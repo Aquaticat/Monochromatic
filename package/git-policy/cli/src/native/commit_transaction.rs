@@ -30,6 +30,9 @@ use super::commit_index::{
     IndexSelection, initialize_commit_index, list_changed_index_paths, list_unmerged_index_paths,
     materialize_pathspec_file, prepare_interactive_selection,
 };
+use super::commit_staged_deletions::{
+    STAGED_DELETION_CODE, STAGED_DELETION_CORE_ID, staged_deletion_message, staged_deletions_present_on_disk,
+};
 use super::commit_workspace::{CommitWorkspace, WorkspaceError, create_commit_workspace};
 use super::config_schema::CliGitConfig;
 use super::diagnostic_log::debug;
@@ -533,6 +536,29 @@ pub fn run_commit_transaction<F: RepositoryFacts>(
     let base: String = base_revision(&capture);
     let pathspecs: Vec<String> = pathspec_texts(invocation);
     let pathspec_arguments: Vec<OsString> = pathspec_arguments(invocation);
+    if selection.mode == TransactionMode::ExplicitPath {
+        // Before any private staging, so Git's "nothing to commit" or its force-add hint never stands in for the reason.
+        let present: Vec<Vec<u8>> = staged_deletions_present_on_disk(
+            context,
+            cwd,
+            capture.layout.repository_root.as_path(),
+            capture.layout.real_index_path.as_path(),
+            base.as_str(),
+            pathspec_arguments.as_slice(),
+        )?;
+        if !present.is_empty() {
+            debug(TAG, "an explicit-path commit selects a staged deletion whose path is on disk");
+            return Ok(TransactionResult {
+                events: vec![PolicyEvent::CoreFinding {
+                    core_id: STAGED_DELETION_CORE_ID,
+                    code: STAGED_DELETION_CODE,
+                    message: staged_deletion_message(present.as_slice()),
+                }],
+                exit_code: 1,
+                landed_oid: None,
+            });
+        }
+    }
     write_journal_record(
         workspace.landing.directory.as_path(),
         PREPARING_FILENAME,

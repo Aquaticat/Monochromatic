@@ -19,6 +19,9 @@ use super::{LanguageBinding, bind};
 /// Shared helpers of the other window tests:
 ///  key events and bounded waiting.
 use crate::native::find_tests::{chord, key};
+/// Windows are drawn on the hardware GPU,
+///  so the platform is installed before the thread's first window.
+use crate::native::gpu_snapshot::install_gpu_platform;
 /// The production window,
 ///  source state,
 ///  and every binding the application installs.
@@ -299,6 +302,7 @@ pub(super) fn reader_with(
     let path = project.root.join(name);
     let text = fs::read_to_string(&path).expect("fixture source");
     let workspace = Workspace::new(&project.root).expect("disposable workspace");
+    install_gpu_platform();
     let window = AppWindow::new().expect("native language window");
     let source = Rc::new(RefCell::new(State::new(&text, Some(path.clone()))));
     window.set_file_label(SharedString::from(path.display().to_string()));

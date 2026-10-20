@@ -74,9 +74,8 @@ pub enum OwnerLiveness {
 /// What:
 ///  Why an owner's liveness could not be decided.
 /// Why:
-///   A refused probe (for example another account's process) must stop recovery rather
-///       than let it touch a transaction that may be live,
-///  as the incumbent's throw does.
+///   A refused probe (for example another account's process) must not let recovery touch a transaction that may be
+///  live; the caller decides whether the refusal means "alive" (permission) or stops recovery (anything else).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

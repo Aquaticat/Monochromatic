@@ -34,7 +34,12 @@ mod embedded_runtime {
     include!(concat!(env!("OUT_DIR"), "/embedded_runtime.rs"));
 }
 
-/// The Wayland app id and the explicit window backend that carries it.
+/// The hardware Vulkan device the window is drawn on,
+///  shared by the launcher and the native test harness.
+mod gpu_device;
+
+/// The Wayland app id and the explicit window backend that carries it,
+///  installed on the device of `gpu_device`.
 mod launcher;
 
 /// Checks of the embedded table:

@@ -917,7 +917,8 @@ fix
 
 Campaign on the final candidate fix `1899e041ef` (gate image of that commit, evidence `native-mutation-jmgEl0`):
 `candidate_prediction.rs` and `policy_dependent_version.rs`, 27 mutants: 8 caught, 15 unviable, 3 timeouts, 1 missed.
-The missed mutant is `policy_dependent_version.rs:255:66`, below.
+The missed mutant is `policy_dependent_version.rs:255:66`,
+analysed in the section The surviving mutant is equivalent after the candidate fix.
 The three timeouts were rerun alone, as the rule for timeouts requires:
 
 - `policy_dependent_version.rs` alone (evidence `native-mutation-dZ9eEY`): 13 mutants, 4 caught, 8 unviable, 1 missed,

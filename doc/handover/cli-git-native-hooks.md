@@ -170,5 +170,6 @@ The user moved these gates after the cutover, so they are not part of this lane'
   The driver `native-interop/hook-dispatch.mjs`.
   The results are in `doc/handover/cli-git-native-interop.md`.
 - The cargo-mutants campaign (`native:mutation:scoped`) over `hook_dispatch*.rs`, `hook_dispatch_plan.rs`,
-  `hook_dispatch_entries.rs` and `binary_hook_tests.rs`. Not run. Its planted phase is the eight controls above.
+  `hook_dispatch_entries.rs` and `binary_hook_tests.rs`. Not run.
+  Its planted phase is the eight controls in the Planted controls section.
 - Long fuzz campaigns: none named for slice 4.

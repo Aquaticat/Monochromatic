@@ -139,6 +139,10 @@ mod focus_tests;
 mod font_tests;
 /// Debug records of the moments a window frame passes through.
 mod frame_trace;
+/// The native tests' GPU snapshot harness:
+///  Slint windows drawn on a hardware Vulkan device and read back as pixels.
+#[cfg(test)]
+mod gpu_snapshot;
 /// Tree rows that git ignores draw their name at 0.8 opacity and nothing else of the row changes.
 #[cfg(test)]
 mod ignored_row_tests;

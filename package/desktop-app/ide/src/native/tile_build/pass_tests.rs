@@ -8,7 +8,8 @@ use crate::native::tile_pass::{PassKey, PassOutput};
 /// The shaper a worker is started with.
 use ide_app::shaped_text::TextShaper;
 
-/// An output of the pass posted as number `generation`, with no lines.
+/// An output of the pass posted as number `generation`,
+/// with no lines.
 fn finished(generation: u64, done: bool) -> PassOutput {
     return PassOutput {
         key: PassKey {
@@ -26,7 +27,8 @@ fn finished(generation: u64, done: bool) -> PassOutput {
 }
 
 /// A pass that was replaced finishes after its replacement was posted;
-/// the window must keep polling for the replacement, which is still running.
+/// the window must keep polling for the replacement,
+/// which is still running.
 #[test]
 fn the_finish_of_a_replaced_pass_leaves_the_newer_pass_open() {
     let mut worker = TileWorker::new(TextShaper::new()).expect("worker starts");

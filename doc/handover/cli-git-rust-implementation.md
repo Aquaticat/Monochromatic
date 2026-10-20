@@ -1752,7 +1752,7 @@ that is verification, not a decision for the user.
   Done 2026-10-19: the mutation run `cli-git-rec4` over the three auto-push files (head `496875c8cf`, the code that
   shipped as 0.2.2) tested 55 mutants in 34 minutes: 51 caught, 4 unviable, none missed or timed out; the container
   gate passed (1995 tests, 5 skipped). The `rec4` images are removed. Nothing is queued for task 50 except the
-  by-nature exceptions named above.
+  by-nature exceptions recorded for task 50 in this handover.
   Released 2026-10-19 as 0.2.2 (commit `63a67d1b5f`) after the container gate passed (1995 tests, 5 skipped): the
   publish workflow succeeded, crates.io lists 0.2.2, both archives exist, the glibc floor on the x86_64 archive is
   still 2.39 (README line 77 names 0.2.2), and `mise upgrade cargo:monochromatic-git-policy-cli` installed it
@@ -1819,6 +1819,58 @@ that is verification, not a decision for the user.
   Separate pass for `cli.fuzz/bin/container.mjs` and `planted-controls.mjs` (1338's second half, 728 to 730):
   they are outside every lint task, use `spawnSync`, `try/finally` and regexes, and `container.mjs` ends in an
   early `return` inside its `try`; verify with a `--build-only` run of the fuzz container script.
+  nc1 finished 2026-10-20 (unit inactive). Six files failed their unmutated baseline (`manual_push_range`,
+  `manual_push_lifecycle`, `auto_push`, `auto_push_branch_key`, `auto_push_record`, `auto_push_single_flight`): two
+  `native_binary` tests (`builtin::branch_creation_is_rejected_in_the_current_worktree`,
+  `builtin::a_tool_cache_checkout_is_exempt_from_the_linked_worktree_rule`) hit the 5-second command bound under load
+  (`binary_support.rs:160`); the other seven files ran. Rerun as unit `cli-git-nc2` (script `~/temp/agent/nc-rerun.ts`,
+  logs `~/temp/agent/nc-rerun-<file>.log`, same image tag `nc1`). Results so far: `policy_events` 32 caught;
+  `maintenance_hk_config` 18 caught, 1 unviable; `maintenance_run` 10 caught, 2 unviable; `auto_push_reconcile` 47
+  caught, 3 unviable, 1 timeout (`:164:31` `||` to `&&` in `read_destination`, unverified); `maintenance_decision` 1
+  missed (`MaintenanceError` `Display::fmt` replaced by `Ok(Default::default())`); `manual_push_probe` 3 missed
+  (`:34:42` and `:34:49` `*` to `+`, and `ManualPushProbeError` `Display::fmt`); `signal_relay` 8 missed (four listed:
+  `wait_without_reaping` ECHILD arm and body, `SignalGuard::install`, `SignalGuard::run_child`). To do after `nc2`
+  ends (editing `src/native` earlier would leak into its image): a test per missed mutant or an equivalence proof.
+  nc2 finished 2026-10-20 (rerun of the six files, no baseline failure): `auto_push_branch_key` 43 caught;
+  `auto_push_single_flight` 25 caught; `auto_push_record` 2 missed (`random_uuid_or_io` constant results);
+  `auto_push` 1 missed (`:324:29`); `manual_push_range` 1 missed (Display); `manual_push_lifecycle` 2 missed (Display,
+  `:88:12` delete `!`). Tests added and committed (6467f403fb, fdc4ef4cf4, cba49396d4), each shown to fail with its
+  mutant applied on the host: the four Display impls, the 16 MiB limit, the remote-name dedup, the unique candidate
+  suffix, the first-push no-merge rule, `restore`, the `waitid` wait, ECHILD and EINTR. Equivalent by reading:
+  `signal_relay.rs:194` and `:243` (`|` to `^` over two disjoint flag bits) and `:398`, `:411` (the `cfg(not(unix))`
+  bodies are not compiled on Linux). `auto_push_reconcile.rs:164:31` (timeout): the host run fails
+  `a_branch_that_tracks_a_local_branch_has_no_destination` under it, so it is detected; the container reported a
+  timeout only; confirm in the closing mutation rerun over every touched file, after the queued `src/native` fixes.
+  Fixes 2026-10-20, each with a failing-first or mutant-checked test, all committed and awaiting the closing gate and
+  mutation run (unit `cli-git-nc3`, script `~/temp/agent/nc3-run.ts`, image tag `nc3`, logs
+  `~/temp/agent/nc3-<name>.log`; no `src/native` edit while it runs): 1032 (d7dd7d364d: `[remote rejected]` is
+  reconciled through the commit graph; a refusal of the merge by a remote that did not move is final), 472
+  (f134ed0c41: finding `commit-only/staged-deletion-worktree-present` before any private staging; positional
+  pathspecs only, `--pathspec-from-file` is not read), 1784 (ed8eeb39e7: `EPERM` from the owner probe means alive),
+  1781 (968a4a06cd: a failure after the branch advanced is worded `LandedThenFailed`, naming the commit and saying not
+  to retry; the cause of the vanished transaction directory is still open, see below), 1346 (3bafa3670f: typed
+  `SignalGuardActive`), 1347 (4537db5cf9: set lookup in `union_paths`; 0.04 s against 9.1 s for 40,000 paths).
+  Closing gate and mutation run `cli-git-nc3` (2026-10-20): container gate 2027 passed, 5 skipped; 14 scoped runs over
+  every touched file, all baselines green, no timeout, every mutant caught or unviable except five in
+  `signal_relay.rs`, all equivalent by reading: `:232` and `:281` (`|` to `^` over disjoint flag bits) and `:302`,
+  `:436`, `:449` (the `cfg(all(unix, not(linux)))` placeholder and the `cfg(not(unix))` guard, not compiled on Linux).
+  That also confirms `auto_push_reconcile.rs:164:31`. The `nc1`, `nc2` and `nc3` images and containers are removed.
+  Hooks plumbing still has no recorded campaign.
+  Open design question for the user (changes an on-disk format, so not done unasked): 1781 and 1784 share a likely
+  cause. An owner record holds a PID and a start tick, with no PID namespace, so a worker in a container sees a host
+  owner's PID as absent or as another process, judges the owner dead and recovers a live transaction. A namespace-aware
+  owner identity needs a record field every reader accepts; until then a mixed host and container setup is unsafe.
+  Probe 2026-10-20 (primitive only): `kill -0 <host pid>` from an alpine container with its own PID namespace fails
+  with "No such process", and succeeds with `--pid=host`. So the wrapper's `ESRCH` branch (`Dead`) is reached for a
+  live host owner. The full path (a container recovering a live host transaction) is still not reproduced.
+  Released 2026-10-20 as 0.2.3 (crates.io, release `monochromatic-git-policy-cli-v0.2.3`, installed through mise and
+  checked with the staged-deletion finding in a throwaway repository). Closed 472, 1346, 1347 and 1032.
+  Triage 2026-10-20: closed 632 (the perf code is gone) and 1348 (ST2 is a TypeScript rule). Reframed 629 to the Rust
+  helpers still duplicated across `test_support.rs`, `command_test_support.rs` and `binary_support.rs` plus the
+  byte-argument copies in `cli.fuzz`; queued behind nc2, as those files are in the mutation image. 630 stays open with
+  option 2 recorded (shared helpers, disagreements first), to be verified together with the e2e suite run. 1672 stays
+  open (my three copies differ in shape; the rest belong to other owners). 1717: the cli-git handovers are fixed
+  (3e8b569cea); the other units' handovers remain.
   Issue 1713 (handover paths and `mise run //` targets that moved): the cli-git half is done in commit `d4a2587cb6`
   (thirty occurrences of 23 distinct unresolved paths in eleven `doc/handover/cli-git*.md` files keep their text and
   carry an in-place note with the current module or the removal date; progress comment posted). The issue stays open

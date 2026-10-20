@@ -368,3 +368,116 @@ fn term_during_a_held_pre_commit_ends_git_and_reports_143() {
     assert!(root.join("cleanup").exists());
     remove(root.as_path());
 }
+
+/// The handler address `signal` currently has, read without changing it.
+#[cfg(unix)]
+fn disposition_of(signal: libc::c_int) -> libc::sighandler_t {
+    // SAFETY: a zeroed `sigaction` is a valid buffer for the kernel to fill.
+    let mut current: libc::sigaction = unsafe { std::mem::zeroed() };
+    // SAFETY: a null new action only reads the current disposition into `current`.
+    unsafe { libc::sigaction(signal, std::ptr::null(), &mut current) };
+    return current.sa_sigaction;
+}
+
+/// A handler that does nothing, standing in for a disposition the process had before the guard.
+#[cfg(unix)]
+extern "C" fn earlier_handler(_signal: libc::c_int) {}
+
+/// Dropping the guard puts back the disposition each signal had before, not the default.
+#[cfg(unix)]
+#[test]
+fn dropping_the_guard_restores_the_previous_dispositions() {
+    let earlier: libc::sighandler_t = earlier_handler as extern "C" fn(libc::c_int) as libc::sighandler_t;
+    // SAFETY: installs a handler that does nothing for a valid signal number.
+    unsafe { libc::signal(libc::SIGHUP, earlier) };
+    let guard: SignalGuard = SignalGuard::install().expect("guard");
+    assert_eq!(
+        disposition_of(libc::SIGHUP),
+        relay_handler as *const () as libc::sighandler_t,
+        "the guard replaces the earlier handler while it lives"
+    );
+    drop(guard);
+    assert_eq!(
+        disposition_of(libc::SIGHUP),
+        earlier,
+        "the earlier handler is back after the drop"
+    );
+    // SAFETY: returns the signal to its default so no later test sees the stand-in.
+    unsafe { libc::signal(libc::SIGHUP, libc::SIG_DFL) };
+}
+
+/// The wait returns when the child has exited and leaves the child unreaped, so its PID still names it.
+#[cfg(target_os = "linux")]
+#[test]
+fn waiting_ends_at_the_childs_exit_and_leaves_it_unreaped() {
+    let mut command: Command = Command::new("sleep");
+    command.arg("1");
+    let mut child: Child = command.spawn().expect("sleep starts");
+    let pid: libc::pid_t = libc::pid_t::try_from(child.id()).expect("pid fits");
+    let started: Instant = Instant::now();
+    wait_without_reaping(pid).expect("the wait succeeds");
+    assert!(
+        started.elapsed() >= Duration::from_millis(800),
+        "the wait lasted until the child exited"
+    );
+    let state: String = std::fs::read_to_string(format!("/proc/{pid}/stat")).expect("the child is still listed");
+    assert!(state.contains(") Z"), "the child is a zombie, not reaped: {state}");
+    assert!(child.wait().expect("the child is still waitable").success());
+}
+
+/// A PID that is not this process's child has nothing to wait for, which is success, not an error.
+#[cfg(target_os = "linux")]
+#[test]
+fn waiting_for_a_process_that_is_not_a_child_ends_without_error() {
+    wait_without_reaping(libc::pid_t::MAX).expect("no such child means nothing to wait for");
+}
+
+/// A signal that interrupts the wait does not end it; the wait goes on until the child exits.
+///
+/// The test handler is installed without `SA_RESTART`, so the interrupted `waitid` reports `EINTR`.
+#[cfg(target_os = "linux")]
+#[test]
+fn an_interrupted_wait_continues_until_the_child_exits() {
+    // SAFETY: a zeroed `sigaction` is a valid starting value; the fields used below are set first.
+    let mut action: libc::sigaction = unsafe { std::mem::zeroed() };
+    action.sa_sigaction = earlier_handler as extern "C" fn(libc::c_int) as libc::sighandler_t;
+    action.sa_flags = 0;
+    // SAFETY: `sigemptyset` initializes the mask in place.
+    unsafe { libc::sigemptyset(&mut action.sa_mask) };
+    // SAFETY: installs a handler that does nothing for a valid signal number.
+    unsafe { libc::sigaction(libc::SIGUSR1, &action, std::ptr::null_mut()) };
+    let mut command: Command = Command::new("sleep");
+    command.arg("1");
+    let mut child: Child = command.spawn().expect("sleep starts");
+    let pid: libc::pid_t = libc::pid_t::try_from(child.id()).expect("pid fits");
+    // SAFETY: `pthread_self` has no preconditions.
+    let waiting_thread: libc::pthread_t = unsafe { libc::pthread_self() };
+    let interrupter = std::thread::spawn(move || {
+        for _ in 0..3 {
+            std::thread::sleep(Duration::from_millis(150));
+            // SAFETY: the waiting thread outlives these signals because the test joins this thread before it ends.
+            unsafe { libc::pthread_kill(waiting_thread, libc::SIGUSR1) };
+        }
+    });
+    let started: Instant = Instant::now();
+    wait_without_reaping(pid).expect("interrupts do not end the wait");
+    assert!(
+        started.elapsed() >= Duration::from_millis(800),
+        "the wait lasted until the child exited"
+    );
+    interrupter.join().expect("interrupter finishes");
+    assert!(child.wait().expect("the child is still waitable").success());
+}
+
+/// The refusal of a second guard carries its type, and nothing else is taken for it.
+#[cfg(unix)]
+#[test]
+fn only_the_refusal_of_a_second_guard_is_recognized_as_such() {
+    let first: SignalGuard = SignalGuard::install().expect("first guard");
+    let refusal: io::Error = SignalGuard::install().err().expect("a second guard is refused");
+    assert!(is_guard_active_refusal(&refusal));
+    assert_eq!(refusal.to_string(), "a signal guard is already active in this process");
+    drop(first);
+    assert!(!is_guard_active_refusal(&io::Error::other("a signal guard is already active in this process")));
+    assert!(!is_guard_active_refusal(&io::Error::from_raw_os_error(libc::EAGAIN)));
+}

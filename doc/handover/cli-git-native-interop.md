@@ -86,7 +86,8 @@ The container gate of the final native code (image `e69138b9973c`) passed:
 1666 unit tests (5 ignored), 118 binary-level tests (1 ignored), the candidate consumer, and Clippy inside the gate;
 `mise run //package/git-policy/cli:native:clippy` is clean too.
 Mutation testing of `recovery_files.rs`, `transaction_registry.rs` and `recovery_scan.rs` was not run.
-The matrix drivers ran on the final native code (commit `5d61d7b442`) with the results below.
+The matrix drivers ran on the final native code (commit `5d61d7b442`)
+with the results in the Results per combination section.
 
 ## Results per combination
 
@@ -153,7 +154,7 @@ incumbent only 369 passed and 5 failed (two incumbent exceptions, listed under t
 
 Not run: `capture-differential.mjs` after the retirement (it prints the incumbent's trees for comparison with
 native unit tests that already hold those trees), Git 2.55.0, macOS and Windows,
-and any run longer than the repetitions above.
+and any run longer than the repetitions recorded per combination.
 
 ## Defects in the native wrapper, fixed
 

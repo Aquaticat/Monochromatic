@@ -552,3 +552,51 @@ fn a_pathspec_file_selects_the_committed_paths() {
     assert_nothing_left(&fixture, repo.as_path());
     remove_settled(&fixture);
 }
+
+/// An explicit-path commit cannot record a deletion staged for a path that stays on disk: the finding says so and
+/// offers the index-backed form, and that form records the deletion and keeps the file (issue 472).
+#[test]
+fn an_explicit_path_commit_of_a_staged_deletion_that_stays_on_disk_offers_the_index_form() {
+    let fixture: Fixture = fixture("commit-staged-deletion");
+    let repo: PathBuf = edited_repository(&fixture, "repo");
+    git(&fixture, repo.as_path(), &["rm", "--quiet", "--cached", "--", "a.txt"]);
+    let head: String = git_text(&fixture, repo.as_path(), &["rev-parse", "HEAD"]);
+    let refused: Observed = run_commit(&fixture, repo.as_path(), &["commit", "--message=untrack", "a.txt"]);
+    assert_eq!(refused.code, Some(1), "{}", stderr_of(&refused));
+    let text: String = stderr_of(&refused);
+    assert!(text.contains("commit-only/staged-deletion-worktree-present"), "{text}");
+    assert!(text.contains("[\\\"a.txt\\\"]"), "{text}");
+    assert!(text.contains("--no-only"), "{text}");
+    assert_eq!(git_text(&fixture, repo.as_path(), &["rev-parse", "HEAD"]), head);
+    assert_eq!(porcelain(&fixture, repo.as_path()), "D  a.txt\n?? a.txt\n");
+    assert_nothing_left(&fixture, repo.as_path());
+    let landed: Observed = run_commit(&fixture, repo.as_path(), &["commit", "--no-only", "--message=untrack"]);
+    assert_eq!(landed.code, Some(0), "{}", stderr_of(&landed));
+    assert_eq!(git_text(&fixture, repo.as_path(), &["ls-tree", "--name-only", "HEAD"]).trim(), "");
+    assert_eq!(std::fs::read(repo.join("a.txt")).expect("the file stays"), b"one\ntwo\n");
+    remove_settled(&fixture);
+}
+
+/// A staged deletion below an ignored directory gets the same finding, not Git's hint to force-add the ignored path.
+#[test]
+fn a_staged_deletion_below_an_ignored_directory_is_not_answered_with_a_force_add_hint() {
+    let fixture: Fixture = fixture("commit-staged-deletion-ignored");
+    let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
+    std::fs::create_dir(repo.join("tool")).expect("tool directory");
+    std::fs::write(repo.join("tool").join("name"), b"local\n").expect("tool file");
+    git(&fixture, repo.as_path(), &["add", "--", "tool/name"]);
+    git(&fixture, repo.as_path(), &["commit", "--quiet", "--message=base"]);
+    std::fs::write(repo.join(".gitignore"), b"/tool/\n").expect("ignore rule");
+    git(&fixture, repo.as_path(), &["add", "--", ".gitignore"]);
+    git(&fixture, repo.as_path(), &["commit", "--quiet", "--message=ignore", "--", ".gitignore"]);
+    keep_maintenance_in_the_foreground(&fixture, repo.as_path());
+    git(&fixture, repo.as_path(), &["rm", "--quiet", "--cached", "--", "tool/name"]);
+    let refused: Observed = run_commit(&fixture, repo.as_path(), &["commit", "--message=untrack", "tool/name"]);
+    assert_eq!(refused.code, Some(1), "{}", stderr_of(&refused));
+    let text: String = stderr_of(&refused);
+    assert!(text.contains("commit-only/staged-deletion-worktree-present"), "{text}");
+    assert!(!text.contains("Use -f"), "{text}");
+    assert!(!text.contains("ignored by one of your .gitignore files"), "{text}");
+    assert_nothing_left(&fixture, repo.as_path());
+    remove_settled(&fixture);
+}

@@ -148,7 +148,8 @@ New modules (each with its `*_tests.rs` where it has pure logic; the transaction
   image built for that campaign): 66 controls, every one noticed by its named test. No non-test source changed after.
 - Mutation. Campaigns over the files created or changed here were run through `native:mutation:scoped` with
   `NATIVE_MUTATION_BASELINE_SKIP=markdown::the_real_linter_rewrites_through_add_check_and_fix` (that test depends on the
-  host load, see above). Earlier per-file campaigns (`commit_transaction`, `commit_conclusion`, `commit_landing_loop`,
+  host load, which the incumbent-logger note in the Results section describes).
+  Earlier per-file campaigns (`commit_transaction`, `commit_conclusion`, `commit_landing_loop`,
   `commit_revalidation`, `commit_worktree_records`, `commit_landing_lock`, `commit_facts`, `commit_command`,
   `commit_no_change`, `commit_workspace`, `commit_replay_options`, `replay_commit`, `commit_preparation`,
   `wrapped_command`, `refusal_frontier`, `candidate_prediction`, `policy_events`, `owner_lock`, `capture_order`,
@@ -186,7 +187,7 @@ New modules (each with its `*_tests.rs` where it has pure logic; the transaction
 
 ## Remaining
 
-Nothing. Every gate and mutation item of the brief is recorded above.
+Nothing. Every gate and mutation item of the brief is recorded in this handover.
 
 ## Rerun commands
 

@@ -197,3 +197,30 @@ fn replay_events_name_the_base_and_the_dropped_headers_only_when_there_are_some(
         }
     );
 }
+
+/// A commit of tens of thousands of paths is combined with its revalidated paths in the order first seen and in time
+/// that does not grow with the product of the two lists (issue 1347); the bound is far above a linear pass and far
+/// below a pairwise scan.
+#[test]
+fn a_replay_of_thousands_of_paths_keeps_the_order_in_linear_time() {
+    let committed: Vec<Vec<u8>> = (0..40_000).map(|index| { return format!("dir/{index:06}.txt").into_bytes(); }).collect();
+    let revalidated: Vec<Vec<u8>> = (20_000..60_000).map(|index| { return format!("dir/{index:06}.txt").into_bytes(); }).collect();
+    let started: std::time::Instant = std::time::Instant::now();
+    let combined: Vec<Vec<u8>> = union_paths(committed.as_slice(), revalidated);
+    assert!(started.elapsed() < std::time::Duration::from_secs(2), "took {:?}", started.elapsed());
+    assert_eq!(combined.len(), 60_000);
+    assert_eq!(combined[0], b"dir/000000.txt".to_vec());
+    assert_eq!(combined[39_999], b"dir/039999.txt".to_vec());
+    assert_eq!(combined[40_000], b"dir/040000.txt".to_vec());
+    assert_eq!(combined[59_999], b"dir/059999.txt".to_vec());
+}
+
+/// A path repeated inside the committed list stays as the commit listed it; only the revalidated additions are deduplicated.
+#[test]
+fn a_repeat_inside_the_committed_list_is_left_as_it_was() {
+    let committed: Vec<Vec<u8>> = vec![b"a".to_vec(), b"a".to_vec()];
+    assert_eq!(
+        union_paths(committed.as_slice(), vec![b"a".to_vec(), b"b".to_vec()]),
+        vec![b"a".to_vec(), b"a".to_vec(), b"b".to_vec()]
+    );
+}

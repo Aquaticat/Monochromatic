@@ -131,7 +131,7 @@ The seeded differential test is the parser's randomized check.
   the library passes 959 tests with 2 ignored, the other test binaries pass.
   The container gate exits 1 only at its Clippy step, on four findings outside this lane (see Clippy).
 - Image identifier: the gate run prints `localhost/git-policy-native-test:replay`;
-  the final identifier is recorded under Final gate below.
+  the final identifier is recorded under the Final gate heading.
 
 ### Clippy
 
@@ -181,7 +181,7 @@ Dispositions:
 The controls and the guard removal are committed. Verification on the gate head (tag `replayI`: 1812 unit, 137 binary,
 1 consumer test): `replay_reverse_apply.rs` `find_position`, `reverse_hunk` and `matches_at` 54 mutants (2 missed before
 the long-image control was added), `replay_containment.rs` and `replay_patch.rs` 52 mutants with none missed, and a
-`find_position` rerun of 17 mutants with the single equivalent survivor at line 129 described above.
+`find_position` rerun of 17 mutants with the single equivalent survivor at line 129 described in the Mutation section.
 Open: landing and the crate release 0.1.5 together with the deletion of the dead policy patch modules already on `main`.
 The container gate image bakes in the source snapshot, so a new test needs a new gate before a mutation run sees it.
 A long fuzz campaign (900 s per target, 15 targets) runs as the unit `cli-git-fuzz-campaign`
@@ -202,7 +202,7 @@ build stops at `cargo vendor --locked`.
    `GIT_POLICY_NATIVE_IMAGE_TAG=replay node <gate-slot path> mise run //package/git-policy/cli:native:test:container`
    and then
    `GIT_POLICY_NATIVE_IMAGE_TAG=replay node <gate-slot path> mise run //package/git-policy/cli:native:mutation:scoped -- <the --file list>`.
-   The `--file` list is the 14 modules named in the Mutation scope note below.
+   The `--file` list is the 14 modules named in the `Mutation scope:` note.
 
 Mutation scope: `replay_patch`, `replay_reverse_apply`, `replay_containment`, `replay_object`,
 `replay_capture_order`, `replay_reservation`, `replay_shared_paths`, `replay_subsumption_text`, `replay_subsumption`,
@@ -252,7 +252,7 @@ Not run, and the exact commands to resume:
   in `bin/mutate-native-container.mjs`. Changing it to 300 s would edit a shared gate, which this lane does not do.
   Command:
   `GIT_POLICY_NATIVE_IMAGE_TAG=replay node <gate-slot.ts> mise run //package/git-policy/cli:native:mutation:scoped -- --file src/native/<file>.rs`
-  for each file listed above.
+  for each file named in the `Mutation scope:` note.
 - The full scoped campaign over the 14 modules:
   `GIT_POLICY_NATIVE_IMAGE_TAG=replay node <gate-slot.ts> mise run //package/git-policy/cli:native:mutation:scoped -- <the --file list in ~/temp/agent/replay-core-mutation-files.txt>`.
   Run it after the container gate, with the baseline failure above in mind.

@@ -9,6 +9,7 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, statSync, w
 import { homedir } from 'node:os';
 import { join, relative, sep } from 'node:path';
 import { containerBounds } from './container-bounds.ts';
+import { gpuArguments } from './gpu-arguments.ts';
 
 // The bound of every container this script starts: the shared computed share of the host, or the caller's IDE_CONTAINER_* values.
 const containerLimits = containerBounds();
@@ -89,9 +90,9 @@ for (let run = 1; run <= runs; run++) {
       '--security-opt', 'label=disable',
       '--volume', sources[scope] + ':/work', '--volume', caches[scope] + ':/work/target', '--volume', cargoHome + ':/cargo',
       '--workdir', '/work', ...containerLimits.environmentArguments, '--env', 'SLINT_EMIT_DEBUG_INFO=1',
-      '--env', 'SLINT_BACKEND=headless', '--env', 'SLINT_MCP_PORT=0', '--env', 'HELIX_RUNTIME=/work/target/debug/runtime',
+      ...gpuArguments, '--env', 'HELIX_RUNTIME=/work/target/debug/runtime',
       'localhost/monochromatic/ide',
-      'cargo', 'nextest', 'run', '--offline', '--features', 'slint/mcp', '--bin', 'monochromatic-ide',
+      'cargo', 'nextest', 'run', '--offline', '--bin', 'monochromatic-ide',
       '--run-ignored', 'only', '--no-capture', '--filter-expr', 'test(watch_scope)',
     ], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
     const output = (result.stdout ?? '') + (result.stderr ?? '');

@@ -5,6 +5,12 @@ FROM localhost/monochromatic/terminal
 # Search integration tests exercise the same ripgrep subprocess protocol as the native reader.
 RUN dnf install --assumeyes gcc-c++ ripgrep && dnf clean all
 
+# The native tests render on the host's hardware GPU through wgpu's Vulkan backend (owner decision of 2026-10-19: no CPU
+# painting in the IDE, tests included). vulkan-loader is the loader library wgpu opens, and mesa-vulkan-drivers holds
+# RADV for AMD GPUs; the same package also holds lavapipe, a CPU rasterizer, which the test harness refuses and the
+# test task hides with VK_DRIVER_FILES. The container sees a GPU only when the task passes --device /dev/dri.
+RUN dnf install --assumeyes vulkan-loader mesa-vulkan-drivers && dnf clean all
+
 # The shared minimal toolchain supplies clippy but omits cargo-fmt.
 RUN CARGO_HOME=/usr/local rustup component add rustfmt
 

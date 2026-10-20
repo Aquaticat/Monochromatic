@@ -123,7 +123,7 @@ The brief asked for tests first, so this is a deviation recorded here.
 The host `/usr/bin/git` is 2.55.0, and the lane's tests run against it as well as the container's 2.56.0.
 Probed on 2.55.0: `reftable` repositories, `--object-format=sha256` repositories,
 `config --list --null` output of a valueless extension (`extensions.worktreeconfig`, lowercase, no value line),
-and the hook probe below.
+and the hook probe (the section on `hook.<event>.enabled=false` and `core.hooksPath`).
 Pre-existing test `git_metadata::tests::queries_capture_output_and_exit_state` asserts `git version 2.56.0`,
 so it fails on the host (2.55.0). It is not in this lane's files.
 
@@ -211,7 +211,8 @@ The gate itself passed its library tests under the same image.
 To rerun when the host is idle:
 `systemd-run --user --unit=<name> --collect --property=MemoryMax=12G --working-directory=<worktree>`
 `node <gate-slot> env GIT_POLICY_NATIVE_IMAGE_TAG=capture`
-with the ten files listed above. The mutation run has not produced any caught, missed, unviable or timed-out result yet.
+with the ten files that the Mutation section names.
+The mutation run has not produced any caught, missed, unviable or timed-out result yet.
 
 ## Drained state
 

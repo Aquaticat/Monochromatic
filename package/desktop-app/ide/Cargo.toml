@@ -64,8 +64,18 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "1.1"
 tokio = { version = "1.50", features = ["rt-multi-thread", "sync", "time", "process", "io-util", "macros"] }
-# Match the compiler/runtime release family used by the sibling native apps.
-slint = { version = "1.18.1", features = [ "backend-winit", "renderer-femtovg", "renderer-software", ], }
+# Match the compiler/runtime release family used by the sibling native apps. No `renderer-software`: nothing in the IDE
+# paints on the CPU, tests included (owner decision of 2026-10-19, doc/planning/ide-gpu-snapshot-harness.md). Slint's
+# `default` feature set contains `renderer-software`, so default features are off and the rest of that set is listed:
+# `std`, `backend-default` (winit), `accessibility`, `compat-1-2`, and `system-tray`.
+# The renderer is FemtoVG over wgpu 30 (`renderer-femtovg-wgpu`, owner-accepted 2026-10-19/20 with `unstable-wgpu-30`,
+# doc/planning/ide-vello-text.md design C). It is declared here once, for the application, its tests, and the GPU
+# snapshot harness (`src/native/gpu_snapshot.rs`). There is no `renderer-femtovg`: that is the OpenGL variant, and the
+# application has no OpenGL path (doc/planning/ide-gpu-snapshot-harness.md, section "Stage 2").
+# `unstable-wgpu-30` exposes `WGPUConfiguration` and the wgpu 30 types for the one device the launcher opens.
+# `unstable-winit-030` is the `BackendSelector` hook that stamps the Wayland app id while that device is handed over
+# (`src/launcher.rs`). Both flags are semver-exempt and add no package.
+slint = { version = "1.18.1", default-features = false, features = ["std", "backend-default", "backend-winit", "renderer-femtovg-wgpu", "unstable-wgpu-30", "unstable-winit-030", "accessibility", "compat-1-2", "system-tray"] }
 tracing = "0.1"
 # The `log` facade helix-lsp writes through and its conversion to `tracing` events, used to re-label
 # helix-lsp records (`src/logging/relabel.rs`). tracing-subscriber already builds this exact crate with
@@ -95,6 +105,15 @@ shadow_unrelated = "deny"
 
 [profile.dev]
 debug = 0
+
+# Every dependency (Slint, Parley, Swash, tree-house, and the GPU stack that will follow) is built optimized in the
+# dev profile. The application crate itself stays unoptimized, so an edit to it rebuilds as fast as before.
+# Slint is about twelve times slower unoptimized, which hides the real frame cadence of a scroll or a minimap drag
+# in a debug build. Measured with the inspect:cadence task; numbers are in README.md, section "Dependencies
+# optimized in the dev profile". This applies to this package only: it declares its own [workspace], so no sibling
+# package shares the profile.
+[profile.dev.package."*"]
+opt-level = 2
 
 [workspace]
 

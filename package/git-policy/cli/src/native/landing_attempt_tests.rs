@@ -27,3 +27,17 @@ fn each_failure_is_worded_by_its_cause() {
             .contains("lock broke")
     );
 }
+
+/// A failure after the branch advanced names the landed commit and its reference, carries the cause and says not to retry.
+#[test]
+fn a_failure_after_the_advance_names_the_landed_commit_and_forbids_a_retry() {
+    let failure: LandingError = LandingError::LandedThenFailed {
+        oid: "a".repeat(40),
+        target: String::from("refs/heads/main"),
+        cause: Box::new(LandingError::Journal(String::from("marker broke"))),
+    };
+    let text: String = failure.to_string();
+    assert!(text.contains(&format!("the commit {} landed on refs/heads/main", "a".repeat(40))), "{text}");
+    assert!(text.contains("completing its records failed: marker broke"), "{text}");
+    assert!(text.contains("do not retry it"), "{text}");
+}

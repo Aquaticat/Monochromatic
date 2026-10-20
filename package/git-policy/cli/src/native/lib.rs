@@ -255,6 +255,9 @@ pub mod commit_revalidation;
 /// The normalization-only transaction for a correction that removed every change.
 pub mod commit_no_change;
 
+/// The finding for a staged deletion that an explicit-path commit cannot record.
+pub mod commit_staged_deletions;
+
 /// The `git commit` command: the transaction, the settled events, the post-commit gate and the backup.
 pub mod commit_command;
 

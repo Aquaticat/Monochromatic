@@ -39,6 +39,10 @@ pub const MAX_RECONCILE_ATTEMPTS: u32 = 10;
 /// The marker Git prints for a push the remote refused as stale; the word is not translated.
 const REJECTED_MARKER: &str = "[rejected]";
 
+/// The marker Git prints for an update that the remote's own rules refused, such as GitHub's protected branch (GH006).
+/// A remote that is updated by two pushes at once refuses the slower one this way, with no word about staleness.
+const REMOTE_REJECTED_MARKER: &str = "[remote rejected]";
+
 /// Where the plain push goes: the branch's upstream remote and the ref it tracks there.
 ///
 /// In TS you'd write (pseudocode):
@@ -54,17 +58,20 @@ struct Destination {
 }
 
 /// What:
-///  Whether a push's output shows that the remote refused the update as stale.
+///  Whether a push's output shows a refusal that a moved remote branch can explain: Git's stale `[rejected]`, or the
+///  remote's own `[remote rejected]`.
 /// Why:
-///   Only a stale-update refusal can be cured by merging; a hook refusal, an authentication failure or an offline error
-///  must be reported as they are.
+///   Only a refusal of an update that raced another push can be cured by merging; an authentication failure or an offline
+///  error must be reported as they are.
+///  The message cannot tell a race from a rule that refuses every push, so the caller compares the remote tip with the
+///  branch and returns the refusal unchanged when the remote has not moved.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// const wasRejectedAsStale = (output: string) => output.includes('[rejected]');
+/// const wasRejectedAsStale = (output: string) => output.includes('[rejected]') || output.includes('[remote rejected]');
 /// ```
 pub fn was_rejected_as_stale(output: &str) -> bool {
-    return output.contains(REJECTED_MARKER);
+    return output.contains(REJECTED_MARKER) || output.contains(REMOTE_REJECTED_MARKER);
 }
 
 /// A failed attempt that explains itself and keeps the push output that came before.
@@ -423,6 +430,9 @@ pub fn reconcile_divergent_push(
         destination.remote, destination.remote
     );
     let mut previous = rejected.output.clone();
+    // The remote tip a merge was pushed against, with the refusal it got: a remote that still shows that tip did not
+    // move, so the refusal was a rule and not a race.
+    let mut refused_against: Option<(String, PushAttempt)> = None;
     for attempt in 1..=MAX_RECONCILE_ATTEMPTS {
         let remote_tip = match fetch_remote_tip(git, &destination)? {
             Ok(tip) => tip,
@@ -437,6 +447,15 @@ pub fn reconcile_divergent_push(
                 ));
             }
         };
+        if let Some((tip, refusal)) = refused_against.take()
+            && tip == remote_tip
+        {
+            debug(
+                TAG,
+                "the remote did not move after it refused the merge; the refusal is final",
+            );
+            return Ok(refusal);
+        }
         match (
             is_ancestor(git, &remote_tip, &local)?,
             is_ancestor(git, &local, &remote_tip)?,
@@ -525,7 +544,8 @@ pub fn reconcile_divergent_push(
         if !was_rejected_as_stale(&pushed.output) {
             return Ok(pushed);
         }
-        previous = pushed.output;
+        previous = pushed.output.clone();
+        refused_against = Some((remote_tip, pushed));
     }
     return Ok(unpublished(
         &previous,

@@ -187,3 +187,22 @@ fn recovery_runs_oldest_first() {
     assert_eq!(ordered, vec![oldest, same_time, newest, unattributed]);
     remove(root.as_path());
 }
+
+/// A probe refused for lack of permission names an existing process of another account or namespace, so its owner is
+/// alive and the scan goes on instead of failing the command (issue 1784).
+#[test]
+fn a_probe_refused_for_permission_leaves_the_owner_alive() {
+    let refusal: std::io::Error = std::io::Error::from_raw_os_error(libc::EPERM);
+    assert_eq!(
+        liveness_after_refused_probe(293, &refusal).expect("the refusal is judged"),
+        OwnerLiveness::Alive
+    );
+}
+
+/// Any other refusal still stops the scan and names the owner, because liveness is then unknown.
+#[test]
+fn a_probe_refused_for_another_reason_fails_the_scan_and_names_the_owner() {
+    let refusal: std::io::Error = std::io::Error::from_raw_os_error(libc::EINVAL);
+    let failure: RecoveryError = liveness_after_refused_probe(293, &refusal).expect_err("the scan stops");
+    assert!(failure.0.contains("probing transaction owner 293 failed"), "{}", failure.0);
+}

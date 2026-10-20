@@ -88,7 +88,8 @@ Logs are under `${HOME}/temp/agent/push-env/` (`red1.log`, `revert-commit-site.l
 
 Production code:
 
-- `auto_push_single_flight.rs` `git_command`: the contract is right, the callers were the defect; fixed as above.
+- `auto_push_single_flight.rs` `git_command`: the contract is right, the callers were the defect;
+  fixed as the section The fix records.
 - `bounded_child.rs` `run_bounded_child`: intentional. Its only caller, `markdown_linter.rs`, passes the invocation's
   whole environment (`std::env::vars_os()` from `main.rs`), so clearing then setting is an explicit copy.
 - `hook_dispatch.rs` `run_git_hook`: intentional. `dispatch_environment` rebuilds the caller's whole environment with
@@ -121,7 +122,8 @@ On code head `116615ad41`:
 
 - Scoped mutation of `src/native/wrapped_command.rs`.
 - Scoped mutation of `src/native/auto_push_single_flight.rs` (only doc comments changed there; optional).
-- The two new planted controls have never been executed. Run them with the planted phase on (see below).
+- The two new planted controls have never been executed. Run them with the planted phase on
+  (see the Rerun commands section).
 - Nothing was published and nothing was installed on the live PATH.
 
 ## Rerun commands

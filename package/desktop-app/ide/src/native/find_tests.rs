@@ -7,6 +7,9 @@
 //!  reload,
 //!  and close.
 
+/// Windows are drawn on the hardware GPU,
+///  so the platform is installed before the thread's first window.
+use super::gpu_snapshot::install_gpu_platform;
 /// The production window,
 ///  source state,
 ///  and every binding the shipped application installs.
@@ -127,6 +130,7 @@ pub(super) fn reader(root: &Path, name: &str) -> Reader {
     // ```
     let text = fs::read_to_string(&path).expect("fixture source");
     let workspace = Workspace::new(root).expect("disposable workspace");
+    install_gpu_platform();
     let window = AppWindow::new().expect("native find window");
     // What: `Some(path.clone())` stores an owned copy of the path as the displayed file.
     // Why: Reload and navigation both need the file identity while the test keeps its own copy.

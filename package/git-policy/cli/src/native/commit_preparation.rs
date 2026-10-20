@@ -27,7 +27,7 @@ use super::shadow_git::remove_shadow_repository;
 /// The shadow request and the real-Git command builder.
 use super::shadow_git::shadow_request;
 use super::forwarding::git_command;
-use super::signal_relay::SignalGuard;
+use super::signal_relay::{SignalGuard, is_guard_active_refusal};
 /// Context, one required Git start and failure text.
 use super::transaction_git::{GitContext, GitFailure, GitOutput, run_git_checked};
 /// `OsString` is owned operating-system text.
@@ -207,7 +207,7 @@ pub fn retry_while_active<Value>(
     loop {
         match install() {
             Ok(value) => return Ok(value),
-            Err(error) if error.to_string().contains("already active") && attempts < limit => {
+            Err(error) if is_guard_active_refusal(&error) && attempts < limit => {
                 attempts += 1;
                 std::thread::sleep(delay);
             }

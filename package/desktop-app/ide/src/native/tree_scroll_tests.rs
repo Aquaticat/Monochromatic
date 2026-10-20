@@ -1,5 +1,8 @@
 //! A far reveal must place the whole target row inside the real native tree viewport.
 
+/// Windows are drawn on the hardware GPU,
+///  so the platform is installed before the thread's first window.
+use super::gpu_snapshot::install_gpu_platform;
 /// Exercise the shipped project component rather than a separate scrolling fixture.
 use super::{AppWindow, tree_pointer_tests::sixty_entries};
 /// Native model and snapshot APIs force the toolkit to materialize its displayed row window.
@@ -10,6 +13,7 @@ use std::rc::Rc;
 /// Large forward/backward jumps and the last row must retain fractional viewport remainders.
 #[test]
 fn far_tree_reveal_keeps_the_entire_target_row_visible() {
+    install_gpu_platform();
     let window = AppWindow::new().expect("native tree window");
     window.set_project_visible(true);
     window.set_source_available(false);

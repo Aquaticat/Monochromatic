@@ -391,10 +391,14 @@ fn replay_candidate<F: RepositoryFacts>(
 /// ```
 pub fn union_paths(committed: &[Vec<u8>], revalidated: Vec<Vec<u8>>) -> Vec<Vec<u8>> {
     let mut paths: Vec<Vec<u8>> = committed.to_vec();
+    // Membership is a set lookup, so a commit of thousands of paths costs linear work per replay, not quadratic.
+    let known: std::collections::HashSet<&[u8]> = committed.iter().map(Vec::as_slice).collect();
+    let mut added: std::collections::HashSet<Vec<u8>> = std::collections::HashSet::new();
     for path in revalidated {
-        if !paths.contains(&path) {
-            paths.push(path);
+        if known.contains(path.as_slice()) || !added.insert(path.clone()) {
+            continue;
         }
+        paths.push(path);
     }
     return paths;
 }

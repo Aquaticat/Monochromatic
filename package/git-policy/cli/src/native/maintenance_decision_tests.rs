@@ -163,3 +163,16 @@ fn integer_detach_settings_are_true_when_nonzero() {
         MaintenanceDecision::Run(FOREGROUND.to_vec())
     );
 }
+
+/// Each failure prints its own diagnostic, so a failed maintenance decision names its cause.
+#[test]
+fn the_maintenance_errors_display_their_causes() {
+    assert_eq!(
+        MaintenanceError::ConfigNotUtf8.to_string(),
+        "git config output for maintenance is not UTF-8"
+    );
+    assert_eq!(
+        MaintenanceError::Start(String::from("git could not start")).to_string(),
+        "git could not start"
+    );
+}

@@ -1023,6 +1023,93 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     a CPU Vulkan driver such as lavapipe is an open owner question, not adopted) and stage 1 agent
     `a54a3dbd127b14fbf` (dev-profile optimization with build-time numbers, `inspect:cadence` task with a positive
     control). I verify each report myself before landing.
+    Stage 0 report received (agent `a90c692a544c2aecc`, branch `worktree-agent-a90c692a544c2aecc`, worktree
+    `.claude/worktrees/agent-a90c692a544c2aecc`, eight commits up to `1e4f35b0e2`, not pushed, not yet landed):
+    `src/native/gpu_snapshot.rs` is a test-only `Platform` + `WindowAdapter` around `FemtoVGWGPURenderer` on a
+    hardware Vulkan device (RADV in the container through `--device /dev/dri`, `VK_DRIVER_FILES` naming only
+    `radeon_icd.x86_64.json`, so lavapipe is not listed; the harness refuses CPU adapters and panics instead of
+    falling back); `source_font_tests.rs` is migrated; renders were deterministic and a compositor screenshot matched
+    the harness in 0 of 60,000 pixels for one component. The agent's full-suite experiment (every test calling
+    `install_gpu_platform()`) passed 209 of 214; two failures were the missing clipboard (fixed) and three remain
+    undiagnosed (dark-scheme selection ink in `query_input_tests` and `query_input_paint_tests`, and
+    `annotation_stability_tests::scrolling_across_annotated_lines_is_rigid`). My answers to its open questions, adopted
+    unless the owner vetoes: lavapipe is never accepted (CPU rasterization); `test:native` keeps requiring
+    `/dev/dri` (the owner's rule makes every native test a GPU test; CI does not run the IDE tests: no workflow
+    mentions `test:native` or `desktop-app/ide`); render-node passthrough is accepted; full wgpu limits and discrete
+    over integrated are accepted. Known limit: the `VK_DRIVER_FILES` path is AMD-only, so an Intel or NVIDIA host
+    needs another ICD file (follow-up: choose the file by detected vendor). Next: migrate the other 13 `take_snapshot`
+    files, diagnose the three failures, then drop `renderer-software` and the testing backend.
+    Verified by me and landed (2026-10-19, merge `64cb8b96eb` on `main`): clippy, rustfmt and slint lint pass, and
+    `test:native` passes 214 of 214 with a unique log (an earlier run of mine used a log shared with another run
+    and showed one failure, `minimap_reflection_tests::the_minimap_of_find_matches_is_the_average_of_the_windows_pixels`
+    at scale 2, "differs by 99"; it did not recur in the clean run; the gate runner now takes `TAG` for a unique
+    log and unit name). Stage 0b agent `a151e856e450d38e8` (migrate the 13 files, diagnose the three failures, drop
+    `renderer-software`) landed (agent `a151e856e450d38e8`, merged into `main` on 2026-10-20, verified by me on the
+    merged tree: `lint`, `inspect:software-renderer`, `test:bin`, `build` pass and `test:native` passed 4 of 4 runs,
+    214 tests each in about 23 s; one guard script it edited but never ran, `inspect:source-guards ... clip-edges`,
+    shows baseline pass, removed fail, restored pass). Every native test installs the GPU platform with one
+    `install_gpu_platform();` before each window constructor (18 constructors in 15 files); the headless backend and
+    the `slint/mcp` feature are gone from `test:native`; `bin/gpu-arguments.ts` gives the 11 guard scripts the same
+    device flags; both `slint` dependency entries set `default-features = false` because the default set pulled the
+    software renderer in; the task `inspect:software-renderer` fails if it is linked again. Builds with
+    `--features slint/mcp` (tasks `mcp`, `inspect:native`, the idle-cost and log-stall scripts) still link the
+    software renderer, because Slint's MCP server screenshots with it: open owner question. The three failures were
+    all assumptions about software-renderer pixels, not application bugs: the GPU anti-aliases the first and last
+    row of a fractionally placed selection rectangle (sampled rows moved inward), and the rigid-scroll test now
+    allows one level of difference in the last window row only (a clip-edge difference in FemtoVG's scissor
+    mask, read in the shader, not isolated); guard runs show both tests still fail when the guarded code is removed.
+    Load-dependent flakes seen only in the agent's parallel runs and not in my 4 runs: the rigid-scroll test once at
+    an interior row (cause unfound), `write_wait_tests` once, two `watch_tests` once (400 ms budgets). The commit
+    message of `415bc345ed` says 22 sites where it is 18 constructors in 15 files; a corrective commit comment was
+    posted (GCA).
+    Stage 2 landed (agent `a1b70500a2a370d0d`, merged into `main`, pushed as `fcfaec56e6`, verified by me): the
+    application runs on FemtoVG over wgpu 30 (Vulkan). `Cargo.toml` lists `renderer-femtovg-wgpu`,
+    `unstable-wgpu-30` and `unstable-winit-030` (the public `BackendSelector` app-id hook, no new package) and no
+    longer `renderer-femtovg` (OpenGL). `src/gpu_device.rs` (7 tests) lists Vulkan adapters, keeps only discrete and
+    integrated GPUs, requests the device with the adapter's resolution limits and retries the next adapter; on failure
+    it names the adapters seen and every remedy. The launcher installs the backend with `WGPUConfiguration::Manual`
+    because wgpu-core filters CPU adapters only on request and Slint's own check is bypassed by `SLINT_WGPU_CPU`
+    (guard proof: accepting `Cpu` fails 3 of 7 device tests; a lavapipe run with the guard removed started on
+    llvmpipe). `SLINT_MCP_PORT` no longer returns early in the launcher. Debug builds aborted at window close
+    (wgpu-core's debug-only thread-local lock trace); the launcher now leaks one handle of each wgpu object.
+    Agent's measurements: adapter `AMD Radeon RX 7600 (RADV NAVI33)` in every run with 8 storage buffers and a 16384 px
+    texture limit; baseline and new screenshots differ in 28 of 726,000 pixels by at most one level; first frame 328 ms
+    to 350 ms; idle RSS 155 MiB to 136 MiB; release binary 83.0 MB to 90.1 MB; cold release build 49 s to 55 s.
+    My verification on the merged `main`: `lint`, `test:bin`, `build`, `inspect:software-renderer` pass;
+    `test:native` 224 of 224 twice (about 24 s each); `inspect:cadence` release, interleaved baseline and new, 2 runs
+    each, 1100x660: scroll 117/119 and 117/119 against 117/119 and 115/119, drag 117/118 and 117/118 against 117/118
+    and 116/118, longest identical run 1 to 2 in every cell, so no difference; I viewed the dark find screenshot and
+    the light hover screenshot. The agent saw one failure of
+    `minimap_tests::an_external_edit_of_fifty_thousand_lines_renders_only_the_band_it_touches` in 9 runs ("rendered
+    4 of 4 bands"), passing alone and in 8 later full runs; I did not see it in 3 of my runs. It is a CPU minimap
+    picture test of the code stage 5 deletes.
+    The IDE was reinstalled from this build: `~/.local/bin/monochromatic-ide` sha256 prefix `e8944c22f708ac4a`
+    (equal to the release build), previous binary kept as `monochromatic-ide.previous` (`85d38e6a32faee9a`).
+    Not exercised: any GPU other than this AMD host, the integrated-GPU path, the device-refused retry outside a
+    unit test, resize, scale other than 1, 50,000-line files, surface loss and suspend.
+    Decisions I took (veto-open): keep `unstable-winit-030` over a direct `i-slint-core` dependency (public API, no
+    new package); virtual GPUs stay refused with CPU and unknown kinds; discrete GPU is preferred over integrated, the
+    choice is not checked against the window surface, and `WGPU_POWER_PREF` and `WGPU_ADAPTER_NAME` are no longer read.
+    Open owner questions: whether losing hosts with OpenGL but no Vulkan hardware driver is accepted (the OpenGL
+    renderer is gone), and the `slint/mcp` inspection builds, which still link the software renderer.
+    Stage 1 landed (agent `a54a3dbd127b14fbf`, merged into `main`, verified by me): `[profile.dev.package."*"]`
+    `opt-level = 2` in the IDE `Cargo.toml` (clean debug build 49.7 s to 81.8 s, incremental rebuild unchanged at
+    about 4 s, `test:native` 214 tests in about 23 s on a quiet host, measured by me after the merge) and the
+    `inspect:cadence` task (`mise run //package/desktop-app/ide:inspect:cadence <scenario> <project> <file> [profile]`,
+    `bin/cadence.ts`, `bin/inspect-cadence.mjs`, README section "Frame cadence check"). My control run of the debug
+    build with optimized dependencies on `client.unit.test.ts`, scenario `drag`: 106 changed, 15 identical of 121,
+    longest identical run 1 (single dropped frames about every eight frames, none of the 5 to 9 frame freezes the
+    agent measured in the unoptimized debug build). The 50,000-line case was not measured. The agent changed
+    `wrap_tests::rows_above_the_view_changing_height_move_no_visible_pixel` to wait for the extent to change before
+    `settled`: with optimized dependencies `settled` returned while the extent was unchanged (10608 before and
+    after, 24504 once measured); why is undetermined (candidate: the pass closes when its last output is taken while
+    the window applies it on a later timer tick), so a production tracking bug in `pass_open` (`tile_build.rs`) is
+    not ruled out. Commit scopes there are `desktop-app/ide` where the repo uses `desktop-app-ide`; not amended.
+    Test races found by running the full suite on the merged `main` and fixed by me (`87d02a02d8`):
+    `tall_window_minimap_tests` read the minimap picture of the window before it was resized; the fixture now also
+    waits for the picture to be taller than 1000 rows (it passed 6 of 6 alone and failed once in a loaded full run).
+    The three `markdown/semantic-line-breaks` findings from my earlier flake fix are fixed; the IDE `lint` task is
+    green (clippy, rustfmt, slint, `monochromatic-lint`).
   - Where docs are edited (owner instruction of 2026-10-19): handover and doc edits are made in the main checkout
     (`/var/home/user/Monochromatic`), merging `origin/main` into it first when it is behind; not in a temporary
     worktree. Agent worktrees are for code.

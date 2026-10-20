@@ -12,6 +12,7 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, statSync, w
 import { homedir } from 'node:os';
 import { join, relative, sep } from 'node:path';
 import { containerBounds } from './container-bounds.ts';
+import { gpuArguments } from './gpu-arguments.ts';
 
 // The bound of every container this script starts: the shared computed share of the host, or the caller's IDE_CONTAINER_* values.
 const containerLimits = containerBounds();
@@ -152,7 +153,7 @@ const baselined = new Set();
 const run = (item, phase) => {
   // What each kind of case runs: a native window test, a library unit test, or an integration test.
   const command = item.native
-    ? ['cargo', 'nextest', 'run', '--offline', '--features', 'slint/mcp', '--bin', 'monochromatic-ide', '--filter-expr', 'test(' + item.test + ')']
+    ? ['cargo', 'nextest', 'run', '--offline', '--bin', 'monochromatic-ide', '--filter-expr', 'test(' + item.test + ')']
     : item.lib
       ? ['cargo', 'test', '--offline', '--no-default-features', '--lib', item.test, '--', '--nocapture']
       : ['cargo', 'test', '--offline', '--no-default-features', '--test', item.integration, item.test, '--', '--nocapture'];
@@ -161,7 +162,7 @@ const run = (item, phase) => {
     '--security-opt', 'label=disable',
     '--volume', source + ':/work', '--volume', cache + ':/work/target', '--volume', cargoHome + ':/cargo',
     '--workdir', '/work', ...containerLimits.environmentArguments, '--env', 'SLINT_EMIT_DEBUG_INFO=1',
-    '--env', 'SLINT_BACKEND=headless', '--env', 'SLINT_MCP_PORT=0', '--env', 'HELIX_RUNTIME=/work/target/debug/runtime',
+    ...gpuArguments, '--env', 'HELIX_RUNTIME=/work/target/debug/runtime',
     'localhost/monochromatic/ide', ...command,
   ], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
   let result = start();

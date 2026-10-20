@@ -84,9 +84,11 @@ pub(super) struct PassJob {
     /// What the measurement is valid for.
     pub(super) key: PassKey,
     /// Which post of a pass this is;
-    /// the worker numbers each request it is given, and every output repeats its request's number.
+    /// the worker numbers each request it is given,
+    /// and every output repeats its request's number.
     /// Two passes can have the same key (a new syntax snapshot posts the same text and width again),
-    /// so the key alone cannot tell the output of a replaced pass from the output of the pass that replaced it.
+    /// so the key alone cannot tell the output of a replaced pass
+    /// from the output of the pass that replaced it.
     pub(super) generation: u64,
     /// Rope snapshot at the revision the key names.
     pub(super) document: Document,

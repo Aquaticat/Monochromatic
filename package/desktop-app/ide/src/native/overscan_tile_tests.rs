@@ -6,6 +6,9 @@
 //! the window thread only swaps the finished tile in,
 //!  and the visible pixels equal a fresh render at that offset.
 
+/// Windows are drawn on the hardware GPU,
+///  so the platform is installed before the thread's first window.
+use super::gpu_snapshot::install_gpu_platform;
 /// Reuse production viewport callbacks,
 /// appearance callbacks,
 /// and the raster presentation.
@@ -44,6 +47,7 @@ fn document() -> String {
 /// Open a shown window on `text`,
 /// with production callbacks and one completed render.
 fn open(text: &str) -> (AppWindow, Rc<RefCell<State>>) {
+    install_gpu_platform();
     let window = AppWindow::new().expect("headless native source window");
     let state = Rc::new(RefCell::new(State::new(text, None)));
     bind_viewport(&window, &state);

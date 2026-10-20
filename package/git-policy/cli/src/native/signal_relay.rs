@@ -26,6 +26,44 @@
 //!  elsewhere a signal that arrives in the instant between the child's exit and its reaping
 //!  could reach a recycled PID.
 
+/// What:
+///  The typed reason a second signal guard is refused while one is active.
+/// Why:
+///   Callers that wait for the guard to be free must recognize this refusal by its type, not by its wording
+///  (issue 1346).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class SignalGuardActiveError extends Error {}
+/// ```
+#[derive(Debug)]
+pub struct SignalGuardActive;
+
+/// The wording of the refusal.
+impl std::fmt::Display for SignalGuardActive {
+    /// Writes the wording of the refusal.
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        return formatter.write_str("a signal guard is already active in this process");
+    }
+}
+
+impl std::error::Error for SignalGuardActive {}
+
+/// What:
+///  Whether an installation failure is the refusal of a second guard.
+/// Why:
+///   Only this refusal clears by itself when the other holder lets go; every other failure is final.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// error instanceof SignalGuardActiveError
+/// ```
+pub fn is_guard_active_refusal(error: &io::Error) -> bool {
+    return error
+        .get_ref()
+        .is_some_and(|inner| { return inner.is::<SignalGuardActive>(); });
+}
+
 /// `c_int` is the C integer type signal numbers and status codes use.
 #[cfg(unix)]
 use std::ffi::c_int;
@@ -304,7 +342,7 @@ impl SignalGuard {
             )
             .is_err()
         {
-            return Err(io::Error::other("a signal guard is already active in this process"));
+            return Err(io::Error::other(SignalGuardActive));
         }
         // `mut` lets each installed disposition be recorded as it is replaced.
         let mut saved: Vec<(c_int, libc::sigaction)> = Vec::with_capacity(RELAYED_SIGNALS.len());

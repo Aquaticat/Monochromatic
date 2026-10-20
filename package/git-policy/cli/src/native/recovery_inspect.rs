@@ -94,8 +94,34 @@ impl InspectedEntry {
 }
 
 /// What:
+///  The liveness of an owner whose existence probe was refused.
+///  A refusal for lack of permission names a process that exists but is not this account's to signal,
+///  so the owner is alive; any other refusal is a recovery failure.
+/// Why:
+///   Recovery must never touch a transaction that may be live, and it must not fail an unrelated read either:
+///  the PID may belong to another account, or to a process of another PID namespace (issue 1784).
+///  Treating the owner as alive leaves its transaction alone and lets the command that scanned the registry go on.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// if (error.code === 'EPERM') return 'alive'; throw error;
+/// ```
+fn liveness_after_refused_probe(owner_pid: i64, error: &std::io::Error) -> Result<OwnerLiveness, RecoveryError> {
+    if error.raw_os_error() == Some(libc::EPERM) {
+        debug(
+            "inspectRegistryEntry",
+            format!("transaction owner {owner_pid} cannot be signaled ({error}); it is treated as alive").as_str(),
+        );
+        return Ok(OwnerLiveness::Alive);
+    }
+    return Err(RecoveryError(format!(
+        "probing transaction owner {owner_pid} failed: {error}"
+    )));
+}
+
+/// What:
 ///  Classify an owner,
-///  reporting a failed probe as a recovery failure.
+///  reporting a failed probe as a recovery failure unless the refusal only means the process is not ours to signal.
 /// Why:
 ///   Recovery cannot decide liveness without the probe.
 ///
@@ -107,10 +133,7 @@ fn liveness(record: &TransactionOwner) -> Result<OwnerLiveness, RecoveryError> {
     match classify_transaction_owner(record.owner_pid, record.owner_identity.as_str()) {
         Ok(found) => return Ok(found),
         Err(OwnerLivenessError::Probe(error)) => {
-            return Err(RecoveryError(format!(
-                "probing transaction owner {} failed: {error}",
-                record.owner_pid
-            )));
+            return liveness_after_refused_probe(record.owner_pid, &error);
         }
         Err(OwnerLivenessError::Identity(error)) => {
             return Err(RecoveryError(format!(
