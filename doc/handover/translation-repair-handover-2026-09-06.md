@@ -790,16 +790,42 @@ its "Next" list is still the queue the merge went ahead of.
       none is added).
       Keyless worktree w248 moves the card's Hyper and OpenRouter served ids,
       keeping the roster id `deepseek-v4.1-flash` as the card's name.
-      w246 meanwhile folds 21 copies of `ReadonlyEntry` into one in `shared-contract`.
+      w246 meanwhile folds 21 copies of `ReadonlyEntry` into one in `shared-contract`
+      (`d390fd0f86`,
+      digest unchanged;
+      gate g133 running).
+      `zheermao19` settled at 23:35 UTC in 35.6 min
+      (`TALLY zheermao101 status=SETTLED ... repairAccepted=13 ... pageChanged=9`);
+      the page read is being drafted at `/var/home/user/temp/agent/x15-fix/reads/zheermao19-read.md`
+      for the pass log.
+      NeuralWatt served 197 calls for 28.7 Wh measured,
+      every estimate running 2 to 6 times its measured figure;
+      the run-end `NeuralWatt PLAN ENERGY SPENT: 345.2 Wh` line is the owner's other key
+      (`mimo-v2.6-pro` rose 335 Wh between 23:15 and 23:36 UTC by `/v1/usage/by-model`).
+      Hyper reached `hyperBalance=0` and Synthetic `syntheticWeekly=0%` during the run;
+      Hyper is not recharged.
+      The Bedrock key has expired
+      (HTTP 401 "The security token included in the request has expired.",
+      already on `zheermao17`'s three Gemma seats),
+      and the owner ruled on 2026-10-20 to leave Bedrock off rather than issue a new key.
+      The run then withheld each Gemma seat for the whole run after 4 refused asks,
+      though `gemma-4-26b-a4b-it` and `google.gemma-4-31b` have OpenRouter sides with no holds
+      and OpenRouter was wet:
+      a credential refusal belongs to the provider,
+      not the seat.
+      Keyless worktree w249 makes it hold the provider out for the run and move each seat to its next provider
+      (ledger P18 once it lands);
+      `google.gemma-4-e2b` is Bedrock-only and stays out.
+      The rotation waits for the combined build,
+      since a run now would lose those seats again and spend OpenRouter credit on a build about to change.
       Next:
       gate and land w246,
-      w247 and w248,
+      w247,
+      w248 and w249,
       rebuild,
       set `FROZEN`,
-      read `zheermao19` when it settles,
-      recalibrate the energy margin from its settled ledger lines
-      (the first call's estimate ran 2.8 times its measured figure),
-      gate and land w246,
+      record the `zheermao19` read in the pass log,
+      recalibrate the energy margin from the settled ledger lines,
       then go on with CuspariaKLSY and the rest of the rotation.
     - The class of the `zheermao15` read is ledger B702.
     - The guard of B701 stays open and undecided:
