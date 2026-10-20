@@ -91,11 +91,23 @@
  that records none keeps its key byte for byte, as the key of every other judged
  stage does (ledger B419).
 
+ Version 6 covers the fixes of the XingZ6015 read (2026-10-20), which change what these sheets say and what their floors accept:
+ reader protection reaches only the account of how a death or an attempt happened (owner, 2026-10-20,
+ `house-rule/src/house-policy.ts`), which every sheet splicing the house rule restates; judges no longer see a note between
+ translators (`document-structure/src/translators-note.ts`); the archive-block review says the page it publishes is complete; a
+ consolidation challenge round seats a proposal two ballots named over a fallback the contest majority called flawed; and the
+ declared-name floor meets a lost form of the subject with another declared form of the same person. This key hashes the sheet, so
+ the new house rule asks anew on its own, but not the floors that read the answers, so a carry chosen under the old declared-name
+ floor would be served under the new one. The XingZ6015 pass wrote records at the old number on `sha256-tree-v1:a92725968adf…`, so
+ the change cannot ride inside it and the number moves, as every version whose sheets splice the house rule moves with it; the
+ pairing version stays, since no pairing sheet carries the house rule. No record has been written at 6, which this change sets
+ first.
+
  @example
  ```ts
  const material = JSON.stringify({ version: CONSISTENCY_CACHE_VERSION, sheet, roster, },);
  ```
  */
-export const CONSISTENCY_CACHE_VERSION = 5;
+export const CONSISTENCY_CACHE_VERSION = 6;
 
 //endregion Consistency cache version
