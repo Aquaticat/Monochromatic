@@ -405,6 +405,12 @@ import type { LaneText, } from '@monochromatic-dev/translation-repair-translate-
  directory, none started on a tip that holds `6a28f54be`, where 28 was set: the newest tip, `a5dc23c5bb` of zheermao16 and
  CuspariaKLSY19, does not, and the others started on earlier ones, so none could write a record at 28. That is the evidence of
  the logs' `START tip=` lines and `git merge-base --is-ancestor`, and not a search of any slice-cache directory.
+
+ Rides inside 28 too: a quote the introduced-defect prober or a coverage voice copied from its sheet across the place a note between translators was cut from now anchors in the stored words on each side of the note
+ (`adjudication/src/introduced-defect-screen.ts`, `archive/src/coverage-verdict.ts`, `typography/src/locate-quote.ts`), so the
+ damage claims over a polish and the coverage verdict can differ for a slice holding such a note. The key hashes the version, the
+ run shape and the texts, not the sheet. The same 12 logs, read the same way, show none that started on a tip that holds
+ `6a28f54beb`, where 28 was set, so none could write a record at 28, and the number does not move.
  */
 export const CONSOLIDATE_CACHE_VERSION = 28;
 

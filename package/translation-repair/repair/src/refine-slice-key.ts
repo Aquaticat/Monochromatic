@@ -295,6 +295,15 @@ import type {
  their original lacks (34 notes in all), so a sheet changes for at most those 10 entries. The consolidate version rides
  inside 28 and the consistency, pairing and page title versions stay; their accounts stand beside them. No record has been
  written at 11, which this change sets first.
+
+ Rides inside 11 too: a quote the introduced-defect prober copied from its sheet across the place a note between translators
+ was cut from used to stand in no stored text and was `unanchored`, and now anchors in the stored words on each side of the note
+ (`adjudication/src/introduced-defect-screen.ts`, `typography/src/locate-quote.ts`), so the damage claim that rolls a rewrite
+ back can stand where it could not. The key hashes the version, the shape of the run and the texts, not the sheet, so a record
+ written before would be served after. Of the 12 run logs in the agent directory, none started on a tip that holds `43e735f7da`,
+ where 11 was set, so none could write a record at 11 (the evidence of the logs' `START tip=` lines and
+ `git merge-base --is-ancestor`, as the repair slice version gives it), and the number does not move. Over the 92 pinned English
+ archives 10 hold a note their original lacks, so a record changes for at most those 10 entries.
  */
 export const REFINE_CACHE_VERSION = 11;
 
