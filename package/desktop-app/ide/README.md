@@ -5165,7 +5165,7 @@ with no power preference wgpu does not sort its adapters,
 so the first one the Vulkan loader lists wins,
 and that may be the CPU adapter lavapipe (`llvmpipe`).
 `src/gpu_device.rs` lists the Vulkan adapters,
-keeps the discrete and integrated GPUs only (discrete first),
+keeps the discrete and integrated GPUs only,
 refuses every other kind (CPU,
 virtual,
 unknown),
@@ -5173,18 +5173,106 @@ and requests a device with wgpu's full default limits raised to the adapter's im
 (Vello's compute shaders need storage buffers,
 which Slint's downlevel default limits forbid).
 The native test harness (`src/native/gpu_snapshot.rs`) opens its device through the same function.
-The launcher logs the chosen adapter at info level (`RUST_LOG=info`),
-for example
-`the window is drawn on this GPU adapter=AMD Radeon RX 7600 (RADV NAVI33) (DiscreteGpu, radv)`,
-with the device's storage-buffer and texture limits.
 
-A host with no hardware Vulkan adapter stops at startup with a message that names the adapters it saw
+#### Which GPU
+
+The IDE is a read-only editor,
+so it does not rank a discrete GPU above an integrated one and does not wake
+a second GPU on its own.
+The hardware adapters stay in the order the Vulkan loader lists them,
+and the first one that accepts the device wins.
+That order is the system's choice:
+Mesa documents that without `DRI_PRIME` the default GPU is the one the display server uses,
+and that `DRI_PRIME` and `MESA_VK_DEVICE_SELECT` put the selected GPU first in the Vulkan physical device list.
+Desktops set these per application through switcheroo-control,
+so an entry such as "launch using discrete graphics card" reaches the IDE as a reordered list.
+
+Two variables that wgpu documents are read as explicit choices and win over the loader's order:
+
+- `WGPU_ADAPTER_NAME` keeps the hardware adapters whose name contains the value,
+  ignoring letter case
+  (`radv navi33` matches `AMD Radeon RX 7600 (RADV NAVI33)`).
+  A value that matches no adapter,
+  or only adapters of a refused kind such as `llvmpipe`,
+  stops the IDE with a message
+  that names the adapters seen.
+  If the adapters it matches refuse the device,
+  the IDE does not move on to an adapter the name did not select.
+- `WGPU_POWER_PREF` is `low` (integrated GPUs first),
+  `high` (discrete GPUs first),
+  or `none` (the loader's order),
+  ignoring letter case,
+  as wgpu 30 accepts them.
+  Any other value stops the IDE with a message that names the accepted values (wgpu itself ignores such a value).
+  The other kind is not dropped;
+  it stays behind as the next adapter to try.
+
+When both are set,
+the name filters and the power preference orders what is left.
+An empty value counts as unset.
+A CPU,
+virtual,
+or unknown adapter is never a candidate,
+whatever the variables say.
+These two variables are the whole interface:
+the IDE has no command-line option for the GPU.
+
+The launcher logs the chosen adapter and the reason at info level (`RUST_LOG=info`),
+for example
+`the window is drawn on this GPU adapter=AMD Radeon RX 7600 (RADV NAVI33) (DiscreteGpu, radv)`
+`why=no variable reordered the adapters, so the system's choice applies: the Vulkan loader's order ...; candidate 1 of 2`,
+with the device's storage-buffer and texture limits.
+The reason is either the loader's position of the adapter or the variable that decided.
+
+Measured on 2026-10-20 on a desktop with an RX 7600 (discrete),
+the Ryzen 9 7950X's Raphael graphics (integrated),
+and lavapipe,
+with the IDE hosted in the nested compositor
+(`DRI_PRIME` and `MESA_VK_DEVICE_SELECT` set for the IDE only,
+not for the compositor):
+
+- Nothing set:
+  the loader lists the RX 7600 first,
+  and the IDE draws on it.
+- `DRI_PRIME=1` or `MESA_VK_DEVICE_SELECT=1002:164e`:
+  the loader lists Raphael first,
+  and the IDE draws on it.
+- `WGPU_POWER_PREF=low`:
+  Raphael,
+  whatever the loader lists first;
+  the window and the code view draw.
+- `WGPU_POWER_PREF=high` with `DRI_PRIME=1`:
+  the RX 7600,
+  which the variable moves in front of the loader's first.
+- `WGPU_ADAPTER_NAME="RADV NAVI33"`:
+  the RX 7600 only.
+- `VK_DRIVER_FILES` naming the lavapipe driver file:
+  no hardware adapter,
+  exit status 1 with the message of the section "When no GPU can be used".
+
+A hybrid laptop and NVIDIA's proprietary driver were not available,
+so their loader order is not measured here.
+
+#### When no GPU can be used
+
+A host with no hardware Vulkan adapter stops at startup with a message that names the adapters it saw,
+in the loader's order,
 and every remedy:
 install the Vulkan driver of the GPU and the Vulkan loader,
 give the process access to the render node (`/dev/dri/renderD*`),
 check `vulkaninfo --summary`,
 and check `VK_DRIVER_FILES` and `VK_ICD_FILENAMES`.
 It also says that a CPU adapter is refused on purpose and that `SLINT_WGPU_CPU` does not allow one.
+Every message about the choice (no hardware adapter,
+an unmatched name,
+a refused device) also gives the order used,
+the two variables as read,
+and how to choose a GPU:
+`WGPU_ADAPTER_NAME`,
+`WGPU_POWER_PREF`,
+`DRI_PRIME`
+(for example `DRI_PRIME=1`),
+and `MESA_VK_DEVICE_SELECT` (`vendor_id:device_id`).
 Both cases were run on 2026-10-20 with `VK_DRIVER_FILES` set to the lavapipe driver file (the message lists
 `llvmpipe (LLVM 22.1.8, 256 bits) (Cpu, llvmpipe)`) and to a missing file (the message says the loader found no driver).
 
@@ -5206,8 +5294,9 @@ and `skia`,
 `vello`)
 is an error that names the accepted spellings,
 because Slint would otherwise warn and draw with its default renderer on a device it chose.
-The adapter is not chosen by `WGPU_ADAPTER_NAME` or `WGPU_POWER_PREF`:
-the launcher does not read them.
+A backend that is not winit with FemtoVG on wgpu does not read `WGPU_ADAPTER_NAME` or `WGPU_POWER_PREF` through
+this program;
+the adapter policy above applies only to the path the launcher opens.
 
 The launcher keeps one extra handle of the wgpu instance,
 adapter,
