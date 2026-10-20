@@ -772,8 +772,28 @@ its "Next" list is still the queue the merge went ahead of.
       its 00:00 UTC ledger reset hands back about 20 Wh NeuralWatt still counts,
       far inside the 550 Wh,
       so it is not stopped.
+      The owner then set a 1 kWh daily limit on this key
+      ("I've also just setup a 1kWh daily limit on this specific api key");
+      `/v1/quota` still reported `key.allowance: null` at 23:15 and 23:20 UTC,
+      and `/v1/usage/by-key` `budget_limit_usd: null` on both keys,
+      so w247 also reads the documented USD allowance (`blocked` makes NeuralWatt dry until `reset_at`)
+      and prints it on the `METERS` line.
+      And:
+      "Migrate to deepseek v4 flash 1017 where possible."
+      Catalogs read at about 23:30 UTC:
+      NeuralWatt's `deepseek-v4.1-flash` already serves `deepseek-ai/DeepSeek-V4.1-Flash-1017`;
+      Hyper lists `deepseek-v4.1-flash-1017`,
+      OpenRouter `deepseek/deepseek-v4.1-flash-1017`
+      (Morph serves it at 0.158 and 0.6),
+      Synthetic `hf:deepseek-ai/DeepSeek-V4.1-Flash-1017`
+      (the card has no Synthetic side;
+      none is added).
+      Keyless worktree w248 moves the card's Hyper and OpenRouter served ids,
+      keeping the roster id `deepseek-v4.1-flash` as the card's name.
+      w246 meanwhile folds 21 copies of `ReadonlyEntry` into one in `shared-contract`.
       Next:
-      gate and land w247 (and w246),
+      gate and land w246,
+      w247 and w248,
       rebuild,
       set `FROZEN`,
       read `zheermao19` when it settles,
