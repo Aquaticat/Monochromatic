@@ -19,6 +19,7 @@ import {
   type SchemaCensusRow,
   type SchemaClassification,
 } from './pass-schema-census.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Pass schema guard
 // Refuses to resume an accumulation into a directory whose settled artifacts do
@@ -236,7 +237,7 @@ export class SchemaGenerationError extends StatedRefusalError {
         ...[...foreign.entries(),].map(function toLine([
           label,
           entryIds,
-        ],): string {
+        ]: ReadonlyEntry<string, readonly string[]>,): string {
           return generationLine({
             label,
             entryIds,

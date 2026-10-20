@@ -1,5 +1,8 @@
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import type {
+  ReadonlyEntry,
+  RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { SliceRounds, } from './editor-calibrate-slice.ts';
 import { roundWasJudged, } from './editor-calibrate-standing.ts';
 
@@ -155,8 +158,8 @@ export function printEditorCalibrateShipped(
 
   for (
     const [modelId, count,] of [...credits.entries(),].toSorted(function byCount(
-      left,
-      right,
+      left: ReadonlyEntry<RosterModelId, number>,
+      right: ReadonlyEntry<RosterModelId, number>,
     ): number {
       return right[1] - left[1];
     },)

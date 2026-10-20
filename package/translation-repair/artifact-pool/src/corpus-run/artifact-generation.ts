@@ -9,6 +9,7 @@ import {
 } from './artifact-file-name.ts';
 import { readPlacement, } from './artifact-placement.ts';
 import { resolveGit, } from '@monochromatic-dev/translation-repair-glossary/ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Artifact generation
 // Which PIPELINE VERSION produced each settled artifact, and which ones a draw
@@ -256,7 +257,7 @@ export async function censusByGeneration(
         .entries(),
     ]
       .map(function toGroup(
-        [digest, entryIds,],
+        [digest, entryIds,]: ReadonlyEntry<string, readonly string[]>,
       ): GenerationGroup {
         return {
           digest,

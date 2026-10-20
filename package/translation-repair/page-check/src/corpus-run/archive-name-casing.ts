@@ -15,6 +15,7 @@ import {
 } from '@monochromatic-dev/translation-repair-glossary/ts';
 
 import { applySpanRewrites, } from './span-rewrites.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Archive name casing
 // CLASS ONE HUNDRED THIRTY-SIX (hulicaijia20, 2026-09-25): the archive names
@@ -104,7 +105,7 @@ function nameForms(
     .filter(function oneCasing([
       phrase,
       count,
-    ],): boolean {
+    ]: ReadonlyEntry<string, number>,): boolean {
       return (count >= MIN_USES)
         && phraseOccurrences({
         text: archiveText,
@@ -117,7 +118,7 @@ function nameForms(
           ) === phrase;
         },);
     },)
-    .map(function phraseOf([phrase,],): string {
+    .map(function phraseOf([phrase,]: ReadonlyEntry<string, number>,): string {
       return phrase;
     },),);
 }

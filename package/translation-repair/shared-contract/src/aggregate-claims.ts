@@ -7,6 +7,7 @@ import {
   type IssueClaim,
   type SpanAnchor,
 } from './issue-model.ts';
+import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Claim aggregation
 // Cross-model dedupe and merge PROPOSAL only: identical claims collapse by
@@ -298,7 +299,7 @@ export function aggregateClaims(
    identity never depend on input order.
    */
   const members: readonly AggregatedClaim[] = [...byId.entries(),]
-    .map(function toMember([claimId, claim,],): AggregatedClaim {
+    .map(function toMember([claimId, claim,]: ReadonlyEntry<string, IssueClaim>,): AggregatedClaim {
       return {
         claimId,
         claim,

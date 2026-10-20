@@ -5,6 +5,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import type {
   AdjudicatedIssue,
   EditableEnvelope,
+  ReadonlyEntry,
   RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
@@ -475,7 +476,7 @@ export async function runEditorStage(
       },
           new Map<string, number>(),
         ),]
-        .map(function toFinding([kind, count,],): string {
+        .map(function toFinding([kind, count,]: ReadonlyEntry<string, number>,): string {
         return `editor-rejected ${kind} (${String(count,)})`;
       },), },),
     ],
