@@ -10,7 +10,7 @@ import {
 import type { NeuralWattQuotaSession, } from './neuralwatt-quota-session.ts';
 
 //region NeuralWatt day anchor
-// WHERE THIS RUN'S DAY STARTS, decided once. The owner, 2026-10-20: "Every neuralwatt day starts at 15:15" (19:15 UTC
+// WHERE THIS RUN'S DAY STARTS, decided once. The owner, 2026-10-20: "Every neuralwatt day starts at `15:15`" (19:15 UTC
 // for an owner in America/New_York, EDT). The time of day comes from the quota's `current_period_start` (the baseline
 // reading of the run, `neuralwatt-quota-session.ts`), else from the `TRANSLATION_REPAIR_NEURALWATT_DAY_START` setting,
 // else not at all: NeuralWatt is then refused for the run, with one warning that names the missing field and both

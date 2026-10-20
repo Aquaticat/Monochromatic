@@ -1,6 +1,6 @@
 /**
  Tests the NeuralWatt day and what is counted against it. The owner, 2026-10-20: "The stop logic should obviously
- count total free energy used per day. Every neuralwatt day starts at 15:15", which is 19:15 UTC for an owner in
+ count total free energy used per day. Every neuralwatt day starts at `15:15`", which is 19:15 UTC for an owner in
  America/New_York (EDT) and is the time of day of the subscription's `current_period_start` (`GET /v1/quota`
  answered `2026-10-20T19:15:08Z`). The free energy spent in that day is the account's, across every key
  (`GET /v1/usage/by-model`), and the ledger this pipeline keeps is the floor under it.
@@ -47,7 +47,7 @@ import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 
 /**
- Start of the subscription period the quota reports: 15:15 in America/New_York (EDT) is 19:15 UTC.
+ Start of the subscription period the quota reports: 15:15 EDT in America/New_York is 19:15 UTC.
  */
 const PERIOD_START = '2026-10-20T19:15:08Z';
 

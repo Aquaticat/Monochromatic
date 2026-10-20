@@ -58,7 +58,7 @@ const MODEL = 'deepseek-v4.1-flash';
 const DAY = { kind: 'anchored', start: new Date('2026-10-20T00:00:00.000Z',), } as const;
 
 /**
- A day that starts at 19:15:08 UTC, the owner's 15:15 in America/New_York (EDT), with the account's figure when given.
+ A day that starts at 19:15:08 UTC, the owner's 15:15 EDT in America/New_York, with the account's figure when given.
 
  @param start - ISO 8601 instant the day starts at
 

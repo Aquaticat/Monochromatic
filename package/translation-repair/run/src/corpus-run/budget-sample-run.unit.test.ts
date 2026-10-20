@@ -102,7 +102,7 @@ function envWith(
 ): Readonly<Record<string, string>> {
   return {
     TRANSLATION_REPAIR_NEURALWATT_API_KEY: 'whisker-key-0005',
-    // The day's start, which the unreachable quota cannot give: 15:15 in America/New_York (EDT) is 19:15 UTC.
+    // The day's start, which the unreachable quota cannot give: 15:15 EDT in America/New_York is 19:15 UTC.
     TRANSLATION_REPAIR_NEURALWATT_DAY_START: '19:15',
     [NEURALWATT_LEDGER_VARIABLE]: join(
       ledgerDir,

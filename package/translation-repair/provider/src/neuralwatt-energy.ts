@@ -1,7 +1,7 @@
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
 import {
-  MS_PER_DAY,
   NEURALWATT_DAY_START_VAR,
+  neuralWattDayAfter,
 } from './neuralwatt-day.ts';
 import type { NeuralWattKeyAllowance, } from './neuralwatt-key-allowance.ts';
 
@@ -174,7 +174,8 @@ function refusalTextOf(
   /**
    End of the day the reading covers.
    */
-  const dayEnd = new Date(Date.parse(energy.dayStart,) + MS_PER_DAY,).toISOString();
+  const dayEnd = neuralWattDayAfter({ start: new Date(energy.dayStart,), },)
+    .toISOString();
   return `NeuralWatt has ${energy.remainingWh
     .toFixed(WH_DECIMALS,)} Wh of the ${String(energy.dailyWh,)} Wh free energy `
     + `left in the day that began ${energy.dayStart} (UTC) after ${energy.reservedWh

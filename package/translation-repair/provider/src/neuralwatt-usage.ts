@@ -89,7 +89,7 @@ function coveredNames(): ReadonlySet<string> {
 }
 
 /**
- Epoch milliseconds of one end of the echoed period.
+ One end of the echoed period.
 
  @param period - the reply's `period` object
 
@@ -101,16 +101,16 @@ function coveredNames(): ReadonlySet<string> {
 
  @example
  ```ts
- const startMs = echoedMs({ period, field: 'start', },);
+ const start = echoedAt({ period, field: 'start', },);
  ```
  */
-function echoedMs({
+function echoedAt({
   period,
   field,
 }: {
   readonly period: Readonly<Record<string, unknown>>;
   readonly field: string
-},): number {
+},): Date {
   /**
    The field as the reply spelled it.
    */
@@ -119,12 +119,12 @@ function echoedMs({
     throw new NeuralWattUsageShapeError({ detail: `period.${field} is not a string`, },);
 
   /**
-   Epoch milliseconds, NaN where it is not an instant.
+   Epoch milliseconds, NaN where the text is not an instant.
    */
   const ms = Date.parse(spelled as string,);
   if (!Number.isFinite(ms,))
     throw new NeuralWattUsageShapeError({ detail: `period.${field} is not an instant`, },);
-  return ms;
+  return new Date(ms,);
 }
 
 /**
@@ -184,26 +184,31 @@ export function coveredWhOf(
    The window the reply answers for.
    */
   const echoed = {
-    startMs: echoedMs({
+    start: echoedAt({
       period,
       field: 'start',
     },),
-    endMs: echoedMs({
+    end: echoedAt({
       period,
       field: 'end',
     },),
   };
-  if ((echoed.startMs
+  // THE WINDOWS ARE COMPARED IN THE SPELLING `toISOString` WRITES, which names an instant once whatever offset or
+  // fraction the reply used.
+  if ((echoed.start
+    .toISOString()
     !== asked.start
-    .getTime()) || (echoed.endMs
+    .toISOString()) || (echoed.end
+      .toISOString()
       !== asked.end
-      .getTime()))
+      .toISOString()))
     throw new NeuralWattUsageShapeError({
       detail: `period does not match the window asked (asked ${asked.start
-        .toISOString()} to ${
-        asked.end
-          .toISOString()
-      }, the reply answers for ${new Date(echoed.startMs,).toISOString()} to ${new Date(echoed.endMs,).toISOString()})`,
+        .toISOString()} to ${asked.end
+          .toISOString()}, `
+        + `the reply answers for ${echoed.start
+          .toISOString()} to ${echoed.end
+            .toISOString()})`,
     },);
   if (!Array.isArray(products,))
     throw new NeuralWattUsageShapeError({ detail: 'products is not a list', },);

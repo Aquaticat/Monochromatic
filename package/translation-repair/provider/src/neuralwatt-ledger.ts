@@ -63,7 +63,7 @@ import {
 //
 // THE DAY IS GIVEN TO EVERY READ AND EVERY RESERVATION, not kept here: it
 // starts at an anchor the client reads off the account (`neuralwatt-day.ts`),
-// the owner's "Every neuralwatt day starts at 15:15" (19:15 UTC), and the
+// the owner's "Every neuralwatt day starts at `15:15`" (19:15 UTC), and the
 // ledger counts the lines whose `at` falls from that start up to but not
 // including 24 hours after it. `at` is written with `toISOString` and read
 // back only in that spelling. The ledger has no day of its own to fall back on,

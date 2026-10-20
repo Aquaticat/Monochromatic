@@ -74,7 +74,7 @@ import {
 //
 //   1. BEFORE ANY REQUEST, the call reserves its estimated energy in the
 //      ledger (`neuralwatt-ledger.ts`), in the day the owner's account has:
-//      "Every neuralwatt day starts at 15:15" (`neuralwatt-day.ts`), counting
+//      "Every neuralwatt day starts at `15:15`" (America/New_York, `neuralwatt-day.ts`), counting
 //      the larger of the ledger's spend and the whole account's covered energy
 //      since then (`neuralwatt-day-session.ts`). When the estimate does not fit
 //      in what is left of the day, or the day's start is unknown, or the key's

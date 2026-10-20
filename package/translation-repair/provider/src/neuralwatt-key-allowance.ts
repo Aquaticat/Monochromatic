@@ -1,5 +1,5 @@
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
-import { MS_PER_DAY, } from './neuralwatt-day.ts';
+import { neuralWattDayAfter, } from './neuralwatt-day.ts';
 
 //region NeuralWatt key allowance
 // THE PER-KEY CAP THE OWNER SET. The owner, 2026-10-20: "I've also just setup a 1kWh daily limit on this specific api
@@ -168,14 +168,14 @@ export function keyAllowanceOf({ key, }: { readonly key: unknown; },): NeuralWat
 
  @param start - first instant of the current day, the next day's anchor being a day after it
 
- @returns Epoch milliseconds
+ @returns The instant
 
  @example
  ```ts
- const untilMs = blockedUntilMsOf({ allowance, start: new Date('2026-10-20T19:15:08Z',), },);
+ const until = blockedUntilOf({ allowance, start: new Date('2026-10-20T19:15:08Z',), },);
  ```
  */
-export function blockedUntilMsOf(
+export function blockedUntilOf(
   {
     allowance,
     start,
@@ -183,10 +183,10 @@ export function blockedUntilMsOf(
     readonly allowance: NeuralWattKeyAllowance;
     readonly start: Date;
   },
-): number {
+): Date {
   if (allowance.resetAt === undefined)
-    return start.getTime() + MS_PER_DAY;
-  return Date.parse(allowance.resetAt,);
+    return neuralWattDayAfter({ start, },);
+  return new Date(allowance.resetAt,);
 }
 
 //endregion NeuralWatt key allowance

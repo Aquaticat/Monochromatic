@@ -236,7 +236,7 @@ export function keyAllowanceOf(
 /**
  One `products[]` row of the by-model usage reply, with the fields these cases read.
  */
-export type UsageRow = {
+type UsageRow = {
   readonly requested_model: string;
   readonly served_model_id: string;
   readonly requests: number;
@@ -247,7 +247,7 @@ export type UsageRow = {
  What the by-model route does on a read: answers with a body, drops the connection, or builds its answer from the
  request it was asked.
  */
-export type UsageScript = Error | TransportReply | ((exchange: TransportExchange,) => TransportReply);
+type UsageScript = Error | TransportReply | ((exchange: TransportExchange,) => TransportReply);
 
 /**
  Spells an instant the way the by-model reply echoes its period: `+00:00`, the fraction six digits where there is one.
@@ -261,7 +261,7 @@ export type UsageScript = Error | TransportReply | ((exchange: TransportExchange
  echoSpelling({ instant: '2026-10-20T23:15:00.741Z', },); // '2026-10-20T23:15:00.741000+00:00'
  ```
  */
-export function echoSpelling({ instant, }: { readonly instant: string; },): string {
+function echoSpelling({ instant, }: { readonly instant: string; },): string {
   /**
    The instant in the one spelling `toISOString` has.
    */

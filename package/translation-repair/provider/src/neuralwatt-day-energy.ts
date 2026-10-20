@@ -1,4 +1,4 @@
-import { MS_PER_DAY, } from './neuralwatt-day.ts';
+import { neuralWattDayAfter, } from './neuralwatt-day.ts';
 import type {
   NeuralWattDay,
   NeuralWattEnergy,
@@ -49,17 +49,14 @@ export function entryIsInDay(
     readonly day: Extract<NeuralWattDay, { readonly kind: 'anchored'; }>;
   },
 ): boolean {
-  /**
-   Instant the line was stamped at, in epoch milliseconds.
-   */
-  const atMs = Date.parse(entry.at,);
-
-  /**
-   First instant of the day.
-   */
-  const startMs = day.start
-    .getTime();
-  return (atMs >= startMs) && (atMs < (startMs + MS_PER_DAY));
+  // THE STAMP IS COMPARED AS TEXT: a ledger line's `at` is read only in the spelling `toISOString` writes
+  // (`neuralwatt-ledger-entry.ts`), which orders as the instants do.
+  return (entry.at
+    >= day.start
+    .toISOString())
+    && (entry.at
+      < neuralWattDayAfter({ start: day.start, },)
+      .toISOString());
 }
 
 /**

@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { allInInputOrder, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/ts';
 import { errorName, } from '@monochromatic-dev/translation-repair-markup/ts';
 import {
@@ -17,7 +18,7 @@ import {
 } from './neuralwatt-day.ts';
 import type { NeuralWattDay, } from './neuralwatt-energy.ts';
 import {
-  blockedUntilMsOf,
+  blockedUntilOf,
   type NeuralWattKeyAllowance,
 } from './neuralwatt-key-allowance.ts';
 import type { NeuralWattQuota, } from './neuralwatt-quota.ts';
@@ -26,7 +27,7 @@ import type { RetryPolicy, } from './transient-retry.ts';
 
 //region NeuralWatt day session
 // THE DAY A RUN COUNTS IN, learned once and refreshed at every meter reading. The owner, 2026-10-20: "The stop logic
-// should obviously count total free energy used per day. Every neuralwatt day starts at 15:15" (19:15 UTC for an owner
+// should obviously count total free energy used per day. Every neuralwatt day starts at `15:15`" (19:15 UTC for an owner
 // in America/New_York, EDT), and `neuralwatt-day.ts` says why the anchor is the quota's `current_period_start`.
 //
 // THREE THINGS ARE LEARNED, each with its own failure rule:
@@ -125,7 +126,7 @@ export function createNeuralWattDaySession(
   const state: {
     anchor?: Promise<NeuralWattDayAnchor>;
     account?: {
-      readonly startMs: number;
+      readonly startIso: string;
       readonly wh: number
     };
     readOnce: boolean;
@@ -135,7 +136,7 @@ export function createNeuralWattDaySession(
     allowanceMalformed: boolean;
     blockedWarned: boolean;
     allowance?: NeuralWattKeyAllowance;
-    blockedUntilMs?: number;
+    blockedUntil?: Date;
   } = {
     readOnce: false,
     accountOutage: false,
@@ -185,7 +186,7 @@ export function createNeuralWattDaySession(
         signal,
       },);
       state.account = {
-        startMs: start.getTime(),
+        startIso: start.toISOString(),
         wh,
       };
       state.accountOutage = false;
@@ -237,14 +238,14 @@ export function createNeuralWattDaySession(
     state.allowanceMalformed = false;
     if (reading.keyAllowance === undefined) {
       delete state.allowance;
-      delete state.blockedUntilMs;
+      delete state.blockedUntil;
       state.blockedWarned = false;
       return;
     }
     state.allowance = reading.keyAllowance;
     if (!reading.keyAllowance
       .blocked) {
-      delete state.blockedUntilMs;
+      delete state.blockedUntil;
       state.blockedWarned = false;
       return;
     }
@@ -252,16 +253,16 @@ export function createNeuralWattDaySession(
     /**
      When the block lifts: the cap's own reset, else the next day's anchor.
      */
-    const untilMs = blockedUntilMsOf({
+    const until = blockedUntilOf({
       allowance: reading.keyAllowance,
       start,
     },);
-    state.blockedUntilMs = untilMs;
+    state.blockedUntil = until;
     if (!state.blockedWarned)
       rl.warn(
         `NeuralWatt key allowance is blocked (${String(reading.keyAllowance
           .remainingUsd,)} USD left); NeuralWatt `
-          + `is held dry until ${new Date(untilMs,).toISOString()} (UTC)`,
+          + `is held dry until ${until.toISOString()} (UTC)`,
       );
     state.blockedWarned = true;
   }
@@ -348,16 +349,18 @@ export function createNeuralWattDaySession(
      Both reads, then the mark that the first readings were taken.
      */
     async function readBoth(): Promise<void> {
-      await Promise.all([
-        readAccount({
-          signal,
-          start,
-        },),
-        readAllowance({
-          signal,
-          start,
-        },),
-      ],);
+      await allInInputOrder({
+        members: [
+          readAccount({
+            signal,
+            start,
+          },),
+          readAllowance({
+            signal,
+            start,
+          },),
+        ],
+      },);
       state.readOnce = true;
     }
     state.refreshing = readBoth();
@@ -431,15 +434,15 @@ export function createNeuralWattDaySession(
       start,
       // Conditional spreads keep an absent field absent instead of undefined.
       ...(((state.account === undefined) || (state.account
-        .startMs
-        !== start.getTime()))
+        .startIso
+        !== start.toISOString()))
         ? {}
         : { accountWh: state.account
           .wh, }),
       ...((state.allowance === undefined) ? {} : { keyAllowance: state.allowance, }),
-      ...(((state.blockedUntilMs === undefined) || (state.blockedUntilMs <= current.getTime()))
+      ...(((state.blockedUntil === undefined) || (state.blockedUntil <= current))
         ? {}
-        : { keyBlockedUntil: new Date(state.blockedUntilMs,), }),
+        : { keyBlockedUntil: state.blockedUntil, }),
     };
   }
 

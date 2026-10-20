@@ -4,7 +4,7 @@ import { isAsciiDigits, } from '@monochromatic-dev/translation-repair-markup/ts'
 //region NeuralWatt day
 // WHERE A NEURALWATT DAY STARTS. The owner, 2026-10-20: "The stop logic should
 // obviously count total free energy used per day. Every neuralwatt day starts at
-// 15:15". That is 19:15 UTC for an owner in America/New_York (EDT, UTC-4), and it
+// `15:15`". That is 19:15 UTC for an owner in America/New_York (EDT, UTC-4), and it
 // is the UTC time of day of the subscription's `current_period_start`
 // (`GET /v1/quota` answered `2026-10-20T19:15:08Z` at 23:15 UTC that day), not
 // 00:00 UTC, which the first version of this package assumed from the
@@ -213,23 +213,63 @@ export function neuralWattDayStartOfInstant({ instant, }: { readonly instant: st
  // 2026-10-20T19:15:00.000Z
  ```
  */
-export function neuralWattDayStartAt({
-  now,
-  msOfDay,
-}: {
-  readonly now: Date;
-  readonly msOfDay: number
-},): Date {
+export function neuralWattDayStartAt(
+  {
+    now,
+    msOfDay,
+  }: {
+    readonly now: Date;
+    readonly msOfDay: number;
+  },
+): Date {
   /**
-   Midnight UTC that began the instant's UTC date.
+   The anchor on the instant's UTC date: midnight plus the time of day, which the milliseconds argument carries past
+   its usual range.
    */
-  const midnightMs = Math.floor(now.getTime() / MS_PER_DAY,) * MS_PER_DAY;
+  const candidate = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate(),
+    0,
+    0,
+    0,
+    msOfDay,
+  ),);
+  if (candidate <= now)
+    return candidate;
+  return new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() - 1,
+    0,
+    0,
+    0,
+    msOfDay,
+  ),);
+}
 
-  /**
-   The anchor on that date, which is in the future until the time of day has come.
-   */
-  const candidateMs = midnightMs + msOfDay;
-  return new Date((candidateMs <= now.getTime()) ? candidateMs : (candidateMs - MS_PER_DAY),);
+/**
+ The start of the day after the one starting at an instant: the same time of day, a UTC date later.
+
+ @param start - first instant of a day
+
+ @returns First instant of the next, which is also when the first ends
+
+ @example
+ ```ts
+ neuralWattDayAfter({ start: new Date('2026-10-20T19:15:08.000Z',), },); // 2026-10-21T19:15:08.000Z
+ ```
+ */
+export function neuralWattDayAfter({ start, }: { readonly start: Date; },): Date {
+  return new Date(Date.UTC(
+    start.getUTCFullYear(),
+    start.getUTCMonth(),
+    start.getUTCDate() + 1,
+    start.getUTCHours(),
+    start.getUTCMinutes(),
+    start.getUTCSeconds(),
+    start.getUTCMilliseconds(),
+  ),);
 }
 
 //endregion NeuralWatt day

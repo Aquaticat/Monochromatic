@@ -23,7 +23,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- Milliseconds in the 19:15 UTC the owner's 15:15 in America/New_York (EDT) is.
+ Milliseconds in the 19:15 UTC the owner's 15:15 EDT in America/New_York is.
  */
 const NAP_TIME_MS = ((19 * 60) + 15) * 60_000;
 
