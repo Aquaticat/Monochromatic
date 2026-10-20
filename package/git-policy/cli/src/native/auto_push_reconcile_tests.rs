@@ -779,7 +779,7 @@ fn fetched_remote_tip(scenario: &Scenario) -> String {
 }
 
 /// Run the fast-forward of the repository under test from its current tip to `target`.
-fn advance(scenario: &Scenario, target: &str) -> Result<(), String> {
+fn advance(scenario: &Scenario, target: &str) -> Result<bool, String> {
     let local = text_of(&scenario.local, &["rev-parse", "HEAD"]);
     return advance_local_branch(&push_git(&scenario.local), "refs/heads/main", &local, target)
         .expect("git");
@@ -810,7 +810,8 @@ fn a_clean_worktree_is_fast_forwarded_to_the_published_merge() {
     remove(&s.root);
 }
 
-/// A tracked change keeps the branch and the worktree where they are, and the report names the reason and the command.
+/// A tracked change in a file the move writes keeps the branch and the worktree where they are, and the report names
+///  the file and the command.
 #[test]
 fn a_worktree_with_a_tracked_change_is_left_behind_with_the_reason_reported() {
     let s = scenario("ar-dirty-report");
@@ -820,7 +821,9 @@ fn a_worktree_with_a_tracked_change_is_left_behind_with_the_reason_reported() {
     let (_result, err) = run(&s, &landed);
     assert_eq!(text_of(&s.local, &["rev-parse", "HEAD"]), landed);
     assert!(
-        err.contains("unchanged (the worktree has uncommitted changes to tracked files)"),
+        err.contains(
+            "unchanged (the worktree has uncommitted changes to files the merge changes: a.txt)"
+        ),
         "{err}"
     );
     assert!(err.contains("git merge --ff-only origin/main"), "{err}");
@@ -833,7 +836,7 @@ fn the_fast_forward_moves_a_clean_checkout_to_the_target() {
     let s = scenario("ar-ff");
     advance_remote(&s, "a.txt", "remote\n");
     let target = fetched_remote_tip(&s);
-    assert_eq!(advance(&s, &target), Ok(()));
+    assert_eq!(advance(&s, &target), Ok(false));
     assert_eq!(text_of(&s.local, &["rev-parse", "HEAD"]), target);
     remove(&s.root);
 }
@@ -890,40 +893,138 @@ fn a_branch_that_moved_after_the_landing_is_not_fast_forwarded() {
     remove(&s.root);
 }
 
-/// A modified tracked file blocks the move, whether or not the target touches it.
+/// A modified tracked file the move writes blocks the move and is named.
 #[test]
-fn a_modified_tracked_file_blocks_the_fast_forward() {
+fn a_modified_file_the_move_writes_blocks_the_fast_forward() {
     let s = scenario("ar-ff-modified");
     advance_remote(&s, "a.txt", "remote\n");
     let target = fetched_remote_tip(&s);
     let before = text_of(&s.local, &["rev-parse", "HEAD"]);
-    std::fs::write(s.local.join("b.txt"), "edited\n").expect("edit");
+    std::fs::write(s.local.join("a.txt"), "edited\n").expect("edit");
     assert_eq!(
         advance(&s, &target),
         Err(String::from(
-            "the worktree has uncommitted changes to tracked files"
+            "the worktree has uncommitted changes to files the merge changes: a.txt"
         ))
     );
     assert_eq!(text_of(&s.local, &["rev-parse", "HEAD"]), before);
     remove(&s.root);
 }
 
-/// A staged new file blocks the move: the index holds work that is not committed.
+/// A modified tracked file the move does not write stays as it is while the branch follows.
 #[test]
-fn a_staged_file_blocks_the_fast_forward() {
+fn a_modified_file_the_move_leaves_alone_is_kept_while_the_branch_follows() {
+    let s = scenario("ar-ff-disjoint");
+    advance_remote(&s, "a.txt", "remote\n");
+    let target = fetched_remote_tip(&s);
+    std::fs::write(s.local.join("b.txt"), "edited\n").expect("edit");
+    let status = text_of(&s.local, &["status", "--porcelain=v1"]);
+    assert_eq!(advance(&s, &target), Ok(true));
+    assert_eq!(text_of(&s.local, &["rev-parse", "HEAD"]), target);
+    assert_eq!(
+        std::fs::read_to_string(s.local.join("b.txt")).expect("b.txt"),
+        "edited\n"
+    );
+    assert_eq!(
+        std::fs::read_to_string(s.local.join("a.txt")).expect("a.txt"),
+        "remote\n"
+    );
+    assert_eq!(text_of(&s.local, &["status", "--porcelain=v1"]), status);
+    remove(&s.root);
+}
+
+/// A staged new file the move does not write stays staged while the branch follows.
+#[test]
+fn a_staged_file_the_move_leaves_alone_stays_staged() {
     let s = scenario("ar-ff-staged");
     advance_remote(&s, "a.txt", "remote\n");
     let target = fetched_remote_tip(&s);
-    let before = text_of(&s.local, &["rev-parse", "HEAD"]);
     std::fs::write(s.local.join("c.txt"), "staged\n").expect("c.txt");
     git(&s.local, &["add", "c.txt"]);
+    assert_eq!(advance(&s, &target), Ok(true));
+    assert_eq!(text_of(&s.local, &["rev-parse", "HEAD"]), target);
+    assert_eq!(text_of(&s.local, &["status", "--porcelain=v1"]), "A  c.txt");
+    remove(&s.root);
+}
+
+/// The incident: a staged rename the move does not write survives the fast-forward untouched.
+#[test]
+fn a_staged_rename_the_move_leaves_alone_survives() {
+    let s = scenario("ar-ff-rename");
+    advance_remote(&s, "a.txt", "remote\n");
+    let target = fetched_remote_tip(&s);
+    git(&s.local, &["mv", "b.txt", "moved.txt"]);
+    let status = text_of(&s.local, &["status", "--porcelain=v1"]);
+    assert_eq!(status, "R  b.txt -> moved.txt");
+    assert_eq!(advance(&s, &target), Ok(true));
+    assert_eq!(text_of(&s.local, &["rev-parse", "HEAD"]), target);
+    assert_eq!(text_of(&s.local, &["status", "--porcelain=v1"]), status);
+    remove(&s.root);
+}
+
+/// A staged rename blocks the move through either of its names.
+#[test]
+fn a_staged_rename_blocks_the_move_through_either_name() {
+    let s = scenario("ar-ff-rename-blocked");
+    advance_remote(&s, "b.txt", "remote\n");
+    let target = fetched_remote_tip(&s);
+    let before = text_of(&s.local, &["rev-parse", "HEAD"]);
+    git(&s.local, &["mv", "b.txt", "moved.txt"]);
     assert_eq!(
         advance(&s, &target),
         Err(String::from(
-            "the worktree has uncommitted changes to tracked files"
+            "the worktree has uncommitted changes to files the merge changes: b.txt"
         ))
     );
     assert_eq!(text_of(&s.local, &["rev-parse", "HEAD"]), before);
+    assert_eq!(
+        text_of(&s.local, &["status", "--porcelain=v1"]),
+        "R  b.txt -> moved.txt"
+    );
+    remove(&s.root);
+}
+
+/// A staged change to a file the move writes blocks the move.
+#[test]
+fn a_staged_change_to_a_file_the_move_writes_blocks_it() {
+    let s = scenario("ar-ff-staged-blocked");
+    advance_remote(&s, "a.txt", "remote\n");
+    let target = fetched_remote_tip(&s);
+    let before = text_of(&s.local, &["rev-parse", "HEAD"]);
+    std::fs::write(s.local.join("a.txt"), "staged\n").expect("a.txt");
+    git(&s.local, &["add", "a.txt"]);
+    assert_eq!(
+        advance(&s, &target),
+        Err(String::from(
+            "the worktree has uncommitted changes to files the merge changes: a.txt"
+        ))
+    );
+    assert_eq!(text_of(&s.local, &["rev-parse", "HEAD"]), before);
+    remove(&s.root);
+}
+
+/// The whole auto-push reports that the branch followed and the work was kept.
+#[test]
+fn the_report_says_the_uncommitted_work_was_left_as_it_is() {
+    let s = scenario("ar-ff-report-kept");
+    advance_remote(&s, "a.txt", "remote\n");
+    std::fs::write(s.local.join("c.txt"), "new\n").expect("c.txt");
+    git(&s.local, &["add", "c.txt"]);
+    let landed = commit_local(&s, "c.txt", "local\n");
+    std::fs::write(s.local.join("b.txt"), "edited\n").expect("edit");
+    let (result, err) = run(&s, &landed);
+    assert_eq!(
+        (result.outcome, result.exit_code),
+        (AutoPushOutcome::Pushed, 0),
+        "{err}"
+    );
+    let published = text_of(&s.remote, &["rev-parse", "main"]);
+    assert_eq!(text_of(&s.local, &["rev-parse", "HEAD"]), published);
+    assert!(
+        err.contains("fast-forwarded to it; your uncommitted changes were left as they are."),
+        "{err}"
+    );
+    assert_eq!(text_of(&s.local, &["status", "--porcelain=v1"]), "M b.txt");
     remove(&s.root);
 }
 
@@ -959,7 +1060,7 @@ fn an_unrelated_untracked_file_does_not_block_the_fast_forward() {
     advance_remote(&s, "a.txt", "remote\n");
     let target = fetched_remote_tip(&s);
     std::fs::write(s.local.join("scratch.txt"), "scratch\n").expect("untracked");
-    assert_eq!(advance(&s, &target), Ok(()));
+    assert_eq!(advance(&s, &target), Ok(false));
     assert_eq!(
         std::fs::read_to_string(s.local.join("scratch.txt")).expect("scratch.txt"),
         "scratch\n"

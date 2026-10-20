@@ -828,6 +828,9 @@ pub mod auto_push_single_flight;
 /// Publishing a landed commit that a moved remote branch rejected: the merge is made from objects alone and pushed.
 pub mod auto_push_reconcile;
 
+/// The paths of a dirty worktree and of a fast-forward, and their overlap.
+pub mod auto_push_dirty_paths;
+
 /// Post-commit auto-push of a landed commit: the push argv, the surfaced output and the failure reporting.
 pub mod auto_push;
 
