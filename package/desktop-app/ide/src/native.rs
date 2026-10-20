@@ -282,6 +282,10 @@ mod source_font_tests;
 mod start;
 /// The initial reading state of a window.
 mod state;
+/// Selections of dozens of rows in a tall tile keep every glyph:
+///  the renderer's tile buffer is not used up by the clips of the selected rows.
+#[cfg(test)]
+mod tall_selection_tests;
 /// The minimap of a tall window is a picture of glyphs,
 ///  not blocks.
 #[cfg(test)]

@@ -228,7 +228,8 @@ impl Platform for GpuPlatform {
 }
 
 /// What:
-///  `install_once` opens the hardware device,
+///  `install_once` opens the hardware device with the largest texture `limit` it may offer
+///  (`None` for the adapter's own),
 ///  makes a `GpuPlatform` of it,
 ///  and registers it with Slint for the rest of the thread.
 ///  It returns the adapter's name.
@@ -238,14 +239,14 @@ impl Platform for GpuPlatform {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function installOnce(): string { /* throws */ }
+/// function installOnce(limit?: number): string { /* throws */ }
 /// ```
-fn install_once() -> String {
+fn install_once(limit: Option<u32>) -> String {
     // The error text lists the adapters seen and every remedy, so a failed test run explains itself.
-    // The device offers textures of 8192 pixels on a side at most, the smallest limit wgpu guarantees,
+    // The usual device offers textures of 8192 pixels on a side at most, the smallest limit wgpu guarantees,
     // although this host's GPU offers more: every native test cuts its tiles for the weakest device the application
     // supports, so the texture rule is proven on every host.
-    let opened = match open_hardware_device_capped(Some(HARNESS_TEXTURE_LIMIT)) {
+    let opened = match open_hardware_device_capped(limit) {
         Ok(device) => device,
         Err(error) => panic!("no hardware Vulkan device for the GPU snapshot harness: {error}"),
     };
@@ -294,7 +295,30 @@ std::thread_local! {
 /// export function installGpuPlatform(): string { return installed ??= installOnce(); }
 /// ```
 pub(super) fn install_gpu_platform() -> String {
-    return INSTALLED.with(|installed| return installed.get_or_init(install_once).clone());
+    return INSTALLED.with(|installed| {
+        return installed
+            .get_or_init(|| return install_once(Some(HARNESS_TEXTURE_LIMIT)))
+            .clone();
+    });
+}
+
+/// What:
+///  `install_uncapped_gpu_platform` installs the GPU platform with the adapter's own texture limit
+///  (16384 pixels on a side on most GPUs of this decade),
+///  as `install_gpu_platform` does otherwise.
+///  Only the first install of a thread counts.
+/// Why:
+///  A test of the tallest tile the application can build on a capable device needs a device that offers it,
+///  and the application opens its device without a cap.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function installUncappedGpuPlatform(): string { return installed ??= installOnce(undefined); }
+/// ```
+pub(super) fn install_uncapped_gpu_platform() -> String {
+    return INSTALLED.with(|installed| {
+        return installed.get_or_init(|| return install_once(None)).clone();
+    });
 }
 
 /// The pixels of a window as RGBA bytes (red,
