@@ -47,6 +47,8 @@ mod plan;
 /// its inputs,
 /// and what a build reports.
 mod scene;
+/// Shaping the lines of a slice and placing them in a view.
+mod shape;
 
 /// The cut of the paint items into chunks.
 pub use chunks::cut;
@@ -62,7 +64,8 @@ pub use geometry::{
 pub use horizontal::{text_span, text_x};
 /// The shaped lines the builds keep.
 pub use line_cache::{LineCache, LineKey, line_key};
-/// The bands, and the chunks a slice is rendered in.
+/// The bands,
+/// and the chunks a slice is rendered in.
 pub use plan::{
     BAND, CHUNK_ROWS, MIN_SCALE, band_count, chunk_rows, most_bands, picture_rows, slice_rows,
 };
@@ -70,7 +73,6 @@ pub use plan::{
 ///  its inputs,
 ///  its work budget,
 ///  and what it reports.
-pub use scene::{
-    BUILD_WORK, Built, Cancel, Input, Source, Stats, blocks_between, build, marks_between,
-    slice_items,
-};
+pub use scene::{BUILD_WORK, Built, Cancel, Input, Source, Stats, build, slice_items};
+/// The blocks and marks that belong to a run of lines.
+pub use shape::{blocks_between, marks_between};

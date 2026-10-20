@@ -164,7 +164,8 @@ pub struct DrawnFill {
     pub right: f32,
     /// Bottom edge in physical pixels.
     pub bottom: f32,
-    /// Thickness of the frame drawn, or zero for the whole rectangle.
+    /// Thickness of the frame drawn,
+    /// or zero for the whole rectangle.
     pub inset: f32,
     /// Straight RGBA ink.
     pub ink: [u8; 4],

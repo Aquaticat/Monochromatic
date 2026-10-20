@@ -6,7 +6,8 @@
 //!  and a scene that needs more than they hold renders blank without an error
 //!  (`doc/planning/ide-vello-buffer-sizes.md`),
 //!  so a tall slice is never one render.
-//! The copy is a GPU command; no pixel is touched by the CPU.
+//! The copy is a GPU command;
+//! no pixel is touched by the CPU.
 
 /// The device,
 /// the textures,
@@ -55,12 +56,10 @@ impl Inner {
     /// function scratch(device: GPUDevice, width: number, height: number): GPUTexture;
     /// ```
     fn scratch(&mut self, device: &wgpu::Device, width: u32, height: u32) -> wgpu::Texture {
-        if let Some(kept) = self
-            .scratch
-            .iter()
-            .find(|target| return target.width == width && target.height == height)
-        {
-            return kept.texture.clone();
+        for kept in &self.scratch {
+            if kept.width == width && kept.height == height {
+                return kept.texture.clone();
+            }
         }
         let texture = device.create_texture(&wgpu::TextureDescriptor {
             label: Some("ide minimap chunk"),
@@ -109,9 +108,13 @@ impl Inner {
             return;
         };
         let width = first.width;
-        let height: u32 = chunks.iter().map(|chunk| return chunk.height).sum();
+        let mut height = 0;
+        let mut ragged = false;
+        for chunk in chunks {
+            height += chunk.height;
+            ragged |= chunk.width != width;
+        }
         let limit = device.limits().max_texture_dimension_2d;
-        let ragged = chunks.iter().any(|chunk| return chunk.width != width);
         if ragged || width == 0 || height == 0 || width > limit || height > limit {
             tracing::error!(
                 width,
@@ -159,12 +162,10 @@ impl Inner {
                 height,
             });
         }
-        let Some(slice) = self.targets[Picture::Minimap.slot()]
-            .as_ref()
-            .map(|target| return target.texture.clone())
-        else {
+        let Some(target) = self.targets[Picture::Minimap.slot()].as_ref() else {
             return;
         };
+        let slice = target.texture.clone();
         let mut row = 0;
         for chunk in chunks {
             let scratch = self.scratch(&device, width, chunk.height);

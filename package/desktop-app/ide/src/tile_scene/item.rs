@@ -115,7 +115,8 @@ pub enum Item {
         bottom: f32,
         /// Thickness of the frame to draw along the edges inside them,
         /// or zero for the whole rectangle.
-        /// A frame is one path, so its four sides leave no seam where they meet.
+        /// A frame is one path,
+        /// so its four sides leave no seam where they meet.
         inset: f32,
         /// Straight RGBA ink.
         ink: [u8; 4],

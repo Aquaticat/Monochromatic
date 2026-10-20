@@ -3,7 +3,8 @@
 //!  and a scene that needs more than they hold renders blank without an error
 //!  (`doc/planning/ide-vello-buffer-sizes.md`),
 //!  so a chunk of the picture must stay inside them for the worst text the editor can show.
-//! The scenes are rendered by the same Vello code as the window's, on the harness device.
+//! The scenes are rendered by the same Vello code as the window's,
+//! on the harness device.
 
 /// Renders a scene on the harness device and reads it back.
 use super::gpu_tile::render_scene;
@@ -55,7 +56,8 @@ impl Cancel for Never {
 }
 
 /// The glyphs with the most outline in the code font:
-/// wide letters, digits and symbols made of many curves.
+/// wide letters,
+/// digits and symbols made of many curves.
 const DENSE: &str =
     "W@%&#B8$MQRSgmw0O&@%W#B8$MQRSgmw0O&@%W#B8$MQRSgmw0O&@%W#B8$MQRSgmw0O&@%W#B8$MQRSgmw0O&@%";
 
@@ -215,7 +217,8 @@ fn the_chunk_size_leaves_a_factor_of_two_inside_what_one_render_holds() {
     );
 }
 
-/// Positive control: the same text drawn as one render of four chunks comes out blank,
+/// Positive control:
+/// the same text drawn as one render of four chunks comes out blank,
 /// so the checks above can tell a blank render from a good one,
 /// and the cut into chunks is what keeps the renderer's fixed buffers sufficient.
 #[test]
@@ -230,8 +233,10 @@ fn one_render_of_four_dense_chunks_comes_out_blank() {
 }
 
 /// A frame scaled down to a sixth of its height keeps the coverage of its edges:
-/// one pixel of a 178-alpha frame is a sixth of 178 on the minimap row that holds it, and the inside stays clear.
-/// Drawn with the even-odd rule the same frame came out at half the alpha, because the renderer folds
+/// one pixel of a 178-alpha frame is a sixth of 178 on the minimap row that holds it,
+/// and the inside stays clear.
+/// Drawn with the even-odd rule the same frame came out at half the alpha,
+/// because the renderer folds
 /// the sum of the two rectangles' partial areas in one pixel and that is not the area between them.
 #[test]
 fn a_frame_scaled_down_keeps_the_coverage_of_its_edges() {

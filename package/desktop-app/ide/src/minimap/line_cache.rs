@@ -184,7 +184,9 @@ impl Default for LineCache {
     }
 }
 
-/// Starting a build, taking rows, and keeping new ones.
+/// Starting a build,
+/// taking rows,
+/// and keeping new ones.
 impl LineCache {
     /// Rows kept after a build:
     /// several slices of a tall window,
@@ -226,11 +228,19 @@ impl LineCache {
     }
 
     /// End a build:
-    /// past the capacity, drop the rows this build did not use.
+    /// past the capacity,
+    /// drop the rows this build did not use.
     pub fn finish(&mut self) {
         if self.rows.len() > self.capacity {
-            let build = self.build;
-            self.rows.retain(|_, kept| return kept.used == build);
+            let mut stale: Vec<LineKey> = Vec::new();
+            for (key, kept) in &self.rows {
+                if kept.used != self.build {
+                    stale.push(*key);
+                }
+            }
+            for key in stale {
+                self.rows.remove(&key);
+            }
         }
     }
 

@@ -86,6 +86,20 @@ fn fill(items: &mut Vec<Item>, cell: Cell, inset: i64, ink: [u8; 4]) {
     });
 }
 
+/// The order cells are joined along a row in:
+/// by the rows they cover,
+/// then left to right.
+fn by_rows(cell: &Cell) -> (i64, i64, i64) {
+    return (cell.top, cell.bottom, cell.left);
+}
+
+/// The order cells are joined down a column in:
+/// by the columns they cover,
+/// then top to bottom.
+fn by_columns(cell: &Cell) -> (i64, i64, i64) {
+    return (cell.left, cell.right, cell.top);
+}
+
 /// What:
 ///  The cells with the ones that touch or overlap joined into one:
 ///  those on the same rows side by side,
@@ -101,7 +115,7 @@ fn fill(items: &mut Vec<Item>, cell: Cell, inset: i64, ink: [u8; 4]) {
 /// function joined(cells: Cell[]): Cell[];
 /// ```
 fn joined(mut cells: Vec<Cell>) -> Vec<Cell> {
-    cells.sort_by_key(|cell| return (cell.top, cell.bottom, cell.left));
+    cells.sort_by_key(by_rows);
     let mut across: Vec<Cell> = Vec::with_capacity(cells.len());
     for cell in cells {
         if let Some(last) = across.last_mut()
@@ -114,7 +128,7 @@ fn joined(mut cells: Vec<Cell>) -> Vec<Cell> {
         }
         across.push(cell);
     }
-    across.sort_by_key(|cell| return (cell.left, cell.right, cell.top));
+    across.sort_by_key(by_columns);
     let mut down: Vec<Cell> = Vec::with_capacity(across.len());
     for cell in across {
         if let Some(last) = down.last_mut()

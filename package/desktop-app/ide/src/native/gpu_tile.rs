@@ -16,11 +16,19 @@
 /// Reads of the textures for the native tests.
 #[cfg(test)]
 mod readback;
-/// The minimap's slice, rendered in chunks.
+/// The minimap's slice,
+/// rendered in chunks.
 mod slice;
+/// The textures,
+/// the pictures,
+/// and the outcome of a step.
+mod types;
 /// A scene rendered without a window.
 #[cfg(test)]
 pub(super) use readback::render_scene;
+/// The small types,
+/// shared with the slice.
+use types::{Outcome, Picture, Placement, Target};
 
 /// The window the textures are shown in,
 ///  and the chaining of the debug frame records.
@@ -41,114 +49,6 @@ use std::{cell::RefCell, rc::Rc};
 use vello::{
     AaConfig, AaSupport, RenderParams, Renderer, RendererOptions, peniko::Color as VelloColor,
 };
-
-/// What:
-///  One texture and the size it was made with.
-/// Why:
-///  A texture is reused while the scene it receives has the same size,
-///  and replaced,
-/// with a new image on the window,
-/// when it has not.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type Target = { texture: GPUTexture; width: number; height: number };
-/// ```
-struct Target {
-    /// The texture Vello renders into and Slint samples.
-    texture: wgpu::Texture,
-    /// Width in physical pixels.
-    width: u32,
-    /// Height in physical pixels.
-    height: u32,
-}
-
-/// The pictures the GPU draws for the window.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum Picture {
-    /// The source tile.
-    Tile,
-    /// The gutter's wrap indicator.
-    Sign,
-    /// The minimap's slice of the picture of the whole text.
-    Minimap,
-}
-
-/// Where a picture's texture is kept.
-impl Picture {
-    /// The place of this picture's texture among the targets.
-    fn slot(self) -> usize {
-        return match self {
-            Self::Tile => 0,
-            Self::Sign => 1,
-            Self::Minimap => 2,
-        };
-    }
-}
-
-/// What:
-///  Where the minimap's texture stands in the whole picture:
-///  its size and its first row.
-/// Why:
-///  The window places the image with these numbers in the same step that shows the texture,
-///  so a new slice never appears at the old slice's place.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type Placement = { width: number; height: number; top: number };
-/// ```
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(super) struct Placement {
-    /// Width of the texture in physical pixels.
-    pub(super) width: u32,
-    /// Height of the texture in physical pixels.
-    pub(super) height: u32,
-    /// The row of the whole picture the texture's first row is.
-    pub(super) top: u32,
-}
-
-/// What:
-///  What a step of the notifier changed for the window:
-///  new images to show and messages to display.
-/// Why:
-///  The window's setters run after the shared state is released,
-///  so a setter that reaches back into the application cannot find it borrowed.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type Outcome = { images: [Picture, Image][]; minimap?: Placement; errors: string[] };
-/// ```
-#[derive(Default)]
-struct Outcome {
-    /// Pictures that have a new texture to show.
-    images: Vec<(Picture, Image)>,
-    /// Where the minimap's slice stands, when one was drawn.
-    minimap: Option<Placement>,
-    /// Failures to show as the window's error.
-    errors: Vec<String>,
-}
-
-/// Show what a step changed.
-impl Outcome {
-    /// Set the images and the last error on `window`.
-    fn apply(self, window: &AppWindow) {
-        for (picture, image) in self.images {
-            match picture {
-                Picture::Tile => window.set_source_image(image),
-                Picture::Sign => window.set_wrap_sign(image),
-                Picture::Minimap => window.set_minimap_image(image),
-            }
-        }
-        if let Some(place) = self.minimap {
-            window.set_minimap_picture_width(place.width as f32);
-            window.set_minimap_picture_height(place.height as f32);
-            window.set_minimap_picture_top(place.top as f32);
-        }
-        if let Some(message) = self.errors.last() {
-            window.set_error_message(slint::SharedString::from(message.as_str()));
-        }
-    }
-}
 
 /// What:
 ///  Everything the notifier and the window thread share:
@@ -236,7 +136,8 @@ impl GpuTile {
 
     /// Forget the minimap's texture and any slice waiting,
     /// so the next slice makes a new texture and a new image.
-    /// The window calls this when it clears the image, for another file.
+    /// The window calls this when it clears the image,
+    /// for another file.
     pub(super) fn forget_minimap(&self) {
         let mut inner = self.inner.borrow_mut();
         inner.pending_minimap = None;
@@ -532,12 +433,10 @@ impl Inner {
                 height: scene.height,
             });
         }
-        let Some(texture) = self.targets[picture.slot()]
-            .as_ref()
-            .map(|target| return target.texture.clone())
-        else {
+        let Some(target) = self.targets[picture.slot()].as_ref() else {
             return;
         };
+        let texture = target.texture.clone();
         match self.render(&device, &queue, &texture, scene) {
             Ok(()) => match picture {
                 Picture::Tile => self.tiles_rendered += 1,
@@ -554,7 +453,8 @@ impl Inner {
     /// What:
     ///  Render `scene` into `texture` with the one Vello renderer.
     /// Why:
-    ///  The tile, the wrap indicator,
+    ///  The tile,
+    ///  the wrap indicator,
     ///  and every chunk of the minimap share one renderer,
     ///  so the renderer's scratch buffers exist once.
     ///

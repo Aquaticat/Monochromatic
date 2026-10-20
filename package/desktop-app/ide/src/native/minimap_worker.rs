@@ -212,7 +212,9 @@ pub(super) struct Reply {
     /// The row of the whole picture that the picture's first row is,
     /// in physical pixels.
     pub(super) top: u32,
-    /// The scene of each chunk of the picture, top first, each with the size of the texture region it fills.
+    /// The scene of each chunk of the picture,
+    /// top first,
+    /// each with the size of the texture region it fills.
     pub(super) chunks: Vec<TileScene>,
     /// What the build cost and left out.
     pub(super) stats: ide_app::minimap::Stats,

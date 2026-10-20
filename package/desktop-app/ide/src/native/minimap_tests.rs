@@ -1089,7 +1089,8 @@ fn fifty_thousand_lines_give_a_bounded_picture_without_blocking_the_window() {
 
 /// A change of one line of a file of fifty thousand lines that reaches the window through its watch
 /// shapes the one line that changed and takes the rest of the picture's lines from the row cache:
-/// the cost of an edit follows the lines it touches, not the length of the file nor the size of the picture.
+/// the cost of an edit follows the lines it touches,
+/// not the length of the file nor the size of the picture.
 #[test]
 fn an_external_edit_of_fifty_thousand_lines_shapes_only_the_line_it_touches() {
     let mut text = String::new();
@@ -1157,6 +1158,10 @@ fn an_external_edit_of_fifty_thousand_lines_shapes_only_the_line_it_touches() {
             current.minimap.shaped,
         )
     };
+    assert!(
+        shaped_after > shaped_before,
+        "the edit shaped no line of the picture, so the picture shows the old text"
+    );
     assert!(
         shaped_after - shaped_before <= 2,
         "the edit shaped {} lines of the picture's {}",

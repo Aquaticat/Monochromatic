@@ -191,8 +191,10 @@ fn long_file(lines: usize) -> String {
     return text;
 }
 
-/// Wait for the first picture of the reader, then resize its window to `height` and wait for the picture of that
-/// height, drawn.
+/// Wait for the first picture of the reader,
+/// then resize its window to `height` and wait for the picture of that
+/// height,
+/// drawn.
 fn resized_to(opened: &Reader, height: f32, track: f32) {
     let window = &opened.window;
     {
@@ -257,7 +259,8 @@ fn a_tall_window_over_a_long_file_draws_a_window_of_bands() {
 }
 
 /// A window taller than the device's texture limit gets a picture cut to the limit:
-/// the texture is made, no error is shown,
+/// the texture is made,
+/// no error is shown,
 /// and the picture covers the top of the track and not the rest.
 #[test]
 fn a_picture_taller_than_the_device_limit_is_cut_to_the_limit() {

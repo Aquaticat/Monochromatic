@@ -22,7 +22,8 @@ use super::find_tests::{Reader, chord, settle, type_text};
 use super::render::render;
 /// The window's metrics.
 use super::sidebar_tests::{DIVIDER, GUTTER, HEADER, resize};
-/// The minimap's texture, read back from the GPU.
+/// The minimap's texture,
+/// read back from the GPU.
 use super::tile_reads::minimap_pixels;
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;

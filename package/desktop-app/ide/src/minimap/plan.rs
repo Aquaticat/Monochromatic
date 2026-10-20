@@ -61,7 +61,8 @@ pub fn chunk_rows(rows: &Range<usize>) -> Vec<Range<usize>> {
 
 /// What:
 ///  How tall a band of the text is,
-///  in logical pixels of the text: thirty-two code rows,
+///  in logical pixels of the text:
+///  thirty-two code rows,
 ///  which are 128 rows of the picture at its fixed scale.
 /// Why:
 ///  The window names the bands the track shows and the worker draws the lines they hold,

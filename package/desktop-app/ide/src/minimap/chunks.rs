@@ -26,7 +26,11 @@ struct Unit {
 fn reach_of(item: &Item, margin: f32) -> Option<(f32, f32)> {
     return match item {
         Item::Glyphs(run) => {
-            let baseline = run.origin.1 + run.glyphs.first().map_or(0.0, |glyph| return glyph.y);
+            let rise = match run.glyphs.first() {
+                Some(glyph) => glyph.y,
+                None => 0.0,
+            };
+            let baseline = run.origin.1 + rise;
             Some((baseline - margin, baseline + margin))
         }
         Item::Fill { top, bottom, .. } => Some((*top, *bottom)),
@@ -49,7 +53,9 @@ fn widen(reach: &mut Option<(f32, f32)>, item: &Item, margin: f32) {
 }
 
 /// The groups of `items`:
-/// a clip, what it brackets, and its end are one group,
+/// a clip,
+/// what it brackets,
+/// and its end are one group,
 /// every other item is a group of its own.
 fn units_of(items: &[Item], margin: f32) -> Vec<Unit> {
     let mut units = Vec::new();

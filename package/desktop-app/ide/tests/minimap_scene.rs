@@ -6,7 +6,8 @@
 //!  a build that is cancelled,
 //!  and the size of the texture a slice is drawn into.
 //! Nothing here fills a pixel:
-//! the items are read as data, and the native tests show that the data lands on the GPU's texture.
+//! the items are read as data,
+//! and the native tests show that the data lands on the GPU's texture.
 
 /// Diagnostics are marks of a range with a severity.
 use ide_app::annotation::Mark;
@@ -22,7 +23,9 @@ use ide_app::find::FindRange;
 use ide_app::language::diagnostics::Severity;
 /// The lines' visual rows.
 use ide_app::line_rows::LineRows;
-/// The picture, its plan, and its parts.
+/// The picture,
+/// its plan,
+/// and its parts.
 use ide_app::minimap::{
     BAND, BUILD_WORK, CHUNK_ROWS, Cancel, Fills, Geometry, Input, LineCache, Source, Stats,
     band_count, build, chunk_rows, cut, most_bands, picture_rows, slice_items, slice_rows,
@@ -346,7 +349,9 @@ fn a_slice_draws_the_glyphs_of_its_lines_in_the_palette_inks() {
     }
 }
 
-/// The selection, the matches, and the active match's boundary are drawn as marks under the glyphs,
+/// The selection,
+/// the matches,
+/// and the active match's boundary are drawn as marks under the glyphs,
 /// in the markup's inks and order.
 #[test]
 fn the_selection_and_the_matches_are_marks_under_the_glyphs() {
@@ -413,7 +418,8 @@ fn the_selection_and_the_matches_are_marks_under_the_glyphs() {
     assert!(fill_alpha.is_some_and(|alpha| return alpha > 0 && alpha < 60));
 }
 
-/// A diagnostic's underline is a stroke, and an error's differs from a warning's.
+/// A diagnostic's underline is a stroke,
+/// and an error's differs from a warning's.
 #[test]
 fn a_diagnostic_is_drawn_as_a_stroke_in_its_ink() {
     let mut fixture = fixture(40, 730.0, 1.0);
@@ -475,9 +481,11 @@ fn edited(fixture: &Fixture, line: usize, replace: &str, with: &str) -> Fixture 
     return fixture_of(&changed, fixture.wrap.expect("wrap"), fixture.scale);
 }
 
-/// An edit of one line, and an inserted line that moves every line after it,
+/// An edit of one line,
+/// and an inserted line that moves every line after it,
 /// shape one line each:
-/// a line is known by what shaped it, not by its number.
+/// a line is known by what shaped it,
+/// not by its number.
 #[test]
 fn an_edit_shapes_only_the_lines_it_changes() {
     let before = fixture(600, 730.0, 1.0);
@@ -547,7 +555,8 @@ fn new_syntax_classes_shape_only_the_lines_they_reach() {
     assert_eq!(stats.shaped, 1, "one class changed on one line");
 }
 
-/// A line that no budget can pay for is drawn blank and counted, and the lines around it are still drawn.
+/// A line that no budget can pay for is drawn blank and counted,
+/// and the lines around it are still drawn.
 #[test]
 fn a_line_the_budget_cannot_pay_for_is_drawn_blank() {
     let mut text = code(30);
@@ -577,7 +586,8 @@ fn a_cancelled_build_answers_nothing() {
 }
 
 /// A long text builds only the lines near its window:
-/// the cost follows the window, not the length of the text.
+/// the cost follows the window,
+/// not the length of the text.
 #[test]
 fn a_long_text_shapes_only_the_lines_near_its_window() {
     let mut text = String::new();
@@ -723,7 +733,8 @@ fn a_tall_slice_is_cut_into_chunks_of_at_most_the_chunk_rows() {
     assert!(chunk_rows(&(5..5)).is_empty());
 }
 
-/// The texture is as wide as the minimap and as tall as the slice, at the display scale.
+/// The texture is as wide as the minimap and as tall as the slice,
+/// at the display scale.
 #[test]
 fn the_texture_is_the_size_of_the_slice_at_the_display_scale() {
     for scale in [1.0_f32, 2.0] {
