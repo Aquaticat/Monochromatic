@@ -1271,6 +1271,83 @@ await describe({
       },
     },),
     it({
+      name: 'SEATS THE PROPOSAL TWO BALLOTS BACKED over a standing every contest ballot called flawed, though '
+        + 'every cast ballot fell on that one proposal (one entry\'s slice 45, 2026-10-19): the writer names '
+        + 'it at half weight, one disinterested judge at full weight and the third declines, so 1.5 against a '
+        + 'minimum of 2 and no run-off to narrow, which kept the archive wording no ballot endorsed',
+      fn: async () => {
+        /**
+         Fragment naming the proposal on a sheet.
+         */
+        const FRESH_MARK = 'beside the window';
+        /**
+         Ballots by seat: the writer and one other name the proposal, the third declines.
+         */
+        function writerAndOneOther(sent: string,): string {
+          if (sent.includes(ROSTER[2],))
+            return judgeBallot({ best: 0, },);
+          return judgeBallot({ best: numberedOn({ sent, wanted: FRESH_MARK, },), },);
+        }
+        const flawed = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          judgeReply: writerAndOneOther,
+          gateReply: ballot({ choice: 'consolidated', },),
+          runoffOverStanding: true,
+        },);
+        expect(flawed.settled.terminal,).toBe('consolidated',);
+        expect(flawed.settled.text.replaceAll('\n', ' ',),).toBe(FRESH,);
+        expect(flawed.settled.findings,).toContain('select-condemned-fallback-under-minimum',);
+
+        const endorsed = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          judgeReply: writerAndOneOther,
+          gateReply: ballot({ choice: 'consolidated', },),
+        },);
+        expect(endorsed.settled.terminal,).toBe('slate-declined-standing',);
+        expect(endorsed.settled.text,).toBe(STANDING,);
+      },
+    },),
+    it({
+      name: 'STILL KEEPS THE ARCHIVE over a flawed standing when one judge alone named the proposal, so one '
+        + 'model never decides (owner, 2026-09-09), and when no proposal passed the floor, so the archive '
+        + 'stays at a slice with no valid wording (owner, 2026-09-27)',
+      fn: async () => {
+        /**
+         Fragment naming the proposal on a sheet.
+         */
+        const FRESH_MARK = 'beside the window';
+        /**
+         Ballots by seat: only the second seat names the proposal.
+         */
+        function oneJudgeAlone(sent: string,): string {
+          if (sent.includes(ROSTER[1],))
+            return judgeBallot({ best: numberedOn({ sent, wanted: FRESH_MARK, },), },);
+          return judgeBallot({ best: 0, },);
+        }
+        const alone = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: true, },),],
+          judgeReply: oneJudgeAlone,
+          gateReply: ballot({ choice: 'consolidated', },),
+          runoffOverStanding: true,
+        },);
+        expect(alone.settled.terminal,).toBe('slate-declined-standing',);
+        expect(alone.settled.text,).toBe(STANDING,);
+
+        const nothingValid = await settleWith({
+          voices: [voiceOf({ modelId: ROSTER[0], translation: FRESH, },),],
+          validity: [validityOf({ modelId: ROSTER[0], valid: false, },),],
+          gateReply: ballot({ choice: 'consolidated', },),
+          runoffOverStanding: true,
+        },);
+        expect(nothingValid.settled.terminal,).toBe('incumbent-only',);
+        expect(nothingValid.settled.text,).toBe(STANDING,);
+        expect(nothingValid.served.judge,).toBe(0,);
+      },
+    },),
+    it({
       name: 'JUDGES THE LANE TEXTS OVER AN EMPTY STANDING (class eighty-seven, one entry\'s slice 89, '
         + '2026-09-22): the contest declined both lanes at a passage the archive never carried, so nothing '
         + 'stood, and the no-standing-text exit ran ahead of the class forty offer; the translate lane\'s '
