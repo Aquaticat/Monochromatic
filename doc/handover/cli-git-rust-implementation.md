@@ -1897,6 +1897,9 @@ that is verification, not a decision for the user.
   with no matching audit line is reported. Still queued: (d) mutation scopes; (f) release 0.2.5 and reinstall; (g)
   comment on and close 1791; (h) ask the user about `rm --cached` and `git worktree remove --force`; fuzz crate if
   signatures changed (they did not: `cli.fuzz` is not touched by these edits, confirm at release with `cli.fuzz:build`).
+  RUNNING (started 2026-10-20 night): systemd user unit `cli-git-s1791b` (script `~/temp/agent/s1791-run.ts`) runs the
+  container gate (tag `s1791b`, log `~/temp/agent/s1791b-container.log`) then scoped mutation for nine files, logs
+  `~/temp/agent/s1791b-mutation-<file>.log`. Do not edit `src/native` until it ends; then release 0.2.5.
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and
