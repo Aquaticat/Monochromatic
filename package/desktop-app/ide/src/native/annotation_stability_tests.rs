@@ -190,6 +190,41 @@ fn band(shown: &SharedPixelBuffer<Rgba8Pixel>, y: f32) -> &[Rgba8Pixel] {
 }
 
 /// What:
+///  A sentence naming how many window rows of `current` are not the row below in `previous` (compared exactly,
+///  from the viewport's second row to the one above the last),
+///  and the first and last of them.
+/// Why:
+///  One lone row points at a renderer detail,
+///  rows from one row down to the end point at content that changed between the two frames,
+///  such as a tile that arrived;
+///  the failure message tells them apart without a second run.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function unshiftedRows(current: Frame, previous: Frame, height: number): string;
+/// ```
+fn unshifted_rows(
+    current: &SharedPixelBuffer<Rgba8Pixel>,
+    previous: &SharedPixelBuffer<Rgba8Pixel>,
+    height: f32,
+) -> String {
+    let mut rows = Vec::new();
+    let mut y = TEXT_TOP + 1.0;
+    while y < height - 2.0 {
+        if band(current, y) != band(previous, y + 1.0) {
+            rows.push(y as usize);
+        }
+        y += 1.0;
+    }
+    return format!(
+        "{} rows differ exactly, the first {:?} and the last {:?}",
+        rows.len(),
+        rows.first(),
+        rows.last()
+    );
+}
+
+/// What:
 ///  Whether two bands differ by at most one level in any channel of any pixel.
 /// Why:
 ///  The viewport's bottom edge is a clip edge.
@@ -745,7 +780,8 @@ fn scrolling_across_annotated_lines_is_rigid() {
             };
             assert!(
                 moved,
-                "the frame at offset {offset} is not the previous one shifted by one row (window row {y})"
+                "the frame at offset {offset} is not the previous one shifted by one row (window row {y}); {}",
+                unshifted_rows(&current, &previous, height)
             );
             y += 1.0;
         }
