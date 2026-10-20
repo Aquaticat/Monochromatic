@@ -160,7 +160,7 @@ await describe({
         expect(
           renderedSheets()
             .filter(function showsOutsideWriters(sheet,): boolean {
-              return showsNote({ text: sheet.text, },) && !Object.hasOwn(WRITERS, sheet.name,);
+              return showsNote({ text: sheet.text, },) && (!Object.hasOwn(WRITERS, sheet.name,));
             },)
             .map(function nameOf(sheet,): string {
               return sheet.name;
@@ -195,7 +195,7 @@ await describe({
         expect(
           sheets
             .filter(function unreadAndUnlisted(sheet,): boolean {
-              return !reachedByPlanted({ text: sheet.text, },) && !Object.hasOwn(UNREACHED, sheet.name,);
+              return (!reachedByPlanted({ text: sheet.text, },)) && (!Object.hasOwn(UNREACHED, sheet.name,));
             },)
             .map(function nameOf(sheet,): string {
               return sheet.name;
