@@ -365,34 +365,47 @@ its "Next" list is still the queue the merge went ahead of.
 
 #### Next
 
-1.  The readiness rotation in the State list,
-    one entry at a time,
-    each page read by the seven steps and the three checks before the next launch.
+1.  The readiness rotation on `a92725968adf…` ended at its third read.
     `zheermao14` and `CuspariaKLSY17` settled with no class
     ([the pass log of 2026-10-19](../planning/translation-repair-openrouter-2026-09-03-2026-10-19.md));
     `CuspariaKLSY16` before the second ran the main checkout's bundler on another build and was stopped (M278).
-    `XingZ6015` launched at 18:14 UTC
-    (unit `corpus-pass-corpus-pass-XingZ6015`,
-    runs directory `~/temp/agent/corpus-pass-XingZ6015`,
-    log beside it,
-    pipeline `sha256-tree-v1:a92725968adf…`,
-    `rolldown v1.2.13`).
-    Each later entry launches with the main-checkout entries removed from the unit's `PATH`
-    and is stopped unless its `START` line reads `a92725968adf…`
-    (`~/temp/agent/tr-fan/s245/split/launch-rotation.ts <run> <entry>` does both).
-    Then `yingying`,
+    `XingZ6015` settled with five classes and one owner ruling
+    ([the pass log of 2026-10-20](../planning/translation-repair-openrouter-2026-09-03-2026-10-20.md)),
+    so `yingying` was not launched.
+    The five fixes and the ruling run in worktrees `w210` to `w214`
+    (brief `~/temp/agent/x15-fix/brief-common.md`,
+    the lead's evidence `~/temp/agent/x15-read/classes.md`):
+    `w210` the consolidation keeping a rejected archive wording on a short bench,
+    `w211` the declared-name floor reading a swap of declared names as a loss,
+    `w212` the page pass dropping the original's section numbers,
+    `w213` the archive's "unfinished" banners and the contest weighing hidden comments,
+    `w214` reader protection scoped to the account of a death or an attempt
+    (owner,
+    2026-10-20).
+    Each lands red then fix,
+    then the lead bumps the cache versions of every stage they alter (M28),
+    gates the merged tree,
+    writes the ledger entries,
+    moves the branch worktree to the new build,
+    and restarts the rotation from `zheermao101`:
+    then `CuspariaKLSY`,
+    `XingZ60`,
+    `yingying`,
     `hulicaijia`,
     `mikaela_khara`,
     `shi_Yumiaoya`
-    and `TianqiChen666`.
+    and `TianqiChen666`,
+    each read before the next launch.
+    Synthetic and Hyper are dry and Hyper will not be recharged,
+    so the restarted rotation runs mostly on OpenRouter (16.13 USD at 00:05 UTC on 2026-10-20).
     The bundler guard landed on `main`
     (red `2640c1c4e1`,
     fix `0fa3120174`,
     M278):
     a family build now refuses a `rolldown` other than the version its checkout installs.
-    The branch worktree stays at `2eeef91fac` until the rotation ends,
-    so the rotation's build does not carry it;
-    update the branch worktree only after the last entry is read.
+    The branch worktree stayed at `2eeef91fac` through the rotation,
+    so its build does not carry the guard;
+    the new build does.
     The seat line now names its provider
     (red `180a72421d`,
     fix `a81da6863e`,
