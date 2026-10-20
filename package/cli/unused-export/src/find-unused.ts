@@ -141,7 +141,7 @@ export async function findUnusedExports({
     file,
     content,
   ] of sources)
-    analyzer.addFile(
+    analyzer.setFile(
       file,
       content,
     );
@@ -149,7 +149,7 @@ export async function findUnusedExports({
   analyzer.link();
 
   for (const diagnostic of analyzer.diagnostics)
-    fl.debug(`link diagnostic: ${diagnostic.module}: ${diagnostic.message}`,);
+    fl.debug(`link diagnostic: ${diagnostic.path}: ${diagnostic.message}`,);
 
   /**
    Findings accumulated across every module's export records.
@@ -171,7 +171,7 @@ export async function findUnusedExports({
 
       if ((local === null) || (moduleExport.name === null))
         continue;
-      if (analyzer.referencesOf(local,)
+      if (local.findReferences()
         .length
         > 0)
         continue;

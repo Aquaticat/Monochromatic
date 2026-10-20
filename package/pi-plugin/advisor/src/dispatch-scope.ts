@@ -5,7 +5,7 @@ import {
   NO_LIVE_SCOPE,
   readLiveScope,
   type ResolveEffectiveScopeContext,
-} from '@monochromatic-dev/pi-shared-model-selection/ts';
+} from '@monochromatic-dev/agent-harness-shared-model-selection/ts';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type {
   AdvisorReadonlyModel,

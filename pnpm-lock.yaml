@@ -537,6 +537,46 @@ importers:
         specifier: 'catalog:'
         version: 7.1.0-beta
 
+  package/agent-harness-shared/model-selection:
+    dependencies:
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      type-fest:
+        specifier: 'catalog:'
+        version: 5.10.0
+      valibot:
+        specifier: 'catalog:'
+        version: 1.5.0(typescript@7.1.0-beta)
+      zeptomatch:
+        specifier: 'catalog:'
+        version: 2.1.0
+    devDependencies:
+      '@earendil-works/pi-ai':
+        specifier: 'catalog:'
+        version: 1.3.0(undici@8.12.2)
+      '@earendil-works/pi-coding-agent':
+        specifier: 'catalog:'
+        version: 1.3.0
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      typescript:
+        specifier: 'catalog:'
+        version: 7.1.0-beta
+
   package/agent-harness-shared/search-fetch:
     dependencies:
       '@monochromatic-dev/agent-harness-shared-truncate':
@@ -4084,6 +4124,9 @@ importers:
 
   package/pi-plugin/advisor:
     dependencies:
+      '@monochromatic-dev/agent-harness-shared-model-selection':
+        specifier: workspace:*
+        version: link:../../agent-harness-shared/model-selection
       '@monochromatic-dev/module-caught-value':
         specifier: workspace:*
         version: link:../../module/caught-value
@@ -4093,9 +4136,6 @@ importers:
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
         version: link:../../ownership-marker/foreign-borrowed
-      '@monochromatic-dev/pi-shared-model-selection':
-        specifier: workspace:*
-        version: link:../../pi-shared/model-selection
       type-fest:
         specifier: 'catalog:'
         version: 5.10.0
@@ -4294,6 +4334,9 @@ importers:
 
   package/pi-plugin/goal:
     dependencies:
+      '@monochromatic-dev/agent-harness-shared-model-selection':
+        specifier: workspace:*
+        version: link:../../agent-harness-shared/model-selection
       '@monochromatic-dev/module-caught-value':
         specifier: workspace:*
         version: link:../../module/caught-value
@@ -4306,9 +4349,6 @@ importers:
       '@monochromatic-dev/pi-shared-model-review':
         specifier: workspace:*
         version: link:../../pi-shared/model-review
-      '@monochromatic-dev/pi-shared-model-selection':
-        specifier: workspace:*
-        version: link:../../pi-shared/model-selection
     devDependencies:
       '@earendil-works/pi-ai':
         specifier: 'catalog:'
@@ -4597,12 +4637,12 @@ importers:
 
   package/pi-plugin/thinking-default:
     dependencies:
+      '@monochromatic-dev/agent-harness-shared-model-selection':
+        specifier: workspace:*
+        version: link:../../agent-harness-shared/model-selection
       '@monochromatic-dev/ownership-marker-foreign-borrowed':
         specifier: workspace:*
         version: link:../../ownership-marker/foreign-borrowed
-      '@monochromatic-dev/pi-shared-model-selection':
-        specifier: workspace:*
-        version: link:../../pi-shared/model-selection
     devDependencies:
       '@earendil-works/pi-coding-agent':
         specifier: 'catalog:'
@@ -4647,46 +4687,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.5
-
-  package/pi-shared/model-selection:
-    dependencies:
-      '@monochromatic-dev/module-caught-value':
-        specifier: workspace:*
-        version: link:../../module/caught-value
-      '@monochromatic-dev/ownership-marker-foreign-borrowed':
-        specifier: workspace:*
-        version: link:../../ownership-marker/foreign-borrowed
-      type-fest:
-        specifier: 'catalog:'
-        version: 5.10.0
-      valibot:
-        specifier: 'catalog:'
-        version: 1.5.0(typescript@7.1.0-beta)
-      zeptomatch:
-        specifier: 'catalog:'
-        version: 2.1.0
-    devDependencies:
-      '@earendil-works/pi-ai':
-        specifier: 'catalog:'
-        version: 1.3.0(undici@8.12.2)
-      '@earendil-works/pi-coding-agent':
-        specifier: 'catalog:'
-        version: 1.3.0
-      '@monochromatic-dev/config-rolldown':
-        specifier: workspace:*
-        version: link:../../config/rolldown
-      '@monochromatic-dev/config-typescript':
-        specifier: workspace:*
-        version: link:../../config/typescript
-      '@monochromatic-dev/module-test':
-        specifier: workspace:*
-        version: link:../../module/test
-      '@types/node':
-        specifier: 'catalog:'
-        version: 26.6.5
-      typescript:
-        specifier: 'catalog:'
-        version: 7.1.0-beta
 
   package/rolldown-plugin/import-attributes:
     dependencies:

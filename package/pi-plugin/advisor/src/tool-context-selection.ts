@@ -14,7 +14,7 @@ import {
   buildAdvisorContext,
   maxContextCharsForAdvisorModel,
 } from './context.ts';
-import { selectDefaultModelFromContextEstimates, } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import { selectDefaultModelFromContextEstimates, } from '@monochromatic-dev/agent-harness-shared-model-selection/ts';
 import {
   type CurrentMainModelIdentity,
   scopeAvoidingCurrentMainModel,

@@ -54,7 +54,7 @@ const svgBackgrounds = [
     join(
       PACKAGE_DIR,
       'src',
-      'assets',
+      'asset',
       'output_1.svg',
     ),
     'utf8',
@@ -63,7 +63,7 @@ const svgBackgrounds = [
     join(
       PACKAGE_DIR,
       'src',
-      'assets',
+      'asset',
       'output_2.svg',
     ),
     'utf8',

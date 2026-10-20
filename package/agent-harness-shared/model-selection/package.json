@@ -1,13 +1,13 @@
 {
-  "name": "@monochromatic-dev/pi-shared-model-selection",
-  "description": "Shared model selection logic for pi plugins",
+  "name": "@monochromatic-dev/agent-harness-shared-model-selection",
+  "description": "Shared model selection logic for pi plugins and harness-neutral agent packages",
   "type": "module",
   "private": true,
   "version": "0.0.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/Aquaticat/Monochromatic.git",
-    "directory": "package/pi-shared/model-selection"
+    "directory": "package/agent-harness-shared/model-selection"
   },
   "exports": {
     ".": {

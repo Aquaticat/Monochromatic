@@ -28,6 +28,7 @@ auth:
           registry: monochromatic-dev
           packages:
             - '@monochromatic-dev/agent-harness-shared-current-time-context'
+            - '@monochromatic-dev/agent-harness-shared-model-selection'
             - '@monochromatic-dev/agent-harness-shared-search-fetch'
             - '@monochromatic-dev/agent-harness-shared-session-discovery'
             - '@monochromatic-dev/agent-harness-shared-shell-command-analyzer'
@@ -145,7 +146,6 @@ auth:
             - '@monochromatic-dev/pi-plugin-terminal-title'
             - '@monochromatic-dev/pi-plugin-thinking-default'
             - '@monochromatic-dev/pi-shared-model-review'
-            - '@monochromatic-dev/pi-shared-model-selection'
             - '@monochromatic-dev/rolldown-plugin-import-attributes'
             - '@monochromatic-dev/shim-node-domexception'
             - '@monochromatic-dev/shim-proper-lockfile'

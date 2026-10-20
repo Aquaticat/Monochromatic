@@ -10,7 +10,7 @@ import {
   type ModelSelection,
   resolveRequestedModel,
   type ScopedModel,
-} from '@monochromatic-dev/pi-shared-model-selection/ts';
+} from '@monochromatic-dev/agent-harness-shared-model-selection/ts';
 import type {
   ForeignBorrowed,
   ForeignHostCapability,

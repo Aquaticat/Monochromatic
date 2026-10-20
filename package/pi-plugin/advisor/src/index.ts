@@ -32,7 +32,7 @@ import {
   ADVISOR_MESSAGE_TYPE,
   MAIN_MODEL_GUIDANCE_PREFIX,
 } from './constants.ts';
-import { resolveEffectiveScope, } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import { resolveEffectiveScope, } from '@monochromatic-dev/agent-harness-shared-model-selection/ts';
 import { filterAdvisorScopeByOutputCapacity, } from './output-eligibility.ts';
 import { selectAdvisorModel, } from './advisor-selection.ts';
 import { createAdvisorProjectContextState, } from './project-context.ts';

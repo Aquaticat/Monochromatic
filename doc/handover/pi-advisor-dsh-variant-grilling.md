@@ -5,7 +5,10 @@ on a shared package,
 and the decisions settled so far.
 Status: interview complete.
 Shared understanding confirmed on 2026-10-20 (Q13);
-implementation is authorized.
+implementation is authorized and underway.
+This file is also the working handover:
+ commits, decisions since the interview, measured failures, and the queue
+ live in Implementation progress.
 
 ## Request
 
@@ -191,21 +194,210 @@ and use a shared package.
 - pi-ai catalog cost side-table (Q12 recommendation),
   rejected in favor of `defaultReviewerModel` plus context heuristic.
 
+## Implementation progress
+
+Authoritative task state,
+ updated as work lands.
+
+### Commits
+
+- `b710410e81` `refactor(*): move model-selection to agent-harness-shared`:
+  the Q9 move,
+  dir plus name plus consumers (advisor, goal, thinking-default, model-retirement),
+  the `mise.toml` PATH entry,
+  the pnpr OIDC allowlist entry,
+  a regenerated lockfile (rename-only,
+  measured: no dependency version changed),
+  and the WR6 note in `doc/todo/pi-shared-model-selection.md`.
+- `c8d9af87d5` `fix(*): stub new pi-coding-agent 1.3.0 ExtensionAPI members in verify fakes`:
+  TS2740 stubs in advisor,
+  guardrail,
+  and thinking-default `src/mise.verify-extension.ts`,
+  mirroring the search-fetch fake.
+- `3b9bb3ad6b` `fix(agent-harness-shared-shell-command-analyzer): parse unbash 6 TestLogical operands`:
+  `visit-expression.ts` maps `operands`,
+  dead `Time`/`Negation` branch removed in `visit-node.ts`,
+  2-way and 3-way TestLogical cases added.
+- `fce8efd40e` `fix(pi-plugin-current-time-context): fill hiddenTools and messageType in the test harness`:
+  `pi-test-harness.ts` fixture updates for pi-coding-agent 1.3.0.
+- `ad7a5a67b4` `fix(pi-plugin-terminal-title): narrow before_agent_start to its user variant`:
+  handler reads `prompt` only on `messageType: 'user'`,
+  custom runs skip the prompt title (new test case).
+- `22f130ed5b` `fix(pi-plugin-model-retirement): regenerate the retirement table fixture for the 2026-10-15 catalog`:
+  regenerated with the documented task after reviewing the retirement diff.
+- `ea2812babc` `fix(cli-unused-export): adopt the yuku-analyzer 0.19.0 API`:
+  `addFile` to `setFile`,
+  `referencesOf` to `Binding.findReferences`,
+  `Diagnostic.module` to `Diagnostic.path`.
+
+### Decisions since the interview
+
+- 2026-10-20 user directive: fix pre-existing failures too,
+  not only this series' regressions.
+- 2026-10-20 user directive: keep this handover current,
+  updating it as work lands.
+- 2026-10-20 user directive: use subagents aggressively,
+  delegating independent workstreams in parallel.
+- `defaultReviewerModel` stays user config only
+  (`~/.pi/agent/extensions/pi-advisor.json`,
+  value `opencode-go/kimi-k3`),
+  never a schema default.
+- 2026-10-20 user decision (flagged adoption approved):
+  `defaultReviewerModel` selects the initial reviewer of a default call
+  and keeps the serial fallback/overlap recovery semantics;
+  only an explicit `model` argument or `<slug>` is exact.
+
+### Pre-existing failures: measured, swept, fixed
+
+Measured 2026-10-20 through package `lint:types` runs.
+None of these files are in this series' diff,
+and no dependency version moved in the move commit.
+
+Fixed with the commits recorded in `### Commits`:
+
+- `agent-harness-shared/shell-command-analyzer` (unbash 6.0.0 AST reshape),
+  `pi-plugin/current-time-context`,
+  `pi-plugin/terminal-title`,
+  `pi-plugin/model-retirement` (catalog drift fixture),
+  `cli/unused-export` (yuku-analyzer 0.19.0 API).
+
+Full sweep 2026-10-20: 213 packages with a `lint:types` task,
+170 pass,
+43 fail.
+Of the 43:
+1 real API drift (`cli/unused-export`,
+now fixed),
+38 build-class (`translation-repair/*`,
+`module/async-time`,
+`module/logger`,
+`module/test`;
+missing or stale `dist`),
+and 4 false positives (`config/typescript`,
+`test-fixture/oxlint-*`,
+whose `lint:types` tasks are commented out on purpose;
+the sweep matched the comment text).
+
+Delegated 2026-10-20 (subagents,
+disjoint write scopes):
+
+- extraction fork `40eef920`: `package/agent-harness-shared/advisor` (new)
+  plus `package/pi-plugin/advisor` rewiring;
+  lockfile and `config/pnpr` changes belong to this scope alone.
+- docs subagent `94e9414e`: `doc/troubleshooting/*` only,
+  the 2026-10 dependency API drift write-up.
+- sweep subagent `25c55b61`: the 38 build-class packages only;
+  parked until the repo-wide `mise run build` ends
+  (no concurrent builds),
+  lead wakes it on the build's completion.
+  NOTE 2026-10-20: became unresumable after parking
+  (`send_message` target not found);
+  scope handed to replacement `bd3dc9b4`,
+  which also takes its findings (the three `module/*` TS2305s were
+  stale-dist artifacts,
+  `translation-repair/source-scan` and `translation-repair/test-fixture`
+  ship no `dist` by design).
+  `bd3dc9b4` DONE 2026-10-20: all 39 packages pass `lint:types` after the
+  rebuild,
+  zero source drift,
+  zero commits.
+  Green validated with positive controls (deliberate TS2322 probes that
+  made `lint:types` fail,
+  then removed).
+  Count correction: 35 `translation-repair` packages were red at sweep
+  time (38 build-class total with the three `module/*`),
+  not 36;
+  `translation-repair/test-fixture` was green even then.
+  `source-scan`'s red was missing dependency dists (TS2307 on
+  `@monochromatic-dev/translation-repair-markup` and siblings).
+- design subagent `1d3fe543`: DONE 2026-10-20,
+  commit `f382400eab`: `doc/planning/pi-advisor-dsh-variant.md`
+  (probed host API signatures,
+  capability gaps each with a designed fallback).
+  Probe corrections to the briefing:
+  `LlmModelInfo` carries no `contextWindow`
+  (only `LlmResolvedModelInfo.context.contextWindow` and
+  `LlmDiscoveredModel.contextWindow?` do),
+  and `package/dsh-plugin/search-fetch` is a configuration-only bundle;
+  the in-process `apply(ctx)` precedent is `@deepseek-ai/dsh-tool-cordis`.
+  Two shared-core prerequisites it specifies
+  (queued as follow-up below,
+  because running subagents cannot be steered in this harness:
+  `send_message` rejects subagent ids with `active teammate not found`):
+  optional `defaultReviewerModel` in `AdvisorConfigFileSchema`/`AdvisorConfig`
+  with no schema default,
+  and a ranking seam in `selectAdvisorModel`
+  (pi expected cost versus DSH largest `contextWindow` then `name`,
+  both supplied externally).
+- docs subagent `94e9414e`: DONE,
+  commit `601c69399e`:
+  `doc/troubleshooting/deps-update-api-drift.md` (new class doc,
+  unbash 6.0.0 / yuku-analyzer 0.19.0 / pi-ai catalog incidents,
+  symptoms reproduced from a pre-fix worktree at `b710410e81`)
+  plus two pi-1.3.0 sections in
+  `doc/troubleshooting/pi-0-87-extension-api-breakage.md`.
+- build-fixes subagent `63d2bd1d`: three pre-existing build failures
+  found by the workspace build
+  (separate incidents,
+  fixed and committed separately):
+  `pi-plugin/auto-mode` (rolldown UNRESOLVED_ENTRY `./src/index.ts`),
+  `webapp-productivity/doodle-widget` (jspdf `canvg` resolve error),
+  `desktop-app/terminal` (staging assumes a prior `libghostty-vt` release
+  build).
+
+The lead holds `doc/handover/` edits and cross-agent integration.
+
+### Unknowns
+
+- Resolved:
+  the shell-command-analyzer TS2339s were the unbash 6.0.0 AST reshape,
+  not the TypeScript toolchain or the ownership branding.
+- Whether any of the 38 build-class `lint:types` failures hide a real
+  source drift behind the missing `dist`;
+  the sweep subagent rebuilds before concluding.
+
 ## Next action
 
-Implementation, in this order:
+Implementation,
+ in this order (user directives 2026-10-20: fix pre-existing failures too;
+ use subagents aggressively):
 
-1. Move `package/pi-shared/model-selection` to
+1. DONE,
+   commit `b710410e81`: move `package/pi-shared/model-selection` to
    `package/agent-harness-shared/model-selection`
-   (dir plus name plus consumers: advisor, goal).
-2. Extract the shared core `package/agent-harness-shared/advisor`
-   (middle depth per Q7)
-   and rewire `package/pi-plugin/advisor` onto it in the same series.
-3. Build `package/dsh-plugin/advisor` (in-process plugin,
+   (dir plus name plus consumers).
+2. DONE: fix the measured pre-existing failures
+   (`3b9bb3ad6b`,
+   `fce8efd40e`,
+   `ad7a5a67b4`,
+   `22f130ed5b`,
+   `ea2812babc`,
+   `c8d9af87d5`)
+   and sweep every package `lint:types`
+   (213 packages,
+   170 pass,
+   43 red triaged as above).
+3. IN PARALLEL (subagents,
+   2026-10-20):
+   extract the shared core `package/agent-harness-shared/advisor`
+   and rewire `package/pi-plugin/advisor`
+   (fork `40eef920`);
+   write the `doc/troubleshooting/` dependency API drift record
+   (`94e9414e`);
+   fix the 38 build-class reds
+   (`25c55b61`).
+4. Fold the two design prerequisites into the extracted core
+   (optional `defaultReviewerModel` field,
+   `selectAdvisorModel` ranking seam),
+   then build `package/dsh-plugin/advisor` (in-process plugin,
    tool plus `/advisor` command, unified config,
-   `ctx.llm` backend, Q12 selection rule).
-4. Tests, lint, and `mise` tasks for every new and moved package;
-   behavior picks recorded per Q5 and Q6.
-5. Fixture-profile verification, then the Q10 live install.
-6. READMEs, planning doc, GitHub issue (`needs-triage`),
+   `ctx.llm` backend, Q12 selection rule,
+   `doc/planning/pi-advisor-dsh-variant.md` as the blueprint).
+5. Tests, lint, and `mise` tasks for every new and moved package;
+   behavior picks recorded per Q5 and Q6
+   plus the 2026-10-20 reviewer-fallback decision
+   (initial reviewer,
+   serial fallback kept,
+   explicit is exact).
+6. Fixture-profile verification, then the Q10 live install.
+7. READMEs, planning doc, GitHub issue (`needs-triage`),
    and this handover's completion record.

@@ -4,7 +4,7 @@
  Ordering is the only evidence a retirement rests on, so every branch here either
  decides from id text or declares the pair unordered. Absence is modelled with the
  {@link UNORDERED} sentinel rather than a nullish union, matching the convention
- `package/pi-shared/model-selection/src/version.ts` uses for `NO_MAJOR_VERSION`.
+ `package/agent-harness-shared/model-selection/src/version.ts` uses for `NO_MAJOR_VERSION`.
 
  @module
  */

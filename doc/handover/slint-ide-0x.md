@@ -1117,6 +1117,21 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     (line 8 changed pixels in row 5), `query_input_tests::find_box_context_menu_runs_each_entry`; the third run passed
     238 of 238. To judge on a quiet host before pushing; the pixel tests could point at a real tile re-center shimmer
     (unhinted glyphs at a new tile origin) and must be compared against `origin/main` under the same load.
+    Owner instruction of 2026-10-20: "Plan for the load average never to quiet down for longer than a minute at a
+    time." Measurement and verification therefore must not wait for a quiet host (another session's
+    translation-repair fan-out drove the load average to 123 while my cadence runs were going; those runs are void).
+    The plan, each part measured here on 2026-10-20: (a) run every measured process as a systemd user unit with
+    `CPUWeight=10000` (the `cpu` controller is delegated to the user manager; all sessions' shell commands share one
+    `claude-code-bash` cgroup at weight 100). Positive control, 56 busy loops: a fixed single-thread job took 647 ms
+    unloaded, 1797 ms at default weight, 1190 ms at weight 10000, so it narrows but does not remove the slowdown (busy
+    sibling hyperthreads and shared caches remain; cgroup `cpuset` is not delegated, so cores cannot be reserved);
+    (b) interleave A and B back to back, alternating the order per pair, and judge by the paired differences and the
+    medians, never by one run (QNB); (c) first run A against A for the noise floor under the current load, and claim a
+    difference only when it exceeds that floor; (d) record CPU pressure (`/proc/pressure/cpu` PSI) and the stalled time
+    per run instead of the load average, which lags; (e) for test reliability, accept only counts over many full runs
+    under the load that exists (15 of 15 passed on a moderately loaded host here), and judge a failure by its name, not
+    by the host state. Tools: `~/temp/agent/matrix-load.mjs` (runs the cadence task as such a unit, pairs, PSI) and
+    `matrix-load-report.mjs`.
     State at 2026-10-20 after the three agent reports (to verify and land in this order):
     (1) flake diagnosis of stages 3 and 4 (agent `a717e60922dca0448`, running): on a quiet host 2 of 8 full
     `test:native` runs failed on `main` (`annotation_stability_tests` "window row 240 differs after the annotations
