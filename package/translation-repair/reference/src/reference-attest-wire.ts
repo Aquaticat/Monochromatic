@@ -4,6 +4,7 @@ import type { JsonSchemaResponseFormat, } from '@monochromatic-dev/translation-r
 import {
   isJsonArray,
   isJsonRecord,
+  withoutTranslatorsNotes,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { selectFence, } from '@monochromatic-dev/translation-repair-stage/ts';
 
@@ -91,12 +92,26 @@ export function buildReferenceAttestMessages(
     readonly referenceContext: string;
   },
 ): readonly ChatMessage[] {
+  // THE VOICE IS SHOWN THE ARCHIVE RENDERING WITHOUT THE NOTES THE ARCHIVE'S
+  // TRANSLATORS LEFT EACH OTHER (`withoutTranslatorsNotes`): no reader sees one,
+  // so a note may not stand as a detail the archive adds. Only what is SHOWN is
+  // cut: the quotes a voice gives are verified against the stored archive text
+  // word for word, and the original's own comments stay in view.
   /**
-   Fence absent from every enclosed value.
+   The archive rendering as the voice reads it.
+   */
+  const archiveShown = withoutTranslatorsNotes({
+    text: archiveText,
+    original: sourceText,
+  },);
+  /**
+   Fence absent from every enclosed value, the archive rendering as written
+   and as shown.
    */
   const fence = selectFence({ texts: [
     sourceText,
     archiveText,
+    archiveShown,
     referenceContext,
   ], },);
   return [
@@ -115,7 +130,7 @@ Reply with JSON only: {"attested":[{"archiveQuote":"...","reference":1,"referenc
     },
     {
       role: 'user',
-      content: `${fence} ORIGINAL ${fence}\n${sourceText}\n${fence} ARCHIVE RENDERING ${fence}\n${archiveText}\n${fence} CITED REFERENCES ${fence}\n${referenceContext}\n${fence} END ${fence}`,
+      content: `${fence} ORIGINAL ${fence}\n${sourceText}\n${fence} ARCHIVE RENDERING ${fence}\n${archiveShown}\n${fence} CITED REFERENCES ${fence}\n${referenceContext}\n${fence} END ${fence}`,
     },
   ];
 }

@@ -246,6 +246,12 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
  consolidate version rides inside 28, the repair slice, refine, consistency, page title and pairing versions stay (their
  sheets and floors are not this rule's, and the consistency floors run live). No record has been written at 13, which this
  change sets first.
+
+ Rides inside 13 too: the cut of the notes between translators from the sheets of the other judges (12e147ae40, 5498ee860b,
+ 89df3896d4, eaab1b1ed9, fcd6d13fa3, ebac709b03, 7ee1755b24) and the label rule of the candidate selection slate, which this
+ lane's sheet does not use, since it labels its own blocks (`lane-contest-wire.ts`). Its sheet is what it was, so the cut moves no
+ number, as the page title version stays: the lexicon sheet shows source and Chinese titles only. The guard that renders every sheet with a planted note (88b5187179, c655a96182) and the restoration judge that
+ only the repair benchmark runs (36c5b02884) change no sheet this lane asks.
  */
 export const LANE_CONTEST_CACHE_VERSION = 13;
 

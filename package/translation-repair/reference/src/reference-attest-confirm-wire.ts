@@ -4,6 +4,7 @@ import type { JsonSchemaResponseFormat, } from '@monochromatic-dev/translation-r
 import {
   isJsonArray,
   isJsonRecord,
+  withoutTranslatorsNotes,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { selectFence, } from '@monochromatic-dev/translation-repair-stage/ts';
 import type { AttestedDetail, } from './reference-attest-match.ts';
@@ -98,12 +99,26 @@ export function buildReferenceAttestConfirmMessages(
       String(candidate.reference,)
     } says: "${candidate.referenceQuote}"`;
   },);
+  // THE VOICE IS SHOWN THE ARCHIVE RENDERING WITHOUT THE NOTES THE ARCHIVE'S
+  // TRANSLATORS LEFT EACH OTHER, as the voices whose candidates it weighs were
+  // (`reference-attest-wire.ts`): no reader sees one. The candidates' quotes
+  // were verified against the stored text and are shown as given, and the
+  // original's own comments stay in view.
   /**
-   Fence absent from every enclosed value.
+   The archive rendering as the voice reads it.
+   */
+  const archiveShown = withoutTranslatorsNotes({
+    text: archiveText,
+    original: sourceText,
+  },);
+  /**
+   Fence absent from every enclosed value, the archive rendering as written
+   and as shown.
    */
   const fence = selectFence({ texts: [
     sourceText,
     archiveText,
+    archiveShown,
     referenceContext,
     ...candidateLines,
   ], },);
@@ -118,7 +133,7 @@ Reply with JSON only: {"confirmed":[1,3]} naming the candidates you confirm by n
     },
     {
       role: 'user',
-      content: `${fence} ORIGINAL ${fence}\n${sourceText}\n${fence} ARCHIVE RENDERING ${fence}\n${archiveText}\n${fence} CITED REFERENCES ${fence}\n${referenceContext}\n${fence} CANDIDATES ${fence}\n${
+      content: `${fence} ORIGINAL ${fence}\n${sourceText}\n${fence} ARCHIVE RENDERING ${fence}\n${archiveShown}\n${fence} CITED REFERENCES ${fence}\n${referenceContext}\n${fence} CANDIDATES ${fence}\n${
         candidateLines.join('\n\n',)
       }\n${fence}`,
     },

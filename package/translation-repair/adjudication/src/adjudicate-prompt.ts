@@ -22,6 +22,7 @@ import {
   HOUSE_POLICY_BLOCK,
   indentContinuation,
 } from '@monochromatic-dev/translation-repair-house-rule/ts';
+import { withoutTranslatorsNotes, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { selectFence, } from '@monochromatic-dev/translation-repair-stage/ts';
 import { citedReferenceBlockText, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import {
@@ -277,16 +278,47 @@ ${evidence}`;
     ].join('\n',);
   },);
 
+  // THE PANEL IS SHOWN THE TRANSLATION WITHOUT THE NOTES THE ARCHIVE'S
+  // TRANSLATORS LEFT EACH OTHER, as the critic whose claims it weighs is
+  // (`critic-prompt.ts`): no reader sees one, so no claim may rest on one and no
+  // panelist may count one for or against a claim. Only what is SHOWN is cut;
+  // the claims' evidence lines quote the stored text, and the original's own
+  // comments stay in view.
+  /**
+   Texts whose comments are the original's own.
+   */
+  const originals = [
+    sourceText,
+    neighbouringSourceText ?? '',
+    documentSourceText ?? '',
+  ].join('\n',);
+  /**
+   The translation as a panelist reads it.
+   */
+  const targetShown = withoutTranslatorsNotes({
+    text: targetText,
+    original: originals,
+  },);
+  /**
+   The existing translation next door as a panelist reads it.
+   */
+  const incumbentShown = withoutTranslatorsNotes({
+    text: neighbouringIncumbentText ?? '',
+    original: originals,
+  },);
+
   /**
    Fence no enclosed text can reproduce, chosen against every text the sheet encloses,
-   the rendered claims included.
+   the rendered claims included, each text as written and as shown.
    */
   const fence = selectFence({
     texts: [
       sourceText,
       targetText,
+      targetShown,
       neighbouringSourceText ?? '',
       neighbouringIncumbentText ?? '',
+      incumbentShown,
       documentSourceText ?? '',
       referenceContext ?? '',
       identityContext ?? '',
@@ -312,13 +344,12 @@ ${evidence}`;
    */
   const nearbyBlock = ((neighbouringSourceText === undefined)
       || (neighbouringSourceText === ''))
-      && ((neighbouringIncumbentText === undefined)
-        || (neighbouringIncumbentText === ''))
+      && (incumbentShown === '')
     ? ''
     : `${fence} NEARBY ORIGINAL, CONTEXT ONLY ${fence}
 ${neighbouringSourceText ?? ''}
 ${fence} NEARBY EXISTING TRANSLATION, CONTEXT ONLY ${fence}
-${neighbouringIncumbentText ?? ''}
+${incumbentShown}
 ${fence} ${NEARBY_RULE} ${fence}
 `;
 
@@ -352,7 +383,7 @@ ${fence} This original document is additional evidence for checking claims about
         content: `${identityBlock}${fence} ORIGINAL ${fence}
 ${sourceText}
 ${fence} TRANSLATION ${fence}
-${targetText}
+${targetShown}
 ${nearbyBlock}${fence} CLAIMS ${fence}
 ${groupBlocks.join('\n\n',)}
 ${documentBlock}${referenceBlock}${fence} END ${fence}`,

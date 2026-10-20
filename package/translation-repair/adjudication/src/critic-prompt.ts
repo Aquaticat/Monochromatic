@@ -17,6 +17,7 @@ import {
   FOREIGN_PHRASE_NAME_TITLE_SCOPE,
   OBLIGATORY_DIFFERENCES,
 } from '@monochromatic-dev/translation-repair-glossary/ts';
+import { withoutTranslatorsNotes, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { selectFence, } from '@monochromatic-dev/translation-repair-stage/ts';
 import { REPAIR_EVIDENCE_ROLE, } from './repair-evidence-role.ts';
 import {
@@ -152,17 +153,54 @@ export function buildCriticMessages(
     readonly neighbouringSourceText?: string;
   },
 ): readonly ChatMessage[] {
+  // THE CRITIC IS SHOWN THE TRANSLATION WITHOUT THE NOTES THE ARCHIVE'S
+  // TRANSLATORS LEFT EACH OTHER, as every other judging sheet is
+  // (`withoutTranslatorsNotes`): no reader sees one, the page keeps each one
+  // whatever a judge says, and a critic told to report the original's language
+  // left in the translation (`accuracy/untranslated`) would report a Chinese
+  // comment, which an accepted issue turns into an envelope for an editor to
+  // render, and the carry then puts the note back beside the rendering. Only
+  // what is SHOWN is cut. A quote the critic gives is located in the stored
+  // text (`locateQuote`), so a quote of words that stand together on the sheet
+  // resolves as it did, and one that runs across a place a note was cut from
+  // finds nothing and is dropped. The original's own comments stay in view,
+  // and so do the notes of the original next door.
   /**
-   Fence no enclosed text can reproduce, chosen against every text the sheet encloses.
+   Texts whose comments are the original's own.
+   */
+  const originals = [
+    sourceText,
+    neighbouringSourceText ?? '',
+  ].join('\n',);
+  /**
+   The translation as the critic reads it.
+   */
+  const targetShown = withoutTranslatorsNotes({
+    text: targetText,
+    original: originals,
+  },);
+  /**
+   The existing translation next door as the critic reads it.
+   */
+  const incumbentShown = withoutTranslatorsNotes({
+    text: neighbouringIncumbentText ?? '',
+    original: originals,
+  },);
+
+  /**
+   Fence no enclosed text can reproduce, chosen against every text the sheet
+   encloses, each text as written and as shown.
    */
   const fence = selectFence({
     texts: [
       sourceText,
       targetText,
+      targetShown,
       identityContext ?? '',
       referenceContext ?? '',
       neighbouringSourceText ?? '',
       neighbouringIncumbentText ?? '',
+      incumbentShown,
     ],
   },);
 
@@ -206,13 +244,12 @@ export function buildCriticMessages(
    */
   const nearbyBlock = ((neighbouringSourceText === undefined)
       || (neighbouringSourceText === ''))
-      && ((neighbouringIncumbentText === undefined)
-        || (neighbouringIncumbentText === ''))
+      && (incumbentShown === '')
     ? ''
     : `${fence} NEARBY ORIGINAL, CONTEXT ONLY ${fence}
 ${neighbouringSourceText ?? ''}
 ${fence} NEARBY EXISTING TRANSLATION, CONTEXT ONLY ${fence}
-${neighbouringIncumbentText ?? ''}
+${incumbentShown}
 ${fence} ${NEARBY_RULE} ${fence}
 `;
 
@@ -226,7 +263,7 @@ ${fence} ${NEARBY_RULE} ${fence}
       content: `${identityBlock}${fence} ORIGINAL ${fence}
 ${sourceText}
 ${fence} TRANSLATION ${fence}
-${targetText}
+${targetShown}
 ${referenceBlock}${nearbyBlock}${fence} END ${fence}`,
     },
   ];

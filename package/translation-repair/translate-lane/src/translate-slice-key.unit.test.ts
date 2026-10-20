@@ -80,6 +80,8 @@ const INCUMBENT_TEXT = 'The cat sleeps on the windowsill.\n';
  Version 21 cuts a translators' note alone on a quoted line with its line, where the judges saw a bare quote line.
  Version 22 refuses a candidate that respells a Han name the archive spells inside a sentence, and the identity lines
  list those spellings (zheermao101, run zheermao16).
+ Version 22 also cuts the translators' notes from the surrounding existing translation the candidate selection slate shows,
+ which a heading that names the original in its own words had left whole, and from the translation the coverage sheet shows.
  These questions changed without input fields.
 
  The roster feeding {@link RUN_SHAPE} is invented, so a production roster change

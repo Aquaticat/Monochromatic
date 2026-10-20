@@ -77,6 +77,18 @@
  the Node binary, or the environment, from which the straggler windows are read (`477bbd6601` moved where they are read, to the
  entry, and not whether they are read from the environment). This account reads the sources of the range and not those three.
 
+ Rides inside 3 too: the section and block pairing sheets cut the notes between translators from the translation's sections and
+ blocks, as the other judging sheets do (`document-structure/src/translators-note.ts`, `eaab1b1ed9`), keeping every index and the
+ length of each list. The sheet is in no key, so this number could not retire a record when it changed, and the account of
+ 2026-10-18 above holds for it: the key holds the version, the question, the exact texts, the pictures and the roster, and a
+ build whose pipeline digest differs discards the namespace before it reads it, so no pairing settled over the old sheet
+ outlives the code that settled it. Runs zheermao16 and CuspariaKLSY19 started on `a5dc23c5bb`, which holds 3, and wrote or
+ may have written pairings under it; they are on a different digest from any build holding the cut, so none of their records
+ is served to it. The digest does not hold a dependency, the Node binary or the environment, and the cut changes none of them.
+ Of the 92 pinned English archives 10 hold a note their original lacks (34 notes in all); 19 of the 63 sections and 28 of the
+ 634 stretches between blank lines of those archives hold one, and 25 of those stretches hold nothing else, so the sheet lists
+ them empty under their own number.
+
  @example
  ```ts
  const material = JSON.stringify({ version: PAIRING_CACHE_VERSION, question, source, target, pictures, roster, },);

@@ -106,9 +106,11 @@ await describe({
             + 'and from 8 to 9 with the XingZ6015 read: a stored refinement was written under reader protection that reached '
             + 'past the account of how a death or an attempt happened, and under the old declared-name floor; and from 9 to 10 '
             + 'with the cut of a translators\' note alone on a quoted line: a stored refinement was chosen from a slate that '
-            + 'showed a bare quote line where the note had stood)',
+            + 'showed a bare quote line where the note had stood; and from 10 to 11 with the cut of the notes from the prober, '
+            + 'the resolution checker and the objection correction\'s slate: a stored refinement was judged over texts that '
+            + 'showed every note between translators)',
           fn: async () => {
-            expect(refineSliceKey(BASE,),).toBe('b31143bd790a81010d1ebe1575400e9c94c1bf37d021382c4cb9771c877b0d7f',);
+            expect(refineSliceKey(BASE,),).toBe('0ce21d98cb32666621902265640a843130516f896b6c112c4f0676ca1fbdc991',);
           },
         },),
 

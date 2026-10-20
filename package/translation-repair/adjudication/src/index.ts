@@ -82,6 +82,11 @@ export {
   UPHELD_ADMISSIBILITY,
 } from './introduced-defect-screen.ts';
 export {
+  proberShownTexts,
+  type ProberShown,
+  type ShownRegion,
+} from './introduced-defect-shown.ts';
+export {
   buildIntroducedDefectMessages,
   INTRODUCED_DEFECT_RESPONSE_FORMAT,
   INTRODUCED_DEFECT_VERDICTS,
