@@ -1860,6 +1860,11 @@ that is verification, not a decision for the user.
   cause. An owner record holds a PID and a start tick, with no PID namespace, so a worker in a container sees a host
   owner's PID as absent or as another process, judges the owner dead and recovers a live transaction. A namespace-aware
   owner identity needs a record field every reader accepts; until then a mixed host and container setup is unsafe.
+  Probe 2026-10-20 (primitive only): `kill -0 <host pid>` from an alpine container with its own PID namespace fails
+  with "No such process", and succeeds with `--pid=host`. So the wrapper's `ESRCH` branch (`Dead`) is reached for a
+  live host owner. The full path (a container recovering a live host transaction) is still not reproduced.
+  Released 2026-10-20 as 0.2.3 (crates.io, release `monochromatic-git-policy-cli-v0.2.3`, installed through mise and
+  checked with the staged-deletion finding in a throwaway repository). Closed 472, 1346, 1347 and 1032.
   Triage 2026-10-20: closed 632 (the perf code is gone) and 1348 (ST2 is a TypeScript rule). Reframed 629 to the Rust
   helpers still duplicated across `test_support.rs`, `command_test_support.rs` and `binary_support.rs` plus the
   byte-argument copies in `cli.fuzz`; queued behind nc2, as those files are in the mutation image. 630 stays open with
