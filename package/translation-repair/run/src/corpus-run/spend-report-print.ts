@@ -177,9 +177,9 @@ export function printCost({ cost, }: { readonly cost: SpendCost; },): void {
     }
 
     /**
-     USD the free-energy seats' lines reported, which is zero while the free energy covered every call.
+     USD the free-energy seats' lines reported, a nominal figure NeuralWatt reports on free-energy requests too.
      */
-    const billedUsd = cost
+    const nominalUsd = cost
       .freeEnergy
       .reduce(
         function addUsd(
@@ -190,11 +190,11 @@ export function printCost({ cost, }: { readonly cost: SpendCost; },): void {
         },
         0,
       );
-    if (billedUsd > 0) {
+    if (nominalUsd > 0) {
       console.log(
-        `NEURALWATT BILLED: ${asUsd({ usd: billedUsd, },)} USD across the calls of these logs came back with a cost, `
-          + 'so the free daily energy did not cover them and they were charged to the owner\'s plan; the energy '
-          + 'ledger marks NeuralWatt dry for the rest of that UTC day',
+        `NeuralWatt nominal cost: ${asUsd({ usd: nominalUsd, },)} USD reported across the calls of these logs; `
+          + 'NeuralWatt reports a cost on free-energy requests too, so this is not plan spend, which only the plan '
+          + 'energy line at the end of a run measures',
       );
     }
   }
