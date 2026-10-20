@@ -5595,8 +5595,8 @@ and `package/music-player/desktop-app/share/applications/`:
   as the sibling `launcher.rs` files do.
   Runs with a non-winit `SLINT_BACKEND` keep Slint's own backend and get no app id;
   a run with `SLINT_MCP_PORT` (debug inspection) installs the same backend and gets the app id
-  (the inspection server starts when the launcher installs the platform,
-  checked with `inspect:native` on 2026-10-20).
+  (the inspection server starts when the launcher installs the platform;
+  `inspect:native` on 2026-10-20 showed `set_app_id("monochromatic.ide")` in the Wayland log and the server listening).
 - `Icon=accessories-text-editor`,
   a stock name of the Icon Naming Specification present in this host's breeze,
   breeze-dark,

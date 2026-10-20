@@ -905,7 +905,7 @@ Nothing in the repository needs that path (the IDE is Linux only through its ino
 and every check runs on this host's GPU).
 This is the owner's rule applied,
 not a decision to keep a CPU-capable path,
-so it is recorded here and not asked;
+and it is listed with the open questions at the end of this section;
 the owner can overrule by adding `renderer-femtovg` back,
 which would not change the default.
 
@@ -1014,6 +1014,16 @@ the paths are under the scratch root):
   baseline and new after the same start,
   28 pixels of 726,000 differ.
 
+The Wayland app id was checked on the new launcher path with `WAYLAND_DEBUG=1`:
+a plain release run and the `inspect:native` run (the debug build with `slint/mcp`,
+`SLINT_MCP_PORT` set by the task)
+both sent `xdg_toplevel.set_app_id("monochromatic.ide")` and `set_title("Monochromatic IDE")`
+(`appid-plain/run.log` and `inspect-native-appid.log` in the scratch root),
+and the inspection server listened on port 9318 in the second.
+That run,
+with the leak in place,
+ended without the exit abort.
+
 Cadence (`inspect:cadence`,
 120 steps of 16 ms,
 `RUST_LOG=info`,
@@ -1074,8 +1084,12 @@ In every cell the ranges of the baseline and of the new code overlap.
 The new code's debug drag is lower by about 2 to 3 changed frames at the median (104.5 against 106.5),
 which is as large as its own run-to-run difference,
 so no difference between baseline and new is claimed.
-The longest identical run is 2 in both debug drag runs of the new code and 1 in all other cells,
-a single sample in each.
+The longest identical run is 2 in both debug drag runs of the new code and 1 in all other cells.
+Both new debug drag runs show the 2-frame run at slot 39 and both baseline runs a 1-frame run at slot 37,
+the start of the drag:
+a hitch at the drag start that reproduced in two of two runs of each build,
+but two runs are too few to confirm it,
+and it is not claimed.
 The probe can move:
 debug against release (drag:
 12 to 15 identical frames of about 120 in debug against 1 to 2 in release,
@@ -1246,8 +1260,11 @@ with the tails in the scratch root (`gate-*.log`):
   The software renderer is linked there for the inspection server's screenshots,
   and no run here requested one.
 
-### Not proven
+### Not proven in stage 2
 
+- The `DeviceRefused` error and the retry on the next hardware adapter ran only as a message in a unit test:
+  both AMD adapters accept the device,
+  so no real adapter ever refused it.
 - Only this host and its two AMD GPUs were used:
   no Intel or NVIDIA,
   no laptop with a hybrid GPU,
@@ -1256,7 +1273,9 @@ with the tails in the scratch root (`gate-*.log`):
 - The cold start cost against the baseline,
   and the first-frame difference on a host with a cold shader cache
   (each of my runs used a fresh private `XDG_CACHE_HOME`,
-  so Mesa's shader cache was cold in each,
+  which Mesa's disk cache normally follows,
+  so its shader cache was probably cold in each,
+  which was not checked,
   and the first frame still took 0.35 s).
 - Accessibility,
   input methods,
