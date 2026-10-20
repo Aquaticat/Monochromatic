@@ -769,7 +769,7 @@ fn the_noise_tolerance_tells_a_shifted_row_from_a_re_render() {
     // The first pixel with room to move in both directions.
     let at = original
         .iter()
-        .position(|pixel| pixel.r >= 2 && pixel.r <= 253)
+        .position(|pixel| return pixel.r >= 2 && pixel.r <= 253)
         .expect("a pixel whose red can move by two levels");
     let moved_by = |levels: i16| {
         let mut changed = original.clone();
