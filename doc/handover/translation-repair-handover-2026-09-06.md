@@ -706,7 +706,17 @@ its "Next" list is still the queue the merge went ahead of.
       (105 errors),
       tuple-destructured callbacks in files the branch never touched;
       main's TypeScript 7.1.0-beta move (`27b1cf2eec`) landed after the green gate g128,
-      and baseline gate g130 on main `a4987be78a` is measuring whether main is red the same way.
+      and baseline gate g130 on main `a4987be78a` is red the same way:
+      the same 105 errors in the same 21 packages,
+      suite 2608 pass and 0 fail.
+      `doc/troubleshooting/typescript-is-tuple-type-tuple-reference.md` explains them:
+      7.1 hands the plugin the tuple reference,
+      so mutable tuples from `Object.entries` and `Map.entries` callbacks now surface,
+      and the offers are sound.
+      Queued after the NeuralWatt land:
+      fix all 105 at the package's own boundaries
+      (an explicit deeply readonly entry type),
+      never by loosening the rule.
       Next:
       green `source-scan`,
       land w242,
