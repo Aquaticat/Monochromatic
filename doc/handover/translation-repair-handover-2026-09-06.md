@@ -631,13 +631,21 @@ its "Next" list is still the queue the merge went ahead of.
       no `[FAIL]` line;
       ledger B709).
       The census's commit `43e735f7da` carries the comment its message needed.
-    - Then move the branch worktree to the build that carries all three,
-      set the launch script's frozen digest to `sha256-tree-v1:ee83b531c14ff55286558920e0b21a0d5c43fda1325ffc4ede74c1bec7d6e2ef`
-      (printed from the gated build in `w241` by `x15-read/digest-build.ts` under the agent scratch directory,
-      the script that reproduced the digest of `a5dc23c5bb` from `w226`),
-      and restart the rotation at `zheermao101` with the run `zheermao17`.
-    - Post comments on `64d40cb4ff` and `768b081ee5`,
-      whose subjects name the wrong commit type (B709).
+    - The rotation restarted on `5ae2173d23`:
+      `zheermao17` (entry zheermao101) runs since 19:16 UTC on 2026-10-20,
+      its `START` line carrying the frozen digest
+      `sha256-tree-v1:ee83b531c14ff55286558920e0b21a0d5c43fda1325ffc4ede74c1bec7d6e2ef`.
+      Its first launch at 18:58 UTC stopped before `START`,
+      the branch worktree uninstalled since `a5dc23c5bb` (M285);
+      no provider was called.
+      Read the page when the waiter on `^DONE processed=` fires,
+      then go on with CuspariaKLSY,
+      XingZ60,
+      yingying,
+      hulicaijia,
+      mikaela_khara,
+      shi_Yumiaoya and TianqiChen666.
+    - `64d40cb4ff` and `768b081ee5` carry the comments their subjects needed (B709).
     - The class of the `zheermao15` read is ledger B702.
     - The guard of B701 stays open and undecided:
       the rotation sweep as an expensive mise task,
