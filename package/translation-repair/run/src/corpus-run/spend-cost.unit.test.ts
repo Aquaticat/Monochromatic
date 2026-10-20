@@ -117,6 +117,45 @@ await describe({
     },),
 
     it({
+      name: 'KEEPS NeuralWatt seats in a bucket of their own, out of the credit total and the USD total, since the '
+        + 'free daily energy bills neither and is metered in watt-hours by the energy ledger',
+      fn: async () => {
+        /**
+         Tally holding a Hyper seat, a NeuralWatt seat on the free energy and one that was billed.
+         */
+        const cost = priceTally({
+          tally: tallyOf({
+            tails: [
+              'SPEND provider=hyper model=kimi-k3 prompt=0 completion=100000',
+              'SPEND provider=neuralwatt model=deepseek-v4.1-flash prompt=3000 completion=400 cost=0',
+              'SPEND provider=neuralwatt model=glm-5.3-flash prompt=2000 completion=300 cost=0.0004',
+            ],
+          },),
+        },);
+
+        expect({
+          total: cost.totalCredits,
+          usd: cost.totalUsd,
+          priced: cost
+            .priced
+            .length,
+          freeEnergy: cost
+            .freeEnergy
+            .map(function named(seat,): string {
+              return `${seat.model} ${String(seat.costUsd,)}`;
+            },)
+            .toSorted(),
+        },)
+          .toEqual({
+            total: 32.664,
+            usd: 0,
+            priced: 1,
+            freeEnergy: ['deepseek-v4.1-flash 0', 'glm-5.3-flash 0.0004',],
+          },);
+      },
+    },),
+
+    it({
       name: 'REPORTS a metered seat the table has no row for as unpriced, so '
         + 'the total reads as incomplete rather than as cheap',
       fn: async () => {

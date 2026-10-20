@@ -43,6 +43,7 @@ const NOTHING: SpendCost = {
   priced: [],
   unpriced: [],
   subscription: [],
+  freeEnergy: [],
   openRouter: [],
   totalCredits: 0,
   totalUsd: 0,
@@ -356,6 +357,66 @@ await describe({
           + 'METERS line:',
           '  hf:zai-org/GLM-5.3-Flash: 1 call, in 300 out 40',
         ],);
+      },
+    },),
+
+    it({
+      name: 'PRINTS the NeuralWatt seats as free daily energy metered in watt-hours, with their tokens only and '
+        + 'no billed warning while no call was billed',
+      fn: async (ctx) => {
+        using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
+        printCost({
+          cost: {
+            ...NOTHING,
+            freeEnergy: [
+              seatOf({
+                overrides: {
+                  provider: 'neuralwatt',
+                  model: 'deepseek-v4.1-flash',
+                  promptTokens: 3_000,
+                  completionTokens: 400,
+                },
+              },),
+            ],
+          },
+        },);
+        expect(printed.lines,).toEqual([
+          'metered seats, priced at rates read 2026-09-11:',
+          '  none. No call in these logs went to the metered provider',
+          'metered run total: 0.00 credits',
+          'NeuralWatt seats, on the free daily energy, which bills no credits and is metered in watt-hours by the '
+          + 'energy ledger (neuralwattWh on the METERS line):',
+          '  deepseek-v4.1-flash: 1 call, in 3000 out 400',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'SAYS IN CAPITALS THAT NEURALWATT BILLED, with the USD its lines reported, since a billed request is '
+        + 'owner plan energy and the provider is dry for the rest of that UTC day',
+      fn: async (ctx) => {
+        using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
+        printCost({
+          cost: {
+            ...NOTHING,
+            freeEnergy: [
+              seatOf({
+                overrides: {
+                  provider: 'neuralwatt',
+                  model: 'glm-5.3-flash',
+                  calls: 2,
+                  costUsd: 0.0004,
+                  costedCalls: 2,
+                },
+              },),
+            ],
+          },
+        },);
+        expect(printed.lines.at(-1,),).toBe(
+          'NEURALWATT BILLED: 0.0004 USD across the calls of these logs came back with a cost, so the free daily '
+          + 'energy did not cover them and they were charged to the owner\'s plan; the energy ledger marks '
+          + 'NeuralWatt dry for the rest of that UTC day',
+        );
       },
     },),
 
