@@ -308,3 +308,68 @@ fn a_completion_step_failing_after_the_branch_advanced_says_the_commit_landed() 
     assert_eq!(git_text(&fixture, world.repo.as_path(), &["rev-parse", "refs/heads/main"]), world.prepared);
     remove(&fixture);
 }
+
+/// A copy of `inner` that runs in new user and PID namespaces, or nothing where the system refuses them.
+/// The copy keeps the program, arguments, environment and directory, so the wrapper inside sees the same repository
+/// under PIDs of its own.
+fn in_new_pid_namespace(inner: &Command) -> Option<Command> {
+    let namespace_flags: [&str; 4] = ["--user", "--map-root-user", "--pid", "--fork"];
+    let probe = Command::new("unshare")
+        .args(namespace_flags)
+        .args(["--mount-proc", "/usr/bin/true"])
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status();
+    if !probe.is_ok_and(|status| { return status.success(); }) {
+        return None;
+    }
+    let mut outer: Command = Command::new("unshare");
+    outer.args(namespace_flags).arg("--mount-proc").arg(inner.get_program()).args(inner.get_args());
+    outer.env_clear();
+    for (name, value) in inner.get_envs() {
+        if let Some(value) = value {
+            outer.env(name, value);
+        }
+    }
+    if let Some(directory) = inner.get_current_dir() {
+        outer.current_dir(directory);
+    }
+    return Some(outer);
+}
+
+/// A wrapper in another PID namespace cannot interpret a live owner's PID, so it leaves the landing alone (issues 1781
+/// and 1784); before the owner records named their namespace it judged the owner dead and recovered the transaction
+/// under the landing, and the landing then failed after its branch advanced.
+#[test]
+fn a_wrapper_in_another_pid_namespace_leaves_a_live_landing_alone() {
+    let fixture: Fixture = fixture("landing-foreign-namespace");
+    let world: World = World::build(&fixture);
+    let marker_directory: PathBuf = markers(&world);
+    let signal: String = format!("ref-updated:pause:{}", marker_directory.display());
+    let mut child: Child = spawn_child(&world, signal.as_str());
+    await_marker(marker_directory.join("ref-updated.reached").as_path(), &mut child);
+    let mut status_command: Command = bounded_for(
+        &fixture,
+        fixture.root.join("bin/git").as_path(),
+        wrapper_first_path(&fixture).as_os_str(),
+        "120",
+    );
+    status_command.current_dir(world.repo.as_path()).args(["status", "--porcelain=v1"]);
+    let Some(mut foreign) = in_new_pid_namespace(&status_command) else {
+        std::fs::write(marker_directory.join("ref-updated.release"), b"").expect("release");
+        finish(child);
+        eprintln!("skipped: this system does not allow a new user and PID namespace");
+        remove(&fixture);
+        return;
+    };
+    let observed = observe(&mut foreign, b"");
+    assert!(world.directory.exists(), "the wrapper of another namespace recovered a live transaction");
+    std::fs::write(marker_directory.join("ref-updated.release"), b"").expect("release");
+    let status: ExitStatus = finish(child);
+    assert!(status.success(), "the child failed; see child.log");
+    let result: String = std::fs::read_to_string(world.root.join("child-result.txt")).expect("the child's result");
+    assert!(result.starts_with("ok "), "the landing must complete: {result}; the foreign wrapper said {}", String::from_utf8_lossy(&observed.stderr));
+    assert_eq!(git_text(&fixture, world.repo.as_path(), &["rev-parse", "refs/heads/main"]), world.prepared);
+    remove(&fixture);
+}
