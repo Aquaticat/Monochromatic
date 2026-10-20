@@ -12,6 +12,7 @@ import {
 import {
   isJsonArray,
   isJsonRecord,
+  withoutTranslatorsNotes,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
   flattenSpace,
@@ -419,6 +420,55 @@ export function buildIntroducedDefectMessages(
     readonly identityContext?: string;
   },
 ): IntroducedDefectPromptPlan {
+  // THE PROBER IS SHOWN THE BASELINE, THE WINDOW AND EVERY REGION WITHOUT THE
+  // NOTES THE ARCHIVE'S TRANSLATORS LEFT EACH OTHER, as the critic and the
+  // panel whose issues the edit was cut for were (`critic-prompt.ts`): no
+  // reader sees one, so an edit may neither be faulted for dropping a note nor
+  // excused for keeping one. Only what is SHOWN is cut; the regions the plan
+  // numbers are those the caller passed, and the original's own comments stay
+  // in view.
+  /**
+   Texts whose comments are the original's own.
+   */
+  const originals = [
+    sourceText,
+    neighbouringSourceText ?? '',
+  ].join('\n',);
+  /**
+   The baseline translation as the prober reads it.
+   */
+  const baselineShown = withoutTranslatorsNotes({
+    text: baselineText,
+    original: originals,
+  },);
+  /**
+   The existing translation next door as the prober reads it.
+   */
+  const incumbentShown = withoutTranslatorsNotes({
+    text: neighbouringIncumbentText ?? '',
+    original: originals,
+  },);
+  /**
+   Each region's two texts as the prober reads them, in region order.
+   */
+  const regionsShown = regions.map(function shownRegion(region,): {
+    readonly region: RepairRegion;
+    readonly before: string;
+    readonly editorAfter: string;
+  } {
+    return {
+      region,
+      before: withoutTranslatorsNotes({
+        text: region.before,
+        original: originals,
+      },),
+      editorAfter: withoutTranslatorsNotes({
+        text: region.editorAfter,
+        original: originals,
+      },),
+    };
+  },);
+
   /**
    Fence no enclosed text can reproduce.
 
@@ -426,12 +476,15 @@ export function buildIntroducedDefectMessages(
    of them are arbitrary prose: a setext heading underline is an ordinary row
    of equals signs, and a translation may contain one. A fixed fence would let
    a region close its own block and have the rest of its text read as sheet
-   structure, which is how a corpus paragraph gets to invent a region.
+   structure, which is how a corpus paragraph gets to invent a region. Each
+   text counts as written and as shown, since cutting a note can join two runs
+   of fence characters.
    */
   const fence = selectFence({
     texts: [
       sourceText,
       baselineText,
+      baselineShown,
       // THE NEIGHBOURS COUNT TOWARDS THE FENCE like every other text this sheet
       // carries. They are arbitrary corpus prose, so a fence chosen without
       // them could be one a neighbouring paragraph reproduces, and that
@@ -440,8 +493,15 @@ export function buildIntroducedDefectMessages(
       // the hole the dynamic fence exists to close.
       neighbouringSourceText ?? '',
       neighbouringIncumbentText ?? '',
+      incumbentShown,
       identityContext ?? '',
       ...regions.flatMap(function toTexts(region,) {
+        return [
+          region.before,
+          region.editorAfter,
+        ];
+      },),
+      ...regionsShown.flatMap(function toShownTexts(region,) {
         return [
           region.before,
           region.editorAfter,
@@ -461,21 +521,24 @@ export function buildIntroducedDefectMessages(
    */
   const nearbyBlock = ((neighbouringSourceText === undefined)
       || (neighbouringSourceText === ''))
-      && ((neighbouringIncumbentText === undefined)
-        || (neighbouringIncumbentText === ''))
+      && (incumbentShown === '')
     ? ''
     : `${fence} NEARBY ORIGINAL, CONTEXT ONLY ${fence}
 ${neighbouringSourceText ?? ''}
 ${fence} NEARBY EXISTING TRANSLATION, CONTEXT ONLY ${fence}
-${neighbouringIncumbentText ?? ''}
+${incumbentShown}
 ${fence} ${NEARBY_RULE} ${fence}
 `;
 
   /**
    Rendered region blocks in numbering order.
    */
-  const blocks = regions.map(function toBlock(
-    region,
+  const blocks = regionsShown.map(function toBlock(
+    {
+      region,
+      before,
+      editorAfter,
+    },
     index,
   ) {
     return `${fence} REGION ${index + 1} ${fence}${
@@ -489,9 +552,9 @@ ${renderPriorIssues({
         : ''
     }
 ${fence} BEFORE ${String(index + 1,)} ${fence}
-${region.before}
+${before}
 ${fence} AFTER ${String(index + 1,)} ${fence}
-${region.editorAfter}`;
+${editorAfter}`;
   },);
 
   /**
@@ -508,7 +571,7 @@ ${region.editorAfter}`;
    */
   const communityBlock = communityRenderingsBlock({
     sourceText,
-    candidates: regions.flatMap(function toCandidates(
+    candidates: regionsShown.flatMap(function toCandidates(
       region,
       index,
     ): readonly RenderingCandidate[] {
@@ -540,7 +603,7 @@ ${region.editorAfter}`;
         content: `${identityBlock}${fence} ORIGINAL ${fence}
 ${sourceText}
 ${fence} BASELINE TRANSLATION ${fence}
-${baselineText}
+${baselineShown}
 ${nearbyBlock}${fence} REPLACED REGIONS ${fence}
 ${blocks.join('\n\n',)}
 ${communityBlock}${fence} END ${fence}`,

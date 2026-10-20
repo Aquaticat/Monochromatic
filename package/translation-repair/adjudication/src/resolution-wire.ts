@@ -18,6 +18,7 @@ import {
 import {
   isJsonArray,
   isJsonRecord,
+  withoutTranslatorsNotes,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { selectFence, } from '@monochromatic-dev/translation-repair-stage/ts';
 
@@ -212,14 +213,30 @@ export function buildResolutionMessages(
     },);
   },);
 
+  // THE CHECKER IS SHOWN THE REVISED TRANSLATION WITHOUT THE NOTES THE
+  // ARCHIVE'S TRANSLATORS LEFT EACH OTHER, as the critic and the panel that
+  // filed the issues were (`critic-prompt.ts`): no reader sees one, so a note
+  // may neither fix an issue nor leave it standing. Only what is SHOWN is cut;
+  // the claims' quotes are those of the stored text, and the original's own
+  // comments stay in view.
+  /**
+   The revised translation as the checker reads it.
+   */
+  const patchedShown = withoutTranslatorsNotes({
+    text: patchedText,
+    original: sourceText,
+  },);
+
   /**
    Fence no enclosed text can reproduce, chosen against the declared names
-   and the references too, since either is arbitrary page text.
+   and the references too, since either is arbitrary page text, and against
+   the revised translation as written and as shown.
    */
   const fence = selectFence({
     texts: [
       sourceText,
       patchedText,
+      patchedShown,
       identityContext ?? '',
       referenceContext ?? '',
       ...blocks,
@@ -257,7 +274,7 @@ export function buildResolutionMessages(
         content: `${identityBlock}${fence} ORIGINAL ${fence}
 ${sourceText}
 ${fence} REVISED TRANSLATION ${fence}
-${patchedText}
+${patchedShown}
 ${referenceBlock}${fence} ISSUES ${fence}
 ${blocks.join('\n\n',)}
 ${fence} END ${fence}`,
