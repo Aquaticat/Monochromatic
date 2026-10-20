@@ -42,8 +42,9 @@ export const WRITER_GRACE_BUILT_IN: string = 'WRITER GRACE built in: writer roun
 /**
  Refusal the run client raises while no provider key is set.
  */
-export const NO_KEY_REFUSAL: string = 'corpus-pass: TRANSLATION_REPAIR_SYNTHETIC_API_KEY, TRANSLATION_REPAIR_CHARM_HYPER_API_KEY, '
-  + 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY or TRANSLATION_REPAIR_OPENROUTER_API_KEY is not set; '
+export const NO_KEY_REFUSAL: string = 'corpus-pass: TRANSLATION_REPAIR_NEURALWATT_API_KEY, TRANSLATION_REPAIR_SYNTHETIC_API_KEY, '
+  + 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY, TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY '
+  + 'or TRANSLATION_REPAIR_OPENROUTER_API_KEY is not set; '
   + 'run under mise so sops injects it\n';
 
 /**

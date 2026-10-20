@@ -841,12 +841,14 @@ function entryClient(
 ): RunClient {
   return {
     providerMeterStates: async () => ({
+      neuralwatt: 'wet',
       synthetic: 'wet',
       bedrock: 'wet',
       hyper: 'wet',
       openrouter: 'wet',
     } as const),
     providerHolds: () => ({
+      neuralwatt: 0,
       synthetic: 0,
       bedrock: 0,
       hyper: 0,

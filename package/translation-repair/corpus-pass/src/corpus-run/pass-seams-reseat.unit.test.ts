@@ -69,6 +69,7 @@ const l = tagged({ tag: 'pass-seams-reseat-test', },);
  Every provider wet: the view each phase reads at its start.
  */
 const ALL_WET: BudgetView = {
+  neuralwatt: false,
   synthetic: false,
   bedrock: false,
   hyper: false,
@@ -81,6 +82,7 @@ const ALL_WET: BudgetView = {
  */
 const SYNTHETIC_DRY: BudgetView = {
   ...ALL_WET,
+  neuralwatt: true,
   synthetic: true,
 };
 
@@ -188,12 +190,14 @@ function viewChangingClient(
       return (counter.reads === 1) ? ALL_WET : later;
     },
     providerMeterStates: async () => ({
+      neuralwatt: 'wet',
       synthetic: 'wet',
       bedrock: 'wet',
       hyper: 'wet',
       openrouter: 'wet',
     } as const),
     providerHolds: () => ({
+      neuralwatt: 0,
       synthetic: held ? HOLD_MS : 0,
       bedrock: 0,
       hyper: 0,

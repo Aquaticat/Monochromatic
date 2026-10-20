@@ -149,6 +149,7 @@ export const UNASKED_CLIENT: ModelClient = {
  Dryness the reading answers with: Bedrock alone wet.
  */
 const BEDROCK_ALONE: BudgetView = {
+  neuralwatt: true,
   synthetic: true,
   bedrock: false,
   hyper: true,
@@ -159,6 +160,7 @@ const BEDROCK_ALONE: BudgetView = {
  Holds as the hook's gate reads them: Hyper held out a minute.
  */
 const HYPER_HELD: ProviderRecord<number> = {
+  neuralwatt: 0,
   synthetic: 0,
   bedrock: 0,
   hyper: 60_000,
@@ -169,6 +171,7 @@ const HYPER_HELD: ProviderRecord<number> = {
  Holds as the reading reads them, the minute having passed.
  */
 const NONE_HELD: ProviderRecord<number> = {
+  neuralwatt: 0,
   synthetic: 0,
   bedrock: 0,
   hyper: 0,

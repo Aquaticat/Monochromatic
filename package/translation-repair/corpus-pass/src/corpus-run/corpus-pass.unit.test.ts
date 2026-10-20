@@ -221,7 +221,7 @@ await describe({
             expect(run.stdout,).toBe('',);
             expect(run.stderr,).toBe(
               'corpus-pass: --bogus is not a flag this command reads. Usage: corpus-pass [--only <entry ids>] '
-              + '[--require-providers <providers of synthetic, bedrock, hyper, openrouter>] [--plan]\n',
+              + '[--require-providers <providers of neuralwatt, synthetic, bedrock, hyper, openrouter>] [--plan]\n',
             );
           },
         },),
@@ -378,7 +378,7 @@ await describe({
               '',
             ].join('\n',),);
             expect(run.stderr,).toBe(
-              'corpus-pass: --require-providers accepts only synthetic, bedrock, hyper, openrouter, and "foo" '
+              'corpus-pass: --require-providers accepts only neuralwatt, synthetic, bedrock, hyper, openrouter, and "foo" '
               + 'is none of them\n',
             );
           },

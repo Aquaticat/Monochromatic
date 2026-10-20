@@ -47,6 +47,7 @@ import {
  Bedrock and OpenRouter wet.
  */
 const BEDROCK_AND_OPENROUTER: BudgetView = {
+  neuralwatt: true,
   synthetic: true,
   bedrock: false,
   hyper: true,
@@ -57,6 +58,7 @@ const BEDROCK_AND_OPENROUTER: BudgetView = {
  No provider held out.
  */
 const NO_HOLDS = {
+  neuralwatt: 0,
   synthetic: 0,
   bedrock: 0,
   hyper: 0,
@@ -74,6 +76,7 @@ const DRY_HOLD_MS = 300_000;
  translate lane finds none (measured 2026-09-28 over all sixteen views).
  */
 const HYPER_AND_OPENROUTER_DRY: BudgetView = {
+  neuralwatt: true,
   synthetic: false,
   bedrock: false,
   hyper: true,
@@ -124,6 +127,7 @@ function viewClient(
         return view;
       },
       providerMeterStates: async () => ({
+        neuralwatt: 'wet',
         synthetic: 'wet',
         bedrock: 'wet',
         hyper: 'wet',
