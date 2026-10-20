@@ -213,10 +213,16 @@ since a run now would lose those seats again and spend OpenRouter credit on a bu
 
 ## Next
 
+The `zheermao19` read is recorded in the pass log of 2026-10-20:
+SETTLED with no class traced to code,
+on a short bench,
+its page losing several intensifiers and small words zheermao17's had kept.
+Gate g134 runs on w248 merged with main (`b2c89960ed`).
 Gate and land w247,
 w248 and w249,
 rebuild,
 set `FROZEN`,
-record the `zheermao19` read in the pass log,
 recalibrate the energy margin from the settled ledger lines,
-then go on with CuspariaKLSY and the rest of the rotation.
+then restart the rotation at `zheermao101` on the combined build,
+since a read counts only on its own build,
+and go on with CuspariaKLSY and the rest.
