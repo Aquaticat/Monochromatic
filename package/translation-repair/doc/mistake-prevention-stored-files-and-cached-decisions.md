@@ -28,6 +28,11 @@ five pinned keys were red there,
 and two version pins in corpus-pass,
 a package that declares none of the constants,
 stayed red until a later commit moved them (ledger M284).
+The cut of a note alone on a quoted line moved five versions because the run `zheermao15` had an empty slice-cache directory,
+read as a check that could not be made;
+a settled entry discards its own slice cache (`retireSettledEntryCache` in
+`corpus-pass/src/corpus-run/pass-entry-caches.ts`),
+so the directory of every settled run is empty and could never have shown a record (ledger B703).
 
 The rule:
 a commit changing a floor,
@@ -46,6 +51,10 @@ lists them,
 one search for each constant that moved (ledger M284).
 The search is added to the declaring packages' own run and does not replace it:
 a case that pins a key hashed from the version without naming the constant is red in the declaring package alone.
+A change rides inside a version only when no record has been written at that number,
+and the evidence for that is the `START tip=` line of every run log begun since the number was set,
+each tip read against the commit that set it;
+a settled run's empty slice-cache directory is no evidence either way (ledger B703).
 
 What enforces it:
 the key-shape tests (`block-pairing-question-key.unit.test.ts`,
