@@ -9,8 +9,9 @@
 //! // Validate reachable tree nodes and produce iterative traversal lists.
 //! ```
 
-/// Import the arena container and the node-kind enum the walker classifies.
+/// Import the arena container the walker indexes.
 use satteri_arena::{Arena, Mdast};
+/// Import the node-kind enum the walker classifies.
 use satteri_ast::mdast::MdastNodeType;
 
 /// Import the typed failure the walker returns for a malformed arena.

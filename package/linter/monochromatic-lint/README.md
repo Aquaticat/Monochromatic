@@ -444,6 +444,22 @@ preparing a package can need containers and network,
 which a linter does not start,
 so a missing artifact names the task that makes it.
 
+### Suppression record
+
+A closure that its callee requires carries the `expect` attribute,
+and every such attribute is listed here with the file,
+the closure it covers,
+and the true sentence its reason states.
+Configuration cannot replace these attributes:
+the callee's own parameter list rules out a named function,
+and the rule refuses comment directives.
+
+- `src/markdown_source.rs`:
+  the `catch_unwind` closure that runs the parser.
+  The attribute sits on the closure argument and reads
+  "catch_unwind accepts only a callable without parameters,
+  so the borrowed source and the parser options must be captured by a closure".
+
 ## Rust test sidecars
 
 `rust/tests-in-sidecars` requires unit tests to live in sidecar files.
