@@ -494,12 +494,46 @@ The rule is documented and registered
 (`package/linter/monochromatic-lint/README.md:274`,
 `doc/decision/rust-closure-lint-dylint.md:111`),
 so this is rule-registry or config-validation drift.
-Dispatched 2026-10-20 to subagent `5b28eefd`
-(scope:
-`package/linter/monochromatic-lint`,
-root `monochromatic-lint.config.jsonc`,
-`doc/troubleshooting/`),
-fixing per the standing pre-existing-issues directive.
+Correction 2026-10-20 (WR6):
+that hypothesis was wrong.
+Measured cause (subagent `5b28eefd`):
+a stale resolved binary.
+Bare-name lookup found published `monochromatic-lint` 0.2.0
+via a stale command-context PATH entry
+(`~/.local/share/mise/installs/cargo-monochromatic-lint/0.2.0/bin`),
+while `mise.lock` pins 0.3.0,
+whose rule registry registers `rust/avoidable-closure`
+(commit `4b786ab4ad`).
+0.2.0's compiled-in registry lacks both that rule
+and the removed `rust/no-anonymous-functions`.
+`mise run lint:monochromatic-lint` resolves 0.3.0
+and lints the same files clean.
+This is not the `deps-update-api-drift` class
+(the consumer config was ahead of the resolved binary).
+RESOLVED 2026-10-20 by subagent `5b28eefd`
+(commits on `origin/main`):
+`407481dedc` regression guard
+(the repository configuration names only registered rules,
+GFP-proven to fail on registry removal),
+`14edcbf712` semantic line breaks in
+`package/agent-harness-shared/advisor/README.md`
+(gate `--fix`,
+word sequence unchanged),
+`725640eb57` troubleshooting record in
+`doc/troubleshooting/mise-lock-pins-repo-tool-version.md`.
+593 nextest tests pass;
+markdown gate green on both advisor READMEs.
+Caveat:
+long-lived agent command contexts keep the stale PATH,
+so bare `monochromatic-lint` there still runs 0.2.0
+until the environment rebuilds;
+invoke through `mise run`.
+Follow-up dispatched 2026-10-20 to subagent `8bb5ee46`
+(`send_message` cannot resume finished subagents here,
+so it runs as a fresh agent with a self-contained brief):
+name the running binary version in the
+`Unknown built-in rule` startup diagnostic
+so a stale install self-identifies.
 
 ### 2026-10-20 transient auto-push rejection
 
