@@ -349,8 +349,21 @@ import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-pa
  (acf6ada60, e80301bf3). None of the 92 pinned English archives has two notes on one line or a carriage return, so no
  sheet text changes, and no record had been written at 21 when they landed: the only run since it was set,
  CuspariaKLSY18, runs a6a0ed7dc0, which predates it.
+
+ Version 22 covers the translate lane's judges no longer seeing a note between translators
+ (`document-structure/src/translators-note.ts`): the candidate selection slate named its block of the surrounding existing
+ translation "SURROUNDING EXISTING TRANSLATION (English), context only: ... the ORIGINAL of THIS passage ...", which a search
+ of the whole label took for the original, so the neighbours' English was shown whole and every note in it counted as the
+ original's own, the candidates beside it keeping theirs; the label's name decides now, the words before its first comma, and
+ the block is cut (12e147ae40). The coverage sheet that insertion admission reads for this lane cuts the notes from the
+ translation (89df3896d4). The key hashes the version, the shape of the run and the texts, not the sheet, so a record written
+ under the old sheet would be served under the new. Runs zheermao16 and CuspariaKLSY19 started on `a5dc23c5bb`, which holds 21
+ (set in `aa0ab6ff0`), so a record may stand at 21 and the check that would let the change ride inside it, no slice-cache record
+ written after it shown beside a control that finds records, was not made, so the number moves, as the repair slice and refine
+ versions move for the same sheets. Over the 92 pinned English archives 10 hold a note their original lacks (34 notes in all),
+ so a sheet changes for at most those 10 entries. No record has been written at 22, which this change sets first.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 21;
+export const TRANSLATE_SLICE_CACHE_VERSION = 22;
 
 /**
  Models the translate lane seats.

@@ -387,6 +387,15 @@ import type { LaneText, } from '@monochromatic-dev/translation-repair-translate-
  them between blank lines hold one, so a sheet changes for at most those 10 entries; no other entry's sheet moves. The
  archive block review has no cache version of its own, the block it reviews stands whatever it finds, and the other
  versions stay, since none of their sheets is this one. No record has been written at 28, which this change sets first.
+
+ Rides inside 28 too: the sheets of the settlement's other judges cut the notes between translators as well
+ (`document-structure/src/translators-note.ts`): the introduced-defect prober and the resolution checker that look over a
+ polish (12e147ae40, 5498ee860b), the candidate selection slate of the objection correction, whose current English and
+ objections were shown whole because a search of the whole label took them for the original (12e147ae40), and the coverage
+ sheet (89df3896d4). The key hashes the version, the run shape and the texts, not the sheet. Of the 12 run logs in the agent
+ directory, none started on a tip that holds `6a28f54be`, where 28 was set: the newest tip, `a5dc23c5bb` of zheermao16 and
+ CuspariaKLSY19, does not, and the others started on earlier ones, so none could write a record at 28. That is the evidence of
+ the logs' `START tip=` lines and `git merge-base --is-ancestor`, and not a search of any slice-cache directory.
  */
 export const CONSOLIDATE_CACHE_VERSION = 28;
 
