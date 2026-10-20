@@ -554,15 +554,24 @@ Recurrence:
 ## B701: tests that name one seat asked broke whenever a sheet's text changed (the seat-window family)
 
 Status:
-open.
-Two members are fixed on 2026-10-20 (UTC):
+fixed on 2026-10-20 (UTC),
+and the census is closed.
+Two members were fixed first:
 the consolidate deep-reply case by `20a379f77a`,
 and the corpus-pass contest re-seat case by `a169580740`.
-A census of the other scripted cases that name a seat was run by an agent in a scratch worktree;
-its result is not integrated and not recorded here,
-so the family may have more members than these two.
+The census of the other scripted cases that name a seat or an order is integrated:
+nine members across `stage`,
+`corpus-pass`,
+`probe` and `translate-stage`,
+fixed by `38b8c172b8` (five test-only pins) and `1305066161` (four seams that now take `fanOut`),
+with an automatic merge repaired in `1001a94d91`.
+Gate g120 on `1001a94d91` ran green,
+with 2561 pass and 0 fail,
+and the three commits landed in `dc4982c9cb` over `main` at `86fec6f872`.
+The guard against a next member is proposed and not decided (the paragraph "Open" of this entry names its shapes).
 No production caller passes `fanOut`,
-so production behaviour and every cache version are unchanged.
+so production behaviour is unchanged,
+and no cache version constant moved.
 
 The first round of a stage asks a window of quorum plus one seats from the bench,
 rotated by a hash of the prompt (`package/translation-repair/stage/src/stage-fanout-window.ts`).
@@ -595,12 +604,139 @@ since the reader-protection scope had changed the house rule every contest sheet
 `runPassContest` now takes an optional `fanOut` it hands the contest as it stands,
 and the case passes the whole bench the way the consolidate case does.
 
+The census:
+an agent ran it in a scratch worktree at `20a379f77a`,
+to find every scripted case that expects a specific seat or order from a window the sheet text rotates.
+Its method was a probe,
+not a reading of the tests.
+A scratch edit of `benchRotation` read a salt from the environment and shifted the rotation start by 0 to 9 seats,
+and the unit suite of every family package ran under each of the ten salts.
+Ten salts cover every start of the largest bench in the family,
+which holds nine seats,
+so they stand for every wording a sheet can hash to.
+The edit was reverted before any commit,
+and the later sweep did the same through a scratch loader that rewrites `benchRotation` as its module loads,
+so no production source reads the environment.
+Only `stage`,
+`corpus-pass`,
+`probe` and `translate-stage` held a failing case of their own.
+The `bench` and `coverage-census` suites also failed in the first sweep,
+on a line the first loader printed to the stderr of the built commands,
+which their cases compare (the paragraph "Open" of this entry).
+Salt 0 shifts nothing,
+so a case red under it is red with no probe:
+the contest case of `pass-seams-reseat.unit.test.ts` was already red on `20a379f77a`.
+
+The five test-only pins (`38b8c172b8`,
+no production code):
+- `stage-quorum.unit.test.ts`,
+  "counts exactly half of an even roster as quorum":
+  red under salts 2,
+  3,
+  6 and 7;
+  the window held both healthy seats and left a silent seat unasked.
+  It now asks the whole bench.
+- `stage-windowed-rounds.unit.test.ts`,
+  the case that counts the bench seats it may not ask as out of reach:
+  red under salt 5,
+  since a refused seat outside the window is never seen refused.
+  It now asks the whole bench.
+- `pass-consistency-ask.unit.test.ts`,
+  "ASKS EVERY SEAT AND HANDS BACK THE BALLOTS IN ROSTER ORDER":
+  red under salts 2,
+  5 and 8;
+  the control's gather hands voices back rotated.
+  The control's gather now starts at the second seat.
+- `pass-consistency-carry-run-off.unit.test.ts`,
+  "RUNS OFF A LONE LEADER WITH THE CANDIDATES NEXT BEHIND IT":
+  red under salts 1,
+  2,
+  3,
+  7,
+  8 and 9;
+  the scene hands out its split in the order the asks arrive,
+  and the record lists ballots in roster order.
+  The case is about the split,
+  so it compares the choices sorted.
+- `audit-sensitivity-print.unit.test.ts` in `probe`,
+  "PRINTS a DEGRADED line for each finding when a voice is lost":
+  red under salts 1,
+  4 and 7;
+  it named the heard voices in roster order,
+  while the report lists them in the order the clean rendering's prompt rotates the bench to.
+  The order is now derived from that prompt.
+
+The four seams that now take `fanOut` (`1305066161`):
+- `pass-seams-reseat.unit.test.ts`,
+  the contest case:
+  red under salts 0,
+  6,
+  7 and 8.
+- The same file,
+  the insertion case:
+  red under salts 4,
+  5 and 6.
+- The same file,
+  the preparation case:
+  red under salts 1,
+  2 and 3.
+- `translate-deep-reply.unit.test.ts`,
+  the case that finishes on the voices that wrote ordinary renderings:
+  red under salts 3,
+  4 and 9.
+  The one self-vote the findings record belongs to a judge the window of four of six may leave out.
+
+`runTranslateStage`,
+`runTranslateRepairs`,
+`produceTranslateSlate` and `judgeTranslateSlate` take an optional `fanOut`
+for the translate stage;
+`prepareDocumentPairWithRoster`,
+`buySectionPairing` and `prepareBlockPairing` take it for the pairing preparation;
+`runPassContest`,
+`admitPassInsertions` and `runPassPreparation` take it for the corpus pass.
+It is passed with the conditional spread the sibling stages use.
+After the change all ten salts pass for every one of these cases and for every other test of the three packages.
+
+The merge that duplicated `fanOut`:
+the two census commits (`514d4f0038` and `f5cfe42cf1` in the scratch worktree) were written on `20a379f77a`,
+before `a169580740` gave `runPassContest` an optional `fanOut` and made the re-seat contest case pass
+`fanOut: 'whole-bench'`.
+Picked onto `c3f3ea5532` as `38b8c172b8` and `1305066161`,
+the automatic merge reported no conflict and kept both copies:
+two `@param fanOut` lines,
+two destructured bindings,
+two `fanOut` fields in the parameter type
+and two conditional spreads in `pass-contest.ts`,
+and two `fanOut` keys in the options of the contest case.
+Git merged two identical additions placed at different lines without asking.
+`1001a94d91` keeps the copy already on `main` in both files,
+so `pass-contest.ts` is as on `main` and the contest case passes the whole bench once.
+
 Open:
-the census.
-It was handed to an agent in a scratch worktree at `20a379f77a`,
-to find every scripted case that expects a specific seat to be asked
-without `fanOut: 'whole-bench'` and without a pinned `benchStart`.
-This entry stays open until its result is integrated and recorded here and each member it finds is fixed.
+the guard,
+so that a next member is found by a check and not by a sheet edit.
+Two shapes are proposed,
+and none is decided.
+
+The first is the rotation sweep as an expensive mise task:
+the suite of every family package,
+once per salt.
+Its loader depends on the shape of the bundled code.
+The scratch `salt-loader.mjs` rewrites the source form `return hash % size;`,
+or matches the minified bundle with a regular expression on `.reduce(function(acc,byte){...},2166136261)%size`.
+A bundler that emits another shape,
+or a change of the hash,
+leaves the salt doing nothing and the sweep passing,
+so a sweep needs a positive control that must go red before its green counts.
+The first loader printed a marker line to the stderr of the built commands,
+which failed the `bench` and `coverage-census` cases that compare that stderr;
+the later sweep ran silent,
+and all forty runs of the four packages that had failed exited 0.
+
+The second is a test-only override seam in `stage`,
+like `StageSettings.editorBenchStart` for the editor seats.
+It needs no loader and no bundle shape,
+and it adds a setting to production code that only tests use.
 
 Recurrence:
 B627 and B631,
@@ -610,3 +746,7 @@ Those rules pinned a seat set by an injected start of the rotation
 the first-round windows of the other stages had no such seam,
 and two seams did not take `fanOut`.
 The prevention rule now names `fanOut: 'whole-bench'` as the second way.
+The merge that duplicated `fanOut` is a second occurrence of the unconflicted merge that held a rule twice
+(M238),
+and "Work merged from parallel briefs" in `mistake-prevention-shell-edits-commits-and-agents.md`
+now covers commits picked onto a tree that already carries an overlapping change.
