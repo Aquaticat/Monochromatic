@@ -369,8 +369,9 @@ its "Next" list is still the queue the merge went ahead of.
   The cache versions of the stages they alter moved in `28f4b8fc75`,
   the pinned keys in `5db53c0056`,
   and the declared-name follow-up (the whole-name arrival rule) joined in `6bf9a7c62f`.
-  The tree stands at `a169580740` (`w220`),
-  whose last commit lets the corpus-pass contest seam ask the whole bench and moves two version pins.
+  The tree stood at `a169580740` (`w220`),
+  whose last commit lets the corpus-pass contest seam ask the whole bench and moves two version pins
+  (the bullet on the census names where it stands now).
   The ledger holds each as its own entry:
   the heading series that lost its numbers (B695),
   the consolidation under the vote minimum (B696),
@@ -424,9 +425,51 @@ its "Next" list is still the queue the merge went ahead of.
   The glossary comment now tells the original's own comments,
   which the judges still weigh,
   from the notes between translators that B698 keeps from them.
+- The seat-window census (B701) is integrated and closed.
+  It found nine members across `stage`,
+  `corpus-pass`,
+  `probe` and `translate-stage`
+  by running every family suite under the rotation shifted by 0 to 9 seats:
+  five test-only pins (`38b8c172b8`) and four seams that now take `fanOut` (`1305066161`).
+  Both were written on `20a379f77a` and picked off `c3f3ea5532`;
+  the automatic merge kept two copies of `fanOut` in `pass-contest.ts` and in the contest case without a conflict,
+  and `1001a94d91` keeps the copy already on `main`.
+  Gate g120 on `1001a94d91` (`summary.txt` in `~/temp/agent/tr-fan/s245/split/gate-g120`)
+  reads `suite totals: 2561 pass, 0 fail`,
+  and the three commits landed in `dc4982c9cb` over `main` at `86fec6f872`.
+  No production caller passes `fanOut` and no cache constant moved,
+  but the signatures of corpus-pass changed,
+  so the frozen digest `c003a383…` of the `zheermao15` run is not the digest of the next build.
+  The merge rule of "Work merged from parallel briefs" in
+  `package/translation-repair/doc/mistake-prevention-shell-edits-commits-and-agents.md` now covers picked commits.
+- The owner confirmed both veto-open adoptions of the round on 2026-10-20 (UTC) through the question tool:
+  "Count self-votes (Recommended)" for B696
+  (rejected:
+  "Exclude self-votes"),
+  and "Keep the notes (Recommended)" for B698
+  (rejected:
+  "Drop the notes").
+- `zheermao15` ended at its `DONE processed=` line and was read at 13:20 UTC on 2026-10-20
+  ([the pass log of 2026-10-20](../planning/translation-repair-openrouter-2026-09-03-2026-10-20.md#zheermao15-read-2026-10-20-1320-utc-settled-in-460-min-of-pass-one-class-and-its-fix-is-in-progress)):
+  SETTLED,
+  15 slices,
+  the translate lane changed 11 and the page pass 9,
+  the repair lane none,
+  in 46.0 min of pass.
+  Kimi-K3 and Qwen threw after Synthetic went dry.
+  The letter and the email were checked against the three photos and are faithful;
+  the frozen `desc` and "tried to end her life" are not defects.
+  It found one class:
+  the note between translators in the reply email was lost,
+  because the archive block review replaced the block before the lanes ran
+  and the carry had no note to carry.
+  The fix is in progress in the worktree `w223` off `dc4982c9cb`;
+  it has not landed.
 - Open:
-  the seat-window census (B701)
-  and the read of `zheermao15` (both in the "Next" list).
+  the note fix (landing needs its own gate),
+  and the guard of B701,
+  whose two shapes (a rotation sweep task,
+  a test-only override seam in `stage`) are proposed and not decided.
 
 #### Next
 
@@ -450,6 +493,10 @@ its "Next" list is still the queue the merge went ahead of.
     `shi_Yumiaoya`
     and `TianqiChen666`,
     each read before the next launch.
+    `zheermao101` has been read (one class,
+    the lost note between translators),
+    so the next launch is `CuspariaKLSY18`,
+    and the item "The next action" says on which build.
     Synthetic and Hyper are dry and Hyper will not be recharged,
     so the restarted rotation runs mostly on OpenRouter (16.13 USD at 00:05 UTC on 2026-10-20).
     The bundler guard landed on `main`
@@ -501,19 +548,29 @@ its "Next" list is still the queue the merge went ahead of.
     so the typography and page-check suites run after any change to `mise.lock`.
 5.  The next action,
     in order:
-    - Integrate the result of the seat-window census (B701),
-      which an agent ran in a scratch worktree from `20a379f77a`,
-      in a new worktree off `a169580740`.
-      The census is open:
-      its first return,
-      `f5cfe42cf1` ("seams take fanOut so four cases that name a seat ask the whole bench"),
-      is not in this tree and its `runPassContest` change overlaps the one in `a169580740`,
-      so integrating it meets a conflict to resolve;
-      more cases that name a seat without `fanOut: 'whole-bench'` or a pinned `benchStart` may exist.
-    - Read `zheermao15` when its `DONE processed=` line arrives,
-      against the original and the archive,
-      then launch `CuspariaKLSY18` if it shows no class.
+    - Land the note fix (the class of the `zheermao15` read;
+      the worktree `w223` off `dc4982c9cb`)
+      after its gate:
+      the fix is in progress,
+      red test first,
+      and the gate runs the build,
+      `lint-oxlint`,
+      `lint-types` and `test-unit` steps of every family package
+      and then the source scans,
+      as g120 did.
+    - Take a new frozen digest from the gated build,
+      since the census and the note fix change the signatures of corpus-pass.
+    - Launch `CuspariaKLSY18` on that build,
+      not a repeat of `zheermao101`,
+      whose read found nothing else on that page.
+      Read it at its `DONE processed=` line against the original and the archive before the next launch.
+    - The guard of B701 stays open and undecided:
+      the rotation sweep as an expensive mise task,
+      or a test-only override seam in `stage`.
     - Done:
+      the seat-window census (B701) integrated in `dc4982c9cb`,
+      the owner's confirmation of B696 and B698,
+      the read of `zheermao15`,
       both corrective commit comments
       (205736551 on `7071a8eb5b8f585a9bdf3ac6b88fd4a94d51ddd7`,
       205736554 on `28f4b8fc755c0b9fcc8bd00b7b9f211d946c67b3`),
