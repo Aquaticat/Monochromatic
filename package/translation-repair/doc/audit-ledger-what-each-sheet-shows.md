@@ -667,7 +667,11 @@ fixed on 2026-10-20 (UTC),
 red `b7ee52b99f` (rendering-audit) and `7d3de9bc2b` (translate-floor),
 fix `999f9a5a07` (rendering-audit) and `4ab33543fd` (translate-floor),
 versions `89ff91202e`,
-source scans held to the new modules `b81c866f25`.
+source scans held to the new modules `b81c866f25`,
+gated as g126b
+(2578 `[PASS]` lines,
+no `[FAIL]` line)
+and landed in `e429659e0b`.
 
 Found in the run `zheermao16`,
 slice 13 of zheermao101.
