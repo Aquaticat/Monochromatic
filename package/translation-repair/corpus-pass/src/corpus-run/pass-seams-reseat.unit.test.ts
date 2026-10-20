@@ -523,6 +523,8 @@ async function admissionAsked({ later, }: { readonly later: BudgetView; },): Pro
     overlap: 1,
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     entryId: 'CatEntry',
+    // The control must ask the seat the dry-out takes, so the whole roster is asked, as in the contest case.
+    fanOut: 'whole-bench',
     stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return asked;
@@ -561,6 +563,8 @@ async function preparationAsked({ later, }: { readonly later: BudgetView; },): P
     targetText: `${ARCHIVE}\n\nIt dreamed of fish.`,
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     outsideReads: NO_OUTSIDE_READS,
+    // The control must ask the seat the dry-out takes, so the whole roster is asked in the pairing round, as in the contest case.
+    fanOut: 'whole-bench',
     stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return asked;

@@ -19,6 +19,7 @@ import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adju
 import type {
   BlockPair,
   DefinitionLabelPair,
+  FanOutMode,
   PairedDocumentRecord,
   StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
@@ -123,6 +124,11 @@ export type PairedPreparation = {
  block round, handing it the roster it is asked of; none keeps the given one
  (ledger X12)
 
+ @param fanOut - seats a pairing round asks: the window of quorum plus one
+ by default, or the whole bench a fixture scripting every seat asks for,
+ since the window is rotated by the sheet text and a sheet edit elsewhere
+ moves which seats it holds
+
  @param stageSettings - straggler windows and contest ledger the entry file
  read for this launch (`StageSettings`)
 
@@ -152,6 +158,7 @@ export async function prepareDocumentPairWithRoster(
     sealArchiveOriginal,
     pictureReadings,
     beforeSection,
+    fanOut,
     stageSettings,
     sourceEntryInfo,
   }: ForeignBorrowed<{
@@ -173,6 +180,7 @@ export async function prepareDocumentPairWithRoster(
     readonly pictureReadings?: ReadonlyMap<string, PairedReading>;
     readonly sourceEntryInfo?: unknown;
     readonly beforeSection?: () => Promise<BenchSeating>;
+    readonly fanOut?: FanOutMode;
     readonly stageSettings: StageSettings;
   }>,
 ): Promise<PairedPreparation> {
@@ -215,6 +223,7 @@ export async function prepareDocumentPairWithRoster(
     exchangeTimeoutMs,
     l: pl,
     ...((sectionCache === undefined) ? {} : { sectionCache, }),
+    ...((fanOut === undefined) ? {} : { fanOut, }),
     stageSettings,
   },);
   /**
@@ -266,6 +275,7 @@ export async function prepareDocumentPairWithRoster(
       l: pl,
       ...((pairingCache === undefined) ? {} : { pairingCache, }),
       ...((pictureReadings === undefined) ? {} : { pictureReadings, }),
+      ...((fanOut === undefined) ? {} : { fanOut, }),
       stageSettings,
     },);
     /* oxlint-enable no-await-in-loop */

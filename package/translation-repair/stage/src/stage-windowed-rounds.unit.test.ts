@@ -381,9 +381,13 @@ await describe({
          Bench the quorum is taken over, two seats wider than the six asked.
          */
         const wider = BENCH.length + 2;
+        // The whole bench is asked, so the seats the script refuses are the seats the round saw refused: a window of quorum plus
+        // one, rotated by the prompt, may leave a refused seat unasked, and then the count of seats out of reach falls short of the seats the script refused.
+
         const oneRefused = await runBench({
           script: { failsOnce: [], failsAlways: [], unreadable: [], refused: BENCH.slice(0, 1,), },
           quorumOver: wider,
+          fanOut: 'whole-bench',
         },);
         expect(oneRefused.unreachable,).toBe(3,);
         expect(oneRefused.quorum.short,).toBe(false,);
@@ -392,6 +396,7 @@ await describe({
         const threeRefused = await runBench({
           script: { failsOnce: [], failsAlways: [], unreadable: [], refused: BENCH.slice(0, 3,), },
           quorumOver: wider,
+          fanOut: 'whole-bench',
         },);
         expect(threeRefused.unreachable,).toBe(5,);
         expect(threeRefused.quorum,).toStrictEqual({

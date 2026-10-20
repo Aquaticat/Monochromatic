@@ -235,6 +235,9 @@ function oneSeatAnswers({ seat, }: { readonly seat: RosterModelId; },): SeatBeha
 
  @param seatTally - the run's record of what each seat did, when a case needs seats it has withheld
 
+ @param benchStart - seat the rotation starts at in place of the sheet's own, for a case that names the order the gather hands its
+ voices back in; absent where the case compares the gather with asking, which rotates by the sheet too
+
  @returns The gather over the same sheet and bench
 
  @example
@@ -246,9 +249,11 @@ async function gatheredBy(
   {
     behave,
     seatTally,
+    benchStart,
   }: {
     readonly behave: SeatScript;
     readonly seatTally?: ReturnType<typeof createSeatTally>;
+    readonly benchStart?: number;
   },
 ): ReturnType<typeof gatherStageVoices<unknown>> {
   return await gatherStageVoices({
@@ -263,6 +268,8 @@ async function gatheredBy(
     l: levelCapturingLogger({ lines: [], },),
     graceMs: HANG_STOP_MS,
     ...((seatTally === undefined) ? {} : { seatTally, }),
+    // Conditional spread keeps the pinned seat absent instead of undefined.
+    ...((benchStart === undefined) ? {} : { benchStart, }),
   },);
 }
 
@@ -286,8 +293,10 @@ await describe({
               lines: [],
               asked,
             },);
-            // Control: the gather itself hands its voices back in the order the bench is rotated to, not the roster's.
-            const gathered = await gatheredBy({ behave: everySeatAnswers, },);
+            // Control: the gather itself hands its voices back in the order the bench is rotated to, not the roster's. The rotation is
+            // pinned to the second seat, since the sheet's own start is zero for some wording of the sheet, and then the order is the
+            // roster's and the control says nothing.
+            const gathered = await gatheredBy({ behave: everySeatAnswers, benchStart: 1, },);
             expect(gathered.voices.map(function seatOf(voice,): string {
               return voice.modelId;
             },),).not.toEqual(BENCH,);

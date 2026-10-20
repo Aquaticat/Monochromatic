@@ -132,6 +132,11 @@ function carryingPassFindings(
  leaving it out (ledger X19): the readers the pass's entry file builds over
  its environment in a run
 
+ @param fanOut - seats a pairing round asks: the window of quorum plus one
+ by default, or the whole bench a fixture scripting every seat asks for,
+ since the window is rotated by the sheet text and a sheet edit elsewhere
+ moves which seats it holds
+
  @param stageSettings - straggler windows and contest ledger the entry file
  read for this launch (`StageSettings`)
 
@@ -157,6 +162,7 @@ export async function preparePassEntry(
     readPictures,
     beforeItem,
     outsideReads,
+    fanOut,
     stageSettings,
   }: ForeignBorrowed<PassPrepareRequest>,
 ): Promise<PassPreparation> {
@@ -395,6 +401,8 @@ export async function preparePassEntry(
       ...((sourceEntryInfo === undefined) ? {} : { sourceEntryInfo, }),
       ...((pictureReadings === undefined) ? {} : { pictureReadings, }),
       ...((beforeItem === undefined) ? {} : { beforeSection: beforeItem, }),
+      // Conditional spread keeps the knob absent instead of undefined.
+      ...((fanOut === undefined) ? {} : { fanOut, }),
       stageSettings,
     },);
   }

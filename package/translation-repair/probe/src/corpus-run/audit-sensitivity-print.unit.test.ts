@@ -56,6 +56,20 @@ const ASKED = rotatedBench({
     },
   },),
 },);
+/**
+ The auditors of the clean arm in the order its report lists them, taken the same way from the prompt the audit builds for the clean
+ rendering, which is another prompt and so another start; a case that silences one auditor of the clean arm names the voices it hears
+ by this order and not by the roster's.
+ */
+const ASKED_CLEAN = rotatedBench({
+  modelIds: RUN_MODELS.checkerModelIds,
+  messages: buildRenderingAuditMessages({
+    subject: {
+      sourceText: AUDIT_SOURCE_TEXT,
+      candidateText: nonNullishOrThrow(AUDIT_ARMS[1],).candidateText,
+    },
+  },),
+},);
 const ASKED_FIRST = nonNullishOrThrow(ASKED[0],);
 const ASKED_SECOND = nonNullishOrThrow(ASKED[1],);
 const ASKED_THIRD = nonNullishOrThrow(ASKED[2],);
@@ -260,8 +274,13 @@ await describe({
             },),).toEqual([
               'SENSITIVITY arm=clean expected=agreement at neither tier heard=2/3 corroborated=0 agreed=0 '
               + 'agreedVoices=0 near=0 oracleVoices=0 findings=2',
-              `  VOICE clean ${FIRST} verdict=no-defect-found claims=0 oracleHits=0 dropped=0`,
-              `  VOICE clean ${SECOND} verdict=no-defect-found claims=0 oracleHits=0 dropped=0`,
+              ...ASKED_CLEAN
+                .filter(function isHeard(modelId,): boolean {
+                  return modelId !== THIRD;
+                },)
+                .map(function heardVoice(modelId,): string {
+                  return `  VOICE clean ${modelId} verdict=no-defect-found claims=0 oracleHits=0 dropped=0`;
+                },),
               `  DEGRADED clean stage-voice-lost (runRenderingAudit ${THIRD})`,
               '  DEGRADED clean stage-roster-incomplete (runRenderingAudit 2/3)',
             ],);

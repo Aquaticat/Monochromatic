@@ -26,6 +26,7 @@ import {
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { floorTranslateVoices, } from './translate-floor.ts';
 import {
+  type FanOutMode,
   gatherStageVoices,
   type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
@@ -126,6 +127,11 @@ export type ProducedSlate = {
 
  @param l - pipeline logger
 
+ @param fanOut - seats a round asks: the window of quorum plus one by
+ default, or the whole bench a fixture scripting every seat asks for, since
+ the window is rotated by the sheet text and a sheet edit elsewhere moves
+ which seats it holds
+
  @param stageSettings - straggler windows and contest ledger the entry file
  read for this launch (`StageSettings`)
 
@@ -156,6 +162,7 @@ export async function produceTranslateSlate(
     signal,
     perCallTimeoutMs,
     l,
+    fanOut,
     stageSettings,
   }: ForeignBorrowed<{
     readonly client: ModelClient;
@@ -176,6 +183,7 @@ export async function produceTranslateSlate(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly fanOut?: FanOutMode;
     readonly stageSettings: StageSettings;
   }>,
 ): Promise<ProducedSlate> {
@@ -228,6 +236,8 @@ export async function produceTranslateSlate(
       .grace
       .writerMs,
     l: tl,
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((fanOut === undefined) ? {} : { fanOut, }),
   },);
 
   /**
