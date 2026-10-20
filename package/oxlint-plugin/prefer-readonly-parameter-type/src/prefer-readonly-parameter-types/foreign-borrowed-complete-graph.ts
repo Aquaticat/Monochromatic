@@ -5,14 +5,14 @@
  */
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { SourceFile, } from 'typescript/unstable/ast';
-import { isCallExpression, } from 'typescript/unstable/ast/is';
+import type { SourceFile, } from 'typescript/ast';
+import { isCallExpression, } from 'typescript/ast/is';
 
 import { callersAreEnumerable, } from './effect-caller-enumeration.ts';
 import type {
   Project,
   SignatureUsage,
-} from 'typescript/unstable/sync';
+} from 'typescript/sync';
 
 import type { EffectAnalysisBudget, } from './effect-analysis-budget.ts';
 import { parameterSlotTable, } from './effect-parameter-slots.ts';

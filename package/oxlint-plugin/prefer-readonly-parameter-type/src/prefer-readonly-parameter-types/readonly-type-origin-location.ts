@@ -6,7 +6,7 @@ import {
   sep,
 } from 'node:path';
 
-import type { Node, } from 'typescript/unstable/ast';
+import type { Node, } from 'typescript/ast';
 import {
   isArrayLiteralExpression,
   isArrowFunction,
@@ -19,8 +19,8 @@ import {
   isReturnStatement,
   isTypeAliasDeclaration,
   isVariableDeclaration,
-} from 'typescript/unstable/ast/is';
-import type { Project, } from 'typescript/unstable/sync';
+} from 'typescript/ast/is';
+import type { Project, } from 'typescript/sync';
 
 import { ancestorDirectories, } from './ancestor-directories.ts';
 import { callableReturnsBinding, } from './readonly-returned-binding.ts';

@@ -6,11 +6,11 @@
 
 import { dirname, } from 'node:path';
 
-import type { SourceFile, } from 'typescript/unstable/ast';
+import type { SourceFile, } from 'typescript/ast';
 import {
   API,
   type Project,
-} from 'typescript/unstable/sync';
+} from 'typescript/sync';
 
 import { effectProjectFingerprint, } from './effect-project-fingerprint.ts';
 import { externalProjectConfigPath, } from './external-project-config.ts';

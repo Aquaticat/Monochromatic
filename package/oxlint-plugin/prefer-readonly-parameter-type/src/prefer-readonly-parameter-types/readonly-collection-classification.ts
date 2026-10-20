@@ -8,7 +8,7 @@ import type {
   Checker,
   Type,
   TypeReference,
-} from 'typescript/unstable/sync';
+} from 'typescript/sync';
 
 import { combineClassifications, } from './readonly-classification-combine.ts';
 import {

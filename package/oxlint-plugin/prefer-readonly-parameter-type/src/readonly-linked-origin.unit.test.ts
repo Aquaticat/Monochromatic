@@ -14,7 +14,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { isParameterDeclaration, } from 'typescript/unstable/ast/is';
+import { isParameterDeclaration, } from 'typescript/ast/is';
 
 import {
   classifyReadonlyType,

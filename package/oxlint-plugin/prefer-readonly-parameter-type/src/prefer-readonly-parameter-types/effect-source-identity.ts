@@ -9,8 +9,8 @@
  @module
  */
 
-import type { SourceFile, } from 'typescript/unstable/ast';
-import type { Project, } from 'typescript/unstable/sync';
+import type { SourceFile, } from 'typescript/ast';
+import type { Project, } from 'typescript/sync';
 
 /**
  Address a source's summaries are stored and looked up under.

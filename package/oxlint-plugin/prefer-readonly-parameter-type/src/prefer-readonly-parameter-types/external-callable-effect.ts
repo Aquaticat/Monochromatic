@@ -9,8 +9,8 @@ import type {
   CallExpression,
   Node,
   SourceFile,
-} from 'typescript/unstable/ast';
-import type { Project, } from 'typescript/unstable/sync';
+} from 'typescript/ast';
+import type { Project, } from 'typescript/sync';
 
 import type { ExternalOmissionRecord, } from './effect-external-omission.ts';
 import {

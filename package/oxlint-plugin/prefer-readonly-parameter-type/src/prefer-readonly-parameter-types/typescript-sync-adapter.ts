@@ -11,7 +11,7 @@ import { version as typescriptVersion, } from 'typescript';
 import {
   API,
   type Snapshot,
-} from 'typescript/unstable/sync';
+} from 'typescript/sync';
 
 import { resetSemanticEffectCaches, } from './effect-cache-lifecycle.ts';
 import {

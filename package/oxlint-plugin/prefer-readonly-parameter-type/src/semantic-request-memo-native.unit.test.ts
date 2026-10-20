@@ -11,7 +11,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { API, } from 'typescript/unstable/sync';
+import { API, } from 'typescript/sync';
 
 import {
   findNodeAtOffset,

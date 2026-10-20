@@ -6,7 +6,7 @@
 
 import { existsSync, } from 'node:fs';
 
-import type { Project, } from 'typescript/unstable/sync';
+import type { Project, } from 'typescript/sync';
 
 /**
  Declaration suffix and possible shipped runtime siblings.

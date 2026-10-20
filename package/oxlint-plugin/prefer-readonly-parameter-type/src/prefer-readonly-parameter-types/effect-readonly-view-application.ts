@@ -8,13 +8,13 @@ import type {
   CallExpression,
   Expression,
   Node,
-} from 'typescript/unstable/ast';
+} from 'typescript/ast';
 import {
   type Checker,
   type Project,
   SignatureKind,
   type Type,
-} from 'typescript/unstable/sync';
+} from 'typescript/sync';
 
 import { callableDeclaration, } from './effect-call-resolution.ts';
 import { expressionOrigins, } from './effect-binding-origins.ts';

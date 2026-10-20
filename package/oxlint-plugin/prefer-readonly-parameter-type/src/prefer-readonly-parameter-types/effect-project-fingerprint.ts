@@ -15,8 +15,8 @@ import {
 } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { Project, } from 'typescript/unstable/sync';
-import type { SourceFile, } from 'typescript/unstable/ast';
+import type { Project, } from 'typescript/sync';
+import type { SourceFile, } from 'typescript/ast';
 
 import { ancestorDirectories, } from './ancestor-directories.ts';
 import { isDeclarationFileName, } from './declaration-file-name.ts';

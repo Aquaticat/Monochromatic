@@ -18,15 +18,15 @@ import type {
   Node,
   ParameterDeclaration,
   VariableDeclaration,
-} from 'typescript/unstable/ast';
+} from 'typescript/ast';
 import {
   isArrayBindingPattern,
   isBindingElement,
   isIdentifier,
   isObjectBindingPattern,
   isVariableDeclarationList,
-} from 'typescript/unstable/ast/is';
-import type { Project, } from 'typescript/unstable/sync';
+} from 'typescript/ast/is';
+import type { Project, } from 'typescript/sync';
 
 import { expressionElementOrigins, } from './effect-element-origin.ts';
 import { expressionValueOrigins, } from './effect-expression-provenance.ts';

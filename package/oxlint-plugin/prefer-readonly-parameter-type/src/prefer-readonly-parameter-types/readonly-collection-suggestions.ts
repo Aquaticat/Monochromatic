@@ -9,11 +9,11 @@ import type {
   Fixer,
 } from '@oxlint/plugins';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import type { ParameterDeclaration, } from 'typescript/unstable/ast';
+import type { ParameterDeclaration, } from 'typescript/ast';
 import {
   isIdentifier,
   isTypeReferenceNode,
-} from 'typescript/unstable/ast/is';
+} from 'typescript/ast/is';
 
 import { classifyReadonlyType, } from './readonly-classifier.ts';
 import type { ReadonlySuggestion, } from './readonly-suggestion.ts';

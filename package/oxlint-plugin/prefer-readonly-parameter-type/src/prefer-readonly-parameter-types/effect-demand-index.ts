@@ -4,7 +4,7 @@
  @module
  */
 
-import type { SourceFile, } from 'typescript/unstable/ast';
+import type { SourceFile, } from 'typescript/ast';
 
 import { scanDirectSummaries, } from './direct-source-scan.ts';
 import type {

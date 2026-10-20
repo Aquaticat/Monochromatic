@@ -8,8 +8,8 @@ import {
   type Checker,
   type Project,
   SymbolFlags,
-} from 'typescript/unstable/sync';
-import type { Node, } from 'typescript/unstable/ast';
+} from 'typescript/sync';
+import type { Node, } from 'typescript/ast';
 import {
   isArrayLiteralExpression,
   isAssertionExpression,
@@ -25,7 +25,7 @@ import {
   isSpreadAssignment,
   isSpreadElement,
   isVariableDeclaration,
-} from 'typescript/unstable/ast/is';
+} from 'typescript/ast/is';
 
 import { packagedCallableOrigins, } from './effect-packaged-callable-origins.ts';
 import { expressionElementOrigins, } from './effect-element-origin.ts';

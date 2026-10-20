@@ -7,9 +7,9 @@
 import type {
   Node,
   SourceFile,
-} from 'typescript/unstable/ast';
-import { isStringLiteral, } from 'typescript/unstable/ast/is';
-import type { Project, } from 'typescript/unstable/sync';
+} from 'typescript/ast';
+import { isStringLiteral, } from 'typescript/ast/is';
+import type { Project, } from 'typescript/sync';
 
 import { isDeclarationFileName, } from './declaration-file-name.ts';
 import type { EffectProjectFingerprint, } from './effect-project-fingerprint.ts';

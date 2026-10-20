@@ -7,19 +7,19 @@
 import type {
   CallExpression,
   Expression,
-} from 'typescript/unstable/ast';
+} from 'typescript/ast';
 import {
   isCallExpression,
   isIdentifier,
   isInterfaceDeclaration,
   isMethodSignatureDeclaration,
-} from 'typescript/unstable/ast/is';
+} from 'typescript/ast/is';
 import {
   type Checker,
   type Project,
   type Type,
   TypeFlags,
-} from 'typescript/unstable/sync';
+} from 'typescript/sync';
 
 import {
   memberCallReceiver,

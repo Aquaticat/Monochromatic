@@ -29,14 +29,14 @@
  @module
  */
 
-import type { Node, } from 'typescript/unstable/ast';
+import type { Node, } from 'typescript/ast';
 import {
   isCallExpression,
   isDecorator,
   isNewExpression,
   isTaggedTemplateExpression,
   isTemplateExpression,
-} from 'typescript/unstable/ast/is';
+} from 'typescript/ast/is';
 
 /**
  Sentinel for a node that invokes nothing.

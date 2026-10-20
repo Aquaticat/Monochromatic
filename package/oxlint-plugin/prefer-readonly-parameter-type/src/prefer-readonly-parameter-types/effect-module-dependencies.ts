@@ -8,7 +8,7 @@ import {
   type Node,
   type SourceFile,
   SyntaxKind,
-} from 'typescript/unstable/ast';
+} from 'typescript/ast';
 import {
   isCallExpression,
   isExportDeclaration,
@@ -17,8 +17,8 @@ import {
   isImportTypeNode,
   isLiteralTypeNode,
   isStringLiteral,
-} from 'typescript/unstable/ast/is';
-import type { Project, } from 'typescript/unstable/sync';
+} from 'typescript/ast/is';
+import type { Project, } from 'typescript/sync';
 
 import { collectAstNodes, } from './effect-summary-model.ts';
 

@@ -15,7 +15,7 @@
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { version as typescriptVersion, } from 'typescript';
-import type { API, } from 'typescript/unstable/sync';
+import type { API, } from 'typescript/sync';
 
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
 

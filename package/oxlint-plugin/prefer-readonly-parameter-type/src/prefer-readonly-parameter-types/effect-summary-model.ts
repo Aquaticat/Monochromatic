@@ -12,7 +12,7 @@ import type {
   FunctionTypeNode,
   MethodSignatureDeclaration,
   Node,
-} from 'typescript/unstable/ast';
+} from 'typescript/ast';
 import type {
   EffectSlot,
   ParameterIndex,
@@ -26,7 +26,7 @@ import {
   isFunctionTypeNode,
   isMethodSignatureDeclaration,
   isPropertyAccessExpression,
-} from 'typescript/unstable/ast/is';
+} from 'typescript/ast/is';
 
 /**
  Sentinel when expression root does not resolve to a callable slot.

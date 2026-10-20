@@ -11,7 +11,7 @@ import {
 } from 'node:fs';
 import { join, } from 'node:path';
 
-import type { Project, } from 'typescript/unstable/sync';
+import type { Project, } from 'typescript/sync';
 
 import {
   contentDigest,
