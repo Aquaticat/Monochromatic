@@ -317,20 +317,26 @@ fn each_decision_leaves_one_line_in_the_audit_file() {
         &["stash", "--no-enforce-worktree", "--include-untracked"],
     );
     assert_eq!(hatch.code, Some(0), "{}", stderr_of(&hatch));
-    let text: String = std::fs::read_to_string(&audit).expect("audit file after the hatch");
-    assert_eq!(text.lines().count(), 2, "{text}");
-    assert!(text.lines().nth(1).is_some_and(|line| line.contains("\"outcome\":\"hatch\"")), "{text}");
+    let after_hatch: String = std::fs::read_to_string(&audit).expect("audit file after the hatch");
+    assert_eq!(after_hatch.lines().count(), 2, "{after_hatch}");
+    assert!(
+        after_hatch.lines().nth(1).is_some_and(|line| { return line.contains("\"outcome\":\"hatch\""); }),
+        "{after_hatch}"
+    );
     let linked: PathBuf = fixture.root.join("linked");
     git(&fixture, repo.as_path(), &["worktree", "add", "--quiet", "-b", "side", "../linked"]);
     let allowed: Observed = run_wrapped(&fixture, linked.as_path(), &["switch", "topic"]);
     assert_eq!(allowed.code, Some(0), "{}", stderr_of(&allowed));
-    let text: String = std::fs::read_to_string(&audit).expect("audit file after a clean run");
-    let last: &str = text.lines().last().expect("a last line");
+    let after_clean: String = std::fs::read_to_string(&audit).expect("audit file after a clean run");
+    let last: &str = after_clean.lines().last().expect("a last line");
     for field in ["\"worktree\":\"linked\"", "\"form\":\"SwitchMove\"", "\"outcome\":\"allowed\"", "\"dirty\":false"] {
         assert!(last.contains(field), "{field} missing from {last}");
     }
     let read_only: Observed = run_wrapped(&fixture, repo.as_path(), &["status", "--short"]);
     assert_eq!(read_only.code, Some(0), "{}", stderr_of(&read_only));
-    assert_eq!(std::fs::read_to_string(&audit).expect("audit file").lines().count(), text.lines().count());
+    assert_eq!(
+        std::fs::read_to_string(&audit).expect("audit file").lines().count(),
+        after_clean.lines().count()
+    );
     remove(&fixture);
 }
