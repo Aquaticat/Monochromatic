@@ -483,15 +483,8 @@ fn the_message_of_a_refused_device_names_each_adapter_the_order_used_and_every_r
     let listed = integrated_listed_first();
     let order =
         choose_adapters(&listed, &variables(None, Some("high"))).expect("hardware is listed");
-    let report = super::SelectionReport {
-        seen: listed.iter().map(AdapterSummary::to_string).collect(),
-        order: order
-            .indexes
-            .iter()
-            .map(|index| listed[*index].to_string())
-            .collect(),
-        variables: variables(None, Some("high")),
-    };
+    let report =
+        super::SelectionReport::new(&listed, &order.indexes, variables(None, Some("high")));
     let message = GpuDeviceError::DeviceRefused {
         refusals: vec![
             "Adapter A: limit max_storage_buffers_per_shader_stage".to_string(),

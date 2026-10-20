@@ -175,15 +175,30 @@ impl Variables {
 impl fmt::Display for Variables {
     /// `WGPU_ADAPTER_NAME="x" or not set, WGPU_POWER_PREF="y" or not set`.
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let write_one =
-            |formatter: &mut fmt::Formatter<'_>, name: &str, value: &Option<String>| match value {
-                Some(text) => write!(formatter, "{name}=\"{text}\""),
-                None => write!(formatter, "{name} not set"),
-            };
-        write_one(formatter, NAME_VARIABLE, &self.adapter_name)?;
+        write_variable(formatter, NAME_VARIABLE, &self.adapter_name)?;
         write!(formatter, ", ")?;
-        return write_one(formatter, POWER_VARIABLE, &self.power_preference);
+        return write_variable(formatter, POWER_VARIABLE, &self.power_preference);
     }
+}
+
+/// What:
+///  Write one variable as `NAME="value"`, or `NAME not set`.
+/// Why:
+///  `Variables` shows both variables the same way.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function writeVariable(name: string, value: string | undefined): string;
+/// ```
+fn write_variable(
+    formatter: &mut fmt::Formatter<'_>,
+    name: &str,
+    value: &Option<String>,
+) -> fmt::Result {
+    return match value {
+        Some(text) => write!(formatter, "{name}=\"{text}\""),
+        None => write!(formatter, "{name} not set"),
+    };
 }
 
 /// What:
@@ -318,6 +333,35 @@ impl AdapterOrder {
 }
 
 /// What:
+///  The candidates with the adapters of one kind moved to the front;
+///  each group keeps the loader's order.
+/// Why:
+///  `WGPU_POWER_PREF=low` and `high` move a kind first and drop nothing,
+///  so the other kind stays behind as the next adapter to try.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function kindFirst(adapters: AdapterSummary[], candidates: number[], kind: DeviceType): number[];
+/// ```
+fn kind_first(
+    adapters: &[AdapterSummary],
+    candidates: &[usize],
+    kind: wgpu::DeviceType,
+) -> Vec<usize> {
+    let mut front: Vec<usize> = Vec::new();
+    let mut back: Vec<usize> = Vec::new();
+    for index in candidates {
+        if adapters[*index].device_type == kind {
+            front.push(*index);
+        } else {
+            back.push(*index);
+        }
+    }
+    front.extend(back);
+    return front;
+}
+
+/// What:
 ///  `choose_adapters` decides which adapters may be used and in which order.
 ///  `&[T]` is a borrowed slice (a read-only view of an array).
 ///  `Result<T, E>` is a value or an error (a function that may throw).
@@ -351,7 +395,6 @@ pub fn choose_adapters(
             }
         },
     };
-    let seen: Vec<String> = adapters.iter().map(AdapterSummary::to_string).collect();
     // The name keeps the adapters whose lowercase name contains the lowercase value, as wgpu's helper does.
     let mut matching: Vec<usize> = Vec::new();
     for (index, adapter) in adapters.iter().enumerate() {
@@ -373,11 +416,7 @@ pub fn choose_adapters(
         }
     }
     if candidates.is_empty() {
-        let report = SelectionReport {
-            seen,
-            order: Vec::new(),
-            variables: variables.clone(),
-        };
+        let report = SelectionReport::new(adapters, &[], variables.clone());
         if variables.adapter_name.is_none() {
             return Err(GpuDeviceError::NoHardwareAdapter { report });
         }
@@ -389,12 +428,13 @@ pub fn choose_adapters(
             matched: refused_kinds,
         });
     }
-    // `sort_by_key` is stable: equal keys keep the loader's order.
     match power {
-        Some(PowerOrder::IntegratedFirst) => candidates
-            .sort_by_key(|index| adapters[*index].device_type != wgpu::DeviceType::IntegratedGpu),
-        Some(PowerOrder::DiscreteFirst) => candidates
-            .sort_by_key(|index| adapters[*index].device_type != wgpu::DeviceType::DiscreteGpu),
+        Some(PowerOrder::IntegratedFirst) => {
+            candidates = kind_first(adapters, &candidates, wgpu::DeviceType::IntegratedGpu);
+        }
+        Some(PowerOrder::DiscreteFirst) => {
+            candidates = kind_first(adapters, &candidates, wgpu::DeviceType::DiscreteGpu);
+        }
         Some(PowerOrder::LoaderOrder) | None => {}
     }
     return Ok(AdapterOrder {
@@ -444,6 +484,32 @@ fn listing(names: &[String]) -> String {
 
 /// The common tail of the messages that concern the choice.
 impl SelectionReport {
+    /// What:
+    ///  Describe every listed adapter,
+    ///  and the adapters at `order` (indexes into the list) in that order.
+    /// Why:
+    ///  The same description serves every error that concerns the choice.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function newReport(adapters: AdapterSummary[], order: number[], variables: Variables): SelectionReport;
+    /// ```
+    pub fn new(adapters: &[AdapterSummary], order: &[usize], variables: Variables) -> Self {
+        let mut seen: Vec<String> = Vec::new();
+        for adapter in adapters {
+            seen.push(adapter.to_string());
+        }
+        let mut used: Vec<String> = Vec::new();
+        for index in order {
+            used.push(adapters[*index].to_string());
+        }
+        return Self {
+            seen,
+            order: used,
+            variables,
+        };
+    }
+
     /// What:
     ///  The sentence block with the adapters seen,
     ///  the order used,
@@ -684,12 +750,12 @@ pub fn open_hardware_device() -> Result<HardwareDevice, GpuDeviceError> {
     // const variables = { adapterName: env.WGPU_ADAPTER_NAME, powerPreference: env.WGPU_POWER_PREF };
     // ```
     let variables = Variables::from_environment();
-    if let Some(value) = &variables.power_preference {
-        if parse_power_order(value).is_none() {
-            return Err(GpuDeviceError::BadPowerPreference {
-                value: value.clone(),
-            });
-        }
+    if let Some(value) = &variables.power_preference
+        && parse_power_order(value).is_none()
+    {
+        return Err(GpuDeviceError::BadPowerPreference {
+            value: value.clone(),
+        });
     }
     // What: a current-thread tokio runtime runs the two wgpu futures to completion; `map_err` turns its error into ours.
     // Why: wgpu's adapter and device requests are async; tokio is already a dependency of the application.
@@ -764,15 +830,7 @@ pub fn open_hardware_device() -> Result<HardwareDevice, GpuDeviceError> {
             }
         }
     }
-    let report = SelectionReport {
-        seen: summaries.iter().map(AdapterSummary::to_string).collect(),
-        order: choice
-            .indexes
-            .iter()
-            .map(|index| summaries[*index].to_string())
-            .collect(),
-        variables,
-    };
+    let report = SelectionReport::new(&summaries, &choice.indexes, variables);
     return Err(GpuDeviceError::DeviceRefused { refusals, report });
 }
 
