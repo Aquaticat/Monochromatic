@@ -1822,6 +1822,16 @@ that is verification, not a decision for the user.
   when the incoming tree touches no modified path. Also fix: an explicit-path commit with no index file yet fails
   with "copying the index failed: No such file or directory". Not decided, ask before doing: guarding `reset`
   (mixed) and `git mv`-state loss through it. Then mutation scopes, container gate, release 0.2.5.
+  SUPERSEDED the same hour by the user (mid-turn message): "Reject every discarding form of everything in every
+  worktree when things are dirty. Reject every discarding form of everything in main worktree even when things are
+  not dirty." Reading adopted: a form that can overwrite or delete uncommitted state by itself (restore, checkout
+  with paths or -f/-p/--ours/--theirs, switch -f/--discard-changes, reset anything but --soft, clean, stash that
+  changes state, rm -f, mv -f, checkout-index -f, read-tree --reset, and --abort of merge/rebase/cherry-pick/revert/
+  am) is rejected in the main worktree always, and in a linked worktree when it is dirty (clean: tracked changes or
+  untracked files; others: tracked changes). HEAD-moving checkout/switch is rejected in any worktree only when dirty.
+  Changes behavior: stash, clean and reset --hard are no longer free in a dirty linked worktree. Escape hatch stays
+  `--no-enforce-worktree` (directly after the subcommand for commands without a table). The 'GFP' restore routine
+  (`git checkout -- file`) now needs a linked worktree or the hatch.
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and
