@@ -605,6 +605,11 @@ IDE_NATIVE_MCP_PORT=9378 mise run //package/desktop-app/ide:inspect:native dark 
 IDE_NATIVE_MCP_PORT=9379 mise run //package/desktop-app/ide:inspect:native light scroll
 ```
 
+The variable `IDE_NATIVE_MCP_PORT` in this command and in the later `inspect:native` commands of this file chose the port of
+Slint's MCP server.
+The task no longer builds that server (removed on 2026-10-20),
+so the variable has no effect and a repeat of a command leaves it out.
+
 - Fixture:
   `scroll`,
   a 203-line `fixture.ts` opened at start.
@@ -632,9 +637,11 @@ IDE_NATIVE_MCP_PORT=9379 mise run //package/desktop-app/ide:inspect:native light
   `click` of `package/cli/nested-wayland-session`).
 - Hover uses the Slint MCP tool `move_pointer`,
   which moves the toolkit pointer,
-  because the control protocol has no plain pointer move.
+  because the control protocol had no plain pointer move.
   Its `wheel` command with zero notches moved the seat pointer,
   but the divider did not show hover afterwards in a control run.
+  As of 2026-10-20 the control protocol has `move X Y`, a pointer move with no button,
+  and hover is made with it: a `move` over a tree row of the disposable project showed the row's hover fill.
 - A frame is the compositor's `screenshot`,
   saved once two screenshots 250 ms apart are byte-identical.
 - Frames with a focused text input are picked from 12 samples taken 120 ms apart:

@@ -48,6 +48,8 @@ if (!liveRoot || (statSync(liveRoot).mode & 0o077) !== 0 || statfsSync(liveRoot)
 const origin = process.cwd();
 demandCurrentCompositor();
 const artifact = mkdtempSync(join(privateRoot, 'ide-idle-cost-'));
+// build.rs embeds target/crate-licenses.json, which the notices task writes; the disposable target directory needs its copy.
+if (!existsSync(join(cache, 'crate-licenses.json'))) copyFileSync(join(origin, 'target/crate-licenses.json'), join(cache, 'crate-licenses.json'));
 const source = join(artifact, 'package');
 cpSync(origin, source, { recursive: true, filter: path => !['target', '.git', 'node_modules'].includes(relative(origin, path).split(sep)[0]) });
 mkdirSync(join(source, 'target'), { recursive: true });

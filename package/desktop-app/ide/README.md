@@ -4706,23 +4706,40 @@ The guard tool stops keeping lines,
 stops waiting for the end of the stream,
 and reports the lines on a clean shutdown,
 and observes the named test fail each time.
-`mise run //package/desktop-app/ide:inspect:log-stall <cache> [cargo] [seconds] [port]`
+`mise run //package/desktop-app/ide:inspect:log-stall <cache> [cargo] [seconds]`
 runs the IDE in the nested compositor with every application record on
 and its standard output on a FIFO that is never read,
 moves the caret with key presses for 30 s,
-and reads from the IDE's own records the longest pause between two keys the window handled;
-it also records how long the window's Slint MCP server,
-which runs on the event loop,
-takes to answer.
+and reads from the IDE's own records the longest pause between two keys the window handled.
+It also photographs the compositor every 200 ms (`screenshot`, which composites the latest frame the IDE committed)
+and counts how often the picture changed and for how long it stood still:
+a moving or blinking caret redraws the window on its event loop,
+so a blocked event loop leaves the picture still.
+A window that never appeared counts as a stall of both.
+Until 2026-10-20 the check asked the window's Slint MCP server for its window list instead;
+the build with that server is gone (see [Inspecting the running window](#inspecting-the-running-window)).
 The same sources with the writer replaced by plain standard output are the control.
 On 2026-10-06,
 at a load average near 90 on 16 processors,
-the shipped build handled 494 keys with a longest pause of 2.2 s and answered every probe within 5 s,
+the shipped build handled 494 keys with a longest pause of 2.2 s and answered every MCP probe within 5 s,
 and the control handled 8 keys,
 then paused 31.8 s and left 6 probes unanswered
 (`~/temp/agent/ide-log-stall-RMpmMv/results.json`).
-A pause of 5 s or more fails the shipped build;
-single slower answers occur on a busy host without any log involved.
+On 2026-10-20,
+at a load average near 11 on 24 processors,
+the shipped build handled 573 keys with a longest pause of 81 ms,
+and its picture changed in 143 of 144 photographs with a longest still time of 263 ms;
+the control mapped no window in 120 s and handled no key,
+because the log it writes before its first frame (about 80 KB with every application record on) already fills the
+64 KiB pipe buffer, so the control stalls in startup and the picture check sees no window rather than a frozen one
+(`~/temp/agent/ide-log-stall-jyzKKf/results.json`).
+The picture probe itself was checked on a release build that was stopped with `SIGSTOP` and continued with `SIGCONT`
+while the same key presses ran:
+19 changes in 20 photographs while running,
+0 in 20 while stopped,
+and 20 in 21 after it continued.
+A pause or a still picture of 5 s or more fails the shipped build;
+single slower redraws occur on a busy host without any log involved.
 
 A bare `RUST_LOG=debug` also turns on the debug records of every library:
 the log up to the first window grew from about 60 KB to about 747 KB,
@@ -5217,6 +5234,52 @@ and a debug build of wgpu-core reads a thread-local value when it frees a device
 which aborted the process at exit before this (see `doc/planning/ide-gpu-snapshot-harness.md`,
 section "Stage 2").
 
+### Inspecting the running window
+
+No build of the IDE contains Slint's MCP server (`--features slint/mcp`, removed on 2026-10-20 on the owner's answer).
+Its screenshot tool draws with Slint's software renderer,
+so any build that carried it linked the CPU renderer that this package forbids.
+Every check that looks at the window now does so through the repository's nested compositor
+(`package/cli/nested-wayland-session`),
+which composites the IDE's frames on the GPU and gives the checks pictures, input, an element tree, and the log:
+
+Pictures come from the control command `screenshot PATH` (a PNG of the latest committed frame)
+and `record DIR FPS bmp` (a steady 60 Hz sequence, as `inspect:cadence` uses).
+
+Input comes from `click`, `move` (a pointer move with no button, which gives the window enter, motion,
+and leave events and so its hover state),
+`button down|up`, `drag`, `scroll`, `wheel`, `key`, and `type`.
+The MCP tool `move_pointer` is `move`.
+
+The element tree comes from the command `a11y`,
+which prints one record per accessible element of the window
+(`depth`, `role`, `name`, `states`, screen `bounds`),
+read over AT-SPI from the tree Slint's `accessibility` feature publishes through AccessKit.
+The compositor serves that bus only when started with `--accessibility`,
+which `inspect:native` does;
+the measuring tasks leave it off so they time the application as shipped.
+On 2026-10-20 it returned 40 elements for a project with five tree rows:
+the application, the frame, the `Project files` landmark, the tree and each row by file name with its `selected`
+and `focused` states and bounds, the `Sidebar width` slider, the file path label, and the `Source code` entry.
+After a click on a row, a second `a11y` showed that row as `selected` and the screenshot showed its file.
+
+State the window does not draw comes from the IDE's own log (`RUST_LOG=ide_app=debug,monochromatic_ide=debug`),
+which `inspect:idle-cost`, `inspect:watch-limit`, `inspect:log-stall`, and the bundle checks read.
+
+What the server gave that these do not:
+reading any property of any Slint element by its element id,
+and invoking any callback by id.
+`a11y` shows only what the toolkit publishes as accessible (role, name, states, bounds),
+and the compositor has no command that invokes an element's default action.
+No script in this package used those two tools;
+the native tests that need them use `ElementHandle` of `i-slint-backend-testing` in the test process.
+
+`mise run //package/desktop-app/ide:inspect:software-renderer` runs `cargo tree` over every feature of the package
+and fails if the software renderer is in the graph.
+It also runs the same query with `--features slint/renderer-software` and with `--features slint/mcp`,
+and fails unless both reach the renderer,
+so an empty answer cannot come from a query that cannot see it.
+
 ### What the executable carries
 
 `build.rs` embeds these files of `target/<profile>/runtime` and of the package,
@@ -5594,9 +5657,9 @@ and `package/music-player/desktop-app/share/applications/`:
   through Slint's winit backend hook,
   as the sibling `launcher.rs` files do.
   Runs with a non-winit `SLINT_BACKEND` keep Slint's own backend and get no app id;
-  a run with `SLINT_MCP_PORT` (debug inspection) installs the same backend and gets the app id
-  (the inspection server starts when the launcher installs the platform;
-  `inspect:native` on 2026-10-20 showed `set_app_id("monochromatic.ide")` in the Wayland log and the server listening).
+  `inspect:native` runs the same backend and gets the app id
+  (it showed `set_app_id("monochromatic.ide")` in the Wayland log on 2026-10-20,
+  and the compositor's `windows` command lists `app-id=monochromatic.ide`).
 - `Icon=accessories-text-editor`,
   a stock name of the Icon Naming Specification present in this host's breeze,
   breeze-dark,

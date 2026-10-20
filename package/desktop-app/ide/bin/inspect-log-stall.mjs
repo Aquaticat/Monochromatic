@@ -47,6 +47,8 @@ const liveRoot = process.env.XDG_RUNTIME_DIR;
 if (!liveRoot || (statSync(liveRoot).mode & 0o077) !== 0 || statfsSync(liveRoot).type !== TMPFS_MAGIC) throw new Error('XDG_RUNTIME_DIR must name a private memory-backed directory for the live session files');
 demandCurrentCompositor();
 const artifact = mkdtempSync(join(privateRoot, 'ide-log-stall-'));
+// build.rs embeds target/crate-licenses.json, which the notices task writes; the disposable target directory needs its copy.
+if (!existsSync(join(cache, 'crate-licenses.json'))) copyFileSync(join(origin, 'target/crate-licenses.json'), join(cache, 'crate-licenses.json'));
 const source = join(artifact, 'package');
 cpSync(origin, source, { recursive: true, filter: path => !['target', '.git', 'node_modules'].includes(relative(origin, path).split(sep)[0]) });
 mkdirSync(join(source, 'target'), { recursive: true });
@@ -268,7 +270,7 @@ const [current, synchronous] = results;
 // moved. A pause or a still picture of 5 s counts as a stall. A busy host can delay single redraws by seconds,
 // so a stall needs 5 s, and slower answers are recorded in results.json but do not decide the check.
 const describe = item => item.keysHandled + ' keys handled, longest pause ' + item.longestInputPauseMs + ' ms; window shown: ' + item.windowShown;
-const describePicture = item => item.pictureChanges + ' picture changes in ' + item.photographs + ' photographs, longest still ' + item.longestStillMs + ' ms';
+const describePicture = item => !item.windowShown ? 'no window was mapped in 120 s, so no photograph was taken' : item.pictureChanges + ' picture changes in ' + item.photographs + ' photographs, longest still ' + item.longestStillMs + ' ms';
 const stalled = item => !item.windowShown || item.keysHandled === 0 || item.longestInputPauseMs >= 5000;
 const stillPicture = item => !item.windowShown || item.longestStillMs === null || item.longestStillMs >= 5000;
 const checks = [
