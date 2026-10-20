@@ -79,7 +79,9 @@ The groups that follow name the main ones.
   (`doc/decision/translation-repair-neuralwatt-provider.md`).
   A durable ledger by UTC day,
   a hold taken from the matrix mean times a margin before each call and replaced by the measured figure at settlement,
-  and a mark that ends the day for the provider when a request comes back with a cost.
+  and no stop on a reported cost,
+  since NeuralWatt reports a nominal cost on free-energy requests too
+  (the `SPEND` line still carries it).
   Names:
   `createNeuralWattLedger`,
   `neuralWattLedgerFromEnv`,

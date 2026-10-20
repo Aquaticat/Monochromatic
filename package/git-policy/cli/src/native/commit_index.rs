@@ -160,6 +160,13 @@ pub fn initialize_commit_index(
     selection: &IndexSelection,
 ) -> Result<(), GitFailure> {
     let copy_failure = |error: std::io::Error| { return GitFailure(format!("copying the index failed: {error}")); };
+    // A repository nothing was ever staged in has no index file, which Git reads as an empty index.
+    if !real_index.exists() {
+        run_git_checked(
+            context,
+            &indexed_request(cwd, &["read-tree".to_string(), "--empty".to_string()], Some(real_index), None),
+        )?;
+    }
     copy_index_with_timestamps(real_index, indexes.captured_index.as_path()).map_err(copy_failure)?;
     if selection.mode == TransactionMode::Index {
         copy_index_with_timestamps(indexes.captured_index.as_path(), indexes.commit_index.as_path())

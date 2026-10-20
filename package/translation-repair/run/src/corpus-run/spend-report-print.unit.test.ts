@@ -362,7 +362,7 @@ await describe({
 
     it({
       name: 'PRINTS the NeuralWatt seats as free daily energy metered in watt-hours, with their tokens only and '
-        + 'no billed warning while no call was billed',
+        + 'no cost line while no call reported a cost',
       fn: async (ctx) => {
         using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
         printCost({
@@ -392,8 +392,8 @@ await describe({
     },),
 
     it({
-      name: 'SAYS IN CAPITALS THAT NEURALWATT BILLED, with the USD its lines reported, since a billed request is '
-        + 'owner plan energy and the provider is dry for the rest of that UTC day',
+      name: 'SAYS THE NOMINAL COST NEURALWATT REPORTED IS NOT PLAN SPEND, with the USD its lines reported, since the '
+        + 'provider reports a cost on free-energy requests too and the provider stays wet',
       fn: async (ctx) => {
         using printed = divertingConsoleLog({ sinon: ctx.sinon, },);
         printCost({
@@ -413,9 +413,9 @@ await describe({
           },
         },);
         expect(printed.lines.at(-1,),).toBe(
-          'NEURALWATT BILLED: 0.0004 USD across the calls of these logs came back with a cost, so the free daily '
-          + 'energy did not cover them and they were charged to the owner\'s plan; the energy ledger marks '
-          + 'NeuralWatt dry for the rest of that UTC day',
+          'NeuralWatt nominal cost: 0.0004 USD reported across the calls of these logs; NeuralWatt reports a cost on '
+          + 'free-energy requests too, so this is not plan spend, which only the plan energy line at the end of a run '
+          + 'measures',
         );
       },
     },),

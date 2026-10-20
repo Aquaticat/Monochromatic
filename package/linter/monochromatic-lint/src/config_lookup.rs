@@ -10,6 +10,8 @@
 
 /// Import typed parsing and setup failures.
 use crate::config_error::ConfigError;
+/// Import the measured staleness hint that names a stale resolved binary.
+use crate::config_pin::stale_binary_hint;
 /// Import the block model and parser that turn each configuration file into rules.
 use crate::configuration::{ConfigBlock, parse_configuration};
 /// Import native path values rather than requiring filesystem names to be UTF-8 strings.
@@ -166,11 +168,43 @@ fn selected(
     match parse_configuration(source) {
         Ok(blocks) => return Ok(ConfigurationSource { path, base, blocks }),
         Err(error) => {
-            return Err(ConfigError::new(
-                format!("Configuration {}: {error}", path.display()).as_str(),
-            ));
+            return Err(rejected(&path, error));
         }
     }
+}
+
+/// What:
+///  Wrap one rejected configuration document with its path and any measured staleness context.
+/// Why:
+///  The reader must see which file failed,
+///  the inner message already ends with the running binary's
+/// identity,
+///  and a stale-binary hint belongs only to an unregistered rule name
+///  beside a repository pin
+/// that measures a newer version.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function rejected(path: Path, error: ConfigError): ConfigError;
+/// ```
+fn rejected(path: &Path, error: ConfigError) -> ConfigError {
+    // What: Measure staleness only for an unregistered rule name.
+    // Why: A syntax or option failure says nothing about which rules another version registers.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const hint = error.unknownRule !== undefined ? staleBinaryHint(dirname(path)) : undefined;
+    // ```
+    let hint: Option<String> = match (error.unknown_rule.is_some(), path.parent()) {
+        (true, Some(directory)) => stale_binary_hint(directory),
+        _ => None,
+    };
+    let mut message: String = format!("Configuration {}: {}", path.display(), error.message);
+    if let Some(text) = hint {
+        message.push(' ');
+        message.push_str(text.as_str());
+    }
+    return ConfigError::composed(message, error.unknown_rule);
 }
 
 /// What:

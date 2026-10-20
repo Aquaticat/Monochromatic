@@ -1191,7 +1191,19 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     `vello_encoding` with sized buffers (another 40 to 72 MiB, needs the clip fix, a computed ptcl, failure detection
     and a lockfile regeneration) > c upstream (PR 1861 open and conflicting) > a leave > d other version > e2
     `use_cpu`. Decisions I took (veto-open): do e1 now, measured in the app; defer b (value after e1 is small against a
-    carried vendored fork); no upstream comment. Agent `ae0713008b220a655` (started 2026-10-20) reproduces the
+    carried vendored fork); no upstream comment. The two Vello 0.11 silent failures (blank frame on buffer overflow, corruption past 128 MiB at the default `ptcl`) are
+    external-tool behavior and now have `doc/troubleshooting/vello-silent-blank-or-corrupt-frames-at-fixed-buffer-limits.md`
+    (owner question of 2026-10-20; none existed). Owner question of 2026-10-20, "Didn't the auto prototype trigger?": no. I wrote the Vello note by hand without
+    loading the `troubleshooting-doc` skill, which fires when a diagnosis finishes and requires the 6-constraint
+    upstream check and, when constraints 1 to 5 hold, a prototype of the fix in a disposable clone. Corrected:
+    agent `a220c117f7de885e2` brings that doc up to the skill standard and prototypes the fix for the unchecked
+    initial `ptcl` region; agent `acd6338a1aeec9b94` writes the troubleshooting docs for the other external findings of
+    this migration that had none (wgpu-core debug-build abort at exit, CPU adapter selection and downlevel defaults in
+    Slint's wgpu path plus Mesa's default-GPU rule, Slint `renderer-vello` clip and texture import limits, Vello's
+    non-bit-identical renders, Slint's default features pulling in the software renderer). Nothing is filed upstream;
+    the owner decides filing after reading each doc's decision. Rule for future briefs: a study or fix of an external
+    tool must say "run the troubleshooting-doc skill" and I load the skill myself at the moment of diagnosis.
+    Agent `ae0713008b220a655` (started 2026-10-20) reproduces the
     selection blank in the real app, fixes the clip structure with a failing test first, applies e1 and measures VRAM,
     RSS, first frame and cadence with `matrix-load.mjs`. Verification of both uses `~/temp/agent/matrix-load.mjs` and at least 15
     full `test:native` runs, under whatever load exists.

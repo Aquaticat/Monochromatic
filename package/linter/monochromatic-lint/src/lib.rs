@@ -56,6 +56,8 @@ pub mod config_lookup;
 /// Internal compiled file-pattern matching and effective rule settings.
 #[doc(hidden)]
 pub mod config_match;
+/// Internal measurement of the repository-pinned tool version behind the stale-binary hint.
+mod config_pin;
 /// Internal ordered JSONC configuration parser.
 #[doc(hidden)]
 pub mod configuration;
@@ -150,7 +152,8 @@ pub mod markdown_punctuation;
 /// Typed Markdown rule selection from validated merged JSONC.
 #[doc(hidden)]
 pub mod markdown_rule_settings;
-/// Prose line breaks that replace their separating space, with token,
+/// Prose line breaks that replace their separating space,
+/// with token,
 ///  delimiter and block guards.
 #[doc(hidden)]
 pub mod markdown_semantic_breaks;
@@ -162,6 +165,8 @@ mod markdown_table_text;
 /// Pipe-table reporting and source-preserving HTML fallback.
 #[doc(hidden)]
 pub mod markdown_tables;
+/// Validated arena traversal lists built by the source adapter's walk.
+mod markdown_traversal;
 /// Native literal and glob command-input expansion.
 #[doc(hidden)]
 pub mod path_inputs;

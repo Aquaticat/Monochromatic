@@ -67,7 +67,23 @@ fn line_starts(source: &str) -> Vec<usize> {
 /// function lineIndex(offset: number, starts: number[]): number;
 /// ```
 fn line_index(offset: usize, starts: &[usize]) -> usize {
-    return starts.partition_point(|start| return *start <= offset) - 1;
+    // What: `count` is how many line starts lie at or before `offset`:
+    //  `binary_search` reports `Ok(found)` for an exact line start,
+    //  which counts itself and everything before it,
+    //  while `Err(insertion)` is already the count of earlier starts.
+    // Why: the named fold replaces `partition_point`,
+    //  whose closure would borrow `offset`,
+    //  and `count - 1` gives the containing line exactly as before.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const count = binarySearchCount(starts, offset);
+    // ```
+    let count: usize = match starts.binary_search(&offset) {
+        Ok(found) => found + 1,
+        Err(insertion) => insertion,
+    };
+    return count - 1;
 }
 
 /// What:

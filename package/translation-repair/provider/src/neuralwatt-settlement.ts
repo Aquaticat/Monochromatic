@@ -13,12 +13,16 @@ import { reportSpend, } from './spend-line.ts';
 // WHAT A FINISHED CALL TELLS THE METER. The stream's two comment lines
 // (`neuralwatt-comments.ts`) settle the reservation the call held: the measured
 // energy replaces the estimate, a missing energy comment leaves the estimate
-// standing and marked, and a cost above zero ends the UTC day for this provider.
+// standing and marked.
 //
-// A COST ABOVE ZERO IS SAID PLAINLY, on a warning and not buried in a debug
-// line: it means a request left the free energy and came out of the owner's
-// plan, which the estimate was there to prevent, and the owner reads it as the
-// signal to recalibrate the margin (`neuralwatt-estimate.ts`).
+// A COST IS REPORTED AND NEVER ACTED ON. The `: cost` comment is still parsed
+// and its figure goes on the SPEND line, but it does not reach the ledger and
+// ends nothing: NeuralWatt reports a nominal `request_cost_usd` on free-energy
+// requests too. The owner, 2026-10-20: a call with 0.0167 Wh measured came back
+// with 0.000107 USD, and the dashboard said "Your call only used 60.3J, which
+// isn't even 0.0%", counted against the free energy. What did leave the free
+// energy shows only in the plan-energy difference a run prints at its end
+// (`neuralwatt-quota-session.ts`).
 
 /**
  Logger root for the settlement.
@@ -110,16 +114,8 @@ export async function settleNeuralWattCall(
       },)
     }`,
   );
-  if ((requestCostUsd !== undefined) && (requestCostUsd > 0))
-    rl.warn(
-      `NeuralWatt BILLED a ${servedId} request ${requestCostUsd.toString()} USD to the plan, which free energy `
-        + 'does not do; its free energy is treated as spent, and calls to it stop until 00:00 UTC',
-    );
-  await reservation.settle({
-    // Conditional spreads keep an unreported figure absent.
-    ...((energyWh === undefined) ? {} : { measuredWh: energyWh, }),
-    ...((requestCostUsd === undefined) ? {} : { billedUsd: requestCostUsd, }),
-  },);
+  // An unreported energy figure stays absent, so the estimate stands, marked.
+  await reservation.settle((energyWh === undefined) ? {} : { measuredWh: energyWh, },);
 }
 
 //endregion NeuralWatt settlement

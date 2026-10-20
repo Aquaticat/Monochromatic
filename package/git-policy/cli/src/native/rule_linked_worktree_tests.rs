@@ -22,19 +22,26 @@ use crate::command_test_support::os_arguments;
 use crate::effective_target::EffectiveTarget;
 use crate::rule_worktree_dirty::DirtyScope;
 
-/// Every guarded command.
-const ALL_COMMANDS: [GuardedCommand; 11] = [
+/// Every guarded form.
+const ALL_COMMANDS: [GuardedCommand; 18] = [
     GuardedCommand::Stash,
     GuardedCommand::Clean,
-    GuardedCommand::Reset,
-    GuardedCommand::Restore,
-    GuardedCommand::Checkout,
-    GuardedCommand::Switch,
+    GuardedCommand::ResetHard,
+    GuardedCommand::ResetMixed,
+    GuardedCommand::RestoreStaged,
+    GuardedCommand::RestoreWorktree,
+    GuardedCommand::CheckoutPaths,
+    GuardedCommand::CheckoutMove,
+    GuardedCommand::SwitchForce,
+    GuardedCommand::SwitchMove,
     GuardedCommand::Remove,
     GuardedCommand::Move,
     GuardedCommand::CheckoutIndex,
     GuardedCommand::ReadTree,
-    GuardedCommand::Abort,
+    GuardedCommand::AbortMerge,
+    GuardedCommand::AbortRebase,
+    GuardedCommand::AbortPick,
+    GuardedCommand::AbortAm,
 ];
 
 /// Decide one invocation written as text.
@@ -58,33 +65,35 @@ fn destructive_forms_need_the_worktree_kind() {
         (vec!["clean", "-fd"], GuardedCommand::Clean),
         (vec!["clean", "-n", "--no-dry-run"], GuardedCommand::Clean),
         (vec!["clean", "-i"], GuardedCommand::Clean),
-        (vec!["reset"], GuardedCommand::Reset),
-        (vec!["reset", "--mixed"], GuardedCommand::Reset),
-        (vec!["reset", "file"], GuardedCommand::Reset),
-        (vec!["reset", "--", "--hard"], GuardedCommand::Reset),
-        (vec!["reset", "--hard"], GuardedCommand::Reset),
-        (vec!["reset", "--merge", "HEAD~1"], GuardedCommand::Reset),
-        (vec!["reset", "--keep"], GuardedCommand::Reset),
-        (vec!["reset", "--soft", "--hard"], GuardedCommand::Reset),
+        (vec!["reset"], GuardedCommand::ResetMixed),
+        (vec!["reset", "--mixed"], GuardedCommand::ResetMixed),
+        (vec!["reset", "file"], GuardedCommand::ResetMixed),
+        (vec!["reset", "--", "--hard"], GuardedCommand::ResetMixed),
+        (vec!["reset", "--hard"], GuardedCommand::ResetHard),
+        (vec!["reset", "--merge", "HEAD~1"], GuardedCommand::ResetHard),
+        (vec!["reset", "--keep"], GuardedCommand::ResetHard),
+        (vec!["reset", "--soft", "--hard"], GuardedCommand::ResetHard),
         (
             vec!["-C", "dir", "--no-pager", "reset", "--hard"],
-            GuardedCommand::Reset,
+            GuardedCommand::ResetHard,
         ),
-        (vec!["restore", "a.txt"], GuardedCommand::Restore),
-        (vec!["restore", "--staged", "--", "."], GuardedCommand::Restore),
-        (vec!["checkout", "--", "a.txt"], GuardedCommand::Checkout),
-        (vec!["checkout", "-f"], GuardedCommand::Checkout),
-        (vec!["switch", "--discard-changes", "topic"], GuardedCommand::Switch),
-        (vec!["switch", "-f", "topic"], GuardedCommand::Switch),
+        (vec!["restore", "a.txt"], GuardedCommand::RestoreWorktree),
+        (vec!["restore", "--staged", "--", "."], GuardedCommand::RestoreStaged),
+        (vec!["restore", "-S", "a.txt"], GuardedCommand::RestoreStaged),
+        (vec!["restore", "--staged", "--worktree", "a.txt"], GuardedCommand::RestoreWorktree),
+        (vec!["checkout", "--", "a.txt"], GuardedCommand::CheckoutPaths),
+        (vec!["checkout", "-f"], GuardedCommand::CheckoutPaths),
+        (vec!["switch", "--discard-changes", "topic"], GuardedCommand::SwitchForce),
+        (vec!["switch", "-f", "topic"], GuardedCommand::SwitchForce),
         (vec!["rm", "-rf", "dir"], GuardedCommand::Remove),
         (vec!["mv", "--force", "a", "b"], GuardedCommand::Move),
         (vec!["checkout-index", "-f", "-a"], GuardedCommand::CheckoutIndex),
         (vec!["read-tree", "--reset", "HEAD"], GuardedCommand::ReadTree),
-        (vec!["merge", "--abort"], GuardedCommand::Abort),
-        (vec!["rebase", "--abort"], GuardedCommand::Abort),
-        (vec!["cherry-pick", "--abort"], GuardedCommand::Abort),
-        (vec!["revert", "--abort"], GuardedCommand::Abort),
-        (vec!["am", "--abort"], GuardedCommand::Abort),
+        (vec!["merge", "--abort"], GuardedCommand::AbortMerge),
+        (vec!["rebase", "--abort"], GuardedCommand::AbortRebase),
+        (vec!["cherry-pick", "--abort"], GuardedCommand::AbortPick),
+        (vec!["revert", "--abort"], GuardedCommand::AbortPick),
+        (vec!["am", "--abort"], GuardedCommand::AbortAm),
     ] {
         assert_eq!(
             decide(values.as_slice()),
@@ -98,10 +107,10 @@ fn destructive_forms_need_the_worktree_kind() {
 #[test]
 fn head_moves_need_the_dirtiness() {
     for (values, command) in [
-        (vec!["checkout", "topic"], GuardedCommand::Checkout),
-        (vec!["checkout", "-"], GuardedCommand::Checkout),
-        (vec!["switch", "topic"], GuardedCommand::Switch),
-        (vec!["switch", "--detach", "HEAD~1"], GuardedCommand::Switch),
+        (vec!["checkout", "topic"], GuardedCommand::CheckoutMove),
+        (vec!["checkout", "-"], GuardedCommand::CheckoutMove),
+        (vec!["switch", "topic"], GuardedCommand::SwitchMove),
+        (vec!["switch", "--detach", "HEAD~1"], GuardedCommand::SwitchMove),
     ] {
         assert_eq!(
             decide(values.as_slice()),
@@ -114,20 +123,13 @@ fn head_moves_need_the_dirtiness() {
 /// Only a deleting clean counts untracked files as uncommitted state.
 #[test]
 fn only_clean_counts_untracked_files() {
-    assert_eq!(dirty_scope(GuardedCommand::Clean), DirtyScope::TrackedAndUntracked);
-    for command in [
-        GuardedCommand::Stash,
-        GuardedCommand::Reset,
-        GuardedCommand::Restore,
-        GuardedCommand::Checkout,
-        GuardedCommand::Switch,
-        GuardedCommand::Remove,
-        GuardedCommand::Move,
-        GuardedCommand::CheckoutIndex,
-        GuardedCommand::ReadTree,
-        GuardedCommand::Abort,
-    ] {
-        assert_eq!(dirty_scope(command), DirtyScope::Tracked, "{command:?}");
+    for command in ALL_COMMANDS {
+        let expected: DirtyScope = if command == GuardedCommand::Clean {
+            DirtyScope::TrackedAndUntracked
+        } else {
+            DirtyScope::Tracked
+        };
+        assert_eq!(dirty_scope(command), expected, "{command:?}");
     }
 }
 
@@ -204,52 +206,86 @@ fn only_main_and_absent_worktrees_are_rejected() {
     }
 }
 
-/// The stash and clean texts are the incumbent's word for word; the reset texts name the wider guard.
+/// Every text names the form, what it destroys, a sanctioned alternative, and the deliberate way to discard.
 #[test]
-fn rejection_texts_are_the_incumbent_messages() {
-    assert_eq!(
-        outside_worktree_message(GuardedCommand::Stash),
-        "cli-git: git stash requires the effective working directory to be inside a linked git worktree. Refusing to run from outside a worktree because git stash can revert filesystem state outside what the caller expected. cd to a linked worktree root or pass -C <linked-worktree-root> before stash."
-    );
-    assert_eq!(
-        outside_worktree_message(GuardedCommand::Clean),
-        "cli-git: state-changing git clean requires the effective working directory to be inside a linked git worktree. Refusing to run from outside a worktree because git clean can delete filesystem state outside what the caller expected. cd to a linked worktree root or pass -C <linked-worktree-root> before clean, or use --dry-run to inspect."
-    );
-    assert_eq!(
-        outside_worktree_message(GuardedCommand::Reset),
-        "cli-git: git reset in any mode but --soft requires the effective working directory to be inside a linked git worktree. Refusing to run from outside a worktree because git reset can discard staged entries or rewrite tracked files outside what the caller expected. cd to a linked worktree root or pass -C <linked-worktree-root> before reset, or use --soft."
-    );
-    assert_eq!(
-        main_worktree_message(GuardedCommand::Stash),
-        "cli-git: git stash is rejected in the main git worktree. Refusing to run because git stash can revert primary checkout filesystem state outside what the caller expected. Use a linked worktree for stash operations."
-    );
-    assert_eq!(
-        main_worktree_message(GuardedCommand::Clean),
-        "cli-git: state-changing git clean is rejected in the main git worktree. Refusing to run because git clean can delete primary checkout filesystem state outside what the caller expected. Use a linked worktree for state-changing clean operations, or use --dry-run to inspect."
-    );
-    assert_eq!(
-        main_worktree_message(GuardedCommand::Reset),
-        "cli-git: git reset in any mode but --soft is rejected in the main git worktree. Refusing to run because git reset can discard staged entries or rewrite primary checkout files outside what the caller expected. Use a linked worktree for it, or use --soft to move HEAD alone."
-    );
-}
-
-/// The texts of the commands added to the policy name the command, the loss, and each way forward.
-#[test]
-fn new_texts_name_the_command_and_every_way_forward() {
+fn every_text_names_the_loss_an_alternative_and_the_hatch() {
     for command in ALL_COMMANDS {
         let main = main_worktree_message(command);
         let dirty = dirty_worktree_message(command);
         let outside = outside_worktree_message(command);
-        assert!(main.starts_with("cli-git: "), "{command:?}");
-        assert!(dirty.contains("uncommitted"), "{command:?}: {dirty}");
-        assert!(dirty.contains("--no-enforce-worktree"), "{command:?}: {dirty}");
-        assert!(dirty.contains("explicit paths"), "{command:?}: {dirty}");
-        assert!(dirty.contains("clean linked worktree"), "{command:?}: {dirty}");
+        assert!(main.starts_with("cli-git: git "), "{command:?}: {main}");
+        assert!(dirty.starts_with("cli-git: git "), "{command:?}: {dirty}");
+        assert!(outside.starts_with("cli-git: git "), "{command:?}: {outside}");
+        assert!(main.contains("in the main git worktree"), "{command:?}");
+        assert!(dirty.contains("has uncommitted"), "{command:?}");
+        assert!(outside.contains("-C <linked-worktree-root>"), "{command:?}");
+        for text in [&main, &dirty] {
+            assert!(text.contains("--no-enforce-worktree"), "{command:?}: {text}");
+            assert!(text.contains("git diff > backup.patch"), "{command:?}: {text}");
+            assert!(text.contains(" (allowed)") || text.contains("git commit --message")
+                || text.contains("git rm <destination>") || text.contains("git rebase --continue")
+                || text.contains("--continue") || text.contains("git diff -- <path>"),
+                "{command:?} names no alternative: {text}");
+        }
         assert_ne!(main, dirty);
         assert_ne!(main, outside);
     }
+}
+
+/// Each intent gets the alternative that fits it.
+#[test]
+fn each_intent_gets_its_own_alternative() {
+    let unstage = main_worktree_message(GuardedCommand::RestoreStaged);
+    assert!(unstage.contains("git commit --message <message> -- <paths>"));
+    assert!(unstage.contains("git diff --cached --name-only"));
+    let revert = main_worktree_message(GuardedCommand::RestoreWorktree);
+    assert!(revert.contains("git show HEAD:<path>"));
+    assert!(revert.contains("git diff -- <path> > backup.patch"));
+    assert!(main_worktree_message(GuardedCommand::ResetHard).contains("git reset --soft <commit>"));
+    assert!(main_worktree_message(GuardedCommand::Stash).contains("git worktree add -b <branch> <path>"));
+    assert!(main_worktree_message(GuardedCommand::Clean).contains("git clean -n"));
     assert!(dirty_worktree_message(GuardedCommand::Clean).contains("untracked files"));
-    assert!(!dirty_worktree_message(GuardedCommand::Restore).contains("untracked"));
-    assert!(main_worktree_message(GuardedCommand::Restore).contains("git restore"));
-    assert!(main_worktree_message(GuardedCommand::Restore).contains("--no-enforce-worktree"));
+    assert!(!dirty_worktree_message(GuardedCommand::RestoreWorktree).contains("untracked"));
+    assert!(main_worktree_message(GuardedCommand::AbortMerge).contains("git merge --quit"));
+    assert!(main_worktree_message(GuardedCommand::AbortRebase).contains("git rebase --quit"));
+    assert!(main_worktree_message(GuardedCommand::AbortPick).contains("--quit"));
+    assert!(main_worktree_message(GuardedCommand::AbortAm).contains("git am --quit"));
+    assert!(main_worktree_message(GuardedCommand::CheckoutIndex).contains("--prefix=<directory>/"));
+    assert!(main_worktree_message(GuardedCommand::Remove).contains("git rm --cached <path>"));
+    assert!(dirty_worktree_message(GuardedCommand::SwitchMove).contains("git worktree add <path> <branch>"));
+}
+
+/// The README documents the alternative that each rejection text names, in the same words.
+#[test]
+fn the_readme_documents_what_the_texts_recommend() {
+    let readme: &str = include_str!("../../README.md");
+    assert!(readme.contains("### Discarding commands"));
+    for (command, phrase) in [
+        (GuardedCommand::Stash, "git worktree add -b <branch> <path>"),
+        (GuardedCommand::Clean, "git clean -n"),
+        (GuardedCommand::ResetHard, "git reset --soft <commit>"),
+        (GuardedCommand::ResetMixed, "git diff --cached --name-only"),
+        (GuardedCommand::RestoreStaged, "git commit --message <message> -- <paths>"),
+        (GuardedCommand::RestoreWorktree, "git show HEAD:<path>"),
+        (GuardedCommand::CheckoutPaths, "git show HEAD:<path>"),
+        (GuardedCommand::CheckoutMove, "git worktree add <path> <branch>"),
+        (GuardedCommand::SwitchForce, "git worktree add <path> <branch>"),
+        (GuardedCommand::SwitchMove, "git worktree add <path> <branch>"),
+        (GuardedCommand::Remove, "git rm --cached <path>"),
+        (GuardedCommand::Move, "git rm <destination>"),
+        (GuardedCommand::CheckoutIndex, "git checkout-index --prefix=<directory>/ --all"),
+        (GuardedCommand::ReadTree, "git read-tree -m"),
+        (GuardedCommand::AbortMerge, "--quit"),
+        (GuardedCommand::AbortRebase, "--quit"),
+        (GuardedCommand::AbortPick, "--quit"),
+        (GuardedCommand::AbortAm, "--quit"),
+    ] {
+        assert!(
+            main_worktree_message(command).contains(phrase),
+            "{command:?} text lacks {phrase}"
+        );
+        assert!(readme.contains(phrase), "{command:?}: README lacks {phrase}");
+    }
+    assert!(readme.contains("git diff > backup.patch"));
+    assert!(readme.contains("--no-enforce-worktree"));
 }

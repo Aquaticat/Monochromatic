@@ -1,4 +1,4 @@
-# Safari Technology Preview 252: an `<img>` SVG with a `#view` fragment and `loading="lazy"` is laid out at the whole canvas's aspect ratio, leaving small artwork in blank margins
+# Safari (Technology Preview 252, Safari 27, Safari 17.5): an `<img>` SVG with a `#view` fragment and `loading="lazy"` is laid out at the whole canvas's aspect ratio, leaving small artwork in blank margins
 
 Tool under test:
 Safari Technology Preview Release 252 (`22626.1.6.19.1`, user agent `Version/27.0`) on macOS 27.0 (`26A428`),
@@ -203,10 +203,13 @@ Measured with several images of the same file on one page, Technology Preview 25
 
 Release Safari 27 and Safari 17.5, measured later on 2026-10-20 by the portfolio session on the case-study hero
 viewers (a lazy fragment `<img>` in a closed popover, opened with `showPopover()`, sized by its natural ratio,
-WebDriver at a 1440 px layout viewport): Safari Technology Preview and release Safari 27 both opened them at
-2.179, 1.789 and 1.848 wide per unit of height against the views' 1.5, 1.541 and 1.265, which Chromium matched.
-With the trimmed copies (portfolio `6e97123`) Technology Preview, Safari 27 and Safari 17.5 all gave the views'
-ratios. Safari 17.5 was not measured before that change.
+WebDriver at a 1440 px layout viewport, the WebDriver helper printing the answering browser: Safari 27.0 and
+Safari 17.5): Technology Preview, Safari 27 and Safari 17.5 all opened them at 2.179, 1.789 and 1.848 wide per
+unit of height against the views' 1.5, 1.541 and 1.265, which Chromium matched. A viewport capture of the open
+MenuMe viewer in Safari 27 and 17.5 shows the artwork at about two thirds of the viewer, blank to its right and
+below. With the trimmed copies (portfolio `6e97123`) all three gave the views' ratios and the artwork fills the
+viewer. A first run of this measurement went to Technology Preview for every rig, because the helper ignored its
+driver setting; the numbers here are from the re-run.
 
 Not measured: iOS Safari, Firefox,
 and a lazy image placed below the fold (every case in this section had the image in the first viewport).

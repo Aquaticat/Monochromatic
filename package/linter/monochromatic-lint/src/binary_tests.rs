@@ -579,6 +579,150 @@ fn a_configuration_naming_the_removed_anonymous_function_rule_is_a_setup_error()
     );
 }
 
+/// Every configuration rejection diagnostic names the running binary,
+///  so which binary refused the configuration is readable from the failure itself.
+/// A lockfile pinning exactly the running version measures no staleness,
+///  so no hint appears.
+#[test]
+fn configuration_rejection_diagnostics_identify_the_running_binary() {
+    // Read the version from the manifest so a release bump cannot leave this assertion stale.
+    let identity: String = format!("(monochromatic-lint {})", env!("CARGO_PKG_VERSION"));
+    let fixture: Fixture = Fixture::new();
+    fixture.write("a.rs", "fn main() {}\n");
+    fixture.write(
+        "mise.lock",
+        format!(
+            "[[tools.\"cargo:monochromatic-lint\"]]\nversion = \"{}\"\n",
+            env!("CARGO_PKG_VERSION")
+        )
+        .as_str(),
+    );
+    fixture.write(
+        CONFIG,
+        r#"[{ "files": ["**/*.rs"], "rules": { "rust/no-anonymous-functions": { "severity": "off" } } }]"#,
+    );
+    let unknown: Run = run(&fixture.path, &[], b"");
+    assert_eq!((unknown.status, unknown.stdout.as_str()), (2, ""));
+    assert!(
+        unknown
+            .stderr
+            .contains("Unknown built-in rule rust/no-anonymous-functions"),
+        "{}",
+        unknown.stderr
+    );
+    assert!(
+        unknown.stderr.contains(identity.as_str()),
+        "{}",
+        unknown.stderr
+    );
+    assert!(
+        !unknown.stderr.contains("may be stale"),
+        "{}",
+        unknown.stderr
+    );
+    fixture.write(
+        CONFIG,
+        r#"[{ "files": ["**/*.rs"], "rules": { "rust/max-lines": { "severity": "warning" } } }]"#,
+    );
+    let severity: Run = run(&fixture.path, &[], b"");
+    assert_eq!((severity.status, severity.stdout.as_str()), (2, ""));
+    assert!(
+        severity.stderr.contains("severity must be"),
+        "{}",
+        severity.stderr
+    );
+    assert!(
+        severity.stderr.contains(identity.as_str()),
+        "{}",
+        severity.stderr
+    );
+    fixture.write(CONFIG, "[{");
+    let malformed: Run = run(&fixture.path, &[], b"");
+    assert_eq!((malformed.status, malformed.stdout.as_str()), (2, ""));
+    assert!(
+        malformed.stderr.contains("JSONC syntax error"),
+        "{}",
+        malformed.stderr
+    );
+    assert!(
+        malformed.stderr.contains(identity.as_str()),
+        "{}",
+        malformed.stderr
+    );
+}
+
+/// The unknown-rule error names a stale resolved binary only when the repository's lockfile
+///  measures a pin newer than the running binary,
+///  and the hint quotes that measurement.
+#[test]
+fn a_newer_repository_pin_adds_the_stale_binary_hint() {
+    let major: u64 = env!("CARGO_PKG_VERSION")
+        .split('.')
+        .next()
+        .expect("manifest version has a major component")
+        .parse()
+        .expect("major component is numeric");
+    // One major version ahead of this build, so a release bump cannot make the control stale.
+    let pin: String = format!("{}.0.0", major + 1);
+    let fixture: Fixture = Fixture::new();
+    fixture.write("a.rs", "fn main() {}\n");
+    fixture.write(
+        "mise.lock",
+        format!("[[tools.\"cargo:monochromatic-lint\"]]\nversion = \"{pin}\"\n").as_str(),
+    );
+    fixture.write(
+        CONFIG,
+        r#"[{ "files": ["**/*.rs"], "rules": { "rust/no-anonymous-functions": { "severity": "off" } } }]"#,
+    );
+    let stale: Run = run(&fixture.path, &[], b"");
+    assert_eq!((stale.status, stale.stdout.as_str()), (2, ""));
+    assert_eq!(
+        stale.stderr,
+        format!(
+            "monochromatic-lint: Configuration {0}/{1}: Unknown built-in rule rust/no-anonymous-functions. (monochromatic-lint {2}) The resolved binary may be stale: {0}/mise.lock pins cargo:monochromatic-lint {pin}, newer than this binary.\n",
+            fixture.path.display(),
+            CONFIG,
+            env!("CARGO_PKG_VERSION")
+        )
+    );
+}
+
+/// A repository pin older than the running binary measures no staleness,
+///  so the hint stays out
+/// even though the rule is still unknown.
+#[test]
+fn an_older_repository_pin_adds_no_stale_binary_hint() {
+    assert_ne!(
+        env!("CARGO_PKG_VERSION"),
+        "0.0.0",
+        "the control needs a strictly older pin"
+    );
+    let fixture: Fixture = Fixture::new();
+    fixture.write("a.rs", "fn main() {}\n");
+    fixture.write(
+        "mise.lock",
+        "[[tools.\"cargo:monochromatic-lint\"]]\nversion = \"0.0.0\"\n",
+    );
+    fixture.write(
+        CONFIG,
+        r#"[{ "files": ["**/*.rs"], "rules": { "rust/no-anonymous-functions": { "severity": "off" } } }]"#,
+    );
+    let resolved: Run = run(&fixture.path, &[], b"");
+    assert_eq!((resolved.status, resolved.stdout.as_str()), (2, ""));
+    assert!(
+        resolved
+            .stderr
+            .contains("Unknown built-in rule rust/no-anonymous-functions"),
+        "{}",
+        resolved.stderr
+    );
+    assert!(
+        !resolved.stderr.contains("may be stale"),
+        "{}",
+        resolved.stderr
+    );
+}
+
 /// `--fix` replaces files atomically,
 ///  keeps their permission bits,
 ///  leaves no temporary files,

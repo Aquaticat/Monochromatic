@@ -528,12 +528,33 @@ long-lived agent command contexts keep the stale PATH,
 so bare `monochromatic-lint` there still runs 0.2.0
 until the environment rebuilds;
 invoke through `mise run`.
-Follow-up dispatched 2026-10-20 to subagent `8bb5ee46`
-(`send_message` cannot resume finished subagents here,
-so it runs as a fresh agent with a self-contained brief):
-name the running binary version in the
-`Unknown built-in rule` startup diagnostic
-so a stale install self-identifies.
+Follow-up DONE 2026-10-20 (subagent `8bb5ee46`;
+`send_message` cannot resume finished subagents here,
+so it ran as a fresh agent with a self-contained brief):
+config-rejection diagnostics now self-identify the running binary
+(`(monochromatic-lint <version>)` suffix on the whole
+`ConfigError` class)
+and hint at a stale resolved binary only when
+the nearest `mise.lock` measures a strictly newer pin
+(commits `d34026bb22`,
+`d659a87347`,
+`07cd829ea2`,
+`6631927759`,
+`e258a33c4a`;
+603 nextest tests with 10 new guards;
+four GFP removal proofs;
+the honesty constraint proven by the equal-pin boundary).
+Separate pre-existing findings it reported:
+10 error-severity `markdown/semantic-line-breaks`
+(fixed 2026-10-20 in `71352ac59d`,
+gate green on `package/linter/monochromatic-lint`)
+and a warn-level `rust/avoidable-closure` backlog
+across 10 source files,
+dispatched 2026-10-20 to subagent `720c4379`
+for paydown under the config's ratchet policy
+("Warnings until no finding is left").
+The lead flips the ratchet to error severity
+only after that paydown reports zero findings.
 
 ### 2026-10-20 transient auto-push rejection
 

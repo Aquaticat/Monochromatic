@@ -13,7 +13,8 @@
 use crate::diagnostic::{Diagnostic, Severity, Span};
 /// Import the owned source whose syntax tree the rule walks.
 use crate::rust_source::RustSource;
-/// Import attribute and name access on parsed items, not a text-pattern approximation.
+/// Import attribute and name access on parsed items,
+/// not a text-pattern approximation.
 use ra_ap_syntax::ast::{HasAttrs, HasName};
 /// Import parser node casts and the syntax types the walk passes around.
 use ra_ap_syntax::{AstNode, SyntaxNode, SyntaxToken, ast};
@@ -37,7 +38,8 @@ fn file_stem(file: &str) -> &str {
 }
 
 /// Whether a path is already a sidecar:
-///  a `*_tests.rs` file, a `tests.rs` file or anything under a `tests` directory.
+///  a `*_tests.rs` file,
+/// a `tests.rs` file or anything under a `tests` directory.
 fn is_sidecar_path(filename: &str) -> bool {
     let (directories, file): (Vec<String>, String) = path_parts(filename);
     for directory in &directories {
@@ -50,7 +52,8 @@ fn is_sidecar_path(filename: &str) -> bool {
 }
 
 /// Whether a `cfg` predicate selects test builds.
-///  `not(...)` flips the sense, and a key-value atom such as `feature = "test"` is not the `test` flag.
+///  `not(...)` flips the sense,
+/// and a key-value atom such as `feature = "test"` is not the `test` flag.
 fn predicate_enables_test(predicate: &ast::CfgPredicate, negated: bool) -> bool {
     match predicate {
         ast::CfgPredicate::CfgAtom(atom) => {
@@ -92,7 +95,8 @@ fn has_test_cfg(item: &impl HasAttrs) -> bool {
 }
 
 /// Whether a function carries a test attribute:
-///  `#[test]` or a runtime's `#[tokio::test]`, which share the last path segment `test`.
+///  `#[test]` or a runtime's `#[tokio::test]`,
+/// which share the last path segment `test`.
 fn has_test_attribute(function: &ast::Fn) -> bool {
     for attribute in function.attrs() {
         let Some(path): Option<ast::Path> = attribute.path() else {

@@ -27,7 +27,6 @@ const WH_DECIMALS = 3;
    reckonedWh: 0.5,
    reservedWh: 0.1,
    remainingWh: 537.4,
-   billedToday: false,
    calls: 40,
  };
  ```
@@ -65,12 +64,6 @@ export type NeuralWattEnergy = {
   readonly remainingWh: number;
 
   /**
-   Whether any request of the day came back billed, which ends the day's
-   free energy for this provider whatever the arithmetic says.
-   */
-  readonly billedToday: boolean;
-
-  /**
    Ledger lines of the day.
    */
   readonly calls: number;
@@ -78,7 +71,7 @@ export type NeuralWattEnergy = {
 
 /**
  Raised, before any request leaves, when the day cannot take a call: the
- estimate does not fit in what is left, or a request was billed today.
+ estimate does not fit in what is left.
 
  A BUDGET REFUSAL the router moves on from (`isBudgetRefusal`), and not a
  payment refusal: nothing is wrong with the account, the day's free energy is
@@ -127,15 +120,12 @@ export class NeuralWattAllowanceError extends StatedRefusalError {
     },
   ) {
     super({
-      says: energy.billedToday
-        ? `NeuralWatt billed a request on ${energy.day} (UTC), so its free energy is treated as spent until `
-          + `00:00 UTC; the call to ${model} was not sent`
-        : `NeuralWatt has ${energy.remainingWh
-          .toFixed(WH_DECIMALS,)} Wh of the ${String(energy.dailyWh,)} Wh free energy `
-          + `left on ${energy.day} (UTC) after ${energy.reservedWh
-            .toFixed(WH_DECIMALS,)} Wh held by calls in flight, `
-          + `and the call to ${model} is estimated at ${estimateWh.toFixed(WH_DECIMALS,)} Wh; it was not sent, and the `
-          + 'energy returns at 00:00 UTC',
+      says: `NeuralWatt has ${energy.remainingWh
+        .toFixed(WH_DECIMALS,)} Wh of the ${String(energy.dailyWh,)} Wh free energy `
+        + `left on ${energy.day} (UTC) after ${energy.reservedWh
+          .toFixed(WH_DECIMALS,)} Wh held by calls in flight, `
+        + `and the call to ${model} is estimated at ${estimateWh.toFixed(WH_DECIMALS,)} Wh; it was not sent, and the `
+        + 'energy returns at 00:00 UTC',
     },);
     this.name = 'NeuralWattAllowanceError';
     this.energy = energy;

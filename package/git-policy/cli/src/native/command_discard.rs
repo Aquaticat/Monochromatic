@@ -157,6 +157,30 @@ pub fn restore_discard(region: &[OsString]) -> Discard {
 }
 
 /// What:
+///  Whether a `git restore` region touches the index only.
+/// Why:
+///   `--staged` alone unstages and leaves the files, so the guidance differs from a restore of file content;
+///  `--worktree` beside it brings the files back in. `--st` and `--w` are the shortest unambiguous prefixes.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function restoresIndexOnly(region: string[]): boolean;
+/// ```
+pub fn restores_index_only(region: &[OsString]) -> bool {
+    let mut staged: bool = false;
+    let mut worktree: bool = false;
+    for token in options_of(region) {
+        if has_short(token, b'S') || spells_long(token, "--staged", 4) {
+            staged = true;
+        }
+        if has_short(token, b'W') || spells_long(token, "--worktree", 3) {
+            worktree = true;
+        }
+    }
+    return staged && !worktree;
+}
+
+/// What:
 ///  Read a `git rm`, `git mv` or `git checkout-index` region.
 /// Why:
 ///   Each refuses to overwrite or delete a modified file unless forced; `-f` and `--force` are the only way

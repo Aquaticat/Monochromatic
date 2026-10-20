@@ -40,6 +40,33 @@ use std::io::Write;
 pub const PROGRAM: &str = "monochromatic-lint";
 
 /// What:
+///  The version of the build that is running,
+///  exactly as the package manifest records it.
+/// Why:
+///  Startup diagnostics append it so the running binary identifies itself in the failure,
+///  which a stale resolved binary would otherwise hide;
+///  `--version` prints the same value.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const VERSION = process.env.npm_package_version;
+/// ```
+pub const VERSION: &str = env!("CARGO_PKG_VERSION");
+
+/// What:
+///  The running binary's name and version as one quotable identity.
+/// Why:
+///  A diagnostic suffix naming both stands alone when a reader quotes it out of context.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function binaryIdentity(): string { return `${PROGRAM} ${VERSION}`; }
+/// ```
+pub fn binary_identity() -> String {
+    return format!("{PROGRAM} {VERSION}");
+}
+
+/// What:
 ///  Discard semantic-workspace progress messages.
 /// Why:
 ///  The engine takes a plain function pointer;

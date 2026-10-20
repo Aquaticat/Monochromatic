@@ -51,7 +51,9 @@ export type NeuralWattComments = {
   readonly energyWh?: number;
 
   /**
-   USD the request was billed, zero for a free one.
+   USD cost the stream reports for the request: zero for some, and a small
+   nominal figure for others that free-energy requests carry too, which is no
+   sign of plan spend.
    */
   readonly requestCostUsd?: number;
 };
@@ -191,7 +193,7 @@ export function readNeuralWattComments({ bodyText, }: { readonly bodyText: strin
     .at(-1,);
 
   /**
-   USD the request was billed, as the last cost comment states it.
+   USD cost as the last cost comment states it, nominal on free-energy requests.
    */
   const requestCostUsd = quantitiesOf({
     bodyText,

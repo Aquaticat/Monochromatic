@@ -577,9 +577,14 @@ and distinct on case-insensitive filesystems.
   After the merge is published, the branch and its worktree are fast-forwarded to it
   (`git merge --ff-only <merge>`) only when all of these hold:
   `HEAD` is the pushed branch at the tip that was pushed,
-  and `git --no-optional-locks status --porcelain=v1 --untracked-files=no` is empty.
+  and no path of `git --no-optional-locks status --porcelain=v1 -z --untracked-files=no`
+  (both names of a staged rename or copy included)
+  is a path of `git diff --name-only -z --no-renames <pushed tip> <merge>`.
+  An empty status passes trivially; uncommitted work in files the move does not write is left exactly as it was,
+  and the report says so.
   Git itself refuses, without changing anything, a move that would overwrite an untracked file.
-  Any other state leaves the branch behind the remote, and the report names the reason.
+  Any other state leaves the branch behind the remote, and the report names the reason, with the overlapping paths
+  (five by name, then a count).
   The merge commit skips commit-time hooks and policies because it is made from objects.
   Every line the reconcile adds begins with `cli-git: auto-push: `;
   a line that begins with `cli-git: auto-push: not published: `

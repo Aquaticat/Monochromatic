@@ -8,7 +8,8 @@
 //!  `git merge-tree --write-tree` and `git commit-tree` read and write only objects, so the active worktree,
 //!  its index and its untracked files are never touched while merging, and both histories stay reachable from the
 //!  published tip.
-//!  Only after the push succeeds is the branch fast-forwarded, and only in a worktree with nothing to lose.
+//!  Only after the push succeeds is the branch fast-forwarded, and only where nothing can be lost: a dirty worktree
+//!  follows too when the move changes none of the files its uncommitted work touches.
 //!  An amended or rebased branch is merged like any other: nothing already published is lost, and the replaced
 //!  commits stay in the remote history beside the new ones.
 
@@ -17,9 +18,10 @@ use super::auto_push_single_flight::{
     PushAttempt, PushGit, SingleFlightError, git_command, git_output, run_query,
 };
 /// The deadline-bound runner of network commands and the limits it applies.
+use super::auto_push_dirty_paths::{diff_paths, listed, overlapping_paths, status_paths};
 use super::bounded_push::{STOP_GRACE, apply_low_speed_defaults, push_deadline, run_bounded_push};
 /// The diagnostic log of the wrapper.
-use super::diagnostic_log::debug;
+use super::diagnostic_log::{debug, warn};
 /// Owned OS strings for Git arguments.
 use std::ffi::OsString;
 
@@ -324,25 +326,29 @@ fn signs_commits(git: &PushGit) -> Result<bool, SingleFlightError> {
 
 /// What:
 ///  Fast-forward the pushed branch and this worktree to the published merge, or the reason that was not done.
+///  The success value says whether uncommitted work was left in place.
 /// Why:
 ///   A branch left behind the remote makes the next commit rejected again, and the person at the keyboard would have
 ///  to merge by hand; the merge contains the branch tip, so the move is a pure fast-forward.
 ///   It is attempted only where nothing can be lost or surprised: the worktree has the branch checked out at the tip
-///  that was pushed and has no change to a tracked file.
+///  that was pushed, and no uncommitted change (tracked file, staged entry, or either name of a staged rename)
+///  lies in a file the move writes.
+///   Another session's work in progress therefore never holds the branch behind the remote, while a move that
+///  would write over such a file is left for the person.
 ///   The status read takes no optional lock, and `git merge --ff-only` refuses, without changing anything, a move that
 ///  would overwrite an untracked file or a change made after the status read.
 ///   Every refusal is a reason for the report, never a failure: the merge is already published.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// async function advanceLocalBranch({ git, branchRef, local, mergeOid }): Promise<{ reason?: string }>;
+/// async function advanceLocalBranch({ git, branchRef, local, mergeOid }): Promise<{ reason?: string; keptChanges?: boolean }>;
 /// ```
 fn advance_local_branch(
     git: &PushGit,
     branch_ref: &str,
     local: &str,
     merge_oid: &str,
-) -> Result<Result<(), String>, SingleFlightError> {
+) -> Result<Result<bool, String>, SingleFlightError> {
     let checked_out = run_query(git, &argv(&["symbolic-ref", "--quiet", "HEAD"]))?;
     if checked_out.code != Some(0) {
         return Ok(Err(String::from("HEAD is detached")));
@@ -358,22 +364,35 @@ fn advance_local_branch(
             "the branch moved after the commit landed",
         )));
     }
-    let status = run_query(
-        git,
-        &argv(&[
-            "--no-optional-locks",
-            "status",
-            "--porcelain=v1",
-            "--untracked-files=no",
-        ]),
-    )?;
+    let status_arguments = argv(&[
+        "--no-optional-locks",
+        "status",
+        "--porcelain=v1",
+        "-z",
+        "--untracked-files=no",
+    ]);
+    let status = run_query(git, &status_arguments)?;
     if status.code != Some(0) {
         return Ok(Err(String::from("the worktree status could not be read")));
     }
-    if !status.stdout.is_empty() {
-        return Ok(Err(String::from(
-            "the worktree has uncommitted changes to tracked files",
-        )));
+    let dirty = status_paths(&status.stdout);
+    if !dirty.is_empty() {
+        let incoming = run_query(
+            git,
+            &argv(&["diff", "--name-only", "-z", "--no-renames", local, merge_oid]),
+        )?;
+        if incoming.code != Some(0) {
+            return Ok(Err(String::from(
+                "the files the merge changes could not be read",
+            )));
+        }
+        let overlap = overlapping_paths(&dirty, &diff_paths(&incoming.stdout));
+        if !overlap.is_empty() {
+            return Ok(Err(format!(
+                "the worktree has uncommitted changes to files the merge changes: {}",
+                listed(&overlap)
+            )));
+        }
     }
     let moved = run_query(git, &argv(&["merge", "--ff-only", "--quiet", merge_oid]))?;
     if moved.code != Some(0) {
@@ -383,7 +402,17 @@ fn advance_local_branch(
             detail.lines().next().unwrap_or_default().trim()
         )));
     }
-    return Ok(Ok(()));
+    if !dirty.is_empty() {
+        // The uncommitted work must read exactly as it did; the move is already done, so a difference is reported.
+        let after = run_query(git, &status_arguments)?;
+        if after.stdout != status.stdout {
+            warn(
+                TAG,
+                "the worktree status differs after the fast-forward; compare it with the status before the commit",
+            );
+        }
+    }
+    return Ok(Ok(!dirty.is_empty()));
 }
 
 /// What:
@@ -520,7 +549,10 @@ pub fn reconcile_divergent_push(
                 .strip_prefix("refs/heads/")
                 .unwrap_or(branch_ref);
             let followed = match advance_local_branch(git, branch_ref, &local, &merge_oid)? {
-                Ok(()) => format!("{branch} and the worktree were fast-forwarded to it."),
+                Ok(false) => format!("{branch} and the worktree were fast-forwarded to it."),
+                Ok(true) => format!(
+                    "{branch} and the worktree were fast-forwarded to it; your uncommitted changes were left as they are."
+                ),
                 Err(reason) => {
                     debug(TAG, &format!("{branch} was not fast-forwarded: {reason}"));
                     format!(
