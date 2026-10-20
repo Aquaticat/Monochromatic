@@ -24,6 +24,7 @@ use crate::policy_trigger::Trigger;
 use crate::private_index_stage::{PrivateStage, stage_correction};
 use crate::candidate_object::CandidateMode;
 use crate::repository_facts::git_facts;
+use crate::signal_relay::SignalGuardActive;
 use crate::test_support::REAL_GIT;
 use crate::wrapper_controls::no_controls;
 use std::ffi::OsString;
@@ -422,7 +423,7 @@ fn a_pre_commit_hook_restaging_a_selected_file_is_kept_in_the_prepared_commit() 
 #[test]
 fn the_guard_wait_retries_only_while_another_holder_is_active() {
     let delay = std::time::Duration::from_millis(1);
-    let active = || { return std::io::Error::other("a signal guard is already active in this process"); };
+    let active = || { return std::io::Error::other(SignalGuardActive); };
     let mut calls: u32 = 0;
     let waited: std::io::Result<u32> = retry_while_active(
         || {
@@ -525,4 +526,21 @@ fn each_preparation_failure_displays_its_own_words() {
     );
     assert_eq!(PreparationError::Git(GitFailure(String::from("git words"))).to_string(), "git words");
     assert_eq!(PreparationError::Write(String::from("write words")).to_string(), "write words");
+}
+
+/// The wait recognizes the occupied guard by its type: an error that only repeats the wording is final (issue 1346).
+#[test]
+fn an_error_with_the_guard_wording_but_not_its_type_is_not_retried() {
+    let mut calls: u32 = 0;
+    let waited: std::io::Result<u32> = retry_while_active(
+        || {
+            calls += 1;
+            assert!(calls <= 1, "a look-alike error is returned at once");
+            return Err(std::io::Error::other("a signal guard is already active in this process"));
+        },
+        5,
+        std::time::Duration::from_millis(1),
+    );
+    assert!(waited.is_err());
+    assert_eq!(calls, 1);
 }

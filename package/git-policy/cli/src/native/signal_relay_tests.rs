@@ -468,3 +468,16 @@ fn an_interrupted_wait_continues_until_the_child_exits() {
     interrupter.join().expect("interrupter finishes");
     assert!(child.wait().expect("the child is still waitable").success());
 }
+
+/// The refusal of a second guard carries its type, and nothing else is taken for it.
+#[cfg(unix)]
+#[test]
+fn only_the_refusal_of_a_second_guard_is_recognized_as_such() {
+    let first: SignalGuard = SignalGuard::install().expect("first guard");
+    let refusal: io::Error = SignalGuard::install().err().expect("a second guard is refused");
+    assert!(is_guard_active_refusal(&refusal));
+    assert_eq!(refusal.to_string(), "a signal guard is already active in this process");
+    drop(first);
+    assert!(!is_guard_active_refusal(&io::Error::other("a signal guard is already active in this process")));
+    assert!(!is_guard_active_refusal(&io::Error::from_raw_os_error(libc::EAGAIN)));
+}
