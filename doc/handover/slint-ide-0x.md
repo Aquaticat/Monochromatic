@@ -1044,7 +1044,24 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     and showed one failure, `minimap_reflection_tests::the_minimap_of_find_matches_is_the_average_of_the_windows_pixels`
     at scale 2, "differs by 99"; it did not recur in the clean run; the gate runner now takes `TAG` for a unique
     log and unit name). Stage 0b agent `a151e856e450d38e8` (migrate the 13 files, diagnose the three failures, drop
-    `renderer-software`) is running.
+    `renderer-software`) landed (agent `a151e856e450d38e8`, merged into `main` on 2026-10-20, verified by me on the
+    merged tree: `lint`, `inspect:software-renderer`, `test:bin`, `build` pass and `test:native` passed 4 of 4 runs,
+    214 tests each in about 23 s; one guard script it edited but never ran, `inspect:source-guards ... clip-edges`,
+    shows baseline pass, removed fail, restored pass). Every native test installs the GPU platform with one
+    `install_gpu_platform();` before each window constructor (18 constructors in 15 files); the headless backend and
+    the `slint/mcp` feature are gone from `test:native`; `bin/gpu-arguments.ts` gives the 11 guard scripts the same
+    device flags; both `slint` dependency entries set `default-features = false` because the default set pulled the
+    software renderer in; the task `inspect:software-renderer` fails if it is linked again. Builds with
+    `--features slint/mcp` (tasks `mcp`, `inspect:native`, the idle-cost and log-stall scripts) still link the
+    software renderer, because Slint's MCP server screenshots with it: open owner question. The three failures were
+    all assumptions about software-renderer pixels, not application bugs: the GPU anti-aliases the first and last
+    row of a fractionally placed selection rectangle (sampled rows moved inward), and the rigid-scroll test now
+    allows one level of difference in the last window row only (a clip-edge difference in FemtoVG's scissor
+    mask, read in the shader, not isolated); guard runs show both tests still fail when the guarded code is removed.
+    Load-dependent flakes seen only in the agent's parallel runs and not in my 4 runs: the rigid-scroll test once at
+    an interior row (cause unfound), `write_wait_tests` once, two `watch_tests` once (400 ms budgets). The commit
+    message of `415bc345ed` says 22 sites where it is 18 constructors in 15 files; a corrective commit comment was
+    posted (GCA).
     Stage 1 landed (agent `a54a3dbd127b14fbf`, merged into `main`, verified by me): `[profile.dev.package."*"]`
     `opt-level = 2` in the IDE `Cargo.toml` (clean debug build 49.7 s to 81.8 s, incremental rebuild unchanged at
     about 4 s, `test:native` 214 tests in about 23 s on a quiet host, measured by me after the merge) and the
