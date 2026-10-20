@@ -355,26 +355,34 @@ disjoint write scopes):
   so `cargo metadata` `build_directory` must be searched
   alongside `target/`,
   in both dir layouts).
-- follow-up subagent `9f07ca3d` (2026-10-20):
-  correct the wrong diagnosis in
+- follow-up subagent `9f07ca3d`: DONE 2026-10-20,
+  `32308cbf48` corrects the libghostty-vt staging diagnosis in
   `doc/troubleshooting/mise-dependency-freshness.md`
-  (it called the staging failure build-order),
-  and verify then repoint the stale plural
-  `ZIG_GLOBAL_CACHE_DIR` in root `.cargo/config.toml`.
+  (WR6 correction note plus a durable `cargo metadata`
+  `build_directory` lesson),
+  `bd5e135a03` repoints `ZIG_GLOBAL_CACHE_DIR`
+  in root `.cargo/config.toml`
+  (measured live-but-wrong with a build-script env probe;
+  the singular `package/` cache holds 437M).
   Separate commits per incident.
 
 The lead holds `doc/handover/` edits and cross-agent integration.
 
-### 2026-10-20 worktree reset incident (extraction data loss)
+### 2026-10-20 uncommitted-work loss incident (extraction)
 
 Around 17:52-17:53 EDT,
-a concurrent session's git merge/reset on `main`
-(commits `949f319816`,
-`d5169ed184`,
-later `8b0860d75e`/`63991e9923`;
-several sessions keep merging `origin/main`)
-hard-reset the worktree and destroyed extraction fork `40eef920`'s
-UNCOMMITTED work:
+extraction fork `40eef920`'s UNCOMMITTED work vanished.
+The first attribution
+(a concurrent session's `git merge`/`reset` on `main`)
+is retracted 2026-10-20:
+`cli-git`'s `linked-worktree-only` policy rejects `reset`,
+`stash`,
+and deleting `clean` in the main worktree
+(`GuardedCommand` is `stash` | `clean` | `reset`),
+and `git reflog` shows no reset in the window,
+only ordinary commits
+and the landing machinery's fast-forward merges.
+Lost:
 
 - destroyed: the staged `git mv` batch
   (36 core files plus 17 tests into `package/agent-harness-shared/advisor/src`)
@@ -417,6 +425,25 @@ Then `pnpm install` for the lockfile,
 file-enforcer,
 verification,
 README.
+First recovery commit landed 18:02:14 as `093f32832a`
+(`refactor(agent-harness-shared-advisor): move the advisor core files`).
+
+Cause candidates (open,
+undetermined):
+
+1. The landing machinery rewrites the index itself
+   (`git reset --quiet <landed_tree> --`,
+   `package/git-policy/cli/src/native/landing_index.rs:304`),
+   and two subagent commits landed at 17:52:18 and 17:53:06,
+   the exact claimed loss window;
+   its e2e invariants `index-no-revert` and `worktree-preserved`
+   name this failure mode.
+2. `git checkout` and `git restore` are not guarded
+   (see `GuardedCommand` above),
+   so any session or stray agent can discard uncommitted state
+   without a wrapper rejection
+   (another session's handover at 18:05:52 warns of stray agent loops).
+3. The fork's own action is not excluded.
 
 ### Unknowns
 
@@ -483,3 +510,8 @@ Implementation,
 6. Fixture-profile verification, then the Q10 live install.
 7. READMEs, planning doc, GitHub issue (`needs-triage`),
    and this handover's completion record.
+8. Investigate the uncommitted-work loss lead in `git-policy`
+   (see the loss incident's cause candidates):
+   the landing `reset --quiet` index rewrite versus staged renames,
+   and unguarded `checkout`/`restore`;
+   fold into the issue work if it is a real machinery bug.
