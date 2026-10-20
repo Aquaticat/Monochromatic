@@ -78,7 +78,7 @@ for (const scheme of ['light', 'dark']) {
     const inspection = join(directory, 'annotations.json');
     writeFileSync(inspection, JSON.stringify(injected, null, 2));
     const env = { ...process.env, HELIX_RUNTIME: resolve(runtime), IDE_INSPECT_ANNOTATIONS: inspection, XDG_CONFIG_HOME: join(directory, 'config'), XDG_CACHE_HOME: join(directory, 'cache'), XDG_DATA_HOME: join(directory, 'data') };
-    for (const key of ['CARGO_MANIFEST_DIR', 'SLINT_BACKEND', 'SLINT_MCP_PORT', 'SLINT_SCALE_FACTOR']) delete env[key];
+    for (const key of ['CARGO_MANIFEST_DIR', 'SLINT_BACKEND', 'SLINT_SCALE_FACTOR']) delete env[key];
     const socket = join(directory, 'control.sock');
     const child = spawn(compositor, ['--socket', socket, '--size', size, '--color-scheme', scheme, '--', application, project, '--file', 'sample.rs'], { cwd: '/', env, stdio: ['ignore', 'pipe', 'pipe'] });
     const chunks = [];
