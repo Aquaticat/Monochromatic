@@ -37,3 +37,35 @@ run = ["cp ../cli/Cargo.lock Cargo.lock", "cargo update --workspace --offline"]
 [tasks."lock:members"]
 description = "Record a changed dependency or dependency version of the subject in this lockfile without moving any other locked version"
 run = "cargo update --offline --workspace"
+
+[tasks.'lint:oxlint']
+extends = "lint:oxlint"
+
+[tasks.'lint:oxlint:paths']
+description = "Lint explicitly selected git-policy-cli.fuzz source paths without unrelated package diagnostics"
+usage = 'arg "[paths]" var=#true help="Package-relative files to lint"'
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.dispatch_workspace_node}}
+{{vars.parse_usage_args}}
+const files = parseUsageArgs(process.env.usage_paths ?? '')
+if (files.length === 0) { throw new Error('lint:oxlint:paths requires at least one file') }
+ensureOxlintConfig()
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', files)
+"""
+
+[tasks."format:oxlint"]
+extends = "format:oxlint"
+
+[tasks.'format:oxlint:paths']
+description = "Auto-fix explicitly selected git-policy-cli.fuzz paths with Oxlint without touching unrelated package files"
+usage = 'arg "[paths]" var=#true help="Package-relative files to fix"'
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.dispatch_workspace_node}}
+{{vars.parse_usage_args}}
+const files = parseUsageArgs(process.env.usage_paths ?? '')
+if (files.length === 0) { throw new Error('format:oxlint:paths requires at least one file') }
+ensureOxlintConfig()
+runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['--fix', ...files])
+"""
