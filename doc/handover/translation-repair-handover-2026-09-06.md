@@ -519,7 +519,10 @@ its "Next" list is still the queue the merge went ahead of.
 - The naturalness sheet (B704),
   the footnote reorder (B705)
   and the CRLF note carry (B706) are fixed on `091dbacf36`,
-  gated as g125;
+  gated as g125
+  (2565 `[PASS]` lines,
+  no `[FAIL]` line)
+  and landed in `eaa250287d`;
   none changes a shipped pinned page,
   so the branch worktree stays at `a5dc23c5bb`
   ([the readiness signal](../planning/translation-repair-readiness-signal.md)).
@@ -620,7 +623,6 @@ its "Next" list is still the queue the merge went ahead of.
     - The census of which model-facing sheets show the notes between translators runs in the worktree `w233`;
       review,
       gate and ledger it when it reports.
-    - Land `091dbacf36` (B704 to B706) when gate g125 is green.
     - The class of the `zheermao15` read is ledger B702.
     - The guard of B701 stays open and undecided:
       the rotation sweep as an expensive mise task,

@@ -900,7 +900,10 @@ Status:
 fixed on 2026-10-20 (UTC),
 red `02a3d4e855`,
 fix `19c50a6cd4`,
-gated with the fixes of B704 and B706 as g125.
+gated with the fixes of B704 and B706 as g125
+(2565 `[PASS]` lines,
+no `[FAIL]` line)
+and landed in `eaa250287d`.
 No cache version moved.
 
 `reorderFootnoteDefinitions` (`archive/src/archive-footnote-order.ts`) bounds each definition by the parse's block,

@@ -609,7 +609,10 @@ red `984b1f030a`,
 fix `b3e2ec47fa`,
 `CONSOLIDATE_CACHE_VERSION` 27 to 28 in `6a28f54beb`,
 pinned key `bfe7cee84f`,
-gated with the fixes of B705 and B706 as g125.
+gated with the fixes of B705 and B706 as g125
+(2565 `[PASS]` lines,
+no `[FAIL]` line)
+and landed in `eaa250287d`.
 
 `buildAbsoluteNaturalnessReviewMessages` (`archive/src/absolute-naturalness-review-wire.ts`)
 showed the candidate and each numbered paragraph with every note,

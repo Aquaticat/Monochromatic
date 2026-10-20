@@ -747,7 +747,10 @@ Status:
 fixed on 2026-10-20 (UTC),
 red `a6a7707956`,
 fix `259fc4200a`,
-gated with the fixes of B704 and B705 as g125.
+gated with the fixes of B704 and B705 as g125
+(2565 `[PASS]` lines,
+no `[FAIL]` line)
+and landed in `eaa250287d`.
 No cache version moved:
 the notes are put back after the judging.
 
