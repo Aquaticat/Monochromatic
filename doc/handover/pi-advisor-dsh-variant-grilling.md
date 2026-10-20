@@ -445,6 +445,11 @@ undetermined):
    (another session's handover at 18:05:52 warns of stray agent loops).
 3. The fork's own action is not excluded.
 
+The candidates were filed as GitHub issue `#1791`
+for Claude,
+the git wrapper's owner;
+wrapper fixes are out of scope for this series.
+
 ### Unknowns
 
 - Resolved:
@@ -510,8 +515,18 @@ Implementation,
 6. Fixture-profile verification, then the Q10 live install.
 7. READMEs, planning doc, GitHub issue (`needs-triage`),
    and this handover's completion record.
-8. Investigate the uncommitted-work loss lead in `git-policy`
-   (see the loss incident's cause candidates):
-   the landing `reset --quiet` index rewrite versus staged renames,
-   and unguarded `checkout`/`restore`;
-   fold into the issue work if it is a real machinery bug.
+8. DONE 2026-10-20:
+   the git-wrapper defects and UX problems are filed as
+   GitHub issue `#1791`
+   (`cli-git: uncommitted work can vanish with no guard and no log`),
+   `needs-triage`,
+   for Claude,
+   who owns the git wrapper.
+   No wrapper fixes in this series.
+   Filed findings:
+   unguarded `checkout`/`restore` can discard uncommitted state,
+   the landing `reset --quiet` index rewrite can revert staged work,
+   read-only `git stash` subcommands are over-blocked,
+   no audit trail exists for state-discarding operations,
+   and the auto-push ff-only sync advice cannot be followed
+   in dirty agent worktrees.
