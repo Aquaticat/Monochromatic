@@ -719,9 +719,14 @@ its "Next" list is still the queue the merge went ahead of.
       (suite 2631 pass and 0 fail,
       lint red only on the inherited 105).
       `zheermao18` launched at 22:22 UTC on that build;
-      its first NeuralWatt call measured 0.0167 Wh and reported `request_cost_usd` 0.000107,
-      the billed stop read NeuralWatt dry,
-      and the run went on spending Hyper until it was stopped at 22:30 UTC after 21 Hyper calls.
+      its first NeuralWatt call used 0.0167 Wh,
+      a tiny share of the day's 550 Wh,
+      yet reported a `request_cost_usd` of 0.000107.
+      The meter as built never looked at the energy here:
+      it took any cost above zero as proof that the free energy was spent and the plan was being charged,
+      so after that one call it marked NeuralWatt out of energy until 00:00 UTC.
+      That rule was the defect.
+      The run went on spending Hyper until it was stopped at 22:30 UTC after 21 Hyper calls.
       The owner read the dashboard
       ("Your call only used 60.3J,
       which isn't even 0.0%")
