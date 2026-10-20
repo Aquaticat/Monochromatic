@@ -1,0 +1,155 @@
+# `@monochromatic-dev/dsh-plugin-advisor`
+
+In-process Cordis plugin that brings the pi Advisor, an independent reviewer for
+the primary coding agent, to the DeepSeek Harness through the shared Advisor
+core in `package/agent-harness-shared/advisor` and the DSH host services.
+
+The package is `private: true` and installs as a Harness bundle patch
+(`dsh.bundle.patch` points at `./cordis.patch.yml`).
+
+## Host API surface
+
+`src/index.ts` exports the plugin contract the Harness Loader consumes:
+
+- `name`: `'advisor'`.
+- `inject`: `tools`, `commands`, `llm`, `systemPrompt`, `workingDirectory`.
+- `Config`: an empty Schemastery object row. Structural fields only; every
+  behavioral setting lives in the unified `pi-advisor.json` files.
+- `apply(ctx)`: one async `ctx.effect` that loads the enablement seed, builds
+  the session state, and registers the tool, the command, and the
+  `tool:advisor` system-prompt section (order `2_500`, between the tool-goal
+  and tool-workflow orders). The effect disposer unregisters all three and
+  disposes any adopted tool mask.
+
+All review work runs against `ctx.llm` (the `LlmRuntime` surface:
+`listProviders`, `listModels`, `resolveModelInfo`, `stream`). The pi-ai type
+vocabulary is imported type-only; no pi runtime module is imported by this
+package's own code.
+
+## Tool and command parity
+
+The `advisor` tool and the `/advisor` command share one execution core
+(`executeDshAdvisorToolCall`, `runDshAdvisorCommand`, `runDshAdvisorReview`),
+so both forms resolve models, build context, and render results identically.
+
+- `advisor` tool arguments: `model` (exact scoped reviewer slug, model id, or
+  unique model name) and `question` (focused review question). The canonical
+  JSON tool value carries `text` (review prose), `details` (operation ledger,
+  attempted models, aggregate usage), and `progress` (the folded progress
+  paragraph). The result renderer leads with the operation summary when the
+  details parse as an operation view, falls back to raw text for unrenderable
+  replays, and always appends the progress tail.
+- Tool calls run sequentially (`isConcurrencySafe` returns `false`), matching
+  pi's `executionMode: 'sequential'`, because default recovery mutates shared
+  operation state.
+- `/advisor` forms: bare (default reviewer review), `/advisor <slug>` (exact
+  reviewer), `/advisor status`, `/advisor off`, `/advisor on`. `off` masks the
+  tool through `ctx.tools.restrict` and records the disposer; `on` lifts the
+  mask. Cancellation reports `Advisor review cancelled.`; failures persist the
+  operation ledger as a durable `advisor/operation` session event and return
+  the error text.
+
+The tool description and prompt section carry the pi prompt snippet plus the
+four prompt guidelines unchanged. One text deviation is deliberate: the
+description says the default pick is the `largest-context-window` model, where
+pi says `highest expected-cost`, because the DSH ranking policy orders by
+context window.
+
+## Config locations
+
+Behavioral settings live only in the unified JSON files, merged global under
+project:
+
+- Global: `~/.pi/agent/extensions/pi-advisor.json`.
+- Project: `.pi/extensions/pi-advisor.json` under the session working
+  directory.
+
+The merged document includes `enabled` and `defaultReviewerModel`. The
+`defaultReviewerModel` value is user-owned configuration (for example
+`opencode-go/kimi-k3`); it is never a schema default and never written to
+`~/.pi/agent/settings.json`. The plugin enablement seed is read once at
+activation from `process.cwd()`; each operation re-reads the merged config for
+the session's own working directory.
+
+## Reviewer selection order (Q12)
+
+Selection prefers, in order:
+
+1. An explicit `model` argument or `<slug>` command form: exact scoped match
+   only, never a fallback.
+2. `defaultReviewerModel` when it resolves inside the current scope: it picks
+   the initial reviewer of a default call.
+3. The variant fallback ranking supplied through the Stage 2b seam
+   (`rankDefaultAdvisorCandidates` in the shared core): DSH ranks eligible
+   candidates by largest `contextWindow`, then model `name`, then canonical
+   slug, with the observed windows recorded in the selection reason.
+
+Serial fallback across reviewers and the overlap suppression are unchanged
+from pi.
+
+## Recorded behavior picks
+
+- Unknown context window: `128_000` tokens.
+- Unknown output capacity: the model stays eligible and the request sets
+  `maxTokens = maxAdvisorOutputTokens`.
+- Reasoning: efforts named or identified `max` are never sent; the greatest
+  remaining effort is sent, and `reasoningEffort` is omitted when a route
+  advertises none (Q5 pick).
+- Credits: `QUOTA` and `ACCOUNT_QUOTA` failures append the
+  `insufficient_quota` marker so provider exclusion keeps pi parity.
+- Usage (Q6 pick): provider totals are preserved; absent totals fall back to
+  the disjoint-counter sum; cost is always zero; reasoning tokens are passed
+  through only when reported.
+- `getAvailable` equals `getAll`; `getApiKeyAndHeaders` always answers
+  `{ok: true}` because `ctx.llm` resolves credentials.
+
+## Reviewer-fallback decision (2026-10-20)
+
+Tier 2 of the reviewer-fallback chain is the initial reviewer of the call: a
+default call starts at the resolved default (or fallback) reviewer and only
+then walks the ranked list. This decision is veto-flagged in the planning
+record and mirrored in the DSH variant so both harnesses share one recovery
+behavior.
+
+## Capability gaps and fallbacks
+
+- Derived assistant history carries no provider accounting: converted
+  messages get a fabricated zero `Usage`, a `stopReason` of `toolUse` or
+  `stop`, and the snapshot timestamp.
+- Usage-only stream updates publish empty text deltas to the completion seam.
+- `AssistantMessageEventStream` is nominal; `provider.ts` asserts the structural
+  `DshAdvisorStreamSurface` to that type once at the shim boundary.
+- `auth.resolve` is a stub returning `undefined`; credentials arrive through
+  `ctx.llm`.
+- Image and file blocks render as placeholder text
+  (`[image: name (WxH, mime)]`, `[file: name (N bytes)]`) because the review
+  prompt consumes text only.
+- Progress from `onUpdate` snapshots folds into the result text tail.
+- Failed operations persist their ledger through a durable
+  `advisor/operation` session event instead of pi's session-persistence
+  handle; non-message events never enter `deriveMessages()`.
+- The session toggle and the tool mask are plugin-process scoped
+  (`ctx.tools.restrict` is global to the plugin instance).
+- `advisorDetailsAsJsonValue` normalizes details through a JSON pass so the
+  readonly shared shapes become mutable `JsonValue` for the tool schema.
+- The shared core imports `estimateTokens` from `@earendil-works/pi-coding-agent`
+  and `getSupportedThinkingLevels`/`normalizeContext` from
+  `@earendil-works/pi-ai` at runtime; both are therefore peer and dev
+  dependencies here even though this package's own code is type-only against
+  pi.
+- There is no `verify:extension` analogue in `mise.toml`; live
+  `plugin_manager` install and fixture-profile verification are owned
+  outside this package.
+
+## Development
+
+```bash
+# package/dsh-plugin/advisor
+mise run //package/dsh-plugin/advisor:build
+mise run //package/dsh-plugin/advisor:lint:types
+mise run //package/dsh-plugin/advisor:lint
+mise run //package/dsh-plugin/advisor:test:unit
+```
+
+Tests import the built artifact from `../dist/final/node/index.mjs` and cover
+every exported module; test helpers follow `testing-practices`.
