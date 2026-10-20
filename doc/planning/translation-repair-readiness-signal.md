@@ -282,6 +282,18 @@ this section is the readiness reading of it.
   No further hunt runs there,
   since Hyper's 111 left is kept for the runs that count;
   the rotation restarts at `zheermao101` on the build that carries the fix.
+- It restarted on `5ae2173d23`,
+  the build with the fixes of B707,
+  B708 and B709:
+  `zheermao17` shipped SETTLED with no class
+  ([the pass log of 2026-10-20](translation-repair-openrouter-2026-09-03-2026-10-20.md)),
+  the first read that counts on that build.
+  It spent 65 of Hyper's 110,
+  so `CuspariaKLSY` was not launched:
+  the NeuralWatt provider the owner added on 2026-10-20 serves two of the seats Hyper paid for,
+  it changes the build,
+  and a read on `5ae2173d23` would stop counting once it lands.
+  The rotation restarts at `zheermao101` on the build that carries NeuralWatt.
 - The entries never run on a recent build are the rest of the 92-entry corpus.
   The owner's rule stands:
   "We never ever need a all 92 entries launch";
@@ -297,3 +309,10 @@ this section is the readiness reading of it.
   So the next rotation runs mostly on OpenRouter seats,
   3 of 7 seats within reach of the contest and consolidation lanes as in `XingZ6015`'s later lanes,
   and `XingZ6015` alone spent 5.80 USD of OpenRouter.
+  At the end of `zheermao17` (19:54 UTC on 2026-10-20) Hyper held 45,
+  OpenRouter 15.23 USD and Bedrock 5.02 USD,
+  and Synthetic had gone dry at 19:38 UTC.
+  NeuralWatt's 550 Wh a day of free energy on `deepseek-v4.1-flash` and `glm-5.3-flash`
+  (owner,
+  2026-10-20)
+  reaches the 119 and 50 asks those two seats took in `zheermao17`.

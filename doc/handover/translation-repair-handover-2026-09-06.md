@@ -638,8 +638,14 @@ its "Next" list is still the queue the merge went ahead of.
       Its first launch at 18:58 UTC stopped before `START`,
       the branch worktree uninstalled since `a5dc23c5bb` (M285);
       no provider was called.
-      Read the page when the waiter on `^DONE processed=` fires,
-      then go on with CuspariaKLSY,
+      It settled with no class
+      (read at 20:30 UTC;
+      the pass log of 2026-10-20),
+      and spent 65 of Hyper's 110.
+      `CuspariaKLSY` waits:
+      the NeuralWatt build changes the digest,
+      so the rotation restarts at `zheermao101` once it lands,
+      then CuspariaKLSY,
       XingZ60,
       yingying,
       hulicaijia,
