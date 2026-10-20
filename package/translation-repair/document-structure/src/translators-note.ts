@@ -316,11 +316,14 @@ type Cut = {
  ```
  */
 function isQuoteHead({ head, }: { readonly head: string; },): boolean {
-  return head.includes('>',)
-    && Array.from(head,)
-      .every(function isMarkerOrSpace(character,): boolean {
-        return (character === '>') || isWhitespace({ character, },);
-      },);
+  /**
+   The head's characters.
+   */
+  const characters = Array.from(head,);
+  return characters.includes('>',)
+    && characters.every(function isMarkerOrSpace(character,): boolean {
+      return (character === '>') || isWhitespace({ character, },);
+    },);
 }
 
 /**
