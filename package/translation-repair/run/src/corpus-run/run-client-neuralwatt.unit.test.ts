@@ -211,6 +211,53 @@ await describe({
     },),
 
     it({
+      name: 'REPORTS THE PLAN ENERGY SPENT BETWEEN THE FIRST NEURALWATT CALL AND THE RUN\'S END: one quota read before '
+        + 'the call and one at the end, their difference printed, and nothing read by a run that made no call',
+      fn: async () => {
+        await runEndReports();
+        await using scratch = await scratchDir({ prefix: 'run-client-neuralwatt-', },);
+        /**
+         Quota replies in the order the account would give them: before the call, then after it.
+         */
+        const quotas = [
+          QUOTA_BODY,
+          QUOTA_BODY.replace('"kwh_used":13.9', '"kwh_used":13.9005',),
+        ];
+        /**
+         Quota reads answered so far.
+         */
+        const reads = { count: 0, };
+        const client = runClientFrom({
+          env: {
+            [NEURALWATT_KEY_VAR]: 'tabby-not-a-real-key',
+            [NEURALWATT_LEDGER_PATH_VAR]: join(scratch.path, 'neuralwatt-energy.jsonl',),
+          },
+          transport: async function answer(exchange: TransportExchange,) {
+            if (exchange.method !== 'GET')
+              return { status: 200, bodyText: NEURALWATT_STREAM, };
+            const bodyText = quotas[Math.min(reads.count, quotas.length - 1,)] ?? QUOTA_BODY;
+            reads.count += 1;
+            return { status: 200, bodyText, };
+          },
+        },);
+        await client.chatText({
+          modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
+          messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
+          signal: new AbortController().signal,
+        },);
+        expect(reads.count,).toBe(1,);
+        /**
+         The lines the run's end prints.
+         */
+        const lines = await runEndReports();
+        expect(reads.count,).toBe(2,);
+        expect(lines.length,).toBe(1,);
+        expect(lines[0],).toContain('PLAN ENERGY SPENT',);
+        expect(lines[0],).toContain('0.5 Wh',);
+      },
+    },),
+
+    it({
       name: 'NAMES THE NEURALWATT KEY AMONG THE VARIABLES A RUN CANNOT START WITHOUT, when no key at all is set',
       fn: async () => {
         /**
