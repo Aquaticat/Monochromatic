@@ -282,7 +282,14 @@ The key's value is masked in every logged exchange by the same credential maskin
 ## Not verifiable without a key
 
 - That `request_cost_usd` is 0 on a free standard-lane request.
-  The documentation says it may be.
+  The energy methodology page
+  (`https://docs.neuralwatt.com/energy-methodology.md`,
+  read 2026-10-20 at 21:40 UTC)
+  defines it as the "Billed cost for this request in USD"
+  and names "`0` for trial and free requests";
+  the daily free energy page says of covered requests "you pay nothing for them until it runs out for the day".
+  Neither page names the free-energy case in the cost field's own description,
+  so a zero there is the reading both pages support and not a stated fact.
   If it is not,
   the first call would end the day for NeuralWatt,
   and the log would say so.
@@ -314,6 +321,22 @@ The Bedrock decision moved none either.
 This is not a claim that anything rides inside an existing version:
 no existing version's account is edited,
 and `slice-cache:cache-account-audit` reads the unchanged accounts.
+The Bedrock credit paragraphs in those accounts
+(for example `lane-contest/src/lane-contest-key.ts`)
+say that moving a Gemma call from Bedrock to OpenRouter sooner "changes whose voices a round hears",
+and they record it as riding inside version 6 only after checking that no slice-cache file was newer than that version.
+The Synthetic quota change of 2026-10-19
+(`package/translation-repair/doc/audit-ledger-follow-ups-emphasis-definitions-cache-accounts-and-synthetic-quota.md`)
+is the later precedent:
+"Routing changes whose voices a round hears",
+no version moved,
+and the commits went "to the next pre-launch account with the rest".
+These commits follow that precedent.
+The model id is unchanged on every call,
+so a cached decision is still a decision of the same model,
+and a bump would discard caches that remain valid.
+Adopted on that reading 2026-10-20 at 21:40 UTC,
+open to the owner's veto.
 
 ## Rejected
 
