@@ -8,14 +8,20 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 import { runArchiveBlockReviewStage, } from '@monochromatic-dev/translation-repair-archive/ts';
 import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { UnclaimedTargetBlock, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import {
+  hashContent,
+  withoutTranslatorsNotes,
+} from '@monochromatic-dev/translation-repair-document-structure/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   type BenchSeating,
   sameWording,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
-import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
+import {
+  rendersAsNothing,
+  wordForCount,
+} from '@monochromatic-dev/translation-repair-typography/ts';
 import {
   keptNotesFinding,
   withBlockNotes,
@@ -318,15 +324,31 @@ export async function repairArchiveBlocks(
       block.startOffset,
       block.endOffset,
     );
-    // EACH BLOCK IS REVIEWED BY THE ROSTER ITS HOOK HANDS OVER (ledger X12,
-    // 2026-09-28): a dry-out inside the review left every later block on the
-    // roster read before it.
-    /* oxlint-disable no-await-in-loop -- Reverse-offset block corrections must settle in document order, each block asked of the bench as it stands. */
     /**
      Original section the block is reviewed against, whose own comments are
      the lanes' to carry.
      */
     const source = sourceContexts.get(identity,) ?? '';
+    /**
+     The block as the reviewers' sheet shows it, without its notes.
+     */
+    const shown = withoutTranslatorsNotes({
+      text: blockText,
+      original: source,
+    },);
+    // A BLOCK OF NOTHING BUT NOTES IS NOT ASKED ABOUT: the sheet shows the
+    // reviewers the block without its notes (`archive-block-review-wire.ts`),
+    // which leaves nothing, and no reader sees what stands there. A block that
+    // holds no note and shows nothing is reviewed as it always was.
+    if ((shown !== blockText) && rendersAsNothing({ text: shown, },)) {
+      repairLog.info(`block ${identity} holds only notes between translators and stands as the archive wrote it`,);
+      findings.push(`archive block holds only notes between translators and stands: ${identity}`,);
+      continue;
+    }
+    // EACH BLOCK IS REVIEWED BY THE ROSTER ITS HOOK HANDS OVER (ledger X12,
+    // 2026-09-28): a dry-out inside the review left every later block on the
+    // roster read before it.
+    /* oxlint-disable no-await-in-loop -- Reverse-offset block corrections must settle in document order, each block asked of the bench as it stands. */
     /**
      Seating the hook hands this block: a roster read under a hold, or none,
      which keeps the one the review started on.
