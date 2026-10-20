@@ -61,6 +61,43 @@ export type ProberShown = {
 };
 
 /**
+ The texts whose comments are the original's own on a prober's sheet: the
+ original, and the original next door.
+
+ THE ONE DEFINITION BOTH SIDES OF THE SHEET READ. The sheet cuts the notes
+ between translators from every translation text against these texts
+ (`proberShownTexts`), and the quotes the probers copy out of it are screened
+ against the same texts (`screenIntroducedDefects`); two spellings of the list
+ could disagree about which comment is the original's.
+
+ @param sourceText - original chunk text
+
+ @param neighbouringSourceText - original next door, absent when the slice
+ stands alone
+
+ @returns The texts joined by line feeds, for `withoutTranslatorsNotes`
+
+ @example
+ ```ts
+ const original = proberOriginalOf({ sourceText, },);
+ ```
+ */
+export function proberOriginalOf(
+  {
+    sourceText,
+    neighbouringSourceText,
+  }: {
+    readonly sourceText: string;
+    readonly neighbouringSourceText?: string;
+  },
+): string {
+  return [
+    sourceText,
+    neighbouringSourceText ?? '',
+  ].join('\n',);
+}
+
+/**
  Cuts the notes between translators from every translation text a prober reads.
 
  @param sourceText - original chunk text, whose own comments stay
@@ -98,10 +135,10 @@ export function proberShownTexts(
   /**
    Texts whose comments are the original's own.
    */
-  const original = [
+  const original = proberOriginalOf({
     sourceText,
-    neighbouringSourceText ?? '',
-  ].join('\n',);
+    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+  },);
   return {
     baseline: withoutTranslatorsNotes({
       text: baselineText,

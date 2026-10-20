@@ -259,7 +259,8 @@ await describe({
           stageSettings: SCRIPTED_STAGE_SETTINGS,
         },);
         expect(asks.flat().some(function showsNote(message,): boolean {
-          return message.content.includes('这句不太对劲',);
+          return JSON.stringify(message.content,)
+            .includes('这句不太对劲',);
         },),).toBe(false,);
         expect(answer.verdict
           .kind,).toBe('carried',);

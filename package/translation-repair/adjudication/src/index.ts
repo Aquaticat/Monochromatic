@@ -48,7 +48,10 @@ export {
   retainAttributions,
   type SliceCriticRecord,
 } from './critic-attribution.ts';
-export { buildCriticMessages, } from './critic-prompt.ts';
+export {
+  buildCriticMessages,
+  criticOriginalsOf,
+} from './critic-prompt.ts';
 export {
   CRITIC_RESPONSE_FORMAT,
   type CriticIssueResolution,
@@ -82,6 +85,7 @@ export {
   UPHELD_ADMISSIBILITY,
 } from './introduced-defect-screen.ts';
 export {
+  proberOriginalOf,
   proberShownTexts,
   type ProberShown,
   type ShownRegion,

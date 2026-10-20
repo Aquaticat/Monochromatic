@@ -21,6 +21,7 @@ import {
   resolveProberChecks,
   screenIntroducedDefects,
 } from './introduced-defect-screen.ts';
+import { proberOriginalOf, } from './introduced-defect-shown.ts';
 import type { RepairRegion, } from './repair-region.ts';
 import {
   gatherStageVoices,
@@ -264,6 +265,11 @@ export async function runIntroducedDefectProbe(
     regions,
     ballots,
     issues,
+    // The regions are screened as the sheet showed them, against the same originals it was cut against.
+    original: proberOriginalOf({
+      sourceText,
+      ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+    },),
   },);
 
   /**
