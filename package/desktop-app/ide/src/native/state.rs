@@ -107,6 +107,7 @@ impl State {
             tiles_applied: 0,
             #[cfg(debug_assertions)]
             tiles_discarded: 0,
+            #[cfg(debug_assertions)]
             worker_failures: Vec::new(),
             #[cfg(debug_assertions)]
             pass_applied: 0,
