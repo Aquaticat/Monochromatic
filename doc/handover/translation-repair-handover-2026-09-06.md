@@ -624,26 +624,20 @@ its "Next" list is still the queue the merge went ahead of.
       2605 `[PASS]` lines,
       no `[FAIL]` line;
       ledger B708).
-    - A judge's quote that crosses a place where a note was cut finds nothing in the stored text;
-      3 of the 34 pinned notes stand where that can happen,
-      in zheermao101,
-      XingZ60 and shihai4h.
-      An agent fixes it in the worktree `w240` from the brief `x15-fix/quote-cross-brief.md` under the agent scratch
-      directory;
-      review,
-      gate,
-      ledger and land it.
+    - A quote copied from a sheet that cut the notes is read in the shown text and mapped back to the stored text,
+      merged as `1851eab22e` after gate g128
+      (145 steps exited 0,
+      2608 `[PASS]` lines,
+      no `[FAIL]` line;
+      ledger B709).
+      The census's commit `43e735f7da` carries the comment its message needed.
     - Then move the branch worktree to the build that carries all three,
-      set the launch script's frozen digest from that build
-      (`x15-read/digest-build.ts` under the agent scratch directory prints it from a worktree's built corpus-pass,
-      and reproduced the digest of `a5dc23c5bb` from `w226`),
-      and restart the rotation at `zheermao101`.
-      The restart waits for the quote fix,
-      since zheermao101 and XingZ60 hold a note a quote can cross and Hyper's 111 left will not be recharged.
-    - Post a comment on `43e735f7da`:
-      its body says the pinned keys land in the next commit;
-      they landed two commits later,
-      in `31c0c8d9ad`.
+      set the launch script's frozen digest to `sha256-tree-v1:ee83b531c14ff55286558920e0b21a0d5c43fda1325ffc4ede74c1bec7d6e2ef`
+      (printed from the gated build in `w241` by `x15-read/digest-build.ts` under the agent scratch directory,
+      the script that reproduced the digest of `a5dc23c5bb` from `w226`),
+      and restart the rotation at `zheermao101` with the run `zheermao17`.
+    - Post comments on `64d40cb4ff` and `768b081ee5`,
+      whose subjects name the wrong commit type (B709).
     - The class of the `zheermao15` read is ledger B702.
     - The guard of B701 stays open and undecided:
       the rotation sweep as an expensive mise task,

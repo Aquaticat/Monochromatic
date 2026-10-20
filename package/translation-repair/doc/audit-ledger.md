@@ -484,7 +484,8 @@ named for that subject and listed here.
   Offsets,
   headings and slices of one text applied to another that does not line up with it,
   a leading byte order mark among the causes,
-  and a heading series that lost the original's numbers where the archive heads it by name alone (B695).
+  a heading series that lost the original's numbers where the archive heads it by name alone (B695),
+  and a quote copied from a sheet that cut the notes between translators searched in the stored text (B709).
 - [Audit ledger: repeated wording and ids on a page](audit-ledger-repeated-wording-and-ids-within-one-text.md):
   Titles,
   links,
