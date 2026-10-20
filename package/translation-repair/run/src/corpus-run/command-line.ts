@@ -12,6 +12,7 @@ import type {
   CommandLineSpec,
   FlagValue,
 } from './command-line-types.ts';
+import type { ReadonlyEntry, } from '../readonly-entry.ts';
 
 //region Command line
 // THE ONE READER OF THE WHOLE COMMAND LINE every runner takes (ledger B75).
@@ -391,10 +392,10 @@ function countRefusals(
    or was dropped in favour of the first, without a word either way.
    */
   const repeated = [...timesWritten,]
-    .filter(function isRepeated([, times,],): boolean {
+    .filter(function isRepeated([, times,]: ReadonlyEntry<string, number>,): boolean {
       return times > 1;
     },)
-    .map(function repeatRefusal([name, times,],): string {
+    .map(function repeatRefusal([name, times,]: ReadonlyEntry<string, number>,): string {
       return `--${name} is written ${String(times,)} times, and is read once`;
     },);
 

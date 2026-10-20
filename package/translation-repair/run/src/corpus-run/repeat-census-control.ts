@@ -1,3 +1,5 @@
+import type { ReadonlyEntry, } from '../readonly-entry.ts';
+
 //region Repeat census control
 // The positive control of the census: the entry and the source lines the design
 // reads as the live case, which every census of the pinned corpus must find,
@@ -116,10 +118,10 @@ function failuresOfReading(
       },);
   }
   return Object.entries(reading,)
-    .filter(function readFalse([, held,],): boolean {
+    .filter(function readFalse([, held,]: ReadonlyEntry<string, boolean>,): boolean {
       return !held;
     },)
-    .map(function failedName([name,],): string {
+    .map(function failedName([name,]: ReadonlyEntry<string, boolean>,): string {
       return `${source}.${name}`;
     },);
 }
