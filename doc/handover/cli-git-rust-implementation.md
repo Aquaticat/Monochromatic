@@ -1888,6 +1888,15 @@ that is verification, not a decision for the user.
   as 0.2.4 (crates.io, release `monochromatic-git-policy-cli-v0.2.4`, installed through mise); 1781 and 1784 closed.
   The host suite has one failure, `markdown_linter::tests::the_real_linter_meets_the_contract`, which needs the real
   linter that only the container has.
+  cli.fuzz scripts 2026-10-20 (committed, NOT yet run end to end because nc5 occupies the host): `bin/container.mjs`
+  is now a short main over `fuzz-options.mjs`, `fuzz-inputs.mjs`, `fuzz-images.mjs`, `fuzz-build.mjs` and
+  `fuzz-run.mjs`, on the shared async `runCommand` and `createContainer` of `cli/bin/native-verification-process.mjs`
+  (which now takes `cwd` and `env`); `bin/planted-controls.mjs` reads nextest lines without regexes, its table is
+  `planted-table.mjs` (29 plants, equal to the old table). `cli.fuzz/mise.toml` gained `lint:oxlint`,
+  `lint:oxlint:paths`, `format:oxlint` and `format:oxlint:paths`; the whole package is lint-clean. The commit says
+  "Closes #728, #729, #730"; if the checks below fail, reopen them. Checks still to run once nc5 ends:
+  `mise run //package/git-policy/cli.fuzz:build` (a heavy podman build), `:test:planted` and one `:smoke` target
+  (for example `node bin/container.mjs --targets=owner_records --seconds-per-target=5` from the package directory).
   Triage 2026-10-20: closed 632 (the perf code is gone) and 1348 (ST2 is a TypeScript rule). Reframed 629 to the Rust
   helpers still duplicated across `test_support.rs`, `command_test_support.rs` and `binary_support.rs` plus the
   byte-argument copies in `cli.fuzz`; queued behind nc2, as those files are in the mutation image. 630 stays open with
