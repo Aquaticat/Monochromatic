@@ -12,6 +12,7 @@ import {
   type HyperClient,
   hyperRequestsPerHour,
   type NeuralWattClient,
+  neuralWattDayStartFrom,
   neuralWattLedgerFromEnv,
   type OpenRouterClient,
   type ProviderBudgetsWithStates,
@@ -160,6 +161,7 @@ export function configureProviders(
     : createNeuralWattClient({
       apiKey: neuralWattKey,
       ledger: neuralWattLedgerFromEnv({ env, },),
+      dayStartSetting: neuralWattDayStartFrom({ env, },),
       transport,
     },);
   if (neuralwatt !== undefined) {

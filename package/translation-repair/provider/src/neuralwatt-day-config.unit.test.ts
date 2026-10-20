@@ -46,8 +46,8 @@ await describe({
             expect(neuralWattDayStartFrom({ env: { [NEURALWATT_DAY_START_VAR]: '23:59', }, },),).toEqual({
               msOfDay: ((23 * 60) + 59) * 60_000,
             },);
-            expect(neuralWattDayStartFrom({ env: {}, },),).toBeUndefined();
-            expect(neuralWattDayStartFrom({ env: { [NEURALWATT_DAY_START_VAR]: '   ', }, },),).toBeUndefined();
+            expect(neuralWattDayStartFrom({ env: {}, },),).toEqual({},);
+            expect(neuralWattDayStartFrom({ env: { [NEURALWATT_DAY_START_VAR]: '   ', }, },),).toEqual({},);
           },
         },),
 
@@ -61,9 +61,9 @@ await describe({
               const refusal = caught(function read(): void {
                 neuralWattDayStartFrom({ env: { [NEURALWATT_DAY_START_VAR]: value, }, },);
               },);
-              expect(refusal, value,).toBeInstanceOf(NeuralWattDayStartOverrideError,);
-              expect(String(refusal,), value,).toContain(NEURALWATT_DAY_START_VAR,);
-              expect(String(refusal,), value,).toContain(JSON.stringify(value,),);
+              expect(refusal,).toBeInstanceOf(NeuralWattDayStartOverrideError,);
+              expect(String(refusal,),).toContain(NEURALWATT_DAY_START_VAR,);
+              expect(String(refusal,),).toContain(JSON.stringify(value,),);
             }
           },
         },),
@@ -87,7 +87,7 @@ await describe({
                 ['2026-03-01T00:00:00.000Z', '2026-02-28T19:15:00.000Z',],
               ] as const
             ) {
-              expect(neuralWattDayStartAt({ now: new Date(now,), msOfDay: NAP_TIME_MS, },).toISOString(), now,).toBe(
+              expect(neuralWattDayStartAt({ now: new Date(now,), msOfDay: NAP_TIME_MS, },).toISOString(),).toBe(
                 expected,
               );
             }

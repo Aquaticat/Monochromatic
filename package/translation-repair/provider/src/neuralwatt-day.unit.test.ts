@@ -90,23 +90,31 @@ await describe({
           name: 'STARTS THE DAY AT THE LATEST INSTANT AT OR BEFORE NOW WHOSE UTC TIME OF DAY IS THE PERIOD START\'S, '
             + 'on both sides of the anchor time and on the instant itself',
           fn: async () => {
-            for (
-              const [now, expected,] of [
-                [AFTER_ANCHOR, '2026-10-20T19:15:08.000Z',],
-                ['2026-10-20T19:15:07.999Z', '2026-10-19T19:15:08.000Z',],
-                ['2026-10-20T19:15:08.000Z', '2026-10-20T19:15:08.000Z',],
-                ['2026-10-21T01:00:00.000Z', '2026-10-20T19:15:08.000Z',],
-                ['2026-10-20T00:00:00.000Z', '2026-10-19T19:15:08.000Z',],
-              ] as const
-            ) {
+            /**
+             Instants the reading is taken at, and the day each is in.
+             */
+            const cases = [
+              [AFTER_ANCHOR, '2026-10-20T19:15:08.000Z',],
+              ['2026-10-20T19:15:07.999Z', '2026-10-19T19:15:08.000Z',],
+              ['2026-10-20T19:15:08.000Z', '2026-10-20T19:15:08.000Z',],
+              ['2026-10-21T01:00:00.000Z', '2026-10-20T19:15:08.000Z',],
+              ['2026-10-20T00:00:00.000Z', '2026-10-19T19:15:08.000Z',],
+            ] as const;
+            /**
+             The day start each reading named.
+             */
+            const named = await Promise.all(cases.map(async function readAt([now,],) {
               await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-day-', },);
               const { client, } = scriptedClient({
                 dir: scratch.path,
                 clockStart: now,
                 quota: [quotaReply({ kwhUsed: 1, periodStart: PERIOD_START, }),],
               },);
-              expect((await energyOf({ client, },)).dayStart, now,).toBe(expected,);
-            }
+              return (await energyOf({ client, },)).dayStart;
+            },),);
+            expect(named,).toEqual(cases.map(function expectedOf([, expected,],): string {
+              return expected;
+            },),);
           },
         },),
 
@@ -132,49 +140,50 @@ await describe({
         },),
 
         it({
-          name: 'SAYS AT RUN START WHERE THE ANCHOR CAME FROM, the quota field or the setting, and the day it began',
+          name: 'SAYS ONCE AT RUN START THAT THE ANCHOR CAME FROM THE QUOTA\'S CURRENT_PERIOD_START, and the day it began',
           fn: async ctx => {
             await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-day-', },);
-            const fromQuota = scriptedClient({
+            const { client, } = scriptedClient({
               dir: scratch.path,
               clockStart: AFTER_ANCHOR,
               quota: [quotaReply({ kwhUsed: 1, periodStart: PERIOD_START, }),],
+            },);
+            /**
+             Lines the two readings logged.
+             */
+            const lines = await consoleLinesDuring({
+              run: async function reading(): Promise<void> {
+                await energyOf({ client, },);
+                await energyOf({ client, },);
+              },
+              sinon: ctx.sinon,
+            },);
+            expect(lines.filter(function names(line,): boolean {
+              return line.includes(TODAY_START,) && line.includes('current_period_start',);
+            },).length,).toBe(1,);
+          },
+        },),
+
+        it({
+          name: 'SAYS AT RUN START THAT THE ANCHOR CAME FROM THE SETTING when the quota gave none, and the day it began',
+          fn: async ctx => {
+            await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-day-', },);
+            const { client, } = scriptedClient({
+              dir: scratch.path,
+              clockStart: AFTER_ANCHOR,
+              quota: [quotaReply({ kwhUsed: 1, periodStartAbsent: true, }),],
+              dayStartSetting: { msOfDay: ((19 * 60) + 15) * 60_000, },
             },);
             /**
              Lines the first reading logged.
              */
             const lines = await consoleLinesDuring({
               run: async function reading(): Promise<void> {
-                await energyOf({ client: fromQuota.client, },);
-                await energyOf({ client: fromQuota.client, },);
+                await energyOf({ client, },);
               },
               sinon: ctx.sinon,
             },);
-            /**
-             Lines that name the anchor.
-             */
-            const naming = lines.filter(function names(line,): boolean {
-              return line.includes(TODAY_START,) && line.includes('current_period_start',);
-            },);
-            expect(naming.length,).toBe(1,);
-
-            await using other = await scratchDir({ prefix: 'whiskers-neuralwatt-day-', },);
-            const fromSetting = scriptedClient({
-              dir: other.path,
-              clockStart: AFTER_ANCHOR,
-              quota: [quotaReply({ kwhUsed: 1, periodStart: null, }),],
-              dayStartSetting: { msOfDay: ((19 * 60) + 15) * 60_000, },
-            },);
-            /**
-             Lines the second client's first reading logged.
-             */
-            const settingLines = await consoleLinesDuring({
-              run: async function reading(): Promise<void> {
-                await energyOf({ client: fromSetting.client, },);
-              },
-              sinon: ctx.sinon,
-            },);
-            expect(settingLines.some(function names(line,): boolean {
+            expect(lines.some(function names(line,): boolean {
               return line.includes('2026-10-20T19:15:00.000Z',) && line.includes('TRANSLATION_REPAIR_NEURALWATT_DAY_START',);
             },),).toBe(true,);
           },
@@ -188,13 +197,18 @@ await describe({
         it({
           name: 'FALLS BACK TO THE SETTING when the quota reply carries no period start or cannot be read',
           fn: async () => {
-            for (
-              const quota of [
-                [quotaReply({ kwhUsed: 1, periodStart: null, }),],
-                [new Error('connection dropped',),],
-                [{ status: 503, bodyText: 'down', },],
-              ] as const
-            ) {
+            /**
+             What the quota route does in each run: no period start, a dropped connection, a refused status.
+             */
+            const quotas = [
+              [quotaReply({ kwhUsed: 1, periodStartAbsent: true, }),],
+              [new Error('connection dropped',),],
+              [{ status: 503, bodyText: 'down', },],
+            ] as const;
+            /**
+             The day start each run named.
+             */
+            const named = await Promise.all(quotas.map(async function readWith(quota,) {
               await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-day-', },);
               const { client, } = scriptedClient({
                 dir: scratch.path,
@@ -202,8 +216,11 @@ await describe({
                 quota,
                 dayStartSetting: { msOfDay: ((19 * 60) + 15) * 60_000, },
               },);
-              expect((await energyOf({ client, },)).dayStart,).toBe('2026-10-20T19:15:00.000Z',);
-            }
+              return (await energyOf({ client, },)).dayStart;
+            },),);
+            expect(named,).toEqual(quotas.map(function expectedOf(): string {
+              return '2026-10-20T19:15:00.000Z';
+            },),);
           },
         },),
 
@@ -215,7 +232,7 @@ await describe({
             const { client, exchanges, } = scriptedClient({
               dir: scratch.path,
               clockStart: AFTER_ANCHOR,
-              quota: [quotaReply({ kwhUsed: 1, periodStart: null, }),],
+              quota: [quotaReply({ kwhUsed: 1, periodStartAbsent: true, }),],
             },);
             /**
              Reading and refusal of the run.
@@ -341,39 +358,46 @@ await describe({
           name: 'REFUSES A REPLY WHOSE PERIOD IS NOT THE WINDOW ASKED, the date-only fallback of the route included, '
             + 'and uses the ledger alone with one warning',
           fn: async ctx => {
-            for (
-              const echo of [
-                { start: '2026-10-20T00:00:00+00:00', end: '2026-10-20T00:00:00+00:00', },
-                { start: '2026-10-20T19:15:08+00:00', end: '2026-10-20T22:15:00.741000+00:00', },
-                { start: '2026-10-20T19:15:09+00:00', end: '2026-10-20T23:15:00.741000+00:00', },
-              ]
-            ) {
-              await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-day-', },);
-              const { client, } = scriptedClient({
-                dir: scratch.path,
-                clockStart: AFTER_ANCHOR,
-                quota: [quotaReply({ kwhUsed: 1, periodStart: PERIOD_START, }),],
-                usage: [usageReply({ rows: [usageRowOf({ requestedModel: 'glm-5.3-flash', kwh: 0.5, },),], echo, },),],
-              },);
-              /**
-               Reading of this case.
-               */
-              const outcome: { energy?: Awaited<ReturnType<typeof energyOf>>; } = {};
-              /**
-               Lines it logged.
-               */
-              const lines = await consoleLinesDuring({
-                run: async function reading(): Promise<void> {
-                  outcome.energy = await energyOf({ client, },);
-                },
-                sinon: ctx.sinon,
-              },);
-              expect(outcome.energy?.accountWh,).toBeUndefined();
-              expect(outcome.energy?.remainingWh,).toBe(550,);
-              expect(lines.filter(function names(line,): boolean {
-                return line.includes('/usage/by-model',) && line.includes('period',);
-              },).length,).toBe(1,);
+            /**
+             What each reply's period said, and the reading it led to.
+             */
+            const echoes = [
+              { start: '2026-10-20T00:00:00+00:00', end: '2026-10-20T00:00:00+00:00', },
+              { start: '2026-10-20T19:15:08+00:00', end: '2026-10-20T22:15:00.741000+00:00', },
+              { start: '2026-10-20T19:15:09+00:00', end: '2026-10-20T23:15:00.741000+00:00', },
+            ];
+            /**
+             Readings taken, one per echo.
+             */
+            const energies: Awaited<ReturnType<typeof energyOf>>[] = [];
+            /**
+             Lines the readings logged.
+             */
+            const lines = await consoleLinesDuring({
+              run: async function readings(): Promise<void> {
+                energies.push(
+                  ...await Promise.all(echoes.map(async function readWith(echo,) {
+                  await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-day-', },);
+                  const { client, } = scriptedClient({
+                    dir: scratch.path,
+                    clockStart: AFTER_ANCHOR,
+                    quota: [quotaReply({ kwhUsed: 1, periodStart: PERIOD_START, }),],
+                    usage: [usageReply({ rows: [usageRowOf({ requestedModel: 'glm-5.3-flash', kwh: 0.5, },),], echo, },),],
+                  },);
+                  return await energyOf({ client, },);
+                },),),
+                );
+              },
+              sinon: ctx.sinon,
+            },);
+            expect(energies.length,).toBe(3,);
+            for (const energy of energies) {
+              expect(energy.accountWh,).toBeUndefined();
+              expect(energy.remainingWh,).toBe(550,);
             }
+            expect(lines.filter(function names(line,): boolean {
+              return line.includes('/usage/by-model',) && line.includes('period',);
+            },).length,).toBe(3,);
           },
         },),
 
@@ -469,7 +493,7 @@ await describe({
               promptTokens: 1,
               estimateWh: 2,
               day: { kind: 'anchored', start: new Date(TODAY_START,), },
-            } as never,);
+            },);
             expect(outcome.granted,).toBe(true,);
             expect(await energyOf({ client, },),).toMatchObject({ accountWh: 300, reservedWh: 2, remainingWh: 248, },);
           },
@@ -496,19 +520,19 @@ await describe({
             /**
              What each reading said about the account.
              */
-            const accounts: (number | undefined)[] = [];
+            const accounts: number[] = [];
             /**
              Lines the readings logged.
              */
             const lines = await consoleLinesDuring({
               run: async function readings(): Promise<void> {
-                for (let reading = 0; reading < 5; reading += 1)
-                  accounts.push((await energyOf({ client, },)).accountWh,);
+                // IN ORDER, since each reading meets the next scripted answer of the route.
+                accounts.push(nonNullishOrThrow((await energyOf({ client, },)).accountWh,), nonNullishOrThrow((await energyOf({ client, },)).accountWh,), nonNullishOrThrow((await energyOf({ client, },)).accountWh,), nonNullishOrThrow((await energyOf({ client, },)).accountWh,), nonNullishOrThrow((await energyOf({ client, },)).accountWh,));
               },
               sinon: ctx.sinon,
             },);
-            expect(accounts.map(function rounded(wh,): number | undefined {
-              return (wh === undefined) ? wh : Math.round(wh,);
+            expect(accounts.map(function rounded(wh,): number {
+              return Math.round(wh,);
             },),).toEqual([100, 100, 100, 100, 100,],);
             expect(lines.filter(function names(line,): boolean {
               return line.includes('/usage/by-model',) && line.includes('503',);
@@ -693,7 +717,7 @@ await describe({
               quota: [quotaReply({
                 kwhUsed: 1,
                 periodStart: PERIOD_START,
-                keyAllowance: keyAllowanceOf({ remainingUsd: 0, blocked: true, resetAt: null, }),
+                keyAllowance: keyAllowanceOf({ remainingUsd: 0, blocked: true }),
               }),],
             },);
             /**
@@ -709,42 +733,48 @@ await describe({
           name: 'WARNS ABOUT A MALFORMED ALLOWANCE AND IGNORES IT: not dry, \'none\' on the meter line, the quota '
             + 'baseline unharmed',
           fn: async ctx => {
-            for (
-              const malformed of [
-                { remaining_usd: 'lots', blocked: 'maybe', },
-                { limit_usd: 5, spent_usd: 1, remaining_usd: 4, blocked: 'yes', reset_at: null, },
-                { limit_usd: 5, spent_usd: 5, remaining_usd: 0, blocked: true, reset_at: 'someday', },
-                'capped',
-              ]
-            ) {
-              await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-day-', },);
-              const { client, } = scriptedClient({
-                dir: scratch.path,
-                clockStart: AFTER_ANCHOR,
-                quota: [quotaReply({ kwhUsed: 1, periodStart: PERIOD_START, keyAllowance: malformed, }),],
-              },);
-              /**
-               The reading of this case.
-               */
-              const outcome: { energy?: Awaited<ReturnType<typeof energyOf>>; } = {};
-              /**
-               Lines it logged.
-               */
-              const lines = await consoleLinesDuring({
-                run: async function reading(): Promise<void> {
-                  outcome.energy = await energyOf({ client, },);
-                },
-                sinon: ctx.sinon,
-              },);
-              expect(neuralWattIsDry({ energy: nonNullishOrThrow(outcome.energy), },),).toBe(false,);
-              expect(outcome.energy?.keyBlockedUntil,).toBeUndefined();
-              expect(neuralWattMeterLevel({ energy: nonNullishOrThrow(outcome.energy), },),).toContain(
-                'neuralwattKeyAllowance=none',
-              );
-              expect(lines.some(function names(line,): boolean {
-                return line.includes('allowance',) && line.includes('malformed',);
-              },),).toBe(true,);
+            /**
+             Allowances that do not read: wrong types, a flag that is not a boolean, a reset that is no instant, no object.
+             */
+            const malformed = [
+              { remaining_usd: 'lots', blocked: 'maybe', },
+              { limit_usd: 5, spent_usd: 1, remaining_usd: 4, blocked: 'yes', reset_at: null, },
+              { limit_usd: 5, spent_usd: 5, remaining_usd: 0, blocked: true, reset_at: 'someday', },
+              'capped',
+            ];
+            /**
+             Readings taken, one per allowance.
+             */
+            const energies: Awaited<ReturnType<typeof energyOf>>[] = [];
+            /**
+             Lines the readings logged.
+             */
+            const lines = await consoleLinesDuring({
+              run: async function readings(): Promise<void> {
+                energies.push(
+                  ...await Promise.all(malformed.map(async function readWith(keyAllowance,) {
+                  await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-day-', },);
+                  const { client, } = scriptedClient({
+                    dir: scratch.path,
+                    clockStart: AFTER_ANCHOR,
+                    quota: [quotaReply({ kwhUsed: 1, periodStart: PERIOD_START, keyAllowance, }),],
+                  },);
+                  return await energyOf({ client, },);
+                },),),
+                );
+              },
+              sinon: ctx.sinon,
+            },);
+            expect(energies.length,).toBe(4,);
+            for (const energy of energies) {
+              expect(neuralWattIsDry({ energy, },),).toBe(false,);
+              expect(energy.keyBlockedUntil,).toBeUndefined();
+              expect(neuralWattMeterLevel({ energy, },),).toContain('neuralwattKeyAllowance=none',);
+              expect(energy.dayStart,).toBe(TODAY_START,);
             }
+            expect(lines.filter(function names(line,): boolean {
+              return line.includes('allowance',) && line.includes('malformed',);
+            },).length,).toBe(4,);
           },
         },),
       ],

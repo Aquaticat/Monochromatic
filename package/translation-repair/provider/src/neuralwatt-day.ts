@@ -1,0 +1,235 @@
+import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
+import { isAsciiDigits, } from '@monochromatic-dev/translation-repair-markup/ts';
+
+//region NeuralWatt day
+// WHERE A NEURALWATT DAY STARTS. The owner, 2026-10-20: "The stop logic should
+// obviously count total free energy used per day. Every neuralwatt day starts at
+// 15:15". That is 19:15 UTC for an owner in America/New_York (EDT, UTC-4), and it
+// is the UTC time of day of the subscription's `current_period_start`
+// (`GET /v1/quota` answered `2026-10-20T19:15:08Z` at 23:15 UTC that day), not
+// 00:00 UTC, which the first version of this package assumed from the
+// documentation's "resets every day at 00:00 UTC".
+//
+// THE ANCHOR IS A TIME OF DAY IN UTC, never a local time: a local anchor would
+// move an hour with daylight saving while the subscription's period start does
+// not. The day is the 24 hours from the latest instant at or before now that has
+// that time of day, and a UTC day is exactly 24 hours long, so no calendar is
+// needed. Where the quota does not give the time of day, the owner's setting
+// does (`TRANSLATION_REPAIR_NEURALWATT_DAY_START`, `HH:MM` UTC); where neither
+// does, the day is unknown and NeuralWatt is refused for the run, since an
+// assumed midnight would count the wrong day's energy.
+
+/**
+ Milliseconds in a day, UTC days all being this long.
+ */
+export const MS_PER_DAY = 86_400_000;
+
+/**
+ Milliseconds in a minute.
+ */
+const MS_PER_MINUTE = 60_000;
+
+/**
+ Minutes in an hour.
+ */
+const MINUTES_PER_HOUR = 60;
+
+/**
+ Hours in a day.
+ */
+const HOURS_PER_DAY = 24;
+
+/**
+ Digits an hour or a minute is written with in `HH:MM`.
+ */
+const TWO_DIGITS = 2;
+
+/**
+ Environment variable giving the UTC time of day a NeuralWatt day starts at, `HH:MM`, for a run whose quota reply
+ does not carry the subscription's `current_period_start`.
+ */
+export const NEURALWATT_DAY_START_VAR = 'TRANSLATION_REPAIR_NEURALWATT_DAY_START';
+
+/**
+ A UTC time of day a NeuralWatt day starts at; empty where none was given.
+
+ @example
+ ```ts
+ const start: NeuralWattDayStart = { msOfDay: ((19 * 60) + 15) * 60_000, };
+ ```
+ */
+export type NeuralWattDayStart = {
+  /**
+   Milliseconds after 00:00 UTC.
+   */
+  readonly msOfDay?: number;
+};
+
+/**
+ Raised when the day-start setting is present but is not `HH:MM`.
+
+ @example
+ ```ts
+ throw new NeuralWattDayStartOverrideError({ value: '7:5', },);
+ ```
+ */
+export class NeuralWattDayStartOverrideError extends StatedRefusalError {
+  /**
+   Declares this message safe to forward: it names the variable and repeats the value the operator set in it.
+   */
+  override readonly messageNamesOnly: true = true;
+
+  /**
+   Names the variable, what it held, and the form it must take.
+
+   @param value - what the variable held, quoted back
+
+   @example
+   ```ts
+   new NeuralWattDayStartOverrideError({ value: '25:00', },);
+   ```
+   */
+  public constructor({ value, }: { readonly value: string; },) {
+    super({
+      says: `${NEURALWATT_DAY_START_VAR} must be a UTC time of day written HH:MM, two digits each, such as 19:15; `
+        + `it holds ${JSON.stringify(value,)}`,
+    },);
+    this.name = 'NeuralWattDayStartOverrideError';
+  }
+}
+
+/**
+ Reads the two digits of an hour or a minute within a bound.
+
+ @param text - the digits as written
+
+ @param limit - exclusive upper bound
+
+ @returns The number in a list of one, or an empty list where the text is not two digits below the bound
+
+ @example
+ ```ts
+ const [hours,] = twoDigitsBelow({ text: '19', limit: 24, },);
+ ```
+ */
+function twoDigitsBelow({
+  text,
+  limit,
+}: {
+  readonly text: string;
+  readonly limit: number
+},): readonly number[] {
+  if ((text.length !== TWO_DIGITS) || (!isAsciiDigits({ text, },)))
+    return [];
+
+  /**
+   The digits as a number.
+   */
+  const value = Number(text,);
+  return (value < limit) ? [value,] : [];
+}
+
+/**
+ The day-start setting: the variable's `HH:MM` as a UTC time of day.
+
+ @param env - process environment
+
+ @returns The time of day, or nothing where the variable is absent or blank
+
+ @throws {@link NeuralWattDayStartOverrideError} when the variable holds something that is not `HH:MM`
+
+ @example
+ ```ts
+ const setting = neuralWattDayStartFrom({ env: process.env, },);
+ ```
+ */
+export function neuralWattDayStartFrom({ env, }: { readonly env: Readonly<NodeJS.ProcessEnv>; },): NeuralWattDayStart {
+  /**
+   What the variable holds, absent or blank for no setting.
+   */
+  const raw = env[NEURALWATT_DAY_START_VAR];
+  if ((raw === undefined) || (raw.trim() === ''))
+    return {};
+
+  /**
+   Hours and minutes as written.
+   */
+  const [hoursText = '', minutesText = '', ...beyond] = raw.trim()
+    .split(':',);
+  /**
+   The hour, if it is two digits below 24.
+   */
+  const [hours,] = twoDigitsBelow({
+    text: hoursText,
+    limit: HOURS_PER_DAY,
+  },);
+  /**
+   The minute, if it is two digits below 60.
+   */
+  const [minutes,] = twoDigitsBelow({
+    text: minutesText,
+    limit: MINUTES_PER_HOUR,
+  },);
+  if ((hours === undefined) || (minutes === undefined)
+    || (beyond.length > 0))
+    throw new NeuralWattDayStartOverrideError({ value: raw, },);
+  return { msOfDay: ((hours * MINUTES_PER_HOUR) + minutes) * MS_PER_MINUTE, };
+}
+
+/**
+ The UTC time of day of an instant a reply spelled.
+
+ @param instant - ISO 8601 instant, such as the quota's `current_period_start`
+
+ @returns The time of day, or nothing where the text is not an instant
+
+ @example
+ ```ts
+ neuralWattDayStartOfInstant({ instant: '2026-10-20T19:15:08Z', },); // { msOfDay: 69_308_000 }
+ ```
+ */
+export function neuralWattDayStartOfInstant({ instant, }: { readonly instant: string; },): NeuralWattDayStart {
+  /**
+   Epoch milliseconds, NaN where the text is not an instant.
+   */
+  const epochMs = Date.parse(instant,);
+  if (!Number.isFinite(epochMs,))
+    return {};
+  return { msOfDay: ((epochMs % MS_PER_DAY) + MS_PER_DAY) % MS_PER_DAY, };
+}
+
+/**
+ The start of the day that contains an instant: the latest instant at or before it with the given UTC time of day.
+
+ @param now - the instant
+
+ @param msOfDay - milliseconds after 00:00 UTC the day starts at
+
+ @returns Start of the day, UTC
+
+ @example
+ ```ts
+ neuralWattDayStartAt({ now: new Date('2026-10-20T23:15:00.741Z',), msOfDay: 69_300_000, },);
+ // 2026-10-20T19:15:00.000Z
+ ```
+ */
+export function neuralWattDayStartAt({
+  now,
+  msOfDay,
+}: {
+  readonly now: Date;
+  readonly msOfDay: number
+},): Date {
+  /**
+   Midnight UTC that began the instant's UTC date.
+   */
+  const midnightMs = Math.floor(now.getTime() / MS_PER_DAY,) * MS_PER_DAY;
+
+  /**
+   The anchor on that date, which is in the future until the time of day has come.
+   */
+  const candidateMs = midnightMs + msOfDay;
+  return new Date((candidateMs <= now.getTime()) ? candidateMs : (candidateMs - MS_PER_DAY),);
+}
+
+//endregion NeuralWatt day

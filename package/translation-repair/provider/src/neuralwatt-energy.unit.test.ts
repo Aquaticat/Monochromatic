@@ -28,7 +28,7 @@ import {
  A day with little left after the spend and the holds in flight.
  */
 const ROOMY: NeuralWattEnergy = {
-  day: '2026-10-20',
+  dayStart: '2026-10-20T19:15:08.000Z',
   dailyWh: 550,
   spentWh: 549.6,
   reckonedWh: 0.5,
@@ -43,16 +43,16 @@ await describe({
   children: [
     it({
       name: 'SAYS WHAT THE DAY HAD LEFT, the allowance, the hold in flight and the estimate, each to three places, '
-        + 'and that the energy returns at 00:00 UTC, when the estimate does not fit',
+        + 'and when that day ends, when the estimate does not fit',
       fn: async () => {
         /**
          Refusal for a call estimated at more than the day has left.
          */
         const refusal = new NeuralWattAllowanceError({ model: 'glm-5.3-flash', estimateWh: 0.3, energy: ROOMY, },);
         expect(refusal.message,).toBe(
-          'NeuralWatt has 0.150 Wh of the 550 Wh free energy left on 2026-10-20 (UTC) after 0.250 Wh held by calls '
-            + 'in flight, and the call to glm-5.3-flash is estimated at 0.300 Wh; it was not sent, and the energy '
-            + 'returns at 00:00 UTC',
+          'NeuralWatt has 0.150 Wh of the 550 Wh free energy left in the day that began 2026-10-20T19:15:08.000Z '
+            + '(UTC) after 0.250 Wh held by calls in flight, and the call to glm-5.3-flash is estimated at 0.300 Wh; '
+            + 'it was not sent, and the energy returns when that day ends at 2026-10-21T19:15:08.000Z (UTC)',
         );
       },
     },),
@@ -70,10 +70,40 @@ await describe({
           energy: { ...ROOMY, dailyWh: 100, remainingWh: -0.00449, reservedWh: 0, },
         },);
         expect(refusal.message,).toBe(
-          'NeuralWatt has -0.004 Wh of the 100 Wh free energy left on 2026-10-20 (UTC) after 0.000 Wh held by calls '
-            + 'in flight, and the call to deepseek-v4.1-flash is estimated at 0.001 Wh; it was not sent, and the energy '
-            + 'returns at 00:00 UTC',
+          'NeuralWatt has -0.004 Wh of the 100 Wh free energy left in the day that began 2026-10-20T19:15:08.000Z '
+            + '(UTC) after 0.000 Wh held by calls in flight, and the call to deepseek-v4.1-flash is estimated at '
+            + '0.001 Wh; it was not sent, and the energy returns when that day ends at 2026-10-21T19:15:08.000Z (UTC)',
         );
+      },
+    },),
+
+    it({
+      name: 'NAMES THE ACCOUNT FIGURE WHEN IT IS WHAT THE DAY WAS COUNTED FROM, the blocked allowance when that closed '
+        + 'the day, and the missing day start with both remedies',
+      fn: async () => {
+        expect(new NeuralWattAllowanceError({
+          model: 'glm-5.3-flash',
+          estimateWh: 0.3,
+          energy: { ...ROOMY, accountWh: 549.5, },
+        },).message,).toContain(', counting the 549.500 Wh the whole account used since then,',);
+        expect(new NeuralWattAllowanceError({
+          model: 'glm-5.3-flash',
+          estimateWh: 0.3,
+          energy: { ...ROOMY, keyBlockedUntil: '2026-10-21T00:00:00.000Z', },
+        },).message,).toBe(
+          'NeuralWatt\'s allowance on this key is blocked until 2026-10-21T00:00:00.000Z (UTC), so the call to '
+            + 'glm-5.3-flash was not sent',
+        );
+        /**
+         The reading with the day start taken out.
+         */
+        const { dayStart: _dayStart, ...unanchored } = ROOMY;
+        expect(new NeuralWattAllowanceError({ model: 'glm-5.3-flash', estimateWh: 0.3, energy: unanchored, },).message,)
+          .toBe(
+            'NeuralWatt\'s day start is unknown, so the call to glm-5.3-flash was not sent: the quota reply gave no '
+              + 'subscription.current_period_start and TRANSLATION_REPAIR_NEURALWATT_DAY_START is not set; make GET '
+              + '/v1/quota readable or set TRANSLATION_REPAIR_NEURALWATT_DAY_START=HH:MM (UTC)',
+          );
       },
     },),
 
@@ -93,7 +123,7 @@ await describe({
 
     it({
       name: 'IS A BUDGET REFUSAL THE ROUTER MOVES ON FROM and not a payment refusal, since nothing is wrong with the '
-        + 'account and the energy returns at 00:00 UTC, whether the day is spent by arithmetic or by holds in flight',
+        + 'account and the energy returns when the day ends, whether the day is spent by arithmetic or by holds in flight',
       fn: async () => {
         for (const energy of [ROOMY, { ...ROOMY, spentWh: 12.5, reservedWh: 537.5, remainingWh: 0, },]) {
           /**

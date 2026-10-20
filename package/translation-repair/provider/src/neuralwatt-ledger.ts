@@ -8,7 +8,15 @@ import {
   wordForCount,
 } from '@monochromatic-dev/translation-repair-typography/ts';
 import { appendLedgerLine, } from './ledger-line-append.ts';
-import type { NeuralWattEnergy, } from './neuralwatt-energy.ts';
+import {
+  dayIsClosed,
+  energyOfDay,
+  entryIsInDay,
+} from './neuralwatt-day-energy.ts';
+import type {
+  NeuralWattDay,
+  NeuralWattEnergy,
+} from './neuralwatt-energy.ts';
 import {
   neuralWattDailyWhFrom,
   neuralWattLedgerPathFrom,
@@ -29,8 +37,9 @@ import {
 // left of the free energy (`https://docs.neuralwatt.com/billing/daily-free-energy`,
 // fetched 2026-10-20: "There's no API that reports how much free energy you
 // have left today"), so every settled call appends one line to a durable file
-// and the meter is the day's allowance minus the lines stamped on today's UTC
-// date, minus the holds of calls still in flight.
+// and the meter is the day's allowance minus the larger of the lines stamped
+// inside the day and the whole account's covered energy, minus the holds of
+// calls still in flight.
 //
 // TWO KINDS OF LINE. A MEASURED line carries the `: energy` figure the stream
 // reported. An ESTIMATED line carries the estimate, marked, for a call whose
@@ -52,9 +61,13 @@ import {
 // the other holds; the margin bounds that, nothing else does, and the record
 // says so.
 //
-// THE DAY IS THE UTC DATE of a line's `at`, which the ledger writes with
-// `toISOString` and reads back only in that spelling, so a run that crosses
-// 00:00 UTC sees the allowance come back.
+// THE DAY IS GIVEN TO EVERY READ AND EVERY RESERVATION, not kept here: it
+// starts at an anchor the client reads off the account (`neuralwatt-day.ts`),
+// the owner's "Every neuralwatt day starts at 15:15" (19:15 UTC), and the
+// ledger counts the lines whose `at` falls from that start up to but not
+// including 24 hours after it. `at` is written with `toISOString` and read
+// back only in that spelling. The ledger has no day of its own to fall back on,
+// since a midnight it assumed would count the wrong day's lines.
 
 /**
  Logger root for the ledger.
@@ -185,41 +198,22 @@ export type NeuralWattLedger = {
   readonly path: string;
 
   /**
-   Reads the day's energy, holds in flight included.
+   Reads the energy of the given day, holds in flight included.
    */
-  readonly read: () => Promise<NeuralWattEnergy>;
+  readonly read: (request: { readonly day: NeuralWattDay; },) => Promise<NeuralWattEnergy>;
 
   /**
-   Asks to send a call, holding its estimate when it fits.
+   Asks to send a call in the given day, holding its estimate when it fits.
    */
   readonly reserve: (
     request: {
       readonly model: string;
       readonly promptTokens: number;
       readonly estimateWh: number;
+      readonly day: NeuralWattDay;
     },
   ) => Promise<NeuralWattReserveOutcome>;
 };
-
-/**
- UTC date of an instant, `YYYY-MM-DD`.
-
- @param instant - stamp as `toISOString` spells it, or a date
-
- @returns The date in UTC
-
- @example
- ```ts
- utcDayOf({ instant: '2026-10-20T23:59:59.999Z', },); // '2026-10-20'
- ```
- */
-function utcDayOf({ instant, }: { readonly instant: string | Date; },): string {
-  return new Date(instant,).toISOString()
-    .slice(
-      0,
-      'YYYY-MM-DD'.length,
-    );
-}
 
 /**
  The system clock, the ledger's time outside a test.
@@ -240,7 +234,7 @@ function systemClock(): Date {
 
  @param path - ledger file, created on the first line
 
- @param dailyWh - free energy a UTC day holds
+ @param dailyWh - free energy a day holds
 
  @param now - clock, injectable so a test moves the day by hand
 
@@ -280,20 +274,23 @@ export function createNeuralWattLedger(
   }
 
   /**
-   The file's lines of today, in order.
+   The file's lines inside the day, in order.
 
-   @returns Entries stamped with today's UTC date
+   @param day - the day the lines count in
+
+   @returns Entries stamped from the day's start up to but not including 24 hours after it; none for a day with no
+   start
    */
-  async function todaysEntries(): Promise<readonly NeuralWattLedgerEntry[]> {
+  async function entriesOfTheDay(
+    { day, }: { readonly day: NeuralWattDay; },
+  ): Promise<readonly NeuralWattLedgerEntry[]> {
+    if (day.kind === 'unanchored')
+      return [];
+
     /**
      Whole file, or nothing where none exists yet.
      */
     const text = await readTextOrEmptyIfMissing({ path, },);
-
-    /**
-     UTC date the file is read for.
-     */
-    const today = utcDayOf({ instant: now(), },);
     return text
       .split('\n',)
       .flatMap(function toEntry(
@@ -308,49 +305,21 @@ export function createNeuralWattLedger(
           line: index + 1,
         },),];
       },)
-      .filter(function isToday(entry,): boolean {
-        return utcDayOf({ instant: entry.at, },) === today;
+      .filter(function isInDay(entry,): boolean {
+        return entryIsInDay({
+          entry,
+          day,
+        },);
       },);
   }
 
   /**
-   The day's reading from the lines read and the holds as they stand NOW.
+   The holds as they stand NOW.
 
-   @param entries - today's lines
-
-   @returns Reading with the holds in flight at this moment
+   @returns Watt-hours held by calls in flight
    */
-  function energyFrom({ entries, }: { readonly entries: readonly NeuralWattLedgerEntry[]; },): NeuralWattEnergy {
-    /**
-     Everything the lines say was spent.
-     */
-    const spentWh = entries.reduce(
-      function addWh(
-        running,
-        entry,
-      ): number {
-      return running + entry.wh;
-    },
-      0,
-    );
-
-    /**
-     The part of that which is an estimate.
-     */
-    const reckonedWh = entries.reduce(
-      function addReckoned(
-        running,
-        entry,
-      ): number {
-      return (entry.estimated === undefined) ? running : (running + entry.wh);
-    },
-      0,
-    );
-
-    /**
-     Watt-hours held by calls in flight.
-     */
-    const reservedWh = [...holds,].reduce(
+  function reservedNow(): number {
+    return [...holds,].reduce(
       function addHold(
         running,
         hold,
@@ -359,24 +328,16 @@ export function createNeuralWattLedger(
     },
       0,
     );
-    return {
-      day: utcDayOf({ instant: now(), },),
-      dailyWh,
-      spentWh,
-      reckonedWh,
-      reservedWh,
-      remainingWh: dailyWh - spentWh
-        - reservedWh,
-      calls: entries.length,
-    };
   }
 
   /**
-   Reads the day's energy.
+   Reads the energy of a day.
+
+   @param day - the day to read
 
    @returns Reading, holds in flight included
    */
-  async function read(): Promise<NeuralWattEnergy> {
+  async function read({ day, }: { readonly day: NeuralWattDay; },): Promise<NeuralWattEnergy> {
     /**
      Logger pre-tagged with this function's name.
      */
@@ -386,14 +347,19 @@ export function createNeuralWattLedger(
     },);
 
     /**
-     Today's lines.
+     The day's lines.
      */
-    const entries = await todaysEntries();
+    const entries = await entriesOfTheDay({ day, },);
 
     /**
      The reading.
      */
-    const energy = energyFrom({ entries, },);
+    const energy = energyOfDay({
+      entries,
+      reservedWh: reservedNow(),
+      dailyWh,
+      day,
+    },);
     rl.debug(
       `${path}: ${String(energy.calls,)} ${
         wordForCount({
@@ -401,7 +367,7 @@ export function createNeuralWattLedger(
           one: 'call',
           many: 'calls',
         },)
-      } on ${energy.day} (UTC), ${energy.spentWh
+      } in the day from ${energy.dayStart ?? 'an unknown start'} (UTC), ${energy.spentWh
         .toFixed(LOG_DECIMALS,)} Wh `
         + `spent of ${String(dailyWh,)} (${energy.reckonedWh
           .toFixed(LOG_DECIMALS,)} of it estimated), ${energy.reservedWh
@@ -420,6 +386,8 @@ export function createNeuralWattLedger(
 
    @param estimateWh - energy the call would hold
 
+   @param day - the day the call is made in
+
    @returns A reservation when the call fits, else the reading it was refused on
    */
   async function reserve(
@@ -427,10 +395,12 @@ export function createNeuralWattLedger(
       model,
       promptTokens,
       estimateWh,
+      day,
     }: {
       readonly model: string;
       readonly promptTokens: number;
       readonly estimateWh: number;
+      readonly day: NeuralWattDay;
     },
   ): Promise<NeuralWattReserveOutcome> {
     /**
@@ -442,22 +412,29 @@ export function createNeuralWattLedger(
     },);
 
     /**
-     Today's lines, read BEFORE the check so the check that follows has no await
+     The day's lines, read BEFORE the check so the check that follows has no await
      between it and the taking of the hold.
      */
-    const entries = await todaysEntries();
+    const entries = await entriesOfTheDay({ day, },);
 
-    // NO AWAIT FROM HERE TO THE HOLD BEING TAKEN: the `energyFrom` reading counts the
+    // NO AWAIT FROM HERE TO THE HOLD BEING TAKEN: the `energyOfDay` reading counts the
     // holds as they stand at this instant, so a call that read the file at
     // the same time as this one and was decided first has its hold counted.
     /**
      The day's reading with the holds as they stand NOW.
      */
-    const energy = energyFrom({ entries, },);
-    if (energy.remainingWh < estimateWh) {
+    const energy = energyOfDay({
+      entries,
+      reservedWh: reservedNow(),
+      dailyWh,
+      day,
+    },);
+    if (dayIsClosed({ day, },) || (energy.remainingWh < estimateWh)) {
       rl.info(
         `${model}: refused before sending, estimate ${estimateWh.toFixed(LOG_DECIMALS,)} Wh, ${energy.remainingWh
-          .toFixed(LOG_DECIMALS,)} Wh left on ${energy.day} (UTC)`,
+          .toFixed(LOG_DECIMALS,)} Wh left in the day from ${energy.dayStart ?? 'an unknown start'} (UTC)${
+            dayIsClosed({ day, },) ? ', and the day is closed to calls' : ''
+          }`,
       );
       return {
         granted: false,

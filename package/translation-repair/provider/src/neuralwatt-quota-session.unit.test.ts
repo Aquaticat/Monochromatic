@@ -40,6 +40,12 @@ import {
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 
 /**
+ The day-start setting of the runs whose quota gives no period start: without a day a run sends nothing, and these
+ cases are about the quota readings of a run that does.
+ */
+const MIDNIGHT_SETTING = { msOfDay: 0, } as const;
+
+/**
  What the quota route does on a read: answers, or drops the connection.
  */
 type QuotaReply = Error | TransportReply;
@@ -78,8 +84,12 @@ await describe({
               sinon: ctx.sinon,
             },);
             expect(exchanges.map(function shape(exchange,): string {
-              return `${exchange.method} ${exchange.url}`;
-            },),).toEqual([`GET ${BASE_URL}/quota`, `POST ${BASE_URL}/chat/completions`,],);
+              return `${exchange.method} ${exchange.url.split('?',)[0] ?? ''}`;
+            },),).toEqual([
+              `GET ${BASE_URL}/quota`,
+              `GET ${BASE_URL}/usage/by-model`,
+              `POST ${BASE_URL}/chat/completions`,
+            ],);
             expect(exchanges[0]?.label,).toBe('quota',);
             expect(exchanges[0]?.headers.Authorization,).toBe('Bearer test-key',);
             expect(exchanges[0]?.signal,).toBe(SIGNAL,);
@@ -100,7 +110,11 @@ await describe({
              */
             async function takeBaseline(reply: QuotaReply,): Promise<void> {
               await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-quota-', },);
-              const { client, } = scriptedClient({ dir: scratch.path, quota: [reply,], },);
+              const { client, } = scriptedClient({
+                dir: scratch.path,
+                quota: [reply,],
+                dayStartSetting: MIDNIGHT_SETTING,
+              },);
               await ask({ client, },);
             }
             /**
@@ -149,7 +163,11 @@ await describe({
              */
             async function failingRun(reply: QuotaReply,): Promise<readonly number[]> {
               await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-quota-', },);
-              const { client, exchanges, } = scriptedClient({ dir: scratch.path, quota: [reply,], },);
+              const { client, exchanges, } = scriptedClient({
+                dir: scratch.path,
+                quota: [reply,],
+                dayStartSetting: MIDNIGHT_SETTING,
+              },);
               expect((await ask({ client, },)).text,).toBe('{"spot":"sunbeam"}',);
               await ask({ client, },);
               return [quotaExchangesOf({ exchanges, },).length, chatExchangesOf({ exchanges, },).length,];
@@ -209,6 +227,7 @@ await describe({
             const { client, exchanges, } = scriptedClient({
               dir: scratch.path,
               quota: [{ status: 403, bodyText: 'Forbidden', }, quotaReply({ kwhUsed: 14, }),],
+              dayStartSetting: MIDNIGHT_SETTING,
             },);
             await ask({ client, },);
             expect(await client.planSpend({ signal: SIGNAL, },),).toEqual({

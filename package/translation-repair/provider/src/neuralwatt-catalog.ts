@@ -146,4 +146,41 @@ export function neuralWattQuotaUrlFor({ baseUrl, }: { readonly baseUrl: string; 
   return `${baseUrl}/quota`;
 }
 
+/**
+ By-model usage URL for a window, which counts every key on the account.
+
+ FULL TIMESTAMPS: a date-only window with the same day at both ends came back
+ empty and zero-length (probe of 2026-10-20), and a malformed date silently
+ falls back to the route's default window, so the reader checks the `period`
+ the reply echoes (`neuralwatt-usage.ts`). The colons are left as they are,
+ the form the probe measured (`https://docs.neuralwatt.com/api-reference/usage/get-usage-broken-down-by-model`).
+
+ @param baseUrl - base address, overridable for tests
+
+ @param start - first instant of the window
+
+ @param end - last instant of the window
+
+ @returns Absolute URL to GET
+
+ @example
+ ```ts
+ neuralWattUsageByModelUrlFor({ baseUrl: NEURALWATT_BASE_URL, start, end, },);
+ // => 'https://api.neuralwatt.com/v1/usage/by-model?start_date=2026-10-20T19:15:08.000Z&end_date=2026-10-20T23:15:00.741Z'
+ ```
+ */
+export function neuralWattUsageByModelUrlFor(
+  {
+    baseUrl,
+    start,
+    end,
+  }: {
+    readonly baseUrl: string;
+    readonly start: Date;
+    readonly end: Date;
+  },
+): string {
+  return `${baseUrl}/usage/by-model?start_date=${start.toISOString()}&end_date=${end.toISOString()}`;
+}
+
 //endregion NeuralWatt catalog

@@ -26,14 +26,18 @@ import {
 // call and the reading at the end, whose difference is the plan energy spent
 // (`neuralwatt-quota.ts` says what that figure can and cannot see).
 //
-// THE BASELINE IS TAKEN LAZILY, once, before the first call goes out, so a run
-// that never reaches NeuralWatt (a start guard, a held model, the provider
-// dry) reads the quota zero times, and the end-of-run report says it has no
-// starting reading rather than inventing one. A READING THAT FAILS NEVER
-// BLOCKS A CALL: the quota is a report on the owner's plan, and the ledger and
-// the cost-comment backstop are what keep calls off it. The failure is
-// warned, with the endpoint's status or the shape complaint, and the run's
-// end report says why it has nothing to compare.
+// THE BASELINE IS TAKEN LAZILY, once, the first time the run needs to know
+// the day: a meter reading or a call, whichever comes first, since the day's
+// anchor is the time of day of the baseline's `current_period_start`
+// (`neuralwatt-day-session.ts`). A run that never reads the NeuralWatt meter
+// or reaches it (a start guard, a held model) reads the quota zero times, and
+// the end-of-run report says it has no starting reading rather than inventing
+// one. A READING THAT FAILS NEVER BLOCKS A CALL: the quota is a report on the
+// owner's plan, and the ledger and the cost-comment backstop are what keep
+// calls off it. The failure is warned, with the endpoint's status or the shape
+// complaint, and the run's end report says why it has nothing to compare. (A
+// day whose start then cannot be learned does stop NeuralWatt, but that is the
+// day's rule and not this session's.)
 
 /**
  Logger root for the quota session.
@@ -48,7 +52,7 @@ const l = contextRoot({ tag: 'translation-repair', },);
  const outcome: BaselineOutcome = { taken: false, };
  ```
  */
-type BaselineOutcome =
+export type BaselineOutcome =
   | {
     readonly taken: true;
     readonly quota: NeuralWattQuota;
@@ -70,7 +74,17 @@ export type NeuralWattQuotaSession = {
    Takes the starting reading if it has not been tried; never throws for a
    failed read.
    */
-  readonly ensureBaseline: (args: { readonly signal: AbortSignal; },) => Promise<void>;
+  readonly ensureBaseline: (args: { readonly signal: AbortSignal; },) => Promise<BaselineOutcome>;
+
+  /**
+   Reads the quota now, for the figures that move (the key's cap), without
+   touching the starting reading.
+
+   @throws {@link ProviderHttpError} on a non-success status
+
+   @throws {@link import('./neuralwatt-quota.ts').NeuralWattQuotaShapeError} on a body that is not the documented shape
+   */
+  readonly readNow: (args: { readonly signal: AbortSignal; },) => Promise<NeuralWattQuota>;
 
   /**
    Reads the quota again and compares it with the starting reading.
@@ -202,10 +216,12 @@ export function createNeuralWattQuotaSession(
    Takes the starting reading if it has not been tried.
 
    @param signal - abort signal for the read
+
+   @returns What the one attempt found
    */
-  async function ensureBaseline({ signal, }: { readonly signal: AbortSignal; },): Promise<void> {
+  async function ensureBaseline({ signal, }: { readonly signal: AbortSignal; },): Promise<BaselineOutcome> {
     state.attempt ??= tryBaseline({ signal, },);
-    await state.attempt;
+    return await state.attempt;
   }
 
   /**
@@ -255,6 +271,7 @@ export function createNeuralWattQuotaSession(
 
   return {
     ensureBaseline,
+    readNow: readQuota,
     planSpend,
   };
 }

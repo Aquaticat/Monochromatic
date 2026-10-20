@@ -53,6 +53,11 @@ export const NOMINAL_COST_COMMENT = ': cost {"request_cost_usd": 0.00001}\n\n';
 const QUOTA_INCLUDED_KWH = 20;
 
 /**
+ The cap, in USD, of the key in every allowance here.
+ */
+const KEY_LIMIT_USD = 5;
+
+/**
  Reply a transport gives where the script has run out, which no case means to reach.
  */
 const NO_SCRIPT_REPLY: TransportReply = {
@@ -145,8 +150,9 @@ export function streamOf(
 
  @param kwhUsed - charged kWh this period
 
- @param periodStart - start of the billing period the reading belongs to, or null for a reply that carries the field
- as null
+ @param periodStart - start of the billing period the reading belongs to
+
+ @param periodStartAbsent - whether the reply carries the field as null instead
 
  @param keyAllowance - what `key.allowance` holds, as the reply would carry it: null for an uncapped key
 
@@ -161,10 +167,12 @@ export function quotaReply(
   {
     kwhUsed,
     periodStart = '2026-10-11T05:05:25Z',
+    periodStartAbsent = false,
     keyAllowance = null,
   }: {
     readonly kwhUsed: number;
-    readonly periodStart?: string | null;
+    readonly periodStart?: string;
+    readonly periodStartAbsent?: boolean;
     readonly keyAllowance?: unknown;
   },
 ): TransportReply {
@@ -174,7 +182,7 @@ export function quotaReply(
       snapshot_at: '2026-10-20T20:00:00Z',
       subscription: {
         plan: 'max',
-        current_period_start: periodStart,
+        current_period_start: periodStartAbsent ? null : periodStart,
         kwh_included: QUOTA_INCLUDED_KWH,
         kwh_used: kwhUsed,
         kwh_remaining: QUOTA_INCLUDED_KWH - kwhUsed,
@@ -212,16 +220,16 @@ export function keyAllowanceOf(
   }: {
     readonly remainingUsd: number;
     readonly blocked: boolean;
-    readonly resetAt: string | null;
+    readonly resetAt?: string;
   },
 ): Readonly<Record<string, unknown>> {
   return {
-    limit_usd: 5,
+    limit_usd: KEY_LIMIT_USD,
     period: 'daily',
-    spent_usd: 5 - remainingUsd,
+    spent_usd: KEY_LIMIT_USD - remainingUsd,
     remaining_usd: remainingUsd,
     blocked,
-    reset_at: resetAt,
+    reset_at: resetAt ?? null,
   };
 }
 
@@ -258,7 +266,13 @@ export function echoSpelling({ instant, }: { readonly instant: string; },): stri
    The instant in the one spelling `toISOString` has.
    */
   const iso = new Date(instant,).toISOString();
-  return iso.endsWith('.000Z',) ? iso.replace('.000Z', '+00:00',) : iso.replace('Z', '000+00:00',);
+  return iso.endsWith('.000Z',) ? iso.replace(
+    '.000Z',
+    '+00:00',
+  ) : iso.replace(
+    'Z',
+    '000+00:00',
+  );
 }
 
 /**
@@ -283,7 +297,10 @@ export function usageReply(
     echo,
   }: {
     readonly rows: readonly UsageRow[];
-    readonly echo?: { readonly start: string; readonly end: string; };
+    readonly echo?: {
+      readonly start: string;
+      readonly end: string
+    };
   },
 ): UsageScript {
   return function build(exchange,): TransportReply {
@@ -319,7 +336,13 @@ export function usageReply(
  const row = usageRowOf({ requestedModel: 'glm-5.3-flash', kwh: 0.002811, },);
  ```
  */
-export function usageRowOf({ requestedModel, kwh, }: { readonly requestedModel: string; readonly kwh: number; },): UsageRow {
+export function usageRowOf({
+  requestedModel,
+  kwh,
+}: {
+  readonly requestedModel: string;
+  readonly kwh: number
+},): UsageRow {
   return {
     requested_model: requestedModel,
     served_model_id: `served/${requestedModel}`,
@@ -416,7 +439,9 @@ export function scriptedClient(
       ...((dayStartSetting === undefined) ? {} : { dayStartSetting, }),
       transport: function transport(exchange,): Promise<TransportReply> {
         exchanges.push(exchange,);
-        if (exchange.method === 'GET' && exchange.url.includes('/usage/by-model',)) {
+        if ((exchange.method === 'GET')
+          && exchange.url
+          .includes('/usage/by-model',)) {
           counts.usage += 1;
 
           /**
@@ -496,7 +521,9 @@ export function quotaExchangesOf(
   { exchanges, }: { readonly exchanges: readonly TransportExchange[]; },
 ): readonly TransportExchange[] {
   return exchanges.filter(function isQuotaGet(exchange,): boolean {
-    return exchange.method === 'GET' && exchange.url.endsWith('/quota',);
+    return (exchange.method === 'GET')
+      && exchange.url
+      .endsWith('/quota',);
   },);
 }
 
@@ -516,7 +543,9 @@ export function usageExchangesOf(
   { exchanges, }: { readonly exchanges: readonly TransportExchange[]; },
 ): readonly TransportExchange[] {
   return exchanges.filter(function isUsageGet(exchange,): boolean {
-    return exchange.method === 'GET' && exchange.url.includes('/usage/by-model',);
+    return (exchange.method === 'GET')
+      && exchange.url
+      .includes('/usage/by-model',);
   },);
 }
 
