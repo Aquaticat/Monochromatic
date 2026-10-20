@@ -191,6 +191,13 @@ The deliberate way is always the same:
  save a copy (`git diff > backup.patch`) and pass `--no-enforce-worktree` directly after the subcommand.
 `git apply backup.patch` brings the edits back.
 
+Each decision about a discarding form (rejected, run in a clean worktree, run in an exempt cache, or run with the
+ escape) is appended as one JSON line to `cli-git-audit.jsonl` in the common Git directory,
+ with the time, the process and its parent, the worktree kind, the form, the working directory and the arguments.
+When uncommitted work disappears, `git rev-parse --git-common-dir` locates the file;
+ a line that says `allowed` or `hatch` near the time of the loss names the command that was let through.
+The file moves aside to `cli-git-audit.jsonl.1` at one mebibyte, and a failed write never changes a command's result.
+
 The forms and their alternatives follow.
 Each alternative is run through the built executable by `src/native/binary_discard_tests.rs`.
 
