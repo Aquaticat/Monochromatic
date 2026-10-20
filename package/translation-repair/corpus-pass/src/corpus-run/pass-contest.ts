@@ -19,7 +19,10 @@ import {
   type RunClient,
 } from '@monochromatic-dev/translation-repair-run/ts';
 import { contestHooksFor, } from './pass-contest-reseat.ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
+import type {
+  FanOutMode,
+  StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Corpus pass lane contest
 
@@ -66,6 +69,10 @@ import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage
  @param stageSettings - straggler windows and contest ledger the entry file
  read for this launch (`StageSettings`)
 
+ @param fanOut - seats a contest round asks, left to the contest's default window
+ when absent; a case that must see every judge asked passes the whole bench,
+ since the default window is rotated by the sheet text
+
  @returns Contest records in comparison order
 
  @example
@@ -88,6 +95,7 @@ export async function runPassContest(
     overlap,
     l,
     stageSettings,
+    fanOut,
   }: {
     readonly client: RunClient;
     readonly lanes: DocumentLanesResult;
@@ -102,6 +110,7 @@ export async function runPassContest(
     readonly overlap: number;
     readonly l: Logger;
     readonly stageSettings: StageSettings;
+    readonly fanOut?: FanOutMode;
   },
 ): Promise<readonly ArtifactContestSlice[]> {
   /**
@@ -155,6 +164,8 @@ export async function runPassContest(
       .beforeSlice,
     l,
     stageSettings,
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((fanOut === undefined) ? {} : { fanOut, }),
   },);
   // THE FINDING IS ADDED HERE, beside the wording each slice offered, so the
   // artifact records the candidates under the labels the judges read them by
