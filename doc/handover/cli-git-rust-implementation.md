@@ -1882,6 +1882,21 @@ that is verification, not a decision for the user.
   `rule_worktree_dirty.rs`, `policy_checks.rs`, `auto_push_reconcile.rs`, `command_stash.rs`; (e) docs above;
   (f) release 0.2.5 (behavior change: policy is stricter) and reinstall via mise; (g) comment on and close 1791 with
   the evidence; (h) ask the user whether `rm --cached` and `git worktree remove --force` should join the guard.
+  Progress 2026-10-20 night (committed on main): (a) UX3 DONE: `advance_local_branch` fast-forwards a dirty worktree
+  when no path of `status --porcelain=v1 -z --untracked-files=no` (both names of renames and copies) is a path of
+  `git diff --name-only -z --no-renames <local> <merge>`; overlap is reported by name (five, then a count); new
+  `auto_push_dirty_paths.rs`; seven new host tests and the overlap guard shown to fail with `if false &&`; README and
+  SPEC updated; local main was fast-forwarded by hand once (0 ahead, 0 behind). Until 0.2.5 is installed the production
+  `git` still prints the old "unchanged (the worktree has uncommitted changes)" text. (c) missing-index commit DONE:
+  `initialize_commit_index` runs `read-tree --empty` on the real index when the file is absent;
+  `an_explicit_path_commit_works_before_any_index_exists` (binary). (b) UX2 audit DONE in part: `discard_audit.rs`
+  appends one JSON line per decision (rejected, allowed, exempt, hatch) to `<common-dir>/cli-git-audit.jsonl`, rotated
+  at 1 MiB, best effort; `each_decision_leaves_one_line_in_the_audit_file` shown to fail without the hatch record.
+  DEFERRED on purpose: the live landing-invariant warning (post-index differs from pre-landing index outside the
+  committed paths), because Defect 2 never reproduced and the audit file now attributes a loss; revisit only if a loss
+  with no matching audit line is reported. Still queued: (d) mutation scopes; (f) release 0.2.5 and reinstall; (g)
+  comment on and close 1791; (h) ask the user about `rm --cached` and `git worktree remove --force`; fuzz crate if
+  signatures changed (they did not: `cli.fuzz` is not touched by these edits, confirm at release with `cli.fuzz:build`).
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and
