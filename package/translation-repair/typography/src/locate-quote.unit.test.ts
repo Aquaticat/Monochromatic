@@ -624,7 +624,7 @@ await describe({
         },);
         expect(before.located && (before.anchors.length === 1),).toBe(true,);
         expect(after.located && (after.anchors.length === 1),).toBe(true,);
-        if (!before.located || !after.located)
+        if ((!before.located) || (!after.located))
           throw new Error('unreachable: asserted located',);
         expect(before.anchors[0]?.endOffset,).toBe(text.indexOf(' {/*',),);
         expect(after.anchors[0]?.startOffset,).toBe(text.indexOf('Then',),);
@@ -667,6 +667,30 @@ await describe({
           quote: 'The cat likes the sun.\nThen it naps.',
         },);
         expect(located.located,).toBe(false,);
+      },
+    },),
+    it({
+      name: 'REFUSES a quote of front matter as outside blocks even when the text holds a note, the stretches '
+        + 'of a cut text binding to nothing between blocks as a whole quote does',
+      fn: async () => {
+        /** Translation with front matter and a note that ends its paragraph. */
+        const text = '---\nname: 小猫-quote\n---\n\nThe cat slept.{/* 注 */}\n';
+
+        /** That text as an anchor target. */
+        const document = {
+          text,
+          nodes: parseDocument({ text, },).nodes,
+        };
+        const located = locateQuote({
+          document,
+          side: 'target',
+          quote: 'name: 小猫-quote',
+          original: '',
+        },);
+        expect(located,).toEqual({
+          located: false,
+          reason: 'quote-outside-blocks (target)',
+        },);
       },
     },),
 
