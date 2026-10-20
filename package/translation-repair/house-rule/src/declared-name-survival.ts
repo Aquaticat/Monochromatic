@@ -5,6 +5,12 @@ import {
   type NameProjection,
   projectName,
 } from './name-projection.ts';
+import {
+  arrivesAsWholeName,
+  besideWordsOf,
+  declaredWordsOf,
+  excusedNeighboursOf,
+} from './whole-name-arrival.ts';
 
 //region Declared name survival
 // CHECKS THAT A NAME THE DOCUMENTS DECLARE SURVIVES AN EDIT, rather than asking
@@ -86,6 +92,13 @@ import {
 //     (`Mittens (Blossom)` becoming `Blossom` still loses `Mittens`), and a
 //     new form counts once with the shorter forms that only run on inside it,
 //     as a lost one does.
+//   - AS A WHOLE NAME. A new form counts only where it stands as a whole name
+//     (`whole-name-arrival.ts`): not run on from or into a letter, a digit, a
+//     hyphen or an underscore, spelled as declared (`Li Li` is not `Lili`,
+//     though carriage reads it as the name), and with no capitalised word beside
+//     it that is not part of a declared form, an ordinary opener or title, or a
+//     word the base held beside the lost form. The first swap rule passed
+//     `Xing Lili`, `XingLili` and `Xing Li Li` for `Lili`, a renamed person.
 //   - PRESENCE, NOT MENTIONS. The floor has only ever asked whether a form is
 //     carried, never how many times, so a candidate that names the person once
 //     where the base named her twice is as acceptable as one that turns the
@@ -103,10 +116,18 @@ import {
 //
 // Measured 2026-10-20 over the 331 stored artifacts: 98 refusals, 85 of which
 // the old rule reproduces from stored texts (the other 13 are repair patches
-// whose text is not stored). 43 of the 85 now pass, every one a lost subject
-// form met by a new subject form, and the other 42 stay refused, none with a
-// subject form arriving. The new answer is always a subset of the old one, so
-// no wording that passed before is refused now.
+// whose text is not stored). The first swap rule passed 43 of the 85; 19 of
+// those wrote a fusion (`Xing Lili` 11, `XingLili` 7, `Xing Li Li` 1) and the
+// whole-name test refuses them again. The 24 that pass are each a lost subject
+// form met by a new subject form written alone, and 61 stay refused. The new
+// answer is always a subset of the old one, so no wording that passed before is
+// refused now. Tried as an arrival, 67 of the 7,596 whole-name occurrences in
+// the 91 pinned archives and 281 settled pages are held back: 48 are written
+// with other spacing than declared (`Yi Ran` for `Yiran`), 12 are joined to a
+// handle by an underscore, 7 sit beside a capitalised word of a longer name
+// (`Yantian Road`, `Susie Glitter`); none is a sentence opener, though the
+// opener list was drawn from those same pages, and only two of the 24 swaps
+// lean on it (`Since`, `After`).
 
 /**
  Separator between alternate handles inside one declared field.
@@ -404,12 +425,45 @@ export function findDroppedDeclaredNames(
     return declaredFormTexts({ entries: lost, },);
 
   /**
-   Subject forms the candidate carries as names and the base did not.
+   Words allowed directly beside a new form: the words of every declared form,
+   the ordinary capitalised words, and the words the base held beside the lost
+   forms.
+   */
+  const excused = excusedNeighboursOf({
+    declaredWords: declaredWordsOf({ forms: [
+      ...forms,
+      ...subjectForms,
+    ], },),
+    base: {
+      before: lostSubject.flatMap(function beforeLost({ key, },): readonly string[] {
+        return besideWordsOf({
+          projection: base,
+          key,
+        },)
+          .before;
+      },),
+      after: lostSubject.flatMap(function afterLost({ key, },): readonly string[] {
+        return besideWordsOf({
+          projection: base,
+          key,
+        },)
+          .after;
+      },),
+    },
+  },);
+
+  /**
+   Subject forms the candidate carries as whole names and the base did not carry.
 
    TOO SHORT A FORM COUNTS FOR NOTHING, for the reason the shortest checkable
-   form gives: its presence cannot be told from an accident.
+   form gives: its presence cannot be told from an accident. A FORM FUSED INTO
+   A NAME NOBODY DECLARED COUNTS FOR NOTHING EITHER, as the `WHOLE-NAME ARRIVAL`
+   note says.
    */
-  const arrived = subject.filter(function isNew({ key, },): boolean {
+  const arrived = subject.filter(function isNew({
+    form,
+    key,
+  },): boolean {
     if (key.length < SHORTEST_CHECKABLE_FORM)
       return false;
     if (carriesName({
@@ -417,9 +471,11 @@ export function findDroppedDeclaredNames(
       key,
     },))
       return false;
-    return carriesName({
+    return arrivesAsWholeName({
       projection: candidate,
+      form,
       key,
+      excused,
     },);
   },);
 

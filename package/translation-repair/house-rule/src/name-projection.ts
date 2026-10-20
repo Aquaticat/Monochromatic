@@ -232,21 +232,40 @@ function joinsWord(
 }
 
 /**
- Whether a projected text carries a key as a name: found in the key, with
- each end of the match at a word edge in the composed text.
+ Where one occurrence of a name sits in the composed text.
+
+ @example
+ ```ts
+ const place: NameOccurrence = { start: 4, end: 11, };
+ ```
+ */
+export type NameOccurrence = {
+  /**
+   Offset of the occurrence's first character in the composed text.
+   */
+  readonly start: number;
+
+  /**
+   Offset just past the occurrence's last character in the composed text.
+   */
+  readonly end: number;
+};
+
+/**
+ Every occurrence of a key in a projected text that falls between word edges.
 
  @param projection - text projected by {@link projectName}
 
  @param key - name projected the same way
 
- @returns Whether some occurrence stands apart
+ @returns Occurrences in text order, each opening and closing at a word edge
 
  @example
  ```ts
- carriesName({ projection: projectName({ text: 'The cat cannot nap.', },), key: 'ann', },); // false
+ const places = nameOccurrences({ projection: projectName({ text: 'Ann naps. Ann wakes.', },), key: 'ann', },);
  ```
  */
-export function carriesName(
+export function nameOccurrences(
   {
     projection,
     key,
@@ -254,9 +273,9 @@ export function carriesName(
     readonly projection: NameProjection;
     readonly key: string;
   },
-): boolean {
+): readonly NameOccurrence[] {
   if (key === '')
-    return false;
+    return [];
 
   /**
    Text the offsets index.
@@ -273,6 +292,11 @@ export function carriesName(
    one.
    */
   const keyUnits = key.length;
+
+  /**
+   Occurrences found, in text order.
+   */
+  const found: NameOccurrence[] = [];
   for (let at = projected.indexOf(key,); at !== (-1); at = projected.indexOf(
     key,
     at + 1,
@@ -315,10 +339,46 @@ export function carriesName(
         at: end,
       },),
     },);
-    if (opensApart && closesApart)
-      return true;
+    if (opensApart && closesApart) {
+      found.push({
+        start,
+        end,
+      },);
+    }
   }
-  return false;
+  return found;
+}
+
+/**
+ Whether a projected text carries a key as a name: found in the key, with
+ each end of the match at a word edge in the composed text.
+
+ @param projection - text projected by {@link projectName}
+
+ @param key - name projected the same way
+
+ @returns Whether some occurrence stands apart
+
+ @example
+ ```ts
+ carriesName({ projection: projectName({ text: 'The cat cannot nap.', },), key: 'ann', },); // false
+ ```
+ */
+export function carriesName(
+  {
+    projection,
+    key,
+  }: {
+    readonly projection: NameProjection;
+    readonly key: string;
+  },
+): boolean {
+  return nameOccurrences({
+    projection,
+    key,
+  },)
+    .length
+    > 0;
 }
 
 //endregion Name projection

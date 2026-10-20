@@ -544,6 +544,12 @@ await describe({
               candidateText: 'Aoba Blossom naps on the sill.',
             },),).toEqual([],);
             expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Blossom', ],
+              subjectForms: [ 'Mittens', 'Blossom', ],
+              baseText: 'Mittens Aoba naps on the sill.',
+              candidateText: 'Blossom Aoba naps on the sill.',
+            },),).toEqual([],);
+            expect(findDroppedDeclaredNames({
               forms: [ 'Mittens', 'Blossom', 'Patch Quill', ],
               subjectForms: [ 'Mittens', 'Blossom', ],
               baseText: 'Mittens naps on the sill.',
@@ -578,6 +584,19 @@ await describe({
               subjectForms: [ 'Mittens', 'Blossom', ],
               baseText: 'Mittens naps on the sill.',
               candidateText: 'The cat (Blossom), who naps, is warm; "Blossom" naps.',
+            },),).toEqual([],);
+            // A no-break space is a space, and a bracket at the end of a declared form is not part of its spelling.
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Wooly Blossom', ],
+              subjectForms: [ 'Mittens', 'Wooly Blossom', ],
+              baseText: 'Mittens naps on the sill.',
+              candidateText: 'Wooly\u00A0Blossom naps on the sill.',
+            },),).toEqual([],);
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Blossom (Peanut)', ],
+              subjectForms: [ 'Mittens', 'Blossom (Peanut)', ],
+              baseText: 'Mittens naps on the sill.',
+              candidateText: 'Blossom (Peanut) naps on the sill.',
             },),).toEqual([],);
           },
         },),
