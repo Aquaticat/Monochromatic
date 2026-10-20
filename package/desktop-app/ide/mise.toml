@@ -4,7 +4,8 @@
 # of 512, and 4096 descriptors. The caller may lower or raise it with IDE_CONTAINER_CPUS, IDE_CONTAINER_MEMORY,
 # IDE_CONTAINER_PIDS, IDE_CONTAINER_NOFILE, IDE_CONTAINER_JOBS, and IDE_CONTAINER_TEST_THREADS; a malformed value stops the
 # task with a message naming the variable. No number of the bound is written in this file.
-# No home directory or credentials are mounted into the build container.
+# No home directory or credentials are mounted into the build container. The native test task also passes /dev/dri
+# (the `gpu` option of runBounded), because its GPU snapshot harness renders on the hardware GPU.
 # Containers run with --network=none, so podman starts no pasta network helper (which takes inotify watches
 # and warns when the limit is reached); only the tasks that download (fetch, runtime) pass network: true.
 [vars]
@@ -23,8 +24,12 @@ if (imageCheck.status !== 0) {
 // It is mounted read-only outside /work and named by CLIPPY_CONF_DIR: a mount over /work/clippy.toml would leave an
 // empty clippy.toml in the package directory on the host. Host clippy finds the file in an ancestor directory.
 const rootClippyConfig = (await import('node:path')).resolve(process.cwd(), '../../../clippy.toml')
-const runBounded = (args, { network = false, ...options } = {}) => execFileSync('podman', [
-  'run', '--rm', ...(network ? [] : ['--network=none']), ...containerLimits.limitArguments,
+// A gpu run passes the host's render nodes so that wgpu finds the hardware Vulkan driver (RADV) of the image's
+// mesa-vulkan-drivers; VK_DRIVER_FILES names that driver only, so the CPU rasterizer (lavapipe) that package also
+// installs is not even listed. Pass it only to the tasks that render on the GPU. The podman bound caps no GPU memory.
+const gpuArguments = ['--device', '/dev/dri', '--env', 'VK_DRIVER_FILES=/usr/share/vulkan/icd.d/radeon_icd.x86_64.json']
+const runBounded = (args, { network = false, gpu = false, ...options } = {}) => execFileSync('podman', [
+  'run', '--rm', ...(network ? [] : ['--network=none']), ...(gpu ? gpuArguments : []), ...containerLimits.limitArguments,
   '--security-opt', 'label=disable',
   '--volume', process.cwd() + ':/work', '--volume', 'ide-cargo:/cargo',
   '--volume', rootClippyConfig + ':/clippy-conf/clippy.toml:ro', '--env', 'CLIPPY_CONF_DIR=/clippy-conf',
@@ -281,7 +286,7 @@ run = """
 runCargo(['build', '--features', 'slint/mcp', '--bin', 'ide-scripted-lsp'])
 // A filtered run prints what its tests print, such as measured contrast ratios, and runs every selected test.
 const filter = process.env.usage_filter ? ['--no-capture', '--no-fail-fast', '--filter-expr', process.env.usage_filter] : []
-runBounded(['env', 'SLINT_BACKEND=headless', 'SLINT_MCP_PORT=0', 'cargo', 'nextest', 'run', '--features', 'slint/mcp', '--bin', 'monochromatic-ide', ...filter])
+runBounded(['env', 'SLINT_BACKEND=headless', 'SLINT_MCP_PORT=0', 'cargo', 'nextest', 'run', '--features', 'slint/mcp', '--bin', 'monochromatic-ide', ...filter], { gpu: true })
 """
 
 [tasks."test:fonts"]

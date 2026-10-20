@@ -3,7 +3,11 @@
 //!  and toolkit snapshot bindings.
 
 /// Reuse the production window and rendering state rather than a lookalike Text widget.
-use super::{AppWindow, State, render};
+use super::{
+    AppWindow, State,
+    gpu_snapshot::{install_gpu_platform, snapshot},
+    render,
+};
 /// Source positions stay independent of the rendered font instance.
 use ide_app::document::ReadingPosition;
 /// Construct immutable real-face requests through the public source API.
@@ -61,18 +65,15 @@ fn capture(window: &AppWindow, state: &Rc<RefCell<State>>, weight: f32, italic: 
     // Lend the existing production state and window rather than constructing another renderer.
     render(window, state);
     update_timers_and_animations();
-    // Expect reports snapshot failures; as_bytes lends pixels, and to_vec owns them across later frames.
-    return window
-        .window()
-        .take_snapshot()
-        .expect("native source typography snapshot")
-        .as_bytes()
-        .to_vec();
+    // The frame is drawn on the GPU and read back; as_bytes lends pixels, and to_vec owns them across later frames.
+    return snapshot(window.window()).as_bytes().to_vec();
 }
 
 /// Rendering real italic/intermediate instances must retain the same selected source character.
 #[test]
 fn source_typography_repaints_without_changing_selection() {
+    // The window is drawn by FemtoVG on the hardware GPU; no software renderer can stand in for it.
+    println!("GPU snapshot adapter: {}", install_gpu_platform());
     // Expect makes a toolkit initialization error a test failure instead of substituting another backend.
     let window = AppWindow::new().expect("headless source window");
     // Rc/RefCell shares the same production state with each render; None selects an in-memory fixture.
