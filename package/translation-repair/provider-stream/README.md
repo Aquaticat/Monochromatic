@@ -30,12 +30,14 @@ The groups that follow name the main ones.
   `scannerFor`,
   `DEFAULT_WIRE_FORMAT`,
   `ssePayloadOf`,
+  `sseCommentOf`,
   `drainBody`,
   `deliveredCharsOf`.
   Declared in `stream-delta-scan.ts`,
   `anthropic-delta-scan.ts`,
   `stream-wire-format.ts`,
   `sse-data-line.ts`,
+  `sse-comment-line.ts`,
   `stream-drain.ts`,
   and `stream-delivered-chars.ts`.
 - Stream failure detectors:

@@ -55,6 +55,7 @@ export {
   type QuotedPassages,
   quoteLossRefusalFinding,
 } from './quote-preservation.ts';
+export { sseCommentOf, } from './sse-comment-line.ts';
 export { ssePayloadOf, } from './sse-data-line.ts';
 export {
   reportStreamProgress,
