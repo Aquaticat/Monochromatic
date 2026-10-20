@@ -4,6 +4,7 @@ import {
   describeAtom,
   mergeAtoms,
 } from './translate-atom-floor.ts';
+import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Rewritten renderings
 // WHERE THE PAGE RENDERS A REFERENCE ANOTHER WAY, a candidate owes one
@@ -367,10 +368,10 @@ export function atomFindings(
    pools, which are counted whole.
    */
   const missing = [...owed.entries(),]
-    .filter(function isShort([key, count,],): boolean {
+    .filter(function isShort([key, count,]: ReadonlyEntry<string, number>,): boolean {
       return (!poolOfKey.has(key,)) && ((carried.get(key,) ?? 0) < count);
     },)
-    .map(function toFinding([key, count,],): string {
+    .map(function toFinding([key, count,]: ReadonlyEntry<string, number>,): string {
       /**
        Copies the candidate carries.
        */
@@ -416,10 +417,10 @@ export function atomFindings(
    Atoms the candidate carries more often than the references.
    */
   const surplus = [...carried.entries(),]
-    .filter(function isSurplus([key, count,],): boolean {
+    .filter(function isSurplus([key, count,]: ReadonlyEntry<string, number>,): boolean {
       return count > (owed.get(key,) ?? 0);
     },)
-    .map(function toFinding([key, count,],): string {
+    .map(function toFinding([key, count,]: ReadonlyEntry<string, number>,): string {
       /**
        Copies the references carry.
        */
