@@ -127,7 +127,8 @@ function shipping({ archive, text, }: { readonly archive: string; readonly text:
 
  @param text - what the consolidation shipped there
 
- @returns The slice's text on the page and the findings
+ @returns The slice's rewritten texts (none when the passes left it as it was)
+ and the findings
 
  @example
  ```ts
@@ -136,7 +137,7 @@ function shipping({ archive, text, }: { readonly archive: string; readonly text:
  */
 function pageCarrying(
   { archive, text, }: { readonly archive: string; readonly text: string; },
-): { readonly carried: string | undefined; readonly findings: readonly string[]; } {
+): { readonly carried: readonly string[]; readonly findings: readonly string[]; } {
   const assembly = guardPageAssembly({
     artifact: shipping({ archive, text, },),
     slices: slicesOver({ archive, },),
@@ -144,9 +145,13 @@ function pageCarrying(
     targetText: archive,
   },);
   return {
-    carried: assembly.trimmed.find(function atSlice(row,): boolean {
-      return row.sliceIndex === 0;
-    },)?.replacementText,
+    carried: assembly.trimmed
+      .filter(function atSlice(row,): boolean {
+        return row.sliceIndex === 0;
+      },)
+      .map(function textOf(row,): string {
+        return row.replacementText;
+      },),
     findings: assembly.findings,
   };
 }
@@ -161,7 +166,7 @@ await describe({
           archive: `The cat slept on the sill. ${NOTE}`,
           text: 'The cat napped on the sill.',
         },);
-        expect(carried,).toBe(`The cat napped on the sill.\n\n${NOTE}`,);
+        expect(carried,).toEqual([`The cat napped on the sill.\n\n${NOTE}`,],);
         expect(findings,).toEqual([`archive-note-carried (slice 0: ${JSON.stringify(NOTE,)})`,],);
       },
     },),
@@ -172,12 +177,40 @@ await describe({
           archive: `The cat slept on the sill. ${NOTE}`,
           text: `The cat napped on the sill. ${NOTE}`,
         },);
-        expect(kept.carried,).toBeUndefined();
+        expect(kept.carried,).toEqual([],);
         const english = pageCarrying({
           archive: `The cat slept on the sill. ${ENGLISH_NOTE}`,
           text: 'The cat napped on the sill.',
         },);
-        expect(english.carried,).toBeUndefined();
+        expect(english.carried,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'CARRIES every note the wording lacks in the archive\'s order, and keeps the whitespace that ends the text',
+      fn: async () => {
+        const second = '<!-- 猫窝：Cat Bed -->';
+        const { carried, } = pageCarrying({
+          archive: `The cat slept. ${NOTE}\n\n${second}\n`,
+          text: 'The cat napped.\n',
+        },);
+        expect(carried,).toEqual([`The cat napped.\n\n${NOTE}\n\n${second}\n`,],);
+      },
+    },),
+    it({
+      name: 'CARRIES NOTHING onto a slice the page removes, and NOTHING into a span sealed as the English original',
+      fn: async () => {
+        const archive = `The cat slept. ${NOTE}`;
+        expect(pageCarrying({ archive, text: '', },).carried,).toEqual([],);
+        const sealed = guardPageAssembly({
+          artifact: shipping({ archive, text: 'The cat napped.', },),
+          slices: slicesOver({ archive, },),
+          sourceText: SOURCE,
+          targetText: archive,
+          archiveOriginalSpans: [{ startOffset: 0, endOffset: archive.length, note: 'seal', },],
+        },);
+        expect(sealed.trimmed.map(function textOf(row,): string {
+          return row.replacementText;
+        },),).not.toContain(`The cat napped.\n\n${NOTE}`,);
       },
     },),
   ],

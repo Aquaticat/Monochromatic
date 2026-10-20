@@ -150,6 +150,12 @@ export {
   type NamingError,
   refusalText,
 } from './refusal-text.ts';
+export {
+  archiveNotesMissingFrom,
+  type TranslatorsNote,
+  translatorsNotesIn,
+  withoutTranslatorsNotes,
+} from './translators-note.ts';
 export { UnhandledMemberInvariantError, } from './unhandled-member.ts';
 export {
   type ContainerSpan,
