@@ -174,6 +174,16 @@ pub enum LandingError {
     Phase(PhaseMarkerError),
     /// The landing decided but could not release the real index lock.
     Release(String),
+    /// The branch already advanced, and a step that completes the landing failed afterwards:
+    ///  the commit exists and must not be committed again.
+    LandedThenFailed {
+        /// The commit that landed.
+        oid: String,
+        /// The reference it landed on.
+        target: String,
+        /// The step that failed afterwards.
+        cause: Box<LandingError>,
+    },
 }
 
 /// The wording of the failure.
@@ -186,6 +196,11 @@ impl std::fmt::Display for LandingError {
             Self::Recovery(failure) => write!(formatter, "{}", failure.0),
             Self::Journal(text) | Self::Release(text) => formatter.write_str(text.as_str()),
             Self::Phase(failure) => write!(formatter, "{failure}"),
+            Self::LandedThenFailed { oid, target, cause } => write!(
+                formatter,
+                "the commit {oid} landed on {target}, but completing its records failed: {cause}. \
+The commit is done, so do not retry it; check it with git log and git status."
+            ),
         };
     }
 }
@@ -483,24 +498,16 @@ fn land_locked(
             return Ok(lost);
         }
     }
-    // A normalization has only the install left once its record is durable.
-    held.for_recovery = true;
-    let Some(installing) = held.lock.take() else {
-        return Err(LandingError::Journal(String::from("the real index lock is not held")));
-    };
-    installing.install(post.as_path()).map_err(LandingError::Recovery)?;
-    write_journal(workspace.directory.as_path(), INDEX_INSTALLED_FILENAME, b"")?;
-    reach(Phase::IndexInstalled)?;
-    if matches!(request.payload, LandingPayload::Commit { .. }) {
-        reproduce_conclusion_cleanup(
-            context,
-            cwd,
-            capture.layout.git_dir.as_path(),
-            workspace.shadow.as_path(),
-            workspace.directory.as_path(),
-            capture.layout.ref_format,
-        )
-        .map_err(LandingError::Recovery)?;
+    if let Err(error) = complete_landing(context, cwd, workspace, request, held, post.as_path()) {
+        // Once the branch advanced, a later failure must say so, or a consumer would commit the same work again.
+        return Err(match request.payload {
+            LandingPayload::Commit { new_oid, .. } => LandingError::LandedThenFailed {
+                oid: new_oid.clone(),
+                target: capture.layout.target_ref.clone(),
+                cause: Box::new(error),
+            },
+            LandingPayload::NormalizeOnly { .. } => error,
+        });
     }
     debug(TAG, format!("landed attempt {}", request.attempt).as_str());
     let oid: String = match request.payload {
@@ -511,6 +518,46 @@ fn land_locked(
         },
     };
     return Ok(LandingOutcome::Landed { oid });
+}
+
+/// What:
+///  Install the post-index and write the records that complete a landing whose record is durable.
+/// Why:
+///   Everything here follows the branch advance, so the caller words a failure of any step as one that happened
+///  after the commit landed.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// // the tail of landTransaction after the ref update
+/// ```
+fn complete_landing(
+    context: &GitContext,
+    cwd: &Path,
+    workspace: &LandingWorkspace,
+    request: &LandingRequest<'_>,
+    held: &mut Held,
+    post: &Path,
+) -> Result<(), LandingError> {
+    // A normalization has only the install left once its record is durable.
+    held.for_recovery = true;
+    let Some(installing) = held.lock.take() else {
+        return Err(LandingError::Journal(String::from("the real index lock is not held")));
+    };
+    installing.install(post).map_err(LandingError::Recovery)?;
+    write_journal(workspace.directory.as_path(), INDEX_INSTALLED_FILENAME, b"")?;
+    reach(Phase::IndexInstalled)?;
+    if matches!(request.payload, LandingPayload::Commit { .. }) {
+        reproduce_conclusion_cleanup(
+            context,
+            cwd,
+            request.capture.layout.git_dir.as_path(),
+            workspace.shadow.as_path(),
+            workspace.directory.as_path(),
+            request.capture.layout.ref_format,
+        )
+        .map_err(LandingError::Recovery)?;
+    }
+    return Ok(());
 }
 
 /// What:
