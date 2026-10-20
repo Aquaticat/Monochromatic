@@ -552,6 +552,12 @@ PWT:
  Wait on a PID,
  bounded: `timeout 600 tail --pid=<pid> --follow /dev/null`.
 
+BGL:
+ Every background wait or poll loop has a deadline,
+ and its starter stops it before reporting:
+ a leftover loop keeps its worktree locked,
+ so check `ps` for processes whose cwd is your worktree.
+
 INH:
  A user-interrupted tool call (`Request interrupted`,
  `doesn't want to proceed`) may be half-applied,
