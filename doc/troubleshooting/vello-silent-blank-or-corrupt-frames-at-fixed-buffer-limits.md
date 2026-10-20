@@ -15,14 +15,14 @@ and does not report a scene that does not fit.
 
 - **Blank frame.**
   When a scene needs more lines,
-segments,
-tiles or command-list space than a buffer holds,
+  segments,
+  tiles or command-list space than a buffer holds,
   a later stage returns early and the fine stage writes no pixel.
   The texture reads back as all `0,0,0,0`,
-and `Renderer::render_to_texture` still returns `Ok(())`.
+  and `Renderer::render_to_texture` still returns `Ok(())`.
   The IDE selecting 58 or more rows of its tile hit this in a probe that copies the tile's clip structure
   (56 rows rendered,
-58 did not).
+  58 did not).
 - **Corrupt frame with `failed = 0`.**
   Every 16 by 16 pixel tile owns 64 `u32` in the command-list buffer (`ptcl`) before any dynamic allocation.
   That initial region is not checked against the buffer size.
@@ -30,7 +30,7 @@ and `Renderer::render_to_texture` still returns `Ok(())`.
   with `ptcl` set to 4,194,304 the render reported `failed = 0` and 290,992 bytes differed from the reference
   by up to 184 levels.
   At the default `ptcl` of 8,388,608 elements the limit is 131,072 tiles,
-which is 128 MiB of RGBA8 texture.
+  which is 128 MiB of RGBA8 texture.
 
 ## Cause
 
@@ -68,16 +68,16 @@ Keep each scene inside the buffers,
 because nothing reports an overflow:
 
 - Clip each rectangle to its own row's height,
-never to the whole texture.
+  never to the whole texture.
   A full-height clip costs about 36,700 tiles per selected row on a 1113 by 8160 texture;
   with row-height clips a select-all needs about 66,000 tiles instead of 12.5 million.
 - Keep a texture at 128 MiB or less with the default `ptcl`,
-or compute `ptcl` from the target size
+  or compute `ptcl` from the target size
   (at least 64 elements per tile plus the dynamic part).
   The IDE keeps its tile at 64 MiB or less.
 - Keep a minimap slice under about 1,600 rows at one sixth scale (the default fails at 4,096 rows).
 - Do not shrink the buffers by patching `vello_encoding` without the clip fix,
-a computed `ptcl`
+  a computed `ptcl`
   and a way to detect failure.
 
 The full study,
@@ -88,23 +88,23 @@ is `doc/planning/ide-vello-buffer-sizes.md`.
 ## Evidence and limits
 
 - Source read:
-the files and lines named above,
-in `~/.cargo/registry/src/*/vello_encoding-0.11.0` and
+  the files and lines named above,
+  in `~/.cargo/registry/src/*/vello_encoding-0.11.0` and
   `vello_shaders-0.11.0`.
 - Pixel measurements come from a headless probe,
-`~/temp/agent/vello-buffers/probe` on the machine that found it
+  `~/temp/agent/vello-buffers/probe` on the machine that found it
   (a scratch directory,
-not in the repository),
-written by a subagent;
+  not in the repository),
+  written by a subagent;
   I did not rerun them.
 - The blank frame was not yet reproduced in the IDE itself when this was written;
   an agent is reproducing it there (see `doc/handover/slint-ide-0x.md`).
 - Only Vello 0.11.0,
-only Vulkan on RADV.
+  only Vulkan on RADV.
 - Upstream:
-linebender/vello issues 366 and 541 and pull requests 606,
-708 and 1861 concern buffer sizing
+  linebender/vello issues 366 and 541 and pull requests 606,
+  708 and 1861 concern buffer sizing
   and are open.
   Pull request 1861 adds configurable sizes without a retry and conflicts with the repository's current layout.
   No upstream issue was found for the unchecked initial `ptcl` region,
-and none was filed.
+  and none was filed.
