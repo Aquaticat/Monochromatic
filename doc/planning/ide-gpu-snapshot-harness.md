@@ -140,7 +140,9 @@ all made in `package/desktop-app/ide`:
   `VK_DRIVER_FILES=/usr/share/vulkan/icd.d/radeon_icd.x86_64.json`;
   only `test:native` passes it.
   `VK_DRIVER_FILES` names RADV only,
-  so `llvmpipe` (installed by the same package) is not even listed.
+  so `llvmpipe` (installed by the same package) is not even listed:
+  `vulkaninfo --summary` in the image with `--device /dev/dri` and that variable listed exactly two devices,
+  the RX 7600 and the Raphael GPU.
 - `Cargo.toml`:
   `slint` as a dev-dependency with `renderer-femtovg-wgpu` and `unstable-wgpu-30`.
 
@@ -152,6 +154,20 @@ Effects to know about:
   The podman memory and CPU bound does not cap GPU memory.
 - A host without `/dev/dri` makes `podman run --device /dev/dri` fail before any test starts,
   for all of `test:native`.
+- Other tasks and `bin/inspect-*-guards.mjs` scripts that run `cargo nextest ... --bin monochromatic-ide` start their
+  own containers without `/dev/dri`.
+  None of them selects the migrated test
+  (checked with `rg` for `source_typography` and `source_font_tests` in `bin/`,
+  `mise.toml`,
+  and the README;
+  `test:annotations-native` filters on `annotation`).
+  A test that moves onto the harness and is also selected by one of those scripts needs the device passed there too.
+- `file-enforcer` does not manage the dev-dependency section:
+  `node file-enforcer.config.ts` rewrote only the root `mise.toml`
+  (unrelated,
+  reverted)
+  and left
+  `package/desktop-app/ide/Cargo.toml` as edited.
 - The application build is unchanged.
   `mise run //package/desktop-app/ide:linked-crates` (`cargo tree` with `--edges normal,no-proc-macro`) lists 371 crates
   and no `wgpu` entry;
@@ -259,9 +275,9 @@ Against the nested compositor:
   over all three colour channels:
   0 differing pixels of 60,000,
   maximum channel delta 0.
-  (The compositor composited on the integrated GPU,
-  `renderD129`,
-  so two different GPUs agree on this component.
+  (The compositor composited the client's frame on the integrated GPU,
+  `renderD129`;
+  the client's own adapter was not logged.
   Only this one component was compared.)
 
 ## What was built
@@ -316,13 +332,17 @@ and the result recorded.
   panic at `src/native/source_font_tests.rs:91` `source weight must change displayed ink`.
   Restored;
   `git diff` empty.
-- A removal in production code was not run:
-  the tool permission layer refused an edit of
-  `src/shaped_text/layout.rs` (the `FontWeight` default pushed to the Parley builder),
-  because this task allows no change of
-  production source.
-  The coordinator can run that mutation;
-  it should fail the same assertion.
+- A removal in production code failed the test too.
+  The tool permission layer refused an edit of `src/shaped_text/layout.rs` in the worktree,
+  so the removal ran in the scratch copy of the package (`~/temp/agent/ide-gpu-snapshot/exp`,
+  same sources and the current harness):
+  the three lines that push `StyleProperty::FontWeight` to the Parley builder in `build_line` were deleted.
+  Result:
+  `FAIL`,
+  panic at `src/native/source_font_tests.rs:91`,
+  `source weight must change displayed ink`.
+  The scratch copy is not part of the branch,
+  so nothing needed restoring in the repository.
 - The CPU refusal in the harness:
   with `hardware_rank` accepting `Cpu` and no `/dev/dri` the test passed on `llvmpipe`;
   with the guard restored,
