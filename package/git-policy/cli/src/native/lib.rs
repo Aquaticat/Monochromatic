@@ -139,6 +139,9 @@ pub mod rule_argument_rewrite;
 /// Pure core of the index-against-`HEAD` check.
 pub mod rule_commit_index;
 
+/// The query and reading of "does this worktree hold uncommitted state?".
+pub mod rule_worktree_dirty;
+
 /// Pure decision of the commit-only transform.
 pub mod rule_commit_only;
 

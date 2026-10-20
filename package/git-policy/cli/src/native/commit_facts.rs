@@ -21,6 +21,7 @@ use super::repository_facts::RepositoryFacts;
 use super::repository_location::RepositoryLocation;
 use super::rule_commit_index::IndexVsHead;
 use super::rule_commit_sequencer::SequencerState;
+use super::rule_worktree_dirty::DirtyScope;
 use super::transaction_git::GitContext;
 use std::ffi::{OsStr, OsString};
 use std::path::Path;
@@ -105,6 +106,10 @@ impl<F: RepositoryFacts> RepositoryFacts for PrivateIndexFacts<F> {
         return self.inner.index_vs_head();
     }
 
+    fn worktree_dirty(&mut self, scope: DirtyScope) -> Result<bool, String> {
+        return self.inner.worktree_dirty(scope);
+    }
+
     fn sequencer_state(&mut self) -> Result<SequencerState, String> {
         return self.inner.sequencer_state();
     }
@@ -142,6 +147,10 @@ impl<F: RepositoryFacts> RepositoryFacts for &mut F {
 
     fn index_vs_head(&mut self) -> Result<IndexVsHead, String> {
         return (**self).index_vs_head();
+    }
+
+    fn worktree_dirty(&mut self, scope: DirtyScope) -> Result<bool, String> {
+        return (**self).worktree_dirty(scope);
     }
 
     fn sequencer_state(&mut self) -> Result<SequencerState, String> {
