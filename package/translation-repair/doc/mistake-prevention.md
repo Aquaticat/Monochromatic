@@ -270,3 +270,12 @@ not a memory of having done it.
     loaded from the gated worktree's build);
     a package added since the last install is left out of the bundle,
     and the pass stops before its `START` line.
+11. A new provider's routing signals are seen working before a run leans on them (P16):
+    any field the provider reports that makes the router stop,
+    hold out or move calls
+    (a cost,
+    a balance,
+    a quota flag)
+    is read in the first keyed run's log beside what the provider's own dashboard shows for the same call,
+    and the run is watched until the first such line arrives;
+    a reading the provider's documentation does not state outright is logged and never acted on until then.

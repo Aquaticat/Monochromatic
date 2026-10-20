@@ -128,19 +128,19 @@ because nothing reports it and overage is the owner's plan.
   marked `unreported-estimate`;
   an attempt abandoned before its stream ended settles at its estimate,
   marked `abandoned-estimate`.
-  The `METERS` line carries `neuralwattWh=` (left),
-  `neuralwattReckonedWh=` (the share of the day's spend resting on estimates)
-  and `neuralwattBilled=`.
-- **Dry when the day cannot hold even the smallest call,
-  or when anything was billed.**
+  The `METERS` line carries `neuralwattWh=` (left)
+  and `neuralwattReckonedWh=` (the share of the day's spend resting on estimates).
+- **Dry when the day cannot hold even the smallest call.**
   The smallest call's hold is the first bucket's lowest mean times the margin.
-- **A request that comes back with a cost ends the day for NeuralWatt.**
-  The free energy is used before anything else,
-  so a `request_cost_usd` above zero means it was spent and the owner's plan was charged.
-  The ledger marks the UTC day billed,
-  the provider reads dry until 00:00 UTC,
-  and the log says so plainly.
-  This is the backstop that holds whatever the estimates get wrong.
+- **A reported cost is not a billing signal.**
+  The first design read a `request_cost_usd` above zero as plan spend
+  and ended the UTC day for NeuralWatt on it.
+  The first keyed call disproved that
+  (see "The first keyed call",
+  in this record),
+  and the stop was removed the same day.
+  The cost is still parsed and reported on the `SPEND` line;
+  nothing routes on it.
 - **An absent key leaves the provider unconfigured.**
   It reads dry and is never routed to,
   as for every other provider.
@@ -211,8 +211,10 @@ uniform across models and buckets.
   the excess is about 6 Wh in the 4,096 to 16,383 bucket and about 62 Wh in the 16,384 to 65,535 bucket,
   both for DeepSeek V4.1 Flash.
   That bound is an upper limit that decode-heavy reasoning calls do not reach.
-  The cost comment ends the day at the first billed request,
-  so the overshoot is bounded by the calls already in flight at that moment.
+  Settlement at the measured figure corrects the ledger as each call ends,
+  so the overshoot is bounded by the calls already in flight when the day runs out;
+  the owner accepted that risk on 2026-10-20
+  ("I can tolerate some potential losses").
 - **Recalibrate from the first keyed run.**
   Every settled call logs its measured energy beside its estimate and its prompt tokens,
   so the first run supplies the pipeline's own means per bucket,
@@ -231,8 +233,7 @@ Its end report is registered when the run client is built and printed by `report
 (`run/src/corpus-run/run-end-report.ts`).
 
 `spend-report` lists NeuralWatt seats in a bucket of their own,
-in no credit total and no USD total,
-and says in capitals when any of their calls came back with a cost.
+in no credit total and no USD total.
 
 ### Credentials
 
@@ -256,9 +257,9 @@ The key's value is masked in every logged exchange by the same credential maskin
   Anything the owner runs on DeepSeek V4.1 Flash or GLM-5.3-Flash outside this pipeline spends the same 550 Wh,
   and the ledger does not know it.
   The ledger can then say energy is left when the account has none,
-  in which case the next request comes back billed,
-  the cost comment ends the day for NeuralWatt,
-  and the owner's plan is charged for that one request and the calls in flight.
+  and the owner's plan is charged for the calls sent past that point.
+  No per-request field tells free energy from plan energy
+  (the first keyed call reported a cost on a free request).
   The quota difference in the spend report is the only signal of plan energy spent,
   and it includes the owner's other use of the plan in the same hours.
 - **Whether there is any free energy today.**
@@ -266,33 +267,65 @@ The key's value is masked in every logged exchange by the same credential maskin
   (often weekends,
   with amounts that can change)
   and that without a promotion there is none.
-  The pipeline cannot read the promotion calendar.
-  On a day without one the first request comes back billed,
-  and the ledger ends the day at once;
+  The pipeline cannot read the promotion calendar,
+  and on a day without one its calls would be charged to the plan unseen;
   the owner can set `TRANSLATION_REPAIR_NEURALWATT_DAILY_WH=0` to keep the provider dry from the start.
+  The dashboard's hover note names when the promotion ends.
   The page also says the free energy does not apply to per-token accounts,
   the free trial or a past-due account.
 - **Another process on the same ledger.**
   A reservation lives in the process that made it.
   Two pipeline processes run at once on one ledger each read the other's settled lines but not its holds,
   so together they can start more than the remainder covers.
-  The margin and the billed mark bound the effect;
+  The margin bounds the effect;
   nothing else does.
+
+## The first keyed call
+
+Run `zheermao18`,
+started 2026-10-20 at 22:22 UTC on build `1dde8c5cd6`.
+Its quota reading before the first call:
+1.9861 kWh charged this period.
+Its first NeuralWatt call,
+DeepSeek V4.1 Flash at 22:23 UTC with 2,954 prompt tokens by the byte estimate
+(2,634 by the reply's usage),
+measured 0.0167 Wh against an estimate of 0.0466 Wh,
+and its cost comment reported `request_cost_usd` 0.000107.
+The billed stop then read NeuralWatt dry,
+and the run went on with Hyper and OpenRouter
+until it was stopped at 22:30 UTC after 21 Hyper calls,
+so that free energy would not stand idle while prepaid credit was spent.
+
+The energy methodology page
+(`https://docs.neuralwatt.com/energy-methodology.md`,
+read 2026-10-20 at 21:40 UTC)
+defines the field as the "Billed cost for this request in USD"
+and names "`0` for trial and free requests";
+the daily free energy page says of covered requests "you pay nothing for them until it runs out for the day".
+Neither names the free-energy case in the field's own description,
+and the design had taken a zero there as given.
+The owner read NeuralWatt's dashboard the same evening:
+"Your call only used 60.3J,
+which isn't even 0.0%."
+60.3 J is 0.01675 Wh,
+the measured figure,
+counted against the free energy.
+So the reported cost is nominal on a free request.
+The owner's ruling,
+2026-10-20:
+"From here on just use NeuralWatt normally,
+I can tolerate some potential losses.
+If it works wrongly I'll tell you."
+The billed stop was removed
+(ledger P16 in `package/translation-repair/doc/audit-ledger-providers-routing-and-seating.md`).
+
+The one call also shows the estimate running high:
+2.8 times the measured figure in the 1,024 to 4,095 bucket.
+One call is no mean;
+the margin stays until a run's settled lines give per-bucket figures.
 
 ## Not verifiable without a key
 
-- That `request_cost_usd` is 0 on a free standard-lane request.
-  The energy methodology page
-  (`https://docs.neuralwatt.com/energy-methodology.md`,
-  read 2026-10-20 at 21:40 UTC)
-  defines it as the "Billed cost for this request in USD"
-  and names "`0` for trial and free requests";
-  the daily free energy page says of covered requests "you pay nothing for them until it runs out for the day".
-  Neither page names the free-energy case in the cost field's own description,
-  so a zero there is the reading both pages support and not a stated fact.
-  If it is not,
-  the first call would end the day for NeuralWatt,
-  and the log would say so.
 - How NeuralWatt handles a picture on either model.
   The listing reports image input for both,
   so both cards say so and a picture call may route there;
