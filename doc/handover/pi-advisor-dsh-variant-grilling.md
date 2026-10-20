@@ -404,7 +404,14 @@ Implementation,
    (`94e9414e`);
    fix the 38 build-class reds
    (`25c55b61`).
-4. Fold the two design prerequisites into the extracted core
+4. Deferred (2026-10-20):
+   `git merge --ff-only origin/main` to adopt the auto-push published
+   merge `46a264639b`
+   (auto-push moved `origin/main` after commit `fafac18a54`).
+   Deferred because the extraction's staged renames make the worktree
+   unsafe for a merge right now;
+   run it once extraction lands and before further integration.
+   Then fold the two design prerequisites into the extracted core
    (optional `defaultReviewerModel` field,
    `selectAdvisorModel` ranking seam),
    then build `package/dsh-plugin/advisor` (in-process plugin,
