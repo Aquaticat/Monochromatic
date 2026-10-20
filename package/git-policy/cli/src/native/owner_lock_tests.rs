@@ -97,6 +97,7 @@ fn plant(lock_directory: &Path, pid: i64, identity: &str, token: &str) {
         owner_pid: pid,
         owner_birth_identity: String::from(identity),
         transaction_id: None,
+        owner_pid_namespace: None,
     };
     std::fs::write(
         lock_directory.join(OWNER_LOCK_RECORD_FILENAME),
@@ -320,6 +321,7 @@ fn plant_record(path: &Path, token: &str) {
         owner_pid: i64::from(std::process::id()),
         owner_birth_identity: current_birth_identity().expect("own"),
         transaction_id: None,
+        owner_pid_namespace: None,
     };
     std::fs::write(path, encode_owner_lock_record(&record)).expect("record");
 }

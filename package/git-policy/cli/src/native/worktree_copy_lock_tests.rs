@@ -32,6 +32,7 @@ fn owner_record_round_trips_with_incumbent_spelling() {
         lease_token: String::from("token"),
         owner_pid: 5,
         owner_birth_identity: String::from("linux:9"),
+        owner_pid_namespace: None,
     };
     let text: String = encode_owner(&owner);
     assert_eq!(
@@ -368,6 +369,7 @@ fn a_wait_ends_when_the_lock_passes_to_another_owner() {
         lease_token: "the-owner-that-left".to_owned(),
         owner_pid: i64::from(std::process::id()),
         owner_birth_identity: "the-owner-that-left".to_owned(),
+        owner_pid_namespace: None,
     };
     let started: Instant = Instant::now();
     wait_while_owner_lives(
@@ -489,4 +491,26 @@ fn a_lock_of_another_owner_is_never_moved() {
     assert!(!outcome.expect("checked without moving"));
     assert!(lock.join(OWNER_RECORD_NAME).exists());
     remove(root.as_path());
+}
+
+/// The namespace is an optional key between `ownerPid` and `schemaVersion`; an absent, empty or mistyped one is none.
+#[test]
+fn the_namespace_is_an_optional_sorted_key() {
+    let owner: LockOwner = LockOwner {
+        lease_token: String::from("token"),
+        owner_pid: 5,
+        owner_birth_identity: String::from("linux:9"),
+        owner_pid_namespace: Some(String::from("pid:[4026531836]")),
+    };
+    let text: String = encode_owner(&owner);
+    assert_eq!(
+        text,
+        "{\"leaseToken\":\"token\",\"ownerBirthIdentity\":\"linux:9\",\"ownerPid\":5,\"ownerPidNamespace\":\"pid:[4026531836]\",\"schemaVersion\":1}\n"
+    );
+    assert_eq!(parse_owner(text.as_str()), Ok(owner));
+    assert_eq!(parse_owner(DEAD_OWNER).expect("old record").owner_pid_namespace, None);
+    for ignored in ["\"\"", "5", "null"] {
+        let text: String = DEAD_OWNER.replace(",\"schemaVersion\"", &format!(",\"ownerPidNamespace\":{ignored},\"schemaVersion\""));
+        assert_eq!(parse_owner(text.as_str()).expect(ignored).owner_pid_namespace, None, "{ignored}");
+    }
 }
