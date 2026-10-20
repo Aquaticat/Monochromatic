@@ -65,7 +65,7 @@ const build = label => {
     '--security-opt', 'label=disable',
     '--volume', source + ':/work', '--volume', cache + ':/work/target', '--volume', cargoHome + ':/cargo',
     '--workdir', '/work', ...containerLimits.environmentArguments, '--env', 'SLINT_EMIT_DEBUG_INFO=1',
-    'localhost/monochromatic/ide', 'cargo', 'build', '--offline', '--features', 'slint/mcp', ...(profile === 'release' ? ['--release'] : []),
+    'localhost/monochromatic/ide', 'cargo', 'build', '--offline', ...(profile === 'release' ? ['--release'] : []),
   ], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   writeFileSync(join(artifact, 'build-' + label + '.log'), (result.stdout ?? '') + (result.stderr ?? ''));
   if (result.error) throw result.error;
@@ -102,7 +102,6 @@ const runtime = [join(origin, 'target/debug/runtime'), join(cache, 'debug/runtim
 // compositor's close records, and both programs read RUST_LOG.
 const environment = { ...process.env, SLINT_BACKEND: 'winit', FONTCONFIG_FILE: fontConfig, XDG_CONFIG_HOME: join(artifact, 'config'), XDG_CACHE_HOME: join(artifact, 'cache'), XDG_DATA_HOME: join(artifact, 'data'), RUST_LOG: 'nested_wayland_session=info,ide_app=debug,monochromatic_ide=debug' };
 if (runtime) environment.HELIX_RUNTIME = runtime;
-delete environment.SLINT_MCP_PORT;
 
 const plain = text => text.replace(/\x1b\[[0-9;]*m/g, '');
 const cpuTicks = pid => {

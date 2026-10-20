@@ -8,13 +8,15 @@
 // (`RUST_LOG=ide_app=debug,monochromatic_ide=debug`, the fixed level before 2026-10-06); a bare `debug` would
 // add every library's records, about twelve times the startup log, without changing what is measured.
 // The IDE's standard output goes to a FIFO that this script opens and never reads, so once the kernel's
-// pipe buffer is full every write to it blocks. While keys move the caret, the script asks the IDE's Slint
-// MCP server, which runs on the window's event loop (`i-slint-backend-testing` 1.18.1, `mcp_server.rs`,
-// `spawn_local`), for its window list over and over and records how long each answer takes. A blocked
-// event loop answers nothing. After the measurement the FIFO is drained, so the log's gap warning, if any,
-// can be read, and the IDE is quit.
+// pipe buffer is full every write to it blocks. While keys move the caret, the script photographs the
+// compositor's screen over and over (`screenshot`, which composites the latest frame the IDE committed, on the GPU)
+// and records when the picture changes. A caret that moves, or blinks, redraws the window, and the redraw happens
+// on the window's event loop, so a blocked event loop leaves the picture still. The IDE also stamps each key it
+// handles in its own log, and the longest pause between two of those stamps is the second account of the same
+// stall. After the measurement the FIFO is drained, so the log's gap warning, if any, can be read, and the IDE is quit.
 import { spawn, spawnSync } from 'node:child_process';
 import { once } from 'node:events';
+import { createHash } from 'node:crypto';
 import { closeSync, constants, copyFileSync, cpSync, existsSync, mkdirSync, mkdtempSync, openSync, readFileSync, readSync, realpathSync, rmSync, statfsSync, statSync, writeFileSync } from 'node:fs';
 import { createConnection } from 'node:net';
 import { homedir } from 'node:os';
@@ -38,7 +40,6 @@ const cache = disposable(process.env.usage_cache, 'Target cache');
 const cargoHome = process.env.usage_cargo ? disposable(process.env.usage_cargo, 'Cargo home copy') : 'ide-cargo';
 const seconds = Number(process.env.usage_seconds ?? 30);
 if (!Number.isInteger(seconds) || seconds < 5) throw new Error('seconds must be a whole number of at least 5');
-const port = process.env.usage_port ?? '9408';
 const origin = process.cwd();
 // Memory-backed storage for the live session files (see `session`).
 const TMPFS_MAGIC = 0x01021994;
@@ -58,7 +59,7 @@ const build = label => {
     '--security-opt', 'label=disable',
     '--volume', source + ':/work', '--volume', cache + ':/work/target', '--volume', cargoHome + ':/cargo',
     '--workdir', '/work', ...containerLimits.environmentArguments, '--env', 'SLINT_EMIT_DEBUG_INFO=1',
-    'localhost/monochromatic/ide', 'cargo', 'build', '--offline', '--features', 'slint/mcp', '--bin', 'monochromatic-ide',
+    'localhost/monochromatic/ide', 'cargo', 'build', '--offline', '--bin', 'monochromatic-ide',
   ], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   writeFileSync(join(artifact, 'build-' + label + '.log'), (result.stdout ?? '') + (result.stderr ?? ''));
   if (result.error) throw result.error;
@@ -95,24 +96,26 @@ const runtime = [join(origin, 'target/debug/runtime'), join(cache, 'debug/runtim
 // (38 s once at a load average of 90) and the two variants would start under different conditions.
 const fontWarmup = spawnSync('fc-list', [], { env: { ...process.env, FONTCONFIG_FILE: fontConfig, XDG_CACHE_HOME: join(artifact, 'cache') }, stdio: ['ignore', 'ignore', 'pipe'], encoding: 'utf8' });
 if (fontWarmup.status !== 0) throw new Error('fc-list failed while building the private font cache: ' + fontWarmup.stderr);
+// One control command with a bound: the compositor answers whatever the hosted IDE does, so an answer that does not
+// come in 10 s is a failure of the compositor, not a stall of the IDE.
 const control = async (socketPath, line) => {
   const socket = createConnection(socketPath);
-  await once(socket, 'connect');
-  socket.write(line + '\n');
-  const [response] = await once(socket, 'data');
-  socket.end();
-  return String(response).trim();
+  const bound = { signal: AbortSignal.timeout(10000) };
+  try {
+    await once(socket, 'connect', bound);
+    socket.write(line + '\n');
+    const [response] = await once(socket, 'data', bound);
+    return String(response).trim();
+  } finally {
+    socket.destroy();
+  }
 };
-const listening = () => spawnSync('ss', ['--listening', '--tcp', '--numeric'], { encoding: 'utf8' }).stdout.split('\n').some(line => line.includes(':' + port + ' '));
-let requestId = 0;
-// One MCP tool call with a bound; resolves to the parsed result, or throws on timeout.
-const mcp = async (name, args, milliseconds) => {
-  const response = await fetch('http://127.0.0.1:' + port + '/mcp', { method: 'POST', signal: AbortSignal.timeout(milliseconds), headers: { 'Content-Type': 'application/json', Accept: 'application/json, text/event-stream' }, body: JSON.stringify({ jsonrpc: '2.0', id: ++requestId, method: 'tools/call', params: { name, arguments: args } }) });
-  const data = await response.json();
-  if (data.error || data.result.isError) throw new Error(JSON.stringify(data));
-  return JSON.parse(data.result.content.find(part => part.type === 'text').text);
+// The picture the compositor shows now, as a hash of the PNG it composited. Every call writes the same file.
+const pictureHash = async (socketPath, path) => {
+  const response = await control(socketPath, 'screenshot ' + path);
+  if (!response.startsWith('ok')) throw new Error('screenshot was refused: ' + response);
+  return createHash('sha256').update(readFileSync(path)).digest('hex');
 };
-const percentile = (values, share) => values.length === 0 ? null : [...values].sort((left, right) => left - right)[Math.min(values.length - 1, Math.floor(values.length * share))];
 
 const session = async variant => {
   const directory = join(artifact, variant.name);
@@ -127,7 +130,7 @@ const session = async variant => {
   const socketPath = join(live, 'control.sock');
   const compositorLogPath = join(live, 'compositor.log');
   const compositorLog = openSync(compositorLogPath, 'w');
-  const environment = { ...process.env, SLINT_BACKEND: 'winit', SLINT_MCP_PORT: port, FONTCONFIG_FILE: fontConfig, XDG_CONFIG_HOME: join(artifact, 'config'), XDG_CACHE_HOME: join(artifact, 'cache'), XDG_DATA_HOME: join(artifact, 'data'), IDE_STALL_FIFO: fifo, IDE_STALL_RUST_LOG: 'ide_app=debug,monochromatic_ide=debug' };
+  const environment = { ...process.env, SLINT_BACKEND: 'winit', FONTCONFIG_FILE: fontConfig, XDG_CONFIG_HOME: join(artifact, 'config'), XDG_CACHE_HOME: join(artifact, 'cache'), XDG_DATA_HOME: join(artifact, 'data'), IDE_STALL_FIFO: fifo, IDE_STALL_RUST_LOG: 'ide_app=debug,monochromatic_ide=debug' };
   if (runtime) environment.HELIX_RUNTIME = runtime;
   delete environment.RUST_LOG;
   // Only the IDE's standard output goes to the FIFO, and only the IDE gets RUST_LOG; the compositor logs to a file.
@@ -136,31 +139,30 @@ const session = async variant => {
   const launcher = ['/bin/sh', '-c', 'RUST_LOG="$IDE_STALL_RUST_LOG" exec "$0" "$@" >"$IDE_STALL_FIFO"', variant.binary, project, '--file', file];
   const host = spawn(compositor, ['--socket', socketPath, '--size', '1100x660', '--color-scheme', 'dark', '--', ...launcher], { env: environment, stdio: ['ignore', compositorLog, compositorLog] });
   const exited = new Promise(done => host.on('exit', (code, signal) => done({ code, signal })));
-  const latencies = [];
+  // [milliseconds into the measurement, picture hash] for each photograph, and the times the picture changed.
   const probes = [];
-  let timeouts = 0;
+  const changes = [];
+  const picturePath = join(live, 'picture.png');
   let keys = 0;
   let measuredFrom;
   let measuredTo;
   const started = performance.now();
   try {
-    // The MCP server binds its port from a task on the window's event loop, and the window appears later;
-    // a loop that is blocked before either never answers, which counts as not answering, not as a setup failure.
+    // The compositor lists the IDE's window once the IDE has committed its first frame. A loop that is blocked
+    // before that never maps a window, which counts as a window that never showed, not as a setup failure.
     const ready = performance.now() + 120000;
     variant.windowShown = false;
     while (performance.now() < ready) {
       if (host.exitCode !== null) throw new Error(variant.name + ': the compositor exited early; inspect ' + directory);
-      if (listening()) {
-        try {
-          const windows = await mcp('list_windows', {}, 5000);
-          if (windows.windowHandles.length > 0) {
-            variant.windowShown = true;
-            break;
-          }
-        } catch (error) {
-          // Not ready yet, or not answering; the loop's own deadline decides.
-          variant.lastStartupError = String(error.message ?? error).slice(0, 120);
+      try {
+        const windows = await control(socketPath, 'windows');
+        if (windows.startsWith('ok') && !/^ok 0\b/.test(windows)) {
+          variant.windowShown = true;
+          break;
         }
+      } catch (error) {
+        // The control socket does not exist yet, or the compositor is not answering; the loop's own deadline decides.
+        variant.lastStartupError = String(error.message ?? error).slice(0, 120);
       }
       await wait(200);
     }
@@ -177,19 +179,16 @@ const session = async variant => {
         await wait(50);
       }
     })();
+    // The first photograph opens the measurement, so a picture that never changes shows as no change at all.
+    let lastHash = variant.windowShown ? await pictureHash(socketPath, picturePath) : undefined;
+    if (lastHash !== undefined) probes.push([0, lastHash.slice(0, 12)]);
     while (variant.windowShown && performance.now() < end) {
-      const before = performance.now();
-      const at = Date.now();
-      try {
-        await mcp('list_windows', {}, 5000);
-        latencies.push(Math.round(performance.now() - before));
-        probes.push([at - measuredFrom, latencies.at(-1)]);
-      } catch (error) {
-        if (error.name !== 'TimeoutError') throw error;
-        timeouts += 1;
-        probes.push([at - measuredFrom, 'stall']);
-      }
       await wait(200);
+      const at = Date.now() - measuredFrom;
+      const hash = await pictureHash(socketPath, picturePath);
+      probes.push([at, hash.slice(0, 12)]);
+      if (hash !== lastHash) changes.push(at);
+      lastHash = hash;
     }
     await typing;
     measuredTo = Date.now();
@@ -244,7 +243,15 @@ const session = async variant => {
     variant.probes = probes;
     variant.gapWarnings = text.split('\n').filter(line => line.includes('were not written because the log output did not accept them')).map(line => line.slice(0, 220));
   }
-  Object.assign(variant, { answers: latencies.length, timeouts, keys, p50Ms: percentile(latencies, 0.5), p99Ms: percentile(latencies, 0.99), maxMs: latencies.length ? Math.max(...latencies) : null });
+  // The longest time the picture stood still, counted from the start of the measurement and to its end, so a picture
+  // that stops changing for good shows that stillness too. The resolution is one photograph, about 200 ms.
+  const stillEdges = measuredFrom === undefined ? [] : [0, ...changes, measuredTo - measuredFrom];
+  Object.assign(variant, {
+    keys,
+    photographs: probes.length,
+    pictureChanges: changes.length,
+    longestStillMs: stillEdges.length > 1 ? Math.max(...stillEdges.slice(1).map((at, index) => at - stillEdges[index])) : null,
+  });
   return variant;
 };
 // endregion
@@ -254,18 +261,21 @@ for (const variant of variants) {
   results.push(await session(variant));
   writeFileSync(join(artifact, 'results.json'), JSON.stringify(results, null, 2));
   console.log(JSON.stringify(results.at(-1)));
-  if (listening()) throw new Error('Port ' + port + ' is still bound after the ' + variant.name + ' session');
 }
 const [current, synchronous] = results;
 // Two accounts of the window's thread: the longest pause between two keys it handled (its own records,
-// stamped when handled), and the Slint MCP server's answers. A pause or an unanswered probe of 5 s counts as a
-// stall. A busy host can delay single answers by seconds without any log involved, so slower answers are
-// recorded but do not decide the check.
-const describe = item => item.keysHandled + ' keys handled, longest pause ' + item.longestInputPauseMs + ' ms; ' + item.answers + ' MCP answers, ' + item.timeouts + ' unanswered for 5 s, p50 ' + item.p50Ms + ' ms, p99 ' + item.p99Ms + ' ms; window shown: ' + item.windowShown;
+// stamped when handled), and the longest time the compositor's picture of the window stood still while the caret
+// moved. A pause or a still picture of 5 s counts as a stall. A busy host can delay single redraws by seconds,
+// so a stall needs 5 s, and slower answers are recorded in results.json but do not decide the check.
+const describe = item => item.keysHandled + ' keys handled, longest pause ' + item.longestInputPauseMs + ' ms; window shown: ' + item.windowShown;
+const describePicture = item => item.pictureChanges + ' picture changes in ' + item.photographs + ' photographs, longest still ' + item.longestStillMs + ' ms';
 const stalled = item => !item.windowShown || item.keysHandled === 0 || item.longestInputPauseMs >= 5000;
+const stillPicture = item => !item.windowShown || item.longestStillMs === null || item.longestStillMs >= 5000;
 const checks = [
   ['with the background writer, the window kept handling input (' + describe(current) + ')', !stalled(current)],
+  ['with the background writer, the picture kept changing (' + describePicture(current) + ')', !stillPicture(current)],
   ['with the synchronous writer, the window stopped handling input (' + describe(synchronous) + ')', stalled(synchronous)],
+  ['with the synchronous writer, the picture stood still (' + describePicture(synchronous) + ')', stillPicture(synchronous)],
   ['no process the compositor started outlived it', results.every(item => item.leftovers.length === 0)],
 ];
 for (const [check, passed] of checks) console.log((passed ? 'PASS ' : 'FAIL ') + check);

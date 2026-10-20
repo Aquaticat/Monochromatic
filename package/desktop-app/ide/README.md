@@ -5140,7 +5140,7 @@ and the inspection tasks use.
 `mise run //package/desktop-app/ide:lint:release` checks the application binary under the release profile,
 where code behind `cfg(debug_assertions)` is absent and unused items show only there.
 The release build unsets `SLINT_EMIT_DEBUG_INFO`,
-which the debug tasks set so inspection can address interface elements by name,
+which the debug tasks set so the native tests can address interface elements by name,
 and builds only the application binary,
 not the runtime,
 inspection,
