@@ -48,6 +48,10 @@ mod frontier;
 #[path = "binary_builtin_tests.rs"]
 mod builtin;
 
+/// Every command form that can discard uncommitted state: rejected, allowed in a clean linked worktree, or hatched.
+#[path = "binary_discard_tests.rs"]
+mod discard;
+
 /// `markdown/autofix` with the linter built from this repository,
 ///  a missing one and a failing one.
 #[path = "binary_markdown_tests.rs"]
