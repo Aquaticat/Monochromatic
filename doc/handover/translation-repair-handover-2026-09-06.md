@@ -688,6 +688,32 @@ its "Next" list is still the queue the merge went ahead of.
       the scratch gate worktrees stay keyless.
       This changes the build,
       so the rotation restarts at zheermao101 once it lands.
+      State at 22:00 UTC on 2026-10-20:
+      built in keyless worktree w242
+      (base `7900a9a639`,
+      16 commits `8fca5003b7` to `ce1b710326`,
+      then docs and test commits to `0a4570d563`);
+      handback `/var/home/user/temp/agent/x15-fix/neuralwatt/handback.md`;
+      decision record `doc/decision/translation-repair-neuralwatt-provider.md`
+      (no cache version moves,
+      veto-open);
+      ledger P15 in `package/translation-repair/doc/audit-ledger-providers-routing-and-seating.md`.
+      Gate g129 on `ce1b710326`:
+      suite 2630 pass and 31 fail,
+      all 31 in `source-scan`'s scans finding the new code
+      (being fixed in w242);
+      oxlint red in 21 packages on `prefer-readonly-parameter-type` alone
+      (105 errors),
+      tuple-destructured callbacks in files the branch never touched;
+      main's TypeScript 7.1.0-beta move (`27b1cf2eec`) landed after the green gate g128,
+      and baseline gate g130 on main `a4987be78a` is measuring whether main is red the same way.
+      Next:
+      green `source-scan`,
+      land w242,
+      install and force-build in the branch worktree (M285),
+      compare digests,
+      set `FROZEN` in `launch-rotation.ts`,
+      and launch `zheermao18`.
     - The class of the `zheermao15` read is ledger B702.
     - The guard of B701 stays open and undecided:
       the rotation sweep as an expensive mise task,
