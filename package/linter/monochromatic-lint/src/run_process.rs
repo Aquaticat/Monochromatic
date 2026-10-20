@@ -166,10 +166,18 @@ fn run_with_environment(options: &CliOptions, run: Runner) -> RunOutput {
 /// function containedRun(options, run): RunOutput { try { return runWithEnvironment(options, run); } catch (error) { return internalError(error); } }
 /// ```
 fn contained_run(options: &CliOptions, run: Runner) -> RunOutput {
-    let attempt: Result<RunOutput, Box<dyn std::any::Any + Send>> =
-        catch_unwind(AssertUnwindSafe(|| {
+    let attempt: Result<RunOutput, Box<dyn std::any::Any + Send>> = catch_unwind(AssertUnwindSafe(
+        #[cfg_attr(
+            dylint_lib = "monochromatic_lint_closure",
+            expect(
+                avoidable_closure,
+                reason = "catch_unwind accepts only a callable without parameters, so the borrowed options and the runner must be moved into a closure"
+            )
+        )]
+        || {
             return run_with_environment(options, run);
-        }));
+        },
+    ));
     match attempt {
         Ok(output) => return output,
         Err(payload) => return internal_error(payload.as_ref()),
@@ -199,8 +207,17 @@ fn run_in_scope<'scope, 'env>(
     let builder: Builder = lint_thread().name(String::from(PROGRAM));
     // The thread API needs a callable; the closure only forwards to the named `contained_run`,
     // and `move` copies the borrowed options and the function pointer into it.
-    let spawned: std::io::Result<ScopedJoinHandle<'scope, RunOutput>> =
-        builder.spawn_scoped(scope, move || return contained_run(options, run));
+    let spawned: std::io::Result<ScopedJoinHandle<'scope, RunOutput>> = builder.spawn_scoped(
+        scope,
+        #[cfg_attr(
+            dylint_lib = "monochromatic_lint_closure",
+            expect(
+                avoidable_closure,
+                reason = "spawn_scoped runs the closure on the spawned thread after this call returns, so the borrowed options and the runner must travel inside it"
+            )
+        )]
+        move || return contained_run(options, run),
+    );
     match spawned {
         Ok(handle) => match handle.join() {
             Ok(output) => return output,
@@ -234,7 +251,16 @@ pub(crate) fn run_process_with(options: &CliOptions, run: Runner) -> u8 {
         std::panic::set_hook(Box::new(silent_hook));
     }
     // The scope API needs a callable; the closure only forwards to the named `run_in_scope`.
-    let output: RunOutput = std::thread::scope(|scope| return run_in_scope(scope, options, run));
+    let output: RunOutput = std::thread::scope(
+        #[cfg_attr(
+            dylint_lib = "monochromatic_lint_closure",
+            expect(
+                avoidable_closure,
+                reason = "std::thread::scope hands its callback only the scope reference, so the borrowed options and the runner can reach run_in_scope only through a closure"
+            )
+        )]
+        |scope| return run_in_scope(scope, options, run),
+    );
     let wrote_stdout: bool = emit(&mut std::io::stdout().lock(), output.stdout.as_str());
     let wrote_stderr: bool = emit(&mut std::io::stderr().lock(), output.stderr.as_str());
     if !wrote_stdout || !wrote_stderr {

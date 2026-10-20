@@ -459,6 +459,40 @@ and the rule refuses comment directives.
   The attribute sits on the closure argument and reads
   "catch_unwind accepts only a callable without parameters,
   so the borrowed source and the parser options must be captured by a closure".
+- `src/run_process.rs`:
+  the `catch_unwind` closure in `contained_run`.
+  "catch_unwind accepts only a callable without parameters,
+  so the borrowed options and the runner must be moved into a closure".
+- `src/run_process.rs`:
+  the `spawn_scoped` closure in `run_in_scope`.
+  "spawn_scoped runs the closure on the spawned thread after this call returns,
+  so the borrowed options and the runner must travel inside it".
+- `src/run_process.rs`:
+  the `std::thread::scope` closure in `run_process_with`.
+  "std::thread::scope hands its callback only the scope reference,
+  so the borrowed options and the runner can reach run_in_scope only through a closure".
+- `src/run_workers.rs`:
+  the `catch_unwind` closure in `contained_with`.
+  "catch_unwind accepts only a callable without parameters,
+  so the plan,
+  the fix flag,
+  the LFS map,
+  the engine and the writer must be moved into a closure".
+- `src/run_workers.rs`:
+  the `catch_unwind` closure in `contained_source`.
+  "catch_unwind accepts only a callable without parameters,
+  so the plan,
+  the source,
+  the fix flag,
+  the LFS map and the engine must be moved into a closure".
+- `src/run_workers.rs`:
+  the `spawn_scoped` closure in `spawn_and_join`.
+  "spawn_scoped runs the worker closure on the spawned thread after this call returns,
+  so the shared run state must travel inside it".
+- `src/run_workers.rs`:
+  the `std::thread::scope` closure in `run_workers`.
+  "std::thread::scope hands its callback only the scope reference,
+  so the shared run state and the worker count can reach spawn_and_join only through a closure".
 
 ## Rust test sidecars
 
