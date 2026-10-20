@@ -1117,6 +1117,18 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     (line 8 changed pixels in row 5), `query_input_tests::find_box_context_menu_runs_each_entry`; the third run passed
     238 of 238. To judge on a quiet host before pushing; the pixel tests could point at a real tile re-center shimmer
     (unhinted glyphs at a new tile origin) and must be compared against `origin/main` under the same load.
+    State at 2026-10-20 after the three agent reports (to verify and land in this order):
+    (1) flake diagnosis of stages 3 and 4 (agent `a717e60922dca0448`, running): on a quiet host 2 of 8 full
+    `test:native` runs failed on `main` (`annotation_stability_tests` "window row 240 differs after the annotations
+    returned"; `waiting_tests.rs:138` "the find did not reach its first match"), against none in about 14 runs before
+    stage 3; it also measures the Vello setup cost and the +52 MiB RSS and +260 MiB VRAM the stage 3 agent reported;
+    (2) the MCP removal (agent `a3b41470505ef8920`, branch `worktree-agent-a3b41470505ef8920`, reported all gates
+    green; `inspect:native` now uses the compositor's `a11y`, `inspect:log-stall` probes the compositor's `windows`
+    and screenshots; the log-stall control stalls before its first window, not after it); (3) the GPU choice by system
+    order (agent `a090eeb1ae38efc05`, branch `worktree-agent-a090eeb1ae38efc05`, 245 of 245 native tests, adapter runs
+    here: default RX 7600, `WGPU_POWER_PREF=low` Raphael, `DRI_PRIME=1` on the IDE only Raphael; setting `DRI_PRIME` on
+    the nested compositor too flips the default because Mesa's default is the compositor's GPU). Heavy verification of
+    (2) and (3) waits until (1) finishes so that its flake-rate runs are not perturbed by load.
     Stages 3 and 4 are merged into one task (the tile bakes in selection, underlines and the wrap sign, so they
     cannot be split cleanly): agent `a8ec6e5d0b8981d42`, started 2026-10-20 (code view on the GPU, CPU pipeline
     deleted except what the minimap still needs). A second agent, `a3b41470505ef8920`, removes the MCP builds in parallel and rebuilds their checks on the nested
