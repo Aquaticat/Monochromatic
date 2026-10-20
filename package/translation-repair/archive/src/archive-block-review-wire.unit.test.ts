@@ -278,5 +278,45 @@ await describe({
         },),
       ],
     },),
+
+    describe({
+      name: `${buildArchiveBlockReviewMessages.name} notes between translators (B698)`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SHOWS neither the block nor the archive around it a note the translators left each other, and '
+            + 'still shows a comment in English and a comment the original itself carries',
+          fn: async () => {
+            /** Note in Han that the original lacks. */
+            const note = '{/* 猫可以躲一躲。 这句不知道如何翻译 */}';
+            /** English comment of the archive. */
+            const english = '<!-- check the cat\'s name -->';
+            /** Comment the original itself carries. */
+            const originals = '<!-- 原文的注释 -->';
+            /** Block holding all three on nested quoted lines. */
+            const block = `> - Mittens\n>   > She dreamed of fish.\n>   > ${note}\n>   > ${english}\n>   > ${originals}`;
+            /** User message of a sheet for that block in its page. */
+            const [, user = '',] = buildArchiveBlockReviewMessages({
+              sourceText: `${SOURCE}\n${originals}`,
+              targetText: `${ARCHIVE}\n\n${block}\n\nThe cat woke.`,
+              blockText: block,
+              priorFindings: [],
+            },)
+              .map(function textOf(message,): string {
+                return messageText({ message, },);
+              },);
+            expect({
+              note: user.includes('猫可以躲一躲',),
+              english: user.includes(english,),
+              originals: user.split(originals,).length - 1,
+            },).toEqual({
+              note: false,
+              english: true,
+              originals: 3,
+            },);
+          },
+        },),
+      ],
+    },),
   ],
 },);
