@@ -279,3 +279,9 @@ not a memory of having done it.
     is read in the first keyed run's log beside what the provider's own dashboard shows for the same call,
     and the run is watched until the first such line arrives;
     a reading the provider's documentation does not state outright is logged and never acted on until then.
+12. A provider meter is checked against the account's own figures (P17):
+    every usage and account endpoint in the provider's documentation index is read once,
+    the meter's total for a window is compared with the account-wide total for the same window,
+    and the meter's day or period boundary is taken from the account's reply,
+    not from a documentation page;
+    a limit recorded as invisible names the endpoints read and what each lacked.
