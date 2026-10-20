@@ -130,3 +130,8 @@ Highest-leverage groups:
 - Name any judgment call above that should flip; each is a one-issue label and comment change.
 - The `ready-for-agent` set is approved work under `doc/handover/contributing-policy.md`; "resolve issue N"
   still means fix and commit per `doc/agent/issue-tracker.md`.
+
+## Maintainer answers, 2026-10-20
+
+- The 99 decision questions stay on their issues as posted; no folded decision doc.
+- The nine recorded judgment calls stand as triaged; no verdict flipped at triage time.
