@@ -189,7 +189,7 @@ await describe({
              Rows with a measured endpoint named on them.
              */
             const named: ReadonlySet<string> = new Set([
-              'deepseek/deepseek-v4.1-flash',
+              SEAT_HYPER_OPENROUTER_UNMEASURED_OPENROUTER_ID,
               'z-ai/glm-5.3-flash',
               'minimax/minimax-m3',
             ],);

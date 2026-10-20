@@ -61,7 +61,8 @@ export type HyperSpelling =
     readonly served: true;
 
     /**
-     Identifier to send, which differs from the roster's for shared models.
+     Identifier to send, which differs from the roster's for shared models
+     and for a seat that moved to a newer Hyper id.
      */
     readonly id: HyperServedId;
   }
@@ -142,13 +143,14 @@ export function hyperIdFor(
   { modelId, }: { readonly modelId: RosterModelId; },
 ): HyperSpelling {
   /**
-   Entry serving this model, whether under its own name or as the shared
-   counterpart of a Synthetic id.
+   Entry on this roster seat's card, whatever its served spelling is: the
+   roster id, a Synthetic spelling or an older name of a seat that moved to
+   a newer Hyper id.
    */
   const entry = Object
     .values(HYPER_MODELS,)
     .find(function serves(info,): boolean {
-      return (info.id === modelId) || (info.sharedWith === modelId);
+      return info.rosterId === modelId;
     },);
 
   if (entry === undefined)

@@ -1,6 +1,7 @@
 import { servedRecord, } from './model-card-derive.ts';
 import type {
   HyperServedId,
+  RosterModelId,
   SyntheticServedId,
 } from './roster-id.ts';
 
@@ -77,7 +78,7 @@ export const HYPER_AUTH_HEADER = 'Authorization';
 
  @example
  ```ts
- const info: HyperModelInfo = HYPER_MODELS['deepseek-v4.1-flash'];
+ const info: HyperModelInfo = HYPER_MODELS['deepseek-v4.1-flash-1017'];
  ```
  */
 export type HyperModelInfo = {
@@ -85,6 +86,17 @@ export type HyperModelInfo = {
    Identifier sent in the request body's `model` field.
    */
   readonly id: HyperServedId;
+
+  /**
+   The roster seat this spelling reaches: the card it sits on.
+
+   NOT ALWAYS THE SAME STRING AS `id`. The roster names a seat by its first
+   serving provider's spelling, and the card of `deepseek-v4.1-flash` kept
+   that name when Hyper and OpenRouter moved the seat to the 1017 weights
+   (`deepseek-v4.1-flash-1017`, 2026-10-20), so the reach lookup reads this
+   field and never compares `id` with a roster id.
+   */
+  readonly rosterId: RosterModelId;
 
   /**
    Same model reached through the other provider, where there is one.
@@ -127,7 +139,7 @@ export type HyperModelInfo = {
 
  @example
  ```ts
- const info = HYPER_MODELS['deepseek-v4.1-flash'];
+ const info = HYPER_MODELS['deepseek-v4.1-flash-1017'];
  ```
  */
 export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = servedRecord({
@@ -142,6 +154,7 @@ export const HYPER_MODELS: Readonly<Record<HyperServedId, HyperModelInfo>> = ser
     } = card;
     return {
       id: hyper.id,
+      rosterId: card.id,
       sharedWith: synthetic?.id ?? NO_SYNTHETIC_COUNTERPART,
       readsImages: hyper.readsImages,
       maxOutputLength: hyper.maxOutputLength,

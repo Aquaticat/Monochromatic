@@ -32,7 +32,7 @@ import {
 /** New version identity, not an alias for Flash 0731. */
 const MODEL: string = SEAT_HYPER_OPENROUTER_UNMEASURED;
 
-/** Spellings the providers take on the wire since 2026-10-20 (the 1017 weights); the roster id above is unchanged. */
+/** Spellings the providers take on the wire since 2026-10-20 (the 1017 weights); the roster id `MODEL` is unchanged. */
 const HYPER_ID: string = SEAT_HYPER_OPENROUTER_UNMEASURED_HYPER_ID;
 const OPENROUTER_ID: string = SEAT_HYPER_OPENROUTER_UNMEASURED_OPENROUTER_ID;
 
