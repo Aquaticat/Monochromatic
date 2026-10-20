@@ -1,5 +1,6 @@
 import type { ArchiveOriginalSpan, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
+import { carryArchiveNotes, } from './archive-note-carry.ts';
 import { restoreArchiveCasing, } from './archive-casing-restore.ts';
 import { restoreArchiveDestinations, } from './archive-destination-restore.ts';
 import { restoreArchiveItalicTitles, } from './archive-italic-title-restore.ts';
@@ -227,6 +228,16 @@ export function runPagePasses(
     archiveOriginalSpans,
   },);
   /**
+   Every note the archive's translators left each other that the page's
+   wording lacks, after the slice's last block, so its survival never depends
+   on which wording won.
+   */
+  const notes = carryArchiveNotes({
+    slices,
+    replacements: destinations.replacements,
+    archiveOriginalSpans,
+  },);
+  /**
    Rows the page-assembly passes rewrote, the latest pass's text per slice.
    */
   const restored = new Map<number, SliceReplacement>([
@@ -247,6 +258,7 @@ export function runPagePasses(
     ...blockquotes.restored,
     ...italics.restored,
     ...destinations.restored,
+    ...notes.restored,
   ].map(function bySlice(row,): readonly [
     number,
     SliceReplacement,
@@ -257,7 +269,7 @@ export function runPagePasses(
     ];
   },),);
   return {
-    replacements: destinations.replacements,
+    replacements: notes.replacements,
     restored,
     findings: [
     ...lineEndings.findings,
@@ -277,6 +289,7 @@ export function runPagePasses(
     ...blockquotes.findings,
     ...italics.findings,
     ...destinations.findings,
+    ...notes.findings,
     ],
   };
 }

@@ -99,4 +99,27 @@ export const PAGE_APPARATUS_IS_KEPT: string = [
   'passage, and its spelling follows the declared names.',
 ].join(' ',);
 
+/**
+ What the page published from a pass is, which the archive's own notices
+ about its state are measured against.
+
+ XingZ60 (2026-10-19): the archive opened with `**Come back later!**`, a
+ warning that the version is not the formal one, and a caution that it is
+ unfinished. The original has none of them and the archive had translated only
+ part of it, but the pass translates all of it, and five archive-block judges
+ called the notices "page apparatus describing the document itself" because no
+ sheet told them the page would be complete. A notice of that kind is not
+ apparatus; it is false on the page this pass publishes.
+
+ @example
+ ```ts
+ const system = `Review the block. ${PAGE_CARRIES_EVERY_BLOCK}`;
+ ```
+ */
+export const PAGE_CARRIES_EVERY_BLOCK: string = 'THE PAGE THIS PASS PUBLISHES IS COMPLETE: it carries an English'
+  + ' rendering of every block of the original. A block that says the English page is unfinished, is not the formal'
+  + ' version, is under construction, will be updated later or waits on another version is therefore false on it'
+  + ' and is not apparatus, whatever its wording and however plainly it is written: remove it with an empty'
+  + ' replacement.';
+
 //endregion Page apparatus clause

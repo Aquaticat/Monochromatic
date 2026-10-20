@@ -15,7 +15,10 @@ import {
   namesOneOf,
   readCandidateNames,
 } from '@monochromatic-dev/translation-repair-lane-contest/ts';
-import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import {
+  isJsonRecord,
+  withoutTranslatorsNotes,
+} from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { selectFence, } from '@monochromatic-dev/translation-repair-stage/ts';
 import {
   objectingJudgesOf,
@@ -314,8 +317,29 @@ export function readConsolidationPolishBallot(
  ```
  */
 export function buildConsolidationPolishGateMessages(
-  { subject, }: { readonly subject: ConsolidationPolishGateSubject; },
+  { subject: held, }: { readonly subject: ConsolidationPolishGateSubject; },
 ): readonly ChatMessage[] {
+  /**
+   The subject as a judge reads it: the archive, the base and the polish
+   without the notes the archive's translators left each other, which a reader
+   never sees and which therefore can neither win nor lose a vote. The
+   original's own comments stay in view.
+   */
+  const subject: ConsolidationPolishGateSubject = {
+    ...held,
+    archiveText: withoutTranslatorsNotes({
+      text: held.archiveText,
+      original: held.sourceText,
+    },),
+    baseText: withoutTranslatorsNotes({
+      text: held.baseText,
+      original: held.sourceText,
+    },),
+    polishedText: withoutTranslatorsNotes({
+      text: held.polishedText,
+      original: held.sourceText,
+    },),
+  };
   /**
    Gate mode naming whether base remains available.
    */

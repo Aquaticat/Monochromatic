@@ -2158,6 +2158,14 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: ASSEMBLED,
   },
+  'document-structure/translators-note.ts#cutAround': {
+    tests: 3,
+    why: SCANNER,
+  },
+  'document-structure/translators-note.ts#isWhitespace': {
+    tests: 1,
+    why: SCANNER,
+  },
   'document-structure/unwrap-container.ts#UnpositionedContainerError': {
     tests: 1,
     why: PARSED,

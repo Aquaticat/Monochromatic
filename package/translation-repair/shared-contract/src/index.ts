@@ -125,6 +125,7 @@ export {
   APPARATUS_KINDS,
   NARRATIVE_DETAIL_IS_NOT_APPARATUS,
   PAGE_APPARATUS_IS_KEPT,
+  PAGE_CARRIES_EVERY_BLOCK,
 } from './page-apparatus-clause.ts';
 export {
   pageDefinitionsOf,

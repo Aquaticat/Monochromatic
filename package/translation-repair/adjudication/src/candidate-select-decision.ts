@@ -1,6 +1,7 @@
 import {
   CANDIDATE_NONE,
   type CandidateBallotAsSent,
+  judgedSelection,
   KEEPS_TRUSTED_TEXT,
   type SelectEvidence,
 } from './candidate-select-wire.ts';
@@ -125,8 +126,8 @@ export function selectDecision(
   {
     task,
     criteria,
-    evidence,
-    rendered,
+    evidence: held,
+    rendered: heldRendered,
     declineConsequence = KEEPS_TRUSTED_TEXT,
     sourceText,
   }: {
@@ -138,6 +139,18 @@ export function selectDecision(
     readonly sourceText?: string;
   },
 ): StageDecision {
+  /**
+   Evidence and candidates as the seat reads them, without the notes between
+   translators, as the chat sheet cuts them.
+   */
+  const {
+    evidence,
+    rendered,
+  } = judgedSelection({
+    evidence: held,
+    rendered: heldRendered,
+    ...((sourceText === undefined) ? {} : { sourceText, }),
+  },);
   /**
    Community renderings a candidate lacks, as the chat sheet names them;
    empty where the caller passed no original or none departs.

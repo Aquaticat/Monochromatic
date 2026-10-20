@@ -3,7 +3,10 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import { communityRenderingsBlock, } from '@monochromatic-dev/translation-repair-glossary/ts';
 import { JUDGE_LINE_STRUCTURE_CLAUSE, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import { FRONT_MATTER_DECISION_RULE, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import {
+  isJsonRecord,
+  withoutTranslatorsNotes,
+} from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
   CONTEST_POLICY,
   findingsOrNone,
@@ -442,8 +445,30 @@ export type LaneContestSubject = {
  ```
  */
 export function buildLaneContestMessages(
-  { subject, }: { readonly subject: LaneContestSubject; },
+  { subject: held, }: { readonly subject: LaneContestSubject; },
 ): readonly ChatMessage[] {
+  /**
+   The subject as a judge reads it: the archive and both candidates without
+   the notes the archive's translators left each other (XingZ60 slice 6: all
+   three judges chose the lane that kept one). A reader never sees such a
+   note, so it can neither win nor lose a vote; the original's own comments
+   stay in view.
+   */
+  const subject: LaneContestSubject = {
+    ...held,
+    incumbentText: withoutTranslatorsNotes({
+      text: held.incumbentText,
+      original: held.sourceText,
+    },),
+    repairText: withoutTranslatorsNotes({
+      text: held.repairText,
+      original: held.sourceText,
+    },),
+    translateText: withoutTranslatorsNotes({
+      text: held.translateText,
+      original: held.sourceText,
+    },),
+  };
   /**
    Tense candidates of each text on offer, shown only where the entry records
    a death, after the passages with the other evidence about them.
