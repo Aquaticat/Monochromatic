@@ -267,10 +267,14 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: anyhow::Result<T
         Err(error) => {
             tracing::error!(%error, "source tile build failed");
             // The job is over: the poll may stop, and a placement for the same tile may be queued again.
-            state.borrow_mut().tile_job = None;
-            window.set_error_message(SharedString::from(format!(
-                "Cannot render source: {error:#}"
-            )));
+            let message = format!("Cannot render source: {error:#}");
+            {
+                let mut current = state.borrow_mut();
+                current.tile_job = None;
+                #[cfg(debug_assertions)]
+                current.worker_failures.push(message.clone());
+            }
+            window.set_error_message(SharedString::from(message));
             return;
         }
     };

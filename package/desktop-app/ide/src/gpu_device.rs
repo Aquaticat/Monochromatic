@@ -10,94 +10,47 @@
 //!  Slint cannot give that guarantee:
 //!  with no power preference wgpu does not sort the adapters it lists,
 //!  and Slint's own check only asks that some adapter is not of the CPU kind.
+//!
+//! Which hardware adapter:
+//!  The candidates are the discrete and integrated GPUs,
+//!  in the order the Vulkan loader lists them.
+//!  That order is the system's choice:
+//!  Mesa documents that without `DRI_PRIME` the default GPU is the one the display server uses,
+//!  that `DRI_PRIME` and `MESA_VK_DEVICE_SELECT` put the selected GPU first in the physical device list,
+//!  and desktops set these per application through switcheroo-control.
+//!  The IDE is a read-only editor,
+//!  so it does not rank discrete above integrated and does not wake a second GPU on its own.
+//!  Two variables that wgpu documents are honored as explicit choices of the person who started the program:
+//!  `WGPU_ADAPTER_NAME` keeps only the hardware adapters whose name contains the value (case-insensitive),
+//!  and `WGPU_POWER_PREF` (`low`,
+//!  `high`,
+//!  or `none`,
+//!  case-insensitive) moves the integrated or the discrete GPUs first.
+//!  When both are set the name filters and the power preference orders what is left,
+//!  as wgpu's own helper lets the name win over the power preference.
+//!  An empty value counts as unset.
+//!  The reason for the choice is returned with the device so the launcher can log it.
+
+/// What an adapter reports about itself and the two variables that choose one.
+mod adapter;
+/// Which adapters may be used and in which order.
+mod choice;
+/// Why no device could be opened,
+///  and the message for it.
+mod error;
+
+/// Reads a `WGPU_POWER_PREF` value before any driver is touched.
+use adapter::parse_power_order;
+/// The adapter descriptions and the variables of the choice.
+pub use adapter::{AdapterSummary, Variables};
+/// The choice.
+pub use choice::choose_adapters;
+/// The failures and the report they carry.
+pub use error::{GpuDeviceError, SelectionReport};
 
 /// The `wgpu` crate as Slint re-exports it,
 ///  so the device is built with exactly the wgpu release (30) that Slint's renderer was built against.
 use slint::wgpu_30::wgpu;
-/// Error text for the failures below.
-use std::fmt;
-
-/// What:
-///  `hardware_rank` scores a `wgpu::DeviceType` for adapter choice;
-///  `Option<u32>` is "a number or nothing" (`number | undefined`).
-/// Why:
-///  A discrete GPU is preferred over an integrated one,
-///  and every other kind
-///  (the CPU kind above all,
-///  but also virtual and unknown ones)
-///  is refused by returning nothing.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function hardwareRank(kind: DeviceType): number | undefined {
-///   if (kind === 'DiscreteGpu') return 2;
-///   if (kind === 'IntegratedGpu') return 1;
-///   return undefined;
-/// }
-/// ```
-fn hardware_rank(kind: wgpu::DeviceType) -> Option<u32> {
-    if kind == wgpu::DeviceType::DiscreteGpu {
-        return Some(2);
-    }
-    if kind == wgpu::DeviceType::IntegratedGpu {
-        return Some(1);
-    }
-    return None;
-}
-
-/// What:
-///  What an adapter reports about itself,
-///  as far as the choice and the error messages need it.
-/// Why:
-///  The choice is a pure function of these values,
-///  so it is tested without a GPU.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type AdapterSummary = { name: string; deviceType: DeviceType; driver: string };
-/// ```
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct AdapterSummary {
-    /// The adapter's name,
-    ///  such as `AMD Radeon RX 7600 (RADV NAVI33)`.
-    pub name: String,
-    /// The kind of device the driver reports.
-    pub device_type: wgpu::DeviceType,
-    /// The driver's name,
-    ///  such as `radv` or `llvmpipe`.
-    pub driver: String,
-}
-
-/// Writes an adapter the way the error messages list it.
-impl fmt::Display for AdapterSummary {
-    /// `name (kind, driver)`.
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        return write!(
-            formatter,
-            "{} ({:?}, {})",
-            self.name, self.device_type, self.driver
-        );
-    }
-}
-
-/// What:
-///  Order two `(rank, index)` pairs:
-///  the higher rank first,
-///  and equal ranks by their place in the listing.
-///  `Ordering` is the less,
-///  equal,
-///  or greater answer of a comparison.
-/// Why:
-///  `sort_by` takes it as the comparison,
-///  so the best adapter leads and the loader's order breaks ties.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function bestFirst(left: [number, number], right: [number, number]): number;
-/// ```
-fn best_first(left: &(u32, usize), right: &(u32, usize)) -> std::cmp::Ordering {
-    return right.0.cmp(&left.0).then(left.1.cmp(&right.1));
-}
 
 /// What:
 ///  Turn the operating system's failure to build the small runtime into this module's error.
@@ -113,122 +66,6 @@ fn no_runtime(error: std::io::Error) -> GpuDeviceError {
 }
 
 /// What:
-///  The indexes of the adapters the application may use,
-///  best first:
-///  discrete GPUs,
-///  then integrated ones,
-///  each group in the order the Vulkan loader listed them.
-///  `&[T]` is a borrowed slice (a read-only view of an array).
-/// Why:
-///  A machine that lists only CPU adapters gets an empty answer,
-///  never its first adapter.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function rankHardware(adapters: AdapterSummary[]): number[];
-/// ```
-pub fn rank_hardware(adapters: &[AdapterSummary]) -> Vec<usize> {
-    let mut ranked: Vec<(u32, usize)> = Vec::new();
-    for (index, adapter) in adapters.iter().enumerate() {
-        if let Some(rank) = hardware_rank(adapter.device_type) {
-            ranked.push((rank, index));
-        }
-    }
-    // Higher rank first; equal ranks keep the order of the listing.
-    ranked.sort_by(best_first);
-    let mut order: Vec<usize> = Vec::new();
-    for (_, index) in ranked {
-        order.push(index);
-    }
-    return order;
-}
-
-/// What:
-///  Why no device could be opened.
-///  An enum is a value that is exactly one of its variants (a TS discriminated union).
-/// Why:
-///  The caller shows the message to the person who started the program,
-///  so each variant says what was seen and every way to fix it.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type GpuDeviceError =
-///   | { kind: 'noRuntime'; reason: string }
-///   | { kind: 'noHardwareAdapter'; seen: string[] }
-///   | { kind: 'deviceRefused'; refusals: string[] };
-/// ```
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub enum GpuDeviceError {
-    /// The small runtime that waits for wgpu's two futures could not be built.
-    NoRuntime(
-        /// The operating system's reason.
-        String,
-    ),
-    /// Vulkan lists no discrete or integrated GPU.
-    NoHardwareAdapter {
-        /// Every Vulkan adapter that was listed,
-        ///  each as `name (kind, driver)`;
-        ///  empty when the loader found no driver at all.
-        seen: Vec<String>,
-    },
-    /// Hardware adapters exist and every one of them refused the device.
-    DeviceRefused {
-        /// One entry per adapter:
-        ///  its name and the reason it gave.
-        refusals: Vec<String>,
-    },
-}
-
-/// The sentence shown to the person who started the program.
-impl fmt::Display for GpuDeviceError {
-    /// Writes the problem,
-    ///  what was seen,
-    ///  and every remedy.
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        return match self {
-            Self::NoRuntime(reason) => write!(
-                formatter,
-                "The IDE could not start the small runtime that opens the GPU device: {reason}. \
-                 Close other programs to free threads and memory, then start the IDE again."
-            ),
-            Self::NoHardwareAdapter { seen } => {
-                let listing = if seen.is_empty() {
-                    "none (the Vulkan loader found no driver at all)".to_string()
-                } else {
-                    seen.join(", ")
-                };
-                write!(
-                    formatter,
-                    "The IDE draws every pixel on the GPU through Vulkan, and no hardware Vulkan adapter is available. \
-                     Adapters seen: {listing}. \
-                     An adapter of the CPU kind (lavapipe, llvmpipe) is refused on purpose, even when it is the only one, \
-                     and SLINT_WGPU_CPU does not allow it here. \
-                     Remedies: install the Vulkan driver of the GPU (the Mesa Vulkan package such as mesa-vulkan-drivers \
-                     for AMD and Intel, the vendor driver for NVIDIA) together with the Vulkan loader \
-                     (vulkan-loader or libvulkan1); \
-                     give the process access to the GPU's render node (/dev/dri/renderD128 and its siblings: \
-                     join the render group, or in a container pass --device /dev/dri and install the driver in the image); \
-                     run `vulkaninfo --summary` to see what the loader finds; \
-                     and if VK_DRIVER_FILES or VK_ICD_FILENAMES is set, make it name the driver file of a hardware GPU."
-                )
-            }
-            Self::DeviceRefused { refusals } => write!(
-                formatter,
-                "A hardware Vulkan adapter was found, but none of them gave the IDE a device with wgpu's default limits \
-                 (storage buffers and 8192-pixel textures among them, which the GPU text path needs): {}. \
-                 Remedies: update the Vulkan driver (Mesa or the vendor driver) of the GPU, \
-                 or run the IDE on a host whose GPU supports the Vulkan 1.1 level that wgpu requires; \
-                 `vulkaninfo --summary` shows the driver version and the API version each adapter reports.",
-                refusals.join("; ")
-            ),
-        };
-    }
-}
-
-/// Lets `?` carry this error into `anyhow::Error` and lets callers use it as a standard error.
-impl std::error::Error for GpuDeviceError {}
-
-/// What:
 ///  The opened device:
 ///  the wgpu instance,
 ///  the chosen adapter,
@@ -242,7 +79,7 @@ impl std::error::Error for GpuDeviceError {}
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type HardwareDevice = { instance: GPUInstance; adapter: GPUAdapter; device: GPUDevice; queue: GPUQueue; summary: AdapterSummary };
+/// type HardwareDevice = { instance: GPUInstance; adapter: GPUAdapter; device: GPUDevice; queue: GPUQueue; summary: AdapterSummary; why: string };
 /// ```
 pub struct HardwareDevice {
     /// The instance that lists only Vulkan adapters.
@@ -256,10 +93,17 @@ pub struct HardwareDevice {
     pub queue: wgpu::Queue,
     /// What the adapter reported about itself.
     pub summary: AdapterSummary,
+    /// Why this adapter was used:
+    ///  the loader's order,
+    ///  or the variable that decided.
+    pub why: String,
 }
 
 /// What:
-///  `open_hardware_device` opens a Vulkan device on the best hardware adapter that accepts wgpu's default limits.
+///  `open_hardware_device` opens a Vulkan device on the first hardware adapter,
+///  in the order of `choose_adapters`,
+///  that accepts wgpu's default limits.
+///  It reads `WGPU_ADAPTER_NAME` and `WGPU_POWER_PREF` from the process environment.
 ///  `Result<T, E>` is a value or an error (a function that may throw).
 ///  `Vec` is a growable array.
 /// Why:
@@ -300,6 +144,21 @@ pub fn open_hardware_device() -> Result<HardwareDevice, GpuDeviceError> {
 pub fn open_hardware_device_capped(
     texture_cap: Option<u32>,
 ) -> Result<HardwareDevice, GpuDeviceError> {
+    // What: the two variables, read once, before any GPU work.
+    // Why: a misspelled `WGPU_POWER_PREF` should fail without touching a driver.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // const variables = { adapterName: env.WGPU_ADAPTER_NAME, powerPreference: env.WGPU_POWER_PREF };
+    // ```
+    let variables = Variables::from_environment();
+    if let Some(value) = &variables.power_preference
+        && parse_power_order(value).is_none()
+    {
+        return Err(GpuDeviceError::BadPowerPreference {
+            value: value.clone(),
+        });
+    }
     // What: a current-thread tokio runtime runs the two wgpu futures to completion; `map_err` turns its error into ours.
     // Why: wgpu's adapter and device requests are async; tokio is already a dependency of the application.
     //
@@ -320,8 +179,9 @@ pub fn open_hardware_device_capped(
     let mut description = wgpu::InstanceDescriptor::new_without_display_handle();
     description.backends = wgpu::Backends::VULKAN;
     let instance = wgpu::Instance::new(description);
-    // What: every Vulkan adapter, as an owned list, and what each one says about itself.
+    // What: every Vulkan adapter, as an owned list in the loader's order, and what each one says about itself.
     // Why: the choice needs all of them, and the failure message names them.
+    //      wgpu 30 does not sort this list when no power preference is given to it.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -337,15 +197,8 @@ pub fn open_hardware_device_capped(
             driver: info.driver,
         });
     }
-    let order = rank_hardware(&summaries);
-    if order.is_empty() {
-        let mut seen: Vec<String> = Vec::new();
-        for summary in &summaries {
-            seen.push(summary.to_string());
-        }
-        return Err(GpuDeviceError::NoHardwareAdapter { seen });
-    }
-    // What: try the adapters best first; the first that gives a device wins.
+    let choice = choose_adapters(&summaries, &variables)?;
+    // What: try the adapters in the chosen order; the first that gives a device wins.
     // Why: an integrated GPU with the limits is better than a discrete one without them, and the refusals are reported.
     //
     // In TS you'd write (pseudocode):
@@ -353,7 +206,7 @@ pub fn open_hardware_device_capped(
     // for (const index of order) { try { return await open(adapters[index]); } catch (error) { refusals.push(...); } }
     // ```
     let mut refusals: Vec<String> = Vec::new();
-    for index in order {
+    for (position, index) in choice.indexes.iter().copied().enumerate() {
         let adapter = adapters[index].clone();
         let summary = summaries[index].clone();
         let mut limits = wgpu::Limits::default().using_resolution(adapter.limits());
@@ -376,6 +229,7 @@ pub fn open_hardware_device_capped(
                     device,
                     queue,
                     summary,
+                    why: choice.why(position, index),
                 });
             }
             Err(error) => {
@@ -384,7 +238,8 @@ pub fn open_hardware_device_capped(
             }
         }
     }
-    return Err(GpuDeviceError::DeviceRefused { refusals });
+    let report = SelectionReport::new(&summaries, &choice.indexes, variables);
+    return Err(GpuDeviceError::DeviceRefused { refusals, report });
 }
 
 /// The adapter choice and the messages of the errors are checked from adapter descriptions alone.
