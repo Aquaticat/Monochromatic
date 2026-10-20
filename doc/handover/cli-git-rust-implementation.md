@@ -1832,6 +1832,47 @@ that is verification, not a decision for the user.
   Changes behavior: stash, clean and reset --hard are no longer free in a dirty linked worktree. Escape hatch stays
   `--no-enforce-worktree` (directly after the subcommand for commands without a table). The 'GFP' restore routine
   (`git checkout -- file`) now needs a linked worktree or the hatch.
+  Issue 1791 progress (2026-10-20 evening), in commit order. DONE and committed: (1) `stash list|show|create` are
+  allowed (`command_stash::stash_changes_state`); (2) `worktree_dirty(DirtyScope)` fact on `RepositoryFacts`
+  (`rule_worktree_dirty.rs`; `Tracked`, or `TrackedAndUntracked` for `clean`); (3) classifiers in
+  `command_discard.rs` (checkout, switch, restore, rm/mv/checkout-index by force scan, read-tree --reset, --abort of
+  merge/rebase/cherry-pick/revert/am; cherry-pick and revert accept only the full `--abort`); (4) the rule rewrite:
+  `GuardedCommand` has 11 variants, `LinkedWorktreeDecision::{Pass, NeedsEffectiveTarget, WhenDirty}`, texts in
+  `rule_linked_worktree_messages.rs` (returns `String`), `check_linked_worktree` in `policy_checks.rs`. Semantics:
+  an overwriting form is rejected in the main worktree and outside a worktree always, in a linked worktree only when
+  dirty; a HEAD-moving `checkout <x>` or `switch <x>` is rejected in main or linked only when dirty; allowlisted tool
+  caches are exempt; an unreadable status fails closed. `reset` in any mode but `--soft` is now guarded.
+  UNVERIFIED as of this entry: the container gate rerun (`GIT_POLICY_NATIVE_IMAGE_TAG=s1791`, log
+  `~/temp/agent/s1791-container.log`); the first run failed only `wrapped_command` (expectation fixed since). Likely
+  next failures: binary tests that run `git reset`/`stash`/`checkout` in a main-worktree fixture, for example
+  `binary_controls_tests.rs:171-206` (`git reset --quiet -- --no-enforce-worktree`). Fix by adding the hatch to the
+  fixture command or by moving the step to real Git; do not loosen the rule.
+  The user asked (mid-turn): are normal dev workflows blocked, and does everything have a documented workaround?
+  Honest status: NOT yet shown. Measured so far: no repo task, script or hook runs a guarded form through the
+  wrapper (searched mise/toml/mjs/ts/yaml); the hatch `--no-enforce-worktree` works for reset (existing test) and is
+  recognized as a general control for checkout/switch, and is read right after the subcommand for the table-less
+  commands, but it has NOT been tested for restore, rm, mv, checkout-index, read-tree or the `--abort` commands.
+  Known blocked normal workflows: unstaging in the main worktree (`restore --staged`, `reset <path>`), reverting a
+  file (`checkout -- f`, `restore f`), and `stash` or a branch `switch`/`checkout` in a dirty linked worktree.
+  Workarounds that exist: commit with explicit paths, use a clean linked worktree, or the hatch directly after the
+  subcommand (named in every rejection text). Documentation gaps to close before release: `README.md` lines 20-21 and
+  160-161 name only stash, clean and reset; `AGENTS.md` GFP ("restore") and `doc/runbook/publish-npm-package-first-
+  time.md:57` (`git switch main`) should say how to do it under the policy; `doc/agent/` has no entry. Needed
+  tests: a binary-level hatch test per new form, and a test per documented workaround.
+  Queue after the gate is green (QWD): (a) UX3, task 58: `advance_local_branch` (`auto_push_reconcile.rs`) refuses
+  any tracked status line, so the user's question "shouldn't this auto merge?" is answered YES: local main stays
+  behind origin/main whenever another session leaves tracked edits (seen 4 times today, merges 46a264639b,
+  0b97c22d5d, 70b86d8a6a, 964b905891, 9562c6729132). Plan: fast-forward when `git diff --name-only <local>
+  <merge_oid>` is disjoint from the status paths (both sides of renames, `-z`), run `git merge --ff-only`, then
+  verify the status output is unchanged and report otherwise; add tests (disjoint, overlapping, staged rename, rename
+  source overlap) and a binary-level one against a moved remote; (b) task 57, audit log: record every guarded
+  command that passed (linked clean) and every hatch use, with command, arguments, cwd, pid, parent pid, time, plus a
+  warning when a landing's post-index differs from the pre-landing index outside the committed paths; (c) fix
+  "copying the index failed: No such file or directory" for an explicit-path commit before any index exists;
+  (d) mutation scopes for `command_discard.rs`, `rule_linked_worktree.rs`, `rule_linked_worktree_messages.rs`,
+  `rule_worktree_dirty.rs`, `policy_checks.rs`, `auto_push_reconcile.rs`, `command_stash.rs`; (e) docs above;
+  (f) release 0.2.5 (behavior change: policy is stricter) and reinstall via mise; (g) comment on and close 1791 with
+  the evidence; (h) ask the user whether `rm --cached` and `git worktree remove --force` should join the guard.
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and
