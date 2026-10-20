@@ -1,6 +1,9 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/ts';
+import {
+  contextRoot,
+  wordForCount,
+} from '@monochromatic-dev/translation-repair-typography/ts';
 import type { ExtractedCompletion, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { readNeuralWattComments, } from './neuralwatt-comments.ts';
 import type { NeuralWattReservation, } from './neuralwatt-ledger.ts';
@@ -32,15 +35,15 @@ const ENERGY_LOG_DECIMALS = 4;
  Settles one finished call against the day's energy and reports it.
 
  @param reservation - hold the call took before it was sent
- 
+
  @param servedId - model the call went to
- 
+
  @param extracted - completion reassembled from the stream
- 
+
  @param bodyText - whole drained stream, comment lines included
- 
+
  @param estimateWh - energy the call held
- 
+
  @param promptTokens - prompt tokens the estimate was drawn for
 
  @throws {@link Error} when the ledger line cannot be written; the hold is
@@ -98,7 +101,15 @@ export async function settleNeuralWattCall(
   const energyNote = (energyWh === undefined)
     ? `not reported, ${estimateWh.toFixed(ENERGY_LOG_DECIMALS,)} Wh estimated stands`
     : `${energyWh.toFixed(ENERGY_LOG_DECIMALS,)} Wh measured against ${estimateWh.toFixed(ENERGY_LOG_DECIMALS,)} Wh estimated`;
-  rl.info(`NeuralWatt energy ${servedId}: ${energyNote} for ${String(promptTokens,)} prompt tokens`,);
+  rl.info(
+    `NeuralWatt energy ${servedId}: ${energyNote} for ${String(promptTokens,)} prompt ${
+      wordForCount({
+        count: promptTokens,
+        one: 'token',
+        many: 'tokens',
+      },)
+    }`,
+  );
   if ((requestCostUsd !== undefined) && (requestCostUsd > 0))
     rl.warn(
       `NeuralWatt BILLED a ${servedId} request ${requestCostUsd.toString()} USD to the plan, which free energy `

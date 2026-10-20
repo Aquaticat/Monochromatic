@@ -28,7 +28,6 @@ export {
 export {
   estimateNeuralWattWh,
   NEURALWATT_ENERGY_MARGIN,
-  NEURALWATT_ENERGY_MATRIX_DATE,
   NEURALWATT_SMALLEST_ESTIMATE_WH,
   type NeuralWattEstimate,
   promptTokensOfBody,

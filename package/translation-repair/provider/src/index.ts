@@ -33,6 +33,7 @@ export {
   StreamErrorEventError,
 } from './anthropic-whole-message.ts';
 export { ledgerAtBound, } from './bedrock-bound-ledger.ts';
+export { appendLedgerLine, } from './ledger-line-append.ts';
 export {
   BEDROCK_AUTH_HEADER,
   BEDROCK_MANTLE_BASE_URL,

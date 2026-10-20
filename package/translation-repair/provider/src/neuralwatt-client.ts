@@ -443,8 +443,22 @@ export function createNeuralWattClient(
        Content and usage reassembled from the drained event stream.
        */
       const extracted = extractStreamedCompletion({ bodyText: reply.bodyText, },);
-      rl.debug(`<- ${servedId}: ${String(extracted.text
-        .length,)} chars${formatUsageNote({ extracted, },)}`,);
+
+      /**
+       Answer length for the completion log line.
+       */
+      const textLength = extracted
+        .text
+        .length;
+      rl.debug(
+        `<- ${servedId}: ${String(textLength,)} ${
+          wordForCount({
+            count: textLength,
+            one: 'char',
+            many: 'chars',
+          },)
+        }${formatUsageNote({ extracted, },)}`,
+      );
       await settleNeuralWattCall({
         reservation: held,
         servedId,

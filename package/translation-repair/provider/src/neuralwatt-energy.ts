@@ -91,6 +91,12 @@ export type NeuralWattEnergy = {
  */
 export class NeuralWattAllowanceError extends StatedRefusalError {
   /**
+   Declares this message safe to forward: a model id, a day, and figures the
+   ledger computed.
+   */
+  override readonly messageNamesOnly: true = true;
+
+  /**
    What the day held when the call was refused.
    */
   readonly energy: NeuralWattEnergy;

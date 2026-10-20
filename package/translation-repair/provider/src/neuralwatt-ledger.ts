@@ -1,16 +1,13 @@
-import {
-  appendFile,
-  mkdir,
-} from 'node:fs/promises';
 import { homedir, } from 'node:os';
-import { dirname, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   contextRoot,
   readTextOrEmptyIfMissing,
+  wordForCount,
 } from '@monochromatic-dev/translation-repair-typography/ts';
+import { appendLedgerLine, } from './ledger-line-append.ts';
 import type { NeuralWattEnergy, } from './neuralwatt-energy.ts';
 import {
   neuralWattDailyWhFrom,
@@ -52,9 +49,9 @@ import {
 // the other holds; the margin and the billed mark bound that, nothing else
 // does, and the record says so.
 //
-// THE DAY IS THE UTC DATE of a line's `at`, read by instant, so an entry
-// stamped with an offset lands where it belongs and a run that crosses 00:00
-// UTC sees the allowance come back.
+// THE DAY IS THE UTC DATE of a line's `at`, which the ledger writes with
+// `toISOString` and reads back only in that spelling, so a run that crosses
+// 00:00 UTC sees the allowance come back.
 
 /**
  Logger root for the ledger.
@@ -209,13 +206,13 @@ export type NeuralWattLedger = {
 /**
  UTC date of an instant, `YYYY-MM-DD`.
 
- @param instant - ISO 8601 text or a date
+ @param instant - stamp as `toISOString` spells it, or a date
 
  @returns The date in UTC
 
  @example
  ```ts
- utcDayOf({ instant: '2026-10-20T22:30:00.000-04:00', },); // '2026-10-21'
+ utcDayOf({ instant: '2026-10-20T23:59:59.999Z', },); // '2026-10-20'
  ```
  */
 function utcDayOf({ instant, }: { readonly instant: string | Date; },): string {
@@ -278,15 +275,10 @@ export function createNeuralWattLedger(
    @param entry - the call's line
    */
   async function note(entry: NeuralWattLedgerEntry,): Promise<void> {
-    await mkdir(
-      dirname(path,),
-      { recursive: true, },
-    );
-    await appendFile(
+    await appendLedgerLine({
       path,
-      `${JSON.stringify(entry,)}\n`,
-      'utf8',
-    );
+      entry,
+    },);
   }
 
   /**
@@ -408,7 +400,13 @@ export function createNeuralWattLedger(
      */
     const energy = energyFrom({ entries, },);
     rl.debug(
-      `${path}: ${String(energy.calls,)} calls on ${energy.day} (UTC), ${energy.spentWh
+      `${path}: ${String(energy.calls,)} ${
+        wordForCount({
+          count: energy.calls,
+          one: 'call',
+          many: 'calls',
+        },)
+      } on ${energy.day} (UTC), ${energy.spentWh
         .toFixed(LOG_DECIMALS,)} Wh `
         + `spent of ${String(dailyWh,)} (${energy.reckonedWh
           .toFixed(LOG_DECIMALS,)} of it estimated), ${energy.reservedWh
@@ -422,9 +420,9 @@ export function createNeuralWattLedger(
    Asks to send a call.
 
    @param model - model the call is for
-   
+
    @param promptTokens - prompt tokens the estimate was drawn for
-   
+
    @param estimateWh - energy the call would hold
 
    @returns A reservation when the call fits, else the reading it was refused on
@@ -454,7 +452,7 @@ export function createNeuralWattLedger(
      */
     const entries = await todaysEntries();
 
-    // NO AWAIT FROM HERE TO THE HOLD BEING TAKEN: the reading below counts the
+    // NO AWAIT FROM HERE TO THE HOLD BEING TAKEN: the `energyFrom` reading counts the
     // holds as they stand at this instant, so a call that read the file at
     // the same time as this one and was decided first has its hold counted.
     /**
@@ -488,9 +486,9 @@ export function createNeuralWattLedger(
      Line for this call at a given reckoning.
 
      @param wh - watt-hours the line carries
-     
+
      @param estimated - why they are an estimate, absent for a measurement
-     
+
      @param billedUsd - USD billed, when above zero
 
      @returns The entry
@@ -529,7 +527,7 @@ export function createNeuralWattLedger(
      Appends the call's line at its settlement, then releases the hold.
 
      @param measuredWh - energy the stream reported, absent when it reported none
-     
+
      @param billedUsd - USD the request was billed
 
      @throws {@link NeuralWattReservationSettledError} when already settled

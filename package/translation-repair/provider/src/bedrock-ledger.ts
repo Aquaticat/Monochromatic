@@ -1,12 +1,5 @@
-import {
-  appendFile,
-  mkdir,
-} from 'node:fs/promises';
 import { homedir, } from 'node:os';
-import {
-  dirname,
-  join,
-} from 'node:path';
+import { join, } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
@@ -21,6 +14,7 @@ import {
 } from '@monochromatic-dev/translation-repair-markup/ts';
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
+import { appendLedgerLine, } from './ledger-line-append.ts';
 import {
   isSpendReckoning,
   type SpendReckoning,
@@ -509,15 +503,10 @@ export function createBedrockLedger(
    @param entry - priced call
    */
   async function note(entry: BedrockLedgerEntry,): Promise<void> {
-    await mkdir(
-      dirname(path,),
-      { recursive: true, },
-    );
-    await appendFile(
+    await appendLedgerLine({
       path,
-      `${JSON.stringify(entry,)}\n`,
-      'utf8',
-    );
+      entry,
+    },);
   }
 
   /**

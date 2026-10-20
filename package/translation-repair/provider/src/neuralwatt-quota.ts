@@ -183,7 +183,7 @@ function fieldValuesOf(
   /**
    Whether it has the type asked for and, for a number, is a usable amount.
    */
-  const fits = ((typeof value) === kind) && ((kind !== 'number') || (Number.isFinite(value,) && (Number(value,) >= 0)));
+  const fits = ((typeof value) === kind) && (((typeof value) !== 'number') || (Number.isFinite(value,) && (value >= 0)));
   if (!fits)
     throw new NeuralWattQuotaShapeError({ detail: `${field} is neither a ${kind} nor null`, },);
   return [value,];
@@ -319,7 +319,7 @@ export function parseNeuralWattQuota({ bodyText, }: { readonly bodyText: string;
  What the plan's charged energy did between two readings.
 
  @param before - reading at the start of the run
- 
+
  @param after - reading at its end
 
  @returns The difference, or why the readings cannot be compared

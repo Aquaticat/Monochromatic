@@ -1,6 +1,7 @@
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import type { NeuralWattServedId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import { PROMPT_BYTES_PER_TOKEN, } from './openrouter-abandoned-spend.ts';
 
 //region NeuralWatt energy estimate
@@ -60,11 +61,6 @@ import { PROMPT_BYTES_PER_TOKEN, } from './openrouter-abandoned-spend.ts';
 // request that comes back billed ends the UTC day for this provider at once
 // (`neuralwatt-client.ts`), so an under-estimate costs at most the calls in
 // flight when the first billed one lands.
-
-/**
- Date the matrix was read, the age of every figure below.
- */
-export const NEURALWATT_ENERGY_MATRIX_DATE = '2026-10-20';
 
 /**
  Factor every bucket mean is multiplied by to give the energy a call holds
@@ -233,13 +229,19 @@ export function estimateNeuralWattWh(
   },
 ): NeuralWattEstimate {
   if ((!Number.isFinite(promptTokens,)) || (promptTokens < 0))
-    throw new RangeError(`a prompt of ${String(promptTokens,)} tokens falls in no energy bucket`,);
+    throw new RangeError(`a prompt of ${String(promptTokens,)} ${
+      wordForCount({
+        count: promptTokens,
+        one: 'token',
+        many: 'tokens',
+      },)
+    } falls in no energy bucket`,);
 
   /**
    Bucket the prompt falls in: the first whose edge is above it, else the last
    one measured.
    */
-  const bucket = ENERGY_BUCKETS.find(function above(candidate,): boolean {
+  const bucket = ENERGY_BUCKETS.find(function edgeExceedsPrompt(candidate,): boolean {
     return promptTokens < candidate.belowTokens;
   },) ?? nonNullishOrThrow(ENERGY_BUCKETS.at(-1,),);
 

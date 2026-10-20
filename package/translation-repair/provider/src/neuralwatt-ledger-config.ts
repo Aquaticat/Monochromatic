@@ -62,6 +62,12 @@ export function defaultNeuralWattLedgerPath({ home, }: { readonly home: string; 
  */
 export class NeuralWattAllowanceOverrideError extends StatedRefusalError {
   /**
+   Declares this message safe to forward: it names the variable and repeats
+   the value the operator set in it.
+   */
+  override readonly messageNamesOnly: true = true;
+
+  /**
    Names the variable, what it held, and why that cannot be an allowance.
 
    @param value - what the variable held, quoted back

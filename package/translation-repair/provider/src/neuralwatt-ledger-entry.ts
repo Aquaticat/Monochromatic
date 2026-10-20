@@ -1,4 +1,7 @@
-import { errorName, } from '@monochromatic-dev/translation-repair-markup/ts';
+import {
+  errorName,
+  isIsoStampText,
+} from '@monochromatic-dev/translation-repair-markup/ts';
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 
 import { NeuralWattLedgerShapeError, } from './neuralwatt-ledger-config.ts';
@@ -37,7 +40,7 @@ export type NeuralWattReckoning = typeof NEURALWATT_RECKONINGS[number];
  */
 export type NeuralWattLedgerEntry = {
   /**
-   When the line was written, ISO 8601.
+   When the line was written, as `toISOString` spells it.
    */
   readonly at: string;
 
@@ -155,8 +158,10 @@ export function neuralWattEntryOf(
     estimated,
     billedUsd,
   } = parsed;
-  if (((typeof at) !== 'string') || Number.isNaN(Date.parse(at,),))
-    return refuse('at is not an instant',);
+  // Only the spelling `toISOString` writes: `Date.parse` alone also reads a
+  // date-time with no zone as local time, which would move the UTC day.
+  if (((typeof at) !== 'string') || (!isIsoStampText({ text: at, },)))
+    return refuse('at is not an instant spelled as toISOString writes it',);
   if ((typeof model) !== 'string')
     return refuse('model is not a string',);
   if (((typeof wh) !== 'number') || (!Number.isFinite(wh,))

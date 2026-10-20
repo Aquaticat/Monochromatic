@@ -82,11 +82,11 @@ export type NeuralWattQuotaSession = {
  Builds the quota session of one client.
 
  @param headers - request headers, auth included
- 
+
  @param baseUrl - API base address
- 
+
  @param transport - HTTP the reads go over
- 
+
  @param retryPolicy - transient-retry pacing
 
  @returns Session surface
