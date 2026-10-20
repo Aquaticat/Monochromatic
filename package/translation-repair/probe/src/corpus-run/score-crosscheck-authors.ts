@@ -1,6 +1,7 @@
 import { compareCodePoints, } from '@monochromatic-dev/translation-repair-markup/ts';
 import type { CrosscheckItem, } from './judge-crosscheck.ts';
 import { MIN_JUDGED_CLAIMS, } from './judge-independence.ts';
+import type { ReadonlyEntry, } from '../readonly-entry.ts';
 
 //region Score crosscheck authors
 // The author table `score-crosscheck` prints: each critic's share of the
@@ -49,6 +50,15 @@ export type AuthorRow = {
 };
 
 /**
+ One author's counts so far, raised as each claim they proposed is read.
+ */
+type AuthorCounts = {
+  accepted: number;
+  control: number;
+  sole: number;
+};
+
+/**
  Tallies each author's claims per arm.
 
  Counts a claim once for EVERY author, not once per claim. The question the
@@ -73,11 +83,7 @@ export function tallyAuthors(
   /**
    Running counts keyed by model id.
    */
-  const rows = new Map<string, {
-    accepted: number;
-    control: number;
-    sole: number;
-  }>();
+  const rows = new Map<string, AuthorCounts>();
 
   for (
     const {
@@ -116,7 +122,7 @@ export function tallyAuthors(
   }
 
   return [...rows.entries(),]
-    .map(function toRow([modelId, counts,],): AuthorRow {
+    .map(function toRow([modelId, counts,]: ReadonlyEntry<string, Readonly<AuthorCounts>>,): AuthorRow {
       return {
         modelId,
         accepted: counts.accepted,

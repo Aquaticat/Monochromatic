@@ -1,5 +1,6 @@
 import type { ScreenedFinding, } from '@monochromatic-dev/translation-repair-rendering-audit/ts';
 import type { SettledAuditRow, } from './rendering-audit-settled-row.ts';
+import type { ReadonlyEntry, } from '../readonly-entry.ts';
 
 //region Settled audit reading
 // Turns persisted audit rows into the three readings the settled audit owes, and nothing
@@ -115,6 +116,16 @@ export type VoiceRate = {
    Claims that fell at the screen, kept because a voice whose every claim fell
    is not a voice that found nothing.
    */
+  readonly dropped: number;
+};
+
+/**
+ One auditor's counts so far, replaced by larger ones each time a subject it answered is read.
+ */
+type RunningVoice = {
+  readonly answered: number;
+  readonly spoke: number;
+  readonly claims: number;
   readonly dropped: number;
 };
 
@@ -405,12 +416,7 @@ export function rateByVoice(
    then filled in one pass, so the map's own order is roster first and
    first-seen after.
    */
-  const byModel = new Map<string, {
-    answered: number;
-    spoke: number;
-    claims: number;
-    dropped: number;
-  }>();
+  const byModel = new Map<string, RunningVoice>();
 
   roster.forEach(function seat(modelId,): void {
     byModel.set(
@@ -463,7 +469,7 @@ export function rateByVoice(
     },);
   },);
 
-  return [...byModel.entries(),].map(function asRate([modelId, tally,],): VoiceRate {
+  return [...byModel.entries(),].map(function asRate([modelId, tally,]: ReadonlyEntry<string, RunningVoice>,): VoiceRate {
     return {
       modelId,
       // A roster member was put in front of every subject; a voice the run

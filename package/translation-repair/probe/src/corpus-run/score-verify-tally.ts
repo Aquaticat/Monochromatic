@@ -3,6 +3,7 @@ import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/
 import type { GradedItem, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
 import type { VerifyManifestItem, } from './score-verify-manifest.ts';
+import type { ReadonlyEntry, } from '../readonly-entry.ts';
 
 //region Score verify tally
 // Joins the graded items to the manifest rows by position, counts the grades
@@ -172,15 +173,15 @@ export function tallyByKind(
 export function verifyKindLines({ tallies, }: { readonly tallies: ReadonlyMap<string, Readonly<KindTally>>; },): readonly string[] {
   return [...tallies,]
     .toSorted(function byLabel(
-      left,
-      right,
+      left: ReadonlyEntry<string, Readonly<KindTally>>,
+      right: ReadonlyEntry<string, Readonly<KindTally>>,
     ): number {
       return compareCodePoints({
         left: left[0],
         right: right[0],
       },);
     },)
-    .map(function toLine([kind, tally,],): string {
+    .map(function toLine([kind, tally,]: ReadonlyEntry<string, Readonly<KindTally>>,): string {
       /**
        Flags this set contributed that carry a verdict.
        */

@@ -7,6 +7,7 @@ import type {
   WouldShipReading,
   WouldShipSilence,
 } from '@monochromatic-dev/translation-repair-page-check/ts';
+import type { ReadonlyEntry, } from '../readonly-entry.ts';
 
 //region Page relation
 // Says whether the wording one audit subject carries is the wording a document
@@ -369,7 +370,7 @@ export function relationTallyOf(
   }
 
   return [...byLabel.entries(),]
-    .map(function asTally([label, tally,],): PageRelationTally {
+    .map(function asTally([label, tally,]: ReadonlyEntry<string, RelationRunning>,): PageRelationTally {
       return {
         label,
         subjects: tally.subjects,

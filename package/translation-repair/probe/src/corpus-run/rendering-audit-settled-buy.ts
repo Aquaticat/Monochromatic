@@ -28,6 +28,7 @@ import type {
   SettledReferences,
 } from './rendering-audit-settled-subject.ts';
 import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
+import type { ReadonlyEntry, } from '../readonly-entry.ts';
 
 //region Settled audit buying
 // What the settled rendering audit buys, in what order, what it prints before
@@ -247,7 +248,7 @@ export async function withCitedReferences(
       async function readPage([
         pageSourceText,
         entryId,
-      ],): Promise<{
+      ]: ReadonlyEntry<string, string>,): Promise<{
         readonly pageSourceText: string;
         readonly entryId: string;
         readonly references: SettledReferences;

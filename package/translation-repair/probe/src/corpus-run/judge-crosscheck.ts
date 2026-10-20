@@ -4,6 +4,7 @@ import type {
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { AttributionEntry, } from './attribution-report.ts';
 import { seatJudges, } from './judge-independence.ts';
+import type { ReadonlyEntry, } from '../readonly-entry.ts';
 
 //region Judge crosscheck census
 // Which claims a disinterested judge may re-examine, and what the reading is
@@ -408,7 +409,7 @@ export function statusBreakdown(
     );
   }
   return [...byStatus,]
-    .map(function toPair([status, count,],): string {
+    .map(function toPair([status, count,]: ReadonlyEntry<string, number>,): string {
       return `${status}=${String(count,)}`;
     },)
     .join(' ',);
