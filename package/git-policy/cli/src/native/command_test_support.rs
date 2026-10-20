@@ -101,14 +101,7 @@ pub(crate) fn byte_argument(bytes: &[u8]) -> OsString {
 
 /// Create one empty fixture directory owned by this test process and test name.
 pub(crate) fn fixture(name: &str) -> PathBuf {
-    crate::test_support::arm_watchdog();
-    let root: PathBuf =
-        std::env::temp_dir().join(format!("native-command-{}-{name}", std::process::id()));
-    if root.exists() {
-        std::fs::remove_dir_all(&root).expect("remove stale fixture");
-    }
-    std::fs::create_dir(&root).expect("fresh fixture");
-    return std::fs::canonicalize(&root).expect("canonical fixture");
+    return crate::test_support::fixture_with_prefix("native-command", name);
 }
 
 /// Start real Git in a fixture with no system or global configuration and a fixed identity.
@@ -172,20 +165,8 @@ pub(crate) fn git_with_input(directory: &Path, arguments: &[OsString], input: &[
     return child.wait_with_output().expect("native Git fixture result");
 }
 
-/// Create a repository with one empty commit on `main` inside a fixture directory.
-pub(crate) fn repository(parent: &Path, name: &str) -> PathBuf {
-    let root: PathBuf = parent.join(name);
-    std::fs::create_dir(&root).expect("repository directory");
-    git(
-        root.as_path(),
-        &["init", "--quiet", "--initial-branch=main"],
-    );
-    git(
-        root.as_path(),
-        &["commit", "--quiet", "--allow-empty", "--message=initial"],
-    );
-    return root;
-}
+/// The repository helper of the unit tests, with one empty commit on `main`.
+pub(crate) use crate::test_support::repository;
 
 /// Create a fixture whose repository has `tracked.txt` committed;
 ///  returns the fixture

@@ -34,6 +34,8 @@ use git_policy_cli::candidate_error::{CandidateError, CandidateFailure};
 use git_policy_cli::candidate_prediction::{CandidateRequest, PreparedCandidates};
 use git_policy_cli::command_commit::parse_commit_region;
 use git_policy_cli::global_arguments::{GlobalOutcome, global_layout};
+/// The production conversion of raw bytes to an argument, so the generators feed the code under test the same way.
+use git_policy_cli::path_bytes::os_from_path_bytes as argument;
 use git_policy_cli::policy_checks::{ShippedChecks, shipped_checks};
 use git_policy_cli::policy_content::LifecycleContent;
 use git_policy_cli::policy_registry::{POLICY_REGISTRY, PolicyId};
@@ -61,8 +63,6 @@ use git_policy_cli::wrapper_invocation::{StrippedInvocation, strip_wrapper_contr
 /// // string, but byte-preserving.
 /// ```
 use std::ffi::{OsStr, OsString};
-/// The trait that builds an `OsString` from raw bytes on Unix.
-use std::os::unix::ffi::OsStringExt;
 /// `PathBuf` is an owned filesystem path of raw bytes.
 use std::path::PathBuf;
 
@@ -96,21 +96,6 @@ pub const MAX_CONTROL_ARGUMENTS: usize = 48;
 /// const SEPARATOR_MARK = 0xff;
 /// ```
 pub const SEPARATOR_MARK: u8 = 0xff;
-
-/// What:
-///  Build one argument from raw bytes.
-///  `OsString` is the owned result.
-/// Why:
-///   Every generator here produces byte-valued arguments.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const argument = (bytes: Uint8Array) => Buffer.from(bytes);
-/// ```
-fn argument(bytes: &[u8]) -> OsString {
-    // `.to_vec()` copies the borrowed bytes into an owned list for the OS string.
-    return OsString::from_vec(bytes.to_vec());
-}
 
 /// What:
 ///  Map each fuzz byte to one token of the control table.

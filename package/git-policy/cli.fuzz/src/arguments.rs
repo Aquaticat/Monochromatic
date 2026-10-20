@@ -19,6 +19,8 @@ use crate::argument_tables::{BRANCH_MUTATIONS, INSPECTION_COMMANDS, TAG_MUTATION
 /// Import the classification functions under test.
 use git_policy_cli::config_loading::{ConfigLoading, classify_config_loading};
 use git_policy_cli::global_arguments::{GlobalLayout, GlobalOutcome, global_layout};
+/// The production conversion of raw bytes to an argument, so the generators feed the code under test the same way.
+use git_policy_cli::path_bytes::os_from_path_bytes as argument;
 /// What:
 ///  `OsString` is owned operating-system text of raw OS bytes (sibling `String`
 ///       must be UTF-8).
@@ -30,8 +32,6 @@ use git_policy_cli::global_arguments::{GlobalLayout, GlobalOutcome, global_layou
 /// // string[] argv, but byte-preserving.
 /// ```
 use std::ffi::OsString;
-/// The Unix trait that wraps raw bytes as OS text unchanged.
-use std::os::unix::ffi::OsStringExt;
 
 /// What:
 ///  Largest generated argument vector.
@@ -46,20 +46,6 @@ use std::os::unix::ffi::OsStringExt;
 /// const MAX_ARGUMENTS = 48;
 /// ```
 pub const MAX_ARGUMENTS: usize = 48;
-
-/// What:
-///  Wrap raw bytes as one argument without decoding.
-/// Why:
-///   Every generator builds arguments the same way.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function argument(bytes: Uint8Array): string;
-/// ```
-fn argument(bytes: &[u8]) -> OsString {
-    // `.to_vec()` copies the borrowed bytes into an owned list for the OS string.
-    return OsString::from_vec(bytes.to_vec());
-}
 
 /// What:
 ///  Split fuzz bytes at NUL into at most `MAX_ARGUMENTS` arguments.
