@@ -493,6 +493,12 @@ and the rule refuses comment directives.
   the `std::thread::scope` closure in `run_workers`.
   "std::thread::scope hands its callback only the scope reference,
   so the shared run state and the worker count can reach spawn_and_join only through a closure".
+- `src/cli_options.rs`:
+  every closure clap's derive generates for `CliOptions`,
+  reported at the field type spans.
+  The attribute is the module's inner `#![cfg_attr(...)]` and reads
+  "clap's derive generates the parser closures in its FromArgMatches implementation with the field type as their span,
+  so no author-written closure exists to refactor".
 
 ## Rust test sidecars
 
