@@ -153,7 +153,7 @@ and each task sets it to its own name.
   provider's live listing,
   so seating a model is one card and one list entry.
   Usage after `--`:
-  `<synthetic|hyper|openrouter|bedrock> <served id>`.
+  `<synthetic|hyper|openrouter|bedrock|neuralwatt> <served id>`.
   Read-only;
   the key is never printed.
 - `model-health`:

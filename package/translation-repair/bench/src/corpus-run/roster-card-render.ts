@@ -383,6 +383,51 @@ export function cardFieldsFrom(
       },),),
     };
   }
+  if (provider === 'neuralwatt') {
+    /**
+     Vision flag as NeuralWatt's catalog reports it, under `metadata`.
+     */
+    const vision = fieldAt({
+      row,
+      path: [
+        'metadata',
+        'capabilities',
+        'vision',
+      ],
+    },);
+    /**
+     Context window the listing states under `metadata.limits`.
+     */
+    const context = numberAt({
+      row,
+      path: [
+        'metadata',
+        'limits',
+        'max_context_length',
+      ],
+    },);
+    /**
+     Output ceiling the listing states, which is null for some models.
+     */
+    const ceiling = numberAt({
+      row,
+      path: [
+        'metadata',
+        'limits',
+        'max_output_tokens',
+      ],
+    },);
+    return {
+      readsImages: ((typeof vision) === 'boolean') ? vision : NOT_LISTED,
+      // The context window stands in where the listing states no ceiling, as
+      // for OpenRouter's top endpoint.
+      maxOutputLength: ((typeof ceiling) === 'symbol') ? context : ceiling,
+      contextLength: context,
+      // The card side carries no price: the free energy bills none.
+      promptPrice: NOT_LISTED,
+      completionPrice: NOT_LISTED,
+    };
+  }
   // Bedrock's listing names the model and its retention mode and nothing a
   // card needs; the model card page carries the rest.
   return {
@@ -513,6 +558,13 @@ export function renderProviderCard(
       `      streamEnd: /* 'done-sentinel' | 'usage-chunk', measured */,`,
       '      promptUsdPerMillion: /* the public pricing page */,',
       '      completionUsdPerMillion: /* the public pricing page */,',
+    ],
+    neuralwatt: [
+      cardLine({
+        name: 'contextLength',
+        value: fields.contextLength,
+        says: 'the model card page',
+      },),
     ],
   };
   return [

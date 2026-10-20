@@ -1,5 +1,6 @@
 import {
   BEDROCK_MANTLE_BASE_URL,
+  NEURALWATT_BASE_URL,
   SYNTHETIC_CHAT_BASE_URL,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { CardProvider, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
@@ -22,6 +23,7 @@ export const LISTING_URL: Readonly<Record<CardProvider, string>> = {
   hyper: 'https://hyper.charm.land/v1/models',
   openrouter: 'https://openrouter.ai/api/v1/models',
   bedrock: `${BEDROCK_MANTLE_BASE_URL}/v1/models`,
+  neuralwatt: `${NEURALWATT_BASE_URL}/models`,
 };
 
 /**
@@ -32,6 +34,7 @@ const KEY_VAR: Readonly<Record<CardProvider, string>> = {
   hyper: 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY',
   openrouter: 'TRANSLATION_REPAIR_OPENROUTER_API_KEY',
   bedrock: 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY',
+  neuralwatt: 'TRANSLATION_REPAIR_NEURALWATT_API_KEY',
 };
 
 /**

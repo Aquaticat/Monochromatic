@@ -11,7 +11,7 @@ import { printRosterCard, } from './roster-card-print.ts';
 // fetches the listing, `roster-card-render.ts` renders the card and
 // `roster-card-print.ts` is the procedure.
 //
-// usage: mise run roster-card -- <synthetic|hyper|openrouter|bedrock> <served id>
+// usage: mise run roster-card -- <synthetic|hyper|openrouter|bedrock|neuralwatt> <served id>
 
 /**
  Prints the card over the process's own environment, the live transport and

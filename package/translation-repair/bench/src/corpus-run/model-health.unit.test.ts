@@ -43,7 +43,8 @@ await describe({
         expect(run,).toEqual({
           code: REFUSED_AS_STATED,
           stdout: '',
-          stderr: 'model-health: TRANSLATION_REPAIR_SYNTHETIC_API_KEY, TRANSLATION_REPAIR_CHARM_HYPER_API_KEY, '
+          stderr: 'model-health: TRANSLATION_REPAIR_NEURALWATT_API_KEY, TRANSLATION_REPAIR_SYNTHETIC_API_KEY, '
+            + 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY, '
             + 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY or TRANSLATION_REPAIR_OPENROUTER_API_KEY is not set; '
             + 'run under mise so sops injects it\n',
         },);
