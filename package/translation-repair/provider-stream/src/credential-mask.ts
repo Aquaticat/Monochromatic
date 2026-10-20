@@ -14,6 +14,7 @@ import {
   decodedViewsOf,
   type TextView,
 } from './credential-views.ts';
+import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Credential mask
 // Replaces every copy of a credential a request carried inside the text a
@@ -129,7 +130,7 @@ export function credentialsOfHeaders(
   { headers, }: { readonly headers: Readonly<Record<string, string>>; },
 ): readonly string[] {
   return Object.entries(headers,)
-    .flatMap(function credentialsOfHeader([name, value,],): readonly string[] {
+    .flatMap(function credentialsOfHeader([name, value,]: ReadonlyEntry<string, string>,): readonly string[] {
       if (!CREDENTIAL_HEADER_NAMES.has(name.toLowerCase(),))
         return [];
 
