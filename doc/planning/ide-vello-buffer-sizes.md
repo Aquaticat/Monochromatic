@@ -24,6 +24,13 @@ Shrinking the seven constants as well, which needs a patched Vello, takes it to 
 (hint `Manual` 8 to 32 MiB), but the smaller buffers are only safe if the IDE first stops clipping with full-height
 rectangles, because Vello 0.11 answers an overflow by silently drawing nothing.
 
+A separate finding matters more than any memory figure, and belongs to whoever owns `src/tile_scene/`:
+with the constants as they are today, `split` clips a selected row with rectangles as tall as the whole texture, and a
+tile 8160 pixels tall overflows the tiles buffer from 58 selected rows on (56 rows rendered, 58 did not).
+A window 2000 pixels tall shows 83 rows, so selecting one screenful already produces a blank or stale tile.
+Section "Two findings for the IDE" has the numbers; this was reproduced in a probe that copies the clip structure, not
+in the application.
+
 ## Where the sizes come from
 
 ### The seven constants
@@ -98,7 +105,7 @@ the sign, both textures kept:
 - `MemoryUsage`: the same 211.6 allocated, 224.2 reserved.
 
 A device with no renderer already holds 193.6 MiB under `Performance`, 13.6 under `MemoryUsage` and 25.6 under `Manual`
-16 to 64 MiB (measured with `drm-memory-vram` right after `request_device`; the earlier harness document found 193 MiB
+16 to 64 MiB (measured with `drm-memory-vram` right after `request_device`; the harness document found 193 MiB
 for a process without a renderer).
 Those figures equal one device block plus one host block plus 1.6 MiB (128 + 64 + 1.6, 8 + 4 + 1.6, 16 + 8 + 1.6), and
 the report after the renders lists exactly those blocks plus one of 256 MiB.
@@ -161,14 +168,18 @@ With `ptcl` at 4,700,000 the same render differed in 284 bytes by at most one le
 So `ptcl` has a floor of 64 elements per tile (one byte per pixel) plus the dynamic part.
 The default 8,388,608 covers 131,072 tiles, which is 33.5 million pixels, twice what the IDE's 64 MiB byte rule allows,
 so the floor never binds at the default and binds any smaller value.
+This also bears on the harness document's open question whether the 64 MiB byte rule should rise for the GPU tile:
+with the default `ptcl`, a texture above 128 MiB (131,072 tiles of RGBA8) corrupts silently with `failed = 0`, so
+raising the rule needs a `ptcl` computed from the target.
 
 ## What the IDE's scenes need
 
 ### The probe
 
 `~/temp/agent/vello-buffers/probe` is a headless program (wgpu 30 and Vello 0.11.0 from the registry, Parley 0.11,
-JetBrains Mono, the 560-line `dense.rs` corpus of the earlier spike, tokenized into six inks as the spike did).
-It renders the scenes listed next, reads the process's own `drm-memory-vram` from `/proc/self/fdinfo`,
+JetBrains Mono, the 560-line `dense.rs` corpus of `~/temp/agent/ide-vello-spike2`, tokenized into six inks as that
+spike did).
+It renders the scenes of this section, reads the process's own `drm-memory-vram` from `/proc/self/fdinfo`,
 and can print the allocator report.
 A local copy of `vello_encoding` reads `VELLO_BUMP_SIZES` (seven element counts) in `BufferSizes::new`, and a local
 copy of `vello` sets `robust = true` so that `render_to_texture_async` returns the bump counters.
@@ -209,7 +220,7 @@ segments 2,097,152; dynamic ptcl 8,388,608 minus 64 per tile; binning 262,144):
   the default render failed (`failed = 2`, tile allocation).
 - `tilesel` with each clip cut to its own row's height: tiles 66,504; ptcl 256; binning 6,636; lines 700,422;
   segments 321,702.
-  The default render succeeded, and so did all smaller profiles listed next.
+  The default render succeeded, and so did the profiles of section "Profiles".
 
 Blend spill was 0 in every run.
 Lines per row are about 640 at scale 1/6 for the minimap and about 730 per row in the tile (the count includes the line
@@ -221,6 +232,12 @@ The full-height clips are the large cost of a selection:
 the tile count of a select-all fell from 12.5 million to 66 thousand, and the ptcl from 7.2 million to 256 elements,
 when each clip rectangle covers only its row.
 The images agreed (117 bytes of 36 million differed by one level, the same noise as between two default renders).
+The cost per selected row is the whole tile area, because the three clips of a row together span the texture's width
+and every clip spans its height: (310,774 - 17,004) / 8 = 36,721 tiles for 8 rows and (1,485,872 - 17,004) / 40 =
+36,722 for 40.
+The default 2,097,152 tiles therefore run out after about 56 selected rows on a tile 8160 pixels tall:
+`tilesel56` needed 2,073,414 tiles and rendered, `tilesel58` needed 2,146,856 and failed (`failed = 2`).
+A shorter tile raises the limit in proportion (a tile 6000 pixels tall allows about 76 rows).
 With the default constants, a tile of 340 selected rows already fails, which this probe reproduces but the application
 was not run on.
 `split` emits the clips when the selected ink differs from the ordinary ink;
@@ -229,8 +246,8 @@ so the clips would be emitted and the tile would stay blank or stale.
 The fix is small: the `Rect` in `encode` gets the row's top and bottom, which `Item::Clip` would have to carry.
 It belongs with whoever owns `src/tile_scene/`.
 
-A minimap slice must stay under about 1,600 rows at scale 1/6 for 1,048,576 lines, and the default already fails at
-4,096 rows.
+A minimap slice must stay under about 1,600 rows at scale 1/6 for 1,048,576 lines (about 3,200 rows for the default
+2,097,152), and the default already fails at 4,096 rows.
 That bound belongs in the minimap rewrite's tile height, not in a buffer size.
 
 ## Reducing it: measurements
@@ -281,6 +298,24 @@ cells of the tile run, the sign 0.7 to 1.4 ms); the spread of an unchanged setti
 For the 21 parallel test processes that the harness document counts at about 9.5 GiB (456.9 MiB each for a test tile
 and sign): `MemoryUsage` alone gives 196.9 MiB each, 4.0 GiB; with `ide_sized` 156.9 MiB each, 3.2 GiB; the floor with
 `MemoryUsage` and no bump buffers is 36.9 MiB each, 0.8 GiB.
+
+### The integrated GPU
+
+The host's second Vulkan adapter is the Raphael integrated GPU (`AMD Ryzen 9 7950X ... RADV RAPHAEL_MENDOCINO`, picked
+with `PROBE_ADAPTER=RAPHAEL`); sysfs `mem_info_vram_total` gives it a dedicated pool of 512 MiB (536,870,912 bytes)
+next to the RX 7600's 8 GiB.
+The probe reads `drm-memory-gtt` as well: it stayed between 2 and 8 MiB in every run, so the blocks are all counted as
+`drm-memory-vram` here too.
+For `testtile` and the sign, total `drm-memory-vram` of the process:
+
+- Hint `Performance`, default sizes (today): 448.4 MiB, which is 88% of the 512 MiB pool for one test process.
+- Hint `Performance`, `ide_sized`: 192.4 MiB.
+- Hint `MemoryUsage`, default sizes: 188.4 MiB; with `ide_sized` 148.4; with `tiny` 28.4.
+- Hint `Manual` 8 to 32 MiB: 188.4 with default sizes, 116.4 with `ide_sized`.
+
+So the allocator behaves the same on the integrated device, and the saving of e1 is 260 MiB there (448.4 to 188.4),
+against a pool that default Vello nearly fills alone.
+A `tile` scene on the integrated device was not run.
 
 ## What can and cannot be removed
 
@@ -401,9 +436,9 @@ the cost makes the question moot.
 - The application itself: every figure is from the headless probe with its own device.
   Whether Slint's FemtoVG renderer, the glyph atlases and the shared device behave the same under `MemoryUsage` or
   `Manual` was not tried, and neither was the frame cadence under scrolling.
-- Another GPU: integrated graphics (the Raphael device), other drivers, and shared-memory accounting.
-  `drm-memory-vram` was read on the RX 7600 only;
-  on an integrated GPU the same blocks would be taken from system memory.
+- Other drivers and other GPUs: the integrated Raphael device was measured with the same probe
+  (section "The integrated GPU"), but Intel, NVIDIA, other Mesa versions and other operating systems were not,
+  and the application was not run on it.
 - Scenes with strokes (the wavy underline and dashes of `src/tile_scene/underline.rs`), color glyphs, very long lines
   (a minified file), nested clips deep enough to spill the blend stack, and tabs and wrapping.
   The corpus has lines up to 117 characters.
@@ -411,6 +446,8 @@ the cost makes the question moot.
   If it does not, a line of tens of thousands of characters overflows `lines` at any size listed here.
 - The minimap as it will be rewritten: only two stand-in slices (503 and 4096 rows) were rendered.
 - The unlabeled 4.1 MiB texture was not traced to its creator.
+  It is consistent with the persistent image atlas, 1024 by 1024 RGBA8 (`vello_encoding-0.11.0/src/image_cache.rs:9`,
+  `vello-0.11.0/src/render.rs:161` to `174`), but that was not confirmed.
 - The select-all failure is reproduced from the clip structure of `split.rs` and `encode.rs`, not in the application.
 - Run-to-run spread of the render times.
   Video memory was identical in every repeated run.
