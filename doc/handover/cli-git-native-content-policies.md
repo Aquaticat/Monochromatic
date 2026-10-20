@@ -30,7 +30,7 @@ the coded failure outcome,
 three fuzz targets,
 and the differential runs.
 The final gate,
-the fuzz smoke campaign and the mutation campaigns are recorded in their own sections below.
+the fuzz smoke campaign and the mutation campaigns are recorded in their own sections, Final gate and Mutation testing.
 
 ## Differential harness
 

@@ -297,7 +297,8 @@ or dynamically loaded code.
 
 `git cli-git trust` owns the first TypeScript build.
 Ordinary Git commands never build an untrusted TypeScript config.
-A previously trusted path explicitly relaxed through `CLI_GIT_NO_PARANOID` is the exception described below.
+A previously trusted path explicitly relaxed through `CLI_GIT_NO_PARANOID` is the exception
+(see the bullet that begins `Under CLI_GIT_NO_PARANOID`).
 
 - Lazily import Rolldown only for trust builds.
 - Call Rolldown's public `rolldown()` API with Node platform targeting,

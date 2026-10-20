@@ -49,7 +49,7 @@ Head `4fd2aafb59`; the container gate, host Clippy and the per-file mutation cam
   `landing_objects.rs` (shadow objects into a kept pack), `landing_index.rs` (post-index).
 - `626382ebca`: `real_index_lock.rs` gains `acquire_landing_index_lock`, `RealIndexLock::install`
   and `RealIndexLock::release_after_landing`.
-- `d7f390002c`: lint fixes (implicit return, shadowing) in the files above.
+- `d7f390002c`: lint fixes (implicit return, shadowing) in the modules that the Built section lists.
 - `ee925b3955`: `landing_attempt.rs`, `landing_findings.rs`, the acceptance tests
   (`binary_landing_support.rs`, `binary_landing_tests.rs`, `binary_landing_crash_tests.rs`) and five planted controls.
 - `613522828c` to `4fd2aafb59`: controls found by mutation (PID file release and creation failures, an amend that
@@ -163,7 +163,8 @@ Counts are from the final run of each file.
 
 The five planted controls added by this lane (`landing branch-switch check`, `landing head-moved check`,
 `landing releases the index lock when it lands nothing`, `landing hands the directory back after a lost
-compare-and-swap`, `landing journals the index lock before announcing it`) were noticed in the campaign above.
+compare-and-swap`, `landing journals the index lock before announcing it`)
+were noticed in the Mutation campaign of this lane.
 
 ### Git 2.55.0
 

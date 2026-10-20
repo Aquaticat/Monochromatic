@@ -191,7 +191,7 @@ At `385ab5b80b` it reported 942 tests passed, 2 ignored, 0 failed across five te
 (the library run alone was 901 passed and 2 ignored).
 At `1262241dc7` the library run reported 902 passed and 2 ignored, including the new handler test,
 and the other test result lines were all passing.
-The Clippy step failed at `385ab5b80b` on the base-file findings listed below.
+The Clippy step failed at `385ab5b80b` on the base-file findings that the Gate results section lists.
 The Clippy step at `1262241dc7` was still running when this lane's report was written;
 its log is `~/temp/agent/signals-gate-final.log` (the line `container-exit=` ends it).
 The only change since `385ab5b80b` is test code in `signal_relay_tests.rs` and two registry entries,
@@ -235,7 +235,8 @@ the sender-check control was not noticed (the old terminal test could not see a 
 and the hk prefix control's `from` string was stale after the clippy fix,
 so the planted-control harness would have refused to start.
 
-These controls run in the container only as phase 1 of `native:mutation`, which trails the cutover (see below).
+These controls run in the container only as phase 1 of `native:mutation`, which trails the cutover
+(see the Trailing gates section).
 The host proof above is the evidence that the guard tests fail; the container noticing is not yet run.
 
 ## Trailing gates

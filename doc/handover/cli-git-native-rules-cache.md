@@ -141,7 +141,8 @@ campaign (the planted-control phase ran once, all 66 controls noticed, at `5e04e
 - `worktree_copy_forward.rs` and `index_writer_forward.rs`, with the selection file again (68 mutants):
   no survivor in the new files; 56 caught, 8 unviable, 4 missed, all in `worktree_copy_selection.rs`.
   That run used the stale scratch script `bin/mutate-native-container-noplanted.mjs`, whose skip arguments differ from
-  `mutate-native-container.mjs`; its survivors were rechecked with the regular script below.
+  `mutate-native-container.mjs`; its survivors were rechecked with the regular script
+  (the by-function run of `worktree_copy_selection.rs`, 37 mutants).
 - `worktree_copy_selection.rs` by function, regular script (37 mutants): 34 caught, 3 missed.
   The misses at lines 68 and 69 (`||` to `&&` inside the unsafe-path test) are equivalent:
   an empty path still has an empty component, and a path that starts with `/` is still absolute on Unix,

@@ -49,7 +49,7 @@ Commits on `feat/cli-git-native-post-landing` after the base `c2f4219acb`:
 `136cf6d0fd` the three modules and their tests,
 `89d0fc7a0c` planted guard removals,
 `8ce41e201c` the first doc record,
-`517a6896cb` the failure and ordering controls described below.
+`517a6896cb` the failure and ordering controls described in the Mutation section.
 
 ### Behavior against the incumbent
 

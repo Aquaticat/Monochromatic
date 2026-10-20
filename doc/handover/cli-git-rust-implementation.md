@@ -1752,7 +1752,7 @@ that is verification, not a decision for the user.
   Done 2026-10-19: the mutation run `cli-git-rec4` over the three auto-push files (head `496875c8cf`, the code that
   shipped as 0.2.2) tested 55 mutants in 34 minutes: 51 caught, 4 unviable, none missed or timed out; the container
   gate passed (1995 tests, 5 skipped). The `rec4` images are removed. Nothing is queued for task 50 except the
-  by-nature exceptions named above.
+  by-nature exceptions recorded for task 50 in this handover.
   Released 2026-10-19 as 0.2.2 (commit `63a67d1b5f`) after the container gate passed (1995 tests, 5 skipped): the
   publish workflow succeeded, crates.io lists 0.2.2, both archives exist, the glibc floor on the x86_64 archive is
   still 2.39 (README line 77 names 0.2.2), and `mise upgrade cargo:monochromatic-git-policy-cli` installed it

@@ -273,7 +273,7 @@ so an installed linter can never stand in for it.
   for what output is trusted.
 - `src/native/event_path.rs`, `src/native/policy_events.rs` and the three `SPEC.md` paragraphs,
   for the event fields.
-- The choices below.
+- The choices in the Choices open to veto section.
 
 ## Differential results
 
@@ -617,7 +617,7 @@ Images, merge result:
 
 - The differential was not rerun. Main's cutover changed the incumbent's configuration and wrapper,
   so the harness needs a check against the new incumbent before its counts mean anything;
-  its last record is the pre-merge one above.
+  its last record is the pre-merge one in the Differential results section.
 - The `forwarding::version_is_identical_to_native_git` 5-second bound failed its unmutated baseline twice:
   in lane b of the four-lane run on the merge result,
   and in an isolated rerun of `markdown_exclude.rs` before the merge.

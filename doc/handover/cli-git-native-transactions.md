@@ -696,7 +696,7 @@ Acceptance cases:
 - commit.
   The commit path is refused by the wrapper until then, and the incumbent is not installed under `/opt/cli-git` here.
 
-Slice 6 is accepted as library-level done with the admission case recorded above.
+Slice 6 is accepted as library-level done with the admission case recorded in the Slice 6 state section.
 
 Push state: this branch is pushed to origin at its current head. The earlier refusal came from the
 `markdown/autofix` plugin, which reported that `mise.lock` needed `mise lock --upgrade`; main carries that upgrade
