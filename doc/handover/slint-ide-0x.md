@@ -1166,9 +1166,13 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     0.11 sizes can be set from the scene or patched, before or during stage 5; (b) try `hint(true)` for Vello glyphs
     and compare crispness (text is unhinted today); (c) move `selection_ink.rs` next to `code_colors.rs`; (d) the
     log-stall control stalls before its first window, so its "picture frozen" half checks only that no window
-    appeared; make it log at a quieter level so it stalls after the window shows; (e) the worktree
-    `.claude/worktrees/agent-a717e60922dca0448` is still locked by the harness; remove it and its merged local branch
-    when the lock is gone. Next: stage 5 (GPU minimap, with the Vello buffer question), then stage 6.
+    appeared; make it log at a quieter level so it stalls after the window shows; (e) done: the worktree `.claude/worktrees/agent-a717e60922dca0448` stayed locked because the flake agent left
+    a polling loop running for 7.5 hours (`until ls .../exp-all-fail-*.log; do sleep 10; done`, waiting for a file that
+    exists only if an experiment fails); I stopped the loop (pid 1450932), unlocked, removed the worktree and its merged
+    branch. Owner correction: "Assume nothing ever works perfectly." So after every agent report, scan for strays
+    before declaring its worktree done: for each process whose `/proc/<pid>/cwd` is inside the worktree, read its
+    command line, stop what the agent left behind, and only then unlock and remove; and look for units the agent
+    started (`systemctl --user list-units`). Next: stage 5 (GPU minimap, with the Vello buffer question), then stage 6.
     Running (started 2026-10-20): stages 5 and 6 merged (GPU minimap on the shared Vello renderer, delete the rest of
     the CPU pipeline and `swash`), agent `a0880539282a3162b`; and a read-only study of Vello 0.11's fixed scratch
     buffers (262 MiB VRAM for any scene), agent `aefec5d0492ba3cab`, which writes only
