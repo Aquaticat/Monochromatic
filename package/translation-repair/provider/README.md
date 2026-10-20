@@ -2,10 +2,12 @@
 
 Everything that talks to a model provider:
 routing a call to the provider that serves its model and still has budget,
-the Synthetic,
+the NeuralWatt,
+Synthetic,
 Hyper,
 OpenRouter and Bedrock clients,
-the Synthetic,
+the NeuralWatt,
+Synthetic,
 OpenRouter and Bedrock catalogues,
 the Anthropic Messages wire format that Hyper speaks,
 retries,
@@ -40,6 +42,7 @@ The groups that follow name the main ones.
   each with its per-model concurrency,
   which defaults to no ceiling (Synthetic's since 2026-10-19).
   Names:
+  `createNeuralWattClient`,
   `createSyntheticClient`,
   `createHyperClient`,
   `createOpenRouterClient`,
@@ -49,13 +52,16 @@ The groups that follow name the main ones.
   Declared in `synthetic-client.ts`,
   `hyper-client.ts`,
   `openrouter-client.ts`,
-  and `bedrock-client.ts`.
+  `bedrock-client.ts`,
+  and `neuralwatt-client.ts`.
 - Catalogues and reach:
-  the models Synthetic,
+  the models NeuralWatt,
+  Synthetic,
   OpenRouter and Bedrock serve for the pipeline,
   and which providers can take a call for a roster model,
   with or without a picture.
   Names:
+  `NEURALWATT_MODELS`,
   `SYNTHETIC_MODELS`,
   `OPENROUTER_MODELS`,
   `BEDROCK_MODELS`,
@@ -65,7 +71,32 @@ The groups that follow name the main ones.
   Declared in `synthetic-catalog.ts`,
   `openrouter-catalog.ts`,
   `bedrock-catalog.ts`,
+  `neuralwatt-catalog.ts`,
   and `roster-reach.ts`.
+- NeuralWatt free daily energy:
+  meter the 550 Wh a day the owner's NeuralWatt account covers on DeepSeek V4.1 Flash and GLM-5.3-Flash,
+  because nothing reports what is left and overage is the owner's plan
+  (`doc/decision/translation-repair-neuralwatt-provider.md`).
+  A durable ledger by UTC day,
+  a hold taken from the matrix mean times a margin before each call and replaced by the measured figure at settlement,
+  and a mark that ends the day for the provider when a request comes back with a cost.
+  Names:
+  `createNeuralWattLedger`,
+  `neuralWattLedgerFromEnv`,
+  `estimateNeuralWattWh`,
+  `NEURALWATT_ENERGY_MARGIN`,
+  `neuralWattIsDry`,
+  `NeuralWattAllowanceError`,
+  `readNeuralWattComments`,
+  `describePlanSpend`.
+  Declared in `neuralwatt-ledger.ts`,
+  `neuralwatt-ledger-config.ts`,
+  `neuralwatt-estimate.ts`,
+  `neuralwatt-meter.ts`,
+  `neuralwatt-energy.ts`,
+  `neuralwatt-comments.ts`,
+  `neuralwatt-settlement.ts`,
+  and `neuralwatt-quota.ts`.
 - Anthropic wire:
   build the request body and read the completion of the Anthropic messages format.
   Names:

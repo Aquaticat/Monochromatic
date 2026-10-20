@@ -61,6 +61,34 @@ each uses an empty export as given.
     Unset,
     one warning per citing entry says how many references went unread.
 
+-   `TRANSLATION_REPAIR_NEURALWATT_API_KEY`.
+    Bearer token for the fifth provider,
+    NeuralWatt,
+    which is first in `PROVIDER_ORDER` since 2026-10-20,
+    the owner having said "Use the neuralwatt free energy front and center."
+    Optional and loud like the others.
+    The owner's account carries 550 Wh of free energy a day on DeepSeek V4.1 Flash and GLM-5.3-Flash,
+    reset at 00:00 UTC and not carried over;
+    nothing reports what is left of it and overage is charged to the owner's plan,
+    so the package meters it itself from a durable ledger
+    (`doc/decision/translation-repair-neuralwatt-provider.md`).
+    The `METERS` line carries `neuralwatt=` and `neuralwattWh=`,
+    `neuralwattReckonedWh=` and `neuralwattBilled=` among its numbers.
+
+-   `TRANSLATION_REPAIR_NEURALWATT_LEDGER`.
+    Where that ledger lives;
+    `~/.local/state/translation-repair/neuralwatt-energy.jsonl` under the running user's home when unset.
+    Append-only JSON lines,
+    one per settled call;
+    a line that will not read stops the meter with the line's number rather than reading the energy as unspent.
+
+-   `TRANSLATION_REPAIR_NEURALWATT_DAILY_WH`.
+    The day's free energy the ledger is read against;
+    550 when unset.
+    Set it to 0 on a day without a promotion,
+    when the account has no free energy and the first request would be billed to the plan;
+    anything that is not a non-negative number is refused at once.
+
 -   `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY`.
     Bearer token for the second provider,
     Charm Hyper.

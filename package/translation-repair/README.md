@@ -263,10 +263,17 @@ publishes no requests-per-minute quota and no token quota for the four models wh
 (three in use since `hf:openai/gpt-oss-120b` left every role),
 asks for retry with backoff on throttling and a gradual ramp,
 and has no local ceiling either.
-Routing walks `PROVIDER_ORDER` (Synthetic,
+NeuralWatt,
+the fifth provider since 2026-10-20,
+serves DeepSeek V4.1 Flash and GLM-5.3-Flash on a free daily energy allowance the package meters itself
+(`doc/decision/translation-repair-neuralwatt-provider.md`);
+it has no local concurrency ceiling either.
+Routing walks `PROVIDER_ORDER` (NeuralWatt,
+Synthetic,
 Bedrock,
 Hyper,
 OpenRouter;
+NeuralWatt first by the owner's decision of 2026-10-20 so the free energy is spent before anything else,
 Bedrock ahead of Hyper by the owner's decision of 2026-09-07,
 so the seats both serve spend the expiring credits before the balance the Hyper-only seats run on):
 the first provider that serves the model and has budget takes the call,

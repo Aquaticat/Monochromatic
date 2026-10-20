@@ -19,6 +19,7 @@ Run everything from the package directory
     mise run roster-card -- hyper <served id>
     mise run roster-card -- synthetic <served id>
     mise run roster-card -- bedrock <served id>
+    mise run roster-card -- neuralwatt <served id>
     ```
 
     The output is the fragment to paste,
@@ -32,7 +33,8 @@ Run everything from the package directory
     (`SYNTHETIC_SERVED_IDS`,
     `HYPER_SERVED_IDS`,
     `OPENROUTER_SERVED_IDS`,
-    `BEDROCK_SERVED_IDS`)
+    `BEDROCK_SERVED_IDS`,
+    `NEURALWATT_SERVED_IDS`)
     and add the roster id to `ROSTER_MODEL_IDS`.
     The roster id is the first serving provider's spelling:
     Synthetic,

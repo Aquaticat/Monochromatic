@@ -64,12 +64,13 @@ These checks establish wire and modality compatibility,
 not actual-output quality.
 Fresh schema-9 passage validation remains mandatory before this replacement contributes readiness evidence.
 
-## Running out of budget is normal, and the four providers run out differently
+## Running out of budget is normal, and the five providers run out differently
 
 They are not the same kind of limit,
 and a former version of this section had Charm Hyper backwards.
 There is one meter per provider,
-in `PROVIDER_ORDER` (Synthetic,
+in `PROVIDER_ORDER` (NeuralWatt,
+Synthetic,
 Bedrock,
 Hyper,
 OpenRouter;
@@ -106,6 +107,18 @@ Amazon Bedrock is prepaid credit that expires and is never topped up;
 the provider shows no balance to a bearer key,
 so `bedrockUsd` is the configured credit less the sum of the package's own spend ledger
 (`TRANSLATION_REPAIR_BEDROCK_LEDGER` and `TRANSLATION_REPAIR_BEDROCK_CREDIT_USD` in [Configuration](configuration.md)).
+
+NeuralWatt is **free energy that resets at 00:00 UTC**:
+550 Wh a day on DeepSeek V4.1 Flash and GLM-5.3-Flash,
+unused energy not carried over,
+and overage charged to the owner's plan.
+The provider reports no remainder,
+so the package keeps its own ledger of the energy each call used (`TRANSLATION_REPAIR_NEURALWATT_LEDGER`,
+`TRANSLATION_REPAIR_NEURALWATT_DAILY_WH` in [Configuration](configuration.md))
+and the `METERS` line prints `neuralwattWh` (left),
+`neuralwattReckonedWh` (the share resting on estimates) and `neuralwattBilled`.
+A request that comes back with a cost ends the day for NeuralWatt at once.
+The record is `doc/decision/translation-repair-neuralwatt-provider.md`.
 
 Plan a pass around these facts rather than around a clean window,
 because a clean window still cannot be arranged.
@@ -144,9 +157,11 @@ when two providers were metered:
 [info] [2026-08-24T19:22:07.104Z] [translation-repair] [takeReading] METERS synthetic=wet hyper=dry syntheticWeekly=97% syntheticFiveHour=48/50 syntheticThrottled=no hyperBalance=0
 ```
 
-Since Bedrock joined on 2026-09-07 the line carries four states,
+Since Bedrock joined on 2026-09-07 the line carried four states,
+and since NeuralWatt joined on 2026-10-20 it carries five,
 one per provider in `PROVIDER_ORDER`,
 then every number each meter reported,
+`neuralwattWh=`,
 `bedrockUsd=` and `openrouterUsd=` among them (`package/translation-repair/provider/src/provider-budget.ts`).
 
 Three states,

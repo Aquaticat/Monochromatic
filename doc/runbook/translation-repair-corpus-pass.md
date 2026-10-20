@@ -116,10 +116,11 @@ TODO | DONE
     grep --only-matching '"TRANSLATION_REPAIR_[A-Z_]*"' .env.local.json | sort --unique
     ```
 
-    Fully configured store prints these three lines (the Exa lookup key may appear beside them):
+    Fully configured store prints these lines (the Exa lookup key and the Amazon Bedrock key may appear beside them):
 
     ```text
     "TRANSLATION_REPAIR_CHARM_HYPER_API_KEY"
+    "TRANSLATION_REPAIR_NEURALWATT_API_KEY"
     "TRANSLATION_REPAIR_OPENROUTER_API_KEY"
     "TRANSLATION_REPAIR_SYNTHETIC_API_KEY"
     ```
@@ -135,10 +136,15 @@ TODO | DONE
     Every name absent is launch refusal.
     The Charm Hyper name carries `CHARM` in the middle.
     A variable missing it configures a run without Hyper rather than silently failing.
-    Routing spends in the order Synthetic,
+    Routing spends in the order NeuralWatt,
+    Synthetic,
+    Amazon Bedrock,
     Charm Hyper,
     OpenRouter
-    (`doc/decision/translation-repair-openrouter-fallback.md`);
+    (`doc/decision/translation-repair-neuralwatt-provider.md`,
+    `doc/decision/translation-repair-openrouter-fallback.md`);
+    NeuralWatt's name is `TRANSLATION_REPAIR_NEURALWATT_API_KEY`,
+    and it carries 550 Wh of free energy a day on two models that the pipeline meters itself;
     a worktree whose store predates the OpenRouter name can still exercise it by launching the worktree's
     bundle with the main repository as the mise config root,
     where the bundle is `package/translation-repair/corpus-pass/dist/final/node/corpus-pass.mjs`:
