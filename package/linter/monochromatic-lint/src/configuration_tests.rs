@@ -218,3 +218,34 @@ fn syntax_errors_keep_byte_context() {
     assert!(error.message.contains("JSONC syntax error at byte"));
     assert_eq!(error.to_string(), error.message);
 }
+
+/// What:
+///  The repository configuration names only rules this build registers.
+/// Why:
+///  A configured name the registry lacks is the `Unknown built-in rule` startup setup error,
+///  and the repository configuration is the shipped consumer of this registry.
+///  The check covers the source tree;
+///  a stale installed binary with an older registry is a version-resolution problem,
+///  recorded in `doc/troubleshooting/mise-lock-pins-repo-tool-version.md`.
+#[test]
+fn the_repository_configuration_only_names_registered_rules() {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../../monochromatic-lint.config.jsonc");
+    let source = std::fs::read_to_string(&path)
+        .unwrap_or_else(|error| panic!("read {}: {error}", path.display()));
+    let blocks = parse_configuration(source.as_str())
+        .unwrap_or_else(|error| panic!("{}: {error}", path.display()));
+    assert!(!blocks.is_empty(), "{} selects no block", path.display());
+    // Control: rewriting every rule namespace in the same document must be rejected by name,
+    //  so the parse above cannot pass through a validator that checks nothing.
+    let renamed = source
+        .replace("\"rust/", "\"renamed/")
+        .replace("\"markdown/", "\"renamed/");
+    assert_ne!(renamed, source, "the control needs rule names to rewrite");
+    let error = parse_configuration(renamed.as_str()).expect_err("unregistered names are rejected");
+    assert!(
+        error.message.contains("Unknown built-in rule renamed/"),
+        "{}",
+        error.message
+    );
+}
