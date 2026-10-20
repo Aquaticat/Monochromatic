@@ -893,3 +893,65 @@ where the alternative is a neutral module both import.
 Recurrence:
 `mistake-prevention.md`,
 "Structure read off the parse".
+
+## B705: a footnote reorder carried a note under the last definition to another definition
+
+Status:
+fixed on 2026-10-20 (UTC),
+red `02a3d4e855`,
+fix `19c50a6cd4`,
+gated with the fixes of B704 and B706 as g125.
+No cache version moved.
+
+`reorderFootnoteDefinitions` (`archive/src/archive-footnote-order.ts`) bounds each definition by the parse's block,
+with HTML comments masked to whitespace,
+and already let the order stand,
+with a note,
+when a gap between two definitions held content.
+It never read the text after the last definition:
+that text was copied through as the suffix.
+A note between translators on the line under the last definition,
+or in its indented continuation paragraph,
+ends no block,
+so it stayed behind and followed whichever definition the move put last.
+Four cases failed for that reason (`expected '2' to equal '1'`).
+
+The order now stands,
+with a note,
+when the first content after the last definition is an HTML or JSX comment that starts on the same line or the next,
+or is indented four columns or more (a tab counting as four),
+as a continuation paragraph is
+(`tailContinuesDefinition`,
+one linear pass).
+A comment on its own line past a blank line and indented less is a block of its own and stays where it stands:
+the pinned `mikaela_khara` page ends with such a block of translators' remarks after its last footnote,
+which a refusal of every comment would have frozen.
+Guard tests hold a tab-indented note,
+a page-closing note,
+a two-column note across CRLF ends,
+and a heading under the last definition,
+and each was shown to fail under a mutation of the rule.
+
+Over the 92 pinned archives,
+12 pages hold two or more definitions and 2 of those carry notes;
+neither the original's order nor the reverse of each page's own order changes any page's output.
+The other passes that touch definitions (`applyFootnoteRelabel`,
+`closeFootnoteRelabel`,
+`relabelArchiveFootnotes` before its reorder,
+the label readers) rewrite marker bytes or read labels and move no note.
+
+Open,
+with no pinned case:
+the note carry (`archive-note-carry.ts`) puts a lost note after the slice's last block,
+so in a slice holding two definitions a note lost from under the first would follow the second;
+none of the 34 pinned notes sits inside a definition block.
+A note on its own line before the first definition stays in the untouched prefix and can precede a different
+definition after a reorder;
+it follows no definition,
+so it is left.
+
+Recurrence:
+none of an earlier entry.
+A pass that moves spans reads every stretch it copies through,
+the text before the first span and after the last included,
+for content that belongs to a span it moves.

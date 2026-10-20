@@ -254,6 +254,23 @@ this section is the readiness reading of it.
   digest `sha256-tree-v1:16f46cb79c96…`),
   so neither read is on the build the rotation now runs,
   and the rotation restarted from `zheermao101` as `zheermao16` at 14:58 UTC on 2026-10-20.
+- Fixes that change no shipped page do not restart the rotation.
+  Three more fixes landed while `zheermao16` ran
+  (ledger B704 to B706 in `package/translation-repair/doc/`):
+  the naturalness review's sheet,
+  whose findings are evidence only and never change the page;
+  the footnote reorder,
+  which changes no pinned page under either order measured;
+  and the CRLF breaks of the note carry,
+  which no pinned page reaches since the corpus read folds CRLF.
+  The rotation goes on on the frozen build `a5dc23c5bb`,
+  and the branch worktree stays there;
+  these fixes reach the rotation with the next fix that changes a shipped page,
+  which restarts it as before.
+  Decided without asking the owner,
+  under "Make decisions yourself and don't block on me",
+  since a restart for each such fix would keep the rotation from finishing:
+  a read takes about 50 min of pass.
 - The entries never run on a recent build are the rest of the 92-entry corpus.
   The owner's rule stands:
   "We never ever need a all 92 entries launch";

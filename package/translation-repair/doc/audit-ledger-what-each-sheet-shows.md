@@ -600,3 +600,59 @@ two marks on one line,
 CRLF ends),
 not only on the forms the pinned archives show,
 and a check whose evidence is a cache directory first reads what empties that directory.
+
+## B704: the absolute naturalness review showed its reviewers the notes between translators
+
+Status:
+fixed on 2026-10-20 (UTC),
+red `984b1f030a`,
+fix `b3e2ec47fa`,
+`CONSOLIDATE_CACHE_VERSION` 27 to 28 in `6a28f54beb`,
+pinned key `bfe7cee84f`,
+gated with the fixes of B705 and B706 as g125.
+
+`buildAbsoluteNaturalnessReviewMessages` (`archive/src/absolute-naturalness-review-wire.ts`)
+showed the candidate and each numbered paragraph with every note,
+where the account of `CONSOLIDATE_CACHE_VERSION` 26 said judges no longer see one.
+Its two callers are the final polish of a consolidation (`polishConsolidation`)
+and the archive block review (`recordArchiveBlockNaturalness`).
+A reviewer could raise a Chinese comment in an English text as a naturalness finding.
+No such finding could delete or alter a note:
+the polish ships its initial text whatever the verdict
+(`consolidation-polish.ts`,
+`correctionCount: 0`),
+the archive block review keeps the block it reviewed,
+and the block repair passes no prior findings,
+so the findings are evidence only.
+
+The sheet now cuts the candidate and each paragraph with `withoutTranslatorsNotes` against the original,
+where the sheet text is built;
+the subject stays exact,
+since the review digests `candidateText` and `paragraphs`
+and the artifact reader recomputes those digests from the shipped text.
+A paragraph of nothing but notes is left off the sheet and its number goes unused,
+so the stage's paragraph-count check and the reader's recompute still agree;
+a reviewer could cite the unused number and pass the check,
+and since findings report only,
+that stays.
+Of the 92 pinned archives 10 hold a note their original lacks (34 notes),
+and only 4 numbered paragraphs hold one (XingZ60 1,
+shihai4h 2,
+zheermao101 1);
+the other 30 notes stood only in the candidate fence.
+
+The review's verdicts are stored in the consolidation settlement,
+keyed by `consolidateSliceKey`,
+which hashes the version,
+the run shape and the texts,
+not the sheet,
+and `zheermao16` was writing records at 27 when the change was made,
+so the number moved.
+
+Recurrence:
+of B698 and B702.
+The census those entries call for,
+every sheet the rendered-sheets fixture renders read for what it shows,
+had not been run;
+it was started on 2026-10-20 (UTC) as its own piece of work,
+and its entry records what it found.

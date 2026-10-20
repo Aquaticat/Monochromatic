@@ -107,7 +107,8 @@ named for that subject and listed here.
 - [Audit ledger: page assembly and the corpus-run driver](audit-ledger-page-assembly-and-corpus-run-driver.md):
   Findings in the page-assembly passes and the driver that runs a corpus pass,
   the archive's notices that a page is unfinished and the translators' notes that decided a contest (B698),
-  and an archive block revision that dropped the note its block held (B702).
+  an archive block revision that dropped the note its block held (B702),
+  and notes put back into a CRLF text with bare line feeds (B706).
 - [Audit ledger: providers, routing and seating](audit-ledger-providers-routing-and-seating.md):
   Findings in the provider clients,
   the router and the seating of models.
@@ -194,7 +195,8 @@ named for that subject and listed here.
   or bought work nothing could use.
 - [Audit ledger: footnote markers and link destinations](audit-ledger-footnote-markers-and-link-destinations.md):
   Scans for footnote markers and link destinations that disagreed with the parse,
-  about where a marker is a reference or where an address ends.
+  about where a marker is a reference or where an address ends,
+  and a definition reorder that carried a note under the last definition to another (B705).
 - [Audit ledger: tags, nesting and paired marks](audit-ledger-tags-nesting-and-marks.md):
   Readers of tags,
   attributes,
@@ -420,8 +422,9 @@ named for that subject and listed here.
 - [Audit ledger: what each sheet shows](audit-ledger-what-each-sheet-shows.md):
   Sheets that lacked a block their role needs to judge or write,
   the reader-protection rule that reached past the account of how a death or an attempt happened (B697),
-  and the cut of the translators' notes that left a bare quote line,
-  joined two lines and dropped a carriage return (B703).
+  the cut of the translators' notes that left a bare quote line,
+  joined two lines and dropped a carriage return (B703),
+  and the absolute naturalness review that showed its reviewers the notes (B704).
 - [Audit ledger: readers that accept what no writer writes](audit-ledger-readers-accept-shapes-writers-never-write.md):
   Readers of stored records and directories that accepted a shape,
   a name or a value their own writer never produces,
