@@ -22,6 +22,8 @@
 //!       because nothing in the IDE paints on the CPU:
 //!  Slint's own adapter choice may land on a CPU adapter (lavapipe),
 //!       and its default limits forbid the storage buffers the GPU text path needs.
+//!  The device is opened on the first hardware adapter the Vulkan loader lists
+//!       (the system's choice), unless `WGPU_ADAPTER_NAME` or `WGPU_POWER_PREF` choose another.
 //!  The application has no OpenGL renderer and no software renderer;
 //!  a host without a hardware Vulkan adapter stops with a message instead of drawing some other way.
 
@@ -212,9 +214,10 @@ fn choose_backend(requested: &str) -> anyhow::Result<BackendChoice> {
 ///  Slint's own selector then decides,
 ///  and there is no app id and no adapter policy.
 ///  A winit renderer other than `femtovg-wgpu` is an error.
-///  The adapter is chosen by `gpu_device`,
-///  not by `WGPU_ADAPTER_NAME` or `WGPU_POWER_PREF`,
-///  which this path does not read.
+///  The adapter is chosen by `gpu_device`:
+///  the first hardware adapter in the Vulkan loader's order,
+///  unless `WGPU_ADAPTER_NAME` or `WGPU_POWER_PREF` (read by `gpu_device`) say otherwise.
+///  The info log line says which one decided.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -247,6 +250,7 @@ pub fn install_backend() -> anyhow::Result<()> {
     let limits = gpu.device.limits();
     tracing::info!(
         adapter = %gpu.summary,
+        why = %gpu.why,
         max_storage_buffers_per_shader_stage = limits.max_storage_buffers_per_shader_stage,
         max_texture_dimension_2d = limits.max_texture_dimension_2d,
         "the window is drawn on this GPU"
