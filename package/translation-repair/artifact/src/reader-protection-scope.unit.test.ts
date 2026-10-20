@@ -49,22 +49,12 @@ const SCOPE_SENTENCE = 'This rule reaches only the account of how a death or an 
   + 'story) is outside this rule and is rendered as the ORIGINAL states it';
 
 /**
- Text of one named sheet.
-
- @param name - stage the sheet is written for
-
- @returns Sheet text, empty where no sheet has the name
-
- @example
- ```ts
- sheetNamed({ name: 'editor', },);
- ```
+ Text of each rendered sheet, by the stage it is written for.
  */
-function sheetNamed({ name, }: { readonly name: string; },): string {
-  return renderedSheets().find(function named(sheet,): boolean {
-    return sheet.name === name;
-  },)?.text ?? '';
-}
+const SHEET_TEXT: ReadonlyMap<string, string> = new Map(renderedSheets()
+  .map(function entryOf(sheet,): readonly [string, string] {
+    return [sheet.name, sheet.text,];
+  },),);
 
 await describe({
   name: 'reader protection reaches the account of how a death or an attempt happened (owner, 2026-10-20)',
@@ -93,7 +83,15 @@ await describe({
          */
         const saying = renderedSheets()
           .filter(function mentions(sheet,): boolean {
-            return /reader(?: |-)protection/iv.test(sheet.text,);
+            /**
+             Sheet text with the hyphenated spelling folded to the spaced one.
+             */
+            const folded = sheet.text.toLowerCase()
+              .replaceAll(
+                'reader-protection',
+                'reader protection',
+              );
+            return folded.includes('reader protection',);
           },);
         expect(saying.length,).toBeGreaterThan(10,);
         expect(saying.filter(function unscoped(sheet,): boolean {
@@ -135,20 +133,20 @@ await describe({
         /**
          Resolution sheet, which splices the measuring tail.
          */
-        const resolution = sheetNamed({ name: 'resolution', },);
+        const resolution = SHEET_TEXT.get('resolution',) ?? '';
         expect(resolution,).toContain(
           `Reader protection keeps specific detail out of these pages only in ${SCOPE_PHRASE}`,
         );
         expect(resolution,).toContain(
-          'text vaguer than the ORIGINAL about a means named outside that account has left out what the ORIGINAL '
-            + 'states, and that is reported like any other omission',
+          'about a means named outside that account (a person\'s own words about what they might do, a hypothetical, a '
+            + 'quoted work, a story) has left out what the ORIGINAL states, and that is reported like any other omission',
         );
       },
     },),
     it({
       name: 'SCOPES THE JUDGES\' precedence sentence, so a candidate vaguer for a quoted means has left it out',
       fn: async () => {
-        expect(sheetNamed({ name: 'critic', },),).toContain(
+        expect(SHEET_TEXT.get('lane contest',) ?? '',).toContain(
           `A candidate vaguer than the ORIGINAL because reader protection asks for it in ${SCOPE_PHRASE}`,
         );
       },
@@ -156,7 +154,7 @@ await describe({
     it({
       name: 'SCOPES THE EDITOR\'S precedence sentence, so a region about a quoted means is restored as the ORIGINAL says',
       fn: async () => {
-        expect(sheetNamed({ name: 'editor', },),).toContain(
+        expect(SHEET_TEXT.get('editor',) ?? '',).toContain(
           `because reader protection asks for it in ${SCOPE_PHRASE}, the region is not an omission to fill`,
         );
       },
@@ -164,7 +162,7 @@ await describe({
     it({
       name: 'SCOPES THE RESOLUTION CHECKER\'S not-fixed answer to a detail kept out in that account',
       fn: async () => {
-        expect(sheetNamed({ name: 'resolution', },),).toContain(
+        expect(SHEET_TEXT.get('resolution',) ?? '',).toContain(
           `An issue asking for a detail reader protection keeps out in ${SCOPE_PHRASE} is answered not-fixed`,
         );
       },
