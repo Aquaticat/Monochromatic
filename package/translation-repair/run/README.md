@@ -53,11 +53,14 @@ The groups that follow name the main ones.
   `COMMAND_LINES`,
   `idListFlag`,
   `wholeNumberFlag`,
-  `reportingRefusals`.
+  `reportingRefusals`,
+  `registerRunEndReport`.
   Declared in `corpus-run/command-line.ts`,
   `corpus-run/command-lines.ts`,
   `corpus-run/command-flags.ts`,
-  and `corpus-run/cli-refusal.ts`.
+  `corpus-run/cli-refusal.ts`,
+  and `corpus-run/run-end-report.ts`,
+  whose registry prints NeuralWatt's plan-energy difference when a run that called it ends.
 - Meters and caps:
   read provider availability back out of logs,
   resolve the hard cap,
