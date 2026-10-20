@@ -54,6 +54,11 @@ const HTTP_UNAUTHORIZED = 401;
 const EXPIRED_WORDS = '{"error":{"code":"invalid_api_key","message":"The security token included in the request has expired."}}';
 
 /**
+ Status a provider answers with when its budget is spent.
+ */
+const HTTP_TOO_MANY_REQUESTS = 429;
+
+/**
  Plain text conversation reused across routed calls.
  */
 const MESSAGES = [
@@ -115,10 +120,14 @@ function budgetsWhereBedrockComesFirst(): {
 }
 
 /**
- Builds a router whose named providers answer every call with HTTP 401 and
- whose other providers answer with their own name.
+ Builds a router whose named providers answer every call with HTTP 401 or, for
+ the budget refusers, HTTP 429, and whose other providers answer with their
+ own name.
 
  @param refusers - providers whose credential is refused
+
+ @param budgetRefusers - providers whose budget refuses every call, none when
+ none are named
 
  @param decide - the decisions endpoint, absent for none
 
@@ -132,9 +141,11 @@ function budgetsWhereBedrockComesFirst(): {
 function routerWhereCredentialRefused(
   {
     refusers,
+    budgetRefusers = [],
     decide,
   }: {
     readonly refusers: readonly ProviderName[];
+    readonly budgetRefusers?: readonly ProviderName[];
     readonly decide?: (request: DecisionRequest,) => Promise<DecisionReply>;
   },
 ): {
@@ -167,6 +178,12 @@ function routerWhereCredentialRefused(
             provider,
             status: HTTP_UNAUTHORIZED,
             bodyText: EXPIRED_WORDS,
+          },);
+        if (budgetRefusers.includes(provider,))
+          throw new ProviderHttpError({
+            provider,
+            status: HTTP_TOO_MANY_REQUESTS,
+            bodyText: `${provider} napping`,
           },);
         return { text: `${provider} answers`, };
       },
@@ -376,6 +393,60 @@ await describe({
         } as unknown as DecisionRequest,),).rejects.toThrow(NoProviderForModelError,);
 
         expect(decided,).toEqual([],);
+      },
+    },),
+    it({
+      name: 'HOLDS OPENROUTER OUT OF CHAT WHEN THE DECISIONS ENDPOINT MEETS THE REFUSAL, and says no provider is left for '
+        + 'the decisions seat',
+      fn: async () => {
+        const refusal = new ProviderHttpError({
+          provider: 'openrouter',
+          status: HTTP_UNAUTHORIZED,
+          bodyText: EXPIRED_WORDS,
+        },);
+        const { client, asked, lines, } = routerWhereCredentialRefused({
+          refusers: [],
+          decide: async function decide(): Promise<DecisionReply> {
+            throw refusal;
+          },
+        },);
+
+        await expect(client.decide?.({
+          modelId: SEAT_OPENROUTER_DECISIONS,
+          signal: SIGNAL,
+        } as unknown as DecisionRequest,),).rejects.toBe(refusal,);
+        const chat = await ask({
+          client,
+          modelId: SEAT_OPENROUTER_ONLY,
+        },);
+
+        expect(('thrown' in chat) && (chat.thrown instanceof NoProviderForModelError),).toBe(true,);
+        expect(asked,).toEqual([],);
+        expect(lines.length,).toBe(1,);
+        expect(lines[0],).toContain(`No provider that serves ${SEAT_OPENROUTER_DECISIONS} is left, so the seat is withheld`,);
+      },
+    },),
+    it({
+      name: 'COUNTS THE ATTEMPTS OVER THE PROVIDERS STILL OPEN: after Bedrock is held, Hyper and OpenRouter refusing on '
+        + 'their budgets are each asked once and the last one\'s refusal ends the call',
+      fn: async () => {
+        const { client, asked, } = routerWhereCredentialRefused({
+          refusers: ['bedrock',],
+          budgetRefusers: ['hyper', 'openrouter',],
+        },);
+
+        await ask({
+          client,
+          modelId: SEAT_HYPER_TEXT_BEDROCK,
+        },);
+        asked.length = 0;
+        const second = await ask({
+          client,
+          modelId: SEAT_HYPER_TEXT_BEDROCK,
+        },);
+
+        expect(asked,).toEqual([`hyper:${SEAT_HYPER_TEXT_BEDROCK}`, `openrouter:${SEAT_HYPER_TEXT_BEDROCK}`,],);
+        expect(('thrown' in second) && (second.thrown instanceof ProviderHttpError),).toBe(true,);
       },
     },),
   ],
