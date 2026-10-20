@@ -618,15 +618,32 @@ its "Next" list is still the queue the merge went ahead of.
       ledger B707):
       the identity lines list each Han name the archive spells in a sentence,
       and a floor refuses a candidate that respells one.
-    - The census of which model-facing sheets show the notes between translators runs in the worktree `w233`;
+    - The census of which model-facing sheets show the notes between translators merged as `1e955f206e`
+      after gate g127
+      (145 steps exited 0,
+      2605 `[PASS]` lines,
+      no `[FAIL]` line;
+      ledger B708).
+    - A judge's quote that crosses a place where a note was cut finds nothing in the stored text;
+      3 of the 34 pinned notes stand where that can happen,
+      in zheermao101,
+      XingZ60 and shihai4h.
+      An agent fixes it in the worktree `w240` from the brief `x15-fix/quote-cross-brief.md` under the agent scratch
+      directory;
       review,
-      gate and ledger it when it reports.
-    - Then move the branch worktree to the build that carries both,
-      set the launch script's frozen digest from that build,
+      gate,
+      ledger and land it.
+    - Then move the branch worktree to the build that carries all three,
+      set the launch script's frozen digest from that build
+      (`x15-read/digest-build.ts` under the agent scratch directory prints it from a worktree's built corpus-pass,
+      and reproduced the digest of `a5dc23c5bb` from `w226`),
       and restart the rotation at `zheermao101`.
-      The restart waits for the census,
-      since its fixes can change shipped pages and Hyper's 111 left will not be recharged:
-      a restart on the handle fix alone would spend a run the census fixes then void.
+      The restart waits for the quote fix,
+      since zheermao101 and XingZ60 hold a note a quote can cross and Hyper's 111 left will not be recharged.
+    - Post a comment on `43e735f7da`:
+      its body says the pinned keys land in the next commit;
+      they landed two commits later,
+      in `31c0c8d9ad`.
     - The class of the `zheermao15` read is ledger B702.
     - The guard of B701 stays open and undecided:
       the rotation sweep as an expensive mise task,

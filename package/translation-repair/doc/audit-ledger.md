@@ -425,7 +425,10 @@ named for that subject and listed here.
   the cut of the translators' notes that left a bare quote line,
   joined two lines and dropped a carriage return (B703),
   the absolute naturalness review that showed its reviewers the notes (B704),
-  and a Han name the archive spells inside its sentence that no sheet or floor carried (B707).
+  a Han name the archive spells inside its sentence that no sheet or floor carried (B707),
+  and the judges,
+  critics,
+  auditors and pairers that saw the notes between translators (B708).
 - [Audit ledger: readers that accept what no writer writes](audit-ledger-readers-accept-shapes-writers-never-write.md):
   Readers of stored records and directories that accepted a shape,
   a name or a value their own writer never produces,
