@@ -12,6 +12,7 @@ import {
 } from '@monochromatic-dev/translation-repair-typography/ts';
 import { referencePageTexts, } from '@monochromatic-dev/translation-repair-reference/ts';
 import { wordStarts, } from '@monochromatic-dev/translation-repair-markup/ts';
+import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Archive block evidence
 
@@ -267,12 +268,12 @@ export function isVerifiableEditorialArchiveBlock(
    Lines a reader sees, each with its index.
    */
   const shown = [...masked.split('\n',)
-    .entries(),].filter(function seen([, line,],): boolean {
+    .entries(),].filter(function seen([, line,]: ReadonlyEntry<number, string>,): boolean {
     return !rendersAsNothing({ text: line, },);
   },);
   if (shown.length === 0)
     return regions.length > 0;
-  return shown.every(function isApparatus([at, line,],): boolean {
+  return shown.every(function isApparatus([at, line,]: ReadonlyEntry<number, string>,): boolean {
     return declaring.has(at,)
       || isLabelLine({ line, },)
       || isPictureLine({ line, },);
