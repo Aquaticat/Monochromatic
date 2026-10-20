@@ -7,9 +7,10 @@
 //!  before it creates any window,
 //!  and then reads pixels with `window.window().take_snapshot()`
 //!  or the `snapshot` helper here.
-//!  The platform can be installed once per process,
-//!  and nextest runs each test in its own process;
-//!  plain `cargo test` would run several tests in one process and the second install would fail.
+//!  Slint keeps one platform per thread,
+//!  and the harness installs its platform once per thread;
+//!  a thread that already has another platform (the headless testing backend,
+//!  because a window was created first) makes the install panic.
 //!  No CPU rasterizer is used:
 //!  an adapter of the CPU kind (lavapipe,
 //!  llvmpipe) is refused with a message naming every adapter that was seen.
@@ -30,8 +31,8 @@
 /// import { FemtoVGWGPURenderer, Platform, PlatformError, WindowAdapter } from 'slint/platform';
 /// ```
 use slint::platform::{
-    Platform, PlatformError, WindowAdapter, WindowEvent, femtovg_renderer::FemtoVGWGPURenderer,
-    set_platform,
+    Clipboard, Platform, PlatformError, WindowAdapter, WindowEvent,
+    femtovg_renderer::FemtoVGWGPURenderer, set_platform,
 };
 /// The `wgpu` crate as Slint re-exports it,
 ///  so the harness uses exactly the wgpu release (30) that Slint's renderer was built against.
@@ -42,7 +43,10 @@ use slint::wgpu_30::wgpu;
 use slint::{PhysicalSize, Rgba8Pixel, SharedPixelBuffer, Window, WindowSize};
 /// Single-threaded shared ownership,
 ///  as Slint's adapters are shared.
-use std::{cell::Cell, rc::Rc};
+use std::{
+    cell::{Cell, OnceCell, RefCell},
+    rc::Rc,
+};
 
 /// Window size before the component states a preferred size,
 ///  the size Slint's testing backend also uses.
@@ -291,6 +295,9 @@ struct GpuDevice {
 struct GpuPlatform {
     /// The leaked device shared by all windows.
     gpu: &'static GpuDevice,
+    /// The text of the default clipboard;
+    ///  `RefCell` lets the platform change it through a shared reference.
+    clipboard: RefCell<Option<String>>,
 }
 
 /// The platform contract:
@@ -319,23 +326,40 @@ impl Platform for GpuPlatform {
         });
         return Ok(adapter);
     }
+
+    /// The default clipboard lives in memory,
+    ///  as in Slint's testing backend,
+    ///  so Copy and Paste in a test never touch the desktop clipboard.
+    fn set_clipboard_text(&self, text: &str, clipboard: Clipboard) {
+        if clipboard == Clipboard::DefaultClipboard {
+            *self.clipboard.borrow_mut() = Some(text.to_string());
+        }
+    }
+
+    /// The text last copied to the default clipboard;
+    ///  the selection clipboard is not kept.
+    fn clipboard_text(&self, clipboard: Clipboard) -> Option<String> {
+        if clipboard == Clipboard::DefaultClipboard {
+            return self.clipboard.borrow().clone();
+        }
+        return None;
+    }
 }
 
 /// What:
-///  `install_gpu_platform` opens the hardware device,
+///  `install_once` opens the hardware device,
 ///  makes a `GpuPlatform` of it,
-///  and registers it with Slint for the rest of the process.
-///  It returns the adapter's name so a test can print what it ran on.
+///  and registers it with Slint for the rest of the thread.
+///  It returns the adapter's name.
 /// Why:
-///  A test calls it first.
-///  It panics when there is no hardware adapter or when a platform was installed before,
+///  It panics when there is no hardware adapter or when another platform was installed before,
 ///  so a test can never silently draw with another renderer.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export function installGpuPlatform(): string { /* throws */ }
+/// function installOnce(): string { /* throws */ }
 /// ```
-pub(super) fn install_gpu_platform() -> String {
+fn install_once() -> String {
     let (instance, device, queue, name) =
         open_hardware_device().expect("a hardware Vulkan device for the GPU snapshot harness");
     // What: `Box::new` puts the device on the heap and `Box::leak` gives up ownership, returning a `&'static` reference.
@@ -350,10 +374,36 @@ pub(super) fn install_gpu_platform() -> String {
         device,
         queue,
     }));
-    let platform = GpuPlatform { gpu };
+    let platform = GpuPlatform {
+        gpu,
+        clipboard: RefCell::new(None),
+    };
     set_platform(Box::new(platform))
         .expect("no Slint platform was installed before the GPU snapshot harness");
     return name;
+}
+
+std::thread_local! {
+    /// The adapter name once this thread installed the platform;
+    ///  Slint keeps its platform per thread.
+    static INSTALLED: OnceCell<String> = const { OnceCell::new() };
+}
+
+/// What:
+///  `install_gpu_platform` installs the GPU platform on the calling thread the first time
+///  and returns the adapter's name so a test can print what it ran on;
+///  later calls on the same thread return the name without installing again.
+/// Why:
+///  A test or the fixture it shares calls it before the first window is created.
+///  Repeated calls are harmless,
+///  so every window a fixture builds can call it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function installGpuPlatform(): string { return installed ??= installOnce(); }
+/// ```
+pub(super) fn install_gpu_platform() -> String {
+    return INSTALLED.with(|installed| return installed.get_or_init(install_once).clone());
 }
 
 /// The pixels of a window as RGBA bytes (red,
