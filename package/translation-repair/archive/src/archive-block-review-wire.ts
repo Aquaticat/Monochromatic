@@ -11,6 +11,7 @@ import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-st
 import {
   APPARATUS_KINDS,
   NARRATIVE_DETAIL_IS_NOT_APPARATUS,
+  PAGE_CARRIES_EVERY_BLOCK,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { selectFence, } from '@monochromatic-dev/translation-repair-stage/ts';
 import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typography/ts';
@@ -172,6 +173,8 @@ export function buildArchiveBlockReviewMessages(
     role: 'system',
     content: `Review English archive wording that block pairing did not connect to any Chinese source block. The source fence contains the aligned section and any CORROBORATED PICTURE SOURCE SUPPORT transcribed from pictures that section references. Both are source support. An archive block translating that picture text is not an unsupported insertion merely because the source prose does not repeat it. When a CITED REFERENCES block follows the block under review, what one cited page states is support too, as the rule closing that block says.
 
+${PAGE_CARRIES_EVERY_BLOCK}
+
 Decide the block's role, source faithfulness, and English quality before classifying it:
 - "editorial-context": only verifiable translation-side apparatus: a translation label, navigation or formatting, or page apparatus (${APPARATUS_KINDS}). A label may introduce content in the next archive block; it need not contain that content itself. ${NARRATIVE_DETAIL_IS_NOT_APPARATUS} Factual biography and quoted dialogue are not apparatus either. Keep useful apparatus; revise it only for a demonstrable defect in its actual context.
 - "revise": a factual claim is unsupported by the aligned section, its pictures and every cited page, is contradictory or misplaced, or the English has a clear unintended error. Faithful content with an obvious typo still needs this disposition. Supply the COMPLETE corrected ENGLISH block, not an excerpt; an empty replacement is appropriate only when removal of the whole block is justified. Keep every already-correct part of the wording and structure. A more literal alternative, a source abbreviation already rendered idiomatically in English, or a stylistic preference is not by itself a correction. Render ordinary source-language speech and interjections into natural English rather than copying them into the replacement. Do not duplicate an utterance or move it to a different speaker or response slot. Parallel reader transcriptions of one picture are alternative witnesses, not additional messages. If unclear source layout would require guessing, do not invent a reconstruction. sourceQuote may cite the part a revision preserves, but does not license the original block.
@@ -251,7 +254,7 @@ export function isArchiveBlockReviewWire(value: unknown,): value is ArchiveBlock
  ```
  */
 export const ARCHIVE_BLOCK_SELECTION_CRITERIA: readonly string[] = [
-  `Remove every factual claim supported neither by the original document nor by a page it cites (CITED REFERENCES, when shown). Page apparatus (${APPARATUS_KINDS}) is not such a claim: retain it unless it is wrong. ${NARRATIVE_DETAIL_IS_NOT_APPARATUS}`,
+  `Remove every factual claim supported neither by the original document nor by a page it cites (CITED REFERENCES, when shown). Page apparatus (${APPARATUS_KINDS}) is not such a claim: retain it unless it is wrong. ${NARRATIVE_DETAIL_IS_NOT_APPARATUS} ${PAGE_CARRIES_EVERY_BLOCK}`,
   'Retain source-supported meaning and verifiable editorial apparatus.',
   'Preserve valid Markdown and contributor identities.',
   'Prefer clear natural English without adding information.',

@@ -9,7 +9,8 @@ import {
 
 //region Pass archive
 // Archive English enters every pass stage through one transform: the
-// invisible-variant fold, then the stub-marker strip (`archive-stub.ts`), in
+// invisible-variant fold, then the stub-marker strip (`archive-stub.ts`, which
+// removes a notice that the page is unfinished as it removes a placeholder), in
 // that order so a marker spelled with an invisible variant is folded before it
 // is read. A byte order mark opening the archive is no content and is not
 // folded. Preparation, both lanes, the artifact's stored archive and the
@@ -68,7 +69,7 @@ export function passArchiveWithOrigins(
   for (const marker of markers) {
     l.warn(
       `archive: stripped stub marker ${JSON.stringify(marker.text,)} at line ${String(marker.lineNumber,)}: a `
-        + 'placeholder is not content the ORIGINAL carries '
+        + 'placeholder, or a notice that the English page is unfinished, is not content the ORIGINAL carries '
         + '(doc/decision/translation-repair-good-result-over-bad-original.md)',
     );
   }

@@ -23,6 +23,23 @@ import {
 // "To be continued" is not one: its two instances are a person's own words
 // and a translation of 未完待续.
 //
+// A NOTICE THAT THE PAGE IS UNFINISHED IS A PLACEHOLDER TOO (XingZ60,
+// 2026-10-19). The same archive opens with `**Come back later!**`, a warning
+// that the version is not the formal one and will be updated after another
+// version is finished, and a caution that it is unfinished and the reader
+// should see another page. The original has none of them, the archive had
+// translated only part of the original, and the pass translated all of it, yet
+// the shipped page kept all three: the archive-block review's judges called
+// them "a faithful, plainly worded English notice about the page's own
+// status", since nothing told them the page would carry every block of the
+// original. A paragraph that is nothing but such a notice is stripped here, by
+// the sentences the notice is made of, because the page published from the
+// pass is complete and the notice is false on it. Measured against the pinned
+// corpus, 92 English pages: one carries such a notice, XingZ60's, and no
+// other paragraph of any page is made of such sentences. The wording a
+// notice takes is open, so the review's sheet says the same
+// (`PAGE_CARRIES_EVERY_BLOCK`) for the notices this list does not name.
+//
 // THE COMMENTS STAY. `entry-notes.ts` reads every archive HTML comment as an
 // "ARCHIVE editor comment" line of the identity block, which is where the
 // vocabulary and voice notes 22 of those 92 pages carry reach the translators
@@ -233,6 +250,282 @@ export function isStubMarkerParagraph({ paragraph, }: { readonly paragraph: stri
 }
 
 /**
+ Sentences that are a notice on their own, lowercased: a reader told to come
+ back when the page is done.
+ */
+const NOTICE_SENTENCES: ReadonlySet<string> = new Set([
+  'come back later',
+  'please come back later',
+  'check back later',
+  'please check back later',
+],);
+
+/**
+ What a notice calls the page it stands on, lowercased.
+ */
+const NOTICE_SUBJECTS: readonly string[] = [
+  'this version',
+  'this page',
+  'this translation',
+  'this entry',
+  'this article',
+  'this english version',
+  'this english page',
+  'the english version',
+  'the english page',
+  'this',
+];
+
+/**
+ What a notice says of that page, lowercased: it is not the finished one.
+ */
+const NOTICE_STATES: readonly string[] = [
+  'not the formal version',
+  'not the final version',
+  'not the official version',
+  'not the complete version',
+  'not finished',
+  'not complete',
+  'unfinished',
+  'incomplete',
+  'still being translated',
+  'a work in progress',
+  'under construction',
+  'an unfinished version',
+  'an incomplete version',
+];
+
+/**
+ Words a notice opens with when it says who will finish the page, lowercased.
+ */
+const NOTICE_UPDATE_OPENERS: readonly string[] = [
+  'maintainers will update this',
+  'the maintainers will update this',
+  'translators will update this',
+  'the translators will update this',
+  'we will update this',
+];
+
+/**
+ Words a notice opens with when it sends the reader to another page,
+ lowercased.
+ */
+const NOTICE_REFER_OPENERS: readonly string[] = [
+  'please refer to the ',
+  'please see the ',
+  'please visit the ',
+];
+
+/**
+ What a notice that sends the reader elsewhere ends with, lowercased.
+ */
+const NOTICE_REFER_CLOSERS: readonly string[] = [
+  ' page',
+  ' version',
+];
+
+/**
+ Most words a notice that sends the reader elsewhere may use, so a sentence
+ about a page in the middle of a story is not read as one.
+ */
+const NOTICE_REFER_MAXIMUM_WORDS = 10;
+
+/**
+ Sentences of the form a notice says of its page: a subject, "is", and a state.
+ */
+const NOTICE_STATEMENTS: ReadonlySet<string> = new Set(NOTICE_SUBJECTS.flatMap(
+  function statementsOf(subject,): readonly string[] {
+    return NOTICE_STATES.map(function statement(state,): string {
+      return `${subject} is ${state}`;
+    },);
+  },
+),);
+
+/**
+ Characters that end a sentence, of either width.
+ */
+const SENTENCE_ENDERS: ReadonlySet<string> = new Set([
+  '.',
+  '!',
+  '?',
+  '。',
+  '！',
+  '？',
+],);
+
+/**
+ Text without a leading callout label such as `[!Warning]`, which a page
+ writes to set a notice apart.
+
+ @param text - paragraph after its quote markers
+
+ @returns Text after the label, trimmed, or the text unchanged when it opens
+ with none
+
+ @example
+ ```ts
+ withoutCalloutLabel({ text: '[!Caution] This is an unfinished version.', },); // 'This is an unfinished version.'
+ ```
+ */
+function withoutCalloutLabel({ text, }: { readonly text: string; },): string {
+  if (!text.startsWith('[!',))
+    return text;
+  /**
+   Offset of the bracket closing the label, none as minus one.
+   */
+  const closeAt = text.indexOf(']',);
+  return (closeAt === (-1))
+    ? text
+    : text.slice(closeAt + 1,)
+      .trim();
+}
+
+/**
+ Whether one character is no emphasis mark.
+
+ @param character - one character
+
+ @returns Whether it is neither an asterisk nor an underscore
+
+ @example
+ ```ts
+ isNoEmphasisMark('C',); // true
+ ```
+ */
+function isNoEmphasisMark(character: string,): boolean {
+  return (character !== '*') && (character !== '_');
+}
+
+/**
+ Text without the emphasis marks that wrap the whole of it.
+
+ @param text - paragraph after its callout label
+
+ @returns Text with the leading and trailing asterisks and underscores gone
+
+ @example
+ ```ts
+ withoutEmphasis({ text: '**Come back later!**', },); // 'Come back later!'
+ ```
+ */
+function withoutEmphasis({ text, }: { readonly text: string; },): string {
+  /**
+   The text's characters.
+   */
+  const characters = Array.from(text,);
+  /**
+   Offset of the first character that is no emphasis mark, none as minus one.
+   */
+  const first = characters.findIndex(isNoEmphasisMark,);
+  if (first === (-1))
+    return '';
+  return characters
+    .slice(
+      first,
+      characters.findLastIndex(isNoEmphasisMark,) + 1,
+    )
+    .join('',);
+}
+
+/**
+ The sentences of a paragraph, lowercased, each with its words on single
+ spaces.
+
+ @param text - paragraph after its label and emphasis
+
+ @returns Each non-empty sentence, split at full stops, exclamation marks and
+ question marks of either width
+
+ @example
+ ```ts
+ noticeSentences({ text: 'Come back later! Thanks.', },); // ['come back later', 'thanks']
+ ```
+ */
+function noticeSentences({ text, }: { readonly text: string; },): readonly string[] {
+  return Array.from(
+    text.toLowerCase(),
+    function breakAtEnd(character,): string {
+      return SENTENCE_ENDERS.has(character,) ? '\n' : character;
+    },
+  )
+    .join('',)
+    .split('\n',)
+    .map(function folded(sentence,): string {
+      return sentence
+        .split(' ',)
+        .filter(function isWord(word,): boolean {
+          return word.length > 0;
+        },)
+        .join(' ',);
+    },)
+    .filter(function isSentence(sentence,): boolean {
+      return sentence.length > 0;
+    },);
+}
+
+/**
+ Whether one sentence is a notice that the page is unfinished.
+
+ @param sentence - lowercased sentence on single spaces
+
+ @returns Whether it says come back later, that the page is not the finished
+ one, who will update it, or which other page to see
+
+ @example
+ ```ts
+ isNoticeSentence({ sentence: 'this version is not the formal version', },); // true
+ ```
+ */
+function isNoticeSentence({ sentence, }: { readonly sentence: string; },): boolean {
+  if (NOTICE_SENTENCES.has(sentence,) || NOTICE_STATEMENTS.has(sentence,))
+    return true;
+  if (NOTICE_UPDATE_OPENERS.some(function opens(opener,): boolean {
+    return sentence.startsWith(opener,);
+  },))
+    return true;
+  /**
+   The sentence's words.
+   */
+  const words = sentence.split(' ',);
+  return NOTICE_REFER_OPENERS.some(function opens(opener,): boolean {
+    return sentence.startsWith(opener,);
+  },)
+    && NOTICE_REFER_CLOSERS.some(function closes(closer,): boolean {
+      return sentence.endsWith(closer,);
+    },)
+    && (words.length <= NOTICE_REFER_MAXIMUM_WORDS);
+}
+
+/**
+ Whether one paragraph is nothing but a notice that the English page is
+ unfinished, not the formal version, or waiting on another version.
+
+ @param paragraph - paragraph text; whitespace, blockquote markers at any
+ depth, one callout label and emphasis marks around the whole of it tolerated
+
+ @returns Whether every sentence of it is such a notice
+
+ @example
+ ```ts
+ isStatusNoticeParagraph({ paragraph: '**Come back later!**', },);
+ ```
+ */
+export function isStatusNoticeParagraph({ paragraph, }: { readonly paragraph: string; },): boolean {
+  /**
+   Sentences of the paragraph without its quote markers, callout label and
+   emphasis.
+   */
+  const sentences = noticeSentences({
+    text: withoutEmphasis({
+      text: withoutCalloutLabel({ text: withoutQuoteMarkers({ text: paragraph.trim(), },), },),
+    },),
+  },);
+  return (sentences.length > 0) && sentences.every(function isNotice(sentence,): boolean {
+    return isNoticeSentence({ sentence, },);
+  },);
+}
+
+/**
  One retained normalized line with its unchanged pinned-file position.
 
  @example
@@ -384,9 +677,10 @@ export function stripStubMarkersWithOrigins(
       && previousBlank
       && nextBlank;
     /**
-     Whether this line is a placeholder paragraph of its own.
+     Whether this line is a placeholder or a status notice paragraph of its own.
      */
-    const isMarker = standsAlone && isStubMarkerParagraph({ paragraph: line, },);
+    const isMarker = standsAlone
+      && (isStubMarkerParagraph({ paragraph: line, },) || isStatusNoticeParagraph({ paragraph: line, },));
     if (!isMarker) {
       kept.push(retainedLine,);
       scan.skipBlank = false;

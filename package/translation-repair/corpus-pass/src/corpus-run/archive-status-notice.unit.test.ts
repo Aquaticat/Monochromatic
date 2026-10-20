@@ -27,7 +27,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { stripStubMarkersWithOrigins, } from '@monochromatic-dev/translation-repair-page-check';
+import {
+  isStatusNoticeParagraph,
+  stripStubMarkersWithOrigins,
+} from '@monochromatic-dev/translation-repair-page-check';
 import { passArchiveText, } from '../../dist/final/node/index.mjs';
 
 /**
@@ -69,6 +72,49 @@ await describe({
   name: '',
   concurrency: 1,
   children: [
+    describe({
+      name: isStatusNoticeParagraph.name,
+      children: [
+        it({
+          name: 'READS a paragraph made only of sentences that say come back later, that the page is not the finished '
+            + 'one, who will update it, or which other page to see, in any case, wrapped in a callout label, emphasis '
+            + 'or blockquote markers',
+          fn: async () => {
+            for (const paragraph of [
+              '**Come back later!**',
+              'Please check back later.',
+              '[!Warning] This version is NOT the formal version. Maintainers will update this after finishing the '
+                + 'Siamese version.',
+              '> [!CAUTION] This is an unfinished version. Please refer to the Persian page.',
+              'This page is under construction.',
+              'The English version is incomplete! Translators will update this soon.',
+              '_This translation is a work in progress._',
+            ]) {
+              expect(isStatusNoticeParagraph({ paragraph, },),).toBe(true,);
+            }
+          },
+        },),
+        it({
+          name: 'LEAVES a sentence that merely says unfinished or under construction, a notice beside any other '
+            + 'sentence, a pointer to a page in a story, and an empty paragraph',
+          fn: async () => {
+            for (const paragraph of [
+              'Her unfinished novel stayed in a drawer.',
+              'The cat house was under construction all spring.',
+              'Come back later, she said, and the cat left.',
+              'Come back later! The cat napped on.',
+              'This is the unfinished business she kept returning to.',
+              'Please refer to the diary she kept through the long and quiet winter of her last year.',
+              '[!Warning]',
+              '****',
+              '',
+            ]) {
+              expect(isStatusNoticeParagraph({ paragraph, },),).toBe(false,);
+            }
+          },
+        },),
+      ],
+    },),
     describe({
       name: stripStubMarkersWithOrigins.name,
       children: [

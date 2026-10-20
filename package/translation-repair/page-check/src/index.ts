@@ -24,6 +24,7 @@ export {
 } from './corpus-run/archive-original-completeness.ts';
 export {
   type ArchiveRetainedLine,
+  isStatusNoticeParagraph,
   isStubMarkerParagraph,
   type StrippedStubMarker,
   stripStubMarkersWithOrigins,
