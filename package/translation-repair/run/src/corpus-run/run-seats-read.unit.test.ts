@@ -57,6 +57,7 @@ const QWEN = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
  Every provider wet.
  */
 const ALL_WET: BudgetView = {
+  neuralwatt: false,
   synthetic: false,
   bedrock: false,
   hyper: false,
@@ -67,6 +68,7 @@ const ALL_WET: BudgetView = {
  Every provider dry.
  */
 const ALL_DRY: BudgetView = {
+  neuralwatt: true,
   synthetic: true,
   bedrock: true,
   hyper: true,
@@ -77,6 +79,7 @@ const ALL_DRY: BudgetView = {
  Synthetic alone dry.
  */
 const SYNTHETIC_DRY: BudgetView = {
+  neuralwatt: true,
   synthetic: true,
   bedrock: false,
   hyper: false,
@@ -87,6 +90,7 @@ const SYNTHETIC_DRY: BudgetView = {
  No provider held out.
  */
 const NO_HOLDS = {
+  neuralwatt: 0,
   synthetic: 0,
   bedrock: 0,
   hyper: 0,
@@ -98,6 +102,7 @@ const NO_HOLDS = {
  out by its daily limit, OpenRouter at 0.01 USD, Bedrock alone wet.
  */
 const BEDROCK_ALONE: BudgetView = {
+  neuralwatt: true,
   synthetic: true,
   bedrock: false,
   hyper: true,
@@ -113,6 +118,7 @@ const l = tagged({ tag: 'run-seats-read-test', },);
  What every meter said when each one answered wet.
  */
 const ALL_METERS_WET: Readonly<Record<keyof BudgetView, MeterState>> = {
+  neuralwatt: 'wet',
   synthetic: 'wet',
   bedrock: 'wet',
   hyper: 'wet',
@@ -241,7 +247,7 @@ await describe({
               l: levelCapturingLogger({ lines, },),
             },);
             expect(lines,).toEqual([
-              'info JUDGE SEATS phase=lanes synthetic=wet bedrock=wet hyper=wet openrouter=wet wide=7 select=8 '
+              'info JUDGE SEATS phase=lanes neuralwatt=wet synthetic=wet bedrock=wet hyper=wet openrouter=wet wide=7 select=8 '
               + 'late=8 slate=8 checkers=3 translators=8 readers=6 writers=9 roster=9 withheld=none '
               + 'threw-withheld=hf:Qwen/Qwen3.8-27B (threw 4 of 4 asks) waited=0ms',
             ],);
@@ -259,7 +265,7 @@ await describe({
               l: levelCapturingLogger({ lines: mixedLines, },),
             },);
             expect(mixedLines,).toEqual([
-              'info JUDGE SEATS phase=lanes synthetic=wet bedrock=wet hyper=wet openrouter=wet wide=7 select=8 '
+              'info JUDGE SEATS phase=lanes neuralwatt=wet synthetic=wet bedrock=wet hyper=wet openrouter=wet wide=7 select=8 '
               + 'late=8 slate=8 checkers=3 translators=8 readers=6 writers=9 roster=9 withheld=none '
               + 'threw-withheld=none waited=0ms',
             ],);
@@ -275,12 +281,14 @@ await describe({
             await readJudgeSeats({
               client: viewClient({
                 providerDryness: async () => ({
+                  neuralwatt: true,
                   synthetic: false,
                   bedrock: true,
                   hyper: false,
                   openrouter: false,
                 }),
                 providerMeterStates: async () => ({
+                  neuralwatt: 'dry',
                   synthetic: 'unreadable',
                   bedrock: 'unreadable',
                   hyper: 'wet',
@@ -293,7 +301,7 @@ await describe({
             },);
             expect(lines.length,).toBe(1,);
             expect(lines[0],).toContain(
-              'info JUDGE SEATS phase=lanes synthetic=unreadable-treated-as-spendable bedrock=dry hyper=wet openrouter=wet ',
+              'info JUDGE SEATS phase=lanes neuralwatt=dry synthetic=unreadable-treated-as-spendable bedrock=dry hyper=wet openrouter=wet ',
             );
           },
         },),
@@ -319,7 +327,8 @@ await describe({
             );
             expect(lines.length,).toBe(2,);
             expect(lines[1],).toContain(
-              'info JUDGE SEATS phase=lanes synthetic=unreadable-treated-as-spendable '
+              'info JUDGE SEATS phase=lanes neuralwatt=unreadable-treated-as-spendable '
+              + 'synthetic=unreadable-treated-as-spendable '
               + 'bedrock=unreadable-treated-as-spendable hyper=unreadable-treated-as-spendable '
               + 'openrouter=unreadable-treated-as-spendable ',
             );

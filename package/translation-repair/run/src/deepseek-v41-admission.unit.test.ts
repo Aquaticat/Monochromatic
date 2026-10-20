@@ -49,7 +49,7 @@ await describe({
         const modelId = nonNullishOrThrow(ROSTER_MODEL_IDS.find(id => id === MODEL));
         expect(hyperIdFor({ modelId })).toEqual({ served: true, id: MODEL });
         expect(openRouterIdFor({ modelId })).toEqual({ served: true, id: `deepseek/${MODEL}` });
-        expect(reachOf({ modelId })).toEqual({ synthetic: false, hyper: true, openrouter: true, bedrock: false });
+        expect(reachOf({ modelId })).toEqual({ neuralwatt: true, synthetic: false, hyper: true, openrouter: true, bedrock: false });
         // The predecessor left the roster on 2026-09-16 at the owner's instruction.
         expect((ROSTER_MODEL_IDS as readonly string[]).includes('deepseek-v4-flash-0731')).toBe(false);
       },

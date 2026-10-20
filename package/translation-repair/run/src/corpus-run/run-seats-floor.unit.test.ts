@@ -44,6 +44,7 @@ import {
  Every provider wet.
  */
 const ALL_WET: BudgetView = {
+  neuralwatt: false,
   synthetic: false,
   bedrock: false,
   hyper: false,
@@ -54,6 +55,7 @@ const ALL_WET: BudgetView = {
  The eighth hakureico pass: Bedrock alone wet.
  */
 const BEDROCK_ALONE: BudgetView = {
+  neuralwatt: true,
   synthetic: true,
   bedrock: false,
   hyper: true,
@@ -183,7 +185,7 @@ await describe({
           name: 'NAMES EACH WRITING BENCH BELOW THE FLOOR WITH ITS CLAUSE, the name beside the clause the phase prints, and '
             + 'names no judge bench however short, the same benches unreachableWritingBenches words',
           fn: async () => {
-            const dry: BudgetView = { synthetic: true, bedrock: true, hyper: true, openrouter: true, };
+            const dry: BudgetView = { neuralwatt: true, synthetic: true, bedrock: true, hyper: true, openrouter: true, };
             const benches = benchesOf({ seats: judgeSeatsFor({ dry, },), },);
             const shortOfFloor = belowFloorWritingBenches({
               benches,

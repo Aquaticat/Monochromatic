@@ -39,6 +39,7 @@ import { SEAT_SYNTHETIC_TEXT_EVERYWHERE, } from '@monochromatic-dev/translation-
  Every provider wet, the reading that seats the widest benches.
  */
 const ALL_WET: BudgetView = {
+  neuralwatt: false,
   synthetic: false,
   hyper: false,
   bedrock: false,
@@ -49,6 +50,7 @@ const ALL_WET: BudgetView = {
  Every provider dry, the reading that seats the substitute checker.
  */
 const ALL_DRY: BudgetView = {
+  neuralwatt: true,
   synthetic: true,
   hyper: true,
   bedrock: true,

@@ -7,9 +7,11 @@ import {
   bedrockLedgerFromEnv,
   createBedrockClient,
   createHyperClient,
+  createNeuralWattClient,
   createOpenRouterClient,
   createProviderBudgets,
   createSyntheticClient,
+  neuralWattLedgerFromEnv,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import { PROVIDER_ORDER, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { ModelTransport, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
@@ -30,10 +32,11 @@ import { taskPathOf, } from './command-owners.ts';
 // This closes that. Run it between passes, or on a timer, and the record gains
 // readings during the quiet stretches where the recovery actually happened.
 //
-// SPENDS NO GENERATION. It reads the four meters the router reads at most once
+// SPENDS NO GENERATION. It reads the five meters the router reads at most once
 // a minute while working (ledger D16): the Synthetic, Hyper and OpenRouter
-// endpoints, and the Bedrock spend ledger on disk, where that provider's credit
-// is kept. No model is called, no token is produced, and nothing is written to
+// endpoints, and the Bedrock and NeuralWatt ledgers on disk, where those
+// providers' credit and daily energy are kept (NeuralWatt's quota endpoint is
+// not read: it reports the plan, not the free daily energy). No model is called, no token is produced, and nothing is written to
 // a run directory.
 //
 // THE READING IS THE OUTPUT. It goes to the log as a `METERS` line, which is
@@ -55,7 +58,7 @@ const SAMPLE_TIMEOUT_MS = 60_000;
 
  Returns nothing: the `METERS` line IS the output.
 
- @param env - environment the keys and the Bedrock ledger's place are read from: `process.env` in a run
+ @param env - environment the keys and the Bedrock and NeuralWatt ledgers' places are read from: `process.env` in a run
 
  @param transport - HTTP every meter is read over: `fetchTransport` in a run
 
@@ -100,6 +103,11 @@ export async function sampleBudgets(
    first call always reaches the wire, and this process makes exactly one.
    */
   const budgets = createProviderBudgets({
+    neuralwatt: createNeuralWattClient({
+      apiKey: keys.neuralwatt,
+      ledger: neuralWattLedgerFromEnv({ env, },),
+      transport,
+    },),
     synthetic: createSyntheticClient({
       apiKey: keys.synthetic,
       transport,

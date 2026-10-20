@@ -75,6 +75,7 @@ const KIMI = SEAT_SYNTHETIC_VISION_WITHHELD;
  Nobody dry.
  */
 const ALL_WET: BudgetView = {
+  neuralwatt: false,
   synthetic: false,
   hyper: false,
   bedrock: false,
@@ -85,6 +86,7 @@ const ALL_WET: BudgetView = {
  Synthetic dry, Hyper serving the shared seats.
  */
 const SYNTHETIC_DRY: BudgetView = {
+  neuralwatt: true,
   synthetic: true,
   hyper: false,
   bedrock: false,
@@ -95,6 +97,7 @@ const SYNTHETIC_DRY: BudgetView = {
  Only OpenRouter left.
  */
 const OPENROUTER_ONLY: BudgetView = {
+  neuralwatt: true,
   synthetic: true,
   hyper: true,
   bedrock: true,

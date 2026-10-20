@@ -93,9 +93,9 @@ await describe({
           },
         },),).toBe(
           `StatedRefusalError: ${OPENING}TRANSLATION_REPAIR_NEURALWATT_API_KEY is absent, `
-            + 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY is present, TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is present, '
-            + 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY is present, TRANSLATION_REPAIR_OPENROUTER_API_KEY is present. '
-            + CLOSING,
+            + `TRANSLATION_REPAIR_SYNTHETIC_API_KEY is present, TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is present, `
+            + `TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY is present, TRANSLATION_REPAIR_OPENROUTER_API_KEY is present. ${
+             CLOSING}`,
         );
       },
     },),

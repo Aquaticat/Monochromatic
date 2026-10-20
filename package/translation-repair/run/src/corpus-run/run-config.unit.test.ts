@@ -147,9 +147,15 @@ const OPENROUTER_KEY_VAR = 'TRANSLATION_REPAIR_OPENROUTER_API_KEY';
 const BEDROCK_KEY_VAR = 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY';
 
 /**
+ Environment variable carrying the fifth provider's API key, named only.
+ */
+const NEURALWATT_KEY_VAR = 'TRANSLATION_REPAIR_NEURALWATT_API_KEY';
+
+/**
  Every provider key variable.
  */
 const PROVIDER_KEY_VARS = [
+  NEURALWATT_KEY_VAR,
   API_KEY_VAR,
   HYPER_KEY_VAR,
   OPENROUTER_KEY_VAR,
@@ -578,12 +584,14 @@ await describe({
               },).providerDryness({ signal: new AbortController().signal, },);
             }
             expect(await drynessAt('40',),).toEqual({
+              neuralwatt: true,
               synthetic: false,
               hyper: false,
               bedrock: false,
               openrouter: false,
             },);
             expect(await drynessAt('0',),).toEqual({
+              neuralwatt: true,
               synthetic: false,
               hyper: false,
               bedrock: true,

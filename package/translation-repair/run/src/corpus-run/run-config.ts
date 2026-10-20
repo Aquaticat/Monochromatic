@@ -1168,6 +1168,7 @@ export function runClientFrom(
    Each configured provider's client, absent where its key is unset.
    */
   const {
+    neuralwatt,
     synthetic,
     hyper,
     bedrock,
@@ -1197,7 +1198,7 @@ export function runClientFrom(
   };
 
   rl.debug(
-    `provider configuration synthetic=${String(synthetic !== undefined,)} hyper=${
+    `provider configuration neuralwatt=${String(neuralwatt !== undefined,)} synthetic=${String(synthetic !== undefined,)} hyper=${
       String(hyper !== undefined,)
     } bedrock=${String(bedrock !== undefined,)} openrouter=${String(openrouter !== undefined,)}`,
   );

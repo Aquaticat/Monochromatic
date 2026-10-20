@@ -10,11 +10,13 @@ import type {
 //region Spend cost
 // WHAT A RUN COST, from what its log recorded and what the provider charges.
 //
-// FOUR BUCKETS, AND MIXING THEM WOULD BE THE WHOLE BUG. A seat is metered in
+// FIVE BUCKETS, AND MIXING THEM WOULD BE THE WHOLE BUG. A seat is metered in
 // hypercredits and priced, metered in hypercredits and missing from the price
-// table, on a flat subscription that bills no credits at all, or billed in USD
-// on OpenRouter with the cost read off the wire. Only the first has a credit
-// figure and only the fourth a USD figure. A total that folded the others in
+// table, on a flat subscription that bills no credits at all, on NeuralWatt's
+// free daily energy (metered in watt-hours by the energy ledger, billing
+// nothing unless a call came back with a cost), or billed in USD on OpenRouter
+// with the cost read off the wire. Only the first has a credit figure and only
+// the last a USD figure. A total that folded the others in
 // would read as a cheaper run for the second and as an invented currency for
 // the third and fourth.
 //
@@ -81,6 +83,16 @@ export type SpendCost = {
    Seats on the flat subscription, carried with their tokens and no credits.
    */
   readonly subscription: readonly SeatSpend[];
+
+  /**
+   Seats on NeuralWatt's free daily energy, with their tokens and the USD
+   their lines reported, which is zero while the free energy covers a call.
+
+   A BUCKET OF THEIR OWN AND IN NO TOTAL. Hypercredits and USD are not what
+   this energy is metered in, and a USD figure here is not a bill the run
+   intended: it is the owner's plan being charged, said on its own line.
+   */
+  readonly freeEnergy: readonly SeatSpend[];
 
   /**
    Seats billed in USD per token, on OpenRouter or on Bedrock, costliest
@@ -182,6 +194,15 @@ export function priceTally(
     .seats
     .filter(function isSubscription(seat,): boolean {
       return seat.provider === 'synthetic';
+    },);
+
+  /**
+   Seats on the free daily energy, kept with their tokens.
+   */
+  const freeEnergy = tally
+    .seats
+    .filter(function isFreeEnergy(seat,): boolean {
+      return seat.provider === 'neuralwatt';
     },);
 
   /**
@@ -287,6 +308,7 @@ export function priceTally(
     priced,
     unpriced,
     subscription,
+    freeEnergy,
     openRouter,
     totalCredits,
     totalUsd,

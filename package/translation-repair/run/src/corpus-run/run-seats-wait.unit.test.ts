@@ -41,6 +41,7 @@ import {
  Every provider wet.
  */
 const ALL_WET: BudgetView = {
+  neuralwatt: false,
   synthetic: false,
   bedrock: false,
   hyper: false,
@@ -52,6 +53,7 @@ const ALL_WET: BudgetView = {
  out by its daily limit, OpenRouter at 0.01 USD, Bedrock alone wet.
  */
 const BEDROCK_ALONE: BudgetView = {
+  neuralwatt: true,
   synthetic: true,
   bedrock: false,
   hyper: true,

@@ -59,6 +59,7 @@ export function mergeSamples({ readings, }: { readonly readings: readonly MeterL
           // one field for two.
           JSON.stringify([
             sample.at,
+            sample.neuralwatt,
             sample.synthetic,
             sample.hyper,
             sample.openrouter,

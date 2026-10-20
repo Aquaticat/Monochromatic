@@ -36,5 +36,10 @@ export {
   readCorpusPinSetting,
 } from './corpus-run/corpus-pin-override.ts';
 export { readOnlyIds, } from './corpus-run/entry-filter.ts';
+export {
+  registerRunEndReport,
+  type RunEndReport,
+  runEndReports,
+} from './corpus-run/run-end-report.ts';
 
 //endregion Command line exports

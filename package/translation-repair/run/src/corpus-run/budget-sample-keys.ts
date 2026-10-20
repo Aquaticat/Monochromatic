@@ -1,12 +1,17 @@
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
 
 //region Budget sample keys
-// Reads the four provider keys a budget sample needs, all or none.
+// Reads the five provider keys a budget sample needs, all or none.
 
 /**
- The four provider keys, each non-empty.
+ The five provider keys, each non-empty.
  */
 export type ProviderKeys = {
+  /**
+   NeuralWatt key.
+   */
+  readonly neuralwatt: string;
+
   /**
    Synthetic key.
    */
@@ -33,7 +38,7 @@ export type ProviderKeys = {
 
  @param env - environment the keys are read from: `process.env` in a run
 
- @returns The four keys
+ @returns The five keys
 
  @throws {@link StatedRefusalError} when any key is absent or empty, naming
  each variable and whether it is present, since a sample of some providers
@@ -47,6 +52,13 @@ export type ProviderKeys = {
 export function readProviderKeys(
   { env, }: { readonly env: Readonly<NodeJS.ProcessEnv>; },
 ): ProviderKeys {
+  /**
+   NeuralWatt's key, from the same place.
+   */
+  const neuralWattKey = env
+    .TRANSLATION_REPAIR_NEURALWATT_API_KEY
+    ?? '';
+
   /**
    First provider's key, injected by mise from the sops-encrypted env.
    */
@@ -78,13 +90,15 @@ export function readProviderKeys(
   /**
    Whether any provider's key is missing, which makes the sample partial.
    */
-  const someKeyMissing = (syntheticKey === '')
+  const someKeyMissing = (neuralWattKey === '')
+    || (syntheticKey === '')
     || (hyperKey === '')
     || (bedrockKey === '')
     || (openRouterKey === '');
   if (someKeyMissing) {
     throw new StatedRefusalError({
       says: 'every provider key must be set to sample availability, and at least one is not: '
+        + `TRANSLATION_REPAIR_NEURALWATT_API_KEY is ${neuralWattKey === '' ? 'absent' : 'present'}, `
         + `TRANSLATION_REPAIR_SYNTHETIC_API_KEY is ${syntheticKey === '' ? 'absent' : 'present'}, `
         + `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is ${hyperKey === '' ? 'absent' : 'present'}, `
         + `TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY is ${bedrockKey === '' ? 'absent' : 'present'}, `
@@ -96,6 +110,7 @@ export function readProviderKeys(
   }
 
   return {
+    neuralwatt: neuralWattKey,
     synthetic: syntheticKey,
     hyper: hyperKey,
     bedrock: bedrockKey,

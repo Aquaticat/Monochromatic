@@ -49,6 +49,7 @@ await describe({
         expect(isDecisionSeat({ modelId: SEAT_OPENROUTER_DECISIONS, },),).toBe(true,);
         expect(isDecisionSeat({ modelId: 'minimax-m3', },),).toBe(false,);
         expect(reachOf({ modelId: SEAT_OPENROUTER_DECISIONS, },),).toEqual({
+          neuralwatt: false,
           synthetic: false,
           hyper: false,
           bedrock: false,
@@ -100,6 +101,7 @@ await describe({
          */
         const seats = judgeSeatsFor({
           dry: {
+            neuralwatt: true,
             synthetic: true,
             hyper: true,
             bedrock: true,
@@ -114,6 +116,7 @@ await describe({
          */
         const dryDay = judgeSeatsFor({
           dry: {
+            neuralwatt: true,
             synthetic: false,
             hyper: false,
             bedrock: false,

@@ -25,6 +25,11 @@ type MeterReading = {
   readonly hyper: string;
 
   /**
+   What the fifth provider's meter said, left off a line older than it.
+   */
+  readonly neuralwatt?: string;
+
+  /**
    What the third provider's meter said, left off a line older than it.
    */
   readonly openrouter?: string;
@@ -68,6 +73,7 @@ export function meterLine(
    a provider the record predates.
    */
   const states = [
+    ...((reading.neuralwatt === undefined) ? [] : [`neuralwatt=${reading.neuralwatt}`,]),
     `synthetic=${reading.synthetic}`,
     `hyper=${reading.hyper}`,
     ...((reading.openrouter === undefined) ? [] : [`openrouter=${reading.openrouter}`,]),
@@ -206,6 +212,7 @@ export const BASE_AT = 1_787_652_000_000;
 export function sampleOf({ overrides, }: { readonly overrides: SampleOverrides; },): MeterSample {
   return {
     at: BASE_AT,
+    neuralwatt: 'absent',
     synthetic: 'wet',
     hyper: 'wet',
     openrouter: 'wet',

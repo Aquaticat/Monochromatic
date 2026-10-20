@@ -65,6 +65,12 @@ export type MeterSample = {
   readonly at: number;
 
   /**
+   What the fifth provider's meter said, or that the record predates it:
+   every line written before 2026-10-20 carries four states or fewer.
+   */
+  readonly neuralwatt: MeterState | 'absent';
+
+  /**
    What the first provider's meter said.
    */
   readonly synthetic: MeterState;
@@ -479,8 +485,17 @@ export function readMeterLine(
     name: 'bedrock',
   },);
 
+  /**
+   What the fifth provider's meter said, absent on lines older than it.
+   */
+  const neuralwatt = fieldValue({
+    tail,
+    name: 'neuralwatt',
+  },);
+
   return {
     at,
+    neuralwatt,
     synthetic,
     hyper,
     bedrock,

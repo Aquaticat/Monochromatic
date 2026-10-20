@@ -6,9 +6,12 @@ import {
   bedrockLedgerFromEnv,
   createBedrockClient,
   createHyperClient,
+  createNeuralWattClient,
   createOpenRouterClient,
   createSyntheticClient,
   hyperIsDry,
+  neuralWattIsDry,
+  neuralWattLedgerFromEnv,
   openRouterIsDry,
   syntheticIsDry,
 } from '@monochromatic-dev/translation-repair-provider/ts';
@@ -41,6 +44,7 @@ const REQUIRED_PROVIDERS_FLAG = '--require-providers';
  Environment variable carrying each provider's key.
  */
 const KEY_VARIABLES: Readonly<Record<ProviderName, string>> = {
+  neuralwatt: 'TRANSLATION_REPAIR_NEURALWATT_API_KEY',
   synthetic: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY',
   hyper: 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY',
   bedrock: 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY',
@@ -205,7 +209,7 @@ async function gateProvider(
 
  @param required - providers measured arm requires wet
 
- @param env - environment the keys and the Bedrock ledger's place are read
+ @param env - environment the keys and the Bedrock and NeuralWatt ledgers' places are read
  from: `process.env` in a run, a test's own otherwise
 
  @param transport - HTTP the meters are read over: `fetchTransport` in a run.
@@ -271,6 +275,24 @@ export async function assertRequiredProvidersReady(
         key,
       },
     ): Promise<void> {
+      if (provider === 'neuralwatt') {
+        /**
+         Required NeuralWatt meter client, over the energy ledger the environment names.
+         */
+        const client = createNeuralWattClient({
+          apiKey: key,
+          ledger: neuralWattLedgerFromEnv({ env, },),
+          transport,
+        },);
+        await gateProvider({
+          provider,
+          readDry: async function readEnergy(): Promise<boolean> {
+            return neuralWattIsDry({ energy: await client.energy({ signal, },), },);
+          },
+          signal,
+        },);
+        return;
+      }
       if (provider === 'synthetic') {
         /**
          Required Synthetic meter client.

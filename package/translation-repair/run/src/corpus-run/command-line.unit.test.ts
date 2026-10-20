@@ -24,7 +24,7 @@ import { statedRefusalMessage, } from '@monochromatic-dev/translation-repair-glo
  Usage line every corpus-pass refusal ends with, as its declaration builds it.
  */
 const PASS_USAGE = 'Usage: corpus-pass [--only <entry ids>] '
-  + '[--require-providers <providers of synthetic, bedrock, hyper, openrouter>] [--plan]';
+  + '[--require-providers <providers of neuralwatt, synthetic, bedrock, hyper, openrouter>] [--plan]';
 
 await describe({
   name: readCommandLine.name,
@@ -205,7 +205,7 @@ await describe({
             },);
           },
         },),).toBe(
-          'this command needs <served id>. Usage: roster-card <synthetic|hyper|openrouter|bedrock> <served id>',
+          'this command needs <served id>. Usage: roster-card <synthetic|hyper|openrouter|bedrock|neuralwatt> <served id>',
         );
       },
     },),

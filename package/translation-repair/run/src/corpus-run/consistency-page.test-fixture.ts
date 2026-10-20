@@ -93,6 +93,7 @@ const PAGE_ARCHIVE: string = ARCHIVE_SECTIONS.join('\n',);
  Every provider wet: the view the seat reading takes.
  */
 const ALL_WET: BudgetView = {
+  neuralwatt: false,
   synthetic: false,
   bedrock: false,
   hyper: false,
@@ -292,6 +293,7 @@ export type SeatScript = (
  */
 function noHolds(): ProviderRecord<number> {
   return {
+    neuralwatt: 0,
     synthetic: 0,
     bedrock: 0,
     hyper: 0,

@@ -165,6 +165,40 @@ export function printCost({ cost, }: { readonly cost: SpendCost; },): void {
     }
   }
 
+  if (cost.freeEnergy
+    .length
+    > 0) {
+    console.log(
+      'NeuralWatt seats, on the free daily energy, which bills no credits and is metered in watt-hours by the '
+        + 'energy ledger (neuralwattWh on the METERS line):',
+    );
+    for (const seat of cost.freeEnergy) {
+      console.log(tokensOnlyLine({ seat, },),);
+    }
+
+    /**
+     USD the free-energy seats' lines reported, which is zero while the free energy covered every call.
+     */
+    const billedUsd = cost
+      .freeEnergy
+      .reduce(
+        function addUsd(
+          running,
+          seat,
+        ): number {
+          return running + seat.costUsd;
+        },
+        0,
+      );
+    if (billedUsd > 0) {
+      console.log(
+        `NEURALWATT BILLED: ${asUsd({ usd: billedUsd, },)} USD across the calls of these logs came back with a cost, `
+          + 'so the free daily energy did not cover them and they were charged to the owner\'s plan; the energy '
+          + 'ledger marks NeuralWatt dry for the rest of that UTC day',
+      );
+    }
+  }
+
   if (cost.unreportedCalls > 0) {
     console.log(
       `FLOOR, NOT A TOTAL: ${String(cost.unreportedCalls,)} ${

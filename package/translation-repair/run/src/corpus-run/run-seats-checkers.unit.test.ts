@@ -81,6 +81,7 @@ function everyReading(): readonly BudgetView[] {
       return (mask & (1 << bit)) !== 0;
     }
     return {
+      neuralwatt: true,
       synthetic: dryAt(0,),
       hyper: dryAt(1,),
       bedrock: dryAt(2,),
@@ -122,6 +123,7 @@ await describe({
       fn: async () => {
         /** The dominant reading. */
         const dry: BudgetView = {
+          neuralwatt: true,
           synthetic: true,
           hyper: true,
           bedrock: false,
@@ -175,6 +177,7 @@ await describe({
       fn: async () => {
         /** Nobody dry. */
         const dry: BudgetView = {
+          neuralwatt: false,
           synthetic: false,
           hyper: false,
           bedrock: false,

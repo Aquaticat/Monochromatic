@@ -3,12 +3,16 @@ import {
   bedrockLedgerFromEnv,
   createBedrockClient,
   createHyperClient,
+  createNeuralWattClient,
   createOpenRouterClient,
   createProviderBudgets,
   createSyntheticClient,
   type Decider,
+  describePlanSpend,
   type HyperClient,
   hyperRequestsPerHour,
+  type NeuralWattClient,
+  neuralWattLedgerFromEnv,
   type OpenRouterClient,
   type ProviderBudgetsWithStates,
   type ModelClient,
@@ -16,6 +20,7 @@ import {
 import type { ModelTransport, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { createDecisionsClient, } from '../decisions-client.ts';
 import { RunConfigError, } from './run-config-error.ts';
+import { registerRunEndReport, } from './run-end-report.ts';
 
 //region Run providers
 // WHICH PROVIDERS A RUN HAS, read off the environment: one client per key
@@ -24,6 +29,11 @@ import { RunConfigError, } from './run-config-error.ts';
 // the line budget. Any number of keys may be absent; the owner, 2026-09-07:
 // "any number of provider being dry or lacking API key is expected and normal
 // operation". Only no key at all is a refusal.
+
+/**
+ Milliseconds the end-of-run quota read may take before the report gives up.
+ */
+const PLAN_ENERGY_TIMEOUT_MS = 15_000;
 
 /**
  Clients a run may route to, each present when its key is, plus the budget
@@ -35,6 +45,12 @@ import { RunConfigError, } from './run-config-error.ts';
  ```
  */
 export type ConfiguredProviders = {
+  /**
+   Fifth provider client, first in routing order, when its key is set: the
+   free daily energy the owner wants used first.
+   */
+  readonly neuralwatt?: NeuralWattClient;
+
   /**
    First provider client, when its key is set.
    */
@@ -70,8 +86,8 @@ export type ConfiguredProviders = {
 /**
  Builds every configured provider's client and the budget view over them.
 
- @param env - environment the keys, the Hyper pace and the Bedrock ledger's
- place are read from: `process.env` in a run, a test's own otherwise
+ @param env - environment the keys, the Hyper pace and the Bedrock and NeuralWatt
+ ledgers' places are read from: `process.env` in a run, a test's own otherwise
 
  @param transport - HTTP every client calls over: `fetchTransport` in a run.
  Both are REQUIRED (ledger M43, M68): a test that took the process's
@@ -97,6 +113,10 @@ export function configureProviders(
   },
 ): ConfiguredProviders {
   /**
+   NeuralWatt API key, the fifth provider and the first in routing order.
+   */
+  const neuralWattKey = env.TRANSLATION_REPAIR_NEURALWATT_API_KEY ?? '';
+  /**
    Synthetic API key, resolved by name from the environment handed over.
    */
   const apiKey = env.TRANSLATION_REPAIR_SYNTHETIC_API_KEY ?? '';
@@ -116,14 +136,40 @@ export function configureProviders(
   /**
    Whether no provider at all is configured, which nothing can run on.
    */
-  const noKeyAtAll = (apiKey === '')
+  const noKeyAtAll = (neuralWattKey === '')
+    && (apiKey === '')
     && (hyperKey === '')
     && (bedrockKey === '')
     && (openRouterKey === '');
   if (noKeyAtAll) {
     throw new RunConfigError({
-      variable: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY, TRANSLATION_REPAIR_CHARM_HYPER_API_KEY, '
-        + 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY or TRANSLATION_REPAIR_OPENROUTER_API_KEY',
+      variable: 'TRANSLATION_REPAIR_NEURALWATT_API_KEY, TRANSLATION_REPAIR_SYNTHETIC_API_KEY, '
+        + 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY, TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY '
+        + 'or TRANSLATION_REPAIR_OPENROUTER_API_KEY',
+    },);
+  }
+
+  /**
+   Fifth provider client when configured, over the durable energy ledger the
+   environment names. Its end-of-run plan-energy report is registered here, so
+   the command that ends the run prints it (`run-end-report.ts`); a run that
+   makes no NeuralWatt call reads no quota and says so.
+   */
+  const neuralwatt = (neuralWattKey === '')
+    ? undefined
+    : createNeuralWattClient({
+      apiKey: neuralWattKey,
+      ledger: neuralWattLedgerFromEnv({ env, },),
+      transport,
+    },);
+  if (neuralwatt !== undefined) {
+    registerRunEndReport({
+      key: 'neuralwatt-plan-energy',
+      report: async function reportPlanEnergy(): Promise<string> {
+        return describePlanSpend({
+          spend: await neuralwatt.planSpend({ signal: AbortSignal.timeout(PLAN_ENERGY_TIMEOUT_MS,), },),
+        },);
+      },
     },);
   }
 
@@ -185,6 +231,7 @@ export function configureProviders(
    Shared budget view every provider is routed by.
    */
   const budgets = createProviderBudgets({
+    ...((neuralwatt === undefined) ? {} : { neuralwatt, }),
     ...((synthetic === undefined) ? {} : { synthetic, }),
     ...((hyper === undefined) ? {} : { hyper, }),
     ...((bedrock === undefined) ? {} : { bedrock, }),
@@ -192,6 +239,7 @@ export function configureProviders(
   },);
 
   return {
+    ...((neuralwatt === undefined) ? {} : { neuralwatt, }),
     ...((synthetic === undefined) ? {} : { synthetic, }),
     ...((hyper === undefined) ? {} : { hyper, }),
     ...((bedrock === undefined) ? {} : { bedrock, }),

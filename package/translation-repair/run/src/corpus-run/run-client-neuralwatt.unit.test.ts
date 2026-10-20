@@ -22,12 +22,12 @@ import {
 
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
 import {
+  EveryProviderDryError,
   NEURALWATT_DAILY_WH_VAR,
   NEURALWATT_LEDGER_PATH_VAR,
 } from '@monochromatic-dev/translation-repair-provider';
 import type { TransportExchange, } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
-  EveryProviderDryError,
   runClientFrom,
   RunConfigError,
   runEndReports,

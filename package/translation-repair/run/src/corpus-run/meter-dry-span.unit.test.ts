@@ -47,6 +47,7 @@ function minuteByMinute(
   { states, }: { readonly states: readonly ('wet' | 'dry' | 'unreadable')[]; },
 ): readonly {
   at: number;
+  neuralwatt: 'absent';
   synthetic: 'wet' | 'dry' | 'unreadable';
   hyper: 'wet';
   bedrock: 'absent';
@@ -56,6 +57,8 @@ function minuteByMinute(
   return states.map(function toSample(state, index,) {
     return {
       at: index * MINUTE,
+      // A record from before the fifth provider.
+      neuralwatt: 'absent' as const,
       synthetic: state,
       hyper: 'wet' as const,
       // A record from before the third provider, which contributes no

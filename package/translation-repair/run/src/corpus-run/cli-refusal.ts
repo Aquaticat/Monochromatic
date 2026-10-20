@@ -14,6 +14,7 @@ import {
   type CommandName,
 } from './command-lines.ts';
 import { COMMAND_OWNERS, } from './command-owners.ts';
+import { runEndReports, } from './run-end-report.ts';
 
 //region CLI refusal
 // Turns ANY failure out of a CLI body into a report that quotes nothing.
@@ -176,16 +177,20 @@ function framesOf({ error, }: { readonly error: unknown; },): string {
 
  @param seats - tally to render
 
- @returns Disposable printing the report on dispose
+ @returns Async disposable printing the end reports and then the seat report on dispose
 
  @example
  ```ts
- using _report = printingSeatReport({ seats: RUN_SEATS, },);
+ await using _report = printingSeatReport({ seats: RUN_SEATS, },);
  ```
  */
-function printingSeatReport({ seats, }: { readonly seats: SeatTally; },): Disposable {
+function printingSeatReport({ seats, }: { readonly seats: SeatTally; },): AsyncDisposable {
   return {
-    [Symbol.dispose](): void {
+    async [Symbol.asyncDispose](): Promise<void> {
+      // THE END REPORTS FIRST (NeuralWatt's plan energy), then the seat report, so the
+      // closing lines of every command stay the seats.
+      for (const line of await runEndReports())
+        console.error(line,);
       for (const line of seatReportLines({ tally: seats, },))
         console.error(line,);
     },
@@ -240,7 +245,7 @@ export async function reportingRefusals<const Command extends CommandName>(
    under the refusal line on a refusal, alone on a clean run, so a seat that
    produced nothing usable is in the closing lines of every command.
    */
-  using _report = printingSeatReport({ seats, },);
+  await using _report = printingSeatReport({ seats, },);
 
   try {
     // FIRST, before the command line is read and before the body touches a
