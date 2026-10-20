@@ -6,6 +6,7 @@ import {
   type DeclaredNamePair,
 } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import { renderedLinks, } from './page-name-link-rendering.ts';
+import { proseNamePairs, } from './prose-name-pairs.ts';
 import { visibleText, } from './page-visible-text.ts';
 import {
   htmlHeadings,
@@ -46,6 +47,22 @@ const LONGEST_NAME = 24;
  */
 const HEADING = 'NAMES AND LINKED TEXT THE ARCHIVE RENDERS ON THIS PAGE '
   + '(render the same person or title the same way everywhere; a declared name inside a title takes its declared form):';
+
+/**
+ Heading of the block naming what the archive spells in its sentences.
+
+ IT SAYS WHAT THE SPELLING IS, because the house rule for a handle with no
+ declared, archive or corpus rendering asks for a regrouping and a meaning in
+ parentheses, and a judge shown "Han Lianyi" in a sentence beside that rule
+ could not tell the archive's spelling from a handle with none (the
+ zheermao16 pass, slice 13, 2026-10-20). The sentence is carried in the
+ identity lines, which every cached stage's key hashes, so it reaches a page
+ that has such a name and no other.
+ */
+const PROSE_HEADING = 'NAMES THE ARCHIVE SPELLS IN LATIN LETTERS INSIDE ITS SENTENCES ON THIS PAGE (the archive\'s '
+  + 'spelling of a name is its rendering, so the rule for a handle with no declared, archive or corpus rendering does '
+  + 'not apply to it: no regrouping and no meaning in parentheses is asked for, and a rewrite keeps the spelling as '
+  + 'the archive writes it):';
 
 /**
  One name or title as the source writes it and as the archive renders it.
@@ -526,10 +543,31 @@ export function pageNameLines(
     sourceText,
     targetText,
   },);
-  if (pairs.length === 0)
-    return [];
+  /**
+   Names a block above already pairs or the front matter declares, which the
+   block of names spelled in sentences leaves to them.
+   */
+  const placed = new Set([
+    ...pairs.map(function sourceOfPair({ source, },): string {
+      return source;
+    },),
+    ...declared.map(function sourceOfDeclared({ source, },): string {
+      return source;
+    },),
+  ],);
+  /**
+   Names the archive spells inside its sentences that no block above pairs and
+   no front matter declares.
+   */
+  const spelled = proseNamePairs({
+    sourceText,
+    targetText,
+  },)
+    .filter(function unplaced({ source, },): boolean {
+      return !placed.has(source,);
+    },);
   return [
-    HEADING,
+    ...(pairs.length === 0) ? [] : [HEADING,],
     ...pairs.map(function toLine(pair,): string {
       /**
        Where this pair was read (class eighty-six reads only links).
@@ -550,6 +588,13 @@ export function pageNameLines(
         },)
         : '';
       return `- ${pair.source} (${pair.evidence}): "${pair.rendering}"${note}`;
+    },),
+    ...(spelled.length === 0) ? [] : [PROSE_HEADING,],
+    ...spelled.map(function toSpelledLine({
+      source,
+      rendering,
+    },): string {
+      return `- ${source}: "${rendering}"`;
     },),
   ];
 }

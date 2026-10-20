@@ -59,6 +59,18 @@ The groups that follow name the main ones.
   `page-title-spans.ts`,
   `page-identity-lines.ts`,
   and `entry-notes.ts`.
+- Names the archive spells inside its sentences:
+  pair a Han name of an original with the capitalised Latin words the archive spells it with,
+  by the letters of the name's pinyin reading,
+  list the pairs on the page-name block of every sheet,
+  and name the spellings a candidate gives the same letters other than the archive's.
+  Names:
+  `proseNamePairs`,
+  `respelledRendering`,
+  `ProseNamePair`.
+  Declared in `prose-name-pairs.ts`,
+  `prose-name-han.ts`,
+  and `prose-name-spelling.ts`.
 - Attribution signatures:
   read the signer's name off a signature line,
   which opens with one or more dashes and carries the name and then a comma and the date,
