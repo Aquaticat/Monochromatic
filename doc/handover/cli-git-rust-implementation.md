@@ -1758,6 +1758,18 @@ that is verification, not a decision for the user.
   still 2.39 (README line 77 names 0.2.2), and `mise upgrade cargo:monochromatic-git-policy-cli` installed it
   (mise caches the remote version list for an hour, so the upgrade needed `MISE_FETCH_REMOTE_VERSIONS_CACHE=0s`;
   `mise.lock` was restored).
+  Task 29 (user chose the post-cutover gates next, 2026-10-19): the open parts are the non-core mutation campaigns.
+  Running (non-blocking): unit `cli-git-nc1`, script `~/temp/agent/nc-run.ts`, image tag `nc1`, one scoped run per
+  file at `--timeout 300` through `gate-slot.ts`, in this order: `manual_push_probe.rs`, `manual_push_range.rs`,
+  `manual_push_lifecycle.rs`, `policy_events.rs` (the 64 unverified 90 s timeouts of the auto-push lane), then
+  `auto_push.rs`, `auto_push_branch_key.rs`, `auto_push_record.rs`, `auto_push_single_flight.rs`,
+  `auto_push_reconcile.rs` (whole files; only functions were examined before), then `signal_relay.rs`,
+  `maintenance_decision.rs`, `maintenance_run.rs` and `maintenance_hk_config.rs` (never run). Logs
+  `~/temp/agent/nc-<file>.log`; read each final "mutants tested" line. Per file: kill every missed mutant with a
+  test or record an equivalence proof, and treat a remaining timeout as unverified. Restart a lost unit with
+  `systemd-run --user --unit=cli-git-nc1 --collect --property=MemoryMax=24G node ~/temp/agent/nc-run.ts` (edit the
+  file list to skip finished files). Afterwards remove the `nc1` images and containers. Hooks plumbing has no
+  recorded campaign yet and is the next file group to check. No finish time can be given: no rate is measured.
   Issue 1713 (handover paths and `mise run //` targets that moved): the cli-git half is done in commit `d4a2587cb6`
   (thirty occurrences of 23 distinct unresolved paths in eleven `doc/handover/cli-git*.md` files keep their text and
   carry an in-place note with the current module or the removal date; progress comment posted). The issue stays open
