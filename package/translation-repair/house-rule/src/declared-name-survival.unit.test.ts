@@ -438,6 +438,153 @@ await describe({
     },),
 
     describe({
+      name: `${findDroppedDeclaredNames.name} with a subject identity, where a new form must stand as a whole name`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REFUSES A NEW FORM RUN ON FROM OR INTO OTHER LETTERS, a camel edge, a digit, a hyphen or an '
+            + 'underscore, since `WoolyBlossom` is a name nobody declared and `Blossom` inside it names '
+            + 'no one (XingZ60: `XingLili`, `Xing-Lili`)',
+          fn: async () => {
+            for (const candidateText of [
+              'WoolyBlossom naps on the sill.',
+              'Wooly-Blossom naps on the sill.',
+              'Wooly_Blossom naps on the sill.',
+              'BlossomWooly naps on the sill.',
+              'Blossom-Wooly naps on the sill.',
+              'Blossom2024 naps on the sill.',
+            ]) {
+              expect(findDroppedDeclaredNames({
+                forms: [ 'Mittens', 'Blossom', ],
+                subjectForms: [ 'Mittens', 'Blossom', ],
+                baseText: 'Mittens naps on the sill.',
+                candidateText,
+              },),).toEqual([ 'Mittens', ],);
+            }
+          },
+        },),
+        it({
+          name: 'REFUSES A NEW FORM FUSED WITH A CAPITALISED WORD BESIDE IT that is no declared form, either side, '
+            + 'since `Wooly Blossom` is a renamed person (XingZ60: `Xing Lili`)',
+          fn: async () => {
+            for (const candidateText of [
+              'Wooly Blossom naps on the sill.',
+              'Blossom Wooly naps on the sill.',
+              'The cat Wooly Blossom naps on the sill.',
+              'When Wooly Blossom napped, the sill was warm.',
+            ]) {
+              expect(findDroppedDeclaredNames({
+                forms: [ 'Mittens', 'Blossom', ],
+                subjectForms: [ 'Mittens', 'Blossom', ],
+                baseText: 'Mittens naps on the sill.',
+                candidateText,
+              },),).toEqual([ 'Mittens', ],);
+            }
+          },
+        },),
+        it({
+          name: 'REFUSES A NEW FORM SPELLED SPLIT, since the projection folds `Mi Mi` into the key of `Mimi` '
+            + '(the plain rule sees the name there) but the spelling is not the declared one (XingZ60: `Xing Li Li`)',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Mimi', ],
+              subjectForms: [ 'Mittens', 'Mimi', ],
+              baseText: 'Mittens naps on the sill.',
+              candidateText: 'Mi Mi naps on the sill.',
+            },),).toEqual([ 'Mittens', ],);
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Mimi', ],
+              subjectForms: [ 'Mittens', 'Mimi', ],
+              baseText: 'Mittens naps on the sill.',
+              candidateText: 'Wooly Mi Mi naps on the sill.',
+            },),).toEqual([ 'Mittens', ],);
+          },
+        },),
+        it({
+          name: 'STILL READS A SPLIT SPELLING AS THE NAME WHERE THE NAME IS CARRIED, which is the carriage rule '
+            + 'this change leaves alone: only an arrival is held to the declared spelling',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mimi', ],
+              baseText: 'Mimi naps on the sill.',
+              candidateText: 'Mi Mi naps on the sill.',
+            },),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'ACCEPTS A NEW FORM BESIDE AN ORDINARY CAPITALISED WORD, a sentence opener, a title or a kin word, '
+            + 'so `When Blossom napped` and `Dear Blossom,` are real swaps',
+          fn: async () => {
+            for (const candidateText of [
+              'When Blossom napped, the sill was warm.',
+              'Dear Blossom, the sill is warm.',
+              'Perhaps Blossom naps on the sill.',
+              'Since Blossom napped, the sill is warm.',
+              'The old sill was warm for Blossom.',
+              'Sister Blossom naps on the sill.',
+              'In June Blossom naps on the sill.',
+            ]) {
+              expect(findDroppedDeclaredNames({
+                forms: [ 'Mittens', 'Blossom', ],
+                subjectForms: [ 'Mittens', 'Blossom', ],
+                baseText: 'Mittens naps on the sill.',
+                candidateText,
+              },),).toEqual([],);
+            }
+          },
+        },),
+        it({
+          name: 'ACCEPTS A NEW FORM BESIDE A WORD THE BASE ALREADY HELD BESIDE THE LOST FORM, and beside a word '
+            + 'that is part of a declared form of anyone, since neither is a fusion the candidate made',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Blossom', ],
+              subjectForms: [ 'Mittens', 'Blossom', ],
+              baseText: 'Aoba Mittens naps on the sill.',
+              candidateText: 'Aoba Blossom naps on the sill.',
+            },),).toEqual([],);
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Blossom', 'Patch Quill', ],
+              subjectForms: [ 'Mittens', 'Blossom', ],
+              baseText: 'Mittens naps on the sill.',
+              candidateText: 'Patch Quill and Blossom nap on the sill.',
+            },),).toEqual([],);
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Blossom', 'Patch', ],
+              subjectForms: [ 'Mittens', 'Blossom', ],
+              baseText: 'Mittens naps on the sill.',
+              candidateText: 'Patch Blossom naps on the sill.',
+            },),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'ACCEPTS A NEW FORM THAT IS WRITTEN AS DECLARED, a whole multi-word form, a Markdown-escaped '
+            + 'handle, or a form beside punctuation, so only a fusion is held back',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Wooly Blossom', 'Blossom', ],
+              subjectForms: [ 'Mittens', 'Wooly Blossom', 'Blossom', ],
+              baseText: 'Mittens naps on the sill.',
+              candidateText: 'Wooly Blossom naps on the sill.',
+            },),).toEqual([],);
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Wooly_Cat', ],
+              subjectForms: [ 'Mittens', 'Wooly_Cat', ],
+              baseText: 'Mittens naps on the sill.',
+              candidateText: String.raw`Wooly\_Cat naps on the sill.`,
+            },),).toEqual([],);
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Blossom', ],
+              subjectForms: [ 'Mittens', 'Blossom', ],
+              baseText: 'Mittens naps on the sill.',
+              candidateText: 'The cat (Blossom), who naps, is warm; "Blossom" naps.',
+            },),).toEqual([],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
       name: declaredNameRefusalReport.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [

@@ -129,6 +129,13 @@ const SWAPS_THE_NAME_FOR_THE_ALIAS =
   'Dumpling is the youngest cat here, and she naps on the windowsill from dawn to dusk.';
 
 /**
+ Fresh rendering that fuses an undeclared word onto the alias, the shape of
+ XingZ60 slice 80's `Xing Lili`, a name nobody declared.
+ */
+const FUSES_A_WORD_ONTO_THE_ALIAS =
+  'Wooly Dumpling is the youngest cat here, and she naps on the windowsill from dawn to dusk.';
+
+/**
  Forms the archive declares for this person.
  */
 const DECLARED_NAMES: readonly string[] = [
@@ -463,6 +470,23 @@ await describe({
         expect(record.disposition,).toBe('stage-result',);
         expect(record.outputText,).toBe(SWAPS_THE_NAME_FOR_THE_ALIAS,);
         expect(record.changed,).toBe(true,);
+      },
+    },),
+    it({
+      name: 'REFUSES A SWAP THAT FUSES AN UNDECLARED WORD ONTO THE ALIAS, since `Wooly Dumpling` is a renamed '
+        + 'person and not another declared form of hers',
+      fn: async () => {
+        const record = await settleWith({
+          rendering: FUSES_A_WORD_ONTO_THE_ALIAS,
+          declaredNames: DECLARED_NAMES,
+          incumbentText: NAME_ONLY_INCUMBENT_TEXT,
+          declaredSubjectForms: DECLARED_NAMES,
+        },);
+        expect(record.disposition,).toBe('refused-declared-name',);
+        expect(record.outputText,).toBe(NAME_ONLY_INCUMBENT_TEXT,);
+        expect((record.disposition === 'refused-declared-name') ? record.droppedDeclaredNames : undefined,).toEqual([
+          DECLARED_NAME,
+        ],);
       },
     },),
     it({
