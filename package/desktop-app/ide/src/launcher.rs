@@ -307,6 +307,7 @@ pub fn install_backend() -> anyhow::Result<()> {
     return Ok(());
 }
 
+/// The `SLINT_BACKEND` spellings are checked as text.
 #[cfg(test)]
 #[path = "launcher_tests.rs"]
 mod tests;

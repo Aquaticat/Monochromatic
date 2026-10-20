@@ -22,7 +22,10 @@ use std::fmt;
 ///  `Option<u32>` is "a number or nothing" (`number | undefined`).
 /// Why:
 ///  A discrete GPU is preferred over an integrated one,
-///  and every other kind (the CPU kind above all, but also virtual and unknown ones) is refused by returning nothing.
+///  and every other kind
+///  (the CPU kind above all,
+///  but also virtual and unknown ones)
+///  is refused by returning nothing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -78,6 +81,38 @@ impl fmt::Display for AdapterSummary {
 }
 
 /// What:
+///  Order two `(rank, index)` pairs:
+///  the higher rank first,
+///  and equal ranks by their place in the listing.
+///  `Ordering` is the less,
+///  equal,
+///  or greater answer of a comparison.
+/// Why:
+///  `sort_by` takes it as the comparison,
+///  so the best adapter leads and the loader's order breaks ties.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function bestFirst(left: [number, number], right: [number, number]): number;
+/// ```
+fn best_first(left: &(u32, usize), right: &(u32, usize)) -> std::cmp::Ordering {
+    return right.0.cmp(&left.0).then(left.1.cmp(&right.1));
+}
+
+/// What:
+///  Turn the operating system's failure to build the small runtime into this module's error.
+/// Why:
+///  `map_err` takes it by name.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function noRuntime(error: Error): GpuDeviceError;
+/// ```
+fn no_runtime(error: std::io::Error) -> GpuDeviceError {
+    return GpuDeviceError::NoRuntime(error.to_string());
+}
+
+/// What:
 ///  The indexes of the adapters the application may use,
 ///  best first:
 ///  discrete GPUs,
@@ -100,7 +135,7 @@ pub fn rank_hardware(adapters: &[AdapterSummary]) -> Vec<usize> {
         }
     }
     // Higher rank first; equal ranks keep the order of the listing.
-    ranked.sort_by(|left, right| return right.0.cmp(&left.0).then(left.1.cmp(&right.1)));
+    ranked.sort_by(best_first);
     let mut order: Vec<usize> = Vec::new();
     for (_, index) in ranked {
         order.push(index);
@@ -251,7 +286,7 @@ pub fn open_hardware_device() -> Result<HardwareDevice, GpuDeviceError> {
     // ```
     let runtime = tokio::runtime::Builder::new_current_thread()
         .build()
-        .map_err(|error| return GpuDeviceError::NoRuntime(error.to_string()))?;
+        .map_err(no_runtime)?;
     // What: an instance that may open only the Vulkan backend (not GL), with default flags and options.
     // Why: wgpu documents the display handle as unused on Vulkan, and Slint's own automatic path passes none either.
     //
@@ -323,6 +358,7 @@ pub fn open_hardware_device() -> Result<HardwareDevice, GpuDeviceError> {
     return Err(GpuDeviceError::DeviceRefused { refusals });
 }
 
+/// The adapter choice and the messages of the errors are checked from adapter descriptions alone.
 #[cfg(test)]
 #[path = "gpu_device_tests.rs"]
 mod tests;
