@@ -1062,6 +1062,11 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     an interior row (cause unfound), `write_wait_tests` once, two `watch_tests` once (400 ms budgets). The commit
     message of `415bc345ed` says 22 sites where it is 18 constructors in 15 files; a corrective commit comment was
     posted (GCA).
+    Stage 2 (renderer switch of the application to `renderer-femtovg-wgpu`, wgpu 30 Vulkan, full limits, no CPU
+    adapter, Skia excluded) is running: agent `a1b70500a2a370d0d`, started 2026-10-20. Open owner questions so far:
+    the `slint/mcp` builds still link the software renderer (`mcp`, `inspect:native`, idle-cost and log-stall
+    scripts); whether the OpenGL FemtoVG renderer may stay as a fallback for a host with no Vulkan adapter (the
+    owner accepted excluding downlevel adapters, so the default is wgpu only with a clear error).
     Stage 1 landed (agent `a54a3dbd127b14fbf`, merged into `main`, verified by me): `[profile.dev.package."*"]`
     `opt-level = 2` in the IDE `Cargo.toml` (clean debug build 49.7 s to 81.8 s, incremental rebuild unchanged at
     about 4 s, `test:native` 214 tests in about 23 s on a quiet host, measured by me after the merge) and the
