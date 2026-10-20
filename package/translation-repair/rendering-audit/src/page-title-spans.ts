@@ -10,6 +10,7 @@ import {
 } from './page-headings.ts';
 import { pairedPageNames, } from './page-name-glossary.ts';
 import { visibleText, } from './page-visible-text.ts';
+import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Page title spans
 // LEDGER H16 (2026-09-28). Each slice is written and judged alone, and where
@@ -224,13 +225,13 @@ export function repeatedTitleSpans(
       new Map<string, number>(),
     );
   return [...counts.entries(),]
-    .filter(function repeatedAndUnpaired([span, occurrences,],): boolean {
+    .filter(function repeatedAndUnpaired([span, occurrences,]: ReadonlyEntry<string, number>,): boolean {
       return (occurrences >= 2)
         && carriesHan({ text: span, },)
         && (codePointCount({ text: span, },) <= LONGEST_TITLE)
         && (!paired.has(span,));
     },)
-    .map(function toSpan([source, occurrences,],): RepeatedTitleSpan {
+    .map(function toSpan([source, occurrences,]: ReadonlyEntry<string, number>,): RepeatedTitleSpan {
       return {
         source,
         occurrences,
