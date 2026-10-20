@@ -7,6 +7,7 @@ import {
   rewriteEverySlice,
   type TextRewrite,
 } from './page-slice-rewrite.ts';
+import type { ReadonlyEntry, } from '../readonly-entry.ts';
 
 //region Archive destination restore
 // LEDGER A4 (owner, 2026-09-27, "Archive's English"). shihai4h2 linked PTSD
@@ -164,10 +165,10 @@ export function replacedDestinations(
     new Map<string, ReadonlySet<string>>(),
   );
   return new Map([...targets.entries(),]
-    .filter(function oneWay([_from, tos,],): boolean {
+    .filter(function oneWay([_from, tos,]: ReadonlyEntry<string, ReadonlySet<string>>,): boolean {
       return tos.size === 1;
     },)
-    .map(function first([from, tos,],): readonly [
+    .map(function first([from, tos,]: ReadonlyEntry<string, ReadonlySet<string>>,): readonly [
       string,
       string,
     ] {
@@ -206,7 +207,7 @@ function redirected(
    Replacements this text carries a link for.
    */
   const carried = [...destinations.entries(),]
-    .filter(function present([from,],): boolean {
+    .filter(function present([from,]: ReadonlyEntry<string, string>,): boolean {
       return linksTo({
         text,
         href: from,
@@ -216,7 +217,7 @@ function redirected(
     text: carried.reduce(
       function pointBack(
         current,
-        [from, to,],
+        [from, to,]: ReadonlyEntry<string, string>,
       ): string {
         return current
           .replaceAll(
@@ -230,7 +231,7 @@ function redirected(
       },
       text,
     ),
-    changed: carried.map(function note([from, to,],): string {
+    changed: carried.map(function note([from, to,]: ReadonlyEntry<string, string>,): string {
       return `${from} to ${to}`;
     },),
   };
