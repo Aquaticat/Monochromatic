@@ -281,7 +281,13 @@ disjoint write scopes):
   lockfile and `config/pnpr` changes belong to this scope alone.
 - docs subagent `94e9414e`: `doc/troubleshooting/*` only,
   the 2026-10 dependency API drift write-up.
-- sweep subagent `25c55b61`: the 38 build-class packages only.
+- sweep subagent `25c55b61`: the 38 build-class packages only;
+  parked until the repo-wide `mise run build` ends
+  (no concurrent builds),
+  lead wakes it on the build's completion.
+- design subagent `1d3fe543`: `doc/planning/pi-advisor-dsh-variant.md` only,
+  the DSH plugin blueprint probed from the host inspect manifests;
+  implementation of `package/dsh-plugin/advisor` waits for the extraction.
 
 The lead holds `doc/handover/` edits and cross-agent integration.
 
