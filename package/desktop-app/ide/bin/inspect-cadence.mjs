@@ -38,7 +38,7 @@ const stepMs = whole('IDE_CADENCE_STEP_MS', process.env.IDE_CADENCE_STEP_MS ?? '
 const settleMs = whole('IDE_CADENCE_SETTLE', process.env.IDE_CADENCE_SETTLE ?? '10000', 0);
 // The pointer grabs the minimap viewport box 55 pixels from the right edge, inside the strip the minimap fills.
 const grab = whole('IDE_CADENCE_GRAB', process.env.IDE_CADENCE_GRAB ?? '60', 0);
-const dragEnd = Math.min(grab + whole('IDE_CADENCE_DISTANCE', process.env.IDE_CADENCE_DISTANCE ?? '600'), height - 1);
+const dragEnd = Math.min(grab + whole('IDE_CADENCE_DISTANCE', process.env.IDE_CADENCE_DISTANCE ?? '400'), height - 1);
 const scrollDelta = whole('IDE_CADENCE_SCROLL', process.env.IDE_CADENCE_SCROLL ?? '3000');
 if (!process.env.usage_project || !process.env.usage_file) throw new Error('Name the project directory and the file in it');
 // endregion

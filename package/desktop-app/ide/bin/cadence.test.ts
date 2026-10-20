@@ -71,13 +71,13 @@ test('every frame that changes counts as changed and no run is reported', () => 
 test('runs of identical frames are listed in order with the longest named', () => {
   const result = analyzeCadence({ hashes: hashesOf('abbcdddde'), window: { firstSlot: 0, lastSlot: 8 } });
   assert.deepEqual([result.changed, result.identical, result.longestIdenticalRun], [4, 4, 3]);
-  assert.deepEqual(result.identicalRuns, [1, 3]);
+  assert.deepEqual(result.identicalRuns, [{ start: 2, length: 1 }, { start: 5, length: 3 }]);
   assert.equal(result.pattern, 'XX.XX...X');
 });
 
 test('a run that reaches the last slot of the window is listed', () => {
   const result = analyzeCadence({ hashes: hashesOf('abccc'), window: { firstSlot: 0, lastSlot: 4 } });
-  assert.deepEqual(result.identicalRuns, [2]);
+  assert.deepEqual(result.identicalRuns, [{ start: 3, length: 2 }]);
   assert.equal(result.longestIdenticalRun, 2);
 });
 
@@ -90,7 +90,7 @@ test('frames outside the window are not judged, though the pattern shows them', 
 
 test('a window that runs past the recording stops at the last frame', () => {
   const result = analyzeCadence({ hashes: hashesOf('abb'), window: { firstSlot: 0, lastSlot: 50 } });
-  assert.deepEqual([result.changed, result.identical, result.identicalRuns], [1, 1, [1]]);
+  assert.deepEqual([result.changed, result.identical, result.identicalRuns], [1, 1, [{ start: 2, length: 1 }]]);
 });
 
 test('a window of one slot, an empty recording, and a first slot of zero compare nothing outside the recording', () => {
@@ -102,7 +102,7 @@ test('a window of one slot, an empty recording, and a first slot of zero compare
 
 test('a frozen pipeline shows as one long run and a smooth one as none', () => {
   const frozen = analyzeCadence({ hashes: hashesOf('a' + 'b'.repeat(30) + 'c'), window: { firstSlot: 0, lastSlot: 31 } });
-  assert.deepEqual([frozen.longestIdenticalRun, frozen.identicalRuns], [29, [29]]);
+  assert.deepEqual([frozen.longestIdenticalRun, frozen.identicalRuns], [29, [{ start: 2, length: 29 }]]);
   const smooth = analyzeCadence({ hashes: Array.from({ length: 120 }, (_, slot) => String(slot)), window: { firstSlot: 0, lastSlot: 119 } });
   assert.deepEqual([smooth.changed, smooth.identical, smooth.identicalRuns], [119, 0, []]);
 });
@@ -113,7 +113,7 @@ test('the printed lines carry the totals, the window, the longest run, the runs,
     'frames recorded: 6, input window: slots 1 to 4',
     'in window: 3 compared, 2 changed, 1 identical',
     'longest identical run: 1',
-    'identical runs: [1]',
+    'identical runs (length@first slot): [1@4]',
     'pattern (X changed, . identical): X[.XX.]X',
   ]);
 });

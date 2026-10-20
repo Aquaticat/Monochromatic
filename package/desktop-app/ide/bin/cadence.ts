@@ -57,6 +57,9 @@ export function inputWindow({ offsetMs, inputMs }: { readonly offsetMs: number; 
   };
 }
 
+/** Frames in a row that each equal the frame before them; `start` is the slot of the first of them. */
+export type IdenticalRun = { readonly start: number; readonly length: number };
+
 /** What the frames of an input stream did against the frame before each. */
 export type Cadence = {
   /** Every recorded frame, inside the window or not. */
@@ -68,8 +71,8 @@ export type Cadence = {
   /** Frames inside the window that equal the frame before them. */
   readonly identical: number;
   readonly longestIdenticalRun: number;
-  /** Length of every run of identical frames inside the window, in order. */
-  readonly identicalRuns: readonly number[];
+  /** Every run of identical frames inside the window, in order, with the slot of its first frame. */
+  readonly identicalRuns: readonly IdenticalRun[];
   /** One character per recorded frame: X when it differs from the frame before it (the first always does), . when not. */
   readonly pattern: string;
 };
@@ -86,20 +89,21 @@ export function analyzeCadence({ hashes, window }: { readonly hashes: readonly s
   let identical = 0;
   let run = 0;
   let longestIdenticalRun = 0;
-  const identicalRuns: number[] = [];
+  const identicalRuns: IdenticalRun[] = [];
+  const first = Math.max(window.firstSlot + 1, 1);
   const last = Math.min(window.lastSlot, hashes.length - 1);
-  for (let slot = Math.max(window.firstSlot + 1, 1); slot <= last; slot++) {
+  for (let slot = first; slot <= last; slot++) {
     if (hashes[slot] === hashes[slot - 1]) {
       identical++;
       run++;
       longestIdenticalRun = Math.max(longestIdenticalRun, run);
     } else {
       changed++;
-      if (run > 0) identicalRuns.push(run);
+      if (run > 0) identicalRuns.push({ start: slot - run, length: run });
       run = 0;
     }
   }
-  if (run > 0) identicalRuns.push(run);
+  if (run > 0) identicalRuns.push({ start: last + 1 - run, length: run });
   const pattern = hashes.map((hash, slot) => (slot === 0 || hash !== hashes[slot - 1] ? 'X' : '.')).join('');
   return { total: hashes.length, firstSlot: window.firstSlot, lastSlot: window.lastSlot, changed, identical, longestIdenticalRun, identicalRuns, pattern };
 }
@@ -119,7 +123,7 @@ export function formatCadence(cadence: Cadence): readonly string[] {
     'frames recorded: ' + String(cadence.total) + ', input window: slots ' + String(cadence.firstSlot) + ' to ' + String(cadence.lastSlot),
     'in window: ' + String(cadence.changed + cadence.identical) + ' compared, ' + String(cadence.changed) + ' changed, ' + String(cadence.identical) + ' identical',
     'longest identical run: ' + String(cadence.longestIdenticalRun),
-    'identical runs: [' + cadence.identicalRuns.join(', ') + ']',
+    'identical runs (length@first slot): [' + cadence.identicalRuns.map(run => String(run.length) + '@' + String(run.start)).join(', ') + ']',
     'pattern (X changed, . identical): ' + marked,
   ];
 }
