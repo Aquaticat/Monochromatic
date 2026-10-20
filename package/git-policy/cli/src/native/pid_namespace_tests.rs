@@ -67,3 +67,11 @@ fn a_foreign_owner_is_alive_until_its_record_expires() {
     let old = record_aged(directory.path(), FOREIGN_OWNER_PATIENCE + Duration::from_secs(60));
     assert_eq!(foreign_owner_standing(Some("pid:[1]"), old.as_path()), Some(false));
 }
+
+/// Exactly the patience is still alive; one nanosecond more is expired.
+#[test]
+fn the_patience_boundary_is_exclusive() {
+    assert!(!age_outlives_patience(FOREIGN_OWNER_PATIENCE));
+    assert!(age_outlives_patience(FOREIGN_OWNER_PATIENCE + Duration::from_nanos(1)));
+    assert!(!age_outlives_patience(FOREIGN_OWNER_PATIENCE - Duration::from_nanos(1)));
+}

@@ -290,3 +290,15 @@ fn a_holder_of_another_namespace_is_alive_until_its_record_expires() {
     assert!(!owner_lock_holder_is_alive(&foreign, root.as_path()).expect("same namespace"));
     remove(root.as_path());
 }
+
+/// The record limit is 64 KiB: a record far over a few hundred bytes still reads.
+#[test]
+fn a_record_of_a_few_kilobytes_is_read() {
+    let root: PathBuf = fixture("lock-record-limit");
+    let long_token: String = "t".repeat(4096);
+    let record: String = INCUMBENT_HOOK_LOCK.replace("0b6c2c1e-6f5b-4d0e-9a55-3f5d8e2f6a10", long_token.as_str());
+    std::fs::write(root.join(OWNER_LOCK_RECORD_FILENAME), record).expect("record");
+    assert!(matches!(read_owner_lock_record(root.as_path()), Ok(PublishedOwner::Owner(_))));
+    assert_eq!(OWNER_LOCK_RECORD_LIMIT, 65_536);
+    remove(root.as_path());
+}
