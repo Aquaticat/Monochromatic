@@ -204,31 +204,31 @@ export const IP_LITERAL_REJECTED_FIXTURES: readonly IpLiteralFixture[] = [
   },
   {
     expected: false,
-    token: String.fromCodePoint(0x0660,),
+    token: String.fromCodePoint(0x06_60,),
   },
   {
     expected: false,
-    token: `${String.fromCodePoint(0x0660,)}.${String.fromCodePoint(0x0660,)}`,
+    token: `${String.fromCodePoint(0x06_60,)}.${String.fromCodePoint(0x06_60,)}`,
   },
   {
     expected: false,
-    token: String.fromCodePoint(0xFF10,),
+    token: String.fromCodePoint(0xFF_10,),
   },
   {
     expected: false,
-    token: String.fromCodePoint(0x1D7D9,),
+    token: String.fromCodePoint(0x1_D7_D9,),
   },
   {
     expected: false,
-    token: `1${String.fromCodePoint(0x1D7D9,)}`,
+    token: `1${String.fromCodePoint(0x1_D7_D9,)}`,
   },
   {
     expected: false,
-    token: String.fromCodePoint(0xD800,),
+    token: String.fromCodePoint(0xD8_00,),
   },
   {
     expected: false,
-    token: String.fromCodePoint(0xDC00,),
+    token: String.fromCodePoint(0xDC_00,),
   },
 ];
 

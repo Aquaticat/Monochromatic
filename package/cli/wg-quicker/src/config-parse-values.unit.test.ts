@@ -15,7 +15,7 @@ import {
   IP_LITERAL_DIGIT_DOT_FIXTURES,
   IP_LITERAL_REJECTED_FIXTURES,
   type IpLiteralFixture,
-} from './config-parse-values-fixture.ts';
+} from './fixture.config-parse-values.ts';
 
 /**
  Builds one parameterised case replaying a recorded classifier verdict.
@@ -87,14 +87,8 @@ await describe({
     },),
     describe({
       name: parseConfigText.name,
-      children: [
-        //region DNS field split
-
-        ...DNS_FIELD_FIXTURES
-          .map(dnsFieldCase,),
-
-        //endregion DNS field split
-      ],
+      children: DNS_FIELD_FIXTURES
+        .map(dnsFieldCase,),
     },),
   ],
 },);
