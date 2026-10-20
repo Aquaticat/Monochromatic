@@ -280,9 +280,40 @@ the sweep matched the comment text).
 Delegated 2026-10-20 (subagents,
 disjoint write scopes):
 
-- extraction fork `40eef920`: `package/agent-harness-shared/advisor` (new)
-  plus `package/pi-plugin/advisor` rewiring;
-  lockfile and `config/pnpr` changes belong to this scope alone.
+- extraction fork `40eef920`: DONE 2026-10-20,
+  shared core `package/agent-harness-shared/advisor` (new)
+  plus `package/pi-plugin/advisor` rewired onto it.
+  Commits:
+  `093f32832a` move the 53 core files,
+  `38aeccbdbd` extract behind the three ports
+  (`AdvisorModelResolution`,
+  `AdvisorTranscript`/`AdvisorTranscriptSerialization`,
+  `AdvisorTheme`),
+  `ee89203126` retype the test fakes,
+  `77e28de319` rewire the pi adapter,
+  `a46ffb6b79` record install outputs,
+  `09be402fe6` chain-per-line lint fix,
+  `44f7ee2e56` Q5 pick applied
+  (`formatDuration` DECIMAL_BELOW_MS precision,
+  3 discriminating tests),
+  `47699d3123` README with ports,
+  adapter guide,
+  `defaultReviewerModel` user-config-only policy,
+  Q5/Q6 picks,
+  LN3 suppression record.
+  Q6 reviewed-not-applied (incumbent wins):
+  `truncateContext`,
+  `buildAdvisorUserMessageText`,
+  config `readJsonFile` copies keep incumbent behavior.
+  Verified by the fork:
+  both packages `lint`,
+  `lint:types`,
+  `build`,
+  `test:unit` green
+  (shared 15 PASS suites,
+  pi 4 PASS suites,
+  0 FAIL).
+  Lockfile and `config/pnpr` changes belonged to this scope alone.
 - docs subagent `94e9414e`: `doc/troubleshooting/*` only,
   the 2026-10 dependency API drift write-up.
 - sweep subagent `25c55b61`: the 38 build-class packages only;
@@ -450,6 +481,26 @@ for Claude,
 the git wrapper's owner;
 wrapper fixes are out of scope for this series.
 
+### 2026-10-20 monochromatic-lint startup failure
+
+Separate incident:
+`monochromatic-lint` fails at startup for every file
+with the config error `Unknown built-in rule rust/avoidable-closure`
+in `monochromatic-lint.config.jsonc`
+(reported by extraction fork `40eef920`,
+which therefore could not run the markdown gate
+and verified README rendering with `marked` instead).
+The rule is documented and registered
+(`package/linter/monochromatic-lint/README.md:274`,
+`doc/decision/rust-closure-lint-dylint.md:111`),
+so this is rule-registry or config-validation drift.
+Dispatched 2026-10-20 to a subagent
+(scope:
+`package/linter/monochromatic-lint`,
+root `monochromatic-lint.config.jsonc`,
+`doc/troubleshooting/`),
+fixing per the standing pre-existing-issues directive.
+
 ### Unknowns
 
 - Resolved:
@@ -481,31 +532,29 @@ Implementation,
    (213 packages,
    170 pass,
    43 red triaged as above).
-3. IN PARALLEL (subagents,
-   2026-10-20):
-   extract the shared core `package/agent-harness-shared/advisor`
-   and rewire `package/pi-plugin/advisor`
-   (fork `40eef920`;
-   redoing destroyed work per the worktree reset incident section,
-   committing in small units);
-   write the `doc/troubleshooting/` dependency API drift record
-   (`94e9414e`);
-   fix the 38 build-class reds
-   (`25c55b61`).
-4. Deferred (2026-10-20):
-   `git merge --ff-only origin/main` to adopt the auto-push published
-   merge `46a264639b`
-   (auto-push moved `origin/main` after commit `fafac18a54`).
-   Deferred because the extraction's staged renames make the worktree
-   unsafe for a merge right now;
-   run it once extraction lands and before further integration.
-   Then fold the two design prerequisites into the extracted core
+3. DONE 2026-10-20 (subagents,
+   disjoint write scopes):
+   shared core extraction and pi rewiring (`40eef920`,
+   commits in the delegation list),
+   the dependency API drift record (`94e9414e`,
+   `601c69399e`),
+   and the 38 build-class reds (`bd3dc9b4`).
+4. DONE 2026-10-20:
+   `git merge --ff-only origin/main` ran on a clean worktree and adopted
+   `1dde8c5cd6`
+   (the concurrent translation-repair NeuralWatt batch;
+   the queued auto-push merges are absorbed).
+   ACTIVE (subagent):
+   fold the two design prerequisites into the extracted core
    (optional `defaultReviewerModel` field,
    `selectAdvisorModel` ranking seam),
    then build `package/dsh-plugin/advisor` (in-process plugin,
    tool plus `/advisor` command, unified config,
    `ctx.llm` backend, Q12 selection rule,
    `doc/planning/pi-advisor-dsh-variant.md` as the blueprint).
+   Parallel (subagent):
+   fix the `monochromatic-lint` startup failure
+   (see its incident section).
 5. Tests, lint, and `mise` tasks for every new and moved package;
    behavior picks recorded per Q5 and Q6
    plus the 2026-10-20 reviewer-fallback decision
