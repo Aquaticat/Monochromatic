@@ -349,8 +349,20 @@ import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-pa
  (acf6ada60, e80301bf3). None of the 92 pinned English archives has two notes on one line or a carriage return, so no
  sheet text changes, and no record had been written at 21 when they landed: the only run since it was set,
  CuspariaKLSY18, runs a6a0ed7dc0, which predates it.
+
+ Version 22 covers the archive's spelling of a Han name written inside a sentence (zheermao101, run zheermao16, 2026-10-20): the
+ publication rule that every translate candidate meets now refuses a candidate that writes the letters of the archive's spelling
+ under another spelling (`translate-floor/src/translate-prose-name.ts`), so a record stored under 21 may hold a candidate the
+ rule refuses, and the identity lines the sheets read carry the archive's spellings (`rendering-audit/src/page-name-glossary.ts`).
+ The key hashes the version, the shape of the run and the texts, not the sheet or the floors, so such a record would be served
+ under the new rule. Runs zheermao16 and CuspariaKLSY19 start at `a5dc23c5bb`, which holds the commit that set 21 (`aa0ab6ff0`),
+ so records at 21 are written there and the change cannot ride inside it; the number moves, as the lane-contest version moves with
+ it. Over the 92 pinned English archives no archive is refused as a candidate against itself, and one of the ten shipped pages
+ under the agent runs is refused (zheermao16). The consolidate version rides inside 28 and the repair slice, refine, consistency,
+ page title and pairing versions stay, for the reasons the lane-contest version gives. No record has been written at 22, which
+ this change sets first.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 21;
+export const TRANSLATE_SLICE_CACHE_VERSION = 22;
 
 /**
  Models the translate lane seats.

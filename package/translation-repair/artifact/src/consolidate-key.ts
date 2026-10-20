@@ -387,6 +387,15 @@ import type { LaneText, } from '@monochromatic-dev/translation-repair-translate-
  them between blank lines hold one, so a sheet changes for at most those 10 entries; no other entry's sheet moves. The
  archive block review has no cache version of its own, the block it reviews stands whatever it finds, and the other
  versions stay, since none of their sheets is this one. No record has been written at 28, which this change sets first.
+
+ Rides inside 28 too: the publication rule the consolidation, its standing verdict and its polish round meet refuses a
+ candidate that writes the letters of the archive's spelling of a Han name written inside a sentence under another spelling
+ (`translate-floor/src/translate-prose-name.ts`), and the identity lines the gates read carry those spellings
+ (`rendering-audit/src/page-name-glossary.ts`; zheermao101, run zheermao16, 2026-10-20). The key does not hash the floors, so a
+ record written under the old rule would be served under the new, if one had been written at 28. None has: 28 was set in
+ `6a28f54be`, at 11:24 UTC-4 on 2026-10-20, and the two runs begun since, zheermao16 and CuspariaKLSY19, both log
+ `START tip=a5dc23c5bb`, which does not hold that commit and sets 27. Both read and write at 27, so neither can have stored
+ an answer at 28. The lane-contest and translate slice versions move for the same rule (13 and 22).
  */
 export const CONSOLIDATE_CACHE_VERSION = 28;
 
