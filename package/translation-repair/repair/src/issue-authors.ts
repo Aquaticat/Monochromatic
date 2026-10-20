@@ -1,3 +1,4 @@
+
 /**
  Reads which models wrote the text a checker stage is about to judge, out of
  the judged rounds that produced it.
@@ -14,6 +15,7 @@ import {
 } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import type {
   EditableEnvelope,
+  ReadonlyEntry,
   RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { EditorStageResult, } from './repair-editor-stage.ts';
@@ -226,7 +228,7 @@ function envelopeAuthorsFromRounds(
    issue, and keying any earlier would drop the first envelope's authors.
    */
   const pairs: readonly IssueAuthorPair[] = Object.entries(issuesByEnvelope,)
-    .flatMap(function toPairs([envelopeId, issueIds,],): readonly IssueAuthorPair[] {
+    .flatMap(function toPairs([envelopeId, issueIds,]: ReadonlyEntry<string, readonly string[]>,): readonly IssueAuthorPair[] {
       /**
        Models that wrote this envelope's winning candidate.
        */

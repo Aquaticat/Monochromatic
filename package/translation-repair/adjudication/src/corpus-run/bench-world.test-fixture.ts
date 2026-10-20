@@ -8,6 +8,7 @@ import {
 } from 'node:path';
 
 import type { CorpusPin, } from '@monochromatic-dev/translation-repair-corpus-source';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { fixtureGit, } from '../hermetic-git-run.test-fixture.ts';
 import { scratchDirWith, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 
@@ -121,7 +122,7 @@ function pagesOf(
 ): readonly PageFile[] {
   return [
     ...Object.entries(entries,)
-      .flatMap(function bothPages([entryId, pages,],): readonly PageFile[] {
+      .flatMap(function bothPages([entryId, pages,]: ReadonlyEntry<string, BenchPages>,): readonly PageFile[] {
         return [
           {
             relPath: `people/${entryId}/page.md`,
@@ -134,7 +135,7 @@ function pagesOf(
         ];
       },),
     ...Object.entries(originalOnly,)
-      .map(function onePage([entryId, source,],): PageFile {
+      .map(function onePage([entryId, source,]: ReadonlyEntry<string, string>,): PageFile {
         return {
           relPath: `people/${entryId}/page.md`,
           text: source,

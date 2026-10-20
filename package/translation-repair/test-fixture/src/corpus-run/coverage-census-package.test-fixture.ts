@@ -5,6 +5,7 @@ import {
 import { join, } from 'node:path';
 
 import { scratchDirWith, } from '../scratch-dir.test-fixture.ts';
+import type { ReadonlyEntry, } from '../readonly-entry.ts';
 
 //region Coverage census package fixture
 // A DISPOSABLE PACKAGE DIRECTORY with a build directory holding the files a
@@ -59,7 +60,7 @@ export async function makeBuiltPackage(
         { recursive: true, },
       );
       await Promise.all(Object.entries(files,)
-        .map(async function written([name, text,],): Promise<void> {
+        .map(async function written([name, text,]: ReadonlyEntry<string, string>,): Promise<void> {
           await writeFile(
             join(
               distDirectory,

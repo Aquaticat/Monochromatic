@@ -30,6 +30,12 @@ New text goes into the file whose subject it belongs to;
 a file that would pass the limit gives up a subject to a new file,
 named for that subject and listed here.
 
+- [Translation repair handover 2026-09-06: NeuralWatt as a provider, 2026-10-20](translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20.md):
+  NeuralWatt as the first provider:
+  the owner's terms,
+  the meter and the stop built and removed,
+  the day boundary and the account-wide count,
+  the DeepSeek V4.1 Flash 1017 weights and the first run on it.
 - [Translation repair handover 2026-09-06: the checkpoint of 2026-10-18, the package split, the shared lint analysis and the rounds after it](translation-repair-handover-2026-09-06-checkpoint-2026-10-18-package-split-shared-lint-analysis-and-follow-ups.md):
   The checkpoint of 2026-10-18,
   the package split with the shared lint analysis and the rounds that landed after it,
@@ -642,9 +648,10 @@ its "Next" list is still the queue the merge went ahead of.
       (read at 20:30 UTC;
       the pass log of 2026-10-20),
       and spent 65 of Hyper's 110.
-      `CuspariaKLSY` waits:
-      the NeuralWatt build changes the digest,
-      so the rotation restarts at `zheermao101` once it lands,
+      The NeuralWatt build changed the digest,
+      so the rotation restarted at `zheermao101`
+      (`zheermao19`,
+      in the NeuralWatt item),
       then CuspariaKLSY,
       XingZ60,
       yingying,
@@ -652,78 +659,19 @@ its "Next" list is still the queue the merge went ahead of.
       mikaela_khara,
       shi_Yumiaoya and TianqiChen666.
     - `64d40cb4ff` and `768b081ee5` carry the comments their subjects needed (B709).
-    - NeuralWatt joins as a provider (owner,
-      2026-10-20:
-      `TRANSLATION_REPAIR_NEURALWATT_API_KEY` added,
-      "550Wh of energy on DeepSeek V4.1 Flash and GLM 5.3 Flash per day",
-      "we need to meter (using estimations) ourselves because overage eats into my normal plan").
-      The 550 Wh is the Max plan's 500 Wh plus the 50 Wh for product-news email
-      (`https://docs.neuralwatt.com/billing/daily-free-energy`):
-      it resets at 00:00 UTC,
-      does not carry over,
-      covers each covered model's standard and flex lanes and not `-speed`,
-      and once spent requests bill the plan.
-      No endpoint reports what is left of it
-      (`/v1/quota` reports the plan's `kwh_used`,
-      `/v1/usage/energy` the account's days),
-      so the pipeline keeps its own meter,
-      as the Bedrock ledger does:
-      reserve an estimate per call from the energy matrix's prompt-size buckets,
-      settle with the stream's `: energy` comment,
-      mark the provider dry until 00:00 UTC on a `: cost` comment with a nonzero `request_cost_usd`,
-      and read `/v1/quota` at start and end of a run.
-      Served ids `deepseek-v4.1-flash` and `glm-5.3-flash`,
-      standard lane only;
-      first in the provider order,
-      by the rule that expiring money is spent first
-      and by the owner's ruling of 2026-10-20:
-      "Use the neuralwatt free energy front and center."
-      Every seat of the two models goes to NeuralWatt first in every role it already holds;
-      no new roles,
-      and the owner's 2026-09-02 unseating of GLM-5.3-Flash as a judge stands.
-      The meter's margin is kept as small as can be justified,
-      so free energy is not left unspent.
-      The encrypted store `.env.local.json` went to the branch worktree on 2026-10-20 (main's copy,
-      a strict superset of the old one by key names);
-      the scratch gate worktrees stay keyless.
-      This changes the build,
-      so the rotation restarts at zheermao101 once it lands.
-      State at 22:00 UTC on 2026-10-20:
-      built in keyless worktree w242
-      (base `7900a9a639`,
-      16 commits `8fca5003b7` to `ce1b710326`,
-      then docs and test commits to `0a4570d563`);
-      handback `/var/home/user/temp/agent/x15-fix/neuralwatt/handback.md`;
-      decision record `doc/decision/translation-repair-neuralwatt-provider.md`
-      (no cache version moves,
-      veto-open);
-      ledger P15 in `package/translation-repair/doc/audit-ledger-providers-routing-and-seating.md`.
-      Gate g129 on `ce1b710326`:
-      suite 2630 pass and 31 fail,
-      all 31 in `source-scan`'s scans finding the new code
-      (being fixed in w242);
-      oxlint red in 21 packages on `prefer-readonly-parameter-type` alone
-      (105 errors),
-      tuple-destructured callbacks in files the branch never touched;
-      main's TypeScript 7.1.0-beta move (`27b1cf2eec`) landed after the green gate g128,
-      and baseline gate g130 on main `a4987be78a` is red the same way:
-      the same 105 errors in the same 21 packages,
-      suite 2608 pass and 0 fail.
-      `doc/troubleshooting/typescript-is-tuple-type-tuple-reference.md` explains them:
-      7.1 hands the plugin the tuple reference,
-      so mutable tuples from `Object.entries` and `Map.entries` callbacks now surface,
-      and the offers are sound.
-      Queued after the NeuralWatt land:
-      fix all 105 at the package's own boundaries
-      (an explicit deeply readonly entry type),
-      never by loosening the rule.
-      Next:
-      green `source-scan`,
-      land w242,
-      install and force-build in the branch worktree (M285),
-      compare digests,
-      set `FROZEN` in `launch-rotation.ts`,
-      and launch `zheermao18`.
+    - NeuralWatt joined as the first provider on 2026-10-20,
+      filed in [NeuralWatt as a provider](translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20.md):
+      the owner's terms,
+      the stop built and removed,
+      the day boundary and the account-wide count,
+      the DeepSeek 1017 weights and the `zheermao19` run.
+      Its "Next" is the queue:
+      gate and land w247,
+      w248 and w249,
+      rebuild,
+      set `FROZEN`,
+      recalibrate the energy margin,
+      then restart the rotation at `zheermao101` on the combined build.
     - The class of the `zheermao15` read is ledger B702.
     - The guard of B701 stays open and undecided:
       the rotation sweep as an expensive mise task,

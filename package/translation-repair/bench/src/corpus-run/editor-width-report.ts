@@ -1,7 +1,10 @@
 import { writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import type {
+  ReadonlyEntry,
+  RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
   summarizeWidths,
@@ -210,7 +213,7 @@ export async function writeWidthReport(
       '## Slices that carried no work',
       '',
       ...Object.entries(skipped,)
-        .map(function toLine([refusal, count,],) {
+        .map(function toLine([refusal, count,]: ReadonlyEntry<string, number>,) {
           return `-   ${refusal}: ${String(count,)}`;
         },),
       '',
