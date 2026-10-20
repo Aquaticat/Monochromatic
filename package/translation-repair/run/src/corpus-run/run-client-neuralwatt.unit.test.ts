@@ -68,7 +68,46 @@ const QUOTA_BODY = JSON.stringify({
 },);
 
 /**
- Transport answering NeuralWatt's two routes, recording what it was asked.
+ By-model usage reply for the window a request asked, with no rows: the account has used no covered energy, and the
+ period echoes the window as the route does when it honours it.
+
+ @param exchange - the by-model request
+
+ @returns The reply
+
+ @example
+ ```ts
+ const reply = usageBodyFor({ exchange, },);
+ ```
+ */
+function usageBodyFor({ exchange, }: { readonly exchange: TransportExchange; },): string {
+  /**
+   Query the request carried.
+   */
+  const { searchParams, } = new URL(exchange.url,);
+  return JSON.stringify({
+    period: {
+      start: (searchParams.get('start_date',) ?? '').replace('Z', '+00:00',),
+      end: (searchParams.get('end_date',) ?? '').replace('Z', '000+00:00',),
+    },
+    models: [],
+    products: [],
+  },);
+}
+
+/**
+ Whether an exchange is the by-model usage read.
+
+ @param exchange - the exchange
+
+ @returns Whether it is
+ */
+function isUsageRead(exchange: TransportExchange,): boolean {
+  return exchange.url.includes('/usage/by-model',);
+}
+
+/**
+ Transport answering NeuralWatt's routes, recording what it was asked.
 
  @param exchanges - where each exchange is recorded
 
@@ -84,6 +123,8 @@ function scriptedNeuralWatt(
 ) {
   return async function answer(exchange: TransportExchange,) {
     exchanges.push(exchange,);
+    if (isUsageRead(exchange,))
+      return { status: 200, bodyText: usageBodyFor({ exchange, },), };
     return (exchange.method === 'GET')
       ? { status: 200, bodyText: QUOTA_BODY, }
       : { status: 200, bodyText: NEURALWATT_STREAM, };
@@ -116,9 +157,10 @@ await describe({
         },);
         expect(reply.text,).toBe('sunbeam',);
         expect(exchanges.map(function urlOf(exchange,): string {
-          return `${exchange.method} ${exchange.url}`;
+          return `${exchange.method} ${exchange.url.split('?',)[0] ?? ''}`;
         },),).toEqual([
           'GET https://api.neuralwatt.com/v1/quota',
+          'GET https://api.neuralwatt.com/v1/usage/by-model',
           'POST https://api.neuralwatt.com/v1/chat/completions',
         ],);
         expect(await client.providerDryness({ signal: new AbortController().signal, },),).toEqual({
@@ -157,7 +199,11 @@ await describe({
           },);
         },);
         expect(refusal,).toBeInstanceOf(EveryProviderDryError,);
-        expect(exchanges.length,).toBe(0,);
+        // THE METER NEEDS THE DAY'S START, so it reads the account's two routes (no energy is spent reading them),
+        // and no chat request goes out.
+        expect(exchanges.filter(function isChat(exchange,): boolean {
+          return exchange.method === 'POST';
+        },).length,).toBe(0,);
       },
     },),
 
@@ -235,6 +281,8 @@ await describe({
           transport: async function answer(exchange: TransportExchange,) {
             if (exchange.method !== 'GET')
               return { status: 200, bodyText: NEURALWATT_STREAM, };
+            if (isUsageRead(exchange,))
+              return { status: 200, bodyText: usageBodyFor({ exchange, },), };
             const bodyText = quotas[Math.min(reads.count, quotas.length - 1,)] ?? QUOTA_BODY;
             reads.count += 1;
             return { status: 200, bodyText, };
