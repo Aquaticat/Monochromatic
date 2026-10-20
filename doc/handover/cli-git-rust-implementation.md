@@ -1831,6 +1831,16 @@ that is verification, not a decision for the user.
   (`:34:42` and `:34:49` `*` to `+`, and `ManualPushProbeError` `Display::fmt`); `signal_relay` 8 missed (four listed:
   `wait_without_reaping` ECHILD arm and body, `SignalGuard::install`, `SignalGuard::run_child`). To do after `nc2`
   ends (editing `src/native` earlier would leak into its image): a test per missed mutant or an equivalence proof.
+  nc2 finished 2026-10-20 (rerun of the six files, no baseline failure): `auto_push_branch_key` 43 caught;
+  `auto_push_single_flight` 25 caught; `auto_push_record` 2 missed (`random_uuid_or_io` constant results);
+  `auto_push` 1 missed (`:324:29`); `manual_push_range` 1 missed (Display); `manual_push_lifecycle` 2 missed (Display,
+  `:88:12` delete `!`). Tests added and committed (6467f403fb, fdc4ef4cf4, cba49396d4), each shown to fail with its
+  mutant applied on the host: the four Display impls, the 16 MiB limit, the remote-name dedup, the unique candidate
+  suffix, the first-push no-merge rule, `restore`, the `waitid` wait, ECHILD and EINTR. Equivalent by reading:
+  `signal_relay.rs:194` and `:243` (`|` to `^` over two disjoint flag bits) and `:398`, `:411` (the `cfg(not(unix))`
+  bodies are not compiled on Linux). `auto_push_reconcile.rs:164:31` (timeout): the host run fails
+  `a_branch_that_tracks_a_local_branch_has_no_destination` under it, so it is detected; the container reported a
+  timeout only; confirm in the closing mutation rerun over every touched file, after the queued `src/native` fixes.
   Triage 2026-10-20: closed 632 (the perf code is gone) and 1348 (ST2 is a TypeScript rule). Reframed 629 to the Rust
   helpers still duplicated across `test_support.rs`, `command_test_support.rs` and `binary_support.rs` plus the
   byte-argument copies in `cli.fuzz`; queued behind nc2, as those files are in the mutation image. 630 stays open with
