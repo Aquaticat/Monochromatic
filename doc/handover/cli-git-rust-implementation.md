@@ -1815,8 +1815,8 @@ that is verification, not a decision for the user.
   code still present), 574 (feature request, not this package's code), 1348 (region markers), 1672 (hex tables),
   728 to 730 (regexes in `cli.fuzz/bin`), 1717, 612's siblings 613 to 680 (other packages).
   Queued behind nc1 (scripts it uses): `bin/mutate-native-container*.mjs`, `native-planted-controls.mjs`,
-  `native-nextest-snapshot.mjs` (19 lint findings, issues 1338, 1340, 1343). Separate pass for `cli.fuzz/bin/container.mjs`
-  and `planted-controls.mjs` (1338's second half, 728 to 730): they are outside every lint task, use `spawnSync`,
+  `native-nextest-snapshot.mjs` (19 lint findings, issues 1338, 1340, 1343).
+  Separate pass for `cli.fuzz/bin/container.mjs` and `planted-controls.mjs` (1338's second half, 728 to 730): they are outside every lint task, use `spawnSync`,
   `try/finally` and regexes, and `container.mjs` ends in an early `return` inside its `try`; verify with a
   `--build-only` run of the fuzz container script.
   Issue 1713 (handover paths and `mise run //` targets that moved): the cli-git half is done in commit `d4a2587cb6`
