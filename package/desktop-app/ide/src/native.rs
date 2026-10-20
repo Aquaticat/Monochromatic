@@ -37,8 +37,6 @@ use ide_app::row_map::RowMap;
 use ide_app::shaped_text::{Clip, ShapedView, TextShaper};
 /// Paint identity prevents caret movement from rebuilding source pixels.
 use ide_app::source_frame::FrameStamp;
-/// Raster output retains the exact glyph positions used by selection.
-use ide_app::text_raster::TextRaster;
 /// One line's block of virtual rows.
 use ide_app::virtual_row::Block;
 /// Source and display geometry use the same library interface tested headlessly.
@@ -94,6 +92,12 @@ mod annotation_gutter_tests;
 ///  and display scale.
 #[cfg(test)]
 mod annotation_paint_tests;
+/// The pixels the GPU draws for annotations:
+/// one underline style per severity,
+/// virtual rows,
+/// and the scheme's inks.
+#[cfg(test)]
+mod annotation_scene_tests;
 /// Which rendered pixels may move when virtual rows arrive,
 ///  change,
 ///  or vanish,
@@ -143,6 +147,14 @@ mod frame_trace;
 ///  Slint windows drawn on a hardware Vulkan device and read back as pixels.
 #[cfg(test)]
 mod gpu_snapshot;
+/// The rendering notifier fires on a harness snapshot,
+///  and a Vello texture imported into the window appears in it.
+#[cfg(test)]
+mod gpu_texture_probe_tests;
+/// The code view on the GPU:
+/// the textures the tile and the wrap indicator are drawn into,
+/// and the rendering notifier that draws them.
+mod gpu_tile;
 /// Tree rows that git ignores draw their name at 0.8 opacity and nothing else of the row changes.
 #[cfg(test)]
 mod ignored_row_tests;
@@ -294,6 +306,10 @@ mod tile;
 mod tile_build;
 /// The background measurement of every line at the wrap width.
 mod tile_pass;
+/// The native tests' reads of the GPU tile:
+/// a frame is rendered and the tile's texture is read back.
+#[cfg(test)]
+mod tile_reads;
 /// Windowed rows must not redirect an in-progress click after scrolling.
 #[cfg(test)]
 mod tree_pointer_tests;
@@ -340,6 +356,12 @@ mod wrap_keys_tests;
 /// and what does not fit goes to the tile worker.
 #[cfg(test)]
 mod wrap_resize_tests;
+/// The pixels the GPU draws for wrapped lines,
+/// clips,
+/// selections,
+/// and the wrap indicator.
+#[cfg(test)]
+mod wrap_scene_tests;
 /// Always-on soft wrap in the window:
 ///  the wrap width,
 ///  the gutter's indicator,
@@ -355,6 +377,8 @@ mod write_wait_tests;
 /// An ignored measurement of saves that begin when the safety sweep comes due.
 #[cfg(test)]
 mod write_wait_timer_tests;
+/// The handle the state holds on the GPU side of the code view.
+use gpu_tile::GpuTile;
 /// The wrap indicator's symbol.
 use ide_app::wrap_sign::Sign;
 /// Bind caret and selection callbacks.
@@ -439,8 +463,10 @@ struct State {
     sign_scale: Option<u32>,
     /// Reusable paragraph/font resources.
     shaper: TextShaper,
-    /// Reusable outline raster resources.
-    raster: TextRaster,
+    /// The GPU side of the code view:
+    /// the textures the tile and the wrap indicator are drawn into,
+    /// and the scenes waiting for the next frame.
+    gpu: GpuTile,
     /// Exact displayed geometry used by pointer input.
     shaped: Option<ShapedView>,
     /// Avoid cloning whole source for accessibility on each selection change.

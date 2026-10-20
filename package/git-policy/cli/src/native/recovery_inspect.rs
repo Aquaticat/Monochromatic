@@ -26,13 +26,13 @@ use super::recovery_error::{RecoveryError, io_failure};
 use super::recovery_files::{RECOVERY_FILE_LIMIT, recovery_path_exists};
 /// Owner records and liveness.
 use super::transaction_owner::{
-    OwnerLiveness, OwnerLivenessError, TransactionOwner, classify_transaction_owner,
+    OwnerLiveness, OwnerLivenessError, TransactionOwner, classify_transaction_owner_record,
     parse_transaction_owner,
 };
 /// Registry entries.
 use super::transaction_registry::{EntryKind, OWNER_FILENAME, RegistryEntry};
 /// `PathBuf` is an owned filesystem path.
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// What:
 ///  An entry's owner evidence:
@@ -129,8 +129,8 @@ fn liveness_after_refused_probe(owner_pid: i64, error: &std::io::Error) -> Resul
 /// ```ts
 /// await classifyTransactionOwner({ ownerPid, ownerIdentity })
 /// ```
-fn liveness(record: &TransactionOwner) -> Result<OwnerLiveness, RecoveryError> {
-    match classify_transaction_owner(record.owner_pid, record.owner_identity.as_str()) {
+fn liveness(record: &TransactionOwner, owner_path: &Path) -> Result<OwnerLiveness, RecoveryError> {
+    match classify_transaction_owner_record(record, owner_path) {
         Ok(found) => return Ok(found),
         Err(OwnerLivenessError::Probe(error)) => {
             return liveness_after_refused_probe(record.owner_pid, &error);
@@ -210,7 +210,7 @@ pub fn inspect_registry_entry(entry: &RegistryEntry) -> Result<InspectedEntry, R
             entry.path.display()
         )));
     }
-    let state: OwnerLiveness = liveness(&record)?;
+    let state: OwnerLiveness = liveness(&record, owner_path.as_path())?;
     return Ok(InspectedEntry {
         entry: entry.clone(),
         owner: OwnerEvidence::Owned(record, state),

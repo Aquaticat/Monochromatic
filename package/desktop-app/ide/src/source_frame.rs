@@ -4,6 +4,8 @@
 use crate::annotation::Visible;
 /// Annotation inks follow the system scheme.
 use crate::annotation_layout::AnnotationColors;
+/// Palette colors affect pixels but not caret geometry.
+use crate::code_colors::CodeColors;
 /// Canonical source revision and selection define source paint inputs.
 use crate::document::Document;
 /// In-file find ranges are painted from the same shaped rows as selection.
@@ -12,8 +14,6 @@ use crate::find::FindRanges;
 use crate::shaped_text::{Clip, Viewport};
 /// Syntax spans belong to the source paint key even when text is unchanged.
 use crate::source_style::SourceStyles;
-/// Palette colors affect pixels but not caret geometry.
-use crate::text_raster::CodeColors;
 /// Pointer equality avoids walking unchanged classifications on caret-only updates.
 use std::sync::Arc;
 

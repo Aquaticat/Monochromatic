@@ -80,6 +80,16 @@ pub mod vertical_motion;
 /// Click counting and unit-wise drag extension for pointer selection.
 pub mod pointer_selection;
 
+/// The palette of source ink:
+///  syntax roles,
+///  default and selected foreground,
+///  per color scheme.
+pub mod code_colors;
+
+/// The GPU code view's picture of a shaped frame:
+///  paint items and the Vello scene they encode to.
+pub mod tile_scene;
+
 /// Pixel painting consumes the same shaped geometry as reading interaction.
 pub mod text_raster;
 

@@ -595,10 +595,13 @@ a tie and a unanimous refusal passed before and keep passing.
 On the corpus,
 the lead read that exactly XingZ60 slice 45 takes this path.
 
-Adopted without asking the owner,
-open to the owner's veto:
+Adopted without asking the owner first,
+then put to the owner as a veto-open adoption:
 a self-vote counts toward the floor of two ballots,
 as it already counts in `runoffDecides`.
+The owner confirmed it on 2026-10-20 (UTC) through the question tool,
+choosing "Count self-votes (Recommended)"
+and rejecting "Exclude self-votes".
 
 Recurrence:
 none of an earlier entry.

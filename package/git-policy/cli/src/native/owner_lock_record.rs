@@ -26,7 +26,9 @@ use super::json_record::{
 };
 /// Bounded no-follow reads of the record file.
 use super::private_storage::{ReadRefusal, read_regular_file};
-/// Owner liveness compares birth identities.
+/// The rule for an owner that lives in another PID namespace.
+use super::pid_namespace::foreign_owner_standing;
+/// Birth identities and the existence probe.
 use super::process_identity::{ProcessIdentityError, process_birth_identity};
 /// `Path` is a borrowed filesystem path.
 use std::path::Path;
@@ -67,6 +69,9 @@ pub struct OwnerLockRecord {
     /// Commit transaction the lock is held for,
     ///  recorded by the landing reservation.
     pub transaction_id: Option<String>,
+    /// PID namespace of the owner, or nothing for a record written before the field existed.
+    ///  Optional on disk; readers that do not know the field ignore it.
+    pub owner_pid_namespace: Option<String>,
 }
 
 /// What:
@@ -109,6 +114,10 @@ pub fn parse_owner_lock_record(text: &str) -> Option<OwnerLockRecord> {
         owner_pid,
         owner_birth_identity: String::from(identity),
         transaction_id,
+        // A present field must be non-empty text; anything else leaves the PID to decide, as before the field.
+        owner_pid_namespace: string_field(&map, "ownerPidNamespace")
+            .filter(|namespace| { return !namespace.is_empty(); })
+            .map(String::from),
     });
 }
 
@@ -134,6 +143,9 @@ pub fn encode_owner_lock_record(record: &OwnerLockRecord) -> String {
         .string("ownerBirthIdentity", record.owner_birth_identity.as_str());
     if let Some(id) = &record.transaction_id {
         writer.string("transactionId", id.as_str());
+    }
+    if let Some(namespace) = &record.owner_pid_namespace {
+        writer.string("ownerPidNamespace", namespace.as_str());
     }
     return format!("{}\n", writer.finish());
 }
@@ -224,7 +236,14 @@ pub fn read_owner_lock_record(lock_directory: &Path) -> Result<PublishedOwner, O
 /// ```ts
 /// async function ownerLockHolderIsAlive(record: OwnerLockRecord): Promise<boolean>;
 /// ```
-pub fn owner_lock_holder_is_alive(record: &OwnerLockRecord) -> Result<bool, ProcessIdentityError> {
+pub fn owner_lock_holder_is_alive(record: &OwnerLockRecord, lock_directory: &Path) -> Result<bool, ProcessIdentityError> {
+    // An owner of another PID namespace has a PID this process cannot interpret (issues 1781 and 1784).
+    if let Some(standing) = foreign_owner_standing(
+        record.owner_pid_namespace.as_deref(),
+        lock_directory.join(OWNER_LOCK_RECORD_FILENAME).as_path(),
+    ) {
+        return Ok(standing);
+    }
     // `match` unpacks the identity answer: a live process with the recorded birth is alive.
     match process_birth_identity(record.owner_pid)? {
         Some(current) => return Ok(current == record.owner_birth_identity),

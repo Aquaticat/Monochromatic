@@ -237,8 +237,14 @@ this section is the readiness reading of it.
   ([the pass log of 2026-10-20](translation-repair-openrouter-2026-09-03-2026-10-20.md)),
   so the rotation on that build ended there with two no-class reads,
   and `yingying` was not launched.
-  The next rotation starts from its first entry on the build that fixes the five classes
-  and the owner's reader-protection ruling of 2026-10-20.
+  The rotation restarted from its first entry on the build that fixes the five classes
+  and the owner's reader-protection ruling of 2026-10-20
+  (`0c64519b57`,
+  digest `sha256-tree-v1:c003a383…`).
+  `zheermao15` shipped SETTLED with one class,
+  a note between translators lost when the archive block review replaced its block
+  ([the pass log of 2026-10-20](translation-repair-openrouter-2026-09-03-2026-10-20.md)).
+  The rotation goes on at `CuspariaKLSY18` on the build that carries the fix for that note.
 - The entries never run on a recent build are the rest of the 92-entry corpus.
   The owner's rule stands:
   "We never ever need a all 92 entries launch";

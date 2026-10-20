@@ -16,6 +16,9 @@ use super::annotate::{displayed, set_annotations};
 use super::annotation_tests::{FIXTURE, TEXT_LEFT, TEXT_TOP, annotate, painted as shown, problem};
 /// The complete reader fixture.
 use super::find_tests::{Reader, reader};
+/// The size of the tile's texture,
+/// read after a frame.
+use super::tile_reads::tile_size;
 /// Snapshot records.
 use ide_app::language::diagnostics::{DiagnosticsSnapshot, Severity, SourceGroup};
 /// The heights virtual rows are built from.
@@ -125,6 +128,25 @@ pub(super) fn near(pixel: Rgba8Pixel, color: Color) -> bool {
         && pixel.b.abs_diff(color.blue()) <= 2;
 }
 
+/// Whether a frame pixel is at least half way from `background` to a toolkit color,
+///  in every channel that differs between the two.
+fn mostly(pixel: Rgba8Pixel, color: Color, background: Rgba8Pixel) -> bool {
+    let channels = [
+        (pixel.r, color.red(), background.r),
+        (pixel.g, color.green(), background.g),
+        (pixel.b, color.blue(), background.b),
+    ];
+    let mut half = true;
+    for (shown, ink, behind) in channels {
+        let whole = f32::from(ink.abs_diff(behind));
+        let done = f32::from(shown.abs_diff(behind));
+        if whole > 8.0 && done < whole / 2.0 {
+            half = false;
+        }
+    }
+    return half;
+}
+
 /// A reader over the shared fixture in a fresh disposable project;
 ///  the directory lives as long as the reader.
 pub(super) fn fixture_reader(text: &str) -> (tempfile::TempDir, Reader) {
@@ -209,9 +231,11 @@ fn rows_and_marks_render_in_both_schemes_with_measured_contrast() {
         let mut underline = 0;
         for y in 17..24 {
             for x in 0..60 {
-                if near(
+                // A thin wave is anti-aliased: a pixel counts when it is at least half way from the background to the ink.
+                if mostly(
                     pixel(&shown, TEXT_LEFT + view_left + x as f32, code + y as f32),
                     error,
+                    background,
                 ) {
                     underline += 1;
                 }
@@ -296,7 +320,7 @@ fn display_scale_keeps_virtual_rows_in_place() {
     annotate(&reader);
     update_timers_and_animations();
     let before = heights(&reader);
-    let image = window.get_source_image().size();
+    let image = tile_size(window, &reader.source);
     let scale = window.window().scale_factor();
     window
         .window()
@@ -309,9 +333,9 @@ fn display_scale_keeps_virtual_rows_in_place() {
         before,
         "blocks changed their logical height"
     );
-    let doubled = window.get_source_image().size();
-    assert_eq!(doubled.height, image.height * 2);
-    assert_eq!(doubled.width, image.width * 2);
+    let doubled = tile_size(window, &reader.source);
+    assert_eq!(doubled.1, image.1 * 2);
+    assert_eq!(doubled.0, image.0 * 2);
     let source = reader.source.borrow();
     let view = source.shaped.as_ref().expect("shaped");
     assert_eq!(view.viewport.scale, scale * 2.0);

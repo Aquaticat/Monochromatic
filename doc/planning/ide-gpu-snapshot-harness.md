@@ -1292,6 +1292,499 @@ with the tails in the scratch root (`gate-*.log`):
   and printed `lsfg-vk: Placing default configuration file` in every new run;
   its influence on the numbers was not isolated.
 
+## Stages 3 and 4: the code view on the GPU
+
+Stages 3 and 4 of `doc/planning/ide-vello-text.md` were done as one stage on 2026-10-20:
+the text area of a file is painted by the GPU,
+with design C (our own Parley layout drawn with Vello 0.11 into a wgpu texture that Slint shows as an image).
+Nothing fills a pixel buffer for the code view any more.
+
+### What was built
+
+- Commits on the branch (base `b4e54b36ce`,
+  the stage 2 head):
+  `5e648dddd2` adds `vello` 0.11;
+  `740fd93f91` proves that the rendering notifier fires on a harness snapshot and that a Vello texture blends as
+  straight alpha;
+  `a4679355b1` draws the code view with Vello;
+  `80d7774dfa` deletes the CPU tile painter and ports its pixel tests to paint items and GPU readback;
+  `21864c32de` moves the guard anchors;
+  `86fd30b4dc` draws the error wave on whole pixel rows (found by the screenshot comparison below),
+  tests tiles on an 8192 px device,
+  and compares frames within render noise.
+  The auto-push hook of this repository pushed the branch after each commit and could not be stopped from the worktree.
+- `src/tile_scene.rs` and `src/tile_scene/` turn the rows of a tile into paint items:
+  glyph runs in their syntax ink,
+  the selected copy of a run clipped to the selection,
+  hint and message rows,
+  and underlines as stroked paths
+  (a triangle wave for errors,
+  dashes for warnings,
+  dots for information,
+  sparse dots for hints).
+  `encode.rs` writes the items into a Vello scene,
+  `read.rs` reads them back for tests.
+  The tile worker (`src/native/tile_build/`) builds scene data,
+  not pixels;
+  the re-center policy is unchanged.
+- `src/native/gpu_tile.rs` owns one rendering notifier per window:
+  at setup it takes Slint's device and makes the Vello renderer,
+  before each frame it renders a waiting scene into an `Rgba8Unorm` texture over a transparent base
+  and hands the texture to Slint with `Image::try_from`.
+  Scrolling inside the tile renders nothing.
+  The wrap sign is a small second texture drawn the same way.
+- Selection fills and in-file find boxes stay Slint rectangles under the tile image (`ui/app.slint`),
+  which FemtoVG draws on the GPU as before.
+  Moving them into the scene would rebuild the tile on every selection change,
+  so this is an owner question below.
+  The selected ink is a second copy of the glyph run clipped to the selection,
+  with the clip edges on whole pixels so no pixel is covered by two partial layers.
+- Texture size is bounded by the device.
+  `src/shaped_text/limit.rs` keeps the largest texture side (8192 by default,
+  set from the device's `max_texture_dimension_2d` at startup),
+  `tile_cap` takes the smaller of the 64 MiB byte rule and that side,
+  and `paint_tile` refuses a view past either limit with a diagnostic.
+  The shortened tile is not split into two textures.
+
+### What was deleted and what stays
+
+- Whole files:
+  none.
+  The CPU painter was inside files the minimap still needs,
+  so stage 5 removes them.
+- Deleted code (lines removed in this branch against `b4e54b36ce`):
+  `TextRaster::paint` and `paint_layout` from `src/text_raster.rs` (74 lines removed),
+  the raster and `set_wrap_sign` code of `src/wrap_sign.rs` (71 lines removed,
+  38 added for the vector sign),
+  and the tile image path of `src/native/render/present.rs` and `src/native/tile_build/`.
+  The pixel tests were rewritten,
+  not dropped:
+  every test that read the tile image reads the GPU texture or the paint items now.
+  The raster-limit tests were kept for the byte rule and extended for the texture side.
+- Still on the CPU,
+  all used only by the minimap picture,
+  which stays as it is until stage 5:
+  `TextRaster::paint_onto`,
+  `MAX_RASTER_BYTES` and `SourcePixels` (`src/text_raster.rs`),
+  `src/glyph_cache.rs`,
+  `src/selection_paint.rs`,
+  `annotation_paint::paint_underlines` (its constants are shared with the GPU underlines),
+  and the `swash` dependency.
+  `src/selection_ink.rs` is color logic and stays.
+  `src/code_colors.rs` is the old `text_raster/palette.rs`,
+  moved because both painters use it.
+- `rg "from_rgba8|SharedPixelBuffer" src` is not limited to the minimap:
+  the remaining hits outside the minimap are `Color::from_rgba8` constructors of Vello (a color value,
+  not a pixel buffer)
+  and test-only readbacks of GPU textures
+  (`gpu_snapshot.rs`,
+  `gpu_tile.rs` under `#[cfg(test)]`,
+  `gpu_tile/readback.rs`,
+  `tile_reads.rs`),
+  which reading snapshots allows.
+
+### Tests
+
+- The rendering notifier fires on a harness snapshot,
+  and the imported textures appear in it (`gpu_texture_probe_tests`).
+  A Vello texture blends as straight alpha:
+  opaque red is exact and 50 percent blue over grey is `[64, 64, 192, 255]`.
+- Two renders of one scene differ by one level in a few texels on this GPU
+  (976 differing readings in 40 renders of a 697 by 1392 tile,
+  worst difference 1),
+  so tests that compare two renders accept one level (`RENDER_NOISE`),
+  each beside a positive control whose difference is far larger.
+- Rewritten against GPU snapshots or paint items:
+  selection,
+  annotation,
+  find,
+  wrap sign,
+  tile,
+  theme and wrap tests,
+  and the library integration tests (`font_features`,
+  `wrap_rows`,
+  `wrap_annotations`,
+  `shaped_text`,
+  `syntax_markdown_faces`,
+  `variable_fonts`).
+- The structural test (`overscan_tile_tests`) counts GPU scene renders:
+  scrolling inside the tile with a snapshot at each step renders nothing and builds no scene,
+  and a re-center draws exactly once.
+- The native test device is limited to 8192 px (wgpu's guaranteed minimum),
+  so every run proves the texture rule although this host's GPU offers 16384.
+  `a_2000_px_window_gets_a_tile_texture_within_the_devices_limit_at_both_scales`
+  prints the tile of a window 2000 px tall over a text area of 1100 px:
+  1113 by 8160 px at scale 1 (the texture side binds,
+  overscan 1440 px above and 4752 px below the view)
+  and 2226 by 7488 px,
+  63 MiB,
+  at scale 2 (the byte rule binds,
+  overscan 888 px on both sides).
+  Three views would be 6000 and 12,000 physical rows.
+  At scale 2 the overscan equals the baseline's because the 64 MiB byte rule is unchanged.
+- The minimap reflection tests compare the window's pixels with the minimap's average.
+  The window text is now unhinted Vello and the minimap still hinted swash,
+  so their bounds were loosened (worst 48 and mean 1.4 levels,
+  measured worst 19 and 40 at scales 1 and 2,
+  means up to 0.46 and 1.14),
+  and a shift probe showed that the best alignment is still at zero.
+  Stage 5 removes the cause.
+
+### Guard evidence
+
+Each guard was proven the way the repository asks:
+the piece was removed in the tree,
+the tests were built and run,
+named tests failed,
+and the file was restored with `git checkout`.
+
+- Glyphs (the run-drawing function made a no-op):
+  5 tests failed,
+  among them `virtual_rows_paint_above_the_code_row_and_never_in_it`,
+  `a_selected_ligature_keeps_its_coverage_and_puts_each_ink_on_its_side` and
+  `selected_ink_reaches_the_pixels_of_continuation_rows`.
+- Selection ink (every split part drawn in the ordinary ink):
+  5 failed,
+  among them `selected_underlines_take_the_selected_ink` and two theme tests.
+- Underlines (the underline call removed):
+  4 failed,
+  among them `each_severity_has_its_own_line_style_in_its_ink`.
+- Hint and message rows (the row text layout removed):
+  3 failed,
+  among them `annotation_inks_follow_the_scheme`.
+- Wrap sign (the submit of the sign texture removed):
+  1 failed,
+  `the_gutter_numbers_first_rows_and_marks_continuation_rows`.
+- Find boxes (the Slint rectangle of the matches hidden):
+  2 failed,
+  `the_minimap_of_find_matches_is_the_average_of_the_windows_pixels` and one theme test.
+- The pale error wave found by the screenshots is now guarded by
+  `an_error_wave_is_not_paler_than_the_line_it_replaced`
+  (the weakest column of a wave peaks at alpha 207 of 255;
+  the first GPU wave measured about 130).
+- The guard inspection scripts that name the code view were retargeted to the new painter
+  and run in a disposable copy with a cold target cache below the scratch root
+  (`inspect:annotation-guards` for `rows-above-the-code-row`,
+  `line-styles` and `selected-underline-ink`;
+  `inspect:source-guards` for `clip-cap`,
+  `selected-ink-visual-row` and `markup-heading-ink`):
+  every guard passed its baseline,
+  failed named tests with its piece removed
+  and passed again when restored.
+  The first run of `clip-cap` showed a weak guard:
+  with the byte rule of `tile_cap` loosened by four the old test still passed,
+  because the texture side and the shaper's second cut hid it.
+  It now names `a_clip_stays_within_the_raster_limit_for_every_window_size`,
+  and a new guard `clip-texture-side` removes the texture side from the same line.
+  The other source and annotation guard scripts were not run;
+  the stale-anchor check over all 442 anchors of the guard scripts found none missing.
+
+### Verification by running
+
+All on the nested compositor and the host GPU (AMD Radeon RX 7600,
+RADV,
+discrete,
+`max_texture_dimension_2d` 16384),
+baseline and new builds side by side.
+The baseline is a detached worktree of `origin/main` (`b4e54b36ce`,
+stage 2,
+OpenGL replaced by wgpu already),
+so the comparison isolates the code view.
+The fixture is `/tmp/ide-gpu-fixture`:
+`code.rs` (2500 lines) and `big.rs` (50,000 lines).
+
+Cadence (`inspect:cadence`,
+frames changed of frames compared,
+longest run of identical frames in brackets,
+two rounds per cell with the build order alternated per round,
+builds interleaved,
+as systemd user unit `ide-cadence-matrix`):
+
+- Release,
+  1100x660 `code.rs`:
+  scroll new 117 of 117 (0) and 119 of 119 (0),
+  baseline 116 of 117 (1) and 118 of 119 (1);
+  drag new 118 of 119 (1) twice,
+  baseline 118 of 119 (1) twice.
+- Release,
+  1147x2000 `code.rs`:
+  scroll new 118 of 119 (1) and 117 of 118 (1),
+  baseline 118 of 119 (1) twice;
+  drag new 119 of 121 (1) and 118 of 121 (1),
+  baseline 112 of 121 (1) and 113 of 121 (1).
+- Release,
+  1100x660 `big.rs` (50,000 lines):
+  scroll new 119 of 119 (0) and 117 of 118 (1),
+  baseline 118 of 119 (1) and 116 of 117 (1).
+  Drag in the matrix:
+  new 117 of 120 and 110 of 120 (longest 1),
+  baseline 120 of 121 and 117 of 120 (longest 1).
+  The 110 was the largest dip of any cell,
+  so four more rounds were run for this cell:
+  new 117 of 121,
+  115 of 119,
+  118 of 119 and 117 of 120,
+  baseline 118 of 121,
+  116 of 120,
+  115 of 120 and 117 of 121.
+  Over six rounds the new build changed 110 to 118 frames per run and the baseline 115 to 120,
+  every identical frame isolated (longest run 1):
+  the spread between runs of one build (up to 8 frames) is as large as the difference between builds,
+  so no claim is made about this cell beyond "the same cadence".
+- Debug,
+  1100x660 `code.rs`:
+  scroll new 119 of 119 (0) twice,
+  baseline 116 of 119 (1) and 117 of 119 (1);
+  drag new 120 of 121 (1) and 118 of 119 (1),
+  baseline 39 of 119 (longest 4) and 38 of 119 (longest 4).
+- Debug,
+  1147x2000 `code.rs`:
+  scroll new 118 of 119 (1) and 117 of 119 (1),
+  baseline 118 of 119 (1) and 117 of 119 (1);
+  drag new 109 of 121 (1) and 107 of 121 (2),
+  baseline 64 of 121 (6) twice.
+
+The two baseline debug drag cells are the positive control the stage 1 study asked for:
+the harness shows frozen frames when the work does not fit the frame time,
+and the baseline's debug build does freeze while dragging (38 to 64 changed frames of 119 to 121).
+The new build does not,
+which is consistent with the tile raster moving from the CPU to the GPU,
+but the cause was not isolated (the explanation is an inference from where the debug build spends time,
+not a profile).
+Every release cell is at today's cadence:
+no release run of the new build shows a stall,
+and its lowest count is the 110 of 120 above.
+
+Screenshots (nested compositor,
+1100x660 at scale 1 and at scale 2,
+dark and light,
+baseline and new,
+`/tmp/ide-gpu-shots/main.ts` with annotations injected through `IDE_INSPECT_ANNOTATIONS`,
+`~/temp/agent/ide-gpu34/shots/<scale>-<scheme>-<build>-<set>/`:
+`plain.png`,
+`selection.png`,
+`scrolled.png` in set `a`,
+`find.png` in set `b`).
+The fixture has ligatures (`=>`,
+`===`,
+`!==`,
+`->`,
+`<=`,
+`>=`),
+a tab,
+accented and wide characters and an emoji,
+inlay hints,
+messages in all severities,
+error,
+warning and information underlines,
+and a wrapped line with wrap signs.
+Viewed:
+dark plain,
+selection at scale 1 (new and baseline),
+light find (new and baseline),
+dark plain and light scrolled at scale 2 (new),
+and enlargements of the underlines and message rows.
+Ligatures,
+tabs,
+selection ink,
+find boxes,
+hints and messages,
+wrap signs and gutter letters agree with the baseline to the eye.
+Two differences are visible at enlargement:
+the unhinted glyphs are a little softer than the hinted baseline,
+and the first version of the error wave was visibly paler than the baseline's.
+The second was fixed (a wave of a whole number of pixels centered on a pixel row,
+a vertical thickness of 1.3 rows:
+the strongest pixel of each column now reads 207 to 242 of 255 where the baseline reads 255)
+and the screenshots above were taken again after the fix.
+
+Numeric comparison of the new frame with the baseline's of the same state
+(the text region is 730 by 630 logical px,
+everything outside it,
+including the minimap,
+is identical in all sixteen pairs:
+the whole-frame count of differing pixels equals the text region's):
+
+- Scale 1,
+  dark:
+  plain 33,311 of 459,900 text-region pixels differ (7.2 percent),
+  0.47 percent by more than 32 levels,
+  largest difference 221,
+  mean 0.69 level;
+  selection 33,293 (7.2 percent),
+  0.48 percent over 32 levels,
+  largest 244;
+  scrolled to filler lines 34,121 (7.4 percent),
+  0.11 percent over 32 levels,
+  largest 51;
+  find 30,966 (6.7 percent),
+  0.40 percent over 32 levels,
+  largest 221.
+- Scale 1,
+  light:
+  plain 34,867 (7.6 percent),
+  0.43 percent over 32 levels,
+  largest 217;
+  selection 34,492,
+  find 32,377,
+  scrolled 37,015 with largest 49.
+- Scale 2:
+  3.5 to 4.3 percent of the 1,839,600 text-region pixels differ,
+  0.50 to 0.66 percent by more than 32 levels in the annotated frames,
+  0.15 to 0.19 percent in the scrolled frames (largest 60 to 63).
+- Explanation:
+  the frames of plain text (scrolled) differ by at most 63 levels on glyph edges,
+  because the baseline hinted the outlines and the new code does not.
+  The larger differences (up to 255) lie in the rows of messages,
+  hint labels and underlines:
+  a band count of the dark plain frame at scale 1 puts 1,580 of its 2,144 pixels over 32 levels (74 percent)
+  in 9 bands of rows,
+  all of them message rows and hint labels (small text,
+  where hinting moves a stem by a pixel) or the two error underlines
+  (a wave and dashes are vector paths now,
+  not whole-pixel dots).
+  The message rows were compared at 4 times enlargement in both schemes and read the same.
+
+Startup and memory (`startup.mjs` in the scratch root,
+release builds,
+ten runs each,
+interleaved with the order alternated,
+a fresh cache and config directory per run;
+the method is the one of the stage 2 section):
+
+- First finished frame:
+  baseline median 368.3 ms (343.8 to 460.6),
+  new median 402.4 ms (396.7 to 441.0):
+  about 34 ms later (9 percent),
+  the ranges overlap.
+  The window's first size event is not later (327.4 against 301.1 ms medians),
+  so the difference is the first frame itself,
+  where the Vello renderer is made and the first scene drawn.
+  Vello's own setup time was not measured separately.
+- Resident memory,
+  idle:
+  baseline 157.5 MiB (156.9 to 158.6),
+  new 209.8 MiB (209.0 to 210.3),
+  52 MiB more.
+  After three scrolls of 3000 px:
+  baseline 173.9 MiB (171.7 to 174.8),
+  new 214.9 MiB (212.5 to 217.4).
+  Peak (`VmHWM`):
+  baseline 174.5 MiB,
+  new 214.9 MiB.
+  Threads 26 in both.
+- GPU memory (`mem_info_vram_used`,
+  system wide):
+  baseline 7003.3 MiB,
+  new 7262.8 MiB in every run,
+  260 MiB more.
+  The counter is shared with the desktop and was trusted to about 50 MiB in the stage 2 study,
+  so 260 MiB is a real increase,
+  but its split between the tile texture (about 9 MiB at this window),
+  Vello's pipelines and its scratch buffers was not measured.
+  It is larger than anything stage 2 added to the baseline
+  and is an owner question below.
+
+### Gates
+
+On the head of the code (`86fd30b4dc`) with the tails in the scratch root (`~/temp/agent/ide-gpu34/gate-*.log`):
+
+- `lint`:
+  passes (clippy with the repository dylint rules,
+  rustfmt,
+  `monochromatic-lint`,
+  slint).
+- `test`:
+  804 tests run,
+  804 passed,
+  1 skipped.
+- `test:native`:
+  238 tests run,
+  238 passed,
+  5 skipped,
+  in the second consecutive run after the head's first run failed once (see below);
+  then 10 more consecutive runs and 8 runs with a filter passed.
+- `test:bin`:
+  54 tests,
+  54 passed.
+- `build`:
+  release builds in 27 s.
+- `inspect:software-renderer`:
+  "Slint software renderer is not linked into the application or the test builds".
+
+One test failed in two of about thirty full parallel runs:
+`annotation_stability_tests::rows_above_the_view_wait_until_scrolling_has_stopped`
+reported one pixel of the frame (289, 78) changing from 241 to 250 between two frames of the same state.
+That is nine levels,
+not the one level of render noise.
+It passed in all of 6 isolated runs and 12 isolated runs under 24 busy loops,
+and in all 22 later full runs;
+the second failure (which test failed was not recorded) happened in the first run of a filtered series.
+The cause is not found.
+The comparison already accepts one level;
+a frame pair differing by nine levels means that two renders of one state were not the same picture,
+for example a tile swapped in between the two frames at another sub-pixel position or an unfinished render,
+neither of which was observed.
+This is listed under "Not proven in stages 3 and 4".
+
+### Open owner questions of stages 3 and 4
+
+- Selection fills and find boxes are Slint rectangles under the tile.
+  They are GPU-drawn like the rest of the chrome,
+  and keeping them there means a selection change repaints nothing in the tile.
+  Putting them into the Vello scene instead rebuilds the scene on each selection change
+  and costs cadence while dragging a selection.
+  Is the rectangle approach acceptable?
+- A tile taller than the texture side is shortened (the window re-places the view when it passes the edge),
+  not split into two textures.
+  The 64 MiB byte rule is also unchanged,
+  so a window at scale 2 holds the same overscan as before (888 px each side at a height of 2000 px).
+  A GPU tile could hold more than 64 MiB (a texture side of 16384 is 1 GiB at 1100 px wide).
+  Should the byte rule rise for the GPU tile,
+  and by how much?
+- Vello costs memory (52 MiB resident and 260 MiB of VRAM measured) and 34 ms of first frame.
+  Is that acceptable until the CPU pipeline is gone?
+  Stage 5 and 6 should return some of the resident memory
+  (the glyph cache and the minimap raster).
+- Text is unhinted now (the baseline's swash raster hinted).
+  Glyphs are a little softer at small sizes.
+  Vello 0.11 can hint with `hint(true)` for fonts that have instructions;
+  it was not tried here.
+  Should it be?
+- `src/selection_ink.rs` is color logic and was kept.
+  Moving it next to `code_colors.rs` is possible,
+  but it was not asked for.
+- Color emoji are drawn through the same Vello glyph path as other glyphs.
+  Only the fallback font's monochrome emoji appeared in these screenshots,
+  so color emoji fonts were not exercised.
+- The texture-side rule lives in a process-wide static that also bounds the CPU minimap frames.
+  The minimap's production bands are far below the limit,
+  and one test sets the value to the maximum to build a whole-frame reference.
+  Stage 5 should drop it.
+- The guard scripts of the other features still need `/dev/dri` and a disposable cache with the prepared runtime
+  (`target/debug/runtime` and `target/crate-licenses.json` copied into the cache);
+  a cache without them fails at the build script before any guard runs.
+
+### Not proven in stages 3 and 4
+
+- The cause of the one nine-level frame difference described under "Gates" is not found.
+- Cadence was measured with two rounds per cell on one host;
+  the run-to-run spread of the 50,000 line drag cell (110 to 118 frames) is as large as any difference.
+  Nothing is claimed about a loaded host or another GPU.
+- Debug-build cadence of the baseline is a recorded positive control;
+  why the new debug build is smoother was not profiled.
+- Memory and first-frame figures are one host and ten runs;
+  the VRAM counter is system wide.
+- The screenshots were compared to the eye on a sample of sixteen pairs and numerically on all sixteen;
+  the many remaining differences are glyph edges.
+  Whether a reader sees the unhinted text as worse was not asked.
+- The wave and dash geometry was tuned for scale 1 and checked at scale 2 by eye only.
+- Only the guard scripts named above were run,
+  not all of them.
+- A device with a texture limit below 8192 was not run;
+  `open_hardware_device_capped` can request one,
+  but no test uses a limit below the default.
+
 ## Open owner questions
 
 - Is lavapipe ever acceptable as a fallback when no GPU is present (for example a CI runner)?

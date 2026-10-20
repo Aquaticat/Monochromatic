@@ -14,6 +14,7 @@ use super::index_lock_wait::{BackoffState, INITIAL_BACKOFF, jittered_wait, next_
 use super::json_record::quote;
 use super::live_lock::{LIVE_WAIT_VARIABLE, live_wait_limit};
 use super::owner_lock_record::{OwnerLockRecord, owner_lock_holder_is_alive};
+use super::pid_namespace::current_pid_namespace;
 use super::process_identity::current_birth_identity;
 use super::random_id::random_uuid;
 use super::worktree_copy_error::{WorktreeCopyError, failure_with_cause, raw_failure};
@@ -94,6 +95,8 @@ pub struct LockOwner {
     pub owner_pid: i64,
     /// The owner's process birth identity.
     pub owner_birth_identity: String,
+    /// The owner's PID namespace, or nothing for a record written before the field existed.
+    pub owner_pid_namespace: Option<String>,
 }
 
 /// What:
@@ -125,8 +128,13 @@ enum Published {
 /// `${JSON.stringify({ leaseToken, ownerBirthIdentity, ownerPid, schemaVersion })}\n`
 /// ```
 pub fn encode_owner(owner: &LockOwner) -> String {
+    // Keys stay in sorted order, so the optional namespace sits between `ownerPid` and `schemaVersion`.
+    let namespace: String = owner
+        .owner_pid_namespace
+        .as_deref()
+        .map_or_else(String::new, |name| { return format!("\"ownerPidNamespace\":{},", quote(name)); });
     return format!(
-        "{{\"leaseToken\":{},\"ownerBirthIdentity\":{},\"ownerPid\":{},\"schemaVersion\":1}}\n",
+        "{{\"leaseToken\":{},\"ownerBirthIdentity\":{},\"ownerPid\":{},{namespace}\"schemaVersion\":1}}\n",
         quote(owner.lease_token.as_str()),
         quote(owner.owner_birth_identity.as_str()),
         owner.owner_pid
@@ -175,6 +183,12 @@ pub fn parse_owner(text: &str) -> Result<LockOwner, String> {
         lease_token: lease_token.to_string(),
         owner_pid,
         owner_birth_identity: birth.to_string(),
+        // A present field must be non-empty text; anything else leaves the PID to decide, as before the field.
+        owner_pid_namespace: object
+            .get("ownerPidNamespace")
+            .and_then(serde_json::Value::as_str)
+            .filter(|namespace| { return !namespace.is_empty(); })
+            .map(String::from),
     });
 }
 
@@ -228,14 +242,15 @@ fn read_published(lock: &Path) -> Result<Published, WorktreeCopyError> {
 /// ```ts
 /// await lockOwnerIsAlive(owner);
 /// ```
-fn owner_alive(owner: &LockOwner) -> Result<bool, WorktreeCopyError> {
+fn owner_alive(owner: &LockOwner, lock: &Path) -> Result<bool, WorktreeCopyError> {
     let record: OwnerLockRecord = OwnerLockRecord {
         token: owner.lease_token.clone(),
         owner_pid: owner.owner_pid,
         owner_birth_identity: owner.owner_birth_identity.clone(),
         transaction_id: None,
+        owner_pid_namespace: owner.owner_pid_namespace.clone(),
     };
-    return owner_lock_holder_is_alive(&record).map_err(|error| return raw_failure(&error));
+    return owner_lock_holder_is_alive(&record, lock).map_err(|error| return raw_failure(&error));
 }
 
 /// What:
@@ -447,6 +462,7 @@ fn current_owner() -> Result<LockOwner, WorktreeCopyError> {
         lease_token: token,
         owner_pid: i64::from(std::process::id()),
         owner_birth_identity: birth,
+        owner_pid_namespace: current_pid_namespace(),
     });
 }
 
@@ -502,7 +518,7 @@ fn attempt(lock: &Path, owner: &LockOwner) -> Result<Attempt, WorktreeCopyError>
         Published::Retry => Ok(Attempt::Retry),
         Published::Unproven(evidence) => Ok(Attempt::Unproven(evidence)),
         Published::Owner(holder) => {
-            if owner_alive(&holder)? {
+            if owner_alive(&holder, lock)? {
                 return Ok(Attempt::Live(holder));
             }
             let _retired: bool = remove_lock_of(lock, holder.lease_token.as_str())?;
@@ -536,7 +552,7 @@ fn wait_while_owner_lives(lock: &Path, owner: &LockOwner, limit: Duration) -> Re
         }
         match read_published(lock)? {
             Published::Owner(current) if current.lease_token == owner.lease_token => {
-                if !owner_alive(&current)? {
+                if !owner_alive(&current, lock)? {
                     return Ok(());
                 }
             }
@@ -688,7 +704,7 @@ pub fn validate_inherited_lease(
     }
     let lock: PathBuf = ensure_journal_root(common_dir)?.join(SETTLEMENT_LOCK_NAME);
     return match read_published(lock.as_path())? {
-        Published::Owner(owner) if owner.lease_token == lease_token => owner_alive(&owner),
+        Published::Owner(owner) if owner.lease_token == lease_token => owner_alive(&owner, lock.as_path()),
         _ => Ok(false),
     };
 }
