@@ -45,8 +45,8 @@ const SCOPE_PHRASE = 'the account of how a death or an attempt happened';
  */
 const SCOPE_SENTENCE = 'This rule reaches only the account of how a death or an attempt happened, whether the '
   + 'subject\'s or anyone\'s that the page tells of. A means named anywhere else (a person\'s own words about what '
-  + 'they might do, such as keeping a capsule so an enemy could never take them, a hypothetical, a quoted work, a '
-  + 'story) is outside this rule and is rendered as the ORIGINAL states it';
+  + 'they might do or carry, a hypothetical, a quoted work, a story) is outside this rule and is rendered as the '
+  + 'ORIGINAL states it';
 
 /**
  Text of each rendered sheet, by the stage it is written for.
