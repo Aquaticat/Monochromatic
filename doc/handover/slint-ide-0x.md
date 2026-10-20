@@ -1178,6 +1178,16 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     buffers (262 MiB VRAM for any scene), agent `aefec5d0492ba3cab`, which writes only
     `doc/planning/ide-vello-buffer-sizes.md`. Verification of both uses `~/temp/agent/matrix-load.mjs` and at least 15
     full `test:native` runs, under whatever load exists.
+    Found and fixed while adding the `BGL` rule (pushed as `1c3ec09299`): `package/desktop-app/ide/Cargo.toml` is
+    managed by file-enforcer (WC2) and `file-enforcer.config.ts` owned `slint` fleet-wide as
+    `backend-winit`, `renderer-femtovg`, `renderer-software`. Running `node file-enforcer.config.ts` rewrote the IDE's
+    `slint` line back to that form (observed in a scratch worktree), so the stage 0b and stage 2 manifest edits, made
+    by hand, would have been undone at the next sync, putting the software renderer and OpenGL back. `slint` is now
+    removed from `CARGO_SHARED_DEPENDENCIES` (like `tokio`, `image`, `gtk4`, `windows`); after the change the enforcer
+    leaves the IDE manifest untouched, and terminal and music-player keep their identical lines. The new rule
+    `BGL` in `AGENTS.md` (and `CLAUDE.md`) says every background wait carries a deadline and is stopped by its starter.
+    Lesson for agent briefs: manifests and root files may be generated, so check `file-enforcer.config.ts` before
+    editing them (WC2) and run the enforcer in a scratch worktree to prove the edit survives a sync.
     State at 2026-10-20 after the three agent reports (to verify and land in this order):
     (1) flake diagnosis of stages 3 and 4 (agent `a717e60922dca0448`, running): on a quiet host 2 of 8 full
     `test:native` runs failed on `main` (`annotation_stability_tests` "window row 240 differs after the annotations
