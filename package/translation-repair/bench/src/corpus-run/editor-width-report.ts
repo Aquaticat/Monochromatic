@@ -8,6 +8,7 @@ import {
   type WidthDraw,
   type WidthRow,
 } from './editor-width-model.ts';
+import type { ReadonlyEntry, } from '../readonly-entry.ts';
 
 //region Editor width report
 // What the draw is allowed to say, written where the run's other artifacts go.
@@ -210,7 +211,7 @@ export async function writeWidthReport(
       '## Slices that carried no work',
       '',
       ...Object.entries(skipped,)
-        .map(function toLine([refusal, count,],) {
+        .map(function toLine([refusal, count,]: ReadonlyEntry<string, number>,) {
           return `-   ${refusal}: ${String(count,)}`;
         },),
       '',

@@ -2,6 +2,7 @@ import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { SliceRounds, } from './editor-calibrate-slice.ts';
 import { roundWasJudged, } from './editor-calibrate-standing.ts';
+import type { ReadonlyEntry, } from '../readonly-entry.ts';
 
 //region Editor calibrate closing
 // THE TWO CLOSING PARAGRAPHS of the editor calibration's report, after both
@@ -155,8 +156,8 @@ export function printEditorCalibrateShipped(
 
   for (
     const [modelId, count,] of [...credits.entries(),].toSorted(function byCount(
-      left,
-      right,
+      left: ReadonlyEntry<RosterModelId, number>,
+      right: ReadonlyEntry<RosterModelId, number>,
     ): number {
       return right[1] - left[1];
     },)
