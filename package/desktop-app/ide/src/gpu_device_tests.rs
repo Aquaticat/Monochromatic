@@ -3,7 +3,9 @@
 //!  and none of them reads the process environment.
 
 /// The choice and the errors under test.
-use super::{AdapterOrder, AdapterSummary, GpuDeviceError, PowerOrder, Variables, choose_adapters};
+use super::{AdapterSummary, GpuDeviceError, Variables, choose_adapters};
+/// The power order the choice parses and the order it returns.
+use super::{adapter::PowerOrder, choice::AdapterOrder};
 /// The adapter kinds.
 use slint::wgpu_30::wgpu::DeviceType;
 

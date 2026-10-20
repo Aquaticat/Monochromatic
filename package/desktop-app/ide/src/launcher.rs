@@ -23,7 +23,8 @@
 //!  Slint's own adapter choice may land on a CPU adapter (lavapipe),
 //!       and its default limits forbid the storage buffers the GPU text path needs.
 //!  The device is opened on the first hardware adapter the Vulkan loader lists
-//!       (the system's choice), unless `WGPU_ADAPTER_NAME` or `WGPU_POWER_PREF` choose another.
+//!       (the system's choice),
+//!       unless `WGPU_ADAPTER_NAME` or `WGPU_POWER_PREF` choose another.
 //!  The application has no OpenGL renderer and no software renderer;
 //!  a host without a hardware Vulkan adapter stops with a message instead of drawing some other way.
 
