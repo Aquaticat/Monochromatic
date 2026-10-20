@@ -46,8 +46,12 @@ Read-only commands,
   When the remote refuses that push because its branch moved after the commit landed,
    the wrapper merges the remote tip into the branch tip from Git objects alone and pushes the merge without force,
    at most three times.
-  The local branch, the index, the worktree and untracked files are not read or changed,
-   so another session's uncommitted files cannot block the push.
+  While the merge is computed and pushed, the local branch, the index, the worktree and untracked files are not read
+   or changed, so another session's uncommitted files cannot block the push.
+  Afterwards the local branch follows the published merge by a fast-forward when nothing can be lost:
+   a worktree with uncommitted work follows too, as long as the move writes none of the files that work touches,
+   and the report says the work was left as it is.
+   Otherwise the branch stays behind and the report names the overlapping files.
   A conflict is reported with the conflicting paths and publishes nothing.
   An amended or rebased branch is not merged, and its rejection is shown as before.
   A failed push never fails the commit,
