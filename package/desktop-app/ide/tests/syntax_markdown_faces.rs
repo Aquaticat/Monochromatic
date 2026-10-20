@@ -3,6 +3,7 @@
 
 /// Production source font assets and shaping interfaces.
 use ide_app::{
+    code_colors::CodeColors,
     document::Document,
     font_asset::{CODE_ITALIC, CODE_ROMAN},
     selection_ink::contrast,
@@ -12,7 +13,7 @@ use ide_app::{
         RAW_INLINE_ROLE, STRIKETHROUGH_ROLE, StyleSpan,
     },
     syntax::SCOPES,
-    text_raster::{CodeColors, TextRaster},
+    tile_scene::{read::drawn_runs, tile_items},
 };
 /// Actual font runs expose the selected font bytes and normalized variation coordinates.
 use parley::PositionedLayoutItem;
@@ -44,11 +45,6 @@ fn weight_of(faces: &[(bool, i16)]) -> Option<i16> {
         }
     }
     return heaviest;
-}
-
-/// One straight color channel recovered from a premultiplied one with `alpha`.
-fn straight(value: u8, alpha: u32) -> u8 {
-    return ((u32::from(value) * 255 + alpha / 2) / alpha).min(255) as u8;
 }
 
 /// True when some channel of `color` is farther than four from the same channel of `hue`.
@@ -243,8 +239,8 @@ const HUES: [(u32, [u8; 3], [u8; 3]); 9] = [
     (QUOTE_ROLE, [160, 168, 176], [85, 92, 101]),
 ];
 
-/// Every pixel a styled word draws with real coverage,
-///  as its straight (not premultiplied) color,
+/// The ink of every glyph run a styled word draws,
+///  as its straight color,
 ///  in the given scheme.
 fn ink_of(role: u32, dark: bool) -> Vec<[u8; 3]> {
     let source = "Markdown";
@@ -260,19 +256,12 @@ fn ink_of(role: u32, dark: bool) -> Vec<[u8; 3]> {
         selected: [255, 255, 255, 255],
         dark,
     };
-    let pixels = TextRaster::new()
-        .paint(&view, colors, 0.0)
-        .expect("paint a styled word");
+    let items = tile_items(&view, colors, 0.0).expect("items of a styled word");
     let mut found = Vec::new();
-    for pixel in pixels.bytes.as_chunks::<4>().0 {
-        // The raster is premultiplied; faint edge pixels carry too little color to compare.
-        if pixel[3] >= 128 {
-            let alpha = u32::from(pixel[3]);
-            found.push([
-                straight(pixel[0], alpha),
-                straight(pixel[1], alpha),
-                straight(pixel[2], alpha),
-            ]);
+    for run in drawn_runs(&items) {
+        // A run is drawn in one straight ink; the GPU's coverage only fades its edges.
+        if !run.ids.is_empty() {
+            found.push([run.ink[0], run.ink[1], run.ink[2]]);
         }
     }
     return found;
@@ -304,7 +293,7 @@ fn markdown_roles_are_painted_in_their_hue_in_both_schemes() {
             assert_eq!(
                 off,
                 0,
-                "role {role}, {scheme}: {off} of {} pixels are not the hue {hue:?}",
+                "role {role}, {scheme}: {off} of {} runs are not the hue {hue:?}",
                 found.len()
             );
             let ratio = contrast([hue[0], hue[1], hue[2], 255], background);

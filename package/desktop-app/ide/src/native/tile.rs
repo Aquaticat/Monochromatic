@@ -324,7 +324,7 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: anyhow::Result<T
                 window,
                 state,
                 Frame {
-                    pixels: None,
+                    scene: None,
                     matches_changed: false,
                     scale: factor,
                     scrolled: Some(offset),
@@ -341,7 +341,7 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: anyhow::Result<T
         return;
     }
     let bounds = built.bounds;
-    let pixels = built.pixels;
+    let scene = built.scene;
     // The map may have moved since the job was queued; the tile's rows move with it, and its own lines did not change.
     let mut view = built.view;
     view.rebase(&current.row_map);
@@ -372,7 +372,7 @@ fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: anyhow::Result<T
         window,
         state,
         Frame {
-            pixels: Some(pixels),
+            scene: Some(scene),
             matches_changed: true,
             scale: factor,
             scrolled,

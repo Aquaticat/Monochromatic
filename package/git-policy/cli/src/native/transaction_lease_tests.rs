@@ -135,6 +135,41 @@ fn preparation_leases_die_with_their_owner() {
     remove(root.as_path());
 }
 
+/// A lease whose owner lives in another PID namespace stays valid while the owner's record is fresh: this process
+///  cannot interpret that PID (issues 1781 and 1784).
+#[cfg(target_os = "linux")]
+#[test]
+fn preparation_leases_of_another_namespace_hold_until_the_record_expires() {
+    let root: PathBuf = fixture("lease-foreign-namespace");
+    let directory_text: String = root
+        .join("0b6c2c1e-6f5b-4d0e-9a55-3f5d8e2f6a10")
+        .to_str()
+        .expect("UTF-8 fixture")
+        .to_string();
+    let lease: String = format_preparation_lease(directory_text.as_str(), "token");
+    let environment: Vec<(OsString, OsString)> = vec![pair(PREPARATION_LEASE_VARIABLE, lease.as_str())];
+    let mut foreign: crate::transaction_owner::TransactionOwner = current_transaction_owner(
+        "0b6c2c1e-6f5b-4d0e-9a55-3f5d8e2f6a10",
+        "2026-10-06T00:00:00.000Z",
+    )
+    .expect("current owner");
+    // A PID that names no process here: the old rule judged this owner dead.
+    foreign.owner_pid = i64::from(i32::MAX);
+    foreign.owner_pid_namespace = Some(String::from("pid:[1]"));
+    let directory: PathBuf = transaction(root.as_path(), encode_transaction_owner(&foreign).as_bytes(), lease.as_str());
+    assert!(has_valid_preparation_lease(environment.as_slice()));
+    let expired: std::time::SystemTime =
+        std::time::SystemTime::now() - crate::pid_namespace::FOREIGN_OWNER_PATIENCE - std::time::Duration::from_secs(60);
+    std::fs::File::options()
+        .write(true)
+        .open(directory.join(OWNER_FILENAME))
+        .expect("open")
+        .set_modified(expired)
+        .expect("age");
+    assert!(!has_valid_preparation_lease(environment.as_slice()));
+    remove(root.as_path());
+}
+
 /// A landing lease is valid only for its own lock while that lock carries its token.
 #[test]
 fn landing_leases_name_their_lock_and_token() {

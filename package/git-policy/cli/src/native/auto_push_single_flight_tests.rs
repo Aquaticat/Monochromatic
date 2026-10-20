@@ -162,6 +162,7 @@ fn plant_dead_lock(lock_directory: &Path) {
         owner_pid: pid,
         owner_birth_identity: "dead-identity".to_owned(),
         transaction_id: None,
+        owner_pid_namespace: None,
     };
     std::fs::write(
         lock_directory.join(OWNER_LOCK_RECORD_FILENAME),

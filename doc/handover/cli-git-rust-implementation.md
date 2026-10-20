@@ -1865,6 +1865,21 @@ that is verification, not a decision for the user.
   live host owner. The full path (a container recovering a live host transaction) is still not reproduced.
   Released 2026-10-20 as 0.2.3 (crates.io, release `monochromatic-git-policy-cli-v0.2.3`, installed through mise and
   checked with the staged-deletion finding in a throwaway repository). Closed 472, 1346, 1347 and 1032.
+  User decision 2026-10-20 (AskUserQuestion): build the namespace-aware owner identity. Done in commits 8b5b2abb6c and
+  0c05b261fd plus the controls after them: new `pid_namespace.rs` (`current_pid_namespace` reads
+  `/proc/self/ns/pid`, `is_other_namespace`, `foreign_owner_standing`, `FOREIGN_OWNER_PATIENCE` of one hour). Three
+  records gain an optional last field `ownerPidNamespace` (transaction `owner.json`, owner-lock `owner.json`,
+  worktree-copy lock owner), schema versions unchanged, old readers ignore it and old records read as none. An owner
+  whose recorded namespace differs from the reader's is alive until its record file is older than the patience, then
+  dead; with no namespace on either side the PID decides as before. Reproduced with real namespaces: the control
+  `a_wrapper_in_another_pid_namespace_leaves_a_live_landing_alone` (a landing paused at `ref-updated`, then
+  `git status` through `unshare --user --map-root-user --pid --fork --mount-proc`) fails with the guard removed
+  ("recovered a live transaction") and passes with it. It skips itself where `unshare` is refused (possibly in the
+  container gate). Limits: a foreign owner that really crashed blocks recovery for up to one hour; a live foreign owner
+  holding a lock longer than an hour is retired; versions before this change still judge by PID.
+  Closing gate and mutation run for the namespace work: unit `cli-git-nc4` (script `~/temp/agent/nc4-run.ts`, image
+  tag `nc4`, logs `~/temp/agent/nc4-<name>.log`; no `src/native` edit while it runs). After it: kill survivors, remove
+  the `nc4` images, release 0.2.4, comment on and close 1781 and 1784.
   Triage 2026-10-20: closed 632 (the perf code is gone) and 1348 (ST2 is a TypeScript rule). Reframed 629 to the Rust
   helpers still duplicated across `test_support.rs`, `command_test_support.rs` and `binary_support.rs` plus the
   byte-argument copies in `cli.fuzz`; queued behind nc2, as those files are in the mutation image. 630 stays open with

@@ -67,6 +67,7 @@ fn every_entry_gets_its_outcome() {
             owner_pid: i64::from(std::process::id()),
             owner_birth_identity: String::from("linux:1"),
             transaction_id: None,
+            owner_pid_namespace: None,
         }),
     )
     .expect("dead reservation");

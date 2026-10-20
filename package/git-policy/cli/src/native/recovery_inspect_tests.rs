@@ -206,3 +206,29 @@ fn a_probe_refused_for_another_reason_fails_the_scan_and_names_the_owner() {
     let failure: RecoveryError = liveness_after_refused_probe(293, &refusal).expect_err("the scan stops");
     assert!(failure.0.contains("probing transaction owner 293 failed"), "{}", failure.0);
 }
+
+/// A transaction of another PID namespace whose PID names nothing here is not recovered while its record is fresh
+///  (issues 1781 and 1784): this process cannot interpret that PID, so it must not call the owner dead.
+#[cfg(target_os = "linux")]
+#[test]
+fn a_transaction_of_another_namespace_is_left_alone_until_its_record_expires() {
+    let root: PathBuf = fixture("recovery-inspect-foreign-namespace");
+    let mut owner: TransactionOwner = current_transaction_owner(ID, "t").expect("owner");
+    owner.owner_pid = i64::from(i32::MAX);
+    owner.owner_pid_namespace = Some(String::from("pid:[1]"));
+    let foreign: RegistryEntry = entry(root.as_path(), ID, Some(encode_transaction_owner(&owner).as_bytes()));
+    let inspected: InspectedEntry = inspect_registry_entry(&foreign).expect("foreign");
+    assert!(matches!(inspected.owner, OwnerEvidence::Owned(_, OwnerLiveness::Alive)), "{:?}", inspected.owner);
+    assert_eq!(inspected.dead_owner(), None);
+    let expired: std::time::SystemTime =
+        std::time::SystemTime::now() - crate::pid_namespace::FOREIGN_OWNER_PATIENCE - std::time::Duration::from_secs(60);
+    std::fs::File::options()
+        .write(true)
+        .open(foreign.path.join(OWNER_FILENAME))
+        .expect("open")
+        .set_modified(expired)
+        .expect("age");
+    let aged: InspectedEntry = inspect_registry_entry(&foreign).expect("aged");
+    assert_eq!(aged.dead_owner().map(owner_pid), Some(i64::from(i32::MAX)));
+    remove(root.as_path());
+}
