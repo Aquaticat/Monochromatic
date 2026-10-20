@@ -643,6 +643,44 @@ declare module '@deepseek-ai/dsh-llm' {
   `tests/parent-guard.test.ts`
   (path traversal guards).
 
+### E7 the plugin manager reproduces the incompatibility
+
+- Claim:
+  `dsh plugin add` refuses `dsh-rewind-plugin@0.17.1` on
+  `dsh` 0.2.1-alpha.4 and accepts it on `dsh` 0.2.1-rc.2.
+- Relevance:
+  hard constraint 1;
+  turns E1 from static range arithmetic into observed behavior.
+- Status:
+  fail on the runtime in service,
+  pass on the prerequisite runtime.
+- Commands:
+  `DSH_HOME=/work/dsh-home-alpha dsh plugin --profile vet add dsh-rewind-plugin`
+  under `dsh` 0.2.1-alpha.4,
+  and the same call under `dsh` 0.2.1-rc.2 with
+  `DSH_HOME=/work/dsh-home-rc`,
+  both in the manifested container image with `pnpm` added per the
+  manifest update below.
+- Output excerpt:
+
+```text
+dsh: installation rejected: Plugin dsh-rewind-plugin@0.17.1 is incompatible with dsh 0.2.1-alpha.4: requirements {"engines.dsh":">=0.2.1-rc.1 <0.3.0-0"}. Running it may cause crashes or data loss. Update the plugin or install a plugin version compatible with this dsh runtime. ... Exact-version exemption: not active.
+dsh: nothing was installed.
+```
+
+```text
+dependencies:
++ dsh-rewind-plugin 0.17.1
+Done in 1.1s using pnpm v12.14.0
+```
+
+- Exits:
+  0.2.1-alpha.4 exit 1,
+  0.2.1-rc.2 exit 0.
+- Logs:
+  `${HOME}/temp/agent/dsh-rewind-run/add-alpha2.log` and
+  `add-rc2.log`.
+
 ## Execution manifest
 
 Recorded before running third-party code.
@@ -726,6 +764,14 @@ Execution-protocol deviation to note:
   the dependency fetch and the validation ran as two container
   invocations in one background shell,
   not as two separately manifested sessions.
+  The install-gate demo also revealed an undeclared subprocess:
+  `dsh plugin add` invokes `pnpm`,
+  which the first demo image lacked
+  (exit 127,
+  `dsh: pnpm was not found`).
+  The manifest was updated with `npm install -g pnpm` inside the same
+  bounded image,
+  and the demo was rerun to completion as recorded in E7.
 
 ## Validation results
 
@@ -1057,12 +1103,16 @@ The plugin field is unranked by design
 
 ## Confidence and evidence limits
 
-- The engine-range and module-graph findings
-  (E1,
-  E2)
-  are static and version-arithmetical,
-  corroborated by npm publish times,
-  but the refusal path of the plugin manager was not executed.
+- The engine-range finding
+  (E1)
+  is static range arithmetic corroborated by npm publish times,
+  and its user-visible consequence is reproduced
+  (E7),
+  while the module-graph finding
+  (E2)
+  stays static:
+  the client bundle's `require` was read from the built artifact,
+  not executed in a browser.
 - The compatibility rating in context B rests on the plugin's own CI
   matrix and pinned dev dependencies at 0.2.1-rc.2,
   not on a live profile load.
