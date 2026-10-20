@@ -83,10 +83,21 @@ export {
 } from './name-form-policy.ts';
 export {
   carriesName,
+  type NameOccurrence,
+  nameOccurrences,
   type NameProjection,
   nameProjection,
   projectName,
 } from './name-projection.ts';
+export { ORDINARY_CAPITALISED_WORDS, } from './ordinary-capitalised-words.ts';
+export {
+  arrivesAsWholeName,
+  type BesideWords,
+  besideWordsOf,
+  declaredWordsOf,
+  type ExcusedNeighbours,
+  excusedNeighboursOf,
+} from './whole-name-arrival.ts';
 export {
   HOUSE_CORRECTION_IS_AN_IMPROVEMENT,
   POLISH_GATE_HOUSE_RULES,

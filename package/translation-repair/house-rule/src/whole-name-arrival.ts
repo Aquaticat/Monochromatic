@@ -5,6 +5,7 @@ import {
   isAsciiLetter,
   isAsciiLowerLetter,
   isLetterOrDigitOfAnyScript,
+  isTagWhitespace,
 } from '@monochromatic-dev/translation-repair-markup/ts';
 import {
   type NameOccurrence,
@@ -99,6 +100,12 @@ const JOINING_MARKS: ReadonlySet<string> = new Set([
 ]);
 
 /**
+ The no-break space, written as an escape so no invisible character sits in
+ the source.
+ */
+const NO_BREAK_SPACE = '\u{00A0}';
+
+/**
  The backslash Markdown writes before a character it escapes.
  */
 const ESCAPE = '\\';
@@ -117,7 +124,7 @@ const ESCAPE = '\\';
  ```
  */
 function isSpace({ character, }: { readonly character: string; },): boolean {
-  return (character === ' ') || (character === ' ');
+  return (character === ' ') || (character === NO_BREAK_SPACE);
 }
 
 /**
@@ -461,7 +468,7 @@ function spellingOf({ text, }: { readonly text: string; },): string {
       '',
     )
     .toLowerCase()) {
-    if (character.trim() !== '') {
+    if (!isTagWhitespace({ character, },)) {
       kept.push(character,);
       continue;
     }

@@ -17,7 +17,7 @@
 // DRAWN FROM A CENSUS, then completed with the same families. Measured
 // 2026-10-20 over the 91 pinned archives and 281 settled pages with a declared
 // form: 7,596 whole-name occurrences, of which 647 sides had a capitalised
-// neighbour, and the words below cover the sentence openers, titles and kin
+// neighbour, and the words in the set cover the sentence openers, titles and kin
 // words among them (`When` 87, `But` 69, `After` 45, `Although` 31, `Was` 30,
 // `As` 26, `Perhaps` 24, `Sister` 23, `And` 23, `In` 21, `For` 21, `The` 18).
 
