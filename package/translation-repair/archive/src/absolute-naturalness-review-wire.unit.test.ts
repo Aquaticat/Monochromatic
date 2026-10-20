@@ -14,6 +14,7 @@ import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { messageText, } from '@monochromatic-dev/translation-repair-provider';
 import {
+  type AbsoluteNaturalnessReviewSubject,
   type AbsoluteNaturalnessReviewWire,
   buildAbsoluteNaturalnessReviewMessages,
   isAbsoluteNaturalnessReviewWire,
@@ -27,6 +28,60 @@ const VALID_REVIEW: AbsoluteNaturalnessReviewWire = {
   findings: [{ paragraph: 2, problem: 'Avoid literal word-for-word order.', },],
   reason: 'retains source phrasing',
 };
+
+/**
+ Note the archive's translators left each other, ending a sentence.
+ */
+const SENTENCE_NOTE = '<!-- 前面这句中文懂什么意思，先这么翻译，大家看一下 -->';
+
+/**
+ Note alone on a line, in JSX comment form.
+ */
+const LINE_NOTE = '{/* 猫窝在哪里 */}';
+
+/**
+ Note on a quoted line, with a `>` among its words.
+ */
+const QUOTED_NOTE = '{/* 猫 > 窝 */}';
+
+/**
+ Comment in English, which no translator wrote for another.
+ */
+const ENGLISH_COMMENT = '<!-- check the cat\'s name -->';
+
+/**
+ Times a text occurs in another.
+
+ @param text - text searched
+
+ @param needle - text looked for
+
+ @returns Count of non-overlapping occurrences
+ */
+function occurrencesOf({ text, needle, }: { readonly text: string; readonly needle: string; },): number {
+  return text.split(needle,)
+    .length - 1;
+}
+
+/**
+ The user message of the review sheet for a subject, in either responsibility.
+
+ @param subject - what the review is asked about
+
+ @returns The sheet's user message for each responsibility
+ */
+function userSheetsOf(
+  { subject, }: { readonly subject: AbsoluteNaturalnessReviewSubject; },
+): readonly string[] {
+  return (['defect-discovery', 'acceptance-challenge',] as const).map(function sheetOf(perspective,): string {
+    return messageText({
+      message: nonNullishOrThrow(buildAbsoluteNaturalnessReviewMessages({
+        subject,
+        perspective,
+      },)[1],),
+    },);
+  },);
+}
 
 await describe({
   name: '',
@@ -266,6 +321,111 @@ await describe({
             expect(messageText({ message: nonNullishOrThrow(challenge[0],), },),).toContain(
               'work backward through each paragraph and sentence',
             );
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: `${buildAbsoluteNaturalnessReviewMessages.name} notes between translators`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'CUTS A NOTE ENDING A SENTENCE from the candidate and from its paragraph, in both responsibilities',
+          fn: async () => {
+            /** Candidate whose first sentence ends in a note. */
+            const candidate = `The cat slept. ${SENTENCE_NOTE}\nIt purred.`;
+            for (
+              const user of userSheetsOf({
+                subject: {
+                  lineStructured: false,
+                  sourceText: '猫睡了。猫呼噜了。',
+                  candidateText: candidate,
+                  paragraphs: [candidate,],
+                },
+              },)
+            ) {
+              expect(user,).not.toContain('前面这句',);
+              expect(user,).not.toContain('<!--',);
+              // The candidate and the one paragraph, each folded to the page's line.
+              expect(occurrencesOf({ text: user, needle: 'The cat slept. It purred.', },),).toBe(2,);
+            }
+          },
+        },),
+
+        it({
+          name: 'CUTS A NOTE ALONE ON A LINE, and leaves its paragraph out of the sheet while the others keep their '
+            + 'numbers',
+          fn: async () => {
+            /** Candidate with a note for a paragraph of its own. */
+            const candidate = `The cat slept.\n\n${LINE_NOTE}\n\nIt purred.`;
+            for (
+              const user of userSheetsOf({
+                subject: {
+                  lineStructured: false,
+                  sourceText: '猫睡了。猫呼噜了。',
+                  candidateText: candidate,
+                  paragraphs: [
+                    'The cat slept.',
+                    LINE_NOTE,
+                    'It purred.',
+                  ],
+                },
+              },)
+            ) {
+              expect(user,).not.toContain('猫窝在哪里',);
+              expect(user,).not.toContain('{/*',);
+              expect(user,).toContain('PARAGRAPH 1\n',);
+              expect(user,).not.toContain('PARAGRAPH 2\n',);
+              expect(user,).toContain('PARAGRAPH 3\n',);
+            }
+          },
+        },),
+
+        it({
+          name: 'CUTS A NOTE ON A QUOTED LINE with its line, leaving no bare quote marker line, on a line-structured '
+            + 'passage',
+          fn: async () => {
+            /** Quoted lines with a note between two of them. */
+            const candidate = `> The cat slept.\n> ${QUOTED_NOTE}\n> It purred.\n`;
+            for (
+              const user of userSheetsOf({
+                subject: {
+                  lineStructured: true,
+                  sourceText: '> 猫睡了。\n> 猫呼噜了。\n',
+                  candidateText: candidate,
+                  paragraphs: [candidate,],
+                },
+              },)
+            ) {
+              expect(user,).not.toContain('猫 > 窝',);
+              expect(user,).not.toContain('>\n',);
+              expect(occurrencesOf({ text: user, needle: '\n> The cat slept.\n> It purred.\n', },),).toBe(2,);
+            }
+          },
+        },),
+
+        it({
+          name: 'KEEPS A COMMENT THE ORIGINAL CARRIES and a comment in English, while cutting the note beside them',
+          fn: async () => {
+            /** Quoted lines with the original's own comment, an English one and a note. */
+            const candidate =
+              `> The cat slept.\n> ${QUOTED_NOTE}\n> ${ENGLISH_COMMENT}\n> It purred. ${SENTENCE_NOTE}\n`;
+            for (
+              const user of userSheetsOf({
+                subject: {
+                  lineStructured: true,
+                  sourceText: `> 猫睡了。\n> ${QUOTED_NOTE}\n> 猫呼噜了。\n`,
+                  candidateText: candidate,
+                  paragraphs: [candidate,],
+                },
+              },)
+            ) {
+              // Shown in the candidate and its paragraph, and the original's own line is the third.
+              expect(occurrencesOf({ text: user, needle: QUOTED_NOTE, },),).toBe(3,);
+              expect(occurrencesOf({ text: user, needle: ENGLISH_COMMENT, },),).toBe(2,);
+              expect(user,).not.toContain('前面这句',);
+            }
           },
         },),
       ],
