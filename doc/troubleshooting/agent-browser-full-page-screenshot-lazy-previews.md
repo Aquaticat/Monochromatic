@@ -155,9 +155,11 @@ agent-browser --session s screenshot "${HOME}/temp/agent/ab-full/vp-2300.png"
   scroll back to the top,
   then full capture:
   previews absent at the four preview offsets (54,000 to 191,000 differing pixels per 1440 by 950 frame) in 5 of 9 runs.
-  All four runs of the second harness (wait eight seconds,
+  All four runs of the second harness and its variants (wait eight seconds,
   step 700 pixels,
-  500 ms pauses) differed,
+  500 ms pauses;
+  one variant without the wait,
+  one resizing after `open`) differed,
   and one of the three repeats of the first harness differed,
   so the outcome is not deterministic for one sequence.
 

@@ -130,22 +130,29 @@ That is why even `tab list` and `get url` failed on this host.
 
 ### What the dying daemon does with the request
 
-Traced with `strace -f -tt -e trace=accept4,unlink,exit_group -p <daemon pid>` on a disposable session
+Traced with `strace -f -tt -e trace=accept4,unlink,exit_group,read,write -p <daemon pid>` on a disposable session
 (times are 2026-10-20 17:01:01,
 in seconds and milliseconds):
 
 ```text
 .716  unlink(".../ab-strace.stream")      # close reply already written (daemon.rs:601-603)
 .778  accept4(...) = 14                   # the next CLI command connects to the old daemon
-.779  unlink(".../DevToolsActivePort")    # the old daemon starts launching a new Chrome for it
+.779  unlink(".../DevToolsActivePort")    # by daemon thread 1104229, Chrome launch setup
+.781  pid 1104615 read(3, "\177ELF...")     # a new Chrome process starts loading its binary
 .818  unlink(".../ab-strace.sock")        # run_socket_server has returned; cleanup (daemon.rs:148)
 .818  unlink(".../ab-strace.pid")
-.826  exit_group(0) of the Chrome children
+.826  exit_group(0) of the new Chrome's children (pids 1104617 and up)
 ```
 
 So the command is accepted and begins executing (an implicit browser launch),
 but the daemon exits about 40 ms later
 without answering.
+The launch evidence is the process ids:
+pid 1104615 is first seen at `.781`,
+after the accept at `.778`,
+and is a Chrome process (its first traced call reads an ELF header,
+and it later unlinks `SingletonSocket` in a Chrome profile directory);
+the daemon itself is pid 1104168 and `strace` was attached before the `close`.
 
 ### An earlier reading that was wrong
 
