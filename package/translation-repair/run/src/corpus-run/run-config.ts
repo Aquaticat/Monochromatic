@@ -1227,9 +1227,6 @@ export function runClientFrom(
       // A SEAT THAT THREW ON EVERY ASK IS WITHHELD: refused at this door, and
       // left out of the gathers' benches, so no later stage asks it again.
       minAsks: SEAT_WITHHOLD_ASKS,
-      // THE FIRST REJECTED CREDENTIAL OF A SEAT IS SAID ON ONE LINE here, at the
-      // start of the run, rather than left to the closing census.
-      l: rl,
     },),
     providerDryness: budgets.read,
     providerMeterStates: budgets.readStates,

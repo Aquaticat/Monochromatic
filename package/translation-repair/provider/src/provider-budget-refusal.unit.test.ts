@@ -20,6 +20,7 @@ import {
 import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   isBudgetRefusal,
+  isCredentialRefusal,
   isPaymentRefusal,
   isUpstreamModelRefusal,
   statedWaitMsOf,
@@ -29,6 +30,17 @@ import {
  Status a subscription reports exhaustion as.
  */
 const HTTP_TOO_MANY_REQUESTS = 429;
+
+/**
+ Status a provider reports a rejected credential as.
+ */
+const HTTP_UNAUTHORIZED = 401;
+
+/**
+ Status a provider reports a request it will not serve as, for reasons that
+ are not always the credential.
+ */
+const HTTP_FORBIDDEN = 403;
 
 /**
  Status a credit balance reports no funds as.
@@ -172,6 +184,44 @@ await describe({
             + 'nothing out',
           fn: async () => {
             expect(statedWaitMsOf({ error: new Error('the cat unplugged the router',), },),).toBe(0,);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: isCredentialRefusal.name,
+      children: [
+        it({
+          name: 'READS a provider answering HTTP 401 as a refused credential, and not as a budget refusal',
+          fn: async () => {
+            /** Refusal Bedrock gave the pass whose token had expired. */
+            const refusal = new ProviderHttpError({
+              provider: 'bedrock',
+              status: HTTP_UNAUTHORIZED,
+              bodyText: '{"error":{"code":"invalid_api_key","message":"The security token included in the request has expired."}}',
+            },);
+            expect(isCredentialRefusal({ error: refusal, },),).toBe(true,);
+            expect(isBudgetRefusal({ error: refusal, },),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'READS NO OTHER STATUS, 403 among them, nor a failure that is not a provider reply, as a refused credential',
+          fn: async () => {
+            expect(isCredentialRefusal({
+              error: new ProviderHttpError({
+                provider: 'bedrock',
+                status: HTTP_FORBIDDEN,
+                bodyText: ACCOUNT_LIMIT_BODY,
+              },),
+            },),).toBe(false,);
+            expect(isCredentialRefusal({
+              error: new ProviderHttpError({
+                provider: 'bedrock',
+                status: HTTP_TOO_MANY_REQUESTS,
+                bodyText: ACCOUNT_LIMIT_BODY,
+              },),
+            },),).toBe(false,);
+            expect(isCredentialRefusal({ error: new Error('the cat unplugged the router',), },),).toBe(false,);
           },
         },),
       ],

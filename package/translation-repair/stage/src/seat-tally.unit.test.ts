@@ -25,7 +25,6 @@ import type {
 } from '@monochromatic-dev/translation-repair-shared-contract';
 
 import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
-import { levelCapturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 
 import type {
   ChatJsonOutcome,
@@ -488,7 +487,6 @@ await describe({
               inner: innerClient({ text: '喵。', },),
               tally,
               minAsks: 4,
-              l: levelCapturingLogger({ lines: [], },),
             },);
 
             /** Reply as the caller sees it. */
@@ -520,7 +518,6 @@ await describe({
               inner: innerClient({ text: '{"verdict":"purr"}', },),
               tally,
               minAsks: 4,
-              l: levelCapturingLogger({ lines: [], },),
             },);
 
             /** Outcome as the caller sees it. */
@@ -555,7 +552,6 @@ await describe({
               inner: innerClient({ text: '{"nap":"spot"}', },),
               tally,
               minAsks: 4,
-              l: levelCapturingLogger({ lines: [], },),
             },);
 
             /** Outcome as the caller sees it. */
@@ -588,7 +584,6 @@ await describe({
               inner: innerClient({ text: '', failing: true, },),
               tally,
               minAsks: 4,
-              l: levelCapturingLogger({ lines: [], },),
             },);
 
             /** What the text surface threw. */
@@ -647,7 +642,6 @@ await describe({
               inner: innerClient({ text: '{"verdict":"purr"}', },),
               tally,
               minAsks: 4,
-              l: levelCapturingLogger({ lines: [], },),
             },);
 
             /** What the text surface threw. */
@@ -704,7 +698,6 @@ await describe({
               inner: innerClient({ text: '', failing: true, },),
               tally,
               minAsks: 4,
-              l: levelCapturingLogger({ lines: [], },),
             },);
             /** Signal the caller aborted before any call was made. */
             const aborted = new AbortController();
@@ -744,14 +737,12 @@ await describe({
               inner: innerClient({ text: '', failing: true, },),
               tally,
               minAsks: 4,
-              l: levelCapturingLogger({ lines: [], },),
             },);
             /** Client whose every call answers although the caller left. */
             const answering = seatTallyClient({
               inner: innerClient({ text: '喵。', },),
               tally,
               minAsks: 4,
-              l: levelCapturingLogger({ lines: [], },),
             },);
 
             await thrownByText({ client: failing, modelId: SEAT_HYPER_VISION, signal: aborted.signal, },);
@@ -786,7 +777,6 @@ await describe({
               inner: innerClient({ text: '', failing: true, },),
               tally,
               minAsks: 4,
-              l: levelCapturingLogger({ lines: [], },),
             },);
 
             /** What each of the four calls threw, in order. */
@@ -811,144 +801,36 @@ await describe({
         },),
 
         it({
-          name: 'SAYS ONCE PER SEAT, plainly, that the provider refused the seat\'s credential with HTTP 401, naming the '
-            + 'seat, the provider that refused it, the provider\'s words, how many answers the seat had given and what '
-            + 'to do before the next run, '
-            + 'and says it again for no later 401 of that seat',
+          name: 'COUNTS A REJECTED CREDENTIAL (HTTP 401) AS ANY OTHER THROW and withholds the seat after its failed asks: '
+            + 'the provider is held out beneath this wrapper, in the router, which throws only when no provider '
+            + 'that serves the seat is left',
           fn: async () => {
-            /** Lines the wrapper writes. */
-            const lines: string[] = [];
             /** Tally the wrapper counts into. */
             const tally = createSeatTally();
             /** Client under test, whose provider refuses the credential on every call. */
             const client = seatTallyClient({
               inner: refusingClient({ provider: 'bedrock', status: 401, },),
               tally,
-              minAsks: 4,
-              l: levelCapturingLogger({ lines, },),
+              minAsks: 2,
             },);
 
             await thrownByText({ client, modelId: SEAT_HYPER_TEXT_BEDROCK, signal: SIGNAL, },);
             await thrownByText({ client, modelId: SEAT_HYPER_TEXT_BEDROCK, signal: SIGNAL, },);
+            /** What the third call threw, with the seat withheld. */
+            const third = await thrownByText({ client, modelId: SEAT_HYPER_TEXT_BEDROCK, signal: SIGNAL, },);
 
-            expect(lines,).toStrictEqual([
-              [
-                'warn [seatTallyClient] SEAT CREDENTIAL REFUSED gemma-4-26b-a4b-it on bedrock: refused by ',
-                'ProviderHttpError from bedrock with HTTP 401 (the provider said: ',
-                String.raw`"{\"error\":{\"code\":\"invalid_api_key\",\"message\":\"The security token included in `,
-                String.raw`the request has expired.\",\"param\":null,\"type\":\"permission_denied_error\"}}"), `,
-                'after 0 usable answers this run. bedrock does not accept the credential this seat is asked ',
-                'with, and a credential does not renew during a run, so asks to it are expected to keep failing. ',
-                'Either renew bedrock\'s credential before the next run, or leave it: the run withholds the seat ',
-                'after 4 failed asks and goes on with the other seats.',
-              ].join('',),
-            ],);
-          },
-        },),
-
-        it({
-          name: 'SAYS IT FOR EACH SEAT whose provider refused the credential, and counts the answers a seat gave '
-            + 'before its credential expired',
-          fn: async () => {
-            /** Lines the wrapper writes. */
-            const lines: string[] = [];
-            /** Tally the wrapper counts into. */
-            const tally = createSeatTally();
-            tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'usable', },);
-            tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'usable', },);
-            /** Client under test, whose provider refuses the credential on every call. */
-            const client = seatTallyClient({
-              inner: refusingClient({ provider: 'bedrock', status: 401, },),
-              tally,
-              minAsks: 4,
-              l: levelCapturingLogger({ lines, },),
-            },);
-
-            await thrownByText({ client, modelId: SEAT_HYPER_VISION, signal: SIGNAL, },);
-            await thrownByText({ client, modelId: SEAT_HYPER_TEXT_BEDROCK, signal: SIGNAL, },);
-
-            expect(lines.length,).toBe(2,);
-            expect(lines[0],).toContain('SEAT CREDENTIAL REFUSED minimax-m3 on bedrock: ',);
-            expect(lines[0],).toContain('after 2 usable answers this run.',);
-            expect(lines[1],).toContain('SEAT CREDENTIAL REFUSED gemma-4-26b-a4b-it on bedrock: ',);
-            expect(lines[1],).toContain('after 0 usable answers this run.',);
-          },
-        },),
-
-        it({
-          name: 'NAMES THE PROVIDER THAT SERVED THE REFUSED CALL, never another one, and offers both ways forward: '
-            + 'renew that provider\'s credential, or leave the seat to be withheld',
-          fn: async () => {
-            /** Lines the wrapper writes, one wrapper per provider. */
-            const lines: string[] = [];
-            /** Wrapper over a Hyper credential that every call finds refused. */
-            const hyper = seatTallyClient({
-              inner: refusingClient({ provider: 'hyper', status: 401, },),
-              tally: createSeatTally(),
-              minAsks: 3,
-              l: levelCapturingLogger({ lines, },),
-            },);
-            /** Wrapper over an OpenRouter credential that every call finds refused. */
-            const openrouter = seatTallyClient({
-              inner: refusingClient({ provider: 'openrouter', status: 401, },),
-              tally: createSeatTally(),
-              minAsks: 3,
-              l: levelCapturingLogger({ lines, },),
-            },);
-
-            await thrownByText({ client: hyper, modelId: SEAT_HYPER_VISION, signal: SIGNAL, },);
-            await thrownByText({ client: openrouter, modelId: SEAT_HYPER_VISION, signal: SIGNAL, },);
-
-            expect(lines.length,).toBe(2,);
-            expect(lines[0],).toContain('SEAT CREDENTIAL REFUSED minimax-m3 on hyper: refused by ProviderHttpError from hyper ',);
-            expect(lines[0],).toContain(
-              'Either renew hyper\'s credential before the next run, or leave it: the run withholds the seat after '
-              + '3 failed asks and goes on with the other seats.',
+            expect(String(third,),).toBe(
+              'NoProviderForModelError: no provider can take gemma-4-26b-a4b-it: the run withheld it after it '
+              + 'threw on all 2 asks and does not ask it again',
             );
-            expect(lines[0],).not.toContain('bedrock',);
-            expect(lines[1],).toContain(
-              'SEAT CREDENTIAL REFUSED minimax-m3 on openrouter: refused by ProviderHttpError from openrouter ',
-            );
-            expect(lines[1],).toContain('Either renew openrouter\'s credential before the next run, or leave it:',);
-          },
-        },),
-
-        it({
-          name: 'SAYS NOTHING for a refusal that is not a rejected credential: another HTTP status, a failure that '
-            + 'is no HTTP answer, or a call the caller had already abandoned',
-          fn: async () => {
-            /** Lines the wrapper writes. */
-            const lines: string[] = [];
-            /** Signal the caller aborted before the call was made. */
-            const aborted = new AbortController();
-            aborted.abort();
-            /** Wrapper over a provider answering 500. */
-            const serverError = seatTallyClient({
-              inner: refusingClient({ provider: 'bedrock', status: 500, },),
-              tally: createSeatTally(),
-              minAsks: 4,
-              l: levelCapturingLogger({ lines, },),
-            },);
-            /** Wrapper over a client throwing a plain error. */
-            const plainError = seatTallyClient({
-              inner: innerClient({ text: '', failing: true, },),
-              tally: createSeatTally(),
-              minAsks: 4,
-              l: levelCapturingLogger({ lines, },),
-            },);
-            /** Wrapper over a provider answering 401 to a call nobody waits for. */
-            const abandoned = seatTallyClient({
-              inner: refusingClient({ provider: 'bedrock', status: 401, },),
-              tally: createSeatTally(),
-              minAsks: 4,
-              l: levelCapturingLogger({ lines, },),
-            },);
-
-            await thrownByText({ client: serverError, modelId: SEAT_HYPER_VISION, signal: SIGNAL, },);
-            await thrownByText({ client: plainError, modelId: SEAT_HYPER_VISION, signal: SIGNAL, },);
-            await thrownByText({ client: abandoned, modelId: SEAT_HYPER_VISION, signal: aborted.signal, },);
-
-            expect(lines,).toStrictEqual([],);
+            expect(tally.counts(),).toStrictEqual([{
+              modelId: SEAT_HYPER_TEXT_BEDROCK,
+              asked: 2,
+              usable: 0,
+              unusable: 0,
+              threw: 2,
+              abandoned: 0,
+            },],);
           },
         },),
 
@@ -962,7 +844,6 @@ await describe({
               inner,
               tally: createSeatTally(),
               minAsks: 4,
-              l: levelCapturingLogger({ lines: [], },),
             },);
 
             expect(client.quotas,).toBe(inner.quotas,);
@@ -992,7 +873,6 @@ await describe({
               },
               tally,
               minAsks: 4,
-              l: levelCapturingLogger({ lines: [], },),
             },);
             /** Client under test, whose decision seat throws. */
             const failing = seatTallyClient({
@@ -1004,7 +884,6 @@ await describe({
               },
               tally,
               minAsks: 4,
-              l: levelCapturingLogger({ lines: [], },),
             },);
 
             expect(await answering.decide?.(request,),).toBe(reply,);
@@ -1021,7 +900,6 @@ await describe({
               inner: innerClient({ text: '喵。', },),
               tally,
               minAsks: 4,
-              l: levelCapturingLogger({ lines: [], },),
             },).decide,).toBeUndefined();
           },
         },),
