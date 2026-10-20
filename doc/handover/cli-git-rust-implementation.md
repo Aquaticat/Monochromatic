@@ -1804,6 +1804,16 @@ that is verification, not a decision for the user.
   `main()`); `native-nextest-snapshot.mjs` and the planted control table (now three area modules) are lint-clean.
   Unit `cli-git-nc5` (script `~/temp/agent/nc5-run.ts`, image tag `nc5`) runs the gate and one scoped mutation run
   WITH the 78 planted controls, to prove the refactored scripts end to end (several hours).
+  Result of nc5: gate 2044 passed, 5 skipped; 54 planted controls noticed, then the run stopped on a stale anchor:
+  the "worktree copy dead-owner settlement retirement" control matched `if owner_alive(&holder)? {`, which 0.2.4
+  changed to `owner_alive(&holder, lock)`. The anchor is fixed (commit e484d9b) and the mutation was shown to fail
+  `dead_owner_lock_is_retired_and_taken` on the host. `~/temp/agent/check-anchors.mjs` confirms all 78 anchors match
+  exactly once. Unit `cli-git-nc6` (image tag `nc6`) reruns the gate and the 78 controls; after it ends remove the
+  `nc6` images, then run the cli.fuzz checks. Lesson: edits to a guarded line in `src/native` must update the table.
+  Issue triage still queued (task 53): 1768 already carries a triage decision (the launcher owns the check, no wrapper
+  change); 480 (tag push `EAGAIN` in the retired TypeScript `final-newline` plugin) needs a throwaway-repository tag
+  push through the native wrapper, then a closing comment; 492 (post-push stage) is a feature with open design points;
+  629 and 630 are refactors that touch `src/native` and wait for nc6 to end.
   Queued behind nc1 (src/native): issue 1032 fix. `was_rejected_as_stale` (`auto_push_reconcile.rs:66`) matches only
   `[rejected]`, and GitHub's GH006 prints `[remote rejected]`, which does not contain it. Plan: on a `[remote
   rejected]` refusal fetch the remote tip into the private ref and decide from the graph: local commit already in the
