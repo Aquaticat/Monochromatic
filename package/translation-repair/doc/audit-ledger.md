@@ -421,7 +421,8 @@ named for that subject and listed here.
   Sheets that lacked a block their role needs to judge or write,
   the reader-protection rule that reached past the account of how a death or an attempt happened (B697),
   and the cut of the translators' notes that left a bare quote line,
-  joined two lines and dropped a carriage return (B703).
+  joined two lines and dropped a carriage return (B703),
+  and a Han name the archive spells inside its sentence that no sheet or floor carried (B704).
 - [Audit ledger: readers that accept what no writer writes](audit-ledger-readers-accept-shapes-writers-never-write.md):
   Readers of stored records and directories that accepted a shape,
   a name or a value their own writer never produces,
