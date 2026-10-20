@@ -10,7 +10,7 @@ import {
   isHanCharacter,
 } from '@monochromatic-dev/translation-repair-markup/ts';
 import { visibleText, } from './page-visible-text.ts';
-import { readingOf, } from './prose-name-spelling.ts';
+import { letterReading, } from './prose-name-spelling.ts';
 
 //region Han readings
 // The Han side of the pairing: the runs of an original and the Latin spellings their pinyin reads as.
@@ -350,15 +350,15 @@ export function settledPairs({ found, }: { readonly found: readonly ProseNamePai
    */
   const byReading = Map.groupBy(
     whole,
-    function readingOfPair(pair,): string {
-      return readingOf({ text: pair.rendering, },);
+    function letterReadingPair(pair,): string {
+      return letterReading({ text: pair.rendering, },);
     },
   );
   return whole.filter(function unambiguous(pair,): boolean {
     /**
      Pairs that spell this reading.
      */
-    const sharing = byReading.get(readingOf({ text: pair.rendering, },),) ?? [];
+    const sharing = byReading.get(letterReading({ text: pair.rendering, },),) ?? [];
     return new Set(sharing.map(function sourceOf(other,): string {
       return other.source;
     },),).size === 1;

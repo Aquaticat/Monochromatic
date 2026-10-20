@@ -88,10 +88,10 @@ function opensLower({ word, }: { readonly word: string; },): boolean {
 
  @example
  ```ts
- readingOf({ text: 'Xue Tuanzi', },); // 'xuetuanzi'
+ letterReading({ text: 'Xue Tuanzi', },); // 'xuetuanzi'
  ```
  */
-export function readingOf({ text, }: { readonly text: string; },): string {
+export function letterReading({ text, }: { readonly text: string; },): string {
   return latinWordSpans({ text, },)
     .map(function folded({ word, },): string {
       return foldLatinWord({ word, },);
@@ -331,7 +331,7 @@ export function spellingIndex({ text, }: { readonly text: string; },): ReadonlyM
       /**
        The stretch's reading.
        */
-      const reading = readingOf({ text: spelling, },);
+      const reading = letterReading({ text: spelling, },);
       if (reading.length < MIN_LETTERS)
         continue;
       if ((stretch.length === 1) && ordinary.has(reading,))

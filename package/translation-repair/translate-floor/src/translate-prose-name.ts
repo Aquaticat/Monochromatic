@@ -155,8 +155,6 @@ export function proseNameFindings(
     readonly declared: readonly DeclaredNamePair[];
   },
 ): readonly string[] {
-  if (pageText === '')
-    return [];
   /**
    The original's Han names and the page's spelling of each.
    */

@@ -544,8 +544,8 @@ export function pageNameLines(
     targetText,
   },);
   /**
-   Names a block above already pairs or the front matter declares, which the
-   block of names spelled in sentences leaves to them.
+   Names the link, signature and heading pairs already carry or the front
+   matter declares, which the block of names spelled in sentences leaves to them.
    */
   const placed = new Set([
     ...pairs.map(function sourceOfPair({ source, },): string {
@@ -556,8 +556,8 @@ export function pageNameLines(
     },),
   ],);
   /**
-   Names the archive spells inside its sentences that no block above pairs and
-   no front matter declares.
+   Names the archive spells inside its sentences that no pair of the
+   link, signature and heading block carries and no front matter declares.
    */
   const spelled = proseNamePairs({
     sourceText,

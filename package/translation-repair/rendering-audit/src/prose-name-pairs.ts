@@ -5,7 +5,7 @@ import {
   stretchPairs,
 } from './prose-name-han.ts';
 import {
-  readingOf,
+  letterReading,
   spellingIndex,
 } from './prose-name-spelling.ts';
 
@@ -111,7 +111,7 @@ export function respelledRendering(
   /**
    Spellings of the name in the text, as written.
    */
-  const spellings = index.get(readingOf({ text: rendering, },),) ?? [];
+  const spellings = index.get(letterReading({ text: rendering, },),) ?? [];
   return spellings.includes(rendering,) ? [] : spellings;
 }
 

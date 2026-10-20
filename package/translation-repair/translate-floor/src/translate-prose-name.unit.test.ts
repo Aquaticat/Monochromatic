@@ -45,7 +45,7 @@ const REGROUPED_FINDING = 'The original names 雪团子 and the page already spe
 
  @param pageText - page as it stands, the archive's own wording
 
- @returns Findings of the composed verdict, empty for a valid candidate
+ @returns Findings of the composed outcome, empty for a valid candidate
 
  @example
  ```ts
@@ -64,16 +64,16 @@ function findingsFor(
   },
 ): readonly string[] {
   /**
-   Composed verdict.
+   Composed outcome.
    */
-  const verdict = validateTranslatedSlice({
+  const outcome = validateTranslatedSlice({
     sourceText: SOURCE_TEXT,
     candidateText,
     pageText,
     lineStructured: false,
     declared,
   },);
-  return (verdict.kind === 'invalid') ? verdict.findings : [];
+  return (outcome.kind === 'invalid') ? outcome.findings : [];
 }
 
 await describe({
