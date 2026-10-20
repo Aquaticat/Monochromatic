@@ -158,18 +158,13 @@ function visitTest(
   if (expression.type === 'TestLogical') {
     return {
       ...EMPTY_VISIT_RESULT,
-      workItems: [
-        {
-          kind: 'test',
-          expression: expression.left,
+      workItems: expression.operands.map(function testWorkItem(operand,) {
+        return {
+          kind: 'test' as const,
+          expression: operand,
           context,
-        },
-        {
-          kind: 'test',
-          expression: expression.right,
-          context,
-        },
-      ],
+        };
+      },),
     };
   }
   if (expression.type === 'TestNot') {

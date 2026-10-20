@@ -784,4 +784,8 @@ named for that subject and listed here.
   What was read and decided on 2026-10-20.
   Entries:
   XingZ6015,
-  zheermao15.
+  zheermao15,
+  CuspariaKLSY18,
+  zheermao16,
+  CuspariaKLSY19,
+  zheermao17.

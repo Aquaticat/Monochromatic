@@ -1825,6 +1825,10 @@ that is verification, not a decision for the user.
   change); 480 (tag push `EAGAIN` in the retired TypeScript `final-newline` plugin) needs a throwaway-repository tag
   push through the native wrapper, then a closing comment; 492 (post-push stage) is a feature with open design points;
   629 and 630 are refactors that touch `src/native` and wait for nc6 to end.
+  Backlog triage 2026-10-20 (`doc/handover/issue-triage-2026-10-20.md`) drained the repo-wide `needs-triage`
+  queue and gave each issue one lifecycle verdict. Of the issues named here, 492, 574, 1768 and 1770 are
+  `ready-for-human` with their decision questions posted, 630 and 1672 are `ready-for-agent`, and the
+  implementation follow-ups above (480's throwaway-repository tag push, the nc6-gated refactors) are unchanged.
   Queued behind nc1 (src/native): issue 1032 fix. `was_rejected_as_stale` (`auto_push_reconcile.rs:66`) matches only
   `[rejected]`, and GitHub's GH006 prints `[remote rejected]`, which does not contain it. Plan: on a `[remote
   rejected]` refusal fetch the remote tip into the private ref and decide from the graph: local commit already in the

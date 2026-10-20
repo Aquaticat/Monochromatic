@@ -2343,33 +2343,45 @@ children: [
       const diagnostics = await lintReadonly(
         'readonly-tuple-exposure-invalid.ts',
       );
-      /* Three opacity reports and no offer. `resultExposesMutableState` calls a tuple
-       * type argument state-carrying without looking inside it, which is what keeps
-       * these reported, and recursing into the tuple's own positions looks like an
-       * obvious refinement.
+      /** Fixture source read back for exact span attribution. */
+      const fixtureSource = readFileSync(resolveFixtureTarget({
+        fixtureSourceRoot: FIXTURES,
+        fixturePath: 'readonly-tuple-exposure-invalid.ts',
+      },), 'utf8',);
+      /* The control is offered and the writers are not. `readStoredPair` iterates the
+       * same receiver through the same member and writes nothing, so wrapping its
+       * parameter is sound, and `readonly-tuple-exposure-invalid.ts` declares that offer
+       * allowed. The two writers must stay silent: `pair[0] = 'rewritten'` on a tuple the
+       * array holds mutates `rows`, so offering either one would recommend a wrapping
+       * their own bodies defeat. A tuple is caller-owned state whatever its positions
+       * are, because the tuple itself is writable, and only a member that builds the
+       * tuple fresh could discharge it. That is the container relation
+       * `FRESH_CONTAINER_MEMBER_NAMES` records as unbuilt.
        *
-       * It is unsound, measured rather than argued. With that recursion applied via
-       * `checker.isTupleType`, all three reports vanish and
-       * `rewriteMutableStoredPair` is offered as read-only while its body runs
-       * `pair[0] = 'rewritten'` on a tuple the array holds. A tuple is caller-owned
-       * state whatever its positions are, because the tuple itself is writable, and
-       * only a member that builds the tuple fresh could discharge it. That is the
-       * container relation `FRESH_CONTAINER_MEMBER_NAMES` records as unbuilt.
-       *
-       * A note for anyone retrying it: `Type.isTupleType()` answers false for these
-       * arguments and `checker.isTupleType(type)` answers true, so a first attempt
-       * can look like a safe no-op while testing nothing. */
-      expect(diagnostics.length,).toBe(0,);
-      /* The assertion that still carries the guarantee, because an empty list satisfies
-       * every "no offer" test vacuously. What must remain true is the attribution, and it
-       * is asserted where it lives: `effect-summaries.unit.test.ts` pins
-       * `rewriteMutableStoredPair` and `rewriteStoredPair` at `referentMutated=[0]`, which
-       * is what withholds the read-only offer the comment above warns about. Silence here
-       * is only correct while that pin holds, so the two move together. */
-      expect(diagnostics.some(function offersAnything(diagnostic,): boolean {
+       * History: under TypeScript 7.0.2 this fixture was fully silent, because
+       * `Type.isTupleType()` answered false for these tuple references and the
+       * classifier fell through to `deep-readonly`, making every offer impossible for
+       * the wrong reason. TypeScript 7.1 answers true (the tuple rework behind
+       * `TupleTypeReference.getTarget().readonly`), so the classifier sees the mutable
+       * element tuple and the control's sound offer appears. The recursion experiment
+       * the fixture warns about stays unsound, measured rather than argued: with the
+       * tuple's own positions recursed into, `rewriteMutableStoredPair` is offered while
+       * its body runs `pair[0] = 'rewritten'`. */
+      expect(diagnostics.length,).toBe(1,);
+      /* The one offer lands on the control's parameter, by exact source offset. An offer
+       * on either writer would carry an identical message, so only the span attributes
+       * it, and the attribution pin in `effect-summaries.unit.test.ts`
+       * (`rewriteMutableStoredPair` and `rewriteStoredPair` at `referentMutated=[0]`) is
+       * what must withhold the writers' offers at the gate. The two move together. */
+      expect(
+        diagnostics[0]?.labels?.[0]?.span.offset,
+      ).toBe(
+        fixtureSource.indexOf('rows', fixtureSource.indexOf('function readStoredPair',),),
+      );
+      expect(diagnostics.some(function offersReadonly(diagnostic,): boolean {
         return diagnostic.message
           .includes('can be deeply readonly',);
-      },),).toBe(false,);
+      },),).toBe(true,);
     },
   },),
   it({

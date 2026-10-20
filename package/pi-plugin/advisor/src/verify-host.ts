@@ -19,7 +19,7 @@ import {
 } from 'node:path';
 import { fileURLToPath, } from 'node:url';
 import { fauxAssistantMessage, } from '@earendil-works/pi-ai';
-import { AdvisorCompletionError, } from './advisor-completion-error.ts';
+import { AdvisorCompletionError, } from '@monochromatic-dev/agent-harness-shared-advisor/ts';
 import {
   parseAdvisorHostJsonl,
   verifyAdvisorHostEvidence,

@@ -90,7 +90,6 @@ const environment = {
   XDG_CACHE_HOME: join(artifact, 'cache'),
   XDG_DATA_HOME: join(artifact, 'data'),
 };
-delete environment.SLINT_MCP_PORT;
 const host = spawn(compositor, ['--socket', socket, '--size', size, '--scale', '1', '--color-scheme', 'dark', '--', binary, project, '--file', sourceFile], { env: environment, stdio: ['ignore', log, log] });
 const exited = new Promise(done => host.on('exit', done));
 const run = {};

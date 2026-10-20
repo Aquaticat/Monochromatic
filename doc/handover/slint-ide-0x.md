@@ -1117,6 +1117,77 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     (line 8 changed pixels in row 5), `query_input_tests::find_box_context_menu_runs_each_entry`; the third run passed
     238 of 238. To judge on a quiet host before pushing; the pixel tests could point at a real tile re-center shimmer
     (unhinted glyphs at a new tile origin) and must be compared against `origin/main` under the same load.
+    Owner instruction of 2026-10-20: "Plan for the load average never to quiet down for longer than a minute at a
+    time." Measurement and verification therefore must not wait for a quiet host (another session's
+    translation-repair fan-out drove the load average to 123 while my cadence runs were going; those runs are void).
+    The plan, each part measured here on 2026-10-20: (a) run every measured process as a systemd user unit with
+    `CPUWeight=10000` (the `cpu` controller is delegated to the user manager; all sessions' shell commands share one
+    `claude-code-bash` cgroup at weight 100). Positive control, 56 busy loops: a fixed single-thread job took 647 ms
+    unloaded, 1797 ms at default weight, 1190 ms at weight 10000, so it narrows but does not remove the slowdown (busy
+    sibling hyperthreads and shared caches remain; cgroup `cpuset` is not delegated, so cores cannot be reserved);
+    (b) interleave A and B back to back, alternating the order per pair, and judge by the paired differences and the
+    medians, never by one run (QNB); (c) first run A against A for the noise floor under the current load, and claim a
+    difference only when it exceeds that floor; (d) record CPU pressure (`/proc/pressure/cpu` PSI) and the stalled time
+    per run instead of the load average, which lags; (e) for test reliability, accept only counts over many full runs
+    under the load that exists (15 of 15 passed on a moderately loaded host here), and judge a failure by its name, not
+    by the host state. Tools: `~/temp/agent/matrix-load.mjs` (runs the cadence task as such a unit, pairs, PSI) and
+    `matrix-load-report.mjs`.
+    All four landed on 2026-10-20 (pushed as `8b0860d75e`, IDE tree identical to the one that passed the gates; the
+    main checkout could not merge `origin/main` because another session had staged renames there, so I pushed from a
+    scratch worktree, `git push origin HEAD:main`, and removed it). This supersedes the queue below. Flake diagnosis
+    (agent `a717e60922dca0448`): four causes, all in tests, none in the GPU code view. (1) Vello renders are not
+    bit-identical: 200 consecutive renders of one tile all differed, 10 to 32 texels by one level (the same texels,
+    a rounding tie in the coverage sum, alpha 57 against 58); the stability tests now accept the measured one-level
+    `RENDER_NOISE` only for a frame that follows a re-render, and scrolling inside one tile stays exact; (2) the
+    find-matches minimap test pressed Enter after the first match was already selected; (3) the failed-worker-tile
+    test polled for a message a retry render cleared within 0.2 ms (the state now records failures in debug builds);
+    (4) the resize test counted passes while the syntax reply could still arrive. Flake rates under shared load:
+    baseline 1 of 20, `main` at the merge 9 of 70, fixed head 15 of 15 and 5 of 5 under a background build. My runs of
+    the integrated tree on a moderately loaded host: `lint`, `test:bin`, `build`, `inspect:software-renderer` pass,
+    `test:native` 15 of 15 (260 tests, about 27 s each). Cadence by my `matrix-load.mjs` (baseline `fcfaec56e6` = A,
+    integrated tree = B, release, alternating pairs, `CPUWeight=10000`): noise floor B against B on the 50,000-line
+    drag 89 to 97 percent of frames changed with paired differences from -5 to +6 points; 50,000-line drag A 94.2 and
+    B 95.8 percent median (6 pairs), scroll 99.2 and 100.0; 1147x2000 drag A 94.2 and B 96.7 (5 pairs), scroll 98.3
+    and 99.2; no regression, within noise. One earlier matrix (load average 123) is void. Unexplained and left
+    open: one nine-level pixel difference seen once in `rows_above_the_view_wait_until_scrolling_has_stopped`,
+    `find_box_context_menu_runs_each_entry` once (passed 72 of 72 stressed), the old minimap test
+    `an_external_edit_of_fifty_thousand_lines_renders_only_the_band_it_touches` (1 of 20 on the baseline; left to
+    stage 5). The MCP removal (agent `a3b41470505ef8920`) and the GPU choice by system order (agent
+    `a090eeb1ae38efc05`) are in. The IDE was reinstalled: `~/.local/bin/monochromatic-ide` sha256 prefix
+    `80c27b37e4224602` (equal to the release build), previous binary `monochromatic-ide.previous` (`e8944c22f708ac4a`).
+    Decisions I took (veto-open): a one-level tolerance for frames after a re-render is the permanent rule (Vello 0.11
+    has no deterministic renderer); selection fills and find boxes stay Slint rectangles under the tile (drawn by
+    FemtoVG on the GPU, no CPU painting); the 64 MiB tile byte bound is unchanged; +52 MiB RSS, +260 MiB VRAM and +34 ms
+    first frame are accepted until stage 6 and the item below; `inspect:native` keeps `--accessibility` on, the
+    measuring tasks leave it off. Queued (QWD): (a) Vello allocates about 262 MiB of video memory for scratch buffers
+    for any scene (165 MiB named in its `config.rs`: lines 48, segments 48, ptcl 32, tiles 16, segment counts 16,
+    blend spill 4, bin data 1; 97 MiB unattributed), which matters on an integrated GPU with shared memory and an 8 GiB
+    card running many parallel test processes (a parallel `test:native` needs about 9.5 GiB); find out whether Vello
+    0.11 sizes can be set from the scene or patched, before or during stage 5; (b) try `hint(true)` for Vello glyphs
+    and compare crispness (text is unhinted today); (c) move `selection_ink.rs` next to `code_colors.rs`; (d) the
+    log-stall control stalls before its first window, so its "picture frozen" half checks only that no window
+    appeared; make it log at a quieter level so it stalls after the window shows; (e) done: the worktree `.claude/worktrees/agent-a717e60922dca0448` stayed locked because the flake agent left
+    a polling loop running for 7.5 hours (`until ls .../exp-all-fail-*.log; do sleep 10; done`, waiting for a file that
+    exists only if an experiment fails); I stopped the loop (pid 1450932), unlocked, removed the worktree and its merged
+    branch. Owner correction: "Assume nothing ever works perfectly." So after every agent report, scan for strays
+    before declaring its worktree done: for each process whose `/proc/<pid>/cwd` is inside the worktree, read its
+    command line, stop what the agent left behind, and only then unlock and remove; and look for units the agent
+    started (`systemctl --user list-units`). Next: stage 5 (GPU minimap, with the Vello buffer question), then stage 6.
+    Running (started 2026-10-20): stages 5 and 6 merged (GPU minimap on the shared Vello renderer, delete the rest of
+    the CPU pipeline and `swash`), agent `a0880539282a3162b`; and a read-only study of Vello 0.11's fixed scratch
+    buffers (262 MiB VRAM for any scene), agent `aefec5d0492ba3cab`, which writes only
+    `doc/planning/ide-vello-buffer-sizes.md`. Verification of both uses `~/temp/agent/matrix-load.mjs` and at least 15
+    full `test:native` runs, under whatever load exists.
+    Found and fixed while adding the `BGL` rule (pushed as `1c3ec09299`): `package/desktop-app/ide/Cargo.toml` is
+    managed by file-enforcer (WC2) and `file-enforcer.config.ts` owned `slint` fleet-wide as
+    `backend-winit`, `renderer-femtovg`, `renderer-software`. Running `node file-enforcer.config.ts` rewrote the IDE's
+    `slint` line back to that form (observed in a scratch worktree), so the stage 0b and stage 2 manifest edits, made
+    by hand, would have been undone at the next sync, putting the software renderer and OpenGL back. `slint` is now
+    removed from `CARGO_SHARED_DEPENDENCIES` (like `tokio`, `image`, `gtk4`, `windows`); after the change the enforcer
+    leaves the IDE manifest untouched, and terminal and music-player keep their identical lines. The new rule
+    `BGL` in `AGENTS.md` (and `CLAUDE.md`) says every background wait carries a deadline and is stopped by its starter.
+    Lesson for agent briefs: manifests and root files may be generated, so check `file-enforcer.config.ts` before
+    editing them (WC2) and run the enforcer in a scratch worktree to prove the edit survives a sync.
     State at 2026-10-20 after the three agent reports (to verify and land in this order):
     (1) flake diagnosis of stages 3 and 4 (agent `a717e60922dca0448`, running): on a quiet host 2 of 8 full
     `test:native` runs failed on `main` (`annotation_stability_tests` "window row 240 differs after the annotations

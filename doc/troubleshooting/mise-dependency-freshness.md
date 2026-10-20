@@ -423,12 +423,53 @@ a failing `git log --follow` in the `aquati.cat` site build,
 and `missing release libghostty-vt build output; run build first` in `desktop-app/terminal`.
 These are environment and build-order failures in those packages,
 not mise behavior.
+Correction (2026-10-20,
+commit `1eee51ee2f`):
+the "environment and build-order" diagnosis is wrong for the
+`desktop-app/terminal` staging error,
+and the staging error's own text names the same wrong assumption.
+The build ran and succeeded;
+`stage:runtime-libs` failed because it globbed only
+`target/<profile>/build/libghostty-vt-sys-<hash>/out`.
+This machine's `~/.cargo/config.toml` sets
+`[build] build-dir = "/var/mnt/encrypted/cargo-build/{workspace-path-hash}"`
+(relocated to a second disk on 2026-10-14),
+and `cargo metadata` reports `build_directory`
+`/var/mnt/encrypted/cargo-build/f8/4f84da14ad940c`
+beside `target_directory` `/var/home/user/Monochromatic/package/desktop-app/terminal/target`,
+so build-script output lands in
+`<build_directory>/<profile>/build/libghostty-vt-sys/<hash>/out`
+while final artifacts stay in `target/`.
+Commit `1eee51ee2f` made `package/desktop-app/terminal/mise.toml` discover roots
+from `cargo metadata` (`target_directory` and `build_directory`),
+`CARGO_TARGET_DIR`,
+and the package target dir,
+and glob both directory layouts in every root.
+This correction covers only the `desktop-app/terminal` staging error;
+the other three diagnoses are unchanged,
+and "not mise behavior" still holds for all four.
 The `fanout_packages` snippet does name the failures;
 the per-package error lines are interleaved far above the final line,
 so a capped or filtered view of the output can show the exit code without them.
 The same run printed `UNRESOLVED_IMPORT` warnings for `@monochromatic-dev/module-logger`
 from two raw `src/main.ts` configs,
 which the #570 handover already records.
+
+### Durable lesson: consult `cargo metadata` `build_directory`
+
+Any task staging cargo build-script output must consult the `cargo metadata` `build_directory`,
+not just `target/`.
+`cargo metadata` reports `target_directory` and `build_directory` separately,
+and a machine-level `[build] build-dir` can move build-script output away from `target/`
+while final artifacts stay in `target/`.
+Build-script output directories have two layouts:
+`<root>/<profile>/build/libghostty-vt-sys-<hash>/out` in the classic `target/` shape and
+`<root>/<profile>/build/libghostty-vt-sys/<hash>/out` under a relocated build dir.
+Discover every root from `cargo metadata`,
+`CARGO_TARGET_DIR`,
+and the package target dir,
+and glob both layouts in each root
+(the discovery `package/desktop-app/terminal/mise.toml` implements in commit `1eee51ee2f`).
 
 ## Verification
 

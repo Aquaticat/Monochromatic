@@ -60,6 +60,59 @@ const containerCargo = (cargoArgs) => {
 const runCargo = (cargoArgs) => { if (hostOk) { execFileSync('cargo', cargoArgs, { stdio: 'inherit', env: hostEnv() }) } else { containerCargo(cargoArgs) } }
 """
 
+# Stages the libghostty-vt shared libraries a cargo build installed through the
+# vendored Ghostty build script. Interpolated into the stage:runtime-libs tasks
+# and the mcp task's inline staging.
+# - cargoOutputRoots(): every root a build may have written to. cargo metadata
+#   reports both target_directory (final artifacts) and build_directory
+#   (build-script output), and a machine-level `[build] build-dir` can move the
+#   latter off the package target dir entirely (this machine relocates it to a
+#   second disk), so a plain `target/...` glob misses the Ghostty install.
+# - Build-script output directories are `libghostty-vt-sys-<hash>` in the
+#   classic layout and `libghostty-vt-sys/<hash>` under build-dir; both shapes
+#   are globbed in every root.
+# Namespace imports (stageFs, stagePath, stageChild) keep these bindings from
+# colliding with the other vars a task body interpolates beside this one.
+stage_runtime_libs = """
+const stageFs = await import('node:fs')
+const stagePath = await import('node:path')
+const stageChild = await import('node:child_process')
+const cargoOutputRoots = () => {
+  const roots = []
+  const envRoot = process.env.CARGO_TARGET_DIR
+  if (envRoot !== undefined && envRoot !== '') { roots.push(envRoot) }
+  try {
+    const metadata = JSON.parse(stageChild.execFileSync('cargo', ['metadata', '--format-version', '1', '--no-deps'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }))
+    for (const key of ['target_directory', 'build_directory']) {
+      const value = metadata[key]
+      if (typeof value === 'string' && value !== '') { roots.push(value) }
+    }
+  } catch {
+    // Without cargo metadata only the package-local target dir is left to search.
+  }
+  roots.push(stagePath.join(process.cwd(), 'target'))
+  return [...new Set(roots)]
+}
+const stageLibghosttyRuntimeLibs = (profile) => {
+  const roots = cargoOutputRoots()
+  const libDirs = roots.flatMap((root) => [
+    ...stageFs.globSync(`${root}/${profile}/build/libghostty-vt-sys-*/out/ghostty-install/lib`),
+    ...stageFs.globSync(`${root}/${profile}/build/libghostty-vt-sys/*/out/ghostty-install/lib`),
+  ]).sort()
+  if (libDirs.length === 0) {
+    const searched = roots.map((root) => stagePath.join(root, profile, 'build')).join(', ')
+    const buildTask = profile === 'release' ? '//package/desktop-app/terminal:build' : '//package/desktop-app/terminal:build:debug'
+    throw new Error(`missing ${profile} libghostty-vt build output (searched ${searched}); run "mise run ${buildTask}" first`)
+  }
+  const sourceLibDir = libDirs[libDirs.length - 1]
+  const stagedLibDir = stagePath.join(process.cwd(), 'target', 'lib', 'monochromatic-terminal')
+  stageFs.mkdirSync(stagedLibDir, { recursive: true })
+  for (const name of ['libghostty-vt.so', 'libghostty-vt.so.0', 'libghostty-vt.so.0.1.0']) {
+    stageFs.copyFileSync(stagePath.join(sourceLibDir, name), stagePath.join(stagedLibDir, name))
+  }
+}
+"""
+
 [tasks.image]
 description = "Build the Fedora build/run container image"
 run = "podman build --tag localhost/monochromatic/terminal --file Containerfile ."
@@ -86,32 +139,16 @@ execFileSync('mise', ['run', '//package/desktop-app/terminal:stage:runtime-libs:
 description = "Copy release libghostty-vt shared libraries into the binary rpath directory"
 shell = "node --input-type=module-typescript -e"
 run = """
-const { globSync, mkdirSync, copyFileSync } = await import('node:fs')
-const { join } = await import('node:path')
-const libDirs = globSync('target/release/build/libghostty-vt-sys-*/out/ghostty-install/lib').sort()
-if (libDirs.length === 0) { throw new Error('missing release libghostty-vt build output; run build first') }
-const sourceLibDir = libDirs[libDirs.length - 1]
-const stagedLibDir = 'target/lib/monochromatic-terminal'
-mkdirSync(stagedLibDir, { recursive: true })
-for (const name of ['libghostty-vt.so', 'libghostty-vt.so.0', 'libghostty-vt.so.0.1.0']) {
-  copyFileSync(join(sourceLibDir, name), join(stagedLibDir, name))
-}
+{{vars.stage_runtime_libs}}
+stageLibghosttyRuntimeLibs('release')
 """
 
 [tasks."stage:runtime-libs:debug"]
 description = "Copy debug libghostty-vt shared libraries into the binary rpath directory"
 shell = "node --input-type=module-typescript -e"
 run = """
-const { globSync, mkdirSync, copyFileSync } = await import('node:fs')
-const { join } = await import('node:path')
-const libDirs = globSync('target/debug/build/libghostty-vt-sys-*/out/ghostty-install/lib').sort()
-if (libDirs.length === 0) { throw new Error('missing debug libghostty-vt build output; run build:debug first') }
-const sourceLibDir = libDirs[libDirs.length - 1]
-const stagedLibDir = 'target/lib/monochromatic-terminal'
-mkdirSync(stagedLibDir, { recursive: true })
-for (const name of ['libghostty-vt.so', 'libghostty-vt.so.0', 'libghostty-vt.so.0.1.0']) {
-  copyFileSync(join(sourceLibDir, name), join(stagedLibDir, name))
-}
+{{vars.stage_runtime_libs}}
+stageLibghosttyRuntimeLibs('debug')
 """
 
 [tasks.lint]
@@ -160,6 +197,7 @@ description = "Build --features slint/mcp (debug), stage libs, and run HEADLESS 
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo_dispatch}}
+{{vars.stage_runtime_libs}}
 const { mkdirSync, copyFileSync } = await import('node:fs')
 const { join } = await import('node:path')
 process.env.SLINT_EMIT_DEBUG_INFO = '1'
@@ -173,13 +211,8 @@ process.env.XDG_DATA_HOME = join(xdgRoot, 'data')
 runCargo(['build', '--features', 'slint/mcp'])
 // Stage libghostty-vt beside the binary INLINE (not via a nested `mise run`, which
 // re-loads this repo's sops-encrypted config and fails without the decrypt key).
-// Mirrors stage:runtime-libs:debug. globSync comes from cargo_dispatch above.
-const libDirs = globSync('target/debug/build/libghostty-vt-sys-*/out/ghostty-install/lib').sort()
-if (libDirs.length === 0) { throw new Error('missing debug libghostty-vt build output') }
-const sourceLibDir = libDirs[libDirs.length - 1]
-const stagedLibDir = 'target/lib/monochromatic-terminal'
-mkdirSync(stagedLibDir, { recursive: true })
-for (const name of ['libghostty-vt.so', 'libghostty-vt.so.0', 'libghostty-vt.so.0.1.0']) { copyFileSync(join(sourceLibDir, name), join(stagedLibDir, name)) }
+// Same discovery and copy as stage:runtime-libs:debug.
+stageLibghosttyRuntimeLibs('debug')
 console.error(`monochromatic-terminal MCP server: http://127.0.0.1:${process.env.SLINT_MCP_PORT}/mcp (backend=${process.env.SLINT_BACKEND || 'default'})`)
 execFileSync('./target/debug/monochromatic-terminal', [], { stdio: 'inherit' })
 """

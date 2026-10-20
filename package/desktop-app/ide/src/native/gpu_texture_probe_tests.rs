@@ -180,4 +180,9 @@ fn repeated_renders_of_one_tile_spread() {
         first.width(),
         first.height()
     );
+    assert!(
+        worst <= super::tile_reads::RENDER_NOISE,
+        "two renders of one scene differ by {worst} levels, more than the {} level the tests accept",
+        super::tile_reads::RENDER_NOISE
+    );
 }
