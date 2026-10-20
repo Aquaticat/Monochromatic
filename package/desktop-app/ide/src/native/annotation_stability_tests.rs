@@ -199,7 +199,8 @@ fn band(shown: &SharedPixelBuffer<Rgba8Pixel>, y: f32) -> &[Rgba8Pixel] {
 ///  by one level at most;
 ///  the viewport's first row differed likewise in 5 scrolls (6 pixels);
 ///  every row between the two edges matched exactly in every scroll.
-///  The likely cause, from reading FemtoVG's fragment shader (`scissorMask` in `femtovg-0.27.0`),
+///  The likely cause,
+///  from reading FemtoVG's fragment shader (`scissorMask` in `femtovg-0.27.0`),
 ///  is that the clip is a float mask multiplied into the pixels of a clipped row,
 ///  which need not be exactly one at the edge row;
 ///  that mechanism was not isolated.
