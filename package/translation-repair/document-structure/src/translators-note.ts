@@ -327,8 +327,8 @@ function isQuoteHead({ head, }: { readonly head: string; },): boolean {
 }
 
 /**
- Whether the text between two offsets is nothing but spaces and tabs, or
- nothing at all.
+ Whether the text between two offsets is nothing but whitespace that is not a
+ line feed, or nothing at all.
 
  @param text - text read
 
@@ -336,8 +336,8 @@ function isQuoteHead({ head, }: { readonly head: string; },): boolean {
 
  @param to - exclusive offset past the stretch
 
- @returns Whether the stretch holds no word and no line break; a stretch
- whose offsets meet is empty and counts
+ @returns Whether the stretch holds no word and no line feed; a stretch whose
+ offsets meet is empty and counts
 
  @example
  ```ts
@@ -356,19 +356,18 @@ function isGapOnOneLine(
     readonly to: number;
   },
 ): boolean {
-  /**
-   What stands between the two offsets.
-   */
-  const gap = text.slice(
+  return Array.from(text.slice(
     from,
     to,
-  );
-  return (gap.trim() === '') && (!gap.includes('\n',));
+  ),)
+    .every(function isSpaceOnTheLine(character,): boolean {
+      return (character !== '\n') && isWhitespace({ character, },);
+    },);
 }
 
 /**
  The stretches of a text that hold notes, a run of notes with nothing but
- spaces and tabs between them being one stretch.
+ whitespace on their line between them being one stretch.
 
  TWO NOTES SIDE BY SIDE ARE ONE NOTE TO CUT. A stretch is judged from the
  text around it, and the text around the second of two notes on a line is the
@@ -441,8 +440,8 @@ function noteStretchesOf(
  line the same way, since the markers it would leave behind are a blank line
  of the quote that splits the quoted paragraph; a comment ending its line
  takes the spaces before it; a comment between words takes one of the two
- spaces around it. Notes with only spaces between them are the one comment
- these rules speak of (`noteStretchesOf`), and the line is judged from the
+ spaces around it. Notes with only whitespace on their line between them are
+ the one comment these rules speak of (`noteStretchesOf`), and the line is judged from the
  original text.
 
  @param text - text the stretch stands in
