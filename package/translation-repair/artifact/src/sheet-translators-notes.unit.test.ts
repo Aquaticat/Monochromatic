@@ -54,6 +54,7 @@ const PLANTED_WITNESSES: readonly string[] = [
   'favourite of the neighbours',
   'asleep in the sunny window',
   'lulled Mittens to sleep',
+  'kitten next door fell asleep too',
 ];
 
 /**

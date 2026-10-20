@@ -35,6 +35,8 @@ import {
   REFERENCES,
   TENSE_ISSUE,
   ARCHIVE_PARAGRAPH_ENVELOPE,
+  NEIGHBOUR_ARCHIVE,
+  NEIGHBOUR_SOURCE,
   TENSE_ENVELOPE,
   joined,
 } from '@monochromatic-dev/translation-repair-repair/ts/rendered-sheets-texts.test-fixture.ts';
@@ -82,6 +84,9 @@ export function renderedSheets(): readonly RenderedSheet[] {
     // archive rendering.
     envelopes: [TENSE_ENVELOPE,],
     issues: [TENSE_ISSUE,],
+    // The passages either side, shown as context only.
+    neighbouringSourceText: NEIGHBOUR_SOURCE,
+    neighbouringIncumbentText: NEIGHBOUR_ARCHIVE,
     // What `repair-editor-stage.ts` passes it (ledger S14).
     identityContext: IDENTITY,
     referenceContext: REFERENCES,
@@ -135,6 +140,8 @@ export function renderedSheets(): readonly RenderedSheet[] {
         messages: buildCriticMessages({
           sourceText: SOURCE,
           targetText: ARCHIVE,
+          neighbouringSourceText: NEIGHBOUR_SOURCE,
+          neighbouringIncumbentText: NEIGHBOUR_ARCHIVE,
           identityContext: IDENTITY,
           referenceContext: REFERENCES,
         },),
@@ -233,6 +240,8 @@ export function renderedSheets(): readonly RenderedSheet[] {
           // The evidence `judgeTranslateSlate` sends.
           evidence: translateSlateEvidence({
             sourceText: SOURCE,
+            neighbouringSourceText: NEIGHBOUR_SOURCE,
+            neighbouringIncumbentText: NEIGHBOUR_ARCHIVE,
             identityContext: IDENTITY,
             referenceContext: REFERENCES,
           },),

@@ -62,6 +62,18 @@ export const ARCHIVE = `That night the kitten falls asleep on the windowsill. Sh
 export const REPAIR = `That night the kitten fell asleep on the windowsill. She said, "I will come again tomorrow." ${TRANSLATORS_NOTE}`;
 
 /**
+ Invented original of the passage next door, which the sheets that carry a
+ window show as context only.
+ */
+export const NEIGHBOUR_SOURCE = '隔壁的小猫也睡着了。';
+
+/**
+ Invented archive rendering of the passage next door, ending with a note
+ between translators like the archive rendering of this one.
+ */
+export const NEIGHBOUR_ARCHIVE = `The kitten next door fell asleep too. ${TRANSLATORS_NOTE}`;
+
+/**
  Invented identity context carrying one declared name.
  */
 export const IDENTITY = 'name: 咪咪 = Mittens';

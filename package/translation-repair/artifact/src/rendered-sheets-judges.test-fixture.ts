@@ -30,6 +30,8 @@ import {
   REFERENCES,
   TENSE_ISSUE,
   JUDGE_REFERENCE,
+  NEIGHBOUR_ARCHIVE,
+  NEIGHBOUR_SOURCE,
   TENSE_REGION,
   TRANSLATORS_NOTE,
   joined,
@@ -63,6 +65,8 @@ export function judgeSheets(): readonly RenderedSheet[] {
             position: 0,
             members: TENSE_ISSUE.claims,
           },],
+          neighbouringSourceText: NEIGHBOUR_SOURCE,
+          neighbouringIncumbentText: NEIGHBOUR_ARCHIVE,
           identityContext: IDENTITY,
           referenceContext: REFERENCES,
         },)
@@ -98,6 +102,8 @@ export function judgeSheets(): readonly RenderedSheet[] {
           baselineText: ARCHIVE,
           regions: [TENSE_REGION,],
           issues: [TENSE_ISSUE,],
+          neighbouringSourceText: NEIGHBOUR_SOURCE,
+          neighbouringIncumbentText: NEIGHBOUR_ARCHIVE,
           identityContext: IDENTITY,
         },)
           .messages,

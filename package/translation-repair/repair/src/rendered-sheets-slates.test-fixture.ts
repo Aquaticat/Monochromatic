@@ -48,6 +48,8 @@ import {
   REFERENCES,
   ARCHIVE_QUOTE,
   VERSE_SOURCE,
+  NEIGHBOUR_ARCHIVE,
+  NEIGHBOUR_SOURCE,
   TENSE_REGION,
   TRANSLATORS_NOTE,
   joined,
@@ -71,6 +73,8 @@ import {
 function translatedEvidence({ sourceText, }: { readonly sourceText: string; },): readonly SelectEvidence[] {
   return translateSlateEvidence({
     sourceText,
+    neighbouringSourceText: NEIGHBOUR_SOURCE,
+    neighbouringIncumbentText: NEIGHBOUR_ARCHIVE,
     identityContext: IDENTITY,
     referenceContext: REFERENCES,
   },);
