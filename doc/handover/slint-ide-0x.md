@@ -1044,7 +1044,25 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     and showed one failure, `minimap_reflection_tests::the_minimap_of_find_matches_is_the_average_of_the_windows_pixels`
     at scale 2, "differs by 99"; it did not recur in the clean run; the gate runner now takes `TAG` for a unique
     log and unit name). Stage 0b agent `a151e856e450d38e8` (migrate the 13 files, diagnose the three failures, drop
-    `renderer-software`) and stage 1 agent `a54a3dbd127b14fbf` are running.
+    `renderer-software`) is running.
+    Stage 1 landed (agent `a54a3dbd127b14fbf`, merged into `main`, verified by me): `[profile.dev.package."*"]`
+    `opt-level = 2` in the IDE `Cargo.toml` (clean debug build 49.7 s to 81.8 s, incremental rebuild unchanged at
+    about 4 s, `test:native` 214 tests in about 23 s on a quiet host, measured by me after the merge) and the
+    `inspect:cadence` task (`mise run //package/desktop-app/ide:inspect:cadence <scenario> <project> <file> [profile]`,
+    `bin/cadence.ts`, `bin/inspect-cadence.mjs`, README section "Frame cadence check"). My control run of the debug
+    build with optimized dependencies on `client.unit.test.ts`, scenario `drag`: 106 changed, 15 identical of 121,
+    longest identical run 1 (single dropped frames about every eight frames, none of the 5 to 9 frame freezes the
+    agent measured in the unoptimized debug build). The 50,000-line case was not measured. The agent changed
+    `wrap_tests::rows_above_the_view_changing_height_move_no_visible_pixel` to wait for the extent to change before
+    `settled`: with optimized dependencies `settled` returned while the extent was unchanged (10608 before and
+    after, 24504 once measured); why is undetermined (candidate: the pass closes when its last output is taken while
+    the window applies it on a later timer tick), so a production tracking bug in `pass_open` (`tile_build.rs`) is
+    not ruled out. Commit scopes there are `desktop-app/ide` where the repo uses `desktop-app-ide`; not amended.
+    Test races found by running the full suite on the merged `main` and fixed by me (`87d02a02d8`):
+    `tall_window_minimap_tests` read the minimap picture of the window before it was resized; the fixture now also
+    waits for the picture to be taller than 1000 rows (it passed 6 of 6 alone and failed once in a loaded full run).
+    The three `markdown/semantic-line-breaks` findings from my earlier flake fix are fixed; the IDE `lint` task is
+    green (clippy, rustfmt, slint, `monochromatic-lint`).
   - Where docs are edited (owner instruction of 2026-10-19): handover and doc edits are made in the main checkout
     (`/var/home/user/Monochromatic`), merging `origin/main` into it first when it is behind; not in a temporary
     worktree. Agent worktrees are for code.
