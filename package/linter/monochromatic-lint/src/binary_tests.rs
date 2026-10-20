@@ -581,12 +581,22 @@ fn a_configuration_naming_the_removed_anonymous_function_rule_is_a_setup_error()
 
 /// Every configuration rejection diagnostic names the running binary,
 ///  so which binary refused the configuration is readable from the failure itself.
+/// A lockfile pinning exactly the running version measures no staleness,
+///  so no hint appears.
 #[test]
 fn configuration_rejection_diagnostics_identify_the_running_binary() {
     // Read the version from the manifest so a release bump cannot leave this assertion stale.
     let identity: String = format!("(monochromatic-lint {})", env!("CARGO_PKG_VERSION"));
     let fixture: Fixture = Fixture::new();
     fixture.write("a.rs", "fn main() {}\n");
+    fixture.write(
+        "mise.lock",
+        format!(
+            "[[tools.\"cargo:monochromatic-lint\"]]\nversion = \"{}\"\n",
+            env!("CARGO_PKG_VERSION")
+        )
+        .as_str(),
+    );
     fixture.write(
         CONFIG,
         r#"[{ "files": ["**/*.rs"], "rules": { "rust/no-anonymous-functions": { "severity": "off" } } }]"#,
@@ -601,6 +611,11 @@ fn configuration_rejection_diagnostics_identify_the_running_binary() {
         unknown.stderr
     );
     assert!(unknown.stderr.contains(identity.as_str()), "{}", unknown.stderr);
+    assert!(
+        !unknown.stderr.contains("may be stale"),
+        "{}",
+        unknown.stderr
+    );
     fixture.write(
         CONFIG,
         r#"[{ "files": ["**/*.rs"], "rules": { "rust/max-lines": { "severity": "warning" } } }]"#,
