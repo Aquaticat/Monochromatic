@@ -244,10 +244,10 @@ function isBreakOrSpace(
   },
 ): boolean {
   /**
-   The character there, none past the end of the text.
+   The text being read, whose end no offset reaches.
    */
-  const character = shown.text[at] ?? '';
-  return (character !== '') && ' \t\n\r'.includes(character,);
+  const { text, } = shown;
+  return (at < text.length) && ' \t\n\r'.includes(text.charAt(at,),);
 }
 
 /**
