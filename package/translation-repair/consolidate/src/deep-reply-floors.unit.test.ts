@@ -372,6 +372,8 @@ await describe({
               signal: new AbortController().signal,
               exchangeTimeoutMs: HANG_STOP_MS,
               l: tagged({ tag: 'deep-reply-floors-test', },),
+              // The deep voice must be asked, and the default window is rotated by the sheet text.
+              fanOut: 'whole-bench',
               stageSettings: SCRIPTED_STAGE_SETTINGS,
             },);
 

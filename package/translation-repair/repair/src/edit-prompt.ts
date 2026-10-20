@@ -162,7 +162,7 @@ Rules, strictly enforced by a machine:
 - ${ADDITION_IS_REMOVED_NOT_SOFTENED}
 - When the CURRENT TEXT is line-structured, meaning short lines separated by blank lines rather than paragraphs, the line is the unit: keep one output line per input line, in the same order, and recast only within a line. Never merge, split, reorder or invent lines.
 - Omit a region entirely when you cannot fix it faithfully; a skipped region stays unchanged.
-- THE HOUSE RULES BELOW OUTRANK EVERY RULE IN THIS LIST. Where a detail is absent from the TRANSLATION because reader protection asks for it, the region is not an omission to fill and the issue reporting it is wrong: omit that region entirely rather than restoring the detail.`;
+- THE HOUSE RULES BELOW OUTRANK EVERY RULE IN THIS LIST. Where a detail is absent from the TRANSLATION because reader protection asks for it in the account of how a death or an attempt happened, the region is not an omission to fill and the issue reporting it is wrong: omit that region entirely rather than restoring the detail. A means named anywhere else is not covered by reader protection, and the region is restored as the ORIGINAL states it.`;
 
 /**
  Rule list followed by the rules this corpus is written under.

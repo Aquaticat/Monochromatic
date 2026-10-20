@@ -142,8 +142,9 @@ export const TRANSLATE_ATTESTED_RULE: string = 'ATTESTED DETAILS lists details t
   + 'translation\'s words where they fit. The ORIGINAL not stating it is not a reason to drop it, and a '
   + 'rendering that drops one drops accurate detail from the page. They license nothing else: from the existing '
   + 'translation carry only these and its apparatus, never other content the ORIGINAL does not state. '
-  + 'Reader protection outranks them: a method, a substance, a dose, or a place that was the means stays out '
-  + 'however plainly a reference states it.';
+  + 'Reader protection outranks them: in the account of how a death or an attempt happened, a method, a '
+  + 'substance, a dose, or a place that was the means stays out however plainly a reference states it; a means '
+  + 'named outside that account is not covered by this rule.';
 
 /**
  Instruction added whenever the sheet shows the pictures block.
