@@ -1084,3 +1084,90 @@ fn a_failed_attempt_between_two_reconciles_does_not_stop_the_next_one() {
     );
     remove(&s.root);
 }
+
+/// Install a `pre-receive` hook on the bare remote that declines the first `declines` pushes the way GitHub's protected
+/// branch does, and, when `advance` is set, first moves the remote branch from the other clone: the race behind GH006.
+/// Returns the file that counts the hook's runs.
+fn declining_remote_hook(scenario: &Scenario, declines: u32, advance: bool) -> PathBuf {
+    let counter = scenario.root.join("receive-counter");
+    let git_without_hook_environment = "env -u GIT_DIR -u GIT_WORK_TREE -u GIT_INDEX_FILE -u GIT_QUARANTINE_PATH \
+                                        -u GIT_OBJECT_DIRECTORY -u GIT_ALTERNATE_OBJECT_DIRECTORIES git";
+    let advance_block = if advance {
+        format!(
+            "if [ $count -eq 1 ]; then\n\
+             {git} -C '{other}' fetch --quiet origin\n\
+             {git} -C '{other}' merge --quiet --ff-only origin/main\n\
+             echo moved > '{other}/moved.txt'\n\
+             {git} -C '{other}' add moved.txt\n\
+             {git} -C '{other}' commit --quiet -m moved\n\
+             {git} -C '{other}' push --quiet origin main\n\
+             fi\n",
+            git = git_without_hook_environment,
+            other = scenario.other.display(),
+        )
+    } else {
+        String::new()
+    };
+    let script = format!(
+        "#!/bin/sh\ncount=$(cat '{counter}' 2>/dev/null || echo 0)\ncount=$((count + 1))\necho $count > '{counter}'\n\
+         if [ $count -le {declines} ]; then\n{advance_block}\
+         echo 'GH006: Protected branch update failed for refs/heads/main.' >&2\nexit 1\nfi\nexit 0\n",
+        counter = counter.display(),
+    );
+    let hook = scenario.remote.join("hooks").join("pre-receive");
+    std::fs::write(&hook, script).expect("pre-receive hook");
+    std::fs::set_permissions(&hook, std::fs::Permissions::from_mode(0o755)).expect("mode");
+    return counter;
+}
+
+/// GitHub prints a protected-branch refusal as `[remote rejected]`; when the remote branch moved meanwhile, it is the
+/// same race as a stale update and the merge is published (issue 1032).
+#[test]
+fn a_protected_branch_refusal_while_the_remote_moved_is_reconciled() {
+    let s = scenario("ar-gh006-moved");
+    declining_remote_hook(&s, 1, true);
+    let landed = commit_local(&s, "b.txt", "local\n");
+    let (result, err) = run(&s, &landed);
+    assert_eq!(
+        (result.outcome, result.exit_code),
+        (AutoPushOutcome::Pushed, 0),
+        "{err}"
+    );
+    assert_eq!(text_of(&s.remote, &["show", "main:b.txt"]), "local");
+    assert_eq!(text_of(&s.remote, &["show", "main:moved.txt"]), "moved");
+    remove(&s.root);
+}
+
+/// A refusal from a remote that did not move is a real refusal: nothing is merged and the push output is unchanged.
+#[test]
+fn a_protected_branch_refusal_while_the_remote_is_behind_is_reported_as_it_came() {
+    let s = scenario("ar-gh006-behind");
+    let counter = declining_remote_hook(&s, 100, false);
+    let remote_before = text_of(&s.remote, &["rev-parse", "main"]);
+    let landed = commit_local(&s, "b.txt", "local\n");
+    let (result, err) = run(&s, &landed);
+    assert_eq!(result.outcome, AutoPushOutcome::Failed, "{err}");
+    assert!(result.shown.contains("[remote rejected]"), "{}", result.shown);
+    assert!(err.contains(PUSH_FAILED_NOTE), "{err}");
+    assert!(!err.contains(RECONCILE_LINE_PREFIX), "{err}");
+    assert_eq!(hook_runs(&counter), 1);
+    assert_eq!(text_of(&s.remote, &["rev-parse", "main"]), remote_before);
+    remove(&s.root);
+}
+
+/// A refusal of the merge itself, by a remote that has not moved since the merge was made, is final: the merge is not
+/// pushed again and the refusal is not reported as a remote that kept moving.
+#[test]
+fn a_refusal_of_the_merge_by_an_unmoved_remote_ends_the_attempts() {
+    let s = scenario("ar-gh006-merge-refused");
+    advance_remote(&s, "a.txt", "remote\n");
+    let counter = declining_remote_hook(&s, 100, false);
+    let landed = commit_local(&s, "b.txt", "local\n");
+    let (result, err) = run(&s, &landed);
+    assert_eq!(result.outcome, AutoPushOutcome::Failed, "{err}");
+    assert!(result.shown.contains("[remote rejected]"), "{}", result.shown);
+    assert!(!err.contains("during each of"), "{err}");
+    assert_eq!(hook_runs(&counter), 1);
+    assert_eq!(text_of(&s.local, &["for-each-ref", "refs/cli-git"]), "");
+    remove(&s.root);
+}
