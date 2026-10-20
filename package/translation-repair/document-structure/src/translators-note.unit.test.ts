@@ -29,6 +29,11 @@ const TRAILING = '<!-- 前面这句猫话懂什么意思，先这么翻译，大
  */
 const JSX_NOTE = '{/* 这句猫话不知道如何翻译 */}';
 
+/**
+ A third note, short, for a line that holds three.
+ */
+const SHORT_NOTE = '{/* 注 */}';
+
 await describe({
   name: '',
   children: [
@@ -199,6 +204,132 @@ await describe({
             );
             expect(withoutTranslatorsNotes({ text: `> ${JSX_NOTE}The cat slept.\n> It purred.\n`, },),).toBe(
               '> The cat slept.\n> It purred.\n',
+            );
+          },
+        },),
+        it({
+          name: 'CUTS two or three notes that follow text on one line with the spaces before them, and keeps the line break after them',
+          fn: async () => {
+            expect(withoutTranslatorsNotes({ text: `The cat slept. ${TRAILING} ${JSX_NOTE}\nIt purred.\n`, },),).toBe(
+              'The cat slept.\nIt purred.\n',
+            );
+            expect(
+              withoutTranslatorsNotes({
+                text: `The cat slept. ${TRAILING} ${JSX_NOTE} ${SHORT_NOTE}\nIt purred.\n`,
+              },),
+            ).toBe('The cat slept.\nIt purred.\n',);
+            expect(withoutTranslatorsNotes({ text: `The cat slept. ${TRAILING}${JSX_NOTE}   \nIt purred.\n`, },),).toBe(
+              'The cat slept.\nIt purred.\n',
+            );
+          },
+        },),
+        it({
+          name: 'CUTS two or three notes that are all a line holds with the line, so no blank line splits a paragraph',
+          fn: async () => {
+            expect(withoutTranslatorsNotes({ text: `The cat slept.\n${TRAILING} ${JSX_NOTE}\nIt purred.\n`, },),).toBe(
+              'The cat slept.\nIt purred.\n',
+            );
+            expect(
+              withoutTranslatorsNotes({
+                text: `The cat slept.\n  ${TRAILING} ${JSX_NOTE}${SHORT_NOTE}  \nIt purred.\n`,
+              },),
+            ).toBe('The cat slept.\nIt purred.\n',);
+            expect(withoutTranslatorsNotes({ text: `${TRAILING} ${JSX_NOTE}\nIt purred.\n`, },),).toBe('It purred.\n',);
+          },
+        },),
+        it({
+          name: 'CUTS two or three notes on one quoted line, at one and two levels of nesting, with the line or with the spaces before them',
+          fn: async () => {
+            expect(withoutTranslatorsNotes({ text: `> The cat slept.\n> ${TRAILING} ${JSX_NOTE}\n> It purred.\n`, },),).toBe(
+              '> The cat slept.\n> It purred.\n',
+            );
+            expect(
+              withoutTranslatorsNotes({
+                text: `>   > The cat slept.\n>   > ${TRAILING} ${JSX_NOTE} ${SHORT_NOTE}\n>   > It purred.\n`,
+              },),
+            ).toBe('>   > The cat slept.\n>   > It purred.\n',);
+            expect(withoutTranslatorsNotes({ text: `> The cat slept. ${TRAILING} ${JSX_NOTE}\n> It purred.\n`, },),).toBe(
+              '> The cat slept.\n> It purred.\n',
+            );
+            expect(
+              withoutTranslatorsNotes({
+                text: `>   > The cat slept. ${TRAILING} ${JSX_NOTE}\n>   > It purred.\n`,
+              },),
+            ).toBe('>   > The cat slept.\n>   > It purred.\n',);
+          },
+        },),
+        it({
+          name: 'CUTS two notes on one line across CRLF line ends as it cuts one, and keeps the line break after a line of notes',
+          fn: async () => {
+            expect(withoutTranslatorsNotes({ text: `The cat slept.\r\n${TRAILING} ${JSX_NOTE}\r\nIt purred.\r\n`, },),).toBe(
+              'The cat slept.\r\nIt purred.\r\n',
+            );
+            expect(
+              withoutTranslatorsNotes({
+                text: `> The cat slept.\r\n> ${TRAILING} ${JSX_NOTE}\r\n> It purred.\r\n`,
+              },),
+            ).toBe('> The cat slept.\r\n> It purred.\r\n',);
+            expect(withoutTranslatorsNotes({ text: `The cat slept. ${TRAILING} ${JSX_NOTE}\r\nIt purred.\r\n`, },),).toBe(
+              withoutTranslatorsNotes({ text: `The cat slept. ${TRAILING}\r\nIt purred.\r\n`, },),
+            );
+          },
+        },),
+        it({
+          name: 'KEEPS the carriage return of a CRLF line a note ends, so the text keeps one kind of line end',
+          fn: async () => {
+            expect(withoutTranslatorsNotes({ text: `The cat slept. ${JSX_NOTE}\r\nIt purred.\r\n`, },),).toBe(
+              'The cat slept.\r\nIt purred.\r\n',
+            );
+            expect(withoutTranslatorsNotes({ text: `> The cat slept. ${JSX_NOTE}\r\n> It purred.\r\n`, },),).toBe(
+              '> The cat slept.\r\n> It purred.\r\n',
+            );
+            expect(withoutTranslatorsNotes({ text: `The cat slept. ${JSX_NOTE}  \r\nIt purred.\r\n`, },),).toBe(
+              'The cat slept.\r\nIt purred.\r\n',
+            );
+            expect(withoutTranslatorsNotes({ text: `The cat slept. ${TRAILING} ${JSX_NOTE}\r\nIt purred.\r\n`, },),).toBe(
+              'The cat slept.\r\nIt purred.\r\n',
+            );
+          },
+        },),
+        it({
+          name: 'CUTS two notes on the last line of a text without a trailing line break, quoted or not, with the spaces before them',
+          fn: async () => {
+            expect(withoutTranslatorsNotes({ text: `The cat slept. ${TRAILING} ${JSX_NOTE}`, },),).toBe('The cat slept.',);
+            expect(withoutTranslatorsNotes({ text: `The cat slept.\n${TRAILING} ${JSX_NOTE}`, },),).toBe('The cat slept.\n',);
+            expect(withoutTranslatorsNotes({ text: `> The cat slept.\n> ${TRAILING} ${JSX_NOTE}`, },),).toBe(
+              '> The cat slept.\n',
+            );
+            expect(withoutTranslatorsNotes({ text: `${TRAILING} ${JSX_NOTE}`, },),).toBe('',);
+          },
+        },),
+        it({
+          name: 'CUTS two or three notes between words with one of the spaces around them, as one note is',
+          fn: async () => {
+            expect(withoutTranslatorsNotes({ text: `The ${TRAILING} ${JSX_NOTE} cat slept.`, },),).toBe('The cat slept.',);
+            expect(withoutTranslatorsNotes({ text: `The ${TRAILING}${JSX_NOTE} ${SHORT_NOTE} cat slept.`, },),).toBe(
+              'The cat slept.',
+            );
+            expect(withoutTranslatorsNotes({ text: `> The ${TRAILING} ${JSX_NOTE} cat slept.\n> It purred.\n`, },),).toBe(
+              '> The cat slept.\n> It purred.\n',
+            );
+          },
+        },),
+        it({
+          name: 'KEEPS the cut of notes that stand apart: one note, notes on lines of their own, and notes with words between them',
+          fn: async () => {
+            expect(withoutTranslatorsNotes({ text: `The cat slept. ${TRAILING}\nIt purred.\n`, },),).toBe(
+              'The cat slept.\nIt purred.\n',
+            );
+            expect(withoutTranslatorsNotes({ text: `The cat slept. ${TRAILING}\nIt purred. ${JSX_NOTE}\nIt ran.\n`, },),)
+              .toBe('The cat slept.\nIt purred.\nIt ran.\n',);
+            expect(withoutTranslatorsNotes({ text: `The cat slept.\n${TRAILING}\n${JSX_NOTE}\nIt purred.\n`, },),).toBe(
+              'The cat slept.\nIt purred.\n',
+            );
+            expect(withoutTranslatorsNotes({ text: `The ${TRAILING} cat ${JSX_NOTE}\nIt purred.\n`, },),).toBe(
+              'The cat\nIt purred.\n',
+            );
+            expect(withoutTranslatorsNotes({ text: `${TRAILING} The cat slept. ${JSX_NOTE}\nIt purred.\n`, },),).toBe(
+              ' The cat slept.\nIt purred.\n',
             );
           },
         },),

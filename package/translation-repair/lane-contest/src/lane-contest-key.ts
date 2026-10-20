@@ -227,6 +227,12 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
  2026-10-20, after 11 was set, its slice-cache directory is empty, and a control from 2026-10-19 finds none either, so the number
  moves, as the consolidate, repair slice, refine and translate versions move for the same cut. The consistency, page title and
  pairing versions stay, since none of their sheets cuts a note. No record has been written at 12, which this change sets first.
+
+ Two later changes to the same cut ride inside 12. A second note on one line no longer takes the line
+ break with it (5b75add81, d60b27a9e, 003983067), and a note ending a CRLF line keeps the line's carriage return
+ (acf6ada60, e80301bf3). None of the 92 pinned English archives has two notes on one line or a carriage return, so no
+ sheet text changes, and no record had been written at 12 when they landed: the only run since it was set,
+ CuspariaKLSY18, runs a6a0ed7dc0, which predates it.
  */
 export const LANE_CONTEST_CACHE_VERSION = 12;
 
