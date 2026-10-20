@@ -91,7 +91,7 @@ await describe({
               },),
             },);
             expect(sheet,).not.toContain(NOTE_WORDS,);
-            expect(sheet,).toContain('The cat slept on the windowsill. ' + ORIGINAL_COMMENT,);
+            expect(sheet,).toContain(`The cat slept on the windowsill. ${ORIGINAL_COMMENT}`,);
             expect(sheet,).toContain('The kitten purred.',);
             for (const index of [0, 1, 2,]) {
               expect(sheet,).toContain(`[${String(index,)}]`,);
@@ -134,7 +134,7 @@ await describe({
               },),
             },);
             expect(sheet,).not.toContain(NOTE_WORDS,);
-            expect(sheet,).toContain('The cat slept on the windowsill. ' + ORIGINAL_COMMENT,);
+            expect(sheet,).toContain(`The cat slept on the windowsill. ${ORIGINAL_COMMENT}`,);
             expect(sheet,).toContain('## Purrs',);
             for (const index of [0, 1,]) {
               expect(sheet.split(`[${String(index,)}]`,).length - 1,).toBe(2,);

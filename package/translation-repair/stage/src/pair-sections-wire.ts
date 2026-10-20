@@ -1,5 +1,6 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
+import { withoutTranslatorsNotes, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { selectFence, } from './prompt-fence.ts';
 
 //region Section pairing wire
@@ -196,6 +197,34 @@ export function buildSectionPairingMessages(
     readonly targetSections: readonly NumberedSection[];
   },
 ): readonly ChatMessage[] {
+  // THE MODEL IS SHOWN THE TRANSLATION'S SECTIONS WITHOUT THE NOTES THE
+  // ARCHIVE'S TRANSLATORS LEFT EACH OTHER (`withoutTranslatorsNotes`): no reader
+  // sees one, so a note may not make a section look as if it had a body.
+  // Every index and the length of the list stay as the caller numbered them, and
+  // the pairs the model returns name those indices, so a section that held
+  // nothing else is listed with its heading alone or empty. The original's own
+  // comments stay in view.
+  /**
+   Texts whose comments are the original's own.
+   */
+  const originals = sourceSections
+    .map(function toText(section,): string {
+      return section.text;
+    },)
+    .join('\n',);
+  /**
+   Translation sections as the model reads them, each at its index.
+   */
+  const shownTargetSections = targetSections.map(function shown(section,): NumberedSection {
+    return {
+      index: section.index,
+      text: withoutTranslatorsNotes({
+        text: section.text,
+        original: originals,
+      },),
+    };
+  },);
+
   /**
    Fence chosen against every section this sheet carries.
 
@@ -211,6 +240,9 @@ export function buildSectionPairingMessages(
         return section.text;
       },),
       ...targetSections.map(function toText(section,): string {
+        return section.text;
+      },),
+      ...shownTargetSections.map(function toText(section,): string {
         return section.text;
       },),
     ],
@@ -252,7 +284,7 @@ export function buildSectionPairingMessages(
         },)
       }\n\nTRANSLATION SECTIONS\n\n${
         renderSections({
-          sections: targetSections,
+          sections: shownTargetSections,
           fence,
         },)
       }`,
