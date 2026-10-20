@@ -10,6 +10,48 @@ use super::frame::{Clip, Viewport};
 use crate::row_map::CODE_ROW;
 /// The most bytes a raster may hold.
 use crate::text_raster::MAX_RASTER_BYTES;
+/// The device's texture size limit is one process-wide number, read by the window thread and the tile worker.
+use std::sync::atomic::{AtomicU32, Ordering};
+
+/// What:
+///  The texture size every GPU device offers at least:
+///  wgpu's default limit for the width and the height of a 2D texture.
+/// Why:
+///  The application opens its device with wgpu's default limits raised to the adapter's,
+///  so no device it works on offers less,
+///  and a tile cut for this size fits any of them.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const DEFAULT_TEXTURE_DIMENSION = 8192;
+/// ```
+pub const DEFAULT_TEXTURE_DIMENSION: u32 = 8192;
+
+/// The largest texture side the process's GPU device offers.
+static TEXTURE_DIMENSION: AtomicU32 = AtomicU32::new(DEFAULT_TEXTURE_DIMENSION);
+
+/// What:
+///  Record the largest side of a 2D texture the process's GPU device offers
+///  (`max_texture_dimension_2d`),
+///  so that a tile is never cut taller than one texture can be.
+/// Why:
+///  The launcher and the test harness know the device before any window exists,
+///  and the rendering notifier checks the value again when the device arrives.
+///  The device is one per process, so the limit is too.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export function setTextureDimension(limit: number): void;
+/// ```
+pub fn set_texture_dimension(limit: u32) {
+    TEXTURE_DIMENSION.store(limit.max(1), Ordering::Relaxed);
+}
+
+/// The largest side of a 2D texture the device offers,
+/// as last recorded by [`set_texture_dimension`].
+pub fn texture_dimension() -> u32 {
+    return TEXTURE_DIMENSION.load(Ordering::Relaxed);
+}
 
 /// What:
 ///  Logical pixels a raster extends past the wrap width.
@@ -62,21 +104,39 @@ pub fn raster_fits(columns: u64, rows: u64) -> bool {
 }
 
 /// What:
-///  The tallest tile in logical pixels whose raster,
+///  Whether a tile texture `columns` pixels wide and `rows` pixels tall is within [`MAX_RASTER_BYTES`] and within
+///  the device's texture size on both sides.
+/// Why:
+///  The tile is one texture on the GPU,
+///  so its memory and the limit of the device both bound its height.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function textureFits(columns: number, rows: number): boolean;
+/// ```
+pub fn texture_fits(columns: u64, rows: u64) -> bool {
+    let side = u64::from(texture_dimension());
+    return raster_fits(columns, rows) && columns <= side && rows <= side;
+}
+
+/// What:
+///  The tallest tile in logical pixels whose texture,
 ///  `columns` physical pixels wide at display `scale`,
-///  stays within [`MAX_RASTER_BYTES`].
-///  One code row is kept free for the rounding of the raster's size up to whole pixels,
+///  stays within [`MAX_RASTER_BYTES`] and within the device's texture size.
+///  One code row is kept free for the rounding of the texture's size up to whole pixels,
 ///  and the answer is never under one code row.
 /// Why:
-///  A tile is one image of the text area's width,
-///  so the limit on its bytes is a limit on its height.
+///  A tile is one texture of the text area's width,
+///  so the limits on its bytes and on its side are limits on its height.
+///  A window cannot be taller than the device's texture size either,
+///  so a tile of that height always holds a view.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function tileCap(columns: number, scale: number): number;
 /// ```
 pub fn tile_cap(columns: u64, scale: f32) -> f32 {
-    let rows = MAX_RASTER_BYTES / 4 / columns.max(1);
+    let rows = (MAX_RASTER_BYTES / 4 / columns.max(1)).min(u64::from(texture_dimension()));
     return ((rows as f32 / scale).floor() - CODE_ROW).max(CODE_ROW);
 }
 
@@ -176,7 +236,7 @@ pub fn fit_clip(
         None => (first_top, bottom),
     };
     let rows = ((to - from).max(CODE_ROW) * scale).ceil() as u64;
-    if raster_fits(columns, rows) {
+    if texture_fits(columns, rows) {
         return clip;
     }
     return band_clip(first_top, bottom, (from, to), tile_cap(columns, scale));

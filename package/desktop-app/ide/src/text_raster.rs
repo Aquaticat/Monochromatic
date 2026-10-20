@@ -21,19 +21,17 @@ use swash::{
     scale::{ScaleContext, image::Content},
 };
 
-/// Palette values and the role-to-ink translation:
-///  the code painting here and the minimap share them.
-mod palette;
 /// What:
 ///  `pub use` re-exports the palette under this module's name.
 /// Why:
-///  Callers written against `text_raster` keep their imports while the palette lives in its own file.
+///  The minimap's picture still reads the palette through `text_raster`;
+///  the palette itself lives in `code_colors`, because the GPU code view uses it too.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export { type CodeColors, ink } from './palette';
+/// export { type CodeColors, ink } from './code-colors';
 /// ```
-pub use palette::{CodeColors, ink};
+pub use crate::code_colors::{CodeColors, ink};
 
 /// What:
 ///  Most bytes a source tile's raster may hold:

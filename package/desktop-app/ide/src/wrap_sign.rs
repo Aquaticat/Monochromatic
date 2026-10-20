@@ -19,12 +19,14 @@ use crate::row_map::CODE_ROW;
 /// The shaper decides which symbols its fonts display,
 /// and sets the one that is chosen.
 use crate::shaped_text::TextShaper;
-/// The raster paints the symbol with one given ink.
-use crate::text_raster::{SourcePixels, TextRaster};
-/// Failures of the glyph rasterizer reach the caller.
+/// The scene the mark is drawn from and the strokes of the drawn arrow.
+use crate::tile_scene::{Item, StrokeItem, TileScene, encode, layout_scene};
+/// Failures of the layout walk reach the caller.
 use anyhow::Result;
 /// Glyph ids tell a displayable symbol from the font's missing-glyph box.
 use parley::PositionedLayoutItem;
+/// The arrow's path.
+use vello::kurbo::BezPath;
 
 /// IntelliJ's `SOFT_WRAP_SIGN_COLOR` in the Default scheme,
 /// which the Darcula scheme inherits:
@@ -153,25 +155,22 @@ impl TextShaper {
     }
 
     /// What:
-    ///  Paint `sign` into a cell `width` logical pixels wide and one code row tall at `scale`,
+    ///  The scene of `sign` in a cell `width` logical pixels wide and one code row tall at `scale`,
     ///  in [`SIGN_INK`].
     ///  A symbol is set like source text and ends at the cell's right edge,
     /// as line numbers do.
     /// Why:
-    ///  The gutter shows this image,
+    ///  The gutter shows the texture this scene is drawn into,
     /// so the symbol is the one the coverage check shaped.
+    ///
+    /// # Errors
+    /// The symbol's layout holds an inline box, which source text never produces.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// signPixels(raster: TextRaster, sign: Sign, scale: number, width: number): Pixels;
+    /// signScene(sign: Sign, scale: number, width: number): TileScene;
     /// ```
-    pub fn sign_pixels(
-        &mut self,
-        raster: &mut TextRaster,
-        sign: Sign,
-        scale: f32,
-        width: f32,
-    ) -> Result<SourcePixels> {
+    pub fn sign_scene(&mut self, sign: Sign, scale: f32, width: f32) -> Result<TileScene> {
         let pixel_width = (width * scale).ceil().max(1.0) as u32;
         let pixel_height = (CODE_ROW * scale).ceil() as u32;
         match sign {
@@ -179,7 +178,7 @@ impl TextShaper {
                 let layout = self.line_layout(&character.to_string(), scale, &[], &[]);
                 let advance = layout.full_width();
                 let left = pixel_width as f32 - advance;
-                return raster.paint_layout(
+                return layout_scene(
                     &layout,
                     (left, 0.0),
                     SIGN_INK,
@@ -187,24 +186,10 @@ impl TextShaper {
                 );
             }
             Sign::Arrow => {
-                return Ok(arrow_pixels(pixel_width, pixel_height, scale));
+                return Ok(arrow_scene(pixel_width, pixel_height, scale));
             }
         }
     }
-}
-
-/// Distance from the point `(px, py)` to the segment from `(ax, ay)` to `(bx, by)`.
-fn distance(point: (f32, f32), from: (f32, f32), to: (f32, f32)) -> f32 {
-    let (px, py) = point;
-    let (dx, dy) = (to.0 - from.0, to.1 - from.1);
-    let length = dx * dx + dy * dy;
-    let along = if length == 0.0 {
-        0.0
-    } else {
-        (((px - from.0) * dx + (py - from.1) * dy) / length).clamp(0.0, 1.0)
-    };
-    let (nearest_x, nearest_y) = (from.0 + along * dx, from.1 + along * dy);
-    return ((px - nearest_x).powi(2) + (py - nearest_y).powi(2)).sqrt();
 }
 
 /// What:
@@ -213,49 +198,35 @@ fn distance(point: (f32, f32), from: (f32, f32), to: (f32, f32)) -> f32 {
 ///  the shape of the symbol it stands in for.
 /// Why:
 ///  `ArrowSoftWrapPainter` is IntelliJ's answer when no font shows a symbol of the pairs.
+///  The stroke is round-capped and 1.25 logical pixels wide.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function arrowPixels(width: number, height: number, scale: number): Pixels;
+/// function arrowScene(width: number, height: number, scale: number): TileScene;
 /// ```
-fn arrow_pixels(width: u32, height: u32, scale: f32) -> SourcePixels {
+fn arrow_scene(width: u32, height: u32, scale: f32) -> TileScene {
     let cell = width as f32 / scale;
     let (stem, turn, tip) = (cell * 0.3, 15.0, cell - 2.0);
-    // Stem, horizontal run, and the two strokes of the head, in logical pixels.
-    let strokes = [
-        ((stem, 6.0), (stem, turn)),
-        ((stem, turn), (tip, turn)),
-        ((tip, turn), (tip - 4.0, turn - 4.0)),
-        ((tip, turn), (tip - 4.0, turn + 4.0)),
-    ];
-    let half = 1.25 * scale / 2.0;
-    let mut bytes = vec![0_u8; (width * height * 4) as usize];
-    for y in 0..height {
-        for x in 0..width {
-            let point = (x as f32 + 0.5, y as f32 + 0.5);
-            let mut covered = 0.0_f32;
-            for (from, to) in strokes {
-                let near = distance(
-                    point,
-                    (from.0 * scale, from.1 * scale),
-                    (to.0 * scale, to.1 * scale),
-                );
-                covered = covered.max((half + 0.5 - near).clamp(0.0, 1.0));
-            }
-            if covered > 0.0 {
-                let offset = ((y * width + x) * 4) as usize;
-                let alpha = (covered * 255.0).round() as u32;
-                for channel in 0..3 {
-                    bytes[offset + channel] =
-                        ((u32::from(SIGN_INK[channel]) * alpha + 127) / 255) as u8;
-                }
-                bytes[offset + 3] = alpha as u8;
-            }
-        }
-    }
-    return SourcePixels {
+    let unit = f64::from(scale);
+    let at = |x: f32, y: f32| return (f64::from(x) * unit, f64::from(y) * unit);
+    // The stem and the horizontal run, then the two strokes of the head, in logical pixels scaled to physical.
+    let mut path = BezPath::new();
+    path.move_to(at(stem, 6.0));
+    path.line_to(at(stem, turn));
+    path.line_to(at(tip, turn));
+    path.move_to(at(tip - 4.0, turn - 4.0));
+    path.line_to(at(tip, turn));
+    path.line_to(at(tip - 4.0, turn + 4.0));
+    let items = [Item::Stroke(StrokeItem {
+        path,
+        width: 1.25 * scale,
+        dash: Vec::new(),
+        round: true,
+        ink: SIGN_INK,
+    })];
+    return TileScene {
+        scene: encode(&items, height as f32),
         width,
         height,
-        bytes,
     };
 }

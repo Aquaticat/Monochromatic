@@ -132,3 +132,36 @@ fn vello_texture_appears_in_the_snapshot_with_straight_alpha() {
     assert_eq!(at(48, 48), [128, 128, 128, 255], "transparent texels leave the window background");
     window.hide().expect("close probe");
 }
+
+/// Premultiplied difference of two straight RGBA texels, the largest over the four channels.
+fn premultiplied_difference(left: slint::Rgba8Pixel, right: slint::Rgba8Pixel) -> u8 {
+    let premultiply = |value: u8, alpha: u8| return (u32::from(value) * u32::from(alpha) / 255) as u8;
+    return premultiply(left.r, left.a)
+        .abs_diff(premultiply(right.r, right.a))
+        .max(premultiply(left.g, left.a).abs_diff(premultiply(right.g, right.a)))
+        .max(premultiply(left.b, left.a).abs_diff(premultiply(right.b, right.a)))
+        .max(left.a.abs_diff(right.a));
+}
+
+/// Two renders of one scene are not bit-identical on the GPU:
+///  how far apart can they be?
+#[test]
+fn repeated_renders_of_one_tile_spread() {
+    let text = "let value = compute_total(first_item, second_item, third_item); // word word word\n".repeat(60);
+    let (_directory, reader) = super::annotation_paint_tests::fixture_reader(&text);
+    let first = super::tile_reads::tile_pixels(&reader.window, &reader.source).expect("tile");
+    let (mut worst, mut differing) = (0u8, 0usize);
+    for _ in 0..40 {
+        reader.source.borrow_mut().frame_stamp = None;
+        super::render(&reader.window, &reader.source);
+        let again = super::tile_reads::tile_pixels(&reader.window, &reader.source).expect("tile");
+        for (left, right) in first.as_slice().iter().zip(again.as_slice()) {
+            let difference = premultiplied_difference(*left, *right);
+            if difference > 0 {
+                differing += 1;
+            }
+            worst = worst.max(difference);
+        }
+    }
+    println!("SPREAD {} x {} texels, 40 renders: {differing} differing texel readings, worst {worst}", first.width(), first.height());
+}

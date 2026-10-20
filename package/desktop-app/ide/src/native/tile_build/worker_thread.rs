@@ -18,8 +18,6 @@ use ide_app::shaped_text::TextShaper;
 use ide_app::source_style::SourceStyles;
 /// Shaping choices a worker shaper must match.
 use ide_app::source_typography::SourceTypography;
-/// Glyph rasterizer of the worker.
-use ide_app::text_raster::TextRaster;
 /// Owned snapshots are shared between the UI and worker threads.
 use std::sync::{
     Arc,
@@ -44,7 +42,7 @@ use std::sync::{
 pub(in crate::native) const KEPT_LAYOUTS: usize = 50_000;
 
 /// What:
-///  The worker's own shaper and raster,
+///  The worker's own shaper,
 /// plus what the shaper's row cache was built for.
 /// Why:
 ///  The row cache keys on revision and scale and tags each row with its wrap width,
@@ -52,13 +50,11 @@ pub(in crate::native) const KEPT_LAYOUTS: usize = 50_000;
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// class Tiler { shaper: TextShaper; raster: TextRaster; styles?: Styles }
+/// class Tiler { shaper: TextShaper; styles?: Styles }
 /// ```
 struct Tiler {
     /// Font and layout resources owned by the worker thread.
     shaper: TextShaper,
-    /// Glyph rasterizer owned by the worker thread.
-    raster: TextRaster,
     /// Typography the shaper was built with.
     typography: SourceTypography,
     /// Syntax classifications the cached rows were shaped with,
@@ -76,7 +72,6 @@ impl Tiler {
         shaper.keep_layouts(KEPT_LAYOUTS);
         return Self {
             shaper,
-            raster: TextRaster::new(),
             typography,
             styles: None,
         };
@@ -106,7 +101,7 @@ impl Tiler {
     /// first making the shaper match its typography and styles.
     fn build(&mut self, job: TileJob) -> Result<TileBuilt> {
         self.adopt(&job.typography, &job.styles)?;
-        return build_tile(&mut self.shaper, &mut self.raster, job);
+        return build_tile(&mut self.shaper, job);
     }
 }
 

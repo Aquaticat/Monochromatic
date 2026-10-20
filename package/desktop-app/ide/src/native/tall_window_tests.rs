@@ -13,7 +13,10 @@ use super::rows::{absorb, settle};
 /// Exact window sizes for the text width.
 use super::sidebar_tests::{TEXT_LEFT, minimap_beside};
 /// The open reader and the pixels of the shown image.
-use super::wrap_tests::{long_text, measured, open, shown};
+use super::{
+    tile_reads::shown,
+    wrap_tests::{long_text, measured, open},
+};
 /// The worker's pass gate,
 /// the tile that is wanted,
 /// and the placement of the view.
@@ -140,7 +143,7 @@ fn a_tall_window_over_unmeasured_wrapped_lines_paints_text_and_names_no_failure(
             );
         }
         let mut inked = false;
-        for pixel in shown(window) {
+        for pixel in shown(window, &opened.source) {
             if pixel[3] > 0 {
                 inked = true;
                 break;

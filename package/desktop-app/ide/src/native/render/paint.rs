@@ -26,7 +26,7 @@ use ide_app::shaped_text::{Viewport, raster_width};
 /// Exact paint inputs exclude collapsed caret movement.
 use ide_app::source_frame::FrameStamp;
 /// Native palette values retain syntax and selection contrast.
-use ide_app::text_raster::CodeColors;
+use ide_app::code_colors::CodeColors;
 /// A wrap width must be a positive number of pixels.
 use ide_app::wrap::has_wrap_width;
 /// The window's display scale for the paint inputs.

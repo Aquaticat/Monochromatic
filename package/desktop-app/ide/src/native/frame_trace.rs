@@ -7,10 +7,8 @@
 use super::AppWindow;
 /// The winit window events and the hook that sees them before the toolkit does.
 use i_slint_backend_winit::{EventResult, WinitWindowAccessor, winit::event::WindowEvent};
-/// The toolkit's window,
-/// rendering stages,
-/// and graphics API.
-use slint::{ComponentHandle, GraphicsAPI, RenderingState, Window};
+/// The toolkit's window and rendering stages.
+use slint::{ComponentHandle, RenderingState, Window};
 
 /// What:
 ///  Log a size event or a redraw request of the windowing system,
@@ -56,7 +54,7 @@ fn log_window_event(toolkit_window: &Window, event: &WindowEvent) -> EventResult
 /// ```ts
 /// function logRenderingStage(state: RenderingState, api: GraphicsAPI): void;
 /// ```
-fn log_rendering_stage(state: RenderingState, _graphics_api: &GraphicsAPI<'_>) {
+pub(super) fn log_rendering_stage(state: &RenderingState) {
     match state {
         RenderingState::BeforeRendering => {
             tracing::debug!(
@@ -75,13 +73,14 @@ fn log_rendering_stage(state: RenderingState, _graphics_api: &GraphicsAPI<'_>) {
 }
 
 /// What:
-///  Log the size events and redraw requests the windowing system delivers,
-///  and the stages of each draw.
+///  Log the size events and redraw requests the windowing system delivers.
+///  The stages of each draw are logged by the window's one rendering notifier (`gpu_tile`), which calls
+///  [`log_rendering_stage`].
 /// Why:
 ///  The stamp of a size event,
 /// of the draw that follows it,
 ///  and of the buffer the compositor receives are the three moments that say where a one-frame delay comes from.
-///  Both hooks only read and log;
+///  The hook only reads and logs;
 ///  the event always goes on to the toolkit.
 ///
 /// In TS you'd write (pseudocode):
@@ -90,12 +89,4 @@ fn log_rendering_stage(state: RenderingState, _graphics_api: &GraphicsAPI<'_>) {
 /// ```
 pub(super) fn bind(window: &AppWindow) {
     window.window().on_winit_window_event(log_window_event);
-    let reported = window.window().set_rendering_notifier(log_rendering_stage);
-    if let Err(error) = reported {
-        tracing::debug!(
-            target: "monochromatic_ide::native::frame",
-            %error,
-            "the renderer reports no draw stages"
-        );
-    }
 }

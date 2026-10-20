@@ -12,7 +12,7 @@ use super::gpu_snapshot::install_gpu_platform;
 /// Reuse production viewport callbacks,
 /// appearance callbacks,
 /// and the raster presentation.
-use super::{AppWindow, State, bind_appearance, bind_viewport, render};
+use super::{AppWindow, State, bind_appearance, bind_viewport, render, tile_reads::{same_rows, shown}};
 /// Toolkit windows and component ownership stay on the test's event-loop thread.
 use slint::{ComponentHandle, Model, platform::update_timers_and_animations};
 /// UI state is shared between the window callbacks and the test.
@@ -170,30 +170,6 @@ pub(super) fn worker_counts(state: &Rc<RefCell<State>>) -> [u64; 4] {
     ];
 }
 
-/// The rows of the window's visible viewport as RGBA pixels,
-/// read from the source image.
-fn shown(window: &AppWindow) -> Vec<[u8; 4]> {
-    let scale = window.window().scale_factor();
-    let image = window
-        .get_source_image()
-        .to_rgba8()
-        .expect("source image pixels");
-    let width = image.width() as usize;
-    let view_top = -window.get_scroll_y();
-    let first = ((view_top - window.get_image_y()) * scale).floor().max(0.0) as usize;
-    let last = (((view_top + window.get_viewport_height() - window.get_image_y()) * scale).ceil()
-        as usize)
-        .min(image.height() as usize);
-    let pixels = image.as_slice();
-    let mut rows = Vec::new();
-    for row in first..last {
-        for pixel in &pixels[row * width..(row + 1) * width] {
-            rows.push([pixel.r, pixel.g, pixel.b, pixel.a]);
-        }
-    }
-    return rows;
-}
-
 /// Small wheel steps inside the tile enter no render,
 /// paint no tile,
 /// shape no row,
@@ -322,7 +298,7 @@ fn leaving_the_overscan_tile_re_centers_once_with_fresh_pixels() {
     scroll_to(&fresh_window, target);
     settle_tile(&fresh);
     assert!(
-        shown(&window) == shown(&fresh_window),
+        same_rows(&shown(&window, &state), &shown(&fresh_window, &fresh)),
         "the visible pixels after scrolling differ from a fresh render at offset {target}"
     );
     window.hide().expect("close headless source window");
@@ -362,7 +338,7 @@ fn an_edit_during_a_re_center_discards_the_worker_result() {
     scroll_to(&fresh_window, target);
     settle_tile(&fresh);
     assert!(
-        shown(&window) == shown(&fresh_window),
+        same_rows(&shown(&window, &state), &shown(&fresh_window, &fresh)),
         "after an edit during a re-center, the visible pixels differ from a fresh render of the edited text at offset {target}"
     );
     window.hide().expect("close headless source window");

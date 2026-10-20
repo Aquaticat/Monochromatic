@@ -37,8 +37,6 @@ use ide_app::row_map::RowMap;
 use ide_app::shaped_text::{Clip, ShapedView, TextShaper};
 /// Paint identity prevents caret movement from rebuilding source pixels.
 use ide_app::source_frame::FrameStamp;
-/// Raster output retains the exact glyph positions used by selection.
-use ide_app::text_raster::TextRaster;
 /// One line's block of virtual rows.
 use ide_app::virtual_row::Block;
 /// Source and display geometry use the same library interface tested headlessly.
@@ -139,6 +137,9 @@ mod focus_tests;
 mod font_tests;
 /// Debug records of the moments a window frame passes through.
 mod frame_trace;
+/// The code view on the GPU:
+/// the textures the tile and the wrap indicator are drawn into, and the rendering notifier that draws them.
+mod gpu_tile;
 /// The native tests' GPU snapshot harness:
 ///  Slint windows drawn on a hardware Vulkan device and read back as pixels.
 #[cfg(test)]
@@ -298,6 +299,9 @@ mod tile;
 mod tile_build;
 /// The background measurement of every line at the wrap width.
 mod tile_pass;
+/// The native tests' reads of the GPU tile: a frame is rendered and the tile's texture is read back.
+#[cfg(test)]
+mod tile_reads;
 /// Windowed rows must not redirect an in-progress click after scrolling.
 #[cfg(test)]
 mod tree_pointer_tests;
@@ -361,6 +365,8 @@ mod write_wait_tests;
 mod write_wait_timer_tests;
 /// The wrap indicator's symbol.
 use ide_app::wrap_sign::Sign;
+/// The handle the state holds on the GPU side of the code view.
+use gpu_tile::GpuTile;
 /// Bind caret and selection callbacks.
 use input::{bind_keys, bind_pointer};
 /// Shared rendering entry point.
@@ -443,8 +449,9 @@ struct State {
     sign_scale: Option<u32>,
     /// Reusable paragraph/font resources.
     shaper: TextShaper,
-    /// Reusable outline raster resources.
-    raster: TextRaster,
+    /// The GPU side of the code view:
+    /// the textures the tile and the wrap indicator are drawn into, and the scenes waiting for the next frame.
+    gpu: GpuTile,
     /// Exact displayed geometry used by pointer input.
     shaped: Option<ShapedView>,
     /// Avoid cloning whole source for accessibility on each selection change.

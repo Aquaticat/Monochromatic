@@ -6,7 +6,8 @@
 use super::{
     AppWindow, State,
     gpu_snapshot::{install_gpu_platform, snapshot},
-    render,
+    gpu_tile, render,
+    tile_reads::RENDER_NOISE,
 };
 /// Source positions stay independent of the rendered font instance.
 use ide_app::document::ReadingPosition;
@@ -26,6 +27,15 @@ use slint::{ComponentHandle, platform::update_timers_and_animations};
 /// const state = { current: new State(source) };
 /// ```
 use std::{cell::RefCell, rc::Rc};
+
+/// Whether two window captures agree byte for byte to within the GPU's render noise of one level.
+fn same_frame(left: &[u8], right: &[u8]) -> bool {
+    return left.len() == right.len()
+        && left
+            .iter()
+            .zip(right)
+            .all(|(one, other)| return one.abs_diff(*other) <= RENDER_NOISE);
+}
 
 /// Install a new immutable shaper,
 ///  invalidate its frame,
@@ -84,6 +94,8 @@ fn source_typography_repaints_without_changing_selection() {
         viewport: 0,
         affinity: ide_app::document::ReadingAffinity::Downstream,
     });
+    // The source is drawn by the GPU notifier, which `bind_viewport` installs in the application.
+    gpu_tile::bind(&window, &state.borrow().gpu);
     window.show().expect("show source typography fixture");
     // Lend the window/state while each independent pixel buffer remains owned by the test.
     let regular = capture(&window, &state, 400.0, false);
@@ -100,6 +112,7 @@ fn source_typography_repaints_without_changing_selection() {
     assert_eq!(window.get_selected_text(), "=");
     assert_eq!(window.get_selection_anchor(), 1);
     assert_eq!(window.get_selection_head(), 2);
-    assert!(capture(&window, &state, 400.0, false) == regular);
+    // Two renders of one scene differ by one level in a few texels on the GPU.
+    assert!(same_frame(&capture(&window, &state, 400.0, false), &regular));
     window.hide().expect("close source typography fixture");
 }

@@ -35,10 +35,10 @@ use ide_app::source_frame::FrameStamp;
 use ide_app::source_style::SourceStyles;
 /// Shaping choices a worker shaper must match.
 use ide_app::source_typography::SourceTypography;
-/// Glyph rasterizer and palette of one tile.
-use ide_app::text_raster::{CodeColors, TextRaster};
-/// Pixel buffers that cross to the window thread.
-use slint::{Rgba8Pixel, SharedPixelBuffer};
+/// The palette of one tile.
+use ide_app::code_colors::CodeColors;
+/// The scene of one tile, which crosses to the window thread.
+use ide_app::tile_scene::{TileScene, paint_tile};
 
 /// What:
 ///  `struct` groups named fields into one owned value;
@@ -88,14 +88,14 @@ pub(in crate::native) struct TileJob {
 /// What:
 ///  A finished tile:
 /// the shaped rows and rectangles,
-/// and the pixels to show.
+/// and the scene to draw.
 /// Why:
 ///  The window thread swaps all of them in together,
 /// so the image and its offset always belong to one tile.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type TileBuilt = { bounds: Bounds; view: ShapedView; pixels: RGBA8[]; stamp: Stamp };
+/// type TileBuilt = { bounds: Bounds; view: ShapedView; scene: Scene; stamp: Stamp };
 /// ```
 pub(in crate::native) struct TileBuilt {
     /// Tile bounds that were built:
@@ -111,8 +111,9 @@ pub(in crate::native) struct TileBuilt {
     /// rectangles,
     /// and annotation positions.
     pub(in crate::native) view: ShapedView,
-    /// Premultiplied pixels of the tile.
-    pub(in crate::native) pixels: SharedPixelBuffer<Rgba8Pixel>,
+    /// The Vello scene of the tile and the size of the texture it is drawn into;
+    /// the GPU turns it into pixels.
+    pub(in crate::native) scene: TileScene,
     /// Paint identity the tile was built for.
     pub(in crate::native) stamp: FrameStamp,
     /// Active match used for the match rectangles.
@@ -138,21 +139,17 @@ pub(in crate::native) static FAIL_NEXT_BUILD: std::sync::atomic::AtomicBool =
 
 /// What:
 ///  `fn` declares a function;
-/// `&mut` lends the shaper and raster for this call only;
+/// `&mut` lends the shaper for this call only;
 ///  `Result<TileBuilt>` is the built tile or the reason it could not be built.
 /// Why:
-///  The same code paints a tile on the window thread and on the worker,
-/// so both produce the same pixels.
+///  The same code builds a tile on the window thread and on the worker,
+/// so both produce the same scene.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function buildTile(shaper: TextShaper, raster: TextRaster, job: TileJob): TileBuilt;
+/// function buildTile(shaper: TextShaper, job: TileJob): TileBuilt;
 /// ```
-pub(in crate::native) fn build_tile(
-    shaper: &mut TextShaper,
-    raster: &mut TextRaster,
-    job: TileJob,
-) -> Result<TileBuilt> {
+pub(in crate::native) fn build_tile(shaper: &mut TextShaper, job: TileJob) -> Result<TileBuilt> {
     #[cfg(test)]
     if FAIL_NEXT_BUILD.swap(false, std::sync::atomic::Ordering::SeqCst) {
         anyhow::bail!("Source viewport refused by the test switch");
@@ -188,19 +185,14 @@ pub(in crate::native) fn build_tile(
     // Annotations are positioned after shaping and never change the geometry inside a code row.
     let frame = lay_out(&view, &job.shown, shaper, job.inks);
     view.annotations = Some(frame);
-    let pixels = raster.paint(&view, job.colors, 0.0)?;
-    // Premultiplied pixels share the font engine's baseline and advances.
-    let buffer = SharedPixelBuffer::<Rgba8Pixel>::clone_from_slice(
-        &pixels.bytes,
-        pixels.width,
-        pixels.height,
-    );
+    // The scene is drawn from the very layouts that measured the rows, so glyphs and geometry cannot disagree.
+    let scene = paint_tile(&view, job.colors, 0.0)?;
     return Ok(TileBuilt {
         bounds,
         requested: job.bounds,
         file: job.file,
         view,
-        pixels: buffer,
+        scene,
         stamp,
         active: job.active,
         key: PassKey {

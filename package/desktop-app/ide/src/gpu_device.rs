@@ -277,6 +277,26 @@ pub struct HardwareDevice {
 /// function openHardwareDevice(): HardwareDevice; // throws GpuDeviceError
 /// ```
 pub fn open_hardware_device() -> Result<HardwareDevice, GpuDeviceError> {
+    return open_hardware_device_capped(None);
+}
+
+/// What:
+///  `open_hardware_device` with the largest 2D texture the device offers lowered to `texture_cap` when that is smaller
+///  than the adapter's own limit.
+///  The device's real limit is recorded as the process's tile texture limit
+///  (`ide_app::shaped_text::set_texture_dimension`).
+/// Why:
+///  A test can ask for a device that offers only wgpu's default 8192 pixels, as many GPUs do,
+///  on a host whose GPU offers 16384.
+///  The record is made here, the one place a device is opened, so every window of the process cuts its tiles for it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function openHardwareDeviceCapped(textureCap?: number): HardwareDevice; // throws GpuDeviceError
+/// ```
+pub fn open_hardware_device_capped(
+    texture_cap: Option<u32>,
+) -> Result<HardwareDevice, GpuDeviceError> {
     // What: a current-thread tokio runtime runs the two wgpu futures to completion; `map_err` turns its error into ours.
     // Why: wgpu's adapter and device requests are async; tokio is already a dependency of the application.
     //
@@ -333,7 +353,10 @@ pub fn open_hardware_device() -> Result<HardwareDevice, GpuDeviceError> {
     for index in order {
         let adapter = adapters[index].clone();
         let summary = summaries[index].clone();
-        let limits = wgpu::Limits::default().using_resolution(adapter.limits());
+        let mut limits = wgpu::Limits::default().using_resolution(adapter.limits());
+        if let Some(cap) = texture_cap {
+            limits.max_texture_dimension_2d = limits.max_texture_dimension_2d.min(cap);
+        }
         let device_description = wgpu::DeviceDescriptor {
             label: Some("ide gpu device"),
             required_limits: limits,
@@ -341,6 +364,9 @@ pub fn open_hardware_device() -> Result<HardwareDevice, GpuDeviceError> {
         };
         match runtime.block_on(adapter.request_device(&device_description)) {
             Ok((device, queue)) => {
+                ide_app::shaped_text::set_texture_dimension(
+                    device.limits().max_texture_dimension_2d,
+                );
                 return Ok(HardwareDevice {
                     instance,
                     adapter,

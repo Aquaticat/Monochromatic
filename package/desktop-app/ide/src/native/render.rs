@@ -7,7 +7,7 @@ use super::{AppWindow, State, rewrap, rows, tile, tile_build::build_tile, viewpo
 ///  not from the color scheme.
 use ide_app::selection_ink::{legible_ink, luminance};
 /// Native palette values retain syntax and selection contrast.
-use ide_app::text_raster::CodeColors;
+use ide_app::code_colors::CodeColors;
 /// Toolkit images and models carry owned source presentation data.
 use slint::{ComponentHandle, SharedString};
 /// UI callbacks share state without cross-thread synchronization.
@@ -168,7 +168,7 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     if !same_inputs && shown.width != requested.width && differs_only_in_annotations {
         same_inputs = true;
     }
-    let mut pixels = None;
+    let mut scene = None;
     let mut matches_changed = false;
     let mut notice = None;
     // What a new width cost: when it began, the lines and work charged, the lines shaped and broken again, and the tile.
@@ -218,10 +218,7 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
             }
         };
         let built_job = job(&current, settled, &paint);
-        let result = {
-            let State { shaper, raster, .. } = &mut *current;
-            build_tile(shaper, raster, built_job)
-        };
+        let result = build_tile(&mut current.shaper, built_job);
         match result {
             Ok(built) => {
                 #[cfg(debug_assertions)]
@@ -262,7 +259,7 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
                 view.rebase(&current.row_map);
                 current.shaped = Some(view);
                 current.frame_stamp = Some(built.stamp);
-                pixels = Some(built.pixels);
+                scene = Some(built.scene);
                 // The first shown tile starts the worker, so a later scroll re-center does not wait for its start-up.
                 if let Err(error) = tile::warm(window, state, &mut current) {
                     tracing::error!(%error, "source tile worker could not start");
@@ -287,7 +284,7 @@ pub(super) fn render(window: &AppWindow, state: &Rc<RefCell<State>>) {
     // The worker measures the whole text at the wrap width in the background.
     tile::sync_pass(window, state, &mut current, factor);
     let frame = Frame {
-        pixels,
+        scene,
         matches_changed,
         scale: factor,
         scrolled,

@@ -18,6 +18,8 @@
 
 /// The window whose scroll the tests drive.
 use super::AppWindow;
+/// Two renders of one scene differ by one level in a few texels on the GPU.
+use super::tile_reads::same_texel;
 /// The production setter and the stamp of the displayed text.
 use super::annotate::{displayed, set_annotations};
 /// The frame reader.
@@ -347,7 +349,7 @@ fn difference(
         let before = band(first, y);
         let after = band(second, y);
         for (index, (old, new)) in before.iter().zip(after.iter()).enumerate() {
-            if old != new {
+            if !same_texel(*old, *new) {
                 // `Some(...)` carries the description of the first differing pixel.
                 return Some(format!(
                     "pixel {},{y} changed from {old:?} to {new:?}",

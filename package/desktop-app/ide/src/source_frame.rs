@@ -13,7 +13,7 @@ use crate::shaped_text::{Clip, Viewport};
 /// Syntax spans belong to the source paint key even when text is unchanged.
 use crate::source_style::SourceStyles;
 /// Palette colors affect pixels but not caret geometry.
-use crate::text_raster::CodeColors;
+use crate::code_colors::CodeColors;
 /// Pointer equality avoids walking unchanged classifications on caret-only updates.
 use std::sync::Arc;
 
