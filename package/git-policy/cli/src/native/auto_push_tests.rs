@@ -486,3 +486,39 @@ fn a_waiting_commit_names_the_process_it_waits_for() {
     drop(held);
     remove(&root);
 }
+
+/// A first push, one with no upstream yet, is never reconciled with a merge, even when the push destination resolves.
+#[test]
+fn a_first_push_rejected_for_a_moved_remote_branch_publishes_no_merge() {
+    let root = fixture("ap-first-push-stale");
+    let repo = root.join("repo");
+    let remote = root.join("remote.git");
+    let other = root.join("other");
+    bare_remote_with_hook(&remote);
+    init_repo_with_commit(&repo);
+    let remote_text = remote.to_str().expect("utf-8");
+    git(&repo, &["remote", "add", "origin", remote_text]);
+    git(&repo, &["push", "--quiet", "origin", "HEAD"]);
+    git(&root, &["clone", "--quiet", remote_text, "other"]);
+    git(&other, &["config", "user.email", "cli-git@example.invalid"]);
+    git(&other, &["config", "user.name", "cli-git auto-push test"]);
+    commit_change(&other, "remote side\n");
+    git(&other, &["push", "--quiet", "origin", "HEAD"]);
+    let branch = String::from_utf8_lossy(&git(&repo, &["branch", "--show-current"]).stdout)
+        .trim()
+        .to_owned();
+    let remote_tip = head_oid(&other);
+    std::fs::write(repo.join("local.txt"), "local side\n").expect("local file");
+    git(&repo, &["add", "local.txt"]);
+    git(&repo, &["commit", "--quiet", "-m", "local side", "local.txt"]);
+    git(&repo, &["config", "remote.pushDefault", "origin"]);
+    git(&repo, &["config", "push.default", "current"]);
+    let (attempted, err) = run(&repo, &head_oid(&repo));
+    let result = attempted.expect("auto-push");
+    assert_eq!(result.outcome, AutoPushOutcome::Failed, "{err}");
+    assert_eq!(
+        String::from_utf8_lossy(&git(&remote, &["rev-parse", &branch]).stdout).trim(),
+        remote_tip
+    );
+    remove(&root);
+}
