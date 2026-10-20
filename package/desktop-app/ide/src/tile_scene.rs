@@ -64,6 +64,25 @@ use underline::underline_items;
 const CULL_MARGIN: f32 = 32.0;
 
 /// What:
+///  The y range `top` to `bottom` of one visual row,
+///  widened by the row's own height on each side.
+/// Why:
+///  A clip that splits the ink of a row is as tall as the row and not as tall as the tile,
+///  because the renderer spends a fixed buffer on every tile a clip covers and a selection of a few dozen rows
+///  in a tile thousands of pixels tall would use it all.
+///  The margin keeps the ink of a glyph that leaves its row,
+///  as the tall clip did.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function rowBand(top: number, bottom: number): [number, number];
+/// ```
+fn row_band(top: f32, bottom: f32) -> (f32, f32) {
+    let margin = bottom - top;
+    return ((top - margin).floor(), (bottom + margin).ceil());
+}
+
+/// What:
 ///  The glyph runs of one visual row of `layout`,
 ///  as items in `ink`,
 ///  for the glyphs whose boxes reach the tile's width.
@@ -192,6 +211,11 @@ fn layout_items(
             Some(held) => held.as_slice(),
             None => &[][..],
         };
+        // The clips of this row cover its own band and a margin of one row on each side, never the whole tile.
+        let band = row_band(
+            origin.1 + metrics.block_min_coord,
+            origin.1 + metrics.block_max_coord,
+        );
         for (role, run) in run_items(layout, index, origin, size.0)? {
             // A fixed ink is never selected; the palette's roles take the selected ink inside the selection.
             let (ordinary, selected) = match inking.fixed {
@@ -203,6 +227,7 @@ fn layout_items(
                 intervals,
                 (ordinary, selected),
                 (-CULL_MARGIN, size.0 + CULL_MARGIN),
+                band,
                 &run,
                 push_run,
             );
@@ -292,6 +317,10 @@ fn underline_frame(
             &intervals,
             (severity_ink, colors.selected),
             (-CULL_MARGIN, width + CULL_MARGIN),
+            row_band(
+                geometry.line - CODE_ROW * scale / 2.0,
+                geometry.line + CODE_ROW * scale / 2.0,
+            ),
             &geometry,
             underline_items,
         );

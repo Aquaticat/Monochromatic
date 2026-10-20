@@ -76,7 +76,7 @@ pub struct StrokeItem {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Item = { glyphs: GlyphItem } | { clip: [number, number] } | 'unclip' | { stroke: StrokeItem };
+/// type Item = { glyphs: GlyphItem } | { clip: [number, number, number, number] } | 'unclip' | { stroke: StrokeItem };
 /// ```
 #[derive(Clone)]
 pub enum Item {
@@ -85,12 +85,20 @@ pub enum Item {
         /// The run to draw.
         GlyphItem,
     ),
-    /// Start drawing only between these two physical x positions.
+    /// Start drawing only inside this physical rectangle:
+    ///  between two x positions and between two y positions,
+    ///  the band of the one row whose ink the clip splits.
     Clip {
         /// Left edge.
         left: f32,
         /// Right edge.
         right: f32,
+        /// Top edge,
+        ///  from the tile's top.
+        top: f32,
+        /// Bottom edge,
+        ///  from the tile's top.
+        bottom: f32,
     },
     /// End the clip that began last.
     Unclip,

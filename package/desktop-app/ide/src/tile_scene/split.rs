@@ -74,6 +74,7 @@ fn merged(intervals: &[(f32, f32)]) -> Vec<(f32, f32)> {
 
 /// What:
 ///  Emit `draw` once in `ordinary` ink outside `intervals` and once in `selected` ink inside them.
+///  Every clip spans `extent` in x and `band` in y.
 ///  With no interval,
 /// or the same ink on both sides,
 /// `draw` runs once and unclipped.
@@ -81,17 +82,21 @@ fn merged(intervals: &[(f32, f32)]) -> Vec<(f32, f32)> {
 ///  A selected glyph keeps its own shape and takes the selection ink exactly where the selection rectangle lies,
 ///  even when one glyph (a ligature) spans several characters,
 ///  so the glyph is clipped at the rectangle's edge and never recolored as a whole.
+///  The band is the row the drawing lies on:
+///  the renderer's cost of a clip is the area it covers,
+///  so a clip as tall as the tile costs the tile's area for every selected row.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function split<T>(items: Item[], intervals: [number, number][], inks: [Rgba, Rgba], extent: [number, number],
-///   context: T, draw: (items: Item[], context: T, ink: Rgba) => void): void;
+///   band: [number, number], context: T, draw: (items: Item[], context: T, ink: Rgba) => void): void;
 /// ```
 pub fn split<T>(
     items: &mut Vec<Item>,
     intervals: &[(f32, f32)],
     inks: ([u8; 4], [u8; 4]),
     extent: (f32, f32),
+    band: (f32, f32),
     context: &T,
     draw: fn(&mut Vec<Item>, &T, [u8; 4]),
 ) {
@@ -108,6 +113,8 @@ pub fn split<T>(
             items.push(Item::Clip {
                 left: cursor,
                 right: *start,
+                top: band.0,
+                bottom: band.1,
             });
             draw(items, context, ordinary);
             items.push(Item::Unclip);
@@ -115,6 +122,8 @@ pub fn split<T>(
         items.push(Item::Clip {
             left: start.max(extent.0),
             right: end.min(extent.1),
+            top: band.0,
+            bottom: band.1,
         });
         draw(items, context, selected);
         items.push(Item::Unclip);
@@ -124,6 +133,8 @@ pub fn split<T>(
         items.push(Item::Clip {
             left: cursor,
             right: extent.1,
+            top: band.0,
+            bottom: band.1,
         });
         draw(items, context, ordinary);
         items.push(Item::Unclip);
