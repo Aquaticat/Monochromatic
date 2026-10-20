@@ -88,7 +88,7 @@ await describe({
         + 'change to the FIXTURE INPUTS of this case moves it too, and must not, because those inputs are '
         + 'already part of the key and invalidate their own entries',
       fn: async () => {
-        expect(SLICE_CACHE_VERSION,).toBe(38,);
+        expect(SLICE_CACHE_VERSION,).toBe(39,);
 
         // MOVED THREE TIMES ON 2026-08-20, FOR THREE DIFFERENT REASONS, which
         // is the whole point of keeping the note.
@@ -159,8 +159,10 @@ await describe({
         //
         // VERSION 38 FOR THE XingZ6015 READ (reader protection scoped to the account of how a death or an attempt happened,
         // translators' notes cut from the judges, the declared-name floor meeting a swap of declared forms): moved the same way.
+        //
+        // VERSION 39 ON 2026-10-20 (a translators' note alone on a quoted line is cut with its line): moved the same way.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('f12902e471b4fc0f9b4644df47ab52d4e51f33d938f325a293e1b7aebfb54fdc',);
+          .toBe('3cc216d3f5976df16682cb0f6d7b35a39479feab260d951242811ada8245b8b1',);
       },
     },),
     it({

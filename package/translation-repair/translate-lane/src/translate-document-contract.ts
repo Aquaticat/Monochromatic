@@ -330,8 +330,21 @@ import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-pa
  old number on `sha256-tree-v1:a92725968adf…`, so the change cannot ride inside it and the number moves, as every version whose
  sheets splice the house rule moves with it; the pairing version stays, since no pairing sheet carries the house rule. No record
  has been written at 20, which this change sets first.
+
+ Version 21 covers the cut of a note between translators that stands alone on a quoted line
+ (`document-structure/src/translators-note.ts`): the translate lane's candidate selection slate cut such a note with the spaces
+ before it and left its quote markers, a bare `>   >` line that the judges read as a paragraph break inside the quote that the
+ archive does not have (zheermao101, run zheermao15), and it now cuts the line. Of the 34 notes in the 92 pinned English archives
+ one stands alone on a quoted line (zheermao101), so only a sheet that shows that archive's text changes, and the cut of every
+ other note is what it was. The key hashes the version, the shape of the run and the texts, not the sheet, so a record written
+ under the old cut would be served under the new. The check that would let the change ride inside 20 (no slice-cache record
+ written after it, shown beside a control that finds records) could not be made with a working control: run zheermao15 started at
+ 02:12 UTC on 2026-10-20, after 20 was set, its slice-cache directory is empty, and a control from 2026-10-19 finds none either,
+ so the number moves, as the consolidate, lane-contest, repair slice and refine versions move for the same cut. The consistency,
+ page title and pairing versions stay, since none of their sheets cuts a note. No record has been written at 21, which this
+ change sets first.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 20;
+export const TRANSLATE_SLICE_CACHE_VERSION = 21;
 
 /**
  Models the translate lane seats.
