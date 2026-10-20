@@ -1850,6 +1850,12 @@ that is verification, not a decision for the user.
   1781 (968a4a06cd: a failure after the branch advanced is worded `LandedThenFailed`, naming the commit and saying not
   to retry; the cause of the vanished transaction directory is still open, see below), 1346 (3bafa3670f: typed
   `SignalGuardActive`), 1347 (4537db5cf9: set lookup in `union_paths`; 0.04 s against 9.1 s for 40,000 paths).
+  Closing gate and mutation run `cli-git-nc3` (2026-10-20): container gate 2027 passed, 5 skipped; 14 scoped runs over
+  every touched file, all baselines green, no timeout, every mutant caught or unviable except five in
+  `signal_relay.rs`, all equivalent by reading: `:232` and `:281` (`|` to `^` over disjoint flag bits) and `:302`,
+  `:436`, `:449` (the `cfg(all(unix, not(linux)))` placeholder and the `cfg(not(unix))` guard, not compiled on Linux).
+  That also confirms `auto_push_reconcile.rs:164:31`. The `nc1`, `nc2` and `nc3` images and containers are removed.
+  Hooks plumbing still has no recorded campaign.
   Open design question for the user (changes an on-disk format, so not done unasked): 1781 and 1784 share a likely
   cause. An owner record holds a PID and a start tick, with no PID namespace, so a worker in a container sees a host
   owner's PID as absent or as another process, judges the owner dead and recovers a live transaction. A namespace-aware
