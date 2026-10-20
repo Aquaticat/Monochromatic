@@ -667,6 +667,11 @@ struct State {
     /// counted in debug builds.
     #[cfg(debug_assertions)]
     tiles_discarded: u64,
+    /// The messages named for tiles the worker failed to build,
+    /// kept in debug builds because the next render clears the window's error message,
+    /// which can happen between two polls of a test.
+    #[cfg(debug_assertions)]
+    worker_failures: Vec<String>,
     /// Outputs of the background pass applied on the window thread,
     /// counted in debug builds.
     #[cfg(debug_assertions)]

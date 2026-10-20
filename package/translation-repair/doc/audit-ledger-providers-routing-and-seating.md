@@ -660,3 +660,51 @@ and with the check replaced by `if (true)` that case alone fails
 (`['neuralwatt','hyper']` where `['neuralwatt','neuralwatt']` was expected).
 No cache moves:
 no cache key names a provider or reads the router's attempt count.
+
+### P16: a reported cost was read as plan spend, and the first NeuralWatt call ended the day
+
+Status:
+found 2026-10-20 at 22:23 UTC by the first keyed call
+(run `zheermao18`,
+build `1dde8c5cd6`);
+the fix is being built in w242 on the owner's ruling,
+and this entry gains its commits when it lands.
+The NeuralWatt design read a `: cost` comment with `request_cost_usd` above zero as a request billed to the plan,
+marked the UTC day billed in the ledger
+and read the provider dry until 00:00 UTC.
+The first call,
+DeepSeek V4.1 Flash measured at 0.0167 Wh,
+reported 0.000107 USD,
+so NeuralWatt went dry after one call and the run spent Hyper credit instead,
+21 Hyper calls before it was stopped at 22:30 UTC.
+The owner read the dashboard:
+"Your call only used 60.3J,
+which isn't even 0.0%",
+which is the measured 0.01675 Wh counted against the free energy.
+The cost is nominal on a free request.
+
+The design rested on a reading the documentation did not state.
+The energy methodology page names zero for "trial and free requests",
+and the free energy page says covered requests cost nothing,
+but neither names the free-energy case in the field's description;
+the brief and the decision record turned that gap into a rule,
+and the decision record listed it under "Not verifiable without a key" while the code acted on it anyway.
+A stop built on an unverified reading of an external field failed safe here
+(one call of the day's energy and some prepaid credit),
+but it disabled the provider the owner put "front and center".
+
+The rule for next time:
+a provider-reported field that gates routing is verified against one keyed call and the provider's own dashboard
+before a run depends on it,
+and until then it is logged and not acted on.
+The owner's ruling,
+2026-10-20:
+"From here on just use NeuralWatt normally,
+I can tolerate some potential losses.
+If it works wrongly I'll tell you."
+The billed stop goes;
+the energy ledger stays,
+settled by measured energy.
+Record:
+`doc/decision/translation-repair-neuralwatt-provider.md`,
+section "The first keyed call".

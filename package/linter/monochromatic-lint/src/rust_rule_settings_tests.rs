@@ -142,19 +142,21 @@ fn the_sidecar_test_rule_is_selected_by_its_id_and_dispatched() {
 }
 
 /// A configuration that still names the removed anonymous-function rule fails like any unknown rule,
-///  naming that rule,
+///  naming that rule and the running binary,
 ///  whatever severity it asks for.
 #[test]
 fn a_removed_rule_name_is_reported_as_an_unknown_built_in_rule() {
+    // Read the version from the manifest so a release bump cannot leave this assertion stale.
+    let expected: String = format!(
+        "Unknown built-in rule rust/no-anonymous-functions. (monochromatic-lint {})",
+        env!("CARGO_PKG_VERSION")
+    );
     for severity in ["off", "warn", "error"] {
         let source: String =
             format!(r#"{{"rust/no-anonymous-functions":{{"severity":"{severity}"}}}}"#);
         let value: JsoncValue = parse_jsonc(source.as_str()).expect("syntactically valid fixture");
         let error = rust_rule_settings(&value).expect_err("the removed rule is not registered");
-        assert_eq!(
-            error.message, "Unknown built-in rule rust/no-anonymous-functions.",
-            "{severity}"
-        );
+        assert_eq!(error.message, expected.as_str(), "{severity}");
     }
 }
 

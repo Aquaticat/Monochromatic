@@ -76,8 +76,8 @@ use super::rule_branch_worktree::{
 };
 /// The linked-worktree rule core.
 use super::rule_linked_worktree::{
-    LINKED_WORKTREE_REQUIRED_CODE, LinkedWorktreeDecision, decide_linked_worktree,
-    resolve_linked_worktree,
+    GuardedCommand, LINKED_WORKTREE_REQUIRED_CODE, LinkedWorktreeDecision, decide_linked_worktree,
+    dirty_scope, dirty_worktree_message, resolve_linked_worktree,
 };
 /// The require-root rule core.
 use super::rule_require_root::{
@@ -301,8 +301,9 @@ fn check_require_root(
 ///  The linked-worktree-only check.
 ///  `&[PathBuf]` borrows the exempt tool caches.
 /// Why:
-///   Only a guarded,
-///  state-changing command needs to know which worktree it targets.
+///   A guarded form that overwrites is rejected at once in the main worktree and outside any worktree, and in a
+///  linked worktree only while uncommitted state exists; a form that only moves `HEAD` is rejected in the main or
+///  a linked worktree only while uncommitted state exists. Only these need the worktree kind or the status.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -314,9 +315,10 @@ fn check_linked_worktree(
     allowed_worktree_dirs: &[PathBuf],
 ) -> PolicyOutcome {
     // `let Variant(x) = ... else { ... };` unwraps the guarded command or returns.
-    let LinkedWorktreeDecision::NeedsEffectiveTarget(command) = decide_linked_worktree(arguments)
-    else {
-        return clean();
+    let (command, moves_head_only): (GuardedCommand, bool) = match decide_linked_worktree(arguments) {
+        LinkedWorktreeDecision::Pass => return clean(),
+        LinkedWorktreeDecision::NeedsEffectiveTarget(command) => (command, false),
+        LinkedWorktreeDecision::WhenDirty(command) => (command, true),
     };
     let location: RepositoryLocation = match facts.location() {
         Ok(found) => found,
@@ -324,10 +326,21 @@ fn check_linked_worktree(
     };
     let target: EffectiveTarget =
         classify_effective_target(&location.identity, allowed_worktree_dirs);
-    match resolve_linked_worktree(command, target) {
-        // `String::from` copies the compiled-in text into owned text.
-        Some(message) => return rejected(LINKED_WORKTREE_REQUIRED_CODE, String::from(message)),
-        None => return clean(),
+    if moves_head_only {
+        // A `HEAD` move outside a worktree or in an exempt cache is not this policy's concern.
+        if target != EffectiveTarget::MainWorktree && target != EffectiveTarget::LinkedWorktree {
+            return clean();
+        }
+    } else if let Some(message) = resolve_linked_worktree(command, target) {
+        return rejected(LINKED_WORKTREE_REQUIRED_CODE, message);
+    }
+    if target == EffectiveTarget::Allowlisted {
+        return clean();
+    }
+    match facts.worktree_dirty(dirty_scope(command)) {
+        Ok(true) => return rejected(LINKED_WORKTREE_REQUIRED_CODE, dirty_worktree_message(command)),
+        Ok(false) => return clean(),
+        Err(message) => return fact_unavailable(message),
     }
 }
 

@@ -619,7 +619,10 @@ fn worktree_policies_read_the_location() {
             located(linked_worktree("/r", "/w")),
             &[]
         ),
-        (forwards(&["reset", "--hard"]), location_only())
+        (
+            forwards(&["reset", "--hard"]),
+            vec![String::from("location"), String::from("dirty:Tracked")]
+        )
     );
     assert_eq!(
         run(
@@ -634,7 +637,11 @@ fn worktree_policies_read_the_location() {
     let (created, created_asked) = run(&["switch", "topic"], guessed, &[]);
     assert_eq!(
         created_asked,
-        vec![String::from("location"), String::from("remote-guess:topic")]
+        vec![
+            String::from("location"),
+            String::from("dirty:Tracked"),
+            String::from("remote-guess:topic")
+        ]
     );
     match created {
         WrappedOutcome::Exit { code, stderr } => {

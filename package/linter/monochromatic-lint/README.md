@@ -39,6 +39,14 @@ one record per finding,
 with the rule identifier in `code`.
 A clean run prints nothing.
 Messages that are not findings go to standard error with a `monochromatic-lint:` prefix.
+A configuration rejection is one prefixed line,
+and it ends with `(monochromatic-lint <version>)`:
+the running binary's version,
+the same one `--version` prints.
+When the nearest `mise.lock` at or above the rejected configuration pins `cargo:monochromatic-lint`
+to a version newer than the running one,
+the line adds that the resolved binary may be stale,
+quoting the measured pin.
 
 Exit statuses:
 

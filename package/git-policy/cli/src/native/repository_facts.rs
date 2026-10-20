@@ -41,6 +41,7 @@ use super::repository_location::{
 };
 use super::rule_branch_worktree::{remote_guess_creates_branch, remote_guess_query_arguments};
 use super::rule_commit_index::{IndexVsHead, index_query_arguments, index_state_from_exit};
+use super::rule_worktree_dirty::{DirtyScope, dirty_from_output, dirty_query_arguments};
 use super::rule_commit_sequencer::{
     SequencerFacts, SequencerState, sequencer_head_paths, sequencer_query_arguments,
     sequencer_state, sequencer_state_when_query_fails,
@@ -90,6 +91,8 @@ pub trait RepositoryFacts {
     fn location(&mut self) -> Result<RepositoryLocation, String>;
     /// Whether the index differs from `HEAD`.
     fn index_vs_head(&mut self) -> Result<IndexVsHead, String>;
+    /// Whether the worktree holds uncommitted state of the given scope.
+    fn worktree_dirty(&mut self, scope: DirtyScope) -> Result<bool, String>;
     /// Whether a merge,
     ///  cherry-pick or revert awaits its concluding commit.
     fn sequencer_state(&mut self) -> Result<SequencerState, String>;
@@ -260,6 +263,12 @@ impl RepositoryFacts for GitFacts {
         // A trailing `?` returns the failure to our caller, or unwraps the output.
         let output: MetadataOutput = self.query(arguments, "the index state")?;
         return Ok(index_state_from_exit(output.code));
+    }
+
+    fn worktree_dirty(&mut self, scope: DirtyScope) -> Result<bool, String> {
+        let arguments: Vec<OsString> = dirty_query_arguments(self.global_prefix.as_slice(), scope);
+        let output: MetadataOutput = self.query(arguments, "the worktree status")?;
+        return dirty_from_output(&output);
     }
 
     fn sequencer_state(&mut self) -> Result<SequencerState, String> {

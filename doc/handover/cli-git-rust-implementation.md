@@ -1810,6 +1810,69 @@ that is verification, not a decision for the user.
   `dead_owner_lock_is_retired_and_taken` on the host. `~/temp/agent/check-anchors.mjs` confirms all 78 anchors match
   exactly once. Unit `cli-git-nc6` (image tag `nc6`) reruns the gate and the 78 controls; after it ends remove the
   `nc6` images, then run the cli.fuzz checks. Lesson: edits to a guarded line in `src/native` must update the table.
+  Issue 1791 (uncommitted work vanished 2026-10-20 17:52 to 17:53), triaged with `~/temp/agent/repro-1791.mjs`:
+  Defect 2 (landing `git reset`) NOT reproduced: it resets only committed paths on a private index copy; concurrent
+  landings and a moved-remote landing preserved 53 staged renames plus 12 unstaged edits. Defect 1 CONFIRMED:
+  `git restore --source=HEAD --staged --worktree -- .` wiped everything with no rejection. UX 1 confirmed (`stash
+  list` rejected). User decision (AskUserQuestion): reject ALL discarding forms of checkout, restore and switch in the
+  main worktree including `restore --staged` and HEAD-moving checkout/switch while tracked changes exist. Queue, in
+  order (tasks 55 to 58): read-only stash forms allowed; the guard (new parsers plus a local-changes fact on
+  `RepositoryFacts`, three implementors: `GitFacts`, `ScriptedFacts`, `commit_facts.rs`); audit log of guarded and
+  allowed discarding operations plus a landing-invariant violation log; auto-push fast-forward on a dirty worktree
+  when the incoming tree touches no modified path. Also fix: an explicit-path commit with no index file yet fails
+  with "copying the index failed: No such file or directory". Not decided, ask before doing: guarding `reset`
+  (mixed) and `git mv`-state loss through it. Then mutation scopes, container gate, release 0.2.5.
+  SUPERSEDED the same hour by the user (mid-turn message): "Reject every discarding form of everything in every
+  worktree when things are dirty. Reject every discarding form of everything in main worktree even when things are
+  not dirty." Reading adopted: a form that can overwrite or delete uncommitted state by itself (restore, checkout
+  with paths or -f/-p/--ours/--theirs, switch -f/--discard-changes, reset anything but --soft, clean, stash that
+  changes state, rm -f, mv -f, checkout-index -f, read-tree --reset, and --abort of merge/rebase/cherry-pick/revert/
+  am) is rejected in the main worktree always, and in a linked worktree when it is dirty (clean: tracked changes or
+  untracked files; others: tracked changes). HEAD-moving checkout/switch is rejected in any worktree only when dirty.
+  Changes behavior: stash, clean and reset --hard are no longer free in a dirty linked worktree. Escape hatch stays
+  `--no-enforce-worktree` (directly after the subcommand for commands without a table). The 'GFP' restore routine
+  (`git checkout -- file`) now needs a linked worktree or the hatch.
+  Issue 1791 progress (2026-10-20 evening), in commit order. DONE and committed: (1) `stash list|show|create` are
+  allowed (`command_stash::stash_changes_state`); (2) `worktree_dirty(DirtyScope)` fact on `RepositoryFacts`
+  (`rule_worktree_dirty.rs`; `Tracked`, or `TrackedAndUntracked` for `clean`); (3) classifiers in
+  `command_discard.rs` (checkout, switch, restore, rm/mv/checkout-index by force scan, read-tree --reset, --abort of
+  merge/rebase/cherry-pick/revert/am; cherry-pick and revert accept only the full `--abort`); (4) the rule rewrite:
+  `GuardedCommand` has 11 variants, `LinkedWorktreeDecision::{Pass, NeedsEffectiveTarget, WhenDirty}`, texts in
+  `rule_linked_worktree_messages.rs` (returns `String`), `check_linked_worktree` in `policy_checks.rs`. Semantics:
+  an overwriting form is rejected in the main worktree and outside a worktree always, in a linked worktree only when
+  dirty; a HEAD-moving `checkout <x>` or `switch <x>` is rejected in main or linked only when dirty; allowlisted tool
+  caches are exempt; an unreadable status fails closed. `reset` in any mode but `--soft` is now guarded.
+  UNVERIFIED as of this entry: the container gate rerun (`GIT_POLICY_NATIVE_IMAGE_TAG=s1791`, log
+  `~/temp/agent/s1791-container.log`); the first run failed only `wrapped_command` (expectation fixed since). Likely
+  next failures: binary tests that run `git reset`/`stash`/`checkout` in a main-worktree fixture, for example
+  `binary_controls_tests.rs:171-206` (`git reset --quiet -- --no-enforce-worktree`). Fix by adding the hatch to the
+  fixture command or by moving the step to real Git; do not loosen the rule.
+  The user asked (mid-turn): are normal dev workflows blocked, and does everything have a documented workaround?
+  Honest status: NOT yet shown. Measured so far: no repo task, script or hook runs a guarded form through the
+  wrapper (searched mise/toml/mjs/ts/yaml); the hatch `--no-enforce-worktree` works for reset (existing test) and is
+  recognized as a general control for checkout/switch, and is read right after the subcommand for the table-less
+  commands, but it has NOT been tested for restore, rm, mv, checkout-index, read-tree or the `--abort` commands.
+  Known blocked normal workflows: unstaging in the main worktree (`restore --staged`, `reset <path>`), reverting a
+  file (`checkout -- f`, `restore f`), and `stash` or a branch `switch`/`checkout` in a dirty linked worktree.
+  Workarounds that exist: commit with explicit paths, use a clean linked worktree, or the hatch directly after the
+  subcommand (named in every rejection text). Documentation gaps to close before release: `README.md` lines 20-21 and
+  160-161 name only stash, clean and reset; `AGENTS.md` GFP ("restore") and `doc/runbook/publish-npm-package-first-
+  time.md:57` (`git switch main`) should say how to do it under the policy; `doc/agent/` has no entry. Needed
+  tests: a binary-level hatch test per new form, and a test per documented workaround.
+  Queue after the gate is green (QWD): (a) UX3, task 58: `advance_local_branch` (`auto_push_reconcile.rs`) refuses
+  any tracked status line, so the user's question "shouldn't this auto merge?" is answered YES: local main stays
+  behind origin/main whenever another session leaves tracked edits (seen 4 times today, merges 46a264639b,
+  0b97c22d5d, 70b86d8a6a, 964b905891, 9562c6729132). Plan: fast-forward when `git diff --name-only <local>
+  <merge_oid>` is disjoint from the status paths (both sides of renames, `-z`), run `git merge --ff-only`, then
+  verify the status output is unchanged and report otherwise; add tests (disjoint, overlapping, staged rename, rename
+  source overlap) and a binary-level one against a moved remote; (b) task 57, audit log: record every guarded
+  command that passed (linked clean) and every hatch use, with command, arguments, cwd, pid, parent pid, time, plus a
+  warning when a landing's post-index differs from the pre-landing index outside the committed paths; (c) fix
+  "copying the index failed: No such file or directory" for an explicit-path commit before any index exists;
+  (d) mutation scopes for `command_discard.rs`, `rule_linked_worktree.rs`, `rule_linked_worktree_messages.rs`,
+  `rule_worktree_dirty.rs`, `policy_checks.rs`, `auto_push_reconcile.rs`, `command_stash.rs`; (e) docs above;
+  (f) release 0.2.5 (behavior change: policy is stricter) and reinstall via mise; (g) comment on and close 1791 with
+  the evidence; (h) ask the user whether `rm --cached` and `git worktree remove --force` should join the guard.
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and
@@ -1825,6 +1888,10 @@ that is verification, not a decision for the user.
   change); 480 (tag push `EAGAIN` in the retired TypeScript `final-newline` plugin) needs a throwaway-repository tag
   push through the native wrapper, then a closing comment; 492 (post-push stage) is a feature with open design points;
   629 and 630 are refactors that touch `src/native` and wait for nc6 to end.
+  Backlog triage 2026-10-20 (`doc/handover/issue-triage-2026-10-20.md`) drained the repo-wide `needs-triage`
+  queue and gave each issue one lifecycle verdict. Of the issues named here, 492, 574, 1768 and 1770 are
+  `ready-for-human` with their decision questions posted, 630 and 1672 are `ready-for-agent`, and the
+  implementation follow-ups above (480's throwaway-repository tag push, the nc6-gated refactors) are unchanged.
   Queued behind nc1 (src/native): issue 1032 fix. `was_rejected_as_stale` (`auto_push_reconcile.rs:66`) matches only
   `[rejected]`, and GitHub's GH006 prints `[remote rejected]`, which does not contain it. Plan: on a `[remote
   rejected]` refusal fetch the remote tip into the private ref and decide from the graph: local commit already in the

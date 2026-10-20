@@ -1,0 +1,293 @@
+//! What:
+//!  Every command form that can discard uncommitted state, through the built executable: rejected in the main
+//!  worktree, rejected in a dirty linked worktree, allowed in a clean one, and allowed anywhere with the hatch.
+//! Why:
+//!  The policy exists because such a command once removed staged renames without any record. The controls also
+//!  prove that each documented way forward (the hatch, a clean linked worktree) really runs the command.
+//!
+//! In TS you'd write (pseudocode):
+//! ```ts
+//! // spawnSync(wrapper, ['restore', '--', 'tracked.txt'], { cwd: repo }).status === 1
+//! ```
+
+use super::support::{
+    Fixture, Observed, fixture, git, porcelain, remove, repository, run_wrapped, stderr_of,
+};
+use std::ffi::OsStr;
+use std::path::PathBuf;
+
+/// A repository with one tracked file edited, and a second branch `topic`.
+fn dirty_repository(fixture: &Fixture) -> PathBuf {
+    let repo: PathBuf = repository(fixture, OsStr::new("repo"));
+    std::fs::write(repo.join("tracked.txt"), b"one\n").expect("tracked file");
+    git(fixture, repo.as_path(), &["add", "--", "tracked.txt"]);
+    git(
+        fixture,
+        repo.as_path(),
+        &["commit", "--quiet", "--message=tracked"],
+    );
+    git(fixture, repo.as_path(), &["branch", "topic"]);
+    std::fs::write(repo.join("tracked.txt"), b"two\n").expect("edit");
+    return repo;
+}
+
+/// Whether the wrapper itself rejected the command.
+fn rejected_by_policy(observed: &Observed) -> bool {
+    return observed.code == Some(1)
+        && stderr_of(observed).contains("\"policyId\":\"linked-worktree-only\"");
+}
+
+/// Every discarding form is rejected in the main worktree and changes nothing.
+#[test]
+fn every_discarding_form_is_rejected_in_the_main_worktree() {
+    let fixture: Fixture = fixture("discard-main");
+    let repo: PathBuf = dirty_repository(&fixture);
+    let before: String = porcelain(&fixture, repo.as_path());
+    for arguments in [
+        vec!["restore", "--", "tracked.txt"],
+        vec!["restore", "--staged", "tracked.txt"],
+        vec!["checkout", "--", "tracked.txt"],
+        vec!["checkout", "-f"],
+        vec!["checkout", "topic"],
+        vec!["switch", "--discard-changes", "topic"],
+        vec!["switch", "topic"],
+        vec!["reset"],
+        vec!["reset", "--mixed", "HEAD"],
+        vec!["rm", "-f", "tracked.txt"],
+        vec!["mv", "--force", "tracked.txt", "moved.txt"],
+        vec!["checkout-index", "-f", "-a"],
+        vec!["read-tree", "--reset", "HEAD"],
+        vec!["merge", "--abort"],
+        vec!["rebase", "--abort"],
+        vec!["cherry-pick", "--abort"],
+        vec!["revert", "--abort"],
+        vec!["am", "--abort"],
+    ] {
+        let observed: Observed = run_wrapped(&fixture, repo.as_path(), arguments.as_slice());
+        assert!(
+            rejected_by_policy(&observed),
+            "{arguments:?}: {}",
+            stderr_of(&observed)
+        );
+    }
+    assert_eq!(porcelain(&fixture, repo.as_path()), before);
+    assert_eq!(
+        std::fs::read(repo.join("tracked.txt")).expect("tracked file"),
+        b"two\n"
+    );
+    remove(&fixture);
+}
+
+/// The hatch directly after the subcommand runs each form, and Git then does what it was asked.
+#[test]
+fn the_hatch_after_the_subcommand_runs_each_form() {
+    let fixture: Fixture = fixture("discard-hatch");
+    let repo: PathBuf = dirty_repository(&fixture);
+    for arguments in [
+        vec!["restore", "--no-enforce-worktree", "--", "tracked.txt"],
+        vec!["checkout", "--no-enforce-worktree", "--", "tracked.txt"],
+        vec!["rm", "--no-enforce-worktree", "-f", "--quiet", "tracked.txt"],
+        vec!["read-tree", "--no-enforce-worktree", "--reset", "HEAD"],
+        vec!["checkout-index", "--no-enforce-worktree", "-f", "-a"],
+        vec!["merge", "--no-enforce-worktree", "--abort"],
+        vec!["rebase", "--no-enforce-worktree", "--abort"],
+        vec!["cherry-pick", "--no-enforce-worktree", "--abort"],
+        vec!["revert", "--no-enforce-worktree", "--abort"],
+        vec!["am", "--no-enforce-worktree", "--abort"],
+        vec!["mv", "--no-enforce-worktree", "-f", "missing.txt", "other.txt"],
+        vec!["switch", "--no-enforce-worktree", "topic"],
+        vec!["reset", "--no-enforce-worktree", "--quiet"],
+    ] {
+        let observed: Observed = run_wrapped(&fixture, repo.as_path(), arguments.as_slice());
+        assert!(
+            !rejected_by_policy(&observed),
+            "{arguments:?}: {}",
+            stderr_of(&observed)
+        );
+        assert!(
+            !stderr_of(&observed).contains("no-enforce-worktree"),
+            "{arguments:?} leaked the hatch to Git: {}",
+            stderr_of(&observed)
+        );
+    }
+    remove(&fixture);
+}
+
+/// A clean linked worktree runs the forms; a dirty one rejects them; a lone branch switch needs a clean tree.
+#[test]
+fn a_linked_worktree_runs_the_forms_only_while_clean() {
+    let fixture: Fixture = fixture("discard-linked");
+    let repo: PathBuf = dirty_repository(&fixture);
+    git(&fixture, repo.as_path(), &["checkout", "--", "tracked.txt"]);
+    let linked: PathBuf = fixture.root.join("linked");
+    git(
+        &fixture,
+        repo.as_path(),
+        &["worktree", "add", "--quiet", "-b", "side", "../linked"],
+    );
+    for arguments in [
+        vec!["restore", "--staged", "tracked.txt"],
+        vec!["switch", "topic"],
+        vec!["stash"],
+        vec!["reset"],
+    ] {
+        let observed: Observed = run_wrapped(&fixture, linked.as_path(), arguments.as_slice());
+        assert!(
+            !rejected_by_policy(&observed),
+            "{arguments:?} in a clean linked worktree: {}",
+            stderr_of(&observed)
+        );
+    }
+    std::fs::write(linked.join("tracked.txt"), b"three\n").expect("edit in the linked worktree");
+    for arguments in [
+        vec!["restore", "--", "tracked.txt"],
+        vec!["checkout", "--", "tracked.txt"],
+        vec!["switch", "side"],
+        vec!["checkout", "side"],
+        vec!["stash"],
+        vec!["reset", "--hard"],
+    ] {
+        let observed: Observed = run_wrapped(&fixture, linked.as_path(), arguments.as_slice());
+        assert!(
+            rejected_by_policy(&observed),
+            "{arguments:?} in a dirty linked worktree: {}",
+            stderr_of(&observed)
+        );
+    }
+    assert_eq!(
+        std::fs::read(linked.join("tracked.txt")).expect("tracked file"),
+        b"three\n"
+    );
+    // The documented way forward: commit the work with explicit paths, after which the worktree is clean again.
+    let committed: Observed = run_wrapped(
+        &fixture,
+        linked.as_path(),
+        &["commit", "--quiet", "--message=work", "--", "tracked.txt"],
+    );
+    assert_eq!(committed.code, Some(0), "{}", stderr_of(&committed));
+    assert_eq!(porcelain(&fixture, linked.as_path()), "");
+    let switched: Observed = run_wrapped(&fixture, linked.as_path(), &["switch", "topic"]);
+    assert!(!rejected_by_policy(&switched), "{}", stderr_of(&switched));
+    remove(&fixture);
+}
+
+/// Reading forms stay available everywhere.
+#[test]
+fn reading_forms_are_never_rejected() {
+    let fixture: Fixture = fixture("discard-reading");
+    let repo: PathBuf = dirty_repository(&fixture);
+    for arguments in [
+        vec!["stash", "list"],
+        vec!["restore", "--help"],
+        vec!["status"],
+        vec!["diff"],
+        vec!["reset", "--soft", "HEAD"],
+        vec!["checkout"],
+        vec!["clean", "-n"],
+    ] {
+        let observed: Observed = run_wrapped(&fixture, repo.as_path(), arguments.as_slice());
+        assert!(
+            !rejected_by_policy(&observed),
+            "{arguments:?}: {}",
+            stderr_of(&observed)
+        );
+    }
+    remove(&fixture);
+}
+
+/// Run one wrapped command in the main worktree and require that it succeeded.
+fn runs(fixture: &Fixture, repo: &std::path::Path, arguments: &[&str]) -> Observed {
+    let observed: Observed = run_wrapped(fixture, repo, arguments);
+    assert_eq!(observed.code, Some(0), "{arguments:?}: {}", stderr_of(&observed));
+    return observed;
+}
+
+/// Every alternative a rejection text names runs in the main worktree, so no normal workflow lacks a way forward.
+#[test]
+fn every_named_alternative_runs_in_the_main_worktree() {
+    let fixture: Fixture = fixture("discard-alternatives");
+    let repo: PathBuf = dirty_repository(&fixture);
+    // Looking instead of reverting.
+    assert_eq!(
+        runs(&fixture, repo.as_path(), &["show", "HEAD:tracked.txt"]).stdout,
+        b"one\n"
+    );
+    let patch: Observed = runs(&fixture, repo.as_path(), &["diff", "--", "tracked.txt"]);
+    assert!(String::from_utf8_lossy(&patch.stdout).contains("+two"));
+    runs(&fixture, repo.as_path(), &["diff", "--cached", "--name-only"]);
+    runs(&fixture, repo.as_path(), &["stash", "list"]);
+    runs(&fixture, repo.as_path(), &["clean", "-n"]);
+    // Moving the branch pointer without touching files.
+    runs(&fixture, repo.as_path(), &["reset", "--soft", "HEAD"]);
+    // Copies of staged files elsewhere, instead of overwriting the worktree.
+    git(&fixture, repo.as_path(), &["add", "--", "tracked.txt"]);
+    runs(
+        &fixture,
+        repo.as_path(),
+        &["checkout-index", "--prefix=copy/", "--all"],
+    );
+    assert_eq!(
+        std::fs::read(repo.join("copy/tracked.txt")).expect("copied staged file"),
+        b"two\n"
+    );
+    // Stopping an operation while keeping the work: these have no operation to stop, and none is rejected.
+    for arguments in [
+        vec!["merge", "--quit"],
+        vec!["rebase", "--quit"],
+        vec!["cherry-pick", "--quit"],
+        vec!["revert", "--quit"],
+        vec!["am", "--quit"],
+    ] {
+        let observed: Observed = run_wrapped(&fixture, repo.as_path(), arguments.as_slice());
+        assert!(!rejected_by_policy(&observed), "{arguments:?}: {}", stderr_of(&observed));
+    }
+    std::fs::remove_dir_all(repo.join("copy")).expect("remove the copied files");
+    // Unstage-by-commit: only the named path lands, the other staged entry stays staged.
+    std::fs::write(repo.join("other.txt"), b"other\n").expect("other file");
+    git(&fixture, repo.as_path(), &["add", "--", "other.txt"]);
+    runs(
+        &fixture,
+        repo.as_path(),
+        &["commit", "--quiet", "--message=only tracked", "--", "tracked.txt"],
+    );
+    assert_eq!(porcelain(&fixture, repo.as_path()), "A  other.txt\n");
+    // A clean linked worktree for anything else.
+    runs(
+        &fixture,
+        repo.as_path(),
+        &["worktree", "add", "--quiet", "-b", "wip", "../wip"],
+    );
+    // Stop tracking a file and keep it on disk.
+    runs(&fixture, repo.as_path(), &["rm", "--cached", "--quiet", "other.txt"]);
+    assert!(repo.join("other.txt").exists());
+    remove(&fixture);
+}
+
+/// Saving a patch and then using the hatch reverts a file, and the patch brings the edits back.
+#[test]
+fn a_saved_patch_makes_the_hatch_revert_reversible() {
+    let fixture: Fixture = fixture("discard-patch");
+    let repo: PathBuf = dirty_repository(&fixture);
+    let patch: Observed = runs(&fixture, repo.as_path(), &["diff", "--", "tracked.txt"]);
+    let patch_file: PathBuf = fixture.root.join("backup.patch");
+    std::fs::write(patch_file.as_path(), patch.stdout.as_slice()).expect("backup patch");
+    runs(
+        &fixture,
+        repo.as_path(),
+        &["restore", "--no-enforce-worktree", "--", "tracked.txt"],
+    );
+    assert_eq!(
+        std::fs::read(repo.join("tracked.txt")).expect("tracked file"),
+        b"one\n"
+    );
+    runs(
+        &fixture,
+        repo.as_path(),
+        &["apply", patch_file.to_str().expect("utf-8 path")],
+    );
+    assert_eq!(
+        std::fs::read(repo.join("tracked.txt")).expect("tracked file"),
+        b"two\n"
+    );
+    remove(&fixture);
+}

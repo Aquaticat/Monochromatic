@@ -28,7 +28,7 @@ use crate::policy_test_support::{
 };
 use crate::policy_trigger::Trigger;
 use crate::rule_linked_worktree::{
-    GuardedCommand, main_worktree_message, outside_worktree_message,
+    GuardedCommand, dirty_worktree_message, main_worktree_message, outside_worktree_message,
 };
 use crate::test_support::{fixture, remove};
 use crate::worktree_identity::WorktreeIdentity;
@@ -89,6 +89,21 @@ fn unlocatable() -> ScriptedFacts {
 /// The location is asked for once.
 fn location_only() -> Vec<String> {
     return vec![String::from("location")];
+}
+
+/// The facts asked for, in order.
+fn asked(names: &[&str]) -> Vec<String> {
+    return names.iter().map(|name| { return String::from(*name); }).collect();
+}
+
+/// Facts that answer the dirtiness question as given, in the given location.
+fn dirty_in(
+    location: crate::repository_location::RepositoryLocation,
+    dirty: bool,
+) -> ScriptedFacts {
+    let mut facts: ScriptedFacts = located(location);
+    facts.dirty = Ok(dirty);
+    return facts;
 }
 
 /// require-root:
@@ -188,7 +203,17 @@ fn require_root_direct_check_always_measures() {
 ///  guarded ones are judged by the worktree kind.
 #[test]
 fn linked_worktree_judges_guarded_commands_by_worktree_kind() {
-    for values in [vec!["status"], vec!["clean", "-n"], vec!["reset", "--soft"]] {
+    for values in [
+        vec!["status"],
+        vec!["clean", "-n"],
+        vec!["reset", "--soft"],
+        vec!["stash", "list"],
+        vec!["stash", "show"],
+        vec!["restore", "--help"],
+        vec!["rm", "a.txt"],
+        vec!["checkout", "-b", "topic"],
+        vec!["merge", "topic"],
+    ] {
         assert_eq!(
             pre_forward(
                 PolicyId::LinkedWorktreeOnly,
@@ -208,7 +233,7 @@ fn linked_worktree_judges_guarded_commands_by_worktree_kind() {
         (
             one(
                 "linked-worktree-required",
-                main_worktree_message(GuardedCommand::Reset)
+                &main_worktree_message(GuardedCommand::ResetHard)
             ),
             location_only()
         )
@@ -222,7 +247,7 @@ fn linked_worktree_judges_guarded_commands_by_worktree_kind() {
         (
             one(
                 "linked-worktree-required",
-                outside_worktree_message(GuardedCommand::Stash)
+                &outside_worktree_message(GuardedCommand::Stash)
             ),
             location_only()
         )
@@ -233,7 +258,7 @@ fn linked_worktree_judges_guarded_commands_by_worktree_kind() {
             &["clean", "-fd"],
             located(linked_worktree("/r", "/w"))
         ),
-        (clean(), location_only())
+        (clean(), asked(&["location", "dirty:TrackedAndUntracked"]))
     );
     assert_eq!(
         pre_forward(
@@ -281,7 +306,7 @@ fn linked_worktree_exempts_an_allowed_tool_cache() {
         guarded.check(PolicyId::LinkedWorktreeOnly, Trigger::PreForward),
         one(
             "linked-worktree-required",
-            main_worktree_message(GuardedCommand::Reset)
+            &main_worktree_message(GuardedCommand::ResetHard)
         )
     );
     remove(root.as_path());
@@ -452,4 +477,129 @@ fn content_policies_follow_the_lifecycle_content() {
         clean()
     );
     assert_eq!(command.facts.asked, Vec::<String>::new());
+}
+
+/// linked-worktree-only:
+///  a form that overwrites is rejected in the main worktree without asking for the status, and in a linked worktree
+///  only when the status shows uncommitted state.
+#[test]
+fn overwriting_forms_are_rejected_in_main_always_and_in_linked_when_dirty() {
+    for (values, command, scope) in [
+        (vec!["restore", "--staged", "a.txt"], GuardedCommand::RestoreStaged, "Tracked"),
+        (vec!["checkout", "--", "a.txt"], GuardedCommand::CheckoutPaths, "Tracked"),
+        (vec!["switch", "--discard-changes", "topic"], GuardedCommand::SwitchForce, "Tracked"),
+        (vec!["reset"], GuardedCommand::ResetMixed, "Tracked"),
+        (vec!["rm", "-rf", "dir"], GuardedCommand::Remove, "Tracked"),
+        (vec!["merge", "--abort"], GuardedCommand::AbortMerge, "Tracked"),
+        (vec!["clean", "-fd"], GuardedCommand::Clean, "TrackedAndUntracked"),
+        (vec!["stash", "push"], GuardedCommand::Stash, "Tracked"),
+    ] {
+        let dirty_scope = format!("dirty:{scope}");
+        for dirty in [false, true] {
+            assert_eq!(
+                pre_forward(
+                    PolicyId::LinkedWorktreeOnly,
+                    values.as_slice(),
+                    dirty_in(main_worktree("/r", ""), dirty)
+                ),
+                (
+                    one("linked-worktree-required", &main_worktree_message(command)),
+                    location_only()
+                ),
+                "{values:?} main dirty={dirty}"
+            );
+        }
+        assert_eq!(
+            pre_forward(
+                PolicyId::LinkedWorktreeOnly,
+                values.as_slice(),
+                dirty_in(linked_worktree("/r", "/w"), false)
+            ),
+            (clean(), asked(&["location", dirty_scope.as_str()])),
+            "{values:?} linked clean"
+        );
+        assert_eq!(
+            pre_forward(
+                PolicyId::LinkedWorktreeOnly,
+                values.as_slice(),
+                dirty_in(linked_worktree("/r", "/w"), true)
+            ),
+            (
+                one(
+                    "linked-worktree-required",
+                    &dirty_worktree_message(command)
+                ),
+                asked(&["location", dirty_scope.as_str()])
+            ),
+            "{values:?} linked dirty"
+        );
+    }
+}
+
+/// linked-worktree-only:
+///  a form that only moves `HEAD` is rejected in any worktree only while the status shows uncommitted state, and
+///  never outside a worktree.
+#[test]
+fn head_moves_are_rejected_only_while_dirty() {
+    for values in [vec!["checkout", "topic"], vec!["switch", "topic"]] {
+        let command: GuardedCommand = if values[0] == "checkout" {
+            GuardedCommand::CheckoutMove
+        } else {
+            GuardedCommand::SwitchMove
+        };
+        for location in [main_worktree("/r", ""), linked_worktree("/r", "/w")] {
+            assert_eq!(
+                pre_forward(
+                    PolicyId::LinkedWorktreeOnly,
+                    values.as_slice(),
+                    dirty_in(location.clone(), false)
+                ),
+                (clean(), asked(&["location", "dirty:Tracked"])),
+                "{values:?} clean"
+            );
+            assert_eq!(
+                pre_forward(
+                    PolicyId::LinkedWorktreeOnly,
+                    values.as_slice(),
+                    dirty_in(location, true)
+                ),
+                (
+                    one(
+                        "linked-worktree-required",
+                        &dirty_worktree_message(command)
+                    ),
+                    asked(&["location", "dirty:Tracked"])
+                ),
+                "{values:?} dirty"
+            );
+        }
+        assert_eq!(
+            pre_forward(
+                PolicyId::LinkedWorktreeOnly,
+                values.as_slice(),
+                dirty_in(outside_worktree(), true)
+            ),
+            (clean(), location_only()),
+            "{values:?} outside"
+        );
+    }
+}
+
+/// linked-worktree-only:
+///  a status that cannot be read stops the command instead of reading as clean.
+#[test]
+fn an_unreadable_status_is_reported() {
+    let mut facts: ScriptedFacts = located(linked_worktree("/r", "/w"));
+    facts.dirty = Err(String::from("Git could not read the worktree status: x"));
+    assert_eq!(
+        pre_forward(PolicyId::LinkedWorktreeOnly, &["restore", "a.txt"], facts),
+        (
+            PolicyOutcome::Failed {
+                code: EngineFailureCode::ContentUnavailable,
+                message: String::from("Git could not read the worktree status: x"),
+                path: None,
+            },
+            asked(&["location", "dirty:Tracked"])
+        )
+    );
 }

@@ -202,7 +202,7 @@ const session = async ({ name, application, cache, config, settled = settledOnSy
   writeFileSync(join(project, 'fixture.sql'), ['-- A comment, a keyword, a string, and a number.', "select 'cat' as name, 42 as answer from pets where name = 'cat';", ''].join('\n'));
   // Nothing may point at the source tree: no runtime variable, no Cargo variable, private XDG homes.
   const env = { ...process.env, XDG_CONFIG_HOME: config, XDG_CACHE_HOME: cache, XDG_DATA_HOME: join(directory, 'data') };
-  for (const key of ['HELIX_RUNTIME', 'CARGO_MANIFEST_DIR', 'SLINT_BACKEND', 'SLINT_MCP_PORT', 'SLINT_SCALE_FACTOR', 'RUST_LOG']) delete env[key];
+  for (const key of ['HELIX_RUNTIME', 'CARGO_MANIFEST_DIR', 'SLINT_BACKEND', 'SLINT_SCALE_FACTOR', 'RUST_LOG']) delete env[key];
   const socket = join(directory, 'control.sock');
   const started = performance.now();
   // RUST_LOG asks the application for the debug records these checks read (a build whose default level is lower

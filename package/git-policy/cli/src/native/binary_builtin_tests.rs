@@ -95,7 +95,8 @@ fn require_root_reads_the_directory_git_works_in() {
     remove(&fixture);
 }
 
-/// linked-worktree-only stops destructive commands in the main worktree and nowhere else.
+/// linked-worktree-only stops destructive commands in the main worktree, and in a linked worktree while it holds
+///  uncommitted state.
 #[test]
 fn destructive_commands_run_only_in_a_linked_worktree() {
     let fixture: Fixture = fixture("builtin-linked");
@@ -112,7 +113,6 @@ fn destructive_commands_run_only_in_a_linked_worktree() {
         vec!["clean", "-f"],
         vec!["clean", "-fd", "--quiet"],
         vec!["stash"],
-        vec!["stash", "list"],
         vec!["reset", "--hard"],
         vec!["reset", "--keep", "HEAD"],
     ] {
@@ -123,6 +123,11 @@ fn destructive_commands_run_only_in_a_linked_worktree() {
         );
     }
     assert_eq!(porcelain(&fixture, repo.as_path()), "?? untracked.txt\n");
+    // Reading the stash list only inspects, so it is forwarded even in the main worktree.
+    assert_eq!(
+        run_wrapped(&fixture, repo.as_path(), &["stash", "list"]),
+        silent_success()
+    );
     // A dry run only inspects, so it is forwarded even in the main worktree.
     assert_eq!(
         run_wrapped(&fixture, repo.as_path(), &["clean", "-n"]),
@@ -132,12 +137,19 @@ fn destructive_commands_run_only_in_a_linked_worktree() {
             stderr: Vec::<u8>::new(),
         }
     );
-    // In the linked worktree the same destructive command runs.
+    // In a linked worktree that holds an untracked file the same command is rejected, since it would delete it.
+    assert_rejected_by(
+        &run_wrapped(&fixture, linked.as_path(), &["clean", "-f", "--quiet"]),
+        "linked-worktree-only",
+        "clean in a linked worktree with an untracked file",
+    );
+    assert!(linked.join("untracked.txt").exists());
+    // Once the worktree holds nothing to lose the same command runs.
+    std::fs::remove_file(linked.join("untracked.txt")).expect("remove the untracked file");
     assert_eq!(
         run_wrapped(&fixture, linked.as_path(), &["clean", "-f", "--quiet"]),
         silent_success()
     );
-    assert!(!linked.join("untracked.txt").exists());
     assert!(repo.join("untracked.txt").exists());
     // The hatch runs it in the main worktree and never reaches Git.
     assert_eq!(

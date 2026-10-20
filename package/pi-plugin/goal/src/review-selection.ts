@@ -15,7 +15,7 @@ import {
   buildCostRanking,
   canonicalSlug,
   resolveEffectiveScope,
-} from '@monochromatic-dev/pi-shared-model-selection/ts';
+} from '@monochromatic-dev/agent-harness-shared-model-selection/ts';
 import { REVIEW_OUTPUT_TOKENS, } from './constants.ts';
 import type {
   GoalReviewEvidence,

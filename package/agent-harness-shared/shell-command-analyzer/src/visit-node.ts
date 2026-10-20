@@ -86,20 +86,6 @@ function visitNode(
       },],
     };
   }
-  if ((node.type === 'Time') || (node.type === 'Negation')) {
-    return {
-      ...EMPTY_VISIT_RESULT,
-      workItems: node.command === undefined ? redirectWorkItems({
-        redirects,
-        context,
-      },) : [{
-        kind: 'node',
-        node: node.command,
-        redirects,
-        context,
-      },],
-    };
-  }
   if (node.type === 'Command') {
     return {
       ...EMPTY_VISIT_RESULT,
@@ -116,6 +102,9 @@ function visitNode(
       },),
     };
   }
+  // `Time` and `Negation` are pipeline prefixes in the unbash 6 tree and carry no
+  // analyzable children, so only `commands` and inherited redirects are walked here;
+  // a bare prefix node falls through to the redirect-only fallback.
   if (node.type === 'Pipeline') {
     return {
       ...EMPTY_VISIT_RESULT,

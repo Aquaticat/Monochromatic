@@ -139,6 +139,9 @@ pub mod rule_argument_rewrite;
 /// Pure core of the index-against-`HEAD` check.
 pub mod rule_commit_index;
 
+/// The query and reading of "does this worktree hold uncommitted state?".
+pub mod rule_worktree_dirty;
+
 /// Pure decision of the commit-only transform.
 pub mod rule_commit_only;
 
@@ -173,6 +176,9 @@ pub mod command_reset;
 
 /// `git stash` subcommand dispatch and wrapper-flag positions.
 pub mod command_stash;
+
+/// The commands that can overwrite or delete uncommitted state, read as Git reads them.
+pub mod command_discard;
 
 /// The Git 2.56.0 option tables of every `git stash` subcommand.
 pub mod command_stash_table;
@@ -289,6 +295,9 @@ pub mod repository_facts;
 
 /// Pure decision of the linked-worktree-only policy.
 pub mod rule_linked_worktree;
+
+/// The rejection texts of the linked-worktree-only policy.
+pub mod rule_linked_worktree_messages;
 
 /// Pure decision of the branch-worktree-only policy and its one-query remote guess.
 pub mod rule_branch_worktree;

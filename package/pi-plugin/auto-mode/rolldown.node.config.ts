@@ -6,7 +6,8 @@
 import { nodeConfig } from '@monochromatic-dev/config-rolldown/.node.ts';
 
 /**
- Plugin entry is supplied by the replacement implementation after design review.
+ Plugin behavior is supplied by the replacement implementation after design
+ review; `src/index.ts` stays a placeholder entry until then.
  */
 const config: ReturnType<typeof nodeConfig> = nodeConfig({
   input: {

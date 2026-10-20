@@ -104,11 +104,8 @@ const PRESERVE_COMPILER_OPTIONS = `${STRICT_COMPILER_OPTIONS},"module":"preserve
 /** Schema of entries written before shared envelopes carried a key digest. */
 const PRECEDING_SCHEMA = 8;
 
-/** One persisted reason an analysis was narrowed. */
+/** The persisted reason an analysis was narrowed. */
 const OMISSION_REASON_A = 'direct-summary-construction-failed';
-
-/** Another persisted reason an analysis was narrowed. */
-const OMISSION_REASON_B = 'typescript-tuple-serialization-failed';
 
 /** Include list reaching the project directory, the shared directory and its JSX-capable files. */
 const JSX_INCLUDE = '"include":["*.ts","../shared/*.ts","../shared/*.tsx"]';
@@ -1210,17 +1207,6 @@ await describe({
             },
           },
           {
-            fileName: 'omission-reason-values.ts',
-            cached: {
-              ...agreeing,
-              omissionReasons: [OMISSION_REASON_B,],
-            },
-            fresh: {
-              ...agreeing,
-              omissionReasons: [OMISSION_REASON_A,],
-            },
-          },
-          {
             fileName: 'external-omissions.ts',
             fresh: {
               ...agreeing,
@@ -1256,7 +1242,6 @@ await describe({
         },),).toEqual([
           'omitted-keys.ts: omittedCallableKeys differ',
           'omission-reasons.ts: omissionReasons differ',
-          'omission-reason-values.ts: omissionReasons differ',
           'external-omissions.ts: externalOmissions differ',
         ],);
       },

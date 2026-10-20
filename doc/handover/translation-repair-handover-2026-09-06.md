@@ -638,8 +638,14 @@ its "Next" list is still the queue the merge went ahead of.
       Its first launch at 18:58 UTC stopped before `START`,
       the branch worktree uninstalled since `a5dc23c5bb` (M285);
       no provider was called.
-      Read the page when the waiter on `^DONE processed=` fires,
-      then go on with CuspariaKLSY,
+      It settled with no class
+      (read at 20:30 UTC;
+      the pass log of 2026-10-20),
+      and spent 65 of Hyper's 110.
+      `CuspariaKLSY` waits:
+      the NeuralWatt build changes the digest,
+      so the rotation restarts at `zheermao101` once it lands,
+      then CuspariaKLSY,
       XingZ60,
       yingying,
       hulicaijia,
@@ -669,12 +675,55 @@ its "Next" list is still the queue the merge went ahead of.
       Served ids `deepseek-v4.1-flash` and `glm-5.3-flash`,
       standard lane only;
       first in the provider order,
-      by the rule that expiring money is spent first.
+      by the rule that expiring money is spent first
+      and by the owner's ruling of 2026-10-20:
+      "Use the neuralwatt free energy front and center."
+      Every seat of the two models goes to NeuralWatt first in every role it already holds;
+      no new roles,
+      and the owner's 2026-09-02 unseating of GLM-5.3-Flash as a judge stands.
+      The meter's margin is kept as small as can be justified,
+      so free energy is not left unspent.
       The encrypted store `.env.local.json` went to the branch worktree on 2026-10-20 (main's copy,
       a strict superset of the old one by key names);
       the scratch gate worktrees stay keyless.
       This changes the build,
       so the rotation restarts at zheermao101 once it lands.
+      State at 22:00 UTC on 2026-10-20:
+      built in keyless worktree w242
+      (base `7900a9a639`,
+      16 commits `8fca5003b7` to `ce1b710326`,
+      then docs and test commits to `0a4570d563`);
+      handback `/var/home/user/temp/agent/x15-fix/neuralwatt/handback.md`;
+      decision record `doc/decision/translation-repair-neuralwatt-provider.md`
+      (no cache version moves,
+      veto-open);
+      ledger P15 in `package/translation-repair/doc/audit-ledger-providers-routing-and-seating.md`.
+      Gate g129 on `ce1b710326`:
+      suite 2630 pass and 31 fail,
+      all 31 in `source-scan`'s scans finding the new code
+      (being fixed in w242);
+      oxlint red in 21 packages on `prefer-readonly-parameter-type` alone
+      (105 errors),
+      tuple-destructured callbacks in files the branch never touched;
+      main's TypeScript 7.1.0-beta move (`27b1cf2eec`) landed after the green gate g128,
+      and baseline gate g130 on main `a4987be78a` is red the same way:
+      the same 105 errors in the same 21 packages,
+      suite 2608 pass and 0 fail.
+      `doc/troubleshooting/typescript-is-tuple-type-tuple-reference.md` explains them:
+      7.1 hands the plugin the tuple reference,
+      so mutable tuples from `Object.entries` and `Map.entries` callbacks now surface,
+      and the offers are sound.
+      Queued after the NeuralWatt land:
+      fix all 105 at the package's own boundaries
+      (an explicit deeply readonly entry type),
+      never by loosening the rule.
+      Next:
+      green `source-scan`,
+      land w242,
+      install and force-build in the branch worktree (M285),
+      compare digests,
+      set `FROZEN` in `launch-rotation.ts`,
+      and launch `zheermao18`.
     - The class of the `zheermao15` read is ledger B702.
     - The guard of B701 stays open and undecided:
       the rotation sweep as an expensive mise task,

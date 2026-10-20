@@ -135,9 +135,10 @@ The [retirement record](doc/retired-extension.md) explains removed behavior and 
 The [historical extension and migration snapshot](doc/historical-extension-and-migration.md)
 preserves the previous README and its durable implementation history.
 
-`src/index.ts` exposes maintained named exports for consumers and built-artifact tests.
-`src/native-policy-api.ts` defines the native bridge interface.
-The generated bridge and its declarations derive their exports from that entry.
+`src/index.ts` is the package entry and the `./ts` export target.
+While the rebuild is stopped it is a documented placeholder that exports nothing,
+so the build and the `./ts` subpath stay resolvable;
+the replacement implementation supplies the real exports from that entry.
 
 Use package tasks through `mise run //package/pi-plugin/auto-mode:<task>`.
 The `build` task builds maintained exports and the native host.

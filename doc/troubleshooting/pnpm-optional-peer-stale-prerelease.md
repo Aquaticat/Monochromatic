@@ -36,6 +36,19 @@ The same move also had to clear the workspace's `minimumReleaseAge: 1440` strict
 The hold behavior is covered in
  [`pnpm-update-no-save-strict-release-age.md`](pnpm-update-no-save-strict-release-age.md).
 
+The same node-semver rule surfaced a second failure during the move's own testing.
+The disposable consumer fixture the built-plugin tests stage
+ (`package/oxlint-plugin/prefer-readonly-parameter-type/src/external-consumer.unit.test.ts`)
+generated a catalog entry `'typescript': '>=7.0.2'`,
+ and `pnpm install` inside the staging directory resolved `7.0.2`:
+the packed bundle then failed to load with
+
+```text
+ERR_PACKAGE_PATH_NOT_EXPORTED: Package subpath './ast/is' is not defined by "exports"
+```
+
+because the `7.0.2` export map predates the entry points the bundle imports.
+
 ## Root cause
 
 ### `7.1.0-beta` never satisfies `valibot`'s optional peer range
@@ -63,6 +76,17 @@ sets if at least one comparator with the same `[major, minor, patch]` tuple also
 `>=5` carries no prerelease comparator,
  so `7.1.0-beta` never satisfies it while the stable `7.0.2` does.
 After the catalog move the only workspace version matching `valibot`'s peer range was therefore the stale one.
+
+### A generated manifest's range can never select the prerelease
+
+The disposable consumer fixture hit the same exclusion through its own catalog range:
+ `>=7.0.2` carries no comparator with a prerelease tag on the `7.1.0` tuple,
+ so `7.1.0-beta` never satisfies it while `7.0.2` does.
+The resolution is node-semver's prerelease rule quoted in
+ `7.1.0-beta never satisfies valibot's optional peer range`,
+ not a pnpm-specific behavior,
+ so any generated manifest that expresses "the current compiler" as a minimum range silently
+ resolves the old stable compiler after a prerelease move.
 
 ### The optional-peer lookup runs per importer
 
@@ -104,14 +128,21 @@ Working catalog:
 - an importer that declares `typescript: catalog:` in `devDependencies` resolves
   `valibot@1.5.0(typescript@7.1.0-beta)`;
 - after the four declarations landed,
-  `rg -n 'typescript@7\.0\.2' pnpm-lock.yaml` returns no match and only `typescript@7.1.0-beta` remains.
+  `rg -n 'typescript@7\.0\.2' pnpm-lock.yaml` returns no match and only `typescript@7.1.0-beta` remains;
+- the consumer fixture stages its catalog entry as the exact installed version
+  (generated from the compiler's own `version` export in
+  `package/oxlint-plugin/prefer-readonly-parameter-type/src/external-consumer.unit.test.ts`),
+  and the packed bundle loads and runs under `typescript@7.1.0-beta`.
 
 Failing catalog:
 
 - an importer that depends on `valibot` without declaring `typescript` retained `valibot@1.5.0(typescript@7.0.2)`
   during the move;
 - `typescript@7.0.2` therefore stayed in `pnpm-lock.yaml` and in `node_modules/.pnpm/` even though the catalog pin
-  asked for `7.1.0-beta`.
+  asked for `7.1.0-beta`;
+- the consumer fixture's staging catalog written as `'typescript': '>=7.0.2'` resolved `7.0.2`
+  and the packed bundle threw `ERR_PACKAGE_PATH_NOT_EXPORTED` for `typescript/ast/is`
+  (recorded in the move's test run on 2026-10-20).
 
 ## Verified workarounds
 
@@ -141,7 +172,36 @@ Tradeoff:
 The `catalog:` specifier keeps the version centralized in `pnpm-workspace.yaml`,
  so the declaration follows the workspace pin.
 
+### Pin the exact compiler version in generated manifests (applied)
+
+```ts
+// package/oxlint-plugin/prefer-readonly-parameter-type/src/external-consumer.unit.test.ts
+`packages:
+  - 'package'
+catalog:
+  '@oxlint/plugins': '>=1.73.0'
+  'typescript': '${typescriptVersion}'
+`
+```
+
+Applied in commit `787241da40`,
+where `typescriptVersion` comes from the compiler's own `version` export.
+The staged consumer then installs exactly the workspace's compiler,
+ and the packed bundle resolves every entry point it imports.
+
+Tradeoff:
+ the fixture no longer exercises range resolution,
+ so a future compiler move that breaks range matching would surface in user manifests rather
+ than in this test;
+ the exact pin is what the fixture is for,
+ since it tests the built bundle against the pinned compiler.
+
 ## What does not work
+
+- A minimum range such as `>=7.0.2` in a generated catalog:
+  it can never select the prerelease
+  (see `A generated manifest's range can never select the prerelease`),
+  and the staging install resolves the old stable compiler instead.
 
 - `peerDependencyRules.allowedVersions` (including a `valibot>typescript` selector):
   it only stops unmet-peer warnings for the named range

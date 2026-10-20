@@ -192,12 +192,13 @@ fn a_path_named_like_a_hatch_is_forwarded_and_a_hatch_is_removed() {
         porcelain(&fixture, repo.as_path()),
         "A  --no-enforce-worktree\nA  other.txt\n"
     );
-    // After `--` the token is a path: only that file is unstaged, so Git received it unchanged.
+    // A mixed reset is guarded too, so the real hatch lets it run; after `--` the token is a path: only that file is
+    // unstaged, so Git received it unchanged.
     assert_eq!(
         run_wrapped(
             &fixture,
             repo.as_path(),
-            &["reset", "--quiet", "--", "--no-enforce-worktree"]
+            &["reset", "--no-enforce-worktree", "--quiet", "--", "--no-enforce-worktree"]
         ),
         silent_success()
     );

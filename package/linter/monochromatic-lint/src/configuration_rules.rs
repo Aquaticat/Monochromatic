@@ -122,9 +122,9 @@ pub(crate) fn line_limit(value: &JsoncValue) -> Result<usize, ConfigError> {
 pub(crate) fn validate_setting(id: &str, setting: &JsoncValue) -> Result<(), ConfigError> {
     // Borrow the rule name for registry lookup; membership does not allocate.
     if !RULE_IDS.contains(&id) {
-        return Err(ConfigError::new(
-            format!("Unknown built-in rule {id}.").as_str(),
-        ));
+        // The constructor keeps the identifier so startup composition can tell a stale binary
+        // from a misspelled rule only when a repository pin measures the difference.
+        return Err(ConfigError::unknown_built_in_rule(id));
     }
     let Some(entries) = setting.entries() else {
         return Err(ConfigError::new(

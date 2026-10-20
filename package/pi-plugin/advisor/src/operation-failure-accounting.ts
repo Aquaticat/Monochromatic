@@ -6,8 +6,8 @@ import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker
 import {
   ADVISOR_OPERATION_TYPE,
   ADVISOR_TOOL_NAME,
-} from './constants.ts';
-import type { AdvisorOperationSnapshot, } from './operation-types.ts';
+  type AdvisorOperationSnapshot,
+} from '@monochromatic-dev/agent-harness-shared-advisor/ts';
 
 /**
  Failed tool operation awaiting Pi's tool-result finalization hook.

@@ -30,10 +30,11 @@
     "typebox": "*"
   },
   "dependencies": {
+    "@monochromatic-dev/agent-harness-shared-advisor": "workspace:*",
     "@monochromatic-dev/module-caught-value": "workspace:*",
     "@monochromatic-dev/module-logger": "workspace:*",
     "@monochromatic-dev/ownership-marker-foreign-borrowed": "workspace:*",
-    "@monochromatic-dev/pi-shared-model-selection": "workspace:*",
+    "@monochromatic-dev/agent-harness-shared-model-selection": "workspace:*",
     "type-fest": "catalog:",
     "valibot": "catalog:"
   },

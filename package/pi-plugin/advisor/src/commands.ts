@@ -10,14 +10,14 @@ import type {
 } from '@earendil-works/pi-coding-agent';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import { containsToolName, } from './active-tool.ts';
-import { sendAdvisorMessage, } from './command-message.ts';
 import {
   ADVISOR_OPERATION_TYPE,
   ADVISOR_TOOL_NAME,
-} from './constants.ts';
-import { AdvisorOperationError, } from './operation-error.ts';
-import { serializeAdvisorProjectContext, } from './project-context.ts';
+  AdvisorOperationError,
+  containsToolName,
+  serializeAdvisorProjectContext,
+} from '@monochromatic-dev/agent-harness-shared-advisor/ts';
+import { sendAdvisorMessage, } from './command-message.ts';
 import { buildAdvisorStatus, } from './status.ts';
 import { runAdvisor, } from './tool.ts';
 import type { AdvisorConfig, } from './types.ts';
