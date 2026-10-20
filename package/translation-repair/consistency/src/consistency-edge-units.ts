@@ -2,6 +2,7 @@ import type { Root, } from 'mdast';
 
 import { referenceEndOf, } from './consistency-unread-units.ts';
 import { parseMdxBody, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 //region Consistency edge units
 // THE UNITS A SPAN EDGE IS CUT BY. A quote's words, and the span they name in an English, begin and end at the edge of a
@@ -78,7 +79,7 @@ const decodedReferences = new Map<string, readonly string[]>();
 
  @returns The text of the one paragraph with the one text node the parse holds, none when the parse holds anything else
  */
-function loneTextOf({ tree, }: { readonly tree: Root; },): readonly string[] {
+function loneTextOf({ tree, }: { readonly tree: ForeignBorrowed<Root>; },): readonly string[] {
   /**
    The one paragraph the parse holds.
    */

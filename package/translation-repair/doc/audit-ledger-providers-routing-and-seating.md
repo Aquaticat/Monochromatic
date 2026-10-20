@@ -713,8 +713,7 @@ section "The first keyed call".
 
 Status:
 found 2026-10-20 at about 23:15 UTC by the owner
-("The stop logic should obviously count total free energy used per day.
-Every neuralwatt day starts at 15:15");
+(`The stop logic should obviously count total free energy used per day. Every neuralwatt day starts at 15:15`);
 the fix is being built in w247,
 and this entry gains its commits when it lands.
 Two defects in one meter.
@@ -727,7 +726,7 @@ current to the request
 And the day ran 00:00 to 00:00 UTC on the documentation's word,
 while the account's day starts at its subscription anchor,
 `current_period_start` `2026-10-20T19:15:08Z` in `GET /v1/quota`,
-15:15 in the owner's zone.
+15:15 EDT in the owner's zone.
 At 00:00 UTC the meter would have handed back a full day
 that NeuralWatt was still counting down.
 

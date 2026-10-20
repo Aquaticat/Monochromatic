@@ -19,7 +19,10 @@ import type {
   ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup/ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import type {
+  ReadonlyEntry,
+  RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Seat tally
 // WHAT EVERY SEAT WAS ASKED AND WHAT IT GAVE BACK, counted at the client seam
@@ -231,7 +234,7 @@ export function createSeatTally(): SeatTally {
    ```
    */
   function snapshot(): readonly SeatCount[] {
-    return [...counters.entries(),].map(function toCount([modelId, counter,],): SeatCount {
+    return [...counters.entries(),].map(function toCount([modelId, counter,]: ReadonlyEntry<RosterModelId, Readonly<SeatCounter>>,): SeatCount {
       return {
         modelId,
         asked: counter.asked,

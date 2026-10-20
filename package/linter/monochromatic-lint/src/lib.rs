@@ -165,6 +165,8 @@ mod markdown_table_text;
 /// Pipe-table reporting and source-preserving HTML fallback.
 #[doc(hidden)]
 pub mod markdown_tables;
+/// Validated arena traversal lists built by the source adapter's walk.
+mod markdown_traversal;
 /// Native literal and glob command-input expansion.
 #[doc(hidden)]
 pub mod path_inputs;
