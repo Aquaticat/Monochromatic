@@ -494,12 +494,27 @@ The rule is documented and registered
 (`package/linter/monochromatic-lint/README.md:274`,
 `doc/decision/rust-closure-lint-dylint.md:111`),
 so this is rule-registry or config-validation drift.
-Dispatched 2026-10-20 to a subagent
+Dispatched 2026-10-20 to subagent `5b28eefd`
 (scope:
 `package/linter/monochromatic-lint`,
 root `monochromatic-lint.config.jsonc`,
 `doc/troubleshooting/`),
 fixing per the standing pre-existing-issues directive.
+
+### 2026-10-20 transient auto-push rejection
+
+Commit `9830f476ed` saved locally,
+auto-push rejected once by GitHub
+(`GH006: Protected branch update failed ... protected branch hook
+declined`).
+A manual `git push` then succeeded
+(`1dde8c5cd6..9830f476ed`),
+and the branch ruleset holds only `copilot_code_review`
+with `review_on_push`.
+Treat a single GH006 rejection as transient and retry once;
+if it repeats,
+ask Claude
+(who owns the git wrapper and remote settings).
 
 ### Unknowns
 
@@ -544,7 +559,7 @@ Implementation,
    `1dde8c5cd6`
    (the concurrent translation-repair NeuralWatt batch;
    the queued auto-push merges are absorbed).
-   ACTIVE (subagent):
+   ACTIVE (subagent `572a1354`):
    fold the two design prerequisites into the extracted core
    (optional `defaultReviewerModel` field,
    `selectAdvisorModel` ranking seam),
@@ -552,7 +567,7 @@ Implementation,
    tool plus `/advisor` command, unified config,
    `ctx.llm` backend, Q12 selection rule,
    `doc/planning/pi-advisor-dsh-variant.md` as the blueprint).
-   Parallel (subagent):
+   Parallel (subagent `5b28eefd`):
    fix the `monochromatic-lint` startup failure
    (see its incident section).
 5. Tests, lint, and `mise` tasks for every new and moved package;
