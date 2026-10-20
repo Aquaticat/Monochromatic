@@ -77,12 +77,13 @@ const INCUMBENT_TEXT = 'The cat sleeps on the windowsill.\n';
  Version 19 lists the narration between marks of different single-quotation pairs among the tense candidates a judge is shown.
  Version 20 scopes reader protection to the account of how a death or an attempt happened and cuts translators' notes from
  the judges (the XingZ6015 read).
+ Version 21 cuts a translators' note alone on a quoted line with its line, where the judges saw a bare quote line.
  These questions changed without input fields.
 
  The roster feeding {@link RUN_SHAPE} is invented, so a production roster change
  leaves this alone.
  */
-const LEGACY_WINDOWLESS_KEY = '70bd1e3b8d71c5d9ed09e8576153deacec7694fec6947546945a7625459a41b7';
+const LEGACY_WINDOWLESS_KEY = '8cd5d86eb1a82894a2e62689e3fff51098c0dc62c56dbff76693f793462711e2';
 
 /**
  One slice's key, with whatever this case wants to vary.
