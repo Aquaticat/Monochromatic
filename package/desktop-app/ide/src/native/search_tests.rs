@@ -3,6 +3,9 @@
 //!  subprocess,
 //!  and source-open boundaries.
 
+/// Windows are drawn on the hardware GPU,
+///  so the platform is installed before the thread's first window.
+use super::gpu_snapshot::install_gpu_platform;
 /// Existing timer waits enforce a finite deadline for observable native state.
 use super::navigation_tests::row;
 /// Reuse the production window and source bindings,
@@ -41,6 +44,7 @@ pub(super) struct Reader {
 /// Bind a source-empty reader so the first successful search result controls initial installation.
 pub(super) fn reader(root: &Path) -> Reader {
     let workspace = Workspace::new(root).expect("disposable workspace");
+    install_gpu_platform();
     let window = AppWindow::new().expect("native search window");
     let source = Rc::new(RefCell::new(State::new("", None)));
     window.set_source_available(false);

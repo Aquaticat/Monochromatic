@@ -1,5 +1,8 @@
 //! Render actual toolkit Text items to verify variable-weight and italic cache invalidation.
 
+/// Windows are drawn on the hardware GPU,
+///  so the platform is installed before the thread's first window.
+use super::gpu_snapshot::install_gpu_platform;
 /// Public toolkit snapshot and event-loop update APIs exercise the native text renderer.
 use slint::{ComponentHandle, SharedString, platform::update_timers_and_animations};
 
@@ -44,6 +47,7 @@ fn snapshot(window: &FontProbe) -> Vec<u8> {
 ///  exact face provenance has separate font-stack tests.
 #[test]
 fn native_text_repaints_for_weight_and_italic_requests() {
+    install_gpu_platform();
     let window = FontProbe::new().expect("headless typography fixture");
     window.show().expect("show typography fixture");
     window.set_family(SharedString::from("IDE unregistered font control"));

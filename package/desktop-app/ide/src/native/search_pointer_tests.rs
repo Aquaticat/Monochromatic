@@ -1,5 +1,8 @@
 //! A held search-result click must not activate a row from a replacement query model.
 
+/// Windows are drawn on the hardware GPU,
+///  so the platform is installed before the thread's first window.
+use super::gpu_snapshot::install_gpu_platform;
 /// Use the production overlay and its real generated row type.
 use super::{AppWindow, ui::SearchEntry};
 /// Native pointer events exercise TouchArea ownership rather than invoking choose directly.
@@ -23,6 +26,7 @@ fn model(label: &str) -> ModelRc<SearchEntry> {
 ///  release cannot acquire a newly bound row at the same index.
 #[test]
 fn replacement_query_cancels_a_held_result_click() {
+    install_gpu_platform();
     let window = AppWindow::new().expect("native search pointer window");
     window.set_source_available(false);
     window.set_search_open(true);

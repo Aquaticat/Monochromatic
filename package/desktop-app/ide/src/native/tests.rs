@@ -1,5 +1,8 @@
 //! Real Slint window events must invalidate source pixels even when source and logical size are unchanged.
 
+/// Windows are drawn on the hardware GPU,
+///  so the platform is installed before the thread's first window.
+use super::gpu_snapshot::install_gpu_platform;
 /// Reuse production initialization,
 ///  viewport callbacks,
 ///  and raster presentation.
@@ -15,6 +18,7 @@ use std::{cell::RefCell, rc::Rc};
 /// Moving to a different display scale must not leave an old-resolution bitmap until the next keypress.
 #[test]
 fn source_raster_tracks_scale_without_input_or_resize() {
+    install_gpu_platform();
     let window = AppWindow::new().expect("headless native source window");
     let state = Rc::new(RefCell::new(State::new("=== and 猫", None)));
     bind_viewport(&window, &state);

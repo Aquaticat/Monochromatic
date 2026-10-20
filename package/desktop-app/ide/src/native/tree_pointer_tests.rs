@@ -1,5 +1,8 @@
 //! Reusing fixed-window row components must not redirect a pointer press to a different file.
 
+/// Windows are drawn on the hardware GPU,
+///  so the platform is installed before the thread's first window.
+use super::gpu_snapshot::install_gpu_platform;
 /// Use the actual native project component and its activation callback.
 use super::{AppWindow, ui::TreeEntry};
 /// Public pointer events exercise the real TouchArea press/release lifecycle.
@@ -25,6 +28,7 @@ pub(super) fn sixty_entries(prefix: &str) -> Vec<TreeEntry> {
 /// A scroll during a held click cannot turn the release into activation of a newly rebound row.
 #[test]
 fn windowed_row_rebinding_cancels_an_in_progress_click() {
+    install_gpu_platform();
     let window = AppWindow::new().expect("native tree window");
     window.set_project_visible(true);
     window.set_source_available(false);

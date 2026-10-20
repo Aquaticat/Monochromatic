@@ -398,7 +398,11 @@ fn find_box_selection_uses_the_ink_chosen_from_the_fill() {
     // The text area starts 12px inside the bar and 12px inside the box; the box's top is the clear cell's.
     let start = (window.get_sidebar_width() + DIVIDER) as usize + 24;
     let top = window.get_find_clear_y() as usize;
-    let glyphs = [start + 2, start + 40, top + 14, top + 34];
+    // The rows are those wholly inside the selection rectangle: it is about 14.5 px tall at a fractional offset,
+    // so the GPU renderer anti-aliases its first and last pixel rows (measured on 2026-10-20 as the box background
+    // blended with about a quarter of the fill, lightness 0.165 in the dark scheme), and a blend of fill and
+    // background is not ink. Rows top + 17 through top + 30 hold every glyph pixel and nothing of the two edge rows.
+    let glyphs = [start + 2, start + 40, top + 17, top + 31];
     for (scheme, label) in [(ColorScheme::Dark, "dark"), (ColorScheme::Light, "light")] {
         switch(window, scheme);
         let shown = frame(window);

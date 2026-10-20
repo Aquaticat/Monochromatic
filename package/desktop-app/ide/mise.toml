@@ -4,8 +4,8 @@
 # of 512, and 4096 descriptors. The caller may lower or raise it with IDE_CONTAINER_CPUS, IDE_CONTAINER_MEMORY,
 # IDE_CONTAINER_PIDS, IDE_CONTAINER_NOFILE, IDE_CONTAINER_JOBS, and IDE_CONTAINER_TEST_THREADS; a malformed value stops the
 # task with a message naming the variable. No number of the bound is written in this file.
-# No home directory or credentials are mounted into the build container. The native test task also passes /dev/dri
-# (the `gpu` option of runBounded), because its GPU snapshot harness renders on the hardware GPU.
+# No home directory or credentials are mounted into the build container. The native test tasks also pass /dev/dri
+# (the `gpu` option of runBounded), because their GPU snapshot harness renders on the hardware GPU.
 # Containers run with --network=none, so podman starts no pasta network helper (which takes inotify watches
 # and warns when the limit is reached); only the tasks that download (fetch, runtime) pass network: true.
 [vars]
@@ -24,10 +24,9 @@ if (imageCheck.status !== 0) {
 // It is mounted read-only outside /work and named by CLIPPY_CONF_DIR: a mount over /work/clippy.toml would leave an
 // empty clippy.toml in the package directory on the host. Host clippy finds the file in an ancestor directory.
 const rootClippyConfig = (await import('node:path')).resolve(process.cwd(), '../../../clippy.toml')
-// A gpu run passes the host's render nodes so that wgpu finds the hardware Vulkan driver (RADV) of the image's
-// mesa-vulkan-drivers; VK_DRIVER_FILES names that driver only, so the CPU rasterizer (lavapipe) that package also
-// installs is not even listed. Pass it only to the tasks that render on the GPU. The podman bound caps no GPU memory.
-const gpuArguments = ['--device', '/dev/dri', '--env', 'VK_DRIVER_FILES=/usr/share/vulkan/icd.d/radeon_icd.x86_64.json']
+// A gpu run passes the host's render nodes and the RADV driver file (bin/gpu-arguments.ts, shared with the guard
+// inspection scripts). Pass it only to the tasks that render on the GPU.
+const { gpuArguments } = await import((await import('node:path')).resolve('bin/gpu-arguments.ts'))
 const runBounded = (args, { network = false, gpu = false, ...options } = {}) => execFileSync('podman', [
   'run', '--rm', ...(network ? [] : ['--network=none']), ...(gpu ? gpuArguments : []), ...containerLimits.limitArguments,
   '--security-opt', 'label=disable',
@@ -173,6 +172,18 @@ writeFileSync('target/linked-crates.txt', crates.join(String.fromCharCode(10)) +
 console.log('Wrote target/linked-crates.txt: ' + crates.length + ' crates, the package itself included')
 """
 
+[tasks."inspect:software-renderer"]
+description = "Fail when Slint's software renderer is linked into the application or the test builds (the opt-in slint/mcp inspection builds are not covered)"
+shell = "node --input-type=module-typescript -e"
+run = """
+{{vars.cargo}}
+// The inverted tree of the CPU renderer over every edge kind that reaches a compiled binary, for the one target.
+// A package that is not in the build graph at all makes cargo print "nothing to print" to stderr and nothing to stdout.
+const tree = runCargo(['tree', '--frozen', '--edges', 'normal,dev,no-proc-macro', '--target', 'x86_64-unknown-linux-gnu', '--invert', 'i-slint-renderer-software'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] })
+if (tree.trim() !== '') { throw new Error('Slint software renderer is linked:' + String.fromCharCode(10) + tree) }
+console.log('Slint software renderer is not linked into the application or the test builds')
+"""
+
 [tasks."build:debug"]
 depends = ["runtime", "notices"]
 description = "Build the debug IDE and its helper binaries in the bounded container"
@@ -277,16 +288,16 @@ runCargo(['nextest', 'run', '--no-default-features', '--test', 'minimap', '--tes
 
 [tasks."test:native"]
 depends = ["runtime", "notices"]
-description = "Exercise native window events and fonts in process-isolated headless tests"
+description = "Exercise native window events and fonts in process-isolated tests that render on the GPU without a display"
 usage = 'arg "[filter]" help="Optional nextest filter expression, for example test(/sidebar/); default is every native test"'
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 // Language navigation tests start the scripted language server from beside the test binary.
-runCargo(['build', '--features', 'slint/mcp', '--bin', 'ide-scripted-lsp'])
+runCargo(['build', '--bin', 'ide-scripted-lsp'])
 // A filtered run prints what its tests print, such as measured contrast ratios, and runs every selected test.
 const filter = process.env.usage_filter ? ['--no-capture', '--no-fail-fast', '--filter-expr', process.env.usage_filter] : []
-runBounded(['env', 'SLINT_BACKEND=headless', 'SLINT_MCP_PORT=0', 'cargo', 'nextest', 'run', '--features', 'slint/mcp', '--bin', 'monochromatic-ide', ...filter], { gpu: true })
+runBounded(['cargo', 'nextest', 'run', '--bin', 'monochromatic-ide', ...filter], { gpu: true })
 """
 
 [tasks."test:fonts"]
@@ -467,11 +478,11 @@ runCargo(['nextest', 'run', '--no-default-features', '--test', 'row_map', '--tes
 
 [tasks."test:annotations-native"]
 depends = ["runtime", "notices"]
-description = "Exercise injected inlay hints and diagnostics through native window events in process-isolated headless tests"
+description = "Exercise injected inlay hints and diagnostics through native window events in process-isolated tests that render on the GPU"
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
-runBounded(['env', 'SLINT_BACKEND=headless', 'SLINT_MCP_PORT=0', 'cargo', 'nextest', 'run', '--features', 'slint/mcp', '--bin', 'monochromatic-ide', '--no-capture', '--filter-expr', 'test(/annotation/)'])
+runBounded(['cargo', 'nextest', 'run', '--bin', 'monochromatic-ide', '--no-capture', '--filter-expr', 'test(/annotation/)'], { gpu: true })
 """
 
 [tasks."inspect:find-regex"]
