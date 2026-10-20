@@ -188,7 +188,13 @@ fn require_root_direct_check_always_measures() {
 ///  guarded ones are judged by the worktree kind.
 #[test]
 fn linked_worktree_judges_guarded_commands_by_worktree_kind() {
-    for values in [vec!["status"], vec!["clean", "-n"], vec!["reset", "--soft"]] {
+    for values in [
+        vec!["status"],
+        vec!["clean", "-n"],
+        vec!["reset", "--soft"],
+        vec!["stash", "list"],
+        vec!["stash", "show"],
+    ] {
         assert_eq!(
             pre_forward(
                 PolicyId::LinkedWorktreeOnly,

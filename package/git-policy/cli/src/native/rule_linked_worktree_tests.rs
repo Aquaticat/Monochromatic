@@ -32,7 +32,9 @@ fn destructive_forms_need_the_worktree_kind() {
     assert_eq!(LINKED_WORKTREE_REQUIRED_CODE, "linked-worktree-required");
     for (values, command) in [
         (vec!["stash"], GuardedCommand::Stash),
-        (vec!["stash", "list"], GuardedCommand::Stash),
+        (vec!["stash", "drop"], GuardedCommand::Stash),
+        (vec!["stash", "pop"], GuardedCommand::Stash),
+        (vec!["stash", "clear"], GuardedCommand::Stash),
         (vec!["stash", "push", "-m", "note"], GuardedCommand::Stash),
         (vec!["stash", "--no-such-option"], GuardedCommand::Stash),
         (vec!["clean"], GuardedCommand::Clean),
@@ -66,6 +68,12 @@ fn harmless_forms_pass() {
         vec!["--version"],
         vec!["status"],
         vec!["add", "stash"],
+        vec!["stash", "list"],
+        vec!["stash", "list", "--stat"],
+        vec!["stash", "show"],
+        vec!["stash", "show", "-p", "stash@{1}"],
+        vec!["stash", "create"],
+        vec!["--no-pager", "stash", "list"],
         vec!["clean", "-n"],
         vec!["clean", "--dry-run", "-fd"],
         vec!["clean", "-i", "-n"],

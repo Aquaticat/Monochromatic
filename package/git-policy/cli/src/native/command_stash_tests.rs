@@ -267,3 +267,26 @@ fn top_level_readings_match_git() {
     assert_eq!(output_text(&created).len(), 40);
     remove(directory.as_path());
 }
+
+/// Only the subcommands that write nothing the stash guard protects are read-only.
+#[test]
+fn only_list_show_and_create_leave_state_alone() {
+    for (subcommand, changes) in [
+        (StashSubcommand::List, false),
+        (StashSubcommand::Show, false),
+        (StashSubcommand::Create, false),
+        (StashSubcommand::Apply, true),
+        (StashSubcommand::Clear, true),
+        (StashSubcommand::Drop, true),
+        (StashSubcommand::Pop, true),
+        (StashSubcommand::Branch, true),
+        (StashSubcommand::Store, true),
+        (StashSubcommand::Push, true),
+        (StashSubcommand::Export, true),
+        (StashSubcommand::Import, true),
+        (StashSubcommand::Save, true),
+        (StashSubcommand::AssumedPush, true),
+    ] {
+        assert_eq!(super::stash_changes_state(subcommand), changes, "{subcommand:?}");
+    }
+}
