@@ -143,6 +143,10 @@ mod frame_trace;
 ///  Slint windows drawn on a hardware Vulkan device and read back as pixels.
 #[cfg(test)]
 mod gpu_snapshot;
+/// The rendering notifier fires on a harness snapshot,
+///  and a Vello texture imported into the window appears in it.
+#[cfg(test)]
+mod gpu_texture_probe_tests;
 /// Tree rows that git ignores draw their name at 0.8 opacity and nothing else of the row changes.
 #[cfg(test)]
 mod ignored_row_tests;
