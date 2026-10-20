@@ -1772,6 +1772,53 @@ that is verification, not a decision for the user.
   `systemd-run --user --unit=cli-git-nc1 --collect --property=MemoryMax=24G node ~/temp/agent/nc-run.ts` (edit the
   file list to skip finished files). Afterwards remove the `nc1` images and containers. Hooks plumbing has no
   recorded campaign yet and is the next file group to check. No finish time can be given: no rate is measured.
+  User instructions 2026-10-19: "Fix even pre-existing issues of the pkgs you own" and "check gh issues about your
+  package; you are authorized to resolve or reframe (modify) the issues as you see fit". Owned: `git-policy/cli`,
+  `git-policy/cli.fuzz`, `monochromatic-lint`. Started: `lint:oxlint` of the package had 234 findings (206 warnings,
+  28 errors) in eight `.mjs` scripts; the linter autofix removed 148 (commit `675d70b203`), 86 remain (log
+  `~/temp/agent/lint-gp-after-fix.log`): `no-regex` (9), `no-await-in-loop` (about 25, `old-format-fixtures.mjs`),
+  `no-function-root-let` (5), `max-lines` (4), `no-magic-numbers`, unsafe `any` in `support.mjs`, `no-sync`,
+  `no-try-finally`, `no-promise-catch`, `catch-binding`, `require-destructured-params`, `no-empty-function`.
+  Constraint: unit `cli-git-nc1` runs `bin/mutate-native-container.mjs` and rebuilds its image from `src/native`
+  for each file, so edits to `src/native/**`, `bin/mutate-native-container*.mjs`, `bin/native-planted-controls.mjs`
+  and `bin/native-nextest-snapshot.mjs` wait until it finishes; the other scripts can change now.
+  Issue triage (open issues naming the package, 2026-10-19): fix after nc1 in `src/native`: 1781 (landed scoped
+  commit exits 2 with `index-installed` missing), 1784 (`EPERM` from the owner probe fails a read), 1346 (retry by
+  error text), 1347 (quadratic `union_paths`); lint-related, fix now or after nc1 by file: 1338, 901, 1343, 1340,
+  1342; other: 1341 (`process-fixture` crash), 1339 (fuzz manifest), 1757 (my packages verified done, only
+  `wg-quicker-exempt` is left), 1032 (GH006 diagnostic, investigate), and the audit duplicate-cluster and docs
+  issues (612 to 680, 1698, 1713, 1740, 1741), which are judged one by one in the same pass.
+  Progress 2026-10-19 (evening): the interop driver is repaired and committed (8b7a9fea21; `old-format-fixtures`
+  passes, 41 checks). The committed fixtures had two gaps that the git-ignored `*.idx` and `*.log` patterns cause:
+  packs without indexes (restore now runs `git index-pack` for any pack lacking one) and no hook log (an absent log
+  counts as empty). A refusing wrapper is judged by a before/after fingerprint of stored files
+  (`native-interop/old-format-fingerprint.mjs`; a dead holder's lock record and a pack `.keep` marker may be retired),
+  because the landed commit of the late phases exists only in the incumbent's shadow repository.
+  Closed with evidence: 901, 1342 (this repair), 1339 (commit 2a4b56bdb0, fuzz manifest), 1341 (commit 3a2a510224,
+  `e2e/process-fixture.unit.test.ts` fails before and passes after). Commented, left open: 1135 to 1140 (the six
+  Git host failures do not reproduce: host suite 1855 of 1856 passed, the one failure needs
+  `GIT_POLICY_NATIVE_TEST_LINTER`; gate container 1995 of 1995; the report came from a private rootfs overlay that was
+  not rerun), 1032 (reframed). Still open and mine: 1338, 1343 (eight `async main()` wrappers), 1340 (duplicate
+  noplanted script), 1757 (only `wg-quicker-exempt` left).
+  Queued behind nc1 (src/native): issue 1032 fix. `was_rejected_as_stale` (`auto_push_reconcile.rs:66`) matches only
+  `[rejected]`, and GitHub's GH006 prints `[remote rejected]`, which does not contain it. Plan: on a `[remote
+  rejected]` refusal fetch the remote tip into the private ref and decide from the graph: local commit already in the
+  remote tip means delivered; remote tip not in the local branch means merge and push as today; remote tip in the local
+  branch means a genuine refusal, reported unchanged. Reproducer test first, then mutation over the file, then release.
+  nc1 was restarted at 21:34 EDT so only the first file runs the planted controls (`NATIVE_MUTATION_SKIP_PLANTED`).
+  Later 2026-10-19: closed 370, 371, 515, 516, 517, 518, 612, 626, 627, 628, 631 (their code was the retired TypeScript
+  wrapper, deleted in 642b6d72cb; each comment names the evidence), 1344 and 1345 (commit 6ab2a1c8eb, tests failed
+  before the fix), and unwrapped four scripts into top-level await (48059eb84f; the real interop launcher still
+  passes 41 checks). Reproduced on the native wrapper and queued behind nc1: 472 (an explicit-path commit of a staged
+  deletion whose path stays on disk exits 1 with Git's bare "nothing added to commit" and no hint; the wrapper should
+  print the index-backed command; reproducer test first). Not yet judged: 629, 630, 632 (e2e and perf fixture sharing,
+  code still present), 574 (feature request, not this package's code), 1348 (region markers), 1672 (hex tables),
+  728 to 730 (regexes in `cli.fuzz/bin`), 1717, 612's siblings 613 to 680 (other packages).
+  Queued behind nc1 (scripts it uses): `bin/mutate-native-container*.mjs`, `native-planted-controls.mjs`,
+  `native-nextest-snapshot.mjs` (19 lint findings, issues 1338, 1340, 1343).
+  Separate pass for `cli.fuzz/bin/container.mjs` and `planted-controls.mjs` (1338's second half, 728 to 730):
+  they are outside every lint task, use `spawnSync`, `try/finally` and regexes, and `container.mjs` ends in an
+  early `return` inside its `try`; verify with a `--build-only` run of the fuzz container script.
   Issue 1713 (handover paths and `mise run //` targets that moved): the cli-git half is done in commit `d4a2587cb6`
   (thirty occurrences of 23 distinct unresolved paths in eleven `doc/handover/cli-git*.md` files keep their text and
   carry an in-place note with the current module or the removal date; progress comment posted). The issue stays open

@@ -259,8 +259,8 @@ Design scenarios exercise the accepted concurrent-commit design:
   it may land only on the parent it saw.
   When it lands,
   the others replay onto the amended history,
-  which auto-push cannot fast-forward
-  (see `push-rejection-surfaced`).
+  which auto-push merges into the remote branch when the two histories do not conflict
+  (see `push-rejection-surfaced` for the conflicting case).
 - `reservation-after-lost-races`:
   a victim commit holds in its editor until a first winner lands,
   then loses one race per winner,
@@ -410,15 +410,16 @@ so the harness records the attempt as deliberately killed.
 - `remote-contains`:
   the remote branch reaches every commit whose wrapper exited `0` with auto-push applying
   (not amends,
-  which auto-push cannot fast-forward,
   not the foreign real-Git commit,
-  and not commits landed on top of an amend of an already-published commit).
+  and not commits landed on top of an amend of an already-published commit whose merge conflicted,
+  which `push-rejection-surfaced` covers).
 - `push-rejection-surfaced`:
   a commit that exited `0` on top of a landed amend of a commit the remote already had
-  must have surfaced Git's `non-fast-forward` push rejection and cli-git's
-  `auto-push to origin failed` note
+  and that the remote does not contain must have surfaced Git's `non-fast-forward` push rejection and either cli-git's
+  `auto-push to origin failed` note or its `cli-git: auto-push: not published:` line
   (owner decision,
-  `doc/decision/cli-git-concurrent-commits.md` "Amending published history").
+  `doc/decision/cli-git-concurrent-commits.md` "Amending published history",
+  narrowed on 2026-10-19 to merges that conflict).
 - `no-leftovers`:
   no `refs/cli-git/` ref,
   lock file or lock directory

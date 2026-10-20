@@ -75,6 +75,30 @@ const NON_FAST_FORWARD = 'non-fast-forward';
  */
 const PUSH_FAILED_NOTE = 'auto-push to origin failed';
 
+/**
+ Line the wrapper prints instead of that note when its reconcile of a stale push cannot publish, for example after a
+ conflicting merge (`RECONCILE_FAILED_PREFIX` in `src/native/auto_push_reconcile.rs`).
+ */
+const RECONCILE_FAILED_LINE = 'auto-push: not published:';
+
+/**
+ Whether an attempt's stderr shows Git's non-fast-forward refusal together with one of the two ways the wrapper says
+ the commit was not published.
+
+ @param stderr - complete stderr of the attempt
+
+ @returns whether the rejection was surfaced
+ */
+function surfacesPushRejection(stderr: string,): boolean {
+  return stderr.includes(NON_FAST_FORWARD,)
+    && [
+      PUSH_FAILED_NOTE,
+      RECONCILE_FAILED_LINE,
+    ].some(function mentioned(note,) {
+      return stderr.includes(note,);
+    },);
+}
+
 //endregion Types
 
 //region Acceptable contents
@@ -476,12 +500,8 @@ export async function observeAttempt({
       ],
     ...(landedEventOid === undefined ? {} : { landedEventOid, }),
     requiresRemote: attempt.requiresRemote,
-    pushRejectionSurfaced: attempt.outcome
-      .stderr
-      .includes(NON_FAST_FORWARD,)
-      && attempt.outcome
-      .stderr
-      .includes(PUSH_FAILED_NOTE,),
+    pushRejectionSurfaced: surfacesPushRejection(attempt.outcome
+      .stderr,),
   };
 }
 

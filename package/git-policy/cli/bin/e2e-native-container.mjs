@@ -241,22 +241,18 @@ async function runSuite() {
   });
 }
 
-/** Dispatch on the subcommand. */
-async function main() {
-  const [subcommand, ...extra] = process.argv
-    .slice(2);
-  const actions = {
-    base: buildBase,
-    image: buildImage,
-    run: runSuite,
-  };
-  const action = Object.entries(actions)
-    .find(function named([name]) {
-      return name === subcommand;
-    })?.[1];
-  if ((extra.length > 0) || (action === undefined))
-    throw new NativeVerificationError('Usage: node bin/e2e-native-container.mjs base|image|run');
-  await action();
-}
-
-await main();
+// Dispatch on the subcommand.
+const [subcommand, ...extra] = process.argv
+  .slice(2);
+const actions = {
+  base: buildBase,
+  image: buildImage,
+  run: runSuite,
+};
+const action = Object.entries(actions)
+  .find(function named([name]) {
+    return name === subcommand;
+  })?.[1];
+if ((extra.length > 0) || (action === undefined))
+  throw new NativeVerificationError('Usage: node bin/e2e-native-container.mjs base|image|run');
+await action();
