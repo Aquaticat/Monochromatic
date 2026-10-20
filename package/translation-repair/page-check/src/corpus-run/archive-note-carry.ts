@@ -1,4 +1,7 @@
-import type { ArchiveOriginalSpan, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
+import {
+  type ArchiveOriginalSpan,
+  documentLineEnding,
+} from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import { archiveNotesMissingFrom, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import type { ChunkPair, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-page-pass/ts';
@@ -62,7 +65,8 @@ export function quotedNote({ text, }: { readonly text: string; },): string {
  THE ONE PLACEMENT RULE of every note put back: the wording the note stood
  beside is gone or reworded, so no position in it is the note's own, and
  the whitespace that ends the text stays at its end. A text that shows a
- reader nothing is replaced by the notes alone.
+ reader nothing is replaced by the notes alone. The breaks written are the
+ text's own line ending, so a CRLF text gains no bare line feed.
 
  @param text - wording the notes follow
 
@@ -86,16 +90,24 @@ export function appendedNotes(
   },
 ): string {
   /**
+   The line ending the text uses, LF when it shows none.
+   */
+  const eol = documentLineEnding({ targetText: text, },);
+  /**
+   The break between two paragraphs in that ending.
+   */
+  const paragraphBreak = `${eol}${eol}`;
+  /**
    The notes, one paragraph each.
    */
-  const written = notes.join('\n\n',);
+  const written = notes.join(paragraphBreak,);
   if (rendersAsNothing({ text, },))
     return written;
   /**
    The text without the whitespace that ends it, which stays at the end.
    */
   const body = text.trimEnd();
-  return `${body}\n\n${written}${text.slice(body.length,)}`;
+  return `${body}${paragraphBreak}${written}${text.slice(body.length,)}`;
 }
 
 /**
