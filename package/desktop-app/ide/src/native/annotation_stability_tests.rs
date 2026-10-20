@@ -192,13 +192,17 @@ fn band(shown: &SharedPixelBuffer<Rgba8Pixel>, y: f32) -> &[Rgba8Pixel] {
 /// What:
 ///  Whether two bands differ by at most one level in any channel of any pixel.
 /// Why:
-///  The viewport's bottom edge is a clip edge,
-///  and the GPU renderer multiplies the pixels of a clipped row by a float mask that is not exactly one there.
+///  The viewport's bottom edge is a clip edge.
 ///  Measured on 2026-10-20 over 1256 one-row scrolls of this test:
 ///  the last window row differed from the same content one row higher in 123 scrolls,
 ///  334 pixels in all,
 ///  by one level at most;
-///  every row between the viewport's two edges matched exactly in every scroll.
+///  the viewport's first row differed likewise in 5 scrolls (6 pixels);
+///  every row between the two edges matched exactly in every scroll.
+///  The likely cause, from reading FemtoVG's fragment shader (`scissorMask` in `femtovg-0.27.0`),
+///  is that the clip is a float mask multiplied into the pixels of a clipped row,
+///  which need not be exactly one at the edge row;
+///  that mechanism was not isolated.
 ///  Shifted content that moved one row is therefore compared exactly except in that last row.
 ///
 /// In TS you'd write (pseudocode):
