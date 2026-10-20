@@ -65,8 +65,10 @@ serde_json = "1"
 toml = "1.1"
 tokio = { version = "1.50", features = ["rt-multi-thread", "sync", "time", "process", "io-util", "macros"] }
 # Match the compiler/runtime release family used by the sibling native apps. No `renderer-software`: nothing in the IDE
-# paints on the CPU, tests included (owner decision of 2026-10-19, doc/planning/ide-gpu-snapshot-harness.md).
-slint ={ version = "1.18.1", features = ["backend-winit", "renderer-femtovg"] }
+# paints on the CPU, tests included (owner decision of 2026-10-19, doc/planning/ide-gpu-snapshot-harness.md). Slint's
+# `default` feature set contains `renderer-software`, so default features are off and the rest of that set is listed:
+# `std`, `backend-default` (winit), `accessibility`, `compat-1-2`, and `system-tray`.
+slint = { version = "1.18.1", default-features = false, features = ["std", "backend-default", "backend-winit", "renderer-femtovg", "accessibility", "compat-1-2", "system-tray"] }
 tracing = "0.1"
 # The `log` facade helix-lsp writes through and its conversion to `tracing` events, used to re-label
 # helix-lsp records (`src/logging/relabel.rs`). tracing-subscriber already builds this exact crate with
@@ -81,7 +83,7 @@ tempfile = "3"
 # wgpu 30 types (owner-accepted 2026-10-19, doc/planning/ide-gpu-snapshot-harness.md). These features reach only test
 # builds (resolver 3 keeps dev-dependency features out of the application build); the same dependency, so no new package
 # of Slint, but Cargo.lock gains the wgpu and FemtoVG entries.
-slint = { version = "1.18.1", features = ["renderer-femtovg-wgpu", "unstable-wgpu-30"] }
+slint = { version = "1.18.1", default-features = false, features = ["renderer-femtovg-wgpu", "unstable-wgpu-30"] }
 # Slint's element handles let the native tests read roles, labels, values, and states and invoke
 # accessible actions, as an assistive tool would. The crate is internal to Slint and has no semver
 # guarantee; its README requires an exact `=` version equal to the resolved `slint` version (1.18.1).
