@@ -659,3 +659,64 @@ every sheet the rendered-sheets fixture renders read for what it shows,
 had not been run;
 it was started on 2026-10-20 (UTC) as its own piece of work,
 and its entry records what it found.
+
+## B707: a judged polish re-romanized a Han name the archive already spells in its sentence
+
+Status:
+fixed on 2026-10-20 (UTC),
+red `b7ee52b99f` (rendering-audit) and `7d3de9bc2b` (translate-floor),
+fix `999f9a5a07` (rendering-audit) and `4ab33543fd` (translate-floor),
+versions `89ff91202e`,
+source scans held to the new modules `b81c866f25`.
+
+Found in the run `zheermao16`,
+slice 13 of zheermao101.
+The archive's sentence for the one that cites 寒涟漪 names its writer "Han Lianyi".
+The page shipped "Han Lian Yi (Cold Ripples)".
+The lane contest chose the translate lane four to zero,
+naming the archive's established rendering,
+but the consolidation select,
+its refine and the polish gate never saw it as a name's rendering:
+the page-name glossary pairs link texts,
+signatures and headings only,
+the declared pairs are the front matter's name and aliases,
+and the signer floor reads signature lines.
+A cited author stands in a sentence,
+so the house rule for a handle with no declared,
+archive or corpus rendering was read as if it applied,
+and three of five polish ballots followed its regrouping and its meaning in parentheses.
+
+The pairing goes from the archive's capitalised Latin words to the original's Han by reading letters
+(`proseNamePairs` in rendering-audit).
+The identity lines list each pair under a heading that says the archive's spelling is the rendering,
+so every sheet that splices the lines shows it,
+and the floor `proseNameFindings` refuses a candidate that writes the same letters under another spelling.
+Over the 92 pinned English archives 69 hold a pair and 60 change their identity block
+(the others pair a name a link,
+signature,
+heading or the front matter already carries),
+none of the 92 archives is refused as a candidate against itself,
+and 240 of 240 respelled controls are refused.
+Of the ten shipped pages under the agent runs one is refused,
+the incident's.
+The rule text is not changed:
+the house rule and its scope sentence already name the case,
+and a change to it would move every version whose sheets splice it.
+
+`TRANSLATE_SLICE_CACHE_VERSION` moved from 21 to 22 and `LANE_CONTEST_CACHE_VERSION` from 12 to 13,
+since both runs begun since those numbers were set log a tip that holds them.
+`CONSOLIDATE_CACHE_VERSION` stays at 28:
+the same two runs log a tip that does not hold the commit that set it.
+The repair slice,
+refine,
+consistency,
+page title and pairing versions stay,
+since their keys hash the identity lines or digest the sheet,
+or their stage does not meet the publication rule.
+
+Recurrence:
+of the family this ledger records,
+a sheet that lacked a block its role needs to judge.
+A rule that excepts a name "the archive already renders" is tested on every place the archive can render a name,
+sentences included,
+and a sheet that carries the exception carries the rendering beside it.

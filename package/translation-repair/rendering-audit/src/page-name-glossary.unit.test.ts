@@ -18,9 +18,41 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  pageNameLines,
+  pageNameLines as allNameLines,
   pairedPageNames,
 } from '../dist/final/node/index.mjs';
+
+/**
+ Lines of the block that pairs links, signatures and headings, which these
+ cases are about; the block of names the archive spells inside its sentences
+ has cases of its own (`page-name-prose.unit.test.ts`), and a cat fixture's
+ link text is a name it spells too.
+
+ @param arguments_ - texts and declared pairs, as `pageNameLines` takes them
+
+ @returns The lines before the heading of the sentence-name block
+
+ @example
+ ```ts
+ const lines = pageNameLines({ sourceText, targetText, },);
+ ```
+ */
+function pageNameLines(arguments_: Parameters<typeof allNameLines>[0],): readonly string[] {
+  /**
+   Every line the glossary gives these texts.
+   */
+  const lines = allNameLines(arguments_,);
+  /**
+   Where the sentence-name block opens, minus one when it does not.
+   */
+  const spelled = lines.findIndex(function opensBlock(line,): boolean {
+    return line.startsWith('NAMES THE ARCHIVE SPELLS',);
+  },);
+  return (spelled === (-1)) ? lines : lines.slice(
+    0,
+    spelled,
+  );
+}
 
 await describe({
   name: 'a page names its people and linked titles as the archive renders them (class seventy-one)',

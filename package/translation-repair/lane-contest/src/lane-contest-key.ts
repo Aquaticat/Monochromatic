@@ -233,8 +233,21 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
  (acf6ada60, e80301bf3). None of the 92 pinned English archives has two notes on one line or a carriage return, so no
  sheet text changes, and no record had been written at 12 when they landed: the only run since it was set,
  CuspariaKLSY18, runs a6a0ed7dc0, which predates it.
+
+ 13 covers the archive's spelling of a Han name written inside a sentence (zheermao101, run zheermao16, 2026-10-20): the
+ publication rule that decides which candidates the contest seats now refuses a candidate that writes the letters of the
+ archive's spelling under another spelling (`translate-floor/src/translate-prose-name.ts`), so a candidate seated under 12 may be
+ one the rule refuses, and the identity lines carry the archive's spellings (`rendering-audit/src/page-name-glossary.ts`). The
+ identity lines are part of the key, so an entry whose lines change asks a new question; the floor is not, so a record written
+ under the old rule for an entry whose lines do not change would be served under the new. Runs zheermao16 and CuspariaKLSY19 start
+ at `a5dc23c5bb`, which holds the commit that set 12 (`aa0ab6ff0`), so records at 12 are written there and the change cannot ride
+ inside it; the number moves, as the translate slice version moves with it. Over the 92 pinned English archives no archive is
+ refused as a candidate against itself, and one of the ten shipped pages under the agent runs is refused (zheermao16). The
+ consolidate version rides inside 28, the repair slice, refine, consistency, page title and pairing versions stay (their
+ sheets and floors are not this rule's, and the consistency floors run live). No record has been written at 13, which this
+ change sets first.
  */
-export const LANE_CONTEST_CACHE_VERSION = 12;
+export const LANE_CONTEST_CACHE_VERSION = 13;
 
 /**
  Everything about this run that changes what the judges are ASKED, folded into
