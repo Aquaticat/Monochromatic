@@ -16,6 +16,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
 import {
   type ProviderName,
   ROSTER_MODEL_IDS,
@@ -411,6 +412,67 @@ await describe({
         await client.chatText({ modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, messages, signal: SIGNAL, },);
         await client.chatText({ modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, messages, signal: SIGNAL, },);
         expect(called,).toEqual(['neuralwatt', 'hyper', 'neuralwatt',],);
+      },
+    },),
+
+    it({
+      name: 'HOLDS NEURALWATT OUT FOR NOTHING WHEN IT REFUSES ONE LARGE RE-ASK, so the small calls behind it still '
+        + 'spend the free energy: the re-ask gives up, and the next call goes to NeuralWatt again',
+      fn: async () => {
+        /**
+         Providers asked, in order.
+         */
+        const called: ProviderName[] = [];
+        /**
+         Calls NeuralWatt has taken, the first of which it refuses as too large.
+         */
+        const taken = { count: 0, };
+        const client = createRoutingClient({
+          callers: {
+            neuralwatt: {
+              chatText: async () => {
+                called.push('neuralwatt',);
+                taken.count += 1;
+                if (taken.count === 1)
+                  throw new NeuralWattAllowanceError({
+                    model: 'deepseek-v4.1-flash',
+                    estimateWh: 120,
+                    energy: energyOf({ remainingWh: 100, }),
+                  },);
+                return { text: 'neuralwatt', };
+              },
+            },
+            hyper: {
+              chatText: async () => {
+                called.push('hyper',);
+                return { text: 'hyper', };
+              },
+            },
+          },
+          budgets: createProviderBudgets({
+            neuralwatt: { energy: async () => energyOf({ remainingWh: 100, }), },
+            hyper: { credits: async () => ({ balance: 10, }), },
+          },),
+        },);
+        const messages = [{ role: 'user' as const, content: 'Where does the cat sleep?', },];
+        /**
+         What the re-ask threw, taken as data.
+         */
+        let refusal: unknown;
+        try {
+          await client.chatText({
+            modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
+            messages,
+            signal: SIGNAL,
+            otherThan: 'hyper',
+          },);
+        }
+        catch (error) {
+          refusal = error;
+        }
+        expect(refusal,).toBeInstanceOf(NoProviderForModelError,);
+        await client.chatText({ modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, messages, signal: SIGNAL, },);
+        expect(called,).toEqual(['neuralwatt', 'neuralwatt',],);
       },
     },),
 
