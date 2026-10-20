@@ -1727,6 +1727,157 @@ for example a tile swapped in between the two frames at another sub-pixel positi
 neither of which was observed.
 This is listed under "Not proven in stages 3 and 4".
 
+### Flakes after the merge
+
+The merge of stages 3 and 4 raised the failure rate of the parallel `test:native` run.
+Four causes were found and fixed on 2026-10-20, all in tests;
+no production behavior changed (the only non-test code is a debug-build list of failure messages in `State`).
+A fifth, older flake was left alone.
+The host was shared with other agents the whole time (load average 5 to 30),
+so every rate is a rate under that load, and a comparison between trees is claimed only where the runs were
+alternated or run under the same artificial load.
+The tools are in `~/temp/agent/flake/`:
+`rep.mjs` repeats `test:native` and keeps the log of each failing run,
+`pair.mjs` alternates trees,
+`stress.mjs` runs one test binary in the bounded GPU container with many copies at once,
+and `loadgen.mjs` starts busy loops.
+Throughout, an unfiltered `test:native` runs the tests in parallel (21 threads here),
+while a filtered one passes `--no-capture` and so runs them one at a time.
+Filtered loops therefore cannot show these flakes; 5 serial runs of every test on main all passed.
+
+#### Rates
+
+- The stage 2 baseline (`fcfaec56e6`), unfiltered runs: 1 failure in 20 (the old minimap test below),
+  and 0 in 20 while 16 busy loops ran.
+- Main at the merge, with only failure details added to some asserts: 9 failures in 70 runs
+  (render noise 3, the old minimap test 3, the find test 2, the resize test 1);
+  while the 16 busy loops ran, 2 failures in 20, both the find test.
+- Forty runs of the baseline cannot show a rate below about 5 percent, so a smaller difference is not excluded.
+- After the fixes, on the head of this branch: 15 consecutive runs without a failure,
+  1 failure in an earlier 15 (the old minimap test, in the last run),
+  and 0 in 5 runs while a build ran in the background.
+
+#### Cause 1: Vello renders are not bit-identical, and the stability tests compared frames exactly
+
+Rendering one scene again never gives the same texels.
+All 200 consecutive renders of the 697 by 1392 tile of `repeated_renders_of_one_tile_spread` were different;
+each differed from the first in 10 to 32 texels, by one level at most.
+The texels are always the same few, for example `x` 199 and 200 of rows 8 of every 16 in that test,
+alpha 57 against 58: a coverage on a rounding tie,
+where the order in which the GPU's atomics put the segments of a tile in order changes the float sum in its last place.
+With error waves and dashes in the scene there were 612 one-level texels in 100 renders,
+with a selection clip 17, with plain text or hints only 0 (premultiplied compare;
+texels of alpha 0 carry changing colors that the tests ignore).
+No difference of more than one level was seen in 400 renders of those scenes.
+
+The stability tests were ported from a CPU painter that was exact,
+and compared two window frames with `==` where the second frame followed a re-render of the tile.
+`a_reload_holds_row_space_until_annotations_return` failed at the same pixel both times it was caught with details:
+`x` 304 of window row 240, green 122 against 123.
+A probe that re-rendered the final state of that test 150 times found 6 renders that differ in the compared rows
+(twice; once 0), worst difference 1, which matches the failure rate seen in parallel runs.
+The failures reported under load in the rows-arriving and rigid-scroll tests are inferred to be the same class:
+a text with the same glyphs on every row has the same rounding tie on every row,
+so one re-render can flip one texel in many rows at once (125 rows in the reported failure).
+A failure with that many rows was not caught again, so that step is not shown.
+
+Fix:
+`annotation_stability_tests.rs` compares with `same_pixels` (the measured one level of `RENDER_NOISE`)
+wherever a frame follows a re-render: `moved`, the rows before a changed line, and the reload.
+The rigid scroll uses it only for a frame in which `tiles_rendered` counted a new tile;
+scrolling inside a tile shows the same texture and stays exact.
+The positive control is `the_noise_tolerance_tells_a_shifted_row_from_a_re_render`:
+one level passes, two levels do not, and a shift by one row does not.
+`repeated_renders_of_one_tile_spread` now fails when the noise exceeds `RENDER_NOISE`.
+
+Guard proof:
+`RENDER_NOISE` raised to 9 made the control fail ("two levels are more than the render noise");
+a mutation of `encode.rs` that moved every glyph run by 0.3 px on every second encode made all four tolerant
+stability tests fail (reload, rows arriving in view, rows arriving above the view, rows above the view);
+both were restored with `git checkout`.
+
+#### Cause 2: the find-matches minimap test pressed Enter after the first match was already selected
+
+`minimap_reflection_tests::the_minimap_of_find_matches_is_the_average_of_the_windows_pixels` types a query,
+presses Enter, and waits 5 s for the status `1/`.
+Typing selects the first match by itself when the worker's reply for the whole query arrives.
+An Enter after that reply steps to the second match (status `2/43`) and the wait never ends.
+When the wait succeeds it takes 21 to 60 ms, so a failure is a lost ordering and not a slow search.
+The stage 2 baseline fails the same way:
+24 copies of the test at once with 16 busy loops, 3 rounds, failed 7 of 72 on main and 5 of 72 on the baseline,
+always with `2/43`; after the fix 0 of 72.
+That is load alone with deterministic output in the sense the task asked for, and no timeout was changed.
+The test now presses no Enter and waits for the first match of the whole query.
+The other failure reported under load, `find_box_context_menu_runs_each_entry`,
+did not fail in 72 stressed runs of either tree and is not explained.
+
+#### Cause 3: the failed worker tile test waited for a message that the retry had cleared
+
+`refused_tile_tests::a_failed_worker_tile_frees_its_job_and_the_next_placement_gets_its_tile` hung for its whole
+90 s wait in 4 of about 410 runs of main-based trees.
+The event log of a hung run:
+the worker consumed the failure switch at 415639 us, `apply` named the failure at 436374 us,
+a render followed at 436677 us, and its `show` set the error message to the empty text at 436853 us,
+all in one timer pass, while the test polls every 2 ms and never saw the message.
+The state now keeps the failure messages in debug builds (`worker_failures`) and the test waits for the first one.
+The baseline has the same path and was not seen to hang in 40 runs, which does not separate the trees.
+
+#### Cause 4: the resize test counted passes while the syntax reply could still arrive
+
+`wrap_tests::a_resize_breaks_kept_rows_again_without_shaping` failed in 3 of about 410 runs of main-based trees
+(twice as "the first pass shaped the file", once as "the resize shaped lines again", 2874 against 1373).
+A syntax reply installs new styles (`apply_syntax`), and the worker forgets its kept rows when its styles change.
+Replacing the styles between the first pass and the resize in the test reproduces the signature exactly:
+the resize pass shapes 1501 lines more (3258 against 1757 forced; 2874 against 1373 in the natural failure).
+The natural arrival was not caught, so it is shown that this is sufficient and not that it is the only way.
+The test now waits for the syntax reply before it counts.
+
+#### Not changed: the old minimap flake
+
+`minimap_tests::an_external_edit_of_fifty_thousand_lines_renders_only_the_band_it_touches`
+("rendered 3 or 4 of 4 bands") failed in 1 of 20 baseline runs and in about 2 to 4 percent of runs of main-based trees.
+The handover lists it as load dependent, and it belongs to the CPU minimap that stage 5 deletes.
+The minimap's key holds the identity of the styles, so a syntax reply that lands before the edit's picture is built
+re-renders every band; this reading was not tested.
+
+#### Not found
+
+The nine-level pixel difference of the stage report (`rows_above_the_view_wait_until_scrolling_has_stopped`,
+241 against 250 at one pixel) was seen once more, in a run that also ran a heavy GPU probe, and its log was lost.
+It did not recur in 96 stressed runs of the single test or in about 440 later full runs.
+During a full run of main the video memory of the 8 GiB card is full:
+each test process holds 193 MiB before the renderer and 455 MiB after the first tile
+(a baseline process holds 193 MiB), 21 processes need about 9.5 GiB,
+the other programs on the host held 4 to 7 GiB, and in sampled runs the card's use rose from 4.1 GB to 7.6 to 8.0 GB
+with main against 4.5 GB with the baseline, while the driver's system-memory mappings rose to 13 GB.
+Whether that overcommit produces a wrong frame is not shown.
+
+#### Measurements of the GPU text setup
+
+- First frame, `Renderer::new`: 57 to 72 ms wall and 0.33 to 0.38 s of CPU, and 66 MiB more resident memory
+  (84 to 150 MiB in a test process); the first tile render took 7 ms and later ones 1 to 4 ms.
+- Video memory (the process's own `drm-memory-vram`, not the system counter):
+  the first render of any scene adds 260 to 262 MiB, the same for a 64 by 64 scene as for a 697 by 1392 tile.
+  Vello 0.11 allocates fixed buffers whatever the scene
+  (`vello_encoding-0.11.0/src/config.rs`): lines 48 MiB, segments 48, ptcl 32, tiles 16, segment counts 16,
+  blend spill 4, bin data 1, which is 165 MiB; the other 97 MiB of the measurement are not attributed.
+  The tile texture is separate: 3.7 MiB for 697 by 1392, 34.6 MiB for 1113 by 8160, 63.6 MiB for 2226 by 7488.
+- Creating the pipelines added no video memory that could be measured.
+- Resident memory rose from 150 MiB to 168 MiB over 40 renders in the test process.
+
+#### Owner questions
+
+- Is a one-level tolerance for frames that follow a re-render acceptable as the permanent rule of these tests?
+  The alternative is a deterministic renderer, and Vello 0.11 offers none for the GPU.
+- Vello 0.11 takes 262 MiB of video memory for its scratch buffers whatever the scene, in the application as well.
+  Its sizes are hand-picked constants in `BufferSizes::new`; changing them means using the low-level API of the crate
+  or a fork.
+  Is the cost accepted until a release of Vello sizes them from the scene?
+- The parallel native run needs about 9.5 GiB of video memory and the card has 8 GiB, shared with other programs.
+  Should the default number of test threads of the native tests be lowered, or the test device given a budget?
+  This work changed neither.
+- Should the old minimap flake be fixed now or left to stage 5?
+
 ### Open owner questions of stages 3 and 4
 
 - Selection fills and find boxes are Slint rectangles under the tile.
