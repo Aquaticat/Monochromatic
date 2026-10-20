@@ -105,7 +105,10 @@ await describe({
         // Version 10 (2026-10-18) re-keys every ballot cast before the tense
         // candidates listed the narration between marks of different
         // single-quotation pairs.
-        expect(key,).toBe('c86d6c104c5b830e1c7c963a5cf62d5d88d91a94794760e5be30ede479ec6d9e',);
+        // Version 11 (2026-10-20) re-keys every ballot cast before reader
+        // protection was scoped to the account of how a death or an attempt
+        // happened and translators' notes were cut from the judges.
+        expect(key,).toBe('eb657a76f20b63a178639acd6a1c9395c24b5f455e352bebf2cfd5e48cfda1c1',);
       },
     },),
     it({

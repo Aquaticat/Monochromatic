@@ -405,9 +405,14 @@ await describe({
         // words keep the speaker's own tense, which moved this literal.
         // Version 25 (2026-10-18) lists the narration between marks of different
         // single-quotation pairs among the tense candidates, which moved this
-        // literal to the value this expectation names.
+        // literal.
+        // Version 26 (2026-10-20) scopes reader protection to the account of how
+        // a death or an attempt happened, cuts translators' notes from the
+        // judges, and seats a challenge proposal two ballots named over a
+        // condemned fallback, which moved this literal to the value this
+        // expectation names.
         expect(consolidateSliceKey(SLICE,),).toBe(
-          'fdc9cf0a17ce4ba75872918e48ca94912f9d21e8f9d15b8fb4ebf1952cf50f68',
+          '64cc9d1efc5eb1dc6329677d4fce23550e54410dd6fd74c96f0af172b590062d',
         );
       },
     },),

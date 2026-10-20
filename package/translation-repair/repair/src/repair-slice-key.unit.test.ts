@@ -88,7 +88,7 @@ await describe({
         + 'change to the FIXTURE INPUTS of this case moves it too, and must not, because those inputs are '
         + 'already part of the key and invalidate their own entries',
       fn: async () => {
-        expect(SLICE_CACHE_VERSION,).toBe(37,);
+        expect(SLICE_CACHE_VERSION,).toBe(38,);
 
         // MOVED THREE TIMES ON 2026-08-20, FOR THREE DIFFERENT REASONS, which
         // is the whole point of keeping the note.
@@ -156,8 +156,11 @@ await describe({
         //
         // VERSION 37 IN n166 (the house tense rule says, in the sentence that puts the life in the past, that quoted words keep
         // the speaker's own tense): moved the same way.
+        //
+        // VERSION 38 FOR THE XingZ6015 READ (reader protection scoped to the account of how a death or an attempt happened,
+        // translators' notes cut from the judges, the declared-name floor meeting a swap of declared forms): moved the same way.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('de515a21e25db23c5876bcb4ef9b9dbf9b30594aa2c10f4f31620e3f786318d9',);
+          .toBe('f12902e471b4fc0f9b4644df47ab52d4e51f33d938f325a293e1b7aebfb54fdc',);
       },
     },),
     it({
