@@ -642,9 +642,10 @@ its "Next" list is still the queue the merge went ahead of.
       (read at 20:30 UTC;
       the pass log of 2026-10-20),
       and spent 65 of Hyper's 110.
-      `CuspariaKLSY` waits:
-      the NeuralWatt build changes the digest,
-      so the rotation restarts at `zheermao101` once it lands,
+      The NeuralWatt build changed the digest,
+      so the rotation restarted at `zheermao101`
+      (`zheermao19`,
+      in the NeuralWatt item),
       then CuspariaKLSY,
       XingZ60,
       yingying,
@@ -670,8 +671,9 @@ its "Next" list is still the queue the merge went ahead of.
       as the Bedrock ledger does:
       reserve an estimate per call from the energy matrix's prompt-size buckets,
       settle with the stream's `: energy` comment,
-      mark the provider dry until 00:00 UTC on a `: cost` comment with a nonzero `request_cost_usd`,
       and read `/v1/quota` at start and end of a run.
+      (A stop that read a nonzero `request_cost_usd` as plan spend was built and removed the same day;
+      ledger P16.)
       Served ids `deepseek-v4.1-flash` and `glm-5.3-flash`,
       standard lane only;
       first in the provider order,
@@ -713,17 +715,92 @@ its "Next" list is still the queue the merge went ahead of.
       7.1 hands the plugin the tuple reference,
       so mutable tuples from `Object.entries` and `Map.entries` callbacks now surface,
       and the offers are sound.
-      Queued after the NeuralWatt land:
-      fix all 105 at the package's own boundaries
-      (an explicit deeply readonly entry type),
-      never by loosening the rule.
+      Landed as `1dde8c5cd6` after gate g131
+      (suite 2631 pass and 0 fail,
+      lint red only on the inherited 105).
+      `zheermao18` launched at 22:22 UTC on that build;
+      its first NeuralWatt call used 0.0167 Wh,
+      a tiny share of the day's 550 Wh,
+      yet reported a `request_cost_usd` of 0.000107.
+      The meter as built never looked at the energy here:
+      it took any cost above zero as proof that the free energy was spent and the plan was being charged,
+      so after that one call it marked NeuralWatt out of energy until 00:00 UTC.
+      That rule was the defect.
+      The run went on spending Hyper until it was stopped at 22:30 UTC after 21 Hyper calls.
+      The owner read the dashboard
+      ("Your call only used 60.3J,
+      which isn't even 0.0%")
+      and ruled:
+      "From here on just use NeuralWatt normally,
+      I can tolerate some potential losses.
+      If it works wrongly I'll tell you."
+      The stop was removed
+      (red `265cb0d224`,
+      fix `05330e45c4`,
+      docs `1c4c10b4d1`;
+      legacy ledger lines that carry `billedUsd` read as plain energy lines),
+      landed as `5b5dca49a9` after gate g132
+      (suite 2648 pass and 0 fail,
+      lint red only on the inherited 105);
+      record and ledger P16 landed in `745b51e38d`.
+      The branch worktree's build digest matched w243's:
+      `sha256-tree-v1:f706c65f04541d1d043d5d39c4597ef034b537c8a73e827ef8c937da7c6d4ee9`.
+      `zheermao19` (entry zheermao101) runs since 23:00 UTC on 2026-10-20 with that digest on its `START` line;
+      by 23:10 UTC NeuralWatt had served 16 calls for 4.1 Wh,
+      all settled at measured figures,
+      and had not gone dry.
+      The 105 `prefer-readonly-parameter-type` findings are being fixed type-only in keyless worktree w246
+      (explicit deeply readonly entry types at the package's own boundaries,
+      never by loosening the rule;
+      the build digest must stay unchanged).
+      The owner then ruled
+      (about 23:15 UTC):
+      "The stop logic should obviously count total free energy used per day.
+      Every neuralwatt day starts at 15:15".
+      Read-only calls confirmed both
+      (`/v1/quota` `current_period_start` `2026-10-20T19:15:08Z`,
+      15:15 in America/New_York;
+      `/v1/usage/by-model` account-wide covered energy 4.095 Wh against the ledger's 4.094 Wh;
+      record section "The day boundary and the account-wide count",
+      ledger P17).
+      The fix is being built in keyless worktree w247:
+      the day anchored at the quota's time of day,
+      spent energy the account-wide covered total since the anchor,
+      never below the ledger,
+      plus calls in flight.
+      `zheermao19` keeps the old build;
+      its 00:00 UTC ledger reset hands back about 20 Wh NeuralWatt still counts,
+      far inside the 550 Wh,
+      so it is not stopped.
+      The owner then set a 1 kWh daily limit on this key
+      ("I've also just setup a 1kWh daily limit on this specific api key");
+      `/v1/quota` still reported `key.allowance: null` at 23:15 and 23:20 UTC,
+      and `/v1/usage/by-key` `budget_limit_usd: null` on both keys,
+      so w247 also reads the documented USD allowance (`blocked` makes NeuralWatt dry until `reset_at`)
+      and prints it on the `METERS` line.
+      And:
+      "Migrate to deepseek v4 flash 1017 where possible."
+      Catalogs read at about 23:30 UTC:
+      NeuralWatt's `deepseek-v4.1-flash` already serves `deepseek-ai/DeepSeek-V4.1-Flash-1017`;
+      Hyper lists `deepseek-v4.1-flash-1017`,
+      OpenRouter `deepseek/deepseek-v4.1-flash-1017`
+      (Morph serves it at 0.158 and 0.6),
+      Synthetic `hf:deepseek-ai/DeepSeek-V4.1-Flash-1017`
+      (the card has no Synthetic side;
+      none is added).
+      Keyless worktree w248 moves the card's Hyper and OpenRouter served ids,
+      keeping the roster id `deepseek-v4.1-flash` as the card's name.
+      w246 meanwhile folds 21 copies of `ReadonlyEntry` into one in `shared-contract`.
       Next:
-      green `source-scan`,
-      land w242,
-      install and force-build in the branch worktree (M285),
-      compare digests,
-      set `FROZEN` in `launch-rotation.ts`,
-      and launch `zheermao18`.
+      gate and land w246,
+      w247 and w248,
+      rebuild,
+      set `FROZEN`,
+      read `zheermao19` when it settles,
+      recalibrate the energy margin from its settled ledger lines
+      (the first call's estimate ran 2.8 times its measured figure),
+      gate and land w246,
+      then go on with CuspariaKLSY and the rest of the rotation.
     - The class of the `zheermao15` read is ledger B702.
     - The guard of B701 stays open and undecided:
       the rotation sweep as an expensive mise task,
