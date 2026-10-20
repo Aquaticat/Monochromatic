@@ -201,7 +201,14 @@ Measured with several images of the same file on one page, Technology Preview 25
 - Seven eager images, one of them with no fragment at all: all 316, including the one with no fragment.
   Chromium 149 gave 216 for that one.
 
-Not measured: Safari 17.5, release Safari 27, iOS Safari, Firefox,
+Release Safari 27 and Safari 17.5, measured later on 2026-10-20 by the portfolio session on the case-study hero
+viewers (a lazy fragment `<img>` in a closed popover, opened with `showPopover()`, sized by its natural ratio,
+WebDriver at a 1440 px layout viewport): Safari Technology Preview and release Safari 27 both opened them at
+2.179, 1.789 and 1.848 wide per unit of height against the views' 1.5, 1.541 and 1.265, which Chromium matched.
+With the trimmed copies (portfolio `6e97123`) Technology Preview, Safari 27 and Safari 17.5 all gave the views'
+ratios. Safari 17.5 was not measured before that change.
+
+Not measured: iOS Safari, Firefox,
 and a lazy image placed below the fold (every case in this section had the image in the first viewport).
 Viewport screenshots from `safari-mcp-stp` came back as an all-black PNG in this setup;
 only full-page captures were readable, so drawing was checked with full-page captures and box sizes.
