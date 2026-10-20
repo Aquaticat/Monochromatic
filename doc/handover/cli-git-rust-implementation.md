@@ -1831,6 +1831,12 @@ that is verification, not a decision for the user.
   (`:34:42` and `:34:49` `*` to `+`, and `ManualPushProbeError` `Display::fmt`); `signal_relay` 8 missed (four listed:
   `wait_without_reaping` ECHILD arm and body, `SignalGuard::install`, `SignalGuard::run_child`). To do after `nc2`
   ends (editing `src/native` earlier would leak into its image): a test per missed mutant or an equivalence proof.
+  Triage 2026-10-20: closed 632 (the perf code is gone) and 1348 (ST2 is a TypeScript rule). Reframed 629 to the Rust
+  helpers still duplicated across `test_support.rs`, `command_test_support.rs` and `binary_support.rs` plus the
+  byte-argument copies in `cli.fuzz`; queued behind nc2, as those files are in the mutation image. 630 stays open with
+  option 2 recorded (shared helpers, disagreements first), to be verified together with the e2e suite run. 1672 stays
+  open (my three copies differ in shape; the rest belong to other owners). 1717: the cli-git handovers are fixed
+  (3e8b569cea); the other units' handovers remain.
   Issue 1713 (handover paths and `mise run //` targets that moved): the cli-git half is done in commit `d4a2587cb6`
   (thirty occurrences of 23 distinct unresolved paths in eleven `doc/handover/cli-git*.md` files keep their text and
   carry an in-place note with the current module or the removal date; progress comment posted). The issue stays open
