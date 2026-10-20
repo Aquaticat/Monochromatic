@@ -99,6 +99,14 @@ export type AdvisorConfig = {
    */
   readonly systemPrompt?: string;
   /**
+   Initial reviewer for default calls, resolved inside the effective scope.
+
+   User config only (`~/.pi/agent/extensions/pi-advisor.json` plus project
+   overrides); never a schema default and never a host plugin config-row
+   value. Empty or blank clears the key.
+   */
+  readonly defaultReviewerModel?: string;
+  /**
    Config source metadata surfaced by `/advisor status`.
    */
   readonly source: AdvisorConfigSource;

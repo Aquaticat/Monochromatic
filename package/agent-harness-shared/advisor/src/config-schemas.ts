@@ -49,6 +49,10 @@ export type AdvisorConfigFile = {
    Project-specific Advisor prompt suffix.
    */
   readonly systemPrompt?: string;
+  /**
+   Initial reviewer for default calls: user config only, never a schema default.
+   */
+  readonly defaultReviewerModel?: string;
 };
 
 /**
@@ -102,6 +106,7 @@ export const AdvisorConfigFileSchema: v.GenericSchema<AdvisorConfigFile> = v.obj
   maxAdvisorOutputTokens: v.exactOptional(PositiveNumberSchema,),
   includePriorAdvisorResults: v.exactOptional(v.boolean(),),
   systemPrompt: v.exactOptional(v.string(),),
+  defaultReviewerModel: v.exactOptional(v.string(),),
 },);
 
 /**

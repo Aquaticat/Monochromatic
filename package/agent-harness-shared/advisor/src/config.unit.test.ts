@@ -158,5 +158,119 @@ await describe({
         expect((caught as Error).message,).toContain('pi-advisor.json',);
       },
     },),
+    it({
+      name: 'merges the configured default reviewer with project override and explicit clear',
+      fn: async () => {
+        const root = await mkdtemp(join(
+          tmpdir(),
+          'pi-advisor-test-',
+        ),);
+        const home = join(
+          root,
+          'home',
+        );
+        const cwd = join(
+          root,
+          'repo',
+        );
+        const globalConfigDir = join(
+          home,
+          '.pi',
+          'agent',
+          'extensions',
+        );
+        const projectConfigDir = join(
+          cwd,
+          '.pi',
+          'extensions',
+        );
+        await Promise.all([
+          mkdir(
+            globalConfigDir,
+            { recursive: true, },
+          ),
+          mkdir(
+            projectConfigDir,
+            { recursive: true, },
+          ),
+        ],);
+        await writeFile(
+          join(
+            globalConfigDir,
+            'pi-advisor.json',
+          ),
+          JSON.stringify({ defaultReviewerModel: 'global-provider/global-model', },),
+        );
+        const mergedGlobal = await loadMergedConfig({ cwd, home, },);
+        expect(mergedGlobal.defaultReviewerModel,).toBe(
+          'global-provider/global-model',
+        );
+        await writeFile(
+          join(
+            projectConfigDir,
+            'pi-advisor.json',
+          ),
+          JSON.stringify({ defaultReviewerModel: 'project-provider/project-model', },),
+        );
+        const mergedProject = await loadMergedConfig({ cwd, home, },);
+        expect(mergedProject.defaultReviewerModel,).toBe(
+          'project-provider/project-model',
+        );
+        await writeFile(
+          join(
+            projectConfigDir,
+            'pi-advisor.json',
+          ),
+          JSON.stringify({ defaultReviewerModel: '', },),
+        );
+        const mergedCleared = await loadMergedConfig({ cwd, home, },);
+        expect(mergedCleared.defaultReviewerModel,).toBe('',);
+      },
+    },),
+    it({
+      name: 'rejects a non-string default reviewer key',
+      fn: async () => {
+        const root = await mkdtemp(join(
+          tmpdir(),
+          'pi-advisor-test-',
+        ),);
+        const home = join(
+          root,
+          'home',
+        );
+        const globalConfigDir = join(
+          home,
+          '.pi',
+          'agent',
+          'extensions',
+        );
+        await mkdir(
+          globalConfigDir,
+          { recursive: true, },
+        );
+        await writeFile(
+          join(
+            globalConfigDir,
+            'pi-advisor.json',
+          ),
+          JSON.stringify({ defaultReviewerModel: 42, },),
+        );
+        let caught: unknown;
+        try {
+          await loadMergedConfig({
+            cwd: join(
+              root,
+              'repo',
+            ),
+            home,
+          },);
+        }
+        catch (error) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(Error,);
+        expect((caught as Error).message,).toContain('pi-advisor.json',);
+      },
+    },),
   ],
 },);

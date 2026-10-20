@@ -207,6 +207,12 @@ function mergeConfigFiles(
      Unrelated project overrides must not discard global reviewer instructions.
      */
     const systemPrompt = config.systemPrompt ?? merged.systemPrompt;
+    /**
+     Configured initial reviewer overrides scalar-wise; an explicit empty string clears it.
+     */
+    const defaultReviewerModel = config.defaultReviewerModel
+      ?? merged
+      .defaultReviewerModel;
     merged = {
       hedgingEnabled: config.hedgingEnabled ?? merged.hedgingEnabled,
       collectionGraceMs: config.collectionGraceMs ?? merged.collectionGraceMs,
@@ -225,6 +231,7 @@ function mergeConfigFiles(
         .includePriorAdvisorResults,
       ...(maxContextChars === undefined ? {} : { maxContextChars, }),
       ...(systemPrompt === undefined ? {} : { systemPrompt, }),
+      ...(defaultReviewerModel === undefined ? {} : { defaultReviewerModel, }),
     };
   }
   return merged;
