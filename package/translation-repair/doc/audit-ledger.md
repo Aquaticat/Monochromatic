@@ -106,7 +106,8 @@ named for that subject and listed here.
   and the stretches that stay cold with the reason for each.
 - [Audit ledger: page assembly and the corpus-run driver](audit-ledger-page-assembly-and-corpus-run-driver.md):
   Findings in the page-assembly passes and the driver that runs a corpus pass,
-  the archive's notices that a page is unfinished and the translators' notes that decided a contest (B698).
+  the archive's notices that a page is unfinished and the translators' notes that decided a contest (B698),
+  and an archive block revision that dropped the note its block held (B702).
 - [Audit ledger: providers, routing and seating](audit-ledger-providers-routing-and-seating.md):
   Findings in the provider clients,
   the router and the seating of models.
@@ -418,7 +419,9 @@ named for that subject and listed here.
   and a lint ignore that matched a package.
 - [Audit ledger: what each sheet shows](audit-ledger-what-each-sheet-shows.md):
   Sheets that lacked a block their role needs to judge or write,
-  and the reader-protection rule that reached past the account of how a death or an attempt happened (B697).
+  the reader-protection rule that reached past the account of how a death or an attempt happened (B697),
+  and the cut of the translators' notes that left a bare quote line,
+  joined two lines and dropped a carriage return (B703).
 - [Audit ledger: readers that accept what no writer writes](audit-ledger-readers-accept-shapes-writers-never-write.md):
   Readers of stored records and directories that accepted a shape,
   a name or a value their own writer never produces,

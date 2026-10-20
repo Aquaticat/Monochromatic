@@ -492,3 +492,111 @@ A rule written for one case (a death by suicide) is read for the places it is sp
 and a ruling of the owner is quoted whole,
 with the option it rejected,
 into the comment over the rule.
+
+## B703: the cut of the notes between translators left a bare quote line, joined two lines and dropped a carriage return
+
+Status:
+three fixes of 2026-10-20 (UTC) to `withoutTranslatorsNotes` in document-structure,
+the cut every judging sheet passes the archive and the candidates through.
+The quoted line:
+red `1f66cad0ec`,
+fix `53d68d85dc`,
+versions `aa0ab6ff0a`,
+pinned keys `8d449d05fe`,
+landed as `cca7711de7` after gate g122.
+Two notes on one line:
+red `5b75add81a`,
+fix `d60b27a9ed`,
+gap reading `0039830674`.
+The carriage return:
+red `acf6ada605`,
+fix `e80301bf32`.
+Version accounts `4f9f25ae24`;
+the last two landed as `a5dc23c5bb` after gate g123
+(2564 `[PASS]` lines,
+no `[FAIL]` line).
+
+### A note alone on a quoted line
+
+The cut took a note's whole line only when nothing but whitespace stood before it,
+so on a line inside a blockquote the markers stood before it and the cut kept them:
+zheermao101's archive line `>   > {/* ... */}` became a bare `>   >` line,
+which a judge reads as a paragraph break inside the quote that the archive does not have.
+The whole line now goes when what stands before the note is quote markers and whitespace only
+and only whitespace stands after it.
+The test reads the characters before the note and never the note's own words,
+and it needs a marker,
+so a `>` that is text (`1 > 0 `) keeps the old cut.
+Of the 34 notes in the 92 pinned English archives,
+one stands alone on a quoted line (zheermao101).
+
+The keys of the five stages whose sheets make the cut hash the version,
+the run shape and the texts,
+not the sheet,
+so a record written under the old cut would be served under the new.
+`CONSOLIDATE_CACHE_VERSION` moved from 26 to 27,
+`LANE_CONTEST_CACHE_VERSION` from 11 to 12,
+`REFINE_CACHE_VERSION` from 9 to 10,
+`SLICE_CACHE_VERSION` from 38 to 39
+and `TRANSLATE_SLICE_CACHE_VERSION` from 20 to 21.
+The account of each move says the check that would let the change ride inside the old number could not be made,
+since the run `zheermao15` had an empty slice-cache directory and so did a control from 2026-10-19.
+That reading lacked its cause:
+a settled entry discards its own slice cache (`retireSettledEntryCache` in
+`corpus-pass/src/corpus-run/pass-entry-caches.ts`),
+and both runs settled,
+so their directories could never have shown a record.
+The check reads the `START tip=` line of each run begun since a number was set instead
+([stored files and cached decisions](mistake-prevention-stored-files-and-cached-decisions.md)).
+Moving the numbers costs a cold cache and the pinned keys,
+and no record was lost by it.
+
+### Two notes on one line
+
+The cut judged each note's line from the end of the previous cut,
+so the second of two notes on one line read an empty head,
+counted as alone on its line and took the line break:
+`x <note> <note>\ny\n` gave `x y\n`,
+and on a quoted line two lines became one.
+The same reading left a space at the end of a text and two spaces between words.
+Notes with only whitespace that is not a line feed between them are now cut as one stretch (`noteStretchesOf`),
+judged against the original text.
+The fix commit's message says spaces and tabs;
+the stretch also joins across a carriage return,
+and `0039830674` says so in its message and in the TSDoc,
+and reads the gap with `isWhitespace` instead of the trimmed-text comparison the blank-text scan lists.
+
+### The carriage return of a CRLF line
+
+The cut of a note that ends its line ran to the line feed,
+so in a CRLF text it took the carriage return and left a bare line feed among CRLF breaks.
+It now stops before a carriage return that ends the line.
+
+### What the last two changed
+
+None of the 92 pinned archives has two notes on one line or a carriage return
+(cut with the old and the new code,
+no archive's text differs),
+so no sheet text changed,
+and no record had been written at the new numbers:
+the only run begun since they were set,
+`CuspariaKLSY18`,
+started at tip `a6a0ed7dc0`,
+which predates them.
+Both fixes ride inside the numbers,
+and each version's account names their commits,
+so the cache-account audit counts them as accounted.
+The audit still lists `db2cd279a3`,
+a lint-only split of one test in the same file,
+and `4f9f25ae24`,
+the accounts themselves;
+neither changes what any stage does.
+
+Recurrence:
+none of an earlier entry.
+A cut that removes text from a line is tested on the line forms the corpus can hold
+(quoted lines,
+two marks on one line,
+CRLF ends),
+not only on the forms the pinned archives show,
+and a check whose evidence is a cache directory first reads what empties that directory.

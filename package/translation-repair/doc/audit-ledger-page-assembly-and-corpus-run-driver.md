@@ -666,3 +666,77 @@ Recurrence:
 none of an earlier entry.
 A candidate wording is judged on what a reader sees;
 text a reader never sees is cut from the judges' sheets and carried by code.
+
+## B702: an archive block revision dropped the note between translators its block held
+
+Status:
+fixed on 2026-10-20 (UTC) and landed as `a6a0ed7dc0` after gate g121
+(2564 `[PASS]` lines,
+no `[FAIL]` line).
+The splice:
+red `49adf0457c`,
+fix `6a13218c44`.
+The review sheet:
+red `7a0179812d`,
+fix `2f5e63538a`.
+A block of nothing but notes:
+red `d8100ba81b`,
+fix `6b390d8427`.
+The scans of the helpers' tests:
+`4625c2773c`.
+No cache version moved:
+the archive block review has no version of its own,
+and the text it settles on is key input to the stages after it.
+The red commit `49adf0457c` has a 122-character subject,
+two past the limit of the package's messages;
+corrective commit comment 205806679 says so.
+
+Read in `zheermao15`,
+the first entry of the readiness rotation,
+on build `0c64519b57`.
+zheermao101's archive holds a JSX comment in Han inside the blockquote of a reply email,
+`{/* 可以避开黑暗的锋芒，到那些有光的地方躲一躲。 这句不知道如何翻译 */}`,
+in which a translator quotes a Chinese sentence and says they do not know how to translate it.
+The original does not hold it.
+The archive block review adopted a rewrite of that block,
+and its splice put the reviewers' complete rewrite over the block and kept nothing of it,
+so the note left the prepared archive text.
+The page assembly carries a note back only from the archive text it compares with,
+which no longer held one,
+so the shipped page lacked it.
+
+The defect had three parts,
+fixed in this order:
+
+- `repairArchiveBlocks` in page-check now puts each note the block held and the replacement lacks
+  on a line of its own after the replacement,
+  in the block's order,
+  through `translatorsNotesIn` and `archiveNotesMissingFrom`,
+  so a re-wrapped note counts as carried.
+  The placement rule is the one the page assembly's carry uses,
+  now shared as `appendedNotes`.
+  A removed block leaves its notes where it stood.
+  A comment in English and a comment the original carries are left alone.
+- The archive block review's own sheet (`buildArchiveBlockReviewMessages`) had kept the note in view
+  in its ENGLISH ARCHIVE and BLOCK UNDER REVIEW fences,
+  where every other judging sheet cut it (ledger B698).
+  Both fences now pass through `withoutTranslatorsNotes`,
+  with the original section as the original whose own comments stay.
+- With the sheet cutting notes,
+  a block that is nothing but a note (shihai4h's comment around a flow expression) reached the reviewers
+  as an empty BLOCK UNDER REVIEW fence,
+  and the round asked about text no reader sees
+  (the red case counted three calls).
+  Such a block is no longer asked about:
+  it stands as the archive wrote it,
+  and the finding and the log say why.
+
+Recurrence:
+of B698.
+That entry's rule,
+that text a reader never sees is cut from the judges' sheets and carried by code,
+was applied to the sheets its read met and not to every sheet and splice that touches an archive block.
+A rule stated for every judging sheet is checked against the list of sheets the rendered-sheets fixture
+(`artifact/src/rendered-sheets.test-fixture.ts`) renders,
+and a rule that carries text across a step is checked against every step that replaces text,
+splices included.
