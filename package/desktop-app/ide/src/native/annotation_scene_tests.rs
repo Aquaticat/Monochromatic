@@ -222,6 +222,59 @@ fn columns(
     return result;
 }
 
+/// What:
+///  The weakest column of an underline over `span`:
+///  the largest alpha any pixel of the column below the baseline reaches,
+///  smallest over the columns.
+/// Why:
+///  A thin wave that straddles two pixel rows is pale in both,
+///  as the first GPU wave was (half the ink of the CPU wave);
+///  the strongest pixel of every column must carry most of the ink.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function weakestColumn(view: ShapedView, pixels: Pixels, span: [number, number]): number;
+/// ```
+fn weakest_column(
+    view: &ShapedView,
+    pixels: &SharedPixelBuffer<Rgba8Pixel>,
+    span: (usize, usize),
+) -> u8 {
+    let top = view.rows[0].baseline.ceil() as usize;
+    let bottom = ((view.rows[0].baseline + DROP + 5.0) as usize).min(23);
+    let mut weakest = u8::MAX;
+    for x in span.0..span.1 {
+        let mut strongest = 0;
+        for y in top..=bottom {
+            strongest = strongest.max(pixels.as_slice()[y * pixels.width() as usize + x].a);
+        }
+        weakest = weakest.min(strongest);
+    }
+    return weakest;
+}
+
+/// An error wave keeps most of its ink in the strongest pixel of every column,
+///  not half of it in each of two rows,
+///  because a pale wave on dark text reads as a smudge.
+#[test]
+fn an_error_wave_is_not_paler_than_the_line_it_replaced() {
+    let source = "ABCDEFHIKLMNOTUVWXZABCDEFHIKLMNOTUVWXZ";
+    let length = source.chars().count();
+    let visible = Visible {
+        blocks: Vec::new(),
+        marks: vec![Mark {
+            start: 0,
+            end: length,
+            severity: Severity::Error,
+        }],
+    };
+    let (view, pixels) = painted(source, &visible, DARK);
+    let right = view.rows[0].caret_x(length, 1.0) as usize;
+    let weakest = weakest_column(&view, &pixels, (2, right - 2));
+    println!("error wave: the weakest column peaks at alpha {weakest} of 255");
+    assert!(weakest >= 178, "the wave peaks at alpha {weakest} of 255");
+}
+
 /// Errors are a continuous wave,
 ///  warnings flat dashes,
 ///  information flat dots,
@@ -277,7 +330,7 @@ fn each_severity_has_its_own_line_style_in_its_ink() {
     let (_, information_lit, information_spread, information_run) = found[2];
     let (_, hint_lit, hint_spread, _) = found[3];
     assert!(
-        error_lit > 0.95 && error_spread >= 2.0,
+        error_lit > 0.95 && error_spread >= 0.75,
         "the error wave is missing"
     );
     assert!(

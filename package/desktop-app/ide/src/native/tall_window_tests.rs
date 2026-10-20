@@ -23,14 +23,14 @@ use super::{
 };
 /// The open reader and the pixels of the shown image.
 use super::{
-    tile_reads::shown,
+    tile_reads::{shown, tile_size},
     wrap_tests::{long_text, measured, open},
 };
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
 /// The code row the raster edges are rounded to,
 /// and the limit one raster may not pass.
-use ide_app::{row_map::CODE_ROW, text_raster::MAX_RASTER_BYTES};
+use ide_app::{row_map::CODE_ROW, shaped_text::texture_dimension, text_raster::MAX_RASTER_BYTES};
 /// Toolkit events.
 use slint::{
     ComponentHandle, LogicalSize,
@@ -343,5 +343,70 @@ fn a_tall_window_over_wrapped_text_finishes_the_measurement_pass() {
             );
         }
         opened.window.hide().expect("close wrap window");
+    }
+}
+
+/// A 2000 px tall window at display scales 1 and 2 on a device whose textures are at most 8192 px on a side
+/// (the harness device is limited to that):
+/// the tile's texture is within the limit on both sides and within the byte limit,
+/// holds the view with overscan,
+/// and is drawn with text.
+/// A tile of three views would be 6,048 px at scale 1 and 12,096 px at scale 2.
+#[test]
+fn a_2000_px_window_gets_a_tile_texture_within_the_devices_limit_at_both_scales() {
+    for scale in [1.0_f32, 2.0] {
+        let (_project, opened) = open(&mixed(6000));
+        let window = &opened.window;
+        window
+            .window()
+            .dispatch_event(WindowEvent::ScaleFactorChanged {
+                scale_factor: scale,
+            });
+        resize_without_frame(&opened, 1100.0, 2000.0);
+        settled_tile(&opened);
+        window.set_scroll_y(-30_000.0);
+        update_timers_and_animations();
+        settled_tile(&opened);
+        let (width, height) = tile_size(window, &opened.source);
+        println!(
+            "TILE scale {scale}: window 2000 px tall, texture {width} x {height} px ({} MiB), device limit {}",
+            u64::from(width) * u64::from(height) * 4 / (1024 * 1024),
+            texture_dimension()
+        );
+        assert!(
+            width <= texture_dimension() && height <= texture_dimension(),
+            "scale {scale}: the texture {width}x{height} passes the device's {} px limit",
+            texture_dimension()
+        );
+        assert!(
+            u64::from(width) * u64::from(height) * 4 <= MAX_RASTER_BYTES,
+            "scale {scale}: the texture {width}x{height} passes the byte limit"
+        );
+        {
+            let current = opened.source.borrow();
+            let view = current.shaped.as_ref().expect("a shown frame");
+            assert_eq!((view.width, view.height), (width, height));
+            let offset = -window.get_scroll_y();
+            let top = view.origin;
+            let bottom = view.origin + view.height as f32 / view.viewport.scale;
+            assert!(
+                top <= offset + 0.5 && offset + window.get_viewport_height() <= bottom + 0.5,
+                "scale {scale}: the tile [{top}, {bottom}] does not hold the view at {offset}"
+            );
+            println!(
+                "TILE scale {scale}: overscan {:.0} px above and {:.0} px below the view",
+                offset - top,
+                bottom - offset - window.get_viewport_height()
+            );
+        }
+        let mut inked = false;
+        for pixel in shown(window, &opened.source) {
+            if pixel[3] > 0 {
+                inked = true;
+                break;
+            }
+        }
+        assert!(inked, "scale {scale}: the text area is blank");
+        window.hide().expect("close wrap window");
     }
 }

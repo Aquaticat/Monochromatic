@@ -26,7 +26,7 @@ use super::{
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
 /// Library types that give the expected values.
-use ide_app::{row_map::CODE_ROW, text_raster::MAX_RASTER_BYTES};
+use ide_app::{row_map::CODE_ROW, shaped_text::texture_dimension, text_raster::MAX_RASTER_BYTES};
 /// Toolkit models and events.
 use slint::{ComponentHandle, Model, platform::update_timers_and_animations};
 
@@ -211,6 +211,10 @@ fn a_clip_stays_within_the_raster_limit_for_every_window_size() {
             assert!(
                 columns * rows * 4 <= MAX_RASTER_BYTES,
                 "width {width} scale {scale} height {height}: a raster of {columns}x{rows} passes the limit"
+            );
+            assert!(
+                rows <= u64::from(texture_dimension()),
+                "width {width} scale {scale} height {height}: a raster of {rows} rows passes the device's texture size"
             );
             assert_eq!(clip.top % CODE_ROW, 0.0);
             assert_eq!(clip.bottom % CODE_ROW, 0.0);

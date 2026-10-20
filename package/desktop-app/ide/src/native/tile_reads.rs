@@ -74,7 +74,15 @@ pub(super) fn same_buffers(
     if left.width() != right.width() || left.height() != right.height() {
         return false;
     }
-    for (one, other) in left.as_slice().iter().zip(right.as_slice()) {
+    return same_pixels(left.as_slice(), right.as_slice());
+}
+
+/// Whether two runs of texels are the same length and agree texel for texel to within [`RENDER_NOISE`].
+pub(super) fn same_pixels(left: &[Rgba8Pixel], right: &[Rgba8Pixel]) -> bool {
+    if left.len() != right.len() {
+        return false;
+    }
+    for (one, other) in left.iter().zip(right) {
         if !same_texel(*one, *other) {
             return false;
         }

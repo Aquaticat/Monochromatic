@@ -2218,8 +2218,9 @@ and the shaper counts its passes (`TextShaper::tab_passes`).
 
 #### Lines taller than one raster
 
-A tile is one image,
-and an image may hold 64 MiB (`MAX_RASTER_BYTES`).
+A tile is one texture,
+and a texture may hold 64 MiB (`MAX_RASTER_BYTES`)
+and at most the device's texture side (8192 px unless the device says more).
 The raster is as wide as the text area plus 24 px,
 so its height is limited:
 at a text width of 782 px that is 866 code rows at scale 1 and 215 at scale 2
@@ -5216,6 +5217,90 @@ Slint frees its handles while the main thread's thread-local values are destroye
 and a debug build of wgpu-core reads a thread-local value when it frees a device,
 which aborted the process at exit before this (see `doc/planning/ide-gpu-snapshot-harness.md`,
 section "Stage 2").
+
+### The code view on the GPU
+
+The text area of a file is drawn by the GPU with no CPU painting:
+no pixel buffer is filled and uploaded,
+and no software renderer is involved.
+The CPU lays out and shapes rows,
+chooses inks,
+and builds a list of paint commands;
+the GPU turns outlines and paths into pixels.
+
+- `src/tile_scene.rs` turns the shaped rows of a tile (`ShapedView`) into paint items (`tile_items`):
+  one glyph run per Parley run in the ink of its syntax role,
+  the selected part of a row as a second copy of its runs in the selection ink clipped to the selection
+  (a ligature half is clipped by geometry,
+  never recolored whole),
+  the texts of hint and message rows in their severity ink,
+  and each diagnostic underline as a stroked path
+  (`src/tile_scene/underline.rs`:
+  a triangle wave for errors,
+  dashes for warnings,
+  dots for information,
+  sparse dots for hints).
+  One shaper measures and draws:
+  the glyph ids and positions are those of the layout that places the caret and answers hit tests.
+- `src/tile_scene/encode.rs` writes the items to a Vello scene (`vello` 0.11).
+  Glyphs are drawn unhinted at the positions the layout gave them.
+  The scene is plain data and is built on whichever thread builds the tile:
+  the tile worker (`src/native/tile_build/job.rs`) or the window thread.
+- `src/native/gpu_tile.rs` owns the textures and the window's one rendering notifier.
+  On the first frame (`RenderingSetup`) it takes Slint's wgpu device and makes Vello's renderer;
+  before every frame (`BeforeRendering`) it renders a waiting scene into an `Rgba8Unorm` texture and,
+  when the tile's size changed,
+  shows that texture as the window's source image with `Image::try_from(texture)`.
+  The texture holds straight alpha,
+  which is how Slint samples an imported texture,
+  so the scene is rendered over a transparent base and the selection fills and find boxes behind it show through.
+  Scrolling inside the tile renders nothing:
+  the image moves,
+  and no scene is built or drawn.
+  The wrap indicator of the gutter is a second,
+  small texture drawn the same way.
+- Selection fills and the boxes of find matches are Slint rectangles behind the tile image (`ui/app.slint`),
+  drawn by FemtoVG on the GPU as before.
+  Their edges and the clip edges of the selected ink lie on whole pixels,
+  so no pixel is covered by two copies of a glyph.
+
+The tile's texture is bounded by the device.
+`src/shaped_text/limit.rs` holds the largest texture side (`texture_dimension`,
+8192 until a device says otherwise),
+which `src/gpu_device.rs` records when it opens the device and `src/native/gpu_tile.rs` checks at the first frame.
+`tile_cap` (the tallest tile in logical pixels) is the smaller of the 64 MiB byte limit and the texture side,
+one code row short for rounding,
+and a tile of lines taller than that is clipped as described in "Lines taller than one raster".
+`paint_tile` refuses a view past either limit with a diagnostic instead of letting the GPU reject the texture.
+The native test device is limited to 8192 px (wgpu's guaranteed minimum),
+so every test run proves the rule on this host too,
+whose own GPU offers 16384.
+In a window 2,000 px tall over `mixed(6000)` lines at a text width of 1,100 px
+(`a_2000_px_window_gets_a_tile_texture_within_the_devices_limit_at_both_scales`),
+the tile is a texture of 1113 by 8160 px at scale 1 (the texture side binds)
+and 2226 by 7488 px,
+63 MiB,
+at scale 2 (the byte limit binds),
+where three views would be 12,000 physical rows at scale 2.
+
+What stays on the CPU until the minimap is drawn on the GPU (stage 5 of `doc/planning/ide-vello-text.md`):
+`src/text_raster.rs` (`TextRaster::paint_onto`),
+`src/glyph_cache.rs`,
+`src/selection_paint.rs`,
+the pixel code of `src/annotation_paint.rs`,
+and the `swash` dependency,
+all of which only the minimap's picture (`src/minimap/`) uses.
+
+The native tests read the GPU,
+not the CPU:
+`src/native/tile_reads.rs` renders a frame and reads the tile's texture back (`tile_pixels`,
+`shown`,
+`sign_pixels`),
+or renders a scene without a window (`rendered_tile`),
+and `tests/` read the paint items through `tile_scene::read` (`drawn_runs`,
+`drawn_strokes`).
+Two renders of one scene may differ by one level in a few texels on the GPU (`tile_reads::RENDER_NOISE`),
+so tests that compare two renders accept one level and each has a control that differs by far more.
 
 ### What the executable carries
 

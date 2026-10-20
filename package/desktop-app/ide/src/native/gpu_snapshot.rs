@@ -18,7 +18,7 @@
 /// The device the application itself opens:
 ///  a hardware Vulkan adapter with full limits,
 ///  and never a CPU one.
-use crate::gpu_device::open_hardware_device;
+use crate::gpu_device::open_hardware_device_capped;
 /// What:
 ///  `FemtoVGWGPURenderer` is Slint's FemtoVG renderer that draws into a `wgpu` texture,
 ///  `Platform` is the trait a custom Slint platform implements,
@@ -57,6 +57,10 @@ use std::{
 const DEFAULT_WIDTH: u32 = 800;
 /// Height of the same default window.
 const DEFAULT_HEIGHT: u32 = 600;
+/// The largest 2D texture the harness device offers:
+/// 8192 pixels,
+/// wgpu's guaranteed minimum.
+const HARNESS_TEXTURE_LIMIT: u32 = 8192;
 
 /// What:
 ///  One Slint window of the harness:
@@ -238,7 +242,10 @@ impl Platform for GpuPlatform {
 /// ```
 fn install_once() -> String {
     // The error text lists the adapters seen and every remedy, so a failed test run explains itself.
-    let opened = match open_hardware_device() {
+    // The device offers textures of 8192 pixels on a side at most, the smallest limit wgpu guarantees,
+    // although this host's GPU offers more: every native test cuts its tiles for the weakest device the application
+    // supports, so the texture rule is proven on every host.
+    let opened = match open_hardware_device_capped(Some(HARNESS_TEXTURE_LIMIT)) {
         Ok(device) => device,
         Err(error) => panic!("no hardware Vulkan device for the GPU snapshot harness: {error}"),
     };
