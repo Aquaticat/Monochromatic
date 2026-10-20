@@ -34,6 +34,7 @@ import {
 } from '@monochromatic-dev/translation-repair-translate-stage/ts';
 import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
+  type FanOutMode,
   gatherStageVoices,
   type HeardVoice,
   reachableQuorum,
@@ -104,6 +105,11 @@ export type ArchiveBlockReviewOutcome = {
 
  @param l - stage logger
 
+ @param fanOut - seats the review round asks: the window of quorum plus one
+ by default, or the whole bench a fixture scripting every seat asks for,
+ since the window is rotated by the sheet text and a sheet edit elsewhere
+ moves which seats it holds
+
  @param stageSettings - straggler windows and contest ledger the entry file
  read for this launch (`StageSettings`)
 
@@ -134,6 +140,7 @@ export async function runArchiveBlockReviewStage(
     signal,
     exchangeTimeoutMs,
     l,
+    fanOut,
     stageSettings,
   }: ForeignBorrowed<{
     readonly client: ModelClient;
@@ -148,6 +155,7 @@ export async function runArchiveBlockReviewStage(
     readonly signal: AbortSignal;
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
+    readonly fanOut?: FanOutMode;
     readonly stageSettings: StageSettings;
   }>,
 ): Promise<ArchiveBlockReviewOutcome> {
@@ -185,6 +193,8 @@ export async function runArchiveBlockReviewStage(
     validate: isArchiveBlockReviewWire,
     stage: 'archive-block-review',
     l: reviewLog,
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((fanOut === undefined) ? {} : { fanOut, }),
     graceMs: stageSettings
       .grace
       .roundMs,
