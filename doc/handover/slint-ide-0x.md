@@ -1039,6 +1039,12 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     over integrated are accepted. Known limit: the `VK_DRIVER_FILES` path is AMD-only, so an Intel or NVIDIA host
     needs another ICD file (follow-up: choose the file by detected vendor). Next: migrate the other 13 `take_snapshot`
     files, diagnose the three failures, then drop `renderer-software` and the testing backend.
+    Verified by me and landed (2026-10-19, merge `64cb8b96eb` on `main`): clippy, rustfmt and slint lint pass, and
+    `test:native` passes 214 of 214 with a unique log (an earlier run of mine used a log shared with another run
+    and showed one failure, `minimap_reflection_tests::the_minimap_of_find_matches_is_the_average_of_the_windows_pixels`
+    at scale 2, "differs by 99"; it did not recur in the clean run; the gate runner now takes `TAG` for a unique
+    log and unit name). Stage 0b agent `a151e856e450d38e8` (migrate the 13 files, diagnose the three failures, drop
+    `renderer-software`) and stage 1 agent `a54a3dbd127b14fbf` are running.
   - Where docs are edited (owner instruction of 2026-10-19): handover and doc edits are made in the main checkout
     (`/var/home/user/Monochromatic`), merging `origin/main` into it first when it is behind; not in a temporary
     worktree. Agent worktrees are for code.
