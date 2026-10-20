@@ -1169,6 +1169,11 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     appeared; make it log at a quieter level so it stalls after the window shows; (e) the worktree
     `.claude/worktrees/agent-a717e60922dca0448` is still locked by the harness; remove it and its merged local branch
     when the lock is gone. Next: stage 5 (GPU minimap, with the Vello buffer question), then stage 6.
+    Running (started 2026-10-20): stages 5 and 6 merged (GPU minimap on the shared Vello renderer, delete the rest of
+    the CPU pipeline and `swash`), agent `a0880539282a3162b`; and a read-only study of Vello 0.11's fixed scratch
+    buffers (262 MiB VRAM for any scene), agent `aefec5d0492ba3cab`, which writes only
+    `doc/planning/ide-vello-buffer-sizes.md`. Verification of both uses `~/temp/agent/matrix-load.mjs` and at least 15
+    full `test:native` runs, under whatever load exists.
     State at 2026-10-20 after the three agent reports (to verify and land in this order):
     (1) flake diagnosis of stages 3 and 4 (agent `a717e60922dca0448`, running): on a quiet host 2 of 8 full
     `test:native` runs failed on `main` (`annotation_stability_tests` "window row 240 differs after the annotations
