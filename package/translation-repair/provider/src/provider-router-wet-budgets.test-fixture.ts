@@ -10,7 +10,8 @@ import type { BudgetView, } from '../dist/final/node/index.mjs';
 //
 // TEST SUPPORT, NOT PACKAGE SOURCE. The provider-router-pace and
 // provider-router-stream-bound tests kept their own copy of this stub; all
-// now import it from here.
+// now import it from here. `readOlderProvidersWet` is the sibling view for
+// cases that pin the older providers' order with NeuralWatt out of the way.
 
 /**
  Reads every provider but Synthetic as wet.
@@ -26,6 +27,28 @@ function readWetBudgets(): Promise<BudgetView> {
   return Promise.resolve({
     neuralwatt: false,
     synthetic: true,
+    hyper: false,
+    bedrock: false,
+    openrouter: false,
+  },);
+}
+
+/**
+ Reads NeuralWatt as dry and the four older providers as wet, so cases that
+ pin the older providers' order never reach NeuralWatt; its own cases are in
+ `neuralwatt-routing.unit.test.ts`.
+
+ @returns Budget view with only NeuralWatt dry
+
+ @example
+ ```ts
+ const view = await readOlderProvidersWet();
+ ```
+ */
+export function readOlderProvidersWet(): Promise<BudgetView> {
+  return Promise.resolve({
+    neuralwatt: true,
+    synthetic: false,
     hyper: false,
     bedrock: false,
     openrouter: false,

@@ -1,3 +1,4 @@
+import type { DisposableSandbox, } from '@monochromatic-dev/module-test/ts';
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 
 //region NeuralWatt ledger test support
@@ -82,32 +83,33 @@ export function jsonRecordOf({ text, }: { readonly text: string; },): Readonly<R
 
 /**
  Lines written to the console's info and warn channels while a body runs,
- restored when it ends however it ends.
+ through the case's own sandbox, which answers to that case alone and puts
+ both channels back when the case ends.
 
  @param run - body to run
+
+ @param sinon - sandbox of the case that calls this
 
  @returns The lines, in order
 
  @example
  ```ts
- const lines = await consoleLinesDuring({ run: async () => { await ask({ client, },); }, },);
+ const lines = await consoleLinesDuring({ run: async () => { await ask({ client, },); }, sinon: ctx.sinon, },);
  ```
  */
-export async function consoleLinesDuring({ run, }: { readonly run: () => Promise<void>; },): Promise<readonly string[]> {
+export async function consoleLinesDuring(
+  {
+    run,
+    sinon,
+  }: {
+    readonly run: () => Promise<void>;
+    readonly sinon: DisposableSandbox;
+  },
+): Promise<readonly string[]> {
   /**
    Lines received.
    */
   const lines: string[] = [];
-
-  /**
-   The info channel as it was.
-   */
-  const informed = console.info;
-
-  /**
-   The warn channel as it was.
-   */
-  const warned = console.warn;
 
   /**
    Keeps what a channel is handed first, which is the whole line the tagged
@@ -118,22 +120,18 @@ export async function consoleLinesDuring({ run, }: { readonly run: () => Promise
   function keep(line: unknown,): void {
     lines.push(String(line,),);
   }
-
-  /**
-   Puts both channels back.
-   */
-  function putBack(): void {
-    console.info = informed;
-    console.warn = warned;
-  }
-  console.info = keep;
-  console.warn = keep;
-
-  /**
-   Restores the channels when this function ends however it ends.
-   */
-  using restore = { [Symbol.dispose]: putBack, };
-  void restore;
+  sinon
+    .stub(
+      console,
+      'info',
+    )
+    .callsFake(keep,);
+  sinon
+    .stub(
+      console,
+      'warn',
+    )
+    .callsFake(keep,);
   await run();
   return lines;
 }

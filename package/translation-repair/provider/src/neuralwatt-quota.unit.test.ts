@@ -83,183 +83,189 @@ function withSubscription(subscription: Readonly<Record<string, unknown>>,): str
 }
 
 await describe({
-  name: parseNeuralWattQuota.name,
+  name: '',
+  concurrency: 1,
   children: [
-    it({
-      name: 'READS THE SUBSCRIPTION\'S CHARGED ENERGY, PERIOD AND OVERAGE OFF THE DOCUMENTED BODY, and ignores '
-        + 'the fields it has no use for',
-      fn: async () => {
-        expect(parseNeuralWattQuota({ bodyText: DOCUMENTED_BODY, },),).toEqual({
-          snapshotAt: '2026-04-16T18:30:00Z',
-          subscription: {
-            plan: 'standard',
-            periodStart: '2026-04-11T05:05:25Z',
-            kwhIncluded: 20,
-            kwhUsed: 13.9023,
-            kwhRemaining: 6.0977,
-            inOverage: false,
+    describe({
+      name: parseNeuralWattQuota.name,
+      children: [
+        it({
+          name: 'READS THE SUBSCRIPTION\'S CHARGED ENERGY, PERIOD AND OVERAGE OFF THE DOCUMENTED BODY, and ignores '
+            + 'the fields it has no use for',
+          fn: async () => {
+            expect(parseNeuralWattQuota({ bodyText: DOCUMENTED_BODY, },),).toEqual({
+              snapshotAt: '2026-04-16T18:30:00Z',
+              subscription: {
+                plan: 'standard',
+                periodStart: '2026-04-11T05:05:25Z',
+                kwhIncluded: 20,
+                kwhUsed: 13.9023,
+                kwhRemaining: 6.0977,
+                inOverage: false,
+              },
+            },);
           },
-        },);
-      },
+        },),
+
+        it({
+          name: 'READS AN ACCOUNT WITH NO SUBSCRIPTION AS ONE, since the field is always present and null then',
+          fn: async () => {
+            expect(parseNeuralWattQuota({
+              bodyText: JSON.stringify({ snapshot_at: '2026-10-20T20:00:00Z', subscription: null, },),
+            },),).toEqual({
+              snapshotAt: '2026-10-20T20:00:00Z',
+            },);
+          },
+        },),
+
+        it({
+          name: 'READS A NULL FIELD AS UNKNOWN RATHER THAN AS ZERO, so an unreported figure is never counted as unspent',
+          fn: async () => {
+            expect(parseNeuralWattQuota({
+              bodyText: withSubscription({ kwh_used: null, in_overage: null, current_period_start: null, },),
+            },).subscription,).toEqual({
+              plan: 'standard',
+              kwhIncluded: 20,
+              kwhRemaining: 6.0977,
+            },);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A BODY THAT IS NOT THE SHAPE, naming the broken expectation and never quoting the body',
+          fn: async () => {
+            for (
+              const [bodyText, detail,] of [
+                ['<html>gateway</html>', 'not valid JSON',],
+                ['[1]', 'not a JSON object',],
+                [JSON.stringify({ subscription: null, },), 'snapshot_at is not a string',],
+                [JSON.stringify({ snapshot_at: '2026-10-20T20:00:00Z', },), 'subscription is absent',],
+                [JSON.stringify({ snapshot_at: '2026-10-20T20:00:00Z', subscription: 5, },), 'subscription is neither an object nor null',],
+                [withSubscription({ kwh_used: '13.9', },), 'kwh_used is neither a number nor null',],
+                [withSubscription({ kwh_used: -1, },), 'kwh_used is neither a number nor null',],
+                [withSubscription({ in_overage: 'no', },), 'in_overage is neither a boolean nor null',],
+              ] as const
+            ) {
+              /**
+               What reading that body throws.
+               */
+              const refusal = caught(function read(): void {
+                parseNeuralWattQuota({ bodyText, },);
+              },);
+              expect(refusal,).toBeInstanceOf(NeuralWattQuotaShapeError,);
+              expect(String(refusal,),).toContain(detail,);
+              expect(String(refusal,),).not.toContain('gateway',);
+            }
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'READS AN ACCOUNT WITH NO SUBSCRIPTION AS ONE, since the field is always present and null then',
-      fn: async () => {
-        expect(parseNeuralWattQuota({
-          bodyText: JSON.stringify({ snapshot_at: '2026-10-20T20:00:00Z', subscription: null, },),
-        },),).toEqual({
-          snapshotAt: '2026-10-20T20:00:00Z',
-        },);
-      },
+    describe({
+      name: planSpendBetween.name,
+      children: [
+        it({
+          name: 'READS THE DIFFERENCE OF THE CHARGED ENERGY as plan energy spent, zero when nothing moved',
+          fn: async () => {
+            /**
+             Reading at the start of a run.
+             */
+            const before = parseNeuralWattQuota({ bodyText: DOCUMENTED_BODY, },);
+            expect(planSpendBetween({ before, after: before, },),).toEqual({ kind: 'measured', kwh: 0, inOverage: false, },);
+
+            /**
+             Reading at its end, after 0.05 kWh were charged.
+             */
+            const after = parseNeuralWattQuota({ bodyText: withSubscription({ kwh_used: 13.9523, kwh_remaining: 6.0477, },), },);
+            const spent = planSpendBetween({ before, after, },);
+            expect(spent.kind,).toBe('measured',);
+            if (spent.kind === 'measured')
+              expect(spent.kwh,).toBeCloseTo(0.05, 9,);
+          },
+        },),
+
+        it({
+          name: 'CARRIES THE OVERAGE FLAG OF THE LATER READING',
+          fn: async () => {
+            /**
+             Reading at the start of a run.
+             */
+            const before = parseNeuralWattQuota({ bodyText: DOCUMENTED_BODY, },);
+            /**
+             Reading at its end, past the included energy.
+             */
+            const after = parseNeuralWattQuota({ bodyText: withSubscription({ kwh_used: 20.5, in_overage: true, },), },);
+            expect(planSpendBetween({ before, after, },),).toMatchObject({ kind: 'measured', inOverage: true, },);
+          },
+        },),
+
+        it({
+          name: 'DECLINES TO COMPARE READINGS THAT CANNOT BE COMPARED, and says why: a billing period that rolled over '
+            + 'between them, an account with no subscription, a figure the reply left out, or a total that fell',
+          fn: async () => {
+            /**
+             Reading at the start of a run.
+             */
+            const before = parseNeuralWattQuota({ bodyText: DOCUMENTED_BODY, },);
+            /**
+             Readings that cannot be compared with it, with the reason each states.
+             */
+            const cases = [
+              [withSubscription({ current_period_start: '2026-05-11T05:05:25Z', kwh_used: 0.2, },), 'billing period',],
+              [JSON.stringify({ snapshot_at: '2026-10-20T20:00:00Z', subscription: null, },), 'no subscription',],
+              [withSubscription({ kwh_used: null, },), 'did not report',],
+              [withSubscription({ kwh_used: 3, },), 'fell',],
+            ] as const;
+            for (const [bodyText, reason,] of cases) {
+              /**
+               Comparison of the start with this reading.
+               */
+              const spent = planSpendBetween({ before, after: parseNeuralWattQuota({ bodyText, },), },);
+              expect(spent.kind,).toBe('not-comparable',);
+              if (spent.kind === 'not-comparable')
+                expect(spent.reason,).toContain(reason,);
+            }
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'READS A NULL FIELD AS UNKNOWN RATHER THAN AS ZERO, so an unreported figure is never counted as unspent',
-      fn: async () => {
-        expect(parseNeuralWattQuota({
-          bodyText: withSubscription({ kwh_used: null, in_overage: null, current_period_start: null, },),
-        },).subscription,).toEqual({
-          plan: 'standard',
-          kwhIncluded: 20,
-          kwhRemaining: 6.0977,
-        },);
-      },
-    },),
+    describe({
+      name: describePlanSpend.name,
+      children: [
+        it({
+          name: 'SAYS PLAINLY THAT NO PLAN ENERGY WAS SPENT, and that the free energy is not in this figure',
+          fn: async () => {
+            /**
+             The sentence for a run that moved nothing.
+             */
+            const said = describePlanSpend({ spend: { kind: 'measured', kwh: 0, inOverage: false, }, },);
+            expect(said,).toContain('no plan energy was spent',);
+            expect(said,).toContain('free daily energy',);
+          },
+        },),
 
-    it({
-      name: 'REFUSES A BODY THAT IS NOT THE SHAPE, naming the broken expectation and never quoting the body',
-      fn: async () => {
-        for (
-          const [bodyText, detail,] of [
-            ['<html>gateway</html>', 'not valid JSON',],
-            ['[1]', 'not a JSON object',],
-            [JSON.stringify({ subscription: null, },), 'snapshot_at is not a string',],
-            [JSON.stringify({ snapshot_at: '2026-10-20T20:00:00Z', },), 'subscription is absent',],
-            [JSON.stringify({ snapshot_at: '2026-10-20T20:00:00Z', subscription: 5, },), 'subscription is neither an object nor null',],
-            [withSubscription({ kwh_used: '13.9', },), 'kwh_used is neither a number nor null',],
-            [withSubscription({ kwh_used: -1, },), 'kwh_used is neither a number nor null',],
-            [withSubscription({ in_overage: 'no', },), 'in_overage is neither a boolean nor null',],
-          ] as const
-        ) {
-          /**
-           What reading that body throws.
-           */
-          const refusal = caught(function read(): void {
-            parseNeuralWattQuota({ bodyText, },);
-          },);
-          expect(refusal,).toBeInstanceOf(NeuralWattQuotaShapeError,);
-          expect(String(refusal,),).toContain(detail,);
-          expect(String(refusal,),).not.toContain('gateway',);
-        }
-      },
-    },),
-  ],
-},);
+        it({
+          name: 'REPORTS A NONZERO DIFFERENCE AS PLAN ENERGY SPENT, in watt-hours, and says when the plan is in overage',
+          fn: async () => {
+            /**
+             The sentence for a run that moved the plan's energy into overage.
+             */
+            const said = describePlanSpend({ spend: { kind: 'measured', kwh: 0.05, inOverage: true, }, },);
+            expect(said,).toContain('PLAN ENERGY SPENT',);
+            expect(said,).toContain('50 Wh',);
+            expect(said,).toContain('in overage',);
+          },
+        },),
 
-await describe({
-  name: planSpendBetween.name,
-  children: [
-    it({
-      name: 'READS THE DIFFERENCE OF THE CHARGED ENERGY as plan energy spent, zero when nothing moved',
-      fn: async () => {
-        /**
-         Reading at the start of a run.
-         */
-        const before = parseNeuralWattQuota({ bodyText: DOCUMENTED_BODY, },);
-        expect(planSpendBetween({ before, after: before, },),).toEqual({ kind: 'measured', kwh: 0, inOverage: false, },);
-
-        /**
-         Reading at its end, after 0.05 kWh were charged.
-         */
-        const after = parseNeuralWattQuota({ bodyText: withSubscription({ kwh_used: 13.9523, kwh_remaining: 6.0477, },), },);
-        const spent = planSpendBetween({ before, after, },);
-        expect(spent.kind,).toBe('measured',);
-        if (spent.kind === 'measured')
-          expect(spent.kwh,).toBeCloseTo(0.05, 9,);
-      },
-    },),
-
-    it({
-      name: 'CARRIES THE OVERAGE FLAG OF THE LATER READING',
-      fn: async () => {
-        /**
-         Reading at the start of a run.
-         */
-        const before = parseNeuralWattQuota({ bodyText: DOCUMENTED_BODY, },);
-        /**
-         Reading at its end, past the included energy.
-         */
-        const after = parseNeuralWattQuota({ bodyText: withSubscription({ kwh_used: 20.5, in_overage: true, },), },);
-        expect(planSpendBetween({ before, after, },),).toMatchObject({ kind: 'measured', inOverage: true, },);
-      },
-    },),
-
-    it({
-      name: 'DECLINES TO COMPARE READINGS THAT CANNOT BE COMPARED, and says why: a billing period that rolled over '
-        + 'between them, an account with no subscription, a figure the reply left out, or a total that fell',
-      fn: async () => {
-        /**
-         Reading at the start of a run.
-         */
-        const before = parseNeuralWattQuota({ bodyText: DOCUMENTED_BODY, },);
-        /**
-         Readings that cannot be compared with it, with the reason each states.
-         */
-        const cases = [
-          [withSubscription({ current_period_start: '2026-05-11T05:05:25Z', kwh_used: 0.2, },), 'billing period',],
-          [JSON.stringify({ snapshot_at: '2026-10-20T20:00:00Z', subscription: null, },), 'no subscription',],
-          [withSubscription({ kwh_used: null, },), 'did not report',],
-          [withSubscription({ kwh_used: 3, },), 'fell',],
-        ] as const;
-        for (const [bodyText, reason,] of cases) {
-          /**
-           Comparison of the start with this reading.
-           */
-          const spent = planSpendBetween({ before, after: parseNeuralWattQuota({ bodyText, },), },);
-          expect(spent.kind,).toBe('not-comparable',);
-          if (spent.kind === 'not-comparable')
-            expect(spent.reason,).toContain(reason,);
-        }
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: describePlanSpend.name,
-  children: [
-    it({
-      name: 'SAYS PLAINLY THAT NO PLAN ENERGY WAS SPENT, and that the free energy is not in this figure',
-      fn: async () => {
-        /**
-         The sentence for a run that moved nothing.
-         */
-        const said = describePlanSpend({ spend: { kind: 'measured', kwh: 0, inOverage: false, }, },);
-        expect(said,).toContain('no plan energy was spent',);
-        expect(said,).toContain('free daily energy',);
-      },
-    },),
-
-    it({
-      name: 'REPORTS A NONZERO DIFFERENCE AS PLAN ENERGY SPENT, in watt-hours, and says when the plan is in overage',
-      fn: async () => {
-        /**
-         The sentence for a run that moved the plan's energy into overage.
-         */
-        const said = describePlanSpend({ spend: { kind: 'measured', kwh: 0.05, inOverage: true, }, },);
-        expect(said,).toContain('PLAN ENERGY SPENT',);
-        expect(said,).toContain('50 Wh',);
-        expect(said,).toContain('in overage',);
-      },
-    },),
-
-    it({
-      name: 'SAYS WHY WHEN THE READINGS COULD NOT BE COMPARED',
-      fn: async () => {
-        expect(describePlanSpend({ spend: { kind: 'not-comparable', reason: 'the billing period rolled over', }, },),)
-          .toContain('the billing period rolled over',);
-      },
+        it({
+          name: 'SAYS WHY WHEN THE READINGS COULD NOT BE COMPARED',
+          fn: async () => {
+            expect(describePlanSpend({ spend: { kind: 'not-comparable', reason: 'the billing period rolled over', }, },),)
+              .toContain('the billing period rolled over',);
+          },
+        },),
+      ],
     },),
   ],
 },);

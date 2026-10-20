@@ -32,7 +32,10 @@ import {
   StreamBoundError,
 } from '../dist/final/node/index.mjs';
 import { textCallOutcome, } from './provider-router-text-call.test-fixture.ts';
-import { stubWetBudgets, } from './provider-router-wet-budgets.test-fixture.ts';
+import {
+  readOlderProvidersWet,
+  stubWetBudgets,
+} from './provider-router-wet-budgets.test-fixture.ts';
 import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_HYPER_TEXT_BEDROCK,
@@ -77,17 +80,7 @@ const SIGNAL = new AbortController().signal;
  */
 function stubFullyWetBudgets(): ReturnType<typeof stubWetBudgets> {
   return {
-    read: async function readAllWet(): Promise<BudgetView> {
-      return {
-        // NeuralWatt reads dry here: these cases pin the older four providers' order,
-        // and its own cases are in `neuralwatt-routing.unit.test.ts`.
-        neuralwatt: true,
-        synthetic: false,
-        hyper: false,
-        bedrock: false,
-        openrouter: false,
-      };
-    },
+    read: readOlderProvidersWet,
     markRefused: async function markNobodyRefused(): Promise<void> {
       return undefined;
     },

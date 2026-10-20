@@ -157,19 +157,6 @@ await describe({
             },);
           },
         },),
-
-        it({
-          name: 'READS THE DAY IN UTC WHATEVER ZONE THE PROCESS RUNS IN: an entry stamped with an offset is placed by '
-            + 'the instant it names',
-          fn: async () => {
-            await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-', },);
-            const path = join(scratch.path, 'energy.jsonl',);
-            // 2026-10-20T22:30:00-04:00 is 2026-10-21T02:30:00Z, tomorrow's date in UTC.
-            await writeFile(path, lineOf({ at: '2026-10-20T22:30:00.000-04:00', model: MODEL, wh: 9, promptTokens: 1, },), 'utf8',);
-            const { now, } = handClock({ start: '2026-10-21T10:00:00.000Z', },);
-            expect((await createNeuralWattLedger({ path, dailyWh: 550, now, },).read()).spentWh,).toBe(9,);
-          },
-        },),
       ],
     },),
 
@@ -420,6 +407,10 @@ await describe({
               ['not a JSON object', '[1]\n',],
               ['at is not an instant', lineOf({ at: 'yesterday', model: MODEL, wh: 1, promptTokens: 1, },),],
               ['at is not an instant', lineOf({ at: 5, model: MODEL, wh: 1, promptTokens: 1, },),],
+              // An offset names the right instant but is not the spelling `toISOString` writes.
+              ['at is not an instant', lineOf({ at: '2026-10-20T22:30:00.000-04:00', model: MODEL, wh: 1, promptTokens: 1, },),],
+              // No zone reads as local time under `Date.parse`, so the day would depend on where the process runs.
+              ['at is not an instant', lineOf({ at: '2026-10-20T22:30:00.000', model: MODEL, wh: 1, promptTokens: 1, },),],
               ['model is not a string', lineOf({ at: '2026-10-20T01:00:00.000Z', model: 5, wh: 1, promptTokens: 1, },),],
               ['wh is not a non-negative number', lineOf({ at: '2026-10-20T01:00:00.000Z', model: MODEL, wh: -1, promptTokens: 1, },),],
               ['wh is not a non-negative number', lineOf({ at: '2026-10-20T01:00:00.000Z', model: MODEL, wh: '1', promptTokens: 1, },),],

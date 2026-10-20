@@ -350,7 +350,7 @@ await describe({
     it({
       name: 'SETTLES AT THE MEASURED ENERGY and the SPEND line: 0.000015 kWh is written as 0.015 Wh, unmarked, the '
         + 'hold is released, and a free request adds nothing to the run\'s USD meter',
-      fn: async () => {
+      fn: async ctx => {
         await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-client-', },);
         const { client, ledger, } = scripted({ dir: scratch.path, },);
         /**
@@ -364,6 +364,7 @@ await describe({
           run: async function call(): Promise<void> {
             await ask({ client, },);
           },
+          sinon: ctx.sinon,
         },);
         expect(lines.some(function isSpend(line,): boolean {
           return line.includes('SPEND provider=neuralwatt model=deepseek-v4.1-flash prompt=90 completion=10 cost=0',);
@@ -411,7 +412,7 @@ await describe({
       name: 'READS A REQUEST THAT WAS BILLED AS THE END OF THE DAY\'S FREE ENERGY: the line carries the cost, the log '
         + 'says plainly that the request was billed and the provider is dry until 00:00 UTC, and the next call is '
         + 'refused without a request',
-      fn: async () => {
+      fn: async ctx => {
         await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-client-', },);
         const { client, ledger, exchanges, } = scripted({
           dir: scratch.path,
@@ -427,6 +428,7 @@ await describe({
           run: async function call(): Promise<void> {
             await ask({ client, },);
           },
+          sinon: ctx.sinon,
         },);
         expect(lines.some(function says(line,): boolean {
           return line.includes('BILLED',) && line.includes('00:00 UTC',) && line.includes('deepseek-v4.1-flash',);
