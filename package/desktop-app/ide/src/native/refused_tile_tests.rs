@@ -84,15 +84,18 @@ fn a_failed_worker_tile_frees_its_job_and_the_next_placement_gets_its_tile() {
     // Far enough to leave the tile, so the worker builds the next one.
     scroll_to(window, 12_000.0);
     {
+        // The window's message is cleared by the next render, which can follow the failure within the same timer
+        // pass, so the test waits for the failure the state recorded when it named it.
         let mut waiting = Waiting::slow();
-        while !(window
-            .get_error_message()
-            .to_string()
-            .contains("Cannot render source"))
-        {
+        while !(!opened.source.borrow().worker_failures.is_empty()) {
             waiting.step("the failed worker tile was not reported");
         }
     }
+    assert!(
+        opened.source.borrow().worker_failures[0].contains("Cannot render source"),
+        "the failed worker tile was not named: {:?}",
+        opened.source.borrow().worker_failures
+    );
     assert!(
         opened.source.borrow().tile_job.is_none(),
         "the failed job is still held"
