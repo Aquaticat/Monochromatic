@@ -320,6 +320,17 @@ fn rows_above_the_view_changing_height_move_no_visible_pixel() {
     let before_extent = opened.source.borrow().row_map.height();
     // Release the pass: lines above the view get their heights, and the offset follows them.
     drop(release);
+    // What: wait until the extent has changed before asking whether the pass has settled.
+    // Why: with dependencies built optimized the settled check returned with the extent unchanged (10608 before and
+    //  after, 24504 once every line is measured) and the assertion below failed; the extent did change a moment later.
+    //  Why the check returned early was not determined: one candidate is that the pass is closed when its last output
+    //  is taken while the window applies that output on a later timer tick.
+    {
+        let mut waiting = Waiting::slow();
+        while opened.source.borrow().row_map.height() <= before_extent {
+            waiting.step("the released pass did not change the extent above the view");
+        }
+    }
     settled(&opened);
     let after_screen = screen(&opened.source, top_line, window);
     let after_extent = opened.source.borrow().row_map.height();
