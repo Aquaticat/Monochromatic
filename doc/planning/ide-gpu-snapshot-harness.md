@@ -1749,9 +1749,12 @@ Filtered loops therefore cannot show these flakes; 5 serial runs of every test o
 
 - The stage 2 baseline (`fcfaec56e6`), unfiltered runs: 1 failure in 20 (the old minimap test below),
   and 0 in 20 while 16 busy loops ran.
-- Main at the merge, with only failure details added to some asserts: 9 failures in 70 runs
-  (render noise 3, the old minimap test 3, the find test 2, the resize test 1);
-  while the 16 busy loops ran, 2 failures in 20, both the find test.
+- Main at the merge, with only failure details added to some asserts: 9 failures in 70 runs,
+  of which 20 ran while 16 busy loops ran
+  (render noise 3, the old minimap test 3, the find test 2, the resize test 1).
+  The 50 runs without busy loops had 7 failures; the 20 with them had 2, both the find test.
+  A further 15 runs of main that carried a heavy GPU probe test are left out of these counts;
+  they had 4 failures, one of them the refused tile hang below.
 - Forty runs of the baseline cannot show a rate below about 5 percent, so a smaller difference is not excluded.
 - After the fixes, on the head of this branch: 15 consecutive runs without a failure,
   1 failure in an earlier 15 (the old minimap test, in the last run),
