@@ -5,7 +5,10 @@ on a shared package,
 and the decisions settled so far.
 Status: interview complete.
 Shared understanding confirmed on 2026-10-20 (Q13);
-implementation is authorized.
+implementation is authorized and underway.
+This file is also the working handover:
+ commits, decisions since the interview, measured failures, and the queue
+ live in Implementation progress.
 
 ## Request
 
@@ -191,21 +194,97 @@ and use a shared package.
 - pi-ai catalog cost side-table (Q12 recommendation),
   rejected in favor of `defaultReviewerModel` plus context heuristic.
 
+## Implementation progress
+
+Authoritative task state,
+ updated as work lands.
+
+### Commits
+
+- `b710410e81` `refactor(*): move model-selection to agent-harness-shared`:
+  the Q9 move,
+  dir plus name plus consumers (advisor, goal, thinking-default, model-retirement),
+  the `mise.toml` PATH entry,
+  the pnpr OIDC allowlist entry,
+  a regenerated lockfile (rename-only,
+  measured: no dependency version changed),
+  and the WR6 note in `doc/todo/pi-shared-model-selection.md`.
+- `c8d9af87d5` `fix(*): stub new pi-coding-agent 1.3.0 ExtensionAPI members in verify fakes`:
+  TS2740 stubs in advisor,
+  guardrail,
+  and thinking-default `src/mise.verify-extension.ts`,
+  mirroring the search-fetch fake.
+
+### Decisions since the interview
+
+- 2026-10-20 user directive: fix pre-existing failures too,
+  not only this series' regressions.
+- 2026-10-20 user directive: keep this handover current,
+  updating it as work lands.
+
+### Pre-existing failures measured (fix authorized, queued)
+
+Measured 2026-10-20 through package `lint:types` runs.
+None of these files are in this series' diff,
+and no dependency version moved in the move commit.
+
+- `agent-harness-shared/shell-command-analyzer`:
+  TS2339 on `TestLogicalExpression` and `Negation`/`Time` intersections with
+  `FOREIGN_BORROWED_MARKER` in `src/visit-expression.ts` and `src/visit-node.ts`.
+  Fails standalone,
+  so ambient.
+  Blocks guardrail and terminal-title lint.
+- `pi-plugin/current-time-context`:
+  TS2322 `NormalizedBuildSystemPromptOptions` fixture in `src/pi-test-harness.ts`
+  (regression class of `c5d262a7b`).
+- `pi-plugin/terminal-title`:
+  `BeforeAgentStartEvent` drift (TS2769,
+  TS2344,
+  TS2322 in `src/index.ts`,
+  TS2352 in `src/index.unit.test.ts`),
+  plus the shell-command-analyzer block.
+- `pi-plugin/model-retirement`:
+  characterization fixture predates the 2026-10-15 catalog (1604 entries,
+  stamp 2026-10-01) versus installed (1714 entries,
+  stamp 2026-10-15);
+  regenerate and review the fixture.
+- Unexercised surfaces at this point:
+  `lint:types` for every package outside the named set,
+  and `test:unit` for packages this series does not touch.
+
+### Unknowns
+
+- Whether the shell-command-analyzer TS2339s come from the TypeScript
+  7.1.0-beta toolchain,
+  the `ownership-marker` branding,
+  or the AST typings;
+  diagnose before choosing the fix.
+- Whether more packages fail `lint:types` until the full sweep runs.
+
 ## Next action
 
-Implementation, in this order:
+Implementation,
+ in this order (user directive 2026-10-20: fix pre-existing failures too):
 
-1. Move `package/pi-shared/model-selection` to
+1. DONE,
+   commit `b710410e81`: move `package/pi-shared/model-selection` to
    `package/agent-harness-shared/model-selection`
-   (dir plus name plus consumers: advisor, goal).
-2. Extract the shared core `package/agent-harness-shared/advisor`
+   (dir plus name plus consumers).
+2. Fix the measured pre-existing failures:
+   shell-command-analyzer TS2339,
+   current-time-context fixture,
+   terminal-title event drift,
+   and model-retirement fixture;
+   then sweep every package `lint:types`
+   and fix whatever else is red.
+3. Extract the shared core `package/agent-harness-shared/advisor`
    (middle depth per Q7)
    and rewire `package/pi-plugin/advisor` onto it in the same series.
-3. Build `package/dsh-plugin/advisor` (in-process plugin,
+4. Build `package/dsh-plugin/advisor` (in-process plugin,
    tool plus `/advisor` command, unified config,
    `ctx.llm` backend, Q12 selection rule).
-4. Tests, lint, and `mise` tasks for every new and moved package;
+5. Tests, lint, and `mise` tasks for every new and moved package;
    behavior picks recorded per Q5 and Q6.
-5. Fixture-profile verification, then the Q10 live install.
-6. READMEs, planning doc, GitHub issue (`needs-triage`),
+6. Fixture-profile verification, then the Q10 live install.
+7. READMEs, planning doc, GitHub issue (`needs-triage`),
    and this handover's completion record.
