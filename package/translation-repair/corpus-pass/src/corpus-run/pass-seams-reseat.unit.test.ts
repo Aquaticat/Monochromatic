@@ -350,6 +350,9 @@ async function contestRun(
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     overlap: 1,
     l,
+    // The control must ask the seat the dry-out takes, so every judge is asked: a window of quorum plus one, rotated by the
+    // sheet text, may leave that seat out and then the control proves nothing about the hook.
+    fanOut: 'whole-bench',
     stageSettings: SCRIPTED_STAGE_SETTINGS,
     // Every late judge must be asked, so the lost seat is, and the default
     // window is rotated by the sheet text.
@@ -523,6 +526,8 @@ async function admissionAsked({ later, }: { readonly later: BudgetView; },): Pro
     overlap: 1,
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     entryId: 'CatEntry',
+    // The control must ask the seat the dry-out takes, so the whole roster is asked, as in the contest case.
+    fanOut: 'whole-bench',
     stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return asked;
@@ -561,6 +566,8 @@ async function preparationAsked({ later, }: { readonly later: BudgetView; },): P
     targetText: `${ARCHIVE}\n\nIt dreamed of fish.`,
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     outsideReads: NO_OUTSIDE_READS,
+    // The control must ask the seat the dry-out takes, so the whole roster is asked in the pairing round, as in the contest case.
+    fanOut: 'whole-bench',
     stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return asked;

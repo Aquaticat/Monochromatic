@@ -66,6 +66,11 @@ import type {
 
  @param l - entry logger
 
+ @param fanOut - seats a round asks: the window of quorum plus one by
+ default, or the whole bench a fixture scripting every seat asks for, since
+ the window is rotated by the sheet text and a sheet edit elsewhere moves
+ which seats it holds
+
  @param stageSettings - straggler windows and contest ledger the entry file
  read for this launch (`StageSettings`)
 
@@ -94,6 +99,7 @@ export async function runPassContest(
     signal,
     overlap,
     l,
+    fanOut,
     stageSettings,
     fanOut,
   }: {
@@ -109,6 +115,7 @@ export async function runPassContest(
     readonly signal: AbortSignal;
     readonly overlap: number;
     readonly l: Logger;
+    readonly fanOut?: FanOutMode;
     readonly stageSettings: StageSettings;
     readonly fanOut?: FanOutMode;
   },
@@ -163,6 +170,8 @@ export async function runPassContest(
     },)
       .beforeSlice,
     l,
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((fanOut === undefined) ? {} : { fanOut, }),
     stageSettings,
     // Conditional spread keeps the knob absent instead of undefined.
     ...((fanOut === undefined) ? {} : { fanOut, }),

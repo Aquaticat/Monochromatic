@@ -17,6 +17,7 @@ import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/
 import {
   type BlockPairingError,
   claimMediaAdjacentTargets,
+  type FanOutMode,
   type FreeOrderBlocks,
   readBlockPairing,
   requireBlockPairingRefusal,
@@ -122,6 +123,11 @@ function cachedPairingMisfit(
 
  @param pairingCache - existing versioned block cache, absent for an uncached probe
 
+ @param fanOut - seats a pairing round asks: the window of quorum plus one
+ by default, or the whole bench a fixture scripting every seat asks for,
+ since the window is rotated by the sheet text and a sheet edit elsewhere
+ moves which seats it holds
+
  @param stageSettings - straggler windows and contest ledger the entry file
  read for this launch (`StageSettings`)
 
@@ -146,6 +152,7 @@ export async function prepareBlockPairing(
     l,
     pairingCache,
     pictureReadings,
+    fanOut,
     stageSettings,
   }: ForeignBorrowed<{
     readonly client: ModelClient;
@@ -158,6 +165,7 @@ export async function prepareBlockPairing(
     readonly l: Logger;
     readonly pairingCache?: SliceCache<PairedSectionRecord>;
     readonly pictureReadings?: ReadonlyMap<string, PairedReading>;
+    readonly fanOut?: FanOutMode;
     readonly stageSettings: StageSettings;
   }>,
 ): Promise<PreparedBlockPairing> {
@@ -283,6 +291,8 @@ export async function prepareBlockPairing(
     signal,
     exchangeTimeoutMs,
     l: pl,
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((fanOut === undefined) ? {} : { fanOut, }),
     stageSettings,
   },);
   /**

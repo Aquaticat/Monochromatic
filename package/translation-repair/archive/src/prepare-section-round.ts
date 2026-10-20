@@ -15,6 +15,7 @@ import {
   pairingQuestionKey,
 } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import {
+  type FanOutMode,
   type NumberedSection,
   type PairedDocumentRecord,
   pairSectionsWithRoster,
@@ -277,6 +278,11 @@ function cachedSectionPairingMisfit(
  @param sectionCache - store a settled round is republished from, so a resumed
  entry buys nothing; a stored round the section reader refuses is a miss
 
+ @param fanOut - seats a pairing round asks: the window of quorum plus one
+ by default, or the whole bench a fixture scripting every seat asks for,
+ since the window is rotated by the sheet text and a sheet edit elsewhere
+ moves which seats it holds
+
  @param stageSettings - straggler windows and contest ledger the entry file
  read for this launch (`StageSettings`)
 
@@ -297,6 +303,7 @@ export async function buySectionPairing(
     exchangeTimeoutMs,
     l,
     sectionCache,
+    fanOut,
     stageSettings,
   }: ForeignBorrowed<{
     readonly client: ModelClient;
@@ -307,6 +314,7 @@ export async function buySectionPairing(
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
     readonly sectionCache?: SliceCache<PairedDocumentRecord>;
+    readonly fanOut?: FanOutMode;
     readonly stageSettings: StageSettings;
   }>,
 ): Promise<SectionRoundOutcome> {
@@ -429,6 +437,8 @@ export async function buySectionPairing(
     signal,
     exchangeTimeoutMs,
     l,
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((fanOut === undefined) ? {} : { fanOut, }),
     stageSettings,
   },);
 

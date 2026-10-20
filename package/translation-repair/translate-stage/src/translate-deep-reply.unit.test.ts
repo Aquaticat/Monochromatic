@@ -216,6 +216,9 @@ async function runDeepVoiceStage(
     signal: new AbortController().signal,
     perCallTimeoutMs: HANG_STOP_MS,
     l: capturingLogger({ messages, },),
+    // The case names the one self-vote its findings record, so every judge is asked: a window of quorum plus one judges, rotated
+    // by the sheet text, may leave that judge out.
+    fanOut: 'whole-bench',
     stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return {

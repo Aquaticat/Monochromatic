@@ -20,7 +20,10 @@ import {
   type RunClient,
   type SeatReadingClient,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
+import type {
+  FanOutMode,
+  StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Insertion admission re-seating
 // THE INSERTION ADMISSION'S PER-CANDIDATE HOOK (ledger X12), beside the other
@@ -124,6 +127,11 @@ export function insertionHooksFor(
 
  @param entryId - entry the log lines are tagged with
 
+ @param fanOut - seats a round asks: the window of quorum plus one by
+ default, or the whole bench a fixture scripting every seat asks for, since
+ the window is rotated by the sheet text and a sheet edit elsewhere moves
+ which seats it holds
+
  @param stageSettings - straggler windows and contest ledger the entry file
  read for this launch (`StageSettings`)
 
@@ -142,6 +150,7 @@ export async function admitPassInsertions(
     overlap,
     signal,
     entryId,
+    fanOut,
     stageSettings,
   }: {
     readonly client: RunClient;
@@ -150,6 +159,7 @@ export async function admitPassInsertions(
     readonly overlap: number;
     readonly signal: AbortSignal;
     readonly entryId: string;
+    readonly fanOut?: FanOutMode;
     readonly stageSettings: StageSettings;
   },
 ): Promise<InsertionAdmission> {
@@ -172,6 +182,8 @@ export async function admitPassInsertions(
       l,
     },)
       .beforeCandidate,
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((fanOut === undefined) ? {} : { fanOut, }),
     stageSettings,
   },);
 }

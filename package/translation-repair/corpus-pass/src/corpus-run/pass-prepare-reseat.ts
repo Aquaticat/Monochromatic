@@ -22,7 +22,10 @@ import {
   type RunClient,
   type SeatReadingClient,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
+import type {
+  FanOutMode,
+  StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Preparation re-seating
 // THE PREPARATION'S PER-ITEM HOOK (ledger X12), beside the other phases'
@@ -134,6 +137,11 @@ export function preparationHooksFor(
  (ledger X19): the readers the pass's entry file builds over its environment
  in a run
 
+ @param fanOut - seats a pairing round asks: the window of quorum plus one
+ by default, or the whole bench a fixture scripting every seat asks for,
+ since the window is rotated by the sheet text and a sheet edit elsewhere
+ moves which seats it holds
+
  @param stageSettings - straggler windows and contest ledger the entry file
  read for this launch (`StageSettings`)
 
@@ -155,6 +163,7 @@ export async function runPassPreparation(
     targetText,
     signal,
     outsideReads,
+    fanOut,
     stageSettings,
   }: {
     readonly client: RunClient;
@@ -166,6 +175,7 @@ export async function runPassPreparation(
     readonly targetText: string;
     readonly signal: AbortSignal;
     readonly outsideReads: PassOutsideReads;
+    readonly fanOut?: FanOutMode;
     readonly stageSettings: StageSettings;
   },
 ): Promise<PassPreparation> {
@@ -204,6 +214,8 @@ export async function runPassPreparation(
     },)
       .beforeItem,
     outsideReads,
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((fanOut === undefined) ? {} : { fanOut, }),
     stageSettings,
   },);
 }

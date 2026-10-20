@@ -20,6 +20,7 @@ import type {
   PreparedDocumentPair,
 } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 import {
+  type FanOutMode,
   mapOverlapped,
   type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
@@ -83,6 +84,11 @@ function candidateSliceName({ item, }: { readonly item: { readonly sliceIndex: n
  @param beforeCandidate - awaited before each candidate's coverage question,
  handing it the roster it is asked of; none keeps the given one (ledger X12)
 
+ @param fanOut - seats a round asks: the window of quorum plus one by
+ default, or the whole bench a fixture scripting every seat asks for, since
+ the window is rotated by the sheet text and a sheet edit elsewhere moves
+ which seats it holds
+
  @param stageSettings - straggler windows and contest ledger the entry file
  read for this launch (`StageSettings`)
 
@@ -106,6 +112,7 @@ export async function decidePassInsertionAdmission(
     perCallTimeoutMs,
     l,
     beforeCandidate,
+    fanOut,
     stageSettings,
   }: ForeignBorrowed<{
     readonly client: ModelClient;
@@ -116,6 +123,7 @@ export async function decidePassInsertionAdmission(
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
     readonly beforeCandidate?: () => Promise<BenchSeating>;
+    readonly fanOut?: FanOutMode;
     readonly stageSettings: StageSettings;
   }>,
 ): Promise<InsertionAdmission> {
@@ -263,6 +271,8 @@ export async function decidePassInsertionAdmission(
         signal,
         exchangeTimeoutMs: perCallTimeoutMs,
         l: al,
+        // Conditional spread keeps the knob absent instead of undefined.
+        ...((fanOut === undefined) ? {} : { fanOut, }),
         stageSettings,
       },);
       /**

@@ -32,7 +32,10 @@ import {
   type TranslateStageResult,
 } from './translate-stage-result.ts';
 import { translateSlateEvidence, } from './translate-slate-evidence.ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
+import type {
+  FanOutMode,
+  StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Translate judge
 
@@ -125,6 +128,11 @@ import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage
 
  @param l - pipeline logger
 
+ @param fanOut - seats a round asks: the window of quorum plus one by
+ default, or the whole bench a fixture scripting every seat asks for, since
+ the window is rotated by the sheet text and a sheet edit elsewhere moves
+ which seats it holds
+
  @param stageSettings - straggler windows and contest ledger the entry file
  read for this launch (`StageSettings`)
 
@@ -171,6 +179,7 @@ export async function judgeTranslateSlate(
     signal,
     perCallTimeoutMs,
     l,
+    fanOut,
     stageSettings,
   }: ForeignBorrowed<{
     readonly client: ModelClient;
@@ -216,6 +225,7 @@ export async function judgeTranslateSlate(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly fanOut?: FanOutMode;
     readonly stageSettings: StageSettings;
   }>,
 ): Promise<TranslateStageResult> {
@@ -462,6 +472,8 @@ export async function judgeTranslateSlate(
     signal,
     perCallTimeoutMs,
     l: tl,
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((fanOut === undefined) ? {} : { fanOut, }),
     stageSettings,
   },);
   if (outcome.kind === 'selected') {

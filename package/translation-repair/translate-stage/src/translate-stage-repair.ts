@@ -17,7 +17,10 @@ import { produceTranslateSlate, } from './translate-produce.ts';
 import { judgeSlateWithRetry, } from './translate-retry.ts';
 import type { TranslateStageResult, } from './translate-stage-result.ts';
 import { TranslationRepairInterruptedError, } from './translation-repair-interrupted-error.ts';
-import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
+import type {
+  FanOutMode,
+  StageSettings,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Translate stage repair
 // FIXED DEPTH TWO BY DESIGN: one initial round, then at most one statically
@@ -66,6 +69,7 @@ type TranslateRoundInput = ForeignBorrowed<{
   readonly signal: AbortSignal;
   readonly perCallTimeoutMs: number;
   readonly l: Logger;
+  readonly fanOut?: FanOutMode;
 }>;
 
 /**
@@ -126,6 +130,8 @@ async function produceAndJudgeOnce(
     signal: input.signal,
     perCallTimeoutMs: input.perCallTimeoutMs,
     l: input.l,
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((input.fanOut === undefined) ? {} : { fanOut: input.fanOut, }),
     stageSettings,
   },);
   /**
@@ -169,6 +175,7 @@ async function produceAndJudgeOnce(
           signal: input.signal,
           perCallTimeoutMs: input.perCallTimeoutMs,
           l: input.l,
+          ...((input.fanOut === undefined) ? {} : { fanOut: input.fanOut, }),
           stageSettings,
         },
       },),
@@ -232,6 +239,11 @@ async function produceAndJudgeOnce(
 
  @param l - pipeline logger
 
+ @param fanOut - seats a round asks: the window of quorum plus one by
+ default, or the whole bench a fixture scripting every seat asks for, since
+ the window is rotated by the sheet text and a sheet edit elsewhere moves
+ which seats it holds
+
  @param stageSettings - straggler windows and contest ledger the entry file
  read for this launch (`StageSettings`)
 
@@ -274,6 +286,7 @@ export async function runTranslateRepairs(
     signal,
     perCallTimeoutMs,
     l,
+    fanOut,
     stageSettings,
   }: ForeignBorrowed<{
     readonly client: ModelClient;
@@ -300,6 +313,7 @@ export async function runTranslateRepairs(
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
+    readonly fanOut?: FanOutMode;
     readonly stageSettings: StageSettings;
   }>,
 ): Promise<TranslateStageResult> {
@@ -331,6 +345,8 @@ export async function runTranslateRepairs(
     signal,
     perCallTimeoutMs,
     l,
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((fanOut === undefined) ? {} : { fanOut, }),
   };
   /**
    Initial round with no rejection evidence.
