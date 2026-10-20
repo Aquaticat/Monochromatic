@@ -285,9 +285,31 @@ disjoint write scopes):
   parked until the repo-wide `mise run build` ends
   (no concurrent builds),
   lead wakes it on the build's completion.
+  NOTE 2026-10-20: became unresumable after parking
+  (`send_message` target not found);
+  scope handed to replacement `bd3dc9b4`,
+  which also takes its findings (the three `module/*` TS2305s were
+  stale-dist artifacts,
+  `translation-repair/source-scan` and `translation-repair/test-fixture`
+  ship no `dist` by design).
 - design subagent `1d3fe543`: `doc/planning/pi-advisor-dsh-variant.md` only,
   the DSH plugin blueprint probed from the host inspect manifests;
   implementation of `package/dsh-plugin/advisor` waits for the extraction.
+- docs subagent `94e9414e`: DONE,
+  commit `601c69399e`:
+  `doc/troubleshooting/deps-update-api-drift.md` (new class doc,
+  unbash 6.0.0 / yuku-analyzer 0.19.0 / pi-ai catalog incidents,
+  symptoms reproduced from a pre-fix worktree at `b710410e81`)
+  plus two pi-1.3.0 sections in
+  `doc/troubleshooting/pi-0-87-extension-api-breakage.md`.
+- build-fixes subagent `63d2bd1d`: three pre-existing build failures
+  found by the workspace build
+  (separate incidents,
+  fixed and committed separately):
+  `pi-plugin/auto-mode` (rolldown UNRESOLVED_ENTRY `./src/index.ts`),
+  `webapp-productivity/doodle-widget` (jspdf `canvg` resolve error),
+  `desktop-app/terminal` (staging assumes a prior `libghostty-vt` release
+  build).
 
 The lead holds `doc/handover/` edits and cross-agent integration.
 
