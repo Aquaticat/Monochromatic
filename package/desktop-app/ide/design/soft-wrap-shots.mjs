@@ -48,7 +48,7 @@ for (const scheme of ['light', 'dark']) {
   mkdirSync(join(directory, 'data'), { recursive: true });
   writeFileSync(join(project, 'sample.rs'), sample);
   const env = { ...process.env, XDG_CONFIG_HOME: join(directory, 'config'), XDG_CACHE_HOME: join(directory, 'cache'), XDG_DATA_HOME: join(directory, 'data') };
-  for (const key of ['HELIX_RUNTIME', 'CARGO_MANIFEST_DIR', 'SLINT_BACKEND', 'SLINT_MCP_PORT', 'SLINT_SCALE_FACTOR']) delete env[key];
+  for (const key of ['HELIX_RUNTIME', 'CARGO_MANIFEST_DIR', 'SLINT_BACKEND', 'SLINT_SCALE_FACTOR']) delete env[key];
   const socket = join(directory, 'control.sock');
   const child = spawn(compositor, ['--socket', socket, '--size', '1100x660', '--color-scheme', scheme, '--', application, project, '--file', 'sample.rs'], { cwd: '/', env, stdio: ['ignore', 'pipe', 'pipe'] });
   const chunks = [];

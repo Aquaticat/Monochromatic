@@ -48,6 +48,8 @@ if (!liveRoot || (statSync(liveRoot).mode & 0o077) !== 0 || statfsSync(liveRoot)
 const origin = process.cwd();
 demandCurrentCompositor();
 const artifact = mkdtempSync(join(privateRoot, 'ide-idle-cost-'));
+// build.rs embeds target/crate-licenses.json, which the notices task writes; the disposable target directory needs its copy.
+if (!existsSync(join(cache, 'crate-licenses.json'))) copyFileSync(join(origin, 'target/crate-licenses.json'), join(cache, 'crate-licenses.json'));
 const source = join(artifact, 'package');
 cpSync(origin, source, { recursive: true, filter: path => !['target', '.git', 'node_modules'].includes(relative(origin, path).split(sep)[0]) });
 mkdirSync(join(source, 'target'), { recursive: true });
@@ -65,7 +67,7 @@ const build = label => {
     '--security-opt', 'label=disable',
     '--volume', source + ':/work', '--volume', cache + ':/work/target', '--volume', cargoHome + ':/cargo',
     '--workdir', '/work', ...containerLimits.environmentArguments, '--env', 'SLINT_EMIT_DEBUG_INFO=1',
-    'localhost/monochromatic/ide', 'cargo', 'build', '--offline', '--features', 'slint/mcp', ...(profile === 'release' ? ['--release'] : []),
+    'localhost/monochromatic/ide', 'cargo', 'build', '--offline', ...(profile === 'release' ? ['--release'] : []),
   ], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
   writeFileSync(join(artifact, 'build-' + label + '.log'), (result.stdout ?? '') + (result.stderr ?? ''));
   if (result.error) throw result.error;
@@ -102,7 +104,6 @@ const runtime = [join(origin, 'target/debug/runtime'), join(cache, 'debug/runtim
 // compositor's close records, and both programs read RUST_LOG.
 const environment = { ...process.env, SLINT_BACKEND: 'winit', FONTCONFIG_FILE: fontConfig, XDG_CONFIG_HOME: join(artifact, 'config'), XDG_CACHE_HOME: join(artifact, 'cache'), XDG_DATA_HOME: join(artifact, 'data'), RUST_LOG: 'nested_wayland_session=info,ide_app=debug,monochromatic_ide=debug' };
 if (runtime) environment.HELIX_RUNTIME = runtime;
-delete environment.SLINT_MCP_PORT;
 
 const plain = text => text.replace(/\x1b\[[0-9;]*m/g, '');
 const cpuTicks = pid => {

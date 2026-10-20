@@ -173,15 +173,22 @@ console.log('Wrote target/linked-crates.txt: ' + crates.length + ' crates, the p
 """
 
 [tasks."inspect:software-renderer"]
-description = "Fail when Slint's software renderer is linked into the application or the test builds (the opt-in slint/mcp inspection builds are not covered)"
+description = "Fail when Slint's software renderer is linked into any build the package defines, and prove the check can see it by requesting that renderer explicitly"
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 // The inverted tree of the CPU renderer over every edge kind that reaches a compiled binary, for the one target.
 // A package that is not in the build graph at all makes cargo print "nothing to print" to stderr and nothing to stdout.
-const tree = runCargo(['tree', '--frozen', '--edges', 'normal,dev,no-proc-macro', '--target', 'x86_64-unknown-linux-gnu', '--invert', 'i-slint-renderer-software'], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] })
+const invertedTree = features => runCargo(['tree', '--frozen', '--edges', 'normal,dev,no-proc-macro', '--target', 'x86_64-unknown-linux-gnu', '--invert', 'i-slint-renderer-software', ...features], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] })
+// --all-features turns on every feature the package defines, so a feature added later that reaches the renderer is seen.
+const tree = invertedTree(['--all-features'])
 if (tree.trim() !== '') { throw new Error('Slint software renderer is linked:' + String.fromCharCode(10) + tree) }
-console.log('Slint software renderer is not linked into the application or the test builds')
+// Positive controls: each request below must reach the renderer, or the empty tree above proves nothing. The second is
+// Slint's MCP server, whose screenshots use the software renderer and which this package no longer builds.
+for (const feature of ['slint/renderer-software', 'slint/mcp']) {
+  if (invertedTree(['--features', feature]).trim() === '') { throw new Error('The positive control --features ' + feature + ' did not reach the software renderer, so this check cannot see it') }
+}
+console.log('Slint software renderer is not linked into any build of this package; --features slint/renderer-software and slint/mcp do reach it')
 """
 
 [tasks."build:debug"]
@@ -200,7 +207,7 @@ shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 // Only the application binary: the runtime, inspection, and scripted-server helpers are build and test tools.
-// SLINT_EMIT_DEBUG_INFO keeps element ids for the debug inspection builds; sibling release builds do not set it.
+// SLINT_EMIT_DEBUG_INFO keeps element ids, which the native tests need to find elements by name; sibling release builds do not set it.
 // The earlier fixed 2 GiB and 2 CPU bound was enough: measured on 2026-10-05, a build from an empty release directory
 // peaked at 1,116 MiB of anonymous memory with no out-of-memory kill and took 15 to 19 minutes on a loaded host.
 runBounded(['env', '--unset=SLINT_EMIT_DEBUG_INFO', 'cargo', 'build', '--release', '--bin', 'monochromatic-ide'])
@@ -758,7 +765,6 @@ usage = '''
 arg "<cache>" help="Existing disposable Cargo target directory below the private agent scratch root"
 arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
 arg "[seconds]" help="Length of each measurement while keys move the caret; default 30"
-arg "[port]" help="Slint MCP port of the IDE under test; default 9408"
 '''
 run = "node bin/inspect-log-stall.mjs"
 
@@ -782,33 +788,9 @@ arg "[only]" help="Comma-separated guard names to run; default is every guard"
 '''
 run = "node bin/inspect-language-navigation-guards.mjs"
 
-[tasks.mcp]
-depends = ["runtime", "notices"]
-description = "Build and run the source-view gate with native headless UI inspection"
-shell = "node --input-type=module-typescript -e"
-run = """
-{{vars.cargo}}
-const { mkdtempSync, mkdirSync } = await import('node:fs')
-const { tmpdir } = await import('node:os')
-const { join } = await import('node:path')
-runCargo(['build', '--features', 'slint/mcp'])
-const scratch = mkdtempSync(join(tmpdir(), 'monochromatic-ide-ui-'))
-for (const name of ['config', 'cache', 'data']) { mkdirSync(join(scratch, name)) }
-const env = {
-  ...process.env,
-  HELIX_RUNTIME: join(process.cwd(), 'target/debug/runtime'),
-  SLINT_MCP_PORT: process.env.SLINT_MCP_PORT ?? '9317',
-  SLINT_BACKEND: process.env.SLINT_BACKEND ?? 'headless',
-  XDG_CONFIG_HOME: join(scratch, 'config'),
-  XDG_CACHE_HOME: join(scratch, 'cache'),
-  XDG_DATA_HOME: join(scratch, 'data'),
-}
-execFileSync('./target/debug/monochromatic-ide', [scratch], { stdio: 'inherit', env })
-"""
-
 [tasks."inspect:native"]
 depends = ["runtime", "notices"]
-description = "Run the IDE in the repo compositor with isolated theme and font configuration"
+description = "Run the IDE in the repo compositor with isolated theme and font configuration; the printed control socket takes screenshot, click, move, drag, scroll, key, type, and a11y commands"
 usage = '''
 arg "[scheme]" default="dark" help="Private system appearance: dark or light"
 arg "[fixture]" default="basic" help="Source fixture: basic, scroll, syntax, or annotations (injected inlay hints and diagnostics)"
@@ -823,7 +805,7 @@ const scheme = process.env.usage_scheme ?? 'dark'
 const fixture = process.env.usage_fixture ?? 'basic'
 if (scheme !== 'dark' && scheme !== 'light') { throw new Error('scheme must be dark or light') }
 if (!['basic', 'scroll', 'syntax', 'annotations'].includes(fixture)) { throw new Error('fixture must be basic, scroll, syntax, or annotations') }
-runCargo(['build', '--features', 'slint/mcp'])
+runCargo(['build', '--bin', 'monochromatic-ide'])
 const scratch = mkdtempSync(join(tmpdir(), 'monochromatic-ide-native-'))
 for (const name of ['config', 'cache', 'data']) { mkdirSync(join(scratch, name)) }
 const fontConfig = join(scratch, 'fonts.conf')
@@ -832,7 +814,6 @@ const env = {
   ...process.env,
   HELIX_RUNTIME: resolve('target/debug/runtime'),
   SLINT_BACKEND: 'winit',
-  SLINT_MCP_PORT: process.env.IDE_NATIVE_MCP_PORT ?? (scheme === 'dark' ? '9318' : '9319'),
   FONTCONFIG_FILE: fontConfig,
   XDG_CONFIG_HOME: join(scratch, 'config'),
   XDG_CACHE_HOME: join(scratch, 'cache'),
@@ -967,7 +948,10 @@ if (!/^[1-9][0-9]*x[1-9][0-9]*$/.test(size)) { throw new Error('IDE_NATIVE_SIZE 
 // IDE_NATIVE_SCALE starts the nested output at another scale; the window keeps its logical size.
 const scale = process.env.IDE_NATIVE_SCALE ?? '1'
 if (!/^[0-9]+([.][0-9]+)?$/.test(scale)) { throw new Error('IDE_NATIVE_SCALE must be a number such as 2 or 1.25') }
-execFileSync(compositor, ['--socket', socket, '--size', size, '--scale', scale, '--color-scheme', scheme, '--', resolve('target/debug/monochromatic-ide'), project, '--file', sourceFile], { env, stdio: 'inherit' })
+// --accessibility serves the accessibility bus, so the control socket's a11y command reads the window's element tree
+// (roles, names, states, and screen bounds). It is on here for the agent that drives this session and off in the
+// measuring tasks, which run the application as shipped.
+execFileSync(compositor, ['--socket', socket, '--size', size, '--scale', scale, '--color-scheme', scheme, '--accessibility', '--', resolve('target/debug/monochromatic-ide'), project, '--file', sourceFile], { env, stdio: 'inherit' })
 """
 
 [tasks."inspect:cadence"]
