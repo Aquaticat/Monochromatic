@@ -1097,7 +1097,7 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     laptops with both GPUs"; my veto-open decision above is retracted. Mesa documents (docs.mesa3d.org/envvars.html)
     that without `DRI_PRIME` the default GPU is the one the display server uses, and that `DRI_PRIME` or
     `MESA_VK_DEVICE_SELECT` put the chosen GPU first in the Vulkan list; desktops set these per application through
-    switcheroo-control. New policy (agent `GPU-PICK` below): follow the loader's order among hardware adapters, honor
+    switcheroo-control. New policy (agent `a090eeb1ae38efc05`, started 2026-10-20): follow the loader's order among hardware adapters, honor
     `WGPU_ADAPTER_NAME` and `WGPU_POWER_PREF` again, keep refusing CPU and unknown kinds. Not testable here (one
     AMD desktop): a hybrid laptop, NVIDIA proprietary ordering.
     Stages 3 and 4 are merged into one task (the tile bakes in selection, underlines and the wrap sign, so they
