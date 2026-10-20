@@ -336,7 +336,7 @@ await describe({
             const path = join(scratch.path, 'e.jsonl',);
             await writeFile(
               path,
-              lineOf({ at: '2026-10-20T01:00:00.000Z', model: MODEL, wh: 0.0167, promptTokens: 2954, billedUsd: 0.000107, },),
+              lineOf({ at: '2026-10-20T01:00:00.000Z', model: MODEL, wh: 0.0167, promptTokens: 2_954, billedUsd: 1.07e-4, },),
               'utf8',
             );
             const { now, } = handClock({ start: '2026-10-20T12:00:00.000Z', },);
@@ -358,7 +358,7 @@ await describe({
             /**
              The next call, asked for after that line.
              */
-            const outcome = await ledger.reserve({ model: MODEL, promptTokens: 2954, estimateWh: 0.1, },);
+            const outcome = await ledger.reserve({ model: MODEL, promptTokens: 2_954, estimateWh: 0.1, },);
             expect(outcome.granted,).toBe(true,);
           },
         },),

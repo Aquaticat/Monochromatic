@@ -67,7 +67,7 @@ await describe({
             + 'while the remainder fits the smallest call, and a reading still carrying the old billedToday flag is '
             + 'wet when its remainder is',
           fn: async () => {
-            expect(neuralWattIsDry({ energy: { ...ROOMY, spentWh: 449.9, reservedWh: 100, calls: 9000, }, },),).toBe(false,);
+            expect(neuralWattIsDry({ energy: { ...ROOMY, spentWh: 449.9, reservedWh: 100, calls: 9_000, }, },),).toBe(false,);
 
             /**
              Reading as an older build shaped it, with a flag nothing reads any more.
