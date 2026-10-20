@@ -26,13 +26,20 @@ use ide_app::row_map::{CODE_ROW, Place, RowMap};
 /// Shaper,
 /// viewport,
 /// the clip of a very tall line,
-/// and the rasterizer whose ink is read back.
-use ide_app::shaped_text::{Clip, TextShaper, Viewport};
-/// Palette of the raster tests,
-/// and the limit of one raster.
-use ide_app::text_raster::{CodeColors, MAX_RASTER_BYTES, TextRaster};
+/// and the device's texture size.
+use ide_app::shaped_text::{Clip, TextShaper, Viewport, texture_dimension};
+/// What a tile draws,
+/// read as data.
+use ide_app::tile_scene::{
+    paint_tile,
+    read::{center_y, drawn_runs, drawn_strokes},
+    tile_items,
+};
 /// The wrap indicator chain.
-use ide_app::wrap_sign::{SIGN_INK, SIGN_PAIRS, Sign, SignCoverage, choose_sign};
+use ide_app::wrap_sign::{SIGN_PAIRS, Sign, SignCoverage, choose_sign};
+/// Palette of the paint tests,
+/// and the limit of one tile texture.
+use ide_app::{code_colors::CodeColors, text_raster::MAX_RASTER_BYTES};
 
 /// Which symbols the fonts of a test show.
 enum Coverage {
@@ -441,27 +448,40 @@ fn selected_ink_reaches_continuation_rows() {
         selected: [255, 0, 0, 255],
         dark: false,
     };
-    let pixels = TextRaster::new().paint(&view, colors, 0.0).expect("raster");
-    let width = pixels.width as usize;
-    for index in 0..view.rows[0].visual_rows() {
-        let top = index * CODE_ROW as usize;
-        let mut red = 0;
-        let mut black = 0;
-        for y in top..top + CODE_ROW as usize {
-            for x in 0..width {
-                let at = (y * width + x) * 4;
-                let (r, g) = (pixels.bytes[at], pixels.bytes[at + 1]);
-                if pixels.bytes[at + 3] > 128 {
-                    if r > 128 && g < 64 {
-                        red += 1;
-                    } else if r < 64 {
-                        black += 1;
-                    }
-                }
+    let items = tile_items(&view, colors, 0.0).expect("items");
+    let runs = drawn_runs(&items);
+    // Every visual row has a run in the selected ink on its own baseline, and the selection clips it to the row's
+    // rectangle, which spans the glyphs of the row.
+    let mut baselines: Vec<f32> = Vec::new();
+    for run in &runs {
+        if run.ink == colors.selected {
+            baselines.push(run.baseline);
+        }
+    }
+    baselines.sort_by(f32::total_cmp);
+    baselines.dedup_by(|left, right| return (*left - *right).abs() < 1.0);
+    assert_eq!(
+        baselines.len(),
+        view.rows[0].visual_rows(),
+        "every visual row has selected ink on its own baseline"
+    );
+    for rectangle in &view.selections {
+        let mut reached = false;
+        for run in &runs {
+            if run.ink == colors.selected
+                && run.clip.is_some_and(|(left, right)| {
+                    return (left - rectangle.x).abs() <= 0.5
+                        && (right - (rectangle.x + rectangle.width)).abs() <= 0.5;
+                })
+            {
+                reached = true;
             }
         }
-        assert!(red > 20, "row {index} has selected ink");
-        assert_eq!(black, 0, "row {index} has no unselected ink left");
+        assert!(
+            reached,
+            "no selected ink is clipped to the rectangle at y {}",
+            rectangle.y
+        );
     }
 }
 
@@ -552,41 +572,6 @@ fn coverage_is_read_from_the_shaped_glyphs() {
     );
 }
 
-/// The sign image carries ink in the sign color,
-/// for a symbol and for the drawn arrow,
-/// at both scales.
-#[test]
-fn the_sign_image_is_painted_in_the_sign_color() {
-    let mut shaper = TextShaper::new();
-    let mut raster = TextRaster::new();
-    let chosen = shaper.choose_sign(1.0);
-    for sign in [chosen, Sign::Arrow] {
-        for scale in [1.0_f32, 2.0] {
-            let pixels = shaper
-                .sign_pixels(&mut raster, sign, scale, 12.0)
-                .expect("sign");
-            assert_eq!(pixels.height as f32, CODE_ROW * scale);
-            let mut inked = 0;
-            for chunk in pixels.bytes.chunks(4) {
-                if chunk[3] > 0 {
-                    inked += 1;
-                    // Premultiplied: each channel is the sign color scaled by the pixel's alpha.
-                    for channel in 0..3 {
-                        let expected = u32::from(SIGN_INK[channel]) * u32::from(chunk[3]) / 255;
-                        assert!(
-                            u32::from(chunk[channel]).abs_diff(expected) <= 1,
-                            "{sign:?} at {scale}: channel {channel} is {} for alpha {}",
-                            chunk[channel],
-                            chunk[3]
-                        );
-                    }
-                }
-            }
-            assert!(inked > 4, "{sign:?} at scale {scale} has ink");
-        }
-    }
-}
-
 /// An underline across a wrap break is laid out once for each visual row it crosses,
 /// each on its own row.
 #[test]
@@ -632,53 +617,45 @@ fn underlines_across_a_wrap_break_stand_on_their_own_rows() {
         offsets[1], CODE_ROW,
         "the run on the lower row is not drawn on its own visual row"
     );
-    // Painted, the lower run's ink lands in the lower row's pixel band and none of it in the rows below.
-    let pixels = TextRaster::new()
-        .paint(
-            &{
-                let mut framed = shaper.prepare_rows(&document, viewport(0, 1, 200.0), &[], &plain);
-                framed.annotations = Some(frame);
-                framed
-            },
-            CodeColors {
-                foreground: [0, 0, 0, 255],
-                selected: [255, 255, 255, 255],
-                dark: false,
-            },
-            0.0,
-        )
-        .expect("raster");
-    let width = pixels.width as usize;
-    let mut red_rows = Vec::new();
-    for y in 0..pixels.height as usize {
-        let mut red = 0;
-        for x in 0..width {
-            let at = (y * width + x) * 4;
-            if pixels.bytes[at] > 150 && pixels.bytes[at + 1] < 60 && pixels.bytes[at + 3] > 150 {
-                red += 1;
-            }
-        }
-        if red > 0 {
-            red_rows.push(y / CODE_ROW as usize);
-        }
+    // Painted, the lower run's stroke lands in the lower row's band and none of it in the rows below.
+    let mut framed = shaper.prepare_rows(&document, viewport(0, 1, 200.0), &[], &plain);
+    framed.annotations = Some(frame);
+    let items = tile_items(
+        &framed,
+        CodeColors {
+            foreground: [0, 0, 0, 255],
+            selected: [255, 255, 255, 255],
+            dark: false,
+        },
+        0.0,
+    )
+    .expect("items");
+    let mut stroke_rows = Vec::new();
+    for drawn in drawn_strokes(&items) {
+        assert_eq!(
+            drawn.stroke.ink, colors.error,
+            "the stroke is in the error ink"
+        );
+        stroke_rows.push((center_y(&drawn.stroke) / CODE_ROW).floor() as usize);
     }
-    red_rows.dedup();
+    stroke_rows.sort_unstable();
+    stroke_rows.dedup();
     assert_eq!(
-        red_rows,
+        stroke_rows,
         vec![0, 1],
         "the error ink stands on exactly the two rows the mark crosses"
     );
 }
 
-/// The raster itself refuses a tile past its limit with a diagnostic,
+/// The painter itself refuses a tile past its limit with a diagnostic,
 /// never a panic;
 ///  the window never asks for one,
 /// because it clips a tile of a very tall line (`Viewport::clip`).
-///  The limit is 64 MiB of pixels:
+///  The limit is 64 MiB of pixels and the device's texture size:
 /// at a text width of 782 px that is about 894 rows at scale 1 (about 75,000
 ///  characters in one line) and about 223 rows at scale 2 (about 18,700).
 #[test]
-fn a_tile_past_the_raster_limit_is_refused_not_painted() {
+fn a_tile_past_the_texture_limit_is_refused_not_painted() {
     // 15,000 characters at 100 px, scale 3: 1,350 rows of 72 physical pixels, 300 px wide, 117 MB.
     let document = Document::new(&"x".repeat(15_000));
     let mut shaper = TextShaper::new();
@@ -697,29 +674,35 @@ fn a_tile_past_the_raster_limit_is_refused_not_painted() {
         &plain,
     );
     assert!(view.rows[0].visual_rows() > 1000);
-    let colors = CodeColors {
-        foreground: [0, 0, 0, 255],
-        selected: [255, 255, 255, 255],
-        dark: false,
-    };
-    // The shaper cuts the frame it prepares to the limit, so the raster is handed an oversized one directly.
+    // The shaper cuts the frame it prepares to the limit, so the painter is handed an oversized one directly.
     assert!(
         view.viewport.clip.is_some(),
         "the shaper did not cut the oversized frame"
     );
+    assert!(
+        paint_tile(&view, PALETTE, 0.0).is_ok(),
+        "the cut frame is within the limit and builds a scene"
+    );
     view.height = (MAX_RASTER_BYTES / 4 / u64::from(view.width)) as u32 + 1;
-    let refused = TextRaster::new().paint(&view, colors, 0.0);
+    let refused = paint_tile(&view, PALETTE, 0.0);
     let mut message = None;
     if let Some(error) = refused.err() {
         message = Some(format!("{error:#}"));
     }
     let refused_with_limit = match message.as_deref() {
-        Some(text) => text.contains("64 MiB"),
+        Some(text) => text.contains("tile texture limit"),
         None => false,
     };
     assert!(
         refused_with_limit,
-        "the oversized tile was not refused with the raster limit: {message:?}"
+        "the oversized tile was not refused with the texture limit: {message:?}"
+    );
+    // The device's texture size bounds the side as well, whatever the bytes.
+    view.height = texture_dimension() + 1;
+    view.width = 4;
+    assert!(
+        paint_tile(&view, PALETTE, 0.0).is_err(),
+        "a tile taller than the device's texture size was accepted"
     );
 }
 
@@ -774,26 +757,26 @@ fn a_clipped_tile_holds_the_pixels_of_its_band() {
         clipped.rows[0].top, whole.rows[0].top,
         "a clip moves no row"
     );
-    let mut raster = TextRaster::new();
-    let full = raster.paint(&whole, PALETTE, 0.0).expect("whole raster");
-    let part = raster
-        .paint(&clipped, PALETTE, 0.0)
-        .expect("clipped raster");
-    let row_bytes = full.width as usize * 4;
-    let from = band.top as usize * row_bytes;
-    let to = band.bottom as usize * row_bytes;
-    assert_eq!(part.bytes.len(), to - from);
-    assert!(
-        part.bytes == full.bytes[from..to],
-        "the clipped raster differs from its band of the whole raster"
-    );
-    let mut inked = false;
-    for pixel in part.bytes.chunks(4) {
-        if pixel[3] > 0 {
-            inked = true;
-        }
+    // The clip draws the runs of its band of the whole tile, at the same place relative to the band.
+    let whole_items = tile_items(&whole, PALETTE, 0.0).expect("whole items");
+    let part_items = tile_items(&clipped, PALETTE, 0.0).expect("clipped items");
+    let part_runs = drawn_runs(&part_items);
+    assert!(!part_runs.is_empty(), "the band has ink");
+    let whole_runs = drawn_runs(&whole_items);
+    for run in &part_runs {
+        let in_whole = whole_runs.iter().any(|candidate| {
+            return candidate.ids == run.ids
+                && candidate.ink == run.ink
+                && (candidate.baseline - band.top - run.baseline).abs() < 0.01
+                && (candidate.left - run.left).abs() < 0.01;
+        });
+        assert!(
+            in_whole,
+            "a run of the clipped tile is not in its band of the whole tile"
+        );
     }
-    assert!(inked, "the band has ink");
+    let scene = paint_tile(&clipped, PALETTE, 0.0).expect("clipped scene");
+    assert_eq!((scene.width, scene.height), (clipped.width, clipped.height));
     // A rebase keeps the clip's distance below the first line's block.
     let mut moved = shaper.prepare_rows(
         &document,
@@ -840,15 +823,14 @@ fn a_line_past_the_real_limit_paints_inside_a_clip() {
             u64::from(whole.width) * u64::from(whole.height) * 4 <= MAX_RASTER_BYTES,
             "scale {scale}: the frame of the whole line passes the limit"
         );
-        // The raster still refuses a frame past the limit that did not come through the shaper.
+        // The painter still refuses a frame past the limit that did not come through the shaper.
         let mut oversized = shaper.prepare_rows(&document, base, &[], &plain);
         oversized.height = limit_rows as u32 + 1;
-        let refused = TextRaster::new().paint(&oversized, PALETTE, 0.0);
         assert!(
-            refused.is_err(),
+            paint_tile(&oversized, PALETTE, 0.0).is_err(),
             "scale {scale}: a frame past the limit was painted"
         );
-        // A band of 200 code rows from the middle of the line: well inside the limit at both scales.
+        // A band of 150 code rows from the middle of the line: well inside the limit at both scales.
         let top = (rows as f32 / 2.0).floor() * CODE_ROW;
         let band = Clip {
             top,
@@ -863,28 +845,25 @@ fn a_line_past_the_real_limit_paints_inside_a_clip() {
             &[],
             &plain,
         );
-        let pixels = TextRaster::new()
-            .paint(&clipped, PALETTE, 0.0)
-            .expect("the clipped band is painted");
+        let scene = paint_tile(&clipped, PALETTE, 0.0).expect("the clipped band is painted");
         assert!(
-            u64::from(pixels.width) * u64::from(pixels.height) * 4 <= MAX_RASTER_BYTES,
-            "scale {scale}: the clipped raster passes the limit"
+            u64::from(scene.width) * u64::from(scene.height) * 4 <= MAX_RASTER_BYTES
+                && scene.height <= texture_dimension(),
+            "scale {scene_scale}: the clipped texture passes the limit",
+            scene_scale = scale
         );
-        assert_eq!(pixels.height as f32, 150.0 * CODE_ROW * scale);
-        let row_pixels = (CODE_ROW * scale) as usize;
-        let width = pixels.width as usize;
+        assert_eq!(scene.height as f32, 150.0 * CODE_ROW * scale);
+        let items = tile_items(&clipped, PALETTE, 0.0).expect("band items");
+        let runs = drawn_runs(&items);
         for code_row in 0..150 {
-            let mut inked = false;
-            for y in code_row * row_pixels..(code_row + 1) * row_pixels {
-                for pixel in pixels.bytes[y * width * 4..(y + 1) * width * 4].chunks(4) {
-                    if pixel[3] > 0 {
-                        inked = true;
-                    }
-                }
-            }
+            let (from, to) = (
+                (code_row as f32) * CODE_ROW * scale,
+                (code_row as f32 + 1.0) * CODE_ROW * scale,
+            );
             assert!(
-                inked,
-                "scale {scale}: code row {code_row} of the band has no ink"
+                runs.iter()
+                    .any(|run| return run.baseline > from && run.baseline < to),
+                "scale {scale}: code row {code_row} of the band draws no glyph"
             );
         }
     }

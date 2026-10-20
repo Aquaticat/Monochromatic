@@ -11,7 +11,10 @@
 use super::find_tests::{Reader, chord, reader, status_for, type_text};
 /// Shared rendering entry point,
 ///  used here only to draw a cold reference image.
-use super::{AppWindow, render};
+use super::{
+    AppWindow, render,
+    tile_reads::{same_buffers, tile_pixels},
+};
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
 /// Selected-text ink is chosen from the drawn selection fill,
@@ -104,17 +107,15 @@ pub(super) fn rgba(color: Color) -> [u8; 4] {
 ///  `expect` fails the test with
 /// the message when the image has no pixel data.
 /// Why:
-///  The displayed source image is the only place source ink exists.
+///  The tile's texture is the only place source ink exists;
+///  it is read back from the GPU after a frame.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function sourcePixels(window: AppWindow): Frame;
+/// function sourcePixels(reader: Reader): Frame;
 /// ```
-fn source_pixels(window: &AppWindow) -> SharedPixelBuffer<Rgba8Pixel> {
-    return window
-        .get_source_image()
-        .to_rgba8_premultiplied()
-        .expect("source image pixels");
+fn source_pixels(reader: &Reader) -> SharedPixelBuffer<Rgba8Pixel> {
+    return tile_pixels(&reader.window, &reader.source).expect("source image pixels");
 }
 
 /// Whether any fully covered source pixel has exactly this ink;
@@ -205,13 +206,13 @@ pub(super) fn region(frame: &SharedPixelBuffer<Rgba8Pixel>, bounds: [usize; 4]) 
 ///  and selected glyphs use the ink chosen from the fill.
 fn assert_current(reader: &Reader, name: &str) -> SharedPixelBuffer<Rgba8Pixel> {
     let window = &reader.window;
-    let live = source_pixels(window);
+    let live = source_pixels(reader);
     // A cold render after forgetting the previous frame is what this scheme looks like from startup.
     reader.source.borrow_mut().frame_stamp = None;
     render(window, &reader.source);
-    let cold = source_pixels(window);
+    let cold = source_pixels(reader);
     assert!(
-        live.as_bytes() == cold.as_bytes(),
+        same_buffers(&live, &cold),
         "{name}: the live source image differs from a cold render; the palette change did not re-rasterize"
     );
     let selected = legible_ink(
@@ -241,7 +242,7 @@ fn assert_current(reader: &Reader, name: &str) -> SharedPixelBuffer<Rgba8Pixel> 
 ///  the scheme's keyword ink,
 ///  overlays,
 ///  and window chrome.
-fn assert_scheme(reader: &Reader, dark: bool) -> Vec<u8> {
+fn assert_scheme(reader: &Reader, dark: bool) -> SharedPixelBuffer<Rgba8Pixel> {
     let window = &reader.window;
     let name = if dark { "dark" } else { "light" };
     assert_eq!(
@@ -315,7 +316,7 @@ fn assert_scheme(reader: &Reader, dark: bool) -> Vec<u8> {
             );
         }
     }
-    return live.as_bytes().to_vec();
+    return live;
 }
 
 /// What:
@@ -370,13 +371,13 @@ fn live_color_scheme_repaints_source_overlays_tree_find_bar_and_divider() {
     switch(window, ColorScheme::Light);
     let light = assert_scheme(&reader, false);
     assert!(
-        light != first_dark,
+        !same_buffers(&light, &first_dark),
         "the light source image equals the dark one"
     );
     switch(window, ColorScheme::Dark);
     let second_dark = assert_scheme(&reader, true);
     assert!(
-        second_dark == first_dark,
+        same_buffers(&second_dark, &first_dark),
         "returning to dark did not restore the dark source image"
     );
     window.hide().expect("close theme window");

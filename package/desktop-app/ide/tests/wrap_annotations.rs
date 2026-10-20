@@ -11,6 +11,7 @@
 use ide_app::{
     annotation::{Annotations, Mark, Visible},
     annotation_layout::{AnnotationColors, lay_out, pack},
+    code_colors::CodeColors,
     document::Document,
     language::{
         diagnostics::{Diagnostic, DiagnosticsSnapshot, Freshness, Severity, SourceGroup},
@@ -19,7 +20,10 @@ use ide_app::{
     },
     row_map::{CODE_ROW, RowMap},
     shaped_text::{TextShaper, Viewport},
-    text_raster::{CodeColors, TextRaster},
+    tile_scene::{
+        read::{center_y, drawn_strokes},
+        tile_items,
+    },
     virtual_row::{BLOCK_GAP, Block, CONTINUATION_INDENT, MESSAGE_ROWS, ROW_HEIGHT},
 };
 /// The pointer snapshots travel in,
@@ -501,34 +505,28 @@ fn a_block_sits_above_the_first_row_and_underlines_stay_on_their_rows() {
         "one run for each row the mark crosses"
     );
     framed.annotations = Some(frame);
-    let pixels = TextRaster::new()
-        .paint(
-            &framed,
-            CodeColors {
-                foreground: [0, 0, 0, 255],
-                selected: [255, 255, 255, 255],
-                dark: false,
-            },
-            0.0,
-        )
-        .expect("raster");
-    let width = pixels.width as usize;
-    let mut red_bands = Vec::new();
-    for y in 0..pixels.height as usize {
-        let mut red = 0;
-        for x in 0..width {
-            let at = (y * width + x) * 4;
-            if pixels.bytes[at] > 150 && pixels.bytes[at + 1] < 60 && pixels.bytes[at + 3] > 150 {
-                red += 1;
-            }
-        }
-        if red > 0 {
-            red_bands.push(((y as f32 - block_height) / CODE_ROW).floor() as i32);
-        }
+    let items = tile_items(
+        &framed,
+        CodeColors {
+            foreground: [0, 0, 0, 255],
+            selected: [255, 255, 255, 255],
+            dark: false,
+        },
+        0.0,
+    )
+    .expect("items");
+    let mut bands = Vec::new();
+    for drawn in drawn_strokes(&items) {
+        assert_eq!(
+            drawn.stroke.ink, COLORS.error,
+            "the stroke is in the error ink"
+        );
+        bands.push(((center_y(&drawn.stroke) - block_height) / CODE_ROW).floor() as i32);
     }
-    red_bands.dedup();
+    bands.sort_unstable();
+    bands.dedup();
     assert_eq!(
-        red_bands,
+        bands,
         vec![0, 1],
         "error ink stands on the two visual rows the mark crosses and nowhere in the block"
     );

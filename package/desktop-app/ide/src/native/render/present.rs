@@ -1,5 +1,5 @@
 //! Presenting a frame to the window:
-//!  the pixels and offsets a presentation carries,
+//!  the scene and offsets a presentation carries,
 //!  the gutter's wrap indicator,
 //!  and the setters that run after the state borrow ends.
 
@@ -12,8 +12,10 @@ use crate::native::{
 };
 /// The rectangles a frame hands to the window.
 use ide_app::shaped_text::ReadingRect;
-/// Toolkit images and models carry owned source presentation data.
-use slint::{Image, ModelRc, Rgba8Pixel, SharedPixelBuffer, SharedString, VecModel};
+/// The scene the GPU draws into a texture.
+use ide_app::tile_scene::TileScene;
+/// Toolkit models carry owned source presentation data.
+use slint::{ComponentHandle, ModelRc, SharedString, VecModel};
 /// UI callbacks share state without cross-thread synchronization.
 use std::{cell::RefCell, rc::Rc};
 
@@ -47,7 +49,7 @@ fn model_rows(rectangles: &[ReadingRect]) -> Vec<SourceSelection> {
 
 /// What:
 ///  What one presentation hands the window:
-/// new pixels,
+/// a new scene for the GPU,
 /// the offsets,
 /// and the frame's diagnostics.
 /// Why:
@@ -56,12 +58,12 @@ fn model_rows(rectangles: &[ReadingRect]) -> Vec<SourceSelection> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Frame = { pixels?: Pixels; matchesChanged: boolean; scale: number; scrolled?: number; sign?: Pixels };
+/// type Frame = { scene?: Scene; matchesChanged: boolean; scale: number; scrolled?: number; sign?: Scene };
 /// ```
 pub(in crate::native) struct Frame {
-    /// Pixels of a newly painted tile,
+    /// Scene of a newly built tile,
     /// when one was swapped in.
-    pub(in crate::native) pixels: Option<SharedPixelBuffer<Rgba8Pixel>>,
+    pub(in crate::native) scene: Option<TileScene>,
     /// Whether the match rectangles changed and must be handed over again.
     pub(in crate::native) matches_changed: bool,
     /// Physical pixels per logical pixel,
@@ -75,32 +77,28 @@ pub(in crate::native) struct Frame {
     /// shown with the other diagnostics.
     pub(in crate::native) notice: Option<String>,
     /// The gutter's wrap indicator,
-    /// painted again after a change of display scale.
-    pub(in crate::native) sign: Option<SharedPixelBuffer<Rgba8Pixel>>,
+    /// drawn again after a change of display scale.
+    pub(in crate::native) sign: Option<TileScene>,
 }
 
 /// What:
-///  Paint the gutter's wrap indicator for display scale `factor` when it has not been painted for it yet.
+///  Build the scene of the gutter's wrap indicator for display scale `factor` when it has not been built for it yet.
 ///  The symbol is chosen once,
 /// from the fonts.
 /// Why:
-///  The image is set in the shaper and raster the source text uses,
+///  The picture is set in the shaper the source text uses,
 /// so the coverage check is about what is shown.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function ensureSign(current: State, factor: number): Pixels | undefined;
+/// function ensureSign(current: State, factor: number): Scene | undefined;
 /// ```
-pub(super) fn ensure_sign(
-    current: &mut State,
-    factor: f32,
-) -> Option<SharedPixelBuffer<Rgba8Pixel>> {
+pub(super) fn ensure_sign(current: &mut State, factor: f32) -> Option<TileScene> {
     if current.sign_scale == Some(factor.to_bits()) {
         return None;
     }
     let State {
         shaper,
-        raster,
         sign,
         sign_scale,
         ..
@@ -114,24 +112,20 @@ pub(super) fn ensure_sign(
             picked
         }
     };
-    match shaper.sign_pixels(raster, chosen, factor, SIGN_WIDTH) {
-        Ok(pixels) => {
+    match shaper.sign_scene(chosen, factor, SIGN_WIDTH) {
+        Ok(scene) => {
             *sign_scale = Some(factor.to_bits());
-            return Some(SharedPixelBuffer::<Rgba8Pixel>::clone_from_slice(
-                &pixels.bytes,
-                pixels.width,
-                pixels.height,
-            ));
+            return Some(scene);
         }
         Err(error) => {
-            tracing::error!(%error, "wrap indicator could not be painted");
+            tracing::error!(%error, "wrap indicator could not be drawn");
             return None;
         }
     }
 }
 
 /// Present the displayed frame:
-/// its image and offsets,
+/// its scene and offsets,
 /// its gutter,
 /// rectangles,
 /// and caret,
@@ -139,7 +133,7 @@ pub(super) fn ensure_sign(
 /// Each setter runs after the state borrow ends.
 pub(in crate::native) fn show(window: &AppWindow, state: &Rc<RefCell<State>>, frame: Frame) {
     let Frame {
-        pixels,
+        scene,
         matches_changed,
         scale: factor,
         scrolled,
@@ -184,21 +178,25 @@ pub(in crate::native) fn show(window: &AppWindow, state: &Rc<RefCell<State>>, fr
     }
     let diagnostic = notices.join("\n");
     #[cfg(debug_assertions)]
-    if pixels.is_some() {
+    if scene.is_some() {
         current.images_set += 1;
     }
     let placement = rows::measure(&current, anchor_line);
+    let gpu = current.gpu.clone();
     drop(current);
 
-    if let Some(buffer) = pixels {
-        let (width, height) = (buffer.width(), buffer.height());
-        window.set_source_image(Image::from_rgba8_premultiplied(buffer));
-        window.set_image_width(width as f32 / factor);
-        window.set_image_height(height as f32 / factor);
+    // The GPU draws the scenes into their textures just before the next frame; the image on the window follows
+    // the texture, and a redraw is asked for because a new scene may change no property the window watches.
+    if let Some(tile) = scene {
+        window.set_image_width(tile.width as f32 / factor);
+        window.set_image_height(tile.height as f32 / factor);
+        gpu.submit_tile(tile);
+        window.window().request_redraw();
     }
-    if let Some(buffer) = sign {
-        window.set_wrap_sign(Image::from_rgba8_premultiplied(buffer));
+    if let Some(mark) = sign {
         window.set_wrap_sign_width(SIGN_WIDTH);
+        gpu.submit_sign(mark);
+        window.window().request_redraw();
     }
     // Rows above the tile can change without a repaint; the image and the line numbers follow the map.
     // The scroll extent is set before the offset, so the old extent cannot clamp the new offset.

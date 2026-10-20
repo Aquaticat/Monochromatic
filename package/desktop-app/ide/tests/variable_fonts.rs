@@ -1,5 +1,5 @@
 //! Real variable coordinates and italic faces must survive source shaping,
-//!  raster caching,
+//!  raster caching and the GPU's glyph runs,
 //!  and copying.
 
 /// Production source font assets and typography interfaces.
@@ -9,6 +9,7 @@ use ide_app::{
     shaped_text::{ShapedView, TextShaper, Viewport},
     source_typography::SourceTypography,
     text_raster::{CodeColors, TextRaster},
+    tile_scene::{Item, tile_items},
 };
 /// Actual font runs expose selected font identity and normalized variation coordinates.
 use parley::PositionedLayoutItem;
@@ -105,18 +106,40 @@ fn variable_weight_cache_matches_fresh_rendering() {
         dark: true,
     };
     let mut cached = TextRaster::new();
-    let original = cached.paint(&normal, colors, 0.0).expect("normal instance");
+    let original = cached
+        .paint_onto(&normal, colors, 0.0, blank(&normal))
+        .expect("normal instance");
     let changed = cached
-        .paint(&heavy, colors, 0.0)
+        .paint_onto(&heavy, colors, 0.0, blank(&heavy))
         .expect("cached heavy instance");
     let fresh = TextRaster::new()
-        .paint(&heavy, colors, 0.0)
+        .paint_onto(&heavy, colors, 0.0, blank(&heavy))
         .expect("fresh heavy instance");
     assert_ne!(
         original.bytes, changed.bytes,
         "weight must change real outline pixels"
     );
     assert_eq!(changed.bytes, fresh.bytes);
+    // The GPU path has no glyph cache: the weight reaches Vello as the variation coordinates of each glyph run.
+    let normal_coords = drawn_coords(&normal, colors);
+    let heavy_coords = drawn_coords(&heavy, colors);
+    assert!(!normal_coords.is_empty() && !heavy_coords.is_empty());
+    assert_ne!(
+        normal_coords, heavy_coords,
+        "the weight must change the variation coordinates the GPU draws with"
+    );
+}
+
+/// The variation coordinates of every glyph run the tile draws,
+/// in drawing order.
+fn drawn_coords(view: &ShapedView, colors: CodeColors) -> Vec<Vec<i16>> {
+    let mut found = Vec::new();
+    for item in tile_items(view, colors, 0.0).expect("items") {
+        if let Item::Glyphs(run) = item {
+            found.push(run.coords.clone());
+        }
+    }
+    return found;
 }
 
 /// Genuine italic ligatures retain per-character geometry and exact source copying.
@@ -161,4 +184,10 @@ fn invalid_source_weights_are_rejected() {
             .is_err()
         );
     }
+}
+
+/// A raster-sized blank buffer for the minimap's rasterizer,
+/// which paints over what it is given.
+fn blank(view: &ShapedView) -> Vec<u8> {
+    return vec![0; (u64::from(view.width) * u64::from(view.height) * 4) as usize];
 }

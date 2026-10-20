@@ -29,6 +29,8 @@ use super::annotation_paint_tests::{contrast, fixture_reader, frame, near, pixel
 use super::annotation_tests::{FIXTURE, TEXT_LEFT, TEXT_TOP, annotate, click, problem};
 /// Width of the whole gutter for files of fewer than 1000 lines.
 use super::sidebar_tests::GUTTER;
+/// Texel comparison that accepts the GPU's one-level difference between two renders.
+use super::tile_reads::same_pixels;
 /// Snapshot records.
 use ide_app::language::diagnostics::{DiagnosticsSnapshot, Severity, SourceGroup};
 /// The toolkit's scheme values,
@@ -416,8 +418,10 @@ fn the_letter_stands_the_same_gap_before_one_two_and_three_digit_numbers() {
             let old_start = (before as usize + dy) * width;
             let new_start = (after as usize + dy) * width;
             assert!(
-                plain.as_slice()[old_start + from..old_start + to]
-                    == shown.as_slice()[new_start + from..new_start + to],
+                same_pixels(
+                    &plain.as_slice()[old_start + from..old_start + to],
+                    &shown.as_slice()[new_start + from..new_start + to]
+                ),
                 "line {line}'s number or text changed when its letter appeared"
             );
         }

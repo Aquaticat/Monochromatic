@@ -3,7 +3,7 @@
 /// Parent state owns the document and the currently displayed tile;
 ///  `rows` holds the map-based scroll rules.
 use super::{
-    AppWindow, State, render, rows,
+    AppWindow, State, gpu_tile, render, rows,
     tile::{self, TileBounds},
 };
 /// The side of a soft-wrap offset a position is read on.
@@ -350,6 +350,8 @@ pub(super) fn place_scrolled(
 /// Retain pixel scrolling;
 ///  update the raster only at viewport tile boundaries and when the wrap width changes.
 pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
+    // The code view is drawn on the GPU, by the window's one rendering notifier.
+    gpu_tile::bind(owner, &shared.borrow().gpu);
     // What: `Rc::clone` copies the pointer to the shared state; `as_weak` does not keep the window alive.
     // Why: The stored callback outlives this binding function.
     //
