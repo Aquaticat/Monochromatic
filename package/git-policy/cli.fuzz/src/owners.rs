@@ -136,6 +136,11 @@ pub fn generated_owner_lock(data: &[u8]) -> (String, Option<OwnerLockRecord>) {
         } else {
             Some(cursor.text(true))
         },
+        owner_pid_namespace: if cursor.flip() {
+            None
+        } else {
+            Some(cursor.text(true))
+        },
     };
     let text: String = encode_owner_lock_record(&record);
     let choice: usize = usize::from(cursor.byte()) % (LOCK_MUTATIONS.len() + 1);
@@ -215,6 +220,11 @@ pub fn check_transaction_owner(data: &[u8]) {
         owner_pid: cursor.positive(),
         owner_identity: cursor.text(true),
         created_at: cursor.text(false),
+        owner_pid_namespace: if cursor.flip() {
+            None
+        } else {
+            Some(cursor.text(true))
+        },
     };
     let encoded: String = encode_transaction_owner(&generated);
     assert_eq!(parse_transaction_owner(encoded.as_bytes()), Some(generated));
