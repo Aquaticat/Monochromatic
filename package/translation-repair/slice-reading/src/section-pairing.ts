@@ -1,4 +1,5 @@
 import type { BlockPair, } from '@monochromatic-dev/translation-repair-stage/ts';
+import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Section pairing
 // Which original block renders which translation block, filed under the aligned
@@ -59,7 +60,7 @@ export function sectionPairingsOf(
   { blockPairings, }: { readonly blockPairings: ReadonlyMap<number, readonly BlockPair[]>; },
 ): readonly SectionBlockPairing[] {
   return [...blockPairings.entries(),]
-    .map(function toPairing([sectionIndex, pairs,],): SectionBlockPairing {
+    .map(function toPairing([sectionIndex, pairs,]: ReadonlyEntry<number, readonly BlockPair[]>,): SectionBlockPairing {
       return {
         sectionIndex,
         pairs,
