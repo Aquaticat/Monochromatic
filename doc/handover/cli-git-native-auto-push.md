@@ -164,6 +164,11 @@ Auto-push-only modules (not run): mutation over `auto_push.rs`, `auto_push_branc
 the interop matrix beyond one-direction fixtures;
 Windows checks (the probe and auto-push code is unix-only).
 
+Update 2026-10-19: the auto-push-only modules and the four timed-out files are queued as the unit `cli-git-nc1` in
+`doc/handover/cli-git-rust-implementation.md`; the results will be recorded there.
+The reconcile change to `auto_push_reconcile.rs`, `auto_push_record.rs` and `auto_push_single_flight.rs` already
+passed a scoped mutation run (55 mutants, none missed).
+
 ## Open facts and choices to veto
 
 - The manual-push probe records updates with a runtime-generated shell `pre-push` hook.

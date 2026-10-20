@@ -117,7 +117,7 @@ function isNativeSourceGlob(scope) {
 // Raised from 90 so a loaded host does not turn slow mutants into timeouts; a `--timeout` option overrides it.
 const defaultTimeoutSeconds = 300;
 /** Largest test timeout, in seconds, a `--timeout` option may request. */
-const maximumTimeoutSeconds = 3600;
+const maximumTimeoutSeconds = 3_600;
 
 /**
  Split `--timeout <seconds>` from the repeated `--file` scopes; the timeout defaults to `defaultTimeoutSeconds`.
@@ -133,14 +133,21 @@ function parseTimeout(options) {
     const flag = options[index];
     const value = options[index + 1];
     if (flag !== '--timeout') {
-      scopeOptions.push(flag ?? '', value ?? '');
+      scopeOptions.push(
+        flag ?? '',
+        value ?? ''
+      );
       continue;
     }
-    if ((value === undefined) || !/^[1-9][0-9]*$/.test(value) || (Number(value) > maximumTimeoutSeconds))
+    if ((value === undefined) || (!/^[1-9][0-9]*$/.test(value))
+      || (Number(value) > maximumTimeoutSeconds))
       throw new NativeVerificationError(`--timeout must be a whole number of seconds from 1 to ${maximumTimeoutSeconds}, got ${value}.`);
     timeoutSeconds = Number(value);
   }
-  return { timeoutSeconds, scopeOptions };
+  return {
+    timeoutSeconds,
+    scopeOptions
+  };
 }
 
 /**
@@ -170,7 +177,10 @@ function parseScopes(options) {
  @param {{ scopes: readonly string[], timeoutSeconds: number }} request - `src/native` file globs and per-mutant test limit
  @returns {string[]} complete argument array, also recorded in the manifest
  */
-function mutationCommand({ scopes, timeoutSeconds }) {
+function mutationCommand({
+  scopes,
+  timeoutSeconds
+}) {
   return [
     'cargo',
     'mutants',
@@ -214,16 +224,24 @@ function mutationCommand({ scopes, timeoutSeconds }) {
  @returns {string[]} `['--', '--skip', name]` or no arguments
  */
 function baselineSkipArguments() {
-  const name = process.env.NATIVE_MUTATION_BASELINE_SKIP;
-  if (name === undefined || name === '') return [];
+  const name = process.env
+    .NATIVE_MUTATION_BASELINE_SKIP;
+  if ((name === undefined) || (name === '')) return [];
   if (!/^[a-z_][a-z0-9_]*(::[a-z_][a-z0-9_]*)+$/u.test(name))
     throw new NativeVerificationError(`NATIVE_MUTATION_BASELINE_SKIP must be a test path, got ${name}.`);
-  return ['--', '--skip', name];
+  return [
+    '--',
+    '--skip',
+    name
+  ];
 }
 
 /** Build and run the tool over an immutable input image, then retain its complete report. */
 async function main() {
-  const { timeoutSeconds, scopeOptions } = parseTimeout(process.argv
+  const {
+    timeoutSeconds,
+    scopeOptions
+  } = parseTimeout(process.argv
     .slice(2));
   const scopes = parseScopes(scopeOptions);
   await using context = await mkdtempDisposable(join(
@@ -282,7 +300,10 @@ async function main() {
       'cargo-mutants',
     ),
   );
-  const command = mutationCommand({ scopes, timeoutSeconds });
+  const command = mutationCommand({
+    scopes,
+    timeoutSeconds
+  });
   await writeFile(
     join(
       context.path,

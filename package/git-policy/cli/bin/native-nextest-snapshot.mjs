@@ -78,7 +78,7 @@ export async function copyNextest({ context }) {
     // No cached copy yet; the download below fills it.
     bytes = undefined;
   }
-  if (bytes === undefined || sha256Of(bytes) !== nextestSha256) {
+  if ((bytes === undefined) || (sha256Of(bytes) !== nextestSha256)) {
     const response = await fetch(nextestUrl);
     if (!response.ok)
       throw new NativeVerificationError(`Downloading ${nextestUrl} failed with status ${String(response.status)}.`);

@@ -222,7 +222,7 @@ const plantedControls = [
   {
     name: 'repeated dash c pairing skipped',
     file: 'src/native/hook_dispatch_plan.rs',
-    from: '        if token != \"-c\" {',
+    from: '        if token != "-c" {',
     to: '        if false {',
     failing: 'hook_dispatch_plan::tests::global_overrides_pair_each_dash_c_with_its_next_token',
   },
@@ -674,8 +674,12 @@ async function runPlantedControl({
   const output = `${run.stdout}\n${run.stderr}`;
   // nextest prints `FAIL [ 0.012s] <binary id> <test name>`, or `FAIL + LEAK [` when the failed test left a child
   // running; the name is the last token of the line.
-  const noticed = (run.status !== 0) && output.split('\n').some(function failedLine(line) {
-    return /^\s*FAIL\b[^[]*\[/u.test(line) && line.trimEnd().endsWith(` ${control.failing}`);
+  const noticed = (run.status !== 0)
+    && output.split('\n')
+    .some(function failedLine(line) {
+    return /^\s*FAIL\b[^[]*\[/u.test(line)
+      && line.trimEnd()
+      .endsWith(` ${control.failing}`);
   });
   await writeFile(
     join(
