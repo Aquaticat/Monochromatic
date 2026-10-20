@@ -1798,8 +1798,12 @@ that is verification, not a decision for the user.
   `e2e/process-fixture.unit.test.ts` fails before and passes after). Commented, left open: 1135 to 1140 (the six
   Git host failures do not reproduce: host suite 1855 of 1856 passed, the one failure needs
   `GIT_POLICY_NATIVE_TEST_LINTER`; gate container 1995 of 1995; the report came from a private rootfs overlay that was
-  not rerun), 1032 (reframed). Still open and mine: 1338, 1343 (eight `async main()` wrappers), 1340 (duplicate
-  noplanted script), 1757 (only `wg-quicker-exempt` left).
+  not rerun), 1032 (reframed). Still open and mine then: 1338, 1343 (eight `async main()` wrappers), 1340 (duplicate
+  noplanted script), 1757 (only `wg-quicker-exempt` left). Update 2026-10-20: 1340 and 1343 are done (the script is
+  removed; `native-mutation-options.mjs` holds the option parsing as character scans; the mutate script has no
+  `main()`); `native-nextest-snapshot.mjs` and the planted control table (now three area modules) are lint-clean.
+  Unit `cli-git-nc5` (script `~/temp/agent/nc5-run.ts`, image tag `nc5`) runs the gate and one scoped mutation run
+  WITH the 78 planted controls, to prove the refactored scripts end to end (several hours).
   Queued behind nc1 (src/native): issue 1032 fix. `was_rejected_as_stale` (`auto_push_reconcile.rs:66`) matches only
   `[rejected]`, and GitHub's GH006 prints `[remote rejected]`, which does not contain it. Plan: on a `[remote
   rejected]` refusal fetch the remote tip into the private ref and decide from the graph: local commit already in the
