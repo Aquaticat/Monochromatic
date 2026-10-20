@@ -5,7 +5,10 @@ import {
   HOUSE_FORM_CORRECTIONS,
   MEASUREMENT_POLICY_BLOCK,
 } from '@monochromatic-dev/translation-repair-house-rule/ts';
-import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import {
+  isJsonRecord,
+  withoutTranslatorsNotes,
+} from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { selectFence, } from '@monochromatic-dev/translation-repair-stage/ts';
 import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typography/ts';
 import { foldSoftBreaks, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
@@ -72,7 +75,8 @@ export type AbsoluteNaturalnessReviewSubject = {
   readonly sourceText: string;
 
   /**
-   Exact English wording that would ship.
+   Exact English wording that would ship. The sheet shows it without the notes
+   between translators it holds, as it does each of `paragraphs`.
    */
   readonly candidateText: string;
 
@@ -212,6 +216,12 @@ export function isAbsoluteNaturalnessReviewWire(
 /**
  Builds independent absolute-quality question over exact would-ship wording.
 
+ THE SHEET SHOWS THE WORDING WITHOUT ITS NOTES BETWEEN TRANSLATORS: the
+ candidate and each paragraph are cut with `withoutTranslatorsNotes` against the
+ original, so a note the archive's translators left each other is no naturalness
+ finding, and a paragraph of nothing but notes is left off the sheet with its
+ number unused. The subject itself is not cut, since the review digests it.
+
  @param subject - source context, exact candidate and declared identities
 
  @param perspective - distinct first review or prior-acceptance challenge task
@@ -238,14 +248,61 @@ export function buildAbsoluteNaturalnessReviewMessages(
   const responsibility = (perspective === 'defect-discovery')
     ? `Discover material defects without relying on any prior verdict. Start with sentence-local grammar and collocation, then independently assess paragraph and whole-passage flow.`
     : `A prior editor accepted this exact candidate. Challenge that result rather than repeating its scan. Start from whole-passage register, coherence, and memorial voice, then work backward through each paragraph and sentence to find any overlooked material defect.`;
+  // THE REVIEWERS ARE SHOWN THE CANDIDATE WITHOUT THE NOTES THE ARCHIVE'S
+  // TRANSLATORS LEFT EACH OTHER, as every other judging sheet is
+  // (`withoutTranslatorsNotes`): no reader sees one, the page keeps each one
+  // whatever a judge says, and a Chinese comment in an English text is what a
+  // reviewer could raise as a naturalness finding. The cut is made here, where
+  // the sheet text is built, and not on the subject: `candidateText` and
+  // `paragraphs` stay exact because the review digests them and the artifact
+  // reader recomputes those digests from the shipped text. The original's own
+  // comments stay in view.
   /**
-   Fence absent from every untrusted block.
+   A text without the notes between translators, whose own comments in the
+   original stay.
+
+   @param text - candidate or paragraph text, exact
+
+   @returns Text with each note cut out along with the space or line it stood on
+   */
+  function withoutNotes({ text, }: { readonly text: string; },): string {
+    return withoutTranslatorsNotes({
+      text,
+      original: subject.sourceText,
+    },);
+  }
+  /**
+   The candidate without its notes.
+   */
+  const candidateShown = withoutNotes({ text: subject.candidateText, },);
+  /**
+   Each exact paragraph beside the paragraph without its notes, in the
+   paragraphs' order.
+   */
+  const paragraphCuts = subject.paragraphs
+    .map(function cutParagraph(paragraph,): {
+      readonly exact: string;
+      readonly cut: string;
+    } {
+      return {
+        exact: paragraph,
+        cut: withoutNotes({ text: paragraph, },),
+      };
+    },);
+  /**
+   Fence absent from every untrusted block, those the sheet shows included.
    */
   const fence = selectFence({
     texts: [
       subject.sourceText,
       subject.candidateText,
-      ...subject.paragraphs,
+      candidateShown,
+      ...paragraphCuts.flatMap(function bothForms(paragraph,): readonly string[] {
+        return [
+          paragraph.exact,
+          paragraph.cut,
+        ];
+      },),
       ...((subject.identityContext === undefined) ? [] : [subject.identityContext,]),
     ],
   },);
@@ -270,14 +327,21 @@ export function buildAbsoluteNaturalnessReviewMessages(
     return subject.lineStructured ? text : foldSoftBreaks({ text, },);
   }
   /**
-   Numbered refinable paragraphs findings must locate.
+   Numbered refinable paragraphs findings must locate, each keeping the number
+   of its place in the exact paragraphs; a paragraph of nothing but notes shows
+   nothing a reviewer could judge and is left out, its number unused.
    */
-  const paragraphs = subject.paragraphs
-    .map(function numberParagraph(
-      paragraph,
+  const paragraphs = paragraphCuts
+    .flatMap(function numberParagraph(
+      {
+        exact,
+        cut,
+      },
       index,
-    ): string {
-      return `PARAGRAPH ${String(index + 1,)}\n${fence}\n${shown({ text: paragraph, },)}\n${fence}`;
+    ): readonly string[] {
+      if ((cut !== exact) && rendersAsNothing({ text: cut, },))
+        return [];
+      return [`PARAGRAPH ${String(index + 1,)}\n${fence}\n${shown({ text: cut, },)}\n${fence}`,];
     },)
     .join('\n\n',);
   return [
@@ -312,7 +376,7 @@ In this review, a candidate obeying a house rule is never unacceptable for it, a
         subject.lineStructured
           ? 'EXACT ENGLISH CANDIDATE THAT WOULD SHIP:'
           : 'ENGLISH CANDIDATE THAT WOULD SHIP, each paragraph on one line as it renders:',
-        `${fence}\n${shown({ text: subject.candidateText, },)}\n${fence}`,
+        `${fence}\n${shown({ text: candidateShown, },)}\n${fence}`,
         '',
         'STRUCTURALLY CORRECTABLE PARAGRAPHS:',
         paragraphs,
