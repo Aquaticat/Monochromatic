@@ -416,6 +416,7 @@ export async function settleTranslateSlice(
   const droppedDeclaredNames = guardDeclaredNames
     ? findDroppedDeclaredNames({
       forms: prepared.declaredNames,
+      ...((prepared.declaredSubjectForms === undefined) ? {} : { subjectForms: prepared.declaredSubjectForms, }),
       baseText: incumbentText,
       candidateText: stageResult.text,
     },)

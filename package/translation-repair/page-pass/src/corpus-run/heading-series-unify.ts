@@ -26,19 +26,30 @@ import {
 // ordinal styles: "One:", none, "Three:", "IV:", "The Fifth:", "Part Six:",
 // none, none, "IX:", "Ten:". Every slice floor passed its own heading and
 // no judge sees two of them at once, so a parallel series has no one style.
-// THE PAGE DECIDES ONCE, HERE, where every heading is in view: a series of
-// numbered headings takes the style most of its renderings took, the
-// earliest style on a tie, and drops the ordinals where most renderings
-// dropped them, which is the archive's own convention on this page.
+// THE PAGE DECIDES ONCE, HERE, where every heading is in view, and renders
+// the series in that one style.
 //
-// CLASS EIGHTY-NINE (XingZ624, 2026-09-23). The plurality moved run to run:
-// XingZ622 shipped "Part One:" to "Part Ten:" on a plurality of "part
-// cardinal" renderings and XingZ624 dropped every ordinal on a plurality of
-// three bare headings, both over the same archive, which heads the sections
-// by name alone. Where the archive renders the series itself (two or more
-// of its headings, all in one style) the page takes the archive's style; the
-// renderings' plurality decides only where the archive never headed the
-// series.
+// CLASS EIGHTY-NINE (XingZ624, 2026-09-23) took the style from the lanes'
+// plurality, which moved run to run: XingZ622 shipped "Part One:" to "Part
+// Ten:" on a plurality of "part cardinal" renderings and XingZ624 dropped
+// every ordinal on a plurality of three bare headings, both over the same
+// archive, which heads the sections by name alone. Its remedy was the
+// archive's style wherever the archive headed two or more of the series,
+// bare or numbered. That was the pipeline's own decision, not the owner's.
+//
+// CLASS EIGHTY-NINE'S RULE IS REPLACED (XingZ6015, 2026-10-20) because the
+// bare archive style is not a numbering style. Both lanes rendered the
+// numbers ("Part One:" to "Part Ten:"), the lane contest kept them, the
+// repair panel logged the archive's dropped number as an accuracy omission,
+// and this pass then wrote nine bare headings over them: the shipped page
+// lost every number the original gives. The original numbers the series, so
+// THE PAGE KEEPS A NUMBER ON EVERY HEADING OF IT, in one style that depends
+// on the original and the archive alone, never on what the lanes wrote:
+// the archive's style where the archive itself numbers the series in one
+// style, else the house style (`HOUSE_SERIES_STYLE`, "Part One:"). The same
+// original and archive give the same style every run, which was the point
+// of class eighty-nine, and no heading loses a number the original gives or
+// gains one it lacks.
 //
 // A SLICE IS PAIRED WITH THE ORIGINAL'S NUMBERS ONLY WHERE IT CARRIES AS MANY
 // HEADINGS (ledger B84). Pairing is by position inside a slice, so a page
@@ -50,6 +61,20 @@ import {
  Mark the original's numbered headings open with.
  */
 const SERIES_MARK = '其';
+
+/**
+ Style a numbered series takes where the archive does not number it: "Part
+ One:". Chosen from what `renderOrdinal` writes and the stored runs, since no
+ human archive in the corpus numbers a heading series: XingZ6015's lanes wrote
+ "Part N:" on 14 of the 18 numbered headings they rendered (the other four
+ were "Three:", "Six:", "The Ninth:" and "Nine:"), and XingZ622 shipped
+ "Part One:" to "Part Ten:". "Part" names the sections without calling them
+ chapters.
+ */
+export const HOUSE_SERIES_STYLE: OrdinalStyle = {
+  leader: 'part',
+  form: 'cardinal',
+};
 
 /**
  One heading of the series as the page carries it.
@@ -79,11 +104,6 @@ type SeriesHeading = {
    Title after the number, as rendered.
    */
   readonly rest: string;
-
-  /**
-   Style the rendering took, `NO_NUMBER` where it carries no number.
-   */
-  readonly style: OrdinalStyle;
 };
 
 /**
@@ -136,7 +156,9 @@ function seriesValues({ text, }: { readonly text: string; },): readonly number[]
  readRendered({ line: '### Part Six: Mikä', },);
  ```
  */
-function readRendered({ line, }: { readonly line: string; },): Pick<SeriesHeading, 'marks' | 'rest' | 'style'> {
+function readRendered(
+  { line, }: { readonly line: string; },
+): Pick<SeriesHeading, 'marks' | 'rest'> & { readonly style: OrdinalStyle; } {
   /**
    Marks and title.
    */
@@ -185,29 +207,31 @@ function readRendered({ line, }: { readonly line: string; },): Pick<SeriesHeadin
 }
 
 /**
- What the archive says about the series' style: one style, or nothing to
- read.
+ What the archive says about the series' style: one numbered style, or
+ nothing to follow.
  */
 type ArchiveSeriesStyle =
   | {
     readonly rendered: true;
 
     /**
-     Style every archive heading of the series shares.
+     Numbered style every archive heading of the series shares.
      */
     readonly style: OrdinalStyle;
   }
   | { readonly rendered: false; };
 
 /**
- The archive heads fewer than two of the series, or in more than one style.
+ The archive heads fewer than two of the series, heads them in more than one
+ style, or heads them by name alone.
  */
 const ARCHIVE_SILENT: ArchiveSeriesStyle = { rendered: false, };
 
 /**
- Style the archive renders the series in: the one style shared by every
- archive heading standing where the original numbers one; silent where the
- archive heads fewer than two of them or heads them in more than one style.
+ Style the archive numbers the series in: the one numbered style shared by
+ every archive heading standing where the original numbers one; silent where
+ the archive heads fewer than two of them, heads them in more than one style,
+ or heads them by name alone, which numbers nothing.
 
  @param slices - prepared pairs in slice order
 
@@ -278,7 +302,7 @@ function archiveStyle({ slices, }: { readonly slices: readonly ChunkPair[]; },):
   const keys = new Set(styles.map(function keyOf(style,): string {
     return styleKey({ style, },);
   },),);
-  return (keys.size === 1)
+  return ((keys.size === 1) && (first.form !== 'none'))
     ? {
       rendered: true,
       style: first,
@@ -287,48 +311,20 @@ function archiveStyle({ slices, }: { readonly slices: readonly ChunkPair[]; },):
 }
 
 /**
- Style most headings took, the earliest on a tie; `NO_NUMBER` when most
- carry no number.
+ Style the original's numbered series is rendered in: the archive's where the
+ archive numbers the series, else the house style.
 
- @param headings - series as rendered
+ @param archived - what the archive says about the series' style
 
- @returns Winning style
+ @returns The style, whose form is never `none`
 
  @example
  ```ts
- const style = majorityStyle({ headings, },);
+ const style = seriesStyle({ archived: archiveStyle({ slices, },), },);
  ```
  */
-function majorityStyle({ headings, }: { readonly headings: readonly SeriesHeading[]; },): OrdinalStyle {
-  /**
-   Count per style key, "none" for no number.
-   */
-  const counts = new Map<string, number>();
-  for (const heading of headings) {
-    /**
-     Key of this heading's style.
-     */
-    const key = styleKey({ style: heading.style, },);
-    counts.set(
-      key,
-      (counts.get(key,) ?? 0) + 1,
-    );
-  }
-  /**
-   Largest count.
-   */
-  const most = Math.max(...counts.values(),);
-  /**
-   Earliest heading whose style drew the largest count.
-   */
-  const earliest = nonNullishOrThrow(headings.find(function leads(heading,): boolean {
-    /**
-     Key of this heading's style.
-     */
-    const key = styleKey({ style: heading.style, },);
-    return counts.get(key,) === most;
-  },),);
-  return earliest.style;
+function seriesStyle({ archived, }: { readonly archived: ArchiveSeriesStyle; },): OrdinalStyle {
+  return archived.rendered ? archived.style : HOUSE_SERIES_STYLE;
 }
 
 /**
@@ -424,11 +420,20 @@ export function unifyHeadingSeries(
       met += 1;
       if (value === 0)
         return;
+      /**
+       Marks and title of the heading, whose rendered number the series
+       style replaces.
+       */
+      const {
+        marks,
+        rest,
+      } = readRendered({ line, },);
       headings.push({
         sliceIndex,
         line: at,
         value,
-        ...readRendered({ line, },),
+        marks,
+        rest,
       },);
     },);
   }
@@ -443,13 +448,14 @@ export function unifyHeadingSeries(
    */
   const archived = archiveStyle({ slices: slicesInOrder({ slices, },), },);
   /**
-   Style the series takes: the archive's, else most renderings'.
+   Style the series takes: the archive's where it numbers the series, else
+   the house style.
    */
-  const style = archived.rendered ? archived.style : majorityStyle({ headings, },);
+  const style = seriesStyle({ archived, },);
   /**
    Whose style it is, for the finding.
    */
-  const whose = archived.rendered ? 'the archive\'s own style' : 'most renderings\' style';
+  const whose = archived.rendered ? 'the archive\'s own style' : 'the house style';
   /**
    Page text per slice after the rewrites.
    */
@@ -462,12 +468,10 @@ export function unifyHeadingSeries(
     /**
      Heading as the series style spells it.
      */
-    const unified = (style.form === 'none')
-      ? `${heading.marks} ${heading.rest}`
-      : `${heading.marks} ${renderOrdinal({
-        value: heading.value,
-        style,
-      },)}: ${heading.rest}`;
+    const unified = `${heading.marks} ${renderOrdinal({
+      value: heading.value,
+      style,
+    },)}: ${heading.rest}`;
     /**
      Slice lines as they stand after earlier rewrites.
      */

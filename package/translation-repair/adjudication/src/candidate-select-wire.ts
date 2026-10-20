@@ -7,7 +7,10 @@ import {
 } from '@monochromatic-dev/translation-repair-glossary/ts';
 import type { JsonSchemaResponseFormat, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { JUDGE_POLICY_BLOCK, } from '@monochromatic-dev/translation-repair-house-rule/ts';
-import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import {
+  isJsonRecord,
+  withoutTranslatorsNotes,
+} from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { selectFence, } from '@monochromatic-dev/translation-repair-stage/ts';
 import { KEEPS_TRUSTED_TEXT, } from './select-decline-consequence.ts';
 
@@ -53,6 +56,107 @@ export type SelectEvidence = {
    */
   readonly text: string;
 };
+
+/**
+ Word a heading carries when its text is the original, which every slate
+ labels so ("ORIGINAL (Chinese)", "EXPECTED ORIGINAL SECTION", "SURROUNDING
+ ORIGINAL (Chinese)").
+ */
+const ORIGINAL_LABEL_MARK = 'ORIGINAL';
+
+/**
+ Whether an evidence block is the original, whose comments are its own.
+
+ @param entry - evidence block
+
+ @returns Whether its heading names it the original
+
+ @example
+ ```ts
+ const original = isOriginalEntry({ entry: { label: 'ORIGINAL (Chinese)', text, }, },);
+ ```
+ */
+function isOriginalEntry({ entry, }: { readonly entry: SelectEvidence; },): boolean {
+  /**
+   Heading naming what the text is.
+   */
+  const { label, } = entry;
+  return label.includes(ORIGINAL_LABEL_MARK,);
+}
+
+/**
+ What a slate's judges are shown: the evidence and the candidates without the
+ notes the archive's translators left each other.
+
+ A READER NEVER SEES SUCH A NOTE, so a candidate may neither win nor lose a
+ vote for carrying one (XingZ60 slice 6: the contest and the gate both
+ praised the candidate that kept the archive's comment). Every slate reaches
+ its judges through this one cut, the chat sheet and the typed question of a
+ decision seat alike. The original's own comments stay in view: the evidence
+ labelled as the original is left whole, and a note found verbatim in it or in
+ the caller's original is the original's markup in every text.
+
+ @param evidence - source and baseline material, in caller order
+
+ @param rendered - candidate texts, in caller order
+
+ @param sourceText - original the candidates render, when the caller has it
+
+ @returns The same evidence and candidates, each text without the notes
+
+ @example
+ ```ts
+ const { evidence, rendered, } = judgedSelection({ evidence: given, rendered: texts, },);
+ ```
+ */
+export function judgedSelection(
+  {
+    evidence,
+    rendered,
+    sourceText = '',
+  }: {
+    readonly evidence: readonly SelectEvidence[];
+    readonly rendered: readonly string[];
+    readonly sourceText?: string;
+  },
+): {
+  readonly evidence: readonly SelectEvidence[];
+  readonly rendered: readonly string[];
+} {
+  /**
+   Everything the judges are shown as the original, whose comments are the
+   original's own.
+   */
+  const original = [
+    sourceText,
+    ...evidence
+      .filter(function isOriginal(entry,): boolean {
+        return isOriginalEntry({ entry, },);
+      },)
+      .map(function textOf(entry,): string {
+        return entry.text;
+      },),
+  ].join('\n',);
+  return {
+    evidence: evidence.map(function judged(entry,): SelectEvidence {
+      return isOriginalEntry({ entry, },)
+        ? entry
+        : {
+          label: entry.label,
+          text: withoutTranslatorsNotes({
+            text: entry.text,
+            original,
+          },),
+        };
+    },),
+    rendered: rendered.map(function judged(text,): string {
+      return withoutTranslatorsNotes({
+        text,
+        original,
+      },);
+    },),
+  };
+}
 
 /**
  Ballot value meaning no candidate is acceptable.
@@ -268,8 +372,8 @@ export function buildCandidateSelectMessages(
   {
     task,
     criteria,
-    evidence,
-    rendered,
+    evidence: held,
+    rendered: heldRendered,
     declineConsequence = KEEPS_TRUSTED_TEXT,
     sourceText,
   }: {
@@ -281,6 +385,18 @@ export function buildCandidateSelectMessages(
     readonly sourceText?: string;
   },
 ): readonly ChatMessage[] {
+  /**
+   Evidence and candidates as the judge reads them, without the notes between
+   translators.
+   */
+  const {
+    evidence,
+    rendered,
+  } = judgedSelection({
+    evidence: held,
+    rendered: heldRendered,
+    ...((sourceText === undefined) ? {} : { sourceText, }),
+  },);
   /**
    Fence no enclosed text can reproduce, chosen across evidence and
    candidates together so one block can never close another's.

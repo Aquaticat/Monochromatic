@@ -75,6 +75,8 @@ export type ConsistencyFloorVerdict =
 
  @param declaredNames - declared name forms the incumbent must keep
 
+ @param declaredSubjectForms - the declared forms among them that name the subject, which may stand in for one another
+
  @param disputedWordings - wordings a disputed slice refuses
 
  @returns That every floor passed, or what the floors found
@@ -96,6 +98,7 @@ export function consistencyFloorVerdict(
     lineStructured,
     declared,
     declaredNames,
+    declaredSubjectForms,
     disputedWordings,
   }: {
     readonly sliceIndex: number;
@@ -105,6 +108,7 @@ export function consistencyFloorVerdict(
     readonly lineStructured: boolean;
     readonly declared: readonly DeclaredNamePair[];
     readonly declaredNames: readonly string[];
+    readonly declaredSubjectForms?: readonly string[];
     readonly disputedWordings: readonly DisputedWording[];
   },
 ): ConsistencyFloorVerdict {
@@ -163,6 +167,7 @@ export function consistencyFloorVerdict(
    */
   const dropped = findDroppedDeclaredNames({
     forms: declaredNames,
+    ...((declaredSubjectForms === undefined) ? {} : { subjectForms: declaredSubjectForms, }),
     baseText: currentText,
     candidateText,
   },);

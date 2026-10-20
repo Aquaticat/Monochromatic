@@ -22,6 +22,12 @@ since every affected stage's run shape names the recorded death and the subject 
 so its key moves for exactly the entries whose question changed;
 the three pinned-key witnesses were read first,
 and kept their pinned strings for an entry that records no death.
+The sheet-backed versions for the fixes of XingZ6015 moved in seven constants of six packages,
+and the check after the bump ran the declaring packages only:
+five pinned keys were red there,
+and two version pins in corpus-pass,
+a package that declares none of the constants,
+stayed red until a later commit moved them (ledger M284).
 
 The rule:
 a commit changing a floor,
@@ -32,6 +38,14 @@ or why none moves.
 A field enters a key only when a run that goes ahead reads it into a question or a weighting.
 Keys hash one JSON value of fixed shape with the version in it (X15),
 never joined strings.
+After a version moves,
+every package whose tests name its constant runs,
+and not only the package that declares it:
+`rg --files-with-matches '<NAME>' package/translation-repair --glob '*.test.ts'`
+lists them,
+one search for each constant that moved (ledger M284).
+The search is added to the declaring packages' own run and does not replace it:
+a case that pins a key hashed from the version without naming the constant is red in the declaring package alone.
 
 What enforces it:
 the key-shape tests (`block-pairing-question-key.unit.test.ts`,
@@ -41,6 +55,8 @@ the checklist's cache step covers the rest,
 through the `cache-account-audit` task,
 which reads the constants out of the source rather than from a remembered list,
 and whose readers are pinned by `cache-account-read.unit.test.ts` and `cache-account-commits.unit.test.ts`.
+The search for the packages whose tests name a moved constant is habit;
+no task lists them.
 
 ## Files a later run reads back
 

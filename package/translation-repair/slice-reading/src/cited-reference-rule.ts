@@ -28,8 +28,9 @@ export const CITED_REFERENCE_RULE: string = 'CITED REFERENCES are what the pages
   + ' An event, an action or a characterization a cited reference states is covered too:'
   + ' the rule that what happened is never apparatus is about detail no source states,'
   + ' and a cited reference is the ORIGINAL\'s own source.'
-  + ' Reader protection outranks the references: a method, a substance, a dose, or a place that was the means'
-  + ' stays out however plainly a reference states it.'
+  + ' Reader protection outranks the references: in the account of how a death or an attempt happened,'
+  + ' a method, a substance, a dose, or a place that was the means stays out however plainly a reference states it;'
+  + ' a means named outside that account is not covered by this rule.'
   + ' Lines marked attested name TRANSLATION details a reference states, checked word for word:'
   + ' a claim that one of them is an addition is void.';
 
@@ -87,8 +88,9 @@ export const CITED_REFERENCE_CANDIDATE_RULE: string = 'CITED REFERENCES are what
   + ' An event, an action or a characterization a cited reference states is covered too:'
   + ' the rule that what happened is never apparatus is about detail no source states,'
   + ' and a cited reference is the ORIGINAL\'s own source.'
-  + ' Reader protection outranks the references: a method, a substance, a dose, or a place that was the means'
-  + ' stays out however plainly a reference states it.'
+  + ' Reader protection outranks the references: in the account of how a death or an attempt happened,'
+  + ' a method, a substance, a dose, or a place that was the means stays out however plainly a reference states it;'
+  + ' a means named outside that account is not covered by this rule.'
   + ' Lines marked attested name archive details a reference states, checked word for word:'
   + ' a rendering is never unsupported for carrying one, and one that drops it drops accurate detail.';
 
@@ -179,7 +181,8 @@ export const CITED_REFERENCE_AUDIT_RULE: string = 'CITED REFERENCES are what the
   + ' a CANDIDATE that leaves out what only a reference states has omitted nothing,'
   + ' and the references never outrank the ORIGINAL where the two disagree and never support a finding elsewhere.'
   + ' An event, an action or a characterization a cited reference states is covered too.'
-  + ' Reader protection outranks the references: a method, a substance, a dose, or a place that was the means'
-  + ' stays out however plainly a reference states it.';
+  + ' Reader protection outranks the references: in the account of how a death or an attempt happened,'
+  + ' a method, a substance, a dose, or a place that was the means stays out however plainly a reference states it;'
+  + ' a means named outside that account is not covered by this rule.';
 
 //endregion Cited-reference rule

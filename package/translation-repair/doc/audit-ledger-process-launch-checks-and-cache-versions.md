@@ -374,3 +374,61 @@ step 10;
 `setup-worktrees.ts` now takes `<name>=<commit>`,
 installs after the checkout,
 and prints the installed `rolldown` version.
+
+## M284: the cache version commit left seven test cases red, because the check after it ran the declaring packages only
+
+Status:
+happened on 2026-10-20 (UTC),
+in the main session,
+at the bump of the sheet-backed cache versions for the fixes of XingZ6015.
+`28f4b8fc75` (01:34 UTC) moved the versions;
+`5db53c0056` (01:43 UTC) moved five pinned keys,
+and `a169580740` (01:54 UTC) moved two version pins in corpus-pass.
+A corrective commit comment on `28f4b8fc755c0b9fcc8bd00b7b9f211d946c67b3` is owed,
+since commits are never amended.
+
+The commit moved seven constants in six packages
+(`TRANSLATE_SLICE_CACHE_VERSION`,
+`PAGE_TITLE_CACHE_VERSION`,
+`CONSISTENCY_CACHE_VERSION`,
+`LANE_CONTEST_CACHE_VERSION`,
+`REFINE_CACHE_VERSION`,
+`SLICE_CACHE_VERSION` and `CONSOLIDATE_CACHE_VERSION`).
+Each version is key input,
+so a case that pins a key or the number itself fails at once.
+Its message does not say it leaves any case red.
+Seven were red:
+
+- five pinned keys in the declaring packages,
+  moved in `5db53c0056`:
+  translate-lane,
+  lane-contest,
+  two in repair (the refine key and the repair slice case),
+  and artifact;
+- two version pins in corpus-pass,
+  the consistency key case (version 5,
+  now 6) and the page title version case (3,
+  now 4),
+  moved in `a169580740`.
+
+The check after the bump ran the packages that declare the versions,
+and corpus-pass is not one of them.
+Each of the five declaring-package cases was read red from its own failure after the bump,
+and `5db53c0056` moved them in a commit of their own.
+The two corpus-pass cases name `CONSISTENCY_CACHE_VERSION` and `PAGE_TITLE_CACHE_VERSION` in a package that declares
+neither,
+so that check never ran them;
+`a169580740` moved them,
+in the commit that also gave the contest seam its `fanOut` (B701).
+The message of `5db53c0056` says its cases were left red by the version commit before it;
+the corrective comment says seven,
+and names both commits that moved them.
+
+Prevention:
+`mistake-prevention-stored-files-and-cached-decisions.md`,
+"Cached decisions":
+after a version moves,
+every package whose tests name the constant runs too.
+The search is `rg --files-with-matches '<NAME>' package/translation-repair --glob '*.test.ts'`,
+and on `a169580740` it finds the two corpus-pass files for `CONSISTENCY_CACHE_VERSION` and the one for
+`PAGE_TITLE_CACHE_VERSION`.

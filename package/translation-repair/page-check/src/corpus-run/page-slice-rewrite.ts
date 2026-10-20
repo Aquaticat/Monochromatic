@@ -65,7 +65,8 @@ function sealed(
 
  @param archiveOriginalSpans - spans sealed as the English original
 
- @param rewrite - rewrite of one slice's text, given the slice's original
+ @param rewrite - rewrite of one slice's text, given the slice's original and
+ the archive's text for it
 
  @param findingName - name each finding opens with
 
@@ -92,6 +93,7 @@ export function rewriteEverySlice(
     readonly rewrite: (input: {
       readonly text: string;
       readonly source: string;
+      readonly archive: string;
     },) => TextRewrite;
     readonly findingName: string;
   },
@@ -139,6 +141,8 @@ export function rewriteEverySlice(
       const rewritten = rewrite({
         text,
         source: slice.source
+          .text,
+        archive: slice.target
           .text,
       },);
       if (rewritten.changed

@@ -704,3 +704,147 @@ Plausible,
 unproven:
 nothing re-floors a lanes-agreed would-ship text,
 and the repair lane never calls `validateTranslatedSlice`.
+
+## B699: the declared-name floor read a swap of declared names as a loss, and its first fix passed undeclared blends
+
+Status:
+two fixes of 2026-10-20 (UTC),
+integrated in the tree at `191a8bc38d`.
+The swap rule:
+red `8f5129e0dd`,
+fix `0adb8d12be`.
+The whole-name arrival rule:
+red `f9686ef927`,
+fix `022f33254a`,
+tests and scan repair `6766f25dec`,
+README `1513587e43`.
+The translate slice,
+repair chunk,
+refine slice,
+consolidation polish and consistency carry settlements can differ for a slice they refused before.
+No version moved for this work alone:
+the version commit `28f4b8fc75` says the declared-name change lands after it and before any run,
+so it rides inside the numbers that commit moved.
+
+### The swap
+
+Found in the read of XingZ6015,
+slices 15 and 80 of XingZ60.
+The front matter declares the name XingZ60 and the aliases Lili and Z60;
+the original's 璃璃 renders as Lili.
+The archive wrote "XingZ60" where the original writes the alias.
+At slice 80 the winning repair patch (12 of 12 served accepted issues resolved,
+a major tense error among them) and the translate replacement both wrote the alias,
+and both were refused at 2026-10-19T21:58:36Z and 22:56:50Z with
+"archive text carries "XingZ60" and the replacement does not",
+so the archive paragraph shipped with its errors.
+Slice 15 drew the same refusal in the translate lane.
+
+The floor read every form the base carried and the candidate did not as a loss,
+and checked each form alone,
+so a person named by another of her own declared forms read as a lost name.
+
+`findDroppedDeclaredNames` takes the optional `subjectForms`,
+the forms the front matter declares for the entry's own subject.
+A lost subject form is met by a subject form the candidate carries as a name and the base did not carry,
+one new form for each lost form.
+Contributor handles are not in the group and stay a plain loss,
+and so does every caller that passes none.
+`PreparedDocumentPair` carries `declaredSubjectForms`,
+and the translate slice,
+the repair chunk verdict,
+the refine stage and the consistency floors of the corpus pass pass it.
+Mittens (Blossom) becoming Mittens still loses Blossom with nothing in its place.
+
+Replay over the 331 stored artifacts,
+98 stored refusals,
+85 reproduced by the old rule from stored texts
+(43 translate and 42 repair;
+the other 13 are repair patches whose text is not stored):
+43 of the 85 passed under the swap rule,
+every one a lost subject form met by a new subject form
+(XingZ60 34,
+hulicaijia 4,
+Toka_ls 3,
+GLaDOSister 2),
+and 42 stayed refused with no subject form arriving.
+The new answer is a subset of the old one on all 98.
+
+### The blends
+
+The lead's review of the swap rule read the 43 passes of that replay.
+19 of them wrote an undeclared name:
+"Xing Lili" (11),
+"XingLili" (7) and "Xing Li Li" (1),
+where the front matter declares XingZ60,
+Lili and Z60.
+A piece of the old name had been fused onto the alias,
+a person renamed.
+The carriage rule reads a name at a word edge,
+a camel edge and a split spelling included,
+so the new form met a lost one inside a blend nobody declared.
+The swap rule's cases held no blend,
+so none failed,
+and the work went back to the agent.
+
+`whole-name-arrival.ts` counts a new form only where it stands as a whole name,
+on at least one occurrence:
+it does not run on from or into a Latin letter or digit,
+or across a hyphen or an underscore;
+it is spelled as declared,
+Markdown escapes,
+case,
+white-space runs and punctuation at its ends aside,
+so "Li Li" is not "Lili";
+and no capitalised Latin word stands directly beside it,
+unless that word belongs to a declared form of anyone,
+is an ordinary sentence opener,
+title,
+kin word or month (`ordinary-capitalised-words.ts`),
+or stood beside the lost form in the base.
+Only an arrival is held to this;
+`nameOccurrences` joined the name projection,
+and `carriesName` reads it,
+so carriage is unchanged.
+
+The fix commit shipped the two new modules without tests of their own,
+wrote a no-break space literally,
+and read blankness with `trim`,
+so five of the package scans failed.
+`6766f25dec` gave each exported function its tests,
+folded a run of white space with `isTagWhitespace`,
+and wrote the narrow no-break space (U+202F,
+in the pinned page MTF_0615) as an escape;
+the false-refusal count went from 75 to 67 with it.
+Each guard of the arrival rule (joint,
+spelling,
+neighbour on either side,
+ordinary words,
+base-beside words,
+declared words) was removed in turn and failed a named test.
+
+Replay of the whole-name rule over the 85 controlled rows:
+the 19 blends are refused again,
+the other 24 still pass
+(XingZ60 15 writing Lili alone,
+hulicaijia 4,
+Toka_ls 3,
+GLaDOSister 2),
+and the answer is a subset of the old one everywhere.
+False refusals,
+every whole-name occurrence of a declared subject form in the 91 pinned archives and 281 settled pages
+tried as an arrival:
+67 of 7596 held back
+(48 written with other spacing than declared,
+12 joined to a handle by an underscore,
+7 beside a capitalised word of a longer name),
+and none a sentence opener.
+The caveat:
+the list of ordinary capitalised words was drawn from the same corpus,
+so the false-refusal count measures the list against the pages it came from.
+
+Recurrence:
+none of an earlier entry.
+A rule that widens what a floor passes is replayed over the refusals it now passes,
+and each pass is read,
+before it lands.

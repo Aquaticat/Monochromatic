@@ -151,6 +151,8 @@ export type AppliedConsistency = {
 
  @param declaredNames - declared name forms
 
+ @param declaredSubjectForms - the declared forms among them that name the subject, which may stand in for one another
+
  @returns What the floors found
 
  @example
@@ -165,12 +167,14 @@ function floorsOn(
     candidateText,
     declared,
     declaredNames,
+    declaredSubjectForms,
   }: {
     readonly facts: ConsistencySliceFacts;
     readonly currentText: string;
     readonly candidateText: string;
     readonly declared: readonly DeclaredNamePair[];
     readonly declaredNames: readonly string[];
+    readonly declaredSubjectForms?: readonly string[];
   },
 ): ConsistencyFloorVerdict {
   return consistencyFloorVerdict({
@@ -181,6 +185,7 @@ function floorsOn(
     lineStructured: facts.lineStructured,
     declared,
     declaredNames,
+    ...((declaredSubjectForms === undefined) ? {} : { declaredSubjectForms, }),
     disputedWordings: facts.disputedWordings,
   },);
 }
@@ -197,6 +202,8 @@ function floorsOn(
 
  @param declaredNames - declared name forms
 
+ @param declaredSubjectForms - the declared forms among them that name the subject, which may stand in for one another
+
  @param l - logger the pass writes to
 
  @returns The groups with final outcomes, the changed slices and the findings
@@ -212,12 +219,14 @@ export function applyConsistency(
     slices,
     declared,
     declaredNames,
+    declaredSubjectForms,
     l,
   }: {
     readonly settled: readonly SettledGroup[];
     readonly slices: readonly ConsistencySliceFacts[];
     readonly declared: readonly DeclaredNamePair[];
     readonly declaredNames: readonly string[];
+    readonly declaredSubjectForms?: readonly string[];
     readonly l: Logger;
   },
 ): AppliedConsistency {
@@ -362,6 +371,7 @@ export function applyConsistency(
           candidateText,
           declared,
           declaredNames,
+          ...((declaredSubjectForms === undefined) ? {} : { declaredSubjectForms, }),
         },);
       },
     },)

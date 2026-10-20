@@ -645,6 +645,13 @@ A fact a run's evidence states,
 such as a work's English title its lookup found,
 is checked against the sources that evidence cites before it is called wrong;
 one store's silence is not the absence of an edition (ledger M279).
+Text in a page is called invented only after the whole quoted passage is read in the original,
+not the line the quote began on:
+"so her enemies could never take her" was removed from a comment as invented,
+from line 9 of the original alone,
+and line 10 of the original is where she said it (ledger M283).
+The reading names the lines it covered,
+and a passage that runs on is read to its end.
 
 What enforces it:
 habit;

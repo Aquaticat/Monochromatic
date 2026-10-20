@@ -44,11 +44,34 @@ The groups that follow name the main ones.
   `findDroppedDeclaredNames`,
   `declaredNameRefusalReport`,
   `projectName`,
+  `nameOccurrences`,
   `declaredNamePairs`.
   Declared in `identity-context.ts`,
   `declared-name-survival.ts`,
   `name-projection.ts`,
   and `linked-title-declared-name.ts`.
+- Whole-name arrival:
+  when a translation loses one declared form of the subject,
+  decide whether another declared form arriving in its place stands as a whole name.
+  It must not run on into a Latin letter or digit,
+  or across a hyphen or an underscore;
+  it must be spelled as declared,
+  so `Li Li` does not stand for `Lili`;
+  and no capitalised Latin word may stand beside it unless that word belongs to a declared form,
+  is an ordinary opener,
+  title,
+  kin word or month,
+  or stood beside the lost form in the base.
+  Carriage is unchanged:
+  `carriesName` still reads `Li Li` as carrying `Lili`,
+  and only an arrival is held to this.
+  Names:
+  `arrivesAsWholeName`,
+  `besideWordsOf`,
+  `declaredWordsOf`,
+  `excusedNeighboursOf`,
+  `ORDINARY_CAPITALISED_WORDS`.
+  Declared in `whole-name-arrival.ts` and `ordinary-capitalised-words.ts`.
 - Contributor names:
   the name forms an archive credits and the findings raised when a translation departs from them.
   Names:

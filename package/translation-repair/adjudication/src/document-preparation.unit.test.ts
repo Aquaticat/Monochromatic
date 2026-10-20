@@ -361,6 +361,21 @@ await describe({
     },),
 
     it({
+      name: 'NAMES THE SUBJECT\'S OWN DECLARED FORMS apart from the contributor handles, so a floor can '
+        + 'tell another form of the person from another person (XingZ60 slice 80)',
+      fn: async () => {
+        const prepared = prepareDocumentPair({
+          sourceText: '---\nname: 猫猫\ninfo:\n    alias: 咪咪, Z60\n---\n\n## 简介\n\n猫睡着了。\n\n条目贡献：一体, 小雪\n',
+          targetText: '---\nname: Maomao\ninfo:\n    alias: Mimi, Z60\n---\n\n## Description\n\nThe cat slept.\n\n'
+            + 'Contributors for this entry: One Body, [Snow](https://example.test/snow)\n',
+        },);
+        expect(prepared.declaredSubjectForms,).toEqual(['Maomao', 'Mimi', 'Z60',],);
+        expect(prepared.declaredNames,).toContain('One Body',);
+        expect(prepared.declaredSubjectForms,).not.toContain('One Body',);
+      },
+    },),
+
+    it({
       name: 'OMITS the identity block when neither side declares anything, '
         + 'rather than passing an empty one, so a prompt never carries a '
         + 'heading with nothing under it',

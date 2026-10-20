@@ -554,3 +554,112 @@ carving over the stored archive reproduced all 23.
 The audit's own reproduction check reports the moved carves as departures from the run
 (hulicaijia's `71 slices rebuilt where the run recorded 72` among them),
 so the rendering audit refuses artifacts whose carve it would reproduce.
+
+## B698: the archive's notices that the page is unfinished shipped, and judges chose a lane for a note no reader sees
+
+Status:
+two fixes of 2026-10-20 (UTC),
+integrated in the tree at `191a8bc38d`.
+The notices:
+red `e98cd009a9`,
+fix `97a4f02b35`.
+The translators' notes:
+red `b77a125486`,
+fix `a3a7baeb3b`.
+`LANE_CONTEST_CACHE_VERSION` moved from 10 to 11 and `CONSOLIDATE_CACHE_VERSION` from 25 to 26 in `28f4b8fc75`,
+and the archive-block review's sheet change rides the same bumps.
+Both were read in XingZ6015,
+the third entry of the readiness rotation,
+and both come from text the archive carries and the original does not.
+
+### Notices that the page is unfinished
+
+The XingZ60 archive opens with three notices:
+"Come back later!",
+"This version is NOT the formal version.
+Maintainers will update this after finishing Simplified Chinese version."
+and "This is an unfinished version.
+Please refer to the Traditional Chinese page."
+(the archive's lines 9 to 13).
+The original has none of them,
+and the archive translated only part of it,
+where the pass translated all of it.
+The archive-block review kept all three as page apparatus
+(log 2026-10-19T18:31:02Z,
+`runArchiveBlockReviewStage`,
+five judges,
+`deepseek-v4.1-flash`:
+"a faithful,
+plainly worded English notice about the page's own status"),
+because its sheet never said the published page holds an English rendering of every block of the original.
+For the block logged at 18:30:51Z only one of five heard replies was eligible and the slate's one candidate was kept
+by all five judges,
+so nothing offered the removal.
+The shipped page carried the three notices on a complete page.
+
+The fix is a deterministic strip and one true sentence on the sheet.
+A sheet sentence alone would meet the same five judges with the same reasoning,
+and the package's own record is that sheet text does not move a vote a judge has reasoned its way to
+(`house-rule/src/declared-name-survival.ts`,
+six of six).
+`isStatusNoticeParagraph` in page-check reads a paragraph made only of sentences that say come back later,
+that the page is not the finished one,
+who will update it or which other page to see,
+through blockquote markers,
+a callout label and emphasis,
+and the entry's stub-marker strip removes such a paragraph as it removes a placeholder.
+`PAGE_CARRIES_EVERY_BLOCK` says the page holds an English rendering of every block of the original,
+and the archive review sheet and the first criterion of its correction slate carry that clause.
+Over the 92 pinned English archives,
+by paragraph,
+the predicate flags exactly the three notices of XingZ60 and nothing on any other page.
+The wording a notice takes is open,
+so the sheet says the same for the notices the strip does not name.
+
+### Translators' notes
+
+Slice 6 of XingZ60:
+the archive ends a sentence with an HTML comment in Han,
+`<!-- 前面这句中文懂什么意思，先这么翻译，大家看一下 -->`,
+asking the other translators whether anyone understands the Chinese before it.
+The repair lane keeps a comment as markup and the translate lane does not.
+All three contest judges chose repair for keeping it,
+one calling it page apparatus,
+over a cleaner translate wording,
+and two of three consolidation gate ballots praised both candidates for keeping it.
+A reader never sees an HTML comment,
+so a rendering was chosen for text no reader reads,
+and the shipped page carried the note because the winning wording happened to keep it.
+
+The cut is deterministic,
+since sheet carve-outs do not move judges:
+
+- `translators-note.ts` in document-structure finds the closed HTML or JSX comments whose words hold Han
+  (ten archives,
+  34 comments,
+  none verbatim in its original),
+  cuts them with the space or line they stood on (`withoutTranslatorsNotes`),
+  and names the archive's notes a page lacks (`archiveNotesMissingFrom`).
+  A comment found verbatim in the original and every comment without Han are untouched.
+- The lane contest sheet,
+  the consolidation gate and polish gate sheets,
+  and every candidate selection slate of the adjudication package (translate,
+  repair and archive-block selection,
+  for the chat sheet and for the typed question of a decision seat alike)
+  show the archive and the candidates without the notes.
+  Evidence labelled as the original is left whole.
+- The page assembly adds each archive note the wording lacks on a line of its own after the slice's last block,
+  last of the page passes.
+  A slice the page removes and a sealed span carry nothing.
+
+Adopted without asking the owner,
+open to the owner's veto:
+the page still ships the notes,
+though no reader sees them,
+because other passes read them and a note can steer the next pass
+(the `hakureico` note seals a span).
+
+Recurrence:
+none of an earlier entry.
+A candidate wording is judged on what a reader sees;
+text a reader never sees is cut from the judges' sheets and carried by code.

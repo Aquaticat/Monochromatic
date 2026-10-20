@@ -351,6 +351,9 @@ async function contestRun(
     overlap: 1,
     l,
     stageSettings: SCRIPTED_STAGE_SETTINGS,
+    // Every late judge must be asked, so the lost seat is, and the default
+    // window is rotated by the sheet text.
+    fanOut: 'whole-bench',
   },);
   return {
     asked,

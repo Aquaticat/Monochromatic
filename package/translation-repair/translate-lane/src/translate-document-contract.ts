@@ -319,8 +319,19 @@ import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-pa
  the change cannot ride inside the number and the number moves, as the other two versions whose judges are shown these candidates
  move with it. A search of those records found no opening curly single mark in a candidate text, so no stored record is known to
  differ.
+
+ Version 20 covers the fixes of the XingZ6015 read (2026-10-20), which change what these sheets say and what their floors accept:
+ reader protection reaches only the account of how a death or an attempt happened (owner, 2026-10-20,
+ `house-rule/src/house-policy.ts`), which every sheet splicing the house rule restates; judges no longer see a note between
+ translators (`document-structure/src/translators-note.ts`); the archive-block review says the page it publishes is complete; a
+ consolidation challenge round seats a proposal two ballots named over a fallback the contest majority called flawed; and the
+ declared-name floor meets a lost form of the subject with another declared form of the same person. The key does not hash the
+ sheet or the floors, so a record written under the old ones would be served under the new. The XingZ6015 pass wrote records at the
+ old number on `sha256-tree-v1:a92725968adf…`, so the change cannot ride inside it and the number moves, as every version whose
+ sheets splice the house rule moves with it; the pairing version stays, since no pairing sheet carries the house rule. No record
+ has been written at 20, which this change sets first.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 19;
+export const TRANSLATE_SLICE_CACHE_VERSION = 20;
 
 /**
  Models the translate lane seats.

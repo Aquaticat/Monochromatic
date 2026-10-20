@@ -144,6 +144,7 @@ export async function buyRepairSlice(
         lineStructured: prepared.lineStructuredSliceIndices
           .has(sliceIndex,),
         declaredNames: prepared.declaredNames,
+        ...((prepared.declaredSubjectForms === undefined) ? {} : { declaredSubjectForms: prepared.declaredSubjectForms, }),
         neighbouringIncumbentText,
         neighbouringSourceText,
         ...(documentSourceText === '' ? {} : { documentSourceText, }),

@@ -364,6 +364,7 @@ export async function repairPreparedDocument(
     // probe too.
     ...((beforeSlice === undefined) ? {} : { reseat: beforeSlice, }),
     declaredNames: prepared.declaredNames,
+    ...((prepared.declaredSubjectForms === undefined) ? {} : { declaredSubjectForms: prepared.declaredSubjectForms, }),
     ...identityFragment,
     ...referenceFragment,
     ...((refineCache === undefined) ? {} : { refineCache, }),

@@ -250,8 +250,19 @@ import type {
  launch started since at `5f6c8593d7` runs at 7 and no runs directory is read in this round, so the number moves, as the
  consolidate, lane-contest, repair slice, translate and page title versions move for the same sheets. No record has been written at
  8, which this change sets first.
+
+ Version 9 covers the fixes of the XingZ6015 read (2026-10-20), which change what these sheets say and what their floors accept:
+ reader protection reaches only the account of how a death or an attempt happened (owner, 2026-10-20,
+ `house-rule/src/house-policy.ts`), which every sheet splicing the house rule restates; judges no longer see a note between
+ translators (`document-structure/src/translators-note.ts`); the archive-block review says the page it publishes is complete; a
+ consolidation challenge round seats a proposal two ballots named over a fallback the contest majority called flawed; and the
+ declared-name floor meets a lost form of the subject with another declared form of the same person. The key does not hash the
+ sheet or the floors, so a record written under the old ones would be served under the new. The XingZ6015 pass wrote records at the
+ old number on `sha256-tree-v1:a92725968adf…`, so the change cannot ride inside it and the number moves, as every version whose
+ sheets splice the house rule moves with it; the pairing version stays, since no pairing sheet carries the house rule. No record
+ has been written at 9, which this change sets first.
  */
-export const REFINE_CACHE_VERSION = 8;
+export const REFINE_CACHE_VERSION = 9;
 
 /**
  Everything about this run that changes what the voices are ASKED.

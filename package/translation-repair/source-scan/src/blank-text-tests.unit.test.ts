@@ -1894,7 +1894,7 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: SCANNER,
   },
-  'house-rule/name-projection.ts#carriesName': {
+  'house-rule/name-projection.ts#nameOccurrences': {
     tests: 1,
     why: EMPTY_NEEDLE,
   },
@@ -2157,6 +2157,14 @@ const HELD_TESTS: Readonly<Record<string, {
   'translate-stage/translated-slate-criteria.ts#translatedSlateCriteria': {
     tests: 1,
     why: ASSEMBLED,
+  },
+  'document-structure/translators-note.ts#cutAround': {
+    tests: 3,
+    why: SCANNER,
+  },
+  'document-structure/translators-note.ts#isWhitespace': {
+    tests: 1,
+    why: SCANNER,
   },
   'document-structure/unwrap-container.ts#UnpositionedContainerError': {
     tests: 1,

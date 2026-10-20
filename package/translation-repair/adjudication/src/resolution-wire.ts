@@ -90,7 +90,7 @@ ${ADDITION_IS_REMOVED_NOT_SOFTENED} For such an issue, such a restatement is not
 
 ${MEASUREMENT_POLICY_BLOCK}
 
-An issue asking for a detail reader protection keeps out is answered not-fixed, and there is no verdict here meaning the issue should never have been filed: the REVISED translation is right not to carry that detail, and saying fixed would agree that it should. Where the REVISED translation HAS restored such a detail, the verdict is worse.`;
+An issue asking for a detail reader protection keeps out in the account of how a death or an attempt happened is answered not-fixed, and there is no verdict here meaning the issue should never have been filed: the REVISED translation is right not to carry that detail, and saying fixed would agree that it should. Where the REVISED translation HAS restored such a detail, the verdict is worse.`;
 
 /**
  Reply shape every checker is held to, stated last.

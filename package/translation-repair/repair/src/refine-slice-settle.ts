@@ -133,6 +133,8 @@ export type RefinedSliceOutcome = RefinedSliceSettlement & {
 
  @param declaredNames - same declarations as strings a guard compares
 
+ @param declaredSubjectForms - the declared forms among them that name the subject, which may stand in for one another
+
  @param signal - caller abort honored by every exchange
 
  @param perCallTimeoutMs - deadline per exchange
@@ -169,6 +171,7 @@ export async function settleRefinedSlice(
     identityContext,
     referenceContext,
     declaredNames,
+    declaredSubjectForms,
     neighbouringSourceText,
     neighbouringIncumbentText,
     signal,
@@ -187,6 +190,7 @@ export async function settleRefinedSlice(
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly declaredNames: readonly string[];
+    readonly declaredSubjectForms?: readonly string[];
     readonly neighbouringSourceText?: string;
     readonly neighbouringIncumbentText?: string;
     readonly signal: AbortSignal;
@@ -231,6 +235,7 @@ export async function settleRefinedSlice(
     ...(identityContext === undefined ? {} : { identityContext, }),
     ...(referenceContext === undefined ? {} : { referenceContext, }),
     declaredNames,
+    ...((declaredSubjectForms === undefined) ? {} : { declaredSubjectForms, }),
     mode: { kind: 'comparative', },
     sliceIndex: outcome.sliceIndex,
     signal,

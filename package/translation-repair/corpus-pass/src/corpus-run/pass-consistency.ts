@@ -98,6 +98,8 @@ type ClassifiedGroup = PreparedGroup & {
 
  @param declaredNames - declared name forms, which the floors keep
 
+ @param declaredSubjectForms - the declared forms among them that name the subject, which may stand in for one another
+
  @param entryCacheDir - per-entry cache root
 
  @param pipelineDigest - generation stamp for the cache
@@ -131,6 +133,7 @@ async function settleAll(
     subjectNames,
     declared,
     declaredNames,
+    declaredSubjectForms,
     entryCacheDir,
     pipelineDigest,
     signal,
@@ -147,6 +150,7 @@ async function settleAll(
     readonly subjectNames?: readonly string[];
     readonly declared: readonly DeclaredNamePair[];
     readonly declaredNames: readonly string[];
+    readonly declaredSubjectForms?: readonly string[];
     readonly entryCacheDir: string;
     readonly pipelineDigest: PipelineDigest;
     readonly signal: AbortSignal;
@@ -176,6 +180,7 @@ async function settleAll(
     ...((subjectNames === undefined) ? {} : { subjectNames, }),
     declared,
     declaredNames,
+    ...((declaredSubjectForms === undefined) ? {} : { declaredSubjectForms, }),
     entryCacheDir,
     pipelineDigest,
     signal,
@@ -340,6 +345,7 @@ export async function runPassConsistency(
       ...((prepared.subjectNames === undefined) ? {} : { subjectNames: prepared.subjectNames, }),
       declared: prepared.declaredNamePairs ?? [],
       declaredNames: prepared.declaredNames,
+      ...((prepared.declaredSubjectForms === undefined) ? {} : { declaredSubjectForms: prepared.declaredSubjectForms, }),
       entryCacheDir,
       pipelineDigest,
       signal,
@@ -355,6 +361,7 @@ export async function runPassConsistency(
       slices,
       declared: prepared.declaredNamePairs ?? [],
       declaredNames: prepared.declaredNames,
+      ...((prepared.declaredSubjectForms === undefined) ? {} : { declaredSubjectForms: prepared.declaredSubjectForms, }),
       l: cl,
     },);
     for (const [position, group,] of applied.groups

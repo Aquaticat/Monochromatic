@@ -75,12 +75,14 @@ const INCUMBENT_TEXT = 'The cat sleeps on the windowsill.\n';
  Version 18 states in the house tense rule, in the sentence that puts the life in the past, that quoted words keep the
  speaker's own tense (n166).
  Version 19 lists the narration between marks of different single-quotation pairs among the tense candidates a judge is shown.
+ Version 20 scopes reader protection to the account of how a death or an attempt happened and cuts translators' notes from
+ the judges (the XingZ6015 read).
  These questions changed without input fields.
 
  The roster feeding {@link RUN_SHAPE} is invented, so a production roster change
  leaves this alone.
  */
-const LEGACY_WINDOWLESS_KEY = '517e530458bd3f7c6b2b717d732d12239b38ba0743387eb3040d1e91fdecffcb';
+const LEGACY_WINDOWLESS_KEY = '70bd1e3b8d71c5d9ed09e8576153deacec7694fec6947546945a7625459a41b7';
 
 /**
  One slice's key, with whatever this case wants to vary.

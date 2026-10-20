@@ -160,6 +160,31 @@ const STRING_CANDIDATES: readonly Candidate<string>[] = [
 ];
 
 /**
+ A fresh proposal against the archive's own wording, which a decline keeps:
+ the shape of a consolidation slate over a standing text.
+ */
+const PROPOSAL_AGAINST_ARCHIVE: readonly Candidate<string>[] = [
+  {
+    producer: {
+      kind: 'model',
+      modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+    },
+    value: 'proposal',
+    rendered: 'The cat chases butterflies.',
+  },
+  {
+    producer: {
+      kind: 'incumbent',
+      // A model that reproduced the archive exactly was collapsed into it and
+      // is discounted when it judges it.
+      matched: [SEAT_SYNTHETIC_VISION_WITHHELD,],
+    },
+    value: 'archive',
+    rendered: 'The cat loves chasing butterflies.',
+  },
+];
+
+/**
  Builds a judged-selection candidate carrying a synthetic chunk replacement,
  keeping the string candidate's producer and rendering so the judge sheet
  still reads as a slate over the same two proposals.
@@ -262,11 +287,20 @@ const JUDGES: readonly RosterModelId[] = [
 ];
 
 /**
+ The first three seats of the fixture roster, the bench a short day leaves.
+ */
+const THREE_JUDGES: readonly RosterModelId[] = JUDGES.slice(0, 3,);
+
+/**
  Runs one selection round over the fixture candidates.
 
  @param ballots - one-based candidate index per judge
 
  @param judgeModelIds - roster to seat; defaults to the fixture roster
+
+ @param candidates - slate to judge; defaults to the two fixture proposals
+
+ @param fallbackCondemned - whether the contest majority called the fallback flawed
 
  @returns Outcome plus how many judge calls it took
 
@@ -281,12 +315,16 @@ async function runSelection(
     judgeModelIds = JUDGES,
     fanOut = 'whole-bench',
     runoff = false,
+    candidates = STRING_CANDIDATES,
+    fallbackCondemned = false,
     logger = l,
   }: {
     readonly ballots: BallotScript;
     readonly judgeModelIds?: readonly RosterModelId[];
     readonly fanOut?: FanOutMode;
     readonly runoff?: boolean;
+    readonly candidates?: readonly Candidate<string>[];
+    readonly fallbackCondemned?: boolean;
     readonly logger?: Logger;
   },
 ) {
@@ -303,7 +341,7 @@ async function runSelection(
       ballots,
       counter,
     },),
-    candidates: STRING_CANDIDATES,
+    candidates,
     judgeModelIds,
     // THE WHOLE BENCH BY DEFAULT HERE, since these cases script every seat's
     // ballot and read the tally over the bench they wrote; production asks the
@@ -311,6 +349,7 @@ async function runSelection(
     // "ASKS a window of quorum plus one judges in production" case.
     fanOut,
     runoff,
+    fallbackCondemned,
     task: 'Pick one.',
     criteria: ['Faithful.',],
     evidence: [
@@ -1240,6 +1279,121 @@ await describe({
             },);
             expect(outcome.kind,).toBe('declined',);
             expect(outcome.kind === 'declined' ? outcome.disposition : '',).toBe('indecision',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'a fallback the contest majority called flawed (one entry\'s slice 45, 2026-10-19)',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SEATS the leader two ballots named under the weight minimum when the fallback was called flawed, '
+            + 'though every ballot fell on one candidate and so no run-off could narrow it; the same ballots '
+            + 'keep the fallback where nobody condemned it',
+          fn: async () => {
+            // Three judges are heard. The model that wrote candidate 1 names it at half weight, a
+            // disinterested one names it at full weight and the third declines everything: 1.5
+            // against 0 with two ballots behind the leader, under the absolute minimum of 2. The
+            // only candidate that drew anything is the leader, so `runoffFinalists` finds fewer
+            // than two backed and the challenge round asks the whole slate again, not a run-off.
+            /** Ballots the round heard, in the shape of the live slice. */
+            const ballots = {
+              [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
+              [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 1,
+              [SEAT_SYNTHETIC_VISION_WITHHELD]: 0,
+            };
+            const kept = await runSelection({
+              ballots,
+              judgeModelIds: THREE_JUDGES,
+              candidates: PROPOSAL_AGAINST_ARCHIVE,
+            },);
+            expect(kept.outcome.kind,).toBe('declined',);
+            expect(kept.outcome.kind === 'declined' ? kept.outcome.reason : '',).toBe(
+              'winner short of the minimum vote weight',
+            );
+
+            const { outcome, } = await runSelection({
+              ballots,
+              judgeModelIds: THREE_JUDGES,
+              candidates: PROPOSAL_AGAINST_ARCHIVE,
+              fallbackCondemned: true,
+            },);
+            expect(outcome.kind,).toBe('selected',);
+            expect(outcome.kind === 'selected' ? outcome.value : '',).toBe('proposal',);
+            expect(outcome.kind === 'selected' ? outcome.voteWeight : 0,).toBe(SELF_VOTE_WEIGHT + FULL_VOTE_WEIGHT,);
+            expect(outcome.tally.abstentions,).toBe(1,);
+            expect(outcome.findings,).toContain('select-condemned-fallback-under-minimum',);
+          },
+        },),
+        it({
+          name: 'still DECLINES a leader one judge alone named, however the fallback was judged, so one model '
+            + 'never decides (owner, 2026-09-09)',
+          fn: async () => {
+            const { outcome, } = await runSelection({
+              ballots: {
+                [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 0,
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 1,
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: 0,
+              },
+              judgeModelIds: THREE_JUDGES,
+              candidates: PROPOSAL_AGAINST_ARCHIVE,
+              fallbackCondemned: true,
+            },);
+            expect(outcome.kind,).toBe('declined',);
+            expect(outcome.kind === 'declined' ? outcome.disposition : '',).toBe('indecision',);
+            expect(outcome.kind === 'declined' ? outcome.reason : '',).toBe(
+              'winner short of the minimum vote weight',
+            );
+          },
+        },),
+        it({
+          name: 'still KEEPS the fallback when two ballots lead with it under the minimum, since a condemned '
+            + 'fallback is no endorsement and the ballots must not seat it as a judged choice',
+          fn: async () => {
+            const { outcome, } = await runSelection({
+              ballots: {
+                [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 0,
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 2,
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: 2,
+              },
+              judgeModelIds: THREE_JUDGES,
+              candidates: PROPOSAL_AGAINST_ARCHIVE,
+              fallbackCondemned: true,
+            },);
+            expect(outcome.kind,).toBe('declined',);
+          },
+        },),
+        it({
+          name: 'still RUNS OFF a tie and declines a round every judge refused, with the fallback condemned',
+          fn: async () => {
+            // Each writer names its own text at half weight: 0.5 against 0.5.
+            const tied = await runSelection({
+              ballots: {
+                [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 1,
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 0,
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: 2,
+              },
+              judgeModelIds: THREE_JUDGES,
+              candidates: PROPOSAL_AGAINST_ARCHIVE,
+              fallbackCondemned: true,
+            },);
+            expect(tied.outcome.kind,).toBe('declined',);
+            expect(tied.outcome.kind === 'declined' ? tied.outcome.reason : '',).toBe('judges tied',);
+
+            const refused = await runSelection({
+              ballots: {
+                [SEAT_HYPER_OPENROUTER_VISION_EDITOR]: 0,
+                [SEAT_SYNTHETIC_VISION_NO_OPENROUTER]: 0,
+                [SEAT_SYNTHETIC_VISION_WITHHELD]: 0,
+              },
+              judgeModelIds: THREE_JUDGES,
+              candidates: PROPOSAL_AGAINST_ARCHIVE,
+              fallbackCondemned: true,
+            },);
+            expect(refused.outcome.kind,).toBe('declined',);
+            expect(refused.outcome.kind === 'declined' ? refused.outcome.disposition : '',).toBe('rejection',);
           },
         },),
       ],

@@ -155,6 +155,8 @@ export async function persistRefinePhaseSlice(
 
  @param declaredNames - exact declarations deterministic guard preserves
 
+ @param declaredSubjectForms - the declared forms among them that name the subject, which may stand in for one another
+
  @param refineCache - prior settlements and persistence boundary
 
  @param signal - caller abort checked before any persistence
@@ -205,6 +207,7 @@ export async function settleRefinePhaseSlice(
     identityContext,
     referenceContext,
     declaredNames,
+    declaredSubjectForms,
     refineCache,
     signal,
     perCallTimeoutMs,
@@ -222,6 +225,7 @@ export async function settleRefinePhaseSlice(
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly declaredNames: readonly string[];
+    readonly declaredSubjectForms?: readonly string[];
     readonly refineCache?: SliceCache<RefinedSliceSettlement>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -279,6 +283,7 @@ export async function settleRefinePhaseSlice(
     incumbentText,
     definitions,
     declaredNames,
+    ...((declaredSubjectForms === undefined) ? {} : { declaredSubjectForms, }),
     issues: outcome.issues,
     resolvedIssueIds: outcome.resolvedIssueIds,
     nonTranslationStanding: outcome.nonTranslationStanding,
@@ -313,6 +318,7 @@ export async function settleRefinePhaseSlice(
     ...(identityContext === undefined ? {} : { identityContext, }),
     ...(referenceContext === undefined ? {} : { referenceContext, }),
     declaredNames,
+    ...((declaredSubjectForms === undefined) ? {} : { declaredSubjectForms, }),
     ...windowFragment,
     signal,
     perCallTimeoutMs,

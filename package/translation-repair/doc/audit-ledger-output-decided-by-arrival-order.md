@@ -550,3 +550,63 @@ and the two tests that named three translator seats in a fixed order now compare
 Recurrence:
 `mistake-prevention-tests-clocks-and-arrival-order.md`,
 "Orders and seats that a prompt hash decides".
+
+## B701: tests that name one seat asked broke whenever a sheet's text changed (the seat-window family)
+
+Status:
+open.
+Two members are fixed on 2026-10-20 (UTC):
+the consolidate deep-reply case by `20a379f77a`,
+and the corpus-pass contest re-seat case by `a169580740`.
+A census of the other scripted cases that name a seat was run by an agent in a scratch worktree;
+its result is not integrated and not recorded here,
+so the family may have more members than these two.
+No production caller passes `fanOut`,
+so production behaviour and every cache version are unchanged.
+
+The first round of a stage asks a window of quorum plus one seats from the bench,
+rotated by a hash of the prompt (`package/translation-repair/stage/src/stage-fanout-window.ts`).
+Any edit to a sheet moves the hash,
+and with it which seats a scripted case reaches.
+A case that needs one named seat asked therefore passes only while the current sheet text rotates that seat
+into the window.
+The reader-protection scope of B697 lengthened the house rule that every sheet splices,
+and two such cases failed for a reason that had nothing to do with what they test.
+
+Consolidate,
+`deep-reply-floors.unit.test.ts`:
+the case withholds the deep reviewer's 300-marker revision and expects the floor to refuse it.
+With the longer house rule the rotated window left the deep voice out,
+no refusal was recorded,
+and the case failed at its line 383 with nothing about the floor in the failure.
+On `main` at `e262b18601` the same case passed only because the old house rule happened to rotate the deep voice
+into the window.
+`runArchiveBlockReviewStage` (archive package) now passes an optional `fanOut` to `gatherStageVoices`,
+as `gateConsolidatedSlice` and the other stages already did,
+and the case asks the whole bench.
+
+Corpus-pass,
+`pass-seams-reseat.unit.test.ts`:
+the contest re-seat case asks whether a contest whose view never changes asks the seat a dry-out takes.
+Gate g118 on `191a8bc38d` ran 2553 pass and 3 fail,
+the failing package corpus-pass alone:
+the control no longer asked the lost seat,
+since the reader-protection scope had changed the house rule every contest sheet splices.
+`runPassContest` now takes an optional `fanOut` it hands the contest as it stands,
+and the case passes the whole bench the way the consolidate case does.
+
+Open:
+the census.
+It was handed to an agent in a scratch worktree at `20a379f77a`,
+to find every scripted case that expects a specific seat to be asked
+without `fanOut: 'whole-bench'` and without a pinned `benchStart`.
+This entry stays open until its result is integrated and recorded here and each member it finds is fixed.
+
+Recurrence:
+B627 and B631,
+"Orders and seats that a prompt hash decides" in `mistake-prevention-tests-clocks-and-arrival-order.md`.
+Those rules pinned a seat set by an injected start of the rotation
+(`StageSettings.editorBenchStart`) for the editor seats;
+the first-round windows of the other stages had no such seam,
+and two seams did not take `fanOut`.
+The prevention rule now names `fanOut: 'whole-bench'` as the second way.

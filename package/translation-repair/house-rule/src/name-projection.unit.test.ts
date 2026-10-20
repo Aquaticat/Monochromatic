@@ -17,6 +17,7 @@ import {
 
 import {
   carriesName,
+  nameOccurrences,
   nameProjection,
   projectName,
 } from '../dist/final/node/index.mjs';
@@ -153,6 +154,48 @@ await describe({
               projection: projectName({ text: 'Ann naps.', },),
               key: '',
             },),).toBe(false,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: nameOccurrences.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'LISTS EVERY OCCURRENCE STANDING APART with where it starts and ends in the composed text',
+          fn: async () => {
+            expect(nameOccurrences({
+              projection: projectName({ text: 'Ann naps. Cannot Ann wake? Ann.', },),
+              key: 'ann',
+            },),).toEqual([
+              {
+                start: 0,
+                end: 3,
+              },
+              {
+                start: 17,
+                end: 20,
+              },
+              {
+                start: 27,
+                end: 30,
+              },
+            ],);
+          },
+        },),
+        it({
+          name: 'LISTS NOTHING FOR AN EMPTY KEY or for a key that only runs on inside a word',
+          fn: async () => {
+            expect(nameOccurrences({
+              projection: projectName({ text: 'Ann naps.', },),
+              key: '',
+            },),).toEqual([],);
+            expect(nameOccurrences({
+              projection: projectName({ text: 'The cat cannot nap.', },),
+              key: 'ann',
+            },),).toEqual([],);
           },
         },),
       ],

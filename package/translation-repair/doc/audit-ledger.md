@@ -33,7 +33,9 @@ named for that subject and listed here.
 - [Audit ledger: rule text, the consolidation gate and the floor replay](audit-ledger-rule-text-gate-and-floor-replay.md):
   Contradictions and gaps in the rule text every sheet carries,
   the consolidation gate finding,
-  and the replay of every floor over the archives and settled pages.
+  the replay of every floor over the archives and settled pages,
+  and the declared-name floor that read a swap of declared names as a loss,
+  with the blends its first fix passed (B699).
 - [Audit ledger: history of the numbered defect classes](audit-ledger-defect-class-history.md):
   The defect classes found run by run before the audit,
   classes 1 to 185 and the ones before numbering.
@@ -103,7 +105,8 @@ named for that subject and listed here.
   the last census,
   and the stretches that stay cold with the reason for each.
 - [Audit ledger: page assembly and the corpus-run driver](audit-ledger-page-assembly-and-corpus-run-driver.md):
-  Findings in the page-assembly passes and the driver that runs a corpus pass.
+  Findings in the page-assembly passes and the driver that runs a corpus pass,
+  the archive's notices that a page is unfinished and the translators' notes that decided a contest (B698).
 - [Audit ledger: providers, routing and seating](audit-ledger-providers-routing-and-seating.md):
   Findings in the provider clients,
   the router and the seating of models.
@@ -140,7 +143,8 @@ named for that subject and listed here.
 - [Audit ledger: copies of shared code in production](audit-ledger-copies-in-production-code.md):
   Readers,
   predicates and helpers the production code kept in more than one copy,
-  each copy free to drift from the others.
+  each copy free to drift from the others,
+  among them the pinned lint binary version beside the one `mise.lock` installs (B700).
 - [Audit ledger: copies of shared code in tests and scans](audit-ledger-copies-in-tests-and-scans.md):
   Helper bodies the test files and the source scans kept in copies,
   and the scans that could not see a copy.
@@ -200,7 +204,8 @@ named for that subject and listed here.
   Rules that decide what a slice ships and what a stage records:
   exits an outcome rule could not reach,
   records that dropped a round,
-  and work no floor could check.
+  work no floor could check,
+  and a consolidation under the vote minimum that kept the archive wording two judges called ineligible (B696).
 - [Audit ledger: composed operations and checks on a part](audit-ledger-composed-operations-and-partial-checks.md):
   One refusal inside a composed operation that stopped the whole,
   or left no finding,
@@ -233,7 +238,9 @@ named for that subject and listed here.
 - [Audit ledger: output decided by arrival order](audit-ledger-output-decided-by-arrival-order.md):
   Findings,
   refusals and log lines whose content or order depended on which concurrent work ended first,
-  and the scan that looks for it.
+  the scan that looks for it,
+  and the seat-window family,
+  tests that named a seat the rotated first round no longer asked (B701).
 - [Audit ledger: failures under a caller's stop](audit-ledger-failures-under-a-callers-stop.md):
   Fan-outs that dropped,
   mislabelled or doubled a member's own failure once the caller had stopped the work.
@@ -410,7 +417,8 @@ named for that subject and listed here.
   workspace cycles made by tests,
   and a lint ignore that matched a package.
 - [Audit ledger: what each sheet shows](audit-ledger-what-each-sheet-shows.md):
-  Sheets that lacked a block their role needs to judge or write.
+  Sheets that lacked a block their role needs to judge or write,
+  and the reader-protection rule that reached past the account of how a death or an attempt happened (B697).
 - [Audit ledger: readers that accept what no writer writes](audit-ledger-readers-accept-shapes-writers-never-write.md):
   Readers of stored records and directories that accepted a shape,
   a name or a value their own writer never produces,
@@ -465,7 +473,8 @@ named for that subject and listed here.
 - [Audit ledger: positions compared across texts](audit-ledger-positions-compared-across-texts.md):
   Offsets,
   headings and slices of one text applied to another that does not line up with it,
-  a leading byte order mark among the causes.
+  a leading byte order mark among the causes,
+  and a heading series that lost the original's numbers where the archive heads it by name alone (B695).
 - [Audit ledger: repeated wording and ids on a page](audit-ledger-repeated-wording-and-ids-within-one-text.md):
   Titles,
   links,
@@ -511,7 +520,8 @@ named for that subject and listed here.
   the handover,
   the log's two streams,
   a launch whose build ran the main checkout's bundler (M278),
-  and a scratch worktree tested on the install of another commit (M280).
+  a scratch worktree tested on the install of another commit (M280),
+  and a cache version commit that left seven test cases red (M284).
 - [Audit ledger: process mistakes, guards and red cases](audit-ledger-process-guards-and-red-cases.md):
   Guards and failing-first cases that could not fail,
   never reached what they guarded,
@@ -532,7 +542,8 @@ named for that subject and listed here.
   a commit body that counted failing cases without naming them (M275),
   a lint comparison taken from a summary line (M276),
   a work's English title called invented after one store page (M279),
-  and a commit body describing a change another commit had made (M281).
+  a commit body describing a change another commit had made (M281),
+  and a quoted phrase called invented after one line of the original (M283).
 - [Audit ledger: process mistakes, lint, edits and tests](audit-ledger-process-lint-edits-and-tests.md):
   Slips in editing and checking code:
   lint left unread,

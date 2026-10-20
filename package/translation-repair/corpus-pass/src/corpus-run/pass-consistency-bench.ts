@@ -84,6 +84,8 @@ export {
 
  @param declaredNames - declared name forms, which the floors keep
 
+ @param declaredSubjectForms - the declared forms among them that name the subject, which may stand in for one another
+
  @param signal - entry deadline and caller abort
 
  @param l - logger the pass writes to
@@ -114,6 +116,7 @@ async function settleAskedGroup(
     subjectNames,
     declared,
     declaredNames,
+    declaredSubjectForms,
     signal,
     l,
     stageSettings,
@@ -131,6 +134,7 @@ async function settleAskedGroup(
     readonly subjectNames?: readonly string[];
     readonly declared: readonly DeclaredNamePair[];
     readonly declaredNames: readonly string[];
+    readonly declaredSubjectForms?: readonly string[];
     readonly signal: AbortSignal;
     readonly l: Logger;
     readonly stageSettings: StageSettings;
@@ -171,6 +175,7 @@ async function settleAskedGroup(
             ...((subjectNames === undefined) ? {} : { subjectNames, }),
             declared,
             declaredNames,
+            ...((declaredSubjectForms === undefined) ? {} : { declaredSubjectForms, }),
             signal,
             l: gl,
             stageSettings,
@@ -307,6 +312,8 @@ export function writersOf(
 
  @param declaredNames - declared name forms, which the floors keep
 
+ @param declaredSubjectForms - the declared forms among them that name the subject, which may stand in for one another
+
  @param entryCacheDir - per-entry cache root
 
  @param pipelineDigest - generation stamp for the cache
@@ -340,6 +347,7 @@ export async function askAll(
     subjectNames,
     declared,
     declaredNames,
+    declaredSubjectForms,
     entryCacheDir,
     pipelineDigest,
     signal,
@@ -356,6 +364,7 @@ export async function askAll(
     readonly subjectNames?: readonly string[];
     readonly declared: readonly DeclaredNamePair[];
     readonly declaredNames: readonly string[];
+    readonly declaredSubjectForms?: readonly string[];
     readonly entryCacheDir: string;
     readonly pipelineDigest: PipelineDigest;
     readonly signal: AbortSignal;
@@ -448,6 +457,7 @@ export async function askAll(
         ...((subjectNames === undefined) ? {} : { subjectNames, }),
         declared,
         declaredNames,
+        ...((declaredSubjectForms === undefined) ? {} : { declaredSubjectForms, }),
         signal,
         l,
         stageSettings,

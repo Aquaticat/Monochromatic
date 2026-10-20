@@ -29,14 +29,19 @@ import { explicitBreakCounts, } from './source-only-breaks.ts';
 // HTML comments to same-length whitespace before its strict parse, because the
 // MDX grammar refuses `<!--` outright and 17 of 92 pinned sources carry one.
 // Until 2026-09-06 this reader did not, so every slice of yulianNyanner whose
-// original carried a translator note was "an original that could not be read",
-// the floor answered `unknown`, and both gates that consume the floor treat
-// `unknown` as inadmissible: the entry stopped at consolidation with nothing to
-// ship. Masking here makes a comment inter-node whitespace on both sides of the
-// comparison, and the mask keeps every offset, so atoms after a comment still
-// index the unmasked text. Whether a candidate carries the note rendered is
-// wording, and the judges are the instrument for wording; the archive itself
-// renders yulianNyanner's fourteen comment lines as twelve.
+// original carried one of its author's own comments was "an original that
+// could not be read", the floor answered `unknown`, and both gates that consume
+// the floor treat `unknown` as inadmissible: the entry stopped at consolidation
+// with nothing to ship. Masking here makes a comment inter-node whitespace on
+// both sides of the comparison, and the mask keeps every offset, so atoms after
+// a comment still index the unmasked text. Whether a candidate carries such a
+// comment rendered is wording, and the judges are the instrument for wording;
+// the archive itself renders yulianNyanner's fourteen comment lines as twelve.
+// A note between translators is another kind: a comment in an archive whose
+// words hold Han and that its original lacks. `translators-note.ts` in the
+// document-structure package cuts those from the lane contest, gate and
+// selection sheets, and the page assembly carries the archive's own, so no
+// judge weighs them.
 //
 // THE SAME FOR A CONTAINER TAG WITHOUT ITS PARTNER. `container-extents.ts`
 // gives a container's opening tag to the first block inside it and its closing

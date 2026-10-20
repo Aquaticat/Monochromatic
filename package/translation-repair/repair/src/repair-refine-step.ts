@@ -121,6 +121,7 @@ export async function refineSettledSlices(
     identityContext,
     referenceContext,
     declaredNames,
+    declaredSubjectForms,
     refineCache,
     signal,
     perCallTimeoutMs,
@@ -137,6 +138,7 @@ export async function refineSettledSlices(
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly declaredNames: readonly string[];
+    readonly declaredSubjectForms?: readonly string[];
     readonly refineCache?: SliceCache<RefinedSliceSettlement>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -159,6 +161,7 @@ export async function refineSettledSlices(
         models,
         ...((reseat === undefined) ? {} : { reseat, }),
         declaredNames,
+        ...((declaredSubjectForms === undefined) ? {} : { declaredSubjectForms, }),
         ...(identityContext === undefined ? {} : { identityContext, }),
         ...(referenceContext === undefined ? {} : { referenceContext, }),
         ...(refineCache === undefined ? {} : { refineCache, }),

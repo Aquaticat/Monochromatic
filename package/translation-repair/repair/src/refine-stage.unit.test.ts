@@ -824,6 +824,52 @@ await describe({
         },),
 
         it({
+          name: 'ACCEPTS a rewrite that names the person by another declared form of hers, and REFUSES the same '
+            + 'rewrite when the stage is given no subject identity, so the acceptance is attributable to the '
+            + 'identity: the shape of XingZ60 slice 80, where the archive wrote the display name and the original '
+            + 'wrote the alias',
+          fn: async () => {
+            /**
+             Repaired text naming her by the display name only.
+             */
+            const nameOnly = `${REPAIRED_TEXT} Everyone called her Meowmeow.`;
+
+            /** Refinable slice of that fixture. */
+            const slice = deriveRefinableEnvelopes({
+              document: parseDocument({ text: nameOnly, },),
+            },);
+
+            /**
+             Runs the stage over the rewrite that names her by the alias instead.
+             */
+            const run = async (
+              subjectForms: { readonly declaredSubjectForms?: readonly string[]; },
+            ) => await runRefineStage({
+              declaredNames: ['Meowmeow', 'Dumpling',],
+              ...subjectForms,
+              mode: { kind: 'comparative', },
+              sliceIndex: 0,
+              client: scriptedRefiner({
+                newText: `${SMOOTH_TEXT} Everyone called her Dumpling.`,
+                ballot: 1,
+              },),
+              refinerModelIds: REFINERS,
+              judgeModelIds: JUDGES,
+              sourceText: SOURCE_TEXT,
+              repairedText: nameOnly,
+              envelopes: slice.envelopes,
+              definitions: slice.definitions,
+              signal: new AbortController().signal,
+              perCallTimeoutMs: HANG_STOP_MS,
+              l,
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
+            },);
+            expect((await run({ declaredSubjectForms: ['Meowmeow', 'Dumpling',], },)).changed,).toBe(true,);
+            expect((await run({},)).changed,).toBe(false,);
+          },
+        },),
+
+        it({
           name: 'KEEPS THE REPAIRED TEXT when an objection correction\'s judges decline, and shows selectors the '
             + 'objections as fenced data (ledger B47: this case declined the removed required correction)',
           fn: async () => {

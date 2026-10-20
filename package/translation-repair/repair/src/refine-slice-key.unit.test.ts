@@ -102,9 +102,11 @@ await describe({
           name: 'ANSWERS THE PINNED KEY for the base question, so a change to the version, the shape or the '
             + 'fields moves it on purpose (the version moved from 6 to 7 with the n159 readers: a stored refinement '
             + 'was decided by quote and word-edge readers that changed; and from 7 to 8 with n166: a stored refinement '
-            + 'was written under a house tense rule that gave quoted words no exception in the sentence that puts the life in the past)',
+            + 'was written under a house tense rule that gave quoted words no exception in the sentence that puts the life in the past; '
+            + 'and from 8 to 9 with the XingZ6015 read: a stored refinement was written under reader protection that reached '
+            + 'past the account of how a death or an attempt happened, and under the old declared-name floor)',
           fn: async () => {
-            expect(refineSliceKey(BASE,),).toBe('372a75ed24a460783f8bfa25aee6107c19097a7e7b0d392e6ad529e66dde8ffb',);
+            expect(refineSliceKey(BASE,),).toBe('98e0fd38988ef0cde227998731708ef6d01c916f8f6fa051468192df1ec77dbc',);
           },
         },),
 

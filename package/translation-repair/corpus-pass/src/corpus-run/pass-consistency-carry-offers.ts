@@ -338,6 +338,7 @@ export function splicedParagraphOf(
     },),
     declared: context.declared,
     declaredNames: context.declaredNames,
+    ...((context.declaredSubjectForms === undefined) ? {} : { declaredSubjectForms: context.declaredSubjectForms, }),
   },);
   if (refusal === undefined) {
     return {
@@ -507,6 +508,7 @@ export async function writtenOffers(
     facts: sliceOfUnit({ unit, },),
     declared: context.declared,
     declaredNames: context.declaredNames,
+    ...((context.declaredSubjectForms === undefined) ? {} : { declaredSubjectForms: context.declaredSubjectForms, }),
     l: context.l,
   },);
   return {

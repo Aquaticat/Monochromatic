@@ -200,6 +200,21 @@ export type PreparedDocumentPair = {
   readonly declaredNames: readonly string[];
 
   /**
+   The forms among `declaredNames` that the TRANSLATION's front matter declares
+   for the entry's own subject: the display name and every alias, one person.
+
+   WHAT IT BUYS. A guard that finds a declared form lost can read another of
+   these standing in its place, one for one, as a swap between two names of the
+   same person rather than as a person unnamed. A contributor handle is not in
+   it, because a contributor is another person.
+
+   OPTIONAL so a pair built before the identity was named, or by a caller with
+   no front matter, reads as naming nobody and every guard keeps the plain rule
+   of dropping nothing it carried. Absence can only refuse more, never less.
+   */
+  readonly declaredSubjectForms?: readonly string[];
+
+  /**
    Name pairs the front matter declares on both sides, source form beside
    its declared rendering, read by the publication rule's declared-name floor
    (class one hundred fourteen) wherever a candidate is validated.
