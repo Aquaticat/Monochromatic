@@ -139,7 +139,8 @@ function revisingClient({ replacement, }: { readonly replacement: string; },): M
 
  @param source - the original section the block is reviewed against
 
- @returns The archive after the round, its findings and every line logged
+ @returns The archive after the round, its findings, every line logged and
+ how many structured calls the round made
 
  @example
  ```ts
@@ -161,6 +162,7 @@ async function reviewedBlock(
   readonly findings: readonly string[];
   readonly lines: readonly string[];
   readonly identity: string;
+  readonly asked: number;
 }> {
   /**
    Archive the block stands in.
@@ -190,8 +192,23 @@ async function reviewedBlock(
    Logger and the lines it keeps.
    */
   const { logger, lines, } = capturingLoggerPair();
+  /**
+   The scripted reviewer, which the round is asked through.
+   */
+  const inner = revisingClient({ replacement, },);
+  /**
+   Structured calls the round made.
+   */
+  const calls = { asked: 0, };
   const repaired = await repairArchiveBlocks({
-    client: revisingClient({ replacement, },),
+    client: {
+      chatText: inner.chatText,
+      chatJson: async (request,) => {
+        calls.asked += 1;
+        return await inner.chatJson(request,);
+      },
+      quotas: inner.quotas,
+    },
     modelIds: ROSTER,
     targetText: archive,
     sourceContexts: new Map([[identity, source,],],),
@@ -209,6 +226,7 @@ async function reviewedBlock(
     findings: repaired.findings,
     lines,
     identity,
+    asked: calls.asked,
   };
 }
 
@@ -279,6 +297,20 @@ await describe({
           source: `${SOURCE}\n\n${originals}`,
         },);
         expect(targetText,).toBe(`The cat is asleep.\n\n${REVISION}\n\n${NOTE}\n\nThe cat wakes.`,);
+      },
+    },),
+    it({
+      name: 'ASKS NOBODY about a block that is nothing but notes, which the reviewers\' sheet would show empty, '
+        + 'and leaves it standing with the finding that says why',
+      fn: async () => {
+        const { targetText, findings, asked, identity, } = await reviewedBlock({
+          block: NOTE,
+          replacement: 'The cat sleeps.',
+          source: SOURCE,
+        },);
+        expect(asked,).toBe(0,);
+        expect(targetText,).toBe(`The cat is asleep.\n\n${NOTE}\n\nThe cat wakes.`,);
+        expect(findings,).toEqual([`archive block holds only notes between translators and stands: ${identity}`,],);
       },
     },),
   ],
