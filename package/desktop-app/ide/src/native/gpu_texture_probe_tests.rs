@@ -1,14 +1,18 @@
 //! Feasibility of the GPU code view in the native test harness:
 //!  the rendering notifier fires on a snapshot,
 //!  a Vello scene rendered into a wgpu texture on the window's own device appears in that snapshot,
-//!  and Vello's transparent output blends as straight alpha, as Slint's import of a wgpu texture expects.
+//!  and Vello's transparent output blends as straight alpha,
+//! as Slint's import of a wgpu texture expects.
 
 /// Windows are drawn on the hardware GPU,
 ///  so the platform is installed before the thread's first window.
 use super::gpu_snapshot::{install_gpu_platform, snapshot};
-/// Slint's own wgpu types, the ones the window's device is made of.
+/// Slint's own wgpu types,
+/// the ones the window's device is made of.
 use slint::wgpu_30::wgpu;
-/// The notifier, the image import, and the test component's handle.
+/// The notifier,
+/// the image import,
+/// and the test component's handle.
 use slint::{ComponentHandle, GraphicsAPI, Image, RenderingState};
 /// Vello draws the scene into the texture.
 use vello::{
@@ -105,8 +109,8 @@ fn vello_texture_appears_in_the_snapshot_with_straight_alpha() {
                     },
                 )
                 .expect("vello render");
-            if let Some(window) = weak.upgrade() {
-                window.set_picture(Image::try_from(texture).expect("import the texture"));
+            if let Some(active) = weak.upgrade() {
+                active.set_picture(Image::try_from(texture).expect("import the texture"));
             }
         })
         .expect("rendering notifier");
@@ -129,13 +133,19 @@ fn vello_texture_appears_in_the_snapshot_with_straight_alpha() {
         half[0].abs_diff(64) <= 2 && half[1].abs_diff(64) <= 2 && half[2].abs_diff(192) <= 2,
         "half-transparent blue over grey must blend as straight alpha to about (64, 64, 192): {half:?}"
     );
-    assert_eq!(at(48, 48), [128, 128, 128, 255], "transparent texels leave the window background");
+    assert_eq!(
+        at(48, 48),
+        [128, 128, 128, 255],
+        "transparent texels leave the window background"
+    );
     window.hide().expect("close probe");
 }
 
-/// Premultiplied difference of two straight RGBA texels, the largest over the four channels.
+/// Premultiplied difference of two straight RGBA texels,
+/// the largest over the four channels.
 fn premultiplied_difference(left: slint::Rgba8Pixel, right: slint::Rgba8Pixel) -> u8 {
-    let premultiply = |value: u8, alpha: u8| return (u32::from(value) * u32::from(alpha) / 255) as u8;
+    let premultiply =
+        |value: u8, alpha: u8| return (u32::from(value) * u32::from(alpha) / 255) as u8;
     return premultiply(left.r, left.a)
         .abs_diff(premultiply(right.r, right.a))
         .max(premultiply(left.g, left.a).abs_diff(premultiply(right.g, right.a)))
@@ -147,7 +157,9 @@ fn premultiplied_difference(left: slint::Rgba8Pixel, right: slint::Rgba8Pixel) -
 ///  how far apart can they be?
 #[test]
 fn repeated_renders_of_one_tile_spread() {
-    let text = "let value = compute_total(first_item, second_item, third_item); // word word word\n".repeat(60);
+    let text =
+        "let value = compute_total(first_item, second_item, third_item); // word word word\n"
+            .repeat(60);
     let (_directory, reader) = super::annotation_paint_tests::fixture_reader(&text);
     let first = super::tile_reads::tile_pixels(&reader.window, &reader.source).expect("tile");
     let (mut worst, mut differing) = (0u8, 0usize);
@@ -163,5 +175,9 @@ fn repeated_renders_of_one_tile_spread() {
             worst = worst.max(difference);
         }
     }
-    println!("SPREAD {} x {} texels, 40 renders: {differing} differing texel readings, worst {worst}", first.width(), first.height());
+    println!(
+        "SPREAD {} x {} texels, 40 renders: {differing} differing texel readings, worst {worst}",
+        first.width(),
+        first.height()
+    );
 }

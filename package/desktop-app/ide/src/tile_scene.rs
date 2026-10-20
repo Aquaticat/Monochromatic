@@ -11,6 +11,13 @@
 /// Items to scene:
 ///  the one place a Vello scene is written.
 mod encode;
+/// The data of the paint commands.
+mod item;
+/// A tile's items as what each draw command shows,
+///  which the tests read instead of pixels.
+pub mod read;
+/// Where a row's ink changes.
+mod split;
 /// The line style of each severity as strokes.
 mod underline;
 
@@ -20,19 +27,26 @@ use crate::annotation_layout::AnnotationFrame;
 use crate::code_colors::{CodeColors, ink};
 /// The row map says where a line's code row starts.
 use crate::row_map::CODE_ROW;
-/// Shaped rows and the frame they belong to.
-use crate::shaped_text::ShapedView;
+/// Shaped rows and the frame they belong to,
+///  and the largest texture a tile may be.
+use crate::shaped_text::{ShapedView, texture_dimension, texture_fits};
 /// Failures of the layout walk reach the caller.
 use anyhow::{Result, bail};
 /// A shaped paragraph and its positioned runs.
 use parley::{Layout, PositionedLayoutItem};
-/// The font a run is drawn with.
-use vello::peniko::FontData;
-/// One positioned glyph of a run, in the layout's own pixel units.
-use vello::{Glyph, Scene, kurbo::BezPath};
+/// One positioned glyph of a run,
+/// in the layout's own pixel units.
+use vello::Glyph;
 
 /// Items to scene.
 pub use encode::encode;
+/// The paint commands of a tile.
+pub use item::{GlyphItem, Item, StrokeItem, TileScene};
+/// A selection edge on whole pixels,
+/// and the change of ink at the edges of a selection.
+pub use split::snapped;
+/// The change of ink at the edges of a selection.
+use split::split;
 /// The geometry of one underline run.
 use underline::underline_items;
 
@@ -48,196 +62,6 @@ use underline::underline_items;
 /// const CULL_MARGIN = 32;
 /// ```
 const CULL_MARGIN: f32 = 32.0;
-
-/// What:
-///  One run of glyphs in one ink,
-///  with the font and the place of its layout.
-/// Why:
-///  A run is the unit Vello draws,
-///  and the unit a test reads the ink and the glyph count of.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type GlyphItem = { font: Font; size: number; coords: number[]; origin: [number, number]; ink: Rgba; glyphs: Glyph[] };
-/// ```
-#[derive(Clone)]
-pub struct GlyphItem {
-    /// The font face of the run.
-    pub font: FontData,
-    /// Font size in physical pixels.
-    pub size: f32,
-    /// Normalized variation coordinates of the face.
-    pub coords: Vec<i16>,
-    /// Physical position of the layout's origin.
-    pub origin: (f32, f32),
-    /// Straight RGBA ink.
-    pub ink: [u8; 4],
-    /// Glyph ids and positions relative to `origin`.
-    pub glyphs: Vec<Glyph>,
-}
-
-/// What:
-///  One stroked path:
-///  a diagnostic underline or a stroke of the wrap arrow.
-/// Why:
-///  Wavy,
-///  dashed,
-///  and dotted lines are one stroke each,
-///  so their style is data a test can read.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type StrokeItem = { path: Path; width: number; dash: number[]; round: boolean; ink: Rgba };
-/// ```
-#[derive(Clone)]
-pub struct StrokeItem {
-    /// The center line.
-    pub path: BezPath,
-    /// Stroke width in physical pixels.
-    pub width: f32,
-    /// On and off lengths of the dashes in physical pixels;
-    ///  empty for a solid line.
-    pub dash: Vec<f64>,
-    /// Round caps and joins instead of butt caps.
-    pub round: bool,
-    /// Straight RGBA ink.
-    pub ink: [u8; 4],
-}
-
-/// What:
-///  One paint command of a tile,
-///  in drawing order.
-/// Why:
-///  The painter produces a list of these and `encode` writes them to a scene,
-///  so what a tile draws is checked without a GPU.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type Item = { glyphs: GlyphItem } | { clip: [number, number] } | 'unclip' | { stroke: StrokeItem };
-/// ```
-#[derive(Clone)]
-pub enum Item {
-    /// Draw a run of glyphs.
-    Glyphs(GlyphItem),
-    /// Start drawing only between these two physical x positions.
-    Clip {
-        /// Left edge.
-        left: f32,
-        /// Right edge.
-        right: f32,
-    },
-    /// End the clip that began last.
-    Unclip,
-    /// Draw a stroked path.
-    Stroke(StrokeItem),
-}
-
-/// What:
-///  A scene and the size of the texture it is drawn into.
-/// Why:
-///  The window thread hands this to the GPU module,
-///  which makes the texture and renders the scene into it.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type TileScene = { scene: Scene; width: number; height: number };
-/// ```
-pub struct TileScene {
-    /// The Vello scene,
-    ///  in physical pixels from the tile's top left corner.
-    pub scene: Scene,
-    /// Texture width in physical pixels.
-    pub width: u32,
-    /// Texture height in physical pixels.
-    pub height: u32,
-}
-
-/// What:
-///  Sort `intervals` and join the ones that touch or overlap.
-/// Why:
-///  The selected part of a row is clipped by its intervals,
-///  and the rest of the row by what lies between them;
-///  both need ordered, disjoint ranges.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function merged(intervals: [number, number][]): [number, number][];
-/// ```
-fn merged(intervals: &[(f32, f32)]) -> Vec<(f32, f32)> {
-    let mut sorted: Vec<(f32, f32)> = Vec::new();
-    for interval in intervals {
-        if interval.1 > interval.0 {
-            sorted.push(*interval);
-        }
-    }
-    sorted.sort_by(|left, right| return left.0.total_cmp(&right.0));
-    let mut joined: Vec<(f32, f32)> = Vec::new();
-    for (start, end) in sorted {
-        if let Some(last) = joined.last_mut()
-            && start <= last.1
-        {
-            last.1 = last.1.max(end);
-            continue;
-        }
-        joined.push((start, end));
-    }
-    return joined;
-}
-
-/// What:
-///  Emit `draw` once in `ordinary` ink outside `intervals` and once in `selected` ink inside them.
-///  With no interval, or the same ink on both sides, `draw` runs once and unclipped.
-/// Why:
-///  A selected glyph keeps its own shape and takes the selection ink exactly where the selection rectangle lies,
-///  even when one glyph (a ligature) spans several characters,
-///  so the glyph is clipped at the rectangle's edge and never recolored as a whole.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function split(items: Item[], intervals: [number, number][], ordinary: Rgba, selected: Rgba, width: number,
-///   draw: (items: Item[], ink: Rgba) => void): void;
-/// ```
-fn split(
-    items: &mut Vec<Item>,
-    intervals: &[(f32, f32)],
-    inks: ([u8; 4], [u8; 4]),
-    extent: (f32, f32),
-    mut draw: impl FnMut(&mut Vec<Item>, [u8; 4]),
-) {
-    let (ordinary, selected) = inks;
-    let joined = merged(intervals);
-    if joined.is_empty() || ordinary == selected {
-        draw(items, ordinary);
-        return;
-    }
-    // The ordinary ink fills the gaps, including the two open ends of the row.
-    let mut cursor = extent.0;
-    for (start, end) in &joined {
-        if *start > cursor {
-            items.push(Item::Clip {
-                left: cursor,
-                right: *start,
-            });
-            draw(items, ordinary);
-            items.push(Item::Unclip);
-        }
-        items.push(Item::Clip {
-            left: start.max(extent.0),
-            right: end.min(extent.1),
-        });
-        draw(items, selected);
-        items.push(Item::Unclip);
-        cursor = cursor.max(*end);
-    }
-    if cursor < extent.1 {
-        items.push(Item::Clip {
-            left: cursor,
-            right: extent.1,
-        });
-        draw(items, ordinary);
-        items.push(Item::Unclip);
-    }
-}
 
 /// What:
 ///  The glyph runs of one visual row of `layout`,
@@ -295,6 +119,24 @@ fn run_items(
         ));
     }
     return Ok(runs);
+}
+
+/// What:
+///  Add the draw command of `run` in `painted` ink to `items`.
+/// Why:
+///  A run is drawn once per ink it appears in:
+///  once,
+/// or once inside and once outside a selection.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function pushRun(items: Item[], run: GlyphItem, painted: Rgba): void;
+/// ```
+fn push_run(items: &mut Vec<Item>, run: &GlyphItem, painted: [u8; 4]) {
+    items.push(Item::Glyphs(GlyphItem {
+        ink: painted,
+        ..run.clone()
+    }));
 }
 
 /// What:
@@ -361,12 +203,8 @@ fn layout_items(
                 intervals,
                 (ordinary, selected),
                 (-CULL_MARGIN, size.0 + CULL_MARGIN),
-                |into, painted| {
-                    into.push(Item::Glyphs(GlyphItem {
-                        ink: painted,
-                        ..run.clone()
-                    }));
-                },
+                &run,
+                push_run,
             );
         }
     }
@@ -392,7 +230,7 @@ fn selected_intervals(
     let mut selected: Vec<Vec<(f32, f32)>> = vec![Vec::new(); row.visual_rows()];
     for rectangle in &view.selections {
         if let Some(index) = row.visual_row_holding(rectangle.y, factor) {
-            selected[index].push((
+            selected[index].push(snapped(
                 (rectangle.x - horizontal) * factor,
                 (rectangle.x + rectangle.width - horizontal) * factor,
             ));
@@ -430,7 +268,7 @@ fn underline_frame(
         for rectangle in &view.selections {
             // A rectangle lies on the run's visual row when its top is that row's top, within rounding.
             if (rectangle.y - code_top).abs() < CODE_ROW * 0.5 {
-                intervals.push((
+                intervals.push(snapped(
                     (rectangle.x - horizontal) * scale,
                     (rectangle.x + rectangle.width - horizontal) * scale,
                 ));
@@ -454,9 +292,8 @@ fn underline_frame(
             &intervals,
             (severity_ink, colors.selected),
             (-CULL_MARGIN, width + CULL_MARGIN),
-            |into, painted| {
-                underline_items(into, &geometry, painted);
-            },
+            &geometry,
+            underline_items,
         );
     }
 }
@@ -474,7 +311,8 @@ fn underline_frame(
 ///  and the tests read it instead of a pixel buffer.
 ///
 /// # Errors
-/// A layout holds an inline box, which source text never produces.
+/// A layout holds an inline box,
+/// which source text never produces.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -521,13 +359,25 @@ pub fn tile_items(view: &ShapedView, colors: CodeColors, horizontal: f32) -> Res
 ///  so a tile built on either looks the same.
 ///
 /// # Errors
-/// A layout holds an inline box, which source text never produces.
+/// The view is larger than a texture of the tile may be (the device's texture size or 64 MiB),
+/// or a layout holds an inline box,
+/// which source text never produces.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function paintTile(view: ShapedView, colors: CodeColors, horizontal: number): TileScene;
 /// ```
 pub fn paint_tile(view: &ShapedView, colors: CodeColors, horizontal: f32) -> Result<TileScene> {
+    // The window never asks for a view past the limit, because the shaper cuts a tile of a very tall line to a clip;
+    // this guards a caller that did not, since the GPU would reject a texture past its size with a validation error.
+    if !texture_fits(u64::from(view.width), u64::from(view.height)) {
+        bail!(
+            "Source viewport {}x{} exceeds the tile texture limit ({} px on a side and 64 MiB); reduce the window size or scale",
+            view.width,
+            view.height,
+            texture_dimension()
+        );
+    }
     let items = tile_items(view, colors, horizontal)?;
     return Ok(TileScene {
         scene: encode(&items, view.height as f32),
@@ -547,7 +397,8 @@ pub fn paint_tile(view: &ShapedView, colors: CodeColors, horizontal: f32) -> Res
 ///  are drawn by the same glyph path as source text.
 ///
 /// # Errors
-/// The layout holds an inline box, which source text never produces.
+/// The layout holds an inline box,
+/// which source text never produces.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

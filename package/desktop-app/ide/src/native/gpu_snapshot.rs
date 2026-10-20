@@ -261,10 +261,13 @@ fn install_once() -> String {
     };
     set_platform(Box::new(platform))
         .expect("no Slint platform was installed before the GPU snapshot harness");
+    DEVICE.with(|held| held.set(Some(gpu)));
     return name;
 }
 
 std::thread_local! {
+    /// The leaked device once this thread installed the platform.
+    static DEVICE: Cell<Option<&'static GpuDevice>> = const { Cell::new(None) };
     /// The adapter name once this thread installed the platform;
     ///  Slint keeps its platform per thread.
     static INSTALLED: OnceCell<String> = const { OnceCell::new() };
@@ -298,4 +301,14 @@ pub(super) fn snapshot(window: &Window) -> SharedPixelBuffer<Rgba8Pixel> {
     return window
         .take_snapshot()
         .expect("a GPU snapshot of the window");
+}
+
+/// The device and queue of the platform this thread installed,
+///  for a test that renders a scene without a window.
+pub(super) fn device_handles() -> (wgpu::Device, wgpu::Queue) {
+    install_gpu_platform();
+    let gpu = DEVICE
+        .with(|held| return held.get())
+        .expect("the GPU platform was installed");
+    return (gpu.device.clone(), gpu.queue.clone());
 }

@@ -812,11 +812,7 @@ fn a_view_with_more_lines_than_the_allowance_is_left_to_the_worker() {
     // A tile of the limit is far past the bound, or holds more lines than the allowance, at every size
     // where the texture limit of the device does not cut it below the allowance:
     // a 300 px wide tile on a device limited to 8192 px holds 340 lines, which the allowance covers.
-    for (width, scale) in [
-        (1100.0_f32, 1.0_f32),
-        (1100.0, 2.0),
-        (3800.0, 1.0),
-    ] {
+    for (width, scale) in [(1100.0_f32, 1.0_f32), (1100.0, 2.0), (3800.0, 1.0)] {
         let cap = tile_cap(width, scale);
         let columns = ((width + 24.0).ceil() * scale).ceil() as u64;
         let bytes = columns * (cap * scale).floor() as u64 * 4;

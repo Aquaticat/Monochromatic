@@ -12,6 +12,8 @@ use ide_app::annotation::Visible;
 /// Hint and diagnostic inks,
 /// and the lay-out that places them beside the rows.
 use ide_app::annotation_layout::{AnnotationColors, lay_out};
+/// The palette of one tile.
+use ide_app::code_colors::CodeColors;
 /// Canonical source text,
 /// cloned as a rope snapshot.
 use ide_app::document::Document;
@@ -35,9 +37,8 @@ use ide_app::source_frame::FrameStamp;
 use ide_app::source_style::SourceStyles;
 /// Shaping choices a worker shaper must match.
 use ide_app::source_typography::SourceTypography;
-/// The palette of one tile.
-use ide_app::code_colors::CodeColors;
-/// The scene of one tile, which crosses to the window thread.
+/// The scene of one tile,
+/// which crosses to the window thread.
 use ide_app::tile_scene::{TileScene, paint_tile};
 
 /// What:

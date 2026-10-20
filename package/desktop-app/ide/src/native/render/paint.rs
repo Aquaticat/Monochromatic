@@ -14,6 +14,8 @@ use crate::native::{
 };
 /// Paint identity and the frame rectangles come from the same shaped rows.
 use ide_app::annotation_layout::AnnotationColors;
+/// Native palette values retain syntax and selection contrast.
+use ide_app::code_colors::CodeColors;
 /// Match ranges and the active match of the in-file find.
 use ide_app::find::{FindRange, FindRanges};
 /// Match ranges of the displayed find results.
@@ -25,8 +27,6 @@ use ide_app::shaped_text::tile_cap as raster_cap;
 use ide_app::shaped_text::{Viewport, raster_width};
 /// Exact paint inputs exclude collapsed caret movement.
 use ide_app::source_frame::FrameStamp;
-/// Native palette values retain syntax and selection contrast.
-use ide_app::code_colors::CodeColors;
 /// A wrap width must be a positive number of pixels.
 use ide_app::wrap::has_wrap_width;
 /// The window's display scale for the paint inputs.

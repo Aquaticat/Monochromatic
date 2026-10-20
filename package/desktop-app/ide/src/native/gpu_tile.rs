@@ -11,14 +11,25 @@
 //!  the scene holds glyph outlines and paths,
 //!  and the GPU turns them into pixels.
 
+/// Reads of the textures for the native tests.
+#[cfg(test)]
+mod readback;
+/// A scene rendered without a window.
+#[cfg(test)]
+pub(super) use readback::render_scene;
+
 /// The window the textures are shown in,
 ///  and the chaining of the debug frame records.
 use super::{AppWindow, frame_trace};
 /// The tile scene that is drawn into a texture.
 use ide_app::tile_scene::TileScene;
-/// Slint's own wgpu types, the ones the window's device is made of.
+/// Slint's own wgpu types,
+/// the ones the window's device is made of.
 use slint::wgpu_30::wgpu;
-/// The window handle, the rendering stages, the graphics API, and the image import.
+/// The window handle,
+/// the rendering stages,
+/// the graphics API,
+/// and the image import.
 use slint::{ComponentHandle, GraphicsAPI, Image, RenderingState};
 /// Shared ownership of the GPU state on the window thread.
 use std::{cell::RefCell, rc::Rc};
@@ -31,7 +42,9 @@ use vello::{
 ///  One texture and the size it was made with.
 /// Why:
 ///  A texture is reused while the scene it receives has the same size,
-///  and replaced, with a new image on the window, when it has not.
+///  and replaced,
+/// with a new image on the window,
+/// when it has not.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -108,7 +121,8 @@ impl Outcome {
 struct Inner {
     /// The device and queue of the first frame's setup.
     device: Option<(wgpu::Device, wgpu::Queue)>,
-    /// Vello's renderer, made at setup.
+    /// Vello's renderer,
+    /// made at setup.
     renderer: Option<Renderer>,
     /// The tile's texture.
     tile: Option<Target>,
@@ -126,10 +140,12 @@ struct Inner {
 
 /// What:
 ///  The handle the window state holds:
-///  a scene is handed to it, and the notifier draws it.
+///  a scene is handed to it,
+/// and the notifier draws it.
 /// Why:
 ///  The state lives next to the window on one thread,
-///  so a shared, checked borrow is all the sharing needs.
+///  so a shared,
+/// checked borrow is all the sharing needs.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -168,7 +184,8 @@ impl GpuTile {
         return self.inner.borrow().signs_rendered;
     }
 
-    /// The tile's texture read back from the GPU as straight RGBA, row by row from the top,
+    /// The tile's texture read back from the GPU as straight RGBA,
+    /// row by row from the top,
     /// or nothing before a tile is drawn.
     /// A frame must have been rendered since the last scene was handed over.
     #[cfg(test)]
@@ -203,7 +220,9 @@ impl GpuTile {
     }
 }
 
-/// Set up, draw, and tear down on the renderer's calls.
+/// Set up,
+/// draw,
+/// and tear down on the renderer's calls.
 impl Inner {
     /// What:
     ///  The uses of a picture's texture:
@@ -212,7 +231,9 @@ impl Inner {
     ///  A test build can also read it back.
     /// Why:
     ///  Reading a texture back is how the native tests look at the tile itself,
-    ///  without the selection fills, caret, and minimap that the window draws around it.
+    ///  without the selection fills,
+    /// caret,
+    /// and minimap that the window draws around it.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -248,67 +269,20 @@ impl Inner {
             Picture::Tile => self.tile.as_ref()?,
             Picture::Sign => self.sign.as_ref()?,
         };
-        let unpadded = target.width * 4;
-        let padded = unpadded.div_ceil(wgpu::COPY_BYTES_PER_ROW_ALIGNMENT)
-            * wgpu::COPY_BYTES_PER_ROW_ALIGNMENT;
-        let buffer = device.create_buffer(&wgpu::BufferDescriptor {
-            label: Some("ide tile readback"),
-            size: u64::from(padded) * u64::from(target.height),
-            usage: wgpu::BufferUsages::COPY_DST | wgpu::BufferUsages::MAP_READ,
-            mapped_at_creation: false,
-        });
-        let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor::default());
-        encoder.copy_texture_to_buffer(
-            wgpu::TexelCopyTextureInfo {
-                texture: &target.texture,
-                mip_level: 0,
-                origin: wgpu::Origin3d::ZERO,
-                aspect: wgpu::TextureAspect::All,
-            },
-            wgpu::TexelCopyBufferInfo {
-                buffer: &buffer,
-                layout: wgpu::TexelCopyBufferLayout {
-                    offset: 0,
-                    bytes_per_row: Some(padded),
-                    rows_per_image: None,
-                },
-            },
-            wgpu::Extent3d {
-                width: target.width,
-                height: target.height,
-                depth_or_array_layers: 1,
-            },
-        );
-        queue.submit(std::iter::once(encoder.finish()));
-        let slice = buffer.slice(..);
-        let (sender, receiver) = std::sync::mpsc::channel();
-        slice.map_async(wgpu::MapMode::Read, move |result| {
-            let _ = sender.send(result);
-        });
-        device
-            .poll(wgpu::PollType::wait_indefinitely())
-            .expect("the GPU finishes the readback");
-        receiver
-            .recv()
-            .expect("the readback callback ran")
-            .expect("the readback buffer maps");
-        let mapped = slice
-            .get_mapped_range()
-            .expect("the mapped readback buffer");
-        let mut pixels = slint::SharedPixelBuffer::<slint::Rgba8Pixel>::new(target.width, target.height);
-        let bytes = pixels.make_mut_bytes();
-        for (row, source) in mapped.chunks(padded as usize).enumerate() {
-            let start = row * unpadded as usize;
-            bytes[start..start + unpadded as usize].copy_from_slice(&source[..unpadded as usize]);
-        }
-        return Some(pixels);
+        return Some(readback::read_texture(
+            device,
+            queue,
+            &target.texture,
+            (target.width, target.height),
+        ));
     }
 
     /// What:
     ///  Take the device of the first frame and make Vello's renderer for it.
     ///  The largest texture the device offers is recorded for the tile's height.
     /// Why:
-    ///  Vello compiles its compute shaders here, once.
+    ///  Vello compiles its compute shaders here,
+    /// once.
     ///  A device whose limit differs from the one the tiles were cut for is reported:
     ///  the launcher and the harness record the device's own limit before any window exists,
     ///  so a difference means another device was given to the window.
@@ -361,7 +335,8 @@ impl Inner {
     }
 
     /// What:
-    ///  Draw the scenes that wait, if the renderer is ready.
+    ///  Draw the scenes that wait,
+    /// if the renderer is ready.
     /// Why:
     ///  This runs just before Slint draws the frame,
     ///  so the textures hold the new scenes when the images that show them are sampled.
@@ -386,7 +361,9 @@ impl Inner {
 
     /// What:
     ///  Render `scene` into the texture of `picture`,
-    ///  making a new texture, and setting a new image on the window, when the size changed.
+    ///  making a new texture,
+    /// and setting a new image on the window,
+    /// when the size changed.
     /// Why:
     ///  Rendering into the same texture needs no new image,
     ///  and the frame that follows samples the new content.
@@ -403,9 +380,10 @@ impl Inner {
             Picture::Tile => &self.tile,
             Picture::Sign => &self.sign,
         };
-        let reusable = held
-            .as_ref()
-            .is_some_and(|target| return target.width == scene.width && target.height == scene.height);
+        let reusable = match held {
+            Some(target) => target.width == scene.width && target.height == scene.height,
+            None => false,
+        };
         if !reusable {
             let texture = device.create_texture(&wgpu::TextureDescriptor {
                 label: Some(match picture {
@@ -442,11 +420,11 @@ impl Inner {
                 Picture::Sign => self.sign = target,
             }
         }
-        let held = match picture {
+        let current = match picture {
             Picture::Tile => &self.tile,
             Picture::Sign => &self.sign,
         };
-        let (Some(target), Some(renderer)) = (held.as_ref(), self.renderer.as_mut()) else {
+        let (Some(target), Some(renderer)) = (current.as_ref(), self.renderer.as_mut()) else {
             return;
         };
         let view = target
@@ -495,27 +473,25 @@ impl Inner {
 pub(super) fn bind(window: &AppWindow, gpu: &GpuTile) {
     let inner = Rc::clone(&gpu.inner);
     let weak = window.as_weak();
-    let installed = window
-        .window()
-        .set_rendering_notifier(move |state, api| {
-            frame_trace::log_rendering_stage(&state);
-            let GraphicsAPI::WGPU30 { device, queue, .. } = api else {
-                tracing::error!("the window's renderer offers no wgpu 30 device");
+    let installed = window.window().set_rendering_notifier(move |state, api| {
+        frame_trace::log_rendering_stage(&state);
+        let GraphicsAPI::WGPU30 { device, queue, .. } = api else {
+            tracing::error!("the window's renderer offers no wgpu 30 device");
+            return;
+        };
+        let outcome = match state {
+            RenderingState::RenderingSetup => inner.borrow_mut().setup(device, queue),
+            RenderingState::BeforeRendering => inner.borrow_mut().draw_pending(),
+            RenderingState::RenderingTeardown => {
+                inner.borrow_mut().teardown();
                 return;
-            };
-            let outcome = match state {
-                RenderingState::RenderingSetup => inner.borrow_mut().setup(device, queue),
-                RenderingState::BeforeRendering => inner.borrow_mut().draw_pending(),
-                RenderingState::RenderingTeardown => {
-                    inner.borrow_mut().teardown();
-                    return;
-                }
-                _ => return,
-            };
-            if let Some(active) = weak.upgrade() {
-                outcome.apply(&active);
             }
-        });
+            _ => return,
+        };
+        if let Some(active) = weak.upgrade() {
+            outcome.apply(&active);
+        }
+    });
     if let Err(error) = installed {
         tracing::error!(%error, "the source view cannot be drawn: the renderer takes no notifier");
         window.set_error_message(slint::SharedString::from(format!(

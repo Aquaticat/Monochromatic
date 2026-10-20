@@ -13,7 +13,10 @@ use super::find_tests::{Reader, memory_project, reader};
 /// Window resizing and layout settling for exact sizes.
 use super::sidebar_tests::{GUTTER, HEADER, TEXT_LEFT, resize};
 /// The production window and its state.
-use super::{AppWindow, State, tile_reads::{same_rows, shown, sign_pixels}};
+use super::{
+    AppWindow, State,
+    tile_reads::{same_rows, shown, sign_pixels},
+};
 /// The wrap width rule and the worker's gates and limits.
 use super::{
     overscan_tile_tests::reset,
@@ -217,6 +220,11 @@ fn the_gutter_numbers_first_rows_and_marks_continuation_rows() {
     assert_eq!(entry, numbers.len());
     drop(current);
     let sign = sign_pixels(window, &opened.source).expect("sign image");
+    assert_eq!(
+        opened.source.borrow().gpu.signs_rendered(),
+        1,
+        "the wrap indicator is drawn by the GPU once for the scale and never again"
+    );
     let mut inked = 0;
     for pixel in sign.as_slice() {
         if pixel.a > 0 {

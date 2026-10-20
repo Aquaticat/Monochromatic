@@ -1,5 +1,7 @@
-//! Rasterize shared shaped rows;
+//! Rasterize shared shaped rows on the CPU for the minimap's picture;
 //!  glyphs retain their common baseline and advances.
+//! The code view itself is drawn on the GPU by `tile_scene`;
+//!  this module stays only until the minimap is drawn there too.
 
 /// Diagnostic underline styles and the tile both they and glyphs are drawn into.
 use crate::annotation_paint::{Tile, TilePlace, paint_underlines};
@@ -25,7 +27,8 @@ use swash::{
 ///  `pub use` re-exports the palette under this module's name.
 /// Why:
 ///  The minimap's picture still reads the palette through `text_raster`;
-///  the palette itself lives in `code_colors`, because the GPU code view uses it too.
+///  the palette itself lives in `code_colors`,
+/// because the GPU code view uses it too.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -34,12 +37,12 @@ use swash::{
 pub use crate::code_colors::{CodeColors, ink};
 
 /// What:
-///  Most bytes a source tile's raster may hold:
-///  64 MiB of premultiplied RGBA.
+///  Most bytes a source tile's texture or a minimap band's raster may hold:
+///  64 MiB of RGBA.
 /// Why:
-///  The tile is one image the toolkit uploads whole;
+///  The tile is one GPU texture and a band one CPU buffer;
 ///  the window clips a tile that would pass this,
-/// so the check here only guards a caller that did not.
+///  so the check here only guards a caller that did not.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -99,33 +102,12 @@ impl TextRaster {
         };
     }
 
-    /// Paint only the bounded materialized viewport;
-    ///  horizontal offset stays fractional.
-    /// Virtual-row texts and diagnostic underlines of `view.annotations` are painted after the source glyphs.
-    pub fn paint(
-        &mut self,
-        view: &ShapedView,
-        colors: CodeColors,
-        horizontal: f32,
-    ) -> Result<SourcePixels> {
-        let length = u64::from(view.width) * u64::from(view.height) * 4;
-        if length > MAX_RASTER_BYTES {
-            bail!(
-                "Source viewport {}x{} exceeds the 64 MiB raster limit; reduce the window size or scale",
-                view.width,
-                view.height
-            );
-        }
-        return self.paint_onto(view, colors, horizontal, vec![0; length as usize]);
-    }
-
     /// What:
     ///  Paint the viewport over `bytes`,
     ///  premultiplied pixels the size of the raster that already hold what lies behind the glyphs.
     /// Why:
     ///  The minimap's bands draw the markup's selection and match fills first,
-    ///  so a band holds what the window shows;
-    ///  the tile itself starts from nothing.
+    ///  so a band holds what the window shows.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -230,47 +212,6 @@ impl TextRaster {
         return Ok(SourcePixels {
             width: view.width,
             height: view.height,
-            bytes,
-        });
-    }
-
-    /// What:
-    ///  Paint one layout alone,
-    /// at the physical `origin`,
-    /// in one `ink`,
-    /// into a new tile of `size` physical pixels.
-    /// Why:
-    ///  Small images,
-    /// such as the gutter's wrap indicator,
-    /// are set by the same glyph path as source text.
-    ///
-    /// In TS you'd write (pseudocode):
-    /// ```ts
-    /// paintLayout(layout: Layout, origin: [number, number], ink: Rgba, size: [number, number]): Pixels;
-    /// ```
-    pub fn paint_layout(
-        &mut self,
-        layout: &Layout<u32>,
-        origin: (f32, f32),
-        ink: [u8; 4],
-        size: (u32, u32),
-    ) -> Result<SourcePixels> {
-        let (width, height) = size;
-        let mut bytes = vec![0; (u64::from(width) * u64::from(height) * 4) as usize];
-        let mut tile = Tile {
-            bytes: &mut bytes,
-            width,
-            height,
-        };
-        let colors = CodeColors {
-            foreground: ink,
-            selected: ink,
-            dark: false,
-        };
-        self.draw(layout, origin, colors, Some(ink), &[], &mut tile)?;
-        return Ok(SourcePixels {
-            width,
-            height,
             bytes,
         });
     }

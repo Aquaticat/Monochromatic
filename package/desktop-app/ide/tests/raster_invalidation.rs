@@ -1,9 +1,9 @@
-//! Warm glyph caches must match a fresh renderer across every paint input change.
+//! Warm glyph caches of the minimap's rasterizer must match a fresh one across every paint input change.
 
 /// Consumer APIs retain canonical source alongside the shared glyph geometry.
 use ide_app::{
     document::{Document, ReadingPosition},
-    shaped_text::{TextShaper, Viewport},
+    shaped_text::{ShapedView, TextShaper, Viewport},
     source_style::StyleSpan,
     text_raster::{CodeColors, TextRaster},
 };
@@ -81,10 +81,10 @@ fn cached_pixels_match_fresh_pixels_after_input_changes() {
         // const expected = new TextRaster().paint(view, colors, horizontal);
         // ```
         let actual = cached
-            .paint(&view, colors, horizontal)
+            .paint_onto(&view, colors, horizontal, blank(&view))
             .expect("cached source raster");
         let expected = TextRaster::new()
-            .paint(&view, colors, horizontal)
+            .paint_onto(&view, colors, horizontal, blank(&view))
             .expect("fresh source raster");
         // assert_eq! compares every premultiplied pixel, including fallback glyph baselines.
         assert_eq!(actual.bytes, expected.bytes, "raster case {case}");
@@ -116,9 +116,21 @@ fn comparison_detects_changed_ink_and_fractional_origin() {
         selected: [255, 255, 255, 255],
         dark: false,
     };
-    let original = raster.paint(&view, dark, 0.0).expect("original pixels");
-    let recolored = raster.paint(&view, light, 0.0).expect("changed ink");
-    let shifted = raster.paint(&view, dark, 0.25).expect("fractional origin");
+    let original = raster
+        .paint_onto(&view, dark, 0.0, blank(&view))
+        .expect("original pixels");
+    let recolored = raster
+        .paint_onto(&view, light, 0.0, blank(&view))
+        .expect("changed ink");
+    let shifted = raster
+        .paint_onto(&view, dark, 0.25, blank(&view))
+        .expect("fractional origin");
     assert_ne!(original.bytes, recolored.bytes);
     assert_ne!(original.bytes, shifted.bytes);
+}
+
+/// A raster-sized blank buffer for the minimap's rasterizer,
+/// which paints over what it is given.
+fn blank(view: &ShapedView) -> Vec<u8> {
+    return vec![0; (u64::from(view.width) * u64::from(view.height) * 4) as usize];
 }

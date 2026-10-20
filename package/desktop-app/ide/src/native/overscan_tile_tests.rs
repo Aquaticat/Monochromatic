@@ -8,11 +8,14 @@
 
 /// Windows are drawn on the hardware GPU,
 ///  so the platform is installed before the thread's first window.
-use super::gpu_snapshot::install_gpu_platform;
+use super::gpu_snapshot::{install_gpu_platform, snapshot};
 /// Reuse production viewport callbacks,
 /// appearance callbacks,
 /// and the raster presentation.
-use super::{AppWindow, State, bind_appearance, bind_viewport, render, tile_reads::{same_rows, shown}};
+use super::{
+    AppWindow, State, bind_appearance, bind_viewport, render,
+    tile_reads::{same_rows, shown},
+};
 /// Toolkit windows and component ownership stay on the test's event-loop thread.
 use slint::{ComponentHandle, Model, platform::update_timers_and_animations};
 /// UI state is shared between the window callbacks and the test.
@@ -181,14 +184,31 @@ fn scrolling_inside_the_overscan_tile_does_no_source_work() {
     scroll_to(&window, START);
     settle_tile(&state);
     reset(&state);
+    // A frame draws the scene the settled tile handed over, so the GPU counts below start from a drawn tile.
+    let _first = snapshot(window.window());
+    let gpu = state.borrow().gpu.clone();
+    let drawn = gpu.tiles_rendered();
+    assert!(drawn > 0, "the settled tile was drawn by the GPU");
     // Half a view height each way stays inside the tile, which holds the view until about 0.75 view heights.
     let steps = (height * 0.5 / STEP) as usize;
     for step in 1..=steps {
         scroll_to(&window, START + step as f32 * STEP);
+        // The frame the toolkit draws for this offset samples the same texture; no scene is built or drawn for it.
+        let _frame = snapshot(window.window());
     }
     for step in (0..steps).rev() {
         scroll_to(&window, START + step as f32 * STEP);
+        let _frame = snapshot(window.window());
     }
+    assert_eq!(
+        gpu.tiles_rendered(),
+        drawn,
+        "scrolling inside the overscan tile must not render a scene on the GPU"
+    );
+    assert!(
+        !gpu.has_pending(),
+        "scrolling inside the overscan tile must not leave a scene waiting"
+    );
     let [renders, tiles, rows, images] = counts(&state);
     assert_eq!(
         renders, 0,
@@ -225,6 +245,8 @@ fn leaving_the_overscan_tile_re_centers_on_the_worker_thread() {
     scroll_to(&window, START);
     settle_tile(&state);
     reset(&state);
+    let _first = snapshot(window.window());
+    let drawn = state.borrow().gpu.tiles_rendered();
     let target = START + height;
     scroll_to(&window, target);
     let [renders, tiles, rows, images] = counts(&state);
@@ -242,6 +264,12 @@ fn leaving_the_overscan_tile_re_centers_on_the_worker_thread() {
         "the window thread builds no image for a scroll re-center"
     );
     settle_tile(&state);
+    let _after = snapshot(window.window());
+    assert_eq!(
+        state.borrow().gpu.tiles_rendered(),
+        drawn + 1,
+        "the re-center is drawn by the GPU exactly once"
+    );
     let [worker_tiles, worker_rows, applied, discarded] = worker_counts(&state);
     assert_eq!(worker_tiles, 1, "the worker answers exactly one re-center");
     assert_eq!(applied, 1, "the finished tile is swapped in once");

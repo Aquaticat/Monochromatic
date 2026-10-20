@@ -3,11 +3,11 @@
 /// Virtual-row texts and diagnostic marks are positioned against the frame's shaped rows.
 /// Child modules can borrow their parent's private state and generated UI.
 use super::{AppWindow, State, rewrap, rows, tile, tile_build::build_tile, viewport::place};
+/// Native palette values retain syntax and selection contrast.
+use ide_app::code_colors::CodeColors;
 /// Selected-text ink is chosen from the selection fill,
 ///  not from the color scheme.
 use ide_app::selection_ink::{legible_ink, luminance};
-/// Native palette values retain syntax and selection contrast.
-use ide_app::code_colors::CodeColors;
 /// Toolkit images and models carry owned source presentation data.
 use slint::{ComponentHandle, SharedString};
 /// UI callbacks share state without cross-thread synchronization.

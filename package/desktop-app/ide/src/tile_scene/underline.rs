@@ -7,7 +7,9 @@
 
 /// The stroke item and the item list it joins.
 use super::{Item, StrokeItem};
-/// Repeat length, wave height, and thickness of the line styles.
+/// Repeat length,
+/// wave height,
+/// and thickness of the line styles.
 use crate::annotation_paint::{AMPLITUDE, PERIOD, THICKNESS};
 /// Severities as the Language module names them.
 use crate::language::diagnostics::Severity;
@@ -109,7 +111,8 @@ fn wave(span: (f32, f32), line: f32, scale: f32) -> BezPath {
 /// Why:
 ///  Whole pixel rows keep a flat line in its full ink;
 ///  a line split over two rows reads as a paler color.
-///  A wave is thinner across its slope, so that its vertical thickness is the same as a flat line's.
+///  A wave is thinner across its slope,
+/// so that its vertical thickness is the same as a flat line's.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

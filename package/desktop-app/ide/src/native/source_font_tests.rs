@@ -113,6 +113,9 @@ fn source_typography_repaints_without_changing_selection() {
     assert_eq!(window.get_selection_anchor(), 1);
     assert_eq!(window.get_selection_head(), 2);
     // Two renders of one scene differ by one level in a few texels on the GPU.
-    assert!(same_frame(&capture(&window, &state, 400.0, false), &regular));
+    assert!(same_frame(
+        &capture(&window, &state, 400.0, false),
+        &regular
+    ));
     window.hide().expect("close source typography fixture");
 }

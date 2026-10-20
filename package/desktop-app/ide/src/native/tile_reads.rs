@@ -2,24 +2,34 @@
 //!  a frame is rendered so the scene the window thread handed over is drawn,
 //!  and the tile's texture is read back from the GPU.
 //!  The window's own snapshot (`gpu_snapshot::snapshot`) shows the tile composited with the selection fills,
-//!  the caret, and the minimap;
-//!  this shows the tile alone, with its alpha.
+//!  the caret,
+//! and the minimap;
+//!  this shows the tile alone,
+//! with its alpha.
 
-/// A frame of the window, which draws the waiting scenes.
-use super::gpu_snapshot::snapshot;
 /// The window and its state.
 use super::{AppWindow, State};
+/// A frame of the window,
+/// which draws the waiting scenes,
+///  and a scene drawn without a window.
+use super::{gpu_snapshot::snapshot, gpu_tile::render_scene};
+/// What a tile draws,
+/// and the palette it draws it in.
+use ide_app::{code_colors::CodeColors, shaped_text::ShapedView, tile_scene::paint_tile};
 /// Toolkit windows and pixel buffers.
 use slint::{ComponentHandle, Rgba8Pixel, SharedPixelBuffer};
 /// Shared state.
 use std::{cell::RefCell, rc::Rc};
 
 /// What:
-///  The most two renders of one scene may differ on the GPU, in levels of one channel of a premultiplied texel.
+///  The most two renders of one scene may differ on the GPU,
+/// in levels of one channel of a premultiplied texel.
 /// Why:
 ///  Vello sums the coverage of a pixel's path segments in the order the GPU's atomics put them,
 ///  so two renders of the same scene differ by one level in a few texels
-///  (measured in `gpu_texture_probe_tests`: 40 renders of a 697 by 1392 tile, worst difference 1).
+///  (measured in `gpu_texture_probe_tests`:
+/// 40 renders of a 697 by 1392 tile,
+/// worst difference 1).
 ///  Tests that compare two renders accept this and nothing more;
 ///  every one of them has a positive control whose difference is far larger.
 ///
@@ -30,7 +40,8 @@ use std::{cell::RefCell, rc::Rc};
 pub(super) const RENDER_NOISE: u8 = 1;
 
 /// Whether two straight-alpha texels are the same picture to within [`RENDER_NOISE`],
-///  compared premultiplied, so the color of an invisible texel does not count.
+///  compared premultiplied,
+/// so the color of an invisible texel does not count.
 pub(super) fn same_texel(left: Rgba8Pixel, right: Rgba8Pixel) -> bool {
     let premultiply =
         |value: u8, alpha: u8| return (u32::from(value) * u32::from(alpha) / 255) as u8;
@@ -140,4 +151,27 @@ pub(super) fn shown(window: &AppWindow, source: &Rc<RefCell<State>>) -> Vec<[u8;
         }
     }
     return rows;
+}
+
+/// What:
+///  The pixels the GPU draws for `view` at the fractional offset `horizontal`,
+///  straight RGBA,
+/// row by row from the top,
+///  from a scene rendered on the test thread's device with no window around it.
+/// Why:
+///  A tile at a display scale a window cannot be set to,
+///  and the tile of a shaped view that no window holds,
+///  are looked at the way the window draws them.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function renderedTile(view: ShapedView, colors: CodeColors, horizontal: number): Pixels;
+/// ```
+pub(super) fn rendered_tile(
+    view: &ShapedView,
+    colors: CodeColors,
+    horizontal: f32,
+) -> SharedPixelBuffer<Rgba8Pixel> {
+    let scene = paint_tile(view, colors, horizontal).expect("the shaped view builds a scene");
+    return render_scene(&scene);
 }

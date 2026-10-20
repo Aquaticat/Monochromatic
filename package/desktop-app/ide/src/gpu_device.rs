@@ -286,9 +286,12 @@ pub fn open_hardware_device() -> Result<HardwareDevice, GpuDeviceError> {
 ///  The device's real limit is recorded as the process's tile texture limit
 ///  (`ide_app::shaped_text::set_texture_dimension`).
 /// Why:
-///  A test can ask for a device that offers only wgpu's default 8192 pixels, as many GPUs do,
+///  A test can ask for a device that offers only wgpu's default 8192 pixels,
+/// as many GPUs do,
 ///  on a host whose GPU offers 16384.
-///  The record is made here, the one place a device is opened, so every window of the process cuts its tiles for it.
+///  The record is made here,
+/// the one place a device is opened,
+/// so every window of the process cuts its tiles for it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

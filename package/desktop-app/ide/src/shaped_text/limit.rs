@@ -10,7 +10,8 @@ use super::frame::{Clip, Viewport};
 use crate::row_map::CODE_ROW;
 /// The most bytes a raster may hold.
 use crate::text_raster::MAX_RASTER_BYTES;
-/// The device's texture size limit is one process-wide number, read by the window thread and the tile worker.
+/// The device's texture size limit is one process-wide number,
+/// read by the window thread and the tile worker.
 use std::sync::atomic::{AtomicU32, Ordering};
 
 /// What:
@@ -37,7 +38,8 @@ static TEXTURE_DIMENSION: AtomicU32 = AtomicU32::new(DEFAULT_TEXTURE_DIMENSION);
 /// Why:
 ///  The launcher and the test harness know the device before any window exists,
 ///  and the rendering notifier checks the value again when the device arrives.
-///  The device is one per process, so the limit is too.
+///  The device is one per process,
+/// so the limit is too.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

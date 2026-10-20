@@ -1,25 +1,33 @@
-//! Annotation pixels in the source tile:
+//! Annotation pixels in the source tile,
+//! as the GPU draws them:
 //!  one underline style per severity in its ink,
 //!  hints and messages on
 //! virtual rows above their line and never in a code row,
 //!  and inks that follow the scheme.
+//! The scene of the shaped rows is rendered on the hardware device and read back.
 
+/// The tile the GPU draws,
+/// read back without a window,
+/// and how far two renders may differ.
+use super::tile_reads::{RENDER_NOISE, rendered_tile};
 /// The production layout and packing,
 ///  underline constants,
 ///  vertical mapping,
 ///  shaper,
-///  and raster.
+///  and palette.
 use ide_app::{
     annotation::{Label, Mark, Visible},
     annotation_layout::{AnnotationColors, lay_out, pack},
     annotation_paint::DROP,
+    code_colors::CodeColors,
     document::Document,
     language::diagnostics::Severity,
     row_map::{CODE_ROW, RowMap},
     shaped_text::{ShapedView, TextShaper, Viewport},
-    text_raster::{CodeColors, SourcePixels, TextRaster},
     virtual_row::{BLOCK_GAP, Block, MessageRow, ROW_HEIGHT},
 };
+/// The pixels the GPU drew.
+use slint::{Rgba8Pixel, SharedPixelBuffer};
 /// Blocks are shared between the window state and the frames that paint them.
 use std::sync::Arc;
 
@@ -51,9 +59,13 @@ const LIGHT: AnnotationColors = AnnotationColors {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function painted(source: string, visible: Visible, inks: AnnotationColors): [ShapedView, SourcePixels];
+/// function painted(source: string, visible: Visible, inks: AnnotationColors): [ShapedView, Pixels];
 /// ```
-fn painted(source: &str, visible: &Visible, inks: AnnotationColors) -> (ShapedView, SourcePixels) {
+fn painted(
+    source: &str,
+    visible: &Visible,
+    inks: AnnotationColors,
+) -> (ShapedView, SharedPixelBuffer<Rgba8Pixel>) {
     let document = Document::new(source);
     let mut shaper = TextShaper::new();
     let viewport = Viewport {
@@ -79,9 +91,7 @@ fn painted(source: &str, visible: &Visible, inks: AnnotationColors) -> (ShapedVi
         selected: [255, 255, 255, 255],
         dark: true,
     };
-    let pixels = TextRaster::new()
-        .paint(&view, colors, 0.0)
-        .expect("source tile");
+    let pixels = rendered_tile(&view, colors, 0.0);
     return (view, pixels);
 }
 
@@ -133,10 +143,10 @@ fn block(
 }
 
 /// How many pixels of rows `rows.0..rows.1` of the tile carry `ink`.
-fn count(pixels: &SourcePixels, rows: (usize, usize), ink: [u8; 4]) -> usize {
+fn count(pixels: &SharedPixelBuffer<Rgba8Pixel>, rows: (usize, usize), ink: [u8; 4]) -> usize {
     let mut found = 0;
     for y in rows.0..rows.1 {
-        for x in 0..pixels.width as usize {
+        for x in 0..pixels.width() as usize {
             if inked(pixels, x, y, ink) {
                 found += 1;
             }
@@ -146,32 +156,23 @@ fn count(pixels: &SourcePixels, rows: (usize, usize), ink: [u8; 4]) -> usize {
 }
 
 /// What:
-///  Whether the premultiplied pixel at (`x`,
-///  `y`) is mostly covered and has `ink` once unpremultiplied.
+///  Whether the pixel at (`x`,
+///  `y`) is mostly covered and has `ink`.
 /// Why:
-///  Partly covered edge pixels keep the ink's hue;
+///  Partly covered edge pixels keep the ink's hue (the texture holds straight alpha);
 ///  the source ink is never close to an annotation ink.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function inked(pixels: SourcePixels, x: number, y: number, ink: Rgba): boolean;
+/// function inked(pixels: Pixels, x: number, y: number, ink: Rgba): boolean;
 /// ```
-fn inked(pixels: &SourcePixels, x: usize, y: usize, ink: [u8; 4]) -> bool {
-    let offset = (y * pixels.width as usize + x) * 4;
-    let alpha = u32::from(pixels.bytes[offset + 3]);
-    if alpha < 96 {
+fn inked(pixels: &SharedPixelBuffer<Rgba8Pixel>, x: usize, y: usize, ink: [u8; 4]) -> bool {
+    let pixel = pixels.as_slice()[y * pixels.width() as usize + x];
+    if pixel.a < 96 {
         return false;
     }
-    // What: `iter().take(3).enumerate()` walks red, green, and blue with their index; `*expected` reads the byte.
-    // Why: Alpha is compared separately; only the color channels are unpremultiplied.
-    //
-    // In TS you'd write (pseudocode):
-    // ```ts
-    // ink.slice(0, 3).forEach((expected, channel) => { ... });
-    // ```
-    for (channel, expected) in ink.iter().take(3).enumerate() {
-        let straight = u32::from(pixels.bytes[offset + channel]) * 255 / alpha;
-        if straight.abs_diff(u32::from(*expected)) > 16 {
+    for (found, expected) in [pixel.r, pixel.g, pixel.b].iter().zip(ink.iter()) {
+        if found.abs_diff(*expected) > 16 {
             return false;
         }
     }
@@ -189,11 +190,11 @@ fn inked(pixels: &SourcePixels, x: usize, y: usize, ink: [u8; 4]) -> bool {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function columns(view: ShapedView, pixels: SourcePixels, left: number, right: number, ink: Rgba): (number | undefined)[];
+/// function columns(view: ShapedView, pixels: Pixels, left: number, right: number, ink: Rgba): (number | undefined)[];
 /// ```
 fn columns(
     view: &ShapedView,
-    pixels: &SourcePixels,
+    pixels: &SharedPixelBuffer<Rgba8Pixel>,
     span: (usize, usize),
     ink: [u8; 4],
 ) -> Vec<Option<f32>> {
@@ -329,14 +330,14 @@ fn virtual_rows_paint_above_the_code_row_and_never_in_it() {
     let (view, pixels) = painted(source, &annotated, DARK);
     let (_, bare) = painted(source, &Visible::default(), DARK);
     assert_eq!(view.rows[0].top, shown.height());
-    assert_eq!(pixels.height as usize, bare.height as usize + height);
+    assert_eq!(pixels.height() as usize, bare.height() as usize + height);
     let gap = BLOCK_GAP as usize;
     let row = ROW_HEIGHT as usize;
     // The gap above the block is empty.
     for y in 0..gap {
-        for x in 0..pixels.width as usize {
-            let offset = (y * pixels.width as usize + x) * 4;
-            assert_eq!(pixels.bytes[offset + 3], 0, "ink in the gap at {x},{y}");
+        for x in 0..pixels.width() as usize {
+            let pixel = pixels.as_slice()[y * pixels.width() as usize + x];
+            assert_eq!(pixel.a, 0, "ink in the gap at {x},{y}");
         }
     }
     // One ink per row: the hint row, then the error row, then the information row.
@@ -358,17 +359,27 @@ fn virtual_rows_paint_above_the_code_row_and_never_in_it() {
             }
         }
     }
-    // The code rows are pixel for pixel the rows of the text without annotations, moved down by the block.
-    let width = pixels.width as usize;
+    // The code rows are the rows of the text without annotations, moved down by the block.
+    // Two renders of one scene may differ by one level in a few texels, and no more.
+    let width = pixels.width() as usize;
     let rows = 2 * CODE_ROW as usize;
     for y in 0..rows {
-        let with = (y + height) * width * 4;
-        let without = y * width * 4;
-        assert_eq!(
-            pixels.bytes[with..with + width * 4],
-            bare.bytes[without..without + width * 4],
-            "code row pixels differ in tile row {y}"
-        );
+        let with = (y + height) * width;
+        let without = y * width;
+        for x in 0..width {
+            let (a, b) = (pixels.as_slice()[with + x], bare.as_slice()[without + x]);
+            let premultiplied =
+                |value: u8, alpha: u8| return (u32::from(value) * u32::from(alpha) / 255) as u8;
+            let level = premultiplied(a.r, a.a)
+                .abs_diff(premultiplied(b.r, b.a))
+                .max(premultiplied(a.g, a.a).abs_diff(premultiplied(b.g, b.a)))
+                .max(premultiplied(a.b, a.a).abs_diff(premultiplied(b.b, b.a)))
+                .max(a.a.abs_diff(b.a));
+            assert!(
+                level <= RENDER_NOISE,
+                "code row pixels differ by {level} at {x},{y} in tile row {y}"
+            );
+        }
     }
     // The texts start where their positions are: the hint above character 9, the error above character 12.
     let frame = view.annotations.as_ref().expect("annotation frame");
@@ -425,9 +436,7 @@ fn selected_underlines_take_the_selected_ink() {
         selected,
         dark: false,
     };
-    let pixels = TextRaster::new()
-        .paint(&view, colors, 0.0)
-        .expect("source tile");
+    let pixels = rendered_tile(&view, colors, 0.0);
     let boundary = view.rows[0].caret_x(9, 1.0) as usize;
     let end = view.rows[0].caret_x(19, 1.0) as usize;
     let inside = columns(&view, &pixels, (2, boundary - 2), selected);
@@ -474,7 +483,7 @@ fn annotation_inks_follow_the_scheme() {
     };
     for (inks, other) in [(DARK, LIGHT), (LIGHT, DARK)] {
         let (_, pixels) = painted(source, &visible, inks);
-        let all = (0, pixels.height as usize);
+        let all = (0, pixels.height() as usize);
         let own_error = count(&pixels, all, inks.error);
         let own_hint = count(&pixels, all, inks.hint);
         let foreign = count(&pixels, all, other.error) + count(&pixels, all, other.hint);

@@ -74,7 +74,8 @@ pub(super) fn log_rendering_stage(state: &RenderingState) {
 
 /// What:
 ///  Log the size events and redraw requests the windowing system delivers.
-///  The stages of each draw are logged by the window's one rendering notifier (`gpu_tile`), which calls
+///  The stages of each draw are logged by the window's one rendering notifier (`gpu_tile`),
+/// which calls
 ///  [`log_rendering_stage`].
 /// Why:
 ///  The stamp of a size event,

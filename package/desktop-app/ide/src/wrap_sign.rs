@@ -26,7 +26,7 @@ use anyhow::Result;
 /// Glyph ids tell a displayable symbol from the font's missing-glyph box.
 use parley::PositionedLayoutItem;
 /// The arrow's path.
-use vello::kurbo::BezPath;
+use vello::kurbo::{Affine, BezPath};
 
 /// IntelliJ's `SOFT_WRAP_SIGN_COLOR` in the Default scheme,
 /// which the Darcula scheme inherits:
@@ -164,7 +164,8 @@ impl TextShaper {
     /// so the symbol is the one the coverage check shaped.
     ///
     /// # Errors
-    /// The symbol's layout holds an inline box, which source text never produces.
+    /// The symbol's layout holds an inline box,
+    /// which source text never produces.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -178,12 +179,7 @@ impl TextShaper {
                 let layout = self.line_layout(&character.to_string(), scale, &[], &[]);
                 let advance = layout.full_width();
                 let left = pixel_width as f32 - advance;
-                return layout_scene(
-                    &layout,
-                    (left, 0.0),
-                    SIGN_INK,
-                    (pixel_width, pixel_height),
-                );
+                return layout_scene(&layout, (left, 0.0), SIGN_INK, (pixel_width, pixel_height));
             }
             Sign::Arrow => {
                 return Ok(arrow_scene(pixel_width, pixel_height, scale));
@@ -206,17 +202,17 @@ impl TextShaper {
 /// ```
 fn arrow_scene(width: u32, height: u32, scale: f32) -> TileScene {
     let cell = width as f32 / scale;
-    let (stem, turn, tip) = (cell * 0.3, 15.0, cell - 2.0);
-    let unit = f64::from(scale);
-    let at = |x: f32, y: f32| return (f64::from(x) * unit, f64::from(y) * unit);
-    // The stem and the horizontal run, then the two strokes of the head, in logical pixels scaled to physical.
+    let (stem, turn, tip) = (f64::from(cell * 0.3), 15.0_f64, f64::from(cell - 2.0));
+    // The stem and the horizontal run, then the two strokes of the head, in logical pixels,
+    // scaled to physical pixels as a whole.
     let mut path = BezPath::new();
-    path.move_to(at(stem, 6.0));
-    path.line_to(at(stem, turn));
-    path.line_to(at(tip, turn));
-    path.move_to(at(tip - 4.0, turn - 4.0));
-    path.line_to(at(tip, turn));
-    path.line_to(at(tip - 4.0, turn + 4.0));
+    path.move_to((stem, 6.0));
+    path.line_to((stem, turn));
+    path.line_to((tip, turn));
+    path.move_to((tip - 4.0, turn - 4.0));
+    path.line_to((tip, turn));
+    path.line_to((tip - 4.0, turn + 4.0));
+    path.apply_affine(Affine::scale(f64::from(scale)));
     let items = [Item::Stroke(StrokeItem {
         path,
         width: 1.25 * scale,

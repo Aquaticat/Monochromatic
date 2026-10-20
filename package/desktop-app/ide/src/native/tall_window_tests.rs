@@ -12,11 +12,6 @@ use super::render::{tile_cap, viewport_of};
 use super::rows::{absorb, settle};
 /// Exact window sizes for the text width.
 use super::sidebar_tests::{TEXT_LEFT, minimap_beside};
-/// The open reader and the pixels of the shown image.
-use super::{
-    tile_reads::shown,
-    wrap_tests::{long_text, measured, open},
-};
 /// The worker's pass gate,
 /// the tile that is wanted,
 /// and the placement of the view.
@@ -25,6 +20,11 @@ use super::{
     tile::{TileBounds, requested},
     tile_build::PASS_GATE,
     viewport::{holds as window_holds, place},
+};
+/// The open reader and the pixels of the shown image.
+use super::{
+    tile_reads::shown,
+    wrap_tests::{long_text, measured, open},
 };
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;

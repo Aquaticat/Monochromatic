@@ -1,4 +1,6 @@
-//! Repeatable raster comparison and stage timings for a viewport-sized source fixture.
+//! Repeatable raster comparison and stage timings for a viewport-sized source fixture,
+//!  through the minimap's rasterizer (the code view is drawn on the GPU;
+//! this rasterizer stays until stage 5).
 
 /// What:
 ///  Imports the same document,
@@ -13,7 +15,7 @@
 /// ```
 use ide_app::{
     document::Document,
-    shaped_text::{TextShaper, Viewport},
+    shaped_text::{ShapedView, TextShaper, Viewport},
     text_raster::{CodeColors, TextRaster},
 };
 /// What:
@@ -101,7 +103,7 @@ fn repeated_viewport_renders_preserve_pixels() {
         // const pixels = raster.paint(view, colors, 0);
         // ```
         let pixels = raster
-            .paint(&view, colors, 0.0)
+            .paint_onto(&view, colors, 0.0, blank(&view))
             .expect("render viewport fixture");
         let painted = start.elapsed() - shaped;
         // Test diagnostics deliberately report measured stage durations.
@@ -119,4 +121,10 @@ fn repeated_viewport_renders_preserve_pixels() {
         // Move the owned byte vector instead of cloning its allocation.
         previous = pixels.bytes;
     }
+}
+
+/// A raster-sized blank buffer for the minimap's rasterizer,
+/// which paints over what it is given.
+fn blank(view: &ShapedView) -> Vec<u8> {
+    return vec![0; (u64::from(view.width) * u64::from(view.height) * 4) as usize];
 }

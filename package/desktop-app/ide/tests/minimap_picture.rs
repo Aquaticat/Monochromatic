@@ -33,7 +33,9 @@ use ide_app::minimap::{
 /// The vertical mapping.
 use ide_app::row_map::{CODE_ROW, RowMap};
 /// Shaping and the frame it prepares.
-use ide_app::shaped_text::{TextShaper, Viewport, raster_fits, raster_width};
+use ide_app::shaped_text::{
+    TextShaper, Viewport, raster_fits, raster_width, set_texture_dimension,
+};
 /// Syntax classes.
 use ide_app::source_style::StyleSpan;
 /// The painter and its palette.
@@ -255,6 +257,9 @@ fn whole_frame(fixture: &Fixture, fills: Fills, view: f32, width: f32) -> (Vec<u
     let out_width = ((width * scale).round() as usize).max(1);
     let out_height =
         (f64::from(fixture.map.height()) * f64::from(scale) * ratio - 1e-3).ceil() as usize;
+    // The reference is a CPU raster of the whole text in one frame; it is never a GPU texture,
+    // so the device's texture size (8192 pixels unless a device says more) does not bound it.
+    set_texture_dimension(u32::MAX);
     let mut shaper = TextShaper::new();
     let mut raster = TextRaster::new();
     let lines = fixture.document.text().len_lines();

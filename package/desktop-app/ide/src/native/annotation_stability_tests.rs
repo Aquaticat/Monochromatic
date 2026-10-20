@@ -18,8 +18,6 @@
 
 /// The window whose scroll the tests drive.
 use super::AppWindow;
-/// Two renders of one scene differ by one level in a few texels on the GPU.
-use super::tile_reads::same_texel;
 /// The production setter and the stamp of the displayed text.
 use super::annotate::{displayed, set_annotations};
 /// The frame reader.
@@ -33,6 +31,8 @@ use super::find_tests::{Reader, reader};
 /// The clock the scrolling rule reads,
 /// which a test holds and moves.
 use super::rows::hold_clock;
+/// Two renders of one scene differ by one level in a few texels on the GPU.
+use super::tile_reads::same_texel;
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
 /// Snapshot records exactly as the Language module builds them.

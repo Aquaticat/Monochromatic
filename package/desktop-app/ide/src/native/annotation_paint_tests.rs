@@ -9,8 +9,6 @@
 use super::AppWindow;
 /// The production setter and the stamp of the displayed text.
 use super::annotate::{displayed, set_annotations};
-/// The size of the tile's texture, read after a frame.
-use super::tile_reads::tile_size;
 /// Snapshot builders,
 ///  the fixture,
 ///  the painted-record counts,
@@ -18,6 +16,9 @@ use super::tile_reads::tile_size;
 use super::annotation_tests::{FIXTURE, TEXT_LEFT, TEXT_TOP, annotate, painted as shown, problem};
 /// The complete reader fixture.
 use super::find_tests::{Reader, reader};
+/// The size of the tile's texture,
+/// read after a frame.
+use super::tile_reads::tile_size;
 /// Snapshot records.
 use ide_app::language::diagnostics::{DiagnosticsSnapshot, Severity, SourceGroup};
 /// The heights virtual rows are built from.

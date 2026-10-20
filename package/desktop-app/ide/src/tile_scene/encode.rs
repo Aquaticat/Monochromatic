@@ -3,7 +3,9 @@
 
 /// The items to write.
 use super::Item;
-/// Vello's scene, shapes, and brushes.
+/// Vello's scene,
+/// shapes,
+/// and brushes.
 use vello::{
     Scene,
     kurbo::{Affine, Cap, Join, Rect, Stroke},
@@ -30,7 +32,8 @@ fn brush(ink: [u8; 4]) -> Color {
 /// Why:
 ///  The window thread and the tile worker both end a build here,
 ///  so the scene of a tile does not depend on which of them built it.
-///  Glyphs are drawn unhinted at their fractional positions, as the layout placed them.
+///  Glyphs are drawn unhinted at their fractional positions,
+/// as the layout placed them.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
