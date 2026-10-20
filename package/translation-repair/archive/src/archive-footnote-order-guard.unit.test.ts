@@ -29,9 +29,18 @@ function ownerOf(
     0,
     text.indexOf(note,),
   );
-  return [ ...before.matchAll(/^\[\^([^\]]+)\]:/gmu,), ].at(-1,)
-    ?.[1]
-    ?? '';
+  /**
+   The last line before the note that opens a definition.
+   */
+  const opener = before.split('\n',)
+    .filter(function opensDefinition(line,): boolean {
+      return line.startsWith('[^',) && line.includes(']:',);
+    },)
+    .at(-1,);
+  return opener?.slice(
+    2,
+    opener.indexOf(']:',),
+  ) ?? '';
 }
 
 await describe({
@@ -116,6 +125,43 @@ await describe({
         expect(ownerOf({ text: result.text, note: CAT_NOTE })).toBe('1');
         expect(result.text).toBe(text);
         expect(result.note).toBeDefined();
+      },
+    }),
+    it({
+      name: 'keeps the order when a tab-indented note follows the last definition after a blank line',
+      fn: async () => {
+        const text = `Body[^1][^2].\n\n[^2]: Mochi naps.\n\n[^1]: Biscuit purrs.\n\n\t${CAT_NOTE}\n`;
+        const result = reorderFootnoteDefinitions({ text, order: ['1', '2'] });
+        expect(result.text).toBe(text);
+        expect(result.note).toBeDefined();
+      },
+    }),
+    it({
+      name: 'moves the definitions past a note that closes the page on a line of its own',
+      fn: async () => {
+        const text = `Body[^1][^2].\n\n[^2]: Mochi naps.\n\n[^1]: Biscuit purrs.\n\n${CAT_NOTE}\n`;
+        const result = reorderFootnoteDefinitions({ text, order: ['1', '2'] });
+        expect(result.text).toBe(`Body[^1][^2].\n\n[^1]: Biscuit purrs.\n\n[^2]: Mochi naps.\n\n${CAT_NOTE}\n`);
+        expect(result.changed).toBe(true);
+        expect(result.note).toBeUndefined();
+      },
+    }),
+    it({
+      name: 'moves the definitions past a heading on the line under the last definition',
+      fn: async () => {
+        const text = 'Body[^1][^2].\n\n[^2]: Mochi naps.\n\n[^1]: Biscuit purrs.\n## Cats\n';
+        const result = reorderFootnoteDefinitions({ text, order: ['1', '2'] });
+        expect(result.text).toBe('Body[^1][^2].\n\n[^1]: Biscuit purrs.\n\n[^2]: Mochi naps.\n## Cats\n');
+        expect(result.note).toBeUndefined();
+      },
+    }),
+    it({
+      name: 'moves the definitions past a note indented two columns after a blank line',
+      fn: async () => {
+        const text = `Body[^1][^2].\r\n\r\n[^2]: Mochi naps.\r\n\r\n[^1]: Biscuit purrs.\r\n\r\n  ${CAT_NOTE}\r\n`;
+        const result = reorderFootnoteDefinitions({ text, order: ['1', '2'] });
+        expect(result.text).toBe(`Body[^1][^2].\r\n\r\n[^1]: Biscuit purrs.\r\n\r\n[^2]: Mochi naps.\r\n\r\n  ${CAT_NOTE}\r\n`);
+        expect(result.changed).toBe(true);
       },
     }),
   ],
