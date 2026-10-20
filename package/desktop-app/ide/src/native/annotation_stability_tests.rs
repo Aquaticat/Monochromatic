@@ -32,7 +32,7 @@ use super::find_tests::{Reader, reader};
 /// which a test holds and moves.
 use super::rows::hold_clock;
 /// Two renders of one scene differ by one level in a few texels on the GPU.
-use super::tile_reads::same_texel;
+use super::tile_reads::{same_pixels, same_texel};
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
 /// Snapshot records exactly as the Language module builds them.
@@ -317,7 +317,10 @@ fn moved(
     let skip = letter_room(line);
     for row in 0..rows {
         assert!(
-            band(before.0, from + row as f32)[skip..] == band(after.0, to + row as f32)[skip..],
+            same_pixels(
+                &band(before.0, from + row as f32)[skip..],
+                &band(after.0, to + row as f32)[skip..]
+            ),
             "line {line} changed its pixels in row {row} of its code row"
         );
     }
@@ -405,7 +408,7 @@ fn rows_arriving_in_view_move_only_lines_beneath_them() {
     let mut y = TEXT_TOP;
     while y < TEXT_TOP + first_block {
         assert!(
-            band(&plain.0, y) == band(&hinted.0, y),
+            same_pixels(band(&plain.0, y), band(&hinted.0, y)),
             "a pixel above the first changed line moved in window row {y}"
         );
         y += 1.0;
@@ -448,7 +451,7 @@ fn rows_arriving_in_view_move_only_lines_beneath_them() {
     let mut above = TEXT_TOP;
     while above < TEXT_TOP + first_changed {
         assert!(
-            band(&hinted.0, above) == band(&diagnosed.0, above),
+            same_pixels(band(&hinted.0, above), band(&diagnosed.0, above)),
             "a pixel above the first changed line moved in window row {above}"
         );
         above += 1.0;
@@ -624,7 +627,7 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
     let mut y = TEXT_TOP;
     while y < TEXT_TOP + shown.block_top(104) - (offset + row) {
         assert!(
-            band(&before, y) == band(&after, y),
+            same_pixels(band(&before, y), band(&after, y)),
             "a visible pixel above the new row moved in window row {y}"
         );
         y += 1.0;
@@ -731,11 +734,60 @@ fn a_reload_holds_row_space_until_annotations_return() {
     let mut back = TEXT_TOP;
     while back < TEXT_TOP + returned.1.block_top(12) {
         assert!(
-            band(&annotated.0, back) == band(&returned.0, back),
+            same_pixels(band(&annotated.0, back), band(&returned.0, back)),
             "window row {back} differs after the annotations returned"
         );
         back += 1.0;
     }
+}
+
+/// The tolerance of the compares that straddle a re-render is the measured render noise and nothing more:
+///  one level in a texel passes,
+///  two levels do not,
+///  and a frame shifted by one row,
+///  the smallest real movement,
+///  does not.
+/// This is the positive control of every compare in this file that accepts the noise,
+///  such as `moved` and the rows above a changed line.
+#[test]
+fn the_noise_tolerance_tells_a_shifted_row_from_a_re_render() {
+    let (_directory, reader) = fixture_reader(&numbered(14));
+    update_timers_and_animations();
+    let shown = frame(&reader.window);
+    let top = TEXT_TOP + map(&reader).code_top(0);
+    // A glyph row of the first line: the first row of its code row that differs from the row below it by more than noise.
+    let mut found = None;
+    for row in 0..ROW_HEIGHT as usize {
+        let y = top + row as f32;
+        if !same_pixels(band(&shown, y), band(&shown, y + 1.0)) {
+            found = Some(y);
+            break;
+        }
+    }
+    let y = found.expect("a code row with glyph pixels");
+    let original = band(&shown, y).to_vec();
+    // The first pixel with room to move in both directions.
+    let at = original
+        .iter()
+        .position(|pixel| pixel.r >= 2 && pixel.r <= 253)
+        .expect("a pixel whose red can move by two levels");
+    let moved_by = |levels: i16| {
+        let mut changed = original.clone();
+        changed[at].r = (i16::from(changed[at].r) + levels) as u8;
+        return changed;
+    };
+    assert!(
+        same_pixels(&original, &moved_by(1)) && same_pixels(&original, &moved_by(-1)),
+        "one level of render noise must be accepted"
+    );
+    assert!(
+        !same_pixels(&original, &moved_by(2)) && !same_pixels(&original, &moved_by(-2)),
+        "two levels are more than the render noise"
+    );
+    assert!(
+        !same_pixels(&original, band(&shown, y + 1.0)),
+        "a frame shifted by one row must differ by more than the render noise"
+    );
 }
 
 /// Scrolling pixel by pixel across consecutive annotated lines moves the whole frame rigidly:
@@ -767,15 +819,22 @@ fn scrolling_across_annotated_lines_is_rigid() {
     let first_tile = reader.source.borrow().first;
     let mut tiles = 0;
     for offset in start + 1..=end {
+        let rendered_before = reader.source.borrow().gpu.tiles_rendered();
         window.set_scroll_y(-(offset as f32));
         update_timers_and_animations();
         let current = frame(window);
+        // A frame that drew a new tile scene is a second render of the text: Vello's render noise applies to it.
+        // Scrolling inside a tile shows the very same texture, so those frames are compared exactly.
+        let re_rendered = reader.source.borrow().gpu.tiles_rendered() != rendered_before;
         let mut y = TEXT_TOP + 1.0;
         while y < height - 1.0 {
             // The previous frame's last row is the viewport's clip edge; its pixels may be a level off (see
-            // `within_one_level`). Every other row is the previous frame's row shifted by one, exactly.
+            // `within_one_level`). Every other row is the previous frame's row shifted by one, exactly,
+            // unless the frame drew a new tile.
             let shifted = band(&previous, y + 1.0);
-            let moved = if y + 2.0 < height {
+            let moved = if re_rendered {
+                same_pixels(band(&current, y), shifted)
+            } else if y + 2.0 < height {
                 band(&current, y) == shifted
             } else {
                 within_one_level(band(&current, y), shifted)
