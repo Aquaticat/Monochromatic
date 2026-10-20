@@ -418,14 +418,6 @@ file-enforcer,
 verification,
 README.
 
-Standing warning for every agent in this worktree:
-uncommitted work is at risk of destruction at any moment
-because other sessions run git merge/reset on `main`.
-Commit early in small units,
-or do long edit batches in a linked worktree
-(`git worktree add`),
-then move the commits.
-
 ### Unknowns
 
 - Resolved:
