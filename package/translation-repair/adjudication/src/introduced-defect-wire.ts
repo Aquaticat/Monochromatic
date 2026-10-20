@@ -12,7 +12,6 @@ import {
 import {
   isJsonArray,
   isJsonRecord,
-  withoutTranslatorsNotes,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
   flattenSpace,
@@ -24,6 +23,7 @@ import {
   NARRATIVE_DETAIL_IS_NOT_APPARATUS,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { selectFence, } from '@monochromatic-dev/translation-repair-stage/ts';
+import { proberShownTexts, } from './introduced-defect-shown.ts';
 import type { RepairRegion, } from './repair-region.ts';
 
 //region Introduced-defect probe wire
@@ -420,53 +420,20 @@ export function buildIntroducedDefectMessages(
     readonly identityContext?: string;
   },
 ): IntroducedDefectPromptPlan {
-  // THE PROBER IS SHOWN THE BASELINE, THE WINDOW AND EVERY REGION WITHOUT THE
-  // NOTES THE ARCHIVE'S TRANSLATORS LEFT EACH OTHER, as the critic and the
-  // panel whose issues the edit was cut for were (`critic-prompt.ts`): no
-  // reader sees one, so an edit may neither be faulted for dropping a note nor
-  // excused for keeping one. Only what is SHOWN is cut; the regions the plan
-  // numbers are those the caller passed, and the original's own comments stay
-  // in view.
   /**
-   Texts whose comments are the original's own.
+   The baseline, the window and every region without the notes between
+   translators, as the prober reads them (`introduced-defect-shown.ts`).
    */
-  const originals = [
+  const {
+    baseline: baselineShown,
+    incumbent: incumbentShown,
+    regions: regionsShown,
+  } = proberShownTexts({
     sourceText,
-    neighbouringSourceText ?? '',
-  ].join('\n',);
-  /**
-   The baseline translation as the prober reads it.
-   */
-  const baselineShown = withoutTranslatorsNotes({
-    text: baselineText,
-    original: originals,
-  },);
-  /**
-   The existing translation next door as the prober reads it.
-   */
-  const incumbentShown = withoutTranslatorsNotes({
-    text: neighbouringIncumbentText ?? '',
-    original: originals,
-  },);
-  /**
-   Each region's two texts as the prober reads them, in region order.
-   */
-  const regionsShown = regions.map(function shownRegion(region,): {
-    readonly region: RepairRegion;
-    readonly before: string;
-    readonly editorAfter: string;
-  } {
-    return {
-      region,
-      before: withoutTranslatorsNotes({
-        text: region.before,
-        original: originals,
-      },),
-      editorAfter: withoutTranslatorsNotes({
-        text: region.editorAfter,
-        original: originals,
-      },),
-    };
+    baselineText,
+    regions,
+    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+    ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
   },);
 
   /**
