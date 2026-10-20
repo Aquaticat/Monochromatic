@@ -565,5 +565,136 @@ await describe({
         ],);
       },
     },),
+    it({
+      name: 'KEEPS A NUMBER ON EVERY HEADING WHERE THE ARCHIVE HEADS THE SERIES BY NAME ALONE (XingZ6015, '
+        + '2026-10-20): the lanes rendered "Part One:" to "Part Four:" and the page dropped all of them to '
+        + 'match the archive, nine numbers lost; the series takes the house style "Part One:"',
+      fn: async () => {
+        /**
+         Four sections: the archive heads the first three by name alone and never headed the fourth.
+         */
+        const slices = [
+          ARCHIVED[0] as ChunkPair,
+          ARCHIVED[1] as ChunkPair,
+          ARCHIVED[2] as ChunkPair,
+          section({
+            sliceIndex: 3,
+            source: '### 其四：花猫',
+            target: '',
+          },),
+        ];
+        const unified = unifyHeadingSeries({
+          slices,
+          replacements: [
+            rendered({
+              sliceIndex: 0,
+              heading: '### Part One: Ginger',
+            },),
+            rendered({
+              sliceIndex: 1,
+              heading: '### Part Two: Sooty',
+            },),
+            rendered({
+              sliceIndex: 2,
+              heading: '### Snowy',
+            },),
+            rendered({
+              sliceIndex: 3,
+              heading: '### The Fourth: Patches',
+            },),
+          ],
+        },);
+        expect(headingsOf({ replacements: unified.replacements, },),).toEqual([
+          '### Part One: Ginger',
+          '### Part Two: Sooty',
+          '### Part Three: Snowy',
+          '### Part Four: Patches',
+        ],);
+      },
+    },),
+    it({
+      name: 'GIVES THE SAME STYLE WHATEVER THE LANES WROTE: one original and one bare archive, three different '
+        + 'sets of renderings (all bare, a "Roman" majority, a "Part" majority), one shipped series',
+      fn: async () => {
+        /**
+         Headings shipped for one set of renderings.
+         */
+        const shipped = function shipped(headings: readonly string[],): readonly string[] {
+          return headingsOf({ replacements: unifyHeadingSeries({
+            slices: ARCHIVED,
+            replacements: headings.map(function row(
+              heading,
+              sliceIndex,
+            ) {
+              return rendered({
+                sliceIndex,
+                heading,
+              },);
+            },),
+          },).replacements, },);
+        };
+        /**
+         The series every run must ship.
+         */
+        const expected = [
+          '### Part One: Ginger',
+          '### Part Two: Sooty',
+          '### Part Three: Snowy',
+        ];
+        expect(shipped(['### Ginger', '### Sooty', '### Snowy',],),).toEqual(expected,);
+        expect(shipped(['### I: Ginger', '### II: Sooty', '### Snowy',],),).toEqual(expected,);
+        expect(shipped(['### Part One: Ginger', '### Part Two: Sooty', '### Part Three: Snowy',],),).toEqual(expected,);
+      },
+    },),
+    it({
+      name: 'TAKES THE HOUSE STYLE where the archive never headed the series or headed it in two styles, and '
+        + 'names the house style in the finding',
+      fn: async () => {
+        /**
+         Renderings that would, by plurality, have dropped every number.
+         */
+        const bare = [
+          rendered({
+            sliceIndex: 0,
+            heading: '### Ginger',
+          },),
+          rendered({
+            sliceIndex: 1,
+            heading: '### Sooty',
+          },),
+          rendered({
+            sliceIndex: 2,
+            heading: '### Part 3: Snowy',
+          },),
+        ];
+        const silent = unifyHeadingSeries({
+          slices: SLICES,
+          replacements: bare,
+        },);
+        expect(headingsOf({ replacements: silent.replacements, },),).toEqual([
+          '### Part One: Ginger',
+          '### Part Two: Sooty',
+          '### Part Three: Snowy',
+        ],);
+        expect(silent.findings[0],).toContain('the house style',);
+        const mixed = unifyHeadingSeries({
+          slices: [
+            section({
+              sliceIndex: 0,
+              source: '### 其一：橘猫',
+              target: '### One: Ginger',
+            },),
+            PARTED[1] as ChunkPair,
+            PARTED[2] as ChunkPair,
+          ],
+          replacements: bare,
+        },);
+        expect(headingsOf({ replacements: mixed.replacements, },),).toEqual([
+          '### Part One: Ginger',
+          '### Part Two: Sooty',
+          '### Part Three: Snowy',
+        ],);
+      },
+    },),
   ],
 },);
