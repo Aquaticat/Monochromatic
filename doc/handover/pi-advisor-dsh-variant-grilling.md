@@ -214,6 +214,21 @@ Authoritative task state,
   guardrail,
   and thinking-default `src/mise.verify-extension.ts`,
   mirroring the search-fetch fake.
+- `3b9bb3ad6b` `fix(agent-harness-shared-shell-command-analyzer): parse unbash 6 TestLogical operands`:
+  `visit-expression.ts` maps `operands`,
+  dead `Time`/`Negation` branch removed in `visit-node.ts`,
+  2-way and 3-way TestLogical cases added.
+- `fce8efd40e` `fix(pi-plugin-current-time-context): fill hiddenTools and messageType in the test harness`:
+  `pi-test-harness.ts` fixture updates for pi-coding-agent 1.3.0.
+- `ad7a5a67b4` `fix(pi-plugin-terminal-title): narrow before_agent_start to its user variant`:
+  handler reads `prompt` only on `messageType: 'user'`,
+  custom runs skip the prompt title (new test case).
+- `22f130ed5b` `fix(pi-plugin-model-retirement): regenerate the retirement table fixture for the 2026-10-15 catalog`:
+  regenerated with the documented task after reviewing the retirement diff.
+- `ea2812babc` `fix(cli-unused-export): adopt the yuku-analyzer 0.19.0 API`:
+  `addFile` to `setFile`,
+  `referencesOf` to `Binding.findReferences`,
+  `Diagnostic.module` to `Diagnostic.path`.
 
 ### Decisions since the interview
 
@@ -221,65 +236,94 @@ Authoritative task state,
   not only this series' regressions.
 - 2026-10-20 user directive: keep this handover current,
   updating it as work lands.
+- 2026-10-20 user directive: use subagents aggressively,
+  delegating independent workstreams in parallel.
+- `defaultReviewerModel` stays user config only
+  (`~/.pi/agent/extensions/pi-advisor.json`,
+  value `opencode-go/kimi-k3`),
+  never a schema default.
 
-### Pre-existing failures measured (fix authorized, queued)
+### Pre-existing failures: measured, swept, fixed
 
 Measured 2026-10-20 through package `lint:types` runs.
 None of these files are in this series' diff,
 and no dependency version moved in the move commit.
 
-- `agent-harness-shared/shell-command-analyzer`:
-  TS2339 on `TestLogicalExpression` and `Negation`/`Time` intersections with
-  `FOREIGN_BORROWED_MARKER` in `src/visit-expression.ts` and `src/visit-node.ts`.
-  Fails standalone,
-  so ambient.
-  Blocks guardrail and terminal-title lint.
-- `pi-plugin/current-time-context`:
-  TS2322 `NormalizedBuildSystemPromptOptions` fixture in `src/pi-test-harness.ts`
-  (regression class of `c5d262a7b`).
-- `pi-plugin/terminal-title`:
-  `BeforeAgentStartEvent` drift (TS2769,
-  TS2344,
-  TS2322 in `src/index.ts`,
-  TS2352 in `src/index.unit.test.ts`),
-  plus the shell-command-analyzer block.
-- `pi-plugin/model-retirement`:
-  characterization fixture predates the 2026-10-15 catalog (1604 entries,
-  stamp 2026-10-01) versus installed (1714 entries,
-  stamp 2026-10-15);
-  regenerate and review the fixture.
-- Unexercised surfaces at this point:
-  `lint:types` for every package outside the named set,
-  and `test:unit` for packages this series does not touch.
+Fixed with the commits recorded in `### Commits`:
+
+- `agent-harness-shared/shell-command-analyzer` (unbash 6.0.0 AST reshape),
+  `pi-plugin/current-time-context`,
+  `pi-plugin/terminal-title`,
+  `pi-plugin/model-retirement` (catalog drift fixture),
+  `cli/unused-export` (yuku-analyzer 0.19.0 API).
+
+Full sweep 2026-10-20: 213 packages with a `lint:types` task,
+170 pass,
+43 fail.
+Of the 43:
+1 real API drift (`cli/unused-export`,
+now fixed),
+38 build-class (`translation-repair/*`,
+`module/async-time`,
+`module/logger`,
+`module/test`;
+missing or stale `dist`),
+and 4 false positives (`config/typescript`,
+`test-fixture/oxlint-*`,
+whose `lint:types` tasks are commented out on purpose;
+the sweep matched the comment text).
+
+Delegated 2026-10-20 (subagents,
+disjoint write scopes):
+
+- extraction fork `40eef920`: `package/agent-harness-shared/advisor` (new)
+  plus `package/pi-plugin/advisor` rewiring;
+  lockfile and `config/pnpr` changes belong to this scope alone.
+- docs subagent `94e9414e`: `doc/troubleshooting/*` only,
+  the 2026-10 dependency API drift write-up.
+- sweep subagent `25c55b61`: the 38 build-class packages only.
+
+The lead holds `doc/handover/` edits and cross-agent integration.
 
 ### Unknowns
 
-- Whether the shell-command-analyzer TS2339s come from the TypeScript
-  7.1.0-beta toolchain,
-  the `ownership-marker` branding,
-  or the AST typings;
-  diagnose before choosing the fix.
-- Whether more packages fail `lint:types` until the full sweep runs.
+- Resolved:
+  the shell-command-analyzer TS2339s were the unbash 6.0.0 AST reshape,
+  not the TypeScript toolchain or the ownership branding.
+- Whether any of the 38 build-class `lint:types` failures hide a real
+  source drift behind the missing `dist`;
+  the sweep subagent rebuilds before concluding.
 
 ## Next action
 
 Implementation,
- in this order (user directive 2026-10-20: fix pre-existing failures too):
+ in this order (user directives 2026-10-20: fix pre-existing failures too;
+ use subagents aggressively):
 
 1. DONE,
    commit `b710410e81`: move `package/pi-shared/model-selection` to
    `package/agent-harness-shared/model-selection`
    (dir plus name plus consumers).
-2. Fix the measured pre-existing failures:
-   shell-command-analyzer TS2339,
-   current-time-context fixture,
-   terminal-title event drift,
-   and model-retirement fixture;
-   then sweep every package `lint:types`
-   and fix whatever else is red.
-3. Extract the shared core `package/agent-harness-shared/advisor`
-   (middle depth per Q7)
-   and rewire `package/pi-plugin/advisor` onto it in the same series.
+2. DONE: fix the measured pre-existing failures
+   (`3b9bb3ad6b`,
+   `fce8efd40e`,
+   `ad7a5a67b4`,
+   `22f130ed5b`,
+   `ea2812babc`,
+   `c8d9af87d5`)
+   and sweep every package `lint:types`
+   (213 packages,
+   170 pass,
+   43 red triaged as above).
+3. IN PARALLEL (subagents,
+   2026-10-20):
+   extract the shared core `package/agent-harness-shared/advisor`
+   and rewire `package/pi-plugin/advisor`
+   (fork `40eef920`);
+   write the `doc/troubleshooting/` dependency API drift record
+   (`94e9414e`);
+   fix the 38 build-class reds
+   (`25c55b61`).
 4. Build `package/dsh-plugin/advisor` (in-process plugin,
    tool plus `/advisor` command, unified config,
    `ctx.llm` backend, Q12 selection rule).
