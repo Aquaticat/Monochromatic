@@ -16,7 +16,6 @@ import {
   type SimpleStreamOptions,
   type Usage,
 } from '@earendil-works/pi-ai';
-import type { ExtensionContext, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 import type {
   ForeignBorrowed,
@@ -28,6 +27,7 @@ import { AdvisorCompletionError, } from './advisor-completion-error.ts';
 import { ADVISOR_SYSTEM_PROMPT, } from './constants.ts';
 import { buildAdvisorUserMessageText, } from './advisor-request.ts';
 import { assertAdvisorEndpointOutputCapacity, } from './output-eligibility.ts';
+import type { AdvisorModelResolution, } from './ports.ts';
 import type {
   AdvisorConfig,
   AdvisorContext,
@@ -62,9 +62,9 @@ const ADVISOR_REASONING_LEVELS_BELOW_MAX: ReadonlySet<ModelThinkingLevel> = new 
  */
 type CompleteAdvisorModelOptions = {
   /**
-   Pi extension context that owns provider registrations.
+   Model-resolution port that owns provider registrations.
    */
-  readonly ctx: ForeignHostCapability<ExtensionContext>;
+  readonly ctx: ForeignHostCapability<AdvisorModelResolution>;
   /**
    Selected Advisor model.
    */
@@ -124,7 +124,6 @@ async function defaultCompleteAdvisorModel(
    Registered provider implementation for selected Advisor model.
    */
   const provider = ctx
-    .modelRegistry
     .getProvider(model.provider,);
   if (provider === undefined) {
     throw new Error(
@@ -159,9 +158,9 @@ export type CompleteAdvisorModel = typeof defaultCompleteAdvisorModel;
  */
 export type CompleteAdvisorOptions = ForeignHostCapability<{
   /**
-   Pi extension context, used for auth lookup.
+   Model-resolution port, used for auth lookup.
    */
-  readonly ctx: ForeignHostCapability<ExtensionContext>;
+  readonly ctx: ForeignHostCapability<AdvisorModelResolution>;
   /**
    Selected Advisor model handed to provider runtime.
    */
@@ -254,11 +253,10 @@ export async function requestAdvisor(
       .maxAdvisorOutputTokens,
   },);
   /**
-   Request auth resolved through pi's model registry.
+   Request auth resolved through the model-resolution port.
    */
   const auth = await options
     .ctx
-    .modelRegistry
     .getApiKeyAndHeaders(mutableModel,);
   if (!auth.ok) {
     throw new Error(

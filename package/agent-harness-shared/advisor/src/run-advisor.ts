@@ -157,7 +157,8 @@ export async function runAdvisor(options: ForeignHostCapability<AdvisorRunOption
       throw new Error(`advisor: ${input.candidate
         .model} left the effective scope before dispatch`,);
     return await requestAdvisor({
-      ctx: options.ctx,
+      ctx: options.ctx
+        .modelRegistry,
       model: candidate.scopedModel
         .model,
       config: options.config,

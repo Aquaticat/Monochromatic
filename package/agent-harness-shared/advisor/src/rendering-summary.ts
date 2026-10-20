@@ -4,7 +4,7 @@
  @module
  */
 
-import type { Theme, } from '@earendil-works/pi-coding-agent';
+import type { AdvisorTheme, } from './ports.ts';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { ADVISOR_TOOL_NAME, } from './constants.ts';
 import type { AdvisorDetails, } from './types.ts';
@@ -56,7 +56,7 @@ export function renderAdvisorSummary(
     readonly text: string;
     readonly details: AdvisorDetails;
     readonly expanded: boolean;
-    readonly theme: ForeignHostCapability<Theme>;
+    readonly theme: ForeignHostCapability<AdvisorTheme>;
   },
 ): string {
   /**
@@ -248,7 +248,7 @@ function formatHeader(
     theme,
   }: {
     readonly details: AdvisorDetails;
-    readonly theme: ForeignHostCapability<Theme>;
+    readonly theme: ForeignHostCapability<AdvisorTheme>;
   },
 ): string {
   /**
