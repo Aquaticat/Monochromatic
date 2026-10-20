@@ -140,11 +140,17 @@ export function buildAdvisorContext(
   }
 
   /**
+   LLM messages converted from included session messages.
+   */
+  const llmMessages = options
+    .transcript
+    .convertToLlm(messages,);
+  /**
    Serialized conversation produced by the host transcript seam.
    */
   const serialized = options
     .transcript
-    .serializeConversation(options.transcript.convertToLlm(messages,),);
+    .serializeConversation(llmMessages,);
   /**
    Effective truncation budget supplied by model-aware caller or config cap.
    */
@@ -171,10 +177,12 @@ export function buildAdvisorContext(
   /**
    Estimated request input tokens.
    */
-  const estimatedInputTokens = options.transcript.estimateInputTokens({
-    systemPrompt: options.advisorSystemPrompt,
-    contextText: advisorUserMessageText,
-  },);
+  const estimatedInputTokens = options
+    .transcript
+    .estimateInputTokens({
+      systemPrompt: options.advisorSystemPrompt,
+      contextText: advisorUserMessageText,
+    },);
 
   /**
    Latest user prompt excerpt, omitted when no user prompt exists.
@@ -219,10 +227,12 @@ export function maxContextCharsForAdvisorModel(
   /**
    Input tokens consumed before serialized conversation content.
    */
-  const reservedInputTokens = options.transcript.estimateInputTokens({
-    systemPrompt: options.advisorSystemPrompt,
-    contextText: reservedUserMessageText,
-  },)
+  const reservedInputTokens = options
+    .transcript
+    .estimateInputTokens({
+      systemPrompt: options.advisorSystemPrompt,
+      contextText: reservedUserMessageText,
+    },)
     + DEFAULT_CONTEXT_OVERHEAD_TOKENS;
   /**
    Input tokens left for serialized conversation content.
