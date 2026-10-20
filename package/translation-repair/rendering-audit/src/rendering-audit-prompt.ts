@@ -1,5 +1,6 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
+import { withoutTranslatorsNotes, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { CITED_REFERENCE_AUDIT_RULE, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import { MEASUREMENT_POLICY_BLOCK, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import { selectFence, } from '@monochromatic-dev/translation-repair-stage/ts';
@@ -182,13 +183,28 @@ export function buildRenderingAuditMessages(
    */
   const references = subject.referenceContext ?? '';
 
+  // THE AUDITOR IS SHOWN THE CANDIDATE WITHOUT THE NOTES THE ARCHIVE'S
+  // TRANSLATORS LEFT EACH OTHER (`withoutTranslatorsNotes`): no reader sees one,
+  // so a note may not be filed as untranslated text, an addition or a mistake.
+  // Only what is SHOWN is cut: the answers are screened against the stored
+  // texts (`rendering-audit.ts`), and the original's own comments stay in view.
   /**
-   Fence long enough to hold every text without any of them closing it.
+   The candidate as the auditor reads it.
+   */
+  const candidateShown = withoutTranslatorsNotes({
+    text: subject.candidateText,
+    original: subject.sourceText,
+  },);
+
+  /**
+   Fence long enough to hold every text without any of them closing it, the
+   candidate as written and as shown.
    */
   const fence = selectFence({
     texts: [
       subject.sourceText,
       subject.candidateText,
+      candidateShown,
       identity,
       references,
     ],
@@ -209,7 +225,7 @@ export function buildRenderingAuditMessages(
         '',
         'CANDIDATE:',
         fence,
-        subject.candidateText,
+        candidateShown,
         fence,
         // NO BLOCK AT ALL for an empty one, as for none: a heading over an
         // empty fence invites an auditor to read the absence as a rule.
