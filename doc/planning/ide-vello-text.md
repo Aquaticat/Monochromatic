@@ -385,6 +385,8 @@ Each stage leaves the app usable and has its own check. Stages 1 and 2 are rever
 2. Renderer switch. Enable `renderer-femtovg-wgpu` and `unstable-wgpu-30`, select it in `src/launcher.rs`
    (`WGPUConfiguration::Automatic` with `Limits::default()`). Check: the existing native tests, the container
    suite, and a nested-compositor run (done once here: 118 of 119 and 120 of 121 frames).
+   Done on 2026-10-20 (section "Stage 2" of `doc/planning/ide-gpu-snapshot-harness.md`), with one change: the launcher
+   opens the device itself (`WGPUConfiguration::Manual`) because `Automatic` can pick a CPU adapter.
 3. Row scene on the GPU. A module draws a Parley layout into a Vello scene and a tile texture on the device from the
    rendering notifier; the tile re-center policy and worker stay, but the worker produces scene data, not pixels.
    Check: the structural test that scrolling inside the tile does no source work, a pixel comparison of a frame against

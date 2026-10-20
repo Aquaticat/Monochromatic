@@ -736,6 +736,543 @@ that is not comparable to the default invocation.
 An earlier reading of the filtered runs as a threefold slowdown from 21 devices opened at once was wrong:
 those runs were serial.
 
+## Stage 2: the application on FemtoVG over wgpu
+
+Stage 2 of the migration in `doc/planning/ide-vello-text.md` (design C).
+Done on 2026-10-20 on the owner's host (AMD Radeon RX 7600 as the discrete GPU,
+the Raphael integrated GPU,
+llvmpipe in the Vulkan loader's list,
+Mesa 26.2.4) with repository tasks,
+in the branch `worktree-agent-a1b70500a2a370d0d`
+(commits `80267c11b4`,
+`8e473701eb`,
+`45c612440b`,
+`f322b7f0bb`,
+`c5515deb56`).
+The application now draws with Slint's FemtoVG renderer over wgpu 30 on the Vulkan backend,
+on a device the launcher opens itself.
+The OpenGL renderer is gone from the application.
+
+### What changed
+
+- `Cargo.toml`:
+  the `slint` dependency lists `renderer-femtovg-wgpu`,
+  `unstable-wgpu-30` and `unstable-winit-030`,
+  and no longer lists `renderer-femtovg` (the OpenGL variant).
+  The dev-dependency entry that held `renderer-femtovg-wgpu` and `unstable-wgpu-30` for the harness is removed,
+  so each feature is declared once,
+  in the dependency the application uses.
+  `unstable-winit-030` is new:
+  it is the `BackendSelector::with_winit_window_attributes_hook` that stamps the Wayland app id
+  while the selector also carries the wgpu device (the selector is Slint's public way to pass `WGPUConfiguration`;
+  `RequestedGraphicsAPI`,
+  the type the winit backend's own builder takes,
+  is documented as an internal enum).
+  It adds no package.
+  `Cargo.lock` only lost entries:
+  `gbm`,
+  `gbm-sys`,
+  and edges from the DRM backend to `glutin` and `raw-window-handle`,
+  plus one edge from `slint` to `i-slint-backend-winit`.
+  Linked crates (`linked-crates` task):
+  367 before,
+  385 after (22 added:
+  wgpu 30 with `wgpu-core`,
+  `wgpu-hal`,
+  `naga`,
+  `ash`,
+  `glow`,
+  `khronos-egl`,
+  `gpu-allocator`,
+  `spirv`,
+  and their helpers;
+  four removed:
+  `glutin`,
+  `glutin_egl_sys`,
+  `glutin_glx_sys`,
+  `glutin-winit`).
+  `glow` and `khronos-egl` are there because wgpu's GL backend is compiled in;
+  the launcher's instance lists Vulkan adapters only.
+- `src/gpu_device.rs` (new,
+  with `src/gpu_device_tests.rs`):
+  `open_hardware_device` lists the Vulkan adapters,
+  keeps `DiscreteGpu` and `IntegratedGpu` (discrete first,
+  listing order breaks ties),
+  refuses every other kind,
+  requests a device with `wgpu::Limits::default().using_resolution(adapter.limits())`,
+  tries the next hardware adapter when one refuses,
+  and returns an error that names the adapters seen and every remedy when none works.
+  It is the harness's code,
+  moved,
+  with the choice made testable from adapter descriptions.
+- `src/launcher.rs`:
+  opens that device,
+  logs the adapter and two limits at info level,
+  and installs the winit backend through `BackendSelector` with `backend_name("winit")`,
+  `renderer_name("femtovg-wgpu")`,
+  `require_wgpu_30(WGPUConfiguration::Manual { instance, adapter, device, queue })` and the app id hook.
+  The early return for `SLINT_MCP_PORT` is gone:
+  with it the inspection builds (`inspect:native`) bypassed the launcher,
+  and a run of `inspect:native` showed that the inspection server also starts when the launcher installs the platform
+  (`slint::platform::set_platform` calls `init_testing_backends`,
+  `slint-1.18.1/lib.rs:443`;
+  the log of `inspect:native` has `Slint MCP server listening on http://127.0.0.1:9318/mcp`
+  and the launcher's adapter line).
+- `src/native/gpu_snapshot.rs`:
+  opens its device through `gpu_device` (`hardware_rank` and `open_hardware_device` were removed there).
+- `README.md`:
+  new section "Renderer and GPU",
+  and the launcher-entry paragraph about `SLINT_MCP_PORT` corrected.
+
+### Why the launcher opens the device
+
+Read in the installed sources,
+then run:
+
+- Slint's automatic path does not refuse CPU adapters.
+  `async_init_instance_adapter_device_queue_surface` (`i-slint-core-1.18.1/graphics/wgpu_30.rs`) requests the adapter,
+  in both of its
+  branches,
+  with a power preference that comes from `WGPU_POWER_PREF` (default `None`) and `force_fallback_adapter: false`.
+  In `wgpu-core-30.0.1/src/instance.rs` the CPU filter exists only for `force_fallback_adapter: true`
+  (lines 511 to 525),
+  and `PowerPreference::None` does not sort (lines 571 to 579),
+  so the first adapter the Vulkan loader lists wins.
+  This host lists RADV,
+  RADV,
+  llvmpipe,
+  so it would pick the RX 7600 today,
+  but nothing guarantees the order.
+  Slint's own check `any_wgpu30_adapters_with_gpu` (same file,
+  lines 180 to 241) only asks that some adapter is not of the CPU kind,
+  and `SLINT_WGPU_CPU` switches it off.
+- Slint's default limits depend on the path:
+  `WGPUSettings::default()` requests `Limits::downlevel_webgl2_defaults()` (line 66),
+  which the study found crashes Vello (no storage buffers),
+  while the path with no configuration requests `adapter.limits()` (line 277).
+  The launcher states its limits itself,
+  as the harness does.
+- Two refusals were run on the release binary with `VK_DRIVER_FILES`:
+  the lavapipe driver file gave `Adapters seen: llvmpipe (LLVM 22.1.8, 256 bits) (Cpu, llvmpipe)` and the full message,
+  exit status 1;
+  a missing file gave `Adapters seen: none (the Vulkan loader found no driver at all)`,
+  exit status 1;
+  with `SLINT_WGPU_CPU=1` added to the lavapipe run the message was the same.
+- Guard run (GFP):
+  the seven `gpu_device` tests and the three launcher tests were committed first,
+  then each guard was removed in the working tree and restored from the commit afterwards.
+  Accepting `DeviceType::Cpu` in `hardware_rank` made three of the seven `gpu_device` tests fail,
+  and accepting any winit renderer in `choose_backend` made one of the three launcher tests fail
+  (4 of 10 failed,
+  6 passed);
+  restoring gave 10 of 10.
+  The same removal in a debug binary,
+  run in the nested compositor with the lavapipe driver file:
+  with `SLINT_WGPU_CPU` unset,
+  Slint's own check then refused (`Cannot install the window backend:
+  WGPU 30.x rendering was required
+  but no GPU-backed WGPU adapter is available`);
+  with `SLINT_WGPU_CPU=1` the application started and logged `adapter=llvmpipe (LLVM 22.1.8, 256 bits) (Cpu, llvmpipe)`.
+  So the guard in `gpu_device` is the only thing between the application and a CPU adapter when `SLINT_WGPU_CPU` is set.
+
+### Can `renderer-femtovg` (OpenGL) go
+
+Yes,
+and it was dropped.
+Reading:
+with both features enabled the winit backend never picks the OpenGL renderer by itself.
+`default_renderer_factory` prefers `renderer-femtovg-wgpu` (`i-slint-backend-winit-1.18.1/lib.rs:139`),
+and the fallback list that `create_window_adapter` uses when the chosen renderer fails builds the OpenGL entry only when
+`renderer-femtovg-wgpu` is off (line 179).
+So the OpenGL feature could not serve as an automatic fallback in this Slint version;
+it would only add an explicit opt-in (`SLINT_BACKEND=winit-femtovg`) that draws through OpenGL and EGL.
+Measured:
+the application builds and runs without it,
+`lint`,
+`test:native` and the nested-compositor runs of this section pass,
+the linked set lost four crates (the `glutin` family) and the lock two (`gbm`,
+`gbm-sys`),
+and the cold builds took 5.6 s (release) and 4 s (debug) longer in single runs (numbers in the verification section).
+The baseline screenshot (OpenGL,
+`Slint: ... FemtoVG renderer with OpenGL backend`) and the new one (`FemtoVG renderer with WGPU backend`)
+of the same state differ in 28 of 726,000 pixels,
+by one channel level at most.
+What it costs:
+a host that has an OpenGL driver for its GPU but no Vulkan driver (older GPUs,
+some virtual machines)
+can no longer start the IDE.
+Nothing in the repository needs that path (the IDE is Linux only through its inotify watcher,
+and every check runs on this host's GPU).
+This is the owner's rule applied,
+not a decision to keep a CPU-capable path,
+so it is recorded here and not asked;
+the owner can overrule by adding `renderer-femtovg` back,
+which would not change the default.
+
+### `SLINT_BACKEND`
+
+The launcher reads the value as Slint does (lowercase,
+split at the first dash,
+with Slint's single-word shorthands).
+Unset,
+`winit`,
+`gl` and `winit-femtovg-wgpu` start the application as described in this section.
+Another backend (`qt`,
+`linuxkms`,
+`headless`) stays with Slint's selector,
+with no app id and no adapter policy,
+as before.
+A winit renderer this build lacks (`femtovg` and `winit-femtovg` are the OpenGL one,
+and `skia`,
+`software`,
+`vello`)
+is an error naming the accepted spellings.
+Without that,
+Slint prints `unrecognized renderer ..., falling back to FemtoVG` (`i-slint-backend-winit-1.18.1/lib.rs:1311`)
+and draws with its default renderer on a device it chose itself.
+`inspect:native` and `inspect:cadence` set `SLINT_BACKEND=winit`,
+which is accepted.
+`WGPU_ADAPTER_NAME` and `WGPU_POWER_PREF` no longer have an effect on the application (the launcher does not read them).
+
+### An abort at exit in debug builds, found and fixed
+
+The first debug runs of the new launcher ended with
+`cannot access a Thread Local Storage value during or after destruction: AccessError` and
+`fatal runtime error: thread local panicked on drop, aborting` after the window closed
+(two of two debug runs without the fix:
+`inspect:native` on the RX 7600 and a debug run on llvmpipe;
+no release run showed it).
+The cause is the one the harness already documents:
+wgpu-core's snatch lock records a thread-local trace in debug builds
+(`wgpu-core-30.0.1/src/snatch.rs:106` to `128`,
+`cfg(all(debug_assertions, feature = "std"))`),
+and the dependencies of a dev build
+keep `debug-assertions` on,
+while Slint drops its platform,
+and the last wgpu handles with it,
+during thread-local destruction.
+The launcher now leaks one extra handle of the instance,
+adapter,
+device and queue (`Box::leak`),
+as the harness leaks its device.
+After the fix,
+nine debug runs closed cleanly (one session run,
+four cadence runs,
+four startup runs).
+
+### Verification by running
+
+All in the repository's nested compositor (`monochromatic-nested-wayland-session` 0.6.1,
+scale 1),
+project `/tmp/drag-project`,
+file `src/client.unit.test.ts` (489 lines),
+1100 by 660 unless a size is named.
+The adapter in every run of the new code was `AMD Radeon RX 7600 (RADV NAVI33) (DiscreteGpu, radv)` with
+`max_storage_buffers_per_shader_stage=8` and `max_texture_dimension_2d=16384`
+(the downlevel default would give 0 storage buffers,
+so the limits took effect).
+The baseline runs say `FemtoVG renderer with OpenGL backend` (Mesa radeonsi on the same card,
+from the compositor's parent session).
+The baseline is `origin/main` (`d282b33948`) built in a scratch worktree,
+whose IDE package equals this branch's parent.
+Every claim of a difference in this section is held against the spread of two runs,
+as the README's cadence section demands.
+
+Screenshots viewed (`~/temp/agent/ide-stage2/shots/`,
+the paths are under the scratch root):
+
+- `native-dark-1-start.png` and `native-dark-2-tree-click.png`:
+  dark scheme,
+  the file tree (a folder expanded by a click,
+  the selected file in the accent colour,
+  the focus ring on the clicked row),
+  the source with syntax colours,
+  the language server's
+  error rows and underlines,
+  line numbers,
+  and the minimap with its viewport box.
+- `native-dark-3-hover.png`:
+  the hover popup (`No hover information at this position.` for the TypeScript server at that caret).
+- `native-dark-4-find.png`:
+  the find bar with `fetch` typed,
+  the match selected,
+  `1/87`,
+  and the match marks in the minimap.
+- `native-dark-5-scrolled.png` and `native-dark-6-minimap-drag.png`:
+  after a scroll of 1500 pixels and a drag of the viewport box;
+  the text moved to line 309 and the box followed.
+- `native-light-1.png`,
+  `native-light-2-find.png`,
+  `native-light-3-hover.png`:
+  the same after `color-scheme light`
+  switched the private appearance while the client ran:
+  light tree,
+  light find bar with a match counter `13/66`,
+  inlay hints between rows,
+  and the hover popup.
+- `adapter-base/before.png` and `adapter-new/before.png` (under the scratch root):
+  baseline and new after the same start,
+  28 pixels of 726,000 differ.
+
+Cadence (`inspect:cadence`,
+120 steps of 16 ms,
+`RUST_LOG=info`,
+interleaved baseline and new,
+two runs each,
+load average 1 to 3).
+Each cell is changed frames of frames compared,
+then the longest run of identical frames,
+then the slots of the identical runs.
+
+- Release,
+  scroll:
+  baseline 118 of 119 (1,
+  at 58) and 116 of 119 (1,
+  at 58,
+  123 and 145);
+  new 117 of 119 (1,
+  at 58 and 80) and 117 of 119 (same).
+- Release,
+  drag:
+  baseline 117 of 119 (1,
+  at 41 and 68) and 117 of 118 (1,
+  at 41);
+  new 117 of 118 (1,
+  at 41) and 117 of 119 (1,
+  at 41 and 137).
+- Debug,
+  scroll:
+  baseline 116 of 117 (1) and 114 of 119 (1,
+  five single frames);
+  new 116 of 119 (1,
+  three) and 117 of 119 (1,
+  at 58 and 80).
+- Debug,
+  drag:
+  baseline 106 of 120 (1,
+  fourteen single frames) and 107 of 119 (1,
+  twelve);
+  new 103 of 118 (2,
+  at 39,
+  then thirteen singles) and 106 of 119 (2,
+  at 39,
+  then eleven singles).
+- Release at 1147 by 2000,
+  the owner's drag size:
+  scroll baseline 118 of 119 (1) twice;
+  new 118 of 118 and 118 of 119 (1);
+  drag baseline 120 of 121 (1,
+  at 105) twice;
+  new 120 of 121 (1,
+  at 105) twice.
+
+The spread between the two runs of one build is up to 2 changed frames in the release scroll (baseline 118 and 116),
+0 in the release drag,
+up to 2 in the debug scroll (baseline 116 and 114),
+and in the debug drag 1 for the baseline (106 and 107) and 3 for the new code (103 and 106).
+In every cell the ranges of the baseline and of the new code overlap.
+The new code's debug drag is lower by about 2 to 3 changed frames at the median (104.5 against 106.5),
+which is as large as its own run-to-run difference,
+so no difference between baseline and new is claimed.
+The longest identical run is 2 in both debug drag runs of the new code and 1 in all other cells,
+a single sample in each.
+The probe can move:
+debug against release (drag:
+12 to 15 identical frames of about 120 in debug against 1 to 2 in release,
+for both builds) is the positive control of the cadence task,
+and it moved here too.
+No debug run of the new code had the frozen stretch of 5 to 9 frames that the unoptimized stage 1 debug build had.
+
+Startup and memory (`session.mjs` in the scratch root,
+release builds,
+fifteen runs each,
+interleaved,
+a fresh private cache and
+config directory per run,
+warm file cache):
+
+- Method:
+  the compositor logs the moment it spawns the client and the application logs its frames at the debug level
+  (`monochromatic_ide::native::frame`);
+  first frame is the first `the toolkit finished drawing a frame` minus the spawn stamp.
+  Resident memory is `VmRSS` and `VmHWM` of the client's pid from `/proc` eight seconds after the spawn
+  (idle) and 1.5 s after three scrolls of 3000 pixels (60 steps each).
+- First finished frame:
+  baseline median 328.1 ms (321.8 to 356.9),
+  new median 350.4 ms (344.7 to 371.4),
+  about 22 ms later (7 percent).
+  The ranges overlap by 12 ms,
+  so the claim is a median shift of about 20 ms,
+  not more.
+  The window's first size event is the same (314.3 against 311.0 ms medians).
+  The launcher's adapter line comes 54.2 to 61.0 ms after the spawn in every one of the fifteen new runs
+  (Vulkan loader start,
+  driver load and the two device requests).
+- Idle resident memory:
+  baseline median 155.1 MiB (154.5 to 162.5),
+  new median 135.6 MiB (134.3 to 142.8),
+  20 MiB less.
+  After the scrolls:
+  baseline 170.7 MiB (161.5 to 177.6),
+  new 144.3 MiB (135.8 to 156.6).
+  Peak (`VmHWM`) after the scrolls:
+  baseline 181.0 MiB (174.6 to 188.7),
+  new 156.6 MiB (150.4 to 159.5).
+  Threads:
+  28 or 29 for the baseline,
+  26 for the new code.
+- GPU memory (`mem_info_vram_used` of the RX 7600,
+  system wide,
+  includes the desktop and the compositor):
+  6821.6 MiB with the baseline
+  and 6998.8 MiB with the new code in every run,
+  so the wgpu path holds about 177 MiB more than the OpenGL path
+  (identical in all fifteen runs of each,
+  but the counter is shared and was never trusted to better than 50 MiB in the study).
+- Debug builds,
+  four runs each:
+  first frame baseline 365.1 to 401.5 ms,
+  new 386.2 to 419.5 ms;
+  idle RSS baseline 161.1 to 161.8 MiB,
+  new 143.7 to 144.7 MiB;
+  after the scrolls baseline 176.6 to 186.9 MiB,
+  new 150.6 to 166.7 MiB;
+  peak baseline 187.4 to 192.0 MiB,
+  new 166.7 to 168.0 MiB.
+- A single cold start (first run after a build,
+  driver libraries not yet in the page cache) took 2.4 s to the first frame with the new code;
+  every warm run took 0.35 s.
+  The baseline's cold start was not measured,
+  so no claim is made about the cost of a cold start against it.
+
+Builds (`build` and `build:debug` tasks in a scratch worktree with the runtime copied in,
+one run each,
+cold target directory):
+
+- Release:
+  baseline 49.2 s,
+  new 54.8 s (the first `build` task of the branch took 53.8 s).
+- Debug (the dev profile builds dependencies at `opt-level = 2`):
+  baseline 65 s,
+  new 69 s.
+  Incremental after touching `src/launcher.rs`:
+  baseline 2.8 s,
+  new 3 to 5 s (2.7,
+  3.1,
+  3.5,
+  3.7 and 4.9 s in five runs).
+  These are single runs with no measured spread,
+  so they show that the wgpu stack does not make the debug build slow
+  (a cold debug build of the whole stack is about 4 s longer,
+  and the incremental one a few seconds),
+  not a precise difference.
+- Binaries:
+  release 82,957,008 to 90,123,280 bytes (plus 7.2 MB),
+  debug 102,398,656 to 111,224,824 bytes.
+
+### Gates
+
+All as repository tasks on the final head of the code (`c5515deb56` for the sources),
+with the tails in the scratch root (`gate-*.log`):
+
+- `lint`:
+  exit 0 (`clippy`,
+  `rustfmt`,
+  `monochromatic-lint`,
+  `slint`).
+  Its first runs found,
+  and the commits fixed,
+  a rustfmt import order,
+  rustdoc missing on the two test sidecars,
+  two avoidable closures (`sort_by` and `map_err` now take named functions),
+  and line breaks in the README section.
+- `test:native`:
+  224 tests (214 plus the ten new ones),
+  two consecutive passes at the head:
+  `Summary [  24.681s] 224 tests run: 224 passed, 5 skipped`
+  and `Summary [  24.877s] 224 tests run: 224 passed, 5 skipped`.
+  Six more interleaved pairs of full runs,
+  baseline against new,
+  all passed (baseline 23.8 to 24.1 s,
+  new 24.1 to 24.3 s).
+  The first full run of the head failed once:
+  `native::minimap_tests::an_external_edit_of_fifty_thousand_lines_renders_only_the_band_it_touches`
+  (`the edit rendered 4 of 4 bands`);
+  it passed alone three times in a row and in the eight full runs after it.
+  It is a minimap picture test that does not use the GPU,
+  of the family of load dependent failures the stage 0 and 0b sections list.
+  One failure in nine full runs of the new code against none in seven of the baseline is not a measurable difference.
+- `test:bin`:
+  54 tests passed.
+- `build` (release):
+  `Finished release profile [optimized] target(s) in 17.05s` after the doc commits (53.8 s the first time).
+- `inspect:software-renderer`:
+  `Slint software renderer is not linked into the application or the test builds`.
+  Positive control:
+  the same `cargo tree` with `--features slint/mcp` in a scratch copy printed the tree through `i-slint-backend-testing`
+  and the task failed,
+  so the check can fail.
+- `inspect:native` and `inspect:cadence` ran as the tasks are written (see the verification by running).
+
+### Open owner questions of stage 2
+
+- Is the loss of hosts with OpenGL but no Vulkan driver for a hardware GPU accepted?
+  Nothing in the repository needs it,
+  and the OpenGL renderer could not have been an automatic fallback anyway (see the section on the OpenGL renderer).
+- `unstable-winit-030` was added for the `BackendSelector` hook.
+  The alternative is a direct dependency on the internal crate `i-slint-core`,
+  to call the winit builder with `RequestedGraphicsAPI`.
+  Both are semver-exempt,
+  neither adds a package,
+  and the feature is the documented one.
+- Virtual GPUs (`DeviceType::VirtualGpu`,
+  for example Venus in a virtual machine) are refused with the CPU and unknown kinds,
+  as the harness has always done.
+  They are accelerated on the host,
+  so they are not CPU painting,
+  but they cannot be told from a software device by type.
+  Should they be accepted at the lowest rank?
+- The discrete GPU is preferred over the integrated one,
+  and the choice is not checked against the window's surface
+  (Slint's `get_default_config(..).unwrap()` in `i-slint-renderer-femtovg-1.18.1/wgpu.rs:408`
+  would panic if the chosen adapter could not present).
+  That worked on this host in every run;
+  on a laptop with a discrete GPU that cannot present to the compositor's screen it may not.
+  `WGPU_POWER_PREF` and `WGPU_ADAPTER_NAME` are not read,
+  so a user cannot steer the choice today.
+- The inspection builds that pass `--features slint/mcp` (`inspect:native`,
+  `mcp`) still link the software renderer
+  (the open question of stage 0b is unchanged).
+  The software renderer is linked there for the inspection server's screenshots,
+  and no run here requested one.
+
+### Not proven
+
+- Only this host and its two AMD GPUs were used:
+  no Intel or NVIDIA,
+  no laptop with a hybrid GPU,
+  no machine where the discrete GPU is not the one driving the screen,
+  and the integrated GPU was never chosen.
+- The cold start cost against the baseline,
+  and the first-frame difference on a host with a cold shader cache
+  (each of my runs used a fresh private `XDG_CACHE_HOME`,
+  so Mesa's shader cache was cold in each,
+  and the first frame still took 0.35 s).
+- Accessibility,
+  input methods,
+  resize and multi-monitor behaviour under the wgpu renderer were not exercised beyond
+  the existing native tests (which run the GPU harness,
+  not the application's window) and the screenshots of the verification section.
+- Scale factors other than 1,
+  and 50,000 line files,
+  were not run in the application.
+- A soak of the wgpu renderer (surface loss,
+  suspend and resume,
+  a GPU reset) was not done.
+- The `lsfg-vk` Vulkan layer is installed on this host
+  and printed `lsfg-vk: Placing default configuration file` in every new run;
+  its influence on the numbers was not isolated.
+
 ## Open owner questions
 
 - Is lavapipe ever acceptable as a fallback when no GPU is present (for example a CI runner)?
