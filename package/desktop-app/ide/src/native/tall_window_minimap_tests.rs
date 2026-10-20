@@ -52,6 +52,9 @@ fn tall(height: f32, measured: bool) -> (tempfile::TempDir, Reader) {
                     && current.minimap.posted == current.minimap.shown
                     && current.minimap.images_set > 0
                     && track > 1000.0
+                    // The picture of the window before it was resized is also posted and shown;
+                    // under load the test could read it before the picture of the tall window arrived.
+                    && window.get_minimap_image().size().height > 1000
                 {
                     break;
                 }
