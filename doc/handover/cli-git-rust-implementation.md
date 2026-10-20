@@ -1859,6 +1859,15 @@ that is verification, not a decision for the user.
   160-161 name only stash, clean and reset; `AGENTS.md` GFP ("restore") and `doc/runbook/publish-npm-package-first-
   time.md:57` (`git switch main`) should say how to do it under the policy; `doc/agent/` has no entry. Needed
   tests: a binary-level hatch test per new form, and a test per documented workaround.
+  Decisions 2026-10-20 (user): (1) every normal workflow that could be blocked must have a documented sanctioned
+  alternative, and every rejection must guess the intent and say it (done: 18 guarded forms in
+  `rule_linked_worktree_messages.rs`, README section "Discarding commands", `binary_discard_tests.rs` runs every
+  named alternative, and `the_readme_documents_what_the_texts_recommend` guards drift; shown to fail with a phrase
+  removed). (2) NO AGENTS.md or CLAUDE.md rule about the restriction: agents must not be told about restrictions
+  upfront (leaks the shape of the guard and invites shortcuts); disclose just in time, in the rejection. (3) The
+  rejection keeps the override hint (`git diff > backup.patch`, then `--no-enforce-worktree` after the subcommand)
+  in every text, by the user's answer. Container gate before the intent split: 2066 passed, 5 skipped; rerun
+  pending after it (log `~/temp/agent/s1791-container.log`).
   Queue after the gate is green (QWD): (a) UX3, task 58: `advance_local_branch` (`auto_push_reconcile.rs`) refuses
   any tracked status line, so the user's question "shouldn't this auto merge?" is answered YES: local main stays
   behind origin/main whenever another session leaves tracked edits (seen 4 times today, merges 46a264639b,
