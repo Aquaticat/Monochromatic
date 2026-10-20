@@ -358,3 +358,18 @@ fn a_failed_probe_removes_its_scratch_directory() {
     remove(repo.parent().expect("root"));
     remove(&root);
 }
+
+/// The probe error prints as its diagnostic, so a refused push names what could not be established.
+#[test]
+fn the_probe_error_displays_its_message() {
+    let error = ManualPushProbeError {
+        message: String::from("the probe could not run"),
+    };
+    assert_eq!(error.to_string(), "the probe could not run");
+}
+
+/// The recording hook accepts exactly 16 MiB of standard input, the incumbent's limit.
+#[test]
+fn the_hook_input_limit_is_sixteen_mebibytes() {
+    assert_eq!(MAX_HOOK_INPUT_BYTES, 16_777_216);
+}

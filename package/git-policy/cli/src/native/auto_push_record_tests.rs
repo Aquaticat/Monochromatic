@@ -163,3 +163,28 @@ fn a_record_with_a_field_this_release_does_not_know_still_parses() {
     assert_eq!(record.tip, "a");
     assert!(!encode_last_pushed_record(&record).contains("publishedTip"));
 }
+
+/// Each write names its candidate with a fresh suffix, so a candidate another writer left behind never blocks it.
+#[test]
+fn a_write_is_not_blocked_by_candidates_with_a_fixed_or_empty_suffix() {
+    let root = fixture("record-write-unique-candidate");
+    let path = root.join("record.json");
+    let empty_suffix = root.join("record.json..pending");
+    let fixed_suffix = root.join("record.json.xyzzy.pending");
+    std::fs::write(&empty_suffix, "other writer").expect("empty-suffix occupant");
+    std::fs::write(&fixed_suffix, "other writer").expect("fixed-suffix occupant");
+    write_last_pushed_record(&path, &failed_record()).expect("write");
+    assert_eq!(
+        read_last_pushed_record(&path).expect("reads"),
+        LastPushedRead::Record(failed_record())
+    );
+    assert_eq!(
+        std::fs::read_to_string(&empty_suffix).expect("occupant stays"),
+        "other writer"
+    );
+    assert_eq!(
+        std::fs::read_to_string(&fixed_suffix).expect("occupant stays"),
+        "other writer"
+    );
+    remove(&root);
+}

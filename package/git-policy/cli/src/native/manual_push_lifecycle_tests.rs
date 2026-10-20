@@ -125,3 +125,31 @@ fn an_unreachable_destination_fails_the_scope() {
     assert!(result.is_err());
     remove(repo.parent().expect("root"));
 }
+
+/// The lifecycle failure prints as its diagnostic, so a refused push names the failed step.
+#[test]
+fn the_failure_displays_its_message() {
+    let failure = ManualPushFailure {
+        message: String::from("the step failed"),
+    };
+    assert_eq!(failure.to_string(), "the step failed");
+}
+
+/// A commit that another branch of the destination already holds is published, so the push does not scan it again.
+#[test]
+fn a_commit_another_branch_of_the_destination_holds_is_not_scanned_again() {
+    let (repo, _tip) = repository_with_unpublished_commit("mp-lifecycle-held-elsewhere");
+    git(
+        &repo,
+        &["push", "--quiet", "origin", "HEAD:refs/heads/other"],
+    );
+    let scope = manual_push_scope(
+        &git_for(&repo),
+        &[],
+        &[OsString::from("origin"), OsString::from("main")],
+    )
+    .expect("scope");
+    assert!(scope.commits.is_empty(), "{:?}", scope.commits);
+    assert!(scope.trees.is_empty(), "{:?}", scope.trees);
+    remove(repo.parent().expect("root"));
+}
