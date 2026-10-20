@@ -46,7 +46,7 @@ await describe({
       name: 'STANDS the notes alone where the text shows a reader nothing',
       fn: async () => {
         expect(appendedNotes({ text: '', notes: [NOTE, SECOND_NOTE,], },),).toBe(`${NOTE}\n\n${SECOND_NOTE}`,);
-        expect(appendedNotes({ text: '​ \n', notes: [NOTE,], },),).toBe(NOTE,);
+        expect(appendedNotes({ text: '\u200B \n', notes: [NOTE,], },),).toBe(NOTE,);
       },
     },),
     it({

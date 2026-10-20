@@ -68,7 +68,7 @@ export function quotedNote({ text, }: { readonly text: string; },): string {
 
  @param notes - each note as the archive writes it, in archive order
 
- @returns The wording with the notes after it
+ @returns The wording followed by each note
 
  @example
  ```ts
