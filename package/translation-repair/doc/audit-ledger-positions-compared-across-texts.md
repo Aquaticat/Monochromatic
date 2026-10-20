@@ -393,3 +393,77 @@ Recurrence:
 "Structure read off the parse":
 a rule about where a document starts is asked of one reader every consumer shares,
 and a test pairs a page with and without the mark.
+
+## B695: a heading series the archive heads by name alone lost the original's numbers
+
+Status:
+fixed on 2026-10-20 (UTC),
+red `e3fcc3094f`,
+fix `bc645360f6`,
+in the integrated tree at `191a8bc38d`.
+Neither page-pass nor page-check declares a cache version
+(a search of their sources for `CACHE_VERSION` finds none),
+so no number moves for it;
+the fix commit lists the stored page assembly findings and page text as the results it alters.
+
+Found in the read of XingZ6015,
+the third entry of the readiness rotation.
+The original heads its sections 其一 to 其十.
+Both lanes rendered them "Part One:
+Irako" to "Part Ten:",
+the lane contest kept the numbers,
+and the repair panel logged the archive's bare "Irako" as an accuracy omission of minor weight.
+Page assembly then wrote nine `heading-series-unified` lines at 2026-10-20T00:05:26.988Z
+(slices 9,
+10,
+49,
+66,
+71,
+76,
+78,
+84 and 103,
+each ending "in the style of none,
+the archive's own style"),
+and the shipped page lost every number the original gives.
+Slice 48 drew no line,
+because its page text already carried the bare archive heading.
+
+The rule that did it is class eighty-nine's of 2026-09-23:
+the archive's style wins wherever the archive heads the series.
+An archive that heads its sections by name alone has no numbering style,
+so the rule read "no style" as a style and removed the number from the heads of both lanes.
+The pass also picked among lane renderings by plurality (`majorityStyle`),
+so one original and one archive could ship different series from different lane output.
+
+`unifyHeadingSeries` now writes a number on every heading of the original's series,
+in one style that depends on the original and the archive alone:
+the archive's style where the archive numbers the series in one style,
+else the house style "Part One:"
+(`HOUSE_SERIES_STYLE`).
+The house style is the one 14 of the 18 numbered lane headings of XingZ6015 took,
+and the one XingZ622 shipped;
+no human archive in the corpus numbers a heading series,
+so none offers a precedent.
+The lane plurality is removed.
+The safeguard of B84 stays:
+a slice joins the pairing only where it carries as many headings as the original's slice.
+The finding now ends "the house style" where the archive does not number the series.
+
+Three cases were red before the fix:
+a bare archive with lane renderings "Part One:"
+and "The Fourth:"
+shipped bare headings,
+one bare archive shipped different series for different lane renderings,
+and an archive that never headed the series,
+or headed it in two styles,
+shipped bare headings on a plurality of bare renderings.
+Each now expects "Part N:"
+on every numbered heading.
+The existing cases that encoded the plurality now expect the house style,
+and the cases for an archive that numbers the series are unchanged.
+
+Recurrence:
+none of an earlier entry.
+A rule that takes the archive's form as the page's is asked first of an archive that has no such form;
+the three red cases of this entry hold the bare,
+the mixed and the unheaded archive.

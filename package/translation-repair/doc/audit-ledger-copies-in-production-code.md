@@ -651,3 +651,65 @@ since its refusal names the code.
 Recurrence:
 a catch that answers "not there" uses `rethrowUnlessMissingPath` or `isMissingPathError`;
 a comment explaining what a catch does with the other failures is read against the arm it describes.
+
+## B700: the pinned lint binary version said 0.2.0 while `mise.lock` installed 0.3.0
+
+Status:
+fixed on 2026-10-20 (UTC),
+`e262b18601`.
+The lock moved in `bca9a2856e`,
+a `chore(mise)` commit of 2026-10-19 at 20:55 UTC that touched `mise.lock` alone.
+It recurs an earlier move of the same constant,
+`ea791a3840` of 2026-10-19 (0.1.2 to 0.2.0),
+which no ledger entry records.
+
+`PINNED_LINT_BINARY_VERSION` in `package/translation-repair/typography/src/semantic-wrap-binary-constants.ts`
+is one of two writings of one fact:
+the version of `monochromatic-lint` the shipped-text wrap is written against.
+The other is the tool's entry in `mise.lock`,
+since `mise.toml` asks for the latest release of a tool this repository publishes.
+With the lock at 0.3.0 and the constant at 0.2.0,
+every wrap of shipped text threw `LintBinaryVersionError` under `mise`:
+the unit tests of page-check failed 13 cases on `214ddb2bdb`,
+and a corpus pass on that build would have stopped at its first wrap.
+It was first read as an environment fault in the check of the page-pass fix,
+and a baseline run on `main` showed it was not.
+
+Between the tags `monochromatic-lint-v0.2.0` and `monochromatic-lint-v0.3.0` the crate's source adds only the
+`rust/avoidable-closure` rule and its closure step;
+`markdown_semantic_breaks.rs` and the Markdown rule settings are unchanged.
+The wrap the pin names writes the same bytes,
+so no cached stage changes.
+After the change the unit tests of typography (43 pass,
+0 fail) and of page-check (59 pass,
+0 fail) pass.
+
+Recurrence:
+the handover's rule that each `monochromatic-lint` release moves `mise.lock`,
+and that `PINNED_LINT_BINARY_VERSION` follows in the same change.
+A search of this audit's files for the constant and its error found no earlier entry;
+the nearest mention,
+a bare `node` resolving 0.1.1 on the path while the pin was 0.1.2,
+is another cause (the program found on `PATH`,
+not the lock).
+The first move,
+`ea791a3840`,
+followed a merge with `main` whose lock installed 0.2.0 and failed 341 failure lines across the family suites
+in gate g112.
+
+A guard exists.
+The agreement case in `semantic-wrap-binary.unit.test.ts`
+(`400582c281`,
+"HOLDS THE PINNED VERSION TO THE ONE mise.lock RECORDS")
+reads the tool's entry in `mise.lock` and compares its version line with the constant,
+so it fails whenever the two differ.
+It is a unit test of typography,
+and `bca9a2856e` changed no file of the package,
+so nothing ran it when the lock moved;
+whether it was run on `214ddb2bdb` is not recorded,
+and it was not run for this entry.
+No code was added for this entry.
+
+Prevention:
+`mistake-prevention-shared-code-loops-and-keyed-tables.md`,
+"Copies of shared code".

@@ -417,3 +417,78 @@ inside the fence the sheet chooses against all its texts.
 so every other key keeps its bytes,
 and `CONSISTENCY_CACHE_VERSION` stays 1,
 since no pass has run at it.
+
+## B697: reader protection reached past the account of how a death or an attempt happened
+
+Status:
+fixed on 2026-10-20 (UTC) on the owner's ruling,
+red `f497ca2a20`,
+fix `49553a32bb`,
+its scope comment and rule example amended by `7071a8eb5b` and restored in part by `abf7fdae89` (M283),
+integrated in the tree at `191a8bc38d`.
+`28f4b8fc75` moved seven cache versions for the fixes of the XingZ6015 read
+and names this scope first among its reasons:
+`TRANSLATE_SLICE_CACHE_VERSION` 19 to 20,
+`PAGE_TITLE_CACHE_VERSION` 3 to 4,
+`CONSISTENCY_CACHE_VERSION` 5 to 6,
+`LANE_CONTEST_CACHE_VERSION` 10 to 11,
+`REFINE_CACHE_VERSION` 8 to 9,
+`SLICE_CACHE_VERSION` 37 to 38
+and `CONSOLIDATE_CACHE_VERSION` 25 to 26.
+`PAIRING_CACHE_VERSION` stays 3,
+since no pairing sheet splices the house rule.
+
+Found in the read of XingZ6015,
+lane contest slice 0 of XingZ60.
+The page opens with her own words about doing things with a potassium cyanide capsule in her mouth (含着氰化钾胶囊).
+It is not an account of how she died,
+and the archive keeps the capsule.
+Two of three contest judges chose the repair wording,
+"I can even do something knowing that it could cost me my life",
+which drops the capsule,
+and cited reader protection:
+the house rule opened "when a death or an attempt was by suicide"
+and set no limit on where on the page a means could stand,
+so a means named anywhere fell under it.
+
+The question went to the owner at about 00:36 UTC on 2026-10-20:
+does reader protection cover a suicide means mentioned outside the account of the death or an attempt?
+The owner chose "Only the death" and rejected "Anywhere on the page":
+"Scope the rule to how she died or attempted,
+so her quote keeps the cyanide capsule as the original and the archive have it."
+
+The rule is now scoped to the account of how a death or an attempt happened.
+A means named elsewhere (a person's own words about what they might do,
+a hypothetical,
+a quoted work,
+a story)
+is rendered as the original states it.
+The replicability test,
+medication without substance or dose,
+method words,
+euthanasia and the immediate medical cause stay,
+inside that scope.
+The scope reached every sheet that restates the rule:
+
+- the house rule carries the scope sentence and the owner's ruling as a comment,
+  and its judges' tail and measuring tail say that a candidate vaguer about a means named elsewhere has left out what
+  the original states;
+- the attested-details rule of the translate floor,
+  the three cited-reference rules of the slice reading (critic and panel,
+  candidate and audit variants),
+  the editor's precedence sentence in the repair lane,
+  and the resolution checker's not-fixed answer in the adjudication package each carry the same limit.
+
+The red test reads the rendered sheets through a map.
+Before the fix all 8 of its cases failed:
+the house rule carried no scope sentence,
+44 rendered sheets named the rule unscoped,
+and each restatement still listed a method,
+a substance and a dose with no limit.
+
+Recurrence:
+none of an earlier entry.
+A rule written for one case (a death by suicide) is read for the places it is spliced into,
+and a ruling of the owner is quoted whole,
+with the option it rejected,
+into the comment over the rule.

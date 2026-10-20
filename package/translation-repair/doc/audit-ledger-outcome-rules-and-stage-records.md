@@ -529,3 +529,78 @@ so a reader refuses it as a parse error;
 a runs directory holding generation 14 artifacts is refused on resume.
 The lead kept each of these on 2026-10-11 (UTC),
 under the owner's instruction of that day to decide the remaining items without asking.
+
+## B696: a consolidation under the vote minimum kept the archive wording two judges called ineligible
+
+Status:
+fixed on 2026-10-20 (UTC),
+red `ca3fd50472`,
+fixes `7f008f9f8d` and `c834db195f`,
+in the integrated tree at `191a8bc38d`.
+`CONSOLIDATE_CACHE_VERSION` moved from 25 to 26 in `28f4b8fc75`,
+since stored settlements change meaning.
+It continues B417,
+which gave the contest's flawed-by-majority archive a run-off.
+
+Found in the read of XingZ6015,
+slice 45.
+All three contest ballots called the archive flawed and split across translate,
+neither and repair,
+so the slice settled neither and the consolidation ran its run-off line.
+Of five candidates,
+the writer of candidate 1 named it at half weight (`SELF_VOTE_WEIGHT`,
+`selfVote` true),
+one disinterested judge named it at full weight,
+and the third declined every candidate:
+1.5 from two ballots against a minimum of 2.00.
+No other candidate drew a ballot,
+so `runoffFinalists` returned the whole slate (`fewer-than-two-backed`).
+The challenge round was then not a run-off:
+it asked the same panel the same question under the same minimum,
+and "keeping the fallback" shipped the archive's "he" and "sir",
+which two judges had called ineligible and a strict majority of the contest ballots had called flawed.
+
+Slice 34 of the same entry opened the same way and is not this class.
+Its ballots split across two candidates,
+a deciding run-off ran,
+and the gate then kept the standing on a 2 to 1 vote.
+
+The fix,
+in two commits:
+
+- `decideBestCandidate` takes `fallbackCondemned`.
+  With it,
+  a leader named by at least two ballots wins under the minimum unless the leader is the incumbent itself,
+  and the round records `select-condemned-fallback-under-minimum`.
+  One ballot alone,
+  a tie and a unanimous refusal decline as before.
+  `judgeConsolidationSlate` takes `standingFlawedByMajority`,
+  which `settleConsolidation` fills from `runoffOverStanding`,
+  and forwards it as `fallbackCondemned` for an eligible standing.
+  A withheld standing is not on the slate and sets nothing.
+- The first form decided in the first ask.
+  That pre-empts the run-off a first round declining under the minimum lets a tie narrow to,
+  which is how slice 34 reached its deciding run-off.
+  `judgeTranslateSlate` now passes `fallbackCondemned` on only the challenge ask,
+  and the settlement case asserts a first-ask sheet and a challenge sheet,
+  both of which the first form failed.
+
+The red commit holds two groups of cases that failed on the previous tree:
+the consolidate case for the slice 45 shape (`slate-declined-standing` where `consolidated` was expected),
+and the repair selection case for the same three ballots ("winner short of the minimum vote weight").
+Cases for a lone judge,
+a slate with no valid proposal,
+a fallback leading under the minimum,
+a tie and a unanimous refusal passed before and keep passing.
+On the corpus,
+the lead read that exactly XingZ60 slice 45 takes this path.
+
+Adopted without asking the owner,
+open to the owner's veto:
+a self-vote counts toward the floor of two ballots,
+as it already counts in `runoffDecides`.
+
+Recurrence:
+none of an earlier entry.
+A rule that decides in the second ask of a round is not copied into the first,
+since the first is what lets a tie narrow to a run-off.

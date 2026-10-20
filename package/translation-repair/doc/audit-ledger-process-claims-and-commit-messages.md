@@ -933,3 +933,49 @@ before a commit lands,
 read `git show --stat` of it beside its body;
 every package paragraph of the body names a file the stat lists,
 and every package the stat lists has its paragraph.
+
+## M283: the lead called "so her enemies could never take her" invented after reading one line of the original
+
+Status:
+happened on 2026-10-20 (UTC),
+in the main session,
+while it wrote the reader-protection scope of B697.
+`7071a8eb5b` (00:54 UTC) removed the words,
+`abf7fdae89` (01:15 UTC) restored them.
+The lead told the owner the wrong thing and retracted it.
+A corrective commit comment on `7071a8eb5b8f585a9bdf3ac6b88fd4a94d51ddd7` is owed,
+since commits are never amended.
+
+The comment over the rule's scope described her opening words as keeping a capsule "so her enemies could never take
+her",
+and the rule's own example carried the same motive to every sheet.
+The lead read line 9 of the original page alone,
+which says living is her right and not her duty,
+so she could even do things with a potassium cyanide capsule in her mouth,
+and that she was preparing to.
+The words are not there,
+and `7071a8eb5b` called the motive invented.
+Line 10 of the original is the rest of the quote:
+in dangerous places,
+where she might be caught,
+she would do it,
+and she would never let her enemies get her (我绝对不会让我的敌人得到我).
+The words are hers.
+
+`abf7fdae89` gives both lines in the comment.
+The rule's example keeps the generic wording of `7071a8eb5b`,
+"what they might do or carry",
+which is accurate and ties no motive to a case.
+The message of `7071a8eb5b` still says the motive was invented;
+the corrective comment says line 10 of the original holds it,
+and names `abf7fdae89`.
+
+Prevention:
+`mistake-prevention-guards-searches-and-claims.md`,
+"Claims without their evidence":
+before text is called invented,
+the whole quoted passage is read in the original,
+not the line the quote started on.
+The slip has the shape of M279,
+a fact called wrong after one source was read,
+and a quote is the unit that can run over a line.

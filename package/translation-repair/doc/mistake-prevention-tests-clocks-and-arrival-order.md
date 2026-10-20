@@ -799,6 +799,12 @@ one took the expected order from the function under test,
 two accepted any six of the seven seats that can edit,
 and one looked up two named voices and no longer failed on an extra entry.
 
+The rule of the rotation came back with the reader-protection scope of 2026-10-20,
+which lengthened the house rule every sheet splices:
+the consolidate deep-reply case and the corpus-pass contest re-seat case named a seat the first round no longer asked
+(ledger B701).
+A census of the other cases that name a seat is open.
+
 The rule:
 a test never pins an order or a seat set that a prompt hash decides,
 since any sheet edit moves the hash.
@@ -828,6 +834,13 @@ and a case that must seat particular voices pins them by an injected start of th
 (`StageSettings.editorBenchStart`,
 which no production launch gives)
 and not by a membership check (ledger B631).
+A case that needs one named seat asked passes `fanOut: 'whole-bench'` to the stage,
+or pins `benchStart`,
+and never relies on the rotated window to reach it (ledger B701).
+A seam that drives a stage takes `fanOut` and hands it on,
+so a case can ask it:
+`runArchiveBlockReviewStage` and `runPassContest` did not,
+until `20a379f77a` and `a169580740`.
 Before a test is rewritten to ignore an order,
 its diff is read for each assertion it drops,
 and a guard is removed to show the new test still fails for it.
@@ -841,3 +854,6 @@ and the ten test files of ledger B627 use it.
 seats the six editor voices of the calibration cases,
 and the guards of the seam were shown to fail by removal (ledger B631).
 No scan finds a test that pins a rotated order.
+Nothing finds a scripted case that names a seat without either;
+the census of ledger B701 is the search for them,
+and until it is done the habit is the only guard.
