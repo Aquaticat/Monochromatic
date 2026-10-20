@@ -1,3 +1,5 @@
+import type { ReadonlyEntry, } from './readonly-entry.ts';
+
 /**
  Reads which models wrote the text a checker stage is about to judge, out of
  the judged rounds that produced it.
@@ -226,7 +228,7 @@ function envelopeAuthorsFromRounds(
    issue, and keying any earlier would drop the first envelope's authors.
    */
   const pairs: readonly IssueAuthorPair[] = Object.entries(issuesByEnvelope,)
-    .flatMap(function toPairs([envelopeId, issueIds,],): readonly IssueAuthorPair[] {
+    .flatMap(function toPairs([envelopeId, issueIds,]: ReadonlyEntry<string, readonly string[]>,): readonly IssueAuthorPair[] {
       /**
        Models that wrote this envelope's winning candidate.
        */

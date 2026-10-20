@@ -13,6 +13,7 @@ import {
 } from './repair-chunk-proof.ts';
 import type { EditorStageResult, } from './repair-editor-stage.ts';
 import type { IssueResolutionTally, } from '@monochromatic-dev/translation-repair-adjudication/ts';
+import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Worse-voted strip
 // LEDGER L3, the owner's ruling of 2026-09-28 ("Revert worse-voted,
@@ -115,7 +116,7 @@ export function stripWorseVotedEdits(
    run can produce.
    */
   const worseIssueIds = new Set(Object.entries(tallies,)
-    .filter(function isWorseVoted([issueId, tally,],): boolean {
+    .filter(function isWorseVoted([issueId, tally,]: ReadonlyEntry<string, IssueResolutionTally>,): boolean {
       if (!creditableIds.has(issueId,))
         return false;
       /**
@@ -127,7 +128,7 @@ export function stripWorseVotedEdits(
       } = tally;
       return (!resolved) && (worse > 0);
     },)
-    .map(function toId([issueId,],): string {
+    .map(function toId([issueId,]: ReadonlyEntry<string, IssueResolutionTally>,): string {
       return issueId;
     },),);
   if (worseIssueIds.size === 0)

@@ -28,6 +28,7 @@ import {
   gatherStageVoices,
   type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
+import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Checker stage
 // The proving stage of one chunk's repair: checker models judge whether each
@@ -294,7 +295,7 @@ export async function runCheckerStage(
   for (
     const line of Object
       .entries(readings,)
-      .flatMap(function toLines([issueId, reading,],): readonly string[] {
+      .flatMap(function toLines([issueId, reading,]: ReadonlyEntry<string, IssueCheckerReading>,): readonly string[] {
         return reading.ballots
           .map(function toLine(ballot,): string {
             return `checker-ballot ${ballot.modelId} ${issueId} ${ballot.verdict} ${

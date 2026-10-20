@@ -46,6 +46,7 @@ import {
   gatherStageVoices,
   type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
+import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Editor stage
 // Several editors rewrite one chunk's envelopes independently, every proposal
@@ -475,7 +476,7 @@ export async function runEditorStage(
       },
           new Map<string, number>(),
         ),]
-        .map(function toFinding([kind, count,],): string {
+        .map(function toFinding([kind, count,]: ReadonlyEntry<string, number>,): string {
         return `editor-rejected ${kind} (${String(count,)})`;
       },), },),
     ],
