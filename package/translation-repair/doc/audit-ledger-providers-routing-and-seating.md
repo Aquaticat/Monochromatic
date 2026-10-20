@@ -622,3 +622,38 @@ and only the type check would have refused it;
 and the rerun (`p14b-mutants.json`) catches it.
 No cache moves:
 nothing a stage reads depends on the spend reader.
+
+### P15: the router's attempt loop was bounded by the provider order, not by the providers that serve the call
+
+Status:
+fixed in `5b124dbaf6` (red in `e11823a963`),
+found 2026-10-20 while adding NeuralWatt as the fifth provider
+(`doc/decision/translation-repair-neuralwatt-provider.md`).
+`createRoutingClient` in `provider-router.ts` ran `for (const attempt of PROVIDER_ORDER.keys())`,
+one pass per provider in the order,
+while its exits counted `serving`,
+the providers that serve the model.
+With four providers and models served by four,
+the two counts agreed and nothing showed.
+With a fifth provider in the order,
+a model four providers serve got a fifth decision after its fourth attempt,
+and when every attempt had been cut at its stream bound
+that decision named a budget refusal instead of the stream bound.
+The loop now runs `Math.max(serving, 1)` passes,
+so a model nobody serves still reaches the decision that says so,
+and the comment after the loop no longer says the case takes a model all four providers serve.
+The rule for next time:
+a loop whose exit reads one count is bounded by that same count,
+never by a constant that happens to equal it today.
+
+The same commit keeps a refusal sized to one call from holding a provider out.
+`NeuralWattAllowanceError` (the day's energy cannot take this call's estimate) is a budget refusal,
+so the router moves the call on;
+`isCallSizedRefusal` makes both the router and the re-ask path skip `markRefused` for it,
+so the small calls behind a refused large one still reach the free energy.
+The guard was shown to fail by mutation:
+without the `isCallSizedRefusal` check,
+"HOLDS NEURALWATT OUT FOR NOTHING WHEN IT REFUSES ONE LARGE CALL" fails.
+The matching check in `provider-router-reask.ts` was not mutated on its own.
+No cache moves:
+no cache key names a provider or reads the router's attempt count.
