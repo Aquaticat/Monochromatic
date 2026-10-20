@@ -1537,7 +1537,9 @@ type CargoSharedDependency = {
  Shared dependency requirements owned across crates: every dependency whose
  exact requirement is identical wherever it appears (single fleet-wide form).
  `tokio` is excluded because `truepeak-core` declares an `optional` variant;
- `image`, `gtk4`, and `windows` carry genuinely divergent per-crate forms.
+ `image`, `gtk4`, `windows`, and `slint` carry genuinely divergent per-crate forms:
+ `package/desktop-app/ide` draws on the GPU only (`renderer-femtovg-wgpu`, no `renderer-software`, no OpenGL),
+ and a fleet-wide form would put the software renderer back into it on the next sync.
  
  @example
  ```ts
@@ -1559,11 +1561,6 @@ const CARGO_SHARED_DEPENDENCIES: readonly CargoSharedDependency[] = [
   { table: 'dependencies', name: 'ringbuf', value: '0.5', },
   { table: 'dependencies', name: 'serde', value: { version: '1', features: ['derive',], }, },
   { table: 'dependencies', name: 'serde_json', value: '1', },
-  {
-    table: 'dependencies',
-    name: 'slint',
-    value: { version: '1.18.1', features: ['backend-winit', 'renderer-femtovg', 'renderer-software',], },
-  },
   { table: 'dependencies', name: 'symphonia', value: { version: '0.6', features: ['all',], }, },
   { table: 'dependencies', name: 'tracing', value: '0.1', },
   { table: 'dependencies', name: 'tracing-appender', value: '0.2', },
