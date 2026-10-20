@@ -8,21 +8,14 @@
  */
 
 /**
- Reason category for an unclassified direct-summary construction failure.
+ Bounded reason category for a direct-summary construction failure.
  */
 export const DIRECT_SUMMARY_FAILURE_REASON = 'direct-summary-construction-failed';
 
 /**
- Reason category for known TypeScript instantiated-tuple serialization panic.
- */
-export const TYPESCRIPT_TUPLE_SERIALIZATION_FAILURE_REASON = 'typescript-tuple-serialization-failed';
-
-/**
  Bounded persisted reason for source-local summary coverage.
  */
-export type EffectSummaryOmissionReason =
-  | typeof DIRECT_SUMMARY_FAILURE_REASON
-  | typeof TYPESCRIPT_TUPLE_SERIALIZATION_FAILURE_REASON;
+export type EffectSummaryOmissionReason = typeof DIRECT_SUMMARY_FAILURE_REASON;
 
 /**
  Tests whether unknown value is one bounded omission reason category.
@@ -33,12 +26,11 @@ export type EffectSummaryOmissionReason =
 
  @example
  ```ts
- isOmissionReason('typescript-tuple-serialization-failed');
+ isOmissionReason('direct-summary-construction-failed');
  ```
  */
 export function isOmissionReason(value: unknown,): value is EffectSummaryOmissionReason {
-  return (value === DIRECT_SUMMARY_FAILURE_REASON)
-    || (value === TYPESCRIPT_TUPLE_SERIALIZATION_FAILURE_REASON);
+  return value === DIRECT_SUMMARY_FAILURE_REASON;
 }
 
 /**
@@ -50,7 +42,7 @@ export function isOmissionReason(value: unknown,): value is EffectSummaryOmissio
  
  @example
  ```ts
- areOmissionReasons(['typescript-tuple-serialization-failed']);
+ areOmissionReasons(['direct-summary-construction-failed']);
  ```
  */
 export function areOmissionReasons(values: readonly unknown[],): values is readonly EffectSummaryOmissionReason[] {
