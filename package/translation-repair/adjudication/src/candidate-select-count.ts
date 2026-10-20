@@ -14,6 +14,7 @@ import {
 import { countCandidateWeights, } from './candidate-weights.ts';
 import type { HeardVoice, } from '@monochromatic-dev/translation-repair-stage/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Ballot counting
 // The weighing and tallying half of the select stage, apart from
@@ -189,8 +190,8 @@ export function countBallots(
    Candidate indexes ordered by drawn weight, most first.
    */
   const ranked = [...tally.entries(),].toSorted(function byWeight(
-    a,
-    b,
+    a: ReadonlyEntry<number, number>,
+    b: ReadonlyEntry<number, number>,
   ): number {
     return b[1] - a[1];
   },);

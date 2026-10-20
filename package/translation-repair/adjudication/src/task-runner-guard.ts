@@ -3,6 +3,7 @@ import {
   rendersAsNothing,
   wordForCount,
 } from '@monochromatic-dev/translation-repair-typography/ts';
+import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Task runner guard
 // A BUILT COMMAND OF THIS PACKAGE REFUSES TO RUN IN A PROCESS THAT HOLDS
@@ -148,7 +149,7 @@ export type TaskRunnerVerdict =
 function countKeyVariables({ env, }: { readonly env: Readonly<NodeJS.ProcessEnv>; },): number {
   return Object
     .entries(env,)
-    .filter(function holdsKey([name, value,],): boolean {
+    .filter(function holdsKey([name, value,]: ReadonlyEntry<string, Readonly<NodeJS.ProcessEnv>[string]>,): boolean {
       if (!isCredentialName({ name, },))
         return false;
       if (value === undefined)

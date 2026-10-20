@@ -16,6 +16,7 @@ import {
   partitionGradedMembers,
   severityUpperMedian,
 } from './tally-issue.ts';
+import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Vote tally
 // Pure aggregation of panel ballots into adjudicated issues. Decision rules,
@@ -221,7 +222,7 @@ function disposeMerge(
           readonly same: number;
           readonly distinct: number
         },
-        [panelistId, ballot,],
+        [panelistId, ballot,]: ReadonlyEntry<string, PanelBallot>,
       ) {
         /**
          This panelist's opinion on the cluster, when given.

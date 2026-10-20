@@ -10,6 +10,7 @@ import {
   rendersAsNothing,
 } from '@monochromatic-dev/translation-repair-typography/ts';
 import { flattenSpace, } from '@monochromatic-dev/translation-repair-house-rule/ts';
+import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Introduced-defect screening
 // The deterministic half of the probe. A prober claiming the edit introduced a
@@ -723,7 +724,7 @@ export function screenIntroducedDefects(
       .filter(function castNothingHere([
         ,
         checks,
-      ],): boolean {
+      ]: ReadonlyEntry<string, readonly IntroducedDefectCheckWire[]>,): boolean {
         return !checks.some(function isThisRegion(check,): boolean {
           return check.region === (index + 1);
         },);

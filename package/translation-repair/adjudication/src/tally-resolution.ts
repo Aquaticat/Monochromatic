@@ -8,6 +8,7 @@ import {
   type ResolutionReportWire,
   type ResolutionVerdict,
 } from './resolution-wire.ts';
+import type { ReadonlyEntry, } from './readonly-entry.ts';
 
 //region Resolution tally
 // Checker replies resolve through the prompt plan exactly like panel
@@ -301,7 +302,7 @@ export function tallyResolutionChecks(
      */
     const cast = Object
       .entries(ballots,)
-      .flatMap(function toWeighed([modelId, ballot,],): readonly WeighedVerdict[] {
+      .flatMap(function toWeighed([modelId, ballot,]: ReadonlyEntry<string, ResolutionBallot>,): readonly WeighedVerdict[] {
         /**
          This checker's verdict, when cast.
          */

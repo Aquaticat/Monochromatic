@@ -51,6 +51,15 @@ export type BenchPages = {
 };
 
 /**
+ One key and its value as a deeply readonly pair, which a callback reading an entry of `Object.entries` needs for its
+ destructured parameter. Declared here because a test fixture imports the package's shipped entry, not its source.
+ */
+type ReadonlyEntry<Key, Value,> = readonly [
+  Key,
+  Value,
+];
+
+/**
  The places a built command reads, with the environment naming them.
 
  @example
@@ -121,7 +130,7 @@ function pagesOf(
 ): readonly PageFile[] {
   return [
     ...Object.entries(entries,)
-      .flatMap(function bothPages([entryId, pages,],): readonly PageFile[] {
+      .flatMap(function bothPages([entryId, pages,]: ReadonlyEntry<string, BenchPages>,): readonly PageFile[] {
         return [
           {
             relPath: `people/${entryId}/page.md`,
@@ -134,7 +143,7 @@ function pagesOf(
         ];
       },),
     ...Object.entries(originalOnly,)
-      .map(function onePage([entryId, source,],): PageFile {
+      .map(function onePage([entryId, source,]: ReadonlyEntry<string, string>,): PageFile {
         return {
           relPath: `people/${entryId}/page.md`,
           text: source,
