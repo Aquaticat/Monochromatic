@@ -8,6 +8,7 @@ import {
 import { CONFIG_FILE_NAME, } from '@monochromatic-dev/translation-repair-typography/ts/semantic-wrap-binary-constants.ts';
 
 import { nodeEntries, } from './src/build-entries.ts';
+import type { ReadonlyEntry, } from './src/readonly-entry.ts';
 
 /**
  Semantic-wrap config of the typography package, which the runner bundles inline and read beside themselves.
@@ -39,7 +40,7 @@ const config: readonly ReturnType<typeof nodeConfig>[] = [
     },
   },),
   nodeConfig({
-    input: Object.fromEntries([...nodeEntries,].filter(function isRunner([entry,],): boolean {
+    input: Object.fromEntries([...nodeEntries,].filter(function isRunner([entry,]: ReadonlyEntry<string, string>,): boolean {
       return entry !== 'index';
     },),),
     outputOverrides: {
