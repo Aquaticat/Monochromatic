@@ -17,6 +17,7 @@ import { propagateEffects, } from './effect-fixed-point-propagation.ts';
 import { effectPublicSummary, } from './effect-public-summary.ts';
 import type { ParameterIndex, } from './effect-slot-identity.ts';
 import { SemanticBridgeError, } from './semantic-bridge-error.ts';
+import { configuredProjectConfigFileName, } from './semantic-file-name.ts';
 import {
   assertReachedCallSummaries,
   reachedSourceFileNames,
@@ -395,7 +396,7 @@ export function createDemandDrivenEffectIndex(
     },);
     pendingStores.clear();
     pruneDirectSummaryCache({
-      projectKey: project.configFileName,
+      projectKey: configuredProjectConfigFileName({ project, },),
       activeFiles: indexedFileNames,
     },);
     /* The optimistic per-expansion foreign pass is gone with the gate it fed. It narrowed

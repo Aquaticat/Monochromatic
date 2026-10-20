@@ -56,6 +56,8 @@ export {
   type SemanticBridgeFailureReason,
 } from './prefer-readonly-parameter-types/semantic-bridge-error.ts';
 
+export { configuredProjectConfigFileName, } from './prefer-readonly-parameter-types/semantic-file-name.ts';
+
 export {
   findNodeAtOffset,
   typescriptOffset,

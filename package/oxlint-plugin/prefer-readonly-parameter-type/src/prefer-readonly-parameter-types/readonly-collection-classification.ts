@@ -192,7 +192,9 @@ function classifyTuple({
       },);
     },);
   return combineClassifications([
-    ...type.readonly
+    ...type
+      .getTarget()
+      .readonly
       ? []
       : [mutableReadonlyClassification({
         kind: 'tuple',

@@ -67,7 +67,7 @@ function signatureUsages({
   readonly declaration: EffectCallableDeclaration;
 }): readonly SignatureUsage[] | typeof SIGNATURE_USAGE_UNAVAILABLE {
   try {
-    return project.checker
+    return project.languageService
       .getSignatureUsage(declaration,);
   }
   catch (error) {

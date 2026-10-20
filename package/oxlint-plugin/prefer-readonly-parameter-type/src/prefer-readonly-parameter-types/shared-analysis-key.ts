@@ -17,6 +17,7 @@ import {
   analyzerDigest,
   contentDigest,
 } from './effect-summary-cache-identity.ts';
+import { configuredProjectConfigFileName, } from './semantic-file-name.ts';
 import { isWorkspaceSourceFileName, } from './workspace-source-path.ts';
 import {
   recordSharedClosure,
@@ -526,7 +527,7 @@ export function createSharedKeyResolver({
       if (key.eligible) {
         recordSharedEligible({
           fileName: sourceFile.fileName,
-          project: project.configFileName,
+          project: configuredProjectConfigFileName({ project, },),
           digest: key.digest,
           parts: key.parts,
         },);

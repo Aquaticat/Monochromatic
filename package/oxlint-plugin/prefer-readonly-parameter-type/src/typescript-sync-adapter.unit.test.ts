@@ -21,6 +21,7 @@ import {
 
 import {
   closeSemanticBridge,
+  configuredProjectConfigFileName,
   openSemanticFile,
   semanticBridgeCacheStats,
   typescriptOffset,
@@ -638,7 +639,9 @@ await describe({
               hasBOM: false,
             },);
             expect(
-              session.project.configFileName.replaceAll('\\', '/',).toLowerCase(),
+              configuredProjectConfigFileName({ project: session.project, },)
+                .replaceAll('\\', '/',)
+                .toLowerCase(),
             ).toBe(
               join(directory.path, 'tsconfig.json',).replaceAll('\\', '/',).toLowerCase(),
             );

@@ -136,14 +136,19 @@ function openExternalProject({
   const api = externalApiState.current ?? new API({ cwd: dirname(configPath,), },);
   /**
    Configured project snapshot for shipped implementation.
+   
+   TypeScript 7.1 creates independent snapshots (`api.createSnapshot`) where 7.0 added the project to one shared
+   session with `api.updateSnapshot`; each external implementation holds and releases its own view. `ensurePrograms`
+   forces the eager program rebuild 7.0 did by default, so the implementation source below reads fresh text.
    */
-  const snapshot = api.updateSnapshot({
+  const snapshot = api.createSnapshot({
     openProjects: [configPath,],
+    ensurePrograms: true,
   },);
   /**
    Loaded generated project.
    */
-  const project = snapshot.getProject(configPath,);
+  const project = snapshot.getConfiguredProject(configPath,);
   /**
    Shipped implementation source in generated project.
    */

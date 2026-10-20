@@ -152,7 +152,7 @@ function callersAllResolve({
     /**
      Every usage of this callable's signature the project can enumerate.
      */
-    const usages = project.checker
+    const usages = project.languageService
       .getSignatureUsage(declaration,);
     /* An empty enumeration is refused rather than accepted, and the distinction is the
      * whole soundness of this test. `every` over nothing is true, so a callable with no
