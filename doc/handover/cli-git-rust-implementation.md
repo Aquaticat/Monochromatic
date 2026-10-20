@@ -1841,6 +1841,19 @@ that is verification, not a decision for the user.
   bodies are not compiled on Linux). `auto_push_reconcile.rs:164:31` (timeout): the host run fails
   `a_branch_that_tracks_a_local_branch_has_no_destination` under it, so it is detected; the container reported a
   timeout only; confirm in the closing mutation rerun over every touched file, after the queued `src/native` fixes.
+  Fixes 2026-10-20, each with a failing-first or mutant-checked test, all committed and awaiting the closing gate and
+  mutation run (unit `cli-git-nc3`, script `~/temp/agent/nc3-run.ts`, image tag `nc3`, logs
+  `~/temp/agent/nc3-<name>.log`; no `src/native` edit while it runs): 1032 (d7dd7d364d: `[remote rejected]` is
+  reconciled through the commit graph; a refusal of the merge by a remote that did not move is final), 472
+  (f134ed0c41: finding `commit-only/staged-deletion-worktree-present` before any private staging; positional
+  pathspecs only, `--pathspec-from-file` is not read), 1784 (ed8eeb39e7: `EPERM` from the owner probe means alive),
+  1781 (968a4a06cd: a failure after the branch advanced is worded `LandedThenFailed`, naming the commit and saying not
+  to retry; the cause of the vanished transaction directory is still open, see below), 1346 (3bafa3670f: typed
+  `SignalGuardActive`), 1347 (4537db5cf9: set lookup in `union_paths`; 0.04 s against 9.1 s for 40,000 paths).
+  Open design question for the user (changes an on-disk format, so not done unasked): 1781 and 1784 share a likely
+  cause. An owner record holds a PID and a start tick, with no PID namespace, so a worker in a container sees a host
+  owner's PID as absent or as another process, judges the owner dead and recovers a live transaction. A namespace-aware
+  owner identity needs a record field every reader accepts; until then a mixed host and container setup is unsafe.
   Triage 2026-10-20: closed 632 (the perf code is gone) and 1348 (ST2 is a TypeScript rule). Reframed 629 to the Rust
   helpers still duplicated across `test_support.rs`, `command_test_support.rs` and `binary_support.rs` plus the
   byte-argument copies in `cli.fuzz`; queued behind nc2, as those files are in the mutation image. 630 stays open with
