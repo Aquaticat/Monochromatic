@@ -15,6 +15,7 @@ import {
   pastQuoteMarkers,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { withoutHtmlComments, } from '@monochromatic-dev/translation-repair-glossary/ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Line structure guard
 // WHY THIS IS NOT IN `translate-validate.ts`, where it was first written and
@@ -266,7 +267,7 @@ function repeatedLines(
   return entries.flatMap(function toFinding([
     wording,
     times,
-  ],): readonly string[] {
+  ]: ReadonlyEntry<string, number>,): readonly string[] {
     if ((times < 2) || (times <= allowed))
       return [];
     return [

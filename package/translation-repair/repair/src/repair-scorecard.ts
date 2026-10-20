@@ -1,4 +1,6 @@
 import type { RepairAttemptRecord, } from './repair-benchmark.ts';
+import type { SeedDetectionVerdict, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Repair scorecard
 // Aggregation of graded repair attempts, split out of the benchmark runner
@@ -235,7 +237,7 @@ export function computeRepairScorecard(
        */
       const fair = Object
         .entries(record.seedDetection,)
-        .filter(function isFair([seedId, verdict,],): boolean {
+        .filter(function isFair([seedId, verdict,]: ReadonlyEntry<string, SeedDetectionVerdict>,): boolean {
           if (verdict === 'declined-protective')
             return false;
 

@@ -1,6 +1,7 @@
 import type {
   AdjudicatedIssue,
   EditableEnvelope,
+  ReadonlyEntry,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { applyPatchOperations, } from '@monochromatic-dev/translation-repair-page-pass/ts';
 import {
@@ -115,7 +116,7 @@ export function stripWorseVotedEdits(
    run can produce.
    */
   const worseIssueIds = new Set(Object.entries(tallies,)
-    .filter(function isWorseVoted([issueId, tally,],): boolean {
+    .filter(function isWorseVoted([issueId, tally,]: ReadonlyEntry<string, IssueResolutionTally>,): boolean {
       if (!creditableIds.has(issueId,))
         return false;
       /**
@@ -127,7 +128,7 @@ export function stripWorseVotedEdits(
       } = tally;
       return (!resolved) && (worse > 0);
     },)
-    .map(function toId([issueId,],): string {
+    .map(function toId([issueId,]: ReadonlyEntry<string, IssueResolutionTally>,): string {
       return issueId;
     },),);
   if (worseIssueIds.size === 0)
