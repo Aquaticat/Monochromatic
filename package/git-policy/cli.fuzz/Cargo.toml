@@ -68,6 +68,9 @@ bench = false
 [[bin]]
 name = "stage_listing"
 path = "fuzz_targets/stage_listing.rs"
+test = false
+doc = false
+bench = false
 
 [[bin]]
 name = "index_lock_records"
