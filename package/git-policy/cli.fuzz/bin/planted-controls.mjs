@@ -221,43 +221,39 @@ function planted({ plant, original }) {
   return text;
 }
 
-/** Copy the inputs, prove the unplanted controls pass, then require every plant to fail a control. */
-async function main() {
-  const repository = resolve(import.meta.dirname, '../../../..');
-  const root = await mkdtemp(join(tmpdir(), 'cli-git-fuzz-planted-'));
-  const evidenceRoot = join(process.cwd(), 'target', 'verification');
-  await mkdir(evidenceRoot, { recursive: true });
-  const evidence = await mkdtemp(join(evidenceRoot, 'planted-'));
-  try {
-    for (const input of inputs)
-      await cp(join(repository, input), join(root, input), { recursive: true });
-    const baseline = controls({ root });
-    if (baseline.status !== 0 || baseline.passed === 0) {
-      await writeFile(join(evidence, 'baseline.log'), baseline.output);
-      throw new PlantedControlError(`Unplanted generator controls did not pass; inspect ${evidence}.`);
-    }
-    console.log(`Unplanted controls: ${baseline.passed} passed`);
-    const results = [];
-    for (const plant of plants) {
-      const path = join(root, plant.file);
-      const original = await readFile(path, 'utf8');
-      await writeFile(path, planted({ plant, original }));
-      const run = controls({ root });
-      await writeFile(path, original);
-      // A compile error is not an observation: the plant must build and a named control must fail.
-      const noticed = run.status !== 0 && run.failed.length > 0;
-      results.push({ name: plant.name, file: plant.file, edits: plant.edits, status: run.status, failed: run.failed, noticed });
-      await writeFile(join(evidence, `planted-${results.length - 1}.log`), run.output);
-      console.log(`Planted defect "${plant.name}": ${noticed ? `noticed by ${run.failed.join(', ')}` : 'NOT noticed'}`);
-    }
-    await writeFile(join(evidence, 'results.json'), JSON.stringify({ baselinePassed: baseline.passed, results }, null, 2) + '\n');
-    console.log(`Planted-control evidence: ${evidence}`);
-    const unnoticed = results.filter(result => !result.noticed);
-    if (unnoticed.length > 0)
-      throw new PlantedControlError(`Planted defects were not noticed: ${unnoticed.map(result => result.name).join('; ')}.`);
-  } finally {
-    await rm(root, { recursive: true, force: true });
+// Copy the inputs, prove the unplanted controls pass, then require every plant to fail a control.
+const repository = resolve(import.meta.dirname, '../../../..');
+const root = await mkdtemp(join(tmpdir(), 'cli-git-fuzz-planted-'));
+const evidenceRoot = join(process.cwd(), 'target', 'verification');
+await mkdir(evidenceRoot, { recursive: true });
+const evidence = await mkdtemp(join(evidenceRoot, 'planted-'));
+try {
+  for (const input of inputs)
+    await cp(join(repository, input), join(root, input), { recursive: true });
+  const baseline = controls({ root });
+  if (baseline.status !== 0 || baseline.passed === 0) {
+    await writeFile(join(evidence, 'baseline.log'), baseline.output);
+    throw new PlantedControlError(`Unplanted generator controls did not pass; inspect ${evidence}.`);
   }
+  console.log(`Unplanted controls: ${baseline.passed} passed`);
+  const results = [];
+  for (const plant of plants) {
+    const path = join(root, plant.file);
+    const original = await readFile(path, 'utf8');
+    await writeFile(path, planted({ plant, original }));
+    const run = controls({ root });
+    await writeFile(path, original);
+    // A compile error is not an observation: the plant must build and a named control must fail.
+    const noticed = run.status !== 0 && run.failed.length > 0;
+    results.push({ name: plant.name, file: plant.file, edits: plant.edits, status: run.status, failed: run.failed, noticed });
+    await writeFile(join(evidence, `planted-${results.length - 1}.log`), run.output);
+    console.log(`Planted defect "${plant.name}": ${noticed ? `noticed by ${run.failed.join(', ')}` : 'NOT noticed'}`);
+  }
+  await writeFile(join(evidence, 'results.json'), JSON.stringify({ baselinePassed: baseline.passed, results }, null, 2) + '\n');
+  console.log(`Planted-control evidence: ${evidence}`);
+  const unnoticed = results.filter(result => !result.noticed);
+  if (unnoticed.length > 0)
+    throw new PlantedControlError(`Planted defects were not noticed: ${unnoticed.map(result => result.name).join('; ')}.`);
+} finally {
+  await rm(root, { recursive: true, force: true });
 }
-
-await main();
