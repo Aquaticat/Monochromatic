@@ -1,5 +1,6 @@
 //! What:
-//!  Semantic line breaks at verified prose boundaries, each replacing the single space it breaks at.
+//!  Semantic line breaks at verified prose boundaries,
+//! each replacing the single space it breaks at.
 //! Why:
 //!  Text-node tails must be interpreted through their inline delimiters and surrounding block syntax.
 //!
@@ -32,8 +33,10 @@ fn is_script_whitespace(character: char) -> bool {
     return (character.is_whitespace() && character != '\u{85}') || character == '\u{feff}';
 }
 
-/// Whether a paragraph's whole source is one tag-like element, such as a component written with JSX braces.
-///  CommonMark does not read such a tag as HTML, so it parses as prose that has nothing to break.
+/// Whether a paragraph's whole source is one tag-like element,
+/// such as a component written with JSX braces.
+///  CommonMark does not read such a tag as HTML,
+/// so it parses as prose that has nothing to break.
 fn is_tag_like_paragraph(context: &MarkdownSource, paragraph: u32) -> bool {
     let text: &str = context.slice(paragraph).trim_matches(is_script_whitespace);
     return text.starts_with('<') && text.ends_with('>');

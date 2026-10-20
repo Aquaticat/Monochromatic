@@ -2,7 +2,8 @@
 //!  Positive and negative controls for the sidecar test rule.
 //! Why:
 //!  Inline test modules and stray test functions must be reported,
-//!  while declarations, sidecar files and non-test configurations must not.
+//!  while declarations,
+//! sidecar files and non-test configurations must not.
 //!
 //! In TS you'd write (pseudocode):
 //! ```ts
@@ -32,7 +33,8 @@ fn check(source: &str) -> Vec<Diagnostic> {
     return check_as("src/thing.rs", source);
 }
 
-/// An inline module under a test configuration is reported once, at its name,
+/// An inline module under a test configuration is reported once,
+/// at its name,
 ///  and its test functions are not reported again.
 #[test]
 fn an_inline_test_module_is_reported_once_at_its_name() {

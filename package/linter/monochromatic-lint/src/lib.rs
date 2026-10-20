@@ -152,7 +152,8 @@ pub mod markdown_punctuation;
 /// Typed Markdown rule selection from validated merged JSONC.
 #[doc(hidden)]
 pub mod markdown_rule_settings;
-/// Prose line breaks that replace their separating space, with token,
+/// Prose line breaks that replace their separating space,
+/// with token,
 ///  delimiter and block guards.
 #[doc(hidden)]
 pub mod markdown_semantic_breaks;
