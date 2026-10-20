@@ -61,7 +61,9 @@ The steps are the runbook's "Add a decision-only model" section.
 DeepSeek V4.1 Flash was approved on Hyper and OpenRouter on 2026-09-11.
 It has one distinct catalog identity,
 `deepseek-v4.1-flash`,
-served as that ID on Hyper and `deepseek/deepseek-v4.1-flash` on OpenRouter.
+served as that ID on Hyper and `deepseek/deepseek-v4.1-flash` on OpenRouter at the approval
+and as `deepseek-v4.1-flash-1017` and `deepseek/deepseek-v4.1-flash-1017` since 2026-10-20
+(the 1017 migration paragraph gives the reasons).
 Both actual compiled clients passed the streamed structured-output probe.
 V4 Flash 0731 was a separate version whose ratings,
 writer exclusion and endpoint exclusions did not transfer,
@@ -80,6 +82,40 @@ The [admission record](../../../doc/planning/translation-repair-deepseek-v41-fla
 contains availability,
 prices,
 verification and remaining work.
+
+DeepSeek V4.1 Flash moved to the 1017 weights (`deepseek-ai/DeepSeek-V4.1-Flash-1017`) on 2026-10-20,
+on the owner's instruction:
+"Migrate to deepseek v4 flash 1017 where possible."
+Hyper and OpenRouter list the 1017 weights under their own ids,
+so the card's `hyper.id` is `deepseek-v4.1-flash-1017`
+and its `openrouter.id` is `deepseek/deepseek-v4.1-flash-1017`,
+while the roster id stays `deepseek-v4.1-flash`
+(caches,
+ledgers,
+calibrations and logs keep one name for the seat;
+`HyperModelInfo.rosterId` ties the two).
+NeuralWatt's `deepseek-v4.1-flash` already served the 1017 weights,
+by its listing's `huggingface_id`,
+so that side did not change.
+Synthetic lists the 1017 weights too,
+but this card has no Synthetic side and adding one would be new seating,
+so none was added.
+Morph's price on the card moved to 0.158 and 0.6 USD per million
+(listing of 2026-10-20;
+was 0.12 and 0.468).
+The five ignored OpenRouter endpoints stay:
+DeepInfra and Wafer list the 1017 id,
+and OpenInference,
+DekaLLM and Sail Research listed no endpoint for it on 2026-10-20,
+so those three ignores are inert until one does.
+The measured values on the card
+(completion cap 13,082,
+Hyper `maxOutputLength` 26,214,
+`rawCharsPerToken` 228,
+the holds and the judge and writer calibrations)
+were measured on the pre-1017 ids and carry over as an assumption until the first runs on 1017 measure them.
+No cache version moved:
+no cache key names a served id.
 
 Hyper-origin identity names and Synthetic-counterpart projections are now explicit:
 `HYPER_ORIGIN_ROSTER_IDS`,
