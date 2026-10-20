@@ -1,6 +1,11 @@
 /**
- Regression coverage for the installed unbash 5 syntax tree.
-
+ Regression coverage for the installed `unbash` syntax tree.
+ 
+ Cases were written against the unbash 5 tree,
+ and the file name records that origin;
+ they stay valid for unbash 6,
+ where `TestLogical` is n-ary and `Time`/`Negation` are pipeline prefixes.
+ 
  @module
  */
 
@@ -35,6 +40,33 @@ await describe({
                 },),).toEqual(['output.txt',],);
             },
           },);
+        },),
+        it({
+          name: 'traverses every operand of a two-way TestLogical expression',
+          fn: async function testTwoWayTestLogical() {
+            const result = analyzeShellCommand('[[ -n $(printf logical_left_value) && -n $(printf logical_right_value) ]]',);
+            expect(result.parsed,).toBe(true,);
+            expect(result.hasCommandSubstitution,).toBe(true,);
+            const nestedArguments = result.commands.flatMap(function commandArguments(command,) {
+              return (command.name === 'printf') ? command.args : [];
+            },);
+            expect(nestedArguments,).toContain('logical_left_value',);
+            expect(nestedArguments,).toContain('logical_right_value',);
+          },
+        },),
+        it({
+          name: 'traverses every operand of a three-way TestLogical expression',
+          fn: async function testThreeWayTestLogical() {
+            const result = analyzeShellCommand('[[ -n $(printf logical_first_value) && -n $(printf logical_second_value) || -n $(printf logical_third_value) ]]',);
+            expect(result.parsed,).toBe(true,);
+            expect(result.hasCommandSubstitution,).toBe(true,);
+            const nestedArguments = result.commands.flatMap(function commandArguments(command,) {
+              return (command.name === 'printf') ? command.args : [];
+            },);
+            expect(nestedArguments,).toContain('logical_first_value',);
+            expect(nestedArguments,).toContain('logical_second_value',);
+            expect(nestedArguments,).toContain('logical_third_value',);
+          },
         },),
         it({
           name: 'keeps redirections separate from mixed command prefixes and suffixes',
