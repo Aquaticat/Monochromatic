@@ -1819,6 +1819,18 @@ that is verification, not a decision for the user.
   Separate pass for `cli.fuzz/bin/container.mjs` and `planted-controls.mjs` (1338's second half, 728 to 730):
   they are outside every lint task, use `spawnSync`, `try/finally` and regexes, and `container.mjs` ends in an
   early `return` inside its `try`; verify with a `--build-only` run of the fuzz container script.
+  nc1 finished 2026-10-20 (unit inactive). Six files failed their unmutated baseline (`manual_push_range`,
+  `manual_push_lifecycle`, `auto_push`, `auto_push_branch_key`, `auto_push_record`, `auto_push_single_flight`): two
+  `native_binary` tests (`builtin::branch_creation_is_rejected_in_the_current_worktree`,
+  `builtin::a_tool_cache_checkout_is_exempt_from_the_linked_worktree_rule`) hit the 5-second command bound under load
+  (`binary_support.rs:160`); the other seven files ran. Rerun as unit `cli-git-nc2` (script `~/temp/agent/nc-rerun.ts`,
+  logs `~/temp/agent/nc-rerun-<file>.log`, same image tag `nc1`). Results so far: `policy_events` 32 caught;
+  `maintenance_hk_config` 18 caught, 1 unviable; `maintenance_run` 10 caught, 2 unviable; `auto_push_reconcile` 47
+  caught, 3 unviable, 1 timeout (`:164:31` `||` to `&&` in `read_destination`, unverified); `maintenance_decision` 1
+  missed (`MaintenanceError` `Display::fmt` replaced by `Ok(Default::default())`); `manual_push_probe` 3 missed
+  (`:34:42` and `:34:49` `*` to `+`, and `ManualPushProbeError` `Display::fmt`); `signal_relay` 8 missed (four listed:
+  `wait_without_reaping` ECHILD arm and body, `SignalGuard::install`, `SignalGuard::run_child`). To do after `nc2`
+  ends (editing `src/native` earlier would leak into its image): a test per missed mutant or an equivalence proof.
   Issue 1713 (handover paths and `mise run //` targets that moved): the cli-git half is done in commit `d4a2587cb6`
   (thirty occurrences of 23 distinct unresolved paths in eleven `doc/handover/cli-git*.md` files keep their text and
   carry an in-place note with the current module or the removal date; progress comment posted). The issue stays open
