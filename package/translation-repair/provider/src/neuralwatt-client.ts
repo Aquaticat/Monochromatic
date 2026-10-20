@@ -72,15 +72,16 @@ import {
 //
 //   1. BEFORE ANY REQUEST, the call reserves its estimated energy in the
 //      ledger (`neuralwatt-ledger.ts`). When the estimate does not fit in what
-//      is left of the UTC day, or a request was already billed today, nothing
-//      is sent and a `NeuralWattAllowanceError` is thrown, which the router
-//      reads as a budget refusal and moves on from.
+//      is left of the UTC day, nothing is sent and a `NeuralWattAllowanceError`
+//      is thrown, which the router reads as a budget refusal and moves on
+//      from.
 //   2. AFTER THE STREAM, the `: energy` comment's figure replaces the estimate
 //      in the ledger. With no such comment the estimate stands, marked.
-//   3. A `: cost` COMMENT WITH `request_cost_usd` ABOVE ZERO means the
-//      request was billed, which free energy does not do. The ledger marks the
-//      UTC day billed, the provider reads dry until 00:00 UTC, and the log
-//      says so plainly. This is the backstop under every estimate.
+//   3. A `: cost` COMMENT IS REPORTED AND NEVER ACTED ON. Its
+//      `request_cost_usd` goes on the `SPEND` line, and a figure above zero
+//      ends nothing: NeuralWatt reports a nominal cost on free-energy requests
+//      too (the owner's dashboard, 2026-10-20, counted a request that reported
+//      0.000107 USD wholly against the free energy).
 //   4. A QUOTA READING BEFORE THE FIRST CALL AND ONE AT THE END OF THE RUN
 //      (`neuralwatt-quota-session.ts`) is the only signal of plan energy
 //      spent, since the free energy is reported nowhere.

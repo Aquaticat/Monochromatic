@@ -48,11 +48,9 @@ import {
 const SIGNAL = new AbortController().signal;
 
 /**
- Energy reading with a given remainder, billed or not.
+ Energy reading with a given remainder.
 
  @param remainingWh - what the day has left
-
- @param billedToday - whether a request was billed today
 
  @returns The reading
 
@@ -61,15 +59,7 @@ const SIGNAL = new AbortController().signal;
  const energy = energyOf({ remainingWh: 12.5, },);
  ```
  */
-function energyOf(
-  {
-    remainingWh,
-    billedToday = false,
-  }: {
-    readonly remainingWh: number;
-    readonly billedToday?: boolean;
-  },
-): NeuralWattEnergy {
+function energyOf({ remainingWh, }: { readonly remainingWh: number; },): NeuralWattEnergy {
   return {
     day: '2026-10-20',
     dailyWh: 550,
@@ -77,7 +67,6 @@ function energyOf(
     reckonedWh: 0.5,
     reservedWh: 0,
     remainingWh,
-    billedToday,
     calls: 3,
   };
 }
@@ -186,26 +175,16 @@ await describe({
         },),
 
         it({
-          name: 'READS DRY ON A DAY A REQUEST WAS BILLED however much energy the ledger says is left, since the next '
-            + 'request would be charged to the plan',
-          fn: async () => {
-            expect(neuralWattIsDry({ energy: energyOf({ remainingWh: 400, billedToday: true, }), },),).toBe(true,);
-          },
-        },),
-
-        it({
-          name: 'PRINTS WHAT IT READ AS KEY=VALUE FIELDS WITH NO SPACE IN A VALUE: the watt-hours left to three places, '
-            + 'the share that rests on estimates, and whether the day was billed',
+          name: 'PRINTS WHAT IT READ AS KEY=VALUE FIELDS WITH NO SPACE IN A VALUE: the watt-hours left to three places '
+            + 'and the share that rests on estimates, with no field about cost',
           fn: async () => {
             expect(neuralWattMeterLevel({ energy: energyOf({ remainingWh: 549.9856, }), },),).toEqual([
               'neuralwattWh=549.986',
               'neuralwattReckonedWh=0.500',
-              'neuralwattBilled=no',
             ],);
-            expect(neuralWattMeterLevel({ energy: energyOf({ remainingWh: 1, billedToday: true, }), },),).toEqual([
+            expect(neuralWattMeterLevel({ energy: energyOf({ remainingWh: 1, }), },),).toEqual([
               'neuralwattWh=1.000',
               'neuralwattReckonedWh=0.500',
-              'neuralwattBilled=yes',
             ],);
           },
         },),
@@ -223,7 +202,7 @@ await describe({
             },);
             expect(wet.neuralwatt,).toEqual({
               state: 'wet',
-              fields: ['neuralwattWh=100.000', 'neuralwattReckonedWh=0.500', 'neuralwattBilled=no',],
+              fields: ['neuralwattWh=100.000', 'neuralwattReckonedWh=0.500',],
             },);
             /**
              Meters read with it dry.
@@ -277,7 +256,8 @@ await describe({
               sinon: ctx.sinon,
             },);
             expect(lines.some(function isMeters(line,): boolean {
-              return line.includes('METERS neuralwatt=wet',) && line.includes('neuralwattWh=250.000',);
+              return line.includes('METERS neuralwatt=wet',) && line.includes('neuralwattWh=250.000',)
+                && (!line.includes('neuralwattBilled',));
             },),).toBe(true,);
           },
         },),

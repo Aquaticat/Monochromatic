@@ -11,6 +11,13 @@ import { NeuralWattLedgerShapeError, } from './neuralwatt-ledger-config.ts';
 // LINES rather than a rewritten total, so two processes writing at once (a
 // pass and a budget sample) cannot lose each other's calls, and a reader can
 // see what was bought and when.
+//
+// A LINE THE FIRST KEYED RUN WROTE (2026-10-20, 22:23 UTC) CARRIES `billedUsd`,
+// a field the ledger no longer writes. THE READER TAKES THE NAMED FIELDS AND IGNORES ANY
+// OTHER, so such a line reads as an ordinary energy line whatever the field
+// holds: NeuralWatt reports a nominal `request_cost_usd` on free-energy requests
+// too (the owner's dashboard counted a 0.0167 Wh request that reported 0.000107
+// USD wholly against the free energy), so a cost is not a billing signal.
 
 /**
  Why a line's watt-hours are an estimate rather than a measurement.
@@ -63,12 +70,6 @@ export type NeuralWattLedgerEntry = {
    Present when `wh` is an estimate, saying why.
    */
   readonly estimated?: NeuralWattReckoning;
-
-  /**
-   USD the request was billed, present only when it was above zero: the
-   request left the free energy, and the day is over for this provider.
-   */
-  readonly billedUsd?: number;
 };
 
 /**
@@ -156,7 +157,6 @@ export function neuralWattEntryOf(
     wh,
     promptTokens,
     estimated,
-    billedUsd,
   } = parsed;
   // Only the spelling `toISOString` writes: `Date.parse` alone also reads a
   // date-time with no zone as local time, which would move the UTC day.
@@ -171,8 +171,6 @@ export function neuralWattEntryOf(
     return refuse('promptTokens is not a number',);
   if ((estimated !== undefined) && (!isNeuralWattReckoning(estimated,)))
     return refuse('estimated is not a reckoning this package writes',);
-  if ((billedUsd !== undefined) && (((typeof billedUsd) !== 'number') || (!(billedUsd > 0))))
-    return refuse('billedUsd is not a positive number',);
   return {
     at,
     model,
@@ -180,7 +178,6 @@ export function neuralWattEntryOf(
     promptTokens,
     // Conditional spreads keep an absent optional field absent.
     ...((estimated === undefined) ? {} : { estimated, }),
-    ...((billedUsd === undefined) ? {} : { billedUsd, }),
   };
 }
 
