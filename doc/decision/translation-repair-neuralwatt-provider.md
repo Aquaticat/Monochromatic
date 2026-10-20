@@ -291,7 +291,9 @@ DeepSeek V4.1 Flash at 22:23 UTC with 2,954 prompt tokens by the byte estimate
 (2,634 by the reply's usage),
 measured 0.0167 Wh against an estimate of 0.0466 Wh,
 and its cost comment reported `request_cost_usd` 0.000107.
-The billed stop then read NeuralWatt dry,
+The billed stop never weighed the energy:
+it read any cost above zero as proof that the free energy was spent and the plan was being charged,
+so after one call of 0.0167 Wh out of 550 Wh it marked NeuralWatt out of energy until 00:00 UTC,
 and the run went on with Hyper and OpenRouter
 until it was stopped at 22:30 UTC after 21 Hyper calls,
 so that free energy would not stand idle while prepaid credit was spent.
