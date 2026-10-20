@@ -42,9 +42,10 @@ export const ENERGY_COMMENT = ': energy {"energy_kwh": 0.000015, "energy_joules"
 export const FREE_COST_COMMENT = ': cost {"request_cost_usd": 0, "cache_savings_usd": 0.0}\n\n';
 
 /**
- The cost comment of a request that was billed.
+ The cost comment of a free-energy request that carries a nominal cost above zero, as the first keyed run's did
+ (0.000107 USD for a request the dashboard counted wholly against the free energy).
  */
-export const BILLED_COST_COMMENT = ': cost {"request_cost_usd": 0.00001}\n\n';
+export const NOMINAL_COST_COMMENT = ': cost {"request_cost_usd": 0.00001}\n\n';
 
 /**
  kWh the plan in every quota reply here includes.

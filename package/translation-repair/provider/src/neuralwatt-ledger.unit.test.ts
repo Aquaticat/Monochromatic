@@ -122,7 +122,6 @@ await describe({
               reckonedWh: 0,
               reservedWh: 0,
               remainingWh: 550,
-              billedToday: false,
               calls: 0,
             },);
           },
@@ -152,7 +151,6 @@ await describe({
               reckonedWh: 0,
               reservedWh: 0,
               remainingWh: 550,
-              billedToday: false,
               calls: 0,
             },);
           },
@@ -220,7 +218,6 @@ await describe({
               reckonedWh: 0,
               reservedWh: 0,
               remainingWh: 549.985,
-              billedToday: false,
               calls: 1,
             },);
             expect(
@@ -328,35 +325,68 @@ await describe({
     },),
 
     describe({
-      name: 'a request that was billed',
+      name: 'a reported cost above zero',
       children: [
         it({
-          name: 'MARKS THE DAY BILLED when a settlement carries a nonzero cost, writing it in the ledger so the next '
-            + 'run on the same UTC day sees it, and CLEARS THE MARK AT THE NEXT 00:00 UTC',
+          name: 'A REPORTED COST ABOVE ZERO DOES NOT END THE DAY: an older line carrying billedUsd 0.000107, the one '
+            + 'the first keyed run wrote, reads as an ordinary energy line, the day keeps its remainder and the next '
+            + 'call is still granted',
           fn: async () => {
             await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-', },);
             const path = join(scratch.path, 'e.jsonl',);
-            const { now, setTo, } = handClock({ start: '2026-10-20T12:00:00.000Z', },);
+            await writeFile(
+              path,
+              lineOf({ at: '2026-10-20T01:00:00.000Z', model: MODEL, wh: 0.0167, promptTokens: 2954, billedUsd: 0.000107, },),
+              'utf8',
+            );
+            const { now, } = handClock({ start: '2026-10-20T12:00:00.000Z', },);
             const ledger = createNeuralWattLedger({ path, dailyWh: 550, now, },);
-            const outcome = await ledger.reserve({ model: MODEL, promptTokens: 1, estimateWh: 0.1, },);
-            if (!outcome.granted)
-              throw new Error('the call fits and should have been granted',);
-            await outcome.reservation.settle({ measuredWh: 0.05, billedUsd: 0.00001, },);
-            expect((await ledger.read()).billedToday,).toBe(true,);
-            expect(
-              jsonRecordOf({ text: (await readFile(path, 'utf8',)).trim(), },),
-            ).toMatchObject({ billedUsd: 0.00001, wh: 0.05, },);
-
-            // A fresh ledger over the same file, as the next run builds.
-            const nextRun = createNeuralWattLedger({ path, dailyWh: 550, now, },);
-            expect((await nextRun.read()).billedToday,).toBe(true,);
-            setTo('2026-10-21T00:00:00.000Z',);
-            expect((await nextRun.read()).billedToday,).toBe(false,);
+            /**
+             Reading of the day with the older line in it.
+             */
+            const energy = await ledger.read();
+            expect(energy,).toEqual({
+              day: '2026-10-20',
+              dailyWh: 550,
+              spentWh: 0.0167,
+              reckonedWh: 0,
+              reservedWh: 0,
+              remainingWh: 550 - 0.0167,
+              calls: 1,
+            },);
+            expect('billedToday' in energy,).toBe(false,);
+            /**
+             The next call, asked for after that line.
+             */
+            const outcome = await ledger.reserve({ model: MODEL, promptTokens: 2954, estimateWh: 0.1, },);
+            expect(outcome.granted,).toBe(true,);
           },
         },),
 
         it({
-          name: 'DOES NOT MARK THE DAY FOR A COST OF ZERO, which is how a free request reads',
+          name: 'READS AN OLDER LINE CARRYING billedUsd AS AN ORDINARY ENERGY LINE WHATEVER THE FIELD HOLDS, since the '
+            + 'field is no longer read: zero, a negative number, text and null all leave the line counted and the day open',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-', },);
+            const { now, } = handClock({ start: '2026-10-20T12:00:00.000Z', },);
+            /**
+             What each older line's field holds, and the reading the ledger gives of a file with that one line.
+             */
+            const readings = await Promise.all([0, -0.1, '0.2', null, true,].map(async function readLine(billedUsd, index,) {
+              const path = join(scratch.path, `legacy-${String(index,)}.jsonl`,);
+              await writeFile(path, lineOf({ at: '2026-10-20T01:00:00.000Z', model: MODEL, wh: 1, promptTokens: 1, billedUsd, },), 'utf8',);
+              return await createNeuralWattLedger({ path, dailyWh: 550, now, },).read();
+            },),);
+            for (const energy of readings) {
+              expect(energy,).toMatchObject({ spentWh: 1, remainingWh: 549, calls: 1, },);
+              expect('billedToday' in energy,).toBe(false,);
+            }
+          },
+        },),
+
+        it({
+          name: 'WRITES A MEASURED CALL AS A PLAIN ENERGY LINE: the settlement names the watt-hours and nothing about '
+            + 'a cost, so a later reader has no billed field to find',
           fn: async () => {
             await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-', },);
             const path = join(scratch.path, 'e.jsonl',);
@@ -365,25 +395,13 @@ await describe({
             const outcome = await ledger.reserve({ model: MODEL, promptTokens: 1, estimateWh: 0.1, },);
             if (!outcome.granted)
               throw new Error('the call fits and should have been granted',);
-            await outcome.reservation.settle({ measuredWh: 0.05, billedUsd: 0, },);
-            expect((await ledger.read()).billedToday,).toBe(false,);
-            expect(jsonRecordOf({ text: (await readFile(path, 'utf8',)).trim(), },).billedUsd,).toBeUndefined();
-          },
-        },),
-
-        it({
-          name: 'REFUSES A RESERVATION ON A BILLED DAY WHATEVER ENERGY IS LEFT, since a call sent then would be charged '
-            + 'to the plan, and says so in the denial, so a client holding a stale reading cannot spend past the mark',
-          fn: async () => {
-            await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-', },);
-            const path = join(scratch.path, 'e.jsonl',);
-            await writeFile(path, lineOf({ at: '2026-10-20T01:00:00.000Z', model: MODEL, wh: 1, promptTokens: 1, billedUsd: 0.2, },), 'utf8',);
-            const { now, } = handClock({ start: '2026-10-20T12:00:00.000Z', },);
-            const ledger = createNeuralWattLedger({ path, dailyWh: 550, now, },);
-            const outcome = await ledger.reserve({ model: MODEL, promptTokens: 1, estimateWh: 0.1, },);
-            expect(outcome.granted,).toBe(false,);
-            if (!outcome.granted)
-              expect(outcome.energy,).toMatchObject({ billedToday: true, remainingWh: 549, },);
+            await outcome.reservation.settle({ measuredWh: 0.05, },);
+            expect(jsonRecordOf({ text: (await readFile(path, 'utf8',)).trim(), },),).toEqual({
+              at: '2026-10-20T12:00:00.000Z',
+              model: MODEL,
+              wh: 0.05,
+              promptTokens: 1,
+            },);
           },
         },),
       ],
@@ -416,7 +434,6 @@ await describe({
               ['wh is not a non-negative number', lineOf({ at: '2026-10-20T01:00:00.000Z', model: MODEL, wh: '1', promptTokens: 1, },),],
               ['promptTokens is not a number', lineOf({ at: '2026-10-20T01:00:00.000Z', model: MODEL, wh: 1, },),],
               ['estimated is not a reckoning this package writes', lineOf({ at: '2026-10-20T01:00:00.000Z', model: MODEL, wh: 1, promptTokens: 1, estimated: 'guess', },),],
-              ['billedUsd is not a positive number', lineOf({ at: '2026-10-20T01:00:00.000Z', model: MODEL, wh: 1, promptTokens: 1, billedUsd: 0, },),],
             ];
             /**
              What reading each bad file throws, with the detail it should name.

@@ -2,10 +2,11 @@
  Tests what a finished NeuralWatt call tells the meter: the stream's two
  comment lines (`neuralwatt-comments.ts`) settle the reservation the call
  held, so the measured energy replaces the estimate, a missing energy comment
- leaves the estimate standing and marked, and a cost above zero is said plainly
- on a warning, because it means a request left the free energy and came out of
- the owner's plan (`https://docs.neuralwatt.com/energy-methodology.md`,
- fetched 2026-10-20).
+ leaves the estimate standing and marked, and a cost above zero is reported on
+ the SPEND line and nowhere else, because NeuralWatt reports a nominal cost on
+ free-energy requests too (`https://docs.neuralwatt.com/energy-methodology.md`,
+ fetched 2026-10-20; the owner's dashboard, 2026-10-20, counted a 0.0167 Wh
+ request that reported 0.000107 USD wholly against the free energy).
 
  REACHED THROUGH THE CLIENT, because `settleNeuralWattCall` is not on the
  package index, which exports only what the siblings and their tests reach,
@@ -44,10 +45,10 @@ import {
 } from './neuralwatt-ledger.test-fixture.ts';
 import {
   ask,
-  BILLED_COST_COMMENT,
   chatExchangesOf,
   ENERGY_COMMENT,
   FREE_COST_COMMENT,
+  NOMINAL_COST_COMMENT,
   scriptedClient,
   streamOf,
 } from './neuralwatt-scripted-client.test-fixture.ts';
@@ -120,7 +121,7 @@ await describe({
         const line = jsonRecordOf({ text: (await readFile(ledger.path, 'utf8',)).trim(), },);
         expect(line.wh,).toBeCloseTo(0.015, 12,);
         expect(line.estimated,).toBeUndefined();
-        expect(line.billedUsd,).toBeUndefined();
+        expect('billedUsd' in line,).toBe(false,);
         expect(lines.some(function isSpend(entry,): boolean {
           return entry.includes(`SPEND provider=neuralwatt model=${SERVED} prompt=90 completion=10 cost=0`,);
         },),).toBe(true,);
@@ -135,7 +136,7 @@ await describe({
           return entry.includes('BILLED',);
         },),).toBe(false,);
         expect(runSpendUsd({ provider: 'neuralwatt', },),).toBe(before,);
-        expect(await ledger.read(),).toMatchObject({ billedToday: false, reservedWh: 0, calls: 1, },);
+        expect(await ledger.read(),).toMatchObject({ reservedWh: 0, calls: 1, },);
       },
     },),
 
@@ -179,7 +180,7 @@ await describe({
 
     it({
       name: 'SETTLES WITH NOTHING WHEN THE STREAM CARRIED NO COMMENT AT ALL: the SPEND line has no cost field, the '
-        + 'ledger line has no billed amount, the estimate stands marked, and nothing is said about a bill',
+        + 'ledger line has no cost field, the estimate stands marked, and nothing is said about a bill',
       fn: async ctx => {
         await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-settle-', },);
         const { client, ledger, } = scriptedClient({
@@ -200,7 +201,7 @@ await describe({
          */
         const line = jsonRecordOf({ text: (await readFile(ledger.path, 'utf8',)).trim(), },);
         expect(line.estimated,).toBe('unreported-estimate',);
-        expect(line.billedUsd,).toBeUndefined();
+        expect('billedUsd' in line,).toBe(false,);
         expect(lines.some(function isSpend(entry,): boolean {
           return entry.includes('SPEND provider=neuralwatt',) && entry.includes('prompt=90 completion=10',)
             && (!entry.includes('cost=',));
@@ -212,20 +213,21 @@ await describe({
     },),
 
     it({
-      name: 'WARNS PLAINLY WHEN A REQUEST WAS BILLED, naming the model, the amount and that calls stop until 00:00 UTC, '
-        + 'writes the cost beside the measured energy, and adds the cost to the run\'s USD meter',
+      name: 'REPORTS A COST ABOVE ZERO ON THE SPEND LINE AND ADDS IT TO THE RUN\'S USD METER, and nothing else: the '
+        + 'ledger line is the measured energy alone, no line is logged as billed or as stopping calls, and the day '
+        + 'keeps its remainder',
       fn: async ctx => {
         await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-settle-', },);
         const { client, ledger, } = scriptedClient({
           dir: scratch.path,
-          chat: [{ status: 200, bodyText: streamOf({ comments: ENERGY_COMMENT + BILLED_COST_COMMENT, }), },],
+          chat: [{ status: 200, bodyText: streamOf({ comments: ENERGY_COMMENT + NOMINAL_COST_COMMENT, }), },],
         },);
         /**
          USD the run meter held before the call.
          */
         const before = runSpendUsd({ provider: 'neuralwatt', },);
         /**
-         Lines the billed call logged.
+         Lines the costed call logged.
          */
         const lines = await consoleLinesDuring({
           run: async function call(): Promise<void> {
@@ -237,14 +239,22 @@ await describe({
          Line the call wrote.
          */
         const line = jsonRecordOf({ text: (await readFile(ledger.path, 'utf8',)).trim(), },);
-        expect(line.billedUsd,).toBe(0.00001,);
+        expect(Object.keys(line,).toSorted(),).toEqual(['at', 'model', 'promptTokens', 'wh',],);
         expect(line.wh,).toBeCloseTo(0.015, 12,);
-        expect(lines.some(function warns(entry,): boolean {
-          return entry.includes(`NeuralWatt BILLED a ${SERVED} request 0.00001 USD to the plan`,)
-            && entry.includes('calls to it stop until 00:00 UTC',);
+        expect(lines.some(function isSpend(entry,): boolean {
+          return entry.includes(`SPEND provider=neuralwatt model=${SERVED} prompt=90 completion=10 cost=0.00001`,);
         },),).toBe(true,);
+        expect(lines.some(function warns(entry,): boolean {
+          return entry.toLowerCase()
+            .includes('billed',) || entry.includes('stop until',);
+        },),).toBe(false,);
         expect(runSpendUsd({ provider: 'neuralwatt', },) - before,).toBeCloseTo(0.00001, 12,);
-        expect((await ledger.read()).billedToday,).toBe(true,);
+        /**
+         The day after the costed call.
+         */
+        const energy = await ledger.read();
+        expect(energy.remainingWh,).toBeCloseTo(550 - 0.015, 12,);
+        expect('billedToday' in energy,).toBe(false,);
       },
     },),
 

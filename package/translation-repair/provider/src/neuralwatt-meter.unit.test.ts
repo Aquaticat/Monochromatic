@@ -23,7 +23,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- A day with room for many calls and no billed request.
+ A day with room for many calls.
  */
 const ROOMY: NeuralWattEnergy = {
   day: '2026-10-20',
@@ -32,7 +32,6 @@ const ROOMY: NeuralWattEnergy = {
   reckonedWh: 0.5,
   reservedWh: 0,
   remainingWh: 549.986,
-  billedToday: false,
   calls: 3,
 };
 
@@ -64,10 +63,17 @@ await describe({
         },),
 
         it({
-          name: 'READS A BILLED DAY AS DRY WHATEVER THE ARITHMETIC SAYS, since every further request would be charged '
-            + 'to the owner\'s plan',
+          name: 'READS A DAY BY WHAT IS LEFT ALONE: the spend, the holds and the calls of the day change nothing '
+            + 'while the remainder fits the smallest call, and a reading still carrying the old billedToday flag is '
+            + 'wet when its remainder is',
           fn: async () => {
-            expect(neuralWattIsDry({ energy: { ...ROOMY, billedToday: true, }, },),).toBe(true,);
+            expect(neuralWattIsDry({ energy: { ...ROOMY, spentWh: 449.9, reservedWh: 100, calls: 9000, }, },),).toBe(false,);
+
+            /**
+             Reading as an older build shaped it, with a flag nothing reads any more.
+             */
+            const older = { ...ROOMY, billedToday: true, };
+            expect(neuralWattIsDry({ energy: older, },),).toBe(false,);
           },
         },),
       ],
@@ -77,14 +83,14 @@ await describe({
       name: neuralWattMeterLevel.name,
       children: [
         it({
-          name: 'RENDERS WHAT IS LEFT AND THE RECKONED SHARE TO THREE PLACES and says a request was not billed, as '
-            + 'tokens with no value carrying a space',
+          name: 'RENDERS WHAT IS LEFT AND THE RECKONED SHARE TO THREE PLACES as '
+            + 'two tokens with no value carrying a space',
           fn: async () => {
             /**
-             Tokens for a day nothing was billed on.
+             Tokens for a day with room.
              */
             const level = neuralWattMeterLevel({ energy: ROOMY, },);
-            expect(level,).toEqual(['neuralwattWh=549.986', 'neuralwattReckonedWh=0.500', 'neuralwattBilled=no',],);
+            expect(level,).toEqual(['neuralwattWh=549.986', 'neuralwattReckonedWh=0.500',],);
             expect(level.some(function hasSpace(token,): boolean {
               return token.includes(' ',);
             },),).toBe(false,);
@@ -93,11 +99,11 @@ await describe({
 
         it({
           name: 'ROUNDS A FIGURE THAT HAS MORE PLACES AND PRINTS A NEGATIVE REMAINDER, which a measurement over its '
-            + 'estimate leaves, and says a request was billed',
+            + 'estimate leaves',
           fn: async () => {
             expect(neuralWattMeterLevel({
-              energy: { ...ROOMY, remainingWh: -0.00449, reckonedWh: 1.23456, billedToday: true, },
-            },),).toEqual(['neuralwattWh=-0.004', 'neuralwattReckonedWh=1.235', 'neuralwattBilled=yes',],);
+              energy: { ...ROOMY, remainingWh: -0.00449, reckonedWh: 1.23456, },
+            },),).toEqual(['neuralwattWh=-0.004', 'neuralwattReckonedWh=1.235',],);
           },
         },),
       ],

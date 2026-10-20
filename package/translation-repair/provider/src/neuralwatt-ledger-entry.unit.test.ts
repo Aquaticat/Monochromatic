@@ -9,7 +9,7 @@
  `isNeuralWattReckoning` are not on the package index, which exports only what
  the siblings and their tests reach, and a test imports the built package and
  not the source. A line that reads shows in the day's reading, by its
- watt-hours, its reckoning and its billed amount; a line that does not read
+ watt-hours and its reckoning; a line that does not read
  shows in the error `read` throws. Every case writes a ledger file in a
  throwaway directory and reads time from a clock the case holds, so no case
  reads the real ledger or the real clock. Fixtures are cat-themed invention.
@@ -116,7 +116,7 @@ await describe({
       name: 'a line that reads',
       children: [
         it({
-          name: 'COUNTS A MEASURED LINE AT ITS WATT-HOURS with no reckoning and no bill, and a line of zero watt-hours, '
+          name: 'COUNTS A MEASURED LINE AT ITS WATT-HOURS with no reckoning, and a line of zero watt-hours, '
             + 'since a call may use nothing',
           fn: async () => {
             const energy = await energyOf({
@@ -126,7 +126,6 @@ await describe({
             expect(energy,).toMatchObject({
               spentWh: 1.5,
               reckonedWh: 0,
-              billedToday: false,
               calls: 3,
             },);
           },
@@ -147,7 +146,9 @@ await describe({
         },),
 
         it({
-          name: 'MARKS THE DAY BILLED WHEN A LINE CARRIES A BILLED AMOUNT, alone or beside a reckoning',
+          name: 'READS A LINE CARRYING THE OLDER billedUsd FIELD AS AN ORDINARY ENERGY LINE, alone or beside a '
+            + 'reckoning: it counts at its watt-hours, adds to the reckoned share only through its reckoning, and '
+            + 'marks nothing about the day',
           fn: async () => {
             /**
              Readings of the two files.
@@ -158,9 +159,12 @@ await describe({
             ].map(async function read(text,) {
               return await energyOf({ text, },);
             },),);
-            expect(energies.map(function billed(energy,): boolean {
-              return energy.billedToday;
-            },),).toEqual([true, true,],);
+            expect(energies.map(function shape(energy,) {
+              return { spentWh: energy.spentWh, reckonedWh: energy.reckonedWh, calls: energy.calls, billedKey: 'billedToday' in energy, };
+            },),).toEqual([
+              { spentWh: 1, reckonedWh: 0, calls: 1, billedKey: false, },
+              { spentWh: 1, reckonedWh: 1, calls: 1, billedKey: false, },
+            ],);
           },
         },),
       ],
@@ -252,16 +256,6 @@ await describe({
           fn: async () => {
             await Promise.all(['guess', 'abandoned', 5, null,].map(async function check(estimated,): Promise<void> {
               await expectRefused({ bad: lineOf({ ...GOOD, estimated, },), detail: 'estimated is not a reckoning this package writes', },);
-            },),);
-          },
-        },),
-
-        it({
-          name: 'REFUSES A BILLED AMOUNT THAT IS NOT A POSITIVE NUMBER, zero included, since a line carries the field '
-            + 'only when the request left the free energy',
-          fn: async () => {
-            await Promise.all([0, -0.1, '0.2', null, true,].map(async function check(billedUsd,): Promise<void> {
-              await expectRefused({ bad: lineOf({ ...GOOD, billedUsd, },), detail: 'billedUsd is not a positive number', },);
             },),);
           },
         },),

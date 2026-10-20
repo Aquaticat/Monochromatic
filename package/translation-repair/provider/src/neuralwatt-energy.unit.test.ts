@@ -25,7 +25,7 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- A day with room left and no billed request.
+ A day with little left after the spend and the holds in flight.
  */
 const ROOMY: NeuralWattEnergy = {
   day: '2026-10-20',
@@ -34,19 +34,7 @@ const ROOMY: NeuralWattEnergy = {
   reckonedWh: 0.5,
   reservedWh: 0.25,
   remainingWh: 0.15,
-  billedToday: false,
   calls: 40,
-};
-
-/**
- A day on which a request came back billed, with arithmetic that still shows room.
- */
-const BILLED: NeuralWattEnergy = {
-  ...ROOMY,
-  spentWh: 12.5,
-  reservedWh: 0,
-  remainingWh: 537.5,
-  billedToday: true,
 };
 
 await describe({
@@ -70,18 +58,22 @@ await describe({
     },),
 
     it({
-      name: 'SAYS A BILLED REQUEST ENDED THE DAY\'S FREE ENERGY WHATEVER THE ARITHMETIC SHOWS, naming the day and the '
-        + 'model and leaving the figures out, since they are not why the call was refused',
+      name: 'PRINTS A NEGATIVE REMAINDER AS IT STANDS and the day\'s own total, since a measurement that came in over its '
+        + 'estimate leaves less than nothing and the allowance can be set to another figure',
       fn: async () => {
         /**
-         Refusal for a call on a billed day.
+         Refusal for a call on a day that is overspent by arithmetic alone.
          */
-        const refusal = new NeuralWattAllowanceError({ model: 'deepseek-v4.1-flash', estimateWh: 0.3, energy: BILLED, },);
+        const refusal = new NeuralWattAllowanceError({
+          model: 'deepseek-v4.1-flash',
+          estimateWh: 0.0011,
+          energy: { ...ROOMY, dailyWh: 100, remainingWh: -0.00449, reservedWh: 0, },
+        },);
         expect(refusal.message,).toBe(
-          'NeuralWatt billed a request on 2026-10-20 (UTC), so its free energy is treated as spent until 00:00 UTC; '
-            + 'the call to deepseek-v4.1-flash was not sent',
+          'NeuralWatt has -0.004 Wh of the 100 Wh free energy left on 2026-10-20 (UTC) after 0.000 Wh held by calls '
+            + 'in flight, and the call to deepseek-v4.1-flash is estimated at 0.001 Wh; it was not sent, and the energy '
+            + 'returns at 00:00 UTC',
         );
-        expect(refusal.message,).not.toContain('537.500',);
       },
     },),
 
@@ -101,9 +93,9 @@ await describe({
 
     it({
       name: 'IS A BUDGET REFUSAL THE ROUTER MOVES ON FROM and not a payment refusal, since nothing is wrong with the '
-        + 'account and the energy returns at 00:00 UTC, whether the day is spent by arithmetic or by a billed request',
+        + 'account and the energy returns at 00:00 UTC, whether the day is spent by arithmetic or by holds in flight',
       fn: async () => {
-        for (const energy of [ROOMY, BILLED,]) {
+        for (const energy of [ROOMY, { ...ROOMY, spentWh: 12.5, reservedWh: 537.5, remainingWh: 0, },]) {
           /**
            Refusal raised on this reading.
            */
