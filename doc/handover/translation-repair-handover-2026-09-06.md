@@ -407,13 +407,26 @@ its "Next" list is still the queue the merge went ahead of.
   a merge of `main` at `71d0882f02` into the branch)
   holds `a169580740`,
   so the round is on `main` and on `translation-repair-rebased`.
-  The pass log of 2026-10-20 has the branch worktree at the build of `2eeef91fac`,
-  and moving it to the new build is open.
+  The branch worktree moved to `0c64519b57` by fast-forward,
+  and its install moved `rolldown` from 1.2.13 to 1.2.14.
+  The rotation restarted from `zheermao101` as `zheermao15`
+  (unit `corpus-pass-corpus-pass-zheermao15`,
+  launched at 02:12 UTC on 2026-10-20);
+  its `START` line names `tip=0c64519b57…` and
+  `pipeline=sha256-tree-v1:c003a383075f49e22f1865d76bcbf5ff06e887f37ec188b950ea61fbdd1edc38`,
+  the digest taken from the gated tree's build.
+  A pass ends at its `DONE processed=` line:
+  `Finished in` also ends the build step before `START`,
+  so a waiter on it returns at once.
+- The two corrective commit comments are posted:
+  205736551 on `7071a8eb5b` (M283)
+  and 205736554 on `28f4b8fc75` (M284).
+  The glossary comment now tells the original's own comments,
+  which the judges still weigh,
+  from the notes between translators that B698 keeps from them.
 - Open:
-  the seat-window census (B701),
-  the two corrective commit comments,
-  the move of the branch worktree and the restart of the rotation,
-  and the glossary comment (all in the "Next" list).
+  the seat-window census (B701)
+  and the read of `zheermao15` (both in the "Next" list).
 
 #### Next
 
@@ -497,28 +510,17 @@ its "Next" list is still the queue the merge went ahead of.
       is not in this tree and its `runPassContest` change overlaps the one in `a169580740`,
       so integrating it meets a conflict to resolve;
       more cases that name a seat without `fanOut: 'whole-bench'` or a pinned `benchStart` may exist.
-    - Post the two corrective commit comments owed,
-      each with the full SHA,
-      now that the tree is on `main`:
-      on `7071a8eb5b8f585a9bdf3ac6b88fd4a94d51ddd7`
-      (M283;
-      the phrase it called invented is in line 10 of the original,
-      restored by `abf7fdae893501d0a3cb70e89e6d3f84bbd82014`)
-      and on `28f4b8fc755c0b9fcc8bd00b7b9f211d946c67b3`
-      (M284;
-      it left seven cases red,
-      five moved in `5db53c0056faa69d44de3a756d2b33950e0b4915`
-      and two in `a1695807409309ca8427ffe0ef351f5a257092d4`).
-    - Move the branch worktree to the new build,
-      check the `START` line's `pipeline=` digest against the build,
-      and restart the rotation from `zheermao101`.
-    - The glossary comment follow-up:
-      the paragraph "READ UNDER THE GRAMMAR THE DOCUMENT WAS READ IN" in
-      `package/translation-repair/glossary/src/translate-skeleton.ts` says whether a candidate carries a translator's
-      note is wording and that the judges are the instrument for it.
-      Since `a3a7baeb3b` the judges never see a note between translators and the page assembly carries it,
-      so the comment needs the new account (B698).
-      Nothing was changed in the source by this docs round.
+    - Read `zheermao15` when its `DONE processed=` line arrives,
+      against the original and the archive,
+      then launch `CuspariaKLSY18` if it shows no class.
+    - Done:
+      both corrective commit comments
+      (205736551 on `7071a8eb5b8f585a9bdf3ac6b88fd4a94d51ddd7`,
+      205736554 on `28f4b8fc755c0b9fcc8bd00b7b9f211d946c67b3`),
+      the branch worktree's move and the restart from `zheermao101`,
+      and the glossary comment in `package/translation-repair/glossary/src/translate-skeleton.ts`,
+      which now says the judges still weigh the original's own comments
+      while `translators-note.ts` cuts the notes between translators from their sheets (B698).
 
 ## Repository state
 
