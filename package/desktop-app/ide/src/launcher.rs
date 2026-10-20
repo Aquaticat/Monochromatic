@@ -251,6 +251,23 @@ pub fn install_backend() -> anyhow::Result<()> {
         max_texture_dimension_2d = limits.max_texture_dimension_2d,
         "the window is drawn on this GPU"
     );
+    // What: `Box::leak` keeps one more handle of each wgpu object alive until the process ends.
+    // Why: Slint drops its platform, and with it the last handles, while the main thread's thread-local values are
+    //      destroyed at exit. A debug build of wgpu-core reads a thread-local value when it frees a device or queue
+    //      (`snatch::trace::LockTrace::enter`), so that drop panics and aborts the process
+    //      ("cannot access a Thread Local Storage value during or after destruction"). The native test harness leaks
+    //      its device for the same reason (`native/gpu_snapshot.rs`). The operating system frees the memory.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // keepForever(instance, adapter, device, queue); // never released
+    // ```
+    Box::leak(Box::new((
+        gpu.instance.clone(),
+        gpu.adapter.clone(),
+        gpu.device.clone(),
+        gpu.queue.clone(),
+    )));
     // What: `Manual` gives Slint the instance, adapter, device, and queue opened above.
     // Why: Slint then neither lists adapters nor requests a device of its own.
     //
