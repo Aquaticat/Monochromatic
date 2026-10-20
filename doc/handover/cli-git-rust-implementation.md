@@ -1877,9 +1877,13 @@ that is verification, not a decision for the user.
   ("recovered a live transaction") and passes with it. It skips itself where `unshare` is refused (possibly in the
   container gate). Limits: a foreign owner that really crashed blocks recovery for up to one hour; a live foreign owner
   holding a lock longer than an hour is retired; versions before this change still judge by PID.
-  Closing gate and mutation run for the namespace work: unit `cli-git-nc4` (script `~/temp/agent/nc4-run.ts`, image
-  tag `nc4`, logs `~/temp/agent/nc4-<name>.log`; no `src/native` edit while it runs). After it: kill survivors, remove
-  the `nc4` images, release 0.2.4, comment on and close 1781 and 1784.
+  Namespace work gate and mutation run (unit `cli-git-nc4`): container gate 2042 passed, 5 skipped; eight scoped runs,
+  every baseline green. Three misses: `pid_namespace.rs:75` (`>` to `>=`) and `owner_lock_record.rs:45` (`64 * 1024`
+  to `64 + 1024`) killed by new controls, each shown to fail with its mutant; `transaction_owner.rs:199`
+  (`process_exists` to `Ok(true)`) is equivalent except when the probe is refused, which a test cannot force. Released
+  as 0.2.4 (crates.io, release `monochromatic-git-policy-cli-v0.2.4`, installed through mise); 1781 and 1784 closed.
+  The host suite has one failure, `markdown_linter::tests::the_real_linter_meets_the_contract`, which needs the real
+  linter that only the container has.
   Triage 2026-10-20: closed 632 (the perf code is gone) and 1348 (ST2 is a TypeScript rule). Reframed 629 to the Rust
   helpers still duplicated across `test_support.rs`, `command_test_support.rs` and `binary_support.rs` plus the
   byte-argument copies in `cli.fuzz`; queued behind nc2, as those files are in the mutation image. 630 stays open with
