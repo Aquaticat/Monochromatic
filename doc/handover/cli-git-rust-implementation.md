@@ -1816,7 +1816,11 @@ that is verification, not a decision for the user.
   `binary_support.rs`), `fixture`, `repository` and the unit `git` message are shared; the fuzz generators use
   `path_bytes::os_from_path_bytes`; gate 2044 passed, `cli.fuzz:build` passed). Filed 1787: `native:format` runs
   bare `cargo fmt`, which rewrites about 200 files against the committed style; never run it (revert with
-  `git checkout -- package/git-policy`). Still queued: 630, 492, 574, 1770.
+  `git checkout -- package/git-policy`). 630 rechecked and left open: its rename-order disagreement is behaviour-neutral (set semantics),
+  and the rest is a 61-file e2e refactor that needs the e2e base image (not on this machine) to verify; first slices
+  when it exists are the seeding helper owning the `random.fork` label and the one `[token]` matcher. 492 (post-push
+  stage, open design points), 574 (not this package's code) and 1770 (awaiting the consumer) stay open. No release is
+  due: everything since 0.2.4 is tests, scripts and the fuzz crate.
   Earlier queue note (task 53): 1768 already carries a triage decision (the launcher owns the check, no wrapper
   change); 480 (tag push `EAGAIN` in the retired TypeScript `final-newline` plugin) needs a throwaway-repository tag
   push through the native wrapper, then a closing comment; 492 (post-push stage) is a feature with open design points;
