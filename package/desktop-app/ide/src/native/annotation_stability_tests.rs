@@ -31,6 +31,8 @@ use super::find_tests::{Reader, reader};
 /// The clock the scrolling rule reads,
 /// which a test holds and moves.
 use super::rows::hold_clock;
+/// Two renders of one scene differ by one level in a few texels on the GPU.
+use super::tile_reads::same_texel;
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
 /// Snapshot records exactly as the Language module builds them.
@@ -347,7 +349,7 @@ fn difference(
         let before = band(first, y);
         let after = band(second, y);
         for (index, (old, new)) in before.iter().zip(after.iter()).enumerate() {
-            if old != new {
+            if !same_texel(*old, *new) {
                 // `Some(...)` carries the description of the first differing pixel.
                 return Some(format!(
                     "pixel {},{y} changed from {old:?} to {new:?}",

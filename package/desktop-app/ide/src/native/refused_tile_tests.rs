@@ -10,14 +10,15 @@
 /// the pixels of the shown image,
 /// and the waits.
 use super::{
-    AppWindow,
+    AppWindow, State,
     overscan_tile_tests::scroll_to,
     render::{Paint, job, stamp_for},
     tall_window_tests::{hold_the_pass, mixed, resize_without_frame, settled_tile},
     theme_tests::switch,
     tile::TileBounds,
     tile_build::{FAIL_NEXT_BUILD, build_tile},
-    wrap_tests::{long_text, open, settled, shown},
+    tile_reads::shown,
+    wrap_tests::{long_text, open, settled},
 };
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
@@ -27,14 +28,14 @@ use slint::{
     private_unstable_api::re_exports::ColorScheme,
 };
 /// The switch is read by the next build.
-use std::sync::atomic::Ordering;
+use std::{cell::RefCell, rc::Rc, sync::atomic::Ordering};
 
-/// Whether any pixel of the visible band of the source image has ink.
-fn has_ink(window: &AppWindow) -> bool {
-    if window.get_source_image().to_rgba8().is_none() {
+/// Whether any pixel of the visible band of the tile has ink.
+fn has_ink(window: &AppWindow, source: &Rc<RefCell<State>>) -> bool {
+    if source.borrow().gpu.read_tile().is_none() && !source.borrow().gpu.has_pending() {
         return false;
     }
-    for pixel in shown(window) {
+    for pixel in shown(window, source) {
         if pixel[3] > 0 {
             return true;
         }
@@ -50,7 +51,7 @@ fn a_refused_tile_keeps_the_text_on_screen_and_names_the_failure() {
     let (_project, opened) = open(&long_text(200));
     let window = &opened.window;
     settled(&opened);
-    assert!(has_ink(window), "the first tile has no ink");
+    assert!(has_ink(window, &opened.source), "the first tile has no ink");
     assert_eq!(window.get_error_message().to_string(), "");
     // The scheme the window starts in is not known, so the first change makes sure the next one differs.
     switch(window, ColorScheme::Dark);
@@ -63,7 +64,10 @@ fn a_refused_tile_keeps_the_text_on_screen_and_names_the_failure() {
         message.contains("Cannot render source"),
         "the failure is not named: {message:?}"
     );
-    assert!(has_ink(window), "a refused tile blanked the source");
+    assert!(
+        has_ink(window, &opened.source),
+        "a refused tile blanked the source"
+    );
     window.hide().expect("close wrap window");
 }
 
@@ -118,7 +122,10 @@ fn a_failed_worker_tile_frees_its_job_and_the_next_placement_gets_its_tile() {
             waiting.step("the tile after a failed one did not arrive");
         }
     }
-    assert!(has_ink(window), "the text is blank after the retry");
+    assert!(
+        has_ink(window, &opened.source),
+        "the text is blank after the retry"
+    );
     window.hide().expect("close wrap window");
 }
 
@@ -143,10 +150,7 @@ fn a_tile_cut_by_the_shaper_is_stamped_with_the_clip_it_was_cut_to() {
             ..current.shown
         };
         let queued = job(&current, asked, &paint);
-        let built = {
-            let super::State { shaper, raster, .. } = &mut *current;
-            build_tile(shaper, raster, queued).expect("the cut tile is painted")
-        };
+        let built = build_tile(&mut current.shaper, queued).expect("the cut tile is painted");
         assert_eq!(built.requested, asked, "the tile names the job it answers");
         assert!(
             built.bounds.clip.is_some(),

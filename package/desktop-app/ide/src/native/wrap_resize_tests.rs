@@ -27,6 +27,8 @@ use super::rows::{due, hold_clock};
 use super::sidebar_tests::{TEXT_LEFT, minimap_beside};
 /// The worker's pass gate.
 use super::tile_build::{BUILD_GATE, PASS_GATE};
+/// The tile's pixels read back from the GPU.
+use super::tile_reads::tile_pixels;
 /// The wrap width rule.
 use super::viewport::wrap_width;
 /// Wrapped fixtures,
@@ -228,12 +230,10 @@ fn rects(list: &[ide_app::shaped_text::ReadingRect]) -> Vec<[f32; 4]> {
 }
 
 /// Whether any pixel of the shown image has ink to the right of `limit` logical pixels.
-fn ink_past(window: &super::AppWindow, limit: f32) -> Option<usize> {
+fn ink_past(reader: &super::find_tests::Reader, limit: f32) -> Option<usize> {
+    let window = &reader.window;
     let scale = window.window().scale_factor();
-    let image = window
-        .get_source_image()
-        .to_rgba8()
-        .expect("source image pixels");
+    let image = tile_pixels(window, &reader.source).expect("source image pixels");
     let width = image.width() as usize;
     let edge = (limit * scale).ceil() as usize;
     for (index, pixel) in image.as_slice().iter().enumerate() {
@@ -336,7 +336,7 @@ fn the_first_frame_after_a_new_width_is_wrapped_to_it() {
         "the shown image is not the raster of the new width"
     );
     assert_eq!(
-        ink_past(window, width + 24.0),
+        ink_past(&opened, width + 24.0),
         None,
         "the shown image has ink past the wrap width"
     );
@@ -809,13 +809,10 @@ fn a_line_of_two_hundred_thousand_characters_is_left_to_the_worker() {
 ///  the bound on the raster.
 #[test]
 fn a_view_with_more_lines_than_the_allowance_is_left_to_the_worker() {
-    // A raster of the limit is far past the bound, or holds more lines than the allowance, at every size.
-    for (width, scale) in [
-        (300.0_f32, 1.0_f32),
-        (1100.0, 1.0),
-        (1100.0, 2.0),
-        (3800.0, 1.0),
-    ] {
+    // A tile of the limit is far past the bound, or holds more lines than the allowance, at every size
+    // where the texture limit of the device does not cut it below the allowance:
+    // a 300 px wide tile on a device limited to 8192 px holds 340 lines, which the allowance covers.
+    for (width, scale) in [(1100.0_f32, 1.0_f32), (1100.0, 2.0), (3800.0, 1.0)] {
         let cap = tile_cap(width, scale);
         let columns = ((width + 24.0).ceil() * scale).ceil() as u64;
         let bytes = columns * (cap * scale).floor() as u64 * 4;

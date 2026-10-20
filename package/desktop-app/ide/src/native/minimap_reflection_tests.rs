@@ -262,13 +262,19 @@ fn assert_reflection(reader: &Reader, what: &str) -> Found {
         "{what}: the picture holds only {} inked pixels",
         found.inked
     );
+    // The window draws the text unhinted with Vello and the picture still rasters it with swash;
+    // measured 2026-10-20 with the picture aligned (a shift of one pixel in any direction is far worse):
+    // at scale 1 the worst pixel is 19 and the mean at most 0.46, at scale 2 the worst is 40 and the mean at most 1.14
+    // (annotations, whose wave is drawn by two different strokers).
+    // A stem that lands on another pixel row in one raster than in the other moves a pixel by that much.
+    // Stage 5 draws both from one scene and restores the old bound of 12 and a mean of 1.
     assert!(
-        found.worst <= 12,
+        found.worst <= 48,
         "{what}: a pixel of the minimap differs by {} from the average of the window's pixels",
         found.worst
     );
     assert!(
-        found.mean <= 1.0,
+        found.mean <= 1.4,
         "{what}: the minimap differs by {:.3} on average from the average of the window's pixels",
         found.mean
     );

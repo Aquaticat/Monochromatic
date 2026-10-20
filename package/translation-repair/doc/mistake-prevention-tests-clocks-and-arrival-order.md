@@ -803,7 +803,12 @@ The rule of the rotation came back with the reader-protection scope of 2026-10-2
 which lengthened the house rule every sheet splices:
 the consolidate deep-reply case and the corpus-pass contest re-seat case named a seat the first round no longer asked
 (ledger B701).
-A census of the other cases that name a seat is open.
+The census of the other cases that name a seat or an order is closed:
+it found nine members across `stage`,
+`corpus-pass`,
+`probe` and `translate-stage`
+(the contest re-seat case among them),
+five pinned in the tests and four reached by seams that now take `fanOut` (ledger B701).
 
 The rule:
 a test never pins an order or a seat set that a prompt hash decides,
@@ -840,7 +845,10 @@ and never relies on the rotated window to reach it (ledger B701).
 A seam that drives a stage takes `fanOut` and hands it on,
 so a case can ask it:
 `runArchiveBlockReviewStage` and `runPassContest` did not,
-until `20a379f77a` and `a169580740`.
+until `20a379f77a` and `a169580740`,
+and the translate stage,
+the pairing preparation and the corpus-pass admission and preparation seams did not,
+until `1305066161`.
 Before a test is rewritten to ignore an order,
 its diff is read for each assertion it drops,
 and a guard is removed to show the new test still fails for it.
@@ -854,6 +862,9 @@ and the ten test files of ledger B627 use it.
 seats the six editor voices of the calibration cases,
 and the guards of the seam were shown to fail by removal (ledger B631).
 No scan finds a test that pins a rotated order.
-Nothing finds a scripted case that names a seat without either;
-the census of ledger B701 is the search for them,
-and until it is done the habit is the only guard.
+Nothing finds a scripted case that names a seat without either.
+The census of ledger B701 searched once,
+on 2026-10-20 (UTC),
+by running every family suite under ten shifts of the rotation;
+a guard that repeats the search is proposed and not decided (ledger B701),
+so until it is decided the habit is the only guard.

@@ -4,7 +4,7 @@
 /// The source state that is constructed,
 ///  the toolkit list models of the gutter,
 ///  and the minimap beside the text.
-use super::{State, minimap, rows, tile::TileBounds};
+use super::{State, gpu_tile::GpuTile, minimap, rows, tile::TileBounds};
 /// Hint and diagnostic snapshots with their position index.
 use ide_app::annotation::Annotations;
 /// Visual rows of every line,
@@ -17,8 +17,6 @@ use ide_app::refresh_policy::SourceRefresh;
 use ide_app::row_map::RowMap;
 /// Shared shaping replaces terminal-column assumptions in native hit testing.
 use ide_app::shaped_text::TextShaper;
-/// Raster output retains the exact glyph positions used by selection.
-use ide_app::text_raster::TextRaster;
 /// Source and display geometry use the same library interface tested headlessly.
 use ide_app::{document::Document, source_style::SourceStyles};
 /// The timer that polls the tile worker is created idle.
@@ -55,7 +53,7 @@ impl State {
             sign: None,
             sign_scale: None,
             shaper: TextShaper::new(),
-            raster: TextRaster::new(),
+            gpu: GpuTile::default(),
             shaped: None,
             presented_revision: None,
             frame_stamp: None,

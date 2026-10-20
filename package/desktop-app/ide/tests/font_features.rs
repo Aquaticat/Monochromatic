@@ -1,10 +1,12 @@
-//! Font feature controls and ligature reading behavior use the production shaping/raster path.
+//! Font feature controls and ligature reading behavior use the production shaping path,
+//!  and the paint items the GPU draws the code view from.
 
 /// Canonical source and production geometry/rendering interfaces.
 use ide_app::{
+    code_colors::CodeColors,
     document::{Document, ReadingPosition},
     shaped_text::{ShapedView, TextShaper, Viewport},
-    text_raster::{CodeColors, TextRaster},
+    tile_scene::{read::drawn_runs, snapped, tile_items},
 };
 /// Typed OpenType settings and actual shaped glyph runs.
 use parley::{FontFeature, PositionedLayoutItem, setting::Tag};
@@ -102,135 +104,114 @@ fn ligature_interior_caret_hit_and_copy_remain_source_based() {
     }
 }
 
-/// Partial selection recolors only selected pixels without breaking the shaped operator.
-#[test]
-fn partial_ligature_selection_preserves_geometry_and_clips_ink() {
+/// The ink of the ordinary glyphs and of the selected ones,
+/// far apart so that a test tells them at a glance.
+const COLORS: CodeColors = CodeColors {
+    foreground: [255, 0, 0, 255],
+    selected: [0, 255, 0, 255],
+    dark: true,
+};
+
+/// Select the second character of `===` and shape it at `area`.
+fn selected_ligature(shaper: &mut TextShaper, area: Viewport) -> (Document, ShapedView) {
     let mut document = Document::new("===");
-    let mut shaper = TextShaper::new();
-    let unselected = shaper.prepare(&document, viewport(), &[]);
     document.select(ReadingPosition {
         anchor: 1,
         head: 2,
         viewport: 0,
         affinity: ide_app::document::ReadingAffinity::Downstream,
     });
-    let selected = shaper.prepare(&document, viewport(), &[]);
+    let selected = shaper.prepare(&document, area, &[]);
+    return (document, selected);
+}
+
+/// Partial selection recolors only selected glyph area without breaking the shaped operator:
+/// the same glyphs are drawn twice,
+/// in the selection ink inside the selection rectangle and in the ordinary ink outside.
+#[test]
+fn partial_ligature_selection_preserves_geometry_and_clips_ink() {
+    let mut shaper = TextShaper::new();
+    let unselected_document = Document::new("===");
+    let unselected = shaper.prepare(&unselected_document, viewport(), &[]);
+    let (_document, selected) = selected_ligature(&mut shaper, viewport());
     assert_eq!(
         glyphs(&unselected),
         glyphs(&selected),
         "selection must not change ligature shaping"
     );
-    let rectangle = selected.selection(&document)[0];
-    let colors = CodeColors {
-        foreground: [255, 0, 0, 255],
-        selected: [0, 255, 0, 255],
-        dark: true,
-    };
-    let pixels = TextRaster::new()
-        .paint(&selected, colors, 0.0)
-        .expect("selected ligature raster");
-    let mut selected_ink = 0;
-    let mut ordinary_ink = 0;
-    for y in 0..pixels.height {
-        for x in 0..pixels.width {
-            let start = ((y * pixels.width + x) * 4) as usize;
-            if pixels.bytes[start + 3] == 0 {
-                continue;
-            }
-            let inside = x as f32 >= rectangle.x && (x as f32) < rectangle.x + rectangle.width;
-            if inside {
-                selected_ink += 1;
-                assert_eq!(
-                    pixels.bytes[start], 0,
-                    "unselected red ink inside selected ligature at {x},{y}"
-                );
-            } else {
-                ordinary_ink += 1;
-                assert_eq!(
-                    pixels.bytes[start + 1],
-                    0,
-                    "selected green ink outside selection at {x},{y}"
-                );
-            }
+    let rectangle = selected.selections[0];
+    let items = tile_items(&selected, COLORS, 0.0).expect("selected ligature items");
+    let runs = drawn_runs(&items);
+    let mut inside = 0;
+    let mut outside = 0;
+    for run in &runs {
+        let (clip_left, clip_right) = run.clip.expect("a selected ligature is drawn clipped");
+        assert_eq!(
+            run.ids,
+            glyphs(&selected),
+            "every clipped copy draws the whole shaped operator"
+        );
+        if run.ink == COLORS.selected {
+            inside += 1;
+            assert!(
+                (clip_left - rectangle.x).abs() <= 0.5
+                    && (clip_right - (rectangle.x + rectangle.width)).abs() <= 0.5,
+                "selected ink is clipped to [{clip_left}, {clip_right}] instead of the selection [{}, {}]",
+                rectangle.x,
+                rectangle.x + rectangle.width
+            );
+        } else {
+            assert_eq!(run.ink, COLORS.foreground);
+            outside += 1;
+            assert!(
+                clip_right <= rectangle.x + 0.5 || clip_left >= rectangle.x + rectangle.width - 0.5,
+                "ordinary ink is clipped to [{clip_left}, {clip_right}], which reaches into the selection"
+            );
         }
     }
     assert!(
-        selected_ink > 0 && ordinary_ink > 0,
-        "both halves must contain real glyph pixels"
+        inside > 0 && outside > 1,
+        "the selected half and both ordinary halves must be drawn (inside {inside}, outside {outside})"
     );
 }
 
-/// Partial selection preserves coverage at fractional DPI and horizontal origins.
+/// Partial selection keeps its clip edges at fractional DPI and horizontal origins.
 #[test]
-fn fractional_ligature_selection_keeps_glyph_alpha_and_clip_edges() {
+fn fractional_ligature_selection_keeps_clip_edges() {
     let mut shaper = TextShaper::new();
-    let colors = CodeColors {
-        foreground: [255, 0, 0, 255],
-        selected: [0, 255, 0, 255],
-        dark: true,
-    };
-    let mut blended_edges = 0;
     for scale in [1.0, 1.25, 1.5, 2.0] {
         for horizontal in [0.0, 0.25, 5.75] {
             let mut area = viewport();
             area.scale = scale;
-            let mut document = Document::new("===");
-            let ordinary = shaper.prepare(&document, area, &[]);
-            let baseline = TextRaster::new()
-                .paint(&ordinary, colors, horizontal)
-                .expect("ordinary glyph alpha");
-            document.select(ReadingPosition {
-                anchor: 1,
-                head: 2,
-                viewport: 0,
-                affinity: ide_app::document::ReadingAffinity::Downstream,
-            });
-            let selected = shaper.prepare(&document, area, &[]);
-            assert_eq!(glyphs(&ordinary), glyphs(&selected));
+            let (_document, selected) = selected_ligature(&mut shaper, area);
             let rectangle = selected.selections[0];
-            let left = (rectangle.x - horizontal) * scale;
-            let right = (rectangle.x + rectangle.width - horizontal) * scale;
-            let image = TextRaster::new()
-                .paint(&selected, colors, horizontal)
-                .expect("fractional selected glyph");
-            for y in 0..image.height {
-                for x in 0..image.width {
-                    let offset = ((y * image.width + x) * 4) as usize;
-                    assert_eq!(image.bytes[offset + 3], baseline.bytes[offset + 3]);
-                    if image.bytes[offset + 3] == 0 {
-                        continue;
-                    }
-                    if x as f32 >= left && x as f32 + 1.0 <= right {
-                        assert_eq!(
-                            image.bytes[offset], 0,
-                            "red inside clip at scale {scale}, origin {horizontal}"
-                        );
-                    }
-                    if x as f32 + 1.0 <= left || x as f32 >= right {
-                        assert_eq!(
-                            image.bytes[offset + 1],
-                            0,
-                            "green outside clip at scale {scale}, origin {horizontal}"
-                        );
-                    }
-                    let covered =
-                        ((x as f32 + 1.0).min(right) - (x as f32).max(left)).clamp(0.0, 1.0);
-                    if covered > 0.1 && covered < 0.9 && image.bytes[offset + 3] >= 32 {
-                        blended_edges += 1;
-                        assert!(
-                            image.bytes[offset] > 0 && image.bytes[offset + 1] > 0,
-                            "fractional boundary must contain both foreground contributions"
-                        );
-                        let expected =
-                            (f32::from(image.bytes[offset + 3]) * covered).round() as i16;
-                        assert!((i16::from(image.bytes[offset + 1]) - expected).abs() <= 1);
-                    }
+            // The clip edges are moved to whole pixels, so that no pixel is covered by two copies of a glyph.
+            let (left, right) = snapped(
+                (rectangle.x - horizontal) * scale,
+                (rectangle.x + rectangle.width - horizontal) * scale,
+            );
+            let items =
+                tile_items(&selected, COLORS, horizontal).expect("fractional selected glyph");
+            let mut edges = 0;
+            for run in drawn_runs(&items) {
+                let (clip_left, clip_right) = run.clip.expect("clipped");
+                if run.ink == COLORS.selected {
+                    edges += 1;
+                    assert!(
+                        (clip_left - left).abs() < 0.01 && (clip_right - right).abs() < 0.01,
+                        "scale {scale}, origin {horizontal}: clip [{clip_left}, {clip_right}] is not [{left}, {right}]"
+                    );
+                } else {
+                    assert!(
+                        clip_right <= left + 0.01 || clip_left >= right - 0.01,
+                        "scale {scale}, origin {horizontal}: ordinary ink reaches into the selection"
+                    );
                 }
             }
+            assert_eq!(
+                edges, 1,
+                "one selected copy at scale {scale}, origin {horizontal}"
+            );
         }
     }
-    assert!(
-        blended_edges > 0,
-        "the raster control must exercise real mixed-color boundary pixels"
-    );
 }

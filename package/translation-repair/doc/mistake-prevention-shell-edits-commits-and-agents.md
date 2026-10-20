@@ -620,6 +620,13 @@ The fold files were reserved to one of two rounds that ran at once,
 and the lead's merge of that round onto the other kept two declarations of the folded links in one function,
 a block of the earlier round beside the later rewrite of it,
 so the merge commit did not build (ledger M238).
+On 2026-10-20 (UTC) two commits of the seat-window census were written on an older base
+and picked onto a tree that already carried the same `fanOut` change to `runPassContest` and its re-seat case.
+Git reported no conflict and kept both copies,
+since two identical additions placed at different lines are not a conflict:
+a doubled `fanOut` parameter,
+binding and spread in `pass-contest.ts`,
+and a doubled `fanOut` key in the case (ledger B701).
 
 The rule:
 work that may change the same production files runs one after the other,
@@ -640,6 +647,11 @@ with the round's own change,
 file by file and by a script,
 before the commit,
 and the build of the merged tree follows at once (ledger M238).
+The same holds for commits written on an older base and picked onto a tree that already carries an overlapping
+change:
+the auto-merged hunks of each file both touched are read,
+since git merges two identical additions placed at different lines without a conflict
+(ledger B701).
 A range is landed only after its base is checked to be an ancestor of the branch
 and every earlier round from the same worktree is found in the branch's `git log`:
 the first round of `w186` stood in the handover as done and was never landed,

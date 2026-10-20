@@ -23,6 +23,8 @@ use super::json_record::{
 use super::process_identity::{
     ProcessIdentityError, current_birth_identity, process_birth_identity,
 };
+/// The namespace an owner record names and the rule for an owner of another one.
+use super::pid_namespace::{current_pid_namespace, foreign_owner_standing};
 
 /// Owner record schema;
 ///  version 2 marks the per-transaction directory layout.
@@ -52,6 +54,9 @@ pub struct TransactionOwner {
     pub owner_identity: String,
     /// ISO-8601 invocation start time.
     pub created_at: String,
+    /// PID namespace of the owner, or nothing for a record written before the field existed.
+    ///  Optional on disk; readers that do not know the field ignore it.
+    pub owner_pid_namespace: Option<String>,
 }
 
 /// What:
@@ -107,6 +112,7 @@ pub fn current_transaction_owner(
         owner_pid: i64::from(std::process::id()),
         owner_identity: current_birth_identity()?,
         created_at: String::from(created_at),
+        owner_pid_namespace: current_pid_namespace(),
     });
 }
 
@@ -129,6 +135,9 @@ pub fn encode_transaction_owner(owner: &TransactionOwner) -> String {
         .integer("ownerPid", owner.owner_pid)
         .string("ownerIdentity", owner.owner_identity.as_str())
         .string("createdAt", owner.created_at.as_str());
+    if let Some(namespace) = &owner.owner_pid_namespace {
+        writer.string("ownerPidNamespace", namespace.as_str());
+    }
     return format!("{}\n", writer.finish());
 }
 
@@ -166,6 +175,10 @@ pub fn parse_transaction_owner(bytes: &[u8]) -> Option<TransactionOwner> {
         owner_pid,
         owner_identity: String::from(owner_identity),
         created_at: String::from(created_at),
+        // A present field must be non-empty text; anything else leaves the PID to decide, as before the field.
+        owner_pid_namespace: string_field(&map, "ownerPidNamespace")
+            .filter(|namespace| { return !namespace.is_empty(); })
+            .map(String::from),
     });
 }
 
@@ -218,6 +231,27 @@ pub fn classify_transaction_owner(
         Some(current) if current == owner_identity => return Ok(OwnerLiveness::Alive),
         Some(_) | None => return Ok(OwnerLiveness::Dead),
     }
+}
+
+/// What:
+///  Classify a parsed owner record, trusting its PID only inside the PID namespace that wrote it.
+/// Why:
+///   An owner of another namespace has a PID this process cannot interpret (issues 1781 and 1784), so it counts as
+///  alive until its record file `owner_path` outlives the patience; the same rule serves recovery, the lease check
+///  and the reservation queue.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// await classifyTransactionOwnerRecord(owner, ownerPath);
+/// ```
+pub fn classify_transaction_owner_record(
+    owner: &TransactionOwner,
+    owner_path: &std::path::Path,
+) -> Result<OwnerLiveness, OwnerLivenessError> {
+    if let Some(standing) = foreign_owner_standing(owner.owner_pid_namespace.as_deref(), owner_path) {
+        return Ok(if standing { OwnerLiveness::Alive } else { OwnerLiveness::Dead });
+    }
+    return classify_transaction_owner(owner.owner_pid, owner.owner_identity.as_str());
 }
 
 /// Owner record and liveness controls stay out of the release executable.

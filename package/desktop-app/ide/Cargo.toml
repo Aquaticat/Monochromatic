@@ -60,6 +60,12 @@ notify = { version = "8.2.0", default-features = false }
 # Native pixel geometry replaces terminal-column assumptions for fallback fonts.
 parley = "0.11"
 swash = "0.2"
+# Draws the code view on the GPU: Parley layouts become a Vello scene that is rendered into a wgpu texture on Slint's own
+# device (src/gpu_tile.rs, doc/planning/ide-vello-text.md design C). Version 0.11 is the release built on wgpu 30, the
+# major that Slint's wgpu feature uses, so both share one device. `wgpu` is its only feature: the crate's default
+# features enable wgpu's own defaults, which the IDE already gets through Slint. Vello brings kurbo and peniko,
+# re-exported as `vello::kurbo` and `vello::peniko`.
+vello = { version = "0.11", default-features = false, features = ["wgpu"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "1.1"

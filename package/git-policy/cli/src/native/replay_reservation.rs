@@ -166,7 +166,7 @@ pub fn live_holder(lock_directory: &Path) -> Result<Option<OwnerLockRecord>, Res
         PublishedOwner::Owner(found) => found,
         PublishedOwner::Busy => return Ok(None),
     };
-    let alive: bool = owner_lock_holder_is_alive(&record)
+    let alive: bool = owner_lock_holder_is_alive(&record, lock_directory)
         .map_err(|error| { return ReservationError::Identity(format!("{error:?}")); })?;
     return Ok(if alive { Some(record) } else { None });
 }

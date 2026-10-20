@@ -27,7 +27,7 @@ use super::owner_lock_record::{PublishedOwner, read_owner_lock_record};
 use super::private_storage::read_regular_file;
 /// Transaction owner records and their liveness.
 use super::transaction_owner::{
-    OwnerLiveness, classify_transaction_owner, parse_transaction_owner,
+    OwnerLiveness, classify_transaction_owner_record, parse_transaction_owner,
 };
 /// The owner record filename of a transaction directory.
 use super::transaction_registry::OWNER_FILENAME;
@@ -160,8 +160,9 @@ pub fn has_valid_preparation_lease(environment: &[(OsString, OsString)]) -> bool
     if string_field(&plan, "lease") != Some(lease.as_str()) {
         return false;
     }
+    let owner_path: PathBuf = transaction.join(OWNER_FILENAME);
     let Ok(owner_bytes) = read_regular_file(
-        transaction.join(OWNER_FILENAME).as_path(),
+        owner_path.as_path(),
         LEASE_RECORD_LIMIT,
     ) else {
         return false;
@@ -170,7 +171,7 @@ pub fn has_valid_preparation_lease(environment: &[(OsString, OsString)]) -> bool
         return false;
     };
     return matches!(
-        classify_transaction_owner(owner.owner_pid, owner.owner_identity.as_str()),
+        classify_transaction_owner_record(&owner, owner_path.as_path()),
         Ok(OwnerLiveness::Alive)
     );
 }
