@@ -351,7 +351,10 @@ with the repository tasks:
   214 tests run,
   214 passed,
   5 skipped,
-  159.0 s.
+  159.0 s on the branch before the clipboard change,
+  and again 214 passed,
+  5 skipped,
+  142.8 s on the final head.
   An earlier run stopped on `minimap_tests::fifty_thousand_lines_give_a_bounded_picture_without_blocking_the_window`
   (`173 lines were rendered for 4 bands`),
   a test that does not use the harness;
