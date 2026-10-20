@@ -1,4 +1,5 @@
 import { compareCodePoints, } from '@monochromatic-dev/translation-repair-markup/ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Attribution report
 // Reads what critic attribution recorded and turns it into rates. Built
@@ -609,8 +610,8 @@ export function buildAttributionReport(
    that raised a claim can be missing one.
    */
   const heardSorted = [...heard.entries(),].toSorted(function byModelId(
-    [left,],
-    [right,],
+    [left,]: ReadonlyEntry<string, number>,
+    [right,]: ReadonlyEntry<string, number>,
   ): number {
     return compareCodePoints({
       left,
@@ -622,7 +623,7 @@ export function buildAttributionReport(
     eligibleEntries: eligible.length,
     ineligibleEntries: entries.length - eligible.length,
     chunks,
-    critics: heardSorted.map(function toTally([modelId, chunksHeard,],): CriticTally {
+    critics: heardSorted.map(function toTally([modelId, chunksHeard,]: ReadonlyEntry<string, number>,): CriticTally {
       return {
         modelId,
         chunksHeard,

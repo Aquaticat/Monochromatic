@@ -8,6 +8,7 @@ import {
 import {
   activeFootnoteMarkers,
   footnoteMarkerLabels,
+  type ReadonlyEntry,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   normalizeFootnoteIdentifier,
@@ -106,14 +107,14 @@ export function closeFootnoteRelabel(
    Unmapped archive identities retain their first observed spellings.
    */
   const archiveLeft = [...input.archive
-    .entries(),].filter(function unplaced([key,],): boolean {
+    .entries(),].filter(function unplaced([key,]: ReadonlyEntry<string, string>,): boolean {
     return !suppliedFrom.has(key,);
   },);
   /**
    Original identities still needing correspondence.
    */
   const originalLeft = [...input.original
-    .entries(),].filter(function unaccounted([key,],): boolean {
+    .entries(),].filter(function unaccounted([key,]: ReadonlyEntry<string, string>,): boolean {
     return !suppliedTo.has(key,);
   },);
   /**
@@ -160,10 +161,10 @@ export function closeFootnoteRelabel(
    */
   const collisions = [...input.archive
     .entries(),]
-    .filter(function occupied([key,],): boolean {
+    .filter(function occupied([key,]: ReadonlyEntry<string, string>,): boolean {
       return establishedTo.has(key,) && (!establishedFrom.has(key,));
     },)
-    .map(function spelling([, label,],): string { return label; },);
+    .map(function spelling([, label,]: ReadonlyEntry<string, string>,): string { return label; },);
   /**
    Source identities not explained by any correspondence or existing elimination.
    */

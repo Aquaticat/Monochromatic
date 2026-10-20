@@ -19,6 +19,7 @@ import {
   nameAuthorities,
 } from './contributor-name-authorities.ts';
 import { carriesRendering, } from './handle-reading.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Contributor name restore
 // CLASS SIXTY-SEVEN (XingZ616, 2026-09-19). A contributor's name in a section
@@ -175,7 +176,7 @@ function restoreHeading(
   /**
    Contributor the original heading names, if any.
    */
-  const named = [...authorities.entries(),].find(function names([name,],): boolean {
+  const named = [...authorities.entries(),].find(function names([name,]: ReadonlyEntry<string, Authority>,): boolean {
     return titleNames({
       title,
       name,

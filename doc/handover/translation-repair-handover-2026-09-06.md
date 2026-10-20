@@ -642,9 +642,10 @@ its "Next" list is still the queue the merge went ahead of.
       (read at 20:30 UTC;
       the pass log of 2026-10-20),
       and spent 65 of Hyper's 110.
-      `CuspariaKLSY` waits:
-      the NeuralWatt build changes the digest,
-      so the rotation restarts at `zheermao101` once it lands,
+      The NeuralWatt build changed the digest,
+      so the rotation restarted at `zheermao101`
+      (`zheermao19`,
+      in the NeuralWatt item),
       then CuspariaKLSY,
       XingZ60,
       yingying,
@@ -670,8 +671,9 @@ its "Next" list is still the queue the merge went ahead of.
       as the Bedrock ledger does:
       reserve an estimate per call from the energy matrix's prompt-size buckets,
       settle with the stream's `: energy` comment,
-      mark the provider dry until 00:00 UTC on a `: cost` comment with a nonzero `request_cost_usd`,
       and read `/v1/quota` at start and end of a run.
+      (A stop that read a nonzero `request_cost_usd` as plan spend was built and removed the same day;
+      ledger P16.)
       Served ids `deepseek-v4.1-flash` and `glm-5.3-flash`,
       standard lane only;
       first in the provider order,
@@ -713,17 +715,122 @@ its "Next" list is still the queue the merge went ahead of.
       7.1 hands the plugin the tuple reference,
       so mutable tuples from `Object.entries` and `Map.entries` callbacks now surface,
       and the offers are sound.
-      Queued after the NeuralWatt land:
-      fix all 105 at the package's own boundaries
-      (an explicit deeply readonly entry type),
-      never by loosening the rule.
+      Landed as `1dde8c5cd6` after gate g131
+      (suite 2631 pass and 0 fail,
+      lint red only on the inherited 105).
+      `zheermao18` launched at 22:22 UTC on that build;
+      its first NeuralWatt call used 0.0167 Wh,
+      a tiny share of the day's 550 Wh,
+      yet reported a `request_cost_usd` of 0.000107.
+      The meter as built never looked at the energy here:
+      it took any cost above zero as proof that the free energy was spent and the plan was being charged,
+      so after that one call it marked NeuralWatt out of energy until 00:00 UTC.
+      That rule was the defect.
+      The run went on spending Hyper until it was stopped at 22:30 UTC after 21 Hyper calls.
+      The owner read the dashboard
+      ("Your call only used 60.3J,
+      which isn't even 0.0%")
+      and ruled:
+      "From here on just use NeuralWatt normally,
+      I can tolerate some potential losses.
+      If it works wrongly I'll tell you."
+      The stop was removed
+      (red `265cb0d224`,
+      fix `05330e45c4`,
+      docs `1c4c10b4d1`;
+      legacy ledger lines that carry `billedUsd` read as plain energy lines),
+      landed as `5b5dca49a9` after gate g132
+      (suite 2648 pass and 0 fail,
+      lint red only on the inherited 105);
+      record and ledger P16 landed in `745b51e38d`.
+      The branch worktree's build digest matched w243's:
+      `sha256-tree-v1:f706c65f04541d1d043d5d39c4597ef034b537c8a73e827ef8c937da7c6d4ee9`.
+      `zheermao19` (entry zheermao101) runs since 23:00 UTC on 2026-10-20 with that digest on its `START` line;
+      by 23:10 UTC NeuralWatt had served 16 calls for 4.1 Wh,
+      all settled at measured figures,
+      and had not gone dry.
+      The 105 `prefer-readonly-parameter-type` findings are being fixed type-only in keyless worktree w246
+      (explicit deeply readonly entry types at the package's own boundaries,
+      never by loosening the rule;
+      the build digest must stay unchanged).
+      The owner then ruled
+      (about 23:15 UTC):
+      "The stop logic should obviously count total free energy used per day.
+      Every neuralwatt day starts at 15:15".
+      Read-only calls confirmed both
+      (`/v1/quota` `current_period_start` `2026-10-20T19:15:08Z`,
+      15:15 in America/New_York;
+      `/v1/usage/by-model` account-wide covered energy 4.095 Wh against the ledger's 4.094 Wh;
+      record section "The day boundary and the account-wide count",
+      ledger P17).
+      The fix is being built in keyless worktree w247:
+      the day anchored at the quota's time of day,
+      spent energy the account-wide covered total since the anchor,
+      never below the ledger,
+      plus calls in flight.
+      `zheermao19` keeps the old build;
+      its 00:00 UTC ledger reset hands back about 20 Wh NeuralWatt still counts,
+      far inside the 550 Wh,
+      so it is not stopped.
+      The owner then set a 1 kWh daily limit on this key
+      ("I've also just setup a 1kWh daily limit on this specific api key");
+      `/v1/quota` still reported `key.allowance: null` at 23:15 and 23:20 UTC,
+      and `/v1/usage/by-key` `budget_limit_usd: null` on both keys,
+      so w247 also reads the documented USD allowance (`blocked` makes NeuralWatt dry until `reset_at`)
+      and prints it on the `METERS` line.
+      And:
+      "Migrate to deepseek v4 flash 1017 where possible."
+      Catalogs read at about 23:30 UTC:
+      NeuralWatt's `deepseek-v4.1-flash` already serves `deepseek-ai/DeepSeek-V4.1-Flash-1017`;
+      Hyper lists `deepseek-v4.1-flash-1017`,
+      OpenRouter `deepseek/deepseek-v4.1-flash-1017`
+      (Morph serves it at 0.158 and 0.6),
+      Synthetic `hf:deepseek-ai/DeepSeek-V4.1-Flash-1017`
+      (the card has no Synthetic side;
+      none is added).
+      Keyless worktree w248 moves the card's Hyper and OpenRouter served ids,
+      keeping the roster id `deepseek-v4.1-flash` as the card's name.
+      w246 meanwhile folds 21 copies of `ReadonlyEntry` into one in `shared-contract`
+      (`d390fd0f86`,
+      digest unchanged;
+      gate g133 green at 2631 pass and 0 fail,
+      landed as `506972d0e4`).
+      Four of its commit bodies claimed more than ran;
+      corrective comments 205886719,
+      205886729,
+      205886731 and 205886736 say what did.
+      `zheermao19` settled at 23:35 UTC in 35.6 min
+      (`TALLY zheermao101 status=SETTLED ... repairAccepted=13 ... pageChanged=9`);
+      the page read is being drafted at `/var/home/user/temp/agent/x15-fix/reads/zheermao19-read.md`
+      for the pass log.
+      NeuralWatt served 197 calls for 28.7 Wh measured,
+      every estimate running 2 to 6 times its measured figure;
+      the run-end `NeuralWatt PLAN ENERGY SPENT: 345.2 Wh` line is the owner's other key
+      (`mimo-v2.6-pro` rose 335 Wh between 23:15 and 23:36 UTC by `/v1/usage/by-model`).
+      Hyper reached `hyperBalance=0` and Synthetic `syntheticWeekly=0%` during the run;
+      Hyper is not recharged.
+      The Bedrock key has expired
+      (HTTP 401 "The security token included in the request has expired.",
+      already on `zheermao17`'s three Gemma seats),
+      and the owner ruled on 2026-10-20 to leave Bedrock off rather than issue a new key.
+      The run then withheld each Gemma seat for the whole run after 4 refused asks,
+      though `gemma-4-26b-a4b-it` and `google.gemma-4-31b` have OpenRouter sides with no holds
+      and OpenRouter was wet:
+      a credential refusal belongs to the provider,
+      not the seat.
+      Keyless worktree w249 makes it hold the provider out for the run and move each seat to its next provider
+      (ledger P18 once it lands);
+      `google.gemma-4-e2b` is Bedrock-only and stays out.
+      The rotation waits for the combined build,
+      since a run now would lose those seats again and spend OpenRouter credit on a build about to change.
       Next:
-      green `source-scan`,
-      land w242,
-      install and force-build in the branch worktree (M285),
-      compare digests,
-      set `FROZEN` in `launch-rotation.ts`,
-      and launch `zheermao18`.
+      gate and land w247,
+      w248 and w249,
+      rebuild,
+      set `FROZEN`,
+      record the `zheermao19` read in the pass log,
+      recalibrate the energy margin from the settled ledger lines,
+      then go on with CuspariaKLSY and the rest of the rotation.
     - The class of the `zheermao15` read is ledger B702.
     - The guard of B701 stays open and undecided:
       the rotation sweep as an expensive mise task,
