@@ -532,7 +532,8 @@ named for that subject and listed here.
   the log's two streams,
   a launch whose build ran the main checkout's bundler (M278),
   a scratch worktree tested on the install of another commit (M280),
-  and a cache version commit that left seven test cases red (M284).
+  a cache version commit that left seven test cases red (M284),
+  and a branch worktree moved to a new build without an install (M285).
 - [Audit ledger: process mistakes, guards and red cases](audit-ledger-process-guards-and-red-cases.md):
   Guards and failing-first cases that could not fail,
   never reached what they guarded,

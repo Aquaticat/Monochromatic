@@ -261,3 +261,12 @@ not a memory of having done it.
     or run `mise run prepare:pnpm:install` after every checkout,
     and read `readlink --canonicalize node_modules/rolldown`
     against the lockfile's `rolldown@` entry before any gate or build.
+    The branch worktree is no exception (M285):
+    after its fast-forward to a new rotation build,
+    install there,
+    build corpus-pass,
+    and compare that build's digest with the gated build's before the launch
+    (glossary's `digestPipeline` over `package/translation-repair/corpus-pass/dist/final/node`,
+    loaded from the gated worktree's build);
+    a package added since the last install is left out of the bundle,
+    and the pass stops before its `START` line.
