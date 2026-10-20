@@ -1806,6 +1806,19 @@ that is verification, not a decision for the user.
   remote tip means delivered; remote tip not in the local branch means merge and push as today; remote tip in the local
   branch means a genuine refusal, reported unchanged. Reproducer test first, then mutation over the file, then release.
   nc1 was restarted at 21:34 EDT so only the first file runs the planted controls (`NATIVE_MUTATION_SKIP_PLANTED`).
+  Later 2026-10-19: closed 370, 371, 515, 516, 517, 518, 612, 626, 627, 628, 631 (their code was the retired TypeScript
+  wrapper, deleted in 642b6d72cb; each comment names the evidence), 1344 and 1345 (commit 6ab2a1c8eb, tests failed
+  before the fix), and unwrapped four scripts into top-level await (48059eb84f; the real interop launcher still
+  passes 41 checks). Reproduced on the native wrapper and queued behind nc1: 472 (an explicit-path commit of a staged
+  deletion whose path stays on disk exits 1 with Git's bare "nothing added to commit" and no hint; the wrapper should
+  print the index-backed command; reproducer test first). Not yet judged: 629, 630, 632 (e2e and perf fixture sharing,
+  code still present), 574 (feature request, not this package's code), 1348 (region markers), 1672 (hex tables),
+  728 to 730 (regexes in `cli.fuzz/bin`), 1717, 612's siblings 613 to 680 (other packages).
+  Queued behind nc1 (scripts it uses): `bin/mutate-native-container*.mjs`, `native-planted-controls.mjs`,
+  `native-nextest-snapshot.mjs` (19 lint findings, issues 1338, 1340, 1343). Separate pass for `cli.fuzz/bin/container.mjs`
+  and `planted-controls.mjs` (1338's second half, 728 to 730): they are outside every lint task, use `spawnSync`,
+  `try/finally` and regexes, and `container.mjs` ends in an early `return` inside its `try`; verify with a
+  `--build-only` run of the fuzz container script.
   Issue 1713 (handover paths and `mise run //` targets that moved): the cli-git half is done in commit `d4a2587cb6`
   (thirty occurrences of 23 distinct unresolved paths in eleven `doc/handover/cli-git*.md` files keep their text and
   carry an in-place note with the current module or the removal date; progress comment posted). The issue stays open
