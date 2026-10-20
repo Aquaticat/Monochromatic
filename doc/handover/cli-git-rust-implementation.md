@@ -1904,9 +1904,11 @@ that is verification, not a decision for the user.
   (which now takes `cwd` and `env`); `bin/planted-controls.mjs` reads nextest lines without regexes, its table is
   `planted-table.mjs` (29 plants, equal to the old table). `cli.fuzz/mise.toml` gained `lint:oxlint`,
   `lint:oxlint:paths`, `format:oxlint` and `format:oxlint:paths`; the whole package is lint-clean. The commit says
-  "Closes #728, #729, #730"; if the checks below fail, reopen them. Checks still to run once nc5 ends:
-  `mise run //package/git-policy/cli.fuzz:build` (a heavy podman build), `:test:planted` and one `:smoke` target
-  (for example `node bin/container.mjs --targets=owner_records --seconds-per-target=5` from the package directory).
+  "Closes #728, #729, #730". End-to-end result 2026-10-20: `build` first failed because the fuzz crate's generators
+  lacked the `owner_pid_namespace` field that 0.2.4 added (fixed in `src/owners.rs`, which now also generates the
+  field for both record kinds); then `build` passed, `:test:planted` noticed all 29 plants, and `:smoke` ran all 12
+  targets with exit 0. nc6 proved the refactored cli scripts: gate 2044 passed, 5 skipped, all 78 planted controls
+  noticed, 8 of 8 mutants caught. Both oxlint gates report zero. 728, 729, 730 and 1338 stay closed or close.
   Triage 2026-10-20: closed 632 (the perf code is gone) and 1348 (ST2 is a TypeScript rule). Reframed 629 to the Rust
   helpers still duplicated across `test_support.rs`, `command_test_support.rs` and `binary_support.rs` plus the
   byte-argument copies in `cli.fuzz`; queued behind nc2, as those files are in the mutation image. 630 stays open with
