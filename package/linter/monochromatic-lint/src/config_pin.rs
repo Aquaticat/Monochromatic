@@ -165,14 +165,25 @@ fn version_value(trimmed: &str) -> Option<String> {
     }
     let quoted: &str = value.trim();
     let inner = quoted.strip_prefix('"')?.strip_suffix('"')?;
-    let plain: bool = !inner.is_empty()
-        && inner
-            .bytes()
-            .all(|byte| return byte.is_ascii_alphanumeric() || b".+-_".contains(&byte));
+    let plain: bool = !inner.is_empty() && inner.bytes().all(plain_version_byte);
     if !plain {
         return None;
     }
     return Some(String::from(inner));
+}
+
+/// What:
+///  Whether one version-value byte may appear in a plain lockfile version.
+/// Why:
+///  A named predicate keeps the byte filter a reusable function path instead of a
+/// capture-free closure.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function plainVersionByte(byte: number): boolean;
+/// ```
+fn plain_version_byte(byte: u8) -> bool {
+    return byte.is_ascii_alphanumeric() || b".+-_".contains(&byte);
 }
 
 /// What:
@@ -229,10 +240,24 @@ fn numeric_triple(version: &str) -> Option<(u64, u64, u64)> {
 /// function decimal(text: string): number | undefined;
 /// ```
 fn decimal(text: &str) -> Option<u64> {
-    if text.is_empty() || !text.bytes().all(|byte| return byte.is_ascii_digit()) {
+    if text.is_empty() || !text.bytes().all(ascii_digit) {
         return None;
     }
     return text.parse::<u64>().ok();
+}
+
+/// What:
+///  Whether one byte is an ASCII decimal digit.
+/// Why:
+///  A named predicate keeps the digit filter a reusable function path instead of a
+/// capture-free closure.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function asciiDigit(byte: number): boolean;
+/// ```
+fn ascii_digit(byte: u8) -> bool {
+    return byte.is_ascii_digit();
 }
 
 /// Pin-measurement controls stay outside release artifacts.
