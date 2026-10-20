@@ -734,8 +734,8 @@ await describe({
           throw new Error('every provider reading dry must end the call with a refusal',);
         expect(outcome.thrown,).toBeInstanceOf(EveryProviderDryError,);
         expect(String(outcome.thrown,),).toBe(
-          'EveryProviderDryError: Every provider is out of budget at once: NeuralWatt has no free daily energy left (or '
-            + 'billed a request today), Synthetic has no weekly credit left (or no five-hour request left, on a reply '
+          'EveryProviderDryError: Every provider is out of budget at once: NeuralWatt has no free daily energy left, '
+            + 'Synthetic has no weekly credit left (or no five-hour request left, on a reply '
             + 'that still carries that window), Charm Hyper has no balance left, Amazon Bedrock has no credit left '
             + 'short of the owner\'s card, and OpenRouter has no credit left. Nothing further can be bought, so this '
             + 'run ends. NeuralWatt\'s free energy returns at 00:00 UTC; Synthetic regenerates on its own schedule; '

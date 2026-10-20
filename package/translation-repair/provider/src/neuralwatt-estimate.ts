@@ -57,10 +57,13 @@ import { PROMPT_BYTES_PER_TOKEN, } from './openrouter-abandoned-spend.ts';
 // margin of 2 is between 0.0004 and 0.33 percent of the 550 Wh by bucket
 // (`doc/decision/translation-repair-neuralwatt-provider.md` has the table); a
 // larger margin raises that and blocks large prompts earlier in the day. What
-// it cannot do is stop plan spend by itself, and it does not need to: a
-// request that comes back billed ends the UTC day for this provider at once
-// (`neuralwatt-client.ts`), so an under-estimate costs at most the calls in
-// flight when the first billed one lands.
+// it cannot do is stop plan spend by itself, and nothing else here does: a
+// cost a stream reports is nominal on free-energy requests too, so it ends
+// nothing (`neuralwatt-settlement.ts`). An under-estimate can therefore spend
+// plan energy, which shows only in the plan-energy difference a run prints at
+// its end (`neuralwatt-quota-session.ts`). The owner, 2026-10-20: "From here on
+// just use NeuralWatt normally, I can tolerate some potential losses. If it
+// works wrongly I'll tell you."
 
 /**
  Factor every bucket mean is multiplied by to give the energy a call holds

@@ -121,7 +121,7 @@ await describe({
         + 'free daily energy bills neither and is metered in watt-hours by the energy ledger',
       fn: async () => {
         /**
-         Tally holding a Hyper seat, a NeuralWatt seat on the free energy and one that was billed.
+         Tally holding a Hyper seat, a NeuralWatt seat on the free energy and one that reported a nominal cost.
          */
         const cost = priceTally({
           tally: tallyOf({
