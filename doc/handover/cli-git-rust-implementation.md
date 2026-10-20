@@ -1877,6 +1877,9 @@ that is verification, not a decision for the user.
   ("recovered a live transaction") and passes with it. It skips itself where `unshare` is refused (possibly in the
   container gate). Limits: a foreign owner that really crashed blocks recovery for up to one hour; a live foreign owner
   holding a lock longer than an hour is retired; versions before this change still judge by PID.
+  Closing gate and mutation run for the namespace work: unit `cli-git-nc4` (script `~/temp/agent/nc4-run.ts`, image
+  tag `nc4`, logs `~/temp/agent/nc4-<name>.log`; no `src/native` edit while it runs). After it: kill survivors, remove
+  the `nc4` images, release 0.2.4, comment on and close 1781 and 1784.
   Triage 2026-10-20: closed 632 (the perf code is gone) and 1348 (ST2 is a TypeScript rule). Reframed 629 to the Rust
   helpers still duplicated across `test_support.rs`, `command_test_support.rs` and `binary_support.rs` plus the
   byte-argument copies in `cli.fuzz`; queued behind nc2, as those files are in the mutation image. 630 stays open with
