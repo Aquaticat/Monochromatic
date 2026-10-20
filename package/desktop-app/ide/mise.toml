@@ -286,11 +286,11 @@ runCargo(['nextest', 'run', '--no-default-features', '--test', 'wrap', '--test',
 """
 
 [tasks."test:minimap"]
-description = "Run the minimap geometry and picture tests in the bounded container"
+description = "Run the minimap geometry and picture-scene tests in the bounded container"
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
-runCargo(['nextest', 'run', '--no-default-features', '--test', 'minimap', '--test', 'minimap_downscale', '--test', 'minimap_picture'])
+runCargo(['nextest', 'run', '--no-default-features', '--test', 'minimap', '--test', 'minimap_scene'])
 """
 
 [tasks."test:native"]
@@ -375,14 +375,6 @@ shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 runCargo(['nextest', 'run', '--no-default-features', '--test', 'file_tree', '--test', 'file_tree_validation', '--test', 'file_tree_requests', '--test', 'directory_worker'])
-"""
-
-[tasks."test:raster"]
-description = "Compare repeated viewport pixels and report shape/raster stage timings"
-shell = "node --input-type=module-typescript -e"
-run = """
-{{vars.cargo}}
-runCargo(['nextest', 'run', '--no-default-features', '--test', 'raster_reuse', '--no-capture'])
 """
 
 [tasks."lint:clippy"]

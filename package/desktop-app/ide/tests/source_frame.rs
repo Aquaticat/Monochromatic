@@ -7,7 +7,7 @@ use ide_app::{
     shaped_text::Viewport,
     source_frame::FrameStamp,
     source_style::{SourceStyles, StyleSpan},
-    text_raster::CodeColors,
+    code_colors::CodeColors,
 };
 
 /// Source-image fixture with explicit physical geometry and system colors.

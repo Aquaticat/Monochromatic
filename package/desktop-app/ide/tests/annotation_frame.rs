@@ -14,7 +14,7 @@ use ide_app::{
     shaped_text::Viewport,
     source_frame::FrameStamp,
     source_style::SourceStyles,
-    text_raster::CodeColors,
+    code_colors::CodeColors,
     virtual_row::{Block, HintPlace, MessageRow, ROW_HEIGHT},
 };
 /// Visible annotations are shared with the layout.

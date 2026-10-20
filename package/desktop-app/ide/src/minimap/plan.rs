@@ -1,22 +1,15 @@
-//! The bands the minimap's picture is rendered in:
-//!  consecutive stretches of the text,
-//!  each short enough that its raster at the window's width stays a small part of the raster limit.
+//! The slices of the picture:
+//!  the bands the picture is cut into,
+//!  the rows of the whole picture that a run of bands makes up,
+//!  and the chunks a slice is rendered in.
 
-/// The unit the clip edges are rounded to,
-/// and the vertical mapping that says which lines a stretch holds.
-use crate::row_map::{CODE_ROW, RowMap};
-/// A clip is two distances below the first line's block,
-/// and a raster's width follows the wrap width.
-use crate::shaped_text::{Clip, raster_width};
-/// The most bytes any raster may hold.
-use crate::text_raster::MAX_RASTER_BYTES;
-/// A band's span of the text.
+/// The bands are counted along the text's height.
 use std::ops::Range;
 
 /// What:
 ///  Least display scale the picture is built at.
 /// Why:
-///  A scale of zero or less would make every raster empty;
+///  A scale of zero or less would make every texture empty;
 ///  no real display is this small.
 ///
 /// In TS you'd write (pseudocode):
@@ -26,114 +19,61 @@ use std::ops::Range;
 pub const MIN_SCALE: f32 = 0.25;
 
 /// What:
-///  Most bytes the raster of one band may hold,
-///  a sixteenth of the raster limit.
+///  Most rows of the picture one render of the GPU draws.
 /// Why:
-///  Only one band is held at full size at a time,
-///  and the headroom keeps a band far from the limit the window's own tile is held to;
-///  measured bands of this size cost a few milliseconds each.
+///  Vello 0.11 sizes its scratch buffers with fixed constants,
+///  and a scene that needs more than they hold renders blank without an error
+///  (`doc/planning/ide-vello-buffer-sizes.md`):
+///  the densest text the editor can show overflows them in one render of 2,048 rows and fits in 1,024
+///  (`src/native/minimap_dense_tests.rs`).
+///  A slice is therefore drawn in chunks of at most this many rows,
+///  which keeps the densest text a factor of two inside the buffers.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// export const BAND_BYTES = MAX_RASTER_BYTES / 16;
+/// export const CHUNK_ROWS = 512;
 /// ```
-pub const BAND_BYTES: u64 = MAX_RASTER_BYTES / 16;
+pub const CHUNK_ROWS: u32 = 512;
 
 /// What:
-///  One band:
-///  the lines it renders,
-///  the clip of them its raster holds,
-///  and the stretch of the text it is responsible for.
+///  The rows of the chunks a slice of `rows` is drawn in,
+///  each at most [`CHUNK_ROWS`] tall,
+///  from the slice's first row.
 /// Why:
-///  A band renders a little more than its stretch,
-///  because a clip is whole code rows below the first line's block;
-///  only the stretch counts in the picture.
+///  The worker builds one scene for each chunk and the GPU renders them one after another
+///  into the one texture of the slice,
+///  so the cuts must be whole picture rows that two builds of the same slice agree on.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Band = { first: number; count: number; clip: Clip; span: [number, number]; last: boolean };
+/// function chunkRows(rows: [number, number]): [number, number][];
 /// ```
-#[derive(Clone, Debug, PartialEq)]
-pub struct Band {
-    /// First line rendered.
-    pub first: usize,
-    /// Lines rendered.
-    pub count: usize,
-    /// The part of those lines the raster holds.
-    pub clip: Clip,
-    /// The stretch of the text this band answers for,
-    /// in logical pixels from the top of the text.
-    pub span: Range<f32>,
-    /// Whether this is the last band,
-    /// which also answers for the output rows below the text's end.
-    pub last: bool,
-}
-
-/// The rows a band answers for.
-impl Band {
-    /// The source rows,
-    /// in physical pixels from the top of the text at `scale`,
-    /// this band answers for;
-    /// the last band answers for everything below as well.
-    pub fn assigned(&self, scale: f32) -> Range<f64> {
-        let from = f64::from(self.span.start) * f64::from(scale);
-        if self.last {
-            return from..f64::INFINITY;
-        }
-        return from..f64::from(self.span.end) * f64::from(scale);
+pub fn chunk_rows(rows: &Range<usize>) -> Vec<Range<usize>> {
+    let mut chunks = Vec::new();
+    let mut start = rows.start;
+    while start < rows.end {
+        let end = (start + CHUNK_ROWS as usize).min(rows.end);
+        chunks.push(start..end);
+        start = end;
     }
+    return chunks;
 }
 
 /// What:
-///  How tall a stretch of text a band answers for,
-///  in logical pixels,
-///  so that its raster of `columns` pixels at `scale` holds at most [`BAND_BYTES`].
+///  How tall a band of the text is,
+///  in logical pixels of the text: thirty-two code rows,
+///  which are 128 rows of the picture at its fixed scale.
 /// Why:
-///  The clip rounds both edges out to whole code rows,
-///  and one more row covers the rounding of the raster up to whole pixels;
-///  the answer is whole code rows and never under two.
+///  The window names the bands the track shows and the worker draws the lines they hold,
+///  so a scroll that stays inside the same bands moves the picture in the markup and draws nothing;
+///  the cuts stand at multiples of this from the top of the text,
+///  so scrolling moves the window over them and never a cut.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function bandHeight(columns: number, scale: number): number;
+/// export const BAND = 768;
 /// ```
-pub fn band_height(columns: u64, scale: f32) -> f32 {
-    let rows = BAND_BYTES / 4 / columns.max(1);
-    let logical = rows as f32 / scale.max(f32::MIN_POSITIVE);
-    let spare = logical - 3.0 * CODE_ROW;
-    return ((spare / CODE_ROW).floor() * CODE_ROW).max(2.0 * CODE_ROW);
-}
-
-/// What:
-///  Physical pixels in a row of a band's raster,
-///  for a text wrapped at `wrap` shown at `scale`.
-/// Why:
-///  The window thread and the worker both size bands from it,
-///  so they agree on where the cuts are.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function columnsOf(wrap: number | undefined, scale: number): number;
-/// ```
-pub fn columns_of(wrap: Option<f32>, scale: f32) -> u64 {
-    return (raster_width(wrap) * scale.max(MIN_SCALE)).ceil() as u64;
-}
-
-/// What:
-///  How tall a stretch of text one band answers for,
-///  in logical pixels,
-/// for a text wrapped at `wrap` shown at `scale`.
-/// Why:
-///  The cuts of a text stand at multiples of this from its top,
-///  so the window thread can name the bands the track shows without the worker.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function bandStep(wrap: number | undefined, scale: number): number;
-/// ```
-pub fn band_step(wrap: Option<f32>, scale: f32) -> f32 {
-    return band_height(columns_of(wrap, scale), scale.max(MIN_SCALE));
-}
+pub const BAND: f32 = 768.0;
 
 /// What:
 ///  How many bands of `step` logical pixels cover a text `height` logical pixels tall.
@@ -153,47 +93,59 @@ pub fn band_count(height: f32, step: f32) -> usize {
 }
 
 /// What:
-///  The bands numbered `window` of the text of `map`,
-///  in order,
-///  for rasters `columns` pixels wide at `scale`.
+///  How many bands of the picture fit in one texture `limit` pixels tall,
+///  at display `scale` and `ratio` rows of the picture for each logical pixel of the text.
+///  Never under one.
 /// Why:
-///  Band `n` stands from `n` steps below the top of the text whatever the window,
-///  so scrolling moves the window and never a cut;
-///  the stretches are consecutive and cover the text exactly,
-///  so the picture is their reductions side by side;
-///  a line taller than a stretch is rendered in as many bands as it takes,
-///  each with the rows of it that fall in its stretch.
+///  The texture a slice is drawn into is bounded by the device,
+///  so the window never asks for more bands than one texture can hold.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function plan(map: RowMap, columns: number, scale: number, window: [number, number]): Band[];
+/// function mostBands(limit: number, scale: number, ratio: number): number;
 /// ```
-pub fn plan(map: &RowMap, columns: u64, scale: f32, window: Range<usize>) -> Vec<Band> {
-    let height = map.height();
-    let step = band_height(columns, scale);
-    let count = band_count(height, step);
-    let mut bands = Vec::new();
-    for index in window.start..window.end.min(count) {
-        let top = index as f32 * step;
-        let bottom = (top + step).min(height);
-        let first = map.line_at(top);
-        let last_line = map.line_at((bottom - 0.01).max(top));
-        let first_top = map.block_top(first);
-        let ends = map.block_top(last_line + 1) - first_top;
-        let from = ((top - first_top) / CODE_ROW).floor().max(0.0) * CODE_ROW;
-        let to = (((bottom - first_top) / CODE_ROW).ceil() * CODE_ROW)
-            .min(ends)
-            .max(from + CODE_ROW);
-        bands.push(Band {
-            first,
-            count: last_line - first + 1,
-            clip: Clip {
-                top: from,
-                bottom: to,
-            },
-            span: top..bottom,
-            last: index + 1 == count,
-        });
-    }
-    return bands;
+pub fn most_bands(limit: u32, scale: f32, ratio: f64) -> usize {
+    let rows = f64::from(BAND) * f64::from(scale.max(MIN_SCALE)) * ratio;
+    return ((f64::from(limit) / rows).floor() as usize).max(1);
+}
+
+/// What:
+///  The rows of the whole picture of a text `height` logical pixels tall,
+///  at display `scale` and `ratio` rows of the picture for each logical pixel of the text.
+/// Why:
+///  The picture is as tall as the text at its fixed scale,
+///  rounded up to whole pixels with a margin for the float error of the product.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function pictureRows(height: number, scale: number, ratio: number): number;
+/// ```
+pub fn picture_rows(height: f32, scale: f32, ratio: f64) -> usize {
+    return ((f64::from(height) * f64::from(scale) * ratio) - 1e-3)
+        .ceil()
+        .max(0.0) as usize;
+}
+
+/// What:
+///  The rows of the whole picture that the bands `window` make up:
+///  from the first row of the first band to the first row of the band after the last,
+///  and to the end of the picture when the window reaches the text's end.
+/// Why:
+///  The edges are whole picture rows and the same for every slice,
+///  so two slices that share a band agree on where it stands.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function sliceRows(window: [number, number], height: number, scale: number, ratio: number): [number, number];
+/// ```
+pub fn slice_rows(window: &Range<usize>, height: f32, scale: f32, ratio: f64) -> Range<usize> {
+    let total = picture_rows(height, scale, ratio);
+    let per_band = f64::from(BAND) * f64::from(scale.max(MIN_SCALE)) * ratio;
+    let start = ((window.start as f64 * per_band).round() as usize).min(total);
+    let end = if window.end >= band_count(height, BAND) {
+        total
+    } else {
+        ((window.end as f64 * per_band).round() as usize).min(total)
+    };
+    return start.min(end)..end;
 }

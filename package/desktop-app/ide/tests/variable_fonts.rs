@@ -1,14 +1,14 @@
 //! Real variable coordinates and italic faces must survive source shaping,
-//!  raster caching and the GPU's glyph runs,
+//!  the GPU's glyph runs,
 //!  and copying.
 
 /// Production source font assets and typography interfaces.
 use ide_app::{
+    code_colors::CodeColors,
     document::{Document, ReadingPosition},
     font_asset::{CODE_ITALIC, CODE_ROMAN},
     shaped_text::{ShapedView, TextShaper, Viewport},
     source_typography::SourceTypography,
-    text_raster::{CodeColors, TextRaster},
     tile_scene::{Item, tile_items},
 };
 /// Actual font runs expose selected font identity and normalized variation coordinates.
@@ -82,9 +82,10 @@ fn code_weights_and_italics_use_real_faces_without_synthesis() {
     }
 }
 
-/// Reusing one glyph cache must distinguish weights even when the font blob ID and glyph IDs stay shared.
+/// Two weights share one font blob and glyph ids,
+/// so only the variation coordinates of each glyph run tell the GPU which outlines to draw.
 #[test]
-fn variable_weight_cache_matches_fresh_rendering() {
+fn variable_weight_reaches_the_gpu_as_variation_coordinates() {
     let document = Document::new("office === != => 0");
     let normal = TextShaper::new().prepare(&document, viewport(), &[]);
     let mut heavier = TextShaper::with_typography(SourceTypography {
@@ -105,22 +106,7 @@ fn variable_weight_cache_matches_fresh_rendering() {
         selected: [255, 255, 255, 255],
         dark: true,
     };
-    let mut cached = TextRaster::new();
-    let original = cached
-        .paint_onto(&normal, colors, 0.0, blank(&normal))
-        .expect("normal instance");
-    let changed = cached
-        .paint_onto(&heavy, colors, 0.0, blank(&heavy))
-        .expect("cached heavy instance");
-    let fresh = TextRaster::new()
-        .paint_onto(&heavy, colors, 0.0, blank(&heavy))
-        .expect("fresh heavy instance");
-    assert_ne!(
-        original.bytes, changed.bytes,
-        "weight must change real outline pixels"
-    );
-    assert_eq!(changed.bytes, fresh.bytes);
-    // The GPU path has no glyph cache: the weight reaches Vello as the variation coordinates of each glyph run.
+    // The weight reaches Vello as the variation coordinates of each glyph run.
     let normal_coords = drawn_coords(&normal, colors);
     let heavy_coords = drawn_coords(&heavy, colors);
     assert!(!normal_coords.is_empty() && !heavy_coords.is_empty());
@@ -184,10 +170,4 @@ fn invalid_source_weights_are_rejected() {
             .is_err()
         );
     }
-}
-
-/// A raster-sized blank buffer for the minimap's rasterizer,
-/// which paints over what it is given.
-fn blank(view: &ShapedView) -> Vec<u8> {
-    return vec![0; (u64::from(view.width) * u64::from(view.height) * 4) as usize];
 }

@@ -312,22 +312,29 @@ impl Geometry {
     /// that the track shows,
     ///  and one more on each side.
     /// Why:
-    ///  Only the bands near the visible part of the picture are built and kept;
+    ///  Only the bands near the visible part of the picture are drawn;
     ///  the extra band on each side lets a scroll of up to a band move the picture without a new one.
+    ///  The picture is drawn into one texture, so it holds at most `most` bands:
+    ///  a track taller than that keeps the bands from its top and leaves the rest of the track blank.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// bandsFor(offset: number, step: number): [number, number];
+    /// bandsFor(offset: number, step: number, most: number): [number, number];
     /// ```
-    pub fn bands_for(&self, offset: f32, step: f32) -> Range<usize> {
+    pub fn bands_for(&self, offset: f32, step: f32, most: usize) -> Range<usize> {
         if self.content <= 0.0 || step <= 0.0 {
             return 0..0;
         }
         let total = band_count(self.content, step);
         let from = self.slide(offset) / self.scale();
         let to = (self.slide(offset) + self.track()) / self.scale();
-        let first = (((from - step) / step).floor().max(0.0) as usize).min(total - 1);
+        let cap = most.max(1);
+        let mut first = (((from - step) / step).floor().max(0.0) as usize).min(total - 1);
         let end = (((to + step) / step).ceil() as usize).clamp(first + 1, total);
-        return first..end;
+        if end - first > cap {
+            // The texture cannot hold the margin bands as well: start at the band the track starts in.
+            first = ((from / step).floor().max(0.0) as usize).clamp(first, end - 1);
+        }
+        return first..end.min(first.saturating_add(cap));
     }
 }

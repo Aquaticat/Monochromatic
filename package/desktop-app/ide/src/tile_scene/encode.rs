@@ -64,6 +64,26 @@ pub fn encode(items: &[Item], height: f32) -> Scene {
                 );
             }
             Item::Unclip => scene.pop_layer(),
+            Item::Fill {
+                left,
+                top,
+                right,
+                bottom,
+                ink,
+            } => {
+                scene.fill(
+                    Fill::NonZero,
+                    Affine::IDENTITY,
+                    brush(*ink),
+                    None,
+                    &Rect::new(
+                        f64::from(*left),
+                        f64::from(*top),
+                        f64::from(*right),
+                        f64::from(*bottom),
+                    ),
+                );
+            }
             Item::Stroke(line) => {
                 let mut style = Stroke::new(f64::from(line.width));
                 if line.round {

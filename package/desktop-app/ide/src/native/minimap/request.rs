@@ -11,7 +11,7 @@ use crate::native::minimap::picture::start_poll;
 /// The worker,
 ///  its request type,
 ///  and the key a picture is valid for.
-use crate::native::minimap_build::{Job, Key, MinimapWorker};
+use crate::native::minimap_worker::{Job, Key, MinimapWorker};
 /// The window,
 ///  its state,
 ///  the displayed text's stamp,
@@ -29,8 +29,8 @@ use ide_app::find::FindRange;
 use ide_app::find_navigation::paint_ranges;
 /// The inks of the selection and match fills,
 /// the geometry that names the bands the track shows,
-/// and the size of a band.
-use ide_app::minimap::{Fills, Geometry, band_step};
+/// and the size of a band and of the texture that holds the bands.
+use ide_app::minimap::{BAND, Fills, Geometry, most_bands};
 /// A wrap width must be a positive number of pixels.
 use ide_app::wrap::has_wrap_width;
 /// Toolkit images,
@@ -97,10 +97,17 @@ pub(super) fn key_of(window: &AppWindow, current: &State) -> Option<Key> {
         (Arc::as_ptr(&ranges).cast::<()>() as usize, ranges.len())
     };
     let active = present(current).active;
-    let wrap = has_wrap_width(current.width).then_some(current.width);
     let scale = window.window().scale_factor();
-    let bands = Geometry::new(current.row_map.height(), height)
-        .bands_for(-window.get_scroll_y(), band_step(wrap, scale));
+    let geometry = Geometry::new(current.row_map.height(), height);
+    let bands = geometry.bands_for(
+        -window.get_scroll_y(),
+        BAND,
+        most_bands(
+            ide_app::shaped_text::texture_dimension(),
+            scale,
+            f64::from(geometry.scale()),
+        ),
+    );
     return Some(Key {
         stamp: displayed(current),
         styles: Arc::as_ptr(&current.styles).cast::<()>() as usize,
@@ -244,7 +251,9 @@ pub(in crate::native) fn note(window: &AppWindow, state: &Rc<RefCell<State>>) {
     if other_file {
         // Another file: the picture on screen is wrong, not just old.
         current.minimap.shown = None;
+        let gpu = current.gpu.clone();
         drop(current);
+        gpu.forget_minimap();
         window.set_minimap_image(Image::default());
         let mut again = state.borrow_mut();
         again.minimap.debounce.stop();

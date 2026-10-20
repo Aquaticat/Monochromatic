@@ -107,7 +107,7 @@ pub fn drawn_runs(items: &[Item]) -> Vec<DrawnRun> {
                     baseline,
                 });
             }
-            Item::Stroke(_) => {}
+            Item::Stroke(_) | Item::Fill { .. } => {}
         }
     }
     return runs;
@@ -137,10 +137,59 @@ pub fn drawn_strokes(items: &[Item]) -> Vec<DrawnStroke> {
                 clip,
                 stroke: stroke.clone(),
             }),
-            Item::Glyphs(_) => {}
+            Item::Glyphs(_) | Item::Fill { .. } => {}
         }
     }
     return strokes;
+}
+
+/// What:
+///  One filled rectangle as it is drawn:
+///  its edges and its ink.
+/// Why:
+///  The minimap draws its selection and match marks as rectangles,
+///  and a test reads their place and ink.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type DrawnFill = { left: number; top: number; right: number; bottom: number; ink: Rgba };
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct DrawnFill {
+    /// Left edge in physical pixels.
+    pub left: f32,
+    /// Top edge in physical pixels.
+    pub top: f32,
+    /// Right edge in physical pixels.
+    pub right: f32,
+    /// Bottom edge in physical pixels.
+    pub bottom: f32,
+    /// Straight RGBA ink.
+    pub ink: [u8; 4],
+}
+
+/// The filled rectangles of `items` in drawing order.
+pub fn drawn_fills(items: &[Item]) -> Vec<DrawnFill> {
+    let mut fills: Vec<DrawnFill> = Vec::new();
+    for item in items {
+        if let Item::Fill {
+            left,
+            top,
+            right,
+            bottom,
+            ink,
+        } = item
+        {
+            fills.push(DrawnFill {
+                left: *left,
+                top: *top,
+                right: *right,
+                bottom: *bottom,
+                ink: *ink,
+            });
+        }
+    }
+    return fills;
 }
 
 /// What:

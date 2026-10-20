@@ -4,7 +4,7 @@
 //! a drag of the box,
 //! the wheel,
 //!  the keyboard after a press,
-//! and the worker that builds the picture off the window thread.
+//! and the worker that builds the picture's scene off the window thread.
 //! Nothing here waits on the window thread:
 //! every wait advances timers and lets the workers answer.
 
@@ -25,14 +25,17 @@ use super::wrap_tests::{long_text, open, settled};
 use super::{
     AppWindow,
     minimap::{DEBOUNCE, Plan, SLIDE, THROTTLE, apply, plan},
-    minimap_build::{Key as PictureKey, MINIMAP_GATE, OFF_WORKER_BUILDS, Reply},
+    minimap_worker::{Key as PictureKey, MINIMAP_GATE, OFF_WORKER_BUILDS, Reply},
     overscan_tile_tests::{scroll_to, settle_tile},
     theme_tests::switch,
+    tile_reads::{draw_minimap, minimap_pixels},
 };
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
 /// Library types that give the expected values.
-use ide_app::minimap::{BUILD_WORK, Geometry, band_count, band_step};
+use ide_app::minimap::{BAND, Geometry, band_count, most_bands};
+/// An empty scene stands for a finished picture in the accept rule's tests.
+use ide_app::tile_scene::TileScene;
 /// Toolkit events,
 /// models,
 /// and images.
@@ -126,7 +129,8 @@ fn calm(reader: &Reader) {
     update_timers_and_animations();
 }
 
-/// Wait until a picture for the displayed text is on screen and no request is awaited.
+/// Wait until a picture for the displayed text is on screen and no request is awaited,
+/// and the GPU has drawn it.
 fn picture_shown(reader: &Reader) {
     {
         let mut waiting = Waiting::slow();
@@ -143,6 +147,7 @@ fn picture_shown(reader: &Reader) {
             waiting.step("the minimap picture did not arrive");
         }
     }
+    draw_minimap(&reader.window);
 }
 
 /// The box and the picture's slide match `ide_app::minimap::Geometry` at every scroll offset,
@@ -528,16 +533,11 @@ fn the_wheel_over_the_minimap_scrolls_like_the_wheel_over_the_text() {
 
 /// How many bands the whole text of the reader's window is cut into.
 pub(super) fn bands_of(reader: &Reader) -> usize {
-    let current = reader.source.borrow();
-    let wrap = ide_app::wrap::has_wrap_width(current.width).then_some(current.width);
-    return band_count(
-        current.row_map.height(),
-        band_step(wrap, reader.window.window().scale_factor()),
-    );
+    return band_count(reader.source.borrow().row_map.height(), BAND);
 }
 
 /// The picture is built on the worker thread,
-/// its width is the minimap's,
+/// its texture is as wide as the minimap,
 /// it holds the bands near the visible part of the text,
 /// and what it cost stays inside its bounds.
 #[test]
@@ -551,10 +551,7 @@ fn the_picture_is_built_on_the_worker_and_stays_inside_its_bounds() {
         0,
         "a picture was built off the worker"
     );
-    let image = window
-        .get_minimap_image()
-        .to_rgba8()
-        .expect("picture pixels");
+    let image = minimap_pixels(window, &opened.source).expect("picture pixels");
     let stats = opened
         .source
         .borrow()
@@ -570,18 +567,23 @@ fn the_picture_is_built_on_the_worker_and_stays_inside_its_bounds() {
         "the picture covers the track"
     );
     assert!(
-        stats.units <= 12 && stats.units * 20 < bands_of(&opened),
+        stats.units <= 12 && stats.units * 3 < bands_of(&opened),
         "{} of {} bands were built for one view",
         stats.units,
         bands_of(&opened)
     );
-    assert!(stats.work <= BUILD_WORK);
     assert_eq!(
-        stats.rendered + stats.reused,
-        stats.units,
-        "every unit of the picture was rendered or taken from the cache"
+        stats.shaped + stats.reused + stats.skipped,
+        stats.lines,
+        "every line of the picture was shaped, taken from the row cache, or left blank"
     );
-    assert_eq!(stats.failed + stats.skipped, 0, "no unit was left out");
+    assert_eq!(stats.skipped, 0, "no line was left out");
+    assert!(
+        stats.lines <= stats.units * 40,
+        "{} lines for {} bands",
+        stats.lines,
+        stats.units
+    );
     let mut inked = false;
     for pixel in image.as_slice().iter() {
         if pixel.a > 0 {
@@ -595,11 +597,15 @@ fn the_picture_is_built_on_the_worker_and_stays_inside_its_bounds() {
 /// The bands a scroll to `offset` shows,
 /// in the reader's window.
 fn bands_at(reader: &Reader, offset: f32) -> std::ops::Range<usize> {
-    let current = reader.source.borrow();
-    let wrap = ide_app::wrap::has_wrap_width(current.width).then_some(current.width);
-    return geometry(reader).bands_for(
+    let shape = geometry(reader);
+    return shape.bands_for(
         offset,
-        band_step(wrap, reader.window.window().scale_factor()),
+        BAND,
+        most_bands(
+            ide_app::shaped_text::texture_dimension(),
+            reader.window.window().scale_factor(),
+            f64::from(shape.scale()),
+        ),
     );
 }
 
@@ -621,6 +627,7 @@ fn picture_of_bands(reader: &Reader, bands: &std::ops::Range<usize>) {
         }
         waiting.step("the picture of the scrolled bands did not arrive");
     }
+    draw_minimap(&reader.window);
 }
 
 /// A scroll that keeps the bands the track shows posts no request and sets no picture:
@@ -649,15 +656,17 @@ fn a_scroll_posts_a_request_only_when_it_names_other_bands() {
         "the stretch of the same bands is only {} px",
         edge - start
     );
-    let (posts, images, top) = {
+    let (posts, images, top, drawn) = {
         let current = opened.source.borrow();
         (
             current.minimap.posts,
             current.minimap.images_set,
             window.get_minimap_picture_top() + window.get_minimap_picture_height(),
+            current.gpu.minimaps_rendered(),
         )
     };
     let slide = window.get_minimap_slide();
+    let first = window.get_minimap_picture_top();
     let mut at = start;
     while at < edge {
         at += 4.0;
@@ -679,6 +688,12 @@ fn a_scroll_posts_a_request_only_when_it_names_other_bands() {
             "a scroll within the bands set a minimap picture"
         );
     }
+    draw_minimap(window);
+    assert_eq!(
+        opened.source.borrow().gpu.minimaps_rendered(),
+        drawn,
+        "a scroll within the bands rendered a slice on the GPU"
+    );
     assert!(
         window.get_minimap_slide() > slide,
         "the picture slid with the scroll"
@@ -705,9 +720,16 @@ fn a_scroll_posts_a_request_only_when_it_names_other_bands() {
         images + 1,
         "one picture for the new bands"
     );
+    assert_eq!(
+        current.gpu.minimaps_rendered(),
+        drawn + 1,
+        "one slice rendered on the GPU for the new bands"
+    );
     drop(current);
+    // The slice moves down by a band at one end or at both, so it starts or ends further down the text.
     assert!(
-        window.get_minimap_picture_top() + window.get_minimap_picture_height() > top,
+        window.get_minimap_picture_top() > first
+            || window.get_minimap_picture_top() + window.get_minimap_picture_height() > top,
         "the new picture reaches further down the text"
     );
     window.hide().expect("close minimap window");
@@ -772,8 +794,12 @@ fn a_new_wrap_width_rebuilds_the_picture() {
         loop {
             {
                 let current = opened.source.borrow();
+                // The picture is for the new text and for the minimap's size as it now stands.
+                let size = current.minimap.size;
                 let followed = match current.minimap.shown {
-                    Some(shown) => shown.rows != before.rows,
+                    Some(shown) => {
+                        shown.rows != before.rows && shown.size == (size.0.to_bits(), size.1.to_bits())
+                    }
                     None => false,
                 };
                 if followed && current.minimap.shown == current.minimap.posted {
@@ -793,10 +819,7 @@ fn a_new_wrap_width_rebuilds_the_picture() {
         height,
         "the longer text is another height"
     );
-    let image = window
-        .get_minimap_image()
-        .to_rgba8()
-        .expect("picture pixels");
+    let image = minimap_pixels(window, &opened.source).expect("picture pixels");
     assert_eq!(image.width() as f32, window.get_minimap_width());
     assert!(
         image.height() as f32 + 1.0 >= window.get_minimap_track() * window.window().scale_factor()
@@ -857,7 +880,11 @@ fn reply(
         id: number,
         key: moved,
         top: 0,
-        pixels: SharedPixelBuffer::new(4, 4),
+        chunks: vec![TileScene {
+            scene: vello::Scene::new(),
+            width: 4,
+            height: 4,
+        }],
         stats,
         elapsed: Duration::ZERO,
     };
@@ -876,11 +903,7 @@ fn styled(reader: &Reader) -> bool {
 
 /// The mean brightness of the inked pixels of the picture on screen.
 fn brightness(reader: &Reader) -> f32 {
-    let image = reader
-        .window
-        .get_minimap_image()
-        .to_rgba8()
-        .expect("picture pixels");
+    let image = minimap_pixels(&reader.window, &reader.source).expect("picture pixels");
     let mut total = 0.0_f32;
     let mut count = 0.0_f32;
     for pixel in image.as_slice() {
@@ -1053,27 +1076,21 @@ fn fifty_thousand_lines_give_a_bounded_picture_without_blocking_the_window() {
     );
     assert!(
         stats.lines <= 40 * stats.units,
-        "{} lines were rendered for {} bands",
+        "{} lines were drawn for {} bands",
         stats.lines,
         stats.units
     );
-    assert!(stats.work <= BUILD_WORK);
-    assert!(
-        stats.largest as u64 <= ide_app::text_raster::MAX_RASTER_BYTES,
-        "a band of {} bytes passed the raster limit",
-        stats.largest
-    );
-    assert_eq!(stats.failed + stats.skipped, 0, "no band was left out");
+    assert_eq!(stats.shaped, stats.lines, "a cold build shapes its lines");
+    assert_eq!(stats.skipped, 0, "no line was left out");
     assert_eq!(OFF_WORKER_BUILDS.load(Ordering::SeqCst), 0);
     window.hide().expect("close minimap window");
 }
 
 /// A change of one line of a file of fifty thousand lines that reaches the window through its watch
-/// renders the one band that holds the line and takes the others from the cache:
-/// the cost of an edit follows the lines it touches,
-/// not the length of the file.
+/// shapes the one line that changed and takes the rest of the picture's lines from the row cache:
+/// the cost of an edit follows the lines it touches, not the length of the file nor the size of the picture.
 #[test]
-fn an_external_edit_of_fifty_thousand_lines_renders_only_the_band_it_touches() {
+fn an_external_edit_of_fifty_thousand_lines_shapes_only_the_line_it_touches() {
     let mut text = String::new();
     for number in 0..50_000 {
         text.push_str(&format!(
@@ -1091,14 +1108,20 @@ fn an_external_edit_of_fifty_thousand_lines_renders_only_the_band_it_touches() {
         }
     }
     let revision = opened.source.borrow().document.revision();
-    let units = opened
-        .source
-        .borrow()
-        .minimap
-        .last_stats
-        .expect("statistics")
-        .units;
-    assert!(units > 3, "the window holds {units} bands");
+    let (cold, shaped_before) = {
+        let current = opened.source.borrow();
+        (
+            current.minimap.last_stats.expect("statistics"),
+            current.minimap.shaped,
+        )
+    };
+    // Positive control: the first picture shaped every line it drew, so a count of one is a count that can move.
+    assert!(cold.lines > 50, "the picture draws {} lines", cold.lines);
+    assert!(
+        shaped_before >= cold.lines as u64,
+        "the first pictures shaped {shaped_before} of {} lines",
+        cold.lines
+    );
     // One word of line 20 changes to another of the same length: the line count and every row stay.
     let edited = text.replacen("item_20(", "itom_20(", 1);
     assert_ne!(edited, text);
@@ -1126,21 +1149,26 @@ fn an_external_edit_of_fifty_thousand_lines_renders_only_the_band_it_touches() {
             waiting.step("the picture did not follow the edit");
         }
     }
-    let stats = opened
-        .source
-        .borrow()
-        .minimap
-        .last_stats
-        .expect("statistics");
-    assert_eq!(stats.units, units);
+    let (stats, shaped_after) = {
+        let current = opened.source.borrow();
+        (
+            current.minimap.last_stats.expect("statistics"),
+            current.minimap.shaped,
+        )
+    };
     assert!(
-        (1..=2).contains(&stats.rendered),
-        "the edit rendered {} of {} bands",
-        stats.rendered,
-        stats.units
+        shaped_after - shaped_before <= 2,
+        "the edit shaped {} lines of the picture's {}",
+        shaped_after - shaped_before,
+        stats.lines
     );
-    assert_eq!(stats.rendered + stats.reused, stats.units);
-    assert_eq!(stats.failed + stats.skipped, 0);
+    assert!(
+        stats.reused + 2 >= stats.lines,
+        "the build after the edit took {} of {} lines from the row cache",
+        stats.reused,
+        stats.lines
+    );
+    assert_eq!(stats.skipped, 0);
     window.hide().expect("close minimap window");
 }
 
@@ -1149,6 +1177,14 @@ fn an_external_edit_of_fifty_thousand_lines_renders_only_the_band_it_touches() {
 fn each_kind_of_change_has_its_own_pace() {
     let (_project, opened) = open(&long_text(400));
     settled(&opened);
+    picture_shown(&opened);
+    // A picture keyed before the rows were laid out has no mapping to move, so wait for the one that has.
+    {
+        let mut waiting = Waiting::slow();
+        while opened.source.borrow().minimap.shown.and_then(|shown| return shown.rows).is_none() {
+            waiting.step("no picture was made for a laid out mapping");
+        }
+    }
     picture_shown(&opened);
     let base = opened.source.borrow().minimap.shown.expect("a picture key");
     let long_ago = Some(Duration::from_secs(5));

@@ -173,7 +173,7 @@ mod language;
 /// and the picture of the whole text built off-thread.
 mod minimap;
 /// The minimap's worker thread.
-mod minimap_build;
+mod minimap_worker;
 /// The minimap's picture is the average of the window's own pixels,
 /// for plain text,
 /// selections,
@@ -182,6 +182,9 @@ mod minimap_build;
 /// and diagnostics.
 #[cfg(test)]
 mod minimap_reflection_tests;
+/// The densest slices of text the minimap draws render in the renderer's fixed buffers.
+#[cfg(test)]
+mod minimap_dense_tests;
 /// The minimap's geometry,
 /// picture,
 /// and pointer paths.

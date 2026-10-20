@@ -5,8 +5,7 @@
 //! and the maps between a minimap position,
 //! a scroll offset,
 //!  and a visual row.
-//!  The picture has its own test files (`minimap_downscale.rs`,
-//! `minimap_picture.rs`).
+//!  The picture has its own test file (`minimap_scene.rs`).
 
 /// The visual row counts and the map built from them.
 use ide_app::line_rows::LineRows;
@@ -259,7 +258,7 @@ fn the_bands_to_keep_surround_the_part_of_the_picture_in_view() {
     assert_eq!(total, (content / step).ceil() as usize);
     for share in [0.0_f32, 0.001, 0.4, 0.999, 1.0] {
         let offset = geometry.max_offset() * share;
-        let bands = geometry.bands_for(offset, step);
+        let bands = geometry.bands_for(offset, step, usize::MAX);
         let shown_from = geometry.slide(offset) / geometry.scale();
         let shown_to = (geometry.slide(offset) + geometry.track()) / geometry.scale();
         assert!(bands.end <= total && bands.start < bands.end);
@@ -279,12 +278,40 @@ fn the_bands_to_keep_surround_the_part_of_the_picture_in_view() {
     }
     // A scroll within a band's height of the picture's slide names the same bands.
     let at = geometry.max_offset() * 0.5;
-    let same = geometry.bands_for(at + 1.0, step);
-    assert_eq!(geometry.bands_for(at, step), same);
+    let same = geometry.bands_for(at + 1.0, step, usize::MAX);
+    assert_eq!(geometry.bands_for(at, step, usize::MAX), same);
     // A short text is one window of all its bands.
     let short = Geometry::new(10.0 * CODE_ROW, 600.0);
-    assert_eq!(short.bands_for(0.0, step), 0..1);
-    assert_eq!(Geometry::new(0.0, 600.0).bands_for(0.0, step), 0..0);
+    assert_eq!(short.bands_for(0.0, step, usize::MAX), 0..1);
+    assert_eq!(Geometry::new(0.0, 600.0).bands_for(0.0, step, usize::MAX), 0..0);
+}
+
+/// A texture holds only so many bands:
+/// a window capped to that many starts at the band the track starts in,
+/// keeps the bands below it,
+/// and never names more than the cap.
+#[test]
+fn a_cap_on_the_bands_keeps_those_from_the_top_of_the_track() {
+    let step = 768.0;
+    let content = 50_000.0 * CODE_ROW;
+    // A view 12,000 px tall: its track is 12,000 px, 15.6 bands of the text's 768 px at a sixth.
+    let geometry = Geometry::new(content, 12_000.0);
+    let offset = geometry.max_offset() * 0.4;
+    let free = geometry.bands_for(offset, step, usize::MAX);
+    assert!(free.len() > 20, "the free window is {} bands", free.len());
+    for cap in [1_usize, 8, 16, 64] {
+        let capped = geometry.bands_for(offset, step, cap);
+        assert!(capped.len() <= cap, "{} bands past the cap {cap}", capped.len());
+        assert!(capped.start >= free.start && capped.end <= free.end);
+        if cap < free.len() {
+            let shown_from = geometry.slide(offset) / geometry.scale();
+            assert!(
+                capped.start as f32 * step <= shown_from
+                    && shown_from < (capped.start as f32 + 1.0) * step,
+                "the capped window {capped:?} does not start in the band the track starts in ({shown_from})"
+            );
+        }
+    }
 }
 
 /// The picture is the text's whole width shrunk to the minimap's,
