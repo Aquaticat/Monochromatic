@@ -1788,6 +1788,24 @@ that is verification, not a decision for the user.
   1342; other: 1341 (`process-fixture` crash), 1339 (fuzz manifest), 1757 (my packages verified done, only
   `wg-quicker-exempt` is left), 1032 (GH006 diagnostic, investigate), and the audit duplicate-cluster and docs
   issues (612 to 680, 1698, 1713, 1740, 1741), which are judged one by one in the same pass.
+  Progress 2026-10-19 (evening): the interop driver is repaired and committed (8b7a9fea21; `old-format-fixtures`
+  passes, 41 checks). The committed fixtures had two gaps that the git-ignored `*.idx` and `*.log` patterns cause:
+  packs without indexes (restore now runs `git index-pack` for any pack lacking one) and no hook log (an absent log
+  counts as empty). A refusing wrapper is judged by a before/after fingerprint of stored files
+  (`native-interop/old-format-fingerprint.mjs`; a dead holder's lock record and a pack `.keep` marker may be retired),
+  because the landed commit of the late phases exists only in the incumbent's shadow repository.
+  Closed with evidence: 901, 1342 (this repair), 1339 (commit 2a4b56bdb0, fuzz manifest), 1341 (commit 3a2a510224,
+  `e2e/process-fixture.unit.test.ts` fails before and passes after). Commented, left open: 1135 to 1140 (the six
+  Git host failures do not reproduce: host suite 1855 of 1856 passed, the one failure needs
+  `GIT_POLICY_NATIVE_TEST_LINTER`; gate container 1995 of 1995; the report came from a private rootfs overlay that was
+  not rerun), 1032 (reframed). Still open and mine: 1338, 1343 (eight `async main()` wrappers), 1340 (duplicate
+  noplanted script), 1757 (only `wg-quicker-exempt` left).
+  Queued behind nc1 (src/native): issue 1032 fix. `was_rejected_as_stale` (`auto_push_reconcile.rs:66`) matches only
+  `[rejected]`, and GitHub's GH006 prints `[remote rejected]`, which does not contain it. Plan: on a `[remote
+  rejected]` refusal fetch the remote tip into the private ref and decide from the graph: local commit already in the
+  remote tip means delivered; remote tip not in the local branch means merge and push as today; remote tip in the local
+  branch means a genuine refusal, reported unchanged. Reproducer test first, then mutation over the file, then release.
+  nc1 was restarted at 21:34 EDT so only the first file runs the planted controls (`NATIVE_MUTATION_SKIP_PLANTED`).
   Issue 1713 (handover paths and `mise run //` targets that moved): the cli-git half is done in commit `d4a2587cb6`
   (thirty occurrences of 23 distinct unresolved paths in eleven `doc/handover/cli-git*.md` files keep their text and
   carry an in-place note with the current module or the removal date; progress comment posted). The issue stays open
