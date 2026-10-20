@@ -25,7 +25,7 @@ import {
 } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   SEAT_HYPER_ONLY,
-  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_OPENROUTER_UNMEASURED_HYPER_ID,
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
@@ -45,7 +45,7 @@ await describe({
         + 'wire because it was chosen rather than because a string resolved',
       fn: async () => {
         expect(Object.keys(HYPER_MODELS,).toSorted(),).toEqual([
-          SEAT_HYPER_OPENROUTER_UNMEASURED,
+          SEAT_HYPER_OPENROUTER_UNMEASURED_HYPER_ID,
           SEAT_HYPER_TEXT_BEDROCK,
           SEAT_HYPER_ONLY,
           'glm-5.3-flash',
@@ -95,7 +95,7 @@ await describe({
       name: 'names Hyper-origin identities without a Synthetic counterpart, independently of OpenRouter reach',
       fn: async () => {
         expect(hyperModelsWithoutSyntheticCounterparts().toSorted(),).toEqual([
-          SEAT_HYPER_OPENROUTER_UNMEASURED,
+          SEAT_HYPER_OPENROUTER_UNMEASURED_HYPER_ID,
           SEAT_HYPER_TEXT_BEDROCK,
           SEAT_HYPER_ONLY,
           SEAT_HYPER_VISION,
@@ -143,7 +143,7 @@ await describe({
           },);
 
         expect(readers.toSorted(),).toEqual([
-          SEAT_HYPER_OPENROUTER_UNMEASURED,
+          SEAT_HYPER_OPENROUTER_UNMEASURED_HYPER_ID,
           'glm-5.3-flash',
           'kimi-k3',
           SEAT_HYPER_VISION,
