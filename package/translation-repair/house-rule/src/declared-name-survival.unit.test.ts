@@ -399,6 +399,18 @@ await describe({
           },
         },),
         it({
+          name: 'MEETS THE SUBJECT\'S LOSS AND STILL NAMES THE CONTRIBUTOR: one new subject form pays for '
+            + 'the lost subject form only, so the contributor lost beside it is reported on its own',
+          fn: async () => {
+            expect(findDroppedDeclaredNames({
+              forms: [ 'Mittens', 'Blossom', 'Patch', ],
+              subjectForms: [ 'Mittens', 'Blossom', ],
+              baseText: 'Patch watched Mittens nap on the sill.',
+              candidateText: 'Blossom napped on the sill.',
+            },),).toEqual([ 'Patch', ],);
+          },
+        },),
+        it({
           name: 'REFUSES A SUBJECT NAME REPLACED BY A CONTRIBUTOR NAME, because a contributor is not '
             + 'another form of the subject',
           fn: async () => {

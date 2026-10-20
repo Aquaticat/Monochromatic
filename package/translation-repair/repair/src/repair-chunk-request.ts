@@ -33,6 +33,7 @@ export type RepairChunkRequest = {
   readonly referenceContext?: string;
   readonly attestedDetails?: readonly AttestedDetail[];
   readonly declaredNames: readonly string[];
+  readonly declaredSubjectForms?: readonly string[];
   readonly neighbouringIncumbentText?: string;
   readonly neighbouringSourceText?: string;
   readonly documentSourceText?: string;

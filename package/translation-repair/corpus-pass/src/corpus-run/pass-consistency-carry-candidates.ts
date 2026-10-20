@@ -72,6 +72,8 @@ export function composeSlice(
 
  @param declaredNames - declared name forms
 
+ @param declaredSubjectForms - the declared forms among them that name the subject, which may stand in for one another
+
  @returns The floors' findings joined as a list of zero or one, none when every floor passed
 
  @example
@@ -86,12 +88,14 @@ export function floorRefusalOf(
     candidateText,
     declared,
     declaredNames,
+    declaredSubjectForms,
   }: {
     readonly facts: ConsistencySliceFacts;
     readonly currentText: string;
     readonly candidateText: string;
     readonly declared: readonly DeclaredNamePair[];
     readonly declaredNames: readonly string[];
+    readonly declaredSubjectForms?: readonly string[];
   },
 ): readonly string[] {
   /**
@@ -105,6 +109,7 @@ export function floorRefusalOf(
     lineStructured: facts.lineStructured,
     declared,
     declaredNames,
+    ...((declaredSubjectForms === undefined) ? {} : { declaredSubjectForms, }),
     disputedWordings: facts.disputedWordings,
   },);
   return (verdict.kind === 'passes')
@@ -268,6 +273,8 @@ function keptWordsLost(
 
  @param declaredNames - declared name forms
 
+ @param declaredSubjectForms - the declared forms among them that name the subject, which may stand in for one another
+
  @param l - logger the stage writes to
 
  @returns Each surviving writer's paragraph, and a finding per reply withheld
@@ -289,6 +296,7 @@ export function writtenParagraphsOf(
     facts,
     declared,
     declaredNames,
+    declaredSubjectForms,
     l,
   }: {
     readonly voices: readonly ConsistencyWriterVoice[];
@@ -299,6 +307,7 @@ export function writtenParagraphsOf(
     readonly facts: ConsistencySliceFacts;
     readonly declared: readonly DeclaredNamePair[];
     readonly declaredNames: readonly string[];
+    readonly declaredSubjectForms?: readonly string[];
     readonly l: Logger;
   },
 ): {
@@ -323,6 +332,7 @@ export function writtenParagraphsOf(
     candidateText: english,
     declared,
     declaredNames,
+    ...((declaredSubjectForms === undefined) ? {} : { declaredSubjectForms, }),
   },);
   /**
    The English of the whole page the slice belongs to, absent for a slice read alone.
@@ -399,6 +409,7 @@ export function writtenParagraphsOf(
         },),
         declared,
         declaredNames,
+        ...((declaredSubjectForms === undefined) ? {} : { declaredSubjectForms, }),
       },);
       if (refusal === undefined) {
         return {

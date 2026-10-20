@@ -466,7 +466,7 @@ await describe({
       },
     },),
     it({
-      name: 'REFUSES that same swap when preparation named no subject identity, so the acceptance above '
+      name: 'REFUSES that same swap when preparation named no subject identity, so the acceptance of that swap '
         + 'is attributable to the identity and to nothing else about that wording',
       fn: async () => {
         const record = await settleWith({

@@ -334,6 +334,12 @@ export type CarryContext = {
   readonly declaredNames: readonly string[];
 
   /**
+   The declared forms among them that name the subject, which the floors read
+   as standing in for one another; absent when preparation named none.
+   */
+  readonly declaredSubjectForms?: readonly string[];
+
+  /**
    Entry deadline and caller abort.
    */
   readonly signal: AbortSignal;

@@ -61,6 +61,52 @@ import {
 // form against the texts of its own entry: all 285 carriages in the 92
 // archives and all 544 on the 214 settled pages stand as names, and 1,422 of
 // 47,389 in the stored artifacts existed only across a word edge.
+//
+// A SWAP BETWEEN TWO FORMS OF ONE PERSON IS NOT A LOSS. The floor used to read
+// every form the base carried and the candidate did not as a loss, so a
+// replacement that named the subject by another of her own declared forms was
+// refused, and the editor's or translator's whole slice with it. XingZ60 slice
+// 80 (corpus pass XingZ6015, 2026-10-19): the archive wrote the display name
+// where the original writes the alias, a repair patch resolving twelve served
+// issues (a major tense error among them) and a translate replacement both wrote
+// the alias, and both were refused for dropping the display name, so the archive
+// paragraph shipped with its errors. A declared form the base carried is now
+// met by a declared form of the same person that the base did not carry, one
+// for one, and nothing else:
+//
+//   - PER IDENTITY. Only the forms the entry's own front matter declares for its
+//     subject can meet each other. A contributor handle is another person, so a
+//     contributor name replaced by a subject name, or the reverse, is still a
+//     loss. A caller that cannot say which forms name the subject passes none
+//     and gets the plain rule.
+//   - COUNT FOR COUNT, IN DISTINCT FORMS. Each lost subject form needs its own
+//     new subject form: `Mittens (Blossom)` becoming `Mittens` loses `Blossom`
+//     with nothing in its place, and `Mittens (Blossom)` becoming `Patch` loses
+//     two forms against one. A form the base already carried is no substitute
+//     (`Mittens (Blossom)` becoming `Blossom` still loses `Mittens`), and a
+//     new form counts once with the shorter forms that only run on inside it,
+//     as a lost one does.
+//   - PRESENCE, NOT MENTIONS. The floor has only ever asked whether a form is
+//     carried, never how many times, so a candidate that names the person once
+//     where the base named her twice is as acceptable as one that turns the
+//     second mention into a pronoun. Counting mentions for swaps alone would
+//     refuse `Lili ... she` and accept `XingZ60 ... she`.
+//   - NOT CHECKED AGAINST THE ORIGINAL'S PASSAGE. Which of the person's names
+//     the original writes there is a question of rendering, which the accuracy
+//     judges own; every form met here is one the same front matter declares, so
+//     none is an invention, and the person is named wherever the base named her.
+//     An exact check was measured too and would misfire: of the 43 swaps the
+//     replay finds, 36 carry the source form the front matter pairs with the
+//     new form, and the other seven are right all the same (a signature written
+//     `瞳华` against a declared `瞳華`, a declared full name met where the
+//     original writes the alias inside it).
+//
+// Measured 2026-10-20 over the 331 stored artifacts: 98 refusals, 85 of which
+// the old rule reproduces from stored texts (the other 13 are repair patches
+// whose text is not stored). 43 of the 85 now pass, every one a lost subject
+// form met by a new subject form, and the other 42 stay refused, none with a
+// subject form arriving. The new answer is always a subset of the old one, so
+// no wording that passed before is refused now.
 
 /**
  Separator between alternate handles inside one declared field.
@@ -174,15 +220,106 @@ type KeyedForm = {
 };
 
 /**
+ Pairs each form with the key it is compared under.
+
+ @param forms - declared forms as the front matter writes them
+
+ @returns One keyed form per form, in the order given
+
+ @example
+ ```ts
+ const keyed = keyedForms({ forms: [ 'Mittens', 'Blossom', ], },);
+ ```
+ */
+function keyedForms(
+  { forms, }: { readonly forms: readonly string[]; },
+): readonly KeyedForm[] {
+  return forms.map(function toKeyed(form,): KeyedForm {
+    /**
+     Form's own projection.
+     */
+    const projection = projectName({ text: form, },);
+    return {
+      form,
+      key: projection.key,
+      projection,
+    };
+  },);
+}
+
+/**
+ Keeps the forms that do not sit inside a longer one of the same set.
+
+ A LONGER FORM CARRYING A SHORTER ONE REPORTS ONCE. Losing
+ `Zha Ke (Lilith)` should not read as two separate losses when the shorter
+ form only ever appeared inside the longer. Carried as a name, as the
+ CARRIED AS A NAME, NOT AS LETTERS note says: `Ann` running on inside
+ `Annabel` is its own form (ledger B23).
+
+ @param entries - forms to fold
+
+ @returns Forms none of the others carries, in the order given
+
+ @example
+ ```ts
+ const outer = outermostForms({ entries: keyed, },);
+ ```
+ */
+function outermostForms(
+  { entries, }: { readonly entries: readonly KeyedForm[]; },
+): readonly KeyedForm[] {
+  return entries.filter(function isNotInsideAnother({ key: lostKey, },): boolean {
+    return !entries.some(function contains(
+      {
+        key: otherKey,
+        projection: other,
+      },
+    ): boolean {
+      return (otherKey !== lostKey)
+        && (otherKey.length > lostKey.length)
+        && carriesName({
+          projection: other,
+          key: lostKey,
+        },);
+    },);
+  },);
+}
+
+/**
+ The forms as the front matter declares them.
+
+ @param entries - keyed forms
+
+ @returns Form texts a finding names, in the order given
+
+ @example
+ ```ts
+ const texts = declaredFormTexts({ entries: keyed, },);
+ ```
+ */
+function declaredFormTexts(
+  { entries, }: { readonly entries: readonly KeyedForm[]; },
+): readonly string[] {
+  return entries.map(function toForm({ form, },): string {
+    return form;
+  },);
+}
+
+/**
  Declared names the base text carried and the candidate does not.
 
  @param forms - declared name forms to check
+
+ @param subjectForms - the forms that name the entry's own subject, so one of
+ them lost can be met by another the base did not carry; absent for the plain
+ rule, which every contributor form and every caller without an identity gets
 
  @param baseText - text being replaced, which sets what must survive
 
  @param candidateText - proposed replacement
 
- @returns Forms present in base and absent from candidate, longest first
+ @returns Forms present in base and absent from candidate, longest first,
+ without the subject forms a new subject form stands in for
 
  @example
  ```ts
@@ -192,10 +329,12 @@ type KeyedForm = {
 export function findDroppedDeclaredNames(
   {
     forms,
+    subjectForms = [],
     baseText,
     candidateText,
   }: {
     readonly forms: readonly string[];
+    readonly subjectForms?: readonly string[];
     readonly baseText: string;
     readonly candidateText: string;
   },
@@ -213,17 +352,7 @@ export function findDroppedDeclaredNames(
   /**
    Every form beside the key it is compared under.
    */
-  const keyed: readonly KeyedForm[] = forms.map(function toKeyed(form,): KeyedForm {
-    /**
-     Form's own projection.
-     */
-    const projection = projectName({ text: form, },);
-    return {
-      form,
-      key: projection.key,
-      projection,
-    };
-  },);
+  const keyed = keyedForms({ forms, },);
 
   /**
    Forms the base text actually carried as names, which are the only ones at
@@ -246,30 +375,69 @@ export function findDroppedDeclaredNames(
     },);
   },);
 
-  // A LONGER FORM CARRYING A SHORTER LOST ONE REPORTS ONCE. Losing
-  // `Zha Ke (Lilith)` should not read as two separate losses when the shorter
-  // form only ever appeared inside the longer. Carried as a name, as the
-  // CARRIED AS A NAME, NOT AS LETTERS note says:
-  // `Ann` running on inside `Annabel` is its own loss (ledger B23).
-  return dropped
-    .filter(function isNotInsideAnother({ key: lostKey, },): boolean {
-      return !dropped.some(function contains(
-        {
-          key: otherKey,
-          projection: other,
-        },
-      ): boolean {
-        return (otherKey !== lostKey)
-          && (otherKey.length > lostKey.length)
-          && carriesName({
-            projection: other,
-            key: lostKey,
-          },);
-      },);
-    },)
-    .map(function toForm({ form, },): string {
-      return form;
+  /**
+   Losses with a shorter form that only runs on inside a longer one folded
+   into it.
+   */
+  const lost = outermostForms({ entries: dropped, },);
+
+  /**
+   Declared forms of the entry's subject, each beside the key it is compared
+   under.
+   */
+  const subject = keyedForms({ forms: subjectForms, },);
+
+  /**
+   Keys of those forms, which decide whether a lost form is the subject's.
+   */
+  const subjectKeys = new Set(subject.map(function toKey({ key, },): string {
+    return key;
+  },),);
+
+  /**
+   Lost forms of the subject, the only ones a new subject form can meet.
+   */
+  const lostSubject = lost.filter(function isSubjectForm({ key, },): boolean {
+    return subjectKeys.has(key,);
+  },);
+  if (lostSubject.length === 0)
+    return declaredFormTexts({ entries: lost, },);
+
+  /**
+   Subject forms the candidate carries as names and the base did not.
+
+   TOO SHORT A FORM COUNTS FOR NOTHING, for the reason the shortest checkable
+   form gives: its presence cannot be told from an accident.
+   */
+  const arrived = subject.filter(function isNew({ key, },): boolean {
+    if (key.length < SHORTEST_CHECKABLE_FORM)
+      return false;
+    if (carriesName({
+      projection: base,
+      key,
+    },))
+      return false;
+    return carriesName({
+      projection: candidate,
+      key,
     },);
+  },);
+
+  /**
+   New subject forms, a longer one and the shorter form that only runs on
+   inside it counted once, as the lost forms are.
+   */
+  const replacements = outermostForms({ entries: arrived, },);
+
+  // ONE NEW FORM FOR EACH LOST ONE.
+  if (replacements.length >= lostSubject.length) {
+    return declaredFormTexts({
+      entries: lost.filter(function isOtherPerson({ key, },): boolean {
+        return !subjectKeys.has(key,);
+      },),
+    },);
+  }
+  return declaredFormTexts({ entries: lost, },);
 }
 
 /**

@@ -113,6 +113,8 @@ function outcomeSliceName({ item, }: { readonly item: { readonly sliceIndex: num
 
  @param declaredNames - exact declarations deterministic guard preserves
 
+ @param declaredSubjectForms - the declared forms among them that name the subject, which may stand in for one another
+
  @param refineCache - naturalness namespace for resume and persistence
 
  @param signal - caller abort honored by exchanges and persistence guard
@@ -163,6 +165,7 @@ export async function runRefinePhase(
     identityContext,
     referenceContext,
     declaredNames,
+    declaredSubjectForms,
     refineCache,
     signal,
     perCallTimeoutMs,
@@ -179,6 +182,7 @@ export async function runRefinePhase(
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly declaredNames: readonly string[];
+    readonly declaredSubjectForms?: readonly string[];
     readonly refineCache?: SliceCache<RefinedSliceSettlement>;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
@@ -263,6 +267,7 @@ export async function runRefinePhase(
             ...(identityContext === undefined ? {} : { identityContext, }),
             ...(referenceContext === undefined ? {} : { referenceContext, }),
             declaredNames,
+            ...((declaredSubjectForms === undefined) ? {} : { declaredSubjectForms, }),
             ...((refineCache === undefined) ? {} : { refineCache, }),
             signal,
             perCallTimeoutMs,

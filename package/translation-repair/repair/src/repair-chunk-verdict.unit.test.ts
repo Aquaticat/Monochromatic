@@ -240,7 +240,7 @@ await describe({
         },),
         it({
           name: 'REFUSES that same swap when preparation named no subject identity, so the acceptance '
-            + 'above is attributable to the identity and to nothing else about that wording',
+            + 'of that swap is attributable to the identity and to nothing else about that wording',
           fn: async () => {
             const verdict = settleWith({
               patchedText: SWAPS_THE_NAME_FOR_THE_ALIAS,

@@ -41,6 +41,8 @@ export type ShippedSettlement = SettledChunk & {
 
  @param declaredNames - name forms the patch may not drop
 
+ @param declaredSubjectForms - the declared forms among them that name the subject, which may stand in for one another
+
  @param targetText - archive wording of the chunk
 
  @param shipped - editor result as it ships, after any strip
@@ -70,6 +72,7 @@ export function settleShippedPatch(
   {
     sliceIndex,
     declaredNames,
+    declaredSubjectForms,
     targetText,
     shipped,
     appliedEnvelopes,
@@ -82,6 +85,7 @@ export function settleShippedPatch(
   }: {
     readonly sliceIndex: number;
     readonly declaredNames: readonly string[];
+    readonly declaredSubjectForms?: readonly string[];
     readonly targetText: string;
     readonly shipped: EditorStageResult;
     readonly appliedEnvelopes: AppliedEnvelopeReading;
@@ -104,6 +108,7 @@ export function settleShippedPatch(
   const settled = settleChunkFromChecks({
     sliceIndex,
     declaredNames,
+    ...((declaredSubjectForms === undefined) ? {} : { declaredSubjectForms, }),
     incumbentText: targetText,
     patchedText: shipped.patch
       .patchedText,
