@@ -8,7 +8,7 @@ Every number comes from a command run on 2026-10-20 on the owner's host
 (AMD Radeon RX 7600, RADV, Vulkan, Vello 0.11.0, wgpu 30.0.1, wgpu-hal 30.0.1);
 what was not run is listed under "Not measured".
 All sizes are in MiB (2^20 bytes) unless a count says otherwise.
-The blank and corrupt frames at these limits are traced, reproduced and prototyped in [the Vello note][vello note].
+The blank and corrupt frames at these limits are traced and reproduced in [the Vello note][vello note].
 
 ## Result in one paragraph
 

@@ -1140,6 +1140,10 @@ for RGBA8 that is 128 MiB.
 Verified:
 `bands:4096:8192` clean,
 `bands:4096:8208` wrong.
+At exactly 131,072 tiles the default `ptcl` has no room left for dynamic allocation:
+`bands:4096:8192` is clean only because no tile outgrows its 64 initial elements,
+and a scene that needs one more chunk at that size fails loudly with bit 16 (a blank frame,
+variant 1).
 Tradeoff:
 it caps the texture;
 the IDE keeps its tile at 64 MiB or less,
@@ -1426,7 +1430,9 @@ and the 0.11.0 release on 2026-10-02).
 
 #### Constraint 4: would the repository welcome our contribution?
 
-Conditional.
+Yes,
+with disclosure;
+the drafts in this document are not yet in a form that may be filed.
 No ban was found:
 the README welcomes pull requests,
 the organization policy allows disclosed LLM assistance,
@@ -1677,6 +1683,11 @@ tiles) is a property of Vello's clip handling that the maintainers know.
 - The reading of pull request 606's `ptcl` start size was not run.
 - Targets of 16384 by 16384:
   only the fixed behavior (a validation error at buffer creation) was seen.
+- The two unit tests of the patch were run only on `main` (container,
+  `cargo test -p vello_encoding --lib`);
+  the 0.11.0 registry copies were built with `cargo build`,
+  which skips test code,
+  and were not tested.
 
 ## Related
 
