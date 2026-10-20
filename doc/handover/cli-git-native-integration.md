@@ -214,6 +214,8 @@ systemd-run --user --unit=int-e2e --collect --property=MemoryMax=10G \
 # one mutation scope without the planted-control phase (the container gate must have built the image tag first)
 cd package/git-policy/cli && GIT_POLICY_NATIVE_IMAGE_TAG=integration node "${HOME}/temp/agent/gate-slot.ts" \
   node bin/mutate-native-container-noplanted.mjs --file src/native/commit_convergence.rs --timeout 900
+  (Note 2026-10-20: the script `bin/mutate-native-container-noplanted.mjs` was removed; `bin/mutate-native-container.mjs`
+  with `NATIVE_MUTATION_SKIP_PLANTED=1` does the same.)
 
 # the container gate
 GIT_POLICY_NATIVE_IMAGE_TAG=integration node "${HOME}/temp/agent/gate-slot.ts" \

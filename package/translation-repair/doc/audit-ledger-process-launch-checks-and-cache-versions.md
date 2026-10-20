@@ -432,3 +432,47 @@ every package whose tests name the constant runs too.
 The search is `rg --files-with-matches '<NAME>' package/translation-repair --glob '*.test.ts'`,
 and on `a169580740` it finds the two corpus-pass files for `CONSISTENCY_CACHE_VERSION` and the one for
 `PAGE_TITLE_CACHE_VERSION`.
+
+## M285: the branch worktree moved to a new rotation build without an install, and the pass could not load a new package
+
+Status:
+happened on 2026-10-20 (UTC),
+in the main session,
+at the first launch of `zheermao17` on `5ae2173d23` (18:58 UTC);
+no provider was called,
+and the relaunch at 19:16 UTC started on the gated build.
+
+The branch worktree was fast-forwarded from `a5dc23c5bb` to `5ae2173d23` with `git merge --ff-only`,
+and nothing installed there.
+The handle fix of B707 added `pinyin-pro` to rendering-audit,
+so the worktree had no copy of it,
+and the bundler,
+unable to resolve it,
+left it as an import in `corpus-pass.mjs`.
+The pass stopped at load with `ERR_MODULE_NOT_FOUND` for `pinyin-pro`,
+before its `START` line,
+and the launch script reported no `START` line after its fifteen minutes.
+The gated build in `w241`,
+installed at its own commit,
+bundles the package and holds no such import.
+After `mise run prepare:pnpm:install` in the branch worktree
+(lockfile unchanged,
+no tracked file changed)
+and a forced build of corpus-pass,
+the branch build's digest was the gated build's
+(`sha256-tree-v1:ee83b531c14ff55286558920e0b21a0d5c43fda1325ffc4ede74c1bec7d6e2ef`),
+and the relaunch's `START` line carried it.
+The failed attempt's log is kept as `corpus-pass-zheermao17-nostart.log` in the agent scratch directory.
+
+Recurrence:
+of M280,
+whose rule names every checkout;
+the branch worktree was read as outside it because it is moved by a fast-forward,
+not checked out.
+
+Prevention:
+`mistake-prevention.md`,
+"Before a run launches",
+step 10 now names the branch worktree,
+the install after its fast-forward,
+and the digest of its build against the gated build's before the launch.

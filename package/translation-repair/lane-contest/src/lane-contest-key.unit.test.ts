@@ -108,7 +108,12 @@ await describe({
         // Version 11 (2026-10-20) re-keys every ballot cast before reader
         // protection was scoped to the account of how a death or an attempt
         // happened and translators' notes were cut from the judges.
-        expect(key,).toBe('eb657a76f20b63a178639acd6a1c9395c24b5f455e352bebf2cfd5e48cfda1c1',);
+        // Version 12 (2026-10-20) re-keys every ballot cast before a note
+        // between translators alone on a quoted line was cut with its line.
+        // Version 13 (2026-10-20) re-keys every ballot cast before a candidate
+        // that respells a Han name the archive spells inside a sentence was
+        // refused.
+        expect(key,).toBe('a41ed7cdb778c31f07042bec533bf67080ba13386dcf8d2d7416f3bb1cf6205b',);
       },
     },),
     it({

@@ -211,11 +211,17 @@ export type CriticIssueResolution =
 
  @param documents - current pair anchors resolve against
 
+ @param original - the texts whose comments are the original's own on the sheet
+ the critic read (`criticOriginalsOf`): the translation quote is located in the
+ translation as that sheet showed it, without the notes between translators, and
+ comes back as the stored stretches of words either side of each note it
+ crosses; absent when the translation was not cut
+
  @returns Anchored claim, or the failure reason as data
 
  @example
  ```ts
- const resolution = resolveCriticIssue({ wire, documents, },);
+ const resolution = resolveCriticIssue({ wire, documents, original, },);
  if (resolution.resolved) grade(resolution.claim,);
  ```
  */
@@ -223,9 +229,11 @@ export function resolveCriticIssue(
   {
     wire,
     documents,
+    original,
   }: {
     readonly wire: CriticIssueWire;
     readonly documents: Readonly<Record<DocumentSide, AnchorTarget>>;
+    readonly original?: string;
   },
 ): CriticIssueResolution {
   /**
@@ -297,6 +305,8 @@ export function resolveCriticIssue(
       document: documents[side],
       side,
       quote,
+      // Only the translation is cut on the sheet; the original is shown as it stands.
+      ...(((side === 'target') && (original !== undefined)) ? { original, } : {}),
     },);
     if (!located.located) {
       return {

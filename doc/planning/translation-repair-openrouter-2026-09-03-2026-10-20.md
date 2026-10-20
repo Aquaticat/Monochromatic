@@ -3,7 +3,8 @@
 What was read and decided on 2026-10-20.
 Entries:
 XingZ6015,
-zheermao15.
+zheermao15,
+CuspariaKLSY18.
 
 Part of [Translation repair: OpenRouter as the paid fallback provider](translation-repair-openrouter-2026-09-03.md),
 which lists every file of this record.
@@ -274,3 +275,373 @@ The next launch is `CuspariaKLSY18` on the build that has the note fix and the s
 under a new frozen digest;
 it is not a repeat of `zheermao101`,
 whose read found nothing else on that page.
+
+## CuspariaKLSY18 read, 2026-10-20, 14:55 UTC: SETTLED in 49.4 min of pass; no class
+
+The note fix landed as `a6a0ed7dc0` after gate g121
+(2564 `[PASS]` lines,
+no `[FAIL]` line).
+The rotation went on with the entry `CuspariaKLSY`,
+launched as `CuspariaKLSY18` at 14:00 UTC on 2026-10-20,
+on tip `a6a0ed7dc0…` and pipeline `sha256-tree-v1:1149dceac4ea…`
+(the unit `corpus-pass-corpus-pass-CuspariaKLSY18`),
+and the `START` line matched the frozen digest.
+It settled in 2,965,786 ms of pass,
+and the `DONE` line reads `elapsed=2965899ms`,
+which is 49.4 min:
+`TALLY CuspariaKLSY status=SETTLED slices=4 repairStatus=repaired repairIssues=48 repairAccepted=41 repairResolved=41
+... repairChanged=4 translateStatus=complete translateChanged=4 documentsDiffer=3 pageChanged=4 pageSilent=0
+alignmentFindings=1 selection=contested`.
+The repair lane,
+the translate lane and the page pass each changed all 4 slices.
+The one alignment finding records that block pairing matched all 18 original and all 18 translation blocks
+(`preparation.alignmentFindings` of the artifact),
+not a defect.
+`DESTINATIONS CuspariaKLSY source=0 page=0 dropped=0`,
+and the publish wrote 4 slices into a page of 1898 characters.
+The log holds 154 `warn` lines,
+no `[error]` line,
+no `DEFECTS` line,
+and none of `REATTEMPT`,
+`STALLED`,
+`mdx-downgraded` or `StreamOverrunError`.
+Its two `verify-published` lines are the build's output listing,
+so this read did not rest on that read-back either.
+
+### Seats and meters
+
+Two Gemma seats were dark on `SEAT CREDENTIAL REFUSED ... HTTP 401`
+("The security token included in the request has expired"):
+`google.gemma-4-e2b` and `gemma-4-26b-a4b-it` threw on all 4 asks each and were withheld after them,
+as `package/translation-repair/doc/status.md` records for the Bedrock Gemma seats.
+`inception/mercury-2.5` threw on 6 of its 54 asks,
+and `hf:Qwen/Qwen3.8-27B` had 12 asks abandoned;
+every other seat threw nothing.
+The run ended with `SEATS DARK: 2 of 11 seats asked produced nothing usable`.
+Synthetic's weekly meter read 8% at 14:00 UTC and 2.03% at the last reading,
+14:50 UTC,
+so the next run starts near the level at which zheermao15 lost Kimi and Qwen.
+Hyper's balance went from 250 to 229,
+OpenRouter from 15.52 USD to 15.47 USD,
+and Bedrock stayed at 5.02 USD.
+
+### The page
+
+The lead read the shipped page (`fixed/people/CuspariaKLSY/page.en.md` of the run) beside the original (`page.md`)
+and the archive (`page.en.md`),
+line by line.
+Every line of the original is rendered,
+in the past tense for a life that ended,
+and the archive's errors the lanes were there to repair are repaired:
+"She didn’t consider her life more valuable than others’" is now "She didn’t value her own life much" (不怎么看重自己的生命),
+"She doesn’t trust God 100%" is "She didn’t really believe in God" (不是太信上帝),
+and the last paragraph now carries 双方情绪爆发,
+抢救 and 脑死亡,
+which the archive left out.
+
+Two things in the page read as defects and are not,
+and each has a source:
+
+- The front matter `desc`,
+  "Be more similar to “herself”.",
+  is the archive's and does not render the original's 「泠水鱼鱼子」是在喂鱼时起的哦,
+  and `desc` stays frozen.
+  `doc/decision/translation-repair-front-matter-guard.md` lets the archive's front matter stand.
+- The archive's "She swallowed lots of her meds that night" is gone.
+  The original does not hold it,
+  and `package/translation-repair/house-rule/src/house-policy.ts` (line 87) says the page tells a survived attempt
+  "never by what means".
+
+Three renderings are the judges' choices and read less well than they could,
+with no shared cause the lead found,
+so they are recorded and not counted as a class:
+
+- "Word came again that she had been confirmed brain-dead" for 再次得到消息得知其已经确认脑死亡:
+  "again" renders 再次 word for word,
+  where "The next news was that" says what the original means.
+- "Contact with futa,
+  too,
+  planted the seed of an idea in her" for 加上接触了 futa 萌生想法:
+  the idea is the one the list is about,
+  transitioning,
+  and "Contact with" reads as touch.
+- "was tormented by having no way to do so" for 苦于没有能力:
+  苦于 is troubled by,
+  weaker than tormented.
+
+### What follows
+
+Three fixes to the cut of the notes between translators landed after this run's build.
+The cut of a note alone on a quoted line now takes the line
+(`cca7711de7`,
+gate g122),
+and the five cache versions whose sheets cut notes moved for it.
+The cut of two notes on one line and of a note ending a CRLF line followed
+(`a5dc23c5bb`,
+gate g123)
+and ride inside those versions,
+since no pinned archive's sheet text changes
+and a settled entry leaves no slice-cache record
+(`retireSettledEntryCache` in `package/translation-repair/corpus-pass/src/corpus-run/pass-entry-caches.ts`).
+"Ready" rests on a rotation on one frozen build,
+and `a5dc23c5bb` is not this run's build,
+so the rotation restarts at its first entry:
+`zheermao16` launched at 14:58 UTC on 2026-10-20 on pipeline `sha256-tree-v1:16f46cb79c96…`,
+and its `START` line matched the frozen digest.
+It is also the first run of the note fix on a page that holds a note,
+since `CuspariaKLSY`'s archive holds none.
+
+## zheermao16 read, 2026-10-20, 15:50 UTC: SETTLED in 43.2 min of pass; one class, and the rotation on this build ends
+
+`zheermao16` ran as the unit `corpus-pass-corpus-pass-zheermao16`
+on tip `a5dc23c5bb…` and pipeline `sha256-tree-v1:16f46cb79c96…`,
+and its `START` line matched the frozen digest.
+The `DONE` line reads `elapsed=2592966ms`,
+which is 43.2 min:
+`TALLY zheermao101 status=SETTLED slices=15 repairStatus=repaired repairIssues=34 repairAccepted=28 repairResolved=28
+... repairChanged=9 translateStatus=complete translateChanged=10 documentsDiffer=10 pageChanged=11 pageSilent=0
+alignmentFindings=14 selection=contested`.
+`DESTINATIONS zheermao101 source=2 page=3 dropped=0`,
+and the publish wrote 15 slices into a page of 5973 characters.
+The log holds 278 `warn` lines,
+no `[error]` line,
+no `DEFECTS` line,
+and none of `REATTEMPT`,
+`STALLED`,
+`mdx-downgraded` or `StreamOverrunError`.
+
+### Seats and meters
+
+Three Gemma seats were dark on `SEAT CREDENTIAL REFUSED ... on bedrock` with HTTP 401
+("The security token included in the request has expired"):
+`gemma-4-26b-a4b-it`,
+`google.gemma-4-e2b` and `google.gemma-4-31b` threw on all 4 asks each and were withheld after them.
+`inception/mercury-2.5` threw on 2 of its 118 asks,
+and `hf:Qwen/Qwen3.8-27B` had 4 asks abandoned.
+The run ended with `SEATS DARK: 3 of 12 seats asked produced nothing usable`.
+Synthetic's weekly meter read 2.03% at 14:58 UTC and went dry at 15:22 UTC.
+Hyper's balance went from 229 to 150,
+OpenRouter from 15.47 USD to 15.36 USD,
+and Bedrock stayed at 5.02 USD.
+At this run's draw,
+Hyper's balance covers about two more runs of this size,
+and Hyper will not be recharged.
+
+### The page
+
+The lead read the shipped page (`fixed/people/zheermao101/page.en.md` of the run) beside the original (`page.md`),
+the archive (`page.en.md`) and the three photos,
+line by line.
+The note between translators is kept once,
+as a paragraph of its own after the email's blockquote
+(`{/* 可以避开黑暗的锋芒，到那些有光的地方躲一躲。 这句不知道如何翻译 */}`),
+with no unclaimed block and no bare quote line,
+so the note fix holds on the page it was made for.
+The email now renders the sentence that note is about,
+"where you can steer clear of the darkness’s sharp edge and take shelter somewhere bright",
+and every line of the photo of the email,
+the closing 顺颂春祉 ("Wishing you well this spring") among them,
+which the archive left out.
+Arts's letter now carries 比比皆是 ("Such people are everywhere"),
+and its "cat-like person" is "kitty" (猫猫).
+The `>   >` line inside the reply keeps a trailing space,
+which the archive's line carries too.
+
+One class:
+the handle 寒涟漪 ships as "Han Lian Yi (Cold Ripples)",
+where the archive renders it "Han Lianyi",
+which the link `https://t.me/Lianyi520/565` also spells.
+The house rule
+(`package/translation-repair/house-rule/src/house-policy.ts`,
+line 104)
+romanizes and glosses only "A person's handle with no declared,
+archive or corpus rendering",
+and its own grouping for three syllables gives "Hanlian Yi",
+so the shipped form matches neither the archive nor the rule.
+In slice 13 a repair-lane critic filed the gloss and the grouping as owed and the panel accepted both;
+the lane contest then chose the translate lane's "Han Lianyi" on all four ballots,
+naming the archive's established rendering;
+the consolidation's select round chose "Han Lian Yi (Cold Ripples)" on three ballots,
+one of them saying the handle has "no declared or archive rendering";
+and the polish gate shipped it on three of five ballots.
+The investigation of which sheets lack the archive's rendering,
+and of which guard should keep it,
+was started at about 15:49 UTC on 2026-10-20 as its own piece of work.
+
+Separately,
+the front matter `desc` keeps the archive's "Treat you to some beverages.",
+while the quote it comes from now reads "milk tea" (奶茶).
+`doc/decision/translation-repair-front-matter-guard.md` lets the archive's front matter stand,
+so this is recorded and not counted as a class.
+
+### What follows
+
+The class ends the rotation on `a5dc23c5bb` with no read that counts,
+and its fix will change this page,
+so the rotation restarts at `zheermao101` on the build that carries the fix.
+`CuspariaKLSY19` was launched at 15:47 UTC on 2026-10-20 on the same frozen build to find more classes meanwhile,
+and its read does not count toward readiness.
+
+## CuspariaKLSY19 read, 2026-10-20, 16:10 UTC: SETTLED in 16.0 min of pass; no class, and a hunt that does not count
+
+`CuspariaKLSY19` ran as the unit `corpus-pass-corpus-pass-CuspariaKLSY19`
+on tip `a5dc23c5bb…` and pipeline `sha256-tree-v1:16f46cb79c96…`,
+and its `START` line matched the frozen digest.
+The `DONE` line reads `elapsed=961503ms`,
+which is 16.0 min:
+`TALLY CuspariaKLSY status=SETTLED slices=4 repairStatus=repaired repairIssues=32 repairAccepted=20 repairResolved=18
+... repairChanged=4 translateStatus=complete translateChanged=4 documentsDiffer=4 pageChanged=4 pageSilent=0
+alignmentFindings=1 selection=contested`.
+`DESTINATIONS CuspariaKLSY source=0 page=0 dropped=0`,
+and the publish wrote 4 slices into a page of 1923 characters.
+The log holds 160 `warn` lines,
+no `[error]` line,
+no `DEFECTS` line,
+and none of `REATTEMPT`,
+`STALLED`,
+`mdx-downgraded` or `StreamOverrunError`.
+
+### Seats and meters
+
+The same three Gemma seats were dark on HTTP 401 and withheld after 4 asks each;
+`inception/mercury-2.5` threw on 8 of its 56 asks;
+the run ended with `SEATS DARK: 3 of 11 seats asked produced nothing usable`.
+Synthetic stayed dry.
+Hyper's balance went from 150 to 111,
+OpenRouter from 15.36 USD to 15.31 USD,
+and Bedrock stayed at 5.02 USD.
+
+### The page
+
+The lead read the shipped page beside the original and the archive,
+line by line,
+and found no class.
+The page keeps the archive's sentence on the nickname,
+"The name means “fish in clear water.”",
+which the archive's own page carries,
+so it is not the class of the `zheermao16` read.
+Three renderings are the judges' choices and read less well than they could,
+with no shared cause found,
+so they are recorded and not counted as a class:
+
+- "When word came again,
+  they learned that she had been confirmed brain dead" for 再次得到消息得知其已经确认脑死亡:
+  the original names no one who learned it,
+  and "they" has no antecedent on the page.
+- "Pressure from family and school was becoming increasingly heavy" for 家庭问题，学校问题日益突出:
+  问题 is problems,
+  not pressure;
+  the wording is the archive's.
+- "didn't have the means to do so" for 苦于没有能力:
+  苦于 (troubled by) is dropped;
+  the wording is the archive's.
+
+### What follows
+
+No further hunt runs on `a5dc23c5bb`.
+Hyper is prepaid and will not be recharged,
+and its 111 left at 16:03 UTC covers less than the `zheermao101` and `CuspariaKLSY` runs of the restarted rotation took
+on this build (79 and 39),
+so the balance is kept for the runs that count.
+The rotation restarts at `zheermao101` on the build that carries the fix for the `zheermao16` class.
+
+## zheermao17 read, 2026-10-20, 20:30 UTC: SETTLED in 37.3 min of pass; no class, and the first read that counts on its build
+
+`zheermao17` ran as the unit `corpus-pass-corpus-pass-zheermao17`
+on tip `5ae2173d23…` and pipeline `sha256-tree-v1:ee83b531c14f…`,
+and its `START` line matched the frozen digest.
+A first launch at 18:58 UTC stopped before `START` on a package the branch worktree had not installed,
+with no provider called (ledger M285);
+the relaunch began at 19:16 UTC.
+The `DONE` line reads `elapsed=2237935ms`,
+which is 37.3 min:
+`TALLY zheermao101 status=SETTLED slices=15 repairStatus=repaired repairIssues=35 repairAccepted=20 repairResolved=20
+... repairChanged=9 translateStatus=complete translateChanged=9 documentsDiffer=7 pageChanged=10 pageSilent=0
+alignmentFindings=14 selection=contested`.
+`DESTINATIONS zheermao101 source=2 page=3 dropped=0`,
+and the publish wrote 15 slices into a page of 5977 characters.
+The log holds 226 `warn` lines,
+no `[error]` line,
+no `DEFECTS` line,
+and none of `REATTEMPT`,
+`STALLED`,
+`mdx-downgraded` or `StreamOverrunError`.
+
+### Seats and meters
+
+The three Gemma seats on Bedrock were dark on HTTP 401 again and withheld after 4 asks each;
+the run ended with `SEATS DARK: 3 of 12 seats asked produced nothing usable`.
+Every other seat answered:
+`deepseek-v4.1-flash` 119 of 119,
+`minimax-m3` 115,
+`hf:moonshotai/Kimi-K3` 109,
+`inception/mercury-2.5` 94 of 95,
+`glm-5.3` 63,
+`hf:zai-org/GLM-5.3-Flash` 50,
+`hf:Qwen/Qwen3.8-27B` 34,
+`xiaomi/mimo-v2.6-flash` and `typesafe/jev-1.13` 23 each.
+Synthetic's weekly meter read 2% at 19:16 UTC and went dry at 19:38 UTC.
+Hyper's balance went from 110 to 45,
+OpenRouter from 15.31 USD to 15.23 USD,
+and Bedrock stayed at 5.02 USD.
+
+### The page
+
+The lead read the shipped page (`fixed/people/zheermao101/page.en.md` of the run) beside the original (`page.md`),
+the archive (`page.en.md`) and the three photos,
+line by line,
+and found no class.
+
+- The quote that opens the page now offers milk tea (奶茶) where the archive gave "some beverages",
+  and its second line asks Zheermao by name which flavour she likes,
+  as 折耳猫喜欢什么口味的呀 does.
+- The game is "Mystery Lover 2:
+  Forgotten Truth".
+  Two critics filed the subtitle as owed,
+  one citing the indienova database.
+  The lead checked it:
+  Steam lists 恋爱绮谭 不存在的真相 under its Chinese name only,
+  while the Nintendo eShop sells it under that English title
+  (developer Never Knows Best,
+  released 2025-05-29),
+  so the title is the published one.
+- Arts's letter,
+  read against the two photos,
+  now carries what the archive had wrong:
+  Zheermao had blocked searches by QQ number (禁止通过QQ号查找),
+  Arts is "a cat" (一只猫猫),
+  and MtF is "a trans woman".
+  It still says "the same hopes and dreams as you" and "for themselves",
+  where the photo says 和我们 and 为了我们的未来 (us,
+  our future);
+  the wording is the archive's.
+- The email,
+  read against the third photo,
+  now renders the sentence the note between translators is about,
+  "you can dodge the edge of the darkness and take shelter in the bright places",
+  and the closing 顺颂春祉 as "Respectfully,
+  with the blessings of spring."
+  Its salutation 玖月折耳猫： is left out,
+  as in the archive.
+- The note is kept once,
+  as a paragraph of its own after the email's blockquote,
+  where `zheermao16`'s page had it too,
+  so B709's account of where the carry puts a note a writer dropped holds.
+  It still says the sentence could not be translated,
+  and the owner's rule of 2026-10-20 keeps the notes as written.
+
+The front matter `desc` keeps the archive's "Treat you to some beverages.",
+while the quote it comes from now reads milk tea;
+`doc/decision/translation-repair-front-matter-guard.md` lets the archive's front matter stand,
+so this is recorded and not counted as a class,
+as on `zheermao16`'s page.
+
+### What follows
+
+`CuspariaKLSY` was not launched.
+Hyper's 45 left is less than this run spent,
+and the NeuralWatt provider the owner added at about 19:45 UTC on 2026-10-20
+serves `deepseek-v4.1-flash` and the GLM-5.3-Flash seat on 550 Wh a day of free energy.
+Adding it changes the build,
+so a read on `5ae2173d23` would stop counting once it lands.
+The rotation restarts at `zheermao101` on the build that carries NeuralWatt.

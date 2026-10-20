@@ -244,7 +244,56 @@ this section is the readiness reading of it.
   `zheermao15` shipped SETTLED with one class,
   a note between translators lost when the archive block review replaced its block
   ([the pass log of 2026-10-20](translation-repair-openrouter-2026-09-03-2026-10-20.md)).
-  The rotation goes on at `CuspariaKLSY18` on the build that carries the fix for that note.
+  `CuspariaKLSY18`,
+  on the build that carries the fix for that note
+  (`a6a0ed7dc0`,
+  digest `sha256-tree-v1:1149dceac4ea…`),
+  shipped SETTLED with no class.
+  Three fixes to the cut of those notes landed after it
+  (`a5dc23c5bb`,
+  digest `sha256-tree-v1:16f46cb79c96…`),
+  so neither read is on the build the rotation now runs,
+  and the rotation restarted from `zheermao101` as `zheermao16` at 14:58 UTC on 2026-10-20.
+- Fixes that change no shipped page do not restart the rotation.
+  Three more fixes landed while `zheermao16` ran
+  (ledger B704 to B706 in `package/translation-repair/doc/`):
+  the naturalness review's sheet,
+  whose findings are evidence only and never change the page;
+  the footnote reorder,
+  which changes no pinned page under either order measured;
+  and the CRLF breaks of the note carry,
+  which no pinned page reaches since the corpus read folds CRLF.
+  The rotation goes on on the frozen build `a5dc23c5bb`,
+  and the branch worktree stays there;
+  these fixes reach the rotation with the next fix that changes a shipped page,
+  which restarts it as before.
+  Decided without asking the owner,
+  under "Make decisions yourself and don't block on me",
+  since a restart for each such fix would keep the rotation from finishing:
+  a read takes about 50 min of pass.
+- `zheermao16` shipped SETTLED with one class
+  ([the pass log of 2026-10-20](translation-repair-openrouter-2026-09-03-2026-10-20.md)):
+  the consolidation re-romanized and glossed the handle 寒涟漪,
+  which the archive renders "Han Lianyi",
+  so the rotation on `a5dc23c5bb` ended with no read that counts.
+  `CuspariaKLSY19` ran on that build to find more classes,
+  settled with no class,
+  and does not count.
+  No further hunt runs there,
+  since Hyper's 111 left is kept for the runs that count;
+  the rotation restarts at `zheermao101` on the build that carries the fix.
+- It restarted on `5ae2173d23`,
+  the build with the fixes of B707,
+  B708 and B709:
+  `zheermao17` shipped SETTLED with no class
+  ([the pass log of 2026-10-20](translation-repair-openrouter-2026-09-03-2026-10-20.md)),
+  the first read that counts on that build.
+  It spent 65 of Hyper's 110,
+  so `CuspariaKLSY` was not launched:
+  the NeuralWatt provider the owner added on 2026-10-20 serves two of the seats Hyper paid for,
+  it changes the build,
+  and a read on `5ae2173d23` would stop counting once it lands.
+  The rotation restarts at `zheermao101` on the build that carries NeuralWatt.
 - The entries never run on a recent build are the rest of the 92-entry corpus.
   The owner's rule stands:
   "We never ever need a all 92 entries launch";
@@ -260,3 +309,10 @@ this section is the readiness reading of it.
   So the next rotation runs mostly on OpenRouter seats,
   3 of 7 seats within reach of the contest and consolidation lanes as in `XingZ6015`'s later lanes,
   and `XingZ6015` alone spent 5.80 USD of OpenRouter.
+  At the end of `zheermao17` (19:54 UTC on 2026-10-20) Hyper held 45,
+  OpenRouter 15.23 USD and Bedrock 5.02 USD,
+  and Synthetic had gone dry at 19:38 UTC.
+  NeuralWatt's 550 Wh a day of free energy on `deepseek-v4.1-flash` and `glm-5.3-flash`
+  (owner,
+  2026-10-20)
+  reaches the 119 and 50 asks those two seats took in `zheermao17`.

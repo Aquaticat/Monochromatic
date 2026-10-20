@@ -11,6 +11,7 @@ import type {
   CarryChosenPlace,
   ConsistencyOccurrenceView,
 } from '@monochromatic-dev/translation-repair-consistency';
+import { TRANSLATORS_NOTE, } from '@monochromatic-dev/translation-repair-repair/ts/rendered-sheets-texts.test-fixture.ts';
 
 //region Carry places
 
@@ -24,7 +25,7 @@ export const FIRST_VIEW: ConsistencyOccurrenceView = {
   markEnd: 12,
   english: {
     kind: 'present',
-    text: 'The sunny window put the kitten to sleep.',
+    text: `The sunny window put the kitten to sleep. ${TRANSLATORS_NOTE}`,
   },
 };
 
@@ -38,7 +39,7 @@ export const SECOND_VIEW: ConsistencyOccurrenceView = {
   markEnd: 18,
   english: {
     kind: 'present',
-    text: 'In the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too.',
+    text: `In the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too. ${TRANSLATORS_NOTE}`,
   },
 };
 
@@ -52,7 +53,7 @@ export const THIRD_VIEW: ConsistencyOccurrenceView = {
   markEnd: 15,
   english: {
     kind: 'present',
-    text: 'At night the sunny window put the kitten to sleep.',
+    text: `At night the sunny window put the kitten to sleep. ${TRANSLATORS_NOTE}`,
   },
 };
 
@@ -70,7 +71,7 @@ export const SENTENCE = {
 export const CHOSEN_PLACE: CarryChosenPlace = {
   view: FIRST_VIEW,
   span: 'The sunny window put the kitten to sleep',
-  paragraph: 'The sunny window put the kitten to sleep.',
+  paragraph: `The sunny window put the kitten to sleep. ${TRANSLATORS_NOTE}`,
 } as const;
 
 //endregion Carry places

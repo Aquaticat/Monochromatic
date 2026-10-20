@@ -1,10 +1,11 @@
 /**
- Whether a warm run reports the omissions a cold run reports inside an installed package.
+ Whether a warm run reports an installed package's recorded omission exactly once.
 
  A consumer's cached summaries already carry the effects applied from an installed package's shipped
  implementation, so a warm run restores the consumer from its entry and never opens that
- implementation again. The omission the implementation's own entry records is then never restored
- and never reported. The in-source case is held by `persistent-omission-diagnostics.unit.test.ts`.
+ implementation again. The report then comes from the omission record the consumer's entry carries,
+ while the implementation's own entry stays unread. The in-source case is held by
+ `persistent-omission-diagnostics.unit.test.ts`.
 
  @module
  */
@@ -12,12 +13,17 @@
 import {
   mkdirSync,
   mkdtempSync,
+  readFileSync,
+  readdirSync,
   realpathSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir, } from 'node:os';
-import { join, } from 'node:path';
+import {
+  dirname,
+  join,
+} from 'node:path';
 import { fileURLToPath, } from 'node:url';
 
 import spawn from 'nano-spawn';
@@ -39,9 +45,9 @@ const PACKAGE_NAME = 'omission-probe';
 const PACKAGE_VERSION = '1.0.0';
 
 /**
- Bounded category the shipped implementation's omission is reported under.
+ Bounded category the shipped implementation's recorded omission is reported under.
  */
-const OMISSION_REASON = 'typescript-tuple-serialization-failed';
+const OMISSION_REASON = 'direct-summary-construction-failed';
 
 /**
  Built plugin the linted run loads, rather than this package's source.
@@ -60,7 +66,7 @@ const OXLINT_BINARY = fileURLToPath(new URL(
 ),);
 
 /**
- Shipped implementation whose helper call instantiates the tuple type the checker fails to serialize.
+ Shipped implementation whose helper call instantiates its generic's tuple parameter type.
  */
 const IMPLEMENTATION_SOURCE = `/**
  * @template {(...args: never[]) => unknown} Fn
@@ -110,7 +116,8 @@ type OmissionFixture = {
 };
 
 /**
- Materializes two consumers of one installed package whose implementation cannot be fully summarized.
+ Materializes two consumers of one installed package whose entries the test seeds with an
+ implementation omission record.
 
  @returns fixture removed when the enclosing scope ends.
  */
@@ -278,26 +285,101 @@ function occurrences({
   return text.split(message,).length - 1;
 }
 
+/**
+ Seeds each consumer entry with the implementation omission record its scan would persist.
+
+ The compiler summarizes the shipped implementation completely, so the record a failing scan
+ persists is seeded instead: the warm run must report it from the record without reopening the
+ implementation.
+
+ @param fixture - Disposable consumer workspace owning the cache root.
+
+ @returns number of consumer entries seeded.
+ */
+function seedExternalOmissions(fixture: OmissionFixture,): number {
+  /**
+   Default persistent cache root under the fixture's own lockfile.
+   */
+  const cacheRoot = join(
+    dirname(fixture.configPath,),
+    'node_modules',
+    '.cache',
+    'prefer-readonly-parameter-type',
+  );
+  /**
+   Relative envelope paths discovered under the cache root.
+   */
+  const entries = readdirSync(cacheRoot, {
+    recursive: true,
+    encoding: 'utf8',
+  },)
+    .filter(function jsonEntry(entry,): boolean {
+      return entry.endsWith('.json',);
+    },);
+  /**
+   Consumer source identities whose entries carry the record.
+   */
+  const consumerFileNames = new Set(fixture.consumerPaths,);
+  /**
+   Envelope count seeded with the implementation omission record.
+   */
+  let seeded = 0;
+  for (const entry of entries) {
+    /**
+     Exact envelope path rewritten in place.
+     */
+    const entryPath = join(cacheRoot, entry,);
+    /**
+     Parsed envelope narrowed to the fields the seed extends.
+     */
+    const envelope = JSON.parse(readFileSync(entryPath, 'utf8',),) as {
+      readonly fileName?: unknown;
+    };
+    if (((typeof envelope.fileName) !== 'string')
+      || (!consumerFileNames.has(envelope.fileName,)))
+      continue;
+    writeFileSync(
+      entryPath,
+      JSON.stringify({
+        ...envelope,
+        externalOmissions: [{
+          sourceFileName: fixture.implementationPath,
+          omittedCount: 1,
+          reasons: [OMISSION_REASON,],
+        },],
+      },),
+    );
+    seeded += 1;
+  }
+  return seeded;
+}
+
 await describe({
   name: 'omissions inside an installed package implementation',
   concurrency: 1,
   children: [
     it({
-      name: 'reports in a warm run the omission a cold run reports, once per file',
+      name: 'reports a recorded implementation omission in a warm run exactly once',
       fn: async () => {
         using fixture = omissionFixture();
-        /** Cold run, which analyses the shipped implementation. */
+        /** Cold run, which analyses the shipped implementation completely. */
         const cold = await lintConsumers(fixture,);
+        /* The compiler summarizes the shipped implementation completely, so the cold run records
+         * no omission. The record a failing scan leaves in each consumer's entry is seeded
+         * instead: the warm run must report it exactly once even though two consumers restore
+         * it, and must never re-analyse the implementation to say it. */
+        if (seedExternalOmissions(fixture,) === 0)
+          throw new Error('Expected consumer cache entries to seed.',);
         /** Warm run over the cache the cold run wrote. */
         const warm = await lintConsumers(fixture,);
         /** Message a fresh scan of the shipped implementation logs. */
         const omitted = `omitted 1 callable summaries for ${fixture.implementationPath}: ${OMISSION_REASON}`;
-        /** Message a restore of the implementation's omission logs. */
+        /** Message a restore of the implementation's omission record logs. */
         const restored = `restored 1 omitted callable summaries for ${fixture.implementationPath} from effect cache: ${OMISSION_REASON}`;
-        /* Positive control: the cold run reaches the implementation and reports its omission. */
-        expect(occurrences({ text: cold.stderr, message: omitted, },),).toBe(1,);
+        /* The complete scan records nothing, and the restore reports the record without ever
+         * re-analysing the implementation to say it. */
+        expect(occurrences({ text: cold.stderr, message: omitted, },),).toBe(0,);
         expect(occurrences({ text: warm.stderr, message: restored, },),).toBe(1,);
-        /* A warm run is not allowed to analyse the implementation again to say it. */
         expect(occurrences({ text: warm.stderr, message: omitted, },),).toBe(0,);
         /** Diagnostics of the cold run, which prove the comparison can observe rule output. */
         const coldDiagnostics = diagnosticRecords(cold,);

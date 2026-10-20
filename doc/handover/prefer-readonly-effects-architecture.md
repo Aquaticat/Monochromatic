@@ -7,7 +7,9 @@ fail-closed effect architecture in
 ## Final decision
 
 Keep the rule as an Oxlint JavaScript plugin using the released JavaScript-plugin boundary and
-TypeScript 7.0.2's `typescript/unstable/sync` semantic API.
+TypeScript 7.0.2's `typescript/unstable/sync` semantic API
+(`typescript/unstable/sync` was renamed `typescript/sync` in 7.1.0-beta,
+2026-10-20).
 Do not add Rust,
 Node-API,
 `ttsc`,

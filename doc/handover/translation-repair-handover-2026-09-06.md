@@ -463,11 +463,75 @@ its "Next" list is still the queue the merge went ahead of.
   the note between translators in the reply email was lost,
   because the archive block review replaced the block before the lanes ran
   and the carry had no note to carry.
-  The fix is in progress in the worktree `w223` off `dc4982c9cb`;
-  it has not landed.
+  The fix landed as `a6a0ed7dc0` after gate g121
+  (2564 `[PASS]` lines,
+  no `[FAIL]` line):
+  an archive block replacement keeps the notes the block held,
+  and the archive block review's sheet cuts them.
+  Its red commit `49adf0457c` has a 122-character subject;
+  corrective commit comment 205806679.
+- `CuspariaKLSY18` ran on `a6a0ed7dc0` from 14:00 UTC and was read at 14:55 UTC on 2026-10-20
+  ([the pass log of 2026-10-20](../planning/translation-repair-openrouter-2026-09-03-2026-10-20.md#cuspariaklsy18-read-2026-10-20-1455-utc-settled-in-494-min-of-pass-no-class)):
+  SETTLED,
+  4 slices,
+  every lane changed all 4,
+  49.4 min of pass,
+  no class.
+  The two Bedrock Gemma seats were dark on their expired token,
+  and Synthetic's weekly meter fell from 8% to 2.03%.
+- Three fixes to the cut of the notes between translators landed after it.
+  A note alone on a quoted line is cut with its line
+  (`cca7711de7`,
+  gate g122;
+  zheermao101's archive is the one pinned page it changes),
+  with the five sheet-backed cache versions moved
+  (lane contest 12,
+  consolidate 27,
+  translate slice 21,
+  repair slice 39,
+  refine 10).
+  Two notes on one line keep the line break after them,
+  and a note ending a CRLF line keeps the carriage return
+  (`a5dc23c5bb`,
+  gate g123);
+  no pinned page changes,
+  so both ride inside those versions,
+  and each version's account names their commits.
+  A settled entry discards its own slice cache
+  (`retireSettledEntryCache` in `package/translation-repair/corpus-pass/src/corpus-run/pass-entry-caches.ts`),
+  so an empty `slice-cache` directory after a settled run is the expected state,
+  not a control that failed.
+- The rotation restarted from `zheermao101` on `a5dc23c5bb`:
+  `zheermao16`,
+  unit `corpus-pass-corpus-pass-zheermao16`,
+  launched at 14:58 UTC on 2026-10-20,
+  `START` digest `sha256-tree-v1:16f46cb79c96…` matching the frozen one.
+  It is the first run of the note fix on a page that holds a note.
+- `zheermao16` settled with one class in 43.2 min of pass
+  ([the pass log of 2026-10-20](../planning/translation-repair-openrouter-2026-09-03-2026-10-20.md)):
+  the note between translators is kept once as its own paragraph,
+  and the consolidation shipped the handle 寒涟漪 as "Han Lian Yi (Cold Ripples)",
+  where the archive renders "Han Lianyi" and the house rule glosses only a handle with no archive rendering.
+  The rotation on `a5dc23c5bb` ended with no read that counts.
+  `CuspariaKLSY19` was launched at 15:47 UTC on 2026-10-20 on that build to find more classes,
+  unit `corpus-pass-corpus-pass-CuspariaKLSY19`;
+  it settled with no class in 16.0 min of pass,
+  and its read does not count.
+  No further hunt runs on that build:
+  Hyper went from 150 to 111 on it and will not be recharged,
+  so the balance is kept for the runs that count.
+- The naturalness sheet (B704),
+  the footnote reorder (B705)
+  and the CRLF note carry (B706) are fixed on `091dbacf36`,
+  gated as g125
+  (2565 `[PASS]` lines,
+  no `[FAIL]` line)
+  and landed in `eaa250287d`;
+  none changes a shipped pinned page,
+  so the branch worktree stays at `a5dc23c5bb`
+  ([the readiness signal](../planning/translation-repair-readiness-signal.md)).
 - Open:
-  the note fix (landing needs its own gate),
-  and the guard of B701,
+  the guard of B701,
   whose two shapes (a rotation sweep task,
   a test-only override seam in `stage`) are proposed and not decided.
 
@@ -493,10 +557,10 @@ its "Next" list is still the queue the merge went ahead of.
     `shi_Yumiaoya`
     and `TianqiChen666`,
     each read before the next launch.
-    `zheermao101` has been read (one class,
-    the lost note between translators),
-    so the next launch is `CuspariaKLSY18`,
-    and the item "The next action" says on which build.
+    `zheermao15` (one class,
+    the lost note between translators) and `CuspariaKLSY18` (no class) ran on earlier builds,
+    and the rotation restarted from `zheermao101` as `zheermao16` on `a5dc23c5bb`;
+    the item "The next action" says what follows.
     Synthetic and Hyper are dry and Hyper will not be recharged,
     so the restarted rotation runs mostly on OpenRouter (16.13 USD at 00:05 UTC on 2026-10-20).
     The bundler guard landed on `main`
@@ -548,22 +612,83 @@ its "Next" list is still the queue the merge went ahead of.
     so the typography and page-check suites run after any change to `mise.lock`.
 5.  The next action,
     in order:
-    - Land the note fix (the class of the `zheermao15` read;
-      the worktree `w223` off `dc4982c9cb`)
-      after its gate:
-      the fix is in progress,
-      red test first,
-      and the gate runs the build,
-      `lint-oxlint`,
-      `lint-types` and `test-unit` steps of every family package
-      and then the source scans,
-      as g120 did.
-    - Take a new frozen digest from the gated build,
-      since the census and the note fix change the signatures of corpus-pass.
-    - Launch `CuspariaKLSY18` on that build,
-      not a repeat of `zheermao101`,
-      whose read found nothing else on that page.
-      Read it at its `DONE processed=` line against the original and the archive before the next launch.
+    - The fix for the `zheermao16` class landed in `e429659e0b` after gate g126b
+      (2578 `[PASS]` lines,
+      no `[FAIL]` line;
+      ledger B707):
+      the identity lines list each Han name the archive spells in a sentence,
+      and a floor refuses a candidate that respells one.
+    - The census of which model-facing sheets show the notes between translators merged as `1e955f206e`
+      after gate g127
+      (145 steps exited 0,
+      2605 `[PASS]` lines,
+      no `[FAIL]` line;
+      ledger B708).
+    - A quote copied from a sheet that cut the notes is read in the shown text and mapped back to the stored text,
+      merged as `1851eab22e` after gate g128
+      (145 steps exited 0,
+      2608 `[PASS]` lines,
+      no `[FAIL]` line;
+      ledger B709).
+      The census's commit `43e735f7da` carries the comment its message needed.
+    - The rotation restarted on `5ae2173d23`:
+      `zheermao17` (entry zheermao101) runs since 19:16 UTC on 2026-10-20,
+      its `START` line carrying the frozen digest
+      `sha256-tree-v1:ee83b531c14ff55286558920e0b21a0d5c43fda1325ffc4ede74c1bec7d6e2ef`.
+      Its first launch at 18:58 UTC stopped before `START`,
+      the branch worktree uninstalled since `a5dc23c5bb` (M285);
+      no provider was called.
+      It settled with no class
+      (read at 20:30 UTC;
+      the pass log of 2026-10-20),
+      and spent 65 of Hyper's 110.
+      `CuspariaKLSY` waits:
+      the NeuralWatt build changes the digest,
+      so the rotation restarts at `zheermao101` once it lands,
+      then CuspariaKLSY,
+      XingZ60,
+      yingying,
+      hulicaijia,
+      mikaela_khara,
+      shi_Yumiaoya and TianqiChen666.
+    - `64d40cb4ff` and `768b081ee5` carry the comments their subjects needed (B709).
+    - NeuralWatt joins as a provider (owner,
+      2026-10-20:
+      `TRANSLATION_REPAIR_NEURALWATT_API_KEY` added,
+      "550Wh of energy on DeepSeek V4.1 Flash and GLM 5.3 Flash per day",
+      "we need to meter (using estimations) ourselves because overage eats into my normal plan").
+      The 550 Wh is the Max plan's 500 Wh plus the 50 Wh for product-news email
+      (`https://docs.neuralwatt.com/billing/daily-free-energy`):
+      it resets at 00:00 UTC,
+      does not carry over,
+      covers each covered model's standard and flex lanes and not `-speed`,
+      and once spent requests bill the plan.
+      No endpoint reports what is left of it
+      (`/v1/quota` reports the plan's `kwh_used`,
+      `/v1/usage/energy` the account's days),
+      so the pipeline keeps its own meter,
+      as the Bedrock ledger does:
+      reserve an estimate per call from the energy matrix's prompt-size buckets,
+      settle with the stream's `: energy` comment,
+      mark the provider dry until 00:00 UTC on a `: cost` comment with a nonzero `request_cost_usd`,
+      and read `/v1/quota` at start and end of a run.
+      Served ids `deepseek-v4.1-flash` and `glm-5.3-flash`,
+      standard lane only;
+      first in the provider order,
+      by the rule that expiring money is spent first
+      and by the owner's ruling of 2026-10-20:
+      "Use the neuralwatt free energy front and center."
+      Every seat of the two models goes to NeuralWatt first in every role it already holds;
+      no new roles,
+      and the owner's 2026-09-02 unseating of GLM-5.3-Flash as a judge stands.
+      The meter's margin is kept as small as can be justified,
+      so free energy is not left unspent.
+      The encrypted store `.env.local.json` went to the branch worktree on 2026-10-20 (main's copy,
+      a strict superset of the old one by key names);
+      the scratch gate worktrees stay keyless.
+      This changes the build,
+      so the rotation restarts at zheermao101 once it lands.
+    - The class of the `zheermao15` read is ledger B702.
     - The guard of B701 stays open and undecided:
       the rotation sweep as an expensive mise task,
       or a test-only override seam in `stage`.
@@ -575,6 +700,8 @@ its "Next" list is still the queue the merge went ahead of.
       (205736551 on `7071a8eb5b8f585a9bdf3ac6b88fd4a94d51ddd7`,
       205736554 on `28f4b8fc755c0b9fcc8bd00b7b9f211d946c67b3`),
       the branch worktree's move and the restart from `zheermao101`,
+      the note fix (`a6a0ed7dc0`) and the three cut fixes (`cca7711de7` and `a5dc23c5bb`),
+      the read of `CuspariaKLSY18`,
       and the glossary comment in `package/translation-repair/glossary/src/translate-skeleton.ts`,
       which now says the judges still weigh the original's own comments
       while `translators-note.ts` cuts the notes between translators from their sheets (B698).

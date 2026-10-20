@@ -395,7 +395,10 @@ The details and the full candidate list are in "Yikes candidates".
    (`doc/troubleshooting/oxlint.md`, Bug 1 and the `ignorePatterns` report).
 - `prefer-readonly-parameter-type` (`package/oxlint-plugin/prefer-readonly-parameter-type`):
   - uses the TypeScript 7 native API
-     (`typescript/unstable/sync`, `typescript/unstable/ast` imports across `src/prefer-readonly-parameter-types/`),
+     (`typescript/unstable/sync`,
+     `typescript/unstable/ast` imports across `src/prefer-readonly-parameter-types/`;
+     renamed `typescript/sync` and `typescript/ast` in 7.1.0-beta,
+     2026-10-20),
      spawning `tsgo --api` children
      (`typescript-sync-native-shutdown.ts:137-147`);
   - analyzes workspace callees live from sibling source,

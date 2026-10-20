@@ -18,7 +18,7 @@ use std::ffi::{OsStr, OsString};
 use std::io::Write;
 use std::os::unix::process::ExitStatusExt;
 use std::path::{Path, PathBuf};
-use std::process::{Child, ChildStdin, Command, Output, Stdio};
+use std::process::{Command, Output, Stdio};
 
 /// The native executable Cargo built for this test run.
 pub const WRAPPER: &str = env!("CARGO_BIN_EXE_cli-git-native");
@@ -251,47 +251,11 @@ pub fn stderr_of(observed: &Observed) -> String {
     return String::from_utf8_lossy(&observed.stderr).into_owned();
 }
 
-/// What:
-///  Write an executable file,
-///  as a PATH candidate,
-///  through a child `tee` process.
-/// Why:
-///   Controls run on several threads.
-///  If this process opened the file for writing,
-///  a
-///       child forked by another control at that moment would inherit the open file until
-///       it starts its own program,
-///  and running the candidate in that window fails with
-///       "Text file busy".
-///  A file only ever opened for writing by `tee` cannot be
-///       inherited by any other child of this process.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// spawnSync('tee', [path], { input: content }); chmodSync(path, 0o755);
-/// ```
-pub fn executable(path: &Path, content: &[u8]) {
-    use std::os::unix::fs::PermissionsExt;
-    // `Stdio::piped()` connects this process to `tee`'s input; its copy to standard output is discarded.
-    let mut writer: Child = Command::new("tee")
-        .arg(path)
-        .stdin(Stdio::piped())
-        .stdout(Stdio::null())
-        .spawn()
-        .expect("start fixture writer");
-    // `.take()` moves the pipe out of the child record so it can be closed below.
-    let mut input: ChildStdin = writer.stdin.take().expect("fixture writer input");
-    input.write_all(content).expect("write candidate");
-    // `drop` closes the pipe now, which is how `tee` learns the content is complete.
-    drop(input);
-    assert!(
-        writer.wait().expect("fixture writer exit").success(),
-        "fixture writer failed for {path:?}"
-    );
-    // Changing the mode names the file by path and never opens it.
-    std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o755))
-        .expect("mark candidate executable");
-}
+/// The one writer of executable fixture files, shared with the unit tests.
+#[path = "fixture_executable.rs"]
+mod fixture_executable;
+
+pub use fixture_executable::executable;
 
 /// What:
 ///  Copy an executable through a child `cp` process,

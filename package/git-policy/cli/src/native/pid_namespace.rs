@@ -72,9 +72,22 @@ pub fn foreign_record_has_expired(record_path: &Path) -> bool {
         return false;
     };
     return match SystemTime::now().duration_since(modified) {
-        Ok(age) => age > FOREIGN_OWNER_PATIENCE,
+        Ok(age) => age_outlives_patience(age),
         Err(_) => false,
     };
+}
+
+/// What:
+///  Whether a record of this age has outlived the patience; exactly the patience still counts as alive.
+/// Why:
+///   The boundary is a fact of the rule, so it is separated from the clock to be checked exactly.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// age > FOREIGN_OWNER_PATIENCE_MS
+/// ```
+pub fn age_outlives_patience(age: Duration) -> bool {
+    return age > FOREIGN_OWNER_PATIENCE;
 }
 
 /// What:

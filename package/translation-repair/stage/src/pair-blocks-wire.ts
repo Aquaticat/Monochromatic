@@ -1,5 +1,6 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
+import { withoutTranslatorsNotes, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { isIndexPairingWire, } from './index-pair-list.ts';
 import { selectFence, } from './prompt-fence.ts';
 
@@ -201,6 +202,34 @@ export function buildBlockPairingMessages(
     readonly pictureContext?: string;
   },
 ): readonly ChatMessage[] {
+  // THE MODEL IS SHOWN THE TRANSLATION'S BLOCKS WITHOUT THE NOTES THE ARCHIVE'S
+  // TRANSLATORS LEFT EACH OTHER (`withoutTranslatorsNotes`): no reader sees one,
+  // so a note may not make a block look like a rendering of an original block
+  // or make a block of its own. Every index and the length of the list stay as
+  // the caller numbered them, and the pairs the model returns name those
+  // indices, so a block that held nothing but a note is listed empty. The
+  // original's own comments stay in view.
+  /**
+   Texts whose comments are the original's own.
+   */
+  const originals = sourceBlocks
+    .map(function toText(block,): string {
+      return block.text;
+    },)
+    .join('\n',);
+  /**
+   Translation blocks as the model reads them, each at its index.
+   */
+  const shownTargetBlocks = targetBlocks.map(function shown(block,): NumberedBlock {
+    return {
+      index: block.index,
+      text: withoutTranslatorsNotes({
+        text: block.text,
+        original: originals,
+      },),
+    };
+  },);
+
   /**
    Fence chosen against every block this sheet carries.
 
@@ -216,6 +245,9 @@ export function buildBlockPairingMessages(
         return block.text;
       },),
       ...targetBlocks.map(function toText(block,): string {
+        return block.text;
+      },),
+      ...shownTargetBlocks.map(function toText(block,): string {
         return block.text;
       },),
       pictureContext,
@@ -261,7 +293,7 @@ export function buildBlockPairingMessages(
         },)
       }\n\nTRANSLATION BLOCKS\n\n${
         renderBlocks({
-          blocks: targetBlocks,
+          blocks: shownTargetBlocks,
           fence,
         },)
       }${

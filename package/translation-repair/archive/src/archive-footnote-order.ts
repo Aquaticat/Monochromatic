@@ -73,6 +73,29 @@ type RankedDefinition = {
 const DEFINITION_ZONE = 'footnote-definition';
 
 /**
+ Openers of the two comment forms a page carries, HTML and JSX.
+ */
+const COMMENT_OPENERS = [
+  '<!--',
+  '{/*',
+] as const;
+
+/**
+ Characters a tail may hold before its first content: spaces, tabs and line ends.
+ */
+const BLANK_CHARACTERS = ' \t\r\n';
+
+/**
+ Columns a tab counts as in an indent.
+ */
+const TAB_COLUMNS = 4;
+
+/**
+ Columns of indent at which a line continues the definition above it.
+ */
+const CONTINUATION_INDENT = 4;
+
+/**
  Labels of a text's definitions, in the order the text carries them.
 
  @param text - document to read
@@ -96,6 +119,79 @@ export function definitionLabelOrder(
 }
 
 /**
+ Whether the text after a definition's last block opens with a comment that
+ continues that definition.
+
+ A COMMENT NO READER SEES ENDS NO BLOCK. The parse masks an HTML comment to
+ whitespace and reads a JSX comment as a block of its own, so a note on the
+ line under a definition, or in its indented continuation paragraph, lies
+ after the block's end and moves with nothing. Such a comment continues the
+ definition when it starts on the same line or the next one, or when it is
+ indented four columns, a tab counting as four, as a continuation paragraph
+ is. A comment on a line of its own past a blank line and indented less is a
+ block of its own: a note closing the page after the last footnote stays where
+ it stands. Content that is no comment is another block, whatever line it
+ starts on.
+
+ @param tail - text from the last definition's end to the text's end
+
+ @returns Whether the first content in the tail is a comment that continues
+ the definition; a tail of whitespace alone does not
+
+ @example
+ ```ts
+ tailContinuesDefinition({ tail: '\n  <!-- 大家看一下 -->\n', },); // true
+ tailContinuesDefinition({ tail: '\n\n<!-- 大家看一下 -->\n', },); // false
+ ```
+ */
+function tailContinuesDefinition({ tail, }: { readonly tail: string; },): boolean {
+  /**
+   Offset of the first character that is no space, tab or line end, minus one
+   when the tail holds none; every character before it is one code unit.
+   */
+  const contentAt = Array.from(tail,)
+    .findIndex(function isContent(character,): boolean {
+      return !BLANK_CHARACTERS.includes(character,);
+    },);
+  if (contentAt === (-1))
+    return false;
+  if (!COMMENT_OPENERS.some(function opensAt(opener,): boolean {
+    return tail.startsWith(
+      opener,
+      contentAt,
+    );
+  },))
+    return false;
+  /**
+   The blank stretch before the comment.
+   */
+  const lead = tail.slice(
+    0,
+    contentAt,
+  );
+  /**
+   Columns the comment's line is indented.
+   */
+  const indent = Array.from(lead.slice(lead.lastIndexOf('\n',) + 1,),)
+    .reduce(
+      function columns(
+        sum,
+        character,
+      ): number {
+        return sum + ((character === '\t') ? TAB_COLUMNS : 1);
+      },
+      0,
+    );
+  /**
+   Line feeds before the comment, a blank line being two.
+   */
+  const breaks = lead.split('\n',)
+    .length
+    - 1;
+  return (breaks < 2) || (indent >= CONTINUATION_INDENT);
+}
+
+/**
  Moves a text's footnote definition blocks into the order of their labels
  in `order`, labels the order does not name keeping their place after the
  ones it does.
@@ -107,7 +203,8 @@ export function definitionLabelOrder(
  @param protectedRanges - original-English intervals in current text coordinates
 
  @returns The text, moved or standing, and why it stands: a move that would
- change how the page parses its definitions stands, with a note
+ change how the page parses its definitions, or leave a comment that continues
+ the last definition behind, stands with a note
 
  @throws FootnoteRewriteError when the moved text's markers disagree with the
  parser's reading of them
@@ -272,6 +369,15 @@ export function reorderFootnoteDefinitions(
       text,
       changed: false,
       note: 'footnote definition gaps contain non-blank content, so they keep their order',
+    };
+  // THE TEXT AFTER THE LAST DEFINITION IS READ LIKE THE GAPS: a note under the
+  // last definition ends no block, so it would stay behind in the tail and
+  // follow whichever definition the move puts last.
+  if (tailContinuesDefinition({ tail: text.slice(last.endOffset,), },))
+    return {
+      text,
+      changed: false,
+      note: 'a comment continues the last footnote definition past its block, so the definitions keep their order',
     };
   /**
    Changed definitions, with unrelated separator bytes neither dropped nor repeated.

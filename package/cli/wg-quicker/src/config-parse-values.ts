@@ -109,7 +109,26 @@ export function expandHome({ path, }: { readonly path: string; },): string {
 }
 
 /**
+ Reports whether one character is an ASCII digit or a dot.
+ 
+ @param char - Candidate character from a DNS token.
+ 
+ @returns True for `0` to `9` and `.` only.
+ 
+ @example
+ ```ts
+ isDigitOrDotChar('4');
+ ```
+ */
+function isDigitOrDotChar(char: string,): boolean {
+  return ((char >= '0') && (char <= '9')) || (char === '.');
+}
+
+/**
  Reports whether DNS token is IP literal rather than search domain.
+ 
+ The digits-and-dots branch is a lexical run check, not an IPv4 validator;
+ it accepts any non-empty run of ASCII digits and dots.
  
  @param token - One comma-separated DNS token.
  
@@ -125,8 +144,13 @@ export function isIpLiteral(
 ): boolean {
   if (token.includes(':',))
     return true;
-  // oxlint-disable-next-line no-restricted-syntax/no-regex -- Anchored IPv4 token classification on short DNS field avoids rescanning giant AllowedIPs values and has no backtracking.
-  return /^[0-9.]+$/u.test(token,);
+  if (token.length === 0)
+    return false;
+  for (const char of token) {
+    if (!isDigitOrDotChar(char,))
+      return false;
+  }
+  return true;
 }
 
 /**

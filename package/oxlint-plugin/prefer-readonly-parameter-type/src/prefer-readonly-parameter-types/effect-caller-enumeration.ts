@@ -4,11 +4,11 @@
  @module
  */
 
-import type { Node, } from 'typescript/unstable/ast';
+import type { Node, } from 'typescript/ast';
 import {
   type Project,
   SymbolFlags,
-} from 'typescript/unstable/sync';
+} from 'typescript/sync';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 

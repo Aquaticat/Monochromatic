@@ -136,6 +136,70 @@ await describe({
         },),
 
         it({
+          name: 'corroborates a quote copied across a note between translators in the replacement, '
+            + 'because the prober was shown the replacement without the note and the quote is found there',
+          fn: async () => {
+            /** Region whose replacement keeps a note that ends its first line. */
+            const noted: RepairRegion = {
+              envelopeId: 'envelope/nap',
+              issueIds: ['adjudicated/nap',],
+              before: 'The cat slept.\nShe woke at dusk.',
+              editorAfter: 'The cat sleeps.{/* 这句不太对劲 */}\nShe wakes at noon.',
+            };
+            expect(
+              screenEvidence({
+                evidence: 'The cat sleeps.\nShe wakes at noon.',
+                omittedText: '',
+                region: noted,
+                original: '猫睡了。她黄昏醒来。',
+              },),
+            ).toBe('corroborated',);
+          },
+        },),
+
+        it({
+          name: 'corroborates the removal of wording copied across a note between translators in the replaced text',
+          fn: async () => {
+            /** Region whose replaced text held a note that ended its first line. */
+            const noted: RepairRegion = {
+              envelopeId: 'envelope/nap',
+              issueIds: ['adjudicated/nap',],
+              before: 'The cat slept.{/* 这句不太对劲 */}\nShe woke at dusk.',
+              editorAfter: 'The cat slept.',
+            };
+            expect(
+              screenEvidence({
+                evidence: '',
+                omittedText: 'The cat slept.\nShe woke at dusk.',
+                region: noted,
+                original: '猫睡了。她黄昏醒来。',
+              },),
+            ).toBe('removal-corroborated',);
+          },
+        },),
+
+        it({
+          name: 'leaves a quote across a note unanchored when no original is given, since the note then '
+            + 'stands in the text it reads',
+          fn: async () => {
+            /** Region whose replacement keeps a note that ends its first line. */
+            const noted: RepairRegion = {
+              envelopeId: 'envelope/nap',
+              issueIds: ['adjudicated/nap',],
+              before: 'The cat slept.\nShe woke at dusk.',
+              editorAfter: 'The cat sleeps.{/* 这句不太对劲 */}\nShe wakes at noon.',
+            };
+            expect(
+              screenEvidence({
+                evidence: 'The cat sleeps.\nShe wakes at noon.',
+                omittedText: '',
+                region: noted,
+              },),
+            ).toBe('unanchored',);
+          },
+        },),
+
+        it({
           name: 'contradicts a quote that already occurred before the edit, '
             + 'because replacing text cannot introduce wording the text already had',
           fn: async () => {

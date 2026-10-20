@@ -106,7 +106,9 @@ named for that subject and listed here.
   and the stretches that stay cold with the reason for each.
 - [Audit ledger: page assembly and the corpus-run driver](audit-ledger-page-assembly-and-corpus-run-driver.md):
   Findings in the page-assembly passes and the driver that runs a corpus pass,
-  the archive's notices that a page is unfinished and the translators' notes that decided a contest (B698).
+  the archive's notices that a page is unfinished and the translators' notes that decided a contest (B698),
+  an archive block revision that dropped the note its block held (B702),
+  and notes put back into a CRLF text with bare line feeds (B706).
 - [Audit ledger: providers, routing and seating](audit-ledger-providers-routing-and-seating.md):
   Findings in the provider clients,
   the router and the seating of models.
@@ -193,7 +195,8 @@ named for that subject and listed here.
   or bought work nothing could use.
 - [Audit ledger: footnote markers and link destinations](audit-ledger-footnote-markers-and-link-destinations.md):
   Scans for footnote markers and link destinations that disagreed with the parse,
-  about where a marker is a reference or where an address ends.
+  about where a marker is a reference or where an address ends,
+  and a definition reorder that carried a note under the last definition to another (B705).
 - [Audit ledger: tags, nesting and paired marks](audit-ledger-tags-nesting-and-marks.md):
   Readers of tags,
   attributes,
@@ -418,7 +421,14 @@ named for that subject and listed here.
   and a lint ignore that matched a package.
 - [Audit ledger: what each sheet shows](audit-ledger-what-each-sheet-shows.md):
   Sheets that lacked a block their role needs to judge or write,
-  and the reader-protection rule that reached past the account of how a death or an attempt happened (B697).
+  the reader-protection rule that reached past the account of how a death or an attempt happened (B697),
+  the cut of the translators' notes that left a bare quote line,
+  joined two lines and dropped a carriage return (B703),
+  the absolute naturalness review that showed its reviewers the notes (B704),
+  a Han name the archive spells inside its sentence that no sheet or floor carried (B707),
+  and the judges,
+  critics,
+  auditors and pairers that saw the notes between translators (B708).
 - [Audit ledger: readers that accept what no writer writes](audit-ledger-readers-accept-shapes-writers-never-write.md):
   Readers of stored records and directories that accepted a shape,
   a name or a value their own writer never produces,
@@ -474,7 +484,8 @@ named for that subject and listed here.
   Offsets,
   headings and slices of one text applied to another that does not line up with it,
   a leading byte order mark among the causes,
-  and a heading series that lost the original's numbers where the archive heads it by name alone (B695).
+  a heading series that lost the original's numbers where the archive heads it by name alone (B695),
+  and a quote copied from a sheet that cut the notes between translators searched in the stored text (B709).
 - [Audit ledger: repeated wording and ids on a page](audit-ledger-repeated-wording-and-ids-within-one-text.md):
   Titles,
   links,
@@ -521,7 +532,8 @@ named for that subject and listed here.
   the log's two streams,
   a launch whose build ran the main checkout's bundler (M278),
   a scratch worktree tested on the install of another commit (M280),
-  and a cache version commit that left seven test cases red (M284).
+  a cache version commit that left seven test cases red (M284),
+  and a branch worktree moved to a new build without an install (M285).
 - [Audit ledger: process mistakes, guards and red cases](audit-ledger-process-guards-and-red-cases.md):
   Guards and failing-first cases that could not fail,
   never reached what they guarded,

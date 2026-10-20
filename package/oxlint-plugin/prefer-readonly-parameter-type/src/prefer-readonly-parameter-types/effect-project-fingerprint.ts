@@ -15,8 +15,8 @@ import {
 } from 'node:path';
 
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { Project, } from 'typescript/unstable/sync';
-import type { SourceFile, } from 'typescript/unstable/ast';
+import type { Project, } from 'typescript/sync';
+import type { SourceFile, } from 'typescript/ast';
 
 import { ancestorDirectories, } from './ancestor-directories.ts';
 import { isDeclarationFileName, } from './declaration-file-name.ts';
@@ -25,6 +25,7 @@ import {
   updateHashString,
 } from './effect-hash-value.ts';
 import { contentDigest, } from './effect-summary-cache-identity.ts';
+import { configuredProjectConfigFileName, } from './semantic-file-name.ts';
 import { isAmbientProgramFile, } from './shared-analysis-ambient.ts';
 import {
   type CheckingOptionsKey,
@@ -261,11 +262,11 @@ export function effectProjectFingerprint({
   const ambientSurface = createHash('sha256',);
   updateHashString({
     digest,
-    value: project.configFileName,
+    value: configuredProjectConfigFileName({ project, },),
   },);
   updateHashPlainValue({
     digest,
-    value: project.compilerOptions,
+    value: project.parsedCommandLine.options,
   },);
   /**
    Resolved compiler-option identity validated by incremental entries.
@@ -273,7 +274,7 @@ export function effectProjectFingerprint({
   const optionsDigest = createHash('sha256',);
   updateHashPlainValue({
     digest: optionsDigest,
-    value: project.compilerOptions,
+    value: project.parsedCommandLine.options,
   },);
   fileNames.forEach(function hashSource(fileName,): void {
     /**
@@ -345,7 +346,7 @@ export function effectProjectFingerprint({
   /**
    Governing lockfile whose package identities affect resolution.
    */
-  const lockfile = nearestLockfile(project.configFileName,);
+  const lockfile = nearestLockfile(configuredProjectConfigFileName({ project, },),);
   /**
    Lockfile content identity, or absence marker when no lockfile governs.
    */
@@ -383,7 +384,7 @@ export function effectProjectFingerprint({
     },
     shared: {
       ambientSurfaceDigest: ambientSurface.digest('hex',),
-      checkingOptions: checkingOptionsKey(project.compilerOptions,),
+      checkingOptions: checkingOptionsKey(project.parsedCommandLine.options,),
     },
   };
 }

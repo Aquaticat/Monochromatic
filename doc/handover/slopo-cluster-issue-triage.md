@@ -518,18 +518,18 @@ Defects found while reviewing, filed inside the issue that owns the surrounding 
 
 None required for this task. Follow-ups a maintainer may want:
 
-1. Answer the decision questions the issues ask. Nine issues carry `needs-triage` because they list
-   competing actions: #611 (which support.js remediation), #612 (keep, delete or relocate the mirror),
-   #613 (which coverage generation survives), #614 (find the emitter), #616 (recognition mechanism),
-   #622 (prototype fate), #623 (extract now or wait for the proposal), #630 (declarative scenarios) and
-   #660 (seven consolidate-or-dismiss calls).
-2. Decide whether the four dismissal issues (#656, #657, #658, #659) should be applied to
-   `slopo.ignore.txt`. As of the second correction round on 2026-10-09 they propose 67 entries between them and
-   hold 80 back, so the decision is now per bucket rather than per batch: accept the 67 whose patterns are closed or
-   whose instances are data, and give the held patterns an owner or a policy. Read
-   `doc/planning/slopo-dismissed-cluster-actionability.md` first; it records why a pair-level verdict is not
-   sufficient and what the family measurements showed. The dead-key cleanup it depends on is recorded in
-   `doc/troubleshooting/slopo-threshold-tuning.md` under "Open cleanup decision for the 55 dead keys".
+1. Answer the decision questions the issues ask. The 2026-10-20 backlog triage
+   (`doc/handover/issue-triage-2026-10-20.md`) routed all nine: #611, #616, #622, #623 and #660 are
+   `ready-for-human` with their competing actions restated in the triage comments, #613, #614 and #630
+   are `ready-for-agent` on the standing default their acceptance criteria pin, and #612 was closed
+   not planned on 2026-10-19 (its mirror code left the tree with the retired TypeScript wrapper in
+   `642b6d72cb`).
+2. The four dismissal issues (#656, #657, #658, #659) are settled: the maintainer's 2026-10-09 accepted
+   batches were applied to `slopo.ignore.txt` in commit `02cacf2ba4` (the file header records the 67
+   accepted entries and the report count dropped from 1008 clusters to 941), and the 2026-10-20 triage
+   closed all four as `wontfix` with that evidence. The held patterns live in #664 to #673. The
+   dead-key cleanup they depend on is recorded in `doc/troubleshooting/slopo-threshold-tuning.md` under
+   "Open cleanup decision for the 55 dead keys".
 3. If the report is regenerated, re-run the review scripts. They are deterministic and validate
    themselves: `parse_clusters.py` checks every cluster against `index.md`, `control_support.py` proves
    the duplicate-artifact check can fail, and `verify_mirror.py` proves the mirror relationship

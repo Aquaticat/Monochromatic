@@ -60,6 +60,32 @@ export type OxlintRuleDiagnostic = {
    Source file path reported by oxlint.
    */
   readonly filename: string;
+  /**
+   Label spans oxlint attaches to the diagnostic, each locating the offending token.
+   */
+  readonly labels?: readonly {
+    /**
+     Exact source range the label names.
+     */
+    readonly span: {
+      /**
+       UTF-16 offset of the range start in the linted source.
+       */
+      readonly offset: number;
+      /**
+       UTF-16 length of the range.
+       */
+      readonly length: number;
+      /**
+       One-based line of the range start.
+       */
+      readonly line: number;
+      /**
+       One-based column of the range start.
+       */
+      readonly column: number;
+    };
+  }[];
 };
 
 /**

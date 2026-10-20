@@ -9,8 +9,10 @@
  @module
  */
 
-import type { SourceFile, } from 'typescript/unstable/ast';
-import type { Project, } from 'typescript/unstable/sync';
+import type { SourceFile, } from 'typescript/ast';
+import type { Project, } from 'typescript/sync';
+
+import { configuredProjectConfigFileName, } from './semantic-file-name.ts';
 
 /**
  Address a source's summaries are stored and looked up under.
@@ -63,7 +65,7 @@ export function sourceIdentity({
   readonly cacheRootOverride?: string;
 }): EffectSourceIdentity {
   return {
-    projectKey: project.configFileName,
+    projectKey: configuredProjectConfigFileName({ project, },),
     scopeKey,
     projectDigest,
     fileName: sourceFile.fileName,

@@ -3,7 +3,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { isFunctionLikeDeclaration, } from 'typescript/unstable/ast/is';
+import { isFunctionLikeDeclaration, } from 'typescript/ast/is';
 import { readFileSync, } from 'node:fs';
 import { fileURLToPath, } from 'node:url';
 

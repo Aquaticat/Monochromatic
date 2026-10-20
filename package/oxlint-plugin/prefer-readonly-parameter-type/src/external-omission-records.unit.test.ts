@@ -12,10 +12,7 @@ import {
   parseExternalOmissionRecords,
 } from '../dist/final/node/index.mjs';
 
-/** Reason category the tuple serializer panic is persisted under. */
-const TUPLE_REASON = 'typescript-tuple-serialization-failed';
-
-/** Reason category an unclassified construction failure is persisted under. */
+/** Reason category a direct-summary construction failure is persisted under. */
 const CONSTRUCTION_REASON = 'direct-summary-construction-failed';
 
 /**
@@ -23,13 +20,13 @@ const CONSTRUCTION_REASON = 'direct-summary-construction-failed';
 
  @param sourceFileName - Source the record names.
 
- @returns record with one omitted callable and the tuple reason.
+ @returns record with one omitted callable and the construction-failure reason.
  */
 function record(sourceFileName: string,): ExternalOmissionRecord {
   return {
     sourceFileName,
     omittedCount: 1,
-    reasons: [TUPLE_REASON,],
+    reasons: [CONSTRUCTION_REASON,],
   };
 }
 
@@ -60,10 +57,7 @@ await describe({
           {
             sourceFileName: 'b.js',
             omittedCount: 65_534,
-            reasons: [
-              TUPLE_REASON,
-              CONSTRUCTION_REASON,
-            ],
+            reasons: [CONSTRUCTION_REASON,],
           },
         ];
         expect(parseForConsumer(valid,),).toEqual(valid,);
@@ -106,9 +100,9 @@ await describe({
     it({
       name: 'rejects reasons that are absent, empty, repeated or outside the bounded categories',
       fn: async () => {
-        expect(parseForConsumer([{ ...record('a.js',), reasons: TUPLE_REASON, },],),).toBe(EXTERNAL_OMISSIONS_INVALID,);
+        expect(parseForConsumer([{ ...record('a.js',), reasons: CONSTRUCTION_REASON, },],),).toBe(EXTERNAL_OMISSIONS_INVALID,);
         expect(parseForConsumer([{ ...record('a.js',), reasons: [], },],),).toBe(EXTERNAL_OMISSIONS_INVALID,);
-        expect(parseForConsumer([{ ...record('a.js',), reasons: [TUPLE_REASON, TUPLE_REASON,], },],),).toBe(
+        expect(parseForConsumer([{ ...record('a.js',), reasons: [CONSTRUCTION_REASON, CONSTRUCTION_REASON,], },],),).toBe(
           EXTERNAL_OMISSIONS_INVALID,
         );
         expect(parseForConsumer([{ ...record('a.js',), reasons: ['made-up-reason',], },],),).toBe(
@@ -139,7 +133,7 @@ await describe({
             {
               sourceFileName: 'a.js',
               omittedCount: 2,
-              reasons: [TUPLE_REASON,],
+              reasons: [CONSTRUCTION_REASON,],
             },
           ],
           [
@@ -153,10 +147,7 @@ await describe({
           {
             sourceFileName: 'a.js',
             omittedCount: 2,
-            reasons: [
-              CONSTRUCTION_REASON,
-              TUPLE_REASON,
-            ],
+            reasons: [CONSTRUCTION_REASON,],
           },
           record('b.js',),
         ],);
@@ -198,7 +189,7 @@ await describe({
           fileName: 'leaf.js',
           source: {
             omittedCallableKeys: ['leaf.js:1:2:3',],
-            omissionReasons: [TUPLE_REASON,],
+            omissionReasons: [CONSTRUCTION_REASON,],
             externalOmissions: [record('deeper.js',),],
           },
           dependencies: ['entry.js',],

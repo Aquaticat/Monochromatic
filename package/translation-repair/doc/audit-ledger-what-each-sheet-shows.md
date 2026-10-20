@@ -492,3 +492,399 @@ A rule written for one case (a death by suicide) is read for the places it is sp
 and a ruling of the owner is quoted whole,
 with the option it rejected,
 into the comment over the rule.
+
+## B703: the cut of the notes between translators left a bare quote line, joined two lines and dropped a carriage return
+
+Status:
+three fixes of 2026-10-20 (UTC) to `withoutTranslatorsNotes` in document-structure,
+the cut every judging sheet passes the archive and the candidates through.
+The quoted line:
+red `1f66cad0ec`,
+fix `53d68d85dc`,
+versions `aa0ab6ff0a`,
+pinned keys `8d449d05fe`,
+landed as `cca7711de7` after gate g122.
+Two notes on one line:
+red `5b75add81a`,
+fix `d60b27a9ed`,
+gap reading `0039830674`.
+The carriage return:
+red `acf6ada605`,
+fix `e80301bf32`.
+Version accounts `4f9f25ae24`;
+the last two landed as `a5dc23c5bb` after gate g123
+(2564 `[PASS]` lines,
+no `[FAIL]` line).
+
+### A note alone on a quoted line
+
+The cut took a note's whole line only when nothing but whitespace stood before it,
+so on a line inside a blockquote the markers stood before it and the cut kept them:
+zheermao101's archive line `>   > {/* ... */}` became a bare `>   >` line,
+which a judge reads as a paragraph break inside the quote that the archive does not have.
+The whole line now goes when what stands before the note is quote markers and whitespace only
+and only whitespace stands after it.
+The test reads the characters before the note and never the note's own words,
+and it needs a marker,
+so a `>` that is text (`1 > 0 `) keeps the old cut.
+Of the 34 notes in the 92 pinned English archives,
+one stands alone on a quoted line (zheermao101).
+
+The keys of the five stages whose sheets make the cut hash the version,
+the run shape and the texts,
+not the sheet,
+so a record written under the old cut would be served under the new.
+`CONSOLIDATE_CACHE_VERSION` moved from 26 to 27,
+`LANE_CONTEST_CACHE_VERSION` from 11 to 12,
+`REFINE_CACHE_VERSION` from 9 to 10,
+`SLICE_CACHE_VERSION` from 38 to 39
+and `TRANSLATE_SLICE_CACHE_VERSION` from 20 to 21.
+The account of each move says the check that would let the change ride inside the old number could not be made,
+since the run `zheermao15` had an empty slice-cache directory and so did a control from 2026-10-19.
+That reading lacked its cause:
+a settled entry discards its own slice cache (`retireSettledEntryCache` in
+`corpus-pass/src/corpus-run/pass-entry-caches.ts`),
+and both runs settled,
+so their directories could never have shown a record.
+The check reads the `START tip=` line of each run begun since a number was set instead
+([stored files and cached decisions](mistake-prevention-stored-files-and-cached-decisions.md)).
+Moving the numbers costs a cold cache and the pinned keys,
+and no record was lost by it.
+
+### Two notes on one line
+
+The cut judged each note's line from the end of the previous cut,
+so the second of two notes on one line read an empty head,
+counted as alone on its line and took the line break:
+`x <note> <note>\ny\n` gave `x y\n`,
+and on a quoted line two lines became one.
+The same reading left a space at the end of a text and two spaces between words.
+Notes with only whitespace that is not a line feed between them are now cut as one stretch (`noteStretchesOf`),
+judged against the original text.
+The fix commit's message says spaces and tabs;
+the stretch also joins across a carriage return,
+and `0039830674` says so in its message and in the TSDoc,
+and reads the gap with `isWhitespace` instead of the trimmed-text comparison the blank-text scan lists.
+
+### The carriage return of a CRLF line
+
+The cut of a note that ends its line ran to the line feed,
+so in a CRLF text it took the carriage return and left a bare line feed among CRLF breaks.
+It now stops before a carriage return that ends the line.
+
+### What the last two changed
+
+None of the 92 pinned archives has two notes on one line or a carriage return
+(cut with the old and the new code,
+no archive's text differs),
+so no sheet text changed,
+and no record had been written at the new numbers:
+the only run begun since they were set,
+`CuspariaKLSY18`,
+started at tip `a6a0ed7dc0`,
+which predates them.
+Both fixes ride inside the numbers,
+and each version's account names their commits,
+so the cache-account audit counts them as accounted.
+The audit still lists `db2cd279a3`,
+a lint-only split of one test in the same file,
+and `4f9f25ae24`,
+the accounts themselves;
+neither changes what any stage does.
+
+Recurrence:
+none of an earlier entry.
+A cut that removes text from a line is tested on the line forms the corpus can hold
+(quoted lines,
+two marks on one line,
+CRLF ends),
+not only on the forms the pinned archives show,
+and a check whose evidence is a cache directory first reads what empties that directory.
+
+## B704: the absolute naturalness review showed its reviewers the notes between translators
+
+Status:
+fixed on 2026-10-20 (UTC),
+red `984b1f030a`,
+fix `b3e2ec47fa`,
+`CONSOLIDATE_CACHE_VERSION` 27 to 28 in `6a28f54beb`,
+pinned key `bfe7cee84f`,
+gated with the fixes of B705 and B706 as g125
+(2565 `[PASS]` lines,
+no `[FAIL]` line)
+and landed in `eaa250287d`.
+
+`buildAbsoluteNaturalnessReviewMessages` (`archive/src/absolute-naturalness-review-wire.ts`)
+showed the candidate and each numbered paragraph with every note,
+where the account of `CONSOLIDATE_CACHE_VERSION` 26 said judges no longer see one.
+Its two callers are the final polish of a consolidation (`polishConsolidation`)
+and the archive block review (`recordArchiveBlockNaturalness`).
+A reviewer could raise a Chinese comment in an English text as a naturalness finding.
+No such finding could delete or alter a note:
+the polish ships its initial text whatever the verdict
+(`consolidation-polish.ts`,
+`correctionCount: 0`),
+the archive block review keeps the block it reviewed,
+and the block repair passes no prior findings,
+so the findings are evidence only.
+
+The sheet now cuts the candidate and each paragraph with `withoutTranslatorsNotes` against the original,
+where the sheet text is built;
+the subject stays exact,
+since the review digests `candidateText` and `paragraphs`
+and the artifact reader recomputes those digests from the shipped text.
+A paragraph of nothing but notes is left off the sheet and its number goes unused,
+so the stage's paragraph-count check and the reader's recompute still agree;
+a reviewer could cite the unused number and pass the check,
+and since findings report only,
+that stays.
+Of the 92 pinned archives 10 hold a note their original lacks (34 notes),
+and only 4 numbered paragraphs hold one (XingZ60 1,
+shihai4h 2,
+zheermao101 1);
+the other 30 notes stood only in the candidate fence.
+
+The review's verdicts are stored in the consolidation settlement,
+keyed by `consolidateSliceKey`,
+which hashes the version,
+the run shape and the texts,
+not the sheet,
+and `zheermao16` was writing records at 27 when the change was made,
+so the number moved.
+
+Recurrence:
+of B698 and B702.
+The census those entries call for,
+every sheet the rendered-sheets fixture renders read for what it shows,
+had not been run;
+it was started on 2026-10-20 (UTC) as its own piece of work,
+and its entry records what it found.
+
+## B707: a judged polish re-romanized a Han name the archive already spells in its sentence
+
+Status:
+fixed on 2026-10-20 (UTC),
+red `b7ee52b99f` (rendering-audit) and `7d3de9bc2b` (translate-floor),
+fix `999f9a5a07` (rendering-audit) and `4ab33543fd` (translate-floor),
+versions `89ff91202e`,
+source scans held to the new modules `b81c866f25`,
+gated as g126b
+(2578 `[PASS]` lines,
+no `[FAIL]` line)
+and landed in `e429659e0b`.
+
+Found in the run `zheermao16`,
+slice 13 of zheermao101.
+The archive's sentence for the one that cites 寒涟漪 names its writer "Han Lianyi".
+The page shipped "Han Lian Yi (Cold Ripples)".
+The lane contest chose the translate lane four to zero,
+naming the archive's established rendering,
+but the consolidation select,
+its refine and the polish gate never saw it as a name's rendering:
+the page-name glossary pairs link texts,
+signatures and headings only,
+the declared pairs are the front matter's name and aliases,
+and the signer floor reads signature lines.
+A cited author stands in a sentence,
+so the house rule for a handle with no declared,
+archive or corpus rendering was read as if it applied,
+and three of five polish ballots followed its regrouping and its meaning in parentheses.
+
+The pairing goes from the archive's capitalised Latin words to the original's Han by reading letters
+(`proseNamePairs` in rendering-audit).
+The identity lines list each pair under a heading that says the archive's spelling is the rendering,
+so every sheet that splices the lines shows it,
+and the floor `proseNameFindings` refuses a candidate that writes the same letters under another spelling.
+Over the 92 pinned English archives 69 hold a pair and 60 change their identity block
+(the others pair a name a link,
+signature,
+heading or the front matter already carries),
+none of the 92 archives is refused as a candidate against itself,
+and 240 of 240 respelled controls are refused.
+Of the ten shipped pages under the agent runs one is refused,
+the incident's.
+The rule text is not changed:
+the house rule and its scope sentence already name the case,
+and a change to it would move every version whose sheets splice it.
+
+`TRANSLATE_SLICE_CACHE_VERSION` moved from 21 to 22 and `LANE_CONTEST_CACHE_VERSION` from 12 to 13,
+since both runs begun since those numbers were set log a tip that holds them.
+`CONSOLIDATE_CACHE_VERSION` stays at 28:
+the same two runs log a tip that does not hold the commit that set it.
+The repair slice,
+refine,
+consistency,
+page title and pairing versions stay,
+since their keys hash the identity lines or digest the sheet,
+or their stage does not meet the publication rule.
+
+Recurrence:
+of the family this ledger records,
+a sheet that lacked a block its role needs to judge.
+A rule that excepts a name "the archive already renders" is tested on every place the archive can render a name,
+sentences included,
+and a sheet that carries the exception carries the rendering beside it.
+
+## B708: the judges, critics, auditors and pairers saw the notes between translators
+
+Status:
+fixed on 2026-10-20 (UTC),
+guard red `88b5187179` and `c655a96182`,
+red and fix per package
+(`2553c8f8d5` and `12e147ae40` adjudication,
+`5498ee860b` its prober module,
+`f947ebf950` and `89df3896d4` archive,
+`d8b8247e11` and `eaab1b1ed9` stage,
+`5283ee9d0b` and `fcd6d13fa3` reference,
+`10e1641b51` and `ebac709b03` rendering-audit,
+`5c0d5ba784` and `36c5b02884` repair,
+`35e421aa8f` and `7ee1755b24` consistency and corpus-pass),
+guard green `59b10c6db4`,
+versions `43e735f7da`,
+`f1571d5012` and `31c0c8d9ad`,
+source scans `ff69a94586`,
+merged onto main as `1e955f206e`,
+gated as g127
+(145 steps exited 0,
+2605 `[PASS]` lines,
+no `[FAIL]` line,
+49 source scans pass)
+and landed with this entry.
+
+The census B698,
+B702 and B704 called for:
+every sheet the rendered-sheets fixture renders,
+54 in all,
+rendered with a note planted in every English text and in a neighbour passage,
+and read for whether it shows the note,
+cuts it,
+or cannot reach it.
+A witness string beside each planted note tells a sheet that cuts the note from one the text never reaches.
+
+The sheets that showed a note to a model that judges,
+audits,
+pairs or chooses:
+the critic (`critic-prompt.ts`),
+the panel (`adjudicate-prompt.ts`),
+the resolution checker (`resolution-wire.ts`),
+the introduced-defect prober (`introduced-defect-wire.ts`),
+the coverage sheet (`coverage-wire.ts`),
+the section and block pairing sheets (`pair-sections-wire.ts`,
+`pair-blocks-wire.ts`),
+the reference attestation and its confirmation (`reference-attest-wire.ts`,
+`reference-attest-confirm-wire.ts`),
+the rendering audit (`rendering-audit-prompt.ts`),
+the restoration judge (`restoration-judge-wire.ts`)
+and the consistency judge,
+run-off and carry choice (`consistency-sheet.ts`,
+`consistency-run-off.ts`,
+`consistency-carry-choice-sheet.ts`).
+The critic weighed most:
+its prompt names Han left in a translation as `accuracy/untranslated`,
+and an accepted issue becomes an envelope the editor rewrites,
+so a Chinese comment could be translated
+and the carry would then put the note back beside its translation.
+
+The candidate selection slate (`candidate-select-wire.ts`) had its own cause:
+it took any evidence block whose heading held the word ORIGINAL for the original,
+so two headings that only mention it
+(the refine slate's current English and the translate slate's surrounding existing translation)
+were shown whole,
+and their notes counted as the original's own in the candidates beside them.
+The words before a heading's first comma decide now;
+the six real original headings stay whole.
+
+Each sheet cuts the notes for display only,
+with `withoutTranslatorsNotes` against the original:
+stored text,
+digests and keys stay on the exact text.
+The pairing sheets keep each index and the list length,
+listing a block of nothing but notes empty under its own number.
+The consistency sheets cut the English of each place,
+the chosen paragraph and each candidate,
+and a new `sliceSource` on the occurrence view carries the slice's whole original,
+so a comment the original holds in a paragraph the sheet does not show is kept.
+
+The writers still show the notes:
+the editor,
+refiner,
+translate writer,
+translate repair,
+consolidation writer and the three carry writers.
+A writer that keeps a note verbatim keeps it,
+and one that drops it has it put back by the carry (`archive-note-carry.ts`),
+which runs last in page assembly.
+The guard `artifact/src/sheet-translators-notes.unit.test.ts` fails on any sheet that shows the note outside its writers list,
+on a stale writers entry,
+and on any sheet neither reached by the planted witness nor listed as unreached
+(house policy,
+page title lexicon,
+derivability and the four picture readings).
+
+Over the 92 pinned English archives 10 hold a note their original lacks (34 notes),
+so the slice-level sheets change for at most those 10 entries;
+19 of 63 sections and 28 of 634 blank-line stretches change under the cut,
+and 25 stretches are left empty.
+9 entries hold a note and a link in the original,
+the most the attestation sheets can change.
+The consistency sheets were not measured;
+their bound is the same 10 entries.
+No provider was called,
+so the effect of each cut on what a model answers is not measured.
+
+`SLICE_CACHE_VERSION` moved from 39 to 40,
+`REFINE_CACHE_VERSION` from 10 to 11,
+and `TRANSLATE_SLICE_CACHE_VERSION` to 22,
+the number the handle fix of B707 set first,
+so the two changes share it:
+their keys hash the version,
+the run shape and the texts,
+not the sheet,
+and both runs begun since 39,
+10 and 21 were set log a tip that holds them.
+`CONSOLIDATE_CACHE_VERSION` rides inside 28 and `LANE_CONTEST_CACHE_VERSION` stays at 13,
+whose sheet does not change.
+`PAIRING_CACHE_VERSION` stays at 3 under the account of B670,
+`CONSISTENCY_CACHE_VERSION` at 6,
+since `consistencyKey` hashes the built messages and so asks afresh under the cut sheet,
+and `PAGE_TITLE_CACHE_VERSION` is untouched.
+The ride-inside checks read the 12 `START tip=` lines of the run logs,
+since the cache-account audit read 0 slice-cache records.
+
+Decided with the entry:
+
+- A judge's quote that crosses a place where a note was cut finds nothing in the stored text.
+  3 of the 34 notes stand where that can happen (zheermao101,
+  XingZ60 and shihai4h),
+  two of them in the readiness rotation,
+  so the fix is its own piece of work,
+  landed before the rotation restarts.
+- The entry-notes identity channel (`rendering-audit/src/entry-notes.ts`) still puts each archive comment in the declared
+  names context,
+  by the owner's rule of 2026-09-02;
+  it is a vocabulary channel,
+  not the note in the candidate,
+  and stays.
+- A writer that rewords or translates a note,
+  which the carry would not recognise and so would duplicate,
+  was not observed;
+  the cut critic and panel close the path by which a judge would ask for it,
+  and the guard's writers list records the case.
+- The version moves follow the convention that a key hashing texts and not the sheet moves its number,
+  while pairing keeps the account of B670;
+  one policy for all would move constants this change has just accounted for,
+  so none is changed.
+
+The body of `43e735f7da` says its pinned keys land "in the next one";
+they landed two commits later,
+in `31c0c8d9ad`,
+after the lane-contest account,
+and the commit carries a comment that says so.
+
+Recurrence:
+of B698,
+B702 and B704.
+A cut that keeps text from a model is checked on every sheet that model reads,
+by a guard that renders all of them with a planted case and a witness that tells cut from unreached,
+and a rule that finds a block by a word in its heading reads the heading's name,
+not the whole heading.

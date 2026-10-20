@@ -355,8 +355,64 @@ import type { LaneText, } from '@monochromatic-dev/translation-repair-translate-
  `sha256-tree-v1:a92725968adf…`, so the change cannot ride inside it and the number moves, as every version whose sheets splice the
  house rule moves with it; the pairing version stays, since no pairing sheet carries the house rule. No record has been written at
  26, which this change sets first.
+
+ 27 covers the cut of a note between translators that stands alone on a quoted line
+ (`document-structure/src/translators-note.ts`): the consolidation gate and the polish gate cut such a note with the spaces
+ before it and left its quote markers, a bare `>   >` line that the judges read as a paragraph break inside the quote that the
+ archive does not have (zheermao101, run zheermao15), and it now cuts the line. Of the 34 notes in the 92 pinned English archives
+ one stands alone on a quoted line (zheermao101), so only a sheet that shows that archive's text changes, and the cut of every
+ other note is what it was. The key hashes the version, the shape of the run and the texts, not the sheet, so a record written
+ under the old cut would be served under the new. The check that would let the change ride inside 26 (no slice-cache record
+ written after it, shown beside a control that finds records) could not be made with a working control: run zheermao15 started at
+ 02:12 UTC on 2026-10-20, after 26 was set, its slice-cache directory is empty, and a control from 2026-10-19 finds none either,
+ so the number moves, as the lane-contest, repair slice, refine and translate versions move for the same cut. The consistency,
+ page title and pairing versions stay, since none of their sheets cuts a note. No record has been written at 27, which this
+ change sets first.
+
+ Two later changes to the same cut ride inside 27. A second note on one line no longer takes the line
+ break with it (5b75add81, d60b27a9e, 003983067), and a note ending a CRLF line keeps the line's carriage return
+ (acf6ada60, e80301bf3). None of the 92 pinned English archives has two notes on one line or a carriage return, so no
+ sheet text changes, and no record had been written at 27 when they landed: the only run since it was set,
+ CuspariaKLSY18, runs a6a0ed7dc0, which predates it.
+
+ 28 covers the sheet of the absolute naturalness review (`archive/src/absolute-naturalness-review-wire.ts`), which the
+ account of 26, "judges no longer see a note between translators", did not reach: the review the final polish asks of its
+ would-ship slice showed the candidate and each paragraph with every note, so a judge could raise a Chinese comment in an
+ English text as a naturalness finding, and it cuts them now against the original, as the gates before it do. A paragraph
+ of nothing but notes is left off that sheet with its number unused. The review's seats, verdicts and findings are part of
+ the settlement this key addresses (`polish.review`), and the key hashes the version, the run shape and the texts, not the
+ sheet, so a record written for a slice whose text holds a note under the old sheet would be served under the new. Run
+ zheermao16 is live on build a5dc23c5bb and writes records at 27, so the change cannot ride inside it and the number
+ moves. Over the 92 pinned English archives 10 hold a note their original lacks (34 notes in all), and 28 stretches of
+ them between blank lines hold one, so a sheet changes for at most those 10 entries; no other entry's sheet moves. The
+ archive block review has no cache version of its own, the block it reviews stands whatever it finds, and the other
+ versions stay, since none of their sheets is this one. No record has been written at 28, which this change sets first.
+
+ Rides inside 28 too: the publication rule the consolidation, its standing verdict and its polish round meet refuses a
+ candidate that writes the letters of the archive's spelling of a Han name written inside a sentence under another spelling
+ (`translate-floor/src/translate-prose-name.ts`), and the identity lines the gates read carry those spellings
+ (`rendering-audit/src/page-name-glossary.ts`; zheermao101, run zheermao16, 2026-10-20). The key does not hash the floors, so a
+ record written under the old rule would be served under the new, if one had been written at 28. None has: 28 was set in
+ `6a28f54be`, at 11:24 UTC-4 on 2026-10-20, and the two runs begun since, zheermao16 and CuspariaKLSY19, both log
+ `START tip=a5dc23c5bb`, which does not hold that commit and sets 27. Both read and write at 27, so neither can have stored
+ an answer at 28. The lane-contest and translate slice versions move for the same rule (13 and 22).
+
+ Rides inside 28 too: the sheets of the settlement's other judges cut the notes between translators as well
+ (`document-structure/src/translators-note.ts`): the introduced-defect prober and the resolution checker that look over a
+ polish (12e147ae40, 5498ee860b), the candidate selection slate of the objection correction, whose current English and
+ objections were shown whole because a search of the whole label took them for the original (12e147ae40), and the coverage
+ sheet (89df3896d4). The key hashes the version, the run shape and the texts, not the sheet. Of the 12 run logs in the agent
+ directory, none started on a tip that holds `6a28f54be`, where 28 was set: the newest tip, `a5dc23c5bb` of zheermao16 and
+ CuspariaKLSY19, does not, and the others started on earlier ones, so none could write a record at 28. That is the evidence of
+ the logs' `START tip=` lines and `git merge-base --is-ancestor`, and not a search of any slice-cache directory.
+
+ Rides inside 28 too: a quote the introduced-defect prober copied from its sheet across the place a note between translators was
+ cut from now anchors in the stored words on each side of the note (`adjudication/src/introduced-defect-screen.ts`,
+ `typography/src/locate-quote.ts`), so the damage claims over a polish can differ for a slice holding such a note. The key
+ hashes the version, the run shape and the texts, not the sheet. The same 12 logs, read the same way, show none that started on
+ a tip that holds `6a28f54beb`, where 28 was set, so none could write a record at 28, and the number does not move.
  */
-export const CONSOLIDATE_CACHE_VERSION = 26;
+export const CONSOLIDATE_CACHE_VERSION = 28;
 
 /**
  What a line-structured slice appends to its key material.

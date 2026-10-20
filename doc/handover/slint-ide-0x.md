@@ -1129,6 +1129,11 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     here: default RX 7600, `WGPU_POWER_PREF=low` Raphael, `DRI_PRIME=1` on the IDE only Raphael; setting `DRI_PRIME` on
     the nested compositor too flips the default because Mesa's default is the compositor's GPU). Heavy verification of
     (2) and (3) waits until (1) finishes so that its flake-rate runs are not perturbed by load.
+    (2) and (3) are already merged with each other in the scratch worktree `~/temp/agent/ide-integrate` (detached,
+    commit `31cd2f1140`, not on any branch, not pushed): the only conflicts were `gpu_device.rs` (the stage 3 and 4
+    texture cap `open_hardware_device_capped` and `set_texture_dimension` reapplied onto the split
+    `src/gpu_device/` layout) and the README (both new sections kept). Next: run `lint`, `test:native`, `test:bin`,
+    `build`, `inspect:*` there after (1) finishes, then fast-forward `main` to it (merge `origin/main` first).
     Stages 3 and 4 are merged into one task (the tile bakes in selection, underlines and the wrap sign, so they
     cannot be split cleanly): agent `a8ec6e5d0b8981d42`, started 2026-10-20 (code view on the GPU, CPU pipeline
     deleted except what the minimap still needs). A second agent, `a3b41470505ef8920`, removes the MCP builds in parallel and rebuilds their checks on the nested

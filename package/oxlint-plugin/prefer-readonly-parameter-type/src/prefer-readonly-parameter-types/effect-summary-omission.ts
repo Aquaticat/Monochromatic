@@ -10,7 +10,6 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   DIRECT_SUMMARY_FAILURE_REASON,
   type EffectSummaryOmissionReason,
-  TYPESCRIPT_TUPLE_SERIALIZATION_FAILURE_REASON,
 } from './effect-cache-envelope.ts';
 import type { ExternalOmissionRecord, } from './effect-external-omission.ts';
 
@@ -23,30 +22,12 @@ const l = tagged({ tag: 'effect-summary-omission', },);
  Restored external omissions already reported by this process,
  keyed by source,
  count and reasons.
- 
+
  A fresh scan reports an installed package's omission once per process because the package's index is
  built once. Every source depending on that package restores the same record, so without this set a
  warm run would repeat the line once per dependent source.
  */
 const reportedExternalOmissions = new Set<string>();
-
-/**
- Stable fragment identifying known TypeScript instantiated-tuple serializer panic.
- */
-const TYPESCRIPT_TUPLE_PANIC_FRAGMENT = 'checker.TypeData is *checker.TypeReference, not *checker.TupleType';
-
-/**
- Classifies caught summary failure into bounded persisted category.
- 
- @param detail - Caught failure stack retained at debug level.
- 
- @returns known tuple panic or general direct-summary failure category.
- */
-function omissionReason(detail: string,): EffectSummaryOmissionReason {
-  return detail.includes(TYPESCRIPT_TUPLE_PANIC_FRAGMENT,)
-    ? TYPESCRIPT_TUPLE_SERIALIZATION_FAILURE_REASON
-    : DIRECT_SUMMARY_FAILURE_REASON;
-}
 
 /**
  Records one fresh direct-summary omission without exposing stack noise at warning level.
@@ -92,12 +73,12 @@ export function recordDirectSummaryOmission({
   readonly error: unknown;
 }): void {
   /**
-   Complete caught detail used for debug log and bounded category.
+   Complete caught detail retained for the debug log.
    */
   const detail = caughtValueStack(error,);
   allOmittedKeys.add(key,);
   sourceOmittedKeys.add(key,);
-  sourceOmissionReasons.add(omissionReason(detail,),);
+  sourceOmissionReasons.add(DIRECT_SUMMARY_FAILURE_REASON,);
   l.debug(`omitting ${key} from the effect index: ${detail}`,);
 }
 

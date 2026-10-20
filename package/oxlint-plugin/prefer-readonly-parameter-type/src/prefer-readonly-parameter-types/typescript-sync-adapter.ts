@@ -10,8 +10,9 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { version as typescriptVersion, } from 'typescript';
 import {
   API,
+  type CreateSnapshotParams,
   type Snapshot,
-} from 'typescript/unstable/sync';
+} from 'typescript/sync';
 
 import { resetSemanticEffectCaches, } from './effect-cache-lifecycle.ts';
 import {
@@ -215,7 +216,7 @@ export function openSemanticFile({
   /* Every text handed to this bridge is kept, rather than cleared down to the active source.
    *
    * Clearing left the native server holding the text it was last given for a source the overlay
-   * no longer claimed, because only the incoming source is reported through `fileChanges` and
+   * no longer claimed, because only the incoming source is reported through `fileNotifications` and
    * nothing ever reported the outgoing one. Reporting it instead would mean a snapshot update on
    * every source, including the reuse path that exists precisely to avoid one, and a snapshot
    * update replaces every `Project` object in the process.
@@ -255,7 +256,7 @@ export function openSemanticFile({
     ? undefined
     : bridgeState
       .snapshot
-      .getProject(knownProject,);
+      .getConfiguredProject(knownProject,);
   /**
    Source already materialized in current immutable snapshot.
    */
@@ -282,18 +283,19 @@ export function openSemanticFile({
    */
   const api = getApi();
   /* No `clearSourceFileCache()` here. It is `sourceFileCache.clear()`, which drops every decoded
-   * source for every project, and `updateSnapshot` below already calls `retainForSnapshot` to
-   * carry entries forward for exactly the paths the native server did not report as changed.
+   * source for every project, and the snapshot update below already calls `retainForSnapshot` to
+   * carry entries forward for exactly the paths the native server did not report as changed
+   * (client-internal names as of 7.0.2).
    * Emptying the store first costs one full re-decode of every project a worker returns to,
    * measured at 154.6ms per project against 0.6ms for a pass that finds them present.
    *
    * What makes dropping it safe is not that the store is hashed. `getRetained` matches on the
    * retained reference and never rechecks the content hash. It is that the only text this bridge
-   * ever changes is the active file's overlay, and it reports that file through `fileChanges`
+   * ever changes is the active file's overlay, and it reports that file through `fileNotifications`
    * below, so retention excludes it and it alone is refetched.
    *
    * Every text this bridge hands over is kept, so the server's view of a source is always the text
-   * it was given, and the file it is about to reread is named through `fileChanges`. */
+   * it was given, and the file it is about to reread is named through `fileNotifications`. */
   /**
    Whether current source is reusable from project this bridge selected for it.
    */
@@ -325,12 +327,48 @@ export function openSemanticFile({
    */
   const needsDiscovery = (knownProject === undefined) || (!sourcePreviouslyKnown);
   /**
+   Newest derived snapshot every later update chains from, starting from the one the service answers.
+   */
+  let chainedSnapshot: Snapshot | typeof NO_SNAPSHOT = currentSnapshot;
+  /**
+   Derives the next immutable snapshot from the chained one and keeps it as the new chain head.
+   
+   TypeScript 7.1 scopes updates to a snapshot handle (`snapshot.update`) and creates the first one with
+   `api.createSnapshot`, where 7.0 rebuilt the shared session on every `api.updateSnapshot` call. Chaining
+   reproduces the 7.0 order: each call sees the previous one's opens, closes, and file notifications.
+   
+   `ensurePrograms: true` keeps 7.0's eager program rebuilds. 7.1 updates programs lazily by default, and this
+   bridge reads `program.getSourceFile` text straight from the snapshot it keeps.
+   
+   @param params - Opens, closes, and file notifications to apply.
+   
+   @returns derived snapshot holding the applied changes.
+   */
+  function deriveSnapshot(params: CreateSnapshotParams,): Snapshot {
+    /**
+     Derived snapshot with program updates forced, chained from the current head.
+     */
+    const next = chainedSnapshot === NO_SNAPSHOT
+      ? api
+        .createSnapshot({
+          ...params,
+          ensurePrograms: true,
+        },)
+      : chainedSnapshot
+        .update({
+          ...params,
+          ensurePrograms: true,
+        },);
+    chainedSnapshot = next;
+    return next;
+  }
+  /**
    Snapshot used for configured-project discovery on first encounter or created file.
    */
   const discoverySnapshot = needsDiscovery
-    ? api.updateSnapshot({
+    ? deriveSnapshot({
       openFiles: [normalizedFileName,],
-      fileChanges: {
+      fileNotifications: {
         created: serviceHoldsSource ? [] : [normalizedFileName,],
         changed: serviceHoldsSource ? [normalizedFileName,] : [],
         deleted: deletedFiles,
@@ -366,9 +404,9 @@ export function openSemanticFile({
     /**
      Snapshot closing temporary open-file association after failed discovery.
      */
-    const releaseSnapshot = api.updateSnapshot({
+    const releaseSnapshot = deriveSnapshot({
       closeFiles: [normalizedFileName,],
-      fileChanges: {
+      fileNotifications: {
         changed: [normalizedFileName,],
         created: [],
         deleted: [],
@@ -408,14 +446,14 @@ export function openSemanticFile({
   /**
    New immutable project view reading current overlay outside LSP open-file cache.
    */
-  const nextSnapshot = api.updateSnapshot({
+  const nextSnapshot = deriveSnapshot({
     ...needsDiscovery
       ? {
         openProjects: [configFileName,],
         closeFiles: [normalizedFileName,],
       }
       : {},
-    fileChanges: {
+    fileNotifications: {
       changed: [normalizedFileName,],
       created: [],
       deleted: needsDiscovery ? [] : deletedFiles,
@@ -432,7 +470,7 @@ export function openSemanticFile({
   /**
    Configured project selected through cached project identity.
    */
-  const project = nextSnapshot.getProject(configFileName,);
+  const project = nextSnapshot.getConfiguredProject(configFileName,);
   if (project === undefined) {
     throw new SemanticBridgeError({
       reason: 'project-not-found',

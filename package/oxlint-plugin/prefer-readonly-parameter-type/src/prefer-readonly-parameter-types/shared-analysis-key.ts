@@ -7,9 +7,9 @@
 import type {
   Node,
   SourceFile,
-} from 'typescript/unstable/ast';
-import { isStringLiteral, } from 'typescript/unstable/ast/is';
-import type { Project, } from 'typescript/unstable/sync';
+} from 'typescript/ast';
+import { isStringLiteral, } from 'typescript/ast/is';
+import type { Project, } from 'typescript/sync';
 
 import { isDeclarationFileName, } from './declaration-file-name.ts';
 import type { EffectProjectFingerprint, } from './effect-project-fingerprint.ts';
@@ -17,6 +17,7 @@ import {
   analyzerDigest,
   contentDigest,
 } from './effect-summary-cache-identity.ts';
+import { configuredProjectConfigFileName, } from './semantic-file-name.ts';
 import { isWorkspaceSourceFileName, } from './workspace-source-path.ts';
 import {
   recordSharedClosure,
@@ -526,7 +527,7 @@ export function createSharedKeyResolver({
       if (key.eligible) {
         recordSharedEligible({
           fileName: sourceFile.fileName,
-          project: project.configFileName,
+          project: configuredProjectConfigFileName({ project, },),
           digest: key.digest,
           parts: key.parts,
         },);

@@ -23,7 +23,7 @@
  @module
  */
 
-import type { Node, } from 'typescript/unstable/ast';
+import type { Node, } from 'typescript/ast';
 import {
   isAssertionExpression,
   isCallExpression,
@@ -31,7 +31,7 @@ import {
   isNonNullExpression,
   isParenthesizedExpression,
   isSatisfiesExpression,
-} from 'typescript/unstable/ast/is';
+} from 'typescript/ast/is';
 
 import { capturedOriginsByCalleeSlot, } from './effect-captured-result-origins.ts';
 import {

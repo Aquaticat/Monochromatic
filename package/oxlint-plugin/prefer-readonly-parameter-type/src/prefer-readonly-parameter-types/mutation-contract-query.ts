@@ -11,11 +11,11 @@ import {
 import type {
   BindingName,
   SourceFile,
-} from 'typescript/unstable/ast';
+} from 'typescript/ast';
 import {
   isBindingElement,
   isIdentifier,
-} from 'typescript/unstable/ast/is';
+} from 'typescript/ast/is';
 
 import type { EffectCallableDeclaration, } from './effect-summary-model.ts';
 

@@ -850,7 +850,9 @@ semantic-analysis,
 declaration-generation,
 or TypeScript compiler components.
 
-The selected independent bridge is TypeScript 7.0.2's `typescript/unstable/sync` API.
+The selected independent bridge is TypeScript 7.0.2's `typescript/unstable/sync` API
+(`typescript/unstable/sync` was renamed `typescript/sync` in 7.1.0-beta,
+2026-10-20).
 One project-owned adapter owns the native client,
 project discovery,
 snapshots,
@@ -1101,8 +1103,10 @@ implementation details that have a correctness-dominant answer do not.
 
 Current checkpoint:
 
-- the technology vet selected TypeScript 7.0.2's `typescript/unstable/sync` API and rejected every TypeScript 6
-  fallback;
+- the technology vet selected TypeScript 7.0.2's `typescript/unstable/sync` API
+  (`typescript/unstable/sync` was renamed `typescript/sync` in 7.1.0-beta,
+  2026-10-20) and rejected every
+  TypeScript 6 fallback;
 - real Oxlint-boundary probes covered imported semantic types,
   mapped readonly state,
   representative direct and higher-order effects,
@@ -1622,19 +1626,23 @@ The implementation suite must retain this corpus and add package-level README an
 
 ### Chosen semantic bridge
 
-Use TypeScript 7's project-native synchronous API through `typescript/unstable/sync`.
+Use TypeScript 7's project-native synchronous API through `typescript/sync`.
 Do not install or fall back to TypeScript 6.
 The repository accepts the API's unstable compatibility status in exchange for matching its installed TypeScript 7
-compiler semantics.
+compiler semantics
+(the 7.1.0-beta export rename,
+2026-10-20,
+dropped the `unstable/` path segment and changed no symbol names).
 
 The rule will keep one process-scoped `API` client,
 open projects through snapshots,
 provide unsaved current-file text through virtual filesystem callbacks,
-and invalidate changed files with `updateSnapshot`.
+and invalidate changed files with `snapshot.update` and its `fileNotifications`.
 Oxlint's synchronous JavaScript-rule visitors require the synchronous TypeScript API rather than its asynchronous
 counterpart.
 
-The disposable Oxlint-boundary prototype proved representative feasibility with installed TypeScript 7.0.2:
+The disposable Oxlint-boundary prototype proved representative feasibility with installed TypeScript 7.0.2
+(2026-era evidence):
 
 - one fixture covering imported aliases,
   generics,
@@ -1686,7 +1694,7 @@ packaging,
 and platform probes remain mandatory before the replacement can be enabled and declared complete.
 
 Readonly detection must isolate the unstable detail behind a tested adapter.
-TypeScript 7.0.2 exposes transient mapped-property readonly state through `Symbol.checkFlags`,
+TypeScript 7.0.2 (2026-era evidence) exposes transient mapped-property readonly state through `Symbol.checkFlags`,
 whose upstream `CheckFlagsReadonly` value is `1 << 3` but whose enum is not exported.
 Pin adapter contract tests to the installed TypeScript version and fail closed with a dedicated semantic-bridge
 diagnostic when the expected capability disappears.
@@ -1694,7 +1702,7 @@ Do not misreport unavailable readonly semantics as `opaqueEffect`,
 which is reserved for unresolved mutation effects.
 
 The published `no-restricted-syntax` package must declare TypeScript 7 as a runtime dependency and prove that its built
-artifact resolves `typescript/unstable/sync` in a disposable external consumer.
+artifact resolves `typescript/sync` in a disposable external consumer.
 It may not rely on the monorepo root's development dependency.
 
 Oxlint's language server currently does not support JavaScript plugins.

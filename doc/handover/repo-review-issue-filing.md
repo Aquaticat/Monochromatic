@@ -323,9 +323,11 @@ The review, dedupe, and filing pipeline is complete;
 nothing is queued for it.
  What remains belongs to the maintainer:
 
-- Triage the 581 filed issues (they carry `needs-triage` plus `bug` or `documentation`
- plus `difficulty:<value>`, per `doc/agent/triage-labels.md`).
- The 54 BLOCKERs are the place to start; `filed.jsonl` maps finding ids to issue
+- Triage the 581 filed issues: done 2026-10-20, recorded in `doc/handover/issue-triage-2026-10-20.md`.
+ Each issue now carries one lifecycle verdict per `doc/agent/triage-labels.md`
+ and no `needs-triage`; per-issue reasons are in
+ `doc/audit/issue-triage-2026-10-20.evidence.jsonl`.
+ The 54 BLOCKERs were triaged with the rest; `filed.jsonl` maps finding ids to issue
  numbers and `rendered/` holds each body as filed.
 - The 42 skip verdicts recorded in `dedupe/decisions.json` name the existing issue
  that already owns each defect; a few carry follow-up notes in judge output

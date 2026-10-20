@@ -527,8 +527,59 @@ import type { RepairModels, } from '@monochromatic-dev/translation-repair-assemb
  old number on `sha256-tree-v1:a92725968adf…`, so the change cannot ride inside it and the number moves, as every version whose
  sheets splice the house rule moves with it; the pairing version stays, since no pairing sheet carries the house rule. No record
  has been written at 38, which this change sets first.
+
+ Version 39 covers the cut of a note between translators that stands alone on a quoted line
+ (`document-structure/src/translators-note.ts`): the editor ensemble's candidate selection slate cut such a note with the spaces
+ before it and left its quote markers, a bare `>   >` line that the judges read as a paragraph break inside the quote that the
+ archive does not have (zheermao101, run zheermao15), and it now cuts the line. Of the 34 notes in the 92 pinned English archives
+ one stands alone on a quoted line (zheermao101), so only a sheet that shows that archive's text changes, and the cut of every
+ other note is what it was. The key hashes the version, the shape of the run and the texts, not the sheet, so a record written
+ under the old cut would be served under the new. The check that would let the change ride inside 38 (no slice-cache record
+ written after it, shown beside a control that finds records) could not be made with a working control: run zheermao15 started at
+ 02:12 UTC on 2026-10-20, after 38 was set, its slice-cache directory is empty, and a control from 2026-10-19 finds none either,
+ so the number moves, as the consolidate, lane-contest, refine and translate versions move for the same cut. The consistency,
+ page title and pairing versions stay, since none of their sheets cuts a note. No record has been written at 39, which this
+ change sets first.
+
+ Two later changes to the same cut ride inside 39. A second note on one line no longer takes the line
+ break with it (5b75add81, d60b27a9e, 003983067), and a note ending a CRLF line keeps the line's carriage return
+ (acf6ada60, e80301bf3). None of the 92 pinned English archives has two notes on one line or a carriage return, so no
+ sheet text changes, and no record had been written at 39 when they landed: the only run since it was set,
+ CuspariaKLSY18, runs a6a0ed7dc0, which predates it.
+
+ Version 40 covers the judges of the repair lane no longer seeing a note between translators
+ (`document-structure/src/translators-note.ts`): the critic, the panel, the introduced-defect prober and the resolution checker
+ showed the archive's text with every note the archive's translators left each other, and now cut them against the original
+ (12e147ae40, 5498ee860b); the coverage sheet that insertion admission reads cuts them from the translation and from the evidence of
+ a prior verdict (89df3896d4); and the reference attestation sheets cut them from the archive rendering (fcd6d13fa3). The labels
+ of the repair slate's evidence name the original only where they are the original's own, so the candidate selection slate
+ the editor ensemble sends is what it was. The key hashes the version, the shape of the run and the texts, not the sheet, so a
+ record written under the old sheets would be served under the new. Runs zheermao16 and CuspariaKLSY19 started on `a5dc23c5bb`, which holds 39 (set in
+ `aa0ab6ff0`), so a record may stand at 39 and the check that would let the change ride inside it, no slice-cache record written
+ after it shown beside a control that finds records, was not made, so the number moves, as the refine and translate versions
+ move for the same sheets. Over the 92 pinned English archives 10 hold a note their original lacks (34 notes in all), so a sheet
+ changes for at most those 10 entries. The consistency sheets cut them too (7ee1755b24), the pairing sheets (eaab1b1ed9) and the
+ rendering audit (ebac709b03); their keys and generations are accounted for beside their own versions, and this one does
+ not hold them. No record has been written at 40, which this change sets first.
+
+ Rides inside 40 too: a quote the critic, the introduced-defect prober, a coverage voice or a reference attestation voice copied
+ from one of those sheets across the place a note between translators was cut from used to stand in no stored text, and now
+ anchors in the stored words on each side of the note (`document-structure/src/translators-note-view.ts`,
+ `typography/src/locate-quote.ts`). `critic-wire.ts` drops a claim it cannot anchor, a prober claim it cannot place is
+ `unanchored`, a coverage voice it cannot place counts as not anchored, and an attestation it cannot place is never verified, so
+ the claims, the corroborated damage lines and the attested details of an entry holding such a note differ, in one direction:
+ a quote that could not anchor does. The key hashes the version, the shape of the run and the texts, not the sheet, and not the
+ attested details, so a record written before would be served after. Of the 12 run logs in the agent directory, none started on a
+ tip that holds `43e735f7da`, where 40 was set: the newest, `a5dc23c5bb` of zheermao16 and CuspariaKLSY19, does not, and the
+ others started on earlier ones, so none could write a record at 40. That is the evidence of the logs' `START tip=` lines and
+ `git merge-base --is-ancestor`, shown beside a control that finds ancestry (`2eeef91fac` and `89ff91202e` of `HEAD`), and not a
+ search of any slice-cache directory; a run on a worktree whose log is not among those 12 is not covered by it. Over the 92
+ pinned English archives 10 hold a note their original lacks (34 notes in all), so a record changes for at most those 10 entries.
+ The consistency version stays: its count reads the stored English and leaves a place unlocated when a quote crosses a note
+ (`consistency/src/consistency-count.ts`), as it did, and its cache holds ballots only. The translate, refine, lane-contest and
+ consolidate versions ride inside their own numbers, accounted beside each.
  */
-export const SLICE_CACHE_VERSION = 38;
+export const SLICE_CACHE_VERSION = 40;
 /**
  Everything about a repair run that changes what the models are ASKED, folded
  into every cache key.

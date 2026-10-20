@@ -6,7 +6,10 @@ import {
   declaredNamesBlock,
 } from '@monochromatic-dev/translation-repair-adjudication/ts';
 import { HOUSE_POLICY_BLOCK, } from '@monochromatic-dev/translation-repair-house-rule/ts';
-import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import {
+  isJsonRecord,
+  withoutTranslatorsNotes,
+} from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { selectFence, } from '@monochromatic-dev/translation-repair-stage/ts';
 import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typography/ts';
 
@@ -199,14 +202,49 @@ export function buildCoverageMessages(
     readonly identityContext?: string;
   },
 ): CoveragePromptPlan {
+  // THE JUDGE IS SHOWN THE TRANSLATION WITHOUT THE NOTES THE ARCHIVE'S
+  // TRANSLATORS LEFT EACH OTHER, as the other judging sheets are
+  // (`withoutTranslatorsNotes`): no reader sees one, so a note may neither carry
+  // the passage nor stand as a remainder it does not. Only what is SHOWN is
+  // cut; the quotes a judge gives are located in the text as shown and carried
+  // back to the stored one (`coverage-verdict.ts`, with the same passage), and
+  // the passage's own comments stay in view.
   /**
-   Fence no enclosed text can reproduce, since every one is arbitrary prose.
+   The translation as the judge reads it.
+   */
+  const translationShown = withoutTranslatorsNotes({
+    text: translationText,
+    original: sourcePassage,
+  },);
+  /**
+   The prior verdict's evidence as the judge reads it, cut the same way.
+   */
+  const evidenceShown = (followupEvidence?.evidence ?? []).map(function shownEvidence(region,): string {
+    return withoutTranslatorsNotes({
+      text: region,
+      original: sourcePassage,
+    },);
+  },);
+  /**
+   The prior verdict as the judge reads it.
+   */
+  const followupShown = (followupEvidence === undefined)
+    ? undefined
+    : {
+      ...followupEvidence,
+      evidence: evidenceShown,
+    };
+  /**
+   Fence no enclosed text can reproduce, since every one is arbitrary prose,
+   each translation text as written and as shown.
    */
   const fence = selectFence({
     texts: [
       sourcePassage,
       translationText,
+      translationShown,
       ...(followupEvidence?.evidence ?? []),
+      ...evidenceShown,
       identityContext ?? '',
     ],
   },);
@@ -237,11 +275,11 @@ export function buildCoverageMessages(
         content: `${identityBlock}${fence} PASSAGE ${fence}
 ${sourcePassage}
 ${fence} ENGLISH TRANSLATION ${fence}
-${translationText}${followupEvidence === undefined
+${translationShown}${followupShown === undefined
     ? ''
     : `
 ${fence} PRIOR UNRESOLVED VERDICT ${fence}
-${JSON.stringify(followupEvidence,)}`}
+${JSON.stringify(followupShown,)}`}
 ${fence} END ${fence}`,
       },
     ],

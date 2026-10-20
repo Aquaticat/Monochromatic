@@ -9,8 +9,8 @@ import type {
   CallExpression,
   Node,
   SourceFile,
-} from 'typescript/unstable/ast';
-import type { Project, } from 'typescript/unstable/sync';
+} from 'typescript/ast';
+import type { Project, } from 'typescript/sync';
 
 import type { ExternalOmissionRecord, } from './effect-external-omission.ts';
 import {
@@ -37,6 +37,7 @@ import {
   PACKAGE_IMPLEMENTATION_UNAVAILABLE,
   resolvePackageImplementation,
 } from './package-implementation-resolution.ts';
+import { configuredProjectConfigFileName, } from './semantic-file-name.ts';
 
 /**
  External implementation inference logger.
@@ -175,7 +176,7 @@ export function externalCallableEffect({
   if (callIdentity === PACKAGE_CALL_IDENTITY_UNAVAILABLE)
     return EXTERNAL_CALLABLE_EFFECT_UNAVAILABLE;
   if (!packageVersionIsLocked({
-    configFileName: consumerProject.configFileName,
+    configFileName: configuredProjectConfigFileName({ project: consumerProject, },),
     identity: packageIdentity,
   },))
     return EXTERNAL_CALLABLE_EFFECT_UNAVAILABLE;

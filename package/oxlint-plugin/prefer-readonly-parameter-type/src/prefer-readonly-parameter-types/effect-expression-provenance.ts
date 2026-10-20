@@ -13,7 +13,7 @@
 import {
   type Node,
   SyntaxKind,
-} from 'typescript/unstable/ast';
+} from 'typescript/ast';
 import {
   isArrayLiteralExpression,
   isAssertionExpression,
@@ -31,8 +31,8 @@ import {
   isSpreadAssignment,
   isSpreadElement,
   isThisExpression,
-} from 'typescript/unstable/ast/is';
-import type { Project, } from 'typescript/unstable/sync';
+} from 'typescript/ast/is';
+import type { Project, } from 'typescript/sync';
 
 import {
   NOT_A_VERIFIED_READER,

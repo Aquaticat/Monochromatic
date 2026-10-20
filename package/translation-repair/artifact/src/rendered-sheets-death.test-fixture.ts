@@ -24,6 +24,8 @@ import {
   REPAIR,
   IDENTITY,
   REFERENCES,
+  NEIGHBOUR_ARCHIVE,
+  NEIGHBOUR_SOURCE,
   joined,
 } from '@monochromatic-dev/translation-repair-repair/ts/rendered-sheets-texts.test-fixture.ts';
 
@@ -89,6 +91,8 @@ export function deathRecordedSheets(): readonly RenderedSheet[] {
           criteria: translateSelectionCriteria({ lineStructured: false, },),
           evidence: translateSlateEvidence({
             sourceText: SOURCE,
+            neighbouringSourceText: NEIGHBOUR_SOURCE,
+            neighbouringIncumbentText: NEIGHBOUR_ARCHIVE,
             identityContext: IDENTITY,
             referenceContext: REFERENCES,
             lifeEnded: true,

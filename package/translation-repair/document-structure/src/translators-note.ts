@@ -280,7 +280,7 @@ export function translatorsNotesIn({ text, }: { readonly text: string; },): read
  const cut: Cut = { from: 1, to: 13, };
  ```
  */
-type Cut = {
+export type Cut = {
   /**
    First offset taken out.
    */
@@ -293,74 +293,213 @@ type Cut = {
 };
 
 /**
- Offset a removal of the comment at `note` starts from, and the one it ends at.
+ Whether what stands before a note on its line is nothing but Markdown quote
+ markers and the space between them, as `>   > ` is.
+
+ A LINE OF MARKERS ALONE IS A BLANK LINE OF THE QUOTE, the way an empty line
+ is of the page, so a note that is the only content of a quoted line must be
+ told from one that shares the line with words. The test is on the characters
+ before the note and never on the note's own words, so a `>` inside a note
+ changes nothing. `provider-stream/src/quote-line.ts` reads the same head
+ (`carriesContent`); it is not imported because that package depends on this
+ one.
+
+ @param head - what stands between the line's start and the note
+
+ @returns Whether the head holds a quote marker and nothing else but
+ whitespace; an empty or blank head holds no marker and is not one
+
+ @example
+ ```ts
+ isQuoteHead({ head: '>   > ', },); // true
+ isQuoteHead({ head: '1 > ', },); // false
+ ```
+ */
+function isQuoteHead({ head, }: { readonly head: string; },): boolean {
+  /**
+   The head's characters.
+   */
+  const characters = Array.from(head,);
+  return characters.includes('>',)
+    && characters.every(function isMarkerOrSpace(character,): boolean {
+      return (character === '>') || isWhitespace({ character, },);
+    },);
+}
+
+/**
+ Whether the text between two offsets is nothing but whitespace that is not a
+ line feed, or nothing at all.
+
+ @param text - text read
+
+ @param from - first offset of the stretch
+
+ @param to - exclusive offset past the stretch
+
+ @returns Whether the stretch holds no word and no line feed; a stretch whose
+ offsets meet is empty and counts
+
+ @example
+ ```ts
+ isGapOnOneLine({ text: 'a  b', from: 1, to: 3, },); // true
+ isGapOnOneLine({ text: 'a\n b', from: 1, to: 3, },); // false
+ ```
+ */
+function isGapOnOneLine(
+  {
+    text,
+    from,
+    to,
+  }: {
+    readonly text: string;
+    readonly from: number;
+    readonly to: number;
+  },
+): boolean {
+  return Array.from(text.slice(
+    from,
+    to,
+  ),)
+    .every(function isSpaceOnTheLine(character,): boolean {
+      return (character !== '\n') && isWhitespace({ character, },);
+    },);
+}
+
+/**
+ The stretches of a text that hold notes, a run of notes with nothing but
+ whitespace on their line between them being one stretch.
+
+ TWO NOTES SIDE BY SIDE ARE ONE NOTE TO CUT. A stretch is judged from the
+ text around it, and the text around the second of two notes on a line is the
+ first, which is no word; judged note by note against the cut made so far, the
+ second of them read an empty head and took the line break with it, so the
+ line after them was joined onto theirs. The stretch is judged against the
+ original text, once, and a note with a word or a line break between it and
+ the next stands as a stretch of its own.
+
+ @param text - text the notes stand in
+
+ @param notes - the notes to cut, in source order
+
+ @returns One stretch for each run of notes, in source order and apart from
+ each other: a word or a line break stands between any two
+
+ @example
+ ```ts
+ const stretches = noteStretchesOf({ text: 'a <!-- 注 --> {/* 注 *\/} b', notes, },); // one, from 2 to 22
+ ```
+ */
+function noteStretchesOf(
+  {
+    text,
+    notes,
+  }: {
+    readonly text: string;
+    readonly notes: readonly TranslatorsNote[];
+  },
+): readonly Cut[] {
+  /**
+   Stretches found, in source order.
+   */
+  const stretches: Cut[] = [];
+  for (const note of notes) {
+    /**
+     The stretch the previous note ended, or nothing before the first note.
+     */
+    const previous = stretches.pop();
+    if (
+      (previous !== undefined)
+      && isGapOnOneLine({
+        text,
+        from: previous.to,
+        to: note.startOffset,
+      },)
+    )
+      stretches.push({
+        from: previous.from,
+        to: note.endOffset,
+      },);
+    else {
+      if (previous !== undefined)
+        stretches.push(previous,);
+      stretches.push({
+        from: note.startOffset,
+        to: note.endOffset,
+      },);
+    }
+  }
+  return stretches;
+}
+
+/**
+ Offset a removal of the notes in `stretch` starts from, and the one it ends at.
 
  A COMMENT ALONE ON ITS LINES TAKES THE LINES WITH IT, so the removal leaves
  neither an empty line that would split a paragraph nor the line's break; a
- comment ending its line takes the spaces before it; a comment between words
- takes one of the two spaces around it.
+ comment alone past its line's quote markers (`>   > {/* 注 *\/}`) takes the
+ line the same way, since the markers it would leave behind are a blank line
+ of the quote that splits the quoted paragraph; a comment ending its line
+ takes the spaces before it and after it, but not the carriage return of a
+ CRLF break, which would leave a bare line feed among CRLF ones; a comment
+ between words takes one of the two
+ spaces around it. Notes with only whitespace on their line between them are
+ the one comment these rules speak of (`noteStretchesOf`), and the line is judged from the
+ original text.
 
- @param text - text the note stands in
+ @param text - text the stretch stands in
 
- @param note - the note to cut
-
- @param floor - offset before which nothing may be cut, the end of the
- previous cut
+ @param stretch - the notes to cut, from the first one's opening delimiter to
+ the last one's end
 
  @returns The stretch to remove, in offsets of the text
 
  @example
  ```ts
- const cut = cutAround({ text: 'a <!-- 注 -->', note, floor: 0, },); // from 1 to 13
+ const cut = cutAround({ text: 'a <!-- 注 -->', stretch: { from: 2, to: 13, }, },); // from 1 to 13
  ```
  */
 function cutAround(
   {
     text,
-    note,
-    floor,
+    stretch,
   }: {
     readonly text: string;
-    readonly note: TranslatorsNote;
-    readonly floor: number;
+    readonly stretch: Cut;
   },
 ): Cut {
   /**
-   Offset where the note's first line starts.
+   Offset where the stretch's first line starts.
    */
-  const lineStart = Math.max(
-    text.lastIndexOf(
-      '\n',
-      note.startOffset - 1,
-    ) + 1,
-    floor,
-  );
+  const lineStart = text.lastIndexOf(
+    '\n',
+    stretch.from - 1,
+  ) + 1;
   /**
-   First line break at or past the note's end, none as minus one.
+   First line break at or past the stretch's end, none as minus one.
    */
   const foundBreak = text.indexOf(
     '\n',
-    note.endOffset,
+    stretch.to,
   );
   /**
-   Offset of the line break ending the note's last line, or the text's end.
+   Offset of the line break ending the stretch's last line, or the text's end.
    */
   const breakAt = (foundBreak === (-1)) ? text.length : foundBreak;
   /**
-   What stands before the note on its line.
+   What stands before the stretch on its line.
    */
   const before = text.slice(
     lineStart,
-    note.startOffset,
+    stretch.from,
   );
   /**
-   What stands after the note on its line.
+   What stands after the stretch on its line.
    */
   const after = text.slice(
-    note.endOffset,
+    stretch.to,
     breakAt,
   );
-  if ((before.trim() === '') && (after.trim() === ''))
+  if (((before.trim() === '') || isQuoteHead({ head: before, },)) && (after.trim() === ''))
     return {
       from: lineStart,
       to: Math.min(
@@ -369,23 +508,79 @@ function cutAround(
       ),
     };
   /**
-   What stands before the note, without the spaces and tabs that end it.
+   What stands before the stretch, without the spaces and tabs that end it.
    */
   const words = before.trimEnd();
+  /**
+   What stands after the stretch on its line, without the carriage return
+   that ends it in a CRLF text, which the cut leaves to its line feed.
+   */
+  const trailing = after.endsWith('\r',) ? after.slice(
+    0,
+    -1,
+  ) : after;
   if (after.trim() === '')
     return {
-      from: note.startOffset - (before.length - words.length),
-      to: note.endOffset + after.length,
+      from: stretch.from - (before.length - words.length),
+      to: stretch.to + trailing.length,
     };
   if (before.endsWith(' ',) && after.startsWith(' ',))
     return {
-      from: note.startOffset,
-      to: note.endOffset + 1,
+      from: stretch.from,
+      to: stretch.to + 1,
     };
-  return {
-    from: note.startOffset,
-    to: note.endOffset,
-  };
+  return stretch;
+}
+
+/**
+ The stretches a judge's view of a text takes out: each run of notes between
+ translators with the space or line it stood on, the original's own comments
+ left in.
+
+ THE ONE PLACE THE CUTS ARE MADE. The text a judge is shown
+ (`withoutTranslatorsNotes`) and the map from that text back to the stored one
+ (`translators-note-view.ts`) both read these stretches, so they cannot
+ disagree about which note was cut.
+
+ @param text - passage whose notes are cut
+
+ @param original - the original passage, whose own comments stay: a note found
+ verbatim in it is the original's markup, whatever language it is in
+
+ @returns The stretches to take out, in source order and apart from each other;
+ none for a text with no note of its own
+
+ @example
+ ```ts
+ const cuts = noteCutsOf({ text: 'The cat slept. <!-- 大家看一下 -->', },); // one, from 14 to 29
+ ```
+ */
+export function noteCutsOf(
+  {
+    text,
+    original = '',
+  }: {
+    readonly text: string;
+    readonly original?: string;
+  },
+): readonly Cut[] {
+  /**
+   Notes that are the passage's, not the original's.
+   */
+  const notes = translatorsNotesIn({ text, },)
+    .filter(function isNotOriginals(note,): boolean {
+      return !original.includes(note.text,);
+    },);
+  return noteStretchesOf({
+    text,
+    notes,
+  },)
+    .map(function cutOf(stretch,): Cut {
+      return cutAround({
+        text,
+        stretch,
+      },);
+    },);
 }
 
 /**
@@ -414,33 +609,14 @@ export function withoutTranslatorsNotes(
   },
 ): string {
   /**
-   Notes that are the passage's, not the original's.
+   The stretch each run of notes takes out, each starting past the one before.
    */
-  const notes = translatorsNotesIn({ text, },)
-    .filter(function isNotOriginals(note,): boolean {
-      return !original.includes(note.text,);
-    },);
-  if (notes.length === 0)
+  const cuts = noteCutsOf({
+    text,
+    original,
+  },);
+  if (cuts.length === 0)
     return text;
-  /**
-   The stretch each note takes out, each starting past the one before.
-   */
-  const cuts = notes.reduce(
-    function cutAfter(
-      done: Cut[],
-      note: TranslatorsNote,
-    ): Cut[] {
-      done.push(cutAround({
-        text,
-        note,
-        floor: done.at(-1,)
-          ?.to
-          ?? 0,
-      },),);
-      return done;
-    },
-    [],
-  );
   return [
     ...cuts.map(function keptBefore(
       cut,

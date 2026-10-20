@@ -156,6 +156,13 @@ export {
   translatorsNotesIn,
   withoutTranslatorsNotes,
 } from './translators-note.ts';
+export {
+  type KeptStretch,
+  type ShownTranslation,
+  shownTranslation,
+  type StoredStretch,
+  storedStretchesOf,
+} from './translators-note-view.ts';
 export { UnhandledMemberInvariantError, } from './unhandled-member.ts';
 export {
   type ContainerSpan,

@@ -104,9 +104,13 @@ await describe({
             + 'was decided by quote and word-edge readers that changed; and from 7 to 8 with n166: a stored refinement '
             + 'was written under a house tense rule that gave quoted words no exception in the sentence that puts the life in the past; '
             + 'and from 8 to 9 with the XingZ6015 read: a stored refinement was written under reader protection that reached '
-            + 'past the account of how a death or an attempt happened, and under the old declared-name floor)',
+            + 'past the account of how a death or an attempt happened, and under the old declared-name floor; and from 9 to 10 '
+            + 'with the cut of a translators\' note alone on a quoted line: a stored refinement was chosen from a slate that '
+            + 'showed a bare quote line where the note had stood; and from 10 to 11 with the cut of the notes from the prober, '
+            + 'the resolution checker and the objection correction\'s slate: a stored refinement was judged over texts that '
+            + 'showed every note between translators)',
           fn: async () => {
-            expect(refineSliceKey(BASE,),).toBe('98e0fd38988ef0cde227998731708ef6d01c916f8f6fa051468192df1ec77dbc',);
+            expect(refineSliceKey(BASE,),).toBe('0ce21d98cb32666621902265640a843130516f896b6c112c4f0676ca1fbdc991',);
           },
         },),
 

@@ -23,7 +23,10 @@ import {
 import { proveSheddingWorseVoted, } from './repair-worse-strip.ts';
 import { runEditorStage, } from './repair-editor-stage.ts';
 import { foldStageFindings, } from './repair-stage-findings.ts';
-import { runPanelStage, } from '@monochromatic-dev/translation-repair-adjudication/ts';
+import {
+  criticOriginalsOf,
+  runPanelStage,
+} from '@monochromatic-dev/translation-repair-adjudication/ts';
 import { screenAttestedAdditions, } from '@monochromatic-dev/translation-repair-reference/ts';
 import { settleShippedPatch, } from './repair-chunk-settle.ts';
 import type { RepairChunkRequest, } from './repair-chunk-request.ts';
@@ -208,6 +211,18 @@ export async function repairChunk(
     claims: critic.claims,
     attested: attestedDetails,
     targetText,
+    // The attested quotes were placed in the archive as its sheet showed it, cut against the whole source page
+    // (`attestPassReferences` is given the page's source). `documentSourceText` is that page
+    // (`prepared.sourceText` in `repair-slice-settle.ts`), so a comment of the original that sits in another
+    // chunk stays in view here as it did there; the chunk's own originals are added for a caller that gives none,
+    // and only then does this cut differ from the attestation's.
+    original: [
+      criticOriginalsOf({
+        sourceText,
+        ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+      },),
+      documentSourceText ?? '',
+    ].join('\n',),
   },);
   for (const finding of screened.findings)
     l.info(`chunk ${String(sliceIndex,)}: ${finding}`,);

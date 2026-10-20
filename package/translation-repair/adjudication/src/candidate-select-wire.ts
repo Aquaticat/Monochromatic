@@ -65,11 +65,26 @@ export type SelectEvidence = {
 const ORIGINAL_LABEL_MARK = 'ORIGINAL';
 
 /**
+ Mark that ends the part of a heading naming what its text is: every slate
+ goes on after it with what the block is for.
+ */
+const LABEL_NAME_END = ',';
+
+/**
  Whether an evidence block is the original, whose comments are its own.
+
+ THE NAME ALONE DECIDES, never the words the heading goes on with. Two headings
+ name the English and then say what it is meant to be checked against ("CURRENT
+ English translation, which ships unchanged unless a candidate resolves an
+ objection the ORIGINAL supports"; "SURROUNDING EXISTING TRANSLATION (English),
+ context only: ... the ORIGINAL of THIS passage ..."), and a search of the whole
+ heading took both for the original: the archive's text was shown whole, and
+ every note in it counted as the original's own, so the candidates beside it
+ kept theirs too.
 
  @param entry - evidence block
 
- @returns Whether its heading names it the original
+ @returns Whether the part of its heading before the first comma names it the original
 
  @example
  ```ts
@@ -81,7 +96,17 @@ function isOriginalEntry({ entry, }: { readonly entry: SelectEvidence; },): bool
    Heading naming what the text is.
    */
   const { label, } = entry;
-  return label.includes(ORIGINAL_LABEL_MARK,);
+  /**
+   Where the name ends and what the block is for begins, the end of the heading
+   when it gives no reason.
+   */
+  const nameEnd = label.indexOf(LABEL_NAME_END,);
+  return label
+    .slice(
+      0,
+      (nameEnd === (-1)) ? label.length : nameEnd,
+    )
+    .includes(ORIGINAL_LABEL_MARK,);
 }
 
 /**

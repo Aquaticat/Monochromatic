@@ -409,10 +409,14 @@ await describe({
         // Version 26 (2026-10-20) scopes reader protection to the account of how
         // a death or an attempt happened, cuts translators' notes from the
         // judges, and seats a challenge proposal two ballots named over a
-        // condemned fallback, which moved this literal to the value this
-        // expectation names.
+        // condemned fallback, which moved this literal.
+        // Version 27 (2026-10-20) cuts a translators' note alone on a quoted
+        // line with its line, which moved this literal.
+        // Version 28 (2026-10-20) cuts the notes between translators from the
+        // sheet of the absolute naturalness review, which moved this literal to
+        // the value this expectation names.
         expect(consolidateSliceKey(SLICE,),).toBe(
-          '64cc9d1efc5eb1dc6329677d4fce23550e54410dd6fd74c96f0af172b590062d',
+          'aba7f22d909359dfa408bafe16bd6ba4a34e049eb7fdef522c82a62784f7ab55',
         );
       },
     },),

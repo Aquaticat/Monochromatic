@@ -33,7 +33,6 @@ export const ENVELOPE_INVALID: unique symbol = Symbol(
 export {
   DIRECT_SUMMARY_FAILURE_REASON,
   type EffectSummaryOmissionReason,
-  TYPESCRIPT_TUPLE_SERIALIZATION_FAILURE_REASON,
 } from './effect-omission-reason.ts';
 
 /**

@@ -7,12 +7,12 @@
 import type {
   Checker,
   Project,
-} from 'typescript/unstable/sync';
+} from 'typescript/sync';
 import type {
   CallExpression,
   Node,
-} from 'typescript/unstable/ast';
-import { isIdentifier, } from 'typescript/unstable/ast/is';
+} from 'typescript/ast';
+import { isIdentifier, } from 'typescript/ast/is';
 
 import { recordArgumentRetentions, } from './effect-argument-retention.ts';
 import { applyExternalEffect, } from './effect-external-application.ts';

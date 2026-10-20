@@ -1,16 +1,16 @@
 import type {
   Node,
   ParameterDeclaration,
-} from 'typescript/unstable/ast';
+} from 'typescript/ast';
 import {
   isArrowFunction,
   isFunctionExpression,
-} from 'typescript/unstable/ast/is';
+} from 'typescript/ast/is';
 import type {
   Project,
   Symbol as TypeScriptSymbol,
   Type,
-} from 'typescript/unstable/sync';
+} from 'typescript/sync';
 
 import {
   readonlyTypeOrigin,

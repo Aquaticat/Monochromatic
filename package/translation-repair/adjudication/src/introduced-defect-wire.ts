@@ -23,6 +23,7 @@ import {
   NARRATIVE_DETAIL_IS_NOT_APPARATUS,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { selectFence, } from '@monochromatic-dev/translation-repair-stage/ts';
+import { proberShownTexts, } from './introduced-defect-shown.ts';
 import type { RepairRegion, } from './repair-region.ts';
 
 //region Introduced-defect probe wire
@@ -420,18 +421,37 @@ export function buildIntroducedDefectMessages(
   },
 ): IntroducedDefectPromptPlan {
   /**
+   The baseline, the window and every region without the notes between
+   translators, as the prober reads them (`introduced-defect-shown.ts`).
+   */
+  const {
+    baseline: baselineShown,
+    incumbent: incumbentShown,
+    regions: regionsShown,
+  } = proberShownTexts({
+    sourceText,
+    baselineText,
+    regions,
+    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+    ...((neighbouringIncumbentText === undefined) ? {} : { neighbouringIncumbentText, }),
+  },);
+
+  /**
    Fence no enclosed text can reproduce.
 
    Chosen against every text this sheet carries rather than fixed, because all
    of them are arbitrary prose: a setext heading underline is an ordinary row
    of equals signs, and a translation may contain one. A fixed fence would let
    a region close its own block and have the rest of its text read as sheet
-   structure, which is how a corpus paragraph gets to invent a region.
+   structure, which is how a corpus paragraph gets to invent a region. Each
+   text counts as written and as shown, since cutting a note can join two runs
+   of fence characters.
    */
   const fence = selectFence({
     texts: [
       sourceText,
       baselineText,
+      baselineShown,
       // THE NEIGHBOURS COUNT TOWARDS THE FENCE like every other text this sheet
       // carries. They are arbitrary corpus prose, so a fence chosen without
       // them could be one a neighbouring paragraph reproduces, and that
@@ -440,8 +460,15 @@ export function buildIntroducedDefectMessages(
       // the hole the dynamic fence exists to close.
       neighbouringSourceText ?? '',
       neighbouringIncumbentText ?? '',
+      incumbentShown,
       identityContext ?? '',
       ...regions.flatMap(function toTexts(region,) {
+        return [
+          region.before,
+          region.editorAfter,
+        ];
+      },),
+      ...regionsShown.flatMap(function toShownTexts(region,) {
         return [
           region.before,
           region.editorAfter,
@@ -461,21 +488,24 @@ export function buildIntroducedDefectMessages(
    */
   const nearbyBlock = ((neighbouringSourceText === undefined)
       || (neighbouringSourceText === ''))
-      && ((neighbouringIncumbentText === undefined)
-        || (neighbouringIncumbentText === ''))
+      && (incumbentShown === '')
     ? ''
     : `${fence} NEARBY ORIGINAL, CONTEXT ONLY ${fence}
 ${neighbouringSourceText ?? ''}
 ${fence} NEARBY EXISTING TRANSLATION, CONTEXT ONLY ${fence}
-${neighbouringIncumbentText ?? ''}
+${incumbentShown}
 ${fence} ${NEARBY_RULE} ${fence}
 `;
 
   /**
    Rendered region blocks in numbering order.
    */
-  const blocks = regions.map(function toBlock(
-    region,
+  const blocks = regionsShown.map(function toBlock(
+    {
+      region,
+      before,
+      editorAfter,
+    },
     index,
   ) {
     return `${fence} REGION ${index + 1} ${fence}${
@@ -489,9 +519,9 @@ ${renderPriorIssues({
         : ''
     }
 ${fence} BEFORE ${String(index + 1,)} ${fence}
-${region.before}
+${before}
 ${fence} AFTER ${String(index + 1,)} ${fence}
-${region.editorAfter}`;
+${editorAfter}`;
   },);
 
   /**
@@ -508,7 +538,7 @@ ${region.editorAfter}`;
    */
   const communityBlock = communityRenderingsBlock({
     sourceText,
-    candidates: regions.flatMap(function toCandidates(
+    candidates: regionsShown.flatMap(function toCandidates(
       region,
       index,
     ): readonly RenderingCandidate[] {
@@ -540,7 +570,7 @@ ${region.editorAfter}`;
         content: `${identityBlock}${fence} ORIGINAL ${fence}
 ${sourceText}
 ${fence} BASELINE TRANSLATION ${fence}
-${baselineText}
+${baselineShown}
 ${nearbyBlock}${fence} REPLACED REGIONS ${fence}
 ${blocks.join('\n\n',)}
 ${communityBlock}${fence} END ${fence}`,

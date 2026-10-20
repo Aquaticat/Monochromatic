@@ -7,7 +7,7 @@
 import type {
   BindingName,
   Node,
-} from 'typescript/unstable/ast';
+} from 'typescript/ast';
 import {
   isArrayLiteralExpression,
   isBindingElement,
@@ -19,11 +19,11 @@ import {
   isShorthandPropertyAssignment,
   isSpreadAssignment,
   isSpreadElement,
-} from 'typescript/unstable/ast/is';
+} from 'typescript/ast/is';
 import type {
   Project,
   Type,
-} from 'typescript/unstable/sync';
+} from 'typescript/sync';
 
 import { isForeignBorrowedType, } from './foreign-borrowed-identity.ts';
 import { classifyReadonlyType, } from './readonly-classifier.ts';

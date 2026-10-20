@@ -196,6 +196,9 @@ It remains a baseline component for local effect syntax.
 
 ### TypeScript 7 `typescript/unstable/sync`
 
+(`typescript/unstable/sync` was renamed `typescript/sync` in 7.1.0-beta,
+2026-10-20.)
+
 Discovery source:
  repository root TypeScript 7.0.2 package,
 its installed declarations,
