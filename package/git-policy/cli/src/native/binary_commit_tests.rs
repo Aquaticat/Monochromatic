@@ -600,3 +600,27 @@ fn a_staged_deletion_below_an_ignored_directory_is_not_answered_with_a_force_add
     assert_nothing_left(&fixture, repo.as_path());
     remove_settled(&fixture);
 }
+
+/// A repository nothing was staged in has no index file; an explicit-path commit there reads it as empty instead of
+///  failing on the missing file.
+#[test]
+fn an_explicit_path_commit_works_before_any_index_exists() {
+    let fixture: Fixture = fixture("commit-no-index");
+    let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
+    // Git writes an index file whenever it commits; a repository nothing was staged in has none, so remove it.
+    std::fs::remove_file(repo.join(".git/index")).expect("the index Git wrote for the initial commit");
+    assert!(!repo.join(".git/index").exists(), "the premise: no index file yet");
+    std::fs::write(repo.join("first.txt"), b"one\n").expect("first file");
+    let observed: Observed = run_commit(
+        &fixture,
+        repo.as_path(),
+        &["commit", "--quiet", "--message=first", "--", "first.txt"],
+    );
+    assert_eq!(observed.code, Some(0), "{}", stderr_of(&observed));
+    assert_eq!(
+        git_text(&fixture, &repo, &["show", "--name-only", "--format=", "HEAD"]),
+        "first.txt\n"
+    );
+    assert_eq!(porcelain(&fixture, repo.as_path()), "");
+    remove_settled(&fixture);
+}
