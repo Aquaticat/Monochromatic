@@ -51,8 +51,51 @@ import {
  const quoted = quotedNote({ text: '<!-- 注 -->', },); // '"<!-- 注 -->"'
  ```
  */
-function quotedNote({ text, }: { readonly text: string; },): string {
+export function quotedNote({ text, }: { readonly text: string; },): string {
   return JSON.stringify(text,);
+}
+
+/**
+ A text with notes added on lines of their own after its last block, in the
+ order given.
+
+ THE ONE PLACEMENT RULE of every note put back: the wording the note stood
+ beside is gone or reworded, so no position in it is the note's own, and
+ the whitespace that ends the text stays at its end. A text that shows a
+ reader nothing is replaced by the notes alone.
+
+ @param text - wording the notes follow
+
+ @param notes - each note as the archive writes it, in archive order
+
+ @returns The wording with the notes after it
+
+ @example
+ ```ts
+ const carried = appendedNotes({ text: 'The cat napped.', notes: [ '<!-- 大家看一下 -->', ], },);
+ // 'The cat napped.\n\n<!-- 大家看一下 -->'
+ ```
+ */
+export function appendedNotes(
+  {
+    text,
+    notes,
+  }: {
+    readonly text: string;
+    readonly notes: readonly string[];
+  },
+): string {
+  /**
+   The notes, one paragraph each.
+   */
+  const written = notes.join('\n\n',);
+  if (rendersAsNothing({ text, },))
+    return written;
+  /**
+   The text without the whitespace that ends it, which stays at the end.
+   */
+  const body = text.trimEnd();
+  return `${body}\n\n${written}${text.slice(body.length,)}`;
 }
 
 /**
@@ -95,18 +138,13 @@ function withArchiveNotes(
       text,
       changed: [],
     };
-  /**
-   The text without the whitespace that ends it, which stays at the end.
-   */
-  const body = text.trimEnd();
   return {
-    text: `${body}\n\n${
-      missing
-        .map(function noteText(note,): string {
-          return note.text;
-        },)
-        .join('\n\n',)
-    }${text.slice(body.length,)}`,
+    text: appendedNotes({
+      text,
+      notes: missing.map(function noteText(note,): string {
+        return note.text;
+      },),
+    },),
     changed: missing.map(function quoted(note,): string {
       return quotedNote({ text: note.text, },);
     },),

@@ -1,4 +1,7 @@
-import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
@@ -12,6 +15,11 @@ import {
   sameWording,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
+import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
+import {
+  keptNotesFinding,
+  withBlockNotes,
+} from './archive-block-notes.ts';
 
 //region Archive block repair
 
@@ -200,6 +208,11 @@ function removalSpan(
  join. Where two blocks' revisions conflict, the later block's, reviewed
  first, stands.
 
+ A BLOCK'S NOTES BETWEEN TRANSLATORS SURVIVE ITS REPLACEMENT
+ (`archive-block-notes.ts`): a revision, or a removal, that lacks a note the
+ block held gets it back on a line of its own after the replacement, as the
+ page assembly would carry it, and the finding and the log name it.
+
  @param client - provider client
 
  @param modelIds - review roster
@@ -265,6 +278,13 @@ export async function repairArchiveBlocks(
   }>,
 ): Promise<ArchiveBlocksRepairOutcome> {
   /**
+   Operation logger, naming the function in every line.
+   */
+  const repairLog = tagged({
+    l,
+    tag: repairArchiveBlocks.name,
+  },);
+  /**
    Operation-only audit findings.
    */
   const findings: string[] = [];
@@ -303,6 +323,11 @@ export async function repairArchiveBlocks(
     // roster read before it.
     /* oxlint-disable no-await-in-loop -- Reverse-offset block corrections must settle in document order, each block asked of the bench as it stands. */
     /**
+     Original section the block is reviewed against, whose own comments are
+     the lanes' to carry.
+     */
+    const source = sourceContexts.get(identity,) ?? '';
+    /**
      Seating the hook hands this block: a roster read under a hold, or none,
      which keeps the one the review started on.
      */
@@ -313,7 +338,7 @@ export async function repairArchiveBlocks(
     const outcome = await runArchiveBlockReviewStage({
       client,
       modelIds: blockSeating.modelIds ?? modelIds,
-      sourceText: sourceContexts.get(identity,) ?? '',
+      sourceText: source,
       // THE PAGE THE REVISIONS ALREADY APPLIED LEAVE (ledger B80): a footnote
       // is a relation between blocks, so a revision is read in the page it
       // would join. Read in the archive as it came, two revisions each
@@ -353,10 +378,46 @@ export async function repairArchiveBlocks(
       continue;
     }
     /**
-     Span the revision replaces: the block alone, or the block with one of
-     its separators when the revision removes it (class ninety-four).
+     What replaces the block: the revision, or nothing for a removal, with
+     each note between translators the block held that it lacks, and those
+     notes.
      */
-    const span = (outcome.text === '')
+    const {
+      text: replacementText,
+      kept,
+    } = withBlockNotes({
+      blockText,
+      replacement: outcome.text,
+      original: source,
+    },);
+    if (kept.length > 0) {
+      /**
+       The notes kept, each quoted so one over several lines stays on one
+       line of the log.
+       */
+      const quotedKept = kept.map(function quoted(note,): string {
+        return JSON.stringify(note,);
+      },);
+      repairLog.info(
+        `block ${identity} replaced with ${String(kept.length,)} ${
+          wordForCount({
+            count: kept.length,
+            one: 'note',
+            many: 'notes',
+          },)
+        } between translators kept: ${quotedKept.join(', ',)}`,
+      );
+      findings.push(keptNotesFinding({
+        identity,
+        kept,
+      },),);
+    }
+    /**
+     Span the replacement covers: the block alone, or the block with one of
+     its separators when the review removes it and no note stands in its
+     place (class ninety-four).
+     */
+    const span = (replacementText === '')
       ? removalSpan({
         text: revisedText,
         startOffset: block.startOffset,
@@ -369,7 +430,7 @@ export async function repairArchiveBlocks(
     revisedText = `${revisedText.slice(
       0,
       span.startOffset,
-    )}${outcome.text}${revisedText.slice(span.endOffset,)}`;
+    )}${replacementText}${revisedText.slice(span.endOffset,)}`;
     findings.push(`archive block reviewed and revised: ${identity}`);
   }
   return {
