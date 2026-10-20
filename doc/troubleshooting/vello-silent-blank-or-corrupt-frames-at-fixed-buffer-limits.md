@@ -2,11 +2,10 @@
 
 Tool under test:
 `vello`,
-`vello_encoding` and `vello_shaders` 0.11.0
-(crates.io checksums `913abde56cab6131b62c0cc69b1a93b671d3c34b3097beb3714fd1dc93be8115`,
+`vello_encoding` and `vello_shaders` 0.11.0 (crates.io checksums
+`913abde56cab6131b62c0cc69b1a93b671d3c34b3097beb3714fd1dc93be8115`,
 `b1fb9548d2b46b0f79137b5b1d208ecbd76d432f74e7a2ba838615d117f11532` and
-`2e653222cee49f2571729c3e4b0fa99bc4f826c6bb9487dbb88b825d552b3a27`)
-on wgpu 30.0.1 with the Vulkan backend,
+`2e653222cee49f2571729c3e4b0fa99bc4f826c6bb9487dbb88b825d552b3a27`) on wgpu 30.0.1 with the Vulkan backend,
 Mesa 26.2.4 RADV on an AMD Radeon RX 7600,
 Linux 7.2.9.
 The IDE (`package/desktop-app/ide`) uses it to draw the code view into a texture.
@@ -20,13 +19,12 @@ They differ in what the application sees.
 - Variant 1 draws a blank frame (every pixel `0,0,0,0`) and reports `Ok(())`.
   It is known upstream.
 - Variant 2 draws a frame with whole tiles missing (base color only),
-with the failure counter at zero,
+  with the failure counter at zero,
   and reports `Ok(())`.
   I found no upstream report of it.
 
 Upstream `main` (commit `7d70631ac848925972c85171dc064a803003f796`,
-2026-10-20) has the same shaders and the same
-size logic for both,
+2026-10-20) has the same shaders and the same size logic for both,
 and the harness under "Verification" reproduces both there as well.
 A fix of about ten lines for variant 2 is prototyped under "Prototype".
 The filing decision is "do not file as written";
@@ -41,9 +39,10 @@ tiles,
 segment counts,
 binning space or command-list space than a bump buffer holds,
 a later stage returns early and the fine stage writes no pixel.
-The target keeps its previous content;
+Because the fine stage returns before it writes anything,
+a texture keeps what it held before;
 a fresh texture reads back as all `0,0,0,0`,
-not even the base color.
+not even the base color (rendering over an existing frame was not run).
 `Renderer::render_to_texture` still returns `Ok(())`.
 
 In the harness,
@@ -51,15 +50,16 @@ In the harness,
 on a 1113 by 8160 target) need 2,101,248 tiles against a 2,097,152 limit:
 all 9,082,080 pixels are `0,0,0,0`,
 `failed=2`,
-`render_to_texture=Ok`.
+and `render_to_texture` returned `Ok`.
 56 rows need 2,064,384 tiles and render exactly.
-The earlier text probe (glyph runs instead of rectangles) found the same edge:
+The study's text probe (glyph runs instead of rectangles) found the same edge:
 56 rows rendered,
 58 did not.
 
 ### Variant 2: corrupt frame with failed=0
 
-Every 16 by 16 pixel tile owns 64 `u32` at the start of the command-list buffer (`ptcl`) before any dynamic allocation.
+Every 16 by 16 pixel tile owns 64 `u32` at the start of the command-list buffer (`ptcl`) before any dynamic
+allocation.
 Nothing checks that the buffer holds all those initial regions.
 With the default `ptcl` of 8,388,608 elements the limit is 131,072 tiles,
 which is 33,554,432 pixels,
@@ -68,7 +68,7 @@ A 4096 by 8208 target has 131,328 tiles:
 the last tile row (65,536 pixels,
 rows 8192 to 8207) is drawn as the base color `30,30,30,255` instead of its content,
 `failed=0`,
-`render_to_texture=Ok`.
+and `render_to_texture` returned `Ok`.
 A 4096 by 16384 target loses its whole lower half (33,554,432 pixels).
 
 This is silent only when no tile outgrows its initial region.
@@ -82,14 +82,14 @@ which sets failure bit 16 and turns the frame blank (variant 1) instead.
   and only when the `debug_layers` feature or an instrumented `vello` turns the readback on.
 - `render.rs` logs one `log::warn!` ("Trying to paint too large image") when the number of coarse workgroups exceeds
   256 (a workgroup covers a bin of 16 by 16 tiles,
-so about 65,536 tiles).
+  so about 65,536 tiles).
   It names issue 680,
-which was closed as fixed by pull request 1700 (in 0.10.0),
+  which was closed as fixed by pull request 1700 (in 0.10.0),
   it says nothing about `ptcl`,
   and it needs an installed `log` logger.
   I read this code;
-the harness installs no logger,
-so I did not see the warning fire.
+  the harness installs no logger,
+  so I did not see the warning fire.
 
 ## Root cause
 
@@ -230,9 +230,9 @@ and the segment-count stage drops writes past `seg_counts_size`:
             }
 ```
 
-Coarse turns an overfull `seg_counts` counter into bit 8 for every later workgroup,
-and sets bit 16 when a tile outgrows its initial command list and the dynamic part does not fit
-or when the blend spill does not fit:
+Coarse turns an overfull `seg_counts` counter into bit 8 (workgroup 0 records it and every workgroup returns),
+and sets bit 16 when a tile outgrows its initial command list and the dynamic part does not fit or when the blend
+spill does not fit:
 
 ```wgsl
 // vello_shaders-0.11.0/shader/coarse.wgsl:161-179
@@ -384,13 +384,12 @@ and the code that would rerun the frame is a `TODO`:
         self.engine.free_download(bump_buf);
 ```
 
-```rust
+```text
 // vello-0.11.0/src/render.rs:94-98
 #[cfg(feature = "wgpu")]
 /// Create a single recording with both coarse and fine render stages.
 ///
-/// This function is not recommended when the scene can be complex,
-as it does not
+/// This function is not recommended when the scene can be complex, as it does not
 /// implement robust dynamic memory.
 ```
 
@@ -405,8 +404,8 @@ The maintainers chose this on purpose.
 Issue 366 (2023,
 still open) records the decision for production use:
 "all production uses will use a 'fire and forget' modality",
-with the previous contents of the target kept on failure and a non-blocking "get last success/failure" call
-that the application polls at the start of the next frame.
+with the previous contents of the target kept on failure and a non-blocking "get last success/failure" call that the
+application polls at the start of the next frame.
 Pull request 537 (merged 2024-03-28) added the early-exit logic and said:
 "For now,
 rendering appears to freeze".
@@ -441,8 +440,8 @@ and the dynamic part begins after the initial regions of all `width_in_tiles * h
 The only comparison with `ptcl_size` is in `alloc_cmd` (shown in Step 2),
 which runs only when a tile outgrows its 64 elements.
 A tile that fits its initial region never reaches it.
-The end-of-tile write `ptcl[cmd_offset] = CMD_END` and the blend offset write (both shown in Step 2)
-are unconditional.
+The end-of-tile write `ptcl[cmd_offset] = CMD_END` and the blend offset write (both shown in Step 2) are
+unconditional.
 The counter that the shader increments,
 `bump.ptcl`,
 counts the dynamic part only (`coarse.wgsl:73`),
@@ -495,8 +494,8 @@ which is `CMD_END` (`ptcl.wgsl:13`),
 so the tile shows the base color and nothing else.
 The harness shows exactly that:
 every wrong pixel is `30,30,30,255`,
-and the wrong pixels are exactly the tiles with index at or above `ptcl_size / 64`
-(65,536 pixels for 256 tiles over the limit).
+and the wrong pixels are exactly the tiles with index at or above `ptcl_size / 64` (65,536 pixels for 256 tiles over
+the limit).
 Other drivers are not tested.
 Issue 680 and pull request 1686 report a system hang on Apple hardware for the analogous out-of-bounds bin access,
 so "base color only" should not be assumed elsewhere.
@@ -526,26 +525,22 @@ so it panics instead of drawing a wrong frame:
   That figure is for the study's reduced 1,048,576-line profile;
   at the default 2,097,152 lines the bound is about 3,200 rows.
   The counters behind it were rerun (321,716 lines for 503 rows,
-2,608,414 lines and `failed=4` for 4,096 rows);
+  2,608,414 lines and `failed=4` for 4,096 rows);
   the bound itself is arithmetic on them.
 - That version also gave only 56 and 58 for the selection edge.
   With rectangles the edge is 57 (the harness found it);
   with glyph runs 57 was not measured.
 - The 256-bin limit (issue 680) does not explain variant 2.
   Pull request 1700 removed it and is in 0.10.0 (`research/CHANGELOG.md`,
-"Fixed"),
+  "Fixed"),
   hence in 0.11.0,
   and the control with oversized `ptcl` renders the 1024-bin target 4096 by 16384 exactly.
-- The statement that "no public option changes the sizes" is still right for 0.11.0.
-  It stops being right if pull request 1861 lands,
-  and then the `ptcl` floor of variant 2 becomes reachable by an ordinary setting.
 
 ### Upstream `main` today
 
 Compared with the installed 0.11.0 sources,
 `main` (shallow clone of `https://github.com/linebender/vello`,
-commit `7d70631ac848925972c85171dc064a803003f796`)
-has byte-identical `coarse.wgsl`,
+commit `7d70631ac848925972c85171dc064a803003f796`) has byte-identical `coarse.wgsl`,
 `fine.wgsl`,
 `binning.wgsl`,
 `path_count.wgsl`,
@@ -557,8 +552,7 @@ has byte-identical `coarse.wgsl`,
 `vello_encoding/src/config.rs`,
 `vello_research/src/lib.rs`,
 `render.rs`,
-`wgpu_engine.rs` and `vello_shaders/src/cpu/coarse.rs`
-(the package paths there are under `research/`).
+`wgpu_engine.rs` and `vello_shaders/src/cpu/coarse.rs` (the package paths there are under `research/`).
 Only `tile_alloc.wgsl` differs,
 by the DirectX 12 workgroup-broadcast change of pull request 1992.
 So the missing initial-region check is absent upstream today,
@@ -572,10 +566,8 @@ Versions under test are in the first paragraph.
 The failing behavior is deterministic:
 four builds of the harness (the original,
 a fresh rebuild from the steps of this document,
-`main` built in a
-container,
-and a first version with another output format) printed identical wrong-pixel counts for the variant 2
-scenes.
+`main` built in a container,
+and a first version with another output format) printed identical wrong-pixel counts for the variant 2 scenes.
 
 ### Harness
 
@@ -588,13 +580,13 @@ and prints the allocator counters.
 Three scene families:
 
 - `bands:W:H` is one opaque rectangle per 256 pixel row band,
-few commands per tile (variant 2).
+  few commands per tile (variant 2).
 - `lines:N` is one rectangle whose top edge is cut into N collinear pieces,
-which flatten into N plus 3 lines.
+  which flatten into N plus 3 lines.
 - `rows:N:full` and `rows:N:band` are the IDE's selection:
-N rows of 24 pixels on 1113 by 8160,
+  N rows of 24 pixels on 1113 by 8160,
   three clips per row,
-each as tall as the texture (`full`) or as tall as its row (`band`).
+  each as tall as the texture (`full`) or as tall as its row (`band`).
 
 Two instrumentation edits of copies of the registry crates are needed;
 neither changes behavior.
@@ -617,54 +609,16 @@ pollster = "0.4"
 [workspace]
 ```
 
-```sh
-# shell: download, copy and instrument the registry crates (run in an empty directory next to Cargo.toml and src/)
-cargo fetch
-cp --recursive ~/.cargo/registry/src/*/vello-0.11.0 vello-0.11.0
-cp --recursive ~/.cargo/registry/src/*/vello_encoding-0.11.0 vello_encoding-0.11.0
-sed --in-place 's/let robust = cfg!(feature = "debug_layers");/let robust = true;/' vello-0.11.0/src/lib.rs
-git apply --directory=vello_encoding-0.11.0 instrument-config.diff
-```
-
-```diff
---- a/src/config.rs
-+++ b/src/config.rs
-@@ -406,6 +406,16 @@
-         // 16 * 16 (1 << 8) is one blend spill, so this allows for 4096 spills.
-         let blend_spill = BufferSize::new(1 << 20);
-         let ptcl = BufferSize::new(1 << 23);
-+        // HARNESS PATCH: VELLO_BUMP_SIZES=lines,bin_data,tiles,seg_counts,segments,blend_spill,ptcl (elements).
-+        let (lines, bin_data, tiles, seg_counts, segments, blend_spill, ptcl) = match std::env::var("VELLO_BUMP_SIZES") {
-+            Ok(v) => {
-+                let n: Vec<u32> = v.split(',').map(|s| s.trim().parse().unwrap()).collect();
-+                let bin_data = BufferSize::new(n[1].max(layout.bin_data_start));
-+                (BufferSize::new(n[0]), bin_data, BufferSize::new(n[2]), BufferSize::new(n[3]), BufferSize::new(n[4]),
-+                    BufferSize::new(n[5]), BufferSize::new(n[6]))
-+            }
-+            Err(_) => (lines, bin_data, tiles, seg_counts, segments, blend_spill, ptcl),
-+        };
-         Self {
-             path_reduced,
-             path_reduced2,
-```
-
-```toml
-# Cargo.toml (append, then build)
-[patch.crates-io]
-vello = { path = "vello-0.11.0" }
-vello_encoding = { path = "vello_encoding-0.11.0" }
-```
+The harness source,
+saved as `src/main.rs` next to that Cargo.toml:
 
 ```rust
 // src/main.rs
 #![recursion_limit = "256"]
-//! Headless Vello 0.11.0 harness:
-renders solid-color scenes whose every pixel is known exactly,
-//! then counts the pixels that are wrong and prints the allocator counters.
-//!
-//! usage:
-harness <scene>...   scenes:
-bands:W:H  lines:N  rows:N:full|band
+// Headless Vello 0.11.0 harness: renders solid-color scenes whose every pixel is known exactly,
+// then counts the pixels that are wrong and prints the allocator counters.
+//
+// usage: harness <scene>...   scenes: bands:W:H  lines:N  rows:N:full|band
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use vello::kurbo::{Affine, BezPath, Rect};
@@ -878,23 +832,74 @@ fn main() {
         stop.store(true, Ordering::Relaxed);
         poller.join().unwrap();
         let counters = match bump {
-            Ok(Some(b)) => format!(
-                "failed={} lines={} tile={} seg_counts={} binning={} ptcl={}",
-                b.failed, b.lines, b.tile, b.seg_counts, b.binning, b.ptcl
-            ),
+            Ok(Some(b)) => format!("failed={} lines={} tile={} ptcl={}", b.failed, b.lines, b.tile, b.ptcl),
             other => format!("counters={other:?}"),
         };
         let (rows, pixel) = if wrong == 0 {
             ("-".to_string(), "-".to_string())
         } else {
-            (format!("{first}..{last}"), format!("{sample:?}"))
+            (format!("{first}..{last}"), format!("{},{},{},{}", sample[0], sample[1], sample[2], sample[3]))
         };
         println!(
-            "{name} render_to_texture={} wrong={wrong} zero={zero} rows={rows} pixel={pixel} {counters}",
+            "{name} render={} wrong={wrong} zero={zero} rows={rows} px={pixel} {counters}",
             if result.is_ok() { "Ok" } else { "Err" }
         );
     }
 }
+```
+
+The second edit,
+saved as `instrument-config.diff` in the same directory:
+
+```diff
+--- a/src/config.rs
++++ b/src/config.rs
+@@ -406,6 +406,24 @@
+         // 16 * 16 (1 << 8) is one blend spill, so this allows for 4096 spills.
+         let blend_spill = BufferSize::new(1 << 20);
+         let ptcl = BufferSize::new(1 << 23);
++        // HARNESS PATCH: VELLO_BUMP_SIZES=lines,bin_data,tiles,seg_counts,segments,blend_spill,ptcl (elements).
++        let (lines, bin_data, tiles, seg_counts, segments, blend_spill, ptcl) =
++            match std::env::var("VELLO_BUMP_SIZES") {
++                Ok(v) => {
++                    let n: Vec<u32> = v.split(',').map(|s| s.trim().parse().unwrap()).collect();
++                    let bin_data = BufferSize::new(n[1].max(layout.bin_data_start));
++                    (
++                        BufferSize::new(n[0]),
++                        bin_data,
++                        BufferSize::new(n[2]),
++                        BufferSize::new(n[3]),
++                        BufferSize::new(n[4]),
++                        BufferSize::new(n[5]),
++                        BufferSize::new(n[6]),
++                    )
++                }
++                Err(_) => (lines, bin_data, tiles, seg_counts, segments, blend_spill, ptcl),
++            };
+         Self {
+             path_reduced,
+             path_reduced2,
+```
+
+Then download the dependencies,
+copy the two registry crates and apply both edits:
+
+```sh
+# shell: run in the directory that holds Cargo.toml, src/ and instrument-config.diff
+cargo fetch
+cp --recursive ~/.cargo/registry/src/*/vello-0.11.0 vello-0.11.0
+cp --recursive ~/.cargo/registry/src/*/vello_encoding-0.11.0 vello_encoding-0.11.0
+sed --in-place 's/let robust = cfg!(feature = "debug_layers");/let robust = true;/' vello-0.11.0/src/lib.rs
+git apply --directory=vello_encoding-0.11.0 instrument-config.diff
+```
+
+Append this to Cargo.toml and build:
+
+```toml
+# Cargo.toml (append)
+[patch.crates-io]
+vello = { path = "vello-0.11.0" }
+vello_encoding = { path = "vello_encoding-0.11.0" }
 ```
 
 ```sh
@@ -910,14 +915,15 @@ I rebuilt it from these steps in an empty directory and it printed the same coun
 ### Scenes that render cleanly (default sizes)
 
 ```text
-$ ./target/release/vello-buffer-harness bands:1024:1024 bands:4096:8192 lines:1000 lines:2097000 rows:8:full rows:56:full rows:340:band
-bands:1024:1024 render_to_texture=Ok wrong=0 zero=0 rows=- pixel=- failed=0 lines=16 tile=4096 seg_counts=0 binning=16 ptcl=0
-bands:4096:8192 render_to_texture=Ok wrong=0 zero=0 rows=- pixel=- failed=0 lines=128 tile=131072 seg_counts=0 binning=512 ptcl=0
-lines:1000 render_to_texture=Ok wrong=0 zero=0 rows=- pixel=- failed=0 lines=1003 tile=196 seg_counts=0 binning=1 ptcl=0
-lines:2097000 render_to_texture=Ok wrong=0 zero=0 rows=- pixel=- failed=0 lines=2097003 tile=196 seg_counts=0 binning=1 ptcl=0
-rows:8:full render_to_texture=Ok wrong=0 zero=0 rows=- pixel=- failed=0 lines=192 tile=294912 seg_counts=21056 binning=3640 ptcl=391680
-rows:56:full render_to_texture=Ok wrong=0 zero=0 rows=- pixel=- failed=0 lines=1344 tile=2064384 seg_counts=147392 binning=25508 ptcl=1305600
-rows:340:band render_to_texture=Ok wrong=0 zero=0 rows=- pixel=- failed=0 lines=8160 tile=97920 seg_counts=55760 binning=7581 ptcl=0
+$ ./target/release/vello-buffer-harness bands:1024:1024 bands:4096:8192 lines:1000 lines:2097000 \
+   rows:8:full rows:56:full rows:340:band
+bands:1024:1024 render=Ok wrong=0 zero=0 rows=- px=- failed=0 lines=16 tile=4096 ptcl=0
+bands:4096:8192 render=Ok wrong=0 zero=0 rows=- px=- failed=0 lines=128 tile=131072 ptcl=0
+lines:1000 render=Ok wrong=0 zero=0 rows=- px=- failed=0 lines=1003 tile=196 ptcl=0
+lines:2097000 render=Ok wrong=0 zero=0 rows=- px=- failed=0 lines=2097003 tile=196 ptcl=0
+rows:8:full render=Ok wrong=0 zero=0 rows=- px=- failed=0 lines=192 tile=294912 ptcl=391680
+rows:56:full render=Ok wrong=0 zero=0 rows=- px=- failed=0 lines=1344 tile=2064384 ptcl=1305600
+rows:340:band render=Ok wrong=0 zero=0 rows=- px=- failed=0 lines=8160 tile=97920 ptcl=0
 ```
 
 `bands:4096:8192` is exactly 131,072 tiles,
@@ -933,19 +939,17 @@ a select-all of 340 rows.
 
 ```text
 $ ./target/release/vello-buffer-harness rows:57:full rows:340:full lines:2097200 lines:2600000
-rows:57:full render_to_texture=Ok wrong=9082080 zero=9082080 rows=0..8159 pixel=[0, 0, 0, 0] failed=2 lines=1368 tile=2101248 seg_counts=0 binning=25963 ptcl=0
-rows:340:full render_to_texture=Ok wrong=9082080 zero=9082080 rows=0..8159 pixel=[0, 0, 0, 0] failed=2 lines=8160 tile=12533760 seg_counts=0 binning=154847 ptcl=0
-lines:2097200 render_to_texture=Ok wrong=65536 zero=65536 rows=0..255 pixel=[0, 0, 0, 0] failed=4 lines=2097203 tile=0 seg_counts=0 binning=0 ptcl=0
-lines:2600000 render_to_texture=Ok wrong=65536 zero=65536 rows=0..255 pixel=[0, 0, 0, 0] failed=4 lines=2600003 tile=0 seg_counts=0 binning=0 ptcl=0
+rows:57:full render=Ok wrong=9082080 zero=9082080 rows=0..8159 px=0,0,0,0 failed=2 lines=1368 tile=2101248 ptcl=0
+rows:340:full render=Ok wrong=9082080 zero=9082080 rows=0..8159 px=0,0,0,0 failed=2 lines=8160 tile=12533760 ptcl=0
+lines:2097200 render=Ok wrong=65536 zero=65536 rows=0..255 px=0,0,0,0 failed=4 lines=2097203 tile=0 ptcl=0
+lines:2600000 render=Ok wrong=65536 zero=65536 rows=0..255 px=0,0,0,0 failed=4 lines=2600003 tile=0 ptcl=0
 ```
 
 `failed=2` is tile allocation (bit 2) and `failed=4` is flatten (bit 4).
-After a failure the later stages report 0 (`seg_counts=0`,
-`tile=0`,
-`binning=0`),
-so one failed render does not say what the later buffers need.
-The five bits were also exercised by shrinking one buffer at a time with `VELLO_BUMP_SIZES`
-(`rows:8:full`;
+After a failure the stages that did not run report 0 (`tile=0` after bit 4,
+`ptcl=0` after bit 2),
+so one failed render does not say what the buffers of those stages need.
+The five bits were also exercised by shrinking one buffer at a time with `VELLO_BUMP_SIZES` (`rows:8:full`;
 the fields are lines,
 bin data,
 tiles,
@@ -955,18 +959,21 @@ blend spill,
 `ptcl`):
 
 ```text
-$ VELLO_BUMP_SIZES=2097152,0,2097152,2097152,2097152,1048576,8388608 ./target/release/vello-buffer-harness rows:8:full
-rows:8:full render_to_texture=Ok wrong=9082080 zero=9082080 rows=0..8159 pixel=[0, 0, 0, 0] failed=1 lines=192 tile=0 seg_counts=0 binning=3640 ptcl=0
+$ VELLO_BUMP_SIZES=2097152,0,2097152,2097152,2097152,1048576,8388608 \
+   ./target/release/vello-buffer-harness rows:8:full
+rows:8:full render=Ok wrong=9082080 zero=9082080 rows=0..8159 px=0,0,0,0 failed=1 lines=192 tile=0 ptcl=0
 ```
 
 ```text
-$ VELLO_BUMP_SIZES=2097152,262144,2097152,1000,2097152,1048576,8388608 ./target/release/vello-buffer-harness rows:8:full
-rows:8:full render_to_texture=Ok wrong=9082080 zero=9082080 rows=0..8159 pixel=[0, 0, 0, 0] failed=8 lines=192 tile=294912 seg_counts=21056 binning=3640 ptcl=0
+$ VELLO_BUMP_SIZES=2097152,262144,2097152,1000,2097152,1048576,8388608 \
+   ./target/release/vello-buffer-harness rows:8:full
+rows:8:full render=Ok wrong=9082080 zero=9082080 rows=0..8159 px=0,0,0,0 failed=8 lines=192 tile=294912 ptcl=0
 ```
 
 ```text
-$ VELLO_BUMP_SIZES=2097152,262144,2097152,2097152,2097152,1048576,300000 ./target/release/vello-buffer-harness rows:8:full
-rows:8:full render_to_texture=Ok wrong=9082080 zero=9082080 rows=0..8159 pixel=[0, 0, 0, 0] failed=16 lines=192 tile=294912 seg_counts=21056 binning=3640 ptcl=391680
+$ VELLO_BUMP_SIZES=2097152,262144,2097152,2097152,2097152,1048576,300000 \
+   ./target/release/vello-buffer-harness rows:8:full
+rows:8:full render=Ok wrong=9082080 zero=9082080 rows=0..8159 px=0,0,0,0 failed=16 lines=192 tile=294912 ptcl=391680
 ```
 
 The blend-spill route to bit 16 was not exercised (the harness has no scene that nests blends deeply enough).
@@ -975,22 +982,22 @@ The blend-spill route to bit 16 was not exercised (the harness has no scene that
 
 ```text
 $ ./target/release/vello-buffer-harness bands:4096:8208 bands:4096:12288 bands:4096:16384
-bands:4096:8208 render_to_texture=Ok wrong=65536 zero=0 rows=8192..8207 pixel=[30, 30, 30, 255] failed=0 lines=132 tile=131328 seg_counts=0 binning=528 ptcl=0
-bands:4096:12288 render_to_texture=Ok wrong=16777216 zero=0 rows=8192..12287 pixel=[30, 30, 30, 255] failed=0 lines=192 tile=196608 seg_counts=0 binning=768 ptcl=0
-bands:4096:16384 render_to_texture=Ok wrong=33554432 zero=0 rows=8192..16383 pixel=[30, 30, 30, 255] failed=0 lines=256 tile=262144 seg_counts=0 binning=1024 ptcl=0
+bands:4096:8208 render=Ok wrong=65536 zero=0 rows=8192..8207 px=30,30,30,255 failed=0 lines=132 tile=131328 ptcl=0
+bands:4096:12288 render=Ok wrong=16777216 zero=0 rows=8192..12287 px=30,30,30,255 failed=0 lines=192 tile=196608 ptcl=0
+bands:4096:16384 render=Ok wrong=33554432 zero=0 rows=8192..16383 px=30,30,30,255 failed=0 lines=256 tile=262144 ptcl=0
 ```
 
 Isolating the cause on small targets:
-with `ptcl` forced to 131,072 elements (2,048 tiles) the edge moves to exactly
-2,048 tiles,
+with `ptcl` forced to 131,072 elements (2,048 tiles) the edge moves to exactly 2,048 tiles,
 and a scene that needs a dynamic allocation is reported instead of corrupted:
 
 ```text
-$ VELLO_BUMP_SIZES=2097152,262144,2097152,2097152,2097152,1048576,131072 ./target/release/vello-buffer-harness bands:1024:512 bands:1024:528 bands:1024:1024 rows:8:full
-bands:1024:512 render_to_texture=Ok wrong=0 zero=0 rows=- pixel=- failed=0 lines=8 tile=2048 seg_counts=0 binning=8 ptcl=0
-bands:1024:528 render_to_texture=Ok wrong=16384 zero=0 rows=512..527 pixel=[30, 30, 30, 255] failed=0 lines=12 tile=2112 seg_counts=0 binning=12 ptcl=0
-bands:1024:1024 render_to_texture=Ok wrong=524288 zero=0 rows=512..1023 pixel=[30, 30, 30, 255] failed=0 lines=16 tile=4096 seg_counts=0 binning=16 ptcl=0
-rows:8:full render_to_texture=Ok wrong=9082080 zero=9082080 rows=0..8159 pixel=[0, 0, 0, 0] failed=16 lines=192 tile=294912 seg_counts=21056 binning=3640 ptcl=391680
+$ VELLO_BUMP_SIZES=2097152,262144,2097152,2097152,2097152,1048576,131072 \
+   ./target/release/vello-buffer-harness bands:1024:512 bands:1024:528 bands:1024:1024 rows:8:full
+bands:1024:512 render=Ok wrong=0 zero=0 rows=- px=- failed=0 lines=8 tile=2048 ptcl=0
+bands:1024:528 render=Ok wrong=16384 zero=0 rows=512..527 px=30,30,30,255 failed=0 lines=12 tile=2112 ptcl=0
+bands:1024:1024 render=Ok wrong=524288 zero=0 rows=512..1023 px=30,30,30,255 failed=0 lines=16 tile=4096 ptcl=0
+rows:8:full render=Ok wrong=9082080 zero=9082080 rows=0..8159 px=0,0,0,0 failed=16 lines=192 tile=294912 ptcl=391680
 ```
 
 The last line is bit 16 and a blank frame (variant 1 behavior):
@@ -1002,14 +1009,19 @@ The three `bands` scenes never do.
 
 The harness detects a wrong frame (the variant catalogs) and it can see a right one:
 the same failing scenes with every buffer oversized render with zero wrong pixels
-(`lines 4,194,304, bin data 1,048,576, tiles 16,777,216, segment counts 4,194,304, segments 4,194,304,
-blend spill 1,048,576, ptcl 16,777,216`):
+(lines 4,194,304,
+bin data 1,048,576,
+tiles 16,777,216,
+segment counts 4,194,304,
+segments 4,194,304,
+blend spill 1,048,576 and `ptcl` 16,777,216 elements):
 
 ```text
-$ VELLO_BUMP_SIZES=4194304,1048576,16777216,4194304,4194304,1048576,16777216 ./target/release/vello-buffer-harness rows:340:full bands:4096:16384 bands:1024:1024
-rows:340:full render_to_texture=Ok wrong=0 zero=0 rows=- pixel=- failed=0 lines=8160 tile=12533760 seg_counts=894880 binning=154847 ptcl=7180800
-bands:4096:16384 render_to_texture=Ok wrong=0 zero=0 rows=- pixel=- failed=0 lines=256 tile=262144 seg_counts=0 binning=1024 ptcl=0
-bands:1024:1024 render_to_texture=Ok wrong=0 zero=0 rows=- pixel=- failed=0 lines=16 tile=4096 seg_counts=0 binning=16 ptcl=0
+$ VELLO_BUMP_SIZES=4194304,1048576,16777216,4194304,4194304,1048576,16777216 \
+   ./target/release/vello-buffer-harness rows:340:full bands:4096:16384 bands:1024:1024
+rows:340:full render=Ok wrong=0 zero=0 rows=- px=- failed=0 lines=8160 tile=12533760 ptcl=7180800
+bands:4096:16384 render=Ok wrong=0 zero=0 rows=- px=- failed=0 lines=256 tile=262144 ptcl=0
+bands:1024:1024 render=Ok wrong=0 zero=0 rows=- px=- failed=0 lines=16 tile=4096 ptcl=0
 ```
 
 `rows:340:full` needs 12,533,760 tiles and `ptcl=7,180,800`,
@@ -1021,27 +1033,30 @@ With the fix of "Prototype" the variant 2 rows turn from wrong to right and the 
 
 ```text
 $ ./target/release/vello-buffer-harness bands:4096:8208 bands:4096:12288 bands:4096:16384
-bands:4096:8208 render_to_texture=Ok wrong=0 zero=0 rows=- pixel=- failed=0 lines=132 tile=131328 seg_counts=0 binning=528 ptcl=0
-bands:4096:12288 render_to_texture=Ok wrong=0 zero=0 rows=- pixel=- failed=0 lines=192 tile=196608 seg_counts=0 binning=768 ptcl=0
-bands:4096:16384 render_to_texture=Ok wrong=0 zero=0 rows=- pixel=- failed=0 lines=256 tile=262144 seg_counts=0 binning=1024 ptcl=0
+bands:4096:8208 render=Ok wrong=0 zero=0 rows=- px=- failed=0 lines=132 tile=131328 ptcl=0
+bands:4096:12288 render=Ok wrong=0 zero=0 rows=- px=- failed=0 lines=192 tile=196608 ptcl=0
+bands:4096:16384 render=Ok wrong=0 zero=0 rows=- px=- failed=0 lines=256 tile=262144 ptcl=0
 ```
 
 ```text
-$ VELLO_BUMP_SIZES=2097152,262144,2097152,2097152,2097152,1048576,131072 ./target/release/vello-buffer-harness bands:1024:512 bands:1024:528 bands:1024:1024 rows:8:full
-bands:1024:512 render_to_texture=Ok wrong=0 zero=0 rows=- pixel=- failed=0 lines=8 tile=2048 seg_counts=0 binning=8 ptcl=0
-bands:1024:528 render_to_texture=Ok wrong=0 zero=0 rows=- pixel=- failed=0 lines=12 tile=2112 seg_counts=0 binning=12 ptcl=0
-bands:1024:1024 render_to_texture=Ok wrong=0 zero=0 rows=- pixel=- failed=0 lines=16 tile=4096 seg_counts=0 binning=16 ptcl=0
-rows:8:full render_to_texture=Ok wrong=0 zero=0 rows=- pixel=- failed=0 lines=192 tile=294912 seg_counts=21056 binning=3640 ptcl=391680
+$ VELLO_BUMP_SIZES=2097152,262144,2097152,2097152,2097152,1048576,131072 \
+   ./target/release/vello-buffer-harness bands:1024:512 bands:1024:528 bands:1024:1024 rows:8:full
+bands:1024:512 render=Ok wrong=0 zero=0 rows=- px=- failed=0 lines=8 tile=2048 ptcl=0
+bands:1024:528 render=Ok wrong=0 zero=0 rows=- px=- failed=0 lines=12 tile=2112 ptcl=0
+bands:1024:1024 render=Ok wrong=0 zero=0 rows=- px=- failed=0 lines=16 tile=4096 ptcl=0
+rows:8:full render=Ok wrong=0 zero=0 rows=- px=- failed=0 lines=192 tile=294912 ptcl=391680
 ```
 
 ```text
 $ ./target/release/vello-buffer-harness rows:57:full rows:340:full lines:2097200 lines:2600000
-rows:57:full render_to_texture=Ok wrong=9082080 zero=9082080 rows=0..8159 pixel=[0, 0, 0, 0] failed=2 lines=1368 tile=2101248 seg_counts=0 binning=25963 ptcl=0
-rows:340:full render_to_texture=Ok wrong=9082080 zero=9082080 rows=0..8159 pixel=[0, 0, 0, 0] failed=2 lines=8160 tile=12533760 seg_counts=0 binning=154847 ptcl=0
-lines:2097200 render_to_texture=Ok wrong=65536 zero=65536 rows=0..255 pixel=[0, 0, 0, 0] failed=4 lines=2097203 tile=0 seg_counts=0 binning=0 ptcl=0
-lines:2600000 render_to_texture=Ok wrong=65536 zero=65536 rows=0..255 pixel=[0, 0, 0, 0] failed=4 lines=2600003 tile=0 seg_counts=0 binning=0 ptcl=0
+rows:57:full render=Ok wrong=9082080 zero=9082080 rows=0..8159 px=0,0,0,0 failed=2 lines=1368 tile=2101248 ptcl=0
+rows:340:full render=Ok wrong=9082080 zero=9082080 rows=0..8159 px=0,0,0,0 failed=2 lines=8160 tile=12533760 ptcl=0
+lines:2097200 render=Ok wrong=65536 zero=65536 rows=0..255 px=0,0,0,0 failed=4 lines=2097203 tile=0 ptcl=0
+lines:2600000 render=Ok wrong=65536 zero=65536 rows=0..255 px=0,0,0,0 failed=4 lines=2600003 tile=0 ptcl=0
 ```
 
+The scene that failed with bit 16 under the forced `ptcl` (`rows:8:full`) renders too,
+because the floor also leaves it dynamic room.
 The fix does not hide variant 1:
 `rows:57:full` and the two `lines` scenes still fail with bits 2 and 4.
 The clean scenes stay clean (same output as the table of clean scenes).
@@ -1049,8 +1064,9 @@ The clean scenes stay clean (same output as the table of clean scenes).
 ### CPU path
 
 ```text
-$ VELLO_BUMP_SIZES=2097152,262144,2097152,2097152,2097152,1048576,131072 HARNESS_CPU=1 ./target/release/vello-buffer-harness bands:1024:1024
-thread 'main' (427513) panicked at ~/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vello_shaders-0.11.0/src/cpu/coarse.rs:68:9:
+$ VELLO_BUMP_SIZES=2097152,262144,2097152,2097152,2097152,1048576,131072 HARNESS_CPU=1 \
+   ./target/release/vello-buffer-harness bands:1024:1024
+thread 'main' (652405) panicked at ~/.cargo/registry/src/index.crates.io-*/vello_shaders-0.11.0/src/cpu/coarse.rs:68:9:
 index out of bounds: the len is 131072 but the index is 131073
 ```
 
@@ -1059,13 +1075,14 @@ loud instead of corrupt.
 With the fix it renders correctly (counters are not available on that path):
 
 ```text
-$ VELLO_BUMP_SIZES=2097152,262144,2097152,2097152,2097152,1048576,131072 HARNESS_CPU=1 ./target/release/vello-buffer-harness bands:1024:1024
-bands:1024:1024 render_to_texture=Ok wrong=0 zero=0 rows=- pixel=- counters=Err(UnavailableBufferUsed("vello.bump_buf", "download"))
+$ VELLO_BUMP_SIZES=2097152,262144,2097152,2097152,2097152,1048576,131072 HARNESS_CPU=1 \
+   ./target/release/vello-buffer-harness bands:1024:1024
+bands:1024:1024 render=Ok wrong=0 zero=0 rows=- px=- counters=Err(UnavailableBufferUsed("vello.bump_buf", "download"))
 ```
 
-### Numbers from the earlier study
+### Numbers from the study
 
-The earlier study (`doc/planning/ide-vello-buffer-sizes.md`) used a text probe in a scratch directory.
+The study (`doc/planning/ide-vello-buffer-sizes.md`) used a text probe in a scratch directory.
 I reran it (same binary,
 same environment switches).
 These reproduced exactly:
@@ -1137,11 +1154,10 @@ the application must vendor `vello_encoding` through `[patch.crates-io]`;
 the buffer grows to `4 * (64 * tiles + 4,194,304)` bytes,
 which is 80 MiB instead of 32 MiB for 4096 by 16384;
 targets of 65,536 tiles or fewer keep today's 8,388,608 elements;
-the buffer must stay within the device's `max_buffer_size`
-(268,435,456 bytes by default,
+the buffer must stay within the device's `max_buffer_size` (268,435,456 bytes by default,
 so about 983,040 tiles):
-a 16384 by 16384 target then fails at buffer creation with a wgpu validation error naming `vello.ptcl_buf`
-(observed with the fix;
+a 16384 by 16384 target then fails at buffer creation with a wgpu validation error naming `vello.ptcl_buf` (observed
+with the fix;
 without the fix the same target could not be read back by this harness,
 so its silent behavior was not measured).
 
@@ -1174,34 +1190,33 @@ the slice height becomes a rendering constraint of the minimap.
 - Trusting the result of `render_to_texture`.
   It is `Ok(())` in every failing row of both catalogs.
 - Waiting for the `log::warn!` about "too large image".
-  It fires above 65,536 tiles only if the application installs a logger,
+  It fires for more than about 65,536 tiles,
+  and only if the application installs a logger,
   and it says nothing about `ptcl`.
   Read,
-not run.
+  not run.
 - The `debug_layers` feature as a failure detector.
-  It also draws debug output over the target,
-  and its download of the lines buffer panics when the lines overflowed
-  (`render_to_texture_async`,
-`lib.rs:805`:
-the slice length is `bump.lines` elements,
-past the buffer).
+  It also captures and downloads the lines buffer,
+  and that download panics when the lines overflowed (`render_to_texture_async`,
+  `lib.rs:805`:
+  the slice length is `bump.lines` elements,
+  past the buffer).
   Issue 720 shows the same wgpu message from the async pipeline.
   From the study and the issue;
-I did not rerun it.
+  I did not rerun it.
 - `use_cpu: true` as a fix.
-  It turns variant 2 into a panic (verified above) and the study measured ten times the render time.
+  It turns variant 2 into a panic (verified in "CPU path") and the study measured ten times the render time.
 - Shrinking the buffers by patching `vello_encoding` without all of:
-row-height clips,
-a `ptcl` computed from the
-  target,
-and a way to see a failure.
+  row-height clips,
+  a `ptcl` computed from the target,
+  and a way to see a failure.
   An undersized buffer blanks or corrupts a frame with no error.
 - The hypothesis that the 256-bin limit (issue 680) causes variant 2.
   Excluded under "Readings that were wrong or incomplete":
   pull request 1700 is in 0.11.0 and the oversized-`ptcl` control renders 1024 bins correctly.
 - The hypothesis that an unchecked `segments` overflow is a third silent failure.
   The maintainers' argument (pull request 673,
-quoted in Step 2) says the `seg_counts` check covers it;
+  quoted in Step 2) says the `seg_counts` check covers it;
   the harness never overflowed `segments` without first failing `seg_counts`.
 - Pull request 1686 (checked shaders for binning and coarse).
   It was closed in favor of pull request 1700 and addresses the bin count;
@@ -1231,49 +1246,45 @@ GPU rendering or this bug class.
 #### Contribution policy of linebender/vello
 
 - `README.md`:
-"Contributions are welcome by pull request.
-The Rust code of conduct applies."
+  "Contributions are welcome by pull request.
+  The Rust code of conduct applies."
   There is no `CONTRIBUTING.md`,
-no issue template,
-no pull request template and no code of conduct file in the
-  repository (the community profile reports each as missing),
+  no issue template,
+  no pull request template and no code of conduct file in the repository (the community profile reports each as
+  missing),
   and `linebender/.github` does not exist.
 - Organization guidance in the `linebender/linebender.github.io` repository:
   `content/contributor-guidelines.md` says "To propose a nontrivial change,
-it is better to file an issue first
-  rather than sending a PR",
+  it is better to file an issue first rather than sending a PR",
   and that issue reports are valued and "can be closed if there's no clear action to be taken".
 - `content/wiki/llm_policy.md` ("LLM contribution policy for Linebender projects",
-published at
-  `https://linebender.org/wiki/llm-policy/`) allows LLM-assisted contributions with disclosure ahead of time,
+  published at `https://linebender.org/wiki/llm-policy/`) allows LLM-assisted contributions with disclosure ahead of
+  time,
   in the pull request description.
   It says:
-"we do not allow LLM bots,
-PRs that were generated end-to-end by LLMs,
-or AI-generated PR descriptions";
+  "we do not allow LLM bots,
+  PRs that were generated end-to-end by LLMs,
+  or AI-generated PR descriptions";
   "In discussion spaces like Github comments and the Zulip server,
-please avoid posting AI-generated analyses,
+  please avoid posting AI-generated analyses,
   even if you vetted them";
   and "We will not merge agentic markdown files."
   Using LLMs "for debugging,
-exploration,
-testing ... is accepted without disclosure".
+  exploration,
+  testing ... is accepted without disclosure".
 - Maintainer behavior under it:
   `linebender/kurbo` issue 607 (a long list of findings from a Claude bug hunt) was closed by Raph Levien on
   2026-09-02 with "Closing as not consistent with our AI policy".
   In `linebender/vello` pull request 1992 (an external contributor's fix to `tile_alloc.wgsl`,
-body ending in
-  "Generated with Claude Code"),
-a member removed it from the merge queue on 2026-10-15 to ask about `Co-authored-by`
-  trailers for LLM entities,
+  body ending in "Generated with Claude Code"),
+  a member removed it from the merge queue on 2026-10-15 to ask about `Co-authored-by` trailers for LLM entities,
   and Raph Levien force-pushed the branch and merged it the same day (what he changed was not inspected).
   On pull request 1700 (a member's change,
-merged 2026-06-13) Raph Levien wrote "I did use Fable to help me review".
+  merged 2026-06-13) Raph Levien wrote "I did use Fable to help me review".
   Pull request 1861 (an external contributor,
-"AI usage:
-This PR was prepared with assistance from an AI coding
-  tool",
-opened 2026-08-31) has had no comment or review in seven weeks and conflicts with `main`.
+  "AI usage:
+  This PR was prepared with assistance from an AI coding tool",
+  opened 2026-08-31) has had no comment or review in seven weeks and conflicts with `main`.
 
 #### Duplicate search
 
@@ -1330,49 +1341,46 @@ Separate searches covered the LLM policy (`AI usage`,
 `LLM`,
 `AI policy`,
 `LLM policy`,
-in the
-repository and in the organization).
+in the repository and in the organization).
 I read the threads that came up in full:
 
 - Variant 1:
-[issue 366][] (robust dynamic memory,
-open),
-[issue 175][] and [pull request 181][] (the 2022 design),
+  [issue 366][] (robust dynamic memory,
+  open),
+  [issue 175][] and [pull request 181][] (the 2022 design),
   [pull request 257][] and [pull request 537][] (GPU-side early exit),
   [pull request 606][] (readback and reallocation,
-open,
-"not shippable"),
+  open,
+  "not shippable"),
   [pull request 673][] (segments,
-closed) and [pull request 708][] (same capacity for `segments` and `seg_counts`,
-open),
+  closed) and [pull request 708][] (same capacity for `segments` and `seg_counts`,
+  open),
   [issue 541][] (bump estimation,
-open),
-[issue 720][] (the same blank-frame report from a user,
-open,
-with two later
-  real-world cases) and [pull request 1861][] (configurable sizes,
-open,
-conflicting).
+  open),
+  [issue 720][] (the same blank-frame report from a user,
+  open,
+  with two later real-world cases) and [pull request 1861][] (configurable sizes,
+  open,
+  conflicting).
 - Large targets:
-[issue 680][] (closed by [pull request 1700][]),
-[issue 548][] (closed,
-not planned,
-an Apple system
-  hang with large windows) and [pull request 1686][] (closed).
+  [issue 680][] (closed by [pull request 1700][]),
+  [issue 548][] (closed,
+  not planned,
+  an Apple system hang with large windows) and [pull request 1686][] (closed).
 - Variant 2:
-no issue or pull request mentions the unchecked initial `ptcl` region.
+  no issue or pull request mentions the unchecked initial `ptcl` region.
   [pull request 606][] is the nearest.
   Its diff adds `layout.ptcl_dyn_start = width_in_tiles * height_in_tiles * PTCL_INITIAL_ALLOC` and adds it to the
   needed size in `BumpAllocators::memory`,
   so its author knew the dynamic part starts after the initial regions;
   it also starts the buffer at `1 << 17` elements and grows it only from the dynamic counter.
   From reading the diff (not run),
-a scene that never needs a dynamic allocation would then keep 131,072 elements,
+  a scene that never needs a dynamic allocation would then keep 131,072 elements,
   which is 2,048 tiles.
   I cannot say whether that is intended.
 - Keyword search is not proof of absence:
   the repository has 210 open issues and pull requests and GitHub's search is lexical.
-  What I can say is that the queries above and the threads they surfaced do not contain the claim.
+  What I can say is that the queries listed here and the threads they surfaced do not contain the claim.
 
 Variant 1 therefore has a duplicate (issues 366 and 720) and variant 2 has none.
 
@@ -1406,12 +1414,12 @@ which is architectural work but not impossible.
 #### Constraint 3: do they support this use case?
 
 Soft yes.
-Rendering targets above 4096 by 4096 pixels is supported work:
+Rendering targets larger than 4096 by 4096 pixels is supported work:
 pull request 1700 ("Rendering scenes whose binning requires more than 256 bins") and its changelog entry,
 and the wgpu texture limit of 16,384 is what the harness uses.
 Against that,
-`README.md` and `ARCHITECTURE.md` describe the package published as `vello` as the original
-compute-centric renderer that "remains an experimental implementation" and sits under `research/`,
+`README.md` and `ARCHITECTURE.md` describe the package published as `vello` as the original compute-centric renderer
+that "remains an experimental implementation" and sits under `research/`,
 with Vello GPU "intended to become the primary renderer for production GPU use cases".
 It still receives fixes (pull requests 1700 in June and 1992 in October 2026,
 and the 0.11.0 release on 2026-10-02).
@@ -1423,27 +1431,24 @@ No ban was found:
 the README welcomes pull requests,
 the organization policy allows disclosed LLM assistance,
 and an LLM-assisted external fix to the same shader family was merged on 2026-10-15.
-The same policy asks for human-written descriptions and discussion
-("avoid posting AI-generated analyses,
+The same policy asks for human-written descriptions and discussion ("avoid posting AI-generated analyses,
 even if you vetted them";
 "AI-generated PR descriptions" are not allowed),
 and the contributor guidelines prefer an issue before a nontrivial pull request.
 Everything in this document was produced by an LLM agent,
-so the drafts below cannot be filed as they stand.
+so the drafts in this section cannot be filed as they stand.
 A human who reproduced the harness runs,
 read the source trace and the prototype,
 and then wrote the report and the disclosure in their own words could truthfully file.
 The disclosure would have to say that an LLM agent found,
-traced and prototyped the fix and name what the human
-verified.
+traced and prototyped the fix and name what the human verified.
 
 #### Constraint 5: will they likely fix it?
 
 Soft yes.
 No document or maintainer statement declines this class of fix,
 and no issue or pull request touches the initial regions.
-Related buffer-sizing work has stalled for lack of review bandwidth
-(DJMcNab in issue 720,
+Related buffer-sizing work has stalled for lack of review bandwidth (DJMcNab in issue 720,
 2024-10-21:
 "Progress on resolving this has stalled due to a shortage of review bandwidth"),
 and the nearest recent external change to these shaders was accepted within eight days (pull request 1992).
@@ -1455,40 +1460,74 @@ and nothing guarantees a response (pull request 1861 has none).
 Yes,
 for variant 2;
 see "Prototype".
-For variant 1 there is no minimal fix to prototype in the sense of the skill:
-the missing piece is the retry design that issues 366 and 720 and pull request 606 already own,
-and the failure bits and counters it needs exist already.
-Nothing was prototyped for variant 1.
+For variant 1 nothing was prototyped,
+because every candidate piece is already covered by an open thread:
+the missing report and retry are issue 366,
+issue 720 and pull request 606;
+the panic in the `debug_layers` download (`lib.rs:805`) is the wgpu error already pasted in issue 720 and sits in a
+path the maintainers call undermaintained;
+the unchecked `segments` buffer is deliberate (pull request 673);
+and the `bump.ptcl` counter that counts only the dynamic part is accounted for by pull request 606's `ptcl_dyn_start`.
 
 #### Recommendation (the owner decides; nothing was filed)
 
 Do not file now.
 The IDE does not need an upstream change:
-the row-height clips and the 131,072-tile rule above protect it,
+the row-height clips and the 131,072-tile rule from the workarounds protect it,
 and the fix is a small patch it could carry under `[patch.crates-io]` if it ever needs bigger targets.
-If the owner wants to contribute anyway,
-file one new issue for variant 2 only,
-written by a human from the draft below with the disclosure,
-and link the patch in it;
-a pull request should follow only if the maintainers ask for one.
-Say nothing on the variant 1 issues (nothing to add,
-see the draft section).
-Post the comment on pull request 1861 only if that pull request moves,
-because it gains the most from it.
+
+The options for the owner,
+with pros and cons:
+
+- Post nothing upstream.
+  Pro:
+  no policy friction,
+  no maintainer load,
+  and the IDE is already protected.
+  Con:
+  the hazard stays for other users and becomes an ordinary setting if pull request 1861 lands.
+- File one new issue for variant 2,
+  written by a human from the new-issue draft with the disclosure,
+  linking the patch.
+  Pro:
+  it is the unit the contributor guidelines ask for before a nontrivial change,
+  and no duplicate exists.
+  Con:
+  it costs a human rewrite and a truthful disclosure,
+  the response is uncertain,
+  and the package is labeled experimental.
+- Comment on pull request 1861 with the draft comment.
+  Pro:
+  it reaches the place where the hazard becomes reachable.
+  Con:
+  that pull request has had no review in seven weeks and conflicts with `main`,
+  and the comment needs the same human rewrite.
+- Open a pull request with the patch.
+  Pro:
+  the least work for maintainers if it is accepted (three small hunks).
+  Con:
+  the guidelines prefer an issue first,
+  and the policy forbids an end-to-end LLM-generated pull request or description.
+
+Ranking:
+post nothing now > file the issue > comment on pull request 1861 > open a pull request.
+Posting nothing beats the issue because the IDE gains nothing from it today and filing costs a human rewrite;
+the issue beats the comment because pull request 1861 is stalled while the issue is the unit the guidelines ask for;
+the comment beats the pull request because it needs a few human-written lines instead of a reviewed change set.
+Say nothing on the variant 1 threads (nothing to add,
+see "Draft").
 
 ### Prototype
 
-The fix ([vello-silent-blank-or-corrupt-frames-at-fixed-buffer-limits.patch](vello-silent-blank-or-corrupt-frames-at-fixed-buffer-limits.patch))
-is made in a disposable shallow clone of
-`https://github.com/linebender/vello` at commit `7d70631ac848925972c85171dc064a803003f796`
-(origin URL and commit checked before editing;
+The fix ([the patch file][fix patch]) is made in a disposable shallow clone of `https://github.com/linebender/vello`
+at commit `7d70631ac848925972c85171dc064a803003f796` (origin URL and commit checked before editing;
 the clone's push URL was set to `DISABLED`;
 no fork exists under our account and none was created).
 
 Why this fix.
 The coarse shader cannot repair the buffer it runs in,
-and a shader-only check (setting bit 16 when `width_in_tiles * height_in_tiles * 64 > ptcl_size`) would turn the corrupt
-frame into a blank one without making the target render,
+and a shader-only check (setting bit 16 when `width_in_tiles * height_in_tiles * 64 > ptcl_size`) would turn the
+corrupt frame into a blank one without making the target render,
 while needing the same change in the CPU shader copy.
 The initial regions are exactly computable from the target size,
 unlike the dynamic part that the maintainers say they cannot estimate.
@@ -1498,9 +1537,9 @@ So the patch raises `ptcl` to the initial regions plus a dynamic part of at leas
 which is what the default size already leaves a 4096 by 4096 target:
 
 - Targets of 65,536 tiles or fewer keep exactly the current size,
-so existing memory use does not change.
+  so existing memory use does not change.
 - Larger targets get `4 * (64 * tiles + 4,194,304)` bytes of command list,
-up to the device's buffer limit.
+  up to the device's buffer limit.
 - The CPU path and the GPU path are fixed in one place.
 - The constant `1 << 22` is a heuristic that the maintainers may want to tune.
 - Pull request 1861's setter would need the same floor applied after its sizes are chosen.
@@ -1512,40 +1551,39 @@ so it is kept as a file beside this document.
 Verification,
 with no upstream script run on the host:
 
-- Harness on 0.11.0 sources (steps above,
-`git apply --directory=vello_encoding-0.11.0 -p3` of the patch):
+- Harness on 0.11.0 sources (the steps of "Harness",
+  then `git apply --directory=vello_encoding-0.11.0 -p3` of the patch):
   the "Fixed copy,
-same commands" outputs,
-variant 2 wrong pixels from 65,536,
-16,777,216 and 33,554,432 to 0,
+  same commands" outputs,
+  variant 2 wrong pixels from 65,536,
+  16,777,216 and 33,554,432 to 0,
   and from 16,384 and 524,288 to 0 with `ptcl` forced to 131,072.
 - The same harness built against the `main` clone (instrumented the same way) inside a container
   (`podman run --rm --userns=keep-id --network=none --memory=4g --cpus=4`,
-only the clone,
-the harness and a cargo home
-  mounted,
-no environment secrets,
-dependencies fetched beforehand) and run on the host GPU:
-  `main` without the fix reproduces both variants with the same counts as 0.11.0
-  (`bands:4096:8208` wrong=65536 `failed=0`,
-`rows:57:full` `failed=2`,
-`use_cpu` panic at `cpu/coarse.rs:68`),
-  `main` with the fix renders the variant 2 scenes exactly and still fails the variant 1 scenes.
+  only the clone,
+  the harness and a cargo home mounted,
+  no environment secrets,
+  dependencies fetched beforehand) and run on the host GPU:
+  `main` without the fix reproduces both variants with the same counts as 0.11.0 (`bands:4096:8208` wrong=65536
+  `failed=0`,
+  `rows:57:full` `failed=2`,
+  `use_cpu` panic at `cpu/coarse.rs:68`),
+  `main` with the two code hunks of the patch renders the variant 2 scenes exactly and still fails the variant 1
+  scenes.
 - Upstream unit tests,
-in the same kind of container:
-`cargo test -p vello_encoding --lib` passes 33 tests with the
-  patch.
+  in the same kind of container:
+  `cargo test -p vello_encoding --lib` passes 33 tests with the patch.
   With only the `ptcl` hunks reverted,
   the new test `ptcl_holds_the_initial_region_of_every_tile` fails and the control
   `ptcl_keeps_the_default_size_up_to_4096_by_4096_pixels` passes,
   so the test detects the missing floor.
 - Not run:
-formatting by the upstream's pinned toolchain and clippy (the container image has neither;
+  formatting by the upstream's pinned toolchain and clippy (the container image has neither;
   `rustfmt --check` from the host,
-with the repository's `rustfmt.toml`,
-accepts the patched file),
+  with the repository's `rustfmt.toml`,
+  accepts the patched file),
   the `vello_research_tests` snapshot suite,
-and any non-Vulkan or non-RADV driver.
+  and any non-Vulkan or non-RADV driver.
 
 ### Draft (do not file as written)
 
@@ -1554,7 +1592,7 @@ It was written by an LLM agent and the Linebender policy asks for a human-writte
 so a human must rewrite it in their own words before anything is posted.
 
 ~~~md
-Title: `RenderConfig::new` can size `ptcl` below the initial command-list regions of the target's tiles (silent missing tiles, `failed == 0`)
+Title: `ptcl` can be smaller than the initial command lists of the target's tiles (tiles missing, `failed == 0`)
 
 Labels: (none; the repository has no issue template)
 
@@ -1611,8 +1649,7 @@ chosen in `RenderConfig::new_with_bump_sizes` would prevent it.
 For variant 1 there is nothing to add.
 Issues 366 and 720 and pull requests 606 and 1861 already contain the cause,
 the design decision,
-the missing
-readback and retry,
+the missing readback and retry,
 and several real-world cases (two in issue 720 answer the maintainers' request for them).
 The IDE's selection scene is one more such case,
 and a "me too" is not additive.
@@ -1622,31 +1659,33 @@ tiles) is a property of Vello's clip handling that the maintainers know.
 ## Not verified and limits
 
 - Only Vello 0.11.0 and `main` at 7d70631,
-only Vulkan on RADV,
-only an AMD RX 7600.
+  only Vulkan on RADV,
+  only an AMD RX 7600.
   Other drivers and other GPUs may not show "base color" for the missing tiles of variant 2,
   and the out-of-bounds accesses are undefined behavior.
 - The IDE itself was not run on these failures;
   the blank frame was reproduced with a harness that copies its clip structure,
-  and the earlier text probe,
-not the application.
+  and with the study's text probe,
+  not the application (an agent is reproducing it in the application;
+  see `doc/handover/slint-ide-0x.md`).
 - The `log::warn!` of `render.rs:207`,
-the `debug_layers` panic and the study's pixel-agreement check of row-height
-  clips were read or taken from the study and not rerun.
+  the `debug_layers` panic and the study's pixel-agreement check of row-height clips were read or taken from the study
+  and not rerun.
 - The blend-spill route to failure bit 16,
-strokes,
-color glyphs and very long lines were not exercised.
+  strokes,
+  color glyphs and very long lines were not exercised.
 - The reading of pull request 606's `ptcl` start size was not run.
 - Targets of 16384 by 16384:
-only the fixed behavior (a validation error at buffer creation) was seen.
+  only the fixed behavior (a validation error at buffer creation) was seen.
 
 ## Related
 
 - The study with the video memory measurements and the option ranking:
   `doc/planning/ide-vello-buffer-sizes.md`.
 - The handover that tracks the IDE reproduction:
-`doc/handover/slint-ide-0x.md`.
+  `doc/handover/slint-ide-0x.md`.
 
+[fix patch]: vello-silent-blank-or-corrupt-frames-at-fixed-buffer-limits.patch
 [issue 175]: https://github.com/linebender/vello/issues/175
 [issue 366]: https://github.com/linebender/vello/issues/366
 [issue 541]: https://github.com/linebender/vello/issues/541
