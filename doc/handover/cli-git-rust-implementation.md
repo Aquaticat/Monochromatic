@@ -1758,6 +1758,8 @@ that is verification, not a decision for the user.
   still 2.39 (README line 77 names 0.2.2), and `mise upgrade cargo:monochromatic-git-policy-cli` installed it
   (mise caches the remote version list for an hour, so the upgrade needed `MISE_FETCH_REMOTE_VERSIONS_CACHE=0s`;
   `mise.lock` was restored).
+  Production evidence 2026-10-19: with 0.2.2 installed, the push of `c95ad3807f` was rejected as stale, reconciled,
+  and `main` and the worktree were fast-forwarded to the signed (`G`) merge `9a48cb3d13`; the status stayed clean.
   Task 29 (user chose the post-cutover gates next, 2026-10-19): the open parts are the non-core mutation campaigns.
   Running (non-blocking): unit `cli-git-nc1`, script `~/temp/agent/nc-run.ts`, image tag `nc1`, one scoped run per
   file at `--timeout 300` through `gate-slot.ts`, in this order: `manual_push_probe.rs`, `manual_push_range.rs`,
