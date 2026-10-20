@@ -107,6 +107,7 @@ async function printReplying(
       TRANSLATION_REPAIR_CHARM_HYPER_API_KEY: KEY,
       TRANSLATION_REPAIR_OPENROUTER_API_KEY: KEY,
       TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY: KEY,
+      TRANSLATION_REPAIR_NEURALWATT_API_KEY: KEY,
     },
     transport,
     now: NOW,
@@ -218,6 +219,47 @@ await describe({
       },
     },),
     it({
+      name: 'PRINTS THE NEURALWATT SIDE off a listing that states its limits under metadata, with the context window '
+        + 'standing in where the listing states no output ceiling',
+      fn: async (ctx) => {
+        const lines = await printReplying({
+          provider: 'neuralwatt',
+          servedId: 'cat-nap-flash',
+          status: 200,
+          bodyText: JSON.stringify({
+            data: [
+              {
+                id: 'cat-nap-flash',
+                max_model_len: 1_048_560,
+                metadata: {
+                  capabilities: { vision: true, },
+                  limits: { max_context_length: 1_048_560, max_output_tokens: null, },
+                },
+              },
+            ],
+          },),
+          sinon: ctx.sinon,
+        },);
+
+        expect(lines,).toEqual([
+          [
+            '// neuralwatt side for cat-nap-flash, read from https://api.neuralwatt.com/v1/models on 2026-10-06',
+            '    neuralwatt: {',
+            "      id: 'cat-nap-flash',",
+            '      readsImages: true,',
+            '      maxOutputLength: 1048560,',
+            '      contextLength: 1048560,',
+            '    },',
+            '',
+            ...footerFor({
+              list: 'NEURALWATT_SERVED_IDS',
+              servedId: 'cat-nap-flash',
+            },),
+          ].join('\n',),
+        ],);
+      },
+    },),
+    it({
       name: 'NAMES the listing URL and the served-id list of each provider on the provenance line and the first step',
       fn: async (ctx) => {
         /**
@@ -229,6 +271,7 @@ await describe({
           'hyper',
           'openrouter',
           'bedrock',
+          'neuralwatt',
         ]) {
           /* oxlint-disable no-await-in-loop -- one provider at a time on purpose: each case diverts the process-wide console.log */
           const [fragment = '',] = await printReplying({
@@ -262,6 +305,10 @@ await describe({
             '// bedrock side for cat/mittens-9, read from https://bedrock-mantle.us-east-1.api.aws/v1/models '
             + 'on 2026-10-06',
             "// 1. Add 'cat/mittens-9' to BEDROCK_SERVED_IDS in roster-id.ts.",
+          ],
+          [
+            '// neuralwatt side for cat/mittens-9, read from https://api.neuralwatt.com/v1/models on 2026-10-06',
+            "// 1. Add 'cat/mittens-9' to NEURALWATT_SERVED_IDS in roster-id.ts.",
           ],
         ],);
       },
@@ -299,7 +346,7 @@ await describe({
         },);
 
         expect(String(refusal,),).toBe(
-          'StatedRefusalError: roster-card\'s provider is one of synthetic, hyper, openrouter, bedrock, '
+          'StatedRefusalError: roster-card\'s provider is one of synthetic, hyper, openrouter, bedrock, neuralwatt, '
             + 'and "bogus" is none of them',
         );
       },

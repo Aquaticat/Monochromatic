@@ -40,6 +40,7 @@ const KEY_VARIABLE_OF = {
   hyper: 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY',
   openrouter: 'TRANSLATION_REPAIR_OPENROUTER_API_KEY',
   bedrock: 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY',
+  neuralwatt: 'TRANSLATION_REPAIR_NEURALWATT_API_KEY',
 } as const;
 
 /**
@@ -50,6 +51,7 @@ const PROVIDERS = [
   'hyper',
   'openrouter',
   'bedrock',
+  'neuralwatt',
 ] as const;
 
 await describe({
@@ -120,6 +122,7 @@ await describe({
               [KEY_VARIABLE_OF.synthetic]: KEY,
               [KEY_VARIABLE_OF.openrouter]: KEY,
               [KEY_VARIABLE_OF.bedrock]: KEY,
+              [KEY_VARIABLE_OF.neuralwatt]: KEY,
             },
             transport,
           },);

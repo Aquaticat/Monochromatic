@@ -34,6 +34,7 @@ const KEY_VARIABLE_OF: Readonly<Record<string, string>> = {
   hyper: 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY',
   openrouter: 'TRANSLATION_REPAIR_OPENROUTER_API_KEY',
   bedrock: 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY',
+  neuralwatt: 'TRANSLATION_REPAIR_NEURALWATT_API_KEY',
 };
 
 await describe({
@@ -80,7 +81,7 @@ await describe({
         expect(run,).toEqual({
           code: REFUSED_AS_STATED,
           stdout: '',
-          stderr: 'roster-card: roster-card\'s provider is one of synthetic, hyper, openrouter, bedrock, '
+          stderr: 'roster-card: roster-card\'s provider is one of synthetic, hyper, openrouter, bedrock, neuralwatt, '
             + 'and "bogus" is none of them\n',
         },);
       },
@@ -103,7 +104,7 @@ await describe({
           code: REFUSED_AS_STATED,
           stdout: '',
           stderr: 'roster-card: --flag is not a flag this command reads. '
-            + 'Usage: roster-card <synthetic|hyper|openrouter|bedrock> <served id>\n',
+            + 'Usage: roster-card <synthetic|hyper|openrouter|bedrock|neuralwatt> <served id>\n',
         },);
       },
     },),
@@ -120,8 +121,8 @@ await describe({
         expect(run,).toEqual({
           code: REFUSED_AS_STATED,
           stdout: '',
-          stderr: 'roster-card: this command needs <synthetic|hyper|openrouter|bedrock> <served id>. '
-            + 'Usage: roster-card <synthetic|hyper|openrouter|bedrock> <served id>\n',
+          stderr: 'roster-card: this command needs <synthetic|hyper|openrouter|bedrock|neuralwatt> <served id>. '
+            + 'Usage: roster-card <synthetic|hyper|openrouter|bedrock|neuralwatt> <served id>\n',
         },);
       },
     },),

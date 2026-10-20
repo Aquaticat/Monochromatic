@@ -478,7 +478,7 @@ await describe({
             },),
           },);
         },).toThrow(
-          'roster-card\'s provider is one of synthetic, hyper, openrouter, bedrock, and "cat nip" is none of them',
+          'roster-card\'s provider is one of synthetic, hyper, openrouter, bedrock, neuralwatt, and "cat nip" is none of them',
         );
         expect(function bothWrong(): void {
           readAsk({
@@ -491,7 +491,7 @@ await describe({
             },),
           },);
         },).toThrow(
-          'roster-card\'s provider is one of synthetic, hyper, openrouter, bedrock, and "Hyper" is none of them; '
+          'roster-card\'s provider is one of synthetic, hyper, openrouter, bedrock, neuralwatt, and "Hyper" is none of them; '
             + 'roster-card\'s served id is written empty',
         );
       },
@@ -523,6 +523,56 @@ await describe({
           promptPrice: NOT_LISTED,
           completionPrice: NOT_LISTED,
         },);
+      },
+    },),
+
+    it({
+      name: 'READS A NEURALWATT LISTING: limits and vision under metadata, a null output ceiling falling back to the '
+        + 'context window, and no price on the card',
+      fn: async () => {
+        expect(cardFieldsFrom({
+          provider: 'neuralwatt',
+          row: {
+            id: 'm',
+            metadata: {
+              capabilities: { vision: true, },
+              limits: { max_context_length: 1_048_560, max_output_tokens: 393_216, },
+            },
+          },
+        },),).toEqual({
+          readsImages: true,
+          maxOutputLength: 393_216,
+          contextLength: 1_048_560,
+          promptPrice: NOT_LISTED,
+          completionPrice: NOT_LISTED,
+        },);
+        expect(cardFieldsFrom({
+          provider: 'neuralwatt',
+          row: {
+            id: 'm',
+            metadata: {
+              capabilities: { vision: 'sometimes', },
+              limits: { max_context_length: 1_048_560, max_output_tokens: null, },
+            },
+          },
+        },),).toEqual({
+          readsImages: NOT_LISTED,
+          maxOutputLength: 1_048_560,
+          contextLength: 1_048_560,
+          promptPrice: NOT_LISTED,
+          completionPrice: NOT_LISTED,
+        },);
+        expect(renderProviderCard({
+          provider: 'neuralwatt',
+          servedId: 'm',
+          fields: {
+            readsImages: true,
+            maxOutputLength: 393_216,
+            contextLength: 1_048_560,
+            promptPrice: NOT_LISTED,
+            completionPrice: NOT_LISTED,
+          },
+        },),).toContain("    neuralwatt: {\n      id: 'm',\n      readsImages: true,\n      maxOutputLength: 393216,\n      contextLength: 1048560,\n    },",);
       },
     },),
 
