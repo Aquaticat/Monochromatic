@@ -98,7 +98,7 @@ await describe({
              */
             const line = '[info] [2026-10-20T17:00:00.000Z] [t] [takeReading] METERS '
               + 'neuralwatt=wet synthetic=dry bedrock=dry hyper=wet openrouter=wet neuralwattWh=549.986 '
-              + 'neuralwattReckonedWh=0.500 neuralwattBilled=no syntheticWeekly=0% hyperBalance=2497';
+              + 'neuralwattReckonedWh=0.500 syntheticWeekly=0% hyperBalance=2497';
 
             expect(readMeterLine({ line, },),).toEqual({
               at: Date.parse('2026-10-20T17:00:00.000Z',),
@@ -110,7 +110,35 @@ await describe({
               levels: [
                 'neuralwattWh=549.986',
                 'neuralwattReckonedWh=0.500',
-                'neuralwattBilled=no',
+                'syntheticWeekly=0%',
+                'hyperBalance=2497',
+              ],
+            },);
+          },
+        },),
+
+        it({
+          name: 'reads a record from a build that printed neuralwattBilled as one more '
+            + 'level token and takes its state from the neuralwatt field alone',
+          fn: async () => {
+            /**
+             A record as the builds that printed the billed field wrote it, one marking the day billed.
+             */
+            const line = '[info] [2026-10-20T17:00:00.000Z] [t] [takeReading] METERS '
+              + 'neuralwatt=dry synthetic=dry bedrock=dry hyper=wet openrouter=wet neuralwattWh=549.986 '
+              + 'neuralwattReckonedWh=0.500 neuralwattBilled=yes syntheticWeekly=0% hyperBalance=2497';
+
+            expect(readMeterLine({ line, },),).toEqual({
+              at: Date.parse('2026-10-20T17:00:00.000Z',),
+              neuralwatt: 'dry',
+              synthetic: 'dry',
+              hyper: 'wet',
+              bedrock: 'dry',
+              openrouter: 'wet',
+              levels: [
+                'neuralwattWh=549.986',
+                'neuralwattReckonedWh=0.500',
+                'neuralwattBilled=yes',
                 'syntheticWeekly=0%',
                 'hyperBalance=2497',
               ],
