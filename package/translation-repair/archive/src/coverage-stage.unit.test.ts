@@ -220,6 +220,54 @@ await describe({
       },
     },),
     it({
+      name: 'ANCHORS a quote copied across a note between translators, because the sheet it sends shows the '
+        + 'translation without the note and the verdict reads the quote in the text the sheet showed',
+      fn: async () => {
+        /** Translation whose first line ends with a note the archive's translators left each other. */
+        const noteText = 'The cat naps on its cushion at noon.{/* 这句不太对劲 */}\nShe watches the birds outside.\n';
+        /** Messages of every call, to see what the roster was shown. */
+        const asks: ChatJsonRequest<unknown>['messages'][] = [];
+        const answer = await runCoverageStage({
+          client: scriptedClient({
+            script: {
+              'hf:cat/Cat-A': {
+                coverage: 'full',
+                quote: 'naps on its cushion at noon.\nShe watches the birds outside.',
+              },
+              'hf:cat/Cat-B': {
+                coverage: 'full',
+                quote: 'naps on its cushion at noon.\nShe watches the birds outside.',
+              },
+              'hf:cat/Cat-C': {
+                coverage: 'full',
+                quote: 'naps on its cushion at noon.\nShe watches the birds outside.',
+              },
+              'hf:cat/Cat-D': {
+                coverage: 'none',
+                quote: '',
+              },
+            },
+            asks,
+          },),
+          modelIds: ROSTER,
+          fanOut: 'whole-bench',
+          sourcePassage: '小猫中午在垫子上打盹。',
+          translation: parseDocument({ text: noteText, },),
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          exchangeTimeoutMs: HANG_STOP_MS,
+          l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
+        },);
+        expect(asks.flat().some(function showsNote(message,): boolean {
+          return message.content.includes('这句不太对劲',);
+        },),).toBe(false,);
+        expect(answer.verdict
+          .kind,).toBe('carried',);
+        expect(answer.verdict
+          .anchoredFull,).toBe(3,);
+      },
+    },),
+    it({
       name: 'TAKES its majority over the seats the window asked, not the bench: four seats all anchoring '
         + 'full coverage are asked quorum plus one, and the seat the window spared is neither silent nor lost',
       fn: async () => {
