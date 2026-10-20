@@ -5146,6 +5146,77 @@ not the runtime,
 inspection,
 and scripted-server helpers.
 
+### Renderer and GPU
+
+Nothing in the IDE paints on the CPU (owner decision of 2026-10-19),
+so the application has one renderer:
+Slint's FemtoVG drawing through wgpu 30 on the Vulkan backend (`renderer-femtovg-wgpu`,
+design C of `doc/planning/ide-vello-text.md`).
+There is no OpenGL renderer and no software renderer in the executable,
+and no fallback to either:
+`mise run //package/desktop-app/ide:inspect:software-renderer` fails if Slint's software renderer is linked again.
+A host without a Vulkan driver for a hardware GPU therefore cannot start the IDE
+(see below for the message it gets).
+
+`src/launcher.rs` opens the GPU itself and gives it to Slint,
+because Slint's own adapter choice cannot be trusted with that rule:
+with no power preference wgpu does not sort its adapters,
+so the first one the Vulkan loader lists wins,
+and that may be the CPU adapter lavapipe (`llvmpipe`).
+`src/gpu_device.rs` lists the Vulkan adapters,
+keeps the discrete and integrated GPUs only (discrete first),
+refuses every other kind (CPU,
+virtual,
+unknown),
+and requests a device with wgpu's full default limits raised to the adapter's image-size limits
+(Vello's compute shaders need storage buffers,
+which Slint's downlevel default limits forbid).
+The native test harness (`src/native/gpu_snapshot.rs`) opens its device through the same function.
+The launcher logs the chosen adapter at info level (`RUST_LOG=info`),
+for example
+`the window is drawn on this GPU adapter=AMD Radeon RX 7600 (RADV NAVI33) (DiscreteGpu, radv)`,
+with the device's storage-buffer and texture limits.
+
+A host with no hardware Vulkan adapter stops at startup with a message that names the adapters it saw
+and every remedy:
+install the Vulkan driver of the GPU and the Vulkan loader,
+give the process access to the render node (`/dev/dri/renderD*`),
+check `vulkaninfo --summary`,
+and check `VK_DRIVER_FILES` and `VK_ICD_FILENAMES`.
+It also says that a CPU adapter is refused on purpose and that `SLINT_WGPU_CPU` does not allow one.
+Both cases were run on 2026-10-20 with `VK_DRIVER_FILES` set to the lavapipe driver file (the message lists
+`llvmpipe (LLVM 22.1.8, 256 bits) (Cpu, llvmpipe)`) and to a missing file (the message says the loader found no driver).
+
+`SLINT_BACKEND` is read as Slint reads it (lowercase,
+split at the first dash):
+unset,
+`winit`,
+`gl`,
+and `winit-femtovg-wgpu` start the application as described above;
+another backend (`qt`,
+`linuxkms`) is left to Slint's own selector and gets no app id,
+no adapter policy,
+and,
+for any backend that draws on the CPU,
+no protection from this rule;
+a winit renderer that is not in this build (`femtovg` is the OpenGL one,
+and `skia`,
+`software`,
+`vello`)
+is an error that names the accepted spellings,
+because Slint would otherwise warn and draw with its default renderer on a device it chose.
+The adapter is not chosen by `WGPU_ADAPTER_NAME` or `WGPU_POWER_PREF`:
+the launcher does not read them.
+
+The launcher keeps one extra handle of the wgpu instance,
+adapter,
+device,
+and queue until the process ends.
+Slint frees its handles while the main thread's thread-local values are destroyed,
+and a debug build of wgpu-core reads a thread-local value when it frees a device,
+which aborted the process at exit before this (see `doc/planning/ide-gpu-snapshot-harness.md`,
+section "Stage 2").
+
 ### What the executable carries
 
 `build.rs` embeds these files of `target/<profile>/runtime` and of the package,
@@ -5522,8 +5593,10 @@ and `package/music-player/desktop-app/share/applications/`:
   the Wayland app id that `src/launcher.rs` stamps on the window
   through Slint's winit backend hook,
   as the sibling `launcher.rs` files do.
-  Runs with `SLINT_MCP_PORT` (debug inspection) or a non-winit `SLINT_BACKEND` keep Slint's own backend
-  and get no app id.
+  Runs with a non-winit `SLINT_BACKEND` keep Slint's own backend and get no app id;
+  a run with `SLINT_MCP_PORT` (debug inspection) installs the same backend and gets the app id
+  (the inspection server starts when the launcher installs the platform;
+  `inspect:native` on 2026-10-20 showed `set_app_id("monochromatic.ide")` in the Wayland log and the server listening).
 - `Icon=accessories-text-editor`,
   a stock name of the Icon Naming Specification present in this host's breeze,
   breeze-dark,
