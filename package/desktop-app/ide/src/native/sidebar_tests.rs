@@ -5,6 +5,9 @@
 //!  both bounds,
 //!  and the drag origin.
 
+/// Windows are drawn on the hardware GPU,
+///  so the platform is installed before the thread's first window.
+use super::gpu_snapshot::install_gpu_platform;
 /// The shipped window and source state,
 ///  with the bindings that repaint source when its width changes.
 use super::{
@@ -288,6 +291,7 @@ pub(super) fn fixture(rows: usize) -> Fixture {
         text.push_str(&line);
         text.push('\n');
     }
+    install_gpu_platform();
     let window = AppWindow::new().expect("native sidebar window");
     // What: `Rc::new(RefCell::new(value))` puts the state behind a shared, checked-mutable pointer;
     // `None` means the source has no file on disk.

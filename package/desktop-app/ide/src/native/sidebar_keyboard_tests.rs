@@ -5,6 +5,9 @@
 /// Real key events through the window,
 ///  shared with the find tests.
 use super::find_tests::{chord, key};
+/// Windows are drawn on the hardware GPU,
+///  so the platform is installed before the thread's first window.
+use super::gpu_snapshot::install_gpu_platform;
 /// Shared window fixture,
 ///  pointer helpers,
 ///  and the pinned layout measurements.
@@ -152,6 +155,7 @@ fn hidden_project_has_no_divider() {
     // ```ts
     // const window = new AppWindow();
     // ```
+    install_gpu_platform();
     let window = AppWindow::new().expect("native window without a project");
     let text = "first line\nsecond line\nthird line\n";
     // `None` means the source has no file on disk.

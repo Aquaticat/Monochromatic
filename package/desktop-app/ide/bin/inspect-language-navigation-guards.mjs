@@ -8,6 +8,7 @@ import { cpSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, statSync, w
 import { homedir } from 'node:os';
 import { join, relative, sep } from 'node:path';
 import { containerBounds } from './container-bounds.ts';
+import { gpuArguments } from './gpu-arguments.ts';
 
 // The bound of every container this script starts: the shared computed share of the host, or the caller's IDE_CONTAINER_* values.
 const containerLimits = containerBounds();
@@ -79,16 +80,16 @@ const podman = (command) => spawnSync('podman', [
   '--security-opt', 'label=disable',
   '--volume', source + ':/work', '--volume', cache + ':/work/target', '--volume', cargoHome + ':/cargo',
   '--workdir', '/work', ...containerLimits.environmentArguments, '--env', 'SLINT_EMIT_DEBUG_INFO=1',
-  '--env', 'SLINT_BACKEND=headless', '--env', 'SLINT_MCP_PORT=0', '--env', 'HELIX_RUNTIME=/work/target/debug/runtime',
+  ...gpuArguments, '--env', 'HELIX_RUNTIME=/work/target/debug/runtime',
   'localhost/monochromatic/ide', ...command,
 ], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
 // The window tests start the scripted server from beside the test binary; no mutation touches it.
-const server = podman(['cargo', 'build', '--offline', '--features', 'slint/mcp', '--bin', 'ide-scripted-lsp']);
+const server = podman(['cargo', 'build', '--offline', '--bin', 'ide-scripted-lsp']);
 writeFileSync(join(artifact, 'scripted-server-build.log'), (server.stdout ?? '') + (server.stderr ?? ''));
 if (server.error) throw server.error;
 if (server.status !== 0) throw new Error('Cannot build the scripted server; inspect ' + artifact);
 const run = (item, phase) => {
-  const result = podman(['cargo', 'nextest', 'run', '--offline', '--features', 'slint/mcp', '--bin', 'monochromatic-ide', '--filter-expr', 'test(=' + item.test + ')']);
+  const result = podman(['cargo', 'nextest', 'run', '--offline', '--bin', 'monochromatic-ide', '--filter-expr', 'test(=' + item.test + ')']);
   const output = (result.stdout ?? '') + (result.stderr ?? '');
   writeFileSync(join(artifact, item.name + '-' + phase + '.log'), output);
   if (result.error) throw result.error;

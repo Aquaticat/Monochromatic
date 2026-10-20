@@ -64,8 +64,9 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 toml = "1.1"
 tokio = { version = "1.50", features = ["rt-multi-thread", "sync", "time", "process", "io-util", "macros"] }
-# Match the compiler/runtime release family used by the sibling native apps.
-slint = { version = "1.18.1", features = [ "backend-winit", "renderer-femtovg", "renderer-software", ], }
+# Match the compiler/runtime release family used by the sibling native apps. No `renderer-software`: nothing in the IDE
+# paints on the CPU, tests included (owner decision of 2026-10-19, doc/planning/ide-gpu-snapshot-harness.md).
+slint ={ version = "1.18.1", features = ["backend-winit", "renderer-femtovg"] }
 tracing = "0.1"
 # The `log` facade helix-lsp writes through and its conversion to `tracing` events, used to re-label
 # helix-lsp records (`src/logging/relabel.rs`). tracing-subscriber already builds this exact crate with

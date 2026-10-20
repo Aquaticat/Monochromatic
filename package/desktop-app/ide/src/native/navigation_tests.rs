@@ -2,6 +2,9 @@
 //!  file installation,
 //!  and recent-file reveal.
 
+/// Windows are drawn on the hardware GPU,
+///  so the platform is installed before the thread's first window.
+use super::gpu_snapshot::install_gpu_platform;
 /// Use the same source and navigation bindings as the shipped window.
 use super::{
     AppWindow, State, bind_appearance, bind_keys, bind_pointer, bind_viewport, navigation, reload,
@@ -43,6 +46,7 @@ fn native_tree_switches_files_and_preserves_current_file_reading_state() {
     fs::write(&initial, &text).expect("initial source");
     fs::write(fixture.path().join("other.txt"), "other source").expect("second source");
     let workspace = Workspace::new(fixture.path()).expect("workspace");
+    install_gpu_platform();
     let window = AppWindow::new().expect("native project window");
     let state = Rc::new(RefCell::new(State::new(&text, Some(initial.clone()))));
     window.set_file_label(SharedString::from(initial.display().to_string()));
@@ -128,6 +132,7 @@ fn native_failed_open_keeps_source_and_does_not_promote_history() {
     fs::write(fixture.path().join("source.txt"), "readable source").expect("readable fixture");
     fs::write(fixture.path().join("binary.txt"), [0xff]).expect("invalid UTF-8 fixture");
     let workspace = Workspace::new(fixture.path()).expect("workspace");
+    install_gpu_platform();
     let window = AppWindow::new().expect("native project window");
     let state = Rc::new(RefCell::new(State::new("", None)));
     window.set_source_available(false);

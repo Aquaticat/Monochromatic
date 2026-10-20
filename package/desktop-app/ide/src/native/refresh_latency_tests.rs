@@ -4,6 +4,9 @@
 //!  so the polling build and the
 //! watching build can be compared on the same machine with the same fixture and trial gaps.
 
+/// Windows are drawn on the hardware GPU,
+///  so the platform is installed before the thread's first window.
+use super::gpu_snapshot::install_gpu_platform;
 /// Tree-row lookup by label,
 ///  shared with the navigation tests.
 use super::navigation_tests::row;
@@ -155,6 +158,7 @@ fn measure(folders: usize) {
         fs::write(folder.join(format!("seed-{index:02}.txt")), "").expect("folder seed");
     }
     let workspace = Workspace::new(fixture.path()).expect("workspace");
+    install_gpu_platform();
     let window = AppWindow::new().expect("native latency window");
     let text = fs::read_to_string(&displayed).expect("initial source");
     // `Some` marks the displayed file as an on-disk path that the source refresh rereads.

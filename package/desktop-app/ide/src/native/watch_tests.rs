@@ -1,6 +1,9 @@
 //! The shipped tree and source bindings follow external changes through inotify notifications,
 //! faster than the safety sweep or the old polling could have produced them.
 
+/// Windows are drawn on the hardware GPU,
+///  so the platform is installed before the thread's first window.
+use super::gpu_snapshot::install_gpu_platform;
 /// Tree-row lookup by label,
 ///  shared with the navigation tests.
 use super::navigation_tests::row;
@@ -50,6 +53,7 @@ fn replace(folder: &Path, displayed: &Path, text: &str) {
 pub(super) fn open(root: &Path, file: &Path) -> (AppWindow, Rc<RefCell<State>>, [Timer; 2]) {
     let text = fs::read_to_string(file).expect("displayed source");
     let workspace = Workspace::new(root).expect("workspace");
+    install_gpu_platform();
     let window = AppWindow::new().expect("native watch window");
     // `Some` marks an on-disk displayed file that the source refresh rereads.
     let state = Rc::new(RefCell::new(State::new(&text, Some(file.to_path_buf()))));

@@ -101,7 +101,7 @@ pub fn install_backend() -> anyhow::Result<()> {
     }
     // What: `std::env::var(...)` reads the variable as text; `unwrap_or_default()` gives empty text
     //       when it is unset or not UTF-8.
-    // Why: Only a value naming winit, optionally with a renderer (`winit-software`), stays explicit here.
+    // Why: Only a value naming winit, optionally with a renderer (`winit-femtovg`), stays explicit here.
     //
     // In TS you'd write (pseudocode):
     // ```ts
@@ -121,7 +121,7 @@ pub fn install_backend() -> anyhow::Result<()> {
     // let builder = Backend.builder().withWindowAttributesHook(setWindowAppId);
     // ```
     let mut builder = Backend::builder().with_window_attributes_hook(set_window_app_id);
-    // What: `strip_prefix("winit-")` returns `Some(rest)` for `winit-software` and the like.
+    // What: `strip_prefix("winit-")` returns `Some(rest)` for `winit-femtovg` and the like.
     // Why: Slint's own `SLINT_BACKEND` spelling picks a renderer after the dash; keep honoring it.
     //
     // In TS you'd write (pseudocode):
