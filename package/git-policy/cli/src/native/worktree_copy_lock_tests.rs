@@ -510,7 +510,7 @@ fn the_namespace_is_an_optional_sorted_key() {
     assert_eq!(parse_owner(text.as_str()), Ok(owner));
     assert_eq!(parse_owner(DEAD_OWNER).expect("old record").owner_pid_namespace, None);
     for ignored in ["\"\"", "5", "null"] {
-        let text: String = DEAD_OWNER.replace(",\"schemaVersion\"", &format!(",\"ownerPidNamespace\":{ignored},\"schemaVersion\""));
-        assert_eq!(parse_owner(text.as_str()).expect(ignored).owner_pid_namespace, None, "{ignored}");
+        let with_ignored: String = DEAD_OWNER.replace(",\"schemaVersion\"", &format!(",\"ownerPidNamespace\":{ignored},\"schemaVersion\""));
+        assert_eq!(parse_owner(with_ignored.as_str()).expect(ignored).owner_pid_namespace, None, "{ignored}");
     }
 }
