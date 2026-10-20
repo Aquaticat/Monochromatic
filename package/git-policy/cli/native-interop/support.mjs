@@ -90,6 +90,7 @@ export async function run({
   child.stdout
     .on(
     'data',
+    /** @param {Buffer} chunk - bytes the process wrote to standard output */
     function collectStdout(chunk) {
       out.push(chunk);
     },
@@ -97,6 +98,7 @@ export async function run({
   child.stderr
     .on(
     'data',
+    /** @param {Buffer} chunk - bytes the process wrote to standard error */
     function collectStderr(chunk) {
       err.push(chunk);
     },
@@ -106,17 +108,19 @@ export async function run({
   child.stdin
     .on(
     'error',
-    function ignoreClosedInput() {},
+    function ignoreClosedInput() {
+      // Nothing to do: the command already ended or replaced itself, and its exit state is read below.
+    },
   );
   child.stdin
     .end(input ?? '');
-  const [status, signal] = await once(
+  await once(
     child,
     'close',
   );
   return {
-    status,
-    signal,
+    status: child.exitCode,
+    signal: child.signalCode,
     stdout: Buffer.concat(out)
       .toString('utf8'),
     stderr: Buffer.concat(err)
@@ -157,14 +161,14 @@ export function runThrough({
 /**
  Run real Git in a fixture and return its trimmed output.
 
- @param {{ repository: string, home: string }} fixture - repository and home
- @param {readonly string[]} args - Git arguments
+ @param {{ fixture: { repository: string, home: string }, args: readonly string[] }} request -
+   repository and home, and the Git arguments
  @returns {Promise<string>} trimmed standard output
  */
-export async function realGit(
+export async function realGit({
   fixture,
-  args
-) {
+  args,
+}) {
   const outcome = await run({
     command: REAL_GIT,
     args,
@@ -181,6 +185,22 @@ export async function realGit(
 }
 
 /**
+ Whether a caught value is the error Node raises for a path that does not exist.
+
+ @param {unknown} error - caught value
+ @returns {boolean} true for an `ENOENT` error
+ */
+export function isMissingPath(error) {
+  // `Object` wraps a primitive and turns `null` into an empty object, so any caught value can be asked for a code.
+  /** @type {unknown} */
+  const code = Reflect.get(
+    new Object(error),
+    'code',
+  );
+  return code === 'ENOENT';
+}
+
+/**
  Entry names of a directory, or none when it does not exist.
 
  @param {string} directory - directory to list
@@ -191,8 +211,7 @@ export async function namesIn(directory) {
     return await readdir(directory);
   }
   catch (error) {
-    if ((Error.isError(error,)) && ('code' in error)
-      && (error.code === 'ENOENT'))
+    if (isMissingPath(error))
       return [];
     throw error;
   }
@@ -210,8 +229,7 @@ export async function pathExists(path) {
     return true;
   }
   catch (error) {
-    if ((Error.isError(error,)) && ('code' in error)
-      && (error.code === 'ENOENT'))
+    if (isMissingPath(error))
       return false;
     throw error;
   }
@@ -224,14 +242,14 @@ export async function pathExists(path) {
  that never takes that lock (a `status`, an `add` that needs no landing) leaves them in place by design.
  `staleLocks` accepts them for such a command.
 
- @param {{ repository: string }} fixture - repository
- @param {{ staleLocks?: boolean }} [options] - whether lock directories count as leftovers
+ @param {{ fixture: { repository: string }, staleLocks?: boolean }} request -
+   repository, and whether lock directories count as leftovers
  @returns {Promise<string[]>} descriptions of each leftover, none when the repository is quiescent
  */
-export async function leftovers(
+export async function leftovers({
   fixture,
-  { staleLocks = false } = {}
-) {
+  staleLocks = false,
+}) {
   const gitDir = join(
     fixture.repository,
     '.git',
@@ -280,14 +298,15 @@ export async function leftovers(
 export function createMatrix() {
   /** @type {string[]} */
   const failures = [];
-  let passed = 0;
+  /** @type {string[]} */
+  const passes = [];
   return {
     check({
       condition,
       message,
     }) {
       if (condition) {
-        passed += 1;
+        passes.push(message);
         console.log(`ok: ${message}`);
       }
       else {
@@ -297,7 +316,7 @@ export function createMatrix() {
       return condition;
     },
     finish() {
-      console.log(`${String(passed)} checks passed, ${String(failures.length)} failed`);
+      console.log(`${String(passes.length)} checks passed, ${String(failures.length)} failed`);
       if (failures.length > 0)
         throw new InteropError(`${String(failures.length)} checks failed:\n${failures.join('\n')}`);
     },

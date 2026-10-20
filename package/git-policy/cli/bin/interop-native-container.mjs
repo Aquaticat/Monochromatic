@@ -131,11 +131,50 @@ async function copySnapshot({ context }) {
     );
 }
 
+/** Characters a driver name may hold: lowercase words and dashes. */
+const driverNameCharacters = 'abcdefghijklmnopqrstuvwxyz0123456789-';
+
+/** Prefix of the crate version line in `Cargo.toml`. */
+const versionLinePrefix = 'version = "';
+
+/**
+ Whether text names a driver under `native-interop/`.
+
+ @param {string} text - requested driver name
+ @returns {boolean} whether it is non-empty and holds only lowercase letters, digits and dashes
+ */
+function isDriverName(text) {
+  const characters = text
+    .split('');
+  return (characters.length > 0)
+    && characters.every(function isAllowed(character) {
+      return driverNameCharacters.includes(character);
+    });
+}
+
+/**
+ The crate version a `Cargo.toml` declares.
+
+ @param {string} manifest - text of `Cargo.toml`
+ @returns {string | undefined} the first `version = "..."` line's value, none when no line has that shape
+ */
+function crateVersionOf(manifest) {
+  const line = manifest
+    .split('\n')
+    .find(function isVersionLine(candidate) {
+      return candidate.startsWith(versionLinePrefix) && candidate.endsWith('"');
+    });
+  return line?.slice(
+    versionLinePrefix.length,
+    -1,
+  );
+}
+
 /** Build the image once per call, then run the named driver in it under the gate's bounds without a PID cap. */
 async function main() {
   const [driver, ...driverArguments] = process.argv
     .slice(2);
-  if ((driver === undefined) || (!/^[a-z0-9-]+$/u.test(driver)))
+  if ((driver === undefined) || (!isDriverName(driver)))
     throw new NativeVerificationError('Name one driver under native-interop/ in lowercase words and dashes.');
   await using context = await mkdtempDisposable(join(
     tmpdir(),
@@ -152,12 +191,10 @@ async function main() {
   ));
   await copySnapshot({ context: context.path });
   await vendorLockedDependencies({ context: context.path });
-  const nativeCrateVersion = /^version = "(?<version>[^"]+)"$/mu.exec(await readFile(
+  const nativeCrateVersion = crateVersionOf(await readFile(
     resolve('Cargo.toml'),
     'utf8',
-  ))
-    ?.groups
-    ?.version;
+  ));
   await writeFile(
     join(
       context.path,
