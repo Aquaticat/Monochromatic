@@ -35,6 +35,7 @@ import {
   type CommandLineOf,
   taskPathOf,
 } from '@monochromatic-dev/translation-repair-run/ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Cache account run
 // THE PRE-LAUNCH CACHE VERSION CHECK (ledger M28), read-only: git log, git
@@ -198,7 +199,7 @@ export async function auditCacheAccounts(
   const versions = [...texts,].flatMap(function declared([
     path,
     text,
-  ],): readonly CacheVersion[] {
+  ]: ReadonlyEntry<string, string>,): readonly CacheVersion[] {
     return cacheVersionsIn({
       path,
       text,

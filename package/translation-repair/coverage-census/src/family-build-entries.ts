@@ -4,6 +4,7 @@ import { nodeEntries as probeEntries, } from '@monochromatic-dev/translation-rep
 import { nodeEntries as runEntries, } from '@monochromatic-dev/translation-repair-run/ts';
 import { nodeEntries as sliceCacheEntries, } from '@monochromatic-dev/translation-repair-slice-cache/ts';
 import { nodeEntries as ownEntries, } from './build-entries.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Family build entries
 // The census tells a runner's command-line main from library source by the
@@ -107,6 +108,14 @@ export const FAMILY_ENTRY_LISTS: ReadonlyMap<string, ReadonlyMap<string, string>
 ],);
 
 /**
+ The package whose list gave an entry, and the path that list gave it.
+ */
+type EntryOwner = {
+  readonly owner: string;
+  readonly path: string;
+};
+
+/**
  Merges the packages' lists into one, in the order given, an entry two lists
  carry at one path kept once.
 
@@ -127,10 +136,7 @@ export function familyEntriesOf(
   /**
    Entries merged so far, and the package whose list gave each.
    */
-  const merged = new Map<string, {
-    readonly owner: string;
-    readonly path: string;
-  }>();
+  const merged = new Map<string, EntryOwner>();
   for (const [owner, list,] of lists) {
     for (const [entry, path,] of list) {
       /**
@@ -157,7 +163,7 @@ export function familyEntriesOf(
         },);
     }
   }
-  return new Map([...merged,].map(function pathOf([entry, { path, },],): readonly [
+  return new Map([...merged,].map(function pathOf([entry, { path, },]: ReadonlyEntry<string, EntryOwner>,): readonly [
     string,
     string
   ] {
@@ -197,10 +203,10 @@ export const nodeEntries: ReadonlyMap<string, string> = familyEntriesOf({ lists:
 export function runnerEntrySources(): ReadonlySet<string> {
   return new Set(
     [...nodeEntries,]
-      .filter(function isRunner([name,],): boolean {
+      .filter(function isRunner([name,]: ReadonlyEntry<string, string>,): boolean {
         return name !== 'index';
       },)
-      .map(function sourceOf([, path,],): string {
+      .map(function sourceOf([, path,]: ReadonlyEntry<string, string>,): string {
         return path.slice('./'.length,);
       },),
   );

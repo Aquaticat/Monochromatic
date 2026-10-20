@@ -13,6 +13,7 @@ import {
   type ConsistencyQuoteWire,
   isUsableConsistencyBallot,
 } from './consistency-wire.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Consistency majority
 // What a strict majority of a group's usable ballots agree on: a quote, a
@@ -62,10 +63,10 @@ function majorityText(
     );
   }
   return [...tally.entries(),]
-    .filter(function isMajority([, ballots,],): boolean {
+    .filter(function isMajority([, ballots,]: ReadonlyEntry<string, number>,): boolean {
       return (ballots * 2) > of;
     },)
-    .map(function textOf([text,],): string {
+    .map(function textOf([text,]: ReadonlyEntry<string, number>,): string {
       return text;
     },);
 }

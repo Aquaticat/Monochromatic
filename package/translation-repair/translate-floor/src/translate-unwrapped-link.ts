@@ -13,6 +13,7 @@ import {
   readSliceSkeleton,
   walkAtoms,
 } from '@monochromatic-dev/translation-repair-glossary/ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Unwrapped link floor
 // THE ONE HUNDRED FIFTEENTH CLASS (yingying10, 2026-09-24). A translate
@@ -219,10 +220,10 @@ export function unwrappedLinkFindings(
    */
   const destinations = carriedDestinations({ text: candidateText, },);
   return [...wordedCounts({ text: sourceText, },),]
-    .filter(function unwrapped([href, owed,],): boolean {
+    .filter(function unwrapped([href, owed,]: ReadonlyEntry<string, number>,): boolean {
       return ((rendered.get(href,) ?? 0) < owed) && destinations.has(href,);
     },)
-    .map(function finding([href,],): string {
+    .map(function finding([href,]: ReadonlyEntry<string, number>,): string {
       return `The ORIGINAL links words to ${href} as [words](${href}), but your translation carries that destination without words linked to it. Keep the link: put the rendered words inside the brackets and the destination in the parentheses right after them, as the ORIGINAL does.`;
     },);
 }
