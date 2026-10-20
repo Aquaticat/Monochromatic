@@ -780,3 +780,7 @@ named for that subject and listed here.
   CuspariaKLSY16,
   CuspariaKLSY17,
   XingZ6015.
+- [OpenRouter and the corpus passes: 2026-10-20](translation-repair-openrouter-2026-09-03-2026-10-20.md):
+  What was read and decided on 2026-10-20.
+  Entries:
+  XingZ6015.

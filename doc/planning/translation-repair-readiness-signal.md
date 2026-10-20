@@ -231,11 +231,26 @@ this section is the readiness reading of it.
   shipped SETTLED with no class,
   with two Gemma seats dark on HTTP 401 and every meter wet;
   `CuspariaKLSY16` ran on another build and is not evidence.
-  `XingZ6015` is the third.
+  The third,
+  `XingZ6015`,
+  shipped SETTLED with five classes
+  ([the pass log of 2026-10-20](translation-repair-openrouter-2026-09-03-2026-10-20.md)),
+  so the rotation on that build ended there with two no-class reads,
+  and `yingying` was not launched.
+  The next rotation starts from its first entry on the build that fixes the five classes
+  and the owner's reader-protection ruling of 2026-10-20.
 - The entries never run on a recent build are the rest of the 92-entry corpus.
   The owner's rule stands:
   "We never ever need a all 92 entries launch";
   readiness is claimed on the read set and the classes it stopped finding.
-- Money is not the constraint:
-  Bedrock 46.57 USD and OpenRouter 92.81 USD at 08:10 UTC,
-  a full rotation of the read set about 16 USD on Bedrock and OpenRouter alone.
+- The providers are now a constraint on the roster,
+  not on money.
+  At the end of `XingZ6015` (00:05 UTC on 2026-10-20) Synthetic's weekly allowance and Hyper's balance were both 0,
+  OpenRouter held 16.13 USD and Bedrock 5.02 USD,
+  and three Gemma seats refused credentials.
+  Hyper is prepaid and will not be recharged;
+  Synthetic gives back about 2% every 202 minutes
+  (`package/translation-repair/doc/provider-availability.md`).
+  So the next rotation runs mostly on OpenRouter seats,
+  3 of 7 seats within reach of the contest and consolidation lanes as in `XingZ6015`'s later lanes,
+  and `XingZ6015` alone spent 5.80 USD of OpenRouter.
