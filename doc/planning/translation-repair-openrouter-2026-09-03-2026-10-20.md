@@ -3,7 +3,8 @@
 What was read and decided on 2026-10-20.
 Entries:
 XingZ6015,
-zheermao15.
+zheermao15,
+CuspariaKLSY18.
 
 Part of [Translation repair: OpenRouter as the paid fallback provider](translation-repair-openrouter-2026-09-03.md),
 which lists every file of this record.
@@ -274,3 +275,118 @@ The next launch is `CuspariaKLSY18` on the build that has the note fix and the s
 under a new frozen digest;
 it is not a repeat of `zheermao101`,
 whose read found nothing else on that page.
+
+## CuspariaKLSY18 read, 2026-10-20, 14:55 UTC: SETTLED in 49.4 min of pass; no class
+
+The note fix landed as `a6a0ed7dc0` after gate g121
+(2564 `[PASS]` lines,
+no `[FAIL]` line).
+The rotation went on with the entry `CuspariaKLSY`,
+launched as `CuspariaKLSY18` at 14:00 UTC on 2026-10-20,
+on tip `a6a0ed7dc0…` and pipeline `sha256-tree-v1:1149dceac4ea…`
+(the unit `corpus-pass-corpus-pass-CuspariaKLSY18`),
+and the `START` line matched the frozen digest.
+It settled in 2,965,786 ms of pass,
+and the `DONE` line reads `elapsed=2965899ms`,
+which is 49.4 min:
+`TALLY CuspariaKLSY status=SETTLED slices=4 repairStatus=repaired repairIssues=48 repairAccepted=41 repairResolved=41
+... repairChanged=4 translateStatus=complete translateChanged=4 documentsDiffer=3 pageChanged=4 pageSilent=0
+alignmentFindings=1 selection=contested`.
+The repair lane,
+the translate lane and the page pass each changed all 4 slices.
+The one alignment finding records that block pairing matched all 18 original and all 18 translation blocks
+(`preparation.alignmentFindings` of the artifact),
+not a defect.
+`DESTINATIONS CuspariaKLSY source=0 page=0 dropped=0`,
+and the publish wrote 4 slices into a page of 1898 characters.
+The log holds 154 `warn` lines,
+no `[error]` line,
+no `DEFECTS` line,
+and none of `REATTEMPT`,
+`STALLED`,
+`mdx-downgraded` or `StreamOverrunError`.
+Its two `verify-published` lines are the build's output listing,
+so this read did not rest on that read-back either.
+
+### Seats and meters
+
+Two Gemma seats were dark on `SEAT CREDENTIAL REFUSED ... HTTP 401`
+("The security token included in the request has expired"):
+`google.gemma-4-e2b` and `gemma-4-26b-a4b-it` threw on all 4 asks each and were withheld after them,
+as `package/translation-repair/doc/status.md` records for the Bedrock Gemma seats.
+`inception/mercury-2.5` threw on 6 of its 54 asks,
+and `hf:Qwen/Qwen3.8-27B` had 12 asks abandoned;
+every other seat threw nothing.
+The run ended with `SEATS DARK: 2 of 11 seats asked produced nothing usable`.
+Synthetic's weekly meter read 8% at 14:00 UTC and 2.03% at the last reading,
+14:50 UTC,
+so the next run starts near the level at which zheermao15 lost Kimi and Qwen.
+Hyper's balance went from 250 to 229,
+OpenRouter from 15.52 USD to 15.47 USD,
+and Bedrock stayed at 5.02 USD.
+
+### The page
+
+The lead read the shipped page (`fixed/people/CuspariaKLSY/page.en.md` of the run) beside the original (`page.md`)
+and the archive (`page.en.md`),
+line by line.
+Every line of the original is rendered,
+in the past tense for a life that ended,
+and the archive's errors the lanes were there to repair are repaired:
+"She didn’t consider her life more valuable than others’" is now "She didn’t value her own life much" (不怎么看重自己的生命),
+"She doesn’t trust God 100%" is "She didn’t really believe in God" (不是太信上帝),
+and the last paragraph now carries 双方情绪爆发,
+抢救 and 脑死亡,
+which the archive left out.
+
+Two things in the page read as defects and are not,
+and each has a source:
+
+- The front matter `desc`,
+  "Be more similar to “herself”.",
+  is the archive's and does not render the original's 「泠水鱼鱼子」是在喂鱼时起的哦,
+  and `desc` stays frozen.
+  `doc/decision/translation-repair-front-matter-guard.md` lets the archive's front matter stand.
+- The archive's "She swallowed lots of her meds that night" is gone.
+  The original does not hold it,
+  and `package/translation-repair/house-rule/src/house-policy.ts` (line 87) says the page tells a survived attempt
+  "never by what means".
+
+Three renderings are the judges' choices and read less well than they could,
+with no shared cause the lead found,
+so they are recorded and not counted as a class:
+
+- "Word came again that she had been confirmed brain-dead" for 再次得到消息得知其已经确认脑死亡:
+  "again" renders 再次 word for word,
+  where "The next news was that" says what the original means.
+- "Contact with futa,
+  too,
+  planted the seed of an idea in her" for 加上接触了 futa 萌生想法:
+  the idea is the one the list is about,
+  transitioning,
+  and "Contact with" reads as touch.
+- "was tormented by having no way to do so" for 苦于没有能力:
+  苦于 is troubled by,
+  weaker than tormented.
+
+### What follows
+
+Three fixes to the cut of the notes between translators landed after this run's build.
+The cut of a note alone on a quoted line now takes the line
+(`cca7711de7`,
+gate g122),
+and the five cache versions whose sheets cut notes moved for it.
+The cut of two notes on one line and of a note ending a CRLF line followed
+(`a5dc23c5bb`,
+gate g123)
+and ride inside those versions,
+since no pinned archive's sheet text changes
+and a settled entry leaves no slice-cache record
+(`retireSettledEntryCache` in `package/translation-repair/corpus-pass/src/corpus-run/pass-entry-caches.ts`).
+"Ready" rests on a rotation on one frozen build,
+and `a5dc23c5bb` is not this run's build,
+so the rotation restarts at its first entry:
+`zheermao16` launched at 14:58 UTC on 2026-10-20 on pipeline `sha256-tree-v1:16f46cb79c96…`,
+and its `START` line matched the frozen digest.
+It is also the first run of the note fix on a page that holds a note,
+since `CuspariaKLSY`'s archive holds none.

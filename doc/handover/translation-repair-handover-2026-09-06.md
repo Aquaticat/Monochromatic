@@ -463,11 +463,52 @@ its "Next" list is still the queue the merge went ahead of.
   the note between translators in the reply email was lost,
   because the archive block review replaced the block before the lanes ran
   and the carry had no note to carry.
-  The fix is in progress in the worktree `w223` off `dc4982c9cb`;
-  it has not landed.
+  The fix landed as `a6a0ed7dc0` after gate g121
+  (2564 `[PASS]` lines,
+  no `[FAIL]` line):
+  an archive block replacement keeps the notes the block held,
+  and the archive block review's sheet cuts them.
+  Its red commit `49adf0457c` has a 122-character subject;
+  corrective commit comment 205806679.
+- `CuspariaKLSY18` ran on `a6a0ed7dc0` from 14:00 UTC and was read at 14:55 UTC on 2026-10-20
+  ([the pass log of 2026-10-20](../planning/translation-repair-openrouter-2026-09-03-2026-10-20.md#cuspariaklsy18-read-2026-10-20-1455-utc-settled-in-494-min-of-pass-no-class)):
+  SETTLED,
+  4 slices,
+  every lane changed all 4,
+  49.4 min of pass,
+  no class.
+  The two Bedrock Gemma seats were dark on their expired token,
+  and Synthetic's weekly meter fell from 8% to 2.03%.
+- Three fixes to the cut of the notes between translators landed after it.
+  A note alone on a quoted line is cut with its line
+  (`cca7711de7`,
+  gate g122;
+  zheermao101's archive is the one pinned page it changes),
+  with the five sheet-backed cache versions moved
+  (lane contest 12,
+  consolidate 27,
+  translate slice 21,
+  repair slice 39,
+  refine 10).
+  Two notes on one line keep the line break after them,
+  and a note ending a CRLF line keeps the carriage return
+  (`a5dc23c5bb`,
+  gate g123);
+  no pinned page changes,
+  so both ride inside those versions,
+  and each version's account names their commits.
+  A settled entry discards its own slice cache
+  (`retireSettledEntryCache` in `package/translation-repair/corpus-pass/src/corpus-run/pass-entry-caches.ts`),
+  so an empty `slice-cache` directory after a settled run is the expected state,
+  not a control that failed.
+- The rotation restarted from `zheermao101` on `a5dc23c5bb`:
+  `zheermao16`,
+  unit `corpus-pass-corpus-pass-zheermao16`,
+  launched at 14:58 UTC on 2026-10-20,
+  `START` digest `sha256-tree-v1:16f46cb79c96…` matching the frozen one.
+  It is the first run of the note fix on a page that holds a note.
 - Open:
-  the note fix (landing needs its own gate),
-  and the guard of B701,
+  the guard of B701,
   whose two shapes (a rotation sweep task,
   a test-only override seam in `stage`) are proposed and not decided.
 
@@ -493,10 +534,10 @@ its "Next" list is still the queue the merge went ahead of.
     `shi_Yumiaoya`
     and `TianqiChen666`,
     each read before the next launch.
-    `zheermao101` has been read (one class,
-    the lost note between translators),
-    so the next launch is `CuspariaKLSY18`,
-    and the item "The next action" says on which build.
+    `zheermao15` (one class,
+    the lost note between translators) and `CuspariaKLSY18` (no class) ran on earlier builds,
+    and the rotation restarted from `zheermao101` as `zheermao16` on `a5dc23c5bb`;
+    the item "The next action" says what follows.
     Synthetic and Hyper are dry and Hyper will not be recharged,
     so the restarted rotation runs mostly on OpenRouter (16.13 USD at 00:05 UTC on 2026-10-20).
     The bundler guard landed on `main`
@@ -548,22 +589,19 @@ its "Next" list is still the queue the merge went ahead of.
     so the typography and page-check suites run after any change to `mise.lock`.
 5.  The next action,
     in order:
-    - Land the note fix (the class of the `zheermao15` read;
-      the worktree `w223` off `dc4982c9cb`)
-      after its gate:
-      the fix is in progress,
-      red test first,
-      and the gate runs the build,
-      `lint-oxlint`,
-      `lint-types` and `test-unit` steps of every family package
-      and then the source scans,
-      as g120 did.
-    - Take a new frozen digest from the gated build,
-      since the census and the note fix change the signatures of corpus-pass.
-    - Launch `CuspariaKLSY18` on that build,
-      not a repeat of `zheermao101`,
-      whose read found nothing else on that page.
-      Read it at its `DONE processed=` line against the original and the archive before the next launch.
+    - Read `zheermao16` at its `DONE processed=` line against the original,
+      the archive and the three photos,
+      and check that the page keeps the note `{/* 可以避开黑暗的锋芒，到那些有光的地方躲一躲。 这句不知道如何翻译 */}`
+      once,
+      where the kept note is placed (a paragraph after the email's blockquote,
+      since the archive holds it on a quoted line of its own),
+      and that no unclaimed block or bare quote line appears there.
+    - Then launch `CuspariaKLSY19` on the same frozen build,
+      and go on through the rotation one read at a time.
+    - Queued and not started:
+      the footnote reorder can move an indented note line under a neighbouring definition;
+      the naturalness review still shows notes to its judges (it only produces findings);
+      and the class of the `zheermao15` read has no ledger id yet.
     - The guard of B701 stays open and undecided:
       the rotation sweep as an expensive mise task,
       or a test-only override seam in `stage`.
@@ -575,6 +613,8 @@ its "Next" list is still the queue the merge went ahead of.
       (205736551 on `7071a8eb5b8f585a9bdf3ac6b88fd4a94d51ddd7`,
       205736554 on `28f4b8fc755c0b9fcc8bd00b7b9f211d946c67b3`),
       the branch worktree's move and the restart from `zheermao101`,
+      the note fix (`a6a0ed7dc0`) and the three cut fixes (`cca7711de7` and `a5dc23c5bb`),
+      the read of `CuspariaKLSY18`,
       and the glossary comment in `package/translation-repair/glossary/src/translate-skeleton.ts`,
       which now says the judges still weigh the original's own comments
       while `translators-note.ts` cuts the notes between translators from their sheets (B698).

@@ -244,7 +244,16 @@ this section is the readiness reading of it.
   `zheermao15` shipped SETTLED with one class,
   a note between translators lost when the archive block review replaced its block
   ([the pass log of 2026-10-20](translation-repair-openrouter-2026-09-03-2026-10-20.md)).
-  The rotation goes on at `CuspariaKLSY18` on the build that carries the fix for that note.
+  `CuspariaKLSY18`,
+  on the build that carries the fix for that note
+  (`a6a0ed7dc0`,
+  digest `sha256-tree-v1:1149dceac4ea…`),
+  shipped SETTLED with no class.
+  Three fixes to the cut of those notes landed after it
+  (`a5dc23c5bb`,
+  digest `sha256-tree-v1:16f46cb79c96…`),
+  so neither read is on the build the rotation now runs,
+  and the rotation restarted from `zheermao101` as `zheermao16` at 14:58 UTC on 2026-10-20.
 - The entries never run on a recent build are the rest of the 92-entry corpus.
   The owner's rule stands:
   "We never ever need a all 92 entries launch";
