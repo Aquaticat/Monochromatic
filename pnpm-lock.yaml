@@ -519,6 +519,52 @@ importers:
         specifier: 'catalog:'
         version: 3.0.0-2
 
+  package/agent-harness-shared/advisor:
+    dependencies:
+      '@monochromatic-dev/agent-harness-shared-model-selection':
+        specifier: workspace:*
+        version: link:../model-selection
+      '@monochromatic-dev/module-caught-value':
+        specifier: workspace:*
+        version: link:../../module/caught-value
+      '@monochromatic-dev/module-logger':
+        specifier: workspace:*
+        version: link:../../module/logger
+      '@monochromatic-dev/ownership-marker-foreign-borrowed':
+        specifier: workspace:*
+        version: link:../../ownership-marker/foreign-borrowed
+      type-fest:
+        specifier: 'catalog:'
+        version: 5.10.0
+      valibot:
+        specifier: 'catalog:'
+        version: 1.5.0(typescript@7.1.0-beta)
+    devDependencies:
+      '@earendil-works/pi-ai':
+        specifier: 'catalog:'
+        version: 1.3.0(undici@8.12.2)
+      '@earendil-works/pi-coding-agent':
+        specifier: 'catalog:'
+        version: 1.3.0
+      '@monochromatic-dev/config-rolldown':
+        specifier: workspace:*
+        version: link:../../config/rolldown
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      typebox:
+        specifier: 'catalog:'
+        version: 1.4.2
+      typescript:
+        specifier: 'catalog:'
+        version: 7.1.0-beta
+
   package/agent-harness-shared/current-time-context:
     devDependencies:
       '@monochromatic-dev/config-rolldown':
@@ -4124,6 +4170,9 @@ importers:
 
   package/pi-plugin/advisor:
     dependencies:
+      '@monochromatic-dev/agent-harness-shared-advisor':
+        specifier: workspace:*
+        version: link:../../agent-harness-shared/advisor
       '@monochromatic-dev/agent-harness-shared-model-selection':
         specifier: workspace:*
         version: link:../../agent-harness-shared/model-selection

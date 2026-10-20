@@ -1473,6 +1473,8 @@ _.file = [{ path = ".env.local.json", redact = true }]
 _.path = [
   ".cache/cli-git-bin",
   "node_modules/.bin",
+  "package/agent-harness-shared/advisor/node_modules/.bin",
+  "package/agent-harness-shared/model-selection/node_modules/.bin",
   "package/agent-harness-shared/search-fetch/node_modules/.bin",
   "package/agent-harness-shared/truncate/node_modules/.bin",
   "package/claude-code-plugin/bash-output-filter/node_modules/.bin",
@@ -1514,7 +1516,6 @@ _.path = [
   "package/pi-plugin/terminal-title/node_modules/.bin",
   "package/pi-plugin/thinking-default/node_modules/.bin",
   "package/pi-shared/model-review/node_modules/.bin",
-  "package/agent-harness-shared/model-selection/node_modules/.bin",
   "package/ssg/aquati.cat/node_modules/.bin",
   "package/stub/throwing/node_modules/.bin",
   "package/translation-repair/document-structure/node_modules/.bin",
