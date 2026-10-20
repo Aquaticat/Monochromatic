@@ -45,6 +45,11 @@ import {
   jsonRecordOf,
 } from './neuralwatt-ledger.test-fixture.ts';
 import {
+  ask,
+  chatExchangesOf,
+  streamOf,
+} from './neuralwatt-scripted-client.test-fixture.ts';
+import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
@@ -78,46 +83,6 @@ const SMALL_ENERGY_COMMENT = ': energy {"energy_kwh": 0.0000005}\n\n';
  The cost comment of a free request.
  */
 const FREE_COST_COMMENT = ': cost {"request_cost_usd": 0, "cache_savings_usd": 0.0}\n\n';
-
-/**
- Whole stream an endpoint answers with.
-
- @param comments - comment lines placed before the sentinel, each ending in a blank line
-
- @param done - whether the sentinel closes the stream
-
- @returns Body text
-
- @example
- ```ts
- const bodyText = streamOf({ comments: ENERGY_COMMENT, },);
- ```
- */
-function streamOf(
-  {
-    comments = '',
-    done = true,
-  }: {
-    readonly comments?: string;
-    readonly done?: boolean;
-  },
-): string {
-  return [
-    `data: ${JSON.stringify({
-      id: 'chatcmpl-whiskers',
-      object: 'chat.completion.chunk',
-      choices: [{ index: 0, delta: { role: 'assistant', content: '{"spot":"sunbeam"}', }, finish_reason: null, },],
-    },)}\n\n`,
-    `data: ${JSON.stringify({
-      id: 'chatcmpl-whiskers',
-      object: 'chat.completion.chunk',
-      choices: [],
-      usage: { prompt_tokens: 90, completion_tokens: 10, total_tokens: 100, },
-    },)}\n\n`,
-    comments,
-    done ? 'data: [DONE]\n\n' : '',
-  ].join('',);
-}
 
 /**
  Quota reply with a given charged energy.
@@ -231,46 +196,6 @@ function scripted(
   };
 }
 
-/**
- Chat exchanges among those seen.
-
- @param exchanges - everything the transport saw
-
- @returns The POSTs
-
- @example
- ```ts
- const posts = chatExchangesOf({ exchanges, },);
- ```
- */
-function chatExchangesOf({ exchanges, }: { readonly exchanges: readonly TransportExchange[]; },): readonly TransportExchange[] {
-  return exchanges.filter(function isPost(exchange,): boolean {
-    return exchange.method === 'POST';
-  },);
-}
-
-/**
- Asks the DeepSeek seat one short question.
-
- @param client - client under test
-
- @returns The reply
-
- @example
- ```ts
- const reply = await ask({ client, },);
- ```
- */
-async function ask(
-  { client, }: { readonly client: ReturnType<typeof createNeuralWattClient>; },
-) {
-  return await client.chatText({
-    modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
-    messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
-    signal: SIGNAL,
-  },);
-}
-
 await describe({
   name: createNeuralWattClient.name,
   concurrency: 1,
@@ -370,7 +295,7 @@ await describe({
           return line.includes('SPEND provider=neuralwatt model=deepseek-v4.1-flash prompt=90 completion=10 cost=0',);
         },),).toBe(true,);
         expect(runSpendUsd({ provider: 'neuralwatt', },),).toBe(before,);
-        expect(await ledger.read(),).toMatchObject({ reservedWh: 0, reckonedWh: 0, calls: 1, billedToday: false, },);
+        expect(await ledger.read(),).toMatchObject({ reservedWh: 0, reckonedWh: 0, calls: 1, },);
         expect((await ledger.read()).spentWh,).toBeCloseTo(0.015, 12,);
         expect(jsonRecordOf({ text: (await readFile(ledger.path, 'utf8',)).trim(), },).estimated,).toBeUndefined();
       },
@@ -409,20 +334,22 @@ await describe({
     },),
 
     it({
-      name: 'READS A REQUEST THAT WAS BILLED AS THE END OF THE DAY\'S FREE ENERGY: the line carries the cost, the log '
-        + 'says plainly that the request was billed and the provider is dry until 00:00 UTC, and the next call is '
-        + 'refused without a request',
+      name: 'A REPORTED COST ABOVE ZERO DOES NOT END THE DAY: the SPEND line still carries the cost, the ledger line '
+        + 'is a plain measured one, nothing is logged as billed, and the next call is still sent and settled',
       fn: async ctx => {
         await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-client-', },);
         const { client, ledger, exchanges, } = scripted({
           dir: scratch.path,
-          chat: [{
-            status: 200,
-            bodyText: streamOf({ comments: `${ENERGY_COMMENT}: cost {"request_cost_usd": 0.00001}\n\n`, }),
-          },],
+          chat: [
+            {
+              status: 200,
+              bodyText: streamOf({ comments: `${ENERGY_COMMENT}: cost {"request_cost_usd": 0.000107}\n\n`, }),
+            },
+            { status: 200, bodyText: streamOf({ comments: ENERGY_COMMENT + FREE_COST_COMMENT, }), },
+          ],
         },);
         /**
-         Lines the billed call logged.
+         Lines the first call logged.
          */
         const lines = await consoleLinesDuring({
           run: async function call(): Promise<void> {
@@ -430,20 +357,25 @@ await describe({
           },
           sinon: ctx.sinon,
         },);
-        expect(lines.some(function says(line,): boolean {
-          return line.includes('BILLED',) && line.includes('00:00 UTC',) && line.includes('deepseek-v4.1-flash',);
+        expect(lines.some(function isSpend(line,): boolean {
+          return line.includes('SPEND provider=neuralwatt model=deepseek-v4.1-flash',) && line.includes('cost=0.000107',);
         },),).toBe(true,);
-        expect(jsonRecordOf({ text: (await readFile(ledger.path, 'utf8',)).trim(), },).billedUsd,).toBe(0.00001,);
-        expect((await client.energy({ signal: SIGNAL, },)).billedToday,).toBe(true,);
-
+        expect(lines.some(function says(line,): boolean {
+          return line.toLowerCase()
+            .includes('billed',);
+        },),).toBe(false,);
+        expect('billedUsd' in jsonRecordOf({ text: (await readFile(ledger.path, 'utf8',)).trim(), },),).toBe(false,);
         /**
-         What the call after the billed one throws.
+         Reading of the day after the costed call.
          */
-        const refusal = await rejectionOf(async function next(): Promise<void> {
-          await ask({ client, },);
-        },);
-        expect(refusal,).toBeInstanceOf(NeuralWattAllowanceError,);
-        expect(chatExchangesOf({ exchanges, },).length,).toBe(1,);
+        const energy = await client.energy({ signal: SIGNAL, },);
+        expect('billedToday' in energy,).toBe(false,);
+        expect(energy.calls,).toBe(1,);
+
+        // The call after the costed one is granted: a second request leaves the transport.
+        await ask({ client, },);
+        expect(chatExchangesOf({ exchanges, },).length,).toBe(2,);
+        expect((await client.energy({ signal: SIGNAL, },)).calls,).toBe(2,);
       },
     },),
 

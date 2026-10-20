@@ -13,8 +13,8 @@ import type {
 // FIVE BUCKETS, AND MIXING THEM WOULD BE THE WHOLE BUG. A seat is metered in
 // hypercredits and priced, metered in hypercredits and missing from the price
 // table, on a flat subscription that bills no credits at all, on NeuralWatt's
-// free daily energy (metered in watt-hours by the energy ledger, billing
-// nothing unless a call came back with a cost), or billed in USD on OpenRouter
+// free daily energy (metered in watt-hours by the energy ledger; the nominal
+// cost its calls report is no bill), or billed in USD on OpenRouter
 // with the cost read off the wire. Only the first has a credit figure and only
 // the last a USD figure. A total that folded the others in
 // would read as a cheaper run for the second and as an invented currency for
@@ -86,11 +86,12 @@ export type SpendCost = {
 
   /**
    Seats on NeuralWatt's free daily energy, with their tokens and the USD
-   their lines reported, which is zero while the free energy covers a call.
+   their lines reported, a nominal figure NeuralWatt reports on free-energy
+   requests too.
 
    A BUCKET OF THEIR OWN AND IN NO TOTAL. Hypercredits and USD are not what
-   this energy is metered in, and a USD figure here is not a bill the run
-   intended: it is the owner's plan being charged, said on its own line.
+   this energy is metered in, and a USD figure here is no bill: plan spend
+   shows only in the plan-energy difference a run prints at its end.
    */
   readonly freeEnergy: readonly SeatSpend[];
 

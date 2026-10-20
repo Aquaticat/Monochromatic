@@ -32,12 +32,15 @@ import {
 // and the meter is the day's allowance minus the lines stamped on today's UTC
 // date, minus the holds of calls still in flight.
 //
-// THREE KINDS OF LINE. A MEASURED line carries the `: energy` figure the stream
+// TWO KINDS OF LINE. A MEASURED line carries the `: energy` figure the stream
 // reported. An ESTIMATED line carries the estimate, marked, for a call whose
 // stream reported none, or an attempt that failed after delivering something.
-// A BILLED line carries `billedUsd` above zero: the request left the free
-// energy and came out of the owner's plan, so the provider reads dry for the
-// rest of the UTC day whatever the sum says.
+// A cost the stream reported is NOT in the line: NeuralWatt reports a nominal
+// `request_cost_usd` on free-energy requests too (the owner's dashboard,
+// 2026-10-20, counted a 0.0167 Wh request that reported 0.000107 USD wholly
+// against the free energy), so it is not a billing signal and nothing here
+// ends the day for it. A line an earlier build wrote may still carry
+// `billedUsd`; the reader ignores it (`neuralwatt-ledger-entry.ts`).
 //
 // THE IN-FLIGHT HOLD. Calls run many at a time and a call's true energy is
 // known only when its stream ends. A call therefore holds its estimate from
@@ -46,8 +49,8 @@ import {
 // read the same remainder. THE HOLD LIVES IN THIS PROCESS ONLY. A second
 // process on the same ledger (a budget sample beside a pass) sees the file's
 // lines and not this process's holds, so two processes can each spend what
-// the other holds; the margin and the billed mark bound that, nothing else
-// does, and the record says so.
+// the other holds; the margin bounds that, nothing else does, and the record
+// says so.
 //
 // THE DAY IS THE UTC DATE of a line's `at`, which the ledger writes with
 // `toISOString` and reads back only in that spelling, so a run that crosses
@@ -97,7 +100,7 @@ export class NeuralWattReservationSettledError extends Error {
 
  @example
  ```ts
- const settlement: NeuralWattSettlement = { measuredWh: 0.015, billedUsd: 0, };
+ const settlement: NeuralWattSettlement = { measuredWh: 0.015, };
  ```
  */
 export type NeuralWattSettlement = {
@@ -106,11 +109,6 @@ export type NeuralWattSettlement = {
    and the estimate then stands, marked.
    */
   readonly measuredWh?: number;
-
-  /**
-   USD the request was billed; above zero marks the day billed.
-   */
-  readonly billedUsd?: number;
 };
 
 /**
@@ -369,9 +367,6 @@ export function createNeuralWattLedger(
       reservedWh,
       remainingWh: dailyWh - spentWh
         - reservedWh,
-      billedToday: entries.some(function isBilled(entry,): boolean {
-        return entry.billedUsd !== undefined;
-      },),
       calls: entries.length,
     };
   }
@@ -411,7 +406,7 @@ export function createNeuralWattLedger(
         + `spent of ${String(dailyWh,)} (${energy.reckonedWh
           .toFixed(LOG_DECIMALS,)} of it estimated), ${energy.reservedWh
             .toFixed(LOG_DECIMALS,)} Wh held, ${energy.remainingWh
-              .toFixed(LOG_DECIMALS,)} Wh left${energy.billedToday ? ', a request was billed today' : ''}`,
+              .toFixed(LOG_DECIMALS,)} Wh left`,
     );
     return energy;
   }
@@ -459,10 +454,10 @@ export function createNeuralWattLedger(
      The day's reading with the holds as they stand NOW.
      */
     const energy = energyFrom({ entries, },);
-    if (energy.billedToday || (energy.remainingWh < estimateWh)) {
+    if (energy.remainingWh < estimateWh) {
       rl.info(
         `${model}: refused before sending, estimate ${estimateWh.toFixed(LOG_DECIMALS,)} Wh, ${energy.remainingWh
-          .toFixed(LOG_DECIMALS,)} Wh left on ${energy.day} (UTC)${energy.billedToday ? ', a request was billed today' : ''}`,
+          .toFixed(LOG_DECIMALS,)} Wh left on ${energy.day} (UTC)`,
       );
       return {
         granted: false,
@@ -489,19 +484,15 @@ export function createNeuralWattLedger(
 
      @param estimated - why they are an estimate, absent for a measurement
 
-     @param billedUsd - USD billed, when above zero
-
      @returns The entry
      */
     function entryFor(
       {
         wh,
         estimated,
-        billedUsd,
       }: {
         readonly wh: number;
         readonly estimated?: NeuralWattReckoning;
-        readonly billedUsd?: number;
       },
     ): NeuralWattLedgerEntry {
       return {
@@ -511,7 +502,6 @@ export function createNeuralWattLedger(
         wh,
         promptTokens,
         ...((estimated === undefined) ? {} : { estimated, }),
-        ...(((billedUsd === undefined) || (!(billedUsd > 0))) ? {} : { billedUsd, }),
       };
     }
 
@@ -528,14 +518,9 @@ export function createNeuralWattLedger(
 
      @param measuredWh - energy the stream reported, absent when it reported none
 
-     @param billedUsd - USD the request was billed
-
      @throws {@link NeuralWattReservationSettledError} when already settled
      */
-    async function settle({
-      measuredWh,
-      billedUsd,
-    }: NeuralWattSettlement,): Promise<void> {
+    async function settle({ measuredWh, }: NeuralWattSettlement,): Promise<void> {
       if (state.settled)
         throw new NeuralWattReservationSettledError();
       state.settled = true;
@@ -550,7 +535,6 @@ export function createNeuralWattLedger(
       await note(entryFor({
         wh: measuredWh ?? estimateWh,
         ...((measuredWh === undefined) ? { estimated: 'unreported-estimate' as const, } : {}),
-        ...((billedUsd === undefined) ? {} : { billedUsd, }),
       },),);
     }
 

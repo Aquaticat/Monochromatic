@@ -72,8 +72,11 @@ each uses an empty export as given.
     nothing reports what is left of it and overage is charged to the owner's plan,
     so the package meters it itself from a durable ledger
     (`doc/decision/translation-repair-neuralwatt-provider.md`).
-    The `METERS` line carries `neuralwatt=` and `neuralwattWh=`,
-    `neuralwattReckonedWh=` and `neuralwattBilled=` among its numbers.
+    The `METERS` line carries `neuralwatt=`,
+    and `neuralwattWh=` and `neuralwattReckonedWh=` among its numbers.
+    A cost a request reports does not stop the provider;
+    it is a nominal figure that free-energy requests carry too,
+    and it appears on the `SPEND` line as `cost=`.
 
 -   `TRANSLATION_REPAIR_NEURALWATT_LEDGER`.
     Where that ledger lives;
