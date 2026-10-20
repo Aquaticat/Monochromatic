@@ -783,4 +783,5 @@ named for that subject and listed here.
 - [OpenRouter and the corpus passes: 2026-10-20](translation-repair-openrouter-2026-09-03-2026-10-20.md):
   What was read and decided on 2026-10-20.
   Entries:
-  XingZ6015.
+  XingZ6015,
+  zheermao15.
