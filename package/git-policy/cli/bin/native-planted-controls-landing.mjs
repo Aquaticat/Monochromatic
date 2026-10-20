@@ -10,7 +10,7 @@ export const plantedLandingControls = [
   {
     name: 'worktree copy dead-owner settlement retirement',
     file: 'src/native/worktree_copy_lock.rs',
-    from: 'if owner_alive(&holder)? {',
+    from: 'if owner_alive(&holder, lock)? {',
     to: 'if true {',
     failing: 'worktree_copy_lock::tests::dead_owner_lock_is_retired_and_taken',
   },
