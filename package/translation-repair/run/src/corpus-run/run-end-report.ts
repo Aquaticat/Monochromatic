@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { allInInputOrder, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { errorName, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/ts';
 
@@ -71,9 +72,9 @@ export function registerRunEndReport({
   registered.set(
     key,
     {
-    key,
-    report,
-  },
+      key,
+      report,
+    },
   );
 }
 
@@ -106,18 +107,20 @@ export async function runEndReports(): Promise<readonly string[]> {
    */
   const taken = [...registered.values(),];
   registered.clear();
-  return await Promise.all(taken.map(async function lineOf({
-    key,
-    report,
-  },): Promise<string> {
-    try {
-      return await report();
-    }
-    catch (error) {
-      rl.warn(`the ${key} end report failed (${errorName({ error, },)})`,);
-      return `${key}: this end report could not be built (${errorName({ error, },)})`;
-    }
-  },),);
+  return await allInInputOrder({
+    members: taken.map(async function lineOf({
+      key,
+      report,
+    },): Promise<string> {
+      try {
+        return await report();
+      }
+      catch (error) {
+        rl.warn(`the ${key} end report failed (${errorName({ error, },)})`,);
+        return `${key}: this end report could not be built (${errorName({ error, },)})`;
+      }
+    },),
+  },);
 }
 
 //endregion Run end reports
