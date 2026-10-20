@@ -38,6 +38,11 @@ import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/
 const LEDGER_VARIABLE = 'TRANSLATION_REPAIR_BEDROCK_LEDGER';
 
 /**
+ Environment variable that moves the NeuralWatt energy ledger.
+ */
+const NEURALWATT_LEDGER_VARIABLE = 'TRANSLATION_REPAIR_NEURALWATT_LEDGER';
+
+/**
  Environment variable the Bedrock credit is read from.
  */
 const CREDIT_VARIABLE = 'TRANSLATION_REPAIR_BEDROCK_CREDIT_USD';
@@ -96,6 +101,11 @@ function envWith(
   },
 ): Readonly<Record<string, string>> {
   return {
+    TRANSLATION_REPAIR_NEURALWATT_API_KEY: 'whisker-key-0005',
+    [NEURALWATT_LEDGER_VARIABLE]: join(
+      ledgerDir,
+      'neuralwatt-energy.jsonl',
+    ),
     TRANSLATION_REPAIR_SYNTHETIC_API_KEY: 'whisker-key-0001',
     TRANSLATION_REPAIR_CHARM_HYPER_API_KEY: 'whisker-key-0002',
     TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY: 'whisker-key-0003',
@@ -131,7 +141,7 @@ await describe({
         },);
 
         expect(lines.at(-1,),).toBe(
-          `[sampleBudgets] SAMPLED: routing would use synthetic, use bedrock, use hyper, use openrouter${SUMMARY_CLOSING}`,
+          `[sampleBudgets] SAMPLED: routing would use neuralwatt, use synthetic, use bedrock, use hyper, use openrouter${SUMMARY_CLOSING}`,
         );
         // The meters are read together, so the order they are asked in is not the contract.
         expect(seen.map(function seenOf(exchange,): string {
@@ -170,8 +180,35 @@ await describe({
         },);
 
         expect(lines.at(-1,),).toBe(
-          `[sampleBudgets] SAMPLED: routing would use synthetic, avoid bedrock, use hyper, use openrouter${SUMMARY_CLOSING}`,
+          `[sampleBudgets] SAMPLED: routing would use neuralwatt, use synthetic, avoid bedrock, use hyper, use openrouter${SUMMARY_CLOSING}`,
         );
+      },
+    },),
+    it({
+      name: 'SAYS routing would avoid NeuralWatt when the environment grants it no energy, reading its ledger over no HTTP',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'budget-run-', },);
+        const seen: TransportExchange[] = [];
+        const {
+          logger,
+          lines,
+        } = capturingLoggerPair();
+
+        await sampleBudgets({
+          env: envWith({
+            ledgerDir: scratch.path,
+            extra: { TRANSLATION_REPAIR_NEURALWATT_DAILY_WH: '0', },
+          },),
+          transport: unreachableTransport({ seen, },),
+          l: logger,
+        },);
+
+        expect(lines.at(-1,),).toBe(
+          `[sampleBudgets] SAMPLED: routing would avoid neuralwatt, use synthetic, use bedrock, use hyper, use openrouter${SUMMARY_CLOSING}`,
+        );
+        expect(seen.some(function reachedNeuralWatt(exchange,): boolean {
+          return exchange.url.includes('neuralwatt',);
+        },),).toBe(false,);
       },
     },),
     it({

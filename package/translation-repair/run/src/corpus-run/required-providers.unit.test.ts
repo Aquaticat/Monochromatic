@@ -32,6 +32,8 @@ import { HYPER_CREDITS_URL, } from '@monochromatic-dev/translation-repair-shared
 import {
   BEDROCK_CREDIT_USD_VAR,
   BEDROCK_LEDGER_PATH_VAR,
+  NEURALWATT_DAILY_WH_VAR,
+  NEURALWATT_LEDGER_PATH_VAR,
   OPENROUTER_CREDITS_URL,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
@@ -54,6 +56,7 @@ import { untilAborted, } from '@monochromatic-dev/translation-repair-provider/ts
  Each provider's key environment name.
  */
 const KEY_NAMES = {
+  neuralwatt: 'TRANSLATION_REPAIR_NEURALWATT_API_KEY',
   synthetic: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY',
   hyper: 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY',
   bedrock: 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY',
@@ -189,7 +192,7 @@ await describe({
                 },);
               },);
               expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-              expect((refusal as Error).message,).toContain('synthetic, bedrock, hyper, openrouter',);
+              expect((refusal as Error).message,).toContain('neuralwatt, synthetic, bedrock, hyper, openrouter',);
             }
           },
         },),
@@ -204,7 +207,7 @@ await describe({
                 },),
               },);
             },) as Error).message,).toBe(
-              '--require-providers accepts only synthetic, bedrock, hyper, openrouter, and "cat nip" is none of them',
+              '--require-providers accepts only neuralwatt, synthetic, bedrock, hyper, openrouter, and "cat nip" is none of them',
             );
           },
         },),
@@ -500,6 +503,53 @@ await describe({
             const refusal = await gateBedrock('0',);
             expect(refusal,).toBeInstanceOf(RequiredProviderError,);
             expect((refusal as Error).message,).toContain('bedrock is not ready: budget dry',);
+          },
+        },),
+        it({
+          name: 'READS NEURALWATT OFF THE ENERGY LEDGER THE HANDED ENVIRONMENT NAMES, over no HTTP, wet under its '
+            + 'day\'s allowance and dry at none, and REFUSES A MISSING KEY before reading anything',
+          fn: async () => {
+            /**
+             Directory holding this case's empty ledger.
+             */
+            await using scratch = await scratchDir({ prefix: 'required-providers-neuralwatt-', },);
+            const dir = scratch.path;
+            /**
+             Gate over NeuralWatt with one allowance and one key.
+
+             @param dailyWh - watt-hours the environment grants a day
+
+             @param key - key the environment holds
+
+             @returns What the gate did
+             */
+            async function gateNeuralWatt({ dailyWh, key, }: { readonly dailyWh: string; readonly key: string; },): Promise<unknown> {
+              return await gateOutcome(async function gateEnergy() {
+                await assertRequiredProvidersReady({
+                  required: ['neuralwatt',],
+                  env: {
+                    [KEY_NAMES.neuralwatt]: key,
+                    [NEURALWATT_LEDGER_PATH_VAR]: join(dir, 'neuralwatt-energy.jsonl',),
+                    [NEURALWATT_DAILY_WH_VAR]: dailyWh,
+                  },
+                  transport: unreachedTransport,
+                  signal: AbortSignal.timeout(HANG_STOP_MS,),
+                },);
+              },);
+            }
+            expect(await gateNeuralWatt({ dailyWh: '550', key: 'test-neuralwatt', },),).toBe('passed',);
+            /**
+             What the gate raised with no energy to spend.
+             */
+            const dry = await gateNeuralWatt({ dailyWh: '0', key: 'test-neuralwatt', },);
+            expect(dry,).toBeInstanceOf(RequiredProviderError,);
+            expect((dry as Error).message,).toContain('neuralwatt is not ready: budget dry',);
+            /**
+             What the gate raised with no key.
+             */
+            const keyless = await gateNeuralWatt({ dailyWh: '550', key: '', },);
+            expect(keyless,).toBeInstanceOf(RequiredProviderError,);
+            expect((keyless as Error).message,).toContain('neuralwatt is not ready: key missing',);
           },
         },),
       ],

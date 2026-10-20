@@ -1,5 +1,5 @@
 /**
- Tests for the four keys a budget sample reads, all or none.
+ Tests for the five keys a budget sample reads, all or none.
 
  A SAMPLE OF SOME PROVIDERS IS NOT RECORDED, because the record is read as a
  statement about all of them and a missing column would be indistinguishable
@@ -23,9 +23,10 @@ import { readProviderKeys, } from '../../dist/final/node/index.mjs';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 
 /**
- Environment holding all four invented keys.
+ Environment holding all five invented keys.
  */
-const ALL_FOUR = {
+const ALL_FIVE = {
+  TRANSLATION_REPAIR_NEURALWATT_API_KEY: 'whisker-key-0005',
   TRANSLATION_REPAIR_SYNTHETIC_API_KEY: 'whisker-key-0001',
   TRANSLATION_REPAIR_CHARM_HYPER_API_KEY: 'whisker-key-0002',
   TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY: 'whisker-key-0003',
@@ -71,9 +72,10 @@ await describe({
   name: readProviderKeys.name,
   children: [
     it({
-      name: 'READS each provider\'s key from its own variable when all four are set',
+      name: 'READS each provider\'s key from its own variable when all five are set',
       fn: async () => {
-        expect(readProviderKeys({ env: ALL_FOUR, },),).toEqual({
+        expect(readProviderKeys({ env: ALL_FIVE, },),).toEqual({
+          neuralwatt: 'whisker-key-0005',
           synthetic: 'whisker-key-0001',
           hyper: 'whisker-key-0002',
           bedrock: 'whisker-key-0003',
@@ -82,15 +84,31 @@ await describe({
       },
     },),
     it({
+      name: 'REFUSES naming only the NeuralWatt variable as absent when that one is left out',
+      fn: async () => {
+        expect(await refusalOver({
+          env: {
+            ...ALL_FIVE,
+            TRANSLATION_REPAIR_NEURALWATT_API_KEY: '',
+          },
+        },),).toBe(
+          `StatedRefusalError: ${OPENING}TRANSLATION_REPAIR_NEURALWATT_API_KEY is absent, `
+            + 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY is present, TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is present, '
+            + 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY is present, TRANSLATION_REPAIR_OPENROUTER_API_KEY is present. '
+            + CLOSING,
+        );
+      },
+    },),
+    it({
       name: 'REFUSES naming only the Synthetic variable as absent when that one is left out',
       fn: async () => {
         expect(await refusalOver({
           env: {
-            ...ALL_FOUR,
+            ...ALL_FIVE,
             TRANSLATION_REPAIR_SYNTHETIC_API_KEY: '',
           },
         },),).toBe(
-          `StatedRefusalError: ${OPENING}TRANSLATION_REPAIR_SYNTHETIC_API_KEY is absent, `
+          `StatedRefusalError: ${OPENING}TRANSLATION_REPAIR_NEURALWATT_API_KEY is present, TRANSLATION_REPAIR_SYNTHETIC_API_KEY is absent, `
             + 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is present, TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY is '
             + `present, TRANSLATION_REPAIR_OPENROUTER_API_KEY is present. ${CLOSING}`,
         );
@@ -101,12 +119,13 @@ await describe({
       fn: async () => {
         expect(await refusalOver({
           env: {
-            TRANSLATION_REPAIR_SYNTHETIC_API_KEY: ALL_FOUR.TRANSLATION_REPAIR_SYNTHETIC_API_KEY,
-            TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY: ALL_FOUR.TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY,
-            TRANSLATION_REPAIR_OPENROUTER_API_KEY: ALL_FOUR.TRANSLATION_REPAIR_OPENROUTER_API_KEY,
+            TRANSLATION_REPAIR_NEURALWATT_API_KEY: ALL_FIVE.TRANSLATION_REPAIR_NEURALWATT_API_KEY,
+            TRANSLATION_REPAIR_SYNTHETIC_API_KEY: ALL_FIVE.TRANSLATION_REPAIR_SYNTHETIC_API_KEY,
+            TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY: ALL_FIVE.TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY,
+            TRANSLATION_REPAIR_OPENROUTER_API_KEY: ALL_FIVE.TRANSLATION_REPAIR_OPENROUTER_API_KEY,
           },
         },),).toBe(
-          `StatedRefusalError: ${OPENING}TRANSLATION_REPAIR_SYNTHETIC_API_KEY is present, `
+          `StatedRefusalError: ${OPENING}TRANSLATION_REPAIR_NEURALWATT_API_KEY is present, TRANSLATION_REPAIR_SYNTHETIC_API_KEY is present, `
             + 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is absent, TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY is '
             + `present, TRANSLATION_REPAIR_OPENROUTER_API_KEY is present. ${CLOSING}`,
         );
@@ -117,11 +136,11 @@ await describe({
       fn: async () => {
         expect(await refusalOver({
           env: {
-            ...ALL_FOUR,
+            ...ALL_FIVE,
             TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY: '',
           },
         },),).toBe(
-          `StatedRefusalError: ${OPENING}TRANSLATION_REPAIR_SYNTHETIC_API_KEY is present, `
+          `StatedRefusalError: ${OPENING}TRANSLATION_REPAIR_NEURALWATT_API_KEY is present, TRANSLATION_REPAIR_SYNTHETIC_API_KEY is present, `
             + 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is present, TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY is '
             + `absent, TRANSLATION_REPAIR_OPENROUTER_API_KEY is present. ${CLOSING}`,
         );
@@ -132,21 +151,21 @@ await describe({
       fn: async () => {
         expect(await refusalOver({
           env: {
-            ...ALL_FOUR,
+            ...ALL_FIVE,
             TRANSLATION_REPAIR_OPENROUTER_API_KEY: '',
           },
         },),).toBe(
-          `StatedRefusalError: ${OPENING}TRANSLATION_REPAIR_SYNTHETIC_API_KEY is present, `
+          `StatedRefusalError: ${OPENING}TRANSLATION_REPAIR_NEURALWATT_API_KEY is present, TRANSLATION_REPAIR_SYNTHETIC_API_KEY is present, `
             + 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is present, TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY is '
             + `present, TRANSLATION_REPAIR_OPENROUTER_API_KEY is absent. ${CLOSING}`,
         );
       },
     },),
     it({
-      name: 'REFUSES naming all four as absent for an empty environment',
+      name: 'REFUSES naming all five as absent for an empty environment',
       fn: async () => {
         expect(await refusalOver({ env: {}, },),).toBe(
-          `StatedRefusalError: ${OPENING}TRANSLATION_REPAIR_SYNTHETIC_API_KEY is absent, `
+          `StatedRefusalError: ${OPENING}TRANSLATION_REPAIR_NEURALWATT_API_KEY is absent, TRANSLATION_REPAIR_SYNTHETIC_API_KEY is absent, `
             + 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is absent, TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY is '
             + `absent, TRANSLATION_REPAIR_OPENROUTER_API_KEY is absent. ${CLOSING}`,
         );

@@ -45,7 +45,8 @@ await describe({
           code: REFUSED_AS_STATED,
           stdout: '',
           stderr: 'budget-sample: every provider key must be set to sample availability, and at least one is not: '
-            + 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY is absent, TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is absent, '
+            + 'TRANSLATION_REPAIR_NEURALWATT_API_KEY is absent, TRANSLATION_REPAIR_SYNTHETIC_API_KEY is absent, '
+            + 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY is absent, '
             + 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY is absent, TRANSLATION_REPAIR_OPENROUTER_API_KEY is absent. '
             + 'Run under mise so sops injects them. A sample of some providers is not recorded, because the record '
             + 'is read as a statement about all of them and a missing column would be indistinguishable from a '

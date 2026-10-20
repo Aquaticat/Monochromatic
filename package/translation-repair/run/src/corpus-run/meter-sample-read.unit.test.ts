@@ -52,6 +52,7 @@ await describe({
               at: Date.parse('2026-08-24T18:17:35.383Z',),
               synthetic: 'wet',
               hyper: 'dry',
+              neuralwatt: 'absent',
               bedrock: 'absent',
               openrouter: 'absent',
               levels: [],
@@ -74,6 +75,7 @@ await describe({
               at: Date.parse('2026-09-03T17:00:00.000Z',),
               synthetic: 'dry',
               hyper: 'wet',
+              neuralwatt: 'absent',
               bedrock: 'absent',
               openrouter: 'wet',
               levels: [
@@ -82,6 +84,35 @@ await describe({
                 'syntheticThrottled=no',
                 'hyperBalance=2497',
                 'openrouterUsd=57.62',
+              ],
+            },);
+          },
+        },),
+
+        it({
+          name: 'reads the NeuralWatt state and its watt-hour fields a record carries since 2026-10-20, first in the '
+            + 'order, and names the column absent on every older record',
+          fn: async () => {
+            /**
+             A record as `takeReading` writes one with NeuralWatt configured.
+             */
+            const line = '[info] [2026-10-20T17:00:00.000Z] [t] [takeReading] METERS '
+              + 'neuralwatt=wet synthetic=dry bedrock=dry hyper=wet openrouter=wet neuralwattWh=549.986 '
+              + 'neuralwattReckonedWh=0.500 neuralwattBilled=no syntheticWeekly=0% hyperBalance=2497';
+
+            expect(readMeterLine({ line, },),).toEqual({
+              at: Date.parse('2026-10-20T17:00:00.000Z',),
+              neuralwatt: 'wet',
+              synthetic: 'dry',
+              hyper: 'wet',
+              bedrock: 'dry',
+              openrouter: 'wet',
+              levels: [
+                'neuralwattWh=549.986',
+                'neuralwattReckonedWh=0.500',
+                'neuralwattBilled=no',
+                'syntheticWeekly=0%',
+                'hyperBalance=2497',
               ],
             },);
           },
@@ -100,6 +131,7 @@ await describe({
               at: Date.parse('2026-08-24T10:00:00.000Z',),
               synthetic: 'unreadable',
               hyper: 'wet',
+              neuralwatt: 'absent',
               bedrock: 'absent',
               openrouter: 'absent',
               levels: [],
@@ -121,6 +153,7 @@ await describe({
               at: Date.parse('2026-08-24T19:00:00.000Z',),
               synthetic: 'wet',
               hyper: 'dry',
+              neuralwatt: 'absent',
               bedrock: 'absent',
               openrouter: 'absent',
               levels: [
@@ -148,6 +181,7 @@ await describe({
               at: Date.parse('2026-10-19T15:00:00.000Z',),
               synthetic: 'wet',
               hyper: 'dry',
+              neuralwatt: 'absent',
               bedrock: 'absent',
               openrouter: 'absent',
               levels: [
@@ -174,6 +208,7 @@ await describe({
               at: Date.parse('2026-08-24T19:00:00.000Z',),
               synthetic: 'wet',
               hyper: 'wet',
+              neuralwatt: 'absent',
               bedrock: 'absent',
               openrouter: 'absent',
               levels: ['hyperResetsAt=03:00',],
@@ -278,6 +313,7 @@ await describe({
               at: Date.parse('2026-08-24T18:17:35.383Z',),
               synthetic: 'wet',
               hyper: 'dry',
+              neuralwatt: 'absent',
               bedrock: 'absent',
               openrouter: 'absent',
               levels: [],
@@ -289,6 +325,7 @@ await describe({
               at: Date.parse('2026-08-24T18:17:35.383Z',),
               synthetic: 'wet',
               hyper: 'dry',
+              neuralwatt: 'absent',
               bedrock: 'absent',
               openrouter: 'absent',
               levels: ['hyperBalance=0',],
