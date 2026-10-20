@@ -2,7 +2,8 @@
 
 What was read and decided on 2026-10-20.
 Entries:
-XingZ6015.
+XingZ6015,
+zheermao15.
 
 Part of [Translation repair: OpenRouter as the paid fallback provider](translation-repair-openrouter-2026-09-03.md),
 which lists every file of this record.
@@ -158,3 +159,118 @@ The five classes and the owner's ruling are being fixed in five worktrees (`w210
 once they land with their cache versions bumped,
 the branch worktree moves to the fixed build
 and the rotation restarts from its first entry.
+
+## zheermao15 read, 2026-10-20, 13:20 UTC: SETTLED in 46.0 min of pass; one class, and its fix is in progress
+
+The restarted rotation began with the entry `zheermao101`,
+launched as `zheermao15` at 02:12 UTC on 2026-10-20,
+on tip `0c64519b57…` and pipeline `sha256-tree-v1:c003a383075f…`
+(the unit `corpus-pass-corpus-pass-zheermao15`;
+the handover section "Where the work stands" names the launch).
+It settled in 2,759,820 ms of pass,
+and the `DONE` line reads `elapsed=2759940ms`,
+which is 46.0 min:
+`TALLY zheermao101 status=SETTLED slices=15 repairStatus=unchanged ... translateChanged=11 documentsDiffer=11
+pageChanged=9 pageSilent=0 alignmentFindings=13 selection=contested`.
+The repair lane changed nothing (`repairChanged=0`,
+29 issues,
+21 accepted,
+none resolved),
+the translate lane changed 11 of the 15 slices,
+and the page pass changed 9.
+`DESTINATIONS zheermao101 source=2 page=3 dropped=0`,
+and the publish wrote 15 slices into a page of 6026 characters.
+The log holds 569 `warn` lines,
+no `[error]` line,
+no `DEFECTS` line,
+and none of `REATTEMPT`,
+`STALLED`,
+`mdx-downgraded` or `StreamOverrunError`.
+It holds no `verify-published` line either,
+so this read did not rest on that read-back.
+
+### Seats and meters
+
+Three Gemma seats were dark on `SEAT CREDENTIAL REFUSED ... HTTP 401` (Bedrock's token had expired),
+as in the earlier reads of the rotation:
+`gemma-4-26b-a4b-it` and `google.gemma-4-e2b` threw on all 4 asks and `google.gemma-4-31b` on all 3.
+`glm-5.3` threw on all 4 of its asks,
+since every provider serving it was out of budget (Hyper was dry at launch).
+Synthetic's weekly meter read 2% at 02:12 UTC and 0% at 02:40 UTC,
+in repair slice 4.
+From then on `hf:moonshotai/Kimi-K3` and `hf:Qwen/Qwen3.8-27B` threw
+with "no provider can take ...:
+every provider serving this model is out of budget,
+seat unreachable":
+Kimi threw on 56 of its 82 asks (26 usable),
+and Qwen on 138 of 162 (24 usable).
+The seats that threw nothing were `minimax-m3`,
+`inception/mercury-2.5`,
+`deepseek-v4.1-flash`,
+`hf:zai-org/GLM-5.3-Flash`,
+`typesafe/jev-1.13` and `xiaomi/mimo-v2.6-flash`.
+From the translate lane at 02:47 UTC the roster was 8 with Kimi withheld,
+and the absolute-naturalness review of consolidation slice 12 closed on a short bench
+(3 of 7 seats within reach,
+quorum 2 of 4).
+The run ended with `SEATS DARK: 4 of 12 seats asked produced nothing usable`
+(the three Gemma seats and `glm-5.3`).
+OpenRouter read 16.11 USD at launch and 15.53 USD at the last meter reading,
+02:58 UTC.
+
+### The page
+
+The lead read the shipped page (`fixed/people/zheermao101/page.en.md` of the run) beside the original and the archive,
+and checked the letter and the email against the three photos of the page
+(photos 1 and 2 are the letter,
+photo 3 is the email and its reply).
+Both renderings were faithful;
+the email's "If I manage to die" is 如果成功死去了 in the photo.
+The check is the lead's reading of the photos;
+this entry records it and did not re-run it.
+
+Two things in the page read as defects and are not,
+and each has a source:
+
+- The front matter `desc`,
+  "Treat you to some beverages.",
+  is the archive's,
+  and `desc` stays frozen.
+  `doc/decision/translation-repair-front-matter-guard.md` lets the archive's front matter stand,
+  since a rewritten `desc` is an editorial change nobody asked for.
+- "Zheermao tried to end her life several times" is the wording the house rule sets for a survived attempt.
+  `package/translation-repair/house-rule/src/house-policy.ts` (line 87) says the page
+  "says that she attempted suicide or tried to end her life,
+  never by what means".
+
+One class,
+in the email block.
+The archive's rendering of the reply from One Among Us carries a note between translators on the line the page renders as
+"You can avoid the darkness’s sharpest edges and take shelter for a while in places where there is light":
+`{/* 可以避开黑暗的锋芒，到那些有光的地方躲一躲。 这句不知道如何翻译 */}`.
+The pinned archive holds that note once;
+the shipped page and the run's artifact do not hold it.
+The owner confirmed on 2026-10-20 that the page keeps such notes (B698,
+"Keep the notes (Recommended)"),
+so the loss is a defect.
+The cause is the order of two steps.
+The archive block review replaced the archive's email block before the lanes ran,
+with a revised rendering (the artifact's `preparation.archiveText` reads "Arts is also a kitty"
+where the pinned archive reads "Arts is also a cat-like person"),
+and the revised block has no note.
+The page assembly carries a note back by comparing the page with `preparation.archiveText`
+(`archive-note-carry.ts`,
+since `a3a7baeb3b`),
+so the carry compared against a text that no longer held the note and had nothing to carry.
+
+### What follows
+
+The fix is in progress,
+not landed:
+an agent works on it in the worktree `w223` off `dc4982c9cb`,
+red test first,
+so that the prepared archive text keeps every note between translators the replaced block held.
+The next launch is `CuspariaKLSY18` on the build that has the note fix and the seat-window census,
+under a new frozen digest;
+it is not a repeat of `zheermao101`,
+whose read found nothing else on that page.

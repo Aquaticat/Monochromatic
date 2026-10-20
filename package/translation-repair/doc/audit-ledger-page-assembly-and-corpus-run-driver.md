@@ -652,12 +652,15 @@ since sheet carve-outs do not move judges:
   last of the page passes.
   A slice the page removes and a sealed span carry nothing.
 
-Adopted without asking the owner,
-open to the owner's veto:
+Adopted without asking the owner first,
+then put to the owner as a veto-open adoption:
 the page still ships the notes,
 though no reader sees them,
 because other passes read them and a note can steer the next pass
 (the `hakureico` note seals a span).
+The owner confirmed it on 2026-10-20 (UTC) through the question tool,
+choosing "Keep the notes (Recommended)"
+and rejecting "Drop the notes".
 
 Recurrence:
 none of an earlier entry.

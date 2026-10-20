@@ -7,7 +7,10 @@ import {
   declaredNamesBlock,
 } from '@monochromatic-dev/translation-repair-adjudication/ts';
 import { HOUSE_POLICY_BLOCK, } from '@monochromatic-dev/translation-repair-house-rule/ts';
-import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import {
+  isJsonRecord,
+  withoutTranslatorsNotes,
+} from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
   APPARATUS_KINDS,
   NARRATIVE_DETAIL_IS_NOT_APPARATUS,
@@ -121,13 +124,33 @@ export function buildArchiveBlockReviewMessages(
     readonly referenceContext?: string;
   },
 ): readonly ChatMessage[] {
+  // THE REVIEWERS ARE SHOWN THE ARCHIVE AND THE BLOCK WITHOUT THE NOTES THE
+  // ARCHIVE'S TRANSLATORS LEFT EACH OTHER (B698), as every other judging sheet
+  // is: no reader sees one, and a reviewer who rewrites a block that shows one
+  // leaves it out of the revision (zheermao101, run zheermao15), which the
+  // review's splice then puts back (`archive-block-notes.ts`, page-check). The
+  // original's own comments stay in view.
+  /**
+   The whole archive as a reviewer reads it.
+   */
+  const shownTarget = withoutTranslatorsNotes({
+    text: targetText,
+    original: sourceText,
+  },);
+  /**
+   The block under review as a reviewer reads it.
+   */
+  const shownBlock = withoutTranslatorsNotes({
+    text: blockText,
+    original: sourceText,
+  },);
   /**
    Fence absent from every enclosed value.
    */
   const fence = selectFence({ texts: [
     sourceText,
-    targetText,
-    blockText,
+    shownTarget,
+    shownBlock,
     ...priorFindings,
     identityContext ?? '',
     referenceContext ?? '',
@@ -188,7 +211,7 @@ Reply with JSON only: {"disposition":"source-supported"|"editorial-context"|"rev
   },
     {
     role: 'user',
-    content: `${identityBlock}${fence} EXPECTED ORIGINAL SECTION ${fence}\n${sourceText}\n${fence} ENGLISH ARCHIVE ${fence}\n${targetText}\n${fence} BLOCK UNDER REVIEW ${fence}\n${blockText}${referenceBlock}${continuation}\n${fence} END ${fence}`,
+    content: `${identityBlock}${fence} EXPECTED ORIGINAL SECTION ${fence}\n${sourceText}\n${fence} ENGLISH ARCHIVE ${fence}\n${shownTarget}\n${fence} BLOCK UNDER REVIEW ${fence}\n${shownBlock}${referenceBlock}${continuation}\n${fence} END ${fence}`,
   },
   ];
 }

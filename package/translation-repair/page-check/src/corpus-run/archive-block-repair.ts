@@ -1,17 +1,31 @@
-import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { runArchiveBlockReviewStage, } from '@monochromatic-dev/translation-repair-archive/ts';
 import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { UnclaimedTargetBlock, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import {
+  hashContent,
+  withoutTranslatorsNotes,
+} from '@monochromatic-dev/translation-repair-document-structure/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   type BenchSeating,
   sameWording,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
+import {
+  rendersAsNothing,
+  wordForCount,
+} from '@monochromatic-dev/translation-repair-typography/ts';
+import {
+  keptNotesFinding,
+  withBlockNotes,
+} from './archive-block-notes.ts';
 
 //region Archive block repair
 
@@ -200,6 +214,11 @@ function removalSpan(
  join. Where two blocks' revisions conflict, the later block's, reviewed
  first, stands.
 
+ A BLOCK'S NOTES BETWEEN TRANSLATORS SURVIVE ITS REPLACEMENT
+ (`archive-block-notes.ts`): a revision, or a removal, that lacks a note the
+ block held gets it back on a line of its own after the replacement, as the
+ page assembly would carry it, and the finding and the log name it.
+
  @param client - provider client
 
  @param modelIds - review roster
@@ -265,6 +284,13 @@ export async function repairArchiveBlocks(
   }>,
 ): Promise<ArchiveBlocksRepairOutcome> {
   /**
+   Operation logger, naming the function in every line.
+   */
+  const repairLog = tagged({
+    l,
+    tag: repairArchiveBlocks.name,
+  },);
+  /**
    Operation-only audit findings.
    */
   const findings: string[] = [];
@@ -298,6 +324,27 @@ export async function repairArchiveBlocks(
       block.startOffset,
       block.endOffset,
     );
+    /**
+     Original section the block is reviewed against, whose own comments are
+     the lanes' to carry.
+     */
+    const source = sourceContexts.get(identity,) ?? '';
+    /**
+     The block as the reviewers' sheet shows it, without its notes.
+     */
+    const shown = withoutTranslatorsNotes({
+      text: blockText,
+      original: source,
+    },);
+    // A BLOCK OF NOTHING BUT NOTES IS NOT ASKED ABOUT: the sheet shows the
+    // reviewers the block without its notes (`archive-block-review-wire.ts`),
+    // which leaves nothing, and no reader sees what stands there. A block that
+    // holds no note and shows nothing is reviewed as it always was.
+    if ((shown !== blockText) && rendersAsNothing({ text: shown, },)) {
+      repairLog.info(`block ${identity} holds only notes between translators and stands as the archive wrote it`,);
+      findings.push(`archive block holds only notes between translators and stands: ${identity}`,);
+      continue;
+    }
     // EACH BLOCK IS REVIEWED BY THE ROSTER ITS HOOK HANDS OVER (ledger X12,
     // 2026-09-28): a dry-out inside the review left every later block on the
     // roster read before it.
@@ -313,7 +360,7 @@ export async function repairArchiveBlocks(
     const outcome = await runArchiveBlockReviewStage({
       client,
       modelIds: blockSeating.modelIds ?? modelIds,
-      sourceText: sourceContexts.get(identity,) ?? '',
+      sourceText: source,
       // THE PAGE THE REVISIONS ALREADY APPLIED LEAVE (ledger B80): a footnote
       // is a relation between blocks, so a revision is read in the page it
       // would join. Read in the archive as it came, two revisions each
@@ -353,10 +400,46 @@ export async function repairArchiveBlocks(
       continue;
     }
     /**
-     Span the revision replaces: the block alone, or the block with one of
-     its separators when the revision removes it (class ninety-four).
+     What replaces the block: the revision, or nothing for a removal, with
+     each note between translators the block held that it lacks, and those
+     notes.
      */
-    const span = (outcome.text === '')
+    const {
+      text: replacementText,
+      kept,
+    } = withBlockNotes({
+      blockText,
+      replacement: outcome.text,
+      original: source,
+    },);
+    if (kept.length > 0) {
+      /**
+       The notes kept, each quoted so one over several lines stays on one
+       line of the log.
+       */
+      const quotedKept = kept.map(function quoted(note,): string {
+        return JSON.stringify(note,);
+      },);
+      repairLog.info(
+        `block ${identity} replaced with ${String(kept.length,)} ${
+          wordForCount({
+            count: kept.length,
+            one: 'note',
+            many: 'notes',
+          },)
+        } between translators kept: ${quotedKept.join(', ',)}`,
+      );
+      findings.push(keptNotesFinding({
+        identity,
+        kept,
+      },),);
+    }
+    /**
+     Span the replacement covers: the block alone, or the block with one of
+     its separators when the review removes it and no note stands in its
+     place (class ninety-four).
+     */
+    const span = (replacementText === '')
       ? removalSpan({
         text: revisedText,
         startOffset: block.startOffset,
@@ -369,7 +452,7 @@ export async function repairArchiveBlocks(
     revisedText = `${revisedText.slice(
       0,
       span.startOffset,
-    )}${outcome.text}${revisedText.slice(span.endOffset,)}`;
+    )}${replacementText}${revisedText.slice(span.endOffset,)}`;
     findings.push(`archive block reviewed and revised: ${identity}`);
   }
   return {

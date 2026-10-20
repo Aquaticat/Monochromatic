@@ -6,6 +6,10 @@ export {
   archiveBlockIdentity,
   repairArchiveBlocks,
 } from './corpus-run/archive-block-repair.ts';
+export {
+  keptNotesFinding,
+  withBlockNotes,
+} from './corpus-run/archive-block-notes.ts';
 export { archiveBlockSourceContexts, } from './corpus-run/archive-block-source-context.ts';
 export { restoreArchiveCasing, } from './corpus-run/archive-casing-restore.ts';
 export {
@@ -79,6 +83,7 @@ export {
   type PageAgreement,
   pageAgreement,
 } from './corpus-run/page-agreement.ts';
+export { appendedNotes, } from './corpus-run/archive-note-carry.ts';
 export { guardPageAssembly, } from './corpus-run/page-assembly-guard.ts';
 export {
   freshlyTakenBack,
