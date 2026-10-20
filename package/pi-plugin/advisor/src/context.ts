@@ -27,7 +27,7 @@ import {
   NO_USER_PROMPT,
 } from './context-user.ts';
 import { buildAdvisorUserMessageText, } from './advisor-request.ts';
-import { estimateAdvisorInputTokens, } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import { estimateAdvisorInputTokens, } from '@monochromatic-dev/agent-harness-shared-model-selection/ts';
 import type {
   AdvisorConfig,
   AdvisorContext,

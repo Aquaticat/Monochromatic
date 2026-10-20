@@ -7,7 +7,7 @@
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import { canonicalSlug, } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import { canonicalSlug, } from '@monochromatic-dev/agent-harness-shared-model-selection/ts';
 import {
   ReviewUnavailableError,
   runStructuredJsonRetries,

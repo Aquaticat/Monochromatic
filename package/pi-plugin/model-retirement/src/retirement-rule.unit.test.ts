@@ -66,7 +66,7 @@ function entry(
 /**
  Retirement controls taken from the measured catalog, including the three `radius`
  inversions that the alias-wins tiebreak in
- `@monochromatic-dev/pi-shared-model-selection` produced and this rule must not.
+ `@monochromatic-dev/agent-harness-shared-model-selection` produced and this rule must not.
  */
 const RETIREMENT_CASES: readonly RetirementCase[] = [
   {

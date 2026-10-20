@@ -7,7 +7,7 @@
 import type { ModelRegistry, } from '@earendil-works/pi-coding-agent';
 import type { ReadonlyDeep, } from 'type-fest';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import { selectDefaultModel, } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import { selectDefaultModel, } from '@monochromatic-dev/agent-harness-shared-model-selection/ts';
 import { resolveAdvisorRequestedModel, } from './advisor-requested-model.ts';
 import {
   assertAdvisorEndpointOutputCapacity,

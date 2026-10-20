@@ -9,7 +9,7 @@ import type { ReadonlyDeep, } from 'type-fest';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import { buildAdvisorSystemPrompt, } from './advisor-client.ts';
 import { maxContextCharsForAdvisorModel, } from './context.ts';
-import { resolveEffectiveScope, } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import { resolveEffectiveScope, } from '@monochromatic-dev/agent-harness-shared-model-selection/ts';
 import { filterAdvisorScopeByOutputCapacity, } from './output-eligibility.ts';
 import { selectAdvisorModel, } from './advisor-selection.ts';
 import type { AdvisorConfig, } from './types.ts';

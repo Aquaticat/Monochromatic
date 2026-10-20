@@ -2,7 +2,7 @@
  Freeze evidence once while retaining each candidate's own context budget. @module
  */
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import { resolveEffectiveScope, } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import { resolveEffectiveScope, } from '@monochromatic-dev/agent-harness-shared-model-selection/ts';
 import { buildAdvisorSystemPromptForProject, } from './advisor-client.ts';
 import { filterAdvisorScopeByOutputCapacity, } from './output-eligibility.ts';
 import {

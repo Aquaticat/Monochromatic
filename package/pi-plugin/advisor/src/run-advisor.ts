@@ -16,7 +16,7 @@ import type {
   AdvisorRunResult
 } from './types.ts';
 import type { ForeignHostCapability, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import { resolveEffectiveScope, } from '@monochromatic-dev/pi-shared-model-selection/ts';
+import { resolveEffectiveScope, } from '@monochromatic-dev/agent-harness-shared-model-selection/ts';
 import { requestAdvisor, } from './advisor-client.ts';
 import {
   ADVISOR_CLOCK_BOUNDARY,

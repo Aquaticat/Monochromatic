@@ -31,7 +31,7 @@ import type {
   ScopedModel,
   ScopedThinkingLevel as SharedScopedThinkingLevel,
   ScopeSource as SharedScopeSource,
-} from '@monochromatic-dev/pi-shared-model-selection/ts';
+} from '@monochromatic-dev/agent-harness-shared-model-selection/ts';
 
 //region Configuration
 

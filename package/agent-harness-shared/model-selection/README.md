@@ -1,13 +1,15 @@
-# @monochromatic-dev/pi-shared-model-selection
+# @monochromatic-dev/agent-harness-shared-model-selection
 
-Shared model-selection logic for pi plugins.
+Shared model-selection logic for pi plugins and harness-neutral agent packages.
 
-This package lives under `package/pi-shared/` because it is reusable pi extension infrastructure,
-not a pi extension itself.
- Packages in this category must be intended for at least two pi packages
-and expose APIs that make sense outside one extension command,
- renderer,
- or config surface.
+This package lives under `package/agent-harness-shared/` because multiple agent harnesses consume it:
+ pi plugins (advisor, goal, thinking-defaults) and the harness-neutral advisor core
+ shared by the pi and DSH advisor variants.
+ It moved here from `package/pi-shared/model-selection` on 2026-10-20;
+ that category required two pi consumers,
+ while this one serves pi plus DSH.
+ The `/pi-coding-agent` tier keeps its optional pi peers
+ and is the deliberate exception to this category's zero-pi-import habit.
 Actual pi extensions stay under `package/pi-plugin/`.
 
 ## Export tiers
@@ -15,7 +17,7 @@ Actual pi extensions stay under `package/pi-plugin/`.
 The package uses subpath exports so lightweight consumers can import string and type helpers
 without loading platform-coupled modules.
 
-- `@monochromatic-dev/pi-shared-model-selection` and `/core` export dependency-free helpers and types.
+- `@monochromatic-dev/agent-harness-shared-model-selection` and `/core` export dependency-free helpers and types.
 - `/scope` exports scope pattern,
    settings,
    and effective-scope helpers.
@@ -28,7 +30,7 @@ Root and `/core` modules must not import either peer.
 
 ## Consumer boundaries
 
-Advisor and auto-mode can import heavier `/scope`,
+Advisor and goal can import heavier `/scope`,
  `/cost`,
  `/budget`,
  and `/pi-coding-agent` modules.
