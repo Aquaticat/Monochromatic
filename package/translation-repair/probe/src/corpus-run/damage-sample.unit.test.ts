@@ -126,7 +126,8 @@ await describe({
             'DAMAGE 0 shipped rows had no incumbent wording and are not drawn from',
             '',
           ].join('\n',),
-          stderr: 'damage-sample: TRANSLATION_REPAIR_SYNTHETIC_API_KEY, TRANSLATION_REPAIR_CHARM_HYPER_API_KEY, '
+          stderr: 'damage-sample: TRANSLATION_REPAIR_NEURALWATT_API_KEY, TRANSLATION_REPAIR_SYNTHETIC_API_KEY, '
+            + 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY, '
             + 'TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY or TRANSLATION_REPAIR_OPENROUTER_API_KEY is not set; '
             + 'run under mise so sops injects it\n',
         },);
