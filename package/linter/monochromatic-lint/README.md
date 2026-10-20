@@ -39,6 +39,10 @@ one record per finding,
 with the rule identifier in `code`.
 A clean run prints nothing.
 Messages that are not findings go to standard error with a `monochromatic-lint:` prefix.
+A configuration rejection is one prefixed line,
+and it ends with `(monochromatic-lint <version>)`:
+the running binary's version,
+the same one `--version` prints.
 
 Exit statuses:
 
