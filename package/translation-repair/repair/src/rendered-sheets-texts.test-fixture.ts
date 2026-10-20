@@ -53,13 +53,13 @@ export const TRANSLATORS_NOTE = '<!-- 大家看一下 -->';
  Invented archive rendering, told in the present, ending with a note between
  translators.
  */
-export const ARCHIVE = `That night the kitten falls asleep on the windowsill. She says, "I will come again tomorrow." ${TRANSLATORS_NOTE}`;
+export const ARCHIVE: string = `That night the kitten falls asleep on the windowsill. She says, "I will come again tomorrow." ${TRANSLATORS_NOTE}`;
 
 /**
  Invented repair of the archive rendering, told in the past, ending with the
  same note.
  */
-export const REPAIR = `That night the kitten fell asleep on the windowsill. She said, "I will come again tomorrow." ${TRANSLATORS_NOTE}`;
+export const REPAIR: string = `That night the kitten fell asleep on the windowsill. She said, "I will come again tomorrow." ${TRANSLATORS_NOTE}`;
 
 /**
  Invented original of the passage next door, which the sheets that carry a
@@ -71,7 +71,7 @@ export const NEIGHBOUR_SOURCE = '隔壁的小猫也睡着了。';
  Invented archive rendering of the passage next door, ending with a note
  between translators like the archive rendering of this one.
  */
-export const NEIGHBOUR_ARCHIVE = `The kitten next door fell asleep too. ${TRANSLATORS_NOTE}`;
+export const NEIGHBOUR_ARCHIVE: string = `The kitten next door fell asleep too. ${TRANSLATORS_NOTE}`;
 
 /**
  Invented identity context carrying one declared name.
@@ -136,12 +136,12 @@ export const TENSE_ISSUE: AdjudicatedIssue = {
 /**
  Invented archive block the original does not claim.
  */
-export const ASIDE = `The kitten was the favourite of the whole street. ${TRANSLATORS_NOTE}`;
+export const ASIDE: string = `The kitten was the favourite of the whole street. ${TRANSLATORS_NOTE}`;
 
 /**
  Invented revision of that block, which a reviewer proposes.
  */
-export const ASIDE_REVISED = `The kitten was a favourite of the neighbours. ${TRANSLATORS_NOTE}`;
+export const ASIDE_REVISED: string = `The kitten was a favourite of the neighbours. ${TRANSLATORS_NOTE}`;
 
 /**
  Invented original with an explicit line break and no archive rendering, so
