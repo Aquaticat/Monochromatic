@@ -45,6 +45,11 @@ import {
   jsonRecordOf,
 } from './neuralwatt-ledger.test-fixture.ts';
 import {
+  ask,
+  chatExchangesOf,
+  streamOf,
+} from './neuralwatt-scripted-client.test-fixture.ts';
+import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
@@ -78,46 +83,6 @@ const SMALL_ENERGY_COMMENT = ': energy {"energy_kwh": 0.0000005}\n\n';
  The cost comment of a free request.
  */
 const FREE_COST_COMMENT = ': cost {"request_cost_usd": 0, "cache_savings_usd": 0.0}\n\n';
-
-/**
- Whole stream an endpoint answers with.
-
- @param comments - comment lines placed before the sentinel, each ending in a blank line
-
- @param done - whether the sentinel closes the stream
-
- @returns Body text
-
- @example
- ```ts
- const bodyText = streamOf({ comments: ENERGY_COMMENT, },);
- ```
- */
-function streamOf(
-  {
-    comments = '',
-    done = true,
-  }: {
-    readonly comments?: string;
-    readonly done?: boolean;
-  },
-): string {
-  return [
-    `data: ${JSON.stringify({
-      id: 'chatcmpl-whiskers',
-      object: 'chat.completion.chunk',
-      choices: [{ index: 0, delta: { role: 'assistant', content: '{"spot":"sunbeam"}', }, finish_reason: null, },],
-    },)}\n\n`,
-    `data: ${JSON.stringify({
-      id: 'chatcmpl-whiskers',
-      object: 'chat.completion.chunk',
-      choices: [],
-      usage: { prompt_tokens: 90, completion_tokens: 10, total_tokens: 100, },
-    },)}\n\n`,
-    comments,
-    done ? 'data: [DONE]\n\n' : '',
-  ].join('',);
-}
 
 /**
  Quota reply with a given charged energy.
@@ -229,46 +194,6 @@ function scripted(
       retryPolicy: { limit: 0, baseMs: 1, },
     },),
   };
-}
-
-/**
- Chat exchanges among those seen.
-
- @param exchanges - everything the transport saw
-
- @returns The POSTs
-
- @example
- ```ts
- const posts = chatExchangesOf({ exchanges, },);
- ```
- */
-function chatExchangesOf({ exchanges, }: { readonly exchanges: readonly TransportExchange[]; },): readonly TransportExchange[] {
-  return exchanges.filter(function isPost(exchange,): boolean {
-    return exchange.method === 'POST';
-  },);
-}
-
-/**
- Asks the DeepSeek seat one short question.
-
- @param client - client under test
-
- @returns The reply
-
- @example
- ```ts
- const reply = await ask({ client, },);
- ```
- */
-async function ask(
-  { client, }: { readonly client: ReturnType<typeof createNeuralWattClient>; },
-) {
-  return await client.chatText({
-    modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
-    messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
-    signal: SIGNAL,
-  },);
 }
 
 await describe({
