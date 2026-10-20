@@ -481,3 +481,66 @@ and its fix will change this page,
 so the rotation restarts at `zheermao101` on the build that carries the fix.
 `CuspariaKLSY19` was launched at 15:47 UTC on 2026-10-20 on the same frozen build to find more classes meanwhile,
 and its read does not count toward readiness.
+
+## CuspariaKLSY19 read, 2026-10-20, 16:10 UTC: SETTLED in 16.0 min of pass; no class, and a hunt that does not count
+
+`CuspariaKLSY19` ran as the unit `corpus-pass-corpus-pass-CuspariaKLSY19`
+on tip `a5dc23c5bb…` and pipeline `sha256-tree-v1:16f46cb79c96…`,
+and its `START` line matched the frozen digest.
+The `DONE` line reads `elapsed=961503ms`,
+which is 16.0 min:
+`TALLY CuspariaKLSY status=SETTLED slices=4 repairStatus=repaired repairIssues=32 repairAccepted=20 repairResolved=18
+... repairChanged=4 translateStatus=complete translateChanged=4 documentsDiffer=4 pageChanged=4 pageSilent=0
+alignmentFindings=1 selection=contested`.
+`DESTINATIONS CuspariaKLSY source=0 page=0 dropped=0`,
+and the publish wrote 4 slices into a page of 1923 characters.
+The log holds 160 `warn` lines,
+no `[error]` line,
+no `DEFECTS` line,
+and none of `REATTEMPT`,
+`STALLED`,
+`mdx-downgraded` or `StreamOverrunError`.
+
+### Seats and meters
+
+The same three Gemma seats were dark on HTTP 401 and withheld after 4 asks each;
+`inception/mercury-2.5` threw on 8 of its 56 asks;
+the run ended with `SEATS DARK: 3 of 11 seats asked produced nothing usable`.
+Synthetic stayed dry.
+Hyper's balance went from 150 to 111,
+OpenRouter from 15.36 USD to 15.31 USD,
+and Bedrock stayed at 5.02 USD.
+
+### The page
+
+The lead read the shipped page beside the original and the archive,
+line by line,
+and found no class.
+The page keeps the archive's sentence on the nickname,
+"The name means “fish in clear water.”",
+which the archive's own page carries,
+so it is not the class of the `zheermao16` read.
+Three renderings are the judges' choices and read less well than they could,
+with no shared cause found,
+so they are recorded and not counted as a class:
+
+- "When word came again,
+  they learned that she had been confirmed brain dead" for 再次得到消息得知其已经确认脑死亡:
+  the original names no one who learned it,
+  and "they" has no antecedent on the page.
+- "Pressure from family and school was becoming increasingly heavy" for 家庭问题，学校问题日益突出:
+  问题 is problems,
+  not pressure;
+  the wording is the archive's.
+- "didn't have the means to do so" for 苦于没有能力:
+  苦于 (troubled by) is dropped;
+  the wording is the archive's.
+
+### What follows
+
+No further hunt runs on `a5dc23c5bb`.
+Hyper is prepaid and will not be recharged,
+and its 111 left at 16:03 UTC covers less than the `zheermao101` and `CuspariaKLSY` runs of the restarted rotation took
+on this build (79 and 39),
+so the balance is kept for the runs that count.
+The rotation restarts at `zheermao101` on the build that carries the fix for the `zheermao16` class.

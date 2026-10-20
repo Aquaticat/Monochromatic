@@ -514,8 +514,12 @@ its "Next" list is still the queue the merge went ahead of.
   where the archive renders "Han Lianyi" and the house rule glosses only a handle with no archive rendering.
   The rotation on `a5dc23c5bb` ended with no read that counts.
   `CuspariaKLSY19` was launched at 15:47 UTC on 2026-10-20 on that build to find more classes,
-  unit `corpus-pass-corpus-pass-CuspariaKLSY19`,
+  unit `corpus-pass-corpus-pass-CuspariaKLSY19`;
+  it settled with no class in 16.0 min of pass,
   and its read does not count.
+  No further hunt runs on that build:
+  Hyper went from 150 to 111 on it and will not be recharged,
+  so the balance is kept for the runs that count.
 - The naturalness sheet (B704),
   the footnote reorder (B705)
   and the CRLF note carry (B706) are fixed on `091dbacf36`,
@@ -608,9 +612,6 @@ its "Next" list is still the queue the merge went ahead of.
     so the typography and page-check suites run after any change to `mise.lock`.
 5.  The next action,
     in order:
-    - Read `CuspariaKLSY19` at its `DONE processed=` line against the original and the archive,
-      as a hunt for classes on `a5dc23c5bb`;
-      it does not count toward readiness.
     - Take the fix for the `zheermao16` class:
       an agent works in the worktree `w235` from the brief `x15-fix/archive-handle-brief.md` under the agent scratch
       directory,

@@ -276,7 +276,11 @@ this section is the readiness reading of it.
   the consolidation re-romanized and glossed the handle 寒涟漪,
   which the archive renders "Han Lianyi",
   so the rotation on `a5dc23c5bb` ended with no read that counts.
-  `CuspariaKLSY19` runs on that build to find more classes and does not count;
+  `CuspariaKLSY19` ran on that build to find more classes,
+  settled with no class,
+  and does not count.
+  No further hunt runs there,
+  since Hyper's 111 left is kept for the runs that count;
   the rotation restarts at `zheermao101` on the build that carries the fix.
 - The entries never run on a recent build are the rest of the 92-entry corpus.
   The owner's rule stands:
