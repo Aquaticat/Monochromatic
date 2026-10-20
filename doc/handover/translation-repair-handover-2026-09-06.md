@@ -753,7 +753,29 @@ its "Next" list is still the queue the merge went ahead of.
       (explicit deeply readonly entry types at the package's own boundaries,
       never by loosening the rule;
       the build digest must stay unchanged).
+      The owner then ruled
+      (about 23:15 UTC):
+      "The stop logic should obviously count total free energy used per day.
+      Every neuralwatt day starts at 15:15".
+      Read-only calls confirmed both
+      (`/v1/quota` `current_period_start` `2026-10-20T19:15:08Z`,
+      15:15 in America/New_York;
+      `/v1/usage/by-model` account-wide covered energy 4.095 Wh against the ledger's 4.094 Wh;
+      record section "The day boundary and the account-wide count",
+      ledger P17).
+      The fix is being built in keyless worktree w247:
+      the day anchored at the quota's time of day,
+      spent energy the account-wide covered total since the anchor,
+      never below the ledger,
+      plus calls in flight.
+      `zheermao19` keeps the old build;
+      its 00:00 UTC ledger reset hands back about 20 Wh NeuralWatt still counts,
+      far inside the 550 Wh,
+      so it is not stopped.
       Next:
+      gate and land w247 (and w246),
+      rebuild,
+      set `FROZEN`,
       read `zheermao19` when it settles,
       recalibrate the energy margin from its settled ledger lines
       (the first call's estimate ran 2.8 times its measured figure),
