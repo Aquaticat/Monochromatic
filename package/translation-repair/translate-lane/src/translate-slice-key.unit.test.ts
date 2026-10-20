@@ -78,12 +78,14 @@ const INCUMBENT_TEXT = 'The cat sleeps on the windowsill.\n';
  Version 20 scopes reader protection to the account of how a death or an attempt happened and cuts translators' notes from
  the judges (the XingZ6015 read).
  Version 21 cuts a translators' note alone on a quoted line with its line, where the judges saw a bare quote line.
+ Version 22 cuts the translators' notes from the surrounding existing translation the candidate selection slate shows,
+ which a heading that names the original in its own words had left whole, and from the translation the coverage sheet shows.
  These questions changed without input fields.
 
  The roster feeding {@link RUN_SHAPE} is invented, so a production roster change
  leaves this alone.
  */
-const LEGACY_WINDOWLESS_KEY = '8cd5d86eb1a82894a2e62689e3fff51098c0dc62c56dbff76693f793462711e2';
+const LEGACY_WINDOWLESS_KEY = '7ee8250682dd2126ab5c212a3bc2b10784b4f3c672c4e25a77dc648fb58a5b36';
 
 /**
  One slice's key, with whatever this case wants to vary.
