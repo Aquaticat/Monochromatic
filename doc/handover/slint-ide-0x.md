@@ -1110,7 +1110,7 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     50,000-line drag (new 110 to 118, baseline 115 to 120 changed of about 120), debug drag no longer freezes (baseline
     38 to 39 of 119); RSS 157 to 210 MiB idle, VRAM +260 MiB, first frame +34 ms; text is unhinted; one error-wave
     brightness regression found by screenshot comparison and fixed. Merged locally on 2026-10-20 as `36d522d4c1`
-    (not pushed yet). My verification so far: `lint`, `test:bin`, `build`, `inspect:software-renderer` pass; screenshots
+    (auto-pushed to `origin/main` with the next handover commit, before verification finished, because auto-push publishes every commit on `main`; verification continues on the pushed state). My verification so far: `lint`, `test:bin`, `build`, `inspect:software-renderer` pass; screenshots
     viewed, same as baseline to the eye; `test:native` failed 2 of 3 full runs at load average 12 to 14 (two other
     agents building): `annotation_stability_tests::scrolling_across_annotated_lines_is_rigid` ("frame at offset 115 is
     not the previous one shifted by one row", 125 rows differ), `rows_arriving_in_view_move_only_lines_beneath_them`
