@@ -646,6 +646,35 @@ its "Next" list is still the queue the merge went ahead of.
       mikaela_khara,
       shi_Yumiaoya and TianqiChen666.
     - `64d40cb4ff` and `768b081ee5` carry the comments their subjects needed (B709).
+    - NeuralWatt joins as a provider (owner,
+      2026-10-20:
+      `TRANSLATION_REPAIR_NEURALWATT_API_KEY` added,
+      "550Wh of energy on DeepSeek V4.1 Flash and GLM 5.3 Flash per day",
+      "we need to meter (using estimations) ourselves because overage eats into my normal plan").
+      The 550 Wh is the Max plan's 500 Wh plus the 50 Wh for product-news email
+      (`https://docs.neuralwatt.com/billing/daily-free-energy`):
+      it resets at 00:00 UTC,
+      does not carry over,
+      covers each covered model's standard and flex lanes and not `-speed`,
+      and once spent requests bill the plan.
+      No endpoint reports what is left of it
+      (`/v1/quota` reports the plan's `kwh_used`,
+      `/v1/usage/energy` the account's days),
+      so the pipeline keeps its own meter,
+      as the Bedrock ledger does:
+      reserve an estimate per call from the energy matrix's prompt-size buckets,
+      settle with the stream's `: energy` comment,
+      mark the provider dry until 00:00 UTC on a `: cost` comment with a nonzero `request_cost_usd`,
+      and read `/v1/quota` at start and end of a run.
+      Served ids `deepseek-v4.1-flash` and `glm-5.3-flash`,
+      standard lane only;
+      first in the provider order,
+      by the rule that expiring money is spent first.
+      The encrypted store `.env.local.json` went to the branch worktree on 2026-10-20 (main's copy,
+      a strict superset of the old one by key names);
+      the scratch gate worktrees stay keyless.
+      This changes the build,
+      so the rotation restarts at zheermao101 once it lands.
     - The class of the `zheermao15` read is ledger B702.
     - The guard of B701 stays open and undecided:
       the rotation sweep as an expensive mise task,
