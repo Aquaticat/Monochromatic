@@ -365,14 +365,76 @@ disjoint write scopes):
 
 The lead holds `doc/handover/` edits and cross-agent integration.
 
+### 2026-10-20 worktree reset incident (extraction data loss)
+
+Around 17:52-17:53 EDT,
+a concurrent session's git merge/reset on `main`
+(commits `949f319816`,
+`d5169ed184`,
+later `8b0860d75e`/`63991e9923`;
+several sessions keep merging `origin/main`)
+hard-reset the worktree and destroyed extraction fork `40eef920`'s
+UNCOMMITTED work:
+
+- destroyed: the staged `git mv` batch
+  (36 core files plus 17 tests into `package/agent-harness-shared/advisor/src`)
+  and the unstaged pi-adapter edits
+  (`index.ts`,
+  `tool.ts`,
+  `types.ts`,
+  `commands.ts`,
+  `rendering.ts`,
+  `status.ts`,
+  `command-message.ts`,
+  `verify-host.ts`,
+  `operation-failure-accounting.ts`,
+  `package.json`,
+  `config/pnpr/config.yaml`,
+  `pnpm-lock.yaml`);
+- survived: `package/agent-harness-shared/advisor` root files
+  (`package.json`,
+  `mise.toml`,
+  `tsconfig.json`,
+  rolldown config),
+  `src/{index,ports,transcript-test-fixture}.ts`
+  (latest versions,
+  lint-clean,
+  property-style port signatures,
+  closed `AdvisorThemeColor` token union),
+  its `dist/` build and `node_modules` link,
+  and `package/pi-plugin/advisor/src/run-context.ts`;
+- the only stash (`3f1dfd8c8a`) is an unrelated 2026-08-05
+  translation-repair autostash,
+  not this work.
+
+Recovery plan (fork `40eef920` is executing it):
+redo the `git mv` batches,
+re-apply the recorded edits verbatim from its event log,
+and commit in small units immediately after each coherent batch
+(GCE),
+never at the end.
+Then `pnpm install` for the lockfile,
+file-enforcer,
+verification,
+README.
+
+Standing warning for every agent in this worktree:
+uncommitted work is at risk of destruction at any moment
+because other sessions run git merge/reset on `main`.
+Commit early in small units,
+or do long edit batches in a linked worktree
+(`git worktree add`),
+then move the commits.
+
 ### Unknowns
 
 - Resolved:
   the shell-command-analyzer TS2339s were the unbash 6.0.0 AST reshape,
   not the TypeScript toolchain or the ownership branding.
-- Whether any of the 38 build-class `lint:types` failures hide a real
-  source drift behind the missing `dist`;
-  the sweep subagent rebuilds before concluding.
+- Resolved:
+  no source drift hid behind the 38 build-class `lint:types` failures;
+  subagent `bd3dc9b4` verified all 39 packages green after rebuild
+  (2026-10-20).
 
 ## Next action
 
@@ -399,7 +461,9 @@ Implementation,
    2026-10-20):
    extract the shared core `package/agent-harness-shared/advisor`
    and rewire `package/pi-plugin/advisor`
-   (fork `40eef920`);
+   (fork `40eef920`;
+   redoing destroyed work per the worktree reset incident section,
+   committing in small units);
    write the `doc/troubleshooting/` dependency API drift record
    (`94e9414e`);
    fix the 38 build-class reds
