@@ -561,6 +561,23 @@ import type { RepairModels, } from '@monochromatic-dev/translation-repair-assemb
  changes for at most those 10 entries. The consistency sheets cut them too (7ee1755b24), the pairing sheets (eaab1b1ed9) and the
  rendering audit (ebac709b03); their keys and generations are accounted for beside their own versions, and this one does
  not hold them. No record has been written at 40, which this change sets first.
+
+ Rides inside 40 too: a quote the critic, the introduced-defect prober, a coverage voice or a reference attestation voice copied
+ from one of those sheets across the place a note between translators was cut from used to stand in no stored text, and now
+ anchors in the stored words on each side of the note (`document-structure/src/translators-note-view.ts`,
+ `typography/src/locate-quote.ts`). `critic-wire.ts` drops a claim it cannot anchor, a prober claim it cannot place is
+ `unanchored`, a coverage voice it cannot place counts as not anchored, and an attestation it cannot place is never verified, so
+ the claims, the corroborated damage lines and the attested details of an entry holding such a note differ, in one direction:
+ a quote that could not anchor does. The key hashes the version, the shape of the run and the texts, not the sheet, and not the
+ attested details, so a record written before would be served after. Of the 12 run logs in the agent directory, none started on a
+ tip that holds `43e735f7da`, where 40 was set: the newest, `a5dc23c5bb` of zheermao16 and CuspariaKLSY19, does not, and the
+ others started on earlier ones, so none could write a record at 40. That is the evidence of the logs' `START tip=` lines and
+ `git merge-base --is-ancestor`, shown beside a control that finds ancestry (`2eeef91fac` and `89ff91202e` of `HEAD`), and not a
+ search of any slice-cache directory; a run on a worktree whose log is not among those 12 is not covered by it. Over the 92
+ pinned English archives 10 hold a note their original lacks (34 notes in all), so a record changes for at most those 10 entries.
+ The consistency version stays: its count reads the stored English and leaves a place unlocated when a quote crosses a note
+ (`consistency/src/consistency-count.ts`), as it did, and its cache holds ballots only. The translate, refine, lane-contest and
+ consolidate versions ride inside their own numbers, accounted beside each.
  */
 export const SLICE_CACHE_VERSION = 40;
 /**

@@ -280,7 +280,7 @@ export function translatorsNotesIn({ text, }: { readonly text: string; },): read
  const cut: Cut = { from: 1, to: 13, };
  ```
  */
-type Cut = {
+export type Cut = {
   /**
    First offset taken out.
    */
@@ -533,6 +533,57 @@ function cutAround(
 }
 
 /**
+ The stretches a judge's view of a text takes out: each run of notes between
+ translators with the space or line it stood on, the original's own comments
+ left in.
+
+ THE ONE PLACE THE CUTS ARE MADE. The text a judge is shown
+ (`withoutTranslatorsNotes`) and the map from that text back to the stored one
+ (`translators-note-view.ts`) both read these stretches, so they cannot
+ disagree about which note was cut.
+
+ @param text - passage whose notes are cut
+
+ @param original - the original passage, whose own comments stay: a note found
+ verbatim in it is the original's markup, whatever language it is in
+
+ @returns The stretches to take out, in source order and apart from each other;
+ none for a text with no note of its own
+
+ @example
+ ```ts
+ const cuts = noteCutsOf({ text: 'The cat slept. <!-- 大家看一下 -->', },); // one, from 14 to 29
+ ```
+ */
+export function noteCutsOf(
+  {
+    text,
+    original = '',
+  }: {
+    readonly text: string;
+    readonly original?: string;
+  },
+): readonly Cut[] {
+  /**
+   Notes that are the passage's, not the original's.
+   */
+  const notes = translatorsNotesIn({ text, },)
+    .filter(function isNotOriginals(note,): boolean {
+      return !original.includes(note.text,);
+    },);
+  return noteStretchesOf({
+    text,
+    notes,
+  },)
+    .map(function cutOf(stretch,): Cut {
+      return cutAround({
+        text,
+        stretch,
+      },);
+    },);
+}
+
+/**
  A text as a judge is shown it: without the notes between translators, but
  with the comments the original itself carries.
 
@@ -558,27 +609,14 @@ export function withoutTranslatorsNotes(
   },
 ): string {
   /**
-   Notes that are the passage's, not the original's.
-   */
-  const notes = translatorsNotesIn({ text, },)
-    .filter(function isNotOriginals(note,): boolean {
-      return !original.includes(note.text,);
-    },);
-  if (notes.length === 0)
-    return text;
-  /**
    The stretch each run of notes takes out, each starting past the one before.
    */
-  const cuts = noteStretchesOf({
+  const cuts = noteCutsOf({
     text,
-    notes,
-  },)
-    .map(function cutOf(stretch,): Cut {
-      return cutAround({
-        text,
-        stretch,
-      },);
-    },);
+    original,
+  },);
+  if (cuts.length === 0)
+    return text;
   return [
     ...cuts.map(function keptBefore(
       cut,

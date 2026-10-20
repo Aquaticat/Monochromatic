@@ -202,6 +202,61 @@ await describe({
         },),
 
         it({
+          name: 'resolves a target quote copied from the text without its notes between translators, '
+            + 'across the place a note was cut from, as spans that leave the note out',
+          fn: async () => {
+            /** Target whose paragraph holds a note between translators at a line end. */
+            const targetText = '## Introduction\n\nThe cat likes the sun.{/* 这句不太对劲 */}\nThen it naps on the cushion.\n';
+            /** Pair whose translation holds the note. */
+            const documents = {
+              source: DOCUMENTS.source,
+              target: parseDocument({ text: targetText, },),
+            } as const;
+            /** Resolution of a quote across the cut note, the original holding no such note. */
+            const resolution = resolveCriticIssue({
+              wire: {
+                category: VALID_WIRE.category,
+                severity: VALID_WIRE.severity,
+                summary: VALID_WIRE.summary,
+                targetQuote: 'The cat likes the sun.\nThen it naps on the cushion.',
+              },
+              documents,
+              original: DOCUMENTS.source.text,
+            },);
+            expect(resolution.resolved,).toBe(true,);
+            if (resolution.resolved) {
+              expect(
+                resolution.claim.spans.map(function quotedOf(span,): string {
+                  return span.quotedText;
+                },),
+              ).toStrictEqual(['The cat likes the sun.', 'Then it naps on the cushion.',],);
+            }
+          },
+        },),
+
+        it({
+          name: 'refuses the same quote when no original is given, since the note then stands in the text it reads',
+          fn: async () => {
+            /** Target whose paragraph holds a note between translators at a line end. */
+            const targetText = '## Introduction\n\nThe cat likes the sun.{/* 这句不太对劲 */}\nThen it naps on the cushion.\n';
+            /** Resolution with no original: the text is read as it stands. */
+            const resolution = resolveCriticIssue({
+              wire: {
+                category: VALID_WIRE.category,
+                severity: VALID_WIRE.severity,
+                summary: VALID_WIRE.summary,
+                targetQuote: 'The cat likes the sun.\nThen it naps on the cushion.',
+              },
+              documents: {
+                source: DOCUMENTS.source,
+                target: parseDocument({ text: targetText, },),
+              },
+            },);
+            expect(resolution.resolved,).toBe(false,);
+          },
+        },),
+
+        it({
           name: 'rescues punctuation-variant quotes with canonical document bytes',
           fn: async () => {
             /** Pair whose translation uses curly punctuation. */

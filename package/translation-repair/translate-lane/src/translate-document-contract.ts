@@ -374,6 +374,15 @@ import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-pa
  written after it shown beside a control that finds records, was not made, so the number moves, as the repair slice and refine
  versions move for the same sheets. Over the 92 pinned English archives 10 hold a note their original lacks (34 notes in all),
  so a sheet changes for at most those 10 entries. Both changes set 22 before any run started on a tip that holds it, so the two ride in one number.
+
+ Rides inside 22 too: a quote a coverage voice copied from that sheet across the place a note between translators was cut from
+ used to stand in no stored text and counted as not anchored, and now anchors in the stored words on each side of the note
+ (`archive/src/coverage-verdict.ts`, `typography/src/locate-quote.ts`), so the verdict insertion admission reads for this lane
+ can carry a passage it could not. The evidence the verdict keeps is still the stored slice. The translate lane asks no critic
+ or prober to quote anything, and the attested lines its sheets show are part of its key, so nothing else of this change reaches
+ it. Of the 12 run logs in the agent directory, none started on a tip that holds `43e735f7da`, where 22 was set, so none could
+ write a record at 22 (the evidence of the logs' `START tip=` lines and `git merge-base --is-ancestor`, as the repair slice
+ version gives it), and the number does not move.
  */
 export const TRANSLATE_SLICE_CACHE_VERSION = 22;
 

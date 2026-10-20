@@ -1,4 +1,7 @@
-import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import {
+  hashContent,
+  withoutTranslatorsNotes,
+} from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
   ADDITION_CATEGORY,
@@ -107,6 +110,11 @@ function attestedRejection(
 
  @param targetText - the chunk's archive text the quotes are placed in
 
+ @param original - the texts whose comments are the original's own on the
+ sheets the attestation read: the attested quotes were placed in the archive as
+ those sheets showed it, without the notes between translators, so the claims'
+ words are placed in the same text; absent when the archive was not cut
+
  @returns Claims for the panel, rejected issues, findings
 
  @example
@@ -119,10 +127,12 @@ export function screenAttestedAdditions(
     claims,
     attested,
     targetText,
+    original,
   }: {
     readonly claims: readonly IssueClaim[];
     readonly attested: readonly AttestedDetail[];
     readonly targetText: string;
+    readonly original?: string;
   },
 ): ScreenedClaims {
   if (attested.length === 0) {
@@ -132,6 +142,15 @@ export function screenAttestedAdditions(
       findings: [],
     };
   }
+  /**
+   The archive text as the attestation placed its quotes in it.
+   */
+  const placedIn = (original === undefined)
+    ? targetText
+    : withoutTranslatorsNotes({
+      text: targetText,
+      original,
+    },);
   /**
    Claims kept for the panel.
    */
@@ -157,7 +176,7 @@ export function screenAttestedAdditions(
         .flatMap(function detailsFor(span,): readonly AttestedDetail[] {
           return attestedDetailsOverlapping({
             quote: span.quotedText,
-            text: targetText,
+            text: placedIn,
             details: attested,
           },);
         },)

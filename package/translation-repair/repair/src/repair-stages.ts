@@ -10,6 +10,7 @@ import {
   type ClaimEmission,
   collectClaimAttributions,
   CRITIC_RESPONSE_FORMAT,
+  criticOriginalsOf,
   isCriticReportWire,
   resolveCriticIssue,
 } from '@monochromatic-dev/translation-repair-adjudication/ts';
@@ -170,6 +171,15 @@ export async function runCriticStage(
   },);
 
   /**
+   The texts whose comments are the original's own on this sheet, which the
+   quotes of the reports are resolved against as well.
+   */
+  const original = criticOriginalsOf({
+    sourceText,
+    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+  },);
+
+  /**
    Heard critics after retry-to-quorum. Full-roster retries were tried
    and reverted (user decision 2026-07-23): live probing showed critics
    answer 7/7 on the first round nearly always, paragraph slicing plus
@@ -246,6 +256,8 @@ export async function runCriticStage(
       const resolution = resolveCriticIssue({
         wire,
         documents,
+        // The quotes are read in the translation as the sheet showed it, cut against the same originals.
+        original,
       },);
       if (!resolution.resolved) {
         findings.push(resolution.reason,);

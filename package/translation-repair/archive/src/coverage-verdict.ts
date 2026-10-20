@@ -225,6 +225,10 @@ function matchedRegion(
 
  @param foreignRegions - target regions paired to other source slices
 
+ @param original - the passage whose comments are the original's own on the
+ sheet the voice read, so the quote is located in the translation as that sheet
+ showed it; absent when the sheet cut nothing
+
  @returns That claim with its anchoring resolved
 
  @example
@@ -237,10 +241,12 @@ function weighVoice(
     voice,
     document,
     foreignRegions,
+    original,
   }: {
     readonly voice: HeardVoice<CoverageReportWire>;
     readonly document: AnchorTarget;
     readonly foreignRegions: readonly TargetRegion[];
+    readonly original?: string;
   },
 ): WeighedVoice {
   /**
@@ -266,6 +272,7 @@ function weighVoice(
     side: 'target',
     quote: voice.value
       .quote,
+    ...((original === undefined) ? {} : { original, }),
   },);
   if (!located.located) {
     return {
@@ -456,6 +463,11 @@ function countVoices(
 
  @param quorumMet - whether enough of them answered to decide at all
 
+ @param original - the passage whose comments are the original's own on the
+ sheet the voices read: each quote is located in the translation as that sheet
+ showed it, without the notes between translators, and the evidence kept is
+ still the document's own stored slice; absent when the sheet cut nothing
+
  @returns Verdict plus the tallies and evidence behind it
 
  @example
@@ -470,12 +482,14 @@ export function judgeCoverage(
     foreignRegions,
     asked,
     quorumMet,
+    original,
   }: {
     readonly voices: readonly HeardVoice<CoverageReportWire>[];
     readonly document: AnchorTarget;
     readonly foreignRegions?: readonly TargetRegion[];
     readonly asked: number;
     readonly quorumMet: boolean;
+    readonly original?: string;
   },
 ): CoverageVerdict {
   /**
@@ -490,6 +504,7 @@ export function judgeCoverage(
       voice,
       document,
       foreignRegions: regions,
+      ...((original === undefined) ? {} : { original, }),
     },);
   },);
 

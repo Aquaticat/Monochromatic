@@ -144,6 +144,9 @@ export function anchorRegion(
     readonly region: string;
   },
 ): RegionAnchoring {
+  // THE REGION IS STORED TEXT, a verdict's recorded evidence, not a quote copied from a sheet that cut the notes
+  // between translators; it is searched in the page as it stands, so it takes no original
+  // (`typography/src/locate-quote.ts`), and a region holding a note finds it where it stands.
   /**
    Where the region sits on the page.
    */

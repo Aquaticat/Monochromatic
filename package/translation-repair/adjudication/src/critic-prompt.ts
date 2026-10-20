@@ -116,6 +116,44 @@ Reply with ONLY a JSON object of shape {"issues": [...]}. No prose, no code fenc
 An empty issues array is a valid answer when the translation is faithful.`;
 
 /**
+ The texts whose comments are the original's own on a critic's sheet: the
+ original, and the original next door.
+
+ THE ONE DEFINITION BOTH SIDES OF THE SHEET READ. The sheet cuts the notes
+ between translators from the translation against these texts
+ (`buildCriticMessages`), and the quotes the critic copies out of it are
+ resolved against the same ones (`resolveCriticIssue`); two spellings of the
+ list could disagree about which comment is the original's and read two
+ different texts.
+
+ @param sourceText - original document
+
+ @param neighbouringSourceText - original next door, absent when the slice
+ stands alone
+
+ @returns The texts joined by line feeds, for `withoutTranslatorsNotes`
+
+ @example
+ ```ts
+ const original = criticOriginalsOf({ sourceText, },);
+ ```
+ */
+export function criticOriginalsOf(
+  {
+    sourceText,
+    neighbouringSourceText,
+  }: {
+    readonly sourceText: string;
+    readonly neighbouringSourceText?: string;
+  },
+): string {
+  return [
+    sourceText,
+    neighbouringSourceText ?? '',
+  ].join('\n',);
+}
+
+/**
  Builds the message list for one critic call.
 
  @param sourceText - original document, front matter included
@@ -160,18 +198,19 @@ export function buildCriticMessages(
   // left in the translation (`accuracy/untranslated`) would report a Chinese
   // comment, which an accepted issue turns into an envelope for an editor to
   // render, and the carry then puts the note back beside the rendering. Only
-  // what is SHOWN is cut. A quote the critic gives is located in the stored
-  // text (`locateQuote`), so a quote of words that stand together on the sheet
-  // resolves as it did, and one that runs across a place a note was cut from
-  // finds nothing and is dropped. The original's own comments stay in view,
-  // and so do the notes of the original next door.
+  // what is SHOWN is cut. A quote the critic gives is located in the text as
+  // shown and carried back to the stored one (`resolveCriticIssue` with the
+  // same originals, `criticOriginalsOf`), so a quote across a place a note was
+  // cut from anchors in the stretches of words either side of the note and no
+  // anchor holds it. The original's own comments stay in view, and so do the
+  // notes of the original next door.
   /**
    Texts whose comments are the original's own.
    */
-  const originals = [
+  const originals = criticOriginalsOf({
     sourceText,
-    neighbouringSourceText ?? '',
-  ].join('\n',);
+    ...((neighbouringSourceText === undefined) ? {} : { neighbouringSourceText, }),
+  },);
   /**
    The translation as the critic reads it.
    */

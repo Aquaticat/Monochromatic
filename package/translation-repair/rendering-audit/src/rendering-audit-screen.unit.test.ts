@@ -192,6 +192,33 @@ await describe({
       },
     },),
     it({
+      name: 'KEEPS a finding whose candidate locator runs across a note between translators, because the '
+        + 'auditor was shown the candidate without the note and the locator is found in the text as shown',
+      fn: async () => {
+        const screened = screenRenderingAudit({
+          report: {
+            verdict: 'defects-found',
+            findings: [
+              claim({
+                overrides: {
+                  candidateLocator: 'attic.\nThey eat canned food',
+                  candidateFocus: 'eat',
+                },
+              },),
+            ],
+          },
+          sourceText: SOURCE_TEXT,
+          candidateText:
+            'Three cats live in the bookshop attic.{/* 这句不太对劲 */}\nThey eat canned food, and drink warm milk.',
+        },);
+        expect(screened.dropped,).toEqual([],);
+        expect(screened.findings,).toHaveLength(1,);
+        expect(screened.findings[0]
+          ?.candidate
+          .kind,).toBe('anchored',);
+      },
+    },),
+    it({
       name:
         'KEEPS an omission quoting the ORIGINAL only, since content the candidate never rendered has '
         + 'nothing in the candidate to point at, and marks the other side unused rather than empty',

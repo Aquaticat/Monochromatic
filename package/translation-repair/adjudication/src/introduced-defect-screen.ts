@@ -1,4 +1,5 @@
 import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import { withoutTranslatorsNotes, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import type { RepairRegion, } from './repair-region.ts';
 import {
   type IntroducedDefectCheckWire,
@@ -201,6 +202,39 @@ function asScreened({ text, }: { readonly text: string; },): string {
 }
 
 /**
+ A region's text as the prober read it: without the notes between translators
+ when its sheet cut them, as it stands when it cut nothing.
+
+ @param text - the region's replaced or replacement text
+
+ @param original - the texts whose comments are the original's own on the
+ sheet, absent when the sheet cut nothing
+
+ @returns The text the prober's quote was copied out of
+
+ @example
+ ```ts
+ const shown = shownTextOf({ text: region.editorAfter, original: '', },);
+ ```
+ */
+function shownTextOf(
+  {
+    text,
+    original,
+  }: {
+    readonly text: string;
+    readonly original?: string;
+  },
+): string {
+  return (original === undefined)
+    ? text
+    : withoutTranslatorsNotes({
+      text,
+      original,
+    },);
+}
+
+/**
  Decides what a claim's anchors prove about one region.
 
  The differential runs in BOTH directions, because collateral damage comes in
@@ -228,11 +262,17 @@ function asScreened({ text, }: { readonly text: string; },): string {
 
  @param region - region the claim is about
 
+ @param original - the texts whose comments are the original's own on the
+ sheet the prober read (`proberOriginalOf`): both texts the quote is checked
+ against are read as that sheet showed them, without the notes between
+ translators, since the prober copied the quote out of them so; absent when the
+ sheet cut nothing
+
  @returns Admissibility of the claim
 
  @example
  ```ts
- const admissibility = screenEvidence({ evidence, omittedText: '', region, },);
+ const admissibility = screenEvidence({ evidence, omittedText: '', region, original, },);
  ```
  */
 export function screenEvidence(
@@ -240,10 +280,12 @@ export function screenEvidence(
     evidence,
     omittedText,
     region,
+    original,
   }: {
     readonly evidence: string;
     readonly omittedText: string;
     readonly region: RepairRegion;
+    readonly original?: string;
   },
 ): ClaimAdmissibility {
   /**
@@ -261,14 +303,24 @@ export function screenEvidence(
     return 'unanchored';
 
   /**
-   Replacement text both directions are checked against.
+   Replacement text both directions are checked against, as the prober read it.
    */
-  const after = asScreened({ text: region.editorAfter, },);
+  const after = asScreened({
+    text: shownTextOf({
+      text: region.editorAfter,
+      ...((original === undefined) ? {} : { original, }),
+    },),
+  },);
 
   /**
-   Replaced text both directions are checked against.
+   Replaced text both directions are checked against, as the prober read it.
    */
-  const before = asScreened({ text: region.before, },);
+  const before = asScreened({
+    text: shownTextOf({
+      text: region.before,
+      ...((original === undefined) ? {} : { original, }),
+    },),
+  },);
   if (quotesAdded) {
     /**
      Added-wording anchor, folded and collapsed as both texts are compared.
@@ -590,11 +642,17 @@ export function resolveProberChecks(
 
  @param ballots - checks per prober, keyed by model id
 
+ @param issues - accepted issues the regions serve, whose quotes a prober's may restate
+
+ @param original - the texts whose comments are the original's own on the
+ sheet the probers read (`proberOriginalOf`), so each quote is checked against
+ the regions as the sheet showed them; absent when the sheet cut nothing
+
  @returns Tally per region, in region order
 
  @example
  ```ts
- const tallies = screenIntroducedDefects({ regions, ballots, },);
+ const tallies = screenIntroducedDefects({ regions, ballots, original, },);
  ```
  */
 export function screenIntroducedDefects(
@@ -602,10 +660,12 @@ export function screenIntroducedDefects(
     regions,
     ballots,
     issues = [],
+    original,
   }: {
     readonly regions: readonly RepairRegion[];
     readonly ballots: Readonly<Record<string, readonly IntroducedDefectCheckWire[]>>;
     readonly issues?: readonly AdjudicatedIssue[];
+    readonly original?: string;
   },
 ): readonly RegionDefectTally[] {
   /**
@@ -689,6 +749,7 @@ export function screenIntroducedDefects(
           omittedText: entry.check
             .omittedText,
           region,
+          ...((original === undefined) ? {} : { original, }),
         },);
 
         /**

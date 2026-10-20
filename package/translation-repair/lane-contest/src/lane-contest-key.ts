@@ -252,6 +252,14 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
  lane's sheet does not use, since it labels its own blocks (`lane-contest-wire.ts`). Its sheet is what it was, so the cut moves no
  number, as the page title version stays: the lexicon sheet shows source and Chinese titles only. The guard that renders every sheet with a planted note (88b5187179, c655a96182) and the restoration judge that
  only the repair benchmark runs (36c5b02884) change no sheet this lane asks.
+
+ Rides inside 13 too: a quote the introduced-defect prober copied across the place a note between translators was cut from now
+ anchors in the stored words on each side of the note (`typography/src/locate-quote.ts`), so the corroborated damage claims of
+ the repair lane can differ for an entry holding such a note. The damage claims shown to the judges are part of this key
+ (`damage`, in `laneContestSliceKey`), so a slice whose claims change asks a new question, and this lane's sheet is what it was. The
+ coverage verdict is read by insertion admission and not by this lane, and is accounted beside the translate version. Of the 12 run logs in the agent directory, none started on a tip that holds `89ff91202e`, where 13 was set, so none could
+ write a record at 13 (the evidence of the logs' `START tip=` lines and `git merge-base --is-ancestor`, as the repair slice
+ version gives it), and the number does not move.
  */
 export const LANE_CONTEST_CACHE_VERSION = 13;
 

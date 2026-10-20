@@ -452,5 +452,248 @@ await describe({
         expect(located.located,).toBe(false,);
       },
     },),
+
+    //region Notes between translators
+
+    // A JUDGE IS SHOWN THE TRANSLATION WITHOUT THE NOTES THE ARCHIVE'S TRANSLATORS LEFT EACH OTHER, and copies a
+    // quote out of that. A quote across the place a note was cut from finds nothing in the stored text, which
+    // is the miss these cases pin: the quote is found in the text as shown, and the anchors it binds are the
+    // stored words on each side of the note, never the note.
+    it({
+      name: 'LOCATES a quote across a note that ends a line, as two anchors that leave the note out',
+      fn: async () => {
+        /** Translation whose first line ends with a note between translators. */
+        const text = 'The cat likes the sun.{/* 这句不太对劲 */}\nThen it naps on the cushion.\n';
+
+        /** That text as an anchor target. */
+        const document = {
+          text,
+          nodes: parseDocument({ text, },).nodes,
+        };
+        const located = locateQuote({
+          document,
+          side: 'target',
+          quote: 'The cat likes the sun.\nThen it naps on the cushion.',
+          original: '',
+        },);
+        expect(located.located,).toBe(true,);
+        if (!located.located)
+          throw new Error('unreachable: asserted located',);
+        expect(
+          located.anchors.map(function quotedOf(anchor,): string {
+            return anchor.quotedText;
+          },),
+        ).toStrictEqual(['The cat likes the sun.', 'Then it naps on the cushion.',],);
+        for (const anchor of located.anchors) {
+          expect(anchor.quotedText,).toBe(text.slice(anchor.startOffset, anchor.endOffset,),);
+        }
+      },
+    },),
+    it({
+      name: 'LOCATES a quote across a note alone on its line, the line itself left out of every anchor',
+      fn: async () => {
+        /** Translation with a note on a line of its own between two sentences. */
+        const text = 'The cat sat by the door.\n{/* 注释 */}\nThe cat slept on the mat.\n';
+
+        /** That text as an anchor target. */
+        const document = {
+          text,
+          nodes: parseDocument({ text, },).nodes,
+        };
+        const located = locateQuote({
+          document,
+          side: 'target',
+          quote: 'The cat sat by the door.\nThe cat slept on the mat.',
+          original: '',
+        },);
+        expect(located.located,).toBe(true,);
+        if (!located.located)
+          throw new Error('unreachable: asserted located',);
+        expect(
+          located.anchors.map(function quotedOf(anchor,): string {
+            return anchor.quotedText;
+          },),
+        ).toStrictEqual(['The cat sat by the door.', 'The cat slept on the mat.',],);
+        expect(
+          located.anchors.some(function holdsNote(anchor,): boolean {
+            return anchor.quotedText.includes('注释',);
+          },),
+        ).toBe(false,);
+      },
+    },),
+    it({
+      name: 'LOCATES a quote across a note that ends a paragraph, one anchor in each block',
+      fn: async () => {
+        /** Translation whose first paragraph ends with a note and the space around it. */
+        const text = 'Trans aid work went on. <!-- 前面这句中文懂什么意思 --> \n\nHer actions helped people.\n';
+
+        /** That text as an anchor target. */
+        const document = {
+          text,
+          nodes: parseDocument({ text, },).nodes,
+        };
+        const located = locateQuote({
+          document,
+          side: 'target',
+          quote: 'Trans aid work went on.\n\nHer actions helped people.',
+          original: '',
+        },);
+        expect(located.located,).toBe(true,);
+        if (!located.located)
+          throw new Error('unreachable: asserted located',);
+        expect(
+          located.anchors.map(function quotedOf(anchor,): string {
+            return anchor.quotedText;
+          },),
+        ).toStrictEqual(['Trans aid work went on.', 'Her actions helped people.',],);
+      },
+    },),
+    it({
+      name: 'LOCATES a quote across a note that ends a CRLF line, the carriage return kept with the line break',
+      fn: async () => {
+        /** Translation with CRLF line ends. */
+        const text = 'The cat likes the sun.{/* 注 */}\r\nThen it naps.\r\n';
+
+        /** That text as an anchor target. */
+        const document = {
+          text,
+          nodes: parseDocument({ text, },).nodes,
+        };
+        const located = locateQuote({
+          document,
+          side: 'target',
+          quote: 'The cat likes the sun.\r\nThen it naps.',
+          original: '',
+        },);
+        expect(located.located,).toBe(true,);
+        if (!located.located)
+          throw new Error('unreachable: asserted located',);
+        expect(
+          located.anchors.map(function quotedOf(anchor,): string {
+            return anchor.quotedText;
+          },),
+        ).toStrictEqual(['The cat likes the sun.', 'Then it naps.',],);
+      },
+    },),
+    it({
+      name: 'JUDGES AMBIGUITY IN THE TEXT AS SHOWN: a sentence that stands once in the stored text, once more with a '
+        + 'note inside it, is two places to the judge who read both',
+      fn: async () => {
+        /** Translation repeating one sentence, the second time with a note between words. */
+        const text = 'The cat sat on the mat. It purred.\n\nThe cat sat on {/* 注 */}the mat. It purred.\n';
+
+        /** That text as an anchor target. */
+        const document = {
+          text,
+          nodes: parseDocument({ text, },).nodes,
+        };
+        const located = locateQuote({
+          document,
+          side: 'target',
+          quote: 'The cat sat on the mat.',
+          original: '',
+        },);
+        expect(located,).toEqual({
+          located: false,
+          reason: 'ambiguous-quote (target)',
+        },);
+      },
+    },),
+    it({
+      name: 'LEAVES THE NOTE OUT of the anchors of a quote that stops where the note begins and of one that starts where it ends',
+      fn: async () => {
+        /** Translation with a note between two sentences of one line. */
+        const text = 'The cat likes the sun. {/* 注 */} Then it naps.\n';
+
+        /** That text as an anchor target. */
+        const document = {
+          text,
+          nodes: parseDocument({ text, },).nodes,
+        };
+        const before = locateQuote({
+          document,
+          side: 'target',
+          quote: 'The cat likes the sun.',
+          original: '',
+        },);
+        const after = locateQuote({
+          document,
+          side: 'target',
+          quote: 'Then it naps.',
+          original: '',
+        },);
+        expect(before.located && (before.anchors.length === 1),).toBe(true,);
+        expect(after.located && (after.anchors.length === 1),).toBe(true,);
+        if ((!before.located) || (!after.located))
+          throw new Error('unreachable: asserted located',);
+        expect(before.anchors[0]?.endOffset,).toBe(text.indexOf(' {/*',),);
+        expect(after.anchors[0]?.startOffset,).toBe(text.indexOf('Then',),);
+      },
+    },),
+    it({
+      name: 'KEEPS A COMMENT THE ORIGINAL ALSO WRITES in the text it searches, so a quote across it finds nothing',
+      fn: async () => {
+        /** Translation repeating a comment the original carries. */
+        const text = 'The cat sat {/* 注 */} on the mat.\n';
+
+        /** That text as an anchor target. */
+        const document = {
+          text,
+          nodes: parseDocument({ text, },).nodes,
+        };
+        const located = locateQuote({
+          document,
+          side: 'target',
+          quote: 'The cat sat on the mat.',
+          original: 'The cat sat {/* 注 */} on the mat.',
+        },);
+        expect(located.located,).toBe(false,);
+      },
+    },),
+    it({
+      name: 'READS THE TEXT AS IT STANDS when no original is given, so a quote across a note finds nothing',
+      fn: async () => {
+        /** Translation with a note that ends a line. */
+        const text = 'The cat likes the sun.{/* 注 */}\nThen it naps.\n';
+
+        /** That text as an anchor target. */
+        const document = {
+          text,
+          nodes: parseDocument({ text, },).nodes,
+        };
+        const located = locateQuote({
+          document,
+          side: 'target',
+          quote: 'The cat likes the sun.\nThen it naps.',
+        },);
+        expect(located.located,).toBe(false,);
+      },
+    },),
+    it({
+      name: 'REFUSES a quote of front matter as outside blocks even when the text holds a note, the stretches '
+        + 'of a cut text binding to nothing between blocks as a whole quote does',
+      fn: async () => {
+        /** Translation with front matter and a note that ends its paragraph. */
+        const text = '---\nname: 小猫-quote\n---\n\nThe cat slept.{/* 注 */}\n';
+
+        /** That text as an anchor target. */
+        const document = {
+          text,
+          nodes: parseDocument({ text, },).nodes,
+        };
+        const located = locateQuote({
+          document,
+          side: 'target',
+          quote: 'name: 小猫-quote',
+          original: '',
+        },);
+        expect(located,).toEqual({
+          located: false,
+          reason: 'quote-outside-blocks (target)',
+        },);
+      },
+    },),
+
+    //endregion Notes between translators
   ],
 },);

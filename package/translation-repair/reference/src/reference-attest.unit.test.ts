@@ -711,5 +711,78 @@ await describe({
         expect(attestation.findings.join('\n',),).toContain('discarded 1 of 4 items',);
       },
     },),
+    it({
+      name: 'VERIFIES an archive quote copied across a note between translators in the archive, because the sheet shows the archive without the note and the quote is read in the text as shown',
+      fn: async () => {
+        /**
+         Archive whose brother sentence is cut by a note between translators.
+         */
+        const notedArchive = 'Mittens is from a small town.\nShe has a younger brother{/* 这句不太对劲 */}\nwho also sits by the stove.\nShe wears a bell.\nShe is very clever.\n';
+        /**
+         The same item as the sheet showed it, quoted across the cut.
+         */
+        const acrossTheNote = {
+          ...BROTHER_ITEM,
+          archiveQuote: 'She has a younger brother\nwho also sits by the stove.',
+        };
+        /**
+         Prompts seen.
+         */
+        const prompts: string[] = [];
+        const attestation = await attestCitedReferences({
+          client: scriptedClient({
+            prompts,
+            replies: {
+              [ROSTER[0]]: { attested: [acrossTheNote,], },
+              [ROSTER[1]]: { attested: [acrossTheNote,], },
+            },
+          },),
+          modelIds: ROSTER,
+          fanOut: 'whole-bench',
+          sourceText: SOURCE_TEXT,
+          archiveText: notedArchive,
+          referenceContext: REFERENCE_CONTEXT,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: HANG_STOP_MS,
+          l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
+        },);
+        expect(prompts.some(function showsNote(prompt,): boolean {
+          return prompt.includes('这句不太对劲',);
+        },),).toBe(false,);
+        expect(attestation.details,).toHaveLength(1,);
+        expect(attestation.details[0]?.voices,).toBe(2,);
+      },
+    },),
+    it({
+      name: 'REJECTS an addition claim that overlaps an attested detail quoted across a note between translators, '
+        + 'the claim extending past the detail so that neither quote holds the other',
+      fn: async () => {
+        /**
+         Archive text the claim and the detail are placed in, a note inside the detail.
+         */
+        const notedArchive = 'Mittens is from a small town.\nShe has a younger brother{/* 这句不太对劲 */}\nwho also sits by the stove.\nShe wears a bell.\n';
+        /**
+         Detail as the attestation produced it from the text as shown.
+         */
+        const acrossTheNote: AttestedDetail = {
+          ...BROTHER_DETAIL,
+          archiveQuote: 'She has a younger brother\nwho also sits by the stove.',
+        };
+        const screened = screenAttestedAdditions({
+          claims: [
+            targetClaim({
+              category: 'accuracy/addition',
+              quotedText: 'by the stove.\nShe wears a bell.',
+            },),
+          ],
+          attested: [acrossTheNote,],
+          targetText: notedArchive,
+          original: SOURCE_TEXT,
+        },);
+        expect(screened.claims,).toHaveLength(0,);
+        expect(screened.issues,).toHaveLength(1,);
+      },
+    },),
   ],
 },);

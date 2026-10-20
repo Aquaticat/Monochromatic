@@ -1,3 +1,8 @@
+import {
+  shownTranslation,
+  type StoredStretch,
+  storedStretchesOf,
+} from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { wordForCount, } from './count-word.ts';
 import type {
   AnchorTarget,
@@ -19,7 +24,9 @@ import { rendersAsNothing, } from './renders-as-nothing.ts';
 // Deterministic evidence anchoring: find a critic's quote in the document,
 // reject absence and ambiguity, and bind the located region to block nodes.
 // Block-crossing regions split into one span per touched block, because models
-// quote across paragraph boundaries no matter what the prompt demands.
+// quote across paragraph boundaries no matter what the prompt demands. A quote
+// copied out of a sheet that cut the notes between translators splits the same way
+// at each note it crosses (`document-structure/src/translators-note-view.ts`).
 //
 // ONE SEARCH OVER THE BROADEST ACCEPTED FORM, rather than a chain of passes
 // from strict to loose. Both normalizations replace one UTF-16 unit with one,
@@ -165,6 +172,72 @@ function bindQuoteRegion(
 }
 
 /**
+ Binds the stored stretches a quote across cut notes came back as, each to its
+ blocks, so no anchor holds a note.
+
+ A stretch that lies wholly between blocks binds to nothing and is passed over,
+ as the gap between two blocks is for a quote across them; the quote is
+ refused as outside the blocks only when no stretch binds.
+
+ @param document - side being anchored
+
+ @param side - which side the anchors belong to
+
+ @param stretches - stored stretches of the quote, in order
+
+ @returns Anchors of every stretch that binds, or the outside-blocks failure
+
+ @example
+ ```ts
+ const bound = bindQuoteStretches({ document, side: 'target', stretches: [{ from: 0, to: 22, },], },);
+ ```
+ */
+function bindQuoteStretches(
+  {
+    document,
+    side,
+    stretches,
+  }: {
+    readonly document: AnchorTarget;
+    readonly side: DocumentSide;
+    readonly stretches: readonly StoredStretch[];
+  },
+): QuoteLocation {
+  /**
+   Anchors of every stretch that binds, in order.
+   */
+  const anchors = stretches.flatMap(function anchorsOf(stretch,): readonly SpanAnchor[] {
+    /**
+     This stretch bound to the blocks it touches.
+     */
+    const bound = bindQuoteRegion({
+      document,
+      side,
+      at: stretch.from,
+      end: stretch.to,
+    },);
+    return bound.located ? bound.anchors : [];
+  },);
+  /**
+   The first anchor, which a location needs, and the rest.
+   */
+  const [first, ...later] = anchors;
+  if (first === undefined) {
+    return {
+      located: false,
+      reason: `quote-outside-blocks (${side})`,
+    };
+  }
+  return {
+    located: true,
+    anchors: [
+      first,
+      ...later,
+    ],
+  };
+}
+
+/**
  Describes the missed quote into the failure finding by its shape, so a miss
  can be diagnosed by size and script rather than only counted, and without
  writing corpus text into a finding.
@@ -247,17 +320,29 @@ function needlePreview(
  space, zero-width space or Hangul filler that the document holds once
  anchored a critic's claim on a character no reader sees.
 
+ A QUOTE COPIED OUT OF A SHEET THAT CUT THE NOTES BETWEEN TRANSLATORS is searched
+ in the document as the sheet showed it (`original` given), and the place it is
+ found comes back as the stored stretches of words either side of each note it
+ crosses (`storedStretchesOf`), one anchor for each stretch and block, never an
+ anchor that holds a note. Uniqueness is judged in the text as shown, since that
+ is the text the quote was read in.
+
  @param document - side being searched
 
  @param side - which side the anchors belong to
 
  @param quote - substring the critic claims
 
+ @param original - the original passage the sheet's translation was cut
+ against, whose own comments stay in view; absent when the quote is stored text
+ (a region a stage recorded from the document, a text no sheet cut), which is
+ searched as it stands
+
  @returns Anchors, or the failure reason
 
  @example
  ```ts
- const located = locateQuote({ document, side: 'target', quote, },);
+ const located = locateQuote({ document, side: 'target', quote, original, },);
  ```
  */
 export function locateQuote(
@@ -265,10 +350,12 @@ export function locateQuote(
     document,
     side,
     quote,
+    original,
   }: {
     readonly document: AnchorTarget;
     readonly side: DocumentSide;
     readonly quote: string;
+    readonly original?: string;
   },
 ): QuoteLocation {
   if (rendersAsNothing({ text: quote, },)) {
@@ -279,12 +366,24 @@ export function locateQuote(
   }
 
   /**
+   The document as the quote was read: cut of its notes between translators
+   when the sheet it came from cut them, as it stands otherwise.
+   */
+  const shown = (original === undefined)
+    ? undefined
+    : shownTranslation({
+      text: document.text,
+      original,
+    },);
+
+  /**
    Document read in the broadest form this function accepts: punctuation
    variants canonical, soft line breaks read as spaces. Both maps replace one
-   UTF-16 unit with one, so every offset here indexes the stored document and
-   anchors still carry its own characters.
+   UTF-16 unit with one, so every offset here indexes the text the quote was
+   read in (the stored document unless notes were cut), and anchors still
+   carry the stored document's own characters.
    */
-  const haystack = collapseSoftLineBreaks({ text: normalizePunctuation({ text: document.text, },), },);
+  const haystack = collapseSoftLineBreaks({ text: normalizePunctuation({ text: shown?.text ?? document.text, },), },);
 
   /**
    Quote read the same way.
@@ -311,11 +410,22 @@ export function locateQuote(
       reason: `ambiguous-quote (${side})`,
     };
   }
-  return bindQuoteRegion({
+  if (shown === undefined) {
+    return bindQuoteRegion({
+      document,
+      side,
+      at,
+      end: at + needle.length,
+    },);
+  }
+  return bindQuoteStretches({
     document,
     side,
-    at,
-    end: at + needle.length,
+    stretches: storedStretchesOf({
+      shown,
+      start: at,
+      end: at + needle.length,
+    },),
   },);
 }
 

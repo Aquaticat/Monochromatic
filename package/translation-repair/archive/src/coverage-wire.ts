@@ -206,8 +206,9 @@ export function buildCoverageMessages(
   // TRANSLATORS LEFT EACH OTHER, as the other judging sheets are
   // (`withoutTranslatorsNotes`): no reader sees one, so a note may neither carry
   // the passage nor stand as a remainder it does not. Only what is SHOWN is
-  // cut; the quotes a judge gives are located in the stored text
-  // (`coverage-verdict.ts`), and the passage's own comments stay in view.
+  // cut; the quotes a judge gives are located in the text as shown and carried
+  // back to the stored one (`coverage-verdict.ts`, with the same passage), and
+  // the passage's own comments stay in view.
   /**
    The translation as the judge reads it.
    */
