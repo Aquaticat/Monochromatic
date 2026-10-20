@@ -525,6 +525,9 @@ pub mod random_id;
 /// Text operations with the exact semantics of JavaScript's built-ins.
 pub mod js_text;
 
+/// The PID namespace an owner record names, and the rule for owners of another one.
+pub mod pid_namespace;
+
 /// Process-birth identities in the incumbent's exact spelling.
 pub mod process_identity;
 
