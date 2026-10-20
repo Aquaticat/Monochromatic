@@ -1,7 +1,10 @@
 //! Native-font geometry tests for mixed-script source rather than terminal cells.
 
 /// Rasterization uses the same shaped rows and font faces.
-use ide_app::text_raster::{CodeColors, TextRaster};
+use ide_app::{
+    code_colors::CodeColors,
+    tile_scene::{paint_tile, read::drawn_runs, tile_items},
+};
 /// Canonical document and shaped source-view interfaces.
 use ide_app::{
     document::{Document, ReadingPosition},
@@ -83,27 +86,26 @@ fn selection_copies_source_not_projection() {
     assert!(!view.selection(&document).is_empty());
 }
 
-/// Source tile output contains glyph ink,
+/// Source tile output contains glyph runs,
 ///  with bounded physical dimensions.
 #[test]
-fn raster_has_ink_and_requested_dimensions() {
+fn tile_has_ink_and_requested_dimensions() {
     let document = Document::new("猫 and a cat");
     let mut shaper = TextShaper::new();
     let view = shaper.prepare(&document, viewport(), &[]);
-    let mut raster = TextRaster::new();
     let colors = CodeColors {
         foreground: [240, 240, 240, 255],
         selected: [255, 255, 255, 255],
         dark: true,
     };
-    let image = raster
-        .paint(&view, colors, 0.0)
-        .expect("the test needs the shaped view to paint into a tile");
-    assert_eq!(image.width, 500);
-    assert_eq!(image.height, 24);
+    let scene = paint_tile(&view, colors, 0.0)
+        .expect("the test needs the shaped view to build a scene for a tile");
+    assert_eq!(scene.width, 500);
+    assert_eq!(scene.height, 24);
+    let items = tile_items(&view, colors, 0.0).expect("items");
     let mut inked = false;
-    for channel in image.bytes.iter() {
-        if *channel != 0 {
+    for run in drawn_runs(&items) {
+        if !run.ids.is_empty() && run.ink == colors.foreground {
             inked = true;
         }
     }

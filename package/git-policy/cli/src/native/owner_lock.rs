@@ -29,6 +29,8 @@ use super::owner_lock_record::{
 };
 /// Private creation and tree removal.
 use super::private_storage::{create_private_directory, remove_tree, write_exclusive_synced};
+/// The PID namespace this process records as its own.
+use super::pid_namespace::current_pid_namespace;
 /// The current process's birth identity.
 use super::process_identity::{ProcessIdentityError, current_birth_identity};
 /// Unguessable tokens and unique candidate names.
@@ -594,7 +596,7 @@ fn attempt_acquire(
     let PublishedOwner::Owner(published) = read_owner(lock_directory)? else {
         return Ok(None);
     };
-    if owner_lock_holder_is_alive(&published).map_err(OwnerLockError::Identity)? {
+    if owner_lock_holder_is_alive(&published, lock_directory).map_err(OwnerLockError::Identity)? {
         return Ok(None);
     }
     retire_dead_lock(lock_directory, published.token.as_str())?;
@@ -617,6 +619,7 @@ fn current_owner_record(transaction_id: Option<&str>) -> Result<OwnerLockRecord,
         owner_birth_identity: current_birth_identity().map_err(OwnerLockError::Identity)?,
         // `.map(String::from)` copies the borrowed ID into owned text when there is one.
         transaction_id: transaction_id.map(String::from),
+        owner_pid_namespace: current_pid_namespace(),
     });
 }
 
@@ -656,7 +659,7 @@ pub fn retire_lock_of_dead_owner(lock_directory: &Path) -> Result<(), OwnerLockE
     let PublishedOwner::Owner(published) = read_owner(lock_directory)? else {
         return Ok(());
     };
-    if owner_lock_holder_is_alive(&published).map_err(OwnerLockError::Identity)? {
+    if owner_lock_holder_is_alive(&published, lock_directory).map_err(OwnerLockError::Identity)? {
         return Ok(());
     }
     return retire_dead_lock(lock_directory, published.token.as_str());

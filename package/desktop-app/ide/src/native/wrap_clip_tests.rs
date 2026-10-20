@@ -19,11 +19,14 @@ use super::viewport::band_clip;
 /// The reader fixture,
 /// bounded waits,
 /// and the pixels of the shown image.
-use super::wrap_tests::{long_text, open, settled, shown};
+use super::{
+    tile_reads::shown,
+    wrap_tests::{long_text, open, settled},
+};
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
 /// Library types that give the expected values.
-use ide_app::{row_map::CODE_ROW, text_raster::MAX_RASTER_BYTES};
+use ide_app::{row_map::CODE_ROW, shaped_text::texture_dimension, text_raster::MAX_RASTER_BYTES};
 /// Toolkit models and events.
 use slint::{ComponentHandle, Model, platform::update_timers_and_animations};
 
@@ -64,11 +67,14 @@ fn settled_tile(opened: &super::find_tests::Reader) {
 
 /// Whether any pixel of the visible band of the image has ink;
 /// a window with no image yet has none.
-fn has_ink(window: &super::AppWindow) -> bool {
-    if window.get_source_image().to_rgba8().is_none() {
+fn has_ink(
+    window: &super::AppWindow,
+    source: &std::rc::Rc<std::cell::RefCell<super::State>>,
+) -> bool {
+    if source.borrow().gpu.tile_size().is_none() && !source.borrow().gpu.has_pending() {
         return false;
     }
-    for pixel in shown(window) {
+    for pixel in shown(window, source) {
         if pixel[3] > 0 {
             return true;
         }
@@ -82,7 +88,7 @@ fn painted_without_error(opened: &super::find_tests::Reader) {
     let window = &opened.window;
     {
         let mut waiting = Waiting::slow();
-        while !(has_ink(window) || !window.get_error_message().is_empty()) {
+        while !(has_ink(window, &opened.source) || !window.get_error_message().is_empty()) {
             waiting.step("the window neither painted nor named a failure");
         }
     }
@@ -160,7 +166,10 @@ fn a_line_past_the_raster_limit_is_painted_in_a_clip_that_follows_the_view() {
             "offset {target}: the gutter lists {entries} of {line_rows} rows"
         );
         drop(current);
-        assert!(has_ink(window), "offset {target}: nothing is painted");
+        assert!(
+            has_ink(window, &opened.source),
+            "offset {target}: nothing is painted"
+        );
     }
     // The first row of the tall line carries its number once the view has gone back to the top.
     scroll_to(window, 0.0);
@@ -202,6 +211,10 @@ fn a_clip_stays_within_the_raster_limit_for_every_window_size() {
             assert!(
                 columns * rows * 4 <= MAX_RASTER_BYTES,
                 "width {width} scale {scale} height {height}: a raster of {columns}x{rows} passes the limit"
+            );
+            assert!(
+                rows <= u64::from(texture_dimension()),
+                "width {width} scale {scale} height {height}: a raster of {rows} rows passes the device's texture size"
             );
             assert_eq!(clip.top % CODE_ROW, 0.0);
             assert_eq!(clip.bottom % CODE_ROW, 0.0);

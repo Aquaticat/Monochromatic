@@ -1090,8 +1090,54 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     Decisions I took (veto-open): keep `unstable-winit-030` over a direct `i-slint-core` dependency (public API, no
     new package); virtual GPUs stay refused with CPU and unknown kinds; discrete GPU is preferred over integrated, the
     choice is not checked against the window surface, and `WGPU_POWER_PREF` and `WGPU_ADAPTER_NAME` are no longer read.
-    Open owner questions: whether losing hosts with OpenGL but no Vulkan hardware driver is accepted (the OpenGL
-    renderer is gone), and the `slint/mcp` inspection builds, which still link the software renderer.
+    Owner answers of 2026-10-20: Vulkan only is accepted (no OpenGL fallback; "Yes, Vulkan only"); the `slint/mcp`
+    inspection builds are to be dropped and their checks rebuilt without Slint's MCP server: "Drop the MCP builds and
+    rebuild those checks without it, our nested compositor supports GPU."
+    Owner correction of 2026-10-20: preferring a discrete GPU over an integrated one "is going to anger users on
+    laptops with both GPUs"; my veto-open decision above is retracted. Mesa documents (docs.mesa3d.org/envvars.html)
+    that without `DRI_PRIME` the default GPU is the one the display server uses, and that `DRI_PRIME` or
+    `MESA_VK_DEVICE_SELECT` put the chosen GPU first in the Vulkan list; desktops set these per application through
+    switcheroo-control. New policy (agent `a090eeb1ae38efc05`, started 2026-10-20): follow the loader's order among hardware adapters, honor
+    `WGPU_ADAPTER_NAME` and `WGPU_POWER_PREF` again, keep refusing CPU and unknown kinds. Not testable here (one
+    AMD desktop): a hybrid laptop, NVIDIA proprietary ordering.
+    Stages 3 and 4 report received (agent `a8ec6e5d0b8981d42`, branch `worktree-agent-a8ec6e5d0b8981d42`, 8 commits,
+    base `b4e54b36ce`; its branch was auto-pushed to origin by the hook, delete the remote branch after landing):
+    code view drawn by Vello into a `Rgba8Unorm` texture from a rendering notifier (`src/tile_scene/`,
+    `src/native/gpu_tile.rs`), tile 1113x8160 px at scale 1 and 2226x7488 px at scale 2 (texture side from the
+    device limit, 64 MiB byte rule), nothing deleted whole because the minimap still uses `text_raster`,
+    `glyph_cache.rs`, `selection_paint.rs`, `annotation_paint::paint_underlines` and `swash`. Selection fills and
+    find boxes stay Slint rectangles under the tile. Agent figures: cadence equal to baseline within spread except the
+    50,000-line drag (new 110 to 118, baseline 115 to 120 changed of about 120), debug drag no longer freezes (baseline
+    38 to 39 of 119); RSS 157 to 210 MiB idle, VRAM +260 MiB, first frame +34 ms; text is unhinted; one error-wave
+    brightness regression found by screenshot comparison and fixed. Merged locally on 2026-10-20 as `36d522d4c1`
+    (auto-pushed to `origin/main` with the next handover commit, before verification finished, because auto-push publishes every commit on `main`; verification continues on the pushed state). My verification so far: `lint`, `test:bin`, `build`, `inspect:software-renderer` pass; screenshots
+    viewed, same as baseline to the eye; `test:native` failed 2 of 3 full runs at load average 12 to 14 (two other
+    agents building): `annotation_stability_tests::scrolling_across_annotated_lines_is_rigid` ("frame at offset 115 is
+    not the previous one shifted by one row", 125 rows differ), `rows_arriving_in_view_move_only_lines_beneath_them`
+    (line 8 changed pixels in row 5), `query_input_tests::find_box_context_menu_runs_each_entry`; the third run passed
+    238 of 238. To judge on a quiet host before pushing; the pixel tests could point at a real tile re-center shimmer
+    (unhinted glyphs at a new tile origin) and must be compared against `origin/main` under the same load.
+    State at 2026-10-20 after the three agent reports (to verify and land in this order):
+    (1) flake diagnosis of stages 3 and 4 (agent `a717e60922dca0448`, running): on a quiet host 2 of 8 full
+    `test:native` runs failed on `main` (`annotation_stability_tests` "window row 240 differs after the annotations
+    returned"; `waiting_tests.rs:138` "the find did not reach its first match"), against none in about 14 runs before
+    stage 3; it also measures the Vello setup cost and the +52 MiB RSS and +260 MiB VRAM the stage 3 agent reported;
+    (2) the MCP removal (agent `a3b41470505ef8920`, branch `worktree-agent-a3b41470505ef8920`, reported all gates
+    green; `inspect:native` now uses the compositor's `a11y`, `inspect:log-stall` probes the compositor's `windows`
+    and screenshots; the log-stall control stalls before its first window, not after it); (3) the GPU choice by system
+    order (agent `a090eeb1ae38efc05`, branch `worktree-agent-a090eeb1ae38efc05`, 245 of 245 native tests, adapter runs
+    here: default RX 7600, `WGPU_POWER_PREF=low` Raphael, `DRI_PRIME=1` on the IDE only Raphael; setting `DRI_PRIME` on
+    the nested compositor too flips the default because Mesa's default is the compositor's GPU). Heavy verification of
+    (2) and (3) waits until (1) finishes so that its flake-rate runs are not perturbed by load.
+    (2) and (3) are already merged with each other in the scratch worktree `~/temp/agent/ide-integrate` (detached,
+    commit `31cd2f1140`, not on any branch, not pushed): the only conflicts were `gpu_device.rs` (the stage 3 and 4
+    texture cap `open_hardware_device_capped` and `set_texture_dimension` reapplied onto the split
+    `src/gpu_device/` layout) and the README (both new sections kept). Next: run `lint`, `test:native`, `test:bin`,
+    `build`, `inspect:*` there after (1) finishes, then fast-forward `main` to it (merge `origin/main` first).
+    Stages 3 and 4 are merged into one task (the tile bakes in selection, underlines and the wrap sign, so they
+    cannot be split cleanly): agent `a8ec6e5d0b8981d42`, started 2026-10-20 (code view on the GPU, CPU pipeline
+    deleted except what the minimap still needs). A second agent, `a3b41470505ef8920`, removes the MCP builds in parallel and rebuilds their checks on the nested
+    compositor (started 2026-10-20).
     Stage 1 landed (agent `a54a3dbd127b14fbf`, merged into `main`, verified by me): `[profile.dev.package."*"]`
     `opt-level = 2` in the IDE `Cargo.toml` (clean debug build 49.7 s to 81.8 s, incremental rebuild unchanged at
     about 4 s, `test:native` 214 tests in about 23 s on a quiet host, measured by me after the merge) and the

@@ -13,7 +13,10 @@ use super::find_tests::{Reader, memory_project, reader};
 /// Window resizing and layout settling for exact sizes.
 use super::sidebar_tests::{GUTTER, HEADER, TEXT_LEFT, resize};
 /// The production window and its state.
-use super::{AppWindow, State};
+use super::{
+    AppWindow, State,
+    tile_reads::{same_rows, shown, sign_pixels},
+};
 /// The wrap width rule and the worker's gates and limits.
 use super::{
     overscan_tile_tests::reset,
@@ -151,30 +154,6 @@ pub(super) fn open(text: &str) -> (tempfile::TempDir, Reader) {
     return (project, opened);
 }
 
-/// The rows of the window's visible viewport as RGBA pixels,
-/// read from the source image.
-pub(super) fn shown(window: &AppWindow) -> Vec<[u8; 4]> {
-    let scale = window.window().scale_factor();
-    let image = window
-        .get_source_image()
-        .to_rgba8()
-        .expect("source image pixels");
-    let width = image.width() as usize;
-    let view_top = -window.get_scroll_y();
-    let first = ((view_top - window.get_image_y()) * scale).floor().max(0.0) as usize;
-    let last = (((view_top + window.get_viewport_height() - window.get_image_y()) * scale).ceil()
-        as usize)
-        .min(image.height() as usize);
-    let pixels = image.as_slice();
-    let mut rows = Vec::new();
-    for row in first..last {
-        for pixel in &pixels[row * width..(row + 1) * width] {
-            rows.push([pixel.r, pixel.g, pixel.b, pixel.a]);
-        }
-    }
-    return rows;
-}
-
 /// The vertical extent a fresh shaper gives `text` when every line is measured at the state's wrap width.
 fn expected_extent(state: &Rc<RefCell<State>>, scale: f32) -> f32 {
     let current = state.borrow();
@@ -240,16 +219,19 @@ fn the_gutter_numbers_first_rows_and_marks_continuation_rows() {
     }
     assert_eq!(entry, numbers.len());
     drop(current);
-    let sign = window
-        .get_wrap_sign()
-        .to_rgba8_premultiplied()
-        .expect("sign image");
+    let sign = sign_pixels(window, &opened.source).expect("sign image");
+    assert_eq!(
+        opened.source.borrow().gpu.signs_rendered(),
+        1,
+        "the wrap indicator is drawn by the GPU once for the scale and never again"
+    );
     let mut inked = 0;
     for pixel in sign.as_slice() {
         if pixel.a > 0 {
             inked += 1;
+            // The texture holds straight alpha: every covered texel carries the sign ink.
             assert!(
-                u32::from(pixel.r).abs_diff(0xC0 * u32::from(pixel.a) / 255) <= 1,
+                u32::from(pixel.r).abs_diff(0xC0) <= 2,
                 "the sign is painted in c0c0c0"
             );
         }
@@ -316,7 +298,7 @@ fn rows_above_the_view_changing_height_move_no_visible_pixel() {
         .row_map
         .line_at(-window.get_scroll_y());
     let before_screen = screen(&opened.source, top_line, window);
-    let before_pixels = shown(window);
+    let before_pixels = shown(window, &opened.source);
     let before_extent = opened.source.borrow().row_map.height();
     // Release the pass: lines above the view get their heights, and the offset follows them.
     drop(release);
@@ -340,7 +322,7 @@ fn rows_above_the_view_changing_height_move_no_visible_pixel() {
         "the line at the top of the view moved on screen"
     );
     assert!(
-        before_pixels == shown(window),
+        same_rows(&before_pixels, &shown(window, &opened.source)),
         "visible pixels changed when rows above the view changed height"
     );
     assert_eq!(after_extent, expected_extent(&opened.source, scale));
