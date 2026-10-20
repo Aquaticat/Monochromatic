@@ -4840,57 +4840,82 @@ and that the timeout terminates a test that sleeps for a minute.
 ### Dependencies optimized in the dev profile
 
 `Cargo.toml` sets `[profile.dev.package."*"] opt-level = 2`,
-so every dependency (Slint, Parley, Swash, tree-house, Helix) is built optimized in a debug build,
+so every dependency (Slint,
+Parley,
+Swash,
+tree-house,
+Helix) is built optimized in a debug build,
 and the `ide` crate itself stays at `opt-level = 0`.
-The package declares its own `[workspace]`, so no sibling package shares this profile.
-Slint is about twelve times slower unoptimized (the GPU text study, `doc/planning/ide-vello-text.md`),
+The package declares its own `[workspace]`,
+so no sibling package shares this profile.
+Slint is about twelve times slower unoptimized (the GPU text study,
+`doc/planning/ide-vello-text.md`),
 which made a debug build show frozen frames that the optimized build does not have.
 
-Measured on 2026-10-20 in the bounded container (21 CPUs, 46 GiB) on a 28-CPU host,
+Measured on 2026-10-20 in the bounded container (21 CPUs,
+46 GiB) on a 28-CPU host,
 with `bin/inspect-cadence.mjs` for the cadence (see [Frame cadence check](#frame-cadence-check)).
 Other sessions shared the host,
 so the load average at the start of each run is given.
 
 - Clean `build:debug` (empty `target/debug` and `target/runtime-config`,
-  so the runtime, notices, and build steps all run):
+  so the runtime,
+  notices,
+  and build steps all run):
   49.7 s at load 1.4 and 48.1 s at load 9.7 before;
   81.8 s at load 2.3 after (a first run at load 55 took 139.5 s and is not comparable).
   `opt-level = 1` took 72.8 s at load 2.7.
   A clean debug build is about 1.6 times slower.
-- Incremental rebuild after `touch src/lib.rs` (`mise run --skip-deps`, wall time including mise):
-  4.5 s, 4.2 s, and 4.4 s before; 8.9 s (the first build after the clean one), 3.4 s, and 3.7 s after.
+- Incremental rebuild after `touch src/lib.rs` (`mise run --skip-deps`,
+  wall time including mise):
+  4.5 s,
+  4.2 s,
+  and 4.4 s before;
+  8.9 s (the first build after the clean one),
+  3.4 s,
+  and 3.7 s after.
   An edit to the application crate costs the same as before.
 - `test:native` (214 tests):
   the nextest run took 440.6 s before and 119.6 s and 166.4 s after
   (the second at a load of about 10 from other sessions),
   because the tests that build and shape large texts in Slint and Parley run in optimized code.
-- Drag cadence of the debug build on a 489-line file (six runs of `inspect:cadence drag`, 400 pixels):
+- Drag cadence of the debug build on a 489-line file (six runs of `inspect:cadence drag`,
+  400 pixels):
   35 and 58 changed frames of 126 and 121 before;
   105 and 105 of 121 after;
-  `opt-level = 1`: 112 and 115 of 118;
-  the release build: 112 of 121 and 109 of 123.
+  `opt-level = 1`:
+  112 and 115 of 118;
+  the release build:
+  112 of 121 and 109 of 123.
   The debug build with optimized dependencies is not distinguishable from the release build within the spread of the
   release runs (three frames) and of the debug runs before the change (23 frames).
-  Levels 1 and 2 are not distinguishable either; 2 was kept because it is the setting the owner named,
+  Levels 1 and 2 are not distinguishable either;
+  2 was kept because it is the setting the owner named,
   and `opt-level = 1` is the cheaper build if the clean build time becomes a cost.
 - Scroll cadence of the debug build (scroll of 3000 pixels in 120 steps):
-  106 and 109 changed frames of 118 and 119 before, 115 of 116 after, 115 of 117 in the release build.
+  106 and 109 changed frames of 118 and 119 before,
+  115 of 116 after,
+  115 of 117 in the release build.
 
 The change exposed one test that passed by timing.
 `rows_above_the_view_changing_height_move_no_visible_pixel` released the measurement pass and checked at once whether it
-had settled; the check saw an idle worker and returned before the pass had run (extent 10608 before and after,
+had settled;
+the check saw an idle worker and returned before the pass had run (extent 10608 before and after,
 24504 once measured).
 It now waits for the extent to change before the settled check.
-The one other test that calls `settled` right after releasing the gate, `the_extent_settles_as_chunks_arrive`,
+The one other test that calls `settled` right after releasing the gate,
+`the_extent_settles_as_chunks_arrive`,
 has the same shape and passed in every run here.
 
 ### Frame cadence check
 
 `mise run //package/desktop-app/ide:inspect:cadence <scenario> <project> <file> [profile] [size] [steps]` records what
 the window shows while an input stream runs.
-It builds the application binary of the profile (`debug` by default, or `release`) in the bounded container,
+It builds the application binary of the profile (`debug` by default,
+or `release`) in the bounded container,
 starts it in the repository's nested compositor over a project directory below the system temporary directory
-(the same constraint as `inspect:native`, so language servers never run against a real project),
+(the same constraint as `inspect:native`,
+so language servers never run against a real project),
 waits for the window to settle,
 starts `record DIR 60 bmp`,
 and sends one input command 500 ms later:
@@ -4901,24 +4926,38 @@ and sends one input command 500 ms later:
   and pulls it 400 pixels down with `drag X 60 X 460 left steps=120 step-ms=16`.
 
 The recorder photographs the compositor at a steady 60 Hz whether or not the application drew,
-so a recorded frame equal to the frame before it, during the input, means the picture did not move for that tick.
-The script hashes the pixels of every frame and prints, for the frames inside the input window only
+so a recorded frame equal to the frame before it,
+during the input,
+means the picture did not move for that tick.
+The script hashes the pixels of every frame and prints,
+for the frames inside the input window only
 (the quiet frames before and after are left out):
 the frames compared,
 how many changed and how many were identical,
 the longest run of identical frames,
 every run as `length@first slot`,
-and the pattern of the whole recording (`X` changed, `.` identical, brackets around the window).
+and the pattern of the whole recording (`X` changed,
+`.` identical,
+brackets around the window).
 The line starting `CADENCE` repeats the numbers as JSON.
-The frames are deleted after hashing; `IDE_CADENCE_KEEP_FRAMES=1` keeps them.
-The recording, hashes, screenshots, and compositor log stay in `~/temp/agent/ide-cadence-*`.
+The frames are deleted after hashing;
+`IDE_CADENCE_KEEP_FRAMES=1` keeps them.
+The recording,
+hashes,
+screenshots,
+and compositor log stay in `~/temp/agent/ide-cadence-*`.
 
-The pure part, the frame hash and the window and run counting, is in `bin/cadence.ts`
+The pure part,
+the frame hash and the window and run counting,
+is in `bin/cadence.ts`
 and tested by `bin/cadence.test.ts` through `mise run //package/desktop-app/ide:test:bin`.
 The script `bin/inspect-cadence.mjs` only drives the compositor.
 
-Tuning variables: `IDE_CADENCE_SETTLE` (milliseconds to wait after startup, default 10000),
-`IDE_CADENCE_GRAB` (the drag's first y, default 60),
+Tuning variables:
+`IDE_CADENCE_SETTLE` (milliseconds to wait after startup,
+default 10000),
+`IDE_CADENCE_GRAB` (the drag's first y,
+default 60),
 `IDE_CADENCE_DISTANCE` (default 400),
 `IDE_CADENCE_SCROLL` (default 3000),
 and `IDE_CADENCE_STEP_MS` (default 16).
@@ -4931,10 +4970,13 @@ Reading the result:
   because the document cannot scroll further (at a distance of 600 pixels the 489-line file ended in a run of 13 or 14
   frames in the debug and in the release build alike).
   The start slot of each run shows whether a run is at the end.
-  Choose a distance the box can travel for the file, or read only the runs before the last.
+  Choose a distance the box can travel for the file,
+  or read only the runs before the last.
 - The positive control is the debug build before the profile change against the release build.
-  Before the change, `drag` at 400 pixels gave a debug build with 91 identical frames of 126 (runs of up to 9 frames)
-  and 63 of 121 (up to 6), against 9 of 121 (up to 2) and 14 of 123 (up to 4) in the release build.
+  Before the change,
+  `drag` at 400 pixels gave a debug build with 91 identical frames of 126 (runs of up to 9 frames)
+  and 63 of 121 (up to 6),
+  against 9 of 121 (up to 2) and 14 of 123 (up to 4) in the release build.
 
 ### Runtime grammars
 
