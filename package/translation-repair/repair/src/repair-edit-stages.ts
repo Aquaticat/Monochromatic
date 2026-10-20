@@ -4,6 +4,7 @@ import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-forei
 
 import type {
   AdjudicatedIssue,
+  ReadonlyEntry,
   RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
@@ -294,7 +295,7 @@ export async function runCheckerStage(
   for (
     const line of Object
       .entries(readings,)
-      .flatMap(function toLines([issueId, reading,],): readonly string[] {
+      .flatMap(function toLines([issueId, reading,]: ReadonlyEntry<string, IssueCheckerReading>,): readonly string[] {
         return reading.ballots
           .map(function toLine(ballot,): string {
             return `checker-ballot ${ballot.modelId} ${issueId} ${ballot.verdict} ${
