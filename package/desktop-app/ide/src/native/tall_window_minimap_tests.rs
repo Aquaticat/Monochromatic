@@ -19,13 +19,16 @@ use super::{
     wrap_tests::{long_text, open, settled},
 };
 /// The window's frame,
-///  read back from the GPU.
-use crate::native::gpu_snapshot::snapshot;
+///  read back from the GPU,
+///  and how often the window was given a new list of the minimap's textures.
+use crate::native::{gpu_snapshot::snapshot, gpu_tile::SLICE_LISTS_SET};
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
 /// The device's texture limit,
 ///  and lowering it for a test.
 use ide_app::shaped_text::{set_texture_dimension, texture_dimension};
+/// Counters are atomic.
+use std::sync::atomic::Ordering;
 /// Toolkit events.
 use slint::{
     ComponentHandle, LogicalSize, Rgba8Pixel,
@@ -546,5 +549,66 @@ fn textures_that_stack_show_the_picture_one_texture_shows() {
         assert_eq!(window.get_error_message().to_string(), "");
     }
     set_texture_dimension(8192);
+    window.hide().expect("close minimap window");
+}
+
+/// A picture of the same shape as the one on screen,
+/// asked for again by a change of the minimap's size of one pixel,
+/// is drawn into the same textures and shown by changing the rows of the list the window already holds:
+/// the markup is not given a new list,
+/// which would make it drop and make every image again inside a frame of a scroll.
+#[test]
+fn a_picture_of_the_same_shape_changes_the_rows_of_the_list_and_never_replaces_it() {
+    let (_project, opened) = tall(3500.0, true);
+    let window = &opened.window;
+    picture_still(&opened);
+    draw_minimap(window);
+    let lists = SLICE_LISTS_SET.load(Ordering::SeqCst);
+    let (drawn, images, sizes) = {
+        let current = opened.source.borrow();
+        (
+            current.gpu.minimaps_rendered(),
+            current.minimap.images_set,
+            current.gpu.minimap_texture_sizes(),
+        )
+    };
+    let bands = opened.source.borrow().minimap.shown.map(|key| return key.window);
+    window.window().dispatch_event(WindowEvent::Resized {
+        size: LogicalSize::new(TEXT_LEFT + 1330.0 + minimap_beside(1330.0), 3501.0),
+    });
+    update_timers_and_animations();
+    {
+        let mut waiting = Waiting::slow();
+        loop {
+            draw_minimap(window);
+            {
+                let current = opened.source.borrow();
+                if current.minimap.images_set > images
+                    && current.minimap.posted == current.minimap.shown
+                    && current.gpu.minimaps_rendered() > drawn
+                {
+                    break;
+                }
+            }
+            waiting.step("the picture of the resized window did not arrive");
+        }
+    }
+    let current = opened.source.borrow();
+    assert_eq!(
+        current.minimap.shown.map(|key| return key.window),
+        bands,
+        "the resize named other bands, so the picture is not of the same shape"
+    );
+    assert_eq!(
+        current.gpu.minimap_texture_sizes(),
+        sizes,
+        "the textures were made again"
+    );
+    assert_eq!(
+        SLICE_LISTS_SET.load(Ordering::SeqCst),
+        lists,
+        "the window was given a new list of textures for a picture of the same shape"
+    );
+    drop(current);
     window.hide().expect("close minimap window");
 }

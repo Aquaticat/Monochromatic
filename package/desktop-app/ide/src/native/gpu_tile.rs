@@ -29,6 +29,9 @@ mod types;
 /// A scene rendered without a window.
 #[cfg(test)]
 pub(super) use readback::render_scene;
+/// How often the window was given a new list of textures.
+#[cfg(test)]
+pub(super) use types::SLICE_LISTS_SET;
 /// The small types,
 /// shared with the slice.
 use types::{MinimapTexture, Outcome, Picture, Placement, Target};

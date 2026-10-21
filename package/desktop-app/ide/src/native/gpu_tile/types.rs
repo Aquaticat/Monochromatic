@@ -11,7 +11,7 @@ use crate::native::{AppWindow, ui::MinimapSlice};
 use slint::wgpu_30::wgpu;
 /// The image import,
 /// and the shared list the window shows the minimap's textures from.
-use slint::{Image, ModelRc, VecModel};
+use slint::{Image, Model, ModelRc, VecModel};
 /// The list is shared with the window.
 use std::rc::Rc;
 
@@ -98,6 +98,48 @@ pub(super) struct Placement {
     pub(super) slices: Vec<MinimapSlice>,
 }
 
+/// How many times the window was given a new list of the minimap's textures,
+/// counted for the tests:
+/// a picture of the same shape must change the rows of the list it has and never replace it.
+#[cfg(test)]
+pub(in crate::native) static SLICE_LISTS_SET: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
+
+/// What:
+///  Show `slices` on `window`,
+///  changing only the rows of the list the window already holds when it has the same number of them,
+///  and only the rows whose texture,
+///  first row,
+///  or height differ.
+/// Why:
+///  The markup draws one image for each row of the list,
+///  and a new list makes it drop and make every image again,
+///  which a picture of the same bands at another place does not need;
+///  the window thread does this inside a frame of a scroll.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function showSlices(window: AppWindow, slices: MinimapSlice[]): void;
+/// ```
+fn show_slices(window: &AppWindow, slices: Vec<MinimapSlice>) {
+    let shown = window.get_minimap_slices();
+    let Some(list) = shown.as_any().downcast_ref::<VecModel<MinimapSlice>>().filter(|_| false) else {
+        #[cfg(test)]
+        SLICE_LISTS_SET.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        window.set_minimap_slices(ModelRc::from(Rc::new(VecModel::from(slices))));
+        return;
+    };
+    if list.row_count() != slices.len() {
+        list.set_vec(slices);
+        return;
+    }
+    for (row, slice) in slices.into_iter().enumerate() {
+        if list.row_data(row).as_ref() != Some(&slice) {
+            list.set_row_data(row, slice);
+        }
+    }
+}
+
 /// What:
 ///  What a step of the notifier changed for the window:
 ///  new images to show and messages to display.
@@ -135,7 +177,7 @@ impl Outcome {
             for slice in &place.slices {
                 height += slice.height;
             }
-            window.set_minimap_slices(ModelRc::from(Rc::new(VecModel::from(place.slices))));
+            show_slices(window, place.slices);
             window.set_minimap_picture_width(place.width as f32);
             window.set_minimap_picture_height(height);
             window.set_minimap_picture_top(place.top as f32);
