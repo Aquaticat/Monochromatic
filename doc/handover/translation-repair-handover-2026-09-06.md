@@ -670,9 +670,11 @@ its "Next" list is still the queue the merge went ahead of.
       the energy recalibration is committed in keyless worktree w250
       (`d07508fd21` to `a665d2d028`,
       ledger P19);
-      review w247 when its agent hands back,
-      merge w250 and main into it,
-      gate once and land,
+      w247 handed back and is merged with w250 and main in keyless worktree w252;
+      its agent now makes a failed anchor read retry instead of refusing NeuralWatt for the run,
+      takes the scratch paths out of the decision record's day-boundary section
+      and records the aliases and the key allowance there;
+      then gate w252 once and land,
       rebuild,
       set `FROZEN`,
       then restart the rotation at `zheermao101` on the combined build.
