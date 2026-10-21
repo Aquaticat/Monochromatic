@@ -711,6 +711,11 @@ Its evidence is the `unreachable` column of its `SEAT` line and the `unserved=` 
 which name every seated seat no wet provider serves at the moment of the reading.
 The `SEATS DARK` line states "of N seats asked" over the seats asked,
 since a seat with only abandoned or refused calls now has a counter and no ask.
+Its explanation no longer lists a provider that cannot serve the seat or a key never injected among the causes of a dark seat,
+since the router refuses both before any request and they are counted `unreachable`
+(the header comment of `seat-tally.ts` and `configuration.md` say the same;
+red `5c6ec6aa49`,
+fixed in `1c737df61b`).
 
 Effect on a run:
 a seat that only the router refuses is never withheld by the tally.
