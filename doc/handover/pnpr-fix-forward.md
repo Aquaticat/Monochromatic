@@ -234,6 +234,17 @@ naming the proven subject-claim hypothesis.
    The control re-run must print
    `The hosted store already has a current layout.json; nothing to do.`
    before anything is pushed.
+   Checked 2026-10-21:
+   `command not found` for `docker` and `podman` was an invisible character
+   pasted before the command name
+   (measured here:
+   bash ignores an ordinary leading space
+   and treats a non-breaking space as part of the name),
+   not a missing CLI;
+   the runbook `### Setup` recovery path records the case.
+   Still pending:
+   which CLI that shell has
+   and whether that shell is on the machine that runs the container.
 2. Re-verify with `mise run //package/config/pnpr:lint:types` and
    `mise run //package/config/pnpr:test:unit`,
    then commit the eight held files in one lockstep commit
