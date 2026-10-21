@@ -83,7 +83,7 @@ const FRESH = 'The cat fell asleep beside the window. She woke at four in the af
 /**
  Phrase separating the gate's sheet from the slate judge's.
  */
-const GATE_MARKER = 'Return JSON: choice one of';
+const GATE_MARKER = 'Return JSON: reason one sentence';
 
 /**
  What a scenario has the slate judges do.

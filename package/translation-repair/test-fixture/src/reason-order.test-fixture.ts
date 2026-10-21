@@ -1,11 +1,104 @@
-import { expect, } from '@monochromatic-dev/module-test/ts';
-
 //region Reason order fixture
 // Reads the order a ballot's reply schema and its sheet's reply instruction
 // declare their fields in, so a case can require the reason to come before the
 // choice without asking the schema builder for the expected answer (owner,
 // 2026-10-21, "Reason first everywhere", extending the ruling of 2026-09-27,
 // "Reason before vote").
+
+/**
+ Whether a value is a plain object, narrowed so its members can be read.
+
+ @param value - value read off a schema
+
+ @returns Whether it is a non-null, non-array object
+
+ @example
+ ```ts
+ if (isObject(schema)) schema.properties;
+ ```
+ */
+function isObject(value: unknown,): value is Readonly<Record<string, unknown>> {
+  if ((typeof value) !== 'object')
+    return false;
+  if (value === null)
+    return false;
+  return !Array.isArray(value,);
+}
+
+/**
+ Thrown when a schema or an instruction does not name the reason ahead of the
+ vote, saying where and in what order the fields stand.
+
+ @example
+ ```ts
+ throw new ReasonOrderError({ where: 'the schema', reason: 'reason', vote: 'best', order: ['best', 'reason',], },);
+ ```
+ */
+export class ReasonOrderError extends Error {
+  /**
+   Builds the report.
+
+   @param where - what was read, a schema list or an instruction
+
+   @param reason - name of the reason field
+
+   @param vote - name of the choice field
+
+   @param order - the names in the order the reader found them
+   */
+  constructor(
+    {
+      where,
+      reason,
+      vote,
+      order,
+    }: {
+      readonly where: string;
+      readonly reason: string;
+      readonly vote: string;
+      readonly order: readonly string[];
+    },
+  ) {
+    /**
+     The names as the reader found them.
+     */
+    const found = order.join(', ',);
+    super(`${where} must name ${reason} first and before ${vote}, and it reads: ${found}`,);
+    this.name = 'ReasonOrderError';
+  }
+}
+
+/**
+ The object schema of a response format.
+
+ @param format - response format as a stage hands it to the client
+
+ @returns The schema's own members
+
+ @throws Error - when the format carries no object schema
+
+ @example
+ ```ts
+ const { properties, } = schemaOf({ format, },);
+ ```
+ */
+function schemaOf({ format, }: { readonly format: unknown; },): Readonly<Record<string, unknown>> {
+  if (!isObject(format,))
+    throw new Error('the response format is not an object',);
+  /**
+   The JSON schema envelope.
+   */
+  const { json_schema: envelope, } = format;
+  if (!isObject(envelope,))
+    throw new Error('the response format carries no json_schema',);
+  /**
+   The schema inside it.
+   */
+  const { schema, } = envelope;
+  if (!isObject(schema,))
+    throw new Error('the response format carries no object schema',);
+  return schema;
+}
 
 /**
  Property names of a response format's object schema, in declared order.
@@ -23,12 +116,10 @@ import { expect, } from '@monochromatic-dev/module-test/ts';
  */
 export function propertyOrderOf({ format, }: { readonly format: unknown; },): readonly string[] {
   /**
-   The properties record, read off the schema without trusting its type.
+   The properties record.
    */
-  const properties = ((format as {
-    readonly json_schema?: { readonly schema?: { readonly properties?: Record<string, unknown>; }; };
-  }).json_schema?.schema?.properties);
-  if (properties === undefined)
+  const { properties, } = schemaOf({ format, },);
+  if (!isObject(properties,))
     throw new Error('the response format carries no object schema with properties',);
   return Object.keys(properties,);
 }
@@ -49,14 +140,12 @@ export function propertyOrderOf({ format, }: { readonly format: unknown; },): re
  */
 export function requiredOrderOf({ format, }: { readonly format: unknown; },): readonly string[] {
   /**
-   The required list, read off the schema without trusting its type.
+   The required list.
    */
-  const required = ((format as {
-    readonly json_schema?: { readonly schema?: { readonly required?: readonly string[]; }; };
-  }).json_schema?.schema?.required);
-  if (required === undefined)
+  const { required, } = schemaOf({ format, },);
+  if (!Array.isArray(required,))
     throw new Error('the response format carries no required list',);
-  return required;
+  return required.map(String,);
 }
 
 /**
@@ -68,6 +157,9 @@ export function requiredOrderOf({ format, }: { readonly format: unknown; },): re
  @param reason - name of the reason field
 
  @param vote - name of the choice field the reason must precede
+
+ @throws {@link ReasonOrderError} when either list does not lead with the
+ reason or does not name the vote after it
 
  @example
  ```ts
@@ -85,11 +177,43 @@ export function expectReasonFirstInSchema(
     readonly vote: string;
   },
 ): void {
-  for (const names of [propertyOrderOf({ format, },), requiredOrderOf({ format, },),]) {
-    expect(names.includes(reason,),).toBe(true,);
-    expect(names.includes(vote,),).toBe(true,);
-    expect(names.indexOf(reason,),).toBeLessThan(names.indexOf(vote,),);
-    expect(names.indexOf(reason,),).toBe(0,);
+  /**
+   Declared names, then required names, each with what it is.
+   */
+  const lists = [
+    {
+      where: 'the declared properties',
+      order: propertyOrderOf({ format, },),
+    },
+    {
+      where: 'the required properties',
+      order: requiredOrderOf({ format, },),
+    },
+  ];
+  for (const list of lists) {
+    /**
+     What the list is, and its names.
+     */
+    const {
+      where,
+      order,
+    } = list;
+    /**
+     Where the reason stands in this list, and where the vote.
+     */
+    const reasonAt = order.indexOf(reason,);
+    /**
+     Where the vote stands in the same list.
+     */
+    const voteAt = order.indexOf(vote,);
+    if ((reasonAt !== 0) || (voteAt < 1)) {
+      throw new ReasonOrderError({
+        where,
+        reason,
+        vote,
+        order,
+      },);
+    }
   }
 }
 
@@ -101,6 +225,9 @@ export function expectReasonFirstInSchema(
  @param reason - phrase naming the reason field in the instruction
 
  @param vote - phrase naming the choice field in the instruction
+
+ @throws {@link ReasonOrderError} when the instruction names the vote first or
+ leaves either out
 
  @example
  ```ts
@@ -118,9 +245,45 @@ export function expectReasonBeforeVoteInText(
     readonly vote: string;
   },
 ): void {
-  expect(text.includes(reason,),).toBe(true,);
-  expect(text.includes(vote,),).toBe(true,);
-  expect(text.indexOf(reason,),).toBeLessThan(text.indexOf(vote,),);
+  /**
+   Where the instruction names the reason.
+   */
+  const reasonAt = text.indexOf(reason,);
+  /**
+   Where it names the vote.
+   */
+  const voteAt = text.indexOf(vote,);
+  /**
+   Whether the reason is named.
+   */
+  const reasonNamed = text.includes(reason,);
+  /**
+   Whether the vote is named.
+   */
+  const voteNamed = text.includes(vote,);
+  /**
+   Whether the reason stands ahead of the vote.
+   */
+  const reasonFirst = reasonAt < voteAt;
+  if (!reasonNamed) {
+    throw new ReasonOrderError({
+      where: 'the instruction',
+      reason,
+      vote,
+      order: [`${reason} at ${String(reasonAt,)}`,],
+    },);
+  }
+  if ((!voteNamed) || (!reasonFirst)) {
+    throw new ReasonOrderError({
+      where: 'the instruction',
+      reason,
+      vote,
+      order: [
+        `${reason} at ${String(reasonAt,)}`,
+        `${vote} at ${String(voteAt,)}`,
+      ],
+    },);
+  }
 }
 
 //endregion Reason order fixture

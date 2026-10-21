@@ -105,6 +105,11 @@ export type ArchiveBlockReviewOutcome = {
  since the window is rotated by the sheet text and a sheet edit elsewhere
  moves which seats it holds
 
+ @param benchStart - seat the review round's rotation starts at in place of
+ the one the sheet text seeds, which a fixture pins so that the order the
+ voices are read in, and with it the numbering of the candidates the revisions
+ make, moves with no sheet text (`rotatedBench`); absent in production
+
  @param stageSettings - straggler windows and contest ledger the entry file
  read for this launch (`StageSettings`)
 
@@ -136,6 +141,7 @@ export async function runArchiveBlockReviewStage(
     exchangeTimeoutMs,
     l,
     fanOut,
+    benchStart,
     stageSettings,
   }: ForeignBorrowed<{
     readonly client: ModelClient;
@@ -151,6 +157,7 @@ export async function runArchiveBlockReviewStage(
     readonly exchangeTimeoutMs: number;
     readonly l: Logger;
     readonly fanOut?: FanOutMode;
+    readonly benchStart?: number;
     readonly stageSettings: StageSettings;
   }>,
 ): Promise<ArchiveBlockReviewOutcome> {
@@ -190,6 +197,7 @@ export async function runArchiveBlockReviewStage(
     l: reviewLog,
     // Conditional spread keeps the knob absent instead of undefined.
     ...((fanOut === undefined) ? {} : { fanOut, }),
+    ...((benchStart === undefined) ? {} : { benchStart, }),
     // THE WRITERS' WINDOW (ledger B713): every `revise` reply is a whole
     // corrected block, so a voice the window cuts is a candidate lost, the
     // owner's reason for the longer window. The selection round after it

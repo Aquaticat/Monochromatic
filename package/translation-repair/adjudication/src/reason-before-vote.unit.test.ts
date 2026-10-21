@@ -36,15 +36,15 @@ await describe({
     it({
       name: 'SHOWS THE REPLY SHAPE WITH THE REASON FIRST in the instruction, before the candidate number',
       fn: async () => {
-        /** The user half of one selection sheet. */
-        const user = buildCandidateSelectMessages({
+        /** The system half of one selection sheet, which carries the reply instruction. */
+        const system = buildCandidateSelectMessages({
           task: 'Pick one.',
           criteria: ['Faithful.',],
           evidence: [{ label: 'ORIGINAL (Chinese)', text: '猫睡了。', },],
           rendered: ['The cat slept.', 'The cat napped.',],
-        },).at(1,)?.content ?? '';
+        },).at(0,)?.content ?? '';
         expectReasonBeforeVoteInText({
-          text: user,
+          text: system,
           reason: '{"reason": "..."',
           vote: '"best": 1}',
         },);

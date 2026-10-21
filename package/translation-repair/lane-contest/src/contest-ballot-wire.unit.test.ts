@@ -128,7 +128,7 @@ await describe({
             },)
               .json_schema
               .schema
-              .required,).toEqual([ 'choice', 'unsupported', 'dropped', 'reason', ],);
+              .required,).toEqual([ 'reason', 'unsupported', 'dropped', 'choice', ],);
           },
         },),
         it({
@@ -140,7 +140,7 @@ await describe({
             },)
               .json_schema
               .schema
-              .required,).toEqual([ 'choice', 'unsupported', 'dropped', 'reason', 'archive', ],);
+              .required,).toEqual([ 'reason', 'unsupported', 'dropped', 'choice', 'archive', ],);
           },
         },),
       ],

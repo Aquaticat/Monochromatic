@@ -525,9 +525,9 @@ export function buildConsolidationPolishGateMessages(
         ...repairClaimsBlock,
         ...communityBlock,
         ...objectionEvidence,
-        `Return JSON: choice one of "polished", "base", "${CONTEST_REFUSAL}";`,
+        'Return JSON: reason one sentence, given before the choice;',
         'unsupported and dropped each a list naming any of "polished", "base";',
-        'reason one sentence.',
+        `choice one of "polished", "base", "${CONTEST_REFUSAL}".`,
       ].join('\n',),
     },
   ];
