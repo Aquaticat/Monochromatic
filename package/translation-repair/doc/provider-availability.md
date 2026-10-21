@@ -108,15 +108,31 @@ the provider shows no balance to a bearer key,
 so `bedrockUsd` is the configured credit less the sum of the package's own spend ledger
 (`TRANSLATION_REPAIR_BEDROCK_LEDGER` and `TRANSLATION_REPAIR_BEDROCK_CREDIT_USD` in [Configuration](configuration.md)).
 
-NeuralWatt is **free energy that resets at 00:00 UTC**:
+NeuralWatt is **free energy that resets once a day,
+at the time of day the subscription's period began**:
 550 Wh a day on DeepSeek V4.1 Flash and GLM-5.3-Flash,
 unused energy not carried over,
 and overage charged to the owner's plan.
+The owner's day starts at 15:15 EDT,
+which is 19:15 UTC,
+read off the quota's `subscription.current_period_start` and never assumed to be midnight UTC.
 The provider reports no remainder,
-so the package keeps its own ledger of the energy each call used (`TRANSLATION_REPAIR_NEURALWATT_LEDGER`,
-`TRANSLATION_REPAIR_NEURALWATT_DAILY_WH` in [Configuration](configuration.md))
-and the `METERS` line prints `neuralwattWh` (left)
-and `neuralwattReckonedWh` (the share resting on estimates).
+so the package counts the larger of its own ledger of the energy each call used
+and the account's covered energy since the day began (`GET /v1/usage/by-model`),
+which also sees calls other processes made,
+those under a tracking alias such as `nw-flash` among them
+(`TRANSLATION_REPAIR_NEURALWATT_LEDGER`,
+`TRANSLATION_REPAIR_NEURALWATT_DAILY_WH`
+and `TRANSLATION_REPAIR_NEURALWATT_DAY_START` in [Configuration](configuration.md)).
+The `METERS` line prints `neuralwattWh` (left in that day),
+`neuralwattReckonedWh` (the share resting on estimates),
+`neuralwattAccountWh` (the account's figure or `none`),
+`neuralwattDayStart` (the day's first instant in UTC or `none`)
+and the key's cap:
+`neuralwattKeyAllowance=none`,
+or `neuralwattKeyRemainingUsd` and `neuralwattKeyBlocked`.
+The owner caps this key at 1 kWh a day as a backstop under the 550 Wh,
+and a blocked cap holds NeuralWatt dry until the cap's reset.
 A cost a request reports does not end the day for NeuralWatt:
 the provider reports a nominal cost on free-energy requests too,
 and the dashboard counts such a request against the free energy.
