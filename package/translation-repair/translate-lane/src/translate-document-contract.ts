@@ -383,8 +383,17 @@ import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-pa
  it. Of the 12 run logs in the agent directory, none started on a tip that holds `43e735f7da`, where 22 was set, so none could
  write a record at 22 (the evidence of the logs' `START tip=` lines and `git merge-base --is-ancestor`, as the repair slice
  version gives it), and the number does not move.
+
+ Version 23 covers the selection ballot and the coverage judge giving their reasons before their votes (owner, 2026-10-21,
+ "Reason first everywhere"; `e5bc27f9f0`): the translate lane's candidate selection (`adjudication/src/candidate-select-wire.ts`,
+ now `reason` then `best`) and the coverage sheet that insertion admission reads for this lane (`archive/src/coverage-wire.ts`,
+ now `reason`, `quote`, then `coverage`). The key hashes the version, the shape of the run and the texts, not the sheet and not the rule that reads the
+ ballots, so a record written before would be served after. Runs zheermao21 and CuspariaKLSY21 started on `3637592bd4`,
+ which holds the commit that set 22 (`git merge-base --is-ancestor`), so records may stand at 22 and the change
+ cannot ride inside it; no search of any slice-cache directory was made, and the number moves. The consolidate, lane-contest, repair slice and refine versions move for
+ the same ballots (29, 14, 41, 12). No record has been written at 23, which this change sets first.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 22;
+export const TRANSLATE_SLICE_CACHE_VERSION = 23;
 
 /**
  Models the translate lane seats.

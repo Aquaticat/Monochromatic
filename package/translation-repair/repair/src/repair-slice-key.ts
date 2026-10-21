@@ -578,8 +578,17 @@ import type { RepairModels, } from '@monochromatic-dev/translation-repair-assemb
  The consistency version stays: its count reads the stored English and leaves a place unlocated when a quote crosses a note
  (`consistency/src/consistency-count.ts`), as it did, and its cache holds ballots only. The translate, refine, lane-contest and
  consolidate versions ride inside their own numbers, accounted beside each.
+
+ Version 41 covers the selection ballot and the coverage judge giving their reasons before their votes (owner, 2026-10-21,
+ "Reason first everywhere"; `e5bc27f9f0`): the editor ensemble's candidate selection (`adjudication/src/candidate-select-wire.ts`,
+ now `reason` then `best`) and the coverage sheet that insertion admission reads (`archive/src/coverage-wire.ts`, now `reason`,
+ `quote`, then `coverage`). The key hashes the version, the shape of the run and the texts, not the sheet and not the rule that reads the
+ ballots, so a record written before would be served after. Runs zheermao21 and CuspariaKLSY21 started on `3637592bd4`,
+ which holds the commit that set 40 (`git merge-base --is-ancestor`), so records may stand at 40 and the change
+ cannot ride inside it; no search of any slice-cache directory was made, and the number moves. The consolidate, lane-contest, translate and refine versions move for the
+ same ballots (29, 14, 23, 12). No record has been written at 41, which this change sets first.
  */
-export const SLICE_CACHE_VERSION = 40;
+export const SLICE_CACHE_VERSION = 41;
 /**
  Everything about a repair run that changes what the models are ASKED, folded
  into every cache key.

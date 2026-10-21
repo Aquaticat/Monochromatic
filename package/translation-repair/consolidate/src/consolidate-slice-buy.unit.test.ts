@@ -67,7 +67,7 @@ function settlementEnding(
 /**
  Marker only the consolidate gate's sheet carries.
  */
-const GATE_MARKER = 'Return JSON: choice one of';
+const GATE_MARKER = 'Return JSON: reason one sentence';
 
 /**
  The slice the empty-standing cases buy for.

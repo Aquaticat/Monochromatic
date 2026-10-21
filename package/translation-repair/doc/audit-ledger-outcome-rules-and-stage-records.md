@@ -761,3 +761,87 @@ the straggler window is read by no key;
 and the composite changes the archive text a pass ships,
 which `repairSliceKey` hashes as `targetText` and the pairing question key hashes as its target blocks,
 so keys move for exactly the entries whose archive block changed.
+
+## B730: a polish gate that tied kept the base, and nothing said so
+
+Status:
+fixed on 2026-10-21 (UTC),
+red `f4682cd017`,
+refactor `a3c2897c5b`,
+fix `45657407a6`,
+cache versions `4b9fc9e645`,
+source scans `2e5c2f82c1`.
+Owner ruling of 2026-10-21,
+"Polished text wins ties"
+(`design-commitments-rulings-of-2026-10-21.md`).
+Found in the read of `CuspariaKLSY21` (finding 1,
+class C).
+
+What the code did:
+`settleConsolidationPolishBallots` returned `polished` for at least the minimum of two ballots and a strict lead,
+`base` likewise,
+and `neither` for anything else,
+and the gate shipped the base for every choice but `polished`.
+The slice 1 gate of `CuspariaKLSY21` heard four usable ballots,
+base,
+base,
+polished,
+polished,
+settled on `neither` and shipped the base.
+Nothing recorded that the vote had tied:
+the log line carried the tally and the word `neither`,
+and no ruling on polish gate ties existed,
+the gate's own comment ("approved base winning every tie") being the only statement.
+The ruling of 2026-10-11,
+"Run off the tied finalists",
+covers a slate tie in which the standing drew no ballot,
+and a gate is a vote between two names and not a slate.
+
+The fix:
+`readConsolidationPolishSettlement` returns the choice,
+the rule that decided and the tally.
+The rules are `polished-lead`,
+`base-lead`,
+`tie-polished-wins` and `unsettled`.
+A tie is equal votes with at least one on each side,
+among usable ballots that reach the minimum in total,
+refusals included.
+The gate then settles on `polished` and ships the polished text,
+base,
+base,
+polished,
+polished and base,
+polished both;
+below the minimum nothing changes.
+The gate log carries the tally and the rule,
+a tie adds a line naming the ruling,
+and the outcome's findings say `consolidation-polish-gate tied N to N between polished and base`.
+The shape of the gate outcome is unchanged,
+because the artifact reader requires `ships` to be `polished` exactly when `choice` is `polished`.
+The red cases failed with `expected 'neither' to equal 'polished'`.
+`settleConsolidationPolishBallots` was left with no caller but its tests and was removed with the source scans of
+`2e5c2f82c1`.
+
+Decisions taken in this session:
+- The minimum counts every usable ballot.
+  The ruling names base,
+  polished as a tie that ships the polished text,
+  and one vote on each side cannot reach the minimum of two on either side.
+- A tie needs a vote on each side.
+  Two refusals,
+  or one vote beside a refusal,
+  are not a tie,
+  and settle on nothing as before.
+- The run-off of a tied consolidation slate is unchanged.
+
+Open to the owner's veto:
+the two readings named in the decisions of this entry.
+
+Cache account:
+`CONSOLIDATE_CACHE_VERSION` 28 to 29.
+A stored settlement of a tied gate holds the opposite verdict,
+and the key hashes the version,
+the run shape and the texts and not the rule.
+`CuspariaKLSY21` and `zheermao21` started on `3637592bd4`,
+which holds the commit that set 28,
+so records may stand at 28 and the change cannot ride inside it.

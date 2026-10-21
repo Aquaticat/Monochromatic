@@ -186,6 +186,9 @@ async function review(
     exchangeTimeoutMs: HANG_STOP_MS,
     l: capturingLogger({ messages: lines, },),
     fanOut: 'whole-bench',
+    // PINNED TO THE FIRST SEAT, so the candidates are numbered in roster order whatever the sheet says:
+    // the bench's rotation is seeded by the sheet text, and an edit to the reply instruction moved it.
+    benchStart: 0,
     stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return {

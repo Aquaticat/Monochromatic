@@ -5,7 +5,6 @@ import {
   archiveStandInFor,
   type ArtifactConsolidateSlice,
   type ConsolidateRoster,
-  consolidateRunShape,
   consolidateSliceKey,
   type ConsolidateSliceSeating,
   laneTextsForSlate,
@@ -31,6 +30,7 @@ import {
   contestedRows,
   contestedSliceName,
   indexConsolidationInputs,
+  rosterRunShapeOf,
 } from './consolidate-driver-index.ts';
 import {
   type BoughtConsolidation,
@@ -38,6 +38,7 @@ import {
   recordedConsolidateSlice,
 } from './consolidate-driver-records.ts';
 import { acquireConsolidation, } from './consolidate-driver-acquire.ts';
+import { consolidationSubjectOf, } from './consolidate-driver-subject.ts';
 import type { SliceNeighbourContext, } from '@monochromatic-dev/translation-repair-repair/ts';
 import {
   armSliceCost,
@@ -91,6 +92,12 @@ import {
 
  @param judgeModelIds - roster that judges each slate and gates its winner;
  `modelIds` when not given
+
+ @param archiveDisputes - slices whose archive rendering the repair lane's
+ adjudicators disputed, whose repair text stands in for the archive
+
+ @param acceptedRepairClaimNotes - the claims that panel accepted per slice,
+ which the final polish gate reads and the key names
 
  @param sheetFacts - what the page tells every sheet and key: the declared names,
  whether the original's entry records a death, the names the translation
@@ -154,6 +161,7 @@ export async function consolidateDocument(
     overlap = 1,
     beforeSlice,
     archiveDisputes,
+    acceptedRepairClaimNotes,
     declaredNamePairs = [],
     l,
     stageSettings,
@@ -167,6 +175,13 @@ export async function consolidateDocument(
      where the contest chose neither lane (class one hundred seven).
      */
     readonly archiveDisputes?: ReadonlyMap<number, ArchiveDispute>;
+
+    /**
+     The claims the repair lane's panel accepted per slice, as the sheet
+     block `acceptedRepairClaimsNote` writes them, for the final polish gate
+     and the key; a slice the panel accepted nothing on has no entry.
+     */
+    readonly acceptedRepairClaimNotes?: ReadonlyMap<number, string>;
     /**
      Name pairs the front matter declares, which the publication rule reads
      for a linked title naming a declared person (class one hundred
@@ -225,11 +240,9 @@ export async function consolidateDocument(
    @returns Run shape for that roster
    */
   function shapeFor({ roster, }: { readonly roster: ConsolidateRoster; },): string {
-    return consolidateRunShape({
-      modelIds: roster.modelIds,
-      judgeModelIds: roster.judgeModelIds,
-      ...sheetFacts,
-      ...((roster.polishConfig === undefined) ? {} : { polishConfig: roster.polishConfig, }),
+    return rosterRunShapeOf({
+      roster,
+      ...((sheetFacts === undefined) ? {} : { sheetFacts, }),
       declaredNamePairs,
     },);
   }
@@ -437,9 +450,13 @@ export async function consolidateDocument(
             };
 
           /**
-           Slice as both halves take it.
+           What the repair panel accepted about this slice, absent when nothing.
            */
-          const subject = {
+          const acceptedRepairClaimsNote = acceptedRepairClaimNotes?.get(row.sliceIndex,);
+          /**
+           Slice as both halves take it (`consolidate-driver-subject.ts`).
+           */
+          const subject = consolidationSubjectOf({
             sourceText,
             incumbentText,
             repairText: row.repairText,
@@ -448,22 +465,13 @@ export async function consolidateDocument(
             ...((syntax === undefined) ? {} : { syntax, }),
             lineStructured,
             declared: declaredNamePairs,
-            ...sheetFacts,
-            ...((disputeNote === undefined) ? {} : { archiveDisputeNote: disputeNote, }),
-            ...((disputedWordings.length === 0) ? {} : { disputedWordings, }),
-            // Omitted rather than empty, matching the context above it, so a producer
-            // shown no readings is shown no heading promising any.
-            ...((pictureContext === '') ? {} : { pictureContext, }),
-            // THE WINDOW REACHES THE JUDGING HALF ONLY, for now. The producer sheet
-            // has no block for it, so putting it here promises nothing to a producer
-            // and gives `settleConsolidation` what its judges need. Whether the
-            // producers should have it too is a real question, recorded
-            // as an explicit exclusion rather than answering it in passing.
-            ...((neighbours.sourceText === '') ? {} : { neighbouringSourceText: neighbours.sourceText, }),
-            ...((neighbours.incumbentText === '')
-              ? {}
-              : { neighbouringIncumbentText: neighbours.incumbentText, }),
-          };
+            ...((sheetFacts === undefined) ? {} : { sheetFacts, }),
+            ...((disputeNote === undefined) ? {} : { disputeNote, }),
+            ...((acceptedRepairClaimsNote === undefined) ? {} : { acceptedRepairClaimsNote, }),
+            disputedWordings,
+            pictureContext,
+            neighbours,
+          },);
 
           /**
            Key this settlement resumes under.
@@ -483,6 +491,7 @@ export async function consolidateDocument(
             neighbouringIncumbentText: neighbours.incumbentText,
             laneTexts,
             ...((disputeNote === undefined) ? {} : { archiveDisputeNote: disputeNote, }),
+            ...((acceptedRepairClaimsNote === undefined) ? {} : { acceptedRepairClaimsNote, }),
           },);
 
           /**

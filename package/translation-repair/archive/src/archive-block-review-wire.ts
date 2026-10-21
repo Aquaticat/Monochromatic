@@ -207,7 +207,7 @@ Do not retain a factual claim merely because it sounds plausible. Preserve Markd
 
 ${HOUSE_POLICY_BLOCK}
 
-Reply with JSON only: {"disposition":"source-supported"|"editorial-context"|"revise","sourceQuote":"exact source support or empty","replacementText":"complete replacement or empty","finding":"one concise sentence"}`,
+Reply with JSON only: {"finding":"one concise sentence, the reason for the disposition","disposition":"source-supported"|"editorial-context"|"revise","sourceQuote":"exact source support or empty","replacementText":"complete replacement or empty"}`,
   },
     {
     role: 'user',
@@ -305,20 +305,20 @@ export const ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
     schema: {
       type: 'object',
       required: [
+        'finding',
         'disposition',
         'sourceQuote',
         'replacementText',
-        'finding',
       ],
       additionalProperties: false,
       properties: {
+        finding: { type: 'string', },
         disposition: {
           type: 'string',
           enum: [...DISPOSITIONS,],
         },
         sourceQuote: { type: 'string', },
         replacementText: { type: 'string', },
-        finding: { type: 'string', },
       },
     },
   },

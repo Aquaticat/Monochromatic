@@ -6,16 +6,22 @@
 import { Surface } from "surface.slint";
 import { Palette } from "std-widgets.slint";
 
+// One texture of the picture: the image, the row of the whole picture its first row is, and its height, in physical
+// pixels. A picture taller than the device's texture limit is several of these, each below the one before it.
+export struct MinimapSlice {
+    image: image,
+    top: float,
+    height: float,
+}
+
 export component Minimap inherits Rectangle {
-    // The picture, and its size in physical pixels. It is a GPU texture holding the window's own shaped lines of the bands
-    // of the text near the visible part, drawn at the minimap's resolution, so it is shown at exactly that many physical
-    // pixels: nothing is resampled, and no pixel of it is repeated or blended with a neighbour.
-    in property <image> picture;
+    // The picture is the window's own shaped lines of the bands of the text near the visible part, drawn at the minimap's
+    // resolution into GPU textures that stack without a gap, each shown at exactly its size in physical pixels, so
+    // nothing is resampled, and no pixel of it is repeated or blended with a neighbour. Its width is the textures' width.
+    in property <[MinimapSlice]> slices;
     in property <float> picture-width;
-    in property <float> picture-height;
-    // The row of the whole picture the picture's first row is, in physical pixels, and how far the whole picture has
-    // slid up past the track, which is the picture's offset in a text taller than the track.
-    in property <float> picture-top;
+    // How far the whole picture has slid up past the track, which is the picture's offset in a text taller than the
+    // track.
     in property <length> slide;
     // Height of the track the picture covers, and the box over it: its height and its distance from the top.
     in property <length> track;
@@ -52,13 +58,14 @@ export component Minimap inherits Rectangle {
     changed width => { root.resized(self.width, self.height); }
     changed height => { root.resized(self.width, self.height); }
 
-    Image {
+    for slice in root.slices : Image {
         x: 0px;
-        // Whole physical pixels, so the picture slides without being resampled.
-        y: (root.picture-top - round(root.slide / 1phx)) * 1phx;
+        // Whole physical pixels, so the picture slides without being resampled, and each texture starts on the row
+        // where the one above it ends.
+        y: (slice.top - round(root.slide / 1phx)) * 1phx;
         width: root.picture-width * 1phx;
-        height: root.picture-height * 1phx;
-        source: root.picture;
+        height: slice.height * 1phx;
+        source: slice.image;
         image-fit: fill;
     }
 

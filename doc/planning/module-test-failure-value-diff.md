@@ -135,3 +135,43 @@ A failing `toEqual` over `31` findings of `174` characters each,
  prints that one entry as the difference,
  not both lists.
  A failing record compare names the differing keys.
+
+## Outcome
+
+Shipped in `package/module/test-diagnostic`,
+ exported from `package/module/test-diagnostic/src/index.ts`:
+
+- `valueDifferenceLines` and `errorDifferenceLines` in
+ `package/module/test-diagnostic/src/value-difference.ts`,
+ with the walks split across `value-walk.ts` and `value-walk-collections.ts`
+ and shared plumbing in `difference-sink.ts`.
+- Entry pairing in `value-entry-key.ts` and `list-difference.ts`,
+ string lines in `string-difference.ts`,
+ single-line renders in `value-representation.ts`.
+- `formatNode` in `package/module/test-diagnostic/src/format-error.ts`
+ appends indented difference lines under an error carrying `actual` and
+ `expected`.
+
+Measured at the consumer boundary (`expect` from
+`@monochromatic-dev/module-test/ts` through `formatFailure`):
+the `31`-finding acceptance case renders chai's truncated headline plus
+two lines naming the one changed entry pair.
+ A failing record compare names its keys.
+
+Decided beyond the original sketch:
+
+- The diff block stays silent when neither compared side can hold content
+ the headline truncates,
+ so matcher fields like `satisfy`'s predicate result never gain a
+ misleading diff.
+- Map values resolve through the paired expected key,
+ since deep-equal map keys need not share identity.
+
+Open limits recorded:
+
+- A single megabyte-scale entry still renders whole on its difference
+ line.
+- The scan-findings fixture consuming `entryDifference` is follow-up
+ scope.
+- The chai-side upstream draft stays local,
+ unposted.

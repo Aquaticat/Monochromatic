@@ -33,7 +33,7 @@ use super::{
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
 /// Library types that give the expected values.
-use ide_app::minimap::{BAND, Geometry, band_count, most_bands};
+use ide_app::minimap::{BAND, Geometry, band_count};
 /// An empty scene stands for a finished picture in the accept rule's tests.
 use ide_app::tile_scene::TileScene;
 /// Toolkit events,
@@ -636,15 +636,8 @@ fn the_picture_is_built_on_the_worker_and_stays_inside_its_bounds() {
 /// in the reader's window.
 fn bands_at(reader: &Reader, offset: f32) -> std::ops::Range<usize> {
     let shape = geometry(reader);
-    return shape.bands_for(
-        offset,
-        BAND,
-        most_bands(
-            ide_app::shaped_text::texture_dimension(),
-            reader.window.window().scale_factor(),
-            f64::from(shape.scale()),
-        ),
-    );
+    // A track taller than one texture is stacked from several, so no band the track shows is left out.
+    return shape.bands_for(offset, BAND, usize::MAX);
 }
 
 /// The numbers of the bands a picture holds.

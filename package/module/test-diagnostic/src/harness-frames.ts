@@ -26,13 +26,14 @@
  propagating the trap.
  
  @param source - object to read from
- 
- @param key - property name to read
- 
+
+ @param key - property key to read; symbols pass through since record
+   walks read symbol keys
+
  @returns property value, or `undefined` when absent or unreadable
- 
+
  @mutates source - `Reflect.get` may invoke caller-defined getters or proxy traps.
- 
+
  @example
  ```ts
  readProperty({ source: new Error('boom'), key: 'message', }) // 'boom'
@@ -44,7 +45,7 @@ export function readProperty({
   key,
 }: {
   readonly source: object;
-  readonly key: string;
+  readonly key: string | symbol;
 },): unknown {
   try {
     return Reflect.get(

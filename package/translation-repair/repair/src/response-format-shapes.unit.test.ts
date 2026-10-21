@@ -78,12 +78,14 @@ await describe({
       name: 'CANDIDATE_SELECT_RESPONSE_FORMAT',
       children: [
         it({
-          name: 'names the candidate_ballot schema and requires best and reason on every ballot, so a '
-            + 'ballot cannot name a candidate without a reason attached',
+          name: 'names the candidate_ballot schema and requires reason and best on every ballot, so a '
+            + 'ballot cannot name a candidate without a reason attached, the reason declared before the '
+            + 'candidate number (owner, 2026-10-21, "Reason first everywhere")',
           fn: async () => {
             expect(CANDIDATE_SELECT_RESPONSE_FORMAT.json_schema.name,).toBe('candidate_ballot',);
             const schema = JSON.stringify(CANDIDATE_SELECT_RESPONSE_FORMAT.json_schema.schema,);
-            expect(schema,).toContain('"required":["best","reason"]',);
+            expect(schema,).toContain('"required":["reason","best"]',);
+            expect(schema.indexOf('"reason":{',),).toBeLessThan(schema.indexOf('"best":{',),);
           },
         },),
       ],
@@ -92,13 +94,15 @@ await describe({
       name: 'COVERAGE_RESPONSE_FORMAT',
       children: [
         it({
-          name: 'names the coverage_report schema, requires coverage, quote and reason, and limits '
+          name: 'names the coverage_report schema, requires reason, quote and coverage, the reason '
+            + 'declared before the verdict (owner, 2026-10-21, "Reason first everywhere"), and limits '
             + 'coverage to full, partial or none, so a wider or narrower degree could not reach the '
             + 'guard even mislabeled',
           fn: async () => {
             expect(COVERAGE_RESPONSE_FORMAT.json_schema.name,).toBe('coverage_report',);
             const schema = JSON.stringify(COVERAGE_RESPONSE_FORMAT.json_schema.schema,);
-            expect(schema,).toContain('"required":["coverage","quote","reason"]',);
+            expect(schema,).toContain('"required":["reason","quote","coverage"]',);
+            expect(schema.indexOf('"reason":{',),).toBeLessThan(schema.indexOf('"coverage":{',),);
             expect(schema,).toContain('"enum":["full","partial","none"]',);
           },
         },),

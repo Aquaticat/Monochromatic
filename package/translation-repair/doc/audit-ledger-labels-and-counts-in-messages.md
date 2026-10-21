@@ -900,3 +900,44 @@ unchanged from the start of the round.
 Recurrence:
 `mistake-prevention-messages-labels-and-counts.md`,
 "Log lines that report nothing done".
+
+## B733: the log said a changed slice shipped unchanged
+
+Status:
+fixed on 2026-10-21 (UTC),
+red `f68c4964de`,
+refactor `ed053bb36c`,
+fix `1ab73ab56d`.
+Found in the read of `zheermao21` (finding 8,
+class B).
+No cache version moved.
+
+What the code did:
+`zheermao21` slice 3 closed its introduced-defect probe at 1 of 3 voices,
+and the log said
+"a stage heard fewer than quorum (stage-quorum-unmet (introduced-defect-probe 1/3)),
+so the slice ships unchanged and is NOT cached".
+The slice did not ship unchanged:
+the repair result lists it in `changedSliceIndices`,
+chunk 3 has `changed true` and `accuracyPatchSelected true`,
+and its repaired text reached the page.
+Only the caching was withheld.
+The sentence in `repair-slice-buy.ts` was written for every refusal reason,
+and a refusal changes what is stored,
+never what is shipped.
+
+The fix:
+`cacheRefusalLine` in `repair-cache-gate.ts` words the line from the refusal reasons,
+the slice index and whether the slice changed:
+"chunk N: <reasons>,
+so this settlement is NOT cached and a later run buys the slice again;
+the slice's text changed|did not change in this run".
+The red cases asserted the line holds neither `ships unchanged` nor a claim of a change the slice did not make,
+and failed with `expected ... to not include 'ships unchanged'`.
+A refactor commit gave the warn line a name first,
+and is a separate commit on purpose.
+
+Cache account:
+none moves.
+The line is log text,
+and the settlement a refusal leaves uncached is the same one that was always left uncached.

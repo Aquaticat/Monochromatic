@@ -58,6 +58,17 @@ The groups that follow name the main ones.
   `logArchiveDisputes`,
   `disputedWordingsOf`.
   Declared in `archive-dispute.ts`.
+- Accepted repair claims:
+  read off the same chunks every claim the adjudicators accepted,
+  at the severity they settled it,
+  leave out the claims a dispute note already carries,
+  and write the sheet note the polish gate reads.
+  Names:
+  `acceptedRepairClaimsOf`,
+  `acceptedRepairClaimsNote`,
+  `acceptedRepairClaimNotesOf`,
+  `repairClaimEvidenceOf`.
+  Declared in `accepted-repair-claims.ts`.
 - Revisions and footnotes:
   check a revision keeps the footnotes and shape of its block,
   and relabel and reorder footnote definitions.

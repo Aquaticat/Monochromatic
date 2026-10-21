@@ -23,14 +23,14 @@ use ide_app::{
 };
 
 /// The dark scheme's palette.
-const DARK: CodeColors = CodeColors {
+pub(super) const DARK: CodeColors = CodeColors {
     foreground: [220, 220, 220, 255],
     selected: [255, 255, 255, 255],
     dark: true,
 };
 
 /// The annotation inks.
-const INKS: AnnotationColors = AnnotationColors {
+pub(super) const INKS: AnnotationColors = AnnotationColors {
     hint: [150, 160, 170, 255],
     error: [255, 110, 120, 255],
     warning: [240, 200, 40, 255],
@@ -39,14 +39,14 @@ const INKS: AnnotationColors = AnnotationColors {
 };
 
 /// The fill inks.
-const FILLS: Fills = Fills {
+pub(super) const FILLS: Fills = Fills {
     selection: [30, 90, 200, 255],
     foreground: [220, 220, 220, 255],
     boundary: false,
 };
 
 /// A build that is never cancelled.
-struct Never;
+pub(super) struct Never;
 
 impl Cancel for Never {
     /// Never cancelled.
@@ -76,7 +76,7 @@ fn dense_text(lines: usize) -> String {
 
 /// Syntax classes that color a word of every line,
 /// so each line has several runs.
-fn styles_of(text: &str) -> Vec<StyleSpan> {
+pub(super) fn styles_of(text: &str) -> Vec<StyleSpan> {
     let mut styles = Vec::new();
     let mut offset = 0;
     for line in text.split_inclusive('\n') {

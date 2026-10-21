@@ -567,9 +567,9 @@ export function buildConsolidateGateMessages(
         ...tenseBlock,
         ...communityBlock,
         ...sizeBlock,
-        `Return JSON: choice one of "consolidated", "standing", "${CONTEST_REFUSAL}";`,
+        'Return JSON: reason one sentence, given before the choice;',
         'unsupported and dropped each a list naming any of "consolidated", "standing";',
-        'reason one sentence.',
+        `choice one of "consolidated", "standing", "${CONTEST_REFUSAL}".`,
       ].join('\n',),
     },
   ];

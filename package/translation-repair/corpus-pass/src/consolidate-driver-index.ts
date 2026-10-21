@@ -1,5 +1,11 @@
 import type { ArtifactContestSlice, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
-import type { ProjectedLanes, } from '@monochromatic-dev/translation-repair-artifact/ts';
+import {
+  type ConsolidateRoster,
+  consolidateRunShape,
+  type ProjectedLanes,
+} from '@monochromatic-dev/translation-repair-artifact/ts';
+import type { DeclaredNamePair, } from '@monochromatic-dev/translation-repair-house-rule/ts';
+import type { PreparedSheetFacts, } from '@monochromatic-dev/translation-repair-corpus-source/ts';
 
 //region Consolidation driver index
 // The two lookups the consolidation driver reads per slice, built once over
@@ -151,6 +157,44 @@ export function contestedSliceName(
   { item: { row, }, }: { readonly item: { readonly row: { readonly sliceIndex: number; }; }; },
 ): string {
   return `slice ${String(row.sliceIndex,)}`;
+}
+
+/**
+ What a run on one roster asks, folded into every key it settles, so a slice
+ seated on a re-read roster is keyed by the roster that settled it.
+
+ @param roster - writers, judges and naturalness roles the slice runs on
+
+ @param sheetFacts - what the page tells every sheet and key, none when the
+ page tells none
+
+ @param declaredNamePairs - name pairs the front matter declares
+
+ @returns Run shape for that roster
+
+ @example
+ ```ts
+ const runShape = rosterRunShapeOf({ roster, sheetFacts, declaredNamePairs, },);
+ ```
+ */
+export function rosterRunShapeOf(
+  {
+    roster,
+    sheetFacts,
+    declaredNamePairs,
+  }: {
+    readonly roster: ConsolidateRoster;
+    readonly sheetFacts?: PreparedSheetFacts;
+    readonly declaredNamePairs: readonly DeclaredNamePair[];
+  },
+): string {
+  return consolidateRunShape({
+    modelIds: roster.modelIds,
+    judgeModelIds: roster.judgeModelIds,
+    ...sheetFacts,
+    ...((roster.polishConfig === undefined) ? {} : { polishConfig: roster.polishConfig, }),
+    declaredNamePairs,
+  },);
 }
 
 //endregion Consolidation driver index

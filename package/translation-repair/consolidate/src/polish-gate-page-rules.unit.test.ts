@@ -36,6 +36,14 @@ const subject = {
 } as const;
 
 /**
+ What the repair panel accepted about the same slice, as the sheet's block
+ carries it: a minor mistranslation, which never reaches the dispute note.
+ */
+const REPAIR_CLAIMS_NOTE = 'REPAIR PANEL CLAIMS ACCEPTED: the repair lane\'s adjudicators accepted 1 claim(s) against the archive '
+  + 'rendering; the claims: (1) accuracy/mistranslation minor: "told of her self-surgery" softens what the ORIGINAL says about '
+  + 'the cat\'s ordeal.';
+
+/**
  Both halves of a sheet, joined.
 
  @param lineStructured - whether the line rule governs the slice
@@ -98,6 +106,48 @@ await describe({
         expect(fence.length,).toBeGreaterThan(0,);
         expect(heading,).toBe(`${fence} ARCHIVE RENDERING DISPUTED ${fence}`,);
         expect(user,).toContain(`${heading}\n${subject.archiveDisputeNote}\n${fence}\n`,);
+      },
+    },),
+    it({
+      name: 'SHOWS the claims the repair panel accepted for the slice, fenced as the dispute note is, so the judges '
+        + 'see the evidence the producers had (CuspariaKLSY21 slice 0: a 4 to 0 minor mistranslation claim on a '
+        + 'softened hunger line never reached the gate that re-softened it)',
+      fn: async () => {
+        /**
+         Messages one judge is sent when the slice carries accepted claims.
+         */
+        const messages = buildConsolidationPolishGateMessages({
+          subject: {
+            ...subject,
+            acceptedRepairClaimsNote: REPAIR_CLAIMS_NOTE,
+            lineStructured: false,
+            mode: { kind: 'comparative', },
+          },
+        },);
+        /**
+         User half of that sheet.
+         */
+        const user = messages.at(1,)?.content ?? '';
+        /**
+         Heading line of the claims block.
+         */
+        const heading = user.split('\n',).find(function isHeading(line,): boolean {
+          return line.includes(' REPAIR PANEL CLAIMS ACCEPTED ',);
+        },) ?? '';
+        /**
+         Fence the heading opens with.
+         */
+        const fence = heading.split(' ',).at(0,) ?? '';
+        expect(fence.length,).toBeGreaterThan(0,);
+        expect(heading,).toBe(`${fence} REPAIR PANEL CLAIMS ACCEPTED ${fence}`,);
+        expect(user,).toContain(`${heading}\n${REPAIR_CLAIMS_NOTE}\n${fence}\n`,);
+        expect(user.indexOf(heading,),).toBeGreaterThan(user.indexOf('CANDIDATE "polished"',),);
+      },
+    },),
+    it({
+      name: 'PRINTS NO CLAIMS BLOCK on a slice the repair panel accepted nothing on',
+      fn: async () => {
+        expect(sheetFor({ lineStructured: false, },).user.includes('REPAIR PANEL CLAIMS ACCEPTED',),).toBe(false,);
       },
     },),
     it({

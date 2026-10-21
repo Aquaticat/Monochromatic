@@ -808,3 +808,4 @@ named for that subject and listed here.
   - [The run of CuspariaKLSY21](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart-cuspariaklsy21-run.md)
   - [The page of CuspariaKLSY21](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart-cuspariaklsy21-page.md)
   - [The XingZ6016 picture stop](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart-xingz6016.md)
+  - [The causes of the rotation 21 findings](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart-causes.md)

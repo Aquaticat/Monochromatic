@@ -411,6 +411,14 @@ one warning per reply and never a count alone.
 `archive-reply-verdict.unit.test.ts` reads every branch's sentence,
 and `archive-block-review-stage.unit.test.ts` reads the logged lines.
 
+A line that says what a refusal changes names what changed.
+The repair cache gate refused to store a settlement whose probe closed short of quorum,
+and the line said the slice "ships unchanged and is NOT cached" for a slice whose text had changed and reached the page (ledger B733).
+`cacheRefusalLine` says the settlement is not cached and a later run buys the slice again,
+and states separately whether the slice's text changed in this run.
+`repair-cache-gate.unit.test.ts` reads the line for a changed slice and an unchanged one.
+A refusal reason written for one effect is read for the others it does not have.
+
 A bench's NEXT advice names the input that actually limited the result (ledger B800):
 `reader-measure` told runs whose 3 trusted records matched 3 of 291 pictures to ask again with a larger `--sample`,
 which could add no picture because every picture had been tried,

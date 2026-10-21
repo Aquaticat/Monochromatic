@@ -39,6 +39,12 @@ which lists every file of these commitments.
   as the share of panel ballots voting supported against TianqiChen66620's,
   one run per arm (`package/translation-repair/doc/status.md`,
   the 2026-09-27 section).
+- **Every ballot and verdict gives its reason before its choice.**
+  Owner,
+  2026-10-21:
+  "Reason first everywhere",
+  extending the 2026-09-27 ruling from the panel verdict to the other ballots
+  (full record in [the rulings of 2026-10-21](design-commitments-rulings-of-2026-10-21.md)).
 - **A winning patch sheds the edits a checker voted worse,
   and the rest is rechecked.**
   Owner,
@@ -169,3 +175,8 @@ which lists every file of these commitments.
   where the slate tied three ways at weight 1 and no judge chose the archive:
   "Run off the tied finalists".
   The standing still ships if that run-off ties again.
+- **A polish gate that ties ships the polished text.**
+  Owner,
+  2026-10-21:
+  "Polished text wins ties"
+  (full record in [the rulings of 2026-10-21](design-commitments-rulings-of-2026-10-21.md)).

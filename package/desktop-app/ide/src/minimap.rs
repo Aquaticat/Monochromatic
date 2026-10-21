@@ -24,8 +24,11 @@
 //!  into Vello scenes scaled to the minimap's pixels,
 //!  one scene for each chunk of at most 512 rows (`chunks`),
 //!  on a worker thread.
-//!  The window renders the scenes one after another into the one texture of the slice
-//!  and shows the texture as an image.
+//!  The window renders the scenes one after another into the textures of the picture,
+//!  each of whole chunks and no taller than the device's texture limit (`texture_runs`),
+//!  and shows the textures as images,
+//!  one below the other.
+//!  A window taller than the limit therefore has a picture that covers its whole track.
 
 /// The paint items cut into the chunks a slice is rendered in.
 mod chunks;
@@ -68,6 +71,7 @@ pub use line_cache::{LineCache, LineKey, line_key};
 /// and the chunks a slice is rendered in.
 pub use plan::{
     BAND, CHUNK_ROWS, MIN_SCALE, band_count, chunk_rows, most_bands, picture_rows, slice_rows,
+    texture_rows, texture_runs,
 };
 /// The picture's build,
 ///  its inputs,
