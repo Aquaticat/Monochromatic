@@ -195,9 +195,13 @@ export async function runArchiveBlockReviewStage(
     l: reviewLog,
     // Conditional spread keeps the knob absent instead of undefined.
     ...((fanOut === undefined) ? {} : { fanOut, }),
+    // THE WRITERS' WINDOW (ledger B713): every `revise` reply is a whole
+    // corrected block, so a voice the window cuts is a candidate lost, the
+    // owner's reason for the longer window. The selection round after it
+    // reads text that exists and keeps the readers' window.
     graceMs: stageSettings
       .grace
-      .roundMs,
+      .writerMs,
   },);
   /**
    Replies as the review reads them. A replacement that shows a reader

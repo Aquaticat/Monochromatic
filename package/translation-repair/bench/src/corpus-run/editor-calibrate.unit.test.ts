@@ -112,7 +112,7 @@ await describe({
               `editor-calibrate: 1 slice, ${MODELS} models editing and judging each, 1 slice in flight\n`
                 + 'straggler window 1234ms (TRANSLATION_REPAIR_STRAGGLER_GRACE_MS override)\n'
                 + 'WRITER GRACE OVERRIDDEN by TRANSLATION_REPAIR_WRITER_GRACE_MS: writer rounds (editor, refiner, '
-                + 'translate, produceConsolidations) abandon stragglers 5678ms after quorum rather than the 1234ms '
+                + 'translate, produceConsolidations, archive-block-review) abandon stragglers 5678ms after quorum rather than the 1234ms '
                 + 'every other round waits\n',
             );
             expect(run.stderr,).toBe(NO_KEY_LINE,);
