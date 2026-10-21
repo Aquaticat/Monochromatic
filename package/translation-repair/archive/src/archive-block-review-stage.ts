@@ -3,6 +3,7 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+import { describeProducer, } from '@monochromatic-dev/translation-repair-house-rule/ts';
 
 import {
   isArchiveReferenceQuoteAnchored,
@@ -10,15 +11,14 @@ import {
   isVerifiableEditorialArchiveBlock,
 } from './archive-block-evidence.ts';
 import { recordArchiveBlockNaturalness, } from './archive-block-naturalness.ts';
+import { compositeOfDisjointRevisions, } from './archive-composite-revision.ts';
+import { voicesAsRead, } from './archive-voices-as-read.ts';
 import { replacementCandidates, } from './archive-replacement-candidates.ts';
 import {
   archiveBlockSelectionEvidence,
   withArchiveOriginal,
 } from './archive-block-selection-evidence.ts';
-import {
-  rendersAsNothing,
-  wordForCount,
-} from '@monochromatic-dev/translation-repair-typography/ts';
+import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
   type ArchiveBlockReviewWire,
   ARCHIVE_BLOCK_DECLINE_CONSEQUENCE,
@@ -36,7 +36,6 @@ import type { ModelClient, } from '@monochromatic-dev/translation-repair-provide
 import {
   type FanOutMode,
   gatherStageVoices,
-  type HeardVoice,
   reachableQuorum,
   type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
@@ -204,31 +203,11 @@ export async function runArchiveBlockReviewStage(
       .writerMs,
   },);
   /**
-   Replies as the review reads them. A replacement that shows a reader
-   nothing is the removal the wire spells as an empty replacement, and it is
-   read as that removal once, here, so the shape floor, the slate's
-   rendering, the selectors' evidence and the page splice all read what was
-   decided rather than each asking an empty-string comparison of the raw
-   reply (ledger B40; "Two layers reading one refusal" in
-   `package/translation-repair/doc/mistake-prevention.md`). Asked that way, a revision of one zero-width
-   space passed the shape floor as a paragraph, reached the selectors as text
-   and shipped, and a revision of spaces was withheld as one of no blocks.
+   Replies as the review reads them: a replacement that shows a reader nothing
+   is read once, here, as the removal the wire spells as an empty replacement
+   (`voicesAsRead`).
    */
-  const voices = gather.voices
-    .map(function asRead(voice,): HeardVoice<ArchiveBlockReviewWire> {
-      if (!rendersAsNothing({
-        text: voice.value
-          .replacementText,
-      },))
-        return voice;
-      return {
-        ...voice,
-        value: {
-          ...voice.value,
-          replacementText: '',
-        },
-      };
-    },);
+  const voices = voicesAsRead({ voices: gather.voices, },);
   /**
    Replies whose claimed source support exists verbatim.
    */
@@ -270,7 +249,25 @@ export async function runArchiveBlockReviewStage(
     blockOffset,
     targetText,
   },);
-  for (const finding of withheld)
+  /**
+   The lines of the revisions that changed disjoint lines, applied to the
+   block together and offered as one more candidate (ledger B712), and the
+   findings the gates refused it under.
+   */
+  const {
+    candidate: composite,
+    withheld: compositeWithheld,
+  } = compositeOfDisjointRevisions({
+    revisions,
+    blockText,
+    blockOffset,
+    targetText,
+    l: reviewLog,
+  },);
+  for (const finding of [
+    ...withheld,
+    ...compositeWithheld,
+  ])
     reviewLog.warn(finding,);
   /**
    Evidence carried into selection and later strategies.
@@ -279,6 +276,8 @@ export async function runArchiveBlockReviewStage(
     ...priorFindings,
     ...gather.findings,
     ...withheld,
+    ...compositeWithheld,
+    ...(composite === undefined ? [] : [`archive-composite-offered (${describeProducer(composite.producer,)})`,]),
     ...voices
       .map(function recordFinding(voice,): string {
       return voice.value
@@ -402,7 +401,10 @@ export async function runArchiveBlockReviewStage(
    Existing wording is an explicit choice, never an automatically approved one.
    */
   const candidates = withArchiveOriginal({
-    revisions,
+    revisions: composite === undefined ? revisions : [
+      ...revisions,
+      composite,
+    ],
     blockText,
   },);
   reviewLog.info(

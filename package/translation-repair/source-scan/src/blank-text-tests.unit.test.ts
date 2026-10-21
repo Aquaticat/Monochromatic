@@ -937,6 +937,10 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: ASSEMBLED,
   },
+  'archive/archive-composite-revision.ts#compositeOfDisjointRevisions': {
+    tests: 1,
+    why: DECIDED_REMOVAL,
+  },
   'archive/archive-replacement-candidates.ts#replacementCandidates': {
     tests: 1,
     why: DECIDED_REMOVAL,

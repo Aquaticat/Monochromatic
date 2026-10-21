@@ -336,7 +336,7 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
       + 'the scripted client, which every other seat answers before, so the window closes on it on any machine; '
       + 'the writers\' window beside it is the hang stop',
   },
-  'archive/scripted-review-client.test-fixture.ts#scriptedClient: wait of module-async-time HELD_REPLY_MS': {
+  'archive/scripted-review-client.test-fixture.ts#chatJson: wait of module-async-time HELD_REPLY_MS': {
     count: 1,
     bound: 'reached',
     reason: 'makes the held seat late: its peers answer in microtasks, so it lands after quorum on any machine, '

@@ -38,11 +38,8 @@ const ROSTER = [
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 ] as const;
 
-/** A seat's answer: a whole corrected block, or retention of the block. */
-type Answer = string | 'retain';
-
 /** The one answer that retains the block, which no block of these cases spells. */
-const RETAIN = 'retain' as const;
+const RETAIN = 'retain';
 
 /** Original section, whose words a retention quotes. */
 const SOURCE = '猫在窗边安静地睡觉。';
@@ -127,7 +124,7 @@ async function review(
     blockText = BLOCK,
     targetText = blockText,
   }: {
-    readonly answers: readonly Answer[];
+    readonly answers: readonly string[];
     readonly best: number;
     readonly blockText?: string;
     readonly targetText?: string;
@@ -563,7 +560,7 @@ await describe({
         /** Two paragraphs. */
         const twoParagraphs = 'The cat sleeps.\n\nThe dog barks.';
         const { lines, } = await review({
-          answers: ['​\n\nThe dog barks.', 'The cat sleeps.\n\n​', RETAIN, RETAIN,],
+          answers: ['\u3164\n\nThe dog barks.', 'The cat sleeps.\n\n\u3164', RETAIN, RETAIN,],
           best: 1,
           blockText: twoParagraphs,
         },);
