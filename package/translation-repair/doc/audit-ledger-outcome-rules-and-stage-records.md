@@ -673,11 +673,12 @@ Decisions taken in this session, open to the owner's veto:
   Existing candidate numbers do not move,
   and the block stays last as `withArchiveOriginal` appends it.
 
-The red commit holds seventeen cases over the real stage on a scripted bench;
+The red commit holds sixteen cases over the real stage on a scripted bench;
 fifteen failed on the previous tree,
 on the slate size, the decision log line or the winning text,
 and none on a missing export.
-Two guards passed before and keep passing (one revision logs nothing; a slate of one is not a composite).
+One guard passed before and keeps passing (one revision logs nothing and offers no composite).
+The red commit's message says fifteen cases; the file holds sixteen.
 The one case that first failed in the fix commit's own run used a zero-width space,
 which the slice grammar reads as a blank paragraph and the shape gate withheld before a composite was tried;
 it now uses a Hangul filler.
@@ -723,6 +724,7 @@ the N findings exactly as the stage worded them (so a count by their wording, `s
 and then the existing line saying what became of the block.
 The pass log carries the same findings.
 They reach the artifact through `PassPreparation`'s `alignmentFindings` (`carryingPassFindings` in `pass-prepare.ts`).
+`redaction-timing.md` says only that agents may read any retained run artifact and sets no limit on what `alignmentFindings` carries.
 The stage's reviewer reasons and `select-self-vote` findings travel with them;
 the `Operation-only` wording of the TSDoc was dropped,
 since the findings the stage records for its own settlement have always included reviewer reasons

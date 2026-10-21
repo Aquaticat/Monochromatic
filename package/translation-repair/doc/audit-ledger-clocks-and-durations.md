@@ -829,11 +829,12 @@ The fix:
 the gather passes `grace.writerMs`,
 `archive-block-review` joins `WRITER_STAGE_LABELS`,
 and the `WRITER GRACE built in` line names it and says it joined on 2026-10-21 and is open to the owner's veto.
-Five pins of the line follow (`corpus-pass-built.test-fixture.ts`,
+Five files pin the line (`corpus-pass-built.test-fixture.ts`,
 `corpus-pass.unit.test.ts`,
 `editor-calibrate.unit.test.ts`,
 `editor-calibrate-run.unit.test.ts`,
-`writer-grace-override.unit.test.ts`).
+`writer-grace-override.unit.test.ts`);
+the fix commit's message counts four.
 `configuration.md`, `seats-and-calibration.md` and a dated addendum of 2026-10-21 in the straggler grace decision record it.
 The selection round after the review keeps the readers' window:
 its judges read text that exists.
