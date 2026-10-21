@@ -1398,6 +1398,12 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     parallel GPU use, a restructured assertion), and the cause lies outside our code and outside what a restructured
     test controls; difficulty, effort or load-dependence alone never qualify; an undiagnosed flake stays an open,
     instrumented flake and is not retried. Sent to agent `af624c22739073177`.
+    Flake work, second session (2026-10-21, branch `worktree-agent-a5d7faec36a652c16`, details and the ledger in
+    `doc/handover/ide-native-flakes.md`): `find_box_context_menu_runs_each_entry` is explained and fixed (the menu opens
+    under the pointer near the window bottom, and a release more than 300 ms later runs the entry under it; hold-time
+    control 600 of 600 failing before, 0 of 600 after); the highlighting-reply wait is in the other fixtures; the
+    annotation stability tests did not reproduce with the permitted tool (0 of 1,310) and keep their frames; no retry
+    overrides.
     Owner instruction of 2026-10-20 that REPLACES the run-count rule in the next paragraph: "I suggest you properly fix the
     flakes instead. And we should never run a full test against one snapshot of code. If some tests are confirmed
     unfixably flaky, make the test harness run the specific tests more instead." My reading (stated to the owner, not

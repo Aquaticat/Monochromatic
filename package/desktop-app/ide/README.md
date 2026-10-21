@@ -3618,8 +3618,10 @@ right 147).
 The row count the test reads before its Down presses is larger than the row map's count afterwards,
 so the test reads
 the map before the measurement has finished shrinking it;
-the find box failure was seen once and its cause is not
-determined.
+the find box failure was found later (2026-10-21):
+the right click landed where the clamped menu rests on its last entries,
+and a release more than 300 ms after the menu opened runs the entry under the pointer
+(see `doc/handover/ide-native-flakes.md`).
 The layout tests were adjusted for the 288 px source column and the minimap's width in
 `src/native/sidebar_tests.rs` (`minimap_beside`,
 `text_area`).
