@@ -10,7 +10,7 @@ await describe({
         const text = String.raw`Literal \[^1], active \\[^2], escaped-label [^a\]b].`;
         expect(scanGfmReferenceLiterals({ slice: text })).toEqual([
           { identifier: '2', localOffset: text.indexOf('[^2]') },
-          { identifier: 'a\\]b', localOffset: text.indexOf('[^a') },
+          { identifier: String.raw`a\]b`, localOffset: text.indexOf('[^a') },
         ]);
       },
     }),

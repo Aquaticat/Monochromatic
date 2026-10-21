@@ -29,10 +29,10 @@ const escapeSuite = describe({
       name: 'READS A BACKSLASH BEFORE AN ASCII PUNCTUATION CHARACTER OR A LINE BREAK AS THE START OF AN ESCAPE',
       fn: async () => {
         expect([
-          startsEscape({ text: 'kittens\\*’', index: 7, },),
-          startsEscape({ text: 'kittens\\_’', index: 7, },),
-          startsEscape({ text: 'kittens\\\\’', index: 7, },),
-          startsEscape({ text: 'kittens\\\'', index: 7, },),
+          startsEscape({ text: String.raw`kittens\*’`, index: 7, },),
+          startsEscape({ text: String.raw`kittens\_’`, index: 7, },),
+          startsEscape({ text: String.raw`kittens\\’`, index: 7, },),
+          startsEscape({ text: String.raw`kittens\'`, index: 7, },),
           startsEscape({ text: 'kittens\\\n’', index: 7, },),
           startsEscape({ text: 'kittens\\\r\n’', index: 7, },),
         ],).toEqual([true, true, true, true, true, true,],);
@@ -42,9 +42,9 @@ const escapeSuite = describe({
       name: 'DOES NOT READ A BACKSLASH BEFORE ANY OTHER CHARACTER, A BACKSLASH AT THE END, OR A CHARACTER THAT IS NO BACKSLASH',
       fn: async () => {
         expect([
-          startsEscape({ text: 'kittens\\a’', index: 7, },),
-          startsEscape({ text: 'kittens\\’', index: 7, },),
-          startsEscape({ text: 'kittens\\ ’', index: 7, },),
+          startsEscape({ text: String.raw`kittens\a’`, index: 7, },),
+          startsEscape({ text: String.raw`kittens\’`, index: 7, },),
+          startsEscape({ text: String.raw`kittens\ ’`, index: 7, },),
           startsEscape({ text: 'kittens\\', index: 7, },),
           startsEscape({ text: 'kittens*’', index: 7, },),
           startsEscape({ text: 'kittens', index: 20, },),

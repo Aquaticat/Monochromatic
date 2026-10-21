@@ -58,7 +58,7 @@ await describe({
           name: 'matches Unicode-folded identifiers without using normalized lengths for edits',
           fn: async () => {
             expect(applyFootnoteRelabel({ text: 'Real[^İ].\n\n[^İ]: Note.', map: [{ from: 'i\u0307', to: 'x' }] })).toBe('Real[^x].\n\n[^x]: Note.');
-            expect(applyFootnoteRelabel({ text: 'Real[^a\\[b].\n\n[^a\\[b]: Note.', map: [{ from: 'a\\[b', to: 'x' }] })).toBe('Real[^x].\n\n[^x]: Note.');
+            expect(applyFootnoteRelabel({ text: 'Real[^a\\[b].\n\n[^a\\[b]: Note.', map: [{ from: String.raw`a\[b`, to: 'x' }] })).toBe('Real[^x].\n\n[^x]: Note.');
           },
         }),
         it({

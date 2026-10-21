@@ -42,7 +42,7 @@ await describe({
       fn: async () => {
         const text = 'Real[^a\\]b].\n\n[^a\\]b]: Actual note.';
         expect(documentLabels({ text })).toEqual([String.raw`a\]b`]);
-        expect(applyFootnoteRelabel({ text, map: [{ from: 'a\\]b', to: 'x\\]y' }] })).toBe('Real[^x\\]y].\n\n[^x\\]y]: Actual note.');
+        expect(applyFootnoteRelabel({ text, map: [{ from: String.raw`a\]b`, to: String.raw`x\]y` }] })).toBe('Real[^x\\]y].\n\n[^x\\]y]: Actual note.');
       },
     }),
     it({

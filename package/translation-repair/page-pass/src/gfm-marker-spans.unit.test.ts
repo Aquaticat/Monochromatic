@@ -32,7 +32,7 @@ await describe({
       fn: async () => {
         expect(applyFootnoteRelabel({
           text: PAGE,
-          map: [{ from: '1', to: 'a\\\\', },],
+          map: [{ from: '1', to: String.raw`a\\`, },],
         },),).toBe('A cat[^a\\\\] naps.\n\n[^a\\\\]: The cat.\n',);
         /**
          What the rewrite refused a label ending in one backslash with.

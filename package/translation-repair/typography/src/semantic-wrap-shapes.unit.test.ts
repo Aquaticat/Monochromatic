@@ -44,7 +44,7 @@ await describe({
                 text: 'She said "the cat naps." Then the dog, barks. \'Single\' too, here.',
               },),
               backslashed: wrapReplacementText({
-                text: 'The path is C:\\cats\\nap. It wakes, then \\ stretches.',
+                text: String.raw`The path is C:\cats\nap. It wakes, then \ stretches.`,
               },),
             },).toEqual({
               quoted: 'She said "the cat naps."\nThen the dog,\nbarks.\n\'Single\' too,\nhere.',

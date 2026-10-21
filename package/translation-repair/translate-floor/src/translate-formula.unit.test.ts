@@ -82,7 +82,7 @@ await describe({
         expect(refusedForFormula({
           validation: validateTranslatedSlice({
             sourceText: TREATS,
-            candidateText: 'The kitten\'s treats cost $\\text{five dollars}$ and its bed ten.',
+            candidateText: String.raw`The kitten's treats cost $\text{five dollars}$ and its bed ten.`,
           },),
         },),).toBe(true,);
       },
@@ -105,7 +105,7 @@ await describe({
         expect(refusedForFormula({
           validation: validateTranslatedSlice({
             sourceText: TREATS,
-            candidateText: 'The kitten\'s treats cost \\$5 and its bed \\$10.',
+            candidateText: String.raw`The kitten's treats cost \$5 and its bed \$10.`,
           },),
         },),).toBe(false,);
         expect(refusedForFormula({

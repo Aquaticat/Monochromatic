@@ -231,12 +231,12 @@ await describe({
         + 'reference after an escaped backslash, which escapes nothing',
       fn: async () => {
         expect([
-          quoteReferencesIn({ english: 'kittens\\&#39; x', },),
-          quoteReferencesIn({ english: 'kittens\\&rsquo; x', },),
-          quoteReferencesIn({ english: 'kittens\\\\&#39; x', },),
-          quoteReferencesIn({ english: 'kittens\\\\\\&#39; x', },),
-          quoteReferencesIn({ english: 'kittens \\&#39; and &#39; x', },),
-          quoteReferencesIn({ english: 'kittens\\ &#39; x', },),
+          quoteReferencesIn({ english: String.raw`kittens\&#39; x`, },),
+          quoteReferencesIn({ english: String.raw`kittens\&rsquo; x`, },),
+          quoteReferencesIn({ english: String.raw`kittens\\&#39; x`, },),
+          quoteReferencesIn({ english: String.raw`kittens\\\&#39; x`, },),
+          quoteReferencesIn({ english: String.raw`kittens \&#39; and &#39; x`, },),
+          quoteReferencesIn({ english: String.raw`kittens\ &#39; x`, },),
         ],).toEqual([[], [], ['&#39;',], [], ['&#39;',], ['&#39;',],],);
       },
     },),
