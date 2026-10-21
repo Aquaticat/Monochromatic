@@ -769,14 +769,26 @@ The landings and the restart,
   (entry `CuspariaKLSY`)
   started at 22:25:13 UTC,
   and its START line names the frozen digest.
+  It ended SETTLED
+  (`slices=4`,
+  `repairChanged=4`,
+  `alignmentFindings=1`)
+  after 2355731 ms
+  (39.3 min).
+  Its read against the source is running,
+  written to `CuspariaKLSY22-read.md` in the reads folder.
+- `XingZ6017`
+  (entry `XingZ60`)
+  started at 23:05:12 UTC,
+  and its START line names the frozen digest.
+  It is the first `XingZ60` run since the Gemma readers were lifted.
 
 Next,
 in order:
-finish the read of `zheermao22`
-and record it in the pass log and the readiness signal;
-read `CuspariaKLSY22` when it ends;
-then continue the rotation with `XingZ60`,
-`yingying`,
+finish the reads of `zheermao22` and `CuspariaKLSY22`
+and record them in the pass log and the readiness signal;
+read `XingZ6017` when it ends;
+then continue the rotation with `yingying`,
 `hulicaijia`,
 `mikaela_khara`,
 `shi_Yumiaoya`
