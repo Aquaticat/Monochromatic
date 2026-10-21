@@ -152,15 +152,16 @@ pub fn audit_line(record: &AuditRecord) -> String {
 }
 
 /// The process that started this one, or zero where the platform does not say.
-#[cfg(unix)]
+/// One body with a gated block per platform, so a mutation of the whole function is built and tested on every host.
 fn parent_process() -> u32 {
-    return std::os::unix::process::parent_id();
-}
-
-/// The process that started this one, or zero where the platform does not say.
-#[cfg(not(unix))]
-fn parent_process() -> u32 {
-    return 0;
+    #[cfg(unix)]
+    {
+        return std::os::unix::process::parent_id();
+    }
+    #[cfg(not(unix))]
+    {
+        return 0;
+    }
 }
 
 /// What:

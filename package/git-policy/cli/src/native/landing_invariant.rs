@@ -82,14 +82,15 @@ fn list_entries(context: &GitContext, cwd: &Path, index: &Path) -> Result<Vec<u8
 }
 
 /// What:
-///  Warn when the post-index differs from the pre-landing index outside the allowed paths.
+///  Warn when the post-index differs from the pre-landing index outside the allowed paths, and return the text
+///  that was logged, or nothing when the indexes agree or one could not be read.
 ///  A failure to read either index is a debug line, not an error.
 /// Why:
 ///   The check exists to attribute a loss; it must not turn a finished landing into a failure.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// await warnWhenEntriesMoved({ context, cwd, pre, post, allowed });
+/// const text: string | undefined = await warnWhenEntriesMoved({ context, cwd, pre, post, allowed });
 /// ```
 pub fn warn_when_entries_moved(
     context: &GitContext,
@@ -97,28 +98,27 @@ pub fn warn_when_entries_moved(
     pre_landing_index: &Path,
     post_index: &Path,
     allowed: &[Vec<u8>],
-) {
+) -> Option<String> {
     let listings = list_entries(context, cwd, pre_landing_index)
         .and_then(|pre| { return list_entries(context, cwd, post_index).map(|post| { return (pre, post); }); });
     let (pre, post) = match listings {
         Ok(found) => found,
         Err(failure) => {
             debug(TAG, &format!("the indexes could not be compared: {}", failure.0));
-            return;
+            return None;
         }
     };
     let moved: Vec<Vec<u8>> = paths_changed_outside(&pre, &post, allowed);
     if moved.is_empty() {
-        return;
+        return None;
     }
-    warn(
-        TAG,
-        &format!(
-            "The landing changed staged entries outside the paths it committed: {}. Your staging should have been left as it was; \
-             compare with git diff --cached, and report the commit that did this with the lines of cli-git-audit.jsonl in the common Git directory.",
-            listed(&moved)
-        ),
+    let message: String = format!(
+        "The landing changed staged entries outside the paths it committed: {}. Your staging should have been left as it was; \
+         compare with git diff --cached, and report the commit that did this with the lines of cli-git-audit.jsonl in the common Git directory.",
+        listed(&moved)
     );
+    warn(TAG, &message);
+    return Some(message);
 }
 
 /// Pure comparison and the warning over real indexes.

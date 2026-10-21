@@ -2024,6 +2024,16 @@ that is verification, not a decision for the user.
   `auto_push_reconcile.rs` 405:8 (delete `!`) and 408:25 (`!=` to `==`) in `advance_local_branch`;
   `auto_push_dirty_paths.rs` 30:24 (`<` to `<=` in `status_paths`); `landing_invariant.rs` 78:5 (`list_entries` to
   `Ok(vec![])`, `Ok(vec![0])`, `Ok(vec![1])`) and 101:5 (`warn_when_entries_moved` to `()`).
+  m028b survivors fixed 2026-10-21 (commit "kill the twelve m028b survivors"; chain `kill13` green: clippy clean, host
+  1948 of 1949 and binary 154 of 155 with only the two real-linter tests failing). Fixes: `parent_process` is one body
+  with a gated block per platform (the non-unix twin was never built on Linux, so its mutants were unkillable there);
+  `the_size_limit_is_one_mebibyte`, `the_parent_is_the_process_that_started_this_one`,
+  `the_shortest_valid_entry_is_four_bytes`, `a_status_differs_only_when_its_bytes_do`; `advance_local_branch` computes
+  `kept` once and compares status through `status_differs`; `warn_when_entries_moved` returns the text it logged and
+  its test asserts moved, allowed, empty, missing and corrupt indexes. Verification rerun: unit `cli-git-mut-m028c`
+  (`~/temp/agent/m028c-run.ts`: container gate tag `m028c`, then the four touched files at `--timeout 900`, logs
+  `~/temp/agent/m028c-mutation-<file>.log`). Do not edit `src/native` while it runs. No release unless it finds more:
+  the fixes change `parent_process` structure and one return type, so a 0.2.9 carries them with the next change.
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and

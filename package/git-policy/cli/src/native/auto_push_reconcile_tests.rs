@@ -1272,3 +1272,13 @@ fn a_refusal_of_the_merge_by_an_unmoved_remote_ends_the_attempts() {
     assert_eq!(text_of(&s.local, &["for-each-ref", "refs/cli-git"]), "");
     remove(&s.root);
 }
+
+/// Equal status text is no change, and any difference, even one byte, is a change.
+#[test]
+fn a_status_differs_only_when_its_bytes_do() {
+    assert!(!status_differs(b"", b""));
+    assert!(!status_differs(b" M a.txt\0", b" M a.txt\0"));
+    assert!(status_differs(b" M a.txt\0", b""));
+    assert!(status_differs(b"", b" M a.txt\0"));
+    assert!(status_differs(b" M a.txt\0", b" M b.txt\0"));
+}

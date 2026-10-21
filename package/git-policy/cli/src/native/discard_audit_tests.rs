@@ -12,7 +12,7 @@
 /// The record, its line and the writer.
 use super::{
     AUDIT_FILE, AuditOutcome, AuditRecord, ROTATE_AT_BYTES, append_line, audit_line, audit_place,
-    record_audit,
+    parent_process, record_audit,
 };
 use crate::command_test_support::{fixture, os_arguments, remove};
 use crate::rule_linked_worktree::GuardedCommand;
@@ -169,4 +169,19 @@ fn a_full_file_moves_aside() {
         ROTATE_AT_BYTES + 4
     );
     remove(root.as_path());
+}
+
+/// The size limit is one mebibyte: the rotation test measures against the constant, so only its value pins the limit.
+#[test]
+fn the_size_limit_is_one_mebibyte() {
+    assert_eq!(ROTATE_AT_BYTES, 1_048_576);
+}
+
+/// The parent is the process that started the test, never the placeholder zero or one.
+#[cfg(unix)]
+#[test]
+fn the_parent_is_the_process_that_started_this_one() {
+    let parent: u32 = parent_process();
+    assert_eq!(parent, std::os::unix::process::parent_id());
+    assert!(parent > 1, "parent {parent}");
 }
