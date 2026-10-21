@@ -40,6 +40,10 @@ use super::theme_tests::{rgba, switch};
 /// import { ColorScheme } from 'slint/private';
 /// ```
 use slint::private_unstable_api::re_exports::{ColorScheme, WindowInner};
+use slint::{
+    ComponentHandle, Rgba8Pixel, SharedPixelBuffer,
+    platform::{Key, PointerEventButton, WindowEvent},
+};
 /// What:
 ///  `Rgba8Pixel` is one pixel of four bytes;
 ///  `SharedPixelBuffer<Rgba8Pixel>` is a rendered frame
@@ -55,10 +59,19 @@ use slint::private_unstable_api::re_exports::{ColorScheme, WindowInner};
 /// ```ts
 /// type Frame = { width: number; pixels: Pixel[] };
 /// ```
-use slint::{
-    ComponentHandle, Rgba8Pixel, SharedPixelBuffer,
-    platform::{Key, PointerEventButton, WindowEvent},
-};
+/// What:
+///  `sleep` blocks the calling thread for a span;
+///  `Duration` is a span of time (sibling `Instant` is a point in time).
+/// Why:
+///  A right click is held for a chosen span,
+///  so the time between press and release is an input,
+///  not host load.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { setTimeout as sleep } from 'node:timers/promises';
+/// ```
+use std::{thread::sleep, time::Duration};
 
 /// What:
 ///  `steps: usize` is how many times Down is pressed (`usize` is the unsigned counting type;
@@ -80,13 +93,52 @@ use slint::{
 /// function menu(window: AppWindow, steps: number): void;
 /// ```
 fn menu(window: &AppWindow, steps: usize) {
+    open_menu(window, Duration::ZERO);
+    for _ in 0..steps {
+        key(window, Key::DownArrow);
+    }
+    key(window, Key::Return);
     settle(window);
-    // A point in the text area, 60px left of the clear cell and in the middle of the box.
-    let x = window.get_find_clear_x() - 60.0;
+}
+
+/// What:
+///  `hold` is a `Duration`,
+///  a span of time (sibling `Instant` is a point in time).
+/// Why:
+///  A menu entry of the toolkit runs on a pointer release that comes more than 300 ms after the entry was created
+///  (`widgets/common/menu-base.slint` in `i-slint-compiler`,
+///  the `up` branch of `pointer-event`).
+///  The hold makes the time between press and release a chosen input,
+///  where it used to be the load the host happened to be under.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function openMenu(window: AppWindow, holdMs: number): void;
+/// ```
+fn open_menu(window: &AppWindow, hold: Duration) {
+    settle(window);
+    // The pointer goes on the left part of the text area:
+    //  the box starts after the sidebar and its divider,
+    //  and the text area is 12px of padding in.
+    // The find bar sits at the bottom of the window,
+    //  so `place_popup` (`window/popup.rs` in `i-slint-core`) clamps the menu up into the window.
+    // At the left the clamp leaves the menu's x at the pointer's x,
+    //  so the pointer rests on the menu's left frame, outside every entry, and a slow release runs nothing.
+    // Near the clear cell the clamp moved the menu left instead,
+    //  the pointer rested on the last entries,
+    //  and a release 300 ms after the menu appeared ran the entry under it and closed the menu.
+    let x = window.get_sidebar_width() + DIVIDER + 36.0;
     let y = window.get_find_clear_y() + 24.0;
     let popups_before = open_popups(window);
     press(window, x, y, PointerEventButton::Right);
     let popups_pressed = open_popups(window);
+    // What: `sleep` blocks this thread for the span; Why: the pointer stays down while the clock runs.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // await new Promise(resolve => setTimeout(resolve, holdMs));
+    // ```
+    sleep(hold);
     release(window, x, y, PointerEventButton::Right);
     let popups_released = open_popups(window);
     settle(window);
@@ -99,11 +151,6 @@ fn menu(window: &AppWindow, steps: usize) {
         window.get_find_status(),
         window.get_find_has_focus()
     );
-    for _ in 0..steps {
-        key(window, Key::DownArrow);
-    }
-    key(window, Key::Return);
-    settle(window);
 }
 
 /// How many popups (menus,
@@ -454,4 +501,14 @@ fn find_box_selection_uses_the_ink_chosen_from_the_fill() {
         );
     }
     window.hide().expect("close find selection window");
+}
+
+/// A right click held longer than the toolkit's activation delay still leaves the menu open.
+#[test]
+fn a_slow_right_click_leaves_the_find_menu_open() {
+    let (_fixture, reader) = opened();
+    let window = &reader.window;
+    type_text(window, "needle");
+    open_menu(window, Duration::from_millis(400));
+    window.hide().expect("close slow click window");
 }
