@@ -1925,6 +1925,12 @@ that is verification, not a decision for the user.
   stay unguarded (user). The runbook step `git switch main` at `doc/runbook/publish-npm-package-first-time.md:57` runs
   in a fresh clone (clean), so the policy never rejects it: no edit needed. Mutation for the new files: not started,
   by instruction; run in the background only after the feature work stops.
+  Release 0.2.6 committed and pushed (landing-invariant warning); install is running as a background job
+  (`~/temp/agent/install-026.ts`, log `~/temp/agent/install-026.log`): it waits for crates.io, runs the mise upgrade, and
+  reverts `mise.lock` with the override. Issue 1787 resolved by option 3 of its own ranking: `native:format` and
+  `format:rust` (bare `cargo fmt`) are removed from both mise.toml files and the README line; the repository lints Rust
+  through monochromatic-lint and clippy. The depot coverage manifest still lists the old task names (a planning
+  snapshot, left as is).
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and

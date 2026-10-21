@@ -18,10 +18,6 @@ run = "node bin/planted-controls.mjs"
 description = "Check the fuzz helper library with denied Clippy warnings"
 run = ["cargo check --lib", "cargo clippy --lib -- -D warnings"]
 
-[tasks."format:rust"]
-description = "Format fuzz source and targets"
-run = "cargo fmt"
-
 [tasks.build]
 description = "Build AddressSanitizer targets in a 2 GiB / 2 CPU container"
 run = "node bin/container.mjs --build-only"

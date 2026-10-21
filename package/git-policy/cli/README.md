@@ -452,8 +452,7 @@ mise run //package/git-policy/cli:native:test:container
 - `native:test:container` is the authority.
   It builds the crate and runs the tests and Clippy in bounded containers with Git 2.56.0 and no network.
   Set `GIT_POLICY_NATIVE_IMAGE_TAG=<name>` to keep the images of parallel runs apart.
-- `native:format` formats the Rust sources.
-  `native:lock:members` records a changed dependency list or version in `Cargo.lock` without moving any other locked
+- `native:lock:members` records a changed dependency list or version in `Cargo.lock` without moving any other locked
   version.
 
 A release build of the executable:
