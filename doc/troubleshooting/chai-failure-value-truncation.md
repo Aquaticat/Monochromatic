@@ -16,7 +16,8 @@ Scope note (issue 610):
 A failing deep comparison built on chai 6.3.0 prints both sides cut to
 `config.truncateThreshold` characters (default `40`),
  so the failure line says the values differ but not how.
- Measured message shapes at the default, all on `expect(actual).to.deep.equal([])`
+ Measured message shapes at the default,
+all on `expect(actual).to.deep.equal([])`
  or an unequal partner:
 
 - a 31-item list of records:
@@ -34,7 +35,8 @@ A failing deep comparison built on chai 6.3.0 prints both sides cut to
   (length `106`)
 - a 12-key record:
   `expected { key0: +0, key1: 1, key2: 2, …(9) } to deeply equal {}`
-- a depth-5 nested object, where even the keys are dropped:
+- a depth-5 nested object,
+  where even the keys are dropped:
   `expected { Object (a) } to deeply equal { Object (a) }`
 
 The trigger is any compared value whose loupe render reaches the threshold
@@ -72,14 +74,18 @@ chai's `config.truncateThreshold` defaults to `40`
 A falsy threshold is the documented disable
  (`lib/chai/config.js:38`:
  "Set it to zero if you want to disable truncating altogether").
- loupe then elides list entries, string tails, and object values to fit
- the budget, marking drops as `…(N)`.
+ loupe then elides list entries,
+string tails,
+and object values to fit
+ the budget,
+marking drops as `…(N)`.
 
 ### Stage 2: objDisplay replaces the render with a shape summary
 
 After the budgeted render,
  `objDisplay` compares the render's own length to the same budget and,
- on a hit, replaces it with a type summary
+ on a hit,
+replaces it with a type summary
  (`node_modules/.pnpm/chai@6.3.0/node_modules/chai/index.js:937`,
  `:949`,
  `:956`):
@@ -106,10 +112,12 @@ Because both stages share one number,
 
 - threshold `30`:
   `expected [ +0, 1, 2, 3, 4, 5, …(25) ] to deeply equal []`
-  (partial content, length `56`)
+  (partial content,
+  length `56`)
 - threshold `34`:
   `expected [ Array(31) ] to deeply equal []`
-  (collapsed, length `41`)
+  (collapsed,
+  length `41`)
 - threshold `35` to `39`:
   partial `…(n)` listings again (length `62` to `65`)
 - threshold `40`:
@@ -132,9 +140,11 @@ So a finite "large" threshold does not buy reliable output:
  (`package/module/test/src/index.ts:33`,
  `package/module/test-expect/src/index.ts:1`).
  chai's `expect` object carries no `config` property either
- (measured: `typeof expect.config === 'undefined'`),
+ (measured:
+`typeof expect.config === 'undefined'`),
  and overriding `chai.util.objDisplay` is rejected
- (measured: `TypeError: Cannot set property objDisplay of #<Object> which has only a getter`).
+ (measured:
+`TypeError: Cannot set property objDisplay of #<Object> which has only a getter`).
  The harness diagnostic printer
  (`package/module/test-diagnostic/src/format-error.ts:149`)
  reads `message`,
@@ -322,7 +332,8 @@ The monotone part of the budget path also works as documented:
  `10 000`,
  `100`):
   output stays non-monotonic near the render length
- (root cause stage 3) and the tail, where differences usually sit,
+ (root cause stage 3) and the tail,
+  where differences usually sit,
  still elides (`…(N)`).
 - `Number.MAX_SAFE_INTEGER` as a special sentinel:
   it works,
@@ -357,7 +368,8 @@ Duplicate search on `chaijs/chai` (`gh search issues`,
  is where the threshold behaviour was introduced,
  closed as completed in `1.9.1`.
 - [#1766](https://github.com/chaijs/chai/issues/1766)
- "Request: allow custom `objDisplay` implementation" is closed,
+ "Request:
+  allow custom `objDisplay` implementation" is closed,
  directing reporters to per-object custom inspectors.
 - [#1728](https://github.com/chaijs/chai/issues/1728)
  "`truncateThreshold: 0` prints `process` and triggers DeprecationWarning"
@@ -418,7 +430,8 @@ No issue reports the non-monotonic replacement boundary;
    reproduction and suite re-run.
 
 Verification output,
- pre-patch and post-patch, same script
+ pre-patch and post-patch,
+same script
  (`node repro.mjs` in the prototype directory):
 
 ```text
@@ -451,7 +464,8 @@ The fix makes the replacement decision read the untruncated length
  monotonically.
  It keeps `test/configuration.js:660`'s threshold-20 contract.
  Nine pinned expectations in `test/assert.js`,
- `test/expect.js`, and `test/globalErr.js` that asserted the leaky partial
+ `test/expect.js`,
+and `test/globalErr.js` that asserted the leaky partial
  renders were updated to the documented shape summaries
  (for example `expected [ Array(4) ] to equal [ Array(4) ]` where they
  pinned `expected [ 'string1', 'string2', …(2) ] to equal [ 'string5', 'string6', …(2) ]`).
