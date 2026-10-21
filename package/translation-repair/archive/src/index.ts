@@ -54,6 +54,21 @@ export {
   numbered,
   sharedLines,
 } from './archive-composite-lines.ts';
+export {
+  ALIGNMENT_CELL_LIMIT,
+  describeCollisions,
+  describeHunk,
+  hunkCollisions,
+  hunksBetween,
+  type HunkCollisions,
+  type LineHunk,
+  placed,
+  replacedLines,
+} from './archive-composite-hunks.ts';
+export {
+  spliceHunks,
+  type SplicedBlock,
+} from './archive-composite-splice.ts';
 export { voicesAsRead, } from './archive-voices-as-read.ts';
 export {
   acceptedRepairClaimNotesOf,

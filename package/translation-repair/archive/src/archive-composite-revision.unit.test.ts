@@ -1,9 +1,11 @@
 /**
  Tests the composite candidate the archive block review offers beside the
- reviewers' whole revisions (ledger B712): when two or more revisions keep the
- block's line count and change pairwise disjoint sets of its lines, the lines
- they changed are applied to the block together and offered as one more
- candidate, after the revisions and before the block as the archive wrote it.
+ reviewers' whole revisions (ledger B712): when two or more revisions change
+ pairwise disjoint stretches of the block's lines, the hunks they made are
+ applied to the block together and offered as one more candidate, after the
+ revisions and before the block as the archive wrote it. A revision may add or
+ remove lines (ledger B803, which replaced the refusal of a revision whose line
+ count differs from the block's).
 
  Every case drives the real stage over a scripted bench, one reply per seat,
  and reads the slate off the stage's own log line and the winner off the
@@ -645,7 +647,7 @@ await describe({
         expect(logged({
           lines,
           parts: [
-            'candidate 1 removes line 2 and adds 1 line before line 4',
+            'candidate 1 removes line 2 and adds 1 line after line 3',
           ],
         },),).toBe(true,);
       },
