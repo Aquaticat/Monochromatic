@@ -93,7 +93,7 @@ fn a_picture_that_a_frame_draws_asks_for_no_frame_of_its_own() {
 fn a_picture_that_no_frame_draws_asks_for_a_frame() {
     let (_project, opened, images, asked) = drawn();
     hand_over_a_picture(&opened, images);
-    let mut waiting = Waiting::slow();
+    let mut waiting = Waiting::eventually();
     while PICTURE_FRAMES_ASKED.load(Ordering::SeqCst) == asked {
         waiting.step("an idle window did not ask for a frame to draw the picture");
     }

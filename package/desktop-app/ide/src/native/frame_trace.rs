@@ -40,13 +40,6 @@ fn log_window_event(toolkit_window: &Window, event: &WindowEvent) -> EventResult
                 "winit asked for a redraw"
             );
         }
-        WindowEvent::MouseWheel { delta, .. } => {
-            tracing::debug!(
-                target: "monochromatic_ide::native::frame",
-                ?delta,
-                "winit delivered a wheel event"
-            );
-        }
         _ => {}
     }
     return EventResult::Propagate;

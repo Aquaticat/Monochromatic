@@ -25,9 +25,9 @@ const POLL: Duration = Duration::from_millis(20);
 /// Why:
 ///  A scroll draws a frame at every step of the input,
 /// so a picture that arrives between two steps is drawn by the next one;
-/// a frame asked for at the hand-over is a second frame in that step's time,
-/// and the compositor shows the frames after it one step later,
-/// which reads as a step in which the text did not move.
+/// a frame asked for at the hand-over is a second frame in that step's time.
+///  In the nested compositor's recording the text then did not move for one tick,
+/// in every scroll measured (`doc/handover/ide-gpu-stages-5-6.md`).
 ///  A frame period of a display at 50 Hz or more is shorter than this wait,
 /// so the picture is drawn by a frame of the scroll before the wait ends.
 ///
@@ -60,11 +60,6 @@ pub(in crate::native) static PICTURE_FRAMES_ASKED: std::sync::atomic::AtomicU64 
 /// function askForAFrameUnlessOneComes(window: AppWindow, state: Shared<State>): void;
 /// ```
 fn ask_for_a_frame_unless_one_comes(window: &AppWindow, state: &Rc<RefCell<State>>) {
-    // Measurement switch, to be removed: the frame asked for at once, as before.
-    if std::env::var_os("IDE_REDRAW_NOW").is_some() {
-        ask_for_a_frame(window);
-        return;
-    }
     let weak_window = window.as_weak();
     let weak_state = Rc::downgrade(state);
     state
