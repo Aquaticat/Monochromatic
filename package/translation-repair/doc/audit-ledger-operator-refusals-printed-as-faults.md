@@ -715,6 +715,9 @@ starts no sweep and returns 6.
 Any other error out of reading the command line is a fault and is thrown unchanged.
 One case of `rotation-sweep.unit.test.ts` drives the four bad command lines
 and failed on the red commit `02ce0ade0d`.
+The new class writes its own sentence,
+so the message inventory of `message-names-only.unit.test.ts` lists it as withheld with its reason,
+which the fix commit missed and the commit after it supplied.
 
 Recurrence:
 `mistake-prevention.md`,
