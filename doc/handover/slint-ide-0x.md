@@ -1344,7 +1344,18 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     files on `depot-ubuntu-24.04`, workflow only in the scratch worktree `~/temp/agent/depot-probe`, never committed).
     SECOND BLOCKER, task halted again: `depot ci run --workflow .depot/workflows/ide-gpu-probe.yml --follow --forge
     github` (CLI 2.102.23) exits 1 with "no supported repository found in git remotes; use --repo and optionally
-    --forge" although `origin` is `https://github.com/Aquaticats/Monochromatic`; cause not yet found; nothing ran.
+    --forge" although `origin` is `https://github.com/Aquaticats/Monochromatic`; cause not found. With the owner's
+    approval the probe was rerun with `--repo Aquaticats/Monochromatic --forge github`: the CLI warned "could not
+    determine merge base, skipping patch: cannot determine default branch" (same detection problem, the probe workflow
+    still ran) and `--follow` gave up with "Timed out waiting for jobs to be created" although the run finished in 38 s
+    (run `7fsk45ct45`, job log `hgc361htlw`, 2026-10-21, one job on `depot-ubuntu-24.04`, 2 CPUs, 7 GiB).
+    MEASURED RESULT: no `/dev/dri`, no `/sys/class/drm`, no GPU on the PCI bus (virtio devices only), no `nvidia-smi`,
+    an empty `/etc/vulkan/icd.d`; `/dev/kvm` is present; kernel 6.12.109+. So the Depot CI sandbox has no GPU as of
+    2026-10-21 and the GPU gates (`test:native`, `inspect:native`, `inspect:cadence`, screenshots) cannot run there.
+    Other sandbox sizes were not probed. The non-GPU gates (`lint`, `test`, `test:bin`, `build`,
+    `inspect:software-renderer`) were not tried on Depot. The one probe run consumed about 38 s of the 2x8 sandbox and
+    was not entered in `doc/planning/depot-admission-ledger.json`. The scratch worktree and probe file are removed;
+    the decision record `doc/decision/depot-ci-adoption.md` is unchanged (a change needs the owner's acceptance).
     Open, in order: (1) the unexplained redraw on picture handoff in `src/native/minimap/picture.rs` (the remaining
     identical frames; a cause by measurement first); (2) the flake work, in `doc/handover/ide-native-flakes.md`:
     fixed with counts (refused-tile test 10 of 360 to 0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160 to 0 of 160); open:
