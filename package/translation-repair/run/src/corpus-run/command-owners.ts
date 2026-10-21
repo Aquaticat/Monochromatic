@@ -47,6 +47,7 @@ export const COMMAND_OWNERS: Readonly<Record<CommandName, string>> = {
   'probe-sensitivity': 'probe',
   'probe-verify': 'probe',
   'producer-calibrate': 'bench',
+  'reader-measure': 'bench',
   'recall-benchmark': 'probe',
   'repeat-census': 'run',
   'rendering-audit-settled': 'probe',

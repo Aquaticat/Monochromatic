@@ -267,7 +267,13 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
     },
     openrouter: {
       id: 'google/gemma-4-26b-a4b-it',
-      readsImages: false,
+      // THE LISTING'S TRUTH SINCE 2026-10-21: `input_modalities` image, text
+      // and video, with 13 endpoints that keep nothing (`GET
+      // /api/v1/endpoints/zdr`). Until then this said false "until a
+      // transcription is measured" (`doc/decision/translation-repair-openrouter-fallback.md`),
+      // and the 2026-09-08 measurement was through Bedrock alone. The route
+      // stays shut by the hold on this card, which `reader-measure` lifts.
+      readsImages: true,
       maxOutputLength: 16_384,
       promptUsdPerMillion: 0.07,
       completionUsdPerMillion: 0.34,
@@ -296,7 +302,13 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
     // Own p99 at most 483 over 16,251 calls on three providers, under the
     // pooled 90th (the 2026-09-09 table).
     completionCap: 'pooled-p90',
-    holds: [],
+    // PICTURES ON OpenRouter UNMEASURED, 2026-10-21 (XingZ6016): Bedrock is the
+    // only route this seat's transcription was measured on (nine pictures,
+    // mean overlap 0.668, 2026-09-08) and its key is never renewed, which left
+    // two live picture readers. The owner: "Yes try gemma". Remove this hold
+    // only after `mise run //package/translation-repair/bench:reader-measure`
+    // reports both clauses of the reader rule met on this route.
+    holds: ['openrouter-pictures-unmeasured',],
   },
   'glm-5.3': {
     hyper: {

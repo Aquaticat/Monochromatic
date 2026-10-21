@@ -534,20 +534,22 @@ The owner rebooted the machine on 2026-10-21 with three agents halted mid-task,
 each told to write its state down first;
 no pass,
 gate or sweep unit was running.
-Resume each from its own handover:
+Each resumed from a handover of its own kept outside the repository,
+and all three have since finished:
 
-- w257 follow-ups
+- the w257 follow-ups
   (composite evidence,
   the source-context lookup,
-  the launch-line note):
-  `/var/home/user/temp/agent/tr-fan/w257-notes/handover.md`,
-  commits in w257 on top of `0818ca282a`.
-- Picture bench investigation:
-  the "Handover" section of `/var/home/user/temp/agent/x15-fix/reads/XingZ6016-pictures.md`.
-- Tracing the two reads' findings:
-  the "Handover" section of `/var/home/user/temp/agent/x15-fix/reads/rotation-21-classes.md`.
+  the launch-line note)
+  landed as `0f80b593ef`;
+- the picture bench investigation became the w258 fix,
+  landed as `2c5f812492`;
+- the tracing of the two reads' findings sent classes B and A1,
+  with the owner's two rulings of 2026-10-21,
+  to the w259 round.
 
-The reads themselves are `zheermao21-read.md` and `CuspariaKLSY21-read.md` beside them.
+The reads themselves are recorded in
+[the rotation restart record](../planning/translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart.md).
 
 After the reboot:
 
@@ -619,6 +621,60 @@ its fix joins w257 before gate g139.
 The rotation had restarted on the g138 build without waiting for them:
 the day's free energy is spent either way,
 and a read on that build still finds defects.
+
+Gemma measured,
+2026-10-21:
+
+- The picture bench fix landed as `2c5f812492` after gate g141
+  (2721 pass,
+  0 fail,
+  every step exit 0),
+  and the branch worktree was rebuilt to it.
+- The keyed `reader-measure` bench measured `gemma-4-26b-a4b-it` on OpenRouter
+  (zero data retention)
+  three times,
+  nine pictures at most each.
+  The first two runs
+  (08:44 and 08:48 UTC)
+  named the recent corpus-pass runs directories,
+  the second adding the full-corpus pass of 2026-08-19;
+  both found 3 trusted records,
+  all for `zheermao101`,
+  and ended "not measured":
+  a verdict needs 6 readings.
+  A count of every stored picture reading on disk showed why:
+  the recent runs directories hold only those 3,
+  while 107 older single-entry runs directories hold 192 distinct trusted readings across 10 entries.
+- The third run
+  (09:02 UTC)
+  named those older directories:
+  9 pictures matched,
+  9 readings produced,
+  and the result line said both clauses were met,
+  against a seated floor of 1.00 corroborated by all and a ceiling of 0.00 corroborated by none,
+  so every Gemma reading was corroborated by every seated reading of its picture.
+  Limit:
+  the 9 pictures come from two entries,
+  `Mio` 7 and `Toka_ls` 2.
+  Gemma calls spent: 15.
+- The first two runs' NEXT line advised a larger `--sample`
+  when the input that limited them was the number of trusted records;
+  and no line printed Gemma's own rates.
+  Both are bench report defects.
+- The w260 round lifts the hold `openrouter-pictures-unmeasured`,
+  bumps the picture-reading cache version,
+  fixes the two report defects with the matched pictures' entries printed too,
+  and records it all;
+  its ledger numbers are B800 to B809.
+
+Next,
+in order:
+review and gate w259 and w260
+and land each;
+rebuild the branch worktree,
+freeze the new digest in the launcher,
+run the rotation sweep,
+and restart the rotation at `zheermao101`.
 
 The sweep's salts covering a bench of at most nine seats is already recorded
 (`package/translation-repair/doc/audit-ledger-output-decided-by-arrival-order.md`).

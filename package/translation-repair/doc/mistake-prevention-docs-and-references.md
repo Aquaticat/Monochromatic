@@ -47,7 +47,7 @@ A change that adds a guard searches this doc for sentences calling the gap open
 and the guard's subject by name)
 and rewrites each in the same change.
 A landing does the same for the commitments page:
-it searches `package/translation-repair/doc/design-commitments.md` for the name of each round it lands
+it searches every `package/translation-repair/doc/design-commitments*.md` file for the name of each round it lands
 and for "not landed",
 and rewrites each sentence that states the old state in the same sitting (ledger M263).
 

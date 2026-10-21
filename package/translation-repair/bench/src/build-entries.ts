@@ -44,6 +44,10 @@ export const nodeEntries: ReadonlyMap<string, string> = new Map([
     './src/corpus-run/model-health.ts',
   ],
   [
+    'reader-measure',
+    './src/corpus-run/reader-measure.ts',
+  ],
+  [
     'roster-card',
     './src/corpus-run/roster-card.ts',
   ],

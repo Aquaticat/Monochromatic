@@ -1,4 +1,5 @@
 import {
+  type NeuralWattReasoningEffort,
   type NeuralWattServedId,
   type RosterModelId,
   servedRecord,
@@ -34,10 +35,18 @@ import {
 //
 // REASONING IS ON BY DEFAULT on both models (GLM-5.3-Flash always, at the
 // listing's default effort of `max`; DeepSeek V4.1 Flash at `high`). The
-// pipeline sends no reasoning parameter by the owner's standing rule of
-// 2026-08-25, so the energy a call uses includes whatever thinking the default
-// spends, and the matrix means the meter estimates from are over traffic that
-// ran the same defaults.
+// pipeline sends no reasoning parameter on a text call, so the energy such a
+// call uses includes whatever thinking the default spends, and the matrix
+// means the meter estimates from are over traffic that ran the same defaults.
+//
+// THE ONE PARAMETER THIS PROVIDER MAY BE SENT, since 2026-10-21, on a call that
+// carries a picture and only where the card's NeuralWatt side names one
+// (`pictureReasoningEffort`, `low` on GLM-5.3-Flash). The owner: "NeuralWatt is
+// a special case of all the providers: It implements what it documents
+// correctly, almost always - I'm lifting the ban on passing params, but only
+// for NeuralWatt." The standing rule of 2026-08-25 ("don't set any thinking
+// parameter or budget tokens", recorded at the Synthetic body) holds for every
+// other provider and for every NeuralWatt text call.
 
 /**
  Base address every NeuralWatt route hangs off.
@@ -83,6 +92,13 @@ export type NeuralWattModelInfo = {
    where it states none.
    */
   readonly maxOutputLength: number;
+
+  /**
+   Reasoning effort a call carrying a picture sends, when the card names
+   one. Read by this provider's client alone; no other provider's catalog
+   row has the field.
+   */
+  readonly pictureReasoningEffort?: NeuralWattReasoningEffort;
 };
 
 /**
@@ -106,6 +122,10 @@ export const NEURALWATT_MODELS: Readonly<Record<NeuralWattServedId, NeuralWattMo
       readsImages: neuralwatt.readsImages,
       contextLength: neuralwatt.contextLength,
       maxOutputLength: neuralwatt.maxOutputLength,
+      // Conditional spread keeps the knob absent instead of undefined.
+      ...((neuralwatt.pictureReasoningEffort === undefined)
+        ? {}
+        : { pictureReasoningEffort: neuralwatt.pictureReasoningEffort, }),
     };
   },
 },);

@@ -4,13 +4,18 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
-import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup/ts';
+import type { ModelCaller, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   type ImageReading,
   IMAGE_READING_PERSPECTIVES,
+  type ImageReadingPerspective,
   readImageAsset,
 } from './image-reading-stage.ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import type {
+  ProviderName,
+  RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Reading past a refusal
 // ASKING THE SAME MODEL AGAIN WHEN IT DECLINES TO READ A PICTURE, because a
@@ -61,11 +66,26 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
 // returned at once; only a reply that declines to read (`reads-as-refusal`)
 // is asked again.
 //
-// SCOPED TO REFUSAL ALONE, deliberately. A model that does not read images, a
-// picture too large to send, an empty reply, and a reading that fails the screen
-// for some other clause are all properties of the input or the roster: asking
-// again spends a call to be told the same thing. Only `reads-as-refusal` has
-// been measured to vary between identical asks, so only it is re-asked.
+// SCOPED TO REFUSAL AND ONE KIND OF EMPTY REPLY, deliberately. A model that
+// does not read images, a picture too large to send, an empty reply with no
+// cut reason, and a reading that fails the screen for some other clause are
+// all properties of the input or the roster: asking again spends a call to be
+// told the same thing. `reads-as-refusal` has been measured to vary between
+// identical asks, so it is re-asked.
+//
+// AN EMPTY REPLY THE LENGTH LIMIT CUT IS ASKED ONCE MORE, since 2026-10-21.
+// XingZ6016 stopped for want of a second reading because `glm-5.3-flash` on
+// NeuralWatt reasoned until its completion cap (18316 tokens, `finishReason`
+// `length`, 0 content characters) on a dense screenshot that Hyper read for
+// 2125 characters in 77 s the day before. The cut is a property of one roll on
+// one serving stack, so the second ask goes to another provider that serves
+// the model when one is wet and to the same provider when none is: the router
+// refuses a hinted ask with nowhere else to go (`NoProviderForModelError`),
+// and the ask is then made without the hint. ONCE, not up to the refusal
+// limit: a second cut is a model that cannot finish this picture, and a third
+// ask would spend another cap's worth of tokens to be told so. The second ask
+// takes the next reading responsibility, because the uniqueness wrapper
+// hashes the prompt and would otherwise replay the empty reply it stored.
 
 /**
  Clause the screen reports for a reading that declined to transcribe.
@@ -108,6 +128,184 @@ function isRefusal({ reading, }: { readonly reading: ImageReading; },): boolean 
 }
 
 /**
+ Whether a reading is an empty reply the completion limit ended.
+
+ @param reading - outcome of one ask
+
+ @returns True when the reply carried no content because it was cut
+
+ @example
+ ```ts
+ if (isCutByLength({ reading, },)) { mark it }
+ ```
+ */
+function isCutByLength({ reading, }: { readonly reading: ImageReading; },): boolean {
+  if (reading.kind !== 'unavailable')
+    return false;
+  return reading.cutByLength === true;
+}
+
+/**
+ Whether a reading is an empty reply the length limit cut that has not yet had
+ its one re-ask.
+
+ @param reading - outcome of the latest ask
+
+ @param cutReasked - whether a length-cut reply was already asked again
+
+ @returns True when one more ask is owed
+
+ @example
+ ```ts
+ if (canReaskCut({ reading, cutReasked: false, },)) { ask again }
+ ```
+ */
+function canReaskCut(
+  {
+    reading,
+    cutReasked,
+  }: {
+    readonly reading: ImageReading;
+    readonly cutReasked: boolean;
+  },
+): boolean {
+  if (cutReasked)
+    return false;
+  return isCutByLength({ reading, },);
+}
+
+/**
+ Whether another ask is owed: the reading is a refusal, or a length-cut empty
+ reply that has not had its one re-ask.
+
+ @param reading - outcome of the latest ask
+
+ @param cutReasked - whether a length-cut reply was already asked again
+
+ @returns True when the loop asks again
+
+ @example
+ ```ts
+ const owed = isOwedAsk({ reading, cutReasked: false, },);
+ ```
+ */
+function isOwedAsk(
+  {
+    reading,
+    cutReasked,
+  }: {
+    readonly reading: ImageReading;
+    readonly cutReasked: boolean;
+  },
+): boolean {
+  return isRefusal({ reading, },) || canReaskCut({
+    reading,
+    cutReasked,
+  },);
+}
+
+/**
+ Asks again after a reply the completion limit cut: on another provider that
+ serves the model when one is wet, on the same provider otherwise.
+
+ @param client - provider client
+
+ @param modelId - reader asked again
+
+ @param bytes - picture as it sits in the corpus
+
+ @param assetName - file name, for the log line and the content part
+
+ @param perspective - responsibility of this ask, which changes the prompt so
+ the uniqueness wrapper buys a new reply
+
+ @param cutOn - provider whose reply was cut, when the client said; absent
+ for a client that routes nowhere, which then gets no hint
+
+ @param signal - abort honoured inside the ask
+
+ @param perCallTimeoutMs - ceiling on this exchange
+
+ @param l - logger
+
+ @returns Reading of the re-ask
+
+ @example
+ ```ts
+ const reading = await reaskCut({ client, modelId, bytes, assetName, perspective, cutOn: 'neuralwatt', signal, perCallTimeoutMs, l, },);
+ ```
+ */
+async function reaskCut(
+  {
+    client,
+    modelId,
+    bytes,
+    assetName,
+    perspective,
+    cutOn,
+    signal,
+    perCallTimeoutMs,
+    l,
+  }: {
+    readonly client: ModelCaller;
+    readonly modelId: RosterModelId;
+    readonly bytes: Uint8Array;
+    readonly assetName: string;
+    readonly perspective: ImageReadingPerspective;
+    readonly cutOn?: ProviderName;
+    readonly signal: AbortSignal;
+    readonly perCallTimeoutMs: number;
+    readonly l: Logger;
+  },
+): Promise<ImageReading> {
+  /**
+   Logger pre-tagged with this function's name.
+   */
+  const rl = tagged({
+    tag: reaskCut.name,
+    l,
+  },);
+  rl.info(
+    `${modelId} was cut by the completion limit on ${assetName} (finish reason length${
+      (cutOn === undefined) ? '' : ` on ${cutOn}`
+    }), asking again${(cutOn === undefined) ? '' : ` on another provider that serves it`}`,
+  );
+  if (cutOn !== undefined) {
+    try {
+      return await readImageAsset({
+        client,
+        modelId,
+        bytes,
+        assetName,
+        perspective,
+        otherThan: cutOn,
+        signal,
+        perCallTimeoutMs,
+        l,
+      },);
+    }
+    catch (error) {
+      // Only the router's "nowhere else" is answered by the same provider; a
+      // stop, a refusal on the other provider's budget that threw something
+      // else, or a transport failure keeps its own handling.
+      if (!(error instanceof NoProviderForModelError))
+        throw error;
+      rl.info(`${modelId}: no other provider serves ${assetName}, asking ${cutOn} again`,);
+    }
+  }
+  return await readImageAsset({
+    client,
+    modelId,
+    bytes,
+    assetName,
+    perspective,
+    signal,
+    perCallTimeoutMs,
+    l,
+  },);
+}
+
+/**
  Asks one model to read one picture, past a refusal, up to a bounded limit.
 
  @param client - provider client
@@ -146,7 +344,7 @@ export async function readPastRefusal(
     perCallTimeoutMs,
     l,
   }: {
-    readonly client: ModelClient;
+    readonly client: ModelCaller;
     readonly modelId: RosterModelId;
     readonly bytes: Uint8Array;
     readonly assetName: string;
@@ -177,18 +375,23 @@ export async function readPastRefusal(
     l,
   },);
 
+  /**
+   Whether the one re-ask a length-cut empty reply gets has been spent.
+   */
+  let cutReasked = false;
+
   for (
     let ask = 2;
-    (ask <= REFUSAL_ASK_LIMIT) && isRefusal({ reading, },);
+    (ask <= REFUSAL_ASK_LIMIT) && isOwedAsk({
+      reading,
+      cutReasked,
+    },);
     ask += 1
   ) {
     // Between asks as well as inside them. A stopped run that only checked
     // inside the exchange would spend the whole limit on every remaining
     // picture during teardown.
     signal.throwIfAborted();
-    rl.info(
-      `${modelId} declined ${assetName}, asking again (${String(ask,)} of ${String(REFUSAL_ASK_LIMIT,)})`,
-    );
 
     // SEQUENTIAL ON PURPOSE. Each later perspective exists only when prior
     // response was refusal-shaped. Concurrent asks would ignore dependency
@@ -198,6 +401,25 @@ export async function readPastRefusal(
      */
     const perspective = nonNullishOrThrow(
       IMAGE_READING_PERSPECTIVES[ask - 1],
+    );
+    if ((reading.kind === 'unavailable') && (reading.cutByLength === true)) {
+      cutReasked = true;
+      /* oxlint-disable-next-line no-await-in-loop -- re-asks are sequential by design: the second ask exists only when the first was cut */
+      reading = await reaskCut({
+        client,
+        modelId,
+        bytes,
+        assetName,
+        perspective,
+        ...((reading.servedBy === undefined) ? {} : { cutOn: reading.servedBy, }),
+        signal,
+        perCallTimeoutMs,
+        l: rl,
+      },);
+      continue;
+    }
+    rl.info(
+      `${modelId} declined ${assetName}, asking again (${String(ask,)} of ${String(REFUSAL_ASK_LIMIT,)})`,
     );
     /* oxlint-disable-next-line no-await-in-loop -- re-asks are sequential by design: each later perspective exists only when the prior answer was refusal-shaped */
     reading = await readImageAsset({

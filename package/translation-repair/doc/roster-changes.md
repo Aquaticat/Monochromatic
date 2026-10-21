@@ -220,3 +220,19 @@ Mimo v2.6 Pro read below Flash on both halves while sharing 8 of its 9 errors,
 and Solar Mini 4 called 78 of the 85 unchanged texts fixed;
 neither holds a card.
 The roster is twelve chat seats plus the decision-only seat.
+
+`gemma-4-26b-a4b-it` is listed as reading pictures on OpenRouter since 2026-10-21,
+behind the card hold `openrouter-pictures-unmeasured`:
+the owner said "Yes try gemma" after `XingZ6016` reached the end of its pictures with one reader,
+Bedrock's key being never renewed and Bedrock the only route its transcription was measured on (2026-09-08).
+The listing reports image input and the zero-data-retention endpoint listing names thirteen endpoints,
+every request keeps `provider.zdr: true`,
+and the vision reach sends no picture to OpenRouter until the hold is lifted.
+The step that lifts it is
+`mise run //package/translation-repair/bench:reader-measure -- --trusted <runs dir> --pictures <people dir>`
+with `TRANSLATION_REPAIR_OPENROUTER_API_KEY` set:
+when it reports both clauses met,
+remove the hold from the card,
+rebuild,
+and run `cache-account-audit`,
+because the roster a picture cache key names then changes (ledger B721 to B723).

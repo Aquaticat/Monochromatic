@@ -87,6 +87,30 @@ The groups that follow name the main ones.
   Declared in `corpus-run/roster-card-render.ts`,
   `corpus-run/roster-card-listing.ts`,
   and `corpus-run/roster-card-print.ts`.
+- Reader measure:
+  hold a candidate picture reader to the readings the pipeline already trusts,
+  by the two-clause reader rule of 2026-09-08.
+  Names:
+  `seatedBandOf`,
+  `candidateRatesOf`,
+  `verdictOf`,
+  `MINIMUM_PRODUCED_READINGS`,
+  `readTrustedRecords`,
+  `matchRecord`,
+  `measureReader`,
+  `runReaderMeasure`,
+  `readMeasureAsk`,
+  `renderMeasureReport`,
+  `loadPictures`,
+  `filesUnder`.
+  Declared in `corpus-run/reader-measure-score.ts`,
+  `corpus-run/reader-measure-records.ts`,
+  `corpus-run/reader-measure-run.ts`,
+  `corpus-run/reader-measure-command.ts`,
+  `corpus-run/reader-measure-ask.ts`,
+  `corpus-run/reader-measure-report.ts`,
+  `corpus-run/reader-measure-pictures.ts`,
+  and `corpus-run/reader-measure-files.ts`.
 - Sentinel,
   displacement and translate probes:
   run named entries through the pipeline,
@@ -156,6 +180,20 @@ and each task sets it to its own name.
   `<synthetic|hyper|openrouter|bedrock|neuralwatt> <served id>`.
   Read-only;
   the key is never printed.
+- `reader-measure`:
+  measures a candidate picture reader through OpenRouter (zero data retention on every request)
+  against the picture readings the pipeline already stored,
+  and says whether both clauses of the reader rule are met and which hold to lift.
+  It builds the OpenRouter client itself,
+  because the router keeps pictures off that route while the card's `openrouter-pictures-unmeasured` hold stands.
+  Usage after `--`:
+  `--trusted <runs dir>` (repeatable),
+  `--pictures <people dir>`,
+  and optionally `--model <seat id>` (default `gemma-4-26b-a4b-it`)
+  and `--sample <count>` (default 9 matched pictures).
+  Needs `TRANSLATION_REPAIR_OPENROUTER_API_KEY`.
+  Spends the OpenRouter key:
+  one ask per matched picture.
 - `model-health`:
   asks every roster model one trivial structured question and reports what came back,
   so a schema mismatch can be told apart from a dead model.

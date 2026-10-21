@@ -3,6 +3,7 @@ import {
   NO_PROVIDER,
   providerServing,
   reachOf,
+  visionReachOf,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { rosterQuorumSize, } from '@monochromatic-dev/translation-repair-stage/ts';
@@ -162,6 +163,12 @@ export function phaseBenches(
 
  @param dry - dryness per provider, holds folded in
 
+ @param reach - which providers count: those that serve the seat text
+ (`text`, the default) or those that can show it a picture (`vision`). A
+ reader is counted by the second, since a picture reaches a narrower set of
+ providers than text does (`visionReachOf`): XingZ6016 counted Gemma reachable
+ through OpenRouter, which serves it text only.
+
  @returns Seats the router could send somewhere right now
 
  @example
@@ -173,14 +180,16 @@ export function reachableSeats(
   {
     seats,
     dry,
+    reach = 'text',
   }: {
     readonly seats: readonly RosterModelId[];
     readonly dry: BudgetView;
+    readonly reach?: 'text' | 'vision';
   },
 ): readonly RosterModelId[] {
   return seats.filter(function isServed(modelId,): boolean {
     return providerServing({
-      reach: reachOf({ modelId, },),
+      reach: (reach === 'vision') ? visionReachOf({ modelId, },) : reachOf({ modelId, },),
       dry,
     },) !== NO_PROVIDER;
   },);
@@ -233,6 +242,7 @@ export function shortBenches(
     const reachable = reachableSeats({
       seats,
       dry,
+      reach: (name === 'readers') ? 'vision' : 'text',
     },);
     if (reachable.length >= quorum)
       return [];

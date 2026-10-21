@@ -763,3 +763,137 @@ so B702 to B709 are not indexed there either.
 Recurrence:
 `mistake-prevention-messages-labels-and-counts.md`,
 "Counts that include calls never made".
+
+## B721: Gemma was listed as unable to read a picture on OpenRouter before anyone had tried
+
+Red `7885284331`,
+fixed in `a767785dd4`.
+
+Found on 2026-10-21 (UTC) in the read of `XingZ6016`,
+and fixed in `w258`.
+The owner's ruling of the same day on the picture bench:
+"Yes try gemma".
+
+What the run showed:
+the bench of picture readers had two readers that could be reached,
+because Bedrock's key is never renewed and Gemma pictures reach it through Bedrock alone.
+The OpenRouter side of `gemma-4-26b-a4b-it` said `readsImages: false`,
+which `doc/decision/translation-repair-openrouter-fallback.md` gave as "gemma's row reports no pictures until a transcription is measured".
+The public listing (fetched 2026-10-21) reports `input_modalities` image,
+text and video for `google/gemma-4-26b-a4b-it`,
+and its zero data retention endpoint listing names thirteen endpoints.
+The only measurement of this seat's pictures,
+nine pictures with a mean overlap of 0.668 on 2026-09-08,
+was made through Bedrock.
+
+The fix:
+the card's OpenRouter side reports the listing's truth,
+and the card carries the new hold `openrouter-pictures-unmeasured`.
+`OPENROUTER_PICTURES_UNMEASURED` (`openrouter-catalog.ts`) is built from that hold,
+and `openRouterShowsPictures` returns false for a seat in it,
+so the vision reach stays Bedrock alone until the hold is lifted.
+The model-wide `reader-unmeasured` was not used,
+because it would also unseat the reader measured on Bedrock.
+Every OpenRouter request keeps `provider.zdr: true`,
+which `openrouter-picture-body.unit.test.ts` pins on a picture body to this seat,
+beside no reasoning key and a numeric `max_tokens`.
+The step that lifts the hold is B723.
+
+Cache versions:
+while the hold stands,
+no roster that a picture cache key names changes.
+Lifting it adds Gemma to the readers a wet OpenRouter reaches,
+which changes the roster `imageReadingKey` hashes for every entry whose Bedrock is dry,
+and the version bump belongs to the commit that lifts it.
+
+Open to the owner's veto:
+a hold of its own,
+not a card flag flipped back and forth,
+and `google/gemma-4-26b-a4b-it` as the size tried.
+
+Unchecked:
+whether each of the thirteen endpoints accepts an image.
+The measuring task reports the endpoint that served each call.
+
+## B722: the readers bench counted a seat by the providers that serve it text
+
+Red `4a93952e3e`,
+fixed in `fce4252472`.
+
+Found on 2026-10-21 (UTC) in the read of `XingZ6016`,
+and fixed in `w258`.
+
+What the run showed:
+the `JUDGE SEATS` line printed `readers=5`,
+and the readers quorum of two read as met,
+though the seats were counted by `reachOf`,
+the providers that serve the model text.
+Gemma is served text by OpenRouter and shown pictures by Bedrock alone,
+and Bedrock's token had expired.
+Two readers could see.
+
+The fix:
+`reachableSeats` takes a reach (`text`,
+the default,
+or `vision`),
+and `shortBenches` reads the `readers` bench with the vision reach (`visionReachOf`).
+`judgeSeatsFor` returns `readersSeeing`,
+the readers a wet provider can show a picture,
+and the `JUDGE SEATS` line prints `seeing=N` beside `readers=N`.
+The bench itself is unchanged,
+so a reader with no wet picture route stays seated and is lost at call time,
+as every unserved seat is.
+
+Cache versions:
+the bench and the roster a cache key names do not change.
+Only the phase's wait and the quorum shortfall clause read the new count.
+
+Recurrence:
+`mistake-prevention-messages-labels-and-counts.md`,
+"Counts that include calls never made".
+
+## B723: the picture reader measurement was a scratch script outside the repository
+
+Red `1f839c0fd4`,
+fixed in `4a1fe70d3a` and `b7cf2b578f`.
+
+Found on 2026-10-21 (UTC) in the work of B721.
+
+What the run showed:
+the rule that seated a picture reader on 2026-09-08 (each reading corroborated by every seated reader at least as often as the seated reader corroborated least often,
+and uncorroborated by all no more often than the seated reader uncorroborated most often,
+with empty,
+cut and thrown calls counting for neither clause)
+was applied by `bedrock-reader-measure.mjs`,
+a scratch script that is not in the repository and ran through Bedrock.
+Seating Gemma on OpenRouter needs the same measurement on that route.
+
+The fix:
+the keyed task `reader-measure` in the bench package.
+It reads the corroborated and the disagreed picture readings the pipeline stored under the runs directories it is given,
+matches each corpus picture to a stored record by the overlap of its deterministic reading,
+asks the candidate through `readPastRefusal` (so a refusal is re-asked and a cut reply asked again as in a pass),
+and scores the candidate against the seated band.
+It builds the OpenRouter client itself,
+because the router keeps pictures off the route while the hold stands.
+It reports the verdict on each clause,
+or "not measured" when fewer than `MINIMUM_PRODUCED_READINGS` (six) readings were produced,
+and the one edit a pass calls for.
+The command is
+`mise run //package/translation-repair/bench:reader-measure -- --trusted <runs dir> --pictures <people dir>`,
+with `--model` (default `gemma-4-26b-a4b-it`) and `--sample` (default nine) optional.
+It needs `TRANSLATION_REPAIR_OPENROUTER_API_KEY` and was never run by the agent that wrote it.
+
+Limits:
+the stored records name no picture,
+so the match rests on the overlap of the deterministic reading at the corroboration share,
+the way the 2026-09-08 instrument matched,
+and a short deterministic text can match a wrong record.
+The seated band comes from the records of the matched pictures only.
+Stored records are of corroborated pictures and of stable disagreements,
+so the band's floor is high when most records are two agreeing readings.
+`reader-measure-files.ts` walks directories through `namesOfKind`,
+which takes neither a link nor a special file.
+
+Open to the owner's veto:
+a floor of six produced readings out of nine asked.

@@ -32,6 +32,7 @@ import {
 import {
   SEAT_HYPER_ONLY,
   SEAT_HYPER_TEXT_BEDROCK,
+  SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 
@@ -58,6 +59,18 @@ const BEDROCK_ALONE: BudgetView = {
   bedrock: false,
   hyper: true,
   openrouter: true,
+};
+
+/**
+ XingZ6016 (2026-10-21) at its start: NeuralWatt and OpenRouter wet, Synthetic
+ and Hyper dry, Bedrock refused for an expired token and so read as dry.
+ */
+const XINGZ6016: BudgetView = {
+  neuralwatt: false,
+  synthetic: true,
+  bedrock: true,
+  hyper: true,
+  openrouter: false,
 };
 
 /**
@@ -213,6 +226,41 @@ await describe({
             },),).toEqual([
               `readers 1 of ${String(oneReader.length,)} reachable, quorum 2`,
             ],);
+          },
+        },),
+        it({
+          name: 'COUNTS A READER BY THE PROVIDERS THAT CAN SHOW IT A PICTURE, not by the ones that serve it text '
+            + '(XingZ6016: the seat line said readers=5 while Gemma was served text by OpenRouter and shown '
+            + 'pictures by Bedrock alone, which was expired)',
+          fn: async () => {
+            expect(reachableSeats({
+              seats: [SEAT_HYPER_TEXT_BEDROCK, SEAT_HYPER_VISION,],
+              dry: XINGZ6016,
+            },),).toEqual([SEAT_HYPER_TEXT_BEDROCK, SEAT_HYPER_VISION,],);
+            expect(reachableSeats({
+              seats: [SEAT_HYPER_TEXT_BEDROCK, SEAT_HYPER_VISION,],
+              dry: XINGZ6016,
+              reach: 'vision',
+            },),).toEqual([SEAT_HYPER_VISION,],);
+            expect(shortBenches({
+              benches: {
+                ...benchesUnder({ dry: XINGZ6016, },),
+                readers: [SEAT_HYPER_TEXT_BEDROCK, SEAT_HYPER_VISION,],
+              },
+              names: phaseBenches({ phase: 'pictures', },),
+              dry: XINGZ6016,
+            },),).toEqual(['readers 1 of 2 reachable, quorum 2',],);
+          },
+        },),
+        it({
+          name: 'NAMES THE READERS A WET PROVIDER CAN SHOW A PICTURE, beside the bench the seat line counts',
+          fn: async () => {
+            expect(judgeSeatsFor({ dry: XINGZ6016, },).readersSeeing
+              .includes(SEAT_HYPER_TEXT_BEDROCK,),).toBe(false,);
+            expect(judgeSeatsFor({ dry: XINGZ6016, },).readersSeeing
+              .includes(SEAT_HYPER_VISION,),).toBe(true,);
+            expect(judgeSeatsFor({ dry: ALL_WET, },).readersSeeing
+              .includes(SEAT_HYPER_TEXT_BEDROCK,),).toBe(true,);
           },
         },),
         it({

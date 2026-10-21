@@ -11,6 +11,13 @@
  off OpenRouter only because their cards carry no OpenRouter block, so
  re-adding one would route them there with nothing to say so.
 
+ NEURALWATT IS THE ONE EXCEPTION, since 2026-10-21 ("I'm lifting the ban on
+ passing params, but only for NeuralWatt"): its client sends `reasoning_effort`
+ on a picture call to a seat whose card names one, and
+ `neuralwatt-picture-effort.unit.test.ts` pins that. The picture pass here is
+ the other half: it shows that no OTHER provider's body carries a knob when
+ given the same picture.
+
  Fixtures are cat-themed invention.
 
  @module
@@ -21,7 +28,6 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import type { TransportExchange, } from '@monochromatic-dev/translation-repair-provider-stream';
 import { MODEL_CARDS, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   type BedrockLedger,
@@ -31,8 +37,13 @@ import {
   createSyntheticClient,
   OPENROUTER_DROPPED_SEATS,
   reachOf,
+  type ChatTextRequest,
   type ModelClient,
 } from '../dist/final/node/index.mjs';
+import {
+  recordingTransport,
+  settled,
+} from './recording-transport.test-fixture.ts';
 import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_HYPER_ONLY,
@@ -119,49 +130,6 @@ function keysOf(value: unknown,): readonly string[] {
 }
 
 /**
- One provider's client over a transport that records the body and fails.
-
- @param bodies - where the recorded bodies go
-
- @returns Transport recording each chat body
-
- @example
- ```ts
- const transport = recordingTransport({ bodies, },);
- ```
- */
-function recordingTransport(
-  { bodies, }: { readonly bodies: string[]; },
-): (exchange: TransportExchange,) => Promise<never> {
-  return async function record(exchange,): Promise<never> {
-    bodies.push(exchange.bodyJson ?? '',);
-    await Promise.resolve();
-    throw new Error('recorded, not sent',);
-  };
-}
-
-/**
- Awaits a call whose failure is expected, since the transport records and
- refuses every body.
-
- @param call - the call to settle
-
- @example
- ```ts
- await settled(client.chatText(request,),);
- ```
- */
-async function settled(call: Promise<unknown>,): Promise<void> {
-  try {
-    await call;
-  }
-  catch (error) {
-    // The transport refuses by design; the recorded body is what is read.
-    void error;
-  }
-}
-
-/**
  Each provider, the seat it alone or first serves, and a client over the
  recording transport.
 
@@ -213,6 +181,103 @@ function providerRows(
   ];
 }
 
+/**
+ The conversation of the text calls.
+ */
+const TEXT_MESSAGES = [{ role: 'user', content: 'Where does the cat nap?', },] as const;
+
+/**
+ The conversation of the picture calls, one image part as the reading stage builds it.
+ */
+const PICTURE_MESSAGES = [{
+  role: 'user',
+  content: [
+    {
+      type: 'text',
+      text: 'Transcribe every word visible in this image.',
+    },
+    {
+      type: 'image_url',
+      image_url: { url: 'data:image/webp;base64,UklGRg==', },
+    },
+  ],
+},] as const;
+
+/**
+ What each provider's bodies break of the owner's standing rules, for one kind
+ of conversation.
+
+ @param messages - conversation each provider's text call and schema'd call send
+
+ @returns One finding per rule a body broke, empty when every body holds
+
+ @example
+ ```ts
+ const findings = await bodyFindingsFor({ messages: [{ role: 'user', content: 'Hi', },], },);
+ ```
+ */
+async function bodyFindingsFor(
+  { messages, }: { readonly messages: ChatTextRequest['messages']; },
+): Promise<readonly string[]> {
+  /**
+   Bodies the transport recorded, in call order.
+   */
+  const bodies: string[] = [];
+  /**
+   What each row's two calls sent.
+   */
+  const findings: string[] = [];
+  for (const row of providerRows({ bodies, },)) {
+    /**
+     Bodies before this row's calls.
+     */
+    const before = bodies.length;
+    // oxlint-disable-next-line no-await-in-loop -- the rows share one recorder, read in order
+    await settled(row.client.chatText({
+      modelId: row.modelId as never,
+      messages,
+      signal: new AbortController().signal,
+    },),);
+    // oxlint-disable-next-line no-await-in-loop -- the rows share one recorder, read in order
+    await settled(row.client.chatJson({
+      modelId: row.modelId as never,
+      messages,
+      signal: new AbortController().signal,
+      responseFormat: {
+        type: 'json_schema',
+        json_schema: {
+          name: 'nap_spot',
+          strict: true,
+          schema: {
+            type: 'object',
+            properties: { spot: { type: 'string', }, },
+            required: ['spot',],
+            additionalProperties: false,
+          },
+        },
+      },
+      validate: function isSpot(value: unknown,): value is { readonly spot: string; } {
+        return ((typeof value) === 'object') && (value !== null) && ('spot' in value);
+      },
+    },),);
+    if ((bodies.length - before) < 2)
+      findings.push(`${row.provider}: ${String(bodies.length - before,)} bodies recorded`,);
+    for (const bodyJson of bodies.slice(before,)) {
+      /**
+       Body as sent.
+       */
+      const body = JSON.parse(bodyJson,) as Record<string, unknown>;
+      if (!(((typeof body.max_tokens) === 'number') && (body.max_tokens > 0)))
+        findings.push(`${row.provider}: no max_tokens`,);
+      for (const key of keysOf(body,).filter(function forbidden(found,): boolean {
+        return FORBIDDEN_KEYS.has(found,);
+      },))
+        findings.push(`${row.provider}: ${key}`,);
+    }
+  }
+  return findings;
+}
+
 await describe({
   name: 'the owner\'s standing body rules hold on every provider (ledger P11)',
   children: [
@@ -220,63 +285,14 @@ await describe({
       name: 'EVERY BODY CARRIES max_tokens AND NO THINKING, BUDGET OR REASONING KNOB, on the text call and on '
         + 'the schema\'d call of each of the four providers',
       fn: async () => {
-        /**
-         Bodies the transport recorded, in call order.
-         */
-        const bodies: string[] = [];
-        /**
-         What each row's two calls sent.
-         */
-        const findings: string[] = [];
-        for (const row of providerRows({ bodies, },)) {
-          /**
-           Bodies before this row's calls.
-           */
-          const before = bodies.length;
-          // oxlint-disable-next-line no-await-in-loop -- the rows share one recorder, read in order
-          await settled(row.client.chatText({
-            modelId: row.modelId as never,
-            messages: [{ role: 'user', content: 'Where does the cat nap?', },],
-            signal: new AbortController().signal,
-          },),);
-          // oxlint-disable-next-line no-await-in-loop -- the rows share one recorder, read in order
-          await settled(row.client.chatJson({
-            modelId: row.modelId as never,
-            messages: [{ role: 'user', content: 'Where does the cat nap?', },],
-            signal: new AbortController().signal,
-            responseFormat: {
-              type: 'json_schema',
-              json_schema: {
-                name: 'nap_spot',
-                strict: true,
-                schema: {
-                  type: 'object',
-                  properties: { spot: { type: 'string', }, },
-                  required: ['spot',],
-                  additionalProperties: false,
-                },
-              },
-            },
-            validate: function isSpot(value: unknown,): value is { readonly spot: string; } {
-              return ((typeof value) === 'object') && (value !== null) && ('spot' in value);
-            },
-          },),);
-          if ((bodies.length - before) < 2)
-            findings.push(`${row.provider}: ${String(bodies.length - before,)} bodies recorded`,);
-          for (const bodyJson of bodies.slice(before,)) {
-            /**
-             Body as sent.
-             */
-            const body = JSON.parse(bodyJson,) as Record<string, unknown>;
-            if (!(((typeof body.max_tokens) === 'number') && (body.max_tokens > 0)))
-              findings.push(`${row.provider}: no max_tokens`,);
-            for (const key of keysOf(body,).filter(function forbidden(found,): boolean {
-              return FORBIDDEN_KEYS.has(found,);
-            },))
-              findings.push(`${row.provider}: ${key}`,);
-          }
-        }
-        expect(findings,).toEqual([],);
+        expect(await bodyFindingsFor({ messages: TEXT_MESSAGES, },),).toEqual([],);
+      },
+    },),
+    it({
+      name: 'EVERY BODY CARRIES NO REASONING KNOB ON A PICTURE CALL EITHER, so the lift the owner gave NeuralWatt '
+        + '(2026-10-21) reaches no other provider\'s request',
+      fn: async () => {
+        expect(await bodyFindingsFor({ messages: PICTURE_MESSAGES, },),).toEqual([],);
       },
     },),
     it({
