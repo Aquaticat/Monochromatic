@@ -518,7 +518,8 @@ Re-run the release probe when a newer `@pnpm/pnpr` lands on `next`,
 
 The patched image now tracks current upstream.
  Branch `pnpr-oidc-workload-discovery` of `Aquaticat/pnpm` sits on pnpm/pnpm `cbe5accc7ace6812e1770f6301d2742c91381c85`
- (`main`, fetched 2026-10-21) as one commit `01dc1384276b91f2b5a3664b6bf8532617e4e6f9`,
+ (`main`,
+fetched 2026-10-21) as one commit `01dc1384276b91f2b5a3664b6bf8532617e4e6f9`,
  `fix(pnpr): verify GitHub Actions workload tokens without login metadata`.
  The fix was ported through pnpm/pnpm#16970's `oidc.rs` split and pnpm/pnpm#16501's `MetadataFreshness` enum.
 
@@ -527,7 +528,8 @@ The patched image now tracks current upstream.
 - `pnpr/crates/auth/src/oidc/provider_metadata.rs:26` and `59-70` cache `Discovered { jwks, login }`;
   workload-only providers call `workload_keys` instead of `CoreProviderMetadata::discover_async`.
 - `pnpr/crates/auth/src/oidc/workload_verification.rs:15` and `66-91` parse only `issuer` and `jwks_uri`,
-  enforce issuer equality, and fetch the key set with `CoreJsonWebKeySet::fetch_async`.
+  enforce issuer equality,
+  and fetch the key set with `CoreJsonWebKeySet::fetch_async`.
 - `pnpr/crates/auth/src/oidc/workload.rs:8` and `33` verify against `&CoreJsonWebKeySet`.
 - `pnpr/crates/auth/src/oidc.rs:124` and `163` map absent login metadata to `rejected()`;
   `verified_expiration` takes the key set (`pnpr/crates/auth/src/oidc.rs:205`).
@@ -536,10 +538,14 @@ The patched image now tracks current upstream.
 
 Both runs in `docker.io/library/rust:1.97.0-bookworm` with `--memory=3g --cpus=2` and `CARGO_BUILD_JOBS=1`:
 
-- Unpatched `cbe5accc` plus only the new test fails, as required:
+- Unpatched `cbe5accc` plus only the new test fails,
+  as required:
   `workload_discovery_accepts_issuers_without_login_endpoints` panics with
-  `Internal { reason: "OIDC provider unavailable" }` (0 passed, 1 failed, 114 filtered out).
-- With the port, `cargo test --package pnpr-auth` passes 115 tests with 0 failures.
+  `Internal { reason: "OIDC provider unavailable" }` (0 passed,
+  1 failed,
+  114 filtered out).
+- With the port,
+  `cargo test --package pnpr-auth` passes 115 tests with 0 failures.
 
 ### Config schema change
 
