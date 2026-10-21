@@ -311,7 +311,7 @@ await describe({
 
     it({
       name: 'KEEPS THE ESTIMATE WHEN THE STREAM CARRIED NO ENERGY COMMENT, the bucket mean for the body\'s bytes '
-        + 'times the margin, and marks the line estimated',
+        + 'times the margin of one, and marks the line estimated',
       fn: async () => {
         await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-client-', },);
         const { client, ledger, exchanges, } = scripted({
@@ -336,8 +336,11 @@ await describe({
         expect(line.wh,).toBeCloseTo(estimateWh, 12,);
         expect(line.estimated,).toBe('unreported-estimate',);
         expect(line.promptTokens,).toBe(promptTokens,);
-        expect(estimateWh,).toBeGreaterThan(estimateNeuralWattWh({ servedId: 'deepseek-v4.1-flash', promptTokens, },).bucketMeanWh,);
-        expect(NEURALWATT_ENERGY_MARGIN,).toBeGreaterThan(1,);
+        expect(estimateWh,).toBeCloseTo(
+          estimateNeuralWattWh({ servedId: 'deepseek-v4.1-flash', promptTokens, },).bucketMeanWh,
+          12,
+        );
+        expect(NEURALWATT_ENERGY_MARGIN,).toBe(1,);
       },
     },),
 

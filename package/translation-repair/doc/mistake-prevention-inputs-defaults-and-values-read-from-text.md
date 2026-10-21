@@ -433,6 +433,16 @@ and the deltas still passed over;
 `anthropic-delta-scan.unit.test.ts` holds the frames the scanner counts as unreadable
 beside the ones it reads or passes over.
 
+A published per-request figure is the same kind of input (P19).
+The NeuralWatt meter held each call at the energy matrix's mean for its prompt-size bucket,
+doubled on a prefill argument nothing had measured;
+the first run's settled calls read GLM-5.3-Flash at more than three times the matrix
+and traced the spread to completion tokens,
+which a prompt bucket cannot see.
+A provider's published mean that sizes a hold is a placeholder until the pipeline's own settled calls replace it,
+and the replacement reads what drives the spread before choosing any multiplier.
+`neuralwatt-estimate.unit.test.ts` pins each figure with the run it came from.
+
 ## Two layers reading one refusal
 
 What happened:
