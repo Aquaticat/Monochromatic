@@ -41,6 +41,12 @@ const ROSTER = [
 const DISPUTE_NOTE = 'ARCHIVE RENDERING DISPUTED: the adjudicators accepted 1 claim(s) about the tabby\'s nap.';
 
 /**
+ What the repair panel accepted about the slice, which no dispute covers.
+ */
+const REPAIR_CLAIMS_NOTE = 'REPAIR PANEL CLAIMS ACCEPTED: the repair lane\'s adjudicators accepted 1 claim(s); the claims: '
+  + '(1) accuracy/mistranslation minor: "dozed" softens the tabby\'s nap.';
+
+/**
  Client proposing one rewrite, recording each polish gate sheet.
 
  @param gateSheets - where each polish gate sheet is recorded
@@ -196,6 +202,51 @@ await describe({
         expect(gateSheets.length,).toBeGreaterThan(0,);
         expect(gateSheets.every(function carriesNote(sheet,): boolean {
           return sheet.includes(DISPUTE_NOTE,);
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'CARRIES the claims the repair panel accepted for the slice to every polish gate sheet, a slice no '
+        + 'dispute covers included (CuspariaKLSY21 slice 0)',
+      fn: async () => {
+        /**
+         Every polish gate sheet the settlement sent.
+         */
+        const gateSheets: string[] = [];
+        await applyFinalPolish({
+          client: recordingClient({ gateSheets, },),
+          settlement: {
+            terminal: 'consolidated',
+            text: 'The tabby spent the whole afternoon napping in the warm window.',
+            floor: { kind: 'proposals', validModelIds: [], },
+            verdicts: [],
+            rewrapped: false,
+            demoted: false,
+            findings: [],
+          },
+          subject: {
+            sourceText: '虎斑猫整个下午都在温暖的窗边打盹。',
+            incumbentText: 'The tabby dozed by the warm window all afternoon long.',
+            acceptedRepairClaimsNote: REPAIR_CLAIMS_NOTE,
+          },
+          lineStructured: false,
+          sliceIndex: 2,
+          polishConfig: {
+            refinerModelIds: [ROSTER[0],],
+            judgeModelIds: ROSTER,
+            gateModelIds: ROSTER,
+            declaredNames: [],
+            definitions: '',
+          },
+          eligible: true,
+          signal: AbortSignal.timeout(HANG_STOP_MS,),
+          perCallTimeoutMs: HANG_STOP_MS,
+          l: tagged({ tag: 'polish-repair-claims-test', },),
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
+        },);
+        expect(gateSheets.length,).toBeGreaterThan(0,);
+        expect(gateSheets.every(function carriesNote(sheet,): boolean {
+          return sheet.includes(REPAIR_CLAIMS_NOTE,);
         },),).toBe(true,);
       },
     },),
