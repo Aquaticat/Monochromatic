@@ -513,3 +513,50 @@ This matches `0.1.0-alpha.11` exactly:
 The patched image pinned in `package/config/pnpr/Containerfile` remains required.
 Re-run the release probe when a newer `@pnpm/pnpr` lands on `next`,
  or before any patched-image refresh.
+
+## Fork update 2026-10-21
+
+The patched image now tracks current upstream.
+ Branch `pnpr-oidc-workload-discovery` of `Aquaticat/pnpm` sits on pnpm/pnpm `cbe5accc7ace6812e1770f6301d2742c91381c85`
+ (`main`, fetched 2026-10-21) as one commit `01dc1384276b91f2b5a3664b6bf8532617e4e6f9`,
+ `fix(pnpr): verify GitHub Actions workload tokens without login metadata`.
+ The fix was ported through pnpm/pnpm#16970's `oidc.rs` split and pnpm/pnpm#16501's `MetadataFreshness` enum.
+
+### Ported code map
+
+- `pnpr/crates/auth/src/oidc/provider_metadata.rs:26` and `59-70` cache `Discovered { jwks, login }`;
+  workload-only providers call `workload_keys` instead of `CoreProviderMetadata::discover_async`.
+- `pnpr/crates/auth/src/oidc/workload_verification.rs:15` and `66-91` parse only `issuer` and `jwks_uri`,
+  enforce issuer equality, and fetch the key set with `CoreJsonWebKeySet::fetch_async`.
+- `pnpr/crates/auth/src/oidc/workload.rs:8` and `33` verify against `&CoreJsonWebKeySet`.
+- `pnpr/crates/auth/src/oidc.rs:124` and `163` map absent login metadata to `rejected()`;
+  `verified_expiration` takes the key set (`pnpr/crates/auth/src/oidc.rs:205`).
+
+### Port proof
+
+Both runs in `docker.io/library/rust:1.97.0-bookworm` with `--memory=3g --cpus=2` and `CARGO_BUILD_JOBS=1`:
+
+- Unpatched `cbe5accc` plus only the new test fails, as required:
+  `workload_discovery_accepts_issuers_without_login_endpoints` panics with
+  `Internal { reason: "OIDC provider unavailable" }` (0 passed, 1 failed, 114 filtered out).
+- With the port, `cargo test --package pnpr-auth` passes 115 tests with 0 failures.
+
+### Config schema change
+
+Current pnpr names the web UI block `ui` with `enabled`
+ (`pub(super) ui: UiFile` at `pnpr/crates/config/src/config_file.rs:235`,
+ fields `enabled` and `dir` at `pnpr/crates/config/src/config_file.rs:324`),
+ and its root parser rejects unknown fields.
+ Measured in both directions with the registry harness:
+
+- The `0.1.0-alpha.16` release binary rejects the old block:
+  ``Invalid config: unknown field `web`, expected one of ... ui ...`` (`pnpr config-check`).
+- The `0.1.0-alpha.11` base pinned before this update starts normally on the new block,
+  because that base drops unknown top-level fields by design
+  (its `ConfigFile` at `8f20a3f` declares no `web` field and documents the drop).
+  The `web: enable: false` block added with `e49cf3100a` was inert on that base.
+
+`generatePnprConfig` in `file-enforcer.config.ts` now emits `ui: enabled: false`,
+ and the generated `package/config/pnpr/config.yaml` carries it.
+ The image pin and the config change land in one commit,
+ because Coolify bakes the config into the rebuilt image and the new base refuses the old block.
