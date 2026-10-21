@@ -7,6 +7,10 @@ import {
   unitTestFilesOf,
 } from './rotation-sweep-packages.test-fixture.ts';
 import {
+  refusalLines,
+  SWEEP_REFUSED_EXIT,
+} from './rotation-sweep-refusal.test-fixture.ts';
+import {
   caseKey,
   type FailedCase,
   newFailures,
@@ -356,7 +360,25 @@ async function runSweep(
 }
 
 /**
+ Writes one line of a refusal to standard error, where a reader collecting the report from standard output does not meet it.
+
+ @param line - the line, without its line break
+
+ @example
+ ```ts
+ writeErrorLine({ line: 'rotation sweep: refused, because ...', },);
+ ```
+ */
+function writeErrorLine({ line, }: { readonly line: string; },): void {
+  process.stderr
+    .write(`${line}\n`,);
+}
+
+/**
  Runs the sweep from the command-line words of the `test:rotation-sweep` task and reports.
+
+ A sweep that found cases to fix writes the report, then a refusal naming each case, and returns the stated-refusal code
+ without throwing. An error out of the sweep itself is a fault and propagates with its stack.
 
  @param args - words after the task name
 
@@ -364,13 +386,13 @@ async function runSweep(
 
  @param write - receives each line of the report
 
- @param writeError - receives each line of a refusal, which has not been written yet
+ @param writeError - receives each line of a refusal
 
- @returns Whether the sweep passed
+ @returns The exit code: 0 for a clean sweep, `SWEEP_REFUSED_EXIT` for one that found cases to fix
 
  @example
  ```ts
- const passed = await rotationSweepMain({ args: [], },);
+ process.exitCode = await rotationSweepMain({ args: [], },);
  ```
  */
 export async function rotationSweepMain(
@@ -378,13 +400,14 @@ export async function rotationSweepMain(
     args,
     sweep = runSweep,
     write = writeLine,
+    writeError = writeErrorLine,
   }: {
     readonly args: readonly string[];
     readonly sweep?: typeof runSweep;
     readonly write?: (arguments_: { readonly line: string; },) => void;
     readonly writeError?: (arguments_: { readonly line: string; },) => void;
   },
-): Promise<boolean> {
+): Promise<number> {
   /**
    What the sweep found.
    */
@@ -394,7 +417,11 @@ export async function rotationSweepMain(
   },);
   for (const line of reportLines({ outcome, },))
     write({ line, },);
-  return sweepPassed({ outcome, },);
+  if (sweepPassed({ outcome, },))
+    return 0;
+  for (const line of refusalLines({ outcome, },))
+    writeError({ line, },);
+  return SWEEP_REFUSED_EXIT;
 }
 
 //endregion Rotation sweep

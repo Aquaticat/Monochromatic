@@ -183,7 +183,7 @@ await describe({
           },);
           expect(err.length,).toBeGreaterThan(0,);
           expect(err.filter(function looksLikeStack(line,): boolean {
-            return /^\s+at /v.test(line,) || /^\w*Error:/v.test(line,);
+            return line.trimStart().startsWith('at ',) || line.includes('Error:',);
           },),).toStrictEqual([],);
         },
       },),
@@ -213,7 +213,7 @@ await describe({
             await commandOver({ outcome: fault, },);
           },);
           expect(thrown,).toBe(fault,);
-          expect(thrown instanceof Error ? thrown.stack : '',).toContain('    at ',);
+          expect(Error.isError(thrown,) ? thrown.stack : '',).toContain('    at ',);
         },
       },),
     ],
