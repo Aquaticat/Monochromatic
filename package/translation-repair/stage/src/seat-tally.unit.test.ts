@@ -1260,10 +1260,11 @@ await describe({
             expect(lines[3],).toBe(
               'SEATS DARK: 2 of 3 seats asked produced nothing usable this run: '
                 + 'gemma-4-26b-a4b-it (asked 2, unusable 0, threw 2); minimax-m3 (asked 1, unusable 1, threw 0). '
-                + 'A seat that fails every call is a provider that cannot serve it, a key that was never '
-                + 'injected, or a model that answers nothing readable; the run log names which, and writes each '
-                + 'failed call\'s error text on a warn line "<stage> <model>: <error>, voice lost" (or "seat '
-                + 'unreachable"). Do not read this run as a comparison of the roster.',
+                + 'A seat that fails every call is a provider that errors on it or a model that answers '
+                + 'nothing readable; the run log names which, and writes each failed call\'s error text on a '
+                + 'warn line "<stage> <model>: <error>, voice lost". A seat the router refused before any '
+                + 'request was sent is on its SEAT line as unreachable=N and is not counted here. Do not read '
+                + 'this run as a comparison of the roster.',
             );
           },
         },),
