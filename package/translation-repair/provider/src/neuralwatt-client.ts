@@ -37,10 +37,8 @@ import {
   NeuralWattAllowanceError,
   type NeuralWattEnergy,
 } from './neuralwatt-energy.ts';
-import {
-  estimateNeuralWattWh,
-  promptTokensOfBody,
-} from './neuralwatt-estimate.ts';
+import { estimateNeuralWattWh, } from './neuralwatt-estimate.ts';
+import { promptTokensOfRequest, } from './neuralwatt-picture-tokens.ts';
 import type { NeuralWattLedger, } from './neuralwatt-ledger.ts';
 import type { NeuralWattPlanSpend, } from './neuralwatt-quota.ts';
 import { createNeuralWattQuotaSession, } from './neuralwatt-quota-session.ts';
@@ -427,9 +425,14 @@ export function createNeuralWattClient(
       },);
 
       /**
-       Prompt tokens the body stands for, and the energy held for them.
+       Prompt tokens the body stands for, a picture counted by its patches and
+       not by its base64 (`neuralwatt-picture-tokens.ts`), and the energy held
+       for them.
        */
-      const promptTokens = promptTokensOfBody({ bodyBytes: Buffer.byteLength(bodyJson,), },);
+      const promptTokens = promptTokensOfRequest({
+        messages: asked,
+        bodyBytes: Buffer.byteLength(bodyJson,),
+      },);
 
       /**
        Energy this call holds while it is in flight.

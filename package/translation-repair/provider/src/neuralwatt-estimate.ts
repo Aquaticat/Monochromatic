@@ -198,6 +198,12 @@ export const NEURALWATT_SMALLEST_ESTIMATE_WH: number = Math.min(
  at three bytes a character and English sheet text at one, and the first run
  supplies the real counts (`usage.prompt_tokens`) to compare against.
 
+ FOR A BODY THAT CARRIES NO PICTURE. A picture travels as base64 inside the
+ body and would be counted as text, about fifty times what the provider
+ reports for it, so the client counts a request through
+ `promptTokensOfRequest` (`neuralwatt-picture-tokens.ts`), which gives this
+ function the text bytes and counts each picture by its patches.
+
  @param bodyBytes - size of the JSON body about to be sent
 
  @returns Prompt tokens, rounded up so a body never reads as lighter than it is

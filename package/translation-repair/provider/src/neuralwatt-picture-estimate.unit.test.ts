@@ -84,9 +84,9 @@ function lossyWebp(
    The VP8 frame: tag, start code, size, then the stand-in data.
    */
   const frame = Buffer.alloc(10 + padding,);
-  frame[3] = 0x9d;
+  frame[3] = 0x9D;
   frame[4] = 0x01;
-  frame[5] = 0x2a;
+  frame[5] = 0x2A;
   frame.writeUInt16LE(width, 6,);
   frame.writeUInt16LE(height, 8,);
   /**
@@ -176,9 +176,9 @@ await describe({
         + '8188 prompt tokens reported, 423985 estimated)',
       fn: async () => {
         const held = await heldForPicture({
-          uri: dataUriOf({ bytes: lossyWebp({ width: 2400, height: 2616, padding: 200_000, }), },),
+          uri: dataUriOf({ bytes: lossyWebp({ width: 2_400, height: 2_616, padding: 200_000, }), },),
         },);
-        expect(held.promptTokens,).toBe(Math.ceil(held.textBytes / 4,) + 7998,);
+        expect(held.promptTokens,).toBe(Math.ceil(held.textBytes / 4,) + 7_998,);
         expect(held.wh,).toBeCloseTo(
           estimateNeuralWattWh({ servedId: 'glm-5.3-flash', promptTokens: held.promptTokens, },).bucketMeanWh
             * NEURALWATT_ENERGY_MARGIN,
@@ -194,7 +194,7 @@ await describe({
         + '26957 to 32466 estimated)',
       fn: async () => {
         const held = await heldForPicture({
-          uri: dataUriOf({ bytes: lossyWebp({ width: 576, height: 1280, padding: 90_000, }), },),
+          uri: dataUriOf({ bytes: lossyWebp({ width: 576, height: 1_280, padding: 90_000, }), },),
         },);
         expect(held.promptTokens,).toBe(Math.ceil(held.textBytes / 4,) + 966,);
       },
@@ -207,7 +207,7 @@ await describe({
         const held = await heldForPicture({
           uri: `data:image/webp;base64,${Buffer.alloc(300_000, 7,).toString('base64',)}`,
         },);
-        expect(held.promptTokens,).toBe(Math.ceil(held.textBytes / 4,) + 8192,);
+        expect(held.promptTokens,).toBe(Math.ceil(held.textBytes / 4,) + 8_192,);
       },
     },),
   ],

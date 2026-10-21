@@ -64,6 +64,16 @@ export {
   promptTokensOfBody,
 } from './neuralwatt-estimate.ts';
 export {
+  type ImagePixelSize,
+  imagePixelSizeOf,
+} from './neuralwatt-image-size.ts';
+export {
+  NEURALWATT_UNSIZED_PICTURE_TOKENS,
+  pictureTokensOfSize,
+  pictureTokensOfUrl,
+  promptTokensOfRequest,
+} from './neuralwatt-picture-tokens.ts';
+export {
   createNeuralWattLedger,
   type NeuralWattLedger,
   neuralWattLedgerFromEnv,
