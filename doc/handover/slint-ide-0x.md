@@ -1234,6 +1234,25 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     and the 131,072-tile rule, and could carry the patch through `[patch.crates-io]` if a larger target is ever
     needed. Note: at exactly 131,072 tiles the default `ptcl` has no dynamic room, so a scene needing one more chunk
     there fails loudly with bit 16.
+    Report in from agent `ae0713008b220a655` (selection fix and memory hint; verification in progress in the scratch
+    worktree `~/temp/agent/ide-integrate2`, merged with `origin/main`): the bug reproduced in the SHIPPED app (release
+    binary of `origin/main`, nested compositor, 1147x2000, `/tmp/ide-gpu-fixture/code.rs`): 30 to 39 selected rows are
+    fine; 42 or more keep stale glyph ink under the new fills; select-all followed by a scroll to the end blanks the whole
+    code view (I viewed `~/temp/agent/vello-fix/shots-before-d/sel-all-scroll.png`, blue fills and no text, and the
+    after shot with the text present). The study's row-height clip was not enough: select-all on the 16,384 px limit
+    (682 dense rows) overflowed the lines buffer, because each clipped copy of a run is flattened again and a fully
+    selected row cost three copies per glyph; `reach` and `meets` in `src/tile_scene/split.rs` drop copies a run's
+    glyphs (plus half a font size) cannot reach (I read the diff and accept it). `MemoryHints::MemoryUsage` measured in
+    the app: video memory idle 499 to 288 MiB (`code.rs` tall) and 476 to 216 MiB (`big.rs`), after scroll 505 to 358
+    and 483 to 259; RSS equal; first frame and cadence inside the noise floor; a parallel `test:native` demand fell from
+    about 11 GiB to about 5.3 GiB (card shared and full, so GTT spill; the study's 9.4 and 4.0 were sums of probe
+    figures). Detection of the silent blank is impossible in Vello 0.11 without a patch (`robust` is
+    `cfg!(feature = "debug_layers")`, `WgpuEngine` is `pub(crate)`). Decisions I took (veto-open): keep the memory
+    hint; accept `reach`/`meets`; for detection prefer a pre-encode estimate of lines and tiles (no GPU wait, bounded
+    cost) over a sentinel-texel readback after each render (a GPU sync per tile render), to be done in
+    `src/native/gpu_tile.rs` after the minimap agent lands. Queued: parallel `test:native` still wants about 5.3 GiB of
+    video memory plus GTT; decide on a test-thread cap or a device budget after stage 5 and 6; two items outside this
+    scope: the doc `doc/planning/ide-gpu-snapshot-harness.md` has 56 older `semantic-line-breaks` findings.
     Agent `ae0713008b220a655` (started 2026-10-20) reproduces the
     selection blank in the real app, fixes the clip structure with a failing test first, applies e1 and measures VRAM,
     RSS, first frame and cadence with `matrix-load.mjs`. Verification of both uses `~/temp/agent/matrix-load.mjs` and at least 15

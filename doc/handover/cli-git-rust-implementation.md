@@ -1981,6 +1981,23 @@ that is verification, not a decision for the user.
   land, run the scoped campaigns for `command_discard.rs`, `rule_linked_worktree.rs`,
   `rule_linked_worktree_messages.rs`, `rule_worktree_dirty.rs`, `discard_audit.rs`, `auto_push_dirty_paths.rs`,
   `landing_invariant.rs`, `event_hints.rs`, `policy_checks.rs`, `auto_push_reconcile.rs`, `command_stash.rs`.
+  Process lesson 2026-10-21: a verification chain started from the shared Bash cgroup died mid-clippy while another
+  session ran heavy work (log stopped with no exit line). Start every chain longer than a minute as its own unit:
+  `systemd-run --user --unit=<name> --collect --property=MemoryMax=16G node ~/temp/agent/chain.ts <tag>` (runs clippy,
+  host and binary suites, logs `~/temp/agent/<tag>-{clippy,host,bin}.log`, each ending in an `exit N` line); a log with
+  no `exit` line means the run was killed, not that it passed. Found by the new binary hint tests: the
+  `config-invalid` failure and the legacy-config warning are rendered by `diagnostics.rs`, not `policy_events.rs`, and
+  had no hint in 0.2.7; the fix (both renderers use `event_hints`) ships in 0.2.8 with
+  `binary_hint_tests.rs` (bulk add, invalid configuration, root context).
+  0.2.8 released and installed 2026-10-21 (container gate 2101 passed, 5 skipped; installed binary verified: an
+  invalid `cli-git.config.jsonc` now prints a `config-invalid` event with its hint). Planned work is done, so the
+  mutation campaigns started unasked as unit `cli-git-mut-m028` (MemoryMax 24G, script `~/temp/agent/m028-run.ts`: a
+  container gate with image tag `m028`, then `native:mutation:scoped --timeout 300` per file). Files: command_discard,
+  rule_worktree_dirty, auto_push_dirty_paths, discard_audit, command_stash, rule_linked_worktree,
+  rule_linked_worktree_messages, policy_checks, auto_push_reconcile, landing_invariant, event_hints, diagnostics.
+  Logs `~/temp/agent/m028-mutation-<file>.log`, gate log `~/temp/agent/m028-container.log`. Do not edit `src/native`
+  while it runs; read results when the unit ends, kill survivors with tests, update planted-control anchors if a
+  guarded line moves. A survivor fix is a 0.2.9 candidate; mutation never blocks a release.
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and

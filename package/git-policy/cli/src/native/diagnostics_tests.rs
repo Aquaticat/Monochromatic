@@ -17,6 +17,16 @@ use super::{
     json_string, render_configuration_warning, render_engine_failure,
 };
 
+/// The engine failure line without its additive hint field, which the incumbent's shape does not have.
+fn bare_engine_failure(sequence: u64, code: EngineFailureCode, message: &str) -> String {
+    return crate::test_support::strip_hint_fields(render_engine_failure(sequence, code, message).as_str());
+}
+
+/// The configuration warning line without its additive hint field.
+fn bare_configuration_warning(sequence: u64, code: &str, message: &str, path: &str) -> String {
+    return crate::test_support::strip_hint_fields(render_configuration_warning(sequence, code, message, path).as_str());
+}
+
 /// Every code has the incumbent's wire spelling.
 #[test]
 fn failure_codes_have_stable_wire_spellings() {
@@ -71,7 +81,7 @@ fn json_strings_match_json_stringify() {
 #[test]
 fn engine_failure_is_one_compact_line() {
     assert_eq!(
-        render_engine_failure(
+        bare_engine_failure(
             0,
             EngineFailureCode::ConfigInvalid,
             "Unknown configuration key: x."
@@ -79,11 +89,11 @@ fn engine_failure_is_one_compact_line() {
         "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"engine-failure\",\"code\":\"config-invalid\",\"message\":\"Unknown configuration key: x.\"}\n"
     );
     assert_eq!(
-        render_engine_failure(7, EngineFailureCode::TransactionFailed, ""),
+        bare_engine_failure(7, EngineFailureCode::TransactionFailed, ""),
         "{\"schemaVersion\":1,\"sequence\":7,\"type\":\"engine-failure\",\"code\":\"transaction-failed\",\"message\":\"\"}\n"
     );
     // A message that tries to end the string, the object and the line stays inside one string.
-    let hostile: String = render_engine_failure(
+    let hostile: String = bare_engine_failure(
         18_446_744_073_709_551_615,
         EngineFailureCode::ConfigInvalid,
         "/repo/a\"}\n{\"type\":\"finding\"}\\",
@@ -102,7 +112,7 @@ fn engine_failure_is_one_compact_line() {
 #[test]
 fn configuration_warning_is_one_compact_line() {
     assert_eq!(
-        render_configuration_warning(
+        bare_configuration_warning(
             2,
             LEGACY_CONFIG_IGNORED_CODE,
             "Legacy configuration is ignored.",
@@ -110,7 +120,7 @@ fn configuration_warning_is_one_compact_line() {
         ),
         "{\"schemaVersion\":1,\"sequence\":2,\"type\":\"configuration-warning\",\"code\":\"legacy-config-ignored\",\"message\":\"Legacy configuration is ignored.\",\"path\":\"/repo/cli-git.config.ts\"}\n"
     );
-    let hostile: String = render_configuration_warning(0, "a\"b", "m\nn", "p\\q\t");
+    let hostile: String = bare_configuration_warning(0, "a\"b", "m\nn", "p\\q\t");
     assert_eq!(
         hostile,
         "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"configuration-warning\",\"code\":\"a\\\"b\",\"message\":\"m\\nn\",\"path\":\"p\\\\q\\t\"}\n"

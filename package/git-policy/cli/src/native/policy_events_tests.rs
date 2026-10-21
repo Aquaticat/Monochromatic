@@ -20,20 +20,7 @@ use super::{
     render_policy_event, render_policy_events,
 };
 use crate::diagnostics::EngineFailureCode;
-/// The lines without their additive `hint` fields, which the incumbent's shape does not have.
-fn strip_hint_fields(text: &str) -> String {
-    let marker: &str = ",\"hint\":\"";
-    let mut rest: String = text.to_owned();
-    while let Some(start) = rest.find(marker) {
-        let bytes: &[u8] = rest.as_bytes();
-        let mut end: usize = start + marker.len();
-        while bytes[end] != b'"' {
-            end += if bytes[end] == b'\\' { 2 } else { 1 };
-        }
-        rest = format!("{}{}", &rest[..start], &rest[end + 1..]);
-    }
-    return rest;
-}
+use crate::test_support::strip_hint_fields;
 
 /// The rendering of one event without its additive `hint` field.
 fn rendered_without_hint(sequence: u64, event: &PolicyEvent) -> String {
