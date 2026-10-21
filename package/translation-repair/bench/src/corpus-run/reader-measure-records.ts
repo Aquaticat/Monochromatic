@@ -1,7 +1,4 @@
-import {
-  readdir,
-  readFile,
-} from 'node:fs/promises';
+import { readFile, } from 'node:fs/promises';
 import {
   basename,
   join,
@@ -12,10 +9,14 @@ import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
 
+import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import {
+  compareCodePoints,
   CORROBORATION_TRIGRAM_SHARE,
+  errorName,
   trigramOverlap,
 } from '@monochromatic-dev/translation-repair-markup/ts';
+import { filesUnder, } from './reader-measure-files.ts';
 import type {
   TrustedReading,
   TrustedRecord,
@@ -51,23 +52,6 @@ type ScoredRecord = {
 };
 
 /**
- Whether a value is a plain record of named fields.
-
- @param value - parsed JSON
-
- @returns Whether its fields can be read by name
-
- @example
- ```ts
- if (isFieldRecord(value,)) value.kind;
- ```
- */
-function isFieldRecord(value: unknown,): value is Readonly<Record<string, unknown>> {
-  return ((typeof value) === 'object') && (value !== null)
-    && (!Array.isArray(value,));
-}
-
-/**
  Whether a value is one model's reading.
 
  @param value - an element of a stored list of readings
@@ -80,7 +64,7 @@ function isFieldRecord(value: unknown,): value is Readonly<Record<string, unknow
  ```
  */
 function isTrustedReading(value: unknown,): value is TrustedReading {
-  return isFieldRecord(value,) && ((typeof value.modelId) === 'string')
+  return isJsonRecord(value,) && ((typeof value.modelId) === 'string')
     && ((typeof value.text) === 'string');
 }
 
@@ -98,7 +82,7 @@ function isTrustedReading(value: unknown,): value is TrustedReading {
  ```
  */
 function readingsKeptBy({ content, }: { readonly content: unknown; },): TrustedRecord {
-  if ((!isFieldRecord(content,)) || (!isFieldRecord(content.record,)))
+  if ((!isJsonRecord(content,)) || (!isJsonRecord(content.record,)))
     return [];
 
   /**
@@ -131,14 +115,7 @@ function readingsKeptBy({ content, }: { readonly content: unknown; },): TrustedR
  ```
  */
 async function pictureFilesUnder({ dir, }: { readonly dir: string; },): Promise<readonly string[]> {
-  /**
-   Paths under the directory, relative to it.
-   */
-  const entries = await readdir(
-    dir,
-    { recursive: true, },
-  );
-  return entries
+  return (await filesUnder({ dir, },))
     .filter(function isPictureFile(path,): boolean {
       /**
        File name without its directories.
@@ -193,15 +170,19 @@ export async function readTrustedRecords({ dirs, }: { readonly dirs: readonly st
             'utf8',
           ),) as unknown,
         },);
-        if (readings.length > 0) {
+        /**
+         The readings' own text, which tells one record from another.
+         */
+        const identity = JSON.stringify(readings,);
+        if ((readings.length > 0) && (!byReadings.has(identity,))) {
           byReadings.set(
-            JSON.stringify(readings,),
+            identity,
             readings,
           );
         }
       }
       catch (error) {
-        l.warn(`skipped ${file}: not readable as a stored picture reading (${String(error,)})`,);
+        l.warn(`skipped ${file}: not readable as a stored picture reading (${errorName({ error, },)})`,);
       }
     }
     /* oxlint-enable no-await-in-loop */
@@ -222,8 +203,10 @@ export async function readTrustedRecords({ dirs, }: { readonly dirs: readonly st
       left: KeyedRecord,
       right: KeyedRecord,
     ): number {
-      return left.key
-        .localeCompare(right.key,);
+      return compareCodePoints({
+        left: left.key,
+        right: right.key,
+      },);
     },)
     .map(function recordOf({ record, }: KeyedRecord,): TrustedRecord {
       return record;

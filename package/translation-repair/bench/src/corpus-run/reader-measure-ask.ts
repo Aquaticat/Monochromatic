@@ -11,6 +11,10 @@ import {
   ROSTER_MODEL_IDS,
   type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  rendersAsNothing,
+  wordForCount,
+} from '@monochromatic-dev/translation-repair-typography/ts';
 
 //region Reader measure ask
 // THE COMMAND LINE OF `reader-measure`, kept apart from the entry so the entry
@@ -52,7 +56,7 @@ export type MeasureAsk = {
  Reads the measurement's inputs off the command line and environment.
 
  @param line - the command line, read whole by `reportingRefusals`
- 
+
  @param env - environment the key is read from
 
  @returns The model, directories, sample and key
@@ -120,8 +124,8 @@ export function readMeasureAsk(
     ...((trustedDirs.length === 0)
       ? ['--trusted names no directory holding the readings the pipeline already trusts',]
       : []),
-    ...((picturesDir === '') ? ['--pictures names no directory holding the pictures to try',] : []),
-    ...((apiKey === '') ? [`${KEY_VARIABLE} is not set`,] : []),
+    ...(rendersAsNothing({ text: picturesDir, },) ? ['--pictures names no directory holding the pictures to try',] : []),
+    ...(rendersAsNothing({ text: apiKey, },) ? [`${KEY_VARIABLE} is not set`,] : []),
   ];
   if (problems.length > 0) {
     throw new StatedRefusalError({
@@ -135,7 +139,13 @@ export function readMeasureAsk(
     sample: wholeNumberFlag({
       asked: line.flag('sample',),
       unwritten: DEFAULT_SAMPLE,
-      leaveOffTo: `ask ${String(DEFAULT_SAMPLE,)} matched pictures`,
+      leaveOffTo: `ask ${String(DEFAULT_SAMPLE,)} ${
+        wordForCount({
+          count: DEFAULT_SAMPLE,
+          one: 'matched picture',
+          many: 'matched pictures',
+        },)
+      }`,
     },),
     apiKey,
   };

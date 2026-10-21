@@ -25,7 +25,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  bandOf,
+  seatedBandOf,
   candidateRatesOf,
   MINIMUM_PRODUCED_READINGS,
   verdictOf,
@@ -83,163 +83,168 @@ const AGREED_RECORD = [
 ] as const;
 
 await describe({
-  name: bandOf.name,
+  name: 'reader measure score',
   children: [
-    it({
-      name: 'READS THE SEATED BAND AS THE LOWEST RATE OF BEING CORROBORATED BY EVERY OTHER READER and the '
-        + 'highest rate of being corroborated by none, per reader over the matched pictures',
-      fn: async () => {
-        await Promise.resolve();
-        // seated-one and seated-two agree with each other but not with seated-three on the split picture;
-        // seated-three agrees with nobody there, and with both others on the agreed one.
-        const band = bandOf({ records: [SPLIT_RECORD, AGREED_RECORD,], },);
-        expect(band.floorCorroboratedByAll,).toBe(0.5,);
-        expect(band.ceilingCorroboratedByNone,).toBe(0.5,);
-        expect(band.readings,).toBe(6,);
-      },
+    describe({
+      name: seatedBandOf.name,
+      children: [
+        it({
+          name: 'READS THE SEATED BAND AS THE LOWEST RATE OF BEING CORROBORATED BY EVERY OTHER READER and the '
+            + 'highest rate of being corroborated by none, per reader over the matched pictures',
+          fn: async () => {
+            await Promise.resolve();
+            // seated-one and seated-two agree with each other but not with seated-three on the split picture;
+            // seated-three agrees with nobody there, and with both others on the agreed one.
+            const band = seatedBandOf({ records: [SPLIT_RECORD, AGREED_RECORD,], },);
+            expect(band.floorCorroboratedByAll,).toBe(0.5,);
+            expect(band.ceilingCorroboratedByNone,).toBe(0.5,);
+            expect(band.readings,).toBe(6,);
+          },
+        },),
+
+        it({
+          name: 'READS A BAND OF FULL AGREEMENT AS A FLOOR OF ONE AND A CEILING OF ZERO',
+          fn: async () => {
+            await Promise.resolve();
+            const band = seatedBandOf({ records: [AGREED_RECORD,], },);
+            expect(band.floorCorroboratedByAll,).toBe(1,);
+            expect(band.ceilingCorroboratedByNone,).toBe(0,);
+          },
+        },),
+      ],
     },),
 
-    it({
-      name: 'READS A BAND OF FULL AGREEMENT AS A FLOOR OF ONE AND A CEILING OF ZERO',
-      fn: async () => {
-        await Promise.resolve();
-        const band = bandOf({ records: [AGREED_RECORD,], },);
-        expect(band.floorCorroboratedByAll,).toBe(1,);
-        expect(band.ceilingCorroboratedByNone,).toBe(0,);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: candidateRatesOf.name,
-  children: [
-    it({
-      name: 'COUNTS A READING CORROBORATED BY EVERY TRUSTED READER, one corroborated by none, and the mean overlap',
-      fn: async () => {
-        await Promise.resolve();
-        const rates = candidateRatesOf({
-          rows: [
-            {
-              candidate: NOTICE,
-              trusted: AGREED_RECORD,
-            },
-            {
-              candidate: UNRELATED,
-              trusted: AGREED_RECORD,
-            },
-            {
-              candidate: NOTICE,
-              trusted: SPLIT_RECORD,
-            },
-          ],
-        },);
-        expect(rates.produced,).toBe(3,);
-        expect(rates.corroboratedByAll,).toBeCloseTo(1 / 3, 12,);
-        expect(rates.corroboratedByNone,).toBeCloseTo(1 / 3, 12,);
-        expect(rates.meanOverlap,).toBeGreaterThan(0.3,);
-      },
-    },),
-
-    it({
-      name: 'COUNTS NOTHING FOR NO PRODUCED READING',
-      fn: async () => {
-        await Promise.resolve();
-        expect(candidateRatesOf({ rows: [], },),).toEqual({
-          produced: 0,
-          corroboratedByAll: 0,
-          corroboratedByNone: 0,
-          meanOverlap: 0,
-        },);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: verdictOf.name,
-  children: [
-    it({
-      name: 'MEETS BOTH CLAUSES when the candidate is corroborated as often as the weakest seated reader and '
-        + 'uncorroborated no more often than the worst',
-      fn: async () => {
-        await Promise.resolve();
-        expect(verdictOf({
-          band: {
-            floorCorroboratedByAll: 0.8,
-            ceilingCorroboratedByNone: 0.1,
-            readings: 20,
+    describe({
+      name: candidateRatesOf.name,
+      children: [
+        it({
+          name: 'COUNTS A READING CORROBORATED BY EVERY TRUSTED READER, one corroborated by none, and the mean overlap',
+          fn: async () => {
+            await Promise.resolve();
+            const rates = candidateRatesOf({
+              rows: [
+                {
+                  candidate: NOTICE,
+                  trusted: AGREED_RECORD,
+                },
+                {
+                  candidate: UNRELATED,
+                  trusted: AGREED_RECORD,
+                },
+                {
+                  candidate: NOTICE,
+                  trusted: SPLIT_RECORD,
+                },
+              ],
+            },);
+            expect(rates.produced,).toBe(3,);
+            expect(rates.corroboratedByAll,).toBeCloseTo(1 / 3, 12,);
+            expect(rates.corroboratedByNone,).toBeCloseTo(1 / 3, 12,);
+            expect(rates.meanOverlap,).toBeGreaterThan(0.3,);
           },
-          candidate: {
-            produced: MINIMUM_PRODUCED_READINGS,
-            corroboratedByAll: 0.8,
-            corroboratedByNone: 0.1,
-            meanOverlap: 0.7,
+        },),
+
+        it({
+          name: 'COUNTS NOTHING FOR NO PRODUCED READING',
+          fn: async () => {
+            await Promise.resolve();
+            expect(candidateRatesOf({ rows: [], },),).toEqual({
+              produced: 0,
+              corroboratedByAll: 0,
+              corroboratedByNone: 0,
+              meanOverlap: 0,
+            },);
           },
-        },),).toEqual({ kind: 'meets-both-clauses', },);
-      },
+        },),
+      ],
     },),
 
-    it({
-      name: 'FAILS THE FIRST CLAUSE below the floor, the second above the ceiling, and names both when both fail',
-      fn: async () => {
-        await Promise.resolve();
-        /**
-         Band every case holds the candidate to.
-         */
-        const band = {
-          floorCorroboratedByAll: 0.8,
-          ceilingCorroboratedByNone: 0.1,
-          readings: 20,
-        };
-        expect(verdictOf({
-          band,
-          candidate: {
-            produced: 9,
-            corroboratedByAll: 0.5,
-            corroboratedByNone: 0,
-            meanOverlap: 0.5,
+    describe({
+      name: verdictOf.name,
+      children: [
+        it({
+          name: 'MEETS BOTH CLAUSES when the candidate is corroborated as often as the weakest seated reader and '
+            + 'uncorroborated no more often than the worst',
+          fn: async () => {
+            await Promise.resolve();
+            expect(verdictOf({
+              band: {
+                floorCorroboratedByAll: 0.8,
+                ceilingCorroboratedByNone: 0.1,
+                readings: 20,
+              },
+              candidate: {
+                produced: MINIMUM_PRODUCED_READINGS,
+                corroboratedByAll: 0.8,
+                corroboratedByNone: 0.1,
+                meanOverlap: 0.7,
+              },
+            },),).toEqual({ kind: 'meets-both-clauses', },);
           },
-        },),).toEqual({ kind: 'fails-clauses', clauses: ['first',], },);
-        expect(verdictOf({
-          band,
-          candidate: {
-            produced: 9,
-            corroboratedByAll: 0.9,
-            corroboratedByNone: 0.3,
-            meanOverlap: 0.5,
-          },
-        },),).toEqual({ kind: 'fails-clauses', clauses: ['second',], },);
-        expect(verdictOf({
-          band,
-          candidate: {
-            produced: 9,
-            corroboratedByAll: 0.1,
-            corroboratedByNone: 0.5,
-            meanOverlap: 0.2,
-          },
-        },),).toEqual({ kind: 'fails-clauses', clauses: ['first', 'second',], },);
-      },
-    },),
+        },),
 
-    it({
-      name: 'IS INCONCLUSIVE BELOW THE LEAST NUMBER OF PRODUCED READINGS A VERDICT RESTS ON, whatever the rates say',
-      fn: async () => {
-        await Promise.resolve();
-        expect(verdictOf({
-          band: {
-            floorCorroboratedByAll: 0.8,
-            ceilingCorroboratedByNone: 0.1,
-            readings: 20,
+        it({
+          name: 'FAILS THE FIRST CLAUSE below the floor, the second above the ceiling, and names both when both fail',
+          fn: async () => {
+            await Promise.resolve();
+            /**
+             Band every case holds the candidate to.
+             */
+            const band = {
+              floorCorroboratedByAll: 0.8,
+              ceilingCorroboratedByNone: 0.1,
+              readings: 20,
+            };
+            expect(verdictOf({
+              band,
+              candidate: {
+                produced: 9,
+                corroboratedByAll: 0.5,
+                corroboratedByNone: 0,
+                meanOverlap: 0.5,
+              },
+            },),).toEqual({ kind: 'fails-clauses', clauses: ['first',], },);
+            expect(verdictOf({
+              band,
+              candidate: {
+                produced: 9,
+                corroboratedByAll: 0.9,
+                corroboratedByNone: 0.3,
+                meanOverlap: 0.5,
+              },
+            },),).toEqual({ kind: 'fails-clauses', clauses: ['second',], },);
+            expect(verdictOf({
+              band,
+              candidate: {
+                produced: 9,
+                corroboratedByAll: 0.1,
+                corroboratedByNone: 0.5,
+                meanOverlap: 0.2,
+              },
+            },),).toEqual({ kind: 'fails-clauses', clauses: ['first', 'second',], },);
           },
-          candidate: {
-            produced: MINIMUM_PRODUCED_READINGS - 1,
-            corroboratedByAll: 1,
-            corroboratedByNone: 0,
-            meanOverlap: 0.9,
+        },),
+
+        it({
+          name: 'IS INCONCLUSIVE BELOW THE LEAST NUMBER OF PRODUCED READINGS A VERDICT RESTS ON, whatever the rates say',
+          fn: async () => {
+            await Promise.resolve();
+            expect(verdictOf({
+              band: {
+                floorCorroboratedByAll: 0.8,
+                ceilingCorroboratedByNone: 0.1,
+                readings: 20,
+              },
+              candidate: {
+                produced: MINIMUM_PRODUCED_READINGS - 1,
+                corroboratedByAll: 1,
+                corroboratedByNone: 0,
+                meanOverlap: 0.9,
+              },
+            },),).toEqual({ kind: 'inconclusive', produced: MINIMUM_PRODUCED_READINGS - 1, },);
           },
-        },),).toEqual({ kind: 'inconclusive', produced: MINIMUM_PRODUCED_READINGS - 1, },);
-      },
+        },),
+      ],
     },),
   ],
 },);

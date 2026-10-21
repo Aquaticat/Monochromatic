@@ -1,6 +1,6 @@
 import type { ChatTextRequest, } from './chat-contract.ts';
 import { imagePixelSizeOf, } from './neuralwatt-image-size.ts';
-import { PROMPT_BYTES_PER_TOKEN, } from './openrouter-abandoned-spend.ts';
+import { promptTokensOfBody, } from './neuralwatt-estimate.ts';
 
 //region NeuralWatt prompt tokens of a request
 // PROMPT TOKENS A REQUEST STANDS FOR, A PICTURE COUNTED AS A PICTURE, for the
@@ -42,7 +42,7 @@ import { PROMPT_BYTES_PER_TOKEN, } from './openrouter-abandoned-spend.ts';
 export const NEURALWATT_UNSIZED_PICTURE_TOKENS = 8_192;
 
 /**
- Pixels along one side that make a token's patch: the grid the fit above found.
+ Pixels along one side that make a token's patch: the grid the fit described in this module's note found.
  */
 const PICTURE_PATCH_PIXELS = 28;
 
@@ -235,7 +235,7 @@ export function promptTokensOfRequest(
     0,
     bodyBytes - inlineBytes,
   );
-  return Math.ceil(textBytes / PROMPT_BYTES_PER_TOKEN,) + pictureTokens;
+  return promptTokensOfBody({ bodyBytes: textBytes, },) + pictureTokens;
 }
 
 //endregion NeuralWatt prompt tokens of a request

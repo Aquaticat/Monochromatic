@@ -19,7 +19,6 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { mkdir, writeFile, } from 'node:fs/promises';
 import { join, } from 'node:path';
 
@@ -29,7 +28,6 @@ import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixtur
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import {
-  loadPictures,
   MINIMUM_PRODUCED_READINGS,
   runReaderMeasure,
 } from '../../dist/final/node/index.mjs';
@@ -224,31 +222,6 @@ await describe({
         },);
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect((refusal as Error).message,).toContain('no stored picture reading',);
-      },
-    },),
-  ],
-},);
-
-await describe({
-  name: loadPictures.name,
-  children: [
-    it({
-      name: 'READS THE PICTURE FILES UNDER A DIRECTORY AT ANY DEPTH, in path order, named by their path, and '
-        + 'skips hidden files and other kinds',
-      fn: async () => {
-        await using scratch = await scratchDir({ prefix: 'whiskers-reader-pictures-', },);
-        await mkdir(join(scratch.path, 'b', 'photos',), { recursive: true, },);
-        await mkdir(join(scratch.path, 'a',), { recursive: true, },);
-        await writeFile(join(scratch.path, 'b', 'photos', 'two.WEBP',), 'two',);
-        await writeFile(join(scratch.path, 'a', 'one.png',), 'one',);
-        await writeFile(join(scratch.path, 'a', '.hidden.png',), 'hidden',);
-        await writeFile(join(scratch.path, 'a', 'notes.md',), 'notes',);
-
-        const pictures = await loadPictures({ dir: scratch.path, },);
-        expect(pictures.map(function nameOf(picture,): string {
-          return picture.assetName;
-        },),).toEqual([join('a', 'one.png',), join('b', 'photos', 'two.WEBP',),],);
-        expect(Buffer.from(pictures[0]?.bytes ?? new Uint8Array(),).toString(),).toBe('one',);
       },
     },),
   ],

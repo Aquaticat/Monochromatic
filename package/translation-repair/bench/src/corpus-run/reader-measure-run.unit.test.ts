@@ -106,7 +106,7 @@ function picturesNamed({ names, }: { readonly names: readonly string[]; },) {
 }
 
 /**
- Deterministic reader that reads the script above and finds no text elsewhere.
+ Deterministic reader that reads the OCR table named OCR and finds no text elsewhere.
 
  @param picture - picture asked about
 

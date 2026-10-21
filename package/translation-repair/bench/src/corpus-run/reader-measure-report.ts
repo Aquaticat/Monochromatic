@@ -1,3 +1,4 @@
+import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
   type CandidateRates,
   type MeasureVerdict,
@@ -68,7 +69,7 @@ function verdictLines(
       `RESULT: not measured: ${String(verdict.produced,)} of the ${
         String(MINIMUM_PRODUCED_READINGS,)
       } readings a verdict needs were produced.`,
-      `NEXT: keep the hold '${HOLD}'; ask again with a larger --sample, or read the reasons above.`,
+      `NEXT: keep the hold '${HOLD}'; ask again with a larger --sample, or read the per-picture reasons the run printed.`,
     ];
   }
   return [
@@ -116,7 +117,13 @@ export function renderMeasureReport(
   },
 ): readonly string[] {
   return [
-    `MEASURED: ${modelId} through OpenRouter (zero data retention), ${String(matched,)} pictures matched,`
+    `MEASURED: ${modelId} through OpenRouter (zero data retention), ${String(matched,)} ${
+      wordForCount({
+        count: matched,
+        one: 'picture',
+        many: 'pictures',
+      },)
+    } matched,`
     + ` ${String(candidate.produced,)} readings produced.`,
     `SEATED: ${String(band.readings,)} readings; seated floor ${twoPlaces({ value: band.floorCorroboratedByAll, },)}`
     + ` corroborated by all, seated ceiling ${twoPlaces({ value: band.ceilingCorroboratedByNone, },)} corroborated by none.`,

@@ -290,7 +290,7 @@ async function reaskCut(
       // else, or a transport failure keeps its own handling.
       if (!(error instanceof NoProviderForModelError))
         throw error;
-      rl.info(`${modelId}: no other provider serves ${assetName} (${error.message}), asking ${cutOn} again`,);
+      rl.info(`${modelId}: no other provider serves ${assetName}, asking ${cutOn} again`,);
     }
   }
   return await readImageAsset({

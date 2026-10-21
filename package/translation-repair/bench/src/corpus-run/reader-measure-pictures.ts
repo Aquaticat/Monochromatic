@@ -1,13 +1,12 @@
-import {
-  readdir,
-  readFile,
-} from 'node:fs/promises';
+import { readFile, } from 'node:fs/promises';
 import {
   basename,
   extname,
   join,
 } from 'node:path';
 
+import { allInInputOrder, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import { filesUnder, } from './reader-measure-files.ts';
 import type { MeasuredPicture, } from './reader-measure-run.ts';
 
 //region Reader measure pictures
@@ -42,26 +41,24 @@ const PICTURE_EXTENSIONS: ReadonlySet<string> = new Set([
  */
 export async function loadPictures({ dir, }: { readonly dir: string; },): Promise<readonly MeasuredPicture[]> {
   /**
-   Paths under the directory, relative to it.
+   Paths of the picture files under the directory, in code point order.
    */
-  const paths = (await readdir(
-    dir,
-    { recursive: true, },
-  )).filter(function isPicture(path,): boolean {
+  const paths = (await filesUnder({ dir, },)).filter(function isPicture(path,): boolean {
     return PICTURE_EXTENSIONS.has(extname(path,)
       .toLowerCase(),) && (!basename(path,)
         .startsWith('.',));
-  },)
-    .toSorted();
-  return await Promise.all(paths.map(async function load(path,): Promise<MeasuredPicture> {
-    return {
-      assetName: path,
-      bytes: await readFile(join(
-        dir,
-        path,
-      ),),
-    };
-  },),);
+  },);
+  return await allInInputOrder({
+    members: paths.map(async function load(path,): Promise<MeasuredPicture> {
+      return {
+        assetName: path,
+        bytes: await readFile(join(
+          dir,
+          path,
+        ),),
+      };
+    },),
+  },);
 }
 
 //endregion Reader measure pictures

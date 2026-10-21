@@ -4,15 +4,19 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
+import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import type { ModelCaller, } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { OcrReader, } from '@monochromatic-dev/translation-repair-slice-reading/ts';
 import type { MeasureAsk, } from './reader-measure-ask.ts';
 import { loadPictures, } from './reader-measure-pictures.ts';
 import { renderMeasureReport, } from './reader-measure-report.ts';
 import { readTrustedRecords, } from './reader-measure-records.ts';
-import { measureReader, } from './reader-measure-run.ts';
 import {
-  bandOf,
+  measureReader,
+  type MeasuredRow,
+} from './reader-measure-run.ts';
+import {
+  seatedBandOf,
   candidateRatesOf,
   type TrustedRecord,
   verdictOf,
@@ -26,18 +30,52 @@ import {
 // hold until this measurement passes), the installed OCR and the console.
 
 /**
+ The line that says what the candidate gave for one picture.
+
+ @param row - the matched picture and the candidate's outcome
+
+ @returns The picture's name, then the length of the reading or why there is none
+
+ @example
+ ```ts
+ const text = rowText({ row, },);
+ ```
+ */
+function rowText({ row, }: { readonly row: MeasuredRow; },): string {
+  if (row.candidate
+    .kind
+    === 'nothing')
+    return `${row.assetName}: nothing (${row.candidate
+      .reason})`;
+
+  /**
+   Length of the reading.
+   */
+  const characters = row.candidate
+    .text
+    .length;
+  return `${row.assetName}: ${String(characters,)} ${
+    wordForCount({
+      count: characters,
+      one: 'character',
+      many: 'characters',
+    },)
+  }`;
+}
+
+/**
  Runs the measurement and prints what it found.
 
  @param ask - model, directories, sample and key
- 
+
  @param client - client the candidate is asked through
- 
+
  @param readOcr - deterministic reader that screens each picture
- 
+
  @param signal - abort for the whole measurement
- 
+
  @param perCallTimeoutMs - how long one ask may run
- 
+
  @param print - where each line of the report goes
 
  @throws {@link StatedRefusalError} When no trusted reading or no picture is found
@@ -93,7 +131,19 @@ export async function runReaderMeasure(
       says: `no picture file was found under ${ask.picturesDir}`,
     },);
   }
-  l.info(`${String(records.length,)} trusted records, ${String(pictures.length,)} pictures`,);
+  l.info(`${String(records.length,)} trusted ${
+    wordForCount({
+      count: records.length,
+      one: 'record',
+      many: 'records',
+    },)
+  }, ${String(pictures.length,)} ${
+    wordForCount({
+      count: pictures.length,
+      one: 'picture',
+      many: 'pictures',
+    },)
+  }`,);
 
   /**
    One row per matched picture asked.
@@ -110,16 +160,7 @@ export async function runReaderMeasure(
     l,
   },);
   for (const row of rows) {
-    print(`${row.assetName}: ${
-      (row.candidate
-        .kind
-        === 'read')
-        ? `${String(row.candidate
-          .text
-          .length,)} characters`
-        : `nothing (${row.candidate
-          .reason})`
-    }`,);
+    print(rowText({ row, },),);
   }
 
   /**
@@ -132,7 +173,7 @@ export async function runReaderMeasure(
   /**
    How the seated readers corroborate one another over those pictures.
    */
-  const band = bandOf({ records: matchedRecords, },);
+  const band = seatedBandOf({ records: matchedRecords, },);
 
   /**
    How the candidate's produced readings fared.

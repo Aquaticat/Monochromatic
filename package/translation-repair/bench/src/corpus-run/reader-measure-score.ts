@@ -239,10 +239,10 @@ function standingOf(
 
  @example
  ```ts
- const band = bandOf({ records, },);
+ const band = seatedBandOf({ records, },);
  ```
  */
-export function bandOf({ records, }: { readonly records: readonly TrustedRecord[]; },): SeatedBand {
+export function seatedBandOf({ records, }: { readonly records: readonly TrustedRecord[]; },): SeatedBand {
   /**
    Counts per reader: readings, corroborated by all, corroborated by none.
    */
@@ -278,8 +278,8 @@ export function bandOf({ records, }: { readonly records: readonly TrustedRecord[
         reading.modelId,
         {
         total: tally.total + 1,
-        byAll: tally.byAll + Number(stand.byAll,),
-        byNone: tally.byNone + Number(stand.byNone,),
+        byAll: tally.byAll + (stand.byAll ? 1 : 0),
+        byNone: tally.byNone + (stand.byNone ? 1 : 0),
       },
       );
     }

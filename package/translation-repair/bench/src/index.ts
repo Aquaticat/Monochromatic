@@ -145,6 +145,7 @@ export {
   readMeasureAsk,
 } from './corpus-run/reader-measure-ask.ts';
 export { runReaderMeasure, } from './corpus-run/reader-measure-command.ts';
+export { filesUnder, } from './corpus-run/reader-measure-files.ts';
 export { loadPictures, } from './corpus-run/reader-measure-pictures.ts';
 export {
   matchRecord,
@@ -159,7 +160,7 @@ export {
   type MeasuredRow,
 } from './corpus-run/reader-measure-run.ts';
 export {
-  bandOf,
+  seatedBandOf,
   type CandidateRates,
   candidateRatesOf,
   type MeasureVerdict,

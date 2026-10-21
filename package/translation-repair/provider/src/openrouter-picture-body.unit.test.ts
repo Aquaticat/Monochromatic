@@ -19,9 +19,12 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
-import type { TransportExchange, } from '@monochromatic-dev/translation-repair-provider-stream';
 
 import { createOpenRouterClient, } from '../dist/final/node/index.mjs';
+import {
+  recordingTransport,
+  settled,
+} from './recording-transport.test-fixture.ts';
 import { SEAT_HYPER_TEXT_BEDROCK, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 
 await describe({
@@ -36,39 +39,29 @@ await describe({
         const bodies: string[] = [];
         const client = createOpenRouterClient({
           apiKey: 'whiskers',
-          transport: async function record(exchange: TransportExchange,): Promise<never> {
-            bodies.push(exchange.bodyJson ?? '',);
-            await Promise.resolve();
-            throw new Error('recorded, not sent',);
-          },
+          transport: recordingTransport({ bodies, },),
           retryPolicy: {
             limit: 0,
             baseMs: 1,
           },
         },);
-        try {
-          await client.chatText({
-            modelId: SEAT_HYPER_TEXT_BEDROCK,
-            messages: [{
-              role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text: 'Transcribe every word visible in this image.',
-                },
-                {
-                  type: 'image_url',
-                  image_url: { url: 'data:image/webp;base64,UklGRg==', },
-                },
-              ],
-            },],
-            signal: new AbortController().signal,
-          },);
-        }
-        catch (error) {
-          // The transport refuses by design; the recorded body is what is read.
-          void error;
-        }
+        await settled(client.chatText({
+          modelId: SEAT_HYPER_TEXT_BEDROCK,
+          messages: [{
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: 'Transcribe every word visible in this image.',
+              },
+              {
+                type: 'image_url',
+                image_url: { url: 'data:image/webp;base64,UklGRg==', },
+              },
+            ],
+          },],
+          signal: new AbortController().signal,
+        },),);
         const [bodyJson,] = bodies;
         const body = JSON.parse(bodyJson ?? '{}',) as Record<string, unknown>;
         expect(body.model,).toBe('google/gemma-4-26b-a4b-it',);
