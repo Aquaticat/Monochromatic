@@ -15,16 +15,18 @@ use super::find_tests::Reader;
 use super::{
     minimap_tests::{bands_of, picture_still},
     sidebar_tests::{TEXT_LEFT, minimap_beside},
-    tile_reads::{draw_minimap, minimap_pixels},
+    tile_reads::{draw_minimap, minimap_pixels, same_pixels, same_texel},
     wrap_tests::{long_text, open, settled},
 };
+/// The window's frame, read back from the GPU.
+use crate::native::gpu_snapshot::snapshot;
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
-/// The device's texture limit.
-use ide_app::shaped_text::texture_dimension;
+/// The device's texture limit, and lowering it for a test.
+use ide_app::shaped_text::{set_texture_dimension, texture_dimension};
 /// Toolkit events.
 use slint::{
-    ComponentHandle, LogicalSize,
+    ComponentHandle, LogicalSize, Rgba8Pixel,
     platform::{WindowEvent, update_timers_and_animations},
 };
 /// A window `height` logical pixels tall over four hundred wrapped lines,
@@ -343,5 +345,159 @@ fn a_picture_taller_than_the_device_limit_covers_the_whole_track() {
         opened.source.borrow().gpu.minimaps_rendered(),
         opened.source.borrow().minimap.last_stats
     );
+    window.hide().expect("close minimap window");
+}
+
+/// The pixels of the minimap's column in the window's frame,
+/// row by row from the top:
+/// the textures as the window composites them, with the box over them.
+fn minimap_column(window: &crate::native::AppWindow) -> (Vec<Rgba8Pixel>, usize) {
+    let frame = snapshot(window.window());
+    let columns = frame.width() as usize;
+    let width = (window.get_minimap_width() * window.window().scale_factor()).round() as usize;
+    let mut column = Vec::new();
+    for row in frame.as_slice().chunks(columns) {
+        column.extend_from_slice(&row[columns - width..]);
+    }
+    return (column, width);
+}
+
+/// Lower the device limit the shaped text records to `limit` and wait for the picture of the same bands, cut for it.
+fn restacked(opened: &Reader, limit: u32) {
+    let window = &opened.window;
+    set_texture_dimension(limit);
+    // The window asks for a picture after a render of its own; a change of the limit alone starts none.
+    super::minimap::note(window, &opened.source);
+    let mut waiting = Waiting::slow();
+    loop {
+        draw_minimap(window);
+        {
+            let current = opened.source.borrow();
+            let cut = match current.minimap.shown {
+                Some(shown) => shown.texture_limit == limit,
+                None => false,
+            };
+            if cut && current.minimap.posted == current.minimap.shown {
+                break;
+            }
+        }
+        waiting.step("the picture cut for the lowered texture limit did not arrive");
+    }
+    draw_minimap(window);
+}
+
+/// Whether `stacked` is `whole` shifted down by one row of `width` texels, which no picture of text equals.
+fn shifted_equals(whole: &[Rgba8Pixel], stacked: &[Rgba8Pixel], width: usize) -> bool {
+    return same_pixels(&whole[width..], &stacked[..stacked.len() - width]);
+}
+
+/// A picture that fits one texture, drawn again as three and as four textures that stack,
+/// is the same picture:
+/// every texel read back equals the texel of the one texture,
+/// the rows on both sides of each seam are inked and equal,
+/// and the window composites the stack into the same column of pixels the one texture gave.
+/// A shift of the stack by a single row is seen by both comparisons.
+#[test]
+fn textures_that_stack_show_the_picture_one_texture_shows() {
+    let (_project, opened) = tall(3500.0, true);
+    let window = &opened.window;
+    picture_still(&opened);
+    draw_minimap(window);
+    let whole = minimap_pixels(window, &opened.source).expect("the picture in one texture");
+    let width = whole.width() as usize;
+    assert_eq!(
+        opened.source.borrow().gpu.minimap_texture_sizes().len(),
+        1,
+        "the picture of a window that fits is one texture"
+    );
+    assert!(
+        whole.height() > 3000,
+        "the picture is {} rows",
+        whole.height()
+    );
+    let (column, column_width) = minimap_column(window);
+    let bands = opened.source.borrow().minimap.shown.map(|key| key.window);
+    let top = window.get_minimap_picture_top();
+    for limit in [1536_u32, 1024] {
+        restacked(&opened, limit);
+        let current = opened.source.borrow().minimap.shown;
+        assert_eq!(
+            current.map(|key| key.window),
+            bands,
+            "the same bands are drawn at limit {limit}"
+        );
+        assert_eq!(
+            window.get_minimap_picture_top(),
+            top,
+            "the picture starts on the same row at limit {limit}"
+        );
+        let sizes = opened.source.borrow().gpu.minimap_texture_sizes();
+        let per_texture = limit / ide_app::minimap::CHUNK_ROWS * ide_app::minimap::CHUNK_ROWS;
+        assert_eq!(
+            sizes.len() as u32,
+            whole.height().div_ceil(per_texture),
+            "textures at limit {limit}: {sizes:?}"
+        );
+        assert!(
+            sizes.len() >= 3,
+            "only {} textures at limit {limit}",
+            sizes.len()
+        );
+        for (index, (texture_width, rows)) in sizes.iter().enumerate() {
+            assert_eq!(*texture_width as usize, width);
+            assert!(*rows <= limit, "a texture of {rows} rows passes {limit}");
+            assert!(
+                index + 1 == sizes.len() || *rows == per_texture,
+                "only the last texture is short: {sizes:?}"
+            );
+        }
+        assert_eq!(
+            window.get_minimap_picture_height(),
+            whole.height() as f32,
+            "the stack is as tall as the one texture was at limit {limit}"
+        );
+        let stacked = minimap_pixels(window, &opened.source).expect("the picture in a stack");
+        assert_eq!(stacked.height(), whole.height());
+        // Every texel of the stack is the texel of the one texture.
+        assert!(
+            same_pixels(whole.as_slice(), stacked.as_slice()),
+            "the stack of {} textures differs from the one texture at limit {limit}",
+            sizes.len()
+        );
+        // The rows on both sides of each seam are inked, and so the equality above is not of blank rows.
+        let mut seam = 0;
+        for (_, rows) in &sizes[..sizes.len() - 1] {
+            seam += *rows as usize;
+            let around = &stacked.as_slice()[(seam - 8) * width..(seam + 8) * width];
+            let inked = around.iter().filter(|pixel| return pixel.a > 0).count();
+            assert!(inked > 0, "the rows around the seam at {seam} are blank");
+            let same_around = whole.as_slice()[(seam - 8) * width..(seam + 8) * width]
+                .iter()
+                .zip(around)
+                .all(|(one, other)| return same_texel(*one, *other));
+            assert!(same_around, "the rows around the seam at {seam} differ");
+        }
+        // Positive control: a stack that sat one row lower would not be equal.
+        assert!(
+            !shifted_equals(whole.as_slice(), stacked.as_slice(), width),
+            "a shift of one row went unseen"
+        );
+        // The window composites the stack into the column the one texture gave.
+        let (stack_column, stack_width) = minimap_column(window);
+        assert_eq!(stack_width, column_width);
+        assert!(
+            same_pixels(&column, &stack_column),
+            "the composited column differs at limit {limit}"
+        );
+        assert!(
+            !same_pixels(
+                &column[column_width..],
+                &stack_column[..stack_column.len() - column_width]
+            ),
+            "a shift of one row of the composited column went unseen"
+        );
+        assert_eq!(window.get_error_message().to_string(), "");
+    }
+    set_texture_dimension(8192);
     window.hide().expect("close minimap window");
 }

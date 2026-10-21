@@ -183,6 +183,11 @@ mod minimap_dense_tests;
 /// and diagnostics.
 #[cfg(test)]
 mod minimap_reflection_tests;
+/// The chunks the minimap's picture is rendered in,
+///  stacked,
+///  equal one render of the picture.
+#[cfg(test)]
+mod minimap_seam_tests;
 /// The minimap's geometry,
 /// picture,
 /// and pointer paths.

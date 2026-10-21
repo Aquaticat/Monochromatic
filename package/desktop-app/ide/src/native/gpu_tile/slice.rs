@@ -119,11 +119,9 @@ impl Inner {
     ) -> bool {
         let (width, heights) = shape;
         let reusable = self.minimap.len() == heights.len()
-            && self
-                .minimap
-                .iter()
-                .zip(heights)
-                .all(|(kept, height)| return kept.target.width == width && kept.target.height == *height);
+            && self.minimap.iter().zip(heights).all(|(kept, height)| {
+                return kept.target.width == width && kept.target.height == *height;
+            });
         if reusable {
             return true;
         }
@@ -201,7 +199,10 @@ impl Inner {
         let allowed = u64::from(texture_rows(width, limit));
         let mut oversize = false;
         for run in &runs {
-            let rows: u64 = heights[run.clone()].iter().map(|rows| return u64::from(*rows)).sum();
+            let rows: u64 = heights[run.clone()]
+                .iter()
+                .map(|rows| return u64::from(*rows))
+                .sum();
             oversize |= rows > allowed;
         }
         if ragged || width == 0 || height == 0 || width > limit || oversize {

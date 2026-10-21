@@ -7,13 +7,13 @@
 /// The window the outcome is applied to,
 /// and the markup's record of one texture of the minimap.
 use crate::native::{AppWindow, ui::MinimapSlice};
+/// Slint's own wgpu types.
+use slint::wgpu_30::wgpu;
 /// The image import,
 /// and the shared list the window shows the minimap's textures from.
 use slint::{Image, ModelRc, VecModel};
 /// The list is shared with the window.
 use std::rc::Rc;
-/// Slint's own wgpu types.
-use slint::wgpu_30::wgpu;
 
 /// What:
 ///  One texture and the size it was made with.

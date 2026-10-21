@@ -157,8 +157,10 @@ pub fn band_count(height: f32, step: f32) -> usize {
 ///  at display `scale` and `ratio` rows of the picture for each logical pixel of the text.
 ///  Never under one.
 /// Why:
-///  The texture a slice is drawn into is bounded by the device,
-///  so the window never asks for more bands than one texture can hold.
+///  The texture a slice is drawn into is bounded by the device.
+///  The window stacks textures for a picture of more bands than that
+///  (`texture_runs`),
+///  so this is the size of one of them and no cap on the picture.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
