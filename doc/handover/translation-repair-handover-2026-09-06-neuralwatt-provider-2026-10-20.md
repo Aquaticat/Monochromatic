@@ -459,11 +459,48 @@ After landing,
 post corrective commit comments on `4e0cbc1b5f` and `e0dbf84a38`:
 their messages say the stitched quote also reaches photo3,
 which the replay disproves.
-Queued after w255 and w256 merge,
-red first:
-`archive-block-repair.ts` looks up `archiveBlockSourceContexts` with `?? ''`,
-so a missed lookup would silently anchor nothing;
-it should refuse instead.
+B712 to B714 are done in w255
+(`a38bc52e29` to `bfff357798`;
+not landed),
+each red first,
+with the package units,
+lint and source scans green and no cache version moving.
+Accepted veto-open beyond the review round's 180 s window:
+no composite when any changing revision differs in line count,
+an identical change to one line counts as an overlap,
+three revisions with only two disjoint build none,
+a revision equal to the archive contributes nothing,
+and the stage's findings travel verbatim,
+reviewer reasons included.
+After landing,
+post corrective commit comments on `49194af623`
+(16 cases,
+15 of them red,
+not fifteen)
+and `96d9d0be32`
+(five files pin the launch line,
+not four).
+w255 and w256 merged in w257 at `0818ca282a`
+(two index-list conflicts,
+both sides kept).
+In w257,
+red first,
+before gate g139:
+the composite reaches the judges with its contributors' assessments
+(it reached them with none,
+because evidence is matched by a voice's proposed text);
+`archive-block-repair.ts` refuses a missed `archiveBlockSourceContexts` lookup
+instead of anchoring against `''`;
+and the launch line drops B713's dated veto note,
+which belongs in the decision doc,
+not in every run log.
+Then gate g139 on w257,
+land,
+the corrective comments,
+rebuild the branch worktree,
+a new frozen digest,
+the rotation sweep,
+and the rotation restarts at `zheermao101`.
 The rotation restarts on the g138 build without waiting for them:
 the day's free energy is spent either way,
 and a read on that build still finds defects.
