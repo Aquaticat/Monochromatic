@@ -1942,6 +1942,15 @@ that is verification, not a decision for the user.
   "Discarding commands" (guard, audit file, landing check). Remaining open: scanner Windows pathname mutation rerun
   (task 23, needs a Windows VM), Windows checks, mutation campaigns for the new files (user: not now), issue 1791
   closing (done below), 630/574/1770 unchanged.
+  User requirement 2026-10-21 (binding, generalizes decision (1) above): EVERY block and EVERY divergence from real
+  Git's behavior must guess what the user is trying to do and emit hints (alternative command, reason, how to
+  proceed). Scope: all policies (`require-root`, `linked-worktree-only` [done], `branch-worktree-only`,
+  `add-explicit`, `final-newline`, forbidden strings, markdown, dependent-version, root context, manual-push gate),
+  engine failures, config errors, and wrapper-made differences (commit transaction replay, hook-skip notices,
+  auto-push notes, unported-command notices). Plan: (1) inventory every message site and rate it for
+  intent-guessing and a concrete hint; (2) fix the gaps with tests that assert the hint text per site; (3) a
+  guard test that fails when a rejection code has no hint registered; (4) README section listing them. Status is
+  tracked below as it lands.
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and
