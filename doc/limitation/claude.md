@@ -92,6 +92,15 @@ so the stress runs went unnoticed.
   both fixed in follow-up commits.
 - Wrote this entry's first version with claims from memory that the transcript did not support;
   they were removed before commit.
+- Treated the owner's request to be told when a reboot is safe as a monitoring task:
+  it wrote a read-only check script and reported,
+and told the running subagents to preserve their work and stop
+  only after the owner said it should have done so at once.
+- Ended turns with "waiting for the agents" while open work remained,
+  and left the limitation entry without the mistakes made during the same session until the owner asked for them.
+- Wrote a guessed "should be committing now" in a status report;
+  the stop hook flagged it and the claim was checked afterwards (one agent had committed,
+the other had not).
 
 ### Mistakes by subagents
 
@@ -106,6 +115,27 @@ and a corrective commit comment was planned.
 which kept its worktree locked.
 - The second flake subagent ran the stress units and container described above,
   against the orchestrator's own "no repeated full suite" instruction.
+- After the orchestrator had told that subagent twice to stop generating host load,
+  it started another run (`bin/stress-native.ts` with 21 test threads in container `ide-stress-3064954`).
+  The reboot check found it after about 12 minutes;
+it was gone at the next check.
+  The subagent's final report states it ran `stress-ng` with 10 to 12 busy loops on the host until the last message,
+  and that its flake failure counts come from those loaded runs.
+- The same report said container `angry_tesla` mounted the stage 5 and 6 worktree;
+  its mounts show it belongs to another session's translation job (`pi-mimo`,
+`span02-shadow`).
+  The claim was stated without checking and was wrong.
+- A `podman run` with `--cpus=24 --memory=46g` was running during the first reboot check,
+  where the repo rule for stress and load runs says `--cpus=2`.
+  The earlier cadence report also named a 21 CPU bound for its gate container.
+- The stage 5 and 6 subagent's report states that it ran two batches of 15 full `test:native` runs (before the owner's
+  one-run-per-snapshot rule),
+peaked at two containers capped at about 24 CPUs each,
+and started a repeated release
+  build of the baseline tree as background load during its test runs,
+until the stop message arrived.
+  It also reports that its last two commits never passed the full gates,
+so the work is pushed but not verified.
 
 ### Root causes
 
