@@ -444,6 +444,26 @@ with ledger ids assigned in advance so the merge does not collide again:
 
 B712 to B714 run in w255,
 B715 in w256.
+B715 is done in w256
+(`4e0cbc1b5f` to `c9e9f735d9`;
+not landed):
+one of the two dropped replies was refused because the anchor compared a quote with a picture transcript's hard line breaks,
+and now anchors through the whitespace-free `quoteIsIn` the reference attestation uses;
+the other stitches three runs from two pictures and stays refused by design;
+every dropped reply is now logged with its reason.
+Accepted veto-open:
+whitespace set aside entirely rather than line breaks only,
+the sheet's wording unchanged,
+and quotes spanning pictures still refused.
+After landing,
+post corrective commit comments on `4e0cbc1b5f` and `e0dbf84a38`:
+their messages say the stitched quote also reaches photo3,
+which the replay disproves.
+Queued after w255 and w256 merge,
+red first:
+`archive-block-repair.ts` looks up `archiveBlockSourceContexts` with `?? ''`,
+so a missed lookup would silently anchor nothing;
+it should refuse instead.
 The rotation restarts on the g138 build without waiting for them:
 the day's free energy is spent either way,
 and a read on that build still finds defects.
