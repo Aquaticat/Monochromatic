@@ -37,9 +37,11 @@ import type {
 // from a tally beneath it, which then counts each reply that arrived as
 // usable. A
 // seat is DARK when it was asked at least once and never once produced a usable
-// answer, which is the signature of a provider that cannot serve it, a key that
-// was never injected, or a model that answers nothing readable; a seat that
-// simply lost some rounds is not dark and is not reported here.
+// answer, which is the signature of a provider that errors on it or a model
+// that answers nothing readable; a seat that simply lost some rounds is not dark
+// and is not reported here, and neither is a seat no provider could take at all
+// (no key, or no wet provider), which the router refuses before any request is
+// sent and the tally counts `unreachable`, not asked.
 //
 // A REFUSAL THE ROUTER GIVES BEFORE ANY REQUEST IS SENT IS NOT AN ASK
 // (ledger B710). The provider router throws `NoProviderForModelError` for a seat
@@ -631,9 +633,10 @@ export function seatReportLines(
     },)
   } asked `
     + `produced nothing usable this run: ${named}. A seat that fails every call is a provider that `
-    + 'cannot serve it, a key that was never injected, or a model that answers nothing readable; '
-    + 'the run log names which, and writes each failed call\'s error text on a warn line "<stage> <model>: '
-    + '<error>, voice lost" (or "seat unreachable"). Do not read this run as a comparison of the roster.';
+    + 'errors on it or a model that answers nothing readable; the run log names which, and writes each '
+    + 'failed call\'s error text on a warn line "<stage> <model>: <error>, voice lost". A seat the router '
+    + 'refused before any request was sent is on its SEAT line as unreachable=N and is not counted here. '
+    + 'Do not read this run as a comparison of the roster.';
 
   return [
     ...perSeat,

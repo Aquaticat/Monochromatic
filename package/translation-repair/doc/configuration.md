@@ -334,10 +334,13 @@ is never withheld by the tally and is not named dark,
 since it was never asked;
 the `unserved=` field of the `JUDGE SEATS` lines names it while it sits on a bench.
 The `SEATS DARK:` line states its count over the seats asked.
-A dark seat is a provider that cannot serve it,
-a key that was never injected,
+A dark seat is a provider that errors on it
 or a model that answers nothing readable;
 the run log names which.
+A seat no provider could take at all,
+because its provider has no key or no wet provider serves it,
+is refused by the router before any request,
+counts `unreachable` and is not dark.
 Do not read a run with a dark seat as a comparison of the roster.
 
 The first time a provider rejects its credential with HTTP 401,
