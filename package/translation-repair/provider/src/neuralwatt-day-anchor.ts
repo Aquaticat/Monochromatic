@@ -1,5 +1,6 @@
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
+import { errorName, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
   NEURALWATT_DAY_START_VAR,
@@ -7,7 +8,11 @@ import {
   neuralWattDayStartAt,
   neuralWattDayStartOfInstant,
 } from './neuralwatt-day.ts';
-import type { NeuralWattQuotaSession, } from './neuralwatt-quota-session.ts';
+import type { NeuralWattQuota, } from './neuralwatt-quota.ts';
+import type {
+  BaselineOutcome,
+  NeuralWattQuotaSession,
+} from './neuralwatt-quota-session.ts';
 
 //region NeuralWatt day anchor
 // WHERE THIS RUN'S DAY STARTS, decided once. The owner, 2026-10-20: "Every neuralwatt day starts at `15:15`" (19:15 UTC
@@ -37,10 +42,56 @@ export type NeuralWattDayAnchor =
      Milliseconds after 00:00 UTC the day starts at.
      */
     readonly msOfDay: number;
+
+    /**
+     The fresh quota reading the anchor was learned from on a retry, which also carries the key's cap; absent for the
+     first attempt, whose reading is the starting one.
+     */
+    readonly quota?: NeuralWattQuota;
   }
   | {
     readonly known: false;
   };
+
+/**
+ Reads the quota afresh for a later attempt, saying nothing of a failure: the outage was warned about at the first one.
+
+ @param quota - the client's quota session
+
+ @param signal - abort signal for the read
+
+ @returns The reading, or that none was taken
+
+ @example
+ ```ts
+ const reading = await freshReading({ quota, signal, },);
+ ```
+ */
+async function freshReading(
+  {
+    quota,
+    signal,
+  }: {
+    readonly quota: NeuralWattQuotaSession;
+    readonly signal: AbortSignal;
+  },
+): Promise<BaselineOutcome> {
+  try {
+    return {
+      taken: true,
+      quota: await quota.readNow({ signal, },),
+    };
+  }
+  catch (error) {
+    signal.throwIfAborted();
+    tagged({
+      tag: freshReading.name,
+      l,
+    },)
+      .debug(`NeuralWatt quota could not be read again for the day start (${errorName({ error, },)})`,);
+    return { taken: false, };
+  }
+}
 
 /**
  Decides where the run's day starts.
@@ -53,11 +104,15 @@ export type NeuralWattDayAnchor =
 
  @param signal - abort signal for the baseline read
 
+ @param retry - whether this is a later attempt, which reads the quota afresh instead of taking the starting reading
+
+ @param warn - whether to warn that the day start is unknown, which is done once for an outage
+
  @returns The anchor, or that none could be learned
 
  @example
  ```ts
- const anchor = await decideNeuralWattDayAnchor({ quota, setting, now, signal, },);
+ const anchor = await decideNeuralWattDayAnchor({ quota, setting, now, signal, retry: false, warn: true, },);
  ```
  */
 export async function decideNeuralWattDayAnchor(
@@ -66,11 +121,15 @@ export async function decideNeuralWattDayAnchor(
     setting,
     now,
     signal,
+    retry,
+    warn,
   }: {
     readonly quota: NeuralWattQuotaSession;
     readonly setting: NeuralWattDayStart;
     readonly now: () => Date;
     readonly signal: AbortSignal;
+    readonly retry: boolean;
+    readonly warn: boolean;
   },
 ): Promise<NeuralWattDayAnchor> {
   /**
@@ -82,9 +141,12 @@ export async function decideNeuralWattDayAnchor(
   },);
 
   /**
-   The starting quota reading, which a run takes once.
+   The quota reading to learn the anchor from: the starting one on the first attempt, a fresh one after.
    */
-  const baseline = await quota.ensureBaseline({ signal, },);
+  const baseline = retry ? await freshReading({
+    quota,
+    signal,
+  },) : await quota.ensureBaseline({ signal, },);
 
   /**
    The quota's period start, if the reading gave one.
@@ -115,14 +177,16 @@ export async function decideNeuralWattDayAnchor(
         source: `the ${NEURALWATT_DAY_START_VAR} setting`,
       });
   if (chosen === undefined) {
-    rl.warn(
-      `NeuralWatt is refused for this run: its day start is unknown, because ${
+    if (warn)
+      rl.warn(
+      `NeuralWatt is refused until its day start is learned: the day start is unknown, because ${
         baseline.taken
           ? 'the quota reply carries no usable subscription.current_period_start'
           : 'the quota could not be read for subscription.current_period_start'
       } and ${NEURALWATT_DAY_START_VAR} is not set. Either make GET /v1/quota readable with `
         + `subscription.current_period_start, or set ${NEURALWATT_DAY_START_VAR}=HH:MM (UTC; 19:15 for a 15:15 `
-        + 'day start in America/New_York during daylight saving time)',
+        + 'day start in America/New_York during daylight saving time). Until then the quota is read again, no sooner '
+        + 'than a minute after each failed attempt, and this is not warned about again',
     );
     return { known: false, };
   }
@@ -142,11 +206,14 @@ export async function decideNeuralWattDayAnchor(
           'YYYY-MM-DDT'.length,
           'YYYY-MM-DDTHH:MM:SS.sss'.length,
         )
-    } UTC every day, from ${chosen.source}; the current day began ${today.toISOString()}`,
+    } UTC every day, from ${chosen.source}${retry ? ' (learned on a retry)' : ''}; the current day began ${
+      today.toISOString()
+    }`,
   );
   return {
     known: true,
     msOfDay: chosen.msOfDay,
+    ...((retry && baseline.taken) ? { quota: baseline.quota, } : {}),
   };
 }
 

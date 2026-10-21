@@ -131,25 +131,25 @@ await describe({
           quota: [NO_PERIOD, NO_PERIOD, NO_PERIOD, GOOD,],
         },);
         /**
-         The day start each reading named.
+         The day start each reading named, none where it named none.
          */
-        const dayStarts: (string | undefined)[] = [];
+        const dayStarts: string[] = [];
         const lines = await consoleLinesDuring({
           run: async function readings(): Promise<void> {
-            dayStarts.push((await client.energy({ signal: SIGNAL, },)).dayStart,);
+            dayStarts.push((await client.energy({ signal: SIGNAL, },)).dayStart ?? 'none',);
             clock.setTo('2026-10-20T23:16:01.000Z',);
-            dayStarts.push((await client.energy({ signal: SIGNAL, },)).dayStart,);
+            dayStarts.push((await client.energy({ signal: SIGNAL, },)).dayStart ?? 'none',);
             clock.setTo('2026-10-20T23:17:02.000Z',);
-            dayStarts.push((await client.energy({ signal: SIGNAL, },)).dayStart,);
+            dayStarts.push((await client.energy({ signal: SIGNAL, },)).dayStart ?? 'none',);
             clock.setTo('2026-10-20T23:18:03.000Z',);
-            dayStarts.push((await client.energy({ signal: SIGNAL, },)).dayStart,);
+            dayStarts.push((await client.energy({ signal: SIGNAL, },)).dayStart ?? 'none',);
           },
           sinon: ctx.sinon,
         },);
-        expect(dayStarts,).toEqual([undefined, undefined, undefined, '2026-10-20T19:15:08.000Z',],);
+        expect(dayStarts,).toEqual(['none', 'none', 'none', '2026-10-20T19:15:08.000Z',],);
         expect(quotaExchangesOf({ exchanges, },).length,).toBe(4,);
         expect(lines.filter(function warnsOfUnknownDay(line,): boolean {
-          return line.includes('subscription.current_period_start',) && line.includes('refused for this run',);
+          return line.includes('subscription.current_period_start',) && line.includes('the day start is unknown',);
         },).length,).toBe(1,);
         expect(lines.filter(function logsLearnedDay(line,): boolean {
           return line.includes('NeuralWatt day starts at 19:15:08.000 UTC',) && line.includes('learned on a retry',);
@@ -176,7 +176,7 @@ await describe({
           sinon: ctx.sinon,
         },);
         expect(lines.filter(function warnsOfUnknownDay(line,): boolean {
-          return line.includes('refused for this run',);
+          return line.includes('the day start is unknown',);
         },).length,).toBe(1,);
       },
     },),

@@ -272,4 +272,39 @@ export function neuralWattDayAfter({ start, }: { readonly start: Date; },): Date
   ),);
 }
 
+/**
+ An instant some seconds after another.
+
+ @param from - the instant
+
+ @param seconds - how many seconds later
+
+ @returns The later instant
+
+ @example
+ ```ts
+ neuralWattSecondsAfter({ from: new Date('2026-10-20T23:15:00.000Z',), seconds: 60, },);
+ // 2026-10-20T23:16:00.000Z
+ ```
+ */
+export function neuralWattSecondsAfter(
+  {
+    from,
+    seconds,
+  }: {
+    readonly from: Date;
+    readonly seconds: number;
+  },
+): Date {
+  return new Date(Date.UTC(
+    from.getUTCFullYear(),
+    from.getUTCMonth(),
+    from.getUTCDate(),
+    from.getUTCHours(),
+    from.getUTCMinutes(),
+    from.getUTCSeconds() + seconds,
+    from.getUTCMilliseconds(),
+  ),);
+}
+
 //endregion NeuralWatt day

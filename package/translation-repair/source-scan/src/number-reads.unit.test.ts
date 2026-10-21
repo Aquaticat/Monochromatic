@@ -272,6 +272,10 @@ const HELD_READS: Readonly<Record<string, {
     calls: 1,
     why: EPOCH_MILLISECONDS,
   },
+  'provider/neuralwatt-day.ts#neuralWattSecondsAfter: new Date': {
+    calls: 1,
+    why: EPOCH_MILLISECONDS,
+  },
   'provider/neuralwatt-day.ts#neuralWattDayStartAt: new Date': {
     calls: 2,
     why: EPOCH_MILLISECONDS,

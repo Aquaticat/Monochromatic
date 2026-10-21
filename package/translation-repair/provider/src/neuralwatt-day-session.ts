@@ -12,10 +12,7 @@ import {
   readAliasMap,
 } from './neuralwatt-account-read.ts';
 import type { NeuralWattAliasMap, } from './neuralwatt-aliases.ts';
-import {
-  decideNeuralWattDayAnchor,
-  type NeuralWattDayAnchor,
-} from './neuralwatt-day-anchor.ts';
+import { createNeuralWattAnchorKeeper, } from './neuralwatt-day-anchor-keeper.ts';
 import {
   type NeuralWattDayStart,
   neuralWattDayStartAt,
@@ -128,7 +125,7 @@ export function createNeuralWattDaySession(
    What the session holds between reads.
    */
   const state: {
-    anchor?: Promise<NeuralWattDayAnchor>;
+    learnedQuota?: NeuralWattQuota;
     account?: {
       readonly startIso: string;
       readonly wh: number
@@ -150,6 +147,15 @@ export function createNeuralWattDaySession(
     allowanceMalformed: false,
     blockedWarned: false,
   };
+
+  /**
+   Keeper of the anchor, which learns it again while it is unknown.
+   */
+  const anchors = createNeuralWattAnchorKeeper({
+    quota,
+    setting,
+    now,
+  },);
 
   /**
    Reads which names are tracking aliases of a covered model, falling back to the usage rows' own served model.
@@ -346,6 +352,15 @@ export function createNeuralWattDaySession(
       l,
     },);
     try {
+      if ((!state.readOnce) && (state.learnedQuota !== undefined)) {
+        // THE RETRY THAT LEARNED THE DAY READ THE QUOTA JUST NOW, so the cap is taken from that reading and not asked again.
+        takeAllowance({
+          reading: state.learnedQuota,
+          start,
+        },);
+        state.allowanceOutage = false;
+        return;
+      }
       if (!state.readOnce) {
         /**
          The starting quota reading, which the first reading of the run is: it was warned about if it failed, and is not
@@ -448,19 +463,14 @@ export function createNeuralWattDaySession(
       readonly refresh: boolean
     },
   ): Promise<NeuralWattDay> {
-    state.anchor ??= decideNeuralWattDayAnchor({
-      quota,
-      setting,
-      now,
-      signal,
-    },);
-
     /**
      Where the day starts.
      */
-    const anchor = await state.anchor;
+    const anchor = await anchors.anchorFor({ signal, },);
     if (!anchor.known)
       return { kind: 'unanchored', };
+    if ((!state.readOnce) && (anchor.quota !== undefined))
+      state.learnedQuota = anchor.quota;
     if (refresh || (!state.readOnce))
       await takeReadings({
         signal,
