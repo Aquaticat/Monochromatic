@@ -294,6 +294,20 @@ this section is the readiness reading of it.
   it changes the build,
   and a read on `5ae2173d23` would stop counting once it lands.
   The rotation restarts at `zheermao101` on the build that carries NeuralWatt.
+- It restarted on `5b5dca49a9`:
+  `zheermao19` shipped SETTLED with no class traced to code
+  ([the pass log of 2026-10-20](translation-repair-openrouter-2026-09-03-2026-10-20.md)),
+  but on a short bench:
+  Synthetic and Hyper went dry during it,
+  the expired Bedrock key withheld the three Gemma seats,
+  and the consolidation judged on three or four voices with a quorum of 2.
+  Its page lost several intensifiers and small words zheermao17's had kept.
+  Four changes then went in together
+  (the NeuralWatt day and account-wide count,
+  the DeepSeek 1017 ids,
+  a refused credential holding out the provider instead of the seat,
+  and the readonly types),
+  so the rotation restarts at `zheermao101` on the combined build.
 - The entries never run on a recent build are the rest of the 92-entry corpus.
   The owner's rule stands:
   "We never ever need a all 92 entries launch";

@@ -444,6 +444,62 @@ preparing a package can need containers and network,
 which a linter does not start,
 so a missing artifact names the task that makes it.
 
+### Suppression record
+
+A closure that its callee requires carries the `expect` attribute,
+and every such attribute is listed here with the file,
+the closure it covers,
+and the true sentence its reason states.
+Configuration cannot replace these attributes:
+the callee's own parameter list rules out a named function,
+and the rule refuses comment directives.
+
+- `src/markdown_source.rs`:
+  the `catch_unwind` closure that runs the parser.
+  The attribute sits on the closure argument and reads
+  "catch_unwind accepts only a callable without parameters,
+  so the borrowed source and the parser options must be captured by a closure".
+- `src/run_process.rs`:
+  the `catch_unwind` closure in `contained_run`.
+  "catch_unwind accepts only a callable without parameters,
+  so the borrowed options and the runner must be moved into a closure".
+- `src/run_process.rs`:
+  the `spawn_scoped` closure in `run_in_scope`.
+  "spawn_scoped runs the closure on the spawned thread after this call returns,
+  so the borrowed options and the runner must travel inside it".
+- `src/run_process.rs`:
+  the `std::thread::scope` closure in `run_process_with`.
+  "std::thread::scope hands its callback only the scope reference,
+  so the borrowed options and the runner can reach run_in_scope only through a closure".
+- `src/run_workers.rs`:
+  the `catch_unwind` closure in `contained_with`.
+  "catch_unwind accepts only a callable without parameters,
+  so the plan,
+  the fix flag,
+  the LFS map,
+  the engine and the writer must be moved into a closure".
+- `src/run_workers.rs`:
+  the `catch_unwind` closure in `contained_source`.
+  "catch_unwind accepts only a callable without parameters,
+  so the plan,
+  the source,
+  the fix flag,
+  the LFS map and the engine must be moved into a closure".
+- `src/run_workers.rs`:
+  the `spawn_scoped` closure in `spawn_and_join`.
+  "spawn_scoped runs the worker closure on the spawned thread after this call returns,
+  so the shared run state must travel inside it".
+- `src/run_workers.rs`:
+  the `std::thread::scope` closure in `run_workers`.
+  "std::thread::scope hands its callback only the scope reference,
+  so the shared run state and the worker count can reach spawn_and_join only through a closure".
+- `src/cli_options.rs`:
+  every closure clap's derive generates for `CliOptions`,
+  reported at the field type spans.
+  The attribute is the module's inner `#![cfg_attr(...)]` and reads
+  "clap's derive generates the parser closures in its FromArgMatches implementation with the field type as their span,
+  so no author-written closure exists to refactor".
+
 ## Rust test sidecars
 
 `rust/tests-in-sidecars` requires unit tests to live in sidecar files.

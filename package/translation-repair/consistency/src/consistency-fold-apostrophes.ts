@@ -14,6 +14,7 @@ import {
   type ProvenApostrophes,
   provenApostrophesOf,
 } from './consistency-proven-apostrophes.ts';
+import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Consistency fold apostrophes
 // THE SPAN OF A QUOTE'S WORDS TAKES IN THE PROVEN APOSTROPHE BESIDE THEM. The
@@ -326,14 +327,14 @@ function readProofView(
     proven,
     joined,
     wordApostrophes: [...readings,]
-      .filter(function partOfAWord([at, reading,],): boolean {
+      .filter(function partOfAWord([at, reading,]: ReadonlyEntry<number, MarkReading>,): boolean {
         return isPartOfAWord({
           reading,
           at,
           proven,
         },);
       },)
-      .map(function wordApostropheAt([at,],): WordApostrophe {
+      .map(function wordApostropheAt([at,]: ReadonlyEntry<number, MarkReading>,): WordApostrophe {
         return {
           at,
           character: prose.charAt(at,),

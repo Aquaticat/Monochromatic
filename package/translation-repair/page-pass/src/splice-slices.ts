@@ -1,6 +1,7 @@
 import {
   type DocumentChunk,
   isInsertionChunk,
+  type ReadonlyEntry,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   rendersAsNothing,
@@ -175,7 +176,7 @@ function plannedEdits(
   /**
    One edit per boundary, carrying its fragments in document order.
    */
-  const intoPlaces = [...byBoundary,].map(function toInsertionEdit(entry,): SpliceEdit {
+  const intoPlaces = [...byBoundary,].map(function toInsertionEdit(entry: ReadonlyEntry<number, readonly PlacedReplacement[]>,): SpliceEdit {
     /**
      Boundary and the replacements anchored there.
      */

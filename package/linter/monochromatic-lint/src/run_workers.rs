@@ -144,10 +144,20 @@ pub fn contained_with(
     engine: Option<&mut RustFileEngine>,
     writer: Writer,
 ) -> FileOutcome {
-    let attempt: Result<FileOutcome, Box<dyn std::any::Any + Send>> =
-        catch_unwind(AssertUnwindSafe(|| {
-            return process_file_with(plan, fix, lfs, engine, writer);
-        }));
+    let attempt: Result<FileOutcome, Box<dyn std::any::Any + Send>> = catch_unwind(
+        AssertUnwindSafe(
+            #[cfg_attr(
+                dylint_lib = "monochromatic_lint_closure",
+                expect(
+                    avoidable_closure,
+                    reason = "catch_unwind accepts only a callable without parameters, so the plan, the fix flag, the LFS map, the engine and the writer must be moved into a closure"
+                )
+            )]
+            || {
+                return process_file_with(plan, fix, lfs, engine, writer);
+            },
+        ),
+    );
     match attempt {
         Ok(outcome) => return outcome,
         Err(payload) => return panicked(plan, payload.as_ref()),
@@ -192,10 +202,20 @@ pub fn contained_source(
     lfs: &LfsRepos,
     engine: Option<&mut RustFileEngine>,
 ) -> SourceOutcome {
-    let attempt: Result<SourceOutcome, Box<dyn std::any::Any + Send>> =
-        catch_unwind(AssertUnwindSafe(|| {
-            return process_source(plan, source, fix, lfs, engine);
-        }));
+    let attempt: Result<SourceOutcome, Box<dyn std::any::Any + Send>> = catch_unwind(
+        AssertUnwindSafe(
+            #[cfg_attr(
+                dylint_lib = "monochromatic_lint_closure",
+                expect(
+                    avoidable_closure,
+                    reason = "catch_unwind accepts only a callable without parameters, so the plan, the source, the fix flag, the LFS map and the engine must be moved into a closure"
+                )
+            )]
+            || {
+                return process_source(plan, source, fix, lfs, engine);
+            },
+        ),
+    );
     match attempt {
         Ok(outcome) => return outcome,
         Err(payload) => {
@@ -257,7 +277,17 @@ fn spawn_and_join<'scope, 'env>(
         let builder: Builder = lint_thread();
         // A spawn failure (resource exhaustion) leaves fewer workers; the rest still drain the queue.
         // The thread API needs a callable; the closure only forwards to the named `work`.
-        if let Ok(handle) = builder.spawn_scoped(scope, || return work(shared)) {
+        if let Ok(handle) = builder.spawn_scoped(
+            scope,
+            #[cfg_attr(
+                dylint_lib = "monochromatic_lint_closure",
+                expect(
+                    avoidable_closure,
+                    reason = "spawn_scoped runs the worker closure on the spawned thread after this call returns, so the shared run state must travel inside it"
+                )
+            )]
+            || return work(shared),
+        ) {
             handles.push(handle);
         }
     }
@@ -285,7 +315,16 @@ fn spawn_and_join<'scope, 'env>(
 /// ```
 fn run_workers(shared: &Shared<'_>, workers: usize) -> Vec<(usize, FileOutcome)> {
     // The scope API needs a callable; the closure only forwards to the named `spawn_and_join`.
-    return std::thread::scope(|scope| return spawn_and_join(scope, shared, workers));
+    return std::thread::scope(
+        #[cfg_attr(
+            dylint_lib = "monochromatic_lint_closure",
+            expect(
+                avoidable_closure,
+                reason = "std::thread::scope hands its callback only the scope reference, so the shared run state and the worker count can reach spawn_and_join only through a closure"
+            )
+        )]
+        |scope| return spawn_and_join(scope, shared, workers),
+    );
 }
 
 /// What:

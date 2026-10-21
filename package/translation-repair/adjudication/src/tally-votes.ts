@@ -7,6 +7,7 @@ import {
   DEFAULT_ADJUDICATION_CONFIG,
   type IssueSeverity,
   type PanelBallot,
+  type ReadonlyEntry,
   type VoteTally,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { panelReadingForClaim, } from './tally-claim.ts';
@@ -221,7 +222,7 @@ function disposeMerge(
           readonly same: number;
           readonly distinct: number
         },
-        [panelistId, ballot,],
+        [panelistId, ballot,]: ReadonlyEntry<string, PanelBallot>,
       ) {
         /**
          This panelist's opinion on the cluster, when given.

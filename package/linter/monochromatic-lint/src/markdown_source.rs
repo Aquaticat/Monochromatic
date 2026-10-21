@@ -116,7 +116,16 @@ impl MarkdownSource {
         if mdx {
             options.insert(Options::ENABLE_MDX);
         }
-        let result = catch_unwind(|| return parse(source.as_str(), options));
+        let result = catch_unwind(
+            #[cfg_attr(
+                dylint_lib = "monochromatic_lint_closure",
+                expect(
+                    avoidable_closure,
+                    reason = "catch_unwind accepts only a callable without parameters, so the borrowed source and the parser options must be captured by a closure"
+                )
+            )]
+            || return parse(source.as_str(), options),
+        );
         let (arena, errors) = match result {
             Ok(parsed) => parsed,
             Err(payload) => {

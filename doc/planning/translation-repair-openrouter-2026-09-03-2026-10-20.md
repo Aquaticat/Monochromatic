@@ -4,7 +4,11 @@ What was read and decided on 2026-10-20.
 Entries:
 XingZ6015,
 zheermao15,
-CuspariaKLSY18.
+CuspariaKLSY18,
+zheermao16,
+CuspariaKLSY19,
+zheermao17,
+zheermao19.
 
 Part of [Translation repair: OpenRouter as the paid fallback provider](translation-repair-openrouter-2026-09-03.md),
 which lists every file of this record.
@@ -645,3 +649,173 @@ serves `deepseek-v4.1-flash` and the GLM-5.3-Flash seat on 550 Wh a day of free 
 Adding it changes the build,
 so a read on `5ae2173d23` would stop counting once it lands.
 The rotation restarts at `zheermao101` on the build that carries NeuralWatt.
+
+## zheermao19 read, 2026-10-20, 23:53 UTC: SETTLED in 35.6 min of pass; no class traced to code, on a short bench
+
+`zheermao19` (entry zheermao101) ran as the unit `corpus-pass-corpus-pass-zheermao19`
+on tip `5b5dca49a9…` and pipeline `sha256-tree-v1:f706c65f04541d1d043d5d39c4597ef034b537c8a73e827ef8c937da7c6d4ee9`,
+the first build with NeuralWatt,
+and its `START` line carried both.
+It ran from 23:00:24 to 23:35:58 UTC.
+The `DONE` line reads `elapsed=2134104ms`,
+which is 35.6 min:
+`TALLY zheermao101 status=SETTLED slices=15 repairStatus=repaired repairIssues=24 repairAccepted=13 repairResolved=12
+... repairChanged=7 translateStatus=complete translateChanged=11 documentsDiffer=9 pageChanged=9 pageSilent=0
+alignmentFindings=14 selection=contested`.
+`DESTINATIONS zheermao101 source=2 page=3 dropped=0`,
+and the publish wrote 15 slices into a page of 6016 characters.
+The log holds 395 `[warn]` lines
+(zheermao17:
+226),
+no `[error]` line,
+no `DEFECTS` line,
+and none of `REATTEMPT`,
+`STALLED`,
+`mdx-downgraded` or `StreamOverrunError`.
+The full line-by-line read is kept at `/var/home/user/temp/agent/x15-fix/reads/zheermao19-read.md`;
+this section keeps every departure it found.
+
+### Seats and meters
+
+Usable answers of asked,
+from the `SEAT` lines after `DONE`:
+`deepseek-v4.1-flash` 141 of 143,
+`minimax-m3` 140 of 140,
+`inception/mercury-2.5` 111 of 116,
+`hf:moonshotai/Kimi-K3` 78 of 81,
+`hf:zai-org/GLM-5.3-Flash` 56 of 56,
+`hf:Qwen/Qwen3.8-27B` 27 of 78,
+`glm-5.3` 25 of 73,
+`typesafe/jev-1.13` 24 of 24,
+`xiaomi/mimo-v2.6-flash` 23 of 23,
+and the three Gemma seats 0 of 4 each.
+
+- Synthetic went dry at 23:21:54 UTC (`syntheticWeekly=0%`,
+  from 1.40% at the start).
+- Hyper went dry at 23:32:11 UTC (`hyperBalance=0`,
+  from 39;
+  zheermao17 had closed at 45,
+  and `zheermao18`'s 21 Hyper calls ran between them).
+- From then every provider of `glm-5.3` and `hf:Qwen/Qwen3.8-27B` was out of budget,
+  which is their 48 and 51 throws,
+  and `hf:moonshotai/Kimi-K3` threw 3 the same way.
+- The Bedrock key had expired
+  (HTTP 401 "The security token included in the request has expired.");
+  the three Gemma seats were withheld after 4 asks each,
+  though two of them have OpenRouter sides
+  (fixed in keyless worktree w249;
+  the owner ruled on 2026-10-20 to leave Bedrock off).
+- OpenRouter went from 15.22 USD to 15.02 USD,
+  Bedrock stayed at 5.02 USD.
+- NeuralWatt served 197 calls for 28.686 Wh measured against 30.487 Wh estimated
+  (`deepseek-v4.1-flash` 143 calls,
+  10.704 Wh against 19.628;
+  `glm-5.3-flash` 54 calls,
+  17.982 Wh against 10.859),
+  and its meter fell from 549.983 Wh to 522.124 Wh.
+  The run-end `NeuralWatt PLAN ENERGY SPENT: 345.2 Wh` is the account,
+  not this run:
+  `mimo-v2.6-pro` on the owner's other key rose 335 Wh between 23:15 and 23:36 UTC by `/v1/usage/by-model`.
+
+The bench was short.
+The log holds 30 `closed on a short bench` lines (zheermao17:
+none),
+and the consolidation's naturalness reviews read `3/7 usable ... quorumNeeded=2 ... unreachable=4`,
+once `2/7` with no quorum,
+where zheermao17's read `5/7 usable ... quorumNeeded=4`.
+Twelve decisions kept the fallback text (zheermao17:
+ten).
+This read therefore counts for less than zheermao17's:
+the page was judged on three or four voices.
+
+### The page
+
+The lead's reader compared the shipped page with the original,
+the archive,
+the three photos and zheermao17's page,
+line by line.
+Her life is in the past tense throughout.
+
+What is now right that zheermao17 had wrong:
+
+- Arts's letter says "the same feelings and hopes as us" and "for our future"
+  for 和我们 and 为了我们的未来,
+  where zheermao17 still had the archive's "as you" and "for themselves",
+  and its two 比如 items are two,
+  as in the photo.
+- 小女孩 keeps 小 ("a little trans girl").
+- 唯利是图，贪生怕死 is carried whole ("only after profit,
+  coveting life and fearing death").
+- 连夜 is "that same night",
+  where zheermao17 said "they stayed up through the night".
+- The reply's salutation 玖月折耳猫： is carried ("Good evening,
+  Zheermao,").
+- 再给你一个温暖的抱抱 is a hug given ("Here's another warm hug").
+
+What departs from the Chinese,
+each a single wording in one sentence:
+
+- 尽力活着了 in her own email is "I tried to live";
+  尽力 (did my best) is lost,
+  where zheermao17 had "I tried my best to live".
+  No candidate in the run wrote "tried my best"
+  (`rg --fixed-strings` over the run directory finds it nowhere),
+  so no seat offered it and no critic flagged the loss.
+- 极度缺爱 is "starved of love";
+  zheermao17 had "extremely lacking in love".
+- 就好了呢 is "It would be better if",
+  which reads as a comparison with meeting in heaven that the Chinese does not make;
+  zheermao17 had "so nice".
+- 顺颂春祉 is "With spring blessings",
+  losing the formal 顺颂;
+  zheermao17 had "Respectfully,
+  with the blessings of spring."
+- 邮箱 is dropped ("an email to One Among Us");
+  zheermao17 had "the One Among Us mailbox".
+- Arts's 我搜索之后发现 (after I searched,
+  I found) is dropped,
+  as are two 也 (in Arts's "Arts also hates this unfair world" and in the Zhihu sentence).
+- "only" is added twice in 得意时想着…失意时想着…,
+  "go on" in 只会去伤害,
+  and 更不会 (much less) is flattened to "and they would never".
+- Three em-dashes stand where the Chinese has commas
+  (the 比比皆是 sentence,
+  比如Arts,
+  and 这是我们的笔永远无法企及的);
+  the archive has none,
+  and no rule of the run's sheets governs dashes.
+- 离世 is "death" for the friend and "departure" for her,
+  悼文 is "epitaph",
+  `desc` keeps the archive's "Treat you to some beverages."
+  while the quote offers milk tea,
+  and the note between translators still says its sentence could not be translated:
+  all as on zheermao17's page and recorded there.
+
+No departure changes who died,
+when,
+how she is named,
+or what the writers tell her,
+and the run shows no log marker of a class.
+The losses against zheermao17 are of one kind:
+an intensifier or a small word the Chinese carries,
+lost where no seat offered the fuller wording,
+on a bench of three or four voices.
+That is recorded here as a condition of the run,
+not as a class with a fix:
+the cause read from the log is the empty Synthetic and Hyper meters
+and the expired Bedrock key,
+and the code that seats a refused credential's model elsewhere is the fix in w249.
+
+### What follows
+
+The rotation does not go on on this build.
+Four changes are being landed together before the next launch:
+the NeuralWatt day anchored at the account's 15:15 EDT and counted account-wide (w247),
+the DeepSeek V4.1 Flash 1017 served ids (w248),
+the credential refusal that holds out the provider instead of the seat (w249),
+and the readonly fix already landed as `506972d0e4`.
+They change the build,
+so a read counts only on the combined one,
+and the rotation restarts there at `zheermao101`,
+then `CuspariaKLSY` and the rest,
+each read before the next launch.

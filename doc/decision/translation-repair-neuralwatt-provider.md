@@ -337,8 +337,7 @@ the margin stays until a run's settled lines give per-bucket figures.
 
 The owner,
 2026-10-20 at about 23:15 UTC:
-"The stop logic should obviously count total free energy used per day.
-Every neuralwatt day starts at 15:15".
+`The stop logic should obviously count total free energy used per day. Every neuralwatt day starts at 15:15`.
 Two read-only calls the same minute
 (no inference;
 raw output in `/var/home/user/temp/agent/x15-fix/neuralwatt/usage-probe.out` and `quota-shape.out`)
@@ -346,7 +345,7 @@ settled both points.
 
 - **The day starts at 19:15 UTC.**
   The owner's zone is America/New_York,
-  so 15:15 there was 19:15 UTC on 2026-10-20,
+  so 15:15 EDT there was 19:15 UTC on 2026-10-20,
   and `GET /v1/quota` reports `subscription.current_period_start` as `2026-10-20T19:15:08Z`
   (`kwh_reset_date` `2026-11-19T19:15:12Z`).
   The documentation's 00:00 UTC does not describe this account.

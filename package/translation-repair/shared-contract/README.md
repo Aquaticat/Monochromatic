@@ -103,6 +103,14 @@ The groups that follow name the main ones.
   `completion-cap.ts`,
   `run-json-read.ts`,
   and `page-title-cache-version.ts`.
+- Shared utility types:
+  the pair type a callback gives its destructured parameter when it reads one entry of `Object.entries`,
+  a map or a count table.
+  Names:
+  `ReadonlyEntry`.
+  Declared in `readonly-entry.ts`.
+  Every sibling package imports it from this package instead of declaring its own copy;
+  `test-fixture` keeps one copy of its own because this package depends on it for tests.
 
 ## Family dependencies
 
