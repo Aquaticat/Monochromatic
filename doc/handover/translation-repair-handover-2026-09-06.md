@@ -666,16 +666,27 @@ its "Next" list is still the queue the merge went ahead of.
       the day boundary and the account-wide count,
       the DeepSeek 1017 weights and the `zheermao19` run.
       Its "Next" is the queue:
-      gate and land w247 and w249
-      (w248 landed as `d8cf1933f4`),
+      w248 landed as `d8cf1933f4` and w249 as `624c5ff583`;
+      the energy recalibration is committed in keyless worktree w250
+      (`d07508fd21` to `a665d2d028`,
+      ledger P19);
+      review w247 when its agent hands back,
+      merge w250 and main into it,
+      gate once and land,
       rebuild,
       set `FROZEN`,
-      recalibrate the energy margin,
       then restart the rotation at `zheermao101` on the combined build.
     - The class of the `zheermao15` read is ledger B702.
-    - The guard of B701 stays open and undecided:
-      the rotation sweep as an expensive mise task,
-      or a test-only override seam in `stage`.
+    - The guard of B701 is decided
+      (2026-10-21 (UTC),
+      by this session under the owner's "Make decisions yourself"):
+      the rotation sweep as an explicitly invoked mise task,
+      since it repeats the census exactly and needs no production change,
+      where a test-only seam in `stage` would put a test hook in production code.
+      A Sonnet agent builds it in keyless worktree w251,
+      with a positive control that reintroduces one member;
+      review,
+      gate and land it when it hands back.
     - Done:
       the seat-window census (B701) integrated in `dc4982c9cb`,
       the owner's confirmation of B696 and B698,
