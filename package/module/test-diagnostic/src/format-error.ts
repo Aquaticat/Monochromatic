@@ -3,6 +3,10 @@
  `AggregateError.errors` as an array of lines, one line per error
  in the walk. Each line carries the error's header AND its stack
  frames joined inline for grep-friendliness.
+
+ An error whose assertion compared two values (`actual` and `expected`)
+ also emits one line per difference beneath its own line, so a failing
+ `toEqual` names what differs instead of leaving both values truncated.
  
  Stack frames are cleaned before joining:
  
@@ -31,6 +35,9 @@ import {
   isHarnessInternalFrame,
   readProperty,
 } from './harness-frames.ts';
+import {
+  errorDifferenceLines,
+} from './value-difference.ts';
 
 //region Workspace prefix resolution
 
@@ -391,6 +398,16 @@ function formatNode({
   const line = `${headerPrefix}${label}: ${message}${siteInline}${framesInline}`;
 
   /**
+   Difference lines for an error whose assertion compared two values,
+   empty elsewhere, kept under the error's own line so the headline
+   still reads first.
+   */
+  const differenceLines = errorDifferenceLines({ error: value, },)
+    .map(function prefixDifference(differenceLine,) {
+      return `  ${differenceLine}`;
+    },);
+
+  /**
    Cause value, defensively read, pulled out so the recursion only runs once when a cause exists.
    */
   const causeValue: unknown = readProperty({
@@ -449,6 +466,7 @@ function formatNode({
 
   return [
     line,
+    ...differenceLines,
     ...causeLines,
     ...errorLines,
   ];
