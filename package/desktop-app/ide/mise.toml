@@ -307,6 +307,18 @@ const filter = process.env.usage_filter ? ['--no-capture', '--no-fail-fast', '--
 runBounded(['cargo', 'nextest', 'run', '--bin', 'monochromatic-ide', ...filter], { gpu: true })
 """
 
+[tasks."test:native:stress"]
+description = "Run filtered native tests many times at once in one bounded GPU container, optionally under CPU load, and count failures per test (see bin/stress-native.ts)"
+usage = '''
+flag "--filter <expression>" help="Nextest filter expression, for example test(rows_arriving_in_view)"
+flag "--count <n>" default="20" help="Iterations each copy runs one after the other"
+flag "--copies <n>" default="4" help="Concurrent nextest invocations in the container"
+flag "--load <cpus>" default="0" help="Host CPUs kept busy by stress-ng in a memory-capped systemd user unit"
+flag "--retries <n>" default="0" help="Nextest retries per test"
+flag "--deadline-minutes <n>" default="60" help="The container and the load unit are removed after this long"
+'''
+run = "node bin/stress-native.ts --filter \"${usage_filter}\" --count \"${usage_count}\" --copies \"${usage_copies}\" --load \"${usage_load}\" --retries \"${usage_retries}\" --deadline-minutes \"${usage_deadline_minutes}\""
+
 [tasks."test:fonts"]
 description = "Exercise embedded font features and ligature selection through production geometry"
 shell = "node --input-type=module-typescript -e"
@@ -355,7 +367,7 @@ run = "node bin/check-nextest-config.mjs"
 
 [tasks."test:bin"]
 description = "Check the compositor version reader, the container bound, and the frame-pattern analysis of the bin scripts with node:test"
-run = "node --test bin/nested-compositor.test.mjs bin/container-bounds.test.ts bin/cadence.test.ts"
+run = "node --test bin/nested-compositor.test.mjs bin/container-bounds.test.ts bin/cadence.test.ts bin/stress-native-report.test.ts"
 
 [tasks."test:ignored"]
 description = "Run the gitignore matching unit tests, the tree and reader tests that carry its answers, and the rule file notification test"
