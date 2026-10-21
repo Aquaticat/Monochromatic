@@ -549,6 +549,33 @@ Resume each from its own handover:
 
 The reads themselves are `zheermao21-read.md` and `CuspariaKLSY21-read.md` beside them,
 not yet recorded in the pass log of 2026-10-21.
+
+Owner rulings of 2026-10-21,
+given just before the reboot:
+
+- On the picture bench:
+  "Yes try gemma".
+  So `google/gemma-4-26b-a4b-it` on OpenRouter
+  (zero data retention)
+  is measured as a second picture reader from another family,
+  over a sample of pictures,
+  and seated if it reads them well.
+- On request parameters:
+  "NeuralWatt is a special case of all the providers:
+  It implements what it documents correctly,
+  almost always - I'm lifting the ban on passing params,
+  but only for NeuralWatt."
+  So NeuralWatt requests may now carry documented parameters,
+  such as a lower reasoning effort for `glm-5.3-flash` on pictures,
+  whose default `max` effort spent the whole output cap on reasoning in `XingZ6016`.
+  Every other provider still gets no such parameter.
+
+Also queued:
+an empty reply cut at the length cap is asked again
+(today only refusals are);
+and the pass log of 2026-10-21 fails two scans
+(a position reference at line 365,
+zone-less clock times at lines 452 and 476).
 An investigation of the picture bench runs
 (why GLM replied empty,
 which wet vision readers could replace the Bedrock seats);
