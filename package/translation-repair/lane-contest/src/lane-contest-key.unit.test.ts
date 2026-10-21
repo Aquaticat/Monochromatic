@@ -113,7 +113,9 @@ await describe({
         // Version 13 (2026-10-20) re-keys every ballot cast before a candidate
         // that respells a Han name the archive spells inside a sentence was
         // refused.
-        expect(key,).toBe('a41ed7cdb778c31f07042bec533bf67080ba13386dcf8d2d7416f3bb1cf6205b',);
+        // Version 14 (2026-10-21) re-keys every ballot cast before the contest
+        // ballot gave its reason before its choice.
+        expect(key,).toBe('114d9497614f135d75fd309245a307ced241074db2264f9520e14f61943e90a5',);
       },
     },),
     it({

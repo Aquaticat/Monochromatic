@@ -108,9 +108,10 @@ await describe({
             + 'with the cut of a translators\' note alone on a quoted line: a stored refinement was chosen from a slate that '
             + 'showed a bare quote line where the note had stood; and from 10 to 11 with the cut of the notes from the prober, '
             + 'the resolution checker and the objection correction\'s slate: a stored refinement was judged over texts that '
-            + 'showed every note between translators)',
+            + 'showed every note between translators; and from 11 to 12 with the ballots that give their reason first (owner, 2026-10-21): '
+            + 'a stored refinement was chosen on a selection ballot that asked for the candidate before its reason)',
           fn: async () => {
-            expect(refineSliceKey(BASE,),).toBe('0ce21d98cb32666621902265640a843130516f896b6c112c4f0676ca1fbdc991',);
+            expect(refineSliceKey(BASE,),).toBe('6f551b50d2a054c096cb3b1a29b9007f739feb4506deeebf5fe1db99c204b29f',);
           },
         },),
 

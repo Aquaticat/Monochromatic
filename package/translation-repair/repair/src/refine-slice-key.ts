@@ -304,8 +304,16 @@ import type {
  where 11 was set, so none could write a record at 11 (the evidence of the logs' `START tip=` lines and
  `git merge-base --is-ancestor`, as the repair slice version gives it), and the number does not move. Over the 92 pinned English
  archives 10 hold a note their original lacks, so a record changes for at most those 10 entries.
+
+ 12 covers the selection ballot giving its reason before its choice (owner, 2026-10-21, "Reason first everywhere";
+ `e5bc27f9f0`): the candidate selection of the objection correction (`adjudication/src/candidate-select-wire.ts`) declares
+ `reason`, then `best`, where `best` came first. The key hashes the version, the shape of the run and the texts, not the sheet and not the rule that reads the
+ ballots, so a record written before would be served after. Runs zheermao21 and CuspariaKLSY21 started on `3637592bd4`,
+ which holds the commit that set 11 (`git merge-base --is-ancestor`), so records may stand at 11 and the change
+ cannot ride inside it; no search of any slice-cache directory was made, and the number moves. The consolidate, lane-contest, translate and repair
+ slice versions move for the same ballots (29, 14, 23, 41). No record has been written at 12, which this change sets first.
  */
-export const REFINE_CACHE_VERSION = 11;
+export const REFINE_CACHE_VERSION = 12;
 
 /**
  Everything about this run that changes what the voices are ASKED.

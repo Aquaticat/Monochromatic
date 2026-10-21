@@ -411,8 +411,25 @@ import type { LaneText, } from '@monochromatic-dev/translation-repair-translate-
  `typography/src/locate-quote.ts`), so the damage claims over a polish can differ for a slice holding such a note. The key
  hashes the version, the run shape and the texts, not the sheet. The same 12 logs, read the same way, show none that started on
  a tip that holds `6a28f54beb`, where 28 was set, so none could write a record at 28, and the number does not move.
+
+ 29 covers three changes to the settlement of 2026-10-21. A polish gate that ties between the polished and the base text
+ now ships the polished text (owner, 2026-10-21, "Polished text wins ties"; `45657407a6`): the gate counts a tie at or above
+ the minimum ballot count as a win for the polished text, where it kept the base, so a stored settlement of a tied gate holds
+ the opposite verdict. The polish gate's sheet shows the claims the repair panel accepted (`5419332cef`, CuspariaKLSY21 slice
+ 0), which the dispute note leaves out below major severity; the key carries that note when a slice has one
+ (`repair-claims`), so a slice with such claims asks a new question by itself, and a slice without them is unchanged by this
+ part. Every ballot gives its reason before its choice (owner, 2026-10-21, "Reason first everywhere"; `e5bc27f9f0`): the sheets
+ of the consolidation gate and the polish gate (`consolidate-gate-wire.ts`, `consolidation-polish-gate-wire.ts`), of the
+ absolute naturalness review (`absolute-naturalness-review-wire.ts`) and of the coverage judge that insertion admission
+ reads (`coverage-wire.ts`) declare and word the reason first. The key hashes the version, the shape of the run and the texts, not the sheet and not the rule that reads the
+ ballots, so a record written before would be served after. Runs zheermao21 and CuspariaKLSY21 started on `3637592bd4`,
+ which holds the commit that set 28 (`git merge-base --is-ancestor`), so records may stand at 28 and the change
+ cannot ride inside it; no search of any slice-cache directory was made, and the number moves. The lane-contest, translate
+ slice, repair slice and refine versions move for the same ballots (14, 23, 41, 12); the archive block review has no version
+ of its own; the consistency, page title and pairing versions stay, since their sheets and schemas are what they were. No
+ record has been written at 29, which this change sets first.
  */
-export const CONSOLIDATE_CACHE_VERSION = 28;
+export const CONSOLIDATE_CACHE_VERSION = 29;
 
 /**
  What a line-structured slice appends to its key material.
