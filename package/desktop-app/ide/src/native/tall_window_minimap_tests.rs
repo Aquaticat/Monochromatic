@@ -259,12 +259,12 @@ fn a_tall_window_over_a_long_file_draws_a_window_of_bands() {
     window.hide().expect("close minimap window");
 }
 
-/// A window taller than the device's texture limit gets a picture cut to the limit:
-/// the texture is made,
+/// A window taller than the device's texture limit gets a picture that covers its whole track:
 /// no error is shown,
-/// and the picture covers the top of the track and not the rest.
+/// and the picture reaches the end of the track,
+/// not the end of one texture.
 #[test]
-fn a_picture_taller_than_the_device_limit_is_cut_to_the_limit() {
+fn a_picture_taller_than_the_device_limit_covers_the_whole_track() {
     let (_project, opened) = open(&long_file(6_000));
     let window = &opened.window;
     // The window is 12,000 px tall at scale 1: its track is 12,000 px, past the harness device's 8192.
@@ -277,36 +277,22 @@ fn a_picture_taller_than_the_device_limit_is_cut_to_the_limit() {
     let track = window.get_minimap_track() * window.window().scale_factor();
     assert!(track > limit as f32, "the track is {track} px");
     let image = minimap_pixels(window, &opened.source).expect("a texture");
-    assert!(
-        image.height() <= limit,
-        "a texture of {} rows passes the limit {limit}",
-        image.height()
-    );
-    assert!(
-        image.height() as f32 > limit as f32 * 0.5,
-        "the picture is only {} rows of a track of {track}",
-        image.height()
-    );
-    assert!(
-        (image.height() as f32) < track,
-        "the cut picture should not cover the whole track"
-    );
     assert_eq!(
-        window.get_minimap_picture_height(),
-        image.height() as f32,
-        "the markup places the texture it was given"
+        window.get_minimap_picture_top(),
+        0.0,
+        "the view is scrolled to the top"
     );
-    assert_eq!(
-        opened.source.borrow().gpu.minimap_size(),
-        Some((image.width(), image.height())),
-        "the texture is the size of the picture the markup places"
+    assert!(
+        window.get_minimap_picture_height() + 1.0 >= track,
+        "the picture is {} rows of a track of {track}",
+        window.get_minimap_picture_height()
     );
     assert_eq!(
         window.get_error_message().to_string(),
         "",
-        "the cut picture is not an error"
+        "the tall picture is not an error"
     );
-    // The slice is several renders, and none of them came out blank.
+    // The picture is several renders, and none of them came out blank.
     let chunks = opened.source.borrow().gpu.minimap_chunks_rendered();
     let wanted = u64::from(image.height().div_ceil(ide_app::minimap::CHUNK_ROWS));
     assert!(
