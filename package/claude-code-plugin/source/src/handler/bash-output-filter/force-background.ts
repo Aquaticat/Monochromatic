@@ -1,18 +1,18 @@
 /**
- Opt-in switch that makes the main agent's Bash calls run as background tasks.
+ Default-on switch that makes the main agent's Bash calls run as background tasks.
 
  @module
  */
 
 /**
- Environment variable that opts in to forcing `run_in_background` on main-agent Bash calls.
+ Environment variable that opts out of forcing `run_in_background` on main-agent Bash calls.
  */
 const FORCE_BACKGROUND_ENV = 'MONOCHROMATIC_BASH_FORCE_BACKGROUND' as const;
 
 /**
- Value of {@link FORCE_BACKGROUND_ENV} that enables forcing; every other value, or absence, leaves Bash calls as sent.
+ Value of {@link FORCE_BACKGROUND_ENV} that disables forcing; every other value, or absence, forces background.
  */
-const FORCE_BACKGROUND_ON = 'on' as const;
+const FORCE_BACKGROUND_OFF = 'off' as const;
 
 /**
  Whether a Bash call should be rewritten to run in the background.
@@ -24,12 +24,13 @@ const FORCE_BACKGROUND_ON = 'on' as const;
 
  @param env - process environment holding {@link FORCE_BACKGROUND_ENV}
 
- @returns `true` only for a main-thread call with the opt-in set
+ @returns `true` for a main-thread call unless the opt-out is set
 
  @example
  ```ts
- shouldForceBackground({ env: { MONOCHROMATIC_BASH_FORCE_BACKGROUND: 'on' } });                  // true
- shouldForceBackground({ agentId: 'a1', env: { MONOCHROMATIC_BASH_FORCE_BACKGROUND: 'on' } }); // false
+ shouldForceBackground({ env: {} });                                                              // true
+ shouldForceBackground({ env: { MONOCHROMATIC_BASH_FORCE_BACKGROUND: 'off' } });                  // false
+ shouldForceBackground({ agentId: 'a1', env: {} });                                               // false
  ```
  */
 function shouldForceBackground(
@@ -43,7 +44,7 @@ function shouldForceBackground(
 ): boolean {
   if (agentId !== undefined)
     return false;
-  return env[FORCE_BACKGROUND_ENV] === FORCE_BACKGROUND_ON;
+  return env[FORCE_BACKGROUND_ENV] !== FORCE_BACKGROUND_OFF;
 }
 
 export {
