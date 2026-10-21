@@ -102,3 +102,24 @@ Commands matching these patterns are **not** filtered:
 The plugin is registered via `.claude-plugin/plugin.json` and hooks into `PreToolUse`
 with a `Bash` matcher.
  No manual configuration needed beyond installing the plugin.
+
+## Force background
+
+Setting `MONOCHROMATIC_BASH_FORCE_BACKGROUND` to `on` in the session environment
+ (for example in the `env` block of `~/.claude/settings.json`)
+ adds `run_in_background: true` to every Bash call the main agent makes.
+Any other value, or an unset variable, leaves calls as sent.
+
+- **Subagents are exempt**:
+   the hook input carries `agent_id` only inside a subagent,
+   and those calls are left in the foreground
+- **Independent of filtering**:
+   commands the denylist skips still run in the background, just without the output filter
+- **Result delivery**:
+   the agent receives a task ID and an output file path,
+   and reads the output with `Read` once the exit notification arrives
+- **Working directory**:
+   a `cd` inside a backgrounded command does not carry over to later commands
+- **Verification**:
+   a real `claude --print` session with this hook returned `Command running in background with ID ...`
+   and then the filtered output (`git version 2.56.0`) through the output file
