@@ -452,7 +452,10 @@ named for that subject and listed here.
   Provider fields read otherwise than the provider documents them:
   stream events,
   usage counts,
-  and the refusals a retry decision reads.
+  and the refusals a retry decision reads,
+  with the picture reader's reply the length limit cut (B718),
+  a NeuralWatt picture call sent at the provider's default effort (B719),
+  and the NeuralWatt energy estimate that counted a picture as base64 text (B720).
 - [Audit ledger: branches no input reaches, kept as quiet answers](audit-ledger-unreachable-branches-kept-as-quiet-answers.md):
   Branches no input reaches that answered quietly where a loud refusal belongs,
   most met when a coverage census asked for them to be removed,
@@ -476,7 +479,10 @@ named for that subject and listed here.
   or were withheld,
   a rejected credential that no line named (B685),
   replies the caller abandoned that no column counted (B687),
-  and a refusal the router gave before any request counted as the seat's failed ask (B711).
+  a refusal the router gave before any request counted as the seat's failed ask (B711),
+  Gemma listed as unable to read a picture on OpenRouter before any transcription was measured (B721),
+  the readers bench counted by text reach where a picture needs vision reach (B722),
+  and a picture reader measurement that lived in a scratch script (B723).
 - [Audit ledger: blocks and quotes read off the parse](audit-ledger-blocks-and-quotes-read-off-the-parse.md):
   Blocks,
   quotes and code spans counted by a blank-line split or a scan of their own,

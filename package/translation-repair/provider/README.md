@@ -72,7 +72,10 @@ The groups that follow name the main ones.
   `BEDROCK_MODELS`,
   `syntheticServes`,
   `reachOf`,
-  `visionReachOf`.
+  `visionReachOf`,
+  `OPENROUTER_PICTURES_UNMEASURED`
+  (the roster seats OpenRouter lists as reading pictures but whose transcription is unmeasured,
+  kept off the picture route by the card hold `openrouter-pictures-unmeasured`).
   Declared in `synthetic-catalog.ts`,
   `openrouter-catalog.ts`,
   `bedrock-catalog.ts`,
@@ -110,10 +113,20 @@ The groups that follow name the main ones.
   `keyAllowanceOf`,
   `readNeuralWattComments`,
   `createNeuralWattQuotaSession`,
-  `describePlanSpend`.
+  `describePlanSpend`,
+  `promptTokensOfRequest`,
+  `imagePixelSizeOf`,
+  `pictureTokensOfSize`.
+  A picture in a request is held by its patches,
+  round(width / 28) times round(height / 28) tokens read off the file header,
+  not by its base64 length (ledger B720),
+  and a NeuralWatt card side may name a `pictureReasoningEffort`
+  that the client sends as `reasoning_effort` on picture calls only (ledger B719).
   Declared in `neuralwatt-ledger.ts`,
   `neuralwatt-ledger-config.ts`,
   `neuralwatt-estimate.ts`,
+  `neuralwatt-picture-tokens.ts`,
+  `neuralwatt-image-size.ts`,
   `neuralwatt-meter.ts`,
   `neuralwatt-energy.ts`,
   `neuralwatt-day.ts`,

@@ -137,6 +137,8 @@ A cost a request reports does not end the day for NeuralWatt:
 the provider reports a nominal cost on free-energy requests too,
 and the dashboard counts such a request against the free energy.
 The only signal of plan energy spent is the difference between the quota readings at the start and the end of a run.
+A picture in a request is held by its patches and not by its base64 length (ledger B720),
+so a call that carries one does not hold the top energy bucket.
 The record is `doc/decision/translation-repair-neuralwatt-provider.md`.
 
 Plan a pass around these facts rather than around a clean window,

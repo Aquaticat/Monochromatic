@@ -457,6 +457,39 @@ Part of [the family README](../README.md).
   the cut one names the length limit and asks for the answer within it,
   keeping any working brief,
   which is prose in the prompt and never a reasoning parameter on the wire.
+- **A reasoning parameter goes on the wire for NeuralWatt picture calls only.**
+  Decided by the owner,
+  2026-10-21,
+  after the pass for `XingZ6016` lost a picture reading to `glm-5.3-flash` spending its whole completion cap reasoning at
+  NeuralWatt's default effort (ledger B718 and B719):
+  (two sentences of one message,
+  the dash between them left out here):
+  "NeuralWatt is a special case of all the providers:
+  It implements what it documents correctly,
+  almost always"
+  and
+  "I'm lifting the ban on passing params,
+  but only for NeuralWatt."
+  The owner's instruction of 2026-08-25 (no thinking,
+  budget or effort key in any body) holds for every other provider and for NeuralWatt text calls.
+  A NeuralWatt card side may name a `pictureReasoningEffort` among the efforts the provider documents for the model
+  (`low`,
+  `high`,
+  `max`),
+  and only that card type has the field,
+  so no other client can send it.
+  `glm-5.3-flash` names `low`,
+  unmeasured:
+  the first keyed run at that effort is the measurement.
+  `thinking_token_budget` is documented but its support table does not name this model,
+  so it is not sent.
+- **A picture reader joins a route only after a keyed measurement of that route.**
+  Decided by the owner,
+  2026-10-21 ("Yes try gemma"),
+  on the rule of 2026-09-08 that a reader's transcription is measured against the seated readers before it counts:
+  `gemma-4-26b-a4b-it` is listed as reading pictures on OpenRouter (zero data retention on every request),
+  held shut by `openrouter-pictures-unmeasured` until `reader-measure` in the bench package reports both clauses met,
+  and the bench of readers is counted by the providers that can show a picture (ledger B721 to B723).
 - **A claim the panel settles at neutral asks for no edit;
   the sheets define every severity.**
   Decided for quality,
