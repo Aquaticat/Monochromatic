@@ -1372,6 +1372,13 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     missing `/sys/class/drm` carries the result); `nsc list` afterwards shows no instances. So neither Depot CI nor a
     standard Namespace Linux instance gives this app a GPU; the GPU gates stay local. Unprobed: Namespace Apple
     Silicon Linux early access, other shapes, macOS (Metal, not the Vulkan path the owner accepted).
+    Flake agent `a5d7faec36a652c16` (started 2026-10-21, its own worktree off `origin/main`, branch push only):
+    the six open items of `doc/handover/ide-native-flakes.md` (find-box context menu, annotation stability, minimap
+    external-edit, reply wait in the other fixtures, thread count against video memory, the flaky-test ledger). Its
+    brief quotes `NLG`, `NLD` and `RXI`, allows only the capped stress tool (2 CPUs, 2 GiB) for repeated runs and one
+    full `test:native`. On its report: verify counts and gates myself, scan `ps`, `podman ps` and
+    `systemctl --user list-units`, merge in a scratch worktree, run the gates once, cadence only if product code
+    changed, land, reinstall if the binary changed, remove its worktree and branch.
     Open, in order: (1) the unexplained redraw on picture handoff in `src/native/minimap/picture.rs` (the remaining
     identical frames; a cause by measurement first); (2) the flake work, in `doc/handover/ide-native-flakes.md`:
     fixed with counts (refused-tile test 10 of 360 to 0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160 to 0 of 160); open:
