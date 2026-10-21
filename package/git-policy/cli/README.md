@@ -30,6 +30,9 @@ Read-only commands,
   When another commit lands first,
    the wrapper replays its own commit on top of the new state.
   Concurrent commits from several worktrees or sessions therefore never overwrite each other.
+  After an explicit-path commit lands, the wrapper compares the real index before and after the landing.
+  Any staged entry outside the committed paths that differs is named in a warning,
+   so a loss of staged work is reported instead of silent.
   A transaction that an interrupted process left behind is recovered by the next invocation.
 - Content policies.
   `final-newline`,

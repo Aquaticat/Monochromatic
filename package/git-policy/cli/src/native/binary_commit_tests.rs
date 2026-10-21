@@ -624,3 +624,34 @@ fn an_explicit_path_commit_works_before_any_index_exists() {
     assert_eq!(porcelain(&fixture, repo.as_path()), "");
     remove_settled(&fixture);
 }
+
+/// An explicit-path commit leaves every other staged entry (a rename, a new file) exactly as it was and says nothing
+///  about staged entries moving.
+#[test]
+fn an_explicit_path_commit_keeps_other_staged_entries_without_a_warning() {
+    let fixture: Fixture = fixture("commit-keeps-staged");
+    let repo: PathBuf = edited_repository(&fixture, "repo");
+    std::fs::write(repo.join("b.txt"), b"base\n").expect("b");
+    git(&fixture, repo.as_path(), &["add", "--", "b.txt"]);
+    git(&fixture, repo.as_path(), &["commit", "--quiet", "--message=b", "--", "b.txt"]);
+    git(&fixture, repo.as_path(), &["mv", "b.txt", "moved.txt"]);
+    std::fs::write(repo.join("c.txt"), b"new\n").expect("c");
+    git(&fixture, repo.as_path(), &["add", "--", "c.txt"]);
+    let staged_before: String = git_text(&fixture, &repo, &["diff", "--cached", "--name-status"]);
+    let observed: Observed = run_commit(
+        &fixture,
+        repo.as_path(),
+        &["commit", "--quiet", "--message=edit a", "--", "a.txt"],
+    );
+    assert_eq!(observed.code, Some(0), "{}", stderr_of(&observed));
+    assert!(
+        !stderr_of(&observed).contains("outside the paths it committed"),
+        "{}",
+        stderr_of(&observed)
+    );
+    assert_eq!(
+        git_text(&fixture, &repo, &["diff", "--cached", "--name-status"]),
+        staged_before
+    );
+    remove_settled(&fixture);
+}

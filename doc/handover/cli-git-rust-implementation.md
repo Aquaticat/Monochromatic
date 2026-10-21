@@ -1919,6 +1919,12 @@ that is verification, not a decision for the user.
   `~/temp/agent`, exit code appended), never as a foreground wait; advance independent work while they run and read
   the result when the completion notice arrives. A foreground clippy/test call with a long timeout counts as blocking.
   Chat promises do not persist; this entry is the record.
+  Status 2026-10-20 night, later: the landing-invariant warning is DONE and committed (`landing_invariant.rs`, 4+3
+  host tests, binary `an_explicit_path_commit_keeps_other_staged_entries_without_a_warning`; clippy clean). It is not
+  in 0.2.5, so it needs 0.2.6 (batch it with whatever else lands next). `rm --cached` and `worktree remove --force`
+  stay unguarded (user). The runbook step `git switch main` at `doc/runbook/publish-npm-package-first-time.md:57` runs
+  in a fresh clone (clean), so the policy never rejects it: no edit needed. Mutation for the new files: not started,
+  by instruction; run in the background only after the feature work stops.
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and
