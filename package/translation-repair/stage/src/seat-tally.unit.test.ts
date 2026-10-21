@@ -980,9 +980,7 @@ await describe({
             },);
 
             expect(
-              [...fromText, fromJson, fromDecide,].map(function toText(thrown,): string {
-                return String(thrown,);
-              },),
+              [...fromText, fromJson, fromDecide,].map(String,),
             ).toStrictEqual(
               Array.from({ length: 7, }, function sameRefusal(): string {
                 return `NoProviderForModelError: no provider can take glm-5.3: ${ROUTER_REASON}`;

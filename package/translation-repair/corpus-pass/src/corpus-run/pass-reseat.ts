@@ -1,4 +1,7 @@
-import { type Logger, tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 
 import type { RepairSliceSeating, } from '@monochromatic-dev/translation-repair-assembly/ts';
 import type {
@@ -111,12 +114,16 @@ function repairSeatingOf(
     .checkerModelIds
     .join(',',);
   /**
+   Models of the reading that no wet provider serves.
+   */
+  const unserved = new Set(seats.unserved,);
+  /**
    Checkers on the bench that no wet provider serves, for the line.
    */
   const padding = seats.repairModels
     .checkerModelIds
     .filter(function isUnserved(modelId,): boolean {
-      return seats.unserved.includes(modelId,);
+      return unserved.has(modelId,);
     },)
     .join(',',);
   return {

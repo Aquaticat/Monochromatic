@@ -612,9 +612,13 @@ export function seatReportLines(
    Seats that were asked at least once, the denominator the dark line states;
    a seat only abandoned or refused by the router was never asked.
    */
-  const askedCount = counts.filter(function wasAsked(count,): boolean {
+  const askedSeats = counts.filter(function wasAsked(count,): boolean {
     return count.asked > 0;
-  },).length;
+  },);
+  /**
+   How many seats were asked.
+   */
+  const askedCount = askedSeats.length;
 
   /**
    The one line a reader who is not grepping must see.
