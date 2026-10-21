@@ -1337,6 +1337,14 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     renderer), so `test:native`, `inspect:native`, `inspect:cadence` and the screenshot checks cannot run in a Depot
     sandbox as the decision stands. The CLI is installed (2.102.23) and logged in (org `l4zncjjbj5`); `.depot/workflows`
     holds `current-baseline.yml` and `weekly-native.yml`. Unprobed: whether today's Depot sandbox exposes a GPU.
+    Docs checked the same day (depot.dev CI overview, blog, pricing, changelog): sandboxes are x86_64 and Arm64 Linux,
+    2x8 to 64x256, Ubuntu 24.04, no GPU, `/dev/dri` or Vulkan mentioned; the only GPU offering found is Depot GitHub
+    Actions runners on Depot Managed (the owner's AWS account, Custom plan), a different product that the adoption
+    decision also excludes. The owner approved one probe job (list `/dev/dri`, `/dev/kvm`, PCI devices, Vulkan ICD
+    files on `depot-ubuntu-24.04`, workflow only in the scratch worktree `~/temp/agent/depot-probe`, never committed).
+    SECOND BLOCKER, task halted again: `depot ci run --workflow .depot/workflows/ide-gpu-probe.yml --follow --forge
+    github` (CLI 2.102.23) exits 1 with "no supported repository found in git remotes; use --repo and optionally
+    --forge" although `origin` is `https://github.com/Aquaticats/Monochromatic`; cause not yet found; nothing ran.
     Open, in order: (1) the unexplained redraw on picture handoff in `src/native/minimap/picture.rs` (the remaining
     identical frames; a cause by measurement first); (2) the flake work, in `doc/handover/ide-native-flakes.md`:
     fixed with counts (refused-tile test 10 of 360 to 0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160 to 0 of 160); open:
