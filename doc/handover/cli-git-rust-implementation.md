@@ -1914,6 +1914,11 @@ that is verification, not a decision for the user.
   clippy and host tests were running when this was written. Still to do: binary-level proof of that warning, docs
   (README, SPEC), commit; comment on and close 1791; JIT-only fix of `doc/runbook/publish-npm-package-first-time.md:57`;
   mutation for the new files only after the implementation stops changing, run in the background and never awaited.
+  Standing procedure (user, 2026-10-20 night, after two reminders): clippy, host tests, binary tests, container gates,
+  mutation and any command that may exceed a minute run with `run_in_background` (output to a file under
+  `~/temp/agent`, exit code appended), never as a foreground wait; advance independent work while they run and read
+  the result when the completion notice arrives. A foreground clippy/test call with a long timeout counts as blocking.
+  Chat promises do not persist; this entry is the record.
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and
