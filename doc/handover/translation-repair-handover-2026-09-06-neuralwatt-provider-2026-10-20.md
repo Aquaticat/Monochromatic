@@ -299,6 +299,27 @@ and was re-seated as a checker under a hold,
 after Synthetic ran dry,
 when `hf:moonshotai/Kimi-K3` was withheld
 (it threw 137 of 158 asks).
+The investigation found the seating as documented.
+`doc/decision/translation-repair-short-bench-share.md` keeps a seat no wet provider serves on the bench,
+to be lost at call time.
+The checker bench pads with unserved seats up to three.
+Kimi-K3 was withheld by the owner's OpenRouter cost rule
+(`OPENROUTER_WITHHELD`),
+which does not name Qwen.
+One defect stands,
+checked against `package/translation-repair/stage/src/seat-tally.ts`:
+`recordThrow` counts the router's own refusal (`NoProviderForModelError`) as an ask that threw,
+where the decision says a refusal is not an ask.
+So `glm-5.3` reads `asked=4 threw=4` though it was never sent a request,
+Qwen's 137 throws are almost all such refusals,
+and the tally withholds such a seat for the run even if a provider becomes wet again.
+Neither `JUDGE SEATS` nor the re-seat line names a seated seat no wet provider serves.
+The fix,
+red first,
+is queued in keyless worktree w254:
+the refusal counts as `unreachable`,
+`JUDGE SEATS` names the unserved seats,
+and the re-seat line marks its padding.
 `CuspariaKLSY20` (entry CuspariaKLSY) runs on the same build from 02:52 UTC on 2026-10-21;
 a fix that lands changes the build,
 and the rotation then restarts at `zheermao101`.
