@@ -809,7 +809,7 @@ dependencies = [
 
 [[package]]
 name = "monochromatic-git-policy-cli"
-version = "0.2.6"
+version = "0.2.7"
 dependencies = [
  "forbidden-strings",
  "getrandom",
