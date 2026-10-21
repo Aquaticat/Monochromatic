@@ -678,3 +678,64 @@ and restart the rotation at `zheermao101`.
 
 The sweep's salts covering a bench of at most nine seats is already recorded
 (`package/translation-repair/doc/audit-ledger-output-decided-by-arrival-order.md`).
+
+The katex shim and the rounds behind it,
+2026-10-21:
+
+- w259 landed as `6d525ca189` after gate g142
+  (2732 pass,
+  0 fail)
+  and a clean rotation sweep.
+- w260's gate g143 was green,
+  but its rotation sweep failed at load under salts 4 to 9,
+  every file with `ERR_MODULE_NOT_FOUND` for `katex`.
+  The cause was outside the repository:
+  scratch worktrees sat under a directory whose own `node_modules`,
+  another session's npm install,
+  had answered imports the workspace does not declare,
+  and that install was rewritten without `katex` at 17:10:03 UTC
+  (ledger B801 and B802).
+- The w262 round replaced the override `'micromark-extension-math>katex': '-'`
+  with a workspace shim,
+  `package/shim/katex`,
+  whose every member throws a named error;
+  the corpus-pass build digest did not move.
+  Its first gate in a worktree with no `node_modules` above it
+  (`~/worktrees/tr-w262`)
+  found a second undeclared resolution,
+  in `consistency/src/consistency-shown-kinds.unit.test.ts`,
+  fixed in `e32aed4101`.
+  Gate g145 on that commit was green
+  (2732 pass,
+  0 fail)
+  and its rotation sweep clean under salts 0 to 9.
+- Main had moved its lockfile meanwhile,
+  so w262 was merged with main as `b04b10b083`,
+  and gate g146 runs on that merge before it lands.
+- w260 was moved to `~/worktrees/tr-w260`
+  and merged with `b04b10b083` as `1eabd8c9ff`
+  (one index-list conflict,
+  both sides kept).
+- Gates and sweeps now run only in worktrees under `~/worktrees`,
+  which has no `node_modules` above it;
+  the gate script refuses any other worktree.
+
+Next,
+in order:
+land w262 when g146 is green;
+gate w260 and run its rotation sweep,
+then land it
+and post the corrective comments on `b1a88def13`
+(9 of 14,
+not 9 of 15)
+and `97e17dc6dc`
+(its run tests stay red until `d1e463bb46`,
+which its message does not say);
+rebuild the branch worktree,
+freeze the new digest in the launcher,
+run the rotation sweep,
+and restart the rotation at `zheermao101`.
+The `@deepseek-ai/dsh-*` lockfile drift
+(alpha.4 to rc.2,
+from `package/dsh-plugin`)
+is another session's and stays out of these commits.
