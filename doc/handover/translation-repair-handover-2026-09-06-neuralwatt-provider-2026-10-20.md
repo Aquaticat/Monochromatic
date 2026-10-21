@@ -400,12 +400,53 @@ so w254's entry became B711 in the merge commit `22cd3e200c`,
 and the subjects of `1ce1e851b0`
 and `29ce2d9daa`
 and `f239810f90` still say B710.
-Gate g138 runs on that merge.
-Once it is green and lands,
-the branch worktree is rebuilt,
-the frozen digest in the launch script is replaced
-and the rotation restarts at `zheermao101`;
-the rotation's order after it is in the launch script.
+Gate g138 on that merge was green
+(145 steps as in g137;
+2693 pass,
+0 fail),
+and it landed as `3637592bd4` on 2026-10-21 (UTC).
+Corrective commit comments name B711 on the three subjects
+and the case count on `da0ec11dd6`.
+The branch worktree was rebuilt at `3637592bd4`;
+it and w254 build alike
+(`sha256-tree-v1:06c97a69446dc452fa2c602da834c36febb7f0d7b4b1010b5dfa9fab81097eec`).
+Since w254 added scripted cases that name seats,
+the rotation sweep runs on w254 before the rotation restarts at `zheermao101`.
+
+A read-only investigation of the zheermao20 letter
+(recorded in the pass log of 2026-10-21)
+found the archive block review as documented,
+with three gaps,
+and a fourth question.
+This session decided to fix all four,
+red first,
+in keyless worktrees based on `22cd3e200c`,
+with ledger ids assigned in advance so the merge does not collide again:
+
+- B712:
+  a composite candidate built from revisions that keep the block's line count and change disjoint lines,
+  checked by the same shape and footnote gates,
+  as the editor lane already builds
+  (`package/translation-repair/repair/src/editor-candidates.ts`)
+  (veto-open).
+- B713:
+  the review round gets the writer window
+  (180000ms),
+  since its revise replies are writer voices under the owner's writer rule;
+  the select round keeps 120000ms
+  (veto-open).
+- B714:
+  `repairArchiveBlocks` keeps the stage's findings in the artifact,
+  so a block that lost a writer shows it.
+- B715:
+  trace why both `source-supported` replies on the letter were dropped as unanchored,
+  and fix it if the anchor test refuses a valid quote.
+
+B712 to B714 run in w255,
+B715 in w256.
+The rotation restarts on the g138 build without waiting for them:
+the day's free energy is spent either way,
+and a read on that build still finds defects.
 
 The sweep's salts covering a bench of at most nine seats is already recorded
 (`package/translation-repair/doc/audit-ledger-output-decided-by-arrival-order.md`).

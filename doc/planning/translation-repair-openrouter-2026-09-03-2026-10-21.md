@@ -257,10 +257,17 @@ and the cause has two parts that are design and not fault:
   with 0 answer characters after about 245 s.
   Whether 180000ms would have let it finish is not known.
 
-That Qwen's cut reply would have been the whole-letter rewrite it was in zheermao19,
-and the winning one,
-is a guess;
-it is the most likely reading and nothing in the run shows it.
+A first draft of this read called it the most likely reading
+that Qwen's cut reply would have been the winning whole-letter rewrite of zheermao19.
+A read-only investigation contradicts that:
+in zheermao19 the letter's Synthetic Qwen call also ended empty,
+and the winning text came from Qwen's re-ask on Hyper,
+which was dry for all of zheermao20.
+Synthetic was still wet during the letter's review.
+The two zheermao20 revisions changed disjoint lines,
+and both  replies were dropped as unanchored for a cause not yet traced.
+The investigation and the three gaps it found in the source are in
+[the archive block review and the zheermao20 letter](translation-repair-archive-block-review-zheermao20-letter.md).
 
 #### Better than zheermao19
 
@@ -660,9 +667,12 @@ and the `closed on a short bench` lines with 12 fallback decisions (none;
   the archive block review picks one whole revision,
   only two narrow revisions reached it,
   and Qwen's reply was cut by the 120 s grace after quorum.
-  No fix for it is queued;
-  whether the review should merge revisions,
-  run a second round or wait 180000ms is not decided here.
+  Fixes for the three gaps the investigation found are queued
+  in [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20.md#next):
+  a composite candidate of disjoint revisions,
+  the writer window for the review round,
+  the stage's findings kept in the artifact,
+  and a trace of why both `source-supported` replies were dropped as unanchored.
 - The seating investigation's one defect is queued in w254,
   and the two defects of the NeuralWatt quota session and the rotation sweep in w253;
   both are in [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20.md#next).
