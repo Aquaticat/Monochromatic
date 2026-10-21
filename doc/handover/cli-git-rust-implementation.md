@@ -1931,6 +1931,17 @@ that is verification, not a decision for the user.
   `format:rust` (bare `cargo fmt`) are removed from both mise.toml files and the README line; the repository lints Rust
   through monochromatic-lint and clippy. The depot coverage manifest still lists the old task names (a planning
   snapshot, left as is).
+  Done later 2026-10-20 night: 0.2.6 is published and INSTALLED (`git --version` 2.56.0 wrapper = cli-git 0.2.6);
+  `mise.lock` reverted with the override. Issue 1787 closed (format tasks removed). Issue 492 commented: no consumer
+  exists (476 is closed and no Worker URL check is in the repository), so it stays open; adopted defaults are recorded
+  in the comment. Release-artifact latency harness DONE: `bin/native-perf.mjs`, task `native:perf`, README entry,
+  baseline `perf/native-latency-2026-10-20.json` (Linux, 30 paired samples per scenario): forwarded `rev-parse`,
+  `status`, `log`, `diff --stat` add 1.5 to 1.7 ms median and under 2 ms p95 against the 2,000 ms bound; an
+  explicit-path commit adds about 174 ms median (reported, not enforced). Per SPEC a budget is accepted only with a
+  baseline on each enforced OS, so the macOS and Windows baselines remain open (no such host here). SPEC.md gained
+  "Discarding commands" (guard, audit file, landing check). Remaining open: scanner Windows pathname mutation rerun
+  (task 23, needs a Windows VM), Windows checks, mutation campaigns for the new files (user: not now), issue 1791
+  closing (done below), 630/574/1770 unchanged.
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and

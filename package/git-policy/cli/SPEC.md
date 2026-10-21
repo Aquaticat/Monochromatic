@@ -3070,6 +3070,41 @@ stripped before real Git.
 Escape-looking option values and pathspecs remain ordinary Git arguments.
 The legacy fixed-rule implementations no longer participate in dispatch.
 
+### Discarding commands
+
+`linked-worktree-only` guards every command form that can overwrite or delete uncommitted work:
+`stash` (except `list`, `show` and `create`),
+`clean` without a dry run,
+`reset` in the hard, merge, keep, mixed and default modes,
+`restore`,
+`checkout` with paths or a force option,
+`checkout` and `switch` that move `HEAD`,
+`switch` with a force or discard option,
+`rm` and `mv` with force,
+`checkout-index` with force,
+`read-tree` with reset,
+and the abort forms of `merge`, `rebase`, `cherry-pick`, `revert` and `am`.
+A form is rejected in the main worktree and outside any worktree always,
+and in a linked worktree while `git status --porcelain=v1 --untracked-files=no` is non-empty
+(`clean` also counts untracked files).
+A `HEAD`-moving form is rejected only while tracked changes exist.
+A status Git cannot read is a `fact-unavailable` finding, never a clean worktree.
+Repositories under an allowlisted tool cache are exempt.
+The rejection names the form, what it destroys,
+an alternative that fits the likely intent,
+and the deliberate override (`--no-enforce-worktree` directly after the subcommand).
+
+Every decision about a guarded form is appended as one JSON line to `<common-git-dir>/cli-git-audit.jsonl`
+with `schemaVersion`, `timeMillis`, `pid`, `parentPid`, `worktree`, `form`, `outcome`
+(`rejected`, `allowed`, `exempt` or `hatch`), `dirty`, `cwd` and `arguments`.
+The file moves to `cli-git-audit.jsonl.1` at one mebibyte.
+A failed write never changes the command's result.
+
+After an explicit-path landing computes its post-index,
+the wrapper lists the stage entries of the pre-landing and post indexes,
+and warns with the differing paths outside the committed and guarded paths.
+The warning never changes the landing.
+
 ### Forbidden root context
 
 Reject root `CONTEXT.md` for commit candidates and direct check.

@@ -452,6 +452,11 @@ mise run //package/git-policy/cli:native:test:container
 - `native:test:container` is the authority.
   It builds the crate and runs the tests and Clippy in bounded containers with Git 2.56.0 and no network.
   Set `GIT_POLICY_NATIVE_IMAGE_TAG=<name>` to keep the images of parallel runs apart.
+- `native:perf` builds the release executable and measures the latency it adds to forwarded Git commands and to
+  explicit-path commits, with paired direct-Git samples in disposable repositories.
+  It reports the median, p95 and median absolute deviation of both sides and the added delta,
+  fails when a forwarded command's added p95 reaches the 2,000 ms bound or any sample fails,
+  and `-- --output <file>` stores the raw samples (baselines live in `perf/`).
 - `native:lock:members` records a changed dependency list or version in `Cargo.lock` without moving any other locked
   version.
 
