@@ -150,20 +150,25 @@ await describe({
     },),
 
     it({
-      name: 'REFUSES A MODEL THAT OPENROUTER DOES NOT SERVE, since the measurement is of that route',
+      name: 'REFUSES A ROSTER MODEL OPENROUTER DOES NOT SERVE AND A NAME THAT IS NO ROSTER MODEL, since the '
+        + 'measurement is of that route',
       fn: async () => {
-        const refusal = await rejectionOf(async function readUnservedModel(): Promise<unknown> {
-          await Promise.resolve();
-          return readMeasureAsk({
-            line: lineOf({
-              command: 'reader-measure',
-              typed: ['--model', 'hf:moonshotai/Kimi-K3', '--trusted', '/runs', '--pictures', '/people',],
-            },),
-            env: { TRANSLATION_REPAIR_OPENROUTER_API_KEY: 'whisker-key-7421', },
+        for (const model of ['google.gemma-4-e2b', 'tabby-9',]) {
+          /* oxlint-disable no-await-in-loop -- two refusals, one after the other */
+          const refusal = await rejectionOf(async function readUnservedModel(): Promise<unknown> {
+            await Promise.resolve();
+            return readMeasureAsk({
+              line: lineOf({
+                command: 'reader-measure',
+                typed: ['--model', model, '--trusted', '/runs', '--pictures', '/people',],
+              },),
+              env: { TRANSLATION_REPAIR_OPENROUTER_API_KEY: 'whisker-key-7421', },
+            },);
           },);
-        },);
-        expect(refusal,).toBeInstanceOf(StatedRefusalError,);
-        expect((refusal as Error).message,).toContain('OpenRouter',);
+          /* oxlint-enable no-await-in-loop */
+          expect(refusal,).toBeInstanceOf(StatedRefusalError,);
+          expect((refusal as Error).message,).toContain('OpenRouter',);
+        }
       },
     },),
   ],

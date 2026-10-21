@@ -12,7 +12,7 @@ import {
 } from './image-reading-sense.ts';
 import {
   readsImages,
-  type ModelClient,
+  type ModelCaller,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type {
@@ -288,7 +288,7 @@ export async function readImageAsset(
     perCallTimeoutMs,
     l,
   }: {
-    readonly client: ModelClient;
+    readonly client: ModelCaller;
     readonly modelId: RosterModelId;
     readonly bytes: Uint8Array;
     readonly assetName: string;

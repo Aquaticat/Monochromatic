@@ -20,7 +20,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
-import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider';
+import type { ModelCaller, } from '@monochromatic-dev/translation-repair-provider';
 import { SEAT_HYPER_TEXT_BEDROCK, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixture/ts/hang-stop.test-fixture.ts';
 import { measureReader, } from '../../dist/final/node/index.mjs';
@@ -64,7 +64,7 @@ const RECORDS = [[
  const { client, asks, } = answering({ reply: NOTICE, },);
  ```
  */
-function answering({ reply, }: { readonly reply: string; },): { readonly client: ModelClient; readonly asks: string[]; } {
+function answering({ reply, }: { readonly reply: string; },): { readonly client: ModelCaller; readonly asks: string[]; } {
   /**
    Asset names asked, in order.
    */
@@ -79,9 +79,6 @@ function answering({ reply, }: { readonly reply: string; },): { readonly client:
       },
       chatJson: async () => {
         throw new Error('chatJson unused',);
-      },
-      quotas: async () => {
-        throw new Error('quotas unused',);
       },
     },
   };

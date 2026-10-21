@@ -67,6 +67,7 @@ export type CommandLines = {
   readonly 'probe-sensitivity': CommandLineSpec<never, never, never>;
   readonly 'probe-verify': CommandLineSpec<never, never, never>;
   readonly 'producer-calibrate': CommandLineSpec<'candidates', never, 'candidates-alone'>;
+  readonly 'reader-measure': CommandLineSpec<'model' | 'sample' | 'pictures', 'trusted', never>;
   readonly 'recall-benchmark': CommandLineSpec<never, never, 'plan'>;
   readonly 'repeat-census': CommandLineSpec<never, never, never>;
   readonly 'rendering-audit-settled': CommandLineSpec<'archive' | 'clone' | 'only' | 'cap', never, never>;
@@ -255,6 +256,15 @@ export const COMMAND_LINES: CommandLines = {
     valued: { candidates: SEATABLE_IDS, },
     switches: { 'candidates-alone': true, },
     positionals: SLICE_COUNT,
+  },
+  'reader-measure': {
+    ...NO_ARGUMENTS,
+    valued: {
+      model: 'seat id',
+      sample: COUNT,
+      pictures: 'directory holding people directories',
+    },
+    repeatable: { trusted: 'directory holding runs directories', },
   },
   'recall-benchmark': {
     ...NO_ARGUMENTS,

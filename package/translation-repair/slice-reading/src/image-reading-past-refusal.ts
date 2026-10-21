@@ -5,7 +5,7 @@ import {
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup/ts';
-import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import type { ModelCaller, } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   type ImageReading,
   IMAGE_READING_PERSPECTIVES,
@@ -247,7 +247,7 @@ async function reaskCut(
     perCallTimeoutMs,
     l,
   }: {
-    readonly client: ModelClient;
+    readonly client: ModelCaller;
     readonly modelId: RosterModelId;
     readonly bytes: Uint8Array;
     readonly assetName: string;
@@ -344,7 +344,7 @@ export async function readPastRefusal(
     perCallTimeoutMs,
     l,
   }: {
-    readonly client: ModelClient;
+    readonly client: ModelCaller;
     readonly modelId: RosterModelId;
     readonly bytes: Uint8Array;
     readonly assetName: string;

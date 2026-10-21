@@ -140,6 +140,35 @@ export { runProducerCalibrate, } from './corpus-run/producer-calibrate-run.ts';
 export { runBenchRow, } from './corpus-run/roster-bench-round.ts';
 export { type BenchRow, } from './corpus-run/roster-bench-row.ts';
 export { runRosterBench, } from './corpus-run/roster-bench-run.ts';
+export {
+  type MeasureAsk,
+  readMeasureAsk,
+} from './corpus-run/reader-measure-ask.ts';
+export { runReaderMeasure, } from './corpus-run/reader-measure-command.ts';
+export { loadPictures, } from './corpus-run/reader-measure-pictures.ts';
+export {
+  matchRecord,
+  readTrustedRecords,
+  type RecordMatch,
+} from './corpus-run/reader-measure-records.ts';
+export { renderMeasureReport, } from './corpus-run/reader-measure-report.ts';
+export {
+  type CandidateOutcome,
+  measureReader,
+  type MeasuredPicture,
+  type MeasuredRow,
+} from './corpus-run/reader-measure-run.ts';
+export {
+  bandOf,
+  type CandidateRates,
+  candidateRatesOf,
+  type MeasureVerdict,
+  MINIMUM_PRODUCED_READINGS,
+  type SeatedBand,
+  type TrustedReading,
+  type TrustedRecord,
+  verdictOf,
+} from './corpus-run/reader-measure-score.ts';
 export { readAsk, } from './corpus-run/roster-card-ask.ts';
 export {
   fetchListing,

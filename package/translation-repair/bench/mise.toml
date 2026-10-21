@@ -73,6 +73,12 @@ depends = ["build"]
 env.TRANSLATION_REPAIR_STARTED_BY = "roster-card"
 run = "node dist/final/node/roster-card.mjs"
 
+[tasks."reader-measure"]
+description = "Measure a candidate picture reader through OpenRouter (zero data retention) against the readings the pipeline already trusts, by the two-clause reader rule of 2026-09-08, and say whether to lift its openrouter-pictures-unmeasured hold; SPENDS THE OPENROUTER KEY, one ask per matched picture (pass --trusted dir, repeatable, naming a directory holding runs directories, --pictures dir naming the corpus people directory, and optionally --model seat id, default gemma-4-26b-a4b-it, and --sample count, default 9, after --)"
+depends = ["build"]
+env.TRANSLATION_REPAIR_STARTED_BY = "reader-measure"
+run = "node dist/final/node/reader-measure.mjs"
+
 [tasks."model-health"]
 description = "Ask every roster model one trivial structured question and report what came back, so schema-mismatch can be told apart from a dead model"
 depends = ["build"]
