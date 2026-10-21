@@ -778,9 +778,9 @@ The landings and the restart,
     (`neuralwatt-client.ts:392` and `:424` send it on picture calls only),
     so `glm-5.3-flash` runs at its default `max`.
     Four of its text calls ended at the 18,316-token cap with no content
-    (SPEND lines at 21:17:32,
-    21:20:36,
-    21:37:15 and 21:40:06 UTC),
+    (SPEND lines at 21:17:32 UTC,
+    21:20:36 UTC,
+    21:37:15 UTC and 21:40:06 UTC),
     and three of the Hyper re-asks after them capped too.
     The owner's lift ("only for NeuralWatt") covers text calls as well.
   - K2:
