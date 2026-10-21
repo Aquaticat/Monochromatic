@@ -29,6 +29,7 @@ use ide_app::line_rows::LineRows;
 use ide_app::minimap::{
     BAND, BUILD_WORK, CHUNK_ROWS, Cancel, Fills, Geometry, Input, LineCache, Source, Stats,
     band_count, build, chunk_rows, cut, most_bands, picture_rows, slice_items, slice_rows,
+    texture_rows, texture_runs,
 };
 /// The vertical mapping.
 use ide_app::row_map::RowMap;
@@ -744,6 +745,56 @@ fn a_tall_slice_is_cut_into_chunks_of_at_most_the_chunk_rows() {
         "the last chunk is the rest"
     );
     assert!(chunk_rows(&(5..5)).is_empty());
+}
+
+/// The chunks of a picture are grouped into textures of whole chunks, none taller than the device's limit,
+/// top first, with no chunk left out or in two textures, and a limit that is not a multiple of a chunk
+/// wastes the rest of the texture rather than cutting a chunk.
+#[test]
+fn chunks_are_grouped_into_textures_that_fit_the_limit() {
+    let full = CHUNK_ROWS;
+    // Sixteen full chunks and a short one fill a texture of 8,192 rows and start another.
+    let mut heights = vec![full; 16];
+    heights.push(100);
+    assert_eq!(texture_runs(&heights, 110, 8192), vec![0..16, 16..17]);
+    // A limit of 1,024 rows holds two chunks.
+    let heights = vec![full; 6];
+    assert_eq!(texture_runs(&heights, 110, 1024), vec![0..2, 2..4, 4..6]);
+    // A limit of 1,500 rows holds two chunks and wastes 476 rows.
+    assert_eq!(texture_runs(&heights, 110, 1500), vec![0..2, 2..4, 4..6]);
+    // One chunk is one texture at a limit of exactly a chunk, and a limit under a chunk still makes progress.
+    assert_eq!(texture_runs(&[full, full], 110, full), vec![0..1, 1..2]);
+    assert_eq!(texture_runs(&[full, full], 110, 100), vec![0..1, 1..2]);
+    // Nothing gives no texture, and a short picture is one texture.
+    assert!(texture_runs(&[], 110, 8192).is_empty());
+    assert_eq!(texture_runs(&[40], 110, 8192), vec![0..1]);
+    // Every grouping is a partition of the chunks in order whose textures fit.
+    for limit in [512_u32, 700, 1024, 3000, 8192, 16384] {
+        let heights: Vec<u32> = (0..50).map(|index| return 100 + index * 9).collect();
+        let runs = texture_runs(&heights, 220, limit);
+        let mut next = 0;
+        for run in &runs {
+            assert_eq!(run.start, next, "a gap or an overlap at limit {limit}");
+            next = run.end;
+            let rows: u32 = heights[run.clone()].iter().sum();
+            assert!(
+                rows <= texture_rows(220, limit) || run.len() == 1,
+                "{rows} rows pass the limit {limit}"
+            );
+        }
+        assert_eq!(next, heights.len(), "a chunk was left out at limit {limit}");
+    }
+}
+
+/// A wide picture is stacked from shorter textures than the device's side allows,
+/// so no texture passes the byte rule the source tile keeps.
+#[test]
+fn a_wide_texture_is_held_to_the_byte_rule_as_well_as_the_side() {
+    assert_eq!(texture_rows(110, 8192), 8192);
+    assert_eq!(texture_rows(0, 8192), 8192);
+    // 64 MiB of RGBA over 8,192 columns is 2,048 rows.
+    assert_eq!(texture_rows(8192, 16384), 2048);
+    assert_eq!(texture_rows(8192, 1024), 1024);
 }
 
 /// The texture is as wide as the minimap and as tall as the slice,
