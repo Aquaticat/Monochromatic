@@ -3573,6 +3573,7 @@ and a frame scaled down keeps the coverage of its edges).
 `minimap-texture-limit-key`,
 `minimap-texture-runs`,
 `minimap-texture-top`,
+`minimap-slices-in-place`,
 `minimap-most-bands`,
 `minimap-chunk-rows`,
 `minimap-chunk-size`,

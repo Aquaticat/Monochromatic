@@ -114,6 +114,62 @@ Built on branch `worktree-agent-a4d54af4e63faea6b` (off `a7f8523f0c`).
   a device change at run time (a new device with another limit) is posted again through the key,
   but a window that moves to another GPU was not tried.
 
+### The scroll hitch the first version of the stack caused
+
+The orchestrating session's cadence A/B (release, 1100 by 660, 50,000 line `big.rs`, scroll scenario, recorder at 60 Hz)
+showed one identical (missed) recorded frame at slot 35
+in 11 of 13 runs of the stacked tree and in 6 of 27 of the baseline.
+
+#### Cause
+
+- A picture of the first stacked version replaced the list of textures that the markup draws
+  (`set_minimap_slices` with a new `VecModel`) every time one arrived, for a picture of the same shape as well.
+  The markup's `for` loop then dropped and made every `Image` item again inside the frame of a scroll step.
+  The old code set one `Image` once and later only changed numbers.
+- The window thread cost does not show it: the frame that takes in a picture lasts 5 to 8 ms in the stacked tree and in
+  the baseline alike, and the frames after it 2.4 to 3.5 ms in both, so the loss is outside the window thread's own work
+  (the toolkit's image items, the compositor), and it was not located further.
+- Intervention, not inference: the same release binary with only this change (commit `3247690ff8`, `show_slices` in
+  `src/native/gpu_tile/types.rs`) brings the count down to the baseline's.
+- Not the cause: the request cadence (ids and posts are the same in both trees over the first 2 s, 50 ms after the
+  scroll starts for the first one), the texture limit in the key (no re-post), the grouping (one texture here),
+  and a new texture or `Image` per picture (the textures are reused while their sizes stay).
+
+#### Counts (identical recorded frames out of 119 in the input window, one run each)
+
+Runs whose highlighting failed (`syntax parse failed ... configured timeout was exceeded`, an error banner of 30 px
+shows and the first picture request comes at 183 ms instead of 50 ms, so the hitch moves from slot 35 to slot 43) are
+counted apart: they are a load-dependent change of the fixture, not of the tree.
+The coordinator's earlier counts include such runs on both sides.
+
+- Question 1, baseline (`origin/main`) against the first stacked tip, 6 pairs interleaved:
+  baseline 0 of 6 runs with an identical frame;
+  stacked 6 of 6 (4 of the 4 whose highlighting worked, at slot 35 in all four; the two that failed highlighting at 43).
+- Question 2, baseline against the fix, 10 pairs interleaved:
+  baseline, highlighting worked in 9 runs: 2 with an identical frame (slot 35 once, slot 99 once);
+  fix, highlighting worked in 8 runs: 2 with an identical frame (slots 67 and 130, and 67; none at 35).
+  The floor is the baseline's own rate, 2 of 9 runs (no run of the baseline against itself was made).
+  The longest identical run is 1 in every run.
+- The extra frame that the baseline has too: `picture.rs` asks for a redraw when it hands a picture to the GPU,
+  so a frame lands between two scroll steps; it is on `origin/main` and was not changed
+  (single instrumented runs of the baseline with highlighting show the same timeline as the stack: request at 50 ms,
+  picture at 70 ms, a 5.5 ms frame, then a hitch at slot 35 in that run).
+
+#### Guard
+
+`a_picture_of_the_same_shape_changes_the_rows_of_the_list_and_never_replaces_it` counts the lists the window is given
+(`SLICE_LISTS_SET`) across a picture of the same bands, forced by a resize of one pixel.
+It failed while every picture made a new list (commit `ee59d9630f`, `the window was given a new list of textures`)
+and passes with the fix.
+The source guard `minimap-slices-in-place` removes the fix in a disposable copy.
+
+#### Not done here
+
+- The remaining recorded identical frames in both trees (slot 35 once, slots 67, 99, 130) were not explained;
+  the baseline has them too, at the same rate as the fix.
+- The cadence was measured with the nested compositor only, on a host that other sessions load;
+  the pressure stall values are in `~/temp/agent/a4d5-q1.jsonl` and `a4d5-q2.jsonl`.
+
 ### Gates of the stacked textures
 
 Run once each, in this order, on tip `89924c2a12` (the tree that this section's commit follows):
