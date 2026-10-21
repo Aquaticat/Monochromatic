@@ -19,6 +19,7 @@ use super::commit_index::copy_index_with_timestamps;
 use super::recovery_files::files_equal;
 /// Warning text to the diagnostic log.
 use super::diagnostic_log::warn;
+use super::landing_invariant::warn_when_entries_moved;
 /// Exact path bytes as command-line arguments, and as text for messages.
 use super::path_bytes::{os_from_path_bytes, path_message_text};
 /// Commit selection mode of the transaction.
@@ -346,7 +347,12 @@ pub fn compute_landing_post_index(
             .filter(|path| { return !input.committed_paths.contains(path); })
             .cloned()
             .collect();
-        return reset_guarded_paths(context, cwd, &artifacts, &outside);
+        reset_guarded_paths(context, cwd, &artifacts, &outside)?;
+        // Every entry outside the committed and guarded paths must read as it did before the landing.
+        let mut allowed: Vec<Vec<u8>> = input.committed_paths.to_vec();
+        allowed.extend(input.guarded_paths.iter().cloned());
+        warn_when_entries_moved(context, cwd, input.pre_landing_index, input.post_index, &allowed);
+        return Ok(());
     }
     if input.exact_private_index && files_equal(input.pre_landing_index, input.captured_index)
         .map_err(|error| { return GitFailure(error.0); })?

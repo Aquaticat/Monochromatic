@@ -622,6 +622,9 @@ pub mod landing_objects;
 /// Post-index a landing installs, computed against the real index at landing.
 pub mod landing_index;
 
+/// The check that a landing changed no staged entry outside the paths it committed.
+pub mod landing_invariant;
+
 /// One landing attempt inside the landing critical section, and its outcome.
 pub mod landing_attempt;
 
