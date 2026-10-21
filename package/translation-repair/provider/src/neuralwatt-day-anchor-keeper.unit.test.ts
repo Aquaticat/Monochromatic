@@ -18,6 +18,7 @@ import {
 import { neuralWattIsDry, } from '../dist/final/node/index.mjs';
 import { consoleLinesDuring, } from './neuralwatt-ledger.test-fixture.ts';
 import {
+  keyAllowanceOf,
   quotaExchangesOf,
   quotaReply,
   scriptedClient,
@@ -154,6 +155,42 @@ await describe({
         expect(lines.filter(function logsLearnedDay(line,): boolean {
           return line.includes('NeuralWatt day starts at 19:15:08.000 UTC',) && line.includes('learned on a retry',);
         },).length,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'TAKES THE KEY\'S CAP FROM THE RETRY THAT LEARNED THE DAY, a blocked cap holding NeuralWatt dry without a '
+        + 'further quota read',
+      fn: async ctx => {
+        await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-retry-', },);
+        const { client, clock, exchanges, } = scriptedClient({
+          dir: scratch.path,
+          clockStart: START,
+          quota: [
+            DOWN,
+            quotaReply({
+              kwhUsed: 1,
+              periodStart: PERIOD_START,
+              keyAllowance: keyAllowanceOf({ remainingUsd: 0, blocked: true, },),
+            },),
+          ],
+        },);
+        /**
+         The reading once the retry is due.
+         */
+        const reading = await (async function readAfterRetry() {
+          await consoleLinesDuring({
+            run: async function first(): Promise<void> {
+              await client.energy({ signal: SIGNAL, },);
+            },
+            sinon: ctx.sinon,
+          },);
+          clock.setTo('2026-10-20T23:16:01.000Z',);
+          return await client.energy({ signal: SIGNAL, },);
+        })();
+        expect(reading.dayStart,).toBe('2026-10-20T19:15:08.000Z',);
+        expect(reading.keyBlockedUntil,).toBe('2026-10-21T19:15:08.000Z',);
+        expect(neuralWattIsDry({ energy: reading, },),).toBe(true,);
+        expect(quotaExchangesOf({ exchanges, },).length,).toBe(2,);
       },
     },),
     it({
