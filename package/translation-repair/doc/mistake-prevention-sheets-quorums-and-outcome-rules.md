@@ -215,6 +215,21 @@ A sheet whose rules name no block,
 and a caller whose fixture passes a block production does not,
 are outside what these can see.
 
+The judge that chooses between a producer's text and its rewording is shown what the repair panel accepted about the slice.
+The dispute note named only additions and accuracy claims settled at major or worse,
+so two accuracy claims accepted 4 to 0 at minor severity on `CuspariaKLSY21` slice 0 reached no sheet after the repair lane,
+and the polish gate chose a second softening of the hunger line on a sheet that showed neither claim (ledger B731).
+`acceptedRepairClaimsNote` states every accepted claim at the severity the panel settled,
+without a severity filter,
+as claims to check against the original,
+and leaves out the claims the dispute note already names.
+`polish-gate-page-rules.unit.test.ts` and `consolidation-polish-apply.unit.test.ts` read the sheet the gate is sent,
+and the driver case in `corpus-pass` reads the block from a run that has the claim and from one that has none.
+What they cannot see is whether a judge then decides differently,
+which needs a rerun measured against run-to-run spread.
+A new judge that chooses between texts takes the claims in the same way,
+and a note that filters claims by severity is read for the claims it hides.
+
 ## A rule a sheet states about tense and what it does not cover
 
 What happened:
@@ -267,6 +282,67 @@ Each marker must be found in at least one sheet,
 so the checks are not vacuous.
 A tense instruction written in words that no marker of the test holds is outside what it can see,
 and its marker is added to the test by hand.
+
+## Ballots give their reason first
+
+What happened:
+the owner ruled on 2026-09-27 that an issue-panel verdict gives its reason before its vote,
+and the contest,
+select,
+naturalness,
+coverage and archive review ballots kept the choice first,
+so a decoder held to the schema could write the vote before it had reasoned.
+The owner extended the ruling on 2026-10-21
+("Reason first everywhere";
+ledger B732).
+
+The rule:
+a ballot or verdict schema that carries a reason declares it and requires it before the choice,
+and the instruction of its sheet names the reason before the choice.
+A field that is the reason under another name counts (`finding` of the archive block review).
+A schema whose reason is empty on some verdicts,
+or whose explanation follows the text it explains,
+is listed with its reason and left as it is.
+Reading is by property name,
+so the order of a reply is free for the readers.
+
+What enforces it:
+`reason-before-vote.unit.test.ts` in `lane-contest`,
+`consolidate`,
+`adjudication` and `archive`,
+over `reason-order.test-fixture.ts`,
+which fails when a declared or required list does not lead with the reason,
+and when the rendered instruction names the choice first.
+A new ballot schema that no test names,
+and a reply cut short by the completion cap,
+are outside what these can see.
+
+## Ties a gate settles
+
+What happened:
+the polish gate settled a tie on `neither` and shipped the base,
+and the log carried the tally and the word `neither` and not that the vote had tied (ledger B730).
+
+The rule:
+a vote between two names says what a tie does,
+in the owner's words,
+and the outcome names the rule that decided,
+so a lead,
+a tie and an unsettled vote read differently in the log and the findings.
+A tie needs a vote on each side,
+and the minimum ballot count applies to the usable ballots in total.
+The gate outcome keeps its shape:
+the artifact reader requires `ships` to be `polished` exactly when `choice` is `polished`.
+
+What enforces it:
+`consolidation-polish-gate-stage.unit.test.ts` and `consolidation-polish-gate.unit.test.ts` read the choice,
+the rule and the log lines for base,
+base,
+polished,
+polished;
+base,
+polished;
+and a refusal beside a vote.
 
 ## Exits an outcome rule reaches
 

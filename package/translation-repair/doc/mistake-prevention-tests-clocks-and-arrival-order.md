@@ -842,6 +842,10 @@ and not by a membership check (ledger B631).
 A case that needs one named seat asked passes `fanOut: 'whole-bench'` to the stage,
 or pins `benchStart`,
 and never relies on the rotated window to reach it (ledger B701).
+The composite cases of the archive block review (ledger B712) asked the whole bench and did not pin the start,
+so the numbers of the candidates followed the sheet text,
+and a change to the reply instruction failed five of them (ledger B734):
+a seam that takes `fanOut` takes `benchStart` too.
 A seam that drives a stage takes `fanOut` and hands it on,
 so a case can ask it:
 `runArchiveBlockReviewStage` and `runPassContest` did not,

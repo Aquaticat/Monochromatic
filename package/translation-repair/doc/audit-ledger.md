@@ -188,7 +188,8 @@ named for that subject and listed here.
   labels that did not fit,
   counts before a fixed plural,
   one field carrying two kinds of text,
-  and a log line that reported nothing done and gave no reason.
+  a log line that reported nothing done and gave no reason,
+  and a log line that said a changed slice shipped unchanged (B733).
 - [Audit ledger: values read back from text](audit-ledger-values-read-back-from-text.md):
   Numbers,
   fields and keys the code wrote into text and then read back more leniently,
@@ -213,7 +214,8 @@ named for that subject and listed here.
   work no floor could check,
   a consolidation under the vote minimum that kept the archive wording two judges called ineligible (B696),
   two archive block revisions of disjoint lines that could not both ship (B712),
-  and the review stage's findings that its caller dropped (B714).
+  the review stage's findings that its caller dropped (B714),
+  and a polish gate tie that kept the base and said nothing (B730).
 - [Audit ledger: composed operations and checks on a part](audit-ledger-composed-operations-and-partial-checks.md):
   One refusal inside a composed operation that stopped the whole,
   or left no finding,
@@ -249,7 +251,8 @@ named for that subject and listed here.
   refusals and log lines whose content or order depended on which concurrent work ended first,
   the scan that looks for it,
   and the seat-window family,
-  tests that named a seat the rotated first round no longer asked (B701).
+  tests that named a seat the rotated first round no longer asked (B701),
+  among them the composite cases of the archive block review (B734).
 - [Audit ledger: failures under a caller's stop](audit-ledger-failures-under-a-callers-stop.md):
   Fan-outs that dropped,
   mislabelled or doubled a member's own failure once the caller had stopped the work.
@@ -425,6 +428,10 @@ named for that subject and listed here.
   audit queries that covered only the new paths,
   workspace cycles made by tests,
   and a lint ignore that matched a package.
+- [Audit ledger: the polish gate's claims and the order of reason and vote](audit-ledger-polish-gate-claims-and-reason-order.md):
+  Sheets that withheld a claim the judges needed:
+  the repair panel's accepted claims that never reached the polish gate (B731),
+  and the ballots whose reply shape asked for the choice before the reason (B732).
 - [Audit ledger: what each sheet shows](audit-ledger-what-each-sheet-shows.md):
   Sheets that lacked a block their role needs to judge or write,
   the reader-protection rule that reached past the account of how a death or an attempt happened (B697),
@@ -793,6 +800,7 @@ Filed in:
 - [Audit ledger: composed operations and checks on a part](audit-ledger-composed-operations-and-partial-checks.md)
 - [Audit ledger: which seats a quorum counts](audit-ledger-which-seats-a-quorum-counts.md)
 - [Audit ledger: what each sheet shows](audit-ledger-what-each-sheet-shows.md)
+- [Audit ledger: the polish gate's claims and the order of reason and vote](audit-ledger-polish-gate-claims-and-reason-order.md)
 - [Audit ledger: defaults that stand in for an input](audit-ledger-defaults-standing-in-for-an-input.md)
 - [Audit ledger: test cases that cannot fail](audit-ledger-test-cases-that-cannot-fail.md)
 - [Audit ledger: survivors of the guard demonstrations and the tests that pin them](audit-ledger-guard-demonstration-survivors-and-their-pins.md)
