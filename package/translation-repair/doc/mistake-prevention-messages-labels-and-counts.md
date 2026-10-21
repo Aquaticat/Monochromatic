@@ -401,6 +401,43 @@ The throws for an unwritable record have 3 tests that fail with the throws repla
 A reason that the record never held is outside what it can see,
 and no scan finds another log line that reports nothing done without a reason.
 
+## Counts that include calls never made
+
+What happened:
+the seat tally counted every throw of the client it wraps as the seat's failed ask,
+and the provider router's own refusal of a seat no wet provider serves is such a throw,
+sent before any request.
+`zheermao20` printed `SEAT glm-5.3 asked=4 usable=0 unusable=0 threw=4` for a seat that was never asked,
+withheld it for the run,
+and named it in every `JUDGE SEATS` line as a seat that threw on all four asks (ledger B710).
+The `seatTallyClient` TSDoc and the decision document already said a refusal is not an ask,
+and the rule held only for the refusal the tally threw itself.
+
+The rule:
+a count of asks counts the calls that reached the thing asked,
+and a call refused before that is counted in a column of its own,
+in neither the asks nor the failures,
+so a threshold over the asks (`withheld`) and a claim made of them (`dark`) read real asks only.
+A line that stops naming a seat as failed names why it is out of reach instead
+(`unreachable=N` on the `SEAT` line,
+`unserved=` on the `JUDGE SEATS` lines),
+and a denominator that said "seats asked" counts the seats asked,
+not every seat that has a counter.
+When a rule is written for one refusal,
+every other place the same error can be thrown from is read against it:
+the router,
+the owner's cull and the tally's own withholding.
+
+What enforces it:
+`stage/src/seat-tally.unit.test.ts` drives a router that refuses every call through the text,
+JSON and typed surfaces,
+and fails when a refusal counts as `asked` or `threw`,
+when the refused seat is withheld,
+or when a throw of another kind stops counting `threw`.
+It fails on the build before the change (red `4508efa798`).
+No scan finds a place that records a thrown value without reading its class,
+so a new wrapper that counts throws is read by hand against this rule.
+
 ## Provider names in failures
 
 What happened:

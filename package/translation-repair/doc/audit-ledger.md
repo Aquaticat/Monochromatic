@@ -475,7 +475,8 @@ named for that subject and listed here.
   could not answer,
   or were withheld,
   a rejected credential that no line named (B685),
-  and replies the caller abandoned that no column counted (B687).
+  replies the caller abandoned that no column counted (B687),
+  and a refusal the router gave before any request counted as the seat's failed ask (B710).
 - [Audit ledger: blocks and quotes read off the parse](audit-ledger-blocks-and-quotes-read-off-the-parse.md):
   Blocks,
   quotes and code spans counted by a blank-line split or a scan of their own,

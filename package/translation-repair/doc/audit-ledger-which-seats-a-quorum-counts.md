@@ -643,3 +643,118 @@ The two corrections of the report's premise are M270.
 Recurrence:
 `mistake-prevention-messages-labels-and-counts.md`,
 "Log lines that report nothing done".
+
+## B710: a refusal the router gave before any request was counted as the seat's failed ask
+
+Red `4508efa798`,
+fixed in `965a5c9c67`.
+It revises B420 and B421.
+
+Found on 2026-10-21 (UTC) in the read of `zheermao20`,
+and fixed in `w254`.
+
+What the run showed:
+`glm-5.3` is served by Charm Hyper alone,
+and Hyper was out of budget from the start.
+The end report read `SEAT glm-5.3 asked=4 usable=0 unusable=0 threw=4 abandoned=0`
+though no request was ever sent.
+Each of the four asks was the provider router refusing with `NoProviderForModelError`
+("no provider can take glm-5.3:
+every provider serving this model is out of budget,
+seat unreachable").
+The seat tally then withheld the seat for the run:
+"the run withheld it after it threw on all 4 asks".
+`hf:Qwen/Qwen3.8-27B` (Synthetic and Hyper) read `asked=158 usable=21 threw=137 abandoned=3`,
+and nearly all of the 137 were router refusals after Synthetic ran dry at about 02:37 UTC.
+Every `JUDGE SEATS phase=lanes` line from then on named a seat withheld as `threw-withheld=glm-5.3 (threw 4 of 4 asks)`,
+and was followed by `chunk re-seated under a hold: checkers=xiaomi/mimo-v2.6-flash,inception/mercury-2.5,hf:Qwen/Qwen3.8-27B`.
+Qwen was padding on that bench with no wet provider,
+and neither line said so.
+
+The rule the code broke:
+the `seatTallyClient` TSDoc said a refusal "is not an ask,
+so it leaves the counts as they were",
+and `doc/decision/translation-repair-short-bench-share.md` says a seat no wet provider serves stays on the seated bench
+and is lost at call time as unreachable.
+That held for the tally's own withholding refusal,
+which is thrown before the inner client is asked,
+and not for the router's,
+which comes out of the inner client.
+`recordThrow` counted every throw of the inner client that was not an abort as `threw`,
+the router's refusal included,
+so the census,
+the `SEATS DARK` line
+and the `JUDGE SEATS` withholding all treated four refusals as four failed asks
+(B420 withholds after `SEAT_WITHHOLD_ASKS` of four).
+B421 had split the abort out of that count and left the refusal in it.
+
+The fix:
+a `NoProviderForModelError` thrown by the inner client is counted as the new outcome `unreachable`,
+in neither `asked` nor `threw` and in no withholding threshold,
+so `withheld({ minAsks })` stays "asked at least `minAsks` times and every ask threw" over real asks only.
+The refusal is tested before the abort:
+a refusal is a fact about the seat,
+no request was sent for it,
+and it counts as `unreachable` whether or not the caller had left.
+The owner's cull (`culled-seat-guard.ts`) refuses a culled seat inside the tally with the same error,
+so a culled seat is counted `unreachable` too and no longer reads as a seat that threw.
+The `SEAT` line gains `unreachable=N` after `abandoned=N`,
+and a seat that was only refused still gets its line (`asked=0 ... unreachable=N`).
+
+Decided from the documents:
+`dark()` keeps its meaning,
+"asked at least once and never once produced a usable answer",
+so a seat only the router refused is not dark.
+Its `SEATS DARK` entry would say it was asked and produced nothing,
+which is the claim B420 and the decision document reject.
+Its evidence is the `unreachable` column of its `SEAT` line and the `unserved=` field of the `JUDGE SEATS` lines,
+which name every seated seat no wet provider serves at the moment of the reading.
+The `SEATS DARK` line states "of N seats asked" over the seats asked,
+since a seat with only abandoned or refused calls now has a counter and no ask.
+
+Effect on a run:
+a seat that only the router refuses is never withheld by the tally.
+The router refuses it cheaply at each call,
+the stages read the refusal as an unreachable seat,
+and the seat comes back by itself when a provider is wet again.
+The gathers therefore keep such a seat on the bench and size their quorum with `reachableQuorum`,
+the way the decision document says,
+where the tally had taken it off the bench after four refusals.
+A seat that threw for another reason,
+a rejected credential with another provider left or a model that errors,
+is counted and withheld exactly as before.
+
+The two logging gaps:
+`judgeSeatsFor` returns `unserved`,
+the seats on any bench of the reading that no wet provider serves,
+and every `JUDGE SEATS` reading line prints `unserved=<ids or none>` after `withheld=`.
+The repair lane's `chunk re-seated under a hold` line prints `unserved-checkers=<ids or none>`,
+the checkers that are padding.
+`lanesHooksFor` takes the optional logger the other hooks take,
+so a case can read that line.
+
+Guards:
+`seat-tally.unit.test.ts` pins `unreachable` on the text,
+JSON and typed surfaces with the seat refused seven times and never withheld,
+a seat that throws for another reason withheld at four asks with refusals between them,
+a refusal given after the caller left counting `unreachable` and any other throw after the abort staying `abandoned`,
+the tally's own refusal counting nothing,
+and the `SEAT` and `SEATS DARK` lines.
+`run-seats.unit.test.ts` and `run-seats-read.unit.test.ts` pin `unserved` in the benches and the line,
+and `pass-reseat.unit.test.ts` pins `unserved-checkers`.
+The cases were red on `4508efa798` and green on `965a5c9c67`.
+
+Cache versions:
+no cache key or stored record reads a seat count or the benches' `unserved` list,
+so no version moves.
+The search is in the body of `965a5c9c67`.
+
+Not done:
+the readers of the `SEAT` line are the tests and the people reading the log,
+and no parser reads it.
+`audit-ledger-entries-by-id.md` stops at B701,
+so B702 to B709 are not indexed there either.
+
+Recurrence:
+`mistake-prevention-messages-labels-and-counts.md`,
+"Counts that include calls never made".
