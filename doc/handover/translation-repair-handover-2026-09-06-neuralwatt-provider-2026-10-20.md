@@ -513,6 +513,22 @@ both Gemma readers on Bedrock),
 so nothing corroborated it.
 The rotation on that build is held there,
 since it can no longer finish with every page SETTLED.
+The two settled reads
+(`zheermao21-read.md` and `CuspariaKLSY21-read.md` in the reads folder)
+are being traced to causes before any of them is called a class:
+a 2 to 2 polish gate keeping "was given to her" for 起的,
+a repair correction accepted 4 to 0 lost when the translate lane won its slice,
+已经,
+一直,
+观望 and 二次元 dropped,
+the opening quote losing 有一天 and 你 to a minimum-weight rule,
+the email's lines thinner than `zheermao20`'s,
+two U+2014 dashes,
+a probe that closed short,
+and a 0.372 Wh gap between the meter and the account.
+The 抢救 rendering "doctors fought to save her" is the glossary's on purpose.
+Classes found there are fixed before gate g139 too,
+since a restarted rotation would meet them again.
 An investigation of the picture bench runs
 (why GLM replied empty,
 which wet vision readers could replace the Bedrock seats);
