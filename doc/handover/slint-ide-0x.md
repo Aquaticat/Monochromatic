@@ -1331,6 +1331,12 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     Owner request 2026-10-21: "Check if depot can do the CI for this app. Early terminate on this depot testing task:
     tell me whenever we encounter any kind of blocker and halt the depot testing task." The first blocker found stops
     the task and is reported to the owner at once; nothing is worked around.
+    BLOCKER found 2026-10-21, task halted, nothing run on Depot: `doc/decision/depot-ci-adoption.md` records GPU as
+    out of scope for Depot CI ("no hardware `/dev/dri` device was found" in the sandbox, a finding from when software
+    rendering was the accepted path); the IDE now needs a hardware Vulkan adapter (never a CPU adapter, no software
+    renderer), so `test:native`, `inspect:native`, `inspect:cadence` and the screenshot checks cannot run in a Depot
+    sandbox as the decision stands. The CLI is installed (2.102.23) and logged in (org `l4zncjjbj5`); `.depot/workflows`
+    holds `current-baseline.yml` and `weekly-native.yml`. Unprobed: whether today's Depot sandbox exposes a GPU.
     Open, in order: (1) the unexplained redraw on picture handoff in `src/native/minimap/picture.rs` (the remaining
     identical frames; a cause by measurement first); (2) the flake work, in `doc/handover/ide-native-flakes.md`:
     fixed with counts (refused-tile test 10 of 360 to 0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160 to 0 of 160); open:
