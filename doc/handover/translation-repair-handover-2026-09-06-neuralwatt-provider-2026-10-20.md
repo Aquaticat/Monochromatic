@@ -763,8 +763,47 @@ The landings and the restart,
   after 4741466 ms
   (79.0 min,
   against 40.7 min for `zheermao21`).
-  Its read against the source is running,
-  written to `zheermao22-read.md` in the reads folder.
+  Its read
+  (`zheermao22-read.md` in the reads folder,
+  23:16 UTC)
+  found the email and the opening quote recovered and Arts's letter regressed.
+  The extra time came from stragglers:
+  Synthetic went dry at 22:14:48 UTC while Hyper stayed wet,
+  so Qwen,
+  Kimi and mercury replies held rounds open,
+  and rounds that waited 100 s or more of grace rose from 7 to 30.
+  It names three code classes and one design class:
+  - K1:
+    NeuralWatt text calls carry no `reasoning_effort`
+    (`neuralwatt-client.ts:392` and `:424` send it on picture calls only),
+    so `glm-5.3-flash` runs at its default `max`.
+    Four of its text calls ended at the 18,316-token cap with no content
+    (SPEND lines at 21:17:32,
+    21:20:36,
+    21:37:15 and 21:40:06 UTC),
+    and three of the Hyper re-asks after them capped too.
+    The owner's lift ("only for NeuralWatt") covers text calls as well.
+  - K2:
+    `STREAM_FIRST_BYTE_MS` and `STREAM_IDLE_MS` are 600,000 ms
+    (`stream-idle-guard.ts:60` and `:89`),
+    longer than the 360,000 ms per-call timeout,
+    so neither guard can fire;
+    and an SSE comment line resets the idle timer.
+    Eleven `inception/mercury-2.5` streams sent no content and were cut only by the 120 s grace.
+  - K3:
+    a minor accepted repair claim is lost when the lane contest settles `neither`,
+    because the polish writers are never shown the accepted claims
+    (slice 8's 因着 claim,
+    accepted 4 to 1).
+  - K4
+    (design):
+    the composite revision refuses any revision that changes a block's line count,
+    so the letter shipped a partial revision.
+  - Untraced:
+    Hyper returns tool input with its keys in alphabetical order
+    (200 of 227 multi-key objects),
+    so the reason-before-vote ruling cannot be confirmed on Hyper without a keyed probe;
+    and the boundary between slices 1 and 2 moved against `zheermao21`.
 - `CuspariaKLSY22`
   (entry `CuspariaKLSY`)
   started at 22:25:13 UTC,
@@ -785,9 +824,22 @@ The landings and the restart,
 
 Next,
 in order:
-finish the reads of `zheermao22` and `CuspariaKLSY22`
-and record them in the pass log and the readiness signal;
-read `XingZ6017` when it ends;
+fix K1,
+K2,
+K3 and the run-off line that says "2 tied finalists" for a plurality
+(`translate-runoff.ts:90`)
+in a new scratch worktree,
+and K4 in a second one;
+gate each,
+land,
+rebuild the branch worktree once no pass runs there,
+digest,
+sweep,
+and restart the rotation at `zheermao23`.
+Meanwhile the rotation continues on `2a336603bf` for evidence:
+finish the read of `CuspariaKLSY22`,
+record both reads in the pass log and the readiness signal,
+and read `XingZ6017` when it ends;
 then continue the rotation with `yingying`,
 `hulicaijia`,
 `mikaela_khara`,
