@@ -1900,6 +1900,20 @@ that is verification, not a decision for the user.
   RUNNING (started 2026-10-20 night): systemd user unit `cli-git-s1791c` (script `~/temp/agent/s1791-run.ts`) runs the
   container gate (tag `s1791b`, log `~/temp/agent/s1791b-container.log`) then scoped mutation for nine files, logs
   `~/temp/agent/s1791b-mutation-<file>.log`. Do not edit `src/native` until it ends; then release 0.2.5.
+  User instructions 2026-10-20 night (binding, QWD/DCK): (1) mutation campaigns never block a release, and are not to
+  be launched on a version that is about to change; implement the open work first. The unit `cli-git-s1791c` was
+  stopped after the container gate passed (2087 passed, 5 skipped) and one file's planted controls. (2) Always implement
+  everything outstanding; never block on long-running commands (run them as capped units or in the background and
+  advance independent work meanwhile). (3) `git rm --cached` and `git worktree remove --force` are NOT added to the
+  guard; the question is closed. (4) Release 0.2.5 is PUBLISHED (crates.io shows 0.2.5) and installed through mise;
+  `mise.lock` was reverted with the deliberate override after saving `~/temp/agent/mise-lock-backup.patch`. The 0.2.5
+  wrapper rejected the revert `git checkout -- mise.lock` itself, so every future mise upgrade needs
+  `git checkout --no-enforce-worktree -- mise.lock`. (5) The live landing-invariant warning is NOT deferred any more:
+  `landing_invariant.rs` (new, with tests) compares the pre-landing and post indexes after an explicit-path landing and
+  warns naming the paths changed outside the committed and guarded paths; wired in `compute_landing_post_index`;
+  clippy and host tests were running when this was written. Still to do: binary-level proof of that warning, docs
+  (README, SPEC), commit; comment on and close 1791; JIT-only fix of `doc/runbook/publish-npm-package-first-time.md:57`;
+  mutation for the new files only after the implementation stops changing, run in the background and never awaited.
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and
