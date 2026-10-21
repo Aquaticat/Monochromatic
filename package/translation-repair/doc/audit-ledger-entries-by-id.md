@@ -381,6 +381,7 @@ which lists every file of this record.
 - [B699, rule text, the consolidation gate and the floor replay](audit-ledger-rule-text-gate-and-floor-replay.md)
 - [B700, copies of shared code in production](audit-ledger-copies-in-production-code.md)
 - [B701, output decided by arrival order](audit-ledger-output-decided-by-arrival-order.md)
+- [B710, operator refusals printed as faults](audit-ledger-operator-refusals-printed-as-faults.md)
 - [D1 to D11, docs and comments that disagreed with the code](audit-ledger-docs-against-code.md)
 - [D12, doc conventions and their guards](audit-ledger-doc-conventions-and-their-guards.md)
 - [D13 to D21, docs and comments that disagreed with the code](audit-ledger-docs-against-code.md)
