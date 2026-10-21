@@ -167,8 +167,10 @@ Keyless worktree w248 moved the card's Hyper and OpenRouter served ids,
 keeping the roster id `deepseek-v4.1-flash` as the card's name
 (red `ad616b6a84`,
 fix `dadeb42ba6`,
-docs `1d610cd05e`;
-gate pending).
+docs `1d610cd05e`),
+landed as `d8cf1933f4` after gate g134 on the merge with main
+(2648 pass and 0 fail,
+every step exit 0).
 `hyperIdFor` had matched on the Hyper id and would have read the seat as unserved,
 so `HyperModelInfo` now carries `rosterId`;
 `hyper-price.ts` gained a `deepseek-v4.1-flash-1017` row,
@@ -187,8 +189,8 @@ NeuralWatt's side served the 1017 weights before the migration too.
 `zheermao19` (entry zheermao101) ran from 23:00 UTC on 2026-10-20 on the digest of `5b5dca49a9`
 and settled at 23:35 UTC in 35.6 min
 (`TALLY zheermao101 status=SETTLED ... repairAccepted=13 ... pageChanged=9`);
-the page read is being drafted at `/var/home/user/temp/agent/x15-fix/reads/zheermao19-read.md`
-for the pass log.
+its read is in the pass log of 2026-10-20,
+the full draft at `/var/home/user/temp/agent/x15-fix/reads/zheermao19-read.md`.
 NeuralWatt served 197 calls for 28.7 Wh measured,
 every estimate running 2 to 6 times its measured figure;
 the run-end `NeuralWatt PLAN ENERGY SPENT: 345.2 Wh` line is the owner's other key
@@ -206,7 +208,18 @@ and OpenRouter was wet:
 a credential refusal belongs to the provider,
 not the seat.
 Keyless worktree w249 makes it hold the provider out for the run and move each seat to its next provider
-(ledger P18 once it lands);
+(red `5e07a8bb6d`,
+fix `786013e4b7`,
+guards `de44d19ea7`,
+docs `7863b003b1`;
+ledger P18 once it lands).
+Withholding the seat was a default and not a ruling:
+ledger B685 says "there is no rule for a 401".
+Its four open gaps are being closed there:
+a 401 on the cross-provider re-ask,
+the warn naming only providers that can take the call,
+reach and quorum readers counting a seat whose every provider is held,
+and holds shared across a run's routers if a run builds several;
 `google.gemma-4-e2b` is Bedrock-only and stays out.
 The rotation waits for the combined build,
 since a run now would lose those seats again and spend OpenRouter credit on a build about to change.
@@ -217,9 +230,7 @@ The `zheermao19` read is recorded in the pass log of 2026-10-20:
 SETTLED with no class traced to code,
 on a short bench,
 its page losing several intensifiers and small words zheermao17's had kept.
-Gate g134 runs on w248 merged with main (`b2c89960ed`).
-Gate and land w247,
-w248 and w249,
+Gate and land w247 and w249,
 rebuild,
 set `FROZEN`,
 recalibrate the energy margin from the settled ledger lines,
