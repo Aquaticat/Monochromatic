@@ -1,4 +1,7 @@
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
@@ -16,22 +19,33 @@ import {
   type ModelReach,
   routeProviderFor,
 } from './budget-routing.ts';
+import {
+  callHoldingRefusedCredential,
+  type CredentialHolds,
+  createCredentialHolds,
+  reachPastCredentialHolds,
+} from './credential-hold.ts';
+import { routedDecide, } from './provider-router-decide.ts';
+import {
+  reachOfRequest,
+  reachPastHoldsOrRefusal,
+} from './reach-past-holds.ts';
 import type {
   Decider,
   DecisionReply,
   DecisionRequest,
 } from './decision-contract.ts';
-import {
-  carriesPicture,
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type ChatTextReply,
-  type ChatTextRequest,
-  type ModelCaller,
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  ChatTextReply,
+  ChatTextRequest,
+  ModelCaller,
 } from './chat-contract.ts';
 import {
   isBudgetRefusal,
   isCallSizedRefusal,
+  isCredentialRefusal,
   isPaymentRefusal,
   isUpstreamModelRefusal,
   statedWaitMsOf,
@@ -53,10 +67,7 @@ import { NEURALWATT_PER_MODEL_CONCURRENCY, } from './neuralwatt-client.ts';
 import type { ProviderCallers, } from './provider-callers.ts';
 import { SYNTHETIC_PER_MODEL_CONCURRENCY, } from './synthetic-client.ts';
 import { isStreamBoundCut, } from './stream-bound.ts';
-import {
-  createStreamBoundHolds,
-  reachPastBoundHolds,
-} from './stream-bound-hold.ts';
+import { createStreamBoundHolds, } from './stream-bound-hold.ts';
 import {
   logWindowOverflow,
   paceWaitsOf,
@@ -67,10 +78,6 @@ import {
   createUpstreamModelHolds,
   UPSTREAM_MODEL_HOLD_MS,
 } from './upstream-model-hold.ts';
-import {
-  reachOf,
-  visionReachOf,
-} from './roster-reach.ts';
 
 //region Provider router
 // ONE CLIENT OVER EVERY PROVIDER. A stage names a panelist; this decides where
@@ -104,9 +111,9 @@ import {
 // rather than an invitation to keep going.
 
 /**
- Logger root for the routing layer.
+ Logger root for the routing layer, which a router built with none writes to.
  */
-const l = contextRoot({ tag: 'translation-repair', },);
+const routerRoot = contextRoot({ tag: 'translation-repair', },);
 
 // The refusal lives in its own module so the re-ask can raise it without an
 // import cycle; it is re-exported here, where every importer found it.
@@ -126,27 +133,6 @@ const DEFAULT_SLOT_LIMITS: SlotLimits = {
   bedrock: Number.POSITIVE_INFINITY,
   openrouter: Number.POSITIVE_INFINITY,
 };
-
-/**
- Providers that can serve one call, narrowed to vision where it carries a
- picture.
-
- @param request - call whose reach is read
-
- @returns Reach for the policy, or for a re-ask, to decide on
-
- @example
- ```ts
- const reach = reachFor({ request, },);
- ```
- */
-function reachFor(
-  { request, }: { readonly request: ForeignBorrowed<ChatTextRequest>; },
-): ModelReach {
-  if (carriesPicture({ messages: request.messages, },))
-    return visionReachOf({ modelId: request.modelId, },);
-  return reachOf({ modelId: request.modelId, },);
-}
 
 /**
  Builds the client that routes each call to whichever provider can serve it.
@@ -178,6 +164,13 @@ function reachFor(
  provider whose window would make the call wait reads saturated, so the call
  overflows to a usable provider behind it (class one hundred forty-nine)
 
+ @param l - logger the router writes its warns to; the package's root logger by default
+
+ @param credentialHolds - providers whose credential was refused, a fresh set
+ by default; a run that builds several routers hands them one set, so a 401 is
+ learned once, and reads the same set for the view its seat readers use
+ (`foldCredentialHolds`)
+
  @returns Client surface a stage calls without naming a provider
 
  @example
@@ -195,6 +188,8 @@ export function createRoutingClient(
     modelHoldMs = UPSTREAM_MODEL_HOLD_MS,
     now = monotonicMs,
     paces = {},
+    l = routerRoot,
+    credentialHolds = createCredentialHolds(),
   }: {
     readonly callers: ProviderCallers;
     readonly budgets: ProviderBudgets;
@@ -204,6 +199,8 @@ export function createRoutingClient(
     readonly modelHoldMs?: number;
     readonly now?: () => number;
     readonly paces?: ProviderPaces;
+    readonly l?: Logger;
+    readonly credentialHolds?: CredentialHolds;
   },
 ): ModelCaller {
   /**
@@ -229,8 +226,34 @@ export function createRoutingClient(
   },);
 
   /**
-   Reads which providers may take one call once the stream bound holds are
-   taken out, refusing where the holds leave nobody.
+   Providers that can serve one call, narrowed to vision where it carries a
+   picture, less any whose credential was refused.
+
+   @param request - call whose reach is read
+
+   @returns Reach for the policy, or for a re-ask, to decide on
+
+   @example
+   ```ts
+   const reach = reachFor({ request, },);
+   ```
+   */
+  function reachFor(
+    { request, }: { readonly request: ForeignBorrowed<ChatTextRequest>; },
+  ): ModelReach {
+    /**
+     Reach of the call less the providers whose credential was refused.
+     */
+    const { reach, } = reachPastCredentialHolds({
+      reach: reachOfRequest({ request, },),
+      holds: credentialHolds,
+    },);
+    return reach;
+  }
+
+  /**
+   Reads which providers may take one call once the credential holds and the
+   stream bound holds are taken out, refusing where the holds leave nobody.
 
    ASKED IN TWO PLACES, so a call ends with one reason whichever of them
    finds every serving provider held: before each attempt, and after the last
@@ -241,7 +264,7 @@ export function createRoutingClient(
    @returns Providers serving the model that hold nothing against it
 
    @throws {@link NoProviderForModelError} when every provider serving the
-   model holds it out on its stream bound
+   model has its credential refused, or holds the model out on its stream bound
 
    @example
    ```ts
@@ -251,29 +274,12 @@ export function createRoutingClient(
   function reachPastBoundHoldsOrRefusal(
     { request, }: { readonly request: ForeignBorrowed<ChatTextRequest>; },
   ): ModelReach {
-    /**
-     Providers that can serve this model, narrowed where it carries a picture,
-     less any holding it out on its stream bound.
-     */
-    const {
-      reach,
-      heldMs,
-    } = reachPastBoundHolds({
-      reach: reachFor({ request, },),
+    return reachPastHoldsOrRefusal({
+      reach: reachOfRequest({ request, },),
       modelId: request.modelId,
-      holds: boundHolds,
+      credentialHolds,
+      boundHolds,
     },);
-    if ((heldMs > 0) && PROVIDER_ORDER.every(function closed(provider,): boolean {
-      return !reach[provider];
-    },)) {
-      // REFUSED WITHOUT A CALL, so a round counts the seat unreachable and
-      // neither asks nor waits for it (class one hundred forty-eight).
-      throw new NoProviderForModelError({
-        modelId: request.modelId,
-        reason: `every provider serving this model ran past its stream bound; held out for another ${String(heldMs,)}ms`,
-      },);
-    }
-    return reach;
   }
 
   /**
@@ -415,7 +421,26 @@ export function createRoutingClient(
      dry, and is never chosen (ledger T8).
      */
     const caller = nonNullishOrThrow(callers[provider],);
-    return await caller.chatText(request,);
+    // HELD ON THE CALL ITSELF, so a first ask and the cross-provider re-ask
+    // hold a provider the same way, through the one function.
+    return await callHoldingRefusedCredential({
+      call: function askProvider(): Promise<ChatTextReply> {
+        return caller.chatText(request,);
+      },
+      hold: {
+        rl: tagged({
+          tag: callOn.name,
+          l,
+        },),
+        provider,
+        modelId: request.modelId,
+        reach: reachOfRequest({ request, },),
+        holds: credentialHolds,
+        boundHolds,
+        budgets,
+        signal: request.signal,
+      },
+    },);
   }
 
   /**
@@ -532,6 +557,14 @@ export function createRoutingClient(
               + `${provider} is held out for this model for ${String(modelHoldMs,)}ms `
               + 'and the call goes to the next provider serving it, if any',
           );
+          continue;
+        }
+        if (isCredentialRefusal({ error, },)) {
+          // ALREADY HELD OUT FOR THE RUN, FOR EVERY MODEL, by `callOn`: the
+          // credential is the provider's and does not renew, so the call goes
+          // on to the next provider serving the model, and the seat is
+          // withheld only when none is left (the loop ends, and
+          // `reachPastBoundHoldsOrRefusal` reads the holds).
           continue;
         }
         if (isUpstreamModelRefusal({ error, },)) {
@@ -669,37 +702,13 @@ export function createRoutingClient(
    ```
    */
   async function decide(request: ForeignBorrowed<DecisionRequest>,): Promise<DecisionReply> {
-    if (decider === undefined) {
-      throw new NoProviderForModelError({
-        modelId: request.modelId,
-        reason: 'no decisions client is configured',
-      },);
-    }
-
-    /**
-     Every meter as it reads now.
-     */
-    const dry = await budgets.read({ signal: request.signal, },);
-    if (dry.openrouter) {
-      throw new NoProviderForModelError({
-        modelId: request.modelId,
-        reason: 'the decisions endpoint reads dry',
-      },);
-    }
-    try {
-      return await decider.decide(request,);
-    }
-    catch (error) {
-      if (isBudgetRefusal({ error, },)) {
-        await budgets.markRefused({
-          provider: 'openrouter',
-          signal: request.signal,
-          statedWaitMs: statedWaitMsOf({ error, },),
-          paymentRequired: isPaymentRefusal({ error, },),
-        },);
-      }
-      throw error;
-    }
+    return await routedDecide({
+      request,
+      ...((decider === undefined) ? {} : { decider, }),
+      budgets,
+      credentialHolds,
+      l,
+    },);
   }
 
   return {

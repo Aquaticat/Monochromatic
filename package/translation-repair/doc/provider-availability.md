@@ -142,6 +142,28 @@ Any quality figure measured then rests on whoever was awake,
 as on 2026-08-24,
 when five of ten models contributed nothing to it.
 
+## A refused credential holds a provider out, and no meter shows it
+
+A meter says whether money is left,
+not whether the provider accepts the key.
+The Bedrock key expired during zheermao19 (2026-10-20),
+every Bedrock call answered HTTP 401,
+and the Bedrock meter kept reading wet,
+because it is the configured credit less the package's own ledger and an expired token cannot move it.
+The router reads a 401 as the provider's credential refused,
+holds that provider out of every model for the rest of the run
+and asks the next provider serving the model,
+so `gemma-4-26b-a4b-it` went to OpenRouter and not out of the bench.
+A model only that provider serves reads unreachable without a call,
+which a round counts out of its quorum.
+A hold from a refused credential has no end inside a run,
+unlike a hold on a stream bound or on a budget refusal.
+The view the benches are derived from reads such a provider as dry,
+so a seat only that provider serves reads as unreachable before it is asked.
+The `SEAT CREDENTIAL REFUSED` warn line is the one place the run says it,
+once per provider
+(see [Configuration](configuration.md)).
+
 ## Measuring how much of the time each provider was there
 
 On 2026-08-24 three writer seats sat on models only Charm Hyper served,

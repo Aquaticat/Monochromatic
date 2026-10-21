@@ -244,6 +244,11 @@ const FIRST_PROVIDER_REPLY = [
 const REFUSED_OUTRIGHT = 400;
 
 /**
+ Status a provider answers with when it rejects the credential it was sent.
+ */
+const UNAUTHORIZED = 401;
+
+/**
  Status of the one endpoint that answers.
  */
 const ANSWERED = 200;
@@ -687,6 +692,48 @@ await describe({
 
             expect(urls.includes(HYPER_MESSAGES_URL,),).toBe(true,);
             expect(urls.some(isFirstProviderChat,),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'READS A PROVIDER WHOSE CREDENTIAL WAS REFUSED AS DRY in the view the seat readers and benches are '
+            + 'derived from, though its meter reads wet: the money is there and the key is not accepted (zheermao19)',
+          fn: async () => {
+            using _fresh = withFreshRunSeats();
+
+            /**
+             Transport refusing the first provider's credential and every other endpoint outright.
+             */
+            async function refuseFirstProviderCredential(exchange: { readonly url: string; },): Promise<{
+              readonly status: number;
+              readonly bodyText: string;
+            }> {
+              if (isFirstProviderChat(exchange.url,))
+                return { status: UNAUTHORIZED, bodyText: '{"error":{"code":"invalid_api_key"}}', };
+              return { status: REFUSED_OUTRIGHT, bodyText: '{}', };
+            }
+
+            /**
+             Client under test, whose first provider rejects its credential.
+             */
+            const client = runClientFrom({ env: TWO_KEYS, transport: refuseFirstProviderCredential, },);
+            const { signal, } = new AbortController();
+
+            /**
+             Dryness before any call met the refusal.
+             */
+            const before = await client.providerDryness({ signal, },);
+            await askSeat({ client, modelId: SHARED_SEAT, },);
+            /**
+             Dryness once a call met it.
+             */
+            const after = await client.providerDryness({ signal, },);
+
+            expect({ before: before.synthetic, after: after.synthetic, hyper: after.hyper, },).toEqual({
+              before: false,
+              after: true,
+              hyper: false,
+            },);
           },
         },),
 

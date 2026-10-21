@@ -258,19 +258,45 @@ or a model that answers nothing readable;
 the run log names which.
 Do not read a run with a dark seat as a comparison of the roster.
 
-The first time a provider rejects a seat's credential with HTTP 401,
-the run writes one `SEAT CREDENTIAL REFUSED <model> on <provider>:` warn line naming the seat,
-the provider that refused it,
-the provider's own words and how many usable answers the seat had given.
+The first time a provider rejects its credential with HTTP 401,
+the run writes one `SEAT CREDENTIAL REFUSED <model> on <provider>:` warn line for that provider,
+naming the seat whose call met it,
+the provider that refused it
+and the provider's own words.
+A credential belongs to the provider and serves every model there,
+and it does not renew during a run,
+so the router holds that provider out of every model for the rest of the run
+(`package/translation-repair/provider/src/credential-hold.ts`).
+The call that met the refusal goes on to the next provider serving the model in the same call,
+and every other model skips the provider without asking it.
+The line names as where the seat moves only the providers that serve it
+and can take a call now:
+not held out for a refused credential,
+not dry,
+and not held on the model's stream bound.
+Where providers serve it but none can take a call now,
+the line names each as dry or held for the model
+and says the seat is not withheld on this refusal,
+since the router's rules for a dry or held provider decide what follows.
+Only where no provider serves it any longer does the line say the seat is withheld.
+The cross-provider re-ask holds a provider the same way a first ask does.
+OpenRouter's decisions endpoint shares OpenRouter's credential,
+so a 401 on either ends the other.
 The line offers both ways forward:
 renew that provider's credential before the next run,
-or leave it,
-and the run withholds the seat after its failed asks and goes on with the other seats.
-A credential does not renew during a run,
-so asks to that seat are expected to keep failing until the run withholds it.
+or leave it.
+No meter shows the hold,
+so the view the seat readers and benches are derived from reads a provider whose credential was refused as dry
+(`foldCredentialHolds` in `package/translation-repair/provider/src/credential-hold.ts`,
+applied by `providerDryness` in `package/translation-repair/run/src/corpus-run/run-config.ts`),
+and a seat served only by such providers reads as unreachable before it is asked.
+Before 2026-10-20 the 401 reached the seat tally as any other failed ask,
+and the run withheld a seat after its failed asks even where another provider served it
+(zheermao19 withheld `gemma-4-26b-a4b-it` with OpenRouter wet).
 
 Each `JUDGE SEATS` line names how every provider reads as `<provider>=<state>`:
-`dry` when the router holds the provider out,
+`dry` when the router holds the provider out
+or its credential was refused,
 `wet` when its meter answered and the provider is not held out,
 and `unreadable-treated-as-spendable` when its meter could not be read,
 which routes as spendable by recorded policy (`package/translation-repair/provider/src/provider-budget.ts`).

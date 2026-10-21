@@ -23,16 +23,21 @@ The groups that follow name the main ones.
 - Routing and budgets:
   choose the provider for a model,
   pass calls down the provider order when one is dry,
+  hold a provider out for the run when it rejects its credential,
   read the provider meters,
   and pace requests to a provider's rate limit.
   Names:
   `createRoutingClient`,
+  `createCredentialHolds`,
+  `foldCredentialHolds`,
+  `isCredentialRefusal`,
   `routeProviderFor`,
   `createProviderBudgets`,
   `readEveryMeter`,
   `EveryProviderDryError`,
   `createRequestPace`.
   Declared in `provider-router.ts`,
+  `credential-hold.ts`,
   `budget-routing.ts`,
   `provider-budget.ts`,
   `provider-meters.ts`,
@@ -145,6 +150,32 @@ The groups that follow name the main ones.
   `bedrock-cost.ts`,
   `bedrock-ledger.ts`,
   and `openrouter-abandoned-spend.ts`.
+
+## What a refused credential holds out
+
+A provider's HTTP 401 holds that provider out of every model for the rest of the run
+(`credential-hold.ts`),
+and the seat goes to its next serving provider in the same call.
+One set of holds belongs to one router.
+`createRoutingClient` takes the set as `credentialHolds`,
+a fresh one by default,
+and the run client (`run-config.ts`) hands the same set to its router and to its dryness view,
+so the benches read a held provider as dry.
+A corpus pass builds one run client for the whole run,
+at the `input.newClient` call in `corpus-pass-run.ts`,
+so it learns a 401 once per run.
+The calibration and probe commands that build a client per arm,
+slice or region learn it again for each,
+and their clients do not share holds:
+`roster-bench-run.ts`,
+`producer-calibrate-run.ts`,
+`checker-sensitivity-run.ts`,
+`audit-sensitivity-run.ts`,
+`probe-verify-collect.ts`,
+`probe-relabel-pair.ts`
+and `rendering-audit-settled-drive.ts`.
+That limit is left as it stands;
+sharing one set across those clients would need each command to build it.
 
 ## Family dependencies
 

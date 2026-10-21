@@ -2,6 +2,7 @@
 // The names `@monochromatic-dev/translation-repair-provider` gives its siblings and its own tests, each from the module that declares it.
 // Production siblings import it through `/ts`; tests and fixtures through the built entry, so a process loads one copy.
 
+export * from './index-hold.ts';
 export * from './index-neuralwatt.ts';
 export { extractAnthropicCompletion, } from './anthropic-completion.ts';
 export {

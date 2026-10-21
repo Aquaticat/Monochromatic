@@ -13,6 +13,11 @@ const HTTP_TOO_MANY_REQUESTS = 429;
 const HTTP_PAYMENT_REQUIRED = 402;
 
 /**
+ How a provider rejects the credential a request carried, expired or wrong.
+ */
+const HTTP_UNAUTHORIZED = 401;
+
+/**
  Statuses that mean provider is out of budget rather than unwell.
  */
 const BUDGET_REFUSAL_STATUSES: ReadonlySet<number> = new Set([
@@ -123,6 +128,29 @@ export function isCallSizedRefusal(
   { error, }: { readonly error: unknown; },
 ): boolean {
   return error instanceof NeuralWattAllowanceError;
+}
+
+/**
+ Whether thrown failure is a provider rejecting the credential its request
+ carried. The credential is the provider's, so the refusal says nothing of the
+ model asked and holds the whole provider out for the run (`credential-hold.ts`).
+ Only 401 is read, since 403 carries too many other meanings to name a credential.
+
+ @param error - whatever call threw
+
+ @returns Whether the provider rejected its credential
+
+ @example
+ ```ts
+ if (isCredentialRefusal({ error, },)) credentialHolds.hold({ provider, },);
+ ```
+ */
+export function isCredentialRefusal(
+  { error, }: { readonly error: unknown; },
+): boolean {
+  if (!(error instanceof ProviderHttpError))
+    return false;
+  return error.status === HTTP_UNAUTHORIZED;
 }
 
 /**

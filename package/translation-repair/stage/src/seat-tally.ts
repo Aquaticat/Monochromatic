@@ -1,14 +1,6 @@
-import {
-  type Logger,
-  tagged,
-} from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
-import {
-  exchangeFailureLogText,
-  ProviderHttpError,
-} from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
@@ -297,12 +289,6 @@ export function createSeatTally(): SeatTally {
 export const RUN_SEATS: SeatTally = createSeatTally();
 
 /**
- HTTP status a provider answers a request with when it rejects the request's
- credential, expired or wrong.
- */
-const HTTP_UNAUTHORIZED = 401;
-
-/**
  Wraps a client so every call it makes is counted against its seat.
 
  COUNTS AFTER THE CALL SETTLES, never before, so a call still in flight when
@@ -321,12 +307,10 @@ const HTTP_UNAUTHORIZED = 401;
  `asked=299 usable=299`, which hid them. A call still in flight when the
  process ends is not counted at all.
 
- A SEAT WHOSE PROVIDER REJECTS ITS CREDENTIAL (HTTP 401) IS SAID ONCE, in one
- line naming the seat and the provider's words, the first time it happens in
- this client's life. The expired Bedrock token of that pass failed 5 asks of each
- Gemma seat among 283 per-call warn lines and a closing census that said "the
- run log names which"; nothing told an operator, at the start, that the
- credential needed renewing.
+ A PROVIDER'S REJECTED CREDENTIAL (HTTP 401) IS NOT SAID OR ACTED ON HERE. The
+ provider router beneath holds that provider out for the run and goes on to the
+ next provider serving the seat (`provider-router.ts`), so a seat is thrown for
+ only when no provider that serves it is left.
 
  @param inner - client whose calls are counted
 
@@ -335,15 +319,13 @@ const HTTP_UNAUTHORIZED = 401;
  @param minAsks - asks a seat must have been given, all of them thrown, before
  its calls are refused
 
- @param l - logger the credential line goes to
-
  @returns Client with the same surface, counting into `tally`
 
  @throws {@link NoProviderForModelError} when the seat is withheld
 
  @example
  ```ts
- const counted = seatTallyClient({ inner: client, tally: RUN_SEATS, minAsks: 4, l, },);
+ const counted = seatTallyClient({ inner: client, tally: RUN_SEATS, minAsks: 4, },);
  ```
  */
 export function seatTallyClient(
@@ -351,26 +333,12 @@ export function seatTallyClient(
     inner,
     tally,
     minAsks,
-    l,
   }: {
     readonly inner: ModelClient;
     readonly tally: SeatTally;
     readonly minAsks: number;
-    readonly l: Logger;
   },
 ): ModelClient {
-  /**
-   Logger pre-tagged with this function's name.
-   */
-  const rl = tagged({
-    tag: seatTallyClient.name,
-    l,
-  },);
-  /**
-   Seats this client has already said a rejected credential of.
-   */
-  const credentialSaid = new Set<RosterModelId>();
-
   /**
    Typed exchange the wrapped client offers, bound once so the closure
    this function returns keeps the narrowing.
@@ -415,97 +383,26 @@ export function seatTallyClient(
   }
 
   /**
-   Says, once per seat, that the provider rejected the seat's credential.
-
-   @param modelId - seat the call went to
-
-   @param error - what the call threw
-
-   @example
-   ```ts
-   sayRejectedCredential({ modelId: request.modelId, error, },);
-   ```
-   */
-  function sayRejectedCredential({
-    modelId,
-    error,
-  }: {
-    readonly modelId: RosterModelId;
-    readonly error: unknown;
-  },): void {
-    if (!(error instanceof ProviderHttpError))
-      return;
-    if (error.status !== HTTP_UNAUTHORIZED)
-      return;
-    if (credentialSaid.has(modelId,))
-      return;
-    credentialSaid.add(modelId,);
-    /**
-     Counts of every seat asked so far.
-     */
-    const seatCounts = tally.counts();
-    /**
-     Counts of this seat, absent when it has never settled a call.
-     */
-    const seatCount = seatCounts.find(function isThisSeat(count,): boolean {
-      return count.modelId === modelId;
-    },);
-    /**
-     Answers the seat gave before its credential was rejected.
-     */
-    const answers = seatCount?.usable ?? 0;
-    /**
-     Provider that refused the credential, named so the operator renews the right one.
-     */
-    const { provider, } = error;
-    rl.warn(
-      `SEAT CREDENTIAL REFUSED ${modelId} on ${provider}: ${exchangeFailureLogText({ error, },)}, after ${
-        String(answers,)
-      } usable ${
-        wordForCount({
-          count: answers,
-          one: 'answer',
-          many: 'answers',
-        },)
-      } this run. ${provider} does not accept the credential this seat is asked with, and a credential does not `
-        + 'renew during a run, so asks to it are expected to keep failing. '
-        + `Either renew ${provider}'s credential before the next run, or leave it: the run withholds the seat after `
-        + `${String(minAsks,)} failed ${
-          wordForCount({
-            count: minAsks,
-            one: 'ask',
-            many: 'asks',
-          },)
-        } and goes on with the other seats.`,
-    );
-  }
-
-  /**
    Counts a call that threw: as abandoned when the caller had aborted its
    signal, since an abort is the caller leaving the call (a straggler cut off
    after quorum, a stage deadline, an entry stop) and not the seat failing to
-   answer, so it is not an ask; otherwise as threw, saying so once when the
-   provider rejected the credential.
+   answer, so it is not an ask; otherwise as threw.
 
    @param modelId - seat the call went to
 
    @param signal - signal the call was made with
 
-   @param error - what the call threw
-
    @example
    ```ts
-   recordThrow({ modelId: request.modelId, signal: request.signal, error, },);
+   recordThrow({ modelId: request.modelId, signal: request.signal, },);
    ```
    */
   function recordThrow({
     modelId,
     signal,
-    error,
   }: {
     readonly modelId: RosterModelId;
     readonly signal: AbortSignal;
-    readonly error: unknown;
   },): void {
     if (signal.aborted) {
       tally.record({
@@ -517,10 +414,6 @@ export function seatTallyClient(
     tally.record({
       modelId,
       outcome: 'threw',
-    },);
-    sayRejectedCredential({
-      modelId,
-      error,
     },);
   }
 
@@ -542,7 +435,6 @@ export function seatTallyClient(
         recordThrow({
           modelId: request.modelId,
           signal: request.signal,
-          error,
         },);
         throw error;
       }
@@ -566,7 +458,6 @@ export function seatTallyClient(
         recordThrow({
           modelId: request.modelId,
           signal: request.signal,
-          error,
         },);
         throw error;
       }
@@ -595,7 +486,6 @@ export function seatTallyClient(
             recordThrow({
               modelId: request.modelId,
               signal: request.signal,
-              error,
             },);
             throw error;
           }
