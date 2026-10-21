@@ -141,7 +141,7 @@ export async function fetchPublishedVersions(
    Anonymous packument response.
    */
   const response = await fetch(
-    `${origin}/${name.replace(
+    `${origin}/npm/${name.replace(
       '/',
       '%2f',
     )}`,

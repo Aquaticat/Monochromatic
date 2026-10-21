@@ -14,12 +14,12 @@ Route only the scope to pnpr;
 
 ```ini
 # .npmrc
-@monochromatic-dev:registry=https://pnpr.c.aquati.cat/~monochromatic-dev/
+@monochromatic-dev:registry=https://pnpr.c.aquati.cat/npm/~monochromatic-dev/
 ```
 
-That route is the `0.1.0-alpha.11` root surface.
- On the `0.1.0-alpha.16` base and later it becomes
- `@monochromatic-dev:registry=https://pnpr.c.aquati.cat/npm/~monochromatic-dev/`;
+That route is the `0.1.0-alpha.16` surface
+ (moved 2026-10-21 from `@monochromatic-dev:registry=https://pnpr.c.aquati.cat/~monochromatic-dev/`,
+ the `0.1.0-alpha.11` root surface);
  see "To move to a newer pnpr" and
  [`doc/troubleshooting/pnpr-base-move.md`](../../../doc/troubleshooting/pnpr-base-move.md).
 
