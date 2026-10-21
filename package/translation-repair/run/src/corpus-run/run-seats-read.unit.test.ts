@@ -294,39 +294,6 @@ await describe({
           },
         },),
         it({
-          name: 'NAMES IN THE JUDGE SEATS LINE EVERY SEATED SEAT NO WET PROVIDER SERVES as unserved, and none when every '
-            + 'seated seat is served, and does not take a seat the router only refused for withheld (zheermao20: '
-            + '"glm-5.3 threw 4 of 4 asks" for four refusals and no request)',
-          fn: async () => {
-            using _fresh = withFreshRunSeats();
-            for (let refusal = 0; refusal < 4; refusal += 1)
-              RUN_SEATS.record({ modelId: GLM, outcome: 'unreachable', },);
-            /** Lines the reading writes under the dry view. */
-            const dryLines: string[] = [];
-            await readJudgeSeats({
-              client: viewClient({ providerDryness: async () => SYNTHETIC_AND_HYPER_DRY, },),
-              phase: 'lanes',
-              signal: new AbortController().signal,
-              l: levelCapturingLogger({ lines: dryLines, },),
-            },);
-            /** Lines the reading writes with every provider wet. */
-            const wetLines: string[] = [];
-            await readJudgeSeats({
-              client: viewClient({ providerDryness: async () => ALL_WET, },),
-              phase: 'lanes',
-              signal: new AbortController().signal,
-              l: levelCapturingLogger({ lines: wetLines, },),
-            },);
-
-            expect(dryLines.length,).toBe(1,);
-            expect(dryLines[0],).toContain(
-              ' unserved=hf:Qwen/Qwen3.8-27B,glm-5.3 threw-withheld=none waited=0ms',
-            );
-            expect(wetLines.length,).toBe(1,);
-            expect(wetLines[0],).toContain(' unserved=none threw-withheld=none waited=0ms',);
-          },
-        },),
-        it({
           name: 'NAMES IN THE JUDGE SEATS LINE a meter that could not be read as unreadable and treated as '
             + 'spendable, never as wet, while a meter that answered wet still reads wet and a provider routed '
             + 'dry reads dry whatever its meter said',
@@ -538,6 +505,47 @@ await describe({
             expect(quiet.lines.some(function namesShortfall(line: string,): boolean {
               return line.includes('short of quorum',);
             },),).toBe(false,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: `${readJudgeSeats.name} beside the run-wide seat tally`,
+      // THE CASES SHARE THE PROCESS-WIDE TALLY, so they run one at a time.
+      concurrency: 1,
+      children: [
+        it({
+          name: 'NAMES IN THE JUDGE SEATS LINE EVERY SEATED SEAT NO WET PROVIDER SERVES as unserved, and none when every '
+            + 'seated seat is served, and does not take a seat the router only refused for withheld (zheermao20: '
+            + '"glm-5.3 threw 4 of 4 asks" for four refusals and no request)',
+          fn: async () => {
+            using _fresh = withFreshRunSeats();
+            for (let refusal = 0; refusal < 4; refusal += 1)
+              RUN_SEATS.record({ modelId: GLM, outcome: 'unreachable', },);
+            /** Lines the reading writes under the dry view. */
+            const dryLines: string[] = [];
+            await readJudgeSeats({
+              client: viewClient({ providerDryness: async () => SYNTHETIC_AND_HYPER_DRY, },),
+              phase: 'lanes',
+              signal: new AbortController().signal,
+              l: levelCapturingLogger({ lines: dryLines, },),
+            },);
+            /** Lines the reading writes with every provider wet. */
+            const wetLines: string[] = [];
+            await readJudgeSeats({
+              client: viewClient({ providerDryness: async () => ALL_WET, },),
+              phase: 'lanes',
+              signal: new AbortController().signal,
+              l: levelCapturingLogger({ lines: wetLines, },),
+            },);
+
+            expect(dryLines.length,).toBe(1,);
+            expect(dryLines[0],).toContain(
+              ' unserved=hf:Qwen/Qwen3.8-27B,glm-5.3 threw-withheld=none waited=0ms',
+            );
+            expect(wetLines.length,).toBe(1,);
+            expect(wetLines[0],).toContain(' unserved=none threw-withheld=none waited=0ms',);
           },
         },),
       ],

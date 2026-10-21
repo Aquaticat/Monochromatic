@@ -508,6 +508,7 @@ export async function readPhaseSeats(
     writers,
     roster,
     withheld,
+    unserved,
   } = seats;
   /**
    What each meter said in the reading the dryness came from.
@@ -553,6 +554,7 @@ export async function readPhaseSeats(
       + `translators=${String(translators.length,)} readers=${String(readers.length,)} `
       + `writers=${String(writers.length,)} roster=${String(roster.length,)} `
       + `withheld=${(withheld.length === 0) ? 'none' : withheld.join(',',)} `
+      + `unserved=${(unserved.length === 0) ? 'none' : unserved.join(',',)} `
       + `threw-withheld=${(threwWithheld.length === 0) ? 'none' : threwWithheld.join(',',)} `
       + `waited=${String(waitMs,)}ms`,
   );
