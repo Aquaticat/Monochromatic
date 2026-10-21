@@ -754,14 +754,14 @@ fn a_tall_slice_is_cut_into_chunks_of_at_most_the_chunk_rows() {
 fn chunks_are_grouped_into_textures_that_fit_the_limit() {
     let full = CHUNK_ROWS;
     // Sixteen full chunks and a short one fill a texture of 8,192 rows and start another.
-    let mut heights = vec![full; 16];
-    heights.push(100);
-    assert_eq!(texture_runs(&heights, 110, 8192), vec![0..16, 16..17]);
+    let mut seventeen = vec![full; 16];
+    seventeen.push(100);
+    assert_eq!(texture_runs(&seventeen, 110, 8192), vec![0..16, 16..17]);
     // A limit of 1,024 rows holds two chunks.
-    let heights = vec![full; 6];
-    assert_eq!(texture_runs(&heights, 110, 1024), vec![0..2, 2..4, 4..6]);
+    let six = vec![full; 6];
+    assert_eq!(texture_runs(&six, 110, 1024), vec![0..2, 2..4, 4..6]);
     // A limit of 1,500 rows holds two chunks and wastes 476 rows.
-    assert_eq!(texture_runs(&heights, 110, 1500), vec![0..2, 2..4, 4..6]);
+    assert_eq!(texture_runs(&six, 110, 1500), vec![0..2, 2..4, 4..6]);
     // One chunk is one texture at a limit of exactly a chunk, and a limit under a chunk still makes progress.
     assert_eq!(texture_runs(&[full, full], 110, full), vec![0..1, 1..2]);
     assert_eq!(texture_runs(&[full, full], 110, 100), vec![0..1, 1..2]);
@@ -770,19 +770,19 @@ fn chunks_are_grouped_into_textures_that_fit_the_limit() {
     assert_eq!(texture_runs(&[40], 110, 8192), vec![0..1]);
     // Every grouping is a partition of the chunks in order whose textures fit.
     for limit in [512_u32, 700, 1024, 3000, 8192, 16384] {
-        let heights: Vec<u32> = (0..50).map(|index| return 100 + index * 9).collect();
-        let runs = texture_runs(&heights, 220, limit);
+        let uneven: Vec<u32> = (0..50).map(|index| return 100 + index * 9).collect();
+        let runs = texture_runs(&uneven, 220, limit);
         let mut next = 0;
         for run in &runs {
             assert_eq!(run.start, next, "a gap or an overlap at limit {limit}");
             next = run.end;
-            let rows: u32 = heights[run.clone()].iter().sum();
+            let rows: u32 = uneven[run.clone()].iter().sum();
             assert!(
                 rows <= texture_rows(220, limit) || run.len() == 1,
                 "{rows} rows pass the limit {limit}"
             );
         }
-        assert_eq!(next, heights.len(), "a chunk was left out at limit {limit}");
+        assert_eq!(next, uneven.len(), "a chunk was left out at limit {limit}");
     }
 }
 

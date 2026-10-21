@@ -3542,7 +3542,7 @@ and a picture cut for a limit of 1,536 and of 1,024 rows is three and four textu
 seams,
 and composited column equal the one texture's),
 and `src/native/minimap_seam_tests.rs`
-(the chunks stacked equal one render of the picture at scales one and one and a half),
+(the chunks stacked equal one render of the picture at scales 1 and 1.5),
 and `src/native/minimap_dense_tests.rs`
 (the densest chunks are not blank,
 one render of four dense chunks is blank as the positive control,
@@ -3566,7 +3566,10 @@ and a frame scaled down keeps the coverage of its edges).
 `minimap-line-key-scale`,
 `minimap-work-budget`,
 `minimap-cancel`,
-`minimap-bands-fit-the-device`,
+`minimap-bands-uncapped`,
+`minimap-texture-limit-key`,
+`minimap-texture-runs`,
+`minimap-texture-top`,
 `minimap-most-bands`,
 `minimap-chunk-rows`,
 `minimap-chunk-size`,

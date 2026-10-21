@@ -57,7 +57,8 @@ Built on branch `worktree-agent-a4d54af4e63faea6b` (off `a7f8523f0c`).
 - `src/native/gpu_tile/slice.rs` (`draw_stack`), `gpu_tile.rs`, `gpu_tile/types.rs`: the picture is rendered chunk by
   chunk and copied on the GPU into as many textures as `texture_runs` names, each with its own `Image`;
   `Picture::Minimap` is gone from the single-texture targets.
-  A device that offers a texture side below one chunk (512 rows) still draws one chunk per texture.
+  A recorded limit below one chunk (512 rows), as a test may set, gives one chunk per texture;
+  a device whose own side is below one chunk is refused with the existing "does not fit a texture" message.
 - `ui/minimap.slint`, `ui/app.slint`: `minimap-image` is replaced by a `[MinimapSlice]` model (image, first row,
   height, all in physical pixels) drawn by a `for` loop at whole-pixel rows, so the textures abut without a gap.
   `minimap-picture-width`, `-height` (now the textures together) and `-top` are kept for the tests and pointer code.
