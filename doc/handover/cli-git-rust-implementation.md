@@ -1972,6 +1972,15 @@ that is verification, not a decision for the user.
   `mise.lock` was reverted. Still open from the user's requirement: a binary-level hint test per remaining site
   (the unit guard covers codes; sites outside event rendering are covered by their own unit pins only), and hints for
   any message site found later. Mutation for the new files stays unrun by instruction.
+  CORRECTION by the user 2026-10-21 (binding; supersedes the earlier wording "mutation: not now"): mutation campaigns
+  are NOT banned. They must not run while changes to the same code are already planned and not deferred, because the
+  campaign would grade code that is about to change. When the planned work is finished or explicitly deferred, run the
+  campaigns for the touched files without being asked, as capped systemd units in the background, and do not await
+  them (advance other work, read the result on the completion notice). Mutation never blocks a release.
+  Planned and not deferred as of this entry: binary-level hint tests for the remaining message sites. After they
+  land, run the scoped campaigns for `command_discard.rs`, `rule_linked_worktree.rs`,
+  `rule_linked_worktree_messages.rs`, `rule_worktree_dirty.rs`, `discard_audit.rs`, `auto_push_dirty_paths.rs`,
+  `landing_invariant.rs`, `event_hints.rs`, `policy_checks.rs`, `auto_push_reconcile.rs`, `command_stash.rs`.
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and
