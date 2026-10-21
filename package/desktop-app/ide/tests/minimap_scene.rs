@@ -408,14 +408,27 @@ fn the_selection_and_the_matches_are_marks_under_the_glyphs() {
         end: from + 5,
     }];
     let found = drawn_fills(&whole(&fixture).0);
-    assert!(found.len() >= 5, "a fill and four boundary edges");
-    let fill_alpha = found.iter().map(|mark| return mark.ink[3]).min();
-    assert_eq!(
-        found.iter().filter(|mark| return mark.ink[3] > 100).count(),
-        4,
-        "four edges of the boundary at 0.7 of the foreground"
+    assert_eq!(found.len(), 2, "a fill and one frame: {found:?}");
+    let fill = found
+        .iter()
+        .find(|mark| return mark.inset == 0.0)
+        .expect("the translucent fill");
+    let frame = found
+        .iter()
+        .find(|mark| return mark.inset > 0.0)
+        .expect("the boundary drawn as one frame");
+    assert!(
+        fill.ink[3] > 0 && fill.ink[3] < 60,
+        "the fill is faint: {fill:?}"
     );
-    assert!(fill_alpha.is_some_and(|alpha| return alpha > 0 && alpha < 60));
+    assert!(
+        frame.ink[3] > 100,
+        "the boundary is 0.7 of the foreground: {frame:?}"
+    );
+    assert!(
+        frame.left == fill.left && frame.right == fill.right,
+        "the frame is the outline of the fill"
+    );
 }
 
 /// A diagnostic's underline is a stroke,
@@ -708,7 +721,7 @@ fn size_of(built: &ide_app::minimap::Built) -> (u32, u32) {
 /// that stack to the slice's height.
 #[test]
 fn a_tall_slice_is_cut_into_chunks_of_at_most_the_chunk_rows() {
-    let fixture = fixture(300, 730.0, 1.0);
+    let fixture = fixture(900, 730.0, 1.0);
     // Twenty bands are 2,560 rows: five full chunks.
     let input = fixture.input(0..20, 660.0, 110.0);
     let built = build(
