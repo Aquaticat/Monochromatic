@@ -41,7 +41,8 @@ const FRAME_WAIT: Duration = Duration::from_millis(20);
 /// counted for the tests:
 /// a window that draws frames anyway must not ask for one.
 #[cfg(test)]
-pub(in crate::native) static PICTURE_FRAMES_ASKED: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+pub(in crate::native) static PICTURE_FRAMES_ASKED: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
 
 /// What:
 ///  Ask for a frame to draw the picture just handed to the GPU,
