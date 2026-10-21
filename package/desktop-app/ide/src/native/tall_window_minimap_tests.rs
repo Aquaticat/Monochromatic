@@ -14,7 +14,7 @@ use super::find_tests::Reader;
 /// and the reads of the minimap's texture.
 use super::{
     minimap_tests::{bands_of, picture_still},
-    sidebar_tests::{TEXT_LEFT, minimap_beside},
+    sidebar_tests::{HEADER, TEXT_LEFT, minimap_beside},
     tile_reads::{draw_minimap, minimap_pixels, same_pixels, same_texel},
     wrap_tests::{long_text, open, settled},
 };
@@ -391,7 +391,7 @@ fn shifted_equals(whole: &[Rgba8Pixel], stacked: &[Rgba8Pixel], width: usize) ->
     return same_pixels(&whole[width..], &stacked[..stacked.len() - width]);
 }
 
-/// A picture that fits one texture, drawn again as three and as four textures that stack,
+/// A picture that fits one texture, drawn again as three, as four, and as seven or more textures that stack,
 /// is the same picture:
 /// every texel read back equals the texel of the one texture,
 /// the rows on both sides of each seam are inked and equal,
@@ -401,6 +401,13 @@ fn shifted_equals(whole: &[Rgba8Pixel], stacked: &[Rgba8Pixel], width: usize) ->
 fn textures_that_stack_show_the_picture_one_texture_shows() {
     let (_project, opened) = tall(3500.0, true);
     let window = &opened.window;
+    // The frame the harness reads is as big as the window the adapter was told to be,
+    // which a resize event alone does not change, and the frame is wanted whole.
+    window.window().set_size(LogicalSize::new(
+        TEXT_LEFT + 1330.0 + minimap_beside(1330.0),
+        3500.0,
+    ));
+    update_timers_and_animations();
     picture_still(&opened);
     draw_minimap(window);
     let whole = minimap_pixels(window, &opened.source).expect("the picture in one texture");
@@ -418,7 +425,7 @@ fn textures_that_stack_show_the_picture_one_texture_shows() {
     let (column, column_width) = minimap_column(window);
     let bands = opened.source.borrow().minimap.shown.map(|key| key.window);
     let top = window.get_minimap_picture_top();
-    for limit in [1536_u32, 1024] {
+    for limit in [1536_u32, 1024, 512] {
         restacked(&opened, limit);
         let current = opened.source.borrow().minimap.shown;
         assert_eq!(
@@ -482,9 +489,33 @@ fn textures_that_stack_show_the_picture_one_texture_shows() {
             !shifted_equals(whole.as_slice(), stacked.as_slice(), width),
             "a shift of one row went unseen"
         );
-        // The window composites the stack into the column the one texture gave.
+        // The window composites the stack into the column the one texture gave:
+        // the rows on both sides of each seam, which stand below the window's header, are inked in it.
         let (stack_column, stack_width) = minimap_column(window);
         assert_eq!(stack_width, column_width);
+        let background = column[0];
+        let mut seam = HEADER as usize;
+        let mut seams_seen = 0;
+        for (_, rows) in &sizes[..sizes.len() - 1] {
+            seam += *rows as usize;
+            // A seam below the bottom of the frame is not in the composited column.
+            if seam + 8 > stack_column.len() / column_width {
+                break;
+            }
+            seams_seen += 1;
+            for side in [seam - 8..seam, seam..seam + 8] {
+                let inked = stack_column[side.start * column_width..side.end * column_width]
+                    .iter()
+                    .filter(|pixel| {
+                        return pixel.r != background.r
+                            || pixel.g != background.g
+                            || pixel.b != background.b;
+                    })
+                    .count();
+                assert!(inked > 0, "the composited column is blank at rows {side:?}");
+            }
+        }
+        assert!(seams_seen >= 2, "only {seams_seen} seams are in the frame at limit {limit}");
         assert!(
             same_pixels(&column, &stack_column),
             "the composited column differs at limit {limit}"
