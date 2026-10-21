@@ -12,7 +12,7 @@ use super::find_tests::Reader;
 /// the window sizing,
 /// and the reads of the minimap's texture.
 use super::{
-    minimap_tests::bands_of,
+    minimap_tests::{bands_of, picture_still},
     sidebar_tests::{TEXT_LEFT, minimap_beside},
     tile_reads::{draw_minimap, minimap_pixels},
     wrap_tests::{long_text, open, settled},
@@ -26,7 +26,6 @@ use slint::{
     ComponentHandle, LogicalSize,
     platform::{WindowEvent, update_timers_and_animations},
 };
-
 /// A window `height` logical pixels tall over four hundred wrapped lines,
 /// once its first picture is on screen,
 /// and the line measurements have arrived when `measured` asks for them.
@@ -230,6 +229,8 @@ fn resized_to(opened: &Reader, height: f32, track: f32) {
             waiting.step("the picture of the tall window did not arrive");
         }
     }
+    // The picture checked is the one that stood still while the line measurements finished.
+    picture_still(opened);
     draw_minimap(window);
 }
 
@@ -314,14 +315,24 @@ fn a_picture_taller_than_the_device_limit_is_cut_to_the_limit() {
     );
     let width = image.width() as usize;
     let pixels = image.as_slice();
+    let mut inked_by_chunk = Vec::new();
     for chunk in 0..wanted as usize {
         let first = chunk * ide_app::minimap::CHUNK_ROWS as usize * width;
         let last = ((chunk + 1) * ide_app::minimap::CHUNK_ROWS as usize * width).min(pixels.len());
-        let inked = pixels[first..last]
-            .iter()
-            .filter(|pixel| return pixel.a > 0)
-            .count();
-        assert!(inked > 0, "chunk {chunk} of the slice is blank");
+        inked_by_chunk.push(
+            pixels[first..last]
+                .iter()
+                .filter(|pixel| return pixel.a > 0)
+                .count(),
+        );
     }
+    assert!(
+        inked_by_chunk.iter().all(|inked| return *inked > 0),
+        "a chunk of the slice is blank: inked pixels by chunk {inked_by_chunk:?}, texture {}x{}, {chunks} chunks rendered, {} slices, statistics {:?}",
+        image.width(),
+        image.height(),
+        opened.source.borrow().gpu.minimaps_rendered(),
+        opened.source.borrow().minimap.last_stats
+    );
     window.hide().expect("close minimap window");
 }

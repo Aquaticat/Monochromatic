@@ -531,6 +531,44 @@ fn the_wheel_over_the_minimap_scrolls_like_the_wheel_over_the_text() {
     window.hide().expect("close minimap window");
 }
 
+/// What:
+///  Wait until the line measurements are done and the picture has stood still,
+///  with the rows,
+///  the picture shown,
+///  and the picture posted unchanged for longer than the slowest pace.
+/// Why:
+///  The measurements of a long file keep changing the rows for a while,
+///  and the picture follows them a pace later,
+///  so a picture read earlier may be one built for rows that are gone.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// async function pictureStill(reader: Reader): Promise<void>;
+/// ```
+pub(super) fn picture_still(reader: &Reader) {
+    settled(reader);
+    let mut waiting = Waiting::slow();
+    let mut seen = None;
+    let mut since = Instant::now();
+    loop {
+        let now = {
+            let current = reader.source.borrow();
+            (
+                current.row_map.height().to_bits(),
+                current.minimap.shown,
+                current.minimap.posted,
+            )
+        };
+        if seen != Some(now) {
+            seen = Some(now);
+            since = Instant::now();
+        } else if since.elapsed() > Duration::from_millis(800) && now.1 == now.2 {
+            return;
+        }
+        waiting.step("the picture did not stand still");
+    }
+}
+
 /// How many bands the whole text of the reader's window is cut into.
 pub(super) fn bands_of(reader: &Reader) -> usize {
     return band_count(reader.source.borrow().row_map.height(), BAND);
@@ -1109,6 +1147,9 @@ fn an_external_edit_of_fifty_thousand_lines_shapes_only_the_line_it_touches() {
             waiting.step("the file was not watched");
         }
     }
+    // The picture the edit is compared with is the one for the final rows,
+    // or its window would differ from the picture after the edit by lines that are new to it.
+    picture_still(&opened);
     let revision = opened.source.borrow().document.revision();
     let (cold, shaped_before) = {
         let current = opened.source.borrow();
