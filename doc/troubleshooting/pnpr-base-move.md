@@ -326,9 +326,15 @@ Measured end to end with the harness above:
 Tradeoffs:
 
 - The conversion is one-way for the live store:
-  the earlier reader cannot see the converted tree,
-  so rolling the image back to `0.1.0-alpha.11` needs the pre-upgrade backup restored.
-  The error message itself says `Back it up and run \`pnpr upgrade-storage\``.
+  the earlier reader cannot see the converted tree.
+  The error message says `Back it up and run \`pnpr upgrade-storage\``,
+  but this repo keeps its standing no-backup decision
+  (owner decision 2026-10-21:
+   no pre-conversion snapshot,
+   recovery republishes current versions),
+  so a rollback after the conversion empties the converted store
+  and lets the `pnpr-publish` workflow republish
+  (runbook section "Move to a newer pnpr base").
 - The CLI mandates stopping every pnpr process that uses the store first
   (`pnpr upgrade-storage --help`),
   so it runs in a deploy window with the container stopped.

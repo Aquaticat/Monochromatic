@@ -597,10 +597,11 @@ Rollback commit `66cff15dc2` restored the `0.1.0-alpha.11` pin,
  returned `401 Authentication required for OIDC credentials`.
  The fix-forward is measured and ready but not deployed:
  stop the container,
- back the store up,
- run `pnpr upgrade-storage` against the volume with `PNPR_SECRET` set,
+ run `pnpr upgrade-storage` against the volume with `PNPR_SECRET` set
+ (no pre-conversion snapshot,
+ under the standing no-backup decision the owner re-confirmed on 2026-10-21),
  then repin the `0.1.0-alpha.16` digest and move every client URL under `/npm` in the same commit.
  The converted store cannot be served by the `0.1.0-alpha.11` reader,
- so the rollback path after that step is restoring the backup.
+ so a rollback after that step empties the converted store and republishes current versions.
  The image pin and the config change land in one commit,
  because Coolify bakes the config into the rebuilt image and the new base refuses the old block.
