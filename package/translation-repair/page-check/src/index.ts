@@ -3,6 +3,10 @@
 // Production siblings import it through `/ts`; tests and fixtures through the built entry, so a process loads one copy.
 
 export {
+  ArchiveBlockAlignmentMissingError,
+  ArchiveBlockContextMissingError,
+} from './corpus-run/archive-block-context-errors.ts';
+export {
   archiveBlockIdentity,
   repairArchiveBlocks,
 } from './corpus-run/archive-block-repair.ts';

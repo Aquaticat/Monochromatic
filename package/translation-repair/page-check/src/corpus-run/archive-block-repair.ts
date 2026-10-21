@@ -22,6 +22,7 @@ import {
   rendersAsNothing,
   wordForCount,
 } from '@monochromatic-dev/translation-repair-typography/ts';
+import { ArchiveBlockContextMissingError, } from './archive-block-context-errors.ts';
 import {
   keptNotesFinding,
   withBlockNotes,
@@ -252,6 +253,10 @@ function removalSpan(
 
  @returns Revised text, retained identities, and audit findings
 
+ @throws {@link ArchiveBlockContextMissingError} when `sourceContexts` holds
+ no entry for a block's identity, which means the caller and the map disagree
+ about the block
+
  @example
  ```ts
  const repaired = await repairArchiveBlocks(input);
@@ -329,9 +334,16 @@ export async function repairArchiveBlocks(
     );
     /**
      Original section the block is reviewed against, whose own comments are
-     the lanes' to carry.
+     the lanes' to carry. A section only the archive has is filed as empty; a
+     block with no entry at all is a fault (ledger B717), never an empty one.
      */
-    const source = sourceContexts.get(identity,) ?? '';
+    const source = sourceContexts.get(identity,);
+    if (source === undefined) {
+      throw new ArchiveBlockContextMissingError({
+        identity,
+        held: [...sourceContexts.keys(),],
+      },);
+    }
     /**
      The block as the reviewers' sheet shows it, without its notes.
      */

@@ -9,9 +9,58 @@ import {
   parseDocument,
   photoReferences,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import { ArchiveBlockAlignmentMissingError, } from './archive-block-context-errors.ts';
 import { archiveBlockIdentity, } from './archive-block-repair.ts';
 
 //region Archive block source context
+
+/**
+ Source section text of the aligned pair a block sits in.
+
+ @param alignment - section alignment preparation consumed
+
+ @param blockId - id of the block, for the refusal
+
+ @param pairIndex - aligned pair the block names
+
+ @returns The pair's source text
+
+ @throws {@link ArchiveBlockAlignmentMissingError} when the alignment holds no
+ such pair, which means the preparation and the alignment disagree about the
+ block's place (ledger B717)
+
+ @example
+ ```ts
+ const text = alignedSourceText({ alignment, blockId: 'block/0', pairIndex: 0, },);
+ ```
+ */
+function alignedSourceText(
+  {
+    alignment,
+    blockId,
+    pairIndex,
+  }: {
+    readonly alignment: ReturnType<typeof alignDocumentSections>;
+    readonly blockId: string;
+    readonly pairIndex: number;
+  },
+): string {
+  /**
+   Pair the block names.
+   */
+  const pair = alignment.pairs
+    .at(pairIndex,);
+  if (pair === undefined) {
+    throw new ArchiveBlockAlignmentMissingError({
+      blockId,
+      pairIndex,
+      pairCount: alignment.pairs
+        .length,
+    },);
+  }
+  return pair.source
+    .text;
+}
 
 /**
  Maps each unclaimed archive block to source section it was expected to render.
@@ -24,6 +73,9 @@ import { archiveBlockIdentity, } from './archive-block-repair.ts';
  @param pictureReadings - completed entry evidence, restricted to each section's references
 
  @returns Exact block identity to source-section text and corroborated picture support
+
+ @throws {@link ArchiveBlockAlignmentMissingError} when a block names an
+ aligned pair the alignment of the same texts does not hold
 
  @example
  ```ts
@@ -60,12 +112,12 @@ export function archiveBlockSourceContexts(
     const sourceContext = block.location
       .kind
       === 'aligned-pair'
-      ? (alignment.pairs
-        .at(block.location
-          .pairIndex,)
-        ?.source
-        .text
-        ?? '')
+      ? alignedSourceText({
+        alignment,
+        blockId: block.blockId,
+        pairIndex: block.location
+          .pairIndex,
+      },)
       : '';
     /**
      Names this source section alone authorizes, each once.
