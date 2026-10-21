@@ -295,6 +295,26 @@ TODO | DONE
     one mount whose `Source` ends in `pnpr-registry-storage`;
     use that `Source` name in every `--volume` below,
     never the bare compose name.
+   If `command -v docker podman nerdctl ctr crictl` prints nothing,
+    the shell is not on the machine that runs the container,
+    or the CLI sits outside this shell's `PATH`.
+   A `command not found` for a command that exists also comes from an invisible character
+    pasted before the name
+    (a non-breaking space;
+     bash ignores an ordinary leading space);
+    retype the command before concluding the CLI is absent.
+   Confirm the machine first:
+    `curl --silent --write-out '%{http_code}\n' --output /dev/null http://127.0.0.1:7677/-/ping`
+    prints `200` only on the host,
+    because compose binds the registry to `127.0.0.1:7677`.
+   Expected on a host that can run the steps:
+    `command -v docker` prints a path
+    and `ls /var/run/docker.sock` lists the daemon socket.
+   If the socket exists without any CLI,
+    install that runtime's CLI on the host
+    (the operator's call)
+    or run the steps from a shell that already has it;
+    never continue without a CLI that can run the conversion image.
 3. Read the `PNPR_SECRET` value from the Coolify environment variables.
    Expected:
     the value the running application uses,
