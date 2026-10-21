@@ -645,7 +645,9 @@ Recurrence:
 ## B710: a rotation sweep that found failing cases ended in a stack trace
 
 Red in `bab539ba71`,
-fixed in `f127703f46`.
+fixed in `f127703f46`;
+the bad-option refusals red in `02ce0ade0d`,
+fixed in `92de2fce80`.
 
 Named in the lead's brief of 2026-10-21 (UTC):
 a task that is run to read its findings ended them in a thrown error.
@@ -701,13 +703,18 @@ the refusal and no frame,
 and exited 6;
 without the file it ended on `rotation sweep: clean` and exited 0.
 
-Left as they were:
-the option refusals of `sweepRequestOf` (an unknown option,
+The command line is refused the same way.
+`sweepRequestOf` threw a bare `Error` for an unknown option,
 a salt past 9,
-an option without a value)
-are the same class and still throw bare errors,
-so a mistyped option prints a stack;
-a follow-up would give them the refusal path.
+a salt that is no number and an option without a value,
+so a mistyped option printed a stack.
+It now throws `SweepOptionRefusalError`,
+and `rotationSweepMain` writes its sentence alone to standard error,
+naming the option typed and the valid forms,
+starts no sweep and returns 6.
+Any other error out of reading the command line is a fault and is thrown unchanged.
+One case of `rotation-sweep.unit.test.ts` drives the four bad command lines
+and failed on the red commit `02ce0ade0d`.
 
 Recurrence:
 `mistake-prevention.md`,
