@@ -504,3 +504,68 @@ and pass after the fix.
 Recurrence:
 `mistake-prevention.md`,
 "Tests touching the real world".
+
+## B801: `remark-math` could not be imported from source, because the override that dropped `katex` left its import dangling
+
+Fixed in `47b4634eeb9afabc1aaa8401a99f2e4dc7432a1b` (the shim) and `1a61a85cfe2128224549a15e1fb7266bc02b48d0` (the override);
+red in the commit before them.
+
+Found on 2026-10-21 (UTC) when a test run from a worktree outside the scratch area's directory tree
+failed at load in every test file that reaches `document-structure/src/parse-mdx.ts`.
+`parse-mdx.ts` imports `remark-math`,
+which imports the root of `micromark-extension-math`.
+That package exports only `"."`,
+and its `index.js` re-exports `mathHtml` from `lib/html.js`,
+which runs `import katex from 'katex'` and reads `katex.renderToString` when the module loads.
+`c92efa816c` overrode `'micromark-extension-math>katex': '-'` for GHSA-238p-pmpm-9mq7,
+so `katex` was not installed,
+and the import threw `ERR_MODULE_NOT_FOUND: Cannot find package 'katex'`.
+Built bundles were not affected:
+rolldown drops `lib/html.js` because the package declares `sideEffects: false`,
+which is why the corpus runs kept working.
+
+The change:
+`package/shim/katex` resolves as `katex`,
+exposes `renderToString` and the other members of katex's surface as functions,
+and throws `KatexNotInstalledError` from every call or construction;
+the override points at it.
+By the agent's run,
+one `document-structure` unit test file failed at load with the `ERR_MODULE_NOT_FOUND` above before the override,
+and that file and the whole `document-structure` unit task pass after it;
+the shim's own cases include loading `remark-math`,
+which failed the same way before the override.
+The built `corpus-pass` bundle has the same pipeline digest before and after.
+
+Recurrence:
+`mistake-prevention-tests-clocks-and-arrival-order.md`,
+"Tests touching the real world";
+`doc/troubleshooting/dependencies.md`,
+"`katex` (dropped for GHSA-238p-pmpm-9mq7;
+substituted via a throwing workspace shim)".
+
+## B802: unit tests passed only because a parent directory of the worktree held a `node_modules`
+
+Status:
+the cause is found and the rule is recorded;
+no guard refuses a run whose parent directories hold a `node_modules`.
+
+Found on 2026-10-21 (UTC) while tracing B801.
+Every scratch worktree sat under one directory that held its own `node_modules`,
+left by another session's npm install,
+and that install held a `katex`.
+Node resolves a bare import by walking up the directory tree,
+so `micromark-extension-math/lib/html.js` found that `katex` although the workspace had none.
+The install was rewritten at 2026-10-21 17:10:03 UTC without `katex`,
+and from then on 1,172 test files of 26 packages failed at load in worktrees under that directory.
+`c92efa816c` had checked its removal of `katex` the same way,
+so its note that the unit suite passed,
+math cases included,
+rested on a directory outside the repository.
+
+The fix of B801 added no guard against this.
+It was made in a worktree where no parent directory holds a `node_modules`,
+which is what showed the defect as it is.
+
+Recurrence:
+`mistake-prevention-tests-clocks-and-arrival-order.md`,
+"Tests touching the real world".
