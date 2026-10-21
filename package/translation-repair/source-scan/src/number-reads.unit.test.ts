@@ -264,9 +264,49 @@ const HELD_READS: Readonly<Record<string, {
     calls: 1,
     why: PLAIN_DECIMAL,
   },
-  'provider/neuralwatt-ledger.ts#utcDayOf: new Date': {
+  'provider/neuralwatt-day-anchor.ts#decideNeuralWattDayAnchor: new Date': {
     calls: 1,
-    why: 'reads a date, no text, or an entry stamp neuralWattEntryOf took through isIsoStampText: what toISOString writes',
+    why: EPOCH_MILLISECONDS,
+  },
+  'provider/neuralwatt-day.ts#neuralWattDayAfter: new Date': {
+    calls: 1,
+    why: EPOCH_MILLISECONDS,
+  },
+  'provider/neuralwatt-day.ts#neuralWattDayStartAt: new Date': {
+    calls: 2,
+    why: EPOCH_MILLISECONDS,
+  },
+  'provider/neuralwatt-day.ts#neuralWattDayStartOfInstant: Date.parse': {
+    calls: 1,
+    why: 'reads an instant a reply spelled, refusing a reading that is not finite',
+  },
+  'provider/neuralwatt-day.ts#twoDigitsBelow: Number': {
+    calls: 1,
+    why: 'reads two characters its own check took as ASCII digits',
+  },
+  'provider/neuralwatt-energy.ts#refusalTextOf: new Date': {
+    calls: 1,
+    why: LOG_STAMP,
+  },
+  'provider/neuralwatt-key-allowance.ts#allowanceFrom: Date.parse': {
+    calls: 1,
+    why: 'reads an instant a reply spelled, refusing a reading that is not finite',
+  },
+  'provider/neuralwatt-key-allowance.ts#allowanceFrom: new Date': {
+    calls: 1,
+    why: EPOCH_MILLISECONDS,
+  },
+  'provider/neuralwatt-key-allowance.ts#blockedUntilOf: new Date': {
+    calls: 1,
+    why: 'reads the reset allowanceFrom wrote with toISOString',
+  },
+  'provider/neuralwatt-usage.ts#echoedAt: Date.parse': {
+    calls: 1,
+    why: 'reads an instant a reply spelled, refusing a reading that is not finite',
+  },
+  'provider/neuralwatt-usage.ts#echoedAt: new Date': {
+    calls: 1,
+    why: EPOCH_MILLISECONDS,
   },
   'provider/neuralwatt-quota.ts#describePlanSpend: Number': {
     calls: 1,

@@ -29,6 +29,8 @@ import {
   NEURALWATT_BASE_URL,
   neuralWattChatUrlFor,
 } from './neuralwatt-catalog.ts';
+import type { NeuralWattDayStart, } from './neuralwatt-day.ts';
+import { createNeuralWattDaySession, } from './neuralwatt-day-session.ts';
 import {
   NeuralWattAllowanceError,
   type NeuralWattEnergy,
@@ -71,10 +73,13 @@ import {
 // "eats into my normal plan which I use for other stuff":
 //
 //   1. BEFORE ANY REQUEST, the call reserves its estimated energy in the
-//      ledger (`neuralwatt-ledger.ts`). When the estimate does not fit in what
-//      is left of the UTC day, nothing is sent and a `NeuralWattAllowanceError`
-//      is thrown, which the router reads as a budget refusal and moves on
-//      from.
+//      ledger (`neuralwatt-ledger.ts`), in the day the owner's account has:
+//      "Every neuralwatt day starts at `15:15`" (America/New_York, `neuralwatt-day.ts`), counting
+//      the larger of the ledger's spend and the whole account's covered energy
+//      since then (`neuralwatt-day-session.ts`). When the estimate does not fit
+//      in what is left of the day, or the day's start is unknown, or the key's
+//      cap is blocked, nothing is sent and a `NeuralWattAllowanceError` is
+//      thrown, which the router reads as a budget refusal and moves on from.
 //   2. AFTER THE STREAM, the `: energy` comment's figure replaces the estimate
 //      in the ledger. With no such comment the estimate stands, marked.
 //   3. A `: cost` COMMENT IS REPORTED AND NEVER ACTED ON. Its
@@ -84,7 +89,8 @@ import {
 //      0.000107 USD wholly against the free energy).
 //   4. A QUOTA READING BEFORE THE FIRST CALL AND ONE AT THE END OF THE RUN
 //      (`neuralwatt-quota-session.ts`) is the only signal of plan energy
-//      spent, since the free energy is reported nowhere.
+//      spent, since the free energy is reported nowhere; the first also gives
+//      the day's anchor.
 //
 // IT THROWS THE SAME FAILURE CLASS AS THE OTHER PROVIDERS for non-success
 // replies (`ProviderHttpError`, provider `'neuralwatt'`), which the router and
@@ -153,8 +159,9 @@ export class NeuralWattModelNotServedError extends Error {
  */
 export type NeuralWattClient = ModelCaller & {
   /**
-   The UTC day's energy off the ledger, which is this provider's whole
-   budget signal.
+   The day's energy off the ledger, floored by the account's figure, and the
+   key's cap: this provider's whole budget signal. Each reading refreshes the
+   account figure and the cap.
    */
   readonly energy: (args: { readonly signal: AbortSignal; },) => Promise<NeuralWattEnergy>;
 
@@ -164,6 +171,20 @@ export type NeuralWattClient = ModelCaller & {
    */
   readonly planSpend: (args: { readonly signal: AbortSignal; },) => Promise<NeuralWattPlanSpend>;
 };
+
+/**
+ The system clock, the client's time outside a test.
+
+ @returns The current instant
+
+ @example
+ ```ts
+ const now = systemClock();
+ ```
+ */
+function systemClock(): Date {
+  return new Date();
+}
 
 /**
  Refuses a success reply whose stream never reached its terminator, so the
@@ -227,6 +248,11 @@ function servedIdFor({ modelId, }: { readonly modelId: RosterModelId; },): Neura
 
  @param retryPolicy - transient-retry pacing; tests pass tiny backoffs
 
+ @param now - clock the day is placed by; the system clock outside a test
+
+ @param dayStartSetting - the owner's `TRANSLATION_REPAIR_NEURALWATT_DAY_START`
+ (`neuralWattDayStartFrom`), used where the quota does not give the day's start
+
  @returns Client surface with chatText, chatJson, energy and planSpend
 
  @example
@@ -242,6 +268,8 @@ export function createNeuralWattClient(
     baseUrl = NEURALWATT_BASE_URL,
     perModelConcurrency = NEURALWATT_PER_MODEL_CONCURRENCY,
     retryPolicy = DEFAULT_RETRY_POLICY,
+    now = systemClock,
+    dayStartSetting = {},
   }: {
     readonly apiKey: string;
     readonly ledger: NeuralWattLedger;
@@ -249,6 +277,8 @@ export function createNeuralWattClient(
     readonly baseUrl?: string;
     readonly perModelConcurrency?: number;
     readonly retryPolicy?: RetryPolicy;
+    readonly now?: () => Date;
+    readonly dayStartSetting?: NeuralWattDayStart;
   },
 ): NeuralWattClient {
   /**
@@ -272,6 +302,19 @@ export function createNeuralWattClient(
     baseUrl,
     transport,
     retryPolicy,
+  },);
+
+  /**
+   The day the account has, which the ledger counts in.
+   */
+  const days = createNeuralWattDaySession({
+    headers,
+    baseUrl,
+    transport,
+    retryPolicy,
+    quota,
+    now,
+    setting: dayStartSetting,
   },);
 
   /**
@@ -370,13 +413,23 @@ export function createNeuralWattClient(
       },);
 
       /**
+       The day the call is made in, which reads the quota once for its anchor
+       when the run has not.
+       */
+      const day = await days.dayFor({
+        signal: request.signal,
+        refresh: false,
+      },);
+
+      /**
        Whether the day can take this call; THE HOLD IS TAKEN BEFORE ANYTHING IS
-       SENT, the quota baseline included.
+       SENT.
        */
       const outcome = await ledger.reserve({
         model: servedId,
         promptTokens,
         estimateWh,
+        day,
       },);
       if (!outcome.granted)
         throw new NeuralWattAllowanceError({
@@ -389,7 +442,6 @@ export function createNeuralWattClient(
        The hold this call took, given back when the call ends however it ends.
        */
       using held = outcome.reservation;
-      await quota.ensureBaseline({ signal: request.signal, },);
 
       /**
        Per-exchange deadline armed inside the slot so local queue wait behind
@@ -478,7 +530,8 @@ export function createNeuralWattClient(
   const chatJson = chatJsonThrough({ chatText, },);
 
   /**
-   Reads the day's energy off the ledger.
+   Reads the day's energy off the ledger, refreshing the account figure and
+   the key's cap first.
 
    @param signal - abort signal honored before the read
 
@@ -493,7 +546,15 @@ export function createNeuralWattClient(
    */
   async function energy({ signal, }: { readonly signal: AbortSignal; },): Promise<NeuralWattEnergy> {
     signal.throwIfAborted();
-    return await ledger.read();
+
+    /**
+     The day, with the account figure and the cap as they are now.
+     */
+    const day = await days.dayFor({
+      signal,
+      refresh: true,
+    },);
+    return await ledger.read({ day, },);
   }
 
   return {

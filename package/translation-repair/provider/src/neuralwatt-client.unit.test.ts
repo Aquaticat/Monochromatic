@@ -43,6 +43,7 @@ import {
   consoleLinesDuring,
   handClock,
   jsonRecordOf,
+  MIDNIGHT_DAY,
 } from './neuralwatt-ledger.test-fixture.ts';
 import {
   ask,
@@ -138,11 +139,13 @@ function scripted(
     dailyWh = 550,
     chat = [{ status: 200, bodyText: streamOf({ comments: ENERGY_COMMENT + FREE_COST_COMMENT, }), },],
     quota = [quotaReply({ kwhUsed: 13.9023, }),],
+    dayStartSetting,
   }: {
     readonly dir: string;
     readonly dailyWh?: number;
     readonly chat?: readonly TransportReply[] | ((exchange: TransportExchange, index: number,) => Promise<TransportReply>);
     readonly quota?: readonly TransportReply[];
+    readonly dayStartSetting?: { readonly msOfDay: number; };
   },
 ) {
   /**
@@ -176,8 +179,13 @@ function scripted(
       apiKey: 'test-key',
       ledger,
       baseUrl: BASE_URL,
+      now: clock.now,
+      ...((dayStartSetting === undefined) ? {} : { dayStartSetting, }),
       transport: async function transport(exchange,): Promise<TransportReply> {
         exchanges.push(exchange,);
+        // THE BY-MODEL ROUTE IS SCRIPTED IN neuralwatt-day.unit.test.ts: here it is down, so the ledger counts alone.
+        if ((exchange.method === 'GET') && exchange.url.includes('/usage/by-model',))
+          return { status: 503, bodyText: 'no script', };
         if (exchange.method === 'GET') {
           counts.quota += 1;
           return quota[Math.min(counts.quota - 1, quota.length - 1,)] ?? { status: 500, bodyText: 'no script', };
@@ -295,8 +303,8 @@ await describe({
           return line.includes('SPEND provider=neuralwatt model=deepseek-v4.1-flash prompt=90 completion=10 cost=0',);
         },),).toBe(true,);
         expect(runSpendUsd({ provider: 'neuralwatt', },),).toBe(before,);
-        expect(await ledger.read(),).toMatchObject({ reservedWh: 0, reckonedWh: 0, calls: 1, },);
-        expect((await ledger.read()).spentWh,).toBeCloseTo(0.015, 12,);
+        expect(await ledger.read({ day: MIDNIGHT_DAY, },),).toMatchObject({ reservedWh: 0, reckonedWh: 0, calls: 1, },);
+        expect((await ledger.read({ day: MIDNIGHT_DAY, },)).spentWh,).toBeCloseTo(0.015, 12,);
         expect(jsonRecordOf({ text: (await readFile(ledger.path, 'utf8',)).trim(), },).estimated,).toBeUndefined();
       },
     },),
@@ -478,7 +486,7 @@ await describe({
         const line = jsonRecordOf({ text: (await readFile(ledger.path, 'utf8',)).trim(), },);
         expect(line.estimated,).toBe('abandoned-estimate',);
         expect(line.wh,).toBeGreaterThan(0,);
-        expect(await ledger.read(),).toMatchObject({ reservedWh: 0, calls: 1, },);
+        expect(await ledger.read({ day: MIDNIGHT_DAY, },),).toMatchObject({ reservedWh: 0, calls: 1, },);
       },
     },),
 
@@ -496,7 +504,7 @@ await describe({
         await rejectionOf(async function call(): Promise<void> {
           await ask({ client: dropped.client, },);
         },);
-        expect(await dropped.ledger.read(),).toMatchObject({ reservedWh: 0, calls: 0, spentWh: 0, },);
+        expect(await dropped.ledger.read({ day: MIDNIGHT_DAY, },),).toMatchObject({ reservedWh: 0, calls: 0, spentWh: 0, },);
 
         await using other = await scratchDir({ prefix: 'whiskers-neuralwatt-client-', },);
         const refused = scripted({
@@ -511,26 +519,31 @@ await describe({
         },);
         expect(failure,).toBeInstanceOf(ProviderHttpError,);
         expect(failure,).toMatchObject({ status: 429, provider: 'neuralwatt', },);
-        expect(await refused.ledger.read(),).toMatchObject({ reservedWh: 0, calls: 0, },);
+        expect(await refused.ledger.read({ day: MIDNIGHT_DAY, },),).toMatchObject({ reservedWh: 0, calls: 0, },);
       },
     },),
 
     it({
       name: 'READS THE QUOTA ONCE BEFORE THE FIRST CALL AND NEVER AGAIN BEFORE THE END: one GET with the bearer key '
-        + 'ahead of the first chat request, none ahead of the second',
+        + 'ahead of the first chat request, then the account usage once, and none of either ahead of the second',
       fn: async () => {
         await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-client-', },);
         const { client, exchanges, } = scripted({ dir: scratch.path, },);
         await ask({ client, },);
         await ask({ client, },);
         expect(exchanges.map(function shape(exchange,): string {
-          return `${exchange.method} ${exchange.url}`;
+          return `${exchange.method} ${exchange.url.split('?',)[0] ?? ''}`;
         },),).toEqual([
           `GET ${BASE_URL}/quota`,
+          `GET ${BASE_URL}/models`,
+          `GET ${BASE_URL}/usage/by-model`,
           `POST ${BASE_URL}/chat/completions`,
           `POST ${BASE_URL}/chat/completions`,
         ],);
         expect(exchanges[0]?.headers.Authorization ?? exchanges[0]?.headers.authorization,).toBe('Bearer test-key',);
+        expect(exchanges[2]?.url,).toBe(
+          `${BASE_URL}/usage/by-model?start_date=2026-10-20T05:05:25.000Z&end_date=2026-10-20T12:00:00.000Z`,
+        );
       },
     },),
 
@@ -552,7 +565,7 @@ await describe({
         if (spend.kind === 'measured')
           expect(spend.kwh,).toBeCloseTo(0.05, 9,);
         expect(exchanges.filter(function isQuota(exchange,): boolean {
-          return exchange.method === 'GET';
+          return (exchange.method === 'GET') && exchange.url.endsWith('/quota',);
         },).length,).toBe(2,);
       },
     },),
@@ -572,13 +585,14 @@ await describe({
     },),
 
     it({
-      name: 'GOES ON WITHOUT A STARTING READING WHEN THE QUOTA CANNOT BE READ: the call is sent, the failure is '
-        + 'logged, and the end-of-run report says it has no starting reading',
+      name: 'GOES ON WITHOUT A STARTING READING WHEN THE QUOTA CANNOT BE READ BUT THE SETTING GIVES THE DAY: the call is '
+        + 'sent, the failure is logged, and the end-of-run report says it has no starting reading',
       fn: async () => {
         await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-client-', },);
         const { client, exchanges, } = scripted({
           dir: scratch.path,
           quota: [{ status: 429, bodyText: 'Too Many Requests', },],
+          dayStartSetting: { msOfDay: 0, },
         },);
         expect((await ask({ client, },)).text,).toBe('{"spot":"sunbeam"}',);
         expect(chatExchangesOf({ exchanges, },).length,).toBe(1,);
@@ -597,7 +611,7 @@ await describe({
         const { client, } = scripted({ dir: scratch.path, },);
         await ask({ client, },);
         expect(await client.energy({ signal: SIGNAL, },),).toMatchObject({
-          day: '2026-10-20',
+          dayStart: '2026-10-20T05:05:25.000Z',
           dailyWh: 550,
           reservedWh: 0,
         },);

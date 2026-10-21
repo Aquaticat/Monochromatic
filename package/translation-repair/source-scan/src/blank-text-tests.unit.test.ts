@@ -1918,6 +1918,10 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: SENTINEL,
   },
+  'provider/neuralwatt-day.ts#neuralWattDayStartFrom': {
+    tests: 1,
+    why: SETTING,
+  },
   'provider/neuralwatt-ledger-config.ts#neuralWattDailyWhFrom': {
     tests: 1,
     why: SETTING,

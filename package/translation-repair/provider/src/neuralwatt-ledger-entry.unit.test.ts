@@ -34,6 +34,7 @@ import {
 import {
   handClock,
   lineOf,
+  MIDNIGHT_DAY,
 } from './neuralwatt-ledger.test-fixture.ts';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
@@ -65,7 +66,7 @@ async function energyOf({ text, }: { readonly text: string; },) {
   const path = join(scratch.path, 'energy.jsonl',);
   await writeFile(path, text, 'utf8',);
   const { now, } = handClock({ start: '2026-10-20T12:00:00.000Z', },);
-  return await createNeuralWattLedger({ path, dailyWh: 550, now, },).read();
+  return await createNeuralWattLedger({ path, dailyWh: 550, now, },).read({ day: MIDNIGHT_DAY, },);
 }
 
 /**
@@ -88,7 +89,7 @@ async function refusalFor({ bad, }: { readonly bad: string; },) {
   return {
     path,
     refusal: await rejectionOf(async function read(): Promise<void> {
-      await createNeuralWattLedger({ path, dailyWh: 550, now, },).read();
+      await createNeuralWattLedger({ path, dailyWh: 550, now, },).read({ day: MIDNIGHT_DAY, },);
     },),
   };
 }
