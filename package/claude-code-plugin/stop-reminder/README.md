@@ -104,6 +104,10 @@ The model is `openai/gpt-6-luna-decisions`, reached through the Gateway Decision
 A stop with a running subagent skips the call and is released, because the subagent reports back on its own;
 a running shell command, monitor, or workflow does not skip it.
 A stop in plan mode also skips the call, because the agent cannot perform the work it announces.
+A stop with a finished task's completion notification still queued skips the call and is released too:
+the Stop event lists only running tasks, so a task that ended a moment earlier is absent from it,
+yet Claude Code delivers the queued notification as a new turn right after the stop.
+The hook finds the notification in the transcript's queue records, and only when no tool result follows it.
 
 A label is acted on at probability 0.60 or higher (interim; revisit from the verdict log).
 The message is sent in full, the end kept when it exceeds 16000 characters, with no thinking blocks.

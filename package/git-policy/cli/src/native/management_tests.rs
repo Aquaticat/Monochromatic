@@ -92,7 +92,7 @@ const FIXED_A: &str = "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"fix-summar
 ///  as event number `sequence`.
 fn final_newline_warning(sequence: u64) -> String {
     return format!(
-        "{{\"schemaVersion\":1,\"sequence\":{sequence},\"type\":\"finding\",\"trigger\":\"direct-check\",\"policyId\":\"final-newline\",\"severity\":\"warn\",\"code\":\"final-newline/noncanonical-final-newline\",\"message\":\"Non-empty text file must end with exactly one LF byte.\",\"path\":\"a.txt\",\"fix\":\"none\"}}\n"
+        "{{\"schemaVersion\":1,\"sequence\":{sequence},\"type\":\"finding\",\"trigger\":\"direct-check\",\"policyId\":\"final-newline\",\"severity\":\"warn\",\"code\":\"final-newline/noncanonical-final-newline\",\"message\":\"Non-empty text file must end with exactly one LF byte.\",\"hint\":\"Hint: if you are committing or checking this file, edit it so it ends with exactly one newline, then stage it again.\",\"path\":\"a.txt\",\"fix\":\"none\"}}\n"
     );
 }
 
@@ -249,7 +249,7 @@ fn unknown_selected_policy_is_reported_on_stdout() {
             exit(
                 2,
                 format!(
-                    "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"engine-failure\",\"code\":\"config-invalid\",\"message\":\"Unknown policy ID: {id}. Shipped policies: require-root, linked-worktree-only, branch-worktree-only, add-explicit, final-newline, markdown/autofix, mono/forbidden-root-context, mono/dependent-version-bump, security/forbidden-strings.\"}}\n"
+                    "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"engine-failure\",\"code\":\"config-invalid\",\"message\":\"Unknown policy ID: {id}. Shipped policies: require-root, linked-worktree-only, branch-worktree-only, add-explicit, final-newline, markdown/autofix, mono/forbidden-root-context, mono/dependent-version-bump, security/forbidden-strings.\",\"hint\":\"Hint: if you just edited cli-git.config.jsonc, fix the key the message names or revert the edit; an unknown key, a wrong type or an unknown policy id fails before any policy runs.\"}}\n"
                 )
                 .as_str(),
                 ""
@@ -435,7 +435,7 @@ fn direct_commands_use_the_repository_configuration() {
         exit(
             2,
             format!(
-                "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"engine-failure\",\"code\":\"config-invalid\",\"message\":\"{}: Configuration key trust is retired: JSONC configuration is data and needs no code-execution approval. Remove the key.\"}}\n",
+                "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"engine-failure\",\"code\":\"config-invalid\",\"message\":\"{}: Configuration key trust is retired: JSONC configuration is data and needs no code-execution approval. Remove the key.\",\"hint\":\"Hint: if you just edited cli-git.config.jsonc, fix the key the message names or revert the edit; an unknown key, a wrong type or an unknown policy id fails before any policy runs.\"}}\n",
                 source.display()
             )
             .as_str(),
@@ -467,7 +467,7 @@ fn direct_commands_use_the_repository_configuration() {
         plan(&["check", "--all"], repo.as_path(), &inputs),
         exit(
             1,
-            "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"finding\",\"trigger\":\"direct-check\",\"policyId\":\"mono/forbidden-root-context\",\"severity\":\"error\",\"code\":\"mono/forbidden-root-context/root-context-forbidden\",\"message\":\"Root CONTEXT.md is forbidden; read source code directly.\",\"path\":\"CONTEXT.md\",\"fix\":\"none\"}\n",
+            "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"finding\",\"trigger\":\"direct-check\",\"policyId\":\"mono/forbidden-root-context\",\"severity\":\"error\",\"code\":\"mono/forbidden-root-context/root-context-forbidden\",\"message\":\"Root CONTEXT.md is forbidden; read source code directly.\",\"hint\":\"Hint: if you meant to keep project notes or terms for later readers, put them in a file under doc/; to drop CONTEXT.md from this commit and keep the file on disk, run `git rm --cached CONTEXT.md`.\",\"path\":\"CONTEXT.md\",\"fix\":\"none\"}\n",
             ""
         )
     );
@@ -481,7 +481,7 @@ fn direct_commands_use_the_repository_configuration() {
     std::fs::write(&source, r#"{ "policies": { "final-newline": "off" } }"#).expect("valid config");
     std::fs::write(repo.join("cli-git.config.ts"), "export default {};").expect("legacy config");
     let legacy_warning: String = format!(
-        "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"configuration-warning\",\"code\":\"legacy-config-ignored\",\"message\":\"Legacy configuration {legacy} is ignored: {jsonc} is authoritative for the native cli-git. Remove the legacy file once no TypeScript cli-git reads it.\",\"path\":\"{legacy}\"}}\n",
+        "{{\"schemaVersion\":1,\"sequence\":0,\"type\":\"configuration-warning\",\"code\":\"legacy-config-ignored\",\"message\":\"Legacy configuration {legacy} is ignored: {jsonc} is authoritative for the native cli-git. Remove the legacy file once no TypeScript cli-git reads it.\",\"path\":\"{legacy}\",\"hint\":\"Hint: if you are still keeping the old configuration files, delete them once cli-git.config.jsonc holds the settings; they are no longer read.\"}}\n",
         legacy = repo.join("cli-git.config.ts").display(),
         jsonc = source.display()
     );

@@ -97,14 +97,14 @@ fn base_tree(input: &NoChangeInput<'_>, base: &str) -> Result<String, GitFailure
 fn no_change_message(conflicted: &[Vec<u8>]) -> String {
     if conflicted.is_empty() {
         return String::from(
-            "No commit created: normalization removed every selected change; matching worktree and index copies were reconciled.",
+            "No commit created: normalization removed every selected change; matching worktree and index copies were reconciled. Hint: if you were committing only whitespace or final-newline edits, they were normalized away, so there is nothing to commit; run `git status` to confirm.",
         );
     }
     // The message shows each name as text; a name that is not UTF-8 shows its replacement characters.
     let names: Vec<String> = conflicted.iter().map(|path| { return path_message_text(path.as_slice()); }).collect();
     let listed: String = serde_json::to_string(&names).unwrap_or_default();
     return format!(
-        "No commit created: normalization removed every selected change; index copies were reconciled, but worktree copies changed and were kept: {listed}. Compare them with HEAD before retrying."
+        "No commit created: normalization removed every selected change; index copies were reconciled, but worktree copies changed and were kept: {listed}. Compare them with HEAD before retrying. Hint: if you were committing only whitespace or final-newline edits, they were normalized away; `git diff HEAD -- <path>` shows what still differs."
     );
 }
 

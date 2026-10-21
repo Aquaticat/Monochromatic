@@ -105,10 +105,9 @@ with a `Bash` matcher.
 
 ## Force background
 
-Setting `MONOCHROMATIC_BASH_FORCE_BACKGROUND` to `on` in the session environment
- (for example in the `env` block of `~/.claude/settings.json`)
- adds `run_in_background: true` to every Bash call the main agent makes.
-Any other value, or an unset variable, leaves calls as sent.
+Every Bash call the main agent makes gets `run_in_background: true` by default.
+Setting `MONOCHROMATIC_BASH_FORCE_BACKGROUND` to `off` in the session environment disables it;
+ any other value, or an unset variable, keeps it on.
 
 - **Subagents are exempt**:
    the hook input carries `agent_id` only inside a subagent,

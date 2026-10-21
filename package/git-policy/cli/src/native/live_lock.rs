@@ -84,7 +84,9 @@ pub fn slow_wait_line(
     };
     return format!(
         "cli-git: still waiting for {holder} to release {subject} ({}) after {} seconds; \
-         giving up after {} seconds ({LIVE_WAIT_VARIABLE} changes this), leaving the lock in place.",
+         giving up after {} seconds ({LIVE_WAIT_VARIABLE} changes this), leaving the lock in place. Hint: if you started \
+         another Git command in a second terminal or session, let it finish and run this one again; if no such \
+         command is running, check with `ps` and report the stuck process.",
         lock_directory.display(),
         waited.as_secs(),
         limit.as_secs()

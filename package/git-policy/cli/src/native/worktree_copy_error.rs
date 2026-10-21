@@ -24,7 +24,8 @@
 /// 'cli-git: automatic ignored-state worktree copy failed.'
 /// ```
 pub const AUTOMATIC_FAILURE_MESSAGE: &str =
-    "cli-git: automatic ignored-state worktree copy failed.";
+    "cli-git: automatic ignored-state worktree copy failed. Hint: if you just created a worktree, it works without \
+     the copied caches and build output; rebuild them there or copy the ones you need by hand.";
 
 /// What:
 ///  One copy failure and its complete diagnostic.

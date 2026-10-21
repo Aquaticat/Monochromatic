@@ -29,6 +29,7 @@ import {
   LUNA_SWITCH_ENV,
   lunaEnabled,
 } from './luna-situation.ts';
+import { hasQueuedTaskNotification, } from './queued-notification.ts';
 import {
   type SituationAction,
   situationAction,
@@ -326,12 +327,23 @@ function createStopRemindersHandler(
      */
     const worked = workedSinceLastForcedContinuation(transcript.lines,);
     /**
-     Whether a background task is still running.
-     
-     Only the state-based fallback releases on this. With a Luna verdict the
-     table decides, since a wait the agent claims while nothing runs cannot resume.
+     Whether a finished task's notification is queued and will resume the session.
+
+     `background_tasks` omits a task that finished just before the stop, so an agent
+     that is right about its wait can see an empty list. The transcript still holds
+     the queued notification; see `queued-notification.ts`.
      */
-    const waiting = hasRunningBackgroundTask(event.background_tasks,);
+    const notificationQueued = hasQueuedTaskNotification(transcript.lines,);
+    /**
+     Whether a background task is running or a notification for one is queued.
+
+     The state-based fallback releases on this. With a Luna verdict the table
+     decides on running tasks alone, since a wait the agent claims while nothing
+     runs cannot resume; a queued notification is the one exception and is
+     released before the request, below.
+     */
+    const waiting = hasRunningBackgroundTask(event.background_tasks,)
+      || notificationQueued;
     /**
      Whether every tracked task is finished.
      
@@ -404,13 +416,16 @@ function createStopRemindersHandler(
      
      A running subagent reports back on its own. In plan mode the agent cannot perform the
      work it announces, so announcing it and stopping is the mode working as designed.
-     The empty string means neither applies.
+     A queued task notification is delivered as a new turn right after the stop.
+     The empty string means none applies.
      */
     const releaseWithoutAsking = (event.permission_mode === 'plan')
       ? 'plan mode: the agent cannot act yet'
       : (hasRunningSubagent(event.background_tasks,)
         ? 'a subagent is running'
-        : '');
+        : (notificationQueued
+          ? 'a task notification is queued'
+          : ''));
     if (releaseWithoutAsking !== '') {
       // Recorded so the verdict log still shows what each skip covered.
       l.debug(`Luna skipped: ${releaseWithoutAsking}`,);

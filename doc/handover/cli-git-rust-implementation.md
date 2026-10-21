@@ -1951,6 +1951,53 @@ that is verification, not a decision for the user.
   intent-guessing and a concrete hint; (2) fix the gaps with tests that assert the hint text per site; (3) a
   guard test that fails when a rejection code has no hint registered; (4) README section listing them. Status is
   tracked below as it lands.
+  Hints work 2026-10-21 (task 60, UNCOMMITTED until the background chain below is green): `event_hints.rs` maps every
+  finding code and engine failure code to an intent-guessing hint, rendered as an additive `hint` JSONL field so
+  `message` stays byte-identical to the retired wrapper (self-hinted: require-root, linked-worktree-only,
+  branch-worktree-only, add-explicit; guard test `every_*_has_a_hint`). Plain stderr notices got appended hints:
+  panic notice, push deadline and flood, lock wait, worktree copy failure, cannot-start-Git. Binary tests observe
+  through `observe` (hint fields stripped, so incumbent shapes stay pinned) and `observe_raw` (hints kept;
+  `a_finding_carries_its_hint_beside_an_unchanged_message`). Chain: logs `~/temp/agent/hints-{clippy4,host4,bin4}.log`.
+  STILL TO DO: hints for `no_change_message`, `post-commit-blocked`, `replay-headers-dropped`; sharper add-explicit
+  intent guess; README and SPEC sections for the `hint` field; commit; release 0.2.7; the flaky-looking
+  `a_termination_signal_during_a_hook_ends_the_commit_and_leaves_nothing` (exit None vs 143) needs a rerun on a quiet
+  host before it is called a regression.
+  Hints work DONE 2026-10-21 (commit "every block and divergence guesses the user's intent and emits a hint"):
+  container gate 2098 passed, 5 skipped (log `~/temp/agent/hints-container.log`); host and binary suites green except
+  the two known real-linter tests that only the container runs. Additive `hint` JSONL field for findings, engine
+  failures, warn-unsafe, post-commit-blocked and replay-headers-dropped; text hints on the panic, push deadline and
+  flood, lock wait, worktree copy, cannot-start-Git and no-change-commit notices; add-explicit moved to a hint field.
+  README "Hints" and SPEC "Hints" added. Release 0.2.7 was started (release script
+  `~/temp/agent/release.ts`, logs `release-027.log` and `install-027.log`); verify crates.io shows 0.2.7 and that
+  `mise.lock` was reverted. Still open from the user's requirement: a binary-level hint test per remaining site
+  (the unit guard covers codes; sites outside event rendering are covered by their own unit pins only), and hints for
+  any message site found later. Mutation for the new files stays unrun by instruction.
+  CORRECTION by the user 2026-10-21 (binding; supersedes the earlier wording "mutation: not now"): mutation campaigns
+  are NOT banned. They must not run while changes to the same code are already planned and not deferred, because the
+  campaign would grade code that is about to change. When the planned work is finished or explicitly deferred, run the
+  campaigns for the touched files without being asked, as capped systemd units in the background, and do not await
+  them (advance other work, read the result on the completion notice). Mutation never blocks a release.
+  Planned and not deferred as of this entry: binary-level hint tests for the remaining message sites. After they
+  land, run the scoped campaigns for `command_discard.rs`, `rule_linked_worktree.rs`,
+  `rule_linked_worktree_messages.rs`, `rule_worktree_dirty.rs`, `discard_audit.rs`, `auto_push_dirty_paths.rs`,
+  `landing_invariant.rs`, `event_hints.rs`, `policy_checks.rs`, `auto_push_reconcile.rs`, `command_stash.rs`.
+  Process lesson 2026-10-21: a verification chain started from the shared Bash cgroup died mid-clippy while another
+  session ran heavy work (log stopped with no exit line). Start every chain longer than a minute as its own unit:
+  `systemd-run --user --unit=<name> --collect --property=MemoryMax=16G node ~/temp/agent/chain.ts <tag>` (runs clippy,
+  host and binary suites, logs `~/temp/agent/<tag>-{clippy,host,bin}.log`, each ending in an `exit N` line); a log with
+  no `exit` line means the run was killed, not that it passed. Found by the new binary hint tests: the
+  `config-invalid` failure and the legacy-config warning are rendered by `diagnostics.rs`, not `policy_events.rs`, and
+  had no hint in 0.2.7; the fix (both renderers use `event_hints`) ships in 0.2.8 with
+  `binary_hint_tests.rs` (bulk add, invalid configuration, root context).
+  0.2.8 released and installed 2026-10-21 (container gate 2101 passed, 5 skipped; installed binary verified: an
+  invalid `cli-git.config.jsonc` now prints a `config-invalid` event with its hint). Planned work is done, so the
+  mutation campaigns started unasked as unit `cli-git-mut-m028` (MemoryMax 24G, script `~/temp/agent/m028-run.ts`: a
+  container gate with image tag `m028`, then `native:mutation:scoped --timeout 300` per file). Files: command_discard,
+  rule_worktree_dirty, auto_push_dirty_paths, discard_audit, command_stash, rule_linked_worktree,
+  rule_linked_worktree_messages, policy_checks, auto_push_reconcile, landing_invariant, event_hints, diagnostics.
+  Logs `~/temp/agent/m028-mutation-<file>.log`, gate log `~/temp/agent/m028-container.log`. Do not edit `src/native`
+  while it runs; read results when the unit ends, kill survivors with tests, update planted-control anchors if a
+  guarded line moves. A survivor fix is a 0.2.9 candidate; mutation never blocks a release.
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and
