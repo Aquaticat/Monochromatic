@@ -82,7 +82,13 @@ The groups that follow name the main ones.
   meter the 550 Wh a day the owner's NeuralWatt account covers on DeepSeek V4.1 Flash and GLM-5.3-Flash,
   because nothing reports what is left and overage is the owner's plan
   (`doc/decision/translation-repair-neuralwatt-provider.md`).
-  A durable ledger by UTC day,
+  A durable ledger by NeuralWatt day (the 24 hours from the UTC time of day of the quota's
+  `current_period_start`,
+  or of `TRANSLATION_REPAIR_NEURALWATT_DAY_START`),
+  floored by the account's covered energy from `GET /v1/usage/by-model`
+  (tracking aliases such as `nw-flash` included,
+  read off `GET /v1/models`),
+  and held dry while the key's own allowance is blocked,
   a hold taken from the matrix mean times a margin before each call and replaced by the measured figure at settlement,
   and no stop on a reported cost,
   since NeuralWatt reports a nominal cost on free-energy requests too
@@ -94,6 +100,11 @@ The groups that follow name the main ones.
   `NEURALWATT_ENERGY_MARGIN`,
   `neuralWattIsDry`,
   `NeuralWattAllowanceError`,
+  `neuralWattDayStartFrom`,
+  `neuralWattDayStartAt`,
+  `coveredWhOf`,
+  `aliasNamesOf`,
+  `keyAllowanceOf`,
   `readNeuralWattComments`,
   `describePlanSpend`.
   Declared in `neuralwatt-ledger.ts`,
@@ -101,6 +112,14 @@ The groups that follow name the main ones.
   `neuralwatt-estimate.ts`,
   `neuralwatt-meter.ts`,
   `neuralwatt-energy.ts`,
+  `neuralwatt-day.ts`,
+  `neuralwatt-day-anchor.ts`,
+  `neuralwatt-day-session.ts`,
+  `neuralwatt-day-energy.ts`,
+  `neuralwatt-account-read.ts`,
+  `neuralwatt-usage.ts`,
+  `neuralwatt-aliases.ts`,
+  `neuralwatt-key-allowance.ts`,
   `neuralwatt-comments.ts`,
   `neuralwatt-settlement.ts`,
   and `neuralwatt-quota.ts`.
