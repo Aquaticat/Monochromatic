@@ -759,12 +759,23 @@ The landings and the restart,
   (entry `zheermao101`)
   started at 21:05:30 UTC,
   and its START line names the frozen digest.
+  It ended with `DONE processed=1 of pending=1; artifacts=1/1 declined=0`
+  after 4741466 ms
+  (79.0 min,
+  against 40.7 min for `zheermao21`).
+  Its read against the source is running,
+  written to `zheermao22-read.md` in the reads folder.
+- `CuspariaKLSY22`
+  (entry `CuspariaKLSY`)
+  started at 22:25:13 UTC,
+  and its START line names the frozen digest.
 
 Next,
 in order:
-read `zheermao22` when it ends,
-then continue the rotation with `CuspariaKLSY`,
-`XingZ60`,
+finish the read of `zheermao22`
+and record it in the pass log and the readiness signal;
+read `CuspariaKLSY22` when it ends;
+then continue the rotation with `XingZ60`,
 `yingying`,
 `hulicaijia`,
 `mikaela_khara`,
