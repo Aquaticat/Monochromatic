@@ -13,6 +13,27 @@
  @module
  */
 
+import {
+  readProperty,
+} from './harness-frames.ts';
+
+/**
+ Characters before the kind name inside `Object.prototype.toString`
+ output (`'[object '.length`),
+ sized as a named constant so tag slicing names what it cuts.
+ */
+const TYPED_TAG_PREFIX_LENGTH = 8;
+
+/**
+ Kinds whose values carry bytes rather than entries:
+ an `ArrayBuffer` holds bytes directly,
+ a `DataView` holds a window onto them.
+ */
+const BYTE_KINDS: ReadonlySet<string> = new Set([
+  'ArrayBuffer',
+  'DataView',
+],);
+
 //region Value kinds
 
 /**
@@ -32,19 +53,22 @@
 
  @example
  ```ts
- valueKind([1,]);    // 'Array'
+ valueKind([1,]);       // 'Array'
  valueKind(new Map(,),); // 'Map'
  ```
  */
 export function valueKind(value: unknown,): string {
   if (value === null)
     return 'null';
-  const valueType = typeof value;
-  if (valueType !== 'object')
-    return valueType;
-  return Object.prototype.toString
+  if ((typeof value) !== 'object')
+    return typeof value;
+  return Object.prototype
+    .toString
     .call(value,)
-    .slice(8, -1,);
+    .slice(
+      TYPED_TAG_PREFIX_LENGTH,
+      -1,
+    );
 }
 
 /**
@@ -65,12 +89,22 @@ export function valueKind(value: unknown,): string {
  ```
  */
 export function valueRole(value: unknown,): 'text' | 'ordered' | 'unordered' | 'record' | 'leaf' {
+  /**
+   Kind of the value read once,
+   so each family below names its member kinds in one place.
+   */
   const kind = valueKind(value,);
   if (kind === 'string')
     return 'text';
   if ((kind === 'Array') || (kind === 'Arguments'))
     return 'ordered';
-  if ((kind === 'ArrayBuffer') || (kind === 'DataView') || kind.endsWith('Array',))
+  /**
+   Whether the kind names a typed-array class,
+   checked by suffix since each element type brings its own class name.
+   */
+  const isTypedArray = kind
+    .endsWith('Array',);
+  if (BYTE_KINDS.has(kind,) || isTypedArray)
     return 'ordered';
   if ((kind === 'Map') || (kind === 'Set'))
     return 'unordered';
@@ -134,65 +168,83 @@ function renderValueInner({
 },): string {
   if (value === null)
     return 'null';
-  const valueType = typeof value;
-  if (valueType === 'string')
+  if ((typeof value) === 'string')
     return JSON.stringify(value,);
-  if (valueType === 'number')
+  if ((typeof value) === 'number')
     return numberText(value,);
-  if (valueType === 'bigint')
+  if ((typeof value) === 'bigint')
     return `${value.toString()}n`;
-  if (valueType === 'symbol')
+  if ((typeof value) === 'symbol')
     return String(value,);
-  if (valueType === 'function')
-    return functionText(value,);
-  if (valueType !== 'object')
-    return String(value,);
+  if ((typeof value) === 'function')
+    return functionText({
+      name: value.name,
+    },);
+  if (value === undefined)
+    return 'undefined';
+  if ((typeof value) === 'boolean')
+    return value ? 'true' : 'false';
+  if ((typeof value) !== 'object')
+    throw new Error(`unreachable: typeof ${typeof value} was not handled`,);
   if (open.includes(value,))
     return '[Circular]';
+  /**
+   Kind of the value,
+   read once so every dispatch below compares against one label.
+   */
   const kind = valueKind(value,);
+  /**
+   Container stack for nested renders,
+   extended with this value so a child pointing back at it reads `[Circular]`.
+   */
   const nested = [
     ...open,
     value,
   ];
   if (kind === 'Array')
     return listText({
-      entries: value as readonly unknown[],
+      entries: arrayLikeEntries(value,),
       open: nested,
     },);
   if (kind === 'Arguments')
     return `Arguments${listText({
-      entries: Array.from(value as ArrayLike<unknown>,),
+      entries: arrayLikeEntries(value,),
       open: nested,
     },)}`;
-  if ((kind === 'ArrayBuffer') || (kind === 'DataView') || kind.endsWith('Array',))
+  if (BYTE_KINDS.has(kind,))
     return `${kind}${listText({
-      entries: Array.from(value as ArrayLike<unknown>,),
+      entries: byteEntries(value,),
+      open: nested,
+    },)}`;
+  if (kind.endsWith('Array',))
+    return `${kind}${listText({
+      entries: arrayLikeEntries(value,),
       open: nested,
     },)}`;
   if (kind === 'Map')
     return mapText({
-      entries: value as ReadonlyMap<unknown, unknown>,
+      entries: mapEntries(value,),
       open: nested,
     },);
   if (kind === 'Set')
     return `Set${listText({
-      entries: [...(value as ReadonlySet<unknown>,),],
+      entries: setEntries(value,),
       open: nested,
     },)}`;
   if (kind === 'Date')
-    return dateText(value as Date,);
+    return dateText(dateValue(value,),);
   if (kind === 'RegExp')
-    return String(value,);
-  if (kind === 'Error')
-    return errorText(value as Error,);
+    return regExpText(value,);
   if (Error.isError(value,))
     return errorText(value,);
-  if ((kind === 'String') || (kind === 'Number') || (kind === 'Boolean'))
+  if ((kind === 'String') || (kind === 'Number')
+    || (kind === 'Boolean'))
     return boxedText({
       kind,
       value,
     },);
-  if ((kind === 'Promise') || (kind === 'WeakMap') || (kind === 'WeakSet'))
+  if ((kind === 'Promise') || (kind === 'WeakMap')
+    || (kind === 'WeakSet'))
     return `[${kind}]`;
   return recordText({
     value,
@@ -215,7 +267,10 @@ function renderValueInner({
  ```
  */
 function numberText(value: number,): string {
-  if (Object.is(value, -0,))
+  if (Object.is(
+    value,
+    -0,
+  ))
     return '-0';
   if (value === 0)
     return '+0';
@@ -226,16 +281,124 @@ function numberText(value: number,): string {
  Renders a function by name so two named functions with one body read apart
  from one anonymous function.
 
- @param value - function to render
+ @param name - function name read; absent where the function is anonymous
 
  @returns `[Function: name]` or `[Function]`
 
- @mutates value - Reading `.name` may invoke a getter or proxy trap.
+ @example
+ ```ts
+ functionText({ name: 'go', },); // '[Function: go]'
+ ```
  */
-function functionText(value: (...args: never[]) => unknown,): string {
-  return value.name
-    ? `[Function: ${value.name}]`
+function functionText({ name, }: { readonly name?: string; },): string {
+  return (name !== undefined) && (name !== '')
+    ? `[Function: ${name}]`
     : '[Function]';
+}
+
+/**
+ The indexed entries of an array-like value (array, arguments object,
+ or typed array),
+ read through one guarded view so the dispatch never casts inline.
+
+ @param value - array-like value read
+
+ @returns Entries by index
+
+ @mutates value - `Array.from` may invoke an iterator or proxy trap.
+ */
+function arrayLikeEntries(value: object,): readonly unknown[] {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- callers dispatch on `valueKind`, which returned 'Array', 'Arguments', or a typed-array class, all array-like at runtime
+  return Array.from(value as ArrayLike<unknown>,);
+}
+
+/**
+ The bytes an `ArrayBuffer` or `DataView` holds,
+ read through one guarded view so byte renders and byte diffs agree.
+
+ @param value - byte-bearing value read
+
+ @returns Byte values
+
+ @mutates value - Buffer reads may invoke proxy traps.
+ */
+function byteEntries(value: object,): readonly number[] {
+  if (value instanceof DataView)
+    return [...new Uint8Array(
+      value.buffer,
+      value.byteOffset,
+      value.byteLength,
+    )];
+  if (value instanceof ArrayBuffer)
+    return [...new Uint8Array(value,)];
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- callers dispatch on `valueKind`, which returned 'ArrayBuffer' or 'DataView'; the instanceof guards above catch same-realm values and this covers cross-realm ones
+  return [...new Uint8Array(value as ArrayBuffer,)];
+}
+
+/**
+ The entries of a kind-confirmed `Map`,
+ read through one guarded view so the dispatch never casts inline.
+
+ @param value - map value read
+
+ @returns Map entries
+
+ @mutates value - Map reads may invoke proxy traps.
+ */
+function mapEntries(value: object,): ReadonlyMap<unknown, unknown> {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- callers dispatch on `valueKind`, which returned 'Map'
+  return value as ReadonlyMap<unknown, unknown>;
+}
+
+/**
+ The items of a kind-confirmed `Set`,
+ read through one guarded view so the dispatch never casts inline.
+
+ @param value - set value read
+
+ @returns Set items
+
+ @mutates value - Set iteration may invoke proxy traps.
+ */
+function setEntries(value: object,): readonly unknown[] {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- callers dispatch on `valueKind`, which returned 'Set'
+  return [...(value as ReadonlySet<unknown>)];
+}
+
+/**
+ A kind-confirmed `Date`,
+ read through one guarded view so date rendering never casts inline.
+
+ @param value - date value read
+
+ @returns Date view
+
+ @mutates value - Later `toJSON` may invoke a user hook.
+ */
+function dateValue(value: object,): Date {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- callers dispatch on `valueKind`, which returned 'Date'
+  return value as Date;
+}
+
+/**
+ Renders a kind-confirmed `RegExp` as its literal,
+ through one guarded view so the dispatch never casts inline.
+
+ @param value - regular expression read
+
+ @returns `/source/flags` rendering
+
+ @mutates value - Source and flags reads may invoke proxy traps.
+ */
+function regExpText(value: object,): string {
+  /* oxlint-disable typescript/no-unsafe-type-assertion -- callers dispatch on `valueKind`, which returned 'RegExp' */
+  /**
+   Kind-confirmed expression,
+   read once so the source and flags below cannot disagree.
+   */
+  const pattern = value as RegExp;
+  /* oxlint-enable typescript/no-unsafe-type-assertion */
+  return `/${pattern.source}/${pattern.flags}`;
 }
 
 /**
@@ -257,6 +420,10 @@ function listText({
   readonly entries: readonly unknown[];
   readonly open: readonly unknown[];
 },): string {
+  /**
+   One rendering per entry,
+   collected before joining so the bracket body stays one line.
+   */
   const parts: string[] = [];
   for (const entry of entries) {
     parts.push(renderValueInner({
@@ -286,6 +453,10 @@ function mapText({
   readonly entries: ReadonlyMap<unknown, unknown>;
   readonly open: readonly unknown[];
 },): string {
+  /**
+   One `key => value` rendering per map entry,
+   collected before joining so the map body stays one line.
+   */
   const parts: string[] = [];
   for (const [key, entryValue] of entries) {
     parts.push(`${renderValueInner({
@@ -308,30 +479,76 @@ function mapText({
  @returns Date rendering
 
  @mutates value - `toJSON` may invoke a user hook.
+
+ @example
+ ```ts
+ dateText(new Date(0,),); // '1970-01-01T00:00:00.000Z'
+ ```
  */
 function dateText(value: Date,): string {
+  /**
+   ISO text of the date,
+   absent exactly when the date holds no valid time.
+   */
   const json = value.toJSON();
-  return json === null
-    ? 'Invalid Date'
-    : json;
+  return json ?? 'Invalid Date';
 }
 
 /**
  Renders an error as `Name: message` so two errors differing only in message
  read apart on one line.
 
- @param value - error to render
+ @param value - error-like value to render
 
  @returns Error rendering
 
- @mutates value - Reading `.name` and `.message` may invoke getters or proxy traps.
+ @mutates value - `readProperty` reads may invoke getters or proxy traps.
  */
-function errorText(value: Error,): string {
-  return `${value.name}: ${value.message}`;
+function errorText(value: object,): string {
+  /**
+   Error name read defensively,
+   falling back to the label every error-like value can claim.
+   */
+  const label = readProperty({
+    source: value,
+    key: 'name',
+  },);
+  /**
+   Error message read defensively,
+   falling back to a marker when the field is absent or unprintable.
+   */
+  const message = readProperty({
+    source: value,
+    key: 'message',
+  },);
+  return `${(typeof label) === 'string'
+    ? label
+    : 'Error'}: ${messageText(message,)}`;
 }
 
 /**
- Renders a boxed primitive as `[String: 'a']` so a box reads apart from the
+ Prints an error message field,
+ keeping an absent or non-string message visible as a marker.
+
+ @param message - message field read
+
+ @returns Message text or marker
+
+ @mutates message - `String` conversion may invoke `Symbol.toPrimitive`, `toString`, or `valueOf`.
+ */
+function messageText(message: unknown,): string {
+  if ((typeof message) === 'string')
+    return message;
+  if (((typeof message) === 'number') || ((typeof message) === 'boolean')
+    || ((typeof message) === 'bigint'))
+    return String(message,);
+  return message === undefined
+    ? '<no message>'
+    : '<unprintable message>';
+}
+
+/**
+ Renders a boxed primitive as `[String: "a"]` so a box reads apart from the
  primitive it holds.
 
  @param kind - box kind name
@@ -350,7 +567,7 @@ function boxedText({
   readonly value: object;
 },): string {
   return `[${kind}: ${renderValueInner({
-    value: (value as { valueOf(): unknown; }).valueOf(),
+    value: (value as { readonly valueOf: () => unknown; }).valueOf(),
     open: [],
   },)}]`;
 }
@@ -375,13 +592,20 @@ function recordText({
   readonly value: object;
   readonly open: readonly unknown[];
 },): string {
+  /**
+   One `key: value` rendering per enumerable key,
+   collected before joining so the record body stays one line.
+   */
   const parts: string[] = [];
   for (const key of enumerableKeys(value,)) {
     parts.push(`${renderValueInner({
       value: key,
       open,
     },)}: ${renderValueInner({
-      value: Reflect.get(value, key,),
+      value: Reflect.get(
+        value,
+        key,
+      ),
       open,
     },)}`);
   }
@@ -391,19 +615,32 @@ function recordText({
 /**
  The own enumerable string and symbol keys of a record,
  in the order chai's deep equality compares them.
+ Non-enumerable keys stay out since deep equality ignores them.
 
  @param value - record to read
 
  @returns Own enumerable keys
 
  @mutates value - `Reflect.ownKeys` and the enumerability read may invoke proxy traps.
+
+ @example
+ ```ts
+ enumerableKeys({ a: 1, },); // ['a']
+ ```
  */
 export function enumerableKeys(value: object,): (string | symbol)[] {
+  /**
+   Enumerable own keys in `Reflect.ownKeys` order,
+   filtered through `propertyIsEnumerable` so hidden keys drop out.
+   */
   const keys: (string | symbol)[] = [];
   for (const key of Reflect.ownKeys(value,)) {
-    if ((typeof key === 'string') || ((typeof key === 'symbol') && Object.prototype.propertyIsEnumerable.call(value, key,)))
-      keys.push(key,);
-    else if (typeof key === 'string')
+    if (Object.prototype
+      .propertyIsEnumerable
+      .call(
+        value,
+        key,
+      ))
       keys.push(key,);
   }
   return keys;
@@ -432,18 +669,88 @@ export function enumerableKeys(value: object,): (string | symbol)[] {
  ```
  */
 export function describeSide(value: unknown,): string {
+  /**
+   Kind of the mismatched side,
+   read once so the size lookup below names one unit per family.
+   */
   const kind = valueKind(value,);
+  if ((typeof value) === 'string')
+    return `String of ${value.length} characters`;
+  if (((typeof value) !== 'object') || (value === null))
+    return renderValue(value,);
   if ((kind === 'Array') || (kind === 'Arguments'))
-    return `${kind} of ${(value as ArrayLike<unknown>,).length} items`;
-  if ((kind === 'ArrayBuffer') || (kind === 'DataView') || kind.endsWith('Array',))
-    return `${kind} of ${(value as ArrayLike<unknown>,).length} items`;
+    return sizedText({
+      value,
+      kind,
+      sizeKey: 'length',
+      unit: 'items',
+    },);
+  if (BYTE_KINDS.has(kind,))
+    return sizedText({
+      value,
+      kind,
+      sizeKey: 'byteLength',
+      unit: 'bytes',
+    },);
+  if (kind.endsWith('Array',))
+    return sizedText({
+      value,
+      kind,
+      sizeKey: 'length',
+      unit: 'items',
+    },);
   if ((kind === 'Map') || (kind === 'Set'))
-    return `${kind} of ${(value as { size: number; },).size} entries`;
+    return sizedText({
+      value,
+      kind,
+      sizeKey: 'size',
+      unit: 'entries',
+    },);
   if (kind === 'Object')
-    return `Object with ${enumerableKeys(value as object,).length} keys`;
-  if (kind === 'string')
-    return `String of ${(value as string,).length} characters`;
+    return `Object with ${enumerableKeys(value,)
+      .length} keys`;
   return renderValue(value,);
+}
+
+/**
+ Names a container's kind and size,
+ keeping the size read defensive so a malformed value degrades to its bare
+ kind instead of throwing mid-diagnosis.
+
+ @param value - container to size
+
+ @param kind - kind label already read
+
+ @param sizeKey - property holding the count
+
+ @param unit - what the count counts
+
+ @returns `Kind of N unit` or the bare kind
+
+ @mutates value - The size read may invoke a getter or proxy trap.
+ */
+function sizedText({
+  value,
+  kind,
+  sizeKey,
+  unit,
+}: {
+  readonly value: object;
+  readonly kind: string;
+  readonly sizeKey: string;
+  readonly unit: string;
+},): string {
+  /**
+   Container size read defensively,
+   absent when the property is missing or not a number.
+   */
+  const size = readProperty({
+    source: value,
+    key: sizeKey,
+  },);
+  return (typeof size) === 'number'
+    ? `${kind} of ${size} ${unit}`
+    : kind;
 }
 
 //endregion Side summary for kind mismatches
