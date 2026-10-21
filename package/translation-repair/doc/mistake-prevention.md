@@ -285,3 +285,15 @@ not a memory of having done it.
     and the meter's day or period boundary is taken from the account's reply,
     not from a documentation page;
     a limit recorded as invisible names the endpoints read and what each lacked.
+13. The rotation sweep is clean when a sheet's text or a seat-naming case changed (B701):
+    `mise run //package/translation-repair/source-scan:test:rotation-sweep` ends on `rotation sweep: clean`
+    and exits 0,
+    after any commit since the last sweep that changed a prompt,
+    a house rule or floor wording that a sheet splices,
+    or a scripted case that names a seat.
+    It runs the unit tests of every package that can reach `stage` ten times
+    (824 s,
+    builds included,
+    on 2026-10-21 (UTC)),
+    and its report states the number of test files and the salts it ran,
+    so a run narrowed by `-- --package` or `-- --salt` is read as a narrowed run and not as the sweep.

@@ -86,7 +86,9 @@ because there is no production code.
 
 Development dependencies other than `test-fixture` (`devDependencies`):
 
-- `adjudication` (its keyless child runner, for the rotation sweep)
+- `adjudication`
+  (its keyless child runner,
+  for the rotation sweep)
 - `document-structure`
 - `markup`
 - `run`

@@ -861,10 +861,24 @@ and the ten test files of ledger B627 use it.
 `PINNED_EDITOR_BENCH_START` in `editor-bench-start.test-fixture.ts`
 seats the six editor voices of the calibration cases,
 and the guards of the seam were shown to fail by removal (ledger B631).
-No scan finds a test that pins a rotated order.
-Nothing finds a scripted case that names a seat without either.
-The census of ledger B701 searched once,
+No scan finds a test that pins a rotated order,
+and none could,
+since the order is decided by a hash at run time.
+The rotation sweep finds a scripted case that names a seat without either by running it (ledger B701).
+The census searched once,
 on 2026-10-20 (UTC),
-by running every family suite under ten shifts of the rotation;
-a guard that repeats the search is proposed and not decided (ledger B701),
-so until it is decided the habit is the only guard.
+by running every family suite under ten shifts of the rotation,
+and the guard built on 2026-10-21 (UTC) repeats that search as a task:
+`mise run //package/translation-repair/source-scan:test:rotation-sweep`.
+It costs ten full runs of the family's unit tests
+(824 s,
+builds included,
+on 2026-10-21 (UTC)),
+so it is not run on every commit.
+It runs before a commit that changes the text of a sheet lands,
+and in the pre-launch checks (`mistake-prevention.md`,
+"Before a run launches",
+step 13).
+A case it lists is fixed by the rule of "Orders and seats that a prompt hash decides",
+and the fix is shown to fail again under the salts the sweep named when its pin is taken out.
+Between sweeps the habit and review are still the guard.
