@@ -211,18 +211,34 @@ Keyless worktree w249 makes it hold the provider out for the run and move each s
 (red `5e07a8bb6d`,
 fix `786013e4b7`,
 guards `de44d19ea7`,
-docs `7863b003b1`;
-ledger P18 once it lands).
+docs `7863b003b1`).
 Withholding the seat was a default and not a ruling:
 ledger B685 says "there is no rule for a 401".
-Its four open gaps are being closed there:
-a 401 on the cross-provider re-ask,
-the warn naming only providers that can take the call,
-reach and quorum readers counting a seat whose every provider is held,
-and holds shared across a run's routers if a run builds several;
+A second round closed its four gaps
+(red `987b4ef553`,
+fix `e9d0c5cd6f`,
+docs `d3c8727aad` and `f1f7c15d94`):
+a 401 on the cross-provider re-ask holds the provider too,
+the warn names only providers that can take the call,
+reach and quorum readers read a held provider as dry,
+and `corpus-pass` builds one router per run,
+so its holds are shared across the run.
+Landed as `624c5ff583` after gate g135
+(2657 pass and 0 fail,
+every step exit 0);
+ledger P18 landed in `803c85d603`.
 `google.gemma-4-e2b` is Bedrock-only and stays out.
 The rotation waits for the combined build,
 since a run now would lose those seats again and spend OpenRouter credit on a build about to change.
+
+The account-wide count in w247 also had to take in tracking aliases:
+a call to `nw-flash`
+(which points at `deepseek-v4.1-flash`)
+is listed in `products[]` under `requested_model` `nw-flash`
+(`https://docs.neuralwatt.com/guides/tracking-aliases`),
+and the first w247 filter counted only the served ids and their `-flex` twins.
+The w247 agent was asked at 00:40 UTC on 2026-10-21 to count alias rows whose alias points at a covered model,
+read from `GET /v1/models`.
 
 ## Next
 
@@ -230,7 +246,9 @@ The `zheermao19` read is recorded in the pass log of 2026-10-20:
 SETTLED with no class traced to code,
 on a short bench,
 its page losing several intensifiers and small words zheermao17's had kept.
-Gate and land w247 and w249,
+w249 has landed.
+Review w247 with its alias rows,
+gate and land it,
 rebuild,
 set `FROZEN`,
 recalibrate the energy margin from the settled ledger lines,
