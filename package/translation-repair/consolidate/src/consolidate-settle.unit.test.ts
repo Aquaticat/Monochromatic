@@ -93,7 +93,7 @@ type FixtureModelId = (typeof ROSTER)[number];
  this stage never asks the lane contest anything, so within one settlement the
  phrase appears in the gate sheet alone.
  */
-const GATE_MARKER = 'Return JSON: choice one of';
+const GATE_MARKER = 'Return JSON: reason one sentence';
 
 /**
  The slice every case decides about.

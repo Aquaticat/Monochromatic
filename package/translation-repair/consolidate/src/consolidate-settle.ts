@@ -190,6 +190,14 @@ export type ConsolidationSubject = {
   readonly archiveDisputeNote?: string;
 
   /**
+   Every claim the repair panel accepted for the slice, whether it disputes
+   the archive or not, left out of the dispute note when that note already
+   carries it; absent where the panel accepted nothing. Read by the final
+   polish gate alone (CuspariaKLSY21 slice 0, 2026-10-21).
+   */
+  readonly acceptedRepairClaimsNote?: string;
+
+  /**
    Wordings a disputed slice refuses as proposal, absent on an undisputed
    slice (owner, 2026-09-27, "No eligible standing").
    */

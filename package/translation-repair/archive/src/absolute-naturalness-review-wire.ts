@@ -118,7 +118,7 @@ export const ABSOLUTE_NATURALNESS_REVIEW_RESPONSE_FORMAT: JsonSchemaResponseForm
     schema: {
       type: 'object',
       properties: {
-        acceptable: { type: 'boolean', },
+        reason: { type: 'string', },
         findings: {
           type: 'array',
           items: {
@@ -137,12 +137,12 @@ export const ABSOLUTE_NATURALNESS_REVIEW_RESPONSE_FORMAT: JsonSchemaResponseForm
             additionalProperties: false,
           },
         },
-        reason: { type: 'string', },
+        acceptable: { type: 'boolean', },
       },
       required: [
-        'acceptable',
-        'findings',
         'reason',
+        'findings',
+        'acceptable',
       ],
       additionalProperties: false,
     },
@@ -381,7 +381,7 @@ In this review, a candidate obeying a house rule is never unacceptable for it, a
         'STRUCTURALLY CORRECTABLE PARAGRAPHS:',
         paragraphs,
         '',
-        'Return only JSON: acceptable boolean; findings objects with paragraph and problem; reason one sentence.',
+        'Return only JSON: reason one sentence, given before the verdict; findings objects with paragraph and problem; acceptable boolean.',
       ].join('\n',),
     },
   ];

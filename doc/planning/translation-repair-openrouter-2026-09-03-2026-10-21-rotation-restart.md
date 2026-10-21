@@ -39,6 +39,11 @@ so that no file passes the repository's limit of 1,000 lines:
   (the shipped page line by line,
   departures,
   the comparison with `CuspariaKLSY20`).
+- The causes of ten findings,
+  their classes and what fixed them:
+  [the causes](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart-causes.md)
+  (traced on 2026-10-21;
+  the page and run files keep their original text and carry a note where a cause is now traced).
 - `XingZ6016`:
   [the picture stop](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart-xingz6016.md)
   (who served the picture,
@@ -174,7 +179,11 @@ Differences found:
 - The handover names "a probe that closed short".
   The reads found three short closes:
   the introduced-defect probe of slice 3 in `zheermao21`
-  (the slice shipped unchanged and was not cached),
+  (the slice shipped unchanged and was not cached;
+  traced on 2026-10-21 (UTC):
+  the slice did change and only the caching was withheld,
+  and the line is fixed,
+  ledger B733),
   the absolute naturalness review of slice 11 in `zheermao21` (3 of 7 usable,
   recorded as evidence),
   and the consolidation `select` of slice 1 in `CuspariaKLSY21` (3 of 7 heard,
@@ -195,7 +204,18 @@ Another reading is tracing the findings of the two settled reads to causes and c
 Until it reports,
 each finding in the page files carries the read's own label,
 and the words "cause not yet traced" stand where the read found no code cause.
-Its results are recorded in a later file.
+Its results are recorded in [the causes](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart-causes.md).
+Where that file settles an item of the lists that follow,
+a note says so beside the item and the original text stands.
+
+Traced on 2026-10-21 (UTC):
+the 0.372 Wh gap is an in-flight hold (`reservedWh`),
+`withheld=` and `unserved=` are two different rules,
+and the log line that said a changed slice "ships unchanged" is fixed (ledger B733).
+Still open after it:
+the 21.244 Wh gap to `zheermao20`,
+the missing re-seat line of `CuspariaKLSY21`,
+and the items the causes file lists under "What is still not traced".
 Open items the reads left,
 by file:
 

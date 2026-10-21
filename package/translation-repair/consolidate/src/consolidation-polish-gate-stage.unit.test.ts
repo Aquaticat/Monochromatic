@@ -11,7 +11,10 @@
  @module
  */
 
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 import {
   describe,
   expect,
@@ -78,7 +81,7 @@ const SUBJECT = {
 /**
  Builds a gate client from what each seat does.
 
- @param choice - what every seat that answers chooses
+ @param choice - what every seat that answers chooses, unless `choiceFor` names its own
 
  @param unusable - seats whose reply no sheet can read
 
@@ -94,10 +97,12 @@ const SUBJECT = {
 function gateClient(
   {
     choice,
+    choiceFor,
     unusable = [],
     refused = [],
   }: {
     readonly choice: 'base' | 'polished';
+    readonly choiceFor?: (modelId: RosterModelId,) => 'base' | 'polished';
     readonly unusable?: readonly RosterModelId[];
     readonly refused?: readonly RosterModelId[];
   },
@@ -126,7 +131,7 @@ function gateClient(
        This seat's ballot.
        */
       const value: unknown = {
-        choice,
+        choice: (choiceFor === undefined) ? choice : choiceFor(request.modelId,),
         unsupported: [],
         dropped: [],
         reason: 'the cat naps either way',
@@ -152,15 +157,19 @@ function gateClient(
 
  @param modelIds - gate bench
 
+ @param l - logger the gate writes to
+
  @returns What the gate settled, shipped and found
  */
 async function gateWith(
   {
     client,
     modelIds = ROSTER,
+    l = tagged({ tag: 'consolidation-polish-gate-stage-test', },),
   }: {
     readonly client: ModelClient;
     readonly modelIds?: readonly RosterModelId[];
+    readonly l?: Logger;
   },
 ) {
   /**
@@ -172,7 +181,7 @@ async function gateWith(
     subject: SUBJECT,
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     exchangeTimeoutMs: HANG_STOP_MS,
-    l: tagged({ tag: 'consolidation-polish-gate-stage-test', },),
+    l,
     stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   return {
@@ -231,6 +240,52 @@ await describe({
             + `${String(CONSOLIDATION_POLISH_GATE_QUORUM,)} needed to settle`,
           ],
         },);
+      },
+    },),
+    it({
+      name: 'SHIPS THE POLISH ON A TIE and says so: one base ballot against one polished ballot settles on the '
+        + 'polished text (owner, 2026-10-21, "Polished text wins ties"), with the tally and the rule in the '
+        + 'findings and the log',
+      fn: async () => {
+        /** Bench of two, whose seats split one to one. */
+        const pair = ROSTER.slice(0, 2,);
+        /** Lines the gate wrote. */
+        const said: string[] = [];
+        /**
+         Keeps one line.
+
+         @param message - line to keep
+         */
+        const keep = (message: string,): void => {
+          said.push(message,);
+        };
+        expect(await gateWith({
+          client: gateClient({
+            choice: 'base',
+            choiceFor: (modelId,) => (modelId === pair[0]) ? 'base' : 'polished',
+          },),
+          modelIds: pair,
+          l: {
+            debug: keep,
+            error: keep,
+            fatal: keep,
+            flush: async () => undefined,
+            info: keep,
+            trace: keep,
+            warn: keep,
+          },
+        },),).toEqual({
+          choice: 'polished',
+          ships: 'polished',
+          usable: 2,
+          findings: [
+            'consolidation-polish-gate tied 1 to 1 between polished and base, so polished wins the tie '
+            + '(owner, 2026-10-21)',
+          ],
+        },);
+        expect(said.some(function namesTheRule(line,): boolean {
+          return line.includes('tie-polished-wins',) && line.includes('polished 1, base 1',);
+        },),).toBe(true,);
       },
     },),
     it({

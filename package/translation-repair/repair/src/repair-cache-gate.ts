@@ -35,4 +35,42 @@ export function cacheRefusalsOf(
     },);
 }
 
+/**
+ The warn line a refused settlement prints.
+
+ SAYS ONLY WHAT IS TRUE OF A REFUSAL: nothing is persisted, and a later run
+ buys the slice again. Whether the slice's text changed is the settlement's
+ own fact, so it is said from the outcome and not assumed. The line said the
+ slice "ships unchanged" for every reason, and zheermao21 slice 3 changed (an
+ accuracy patch won and its repaired title reached the page) while its probe
+ closed at 1 of 3.
+
+ @param sliceIndex - slice the refusal concerns
+
+ @param refusals - reasons from {@link cacheRefusalsOf}, never empty
+
+ @param changed - whether the settled text differs from the archive's
+
+ @returns Line naming the slice, every reason and what follows
+
+ @example
+ ```ts
+ l.warn(cacheRefusalLine({ sliceIndex: 3, refusals, changed: outcome.changed, },),);
+ ```
+ */
+export function cacheRefusalLine(
+  {
+    sliceIndex,
+    refusals,
+    changed,
+  }: {
+    readonly sliceIndex: number;
+    readonly refusals: readonly string[];
+    readonly changed: boolean;
+  },
+): string {
+  return `chunk ${String(sliceIndex,)}: ${refusals.join('; ',)}, so this settlement is NOT cached and a later run `
+    + `buys the slice again; the slice's text ${changed ? 'changed' : 'did not change'} in this run`;
+}
+
 //endregion Repair cache gate

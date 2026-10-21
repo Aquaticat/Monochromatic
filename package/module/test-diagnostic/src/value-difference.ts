@@ -40,14 +40,40 @@ export const DEFAULT_MAX_DIFFERENCES = 100;
 //region Public entry points
 
 /**
+ Whether one side can hold content the error headline truncates:
+ strings,
+ functions,
+ and containers,
+ the values chai's display cuts past its threshold.
+
+ When neither side qualifies,
+ both render whole in the headline already,
+ and for matchers like `satisfy` the fields carry a predicate result
+ rather than compared values at all.
+
+ @param value - one compared side read from the error
+
+ @returns Whether a diff line could name something the headline cut
+ */
+function sideCarriesLongContent(value: unknown,): boolean {
+  return ((typeof value) === 'string')
+    || ((typeof value) === 'function')
+    || (((typeof value) === 'object') && (value !== null));
+}
+
+/**
  The lines describing how an error-like value's `actual` and `expected`
  differ, for errors whose assertion compared two values.
 
  Errors without both fields produce no lines,
- and errors chai marked `showDiff: false` (truthiness,
+ errors chai marked `showDiff: false` (truthiness,
  containment,
  and similar matchers whose `expected` is not a compared value) stay
- silent too, so arbitrary thrown values never gain a diff block.
+ silent,
+ and pairs where neither side can hold content the headline truncated
+ stay silent too,
+ so matchers like `satisfy` whose fields carry a predicate result never
+ gain a misleading diff block.
 
  @param error - error-like value read
 
@@ -75,17 +101,29 @@ export function errorDifferenceLines({ error, }: { readonly error: object; },): 
     key: 'showDiff',
   },) === false)
     return [];
+  /**
+   Value the comparison found, read once for the gate and the walk.
+   */
+  const actual = readProperty({
+    source: error,
+    key: 'actual',
+  },);
+  /**
+   Value the comparison listed, read once for the gate and the walk.
+   */
+  const expected = readProperty({
+    source: error,
+    key: 'expected',
+  },);
+  if (!(sideCarriesLongContent(actual,)
+    || sideCarriesLongContent(expected,)))
+    return [];
   return valueDifferenceLines({
-    actual: readProperty({
-      source: error,
-      key: 'actual',
-    },),
-    expected: readProperty({
-      source: error,
-      key: 'expected',
-    },),
+    actual,
+    expected,
   },);
 }
+
 
 /**
  The lines describing how two compared values differ,

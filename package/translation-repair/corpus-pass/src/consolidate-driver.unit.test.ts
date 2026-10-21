@@ -731,11 +731,17 @@ async function driveWith(
     // own controller.
     signal = AbortSignal.timeout(HANG_STOP_MS,),
     archiveDisputes,
+    acceptedRepairClaimNotes,
     referenceContext,
     sheetFacts,
   }: {
     readonly contests: readonly ArtifactContestSlice[];
     readonly archiveDisputes?: ReadonlyMap<number, ArchiveDispute>;
+    /**
+     The claims the repair panel accepted per slice, for the cases reading
+     what the key and the polish gate are given.
+     */
+    readonly acceptedRepairClaimNotes?: ReadonlyMap<number, string>;
     /**
      What the pages the original cites say, for the cases reading whether
      each round was shown it.
@@ -832,6 +838,7 @@ async function driveWith(
     pictureContextBySlice,
     neighbourContextBySlice,
     ...((archiveDisputes === undefined) ? {} : { archiveDisputes, }),
+    ...((acceptedRepairClaimNotes === undefined) ? {} : { acceptedRepairClaimNotes, }),
     ...((sheetFacts !== undefined)
       ? { sheetFacts, }
       : ((referenceContext === undefined)
@@ -1081,6 +1088,57 @@ function roleAnsweringClient(
       return request.validate(value,)
         ? { kind: 'ok', value, rawText, }
         : { kind: 'schema-mismatch', rawText, detail: 'fixture answers another sheet', };
+    },
+    quotas: async () => {
+      throw new Error('quotas not used',);
+    },
+  };
+}
+
+/**
+ Builds a client that answers every stage by its reply schema, so a standing
+ reaches the final polish: the refiner rewrites, the selection backs the
+ rewrite, and the gates approve it.
+
+ @param sheets - sink for everything each call sent
+
+ @returns Client to drive with
+
+ @example
+ ```ts
+ const client = polishingClient({ sheets: [], },);
+ ```
+ */
+function polishingClient({ sheets, }: { readonly sheets: string[]; },): ModelClient {
+  return {
+    chatText: async () => {
+      throw new Error('chatText not used',);
+    },
+    chatJson: async <ValueT,>(
+      request: ChatJsonRequest<ValueT>,
+    ): Promise<ChatJsonOutcome<ValueT>> => {
+      sheets.push(JSON.stringify(request,),);
+      /**
+       Stage the call belongs to, by its reply schema.
+       */
+      const schema = request.responseFormat?.json_schema.name ?? '';
+      /**
+       Reply this stage is given.
+       */
+      const value: unknown = (schema === 'translation_report')
+        ? { translation: 'A cat asleep in the sun.', }
+        : (schema === 'refine_report')
+        ? { rewrites: [{ paragraph: 1, newText: 'a repair wording for slice 0', },], }
+        : (schema === 'consolidation_polish_gate')
+        ? { choice: 'polished', unsupported: [], dropped: [], reason: 'equally faithful', }
+        : (schema === 'absolute_naturalness_review')
+        ? { acceptable: true, findings: [], reason: 'publication-ready', }
+        : (schema === 'candidate_ballot')
+        ? { best: 1, reason: 'it says what the original says', }
+        : { choice: 'standing', unsupported: [], dropped: [], reason: 'the original supports it', };
+      return request.validate(value,)
+        ? { kind: 'ok', value, rawText: JSON.stringify(value,), }
+        : { kind: 'schema-mismatch', rawText: JSON.stringify(value,), detail: `fixture does not answer ${schema}`, };
     },
     quotas: async () => {
       throw new Error('quotas not used',);
@@ -2690,6 +2748,66 @@ await describe({
               [ 'not all', 'not all', ],
               [ 'all', 'all', ],
             ],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: `${consolidateDocument.name} given the claims the repair panel accepted (CuspariaKLSY21 slice 0)`,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'KEYS A SLICE THE PANEL ACCEPTED CLAIMS ON under those claims, and every polish gate sheet of it '
+            + 'carries them, where a slice with none keys as before and its gate sheets never mention them',
+          fn: async () => {
+            /** Note the panel's accepted claim is written as. */
+            const note = 'REPAIR PANEL CLAIMS ACCEPTED: (1) accuracy/mistranslation minor: the nap is softened.';
+            /**
+             Keys one drive looked up and the polish gate sheets it sent.
+
+             @param notes - accepted claims per slice, none left out
+             @returns Keys and gate sheets
+             */
+            async function drive(
+              { notes, }: { readonly notes?: ReadonlyMap<number, string>; },
+            ): Promise<{ readonly keys: readonly string[]; readonly gateSheets: readonly string[]; }> {
+              /** Every key the driver asked the cache for. */
+              const keys: string[] = [];
+              /** Everything each call sent. */
+              const sheets: string[] = [];
+              await driveWith({
+                contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+                client: polishingClient({ sheets, },),
+                polishConfig: polishOn({ seats: RESEATED, },),
+                resumed: {
+                  get: function recordKey(key: string,): undefined {
+                    keys.push(key,);
+                    return undefined;
+                  },
+                } as unknown as ReadonlyMap<string, ConsolidationSettlement>,
+                ...((notes === undefined) ? {} : { acceptedRepairClaimNotes: notes, }),
+              },);
+              return {
+                keys,
+                gateSheets: sheets.filter(function isGate(sheet,): boolean {
+                  return sheet.includes('consolidation_polish_gate',);
+                },),
+              };
+            }
+            const withClaims = await drive({ notes: new Map([[0, note,],],), },);
+            const without = await drive({},);
+            expect(withClaims.keys.length,).toBeGreaterThan(0,);
+            expect(withClaims.keys,).not.toEqual(without.keys,);
+            expect(withClaims.gateSheets.length,).toBeGreaterThan(0,);
+            expect(withClaims.gateSheets.every(function carries(sheet,): boolean {
+              return sheet.includes(note,);
+            },),).toBe(true,);
+            // THE CONTROL REACHES THE GATE TOO, or "never mentions" would hold of no sheet at all.
+            expect(without.gateSheets.length,).toBeGreaterThan(0,);
+            expect(without.gateSheets.some(function carries(sheet,): boolean {
+              return sheet.includes('REPAIR PANEL CLAIMS ACCEPTED',);
+            },),).toBe(false,);
           },
         },),
       ],

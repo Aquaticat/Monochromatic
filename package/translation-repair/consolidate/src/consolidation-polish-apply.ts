@@ -130,6 +130,11 @@ export async function applyFinalPolish(
     ...((subject.archiveDisputeNote === undefined)
       ? {}
       : { archiveDisputeNote: subject.archiveDisputeNote, }),
+    // THE CLAIMS THE REPAIR PANEL ACCEPTED, disputing the archive or not, for
+    // the gate alone (CuspariaKLSY21 slice 0, 2026-10-21).
+    ...((subject.acceptedRepairClaimsNote === undefined)
+      ? {}
+      : { acceptedRepairClaimsNote: subject.acceptedRepairClaimsNote, }),
     // THE WORDINGS THE SLICE REFUSES reach the polish too (ledger B29): the
     // consolidation refused them as standing, lane offer and proposal, and a
     // polish landing on one would ship it past all three.

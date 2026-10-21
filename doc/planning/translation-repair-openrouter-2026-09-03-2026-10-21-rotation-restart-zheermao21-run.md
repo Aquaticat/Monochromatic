@@ -265,7 +265,12 @@ Energy and the meter:
   against 124.717 Wh on the account.
   The meter counts from the larger of the ledger's spend and the account's (`neuralWattMeterLevel` text),
   so the ledger side reads 0.372 Wh higher than the account at the end.
-  Cause not yet traced;
+  Traced on 2026-10-21 (UTC),
+  original text kept:
+  the meter also subtracts the energy reserved for calls in flight,
+  and 0.372 Wh is the estimate of one `glm-5.3-flash` call ([the causes](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart-causes.md),
+  "Finding 9").
+  Cause not yet traced (before that tracing);
   `neuralwattReckonedWh` reads 0.000 on every line,
   so the gap is not a share resting on estimates.
 - The 16 calls after the last `METERS` line sum to 1.226 Wh,
@@ -372,7 +377,12 @@ Read against the `zheermao20` seat table (its read):
   All 49 carry `threw-withheld=none`.
   Kimi is `withheld=` and Qwen is `unserved=` in the same lines.
   Why the two are classed differently:
-  cause not yet traced
+  traced on 2026-10-21 (UTC),
+  original text kept:
+  Kimi is in the withheld list and was dropped from the benches on purpose,
+  Qwen stays seated and no wet provider serves it ([the causes](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart-causes.md),
+  "Finding 10");
+  cause not yet traced (before that tracing)
   (in `zheermao20` Kimi was `withheld=` and Qwen was not listed at all;
   here Qwen is listed as `unserved=`).
 - The repair lane's re-seat line ends `unserved-checkers=hf:Qwen/Qwen3.8-27B`,

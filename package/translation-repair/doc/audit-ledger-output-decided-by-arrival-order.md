@@ -859,3 +859,44 @@ The merge that duplicated `fanOut` is a second occurrence of the unconflicted me
 (M238),
 and "Work merged from parallel briefs" in `mistake-prevention-shell-edits-commits-and-agents.md`
 now covers commits picked onto a tree that already carries an overlapping change.
+
+## B734: the composite cases numbered their candidates by a rotation the sheet text seeds
+
+Status:
+fixed on 2026-10-21 (UTC),
+with the fix of B732 (`e5bc27f9f0`),
+source scans `2e5c2f82c1`.
+A member of the family of B701,
+found when the reply instruction of the archive block review changed.
+No cache version moved on its account.
+
+What the code did:
+`archive-composite-revision.unit.test.ts` (B712) asks the whole bench with `fanOut: 'whole-bench'`
+but not a pinned start of the rotation,
+so the order in which the voices are heard,
+and with it the number each revision has on the slate and which contributors a composite names,
+followed a hash of the sheet text.
+The reply instruction of the archive block review changed with B732,
+the hash moved,
+and five cases failed on candidate numbers and on the log line that names the winner.
+
+The fix:
+`runArchiveBlockReviewStage` takes `benchStart` and hands it to the gather,
+which already took it (the stage did not pass it,
+as it once did not pass `fanOut`,
+see B701),
+and the cases pin it to the first seat.
+
+Why the census missed it:
+the census of B701 ran on 2026-10-20 (UTC),
+and the composite cases were added on 2026-10-21 (UTC).
+The rotation sweep that would find a case like this one (`source-scan:test:rotation-sweep`) was not run in this change:
+it runs the family's unit tests ten times,
+which the ban on repeated full test runs forbids to a session without the lead's say.
+Every package that renders a changed sheet ran its unit tests once,
+and they pass on the new text,
+which says nothing about the other nine rotations.
+
+Open:
+the rotation sweep before the change lands,
+as `mistake-prevention-tests-clocks-and-arrival-order.md` says for a change to the text of a sheet.

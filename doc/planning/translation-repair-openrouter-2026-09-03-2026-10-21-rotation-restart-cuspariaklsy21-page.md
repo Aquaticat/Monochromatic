@@ -568,6 +568,17 @@ Items 3,
 and each was re-checked against its page.
 Cause not yet traced for all twelve.
 
+Traced on 2026-10-21 (UTC),
+original text kept ([the causes](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart-causes.md)):
+item 10 (已经) is noise,
+because no stage held the word and both lanes and the archive lack it (finding 3).
+The lost 一直,
+观望 and 二次元 of slice 2 are the translate lane's wording picked whole by the lane contest (finding 4);
+"was given to her" is the translate lane's wording (finding 1);
+and the softened 吃不上饭 of slice 0 is class A1 at the polish gate,
+fixed by ledger B731 (finding 2).
+The other items stay untraced.
+
 #### Behaviours of the run that are not departures on the page
 
 - The repair lane's `repairResolved=14` of 20 counts:

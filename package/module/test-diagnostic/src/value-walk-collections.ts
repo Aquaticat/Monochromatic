@@ -143,9 +143,21 @@ export function walkMap({
     },);
   }
   for (const key of shared) {
+    /**
+     Expected-side key paired with this actual key,
+     found by pairing key since deep-equal map keys need not share identity.
+     */
+    const pairedKey = expectedByKey.get(entryKey({
+      value: key,
+      registry,
+    },));
+    if (pairedKey === undefined) {
+      /* v8 ignore next 3 -- @preserve */
+      throw new Error('unreachable: shared key lost its expected pair',);
+    }
     walkChild({
       actual: actual.get(key,),
-      expected: expected.get(key,),
+      expected: expected.get(pairedKey,),
       prefix: `${prefix}${renderValue(key,)}: `,
       sink,
       registry,

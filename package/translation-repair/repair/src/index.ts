@@ -161,7 +161,10 @@ export {
   type RepairBenchmarkResult,
   runRepairBenchmark,
 } from './repair-benchmark.ts';
-export { cacheRefusalsOf, } from './repair-cache-gate.ts';
+export {
+  cacheRefusalLine,
+  cacheRefusalsOf,
+} from './repair-cache-gate.ts';
 export {
   assertCheckerBench,
   checkerBenchAtStage,

@@ -64,6 +64,12 @@ The groups that follow name the main ones.
   refiners propose,
   judges choose between proposal and standing text,
   and the gate applies.
+  The judges' sheet shows the claims the repair panel accepted for the slice,
+  and a tie between the polished and the standing text ships the polished text
+  (owner,
+  2026-10-21,
+  "Polished text wins ties"),
+  provided the minimum ballot count is met.
   Names:
   `polishConsolidation`,
   `configuredConsolidationPolish`,

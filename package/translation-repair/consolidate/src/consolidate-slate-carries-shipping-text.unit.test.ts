@@ -77,7 +77,7 @@ type FixtureModelId = (typeof ROSTER)[number];
  a marker spelled with quote characters matches nothing once the exchange is
  serialised, and every gate call is then answered with a selector ballot.
  */
-const GATE_MARKER = 'Return JSON: choice one of';
+const GATE_MARKER = 'Return JSON: reason one sentence';
 
 /**
  The slice every case decides about.
