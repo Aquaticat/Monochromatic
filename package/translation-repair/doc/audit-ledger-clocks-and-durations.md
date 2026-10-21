@@ -818,7 +818,8 @@ What the run showed:
 the review round asks each reviewer for the complete corrected block,
 so a `revise` reply is a whole candidate,
 and the owner's reason for the 180000 ms writer window is that a cut writer voice is a whole candidate lost
-(`doc/decision/translation-repair-straggler-grace.md`, decision of 2026-09-06).
+(`doc/decision/translation-repair-straggler-grace.md`,
+decision of 2026-09-06).
 The stage passed `grace.roundMs` (120000 ms),
 and no decision had classified the round either way.
 The letter block's Qwen reply was cut 120000 ms after quorum,
@@ -828,14 +829,23 @@ and the block shipped without it.
 The fix:
 the gather passes `grace.writerMs`,
 `archive-block-review` joins `WRITER_STAGE_LABELS`,
-and the `WRITER GRACE built in` line names it and says it joined on 2026-10-21 and is open to the owner's veto.
-Five files pin the line (`corpus-pass-built.test-fixture.ts`,
-`corpus-pass.unit.test.ts`,
-`editor-calibrate.unit.test.ts`,
-`editor-calibrate-run.unit.test.ts`,
-`writer-grace-override.unit.test.ts`);
-the fix commit's message counts four.
-`configuration.md`, `seats-and-calibration.md` and a dated addendum of 2026-10-21 in the straggler grace decision record it.
+and the `WRITER GRACE built in` line names it and said it joined on 2026-10-21 and was open to the owner's veto.
+That note was removed in `29f86a2863`:
+a run log states what the build does,
+and whether the owner has confirmed a classification is the status of a decision,
+which the straggler grace decision record and `configuration.md` already hold;
+left in the line it would sit in every run log after the owner has answered.
+The line keeps the stages,
+both windows,
+the decision date of 2026-09-06 and the dial that moves it.
+Only two files carry the line's text:
+`writer-grace-override.ts` and the `WRITER_GRACE_BUILT_IN` constant of `corpus-pass-built.test-fixture.ts`.
+This entry first said five files pinned it and the fix commit's message said four;
+`corpus-pass.unit.test.ts` and `corpus-pass-refusals.unit.test.ts` import the constant,
+and the bench and stage units pin only the overridden line or the words "built in".
+`configuration.md`,
+`seats-and-calibration.md`
+and a dated addendum of 2026-10-21 in the straggler grace decision record it.
 The selection round after the review keeps the readers' window:
 its judges read text that exists.
 

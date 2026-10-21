@@ -106,11 +106,15 @@ and asserts the seat is heard from there.
 `credential-hold.unit.test.ts` and `provider-router.unit.test.ts` hold the case.
 
 A round's straggler window follows what its replies are (ledger B713).
-A reply that is a whole candidate (an editor's patch, a translation, a corrected block)
-is a writer voice, and the window that cuts it takes a candidate from the judges;
+A reply that is a whole candidate (an editor's patch,
+a translation,
+a corrected block)
+is a writer voice,
+and the window that cuts it takes a candidate from the judges;
 a reply that reads text which exists is one ballot among several.
 The archive block review asked for whole corrected blocks and ran under the readers' window
-because no decision had classified it, and zheermao20's letter block lost a Qwen reply to it.
+because no decision had classified it,
+and zheermao20's letter block lost a Qwen reply to it.
 A new gather says in its call which kind it is,
 and joins `WRITER_STAGE_LABELS` if it is a writer round.
 Its case runs a straggler under windows that differ (`archive-block-review-windows.unit.test.ts`),
@@ -159,6 +163,15 @@ that one names a TRANSLATION the audit never shows and a category its wire rejec
 The relabel probe's arm that claims no issue list is known sent the production disclosure with an empty list,
 which under a rendered disclosure writes a list's heading into the prompt (ledger B283).
 An arm that claims a thing is absent sends the form production sends when it is absent.
+
+The archive block review's selection sheet listed the reviewers' assessments by the text each reviewer proposed,
+so the composite of disjoint revisions,
+which no reviewer proposed,
+reached the judges with none (ledger B716).
+A candidate no one proposed carries the assessments of those whose lines it is made of,
+copied as given and marked with the lines each covers;
+the judges are never shown a verdict nobody gave,
+and never a candidate they cannot check beside ones they can.
 
 The rule:
 a sheet whose rules name a block carries that block wherever its caller holds it.

@@ -181,7 +181,8 @@ named for that subject and listed here.
 - [Audit ledger: defaults that stand in for an input](audit-ledger-defaults-standing-in-for-an-input.md):
   Places where a missing,
   malformed or unreadable input was replaced by a default,
-  and the run went on as though the input had said so.
+  and the run went on as though the input had said so,
+  among them a block with no source section reviewed against an empty one in silence (B717).
 - [Audit ledger: labels and counts in messages](audit-ledger-labels-and-counts-in-messages.md):
   Messages that named the wrong thing or stated a count wrongly:
   labels that did not fit,
@@ -431,9 +432,10 @@ named for that subject and listed here.
   joined two lines and dropped a carriage return (B703),
   the absolute naturalness review that showed its reviewers the notes (B704),
   a Han name the archive spells inside its sentence that no sheet or floor carried (B707),
-  and the judges,
+  the judges,
   critics,
-  auditors and pairers that saw the notes between translators (B708).
+  auditors and pairers that saw the notes between translators (B708),
+  and the composite archive candidate that reached the judges with no assessment (B716).
 - [Audit ledger: readers that accept what no writer writes](audit-ledger-readers-accept-shapes-writers-never-write.md):
   Readers of stored records and directories that accepted a shape,
   a name or a value their own writer never produces,
