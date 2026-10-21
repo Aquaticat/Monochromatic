@@ -55,6 +55,17 @@ use slint::private_unstable_api::re_exports::{ColorScheme, WindowInner};
 /// ```ts
 /// type Frame = { width: number; pixels: Pixel[] };
 /// ```
+/// What:
+///  `sleep` blocks the calling thread for a span;
+///  `Duration` is a span of time (sibling `Instant` is a point in time).
+/// Why:
+///  A right click is held for a chosen span, so the time between press and release is an input, not host load.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// import { setTimeout as sleep } from 'node:timers/promises';
+/// ```
+use std::{thread::sleep, time::Duration};
 use slint::{
     ComponentHandle, Rgba8Pixel, SharedPixelBuffer,
     platform::{Key, PointerEventButton, WindowEvent},
@@ -80,13 +91,45 @@ use slint::{
 /// function menu(window: AppWindow, steps: number): void;
 /// ```
 fn menu(window: &AppWindow, steps: usize) {
+    open_menu(window, Duration::ZERO);
+    for _ in 0..steps {
+        key(window, Key::DownArrow);
+    }
+    key(window, Key::Return);
     settle(window);
-    // A point in the text area, 60px left of the clear cell and in the middle of the box.
-    let x = window.get_find_clear_x() - 60.0;
+}
+
+/// What:
+///  `hold` is a `Duration`, a span of time (sibling `Instant` is a point in time).
+/// Why:
+///  The toolkit's menu entries run on a pointer release that comes more than 300 ms after the entry was created,
+///  so a right click held that long must still leave the menu open;
+///  the hold makes that time a chosen input instead of the load the host happens to be under.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function openMenu(window: AppWindow, holdMs: number): void;
+/// ```
+fn open_menu(window: &AppWindow, hold: Duration) {
+    settle(window);
+    // The pointer goes on the left part of the text area (the box starts after the sidebar and its divider, with 12px
+    // of padding before the text area and 12px more of text), not near the clear cell.
+    // The find bar sits at the bottom of the window, so the menu is pushed up over the pointer's row;
+    // at the left the menu starts exactly at the pointer, which then rests on the menu's frame, outside every entry.
+    // Near the right edge the menu is pushed left instead, the pointer rests on an entry, and a release more than
+    // 300 ms after the menu appeared (the toolkit runs the entry under the pointer then) closed it under host load.
+    let x = window.get_sidebar_width() + DIVIDER + 36.0;
     let y = window.get_find_clear_y() + 24.0;
     let popups_before = open_popups(window);
     press(window, x, y, PointerEventButton::Right);
     let popups_pressed = open_popups(window);
+    // What: `sleep` blocks this thread for the span; Why: the pointer stays down while the clock runs.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // await new Promise(resolve => setTimeout(resolve, holdMs));
+    // ```
+    sleep(hold);
     release(window, x, y, PointerEventButton::Right);
     let popups_released = open_popups(window);
     settle(window);
@@ -99,11 +142,6 @@ fn menu(window: &AppWindow, steps: usize) {
         window.get_find_status(),
         window.get_find_has_focus()
     );
-    for _ in 0..steps {
-        key(window, Key::DownArrow);
-    }
-    key(window, Key::Return);
-    settle(window);
 }
 
 /// How many popups (menus,
@@ -454,4 +492,14 @@ fn find_box_selection_uses_the_ink_chosen_from_the_fill() {
         );
     }
     window.hide().expect("close find selection window");
+}
+
+/// A right click held longer than the toolkit's activation delay still leaves the menu open.
+#[test]
+fn a_slow_right_click_leaves_the_find_menu_open() {
+    let (_fixture, reader) = opened();
+    let window = &reader.window;
+    type_text(window, "needle");
+    open_menu(window, Duration::from_millis(400));
+    window.hide().expect("close slow click window");
 }
