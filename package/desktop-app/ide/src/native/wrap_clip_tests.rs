@@ -282,18 +282,9 @@ fn scrolling_inside_a_built_tile_of_a_wrapped_file_does_no_source_work() {
             renders, 0,
             "scrolling inside the tile entered render {facts}"
         );
-        assert_eq!(
-            tiles, 0,
-            "scrolling inside the tile painted a tile {facts}"
-        );
-        assert_eq!(
-            rows, 0,
-            "scrolling inside the tile shaped a row {facts}"
-        );
-        assert_eq!(
-            images, 0,
-            "scrolling inside the tile set an image {facts}"
-        );
+        assert_eq!(tiles, 0, "scrolling inside the tile painted a tile {facts}");
+        assert_eq!(rows, 0, "scrolling inside the tile shaped a row {facts}");
+        assert_eq!(images, 0, "scrolling inside the tile set an image {facts}");
         let [worker_tiles, worker_rows, applied, _] = worker_counts(&opened.source);
         assert_eq!(
             [worker_tiles, worker_rows, applied],
