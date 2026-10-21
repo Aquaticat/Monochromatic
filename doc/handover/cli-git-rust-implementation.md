@@ -2034,6 +2034,11 @@ that is verification, not a decision for the user.
   (`~/temp/agent/m028c-run.ts`: container gate tag `m028c`, then the four touched files at `--timeout 900`, logs
   `~/temp/agent/m028c-mutation-<file>.log`). Do not edit `src/native` while it runs. No release unless it finds more:
   the fixes change `parent_process` structure and one return type, so a 0.2.9 carries them with the next change.
+  m028c result (2026-10-21, unit ended, no leftover units): container gate 2105 passed, 5 skipped, 0 failed; mutation
+  0 missed in all four files: `auto_push_dirty_paths` 28 mutants (27 caught, 1 unviable), `auto_push_reconcile` 60
+  (56 caught, 4 unviable), `discard_audit` 14 (14 caught), `landing_invariant` 32 (32 caught). Task 61 is done: every
+  file touched since 0.2.5 has a campaign with 0 missed. Next release (0.2.9) carries the survivor fixes with the next
+  change; none is due now.
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and
