@@ -40,7 +40,7 @@ Through this route,
    starts from the digest-pinned `ghcr.io/aquaticat/pnpr` image,
    bakes in `config.yaml`,
    and disables the install-accelerator surface.
-   That image is pnpr 0.1.0-alpha.16 with a fix for GitHub Actions OIDC publishes
+   That image is pnpr 0.1.0-alpha.11 with a fix for GitHub Actions OIDC publishes
    (`doc/troubleshooting/pnpr-oidc-github-actions-discovery.md`),
    published by `.github/workflows/pnpr-patched-image.yml`
    on branch `pnpr-oidc-workload-discovery` of `Aquaticat/pnpm`.
