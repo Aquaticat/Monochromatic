@@ -37,6 +37,7 @@ import {
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import {
   type BudgetView,
+  createCredentialHolds,
   createRoutingClient,
   type DecisionReply,
   type DecisionRequest,
@@ -82,6 +83,8 @@ type Asked = string[];
  Budgets reading NeuralWatt and Synthetic dry and the rest wet, so a model
  Bedrock serves is asked of Bedrock first, then Hyper, then OpenRouter.
 
+ @param alsoDry - providers that read dry besides those two
+
  @returns Budgets of the shape the router reads, marking nothing
 
  @example
@@ -89,7 +92,9 @@ type Asked = string[];
  const budgets = budgetsWhereBedrockComesFirst();
  ```
  */
-function budgetsWhereBedrockComesFirst(): {
+function budgetsWhereBedrockComesFirst(
+  { alsoDry = [], }: { readonly alsoDry?: readonly ProviderName[]; } = {},
+): {
   readonly read: () => Promise<BudgetView>;
   readonly markRefused: () => Promise<void>;
   readonly holds: () => ProviderRecord<number>;
@@ -99,9 +104,9 @@ function budgetsWhereBedrockComesFirst(): {
       return {
         neuralwatt: true,
         synthetic: true,
-        hyper: false,
-        bedrock: false,
-        openrouter: false,
+        hyper: alsoDry.includes('hyper',),
+        bedrock: alsoDry.includes('bedrock',),
+        openrouter: alsoDry.includes('openrouter',),
       };
     },
     markRefused: async function markNothingRefused(): Promise<void> {
@@ -129,6 +134,10 @@ function budgetsWhereBedrockComesFirst(): {
  @param budgetRefusers - providers whose budget refuses every call, none when
  none are named
 
+ @param alsoDry - providers whose meter reads dry besides NeuralWatt and Synthetic
+
+ @param credentialHolds - holds shared with another router, a fresh set when none are given
+
  @param decide - the decisions endpoint, absent for none
 
  @returns Router, the calls asked, and the log lines written
@@ -142,10 +151,14 @@ function routerWhereCredentialRefused(
   {
     refusers,
     budgetRefusers = [],
+    alsoDry = [],
+    credentialHolds,
     decide,
   }: {
     readonly refusers: readonly ProviderName[];
     readonly budgetRefusers?: readonly ProviderName[];
+    readonly alsoDry?: readonly ProviderName[];
+    readonly credentialHolds?: ReturnType<typeof createCredentialHolds>;
     readonly decide?: (request: DecisionRequest,) => Promise<DecisionReply>;
   },
 ): {
@@ -200,8 +213,9 @@ function routerWhereCredentialRefused(
         bedrock: callerFor('bedrock',),
         openrouter: callerFor('openrouter',),
       },
-      budgets: budgetsWhereBedrockComesFirst(),
+      budgets: budgetsWhereBedrockComesFirst({ alsoDry, },),
       l: levelCapturingLogger({ lines, },),
+      ...((credentialHolds === undefined) ? {} : { credentialHolds, }),
       ...((decide === undefined) ? {} : { decider: { decide, }, }),
     },),
   };
@@ -361,11 +375,11 @@ await describe({
         expect(lines,).toEqual([
           `warn [routedText] SEAT CREDENTIAL REFUSED ${SEAT_HYPER_TEXT_BEDROCK} on bedrock: ${refusalSaid({ provider: 'bedrock', },)}. `
           + 'bedrock is held out for every model for the rest of the run, because one credential serves them all. '
-          + `${SEAT_HYPER_TEXT_BEDROCK} moves to hyper, then openrouter. `
+          + `${SEAT_HYPER_TEXT_BEDROCK} moves to hyper, then openrouter (every provider that serves it and can take a call now). `
           + 'Renew bedrock\'s credential before the next run, or leave it.',
           `warn [routedText] SEAT CREDENTIAL REFUSED ${SEAT_HYPER_TEXT_BEDROCK} on hyper: ${refusalSaid({ provider: 'hyper', },)}. `
           + 'hyper is held out for every model for the rest of the run, because one credential serves them all. '
-          + `${SEAT_HYPER_TEXT_BEDROCK} moves to openrouter. `
+          + `${SEAT_HYPER_TEXT_BEDROCK} moves to openrouter (every provider that serves it and can take a call now). `
           + 'Renew hyper\'s credential before the next run, or leave it.',
         ],);
       },
@@ -447,6 +461,98 @@ await describe({
 
         expect(asked,).toEqual([`hyper:${SEAT_HYPER_TEXT_BEDROCK}`, `openrouter:${SEAT_HYPER_TEXT_BEDROCK}`,],);
         expect(('thrown' in second) && (second.thrown instanceof ProviderHttpError),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'NAMES NO DRY PROVIDER AS WHERE THE SEAT MOVES TO, and says the seat is not withheld when every provider '
+        + 'left serving it is dry',
+      fn: async () => {
+        const { client, lines, } = routerWhereCredentialRefused({
+          refusers: ['bedrock',],
+          alsoDry: ['hyper', 'openrouter',],
+        },);
+
+        await ask({
+          client,
+          modelId: SEAT_HYPER_TEXT_BEDROCK,
+        },);
+
+        expect(lines[0],).toContain(
+          `No provider that serves ${SEAT_HYPER_TEXT_BEDROCK} can take a call now (hyper is dry, openrouter is dry), `
+          + 'so the seat is not withheld on this refusal: the router goes on by its rules for a dry or held provider. ',
+        );
+        expect(lines[0],).not.toContain('is withheld for the rest of the run',);
+      },
+    },),
+    it({
+      name: 'LEAVES A DRY PROVIDER OUT OF THE LIST but names the one still wet',
+      fn: async () => {
+        const { client, lines, } = routerWhereCredentialRefused({
+          refusers: ['bedrock',],
+          alsoDry: ['hyper',],
+        },);
+
+        await ask({
+          client,
+          modelId: SEAT_HYPER_TEXT_BEDROCK,
+        },);
+
+        expect(lines[0],).toContain(
+          `${SEAT_HYPER_TEXT_BEDROCK} moves to openrouter (every provider that serves it and can take a call now). `,
+        );
+      },
+    },),
+    it({
+      name: 'HOLDS THE PROVIDER OUT ON A 401 MET BY THE CROSS-PROVIDER RE-ASK exactly as on a first ask: said once, and '
+        + 'skipped for every model after',
+      fn: async () => {
+        const { client, asked, lines, } = routerWhereCredentialRefused({ refusers: ['bedrock',], },);
+
+        /** What the re-ask, hinted away from Hyper, came to: Bedrock is the next provider and refuses. */
+        let reasked: unknown;
+        try {
+          reasked = await client.chatText({
+            modelId: SEAT_HYPER_TEXT_BEDROCK,
+            messages: MESSAGES,
+            signal: SIGNAL,
+            otherThan: 'hyper',
+          },);
+        }
+        catch (error) {
+          reasked = error;
+        }
+        const later = await ask({
+          client,
+          modelId: SEAT_HYPER_TEXT_BEDROCK,
+        },);
+
+        expect(reasked,).toBeInstanceOf(ProviderHttpError,);
+        expect(later,).toEqual({ text: 'hyper answers', },);
+        expect(asked,).toEqual([`bedrock:${SEAT_HYPER_TEXT_BEDROCK}`, `hyper:${SEAT_HYPER_TEXT_BEDROCK}`,],);
+        expect(lines.length,).toBe(1,);
+        expect(lines[0],).toContain(`SEAT CREDENTIAL REFUSED ${SEAT_HYPER_TEXT_BEDROCK} on bedrock: `,);
+      },
+    },),
+    it({
+      name: 'SHARES A HOLD LEARNED BY ONE ROUTER with another built over the same holds, so a run with several routers '
+        + 'learns a 401 once',
+      fn: async () => {
+        const credentialHolds = createCredentialHolds();
+        const first = routerWhereCredentialRefused({ refusers: ['bedrock',], credentialHolds, },);
+        const second = routerWhereCredentialRefused({ refusers: [], credentialHolds, },);
+
+        await ask({
+          client: first.client,
+          modelId: SEAT_HYPER_TEXT_BEDROCK,
+        },);
+        const outcome = await ask({
+          client: second.client,
+          modelId: SEAT_HYPER_TEXT_BEDROCK,
+        },);
+
+        expect(outcome,).toEqual({ text: 'hyper answers', },);
+        expect(second.asked,).toEqual([`hyper:${SEAT_HYPER_TEXT_BEDROCK}`,],);
+        expect(second.lines,).toEqual([],);
       },
     },),
   ],
