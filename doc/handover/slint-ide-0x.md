@@ -1287,11 +1287,13 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     Removed: both agent branches (local and remote), their worktrees, `ide-gpu56-baseline`, `.claude/exp-flake` and
     `.claude/exp-flake2`, my scratch worktrees. Another session's `cargo mutants` container (`event_hints.rs`, started
     03:36 on 2026-10-21) was running during this work; it is not ours and was left alone.
-    Open, in order: (1) the stage 5+6 agent's owner questions, in `doc/handover/ide-gpu-stages-5-6.md`: a window taller
-    than the device texture limit ends the picture at the texture end; the `minimap_build` to `minimap_worker` rename;
-    whether the tightened reflection bounds (worst 36 / mean 0.8 at scale 1, 58 / 0.9 at scale 2) are the contract; the
-    stale `TEXTURE_DIMENSION` doc; dense-selection cost until full-height clipping in `split.rs` and `encode.rs` is
-    fixed. (2) The flake work, in `doc/handover/ide-native-flakes.md`: fixed with counts (refused-tile test 10 of 360 to
+    Owner decisions of 2026-10-21 on the stage 5+6 questions (`doc/handover/ide-gpu-stages-5-6.md`): (a) a window
+    taller than the device texture limit stacks textures, so the minimap covers the whole window (to build); (b) the
+    reflection bounds (worst 36 / mean 0.8 at scale 1, 58 / 0.9 at scale 2) are the contract, kept as the guard;
+    (c) the `minimap_build` to `minimap_worker` rename stands (already in the code, `src/native/minimap_worker.rs`).
+    Still open from that note: the stale `TEXTURE_DIMENSION` doc; dense-selection cost until full-height clipping in
+    `split.rs` and `encode.rs` is fixed.
+    Open, in order: (1) stacked textures for a window taller than the texture limit; (2) the flake work, in `doc/handover/ide-native-flakes.md`: fixed with counts (refused-tile test 10 of 360 to
     0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160 to 0 of 160); open:
     `find_box_context_menu_runs_each_entry`,
     the annotation stability tests (frames kept under `target/flake-frames/`), the minimap external-edit test (13 of 120
