@@ -372,7 +372,7 @@ fn keep_frames(
     }
     let stamp = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
-        .map_or(0, |elapsed| elapsed.as_millis());
+        .map_or(0, |elapsed| return elapsed.as_millis());
     for (label, frame) in [("first", first), ("second", second)] {
         let mut bytes = format!("P6\n{} {}\n255\n", frame.width(), frame.height()).into_bytes();
         for pixel in frame.as_slice() {
