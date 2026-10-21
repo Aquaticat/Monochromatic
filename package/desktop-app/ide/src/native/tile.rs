@@ -150,8 +150,21 @@ fn start_poll(window: &AppWindow, state: &Rc<RefCell<State>>, current: &mut Stat
             let (Some(active), Some(shared)) = (weak_window.upgrade(), weak_state.upgrade()) else {
                 return;
             };
+            if x_hold() {
+                let live = shared.borrow().scrolled_at.is_some_and(|at| {
+                    rows::quiet_now().saturating_duration_since(at) < Duration::from_millis(20)
+                });
+                if live {
+                    return;
+                }
+            }
             poll(&active, &shared);
         });
+}
+
+/// TEMPORARY experiment switch.
+pub(super) fn x_hold() -> bool {
+    return std::env::var("IDE_X_HOLD").as_deref() == Ok("1");
 }
 
 /// Whether a finished tile still describes what is displayed,

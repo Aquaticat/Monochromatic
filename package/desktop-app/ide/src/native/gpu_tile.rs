@@ -428,7 +428,15 @@ pub(super) fn bind(window: &AppWindow, gpu: &GpuTile) {
         };
         let outcome = match state {
             RenderingState::RenderingSetup => inner.borrow_mut().setup(device, queue),
-            RenderingState::BeforeRendering => inner.borrow_mut().draw_pending(),
+            RenderingState::BeforeRendering => {
+                let began = std::time::Instant::now();
+                let tiles = inner.borrow().tiles_rendered;
+                let outcome = inner.borrow_mut().draw_pending();
+                if inner.borrow().tiles_rendered != tiles {
+                    tracing::debug!(us = began.elapsed().as_micros() as u64, "x: drew a pending tile before the frame");
+                }
+                outcome
+            }
             RenderingState::RenderingTeardown => {
                 inner.borrow_mut().teardown();
                 return;

@@ -379,6 +379,9 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         let mut reported = None;
         if let Some(window) = weak.upgrade() {
             reported = Some(window.window().scale_factor());
+            if tile::x_hold() {
+                tile::poll(&window, &state);
+            }
         }
         tracing::debug!(
             target: "monochromatic_ide::native::frame",
