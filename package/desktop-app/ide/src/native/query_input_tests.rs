@@ -106,7 +106,8 @@ fn menu(window: &AppWindow, steps: usize) {
     settle(window);
 }
 
-/// How many popups (menus, tooltips) the window holds open.
+/// How many popups (menus,
+///  tooltips) the window holds open.
 fn open_popups(window: &AppWindow) -> usize {
     return WindowInner::from_pub(window.window()).active_popups().len();
 }

@@ -358,9 +358,12 @@ fn moved(
 }
 
 /// What:
-///  Write two frames that a comparison found different to `target/flake-frames/`, as PPM images, and say where.
+///  Write two frames that a comparison found different to `target/flake-frames/`,
+///  as PPM images,
+///  and say where.
 /// Why:
-///  A difference that shows only now and then cannot be looked at again; the files are the evidence of the next one.
+///  A difference that shows only now and then cannot be looked at again;
+///  the files are the evidence of the next one.
 fn keep_frames(
     name: &str,
     first: &SharedPixelBuffer<Rgba8Pixel>,
@@ -384,7 +387,9 @@ fn keep_frames(
 }
 
 /// What:
-///  A frame, the vertical mapping the reader paints with now, and the tile facts of that moment.
+///  A frame,
+///  the vertical mapping the reader paints with now,
+///  and the tile facts of that moment.
 /// Why:
 ///  A failed comparison names the state each of its two frames was taken in.
 fn shot(reader: &Reader) -> (SharedPixelBuffer<Rgba8Pixel>, RowMap, String) {

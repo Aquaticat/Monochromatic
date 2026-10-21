@@ -159,12 +159,20 @@ impl Waiting {
 }
 
 /// What:
-///  The tile and worker facts of a window, written when a failure message is formatted.
+///  The tile and worker facts of a window,
+///  written when a failure message is formatted.
 /// Why:
-///  A flake that cannot be reproduced on demand must name, at the moment it fails, which tile was shown, which
-///  job and re-center were pending, how many tiles each side had built, and whether the failure switch was
-///  consumed, or the next occurrence says only that a number differed.
-///  The text is built only when the assertion fails, so a passing wait pays nothing.
+///  A flake that cannot be reproduced on demand must name,
+///  at the moment it fails,
+///  which tile was shown,
+///  which
+///  job and re-center were pending,
+///  how many tiles each side had built,
+///  and whether the failure switch was
+///  consumed,
+///  or the next occurrence says only that a number differed.
+///  The text is built only when the assertion fails,
+///  so a passing wait pays nothing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -179,7 +187,8 @@ pub(super) struct Facts<'a> {
 
 /// The facts as one line.
 impl Display for Facts<'_> {
-    /// Write the facts, or say that the state was borrowed.
+    /// Write the facts,
+    ///  or say that the state was borrowed.
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let Ok(current) = self.source.try_borrow() else {
             return write!(formatter, "[state borrowed]");
