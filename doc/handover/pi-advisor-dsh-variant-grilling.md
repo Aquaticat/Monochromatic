@@ -725,12 +725,19 @@ Implementation,
    (no command tool or commands service),
    so `/advisor` parity moves to the user boundary after Q10,
    the plan's known gap.
+   Fixture 2 PASS (2026-10-20, disposable home and project configs):
+   default call served `llmgateway-devpass/deepseek-v4.1-flash-1017`
+   (project `defaultReviewerModel: opencode-go/kimi-k3` unresolvable,
+   falling through to the ranking pick, not global `claude-haiku-5-5`),
+   and the reported deadline (`222222` minus elapsed) proves the project
+   scalar `timeoutMs` won the merge;
+   explicit `llmgateway-devpass/claude-haiku-5-5` served exactly.
+   The result line `deadline remaining <timeoutMs - elapsed>ms`
+   is the merged-config observable at the tool boundary.
    QUEUED:
-   fixture 2 config-merge and `defaultReviewerModel` fall-through
-   (config observability is limited: the tool result reports the
-   chosen reviewer model; `/advisor status` needs command dispatch
-   or the user boundary),
-   fixture 1 plan-faithful empty-home rerun (same observability),
+   fixture 1 plan-faithful empty-home rerun (in flight;
+   expect the `600000` default deadline and the ranking pick,
+   plus ambiguous and empty-slug parity errors),
    fixture 3 `/advisor off`/`on` toggle and `/advisor` command parity
    at the user boundary after Q10,
    then the Q10 live install.
