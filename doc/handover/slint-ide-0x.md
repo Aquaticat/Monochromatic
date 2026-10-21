@@ -1324,6 +1324,9 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     (three textures were made by lowering the recorded limit), densest-text stacking, a look in a nested compositor
     window, frame time of a 12,000 px window (about 24 chunk renders per picture on the window thread), cadence on a
     quiet host (load average was 8 to 9 from other sessions).
+    Update 2026-10-21: the extra redraw `picture.rs` requested is explained and changed on branch
+    `worktree-agent-a3a543d4c80040d25` (cause, counts and limits in `doc/handover/ide-gpu-stages-5-6.md`, section
+    "The extra frame at a picture hand-over"); not yet merged into `main`.
     Installed 2026-10-21: `~/.local/bin/monochromatic-ide` sha256 prefix `e1f2590ffadecc91`, equal to the release
     build; the previous binary (`c0b8219d73bc1062`) is `monochromatic-ide.previous`. Removed: the agent branch (local
     and remote), its worktree, my scratch worktrees and guard caches. Another session's mutation container
