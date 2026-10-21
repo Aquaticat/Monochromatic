@@ -45,6 +45,7 @@ export {
 } from './archive-block-review-wire.ts';
 export {
   archiveBlockSelectionEvidence,
+  CompositeNotOnSlateError,
   withArchiveOriginal,
 } from './archive-block-selection-evidence.ts';
 export { voicesAsRead, } from './archive-voices-as-read.ts';

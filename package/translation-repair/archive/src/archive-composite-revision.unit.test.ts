@@ -18,7 +18,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { runArchiveBlockReviewStage, } from '../dist/final/node/index.mjs';
+import {
+  archiveBlockSelectionEvidence,
+  CompositeNotOnSlateError,
+  runArchiveBlockReviewStage,
+} from '../dist/final/node/index.mjs';
 import {
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
@@ -286,15 +290,26 @@ function selectSheetOf({ prompts, }: { readonly prompts: readonly string[]; },):
     },)
     .join('\n',);
   /**
-   The assessments' JSON, between the rules that bound their block.
+   The sheet's lines, the assessments' block opening two lines after its label.
    */
-  const assessmentsJson = /PRIOR REVIEW ASSESSMENTS[^\n]*\n=====\n(?<json>[^\n]*)\n=====/u.exec(sheet,)?.groups?.['json'] ?? '[]';
+  const sheetLines = sheet.split('\n',);
+  /**
+   Position of the label that opens the assessments' block.
+   */
+  const labelAt = sheetLines.findIndex(function isLabel(line,): boolean {
+    return line.startsWith('PRIOR REVIEW ASSESSMENTS',);
+  },);
   return {
-    candidates: new Map([...sheet.matchAll(/CANDIDATE (?<number>\d+)\n=====\n(?<text>[\s\S]*?)\n=====/gu,),]
-      .map(function toEntry({ groups, },): readonly [number, string] {
-        return [Number(groups?.['number'],), groups?.['text'] ?? '',] as const;
+    candidates: new Map(sheet.split('\nCANDIDATE ',)
+      .slice(1,)
+      .map(function toEntry(part,): readonly [number, string] {
+        /**
+         The part from the rule that opens the candidate's text.
+         */
+        const fromText = part.slice(part.indexOf('\n=====\n',) + '\n=====\n'.length,);
+        return [Number(part.split('\n',)[0],), fromText.slice(0, fromText.lastIndexOf('\n=====',),),] as const;
       },),),
-    assessments: JSON.parse(assessmentsJson,) as readonly SheetAssessment[],
+    assessments: JSON.parse(sheetLines[labelAt + 2] ?? '[]',) as readonly SheetAssessment[],
   };
 }
 
@@ -423,6 +438,36 @@ await describe({
         expect(assessments.some(function marked({ coversLines, },): boolean {
           return coversLines !== undefined;
         },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'REFUSES A COMPOSITE THAT IS NOT ON THE SLATE it is numbered against, naming how many candidates the '
+        + 'slate holds, since its assessments would otherwise be filed under a number the judges never see',
+      fn: async () => {
+        /** A candidate standing for the composite, which the slate does not hold. */
+        const stray = {
+          producer: { kind: 'composite', contributors: [ROSTER[0],], } as const,
+          value: FIRST_AND_THIRD,
+          rendered: FIRST_AND_THIRD,
+        };
+        expect(() => archiveBlockSelectionEvidence({
+          sourceText: SOURCE,
+          targetText: BLOCK,
+          blockText: BLOCK,
+          voices: [],
+          candidates: [{ producer: { kind: 'incumbent', matched: [], } as const, value: BLOCK, rendered: BLOCK, },],
+          composite: { candidate: stray, contributions: [{ candidate: 1, changed: [0,], },], },
+          priorFindings: [],
+        },),).toThrow(CompositeNotOnSlateError,);
+        expect(() => archiveBlockSelectionEvidence({
+          sourceText: SOURCE,
+          targetText: BLOCK,
+          blockText: BLOCK,
+          voices: [],
+          candidates: [{ producer: { kind: 'incumbent', matched: [], } as const, value: BLOCK, rendered: BLOCK, },],
+          composite: { candidate: stray, contributions: [{ candidate: 1, changed: [0,], },], },
+          priorFindings: [],
+        },),).toThrow('not one of the 1 candidate the judges are shown',);
       },
     },),
     it({

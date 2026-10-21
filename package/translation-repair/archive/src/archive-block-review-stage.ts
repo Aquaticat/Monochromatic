@@ -251,6 +251,7 @@ export async function runArchiveBlockReviewStage(
   const {
     candidate: composite,
     withheld: compositeWithheld,
+    contributions,
   } = compositeOfDisjointRevisions({
     revisions,
     blockText,
@@ -444,6 +445,14 @@ export async function runArchiveBlockReviewStage(
       blockText,
       voices: anchoredVoices,
       candidates,
+      ...((composite === undefined)
+        ? {}
+        : {
+          composite: {
+            candidate: composite,
+            contributions,
+          },
+        }),
       priorFindings,
       ...pageContext,
     },),

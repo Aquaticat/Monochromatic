@@ -7,11 +7,14 @@ import {
   describeProducer,
   producerModelIds,
 } from '@monochromatic-dev/translation-repair-house-rule/ts';
-import {
-  rendersAsNothing,
-  wordForCount,
-} from '@monochromatic-dev/translation-repair-typography/ts';
+import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typography/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  counted,
+  linesOf,
+  numbered,
+  sharedLines,
+} from './archive-composite-lines.ts';
 import { revisionFootnoteFindings, } from './archive-revision-footnotes.ts';
 import {
   REVISION_SHAPE_REFUSED,
@@ -51,6 +54,10 @@ import {
 //   line, never a line of its own.
 // - The composite goes through the gates every revision passed (shape,
 //   footnotes), since a composite is text no model read as a whole.
+// - The outcome names what each revision contributed (its candidate number
+//   and the lines it changed), because no reviewer proposed the composite and
+//   the judges' sheet can show its assessments only through its contributors'
+//   (ledger B716, `archive-block-selection-evidence.ts`).
 // - It stands after the reviewers' revisions and before the block as the
 //   archive wrote it, as the editor lane's composite stands last among its
 //   proposals (`editor-candidates.ts`).
@@ -68,6 +75,36 @@ export type CompositeRevisionOutcome = {
    otherwise.
    */
   readonly withheld: readonly string[];
+  /**
+   What each revision the composite carries contributed, in slate order, empty
+   when no composite was built (ledger B716).
+   */
+  readonly contributions: readonly CompositeContribution[];
+};
+
+/**
+ One revision a composite carries, and the lines of the block it changed.
+ */
+export type CompositeContribution = {
+  /**
+   Candidate number the judges see the revision under, which the revisions
+   keep because the composite stands after them.
+   */
+  readonly candidate: number;
+  /**
+   Zero-based positions of the block's lines the revision changed, which the
+   composite takes from it.
+   */
+  readonly changed: readonly number[];
+};
+
+/**
+ The outcome of a block whose revisions leave nothing to combine or whose
+ combination no gate lets stand, said without a finding.
+ */
+const NO_COMPOSITE: CompositeRevisionOutcome = {
+  withheld: [],
+  contributions: [],
 };
 
 /**
@@ -93,112 +130,6 @@ type ChangingRevision = {
 };
 
 /**
- Lines of a text, each with the line ending that closes it.
-
- @param text - block or revision
-
- @returns Lines whose concatenation is the text
- */
-function linesOf({ text, }: { readonly text: string; },): readonly string[] {
-  /**
-   Text cut at its line feeds, each piece without the one that closed it.
-   */
-  const pieces = text.split('\n',);
-  /**
-   Every piece that a line feed closed, with it put back.
-   */
-  const closed = pieces
-    .slice(
-      0,
-      -1,
-    )
-    .map(function withEnding(piece,): string {
-      return `${piece}\n`;
-    },);
-  // A text that ends in a line feed has no line after it.
-  return text.endsWith('\n',) ? closed : [
-    ...closed,
-    pieces.at(-1,) ?? '',
-  ];
-}
-
-/**
- A count with its noun, as a log line says it.
-
- @param count - how many
-
- @param one - noun for one
-
- @param many - noun for any other count
-
- @returns The count and its noun
- */
-function counted(
-  {
-    count,
-    one,
-    many,
-  }: {
-    readonly count: number;
-    readonly one: string;
-    readonly many: string;
-  },
-): string {
-  return `${String(count,)} ${
-    wordForCount({
-      count,
-      one,
-      many,
-    },)
-  }`;
-}
-
-/**
- Line numbers as a log line says them, counting from one.
-
- @param indexes - zero-based line positions
-
- @returns "line 4" for one, "lines 1, 2" for several
- */
-function numbered({ indexes, }: { readonly indexes: readonly number[]; },): string {
-  return `${
-    wordForCount({
-      count: indexes.length,
-      one: 'line',
-      many: 'lines',
-    },)
-  } ${
-    indexes.map(function oneBased(index,): string {
-      return String(index + 1,);
-    },)
-      .join(', ',)
-  }`;
-}
-
-/**
- Positions of the lines two revisions both change.
-
- @param left - first revision's changed positions
-
- @param right - second revision's changed positions
-
- @returns Shared positions in ascending order
- */
-function sharedLines(
-  {
-    left,
-    right,
-  }: {
-    readonly left: readonly number[];
-    readonly right: readonly number[];
-  },
-): readonly number[] {
-  return left.filter(function inBoth(index,): boolean {
-    return right.includes(index,);
-  },);
-}
-
-/**
  Builds the composite of the revisions' changed lines when they allow one,
  and says at the decision point why not when they do not.
 
@@ -217,7 +148,8 @@ function sharedLines(
  @param l - stage logger
 
  @returns The composite candidate when built and passed through the gates,
- with the findings the gates refused it under when they did
+ with what each revision it carries contributed, and the findings the gates
+ refused it under when they did
 
  @throws BlockOutsideArchiveError when the page does not carry the block
 
@@ -243,7 +175,7 @@ export function compositeOfDisjointRevisions(
 ): CompositeRevisionOutcome {
   // ONE REVISION, OR NONE, HAS NOTHING TO COMBINE and no decision to record.
   if (revisions.length < 2)
-    return { withheld: [], };
+    return NO_COMPOSITE;
   /**
    Logger naming this step in every line.
    */
@@ -284,7 +216,7 @@ export function compositeOfDisjointRevisions(
         },)
       } change the block, and two are needed to combine`,
     );
-    return { withheld: [], };
+    return NO_COMPOSITE;
   }
   /**
    Each differing revision with the lines it changes.
@@ -298,7 +230,7 @@ export function compositeOfDisjointRevisions(
       compositeLog.info(
         `archive composite not built: candidate ${String(number,)} is a removal, which has no lines to match`,
       );
-      return { withheld: [], };
+      return NO_COMPOSITE;
     }
     /**
      Lines of this revision.
@@ -320,7 +252,7 @@ export function compositeOfDisjointRevisions(
           },)
         }, and lines can only be matched one for one`,
       );
-      return { withheld: [], };
+      return NO_COMPOSITE;
     }
     changing.push({
       number,
@@ -370,7 +302,7 @@ export function compositeOfDisjointRevisions(
         },)
       }`,
     );
-    return { withheld: [], };
+    return NO_COMPOSITE;
   }
   /**
    Models whose revisions the composite carries, in slate order.
@@ -419,6 +351,7 @@ export function compositeOfDisjointRevisions(
         `${REVISION_SHAPE_REFUSED} (${label}): the combined revision shows a reader nothing, though each revision `
         + 'shows something',
       ],
+      contributions: [],
     };
   }
   /**
@@ -441,7 +374,10 @@ export function compositeOfDisjointRevisions(
   ];
   if (refused.length > 0) {
     compositeLog.info(`archive composite not built: a gate refused the combined text: ${refused.join('; ',)}`,);
-    return { withheld: refused, };
+    return {
+      withheld: refused,
+      contributions: [],
+    };
   }
   compositeLog.info(
     `archive composite built from ${
@@ -473,6 +409,15 @@ export function compositeOfDisjointRevisions(
       rendered: combined,
     },
     withheld: [],
+    contributions: changing.map(function toContribution({
+      number,
+      changed,
+    },): CompositeContribution {
+      return {
+        candidate: number,
+        changed,
+      };
+    },),
   };
 }
 
