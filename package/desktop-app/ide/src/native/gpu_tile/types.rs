@@ -123,7 +123,7 @@ pub(in crate::native) static SLICE_LISTS_SET: std::sync::atomic::AtomicU64 =
 /// ```
 fn show_slices(window: &AppWindow, slices: Vec<MinimapSlice>) {
     let shown = window.get_minimap_slices();
-    let Some(list) = shown.as_any().downcast_ref::<VecModel<MinimapSlice>>().filter(|_| false) else {
+    let Some(list) = shown.as_any().downcast_ref::<VecModel<MinimapSlice>>() else {
         #[cfg(test)]
         SLICE_LISTS_SET.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
         window.set_minimap_slices(ModelRc::from(Rc::new(VecModel::from(slices))));
