@@ -69,6 +69,8 @@ const BYTE_OFFSET_OR_NOTHING = "(at === OFFSET_UNSTATED) ? '' : ` at byte $"
  name is written down, which is the moment to ask what its message carries.
  */
 const MARKED_CLASSES: readonly string[] = [
+  'ArchiveBlockAlignmentMissingError',
+  'ArchiveBlockContextMissingError',
   'ArchiveOriginalCompletenessError',
   'ArtifactComparisonError',
   'ArtifactParseError',
@@ -88,6 +90,7 @@ const MARKED_CLASSES: readonly string[] = [
   'CheckerQuorumError',
   'CitedReferenceFetchError',
   'CollapsedHeadingError',
+  'CompositeNotOnSlateError',
   'ConsistencyInvariantError',
   'ConsolidationLedgerGapError',
   'ContributorCompletenessError',
@@ -445,6 +448,19 @@ const NAMED_PARTS: Record<string, string> = {
     + 'numbers, OCCURRENCE labels, offsets and vocabulary words and quoting no page text, which each site was read '
     + 'for (ConsistencyInvariantError)',
   'entry': 'name of a build entry, a key of a package\'s own list in src/build-entries.ts (FamilyEntryConflictError)',
+  'identity': 'identity of an archive block (ArchiveBlockContextMissingError): its location as indices, its parser '
+    + 'block id and a digest of its wording, never the wording (archiveBlockIdentity)',
+  'heldText': 'whether the map of source sections holds no block, or how many it holds and the identities of '
+    + 'them, each an archive block identity, built in the constructor from a count and identities alone (ArchiveBlockContextMissingError)',
+  'blockId': 'parser block id (block/N) of an archive block, naming a place and never wording '
+    + '(ArchiveBlockAlignmentMissingError)',
+  'String(pairIndex,)': 'index of the aligned pair an archive block names',
+  'String(pairCount,)': 'count',
+  'wordForCount({ count: pairCount, one: \'pair\', many: \'pairs\', },)':
+    'noun agreeing with a count, both forms authored here',
+  'String(slateSize,)': 'count',
+  'wordForCount({ count: slateSize, one: \'candidate\', many: \'candidates\', },)':
+    'noun agreeing with a count, both forms authored here',
   'firstPath': 'path a package\'s own build entry list gives an entry (FamilyEntryConflictError)',
   'firstOwner': 'directory name of a package of the family (FamilyEntryConflictError)',
   'secondPath': 'path a package\'s own build entry list gives an entry (FamilyEntryConflictError)',

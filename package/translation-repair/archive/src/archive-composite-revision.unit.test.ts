@@ -450,7 +450,8 @@ await describe({
           value: FIRST_AND_THIRD,
           rendered: FIRST_AND_THIRD,
         };
-        expect(() => archiveBlockSelectionEvidence({
+        /** The evidence asked for with a composite the slate does not hold. */
+        const strayEvidence = (): unknown => archiveBlockSelectionEvidence({
           sourceText: SOURCE,
           targetText: BLOCK,
           blockText: BLOCK,
@@ -458,16 +459,9 @@ await describe({
           candidates: [{ producer: { kind: 'incumbent', matched: [], } as const, value: BLOCK, rendered: BLOCK, },],
           composite: { candidate: stray, contributions: [{ candidate: 1, changed: [0,], },], },
           priorFindings: [],
-        },),).toThrow(CompositeNotOnSlateError,);
-        expect(() => archiveBlockSelectionEvidence({
-          sourceText: SOURCE,
-          targetText: BLOCK,
-          blockText: BLOCK,
-          voices: [],
-          candidates: [{ producer: { kind: 'incumbent', matched: [], } as const, value: BLOCK, rendered: BLOCK, },],
-          composite: { candidate: stray, contributions: [{ candidate: 1, changed: [0,], },], },
-          priorFindings: [],
-        },),).toThrow('not one of the 1 candidate the judges are shown',);
+        },);
+        expect(strayEvidence,).toThrow(CompositeNotOnSlateError,);
+        expect(strayEvidence,).toThrow('not one of the 1 candidate the judges are shown',);
       },
     },),
     it({

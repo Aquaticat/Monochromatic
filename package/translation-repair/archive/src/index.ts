@@ -48,6 +48,12 @@ export {
   CompositeNotOnSlateError,
   withArchiveOriginal,
 } from './archive-block-selection-evidence.ts';
+export {
+  counted,
+  linesOf,
+  numbered,
+  sharedLines,
+} from './archive-composite-lines.ts';
 export { voicesAsRead, } from './archive-voices-as-read.ts';
 export {
   type ArchiveDispute,

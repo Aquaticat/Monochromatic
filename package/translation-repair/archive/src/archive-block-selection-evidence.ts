@@ -71,6 +71,11 @@ const COMPOSITE_ASSESSMENTS_NOTE = '. A composite candidate was proposed by no r
  */
 export class CompositeNotOnSlateError extends Error {
   /**
+   Message names a count only, never archive wording.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
    Builds refusal.
 
    @param slateSize - how many candidates the slate holds
