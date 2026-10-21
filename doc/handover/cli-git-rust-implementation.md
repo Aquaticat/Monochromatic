@@ -1962,6 +1962,16 @@ that is verification, not a decision for the user.
   intent guess; README and SPEC sections for the `hint` field; commit; release 0.2.7; the flaky-looking
   `a_termination_signal_during_a_hook_ends_the_commit_and_leaves_nothing` (exit None vs 143) needs a rerun on a quiet
   host before it is called a regression.
+  Hints work DONE 2026-10-21 (commit "every block and divergence guesses the user's intent and emits a hint"):
+  container gate 2098 passed, 5 skipped (log `~/temp/agent/hints-container.log`); host and binary suites green except
+  the two known real-linter tests that only the container runs. Additive `hint` JSONL field for findings, engine
+  failures, warn-unsafe, post-commit-blocked and replay-headers-dropped; text hints on the panic, push deadline and
+  flood, lock wait, worktree copy, cannot-start-Git and no-change-commit notices; add-explicit moved to a hint field.
+  README "Hints" and SPEC "Hints" added. Release 0.2.7 was started (release script
+  `~/temp/agent/release.ts`, logs `release-027.log` and `install-027.log`); verify crates.io shows 0.2.7 and that
+  `mise.lock` was reverted. Still open from the user's requirement: a binary-level hint test per remaining site
+  (the unit guard covers codes; sites outside event rendering are covered by their own unit pins only), and hints for
+  any message site found later. Mutation for the new files stays unrun by instruction.
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and
