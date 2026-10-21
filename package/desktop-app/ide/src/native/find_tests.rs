@@ -125,11 +125,14 @@ pub(super) fn replace_file(path: &Path, text: &str) {
 ///  `RefCell` checks borrows while running;
 ///  the sibling pair for threads is `Arc<Mutex<State>>`).
 /// Why:
-///  The reply arrives on the reload timer's schedule, after the first frame,
+///  The reply arrives on the reload timer's schedule,
+///  after the first frame,
 ///  and was still missing after the measurement pass in 28 of 160 runs of a probe under load on 2026-10-20.
 ///  It installs new styles and renders again,
 ///  which asks the worker for another tile and another pass,
-///  so a test that counted renders, compared frames, or waited for a failed tile met it in the middle of its steps.
+///  so a test that counted renders,
+///  compared frames,
+///  or waited for a failed tile met it in the middle of its steps.
 ///  Every fixture that opens a file waits here before it hands out its window.
 ///
 /// In TS you'd write (pseudocode):

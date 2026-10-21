@@ -40,6 +40,10 @@ use super::theme_tests::{rgba, switch};
 /// import { ColorScheme } from 'slint/private';
 /// ```
 use slint::private_unstable_api::re_exports::{ColorScheme, WindowInner};
+use slint::{
+    ComponentHandle, Rgba8Pixel, SharedPixelBuffer,
+    platform::{Key, PointerEventButton, WindowEvent},
+};
 /// What:
 ///  `Rgba8Pixel` is one pixel of four bytes;
 ///  `SharedPixelBuffer<Rgba8Pixel>` is a rendered frame
@@ -59,17 +63,15 @@ use slint::private_unstable_api::re_exports::{ColorScheme, WindowInner};
 ///  `sleep` blocks the calling thread for a span;
 ///  `Duration` is a span of time (sibling `Instant` is a point in time).
 /// Why:
-///  A right click is held for a chosen span, so the time between press and release is an input, not host load.
+///  A right click is held for a chosen span,
+///  so the time between press and release is an input,
+///  not host load.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// import { setTimeout as sleep } from 'node:timers/promises';
 /// ```
 use std::{thread::sleep, time::Duration};
-use slint::{
-    ComponentHandle, Rgba8Pixel, SharedPixelBuffer,
-    platform::{Key, PointerEventButton, WindowEvent},
-};
 
 /// What:
 ///  `steps: usize` is how many times Down is pressed (`usize` is the unsigned counting type;
@@ -104,7 +106,8 @@ fn menu(window: &AppWindow, steps: usize) {
 ///  a span of time (sibling `Instant` is a point in time).
 /// Why:
 ///  A menu entry of the toolkit runs on a pointer release that comes more than 300 ms after the entry was created
-///  (`widgets/common/menu-base.slint` in `i-slint-compiler`, the `up` branch of `pointer-event`).
+///  (`widgets/common/menu-base.slint` in `i-slint-compiler`,
+///  the `up` branch of `pointer-event`).
 ///  The hold makes the time between press and release a chosen input,
 ///  where it used to be the load the host happened to be under.
 ///
