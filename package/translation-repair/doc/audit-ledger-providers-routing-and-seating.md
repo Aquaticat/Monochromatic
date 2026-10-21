@@ -667,8 +667,11 @@ Status:
 found 2026-10-20 at 22:23 UTC by the first keyed call
 (run `zheermao18`,
 build `1dde8c5cd6`);
-the fix is being built in w242 on the owner's ruling,
-and this entry gains its commits when it lands.
+fixed on the owner's ruling
+(red `265cb0d224`,
+fix `05330e45c4`,
+docs `1c4c10b4d1`),
+landed as `5b5dca49a9` after gate g132.
 The NeuralWatt design read a `: cost` comment with `request_cost_usd` above zero as a request billed to the plan,
 marked the UTC day billed in the ledger
 and read the provider dry until 00:00 UTC.
@@ -742,3 +745,62 @@ a "the meter cannot see" limit names the endpoints read and what each lacked.
 Record:
 `doc/decision/translation-repair-neuralwatt-provider.md`,
 section "The day boundary and the account-wide count".
+
+### P18: a refused credential withheld the seat when another provider served it
+
+Status:
+found 2026-10-20 in the log of `zheermao19`;
+fixed in two rounds
+(red `5e07a8bb6d`,
+fix `786013e4b7`,
+guards `de44d19ea7`,
+docs `7863b003b1`;
+then red `987b4ef553`,
+fix `e9d0c5cd6f`,
+docs `d3c8727aad` and `f1f7c15d94`),
+landed as `624c5ff583` after gate g135
+(2657 pass and 0 fail,
+every step exit 0).
+The Amazon Bedrock key had expired,
+and every Bedrock call answered HTTP 401 "The security token included in the request has expired."
+The seat tally counted those as failed asks of the seat
+and withheld `gemma-4-26b-a4b-it` and `google.gemma-4-31b` for the whole run after 4 each,
+though both cards carry OpenRouter sides with no holds and OpenRouter was wet all run:
+no `SPEND provider=openrouter model=google/gemma...` line appears in the log.
+The consolidation then judged on three or four voices of seven.
+A credential belongs to a provider,
+not to a seat:
+one key serves every model on it.
+
+Withholding the seat was a default and not a ruling.
+B685 says "there is no rule for a 401",
+and the generic tally withheld any seat that threw on every one of its asks;
+the owner's rulings about Bedrock were not to top it up or renew it,
+and on 2026-10-20 to leave Bedrock off rather than issue a new key.
+
+Now one function that every provider call passes (`callHoldingRefusedCredential` in `provider/src/credential-hold.ts`)
+holds a provider out of every model for the run on a 401,
+the first ask and the cross-provider re-ask alike,
+and the seat goes to its next serving provider.
+The `SEAT CREDENTIAL REFUSED <model> on <provider>` line is written once per provider
+and names only the providers that can take the call now;
+a seat is withheld only when no provider serves it.
+The dryness view every reach reader takes reads a credential-held provider as dry,
+so the judge seats,
+short benches and quorum denominators stop counting a seat none of whose providers can be asked.
+`corpus-pass` builds one router per run (`corpus-pass-run.ts`),
+so a 401 is learned once per run;
+commands that build a client per arm or slice learn it once per client,
+a limit the provider README records.
+`google.gemma-4-e2b` has no provider but Bedrock and stays out.
+
+The cause is the family of B21 five,
+quorum denominators counting unreachable seats,
+reached from the provider side:
+a failure scoped to one provider's key was scoped to the seat.
+The rule for next time:
+a failure is scoped to the narrowest thing it names
+(a key to its provider,
+a model's refusal to that model on that provider,
+a request's size to that request),
+and a test pins the scope with a second provider that serves the same seat.

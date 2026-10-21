@@ -94,6 +94,17 @@ the select minimum and the naturalness review each hold a refused seat
 on a bench every seat of which answers and on the same bench with most seats refused,
 and `repair-edit-stages.unit.test.ts` the same number as the checker stage hands it on.
 
+A failure is scoped to the narrowest thing it names (P18):
+a refused key to its provider,
+a model's refusal to that model on that provider,
+a request's size to that request.
+The seat tally once counted a provider's HTTP 401 as failed asks of the seat
+and withheld two Gemma seats another wet provider served,
+so the consolidation judged on three or four voices of seven.
+A test of a scoped failure gives the seat a second provider that serves it
+and asserts the seat is heard from there.
+`credential-hold.unit.test.ts` and `provider-router.unit.test.ts` hold the case.
+
 ## Sheets every model reads
 
 What happened:
