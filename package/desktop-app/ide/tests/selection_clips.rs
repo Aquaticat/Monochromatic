@@ -11,6 +11,9 @@
 //! `native/tall_selection_tests.rs` shows the pixels.
 //! No window is opened.
 
+/// The palette of the tile:
+/// black text and red selected text.
+use ide_app::code_colors::CodeColors;
 /// The document under test and the position that selects a range.
 use ide_app::document::{Document, ReadingAffinity, ReadingPosition};
 /// The row height of the tile.
@@ -24,9 +27,6 @@ use ide_app::tile_scene::{
     read::{DrawnRun, drawn_runs},
     tile_items,
 };
-/// The palette of the tile:
-/// black text and red selected text.
-use ide_app::code_colors::CodeColors;
 
 /// A palette whose two inks differ,
 /// so every selected run is clipped.
@@ -97,7 +97,7 @@ fn a_selected_rows_clips_are_as_tall_as_the_row_and_not_the_tile() {
             clips += 1;
             let tall = bottom - top;
             assert!(
-                tall <= 3.0 * CODE_ROW + 2.0 && tall >= CODE_ROW,
+                (CODE_ROW..=3.0 * CODE_ROW + 2.0).contains(&tall),
                 "a clip {tall} px tall in a tile {height} px tall"
             );
         }
@@ -152,7 +152,9 @@ fn a_row_selected_end_to_end_is_drawn_once() {
 #[test]
 fn a_row_selected_in_its_middle_is_drawn_on_both_sides_and_inside() {
     let text = code(3);
-    let start = text.find("first_item: u32, second_item").expect("the text of line 0");
+    let start = text
+        .find("first_item: u32, second_item")
+        .expect("the text of line 0");
     let mut document = Document::new(&text);
     document.select(ReadingPosition {
         anchor: start,

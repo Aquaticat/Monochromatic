@@ -196,8 +196,15 @@ fn select_all_over_the_tallest_tile_of_the_test_device_draws_every_glyph() {
     let width = everything.width() as usize;
     let last = (lines - 2) * CODE_ROW as usize * width;
     let band = &everything.as_slice()[last..last + CODE_ROW as usize * width];
-    assert!(band.iter().any(|pixel| return pixel.a > 200 && pixel.r > 200));
-    assert!(!band.iter().any(|pixel| return pixel.a > 200 && pixel.r < 64));
+    assert!(
+        band.iter()
+            .any(|pixel| return pixel.a > 200 && pixel.r > 200)
+    );
+    assert!(
+        !band
+            .iter()
+            .any(|pixel| return pixel.a > 200 && pixel.r < 64)
+    );
 }
 
 /// A selection of every row of the tallest tile the device's own limit allows draws every glyph:
@@ -209,7 +216,9 @@ fn select_all_over_the_tallest_tile_of_the_real_device_draws_every_glyph() {
     install_uncapped_gpu_platform();
     let limit = texture_dimension();
     if limit < 16384 {
-        eprintln!("this host's GPU offers textures of {limit} pixels on a side, not 16384: nothing to prove");
+        eprintln!(
+            "this host's GPU offers textures of {limit} pixels on a side, not 16384: nothing to prove"
+        );
         return;
     }
     let lines = 16384 / CODE_ROW as usize;

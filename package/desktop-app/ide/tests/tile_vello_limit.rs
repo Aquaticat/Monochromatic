@@ -6,10 +6,11 @@
 //! That is 131,072 tiles,
 //!  33.5 million pixels,
 //!  128 MiB of `Rgba8Unorm`.
-//! A texture past it renders wrong with no failure bit set:
-//!  a 1113 by 16384 picture on a list of 4,194,304 elements differed from the reference by up to 184 levels in 290,992
-//!  bytes while the renderer reported `failed = 0`
-//!  (`doc/planning/ide-vello-buffer-sizes.md`, section "A silent corruption the failure bits do not cover").
+//! A texture past it renders wrong with no failure bit set,
+//!  as a picture 1113 pixels wide and 16384 tall did on a list of 4,194,304 elements:
+//!  290,992 bytes differed from the reference by up to 184 levels,
+//!  and the renderer reported that nothing had failed,
+//!  as `doc/planning/ide-vello-buffer-sizes.md` records in its section on silent corruption.
 //! The 64 MiB rule of `MAX_RASTER_BYTES` keeps every tile of the application below that floor,
 //!  and these tests keep the rule and the floor in step:
 //!  raising the rule,
@@ -82,7 +83,8 @@ fn no_accepted_tile_uses_more_than_three_quarters_of_the_command_list_floor() {
         set_texture_dimension(side);
         let mut columns: u64 = 1;
         while columns <= u64::from(side) {
-            let rows = tallest(columns).expect("a one pixel tall texture fits any width up to the side");
+            let rows =
+                tallest(columns).expect("a one pixel tall texture fits any width up to the side");
             assert!(texture_fits(columns, rows));
             assert!(!texture_fits(columns, rows + 1));
             let used = tiles(columns, rows);
