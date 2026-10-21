@@ -1293,23 +1293,47 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     (c) the `minimap_build` to `minimap_worker` rename stands (already in the code, `src/native/minimap_worker.rs`).
     Still open from that note: the stale `TEXTURE_DIMENSION` doc; dense-selection cost until full-height clipping in
     `split.rs` and `encode.rs` is fixed.
-    Agent `a4d54af4e63faea6b` (started 2026-10-21 after the owner's decision (a), its own worktree off `origin/main`,
-    branch push only) builds the stacked textures with a failing test first; its brief quotes `NLG`, `NLD` and `RXI`
-    and limits it to one full `test:native`; on its report I verify the numbers, scan `ps`, `podman ps` and
-    `systemctl --user list-units`, merge in a scratch worktree, run the gates once, land, and reinstall.
-    Stacked textures, report of the agent verified by me on a scratch merge (`a25a5b9eb2`, tip `06c1796c69` in
-    `~/temp/agent/land-stack`, not landed): `lint`, `test:native` 273 of 273, `test` 797 of 797, `test:bin`, `build`,
-    `inspect:software-renderer` pass. `inspect:source-guards`, which the agent had not run, proved four of its five
-    guards; `minimap-texture-top` expected the failure text "the composited column differs" while the removed guard
-    fails with "the composited column is blank", fixed by me to "the composited column" (commit `06c1796c69`, scratch
-    tree only until landed). Cadence A/B (release, `big.rs`, scroll, `matrix-load.mjs`, baseline `origin/main`): drag no
-    difference; scroll shows a one-frame identical frame at slot 35 in 11 of 13 stacked runs against 6 of 27 baseline
-    runs (floor included), baseline usually 0 identical frames, stacked 1 to 2, longest run 1. Owner rule: choppiness
-    is a defect, so the agent was resumed to find the cause and fix it or prove it is not the stacking. Not landed and
-    not installed until that is answered. Trees kept for it: `~/temp/agent/land-stack` (merged), `land-stack-base`
-    (baseline), `/tmp/ide-gpu-fixture`.
-    Open, in order: (1) stacked textures for a window taller than the texture limit (above); (2) the flake work, in `doc/handover/ide-native-flakes.md`: fixed with counts (refused-tile test 10 of 360 to
-    0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160 to 0 of 160); open:
+    LANDED 2026-10-21, stacked minimap textures (owner decision (a)): `main` is `cf58581533` (merge of the agent branch
+    tip `54a1e5089d` and my guard text fix, pushed explicitly from a scratch worktree; `origin/main` had gained only
+    translation and doc commits). A window taller than the device texture limit gets several textures, each at most
+    the device side and 64 MiB (`texture_rows` and `texture_runs` in `src/minimap/plan.rs`, one `Image` per texture in
+    `src/native/gpu_tile/slice.rs`, a `[MinimapSlice]` list in `ui/minimap.slint`); the defect test (12,000 px window
+    over a device capped at 8,192) failed before with "the picture is 8064 rows of a track of 11968", seam and
+    unsplit-render tests cover 3, 4 and 7 textures at scales 1 and 1.5, and mutation checks prove the one-row
+    placement faults are caught. My verification: the cadence A/B found a scroll hitch the agent's first version
+    caused (an identical frame at recorded slot 35 in 11 of 13 stacked runs against 6 of 27 baseline runs); the cause,
+    shown by intervention, is that every picture was given to the window as a new `VecModel`, so the markup rebuilt
+    every `Image` item inside a scroll-step frame. Fix `3247690ff8` changes the rows of the existing list in
+    place (guard test `a_picture_of_the_same_shape_changes_the_rows_of_the_list_and_never_replaces_it`, failing
+    commit `ee59d9630f`, source guard `minimap-slices-in-place` proven). Where the cost lands is not located: window
+    thread timing is the same in both trees, so it is outside that thread. The agent also found that runs where
+    highlighting times out (a load-dependent tree-sitter deadline) show a 30 px banner and move the hitch to slot 43;
+    my counts include 4 such runs, and the per-record mapping to artifact directories is probable, not certain.
+    Gates on the landed tree, once each: `lint` pass; `test:native` 274 of 274 (5 skipped, 174 s); `test` 797 of
+    797; `test:bin`, `build`, `inspect:software-renderer` pass; `inspect:source-guards` for the two changed guards
+    (`minimap-texture-top`, `minimap-slices-in-place`) baseline pass, removed fail, restored pass (the other 146
+    guards were not run in this pass). My guard text fix: `minimap-texture-top` expected "the composited column
+    differs" while the removed guard fails with "the composited column is blank"; the entry now matches the prefix
+    "the composited column". Cadence by `matrix-load.mjs` (release, `big.rs`, 1100x660, baseline `origin/main` before
+    the merge as A, fixed tree as B, alternating pairs, A against A for the floor): scroll, identical-frame runs in
+    A (floor included) 7 of 20 with 4 at slot 35, in B 3 of 10 with 1 at slot 35, longest identical run 1 in both;
+    drag, identical frames per run A 3, 9, 9, 5, 10 against B 5, 11, 6, 14, 4, longest run 1, no difference beyond the
+    floor. One identical frame at slots 35, 67, 99 or 130 remains in both trees: the extra redraw `picture.rs`
+    requests on handoff exists on `main` and was not explained or changed (open). Not run: display scale 2 or other
+    scales with a stack, devices with a texture limit above 8,192 (16,384 is common), a window of 17,000 px or more
+    (three textures were made by lowering the recorded limit), densest-text stacking, a look in a nested compositor
+    window, frame time of a 12,000 px window (about 24 chunk renders per picture on the window thread), cadence on a
+    quiet host (load average was 8 to 9 from other sessions).
+    Installed 2026-10-21: `~/.local/bin/monochromatic-ide` sha256 prefix `e1f2590ffadecc91`, equal to the release
+    build; the previous binary (`c0b8219d73bc1062`) is `monochromatic-ide.previous`. Removed: the agent branch (local
+    and remote), its worktree, my scratch worktrees and guard caches. Another session's mutation container
+    (`git-policy-native-mutation:m028b`) was running and is not ours.
+    Owner request 2026-10-21: "Check if depot can do the CI for this app. Early terminate on this depot testing task:
+    tell me whenever we encounter any kind of blocker and halt the depot testing task." The first blocker found stops
+    the task and is reported to the owner at once; nothing is worked around.
+    Open, in order: (1) the unexplained redraw on picture handoff in `src/native/minimap/picture.rs` (the remaining
+    identical frames; a cause by measurement first); (2) the flake work, in `doc/handover/ide-native-flakes.md`:
+    fixed with counts (refused-tile test 10 of 360 to 0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160 to 0 of 160); open:
     `find_box_context_menu_runs_each_entry`,
     the annotation stability tests (frames kept under `target/flake-frames/`), the minimap external-edit test (13 of 120
     on baseline), the highlighting-reply wait in `watch_tests::open`, `refresh_latency_tests`, `navigation_tests` and
