@@ -450,7 +450,7 @@ The fix makes the replacement decision read the untruncated length
  so collapse happens exactly when the value does not fit,
  monotonically.
  It keeps `test/configuration.js:660`'s threshold-20 contract.
- Eight pinned expectations in `test/assert.js`,
+ Nine pinned expectations in `test/assert.js`,
  `test/expect.js`, and `test/globalErr.js` that asserted the leaky partial
  renders were updated to the documented shape summaries
  (for example `expected [ Array(4) ] to equal [ Array(4) ]` where they
@@ -493,7 +493,7 @@ return value. A prototype against 78d9637 does this in
 `lib/chai/utils/inspect.js` (optional `truncate` argument) and
 `lib/chai/utils/objDisplay.js`; it keeps `test/configuration.js:660` green and
 makes the sweep above collapse at 20..41 and show the full listing at 145+.
-Eight expectations in `test/assert.js`, `test/expect.js`, and
+Nine expectations in `test/assert.js`, `test/expect.js`, and
 `test/globalErr.js` pinned the leaky partial renders and were updated to the
 documented shape summaries.
 
