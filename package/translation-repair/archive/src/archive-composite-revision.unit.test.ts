@@ -1,0 +1,577 @@
+/**
+ Tests the composite candidate the archive block review offers beside the
+ reviewers' whole revisions (ledger B712): when two or more revisions keep the
+ block's line count and change pairwise disjoint sets of its lines, the lines
+ they changed are applied to the block together and offered as one more
+ candidate, after the revisions and before the block as the archive wrote it.
+
+ Every case drives the real stage over a scripted bench, one reply per seat,
+ and reads the slate off the stage's own log line and the winner off the
+ outcome. Cat-themed invention throughout; no corpus content appears here.
+
+ @module
+ */
+
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+
+import { runArchiveBlockReviewStage, } from '../dist/final/node/index.mjs';
+import {
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+} from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
+import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixture/ts/hang-stop.test-fixture.ts';
+import { capturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
+import { SCRIPTED_STAGE_SETTINGS, } from '@monochromatic-dev/translation-repair-stage/ts/stage-settings.test-fixture.ts';
+import { scriptedClient, } from './scripted-review-client.test-fixture.ts';
+
+/** Four seats, so two revisions leave two judges with no stake in the composite. */
+const ROSTER = [
+  SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+  SEAT_SYNTHETIC_VISION_WITHHELD,
+  SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+] as const;
+
+/** The one answer that retains the block, which no block of these cases spells. */
+const RETAIN = 'retain';
+
+/** Original section, whose words a retention quotes. */
+const SOURCE = '猫在窗边安静地睡觉。';
+
+/** Four-line block under review. */
+const BLOCK = [
+  'The cat sleeps by the window.',
+  'It purrs at the birds.',
+  'It won an award last spring.',
+  'The dog barks at the mailman.',
+].join('\n',);
+
+/** Lines of the block, for building revisions of it. */
+const [LINE_1, LINE_2, LINE_3, LINE_4,] = BLOCK.split('\n',) as [string, string, string, string];
+
+/** Revision of the first line only. */
+const FIRST_LINE = [
+  'The cat naps by the window.',
+  LINE_2,
+  LINE_3,
+  LINE_4,
+].join('\n',);
+
+/** Revision of the third line only. */
+const THIRD_LINE = [
+  LINE_1,
+  LINE_2,
+  'It won a ribbon last spring.',
+  LINE_4,
+].join('\n',);
+
+/** The first two revisions' changed lines together. */
+const FIRST_AND_THIRD = [
+  'The cat naps by the window.',
+  LINE_2,
+  'It won a ribbon last spring.',
+  LINE_4,
+].join('\n',);
+
+/** Revision of the first line again, in other words, so it overlaps the first revision. */
+const FIRST_LINE_AGAIN = [
+  'The cat dozes by the window.',
+  LINE_2,
+  LINE_3,
+  LINE_4,
+].join('\n',);
+
+/** What a case read off the stage. */
+type Review = {
+  /**
+   Stage outcome.
+   */
+  readonly outcome: Awaited<ReturnType<typeof runArchiveBlockReviewStage>>;
+  /**
+   Every line the stage logged.
+   */
+  readonly lines: readonly string[];
+};
+
+/**
+ Runs the stage over a block, one answer per seat.
+
+ @param answers - what each seat of the roster answers, in roster order
+
+ @param best - candidate number every judge names
+
+ @param blockText - block under review
+
+ @param targetText - page the block stands at the start of; the block alone by default
+
+ @returns Outcome and log lines
+
+ @example
+ ```ts
+ const { outcome, lines, } = await review({ answers: [FIRST_LINE, THIRD_LINE, RETAIN, RETAIN,], best: 3, });
+ ```
+ */
+async function review(
+  {
+    answers,
+    best,
+    blockText = BLOCK,
+    targetText = blockText,
+  }: {
+    readonly answers: readonly string[];
+    readonly best: number;
+    readonly blockText?: string;
+    readonly targetText?: string;
+  },
+): Promise<Review> {
+  /**
+   Lines the stage logged.
+   */
+  const lines: string[] = [];
+  const outcome = await runArchiveBlockReviewStage({
+    client: scriptedClient({
+      prompts: [],
+      replyFor: function replyFor({ schema, modelId, },): unknown {
+        if (schema !== 'archive_block_review') {
+          return {
+            best,
+            reason: 'The candidate carries the fixes the others lack.',
+          };
+        }
+        /**
+         This seat's answer.
+         */
+        const answer = answers[ROSTER.indexOf(modelId as typeof ROSTER[number],)] ?? RETAIN;
+        if (answer === RETAIN) {
+          return {
+            disposition: 'source-supported',
+            sourceQuote: '窗边安静地睡觉',
+            replacementText: '',
+            finding: 'The original supports this block.',
+          };
+        }
+        return {
+          disposition: 'revise',
+          sourceQuote: '',
+          replacementText: answer,
+          finding: 'Some wording is unsupported.',
+        };
+      },
+    },),
+    modelIds: ROSTER,
+    sourceText: SOURCE,
+    targetText,
+    blockText,
+    blockOffset: targetText.indexOf(blockText,),
+    priorFindings: [],
+    signal: new AbortController().signal,
+    exchangeTimeoutMs: HANG_STOP_MS,
+    l: capturingLogger({ messages: lines, },),
+    fanOut: 'whole-bench',
+    stageSettings: SCRIPTED_STAGE_SETTINGS,
+  },);
+  return {
+    outcome,
+    lines,
+  };
+}
+
+/**
+ Whether the stage logged a line holding every part.
+
+ @param lines - lines the stage logged
+
+ @param parts - texts one line must hold together
+
+ @returns Whether a line holds them all
+ */
+function logged(
+  {
+    lines,
+    parts,
+  }: {
+    readonly lines: readonly string[];
+    readonly parts: readonly string[];
+  },
+): boolean {
+  return lines.some(function holdsAll(line,): boolean {
+    return parts.every(function holds(part,): boolean {
+      return line.includes(part,);
+    },);
+  },);
+}
+
+/**
+ The candidates count the stage logged for the slate.
+
+ @param lines - lines the stage logged
+
+ @returns The line saying how many candidates the judges compared
+ */
+function slateLine({ lines, }: { readonly lines: readonly string[]; },): string {
+  return lines.find(function isSlate(line,): boolean {
+    return line.includes('archive review: comparing',);
+  },) ?? '';
+}
+
+await describe({
+  name: 'archive composite revision',
+  children: [
+    it({
+      name: 'OFFERS THE LINES OF TWO REVISIONS THAT CHANGED DISJOINT LINES AS ONE CANDIDATE (ledger B712): the '
+        + 'composite is candidate 3, after the two revisions and before the block as the archive wrote it, and '
+        + 'wins when the judges name it',
+      fn: async () => {
+        const { outcome, lines, } = await review({
+          answers: [FIRST_LINE, THIRD_LINE, RETAIN, RETAIN,],
+          best: 3,
+        },);
+        expect(slateLine({ lines, },),).toContain('comparing 2 admissible revisions in 4 candidates',);
+        expect(outcome.kind,).toBe('revised',);
+        expect(outcome.text,).toBe(FIRST_AND_THIRD,);
+        // Its contributors, in the order the revisions stand, own the stake that discounts their ballots.
+        expect(logged({
+          lines,
+          parts: [`candidate 3 from composite(${ROSTER[0]} + ${ROSTER[1]}) won`,],
+        },),).toBe(true,);
+        expect(logged({
+          lines,
+          parts: [
+            'archive composite built',
+            '2 revisions',
+            'disjoint',
+          ],
+        },),).toBe(true,);
+        expect(outcome.findings.some(function recordsComposite(finding,): boolean {
+          return finding.startsWith('archive-composite-offered',) && finding.includes(ROSTER[0],);
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'KEEPS THE BLOCK AS THE ARCHIVE WROTE IT LAST: the judges naming candidate 4 retain the block',
+      fn: async () => {
+        const { outcome, lines, } = await review({
+          answers: [FIRST_LINE, THIRD_LINE, RETAIN, RETAIN,],
+          best: 4,
+        },);
+        expect(slateLine({ lines, },),).toContain('in 4 candidates',);
+        expect(outcome.kind,).toBe('retained',);
+        expect(outcome.text,).toBe(BLOCK,);
+      },
+    },),
+    it({
+      name: 'BUILDS NO COMPOSITE WHEN THE CHANGED LINES OVERLAP, and says which lines and which candidates: two '
+        + 'revisions of the first line',
+      fn: async () => {
+        const { outcome, lines, } = await review({
+          answers: [FIRST_LINE, FIRST_LINE_AGAIN, RETAIN, RETAIN,],
+          best: 1,
+        },);
+        expect(slateLine({ lines, },),).toContain('in 3 candidates',);
+        expect(logged({
+          lines,
+          parts: [
+            'archive composite not built',
+            'overlap',
+            'line 1',
+            'candidates 1 and 2',
+          ],
+        },),).toBe(true,);
+        expect(outcome.text,).toBe(FIRST_LINE,);
+      },
+    },),
+    it({
+      name: 'TREATS A LINE TWO REVISIONS CHANGE IDENTICALLY AS AN OVERLAP: agreeing on a line is no reason to '
+        + 'merge revisions that differ elsewhere, so no composite is built',
+      fn: async () => {
+        /** Revision changing the first line as the first revision does, and the last line as well. */
+        const sameFirstLineAndMore = [
+          'The cat naps by the window.',
+          LINE_2,
+          LINE_3,
+          'The dog howls at the mailman.',
+        ].join('\n',);
+        const { lines, } = await review({
+          answers: [FIRST_LINE, sameFirstLineAndMore, RETAIN, RETAIN,],
+          best: 1,
+        },);
+        expect(slateLine({ lines, },),).toContain('in 3 candidates',);
+        expect(logged({
+          lines,
+          parts: [
+            'archive composite not built',
+            'overlap',
+            'line 1',
+          ],
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'BUILDS NO COMPOSITE FROM THREE REVISIONS OF WHICH ONLY TWO ARE DISJOINT: choosing the pair would '
+        + 'make the shipped text depend on which reviewers happened to answer, so the judges choose among the '
+        + 'whole revisions and the block',
+      fn: async () => {
+        const { outcome, lines, } = await review({
+          answers: [FIRST_LINE, THIRD_LINE, FIRST_LINE_AGAIN, RETAIN,],
+          best: 1,
+        },);
+        expect(slateLine({ lines, },),).toContain('comparing 3 admissible revisions in 4 candidates',);
+        expect(logged({
+          lines,
+          parts: [
+            'archive composite not built',
+            'overlap',
+            'candidates 1 and 3',
+          ],
+        },),).toBe(true,);
+        expect(outcome.text,).toBe(FIRST_LINE,);
+      },
+    },),
+    it({
+      name: 'BUILDS A COMPOSITE FROM THREE DISJOINT REVISIONS, every changed line of every one of them',
+      fn: async () => {
+        /** Revision of the second line only. */
+        const secondLine = [
+          LINE_1,
+          'It chirps back at the birds.',
+          LINE_3,
+          LINE_4,
+        ].join('\n',);
+        const { outcome, lines, } = await review({
+          answers: [FIRST_LINE, THIRD_LINE, secondLine, RETAIN,],
+          best: 4,
+        },);
+        expect(slateLine({ lines, },),).toContain('comparing 3 admissible revisions in 5 candidates',);
+        expect(outcome.text,).toBe([
+          'The cat naps by the window.',
+          'It chirps back at the birds.',
+          'It won a ribbon last spring.',
+          LINE_4,
+        ].join('\n',),);
+      },
+    },),
+    it({
+      name: 'BUILDS NO COMPOSITE WHEN A REVISION HAS ANOTHER LINE COUNT, and says the counts: lines cannot be '
+        + 'matched against the block\'s',
+      fn: async () => {
+        /** Revision that adds a fifth line. */
+        const longer = `${THIRD_LINE}\nIt then naps again.`;
+        const { lines, } = await review({
+          answers: [FIRST_LINE, longer, RETAIN, RETAIN,],
+          best: 1,
+        },);
+        expect(slateLine({ lines, },),).toContain('in 3 candidates',);
+        expect(logged({
+          lines,
+          parts: [
+            'archive composite not built',
+            'candidate 2 has 5 lines',
+            'the block\'s 4',
+          ],
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'BUILDS NO COMPOSITE WHEN ONE OF THE REVISIONS IS A REMOVAL, which has no lines to match',
+      fn: async () => {
+        const { lines, } = await review({
+          answers: [FIRST_LINE, THIRD_LINE, '', RETAIN,],
+          best: 1,
+        },);
+        expect(logged({
+          lines,
+          parts: [
+            'archive composite not built',
+            'removal',
+          ],
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'READS A TRAILING NEWLINE AS A CHANGE TO THE LAST LINE: a revision that only adds one composes with '
+        + 'a revision of another line, and collides with a revision of the last line',
+      fn: async () => {
+        /** The first revision with a newline after the last line. */
+        const withNewline = `${THIRD_LINE}\n`;
+        const composed = await review({
+          answers: [FIRST_LINE, withNewline, RETAIN, RETAIN,],
+          best: 3,
+        },);
+        expect(composed.outcome.text,).toBe(`${FIRST_AND_THIRD}\n`,);
+        /** Revision of the last line. */
+        const lastLine = [
+          LINE_1,
+          LINE_2,
+          LINE_3,
+          'The dog howls at the mailman.',
+        ].join('\n',);
+        const collided = await review({
+          answers: [lastLine, `${LINE_1}\n${LINE_2}\n${LINE_3}\n${LINE_4}\n`, RETAIN, RETAIN,],
+          best: 1,
+        },);
+        expect(slateLine({ lines: collided.lines, },),).toContain('in 3 candidates',);
+        expect(logged({
+          lines: collided.lines,
+          parts: [
+            'archive composite not built',
+            'overlap',
+            'line 4',
+          ],
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'COUNTS AN EMPTY LINE AS A LINE: a block with a blank line between two paragraphs composes around it '
+        + 'and keeps it',
+      fn: async () => {
+        /** Two paragraphs with the empty line between them. */
+        const twoParagraphs = 'The cat sleeps.\n\nThe dog barks.';
+        const { outcome, } = await review({
+          answers: ['The cat naps.\n\nThe dog barks.', 'The cat sleeps.\n\nThe dog howls.', RETAIN, RETAIN,],
+          best: 3,
+          blockText: twoParagraphs,
+        },);
+        expect(outcome.text,).toBe('The cat naps.\n\nThe dog howls.',);
+      },
+    },),
+    it({
+      name: 'KEEPS CARRIAGE RETURNS WITH THEIR LINES: revisions of a CRLF block compose in CRLF, and a revision '
+        + 'that only rewrites every ending as a bare line feed changes every line and so collides',
+      fn: async () => {
+        /** The block with Windows endings. */
+        const crlf = BLOCK.replaceAll('\n', '\r\n',);
+        const composed = await review({
+          answers: [FIRST_LINE.replaceAll('\n', '\r\n',), THIRD_LINE.replaceAll('\n', '\r\n',), RETAIN, RETAIN,],
+          best: 3,
+          blockText: crlf,
+        },);
+        expect(composed.outcome.text,).toBe(FIRST_AND_THIRD.replaceAll('\n', '\r\n',),);
+        const normalized = await review({
+          answers: [FIRST_LINE.replaceAll('\n', '\r\n',), THIRD_LINE, RETAIN, RETAIN,],
+          best: 1,
+          blockText: crlf,
+        },);
+        expect(slateLine({ lines: normalized.lines, },),).toContain('in 3 candidates',);
+        expect(logged({
+          lines: normalized.lines,
+          parts: [
+            'archive composite not built',
+            'overlap',
+          ],
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'LEAVES OUT A REVISION EQUAL TO THE ARCHIVE: it changes no line, so it is no contributor and the '
+        + 'composite is of the others, while one revision beside it leaves nothing to combine',
+      fn: async () => {
+        const combined = await review({
+          answers: [FIRST_LINE, THIRD_LINE, BLOCK, RETAIN,],
+          best: 4,
+        },);
+        // The revision equal to the block is the block's own candidate, so the block is not added again.
+        expect(slateLine({ lines: combined.lines, },),).toContain('comparing 3 admissible revisions in 4 candidates',);
+        expect(combined.outcome.text,).toBe(FIRST_AND_THIRD,);
+        expect(logged({
+          lines: combined.lines,
+          parts: [`composite(${ROSTER[0]} + ${ROSTER[1]})`,],
+        },),).toBe(true,);
+        const alone = await review({
+          answers: [FIRST_LINE, BLOCK, RETAIN, RETAIN,],
+          best: 1,
+        },);
+        expect(slateLine({ lines: alone.lines, },),).toContain('comparing 2 admissible revisions in 2 candidates',);
+        expect(logged({
+          lines: alone.lines,
+          parts: [
+            'archive composite not built',
+            '1 of 2',
+          ],
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'OFFERS NO COMPOSITE OF ONE REVISION and logs nothing about one',
+      fn: async () => {
+        const { lines, } = await review({
+          answers: [FIRST_LINE, RETAIN, RETAIN, RETAIN,],
+          best: 1,
+        },);
+        expect(slateLine({ lines, },),).toContain('comparing 1 admissible revision in 2 candidates',);
+        expect(logged({
+          lines,
+          parts: ['archive composite',],
+        },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'WITHHOLDS A COMPOSITE THAT LEAVES A FOOTNOTE DEFECT NEITHER REVISION DOES: each drops one of the '
+        + 'note\'s two markers, which leaves the note referenced, and together they drop both',
+      fn: async () => {
+        /** Block citing the page\'s note on two lines. */
+        const cited = 'Cats[^1] nap.\nDogs bark.\nBirds[^1] sing.';
+        /** The page, with the note the block cites. */
+        const page = `${cited}\n\n[^1]: A note.`;
+        const { outcome, lines, } = await review({
+          answers: ['Cats nap.\nDogs bark.\nBirds[^1] sing.', 'Cats[^1] nap.\nDogs bark.\nBirds sing.', RETAIN, RETAIN,],
+          best: 1,
+          blockText: cited,
+          targetText: page,
+        },);
+        expect(slateLine({ lines, },),).toContain('comparing 2 admissible revisions in 3 candidates',);
+        expect(logged({
+          lines,
+          parts: [
+            'archive composite not built',
+            'footnote',
+          ],
+        },),).toBe(true,);
+        expect(outcome.findings.some(function refusesComposite(finding,): boolean {
+          return finding.startsWith('archive-revision-refused (composite(',);
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'KEEPS A MARKER ON A CHANGED LINE WHEN THE NOTE STAYS REFERENCED: revisions that reword lines '
+        + 'holding the marker compose',
+      fn: async () => {
+        /** Block citing the page\'s note on two lines. */
+        const cited = 'Cats[^1] nap.\nDogs bark.\nBirds[^1] sing.';
+        const page = `${cited}\n\n[^1]: A note.`;
+        const { outcome, } = await review({
+          answers: ['Cats[^1] doze.\nDogs bark.\nBirds[^1] sing.', 'Cats[^1] nap.\nDogs bark.\nBirds[^1] chirp.', RETAIN, RETAIN,],
+          best: 3,
+          blockText: cited,
+          targetText: page,
+        },);
+        expect(outcome.text,).toBe('Cats[^1] doze.\nDogs bark.\nBirds[^1] chirp.',);
+      },
+    },),
+    it({
+      name: 'WITHHOLDS A COMPOSITE THAT SHOWS A READER NOTHING though each revision shows something: each '
+        + 'blanks the paragraph the other keeps',
+      fn: async () => {
+        /** Two paragraphs. */
+        const twoParagraphs = 'The cat sleeps.\n\nThe dog barks.';
+        const { lines, } = await review({
+          answers: ['\u3164\n\nThe dog barks.', 'The cat sleeps.\n\n\u3164', RETAIN, RETAIN,],
+          best: 1,
+          blockText: twoParagraphs,
+        },);
+        expect(logged({
+          lines,
+          parts: [
+            'archive composite not built',
+            'shows a reader nothing',
+          ],
+        },),).toBe(true,);
+      },
+    },),
+  ],
+},);

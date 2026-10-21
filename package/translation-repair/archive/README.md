@@ -21,18 +21,23 @@ The groups that follow name the main ones.
 - Archive block review:
   review one archive block that no source block claims,
   where reviewers keep it on source or editorial support or revise it,
-  and judges choose between the revisions and the unchanged block;
+  and judges choose between the revisions, one composite of revisions that changed disjoint lines,
+  and the unchanged block;
   the evidence checks and the selection evidence for that choice.
+  The round waits the writers' straggler window, since each revision is a whole candidate.
   Names:
   `runArchiveBlockReviewStage`,
   `buildArchiveBlockReviewMessages`,
   `isVerifiableEditorialArchiveBlock`,
   `archiveBlockSelectionEvidence`,
-  `withArchiveOriginal`.
+  `withArchiveOriginal`,
+  `voicesAsRead`.
   Declared in `archive-block-review-stage.ts`,
   `archive-block-review-wire.ts`,
   `archive-block-evidence.ts`,
-  and `archive-block-selection-evidence.ts`.
+  `archive-block-selection-evidence.ts`,
+  `archive-composite-revision.ts`,
+  and `archive-voices-as-read.ts`.
 - Archive disputes:
   read off the repair lane's chunks the slices whose archive rendering the adjudicators accepted a claim against,
   say which text stands in for the archive there and which wordings the slice refuses,

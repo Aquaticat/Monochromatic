@@ -1,6 +1,12 @@
 # The straggler grace moves from 60 to 180 seconds, on the latency distribution
 
-## Current status, 2026-09-06
+## Current status, 2026-10-21
+
+The archive block review round also waits the writer window,
+a classification this session made and the owner has not confirmed
+(addendum 2026-10-21).
+
+## Status of 2026-09-06
 
 Three windows are built in,
 each the owner's:
@@ -638,3 +644,41 @@ same hard page,
 overlap 4,
 fresh roots,
 with contest completeness and actual page quality read beside normalized runtime.
+
+## Addendum 2026-10-21: the archive block review round is a writer round
+
+This session classified the archive block review round as a writer round under the owner's rule of 2026-09-06.
+The decision is open to the owner's veto.
+
+The reason is the owner's own:
+a cut writer voice is a whole candidate lost.
+The review asks each reviewer for the complete corrected block,
+so a `revise` reply is a whole candidate,
+and the window that cuts it takes that candidate from the judges.
+The 2026-09-06 decision listed the writer rounds as editor,
+refiner,
+translate and consolidate,
+and never mentioned the archive review,
+so the round ran under the 120000 ms round window by omission,
+not by a decision.
+In the run `zheermao20` the letter block's Qwen reply was cut at 243 s of a 360 s call deadline,
+120000 ms after quorum,
+and the block shipped without it.
+
+What changed:
+`archive-block-review-stage.ts` passes `grace.writerMs` to its gather,
+`archive-block-review` joins `WRITER_STAGE_LABELS`,
+and the `WRITER GRACE built in` line names it and says it joined on 2026-10-21.
+The selection round after the review is a reading of text that exists,
+one ballot in several,
+and keeps the round window.
+
+Not measured:
+whether the extra 60 seconds converts the cut into a rewrite or into a cap-cut empty reply
+(the same block in `zheermao19` ran its Qwen stream to the cap with no content),
+and how often a review round reaches the window.
+The cost is at most 60 seconds on a review round that has a straggler past 120 seconds,
+bounded by the 360000 ms call deadline.
+
+To veto:
+remove `archive-block-review` from `WRITER_STAGE_LABELS` and pass `grace.roundMs` again at the gather.

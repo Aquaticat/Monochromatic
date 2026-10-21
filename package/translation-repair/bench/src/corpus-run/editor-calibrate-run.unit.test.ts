@@ -313,7 +313,7 @@ await describe({
               `editor-calibrate: 1 slice, ${MODELS} models editing and judging each, 1 slice in flight`,
               'straggler window 1234ms (TRANSLATION_REPAIR_STRAGGLER_GRACE_MS override)',
               'WRITER GRACE OVERRIDDEN by TRANSLATION_REPAIR_WRITER_GRACE_MS: writer rounds (editor, refiner, '
-              + 'translate, produceConsolidations) abandon stragglers 60000ms after quorum rather than the 60000ms '
+              + 'translate, produceConsolidations, archive-block-review) abandon stragglers 60000ms after quorum rather than the 60000ms '
               + 'every other round waits',
             ],);
           },

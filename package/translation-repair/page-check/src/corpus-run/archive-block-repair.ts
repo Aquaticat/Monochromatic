@@ -38,7 +38,10 @@ export type ArchiveBlocksRepairOutcome = {
    */
   readonly targetText: string;
   /**
-   Operation-only findings safe for pass audit.
+   Audit findings in the order the blocks were reviewed (latest first). A block
+   whose review stage reported findings contributes a header naming the block
+   (`archive block review findings (N): <identity>`), the N findings as the
+   stage worded them, and then the line saying what became of it.
    */
   readonly findings: readonly string[];
 };
@@ -291,7 +294,7 @@ export async function repairArchiveBlocks(
     tag: repairArchiveBlocks.name,
   },);
   /**
-   Operation-only audit findings.
+   Audit findings in review order.
    */
   const findings: string[] = [];
   /* oxlint-disable no-restricted-syntax/no-function-root-let -- Reverse-offset sequential splicing carries each accepted correction forward. */
@@ -379,6 +382,45 @@ export async function repairArchiveBlocks(
       stageSettings,
     },);
     /* oxlint-enable no-await-in-loop */
+    // THE STAGE'S FINDINGS ARE KEPT (ledger B714): the voices it lost to the
+    // window, the revisions it withheld, the tally and what each reviewer
+    // said. They were dropped here, so a block whose review lost a writer
+    // recorded only that it was reviewed, and the artifact could not say that
+    // zheermao20's letter block lost Qwen twice. They stand ahead of the line
+    // saying what became of the block, under a header naming it, and each
+    // stays as the stage worded it so a count by wording still counts voices.
+    /**
+     What the stage reported for this block.
+     */
+    const { findings: reviewFindings, } = outcome;
+    /**
+     How many findings that is.
+     */
+    const reviewFindingCount = reviewFindings.length;
+    if (reviewFindingCount > 0) {
+      findings.push(
+        `archive block review findings (${String(reviewFindingCount,)}): ${identity}`,
+        ...reviewFindings,
+      );
+      /**
+       The findings, each quoted so one over several lines stays on one line
+       of the log.
+       */
+      const quotedFindings = reviewFindings
+        .map(function quoted(finding,): string {
+          return JSON.stringify(finding,);
+        },)
+        .join(', ',);
+      repairLog.info(
+        `block ${identity} review recorded ${String(reviewFindingCount,)} ${
+          wordForCount({
+            count: reviewFindingCount,
+            one: 'finding',
+            many: 'findings',
+          },)
+        }: ${quotedFindings}`,
+      );
+    }
     if (outcome.kind === 'retained') {
       findings.push(`archive block reviewed and retained: ${identity}`);
       continue;

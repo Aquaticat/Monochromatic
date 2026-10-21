@@ -12,6 +12,13 @@ import {
 // A WRITER ROUND LOSES A CANDIDATE; A READER ROUND LOSES A BALLOT. The editor,
 // refiner, translate and consolidate gathers ask each seat for text, and every
 // voice the window cuts is one fewer candidate for the judges to choose among.
+// THE ARCHIVE BLOCK REVIEW IS ONE TOO (ledger B713, 2026-10-21): each reviewer
+// answers with the complete corrected block, so a `revise` reply cut by the
+// window is a whole candidate lost, the very reason the writers wait longer. No decision had
+// classified that round, and it ran under the reader window; this session
+// classified it under the owner's rule, open to the owner's veto
+// (`doc/decision/translation-repair-straggler-grace.md`, addendum of
+// 2026-10-21). The selection round after it keeps the reader window.
 // The critic, panel, judge, checker and probe gathers ask eight or so seats for
 // a reading of text that already exists, and the last voice to arrive adds one
 // ballot to seven. The two are not the same wait, and the 2026-09-01 seating
@@ -68,6 +75,7 @@ export const WRITER_STAGE_LABELS: readonly string[] = [
   'refiner',
   'translate',
   'produceConsolidations',
+  'archive-block-review',
 ];
 
 /**
@@ -244,7 +252,8 @@ export function writerGraceOverrideNote(
     + `${String(grace.writerMs,)}ms after quorum rather than the ${String(grace.roundMs,)}ms every other round waits`;
 
   if (grace.source === 'built-in') {
-    return `WRITER GRACE built in: ${windows}, the owner's decision of 2026-09-06; `
+    return `WRITER GRACE built in: ${windows}, the owner's decision of 2026-09-06 `
+      + '(archive-block-review joined on 2026-10-21, open to the owner\'s veto); '
       + `${WRITER_GRACE_VAR} moves it for one launch`;
   }
   return `WRITER GRACE OVERRIDDEN by ${WRITER_GRACE_VAR}: ${windows}`;

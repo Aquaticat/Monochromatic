@@ -208,7 +208,9 @@ named for that subject and listed here.
   exits an outcome rule could not reach,
   records that dropped a round,
   work no floor could check,
-  and a consolidation under the vote minimum that kept the archive wording two judges called ineligible (B696).
+  a consolidation under the vote minimum that kept the archive wording two judges called ineligible (B696),
+  two archive block revisions of disjoint lines that could not both ship (B712),
+  and the review stage's findings that its caller dropped (B714).
 - [Audit ledger: composed operations and checks on a part](audit-ledger-composed-operations-and-partial-checks.md):
   One refusal inside a composed operation that stopped the whole,
   or left no finding,
@@ -237,7 +239,8 @@ named for that subject and listed here.
   child processes or process globals.
 - [Audit ledger: clocks and durations](audit-ledger-clocks-and-durations.md):
   Durations measured on the system clock,
-  and test bounds on the real clock a loaded machine could outrun.
+  test bounds on the real clock a loaded machine could outrun,
+  and the archive block review round that waited the readers' window for writer voices (B713).
 - [Audit ledger: output decided by arrival order](audit-ledger-output-decided-by-arrival-order.md):
   Findings,
   refusals and log lines whose content or order depended on which concurrent work ended first,
