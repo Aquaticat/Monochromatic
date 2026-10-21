@@ -14,7 +14,7 @@ import {
 // voice the window cuts is one fewer candidate for the judges to choose among.
 // THE ARCHIVE BLOCK REVIEW IS ONE TOO (ledger B713, 2026-10-21): each reviewer
 // answers with the complete corrected block, so a `revise` reply cut by the
-// window is a whole candidate lost, which is the reason above. No decision had
+// window is a whole candidate lost, the very reason the writers wait longer. No decision had
 // classified that round, and it ran under the reader window; this session
 // classified it under the owner's rule, open to the owner's veto
 // (`doc/decision/translation-repair-straggler-grace.md`, addendum of

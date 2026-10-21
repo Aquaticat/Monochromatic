@@ -607,3 +607,155 @@ Recurrence:
 none of an earlier entry.
 A rule that decides in the second ask of a round is not copied into the first,
 since the first is what lets a tie narrow to a run-off.
+
+## B712: two reviewers who fixed different lines of one archive block could not both ship
+
+Status:
+fixed on 2026-10-21 (UTC),
+red `49194af623`,
+fix `46f2959d96`.
+Found in the investigation of the letter block of `zheermao20`
+(`archive-block-whole-revision-investigation.md`).
+No cache version moved.
+
+What the run showed:
+the review asks each reviewer for the complete corrected block and tells each to change only what is wrong,
+`replacementCandidates` merges only byte-identical revisions,
+and `decideBestCandidate` returns one whole candidate.
+The letter block (36 lines) drew two revisions,
+one changing lines 3 and 6 to 9 (the cat and evil wording),
+the other lines 12, 13 and 26 (fearing death, scraping by, "as a trans woman" and the inclusive "us").
+The sets are disjoint,
+the judges named both sets of fixes real,
+and the slate had no text carrying both.
+The consolidation stage was built on the same argument for slices
+(`consolidate-wire.ts`: no selection can produce text that is neither candidate),
+and the archive review never applied it.
+
+The fix:
+`compositeOfDisjointRevisions` (`archive/src/archive-composite-revision.ts`) applies every revision's changed lines to the block
+and offers the result as one more candidate,
+with the existing `composite` producer naming the contributors in slate order,
+after the reviewers' revisions and before the block as the archive wrote it.
+It passes `revisionShapeFindings` and `revisionFootnoteFindings` under the label `composite(a + b)`,
+refuses a combined text that shows a reader nothing,
+and records the one built as the finding `archive-composite-offered (composite(...))`
+and one a gate refused under `archive-revision-refused`.
+The editor lane's composite (`editor-candidates.ts`) is assembled from per-envelope winners over a patch outcome,
+a different mechanism,
+so what is shared is the producer kind and the producer helpers (`describeProducer`, `producerModelIds`),
+and no body is copied.
+The log says at the decision point why no composite was built,
+with candidate numbers, line numbers and counts, never the archive's wording.
+
+Decisions taken in this session, open to the owner's veto:
+- A line count that differs on any revision that changes the block builds no composite,
+  rather than a composite of the revisions that match,
+  so the shipped text does not depend on which reviewers answered in a matching shape.
+  A removal is such a revision.
+- A line two revisions change is an overlap even when both change it identically.
+  Agreeing on a line is no reason to merge revisions that differ elsewhere,
+  and the only merge the slate trusts is of byte-identical whole revisions.
+- Three revisions of which two are disjoint build none.
+  Choosing the pair needs a rule,
+  and the only one to hand (roster order) makes the shipped text depend on who answered first.
+  The judges still choose among the whole revisions and the block.
+- A revision equal to the block changes no line.
+  It is no contributor and does not count toward the two a composite needs.
+- A line is the text through its line ending.
+  A carriage return stays with its line (CRLF composes as CRLF),
+  and a trailing newline is a change to the last line,
+  so it composes with a revision of another line and collides with a revision of the last.
+- The composite is candidate number three of four on a two-revision slate:
+  revisions in the order the stage hears them (round, then roster; `stage-quorum.ts`),
+  then the composite,
+  then the archive block.
+  Existing candidate numbers do not move,
+  and the block stays last as `withArchiveOriginal` appends it.
+
+The red commit holds seventeen cases over the real stage on a scripted bench;
+fifteen failed on the previous tree,
+on the slate size, the decision log line or the winning text,
+and none on a missing export.
+Two guards passed before and keep passing (one revision logs nothing; a slate of one is not a composite).
+The one case that first failed in the fix commit's own run used a zero-width space,
+which the slice grammar reads as a blank paragraph and the shape gate withheld before a composite was tried;
+it now uses a Hangul filler.
+
+Not measured:
+whether judges choose the composite.
+The investigation's census of stored `prompt-payloads/` for disjoint, line-preserving slates,
+and a replay of the zheermao20 select round with the composite,
+need paid calls or runs directories this worktree does not hold.
+A composite is text no model read as a whole,
+so a cross-line coherence problem (one word choice for a name across lines) is possible,
+and the judges may split their ballots across three revisions and decline.
+The composite would not have fixed the QQ sentence or the comfort lines of that block,
+which no heard reviewer named.
+
+Recurrence:
+`mistake-prevention-sheets-quorums-and-outcome-rules.md`,
+"Checks on one part of a composed text".
+
+## B714: the archive block review stage's findings were dropped by its only caller
+
+Status:
+fixed on 2026-10-21 (UTC),
+red `1d525f62cb`,
+fix `ae37ee5a97`.
+Found in the same investigation.
+No artifact schema version and no cache version moved.
+
+What the run showed:
+`runArchiveBlockReviewStage` returns its voice-loss findings,
+the revisions it withheld,
+the selection tally,
+the decline marker and each reviewer's stated reason,
+and `repairArchiveBlocks` read the outcome's kind and text and never its findings.
+The artifact of `zheermao20` carried `archive block reviewed and revised: block/14` and the count of blocks that remained,
+not that Qwen was cut twice or that the review lost a writer.
+It is the third dropped stage record after B142 and B162.
+
+The fix:
+each block whose stage reported findings contributes a header
+`archive block review findings (N): <identity>`,
+the N findings exactly as the stage worded them (so a count by their wording, `stage-voice-lost`, still counts voices),
+and then the existing line saying what became of the block.
+The pass log carries the same findings.
+They reach the artifact through `PassPreparation`'s `alignmentFindings` (`carryingPassFindings` in `pass-prepare.ts`).
+The stage's reviewer reasons and `select-self-vote` findings travel with them;
+the `Operation-only` wording of the TSDoc was dropped,
+since the findings the stage records for its own settlement have always included reviewer reasons
+and the stage's naturalness findings quote what a reviewer called awkward.
+
+Readers checked:
+`artifact-two-lane-read.ts` reads `alignmentFindings` as an array of strings of any content;
+`artifact-two-lane-verify.ts` compares the run's own copy to the preparation's,
+both taken from the same object in `document-lanes.ts`;
+`settled-tally.ts` prints its length;
+`repair-translation.ts` spreads it into the repair result's findings.
+No reader re-derives the list from the archive (the rebuild carves the stored archive text and does not rerun the review).
+`ARTIFACT_SCHEMA_VERSION_V19` is unmoved: the field is the same array of strings,
+and the addition is a vocabulary of findings, not a key.
+
+Cache account, measured:
+`mise run //package/translation-repair/slice-cache:cache-account-audit` on the tree at `46f2959d96`
+read eight versions
+(`CONSISTENCY_CACHE_VERSION` 6,
+`TRANSLATE_SLICE_CACHE_VERSION` 22,
+`REFINE_CACHE_VERSION` 11,
+`PAIRING_CACHE_VERSION` 3,
+`CONSOLIDATE_CACHE_VERSION` 28,
+`SLICE_CACHE_VERSION` 40,
+`PAGE_TITLE_CACHE_VERSION` 4,
+`LANE_CONTEST_CACHE_VERSION` 13),
+listed this session's commits as riding inside all eight,
+and found no slice-cache record in the worktree's runs directory (0),
+which is no evidence either way in a keyless worktree.
+The reasons none moves are from the source:
+the archive review is not cached and its result is not stored under any key;
+the straggler window is read by no key;
+`alignmentFindings` is hashed by no key;
+and the composite changes the archive text a pass ships,
+which `repairSliceKey` hashes as `targetText` and the pairing question key hashes as its target blocks,
+so keys move for exactly the entries whose archive block changed.
