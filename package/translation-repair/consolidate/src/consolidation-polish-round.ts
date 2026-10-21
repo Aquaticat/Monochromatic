@@ -173,6 +173,9 @@ export function reviewParagraphsOf(
  @param archiveDisputeNote - accepted claims against the archive rendering
  on a disputed slice, which the gate reads (ledger S12)
 
+ @param acceptedRepairClaimsNote - every claim the repair panel accepted for
+ the slice, which the gate reads beside the dispute note
+
  @param disputedWordings - wordings the slice refuses, which the rule refuses
  as the polished text as it does every other text on the slice (ledger B29)
 
@@ -213,6 +216,7 @@ export async function runConsolidationPolishRound(
     identityContext,
     referenceContext,
     archiveDisputeNote,
+    acceptedRepairClaimsNote,
     disputedWordings,
     mode,
     sliceIndex,
@@ -230,6 +234,7 @@ export async function runConsolidationPolishRound(
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly archiveDisputeNote?: string;
+    readonly acceptedRepairClaimsNote?: string;
     readonly disputedWordings?: readonly DisputedWording[];
     readonly mode: RefineStageMode;
     readonly sliceIndex: number;
@@ -443,6 +448,7 @@ export async function runConsolidationPolishRound(
       ...((identityContext === undefined) ? {} : { identityContext, }),
       ...((referenceContext === undefined) ? {} : { referenceContext, }),
       ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),
+      ...((acceptedRepairClaimsNote === undefined) ? {} : { acceptedRepairClaimsNote, }),
     },
     signal,
     exchangeTimeoutMs: perCallTimeoutMs,

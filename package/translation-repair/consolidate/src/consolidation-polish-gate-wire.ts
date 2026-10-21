@@ -195,6 +195,15 @@ export type ConsolidationPolishGateSubject = {
    note the consolidate gate read before approving the base (ledger S12).
    */
   readonly archiveDisputeNote?: string;
+
+  /**
+   The claims the repair panel accepted about this slice, whether or not
+   they dispute the archive, as the block `acceptedRepairClaimsNote` writes
+   them: the evidence the producers wrote against, which a judge deciding a
+   rewording of their text reads too (CuspariaKLSY21 slice 0, 2026-10-21).
+   Absent where the panel accepted nothing.
+   */
+  readonly acceptedRepairClaimsNote?: string;
 };
 
 /**
@@ -383,6 +392,7 @@ export function buildConsolidationPolishGateMessages(
       ...((subject.identityContext === undefined) ? [] : [subject.identityContext,]),
       ...((subject.referenceContext === undefined) ? [] : [subject.referenceContext,]),
       ...((subject.archiveDisputeNote === undefined) ? [] : [subject.archiveDisputeNote,]),
+      ...((subject.acceptedRepairClaimsNote === undefined) ? [] : [subject.acceptedRepairClaimsNote,]),
     ],
   },);
   /**
@@ -394,6 +404,19 @@ export function buildConsolidationPolishGateMessages(
     : [
       `${fence} ARCHIVE RENDERING DISPUTED ${fence}`,
       subject.archiveDisputeNote,
+      fence,
+      '',
+    ];
+  /**
+   What the repair panel accepted about the slice, fenced as the dispute note
+   is, or nothing where it accepted nothing.
+   */
+  const repairClaimsBlock = ((subject.acceptedRepairClaimsNote === undefined)
+      || (subject.acceptedRepairClaimsNote === ''))
+    ? []
+    : [
+      `${fence} REPAIR PANEL CLAIMS ACCEPTED ${fence}`,
+      subject.acceptedRepairClaimsNote,
       fence,
       '',
     ];
@@ -499,6 +522,7 @@ export function buildConsolidationPolishGateMessages(
         '',
         ...referenceBlock,
         ...disputeBlock,
+        ...repairClaimsBlock,
         ...communityBlock,
         ...objectionEvidence,
         `Return JSON: choice one of "polished", "base", "${CONTEST_REFUSAL}";`,

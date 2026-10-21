@@ -50,6 +50,9 @@ import {
  adjudicators disputed, whose repair text stands in for the archive (class
  one hundred seven)
 
+ @param acceptedRepairClaimNotes - the claims that panel accepted per slice,
+ which the final polish gate reads
+
  @param contests - lane contest records
 
  @param frontMatterSlices - syntax-bearing metadata positions
@@ -89,11 +92,13 @@ export async function runPassConsolidation(
     signal,
     overlap,
     archiveDisputes,
+    acceptedRepairClaimNotes,
     l,
     stageSettings,
   }: {
     readonly client: RunClient;
     readonly archiveDisputes?: ReadonlyMap<number, ArchiveDispute>;
+    readonly acceptedRepairClaimNotes?: ReadonlyMap<number, string>;
     readonly prepared: PreparedDocumentPair;
     readonly projected: ProjectedLanes;
     readonly contests: readonly ArtifactContestSlice[];
@@ -165,6 +170,7 @@ export async function runPassConsolidation(
       generation: pipelineDigest,
     },),
     ...((archiveDisputes === undefined) ? {} : { archiveDisputes, }),
+    ...((acceptedRepairClaimNotes === undefined) ? {} : { acceptedRepairClaimNotes, }),
     signal,
     perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
     overlap,

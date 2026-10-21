@@ -100,6 +100,9 @@ function objectionPolishFindings(
  @param archiveDisputeNote - accepted claims against the archive rendering
  on a disputed slice, for the gate (ledger S12)
 
+ @param acceptedRepairClaimsNote - every claim the repair panel accepted for
+ the slice, disputing or not, for the gate
+
  @param disputedWordings - wordings the slice refuses, which the polish may
  not land on any more than a proposal may (ledger B29)
 
@@ -140,6 +143,7 @@ export async function polishConsolidation(
     identityContext,
     referenceContext,
     archiveDisputeNote,
+    acceptedRepairClaimsNote,
     disputedWordings,
     sliceIndex,
     config,
@@ -159,6 +163,7 @@ export async function polishConsolidation(
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly archiveDisputeNote?: string;
+    readonly acceptedRepairClaimsNote?: string;
     readonly disputedWordings?: readonly DisputedWording[];
     readonly sliceIndex: number;
     readonly config?: ConsolidationPolishConfig;
@@ -192,6 +197,7 @@ export async function polishConsolidation(
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
     ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),
+    ...((acceptedRepairClaimsNote === undefined) ? {} : { acceptedRepairClaimsNote, }),
     ...((disputedWordings === undefined) ? {} : { disputedWordings, }),
     mode,
     sliceIndex,

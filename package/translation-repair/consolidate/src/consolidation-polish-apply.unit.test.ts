@@ -44,7 +44,7 @@ const DISPUTE_NOTE = 'ARCHIVE RENDERING DISPUTED: the adjudicators accepted 1 cl
  What the repair panel accepted about the slice, which no dispute covers.
  */
 const REPAIR_CLAIMS_NOTE = 'REPAIR PANEL CLAIMS ACCEPTED: the repair lane\'s adjudicators accepted 1 claim(s); the claims: '
-  + '(1) accuracy/mistranslation minor: "dozed" softens the tabby\'s nap.';
+  + '(1) accuracy/mistranslation minor: dozed softens the tabby\'s nap.';
 
 /**
  Client proposing one rewrite, recording each polish gate sheet.

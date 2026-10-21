@@ -4,7 +4,7 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { armCallDeadline, } from '@monochromatic-dev/translation-repair-provider/ts';
 import { monotonicMs, } from '@monochromatic-dev/translation-repair-markup/ts';
-import { archiveDisputesOfRepair, } from '@monochromatic-dev/translation-repair-archive/ts';
+import { repairClaimEvidenceOf, } from '@monochromatic-dev/translation-repair-archive/ts';
 import {
   type CorpusPair,
   entryArchiveOriginalOf,
@@ -428,8 +428,11 @@ async function runEntryPipeline(
       projected,
       contests: contestSlices,
       // THE SAME READING THE LANES MADE, so the consolidation's stand-in is
-      // the text the translate lane judged over (class one hundred seven).
-      archiveDisputes: archiveDisputesOfRepair({ repair: lanes.repair, },),
+      // the text the translate lane judged over (class one hundred seven),
+      // and beside it the claims the repair panel accepted, disputing the
+      // archive or not, for the polish gate that decides a rewording of the
+      // consolidated text (CuspariaKLSY21 slice 0, 2026-10-21).
+      ...repairClaimEvidenceOf({ repair: lanes.repair, },),
       frontMatterSlices,
       pictureReadings,
       entryCacheDir,

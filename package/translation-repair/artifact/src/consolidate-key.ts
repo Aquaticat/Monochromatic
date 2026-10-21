@@ -606,6 +606,9 @@ export function consolidateRunShape(
  @param archiveDisputeNote - the dispute note a disputed slice is settled
  under, absent on an undisputed one
 
+ @param acceptedRepairClaimsNote - the claims the repair panel accepted for
+ the slice, which the final polish gate reads, absent where it accepted none
+
  @returns Hash keying this slice's settlement
 
  @example
@@ -629,6 +632,7 @@ export function consolidateSliceKey(
     neighbouringIncumbentText,
     laneTexts = [],
     archiveDisputeNote,
+    acceptedRepairClaimsNote,
   }: {
     readonly runShape: string;
     readonly sourceText: string;
@@ -644,6 +648,7 @@ export function consolidateSliceKey(
     readonly neighbouringIncumbentText?: string;
     readonly laneTexts?: readonly LaneText[];
     readonly archiveDisputeNote?: string;
+    readonly acceptedRepairClaimsNote?: string;
   },
 ): string {
   return hashContent({
@@ -726,6 +731,17 @@ export function consolidateSliceKey(
         : [
           'dispute',
           archiveDisputeNote,
+        ]),
+      // THE ACCEPTED REPAIR CLAIMS, appended only when present, on the same
+      // terms as the dispute note: the polish gate of a slice the repair panel
+      // accepted claims on reads them (CuspariaKLSY21 slice 0, 2026-10-21), so
+      // it asks a different question from the same texts without them, and a
+      // slice the panel accepted nothing on keys as before.
+      ...(((acceptedRepairClaimsNote === undefined) || (acceptedRepairClaimsNote === ''))
+        ? []
+        : [
+          'repair-claims',
+          acceptedRepairClaimsNote,
         ]),
     ],),
   },);

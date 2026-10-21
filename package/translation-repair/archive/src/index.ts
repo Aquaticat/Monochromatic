@@ -56,6 +56,12 @@ export {
 } from './archive-composite-lines.ts';
 export { voicesAsRead, } from './archive-voices-as-read.ts';
 export {
+  acceptedRepairClaimNotesOf,
+  acceptedRepairClaimsNote,
+  acceptedRepairClaimsOf,
+  repairClaimEvidenceOf,
+} from './accepted-repair-claims.ts';
+export {
   type ArchiveDispute,
   archiveDisputeNote,
   archiveDisputeNotesOf,

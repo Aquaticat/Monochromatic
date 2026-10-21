@@ -482,5 +482,26 @@ await describe({
         );
       },
     },),
+
+    it({
+      name: 'SEPARATES A SLICE THE REPAIR PANEL ACCEPTED CLAIMS ON from one it accepted none on, and keys no '
+        + 'claims and an empty note alike, since the polish gate of the first reads them and the second\'s key '
+        + 'is what it always was (CuspariaKLSY21 slice 0, 2026-10-21)',
+      fn: async () => {
+        /**
+         Note naming one accepted claim.
+         */
+        const acceptedRepairClaimsNote = 'REPAIR PANEL CLAIMS ACCEPTED: (1) accuracy/mistranslation minor: dozed softens.';
+        expect(consolidateSliceKey(SLICE,),).not.toBe(
+          consolidateSliceKey({ ...SLICE, acceptedRepairClaimsNote, },),
+        );
+        expect(consolidateSliceKey({ ...SLICE, acceptedRepairClaimsNote: '', },),).toBe(
+          consolidateSliceKey(SLICE,),
+        );
+        expect(consolidateSliceKey({ ...SLICE, acceptedRepairClaimsNote, },),).not.toBe(
+          consolidateSliceKey({ ...SLICE, archiveDisputeNote: acceptedRepairClaimsNote, },),
+        );
+      },
+    },),
   ],
 },);
