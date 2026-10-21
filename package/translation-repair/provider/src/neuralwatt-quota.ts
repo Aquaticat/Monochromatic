@@ -430,7 +430,8 @@ const LATER_START_NOTE = 'the first reading of the run failed, so this compariso
 /**
  The sentence a run's end prints about plan energy.
 
- @param spend - result of `planSpendBetween`
+ @param spend - difference or reason for none, carrying `laterStartAt` where starting reading followed failed first read,
+ because comparison from later start must not read as covering whole run
 
  @returns Plain statement, with what the figure cannot see
 
