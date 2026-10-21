@@ -199,6 +199,51 @@ await describe({
         },
       },),
       it({
+        name: 'REFUSES A BAD OPTION IN PLAIN WORDS, naming the option and the valid forms, returns the stated-refusal '
+          + 'code, runs no sweep and prints no stack: an unknown option, a salt past the largest bench, a salt that '
+          + 'is no number and an option without a value',
+        fn: async () => {
+          /**
+           Each bad command line and the sentence it is refused with.
+           */
+          const refusals: readonly (readonly [readonly string[], string])[] = [
+            [['--nap', 'long',], 'rotation sweep: refused, --nap is not an option'],
+            [['--salt', '10',], 'rotation sweep: refused, --salt takes a whole number from 0 to 9, got 10'],
+            [['--salt', 'x',], 'rotation sweep: refused, --salt takes a whole number from 0 to 9, got x'],
+            [['--package',], 'rotation sweep: refused, --package needs a value'],
+          ];
+          for (const [args, sentence,] of refusals) {
+            /**
+             Lines written, and whether a sweep was started.
+             */
+            const out: string[] = [];
+            const err: string[] = [];
+            const started: boolean[] = [];
+            /* oxlint-disable no-await-in-loop -- each command line is refused on its own, one after the other */
+            const result = await rotationSweepMain({
+              args,
+              sweep: async function unasked(): Promise<SweepOutcome> {
+                started.push(true,);
+                return { results: [], redAtSaltZero: [], };
+              },
+              write: function takeOut({ line, },): void {
+                out.push(line,);
+              },
+              writeError: function takeErr({ line, },): void {
+                err.push(line,);
+              },
+            },);
+            /* oxlint-enable no-await-in-loop */
+            expect(result,).toBe(6,);
+            expect(started,).toStrictEqual([],);
+            expect(out,).toStrictEqual([],);
+            expect(err,).toStrictEqual([
+              `${sentence}; the options are --package <directory> and --salt <n>, each repeatable`,
+            ],);
+          }
+        },
+      },),
+      it({
         name: 'LETS A FAULT OF THE MACHINERY SURFACE WITH ITS STACK, an error out of the sweep itself being nobody\'s '
           + 'finding: it is thrown unchanged and nothing is refused',
         fn: async () => {
