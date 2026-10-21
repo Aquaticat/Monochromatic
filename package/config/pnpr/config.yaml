@@ -191,8 +191,8 @@ auth:
             - '@monochromatic-dev/translation-repair-typography'
             - '@monochromatic-dev/typeface-aquaticat'
 
-web:
-  enable: false
+ui:
+  enabled: false
 
 registries:
   monochromatic-dev:

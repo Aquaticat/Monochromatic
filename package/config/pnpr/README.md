@@ -40,7 +40,7 @@ Through this route,
    starts from the digest-pinned `ghcr.io/aquaticat/pnpr` image,
    bakes in `config.yaml`,
    and disables the install-accelerator surface.
-   That image is pnpr 0.1.0-alpha.11 with a fix for GitHub Actions OIDC publishes
+   That image is pnpr 0.1.0-alpha.16 with a fix for GitHub Actions OIDC publishes
    (`doc/troubleshooting/pnpr-oidc-github-actions-discovery.md`),
    published by `.github/workflows/pnpr-patched-image.yml`
    on branch `pnpr-oidc-workload-discovery` of `Aquaticat/pnpm`.
@@ -115,6 +115,10 @@ Coolify redeploys only when files under `package/config/pnpr/` change,
 To move to a newer pnpr,
  rebase `pnpr-oidc-workload-discovery` in `Aquaticat/pnpm` onto upstream and push it,
  then copy the `tag@digest` from that run's **pnpr image** notice into the `Containerfile` `FROM` line.
+A base newer than 0.1.0-alpha.11 also needs the generated `config.yaml` schema change in the same commit,
+ because Coolify bakes the config into the rebuilt image:
+ pnpr 0.1.0-alpha.16's schema names the web UI block `ui` (`enabled`) where our config had `web` (`enable`),
+ and the parser rejects unknown fields.
 Once an upstream release verifies GitHub workload tokens,
  return to the upstream image instead.
 
