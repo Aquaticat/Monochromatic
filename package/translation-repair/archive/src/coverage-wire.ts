@@ -87,7 +87,7 @@ ${HOUSE_POLICY_BLOCK}`;
  Reply-format instruction, kept LAST in the assembled sheet.
  */
 const COVERAGE_REPLY_RULE =
-  `Reply with JSON only: {"coverage": "full" | "partial" | "none", "quote": "<one span copied exactly from the English translation, or empty for none>", "reason": "<one sentence naming what the span states>"}`;
+  `Reply with JSON only: {"reason": "<one sentence naming what the span states>", "quote": "<one span copied exactly from the English translation, or empty for none>", "coverage": "full" | "partial" | "none"}`;
 
 /**
  What coverage does with a name the DECLARED NAMES block makes correct, after
@@ -398,18 +398,18 @@ export const COVERAGE_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
     schema: {
       type: 'object',
       required: [
-        'coverage',
-        'quote',
         'reason',
+        'quote',
+        'coverage',
       ],
       additionalProperties: false,
       properties: {
+        reason: { type: 'string', },
+        quote: { type: 'string', },
         coverage: {
           type: 'string',
           enum: [...COVERAGE_DEGREES,],
         },
-        quote: { type: 'string', },
-        reason: { type: 'string', },
       },
     },
   },

@@ -632,7 +632,13 @@ The block is worse than `zheermao20`'s and better than the archive's.
   "keep her for a little longer" run in one sentence).
   联系上了 is "reached",
   which is closer than `zheermao20`'s "reached out to".
-  D21 (`W`):
+  D21 (`W`;
+  WITHDRAWN on 2026-10-21 (UTC):
+  the source has a full stop and a comma at the two places,
+  so by the owner's dash ruling the dashes are not a defect,
+  see [the causes](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart-causes.md),
+  "Finding 7";
+  original text kept):
   the two `U+2014` characters,
   a house-style break (see the paragraph on em-dashes in "The page");
   `zheermao20` split the same content with commas and had none.
@@ -908,6 +914,18 @@ and its cause where the read gave none:
 cause not yet traced for every departure labelled `WD`,
 `WB` and `W`;
 the separate tracing reports in a later record.
+
+Traced on 2026-10-21 (UTC),
+original text kept ([the causes](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart-causes.md)):
+the opening quote (D02,
+D03 and D05) is the minimum selection weight working as written (finding 5,
+no class);
+the email (D12 to D19) is class A2,
+the whole-revision pick of the archive block review,
+which the composite candidate of ledger B712 addresses in the code that followed this build (finding 6);
+D21 is withdrawn (finding 7).
+The other departures labelled `WD`,
+`WB` and `W` stay untraced.
 
 
 ### What the page read did not do

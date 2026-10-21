@@ -33,6 +33,9 @@ The groups that follow name the main ones.
   `translate-ballot.test-fixture.ts` gives `candidateCarrying`,
   and `structural-ballot.test-fixture.ts` gives `ballot`.
   `tense-sheet.test-fixture.ts` and `sheet-fence.test-fixture.ts` read rendered sheets.
+  `reason-order.test-fixture.ts` gives `expectReasonFirstInSchema` and `expectReasonBeforeVoteInText`,
+  which require a ballot's schema and reply instruction to put the reason before the vote,
+  as the owner ruled on 2026-10-21.
 - Wire and failure pieces:
   `sse-frame.test-fixture.ts`,
   `anthropic-frames.test-fixture.ts` and `piece-response.test-fixture.ts` build streamed replies.

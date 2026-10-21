@@ -78,6 +78,12 @@ export const CONTEST_POLICY: string = [
 /**
  Builds the reply schema one contest asks for.
 
+ REASON FIRST (owner, 2026-10-21, "Reason first everywhere"), then the two
+ findings lists, then the choice and the archive answer, which the reason
+ precedes as the panel's does (owner, 2026-09-27, "Reason before vote"). The
+ reply is read by property name, so the order changes only what a model
+ writes first.
+
  NAMED PER CONTEST, because the schema name is what a provider log and a
  degradation finding call this stage, and two stages sharing one name are two
  stages nobody can tell apart afterwards.
@@ -130,7 +136,7 @@ export function contestResponseFormat(
       schema: {
         type: 'object',
         properties: {
-          choice: { type: 'string', },
+          reason: { type: 'string', },
           unsupported: {
             type: 'array',
             items: { type: 'string', },
@@ -139,14 +145,14 @@ export function contestResponseFormat(
             type: 'array',
             items: { type: 'string', },
           },
-          reason: { type: 'string', },
+          choice: { type: 'string', },
           ...archiveProperty,
         },
         required: [
-          'choice',
+          'reason',
           'unsupported',
           'dropped',
-          'reason',
+          'choice',
           ...archiveRequired,
         ],
       },

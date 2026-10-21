@@ -260,8 +260,17 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
  coverage verdict is read by insertion admission and not by this lane, and is accounted beside the translate version. Of the 12 run logs in the agent directory, none started on a tip that holds `89ff91202e`, where 13 was set, so none could
  write a record at 13 (the evidence of the logs' `START tip=` lines and `git merge-base --is-ancestor`, as the repair slice
  version gives it), and the number does not move.
+
+ 14 covers the contest ballot giving its reason before its choice (owner, 2026-10-21, "Reason first everywhere";
+ `e5bc27f9f0`): the schema and the instruction of the lane contest's sheet (`contest-ballot-wire.ts`, `lane-contest-wire.ts`)
+ declare `reason`, then the lists of unsupported and dropped content, then the choice, where the choice came first. The key hashes the version, the shape of the run and the texts, not the sheet and not the rule that reads the
+ ballots, so a record written before would be served after. Runs zheermao21 and CuspariaKLSY21 started on `3637592bd4`,
+ which holds the commit that set 13 (`git merge-base --is-ancestor`), so records may stand at 13 and the change
+ cannot ride inside it; no search of any slice-cache directory was made, and the number moves. The
+ consolidate version moves for the same ballot and for the polish gate tie rule and sheet (29); the polish gate tie rule and
+ the accepted claims block do not touch this lane. No record has been written at 14, which this change sets first.
  */
-export const LANE_CONTEST_CACHE_VERSION = 13;
+export const LANE_CONTEST_CACHE_VERSION = 14;
 
 /**
  Everything about this run that changes what the judges are ASKED, folded into

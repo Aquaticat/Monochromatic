@@ -36,7 +36,11 @@ a new commitment goes into the file whose subject it belongs to.
   markup atoms,
   neutral claims,
   the standing directive on quality,
-  and the run-offs.
+  the run-offs,
+  and the polish gate's tie.
+- [Design commitments: the rulings of 2026-10-21](design-commitments-rulings-of-2026-10-21.md):
+  the full record of the polish gate's tie rule
+  and of every ballot giving its reason before its choice.
 - [Design commitments: the consistency pass](design-commitments-consistency-pass.md):
   repeated source lines rendered one way,
   and the pass that carries words and leaves every mark where it was.

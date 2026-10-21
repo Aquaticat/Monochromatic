@@ -355,13 +355,13 @@ export const CANDIDATE_SELECT_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
     schema: {
       type: 'object',
       required: [
-        'best',
         'reason',
+        'best',
       ],
       additionalProperties: false,
       properties: {
-        best: { type: 'integer', },
         reason: { type: 'string', },
+        best: { type: 'integer', },
       },
     },
   },
@@ -503,7 +503,7 @@ export function buildCandidateSelectMessages(
           + `Answer ${String(CANDIDATE_NONE,)} for "best" when NO candidate is acceptable. `
           + `Declining is a real answer and is better than endorsing a candidate you would not ship; `
           + `${declineConsequence}.\n\n`
-          + `Reply with ONLY a JSON object of shape {"best": 1, "reason": "..."}. `
+          + `Reply with ONLY a JSON object of shape {"reason": "...", "best": 1}. `
           + `No prose, no code fences.`,
     },
     {

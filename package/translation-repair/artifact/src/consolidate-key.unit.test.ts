@@ -413,10 +413,13 @@ await describe({
         // Version 27 (2026-10-20) cuts a translators' note alone on a quoted
         // line with its line, which moved this literal.
         // Version 28 (2026-10-20) cuts the notes between translators from the
-        // sheet of the absolute naturalness review, which moved this literal to
-        // the value this expectation names.
+        // sheet of the absolute naturalness review, which moved this literal.
+        // Version 29 (2026-10-21) settles a polish gate tie to the polished
+        // text, shows the polish gate the claims the repair panel accepted, and
+        // has every ballot give its reason before its choice, which moved this
+        // literal to the value this expectation names.
         expect(consolidateSliceKey(SLICE,),).toBe(
-          'aba7f22d909359dfa408bafe16bd6ba4a34e049eb7fdef522c82a62784f7ab55',
+          '4546d17edd10323b0ccf5b4153c06d4fe90116bde9e520446c675b221a56c505',
         );
       },
     },),
@@ -479,6 +482,27 @@ await describe({
         );
         expect(consolidateSliceKey({ ...SLICE, laneTexts: [], },),).toBe(
           consolidateSliceKey(SLICE,),
+        );
+      },
+    },),
+
+    it({
+      name: 'SEPARATES A SLICE THE REPAIR PANEL ACCEPTED CLAIMS ON from one it accepted none on, and keys no '
+        + 'claims and an empty note alike, since the polish gate of the first reads them and the second\'s key '
+        + 'is what it always was (CuspariaKLSY21 slice 0, 2026-10-21)',
+      fn: async () => {
+        /**
+         Note naming one accepted claim.
+         */
+        const acceptedRepairClaimsNote = 'REPAIR PANEL CLAIMS ACCEPTED: (1) accuracy/mistranslation minor: dozed softens.';
+        expect(consolidateSliceKey(SLICE,),).not.toBe(
+          consolidateSliceKey({ ...SLICE, acceptedRepairClaimsNote, },),
+        );
+        expect(consolidateSliceKey({ ...SLICE, acceptedRepairClaimsNote: '', },),).toBe(
+          consolidateSliceKey(SLICE,),
+        );
+        expect(consolidateSliceKey({ ...SLICE, acceptedRepairClaimsNote, },),).not.toBe(
+          consolidateSliceKey({ ...SLICE, archiveDisputeNote: acceptedRepairClaimsNote, },),
         );
       },
     },),

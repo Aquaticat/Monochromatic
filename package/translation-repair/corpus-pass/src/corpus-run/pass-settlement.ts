@@ -55,6 +55,9 @@ export type PassSettlement = {
 
  @param archiveDisputes - slices whose archive rendering the repair lane disputed
 
+ @param acceptedRepairClaimNotes - the claims the repair lane's panel accepted
+ per slice, which the final polish gate reads
+
  @param frontMatterSlices - syntax-bearing metadata positions
 
  @param pictureReadings - paired OCR evidence
@@ -86,6 +89,7 @@ export async function runPassSettlement(
     projected,
     contests,
     archiveDisputes,
+    acceptedRepairClaimNotes,
     frontMatterSlices,
     pictureReadings,
     entryCacheDir,
@@ -100,6 +104,7 @@ export async function runPassSettlement(
     readonly projected: ProjectedLanes;
     readonly contests: readonly ArtifactContestSlice[];
     readonly archiveDisputes: ReadonlyMap<number, ArchiveDispute>;
+    readonly acceptedRepairClaimNotes?: ReadonlyMap<number, string>;
     readonly frontMatterSlices: ReadonlySet<number>;
     readonly pictureReadings: ReadonlyMap<string, PairedReading>;
     readonly entryCacheDir: string;
@@ -119,6 +124,7 @@ export async function runPassSettlement(
     projected,
     contests,
     archiveDisputes,
+    ...((acceptedRepairClaimNotes === undefined) ? {} : { acceptedRepairClaimNotes, }),
     frontMatterSlices,
     pictureReadings,
     entryCacheDir,
