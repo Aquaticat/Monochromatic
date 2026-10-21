@@ -34,6 +34,29 @@ const BYTE_KINDS: ReadonlySet<string> = new Set([
   'DataView',
 ],);
 
+/**
+ Kinds compared as one opaque value rather than walked key by key:
+ time and pattern kinds by their payload,
+ errors by name,
+ message,
+ and own enumerable keys,
+ boxed primitives by their inner value alone
+ (chai ignores extra boxed props),
+ and reference kinds by identity.
+ */
+const LEAF_KINDS: ReadonlySet<string> = new Set([
+  'null',
+  'Date',
+  'RegExp',
+  'Error',
+  'String',
+  'Number',
+  'Boolean',
+  'Promise',
+  'WeakMap',
+  'WeakSet',
+],);
+
 //region Value kinds
 
 /**
@@ -62,13 +85,23 @@ export function valueKind(value: unknown,): string {
     return 'null';
   if ((typeof value) !== 'object')
     return typeof value;
-  return Object.prototype
+  if (Array.isArray(value,))
+    return 'Array';
+  /**
+   Object tag of the value,
+   read after the real-array check since an object inheriting
+   `Array.prototype` claims `Array` without being one.
+   */
+  const tag = Object.prototype
     .toString
     .call(value,)
     .slice(
       TYPED_TAG_PREFIX_LENGTH,
       -1,
     );
+  return tag === 'Array'
+    ? 'ArrayLike'
+    : tag;
 }
 
 /**
@@ -108,9 +141,11 @@ export function valueRole(value: unknown,): 'text' | 'ordered' | 'unordered' | '
     return 'ordered';
   if ((kind === 'Map') || (kind === 'Set'))
     return 'unordered';
-  if (kind === 'Object')
-    return 'record';
-  return 'leaf';
+  if ((typeof value) !== 'object')
+    return 'leaf';
+  if (LEAF_KINDS.has(kind,))
+    return 'leaf';
+  return 'record';
 }
 
 //endregion Value kinds
@@ -236,7 +271,10 @@ function renderValueInner({
   if (kind === 'RegExp')
     return regExpText(value,);
   if (Error.isError(value,))
-    return errorText(value,);
+    return errorText({
+      value,
+      open: nested,
+    },);
   if ((kind === 'String') || (kind === 'Number')
     || (kind === 'Boolean'))
     return boxedText({
@@ -306,8 +344,13 @@ function functionText({ name, }: { readonly name?: string; },): string {
  @returns Entries by index
 
  @mutates value - `Array.from` may invoke an iterator or proxy trap.
+
+ @example
+ ```ts
+ arrayLikeEntries([1, 2,],); // [1, 2]
+ ```
  */
-function arrayLikeEntries(value: object,): readonly unknown[] {
+export function arrayLikeEntries(value: object,): readonly unknown[] {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- callers dispatch on `valueKind`, which returned 'Array', 'Arguments', or a typed-array class, all array-like at runtime
   return Array.from(value as ArrayLike<unknown>,);
 }
@@ -321,8 +364,13 @@ function arrayLikeEntries(value: object,): readonly unknown[] {
  @returns Byte values
 
  @mutates value - Buffer reads may invoke proxy traps.
+
+ @example
+ ```ts
+ byteEntries(new Uint8Array([1,],),); // [1]
+ ```
  */
-function byteEntries(value: object,): readonly number[] {
+export function byteEntries(value: object,): readonly number[] {
   if (value instanceof DataView)
     return [...new Uint8Array(
       value.buffer,
@@ -344,8 +392,13 @@ function byteEntries(value: object,): readonly number[] {
  @returns Map entries
 
  @mutates value - Map reads may invoke proxy traps.
+
+ @example
+ ```ts
+ mapEntries(new Map([[1, 'a',],],),); // Map { 1 => 'a' }
+ ```
  */
-function mapEntries(value: object,): ReadonlyMap<unknown, unknown> {
+export function mapEntries(value: object,): ReadonlyMap<unknown, unknown> {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- callers dispatch on `valueKind`, which returned 'Map'
   return value as ReadonlyMap<unknown, unknown>;
 }
@@ -359,8 +412,13 @@ function mapEntries(value: object,): ReadonlyMap<unknown, unknown> {
  @returns Set items
 
  @mutates value - Set iteration may invoke proxy traps.
+
+ @example
+ ```ts
+ setEntries(new Set([1,],),); // [1]
+ ```
  */
-function setEntries(value: object,): readonly unknown[] {
+export function setEntries(value: object,): readonly unknown[] {
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- callers dispatch on `valueKind`, which returned 'Set'
   return [...(value as ReadonlySet<unknown>)];
 }
@@ -495,16 +553,24 @@ function dateText(value: Date,): string {
 }
 
 /**
- Renders an error as `Name: message` so two errors differing only in message
- read apart on one line.
+ Renders an error as `Name: message` plus own enumerable keys so two
+ errors differing in a carried field read apart on one line.
 
  @param value - error-like value to render
 
+ @param open - containers still being rendered above the error
+
  @returns Error rendering
 
- @mutates value - `readProperty` reads may invoke getters or proxy traps.
+ @mutates value - `readProperty` reads and key reads may invoke getters or proxy traps.
  */
-function errorText(value: object,): string {
+function errorText({
+  value,
+  open,
+}: {
+  readonly value: object;
+  readonly open: readonly unknown[];
+},): string {
   /**
    Error name read defensively,
    falling back to the label every error-like value can claim.
@@ -521,9 +587,23 @@ function errorText(value: object,): string {
     source: value,
     key: 'message',
   },);
-  return `${(typeof label) === 'string'
+  /**
+   Head rendering naming the error class and its message.
+   */
+  const head = `${(typeof label) === 'string'
     ? label
     : 'Error'}: ${messageText(message,)}`;
+  /**
+   Own enumerable keys, which chai's deep equality compares on errors
+   alongside the name and message.
+   */
+  const carried = enumerableKeys(value,);
+  return carried.length === 0
+    ? head
+    : `${head} ${recordText({
+      value,
+      open,
+    },)}`;
 }
 
 /**

@@ -71,6 +71,16 @@ Version under test:
 `dsh --version` prints `0.2.1-alpha.4`
 from the mise npm install `npm-deepseek-ai-dsh` alpha v11.
 
+Still reproduces unchanged on `dsh` 0.2.1-rc.2
+(2026-10-21,
+mise npm install `npm-deepseek-ai-dsh` next v11/1483ad):
+every call that supplies `input` is rejected with the same message,
+including an empty object
+(`Tool.listTools` with `input: {}`),
+while `input` omitted
+(client `Slots.listSubTree`)
+returns normally.
+
 Harness:
 call `cordis_inspect_query` from a live session
 and compare input encodings.
@@ -78,10 +88,14 @@ and compare input encodings.
 Catalog that works cleanly:
 
 - `cordis_inspect_query` with `platform: host`,
-  `provider: Tool`, `method: listTools`, input omitted:
+  `provider: Tool`,
+  `method: listTools`,
+  input omitted:
   full tool list with parameter schemas.
 - `cordis_inspect_query` with `platform: host`,
-  `provider: Config`, `method: listConfigs`, input omitted:
+  `provider: Config`,
+  `method: listConfigs`,
+  input omitted:
   first page of the entry directory.
 
 Catalog that fails:
@@ -124,7 +138,8 @@ or entry id can run.
 ## Upstream filing decision
 
 `.out-of-scope/` holds no entry covering dsh tool marshaling
-(checked `bun-install.md`, `codex-harness.md`,
+(checked `bun-install.md`,
+`codex-harness.md`,
 and the other listed exemptions).
 The upstream repository is `deepseek-ai/deepseek-harness`
 (`packages/extensions/tool-cordis`,

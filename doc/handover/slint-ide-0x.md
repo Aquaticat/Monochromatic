@@ -1297,7 +1297,18 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     branch push only) builds the stacked textures with a failing test first; its brief quotes `NLG`, `NLD` and `RXI`
     and limits it to one full `test:native`; on its report I verify the numbers, scan `ps`, `podman ps` and
     `systemctl --user list-units`, merge in a scratch worktree, run the gates once, land, and reinstall.
-    Open, in order: (1) stacked textures for a window taller than the texture limit; (2) the flake work, in `doc/handover/ide-native-flakes.md`: fixed with counts (refused-tile test 10 of 360 to
+    Stacked textures, report of the agent verified by me on a scratch merge (`a25a5b9eb2`, tip `06c1796c69` in
+    `~/temp/agent/land-stack`, not landed): `lint`, `test:native` 273 of 273, `test` 797 of 797, `test:bin`, `build`,
+    `inspect:software-renderer` pass. `inspect:source-guards`, which the agent had not run, proved four of its five
+    guards; `minimap-texture-top` expected the failure text "the composited column differs" while the removed guard
+    fails with "the composited column is blank", fixed by me to "the composited column" (commit `06c1796c69`, scratch
+    tree only until landed). Cadence A/B (release, `big.rs`, scroll, `matrix-load.mjs`, baseline `origin/main`): drag no
+    difference; scroll shows a one-frame identical frame at slot 35 in 11 of 13 stacked runs against 6 of 27 baseline
+    runs (floor included), baseline usually 0 identical frames, stacked 1 to 2, longest run 1. Owner rule: choppiness
+    is a defect, so the agent was resumed to find the cause and fix it or prove it is not the stacking. Not landed and
+    not installed until that is answered. Trees kept for it: `~/temp/agent/land-stack` (merged), `land-stack-base`
+    (baseline), `/tmp/ide-gpu-fixture`.
+    Open, in order: (1) stacked textures for a window taller than the texture limit (above); (2) the flake work, in `doc/handover/ide-native-flakes.md`: fixed with counts (refused-tile test 10 of 360 to
     0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160 to 0 of 160); open:
     `find_box_context_menu_runs_each_entry`,
     the annotation stability tests (frames kept under `target/flake-frames/`), the minimap external-edit test (13 of 120
