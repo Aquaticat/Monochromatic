@@ -21,6 +21,78 @@ use std::{cell::RefCell, rc::Rc, time::Duration};
 const POLL: Duration = Duration::from_millis(20);
 
 /// What:
+///  How long a picture handed to the GPU waits for a frame that comes anyway before the window asks for one.
+/// Why:
+///  A scroll draws a frame at every step of the input,
+/// so a picture that arrives between two steps is drawn by the next one;
+/// a frame asked for at the hand-over is a second frame in that step's time,
+/// and the compositor shows the frames after it one step later,
+/// which reads as a step in which the text did not move.
+///  A frame period of a display at 50 Hz or more is shorter than this wait,
+/// so the picture is drawn by a frame of the scroll before the wait ends.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const FRAME_WAIT_MS = 20;
+/// ```
+const FRAME_WAIT: Duration = Duration::from_millis(20);
+
+/// How many frames were asked for to draw a picture,
+/// counted for the tests:
+/// a window that draws frames anyway must not ask for one.
+#[cfg(test)]
+pub(in crate::native) static PICTURE_FRAMES_ASKED: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+/// What:
+///  Ask for a frame to draw the picture just handed to the GPU,
+/// unless a frame draws it first.
+///  The request is made once `FRAME_WAIT` has passed and the picture is still waiting.
+/// Why:
+///  The GPU draws the picture just before a frame,
+/// and a picture changes no property the window watches,
+/// so an idle window would keep the old picture until something else drew a frame.
+///  A window that is already drawing frames,
+/// as a scroll does,
+/// draws the picture in the next one without a frame of its own.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function askForAFrameUnlessOneComes(window: AppWindow, state: Shared<State>): void;
+/// ```
+fn ask_for_a_frame_unless_one_comes(window: &AppWindow, state: &Rc<RefCell<State>>) {
+    // Measurement switch, to be removed: the frame asked for at once, as before.
+    if std::env::var_os("IDE_REDRAW_NOW").is_some() {
+        ask_for_a_frame(window);
+        return;
+    }
+    let weak_window = window.as_weak();
+    let weak_state = Rc::downgrade(state);
+    state
+        .borrow()
+        .minimap
+        .redraw
+        .start(TimerMode::SingleShot, FRAME_WAIT, move || {
+            let (Some(active), Some(shared)) = (weak_window.upgrade(), weak_state.upgrade()) else {
+                return;
+            };
+            let gpu = shared.borrow().gpu.clone();
+            if !gpu.minimap_waiting() {
+                return;
+            }
+            tracing::debug!("asking for a frame to draw a minimap picture no frame had drawn");
+            ask_for_a_frame(&active);
+        });
+}
+
+/// Ask the toolkit for a frame,
+/// which draws the picture waiting for one.
+fn ask_for_a_frame(window: &AppWindow) {
+    #[cfg(test)]
+    PICTURE_FRAMES_ASKED.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+    window.window().request_redraw();
+}
+
+/// What:
 ///  Hand a finished picture to the GPU when it is for the displayed text and not older than the one on screen;
 ///  otherwise count it as dropped.
 ///  This is the window thread's whole cost of a picture:
@@ -71,11 +143,7 @@ pub(in crate::native) fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, r
         // starts it at the row of the whole picture the worker built it from; the GPU sets these with the images
         // of its textures, which are as many as the device's texture limit asks for.
         gpu.submit_minimap(reply.chunks, reply.top);
-        // The GPU draws the picture just before the next frame, and a picture changes no property the window
-        // watches, so an idle window would keep the old picture until something else drew a frame.
-        if std::env::var_os("IDE_NO_PICTURE_REDRAW").is_none() {
-            window.window().request_redraw();
-        }
+        ask_for_a_frame_unless_one_comes(window, state);
     }
     tracing::debug!(
         id = reply.id,

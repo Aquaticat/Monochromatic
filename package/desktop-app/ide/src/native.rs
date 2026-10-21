@@ -188,6 +188,9 @@ mod minimap_reflection_tests;
 ///  equal one render of the picture.
 #[cfg(test)]
 mod minimap_seam_tests;
+/// A picture asks for a frame of its own only when no frame draws it first.
+#[cfg(test)]
+mod picture_frame_tests;
 /// The minimap's geometry,
 /// picture,
 /// and pointer paths.
