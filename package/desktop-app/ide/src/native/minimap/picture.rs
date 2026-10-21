@@ -1,9 +1,9 @@
 //! Taking in the finished pictures:
 //!  polling the worker's replies,
-//!  and setting on the window each one that is still valid for the displayed text.
+//!  and handing to the GPU each one that is still valid for the displayed text.
 
 /// The reply type of the worker.
-use crate::native::minimap_build::Reply;
+use crate::native::minimap_worker::Reply;
 /// The window,
 ///  its state,
 ///  and the displayed text's stamp.
@@ -21,10 +21,12 @@ use std::{cell::RefCell, rc::Rc, time::Duration};
 const POLL: Duration = Duration::from_millis(20);
 
 /// What:
-///  Set a finished picture on the window when it is for the displayed text and not older than the one on screen;
+///  Hand a finished picture to the GPU when it is for the displayed text and not older than the one on screen;
 ///  otherwise count it as dropped.
 ///  This is the window thread's whole cost of a picture:
-/// one comparison and one image setter.
+/// one comparison and the hand-over of a scene.
+///  The GPU draws the scene into the minimap's texture before the next frame
+/// and sets the image and its place on the window in the same step.
 /// Why:
 ///  A picture of an older text,
 /// or of an older request,
@@ -53,20 +55,25 @@ pub(in crate::native) fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, r
     #[cfg(debug_assertions)]
     {
         current.minimap.images_set += 1;
+        current.minimap.shaped += reply.stats.shaped as u64;
         current.minimap.last_stats = Some(reply.stats);
     }
+    let gpu = current.gpu.clone();
     drop(current);
-    let (width, height) = (reply.pixels.width(), reply.pixels.height());
-    if width == 0 || height == 0 {
+    if reply.chunks.is_empty() {
+        gpu.forget_minimap();
         window.set_minimap_image(Image::default());
+        window.set_minimap_picture_width(0.0);
+        window.set_minimap_picture_height(0.0);
+        window.set_minimap_picture_top(reply.top as f32);
     } else {
-        window.set_minimap_image(Image::from_rgba8_premultiplied(reply.pixels));
+        // The markup draws the picture at exactly this many physical pixels, so no pixel of it is resampled, and
+        // starts it at the row of the whole picture the worker built it from; the GPU sets these with the image.
+        gpu.submit_minimap(reply.chunks, reply.top);
+        // The GPU draws the slice just before the next frame, and a slice changes no property the window
+        // watches, so an idle window would keep the old picture until something else drew a frame.
+        window.window().request_redraw();
     }
-    // The markup draws the picture at exactly this many physical pixels, so no pixel of it is resampled, and starts it
-    // at the row of the whole picture the worker built it from.
-    window.set_minimap_picture_width(width as f32);
-    window.set_minimap_picture_height(height as f32);
-    window.set_minimap_picture_top(reply.top as f32);
     tracing::debug!(
         id = reply.id,
         top = reply.top,

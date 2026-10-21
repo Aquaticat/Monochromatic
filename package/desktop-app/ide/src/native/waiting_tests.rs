@@ -6,11 +6,16 @@
 //!  and calls `Waiting::step` in the body.
 //!  A condition that never holds fails the test with the message given to `step`.
 
+/// The window and the source state whose facts a failed wait names.
+use super::{AppWindow, State, tile_build::FAIL_NEXT_BUILD};
 /// Native timers and animations run only when the test advances them.
 use slint::platform::update_timers_and_animations;
 /// Deadlines and pauses between checks.
 use std::{
-    fmt::Display,
+    cell::RefCell,
+    fmt::{self, Display},
+    rc::Rc,
+    sync::atomic::Ordering,
     time::{Duration, Instant},
 };
 
@@ -150,5 +155,69 @@ impl Waiting {
     /// Time since the wait began.
     pub(super) fn elapsed(&self) -> Duration {
         return self.started.elapsed();
+    }
+}
+
+/// What:
+///  The tile and worker facts of a window,
+///  written when a failure message is formatted.
+/// Why:
+///  A flake that cannot be reproduced on demand must name,
+///  at the moment it fails,
+///  which tile was shown,
+///  which
+///  job and re-center were pending,
+///  how many tiles each side had built,
+///  and whether the failure switch was
+///  consumed,
+///  or the next occurrence says only that a number differed.
+///  The text is built only when the assertion fails,
+///  so a passing wait pays nothing.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// class Facts { toString(): string { return describe(this.window, this.source); } }
+/// ```
+pub(super) struct Facts<'a> {
+    /// The window whose properties are read.
+    pub(super) window: &'a AppWindow,
+    /// The source state of that window.
+    pub(super) source: &'a Rc<RefCell<State>>,
+}
+
+/// The facts as one line.
+impl Display for Facts<'_> {
+    /// Write the facts,
+    ///  or say that the state was borrowed.
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let Ok(current) = self.source.try_borrow() else {
+            return write!(formatter, "[state borrowed]");
+        };
+        return write!(
+            formatter,
+            "[scroll_y {} offset {} image_y {} first {} count {} shown {}+{} tile_job {} scroll_wanted {} \
+             renders {} tiles_painted {} images_set {} tiles_rendered {} gpu_pending {} worker_tiles {} \
+             applied {} discarded {} worker_failures {} fail_next_build {} error {:?}]",
+            self.window.get_scroll_y(),
+            current.offset,
+            self.window.get_image_y(),
+            current.first,
+            current.count,
+            current.shown.first,
+            current.shown.count,
+            current.tile_job.is_some(),
+            current.scroll_wanted.is_some(),
+            current.renders,
+            current.tiles_painted,
+            current.images_set,
+            current.gpu.tiles_rendered(),
+            current.gpu.has_pending(),
+            current.worker_tiles,
+            current.tiles_applied,
+            current.tiles_discarded,
+            current.worker_failures.len(),
+            FAIL_NEXT_BUILD.load(Ordering::SeqCst),
+            self.window.get_error_message().to_string(),
+        );
     }
 }

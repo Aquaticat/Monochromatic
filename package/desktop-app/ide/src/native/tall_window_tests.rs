@@ -30,7 +30,7 @@ use super::{
 use crate::native::waiting_tests::Waiting;
 /// The code row the raster edges are rounded to,
 /// and the limit one raster may not pass.
-use ide_app::{row_map::CODE_ROW, shaped_text::texture_dimension, text_raster::MAX_RASTER_BYTES};
+use ide_app::{row_map::CODE_ROW, shaped_text::MAX_RASTER_BYTES, shaped_text::texture_dimension};
 /// Toolkit events.
 use slint::{
     ComponentHandle, LogicalSize,

@@ -185,6 +185,9 @@ each uses an empty export as given.
     the paid per-token fallback the owner chose on
     2026-09-03 (`doc/decision/translation-repair-openrouter-fallback.md`).
     Optional and loud like the second.
+    The bench task `reader-measure` reads this key too,
+    and spends it:
+    one ask per matched picture over the zero-data-retention route (ledger B723).
     Every request carries `provider: { zdr: true, require_parameters: true, sort: 'price', ignore: [...] }`
     (`OPENROUTER_PROVIDER_PREFERENCES` and `openRouterProviderPreferencesFor` in
     `package/translation-repair/provider/src/openrouter-catalog.ts`),

@@ -395,6 +395,8 @@ which lists every file of this record.
 - [B715, folds and quote forms](audit-ledger-folds-and-quote-forms.md)
 - [B716, what each sheet shows](audit-ledger-what-each-sheet-shows.md)
 - [B717, defaults that stand in for an input](audit-ledger-defaults-standing-in-for-an-input.md)
+- [B718 to B720, provider streams, usage counts and retries](audit-ledger-provider-streams-usage-and-retries.md)
+- [B721 to B723, which seats a quorum counts](audit-ledger-which-seats-a-quorum-counts.md)
 - [B730, outcome rules and stage records](audit-ledger-outcome-rules-and-stage-records.md)
 - [B731 to B732, the polish gate's claims and the order of reason and vote](audit-ledger-polish-gate-claims-and-reason-order.md)
 - [B733, labels and counts in messages](audit-ledger-labels-and-counts-in-messages.md)

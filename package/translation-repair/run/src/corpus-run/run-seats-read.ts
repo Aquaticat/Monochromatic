@@ -505,6 +505,7 @@ export async function readPhaseSeats(
     checkers,
     translators,
     readers,
+    readersSeeing,
     writers,
     roster,
     withheld,
@@ -551,7 +552,7 @@ export async function readPhaseSeats(
     `JUDGE SEATS phase=${phase} ${states.join(' ',)} wide=${String(wideSeats.length,)} `
       + `select=${String(selectJudges.length,)} late=${String(lateJudges.length,)} `
       + `slate=${String(slateJudges.length,)} checkers=${String(checkers.length,)} `
-      + `translators=${String(translators.length,)} readers=${String(readers.length,)} `
+      + `translators=${String(translators.length,)} readers=${String(readers.length,)} seeing=${String(readersSeeing.length,)} `
       + `writers=${String(writers.length,)} roster=${String(roster.length,)} `
       + `withheld=${(withheld.length === 0) ? 'none' : withheld.join(',',)} `
       + `unserved=${(unserved.length === 0) ? 'none' : unserved.join(',',)} `

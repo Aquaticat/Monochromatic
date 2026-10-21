@@ -261,7 +261,11 @@ fn stop_when_idle(current: &mut State) {
 /// or count it as discarded.
 /// A failed build keeps the displayed tile on screen and names the failure,
 /// never falling back to a synchronous build.
-fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, reply: anyhow::Result<TileBuilt>) {
+pub(super) fn apply(
+    window: &AppWindow,
+    state: &Rc<RefCell<State>>,
+    reply: anyhow::Result<TileBuilt>,
+) {
     let built = match reply {
         Ok(built) => built,
         Err(error) => {

@@ -286,11 +286,11 @@ runCargo(['nextest', 'run', '--no-default-features', '--test', 'wrap', '--test',
 """
 
 [tasks."test:minimap"]
-description = "Run the minimap geometry and picture tests in the bounded container"
+description = "Run the minimap geometry and picture-scene tests in the bounded container"
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
-runCargo(['nextest', 'run', '--no-default-features', '--test', 'minimap', '--test', 'minimap_downscale', '--test', 'minimap_picture'])
+runCargo(['nextest', 'run', '--no-default-features', '--test', 'minimap', '--test', 'minimap_scene'])
 """
 
 [tasks."test:native"]
@@ -306,6 +306,18 @@ runCargo(['build', '--bin', 'ide-scripted-lsp'])
 const filter = process.env.usage_filter ? ['--no-capture', '--no-fail-fast', '--filter-expr', process.env.usage_filter] : []
 runBounded(['cargo', 'nextest', 'run', '--bin', 'monochromatic-ide', ...filter], { gpu: true })
 """
+
+[tasks."test:native:stress"]
+description = "Run filtered native tests many times at once in a GPU container limited to 2 CPUs and 2 GiB, and count failures per test (see bin/stress-native.ts)"
+usage = '''
+flag "--filter <expression>" help="Nextest filter expression, for example test(rows_arriving_in_view)"
+flag "--count <n>" default="20" help="Iterations each copy runs one after the other"
+flag "--copies <n>" default="4" help="Concurrent nextest invocations in the container"
+flag "--retries <n>" default="0" help="Nextest retries per test"
+flag "--threads <n>" default="2" help="Test processes each copy runs at once; the copies share 2 CPUs"
+flag "--deadline-minutes <n>" default="60" help="The container is removed after this long"
+'''
+run = "node bin/stress-native.ts --filter \"${usage_filter}\" --count \"${usage_count}\" --copies \"${usage_copies}\" --retries \"${usage_retries}\" --threads \"${usage_threads}\" --deadline-minutes \"${usage_deadline_minutes}\""
 
 [tasks."test:fonts"]
 description = "Exercise embedded font features and ligature selection through production geometry"
@@ -355,7 +367,7 @@ run = "node bin/check-nextest-config.mjs"
 
 [tasks."test:bin"]
 description = "Check the compositor version reader, the container bound, and the frame-pattern analysis of the bin scripts with node:test"
-run = "node --test bin/nested-compositor.test.mjs bin/container-bounds.test.ts bin/cadence.test.ts"
+run = "node --test bin/nested-compositor.test.mjs bin/container-bounds.test.ts bin/cadence.test.ts bin/stress-native-report.test.ts"
 
 [tasks."test:ignored"]
 description = "Run the gitignore matching unit tests, the tree and reader tests that carry its answers, and the rule file notification test"
@@ -375,14 +387,6 @@ shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 runCargo(['nextest', 'run', '--no-default-features', '--test', 'file_tree', '--test', 'file_tree_validation', '--test', 'file_tree_requests', '--test', 'directory_worker'])
-"""
-
-[tasks."test:raster"]
-description = "Compare repeated viewport pixels and report shape/raster stage timings"
-shell = "node --input-type=module-typescript -e"
-run = """
-{{vars.cargo}}
-runCargo(['nextest', 'run', '--no-default-features', '--test', 'raster_reuse', '--no-capture'])
 """
 
 [tasks."lint:clippy"]
@@ -480,7 +484,7 @@ description = "Check the vertical row mapping, virtual-row rules, inlay-hint and
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
-runCargo(['nextest', 'run', '--no-default-features', '--test', 'row_map', '--test', 'virtual_row', '--test', 'annotation', '--test', 'annotation_frame', '--test', 'annotation_layout', '--test', 'annotation_paint', '--test', 'annotation_placement', '--test', 'wrap_annotations', '--test', 'source_frame', '--no-capture'])
+runCargo(['nextest', 'run', '--no-default-features', '--test', 'row_map', '--test', 'virtual_row', '--test', 'annotation', '--test', 'annotation_frame', '--test', 'annotation_layout', '--test', 'annotation_placement', '--test', 'wrap_annotations', '--test', 'source_frame', '--no-capture'])
 """
 
 [tasks."test:annotations-native"]

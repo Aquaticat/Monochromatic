@@ -39,7 +39,7 @@ use ide_app::tile_scene::{
 use ide_app::wrap_sign::{SIGN_PAIRS, Sign, SignCoverage, choose_sign};
 /// Palette of the paint tests,
 /// and the limit of one tile texture.
-use ide_app::{code_colors::CodeColors, text_raster::MAX_RASTER_BYTES};
+use ide_app::{code_colors::CodeColors, shaped_text::MAX_RASTER_BYTES};
 
 /// Which symbols the fonts of a test show.
 enum Coverage {

@@ -58,6 +58,11 @@ less the ones held as unmeasured readers and the ones the owner culled.
 Each entry seats its readers off the meters
 (`package/translation-repair/corpus-pass/src/corpus-run/pass-seated-pictures.ts`),
 so a model withheld on the provider that would serve it reads nothing that entry.
+The bench is counted by the providers that can show a picture (`visionReachOf`),
+not by the ones that serve the model text,
+and the `JUDGE SEATS` line prints `seeing=` beside `readers=` (ledger B722).
+`gemma-4-26b-a4b-it` is listed as reading pictures on OpenRouter but held out of that reach by
+`openrouter-pictures-unmeasured` until `reader-measure` passes (ledger B721 and B723).
 Corroboration still requires independent agreement,
 and a declined reading is still asked again up to four times.
 The corpus-wide retry measurement predates the current reader roster
@@ -77,6 +82,21 @@ on one text-bearing asset asked six times per model,
 `hf:Qwen/Qwen3.6-27B` read it six times of six and `hf:moonshotai/Kimi-K3` twice of six,
 transcribing the same text either way.
 Re-asking costs about 20 extra calls over a corpus pass and recovers the roll case when it happens.
+
+A reply the length limit cut is the one empty reply that is asked again
+(since 2026-10-21,
+ledger B718).
+`glm-5.3-flash` on NeuralWatt spent its whole completion cap reasoning and answered `text:""` with
+`finishReason:"length"`,
+which says the call ran out of budget and nothing about the picture.
+The ask goes once more with the next reading perspective,
+to another wet provider that serves the model where the router has one,
+else to the same provider,
+and the log line names the picture,
+the finish reason,
+the provider that cut it and the route the second ask takes.
+A second empty reply stays `empty-reply`,
+and an empty reply that ended on `stop` is still asked once.
 
 ## What is sent, and what is not
 

@@ -1,8 +1,8 @@
 //! The minimap's worker thread:
-//! it builds the picture of the whole text off the window thread,
+//! it builds the scene of the picture of the whole text off the window thread,
 //!  newest request first,
-//! and hands the finished pixels back.
-//!  Its serving loop and the cache of rendered units are in `minimap_build/serve.rs`.
+//! and hands the finished scene back to be drawn by the GPU.
+//!  Its serving loop and the row cache are in `minimap_worker/serve.rs`.
 
 /// The row key of the vertical mapping a picture is built from.
 use super::rows::RowKey;
@@ -12,6 +12,8 @@ use anyhow::{Context, Result, bail};
 use ide_app::annotation::Mark;
 /// The annotation inks.
 use ide_app::annotation_layout::AnnotationColors;
+/// The palette whose inks the picture uses.
+use ide_app::code_colors::CodeColors;
 /// Canonical source,
 /// cloned as a rope snapshot.
 use ide_app::document::Document;
@@ -31,12 +33,10 @@ use ide_app::shaped_text::TextShaper;
 use ide_app::source_style::SourceStyles;
 /// Shaping choices a worker shaper must match.
 use ide_app::source_typography::SourceTypography;
-/// The palette whose inks the picture uses.
-use ide_app::text_raster::CodeColors;
+/// The scene and the size of the texture it is drawn into.
+use ide_app::tile_scene::TileScene;
 /// Blocks of virtual rows.
 use ide_app::virtual_row::Block;
-/// Pixel buffers that cross to the window thread.
-use slint::{Rgba8Pixel, SharedPixelBuffer};
 /// Owned snapshots and the newest-request flag are shared between the window thread and the worker.
 use std::{
     panic::{AssertUnwindSafe, catch_unwind},
@@ -192,15 +192,17 @@ pub(super) struct Job {
 }
 
 /// What:
-///  A finished picture of a request,
-/// with the row of the whole picture it starts at and what it cost.
+///  A finished picture of a request:
+/// the scene to draw,
+/// the row of the whole picture it starts at,
+/// and what it cost.
 /// Why:
 ///  The picture holds the bands near the visible part of the whole picture,
 /// so the window needs to know where it stands to place it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Reply = { id: number; key: Key; top: number; pixels: Pixels; stats: Stats; elapsed: number };
+/// type Reply = { id: number; key: Key; top: number; chunks: TileScene[]; stats: Stats; elapsed: number };
 /// ```
 pub(super) struct Reply {
     /// The request this answers.
@@ -210,8 +212,10 @@ pub(super) struct Reply {
     /// The row of the whole picture that the picture's first row is,
     /// in physical pixels.
     pub(super) top: u32,
-    /// Premultiplied pixels of the picture.
-    pub(super) pixels: SharedPixelBuffer<Rgba8Pixel>,
+    /// The scene of each chunk of the picture,
+    /// top first,
+    /// each with the size of the texture region it fills.
+    pub(super) chunks: Vec<TileScene>,
     /// What the build cost and left out.
     pub(super) stats: ide_app::minimap::Stats,
     /// Time from the start of the request to the end of this build.

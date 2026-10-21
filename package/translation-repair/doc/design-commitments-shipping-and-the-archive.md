@@ -1,0 +1,139 @@
+# Design commitments: shipping and the archive
+
+The commitments on what a run ships,
+what counts as a defect in a page,
+and what stays as the archive has it.
+
+Part of [Design commitments](design-commitments.md),
+which lists every file of these commitments.
+
+- **A placeholder in the archive is not content the pipeline preserves.**
+  `passArchiveText` (`corpus-run/pass-archive.ts`,
+  run inside `preparePassEntry`) folds invisible variants and then strips any paragraph
+  that is nothing but a stub token (`(To-Do)`,
+  `TODO`,
+  `TBD`,
+  `WIP`,
+  one layer of brackets,
+  any case) outside front matter,
+  HTML comments and code fences,
+  logging `archive: stripped stub marker ... at line N`.
+  Measured against the 92 English pages of the pinned corpus:
+  one such marker,
+  XIEPT2's,
+  which the pipeline had published over a finished translation.
+  HTML comments stay:
+  `entry-notes.ts` reads them as editor comments and a reader never sees them.
+  Decision:
+  `doc/decision/translation-repair-good-result-over-bad-original.md`.
+- **Whitespace Markdown renders the same is not a defect.**
+  Owner,
+  2026-09-27:
+  "There is no need to eliminate extra newlines,
+  because markdown doesn't care."
+  A run of blank lines where the archive has one,
+  or a wording whose edge newlines differ from its archive span's,
+  renders as the archive does,
+  so no pass,
+  floor or finding acts on it.
+  Spacing that changes rendering is another matter:
+  a list's items loose or tight (`list-spread-restore.ts`),
+  or two paragraphs joined by a single newline.
+  Carriage returns are kept apart by a second ruling:
+  asked whether this one retires `corpus-run/line-ending-fold.ts`,
+  which folds a model's CRLF to LF at page assembly (ledger A3),
+  the owner kept the fold on 2026-09-27.
+  The corpus reader already folds the archive to LF,
+  so the fold keeps each published page on one line-ending convention,
+  and a stray CR shows in diffs and tools even where Markdown renders it alike.
+- **A run always ships.**
+  Owner,
+  2026-09-27,
+  rejecting a `verify-published` that would refuse a run over a page no artifact records:
+  "One of the rules is no matter what,
+  we must ship."
+  A check reports what it finds and repairs what it can;
+  it never withholds a run's pages.
+  A page whose artifact a crash lost between the two writes (`publish-fixed.ts`) therefore ships,
+  reported as `PUBLISHED AND NOT SETTLED`;
+  measured on 2026-09-27,
+  no such page exists among the 214 pages in 372 run directories.
+  Asked the same day how the rule reaches the two findings that then still exited 1,
+  the owner chose repair and a clean exit:
+  a pass starting in a runs directory rewrites from its artifact any page that is missing
+  or that differs from what the artifact says ships,
+  and `verify-published` prints every finding and exits 0,
+  keeping its separate exit 2 for a run it could not read at all.
+  Following from the same two rules rather than from an answer,
+  a decline removes a page an earlier crash left for the entry,
+  so the archive ships as the archive's note says it must.
+  That question told the owner no page had ever disagreed with its artifact,
+  a count that had only checked pages exist (ledger M18).
+  Judged by the build of 2026-09-27,
+  77 of the 214 stored pages disagree,
+  every one written after the publish-time agreement check existed and so agreeing with its own build:
+  the would-ship reader applies `restoreTypography` when it reads,
+  and two later fixes there (class 181,
+  punctuation inside a closing quote;
+  class 147,
+  a nested quotation curled as a pair) account for 69 of them.
+  Told this,
+  the owner chose again,
+  the same day,
+  that a pass rewrites such pages to the running build's reading:
+  a page that does not parse stays as it was and is reported.
+  A pass meets an older build's pages only on a resume the operator opted into,
+  since the build-generation guard refuses one otherwise.
+- **A settled page ships with its defects reported.**
+  Owner,
+  2026-09-27,
+  asked whether the publish-time checks keep refusing a settled entry
+  (front matter,
+  sealed English originals,
+  contributor names,
+  link destinations,
+  merged headings,
+  and whether the page parses),
+  with the archive's page shipping in its place:
+  "Ship with the defect".
+  The page ships and each failed check is reported,
+  in the run log and on a line a grep over a pass totals;
+  a page that does not parse still refuses,
+  since it would break the site build.
+  Measured before the ruling:
+  seven real entries were refused for one dropped link destination each,
+  about 10.3 hours of settling discarded (ledger E1).
+  The check that a page carries what its artifact says ships joined them by a second answer:
+  asked the same day whether a page failing it,
+  which is a defect in the assembly code rather than in the text,
+  should still refuse with the archive's page shipping in its place,
+  the owner chose "Ship with defect reported".
+  It had fired in no real run (the 8 run logs naming it were all test suites).
+- **A slice with no valid wording keeps the archive's,
+  and the page ships.**
+  Owner,
+  2026-09-27,
+  asked whether an entry keeps stopping at once
+  when no wording for a slice passes the deterministic rule
+  (the lanes',
+  the consolidations' and the archive's,
+  or the archive has nothing there),
+  given that a stopped entry leaves the archive's whole page live,
+  that slice included:
+  "Keep archive,
+  ship".
+  The slice keeps exactly what the archive has there,
+  nothing where the archive is silent,
+  the page ships with every other repair,
+  and the slice is reported on the `DEFECTS` line.
+  This replaces the "else fail the slice at once" half of the rule of 2026-09-04;
+  its first half stands,
+  so a valid proposal is still preferred wherever one exists.
+  Measured before the ruling:
+  18 real entries stopped on this refusal from 2026-09-04 to 2026-09-27,
+  about 34.3 hours in all,
+  most on terminals later rulings already turned into shipping the slate's choice;
+  on the build of the ruling,
+  one real stop was of the kind still reachable (yulianNyanner,
+  `incumbent-only`,
+  0.48 hours).

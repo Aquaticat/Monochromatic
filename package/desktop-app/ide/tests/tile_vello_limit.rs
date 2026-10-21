@@ -19,10 +19,7 @@
 //! No window is opened.
 
 /// The rule and the texture side limit under test.
-use ide_app::{
-    shaped_text::{set_texture_dimension, texture_fits},
-    text_raster::MAX_RASTER_BYTES,
-};
+use ide_app::shaped_text::{MAX_RASTER_BYTES, set_texture_dimension, texture_fits};
 
 /// Elements of Vello 0.11's command list at its default size.
 const VELLO_PTCL_ELEMENTS: u64 = 1 << 23;

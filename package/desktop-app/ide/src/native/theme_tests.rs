@@ -58,7 +58,7 @@ use std::fs;
 ///  alpha);
 ///  siblings `Vec<u8>` and `&[u8]`.
 /// Why:
-///  The keyword ink pair pinned in `src/text_raster.rs` `ink` for role 1,
+///  The keyword ink pair pinned in `src/code_colors.rs` `ink` for role 1,
 ///  dark then light.
 ///
 /// In TS you'd write (pseudocode):

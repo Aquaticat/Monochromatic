@@ -115,7 +115,7 @@ const CLAIMS: readonly {
       'bedrock',
     ],
     reads: true,
-    holds: [],
+    holds: ['openrouter-pictures-unmeasured',],
   },
   {
     seat: SEAT_HYPER_ONLY,

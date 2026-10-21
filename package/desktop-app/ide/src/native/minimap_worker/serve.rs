@@ -1,7 +1,7 @@
 //! The serving loop of the minimap worker:
 //!  it takes the newest request,
-//! builds its picture,
-//!  and keeps the rendered units between requests.
+//! builds its scene,
+//!  and keeps the shaped lines between requests.
 
 /// The job,
 /// the key,
@@ -11,16 +11,11 @@ use super::{Job, Reply};
 /// Typography comparison shared with the tile worker.
 use crate::native::tile_build::same_typography;
 /// The picture build,
-/// its budgets,
-/// its cache,
+/// its row cache,
 /// and its inputs.
-use ide_app::minimap::{BUILD_WORK, Built, Cache, Cancel, Input, Scene, build, prepare};
+use ide_app::minimap::{Built, Cancel, Input, LineCache, Source, build};
 /// Shaping finds where wrapped lines break.
 use ide_app::shaped_text::TextShaper;
-/// The painter whose glyph cache the worker keeps.
-use ide_app::text_raster::TextRaster;
-/// Pixel buffers that cross to the window thread.
-use slint::{Rgba8Pixel, SharedPixelBuffer};
 /// The newest-request flag and the channels.
 use std::{
     sync::{
@@ -93,27 +88,23 @@ impl ReplySink for ChannelSink<'_> {
 }
 
 /// What:
-///  The shaper and the painter of the worker,
-///  what they were made for,
-///  and the units of the last picture.
+///  The shaper of the worker,
+///  what it was made for,
+///  and the shaped lines of the last pictures.
 /// Why:
-///  A change of typography replaces the shaper and empties the cache;
-///  another file or other classes empty the shaper's rows,
-/// which carry the classes' inks.
+///  A change of typography replaces the shaper and empties the row cache;
+///  the cache is keyed by what shaped each line,
+///  so another file or other classes need no flush of it.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// class Builder { shaper: TextShaper; raster: TextRaster; cache: Cache }
+/// class Builder { shaper: TextShaper; cache: LineCache }
 /// ```
 struct Builder {
     /// Font and layout resources owned by the worker thread.
     shaper: TextShaper,
-    /// Glyph images and scalers owned by the worker thread.
-    raster: TextRaster,
-    /// The units of the last picture.
-    cache: Cache,
-    /// The file generation and the address of the classes the shaper's rows were shaped for.
-    shaped_for: Option<(u64, usize)>,
+    /// The shaped lines of the last pictures.
+    cache: LineCache,
 }
 
 /// Build the replies of one job.
@@ -123,12 +114,6 @@ impl Builder {
         if !same_typography(self.shaper.typography(), &job.typography) {
             self.shaper = TextShaper::with_typography(job.typography.clone())?;
             self.cache.clear();
-            self.shaped_for = None;
-        }
-        let now = (job.key.stamp.file, job.key.styles);
-        if self.shaped_for != Some(now) {
-            self.shaper.forget_rows();
-            self.shaped_for = Some(now);
         }
         return Ok(());
     }
@@ -136,16 +121,11 @@ impl Builder {
     /// Hand one finished picture to `send`;
     ///  false when nobody receives it any more.
     fn reply(&self, job: &Job, built: Built, started: Instant, send: &mut dyn ReplySink) -> bool {
-        let pixels = SharedPixelBuffer::<Rgba8Pixel>::clone_from_slice(
-            &built.bytes,
-            built.width,
-            built.height,
-        );
         let reply = Reply {
             id: job.id,
             key: job.key,
             top: built.top,
-            pixels,
+            chunks: built.chunks,
             stats: built.stats,
             elapsed: started.elapsed(),
         };
@@ -154,10 +134,10 @@ impl Builder {
             elapsed_us = reply.elapsed.as_micros() as u64,
             top = reply.top,
             units = reply.stats.units,
-            rendered = reply.stats.rendered,
+            lines = reply.stats.lines,
+            shaped = reply.stats.shaped,
             reused = reply.stats.reused,
             skipped = reply.stats.skipped,
-            failed = reply.stats.failed,
             "minimap worker built a picture"
         );
         return send.deliver(reply);
@@ -178,7 +158,7 @@ impl Builder {
             return;
         }
         let cancelled = Superseded { newest, id: job.id };
-        let scene = Scene {
+        let source = Source {
             document: &job.document,
             styles: &job.styles,
             map: &job.map,
@@ -190,25 +170,15 @@ impl Builder {
             ranges: &job.ranges,
             active: job.active,
             wrap: job.wrap,
-            width: ide_app::shaped_text::raster_width(job.wrap),
             scale: job.scale,
         };
         let input = Input {
-            scene,
+            source,
             view: job.size.1,
             width: job.size.0,
             window: job.key.window.0..job.key.window.1,
         };
-        let prepared = prepare(&input);
-        let Some(done) = build(
-            &mut self.shaper,
-            &mut self.raster,
-            &input,
-            &prepared,
-            &mut self.cache,
-            BUILD_WORK,
-            &cancelled,
-        ) else {
+        let Some(done) = build(&mut self.shaper, &mut self.cache, &input, &cancelled) else {
             tracing::debug!(id = job.id, "a newer minimap request stopped the build");
             return;
         };
@@ -226,9 +196,7 @@ pub(super) fn serve(
     tracing::debug!("minimap worker started");
     let mut builder = Builder {
         shaper,
-        raster: TextRaster::new(),
-        cache: Cache::new(),
-        shaped_for: None,
+        cache: LineCache::default(),
     };
     while let Ok(mut job) = jobs.recv() {
         // Only the newest waiting request is built; an older one is dropped unbuilt.

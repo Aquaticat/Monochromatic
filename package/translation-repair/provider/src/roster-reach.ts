@@ -15,6 +15,7 @@ import type { ModelReach, } from './budget-routing.ts';
 import {
   OPENROUTER_DROPPED_SEATS,
   OPENROUTER_MODELS,
+  OPENROUTER_PICTURES_UNMEASURED,
   OPENROUTER_WITHHELD,
 } from './openrouter-catalog.ts';
 import {
@@ -417,6 +418,7 @@ function hyperShowsPictures(
  @param modelId - roster model to look up
 
  @returns Whether this provider serves it AND the listing reports vision for it
+ AND no hold keeps pictures off this route until they are measured
 
  @example
  ```ts
@@ -433,6 +435,11 @@ function openRouterShowsPictures(
 
   if ((!spelling.served) || OPENROUTER_WITHHELD.has(modelId,)
     || OPENROUTER_DROPPED_SEATS.has(modelId,))
+    return false;
+
+  // THE LISTING SAYS IMAGE, NO TRANSCRIPTION IS MEASURED HERE: a picture is
+  // not sent until the hold is lifted (`openrouter-pictures-unmeasured`).
+  if (OPENROUTER_PICTURES_UNMEASURED.has(modelId,))
     return false;
 
   /**

@@ -21,7 +21,7 @@ use ide_app::shaped_text::{
 /// and the items whose ink is read back.
 use ide_app::{
     code_colors::CodeColors,
-    text_raster::MAX_RASTER_BYTES,
+    shaped_text::MAX_RASTER_BYTES,
     tile_scene::{Item, paint_tile, tile_items},
 };
 

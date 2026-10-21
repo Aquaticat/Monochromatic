@@ -115,6 +115,7 @@ export {
   type DecisionsCard,
   type ModelCard,
   type NeuralWattCard,
+  type NeuralWattReasoningEffort,
   type OpenRouterCard,
   type SeatHold,
   type ServedCard,

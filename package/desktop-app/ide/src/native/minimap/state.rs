@@ -3,7 +3,7 @@
 
 /// The key the newest request and the picture on screen are valid for,
 ///  and the worker the window starts on first use.
-use crate::native::minimap_build::{Key, MinimapWorker};
+use crate::native::minimap_worker::{Key, MinimapWorker};
 /// The two timers the state owns:
 ///  one polls the worker's replies,
 ///  the other holds the quiet time.
@@ -85,6 +85,10 @@ pub(in crate::native) struct MinimapState {
     /// counted in debug builds.
     #[cfg(debug_assertions)]
     pub(in crate::native) dropped: u64,
+    /// Lines shaped for the pictures handed to the GPU,
+    /// summed in debug builds.
+    #[cfg(debug_assertions)]
+    pub(in crate::native) shaped: u64,
     /// The cost of the picture on screen,
     /// kept in debug builds.
     #[cfg(debug_assertions)]
@@ -114,6 +118,8 @@ impl MinimapState {
             images_set: 0,
             #[cfg(debug_assertions)]
             dropped: 0,
+            #[cfg(debug_assertions)]
+            shaped: 0,
             #[cfg(debug_assertions)]
             last_stats: None,
         };
