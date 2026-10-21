@@ -193,7 +193,12 @@ export async function runReaderMeasure(
   },);
   for (const line of renderMeasureReport({
     modelId: ask.modelId,
-    matched: rows.length,
+    matchedAssets: rows.map(function nameOf(row,): string {
+      return row.assetName;
+    },),
+    sample: ask.sample,
+    trustedRecords: records.length,
+    pictures: pictures.length,
     band,
     candidate,
     verdict: verdictOf({

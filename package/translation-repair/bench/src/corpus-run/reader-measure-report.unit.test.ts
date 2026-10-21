@@ -130,7 +130,9 @@ await describe({
         expect(lines,).toContain(
           'CANDIDATE: 6 readings; corroborated by all 0.90 (floor 0.80), corroborated by none 0.00 (ceiling 0.10).',
         );
-        expect(lines.join('\n',),).toContain('mean overlap 0.70',);
+        expect(lines,).toContain(
+          'OVERLAP: mean trigram overlap of the candidate\'s readings with the trusted readings 0.70.',
+        );
       },
     },),
 
@@ -176,7 +178,7 @@ await describe({
         expect(renderMeasureReport({
           ...BASE,
           matchedAssets: ['stray.webp', 'Mittens/a.webp',],
-        },),).toContain('ENTRIES: 2 matched pictures came from 2 entries: Mittens 1, (no entry directory) 1.',);
+        },),).toContain('ENTRIES: 2 matched pictures came from 2 entries: (no entry directory) 1, Mittens 1.',);
         expect(renderMeasureReport({
           ...BASE,
           matchedAssets: [],
@@ -235,7 +237,7 @@ await describe({
           verdict: { kind: 'inconclusive', produced: 3, },
         },).join('\n',);
         expect(text,).toContain('larger --sample',);
-        expect(text,).toContain('--sample 3',);
+        expect(text,).toContain('the sample of 3 ended the count at 3 matched pictures',);
         expect(text,).not.toContain('more trusted records are needed',);
       },
     },),
