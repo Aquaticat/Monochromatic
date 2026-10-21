@@ -1234,6 +1234,15 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     and the 131,072-tile rule, and could carry the patch through `[patch.crates-io]` if a larger target is ever
     needed. Note: at exactly 131,072 tiles the default `ptcl` has no dynamic room, so a scene needing one more chunk
     there fails loudly with bit 16.
+    LANDED 2026-10-20 (pushed as `6a44ec419f`; the IDE tree equals the one I verified: `lint`, `test:bin`, `build`,
+    `inspect:software-renderer` pass, `test:native` 15 of 15 at 264 tests under a load average of about 50; the first
+    push attempt failed twice, a hook message and then a plain non-fast-forward because others pushed, and the third
+    attempt after re-merging `origin/main` succeeded; the agent worktree, its local and remote branches and the scratch
+    worktree are removed, no strays). The IDE was reinstalled with the selection fix and the memory hint:
+    `~/.local/bin/monochromatic-ide` sha256 prefix `ab91c5f45960a4e7` (equal to the release build), previous binary
+    `monochromatic-ide.previous` (`80c27b37e4224602`). Before this install the shipped binary blanked or staled the code
+    view on a tall selection. I did not rerun the agent's cadence and memory measurements. The next paragraph is the
+    pre-landing state of this entry.
     Report in from agent `ae0713008b220a655` (selection fix and memory hint; verification in progress in the scratch
     worktree `~/temp/agent/ide-integrate2`, merged with `origin/main`): the bug reproduced in the SHIPPED app (release
     binary of `origin/main`, nested compositor, 1147x2000, `/tmp/ide-gpu-fixture/code.rs`): 30 to 39 selected rows are
