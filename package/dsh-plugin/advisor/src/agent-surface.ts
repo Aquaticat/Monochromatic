@@ -3,9 +3,13 @@
  pipeline reads. @module
  */
 
-import type {
-  Agent,
+import {
+  assembleContextFor,
+  type Agent,
 } from '@deepseek-ai/dsh-agent';
+import type {
+  AssembleContext,
+} from '@deepseek-ai/dsh-system-prompt';
 import type {
   WorkingDirectoryService,
 } from '@deepseek-ai/dsh-working-directory';
@@ -68,6 +72,9 @@ export function toDshAdvisorAgentSurface(
         session: agent.session,
         operation,
       },);
+    },
+    assembleContext: function assembleContext(signal?: AbortSignal): AssembleContext {
+      return assembleContextFor(agent, signal);
     },
   };
 }

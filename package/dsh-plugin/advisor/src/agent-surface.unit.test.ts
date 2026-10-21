@@ -74,5 +74,34 @@ await describe({
         await surface.whenIdle();
       },
     },),
+    it({
+      name: 'carries the agent identity and signal in the assembly context',
+      fn: async () => {
+        const agent = {
+          session: {
+            deriveMessages: () => [],
+          },
+          options: {
+            provider: 'route',
+            model: 'model-id',
+          },
+        } as unknown as Agent;
+        const surface = toDshAdvisorAgentSurface({
+          agent,
+          workingDirectory: {
+            get: (): string => '/work/dir',
+          } as unknown as ProjectOptions['workingDirectory'],
+        },);
+        const controller = new AbortController();
+        const context = surface
+          .assembleContext(controller.signal,);
+        expect(context.agent,).toBe(agent,);
+        expect(context.scope,).toBe(agent,);
+        expect(context.signal,).toBe(controller.signal,);
+        const withoutSignal = surface
+          .assembleContext();
+        expect(withoutSignal.signal,).toBe(undefined,);
+      },
+    },),
   ],
 },);

@@ -69,6 +69,7 @@ function commandFixture(
       options: {},
       whenIdle: () => Promise.resolve(),
       appendOperationRecord: () => undefined,
+      assembleContext: () => ({}),
     },
     restrictions,
   } as unknown as RunDshAdvisorCommandOptions & {

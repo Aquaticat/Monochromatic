@@ -638,6 +638,32 @@ unknown slug, ambiguous slug, empty scope, and disabled-session errors
 all produce the exact parity strings,
 which needs no credentials and no model call.
 
+### Measured fixture findings (2026-10-20)
+
+Wiring each fixture needs three additions recorded in
+[`dsh-fixture-profile-plugin-verification.md`](../troubleshooting/dsh-fixture-profile-plugin-verification.md):
+inserted rows `cordis-host-runner`, `cordis-inspect-providers`, and `tool-cordis`;
+a disposable LLM overlay;
+and provider keys exported from the launching environment.
+
+Fixture 1 exposed a plugin defect:
+every `advisor` tool call failed with
+`prompt variable "{{model}}" has no value for this assembly`
+(section `deployment:persona-prefix`),
+because `buildDshAdvisorProjectContext` called `systemPrompt.assemble()`
+without the agent assembly context the prompt variables read.
+Fixed in `85434d0c40` via `DshAdvisorAgentSurface.assembleContext`,
+which forwards `assembleContextFor` from `@deepseek-ai/dsh-agent`.
+
+Measured: agent sessions expose no command-invocation surface
+(no command tool or commands service),
+so `/advisor` parity checks in this plan run at the user boundary
+(verification in the web GUI chat input after Q10),
+and fixture runs cover the tool surface only.
+Fixture config observability is limited likewise:
+the tool result reports the chosen reviewer model,
+while `/advisor status` config echo needs command dispatch.
+
 ### Q10 live install and rollback
 
 1.  After fixture checks pass:
@@ -645,10 +671,16 @@ which needs no credentials and no model call.
     with `target` set to the absolute `package/dsh-plugin/advisor` directory.
 2.  Read `application` and `warnings` from the result;
     `application: applied` is the live signal.
-3.  Confirm the new rows with approval-free `cordis_inspect_query`
-    (`Config.listConfigs`, `Tool.listTools`),
-    not `list_plugins`.
-4.  Exercise `/advisor status` in the live session (no provider call needed).
+3.  Confirm the new rows.
+    The filtered `cordis_inspect_query` check is blocked by the
+    harness-wide input coercion recorded in
+    [`dsh-cordis-inspect-query-input-coerced-to-string.md`](../troubleshooting/dsh-cordis-inspect-query-input-coerced-to-string.md),
+    so this step deviates from the inspect preference toward
+    `plugin_manager` `list_plugins`/`list_bundles`
+    plus an unfiltered `Tool.listTools` call.
+4.  Exercise `/advisor status` at the user boundary
+    in the web GUI chat input (no provider call needed),
+    the VB1 trigger for command capability.
 5.  Rollback path:
     `plugin_manager` `remove_bundle` with the same target identity,
     then re-run the `Config.listConfigs` and `Tool.listTools` checks
