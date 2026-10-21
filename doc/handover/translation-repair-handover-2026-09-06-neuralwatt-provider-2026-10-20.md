@@ -814,8 +814,33 @@ The landings and the restart,
   `alignmentFindings=1`)
   after 2355731 ms
   (39.3 min).
-  Its read against the source is running,
-  written to `CuspariaKLSY22-read.md` in the reads folder.
+  Its read
+  (`CuspariaKLSY22-read.md` in the reads folder,
+  23:41 UTC)
+  found the page mixed:
+  slices 0 to 2 better than `CuspariaKLSY21`'s,
+  slice 3 worse
+  ("When she came to" loses 又;
+  "rushed" and "her friend" added).
+  No new ruling was shown to act:
+  the three polish gates settled by lead,
+  and the one consolidation tie
+  (slice 2,
+  weight 1)
+  left no slate in the artifact to say whether a run-off was owed.
+  It confirms two findings of the `zheermao22` read on a second entry:
+  102 of 103 Hyper vote replies have their keys in alphabetical order,
+  against reason first on all 44 from NeuralWatt and OpenRouter;
+  and 33 `inception/mercury-2.5` streams were abandoned with no content,
+  each waited out to the grace,
+  because the tally never counts an abandoned call against its seat
+  (`seat-tally.ts:120` to `122`).
+  It also shows the run still asks Bedrock once per run and is refused with HTTP 401 before holding it out,
+  though the owner ruled to leave Bedrock off,
+  and that `METERS` lines read `bedrock=wet` while `JUDGE SEATS` reads `bedrock=dry`.
+  NeuralWatt's plan meter rose 37.3 Wh over the run against 21.11 Wh of this run's own calls;
+  the rest is most likely other use of the account in that window,
+  which is unverified.
 - `XingZ6017`
   (entry `XingZ60`)
   started at 23:05:12 UTC,
@@ -830,6 +855,15 @@ K3 and the run-off line that says "2 tied finalists" for a plurality
 (`translate-runoff.ts:90`)
 in a new scratch worktree,
 and K4 in a second one;
+then a third round:
+Bedrock off by configuration so no run asks it,
+the `METERS` and `JUDGE SEATS` readings of a held provider made to agree,
+a seat whose streams keep ending with no content counted against that seat
+(it is never counted now,
+so every round waits it out),
+and Hyper's key order
+(either schema keys whose alphabetical order is the declared order,
+or a keyed probe first if that is cheaper to decide);
 gate each,
 land,
 rebuild the branch worktree once no pass runs there,
