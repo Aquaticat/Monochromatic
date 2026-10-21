@@ -558,5 +558,49 @@ Current pnpr names the web UI block `ui` with `enabled`
 
 `generatePnprConfig` in `file-enforcer.config.ts` now emits `ui: enabled: false`,
  and the generated `package/config/pnpr/config.yaml` carries it.
+
+### Deployment record
+
+`.github/workflows/pnpr-patched-image.yml` run `39646035147` built the rebased port as
+
+```text
+ghcr.io/aquaticat/pnpr:0.1.0-alpha.16-oidc-workload-discovery.01dc1384276b@sha256:09a9818eaebba777848f3d01382c97143e232d95085ea4950408ad436505109c
+```
+
+`package/config/pnpr/Containerfile` pinned that `tag@digest`,
+ the generated config carried `ui: enabled: false`,
+ and the deploy files landed in one lockstep commit `4adc1b864c`
+ at 2026-10-21T18:01:46Z.
+ Local runs of the new image before the pin answered `GET /-/ping` with `{}`,
+ `GET /-/ready` with `{"status":"ok","storage":"ok","auth":"ok"}`,
+ and `GET /-/metrics` with `pnpr_build_info{version="0.1.0-alpha.16"}`.
+
+### Outage and root cause
+
+The 404 surface became `502` from about 18:04Z and stayed down about 10 minutes,
+ because the new base aborts startup on a store in the earlier layout
+ and the deployed store holds 163 published packages there with no `layout.json`.
+ The container log held `Storage is temporarily unavailable: the hosted store has no layout.json`,
+ and the full diagnosis,
+ reproduction,
+ and remedy are in
+[the base-move topic](pnpr-base-move.md).
+ A second breaking change rode the same base move:
+ npm URLs now answer only under `/npm`.
+
+### Rollback and remedy
+
+Rollback commit `66cff15dc2` restored the `0.1.0-alpha.11` pin,
+ and production answered `GET /-/ping` with `{}`
+ while a forged workload publish probe at
+`https://pnpr.c.aquati.cat/~monochromatic-dev/@monochromatic-dev%2fprobe-nonexistent`
+ returned `401 Authentication required for OIDC credentials`.
+ The fix-forward is measured and ready but not deployed:
+ stop the container,
+ back the store up,
+ run `pnpr upgrade-storage` against the volume with `PNPR_SECRET` set,
+ then repin the `0.1.0-alpha.16` digest and move every client URL under `/npm` in the same commit.
+ The converted store cannot be served by the `0.1.0-alpha.11` reader,
+ so the rollback path after that step is restoring the backup.
  The image pin and the config change land in one commit,
  because Coolify bakes the config into the rebuilt image and the new base refuses the old block.
