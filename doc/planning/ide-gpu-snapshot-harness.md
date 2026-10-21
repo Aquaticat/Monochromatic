@@ -1879,7 +1879,7 @@ Whether that overcommit produces a wrong frame is not shown.
 - The parallel native run needs about 9.5 GiB of video memory and the card has 8 GiB, shared with other programs.
   Should the default number of test threads of the native tests be lowered, or the test device given a budget?
   This work changed neither.
-  (The device hint of "Selections over a tall tile, and the device's memory hint" below halves the demand.)
+  (The device hint recorded under "Selections over a tall tile" below halves the demand.)
 - Should the old minimap flake be fixed now or left to stage 5?
 
 ### Selections over a tall tile, and the device's memory hint
@@ -1908,8 +1908,8 @@ and the picture in the application matches a small selection.
 The device hint takes the application from 498.9 to 287.7 MiB of video memory at 1147 by 2000 pixels (medians of ten
 interleaved starts) and from 476.3 to 216.4 MiB at 1100 by 660 pixels,
 with no first-frame,
-resident-memory or frame
-cadence difference beyond the run-to-run spread.
+resident-memory,
+or frame cadence difference beyond the run-to-run spread.
 
 #### Reproduction in the application
 
@@ -1944,8 +1944,8 @@ The screenshots are below `~/temp/agent/vello-fix/`.
   54,
   60,
   80 rows and select-all:
-  the selection fills are drawn (they are Slint rectangles) but the text keeps
-  the unselected inks,
+  the selection fills are drawn (they are Slint rectangles),
+  but the text keeps the unselected inks,
   because the tile that stays on screen is the one drawn before the selection.
   Against the 30-row picture 17,325 texels of the first 27 rows differ by more than 40 levels
   (`shots-before-b/sel-42.png`,
