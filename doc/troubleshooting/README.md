@@ -254,6 +254,15 @@ and the surfaces they miss out of the box:
 - Removing `apiKeyEnv` from a patch-declared provider
    fails with `PI_AI_ERROR: Provider is not configured`
 
+### [`cordis_inspect_query` input coerced to string](dsh-cordis-inspect-query-input-coerced-to-string.md)
+
+dsh 0.2.1-alpha.4 inspect marshaling defect:
+
+- Every filtered or paged `cordis_inspect_query` call fails with
+   `Host Cordis inspect ... rejected input: "input" must be an object`
+- Input-less discovery still works,
+   so unfiltered `Tool.listTools` remains usable
+
 ### [Bash and CLI](bash.md)
 
 Bash shell and CLI tool quirks that cause confusing behavior:

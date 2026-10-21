@@ -129,8 +129,14 @@ Catalog that works cleanly:
   inside the fixture session.
 - `Tool.listTools` reports the plugin's `advisor` tool
   with its parameter schema.
-- `Config.listConfigs` reports the plugin row
-  with `status: "schema"` and structural-only config fields.
+  Filtered and paged inspect queries fail separately
+  in [dsh-cordis-inspect-query-input-coerced-to-string](dsh-cordis-inspect-query-input-coerced-to-string.md).
+- The `Config.listConfigs` entry check for the plugin row
+  is blocked by that defect
+  (unfiltered calls return only the first page);
+  the composed `--dump-config` tree
+  shows `id: advisor` with `config: {}`
+  as the composition-level evidence.
 - The fixture agent boots and answers a task
   on `llmgateway-devpass`/`mimo-v2.6-pro`.
 
