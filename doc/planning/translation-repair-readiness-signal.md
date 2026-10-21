@@ -319,6 +319,24 @@ this section is the readiness reading of it.
   `XingZ60` is held:
   the fixes in w253 and w254 change the build when they land,
   and the rotation then restarts at `zheermao101`.
+- It restarted on `3637592bd4`
+  (digest `sha256-tree-v1:06c97a69446d…`):
+  `zheermao21` and `CuspariaKLSY21` shipped SETTLED
+  (reads running),
+  and `XingZ6016` stopped INCOMPLETE after 6.7 min of pass
+  with `visual evidence incomplete for 1 referenced assets`.
+  Its one picture needs two corroborating readings;
+  `minimax-m3` read it,
+  `GLM-5.3-Flash` returned an empty reply,
+  Qwen's only provider was out of budget,
+  and both Gemma readers are on Bedrock,
+  whose key is never renewed.
+  So the rotation on that build cannot finish with every page SETTLED,
+  and no further entry runs on it:
+  OpenRouter's balance is kept for runs that count.
+  The rotation restarts at `zheermao101` on the build that lands the archive review fixes
+  (B712 to B715 and their follow-ups)
+  with a picture bench that two wet readers can corroborate.
 - The entries never run on a recent build are the rest of the 92-entry corpus.
   The owner's rule stands:
   "We never ever need a all 92 entries launch";

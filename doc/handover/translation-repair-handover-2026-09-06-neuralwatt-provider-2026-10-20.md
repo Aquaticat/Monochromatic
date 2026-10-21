@@ -459,12 +459,128 @@ After landing,
 post corrective commit comments on `4e0cbc1b5f` and `e0dbf84a38`:
 their messages say the stitched quote also reaches photo3,
 which the replay disproves.
-Queued after w255 and w256 merge,
-red first:
-`archive-block-repair.ts` looks up `archiveBlockSourceContexts` with `?? ''`,
-so a missed lookup would silently anchor nothing;
-it should refuse instead.
-The rotation restarts on the g138 build without waiting for them:
+B712 to B714 are done in w255
+(`a38bc52e29` to `bfff357798`;
+not landed),
+each red first,
+with the package units,
+lint and source scans green and no cache version moving.
+Accepted veto-open beyond the review round's 180 s window:
+no composite when any changing revision differs in line count,
+an identical change to one line counts as an overlap,
+three revisions with only two disjoint build none,
+a revision equal to the archive contributes nothing,
+and the stage's findings travel verbatim,
+reviewer reasons included.
+After landing,
+post corrective commit comments on `49194af623`
+(16 cases,
+15 of them red,
+not fifteen)
+and `96d9d0be32`
+(five files pin the launch line,
+not four).
+w255 and w256 merged in w257 at `0818ca282a`
+(two index-list conflicts,
+both sides kept).
+In w257,
+red first,
+before gate g139:
+the composite reaches the judges with its contributors' assessments
+(it reached them with none,
+because evidence is matched by a voice's proposed text);
+`archive-block-repair.ts` refuses a missed `archiveBlockSourceContexts` lookup
+instead of anchoring against `''`;
+and the launch line drops B713's dated veto note,
+which belongs in the decision doc,
+not in every run log.
+Then gate g139 on w257,
+land,
+the corrective comments,
+rebuild the branch worktree,
+a new frozen digest,
+the rotation sweep,
+and the rotation restarts at `zheermao101`.
+On the g138 build,
+`zheermao21` and `CuspariaKLSY21` shipped SETTLED
+(reads running),
+and `XingZ6016` stopped INCOMPLETE:
+its one picture got a single reading
+(`minimax-m3`;
+`GLM-5.3-Flash` replied empty,
+Qwen's provider out of budget,
+both Gemma readers on Bedrock),
+so nothing corroborated it.
+The rotation on that build is held there,
+since it can no longer finish with every page SETTLED.
+The two settled reads
+(`zheermao21-read.md` and `CuspariaKLSY21-read.md` in the reads folder)
+are being traced to causes before any of them is called a class:
+a 2 to 2 polish gate keeping "was given to her" for 起的,
+a repair correction accepted 4 to 0 lost when the translate lane won its slice,
+已经,
+一直,
+观望 and 二次元 dropped,
+the opening quote losing 有一天 and 你 to a minimum-weight rule,
+the email's lines thinner than `zheermao20`'s,
+two U+2014 dashes,
+a probe that closed short,
+and a 0.372 Wh gap between the meter and the account.
+The 抢救 rendering "doctors fought to save her" is the glossary's on purpose.
+Classes found there are fixed before gate g139 too,
+since a restarted rotation would meet them again.
+
+The owner rebooted the machine on 2026-10-21 with three agents halted mid-task,
+each told to write its state down first;
+no pass,
+gate or sweep unit was running.
+Resume each from its own handover:
+
+- w257 follow-ups
+  (composite evidence,
+  the source-context lookup,
+  the launch-line note):
+  `/var/home/user/temp/agent/tr-fan/w257-notes/handover.md`,
+  commits in w257 on top of `0818ca282a`.
+- Picture bench investigation:
+  the "Handover" section of `/var/home/user/temp/agent/x15-fix/reads/XingZ6016-pictures.md`.
+- Tracing the two reads' findings:
+  the "Handover" section of `/var/home/user/temp/agent/x15-fix/reads/rotation-21-classes.md`.
+
+The reads themselves are `zheermao21-read.md` and `CuspariaKLSY21-read.md` beside them,
+not yet recorded in the pass log of 2026-10-21.
+
+Owner rulings of 2026-10-21,
+given just before the reboot:
+
+- On the picture bench:
+  "Yes try gemma".
+  So `google/gemma-4-26b-a4b-it` on OpenRouter
+  (zero data retention)
+  is measured as a second picture reader from another family,
+  over a sample of pictures,
+  and seated if it reads them well.
+- On request parameters:
+  "NeuralWatt is a special case of all the providers:
+  It implements what it documents correctly,
+  almost always - I'm lifting the ban on passing params,
+  but only for NeuralWatt."
+  So NeuralWatt requests may now carry documented parameters,
+  such as a lower reasoning effort for `glm-5.3-flash` on pictures,
+  whose default `max` effort spent the whole output cap on reasoning in `XingZ6016`.
+  Every other provider still gets no such parameter.
+
+Also queued:
+an empty reply cut at the length cap is asked again
+(today only refusals are);
+and the pass log of 2026-10-21 fails two scans
+(a position reference at line 365,
+zone-less clock times at lines 452 and 476).
+An investigation of the picture bench runs
+(why GLM replied empty,
+which wet vision readers could replace the Bedrock seats);
+its fix joins w257 before gate g139.
+The rotation had restarted on the g138 build without waiting for them:
 the day's free energy is spent either way,
 and a read on that build still finds defects.
 

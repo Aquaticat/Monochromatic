@@ -362,7 +362,7 @@ The wording choices in the lanes' slices:
   line 43:
   "Arts’s letters" is plural for 信件,
   which leaves number open,
-  while the sentence before it says "a caring letter" and the label says "Arts’s letter".
+  while the page also says "a caring letter" and the label says "Arts’s letter".
   It came from a critic claim the panel left as `needs-human` 2 to 2,
   then from the consolidation slate and its gate (2 for `consolidated`,
   1 `standing`,
@@ -449,7 +449,8 @@ The wording choices in the lanes' slices:
   line 97:
   连夜 is "overnight",
   where zheermao19 had "that same night".
-  The photo stamps the mail 11:55 PM and the reply 12:10 AM,
+  The photo stamps the mail 11:55 PM and the reply 12:10 AM
+  (the zone it was observed in was never established),
   so "overnight" is true but can read as "took all night".
   The gate shipped the consolidated candidate 3 to 0 with 1 `neither`.
 - `W` D22,
@@ -473,7 +474,8 @@ The wording choices in the lanes' slices:
   A reviewer (`76807c82`) had flagged it and the winning candidate did not restore it.
 - `W` D24,
   line 114:
-  夜安 as "Good evening" is a register choice for a night greeting stamped 12:10 AM,
+  夜安 as "Good evening" is a register choice for a night greeting stamped 12:10 AM
+  (the zone it was observed in was never established),
   unchanged since the archive.
 - `W` D25,
   line 125:
