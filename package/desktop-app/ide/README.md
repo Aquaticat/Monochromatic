@@ -1991,7 +1991,7 @@ The window thread queues an owned job with a document snapshot,
 the styles,
 the row map,
 and the paint inputs.
-The worker keeps its own `TextShaper` and `TextRaster`,
+The worker keeps its own `TextShaper`,
 and it builds only the newest queued job.
 A `slint::Timer` polls the worker every 20 ms (`src/native/tile.rs`).
 The displayed tile stays on screen until the result arrives,
@@ -2075,7 +2075,7 @@ Every open detail follows IntelliJ IDEA Community
   and an arrow drawn by hand when no pair is displayable.
   The check shapes the symbols with the same shaper that sets the source text and looks for the missing-glyph box
   (`TextShaper::can_display` and `choose_sign` in `src/wrap_sign.rs`),
-  and the image the gutter shows is set in that shaper and painted by the same raster,
+  and the image the gutter shows is set in that shaper and drawn by the same renderer,
   so the check is about what is drawn.
   Which pair a machine gets depends on its fonts;
   the choice is logged at debug level.
@@ -2245,7 +2245,7 @@ A tile of lines taller than that is clipped instead of refused (`Viewport::clip`
   and leaving them re-centers the tile on the worker as for any tile.
   Scrolling inside a clip does no work,
   as inside any built tile.
-- `TextRaster::draw` already skips the visual rows of a layout that lie outside the raster,
+- The frame already skips the visual rows of a layout that lie outside it (`src/shaped_text/frame.rs`),
   so a line of thousands of rows costs only the rows in the clip.
   The gutter lists only the rows in the clip (`rows::measure`).
 - A reveal (a search result,
@@ -3089,23 +3089,27 @@ and `render/MainMinimap.kt`.
   the diagnostics' underlines and the hints,
   the virtual rows above annotated lines,
   and the rows soft wrap makes.
-  Each band of the text is rendered with the same code path that paints a tile of the source view
-  (`TextShaper::prepare_rows`,
+  The picture is a Vello scene drawn on the GPU by the one renderer the code view uses (`src/native/gpu_tile.rs`):
+  the shaped lines of the window (`TextShaper::prepare_rows`,
+  the same shaping the tile uses),
   the match rectangles,
   the annotation layout,
-  the markup's fills,
-  and `TextRaster::paint_onto` in `src/minimap/render.rs`),
-  and the rendering is then reduced to the picture's size by exact area averaging at the final device-pixel size
-  (`src/minimap/downscale.rs`).
-  It is never rectangles or blocks:
-  a pixel of the picture is the average of the window's pixels it stands for,
+  and the markup's fills are encoded as paint items
+  (`src/minimap/scene.rs`,
+  `src/minimap/shape.rs`,
+  `src/minimap/fills.rs`),
+  scaled to a sixth of the text by the scene's transform,
+  and rendered into a texture that the markup shows as an image.
+  Nothing is painted on the CPU,
+  and nothing is averaged by hand:
+  a pixel of the picture is the GPU's coverage of the glyph outlines it stands for,
   and the native test `src/native/minimap_reflection_tests.rs` compares the picture with the box average of a
   snapshot of the real window for plain text,
   a selection,
   find matches,
   wrapped lines,
   and diagnostics,
-  at display scales one and two.
+  at display scales one and two (the bounds are in Measured cost).
 - The picture covers the whole width of the text area (the wrap width,
   or 1,300 px while the view has none) shrunk to the minimap's width,
   and the rows of the file in visual rows shrunk by a fixed scale of a sixth
@@ -3114,7 +3118,7 @@ and `render/MainMinimap.kt`.
   whatever the length of the file).
   The rows come from the one vertical mapping (`RowMap`),
   never from a second estimate of the height.
-  Its pixels hold the averaged color with the averaged coverage,
+  Its pixels hold the straight-alpha color of the covered part of the pixel,
   so an average of ink and background is a fainter ink,
   as in the window's own frame;
   the caret and the line-number gutter are not part of the picture.
@@ -3137,7 +3141,7 @@ and `render/MainMinimap.kt`.
   The picture holds only the bands near the visible part of it:
   the bands the track shows and one more on each side (`Geometry::bands_for`),
   so the work and the memory follow the view and not the length of the file.
-  Every pixel row is the exact average of the window's pixels;
+  Every line in the bands is drawn;
   nothing is sampled.
 - The inks are the syntax classes and the palette of the source text in the dark and the light scheme
   (`CodeColors`,
@@ -3297,7 +3301,7 @@ and `render/MainMinimap.kt`.
   The picture here has no such limit,
   because its cost follows the bands near the view and not the length of the text.
 - CodeGlance Pro draws its picture at 0.8 opacity with a weight for each glyph.
-  This picture is the exact average of the window's pixels,
+  This picture is the GPU's own coverage of the window's glyphs at a sixth of their size,
   and no gain is applied to it.
   In the dark scheme the large surfaces are pure black (see Black surfaces in the dark scheme),
   so the average of ink over black is as bright as the window's own ink at that coverage.
@@ -3312,10 +3316,13 @@ and `render/MainMinimap.kt`.
 ### Performance bounds
 
 - The picture is built on its own thread (`ide-minimap`,
-  `src/native/minimap_build.rs` and `src/native/minimap_build/serve.rs`),
+  `src/native/minimap_worker.rs` and `src/native/minimap_worker/serve.rs`),
   never on the window thread.
-  The window thread takes a finished picture with one comparison and one image setter
-  (`apply` in `src/native/minimap/picture.rs`).
+  The worker returns paint items cut into chunks (`Built`),
+  and the window thread hands them to the renderer with one call (`apply` in `src/native/minimap/picture.rs`).
+  The rendering notifier renders the chunks with the one Vello renderer the code view owns
+  (`src/native/gpu_tile/slice.rs`):
+  there is no second renderer and no scratch memory of the minimap beyond a few chunk-sized textures.
   The window's side is split by what each part answers for in `src/native/minimap/`:
   `state.rs` holds the state and the drag,
   `pace.rs` decides when a request is posted,
@@ -3325,12 +3332,12 @@ and `render/MainMinimap.kt`.
   a drag,
   and a page step into scroll offsets.
   The picture's own code is in `src/minimap/`:
-  `plan.rs` cuts the text into bands at fixed distances from its top,
-  `render.rs` renders a band,
-  `fills.rs` paints the selection and match fills under the glyphs,
-  `downscale.rs` reduces a rendering,
-  `key.rs` and `cache.rs` keep what is valid,
-  and `build.rs` runs one pass.
+  `plan.rs` cuts the text into bands at fixed distances from its top and the rows into chunks,
+  `shape.rs` shapes the lines of a slice (or takes them from the row cache) and places the marks,
+  `line_cache.rs` is the row cache,
+  `fills.rs` makes the paint items of the selection and match marks,
+  `scene.rs` runs one pass,
+  and `chunks.rs` cuts the items into the chunks.
 - The picture depends on the text,
   its syntax classes,
   the vertical mapping,
@@ -3344,7 +3351,7 @@ and `render/MainMinimap.kt`.
   the inks of the fills,
   and the numbers of the bands the track shows with the view scrolled where it is,
   and on nothing else
-  (`Key` in `src/native/minimap_build.rs`).
+  (`Key` in `src/native/minimap_worker.rs`).
   A render that changes none of these costs a comparison of a few words:
   a scroll step that keeps the bands posts no request and sets no picture,
   and only the markup moves the picture and the box.
@@ -3358,52 +3365,52 @@ and `render/MainMinimap.kt`.
   and 120 ms after the last change for everything else,
   such as the size steps of a resize drag or an edit.
   The newest request wins:
-  a build stops between two bands,
+  a build stops within 32 lines of the newer request,
   and an older request that was never started is dropped.
-- The picture is rendered one band at a time:
-  a band is a run of whole code rows whose raster is at most 4 MiB (`BAND_BYTES`,
-  a sixteenth of the 64 MiB raster limit),
-  and one very tall line is cut into bands by the same clip the window's tile uses.
-  The cuts stand at multiples of the band's height from the top of the text and do not move with the scroll.
-  The reduction of a band is kept as a unit of the cache with the key it is valid for,
-  and the cache keeps the units of the bands the last picture held and no others.
-  The key holds the band's lines and their rows,
-  a digest of the band's text,
-  a digest of the syntax classes that reach it,
-  the selection,
-  the matches,
-  the diagnostics,
-  and the blocks that touch it,
-  all measured from the band's first character,
-  plus what every unit shares.
-  No revision or address of the text is in it,
-  so an edit renders again the bands whose lines it changed
-  and takes the others from the cache,
-  and an edit above the window that moves characters but no row renders nothing.
-  An added or removed line moves every row below it,
-  so it renders the bands of the window below the edit (see Measured cost).
-  A new selection or match list renders the bands it touches.
-  Two bands that share a pixel row keep the unrounded sums of that row and complete it together,
-  so the picture does not depend on where the bands were cut
-  (the test `bands_put_together_make_the_picture_of_the_whole_without_a_seam`),
-  and the rows built for a window are exactly those rows of the picture of the whole text
-  (`a_long_text_builds_only_the_bands_near_the_visible_part_and_they_are_rows_of_the_whole`).
+- The slice is the bands the track shows and one on each side.
+  A band is 768 logical px of the text from a fixed distance from its top (`BAND`),
+  so the cuts do not move with the scroll,
+  and a slice holds as many bands as its texture may hold:
+  at most the device's texture side in rows (`most_bands` in `src/minimap/plan.rs`,
+  used where the key is made, so a taller track shows a picture that ends where the texture ends).
+- The slice is rendered in chunks of at most 512 rows (`CHUNK_ROWS`).
+  Vello 0.11 sizes the buffers of one render with fixed constants,
+  and a scene that needs more renders blank with no error
+  (`doc/planning/ide-vello-buffer-sizes.md`).
+  The densest slice measured (the whole text selected and every line a match) renders completely at 1,024 rows and
+  blank at 2,048 (`src/native/minimap_dense_tests.rs`),
+  so a chunk is a factor of two inside what one render holds.
+  Each chunk is rendered into a scratch texture of its size (at most four are kept)
+  and copied into the slice texture on the GPU,
+  so a chunk is a render and a copy and no pixel crosses to the CPU.
+  An item that reaches into a chunk (a glyph run, a mark, a clip group) is kept in every chunk its ink can reach
+  (`src/minimap/chunks.rs`),
+  so no seam shows at a cut.
+- The row cache (`src/minimap/line_cache.rs`) keeps the shaped lines of the picture by a key of the line's text,
+  the digest of the syntax classes that reach it,
+  the wrap width,
+  and the display scale (4,096 lines at most;
+  the lines the build did not use are evicted when it is over).
+  An edit shapes the lines it changed and takes the others from the cache,
+  an edit above the window that moves characters but no row shapes nothing,
+  and an external edit of a file of 50,000 lines shapes only the line it touched
+  (`an_external_edit_of_fifty_thousand_lines_shapes_only_the_line_it_touches`).
+  A line added or removed moves every row below it, so the slice is encoded and rendered again,
+  with every line from the cache.
 - The work is bounded by the view,
   not by the text:
   the picture holds the bands the track shows and one on each side,
-  whatever the length of the file,
-  and renders every code row of them.
+  whatever the length of the file.
   A build may spend 5,000,000 units of `line_work` (`BUILD_WORK`).
   A line past `WORK_SCAN_LIMIT` characters,
-  or a band the budget cannot pay,
-  or a band that fails to render,
-  is not drawn blank:
-  the rows the last picture held for the same place stay,
-  the unit is counted in `skipped` or `failed` of the build's statistics,
+  or one the budget cannot pay,
+  is drawn blank and counted in `skipped` of the build's statistics,
   and a `tracing::warn!` gives the range of lines.
-- The memory of a build is the bands in flight (at most 4 MiB each),
-  the unrounded sums of the rows two bands share,
-  the units of the bands of the last picture (`4 * width * rows` bytes at the display scale squared),
+- The memory of a picture is the slice texture
+  (`4 * width * rows` bytes at the display scale squared,
+  for example 110 by 384 px at scale 1: 165 KiB),
+  the chunk scratch textures,
+  the row cache (the shaped layouts of at most 4,096 lines),
   and the worker's job,
   which holds a rope snapshot,
   the row map,
@@ -3412,69 +3419,38 @@ and `render/MainMinimap.kt`.
 
 ### Measured cost
 
-The numbers are for the picture builder of this branch.
-The frame-pacing measurements of the earlier builder (scrolling by wheel,
-dragging a window edge,
-memory of a bundle)
-were not repeated:
-the window thread's part of a picture is still one comparison and one image setter,
-and a scroll step that shows the same bands posts nothing.
+The numbers are for the minimap drawn on the GPU.
+The measurements of frame pacing,
+memory,
+and start-up against `origin/main` before the change are in `doc/planning/ide-gpu-snapshot-harness.md`,
+section "Stages 5 and 6".
 
-- The picture holds only the bands near the view,
-  so its cost follows the height of the view and not the length of the file.
-  Release build,
-  a throwaway test (not committed) that timed `prepare` and `build` on a file of 50,000 lines of about ninety
-  characters,
-  a view 1,000 px tall,
-  a minimap 110 px wide,
-  the view in the middle of the file:
-  the first picture takes 44 ms at display scale 1 (12 bands,
-  348 lines rendered) and 78 ms at scale 2 (66 bands,
-  330 lines rendered);
-  a picture whose bands are all in the cache takes 0.13 and 0.38 ms,
-  and the keys of the bands (`prepare`) take 0.05 to 0.2 ms.
-- The cost of an edit in the same setting,
-  with the cache holding the picture of the unedited text:
-  one line changed inside the window renders one band (3.7 ms at scale 1 and 1.9 ms at scale 2);
-  one line changed above the window renders nothing (0.09 and 0.27 ms),
-  and one line inserted below it renders nothing (0.11 and 0.35 ms).
-  A line inserted or deleted above or inside the window moves every row below it,
-  and the bands sit on a fixed pixel grid,
-  so the bands of the window whose content moved are rendered again:
-  21 ms at scale 1 for a line inserted or deleted in the window (10 of 12 bands),
-  26 ms for a line inserted above it (all 12),
-  and 58 to 61 ms at scale 2 (64 or 66 of 66).
-  The number of bands rendered again is bounded by the window,
-  never by the length of the file,
-  and a shift of the grid is not recognized as the same content.
-- Debug build in the nested compositor
-  (`inspect:native`,
-  dark scheme,
-  window of 1100 by 660 px),
-  a file of 50,000 short lines in which the last occurrence of a word is replaced on the disk while the view is at
-  the end:
-  the picture after the change renders 1 of 4 bands in 44 ms at scale 1,
-  and 1 of 14 bands in 8.7 ms at scale 2 (2 bands in 37 ms for a second change),
-  and the build that follows renders none.
-  The same change in a file of 50,000 lines of 600 characters that wrap
-  renders every band of the window,
-  because the measurement of the wrapped rows that follows a reload moves the pixel grid
-  while it runs (each picture of that run took 100 to 190 ms).
-- The first picture of a file at the top,
-  in the same debug build:
-  170 ms for the first two bands and 190 to 245 ms for the window of 7 bands at scale 1 and 14 at scale 2,
-  for this package's `src/native/wrap_resize_tests.rs` (1,218 lines).
-- The cache:
-  a picture whose bands are all valid costs 0.1 to 10 ms,
-  and a changed selection renders the bands it touches.
-  Only the bands near the visible part are ever built or kept (`Cache::retain`).
+- A file of 50,000 lines of about ninety characters,
+  release build in the nested compositor at 1100 by 660 px:
+  the worker takes a median of 3.2 ms for a picture while the box is dragged and the view is scrolled
+  (79 pictures,
+  90th percentile 5.1 ms,
+  longest 19.6 ms),
+  and shapes a median of 37 of the 199 lines of the picture,
+  the others coming from the row cache.
+- A picture is compared with the box average of the window's own pixels by
+  `src/native/minimap_reflection_tests.rs`.
+  The worst pixel and the mean difference were measured at scale 1: plain 13 and 0.45,
+  find matches 13 and 0.68,
+  diagnostics 19 and 0.41,
+  a selection 32 and 0.39;
+  at scale 2: plain 41 and 0.53,
+  find matches 41 and 0.78,
+  diagnostics 49 and 0.57,
+  a selection 54 and 0.47,
+  and the bounds are 36 and 0.8 at scale 1 and 58 and 0.9 at scale 2.
+  The runs are the same from one run to the next.
+  A control that reads the window three pixels aside does not match.
 - A window 12,000 px tall could not be shown in the nested compositor:
   it hosts a window of at most 3,704 px of height here,
   whatever size is asked.
   The tall windows are covered by `src/native/tall_window_minimap_tests.rs` at 3,500 and 12,000 px instead.
-- The picture itself is `4 * width * rows` bytes at the display scale squared,
-  276 KB at 110 by 628 px,
-  and a band in flight is at most 4 MiB.
+
 
 ### Limits and follow-ups
 
@@ -3487,53 +3463,40 @@ and a scroll step that shows the same bands posts nothing.
   the resizable width,
   and a drag with the middle button are not implemented.
 - A picture is drawn at the size of the minimap,
-  so a larger display scale makes a larger picture
-  (`4 * width * track` bytes at that scale squared),
+  so a larger display scale makes a larger texture
+  (`4 * width * rows` bytes at that scale squared),
   and the markup draws it at exactly that many device pixels without resampling.
-- A line inserted or deleted renders again the bands of the window whose content moved,
-  because the bands sit on a fixed pixel grid and the key of a band is its content.
-  The cost is bounded by the window (see Performance bounds),
-  and a content-anchored grid that survives a shift is not implemented.
+- A line inserted or deleted moves every row below it,
+  so the slice is encoded and rendered again for the window,
+  but the shaped lines come from the row cache (see Performance bounds).
 - A very fast drag of the box over a very long file may show blank rows at the edge of the picture for a moment:
   the worker builds the bands near the new place after the pause of the pace rule,
   and the picture keeps its last rows until then.
   This was not provoked on purpose in the nested compositor.
 - There is no quick pass of a coarse picture:
-  it drew a sample of the code rows,
-  and the sampled path was removed,
-  so a picture of a new wrap width arrives as one reply,
-  after the bands near the view are rendered.
+  a picture of a new wrap width arrives as one reply,
+  after the lines of the bands near the view are shaped.
+- A window taller than the device's texture limit has a picture that ends where the texture ends,
+  and the rest of the track is blank (the slice never passes the limit).
+  A selection that covers the whole slice makes the render cost grow with its rows until the tile code clips
+  rectangles per row (see `doc/planning/ide-gpu-snapshot-harness.md`, "Stages 5 and 6").
 
 ### Minimap checks
 
 `mise run //package/desktop-app/ide:test:minimap` runs the integration tests without a window:
-the geometry (`tests/minimap.rs`),
-the reduction (`tests/minimap_downscale.rs`:
-a uniform field at every ratio,
-patterns averaged by hand,
-fractional edges,
-ratios above one,
-noise against an exact reference,
-alpha,
-the rows below the text,
-adversarial sizes,
-and bands put together without a seam),
-and the picture (`tests/minimap_picture.rs`:
-the plan of bands within the budget,
-the picture against one frame of the whole text,
-the selection fill,
-the cache,
-the budgets,
-a band that fails,
-the window of a long text (only the bands near the view are built,
-the picture is an exact crop of the picture of the whole text at fractional scales too,
-the cache keeps only the window),
-the content keys (an edit renders only the bands it touches,
-a selection or a match moves nothing outside its bands,
-text and styles are digested),
+the geometry (`tests/minimap.rs`)
+and the scene (`tests/minimap_scene.rs`:
+the plan of bands and chunks,
+the most bands a texture holds at every scale and limit,
+the glyphs of a slice in the palette's inks,
+the selection and the matches as marks under the glyphs,
+the row cache (an edit shapes only the lines it changes,
+new syntax classes only the lines they reach,
+a wrap width or a scale shapes every line again),
+the window of a long text,
 costly lines,
 cancel,
-and a tall view).
+and the cut of the items into chunks).
 `test:native` runs the window tests:
 `src/native/minimap_tests.rs`
 (the box against the geometry at every offset,
@@ -3561,35 +3524,41 @@ diagnostics and hints,
 at display scales one and two,
 with a control that a window read three pixels aside does not match),
 and `src/native/tall_window_minimap_tests.rs`
-(a window of 3,500 and of 12,000 px keeps a picture with the texture of glyphs and no band over the raster limit,
-and a long file in a tall window keeps its picture within the raster limit).
+(a window of 3,500 and of 12,000 px keeps a picture with the texture of glyphs, rendered in chunks that are not
+blank,
+and a long file in a tall window keeps its picture within the device's texture limit),
+and `src/native/minimap_dense_tests.rs`
+(the densest chunks are not blank,
+one render of four dense chunks is blank as the positive control,
+and a frame scaled down keeps the coverage of its edges).
 `inspect:source-guards` removes each rule in a disposable copy and checks that its named test fails:
 `minimap-box-share`,
 `minimap-slide-share`,
 `minimap-drag-ratio`,
 `minimap-position-clamp`,
 `minimap-renders-glyphs`,
+`minimap-glyph-inks`,
 `minimap-fills-selection`,
+`minimap-fills-joined`,
 `minimap-fills-match`,
 `minimap-fills-boundary`,
-`minimap-key-selection`,
-`minimap-window-key-selection`,
-`minimap-key-text`,
-`minimap-key-styles`,
-`minimap-key-from-band`,
-`minimap-key-text-reload`,
-`minimap-key-has-bands`,
-`minimap-cache-key`,
-`minimap-cache-window`,
+`minimap-frame-winding`,
+`minimap-line-key-text`,
+`minimap-line-key-text-reload`,
+`minimap-line-key-styles`,
+`minimap-line-key-wrap`,
+`minimap-line-key-scale`,
 `minimap-work-budget`,
-`minimap-degrade-keeps-rows`,
-`minimap-failed-counted`,
 `minimap-cancel`,
-`minimap-band-bytes`,
-`minimap-reduce-row-weight`,
-`minimap-reduce-column-weight`,
-`minimap-stitch-sum`,
-`minimap-stitch-complete`,
+`minimap-bands-fit-the-device`,
+`minimap-most-bands`,
+`minimap-chunk-rows`,
+`minimap-chunk-size`,
+`minimap-chunk-cut`,
+`minimap-chunk-copy-row`,
+`minimap-slice-top`,
+`minimap-window-key-selection`,
+`minimap-key-has-bands`,
 `minimap-slide-offset`,
 `minimap-window-margin`,
 `minimap-picture-origin`,
@@ -5395,13 +5364,13 @@ and 2226 by 7488 px,
 at scale 2 (the byte limit binds),
 where three views would be 12,000 physical rows at scale 2.
 
-What stays on the CPU until the minimap is drawn on the GPU (stage 5 of `doc/planning/ide-vello-text.md`):
-`src/text_raster.rs` (`TextRaster::paint_onto`),
+Stages 5 and 6 of `doc/planning/ide-vello-text.md` are done:
+the minimap is drawn by the same renderer,
+and `src/text_raster.rs`,
 `src/glyph_cache.rs`,
 `src/selection_paint.rs`,
 the pixel code of `src/annotation_paint.rs`,
-and the `swash` dependency,
-all of which only the minimap's picture (`src/minimap/`) uses.
+and the `swash` dependency are deleted.
 
 The native tests read the GPU,
 not the CPU:

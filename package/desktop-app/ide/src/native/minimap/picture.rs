@@ -70,6 +70,9 @@ pub(in crate::native) fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, r
         // The markup draws the picture at exactly this many physical pixels, so no pixel of it is resampled, and
         // starts it at the row of the whole picture the worker built it from; the GPU sets these with the image.
         gpu.submit_minimap(reply.chunks, reply.top);
+        // The GPU draws the slice just before the next frame, and a slice changes no property the window
+        // watches, so an idle window would keep the old picture until something else drew a frame.
+        window.window().request_redraw();
     }
     tracing::debug!(
         id = reply.id,
