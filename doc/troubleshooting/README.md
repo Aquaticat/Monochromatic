@@ -21,6 +21,8 @@ Problems with test execution and test suite organization:
 - Duplicate describe blocks causing missing or misattributed test output
 - Test suite organization best practices
 - [Sinon drops an injected undefined exception](sinon-undefined-exception-sentinel.md)
+- [chai 6.3.0 `truncateThreshold` cuts failing compare values](chai-failure-value-truncation.md),
+   and any finite replacement threshold is non-monotonic
 
 ### [Editor Setup](editors.md)
 
@@ -344,6 +346,8 @@ For common issues:
   ** → [Build performance](performance.build.md)
 - **Test failures not showing?
   ** → [Duplicate describe blocks](testing.md#duplicate-describe-blocks-causing-missing-or-misattributed-test-output)
+- **A failing comparison prints `[ …(N) ]` instead of the values?
+  ** → [chai `truncateThreshold` cut](chai-failure-value-truncation.md)
 - **TypeScript path warnings?
   ** → [dprint configuration](typescript.md#typescript-path-warnings-with-dprint)
 - **Learning Rust HTML fails dprint and Stylelint?

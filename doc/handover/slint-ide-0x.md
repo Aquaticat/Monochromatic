@@ -1203,6 +1203,37 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     non-bit-identical renders, Slint's default features pulling in the software renderer). Nothing is filed upstream;
     the owner decides filing after reading each doc's decision. Rule for future briefs: a study or fix of an external
     tool must say "run the troubleshooting-doc skill" and I load the skill myself at the moment of diagnosis.
+    The five troubleshooting docs landed (pushed as `e0cd3fec64`, agent `acd6338a1aeec9b94`, no strays, worktree and
+    branches removed; nothing filed upstream): `wgpu-core-snatch-lock-trace-aborts-at-thread-local-destruction.md`
+    (fixed upstream by wgpu PR 10030 merged 2026-10-17, which I confirmed with `gh`; wgpu 30.0.1 of 2026-08-22 is still
+    the latest release and lacks it, so the IDE's leaked-handle workaround in `src/launcher.rs` and
+    `src/native/gpu_snapshot.rs` stays until a release with the fix is resolved; queued: re-check on each wgpu or Slint
+    update), `slint-wgpu-automatic-configuration-adapter-and-limits.md` (llvmpipe chosen by Slint with
+    `MESA_VK_DEVICE_SELECT=10005:0`; downlevel defaults give Vello 0 storage buffers; draft not fileable, motivation
+    weak), `slint-vello-renderer-clip-ignores-scale-and-rotation.md` (I confirmed in `itemrenderer.rs` that `translate`
+    updates `clip_rect` while `rotate` and `scale` do not; all six constraints hold, a 51-line patch makes Vello match
+    FemtoVG; the only doc worth filing and it needs a human-written description; we do not use that renderer, so it has
+    no value for the IDE: recommendation hold), `vello-compute-renderer-renders-are-not-bit-identical.md` (cause: f32
+    area sums over an `atomicAdd`-ordered segment list; a 16.16 fixed-point probe patch gives 0 of 200 differing
+    renders; not fileable, research renderer; the IDE keeps `RENDER_NOISE = 1`), and
+    `slint-default-cargo-features-link-software-renderer-and-opengl.md` (274 crates against 256).
+    The Vello troubleshooting doc is finished to the skill standard (pushed as `d18845b99f`, agent `a220c117f7de885e2`, no
+    strays, worktree and branches removed; nothing filed): variant 1 (blank frame) has many upstream duplicates (issues
+    366, 175, 541, 720; PRs 606, 1861 and others) and nothing to add; variant 2 (initial per-tile `ptcl` region never
+    checked against `ptcl_size`) has no upstream report; the agent reproduced both on 0.11.0 and on upstream `main`
+    (`7d70631ac8`, relevant files byte-identical), prototyped a fix in `vello_encoding` `RenderConfig::new`
+    (`ptcl = max(default, tiles * 64 + (1 << 22))`, 3 hunks, 56 lines, kept as a `.patch` beside the doc; I applied it
+    to the installed 0.11.0 sources with `git apply -p3`, it applies cleanly) with before and after counts, and ran
+    upstream's unit tests inside a network-less container (33 pass; the new test fails without the hunk). Study
+    numbers reproduced except two within noise (290,939 against 290,992 bytes). Correction: the "1,600 rows" minimap
+    bound I sent the stage 5 and 6 agent was for a reduced 1,048,576-line profile; at the default the bound is about
+    3,200 rows (derived, not run), so 1,600 stays as the conservative figure. Six constraints: all hold for variant 2
+    (soft on constraints 3 and 5), but the Linebender LLM policy requires human-written descriptions, so the drafts are
+    not fileable as written. Agent's filing ranking: post nothing now > one human-written issue for variant 2 >
+    comment on PR 1861 > a PR. Decision I took (veto-open): post nothing; the IDE is protected by row-height clips
+    and the 131,072-tile rule, and could carry the patch through `[patch.crates-io]` if a larger target is ever
+    needed. Note: at exactly 131,072 tiles the default `ptcl` has no dynamic room, so a scene needing one more chunk
+    there fails loudly with bit 16.
     Agent `ae0713008b220a655` (started 2026-10-20) reproduces the
     selection blank in the real app, fixes the clip structure with a failing test first, applies e1 and measures VRAM,
     RSS, first frame and cadence with `matrix-load.mjs`. Verification of both uses `~/temp/agent/matrix-load.mjs` and at least 15

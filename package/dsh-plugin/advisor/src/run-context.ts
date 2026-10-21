@@ -1,0 +1,80 @@
+/**
+ Shared Advisor run-context assembly for DSH operations. @module
+ */
+
+import type {
+  AdvisorRunContext,
+  AdvisorTranscript,
+} from '@monochromatic-dev/agent-harness-shared-advisor/ts';
+import type {
+  DshAdvisorCatalog,
+} from './types.ts';
+
+//region Types
+
+/**
+ Inputs for assembling one shared Advisor run context.
+ */
+export type CreateDshAdvisorRunContextOptions = {
+  /**
+   Catalog snapshot serving the model-resolution port.
+   */
+  readonly catalog: DshAdvisorCatalog;
+  /**
+   Transcript port over the captured session snapshot.
+   */
+  readonly transcript: AdvisorTranscript;
+  /**
+   Working directory for project-scope resolution.
+   */
+  readonly cwd: string;
+  /**
+   Agent route identity used as the current main model to avoid, when both
+   provider and model are configured.
+   */
+  readonly mainProvider?: string;
+  /**
+   Agent model id paired with `mainProvider`.
+   */
+  readonly mainModel?: string;
+};
+
+//endregion Types
+
+//region Public API
+
+/**
+ Assemble the shared run context for one Advisor operation.
+
+ The current main model is supplied only when the agent carries a complete
+ `provider/model` route, so default selection can exclude it exactly as pi
+ excludes its active primary model.
+
+ @param options - catalog, transcript, working directory, and agent route
+
+ @returns shared run context
+
+ @example
+ ```ts
+ const ctx = createDshAdvisorRunContext({ catalog, transcript, cwd: exec.cwd });
+ ```
+ */
+export function createDshAdvisorRunContext(
+  options: CreateDshAdvisorRunContextOptions,
+): AdvisorRunContext {
+  return {
+    modelRegistry: options.catalog,
+    transcript: options.transcript,
+    cwd: options.cwd,
+    ...((options.mainProvider === undefined) || (options.mainModel === undefined)
+      ? {}
+      : {
+        model: {
+          provider: options.mainProvider,
+          id: options.mainModel,
+        },
+      }),
+  };
+}
+
+//endregion Public API

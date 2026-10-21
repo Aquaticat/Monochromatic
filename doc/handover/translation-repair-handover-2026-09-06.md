@@ -670,9 +670,8 @@ its "Next" list is still the queue the merge went ahead of.
       w248 and w249,
       rebuild,
       set `FROZEN`,
-      record the `zheermao19` read,
       recalibrate the energy margin,
-      then CuspariaKLSY and the rest of the rotation.
+      then restart the rotation at `zheermao101` on the combined build.
     - The class of the `zheermao15` read is ledger B702.
     - The guard of B701 stays open and undecided:
       the rotation sweep as an expensive mise task,

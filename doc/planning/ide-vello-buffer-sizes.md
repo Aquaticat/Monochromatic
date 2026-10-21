@@ -8,6 +8,7 @@ Every number comes from a command run on 2026-10-20 on the owner's host
 (AMD Radeon RX 7600, RADV, Vulkan, Vello 0.11.0, wgpu 30.0.1, wgpu-hal 30.0.1);
 what was not run is listed under "Not measured".
 All sizes are in MiB (2^20 bytes) unless a count says otherwise.
+The blank and corrupt frames at these limits are traced and reproduced in [the Vello note][vello note].
 
 ## Result in one paragraph
 
@@ -466,3 +467,5 @@ All under `~/temp/agent/vello-buffers/` (scratch, not in the repository):
   `correctness.mjs` renders every profile with pixels and compares them with `big` (`correctness.jsonl`);
   `bump-default.jsonl` holds the counters of the unmodified sizes.
 - `pr1861.diff` is the upstream pull request's patch for reading.
+
+[vello note]: ../troubleshooting/vello-silent-blank-or-corrupt-frames-at-fixed-buffer-limits.md
