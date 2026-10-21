@@ -6,6 +6,9 @@ import {
   renderPrompt,
   type SystemPrompt,
 } from '@deepseek-ai/dsh-system-prompt';
+import type {
+  DshAdvisorAgentSurface,
+} from './types.ts';
 
 //region Types
 
@@ -36,22 +39,32 @@ export type DshAdvisorSystemPromptSurface = Pick<SystemPrompt, 'assemble'>;
  @param systemPrompt - system-prompt registry surface whose assembly carries
  the project context
 
+ @param agent - agent surface whose assembly context resolves the `model` and
+ `provider` prompt variables referenced by persona sections
+
+ @param signal - abort signal forwarded into the assembly context
+
  @returns rendered project-context text
 
  @example
  ```ts
- const projectContext = await buildDshAdvisorProjectContext({ systemPrompt });
+ const projectContext = await buildDshAdvisorProjectContext({ systemPrompt, agent });
  ```
  */
 export async function buildDshAdvisorProjectContext(
   {
     systemPrompt,
+    agent,
+    signal,
   }: {
     readonly systemPrompt: DshAdvisorSystemPromptSurface;
+    readonly agent: DshAdvisorAgentSurface;
+    readonly signal?: AbortSignal;
   },
 ): Promise<string> {
   return renderPrompt(await systemPrompt
-    .assemble(),);
+    .assemble(agent
+      .assembleContext(signal),),);
 }
 
 //endregion Public API

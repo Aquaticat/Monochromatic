@@ -143,6 +143,10 @@ export async function runDshAdvisorReview(
     },),
     buildDshAdvisorProjectContext({
       systemPrompt: options.systemPrompt,
+      agent: options.agent,
+      ...(options.signal === undefined
+        ? {}
+        : { signal: options.signal, }),
     },),
   ],);
   /**

@@ -62,6 +62,7 @@ function toolCallFixture(
           options: {},
           whenIdle: () => Promise.resolve(),
           appendOperationRecord: () => undefined,
+          assembleContext: () => ({}),
         },
       }),
   } as unknown as ExecuteDshAdvisorToolCallOptions;

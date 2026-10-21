@@ -13,6 +13,9 @@ import type {
   ReasoningEffortId,
 } from '@deepseek-ai/dsh-llm';
 import type {
+  AssembleContext,
+} from '@deepseek-ai/dsh-system-prompt';
+import type {
   AdvisorModelResolution,
   AdvisorOperationSnapshot,
 } from '@monochromatic-dev/agent-harness-shared-advisor/ts';
@@ -140,4 +143,12 @@ export type DshAdvisorAgentSurface = {
    Persist one failed Advisor operation to the durable session log.
    */
   readonly appendOperationRecord: (operation: AdvisorOperationSnapshot) => void;
+  /**
+   Build the system-prompt assembly context carrying this agent's identity.
+
+   The agent-loop's `model` and `provider` prompt variables read
+   `context.agent.options`, so an assembly built without this context fails to
+   render any section referencing them.
+   */
+  readonly assembleContext: (signal?: AbortSignal) => AssembleContext;
 };
