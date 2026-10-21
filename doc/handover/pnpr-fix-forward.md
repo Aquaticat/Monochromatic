@@ -249,6 +249,9 @@ and run `39693597489` reports
    `@monochromatic-dev:registry=https://pnpr.c.aquati.cat/npm/~monochromatic-dev/`,
    and consumer lockfiles re-resolve their tarball URLs
    (documented in `package/config/pnpr/README.md`).
+   Tracked as `Aquaticat/labwc-config#2`
+   (opened 2026-10-21 at the person's request;
+    they handle it in another session).
 2. Final report to the person:
    the deploy outage and recovery,
    the `/npm` surface move,
