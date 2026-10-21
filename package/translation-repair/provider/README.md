@@ -23,16 +23,20 @@ The groups that follow name the main ones.
 - Routing and budgets:
   choose the provider for a model,
   pass calls down the provider order when one is dry,
+  hold a provider out for the run when it rejects its credential,
   read the provider meters,
   and pace requests to a provider's rate limit.
   Names:
   `createRoutingClient`,
+  `createCredentialHolds`,
+  `isCredentialRefusal`,
   `routeProviderFor`,
   `createProviderBudgets`,
   `readEveryMeter`,
   `EveryProviderDryError`,
   `createRequestPace`.
   Declared in `provider-router.ts`,
+  `credential-hold.ts`,
   `budget-routing.ts`,
   `provider-budget.ts`,
   `provider-meters.ts`,
