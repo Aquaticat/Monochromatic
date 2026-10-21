@@ -548,6 +548,33 @@ await describe({
           },
         },),
         it({
+          name: 'REFUSES BEDROCK WHILE IT IS LEFT OFF, whatever its key and credit say, before any meter is read: the '
+            + 'launch would otherwise print status=wet for a provider no run asks',
+          fn: async () => {
+            /**
+             Directory holding this case's empty ledger.
+             */
+            await using scratch = await scratchDir({ prefix: 'required-providers-bedrock-off-', },);
+            /**
+             What the gate raised for Bedrock with a key and credit to spare.
+             */
+            const refusal = await gateOutcome(async function gateOffBedrock() {
+              await assertRequiredProvidersReady({
+                required: ['bedrock',],
+                env: {
+                  [KEY_NAMES.bedrock]: 'test-bedrock',
+                  [BEDROCK_LEDGER_PATH_VAR]: join(scratch.path, 'bedrock-spend.jsonl',),
+                  [BEDROCK_CREDIT_USD_VAR]: '40',
+                },
+                transport: unreachedTransport,
+                signal: AbortSignal.timeout(HANG_STOP_MS,),
+              },);
+            },);
+            expect(refusal,).toBeInstanceOf(RequiredProviderError,);
+            expect((refusal as Error).message,).toContain('bedrock is not ready: left off',);
+          },
+        },),
+        it({
           name: 'READS NEURALWATT OFF THE ENERGY LEDGER THE HANDED ENVIRONMENT NAMES, floored by the account\'s two '
             + 'read-only routes, wet under its day\'s allowance and dry at none, and REFUSES A MISSING KEY before '
             + 'reading anything',
