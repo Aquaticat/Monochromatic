@@ -143,6 +143,12 @@ impl GpuTile {
         self.inner.borrow_mut().pending_minimap = Some((chunks, top));
     }
 
+    /// TEMPORARY: whether a tile or a wrap indicator waits for a frame to draw it.
+    pub(super) fn tile_waiting(&self) -> bool {
+        let inner = self.inner.borrow();
+        return inner.pending_tile.is_some() || inner.pending_sign.is_some();
+    }
+
     /// Whether a picture of the minimap waits for a frame to draw it.
     pub(super) fn minimap_waiting(&self) -> bool {
         return self.inner.borrow().pending_minimap.is_some();
