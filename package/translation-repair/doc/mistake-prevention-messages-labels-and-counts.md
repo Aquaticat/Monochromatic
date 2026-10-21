@@ -401,6 +401,16 @@ The throws for an unwritable record have 3 tests that fail with the throws repla
 A reason that the record never held is outside what it can see,
 and no scan finds another log line that reports nothing done without a reason.
 
+The same holds for a decision that drops a heard reply:
+the archive block review dropped two of four replies and logged only `2 eligible assessments from 4 heard reviews`,
+so the refused quote could not be told from a refused reviewer (ledger B715).
+The function that decides a reply is evidence also returns the sentence naming the test and the numbers that decided it
+(`archiveReplyVerdict`),
+and the stage logs that sentence at the decision,
+one warning per reply and never a count alone.
+`archive-reply-verdict.unit.test.ts` reads every branch's sentence,
+and `archive-block-review-stage.unit.test.ts` reads the logged lines.
+
 ## Counts that include calls never made
 
 What happened:

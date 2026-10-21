@@ -29,12 +29,14 @@ The groups that follow name the main ones.
   `runArchiveBlockReviewStage`,
   `buildArchiveBlockReviewMessages`,
   `isVerifiableEditorialArchiveBlock`,
+  `archiveReplyVerdict`,
   `archiveBlockSelectionEvidence`,
   `withArchiveOriginal`,
   `voicesAsRead`.
   Declared in `archive-block-review-stage.ts`,
   `archive-block-review-wire.ts`,
   `archive-block-evidence.ts`,
+  `archive-reply-verdict.ts`,
   `archive-block-selection-evidence.ts`,
   `archive-composite-revision.ts`,
   and `archive-voices-as-read.ts`.

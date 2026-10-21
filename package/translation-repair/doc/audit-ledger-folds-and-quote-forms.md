@@ -522,3 +522,176 @@ whitespace runs,
 quotation-mark style and the punctuation at a quote's edges read as equal,
 and later steps use the place's own span,
 never a judge's string.
+
+## B715: the archive review's source-quote anchor compared a screenshot quote with the picture's own line breaks, and a dropped reply was never logged
+
+Found on 2026-10-21 (UTC) in run zheermao20, the email letter block (`block/14`) of `zheermao101`.
+Red `4e0cbc1b5f`,
+fixed in `e0dbf84a38`
+(with `3ebf976751`, which brought the new verdict function under the fixed-length-cut,
+count-noun and duplicate-body scans that the first fix commit failed).
+Four reviews were heard:
+two `revise` replies and two `source-supported` replies
+(minimax-m3, reply `8cddb6a0`; the GLM-5.3-Flash re-ask on OpenRouter, reply `38241cf7`).
+The log read `2 eligible assessments from 4 heard reviews`,
+so both `source-supported` replies had been dropped as unanchored,
+and no line said which test refused which reply.
+
+### What decides a reply is anchored
+
+`runArchiveBlockReviewStage` (`archive/src/archive-block-review-stage.ts`) keeps a `source-supported` reply only when
+`isArchiveSourceQuoteAnchored` (`archive/src/archive-block-evidence.ts`) accepts its quote against the text the sheet carries as
+the expected section,
+or `isArchiveReferenceQuoteAnchored` accepts it against one cited page.
+That section text is built by `archiveBlockSourceContexts` (`page-check/src/corpus-run/archive-block-source-context.ts`):
+the Chinese source section,
+then one `CORROBORATED PICTURE SOURCE SUPPORT <asset>` heading and transcript per picture the section names,
+the transcript being the one the other readers carry most (the decision of 2026-09-16).
+The quote must show four characters a reader sees (B40) and be a span of that text.
+Until this entry the span test was a raw `includes` after the punctuation fold (B24).
+It is not a comparison against the archive block,
+a heading or an attested line.
+The sheet asks for "one exact character-for-character span from the aligned section,
+one corroborated picture transcription or one cited page's text"
+(`archive/src/archive-block-review-wire.ts`).
+
+### The replay
+
+Offline,
+no provider,
+from the run's stored replies (`/home/user/temp/agent/x15-fix/b715-replay.ts`,
+output `b715-replay-after.txt`).
+The picture readings were rebuilt by the real `readImagePair` through `promptUniqueClient` over a read-only
+`promptPayloadStore` on the run's `prompt-payloads`,
+with the entry's photos from the working copy of the corpus:
+all 12 reader prompts (four readers, three pictures) hit a stored reply by digest,
+which proves the bytes and the reader prompt are the run's,
+and the overlaps reproduce the log (0.990, 0.971 and 0.976).
+The reader lengths in the log lines count characters that are not whitespace (`solidCharacters`):
+minimax-m3's `photo1.webp` reply holds 559 of them in 596 characters,
+which the log's `559 characters` and the stream's `598 content chars` (UTF-16 units) both fit.
+The sheet's section text was rebuilt from source with the real `archiveBlockSourceContexts`
+(2,402 characters: the section and three transcripts of Kimi-K3 for `photo1.webp`,
+Qwen3.8-27B for `photo2.webp` and Kimi-K3 for `photo3.webp`),
+not read from the run,
+which holds replies only.
+The chosen transcripts are the ones `mostCarriedReading` picks over the four readings,
+not a copy of the sheet.
+
+- `38241cf7` quotes 39 characters of one sentence of `photo1.webp`.
+  The chosen transcript keeps the screenshot's hard wrap (`罪恶` then a line break then `的呢`),
+  the longest folded opening of the quote found in the text was 22 of 39,
+  and with whitespace set aside the quote is a span of every one of the four `photo1.webp` readings.
+  Refused for a line break the reviewer left out: a normalization mismatch,
+  and a defect.
+  The readers are told to preserve line breaks (`slice-reading/src/image-reading-stage.ts`),
+  so a wrapped transcript is the designed shape.
+- `8cddb6a0` quotes 661 characters.
+  It fails at its 30th character on the same line break,
+  but with whitespace set aside it still fails:
+  the quote is three runs of 462,
+  83 and 101 characters,
+  the first in the `photo1.webp` transcript and the other two in the `photo2.webp` transcript with a gap between them,
+  joined into one letter with the pictures' own words
+  (`回复全部 Arts Epiphany...`) and the sheet's headings left out.
+  That is not one span of one transcript,
+  which is what the sheet asks for,
+  so its refusal is correct by design and stays.
+  The commit messages of the red and fix commits say the three runs also reach `photo3.webp`;
+  the replay shows they do not,
+  and this entry is the correction (the commits are not amended,
+  and nothing was pushed from this worktree to carry a commit comment).
+- Neither reply quotes the transcript the reviewer was shown wrongly,
+  and neither fails the four-character minimum.
+  The length rule and the prefix rule are not at fault.
+
+### The fix
+
+`isArchiveSourceQuoteAnchored` asks `quoteIsIn` (`reference/src/reference-attest-match.ts`),
+the comparison the reference attestation already makes of a quote it verifies
+(Mio22 lost a quorum on one space,
+B25): the evidence fold,
+every whitespace character set aside on both sides,
+the shown-character minimum counted first and unchanged.
+`isArchiveReferenceQuoteAnchored` inherits it through the same function.
+Replayed:
+`38241cf7` is anchored,
+`8cddb6a0` is still refused,
+so the block would have carried 3 eligible assessments of 4 heard instead of 2,
+one of them supporting the archive text.
+That the judges would have chosen differently is not claimed.
+Its cost is the attestation's:
+with spaces gone,
+two Latin words can meet across a boundary the text does not have,
+and the four-character minimum is all that bounds that.
+
+### The missing log line
+
+The stage dropped replies in a bare `.filter`.
+`archiveReplyVerdict` (`archive/src/archive-reply-verdict.ts`) now makes the decision and states it,
+and the stage logs one warning per dropped reply:
+`archive review dropped the source-supported reply of <seat>: ...`,
+naming the test that refused it:
+the shown characters against the minimum,
+or the quote's length with whitespace set aside,
+its opening,
+the section's length and how much of the quote's opening the section and the best cited page hold;
+and for an `editorial-context` reply the block's length and that it is not wholly apparatus.
+Replayed on the two stored replies the lines read
+`its quote runs 646 characters ... opens "我是Transland管理员ArtsEp" ... the longest opening of the quote found there 462 of 646`
+for `8cddb6a0`,
+which locates the stitch at its first joint,
+and nothing for `38241cf7`.
+The decision and the sentence come from one function,
+so a line cannot name a test the decision did not make (B40's two layers).
+
+### Evidence
+
+Red:
+five cases fail at `4e0cbc1b5f`
+(the two anchor cases in `archive-block-evidence.unit.test.ts`,
+the wrapped-section stage case and the two log cases in `archive-block-review-stage.unit.test.ts`),
+and the two controls that must keep refusing pass.
+With the anchor made to accept anything,
+12 cases fail across four test files,
+the controls among them.
+The fix commit adds `archive-reply-verdict.unit.test.ts` for every branch of the verdict.
+All of `archive` passes under `buildAndTest`,
+`lint:types` and `lint`.
+
+Cache versions:
+none moves.
+The archive block review is cached nowhere:
+its replies replay from the run's prompt payloads by prompt digest and the prompts are unchanged,
+and its only product is the archive text,
+which the translate,
+repair,
+consolidation and consistency keys already hash by content.
+`cache-account-audit` (read-only) lists the eight constants:
+translate 22,
+page title 4,
+consistency 6,
+lane contest 13,
+refine 11,
+repair slice 40,
+consolidate 28 and pairing 3.
+Of the 26 archive review summaries in the 18 stored `corpus-pass-*.log` files,
+21 heard more replies than they found eligible,
+52 replies in all.
+Their causes are not recoverable:
+the logs hold no sheets,
+and the drops were unlogged,
+so only zheermao20's letter was replayed.
+The next run's log lines will carry each cause.
+
+Decided for quality and open to veto:
+reading the anchor through `quoteIsIn` rather than collapsing only line breaks
+(the attestation's precedent,
+and a reviewer's spaces around Latin tokens differ as often as its line breaks);
+and leaving the sheet's wording alone
+(telling reviewers about a picture's line breaks would also have worked and is not needed now).
+
+Recurrence:
+`mistake-prevention.md`,
+"Which fold for which question",
+and "Log lines that report nothing done".
