@@ -4,6 +4,7 @@ import {
   OPENROUTER_WITHHELD,
   providerServing,
   reachOf,
+  visionReachOf,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import {
   holdSet,
@@ -164,6 +165,15 @@ export type JudgeSeats = {
    of all.
    */
   readonly readers: readonly RosterModelId[];
+
+  /**
+   The readers a wet provider can show a picture in this reading: the
+   readers bench less the seats only a text route is wet for. The seat line
+   prints its count beside the bench's, because a reader with no wet
+   picture route stays seated and is lost at call time (XingZ6016 printed
+   `readers=5` while two could see).
+   */
+  readonly readersSeeing: readonly RosterModelId[];
 
   /**
    Consolidation writers for this reading: the measured writers less any
@@ -342,6 +352,15 @@ export function judgeSeatsFor(
    */
   const readers = RUN_READER_MODELS.filter(seated,);
   /**
+   Picture readers a wet provider can show a picture.
+   */
+  const readersSeeing = readers.filter(function sees(modelId: RosterModelId,): boolean {
+    return providerServing({
+      reach: visionReachOf({ modelId, },),
+      dry,
+    },) !== NO_PROVIDER;
+  },);
+  /**
    Consolidation writers for this reading.
    */
   const writers = RUN_WRITERS.filter(seated,);
@@ -414,6 +433,7 @@ export function judgeSeatsFor(
     checkers,
     translators,
     readers,
+    readersSeeing,
     writers,
     roster,
     repairModels: {

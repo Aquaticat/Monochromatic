@@ -270,7 +270,7 @@ await describe({
             },);
             expect(lines,).toEqual([
               'info JUDGE SEATS phase=lanes neuralwatt=wet synthetic=wet bedrock=wet hyper=wet openrouter=wet wide=7 select=8 '
-              + 'late=8 slate=8 checkers=3 translators=8 readers=6 writers=9 roster=9 withheld=none unserved=none '
+              + 'late=8 slate=8 checkers=3 translators=8 readers=6 seeing=6 writers=9 roster=9 withheld=none unserved=none '
               + 'threw-withheld=hf:Qwen/Qwen3.8-27B (threw 4 of 4 asks) waited=0ms',
             ],);
 
@@ -288,7 +288,7 @@ await describe({
             },);
             expect(mixedLines,).toEqual([
               'info JUDGE SEATS phase=lanes neuralwatt=wet synthetic=wet bedrock=wet hyper=wet openrouter=wet wide=7 select=8 '
-              + 'late=8 slate=8 checkers=3 translators=8 readers=6 writers=9 roster=9 withheld=none unserved=none '
+              + 'late=8 slate=8 checkers=3 translators=8 readers=6 seeing=6 writers=9 roster=9 withheld=none unserved=none '
               + 'threw-withheld=none waited=0ms',
             ],);
           },
