@@ -1391,8 +1391,13 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     pass. Not run: a second full `test:native`, guard runners, a capped against uncapped video-memory comparison, runs
     under host load. The agent's worktree, its 32 GiB `target` copy and its branch (local and remote) are removed; no
     units or containers were left.
+    Redraw agent `a3a543d4c80040d25` (started 2026-10-21, own worktree off `origin/main`, branch push only): finds by
+    measurement why `picture.rs` requests an extra redraw on handoff (identical frame at slots 35, 67, 99, 130 of the
+    scripted scroll), fixes only if the cause is clear and the A/B cadence shows it; brief quotes `NLG`, `NLD`, `RXI`.
+    On its report: verify, scan `ps`, `podman ps`, `systemctl --user list-units`, merge in a scratch worktree, gates
+    once, reinstall if the binary changed, remove its worktree and branch.
     Open, in order: (1) the unexplained redraw on picture handoff in `src/native/minimap/picture.rs` (the remaining
-    identical frames; a cause by measurement first); (2) the flake work, in `doc/handover/ide-native-flakes.md`:
+    identical frames; a cause by measurement first; the agent above is on it); (2) the flake work, in `doc/handover/ide-native-flakes.md`:
     fixed with counts (refused-tile test 10 of 360 to 0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160
     to 0 of 160, find-box menu test by its guard, see the LANDED block above); open: the annotation stability tests
     (cause unknown, frames kept under `target/flake-frames/` for the next failure), the two incomplete ledger entries,
