@@ -1850,6 +1850,95 @@ returned an empty success reply,
  confirming method dispatch through
 `@homebridge/dbus-native`.
 
+### `katex` (dropped for GHSA-238p-pmpm-9mq7; substituted via a throwing workspace shim)
+
+`katex` is not installed in this workspace.
+Commit `c92efa816c` (2026-10-19) overrode `'micromark-extension-math>katex': '-'` for GHSA-238p-pmpm-9mq7 / CVE-2026-103923
+(`>=0.11.0 <0.18.2` lets existing prototype pollution bypass katex's trust restrictions).
+The only consumer is `micromark-extension-math@3.1.0`,
+and its latest release still asks for `katex: ^0.16.0`,
+so the fixed release cannot be reached in range.
+Removal alone broke every unbundled load of `remark-math`;
+the override now points at a shim,
+`'micromark-extension-math>katex': 'link:package/shim/katex'`,
+whose every member throws and which never renders.
+
+#### Dependency chain
+
+```text
+katex  (substituted: link:package/shim/katex)
+└─┬ micromark-extension-math@3.1.0
+  └─┬ remark-math@6.0.0
+    └── @monochromatic-dev/translation-repair-document-structure  (src/parse-mdx.ts imports remark-math)
+```
+
+#### Why removal was not enough
+
+`micromark-extension-math`'s `package.json` exports only `"."`,
+and its `index.js` re-exports `mathHtml` from `lib/html.js`.
+`lib/html.js` runs `import katex from 'katex'` and reads `katex.renderToString` when the module loads.
+With the package removed,
+loading `remark-math` threw
+`ERR_MODULE_NOT_FOUND: Cannot find package 'katex' imported from .../micromark-extension-math/lib/html.js`.
+The workspace uses only the syntax extension (`math`),
+never `mathHtml`,
+but an ESM re-export loads the whole module either way.
+
+Built bundles were not affected:
+rolldown drops `lib/html.js` because the package declares `sideEffects: false`,
+which is why corpus runs from built output kept working.
+
+#### Why the failure stayed hidden
+
+Unit tests import the unbundled sources,
+so every test file that reaches `parse-mdx.ts` loads `remark-math` directly.
+They passed only because the scratch worktrees sat under a directory that held its own `node_modules`
+(another session's npm install),
+which contained a `katex`.
+Node found it by walking up the directory tree from `micromark-extension-math`.
+That install was rewritten at 2026-10-21 17:10:03 UTC without `katex`,
+and from then on 1,172 test files of 26 packages failed at load in worktrees under that directory.
+The change that dropped `katex` had been checked the same way,
+so its note that the unit suite passed,
+math cases included,
+rested on the parent directory and not on the repository.
+
+#### Why a shim and not a stub
+
+`package/stub/throwing` throws when it is loaded,
+which is the wrong moment here:
+`lib/html.js` loads it on every import of `remark-math`.
+`package/shim/katex` loads cleanly and exposes `renderToString` and the other members as functions,
+so the read in `lib/html.js` succeeds and only a call (or `new ParseError()`) throws `KatexNotInstalledError`.
+The message names katex,
+the advisory,
+the override and the reason the shim exists.
+This follows the precedent of `package/shim/node-domexception`,
+except that the shim cannot be API-identical,
+because the real API is what the advisory rules out.
+
+Its `index.d.cts` also exports a `KatexOptions` type:
+once `katex` resolves to a package that has a `types` field,
+TypeScript no longer falls back to `@types/katex`
+for `micromark-extension-math`'s `import type { KatexOptions } from 'katex'`.
+
+#### Verification
+
+- Red,
+  from a worktree with no `node_modules` in any parent directory and before the shim,
+  one `document-structure` unit test file failed at load with the `ERR_MODULE_NOT_FOUND` above.
+- pnpm honours `link:` in a `parent>child` selector override:
+  `node_modules/.pnpm/micromark-extension-math@3.1.0/node_modules/katex` is a symlink to `package/shim/katex`.
+- Green,
+  the same file and the whole `document-structure` unit task pass in that worktree;
+  `package/shim/katex` has its own tests for the import and for every member.
+- The built `corpus-pass` bundle is byte-identical before and after the override:
+  its pipeline digest and a hash over every output file are equal.
+
+Revisit when `micromark-extension-math` accepts a `katex` release outside the advisory range,
+or when the workspace needs `mathHtml`.
+See `package/shim/katex/README.md`.
+
 ## Why we do not file the policy entries upstream
 
 Walked the 5-constraint upstream-filing check once for the whole policy
