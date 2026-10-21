@@ -806,6 +806,32 @@ Lifting it adds Gemma to the readers a wet OpenRouter reaches,
 which changes the roster `imageReadingKey` hashes for every entry whose Bedrock is dry,
 and the version bump belongs to the commit that lifts it.
 
+Update of 2026-10-21 (UTC),
+at the lift:
+the claim above that the lift changes the roster `imageReadingKey` hashes,
+and that a version bump belongs to the lifting commit,
+was wrong,
+and no version moved.
+No cache version constant names the picture readers.
+The roster the key hashes is the readers bench (`readers` of `judgeSeatsFor`),
+which holds a reader whenever a wet provider serves it text,
+so it already held `gemma-4-26b-a4b-it` while Bedrock was dry and OpenRouter wet,
+and the lift does not change a key.
+What it changes is whether that reader's ask can be sent to a provider that shows it a picture.
+A stored reading says what the readers asked saw and stays valid.
+The reading store opens under the digest of the built pipeline,
+and the card is bundled into that build:
+the `corpus-pass` build at the lifting commit digests to `sha256-tree-v1:b4eacc1f...`,
+and the same tree with the hold put back digests to `sha256-tree-v1:96cc43b6...`.
+The first pass on a new build therefore discards the store before it reads it
+(`slice-cache-pairing.unit.test.ts` holds the mechanism for the pairing caches,
+`openNamespacedCache` is the one opener of the picture store too).
+`cache-account-audit`,
+run against an empty scratch runs directory,
+read eight constants,
+none of them a picture reader's,
+and lists the lifting commit among the commits that ride inside the standing accounts.
+
 Open to the owner's veto:
 a hold of its own,
 not a card flag flipped back and forth,

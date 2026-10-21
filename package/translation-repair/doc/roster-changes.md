@@ -234,5 +234,50 @@ with `TRANSLATION_REPAIR_OPENROUTER_API_KEY` set:
 when it reports both clauses met,
 remove the hold from the card,
 rebuild,
-and run `cache-account-audit`,
-because the roster a picture cache key names then changes (ledger B721 to B723).
+and run `cache-account-audit` (ledger B721 to B723;
+the cache version this step was thought to move did not exist,
+see the update in B721).
+
+The hold was lifted on 2026-10-21 (UTC),
+after `reader-measure` ran three times through OpenRouter
+with zero data retention at `--sample 9`.
+The first run (08:44 UTC) and the second (08:48 UTC) named the 20 recent `corpus-pass-*` runs directories,
+the second adding the full-corpus pass of 2026-08-19.
+Both read 3 trusted records,
+matched 3 of the 291 pictures,
+produced 3 readings and were not measured:
+3 of the 6 readings a verdict needs.
+The recent runs directories hold only 3 `picture.<key>.json` files,
+all corroborated and all for one entry,
+so no sample could have added a picture,
+and the report's advice to ask again with a larger sample was the defect of ledger B800.
+The third run (09:02 UTC) named 107 older single-entry runs directories,
+which hold 450 such files and 192 distinct trusted reading sets across 10 entries
+(Mio 106,
+hakureico 26,
+XingZ60 21,
+Toka_ls 12,
+gqt 8,
+zheermao101 8,
+luxuanwen3 3,
+Zha_Ke 3,
+yuki418330012 3,
+Xu_Yushu 2).
+It matched 9 pictures and produced 9 readings against a seated band of 43 readings
+with a floor of 1.00 corroborated by all and a ceiling of 0.00 corroborated by none,
+and both clauses were met:
+every one of the 9 readings was corroborated by every seated reading of its picture,
+and none was corroborated by none.
+The limit of that verdict is its breadth:
+the 9 pictures came from two entries (Mio 7,
+Toka_ls 2).
+The measurement spent 15 calls of the model (3,
+3 and 9).
+The card no longer carries `openrouter-pictures-unmeasured` (the fix commit `97e17dc6dc`,
+red `3a61ff6698`),
+and the vision reach of `gemma-4-26b-a4b-it` names Bedrock and OpenRouter.
+The hold,
+its set and its gate stay in the code for the next candidate;
+no card carries it.
+No cache version moved (ledger B721,
+update of 2026-10-21 (UTC)).

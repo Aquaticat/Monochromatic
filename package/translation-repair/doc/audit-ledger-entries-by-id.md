@@ -397,6 +397,7 @@ which lists every file of this record.
 - [B717, defaults that stand in for an input](audit-ledger-defaults-standing-in-for-an-input.md)
 - [B718 to B720, provider streams, usage counts and retries](audit-ledger-provider-streams-usage-and-retries.md)
 - [B721 to B723, which seats a quorum counts](audit-ledger-which-seats-a-quorum-counts.md)
+- [B800, runner reports and probes](audit-ledger-runner-reports-and-probes.md)
 - [D1 to D11, docs and comments that disagreed with the code](audit-ledger-docs-against-code.md)
 - [D12, doc conventions and their guards](audit-ledger-doc-conventions-and-their-guards.md)
 - [D13 to D21, docs and comments that disagreed with the code](audit-ledger-docs-against-code.md)

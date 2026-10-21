@@ -182,6 +182,22 @@ The `SEAT CREDENTIAL REFUSED` warn line is the one place the run says it,
 once per provider
 (see [Configuration](configuration.md)).
 
+## Gemma's pictures reach OpenRouter since 2026-10-21
+
+With Bedrock's key expired,
+the only provider showing `gemma-4-26b-a4b-it` a picture was Bedrock,
+so a pass with Bedrock out counted the seat in the readers bench (served text by OpenRouter and Hyper)
+and could not send it a picture (`seeing=` in the `JUDGE SEATS` line,
+ledger B722).
+OpenRouter lists the model as reading images,
+and `reader-measure` found its transcription through that route to meet both clauses of the reader rule
+on 2026-10-21 (UTC),
+over 9 pictures of two entries (`roster-changes.md` has the three runs).
+Since the lift the seat is shown pictures by OpenRouter whenever OpenRouter is wet,
+Hyper still shows it none,
+and the state `XingZ6016` started in (Bedrock expired,
+OpenRouter wet) now has `readers=5 seeing=3` where it had two seats that could see.
+
 ## Measuring how much of the time each provider was there
 
 On 2026-08-24 three writer seats sat on models only Charm Hyper served,

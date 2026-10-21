@@ -195,7 +195,8 @@ named for that subject and listed here.
   or by a rule the writer does not keep.
 - [Audit ledger: runner reports and probes](audit-ledger-runner-reports-and-probes.md):
   Report and probe commands that printed a claim their own figures deny,
-  or bought work nothing could use.
+  or bought work nothing could use,
+  and a picture reader measurement whose next step named the sample when the trusted records had limited the count (B800).
 - [Audit ledger: footnote markers and link destinations](audit-ledger-footnote-markers-and-link-destinations.md):
   Scans for footnote markers and link destinations that disagreed with the parse,
   about where a marker is a reference or where an address ends,

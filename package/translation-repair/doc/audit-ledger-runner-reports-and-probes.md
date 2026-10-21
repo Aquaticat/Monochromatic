@@ -567,3 +567,83 @@ the report names no alternative.
 Recurrence:
 `mistake-prevention.md`,
 "Claims without their evidence".
+
+## B800: the picture reader measurement told a run short of trusted records to ask again with a larger sample
+
+Red `b1a88def13`,
+fixed in `43589efacb`,
+`3a4ac9e2ea` and `2d38261279`.
+
+Found on 2026-10-21 (UTC) in the three keyed runs of `reader-measure` for `gemma-4-26b-a4b-it`.
+
+What the runs showed:
+the first two runs (08:44 UTC and 08:48 UTC) named the 20 recent `corpus-pass-*` runs directories,
+the second adding the full-corpus pass of 2026-08-19.
+They read 3 trusted records,
+matched 3 of the 291 pictures,
+produced 3 readings,
+and printed `RESULT: not measured: 3 of the 6 readings a verdict needs were produced.`
+with `NEXT: keep the hold 'openrouter-pictures-unmeasured'; ask again with a larger --sample, or read the per-picture reasons the run printed.`
+The recent runs directories hold 3 `picture.<key>.json` files in all,
+every one for one entry,
+so a larger sample could not have added a picture:
+the loop had already tried all 291.
+The older single-entry runs directories hold 450 such files,
+and the third run (09:02 UTC),
+naming 107 of them,
+read 192 distinct trusted records across 10 entries and was measured.
+Two other gaps showed in the same printouts.
+The candidate's rates were printed without the floor and ceiling they were held to,
+so a verdict could not be checked from the printout,
+and nothing said which entries the matched pictures came from,
+so a measurement resting on two entries read like one resting on the corpus.
+
+The cause:
+`verdictLines` in `reader-measure-report.ts` printed one fixed `NEXT` line for every candidate that produced too few readings,
+whichever input had limited the count,
+and `renderMeasureReport` was handed neither the sample asked,
+the trusted records read,
+nor the pictures found,
+so it could not tell the three limits apart.
+The sample limits the count only when pictures were left untried.
+The trusted records limit it when every picture was tried and fewer than six matched.
+The candidate's own answers limit it when six or more matched and few readings came back.
+
+The fix:
+the report prints a `CANDIDATE:` line with the candidate's reading count and both of its shares beside the seated floor and ceiling
+(or says no reading was produced),
+an `OVERLAP:` line,
+and an `ENTRIES:` line counting the matched pictures by the first directory of their path,
+most pictures first.
+The `NEXT` line for too few readings asks for more trusted records when every picture was tried and fewer than six matched,
+naming `--trusted` directories whose runs directories hold `slice-cache/<entry>/picture.<key>.json` files of other entries,
+and `--pictures`;
+asks for a larger `--sample` only when pictures were left untried;
+and points at the per-picture reasons when six or more pictures matched.
+A run is read as having tried every picture when it matched fewer pictures than its sample,
+since the loop stops short of its sample only when the pictures run out.
+Two follow-up commits brought the lines within the lint rules and the source scans:
+no position references,
+an example calling every required key,
+and every count noun counted by `wordForCount`.
+
+Limits:
+the trusted records name no picture,
+so the report counts records and cannot say which entries they came from;
+only the matched pictures are grouped by entry.
+A picture directly in the pictures directory is counted under `(no entry directory)`.
+The `ENTRIES:` line shows how narrow a sample is and does not set a floor on it.
+
+Cache versions:
+none.
+The report is printed text.
+
+Open to the owner's veto:
+a floor on the number of entries a measurement rests on.
+The measurement of 2026-10-21 rested on two (Mio 7,
+Toka_ls 2),
+and the rule of 2026-09-08 sets none.
+
+Recurrence:
+`mistake-prevention-messages-labels-and-counts.md`,
+"Log lines that report nothing done".
