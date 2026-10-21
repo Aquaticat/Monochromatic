@@ -16,6 +16,9 @@ type Counts = { pass: number; flaky: number; fail: number; failedAttempts: numbe
  */
 const statusLine = /^\s*(PASS|FAIL|FLAKY \d+\/\d+|TRY \d+ (?:PASS|FAIL)|TIMEOUT|ABORT|SIG[A-Z]+|LEAK|LEAK-FAIL|SLOW|EXECFAIL)\s+\[[^\]]*\]\s+(?:\[[^\]]*\]\s+)?\(([^)]*)\)\s+\S+\s+(\S+)\s*$/;
 
+/** A run of more tests than this lists only the tests that failed an attempt; fewer list every test. */
+const listedCleanTests = 12;
+
 /** Lines of the first failure's output that the report keeps. */
 const keptLines = 30;
 
@@ -82,12 +85,21 @@ export const summarize = (logs: readonly string[]): Tally => {
   }
   let failures = 0;
   const blocks: string[] = [];
-  for (const test of [...counts.keys()].sort()) {
+  const clean: string[] = [];
+  const tests = [...counts.keys()].sort();
+  for (const test of tests) {
     const counted = counts.get(test) as Counts;
     failures += counted.fail;
     const runs = counted.pass + counted.flaky + counted.fail;
     const head = `${test}: ${counted.fail} failed, ${counted.flaky} passed after a retry (FLAKY), ${counted.pass} passed, of ${runs} runs (${counted.failedAttempts} failed attempts including retries)`;
-    blocks.push(counted.first === undefined ? head : `${head}\nfirst failure:\n${counted.first}`);
+    if (counted.failedAttempts === 0 && tests.length > listedCleanTests) {
+      clean.push(test);
+    } else {
+      blocks.push(counted.first === undefined ? head : `${head}\nfirst failure:\n${counted.first}`);
+    }
+  }
+  if (clean.length > 0) {
+    blocks.push(`${clean.length} other tests had no failed attempt in any run.`);
   }
   if (blocks.length === 0) {
     blocks.push('No test result was found in the logs: the filter selected no test, or nextest did not run.');

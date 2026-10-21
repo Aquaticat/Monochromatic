@@ -21,7 +21,7 @@ use super::{
     wrap_tests::{long_text, open, settled},
 };
 /// Bounded waiting that advances native timers until a state the test checks holds.
-use crate::native::waiting_tests::Waiting;
+use crate::native::waiting_tests::{Facts, Waiting};
 /// Toolkit events.
 use slint::{
     ComponentHandle, platform::update_timers_and_animations,
@@ -88,7 +88,13 @@ fn a_failed_worker_tile_frees_its_job_and_the_next_placement_gets_its_tile() {
         // pass, so the test waits for the failure the state recorded when it named it.
         let mut waiting = Waiting::slow();
         while !(!opened.source.borrow().worker_failures.is_empty()) {
-            waiting.step("the failed worker tile was not reported");
+            waiting.step(format_args!(
+                "the failed worker tile was not reported {}",
+                Facts {
+                    window,
+                    source: &opened.source
+                }
+            ));
         }
     }
     assert!(
@@ -98,13 +104,23 @@ fn a_failed_worker_tile_frees_its_job_and_the_next_placement_gets_its_tile() {
     );
     assert!(
         opened.source.borrow().tile_job.is_none(),
-        "the failed job is still held"
+        "the failed job is still held {}",
+        Facts {
+            window,
+            source: &opened.source
+        }
     );
     {
         let mut waiting = Waiting::slow();
         while !(!opened.source.borrow().tile_poll.running()) {
             update_timers_and_animations();
-            waiting.step("the poll of a failed job did not stop");
+            waiting.step(format_args!(
+                "the poll of a failed job did not stop {}",
+                Facts {
+                    window,
+                    source: &opened.source
+                }
+            ));
         }
     }
     // One more step of the view asks for the tile again, and it arrives.
@@ -122,7 +138,13 @@ fn a_failed_worker_tile_frees_its_job_and_the_next_placement_gets_its_tile() {
                     break;
                 }
             }
-            waiting.step("the tile after a failed one did not arrive");
+            waiting.step(format_args!(
+                "the tile after a failed one did not arrive {}",
+                Facts {
+                    window,
+                    source: &opened.source
+                }
+            ));
         }
     }
     assert!(

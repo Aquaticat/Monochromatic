@@ -222,7 +222,10 @@ fn find_box_context_menu_runs_each_entry() {
     assert_eq!(
         window.get_find_query(),
         "x",
-        "the menu's Select All did not select the whole find text"
+        "the menu's Select All did not select the whole find text (find status {:?}, find focus {}, search open {})",
+        window.get_find_status(),
+        window.get_find_has_focus(),
+        window.get_search_open()
     );
     assert!(
         window.get_find_has_focus(),

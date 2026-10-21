@@ -8,8 +8,8 @@
 // The pure helpers are tested in stress-native.test.ts; the container and the load unit are the only side effects.
 
 import { spawn, spawnSync } from 'node:child_process';
-import { createWriteStream, mkdirSync, mkdtempSync, readFileSync, statSync } from 'node:fs';
-import { homedir } from 'node:os';
+import { createWriteStream, mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync } from 'node:fs';
+import { homedir, loadavg } from 'node:os';
 import { join, resolve } from 'node:path';
 import { containerBounds } from './container-bounds.ts';
 import { gpuArguments } from './gpu-arguments.ts';
@@ -132,6 +132,35 @@ const startLoad = (): void => {
   console.error(`Load: stress-ng with ${options.load} busy CPU loops in unit ${loadUnit}`);
 };
 
+/** The video memory of the largest card, read from sysfs, or nothing when no card reports it. */
+const videoMemory = (): { used: number; total: number } | undefined => {
+  let best: { used: number; total: number } | undefined;
+  for (const card of readdirSync('/sys/class/drm').filter(entry => /^card[0-9]+$/.test(entry))) {
+    try {
+      const total = Number(readFileSync(`/sys/class/drm/${card}/device/mem_info_vram_total`, 'utf8'));
+      const used = Number(readFileSync(`/sys/class/drm/${card}/device/mem_info_vram_used`, 'utf8'));
+      if (best === undefined || total > best.total) {
+        best = { used, total };
+      }
+    } catch {
+      // A card without the counters is not the one the tests render on.
+    }
+  }
+  return best;
+};
+
+/** Peak video memory and load average seen while sampling, so a failure can be read against the pressure it met. */
+const pressure = { vramPeak: 0, vramTotal: 0, loadPeak: 0, samples: 0 };
+const sample = (): void => {
+  const memory = videoMemory();
+  if (memory !== undefined) {
+    pressure.vramPeak = Math.max(pressure.vramPeak, memory.used);
+    pressure.vramTotal = memory.total;
+  }
+  pressure.loadPeak = Math.max(pressure.loadPeak, loadavg()[0] ?? 0);
+  pressure.samples += 1;
+};
+
 /** Run one bounded command in the container and wait for it; output goes to `logFile`. */
 const execute = (command: readonly string[], logFile: string): Promise<number> =>
   new Promise(done => {
@@ -168,6 +197,7 @@ try {
   }
   startLoad();
   const began = Date.now();
+  const sampler = setInterval(sample, 5000);
   const runs = Array.from({ length: options.copies }, (_, copy) =>
     execute([
       'cargo', 'nextest', 'run', '--bin', 'monochromatic-ide', '--filter-expr', options.filter, '--no-fail-fast',
@@ -175,9 +205,11 @@ try {
       '--status-level', 'pass', '--final-status-level', 'none', '--failure-output', 'immediate',
     ], join(logs, `copy-${copy}.log`)));
   await Promise.all(runs);
+  clearInterval(sampler);
   const tally: Tally = summarize(Array.from({ length: options.copies }, (_, copy) => readFileSync(join(logs, `copy-${copy}.log`), 'utf8')));
   console.log(`Stress run: filter ${options.filter}, ${options.copies} copies x ${options.count} iterations, load ${options.load} CPUs, retries ${options.retries}, ${Math.round((Date.now() - began) / 1000)} s`);
   console.log(`Logs: ${logs}`);
+  console.log(`Pressure: video memory peak ${(pressure.vramPeak / 2 ** 30).toFixed(2)} of ${(pressure.vramTotal / 2 ** 30).toFixed(2)} GiB (all programs), load average peak ${pressure.loadPeak.toFixed(1)}, ${pressure.samples} samples`);
   console.log(tally.report);
   process.exitCode = tally.failures > 0 ? 1 : 0;
 } finally {
