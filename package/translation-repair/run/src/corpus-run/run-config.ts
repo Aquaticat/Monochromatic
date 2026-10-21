@@ -36,7 +36,10 @@ import {
   type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
+  type BudgetView,
+  createCredentialHolds,
   createRoutingClient,
+  foldCredentialHolds,
   readsImages,
   type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
@@ -1176,6 +1179,15 @@ export function runClientFrom(
   } = clients;
 
   /**
+   Providers whose credential a call found refused, held out for the rest of
+   the run: the router reads them to route, and the dryness view below reads
+   them for the benches. ONE CLIENT PER RUN is what a corpus pass builds
+   (`corpus-pass-run.ts`), so a 401 is learned once per run there; the commands
+   that build a client per slice or per arm learn it again for each.
+   */
+  const credentialHolds = createCredentialHolds();
+
+  /**
    Routed client with stable compatibility quota surface.
    */
   const routed: ModelClient = {
@@ -1186,6 +1198,7 @@ export function runClientFrom(
       // 2026-09-29, and no call could reach one.
       callers: clients,
       budgets,
+      credentialHolds,
       // Hyper paces its calls to the account's hourly limit; while that
       // window is full, a model another provider serves goes there instead
       // of queueing (class one hundred forty-nine).
@@ -1228,7 +1241,15 @@ export function runClientFrom(
       // left out of the gathers' benches, so no later stage asks it again.
       minAsks: SEAT_WITHHOLD_ASKS,
     },),
-    providerDryness: budgets.read,
+    // THE VIEW THE SEAT READERS AND BENCHES ARE DERIVED FROM READS A PROVIDER
+    // WHOSE CREDENTIAL WAS REFUSED AS DRY: its meter reads money left and says
+    // nothing of whether the key is accepted (zheermao19).
+    providerDryness: async function providerDryness({ signal, },): Promise<BudgetView> {
+      return foldCredentialHolds({
+        dry: await budgets.read({ signal, },),
+        holds: credentialHolds,
+      },);
+    },
     providerMeterStates: budgets.readStates,
     providerHolds: budgets.holds,
   };

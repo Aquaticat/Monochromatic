@@ -20,24 +20,27 @@ import {
   routeProviderFor,
 } from './budget-routing.ts';
 import {
+  callHoldingRefusedCredential,
+  type CredentialHolds,
   createCredentialHolds,
-  holdOnCredentialRefusal,
   reachPastCredentialHolds,
 } from './credential-hold.ts';
 import { routedDecide, } from './provider-router-decide.ts';
-import { reachPastHoldsOrRefusal, } from './reach-past-holds.ts';
+import {
+  reachOfRequest,
+  reachPastHoldsOrRefusal,
+} from './reach-past-holds.ts';
 import type {
   Decider,
   DecisionReply,
   DecisionRequest,
 } from './decision-contract.ts';
-import {
-  carriesPicture,
-  type ChatJsonOutcome,
-  type ChatJsonRequest,
-  type ChatTextReply,
-  type ChatTextRequest,
-  type ModelCaller,
+import type {
+  ChatJsonOutcome,
+  ChatJsonRequest,
+  ChatTextReply,
+  ChatTextRequest,
+  ModelCaller,
 } from './chat-contract.ts';
 import {
   isBudgetRefusal,
@@ -75,10 +78,6 @@ import {
   createUpstreamModelHolds,
   UPSTREAM_MODEL_HOLD_MS,
 } from './upstream-model-hold.ts';
-import {
-  reachOf,
-  visionReachOf,
-} from './roster-reach.ts';
 
 //region Provider router
 // ONE CLIENT OVER EVERY PROVIDER. A stage names a panelist; this decides where
@@ -136,27 +135,6 @@ const DEFAULT_SLOT_LIMITS: SlotLimits = {
 };
 
 /**
- Providers that can serve one call, narrowed to vision where it carries a
- picture.
-
- @param request - call whose reach is read
-
- @returns Reach for the policy, or for a re-ask, to decide on
-
- @example
- ```ts
- const reach = reachOfRequest({ request, },);
- ```
- */
-function reachOfRequest(
-  { request, }: { readonly request: ForeignBorrowed<ChatTextRequest>; },
-): ModelReach {
-  if (carriesPicture({ messages: request.messages, },))
-    return visionReachOf({ modelId: request.modelId, },);
-  return reachOf({ modelId: request.modelId, },);
-}
-
-/**
  Builds the client that routes each call to whichever provider can serve it.
 
  @param callers - each configured provider's text call, which is all this
@@ -188,6 +166,11 @@ function reachOfRequest(
 
  @param l - logger the router writes its warns to; the package's root logger by default
 
+ @param credentialHolds - providers whose credential was refused, a fresh set
+ by default; a run that builds several routers hands them one set, so a 401 is
+ learned once, and reads the same set for the view its seat readers use
+ (`foldCredentialHolds`)
+
  @returns Client surface a stage calls without naming a provider
 
  @example
@@ -206,6 +189,7 @@ export function createRoutingClient(
     now = monotonicMs,
     paces = {},
     l = routerRoot,
+    credentialHolds = createCredentialHolds(),
   }: {
     readonly callers: ProviderCallers;
     readonly budgets: ProviderBudgets;
@@ -216,6 +200,7 @@ export function createRoutingClient(
     readonly now?: () => number;
     readonly paces?: ProviderPaces;
     readonly l?: Logger;
+    readonly credentialHolds?: CredentialHolds;
   },
 ): ModelCaller {
   /**
@@ -239,12 +224,6 @@ export function createRoutingClient(
     holdMs: modelHoldMs,
     now,
   },);
-
-  /**
-   Providers whose credential a call has found refused, held out of every
-   model for the rest of the run (zheermao19, 2026-10-20).
-   */
-  const credentialHolds = createCredentialHolds();
 
   /**
    Providers that can serve one call, narrowed to vision where it carries a
@@ -442,7 +421,26 @@ export function createRoutingClient(
      dry, and is never chosen (ledger T8).
      */
     const caller = nonNullishOrThrow(callers[provider],);
-    return await caller.chatText(request,);
+    // HELD ON THE CALL ITSELF, so a first ask and the cross-provider re-ask
+    // hold a provider the same way, through the one function.
+    return await callHoldingRefusedCredential({
+      call: function askProvider(): Promise<ChatTextReply> {
+        return caller.chatText(request,);
+      },
+      hold: {
+        rl: tagged({
+          tag: callOn.name,
+          l,
+        },),
+        provider,
+        modelId: request.modelId,
+        reach: reachOfRequest({ request, },),
+        holds: credentialHolds,
+        boundHolds,
+        budgets,
+        signal: request.signal,
+      },
+    },);
   }
 
   /**
@@ -562,19 +560,11 @@ export function createRoutingClient(
           continue;
         }
         if (isCredentialRefusal({ error, },)) {
-          // HELD OUT FOR THE RUN, FOR EVERY MODEL: the credential is the
-          // provider's and does not renew, so the call goes on to the next
-          // provider serving the model, and the seat is withheld only when
-          // none is left (the loop ends, and `reachPastBoundHoldsOrRefusal` reads the holds).
-          holdOnCredentialRefusal({
-            rl,
-            provider,
-            modelId: request.modelId,
-            error,
-            reach: reachOfRequest({ request, },),
-            holds: credentialHolds,
-            boundHolds,
-          },);
+          // ALREADY HELD OUT FOR THE RUN, FOR EVERY MODEL, by `callOn`: the
+          // credential is the provider's and does not renew, so the call goes
+          // on to the next provider serving the model, and the seat is
+          // withheld only when none is left (the loop ends, and
+          // `reachPastBoundHoldsOrRefusal` reads the holds).
           continue;
         }
         if (isUpstreamModelRefusal({ error, },)) {

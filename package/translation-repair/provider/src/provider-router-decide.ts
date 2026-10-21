@@ -110,7 +110,11 @@ export async function routedDecide(
         modelId: request.modelId,
         provider: 'openrouter',
         error,
-        movesTo: [],
+        outlook: {
+          open: [],
+          dry: [],
+          heldForModel: [],
+        },
       },),);
     }
     if (isBudgetRefusal({ error, },)) {

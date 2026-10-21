@@ -4,8 +4,11 @@
 // holds put that file over the line budget.
 
 export {
+  callHoldingRefusedCredential,
+  type CredentialHolds,
   createCredentialHolds,
   credentialRefusalLine,
+  foldCredentialHolds,
   holdOnCredentialRefusal,
   reachPastCredentialHolds,
 } from './credential-hold.ts';

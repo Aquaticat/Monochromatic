@@ -5,6 +5,11 @@ import {
   type ProviderName,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { ModelReach, } from './budget-routing.ts';
+import { isCredentialRefusal, } from './provider-budget-refusal.ts';
+import type {
+  BudgetView,
+  ProviderBudgets,
+} from './provider-budget.ts';
 import {
   reachPastBoundHolds,
   type StreamBoundHolds,
@@ -139,7 +144,82 @@ export function reachPastCredentialHolds(
 }
 
 /**
+ Where a seat can go once a provider's credential is refused, among the
+ providers that still serve it.
+ */
+export type SeatOutlook = {
+  /**
+   Providers that serve the model and can take a call now, in the order they
+   are tried: not credential-held, not dry, not held for the model.
+   */
+  readonly open: readonly ProviderName[];
+
+  /**
+   Providers that serve the model and read dry.
+   */
+  readonly dry: readonly ProviderName[];
+
+  /**
+   Providers that serve the model and are held out for it on its stream bound.
+   */
+  readonly heldForModel: readonly ProviderName[];
+};
+
+/**
+ Says what becomes of the seat.
+
+ @param modelId - model whose call met the refusal
+
+ @param outlook - the providers still serving the model, by what each can do now
+
+ @returns The sentence for the line
+
+ @example
+ ```ts
+ const sentence = seatSentence({ modelId, outlook, },);
+ ```
+ */
+function seatSentence(
+  {
+    modelId,
+    outlook: {
+      open,
+      dry,
+      heldForModel,
+    },
+  }: {
+    readonly modelId: string;
+    readonly outlook: SeatOutlook;
+  },
+): string {
+  if (open.length > 0)
+    return `${modelId} moves to ${open.join(', then ',)} (every provider that serves it and can take a call now).`;
+
+  /**
+   Providers that serve the model but cannot take a call now, each with why, in provider order.
+   */
+  const waiting = PROVIDER_ORDER.flatMap(function reasonOf(candidate,): readonly string[] {
+    if (dry.includes(candidate,))
+      return [`${candidate} is dry`,];
+    if (heldForModel.includes(candidate,))
+      return [`${candidate} is held for this model`,];
+    return [];
+  },);
+  if (waiting.length === 0)
+    return `No provider that serves ${modelId} is left, so the seat is withheld for the rest of the run.`;
+  return `No provider that serves ${modelId} can take a call now (${waiting.join(', ',)}), `
+    + 'so the seat is not withheld on this refusal: the router goes on by its rules for a dry or held provider.';
+}
+
+/**
  The line said once per provider, when its credential is first refused.
+
+ THREE ENDINGS FOR THE SEAT, because they are three facts. A provider that can
+ take the call now is named as where the seat moves to. Providers that serve
+ the model but are dry or held for it are named by that reason and the seat is
+ not withheld on this refusal, since the router's rules for a dry or held
+ provider decide what follows. Only a model no provider serves any longer is
+ withheld.
 
  @param modelId - model whose call met the refusal
 
@@ -147,14 +227,13 @@ export function reachPastCredentialHolds(
 
  @param error - what the call threw, whose words the line quotes
 
- @param movesTo - providers still serving the model, in the order they are
- tried, none where the model is served nowhere else
+ @param outlook - the providers still serving the model, by what each can do now
 
  @returns The warn line
 
  @example
  ```ts
- rl.warn(credentialRefusalLine({ modelId, provider: 'bedrock', error, movesTo: ['hyper',], },),);
+ rl.warn(credentialRefusalLine({ modelId, provider: 'bedrock', error, outlook, },),);
  ```
  */
 export function credentialRefusalLine(
@@ -162,27 +241,37 @@ export function credentialRefusalLine(
     modelId,
     provider,
     error,
-    movesTo,
+    outlook,
   }: {
     readonly modelId: string;
     readonly provider: ProviderName;
     readonly error: unknown;
-    readonly movesTo: readonly ProviderName[];
+    readonly outlook: SeatOutlook;
   },
 ): string {
   /**
-   What becomes of the seat, said in the order it is tried.
+   The failure and the provider's own words.
    */
-  const seat = (movesTo.length === 0)
-    ? `No provider that serves ${modelId} is left, so the seat is withheld for the rest of the run.`
-    : `${modelId} moves to ${movesTo.join(', then ',)}.`;
-  return `SEAT CREDENTIAL REFUSED ${modelId} on ${provider}: ${exchangeFailureLogText({ error, },)}. `
+  const said = exchangeFailureLogText({ error, },);
+  /**
+   What becomes of the seat.
+   */
+  const seat = seatSentence({
+    modelId,
+    outlook,
+  },);
+  return `SEAT CREDENTIAL REFUSED ${modelId} on ${provider}: ${said}. `
     + `${provider} is held out for every model for the rest of the run, because one credential serves them all. `
     + `${seat} Renew ${provider}'s credential before the next run, or leave it.`;
 }
 
 /**
  Holds a provider out for a refused credential, saying so the first time.
+
+ THE ONE PLACE A REFUSED CREDENTIAL IS HELD, reached from the call itself
+ (`provider-router.ts`), so a first ask and the cross-provider re-ask hold the
+ provider the same way. The budgets are read only for the call that began the
+ hold, to say which providers can take the seat now.
 
  @param rl - logger the line goes to
 
@@ -199,12 +288,16 @@ export function credentialRefusalLine(
  @param boundHolds - the router's stream bound holds, which also close a
  provider to the model the line names the seat's next provider from
 
+ @param budgets - the router's budget view, read for which providers are dry
+
+ @param signal - the call's abort signal, which the budget read honours
+
  @example
  ```ts
- holdOnCredentialRefusal({ rl, provider, modelId, error, reach, holds, boundHolds, },);
+ await holdOnCredentialRefusal({ rl, provider, modelId, error, reach, holds, boundHolds, budgets, signal, },);
  ```
  */
-export function holdOnCredentialRefusal(
+export async function holdOnCredentialRefusal(
   {
     rl,
     provider,
@@ -213,6 +306,8 @@ export function holdOnCredentialRefusal(
     reach,
     holds,
     boundHolds,
+    budgets,
+    signal,
   }: {
     readonly rl: Logger;
     readonly provider: ProviderName;
@@ -221,8 +316,10 @@ export function holdOnCredentialRefusal(
     readonly reach: ModelReach;
     readonly holds: CredentialHolds;
     readonly boundHolds: StreamBoundHolds;
+    readonly budgets: Pick<ProviderBudgets, 'read'>;
+    readonly signal: AbortSignal;
   },
-): void {
+): Promise<void> {
   if (!holds.hold({ provider, },))
     return;
 
@@ -235,22 +332,122 @@ export function holdOnCredentialRefusal(
   },);
 
   /**
-   Providers still serving the model, the refused one taken out and the stream
-   bound holds with it.
+   Providers serving the model that the stream bound holds do not close to it.
    */
-  const { reach: remaining, } = reachPastBoundHolds({
+  const { reach: notHeld, } = reachPastBoundHolds({
     reach: accepted,
     modelId,
     holds: boundHolds,
   },);
+
+  /**
+   Which providers read dry now.
+   */
+  const dry = await budgets.read({ signal, },);
+
   rl.warn(credentialRefusalLine({
     modelId,
     provider,
     error,
-    movesTo: PROVIDER_ORDER.filter(function stillServes(candidate,): boolean {
-      return remaining[candidate];
-    },),
+    outlook: {
+      open: PROVIDER_ORDER.filter(function canTakeNow(candidate,): boolean {
+        return notHeld[candidate] && (!dry[candidate]);
+      },),
+      dry: PROVIDER_ORDER.filter(function servesAndDry(candidate,): boolean {
+        return notHeld[candidate] && dry[candidate];
+      },),
+      heldForModel: PROVIDER_ORDER.filter(function servesAndHeld(candidate,): boolean {
+        return accepted[candidate] && (!notHeld[candidate]);
+      },),
+    },
   },),);
+}
+
+/**
+ Performs one provider call, holding the provider out when it answers that its
+ credential was refused, and rethrowing every failure unchanged.
+
+ @param call - the provider call to perform
+
+ @param hold - everything `holdOnCredentialRefusal` needs but the failure
+
+ @returns Whatever the call returned
+
+ @throws Whatever the call threw, after a refused credential is held
+
+ @example
+ ```ts
+ const reply = await callHoldingRefusedCredential({ call: askBedrock, hold, },);
+ ```
+ */
+export async function callHoldingRefusedCredential<ReplyT,>(
+  {
+    call,
+    hold,
+  }: {
+    readonly call: () => Promise<ReplyT>;
+    readonly hold: Omit<Parameters<typeof holdOnCredentialRefusal>[0], 'error'>;
+  },
+): Promise<ReplyT> {
+  try {
+    return await call();
+  }
+  catch (error) {
+    if (isCredentialRefusal({ error, },))
+      await holdOnCredentialRefusal({
+        ...hold,
+        error,
+      },);
+    throw error;
+  }
+}
+
+/**
+ Reads the budget view with every provider whose credential was refused as
+ dry, which is the one reading the seat readers, benches and quorum
+ denominators are derived from.
+
+ A METER SAYS WHETHER MONEY IS LEFT, NOT WHETHER THE KEY IS ACCEPTED. The
+ Bedrock meter stayed wet through the run its token expired in, so a bench read
+ from the meters alone counted its seats within reach until each was asked.
+
+ @param dry - the budget view as the meters and refusal holds read it
+
+ @param holds - the router's credential holds
+
+ @returns The view with each held provider read dry
+
+ @example
+ ```ts
+ const view = foldCredentialHolds({ dry: await budgets.read({ signal, },), holds, });
+ ```
+ */
+export function foldCredentialHolds(
+  {
+    dry,
+    holds,
+  }: {
+    readonly dry: BudgetView;
+    readonly holds: CredentialHolds;
+  },
+): BudgetView {
+  /**
+   Whether one provider reads dry or has its credential refused.
+
+   @param provider - provider read
+
+   @returns True where nothing can be bought from it
+   */
+  function dryOrHeld(provider: ProviderName,): boolean {
+    return dry[provider] || holds.isHeld({ provider, });
+  }
+  return {
+    neuralwatt: dryOrHeld('neuralwatt',),
+    synthetic: dryOrHeld('synthetic',),
+    hyper: dryOrHeld('hyper',),
+    bedrock: dryOrHeld('bedrock',),
+    openrouter: dryOrHeld('openrouter',),
+  };
 }
 
 //endregion Credential hold

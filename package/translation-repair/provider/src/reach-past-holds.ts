@@ -1,3 +1,5 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
+
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup/ts';
 import {
   PROVIDER_ORDER,
@@ -5,9 +7,17 @@ import {
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { ModelReach, } from './budget-routing.ts';
 import {
+  carriesPicture,
+  type ChatTextRequest,
+} from './chat-contract.ts';
+import {
   type CredentialHolds,
   reachPastCredentialHolds,
 } from './credential-hold.ts';
+import {
+  reachOf,
+  visionReachOf,
+} from './roster-reach.ts';
 import {
   reachPastBoundHolds,
   type StreamBoundHolds,
@@ -18,6 +28,27 @@ import {
 // the credential holds (a provider, for every model, for the run) and the stream
 // bound holds (a provider and a model, for a backoff). Split from
 // `provider-router.ts` at its line budget.
+
+/**
+ Providers that can serve one call, narrowed to vision where it carries a
+ picture.
+
+ @param request - call whose reach is read
+
+ @returns Reach for the policy, or for a re-ask, to decide on
+
+ @example
+ ```ts
+ const reach = reachOfRequest({ request, },);
+ ```
+ */
+export function reachOfRequest(
+  { request, }: { readonly request: ForeignBorrowed<ChatTextRequest>; },
+): ModelReach {
+  if (carriesPicture({ messages: request.messages, },))
+    return visionReachOf({ modelId: request.modelId, },);
+  return reachOf({ modelId: request.modelId, },);
+}
 
 /**
  Whether no provider is left in a reach.

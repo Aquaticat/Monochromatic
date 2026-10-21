@@ -717,7 +717,7 @@ await describe({
              Client under test, whose first provider rejects its credential.
              */
             const client = runClientFrom({ env: TWO_KEYS, transport: refuseFirstProviderCredential, },);
-            const signal = new AbortController().signal;
+            const { signal, } = new AbortController();
 
             /**
              Dryness before any call met the refusal.
