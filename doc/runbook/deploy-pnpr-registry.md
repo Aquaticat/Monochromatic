@@ -311,36 +311,12 @@ TODO | DONE
    Expected:
     `curl --silent http://127.0.0.1:7677/-/ping` prints nothing and exits non-zero.
     The registry serves nothing from here until the last check passes.
-2. Back the store up.
-   The conversion in step 4 is one-way for the old base,
-    and the startup error itself says `Back it up` first:
-
-   ```bash
-   mkdir --parents /var/backups/pnpr-storage
-   chmod 0777 /var/backups/pnpr-storage
-   docker run --rm --entrypoint /bin/sh --volume <VOLUME>:/pnpr/storage:z --volume /var/backups/pnpr-storage:/backup:z <IMAGE> -c 'tar --create --gzip --file /backup/pnpr-storage.tgz --directory /pnpr/storage .'
-   ```
-
-   Expected:
-    `/var/backups/pnpr-storage/pnpr-storage.tgz` exists
-    and `tar --list --gzip --file /var/backups/pnpr-storage/pnpr-storage.tgz`
-    lists the package directories.
-    This one-time snapshot departs from the standing no-backup note in
-    `package/config/pnpr/compose.yaml`;
-    it is the rollback artifact for the Restore section.
-3. Preview the conversion:
-
-   ```bash
-   docker run --rm --env PNPR_SECRET=<secret> --volume <VOLUME>:/pnpr/storage:z <IMAGE> --storage /pnpr/storage upgrade-storage --dry-run
-   ```
-
-   Expected:
-    `Would move N documents` and `Would move N other files`,
-    with the store unchanged.
-    A refusal naming `layout <n>` means the store is already converted
-    or converted by another layout,
-    and this procedure does not apply.
-4. Convert the store:
+2. Convert the store.
+   Keep the standing no-backup decision in `package/config/pnpr/compose.yaml`
+    (owner decision 2026-10-21:
+     no pre-conversion snapshot,
+     recovery republishes current versions),
+    even though the startup error says `Back it up` and the conversion is one-way for the old base:
 
    ```bash
    docker run --rm --env PNPR_SECRET=<secret> --volume <VOLUME>:/pnpr/storage:z <IMAGE> --storage /pnpr/storage upgrade-storage
@@ -350,10 +326,16 @@ TODO | DONE
     `Moved N documents` and `Moved N other files`.
     The layout marker is written last,
     so an interrupted run resumes on re-run.
-5. Re-run step 4 as a control.
+    A refusal naming `layout <n>` means the store is already converted
+    or converted by another layout,
+    and this procedure does not apply.
+   Preview first with `upgrade-storage --dry-run`
+    if you want the counts before anything moves
+    (`Would move N documents`).
+3. Re-run step 2 as a control.
    Expected:
     `The hosted store already has a current layout.json; nothing to do.`
-6. Push the lockstep commit
+4. Push the lockstep commit
     (`Containerfile` `FROM` pin,
     the `/npm` URL moves in `package/config/pnpr/src/` and the docs).
    Expected:
@@ -390,22 +372,36 @@ Status:
 TODO | DONE
 
 Only if the converted base must be rolled back.
+ Under the standing no-backup decision there is no store snapshot,
+ so the earlier base gets an empty store
+ and the publish workflow republishes current versions
+ (the same recovery the top-level Restore section uses).
 
 1. Stop the pnpr application.
-2. Put the earlier store back.
-   Delete exactly what the conversion added
-    (a stale `layout.json` would make the store look current while its data sits in the earlier layout):
+2. Empty the converted store,
+    because `0.1.0-alpha.11` cannot read it
+    and a leftover `layout.json` would make the store look current while its data sits elsewhere.
+   Remove exactly what the conversion adds
+    (`layout.json`,
+    the `default`,
+    `orgs`,
+    and `.pnpr-cache` trees),
+    leaving user records such as `htpasswd` in place:
 
    ```bash
-   docker run --rm --entrypoint /bin/sh --volume <VOLUME>:/pnpr/storage:z --volume /var/backups/pnpr-storage:/backup:z <IMAGE> -c 'rm -rf /pnpr/storage/layout.json /pnpr/storage/default /pnpr/storage/orgs /pnpr/storage/.pnpr-cache && tar --extract --gzip --file /backup/pnpr-storage.tgz --directory /pnpr/storage'
+   docker run --rm --entrypoint /bin/sh --volume <VOLUME>:/pnpr/storage:z <IMAGE> -c 'rm -rf /pnpr/storage/layout.json /pnpr/storage/default /pnpr/storage/orgs /pnpr/storage/.pnpr-cache'
    ```
 
    Expected:
-    `ls /pnpr/storage` inside a throwaway container lists the package directories and no `layout.json`.
+    `ls /pnpr/storage` inside a throwaway container shows no package directories and no `layout.json`.
 3. Revert the lockstep commit
     (the `Containerfile` `FROM` pin and the URL moves move back together)
     and let Coolify redeploy,
     or start the previous image.
    Expected:
-    `curl --silent --write-out '%{http_code}\n' --output /dev/null https://pnpr.c.aquati.cat/-/ping` prints `200`
+    `curl --silent --write-out '%{http_code}\n' --output /dev/null https://pnpr.c.aquati.cat/-/ping` prints `200`.
+4. Dispatch the `pnpr-publish` workflow
+    (empty **only** input publishes every missing version).
+   Expected:
+    the run reports the republished versions
     and the root packument URL answers `200` again.
