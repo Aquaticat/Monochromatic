@@ -20,6 +20,7 @@ import {
   type ConsolidationPolishBallot,
   isConsolidationPolishGateWire,
   readConsolidationPolishBallot,
+  readConsolidationPolishSettlement,
   settleConsolidationPolishBallots,
 } from '../dist/final/node/index.mjs';
 
@@ -57,7 +58,7 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'ACCEPTS CLEAR POLISH WIN and keeps base on ties or thin support',
+          name: 'ACCEPTS A CLEAR POLISH WIN, and counts a clear base win as the base',
           fn: async () => {
             expect(settleConsolidationPolishBallots({
               ballots: [
@@ -68,13 +69,11 @@ await describe({
             },),).toBe('polished',);
             expect(settleConsolidationPolishBallots({
               ballots: [
-                ballot({ choice: 'polished', },),
                 ballot({ choice: 'base', },),
+                ballot({ choice: 'base', },),
+                ballot({ choice: 'polished', },),
               ],
-            },),).toBe('neither',);
-            expect(settleConsolidationPolishBallots({
-              ballots: [ballot({ choice: 'polished', },),],
-            },),).toBe('neither',);
+            },),).toBe('base',);
             expect(settleConsolidationPolishBallots({
               ballots: [
                 ballot({ choice: 'polished', },),
@@ -88,6 +87,102 @@ await describe({
                 ballot({ choice: 'neither', },),
               ],
             },),).toBe('polished',);
+          },
+        },),
+        it({
+          name: 'SHIPS THE POLISHED TEXT ON A TIE between base and polished at or above the minimum ballot '
+            + 'count (owner, 2026-10-21, "Polished text wins ties"): 2 to 2, 1 to 1, and a tie beside refusals',
+          fn: async () => {
+            expect(settleConsolidationPolishBallots({
+              ballots: [
+                ballot({ choice: 'base', },),
+                ballot({ choice: 'base', },),
+                ballot({ choice: 'polished', },),
+                ballot({ choice: 'polished', },),
+              ],
+            },),).toBe('polished',);
+            expect(settleConsolidationPolishBallots({
+              ballots: [
+                ballot({ choice: 'base', },),
+                ballot({ choice: 'polished', },),
+              ],
+            },),).toBe('polished',);
+            expect(settleConsolidationPolishBallots({
+              ballots: [
+                ballot({ choice: 'base', },),
+                ballot({ choice: 'neither', },),
+                ballot({ choice: 'polished', },),
+              ],
+            },),).toBe('polished',);
+          },
+        },),
+        it({
+          name: 'CHANGES NOTHING BELOW THE MINIMUM BALLOT COUNT, and finds no tie in refusals alone or in a '
+            + 'lone vote beside a refusal',
+          fn: async () => {
+            expect(settleConsolidationPolishBallots({ ballots: [], },),).toBe('neither',);
+            expect(settleConsolidationPolishBallots({
+              ballots: [ballot({ choice: 'polished', },),],
+            },),).toBe('neither',);
+            expect(settleConsolidationPolishBallots({
+              ballots: [ballot({ choice: 'base', },),],
+            },),).toBe('neither',);
+            expect(settleConsolidationPolishBallots({
+              ballots: [
+                ballot({ choice: 'neither', },),
+                ballot({ choice: 'neither', },),
+              ],
+            },),).toBe('neither',);
+            expect(settleConsolidationPolishBallots({
+              ballots: [
+                ballot({ choice: 'polished', },),
+                ballot({ choice: 'neither', },),
+              ],
+            },),).toBe('neither',);
+            expect(settleConsolidationPolishBallots({
+              ballots: [
+                ballot({ choice: 'base', },),
+                ballot({ choice: 'neither', },),
+              ],
+            },),).toBe('neither',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: readConsolidationPolishSettlement.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES THE RULE THAT DECIDED, with the tally: a lead, a tie the polished text wins, or no '
+            + 'settlement',
+          fn: async () => {
+            expect(readConsolidationPolishSettlement({
+              ballots: [
+                ballot({ choice: 'polished', },),
+                ballot({ choice: 'polished', },),
+                ballot({ choice: 'base', },),
+              ],
+            },),).toEqual({ choice: 'polished', rule: 'polished-lead', polished: 2, base: 1, },);
+            expect(readConsolidationPolishSettlement({
+              ballots: [
+                ballot({ choice: 'base', },),
+                ballot({ choice: 'base', },),
+                ballot({ choice: 'polished', },),
+              ],
+            },),).toEqual({ choice: 'base', rule: 'base-lead', polished: 1, base: 2, },);
+            expect(readConsolidationPolishSettlement({
+              ballots: [
+                ballot({ choice: 'base', },),
+                ballot({ choice: 'base', },),
+                ballot({ choice: 'polished', },),
+                ballot({ choice: 'polished', },),
+              ],
+            },),).toEqual({ choice: 'polished', rule: 'tie-polished-wins', polished: 2, base: 2, },);
+            expect(readConsolidationPolishSettlement({
+              ballots: [ballot({ choice: 'polished', },),],
+            },),).toEqual({ choice: 'neither', rule: 'unsettled', polished: 1, base: 0, },);
           },
         },),
       ],
