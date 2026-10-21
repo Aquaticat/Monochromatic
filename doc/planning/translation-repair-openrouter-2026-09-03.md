@@ -795,3 +795,16 @@ named for that subject and listed here.
   Entries:
   zheermao20,
   CuspariaKLSY20.
+- [OpenRouter and the corpus passes: the rotation restarted on build 3637592bd4 (2026-10-21)](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart.md):
+  What was read on 2026-10-21 of the first three passes after the rotation restarted;
+  two entries settled and the third stopped on a picture only one model had read.
+  Entries:
+  zheermao21,
+  CuspariaKLSY21,
+  XingZ6016.
+  Files:
+  - [The run of zheermao21](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart-zheermao21-run.md)
+  - [The page of zheermao21](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart-zheermao21-page.md)
+  - [The run of CuspariaKLSY21](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart-cuspariaklsy21-run.md)
+  - [The page of CuspariaKLSY21](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart-cuspariaklsy21-page.md)
+  - [The XingZ6016 picture stop](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart-xingz6016.md)

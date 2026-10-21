@@ -172,14 +172,17 @@ named for that subject and listed here.
   straight against curly quotes,
   layout-only differences,
   case folds,
-  and answers checked before they were folded.
+  answers checked before they were folded,
+  and an archive review quote of a screenshot refused for the picture's own line breaks,
+  its dropped reply left unlogged (B715).
 - [Audit ledger: text that shows nothing](audit-ledger-text-that-shows-nothing.md):
   Text a reader sees as blank that passed for wording,
   because the check asked `trim()` or asked nothing.
 - [Audit ledger: defaults that stand in for an input](audit-ledger-defaults-standing-in-for-an-input.md):
   Places where a missing,
   malformed or unreadable input was replaced by a default,
-  and the run went on as though the input had said so.
+  and the run went on as though the input had said so,
+  among them a block with no source section reviewed against an empty one in silence (B717).
 - [Audit ledger: labels and counts in messages](audit-ledger-labels-and-counts-in-messages.md):
   Messages that named the wrong thing or stated a count wrongly:
   labels that did not fit,
@@ -208,7 +211,9 @@ named for that subject and listed here.
   exits an outcome rule could not reach,
   records that dropped a round,
   work no floor could check,
-  and a consolidation under the vote minimum that kept the archive wording two judges called ineligible (B696).
+  a consolidation under the vote minimum that kept the archive wording two judges called ineligible (B696),
+  two archive block revisions of disjoint lines that could not both ship (B712),
+  and the review stage's findings that its caller dropped (B714).
 - [Audit ledger: composed operations and checks on a part](audit-ledger-composed-operations-and-partial-checks.md):
   One refusal inside a composed operation that stopped the whole,
   or left no finding,
@@ -237,7 +242,8 @@ named for that subject and listed here.
   child processes or process globals.
 - [Audit ledger: clocks and durations](audit-ledger-clocks-and-durations.md):
   Durations measured on the system clock,
-  and test bounds on the real clock a loaded machine could outrun.
+  test bounds on the real clock a loaded machine could outrun,
+  and the archive block review round that waited the readers' window for writer voices (B713).
 - [Audit ledger: output decided by arrival order](audit-ledger-output-decided-by-arrival-order.md):
   Findings,
   refusals and log lines whose content or order depended on which concurrent work ended first,
@@ -426,9 +432,10 @@ named for that subject and listed here.
   joined two lines and dropped a carriage return (B703),
   the absolute naturalness review that showed its reviewers the notes (B704),
   a Han name the archive spells inside its sentence that no sheet or floor carried (B707),
-  and the judges,
+  the judges,
   critics,
-  auditors and pairers that saw the notes between translators (B708).
+  auditors and pairers that saw the notes between translators (B708),
+  and the composite archive candidate that reached the judges with no assessment (B716).
 - [Audit ledger: readers that accept what no writer writes](audit-ledger-readers-accept-shapes-writers-never-write.md):
   Readers of stored records and directories that accepted a shape,
   a name or a value their own writer never produces,

@@ -214,9 +214,9 @@ export component AppWindow inherits Window {
     out property <float> viewport-width: root.text-area-width / 1px;
     // The minimap beside the text: CodeGlance Pro's 110 px, narrower in a narrow view (`ide_app::minimap::width_for`).
     out property <length> minimap-width: clamp(round(scroll.width / 6px) * 1px, 15px, 110px);
-    // Native code builds the picture of the bands near the visible part of the file; the box, the track and the slide of
-    // the picture follow the scroll live, from the text's height, the view's height, and the scroll offset alone
-    // (`ide_app::minimap::Geometry` holds the same formulas).
+    // The GPU draws the picture of the bands near the visible part of the file into a texture; the box, the track and
+    // the slide of the picture follow the scroll live, from the text's height, the view's height, and the scroll
+    // offset alone (`ide_app::minimap::Geometry` holds the same formulas).
     in property <image> minimap-image;
     // The picture's size in physical pixels, which the markup draws it at, and the row of the whole picture its first
     // row is.

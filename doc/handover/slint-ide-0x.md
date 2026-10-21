@@ -1259,37 +1259,52 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     after the stops: nothing of this work running or unpushed; one container, `angry_tesla` (another session's
     translation job, mounts `pi-mimo` and `span02-shadow`), would be killed by a reboot, which is that session's call.
     Subagent contexts are not saved by a reboot: the notes below are the durable state.
-    Stage 5 and 6 agent (`a0880539282a3162b`): branch `worktree-agent-a0880539282a3162b`, tip `7ab986ebc3`, pushed to the
-    branch only, NOT merged into `main` and NOT installed. GPU minimap on the shared Vello `Renderer` (chunks of at most
-    512 rows copied on the GPU into the slice texture), `swash` and the CPU raster files deleted (3,406 lines added, 5,049
-    deleted), 45 `minimap-*` guards proven. Its last two commits never went through the full gates (`lint`, `test:native`,
-    `test`, `test:bin`, `build`, `inspect:software-renderer` are unrun on the tip); `test:native` failed 264/265 on the
-    external-edit timing test on one snapshot and passed 265/265 on the next. Found by screenshots: no redraw after a
-    slice handoff (fixed, no automated test). Its note: `doc/handover/ide-gpu-stages-5-6.md` in its worktree; measurements
-    in `doc/planning/ide-gpu-snapshot-harness.md` section "Stages 5 and 6". Its owner questions: a window taller than the
-    device texture limit ends the picture at the texture end; the `minimap_build` to `minimap_worker` rename; whether the
-    tightened reflection bounds (worst 36 / mean 0.8 at scale 1, 58 / 0.9 at scale 2) are an acceptable contract; the
-    `TEXTURE_DIMENSION` doc is stale. Unexercised: a chunk seam in a window of about 3,700 px, a denser scene, quiet-host
-    cadence after the redraw fix. It admits two batches of 15 full runs (before the one-run rule), two containers at about
-    24 CPUs each and a repeated release build as background load.
-    Flake agent (`af624c22739073177`): branch `worktree-agent-af624c22739073177`, tip `3f2f8b1d4f`, pushed to the branch
-    only. Fixed with counts: refused-tile test (10 of 360 failing before, 0 of 360 after), wrap clip test (3 of 240 to 0 of
-    240), reader fixture (28 of 160 to 0 of 160). Open: `find_box_context_menu_runs_each_entry` (the menu popup closes
-    during the right release; two Slint paths not separated), the annotation stability tests (frames now kept under
-    `target/flake-frames/`), the minimap external-edit test (13 of 120 on baseline). Its counts come from runs under host
-    load of 10 to 12 CPUs, which it ran until my stop message. Its stress tool no longer loads the host: build once, then
-    tests in a GPU container capped at 2 CPUs and 2 GiB (`mise run //package/desktop-app/ide:test:native:stress --filter
-    ... --count N --copies K --threads T`; one verification run only). Not done: the "Flaky test ledger", any retry
-    override, all gates on the final snapshot. Its note: `doc/handover/ide-native-flakes.md` in its worktree. Open
-    questions: put the highlighting-reply wait into the other fixtures (`watch_tests::open`, `refresh_latency_tests`,
-    `navigation_tests`, `language/test_support.rs`); lower the test thread count (video memory sits at 7.98 of 7.98 GiB in
-    every full run). Leftover untracked scratch: `.claude/exp-flake`, `.claude/exp-flake2`; the detached worktree
-    `.claude/worktrees/ide-gpu56-baseline` can be removed.
-    Next actions, in order: (1) the owner reboots when ready (run the reboot check first); (2) merge both branches in a
-    scratch worktree (they touch `find_tests.rs`, `tile.rs`, `ide-gpu-snapshot-harness.md` and others, so conflicts are
-    likely), then ONE `lint` and ONE `test:native` on the merged tip, then the other gates; (3) cadence pairs with a noise
-    floor, screenshots at scale 1 and 2 dark and light, a 3,700 px chunk-seam check; (4) land, push explicitly, reinstall
-    the IDE (backup, capped install, sha256 compare); (5) remove worktrees and branches; (6) apply the open flake work.
+    LANDED 2026-10-21 after the reboot: both agent branches are merged and pushed as `34a38c9897` on `main` (scratch
+    worktree, explicit `git push origin HEAD:main`; `origin/main` had gained only translation and doc commits, none
+    touching the IDE, the compositor or the lint tool). One conflict, a doc comment in `tile_scene/item.rs`. Repairs the
+    merge needed: `tests/tile_vello_limit.rs` imported the deleted `text_raster::MAX_RASTER_BYTES` (now
+    `shaped_text::MAX_RASTER_BYTES`), an implicit `return` in `annotation_stability_tests.rs`, rustfmt in
+    `minimap_tests.rs` and `minimap_dense_tests.rs`, semantic line breaks in three flake test files.
+    The positive control `one_render_of_four_dense_chunks_comes_out_blank` failed on the merged tip. A probe measured
+    one render of the densest selected scene: eight chunks (4,096 rows) draw every inked pixel, twelve (6,144 rows) come
+    out blank. The likely cause is `c57aa0fd66` (a selected row drawn once), which shrinks the scene; no run on the
+    unmerged agent tip isolated it. The control is now `one_render_of_every_dense_chunk_comes_out_blank` over the whole
+    16-chunk slice (blank, 0 of 515,712 inked pixels), and the doc section names the new margin.
+    Gates on the final tree: `lint` pass; `test:native` 271 of 271 passed, 5 skipped, 170 s, run once with the filter
+    `all()` so the run does not stop at the first failure (the first run, with fail-fast, stopped at the control with
+    139 tests unrun); `test` 795 of 795, `test:bin`, `build`, `inspect:software-renderer` pass. Cadence by
+    `~/temp/agent/matrix-load.mjs` (release, 50,000-line `big.rs`, 1100x660, baseline `origin/main` before the merge as
+    A, merged tip as B, 5 alternating pairs, A against A twice for the floor): scroll 118 to 119 of 119 in every run of
+    both; drag A 115, 117, 116, 115, 112 of 121 (median 115), B 118, 115, 114, 110, 117 (median 115), floor 111 to
+    117, so
+    no difference beyond the floor. Screenshot of the merged tip (dark, scale 1): code and minimap draw, and select-all
+    shows the selection marks in both. Not run: scale 2 and the light scheme in the app (the reflection tests cover both
+    scales), the chunk seam of a window of about 3,700 px, quiet-host cadence, a denser scene. The fixture lives in
+    `/tmp/ide-gpu-fixture` (the inspector demands a project below `/tmp`; rebuild with
+    `~/temp/agent/make-gpu-fixture.mjs`).
+    Installed 2026-10-21: `~/.local/bin/monochromatic-ide` sha256 prefix `c0b8219d73bc1062`, equal to the release build;
+    the previous binary (`ab91c5f45960a4e7`) is `monochromatic-ide.previous`.
+    Removed: both agent branches (local and remote), their worktrees, `ide-gpu56-baseline`, `.claude/exp-flake` and
+    `.claude/exp-flake2`, my scratch worktrees. Another session's `cargo mutants` container (`event_hints.rs`, started
+    03:36 on 2026-10-21) was running during this work; it is not ours and was left alone.
+    Owner decisions of 2026-10-21 on the stage 5+6 questions (`doc/handover/ide-gpu-stages-5-6.md`): (a) a window
+    taller than the device texture limit stacks textures, so the minimap covers the whole window (to build); (b) the
+    reflection bounds (worst 36 / mean 0.8 at scale 1, 58 / 0.9 at scale 2) are the contract, kept as the guard;
+    (c) the `minimap_build` to `minimap_worker` rename stands (already in the code, `src/native/minimap_worker.rs`).
+    Still open from that note: the stale `TEXTURE_DIMENSION` doc; dense-selection cost until full-height clipping in
+    `split.rs` and `encode.rs` is fixed.
+    Agent `a4d54af4e63faea6b` (started 2026-10-21 after the owner's decision (a), its own worktree off `origin/main`,
+    branch push only) builds the stacked textures with a failing test first; its brief quotes `NLG`, `NLD` and `RXI`
+    and limits it to one full `test:native`; on its report I verify the numbers, scan `ps`, `podman ps` and
+    `systemctl --user list-units`, merge in a scratch worktree, run the gates once, land, and reinstall.
+    Open, in order: (1) stacked textures for a window taller than the texture limit; (2) the flake work, in `doc/handover/ide-native-flakes.md`: fixed with counts (refused-tile test 10 of 360 to
+    0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160 to 0 of 160); open:
+    `find_box_context_menu_runs_each_entry`,
+    the annotation stability tests (frames kept under `target/flake-frames/`), the minimap external-edit test (13 of 120
+    on baseline), the highlighting-reply wait in `watch_tests::open`, `refresh_latency_tests`, `navigation_tests` and
+    `language/test_support.rs`, the "Flaky test ledger", any retry override, and a lower test thread count (video memory
+    sits at 7.98 of 7.98 GiB in every full run). The one full `test:native` of this landing passed 271 of 271, which
+    is one snapshot, not a flake count. (3) Scale 2, light scheme and seam checks in the app, on a quiet host.
     The prevention proposal `doc/planning/agents-cannot-load-the-host.md` waits for the owner: a fresh Claude session and
     at least two more reviewers must read it first. Stopgap rules `NLG` and `NLD` are in `AGENTS.md`. The entry in
     `doc/limitation/claude.md` ("Delegated GPU migration of the Slint IDE") lists this session's and the agents' mistakes.

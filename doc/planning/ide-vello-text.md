@@ -377,7 +377,7 @@ renderer of the `Text` elements (design A) is the choice only when simplicity ou
 
 ## Migration stages (design C, with design B differences at the end)
 
-Each stage leaves the app usable and has its own check. Stages 1 and 2 are reversible by a flag until stage 5. Stages 3 and 4 were merged into one.
+Each stage leaves the app usable and has its own check. Stages 1 and 2 are reversible by a flag until stage 5. Stages 3 and 4 were merged into one, and so were stages 5 and 6.
 
 1. Measurement and profile groundwork. Add `[profile.dev.package."*"] opt-level` for dependencies (debug builds are
    twelve times slower in Slint and Vello). Keep the cadence driver with a positive control (the debug build must show
@@ -398,14 +398,16 @@ Each stage leaves the app usable and has its own check. Stages 1 and 2 are rever
    tests rewritten against paint items and GPU readback, a guard per piece that fails a test when the piece is
    removed, and the cadence run.
    Done on 2026-10-20 (section "Stages 3 and 4" of `doc/planning/ide-gpu-snapshot-harness.md`).
-5. Minimap as a GPU slice texture. Render the slice with a row cache; keep the box, pointer, and planning code. Delete
-   `downscale.rs`, `build.rs`, `render.rs`, `fills.rs`, `cache.rs`, `minimap_build`, `picture.rs`. Check: the drag
-   cadence for 489 and 50,000 lines, a crispness comparison against the removed bitmap, `tall_window_minimap_tests`.
-6. Delete the CPU pipeline: `text_raster.rs`, `glyph_cache.rs`, `selection_paint.rs`, the pixel code of
-   `annotation_paint.rs`, the `swash` dependency, and the
-   `renderer-software` feature; replace the tests that read pixels through the software renderer with a GPU snapshot
-   harness (or record that test scaffolding keeps the software renderer). Check: `lint`, `test`, `test:native`, and
-   a repository search that no `from_rgba8` or `SharedPixelBuffer` remains in application code.
+5. and 6. (merged into one stage) The minimap as a GPU slice texture, and the end of the CPU pipeline. The worker
+   shapes the lines of the slice with a row cache and encodes them as paint items in chunks of at most 512 rows;
+   the one Vello renderer of the code view renders each chunk and copies it into the slice texture, and the box,
+   pointer, and planning code stay. Deleted: `downscale.rs`, `build.rs`, `render.rs`, `key.rs`, `cache.rs` of the
+   minimap, `text_raster.rs`, `glyph_cache.rs`, `selection_paint.rs`, the pixel code of `annotation_paint.rs`, the
+   `swash` dependency, and the CPU minimap tests. Check: the drag cadence for 489 and 50,000 lines, a crispness
+   comparison against the removed bitmap, `tall_window_minimap_tests`, a guard per thing the minimap draws, and a
+   repository search that no `from_rgba8` or `SharedPixelBuffer` remains in application code. The software renderer
+   feature was already removed from the application in stage 0b (test scaffolding reads GPU snapshots).
+   Done on 2026-10-20 and 2026-10-21 (section "Stages 5 and 6" of `doc/planning/ide-gpu-snapshot-harness.md`).
 
 For design B the stages differ at 2 (enable `renderer-vello` in `Cargo.toml`, patch or upstream the one-line clip fix
 before the minimap), 3 and 5 (ring rows of `Text` elements, font-size minimap), and need a re-run of the Vello freeze

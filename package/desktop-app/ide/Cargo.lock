@@ -2575,7 +2575,6 @@ dependencies = [
  "serde_json",
  "slint",
  "slint-build",
- "swash",
  "tempfile",
  "tokio",
  "toml",

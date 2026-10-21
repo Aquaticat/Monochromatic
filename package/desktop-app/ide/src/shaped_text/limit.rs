@@ -8,11 +8,23 @@
 use super::frame::{Clip, Viewport};
 /// A code row is the unit the clip edges are rounded to.
 use crate::row_map::CODE_ROW;
-/// The most bytes a raster may hold.
-use crate::text_raster::MAX_RASTER_BYTES;
 /// The device's texture size limit is one process-wide number,
 /// read by the window thread and the tile worker.
 use std::sync::atomic::{AtomicU32, Ordering};
+
+/// What:
+///  Most bytes a source tile's texture may hold:
+///  64 MiB of RGBA.
+/// Why:
+///  The tile is one GPU texture;
+///  the window clips a tile that would pass this,
+///  so the check in the painter only guards a caller that did not.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const MAX_RASTER_BYTES = 64 * 1024 * 1024;
+/// ```
+pub const MAX_RASTER_BYTES: u64 = 64 * 1024 * 1024;
 
 /// What:
 ///  The texture size every GPU device offers at least:

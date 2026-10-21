@@ -132,6 +132,35 @@ pub(super) fn sign_pixels(
 }
 
 /// What:
+///  The minimap's texture as straight RGBA,
+///  read back after a frame that draws the slice the window thread last handed over,
+///  or nothing when none was drawn yet.
+///  The texture holds the rows `window.get_minimap_picture_top()` and below of the whole picture.
+/// Why:
+///  The minimap is a texture the toolkit shows as an image,
+///  which the toolkit cannot read back,
+///  so the tests read the GPU's own copy.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function minimapPixels(window: AppWindow, source: State): Pixels | undefined;
+/// ```
+pub(super) fn minimap_pixels(
+    window: &AppWindow,
+    source: &Rc<RefCell<State>>,
+) -> Option<SharedPixelBuffer<Rgba8Pixel>> {
+    let _frame = snapshot(window.window());
+    let gpu = source.borrow().gpu.clone();
+    return gpu.read_minimap();
+}
+
+/// Run one frame so the slice the window thread last handed over is drawn,
+/// and the image and its place are set on the window.
+pub(super) fn draw_minimap(window: &AppWindow) {
+    let _frame = snapshot(window.window());
+}
+
+/// What:
 ///  The rows of the window's visible viewport as RGBA pixels,
 ///  read from the tile's texture.
 /// Why:

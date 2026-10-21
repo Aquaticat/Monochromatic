@@ -153,7 +153,7 @@ await describe({
         },),
 
         it({
-          name: 'NAMES exactly the four gathers that pass the writer window, in the words their log '
+          name: 'NAMES exactly the gathers that pass the writer window, in the words their log '
             + 'lines use, written out here separately so the launch note cannot certify itself',
           fn: async () => {
             expect(WRITER_STAGE_LABELS,).toStrictEqual([
@@ -161,6 +161,7 @@ await describe({
               'refiner',
               'translate',
               'produceConsolidations',
+              'archive-block-review',
             ],);
           },
         },),

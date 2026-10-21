@@ -866,3 +866,73 @@ every way out of `preparePassEntry` carries it,
 and a case pins each.
 Findings reach no key and no sheet,
 so no cache key or schema version moved.
+
+## B717: a block with no source section was reviewed against an empty source in silence
+
+Status:
+fixed on 2026-10-21 (UTC),
+red `a331908d9c`,
+fix `ab0ccbe7a3`,
+source scans `651ae7846d`.
+Found in the same review as B716.
+No cache version moved.
+
+What the code did:
+`repairArchiveBlocks` read the expected source section with `sourceContexts.get(identity) ?? ''`,
+and `archiveBlockSourceContexts` read the aligned pair of a block with `alignment.pairs.at(pairIndex)?.source.text ?? ''`.
+An empty section is a real answer
+(a section only the archive has is filed as empty),
+so a miss could not be told from it,
+and a miss checked every quote against nothing:
+each reply that cited the original was dropped as unanchored,
+and since B715 the log says only that the reply failed an anchor test.
+A miss means the caller and the map disagree about the block's identity
+(its location,
+id or wording differ,
+as when the archive text the identity is cut from differs),
+or the preparation and the alignment disagree about its place.
+Neither input of the review can repair that.
+
+The fix:
+both throw a custom error that names the block and what the other side holds.
+`ArchiveBlockContextMissingError` carries the identity and every identity the map holds,
+or says the map holds none.
+`ArchiveBlockAlignmentMissingError` carries the block,
+the pair it names
+and how many pairs the alignment holds.
+Neither message carries archive wording.
+An entry filed as empty still reviews.
+The red commit replaced two cases that pinned the silent default.
+The second lookup was not in the brief's search path
+(`page-check`,
+not `archive`);
+it is the same fault one step earlier,
+and a case that pinned its empty answer said "rather than the archive's whole original section",
+a concern about the opposite fallback.
+`preparation-unclaimed.ts` builds `aligned-pair` locations from the same alignment,
+so a block naming a pair the alignment lacks is a fault.
+
+Other sites read:
+the search `rg '\?\? .{0,3}(\x27\x27|""|\[\])'` over `archive/src`,
+`archive-block-repair.ts` and the sibling `archive-*.ts` of `page-check`,
+and the `.get(...) ??` and `.at(...) ??` forms beside it.
+Left as they are,
+because an absent value is a legitimate state:
+`identityContext` and `referenceContext` defaults (a page that declares no names or links nowhere),
+the label of a footnote definition that opens with none (`archive-footnote-order.ts`),
+the counting accumulators of the casing restores,
+and `read.get(from) ?? []` in the destination restore (a key never read has no entries).
+`pieces.at(-1) ?? ''` and `owner.lines[index] ?? line` in the composite narrow an indexed read that cannot miss.
+
+Open to the owner's veto:
+throwing for a block naming an absent aligned pair,
+where the pass once went on with reviewers who could anchor nothing.
+
+Cache account:
+none moves.
+No cached stage result is read or written by these lookups,
+and the audit named in B716 read the same eight versions.
+
+Recurrence:
+`mistake-prevention-inputs-defaults-and-values-read-from-text.md`,
+"Defaults that stand in for an input".

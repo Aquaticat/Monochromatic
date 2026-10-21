@@ -1,6 +1,8 @@
-//! The code view on the GPU:
-//!  the textures the source tile and the gutter's wrap indicator are drawn into,
-//!  and the rendering notifier that draws them.
+//! The code view and the minimap on the GPU:
+//!  the textures the source tile,
+//!  the gutter's wrap indicator,
+//!  and the minimap's slice are drawn into,
+//!  and the rendering notifier that draws them with one Vello renderer.
 //!
 //! Slint hands its wgpu device to the notifier only when the first frame is set up,
 //!  so the Vello renderer and the textures are made there.
@@ -14,9 +16,19 @@
 /// Reads of the textures for the native tests.
 #[cfg(test)]
 mod readback;
+/// The minimap's slice,
+/// rendered in chunks.
+mod slice;
+/// The textures,
+/// the pictures,
+/// and the outcome of a step.
+mod types;
 /// A scene rendered without a window.
 #[cfg(test)]
 pub(super) use readback::render_scene;
+/// The small types,
+/// shared with the slice.
+use types::{Outcome, Picture, Placement, Target};
 
 /// The window the textures are shown in,
 ///  and the chaining of the debug frame records.
@@ -39,75 +51,10 @@ use vello::{
 };
 
 /// What:
-///  One texture and the size it was made with.
-/// Why:
-///  A texture is reused while the scene it receives has the same size,
-///  and replaced,
-/// with a new image on the window,
-/// when it has not.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type Target = { texture: GPUTexture; width: number; height: number };
-/// ```
-struct Target {
-    /// The texture Vello renders into and Slint samples.
-    texture: wgpu::Texture,
-    /// Width in physical pixels.
-    width: u32,
-    /// Height in physical pixels.
-    height: u32,
-}
-
-/// The two pictures the GPU draws for the window.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum Picture {
-    /// The source tile.
-    Tile,
-    /// The gutter's wrap indicator.
-    Sign,
-}
-
-/// What:
-///  What a step of the notifier changed for the window:
-///  new images to show and messages to display.
-/// Why:
-///  The window's setters run after the shared state is released,
-///  so a setter that reaches back into the application cannot find it borrowed.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// type Outcome = { images: [Picture, Image][]; errors: string[] };
-/// ```
-#[derive(Default)]
-struct Outcome {
-    /// Pictures that have a new texture to show.
-    images: Vec<(Picture, Image)>,
-    /// Failures to show as the window's error.
-    errors: Vec<String>,
-}
-
-/// Show what a step changed.
-impl Outcome {
-    /// Set the images and the last error on `window`.
-    fn apply(self, window: &AppWindow) {
-        for (picture, image) in self.images {
-            match picture {
-                Picture::Tile => window.set_source_image(image),
-                Picture::Sign => window.set_wrap_sign(image),
-            }
-        }
-        if let Some(message) = self.errors.last() {
-            window.set_error_message(slint::SharedString::from(message.as_str()));
-        }
-    }
-}
-
-/// What:
 ///  Everything the notifier and the window thread share:
 ///  the device once Slint has one,
 ///  the renderer,
-///  the two textures,
+///  the three textures,
 ///  and the scenes waiting to be drawn.
 /// Why:
 ///  The window thread hands a scene over at any time and the notifier draws it at the next frame,
@@ -115,7 +62,7 @@ impl Outcome {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Gpu = { device?: Device; renderer?: Renderer; tile?: Target; sign?: Target; pending: Scene[] };
+/// type Gpu = { device?: Device; renderer?: Renderer; targets: (Target | undefined)[]; pending: Scene[] };
 /// ```
 #[derive(Default)]
 struct Inner {
@@ -124,18 +71,26 @@ struct Inner {
     /// Vello's renderer,
     /// made at setup.
     renderer: Option<Renderer>,
-    /// The tile's texture.
-    tile: Option<Target>,
-    /// The wrap indicator's texture.
-    sign: Option<Target>,
+    /// The textures of the pictures,
+    /// by [`Picture::slot`].
+    targets: [Option<Target>; 3],
     /// A tile scene not drawn yet.
     pending_tile: Option<TileScene>,
     /// A wrap indicator scene not drawn yet.
     pending_sign: Option<TileScene>,
+    /// The chunks of a minimap slice not drawn yet,
+    /// with the row of the whole picture the slice's first row is.
+    pending_minimap: Option<(Vec<TileScene>, u32)>,
+    /// Small textures the chunks of a slice are rendered into before they are copied into the slice's texture.
+    scratch: Vec<Target>,
     /// Tile scenes rendered into the texture so far.
     tiles_rendered: u64,
     /// Wrap indicator scenes rendered so far.
     signs_rendered: u64,
+    /// Minimap slices rendered so far.
+    minimaps_rendered: u64,
+    /// Minimap chunks rendered so far.
+    minimap_chunks_rendered: u64,
 }
 
 /// What:
@@ -170,6 +125,25 @@ impl GpuTile {
         self.inner.borrow_mut().pending_sign = Some(scene);
     }
 
+    /// Make the slice of the minimap's picture,
+    /// given as the scenes of its chunks from the top,
+    /// whose first row is the row `top` of the whole picture,
+    /// the one to draw at the next frame;
+    /// a slice not drawn yet is replaced.
+    pub(super) fn submit_minimap(&self, chunks: Vec<TileScene>, top: u32) {
+        self.inner.borrow_mut().pending_minimap = Some((chunks, top));
+    }
+
+    /// Forget the minimap's texture and any slice waiting,
+    /// so the next slice makes a new texture and a new image.
+    /// The window calls this when it clears the image,
+    /// for another file.
+    pub(super) fn forget_minimap(&self) {
+        let mut inner = self.inner.borrow_mut();
+        inner.pending_minimap = None;
+        inner.targets[Picture::Minimap.slot()] = None;
+    }
+
     /// How many tile scenes the GPU has rendered into a texture,
     /// for the structural tests:
     /// scrolling inside the tile renders none.
@@ -200,14 +174,43 @@ impl GpuTile {
         return self.inner.borrow().read(Picture::Sign);
     }
 
+    /// The minimap's texture read back from the GPU as straight RGBA,
+    /// or nothing before a slice is drawn.
+    #[cfg(test)]
+    pub(super) fn read_minimap(&self) -> Option<slint::SharedPixelBuffer<slint::Rgba8Pixel>> {
+        return self.inner.borrow().read(Picture::Minimap);
+    }
+
+    /// How many minimap slices the GPU has rendered into a texture,
+    /// for the structural tests:
+    /// a scroll inside the bands of the slice renders none.
+    #[cfg(test)]
+    pub(super) fn minimaps_rendered(&self) -> u64 {
+        return self.inner.borrow().minimaps_rendered;
+    }
+
+    /// How many minimap chunks the GPU has rendered,
+    /// for the structural tests:
+    /// a tall slice is several renders.
+    #[cfg(test)]
+    pub(super) fn minimap_chunks_rendered(&self) -> u64 {
+        return self.inner.borrow().minimap_chunks_rendered;
+    }
+
+    /// The size of the minimap's texture in physical pixels,
+    /// or nothing before the first slice is drawn.
+    #[cfg(test)]
+    pub(super) fn minimap_size(&self) -> Option<(u32, u32)> {
+        return self.inner.borrow().targets[Picture::Minimap.slot()]
+            .as_ref()
+            .map(|target| return (target.width, target.height));
+    }
+
     /// The size of the tile's texture in physical pixels,
     /// or nothing before the first tile is drawn.
     #[cfg(test)]
     pub(super) fn tile_size(&self) -> Option<(u32, u32)> {
-        return self
-            .inner
-            .borrow()
-            .tile
+        return self.inner.borrow().targets[Picture::Tile.slot()]
             .as_ref()
             .map(|target| return (target.width, target.height));
     }
@@ -216,7 +219,9 @@ impl GpuTile {
     #[cfg(test)]
     pub(super) fn has_pending(&self) -> bool {
         let inner = self.inner.borrow();
-        return inner.pending_tile.is_some() || inner.pending_sign.is_some();
+        return inner.pending_tile.is_some()
+            || inner.pending_sign.is_some()
+            || inner.pending_minimap.is_some();
     }
 }
 
@@ -265,10 +270,7 @@ impl Inner {
     #[cfg(test)]
     fn read(&self, picture: Picture) -> Option<slint::SharedPixelBuffer<slint::Rgba8Pixel>> {
         let (device, queue) = self.device.as_ref()?;
-        let target = match picture {
-            Picture::Tile => self.tile.as_ref()?,
-            Picture::Sign => self.sign.as_ref()?,
-        };
+        let target = self.targets[picture.slot()].as_ref()?;
         return Some(readback::read_texture(
             device,
             queue,
@@ -329,8 +331,8 @@ impl Inner {
     /// Release the renderer and the textures before the device goes away.
     fn teardown(&mut self) {
         self.renderer = None;
-        self.tile = None;
-        self.sign = None;
+        self.targets = [None, None, None];
+        self.scratch = Vec::new();
         self.device = None;
     }
 
@@ -356,6 +358,9 @@ impl Inner {
         if let Some(scene) = self.pending_sign.take() {
             self.draw(Picture::Sign, &scene, &mut outcome);
         }
+        if let Some((chunks, top)) = self.pending_minimap.take() {
+            self.draw_slice(&chunks, top, &mut outcome);
+        }
         return outcome;
     }
 
@@ -376,11 +381,22 @@ impl Inner {
         let Some((device, queue)) = self.device.clone() else {
             return;
         };
-        let held = match picture {
-            Picture::Tile => &self.tile,
-            Picture::Sign => &self.sign,
-        };
-        let reusable = match held {
+        let limit = device.limits().max_texture_dimension_2d;
+        if scene.width == 0 || scene.height == 0 || scene.width > limit || scene.height > limit {
+            tracing::error!(
+                width = scene.width,
+                height = scene.height,
+                limit,
+                ?picture,
+                "a scene does not fit a texture of this device"
+            );
+            outcome.errors.push(format!(
+                "Cannot draw source: a {}x{} picture does not fit a texture of this device (at most {limit} on a side)",
+                scene.width, scene.height
+            ));
+            return;
+        }
+        let reusable = match &self.targets[picture.slot()] {
             Some(target) => target.width == scene.width && target.height == scene.height,
             None => false,
         };
@@ -389,6 +405,7 @@ impl Inner {
                 label: Some(match picture {
                     Picture::Tile => "ide source tile",
                     Picture::Sign => "ide wrap indicator",
+                    Picture::Minimap => "ide minimap",
                 }),
                 size: wgpu::Extent3d {
                     width: scene.width,
@@ -410,29 +427,55 @@ impl Inner {
                     return;
                 }
             }
-            let target = Some(Target {
+            self.targets[picture.slot()] = Some(Target {
                 texture,
                 width: scene.width,
                 height: scene.height,
             });
-            match picture {
-                Picture::Tile => self.tile = target,
-                Picture::Sign => self.sign = target,
-            }
         }
-        let current = match picture {
-            Picture::Tile => &self.tile,
-            Picture::Sign => &self.sign,
-        };
-        let (Some(target), Some(renderer)) = (current.as_ref(), self.renderer.as_mut()) else {
+        let Some(target) = self.targets[picture.slot()].as_ref() else {
             return;
         };
-        let view = target
-            .texture
-            .create_view(&wgpu::TextureViewDescriptor::default());
-        let rendered = renderer.render_to_texture(
-            &device,
-            &queue,
+        let texture = target.texture.clone();
+        match self.render(&device, &queue, &texture, scene) {
+            Ok(()) => match picture {
+                Picture::Tile => self.tiles_rendered += 1,
+                Picture::Sign => self.signs_rendered += 1,
+                Picture::Minimap => {}
+            },
+            Err(error) => {
+                tracing::error!(%error, ?picture, "the GPU could not render a scene");
+                outcome.errors.push(format!("Cannot draw source: {error}"));
+            }
+        }
+    }
+
+    /// What:
+    ///  Render `scene` into `texture` with the one Vello renderer.
+    /// Why:
+    ///  The tile,
+    ///  the wrap indicator,
+    ///  and every chunk of the minimap share one renderer,
+    ///  so the renderer's scratch buffers exist once.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function render(device: GPUDevice, queue: GPUQueue, texture: GPUTexture, scene: TileScene): void;
+    /// ```
+    fn render(
+        &mut self,
+        device: &wgpu::Device,
+        queue: &wgpu::Queue,
+        texture: &wgpu::Texture,
+        scene: &TileScene,
+    ) -> Result<(), vello::Error> {
+        let Some(renderer) = self.renderer.as_mut() else {
+            return Ok(());
+        };
+        let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
+        return renderer.render_to_texture(
+            device,
+            queue,
             &scene.scene,
             &view,
             &RenderParams {
@@ -442,16 +485,6 @@ impl Inner {
                 antialiasing_method: AaConfig::Area,
             },
         );
-        match rendered {
-            Ok(()) => match picture {
-                Picture::Tile => self.tiles_rendered += 1,
-                Picture::Sign => self.signs_rendered += 1,
-            },
-            Err(error) => {
-                tracing::error!(%error, ?picture, "the GPU could not render a scene");
-                outcome.errors.push(format!("Cannot draw source: {error}"));
-            }
-        }
     }
 }
 

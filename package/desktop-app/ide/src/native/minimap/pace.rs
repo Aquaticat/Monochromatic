@@ -4,7 +4,7 @@
 
 /// The key a picture is valid for,
 ///  whose parts the decision compares.
-use crate::native::minimap_build::Key;
+use crate::native::minimap_worker::Key;
 /// The quiet time and the throttle period are durations.
 use std::time::Duration;
 

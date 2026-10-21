@@ -9,12 +9,12 @@
 use ide_app::{
     annotation::{Mark, Visible},
     annotation_layout::AnnotationColors,
+    code_colors::CodeColors,
     document::Document,
     language::diagnostics::Severity,
     shaped_text::Viewport,
     source_frame::FrameStamp,
     source_style::SourceStyles,
-    text_raster::CodeColors,
     virtual_row::{Block, HintPlace, MessageRow, ROW_HEIGHT},
 };
 /// Visible annotations are shared with the layout.

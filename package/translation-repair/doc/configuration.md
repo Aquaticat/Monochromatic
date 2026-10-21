@@ -509,15 +509,22 @@ section `Historical writer and editor runners`.
     The same window for the writer rounds alone
     (editor,
     refiner,
-    translate and consolidation producers),
+    translate and consolidation producers,
+    and the archive block review round),
     since a cut writer voice is a whole candidate lost.
+    The archive block review joined on 2026-10-21 (ledger B713):
+    each reviewer answers with the complete corrected block,
+    so its reply is a writer voice.
+    The selection round after it keeps the round window,
+    and the classification is open to the owner's veto.
     Built in at 180000 (`WRITER_GRACE_MS` in `package/translation-repair/glossary/src/writer-grace-override.ts`,
     the owner's decision of 2026-09-06 in `doc/decision/translation-repair-straggler-grace.md`);
     when it is unset and the round window is longer,
     the writers follow the round window instead.
     Every writer round reads it when it gathers,
     and a launch prints `WRITER GRACE built in` or `WRITER GRACE OVERRIDDEN`
-    unless the writers follow the round window.
+    unless the writers follow the round window;
+    the line names every writer round (`WRITER_STAGE_LABELS`).
     It is refused by the same rule as the round window.
 
 -   `TRANSLATION_REPAIR_HYPER_REQUESTS_PER_HOUR`.

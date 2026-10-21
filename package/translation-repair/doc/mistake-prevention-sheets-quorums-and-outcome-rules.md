@@ -105,6 +105,21 @@ A test of a scoped failure gives the seat a second provider that serves it
 and asserts the seat is heard from there.
 `credential-hold.unit.test.ts` and `provider-router.unit.test.ts` hold the case.
 
+A round's straggler window follows what its replies are (ledger B713).
+A reply that is a whole candidate (an editor's patch,
+a translation,
+a corrected block)
+is a writer voice,
+and the window that cuts it takes a candidate from the judges;
+a reply that reads text which exists is one ballot among several.
+The archive block review asked for whole corrected blocks and ran under the readers' window
+because no decision had classified it,
+and zheermao20's letter block lost a Qwen reply to it.
+A new gather says in its call which kind it is,
+and joins `WRITER_STAGE_LABELS` if it is a writer round.
+Its case runs a straggler under windows that differ (`archive-block-review-windows.unit.test.ts`),
+since `SCRIPTED_STAGE_SETTINGS` makes the two equal and so cannot tell which one a stage read.
+
 ## Sheets every model reads
 
 What happened:
@@ -148,6 +163,15 @@ that one names a TRANSLATION the audit never shows and a category its wire rejec
 The relabel probe's arm that claims no issue list is known sent the production disclosure with an empty list,
 which under a rendered disclosure writes a list's heading into the prompt (ledger B283).
 An arm that claims a thing is absent sends the form production sends when it is absent.
+
+The archive block review's selection sheet listed the reviewers' assessments by the text each reviewer proposed,
+so the composite of disjoint revisions,
+which no reviewer proposed,
+reached the judges with none (ledger B716).
+A candidate no one proposed carries the assessments of those whose lines it is made of,
+copied as given and marked with the lines each covers;
+the judges are never shown a verdict nobody gave,
+and never a candidate they cannot check beside ones they can.
 
 The rule:
 a sheet whose rules name a block carries that block wherever its caller holds it.
@@ -392,6 +416,14 @@ never the heads,
 addresses or notes the package wrote around them,
 and every reader of that composition goes through the same cut.
 
+A text the package composes from parts that each passed a gate is a new text,
+and goes through the same gates whole (ledger B712).
+The archive block review offers the lines of disjoint revisions together as one candidate,
+and `archive-composite-revision.unit.test.ts` pairs two revisions that each drop one marker of a note,
+which leave it referenced alone and unreferenced together,
+beside two that reword lines holding a marker,
+and a pair that each blank a paragraph the other keeps.
+
 What enforces it:
 `corpus-run/archive-block-repair.unit.test.ts` holds the two-marker case,
 and `reference-attest-verdict.unit.test.ts` the address and failure-note quotes;
@@ -452,6 +484,14 @@ Its test compares the whole record around that finding.
 What enforces it:
 habit and review;
 the stage case and the B39 case fail if the depth-two layer drops a round again.
+
+A caller that receives a stage's outcome records the findings it carries (ledger B714).
+`repairArchiveBlocks` read the review stage's text and kind and never its findings,
+so a block that lost voices to the window recorded only that it was reviewed,
+the third time a caller dropped a stage's findings after B142 and B162.
+Its case mutes seats so the stage loses voices,
+and reads the returned findings and the log for them
+(`corpus-run/archive-block-repair.unit.test.ts`).
 
 ## Work no floor can check
 

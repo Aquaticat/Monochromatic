@@ -547,8 +547,42 @@ Resume each from its own handover:
 - Tracing the two reads' findings:
   the "Handover" section of `/var/home/user/temp/agent/x15-fix/reads/rotation-21-classes.md`.
 
-The reads themselves are `zheermao21-read.md` and `CuspariaKLSY21-read.md` beside them,
-not yet recorded in the pass log of 2026-10-21.
+The reads themselves are `zheermao21-read.md` and `CuspariaKLSY21-read.md` beside them.
+
+After the reboot:
+
+- The w257 follow-ups finished at `fc61e60462`
+  (B716 composite evidence,
+  B717 source-context lookup,
+  B713 amended:
+  two files carried the launch-line note,
+  not five)
+  and were merged with main as `e39e7b163a`;
+  gate g139 runs on that tree,
+  and it lands when green.
+- The picture bench fix runs in w258 from main:
+  a length-cut empty reading is asked again,
+  NeuralWatt alone gets a documented lower reasoning effort for pictures,
+  `google/gemma-4-26b-a4b-it` on OpenRouter is prepared as a reader behind its measurement probe,
+  and the picture energy estimate stops counting base64 as text.
+  Its ledger entries start at B718.
+  The keyed measurement of Gemma is mine to run once the probe lands.
+- The tracing of the two reads' findings resumed from its handover section.
+- The reads are recorded in
+  [the rotation restart record](../planning/translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart.md)
+  (`90ffed222a`).
+
+Next:
+land g139;
+gate the picture bench fix and any classes the tracing finds;
+post corrective comments on `4e0cbc1b5f`,
+`e0dbf84a38`,
+`49194af623` and `96d9d0be32` once they are on GitHub;
+rebuild the branch worktree,
+freeze the new digest,
+run the rotation sweep,
+measure Gemma,
+and restart the rotation at `zheermao101`.
 
 Owner rulings of 2026-10-21,
 given just before the reboot:
@@ -566,16 +600,18 @@ given just before the reboot:
   almost always - I'm lifting the ban on passing params,
   but only for NeuralWatt."
   So NeuralWatt requests may now carry documented parameters,
-  such as a lower reasoning effort for `glm-5.3-flash` on pictures,
-  whose default `max` effort spent the whole output cap on reasoning in `XingZ6016`.
+  such as a lower reasoning effort for `glm-5.3-flash` on pictures:
+  in `XingZ6016` its reply streamed 40652 reasoning characters and no content before the 18316-token cap cut it;
+  that the default effort `max` caused this is a guess not yet checked against NeuralWatt's documentation.
   Every other provider still gets no such parameter.
 
 Also queued:
 an empty reply cut at the length cap is asked again
-(today only refusals are);
-and the pass log of 2026-10-21 fails two scans
-(a position reference at line 365,
-zone-less clock times at lines 452 and 476).
+(today only refusals are).
+The pass log of 2026-10-21 no longer fails its two scans (`36159b960f`),
+and the reads of the three restarted passes are recorded in
+[the rotation restart record](../planning/translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart.md)
+(`90ffed222a`).
 An investigation of the picture bench runs
 (why GLM replied empty,
 which wet vision readers could replace the Bedrock seats);

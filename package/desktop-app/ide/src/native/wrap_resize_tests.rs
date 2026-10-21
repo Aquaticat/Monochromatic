@@ -913,7 +913,7 @@ fn common_raster_bytes(scale: f32) -> u64 {
 fn a_tile_with_a_huge_raster_is_left_to_the_worker() {
     // 1100 x 660 at scale 1: three views of 1124 columns.
     assert!(common_raster_bytes(1.0) <= REWRAP_RASTER_BYTES);
-    const { assert!(REWRAP_RASTER_BYTES < ide_app::text_raster::MAX_RASTER_BYTES) };
+    const { assert!(REWRAP_RASTER_BYTES < ide_app::shaped_text::MAX_RASTER_BYTES) };
     let (_project, opened) = open(&"a short line\n".repeat(6000));
     settled(&opened);
     let window = &opened.window;

@@ -1,7 +1,7 @@
 //! The window's side of the minimap,
 //! the scroll control beside the source text.
 //!
-//! The picture of the whole text is built on the minimap worker thread (`minimap_build.rs`);
+//! The picture of the whole text is built on the minimap worker thread (`minimap_worker.rs`);
 //! this module posts a
 //!  request when what the picture is valid for changes,
 //! takes in the finished pixels with one image setter,

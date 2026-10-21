@@ -26,7 +26,7 @@ use super::{
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
 /// Library types that give the expected values.
-use ide_app::{row_map::CODE_ROW, shaped_text::texture_dimension, text_raster::MAX_RASTER_BYTES};
+use ide_app::{row_map::CODE_ROW, shaped_text::MAX_RASTER_BYTES, shaped_text::texture_dimension};
 /// Toolkit models and events.
 use slint::{ComponentHandle, Model, platform::update_timers_and_animations};
 
@@ -274,15 +274,22 @@ fn scrolling_inside_a_built_tile_of_a_wrapped_file_does_no_source_work() {
             scroll_to(window, start + step as f32 * 3.0);
         }
         let [renders, tiles, rows, images] = counts(&opened.source);
-        assert_eq!(renders, 0, "scrolling inside the tile entered render");
-        assert_eq!(tiles, 0, "scrolling inside the tile painted a tile");
-        assert_eq!(rows, 0, "scrolling inside the tile shaped a row");
-        assert_eq!(images, 0, "scrolling inside the tile set an image");
+        let facts = crate::native::waiting_tests::Facts {
+            window,
+            source: &opened.source,
+        };
+        assert_eq!(
+            renders, 0,
+            "scrolling inside the tile entered render {facts}"
+        );
+        assert_eq!(tiles, 0, "scrolling inside the tile painted a tile {facts}");
+        assert_eq!(rows, 0, "scrolling inside the tile shaped a row {facts}");
+        assert_eq!(images, 0, "scrolling inside the tile set an image {facts}");
         let [worker_tiles, worker_rows, applied, _] = worker_counts(&opened.source);
         assert_eq!(
             [worker_tiles, worker_rows, applied],
             [0, 0, 0],
-            "scrolling inside the tile asked the worker for work"
+            "scrolling inside the tile asked the worker for work {facts}"
         );
         window.hide().expect("close wrap window");
     }

@@ -172,8 +172,9 @@ mod language;
 /// the scroll control,
 /// and the picture of the whole text built off-thread.
 mod minimap;
-/// The minimap's worker thread.
-mod minimap_build;
+/// The densest slices of text the minimap draws render in the renderer's fixed buffers.
+#[cfg(test)]
+mod minimap_dense_tests;
 /// The minimap's picture is the average of the window's own pixels,
 /// for plain text,
 /// selections,
@@ -187,6 +188,8 @@ mod minimap_reflection_tests;
 /// and pointer paths.
 #[cfg(test)]
 mod minimap_tests;
+/// The minimap's worker thread.
+mod minimap_worker;
 /// Project tree and asynchronous successful-file navigation.
 mod navigation;
 /// Missing targets and canonical aliases exercise reveal liveness and model identity.

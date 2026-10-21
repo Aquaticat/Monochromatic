@@ -804,3 +804,66 @@ where the alternative lists each such site.
 Recurrence:
 `mistake-prevention.md`,
 "Tests on the real clock".
+
+## B713: the archive block review round waited the readers' window for replies that are writer voices
+
+Status:
+fixed on 2026-10-21 (UTC),
+red `a38bc52e29`,
+fix `96d9d0be32`.
+Found in the investigation of the letter block of `zheermao20`.
+No cache version moved.
+
+What the run showed:
+the review round asks each reviewer for the complete corrected block,
+so a `revise` reply is a whole candidate,
+and the owner's reason for the 180000 ms writer window is that a cut writer voice is a whole candidate lost
+(`doc/decision/translation-repair-straggler-grace.md`,
+decision of 2026-09-06).
+The stage passed `grace.roundMs` (120000 ms),
+and no decision had classified the round either way.
+The letter block's Qwen reply was cut 120000 ms after quorum,
+243 s into a 360 s call deadline,
+and the block shipped without it.
+
+The fix:
+the gather passes `grace.writerMs`,
+`archive-block-review` joins `WRITER_STAGE_LABELS`,
+and the `WRITER GRACE built in` line names it and said it joined on 2026-10-21 and was open to the owner's veto.
+That note was removed in `29f86a2863`:
+a run log states what the build does,
+and whether the owner has confirmed a classification is the status of a decision,
+which the straggler grace decision record and `configuration.md` already hold;
+left in the line it would sit in every run log after the owner has answered.
+The line keeps the stages,
+both windows,
+the decision date of 2026-09-06 and the dial that moves it.
+Only two files carry the line's text:
+`writer-grace-override.ts` and the `WRITER_GRACE_BUILT_IN` constant of `corpus-pass-built.test-fixture.ts`.
+This entry first said five files pinned it and the fix commit's message said four;
+`corpus-pass.unit.test.ts` and `corpus-pass-refusals.unit.test.ts` import the constant,
+and the bench and stage units pin only the overridden line or the words "built in".
+`configuration.md`,
+`seats-and-calibration.md`
+and a dated addendum of 2026-10-21 in the straggler grace decision record it.
+The selection round after the review keeps the readers' window:
+its judges read text that exists.
+
+This session made the classification under the owner's rule and the owner has not confirmed it.
+The addendum says how to veto it.
+
+The red case holds a reviewer past quorum under `writerMs` of the hang stop and `roundMs` of 0,
+and failed on the previous tree with one `stage-voice-lost (archive-block-review ...)` finding.
+A second case holds a judge the same way in the selection round and expects it cut and said lost;
+it passed before and keeps passing,
+so it pins the readers' window rather than shows a change.
+Both use a straggler delay of 25 ms past peers that answer at once,
+so the red case could pass by accident only if the held reply landed inside a zero window,
+and the green case cannot fail on load.
+
+Not measured:
+whether the extra 60 seconds turns the cut into a rewrite or into a cap-cut empty reply
+(the same block in `zheermao19` ran its Qwen stream to the cap with no content),
+and how often a review round reaches the window at all.
+The cost is at most 60 seconds on a review round with a straggler past 120 seconds,
+bounded by the 360000 ms call deadline.
