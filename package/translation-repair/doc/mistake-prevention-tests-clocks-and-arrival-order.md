@@ -317,6 +317,15 @@ by the names of the scans the `source-scans` task runs;
 the censuses that found them were scratch scripts,
 so the rest is habit.
 
+A test or gate result counts only from a worktree with no `node_modules` in any parent directory,
+because Node finds a bare import by walking up the directory tree and a stray install there answers for a missing package
+(ledger B801,
+B802).
+A dependency removal or override is checked by loading every unbundled entry of the packages that reach it,
+the unit test files among them,
+and not only by the digest of a built bundle,
+which drops code the source still imports.
+
 ## Tests on the real clock
 
 What happened:

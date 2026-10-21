@@ -2283,8 +2283,8 @@ ${publishedNames.map(function toYamlItem(name,) {
     },)
   .join('\n',)}
 
-web:
-  enable: false
+ui:
+  enabled: false
 
 registries:
   ${PNPR_HOSTED_REGISTRY}:

@@ -66,6 +66,14 @@ pub(super) fn open(root: &Path, file: &Path) -> (AppWindow, Rc<RefCell<State>>, 
     let project = navigation::bind(&window, &state, workspace).expect("project navigation");
     window.show().expect("show watch window");
     render(&window, &state);
+    // What: Wait for the highlighting reply of the opened file before the test starts its steps.
+    // Why: The reply renders again after the first frame, so a step timed or counted from here met it in the middle.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // await waitForHighlighting(state);
+    // ```
+    super::find_tests::wait_for_highlighting(&state);
     return (window, state, [refresh, project]);
 }
 

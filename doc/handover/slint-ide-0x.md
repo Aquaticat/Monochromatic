@@ -1293,29 +1293,116 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     (c) the `minimap_build` to `minimap_worker` rename stands (already in the code, `src/native/minimap_worker.rs`).
     Still open from that note: the stale `TEXTURE_DIMENSION` doc; dense-selection cost until full-height clipping in
     `split.rs` and `encode.rs` is fixed.
-    Agent `a4d54af4e63faea6b` (started 2026-10-21 after the owner's decision (a), its own worktree off `origin/main`,
-    branch push only) builds the stacked textures with a failing test first; its brief quotes `NLG`, `NLD` and `RXI`
-    and limits it to one full `test:native`; on its report I verify the numbers, scan `ps`, `podman ps` and
-    `systemctl --user list-units`, merge in a scratch worktree, run the gates once, land, and reinstall.
-    Stacked textures, report of the agent verified by me on a scratch merge (`a25a5b9eb2`, tip `06c1796c69` in
-    `~/temp/agent/land-stack`, not landed): `lint`, `test:native` 273 of 273, `test` 797 of 797, `test:bin`, `build`,
-    `inspect:software-renderer` pass. `inspect:source-guards`, which the agent had not run, proved four of its five
-    guards; `minimap-texture-top` expected the failure text "the composited column differs" while the removed guard
-    fails with "the composited column is blank", fixed by me to "the composited column" (commit `06c1796c69`, scratch
-    tree only until landed). Cadence A/B (release, `big.rs`, scroll, `matrix-load.mjs`, baseline `origin/main`): drag no
-    difference; scroll shows a one-frame identical frame at slot 35 in 11 of 13 stacked runs against 6 of 27 baseline
-    runs (floor included), baseline usually 0 identical frames, stacked 1 to 2, longest run 1. Owner rule: choppiness
-    is a defect, so the agent was resumed to find the cause and fix it or prove it is not the stacking. Not landed and
-    not installed until that is answered. Trees kept for it: `~/temp/agent/land-stack` (merged), `land-stack-base`
-    (baseline), `/tmp/ide-gpu-fixture`.
-    Open, in order: (1) stacked textures for a window taller than the texture limit (above); (2) the flake work, in `doc/handover/ide-native-flakes.md`: fixed with counts (refused-tile test 10 of 360 to
-    0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160 to 0 of 160); open:
-    `find_box_context_menu_runs_each_entry`,
-    the annotation stability tests (frames kept under `target/flake-frames/`), the minimap external-edit test (13 of 120
-    on baseline), the highlighting-reply wait in `watch_tests::open`, `refresh_latency_tests`, `navigation_tests` and
-    `language/test_support.rs`, the "Flaky test ledger", any retry override, and a lower test thread count (video memory
-    sits at 7.98 of 7.98 GiB in every full run). The one full `test:native` of this landing passed 271 of 271, which
-    is one snapshot, not a flake count. (3) Scale 2, light scheme and seam checks in the app, on a quiet host.
+    LANDED 2026-10-21, stacked minimap textures (owner decision (a)): `main` is `cf58581533` (merge of the agent branch
+    tip `54a1e5089d` and my guard text fix, pushed explicitly from a scratch worktree; `origin/main` had gained only
+    translation and doc commits). A window taller than the device texture limit gets several textures, each at most
+    the device side and 64 MiB (`texture_rows` and `texture_runs` in `src/minimap/plan.rs`, one `Image` per texture in
+    `src/native/gpu_tile/slice.rs`, a `[MinimapSlice]` list in `ui/minimap.slint`); the defect test (12,000 px window
+    over a device capped at 8,192) failed before with "the picture is 8064 rows of a track of 11968", seam and
+    unsplit-render tests cover 3, 4 and 7 textures at scales 1 and 1.5, and mutation checks prove the one-row
+    placement faults are caught. My verification: the cadence A/B found a scroll hitch the agent's first version
+    caused (an identical frame at recorded slot 35 in 11 of 13 stacked runs against 6 of 27 baseline runs); the cause,
+    shown by intervention, is that every picture was given to the window as a new `VecModel`, so the markup rebuilt
+    every `Image` item inside a scroll-step frame. Fix `3247690ff8` changes the rows of the existing list in
+    place (guard test `a_picture_of_the_same_shape_changes_the_rows_of_the_list_and_never_replaces_it`, failing
+    commit `ee59d9630f`, source guard `minimap-slices-in-place` proven). Where the cost lands is not located: window
+    thread timing is the same in both trees, so it is outside that thread. The agent also found that runs where
+    highlighting times out (a load-dependent tree-sitter deadline) show a 30 px banner and move the hitch to slot 43;
+    my counts include 4 such runs, and the per-record mapping to artifact directories is probable, not certain.
+    Gates on the landed tree, once each: `lint` pass; `test:native` 274 of 274 (5 skipped, 174 s); `test` 797 of
+    797; `test:bin`, `build`, `inspect:software-renderer` pass; `inspect:source-guards` for the two changed guards
+    (`minimap-texture-top`, `minimap-slices-in-place`) baseline pass, removed fail, restored pass (the other 146
+    guards were not run in this pass). My guard text fix: `minimap-texture-top` expected "the composited column
+    differs" while the removed guard fails with "the composited column is blank"; the entry now matches the prefix
+    "the composited column". Cadence by `matrix-load.mjs` (release, `big.rs`, 1100x660, baseline `origin/main` before
+    the merge as A, fixed tree as B, alternating pairs, A against A for the floor): scroll, identical-frame runs in
+    A (floor included) 7 of 20 with 4 at slot 35, in B 3 of 10 with 1 at slot 35, longest identical run 1 in both;
+    drag, identical frames per run A 3, 9, 9, 5, 10 against B 5, 11, 6, 14, 4, longest run 1, no difference beyond the
+    floor. One identical frame at slots 35, 67, 99 or 130 remains in both trees: the extra redraw `picture.rs`
+    requests on handoff exists on `main` and was not explained or changed (open). Not run: display scale 2 or other
+    scales with a stack, devices with a texture limit above 8,192 (16,384 is common), a window of 17,000 px or more
+    (three textures were made by lowering the recorded limit), densest-text stacking, a look in a nested compositor
+    window, frame time of a 12,000 px window (about 24 chunk renders per picture on the window thread), cadence on a
+    quiet host (load average was 8 to 9 from other sessions).
+    Installed 2026-10-21: `~/.local/bin/monochromatic-ide` sha256 prefix `e1f2590ffadecc91`, equal to the release
+    build; the previous binary (`c0b8219d73bc1062`) is `monochromatic-ide.previous`. Removed: the agent branch (local
+    and remote), its worktree, my scratch worktrees and guard caches. Another session's mutation container
+    (`git-policy-native-mutation:m028b`) was running and is not ours.
+    Owner request 2026-10-21: "Check if depot can do the CI for this app. Early terminate on this depot testing task:
+    tell me whenever we encounter any kind of blocker and halt the depot testing task." The first blocker found stops
+    the task and is reported to the owner at once; nothing is worked around.
+    BLOCKER found 2026-10-21, task halted, nothing run on Depot: `doc/decision/depot-ci-adoption.md` records GPU as
+    out of scope for Depot CI ("no hardware `/dev/dri` device was found" in the sandbox, a finding from when software
+    rendering was the accepted path); the IDE now needs a hardware Vulkan adapter (never a CPU adapter, no software
+    renderer), so `test:native`, `inspect:native`, `inspect:cadence` and the screenshot checks cannot run in a Depot
+    sandbox as the decision stands. The CLI is installed (2.102.23) and logged in (org `l4zncjjbj5`); `.depot/workflows`
+    holds `current-baseline.yml` and `weekly-native.yml`. Unprobed: whether today's Depot sandbox exposes a GPU.
+    Docs checked the same day (depot.dev CI overview, blog, pricing, changelog): sandboxes are x86_64 and Arm64 Linux,
+    2x8 to 64x256, Ubuntu 24.04, no GPU, `/dev/dri` or Vulkan mentioned; the only GPU offering found is Depot GitHub
+    Actions runners on Depot Managed (the owner's AWS account, Custom plan), a different product that the adoption
+    decision also excludes. The owner approved one probe job (list `/dev/dri`, `/dev/kvm`, PCI devices, Vulkan ICD
+    files on `depot-ubuntu-24.04`, workflow only in the scratch worktree `~/temp/agent/depot-probe`, never committed).
+    SECOND BLOCKER, task halted again: `depot ci run --workflow .depot/workflows/ide-gpu-probe.yml --follow --forge
+    github` (CLI 2.102.23) exits 1 with "no supported repository found in git remotes; use --repo and optionally
+    --forge" although `origin` is `https://github.com/Aquaticats/Monochromatic`; cause not found. With the owner's
+    approval the probe was rerun with `--repo Aquaticats/Monochromatic --forge github`: the CLI warned "could not
+    determine merge base, skipping patch: cannot determine default branch" (same detection problem, the probe workflow
+    still ran) and `--follow` gave up with "Timed out waiting for jobs to be created" although the run finished in 38 s
+    (run `7fsk45ct45`, job log `hgc361htlw`, 2026-10-21, one job on `depot-ubuntu-24.04`, 2 CPUs, 7 GiB).
+    MEASURED RESULT: no `/dev/dri`, no `/sys/class/drm`, no GPU on the PCI bus (virtio devices only), no `nvidia-smi`,
+    an empty `/etc/vulkan/icd.d`; `/dev/kvm` is present; kernel 6.12.109+. So the Depot CI sandbox has no GPU as of
+    2026-10-21 and the GPU gates (`test:native`, `inspect:native`, `inspect:cadence`, screenshots) cannot run there.
+    Other sandbox sizes were not probed. The non-GPU gates (`lint`, `test`, `test:bin`, `build`,
+    `inspect:software-renderer`) were not tried on Depot. The one probe run consumed about 38 s of the 2x8 sandbox and
+    was not entered in `doc/planning/depot-admission-ledger.json`. The scratch worktree and probe file are removed;
+    the decision record `doc/decision/depot-ci-adoption.md` is unchanged (a change needs the owner's acceptance).
+    Owner decisions after that: stop the Depot check here (the non-GPU gates were not tried on Depot); rename the
+    guard `inspect:software-renderer` to `inspect:no-software-renderer` (the owner asked why a software renderer
+    task still exists: it is the guard that fails when that renderer is linked, `cargo tree` only, no rendering; renamed
+    2026-10-21 in `mise.toml`, the IDE README and the troubleshooting doc; older notes in this file and the planning and
+    handover docs keep the old name for their recorded results, so read `inspect:software-renderer` there as the
+    renamed task).
+    Namespace (`nsc` v0.0.587, workspace "Personal", installed by the owner), checked 2026-10-21 for GPU CI: the docs
+    (machine shapes, `nsc create` reference, Linux and macOS compute pages, docs index) name no GPU shape, no GPU
+    feature and no Vulkan or `/dev/dri`; Apple M4 Pro and M5 Max Linux is early access with no GPU statement, macOS
+    mentions Metal only. With the owner's approval one probe instance was created and destroyed
+    (`nsc create --machine_type linux/amd64:2x4 --duration 10m --bare`, id `1v2fprmgr0h4a`, probe script
+    `~/temp/agent/nsc-probe.mjs`): kernel 7.1.4, no `/dev/dri`, no `/sys/class/drm`, no `nvidia-smi`, no Vulkan ICD
+    directory, `/dev/kvm` present, 2 CPUs and 4 GB; `lspci` is not installed there, so the PCI bus was not listed (the
+    missing `/sys/class/drm` carries the result); `nsc list` afterwards shows no instances. So neither Depot CI nor a
+    standard Namespace Linux instance gives this app a GPU; the GPU gates stay local. Unprobed: Namespace Apple
+    Silicon Linux early access, other shapes, macOS (Metal, not the Vulkan path the owner accepted).
+    LANDED 2026-10-21, flake agent `a5d7faec36a652c16` (merge tip `3bb3fd2e8e`, contained in `origin/main`): tests and
+    docs only, no product code, so no reinstall and no cadence run. The find-box menu flake is explained and fixed:
+    the test right-clicked where the toolkit clamps the menu under the pointer, and the toolkit runs the entry under
+    the pointer on a release more than 300 ms after the menu appears (a stalled test thread under host load); the test
+    now clicks where the pointer rests on the menu frame, and `a_slow_right_click_leaves_the_find_menu_open` holds the
+    click 400 ms (old position 600 of 600 failed, new position 0 of 600; the original test 0 of 600 either way, so the
+    old load-dependent rate of 2 of 240 and 5 of 480 was not re-measured). A shared `wait_for_highlighting` now covers
+    the other fixtures that open a file (an exposure removed, no failure was ever measured there). The annotation
+    stability tests did not reproduce (1,145 of 1,145 runs of `rows_arriving_in_view_move_only_lines_beneath_them`), so
+    their cause is unknown; every comparison now keeps both frames under `target/flake-frames/` when it fails, and the
+    next failure's frames are read before any change. The minimap external-edit test was deleted with the CPU minimap;
+    its successor passed 120 of 120. No video-memory cap was set (no failure is attributed to it; the override
+    `IDE_CONTAINER_TEST_THREADS` exists). The "Flaky test ledger" is in `doc/handover/ide-native-flakes.md`, with two
+    incomplete entries (`the_view_follows_the_caret_through_every_visual_row` fix unverified; the scroll quiet-time
+    test has no recurrence recorded). Zero tests are under retries. Gates once on the merged tip: `lint`,
+    `test:native` 275 of 275 (5 skipped), `test` 797 of 797, `test:bin`, `build`, `inspect:no-software-renderer` all
+    pass. Not run: a second full `test:native`, guard runners, a capped against uncapped video-memory comparison, runs
+    under host load. The agent's worktree, its 32 GiB `target` copy and its branch (local and remote) are removed; no
+    units or containers were left.
+    Redraw agent `a3a543d4c80040d25` (started 2026-10-21, own worktree off `origin/main`, branch push only): finds by
+    measurement why `picture.rs` requests an extra redraw on handoff (identical frame at slots 35, 67, 99, 130 of the
+    scripted scroll), fixes only if the cause is clear and the A/B cadence shows it; brief quotes `NLG`, `NLD`, `RXI`.
+    On its report: verify, scan `ps`, `podman ps`, `systemctl --user list-units`, merge in a scratch worktree, gates
+    once, reinstall if the binary changed, remove its worktree and branch.
+    Open, in order: (1) the unexplained redraw on picture handoff in `src/native/minimap/picture.rs` (the remaining
+    identical frames; a cause by measurement first; the agent above is on it); (2) the flake work, in `doc/handover/ide-native-flakes.md`:
+    fixed with counts (refused-tile test 10 of 360 to 0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160
+    to 0 of 160, find-box menu test by its guard, see the LANDED block above); open: the annotation stability tests
+    (cause unknown, frames kept under `target/flake-frames/` for the next failure), the two incomplete ledger entries,
+    and the video-memory question (7.98 of 7.98 GiB in every full run; no failure attributed). Full `test:native`
+    passes are snapshots, not flake counts. (3) Scale 2, light scheme and seam checks in the app, on a quiet host.
     The prevention proposal `doc/planning/agents-cannot-load-the-host.md` waits for the owner: a fresh Claude session and
     at least two more reviewers must read it first. Stopgap rules `NLG` and `NLD` are in `AGENTS.md`. The entry in
     `doc/limitation/claude.md` ("Delegated GPU migration of the Slint IDE") lists this session's and the agents' mistakes.
@@ -1326,6 +1413,12 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     parallel GPU use, a restructured assertion), and the cause lies outside our code and outside what a restructured
     test controls; difficulty, effort or load-dependence alone never qualify; an undiagnosed flake stays an open,
     instrumented flake and is not retried. Sent to agent `af624c22739073177`.
+    Flake work, second session (2026-10-21, branch `worktree-agent-a5d7faec36a652c16`, details and the ledger in
+    `doc/handover/ide-native-flakes.md`): `find_box_context_menu_runs_each_entry` is explained and fixed (the menu opens
+    under the pointer near the window bottom, and a release more than 300 ms later runs the entry under it; hold-time
+    control 600 of 600 failing before, 0 of 600 after); the highlighting-reply wait is in the other fixtures; the
+    annotation stability tests did not reproduce with the permitted tool (0 of 1,310) and keep their frames; no retry
+    overrides.
     Owner instruction of 2026-10-20 that REPLACES the run-count rule in the next paragraph: "I suggest you properly fix the
     flakes instead. And we should never run a full test against one snapshot of code. If some tests are confirmed
     unfixably flaky, make the test harness run the specific tests more instead." My reading (stated to the owner, not

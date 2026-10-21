@@ -67,3 +67,11 @@ fn the_report_names_five_and_counts_the_rest() {
     assert_eq!(listed(&paths(&["a", "b", "c", "d", "e", "f", "g", "h"])), "a, b, c, d, e, and 3 more");
     assert_eq!(listed(&[b"t\xffp".to_vec()]), "t\u{fffd}p");
 }
+
+/// An entry of two letters, a space and a one-byte path is the shortest valid one; anything shorter has no path.
+#[test]
+fn the_shortest_valid_entry_is_four_bytes() {
+    assert_eq!(status_paths(b"M  a\0"), paths(&["a"]));
+    assert_eq!(status_paths(b" M a\0?? b\0"), paths(&["a", "b"]));
+    assert_eq!(status_paths(b"M  \0"), Vec::<Vec<u8>>::new());
+}

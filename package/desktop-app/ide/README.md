@@ -3618,8 +3618,10 @@ right 147).
 The row count the test reads before its Down presses is larger than the row map's count afterwards,
 so the test reads
 the map before the measurement has finished shrinking it;
-the find box failure was seen once and its cause is not
-determined.
+the find box failure was found later (2026-10-21):
+the right click landed where the clamped menu rests on its last entries,
+and a release more than 300 ms after the menu opened runs the entry under the pointer
+(see `doc/handover/ide-native-flakes.md`).
 The layout tests were adjusted for the 288 px source column and the minimap's width in
 `src/native/sidebar_tests.rs` (`minimap_beside`,
 `text_area`).
@@ -5170,7 +5172,7 @@ Slint's FemtoVG drawing through wgpu 30 on the Vulkan backend (`renderer-femtovg
 design C of `doc/planning/ide-vello-text.md`).
 There is no OpenGL renderer and no software renderer in the executable,
 and no fallback to either:
-`mise run //package/desktop-app/ide:inspect:software-renderer` fails if Slint's software renderer is linked again.
+`mise run //package/desktop-app/ide:inspect:no-software-renderer` fails if Slint's software renderer is linked again.
 A host without a Vulkan driver for a hardware GPU therefore cannot start the IDE
 (see below for the message it gets).
 
@@ -5476,7 +5478,7 @@ and the compositor has no command that invokes an element's default action.
 No script in this package used those two tools;
 the native tests that need them use `ElementHandle` of `i-slint-backend-testing` in the test process.
 
-`mise run //package/desktop-app/ide:inspect:software-renderer` runs `cargo tree` over every feature of the package
+`mise run //package/desktop-app/ide:inspect:no-software-renderer` runs `cargo tree` over every feature of the package
 and fails if the software renderer is in the graph.
 It also runs the same query with `--features slint/renderer-software` and with `--features slint/mcp`,
 and fails unless both reach the renderer,

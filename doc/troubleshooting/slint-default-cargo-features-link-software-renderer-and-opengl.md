@@ -217,7 +217,7 @@ the same three inverted trees print `nothing to print` for
 and `i-slint-renderer-femtovg` is reached only through the selector,
 the winit
 backend and `slint` (which is the wgpu flavor there).
-The package's task `inspect:software-renderer` (`package/desktop-app/ide/mise.toml:175-192`) runs this check inside the
+The package's task `inspect:no-software-renderer` (`package/desktop-app/ide/mise.toml:175-192`) runs this check inside the
 container with `--all-features`,
 and takes `--features slint/renderer-software` and `--features slint/mcp` as positive
 controls that must reach the renderer;
@@ -246,7 +246,7 @@ The owner decided on 2026-10-20 to drop the IDE's MCP builds and rebuild their c
 (`doc/handover/slint-ide-0x.md`,
 "Owner answers of 2026-10-20");
 the positive control `--features slint/mcp` in the
-package's `inspect:software-renderer` task keeps proving the edge.
+package's `inspect:no-software-renderer` task keeps proving the edge.
 The applications that `doc/troubleshooting/slint-embedded-mcp-server.md` is about (the music player and the terminal)
 are other packages and are not covered by this note.
 
@@ -338,7 +338,7 @@ Draft:
 none.
 The follow-up that is ours:
 when `slint` is upgraded,
-rerun the three inverted trees (or `inspect:software-renderer`) and
+rerun the three inverted trees (or `inspect:no-software-renderer`) and
 compare the default list in `slint-1.18.x/Cargo.toml` with the IDE's.
 
 ## Evidence and limits
@@ -350,7 +350,7 @@ compare the default list in `slint-1.18.x/Cargo.toml` with the IDE's.
 - The crate counts are from `cargo tree` and measure the graph only,
   not compile time or binary size.
 - Whether `slint-build`'s default `renderer-software` pulls extra build-time crates into the IDE was not measured.
-- I did not run the package's container task `inspect:software-renderer`.
+- I did not run the package's container task `inspect:no-software-renderer`.
 - The two existing MCP notes (`doc/troubleshooting/slint-embedded-mcp-server.md`,
   `doc/troubleshooting/slint-mcp-winit-femtovg-screenshot.md`) never name the IDE (searched for `desktop-app/ide`,
   `editor`,

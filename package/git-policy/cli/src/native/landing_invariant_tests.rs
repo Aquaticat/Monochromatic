@@ -93,9 +93,35 @@ fn real_indexes_are_compared_and_an_unreadable_one_is_tolerated() {
     std::fs::write(repo.join("b.txt"), b"two\n").expect("b.txt");
     git_index(repo.as_path(), post.as_path(), &["add", "b.txt"]);
     let context = git_context();
-    // Both calls return; the warning text itself is checked at the binary level.
-    warn_when_entries_moved(&context, repo.as_path(), pre.as_path(), post.as_path(), &[]);
-    warn_when_entries_moved(&context, repo.as_path(), pre.as_path(), post.as_path(), &[b"b.txt".to_vec()]);
-    warn_when_entries_moved(&context, repo.as_path(), root.join("absent.index").as_path(), post.as_path(), &[]);
+    // b.txt entered the index after the pre-landing copy, so it is named unless it is allowed.
+    let warned = warn_when_entries_moved(&context, repo.as_path(), pre.as_path(), post.as_path(), &[])
+        .expect("a moved entry is warned about");
+    assert!(warned.starts_with("The landing changed staged entries outside the paths it committed: "), "{warned}");
+    assert!(warned.contains("b.txt"), "{warned}");
+    assert!(!warned.contains("a.txt"), "{warned}");
+    assert!(warned.contains("cli-git-audit.jsonl"), "{warned}");
+    assert_eq!(
+        warn_when_entries_moved(&context, repo.as_path(), pre.as_path(), post.as_path(), &[b"b.txt".to_vec()]),
+        None
+    );
+    assert_eq!(
+        warn_when_entries_moved(&context, repo.as_path(), pre.as_path(), pre.as_path(), &[]),
+        None
+    );
+    // A missing index file reads as an empty index, so every entry of the other one is new.
+    let from_nothing = warn_when_entries_moved(&context, repo.as_path(), root.join("absent.index").as_path(), post.as_path(), &[])
+        .expect("every entry is new against an empty index");
+    assert!(from_nothing.contains("a.txt") && from_nothing.contains("b.txt"), "{from_nothing}");
+    // An index file that is not an index cannot be listed, which is tolerated and says nothing.
+    let corrupt = root.join("corrupt.index");
+    std::fs::write(&corrupt, b"this is not an index").expect("corrupt index");
+    assert_eq!(
+        warn_when_entries_moved(&context, repo.as_path(), corrupt.as_path(), post.as_path(), &[]),
+        None
+    );
+    assert_eq!(
+        warn_when_entries_moved(&context, repo.as_path(), pre.as_path(), corrupt.as_path(), &[]),
+        None
+    );
     remove(root.as_path());
 }

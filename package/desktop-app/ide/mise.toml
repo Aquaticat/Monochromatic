@@ -172,7 +172,7 @@ writeFileSync('target/linked-crates.txt', crates.join(String.fromCharCode(10)) +
 console.log('Wrote target/linked-crates.txt: ' + crates.length + ' crates, the package itself included')
 """
 
-[tasks."inspect:software-renderer"]
+[tasks."inspect:no-software-renderer"]
 description = "Fail when Slint's software renderer is linked into any build the package defines, and prove the check can see it by requesting that renderer explicitly"
 shell = "node --input-type=module-typescript -e"
 run = """

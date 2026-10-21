@@ -325,6 +325,20 @@ fn signs_commits(git: &PushGit) -> Result<bool, SingleFlightError> {
 }
 
 /// What:
+///  Whether the status read after a fast-forward differs from the one read before it.
+///  `&[u8]` borrows Git's output.
+/// Why:
+///   The uncommitted work must read exactly as it did; a difference is the only sign that the move touched it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function statusDiffers(before: Uint8Array, after: Uint8Array): boolean;
+/// ```
+fn status_differs(before: &[u8], after: &[u8]) -> bool {
+    return before != after;
+}
+
+/// What:
 ///  Fast-forward the pushed branch and this worktree to the published merge, or the reason that was not done.
 ///  The success value says whether uncommitted work was left in place.
 /// Why:
@@ -376,7 +390,8 @@ fn advance_local_branch(
         return Ok(Err(String::from("the worktree status could not be read")));
     }
     let dirty = status_paths(&status.stdout);
-    if !dirty.is_empty() {
+    let kept: bool = !dirty.is_empty();
+    if kept {
         let incoming = run_query(
             git,
             &argv(&["diff", "--name-only", "-z", "--no-renames", local, merge_oid]),
@@ -402,17 +417,17 @@ fn advance_local_branch(
             detail.lines().next().unwrap_or_default().trim()
         )));
     }
-    if !dirty.is_empty() {
+    if kept {
         // The uncommitted work must read exactly as it did; the move is already done, so a difference is reported.
         let after = run_query(git, &status_arguments)?;
-        if after.stdout != status.stdout {
+        if status_differs(&status.stdout, &after.stdout) {
             warn(
                 TAG,
                 "the worktree status differs after the fast-forward; compare it with the status before the commit",
             );
         }
     }
-    return Ok(Ok(!dirty.is_empty()));
+    return Ok(Ok(kept));
 }
 
 /// What:
