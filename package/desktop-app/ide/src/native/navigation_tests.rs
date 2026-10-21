@@ -58,6 +58,14 @@ fn native_tree_switches_files_and_preserves_current_file_reading_state() {
     let _navigation = navigation::bind(&window, &state, workspace).expect("project navigation");
     window.show().expect("show project window");
     render(&window, &state);
+    // What: Wait for the highlighting reply of the opened file before the test starts its steps.
+    // Why: The reply renders again after the first frame, so a step timed or counted from here met it in the middle.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // await waitForHighlighting(state);
+    // ```
+    super::find_tests::wait_for_highlighting(&state);
     {
         let mut waiting = Waiting::eventually();
         while !(row(&window, "view.txt").is_some()) {

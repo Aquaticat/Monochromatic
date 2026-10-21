@@ -118,6 +118,33 @@ pub(super) fn replace_file(path: &Path, text: &str) {
     fs::rename(&sibling, path).expect("replace the file");
 }
 
+/// What:
+///  Wait until the highlighting reply of the opened text has been applied.
+///  `&Rc<RefCell<State>>` lends the window's shared source state
+///  (`Rc` is a shared owner,
+///  `RefCell` checks borrows while running;
+///  the sibling pair for threads is `Arc<Mutex<State>>`).
+/// Why:
+///  The reply arrives on the reload timer's schedule, after the first frame,
+///  and was still missing after the measurement pass in 28 of 160 runs of a probe under load on 2026-10-20.
+///  It installs new styles and renders again,
+///  which asks the worker for another tile and another pass,
+///  so a test that counted renders, compared frames, or waited for a failed tile met it in the middle of its steps.
+///  Every fixture that opens a file waits here before it hands out its window.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// async function waitForHighlighting(source: State): Promise<void> {
+///   await until(() => source.syntaxRevision === source.document.revision);
+/// }
+/// ```
+pub(super) fn wait_for_highlighting(source: &Rc<RefCell<State>>) {
+    let mut waiting = Waiting::slow();
+    while !(source.borrow().syntax_revision == Some(source.borrow().document.revision())) {
+        waiting.step("the highlighting reply of the opened text did not arrive");
+    }
+}
+
 /// Open `name` inside the disposable project with every production binding installed.
 pub(super) fn reader(root: &Path, name: &str) -> Reader {
     let path = root.join(name);
@@ -155,21 +182,13 @@ pub(super) fn reader(root: &Path, name: &str) -> Reader {
     // The layout gave the view its width; a tile for it may still be on the worker.
     super::overscan_tile_tests::settle_tile(&source);
     // What: The highlighting reply of the opened text is waited for, then the tile it asks for is settled.
-    // Why: The reply arrives on the reload timer's schedule, after the first frame (still missing when the
-    //      measurement pass had finished in 28 of 160 runs of a probe under load on 2026-10-20). It installs new
-    //      styles and renders again, which asks the worker for another tile and another pass, so a test that
-    //      counted renders, compared frames, or waited for a failed tile met it in the middle of its steps.
+    // Why: See `wait_for_highlighting`.
     //
     // In TS you'd write (pseudocode):
     // ```ts
-    // await until(() => source.syntaxRevision === source.document.revision); await settleTile(source);
+    // await waitForHighlighting(source); await settleTile(source);
     // ```
-    {
-        let mut waiting = Waiting::slow();
-        while !(source.borrow().syntax_revision == Some(source.borrow().document.revision())) {
-            waiting.step("the highlighting reply of the opened text did not arrive");
-        }
-    }
+    wait_for_highlighting(&source);
     super::overscan_tile_tests::settle_tile(&source);
     window.invoke_focus_source();
     return Reader {

@@ -100,11 +100,13 @@ fn menu(window: &AppWindow, steps: usize) {
 }
 
 /// What:
-///  `hold` is a `Duration`, a span of time (sibling `Instant` is a point in time).
+///  `hold` is a `Duration`,
+///  a span of time (sibling `Instant` is a point in time).
 /// Why:
-///  The toolkit's menu entries run on a pointer release that comes more than 300 ms after the entry was created,
-///  so a right click held that long must still leave the menu open;
-///  the hold makes that time a chosen input instead of the load the host happens to be under.
+///  A menu entry of the toolkit runs on a pointer release that comes more than 300 ms after the entry was created
+///  (`widgets/common/menu-base.slint` in `i-slint-compiler`, the `up` branch of `pointer-event`).
+///  The hold makes the time between press and release a chosen input,
+///  where it used to be the load the host happened to be under.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -112,12 +114,16 @@ fn menu(window: &AppWindow, steps: usize) {
 /// ```
 fn open_menu(window: &AppWindow, hold: Duration) {
     settle(window);
-    // The pointer goes on the left part of the text area (the box starts after the sidebar and its divider, with 12px
-    // of padding before the text area and 12px more of text), not near the clear cell.
-    // The find bar sits at the bottom of the window, so the menu is pushed up over the pointer's row;
-    // at the left the menu starts exactly at the pointer, which then rests on the menu's frame, outside every entry.
-    // Near the right edge the menu is pushed left instead, the pointer rests on an entry, and a release more than
-    // 300 ms after the menu appeared (the toolkit runs the entry under the pointer then) closed it under host load.
+    // The pointer goes on the left part of the text area:
+    //  the box starts after the sidebar and its divider,
+    //  and the text area is 12px of padding in.
+    // The find bar sits at the bottom of the window,
+    //  so `place_popup` (`window/popup.rs` in `i-slint-core`) clamps the menu up into the window.
+    // At the left the clamp leaves the menu's x at the pointer's x,
+    //  so the pointer rests on the menu's left frame, outside every entry, and a slow release runs nothing.
+    // Near the clear cell the clamp moved the menu left instead,
+    //  the pointer rested on the last entries,
+    //  and a release 300 ms after the menu appeared ran the entry under it and closed the menu.
     let x = window.get_sidebar_width() + DIVIDER + 36.0;
     let y = window.get_find_clear_y() + 24.0;
     let popups_before = open_popups(window);

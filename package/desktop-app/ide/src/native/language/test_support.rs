@@ -320,6 +320,15 @@ pub(super) fn reader_with(
     window.window().take_snapshot().expect("initial layout");
     // The layout gave the view its width; a tile for it may still be on the worker.
     crate::native::overscan_tile_tests::settle_tile(&source);
+    // What: Wait for the highlighting reply of the opened file before the test starts its steps.
+    // Why: The reply renders again after the first frame, so a step timed or counted from here met it in the middle.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // await waitForHighlighting(source);
+    // ```
+    crate::native::find_tests::wait_for_highlighting(&source);
+    crate::native::overscan_tile_tests::settle_tile(&source);
     window.invoke_focus_source();
     return LanguageReader {
         window,

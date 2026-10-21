@@ -172,6 +172,14 @@ fn measure(folders: usize) {
     let _navigation = navigation::bind(&window, &state, workspace).expect("project navigation");
     window.show().expect("show latency window");
     render(&window, &state);
+    // What: Wait for the highlighting reply of the opened file before the test starts its steps.
+    // Why: The reply renders again after the first frame, so a step timed or counted from here met it in the middle.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // await waitForHighlighting(state);
+    // ```
+    super::find_tests::wait_for_highlighting(&state);
     for index in 0..folders {
         let label = format!("folder-{index:02}");
         elapsed_until_row(&window, &label);
