@@ -81,6 +81,14 @@ export type SeatHold =
    */
   | 'reader-unmeasured'
   /**
+   OpenRouter's listing reports image input for it, and no transcription has
+   been measured through that route, so a picture is not sent there. The
+   model-wide `reader-unmeasured` would also unseat a reader measured on
+   another provider, which this does not. Lifted by `reader-measure`
+   (`bench`) passing its two clauses on a keyed run.
+   */
+  | 'openrouter-pictures-unmeasured'
+  /**
    A producer calibration measured it out of the translator seat.
    */
   | 'translator-dropped'
