@@ -765,7 +765,6 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
 #[test]
 fn a_reload_holds_row_space_until_annotations_return() {
     let (directory, reader) = fixture_reader(&numbered(14));
-    let window = &reader.window;
     let hints = vec![hint(at(3, 8), ": u32"), hint(at(6, 4), "n:")];
     let problems = vec![problem(
         at(6, 10),
