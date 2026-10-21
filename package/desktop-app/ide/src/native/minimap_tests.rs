@@ -1160,7 +1160,10 @@ fn an_external_edit_of_fifty_thousand_lines_shapes_only_the_line_it_touches() {
         (
             current.minimap.last_stats.expect("statistics"),
             current.minimap.shaped,
-            current.minimap.shown.map(|key| return (key.window, key.size)),
+            current
+                .minimap
+                .shown
+                .map(|key| return (key.window, key.size)),
         )
     };
     // Positive control: the first picture shaped every line it drew, so a count of one is a count that can move.
@@ -1202,7 +1205,10 @@ fn an_external_edit_of_fifty_thousand_lines_shapes_only_the_line_it_touches() {
         (
             current.minimap.last_stats.expect("statistics"),
             current.minimap.shaped,
-            current.minimap.shown.map(|key| return (key.window, key.size)),
+            current
+                .minimap
+                .shown
+                .map(|key| return (key.window, key.size)),
         )
     };
     eprintln!(
