@@ -19,7 +19,7 @@ auth:
       audience: https://pnpr.c.aquati.cat
       workloads:
         - identity:
-            subject: 'repo:Aquaticats/Monochromatic:ref:refs/heads/main'
+            subject: 'repo:Aquaticats@343218767/Monochromatic@710240121:ref:refs/heads/main'
             username: pnpr-publish-ci
             claims:
               repository_id: '710240121'
