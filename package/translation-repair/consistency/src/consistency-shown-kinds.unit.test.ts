@@ -69,10 +69,21 @@ await describe({
           name: 'HOLDS every name of the parser\'s own list of HTML block names, read from the installed micromark',
           fn: async () => {
             /**
-             The chain of packages from the parser this one depends on to the one that holds the list.
+             The chain of packages from the package this one depends on for its parse to the one that holds the list.
+             This package declares no parser of its own, so the chain starts at the document structure package, which declares
+             `remark-parse`; resolving `remark-parse` from here passed only where a parent directory's `node_modules` held it
+             (ledger B802).
              */
             let at = import.meta.url;
-            for (const name of ['remark-parse', 'mdast-util-from-markdown', 'micromark', 'micromark-core-commonmark',] as const)
+            for (
+              const name of [
+                '@monochromatic-dev/translation-repair-document-structure',
+                'remark-parse',
+                'mdast-util-from-markdown',
+                'micromark',
+                'micromark-core-commonmark',
+              ] as const
+            )
               at = pathToFileURL(resolvedFrom({ from: at, name, },),).href;
             /**
              The path of the parser's list.

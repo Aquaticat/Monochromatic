@@ -567,6 +567,18 @@ The fix of B801 added no guard against this.
 It was made in a worktree where no parent directory holds a `node_modules`,
 which is what showed the defect as it is.
 
+The first whole gate run in such a worktree,
+on 2026-10-21 (UTC) after the shim,
+found a second site:
+`consistency/src/consistency-shown-kinds.unit.test.ts` walked to the parser's list of HTML block names
+by resolving `remark-parse` from its own file,
+and `consistency` declares no `remark-parse`,
+so three cases failed with `Cannot find module 'remark-parse'`.
+The walk now starts at the document structure package,
+which `consistency` depends on and which declares `remark-parse`.
+Every other case of the suite passed there,
+so no third site was found by that run.
+
 Recurrence:
 `mistake-prevention-tests-clocks-and-arrival-order.md`,
 "Tests touching the real world".
