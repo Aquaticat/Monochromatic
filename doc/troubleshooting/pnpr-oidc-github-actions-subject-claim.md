@@ -198,12 +198,23 @@ the regenerated `package/config/pnpr/config.yaml` subject was compared to the mi
 claim with node;
 the two strings are identical.
 
-Green expectation after the fix lands:
-the workload credential probe returns 403
-(`user "pnpr-publish-ci" cannot use workload credentials outside the configured npm publish targets`)
-and a dispatched `pnpr-publish` run reports republished versions,
-the check recorded in
-`doc/runbook/deploy-pnpr-registry.md`.
+Fix measurement,
+green:
+run `39690652845` at 2026-10-21T23:02Z,
+after the trust fix deployed as commit `fd2890ba0d`:
+
+```text
+# run 39690652845, trust pinning the minted subject
+probe /~monochromatic-dev/@monochromatic-dev%2foidc-claims-probe with workload credential -> 403 "pnpr-publish-ci" is not allowed to use workload credentials outside the configured npm publish targets
+probe /~monochromatic-dev/@monochromatic-dev%2foidc-claims-probe with raw JWT (control) -> 401 Authentication required for package "@monochromatic-dev/oidc-claims-probe"
+```
+
+The same run's `Publish missing versions to pnpr` step published 42 backlog versions,
+so the incident is closed on the live `0.1.0-alpha.11` base.
+An earlier prediction of the refusal wording as
+`user "pnpr-publish-ci" cannot use workload credentials outside the configured npm publish targets`
+was wrong;
+the quoted line is the measured body.
 
 ## Verified workarounds
 
@@ -345,7 +356,13 @@ so no exemption applies.
 
 ## Next action
 
-Land the regenerated trust with the base repin held in `doc/handover/pnpr-fix-forward.md`,
-run the
-green check in "Verification",
-then remove the `[DEBUG-401]` step and record the outcome here.
+The trust fix landed alone as commit `fd2890ba0d`,
+and the green run `39690652845` closed this incident on the live `0.1.0-alpha.11` base,
+per the landing decision recorded in `doc/handover/pnpr-fix-forward.md`,
+`## Owner decisions (2026-10-21)`.
+
+1. Remove the `[DEBUG-401]` step from `.github/workflows/pnpr-publish.yml`,
+   naming this subject-claim hypothesis in the commit body.
+2. The base repin to `0.1.0-alpha.16` and its `/npm` URL move stay held until the person runs the
+   `pnpr upgrade-storage` conversion from `doc/runbook/deploy-pnpr-registry.md`,
+   `## Move to a newer pnpr base`.
