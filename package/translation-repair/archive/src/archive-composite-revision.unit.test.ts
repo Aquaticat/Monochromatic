@@ -97,6 +97,10 @@ type Review = {
    Every line the stage logged.
    */
   readonly lines: readonly string[];
+  /**
+   Every request the bench was sent, serialized.
+   */
+  readonly prompts: readonly string[];
 };
 
 /**
@@ -134,9 +138,13 @@ async function review(
    Lines the stage logged.
    */
   const lines: string[] = [];
+  /**
+   Requests the bench was sent.
+   */
+  const prompts: string[] = [];
   const outcome = await runArchiveBlockReviewStage({
     client: scriptedClient({
-      prompts: [],
+      prompts,
       replyFor: function replyFor({ schema, modelId, },): unknown {
         if (schema !== 'archive_block_review') {
           return {
@@ -160,7 +168,7 @@ async function review(
           disposition: 'revise',
           sourceQuote: '',
           replacementText: answer,
-          finding: 'Some wording is unsupported.',
+          finding: `Some wording is unsupported: ${JSON.stringify(answer,)} is the fix.`,
         };
       },
     },),
@@ -179,6 +187,7 @@ async function review(
   return {
     outcome,
     lines,
+    prompts,
   };
 }
 
@@ -220,6 +229,90 @@ function slateLine({ lines, }: { readonly lines: readonly string[]; },): string 
   },) ?? '';
 }
 
+/**
+ One assessment the select sheet carries, as the sheet words it.
+ */
+type SheetAssessment = {
+  readonly disposition: string;
+  readonly proposedAction: string;
+  readonly candidate: number;
+  readonly finding: string;
+  readonly coversLines?: readonly number[];
+  readonly fromCandidate?: number;
+};
+
+/**
+ What the select sheet the judges were sent shows of the slate.
+ */
+type SelectSheet = {
+  /**
+   Candidate texts by the number the sheet gives them.
+   */
+  readonly candidates: ReadonlyMap<number, string>;
+  /**
+   Prior review assessments in the order the sheet lists them.
+   */
+  readonly assessments: readonly SheetAssessment[];
+};
+
+/**
+ Reads the select sheet off the requests a review sent.
+
+ @param prompts - serialized requests of the bench
+
+ @returns The first select sheet: its candidates and its prior review assessments
+
+ @example
+ ```ts
+ const sheet = selectSheetOf({ prompts, },);
+ ```
+ */
+function selectSheetOf({ prompts, }: { readonly prompts: readonly string[]; },): SelectSheet {
+  /**
+   The request that carries the assessments, which only a select round sends.
+   */
+  const request = prompts.find(function isSelect(prompt,): boolean {
+    return prompt.includes('PRIOR REVIEW ASSESSMENTS',);
+  },) ?? '';
+  /**
+   Text of the sheet's user message.
+   */
+  const sheet = (JSON.parse(request,) as readonly { readonly role: string; readonly content: string; }[])
+    .filter(function isUser({ role, },): boolean {
+      return role === 'user';
+    },)
+    .map(function contentOf({ content, },): string {
+      return content;
+    },)
+    .join('\n',);
+  /**
+   The assessments' JSON, between the rules that bound their block.
+   */
+  const assessmentsJson = /PRIOR REVIEW ASSESSMENTS[^\n]*\n=====\n(?<json>[^\n]*)\n=====/u.exec(sheet,)?.groups?.['json'] ?? '[]';
+  return {
+    candidates: new Map([...sheet.matchAll(/CANDIDATE (?<number>\d+)\n=====\n(?<text>[\s\S]*?)\n=====/gu,),]
+      .map(function toEntry({ groups, },): readonly [number, string] {
+        return [Number(groups?.['number'],), groups?.['text'] ?? '',] as const;
+      },),),
+    assessments: JSON.parse(assessmentsJson,) as readonly SheetAssessment[],
+  };
+}
+
+/**
+ Number the sheet gives the candidate with a text.
+
+ @param sheet - what the judges were sent
+
+ @param text - candidate text
+
+ @returns Its number, or zero where the sheet holds no such candidate
+ */
+function numberOf({ sheet, text, }: { readonly sheet: SelectSheet; readonly text: string; },): number {
+  return [...sheet.candidates.entries(),].find(function holdsText([, candidate,],): boolean {
+    return candidate === text;
+  },)?.[0] ?? 0;
+}
+
 await describe({
   name: 'archive composite revision',
   children: [
@@ -251,6 +344,85 @@ await describe({
         expect(outcome.findings.some(function recordsComposite(finding,): boolean {
           return finding.startsWith('archive-composite-offered',) && finding.includes(ROSTER[0],);
         },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'CARRIES THE CONTRIBUTORS\' ASSESSMENTS ON THE COMPOSITE, each marked with the lines its reviewer changed: '
+        + 'no reviewer proposed the composite, so matching assessments by proposed text left the one candidate '
+        + 'the judges could not check against anyone\'s reasons',
+      fn: async () => {
+        const { prompts, } = await review({
+          answers: [FIRST_LINE, THIRD_LINE, RETAIN, RETAIN,],
+          best: 3,
+        },);
+        const sheet = selectSheetOf({ prompts, },);
+        const composite = numberOf({ sheet, text: FIRST_AND_THIRD, },);
+        const first = numberOf({ sheet, text: FIRST_LINE, },);
+        const third = numberOf({ sheet, text: THIRD_LINE, },);
+        expect(composite,).toBeGreaterThan(0,);
+        /** The contributors in the order the slate numbers them, with the lines each changed. */
+        const contributors = [
+          { number: first, text: FIRST_LINE, lines: [1,], },
+          { number: third, text: THIRD_LINE, lines: [3,], },
+        ].toSorted(function bySlate(left, right,): number {
+          return left.number - right.number;
+        },);
+        expect(sheet.assessments.filter(function onComposite({ candidate, },): boolean {
+          return candidate === composite;
+        },),).toEqual(contributors.map(function asAssessment({ number, text, lines, },): SheetAssessment {
+          return {
+            disposition: 'revise',
+            proposedAction: 'revise',
+            candidate: composite,
+            finding: `Some wording is unsupported: ${JSON.stringify(text,)} is the fix.`,
+            coversLines: lines,
+            fromCandidate: number,
+          };
+        },),);
+        // The contributors' own assessments stay where they were, whole-candidate and unmarked.
+        for (const { number, text, } of contributors) {
+          expect(sheet.assessments.filter(function onRevision({ candidate, },): boolean {
+            return candidate === number;
+          },),).toEqual([{
+            disposition: 'revise',
+            proposedAction: 'revise',
+            candidate: number,
+            finding: `Some wording is unsupported: ${JSON.stringify(text,)} is the fix.`,
+          },],);
+        }
+      },
+    },),
+    it({
+      name: 'CARRIES EVERY ASSESSMENT OF A REVISION SEVERAL REVIEWERS WROTE IDENTICALLY, since each of them backs '
+        + 'the lines that revision changed',
+      fn: async () => {
+        const { prompts, } = await review({
+          answers: [FIRST_LINE, FIRST_LINE, THIRD_LINE, RETAIN,],
+          best: 3,
+        },);
+        const sheet = selectSheetOf({ prompts, },);
+        const composite = numberOf({ sheet, text: FIRST_AND_THIRD, },);
+        expect(composite,).toBeGreaterThan(0,);
+        expect(sheet.assessments.filter(function onComposite({ candidate, },): boolean {
+          return candidate === composite;
+        },).map(function linesOf({ coversLines, },): string {
+          return JSON.stringify(coversLines,);
+        },).toSorted(),).toEqual(['[1]', '[1]', '[3]',],);
+      },
+    },),
+    it({
+      name: 'MARKS NO ASSESSMENT AS COVERING LINES WHEN NO COMPOSITE IS OFFERED: overlapping revisions leave '
+        + 'every assessment on the candidate its reviewer proposed',
+      fn: async () => {
+        const { prompts, } = await review({
+          answers: [FIRST_LINE, FIRST_LINE_AGAIN, RETAIN, RETAIN,],
+          best: 1,
+        },);
+        const { assessments, } = selectSheetOf({ prompts, },);
+        expect(assessments.length,).toBeGreaterThan(0,);
+        expect(assessments.some(function marked({ coversLines, },): boolean {
+          return coversLines !== undefined;
+        },),).toBe(false,);
       },
     },),
     it({
