@@ -137,6 +137,12 @@ behavior.
   `@earendil-works/pi-ai` at runtime; both are therefore peer and dev
   dependencies here even though this package's own code is type-only against
   pi.
+- DSH exposes no pi-style scoped-model cycle list: the run context maps the
+  live scope to the catalog's `getAvailable()` routes, so every resolved route
+  with runtime-owned auth is in scope.
+- `/advisor` commands dispatch only through the host app: agent sessions expose
+  no command-invocation surface, and a leading-slash task line arrives as an
+  ordinary user message, so command parity is verified at the user boundary.
 - There is no `verify:extension` analogue in `mise.toml`; live
   `plugin_manager` install and fixture-profile verification are owned
   outside this package.
