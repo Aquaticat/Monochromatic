@@ -10,17 +10,36 @@ the measurements.
 
 ## Owner decisions (2026-10-21)
 
-- The person runs the runbook host steps now (stop,
+- The person runs the runbook host steps (stop,
   `pnpr upgrade-storage`);
   the agent pushes the held
   lockstep commit only after the person confirms the conversion.
+  Status 2026-10-21T18:55Z:
+  unconfirmed.
+  The person asked what the conversion is and which runbook names it,
+  so the host steps are not started;
+  the agent re-explains
+  `doc/runbook/deploy-pnpr-registry.md`
+  `## Move to a newer pnpr base`
+  and re-asks the landing order.
 - No pre-conversion snapshot ("Skip it,
   republish on failure").
   Recovery republishes through
   `pnpr-publish`.
-  This recovery path is currently impaired by the 401 incident below;
+  This recovery path is currently impaired by the 401 incident recorded under
+  `## Publish 401 incident`;
   see
   `doc/troubleshooting/pnpr-oidc-github-actions-discovery.md` for the outage record.
+- Trust pinning (2026-10-21T18:55Z):
+  pin the minted subject form only
+  (`repo:Aquaticats@343218767/Monochromatic@710240121:ref:refs/heads/main`),
+  not both subject forms.
+  A later `use_immutable_subject` flip-off would break publishes again
+  with a named cause and a one-line remedy.
+- Probe step (2026-10-21T18:55Z):
+  remove `[DEBUG-401]` when the incident closes,
+  as planned.
+  No permanent claims preflight.
 
 ## Held lockstep commit (uncommitted)
 

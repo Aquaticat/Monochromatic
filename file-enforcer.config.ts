@@ -1968,12 +1968,38 @@ const PNPR_PACKAGE_NAME_CHARACTERS: ReadonlySet<string> = new Set('abcdefghijklm
  ```
  */
 const PNPR_GITHUB_IDENTITY = {
-  repository: 'Aquaticats/Monochromatic',
+  repositoryOwner: 'Aquaticats',
+  repositoryName: 'Monochromatic',
   repositoryId: '710240121',
   repositoryOwnerId: '343218767',
   workflowPath: '.github/workflows/pnpr-publish.yml',
   ref: 'refs/heads/main',
 } as const;
+
+/**
+ The `sub` claim the publishing workload presents. GitHub mints `repo:<owner>@<owner id>/<repo>@<repo id>:ref:<ref>`
+ once the repository's OIDC customization sets `use_immutable_subject` (measured 2026-10-21 with
+ `gh api /repos/Aquaticats/Monochromatic/actions/oidc/customization/sub`); the name-only form matches no token.
+
+ @example
+ ```ts
+ console.log(PNPR_GITHUB_WORKLOAD_SUBJECT);
+ ```
+ */
+const PNPR_GITHUB_WORKLOAD_SUBJECT = `repo:${PNPR_GITHUB_IDENTITY.repositoryOwner}@${PNPR_GITHUB_IDENTITY.repositoryOwnerId}`
+  + `/${PNPR_GITHUB_IDENTITY.repositoryName}@${PNPR_GITHUB_IDENTITY.repositoryId}:ref:${PNPR_GITHUB_IDENTITY.ref}`;
+
+/**
+ The `workflow_ref` claim the publishing workload presents; even under `use_immutable_subject` GitHub mints it
+ in the name-based form.
+
+ @example
+ ```ts
+ console.log(PNPR_GITHUB_WORKFLOW_REF);
+ ```
+ */
+const PNPR_GITHUB_WORKFLOW_REF = `${PNPR_GITHUB_IDENTITY.repositoryOwner}/${PNPR_GITHUB_IDENTITY.repositoryName}`
+  + `/${PNPR_GITHUB_IDENTITY.workflowPath}@${PNPR_GITHUB_IDENTITY.ref}`;
 
 /**
  Reviewed exclusions for packages that cannot build or publish on GitHub-hosted runners, keyed by package name.
@@ -2270,12 +2296,12 @@ auth:
       audience: ${PNPR_PUBLIC_ORIGIN}
       workloads:
         - identity:
-            subject: 'repo:${PNPR_GITHUB_IDENTITY.repository}:ref:${PNPR_GITHUB_IDENTITY.ref}'
+            subject: '${PNPR_GITHUB_WORKLOAD_SUBJECT}'
             username: ${PNPR_PUBLISH_USERNAME}
             claims:
               repository_id: '${PNPR_GITHUB_IDENTITY.repositoryId}'
               repository_owner_id: '${PNPR_GITHUB_IDENTITY.repositoryOwnerId}'
-              workflow_ref: '${PNPR_GITHUB_IDENTITY.repository}/${PNPR_GITHUB_IDENTITY.workflowPath}@${PNPR_GITHUB_IDENTITY.ref}'
+              workflow_ref: '${PNPR_GITHUB_WORKFLOW_REF}'
           registry: ${PNPR_HOSTED_REGISTRY}
           packages:
 ${publishedNames.map(function toYamlItem(name,) {
