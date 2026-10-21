@@ -648,9 +648,11 @@ The fix:
 by a longest-common-subsequence line diff;
 `hunkCollisions` finds the block lines two revisions both replace and the gaps an insertion meets;
 `spliceHunks` (`archive/src/archive-composite-splice.ts`) applies the hunks of several revisions together.
-The package held no diff to reuse:
-the only prefix and suffix code in the family is `assembly-structural-withdrawal.ts`,
-which works in characters on pages.
+The package held no line diff to reuse.
+`assembly-structural-withdrawal.ts` cuts a common prefix and suffix in characters on pages,
+and `document-structure/src/align-blocks-walk.ts` is a Needleman-Wunsch walk over the parsed blocks of two languages
+that pairs by a similarity score (`scorePairing`) and pays a gap penalty to leave a block unpartnered,
+which is not a diff of equal lines.
 Revisions whose hunks collide keep the outcome of B712 for the whole block:
 no composite,
 and the log line names the lines or the place and says that revisions that overlap are not combined.
@@ -659,7 +661,14 @@ shape,
 footnotes,
 and the combined text showing a reader nothing.
 `CompositeContribution.changed` now numbers the composite's lines,
-which the judges' sheet reads as `coversLines`.
+which the judges' sheet reads as `coversLines`,
+and the note on that sheet (`COMPOSITE_ASSESSMENTS_NOTE`,
+`archive-block-selection-evidence.ts`) and the TSDoc of
+`coversLines` now say what a removal is credited with.
+The red commit's case for a hunk that removes a line and adds one before the last line expected the log to say
+"before line 4",
+and the fix commit corrects it to "after line 3",
+since an insertion is worded by the line before its gap (and "before line 1" at the start).
 
 Bound:
 after the common prefix and suffix are cut the table holds at most `ALIGNMENT_CELL_LIMIT` cells (4,000,000,
@@ -725,6 +734,16 @@ open to the owner's veto:
   lines both texts start with are kept first,
   and a tie between deleting and inserting deletes first.
   A paragraph removed from between blank quote lines loses the blank line after it.
+- A reviewer who only removed lines is credited,
+  in `coversLines`,
+  with the line that now follows the cut,
+  or the last line when the cut is at the end.
+  The note on the select sheet says so:
+  it used to say the lines that reviewer changed,
+  which would have been false for a line the reviewer did not write.
+  Crediting a removal with nothing would have left its assessment covering no line.
+  The wording change moves the prompt digest of the select rounds that hold a composite and no other,
+  and no cache version.
 - A line is still the text through its line ending,
   so a revision that adds a line after a last line with no ending replaces that last line,
   and a trailing newline is still a change to the last line.
