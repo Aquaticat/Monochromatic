@@ -717,8 +717,16 @@ section "The first keyed call".
 Status:
 found 2026-10-20 at about 23:15 UTC by the owner
 (`The stop logic should obviously count total free energy used per day. Every neuralwatt day starts at 15:15`);
-the fix is being built in w247,
-and this entry gains its commits when it lands.
+fixed by red `6ec47d7dd0` and fix `bc429ded8d`
+(the account's free energy over the day that starts at the quota's anchor),
+`1567eae36e` and `538a151a44`,
+the tracking-alias rows by red `3d5081a77f` and fix `5f09a2f4fb`,
+docs `7a8883aefe`,
+and the anchor retry by red `8f666261b4` and fix `2b94188c26`
+(an unknown anchor is learned on a later reading instead of refusing NeuralWatt for the run),
+with tests `dd6e8141ce` and `4dfa4ba1b3` and docs `a0fdb0aa19`.
+Gate g136 on `a0fdb0aa19` ran 2680 pass and 0 fail,
+and the work landed in `31ce5369e1` on 2026-10-21 (UTC).
 Two defects in one meter.
 The ledger counted only the calls this pipeline sent,
 although the free energy is the account's,
@@ -812,8 +820,10 @@ found 2026-10-21 reading the settled calls of `zheermao19`;
 fixed in w250
 (red `d07508fd21`,
 fix `8f238ff4f4`,
-docs `35e5434b80`),
-and this entry gains its landing when it lands.
+docs `35e5434b80` and `a665d2d028`),
+merged with the P17 work and landed in `31ce5369e1` on 2026-10-21 (UTC) after gate g136
+(2680 pass,
+0 fail).
 The meter held each call at the energy matrix's mean for its prompt-size bucket times a margin of 2.
 The run's 197 settled calls,
 nearly all in the 4,096 to 16,384 token bucket,

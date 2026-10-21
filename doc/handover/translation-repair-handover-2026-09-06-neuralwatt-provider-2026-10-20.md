@@ -246,12 +246,41 @@ The `zheermao19` read is recorded in the pass log of 2026-10-20:
 SETTLED with no class traced to code,
 on a short bench,
 its page losing several intensifiers and small words zheermao17's had kept.
-w249 has landed.
-Review w247 with its alias rows,
-gate and land it,
-rebuild,
-set `FROZEN`,
-recalibrate the energy margin from the settled ledger lines,
-then restart the rotation at `zheermao101` on the combined build,
-since a read counts only on its own build,
-and go on with CuspariaKLSY and the rest.
+Done since:
+w249 landed as `624c5ff583` (ledger P18);
+the energy recalibration
+(measured means for the 4,096 to 16,384 token bucket and a margin of 1,
+ledger P19),
+w247's account-wide day with its alias rows,
+and the retry of an unknown day anchor
+(ledger P17)
+were merged in w252,
+gated by g136
+(2680 pass,
+0 fail)
+and landed as `31ce5369e1` on 2026-10-21 (UTC).
+The branch worktree and w252 digest that build alike
+(`sha256-tree-v1:e9eda9fe032032f4896f29b0c82099ae5b04084f209ce37144bb83d78eadcfcd`).
+No cache version moved:
+every commit since `5b5dca49a9` outside the provider package is a type-only change,
+the credential hold
+or the DeepSeek 1017 ids,
+and `dadeb42ba6` found no cache key that reads a served id.
+Its body left reusing decisions cached under the pre-1017 weights to the owner;
+this session decided to keep them,
+since a version bump discards every model's cached decisions of that stage,
+not only DeepSeek's
+(veto-open).
+
+`zheermao20` (entry zheermao101) runs from 02:15 UTC on 2026-10-21 on that build.
+Its log shows the anchor learned from the quota
+(`NeuralWatt day starts at 19:15:08.000 UTC every day`),
+the by-model usage read,
+NeuralWatt wet
+and DeepSeek and GLM calls settling on it.
+Next:
+read `zheermao20` when it settles,
+recalibrate the other buckets from its settled lines if they hold enough calls,
+then go on with CuspariaKLSY and the rest of the rotation.
+The B701 rotation sweep is gating as g137 in w251;
+land it when green.
