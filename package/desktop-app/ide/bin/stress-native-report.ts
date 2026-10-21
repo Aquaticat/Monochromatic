@@ -52,7 +52,7 @@ export const summarize = (logs: readonly string[]): Tally => {
       const word = words[0] === 'TRY' ? (words[2] ?? '') : (words[0] ?? '');
       const attempt = words[0] === 'TRY' ? Number(words[1]) : 1;
       // An attempt that a retry follows carries no test counter (`───`); the last attempt of a run does.
-      const final = /^\d+\/\d+$/.test(match[2] ?? '');
+      const final = /^\d+\/\d+$/.test((match[2] ?? '').trim());
       const counted = entry(match[3] ?? '');
       const failed = failureWords.has(word) || word.startsWith('SIG');
       if (failed) {
