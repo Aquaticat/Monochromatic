@@ -2016,6 +2016,14 @@ that is verification, not a decision for the user.
   `auto_push_reconcile`, `rule_worktree_dirty`, `auto_push_dirty_paths`, `discard_audit`, `command_stash`,
   `rule_linked_worktree`, `rule_linked_worktree_messages`. Logs `~/temp/agent/m028b-mutation-<file>.log`. Do not edit
   `src/native` while it runs. A reboot kills it: rerun only the files without a `mutants tested` line.
+  m028b result 2026-10-21 (all ten files ran; logs `~/temp/agent/m028b-mutation-<file>.log`, survivor list
+  `~/temp/agent/m028b-survivors.txt`). Fully caught: `event_hints` 25/25, `diagnostics` 18/18,
+  `rule_linked_worktree_messages` 15/15, `rule_worktree_dirty` 6/6, `command_stash` 34 caught 4 unviable,
+  `rule_linked_worktree` 16 caught 4 unviable. Twelve survivors, now being killed with tests (0.2.9 candidate):
+  `discard_audit.rs` 26:35 (`*` to `+`), 157:5 and 163:5 (`parent_process` to 0 and to 1, four mutants);
+  `auto_push_reconcile.rs` 405:8 (delete `!`) and 408:25 (`!=` to `==`) in `advance_local_branch`;
+  `auto_push_dirty_paths.rs` 30:24 (`<` to `<=` in `status_paths`); `landing_invariant.rs` 78:5 (`list_entries` to
+  `Ok(vec![])`, `Ok(vec![0])`, `Ok(vec![1])`) and 101:5 (`warn_when_entries_moved` to `()`).
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and
