@@ -74,6 +74,20 @@ const XINGZ6016: BudgetView = {
 };
 
 /**
+ A view where Hyper alone is wet: NeuralWatt, Synthetic, Bedrock and OpenRouter
+ dry. Hyper serves Gemma text and shows it no picture (its row reports none), so
+ this view is a seat served text and shown no picture, which XingZ6016 was
+ until `reader-measure` opened OpenRouter to Gemma pictures (2026-10-21).
+ */
+const HYPER_ALONE: BudgetView = {
+  neuralwatt: true,
+  synthetic: true,
+  bedrock: true,
+  hyper: false,
+  openrouter: true,
+};
+
+/**
  Benches as the seat reader derives them from one view.
 
  @param dry - dryness per provider
@@ -231,17 +245,37 @@ await describe({
         it({
           name: 'COUNTS A READER BY THE PROVIDERS THAT CAN SHOW IT A PICTURE, not by the ones that serve it text '
             + '(XingZ6016: the seat line said readers=5 while Gemma was served text by OpenRouter and shown '
-            + 'pictures by Bedrock alone, which was expired)',
+            + 'pictures by Bedrock alone, which was expired; the case now reads a Hyper-alone view, where Gemma is '
+            + 'served text and shown no picture)',
+          fn: async () => {
+            expect(reachableSeats({
+              seats: [SEAT_HYPER_TEXT_BEDROCK, SEAT_HYPER_VISION,],
+              dry: HYPER_ALONE,
+            },),).toEqual([SEAT_HYPER_TEXT_BEDROCK, SEAT_HYPER_VISION,],);
+            expect(reachableSeats({
+              seats: [SEAT_HYPER_TEXT_BEDROCK, SEAT_HYPER_VISION,],
+              dry: HYPER_ALONE,
+              reach: 'vision',
+            },),).toEqual([SEAT_HYPER_VISION,],);
+            expect(shortBenches({
+              benches: {
+                ...benchesUnder({ dry: HYPER_ALONE, },),
+                readers: [SEAT_HYPER_TEXT_BEDROCK, SEAT_HYPER_VISION,],
+              },
+              names: phaseBenches({ phase: 'pictures', },),
+              dry: HYPER_ALONE,
+            },),).toEqual(['readers 1 of 2 reachable, quorum 2',],);
+          },
+        },),
+        it({
+          name: 'COUNTS GEMMA AS SEEN BY OPENROUTER at the XingZ6016 start (Bedrock expired, OpenRouter wet), since '
+            + 'reader-measure opened that route to its pictures (2026-10-21): both readers reach, the bench is not short',
           fn: async () => {
             expect(reachableSeats({
               seats: [SEAT_HYPER_TEXT_BEDROCK, SEAT_HYPER_VISION,],
               dry: XINGZ6016,
-            },),).toEqual([SEAT_HYPER_TEXT_BEDROCK, SEAT_HYPER_VISION,],);
-            expect(reachableSeats({
-              seats: [SEAT_HYPER_TEXT_BEDROCK, SEAT_HYPER_VISION,],
-              dry: XINGZ6016,
               reach: 'vision',
-            },),).toEqual([SEAT_HYPER_VISION,],);
+            },),).toEqual([SEAT_HYPER_TEXT_BEDROCK, SEAT_HYPER_VISION,],);
             expect(shortBenches({
               benches: {
                 ...benchesUnder({ dry: XINGZ6016, },),
@@ -249,16 +283,18 @@ await describe({
               },
               names: phaseBenches({ phase: 'pictures', },),
               dry: XINGZ6016,
-            },),).toEqual(['readers 1 of 2 reachable, quorum 2',],);
+            },),).toEqual([],);
           },
         },),
         it({
           name: 'NAMES THE READERS A WET PROVIDER CAN SHOW A PICTURE, beside the bench the seat line counts',
           fn: async () => {
-            expect(judgeSeatsFor({ dry: XINGZ6016, },).readersSeeing
+            expect(judgeSeatsFor({ dry: HYPER_ALONE, },).readersSeeing
               .includes(SEAT_HYPER_TEXT_BEDROCK,),).toBe(false,);
-            expect(judgeSeatsFor({ dry: XINGZ6016, },).readersSeeing
+            expect(judgeSeatsFor({ dry: HYPER_ALONE, },).readersSeeing
               .includes(SEAT_HYPER_VISION,),).toBe(true,);
+            expect(judgeSeatsFor({ dry: XINGZ6016, },).readersSeeing
+              .includes(SEAT_HYPER_TEXT_BEDROCK,),).toBe(true,);
             expect(judgeSeatsFor({ dry: ALL_WET, },).readersSeeing
               .includes(SEAT_HYPER_TEXT_BEDROCK,),).toBe(true,);
           },
