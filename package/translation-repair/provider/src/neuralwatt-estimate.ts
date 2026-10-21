@@ -25,51 +25,52 @@ import { PROMPT_BYTES_PER_TOKEN, } from './openrouter-abandoned-spend.ts';
 // statistic `mean`, basis `charged`, the standard lane, a minimum of 30
 // requests per bucket). The matrix buckets a request by its prompt tokens;
 // the bucket edges are the matrix's `min_prompt_tokens` and `max_prompt_tokens`.
-// RECALIBRATE FROM THE FIRST RUN: every settled call prints its measured
-// figure beside its estimate (`neuralwatt-client.ts`), so the first keyed run
-// supplies the pipeline's own means per bucket, which replace these.
 //
-// THE MATRIX UNDER-READS THIS PIPELINE'S PROMPTS, and the margin is the answer
-// to that. The means come from production traffic whose prompts were largely
-// served from the prefix cache, a share the matrix prints per bucket.
-// DeepSeek V4.1 Flash, by bucket from 0 to 256 tokens up: 0.000, 0.458, 0.623,
-// 0.696, 0.889, 0.976 and 0.982 (256k to 1M); GLM-5.3-Flash: 0.005, 0.138,
-// 0.308, 0.362, 0.872, 0.964 and 0.974. This pipeline's prompts are mostly
-// fresh (a sheet is built for one question), so the energy of a call is
-// expected above the bucket's mean.
+// THE 4,096 TO 16,384 TOKEN BUCKET IS THE PIPELINE'S OWN, measured over the
+// settled calls of run `zheermao19` (build `5b5dca49a9`, 2026-10-20), where
+// nearly every call falls (140 of 143 DeepSeek V4.1 Flash calls, 48 of 54
+// GLM-5.3-Flash calls): 10.613 Wh over the 140 and 17.882 Wh over the 48, means
+// of 0.0758 and 0.3725 Wh against the matrix's 0.0696 and 0.1015. The matrix
+// was near for DeepSeek and read GLM at about a quarter of its use. Its means
+// come from production traffic whose prompts were largely served from the
+// prefix cache, and this pipeline's sheets are fresh. The other buckets keep
+// the matrix's figures: the run held two to four calls in each, too few for a
+// mean. Every settled call prints its measured figure beside its estimate
+// (`neuralwatt-settlement.ts`), so a later run can replace them the same way.
 //
-// THE MARGIN IS 2, a start and not a measurement. Were a bucket's energy
-// wholly the work on fresh prompt tokens, a mean over a cached share h would
-// understate a fresh prompt by 1/(1-h). By bucket from 256 tokens up that
-// bound reads, for DeepSeek V4.1 Flash, 1.84, 2.65, 3.29, 9.0, 42 and 55, and
-// for GLM-5.3-Flash 1.16, 1.45, 1.57, 7.8, 27 and 38. It is an upper bound:
-// decode work, which these reasoning models spend heavily on, does not scale
-// with fresh tokens, and the true multiplier lies between 1 and the bound.
-// 2 is the smallest whole number at or above the bound for the lightest
-// bucket that has a cached share (1.84), and sits near the middle of the range
-// for the sheet-sized buckets of 1k to 16k tokens (1 to 3.3). It is NOT
-// claimed to cover the heavier buckets, and no larger figure is justified by
-// anything measured: the first run's settled figures say how far off it is.
+// THE SPREAD IS IN THE OUTPUT, NOT THE PROMPT. The largest single calls were
+// 0.840 Wh for DeepSeek, eleven times its mean, and 1.626 Wh for GLM, 4.4
+// times its mean. A call's energy tracked its completion tokens (read off the
+// `SPEND` line of the same stamp, which 193 of the 197 calls have): the
+// correlation was 0.87 for both models, about 0.057 Wh per thousand completion
+// tokens for DeepSeek and 0.100 for GLM. These reasoning models spend most of a
+// call on decoding, which a prompt-size bucket cannot see before the call is
+// sent; the completion cap (`completion-cap.ts` in the shared contract) bounds
+// the worst call, and GLM's three calls at 18,316 completion tokens measured
+// 1.312 to 1.626 Wh.
 //
-// WHY NOT LARGER. The margin only sizes the hold a call has while in flight,
-// because the measured figure replaces it at settlement. What it can strand at
-// the end of a day is less than one call's hold, which at these means and a
-// margin of 2 is between 0.0004 and 0.33 percent of the 550 Wh by bucket
-// (`doc/decision/translation-repair-neuralwatt-provider.md` has the table); a
-// larger margin raises that and blocks large prompts earlier in the day. What
-// it cannot do is stop plan spend by itself, and nothing else here does: a
-// cost a stream reports is nominal on free-energy requests too, so it ends
-// nothing (`neuralwatt-settlement.ts`). An under-estimate can therefore spend
-// plan energy, which shows only in the plan-energy difference a run prints at
-// its end (`neuralwatt-quota-session.ts`). The owner, 2026-10-20: "From here on
-// just use NeuralWatt normally, I can tolerate some potential losses. If it
-// works wrongly I'll tell you."
+// THE MARGIN IS 1, now that the bucket that matters holds the measured mean.
+// It only sizes the hold a call has while in flight, because the measured
+// figure replaces it at settlement, so a hold at the mean is right on average.
+// What a short hold can cost is bounded by the calls in flight at the moment
+// the day runs out: in that run up to 30 calls settled within one minute, and
+// 30 GLM calls each 1.25 Wh past the mean would overrun the day by about 37 Wh
+// (6.8 percent of the 550 Wh), a bound no measured minute came near. The old
+// margin of 2 was a start and not a measurement; at that run's figures it held
+// DeepSeek at 1.8 times its use, and a larger margin sends the last calls of
+// every day to a paid provider while the free energy still covers them. What
+// the margin cannot do is stop plan spend by itself: a cost a stream reports
+// is nominal on free-energy requests too, so it ends nothing
+// (`neuralwatt-settlement.ts`), and an overrun shows in the plan-energy
+// difference a run prints at its end (`neuralwatt-quota-session.ts`). The
+// owner, 2026-10-20: "From here on just use NeuralWatt normally, I can tolerate
+// some potential losses. If it works wrongly I'll tell you."
 
 /**
  Factor every bucket mean is multiplied by to give the energy a call holds
- while it is in flight; see the module note for why 2.
+ while it is in flight; see the module note for why 1.
  */
-export const NEURALWATT_ENERGY_MARGIN = 2;
+export const NEURALWATT_ENERGY_MARGIN = 1;
 
 /**
  One bucket of the matrix: the prompt sizes it covers and what a request in it
@@ -89,13 +90,15 @@ type EnergyBucket = {
   readonly belowTokens: number;
 
   /**
-   The matrix's mean watt-hours per request, by served model.
+   Mean watt-hours per request, by served model: the matrix's, or the
+   pipeline's own where a run measured enough calls in the bucket.
    */
   readonly meanWh: Readonly<Record<NeuralWattServedId, number>>;
 };
 
 /**
- The matrix's first seven buckets, in order. Its eighth, a million prompt
+ The matrix's first seven buckets, in order, one of them holding the measured
+ means (the module note says which). Its eighth, a million prompt
  tokens and more, has no figure; a prompt past the last edge is estimated at
  the last bucket's mean.
  */
@@ -123,9 +126,11 @@ const ENERGY_BUCKETS: readonly EnergyBucket[] = [
   },
   {
     belowTokens: 16_384,
+    // MEASURED, NOT THE MATRIX'S: the pipeline's own means over run
+    // `zheermao19` (the module note has the counts and the matrix figures).
     meanWh: {
-      'deepseek-v4.1-flash': 0.06962,
-      'glm-5.3-flash': 0.1014855,
+      'deepseek-v4.1-flash': 0.0758,
+      'glm-5.3-flash': 0.3725,
     },
   },
   {
@@ -156,12 +161,12 @@ const ENERGY_BUCKETS: readonly EnergyBucket[] = [
 
  @example
  ```ts
- const estimate: NeuralWattEstimate = { bucketMeanWh: 0.0233012, estimateWh: 0.0466024, };
+ const estimate: NeuralWattEstimate = { bucketMeanWh: 0.0233012, estimateWh: 0.0233012, };
  ```
  */
 export type NeuralWattEstimate = {
   /**
-   The matrix's mean for the prompt's bucket, in watt-hours.
+   The table's mean for the prompt's bucket, in watt-hours.
    */
   readonly bucketMeanWh: number;
 
