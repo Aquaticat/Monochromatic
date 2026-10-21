@@ -1234,6 +1234,43 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     and the 131,072-tile rule, and could carry the patch through `[patch.crates-io]` if a larger target is ever
     needed. Note: at exactly 131,072 tiles the default `ptcl` has no dynamic room, so a scene needing one more chunk
     there fails loudly with bit 16.
+    Owner addition of 2026-10-20: "proven unfixably flaky" is a very, very high bar; "in many cases we can change our
+    code, our tests, split the tests, and more instead". Zero retry overrides is the expected outcome. A test may go under
+    retries only when the report lists every alternative tried or ruled out with evidence (deterministic product code,
+    waiting on the real condition, splitting the test, injected clock or renderer state, waiting for GPU idle, less
+    parallel GPU use, a restructured assertion), and the cause lies outside our code and outside what a restructured
+    test controls; difficulty, effort or load-dependence alone never qualify; an undiagnosed flake stays an open,
+    instrumented flake and is not retried. Sent to agent `af624c22739073177`.
+    Owner instruction of 2026-10-20 that REPLACES the run-count rule in the next paragraph: "I suggest you properly fix the
+    flakes instead. And we should never run a full test against one snapshot of code. If some tests are confirmed
+    unfixably flaky, make the test harness run the specific tests more instead." My reading (stated to the owner, not
+    contradicted so far): nobody repeats the whole suite on one snapshot to judge it; one full `test:native` run per
+    snapshot is the gate; flakes are fixed at their cause; a test proven unfixably flaky gets a nextest per-test retry
+    override that keeps the pass-after-retry visible (FLAKY in the summary) and an entry in a ledger. Agent
+    `af624c22739073177` (started 2026-10-20) builds a per-test stress tool (a mise task), reproduces each known flake
+    (listed in its brief: the annotation stability tests, `find_box_context_menu_runs_each_entry`,
+    `refused_tile_tests`, `wrap_clip_tests`, the older `write_wait_tests` and `watch_tests`, the `wrap_tests` `settled`
+    early return; the CPU minimap test is the stage 5 and 6 agent's and disappears with it), fixes causes, and adds the
+    nextest config and ledger only for tests it proves unfixable. For stage 5 and 6 verification I now run
+    `test:native` once on the merged snapshot and rely on the per-test stress tool for any test that fails.
+    Owner question of 2026-10-20, "Do we really need 15 or more full test:native runs? I thought we fixed the
+    flakes?": no, 15 was my round number. With a true flake rate p per run, n runs catch it with probability
+    1-(1-p)^n: 54 percent at p = 5 percent and 79 percent at p = 10 percent for n = 15, so it is no proof either. The
+    four causes found by the flake agent are fixed (three batches of 15 passed since, one at load 50); the residual
+    repeat offender is the CPU minimap test `an_external_edit_of_fifty_thousand_lines_renders_only_the_band_it_touches`
+    (1 of 20 on the baseline), which stage 5 and 6 delete; one nine-level pixel difference and
+    `find_box_context_menu_runs_each_entry` were each seen once. Rule I adopted (veto-open): a change that adds or
+    rewrites tests that read pixels or wait on timers (stage 5 and 6 does) gets 15 consecutive full runs; any other
+    change gets 3 full runs. The "15 or more" in the stage 5 and 6 brief stands for that reason only.
+    LANDED 2026-10-20 (pushed as `6a44ec419f`; the IDE tree equals the one I verified: `lint`, `test:bin`, `build`,
+    `inspect:software-renderer` pass, `test:native` 15 of 15 at 264 tests under a load average of about 50; the first
+    push attempt failed twice, a hook message and then a plain non-fast-forward because others pushed, and the third
+    attempt after re-merging `origin/main` succeeded; the agent worktree, its local and remote branches and the scratch
+    worktree are removed, no strays). The IDE was reinstalled with the selection fix and the memory hint:
+    `~/.local/bin/monochromatic-ide` sha256 prefix `ab91c5f45960a4e7` (equal to the release build), previous binary
+    `monochromatic-ide.previous` (`80c27b37e4224602`). Before this install the shipped binary blanked or staled the code
+    view on a tall selection. I did not rerun the agent's cadence and memory measurements. The next paragraph is the
+    pre-landing state of this entry.
     Report in from agent `ae0713008b220a655` (selection fix and memory hint; verification in progress in the scratch
     worktree `~/temp/agent/ide-integrate2`, merged with `origin/main`): the bug reproduced in the SHIPPED app (release
     binary of `origin/main`, nested compositor, 1147x2000, `/tmp/ide-gpu-fixture/code.rs`): 30 to 39 selected rows are

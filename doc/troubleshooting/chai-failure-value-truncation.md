@@ -522,9 +522,10 @@ verified by a human-run reproduction script.
 
 ## Next action
 
-The module-test-side fix choice for issue 610 is still open:
- the unbounded-display option raises a flood concern
- (measured `1 488 921` characters for `200 000` numbers),
- so the options are being re-scoped around a capped value render in
- `package/module/test-diagnostic` that needs no threshold change.
+The module-test-side fix choice for issue 610 is recorded as a proposal:
+ [doc/planning/module-test-failure-value-diff.md](../planning/module-test-failure-value-diff.md).
+ The whole-value render options were rejected after a sizing correction
+ (real findings are `174`-character sentences,
+ so any cap hides the differing entry),
+ leaving a difference-first structural diff in `package/module/test-diagnostic`.
  The upstream draft stays local per the 2026-10-20 owner decision.

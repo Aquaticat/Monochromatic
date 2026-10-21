@@ -100,6 +100,32 @@ pub struct HardwareDevice {
 }
 
 /// What:
+///  The description of the device the application asks every adapter for:
+///  `limits` as its limits,
+///  and device memory handed out in blocks of 8 to 64 MiB (`MemoryHints::MemoryUsage`).
+/// Why:
+///  wgpu's default hint (`Performance`) reserves device memory in blocks of 128 to 256 MiB.
+///  A device with no renderer already holds 193.6 MiB under it and 13.6 MiB under `MemoryUsage`,
+///  and Vello's first render adds a 256 MiB block under it,
+///  so a process measured 458.2 MiB of video memory with the default hint and 234.4 MiB with this one
+///  (`doc/planning/ide-vello-buffer-sizes.md`).
+///  The card is shared with the desktop,
+///  and every native test process opens a device of its own.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function deviceDescription(limits: Limits): DeviceDescriptor;
+/// ```
+fn device_description(limits: wgpu::Limits) -> wgpu::DeviceDescriptor<'static> {
+    return wgpu::DeviceDescriptor {
+        label: Some("ide gpu device"),
+        required_limits: limits,
+        memory_hints: wgpu::MemoryHints::MemoryUsage,
+        ..wgpu::DeviceDescriptor::default()
+    };
+}
+
+/// What:
 ///  `open_hardware_device` opens a Vulkan device on the first hardware adapter,
 ///  in the order of `choose_adapters`,
 ///  that accepts wgpu's default limits.
@@ -213,11 +239,7 @@ pub fn open_hardware_device_capped(
         if let Some(cap) = texture_cap {
             limits.max_texture_dimension_2d = limits.max_texture_dimension_2d.min(cap);
         }
-        let device_description = wgpu::DeviceDescriptor {
-            label: Some("ide gpu device"),
-            required_limits: limits,
-            ..wgpu::DeviceDescriptor::default()
-        };
+        let device_description = device_description(limits);
         match runtime.block_on(adapter.request_device(&device_description)) {
             Ok((device, queue)) => {
                 ide_app::shaped_text::set_texture_dimension(
