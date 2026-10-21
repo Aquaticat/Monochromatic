@@ -17,6 +17,12 @@ Route only the scope to pnpr;
 @monochromatic-dev:registry=https://pnpr.c.aquati.cat/~monochromatic-dev/
 ```
 
+That route is the `0.1.0-alpha.11` root surface.
+ On the `0.1.0-alpha.16` base and later it becomes
+ `@monochromatic-dev:registry=https://pnpr.c.aquati.cat/npm/~monochromatic-dev/`;
+ see "To move to a newer pnpr" and
+ [`doc/troubleshooting/pnpr-base-move.md`](../../../doc/troubleshooting/pnpr-base-move.md).
+
 pnpm 11 and later hold back versions younger than `minimumReleaseAge`,
  so exclude the scope or a fresh publish stays uninstallable for a day:
 
@@ -119,6 +125,24 @@ A base newer than 0.1.0-alpha.11 also needs the generated `config.yaml` schema c
  because Coolify bakes the config into the rebuilt image:
  pnpr 0.1.0-alpha.16's schema names the web UI block `ui` (`enabled`) where our config had `web` (`enable`),
  and the parser rejects unknown fields.
+A base at 0.1.0-alpha.16 or newer also gates the deploy in two ways,
+ both measured in
+ [`doc/troubleshooting/pnpr-base-move.md`](../../../doc/troubleshooting/pnpr-base-move.md):
+
+- The startup layout gate aborts on the deployed store until `pnpr upgrade-storage` converts it
+  on the Coolify host,
+  with the container stopped and the volume backed up.
+  The section "Move to a newer pnpr base" in
+  [`doc/runbook/deploy-pnpr-registry.md`](../../../doc/runbook/deploy-pnpr-registry.md)
+  is that procedure.
+  The converted store cannot be read by the 0.1.0-alpha.11 base,
+  so rollback after that step means restoring the snapshot.
+- The npm surface answers only under `/npm`,
+  so move the consumer route,
+  the publish tooling URLs in `package/config/pnpr/src/`
+  (`publish-steps.ts` and `registry-read.ts`),
+  and every doc example in that same commit.
+
 Once an upstream release verifies GitHub workload tokens,
  return to the upstream image instead.
 
