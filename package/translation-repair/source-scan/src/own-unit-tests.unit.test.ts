@@ -597,6 +597,7 @@ const ALLOWLIST: readonly string[] = [
   'corpus-pass/consolidate-driver-acquire.ts',
   'corpus-pass/consolidate-driver-index.ts',
   'corpus-pass/consolidate-driver-records.ts',
+  'corpus-pass/consolidate-driver-subject.ts',
   'consolidate/consolidate-persistence.ts',
   'consolidate/consolidate-settle-context.ts',
   'consolidate/consolidate-settle-gate.ts',

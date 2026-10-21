@@ -34,7 +34,7 @@ function isObject(value: unknown,): value is Readonly<Record<string, unknown>> {
  throw new ReasonOrderError({ where: 'the schema', reason: 'reason', vote: 'best', order: ['best', 'reason',], },);
  ```
  */
-export class ReasonOrderError extends Error {
+class ReasonOrderError extends Error {
   /**
    Builds the report.
 
@@ -138,7 +138,7 @@ export function propertyOrderOf({ format, }: { readonly format: unknown; },): re
  const names = requiredOrderOf({ format: CANDIDATE_SELECT_RESPONSE_FORMAT, },);
  ```
  */
-export function requiredOrderOf({ format, }: { readonly format: unknown; },): readonly string[] {
+function requiredOrderOf({ format, }: { readonly format: unknown; },): readonly string[] {
   /**
    The required list.
    */

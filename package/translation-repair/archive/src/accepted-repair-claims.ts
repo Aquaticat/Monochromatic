@@ -2,6 +2,7 @@ import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-sh
 import {
   type ArchiveDispute,
   archiveDisputesOfRepair,
+  claimLineOf,
   type DisputableChunk,
 } from './archive-dispute.ts';
 
@@ -48,14 +49,10 @@ export function acceptedRepairClaimsOf(
     .flatMap(function claimsOf(issue,): readonly string[] {
       return issue.claims
         .map(function toLine(member,): string {
-          /**
-           Category and summary as the critic filed them.
-           */
-          const {
-            category,
-            summary,
-          } = member.claim;
-          return `${category} ${issue.severity}: ${summary}`;
+          return claimLineOf({
+            member,
+            severity: issue.severity,
+          },);
         },);
     },);
   return [...new Set(claims,),];

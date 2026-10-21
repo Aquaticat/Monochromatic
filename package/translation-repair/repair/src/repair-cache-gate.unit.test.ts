@@ -35,49 +35,6 @@ const HEARD = {
   findings: [],
 };
 
-await describe({
-  name: cacheRefusalsOf.name,
-  children: [
-    it({
-      name: 'REFUSES a slice no critic was heard on, whatever else its findings say',
-      fn: async () => {
-        expect(cacheRefusalsOf({
-          outcome: {
-            ...HEARD,
-            heardCritics: 0,
-            findings: [stageQuorumUnmetFinding({ shortfall: 'checker 1/3', },),],
-          },
-        },),).toStrictEqual(['no critic was heard',],);
-      },
-    },),
-    it({
-      name: 'NAMES every stage that fell short of quorum, in order, and not a stage that only lost '
-        + 'a voice',
-      fn: async () => {
-        expect(cacheRefusalsOf({
-          outcome: {
-            ...HEARD,
-            findings: [
-              stageQuorumUnmetFinding({ shortfall: 'panel 1/3', },),
-              'stage-voice-lost (editor tabby-large)',
-              stageQuorumUnmetFinding({ shortfall: 'checker 1/3', },),
-            ],
-          },
-        },),).toStrictEqual([
-          'a stage heard fewer than quorum (stage-quorum-unmet (panel 1/3))',
-          'a stage heard fewer than quorum (stage-quorum-unmet (checker 1/3))',
-        ],);
-      },
-    },),
-    it({
-      name: 'ADMITS a slice every stage heard to quorum',
-      fn: async () => {
-        expect(cacheRefusalsOf({ outcome: HEARD, },),).toStrictEqual([],);
-      },
-    },),
-  ],
-},);
-
 /**
  Settled outcome whose repair patch won, so the slice's text changed, while the
  introduced-defect probe closed short of quorum (zheermao21 slice 3 had this
@@ -92,41 +49,88 @@ const CHANGED_BUT_PROBE_SHORT = {
 };
 
 await describe({
-  name: cacheRefusalLine.name,
+  name: '',
   children: [
-    it({
-      name: 'DOES NOT SAY A CHANGED SLICE SHIPS UNCHANGED when a probe closed short of quorum',
-      fn: async () => {
-        /**
-         Warn line a changed, quorum-unmet settlement prints.
-         */
-        const line = cacheRefusalLine({
-          sliceIndex: 3,
-          refusals: cacheRefusalsOf({ outcome: CHANGED_BUT_PROBE_SHORT, },),
-          changed: CHANGED_BUT_PROBE_SHORT.changed,
-        },);
-        expect(line,).not.toContain('ships unchanged',);
-        expect(line,).toContain('stage-quorum-unmet (introduced-defect-probe 1/3)',);
-        expect(line,).toContain('NOT cached',);
-        expect(line,).toContain('the slice\'s text changed',);
-      },
+    describe({
+      name: cacheRefusalsOf.name,
+      children: [
+        it({
+          name: 'REFUSES a slice no critic was heard on, whatever else its findings say',
+          fn: async () => {
+            expect(cacheRefusalsOf({
+              outcome: {
+                ...HEARD,
+                heardCritics: 0,
+                findings: [stageQuorumUnmetFinding({ shortfall: 'checker 1/3', },),],
+              },
+            },),).toStrictEqual(['no critic was heard',],);
+          },
+        },),
+        it({
+          name: 'NAMES every stage that fell short of quorum, in order, and not a stage that only lost '
+            + 'a voice',
+          fn: async () => {
+            expect(cacheRefusalsOf({
+              outcome: {
+                ...HEARD,
+                findings: [
+                  stageQuorumUnmetFinding({ shortfall: 'panel 1/3', },),
+                  'stage-voice-lost (editor tabby-large)',
+                  stageQuorumUnmetFinding({ shortfall: 'checker 1/3', },),
+                ],
+              },
+            },),).toStrictEqual([
+              'a stage heard fewer than quorum (stage-quorum-unmet (panel 1/3))',
+              'a stage heard fewer than quorum (stage-quorum-unmet (checker 1/3))',
+            ],);
+          },
+        },),
+        it({
+          name: 'ADMITS a slice every stage heard to quorum',
+          fn: async () => {
+            expect(cacheRefusalsOf({ outcome: HEARD, },),).toStrictEqual([],);
+          },
+        },),
+      ],
     },),
-    it({
-      name: 'SAYS AN UNCHANGED SLICE DID NOT CHANGE, and still that nothing is cached',
-      fn: async () => {
-        /**
-         Warn line a settlement no critic was heard on prints.
-         */
-        const line = cacheRefusalLine({
-          sliceIndex: 4,
-          refusals: cacheRefusalsOf({ outcome: { ...HEARD, heardCritics: 0, }, },),
-          changed: false,
-        },);
-        expect(line,).toContain('chunk 4: no critic was heard',);
-        expect(line,).toContain('NOT cached',);
-        expect(line,).toContain('the slice\'s text did not change',);
-        expect(line,).not.toContain('the slice\'s text changed',);
-      },
+    describe({
+      name: cacheRefusalLine.name,
+      children: [
+        it({
+          name: 'DOES NOT SAY A CHANGED SLICE SHIPS UNCHANGED when a probe closed short of quorum',
+          fn: async () => {
+            /**
+             Warn line a changed, quorum-unmet settlement prints.
+             */
+            const line = cacheRefusalLine({
+              sliceIndex: 3,
+              refusals: cacheRefusalsOf({ outcome: CHANGED_BUT_PROBE_SHORT, },),
+              changed: CHANGED_BUT_PROBE_SHORT.changed,
+            },);
+            expect(line,).not.toContain('ships unchanged',);
+            expect(line,).toContain('stage-quorum-unmet (introduced-defect-probe 1/3)',);
+            expect(line,).toContain('NOT cached',);
+            expect(line,).toContain('the slice\'s text changed',);
+          },
+        },),
+        it({
+          name: 'SAYS AN UNCHANGED SLICE DID NOT CHANGE, and still that nothing is cached',
+          fn: async () => {
+            /**
+             Warn line a settlement no critic was heard on prints.
+             */
+            const line = cacheRefusalLine({
+              sliceIndex: 4,
+              refusals: cacheRefusalsOf({ outcome: { ...HEARD, heardCritics: 0, }, },),
+              changed: false,
+            },);
+            expect(line,).toContain('chunk 4: no critic was heard',);
+            expect(line,).toContain('NOT cached',);
+            expect(line,).toContain('the slice\'s text did not change',);
+            expect(line,).not.toContain('the slice\'s text changed',);
+          },
+        },),
+      ],
     },),
   ],
 },);

@@ -87,7 +87,6 @@ export {
   type ConsolidationPolishSettlementRule,
   gateConsolidationPolish,
   readConsolidationPolishSettlement,
-  settleConsolidationPolishBallots,
 } from './consolidation-polish-gate-stage.ts';
 export {
   buildConsolidationPolishGateMessages,

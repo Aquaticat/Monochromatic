@@ -416,7 +416,7 @@ import type { LaneText, } from '@monochromatic-dev/translation-repair-translate-
  now ships the polished text (owner, 2026-10-21, "Polished text wins ties"; `45657407a6`): the gate counts a tie at or above
  the minimum ballot count as a win for the polished text, where it kept the base, so a stored settlement of a tied gate holds
  the opposite verdict. The polish gate's sheet shows the claims the repair panel accepted (`5419332cef`, CuspariaKLSY21 slice
- 0), which the dispute note leaves out below major severity; the key carries that note when a slice has one
+ 0), which the dispute note leaves out at minor severity; the key carries that note when a slice has one
  (`repair-claims`), so a slice with such claims asks a new question by itself, and a slice without them is unchanged by this
  part. Every ballot gives its reason before its choice (owner, 2026-10-21, "Reason first everywhere"; `e5bc27f9f0`): the sheets
  of the consolidation gate and the polish gate (`consolidate-gate-wire.ts`, `consolidation-polish-gate-wire.ts`), of the

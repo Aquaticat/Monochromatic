@@ -257,6 +257,39 @@ function disputesArchive(
 }
 
 /**
+ One claim as a sheet and a log line state it: "category severity: summary".
+
+ @param member - the claim the issue holds, as the critic filed it
+
+ @param severity - the severity the panel settled the issue at
+
+ @returns The claim's category, the settled severity and the critic's summary
+
+ @example
+ ```ts
+ const line = claimLineOf({ member: issue.claims[0], severity: issue.severity, },);
+ ```
+ */
+export function claimLineOf(
+  {
+    member,
+    severity,
+  }: {
+    readonly member: AdjudicatedIssue['claims'][number];
+    readonly severity: IssueSeverity;
+  },
+): string {
+  /**
+   Claim's category and summary as the critic filed them.
+   */
+  const {
+    category,
+    summary,
+  } = member.claim;
+  return `${category} ${severity}: ${summary}`;
+}
+
+/**
  Names the accepted issues carrying disputing claims against one chunk's
  archive rendering.
 
@@ -293,14 +326,10 @@ function disputingIssuesOf(
           },);
         },)
         .map(function toBody(member,): string {
-          /**
-           Claim's category and summary as the critic filed them.
-           */
-          const {
-            category,
-            summary,
-          } = member.claim;
-          return `${category} ${issue.severity}: ${summary}`;
+          return claimLineOf({
+            member,
+            severity: issue.severity,
+          },);
         },);
       return (claims.length === 0)
         ? []

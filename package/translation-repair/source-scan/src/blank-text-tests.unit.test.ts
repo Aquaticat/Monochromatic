@@ -1062,7 +1062,7 @@ const HELD_TESTS: Readonly<Record<string, {
     tests: 1,
     why: PROTOCOL,
   },
-  'corpus-pass/consolidate-driver.ts#consolidateInContext': {
+  'corpus-pass/consolidate-driver-subject.ts#consolidationSubjectOf': {
     tests: 3,
     why: ASSEMBLED,
   },
@@ -1079,7 +1079,7 @@ const HELD_TESTS: Readonly<Record<string, {
     why: ASSEMBLED,
   },
   'artifact/consolidate-key.ts#consolidateSliceKey': {
-    tests: 4,
+    tests: 5,
     why: ASSEMBLED,
   },
   'consolidate/consolidate-settle-context.ts#settlementContextOf': {
@@ -1116,7 +1116,7 @@ const HELD_TESTS: Readonly<Record<string, {
     why: ASSEMBLED,
   },
   'consolidate/consolidation-polish-gate-wire.ts#buildConsolidationPolishGateMessages': {
-    tests: 1,
+    tests: 2,
     why: ASSEMBLED,
   },
   'consolidate/consolidation-polish-gate-wire.ts#hasRule': {

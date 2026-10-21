@@ -228,29 +228,6 @@ export function readConsolidationPolishSettlement(
 }
 
 /**
- Settles naturalness ballots with the polished text winning every tie, and the
- approved base every other outcome without a clear winner.
-
- @param ballots - usable ballots
-
- @returns Clear winner, the polished text on a tie, or refusal
-
- @example
- ```ts
- const choice = settleConsolidationPolishBallots({ ballots, });
- ```
- */
-export function settleConsolidationPolishBallots(
-  { ballots, }: { readonly ballots: readonly ConsolidationPolishBallot[]; },
-): PolishChoice {
-  /**
-   Choice the settlement reached, its rule and tally dropped.
-   */
-  const { choice, } = readConsolidationPolishSettlement({ ballots, },);
-  return choice;
-}
-
-/**
  Asks roster whether naturalness polish may replace approved base.
 
  @param client - shared provider client
@@ -365,7 +342,7 @@ export async function gateConsolidationPolish(
   if (rule === 'tie-polished-wins') {
     gl.info(
       `consolidation polish gate tied ${String(polished,)} to ${String(base,)} between polished and base `
-        + `(${String(ballots.length,)} usable ballots, minimum ${String(CONSOLIDATION_POLISH_GATE_QUORUM,)}), `
+        + `(usable ballots counted: ${String(ballots.length,)}, minimum ${String(CONSOLIDATION_POLISH_GATE_QUORUM,)}), `
         + 'so polished wins the tie (owner, 2026-10-21, "Polished text wins ties")',
     );
   }
