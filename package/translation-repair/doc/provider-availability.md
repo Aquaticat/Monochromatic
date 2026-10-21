@@ -158,6 +158,8 @@ A model only that provider serves reads unreachable without a call,
 which a round counts out of its quorum.
 A hold from a refused credential has no end inside a run,
 unlike a hold on a stream bound or on a budget refusal.
+The view the benches are derived from reads such a provider as dry,
+so a seat only that provider serves reads as unreachable before it is asked.
 The `SEAT CREDENTIAL REFUSED` warn line is the one place the run says it,
 once per provider
 (see [Configuration](configuration.md)).
