@@ -26,7 +26,7 @@ use super::{
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
 /// Library types that give the expected values.
-use ide_app::{row_map::CODE_ROW, shaped_text::texture_dimension, text_raster::MAX_RASTER_BYTES};
+use ide_app::{row_map::CODE_ROW, shaped_text::MAX_RASTER_BYTES, shaped_text::texture_dimension};
 /// Toolkit models and events.
 use slint::{ComponentHandle, Model, platform::update_timers_and_animations};
 

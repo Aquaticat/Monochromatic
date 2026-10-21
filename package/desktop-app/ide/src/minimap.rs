@@ -12,28 +12,23 @@
 //! a scroll offset,
 //! and a visual row of the vertical mapping.
 //!
-//! The picture is the window's own rendering of the text,
+//! The picture is drawn by the GPU from the window's own shaped lines,
 //!  zoomed out,
-//! and it holds only the bands near the visible part of it.
-//!  The text is rendered in bands as the window renders a tile (`render`),
-//!  with the selection,
-//! the matches,
-//! and the annotations the window draws,
-//!  and each band is reduced to the minimap's resolution by area averaging (`downscale`),
-//!  so a minimap pixel is the average of the window's pixels it stands for.
+//!  and it holds only the bands near the visible part of it.
 //!  The bands are planned (`plan`),
-//! kept by what they were rendered for (`key`,
-//! `cache`),
-//!  and put together by `build`,
-//! which runs on a worker thread within a work budget.
+//!  the lines of the window's bands are shaped once and kept by what shaped them (`line_cache`),
+//!  and `scene` turns them,
+//!  with the selection,
+//!  the matches,
+//!  and the annotations the window draws (`fills`),
+//!  into Vello scenes scaled to the minimap's pixels,
+//!  one scene for each chunk of at most 512 rows (`chunks`),
+//!  on a worker thread.
+//!  The window renders the scenes one after another into the one texture of the slice
+//!  and shows the texture as an image.
 
-/// The picture of the bands near the visible part,
-/// built band by band and kept.
-mod build;
-/// The units of the last picture and the keys they were rendered for.
-mod cache;
-/// The area-averaging reduction of rendered bands.
-mod downscale;
+/// The paint items cut into the chunks a slice is rendered in.
+mod chunks;
 /// The markup's selection and match fills behind the glyphs.
 mod fills;
 /// The minimap's sizes,
@@ -42,24 +37,23 @@ mod fills;
 mod geometry;
 /// The horizontal map of the picture.
 mod horizontal;
-/// What a unit of the picture is valid for.
-mod key;
-/// The bands the text is rendered in.
+/// The shaped lines the picture is drawn from,
+/// kept by what shaped them.
+mod line_cache;
+/// The bands the picture is cut into,
+/// and the rows a run of bands makes up.
 mod plan;
-/// Rendering one band as the window renders a tile.
-mod render;
+/// The picture's scene,
+/// its inputs,
+/// and what a build reports.
+mod scene;
+/// Shaping the lines of a slice and placing them in a view.
+mod shape;
 
-/// The picture's build,
-///  its inputs,
-///  its work budget,
-///  and what it reports.
-pub use build::{BUILD_WORK, Built, Cancel, Input, Prepared, Stats, build, prepare};
-/// The units a build keeps.
-pub use cache::{Cache, Slot};
-/// The reduction of a strip of rendered pixels to the picture's rows.
-pub use downscale::{Picture, Reduced, Reducer, Reduction, Strip};
-/// The fill inks.
-pub use fills::{Fills, paint_fills};
+/// The cut of the paint items into chunks.
+pub use chunks::cut;
+/// The fill inks and the items that draw the marks.
+pub use fills::{Fills, fill_items};
 /// The geometry's sizes,
 ///  the target of a position,
 ///  and the maps between pixels and visual rows.
@@ -68,10 +62,17 @@ pub use geometry::{
 };
 /// A position across the minimap and the text's width.
 pub use horizontal::{text_span, text_x};
-/// What a kept unit is valid for.
-pub use key::{Shared, UnitKey, key_of};
-/// The bands.
-pub use plan::{BAND_BYTES, Band, MIN_SCALE, band_count, band_height, band_step, columns_of, plan};
-/// What a band is rendered from,
-/// and the rendering.
-pub use render::{Rendered, Scene, blocks_between, marks_between, render};
+/// The shaped lines the builds keep.
+pub use line_cache::{LineCache, LineKey, line_key};
+/// The bands,
+/// and the chunks a slice is rendered in.
+pub use plan::{
+    BAND, CHUNK_ROWS, MIN_SCALE, band_count, chunk_rows, most_bands, picture_rows, slice_rows,
+};
+/// The picture's build,
+///  its inputs,
+///  its work budget,
+///  and what it reports.
+pub use scene::{BUILD_WORK, Built, Cancel, Input, Source, Stats, build, slice_items};
+/// The blocks and marks that belong to a run of lines.
+pub use shape::{blocks_between, marks_between};

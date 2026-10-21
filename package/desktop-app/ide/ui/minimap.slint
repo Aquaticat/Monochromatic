@@ -1,5 +1,5 @@
-// The minimap beside the source text: the picture of the whole file, which is the window's own rendering of the text
-// zoomed out, and the viewport box over it that is the scroll control. Native code builds the picture and decides what
+// The minimap beside the source text: the picture of the whole file, which is the window's own shaped text drawn small
+// by the GPU, and the viewport box over it that is the scroll control. Native code draws the picture and decides what
 // a press or a drag scrolls to; this file only places the picture and the box and reports the pointer. The box follows
 // CodeGlance Pro's defaults: it is the palette's foreground at 0.15 opacity, 0.25 under the pointer, and 0.35 while it
 // is dragged, and a hand cursor shows outside the box where a press jumps.
@@ -7,9 +7,9 @@ import { Surface } from "surface.slint";
 import { Palette } from "std-widgets.slint";
 
 export component Minimap inherits Rectangle {
-    // The picture, and its size in physical pixels. It is the window's own rendering of the bands of the text near the
-    // visible part, already reduced to the minimap's resolution by native code, so it is drawn at exactly that many
-    // physical pixels: nothing is resampled, and no pixel of it is repeated or blended with a neighbour.
+    // The picture, and its size in physical pixels. It is a GPU texture holding the window's own shaped lines of the bands
+    // of the text near the visible part, drawn at the minimap's resolution, so it is shown at exactly that many physical
+    // pixels: nothing is resampled, and no pixel of it is repeated or blended with a neighbour.
     in property <image> picture;
     in property <float> picture-width;
     in property <float> picture-height;

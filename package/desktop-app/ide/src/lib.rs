@@ -90,12 +90,6 @@ pub mod code_colors;
 ///  paint items and the Vello scene they encode to.
 pub mod tile_scene;
 
-/// Pixel painting consumes the same shaped geometry as reading interaction.
-pub mod text_raster;
-
-/// Internal bounded glyph images shared across source-raster frames.
-mod glyph_cache;
-
 /// Paint identity separates source-image updates from caret presentation.
 pub mod source_frame;
 
@@ -151,11 +145,9 @@ pub mod annotation_layout;
 ///  and their spacing.
 pub mod virtual_row;
 
-/// Diagnostic underline pixels in one line style per severity.
+/// The measures of the diagnostic underlines,
+///  one line style per severity.
 pub mod annotation_paint;
-
-/// Partial ligature selection clips foreground against source selection geometry.
-mod selection_paint;
 
 /// Selected-text ink follows the selection background's lightness,
 ///  not the color scheme.

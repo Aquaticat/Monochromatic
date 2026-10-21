@@ -80,7 +80,7 @@ pub struct StrokeItem {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Item = { glyphs: GlyphItem } | { clip: [number, number, number, number] } | 'unclip' | { stroke: StrokeItem };
+/// type Item = { glyphs: GlyphItem } | { clip: [number, number, number, number] } | 'unclip' | { stroke: StrokeItem } | { fill: Rect };
 /// ```
 #[derive(Clone)]
 pub enum Item {
@@ -111,6 +111,28 @@ pub enum Item {
         /// The path to stroke.
         StrokeItem,
     ),
+    /// Fill a rectangle in one ink,
+    /// or only a frame of the given thickness along its edges,
+    /// for the minimap's selection and match marks.
+    Fill {
+        /// Left edge in physical pixels.
+        left: f32,
+        /// Top edge in physical pixels.
+        top: f32,
+        /// Right edge in physical pixels,
+        /// not inside.
+        right: f32,
+        /// Bottom edge in physical pixels,
+        /// not inside.
+        bottom: f32,
+        /// Thickness of the frame to draw along the edges inside them,
+        /// or zero for the whole rectangle.
+        /// A frame is one path,
+        /// so its four sides leave no seam where they meet.
+        inset: f32,
+        /// Straight RGBA ink.
+        ink: [u8; 4],
+    },
 }
 
 /// What:

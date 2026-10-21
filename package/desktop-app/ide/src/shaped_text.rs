@@ -84,13 +84,15 @@ mod limit;
 /// export { RASTER_MARGIN, UNWRAPPED_RASTER_WIDTH, bandClip, fitClip, fitViewport, rasterFits, rasterWidth, tileCap } from './limit';
 /// ```
 pub use limit::{
-    DEFAULT_TEXTURE_DIMENSION, RASTER_MARGIN, UNWRAPPED_RASTER_WIDTH, band_clip, fit_clip,
-    fit_viewport, raster_fits, raster_width, set_texture_dimension, texture_dimension,
+    DEFAULT_TEXTURE_DIMENSION, MAX_RASTER_BYTES, RASTER_MARGIN, UNWRAPPED_RASTER_WIDTH, band_clip,
+    fit_clip, fit_viewport, raster_fits, raster_width, set_texture_dimension, texture_dimension,
     texture_fits, tile_cap,
 };
 
 /// Shaping of single lines and virtual rows with the shared font setup.
 mod layout;
+/// Shaping one line without the row cache.
+mod line;
 /// The inputs that shape one source line,
 ///  which the tab passes build too.
 pub(crate) use layout::LineRequest;
