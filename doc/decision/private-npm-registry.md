@@ -61,6 +61,13 @@ On 2026-09-14 the workspace held 154 packages under `package/`,
 @monochromatic-dev:registry=https://pnpr.c.aquati.cat/~monochromatic-dev/
 ```
 
+Moved 2026-10-21:
+ the route is `@monochromatic-dev:registry=https://pnpr.c.aquati.cat/npm/~monochromatic-dev/`
+ from the `0.1.0-alpha.16` base,
+ which mounts npm under `/npm`
+ (`doc/troubleshooting/pnpr-base-move.md`);
+ the block above records the `0.1.0-alpha.11` root surface.
+
 Through this route,
  npmjs-only versions and `@monochromatic-dev/mcp-nvim` are not installable.
 pnpm 11 and later delay fresh versions by `minimumReleaseAge`,

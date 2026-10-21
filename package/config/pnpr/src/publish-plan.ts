@@ -17,7 +17,8 @@ export type PnprPublishTarget = {
    */
   readonly origin: string;
   /**
-   Hosted registry name that workload publishes must target as `/~<name>/`.
+   Hosted registry name that workload publishes must target as `/npm/~<name>/`
+   (the `/~<name>/` root form until the 0.1.0-alpha.16 base move).
    */
   readonly registryName: string;
   /**

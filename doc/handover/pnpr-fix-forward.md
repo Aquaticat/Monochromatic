@@ -222,41 +222,37 @@ per the owner decision recorded in `## Owner decisions (2026-10-21)`.
 
 ## Next actions (order)
 
-Done already:
+Completed 2026-10-21:
 the trust fix landed as `fd2890ba0d`,
 run `39690652845` is green with 42 backlog versions published,
 and the `[DEBUG-401]` probe was removed as `c0796cbe2e`,
 naming the proven subject-claim hypothesis.
+The host conversion ran 2026-10-21T23:23Z:
+`Moved 182 documents`,
+`Moved 444 other files`,
+`Removed 183 listing-index and upload files`,
+control re-run `The hosted store already has a current layout.json; nothing to do.`
+The repin landed as `0f443e98d0`
+after `mise run //package/config/pnpr:lint:types` and
+`mise run //package/config/pnpr:test:unit` passed.
+The runbook `### What to check` list is green:
+`/-/ready` `{"status":"ok","storage":"ok","auth":"ok"}`,
+`pnpr_build_info{version="0.1.0-alpha.16"}`,
+the `/npm` packument serves 200,
+the root npm surface is 404,
+the anonymous PUT is
+`Authentication required for package "@monochromatic-dev/module-or-throw" 401`,
+and run `39693597489` reports
+`0 of 163 package versions are missing from https://pnpr.c.aquati.cat`.
 
-1. Person runs the host steps:
-   Setup and Steps 1 to 3 of `## Move to a newer pnpr base` in
-   `doc/runbook/deploy-pnpr-registry.md`.
-   The control re-run must print
-   `The hosted store already has a current layout.json; nothing to do.`
-   before anything is pushed.
-   Checked 2026-10-21:
-   `command not found` for `docker` and `podman` was an invisible character
-   pasted before the command name
-   (measured here:
-   bash ignores an ordinary leading space
-   and treats a non-breaking space as part of the name),
-   not a missing CLI;
-   the runbook `### Setup` recovery path records the case.
-   Still pending:
-   which CLI that shell has
-   and whether that shell is on the machine that runs the container.
-2. Re-verify with `mise run //package/config/pnpr:lint:types` and
-   `mise run //package/config/pnpr:test:unit`,
-   then commit the eight held files in one lockstep commit
-   (`fix(config-pnpr): ...`) and push;
-   Coolify auto-deploys.
-3. Run the runbook `### What to check` list,
-   including dispatching `pnpr-publish`.
-   Expected green:
-   `pnpr_build_info{version="0.1.0-alpha.16"}`,
-   the `/npm` surface serves,
-   and the run republishes.
-4. Final report:
+1. Consumer side (their `.npmrc` files):
+   `@monochromatic-dev:registry=https://pnpr.c.aquati.cat/npm/~monochromatic-dev/`,
+   and consumer lockfiles re-resolve their tarball URLs
+   (documented in `package/config/pnpr/README.md`).
+   Tracked as `Aquaticat/labwc-config#2`
+   (opened 2026-10-21 at the person's request;
+    they handle it in another session).
+2. Final report to the person:
    the deploy outage and recovery,
    the `/npm` surface move,
    the publish-401 root cause

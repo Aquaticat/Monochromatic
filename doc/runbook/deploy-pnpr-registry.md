@@ -343,7 +343,9 @@ TODO | DONE
    ```
 
    Expected:
-    `Moved N documents` and `Moved N other files`.
+    `Moved N documents`,
+    `Moved N other files`,
+    and `Removed N listing-index and upload files`.
     The layout marker is written last,
     so an interrupted run resumes on re-run.
     A refusal naming `layout <n>` means the store is already converted
