@@ -16,16 +16,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import type {
-  ChatJsonOutcome,
-  ChatJsonRequest,
-  ModelClient,
-} from '@monochromatic-dev/translation-repair-provider';
 import {
   reachableQuorum,
   rosterQuorumSize,
 } from '@monochromatic-dev/translation-repair-stage';
-import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
+import { scriptedClient, } from './scripted-review-client.test-fixture.ts';
 import {
   ARCHIVE_BLOCK_SELECTION_CRITERIA,
   isArchiveReferenceQuoteAnchored,
@@ -108,95 +103,6 @@ function asCaptured(text: string,): string {
 
 /** Logger for archive-block stage tests. */
 const l = tagged({ tag: 'archive-block-review-stage-test', },);
-
-/** Reply selector for one scripted request. */
-type ReplyFor = (input: {
-  readonly schema: string;
-  readonly prompt: string;
-  readonly modelId: string;
-}) => unknown;
-
-/**
- Creates schema-aware direct client and captures exact prompts.
-
- @param replyFor - reply selector
-
- @param prompts - prompt capture sink
-
- @param payloads - optional model-plus-prompt identity sink
-
- @returns Scripted client
- */
-function scriptedClient(
-  {
-    replyFor,
-    prompts,
-    payloads,
-    unreadableFor = () => false,
-    refusedFor = () => false,
-  }: {
-    readonly replyFor: ReplyFor;
-    readonly prompts: string[];
-    readonly payloads?: string[];
-    /**
-     Seats whose reply to a prompt the completion cap cut before its
-     content, the shape `chat-json-outcome.ts` reads off
-     `finish_reason=length`; the prompt lets a case cut one review's replies
-     and not another's.
-     */
-    readonly unreadableFor?: (request: { readonly modelId: string; readonly prompt: string; }) => boolean;
-    /**
-     Seats the router refuses because no provider serving them is wet, the
-     refusal `stage-call.ts` counts out of reach.
-     */
-    readonly refusedFor?: (modelId: string) => boolean;
-  },
-): ModelClient {
-  return {
-    chatText: async () => {
-      throw new Error('chatText not used',);
-    },
-    chatJson: async <ValueT,>(
-      request: ChatJsonRequest<ValueT>,
-    ): Promise<ChatJsonOutcome<ValueT>> => {
-      /** Structured schema naming requested responsibility. */
-      const schema = request.responseFormat?.json_schema.name ?? '';
-      /** Complete prompt used for responsibility and anonymity assertions. */
-      const prompt = JSON.stringify(request.messages,);
-      prompts.push(prompt,);
-      payloads?.push(`${request.modelId}\u0000${prompt}`,);
-      if (refusedFor(request.modelId,)) {
-        throw new NoProviderForModelError({
-          modelId: request.modelId,
-          reason: 'every provider serving this model is out of budget',
-        },);
-      }
-      if (unreadableFor({
-        modelId: request.modelId,
-        prompt,
-      },)) {
-        return {
-          kind: 'schema-mismatch',
-          rawText: '',
-          reason: 'truncated-completion',
-          detail: 'provider reported a truncating completion (model stopped with finish_reason=length)',
-        };
-      }
-      /** Scripted value for current role. */
-      const value = replyFor({ schema, prompt, modelId: request.modelId, });
-      if (!request.validate(value,))
-        throw new Error(`scripted ${schema} reply failed validator`,);
-      return {
-        kind: 'ok',
-        value,
-        rawText: JSON.stringify(value,),
-      };
-    },
-    quotas: async () => {
-      throw new Error('quotas not used',);
-    },
-  };
-}
 
 /** Acceptable absolute-naturalness reply. */
 const ACCEPTABLE_NATURALNESS = {

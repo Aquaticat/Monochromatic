@@ -329,6 +329,19 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
   'provider-stream/abandon-kind.unit.test.ts#<module>: firstByteMs: -1': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'provider-stream/abandon-kind.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'provider-stream/abandon-kind.unit.test.ts#cutWith: firstByteMs: firstByteMs': { count: 1, bound: 'other', reason: HANDED_ON, },
+  'archive/archive-block-review-windows.unit.test.ts#<module>: roundMs: 0': {
+    count: 1,
+    bound: 'reached',
+    reason: 'the readers\' window of 0 the selection case reaches: its straggler answers only after the reply delay of '
+      + 'the scripted client, which every other seat answers before, so the window closes on it on any machine; '
+      + 'the writers\' window beside it is the hang stop',
+  },
+  'archive/scripted-review-client.test-fixture.ts#scriptedClient: wait of module-async-time HELD_REPLY_MS': {
+    count: 1,
+    bound: 'reached',
+    reason: 'makes the held seat late: its peers answer in microtasks, so it lands after quorum on any machine, '
+      + 'inside a window that is the hang stop and outside one of 0',
+  },
   'archive/absolute-naturalness-review-stage.unit.test.ts#<module>: wait of module-async-time 0': {
     count: 1,
     bound: 'other',
