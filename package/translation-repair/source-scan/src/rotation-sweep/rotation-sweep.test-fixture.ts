@@ -360,6 +360,12 @@ async function runSweep(
 
  @param args - words after the task name
 
+ @param sweep - the machinery that runs the salts, injected so that a case need not run the family's tests
+
+ @param write - receives each line of the report
+
+ @param writeError - receives each line of a refusal, which has not been written yet
+
  @returns Whether the sweep passed
 
  @example
@@ -367,16 +373,27 @@ async function runSweep(
  const passed = await rotationSweepMain({ args: [], },);
  ```
  */
-export async function rotationSweepMain({ args, }: { readonly args: readonly string[]; },): Promise<boolean> {
+export async function rotationSweepMain(
+  {
+    args,
+    sweep = runSweep,
+    write = writeLine,
+  }: {
+    readonly args: readonly string[];
+    readonly sweep?: typeof runSweep;
+    readonly write?: (arguments_: { readonly line: string; },) => void;
+    readonly writeError?: (arguments_: { readonly line: string; },) => void;
+  },
+): Promise<boolean> {
   /**
    What the sweep found.
    */
-  const outcome = await runSweep({
+  const outcome = await sweep({
     request: sweepRequestOf({ args, },),
-    write: writeLine,
+    write,
   },);
   for (const line of reportLines({ outcome, },))
-    writeLine({ line, },);
+    write({ line, },);
   return sweepPassed({ outcome, },);
 }
 
