@@ -212,13 +212,17 @@ fn unshifted_rows(
 ) -> String {
     let mut rows = Vec::new();
     let mut largest = 0;
+    let mut columns = (usize::MAX, 0);
     let mut y = TEXT_TOP + 1.0;
     while y < height - 2.0 {
         let now = band(current, y);
         let then = band(previous, y + 1.0);
         if now != then {
             rows.push(y as usize);
-            for (one, other) in now.iter().zip(then.iter()) {
+            for (column, (one, other)) in now.iter().zip(then.iter()).enumerate() {
+                if one != other {
+                    columns = (columns.0.min(column), columns.1.max(column));
+                }
                 largest = largest
                     .max(one.r.abs_diff(other.r))
                     .max(one.g.abs_diff(other.g))
@@ -233,10 +237,12 @@ fn unshifted_rows(
         _ => true,
     };
     return format!(
-        "{} rows differ exactly, the first {:?} and the last {:?}, contiguous {contiguous}, largest channel difference {largest}",
+        "{} rows differ exactly, the first {:?} and the last {:?}, contiguous {contiguous}, largest channel difference {largest}, columns {} to {} of the band, the differing rows {rows:?}",
         rows.len(),
         rows.first(),
-        rows.last()
+        rows.last(),
+        columns.0,
+        columns.1
     );
 }
 
@@ -332,9 +338,14 @@ fn moved(
     for row in 0..rows {
         let old = &band(before.0, from + row as f32)[skip..];
         let new = &band(after.0, to + row as f32)[skip..];
+        let kept = if same_pixels(old, new) {
+            String::new()
+        } else {
+            keep_frames("moved", before.0, after.0)
+        };
         assert!(
             same_pixels(old, new),
-            "line {line} changed its pixels in row {row} of its code row (window rows {} and {}); {}; \
+            "line {line} changed its pixels in row {row} of its code row (window rows {} and {}); {}; {kept}; \
              facts before {}; facts after {}",
             from + row as f32,
             to + row as f32,
@@ -344,6 +355,32 @@ fn moved(
         );
     }
     return to - from;
+}
+
+/// What:
+///  Write two frames that a comparison found different to `target/flake-frames/`, as PPM images, and say where.
+/// Why:
+///  A difference that shows only now and then cannot be looked at again; the files are the evidence of the next one.
+fn keep_frames(
+    name: &str,
+    first: &SharedPixelBuffer<Rgba8Pixel>,
+    second: &SharedPixelBuffer<Rgba8Pixel>,
+) -> String {
+    let directory = std::path::Path::new("target/flake-frames");
+    if fs::create_dir_all(directory).is_err() {
+        return "frames not kept".to_string();
+    }
+    let stamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |elapsed| elapsed.as_millis());
+    for (label, frame) in [("first", first), ("second", second)] {
+        let mut bytes = format!("P6\n{} {}\n255\n", frame.width(), frame.height()).into_bytes();
+        for pixel in frame.as_slice() {
+            bytes.extend_from_slice(&[pixel.r, pixel.g, pixel.b]);
+        }
+        let _ = fs::write(directory.join(format!("{name}-{stamp}-{label}.ppm")), bytes);
+    }
+    return format!("frames kept as target/flake-frames/{name}-{stamp}-first and -second.ppm");
 }
 
 /// What:
@@ -373,6 +410,7 @@ fn level_difference(left: &[Rgba8Pixel], right: &[Rgba8Pixel]) -> String {
     let mut count = 0;
     let mut largest = 0;
     let mut first = None;
+    let mut columns = (usize::MAX, 0);
     for (index, (one, other)) in left.iter().zip(right.iter()).enumerate() {
         let worst = one
             .r
@@ -383,14 +421,17 @@ fn level_difference(left: &[Rgba8Pixel], right: &[Rgba8Pixel]) -> String {
         if worst > 0 {
             count += 1;
             largest = largest.max(worst);
+            columns = (columns.0.min(index), columns.1.max(index));
             if first.is_none() {
                 first = Some((index, *one, *other));
             }
         }
     }
     return format!(
-        "{count} of {} texels differ, by {largest} levels at most, the first {first:?}",
-        left.len()
+        "{count} of {} texels differ, by {largest} levels at most, in columns {} to {} of the compared part, the first {first:?}",
+        left.len(),
+        columns.0,
+        columns.1
     );
 }
 
@@ -934,9 +975,14 @@ fn scrolling_across_annotated_lines_is_rigid() {
             } else {
                 within_one_level(band(current, y), shifted)
             };
+            let kept = if moved {
+                String::new()
+            } else {
+                keep_frames("rigid", previous, current)
+            };
             assert!(
                 moved,
-                "the frame at offset {offset} is not the previous one shifted by one row (window row {y}); {}; \
+                "the frame at offset {offset} is not the previous one shifted by one row (window row {y}); {kept}; {}; \
                  re_rendered {re_rendered}, tiles_rendered before the step {rendered_before}; facts at the \
                  previous frame {}; facts at this frame {}",
                 unshifted_rows(current, previous, height),

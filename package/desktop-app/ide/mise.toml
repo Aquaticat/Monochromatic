@@ -315,9 +315,10 @@ flag "--count <n>" default="20" help="Iterations each copy runs one after the ot
 flag "--copies <n>" default="4" help="Concurrent nextest invocations in the container"
 flag "--load <cpus>" default="0" help="Host CPUs kept busy by stress-ng in a memory-capped systemd user unit"
 flag "--retries <n>" default="0" help="Nextest retries per test"
+flag "--threads <n>" default="0" help="Test processes each copy runs at once; zero keeps the container bound"
 flag "--deadline-minutes <n>" default="60" help="The container and the load unit are removed after this long"
 '''
-run = "node bin/stress-native.ts --filter \"${usage_filter}\" --count \"${usage_count}\" --copies \"${usage_copies}\" --load \"${usage_load}\" --retries \"${usage_retries}\" --deadline-minutes \"${usage_deadline_minutes}\""
+run = "node bin/stress-native.ts --filter \"${usage_filter}\" --count \"${usage_count}\" --copies \"${usage_copies}\" --load \"${usage_load}\" --retries \"${usage_retries}\" --threads \"${usage_threads}\" --deadline-minutes \"${usage_deadline_minutes}\""
 
 [tasks."test:fonts"]
 description = "Exercise embedded font features and ligature selection through production geometry"

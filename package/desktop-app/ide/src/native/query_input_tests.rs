@@ -39,7 +39,7 @@ use super::theme_tests::{rgba, switch};
 /// ```ts
 /// import { ColorScheme } from 'slint/private';
 /// ```
-use slint::private_unstable_api::re_exports::ColorScheme;
+use slint::private_unstable_api::re_exports::{ColorScheme, WindowInner};
 /// What:
 ///  `Rgba8Pixel` is one pixel of four bytes;
 ///  `SharedPixelBuffer<Rgba8Pixel>` is a rendered frame
@@ -84,14 +84,31 @@ fn menu(window: &AppWindow, steps: usize) {
     // A point in the text area, 60px left of the clear cell and in the middle of the box.
     let x = window.get_find_clear_x() - 60.0;
     let y = window.get_find_clear_y() + 24.0;
+    let popups_before = open_popups(window);
     press(window, x, y, PointerEventButton::Right);
+    let popups_pressed = open_popups(window);
     release(window, x, y, PointerEventButton::Right);
+    let popups_released = open_popups(window);
     settle(window);
+    let popups_settled = open_popups(window);
+    assert_eq!(
+        popups_settled,
+        1,
+        "the right click at {x},{y} left no menu open (popups before the press {popups_before}, after it {popups_pressed}, \
+         after the release {popups_released}, after settling {popups_settled}; find status {:?}, find focus {})",
+        window.get_find_status(),
+        window.get_find_has_focus()
+    );
     for _ in 0..steps {
         key(window, Key::DownArrow);
     }
     key(window, Key::Return);
     settle(window);
+}
+
+/// How many popups (menus, tooltips) the window holds open.
+fn open_popups(window: &AppWindow) -> usize {
+    return WindowInner::from_pub(window.window()).active_popups().len();
 }
 
 /// Entry positions in the menu,

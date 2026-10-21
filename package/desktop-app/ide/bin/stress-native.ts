@@ -26,16 +26,19 @@ type Options = {
   readonly load: number;
   /** Retries per test (`--retries`); the run proves the harness shows a pass after retry as FLAKY. */
   readonly retries: number;
+  /** Test processes each copy runs at once (`--test-threads`); zero keeps the container's own bound. */
+  readonly threads: number;
   /** Longest wall time of the whole run, after which the container is removed. */
   readonly deadlineMinutes: number;
 };
 
-const usage = `Usage: node bin/stress-native.ts --filter <nextest filter expression> [--count 20] [--copies 4] [--load 0] [--retries 0] [--deadline-minutes 60]
+const usage = `Usage: node bin/stress-native.ts --filter <nextest filter expression> [--count 20] [--copies 4] [--load 0] [--retries 0] [--threads 0] [--deadline-minutes 60]
   --filter    nextest filter expression, for example 'test(rows_arriving_in_view)'; every selected test runs in each copy
   --count     iterations per copy, run one after the other
   --copies    concurrent nextest invocations in one container (each runs its tests in separate processes)
   --load      host CPUs kept busy by stress-ng in a memory-capped systemd user unit while the run lasts
   --retries   nextest retries per test, 0 by default
+  --threads   test processes each copy runs at once, 0 for the container's bound; copies times threads is the load on the GPU
   --deadline-minutes  the container and the load unit are removed after this long, whatever has finished`;
 
 /**
@@ -55,7 +58,7 @@ const parse = (argv: readonly string[]): Options => {
     }
     values.set(name.slice(2), value);
   }
-  const known = ['filter', 'count', 'copies', 'load', 'retries', 'deadline-minutes'];
+  const known = ['filter', 'count', 'copies', 'load', 'retries', 'threads', 'deadline-minutes'];
   for (const name of values.keys()) {
     if (!known.includes(name)) {
       throw new Error(`Unknown option --${name}.\n${usage}`);
@@ -81,6 +84,7 @@ const parse = (argv: readonly string[]): Options => {
     copies: Math.max(1, whole('copies', 4)),
     load: whole('load', 0),
     retries: whole('retries', 0),
+    threads: whole('threads', 0),
     deadlineMinutes: Math.max(1, whole('deadline-minutes', 60)),
   };
 };
@@ -203,13 +207,14 @@ try {
     execute([
       'cargo', 'nextest', 'run', '--bin', 'monochromatic-ide', '--filter-expr', options.filter, '--no-fail-fast',
       '--stress-count', String(options.count), '--retries', String(options.retries),
+      ...(options.threads > 0 ? ['--test-threads', String(options.threads)] : []),
       '--status-level', 'pass', '--final-status-level', 'none', '--failure-output', 'immediate',
     ], join(logs, `copy-${copy}.log`)));
   await Promise.all(runs);
   clearInterval(sampler);
   sample();
   const tally: Tally = summarize(Array.from({ length: options.copies }, (_, copy) => readFileSync(join(logs, `copy-${copy}.log`), 'utf8')));
-  console.log(`Stress run: filter ${options.filter}, ${options.copies} copies x ${options.count} iterations, load ${options.load} CPUs, retries ${options.retries}, ${Math.round((Date.now() - began) / 1000)} s`);
+  console.log(`Stress run: filter ${options.filter}, ${options.copies} copies x ${options.count} iterations, load ${options.load} CPUs, retries ${options.retries}, threads ${options.threads || limits.testThreads}, ${Math.round((Date.now() - began) / 1000)} s`);
   console.log(`Logs: ${logs}`);
   console.log(`Pressure: video memory peak ${(pressure.vramPeak / 2 ** 30).toFixed(2)} of ${(pressure.vramTotal / 2 ** 30).toFixed(2)} GiB (all programs), load average peak ${pressure.loadPeak.toFixed(1)}, ${pressure.samples} samples`);
   console.log(tally.report);
