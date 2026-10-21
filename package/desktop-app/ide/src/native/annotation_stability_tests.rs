@@ -387,6 +387,31 @@ fn keep_frames(
 }
 
 /// What:
+///  The note a failure message carries about saved frames:
+///  empty when the two compared parts of a row are the same pixels,
+///  otherwise the frames are written to `target/flake-frames/` under `name` and the note names the files.
+/// Why:
+///  Every comparison of two frames in this file keeps its frames when it fails,
+///  so the next failure of any of them can be looked at.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function keptIfDifferent(name: string, old: Pixel[], now: Pixel[], first: Frame, second: Frame): string;
+/// ```
+fn kept_if_different(
+    name: &str,
+    old: &[Rgba8Pixel],
+    new: &[Rgba8Pixel],
+    first: &SharedPixelBuffer<Rgba8Pixel>,
+    second: &SharedPixelBuffer<Rgba8Pixel>,
+) -> String {
+    if same_pixels(old, new) {
+        return String::new();
+    }
+    return keep_frames(name, first, second);
+}
+
+/// What:
 ///  A frame,
 ///  the vertical mapping the reader paints with now,
 ///  and the tile facts of that moment.
@@ -522,8 +547,15 @@ fn rows_arriving_in_view_move_only_lines_beneath_them() {
     while y < TEXT_TOP + first_block {
         assert!(
             same_pixels(band(&plain.0, y), band(&hinted.0, y)),
-            "a pixel above the first changed line moved in window row {y}; {}; facts before {}; facts after {}",
+            "a pixel above the first changed line moved in window row {y}; {}; {}; facts before {}; facts after {}",
             level_difference(band(&plain.0, y), band(&hinted.0, y)),
+            kept_if_different(
+                "above-hints",
+                band(&plain.0, y),
+                band(&hinted.0, y),
+                &plain.0,
+                &hinted.0
+            ),
             plain.2,
             hinted.2
         );
@@ -568,8 +600,15 @@ fn rows_arriving_in_view_move_only_lines_beneath_them() {
     while above < TEXT_TOP + first_changed {
         assert!(
             same_pixels(band(&hinted.0, above), band(&diagnosed.0, above)),
-            "a pixel above the first changed line moved in window row {above}; {}; facts before {}; facts after {}",
+            "a pixel above the first changed line moved in window row {above}; {}; {}; facts before {}; facts after {}",
             level_difference(band(&hinted.0, above), band(&diagnosed.0, above)),
+            kept_if_different(
+                "above-diagnostics",
+                band(&hinted.0, above),
+                band(&diagnosed.0, above),
+                &hinted.0,
+                &diagnosed.0
+            ),
             hinted.2,
             diagnosed.2
         );
@@ -761,8 +800,15 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
     while y < TEXT_TOP + shown.block_top(104) - (offset + row) {
         assert!(
             same_pixels(band(&before, y), band(&after, y)),
-            "a visible pixel above the new row moved in window row {y}; {}; facts at the first frame {before_facts}; facts now {}",
+            "a visible pixel above the new row moved in window row {y}; {}; {}; facts at the first frame {before_facts}; facts now {}",
             level_difference(band(&before, y), band(&after, y)),
+            kept_if_different(
+                "below-the-new-row",
+                band(&before, y),
+                band(&after, y),
+                &before,
+                &after
+            ),
             Facts {
                 window,
                 source: &reader.source
@@ -872,8 +918,15 @@ fn a_reload_holds_row_space_until_annotations_return() {
     while back < TEXT_TOP + returned.1.block_top(12) {
         assert!(
             same_pixels(band(&annotated.0, back), band(&returned.0, back)),
-            "window row {back} differs after the annotations returned; {}; facts before {}; facts after {}",
+            "window row {back} differs after the annotations returned; {}; {}; facts before {}; facts after {}",
             level_difference(band(&annotated.0, back), band(&returned.0, back)),
+            kept_if_different(
+                "reload",
+                band(&annotated.0, back),
+                band(&returned.0, back),
+                &annotated.0,
+                &returned.0
+            ),
             annotated.2,
             returned.2
         );
