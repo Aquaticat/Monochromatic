@@ -1227,7 +1227,7 @@ export function runClientFrom(
       inner: promptUniqueClient({
         // THE OWNER'S CULL AT THE DOOR (ledger P4): a culled model is refused
         // before any provider is asked, whatever path named it, and tallied
-        // as unreachable, not as an ask (ledger B710).
+        // as unreachable, not as an ask (ledger B711).
         inner: refusingCulledSeats({
           inner: routed,
           culled: OWNER_CULLED,

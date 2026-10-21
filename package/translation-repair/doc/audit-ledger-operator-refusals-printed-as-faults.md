@@ -641,3 +641,86 @@ or one built at the start as before.
 Recurrence:
 `mistake-prevention.md`,
 "Tests touching the real world".
+
+## B710: a rotation sweep that found failing cases ended in a stack trace
+
+Red in `bab539ba71`,
+fixed in `f127703f46`;
+the bad-option refusals red in `02ce0ade0d`,
+fixed in `92de2fce80`.
+
+Named in the lead's brief of 2026-10-21 (UTC):
+a task that is run to read its findings ended them in a thrown error.
+The entry of `test:rotation-sweep` (`source-scan/src/rotation-sweep/rotation-sweep-cli.test-fixture.ts`)
+threw a bare `Error` when `rotationSweepMain` returned false,
+so Node printed the entry file's source line and frames after a report that already named the cases.
+The sweep had run to its end and found what it exists to find;
+nothing was broken,
+and the operator was shown a fault.
+
+The fix:
+`rotationSweepMain` returns the exit code.
+A clean sweep ends on `rotation sweep: clean` and returns 0.
+A sweep that found cases writes the same report on standard output,
+then a refusal on standard error that names each case,
+its package,
+the salts that fail it
+(or that it is red with no shift)
+and the command that reruns one salt,
+and returns 6,
+the code `reportingRefusals` gives a stated refusal.
+`source-scan` does not depend on `glossary`,
+where `StatedRefusalError` lives,
+and `reportingRefusals` serves the declared `corpus-run` commands,
+so the sweep takes the pattern's shape and not its class:
+a found failure is a verdict,
+and only an error out of the machinery
+(the canary,
+a package with no test file)
+is thrown,
+with its stack.
+`rotation-sweep.unit.test.ts` drives `rotationSweepMain` over an injected sweep:
+four of its five new cases fail on the red commit,
+and the fifth,
+a fault thrown unchanged with its stack,
+passes there by design.
+
+The exit code is assigned at the entry file's top.
+The scan of process globals (`global-writes-sequenced.unit.test.ts`) refuses that in any fixture,
+and the linter refuses `process.exit`,
+so the scan now names the one fixture that is a process's own entry (`PROCESS_ENTRIES`),
+allows its writes outside a case only,
+fails if the listed file is gone,
+and has a case showing the same write elsewhere still found.
+That is a change to a guard,
+made on purpose and listed for the lead's veto.
+
+Measured on the fix commit by the real task on a throwaway always-failing test file in `translate-stage`,
+removed afterwards:
+`mise run //package/translation-repair/source-scan:test:rotation-sweep -- --package translate-stage --salt 1`
+printed the report,
+the refusal and no frame,
+and exited 6;
+without the file it ended on `rotation sweep: clean` and exited 0.
+
+The command line is refused the same way.
+`sweepRequestOf` threw a bare `Error` for an unknown option,
+a salt past 9,
+a salt that is no number and an option without a value,
+so a mistyped option printed a stack.
+It now throws `SweepOptionRefusalError`,
+and `rotationSweepMain` writes its sentence alone to standard error,
+naming the option typed and the valid forms,
+starts no sweep and returns 6.
+Any other error out of reading the command line is a fault and is thrown unchanged.
+One case of `rotation-sweep.unit.test.ts` drives the four bad command lines
+and failed on the red commit `02ce0ade0d`.
+The new class writes its own sentence,
+so the message inventory of `message-names-only.unit.test.ts` lists it as withheld with its reason,
+which the fix commit missed and the commit after it supplied.
+
+Recurrence:
+`mistake-prevention.md`,
+"Two layers reading one refusal":
+an entry that can find something an operator is meant to fix returns a code,
+and a case drives the found and the faulted paths through the entry's function.

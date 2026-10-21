@@ -116,7 +116,7 @@ export type JudgeSeats = {
    named once, in bench order. They stay seated and are lost at call time as
    unreachable (the owner's rule of 2026-09-09), so the `JUDGE SEATS` lines
    name them: a bench count includes them, and the checker bench is padded
-   with them when fewer than its width are served (ledger B710).
+   with them when fewer than its width are served (ledger B711).
    */
   readonly unserved: readonly RosterModelId[];
 

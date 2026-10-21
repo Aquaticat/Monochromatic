@@ -188,7 +188,7 @@ The seat tally did not hold to it.
 `seatTallyClient` counted the router's own refusal as a failed ask of the seat,
 so `zheermao20` printed `SEAT glm-5.3 asked=4 usable=0 unusable=0 threw=4` for a seat never sent a request,
 and withheld it for the run after four refusals
-(audit ledger B710).
+(audit ledger B711).
 
 The counting rule,
 written on 2026-10-21 (UTC):

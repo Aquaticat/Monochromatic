@@ -7,6 +7,11 @@ import {
   unitTestFilesOf,
 } from './rotation-sweep-packages.test-fixture.ts';
 import {
+  refusalLines,
+  SweepOptionRefusalError,
+  SWEEP_REFUSED_EXIT,
+} from './rotation-sweep-refusal.test-fixture.ts';
+import {
   caseKey,
   type FailedCase,
   newFailures,
@@ -81,7 +86,7 @@ type SweepRequest = {
 
  @returns The request
 
- @throws Error on a word that is no option, or a salt that is not a whole number from 0 to 9
+ @throws {@link SweepOptionRefusalError} on a word that is no option, an option without a value, or a salt that is not a whole number from 0 to 9
 
  @example
  ```ts
@@ -106,7 +111,7 @@ export function sweepRequestOf({ args, }: { readonly args: readonly string[]; },
      */
     const value = args[at + 1];
     if (value === undefined)
-      throw new Error(`rotation sweep: ${option} needs a value`,);
+      throw new SweepOptionRefusalError({ reason: `${option} needs a value`, },);
     if (option === '--package') {
       packages.push(value,);
     }
@@ -117,11 +122,11 @@ export function sweepRequestOf({ args, }: { readonly args: readonly string[]; },
       const salt = Number(value,);
       if ((!Number.isInteger(salt,)) || (salt < 0)
         || (salt >= SALT_COUNT))
-        throw new Error(`rotation sweep: --salt takes a whole number from 0 to ${String(SALT_COUNT - 1,)}, got ${value}`,);
+        throw new SweepOptionRefusalError({ reason: `--salt takes a whole number from 0 to ${String(SALT_COUNT - 1,)}, got ${value}`, },);
       salts.push(salt,);
     }
     else {
-      throw new Error(`rotation sweep: unknown option ${option}; the options are --package <directory> and --salt <n>`,);
+      throw new SweepOptionRefusalError({ reason: `${option} is not an option`, },);
     }
   }
   return {
@@ -251,6 +256,50 @@ async function runShifted(
 }
 
 /**
+ What reading the command line gave: the request, or the sentence that refuses it.
+ */
+type AskedRequest =
+  | {
+    readonly kind: 'request';
+    readonly request: SweepRequest;
+  }
+  | {
+    readonly kind: 'refused';
+    readonly says: string;
+  };
+
+/**
+ Reads the command line, keeping a refusal of it apart from a fault.
+
+ @param args - words after the task name
+
+ @returns The request, or the sentence that refuses the command line
+
+ @throws Error on anything but a refusal of the command line, which is a fault of the reader
+
+ @example
+ ```ts
+ const asked = requestOrRefusal({ args: ['--nap',], },); // { kind: 'refused', says: 'rotation sweep: refused, --nap is not an option; ...' }
+ ```
+ */
+function requestOrRefusal({ args, }: { readonly args: readonly string[]; },): AskedRequest {
+  try {
+    return {
+      kind: 'request',
+      request: sweepRequestOf({ args, },),
+    };
+  }
+  catch (error) {
+    if (error instanceof SweepOptionRefusalError)
+      return {
+        kind: 'refused',
+        says: error.message,
+      };
+    throw error;
+  }
+}
+
+/**
  Writes one line of the report to standard output.
 
  @param line - the line, without its line break
@@ -356,28 +405,77 @@ async function runSweep(
 }
 
 /**
- Runs the sweep from the command-line words of the `test:rotation-sweep` task and reports.
+ Writes one line of a refusal to standard error, where a reader collecting the report from standard output does not meet it.
 
- @param args - words after the task name
-
- @returns Whether the sweep passed
+ @param line - the line, without its line break
 
  @example
  ```ts
- const passed = await rotationSweepMain({ args: [], },);
+ writeErrorLine({ line: 'rotation sweep: refused, because ...', },);
  ```
  */
-export async function rotationSweepMain({ args, }: { readonly args: readonly string[]; },): Promise<boolean> {
+function writeErrorLine({ line, }: { readonly line: string; },): void {
+  process.stderr
+    .write(`${line}\n`,);
+}
+
+/**
+ Runs the sweep from the command-line words of the `test:rotation-sweep` task and reports.
+
+ A sweep that found cases to fix writes the report, then a refusal naming each case, and returns the stated-refusal code
+ without throwing. An error out of the sweep itself is a fault and propagates with its stack.
+
+ @param args - words after the task name
+
+ @param sweep - the machinery that runs the salts, injected so that a case need not run the family's tests
+
+ @param write - receives each line of the report
+
+ @param writeError - receives each line of a refusal
+
+ @returns The exit code: 0 for a clean sweep, `SWEEP_REFUSED_EXIT` for one that found cases to fix
+
+ @example
+ ```ts
+ process.exitCode = await rotationSweepMain({ args: [], },);
+ ```
+ */
+export async function rotationSweepMain(
+  {
+    args,
+    sweep = runSweep,
+    write = writeLine,
+    writeError = writeErrorLine,
+  }: {
+    readonly args: readonly string[];
+    readonly sweep?: typeof runSweep;
+    readonly write?: (arguments_: { readonly line: string; },) => void;
+    readonly writeError?: (arguments_: { readonly line: string; },) => void;
+  },
+): Promise<number> {
+  /**
+   The request the command line makes, or the sentence that refuses it.
+   */
+  const asked = requestOrRefusal({ args, },);
+  if (asked.kind === 'refused') {
+    writeError({ line: asked.says, },);
+    return SWEEP_REFUSED_EXIT;
+  }
+
   /**
    What the sweep found.
    */
-  const outcome = await runSweep({
-    request: sweepRequestOf({ args, },),
-    write: writeLine,
+  const outcome = await sweep({
+    request: asked.request,
+    write,
   },);
   for (const line of reportLines({ outcome, },))
-    writeLine({ line, },);
-  return sweepPassed({ outcome, },);
+    write({ line, },);
+  if (sweepPassed({ outcome, },))
+    return 0;
+  for (const line of refusalLines({ outcome, },))
+    writeError({ line, },);
+  return SWEEP_REFUSED_EXIT;
 }
 
 //endregion Rotation sweep

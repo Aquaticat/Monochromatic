@@ -44,7 +44,7 @@ import type {
 // sent and the tally counts `unreachable`, not asked.
 //
 // A REFUSAL THE ROUTER GIVES BEFORE ANY REQUEST IS SENT IS NOT AN ASK
-// (ledger B710). The provider router throws `NoProviderForModelError` for a seat
+// (ledger B711). The provider router throws `NoProviderForModelError` for a seat
 // no wet provider serves, and the zheermao20 run counted four such refusals of
 // `glm-5.3` as "asked=4 threw=4" and withheld the seat for a failure it never
 // had. They are counted in a column of their own, `unreachable`, which is in
@@ -71,7 +71,7 @@ import type {
  provider router refused with `NoProviderForModelError` before any request was
  sent, which is counted beside the others and in none of them for the same
  reason: no provider was asked, so the seat neither answered nor failed
- (ledger B710).
+ (ledger B711).
 
  @example
  ```ts
@@ -335,7 +335,7 @@ export const RUN_SEATS: SeatTally = createSeatTally();
  refusal is not an ask, so it leaves the counts as they were.
 
  A `NoProviderForModelError` THE INNER CLIENT THROWS IS COUNTED AS UNREACHABLE,
- AND AS NOTHING ELSE (ledger B710). The router gives it for a seat no wet
+ AND AS NOTHING ELSE (ledger B711). The router gives it for a seat no wet
  provider serves and the owner's cull gives it for a culled seat, both before
  any request is sent, so it is no more an ask than the tally's own refusal is.
  It is counted whether or not the caller had aborted, since the refusal is a

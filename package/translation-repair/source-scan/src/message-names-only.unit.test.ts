@@ -470,6 +470,9 @@ const WITHHELD: Record<string, string> = {
   UnhandledMemberInvariantError: 'names the discriminant of a value the types say cannot exist, which is '
     + 'whatever text that value carries under `kind`; unreachable while every chain names every member of its '
     + 'union, so the boundary never has to print it',
+  SweepOptionRefusalError: 'the rotation sweep\'s own refusal of a command line, printed by `rotationSweepMain` '
+    + 'and never through the boundary; its sentence names the option and value the operator typed, which is all it '
+    + 'carries, so the marker would mean nothing where no boundary reads it',
 };
 
 //endregion Marked message inventory

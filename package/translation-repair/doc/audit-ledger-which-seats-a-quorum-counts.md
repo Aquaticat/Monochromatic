@@ -644,7 +644,7 @@ Recurrence:
 `mistake-prevention-messages-labels-and-counts.md`,
 "Log lines that report nothing done".
 
-## B710: a refusal the router gave before any request was counted as the seat's failed ask
+## B711: a refusal the router gave before any request was counted as the seat's failed ask
 
 Red `4508efa798`,
 fixed in `965a5c9c67`.

@@ -89,7 +89,7 @@ export function translateReseatFor(
  What the repair lane takes from a seat reading: its roster, whose checkers
  the line names, and which of them are padding.
 
- A CHECKER NO WET PROVIDER SERVES IS PADDING (ledger B710): the bench is
+ A CHECKER NO WET PROVIDER SERVES IS PADDING (ledger B711): the bench is
  padded with ranked seats nobody serves only while fewer than its width are
  served, and the stage reads them as unreachable. The zheermao20 chunks were
  re-seated with Qwen3.8-27B as a checker after Synthetic ran dry and nothing

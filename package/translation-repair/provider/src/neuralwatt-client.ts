@@ -302,6 +302,7 @@ export function createNeuralWattClient(
     baseUrl,
     transport,
     retryPolicy,
+    now,
   },);
 
   /**

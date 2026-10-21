@@ -327,7 +327,7 @@ and is neither withheld nor named dark for them.
 `unreachable` counts calls the provider router refused with `NoProviderForModelError` before any request was sent,
 because no wet provider serves the seat (or the owner culled it);
 since 2026-10-21 they are in no other column either
-(audit ledger B710),
+(audit ledger B711),
 where before that they were counted as `asked` and `threw`.
 A seat only the router refused prints `asked=0` and its `unreachable` count,
 is never withheld by the tally and is not named dark,

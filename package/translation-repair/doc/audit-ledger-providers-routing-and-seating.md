@@ -852,3 +852,65 @@ before choosing any multiplier.
 Record:
 `doc/decision/translation-repair-neuralwatt-provider.md`,
 section "The margin".
+
+### P20: a failed first quota read stayed the run's starting reading for good
+
+Status:
+named in the lead's brief of 2026-10-21 (UTC),
+from `createNeuralWattQuotaSession` read against the day anchor keeper;
+the behaviour is the lead's ruling of that day;
+fixed by red `da0ec11dd6` and fix `d8c2b5451d`,
+with the docs commit that carries this entry.
+On the red commit nine cases of the provider package fail:
+two reworded cases of the quota session suite,
+six new ones there,
+and one new case for the end-of-run sentence;
+on the fix commit the package's whole unit run,
+its lint,
+its type check and the 49 source scans pass.
+`createNeuralWattQuotaSession` kept its one baseline attempt with `state.attempt ??= tryBaseline(...)`,
+so a first quota read that failed stored `{ taken: false }` for the whole run.
+`planSpend` then answered "the starting reading could not be taken" at the end,
+though the day anchor keeper had read the same endpoint successfully a minute or more after the failure
+(it tries its own read again through `readNow`,
+no sooner than 60 seconds after a failure),
+and the warning on the failed read said the end report "will have no starting reading" as if nothing could change that.
+A run whose quota endpoint recovered within minutes still ended with no plan-energy line.
+
+The cause is two readers of one endpoint keeping two failure rules:
+the keeper stored a failure with the time it happened and the spacing before the next attempt,
+and the session stored the failure as the answer.
+A once-only memo of a read that can fail is a decision never to look again.
+
+The fix:
+`ensureBaseline` tries again no sooner than 60 seconds after the last failure on the injected clock,
+with one attempt in flight serving every caller,
+and takes the spacing from `NEURALWATT_QUOTA_RETRY_SECONDS` in `neuralwatt-day.ts`,
+which the keeper now shares.
+Tracing the callers showed that nothing asks `ensureBaseline` a second time in a run:
+the keeper's retry and the key allowance's refresh both read through `readNow`.
+So a `readNow` that succeeds after a failed baseline takes the baseline's place as well,
+with no extra read,
+and the cases that go through a client are red without it.
+A baseline taken after a failure is not the run's start:
+the measured spend carries `laterStartAt`,
+and `describePlanSpend` says the comparison starts at that later reading,
+gives its time and says that plan energy spent before it is not counted.
+A baseline taken on the first try reads as before.
+A run whose every attempt fails says how many attempts failed and when the last was.
+The failed read is warned about once,
+with wording that no longer promises an empty report.
+The end report of the run package (`run/src/corpus-run/run-providers.ts`) only prints `describePlanSpend`
+and needed no change;
+a run-level case cannot move the clock,
+so the label is pinned in the provider package's cases and not in the run package's.
+
+The rule for next time:
+an attempt at a read that can fail is stored as a result only when it succeeded;
+a failure is stored with its time and the spacing before the next attempt,
+and a figure measured from a start that moved carries that start wherever it is printed.
+Record:
+`doc/decision/translation-repair-neuralwatt-provider.md`,
+section "The spend report",
+and `mistake-prevention-stored-files-and-cached-decisions.md`,
+"Cached decisions".

@@ -409,7 +409,7 @@ and the provider router's own refusal of a seat no wet provider serves is such a
 sent before any request.
 `zheermao20` printed `SEAT glm-5.3 asked=4 usable=0 unusable=0 threw=4` for a seat that was never asked,
 withheld it for the run,
-and named it in every `JUDGE SEATS` line as a seat that threw on all four asks (ledger B710).
+and named it in every `JUDGE SEATS` line as a seat that threw on all four asks (ledger B711).
 The `seatTallyClient` TSDoc and the decision document already said a refusal is not an ask,
 and the rule held only for the refusal the tally threw itself.
 
