@@ -299,11 +299,14 @@ export const OPENROUTER_WITHHELD: ReadonlySet<RosterModelId> = holdSet({ hold: '
  Roster seats OpenRouter's listing reports image input for and whose
  transcription has not been measured through it, so the reach sends them no
  picture there (`openrouter-pictures-unmeasured`). Unlike `reader-unmeasured`,
- this leaves a reader measured on another provider seated.
+ this leaves a reader measured on another provider seated. No card carries
+ the hold since `gemma-4-26b-a4b-it` was measured through OpenRouter on
+ 2026-10-21, so the set reads empty until `reader-measure` has another
+ candidate to measure.
 
  @example
  ```ts
- const unmeasured = OPENROUTER_PICTURES_UNMEASURED.has('gemma-4-26b-a4b-it',);
+ const heldSeats = OPENROUTER_PICTURES_UNMEASURED.size;
  ```
  */
 export const OPENROUTER_PICTURES_UNMEASURED: ReadonlySet<RosterModelId> = holdSet({

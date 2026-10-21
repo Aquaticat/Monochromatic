@@ -85,7 +85,8 @@ export type SeatHold =
    been measured through that route, so a picture is not sent there. The
    model-wide `reader-unmeasured` would also unseat a reader measured on
    another provider, which this does not. Lifted by `reader-measure`
-   (`bench`) passing its two clauses on a keyed run.
+   (`bench`) passing its two clauses on a keyed run; no card carries it since
+   `gemma-4-26b-a4b-it` passed on 2026-10-21.
    */
   | 'openrouter-pictures-unmeasured'
   /**

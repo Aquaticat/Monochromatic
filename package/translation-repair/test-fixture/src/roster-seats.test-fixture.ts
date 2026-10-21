@@ -48,8 +48,8 @@ export const SEAT_SYNTHETIC_TEXT_EVERYWHERE = 'hf:openai/gpt-oss-120b' as const;
 export const SEAT_HYPER_VISION = 'minimax-m3' as const;
 
 /**
- Hyper, OpenRouter and Bedrock serve it; Bedrock alone shows it pictures, while the hold
- `openrouter-pictures-unmeasured` keeps pictures off OpenRouter until a measurement lifts it.
+ Hyper, OpenRouter and Bedrock serve it; Bedrock and OpenRouter show it pictures (OpenRouter
+ since 2026-10-21, when `reader-measure` lifted the hold `openrouter-pictures-unmeasured`), Hyper does not.
  */
 export const SEAT_HYPER_TEXT_BEDROCK = 'gemma-4-26b-a4b-it' as const;
 

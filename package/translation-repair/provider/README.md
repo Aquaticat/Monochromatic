@@ -75,7 +75,9 @@ The groups that follow name the main ones.
   `visionReachOf`,
   `OPENROUTER_PICTURES_UNMEASURED`
   (the roster seats OpenRouter lists as reading pictures but whose transcription is unmeasured,
-  kept off the picture route by the card hold `openrouter-pictures-unmeasured`).
+  kept off the picture route by the card hold `openrouter-pictures-unmeasured`;
+  no card carries the hold since `gemma-4-26b-a4b-it` was measured on 2026-10-21 (UTC),
+  so the set is empty until the next candidate is listed behind it).
   Declared in `synthetic-catalog.ts`,
   `openrouter-catalog.ts`,
   `bedrock-catalog.ts`,
