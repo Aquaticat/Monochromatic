@@ -734,13 +734,22 @@ Implementation,
    explicit `llmgateway-devpass/claude-haiku-5-5` served exactly.
    The result line `deadline remaining <timeoutMs - elapsed>ms`
    is the merged-config observable at the tool boundary.
+   Fixture 1b PASS (2026-10-20, empty disposable home, non-project cwd):
+   default call reported `deadline remaining 594995ms` after `5005ms`
+   elapsed (`600000` equals `DEFAULT_TIMEOUT_MS`: config paths absent)
+   and served the ranking pick `llmgateway-devpass/deepseek-v4.1-flash-1017`;
+   `llmgateway-devpass/claude` raised the exact not-found parity error
+   (slug matching is exact,
+   so the ambiguous branch needs duplicate match keys and stays unit-covered);
+   `model: ""` served the default by design:
+   shared `normalizeModelArgument` drops blank model values
+   (`agent-harness-shared/advisor/src/tool-params.ts`),
+   so `model slug must not be empty` is a command-form error only.
    QUEUED:
-   fixture 1 plan-faithful empty-home rerun (in flight;
-   expect the `600000` default deadline and the ranking pick,
-   plus ambiguous and empty-slug parity errors),
-   fixture 3 `/advisor off`/`on` toggle and `/advisor` command parity
-   at the user boundary after Q10,
-   then the Q10 live install.
+   Q10 live install (next),
+   then fixture 3 `/advisor off`/`on` toggle and `/advisor` command
+   parity at the user boundary,
+   then item 7 closure.
    Measured (2026-10-20):
    a leading-slash task line (`/advisor status`) reaches headless
    agents as an ordinary user message with no command dispatch,
