@@ -745,11 +745,14 @@ Implementation,
    shared `normalizeModelArgument` drops blank model values
    (`agent-harness-shared/advisor/src/tool-params.ts`),
    so `model slug must not be empty` is a command-form error only.
-   QUEUED:
-   Q10 live install (next),
-   then fixture 3 `/advisor off`/`on` toggle and `/advisor` command
-   parity at the user boundary,
-   then item 7 closure.
+   Q10 live install: DONE 2026-10-20
+   (`plugin_manager install_bundle`: `application: applied`,
+   `warnings: []`; `--dump-config` shows `id: advisor`, `config: {}`;
+   the web app has no CLI task mode,
+   so the live tool catalog is confirmed in a fresh GUI chat).
+   QUEUED at the user boundary (tracked in issue `#1792`):
+   new GUI chat `/advisor status` (expect the transcribed config lines),
+   `/advisor off` (tool masked) and `/advisor on` (restored).
    Measured (2026-10-20):
    a leading-slash task line (`/advisor status`) reaches headless
    agents as an ordinary user message with no command dispatch,
@@ -762,8 +765,15 @@ Implementation,
    (initial reviewer,
    serial fallback kept,
    explicit is exact).
-6. Fixture-profile verification, then the Q10 live install.
-7. READMEs, planning doc, GitHub issue (`needs-triage`),
+6. DONE 2026-10-20:
+   fixture-profile verification (fixtures 1, 2, and the empty-home 1b;
+   fixture 3 toggle parity deferred to the user boundary)
+   and the Q10 live install (`application: applied`, `warnings: []`).
+7. DONE 2026-10-20:
+   READMEs (dsh capability gaps now record the scope mapping
+   and the command-parity boundary),
+   planning doc (fixture findings, Q10 deviation, completion status),
+   GitHub issue `#1792` (`needs-triage`),
    and this handover's completion record.
 8. DONE 2026-10-20:
    the git-wrapper defects and UX problems are filed as
@@ -780,3 +790,24 @@ Implementation,
    no audit trail exists for state-discarding operations,
    and the auto-push ff-only sync advice cannot be followed
    in dirty agent worktrees.
+
+## Completion record (2026-10-20)
+
+The series landed as commits `16a22cd7de`, `39d452035a`, `effcff526e`,
+`3583eec279`, `85434d0c40`, and `07ad8133c5`, with doc commits alongside.
+The Q5 end-of-series picks report:
+merged-copy disagreements defaulted to richer with no approval round,
+and the recorded picks (initial-reviewer `defaultReviewerModel`,
+explicit exact selection, serial fallback kept, the Q12 ranking order,
+derived-history usage fabrication, unknown window `128_000`)
+are documented in `package/dsh-plugin/advisor/README.md`
+and the Q5/Q6 sections of this handover,
+each pick landed with its test in the same commit.
+Verification: fixtures 1, 2, and 1b green with the measured evidence above;
+fixture 3 toggle parity and `/advisor` command parity wait on the user
+boundary (issue `#1792`).
+Rollback for the live install: `plugin_manager remove_bundle` with the
+absolute `package/dsh-plugin/advisor` target,
+then re-check `dsh --profile web --dump-config`.
+Residue to clean: fixture profile `advisor-fixture-minimal`
+and `~/temp/agent/advisor-fixture-*` inputs.

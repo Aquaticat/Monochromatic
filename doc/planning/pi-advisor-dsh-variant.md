@@ -820,4 +820,27 @@ logical attempt (documented gap: pi disables provider-internal retries with
 - Slopo issue 621 (shared fake pi extension host) stays out of this series;
   the DSH fixture harness is DSH-only.
 - Issue tracking follows the `pi-advisor-413` precedent:
-  this planning doc plus one GitHub issue opened `needs-triage`.
+  this planning doc plus one GitHub issue opened `needs-triage`
+  (now `#1792`).
+
+## Completion status (2026-10-20)
+
+Implemented, fixture-verified, and installed in the live `web` profile.
+Landing commits: `16a22cd7de`, `39d452035a`, `effcff526e`, `3583eec279`,
+`85434d0c40`, `07ad8133c5`; every behavior pick landed with its test.
+Q10 live install: `plugin_manager install_bundle` reported
+`application: applied`, `warnings: []`,
+and `dsh --profile web --dump-config` shows `id: advisor`, `config: {}`.
+Deviations from the plan, measured and recorded:
+`cordis_inspect_query` coerces input to string (unfiltered calls only),
+`plugin_manager list_plugins` ignores `target` as a filter,
+and the web app has no CLI task mode,
+so the live tool catalog is confirmed in a fresh GUI chat.
+The Q5 end-of-series picks report closed the series in the session record;
+the picks live in `package/dsh-plugin/advisor/README.md`.
+Remaining at the user boundary (issue `#1792`):
+`/advisor status`, `/advisor off`, `/advisor on`,
+and tool-catalog presence in a new GUI chat.
+Rollback: `plugin_manager remove_bundle` with the package target.
+Residue: fixture profile `advisor-fixture-minimal`,
+`~/temp/agent/advisor-fixture-*` inputs.
