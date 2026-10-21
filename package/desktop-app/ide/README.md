@@ -3372,7 +3372,8 @@ and `render/MainMinimap.kt`.
   so the cuts do not move with the scroll,
   and a slice holds as many bands as its texture may hold:
   at most the device's texture side in rows (`most_bands` in `src/minimap/plan.rs`,
-  used where the key is made, so a taller track shows a picture that ends where the texture ends).
+  used where the key is made,
+  so a taller track shows a picture that ends where the texture ends).
 - The slice is rendered in chunks of at most 512 rows (`CHUNK_ROWS`).
   Vello 0.11 sizes the buffers of one render with fixed constants,
   and a scene that needs more renders blank with no error
@@ -3383,7 +3384,9 @@ and `render/MainMinimap.kt`.
   Each chunk is rendered into a scratch texture of its size (at most four are kept)
   and copied into the slice texture on the GPU,
   so a chunk is a render and a copy and no pixel crosses to the CPU.
-  An item that reaches into a chunk (a glyph run, a mark, a clip group) is kept in every chunk its ink can reach
+  An item that reaches into a chunk (a glyph run,
+  a mark,
+  a clip group) is kept in every chunk its ink can reach
   (`src/minimap/chunks.rs`),
   so no seam shows at a cut.
 - The row cache (`src/minimap/line_cache.rs`) keeps the shaped lines of the picture by a key of the line's text,
@@ -3395,7 +3398,8 @@ and `render/MainMinimap.kt`.
   an edit above the window that moves characters but no row shapes nothing,
   and an external edit of a file of 50,000 lines shapes only the line it touched
   (`an_external_edit_of_fifty_thousand_lines_shapes_only_the_line_it_touches`).
-  A line added or removed moves every row below it, so the slice is encoded and rendered again,
+  A line added or removed moves every row below it,
+  so the slice is encoded and rendered again,
   with every line from the cache.
 - The work is bounded by the view,
   not by the text:
@@ -3408,7 +3412,8 @@ and `render/MainMinimap.kt`.
   and a `tracing::warn!` gives the range of lines.
 - The memory of a picture is the slice texture
   (`4 * width * rows` bytes at the display scale squared,
-  for example 110 by 384 px at scale 1: 165 KiB),
+  for example 110 by 384 px at scale 1:
+  165 KiB),
   the chunk scratch textures,
   the row cache (the shaped layouts of at most 4,096 lines),
   and the worker's job,
@@ -3435,11 +3440,13 @@ section "Stages 5 and 6".
   the others coming from the row cache.
 - A picture is compared with the box average of the window's own pixels by
   `src/native/minimap_reflection_tests.rs`.
-  The worst pixel and the mean difference were measured at scale 1: plain 13 and 0.45,
+  The worst pixel and the mean difference were measured at scale 1:
+  plain 13 and 0.45,
   find matches 13 and 0.68,
   diagnostics 19 and 0.41,
   a selection 32 and 0.39;
-  at scale 2: plain 41 and 0.53,
+  at scale 2:
+  plain 41 and 0.53,
   find matches 41 and 0.78,
   diagnostics 49 and 0.57,
   a selection 54 and 0.47,
@@ -3479,7 +3486,8 @@ section "Stages 5 and 6".
 - A window taller than the device's texture limit has a picture that ends where the texture ends,
   and the rest of the track is blank (the slice never passes the limit).
   A selection that covers the whole slice makes the render cost grow with its rows until the tile code clips
-  rectangles per row (see `doc/planning/ide-gpu-snapshot-harness.md`, "Stages 5 and 6").
+  rectangles per row (see `doc/planning/ide-gpu-snapshot-harness.md`,
+  "Stages 5 and 6").
 
 ### Minimap checks
 
@@ -3524,7 +3532,8 @@ diagnostics and hints,
 at display scales one and two,
 with a control that a window read three pixels aside does not match),
 and `src/native/tall_window_minimap_tests.rs`
-(a window of 3,500 and of 12,000 px keeps a picture with the texture of glyphs, rendered in chunks that are not
+(a window of 3,500 and of 12,000 px keeps a picture with the texture of glyphs,
+rendered in chunks that are not
 blank,
 and a long file in a tall window keeps its picture within the device's texture limit),
 and `src/native/minimap_dense_tests.rs`
