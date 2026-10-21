@@ -230,7 +230,8 @@ fn one_render_of_every_dense_chunk_comes_out_blank() {
     let (together, apart, height) = together_and_apart(&chunks, chunks.len());
     assert!(apart > 0);
     assert_eq!(
-        together, 0,
+        together,
+        0,
         "one render of {height} rows drew {together} inked pixels where {} renders drew {apart}",
         chunks.len()
     );
