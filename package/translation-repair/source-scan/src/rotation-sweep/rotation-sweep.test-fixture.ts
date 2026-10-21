@@ -8,6 +8,7 @@ import {
 } from './rotation-sweep-packages.test-fixture.ts';
 import {
   refusalLines,
+  SweepOptionRefusalError,
   SWEEP_REFUSED_EXIT,
 } from './rotation-sweep-refusal.test-fixture.ts';
 import {
@@ -85,7 +86,7 @@ type SweepRequest = {
 
  @returns The request
 
- @throws Error on a word that is no option, or a salt that is not a whole number from 0 to 9
+ @throws {@link SweepOptionRefusalError} on a word that is no option, an option without a value, or a salt that is not a whole number from 0 to 9
 
  @example
  ```ts
@@ -110,7 +111,7 @@ export function sweepRequestOf({ args, }: { readonly args: readonly string[]; },
      */
     const value = args[at + 1];
     if (value === undefined)
-      throw new Error(`rotation sweep: ${option} needs a value`,);
+      throw new SweepOptionRefusalError({ reason: `${option} needs a value`, },);
     if (option === '--package') {
       packages.push(value,);
     }
@@ -121,11 +122,11 @@ export function sweepRequestOf({ args, }: { readonly args: readonly string[]; },
       const salt = Number(value,);
       if ((!Number.isInteger(salt,)) || (salt < 0)
         || (salt >= SALT_COUNT))
-        throw new Error(`rotation sweep: --salt takes a whole number from 0 to ${String(SALT_COUNT - 1,)}, got ${value}`,);
+        throw new SweepOptionRefusalError({ reason: `--salt takes a whole number from 0 to ${String(SALT_COUNT - 1,)}, got ${value}`, },);
       salts.push(salt,);
     }
     else {
-      throw new Error(`rotation sweep: unknown option ${option}; the options are --package <directory> and --salt <n>`,);
+      throw new SweepOptionRefusalError({ reason: `${option} is not an option`, },);
     }
   }
   return {
@@ -252,6 +253,50 @@ async function runShifted(
     },),
     milliseconds: performance.now() - started,
   };
+}
+
+/**
+ What reading the command line gave: the request, or the sentence that refuses it.
+ */
+type AskedRequest =
+  | {
+    readonly kind: 'request';
+    readonly request: SweepRequest;
+  }
+  | {
+    readonly kind: 'refused';
+    readonly says: string;
+  };
+
+/**
+ Reads the command line, keeping a refusal of it apart from a fault.
+
+ @param args - words after the task name
+
+ @returns The request, or the sentence that refuses the command line
+
+ @throws Error on anything but a refusal of the command line, which is a fault of the reader
+
+ @example
+ ```ts
+ const asked = requestOrRefusal({ args: ['--nap',], },); // { kind: 'refused', says: 'rotation sweep: refused, --nap is not an option; ...' }
+ ```
+ */
+function requestOrRefusal({ args, }: { readonly args: readonly string[]; },): AskedRequest {
+  try {
+    return {
+      kind: 'request',
+      request: sweepRequestOf({ args, },),
+    };
+  }
+  catch (error) {
+    if (error instanceof SweepOptionRefusalError)
+      return {
+        kind: 'refused',
+        says: error.message,
+      };
+    throw error;
+  }
 }
 
 /**
@@ -409,10 +454,19 @@ export async function rotationSweepMain(
   },
 ): Promise<number> {
   /**
+   The request the command line makes, or the sentence that refuses it.
+   */
+  const asked = requestOrRefusal({ args, },);
+  if (asked.kind === 'refused') {
+    writeError({ line: asked.says, },);
+    return SWEEP_REFUSED_EXIT;
+  }
+
+  /**
    What the sweep found.
    */
   const outcome = await sweep({
-    request: sweepRequestOf({ args, },),
+    request: asked.request,
     write,
   },);
   for (const line of reportLines({ outcome, },))

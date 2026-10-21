@@ -25,6 +25,32 @@ export const SWEEP_REFUSED_EXIT = 6;
 const RERUN_COMMAND = 'mise run //package/translation-repair/source-scan:test:rotation-sweep --';
 
 /**
+ The options the task takes, said in every refusal of a command line.
+ */
+const OPTION_FORMS = 'the options are --package <directory> and --salt <n>, each repeatable';
+
+/**
+ A command line the sweep refuses: an option it does not take, a value it cannot use or none where one is needed.
+
+ This is the operator's mistake and not a fault of the command, so `rotationSweepMain` prints its sentence alone and
+ returns the stated-refusal code. The sentence is composed of authored words and the option and value the operator typed.
+ */
+export class SweepOptionRefusalError extends Error {
+  /**
+   @param reason - what is wrong with the command line, naming the option typed
+
+   @example
+   ```ts
+   throw new SweepOptionRefusalError({ reason: '--nap is not an option', },);
+   ```
+   */
+  constructor({ reason, }: { readonly reason: string; },) {
+    super(`rotation sweep: refused, ${reason}; ${OPTION_FORMS}`,);
+    this.name = 'SweepOptionRefusalError';
+  }
+}
+
+/**
  The package directory a case's test file sits in.
 
  @param failed - case and its file, a path under `package/translation-repair`
