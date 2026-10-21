@@ -1131,10 +1131,14 @@ fn fifty_thousand_lines_give_a_bounded_picture_without_blocking_the_window() {
 /// not the length of the file nor the size of the picture.
 #[test]
 fn an_external_edit_of_fifty_thousand_lines_shapes_only_the_line_it_touches() {
+    // The lines are short enough never to wrap:
+    // a reload briefly maps every line to one row until it is measured again,
+    // and a line that wraps would change its rows and so the lines the picture holds,
+    // which brings lines into the picture that no edit touched.
     let mut text = String::new();
     for number in 0..50_000 {
         text.push_str(&format!(
-            "fn item_{number}(value: u32) -> u32 {{ value + {number} }} // trailing words words words words words words\n"
+            "fn item_{number}(value: u32) -> u32 {{ value + {number} }} // x\n"
         ));
     }
     let (project, opened) = open(&text);
