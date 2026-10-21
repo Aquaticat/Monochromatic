@@ -248,7 +248,7 @@ function adviceForFewReadings(
         },)
       }, fewer than the ${String(MINIMUM_PRODUCED_READINGS,)} a verdict needs, and a larger sample would add none`
         + ` because every picture was already tried. Add --trusted directories naming runs directories whose`
-        + ` slice-cache/<entry>/picture.<key>.json files belong to other entries than the ones counted above`
+        + ` slice-cache/<entry>/picture.<key>.json files belong to other entries than the ones the ENTRIES line counts`
         + ` (older single-entry runs directories hold them, not only the recent corpus-pass ones), or point --pictures at the`
         + ' people directory that holds the pictures those records read, then ask again.';
     }
@@ -268,8 +268,14 @@ function adviceForFewReadings(
   const closing = everyPictureTried
     ? 'then ask again.'
     : 'then ask again, with a larger --sample if the reasons are about the pictures and not the candidate.';
-  return `NEXT: keep the hold '${HOLD}'; ${String(matched,)} pictures matched but the candidate gave few readings: `
-    + `read the per-picture reasons printed above, ${closing}`;
+  return `NEXT: keep the hold '${HOLD}'; ${String(matched,)} ${
+    wordForCount({
+      count: matched,
+      one: 'picture',
+      many: 'pictures',
+    },)
+  } matched but the candidate gave few readings: `
+    + `read the per-picture reasons the run printed, ${closing}`;
 }
 
 /**
@@ -291,7 +297,7 @@ function adviceForFewReadings(
 
  @example
  ```ts
- const lines = verdictLines({ modelId, verdict, },);
+ const lines = verdictLines({ modelId, verdict, matched: 3, sample: 9, trustedRecords: 3, pictures: 291, },);
  ```
  */
 function verdictLines(
@@ -320,9 +326,13 @@ function verdictLines(
   }
   if (verdict.kind === 'inconclusive') {
     return [
-      `RESULT: not measured: ${String(verdict.produced,)} of the ${
-        String(MINIMUM_PRODUCED_READINGS,)
-      } readings a verdict needs were produced.`,
+      `RESULT: not measured: ${String(verdict.produced,)} of the ${String(MINIMUM_PRODUCED_READINGS,)} ${
+        wordForCount({
+          count: MINIMUM_PRODUCED_READINGS,
+          one: 'reading',
+          many: 'readings',
+        },)
+      } a verdict needs were produced.`,
       adviceForFewReadings({
         matched,
         sample,
@@ -404,7 +414,13 @@ export function renderMeasureReport(
       },)
     } produced.`,
     entriesLine({ matchedAssets, },),
-    `SEATED: ${String(band.readings,)} readings; seated floor ${twoPlaces({ value: band.floorCorroboratedByAll, },)}`
+    `SEATED: ${String(band.readings,)} ${
+      wordForCount({
+        count: band.readings,
+        one: 'reading',
+        many: 'readings',
+      },)
+    }; seated floor ${twoPlaces({ value: band.floorCorroboratedByAll, },)}`
     + ` corroborated by all, seated ceiling ${twoPlaces({ value: band.ceilingCorroboratedByNone, },)} corroborated by none.`,
     candidateLine({
       candidate,
