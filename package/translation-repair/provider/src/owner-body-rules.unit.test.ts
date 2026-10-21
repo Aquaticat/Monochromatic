@@ -11,6 +11,13 @@
  off OpenRouter only because their cards carry no OpenRouter block, so
  re-adding one would route them there with nothing to say so.
 
+ NEURALWATT IS THE ONE EXCEPTION, since 2026-10-21 ("I'm lifting the ban on
+ passing params, but only for NeuralWatt"): its client sends `reasoning_effort`
+ on a picture call to a seat whose card names one, and
+ `neuralwatt-picture-effort.unit.test.ts` pins that. The picture pass here is
+ the other half: it shows that no OTHER provider's body carries a knob when
+ given the same picture.
+
  Fixtures are cat-themed invention.
 
  @module

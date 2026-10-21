@@ -270,6 +270,19 @@ export type BedrockCard = ServedCard<BedrockServedId> & {
 };
 
 /**
+ A reasoning effort NeuralWatt documents for `glm-5.3-flash`: its
+ `supported_efforts` are `max`, `high` and `low`
+ (`GET https://api.neuralwatt.com/v1/models`, `metadata.reasoning`, fetched
+ 2026-10-21; the default is `max`).
+
+ @example
+ ```ts
+ const effort: NeuralWattReasoningEffort = 'low';
+ ```
+ */
+export type NeuralWattReasoningEffort = 'low' | 'high' | 'max';
+
+/**
  NeuralWatt's side of a card.
 
  @example
@@ -283,6 +296,17 @@ export type NeuralWattCard = ServedCard<NeuralWattServedId> & {
    meter's prompt buckets end at this window.
    */
   readonly contextLength: number;
+
+  /**
+   Reasoning effort sent with a call that carries a picture, on this
+   provider only. THE ONLY REQUEST PARAMETER ANY CARD CAN NAME, and it lives
+   on this side alone, so no other provider's client has a field to read.
+   The owner, 2026-10-21: "NeuralWatt is a special case of all the
+   providers: It implements what it documents correctly, almost always -
+   I'm lifting the ban on passing params, but only for NeuralWatt." Absent
+   where no picture reading on this model has been measured to need one.
+   */
+  readonly pictureReasoningEffort?: NeuralWattReasoningEffort;
 };
 
 /**

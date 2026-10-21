@@ -30,6 +30,19 @@ export const GLM_5_3_FLASH_ON_NEURALWATT: NeuralWattCard = {
   readsImages: true,
   contextLength: 1_048_560,
   maxOutputLength: 1_048_560,
+  // LOW ON A PICTURE CALL, 2026-10-21 (XingZ6016). The listing's reasoning is
+  // mandatory with `supported_efforts` `max`, `high`, `low` and `default_effort`
+  // `max`, so a call that sends no effort reasons at the deepest level, and on a
+  // dense 2400 by 2616 screenshot that spent all 18316 completion tokens of the
+  // card's cap on 40652 characters of reasoning and wrote no answer. `low` is the
+  // shallowest level the model has, hence the one that leaves the most of an
+  // unchanged cap for the transcript. NO MEASUREMENT EXISTS FOR EITHER LEVEL:
+  // the choice rests on the one failure at `max` and on the listing's ordering,
+  // and the first keyed run at `low` is the measurement. A transcription is not
+  // a deduction, so the depth is not what the reading needs.
+  // Text calls send nothing: the owner's lift covers NeuralWatt, and the energy
+  // matrix was measured on the defaults.
+  pictureReasoningEffort: 'low',
 };
 
 /**

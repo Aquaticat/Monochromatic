@@ -18,15 +18,17 @@ import {
   type TransportReply,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { armCallDeadline, } from './call-deadline.ts';
-import type {
-  ChatTextReply,
-  ChatTextRequest,
-  ModelCaller,
+import {
+  carriesPicture,
+  type ChatTextReply,
+  type ChatTextRequest,
+  type ModelCaller,
 } from './chat-contract.ts';
 import { chatJsonThrough, } from './chat-json-through.ts';
 import {
   NEURALWATT_AUTH_HEADER,
   NEURALWATT_BASE_URL,
+  NEURALWATT_MODELS,
   neuralWattChatUrlFor,
 } from './neuralwatt-catalog.ts';
 import type { NeuralWattDayStart, } from './neuralwatt-day.ts';
@@ -66,8 +68,12 @@ import {
 // IT SPEAKS THE OPENAI-COMPATIBLE PROTOCOL the Bedrock and OpenRouter clients
 // speak: chat completions with `stream` and `stream_options.include_usage`, a
 // json_schema `response_format` and the schema stated in the system prompt,
-// `max_tokens` at the measured ceiling, and NO reasoning parameter ever (the
-// owner's standing instruction of 2026-08-25).
+// `max_tokens` at the measured ceiling, and no reasoning parameter on a text
+// call (the owner's standing instruction of 2026-08-25). THE ONE EXCEPTION IS A
+// PICTURE CALL to a model whose card names a `pictureReasoningEffort`, which
+// sends the documented `reasoning_effort` (the owner, 2026-10-21: "I'm lifting
+// the ban on passing params, but only for NeuralWatt"); no other client has
+// that field to send.
 //
 // WHAT THIS CLIENT ADDS IS THE METER'S SIDE OF EVERY CALL, because overage
 // "eats into my normal plan which I use for other stuff":
@@ -377,12 +383,30 @@ export function createNeuralWattClient(
       },);
 
       /**
+       The picture effort this model's card names, if any.
+       */
+      const { pictureReasoningEffort, } = NEURALWATT_MODELS[servedId];
+
+      /**
+       Reasoning effort this call sends: the card's picture effort when the
+       conversation carries a picture, else none.
+       */
+      const pictureEffort = carriesPicture({ messages: request.messages, },) ? pictureReasoningEffort : undefined;
+
+      /**
        Exactly what goes on the wire, hoisted so its size can be measured.
 
-       NO THINKING PARAMETER, NO TOKEN BUDGET AND NO REASONING EFFORT, EVER,
-       the owner's standing instruction of 2026-08-25, recorded in full at the
-       Synthetic body. Both models reason by default, and the energy that costs
-       is in the matrix the estimate is drawn from.
+       NO THINKING PARAMETER, NO TOKEN BUDGET AND NO REASONING EFFORT ON A
+       TEXT CALL, the owner's standing instruction of 2026-08-25, recorded in
+       full at the Synthetic body. Both models reason by default, and the energy
+       that costs is in the matrix the estimate is drawn from.
+
+       A PICTURE CALL MAY CARRY `reasoning_effort` since 2026-10-21, when the
+       card's NeuralWatt side names one: the owner lifted the ban for this
+       provider alone, and `glm-5.3-flash` spent its whole completion cap
+       reasoning at the default `max` on a dense screenshot (XingZ6016). Never
+       `thinking_token_budget`: its support table (2026-08-26) does not name
+       this model.
        */
       const bodyJson = JSON.stringify({
         model: servedId,
@@ -398,6 +422,8 @@ export function createNeuralWattClient(
         },),
         // Conditional spread keeps the optional knob absent instead of undefined.
         ...(request.responseFormat === undefined ? {} : { response_format: request.responseFormat, }),
+        // Conditional spread keeps the knob absent from every text call.
+        ...(pictureEffort === undefined ? {} : { reasoning_effort: pictureEffort, }),
       },);
 
       /**

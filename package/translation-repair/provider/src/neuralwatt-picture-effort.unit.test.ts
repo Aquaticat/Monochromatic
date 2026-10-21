@@ -119,14 +119,15 @@ await describe({
     it({
       name: 'LETS ONLY THE NEURALWATT SIDE OF A CARD NAME A PICTURE EFFORT, and names low on the GLM card, so '
         + 'no other provider\'s client has a field to send',
-      fn: () => {
+      fn: async () => {
+        await Promise.resolve();
         /**
          Every side of every card that names a picture effort, as `card.side`.
          */
         const naming: string[] = [];
         for (const [modelId, card,] of Object.entries(MODEL_CARDS,)) {
           for (const [side, value,] of Object.entries(card,)) {
-            if ((typeof value) === 'object' && value !== null && Object.hasOwn(value, 'pictureReasoningEffort',))
+            if (((typeof value) === 'object') && (value !== null) && Object.hasOwn(value, 'pictureReasoningEffort',))
               naming.push(`${modelId}.${side}=${String((value as Record<string, unknown>).pictureReasoningEffort,)}`,);
           }
         }
