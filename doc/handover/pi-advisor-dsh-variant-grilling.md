@@ -668,6 +668,27 @@ Implementation,
    fixture-profile verification,
    then the Q10 live install
    (`plugin_manager install_bundle`).
+   Fixture 1 `advisor-fixture-minimal` created from the headless
+   template and the bundle linked via `dsh plugin --profile ... add`;
+   `--dump-config` composes `id: advisor`, `config: {}`.
+   Measured fixture-surface gaps (diagnosed 2026-10-20):
+   headless sessions mount no inspect tools,
+   needing inserted rows `cordis-host-runner`,
+   `cordis-inspect-providers`, and `tool-cordis`;
+   fixtures do not share the live profile credential store;
+   the `MISSING_CREDENTIAL` diagnostic sanctions exporting keys
+   in the launching environment,
+   and tool shells lack the keys the harness PID env carries.
+   Workaround:
+   disposable overlay `~/temp/agent/advisor-fixture-llm.patch.yml`
+   (`llmgateway-devpass`/`mimo-v2.6-pro`,
+   exported `LLMGATEWAY_DEVPASS_API_KEY`,
+   inserted inspect rows).
+   QUEUED:
+   troubleshooting doc for this fixture wiring,
+   fixture 2 config-merge checks,
+   fixture 3 toggle checks,
+   then the Q10 live install.
    Parallel (subagent `5b28eefd`): DONE
    (see the monochromatic-lint incident section).
 5. Tests, lint, and `mise` tasks for every new and moved package;
