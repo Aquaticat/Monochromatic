@@ -241,6 +241,19 @@ mise watch flag forwarding bugs and dev-mode restart suppression:
 - Server restart generates fresh auth token,
    breaking client reconnection
 
+### [dsh fixture-profile plugin verification](dsh-fixture-profile-plugin-verification.md)
+
+Disposable dsh fixture profiles for plugin verification
+and the surfaces they miss out of the box:
+
+- Headless-template sessions mount no `cordis_inspect_*` tools
+   until host and preset rows are inserted
+- Fixture profiles resolve no live route credentials;
+   `MISSING_CREDENTIAL` sanctions exporting keys
+   in the launching environment
+- Removing `apiKeyEnv` from a patch-declared provider
+   fails with `PI_AI_ERROR: Provider is not configured`
+
 ### [Bash and CLI](bash.md)
 
 Bash shell and CLI tool quirks that cause confusing behavior:
