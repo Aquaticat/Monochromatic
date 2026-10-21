@@ -501,7 +501,23 @@ rebuild the branch worktree,
 a new frozen digest,
 the rotation sweep,
 and the rotation restarts at `zheermao101`.
-The rotation restarts on the g138 build without waiting for them:
+On the g138 build,
+`zheermao21` and `CuspariaKLSY21` shipped SETTLED
+(reads running),
+and `XingZ6016` stopped INCOMPLETE:
+its one picture got a single reading
+(`minimax-m3`;
+`GLM-5.3-Flash` replied empty,
+Qwen's provider out of budget,
+both Gemma readers on Bedrock),
+so nothing corroborated it.
+The rotation on that build is held there,
+since it can no longer finish with every page SETTLED.
+An investigation of the picture bench runs
+(why GLM replied empty,
+which wet vision readers could replace the Bedrock seats);
+its fix joins w257 before gate g139.
+The rotation had restarted on the g138 build without waiting for them:
 the day's free energy is spent either way,
 and a read on that build still finds defects.
 
