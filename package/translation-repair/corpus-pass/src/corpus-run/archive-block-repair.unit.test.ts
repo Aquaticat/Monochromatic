@@ -278,7 +278,7 @@ async function reviewsAsked(
 
  @example
  ```ts
- const prompts = await reviewPrompts({ sourceContexts: new Map(), },);
+ const prompts = await reviewPrompts({ sourceContexts: new Map([[identity, '猫在睡觉。',],],), },);
  ```
  */
 async function reviewPrompts(
@@ -380,8 +380,10 @@ await describe({
           },
         },),
         it({
-          name: 'SCOPES an aligned-pair location with no matching alignment pair to empty support, rather than '
-            + 'the archive\'s whole original section',
+          name: 'REFUSES an aligned-pair location with no matching alignment pair, naming the block, the pair it '
+            + 'sits in and how many pairs the page has: the preparation and the alignment disagree about the '
+            + 'block, which is a fault, and empty support would drop every reply that cites the original without '
+            + 'a word',
           fn: async () => {
             const prepared = prepareDocumentPair({
               sourceText: 'Cats nap.',
@@ -396,20 +398,16 @@ await describe({
               ...block,
               location: { kind: 'aligned-pair', pairIndex: 99, },
             };
-            const contexts = archiveBlockSourceContexts({
+            /** The mapper over the misaligned block. */
+            const contextsOfMisaligned = (): unknown => archiveBlockSourceContexts({
               prepared: {
                 ...prepared,
                 unclaimedTargetBlocks: [misaligned,],
               },
             },);
-            /**
-             Key the misaligned block's support is filed under.
-             */
-            const identity = archiveBlockIdentity({
-              block: misaligned,
-              targetText: prepared.targetText,
-            },);
-            expect(contexts.get(identity,),).toBe('',);
+            expect(contextsOfMisaligned,).toThrow(misaligned.blockId,);
+            expect(contextsOfMisaligned,).toThrow('aligned pair 99',);
+            expect(contextsOfMisaligned,).toThrow('holds 1 pair',);
           },
         },),
         it({
@@ -471,27 +469,45 @@ await describe({
           },
         },),
         it({
-          name: 'SENDS the same empty source support whether the map simply has no entry for the block\'s '
-            + 'identity or the caller spelled the entry out as empty',
+          name: 'REFUSES A BLOCK THE SOURCE-CONTEXT MAP HOLDS NO ENTRY FOR, naming the block and the identities the '
+            + 'map holds: the caller and the map disagree about the block, and reviewing it against an empty '
+            + 'source would drop every reply that cites the original as unanchored without a word',
           fn: async () => {
-            const [missing, explicitEmpty,] = await Promise.all([
-              reviewPrompts({ sourceContexts: new Map(), },),
-              reviewPrompts({
-                sourceContexts: new Map([[
-                  archiveBlockIdentity({
-                    block: blockAt({
-                      targetText: 'The cat napped on the mat.',
-                      blockText: 'The cat napped on the mat.',
-                      blockId: 'block/0',
-                    },),
+            /** The archive and the one block the review is asked about. */
+            const targetText = 'The cat napped on the mat.';
+            /** Identity the review looks the block up under. */
+            const identity = archiveBlockIdentity({
+              block: blockAt({ targetText, blockText: targetText, blockId: 'block/0', },),
+              targetText,
+            },);
+            /** Identity of a block the map holds instead, as when the archive text differs between caller and map. */
+            const other = archiveBlockIdentity({
+              block: blockAt({ targetText, blockText: targetText, blockId: 'block/7', },),
+              targetText,
+            },);
+            await expect(reviewPrompts({ sourceContexts: new Map([[other, '猫在睡觉。',],],), },),).rejects.toThrow(identity,);
+            await expect(reviewPrompts({ sourceContexts: new Map([[other, '猫在睡觉。',],],), },),).rejects.toThrow(other,);
+            await expect(reviewPrompts({ sourceContexts: new Map(), },),).rejects.toThrow('holds no block',);
+          },
+        },),
+        it({
+          name: 'REVIEWS A BLOCK AGAINST AN EMPTY SOURCE WHEN THE MAP SPELLS THE ENTRY OUT AS EMPTY, the state a '
+            + 'target-only section is filed under: an empty entry is an answer, an absent one is not',
+          fn: async () => {
+            const prompts = await reviewPrompts({
+              sourceContexts: new Map([[
+                archiveBlockIdentity({
+                  block: blockAt({
                     targetText: 'The cat napped on the mat.',
+                    blockText: 'The cat napped on the mat.',
+                    blockId: 'block/0',
                   },),
-                  '',
-                ],],),
-              },),
-            ],);
-            expect(missing,).toEqual(explicitEmpty,);
-            expect(missing.length,).toBeGreaterThan(0,);
+                  targetText: 'The cat napped on the mat.',
+                },),
+                '',
+              ],],),
+            },);
+            expect(prompts.length,).toBeGreaterThan(0,);
           },
         },),
         it({
