@@ -1951,6 +1951,17 @@ that is verification, not a decision for the user.
   intent-guessing and a concrete hint; (2) fix the gaps with tests that assert the hint text per site; (3) a
   guard test that fails when a rejection code has no hint registered; (4) README section listing them. Status is
   tracked below as it lands.
+  Hints work 2026-10-21 (task 60, UNCOMMITTED until the background chain below is green): `event_hints.rs` maps every
+  finding code and engine failure code to an intent-guessing hint, rendered as an additive `hint` JSONL field so
+  `message` stays byte-identical to the retired wrapper (self-hinted: require-root, linked-worktree-only,
+  branch-worktree-only, add-explicit; guard test `every_*_has_a_hint`). Plain stderr notices got appended hints:
+  panic notice, push deadline and flood, lock wait, worktree copy failure, cannot-start-Git. Binary tests observe
+  through `observe` (hint fields stripped, so incumbent shapes stay pinned) and `observe_raw` (hints kept;
+  `a_finding_carries_its_hint_beside_an_unchanged_message`). Chain: logs `~/temp/agent/hints-{clippy4,host4,bin4}.log`.
+  STILL TO DO: hints for `no_change_message`, `post-commit-blocked`, `replay-headers-dropped`; sharper add-explicit
+  intent guess; README and SPEC sections for the `hint` field; commit; release 0.2.7; the flaky-looking
+  `a_termination_signal_during_a_hook_ends_the_commit_and_leaves_nothing` (exit None vs 143) needs a rerun on a quiet
+  host before it is called a regression.
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and
