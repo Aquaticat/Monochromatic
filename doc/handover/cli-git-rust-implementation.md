@@ -1998,6 +1998,18 @@ that is verification, not a decision for the user.
   Logs `~/temp/agent/m028-mutation-<file>.log`, gate log `~/temp/agent/m028-container.log`. Do not edit `src/native`
   while it runs; read results when the unit ends, kill survivors with tests, update planted-control anchors if a
   guarded line moves. A survivor fix is a 0.2.9 candidate; mutation never blocks a release.
+  m028 result 2026-10-21, stopped by me before the user's BIOS change (`systemctl --user stop`, no mutation container
+  left, tree clean and pushed): two files completed, none missed. `command_discard.rs`: 47 mutants, 41 caught, 6
+  unviable, 0 missed (73 min). `policy_checks.rs`: 19 mutants, 7 caught, 12 unviable, 0 missed (17 min). Seven files
+  (`rule_worktree_dirty`, `auto_push_dirty_paths`, `discard_audit`, `command_stash`, `rule_linked_worktree`,
+  `rule_linked_worktree_messages`, and the ones after them) never ran a mutant: the unmutated baseline hit the 300 s
+  bound (`Summary [310.862s] 2042/2101 tests run ... result: Timeout`) because another session's rotation sweep loaded
+  the host; those logs are harness failures, not mutation results. `auto_push_reconcile.rs` was 20 s in when stopped.
+  Cargo-mutants has no resume inside a file, so the rerun is per file: `landing_invariant`, `event_hints`,
+  `diagnostics`, `auto_push_reconcile`, `rule_worktree_dirty`, `auto_push_dirty_paths`, `discard_audit`,
+  `command_stash`, `rule_linked_worktree`, `rule_linked_worktree_messages`. Use `--timeout 900` (the baseline needs
+  about 250 to 310 s on a loaded host) as a capped unit when the host is quiet; start from a copy of
+  `~/temp/agent/m028-run.ts` with the finished two removed. Mutation never blocks a release.
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and
