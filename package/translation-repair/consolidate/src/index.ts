@@ -83,7 +83,10 @@ export { configuredConsolidationPolish, } from './consolidation-polish-config.ts
 export {
   CONSOLIDATION_POLISH_GATE_QUORUM,
   type ConsolidationPolishGateOutcome,
+  type ConsolidationPolishSettlement,
+  type ConsolidationPolishSettlementRule,
   gateConsolidationPolish,
+  readConsolidationPolishSettlement,
   settleConsolidationPolishBallots,
 } from './consolidation-polish-gate-stage.ts';
 export {

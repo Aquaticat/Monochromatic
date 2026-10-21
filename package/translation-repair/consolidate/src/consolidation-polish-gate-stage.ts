@@ -110,20 +110,58 @@ function polishVotesFor(
 }
 
 /**
- Settles naturalness ballots with approved base winning every tie.
+ The rule that settled a polish gate.
+ */
+export type ConsolidationPolishSettlementRule =
+  | 'polished-lead'
+  | 'base-lead'
+  | 'unsettled';
 
- @param ballots - usable ballots
-
- @returns Clear winner or refusal
+/**
+ What the ballots settled, the rule that decided and the tally it read.
 
  @example
  ```ts
- const choice = settleConsolidationPolishBallots({ ballots, });
+ const settlement: ConsolidationPolishSettlement = { choice: 'base', rule: 'base-lead', polished: 1, base: 2, };
  ```
  */
-export function settleConsolidationPolishBallots(
+export type ConsolidationPolishSettlement = {
+  /**
+   Panel choice, refusal included.
+   */
+  readonly choice: PolishChoice;
+
+  /**
+   Rule that decided the choice.
+   */
+  readonly rule: ConsolidationPolishSettlementRule;
+
+  /**
+   Ballots naming the polished text.
+   */
+  readonly polished: number;
+
+  /**
+   Ballots naming the approved base.
+   */
+  readonly base: number;
+};
+
+/**
+ Settles naturalness ballots and names the rule that decided.
+
+ @param ballots - usable ballots
+
+ @returns Choice, deciding rule and the tally the rule read
+
+ @example
+ ```ts
+ const { choice, rule, } = readConsolidationPolishSettlement({ ballots, });
+ ```
+ */
+export function readConsolidationPolishSettlement(
   { ballots, }: { readonly ballots: readonly ConsolidationPolishBallot[]; },
-): PolishChoice {
+): ConsolidationPolishSettlement {
   /**
    Votes backing proposed polish.
    */
@@ -138,11 +176,46 @@ export function settleConsolidationPolishBallots(
     ballots,
     choice: 'base',
   },);
-  if ((polished >= CONSOLIDATION_POLISH_GATE_QUORUM) && (polished > base))
-    return 'polished';
-  if ((base >= CONSOLIDATION_POLISH_GATE_QUORUM) && (base > polished))
-    return 'base';
-  return CONTEST_REFUSAL;
+  if ((polished >= CONSOLIDATION_POLISH_GATE_QUORUM) && (polished > base)) {
+    return {
+      choice: 'polished',
+      rule: 'polished-lead',
+      polished,
+      base,
+    };
+  }
+  if ((base >= CONSOLIDATION_POLISH_GATE_QUORUM) && (base > polished)) {
+    return {
+      choice: 'base',
+      rule: 'base-lead',
+      polished,
+      base,
+    };
+  }
+  return {
+    choice: CONTEST_REFUSAL,
+    rule: 'unsettled',
+    polished,
+    base,
+  };
+}
+
+/**
+ Settles naturalness ballots with approved base winning every tie.
+
+ @param ballots - usable ballots
+
+ @returns Clear winner or refusal
+
+ @example
+ ```ts
+ const choice = settleConsolidationPolishBallots({ ballots, });
+ ```
+ */
+export function settleConsolidationPolishBallots(
+  { ballots, }: { readonly ballots: readonly ConsolidationPolishBallot[]; },
+): PolishChoice {
+  return readConsolidationPolishSettlement({ ballots, },).choice;
 }
 
 /**
