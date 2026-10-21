@@ -1879,7 +1879,489 @@ Whether that overcommit produces a wrong frame is not shown.
 - The parallel native run needs about 9.5 GiB of video memory and the card has 8 GiB, shared with other programs.
   Should the default number of test threads of the native tests be lowered, or the test device given a budget?
   This work changed neither.
+  (The device hint of "Selections over a tall tile, and the device's memory hint" below halves the demand.)
 - Should the old minimap flake be fixed now or left to stage 5?
+
+### Selections over a tall tile, and the device's memory hint
+
+Two changes of 2026-10-20 that come from `doc/planning/ide-vello-buffer-sizes.md`:
+the clips of a selected row no longer use up Vello's tile buffer,
+and the GPU device is opened with `MemoryHints::MemoryUsage`.
+Every number below was measured on the owner's host (RX 7600,
+RADV,
+Vulkan,
+Vello 0.11.0,
+wgpu 30.0.1)
+by a command run on that day.
+
+#### Result in one paragraph
+
+A selection of about 40 rows or more blanked or froze the code view in the real application,
+because `split` clipped every selected row with rectangles as tall as the whole texture and Vello drew nothing when its
+tile buffer overflowed,
+with no error.
+Each clip is now as tall as its own row (with one row of margin on each side),
+and a part of a row that holds no ink of a run gets no copy of the run at all.
+After both changes select-all draws every glyph on the tallest tile of the test device (8160 pixels) and on the tallest
+tile of the device's own limit (16,368 pixels),
+and the picture in the application matches a small selection.
+The device hint takes the application from 498.9 to 287.7 MiB of video memory at 1147 by 2000 pixels (medians of ten
+interleaved starts) and from 476.3 to 216.4 MiB at 1100 by 660 pixels,
+with no first-frame,
+resident-memory or frame
+cadence difference beyond the run-to-run spread.
+
+#### Reproduction in the application
+
+The release binary built from `origin/main` (`mise run //package/desktop-app/ide:build`) ran in the nested compositor
+(`monochromatic-nested-wayland-session`,
+size 1147 by 2000,
+scale 1) over `/tmp/ide-gpu-fixture/code.rs`
+(2500 lines).
+A selection of K rows was made with a click at the first row and a shift-click K rows below,
+and select-all with `key ctrl+a`;
+each was screenshotted after 2.5 seconds.
+The counts are visual rows,
+because wrapped lines take several.
+A window of 2000 pixels shows 82 rows,
+so 83 rows could not be selected on screen;
+80 and select-all were.
+The screenshots are below `~/temp/agent/vello-fix/`.
+
+- 30,
+  33,
+  36 and 39 rows:
+  every selected glyph is in the selection ink
+  (`shots-before-c/sel-30.png`,
+  `sel-33.png`,
+  `sel-36.png`,
+  `sel-39.png`).
+  An earlier attempt at 36 rows (`shots-before-b/sel-36.png`) shows no selection at all:
+  the first shift-click of that session did not register,
+  so it is a failed input and not a result.
+- 42,
+  48,
+  54,
+  60,
+  80 rows and select-all:
+  the selection fills are drawn (they are Slint rectangles) but the text keeps
+  the unselected inks,
+  because the tile that stays on screen is the one drawn before the selection.
+  Against the 30-row picture 17,325 texels of the first 27 rows differ by more than 40 levels
+  (`shots-before-b/sel-42.png`,
+  `sel-48.png`,
+  `sel-54.png`,
+  `shots-before/sel-60.png`,
+  `sel-80.png`,
+  `sel-all.png`).
+  So the threshold in this window is between 39 and 42 rows,
+  not the 58 of the study:
+  the study's probe tile was 1113 pixels wide,
+  the application's is about 804 and taller.
+  The tile height was not read from the application (it logs nothing about it);
+  the threshold is consistent with a tile near the 16,360 pixels that the byte rule and the device allow here
+  (2,097,152 tiles divided by about 40 rows is about 52,000 tiles per row,
+  which is 804 by 16,700 pixels).
+- Select-all,
+  then a scroll to the end of the file (`key ctrl+a`,
+  then `scroll 600 1000 0 20000`):
+  the new tile has no
+  earlier picture to fall back to,
+  so the whole code view is blank,
+  with line numbers and selection fills only
+  (`shots-before-d/sel-all-scroll.png`;
+  its text area holds two colors only,
+  the fill and the background).
+
+After the fix,
+on a binary built from the branch head:
+30,
+60 and 80 rows and select-all agree with each other in the first 27 rows (0 texels differ for 60 and 80;
+select-all differs in 288 texels at the first two characters,
+which the click of the other cases leaves unselected),
+and the scroll to the end shows the code (`shots-after/`,
+`shots-after-d/sel-all-scroll.png`).
+
+#### Why the study's fix was not enough
+
+The study proposed cutting each rectangle to its row's height.
+That fixed 100 selected rows of an 8160 pixel tile and select-all over 340 rows,
+but the worst-case test on the device's
+own limit still came out blank:
+682 dense rows (85 characters each) selected,
+on a tile 1024 by 16,368.
+A probe over 300 to 682 rows showed the render intact up to 400 rows and blank from 500 with the selected ink (clipped
+copies),
+and intact at every height with the same ink on both sides (no clips) and with no selection.
+The cause is the lines buffer (2,097,152 entries) and not the tiles:
+every copy of a glyph in a clip is flattened again,
+so a fully selected row costs three copies of each run
+(left of the selection,
+inside,
+right of it) although only the inside copy has ink.
+`split` now takes the x range where the run can have ink (`reach`:
+the boxes of its glyphs plus half the font size,
+cut
+to the texture) and leaves out the copies of the parts that do not meet it.
+A row selected from its first glyph to its last then has one copy of each run,
+as the test
+`a_row_selected_end_to_end_is_drawn_once` checks.
+
+#### The change
+
+- `src/tile_scene/item.rs`:
+  `Item::Clip` carries `top` and `bottom`,
+  and `GlyphItem` the `reach` of its boxes.
+- `src/tile_scene.rs`:
+  `row_band` widens a row by its own height on each side;
+  `layout_items` and `underline_frame` pass a `Place` (extent,
+  band,
+  reach) to `split`.
+- `src/tile_scene/split.rs`:
+  the clips use the band,
+  and parts of a row the run's ink does not meet get no copy.
+- `src/tile_scene/encode.rs`:
+  the rectangle uses the band,
+  cut to the texture.
+- `src/tile_scene/read.rs`:
+  `DrawnRun` and `DrawnStroke` also give the band of their clip.
+- `src/gpu_device.rs`:
+  `device_description` builds the descriptor with `memory_hints: MemoryHints::MemoryUsage`;
+  `open_hardware_device_capped` uses it,
+  so the application and the native test harness share it.
+- `src/native/gpu_snapshot.rs`:
+  `install_uncapped_gpu_platform` opens the harness device with the adapter's own texture
+  limit,
+  for the one test that needs a 16,384 pixel tile.
+- `src/native.rs` gained one line,
+  the `mod` of the new native test file.
+
+#### Tests and guard proofs
+
+The tests were written first and failed on the unfixed tree
+(the first blank row was row 0 in all three native tests,
+the whole tile blank).
+
+- `native::tall_selection_tests::many_selected_rows_in_a_tall_tile_keep_their_glyphs_and_selected_ink`:
+  a tile 1113 by 8160 pixels (340 dense rows) with 100 rows selected keeps glyphs on every row,
+  its first 7 rows match those of a tile with 8 rows selected within the render noise,
+  and row 20,
+  selected in one and not the other,
+  differs (the positive control).
+- `native::tall_selection_tests::select_all_over_the_tallest_tile_of_the_test_device_draws_every_glyph`:
+  select-all over the same tile has no blank row and exactly the glyph coverage of a render with the same ink on both
+  sides (no clip),
+  and the selected ink is red on the last rows.
+- `native::tall_selection_tests::select_all_over_the_tallest_tile_of_the_real_device_draws_every_glyph`:
+  the same on a tile 1024 by 16,368 (682 rows),
+  on a device opened with the adapter's own limit of 16,384
+  (`install_uncapped_gpu_platform`;
+  the test returns with a message on a GPU that offers less).
+  It failed with the band fix alone and passes with the single-copy change.
+- `selection_clips` (no GPU):
+  `a_selected_rows_clips_are_as_tall_as_the_row_and_not_the_tile`,
+  `a_row_selected_end_to_end_is_drawn_once` and `a_row_selected_in_its_middle_is_drawn_on_both_sides_and_inside`.
+- `tile_vello_limit` (no GPU):
+  `the_byte_rule_is_at_most_half_of_what_the_command_list_floor_serves` and
+  `no_accepted_tile_uses_more_than_three_quarters_of_the_command_list_floor`.
+  The derivation is in the file's header and beside the diagnostic of `paint_tile`:
+  Vello's default command list serves 131,072 tiles (128 MiB of `Rgba8Unorm`) before it corrupts with `failed = 0`,
+  the 64 MiB rule is half of that,
+  and the sweep over widths and three texture side limits (8192,
+  16,384,
+  32,768) keeps
+  every tile the code accepts to at most three quarters of the floor.
+- `gpu_device::tests::the_device_description_asks_for_the_memory_usage_hint_and_keeps_the_limits`.
+
+Guard proofs ran in a disposable worktree that held a copy of the branch head's `src` and `tests`
+(the piece was removed,
+the tests were built and run,
+the piece was written back,
+the same tests were run again):
+
+- `encode` cuts every clip to the whole texture again:
+  the three `tall_selection_tests` above fail.
+- `row_band` returns a band far taller than any tile:
+  `a_selected_rows_clips_are_as_tall_as_the_row_and_not_the_tile`
+  fails.
+- `meets` answers true for every part of a row:
+  `a_row_selected_end_to_end_is_drawn_once` fails,
+  and so does
+  `select_all_over_the_tallest_tile_of_the_real_device_draws_every_glyph` on the GPU.
+- The `memory_hints` line removed:
+  the device description test fails.
+- `MAX_RASTER_BYTES` set to 128 MiB (an edit of `src/text_raster.rs` in the disposable tree only,
+  never in this
+  branch,
+  because the minimap rewrite owns that file):
+  both `tile_vello_limit` tests fail.
+- Every removed piece was restored and the same tests passed again.
+
+#### The memory hint, measured in the application
+
+The tool of the owner's cadence study ran the release binaries of `origin/main` (A,
+a detached worktree whose target was
+copied from the branch's baseline build) and of the branch head (B),
+alternating the order per pair,
+each start a systemd user unit with `CPUWeight=10000` (the host's load average was 10 to 12,
+CPU pressure `avg10` 1 to 38).
+The noise floor is B against B with the same tools.
+Process video memory is `drm-memory-vram` of the IDE process,
+deduplicated by DRM client
+(`/proc/<pid>/fdinfo`,
+one client in every run),
+taken 4 seconds after the start (idle) and after a 6000 pixel scroll.
+First frame is the time from spawning the compositor to the first recorded frame (60 per second) with text in it.
+
+- Video memory,
+  1147 by 2000 window,
+  `code.rs`,
+  10 interleaved pairs:
+  idle A 498.9 MiB (range 65.2 to 501.9),
+  B 287.7 (286.9 to 291.2),
+  paired B minus A median -211.4
+  (nine pairs from -207.7 to -215.0;
+  in the tenth the driver had moved 450 MiB of A to system memory while the
+  card was busy,
+  65.2 MiB in video memory and 450.0 in GTT,
+  so that pair reads +223 and is not a growth).
+  After the scroll:
+  A 505.4,
+  B 358.3,
+  paired -146.5.
+- Video memory,
+  1100 by 660 window,
+  `big.rs` (50,000 lines),
+  10 pairs:
+  idle A 476.3 MiB (476.2 to 478.0),
+  B 216.4 (216.3 to 219.0),
+  paired -260.0 (all ten from -257.4 to -261.6);
+  after the scroll A 483.0,
+  B 258.7,
+  paired -225.6.
+  The noise floor of video memory is within 4 MiB for identical binaries,
+  apart from the driver moving memory.
+- Resident memory:
+  `code.rs` idle A 215.4 MiB,
+  B 216.1 (paired +0.6),
+  after the scroll 226.8 and 227.0.
+  `big.rs` idle A 649.5,
+  B 597.2:
+  the process is bimodal at about 590 and 700 MiB in both trees
+  (B against B:
+  597.7 and 700.8 medians,
+  586 to 702),
+  so there is no difference.
+- First frame,
+  `code.rs` 1147 by 2000:
+  A median 488 ms (471 to 2134),
+  B 488 (455 to 1338),
+  paired B minus A median -9 ms
+  (from -796 to +17);
+  the floor's paired median is -34 ms (from -625 to +175).
+  `big.rs` 1100 by 660:
+  A median 563 ms (487 to 822),
+  B 597 (505 to 856),
+  paired median +76 ms
+  (seven of ten pairs positive,
+  from +34 to +317;
+  the others from -83 to -281);
+  the floor's paired median is +11 ms
+  (from -617 to +1701).
+  Neither is beyond the floor,
+  and nothing is claimed;
+  but B's median on `big.rs` is 34 ms later,
+  and ten pairs cannot rule out a small cost.
+- Frame cadence (the share of the recorded frames that changed during a held minimap drag or a two-finger scroll,
+  measured with `matrix-load.mjs`;
+  B minus A in percentage points per pair,
+  A against B 8 pairs,
+  floor 6 pairs):
+  `big.rs` 1100 by 660,
+  drag:
+  A median 92.9,
+  B 94.6,
+  deltas +1 +1 +1 +1 +6 +1 -2 -2,
+  floor -7 to +11;
+  scroll:
+  A 99.6,
+  B 100.0,
+  deltas 0 0 +3 0 0 -1 +1 +1,
+  floor -2 to +1.
+  `code.rs` 1147 by 2000,
+  drag:
+  A median 97.1,
+  B 98.3,
+  deltas +4 0 0 +1 +2 0 +1 +1,
+  floor -7 to -2
+  (the floor's second label was lower in all six pairs although both were one binary,
+  so a few points of drift between
+  two runs is possible on this host);
+  scroll:
+  A 99.2,
+  B 99.2,
+  deltas 0 0 0 0 0 0 0 +1,
+  floor -2 to +1.
+  No cadence is worse than the floor,
+  so the allocator's smaller blocks did not show as hitching;
+  the recording samples 60 frames per second over 120 steps,
+  so a single 20 ms hitch would not stand out from the
+  floor's spread.
+- Parallel `test:native` (264 tests of the branch,
+  260 of `origin/main`),
+  on a card of 8 GiB that the desktop and other sessions already used 4.1 to 4.8 GiB of before each run:
+  21 to 22 test processes held GPU memory at once in every run.
+  Summed over those processes at the peak,
+  video memory plus GTT:
+  A 10.9,
+  11.3 and 11.7 GiB (video memory 3.7 to 3.8 GiB,
+  the rest 7.1 to 7.8 GiB in system memory),
+  about 0.5 GiB each;
+  B 5.2,
+  5.4 and 5.2 GiB (video memory 3.9 to 4.0,
+  GTT 1.3 to 1.5),
+  about 0.24 GiB each.
+  The study's 9.4 and 4.0 GiB were sums of its probe's 457 and 197 MiB per process.
+  The card was full at the peak in both (8.13 to 8.17 GiB used),
+  so the driver spilled to GTT:
+  the figures above are the demand,
+  not the video memory held.
+  The suite took 23 to 28 s (nextest) before and 25 to 29 s after.
+  The first of three rounds of A failed
+  `refused_tile_tests::a_failed_worker_tile_frees_its_job_and_the_next_placement_gets_its_tile`
+  under that pressure (178 of 260 tests run);
+  the other two rounds of A passed.
+
+#### Detecting a silent blank
+
+No detection exists in Vello 0.11 without a patch,
+and none was built:
+
+- `Renderer::render_to_texture` returns `Ok(())` after a frame that overflowed a buffer.
+- The only public path to the bump counters is the deprecated `render_to_texture_async`,
+  and it reads them only when `robust` is true,
+  which is `cfg!(feature = "debug_layers")` (`vello-0.11.0/src/lib.rs:732`).
+  The IDE declares `vello` without that feature (`Cargo.toml:68`) and its manifest is generated by file-enforcer.
+  With the feature on,
+  `render_encoding_coarse` also downloads the whole lines buffer on every frame
+  (48 MiB of the 165),
+  and `DebugDownloads::map` slices it by `bump.lines` (`lib.rs:805`),
+  which panics when the lines buffer is the one
+  that overflowed (`render.rs:528` to `545`).
+  The overflow found here is that case.
+- `low_level::Render::bump_buf` is public,
+  but the engine that runs recordings (`WgpuEngine`) is `pub(crate)`.
+
+Two guards that need no patch exist and are left for the owner:
+an estimate of the tiles that the clips of a scene cover before encoding (exact for tiles,
+not for lines),
+and a sentinel texel (draw one opaque pixel last,
+read it back after each tile render,
+and fall back or log an error when it is zero;
+a tile renders only at a re-center,
+so the readback would stall the GPU a few times per scroll,
+not per frame).
+The sentinel belongs in `src/native/gpu_tile.rs`,
+which another change is rewriting.
+
+#### Gates
+
+All from the branch head,
+from the worktree,
+with `mise run //package/desktop-app/ide:<task>`:
+
+- `lint`:
+  clippy,
+  `cargo fmt --check`,
+  `monochromatic-lint` (including the closure check) and the Slint checks pass.
+  The first run found a `manual_range_contains` in a new test and a line break that the Markdown rule wanted in a doc
+  comment,
+  and `cargo fmt` reformatted a few lines;
+  all were fixed.
+- `test:native`:
+  264 tests,
+  264 passed in each of 15 consecutive runs (25 to 28 s by nextest's summary),
+  the first six while the guard proofs built and ran in another tree.
+  Fifteen more runs followed while a loop rebuilt the release binary of `origin/main` in another tree for the whole
+  time (25 to 34 s):
+  13 passed and 2 failed,
+  both
+  `minimap_tests::an_external_edit_of_fifty_thousand_lines_renders_only_the_band_it_touches`
+  ("the edit rendered 4 of 4 bands" and "3 of 4 bands"),
+  the CPU minimap flake that "Not changed:
+  the old minimap flake" records.
+  Run alone,
+  that test passed 10 of 10 times.
+  For comparison,
+  15 runs of `origin/main` (260 tests) under the same loop and the other sessions' jobs at that moment
+  (nextest 30 to 51 s) passed 5 times and failed 10:
+  the same minimap test in 6 runs,
+  `refused_tile_tests::a_failed_worker_tile_frees_its_job_and_the_next_placement_gets_its_tile` in 2,
+  and `annotation_stability_tests::scrolling_across_annotated_lines_is_rigid`,
+  `query_input_tests::find_box_context_menu_runs_each_entry` and
+  `wrap_clip_tests::scrolling_inside_a_built_tile_of_a_wrapped_file_does_no_source_work` once each.
+  That batch ran at another moment and under a heavier load,
+  so it is not a controlled comparison;
+  it shows that these tests fail under load without this branch.
+- `test` (library and integration tests):
+  809 passed,
+  1 skipped.
+- `test:bin`:
+  54 passed.
+  `build`:
+  finished.
+  `inspect:software-renderer`:
+  not linked,
+  and both positive controls reach it.
+
+#### Not exercised
+
+- Select 83 rows:
+  83 rows of 24 pixels do not fit a 2000 pixel window (82 rows show);
+  80 rows and select-all were.
+- The application's real tile height and tile count were not read;
+  the threshold is inferred (see above).
+- Another GPU,
+  another driver,
+  the integrated Raphael GPU,
+  and a display scale other than 1 in the application.
+- Selections with underlines,
+  color glyphs,
+  tabs,
+  very long lines,
+  and horizontal scrolling at a tall tile:
+  the changed code is covered by the existing tests of those (`selected_underlines_take_the_selected_ink`,
+  the wrap and
+  tab tests),
+  not by a new pixel test over a tall tile.
+- The `reach` margin (half a font size) and the band margin (one row) were chosen,
+  not measured against a font with a
+  large overhang.
+- Whether a tile at the 16,384 pixel limit with no selection can overflow the lines buffer on rows denser than these
+  85 characters.
+- `MemoryHints::Manual`,
+  and hitching in the application beyond the 60 frames per second cadence records.
+- The minimap's texture on the shared renderer,
+  which another change is adding.
+
+#### Owner questions
+
+- Keep `MemoryHints::MemoryUsage`?
+  It is one commit that can be reverted alone.
+  It saves 211 to 260 MiB of video memory per process and halves the parallel test demand,
+  with no cost measured in first frame,
+  resident memory or cadence beyond the spread.
+- Should a detection of a silent blank be built (the estimate,
+  or the sentinel texel in `gpu_tile.rs`)?
+  Either only reports the blank,
+  so it also needs a response.
+- The parallel native run still wants about 5.3 GiB (video memory and GTT) on a card with 3.4 to 4.0 GiB free when the
+  desktop is busy.
+  Should the number of test threads be lowered,
+  or should the smaller Vello buffers (a patch) follow?
+- The two margins of the clips (one row of band,
+  half a font size of reach) are the code's choice;
+  are they acceptable?
 
 ### Open owner questions of stages 3 and 4
 
