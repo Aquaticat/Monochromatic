@@ -314,14 +314,36 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       'openrouter-dropped',
     ],
   },
+  // THE 1017 WEIGHTS SINCE 2026-10-20, UNDER THE SAME CARD NAME. The owner:
+  // "Migrate to deepseek v4 flash 1017 where possible." The model is
+  // DeepSeek V4.1 Flash 1017 (`deepseek-ai/DeepSeek-V4.1-Flash-1017`).
+  // Charm Hyper lists it as `deepseek-v4.1-flash-1017` and OpenRouter as
+  // `deepseek/deepseek-v4.1-flash-1017` (created 2026-10-18), beside the
+  // older ids, which both listings still carry; Hyper's listing does not
+  // name the older id's weights. The Hyper and OpenRouter sides of this card
+  // send the 1017 ids. The roster id stays `deepseek-v4.1-flash`, so caches,
+  // ledgers, calibrations and logs keep one name for the seat; Hyper's
+  // catalog row ties the two (`HyperModelInfo.rosterId`). NeuralWatt's
+  // `deepseek-v4.1-flash` needed no change: its listing already names the
+  // 1017 weights. Synthetic lists `hf:deepseek-ai/DeepSeek-V4.1-Flash-1017`
+  // and this card has no Synthetic side; seating one would be a new route
+  // and not a migration, so none was added.
+  //
+  // THE MEASURED VALUES ON THIS CARD WERE MEASURED ON THE PRE-1017 IDS and
+  // carry over as an assumption until the first runs on 1017 measure them
+  // again: the completion cap, Hyper's `maxOutputLength`, `rawCharsPerToken`,
+  // the holds and the judge and writer calibrations. Hyper's listing for the
+  // new id states the same context window, output ceiling, vision flag and
+  // price as the old id (read 2026-10-20); OpenRouter's Morph price differs
+  // (see the price comment on its side of this card).
   'deepseek-v4.1-flash': {
     hyper: {
-      id: 'deepseek-v4.1-flash',
+      id: 'deepseek-v4.1-flash-1017',
       readsImages: true,
       maxOutputLength: 26_214,
     },
     openrouter: {
-      id: 'deepseek/deepseek-v4.1-flash',
+      id: 'deepseek/deepseek-v4.1-flash-1017',
       readsImages: true,
       maxOutputLength: 384_000,
       // MORPH'S PRICE, THE ENDPOINT THIS SEAT BUYS (ledger P13, 2026-09-28).
@@ -329,8 +351,13 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       // 817 calls on TianqiChen66616, 66619 and 66620 went to Morph, listed
       // that day at 0.12 and 0.468 and charged at 0.662 to 0.674 of it. Only
       // the abandoned-spend estimate reads these.
-      promptUsdPerMillion: 0.12,
-      completionUsdPerMillion: 0.468,
+      //
+      // 2026-10-20: THE 1017 ID'S MORPH LISTING READS 0.158 AND 0.6
+      // (`GET https://openrouter.ai/api/v1/models/deepseek/deepseek-v4.1-flash-1017/endpoints`,
+      // tag `morph/fp8`, pricing prompt 0.000000158 and completion 0.0000006).
+      // The pre-1017 id's Morph price on this card was 0.12 and 0.468.
+      promptUsdPerMillion: 0.158,
+      completionUsdPerMillion: 0.6,
       // THE ENDPOINT WAS THE SLOW SEAT, NOT THE MODEL (XingZ607, 2026-09-18).
       // Over 990 completed judge calls the price sort spread across three
       // upstreams: Morph answered at 11 s median and 25 s at the ninetieth
@@ -367,6 +394,15 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       // sort (`provider.order`, fallbacks allowed): 11.1 s, 11.5 s, 3.4 s
       // and 6.2 s a stream over XingZ608, 624, 625 and 626. Slugs from the
       // listing of 2026-09-23.
+      //
+      // 2026-10-20, THE 1017 ID'S ENDPOINT LISTING against these slugs: the
+      // slugs are the prefix of each endpoint's tag (`deepinfra/fp8`,
+      // `wafer/mxfp4`, `morph/fp8`), the form the gateway's `provider.ignore`
+      // and `provider.order` take. DeepInfra and Wafer list the 1017 id, so
+      // their ignores bite. OpenInference, DekaLLM and Sail Research list no
+      // endpoint for it today, so those three ignores are inert until one
+      // does; they stay because the measurements behind them are about those
+      // upstreams, not about the weights.
       ignoredEndpoints: [
         'deepinfra',
         'wafer',
@@ -381,6 +417,9 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
     },
     // NEURALWATT, 2026-10-20: the standard lane of `deepseek-v4.1-flash`,
     // which the owner's free daily energy covers (`neuralwatt-card-sides.ts`).
+    // Its listing names the 1017 weights (`huggingface_id` of
+    // `deepseek-ai/DeepSeek-V4.1-Flash-1017`), so this id is already the
+    // migrated one.
     // The hold on this card was recorded before NeuralWatt joined and stays: no
     // transcription of a picture has been measured on any stack of this model.
     neuralwatt: DEEPSEEK_V4_1_FLASH_ON_NEURALWATT,

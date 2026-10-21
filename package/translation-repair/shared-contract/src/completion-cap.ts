@@ -56,7 +56,8 @@ import {
 // "under one percent" in the table: `hf:zai-org/GLM-5.3-Flash` on Synthetic
 // 4.85 (97 of its 100 with no content), `minimax-m3` on Hyper 4.06 (157 of
 // 162), `google.gemma-4-31b` on Bedrock 2.34 (all 5 with content, over 214
-// calls), `deepseek-v4.1-flash` on Hyper 1.85 (74 of 75 with none),
+// calls), `deepseek-v4.1-flash` on Hyper 1.85 (74 of 75 with none; read on the
+// pre-1017 Hyper id, which the seat left on 2026-10-20),
 // Qwen3.8-27B on Synthetic 1.75 (185 of 197), `glm-5.3` on Hyper 1.46 (23 of
 // 25), and GLM-5.3-Flash on OpenRouter 1.15 (233 of its 239 with no stream
 // line to pair). Where a cut call pairs with its stream, nearly every one

@@ -133,6 +133,11 @@ each uses an empty export as given.
     DekaLLM and Sail Research for `deepseek-v4.1-flash`
     (the first two after XingZ607 on 2026-09-18,
     the last three after XingZ624 to XingZ626 on 2026-09-23).
+    The card has sent the 1017 id,
+    `deepseek/deepseek-v4.1-flash-1017`,
+    since 2026-10-20.
+    Its endpoint listing of that day carries DeepInfra and Wafer and none of the other three,
+    so those three ignores are inert until one lists it.
     A card whose `preferredEndpoints` is not empty also sends `order`,
     which names those endpoints ahead of the price sort and leaves `allow_fallbacks` unset:
     Wafer for `hf:zai-org/GLM-5.3-Flash` and Morph for `deepseek-v4.1-flash`,

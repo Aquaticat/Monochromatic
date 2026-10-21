@@ -32,8 +32,21 @@ import {
   OPENROUTER_MODELS,
   SYNTHETIC_MODELS,
 } from '../dist/final/node/index.mjs';
+import { SEAT_HYPER_OPENROUTER_UNMEASURED, SEAT_HYPER_OPENROUTER_UNMEASURED_HYPER_ID, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { BEDROCK_ONLY_ROSTER_IDS, } from '@monochromatic-dev/translation-repair-shared-contract/ts/roster-buckets.test-fixture.ts';
 import { cardOf, } from './catalog-lookups.test-fixture.ts';
+
+/**
+ Roster ids that kept their name when a provider moved the model to a newer
+ served id, beside the served id each now carries on its first serving
+ provider. The owner's instruction of 2026-10-20 ("Migrate to deepseek v4
+ flash 1017 where possible") moved Hyper and OpenRouter to the 1017 ids and
+ kept the card's name, so caches, ledgers, calibrations and logs keep one
+ name for the seat.
+ */
+const KEPT_ROSTER_NAME: Readonly<Record<string, string>> = {
+  [SEAT_HYPER_OPENROUTER_UNMEASURED]: SEAT_HYPER_OPENROUTER_UNMEASURED_HYPER_ID,
+};
 
 await describe({
   name: 'model-cards',
@@ -90,7 +103,8 @@ await describe({
 
     it({
       name: 'SPELLS EVERY ROSTER ID THE FIRST SERVING PROVIDER\'S WAY: Synthetic, else Hyper, else Bedrock, '
-        + 'else OpenRouter, in the order the providers joined',
+        + 'else OpenRouter, in the order the providers joined, but for the roster ids that kept their name '
+        + 'when the provider moved the model to a newer served id',
       fn: async () => {
         for (const card of ROSTER_CARDS) {
           /**
@@ -101,6 +115,10 @@ await describe({
             ?? card.bedrock?.id
             ?? card.openrouter?.id
             ?? card.decisions?.id;
+          if (Object.hasOwn(KEPT_ROSTER_NAME, card.id,)) {
+            expect(expected,).toBe(KEPT_ROSTER_NAME[card.id],);
+            continue;
+          }
           expect(card.id,).toBe(expected,);
         }
       },
@@ -125,6 +143,7 @@ await describe({
         }
         for (const card of cardsServing({ provider: 'hyper', },)) {
           expect(HYPER_MODELS[card.hyper.id].sharedWith,).toBe(card.synthetic?.id ?? 'no-synthetic-counterpart',);
+          expect(HYPER_MODELS[card.hyper.id].rosterId,).toBe(card.id,);
         }
       },
     },),

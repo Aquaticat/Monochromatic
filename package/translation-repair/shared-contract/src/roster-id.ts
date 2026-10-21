@@ -105,7 +105,7 @@ export const HYPER_SERVED_IDS = [
   'minimax-m3',
   'gemma-4-26b-a4b-it',
   'glm-5.3',
-  'deepseek-v4.1-flash',
+  'deepseek-v4.1-flash-1017',
 ] as const;
 
 /**
@@ -113,7 +113,7 @@ export const HYPER_SERVED_IDS = [
 
  @example
  ```ts
- const modelId: HyperServedId = 'deepseek-v4.1-flash';
+ const modelId: HyperServedId = 'deepseek-v4.1-flash-1017';
  ```
  */
 export type HyperServedId = typeof HYPER_SERVED_IDS[number];
@@ -132,7 +132,7 @@ export const OPENROUTER_SERVED_IDS = [
   'openai/gpt-oss-120b',
   'minimax/minimax-m3',
   'google/gemma-4-26b-a4b-it',
-  'deepseek/deepseek-v4.1-flash',
+  'deepseek/deepseek-v4.1-flash-1017',
   'inception/mercury-2.5',
   'xiaomi/mimo-v2.6-flash',
 ] as const;
@@ -211,6 +211,10 @@ export type NeuralWattServedId = typeof NEURALWATT_SERVED_IDS[number];
  spelling: by the naming rule, the roster ids that are Hyper spellings.
  The historical bucket name is not exclusive reach: OpenRouter serves
  several too.
+
+ `deepseek-v4.1-flash` is no longer in it: Hyper serves that seat as
+ `deepseek-v4.1-flash-1017` since 2026-10-20, and the roster id kept its
+ name (`HyperModelInfo.rosterId` ties the two).
 
  @example
  ```ts

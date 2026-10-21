@@ -29,6 +29,7 @@ import {
 } from '../dist/final/node/index.mjs';
 import {
   SEAT_HYPER_ONLY,
+  SEAT_HYPER_OPENROUTER_UNMEASURED_OPENROUTER_ID,
   SEAT_HYPER_VISION,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
@@ -145,7 +146,7 @@ await describe({
               'parasail',
               'modelrun',
             ],);
-            expect(OPENROUTER_MODELS['deepseek/deepseek-v4.1-flash'].ignoredEndpoints,).toEqual([
+            expect(OPENROUTER_MODELS[SEAT_HYPER_OPENROUTER_UNMEASURED_OPENROUTER_ID].ignoredEndpoints,).toEqual([
               'deepinfra',
               'wafer',
               'open-inference',
@@ -157,7 +158,7 @@ await describe({
              */
             const measured: ReadonlySet<string> = new Set([
               'minimax/minimax-m3',
-              'deepseek/deepseek-v4.1-flash',
+              SEAT_HYPER_OPENROUTER_UNMEASURED_OPENROUTER_ID,
             ],);
             /**
              Rows other than the one with a measured endpoint.
@@ -181,14 +182,14 @@ await describe({
             + 'requests reach (ledger H12: 7,601 streams at p90 5.5 s against 37,870 at 9.7 s since 2026-09-21, '
             + 'both FP4, completion alike), sent as `provider.order` with fallbacks allowed; every other row names none',
           fn: async () => {
-            expect(OPENROUTER_MODELS['deepseek/deepseek-v4.1-flash'].preferredEndpoints,).toEqual(['morph',],);
+            expect(OPENROUTER_MODELS[SEAT_HYPER_OPENROUTER_UNMEASURED_OPENROUTER_ID].preferredEndpoints,).toEqual(['morph',],);
             expect(OPENROUTER_MODELS['z-ai/glm-5.3-flash'].preferredEndpoints,).toEqual(['wafer',],);
             expect(OPENROUTER_MODELS['minimax/minimax-m3'].preferredEndpoints,).toEqual(['together', 'coreweave',],);
             /**
              Rows with a measured endpoint named on them.
              */
             const named: ReadonlySet<string> = new Set([
-              'deepseek/deepseek-v4.1-flash',
+              SEAT_HYPER_OPENROUTER_UNMEASURED_OPENROUTER_ID,
               'z-ai/glm-5.3-flash',
               'minimax/minimax-m3',
             ],);
@@ -265,7 +266,7 @@ await describe({
               order: ['together', 'coreweave',],
             },);
             expect(minimax.ignore,).not.toBe(OPENROUTER_MODELS['minimax/minimax-m3'].ignoredEndpoints,);
-            expect(openRouterProviderPreferencesFor({ servedId: 'deepseek/deepseek-v4.1-flash', },),).toEqual({
+            expect(openRouterProviderPreferencesFor({ servedId: SEAT_HYPER_OPENROUTER_UNMEASURED_OPENROUTER_ID, },),).toEqual({
               zdr: true,
               require_parameters: true,
               sort: 'price',
