@@ -2010,6 +2010,12 @@ that is verification, not a decision for the user.
   `command_stash`, `rule_linked_worktree`, `rule_linked_worktree_messages`. Use `--timeout 900` (the baseline needs
   about 250 to 310 s on a loaded host) as a capped unit when the host is quiet; start from a copy of
   `~/temp/agent/m028-run.ts` with the finished two removed. Mutation never blocks a release.
+  m028b rerun started 2026-10-21 after the user's reboot, on a quiet host (load 2.27 on 28 CPUs, no containers): unit
+  `cli-git-mut-m028b` (MemoryMax 24G, CPUQuota 800%), script `~/temp/agent/m028b-run.ts`: a container gate with image
+  tag `m028b`, then `native:mutation:scoped --timeout 900` for `landing_invariant`, `event_hints`, `diagnostics`,
+  `auto_push_reconcile`, `rule_worktree_dirty`, `auto_push_dirty_paths`, `discard_audit`, `command_stash`,
+  `rule_linked_worktree`, `rule_linked_worktree_messages`. Logs `~/temp/agent/m028b-mutation-<file>.log`. Do not edit
+  `src/native` while it runs. A reboot kills it: rerun only the files without a `mutants tested` line.
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and

@@ -185,7 +185,7 @@ await describe({
               'STRAGGLER GRACE OVERRIDDEN by TRANSLATION_REPAIR_STRAGGLER_GRACE_MS: rounds abandon stragglers '
               + '90000ms after quorum rather than the built-in 120000ms',
               'WRITER GRACE OVERRIDDEN by TRANSLATION_REPAIR_WRITER_GRACE_MS: writer rounds (editor, refiner, '
-              + 'translate, produceConsolidations) abandon stragglers 60000ms after quorum rather than the '
+              + 'translate, produceConsolidations, archive-block-review) abandon stragglers 60000ms after quorum rather than the '
               + '90000ms every other round waits',
               pinLine({ clone, },),
               'CAP TOO TIGHT: an attempt runs 90000ms, which is not longer than the 360000ms one model '

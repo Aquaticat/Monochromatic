@@ -16,16 +16,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import type {
-  ChatJsonOutcome,
-  ChatJsonRequest,
-  ModelClient,
-} from '@monochromatic-dev/translation-repair-provider';
 import {
   reachableQuorum,
   rosterQuorumSize,
 } from '@monochromatic-dev/translation-repair-stage';
-import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
+import { scriptedClient, } from './scripted-review-client.test-fixture.ts';
 import {
   ARCHIVE_BLOCK_SELECTION_CRITERIA,
   isArchiveReferenceQuoteAnchored,
@@ -40,6 +35,7 @@ import {
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixture/ts/hang-stop.test-fixture.ts';
+import { capturingLoggerPair, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from '@monochromatic-dev/translation-repair-stage/ts/stage-settings.test-fixture.ts';
 
 /** Four seats let two producers receive disinterested selection ballots. */
@@ -108,95 +104,6 @@ function asCaptured(text: string,): string {
 
 /** Logger for archive-block stage tests. */
 const l = tagged({ tag: 'archive-block-review-stage-test', },);
-
-/** Reply selector for one scripted request. */
-type ReplyFor = (input: {
-  readonly schema: string;
-  readonly prompt: string;
-  readonly modelId: string;
-}) => unknown;
-
-/**
- Creates schema-aware direct client and captures exact prompts.
-
- @param replyFor - reply selector
-
- @param prompts - prompt capture sink
-
- @param payloads - optional model-plus-prompt identity sink
-
- @returns Scripted client
- */
-function scriptedClient(
-  {
-    replyFor,
-    prompts,
-    payloads,
-    unreadableFor = () => false,
-    refusedFor = () => false,
-  }: {
-    readonly replyFor: ReplyFor;
-    readonly prompts: string[];
-    readonly payloads?: string[];
-    /**
-     Seats whose reply to a prompt the completion cap cut before its
-     content, the shape `chat-json-outcome.ts` reads off
-     `finish_reason=length`; the prompt lets a case cut one review's replies
-     and not another's.
-     */
-    readonly unreadableFor?: (request: { readonly modelId: string; readonly prompt: string; }) => boolean;
-    /**
-     Seats the router refuses because no provider serving them is wet, the
-     refusal `stage-call.ts` counts out of reach.
-     */
-    readonly refusedFor?: (modelId: string) => boolean;
-  },
-): ModelClient {
-  return {
-    chatText: async () => {
-      throw new Error('chatText not used',);
-    },
-    chatJson: async <ValueT,>(
-      request: ChatJsonRequest<ValueT>,
-    ): Promise<ChatJsonOutcome<ValueT>> => {
-      /** Structured schema naming requested responsibility. */
-      const schema = request.responseFormat?.json_schema.name ?? '';
-      /** Complete prompt used for responsibility and anonymity assertions. */
-      const prompt = JSON.stringify(request.messages,);
-      prompts.push(prompt,);
-      payloads?.push(`${request.modelId}\u0000${prompt}`,);
-      if (refusedFor(request.modelId,)) {
-        throw new NoProviderForModelError({
-          modelId: request.modelId,
-          reason: 'every provider serving this model is out of budget',
-        },);
-      }
-      if (unreadableFor({
-        modelId: request.modelId,
-        prompt,
-      },)) {
-        return {
-          kind: 'schema-mismatch',
-          rawText: '',
-          reason: 'truncated-completion',
-          detail: 'provider reported a truncating completion (model stopped with finish_reason=length)',
-        };
-      }
-      /** Scripted value for current role. */
-      const value = replyFor({ schema, prompt, modelId: request.modelId, });
-      if (!request.validate(value,))
-        throw new Error(`scripted ${schema} reply failed validator`,);
-      return {
-        kind: 'ok',
-        value,
-        rawText: JSON.stringify(value,),
-      };
-    },
-    quotas: async () => {
-      throw new Error('quotas not used',);
-    },
-  };
-}
 
 /** Acceptable absolute-naturalness reply. */
 const ACCEPTABLE_NATURALNESS = {
@@ -1209,6 +1116,134 @@ await describe({
           expect(outcome.kind,).toBe('retained',);
           expect(outcome.findings,).toContain('archive review discarded uncorroborated retention claim',);
           expect(outcome.findings.join('\n',),).toContain('archive review left the block unresolved: 0 of',);
+        }
+      },
+    },),
+    it({
+      name: 'KEEPS A RETENTION QUOTED WITHOUT THE LINE BREAKS OF A WRAPPED SECTION (ledger B715): zheermao101 '
+        + '(run zheermao20) dropped a reviewer\'s sentence-long quote of a screenshot transcript that the picture '
+        + 'had wrapped mid-sentence, and the block lost an assessment that supported the archive',
+      fn: async () => {
+        const outcome = await runArchiveBlockReviewStage({
+          client: scriptedClient({
+            prompts: [],
+            replyFor: anchoredReviewReplyFor,
+          },),
+          modelIds: ROSTER,
+          sourceText: '猫在窗边安\n静地睡觉。',
+          targetText: 'The cat sleeps quietly by the window.',
+          blockText: 'The cat sleeps quietly by the window.',
+          blockOffset: 0,
+          priorFindings: [],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: HANG_STOP_MS,
+          l,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
+        },);
+        expect(outcome.kind,).toBe('retained',);
+        expect(outcome.findings,).not.toContain('archive review discarded uncorroborated retention claim',);
+        expect(outcome.findings.join('\n',),).not.toContain('archive review left the block unresolved',);
+      },
+    },),
+    it({
+      name: 'LOGS WHY EACH SOURCE-SUPPORTED REPLY WAS DROPPED, with the inputs that decided it (ledger B715): the '
+        + 'run zheermao20 logged "2 eligible assessments from 4 heard reviews" and nothing said which reply failed '
+        + 'which test, so a refused quote could not be told from a refused reviewer',
+      fn: async () => {
+        const { logger, lines, } = capturingLoggerPair();
+        /**
+         Seats asked for a review, in first-call order. The first anchors
+         its quote; the second quotes words the section lacks; the rest
+         quote too few characters to anchor anything.
+         */
+        const reviewers: string[] = [];
+        const outcome = await runArchiveBlockReviewStage({
+          client: scriptedClient({
+            prompts: [],
+            replyFor: ({ schema, modelId, },) => {
+              if (schema !== 'archive_block_review')
+                return ACCEPTABLE_NATURALNESS;
+              if (!reviewers.includes(modelId,))
+                reviewers.push(modelId,);
+              return {
+                disposition: 'source-supported',
+                sourceQuote: [
+                  '窗边安静地睡觉',
+                  '不存在的来源句子',
+                ][reviewers.indexOf(modelId,)] ?? '猫在',
+                replacementText: '',
+                finding: 'Source support claim.',
+              };
+            },
+          },),
+          modelIds: ROSTER,
+          sourceText: '猫在窗边安静地睡觉。',
+          targetText: 'The cat sleeps quietly by the window.',
+          blockText: 'The cat sleeps quietly by the window.',
+          blockOffset: 0,
+          priorFindings: [],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: HANG_STOP_MS,
+          l: logger,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
+        },);
+        expect(outcome.findings,).toContain('archive review discarded uncorroborated retention claim',);
+        /** Lines of the drops, one per refused reply. */
+        const dropped = lines.filter(function isDrop(line,): boolean {
+          return line.includes('archive review dropped the source-supported reply of',);
+        },);
+        expect(dropped.length,).toBe(reviewers.length - 1,);
+        /** The reviewer who quoted words the section lacks. */
+        const [, absentReviewer, shortReviewer,] = reviewers;
+        const absent = dropped.find(function names(line,): boolean {
+          return line.includes(`reply of ${String(absentReviewer,)}:`,);
+        },);
+        expect(absent,).toContain('no span of the expected section and its picture transcripts (10 characters',);
+        expect(absent,).toContain('longest opening of the quote found there 0 of 8',);
+        expect(absent,).toContain('any of the 0 cited pages',);
+        const short = dropped.find(function names(line,): boolean {
+          return line.includes(`reply of ${String(shortReviewer,)}:`,);
+        },);
+        expect(short,).toContain('its quote shows 2 characters a reader sees, below the 4 an anchor needs',);
+        expect(dropped.some(function namesAnchored(line,): boolean {
+          return line.includes(`reply of ${String(reviewers[0],)}:`,);
+        },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'LOGS WHY AN EDITORIAL-CONTEXT REPLY WAS DROPPED when the block is not wholly apparatus (ledger B715)',
+      fn: async () => {
+        const { logger, lines, } = capturingLoggerPair();
+        await runArchiveBlockReviewStage({
+          client: scriptedClient({
+            prompts: [],
+            replyFor: ({ schema, },) => schema === 'archive_block_review'
+              ? {
+                disposition: 'editorial-context',
+                sourceQuote: '',
+                replacementText: '',
+                finding: 'Apparatus.',
+              }
+              : ACCEPTABLE_NATURALNESS,
+          },),
+          modelIds: ROSTER,
+          sourceText: '猫在窗边安静地睡觉。',
+          targetText: 'The cat sleeps quietly by the window.',
+          blockText: 'The cat sleeps quietly by the window.',
+          blockOffset: 0,
+          priorFindings: [],
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: HANG_STOP_MS,
+          l: logger,
+          stageSettings: SCRIPTED_STAGE_SETTINGS,
+        },);
+        /** Lines of the drops. */
+        const dropped = lines.filter(function isDrop(line,): boolean {
+          return line.includes('archive review dropped the editorial-context reply of',);
+        },);
+        expect(dropped.length,).toBeGreaterThan(0,);
+        for (const line of dropped) {
+          expect(line,).toContain('the block of 37 characters is not wholly apparatus',);
         }
       },
     },),

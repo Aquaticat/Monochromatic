@@ -69,6 +69,13 @@ so a missing count would have read as zero (ledger B323,
 M137).
 A value that belongs to a key is carried with that key,
 and a read that cannot miss throws if it does.
+The archive review looked a block's source section up with `?? ''`,
+and so did the alignment lookup behind the map,
+though an empty section is itself an answer (a section only the archive has);
+a miss checked every quote against nothing and dropped each reply that cited the original (ledger B717).
+Where an empty value is a legitimate answer,
+a miss is not it:
+the lookup throws a named error carrying the key and what the map holds.
 
 A commit probe that threw in the process,
 its working directory removed before git ran,

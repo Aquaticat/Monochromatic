@@ -888,3 +888,94 @@ A cut that keeps text from a model is checked on every sheet that model reads,
 by a guard that renders all of them with a planted case and a witness that tells cut from unreached,
 and a rule that finds a block by a word in its heading reads the heading's name,
 not the whole heading.
+
+## B716: the composite candidate reached the judges with no assessment
+
+Status:
+fixed on 2026-10-21 (UTC),
+red `882899efa4`,
+fix `b7c4a959d5`,
+source scans `651ae7846d`.
+Found in the review of the archive block review after B712 to B715 met in one tree.
+No cache version moved.
+
+What the code did:
+`archiveBlockSelectionEvidence` files each reviewer assessment under the candidate whose text the reviewer proposed.
+No reviewer proposed the composite of disjoint revisions that B712 added,
+so the select sheet listed assessments for the other candidates and none for the composite.
+The judges weighed the one candidate they could not check against candidates they could.
+The red cases read the select sheet the judges are sent:
+the composite stood as candidate 3 of 4 and the list held no entry for it
+(two of three cases failed with an empty list;
+the case with no composite passed before and after).
+
+The fix:
+`compositeOfDisjointRevisions` returns what each revision it carries contributed
+(the candidate number and the zero-based lines it changed),
+and the evidence copies each contributor's assessments onto the composite,
+in slate order,
+as the reviewer gave them:
+the same disposition and finding,
+marked `coversLines`
+(the block's lines,
+counted from one,
+that reviewer changed)
+and `fromCandidate`.
+The contributors' own entries stay as they were.
+The label of the assessments adds,
+only when a composite stands,
+that its entries are the contributors' own and that no reviewer assessed the composite as a whole.
+Every reviewer of a byte-identical revision is carried,
+because the copy follows the revision and not the model.
+The line arithmetic moved to `archive-composite-lines.ts`,
+the composite module being over its line budget.
+
+Decisions taken in this session:
+- The composite is found on the slate by object identity.
+  A merged byte-identical revision also has the producer kind `composite`,
+  which the first draft searched by and which numbered a merged revision as the composite.
+  A composite absent from the slate throws `CompositeNotOnSlateError`.
+- A fresh reviewer verdict on the composite was rejected:
+  it invents an opinion the reviewers did not give and asks the bench again.
+- A bare note saying the composite is made of candidates 1 and 3 was rejected:
+  the judges would have to join the entries by hand,
+  and the reasons are what they lacked.
+- Duplicating a finding on the composite and on its contributor is the design.
+  The mark `coversLines` is what stops a judge reading it as an opinion of the whole composite.
+
+Source scans:
+the first run of the scans after the changes of B716 and B717 failed five scans,
+three of them on the new files and classes:
+the own-unit-test ratchet (two modules),
+the marked-message inventory (three classes)
+and the duplicate-body scan (two identical lambdas in the new case).
+The other two,
+references by position and zone-less clock times,
+failed on a planning doc of the repository that this branch does not edit.
+`651ae7846d` gives the modules units of their own and inventories the classes.
+
+Cache account:
+none moves.
+The archive review is not cached and its result is stored under no key (B714),
+and the select sheet's evidence text is hashed by no slice-cache key.
+`mise run //package/translation-repair/slice-cache:cache-account-audit` on this tree read the same eight versions as B714
+(`CONSISTENCY_CACHE_VERSION` 6,
+`TRANSLATE_SLICE_CACHE_VERSION` 22,
+`REFINE_CACHE_VERSION` 11,
+`PAIRING_CACHE_VERSION` 3,
+`CONSOLIDATE_CACHE_VERSION` 28,
+`SLICE_CACHE_VERSION` 40,
+`PAGE_TITLE_CACHE_VERSION` 4,
+`LANE_CONTEST_CACHE_VERSION` 13)
+and found no slice-cache record in the worktree (0),
+which is no evidence either way in a keyless worktree.
+
+Not measured:
+whether judges choose the composite more or less often with its assessments shown,
+which needs paid calls.
+The assessments on the composite are the reviewers' reasons for lines they changed;
+a reason that argued about the whole block would read wider than the lines it covers.
+
+Recurrence:
+`mistake-prevention-sheets-quorums-and-outcome-rules.md`,
+"What each sheet is shown".

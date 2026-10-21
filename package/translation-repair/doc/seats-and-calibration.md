@@ -148,7 +148,8 @@ so a launch within an hour of a heavy run is refused until that run's requests l
 The **writer** rounds,
 editor,
 refiner,
-translate and consolidate,
+translate,
+consolidate and the archive block review (classified so on 2026-10-21, open to the owner's veto),
 wait 180000 ms on stragglers after quorum (`WRITER_GRACE_MS` in `writer-grace-override.ts`,
 the owner's decision of 2026-09-06 in `doc/decision/translation-repair-straggler-grace.md`),
 since a cut writer voice is a whole candidate lost while a cut reader voice is one ballot of eight;
