@@ -93,6 +93,9 @@ The groups that follow name the main ones.
   and no stop on a reported cost,
   since NeuralWatt reports a nominal cost on free-energy requests too
   (the `SPEND` line still carries it).
+  The run's plan energy is the difference of two quota readings;
+  a first reading that fails is tried again no sooner than a minute later,
+  and a comparison that starts at that later reading says so in the end report.
   Names:
   `createNeuralWattLedger`,
   `neuralWattLedgerFromEnv`,
@@ -106,6 +109,7 @@ The groups that follow name the main ones.
   `aliasNamesOf`,
   `keyAllowanceOf`,
   `readNeuralWattComments`,
+  `createNeuralWattQuotaSession`,
   `describePlanSpend`.
   Declared in `neuralwatt-ledger.ts`,
   `neuralwatt-ledger-config.ts`,
@@ -122,6 +126,7 @@ The groups that follow name the main ones.
   `neuralwatt-key-allowance.ts`,
   `neuralwatt-comments.ts`,
   `neuralwatt-settlement.ts`,
+  `neuralwatt-quota-session.ts`,
   and `neuralwatt-quota.ts`.
 - Anthropic wire:
   build the request body and read the completion of the Anthropic messages format.

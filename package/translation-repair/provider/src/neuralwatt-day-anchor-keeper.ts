@@ -3,6 +3,7 @@ import {
   type NeuralWattDayAnchor,
 } from './neuralwatt-day-anchor.ts';
 import {
+  NEURALWATT_QUOTA_RETRY_SECONDS,
   type NeuralWattDayStart,
   neuralWattSecondsAfter,
 } from './neuralwatt-day.ts';
@@ -15,12 +16,6 @@ import type { NeuralWattQuotaSession, } from './neuralwatt-quota-session.ts';
 // and not from the failed baseline, no sooner than a minute after the last failed attempt on the injected clock; the
 // calls in between stay refused. The outage is warned about once (the first failed attempt), and the day that is
 // finally learned is logged with where it came from (`neuralwatt-day-anchor.ts`).
-
-/**
- Seconds between a failed attempt to learn the anchor and the next one, the cadence of the budget layer's meter
- readings.
- */
-const ANCHOR_RETRY_SECONDS = 60;
 
 /**
  Keeper of one client's day anchor.
@@ -118,7 +113,7 @@ export function createNeuralWattAnchorKeeper(
     state.failedBefore = true;
     state.retryAfter = neuralWattSecondsAfter({
       from: now(),
-      seconds: ANCHOR_RETRY_SECONDS,
+      seconds: NEURALWATT_QUOTA_RETRY_SECONDS,
     },);
     return anchor;
   }

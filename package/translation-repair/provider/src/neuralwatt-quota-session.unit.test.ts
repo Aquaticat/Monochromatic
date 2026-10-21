@@ -436,10 +436,6 @@ await describe({
              Reads seen after each asking.
              */
             const readsAt: number[] = [];
-            /**
-             The end report and the lines logged on the way.
-             */
-            let spend: Awaited<ReturnType<typeof session.planSpend>> | undefined;
             const lines = await consoleLinesDuring({
               run: async function asks(): Promise<void> {
                 for (const instant of [START, '2026-10-20T12:00:59.999Z', '2026-10-20T12:01:00.000Z',]) {
@@ -449,15 +445,17 @@ await describe({
                   /* oxlint-enable no-await-in-loop */
                   readsAt.push(reads.length,);
                 }
-                clock.setTo('2026-10-20T12:30:00.000Z',);
-                spend = await session.planSpend({ signal: SIGNAL, },);
               },
               sinon: ctx.sinon,
             },);
             expect(takenAt,).toEqual([false, false, true,],);
             expect(readsAt,).toEqual([1, 1, 2,],);
-            expect(spend,).toMatchObject({ kind: 'measured', inOverage: false, laterStartAt: '2026-10-20T12:01:00.000Z', },);
-            expect(spend?.kind === 'measured' ? spend.kwh : Number.NaN, ).toBeCloseTo(0.5, 9,);
+            clock.setTo('2026-10-20T12:30:00.000Z',);
+            /**
+             The end report.
+             */
+            const spend = await session.planSpend({ signal: SIGNAL, },);
+            expect(spend,).toEqual({ kind: 'measured', kwh: 0.5, inOverage: false, laterStartAt: '2026-10-20T12:01:00.000Z', },);
             expect(reads.length,).toBe(3,);
             expect(lines.some(function says(line,): boolean {
               return line.includes('NeuralWatt quota read at 2026-10-20T12:01:00.000Z',)
@@ -545,10 +543,6 @@ await describe({
             + 'warning once for the outage and not at each retry',
           fn: async ctx => {
             const { session, reads, clock, } = sessionOver({ replies: [DOWN,], },);
-            /**
-             The end report.
-             */
-            let spend: Awaited<ReturnType<typeof session.planSpend>> | undefined;
             const lines = await consoleLinesDuring({
               run: async function asks(): Promise<void> {
                 for (const instant of [START, '2026-10-20T12:01:00.000Z', '2026-10-20T12:02:00.000Z',]) {
@@ -557,12 +551,11 @@ await describe({
                   await session.ensureBaseline({ signal: SIGNAL, },);
                   /* oxlint-enable no-await-in-loop */
                 }
-                clock.setTo('2026-10-20T12:03:00.000Z',);
-                spend = await session.planSpend({ signal: SIGNAL, },);
               },
               sinon: ctx.sinon,
             },);
-            expect(spend,).toEqual({
+            clock.setTo('2026-10-20T12:03:00.000Z',);
+            expect(await session.planSpend({ signal: SIGNAL, },),).toEqual({
               kind: 'not-comparable',
               reason: 'the starting reading could not be taken: every attempt to read the quota for it failed '
                 + '(3 attempts, the last at 2026-10-20T12:02:00.000Z)',
