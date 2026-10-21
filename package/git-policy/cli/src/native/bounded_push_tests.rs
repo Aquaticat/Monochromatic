@@ -334,7 +334,7 @@ fn a_flooding_push_is_stopped_and_its_output_capped() {
     .expect("runs");
     assert_eq!(attempt.exit_code, STOPPED_EXIT_CODE);
     assert!(
-        attempt.output.ends_with("bytes of output and was stopped."),
+        attempt.output.contains("bytes of output and was stopped. Hint: if a hook or the remote prints this much"),
         "{}",
         &attempt.output[attempt.output.len().saturating_sub(120)..]
     );

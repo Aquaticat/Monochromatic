@@ -92,7 +92,7 @@ const FIXED_A: &str = "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"fix-summar
 ///  as event number `sequence`.
 fn final_newline_warning(sequence: u64) -> String {
     return format!(
-        "{{\"schemaVersion\":1,\"sequence\":{sequence},\"type\":\"finding\",\"trigger\":\"direct-check\",\"policyId\":\"final-newline\",\"severity\":\"warn\",\"code\":\"final-newline/noncanonical-final-newline\",\"message\":\"Non-empty text file must end with exactly one LF byte.\",\"path\":\"a.txt\",\"fix\":\"none\"}}\n"
+        "{{\"schemaVersion\":1,\"sequence\":{sequence},\"type\":\"finding\",\"trigger\":\"direct-check\",\"policyId\":\"final-newline\",\"severity\":\"warn\",\"code\":\"final-newline/noncanonical-final-newline\",\"message\":\"Non-empty text file must end with exactly one LF byte.\",\"hint\":\"Hint: if you are committing or checking this file, edit it so it ends with exactly one newline, then stage it again.\",\"path\":\"a.txt\",\"fix\":\"none\"}}\n"
     );
 }
 
@@ -467,7 +467,7 @@ fn direct_commands_use_the_repository_configuration() {
         plan(&["check", "--all"], repo.as_path(), &inputs),
         exit(
             1,
-            "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"finding\",\"trigger\":\"direct-check\",\"policyId\":\"mono/forbidden-root-context\",\"severity\":\"error\",\"code\":\"mono/forbidden-root-context/root-context-forbidden\",\"message\":\"Root CONTEXT.md is forbidden; read source code directly.\",\"path\":\"CONTEXT.md\",\"fix\":\"none\"}\n",
+            "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"finding\",\"trigger\":\"direct-check\",\"policyId\":\"mono/forbidden-root-context\",\"severity\":\"error\",\"code\":\"mono/forbidden-root-context/root-context-forbidden\",\"message\":\"Root CONTEXT.md is forbidden; read source code directly.\",\"hint\":\"Hint: if you meant to keep project notes or terms for later readers, put them in a file under doc/; to drop CONTEXT.md from this commit and keep the file on disk, run `git rm --cached CONTEXT.md`.\",\"path\":\"CONTEXT.md\",\"fix\":\"none\"}\n",
             ""
         )
     );

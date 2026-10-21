@@ -171,6 +171,17 @@ A wrapper-only option is removed before Git sees the arguments and applies to th
 - `--no-worktree-copy` skips the ignored-state copy into a new linked worktree.
 - `--cli-git-keep-going` reports every finding of the command in one run instead of stopping at the first blocking one.
 
+### Hints
+
+Every block and every divergence from real Git's behavior says what you were probably trying to do and how to proceed.
+A JSONL event (a finding, an engine failure or a warn-unsafe notice) carries the hint in its own `hint` field,
+ beside a `message` that is unchanged from the retired wrapper's text.
+A plain notice (an internal error, a push stopped by its deadline or its output cap, a lock wait that gave up,
+ a failed worktree copy, a real Git that cannot start, a commit that normalization emptied) ends with the hint.
+The rejections that already carry their own alternatives (`require-root`, `linked-worktree-only`,
+ `branch-worktree-only` and the commit-only rules) keep them in the message.
+`src/native/event_hints.rs` holds the texts, and its tests fail when a finding code or an engine failure code has no hint.
+
 ### Discarding commands
 
 `linked-worktree-only` rejects a command form that can overwrite or delete uncommitted work by itself.

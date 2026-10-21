@@ -37,6 +37,10 @@ use super::diagnostics::{
 };
 /// A pathname as events report it,
 ///  and the encoding of its exact bytes.
+use super::event_hints::{
+    POST_COMMIT_BLOCKED_HINT, REPLAY_HEADERS_DROPPED_HINT, WARN_UNSAFE_HINT, engine_failure_hint, finding_hint,
+    push_hint_field,
+};
 use super::event_path::{EventPath, base64_standard};
 use super::policy_registry::{PolicyId, Severity, policy_descriptor, severity_name};
 use super::policy_trigger::{Trigger, trigger_name};
@@ -344,6 +348,7 @@ fn push_finding(line: &mut String, finding: &FindingEvent) {
         format!("{policy_name}/{}", finding.code).as_str(),
     );
     push_text_field(line, "message", finding.message.as_str());
+    push_hint_field(line, finding_hint(policy_name, finding.code, finding.fix_available));
     // `if let Some(path) = &finding.path` borrows the path only when one is present.
     if let Some(path) = &finding.path {
         push_path_field(line, path);
@@ -527,6 +532,7 @@ pub fn render_policy_event(sequence: u64, event: &PolicyEvent) -> String {
                 "message",
                 format!("Policy {policy_name} is warn-unsafe but configured as warn.").as_str(),
             );
+            push_hint_field(&mut line, Some(WARN_UNSAFE_HINT));
         }
         PolicyEvent::CoreFinding {
             core_id,
@@ -545,8 +551,10 @@ pub fn render_policy_event(sequence: u64, event: &PolicyEvent) -> String {
             policy,
             path,
         } => {
-            push_text_field(&mut line, "code", engine_failure_code_name(*code));
+            let code_name: &str = engine_failure_code_name(*code);
+            push_text_field(&mut line, "code", code_name);
             push_text_field(&mut line, "message", message.as_str());
+            push_hint_field(&mut line, engine_failure_hint(code_name));
             if let Some(found) = trigger {
                 push_text_field(&mut line, "trigger", trigger_name(*found));
             }
@@ -575,6 +583,7 @@ pub fn render_policy_event(sequence: u64, event: &PolicyEvent) -> String {
                 format!("Commit {oid} remains local; post-commit gate blocked automatic backup.")
                     .as_str(),
             );
+            push_hint_field(&mut line, Some(POST_COMMIT_BLOCKED_HINT));
         }
         PolicyEvent::LandingRaceLost { attempt, winning_oid } => {
             line.push_str(format!(",\"attempt\":{attempt}").as_str());
@@ -614,6 +623,7 @@ pub fn render_policy_event(sequence: u64, event: &PolicyEvent) -> String {
                 )
                 .as_str(),
             );
+            push_hint_field(&mut line, Some(REPLAY_HEADERS_DROPPED_HINT));
         }
         PolicyEvent::ReplayConflict {
             target_ref,

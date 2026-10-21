@@ -39,7 +39,7 @@ fn lifecycle_uses_generic_sentence_for_raw_failures_only() {
     let raw: WorktreeCopyError = raw_failure(&std::io::Error::other("boom"));
     assert_eq!(
         lifecycle_failure(raw).0,
-        "cli-git: automatic ignored-state worktree copy failed. Cause: boom"
+        format!("{AUTOMATIC_FAILURE_MESSAGE} Cause: boom")
     );
     let owned: WorktreeCopyError = WorktreeCopyError(String::from("cli-git: owned."));
     assert_eq!(lifecycle_failure(owned.clone()), owned);

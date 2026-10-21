@@ -372,11 +372,14 @@ pub fn run_bounded_push(
             let reason: String = match cause {
                 StopCause::Deadline => format!(
                     "cli-git: git push did not finish within {} seconds and was stopped; \
-                     set {PUSH_DEADLINE_VARIABLE} to allow longer.",
+                     set {PUSH_DEADLINE_VARIABLE} to allow longer. Hint: if you were pushing over a slow or \
+                     offline connection, your commit is already saved; push again when the connection works.",
                     deadline.as_secs()
                 ),
                 StopCause::Flood => format!(
-                    "cli-git: git push wrote more than {MAX_PUSH_OUTPUT} bytes of output and was stopped."
+                    "cli-git: git push wrote more than {MAX_PUSH_OUTPUT} bytes of output and was stopped. Hint: if a hook or the \
+                     remote prints this much, run `git ls-remote` to see whether your commits arrived, and read the \
+                     hook's own output by running it directly before pushing again."
                 ),
             };
             debug(TAG, &reason);

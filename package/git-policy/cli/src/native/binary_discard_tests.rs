@@ -11,7 +11,7 @@
 //! ```
 
 use super::support::{
-    Fixture, Observed, fixture, git, porcelain, remove, repository, run_wrapped, stderr_of,
+    Fixture, Observed, fixture, git, observe_raw, porcelain, remove, repository, run_wrapped, stderr_of, wrapped,
 };
 use std::ffi::OsStr;
 use std::path::PathBuf;
@@ -338,5 +338,24 @@ fn each_decision_leaves_one_line_in_the_audit_file() {
         std::fs::read_to_string(&audit).expect("audit file").lines().count(),
         after_clean.lines().count()
     );
+    remove(&fixture);
+}
+
+/// A finding reaches the caller with its hint as a separate field, and the message stays the incumbent's text.
+#[test]
+fn a_finding_carries_its_hint_beside_an_unchanged_message() {
+    let fixture: Fixture = fixture("hint-field");
+    let repo: PathBuf = repository(&fixture, OsStr::new("repo"));
+    std::fs::write(repo.join("a.txt"), b"no final newline").expect("file");
+    let raw: Observed = observe_raw(
+        wrapped(&fixture).current_dir(repo.as_path()).args(["cli-git", "check", "--all"]),
+        b"",
+    );
+    let text: String = String::from_utf8_lossy(raw.stdout.as_slice()).into_owned();
+    assert!(
+        text.contains("\"message\":\"Non-empty text file must end with exactly one LF byte.\",\"hint\":\"Hint: if you are committing or checking this file"),
+        "{text}"
+    );
+    assert!(text.contains("git cli-git fix -- <path>") || text.contains("exactly one newline"), "{text}");
     remove(&fixture);
 }

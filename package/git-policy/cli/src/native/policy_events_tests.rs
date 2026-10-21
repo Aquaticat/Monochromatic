@@ -20,6 +20,53 @@ use super::{
     render_policy_event, render_policy_events,
 };
 use crate::diagnostics::EngineFailureCode;
+/// The lines without their additive `hint` fields, which the incumbent's shape does not have.
+fn strip_hint_fields(text: &str) -> String {
+    let marker: &str = ",\"hint\":\"";
+    let mut rest: String = text.to_owned();
+    while let Some(start) = rest.find(marker) {
+        let bytes: &[u8] = rest.as_bytes();
+        let mut end: usize = start + marker.len();
+        while bytes[end] != b'"' {
+            end += if bytes[end] == b'\\' { 2 } else { 1 };
+        }
+        rest = format!("{}{}", &rest[..start], &rest[end + 1..]);
+    }
+    return rest;
+}
+
+/// The rendering of one event without its additive `hint` field.
+fn rendered_without_hint(sequence: u64, event: &PolicyEvent) -> String {
+    return strip_hint_fields(render_policy_event(sequence, event).as_str());
+}
+
+/// A finding with a known hint carries it as its own field after the message, and the message stays the same.
+#[test]
+fn a_hinted_event_carries_the_hint_as_its_own_field() {
+    let line: String = render_policy_event(
+        0,
+        &PolicyEvent::EngineFailure {
+            code: EngineFailureCode::FixCycle,
+            message: String::from("cycle"),
+            trigger: None,
+            policy: None,
+            path: None,
+        },
+    );
+    assert!(line.contains("\"message\":\"cycle\",\"hint\":\"Hint: "), "{line}");
+    assert!(line.ends_with("\"}\n"), "{line}");
+    let warning: String = render_policy_event(
+        3,
+        &PolicyEvent::WarnUnsafe { trigger: Trigger::PreForward, policy: PolicyId::AddExplicit },
+    );
+    assert!(warning.contains("\"hint\":\"Hint: if you set it to warn"), "{warning}");
+    let unhinted: String = render_policy_event(
+        0,
+        &PolicyEvent::CoreFinding { core_id: "commit-only", code: "all-flag", message: String::from("m") },
+    );
+    assert!(!unhinted.contains("hint"), "{unhinted}");
+}
+
 /// The event form of a pathname.
 use crate::event_path::EventPath;
 use crate::policy_registry::{PolicyId, Severity};
@@ -44,7 +91,7 @@ fn finding(severity: Severity) -> FindingEvent {
 #[test]
 fn finding_has_the_incumbent_shape() {
     assert_eq!(
-        render_policy_event(0, &PolicyEvent::Finding(finding(Severity::Error))),
+        rendered_without_hint(0, &PolicyEvent::Finding(finding(Severity::Error))),
         "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"finding\",\"trigger\":\"pre-forward\",\
          \"policyId\":\"require-root\",\"severity\":\"error\",\"code\":\"require-root/not-at-root\",\
          \"message\":\"Not at root\",\"fix\":\"none\"}\n"
@@ -63,7 +110,7 @@ fn finding_has_the_incumbent_shape() {
         fix_available: true,
     };
     assert_eq!(
-        render_policy_event(41, &PolicyEvent::Finding(full)),
+        rendered_without_hint(41, &PolicyEvent::Finding(full)),
         "{\"schemaVersion\":1,\"sequence\":41,\"type\":\"finding\",\"trigger\":\"direct-check\",\
          \"policyId\":\"security/forbidden-strings\",\"severity\":\"warn\",\
          \"code\":\"security/forbidden-strings/match\",\"message\":\"found\",\"path\":\"dir/a.txt\",\
@@ -76,7 +123,7 @@ fn finding_has_the_incumbent_shape() {
 fn warn_unsafe_has_the_incumbent_shape() {
     assert_eq!(WARN_UNSAFE_CODE, "warn-unsafe");
     assert_eq!(
-        render_policy_event(
+        rendered_without_hint(
             2,
             &PolicyEvent::WarnUnsafe {
                 trigger: Trigger::PreForward,
@@ -93,7 +140,7 @@ fn warn_unsafe_has_the_incumbent_shape() {
 #[test]
 fn core_finding_has_the_incumbent_shape() {
     assert_eq!(
-        render_policy_event(
+        rendered_without_hint(
             1,
             &PolicyEvent::CoreFinding {
                 core_id: "commit-only",
@@ -112,7 +159,7 @@ fn core_finding_has_the_incumbent_shape() {
 #[test]
 fn engine_failure_prints_optional_fields_in_order() {
     assert_eq!(
-        render_policy_event(
+        rendered_without_hint(
             0,
             &PolicyEvent::EngineFailure {
                 code: EngineFailureCode::CoreIncomplete,
@@ -126,7 +173,7 @@ fn engine_failure_prints_optional_fields_in_order() {
          \"message\":\"transform failed\"}\n"
     );
     assert_eq!(
-        render_policy_event(
+        rendered_without_hint(
             7,
             &PolicyEvent::EngineFailure {
                 code: EngineFailureCode::ContentUnavailable,
@@ -161,7 +208,7 @@ fn engine_failure_prints_optional_fields_in_order() {
             ",\"path\":\"p\"}\n",
         ),
     ] {
-        let rendered: String = render_policy_event(
+        let rendered: String = rendered_without_hint(
             0,
             &PolicyEvent::EngineFailure {
                 code: EngineFailureCode::FixCycle,
@@ -185,7 +232,7 @@ fn engine_failure_prints_optional_fields_in_order() {
 #[test]
 fn fix_summary_has_the_incumbent_shape() {
     assert_eq!(
-        render_policy_event(
+        rendered_without_hint(
             3,
             &PolicyEvent::FixSummary {
                 trigger: Trigger::DirectFix,
@@ -200,7 +247,7 @@ fn fix_summary_has_the_incumbent_shape() {
          \"passes\":2,\"changedPaths\":[\"a.txt\",\"dir/b \\\"c\\\".md\"]}\n"
     );
     assert_eq!(
-        render_policy_event(
+        rendered_without_hint(
             0,
             &PolicyEvent::FixSummary {
                 trigger: Trigger::PreForward,
@@ -219,7 +266,7 @@ fn hostile_text_cannot_leave_its_field() {
     let mut hostile: FindingEvent = finding(Severity::Error);
     hostile.message = String::from("a\"}\n{\"type\":\"x\"\\");
     hostile.path = Some(EventPath::from_git_bytes("p\n\"q\"\u{1}".as_bytes()));
-    let rendered: String = render_policy_event(0, &PolicyEvent::Finding(hostile));
+    let rendered: String = rendered_without_hint(0, &PolicyEvent::Finding(hostile));
     assert_eq!(
         rendered,
         "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"finding\",\"trigger\":\"pre-forward\",\
@@ -242,7 +289,7 @@ fn lists_are_numbered_from_the_first_sequence() {
         },
         PolicyEvent::Finding(finding(Severity::Error)),
     ];
-    let rendered: String = render_policy_events(4, &events);
+    let rendered: String = strip_hint_fields(render_policy_events(4, &events).as_str());
     let mut lines: Vec<&str> = Vec::<&str>::new();
     for line in rendered.lines() {
         lines.push(line);
@@ -256,12 +303,12 @@ fn lists_are_numbered_from_the_first_sequence() {
         );
         assert_eq!(
             format!("{line}\n"),
-            render_policy_event(index as u64 + 4, &events[index])
+            rendered_without_hint(index as u64 + 4, &events[index])
         );
     }
     assert_eq!(
         render_policy_events(0, &events[..1]),
-        render_policy_event(0, &events[0])
+        rendered_without_hint(0, &events[0])
     );
 }
 
@@ -307,7 +354,7 @@ fn a_finding_about_a_name_that_is_not_utf8_adds_path_bytes() {
     let mut latin: FindingEvent = finding(Severity::Warn);
     latin.path = Some(EventPath::from_git_bytes(b"caf\xe9.txt"));
     assert_eq!(
-        render_policy_event(0, &PolicyEvent::Finding(latin)),
+        rendered_without_hint(0, &PolicyEvent::Finding(latin)),
         "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"finding\",\"trigger\":\"pre-forward\",\
          \"policyId\":\"require-root\",\"severity\":\"warn\",\"code\":\"require-root/not-at-root\",\
          \"message\":\"Not at root\",\"path\":\"caf\u{fffd}.txt\",\"pathBytes\":\"Y2Fm6S50eHQ=\",\
@@ -315,7 +362,7 @@ fn a_finding_about_a_name_that_is_not_utf8_adds_path_bytes() {
     );
     let mut utf8: FindingEvent = finding(Severity::Warn);
     utf8.path = Some(EventPath::from_git_bytes("café.txt".as_bytes()));
-    let rendered: String = render_policy_event(0, &PolicyEvent::Finding(utf8));
+    let rendered: String = rendered_without_hint(0, &PolicyEvent::Finding(utf8));
     assert!(
         rendered.contains(",\"path\":\"café.txt\",\"fix\""),
         "{rendered}"
@@ -327,7 +374,7 @@ fn a_finding_about_a_name_that_is_not_utf8_adds_path_bytes() {
 #[test]
 fn an_engine_failure_about_a_name_that_is_not_utf8_adds_path_bytes() {
     assert_eq!(
-        render_policy_event(
+        rendered_without_hint(
             1,
             &PolicyEvent::EngineFailure {
                 code: EngineFailureCode::PolicyIncomplete,
@@ -345,7 +392,7 @@ fn an_engine_failure_about_a_name_that_is_not_utf8_adds_path_bytes() {
 
 /// One rendered fix summary of one changed pass over `paths`.
 fn render_summary(paths: Vec<EventPath>) -> String {
-    return render_policy_event(
+    return rendered_without_hint(
         0,
         &PolicyEvent::FixSummary {
             trigger: Trigger::DirectFix,
@@ -427,7 +474,7 @@ fn concurrent_commit_events_have_the_incumbent_shape() {
         },
     ];
     assert_eq!(
-        render_policy_events(0, events.as_slice()),
+        strip_hint_fields(render_policy_events(0, events.as_slice()).as_str()),
         concat!(
             "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"landing-race-lost\",\"attempt\":2,\"winningOid\":\"abc\"}\n",
             "{\"schemaVersion\":1,\"sequence\":1,\"type\":\"landing-reserved\",\"lostRaces\":2}\n",
@@ -459,13 +506,13 @@ fn a_replay_conflict_over_a_name_that_is_not_utf8_adds_paths_bytes() {
         };
     };
     assert_eq!(
-        render_policy_event(
+        rendered_without_hint(
             0,
             &conflict(vec![EventPath::from_git_bytes(b"a.txt"), EventPath::from_git_bytes(b"caf\xe9.txt")])
         ),
         "{\"schemaVersion\":1,\"sequence\":0,\"type\":\"core-finding\",\"trigger\":\"pre-forward\",\"coreId\":\"concurrent-commit\",\"code\":\"concurrent-commit/replay-conflict\",\"message\":\"refs/heads/main moved while this commit was prepared, and replaying it conflicts with w in a.txt, caf\u{fffd}.txt; nothing landed. The prepared commit p stays in the object store until gc expires it: resolve with git cherry-pick p.\",\"paths\":[\"a.txt\",\"caf\u{fffd}.txt\"],\"pathsBytes\":[\"YS50eHQ=\",\"Y2Fm6S50eHQ=\"],\"winningOid\":\"w\",\"preparedOid\":\"p\"}\n"
     );
-    let utf8: String = render_policy_event(0, &conflict(vec![EventPath::from_git_bytes("café.txt".as_bytes())]));
+    let utf8: String = rendered_without_hint(0, &conflict(vec![EventPath::from_git_bytes("café.txt".as_bytes())]));
     assert!(utf8.contains(",\"paths\":[\"café.txt\"],\"winningOid\""), "{utf8}");
     assert!(!utf8.contains("Bytes"), "{utf8}");
 }
