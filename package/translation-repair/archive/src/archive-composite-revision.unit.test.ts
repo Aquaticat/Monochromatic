@@ -666,6 +666,10 @@ await describe({
           answers: [withAddedLine, withoutThird, RETAIN, RETAIN,],
           best: 3,
         },);
+        // The note on the sheet says what a removal's entry covers, since no line of the composite is its own.
+        expect(prompts.some(function saysRemoval(prompt,): boolean {
+          return prompt.includes('the line that now follows the cut',);
+        },),).toBe(true,);
         const sheet = selectSheetOf({ prompts, },);
         const number = numberOf({ sheet, text: composite, },);
         expect(number,).toBeGreaterThan(0,);

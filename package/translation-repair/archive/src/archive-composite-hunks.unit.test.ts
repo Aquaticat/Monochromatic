@@ -233,29 +233,36 @@ await describe({
       },
     },),
     it({
-      name: `BOUNDS THE TABLE: a block of 1,500 lines all unlike its revision is aligned, and one of 2,100 lines is `
-        + `cut to one hunk, the cell limit being ${  String(ALIGNMENT_CELL_LIMIT,)}`,
+      name: `BOUNDS THE TABLE: a block of 1,500 lines that differ in every other line is aligned into one hunk for `
+        + `each differing line, and one of 2,100 is cut to a single hunk, the cell limit being ${
+         String(ALIGNMENT_CELL_LIMIT,)}`,
       fn: async () => {
+        /**
+         Lines named by position, the odd ones carrying the given word.
+         */
+        function alternating({ count, odd, }: { readonly count: number; readonly odd: string; }): readonly string[] {
+          return Array.from({ length: count, }, function line(_unused, index,): string {
+            return `${(index % 2) === 0 ? 'old' : odd} ${String(index,)}\n`;
+          },);
+        }
+        /** Hunks of a block that fits the table: one for each of the 750 changed lines. */
         const within = hunksBetween({
-          base: Array.from({ length: 1_500, }, function line(_unused, index,): string {
-            return `old ${String(index,)}\n`;
-          },),
-          revision: Array.from({ length: 1_500, }, function line(_unused, index,): string {
-            return `new ${String(index,)}\n`;
-          },),
+          base: alternating({ count: 1_500, odd: 'old', }),
+          revision: alternating({ count: 1_500, odd: 'new', }),
         },);
-        expect(within,).toHaveLength(1,);
+        expect(within,).toHaveLength(750,);
+        /** Hunks of a block that needs more cells than the limit allows. */
         const beyond = hunksBetween({
-          base: Array.from({ length: 2_100, }, function line(_unused, index,): string {
-            return `old ${String(index,)}\n`;
-          },),
-          revision: Array.from({ length: 2_100, }, function line(_unused, index,): string {
-            return `${(index % 2) === 0 ? 'old' : 'new'} ${String(index,)}\n`;
-          },),
+          base: alternating({ count: 2_100, odd: 'old', }),
+          revision: alternating({ count: 2_100, odd: 'new', }),
         },);
         expect(beyond,).toHaveLength(1,);
         expect(beyond[0]?.start,).toBe(1,);
         expect(beyond[0]?.end,).toBe(2_100,);
+        expect(spliceHunks({
+          base: alternating({ count: 2_100, odd: 'old', }),
+          revisions: [beyond,],
+        },).lines,).toEqual(alternating({ count: 2_100, odd: 'new', }),);
       },
     },),
     it({
