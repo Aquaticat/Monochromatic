@@ -643,17 +643,33 @@ Implementation,
    `1dde8c5cd6`
    (the concurrent translation-repair NeuralWatt batch;
    the queued auto-push merges are absorbed).
-   ACTIVE (subagent `572a1354`):
-   fold the two design prerequisites into the extracted core
-   (optional `defaultReviewerModel` field,
-   `selectAdvisorModel` ranking seam),
-   then build `package/dsh-plugin/advisor` (in-process plugin,
-   tool plus `/advisor` command, unified config,
-   `ctx.llm` backend, Q12 selection rule,
-   `doc/planning/pi-advisor-dsh-variant.md` as the blueprint).
-   Parallel (subagent `5b28eefd`):
-   fix the `monochromatic-lint` startup failure
-   (see its incident section).
+   DONE 2026-10-20 (subagent `572a1354`):
+   fold-ins and the DSH plugin landed
+   (`16a22cd7de` `defaultReviewerModel` initial-reviewer behavior,
+   `39d452035a` default-ranking seam in
+   `src/default-ranking.ts`,
+   `effcff526e` `package/dsh-plugin/advisor`,
+   `3583eec279` install outputs,
+   `ff2de2b5a3` synced `main`).
+   Lead-verified:
+   shared advisor and `dsh-plugin/advisor` `lint:types` and
+   `test:unit` green
+   (31 dsh test groups;
+   shared suites cover the Q12 order,
+   the ranking seam permutation guards,
+   and the `defaultReviewerModel` config merge).
+   Capability-gap deviations recorded in the dsh README
+   (runtime pi imports kept external as peer deps,
+   fabricated zero usage on derived history,
+   unknown window 128_000,
+   empty Schemastery `Config` row,
+   no `verify:extension` analogue).
+   ACTIVE (lead):
+   fixture-profile verification,
+   then the Q10 live install
+   (`plugin_manager install_bundle`).
+   Parallel (subagent `5b28eefd`): DONE
+   (see the monochromatic-lint incident section).
 5. Tests, lint, and `mise` tasks for every new and moved package;
    behavior picks recorded per Q5 and Q6
    plus the 2026-10-20 reviewer-fallback decision
