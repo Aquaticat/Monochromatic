@@ -113,3 +113,25 @@ Built on branch `worktree-agent-a4d54af4e63faea6b` (off `a7f8523f0c`).
 - The recorded limit is read when a picture is requested and when it is drawn;
   a device change at run time (a new device with another limit) is posted again through the key,
   but a window that moves to another GPU was not tried.
+
+### Gates of the stacked textures
+
+Run once each, in this order, on tip `89924c2a12` (the tree that this section's commit follows):
+
+- `lint`: 0 findings (clippy, rustfmt, monochromatic-lint including the README and the Rust doc comments, slint).
+  Earlier runs on the way found shadowed bindings, avoidable closures, a file past the 300 line limit
+  (the test-only readers moved to `src/native/gpu_tile/probe.rs`), and semantic line breaks; all fixed.
+- `test:native`: 273 passed, 5 skipped (not selected by the task), 0 failed.
+- `test`: 797 passed, 1 skipped, 0 failed.
+- `test:bin`: 60 passed, 0 failed.
+- `build` (release): finished.
+- `inspect:software-renderer`: the software renderer is not linked, and both positive controls reach it.
+
+Not run: `inspect:source-guards` (it builds disposable copies of the package for every guard).
+Its entries for the minimap were updated by hand:
+`minimap-bands-fit-the-device` became `minimap-bands-uncapped`,
+`minimap-chunk-copy-row` follows the new test and indentation,
+and `minimap-texture-limit-key`, `minimap-texture-runs` and `minimap-texture-top` are new.
+None of the five was executed, so each is unproven until that task runs.
+The two faults tried by hand (see Evidence) are the same as `minimap-texture-top`
+and a variant of `minimap-chunk-copy-row`.
