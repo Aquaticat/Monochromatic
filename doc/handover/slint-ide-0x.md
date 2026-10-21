@@ -1372,22 +1372,32 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     missing `/sys/class/drm` carries the result); `nsc list` afterwards shows no instances. So neither Depot CI nor a
     standard Namespace Linux instance gives this app a GPU; the GPU gates stay local. Unprobed: Namespace Apple
     Silicon Linux early access, other shapes, macOS (Metal, not the Vulkan path the owner accepted).
-    Flake agent `a5d7faec36a652c16` (started 2026-10-21, its own worktree off `origin/main`, branch push only):
-    the six open items of `doc/handover/ide-native-flakes.md` (find-box context menu, annotation stability, minimap
-    external-edit, reply wait in the other fixtures, thread count against video memory, the flaky-test ledger). Its
-    brief quotes `NLG`, `NLD` and `RXI`, allows only the capped stress tool (2 CPUs, 2 GiB) for repeated runs and one
-    full `test:native`. On its report: verify counts and gates myself, scan `ps`, `podman ps` and
-    `systemctl --user list-units`, merge in a scratch worktree, run the gates once, cadence only if product code
-    changed, land, reinstall if the binary changed, remove its worktree and branch.
+    LANDED 2026-10-21, flake agent `a5d7faec36a652c16` (merge tip `3bb3fd2e8e`, contained in `origin/main`): tests and
+    docs only, no product code, so no reinstall and no cadence run. The find-box menu flake is explained and fixed:
+    the test right-clicked where the toolkit clamps the menu under the pointer, and the toolkit runs the entry under
+    the pointer on a release more than 300 ms after the menu appears (a stalled test thread under host load); the test
+    now clicks where the pointer rests on the menu frame, and `a_slow_right_click_leaves_the_find_menu_open` holds the
+    click 400 ms (old position 600 of 600 failed, new position 0 of 600; the original test 0 of 600 either way, so the
+    old load-dependent rate of 2 of 240 and 5 of 480 was not re-measured). A shared `wait_for_highlighting` now covers
+    the other fixtures that open a file (an exposure removed, no failure was ever measured there). The annotation
+    stability tests did not reproduce (1,145 of 1,145 runs of `rows_arriving_in_view_move_only_lines_beneath_them`), so
+    their cause is unknown; every comparison now keeps both frames under `target/flake-frames/` when it fails, and the
+    next failure's frames are read before any change. The minimap external-edit test was deleted with the CPU minimap;
+    its successor passed 120 of 120. No video-memory cap was set (no failure is attributed to it; the override
+    `IDE_CONTAINER_TEST_THREADS` exists). The "Flaky test ledger" is in `doc/handover/ide-native-flakes.md`, with two
+    incomplete entries (`the_view_follows_the_caret_through_every_visual_row` fix unverified; the scroll quiet-time
+    test has no recurrence recorded). Zero tests are under retries. Gates once on the merged tip: `lint`,
+    `test:native` 275 of 275 (5 skipped), `test` 797 of 797, `test:bin`, `build`, `inspect:no-software-renderer` all
+    pass. Not run: a second full `test:native`, guard runners, a capped against uncapped video-memory comparison, runs
+    under host load. The agent's worktree, its 32 GiB `target` copy and its branch (local and remote) are removed; no
+    units or containers were left.
     Open, in order: (1) the unexplained redraw on picture handoff in `src/native/minimap/picture.rs` (the remaining
     identical frames; a cause by measurement first); (2) the flake work, in `doc/handover/ide-native-flakes.md`:
-    fixed with counts (refused-tile test 10 of 360 to 0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160 to 0 of 160); open:
-    `find_box_context_menu_runs_each_entry`,
-    the annotation stability tests (frames kept under `target/flake-frames/`), the minimap external-edit test (13 of 120
-    on baseline), the highlighting-reply wait in `watch_tests::open`, `refresh_latency_tests`, `navigation_tests` and
-    `language/test_support.rs`, the "Flaky test ledger", any retry override, and a lower test thread count (video memory
-    sits at 7.98 of 7.98 GiB in every full run). The one full `test:native` of this landing passed 271 of 271, which
-    is one snapshot, not a flake count. (3) Scale 2, light scheme and seam checks in the app, on a quiet host.
+    fixed with counts (refused-tile test 10 of 360 to 0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160
+    to 0 of 160, find-box menu test by its guard, see the LANDED block above); open: the annotation stability tests
+    (cause unknown, frames kept under `target/flake-frames/` for the next failure), the two incomplete ledger entries,
+    and the video-memory question (7.98 of 7.98 GiB in every full run; no failure attributed). Full `test:native`
+    passes are snapshots, not flake counts. (3) Scale 2, light scheme and seam checks in the app, on a quiet host.
     The prevention proposal `doc/planning/agents-cannot-load-the-host.md` waits for the owner: a fresh Claude session and
     at least two more reviewers must read it first. Stopgap rules `NLG` and `NLD` are in `AGENTS.md`. The entry in
     `doc/limitation/claude.md` ("Delegated GPU migration of the Slint IDE") lists this session's and the agents' mistakes.
