@@ -450,6 +450,28 @@ A provider's published mean that sizes a hold is a placeholder until the pipelin
 and the replacement reads what drives the spread before choosing any multiplier.
 `neuralwatt-estimate.unit.test.ts` pins each figure with the run it came from.
 
+An owner's lift of a ban is applied at the scope the owner's words state (ledger B803).
+"I'm lifting the ban on passing params,
+but only for NeuralWatt" was built for the one call kind that had failed that day,
+the picture reading,
+and the same model ran to its completion cap at the provider's default effort on 11 of 288 text calls over the next four passes,
+three runs in a row on the letter block alone.
+The rule:
+a lift is built for the scope its words name,
+and the kind of call that prompted it is recorded as the evidence for the lift,
+never as its edge;
+a narrower build says in the ledger entry which part of the lift it leaves unused and why.
+A parameter is sent only for a model whose supported values the repo records from the provider's documentation,
+and a model with no recorded list gets none,
+so the lift never becomes a guess at a provider's reply.
+The level is chosen from the distribution of the calls that did not cap,
+read over every pass log that holds the model,
+with the capped calls counted beside them,
+and the entry says that no measurement exists at the chosen level until a keyed run provides one.
+`neuralwatt-text-effort.unit.test.ts` pins the value on the text calls of the model that lists it,
+none on the model that does not,
+and that only the NeuralWatt side of a card can name one.
+
 ## Two layers reading one refusal
 
 What happened:

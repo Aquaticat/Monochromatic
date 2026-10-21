@@ -103,7 +103,7 @@ which lists every file of these commitments.
   the cut one names the length limit and asks for the answer within it,
   keeping any working brief,
   which is prose in the prompt and never a reasoning parameter on the wire.
-- **A reasoning parameter goes on the wire for NeuralWatt picture calls only.**
+- **A reasoning parameter goes on the wire for NeuralWatt calls only.**
   Decided by the owner,
   2026-10-21,
   after the pass for `XingZ6016` lost a picture reading to `glm-5.3-flash` spending its whole completion cap reasoning at
@@ -117,16 +117,21 @@ which lists every file of these commitments.
   "I'm lifting the ban on passing params,
   but only for NeuralWatt."
   The owner's instruction of 2026-08-25 (no thinking,
-  budget or effort key in any body) holds for every other provider and for NeuralWatt text calls.
-  A NeuralWatt card side may name a `pictureReasoningEffort` among the efforts the provider documents for the model
+  budget or effort key in any body) holds for every other provider.
+  The lift was first built for picture calls only (ledger B719),
+  and widened to the text calls of the same seat on 2026-10-21 (ledger B803),
+  because the words name the provider and not the kind of call.
+  A NeuralWatt card side may name a `pictureReasoningEffort` and a `textReasoningEffort` among the efforts the provider documents for the model
   (`low`,
   `high`,
   `max`),
   and only that card type has the field,
   so no other client can send it.
-  `glm-5.3-flash` names `low`,
+  `glm-5.3-flash` names `low` for both,
   unmeasured:
   the first keyed run at that effort is the measurement.
+  `deepseek-v4.1-flash` names none,
+  since the repo records no supported efforts for it.
   `thinking_token_budget` is documented but its support table does not name this model,
   so it is not sent.
 - **A picture reader joins a route only after a keyed measurement of that route.**

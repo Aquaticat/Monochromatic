@@ -589,6 +589,11 @@ Open to the owner's veto:
 `low`,
 not `high`.
 
+Widened on 2026-10-21 (UTC) by B803:
+the lift covers the NeuralWatt text calls of the same seat too,
+and the standing rule of 2026-08-25 now holds for every other provider only,
+where this entry's ruling paragraph said "and for NeuralWatt text calls".
+
 ## B720: the NeuralWatt energy estimate counted a picture as base64 text
 
 Red `7dfd70e7d5`,
@@ -644,3 +649,171 @@ Not done:
 `openrouter-abandoned-spend.ts` estimates an OpenRouter body by the same bytes over four,
 and a picture there has the same overcount.
 The owner's ruling named NeuralWatt.
+
+## B803: a NeuralWatt text call ran at the provider's default reasoning effort
+
+Status:
+fixed on 2026-10-21 (UTC),
+red `b5fd3e9a3bd0ff7794ede7b1475b33167b69e891`,
+fix `109f1b7a7eb927191776a92de8d3df151483ce1c`,
+cache versions none.
+Found in the read of the corpus pass for `zheermao22` (class K1) and fixed in `w263`.
+It widens B719,
+which built the owner's lift for pictures only.
+
+What the run showed:
+four `glm-5.3-flash` calls on NeuralWatt ran to the 18316-token cap with 0 content characters
+(`zheermao22` log lines 514,
+533,
+1983 and 2209,
+at 21:17:32,
+21:20:36,
+21:37:15 and 21:40:06 UTC),
+12.0174 Wh,
+29 percent of the run's NeuralWatt energy.
+The Hyper re-ask of each ran to its own cap three times of four,
+and two recovery rounds waited the full writer grace (180 s and 175 s) and heard nothing.
+The same call on the letter block capped in `zheermao20` and `zheermao21`,
+so it is the third run in a row.
+
+What the code did:
+`neuralwatt-client.ts` took the card's `pictureReasoningEffort` only when the request carried a picture,
+and sent `reasoning_effort` only then.
+B719 had read the owner's two sentences of 2026-10-21
+("NeuralWatt is a special case of all the providers:
+It implements what it documents correctly,
+almost always"
+and
+"I'm lifting the ban on passing params,
+but only for NeuralWatt")
+as covering the call kind that had failed that day.
+The words name the provider,
+not the kind of call.
+
+What was measured,
+keyless,
+from the `SPEND provider=neuralwatt` lines of every pass log in the agent directory except `XingZ6017`,
+which was still being written when this was counted
+(`~/temp/agent/tr-fan/w263-scratch/nw-spend2.ts`,
+outside the repository;
+a picture read is left out by its `read photo` line right after the spend line;
+the cap of each model is `model-cards.ts`):
+
+- `glm-5.3-flash`,
+  288 text calls at the default effort `max`.
+  Cap 18316.
+  Capped:
+  11 (3.8 percent),
+  7 of them on prompts of 11509 to 13908 tokens (the size of the letter block's review,
+  which the reads of `zheermao20` to `zheermao22` name) and 4 on prompts of 7064 to 9451 tokens,
+  and none a picture (the capped call of `XingZ6016` is the picture of B718,
+  8188 prompt tokens,
+  not counted).
+  Uncapped,
+  277 calls:
+  p50 2125,
+  p75 3950,
+  p90 7573,
+  p95 10778,
+  p99 15731,
+  largest 18262.
+  Of the uncapped,
+  9 passed 12000,
+  5 passed 14000 and 2 passed 16000.
+  Of the 31 calls past 9158 (half the cap),
+  11 capped.
+- `deepseek-v4.1-flash`,
+  819 text calls at its default effort `high`.
+  Cap 13082.
+  Capped:
+  12 (1.5 percent).
+  Uncapped,
+  807 calls:
+  p50 802,
+  p90 2840,
+  p99 9121,
+  largest 11591.
+
+The choice:
+`low` on the GLM seat's text calls.
+The brief's test is whether the uncapped calls sit well under the cap or crowd it.
+The bulk sits well under (p90 at 41 percent),
+but the tail does not:
+p99 is at 86 percent of the cap,
+the largest uncapped call is 54 tokens short of it,
+and a call that reaches half the cap capped in 11 of 31 cases.
+`high` is the other candidate.
+DeepSeek runs at `high` by default and capped on 1.5 percent of its calls,
+so `high` is not shown to cure the runaway.
+No measurement exists at `high` or at `low` for text on this seat;
+the first keyed run at `low` is the measurement,
+and a shallower effort may cost editing quality that the cap-outs never showed.
+
+DeepSeek V4.1 Flash:
+no effort is sent.
+The repo records its default (`high`,
+`neuralwatt-catalog.ts`) and that reasoning is on by default
+(`doc/decision/translation-repair-neuralwatt-provider.md`),
+and records no `supported_efforts` list for it.
+B719 lists the supported efforts for GLM-5.3-Flash alone.
+Nothing the repo holds documents a value to send.
+
+The fix:
+`NeuralWattCard` carries `textReasoningEffort` beside `pictureReasoningEffort`,
+the catalog row copies it,
+and the client sends the picture effort for a request that carries a picture and the text effort otherwise.
+Only the GLM seat's NeuralWatt side names one.
+No other provider's card type has the field.
+`neuralwatt-text-effort.unit.test.ts` pins `low` on a plain and on a schema call to the GLM seat,
+none on the DeepSeek seat,
+and that the only card sides naming a text effort are NeuralWatt's GLM side,
+at a level the listing documents.
+`neuralwatt-client.unit.test.ts` pins the body of both seats,
+and `owner-body-rules.unit.test.ts` still expects no forbidden key in the body of any other provider.
+The red cases failed with `expected undefined to equal 'low'` and an empty list of naming card sides.
+
+The retry at `low` before the next-seat re-ask was checked and not built:
+B718 re-asks a picture reading once with the next perspective,
+which changes the message bytes.
+A text call has no such text to change.
+The payload store keys a reply on the model and the message bytes alone
+(`prompt-uniqueness-client.ts`),
+so a second ask of the same bytes returns the stored empty reply,
+and the nudged re-ask goes to another provider on purpose
+(`nudged-reask.ts`:
+"the same bytes asked again would be the same sample").
+With `low` sent from the first ask,
+a retry at `low` would repeat the first ask.
+
+Cache versions:
+none moves.
+No slice-cache key hashes a request parameter:
+the keys hash the version,
+the shape of the run and the texts,
+and the reasoning for the call deadline (`perCallTimeoutMs`,
+"changes how long a voice has to answer,
+not what it is asked") holds for an effort.
+The payload store sits under the run's own runs directory (`runs-layout.ts`,
+`PROMPT_PAYLOADS_DIR`),
+so a new run starts with none,
+and a resume of a run begun before the change reads replies already paid for at the old effort,
+which is wanted.
+This is the reading B719 took for the picture effort ("No key moves").
+
+Limits:
+the energy matrix the meter estimates from was drawn at the default efforts,
+so a call at `low` holds more than it uses;
+the settlement replaces the hold with the measured energy.
+The hold is larger than needed,
+never smaller.
+
+Open to the owner's veto:
+`low`,
+not `high`,
+for text.
+Changing it is the value in `neuralwatt-card-sides.ts`.
+
+Recurrence:
+`mistake-prevention-inputs-defaults-and-values-read-from-text.md`,
+"Provider fields read by their documentation":
+an owner's lift is built at the scope its words name.
