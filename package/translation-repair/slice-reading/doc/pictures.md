@@ -61,8 +61,20 @@ so a model withheld on the provider that would serve it reads nothing that entry
 The bench is counted by the providers that can show a picture (`visionReachOf`),
 not by the ones that serve the model text,
 and the `JUDGE SEATS` line prints `seeing=` beside `readers=` (ledger B722).
-`gemma-4-26b-a4b-it` is listed as reading pictures on OpenRouter but held out of that reach by
-`openrouter-pictures-unmeasured` until `reader-measure` passes (ledger B721 and B723).
+`gemma-4-26b-a4b-it` was listed as reading pictures on OpenRouter but held out of that reach by
+`openrouter-pictures-unmeasured` until `reader-measure` passed (ledger B721 and B723).
+It passed on 2026-10-21 (UTC) and the hold was lifted:
+a first and a second run (08:44 UTC and 08:48 UTC) matched 3 of 291 pictures to 3 recent trusted records
+and were not measured,
+since the recent runs directories hold picture readings of one entry only (ledger B800),
+and a third run (09:02 UTC) over 192 trusted records of 10 entries read 9 pictures,
+all of them corroborated by every seated reading of their picture and none by none,
+against a seated floor of 1.00 and ceiling of 0.00 over 43 readings.
+The 9 pictures came from two entries (Mio 7,
+Toka_ls 2),
+which is the limit of the verdict,
+and the measurement cost 15 calls.
+`roster-changes.md` in the family `doc/` carries the full account.
 Corroboration still requires independent agreement,
 and a declined reading is still asked again up to four times.
 The corpus-wide retry measurement predates the current reader roster

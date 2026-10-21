@@ -401,6 +401,7 @@ which lists every file of this record.
 - [B731 to B732, the polish gate's claims and the order of reason and vote](audit-ledger-polish-gate-claims-and-reason-order.md)
 - [B733, labels and counts in messages](audit-ledger-labels-and-counts-in-messages.md)
 - [B734, output decided by arrival order](audit-ledger-output-decided-by-arrival-order.md)
+- [B800, runner reports and probes](audit-ledger-runner-reports-and-probes.md)
 - [B801 to B802, tests touching the real world](audit-ledger-tests-touching-the-real-world.md)
 - [D1 to D11, docs and comments that disagreed with the code](audit-ledger-docs-against-code.md)
 - [D12, doc conventions and their guards](audit-ledger-doc-conventions-and-their-guards.md)

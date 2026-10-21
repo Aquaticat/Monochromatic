@@ -185,7 +185,9 @@ and each task sets it to its own name.
   against the picture readings the pipeline already stored,
   and says whether both clauses of the reader rule are met and which hold to lift.
   It builds the OpenRouter client itself,
-  because the router keeps pictures off that route while the card's `openrouter-pictures-unmeasured` hold stands.
+  because the router keeps pictures off that route while a card carries the `openrouter-pictures-unmeasured` hold
+  (no card carries it since `gemma-4-26b-a4b-it` was measured on 2026-10-21 (UTC),
+  and the account of that measurement closes this entry).
   Usage after `--`:
   `--trusted <runs dir>` (repeatable),
   `--pictures <people dir>`,
@@ -194,6 +196,31 @@ and each task sets it to its own name.
   Needs `TRANSLATION_REPAIR_OPENROUTER_API_KEY`.
   Spends the OpenRouter key:
   one ask per matched picture.
+  Where the trusted records live:
+  a `--trusted` directory holds runs directories,
+  and a runs directory holds a record when its `slice-cache/<entry>/` holds `picture.<key>.json` files.
+  The recent `corpus-pass-*` runs directories hold few of them,
+  all for one entry in the case of 2026-10-21 (UTC),
+  and the older single-entry runs directories hold most:
+  107 of them held 450 files and 192 distinct trusted reading sets across 10 entries.
+  A run that matches too few pictures needs `--trusted` directories of other entries,
+  and a larger `--sample` cannot help once every picture has been tried.
+  The report prints the `ENTRIES:` line (the matched pictures counted by entry),
+  the `SEATED:` band and the `CANDIDATE:` line (the candidate's reading count and both shares beside the band's floor
+  and ceiling),
+  so a verdict is checked from the printout and a narrow sample is visible.
+  The measurement of 2026-10-21 (UTC):
+  three runs of `gemma-4-26b-a4b-it` through OpenRouter with zero data retention at `--sample 9`.
+  The first (08:44 UTC) and second (08:48 UTC) named the recent runs directories
+  (the second adding the full-corpus pass of 2026-08-19),
+  matched 3 of 291 pictures and were not measured (ledger B800).
+  The third (09:02 UTC) named 107 older runs directories,
+  matched 9 pictures from two entries (Mio 7,
+  Toka_ls 2),
+  and met both clauses (seated floor 1.00 and ceiling 0.00 over 43 readings),
+  so the hold was lifted.
+  It spent 15 calls (3,
+  3 and 9).
 - `model-health`:
   asks every roster model one trivial structured question and reports what came back,
   so a schema mismatch can be told apart from a dead model.

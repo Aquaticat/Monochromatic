@@ -136,3 +136,5 @@ which lists every file of these commitments.
   `gemma-4-26b-a4b-it` is listed as reading pictures on OpenRouter (zero data retention on every request),
   held shut by `openrouter-pictures-unmeasured` until `reader-measure` in the bench package reports both clauses met,
   and the bench of readers is counted by the providers that can show a picture (ledger B721 to B723).
+  The measurement met both clauses on 2026-10-21 (UTC) and the hold was lifted from that card
+  (`roster-changes.md` has the three runs and their limit).

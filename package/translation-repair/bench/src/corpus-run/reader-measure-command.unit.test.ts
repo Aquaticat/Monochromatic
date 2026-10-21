@@ -6,8 +6,11 @@
  WHAT THEY PIN: a candidate that answers as the seated readers do passes both
  clauses and is told the one edit to make; a candidate that answers with
  something else fails and is told to keep the hold; a measurement with nothing
- to hold the candidate to, or nothing to try, is refused by name; and the
- per-picture lines name what the candidate gave.
+ to hold the candidate to, or nothing to try, is refused by name; the
+ per-picture lines name what the candidate gave; the report prints the
+ candidate's rates beside the band and the entries the pictures came from; and
+ a run whose trusted records matched too few pictures is told to find more
+ trusted records, not to ask for a larger sample.
 
  Fixtures are cat-themed invention.
 
@@ -120,6 +123,9 @@ async function seeded({ root, }: { readonly root: string; },): Promise<{ readonl
 
  @param reply - text the candidate answers
 
+ @param readable - how many of the pictures the deterministic reader finds text in, the rest being
+ pictures no trusted record can match
+
  @returns Lines printed
 
  @example
@@ -127,7 +133,17 @@ async function seeded({ root, }: { readonly root: string; },): Promise<{ readonl
  const lines = await printed({ root: scratch.path, reply: NOTICE, },);
  ```
  */
-async function printed({ root, reply, }: { readonly root: string; readonly reply: string; },): Promise<readonly string[]> {
+async function printed(
+  {
+    root,
+    reply,
+    readable = MINIMUM_PRODUCED_READINGS,
+  }: {
+    readonly root: string;
+    readonly reply: string;
+    readonly readable?: number;
+  },
+): Promise<readonly string[]> {
   const { runs, people, } = await seeded({ root, },);
   /**
    Lines the command printed.
@@ -142,8 +158,18 @@ async function printed({ root, reply, }: { readonly root: string; readonly reply
       apiKey: 'whisker-key-7421',
     },
     client: answering({ reply, },),
-    readOcr: async () => {
+    readOcr: async ({ assetName, }) => {
       await Promise.resolve();
+      if (!Array.from({ length: readable, }, function named(_unused, index,): string {
+        return `notice${String(index,)}.webp`;
+      },).some(function matches(name,): boolean {
+        return assetName.endsWith(name,);
+      },)) {
+        return {
+          kind: 'no-text' as const,
+          characters: 0,
+        };
+      }
       return {
         kind: 'read' as const,
         text: NOTICE,
@@ -170,6 +196,23 @@ await describe({
         expect(text,).toContain('both clauses met',);
         expect(text,).toContain('openrouter-pictures-unmeasured',);
         expect(text,).toContain('notice0.webp',);
+        expect(text,).toContain(
+          'CANDIDATE: 6 readings; corroborated by all 1.00 (floor 1.00), corroborated by none 0.00 (ceiling 0.00).',
+        );
+        expect(text,).toContain('ENTRIES: 6 matched pictures came from 1 entry: Mittens 6.',);
+      },
+    },),
+
+    it({
+      name: 'TELLS A RUN WHOSE TRUSTED RECORDS MATCHED TOO FEW PICTURES to find more trusted records, not to ask for a larger sample',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'whiskers-reader-measure-', },);
+        const text = (await printed({ root: scratch.path, reply: NOTICE, readable: 2, },)).join('\n',);
+        expect(text,).toContain('MEASURED: gemma-4-26b-a4b-it through OpenRouter (zero data retention), 2 pictures matched',);
+        expect(text,).toContain('ENTRIES: 2 matched pictures came from 1 entry: Mittens 2.',);
+        expect(text,).toContain('more trusted records are needed',);
+        expect(text,).toContain('the 1 trusted record matched 2 of the 6 pictures',);
+        expect(text,).not.toContain('larger --sample',);
       },
     },),
 

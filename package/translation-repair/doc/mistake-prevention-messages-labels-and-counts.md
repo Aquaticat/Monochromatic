@@ -419,6 +419,13 @@ and states separately whether the slice's text changed in this run.
 `repair-cache-gate.unit.test.ts` reads the line for a changed slice and an unchanged one.
 A refusal reason written for one effect is read for the others it does not have.
 
+A bench's NEXT advice names the input that actually limited the result (ledger B800):
+`reader-measure` told runs whose 3 trusted records matched 3 of 291 pictures to ask again with a larger `--sample`,
+which could add no picture because every picture had been tried,
+so the advice is chosen by reading which input ran out (the records,
+the sample or the candidate's answers)
+and `renderMeasureReport` cases pin each of the three.
+
 ## Counts that include calls never made
 
 What happened:

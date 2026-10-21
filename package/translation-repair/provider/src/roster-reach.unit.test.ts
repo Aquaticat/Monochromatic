@@ -399,18 +399,18 @@ await describe({
         },),
 
         it({
-          name: 'SENDS gemma pictures through Bedrock alone until its OpenRouter transcription is measured: the '
-            + 'listing reports image input there (2026-10-21) and the hold `openrouter-pictures-unmeasured` keeps '
-            + 'the route shut, so a field of the listing alone cannot widen the reader roster',
+          name: 'SENDS gemma pictures through Bedrock and OpenRouter since its OpenRouter transcription was measured '
+            + '(2026-10-21, both clauses of the reader rule met): the card carries no `openrouter-pictures-unmeasured` hold '
+            + 'and the listing\'s image input reaches the vision roster',
           fn: async () => {
             expect(OPENROUTER_MODELS['google/gemma-4-26b-a4b-it'].readsImages,).toBe(true,);
-            expect(MODEL_CARDS[SEAT_HYPER_TEXT_BEDROCK].holds,).toContain('openrouter-pictures-unmeasured',);
+            expect(MODEL_CARDS[SEAT_HYPER_TEXT_BEDROCK].holds,).not.toContain('openrouter-pictures-unmeasured',);
             expect(visionReachOf({ modelId: SEAT_HYPER_TEXT_BEDROCK, },),).toEqual({
               neuralwatt: false,
               synthetic: false,
               hyper: false,
               bedrock: true,
-              openrouter: false,
+              openrouter: true,
             },);
             expect(visionReachOf({ modelId: SEAT_BEDROCK_ONLY_TEXT, },),).toEqual({
               neuralwatt: false,

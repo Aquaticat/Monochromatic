@@ -678,3 +678,101 @@ and restart the rotation at `zheermao101`.
 
 The sweep's salts covering a bench of at most nine seats is already recorded
 (`package/translation-repair/doc/audit-ledger-output-decided-by-arrival-order.md`).
+
+The katex shim and the rounds behind it,
+2026-10-21:
+
+- w259 landed as `6d525ca189` after gate g142
+  (2732 pass,
+  0 fail)
+  and a clean rotation sweep.
+- w260's gate g143 was green,
+  but its rotation sweep failed at load under salts 4 to 9,
+  every file with `ERR_MODULE_NOT_FOUND` for `katex`.
+  The cause was outside the repository:
+  scratch worktrees sat under a directory whose own `node_modules`,
+  another session's npm install,
+  had answered imports the workspace does not declare,
+  and that install was rewritten without `katex` at 17:10:03 UTC
+  (ledger B801 and B802).
+- The w262 round replaced the override `'micromark-extension-math>katex': '-'`
+  with a workspace shim,
+  `package/shim/katex`,
+  whose every member throws a named error;
+  the corpus-pass build digest did not move.
+  Its first gate in a worktree with no `node_modules` above it
+  (`~/worktrees/tr-w262`)
+  found a second undeclared resolution,
+  in `consistency/src/consistency-shown-kinds.unit.test.ts`,
+  fixed in `e32aed4101`.
+  Gate g145 on that commit was green
+  (2732 pass,
+  0 fail)
+  and its rotation sweep clean under salts 0 to 9.
+- Main had moved its lockfile meanwhile,
+  so w262 was merged with main as `b04b10b083`,
+  and gate g146 runs on that merge before it lands.
+- w260 was moved to `~/worktrees/tr-w260`
+  and merged with `b04b10b083` as `1eabd8c9ff`
+  (one index-list conflict,
+  both sides kept).
+- Gates and sweeps now run only in worktrees under `~/worktrees`,
+  which has no `node_modules` above it;
+  the gate script refuses any other worktree.
+
+The landings and the restart,
+2026-10-21:
+
+- Gate g146 on the w262 merge failed lint:
+  oxlint 1.89.0,
+  which main had taken in `148f47c951`,
+  added `unicorn(prefer-string-raw)`,
+  and 18 test files wrote backslash-bearing strings as escapes.
+  `b81dbe9b0c` rewrote those 106 lines as `String.raw`,
+  each value unchanged,
+  and gate g147 was green
+  (2732 pass,
+  0 fail).
+  w262 landed as `c0d0325899`.
+- w260,
+  merged with `b81dbe9b0c` and main,
+  had gate g148 green at `2a336603bf`
+  (2732 pass,
+  0 fail)
+  and a clean rotation sweep under salts 0 to 9;
+  it landed as `2a336603bf`.
+- Corrective comments were posted on `b1a88def13`
+  (commitcomment-206042846:
+  9 of 14 cases failed before the fix,
+  not 9 of 15)
+  and on `97e17dc6dc`
+  (commitcomment-206042849:
+  the run package's readers-bench cases stay red from that commit until `d1e463bb46`).
+- The branch worktree was rebuilt at `2a336603bf`.
+  The corpus-pass build digests to
+  `sha256-tree-v1:5d4265dfab83b5a6e61b5b8c23d597519c7ca24293065473c883ec82af54c78c`
+  there and in the gated `tr-w260` alike,
+  and the launcher holds that digest as the rotation's frozen build.
+  No second sweep ran:
+  the clean sweep was on the same commit.
+- `zheermao22`
+  (entry `zheermao101`)
+  started at 21:05:30 UTC,
+  and its START line names the frozen digest.
+
+Next,
+in order:
+read `zheermao22` when it ends,
+then continue the rotation with `CuspariaKLSY`,
+`XingZ60`,
+`yingying`,
+`hulicaijia`,
+`mikaela_khara`,
+`shi_Yumiaoya`
+and `TianqiChen666`.
+The `@deepseek-ai/dsh-*` lockfile drift
+(alpha.4 to rc.2,
+from `package/dsh-plugin`)
+is another session's and stays out of these commits.
+Whether oxlint 1.89.0 also breaks lint in packages outside translation-repair is unmeasured;
+those packages are other owners'.
