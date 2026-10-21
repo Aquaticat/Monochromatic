@@ -201,14 +201,14 @@ From [the handover](../handover/translation-repair-handover-2026-09-06-neuralwat
 - K1,
   K2,
   K3 and the run-off line that says "2 tied finalists" for what was a plurality (`translate-runoff.ts:90`)
-  are fixed in one scratch worktree,
+  are to be fixed in one new worktree,
   and K4 in a second.
-  Each is gated and landed,
+  Each is to be gated and landed in turn,
   then the branch worktree is rebuilt once no pass runs there,
   its digest taken and its rotation sweep run,
   and the rotation restarts at `zheermao23`.
 - Meanwhile the rotation continues on `2a336603bf` for evidence:
-  the read of `CuspariaKLSY22` is finished,
+  the read of `CuspariaKLSY22` is to be finished,
   `XingZ6017` is read when it ends,
   and then the rotation continues with `yingying`,
   `hulicaijia`,
