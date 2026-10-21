@@ -529,6 +529,26 @@ and a 0.372 Wh gap between the meter and the account.
 The 抢救 rendering "doctors fought to save her" is the glossary's on purpose.
 Classes found there are fixed before gate g139 too,
 since a restarted rotation would meet them again.
+
+The owner rebooted the machine on 2026-10-21 with three agents halted mid-task,
+each told to write its state down first;
+no pass,
+gate or sweep unit was running.
+Resume each from its own handover:
+
+- w257 follow-ups
+  (composite evidence,
+  the source-context lookup,
+  the launch-line note):
+  `/var/home/user/temp/agent/tr-fan/w257-notes/handover.md`,
+  commits in w257 on top of `0818ca282a`.
+- Picture bench investigation:
+  the "Handover" section of `/var/home/user/temp/agent/x15-fix/reads/XingZ6016-pictures.md`.
+- Tracing the two reads' findings:
+  the "Handover" section of `/var/home/user/temp/agent/x15-fix/reads/rotation-21-classes.md`.
+
+The reads themselves are `zheermao21-read.md` and `CuspariaKLSY21-read.md` beside them,
+not yet recorded in the pass log of 2026-10-21.
 An investigation of the picture bench runs
 (why GLM replied empty,
 which wet vision readers could replace the Bedrock seats);
