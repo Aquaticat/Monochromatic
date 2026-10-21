@@ -154,9 +154,12 @@ each uses an empty export as given.
     Read only when the quota reply carries no usable `subscription.current_period_start`;
     the quota's own period start wins when both exist.
     When neither gives a time of day the day is unknown:
-    NeuralWatt is refused for the run,
-    marked dry,
+    NeuralWatt is marked dry and refused until it is learned,
     with one warning naming the missing field and both remedies.
+    The quota is then read again,
+    no sooner than 60 seconds after each failed attempt,
+    so a transient failure at the start of a run does not refuse NeuralWatt for the whole run;
+    the day finally learned is logged with its source.
     There is no midnight fallback,
     since an assumed 00:00 UTC would count the wrong day's energy.
     A value that is not `HH:MM` is refused at once.

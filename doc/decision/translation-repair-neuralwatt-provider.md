@@ -268,9 +268,13 @@ The key's value is masked in every logged exchange by the same credential maskin
 - **The owner's other use of covered models.**
   The free energy is per account.
   Anything the owner runs on DeepSeek V4.1 Flash or GLM-5.3-Flash outside this pipeline spends the same 550 Wh,
-  and the ledger does not know it.
-  The ledger can then say energy is left when the account has none,
-  and the owner's plan is charged for the calls sent past that point.
+  and the ledger alone does not know it.
+  The account-wide count ("The day boundary and the account-wide count") reads it back from the by-model usage
+  on every meter reading,
+  so the stop now sees that use,
+  tracking-alias calls included,
+  as of the last reading;
+  a call the owner makes between two readings is still unseen until the next one.
   No per-request field tells free energy from plan energy
   (the first keyed call reported a cost on a free request).
   The quota difference in the spend report is the only signal of plan energy spent,
@@ -348,7 +352,7 @@ The owner,
 `The stop logic should obviously count total free energy used per day. Every neuralwatt day starts at 15:15`.
 Two read-only calls the same minute
 (no inference;
-raw output in `/var/home/user/temp/agent/x15-fix/neuralwatt/usage-probe.out` and `quota-shape.out`)
+the raw output was kept outside the repository)
 settled both points.
 
 - **The day starts at 19:15 UTC.**
@@ -378,8 +382,90 @@ never less than the ledger's own settled lines,
 plus the calls in flight;
 the meter's blind spot for the owner's other use,
 in "What the meter cannot see",
-closes when that lands.
+closed when that landed.
 Ledger P17 in `package/translation-repair/doc/audit-ledger-providers-routing-and-seating.md` records the miss.
+
+### What landed
+
+- **The anchor and where it comes from.**
+  A NeuralWatt day is the 24 hours from the latest instant,
+  at or before now,
+  whose UTC time of day is that of the quota's `subscription.current_period_start`.
+  Where the quota gives none,
+  `TRANSLATION_REPAIR_NEURALWATT_DAY_START` (`HH:MM`,
+  UTC) does;
+  where neither does,
+  the day is unknown and NeuralWatt is dry and refused,
+  with one warning that names the missing field and both remedies.
+  There is no midnight fallback,
+  since an assumed 00:00 UTC would count the wrong day's energy.
+  Run start logs the anchor and its source.
+- **An unknown anchor is tried again.**
+  Only a known anchor is kept for the run.
+  While it is unknown,
+  a later reading or call reads the quota afresh
+  (not the failed starting reading),
+  no sooner than 60 seconds after the last failed attempt on the injected clock;
+  calls in between stay refused.
+  The outage is warned about once,
+  and the day finally learned is logged with its source.
+  One transient quota failure at the start of a run therefore no longer sends the whole run to a paid provider.
+- **What a day has spent.**
+  The larger of the account's covered energy since the anchor and the ledger's own settled energy since it,
+  never their sum,
+  plus the holds of calls in flight.
+  The ledger's days are the anchored days too.
+  The by-model reply's echoed `period` is checked against the window asked,
+  and a reply for another window is refused.
+  With the route unreadable,
+  the last figure for the same day stands,
+  else the ledger counts alone,
+  with one warning per outage that names the endpoint and the status.
+  `energy_kwh` is consumed energy,
+  so a flex row is counted at more than it was charged,
+  which errs on the safe side.
+- **Tracking aliases count.**
+  A call made under an alias such as `nw-flash` shows in `products[]` with the alias as its `requested_model`,
+  so a count of card ids alone would miss the owner's DeepSeek V4.1 Flash use through it.
+  `GET /v1/models` is read at each account reading,
+  and an entry counts,
+  with its `-flex` twin,
+  when its `metadata.huggingface_id` equals that of a covered model's own entry,
+  so an alias that moves is followed.
+  With that listing unreadable,
+  every `nw-` row that is not a speed lane and was served by a covered model counts,
+  with one warning per outage.
+  Speed lanes never count.
+- **The key's own cap.**
+  The owner set a 1 kWh daily limit on this key on 2026-10-20.
+  The quota reports it as `key.allowance`,
+  which still read `null` that day,
+  so what a live cap reports is unconfirmed;
+  the pipeline reads only the fields the schema states.
+  A blocked cap holds NeuralWatt dry until its `reset_at`,
+  or until the next day's anchor where it names none,
+  with a warning;
+  a cap that will not read is warned about once and ignored.
+  The 550 Wh is under the 1 kWh,
+  so the cap is a backstop and the free-energy stop stays the primary one.
+- **The cost of the count.**
+  Each account reading makes three GET requests:
+  the quota (for the cap),
+  the models listing and the by-model usage.
+  The budget layer reads the meter every 60 seconds.
+  The `METERS` line carries `neuralwattAccountWh`,
+  `neuralwattDayStart` and the cap's fields beside the two it had.
+
+### Assumptions left
+
+- A flex twin is named `<id>-flex`.
+  The catalog names none,
+  and the listing's own twin entries are read when it has them.
+- The anchor is kept to the second (`19:15:08`),
+  as the quota reports it;
+  whether the service's day boundary is the second or the minute is not measured.
+- The cap's USD figures are not converted to energy,
+  and no kWh field is invented for it.
 
 ## Not verifiable without a key
 
