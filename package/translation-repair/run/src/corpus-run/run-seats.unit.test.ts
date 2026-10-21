@@ -45,6 +45,7 @@ import {
 import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+  SEAT_HYPER_ONLY,
   SEAT_OPENROUTER_DECISIONS,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_OPENROUTER_ONLY,
@@ -349,6 +350,29 @@ await describe({
         expect(seats.roster.includes(KIMI,),).toBe(false,);
         expect(seats.roster.length,).toBe(RUN_ROSTER.length - 1,);
         expect(seats.withheld,).toEqual([KIMI,],);
+      },
+    },),
+    it({
+      name: 'NAMES AS UNSERVED THE SEATED SEATS NO WET PROVIDER SERVES, once each and in bench order, and none while '
+        + 'every seated seat is served or the seat is not seated at all (zheermao20: glm-5.3 and Qwen3.8-27B after '
+        + 'Synthetic ran dry with Hyper dry from the start)',
+      fn: async () => {
+        /** NeuralWatt, Bedrock and OpenRouter wet, Synthetic and Hyper dry. */
+        const syntheticAndHyperDry: BudgetView = {
+          neuralwatt: false,
+          synthetic: true,
+          hyper: true,
+          bedrock: false,
+          openrouter: false,
+        };
+        /** Benches read under that view. */
+        const seats = judgeSeatsFor({ dry: syntheticAndHyperDry, },);
+
+        expect(seats.unserved,).toEqual([QWEN, SEAT_HYPER_ONLY,],);
+        expect(seats.roster.includes(SEAT_HYPER_ONLY,),).toBe(true,);
+        expect(judgeSeatsFor({ dry: ALL_WET, },).unserved,).toEqual([],);
+        // QWEN is not seated here, since Hyper would serve it too slowly, so it is not named unserved either.
+        expect(judgeSeatsFor({ dry: SYNTHETIC_DRY, },).unserved,).toEqual([],);
       },
     },),
   ],

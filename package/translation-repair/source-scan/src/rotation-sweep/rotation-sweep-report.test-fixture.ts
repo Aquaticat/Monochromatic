@@ -221,6 +221,63 @@ export type SweepOutcome = {
 };
 
 /**
+ A case that failed under at least one salt, with the salts that failed it.
+ */
+type CaseBySalts = {
+  /**
+   The case and its file.
+   */
+  readonly failed: FailedCase;
+  /**
+   The salt that failed it first, which reruns it alone.
+   */
+  readonly firstSalt: number;
+  /**
+   Every salt that failed it, in the order the salts ran.
+   */
+  readonly salts: readonly number[];
+};
+
+/**
+ The cases a sweep's salts failed that salt 0 passed, each once with every salt that failed it.
+
+ @param outcome - what the sweep found
+
+ @returns The cases in the order their first salt ran
+
+ @example
+ ```ts
+ const cases = casesBySalts({ outcome: { results: [], redAtSaltZero: [], }, },);
+ ```
+ */
+export function casesBySalts({ outcome, }: { readonly outcome: SweepOutcome; },): readonly CaseBySalts[] {
+  /**
+   Salts that fail each case, by file and tags.
+   */
+  const saltsOf = new Map<string, CaseBySalts>();
+  for (const result of outcome.results) {
+    for (const failed of result.failures) {
+      saltsOf.set(
+        caseKey({ failed, },),
+        {
+          failed,
+          firstSalt: saltsOf.get(caseKey({ failed, },),)
+            ?.firstSalt
+            ?? result.salt,
+          salts: [
+            ...saltsOf.get(caseKey({ failed, },),)
+              ?.salts
+              ?? [],
+            result.salt,
+          ],
+        },
+      );
+    }
+  }
+  return [...saltsOf.values(),];
+}
+
+/**
  Lines that report a sweep's outcome: every failing case with the salts that fail it, the flakes, the cases red with no shift, and the verdict.
 
  @param outcome - what the sweep found
@@ -234,32 +291,13 @@ export type SweepOutcome = {
  */
 export function reportLines({ outcome, }: { readonly outcome: SweepOutcome; },): readonly string[] {
   /**
-   Salts that fail each case, by file and tags.
+   Cases failed under a salt that salt 0 passes.
    */
-  const saltsOf = new Map<string, {
-    readonly failed: FailedCase;
-    readonly salts: readonly number[]
-  }>();
-  for (const result of outcome.results) {
-    for (const failed of result.failures) {
-      saltsOf.set(
-        caseKey({ failed, },),
-        {
-          failed,
-          salts: [
-            ...saltsOf.get(caseKey({ failed, },),)
-              ?.salts
-              ?? [],
-            result.salt,
-          ],
-        },
-      );
-    }
-  }
+  const cases = casesBySalts({ outcome, },);
   /**
    Lines of the report.
    */
-  const lines: string[] = [...saltsOf.values(),].map(function failLine({
+  const lines: string[] = cases.map(function failLine({
     failed,
     salts,
   },): string {
@@ -274,7 +312,7 @@ export function reportLines({ outcome, }: { readonly outcome: SweepOutcome; },):
     lines.push(`red with no shift (salt 0), which cannot be read against the salts: ${caseKey({ failed: red, },)}`,);
   }
   lines.push(
-    `rotation sweep: cases failing under a salt that salt 0 passes ${String(saltsOf.size,)}, cases red with no shift ${
+    `rotation sweep: cases failing under a salt that salt 0 passes ${String(cases.length,)}, cases red with no shift ${
       String(outcome.redAtSaltZero
         .length,)
     }`,

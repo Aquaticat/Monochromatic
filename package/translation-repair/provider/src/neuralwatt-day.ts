@@ -273,6 +273,12 @@ export function neuralWattDayAfter({ start, }: { readonly start: Date; },): Date
 }
 
 /**
+ Seconds between a failed read of the quota and the next attempt to read it for the same purpose: the cadence of the
+ budget layer's meter readings, shared by the day anchor keeper and the quota session's starting reading.
+ */
+export const NEURALWATT_QUOTA_RETRY_SECONDS = 60;
+
+/**
  An instant some seconds after another.
 
  @param from - the instant

@@ -316,7 +316,7 @@ The guard stops a start nobody meant,
 a built file run by hand from a shell that happens to hold keys;
 it is not access control.
 
-Every command ends by printing one `SEAT <model> asked=N usable=N unusable=N threw=N abandoned=N` line per seat to stderr,
+Every command ends by printing one `SEAT <model> asked=N usable=N unusable=N threw=N abandoned=N unreachable=N` line per seat to stderr,
 and a `SEATS DARK:` line naming every seat that was asked and never once produced a usable answer.
 `asked` counts calls that settled.
 `abandoned` counts calls the caller left before they settled,
@@ -324,10 +324,23 @@ chiefly the replies a round cut at its straggler deadline after quorum;
 they are in no other column,
 so a seat with a large `abandoned` was waited on less often than `asked` says
 and is neither withheld nor named dark for them.
-A dark seat is a provider that cannot serve it,
-a key that was never injected,
+`unreachable` counts calls the provider router refused with `NoProviderForModelError` before any request was sent,
+because no wet provider serves the seat (or the owner culled it);
+since 2026-10-21 they are in no other column either
+(audit ledger B711),
+where before that they were counted as `asked` and `threw`.
+A seat only the router refused prints `asked=0` and its `unreachable` count,
+is never withheld by the tally and is not named dark,
+since it was never asked;
+the `unserved=` field of the `JUDGE SEATS` lines names it while it sits on a bench.
+The `SEATS DARK:` line states its count over the seats asked.
+A dark seat is a provider that errors on it
 or a model that answers nothing readable;
 the run log names which.
+A seat no provider could take at all,
+because its provider has no key or no wet provider serves it,
+is refused by the router before any request,
+counts `unreachable` and is not dark.
 Do not read a run with a dark seat as a comparison of the roster.
 
 The first time a provider rejects its credential with HTTP 401,
@@ -374,6 +387,19 @@ and `unreadable-treated-as-spendable` when its meter could not be read,
 which routes as spendable by recorded policy (`package/translation-repair/provider/src/provider-budget.ts`).
 `wet` says the meter reports money left;
 it says nothing of whether a credential is accepted.
+
+The line goes on to name the benches' sizes and two lists of seats.
+`withheld=` names the models the slowness and cost rules took from a bench.
+`unserved=<models or none>` names,
+since 2026-10-21,
+every model on a bench of the reading that no wet provider serves:
+it stays seated and is lost at call time as unreachable,
+so a bench count includes it
+(`doc/decision/translation-repair-short-bench-share.md`).
+`threw-withheld=` names the seats the run withheld for failing every real ask,
+and never a seat the router only refused.
+The repair lane's `chunk re-seated under a hold: checkers=<models>` line ends with `unserved-checkers=<models or none>`,
+naming the checkers that are padding the bench with no wet provider behind them.
 
 ## Where a run writes
 

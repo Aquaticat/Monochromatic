@@ -56,6 +56,20 @@ const BEDROCK_AND_OPENROUTER: BudgetView = {
 };
 
 /**
+ Synthetic, Hyper and OpenRouter dry, NeuralWatt and Bedrock wet: the view
+ under which the lanes phase seats the measured checkers a wet provider
+ serves first and pads the bench with two ranked seats nobody serves, as the
+ zheermao20 chunks were padded with Qwen3.8-27B once Synthetic ran dry.
+ */
+const NEURALWATT_AND_BEDROCK: BudgetView = {
+  neuralwatt: false,
+  synthetic: true,
+  bedrock: false,
+  hyper: true,
+  openrouter: true,
+};
+
+/**
  No provider held out.
  */
 const NO_HOLDS = {
@@ -174,6 +188,50 @@ await describe({
             ],);
             expect(seating.repairModels?.checkerModelIds,).not.toContain(SEAT_SYNTHETIC_VISION_WITHHELD,);
             expect(rig.counter.reads,).toBe(1,);
+          },
+        },),
+        it({
+          name: 'MARKS IN THE CHUNK LINE THE CHECKERS THAT ARE PADDING, ranked seats no wet provider serves, '
+            + 'and says none when every checker is served (zheermao20: Qwen3.8-27B sat on the bench after '
+            + 'Synthetic ran dry and neither line said so)',
+          fn: async () => {
+            /** Rig whose NeuralWatt and Bedrock alone are wet, under a running hold. */
+            const padded = viewClient({ view: NEURALWATT_AND_BEDROCK, },);
+            padded.holds.synthetic = DRY_HOLD_MS;
+            /** Lines the padded rig's hook wrote. */
+            const paddedLines: string[] = [];
+            await lanesHooksFor({
+              client: padded.client,
+              signal: new AbortController().signal,
+              entryId: 'mittens',
+              l: capturingLogger({ messages: paddedLines, },),
+            },).beforeSlice({ lane: 'repair', },);
+            /** Rig whose every checker a wet provider serves, under a running hold. */
+            const served = viewClient({ view: BEDROCK_AND_OPENROUTER, },);
+            served.holds.synthetic = DRY_HOLD_MS;
+            /** Lines the served rig's hook wrote. */
+            const servedLines: string[] = [];
+            await lanesHooksFor({
+              client: served.client,
+              signal: new AbortController().signal,
+              entryId: 'mittens',
+              l: capturingLogger({ messages: servedLines, },),
+            },).beforeSlice({ lane: 'repair', },);
+
+            expect(paddedLines.filter(function isChunkLine(line,): boolean {
+              return line.includes('chunk re-seated under a hold',);
+            },),).toEqual([
+              'JUDGE SEATS phase=lanes chunk re-seated under a hold: '
+              + 'checkers=google.gemma-4-31b,hf:Qwen/Qwen3.8-27B,xiaomi/mimo-v2.6-flash '
+              + 'unserved-checkers=hf:Qwen/Qwen3.8-27B,xiaomi/mimo-v2.6-flash',
+            ],);
+            expect(servedLines.filter(function isChunkLine(line,): boolean {
+              return line.includes('chunk re-seated under a hold',);
+            },),).toEqual([
+              `JUDGE SEATS phase=lanes chunk re-seated under a hold: checkers=${
+                [SEAT_OPENROUTER_ONLY_CHECKER, SEAT_BEDROCK_ONLY_VISION_UNSEATED, SEAT_OPENROUTER_ONLY,].join(',',)
+              } unserved-checkers=none`,
+            ],);
           },
         },),
         it({

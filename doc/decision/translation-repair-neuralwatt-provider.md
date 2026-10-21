@@ -242,6 +242,15 @@ and prints the difference in `subscription.kwh_used` and whether `in_overage` is
 The reading exists only in a keyed run that made a NeuralWatt call;
 no test reads it,
 and a failed read never blocks a call.
+A starting read that fails is tried again,
+no sooner than 60 seconds after the last failure on the injected clock,
+the spacing of the day anchor's retry,
+and a later read of the quota that the run makes for its own reasons takes its place the same way.
+A comparison that starts at such a later reading is printed as starting there:
+the line gives the reading's time and says that plan energy spent before it is not counted.
+A run whose every start read fails says how many failed and when the last was.
+The warning on the first failure is written once.
+Ledger P20 in `package/translation-repair/doc/audit-ledger-providers-routing-and-seating.md` records the miss.
 Its end report is registered when the run client is built and printed by `reportingRefusals`
 (`run/src/corpus-run/run-end-report.ts`).
 
@@ -404,7 +413,8 @@ Ledger P17 in `package/translation-repair/doc/audit-ledger-providers-routing-and
   Only a known anchor is kept for the run.
   While it is unknown,
   a later reading or call reads the quota afresh
-  (not the failed starting reading),
+  (not the failed starting reading,
+  which that fresh reading then replaces as the comparison's start),
   no sooner than 60 seconds after the last failed attempt on the injected clock;
   calls in between stay refused.
   The outage is warned about once,

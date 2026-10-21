@@ -15,6 +15,10 @@
  policy allows no retry so no case waits, and logging goes through the case's
  own sandbox. Fixtures are cat-themed invention.
 
+ A BASELINE THAT FAILED IS TRIED AGAIN, no sooner than 60 seconds after the failure on the injected clock (the pace of
+ the day anchor keeper), and a baseline taken that way is labelled as starting at the later reading. Those cases reach
+ the session directly, over a scripted transport and a hand-moved clock, since only the session knows when it was asked.
+
  @module
  */
 
@@ -24,8 +28,15 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { TransportReply, } from '@monochromatic-dev/translation-repair-provider-stream';
-import { consoleLinesDuring, } from './neuralwatt-ledger.test-fixture.ts';
+import type {
+  TransportExchange,
+  TransportReply,
+} from '@monochromatic-dev/translation-repair-provider-stream';
+import { createNeuralWattQuotaSession, } from '../dist/final/node/index.mjs';
+import {
+  consoleLinesDuring,
+  handClock,
+} from './neuralwatt-ledger.test-fixture.ts';
 import {
   ask,
   BASE_URL,
@@ -49,6 +60,71 @@ const MIDNIGHT_SETTING = { msOfDay: 0, } as const;
  What the quota route does on a read: answers, or drops the connection.
  */
 type QuotaReply = Error | TransportReply;
+
+/**
+ A quota reply that is a server error.
+ */
+const DOWN = { status: 503, bodyText: 'down', };
+
+/**
+ The instant the direct cases start at.
+ */
+const START = '2026-10-20T12:00:00.000Z';
+
+/**
+ A quota session over a scripted transport and a hand-moved clock.
+
+ @param replies - what the quota route does on each read, in order, the last repeating
+
+ @returns The session, the reads the transport saw and the clock
+
+ @example
+ ```ts
+ const { session, reads, clock, } = sessionOver({ replies: [DOWN, quotaReply({ kwhUsed: 14, },),], },);
+ ```
+ */
+function sessionOver(
+  { replies, }: { readonly replies: readonly QuotaReply[]; },
+): {
+  readonly session: ReturnType<typeof createNeuralWattQuotaSession>;
+  readonly reads: readonly TransportExchange[];
+  readonly clock: ReturnType<typeof handClock>;
+} {
+  /**
+   Every read the transport was handed.
+   */
+  const reads: TransportExchange[] = [];
+
+  /**
+   Clock the session reads, which a case moves by hand.
+   */
+  const clock = handClock({ start: START, },);
+  return {
+    reads,
+    clock,
+    session: createNeuralWattQuotaSession({
+      headers: {},
+      baseUrl: BASE_URL,
+      now: clock.now,
+      retryPolicy: {
+        limit: 0,
+        baseMs: 1,
+      },
+      transport: function answer(exchange,): Promise<TransportReply> {
+        reads.push(exchange,);
+
+        /**
+         What this read is scripted to get.
+         */
+        const scripted = replies[Math.min(
+          reads.length - 1,
+          replies.length - 1,
+        )] ?? DOWN;
+        return Error.isError(scripted,) ? Promise.reject(scripted,) : Promise.resolve(scripted,);
+      },
+    },),
+  };
+}
 
 /**
  Quota replies that fail, with the kind of failure each is warned as: a refused status, a body that is not the
@@ -153,7 +229,7 @@ await describe({
         it({
           name: 'NEVER BLOCKS A CALL FOR A READ THAT FAILED, a refused status, a body that is not the documented shape '
             + 'and a dropped connection alike: the call is sent, the failure is warned with its kind, and the read is '
-            + 'not tried again',
+            + 'not tried again while the clock has not moved',
           fn: async ctx => {
             /**
              Runs two calls on a run whose quota read fails.
@@ -196,7 +272,9 @@ await describe({
             for (const [, kind,] of FAILURES) {
               expect(lines.some(function warns(line,): boolean {
                 return line.includes(`NeuralWatt quota could not be read before the first call (${kind})`,)
-                  && line.includes('no starting reading to compare with',);
+                  && line.includes('read again no sooner than 60 seconds after this failure',)
+                  && line.includes('no starting reading unless one of those reads succeeds',)
+                  && (!line.includes('will have no starting reading',));
               },),).toBe(true,);
             }
           },
@@ -221,8 +299,8 @@ await describe({
         },),
 
         it({
-          name: 'DOES NOT READ AGAIN WHEN THE BASELINE COULD NOT BE TAKEN, and says so, since there is nothing to '
-            + 'compare a later reading with',
+          name: 'DOES NOT READ AGAIN WHEN THE BASELINE COULD NOT BE TAKEN AND NO TIME HAS PASSED, and says so with '
+            + 'the number of attempts and when the last was, since there is nothing to compare a later reading with',
           fn: async () => {
             await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-quota-', },);
             const { client, exchanges, } = scriptedClient({
@@ -233,7 +311,8 @@ await describe({
             await ask({ client, },);
             expect(await client.planSpend({ signal: SIGNAL, },),).toEqual({
               kind: 'not-comparable',
-              reason: 'the starting reading could not be taken',
+              reason: 'the starting reading could not be taken: every attempt to read the quota for it failed '
+                + '(1 attempt, the last at 2026-10-20T12:00:00.000Z)',
             },);
             expect(quotaExchangesOf({ exchanges, },).length,).toBe(1,);
           },
@@ -334,6 +413,217 @@ await describe({
                 return line.includes(`NeuralWatt quota could not be read at the end of the run (${kind})`,);
               },),).toBe(true,);
             }
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'a baseline that failed',
+      children: [
+        it({
+          name: 'IS TRIED AGAIN NO SOONER THAN 60 SECONDS AFTER THE FAILURE, and a baseline taken by the retry is '
+            + 'labelled as starting at that later reading: its time is given, and the first read is not the start',
+          fn: async ctx => {
+            const { session, reads, clock, } = sessionOver({
+              replies: [DOWN, quotaReply({ kwhUsed: 14, },), quotaReply({ kwhUsed: 14.5, },),],
+            },);
+            /**
+             What the baseline said at each asking.
+             */
+            const takenAt: boolean[] = [];
+            /**
+             Reads seen after each asking.
+             */
+            const readsAt: number[] = [];
+            const lines = await consoleLinesDuring({
+              run: async function asks(): Promise<void> {
+                for (const instant of [START, '2026-10-20T12:00:59.999Z', '2026-10-20T12:01:00.000Z',]) {
+                  clock.setTo(instant,);
+                  /* oxlint-disable no-await-in-loop -- each asking reads the clock the one before moved */
+                  takenAt.push((await session.ensureBaseline({ signal: SIGNAL, },)).taken,);
+                  /* oxlint-enable no-await-in-loop */
+                  readsAt.push(reads.length,);
+                }
+              },
+              sinon: ctx.sinon,
+            },);
+            expect(takenAt,).toEqual([false, false, true,],);
+            expect(readsAt,).toEqual([1, 1, 2,],);
+            clock.setTo('2026-10-20T12:30:00.000Z',);
+            /**
+             The end report.
+             */
+            const spend = await session.planSpend({ signal: SIGNAL, },);
+            expect(spend,).toEqual({ kind: 'measured', kwh: 0.5, inOverage: false, laterStartAt: '2026-10-20T12:01:00.000Z', },);
+            expect(reads.length,).toBe(3,);
+            expect(lines.some(function says(line,): boolean {
+              return line.includes('NeuralWatt quota read at 2026-10-20T12:01:00.000Z',)
+                && line.includes('the first read of the run failed',)
+                && line.includes('starts at this later reading',)
+                && line.includes('energy spent before it is not counted',);
+            },),).toBe(true,);
+            expect(lines.some(function saysStartOfRun(line,): boolean {
+              return line.includes('NeuralWatt quota at the start of the run',);
+            },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'IS NOT TRIED AGAIN INSIDE THE 60 SECONDS, however often it is asked for, and says the first '
+            + 'attempt failed',
+          fn: async () => {
+            const { session, reads, clock, } = sessionOver({ replies: [DOWN, quotaReply({ kwhUsed: 14, },),], },);
+            expect((await session.ensureBaseline({ signal: SIGNAL, },)).taken,).toBe(false,);
+            for (const instant of ['2026-10-20T12:00:01.000Z', '2026-10-20T12:00:30.000Z', '2026-10-20T12:00:59.999Z',]) {
+              clock.setTo(instant,);
+              /* oxlint-disable no-await-in-loop -- each asking reads the clock the one before moved */
+              expect((await session.ensureBaseline({ signal: SIGNAL, },)).taken,).toBe(false,);
+              /* oxlint-enable no-await-in-loop */
+            }
+            expect(reads.length,).toBe(1,);
+          },
+        },),
+
+        it({
+          name: 'IS TRIED ONCE WHEN TWO CALLS ASK AT THE SAME MOMENT AFTER THE 60 SECONDS, both awaiting the one retry',
+          fn: async () => {
+            const { session, reads, clock, } = sessionOver({ replies: [DOWN, quotaReply({ kwhUsed: 14, },),], },);
+            await session.ensureBaseline({ signal: SIGNAL, },);
+            clock.setTo('2026-10-20T12:02:00.000Z',);
+            /**
+             Both askings, made at once.
+             */
+            const outcomes = await Promise.all([
+              session.ensureBaseline({ signal: SIGNAL, },),
+              session.ensureBaseline({ signal: SIGNAL, },),
+            ],);
+            expect(outcomes.map(function takenOf(outcome,): boolean {
+              return outcome.taken;
+            },),).toEqual([true, true,],);
+            expect(reads.length,).toBe(2,);
+          },
+        },),
+
+        it({
+          name: 'BECOMES THE BASELINE WHEN A LATER READ OF THE QUOTA SUCCEEDS, the day anchor\'s retry and the key '
+            + 'allowance\'s refresh read it through readNow and are not asked twice, and the comparison is labelled as '
+            + 'starting at that reading',
+          fn: async () => {
+            const { session, reads, clock, } = sessionOver({
+              replies: [DOWN, quotaReply({ kwhUsed: 14, },), quotaReply({ kwhUsed: 14.5, },),],
+            },);
+            await session.ensureBaseline({ signal: SIGNAL, },);
+            clock.setTo('2026-10-20T12:00:05.000Z',);
+            await session.readNow({ signal: SIGNAL, },);
+            clock.setTo('2026-10-20T12:10:00.000Z',);
+            expect(await session.planSpend({ signal: SIGNAL, },),).toMatchObject({
+              kind: 'measured',
+              laterStartAt: '2026-10-20T12:00:05.000Z',
+            },);
+            expect(reads.length,).toBe(3,);
+          },
+        },),
+
+        it({
+          name: 'IS NOT BEGUN BY A READ MADE BEFORE ANY ATTEMPT, since a run that never asked for a baseline made no '
+            + 'NeuralWatt call and says so',
+          fn: async () => {
+            const { session, } = sessionOver({ replies: [quotaReply({ kwhUsed: 14, },),], },);
+            await session.readNow({ signal: SIGNAL, },);
+            expect(await session.planSpend({ signal: SIGNAL, },),).toEqual({
+              kind: 'not-comparable',
+              reason: 'the run made no NeuralWatt call, so no starting reading was taken',
+            },);
+          },
+        },),
+
+        it({
+          name: 'STAYS NOT COMPARABLE WHEN EVERY READ FAILS, and says how many attempts failed and when the last was, '
+            + 'warning once for the outage and not at each retry',
+          fn: async ctx => {
+            const { session, reads, clock, } = sessionOver({ replies: [DOWN,], },);
+            const lines = await consoleLinesDuring({
+              run: async function asks(): Promise<void> {
+                for (const instant of [START, '2026-10-20T12:01:00.000Z', '2026-10-20T12:02:00.000Z',]) {
+                  clock.setTo(instant,);
+                  /* oxlint-disable no-await-in-loop -- each asking reads the clock the one before moved */
+                  await session.ensureBaseline({ signal: SIGNAL, },);
+                  /* oxlint-enable no-await-in-loop */
+                }
+              },
+              sinon: ctx.sinon,
+            },);
+            clock.setTo('2026-10-20T12:03:00.000Z',);
+            expect(await session.planSpend({ signal: SIGNAL, },),).toEqual({
+              kind: 'not-comparable',
+              reason: 'the starting reading could not be taken: every attempt to read the quota for it failed '
+                + '(3 attempts, the last at 2026-10-20T12:02:00.000Z)',
+            },);
+            expect(reads.length,).toBe(3,);
+            expect(lines.filter(function warns(line,): boolean {
+              return line.includes('NeuralWatt quota could not be read before the first call',);
+            },).length,).toBe(1,);
+          },
+        },),
+
+        it({
+          name: 'LEAVES A BASELINE TAKEN ON THE FIRST TRY AS IT WAS, with no later start in the end report, and reads '
+            + 'the quota no more however much time passes',
+          fn: async () => {
+            const { session, reads, clock, } = sessionOver({
+              replies: [quotaReply({ kwhUsed: 14, },), quotaReply({ kwhUsed: 14.5, },),],
+            },);
+            expect((await session.ensureBaseline({ signal: SIGNAL, },)).taken,).toBe(true,);
+            clock.setTo('2026-10-20T14:00:00.000Z',);
+            expect((await session.ensureBaseline({ signal: SIGNAL, },)).taken,).toBe(true,);
+            expect(reads.length,).toBe(1,);
+            expect(await session.planSpend({ signal: SIGNAL, },),).toEqual({ kind: 'measured', kwh: 0.5, inOverage: false, },);
+          },
+        },),
+
+        it({
+          name: 'IS LEARNED BY THE DAY ANCHOR\'S RETRY THROUGH A CLIENT: the first read fails, the retry 61 seconds later '
+            + 'reads the quota, and the end report compares from that later reading',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-quota-', },);
+            const { client, clock, exchanges, } = scriptedClient({
+              dir: scratch.path,
+              quota: [DOWN, quotaReply({ kwhUsed: 14, },), quotaReply({ kwhUsed: 14.5, },),],
+            },);
+            await client.energy({ signal: SIGNAL, },);
+            clock.setTo('2026-10-20T12:01:01.000Z',);
+            await client.energy({ signal: SIGNAL, },);
+            clock.setTo('2026-10-20T12:30:00.000Z',);
+            expect(await client.planSpend({ signal: SIGNAL, },),).toMatchObject({
+              kind: 'measured',
+              kwh: 0.5,
+              laterStartAt: '2026-10-20T12:01:01.000Z',
+            },);
+            expect(quotaExchangesOf({ exchanges, },).length,).toBe(3,);
+          },
+        },),
+
+        it({
+          name: 'IS LEARNED BY THE KEY ALLOWANCE\'S REFRESH THROUGH A CLIENT: the first read fails with the day given by '
+            + 'the setting, a call is sent, and the next meter reading takes the baseline',
+          fn: async () => {
+            await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-quota-', },);
+            const { client, clock, exchanges, } = scriptedClient({
+              dir: scratch.path,
+              quota: [DOWN, quotaReply({ kwhUsed: 14, },), quotaReply({ kwhUsed: 14.5, },),],
+              dayStartSetting: MIDNIGHT_SETTING,
+            },);
+            await ask({ client, },);
+            clock.setTo('2026-10-20T12:05:00.000Z',);
+            await client.energy({ signal: SIGNAL, },);
+            clock.setTo('2026-10-20T12:30:00.000Z',);
+            expect(await client.planSpend({ signal: SIGNAL, },),).toMatchObject({
+              kind: 'measured',
+              kwh: 0.5,
+              laterStartAt: '2026-10-20T12:05:00.000Z',
+            },);
+            expect(quotaExchangesOf({ exchanges, },).length,).toBe(3,);
           },
         },),
       ],

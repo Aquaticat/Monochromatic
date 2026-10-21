@@ -37,9 +37,22 @@ import type {
 // from a tally beneath it, which then counts each reply that arrived as
 // usable. A
 // seat is DARK when it was asked at least once and never once produced a usable
-// answer, which is the signature of a provider that cannot serve it, a key that
-// was never injected, or a model that answers nothing readable; a seat that
-// simply lost some rounds is not dark and is not reported here.
+// answer, which is the signature of a provider that errors on it or a model
+// that answers nothing readable; a seat that simply lost some rounds is not dark
+// and is not reported here, and neither is a seat no provider could take at all
+// (no key, or no wet provider), which the router refuses before any request is
+// sent and the tally counts `unreachable`, not asked.
+//
+// A REFUSAL THE ROUTER GIVES BEFORE ANY REQUEST IS SENT IS NOT AN ASK
+// (ledger B711). The provider router throws `NoProviderForModelError` for a seat
+// no wet provider serves, and the zheermao20 run counted four such refusals of
+// `glm-5.3` as "asked=4 threw=4" and withheld the seat for a failure it never
+// had. They are counted in a column of their own, `unreachable`, which is in
+// neither `asked` nor `threw`, so a seat the router only refuses is never dark
+// and never withheld here: the router refuses it cheaply each time, the stages
+// read the refusal as an unreachable seat, and the seat comes back by itself
+// when a provider is wet again. The `JUDGE SEATS` lines name such seats as
+// unserved while they sit on a bench.
 //
 // PROCESS-SCOPED, LIKE `process.exitCode`. A calibration builds one client per
 // slice, so a tally held by a client would end with the slice; the fact being
@@ -54,14 +67,18 @@ import type {
  call that never returned an outcome at all and was not abandoned by its
  caller; `abandoned` is a call whose caller aborted its signal before it
  settled, which is counted beside the others and in none of them: it is not an
- ask the seat answered or failed (ledger B421).
+ ask the seat answered or failed (ledger B421); `unreachable` is a call the
+ provider router refused with `NoProviderForModelError` before any request was
+ sent, which is counted beside the others and in none of them for the same
+ reason: no provider was asked, so the seat neither answered nor failed
+ (ledger B711).
 
  @example
  ```ts
  const outcome: SeatOutcome = 'threw';
  ```
  */
-export type SeatOutcome = 'usable' | 'unusable' | 'threw' | 'abandoned';
+export type SeatOutcome = 'usable' | 'unusable' | 'threw' | 'abandoned' | 'unreachable';
 
 /**
  Counts for one seat over the life of the tally.
@@ -79,7 +96,8 @@ export type SeatCount = {
 
   /**
    Calls that settled, whatever came back; a call the caller abandoned is not
-   one, so it can neither raise a seat toward its withholding nor lower it.
+   one, and neither is a call the router refused, so neither can raise a seat
+   toward its withholding or lower it.
    */
   readonly asked: number;
 
@@ -103,6 +121,12 @@ export type SeatCount = {
    off after quorum, a stage deadline, an entry stop. Not in `asked`.
    */
   readonly abandoned: number;
+
+  /**
+   Calls the provider router refused with `NoProviderForModelError` before any
+   request was sent, because no wet provider serves the seat. Not in `asked`.
+   */
+  readonly unreachable: number;
 };
 
 /**
@@ -124,18 +148,22 @@ export type SeatTally = {
   },) => void;
 
   /**
-   Every seat asked at least once, in first-asked order.
+   Every seat a call was counted against, in first-counted order: seats asked,
+   and seats whose calls were all abandoned or refused by the router.
    */
   readonly counts: () => readonly SeatCount[];
 
   /**
-   Seats asked at least once that never produced a usable answer.
+   Seats asked at least once that never produced a usable answer. A seat only
+   the router refused was never asked, so it is not here; its `unreachable`
+   count and the `JUDGE SEATS` lines name it.
    */
   readonly dark: () => readonly SeatCount[];
 
   /**
    Seats asked at least `minAsks` times that threw on every one of those asks,
-   so no call they made ever returned an outcome.
+   so no call they made ever returned an outcome. Calls the router refused are
+   not asks, so they neither count toward `minAsks` nor break a run of throws.
 
    @param args - the number of asks a seat must have been given before it counts
 
@@ -160,6 +188,7 @@ type SeatCounter = {
   unusable: number;
   threw: number;
   abandoned: number;
+  unreachable: number;
 };
 
 /**
@@ -207,6 +236,7 @@ export function createSeatTally(): SeatTally {
       unusable: 0,
       threw: 0,
       abandoned: 0,
+      unreachable: 0,
     };
     counters.set(
       modelId,
@@ -234,6 +264,7 @@ export function createSeatTally(): SeatTally {
         unusable: counter.unusable,
         threw: counter.threw,
         abandoned: counter.abandoned,
+        unreachable: counter.unreachable,
       };
     },);
   }
@@ -249,6 +280,10 @@ export function createSeatTally(): SeatTally {
       const counter = counterFor(modelId,);
       if (outcome === 'abandoned') {
         counter.abandoned += 1;
+        return;
+      }
+      if (outcome === 'unreachable') {
+        counter.unreachable += 1;
         return;
       }
       counter.asked += 1;
@@ -298,6 +333,15 @@ export const RUN_SEATS: SeatTally = createSeatTally();
  A SEAT THE TALLY WITHHOLDS IS REFUSED BEFORE THE INNER CLIENT IS ASKED, with
  a `NoProviderForModelError` that a stage reads as an unreachable seat. Such a
  refusal is not an ask, so it leaves the counts as they were.
+
+ A `NoProviderForModelError` THE INNER CLIENT THROWS IS COUNTED AS UNREACHABLE,
+ AND AS NOTHING ELSE (ledger B711). The router gives it for a seat no wet
+ provider serves and the owner's cull gives it for a culled seat, both before
+ any request is sent, so it is no more an ask than the tally's own refusal is.
+ It is counted whether or not the caller had aborted, since the refusal is a
+ fact about the seat and no call was left behind. A seat only refused this way
+ is never dark and never withheld by the tally; it is refused again, cheaply,
+ at every call.
 
  A CALL THE CALLER ABORTED IS COUNTED AS ABANDONED WHEN IT THROWS, AND AS
  NOTHING ELSE. The abort is the caller leaving the call, not the seat failing
@@ -383,27 +427,40 @@ export function seatTallyClient(
   }
 
   /**
-   Counts a call that threw: as abandoned when the caller had aborted its
+   Counts a call that threw: as unreachable when the inner client refused the
+   seat with `NoProviderForModelError`, since no request was sent and so no
+   ask was made; otherwise as abandoned when the caller had aborted its
    signal, since an abort is the caller leaving the call (a straggler cut off
    after quorum, a stage deadline, an entry stop) and not the seat failing to
-   answer, so it is not an ask; otherwise as threw.
+   answer, so it is not an ask either; otherwise as threw.
 
    @param modelId - seat the call went to
 
    @param signal - signal the call was made with
 
+   @param error - what the call threw, whose class says whether the router refused the seat
+
    @example
    ```ts
-   recordThrow({ modelId: request.modelId, signal: request.signal, },);
+   recordThrow({ modelId: request.modelId, signal: request.signal, error, },);
    ```
    */
   function recordThrow({
     modelId,
     signal,
+    error,
   }: {
     readonly modelId: RosterModelId;
     readonly signal: AbortSignal;
+    readonly error: unknown;
   },): void {
+    if (error instanceof NoProviderForModelError) {
+      tally.record({
+        modelId,
+        outcome: 'unreachable',
+      },);
+      return;
+    }
     if (signal.aborted) {
       tally.record({
         modelId,
@@ -435,6 +492,7 @@ export function seatTallyClient(
         recordThrow({
           modelId: request.modelId,
           signal: request.signal,
+          error,
         },);
         throw error;
       }
@@ -458,12 +516,13 @@ export function seatTallyClient(
         recordThrow({
           modelId: request.modelId,
           signal: request.signal,
+          error,
         },);
         throw error;
       }
     },
     quotas: inner.quotas,
-    // THE TYPED EXCHANGE IS A SEAT ASKED TOO, tallied under the same three
+    // THE TYPED EXCHANGE IS A SEAT ASKED TOO, tallied under the same
     // outcomes, so the SEAT lines count a decision seat beside the rest and a
     // decision seat that never answers usably is named dark like any other.
     ...((innerDecide === undefined)
@@ -486,6 +545,7 @@ export function seatTallyClient(
             recordThrow({
               modelId: request.modelId,
               signal: request.signal,
+              error,
             },);
             throw error;
           }
@@ -498,8 +558,10 @@ export function seatTallyClient(
  Renders the tally as the lines a command prints when it ends.
 
  ONE LINE PER SEAT, then one line naming the dark seats when there are any.
- Nothing at all when no seat was asked, so a command that never built a
- client prints nothing extra. Model ids and numbers only.
+ Nothing at all when no call was counted, so a command that never built a
+ client prints nothing extra. A seat the router only refused gets its line
+ (`asked=0`, `unreachable=N`) and is not named dark, since it was never asked.
+ Model ids and numbers only.
 
  @param tally - counts to render
 
@@ -514,7 +576,7 @@ export function seatReportLines(
   { tally, }: { readonly tally: SeatTally; },
 ): readonly string[] {
   /**
-   Every seat asked this run.
+   Every seat a call was counted against this run.
    */
   const counts = tally.counts();
   if (counts.length === 0)
@@ -530,7 +592,8 @@ export function seatReportLines(
    */
   const perSeat = counts.map(function toLine(count,): string {
     return `SEAT ${count.modelId} asked=${String(count.asked,)} usable=${String(count.usable,)} `
-      + `unusable=${String(count.unusable,)} threw=${String(count.threw,)} abandoned=${String(count.abandoned,)}`;
+      + `unusable=${String(count.unusable,)} threw=${String(count.threw,)} abandoned=${String(count.abandoned,)} `
+      + `unreachable=${String(count.unreachable,)}`;
   },);
 
   if (dark.length === 0)
@@ -548,19 +611,32 @@ export function seatReportLines(
     .join('; ',);
 
   /**
+   Seats that were asked at least once, the denominator the dark line states;
+   a seat only abandoned or refused by the router was never asked.
+   */
+  const askedSeats = counts.filter(function wasAsked(count,): boolean {
+    return count.asked > 0;
+  },);
+  /**
+   How many seats were asked.
+   */
+  const askedCount = askedSeats.length;
+
+  /**
    The one line a reader who is not grepping must see.
    */
-  const darkLine = `SEATS DARK: ${String(dark.length,)} of ${String(counts.length,)} ${
+  const darkLine = `SEATS DARK: ${String(dark.length,)} of ${String(askedCount,)} ${
     wordForCount({
-      count: counts.length,
+      count: askedCount,
       one: 'seat',
       many: 'seats',
     },)
   } asked `
     + `produced nothing usable this run: ${named}. A seat that fails every call is a provider that `
-    + 'cannot serve it, a key that was never injected, or a model that answers nothing readable; '
-    + 'the run log names which, and writes each failed call\'s error text on a warn line "<stage> <model>: '
-    + '<error>, voice lost" (or "seat unreachable"). Do not read this run as a comparison of the roster.';
+    + 'errors on it or a model that answers nothing readable; the run log names which, and writes each '
+    + 'failed call\'s error text on a warn line "<stage> <model>: <error>, voice lost". A seat the router '
+    + 'refused before any request was sent is on its SEAT line as unreachable=N and is not counted here. '
+    + 'Do not read this run as a comparison of the roster.';
 
   return [
     ...perSeat,

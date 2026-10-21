@@ -1227,7 +1227,7 @@ export function runClientFrom(
       inner: promptUniqueClient({
         // THE OWNER'S CULL AT THE DOOR (ledger P4): a culled model is refused
         // before any provider is asked, whatever path named it, and tallied
-        // as the seat that threw.
+        // as unreachable, not as an ask (ledger B711).
         inner: refusingCulledSeats({
           inner: routed,
           culled: OWNER_CULLED,
@@ -1238,7 +1238,8 @@ export function runClientFrom(
       },),
       tally: RUN_SEATS,
       // A SEAT THAT THREW ON EVERY ASK IS WITHHELD: refused at this door, and
-      // left out of the gathers' benches, so no later stage asks it again.
+      // left out of the gathers' benches, so no later stage asks it again. A
+      // refusal the router gives is no ask, so it never counts toward this.
       minAsks: SEAT_WITHHOLD_ASKS,
     },),
     // THE VIEW THE SEAT READERS AND BENCHES ARE DERIVED FROM READS A PROVIDER

@@ -178,3 +178,42 @@ and closed 3 of 5 usable against a quorum of 4 with `glm-5.3` and Qwen3.8-27B re
     over counting only the seats the router refused.
     With nothing refused the confirmation's quorum is unchanged;
     it drops to the reachable share only where the seats it may ask cannot meet the bench quorum.
+
+## Addendum 2026-10-21: a refusal the router gives is not an ask
+
+The rule is unchanged:
+a seat no wet provider serves stays on the seated bench and is lost at call time as `NoProviderForModelError`,
+and a refusal is not an ask.
+The seat tally did not hold to it.
+`seatTallyClient` counted the router's own refusal as a failed ask of the seat,
+so `zheermao20` printed `SEAT glm-5.3 asked=4 usable=0 unusable=0 threw=4` for a seat never sent a request,
+and withheld it for the run after four refusals
+(audit ledger B711).
+
+The counting rule,
+written on 2026-10-21 (UTC):
+
+- A `NoProviderForModelError` thrown by the client the tally wraps is counted as `unreachable`.
+    It is in neither `asked` nor `threw`,
+    and it counts toward no withholding threshold.
+    That holds whether or not the caller had aborted,
+    and for the owner's cull,
+    which gives the same refusal inside the tally.
+- `withheld({ minAsks })` stays "asked at least `minAsks` times and every ask threw",
+    over real asks only.
+    A seat that only the router refuses is never withheld by the tally.
+    The router refuses it cheaply at every call,
+    the stages read the refusal as an unreachable seat and size their quorum on the reachable bench,
+    and the seat comes back by itself when a provider is wet again.
+- `dark()` stays "asked at least once and never once produced a usable answer",
+    so a seat only the router refused is not dark.
+    Its evidence is the `unreachable` column of its `SEAT` line
+    and the `unserved=` field of the `JUDGE SEATS` lines.
+- A failure of any other kind,
+    including a rejected credential where no other provider is left to try,
+    is counted and withheld as before.
+
+The seats that sit on a bench and that no wet provider serves are now named in the log
+(`unserved=` on every `JUDGE SEATS` reading line,
+`unserved-checkers=` on the repair lane's `chunk re-seated under a hold` line),
+so the checker bench padded with unserved ranked seats (addendum of 2026-09-27) is visible where it is seated.

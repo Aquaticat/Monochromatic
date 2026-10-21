@@ -102,6 +102,15 @@ const PROCESS_SETTERS: ReadonlySet<string> = new Set([
 ],);
 
 /**
+ Test fixtures that are a process's own entry, each as the scan names its path: nothing imports one and no case runs
+ beside it, so the exit code it leaves is the process's alone and no other case can read it. A write outside any case is
+ allowed in these and nowhere else; adding one is a reviewed decision, and the package case fails for one that is gone.
+ */
+const PROCESS_ENTRIES: readonly string[] = [
+  'source-scan/rotation-sweep/rotation-sweep-cli.test-fixture.ts',
+];
+
+/**
  Node kinds that open a function.
  */
 const FUNCTION_KINDS: ReadonlySet<string> = new Set([
@@ -713,9 +722,13 @@ function unconfinedWrites({ files, }: { readonly files: readonly SourceText[]; }
        */
       const form = writeOf({ node: write, },);
       if (form !== '') {
-        found.push(...unconfined({ write, syntax, all, },).map(function keyed(reason,): string {
-          return `${syntax.file.path}: ${form}, ${reason}`;
-        },),);
+        found.push(...unconfined({ write, syntax, all, },)
+          .filter(function notAnEntrysOwn(reason,): boolean {
+            return (!PROCESS_ENTRIES.includes(syntax.file.path,)) || (reason !== 'outside any case');
+          },)
+          .map(function keyed(reason,): string {
+            return `${syntax.file.path}: ${form}, ${reason}`;
+          },),);
       }
     }
   }
@@ -861,6 +874,34 @@ await describe({
       },
     },),
     it({
+      name: 'ALLOWS A WRITE OUTSIDE ANY CASE IN A NAMED PROCESS ENTRY ONLY, and still finds one of its writes in a '
+        + 'suite that runs cases beside it, and the same write in any other fixture',
+      fn: async () => {
+        expect(unconfinedWrites({
+          files: [
+            {
+              path: PROCESS_ENTRIES[0] ?? '',
+              isTest: true,
+              text: [
+                'process.exitCode = 6;',
+                'await describe({ name: \'entry\', children: [',
+                '  it({ name: \'sets\', fn: async () => { process.env.CAT = \'tabby\'; await nap(); }, },),',
+                '], },);',
+              ].join('\n',),
+            },
+            {
+              path: 'den-entry.test-fixture.ts',
+              isTest: true,
+              text: 'process.exitCode = 6;',
+            },
+          ],
+        },),).toEqual([
+          'den-entry.test-fixture.ts: process assigned, outside any case',
+          `${PROCESS_ENTRIES[0] ?? ''}: process assigned, in a suite that runs cases beside it`,
+        ],);
+      },
+    },),
+    it({
       name: 'WRITES NO PROCESS GLOBAL in this package\'s tests outside a case run one at a time',
       fn: async () => {
         /**
@@ -870,6 +911,13 @@ await describe({
         expect(files.some(function testFile({ isTest, },): boolean {
           return isTest;
         },),).toBe(true,);
+        expectNoFindings({
+          findings: PROCESS_ENTRIES.filter(function gone(entry,): boolean {
+            return !files.some(function holdsEntry({ path, },): boolean {
+              return path === entry;
+            },);
+          },),
+        },);
         expectNoFindings({ findings: unconfinedWrites({ files, },), },);
       },
     },),

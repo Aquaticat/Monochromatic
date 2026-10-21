@@ -112,6 +112,15 @@ export type JudgeSeats = {
   readonly withheld: readonly RosterModelId[];
 
   /**
+   Seats on at least one bench that no wet provider serves in this reading,
+   named once, in bench order. They stay seated and are lost at call time as
+   unreachable (the owner's rule of 2026-09-09), so the `JUDGE SEATS` lines
+   name them: a bench count includes them, and the checker bench is padded
+   with them when fewer than its width are served (ledger B711).
+   */
+  readonly unserved: readonly RosterModelId[];
+
+  /**
    Critics and adjudication panel.
    */
   readonly wideSeats: readonly RosterModelId[];
@@ -370,9 +379,34 @@ export function judgeSeatsFor(
     const keepsAll = seated(modelId,) && seatedForSelect(modelId,);
     return first && (!keepsAll);
   },);
+  /**
+   Every model on a bench of this reading, named once in bench order.
+   */
+  const benched = [
+    ...wideSeats,
+    ...lateJudges,
+    ...checkers,
+    ...translators,
+    ...readers,
+    ...writers,
+    ...roster,
+  ].filter(function firstMention(
+    modelId: RosterModelId,
+    index: number,
+    all: readonly RosterModelId[],
+  ): boolean {
+    return all.indexOf(modelId,) === index;
+  },);
+  /**
+   The benched models no wet provider serves in this reading.
+   */
+  const unserved = benched.filter(function notServed(modelId: RosterModelId,): boolean {
+    return !served(modelId,);
+  },);
   return {
     dry,
     withheld,
+    unserved,
     wideSeats,
     selectJudges,
     lateJudges,
