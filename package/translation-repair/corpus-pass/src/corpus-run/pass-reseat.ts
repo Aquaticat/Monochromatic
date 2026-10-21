@@ -124,12 +124,11 @@ function repairSeatingOf(
     .checkerModelIds
     .filter(function isUnserved(modelId,): boolean {
       return unserved.has(modelId,);
-    },)
-    .join(',',);
+    },);
   return {
     seating: { repairModels: seats.repairModels, },
     line: `chunk re-seated under a hold: checkers=${checkers} unserved-checkers=${
-      (padding === '') ? 'none' : padding
+      (padding.length === 0) ? 'none' : padding.join(',',)
     }`,
   };
 }
