@@ -870,6 +870,26 @@ rebuild the branch worktree once no pass runs there,
 digest,
 sweep,
 and restart the rotation at `zheermao23`.
+K4 is done in `tr-w264`
+(ledger B803,
+open to the owner's veto,
+head `484f1d205b`,
+gate g149 running):
+the composite now reads each revision by a line diff and composes hunks that do not collide.
+Replayed over the `zheermao22` artifact,
+none of the three refused attempts builds under it either,
+since each pair collides on a real line
+(the letter's two revisions both change line 7),
+so it would not have changed what shipped.
+The letter that shipped is the one complete revision,
+chosen by the judges over whole texts,
+not a fallback.
+The same worktree breaks the B712 and B714 ledger entries at their semantic boundaries:
+that file failed the Markdown linter on main,
+as do eight more translation-repair docs
+(96 findings in all),
+which the gate never lints.
+`tr-w266` fixes those and adds a guard so the gate does.
 Meanwhile the rotation continues on `2a336603bf` for evidence:
 finish the read of `CuspariaKLSY22`,
 record both reads in the pass log and the readiness signal,
