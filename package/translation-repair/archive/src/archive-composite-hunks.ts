@@ -310,7 +310,7 @@ export function hunksBetween(
    */
   const prefix = firstDifference === (-1) ? base.length : firstDifference;
   /**
-   Block lines after the prefix, last first.
+   Block lines after the prefix.
    */
   const baseTail = base.slice(prefix,);
   /**
