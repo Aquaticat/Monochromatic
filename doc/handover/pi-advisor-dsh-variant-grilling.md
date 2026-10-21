@@ -684,10 +684,40 @@ Implementation,
    (`llmgateway-devpass`/`mimo-v2.6-pro`,
    exported `LLMGATEWAY_DEVPASS_API_KEY`,
    inserted inspect rows).
+   DONE 2026-10-20:
+   troubleshooting docs
+   `doc/troubleshooting/dsh-fixture-profile-plugin-verification.md`
+   (`0a56240d1a`)
+   and `doc/troubleshooting/dsh-cordis-inspect-query-input-coerced-to-string.md`
+   (`c94dc5ed69`),
+   both indexed in `doc/troubleshooting/README.md`.
+   Measured defect (fixture 1, 2026-10-20):
+   every `advisor` tool call failed with
+   `prompt variable "{{model}}" has no value for this assembly`
+   (section `deployment:persona-prefix`).
+   Root cause:
+   `buildDshAdvisorProjectContext` called `systemPrompt.assemble()`
+   without the agent assembly context that the agent-loop's
+   `model` and `provider` prompt variables read
+   (`context.agent.options`).
+   Fixed (`85434d0c40`):
+   `DshAdvisorAgentSurface.assembleContext` forwards
+   `assembleContextFor(agent, signal)` from `@deepseek-ai/dsh-agent`,
+   matching the agent-loop's own assembly call shape.
+   Measured (fixture 1):
+   agent sessions expose no command-invocation surface
+   (no command tool or commands service),
+   so `/advisor` parity moves to the user boundary after Q10,
+   the plan's known gap.
    QUEUED:
-   troubleshooting doc for this fixture wiring,
-   fixture 2 config-merge checks,
-   fixture 3 toggle checks,
+   fixture re-probe of the unknown-slug parity error (in flight),
+   leading-slash task-line dispatch probe (in flight),
+   fixture 1 plan-faithful empty-home rerun,
+   fixture 2 config-merge and `defaultReviewerModel` fall-through
+   (config observability is limited: the tool result reports the
+   chosen reviewer model; `/advisor status` needs command dispatch
+   or the user boundary),
+   fixture 3 `/advisor off`/`on` toggle (same dependency),
    then the Q10 live install.
    Parallel (subagent `5b28eefd`): DONE
    (see the monochromatic-lint incident section).
