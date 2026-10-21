@@ -278,10 +278,30 @@ Its log shows the anchor learned from the quota
 the by-model usage read,
 NeuralWatt wet
 and DeepSeek and GLM calls settling on it.
-Next:
-read `zheermao20` when it settles,
-recalibrate the other buckets from its settled lines if they hold enough calls,
-then go on with CuspariaKLSY and the rest of the rotation.
+It settled in 1,977,563 ms of pass
+(`TALLY zheermao101 status=SETTLED slices=15 ... repairAccepted=13 ... pageChanged=8 ... selection=contested`),
+and its end report read
+`NeuralWatt plan energy: no plan energy was spent between the start and the end of the run`.
+Its 215 settled NeuralWatt calls measured 31.33 Wh in all.
+In the 4,096 to 16,384 token bucket the measured means
+are DeepSeek 0.0819 Wh over 156 calls against 0.0758 Wh estimated
+and GLM 0.3686 Wh over 49 calls against 0.3725 Wh,
+so the bucket's recalibration holds;
+the other buckets hold 2 to 4 calls each,
+too few to recalibrate.
+OpenRouter's reported cost was USD 0.498.
+
+The page read and an investigation of two seating questions run as read-only Sonnet agents.
+The seating questions:
+why `glm-5.3` was seated at preparation though its every provider was out of budget,
+and why `hf:Qwen/Qwen3.8-27B` stayed seatable,
+and was re-seated as a checker under a hold,
+after Synthetic ran dry,
+when `hf:moonshotai/Kimi-K3` was withheld
+(it threw 137 of 158 asks).
+`CuspariaKLSY20` (entry CuspariaKLSY) runs on the same build from 02:52 UTC on 2026-10-21;
+a fix that lands changes the build,
+and the rotation then restarts at `zheermao101`.
 The B701 rotation sweep landed as `7c9d5fa35f` after gate g137
 (2690 pass,
 0 fail).
