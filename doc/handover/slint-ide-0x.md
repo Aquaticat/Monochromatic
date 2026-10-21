@@ -1324,9 +1324,9 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     (three textures were made by lowering the recorded limit), densest-text stacking, a look in a nested compositor
     window, frame time of a 12,000 px window (about 24 chunk renders per picture on the window thread), cadence on a
     quiet host (load average was 8 to 9 from other sessions).
-    Update 2026-10-21: the extra redraw `picture.rs` requested is explained and changed on branch
-    `worktree-agent-a3a543d4c80040d25` (cause, counts and limits in `doc/handover/ide-gpu-stages-5-6.md`, section
-    "The extra frame at a picture hand-over"); not yet merged into `main`.
+    Update 2026-10-21: the extra redraw `picture.rs` requested is explained and fixed, and landed (see the LANDED
+    block of the redraw agent below; cause, counts and limits in `doc/handover/ide-gpu-stages-5-6.md`, section
+    "The extra frame at a picture hand-over").
     Installed 2026-10-21: `~/.local/bin/monochromatic-ide` sha256 prefix `e1f2590ffadecc91`, equal to the release
     build; the previous binary (`c0b8219d73bc1062`) is `monochromatic-ide.previous`. Removed: the agent branch (local
     and remote), its worktree, my scratch worktrees and guard caches. Another session's mutation container
@@ -1394,13 +1394,37 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     pass. Not run: a second full `test:native`, guard runners, a capped against uncapped video-memory comparison, runs
     under host load. The agent's worktree, its 32 GiB `target` copy and its branch (local and remote) are removed; no
     units or containers were left.
-    Redraw agent `a3a543d4c80040d25` (started 2026-10-21, own worktree off `origin/main`, branch push only): finds by
-    measurement why `picture.rs` requests an extra redraw on handoff (identical frame at slots 35, 67, 99, 130 of the
-    scripted scroll), fixes only if the cause is clear and the A/B cadence shows it; brief quotes `NLG`, `NLD`, `RXI`.
-    On its report: verify, scan `ps`, `podman ps`, `systemctl --user list-units`, merge in a scratch worktree, gates
-    once, reinstall if the binary changed, remove its worktree and branch.
-    Open, in order: (1) the unexplained redraw on picture handoff in `src/native/minimap/picture.rs` (the remaining
-    identical frames; a cause by measurement first; the agent above is on it); (2) the flake work, in `doc/handover/ide-native-flakes.md`:
+    LANDED 2026-10-21, redraw agent `a3a543d4c80040d25` (merge tip `73ee80f08b`, contained in `origin/main`):
+    `src/native/minimap/picture.rs` called `request_redraw()` the moment it handed a picture to the GPU; a scroll draws
+    a frame at every wheel step and the GPU draws a waiting picture inside the next frame, so the request added a second
+    frame between two steps and the text area stood still for one tick (row shift 0 px where every other tick is
+    25 px). The hand-over now starts a single-shot 20 ms timer (`FRAME_WAIT`) and asks for a frame only if
+    `GpuTile::minimap_waiting()` is still true then; an idle window gets its frame at most 20 ms later. Guards: tests
+    `a_picture_that_a_frame_draws_asks_for_no_frame_of_its_own` and `a_picture_that_no_frame_draws_asks_for_a_frame`
+    (`picture_frame_tests.rs`), source guards `minimap-picture-waits-for-frame` and `minimap-picture-asks-when-idle`
+    (agent: baseline pass, removed fail, restored pass; mine on the merged tree: the two pass). The cadence tool's
+    whole-frame hash undercounts these stalls (it saw an identical frame in 7 of 20 old-behaviour runs where the stall
+    was present in 20 of 20), so the measure is the agent's frame-shift probe `~/temp/agent/mm-stall.mjs` (ticks where
+    the text area moved 0 rows). Agent's counts (10 pairs, release, `big.rs`, 1100x660, scroll): first-hand-over stall
+    A 10 of 10, B 0 of 10. My own run on the merged tree
+    (6 pairs, alternating order, `~/temp/agent/redraw-stall-ab.mjs`):
+    first-hand-over stall A 6 of 6 (slot 35 every time), B 0 of 6; stalls in total A 12, B 8; no odd row shifts in
+    either tree. Hash tool on 8 pairs: identical frame A 2 of 8 runs, B 0 of 8; A against A 1 of 8 (the floor).
+    NOT eliminated: every B run (6 of 6) stalls once at slot 50, where A shows none there (A stalls at 95, 98, 74, 67,
+    142 in other runs). The agent attributes the remaining stalls to the tile hand-over in
+    `src/native/render/present.rs` (`request_redraw()` after `submit_tile` and `submit_sign`) from a debug log, not from an intervention; it is open.
+    Not run: the other 148 source guards, the drag scenario, display scales other than 1, a real compositor, idle
+    latency of the 20 ms wait (a picture in an idle window waits up to 20 ms; on a display slower than 50 Hz the old
+    extra frame returns), the markdown render check. Gates on the merged tip, once each: `lint`, `test:native`
+    277 of 277 (5 skipped), `test` 797 of 797, `test:bin`, `build`, `inspect:no-software-renderer`, all pass.
+    Installed 2026-10-21 (second install this day): `~/.local/bin/monochromatic-ide` sha256 prefix
+    `8706732d98cdd82c`, equal to the release binary of the verified tree; the previous binary (`e1f2590ffadecc91`) is
+    `monochromatic-ide.previous`. The agent's worktree (it was locked by the session process; I checked its HEAD is in
+    `origin/main` and unlocked it), branch (local and remote), my two scratch trees and 24 cadence artifact
+    directories are removed; no units or containers were left.
+    Open, in order: (1) the stall at slot 50 of the scripted scroll, the tile hand-over in
+    `src/native/render/present.rs` (an intervention, not a log reading, decides it; the frame-shift probe above is the
+    measure); (2) the flake work, in `doc/handover/ide-native-flakes.md`:
     fixed with counts (refused-tile test 10 of 360 to 0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160
     to 0 of 160, find-box menu test by its guard, see the LANDED block above); open: the annotation stability tests
     (cause unknown, frames kept under `target/flake-frames/` for the next failure), the two incomplete ledger entries,
