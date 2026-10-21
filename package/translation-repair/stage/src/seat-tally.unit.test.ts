@@ -24,12 +24,14 @@ import type {
   RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract';
 
+import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
 import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 
 import type {
   ChatJsonOutcome,
   ChatJsonRequest,
   ChatTextReply,
+  ChatTextRequest,
   DecisionReply,
   DecisionRequest,
   ModelClient,
@@ -41,6 +43,7 @@ import {
   seatTallyClient,
 } from '../dist/final/node/index.mjs';
 import {
+  SEAT_HYPER_ONLY,
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
@@ -200,6 +203,58 @@ function refusingClient(
 }
 
 /**
+ Words the router gives for a seat whose every provider is out of budget, as
+ the zheermao20 log read them for `glm-5.3`.
+ */
+const ROUTER_REASON = 'every provider serving this model is out of budget, seat unreachable';
+
+/**
+ Builds an inner client that behaves as the provider router does for a seat no
+ wet provider serves: every call on every surface throws the router's own
+ `NoProviderForModelError` before any request is sent.
+
+ @returns Client with the full surface, refusing every call as the router does
+
+ @example
+ ```ts
+ const inner = routerRefusingClient();
+ ```
+ */
+function routerRefusingClient(): ModelClient {
+  /**
+   Builds the refusal the router raises for the seat a call names.
+
+   @param modelId - seat the call names
+
+   @returns The router's refusal
+
+   @example
+   ```ts
+   throw routerRefusal({ modelId: SEAT_HYPER_ONLY, },);
+   ```
+   */
+  function routerRefusal({ modelId, }: { readonly modelId: RosterModelId; },): NoProviderForModelError {
+    return new NoProviderForModelError({ modelId, reason: ROUTER_REASON, },);
+  }
+  return {
+    async chatText(request: ForeignBorrowed<ChatTextRequest>,): Promise<ChatTextReply> {
+      throw routerRefusal({ modelId: request.modelId, },);
+    },
+    async chatJson<ValueT,>(
+      request: ForeignBorrowed<ChatJsonRequest<ValueT>>,
+    ): Promise<ChatJsonOutcome<ValueT>> {
+      throw routerRefusal({ modelId: request.modelId, },);
+    },
+    async decide(request: ForeignBorrowed<DecisionRequest>,): Promise<DecisionReply> {
+      throw routerRefusal({ modelId: request.modelId, },);
+    },
+    async quotas(): Promise<never> {
+      throw new Error('quotas is never asked here',);
+    },
+  };
+}
+
+/**
  Runs one call and hands back what it threw, or `undefined` when it resolved.
 
  @param call - call to run
@@ -337,6 +392,7 @@ await describe({
                 unusable: 1,
                 threw: 1,
                 abandoned: 0,
+                unreachable: 0,
               },
               {
                 modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
@@ -345,6 +401,7 @@ await describe({
                 unusable: 0,
                 threw: 0,
                 abandoned: 0,
+                unreachable: 0,
               },
             ],);
           },
@@ -430,6 +487,7 @@ await describe({
               unusable: 0,
               threw: 0,
               abandoned: 3,
+              unreachable: 0,
             },],);
           },
         },),
@@ -454,6 +512,43 @@ await describe({
             expect(tally.withheld({ minAsks: 4, },).map(function toId(count,): string {
               return count.modelId;
             },),).toStrictEqual([SEAT_HYPER_VISION,],);
+          },
+        },),
+
+        it({
+          name: 'COUNTS an unreachable call beside the settled ones without adding it to asked, so a seat the router '
+            + 'only refused is neither dark nor withheld however often it was refused',
+          fn: async () => {
+            /** Tally of a seat the router refused four times and a seat that answered once. */
+            const tally = createSeatTally();
+            tally.record({ modelId: SEAT_HYPER_ONLY, outcome: 'unreachable', },);
+            tally.record({ modelId: SEAT_HYPER_ONLY, outcome: 'unreachable', },);
+            tally.record({ modelId: SEAT_HYPER_ONLY, outcome: 'unreachable', },);
+            tally.record({ modelId: SEAT_HYPER_ONLY, outcome: 'unreachable', },);
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
+
+            expect(tally.counts(),).toStrictEqual([
+              {
+                modelId: SEAT_HYPER_ONLY,
+                asked: 0,
+                usable: 0,
+                unusable: 0,
+                threw: 0,
+                abandoned: 0,
+                unreachable: 4,
+              },
+              {
+                modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+                asked: 1,
+                usable: 1,
+                unusable: 0,
+                threw: 0,
+                abandoned: 0,
+                unreachable: 0,
+              },
+            ],);
+            expect(tally.withheld({ minAsks: 1, },),).toStrictEqual([],);
+            expect(tally.dark(),).toStrictEqual([],);
           },
         },),
 
@@ -504,6 +599,7 @@ await describe({
               unusable: 0,
               threw: 0,
               abandoned: 0,
+              unreachable: 0,
             },],);
           },
         },),
@@ -537,6 +633,7 @@ await describe({
               unusable: 0,
               threw: 0,
               abandoned: 0,
+              unreachable: 0,
             },],);
           },
         },),
@@ -570,6 +667,7 @@ await describe({
               unusable: 1,
               threw: 0,
               abandoned: 0,
+              unreachable: 0,
             },],);
           },
         },),
@@ -622,6 +720,7 @@ await describe({
               unusable: 0,
               threw: 2,
               abandoned: 0,
+              unreachable: 0,
             },],);
             expect(tally.dark().length,).toBe(1,);
           },
@@ -683,6 +782,7 @@ await describe({
               unusable: 0,
               threw: 4,
               abandoned: 0,
+              unreachable: 0,
             },],);
           },
         },),
@@ -717,6 +817,7 @@ await describe({
               unusable: 0,
               threw: 0,
               abandoned: 4,
+              unreachable: 0,
             },],);
             expect(tally.withheld({ minAsks: 4, },),).toStrictEqual([],);
             expect(tally.dark(),).toStrictEqual([],);
@@ -763,6 +864,7 @@ await describe({
               unusable: 0,
               threw: 0,
               abandoned: 2,
+              unreachable: 0,
             },],);
           },
         },),
@@ -793,6 +895,7 @@ await describe({
               unusable: 0,
               threw: 4,
               abandoned: 0,
+              unreachable: 0,
             },],);
             expect(tally.withheld({ minAsks: 4, },).map(function toId(count,): string {
               return count.modelId;
@@ -830,6 +933,156 @@ await describe({
               unusable: 0,
               threw: 2,
               abandoned: 0,
+              unreachable: 0,
+            },],);
+          },
+        },),
+
+        it({
+          name: 'COUNTS THE ROUTER\'S OWN REFUSAL AS UNREACHABLE on every surface, neither asked nor threw, rethrows '
+            + 'the very same refusal, and never withholds the seat however often the router refuses it (zheermao20: '
+            + '"glm-5.3 asked=4 threw=4" for four refusals and no request)',
+          fn: async () => {
+            /** Tally the wrapper counts into. */
+            const tally = createSeatTally();
+            /** Client under test, over a router that refuses every call. */
+            const client = seatTallyClient({
+              inner: routerRefusingClient(),
+              tally,
+              minAsks: 4,
+            },);
+            /** Request the typed exchange is made with, cast past what the tally never reads. */
+            const decision = {
+              modelId: SEAT_HYPER_ONLY,
+              signal: SIGNAL,
+            } as unknown as DecisionRequest;
+
+            /** What five text calls threw, the fifth made after four refusals. */
+            const fromText = [
+              await thrownByText({ client, modelId: SEAT_HYPER_ONLY, signal: SIGNAL, },),
+              await thrownByText({ client, modelId: SEAT_HYPER_ONLY, signal: SIGNAL, },),
+              await thrownByText({ client, modelId: SEAT_HYPER_ONLY, signal: SIGNAL, },),
+              await thrownByText({ client, modelId: SEAT_HYPER_ONLY, signal: SIGNAL, },),
+              await thrownByText({ client, modelId: SEAT_HYPER_ONLY, signal: SIGNAL, },),
+            ];
+            /** What the JSON surface threw. */
+            const fromJson = await thrownBy(function askJson(): Promise<unknown> {
+              return client.chatJson({
+                modelId: SEAT_HYPER_ONLY,
+                messages: MESSAGES,
+                signal: SIGNAL,
+                validate: isCatVerdict,
+              },);
+            },);
+            /** What the typed exchange threw. */
+            const fromDecide = await thrownBy(function askDecide(): Promise<unknown> {
+              return client.decide?.(decision,) ?? Promise.resolve();
+            },);
+
+            expect(
+              [...fromText, fromJson, fromDecide,].map(function toText(thrown,): string {
+                return String(thrown,);
+              },),
+            ).toStrictEqual(
+              Array.from({ length: 7, }, function sameRefusal(): string {
+                return `NoProviderForModelError: no provider can take glm-5.3: ${ROUTER_REASON}`;
+              },),
+            );
+            expect(tally.counts(),).toStrictEqual([{
+              modelId: SEAT_HYPER_ONLY,
+              asked: 0,
+              usable: 0,
+              unusable: 0,
+              threw: 0,
+              abandoned: 0,
+              unreachable: 7,
+            },],);
+            expect(tally.withheld({ minAsks: 4, },),).toStrictEqual([],);
+            expect(tally.dark(),).toStrictEqual([],);
+          },
+        },),
+
+        it({
+          name: 'STILL COUNTS ANOTHER KIND OF FAILURE AS THREW and withholds the seat after minAsks asks that all '
+            + 'threw, router refusals beside them leaving asked and threw as they were, and the tally\'s own '
+            + 'withholding refusal counting as nothing at all',
+          fn: async () => {
+            /** Tally both clients count into. */
+            const tally = createSeatTally();
+            /** Client over an inner that fails every call in its own way. */
+            const failing = seatTallyClient({
+              inner: innerClient({ text: '', failing: true, },),
+              tally,
+              minAsks: 4,
+            },);
+            /** Client over a router that refuses every call. */
+            const refused = seatTallyClient({
+              inner: routerRefusingClient(),
+              tally,
+              minAsks: 4,
+            },);
+
+            await thrownByText({ client: refused, modelId: SEAT_HYPER_ONLY, signal: SIGNAL, },);
+            await thrownByText({ client: failing, modelId: SEAT_HYPER_ONLY, signal: SIGNAL, },);
+            await thrownByText({ client: failing, modelId: SEAT_HYPER_ONLY, signal: SIGNAL, },);
+            await thrownByText({ client: refused, modelId: SEAT_HYPER_ONLY, signal: SIGNAL, },);
+            await thrownByText({ client: failing, modelId: SEAT_HYPER_ONLY, signal: SIGNAL, },);
+            await thrownByText({ client: failing, modelId: SEAT_HYPER_ONLY, signal: SIGNAL, },);
+            /** What the next call threw, with the seat withheld. */
+            const withheldCall = await thrownByText({ client: refused, modelId: SEAT_HYPER_ONLY, signal: SIGNAL, },);
+
+            expect(String(withheldCall,),).toBe(
+              'NoProviderForModelError: no provider can take glm-5.3: the run withheld it after it threw on all '
+              + '4 asks and does not ask it again',
+            );
+            expect(tally.counts(),).toStrictEqual([{
+              modelId: SEAT_HYPER_ONLY,
+              asked: 4,
+              usable: 0,
+              unusable: 0,
+              threw: 4,
+              abandoned: 0,
+              unreachable: 2,
+            },],);
+            expect(tally.withheld({ minAsks: 4, },).map(function toId(count,): string {
+              return count.modelId;
+            },),).toStrictEqual([SEAT_HYPER_ONLY,],);
+          },
+        },),
+
+        it({
+          name: 'COUNTS A REFUSAL THE ROUTER GAVE AFTER THE CALLER LEFT AS UNREACHABLE, since the refusal is a fact '
+            + 'about the seat that no request was sent for, while any other throw after the abort stays abandoned',
+          fn: async () => {
+            /** Tally the wrapper counts into. */
+            const tally = createSeatTally();
+            /** Signal the caller aborted before any call was made. */
+            const aborted = new AbortController();
+            aborted.abort();
+            /** Client over a router that refuses every call. */
+            const refused = seatTallyClient({
+              inner: routerRefusingClient(),
+              tally,
+              minAsks: 4,
+            },);
+            /** Client over an inner that fails every call in its own way. */
+            const failing = seatTallyClient({
+              inner: innerClient({ text: '', failing: true, },),
+              tally,
+              minAsks: 4,
+            },);
+
+            await thrownByText({ client: refused, modelId: SEAT_HYPER_ONLY, signal: aborted.signal, },);
+            await thrownByText({ client: failing, modelId: SEAT_HYPER_ONLY, signal: aborted.signal, },);
+
+            expect(tally.counts(),).toStrictEqual([{
+              modelId: SEAT_HYPER_ONLY,
+              asked: 0,
+              usable: 0,
+              unusable: 0,
+              threw: 0,
+              abandoned: 1,
+              unreachable: 1,
             },],);
           },
         },),
@@ -895,6 +1148,7 @@ await describe({
               unusable: 0,
               threw: 1,
               abandoned: 0,
+              unreachable: 0,
             },],);
             expect(seatTallyClient({
               inner: innerClient({ text: '喵。', },),
@@ -927,8 +1181,8 @@ await describe({
             tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'usable', },);
 
             expect(seatReportLines({ tally, },),).toStrictEqual([
-              'SEAT hf:openai/gpt-oss-120b asked=1 usable=1 unusable=0 threw=0 abandoned=0',
-              'SEAT minimax-m3 asked=2 usable=1 unusable=1 threw=0 abandoned=0',
+              'SEAT hf:openai/gpt-oss-120b asked=1 usable=1 unusable=0 threw=0 abandoned=0 unreachable=0',
+              'SEAT minimax-m3 asked=2 usable=1 unusable=1 threw=0 abandoned=0 unreachable=0',
             ],);
           },
         },),
@@ -946,8 +1200,48 @@ await describe({
             tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'abandoned', },);
 
             expect(seatReportLines({ tally, },),).toStrictEqual([
-              'SEAT hf:openai/gpt-oss-120b asked=2 usable=2 unusable=0 threw=0 abandoned=3',
+              'SEAT hf:openai/gpt-oss-120b asked=2 usable=2 unusable=0 threw=0 abandoned=3 unreachable=0',
             ],);
+          },
+        },),
+
+        it({
+          name: 'PRINTS THE UNREACHABLE COUNT on the SEAT line, and gives a seat only the router refused its own line '
+            + 'with asked=0 that is not named dark, since it was never asked (zheermao20, glm-5.3)',
+          fn: async () => {
+            /** Tally of a seat the router refused four times and a seat that answered. */
+            const tally = createSeatTally();
+            tally.record({ modelId: SEAT_HYPER_ONLY, outcome: 'unreachable', },);
+            tally.record({ modelId: SEAT_HYPER_ONLY, outcome: 'unreachable', },);
+            tally.record({ modelId: SEAT_HYPER_ONLY, outcome: 'unreachable', },);
+            tally.record({ modelId: SEAT_HYPER_ONLY, outcome: 'unreachable', },);
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
+
+            expect(seatReportLines({ tally, },),).toStrictEqual([
+              'SEAT glm-5.3 asked=0 usable=0 unusable=0 threw=0 abandoned=0 unreachable=4',
+              'SEAT hf:openai/gpt-oss-120b asked=1 usable=1 unusable=0 threw=0 abandoned=0 unreachable=0',
+            ],);
+          },
+        },),
+
+        it({
+          name: 'COUNTS ONLY THE SEATS ASKED in the SEATS DARK line, so a seat the router only refused is not one of '
+            + 'the seats said to have produced nothing',
+          fn: async () => {
+            /** Tally with one dark seat, one seat that answered and one the router only refused. */
+            const tally = createSeatTally();
+            tally.record({ modelId: SEAT_HYPER_TEXT_BEDROCK, outcome: 'threw', },);
+            tally.record({ modelId: SEAT_HYPER_ONLY, outcome: 'unreachable', },);
+            tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
+
+            /** Lines as a reader sees them. */
+            const lines = seatReportLines({ tally, },);
+
+            expect(lines.length,).toBe(4,);
+            expect(lines[3],).toContain(
+              'SEATS DARK: 1 of 2 seats asked produced nothing usable this run: gemma-4-26b-a4b-it (asked 1, '
+              + 'unusable 0, threw 1). ',
+            );
           },
         },),
 

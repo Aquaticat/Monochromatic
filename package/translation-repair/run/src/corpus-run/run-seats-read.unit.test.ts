@@ -43,7 +43,10 @@ import {
   warningRecordingLogger,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import { quotingFailure, } from '@monochromatic-dev/translation-repair-test-fixture/ts/quoting-failure.test-fixture.ts';
-import { SEAT_SYNTHETIC_VISION_NO_OPENROUTER, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
+import {
+  SEAT_HYPER_ONLY,
+  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+} from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { withFreshRunSeats, } from '@monochromatic-dev/translation-repair-stage/ts/corpus-run/fresh-run-seats.test-fixture.ts';
 
 //region Seat reading tests
@@ -52,6 +55,11 @@ import { withFreshRunSeats, } from '@monochromatic-dev/translation-repair-stage/
  The Hyper-slow judge.
  */
 const QWEN = SEAT_SYNTHETIC_VISION_NO_OPENROUTER;
+
+/**
+ The seat only Hyper serves.
+ */
+const GLM = SEAT_HYPER_ONLY;
 
 /**
  Every provider wet.
@@ -83,6 +91,20 @@ const SYNTHETIC_DRY: BudgetView = {
   synthetic: true,
   bedrock: false,
   hyper: false,
+  openrouter: false,
+};
+
+/**
+ NeuralWatt and Bedrock wet, Synthetic and Hyper dry, OpenRouter wet: the
+ view zheermao20 read after Synthetic ran dry at 02:37 UTC, under which
+ `glm-5.3` (Hyper alone) and `hf:Qwen/Qwen3.8-27B` (Synthetic and Hyper) are
+ seated and no wet provider serves either.
+ */
+const SYNTHETIC_AND_HYPER_DRY: BudgetView = {
+  neuralwatt: false,
+  synthetic: true,
+  bedrock: false,
+  hyper: true,
   openrouter: false,
 };
 
@@ -248,7 +270,7 @@ await describe({
             },);
             expect(lines,).toEqual([
               'info JUDGE SEATS phase=lanes neuralwatt=wet synthetic=wet bedrock=wet hyper=wet openrouter=wet wide=7 select=8 '
-              + 'late=8 slate=8 checkers=3 translators=8 readers=6 writers=9 roster=9 withheld=none '
+              + 'late=8 slate=8 checkers=3 translators=8 readers=6 writers=9 roster=9 withheld=none unserved=none '
               + 'threw-withheld=hf:Qwen/Qwen3.8-27B (threw 4 of 4 asks) waited=0ms',
             ],);
 
@@ -266,9 +288,42 @@ await describe({
             },);
             expect(mixedLines,).toEqual([
               'info JUDGE SEATS phase=lanes neuralwatt=wet synthetic=wet bedrock=wet hyper=wet openrouter=wet wide=7 select=8 '
-              + 'late=8 slate=8 checkers=3 translators=8 readers=6 writers=9 roster=9 withheld=none '
+              + 'late=8 slate=8 checkers=3 translators=8 readers=6 writers=9 roster=9 withheld=none unserved=none '
               + 'threw-withheld=none waited=0ms',
             ],);
+          },
+        },),
+        it({
+          name: 'NAMES IN THE JUDGE SEATS LINE EVERY SEATED SEAT NO WET PROVIDER SERVES as unserved, and none when every '
+            + 'seated seat is served, and does not take a seat the router only refused for withheld (zheermao20: '
+            + '"glm-5.3 threw 4 of 4 asks" for four refusals and no request)',
+          fn: async () => {
+            using _fresh = withFreshRunSeats();
+            for (let refusal = 0; refusal < 4; refusal += 1)
+              RUN_SEATS.record({ modelId: GLM, outcome: 'unreachable', },);
+            /** Lines the reading writes under the dry view. */
+            const dryLines: string[] = [];
+            await readJudgeSeats({
+              client: viewClient({ providerDryness: async () => SYNTHETIC_AND_HYPER_DRY, },),
+              phase: 'lanes',
+              signal: new AbortController().signal,
+              l: levelCapturingLogger({ lines: dryLines, },),
+            },);
+            /** Lines the reading writes with every provider wet. */
+            const wetLines: string[] = [];
+            await readJudgeSeats({
+              client: viewClient({ providerDryness: async () => ALL_WET, },),
+              phase: 'lanes',
+              signal: new AbortController().signal,
+              l: levelCapturingLogger({ lines: wetLines, },),
+            },);
+
+            expect(dryLines.length,).toBe(1,);
+            expect(dryLines[0],).toContain(
+              ' unserved=hf:Qwen/Qwen3.8-27B,glm-5.3 threw-withheld=none waited=0ms',
+            );
+            expect(wetLines.length,).toBe(1,);
+            expect(wetLines[0],).toContain(' unserved=none threw-withheld=none waited=0ms',);
           },
         },),
         it({
