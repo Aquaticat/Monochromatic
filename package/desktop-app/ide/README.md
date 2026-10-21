@@ -3370,9 +3370,12 @@ and `render/MainMinimap.kt`.
 - The slice is the bands the track shows and one on each side.
   A band is 768 logical px of the text from a fixed distance from its top (`BAND`),
   so the cuts do not move with the scroll,
-  and a slice holds every band the track shows, however tall that is.
+  and a slice holds every band the track shows,
+  however tall that is.
   The GPU draws a slice into as many textures as the device's texture side asks for
-  (`texture_runs` in `src/minimap/plan.rs`: whole chunks, each texture at most the device's side in rows
+  (`texture_runs` in `src/minimap/plan.rs`:
+  whole chunks,
+  each texture at most the device's side in rows
   and at most the source tile's byte rule),
   and the markup stacks them one below the other without a gap (`ui/minimap.slint`).
 - The slice is rendered in chunks of at most 512 rows (`CHUNK_ROWS`).

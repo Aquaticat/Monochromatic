@@ -203,7 +203,9 @@ pub struct Stats {
 ///  and the row of the whole picture the slice's first row is.
 ///  The chunks are as wide as the slice and stack without a gap;
 ///  the slice is as tall as they are together,
-///  and the GPU draws it into one texture or, past the device's texture limit, into several that stack.
+///  and the GPU draws it into one texture or,
+///  past the device's texture limit,
+///  into several that stack.
 ///  No chunk when the slice holds no rows.
 /// Why:
 ///  The window thread hands the scenes to the GPU and places the textures by the top row.

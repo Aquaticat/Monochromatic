@@ -131,7 +131,10 @@ impl Outcome {
             }
         }
         if let Some(place) = self.minimap {
-            let height: f32 = place.slices.iter().map(|slice| return slice.height).sum();
+            let mut height = 0.0;
+            for slice in &place.slices {
+                height += slice.height;
+            }
             window.set_minimap_slices(ModelRc::from(Rc::new(VecModel::from(place.slices))));
             window.set_minimap_picture_width(place.width as f32);
             window.set_minimap_picture_height(height);

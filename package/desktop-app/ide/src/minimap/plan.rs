@@ -83,7 +83,9 @@ pub fn texture_rows(width: u32, limit: u32) -> u32 {
 }
 
 /// What:
-///  How the chunks of a picture, given by their `heights` from the top, are grouped into the textures that are
+///  How the chunks of a picture,
+///  given by their `heights` from the top,
+///  are grouped into the textures that are
 ///  stacked to show it:
 ///  the chunk numbers of each texture,
 ///  top first,
@@ -91,9 +93,11 @@ pub fn texture_rows(width: u32, limit: u32) -> u32 {
 ///  A chunk taller than that is a texture of its own,
 ///  which the GPU then refuses with a message.
 /// Why:
-///  A texture is made of whole chunks, because the GPU renders and copies a chunk as it was built,
+///  A texture is made of whole chunks,
+///  because the GPU renders and copies a chunk as it was built,
 ///  and a stack of textures that abut shows the same rows as one texture would,
-///  so the cut between two textures is a cut between two chunks, which is already seamless.
+///  so the cut between two textures is a cut between two chunks,
+///  which is already seamless.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

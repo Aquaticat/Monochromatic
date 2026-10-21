@@ -747,8 +747,11 @@ fn a_tall_slice_is_cut_into_chunks_of_at_most_the_chunk_rows() {
     assert!(chunk_rows(&(5..5)).is_empty());
 }
 
-/// The chunks of a picture are grouped into textures of whole chunks, none taller than the device's limit,
-/// top first, with no chunk left out or in two textures, and a limit that is not a multiple of a chunk
+/// The chunks of a picture are grouped into textures of whole chunks,
+///  none taller than the device's limit,
+/// top first,
+///  with no chunk left out or in two textures,
+///  and a limit that is not a multiple of a chunk
 /// wastes the rest of the texture rather than cutting a chunk.
 #[test]
 fn chunks_are_grouped_into_textures_that_fit_the_limit() {

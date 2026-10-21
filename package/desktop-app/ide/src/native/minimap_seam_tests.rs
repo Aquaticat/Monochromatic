@@ -30,14 +30,18 @@ use slint::Rgba8Pixel;
 /// A scene is placed by an affine transform.
 use vello::{Scene, kurbo::Affine};
 
-/// The width the lines wrap at, in logical pixels.
+/// The width the lines wrap at,
+///  in logical pixels.
 const WRAP: f32 = 730.0;
-/// The width of the minimap, in logical pixels.
+/// The width of the minimap,
+///  in logical pixels.
 const WIDTH: f32 = 110.0;
-/// The height of the view, in logical pixels.
+/// The height of the view,
+///  in logical pixels.
 const VIEW: f32 = 660.0;
 
-/// Lines of code of ordinary density, some of which wrap.
+/// Lines of code of ordinary density,
+///  some of which wrap.
 fn code_text(lines: usize) -> String {
     let mut text = String::new();
     for number in 0..lines {
@@ -52,11 +56,15 @@ fn code_text(lines: usize) -> String {
 /// How the scenes of a picture are made.
 #[derive(Clone, Copy)]
 enum Mode {
-    /// As the product makes them: chunks of at most 512 rows, each keeping the items whose ink can reach its rows.
+    /// As the product makes them:
+    ///  chunks of at most 512 rows,
+    ///  each keeping the items whose ink can reach its rows.
     Product,
-    /// One scene for all the rows, which one render draws.
+    /// One scene for all the rows,
+    ///  which one render draws.
     Unsplit,
-    /// Chunks as the product cuts them, but each keeping only the items whose layout box lies inside its rows.
+    /// Chunks as the product cuts them,
+    ///  but each keeping only the items whose layout box lies inside its rows.
     Bare,
 }
 
@@ -66,7 +74,7 @@ fn scenes(scale: f32, bands: usize, mode: Mode) -> (Vec<TileScene>, usize) {
     let text = code_text(900);
     let document = Document::new(&text);
     let mut shaper = TextShaper::new();
-    let mut rows = LineRows::plain(document.text().len_lines());
+    let mut line_rows = LineRows::plain(document.text().len_lines());
     let mut measured = Vec::new();
     for line in 0..document.text().len_lines() {
         let count = shaper
@@ -74,8 +82,8 @@ fn scenes(scale: f32, bands: usize, mode: Mode) -> (Vec<TileScene>, usize) {
             .visual_rows();
         measured.push((line, count));
     }
-    rows.apply(measured);
-    let map = RowMap::plain(document.text().len_lines()).with_rows(&rows);
+    line_rows.apply(measured);
+    let map = RowMap::plain(document.text().len_lines()).with_rows(&line_rows);
     let styles = styles_of(&text);
     let source = Source {
         document: &document,
@@ -158,7 +166,9 @@ fn stacked(scenes: &[TileScene]) -> Vec<Rgba8Pixel> {
     return texels;
 }
 
-/// The chunks the picture is rendered in, stacked, equal the one render of all its rows,
+/// The chunks the picture is rendered in,
+///  stacked,
+///  equal the one render of all its rows,
 /// at a scale where a seam falls between lines and at one where it falls through a line,
 /// and the rows on both sides of each seam are inked.
 #[test]

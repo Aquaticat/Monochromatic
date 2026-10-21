@@ -18,11 +18,13 @@ use super::{
     tile_reads::{draw_minimap, minimap_pixels, same_pixels, same_texel},
     wrap_tests::{long_text, open, settled},
 };
-/// The window's frame, read back from the GPU.
+/// The window's frame,
+///  read back from the GPU.
 use crate::native::gpu_snapshot::snapshot;
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
-/// The device's texture limit, and lowering it for a test.
+/// The device's texture limit,
+///  and lowering it for a test.
 use ide_app::shaped_text::{set_texture_dimension, texture_dimension};
 /// Toolkit events.
 use slint::{
@@ -350,7 +352,8 @@ fn a_picture_taller_than_the_device_limit_covers_the_whole_track() {
 
 /// The pixels of the minimap's column in the window's frame,
 /// row by row from the top:
-/// the textures as the window composites them, with the box over them.
+/// the textures as the window composites them,
+///  with the box over them.
 fn minimap_column(window: &crate::native::AppWindow) -> (Vec<Rgba8Pixel>, usize) {
     let frame = snapshot(window.window());
     let columns = frame.width() as usize;
@@ -362,7 +365,8 @@ fn minimap_column(window: &crate::native::AppWindow) -> (Vec<Rgba8Pixel>, usize)
     return (column, width);
 }
 
-/// Lower the device limit the shaped text records to `limit` and wait for the picture of the same bands, cut for it.
+/// Lower the device limit the shaped text records to `limit` and wait for the picture of the same bands,
+///  cut for it.
 fn restacked(opened: &Reader, limit: u32) {
     let window = &opened.window;
     set_texture_dimension(limit);
@@ -386,12 +390,16 @@ fn restacked(opened: &Reader, limit: u32) {
     draw_minimap(window);
 }
 
-/// Whether `stacked` is `whole` shifted down by one row of `width` texels, which no picture of text equals.
+/// Whether `stacked` is `whole` shifted down by one row of `width` texels,
+///  which no picture of text equals.
 fn shifted_equals(whole: &[Rgba8Pixel], stacked: &[Rgba8Pixel], width: usize) -> bool {
     return same_pixels(&whole[width..], &stacked[..stacked.len() - width]);
 }
 
-/// A picture that fits one texture, drawn again as three, as four, and as seven or more textures that stack,
+/// A picture that fits one texture,
+///  drawn again as three,
+///  as four,
+///  and as seven or more textures that stack,
 /// is the same picture:
 /// every texel read back equals the texel of the one texture,
 /// the rows on both sides of each seam are inked and equal,
@@ -423,13 +431,18 @@ fn textures_that_stack_show_the_picture_one_texture_shows() {
         whole.height()
     );
     let (column, column_width) = minimap_column(window);
-    let bands = opened.source.borrow().minimap.shown.map(|key| key.window);
+    let bands = opened
+        .source
+        .borrow()
+        .minimap
+        .shown
+        .map(|key| return key.window);
     let top = window.get_minimap_picture_top();
     for limit in [1536_u32, 1024, 512] {
         restacked(&opened, limit);
         let current = opened.source.borrow().minimap.shown;
         assert_eq!(
-            current.map(|key| key.window),
+            current.map(|key| return key.window),
             bands,
             "the same bands are drawn at limit {limit}"
         );
@@ -494,16 +507,16 @@ fn textures_that_stack_show_the_picture_one_texture_shows() {
         let (stack_column, stack_width) = minimap_column(window);
         assert_eq!(stack_width, column_width);
         let background = column[0];
-        let mut seam = HEADER as usize;
-        let mut seams_seen = 0;
+        let mut frame_seam = HEADER as usize;
+        let mut frame_seams_seen = 0;
         for (_, rows) in &sizes[..sizes.len() - 1] {
-            seam += *rows as usize;
+            frame_seam += *rows as usize;
             // A seam below the bottom of the frame is not in the composited column.
-            if seam + 8 > stack_column.len() / column_width {
+            if frame_seam + 8 > stack_column.len() / column_width {
                 break;
             }
-            seams_seen += 1;
-            for side in [seam - 8..seam, seam..seam + 8] {
+            frame_seams_seen += 1;
+            for side in [frame_seam - 8..frame_seam, frame_seam..frame_seam + 8] {
                 let inked = stack_column[side.start * column_width..side.end * column_width]
                     .iter()
                     .filter(|pixel| {
@@ -515,7 +528,10 @@ fn textures_that_stack_show_the_picture_one_texture_shows() {
                 assert!(inked > 0, "the composited column is blank at rows {side:?}");
             }
         }
-        assert!(seams_seen >= 2, "only {seams_seen} seams are in the frame at limit {limit}");
+        assert!(
+            frame_seams_seen >= 2,
+            "only {frame_seams_seen} seams are in the frame at limit {limit}"
+        );
         assert!(
             same_pixels(&column, &stack_column),
             "the composited column differs at limit {limit}"

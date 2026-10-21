@@ -26,7 +26,8 @@
 //!  on a worker thread.
 //!  The window renders the scenes one after another into the textures of the picture,
 //!  each of whole chunks and no taller than the device's texture limit (`texture_runs`),
-//!  and shows the textures as images, one below the other.
+//!  and shows the textures as images,
+//!  one below the other.
 //!  A window taller than the limit therefore has a picture that covers its whole track.
 
 /// The paint items cut into the chunks a slice is rendered in.

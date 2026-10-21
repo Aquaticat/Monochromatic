@@ -2,7 +2,8 @@
 //!  rendered in chunks of at most 512 rows,
 //!  each into a small scratch texture and then copied into a texture of the picture.
 //!  A picture taller than the device's texture limit is several textures,
-//!  each of whole chunks, stacked one below the other.
+//!  each of whole chunks,
+//!  stacked one below the other.
 //!
 //! Vello 0.11 sizes its scratch buffers with fixed constants,
 //!  and a scene that needs more than they hold renders blank without an error
@@ -118,10 +119,10 @@ impl Inner {
         outcome: &mut Outcome,
     ) -> bool {
         let (width, heights) = shape;
-        let reusable = self.minimap.len() == heights.len()
-            && self.minimap.iter().zip(heights).all(|(kept, height)| {
-                return kept.target.width == width && kept.target.height == *height;
-            });
+        let mut reusable = self.minimap.len() == heights.len();
+        for (kept, height) in self.minimap.iter().zip(heights) {
+            reusable &= kept.target.width == width && kept.target.height == *height;
+        }
         if reusable {
             return true;
         }
@@ -186,9 +187,13 @@ impl Inner {
             return;
         };
         let width = first.width;
-        let heights: Vec<u32> = chunks.iter().map(|chunk| return chunk.height).collect();
+        let mut heights = Vec::with_capacity(chunks.len());
+        let mut ragged = false;
+        for chunk in chunks {
+            heights.push(chunk.height);
+            ragged |= chunk.width != width;
+        }
         let height: u32 = heights.iter().sum();
-        let ragged = chunks.iter().any(|chunk| return chunk.width != width);
         let limit = device.limits().max_texture_dimension_2d;
         // The texture limit the shaped text records is the device's, unless a test lowered it.
         let runs = texture_runs(
@@ -199,10 +204,10 @@ impl Inner {
         let allowed = u64::from(texture_rows(width, limit));
         let mut oversize = false;
         for run in &runs {
-            let rows: u64 = heights[run.clone()]
-                .iter()
-                .map(|rows| return u64::from(*rows))
-                .sum();
+            let mut rows: u64 = 0;
+            for chunk_height in &heights[run.clone()] {
+                rows += u64::from(*chunk_height);
+            }
             oversize |= rows > allowed;
         }
         if ragged || width == 0 || height == 0 || width > limit || oversize {
@@ -219,10 +224,10 @@ impl Inner {
             ));
             return;
         }
-        let sizes: Vec<u32> = runs
-            .iter()
-            .map(|run| return heights[run.clone()].iter().sum())
-            .collect();
+        let mut sizes = Vec::with_capacity(runs.len());
+        for run in &runs {
+            sizes.push(heights[run.clone()].iter().sum::<u32>());
+        }
         if !self.stack_textures(&device, (width, &sizes), outcome) {
             return;
         }
