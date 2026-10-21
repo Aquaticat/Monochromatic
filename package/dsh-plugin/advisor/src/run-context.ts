@@ -50,6 +50,12 @@ export type CreateDshAdvisorRunContextOptions = {
  `provider/model` route, so default selection can exclude it exactly as pi
  excludes its active primary model.
 
+ The live scoped-model getter exposes every catalog route the DSH runtime
+ resolved with configured auth.
+ DSH has no pi-style scoped-model cycle list,
+ so without this getter scope resolution falls back to pi-only sources
+ and reports an empty scope.
+
  @param options - catalog, transcript, working directory, and agent route
 
  @returns shared run context
@@ -64,6 +70,10 @@ export function createDshAdvisorRunContext(
 ): AdvisorRunContext {
   return {
     modelRegistry: options.catalog,
+    getScopedModels: function getScopedModels(): unknown {
+      return options.catalog
+        .getAvailable();
+    },
     transcript: options.transcript,
     cwd: options.cwd,
     ...((options.mainProvider === undefined) || (options.mainModel === undefined)
