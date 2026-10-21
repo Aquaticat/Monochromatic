@@ -320,9 +320,29 @@ is queued in keyless worktree w254:
 the refusal counts as `unreachable`,
 `JUDGE SEATS` names the unserved seats,
 and the re-seat line marks its padding.
-`CuspariaKLSY20` (entry CuspariaKLSY) runs on the same build from 02:52 UTC on 2026-10-21;
+`CuspariaKLSY20` (entry CuspariaKLSY) ran on the same build from 02:52 UTC on 2026-10-21
+and settled in 690,310 ms of pass
+(`TALLY CuspariaKLSY status=SETTLED slices=4 ... repairAccepted=21 ... pageChanged=4 ... selection=contested`),
+again with no plan energy spent;
+its read runs as a read-only Sonnet agent.
+Its 80 settled NeuralWatt calls measured 21.19 Wh.
+In the 4,096 to 16,384 token bucket its means were well over the estimates:
+DeepSeek 0.1996 Wh over 62 calls against 0.0758 Wh,
+GLM 0.5500 Wh over 16 calls against 0.3725 Wh.
+So the bucket's mean moves a great deal from entry to entry,
+and two runs are too few to recalibrate from.
+What an estimate costs when it runs low is the energy of calls in flight at the daily boundary,
+since every settled call counts its measured energy;
+the day stood at about 52 Wh of 550 after these two runs.
+Open:
+whether the estimate should follow the measured mean of the run in progress,
+decided once more runs have settled.
+
+XingZ60 is held until w253 and w254 land:
 a fix that lands changes the build,
-and the rotation then restarts at `zheermao101`.
+the rotation then restarts at `zheermao101`,
+and a read of XingZ60 on this build would not count,
+while it would spend a large share of the day's free energy.
 The B701 rotation sweep landed as `7c9d5fa35f` after gate g137
 (2690 pass,
 0 fail).
