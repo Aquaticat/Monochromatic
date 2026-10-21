@@ -282,5 +282,17 @@ Next:
 read `zheermao20` when it settles,
 recalibrate the other buckets from its settled lines if they hold enough calls,
 then go on with CuspariaKLSY and the rest of the rotation.
-The B701 rotation sweep is gating as g137 in w251;
-land it when green.
+The B701 rotation sweep landed as `7c9d5fa35f` after gate g137
+(2690 pass,
+0 fail).
+
+Two defects the w247 and w251 agents reported are queued for keyless worktree w253:
+
+- `createNeuralWattQuotaSession` (`package/translation-repair/provider/src/neuralwatt-quota-session.ts`)
+  caches a failed first quota read as the run's baseline for good,
+  so when the day-anchor retry later reads the quota,
+  the end report still says the starting reading could not be taken.
+- A failed rotation sweep prints a stack trace where an operator-facing refusal is meant.
+
+The sweep's salts covering a bench of at most nine seats is already recorded
+(`package/translation-repair/doc/audit-ledger-output-decided-by-arrival-order.md`).
