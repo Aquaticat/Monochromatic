@@ -447,3 +447,69 @@ Patch: attach `doc/troubleshooting/pnpr-oidc-github-actions-discovery.patch` or 
 
 Written by an agent (Claude Code, claude-opus-5).
 ~~~
+
+## Upstream status re-check 2026-10-21
+
+pnpr has not fixed this.
+ The npm `next` dist-tag is `@pnpm/pnpr@0.1.0-alpha.16`
+ (published 2026-10-21T10:47Z from pnpm/pnpm `91774e72a04d52ce61db06339696a433d383c764`,
+ release PR pnpm/pnpm#17187),
+ and that release still carries the whole failure chain:
+
+- `pnpr/crates/auth/src/oidc/provider_metadata.rs:42` maps every discovery error to `unavailable()`.
+- `pnpr/crates/auth/src/oidc/provider_metadata.rs:43` requires `metadata.authorization_endpoint()`.
+- `pnpr/crates/auth/src/oidc/workload_verification.rs:42` sends every workload token through that discovery.
+- `pnpr/crates/auth/src/oidc/tests.rs:72` and `73` still synthesize `authorization_endpoint` in test metadata.
+- Workspace `Cargo.toml:134` still pins openidconnect 4.0.1.
+
+pnpm/pnpm#16970 (2026-10-16) split `pnpr/crates/auth/src/oidc.rs` into `pnpr/crates/auth/src/oidc/`,
+ and pnpm/pnpm#16501 renamed the refresh flag to a `MetadataFreshness` enum;
+ both are shape changes with the same discovery behavior.
+GitHub's discovery document,
+ fetched 2026-10-21,
+ still omits `authorization_endpoint`:
+ it serves `claims_supported`,
+ `id_token_signing_alg_values_supported`,
+ `issuer`,
+ `jwks_uri`,
+ `response_types_supported`,
+ `scopes_supported`,
+ and `subject_types_supported`.
+Issue and pull request search in pnpm/pnpm for `authorization_endpoint` returns nothing (checked 2026-10-21),
+ and the 2026-09-15 filing decision stands unchanged.
+
+### Release probe
+
+The registry harness against `@pnpm/pnpr@0.1.0-alpha.16` installed from npm
+ (throwaway instance on 127.0.0.1:17678,
+ this repository's generated `package/config/pnpr/config.yaml`
+ with its storage paths moved to a scratch directory and its `web:` block removed):
+
+```text
+control GET / -> 404
+500 Internal Server Error
+```
+
+pnpr logged the probe request as:
+
+```json
+{"level":"ERROR","fields":{"message":"request failed","err":"Internal error: OIDC provider unavailable","error_kind":"internal","status":"500 Internal Server Error"},"target":"pnpr_error::response"}
+```
+
+The control GET proves the instance was up and answering other routes,
+ so the 500 comes from the workload path.
+This matches `0.1.0-alpha.11` exactly:
+ upstream releases through `0.1.0-alpha.16` still reject every GitHub Actions workload publish.
+
+### Migration note for leaving the patched image
+
+`0.1.0-alpha.16` also rejects the generated config's `web:` block
+ (``unknown field `web`, expected one of ... ui ...``,
+ from `pnpr config-check` against the release binary),
+ so returning to an upstream build needs a config migration along with a fixed or patched binary.
+
+### Next action
+
+The patched image pinned in `package/config/pnpr/Containerfile` remains required.
+Re-run the release probe when a newer `@pnpm/pnpr` lands on `next`,
+ or before any patched-image refresh.
