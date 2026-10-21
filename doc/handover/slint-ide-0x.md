@@ -1234,6 +1234,15 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     and the 131,072-tile rule, and could carry the patch through `[patch.crates-io]` if a larger target is ever
     needed. Note: at exactly 131,072 tiles the default `ptcl` has no dynamic room, so a scene needing one more chunk
     there fails loudly with bit 16.
+    Owner question of 2026-10-20, "Do we really need 15 or more full test:native runs? I thought we fixed the
+    flakes?": no, 15 was my round number. With a true flake rate p per run, n runs catch it with probability
+    1-(1-p)^n: 54 percent at p = 5 percent and 79 percent at p = 10 percent for n = 15, so it is no proof either. The
+    four causes found by the flake agent are fixed (three batches of 15 passed since, one at load 50); the residual
+    repeat offender is the CPU minimap test `an_external_edit_of_fifty_thousand_lines_renders_only_the_band_it_touches`
+    (1 of 20 on the baseline), which stage 5 and 6 delete; one nine-level pixel difference and
+    `find_box_context_menu_runs_each_entry` were each seen once. Rule I adopted (veto-open): a change that adds or
+    rewrites tests that read pixels or wait on timers (stage 5 and 6 does) gets 15 consecutive full runs; any other
+    change gets 3 full runs. The "15 or more" in the stage 5 and 6 brief stands for that reason only.
     LANDED 2026-10-20 (pushed as `6a44ec419f`; the IDE tree equals the one I verified: `lint`, `test:bin`, `build`,
     `inspect:software-renderer` pass, `test:native` 15 of 15 at 264 tests under a load average of about 50; the first
     push attempt failed twice, a hook message and then a plain non-fast-forward because others pushed, and the third
