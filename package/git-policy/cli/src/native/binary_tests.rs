@@ -52,6 +52,10 @@ mod builtin;
 #[path = "binary_discard_tests.rs"]
 mod discard;
 
+/// The hints of blocks outside the discard guard reach the caller beside an unchanged message.
+#[path = "binary_hint_tests.rs"]
+mod hints;
+
 /// `markdown/autofix` with the linter built from this repository,
 ///  a missing one and a failing one.
 #[path = "binary_markdown_tests.rs"]

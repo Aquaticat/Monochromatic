@@ -177,3 +177,18 @@ pub(crate) fn git_text<S: AsRef<OsStr>>(directory: &Path, arguments: &[S]) -> St
     let text: String = String::from_utf8(output.stdout).expect("UTF-8 Git output");
     return String::from(text.strip_suffix('\n').unwrap_or(text.as_str()));
 }
+
+/// The lines without their additive `hint` fields, which the incumbent's shape does not have.
+pub(crate) fn strip_hint_fields(text: &str) -> String {
+    let marker: &str = ",\"hint\":\"";
+    let mut rest: String = text.to_owned();
+    while let Some(start) = rest.find(marker) {
+        let bytes: &[u8] = rest.as_bytes();
+        let mut end: usize = start + marker.len();
+        while bytes[end] != b'"' {
+            end += if bytes[end] == b'\\' { 2 } else { 1 };
+        }
+        rest = format!("{}{}", &rest[..start], &rest[end + 1..]);
+    }
+    return rest;
+}
