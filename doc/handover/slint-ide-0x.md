@@ -1234,6 +1234,13 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     and the 131,072-tile rule, and could carry the patch through `[patch.crates-io]` if a larger target is ever
     needed. Note: at exactly 131,072 tiles the default `ptcl` has no dynamic room, so a scene needing one more chunk
     there fails loudly with bit 16.
+    Owner addition of 2026-10-20: "proven unfixably flaky" is a very, very high bar; "in many cases we can change our
+    code, our tests, split the tests, and more instead". Zero retry overrides is the expected outcome. A test may go under
+    retries only when the report lists every alternative tried or ruled out with evidence (deterministic product code,
+    waiting on the real condition, splitting the test, injected clock or renderer state, waiting for GPU idle, less
+    parallel GPU use, a restructured assertion), and the cause lies outside our code and outside what a restructured
+    test controls; difficulty, effort or load-dependence alone never qualify; an undiagnosed flake stays an open,
+    instrumented flake and is not retried. Sent to agent `af624c22739073177`.
     Owner instruction of 2026-10-20 that REPLACES the run-count rule in the next paragraph: "I suggest you properly fix the
     flakes instead. And we should never run a full test against one snapshot of code. If some tests are confirmed
     unfixably flaky, make the test harness run the specific tests more instead." My reading (stated to the owner, not
