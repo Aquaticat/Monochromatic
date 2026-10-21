@@ -790,3 +790,8 @@ named for that subject and listed here.
   CuspariaKLSY19,
   zheermao17,
   zheermao19.
+- [OpenRouter and the corpus passes: 2026-10-21](translation-repair-openrouter-2026-09-03-2026-10-21.md):
+  What was read and decided on 2026-10-21.
+  Entries:
+  zheermao20,
+  CuspariaKLSY20.

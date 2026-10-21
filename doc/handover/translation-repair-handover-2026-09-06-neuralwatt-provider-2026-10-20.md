@@ -291,7 +291,13 @@ the other buckets hold 2 to 4 calls each,
 too few to recalibrate.
 OpenRouter's reported cost was USD 0.498.
 
-The page read and an investigation of two seating questions run as read-only Sonnet agents.
+The page read is recorded in
+[the pass log of 2026-10-21](../planning/translation-repair-openrouter-2026-09-03-2026-10-21.md):
+no class traced to code;
+the letter fell back toward the archive,
+because the archive block review picks one whole revision
+and only two narrow revisions reached it.
+An investigation of two seating questions ran as a read-only Sonnet agent.
 The seating questions:
 why `glm-5.3` was seated at preparation though its every provider was out of budget,
 and why `hf:Qwen/Qwen3.8-27B` stayed seatable,
@@ -299,20 +305,107 @@ and was re-seated as a checker under a hold,
 after Synthetic ran dry,
 when `hf:moonshotai/Kimi-K3` was withheld
 (it threw 137 of 158 asks).
-`CuspariaKLSY20` (entry CuspariaKLSY) runs on the same build from 02:52 UTC on 2026-10-21;
+The investigation found the seating as documented.
+`doc/decision/translation-repair-short-bench-share.md` keeps a seat no wet provider serves on the bench,
+to be lost at call time.
+The checker bench pads with unserved seats up to three.
+Kimi-K3 was withheld by the owner's OpenRouter cost rule
+(`OPENROUTER_WITHHELD`),
+which does not name Qwen.
+One defect stands,
+checked against `package/translation-repair/stage/src/seat-tally.ts`:
+`recordThrow` counts the router's own refusal (`NoProviderForModelError`) as an ask that threw,
+where the decision says a refusal is not an ask.
+So `glm-5.3` reads `asked=4 threw=4` though it was never sent a request,
+Qwen's 137 throws are almost all such refusals,
+and the tally withholds such a seat for the run even if a provider becomes wet again.
+Neither `JUDGE SEATS` nor the re-seat line names a seated seat no wet provider serves.
+The fix,
+red first,
+is queued in keyless worktree w254:
+the refusal counts as `unreachable`,
+`JUDGE SEATS` names the unserved seats,
+and the re-seat line marks its padding.
+`CuspariaKLSY20` (entry CuspariaKLSY) ran on the same build from 02:52 UTC on 2026-10-21
+and settled in 690,310 ms of pass
+(`TALLY CuspariaKLSY status=SETTLED slices=4 ... repairAccepted=21 ... pageChanged=4 ... selection=contested`),
+again with no plan energy spent;
+its read in the same pass log found no class
+and a better page than CuspariaKLSY19's.
+Its 80 settled NeuralWatt calls measured 21.19 Wh.
+In the 4,096 to 16,384 token bucket its means were well over the estimates:
+DeepSeek 0.1996 Wh over 62 calls against 0.0758 Wh,
+GLM 0.5500 Wh over 16 calls against 0.3725 Wh.
+So the bucket's mean moves a great deal from entry to entry,
+and two runs are too few to recalibrate from.
+What an estimate costs when it runs low is the energy of calls in flight at the daily boundary,
+since every settled call counts its measured energy;
+the day stood at about 52 Wh of 550 after these two runs.
+Open:
+whether the estimate should follow the measured mean of the run in progress,
+decided once more runs have settled.
+
+XingZ60 is held until w253 and w254 land:
 a fix that lands changes the build,
-and the rotation then restarts at `zheermao101`.
+the rotation then restarts at `zheermao101`,
+and a read of XingZ60 on this build would not count,
+while it would spend a large share of the day's free energy.
 The B701 rotation sweep landed as `7c9d5fa35f` after gate g137
 (2690 pass,
 0 fail).
 
-Two defects the w247 and w251 agents reported are queued for keyless worktree w253:
+Two defects the w247 and w251 agents reported were fixed in keyless worktree w253,
+red first:
 
 - `createNeuralWattQuotaSession` (`package/translation-repair/provider/src/neuralwatt-quota-session.ts`)
-  caches a failed first quota read as the run's baseline for good,
-  so when the day-anchor retry later reads the quota,
-  the end report still says the starting reading could not be taken.
-- A failed rotation sweep prints a stack trace where an operator-facing refusal is meant.
+  cached a failed first quota read as the run's baseline for good,
+  so when the day-anchor retry later read the quota,
+  the end report still said the starting reading could not be taken.
+  It now tries the baseline again no sooner than `NEURALWATT_QUOTA_RETRY_SECONDS` (60 s) later,
+  takes the first successful `readNow` after a failed baseline as the baseline,
+  and the end report says the comparison starts late
+  (`laterStartAt`;
+  ledger P20).
+- A failed rotation sweep printed a stack trace where an operator-facing refusal is meant.
+  It now prints a refusal naming the failing cases and exits 6,
+  and a bad option is refused the same way by `SweepOptionRefusalError`
+  (ledger B710).
+  The process-global writes guard
+  (`package/translation-repair/source-scan/src/global-writes-sequenced.unit.test.ts`)
+  gains a `PROCESS_ENTRIES` list naming only `source-scan/rotation-sweep/rotation-sweep-cli.test-fixture.ts`:
+  that fixture is a process's own entry,
+  so its `process.exitCode` write outside any case is allowed there and nowhere else;
+  its other findings still count,
+  and the package case fails if the named file is gone.
+  This session accepted the exception after reading the diff
+  (veto-open).
+
+The seating defect was fixed in keyless worktree w254,
+red first
+(ledger B711):
+the router's refusal counts as `unreachable`,
+never as an ask or a throw,
+so it moves no withholding threshold;
+the `SEAT` line prints `unreachable=`;
+`JUDGE SEATS` prints `unserved=`;
+and the repair lane's re-seat line ends with `unserved-checkers=`.
+This session accepted the agent's choices
+(veto-open):
+a refusal after the caller aborted counts `unreachable` rather than `abandoned`;
+a seat the owner's cull refuses counts `unreachable` too;
+and only the repair lane's re-seat line marks padding.
+Both agents took B710 as the next free id;
+w253 numbered first,
+so w254's entry became B711 in the merge commit `22cd3e200c`,
+and the subjects of `1ce1e851b0`
+and `29ce2d9daa`
+and `f239810f90` still say B710.
+Gate g138 runs on that merge.
+Once it is green and lands,
+the branch worktree is rebuilt,
+the frozen digest in the launch script is replaced
+and the rotation restarts at `zheermao101`;
+the rotation's order after it is in the launch script.
 
 The sweep's salts covering a bench of at most nine seats is already recorded
 (`package/translation-repair/doc/audit-ledger-output-decided-by-arrival-order.md`).
