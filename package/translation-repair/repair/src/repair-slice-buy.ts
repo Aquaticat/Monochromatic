@@ -207,6 +207,7 @@ export async function buyRepairSlice(
     l.warn(cacheRefusalLine({
       sliceIndex,
       refusals,
+      changed: outcome.changed,
     },),);
     return outcome;
   }
