@@ -35,4 +35,30 @@ export function cacheRefusalsOf(
     },);
 }
 
+/**
+ The warn line a refused settlement prints.
+
+ @param sliceIndex - slice the refusal concerns
+
+ @param refusals - reasons from {@link cacheRefusalsOf}, never empty
+
+ @returns Line naming the slice, every reason and what follows
+
+ @example
+ ```ts
+ l.warn(cacheRefusalLine({ sliceIndex: 3, refusals, },),);
+ ```
+ */
+export function cacheRefusalLine(
+  {
+    sliceIndex,
+    refusals,
+  }: {
+    readonly sliceIndex: number;
+    readonly refusals: readonly string[];
+  },
+): string {
+  return `chunk ${String(sliceIndex,)}: ${refusals.join('; ',)}, so the slice ships unchanged and is NOT cached`;
+}
+
 //endregion Repair cache gate

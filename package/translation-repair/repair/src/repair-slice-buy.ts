@@ -10,7 +10,10 @@ import {
   failureWritten,
   type StageSettings,
 } from '@monochromatic-dev/translation-repair-stage/ts';
-import { cacheRefusalsOf, } from './repair-cache-gate.ts';
+import {
+  cacheRefusalLine,
+  cacheRefusalsOf,
+} from './repair-cache-gate.ts';
 import { repairChunk, } from './repair-chunk.ts';
 import type {
   ChunkRepairOutcome,
@@ -201,10 +204,10 @@ export async function buyRepairSlice(
    */
   const refusals = cacheRefusalsOf({ outcome, },);
   if (refusals.length > 0) {
-    l.warn(
-      `chunk ${String(sliceIndex,)}: ${refusals.join('; ',)}, so the slice ships `
-        + 'unchanged and is NOT cached',
-    );
+    l.warn(cacheRefusalLine({
+      sliceIndex,
+      refusals,
+    },),);
     return outcome;
   }
 
