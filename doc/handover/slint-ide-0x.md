@@ -1234,6 +1234,18 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     and the 131,072-tile rule, and could carry the patch through `[patch.crates-io]` if a larger target is ever
     needed. Note: at exactly 131,072 tiles the default `ptcl` has no dynamic room, so a scene needing one more chunk
     there fails loudly with bit 16.
+    Owner instruction of 2026-10-20 that REPLACES the run-count rule in the next paragraph: "I suggest you properly fix the
+    flakes instead. And we should never run a full test against one snapshot of code. If some tests are confirmed
+    unfixably flaky, make the test harness run the specific tests more instead." My reading (stated to the owner, not
+    contradicted so far): nobody repeats the whole suite on one snapshot to judge it; one full `test:native` run per
+    snapshot is the gate; flakes are fixed at their cause; a test proven unfixably flaky gets a nextest per-test retry
+    override that keeps the pass-after-retry visible (FLAKY in the summary) and an entry in a ledger. Agent
+    `af624c22739073177` (started 2026-10-20) builds a per-test stress tool (a mise task), reproduces each known flake
+    (listed in its brief: the annotation stability tests, `find_box_context_menu_runs_each_entry`,
+    `refused_tile_tests`, `wrap_clip_tests`, the older `write_wait_tests` and `watch_tests`, the `wrap_tests` `settled`
+    early return; the CPU minimap test is the stage 5 and 6 agent's and disappears with it), fixes causes, and adds the
+    nextest config and ledger only for tests it proves unfixable. For stage 5 and 6 verification I now run
+    `test:native` once on the merged snapshot and rely on the per-test stress tool for any test that fails.
     Owner question of 2026-10-20, "Do we really need 15 or more full test:native runs? I thought we fixed the
     flakes?": no, 15 was my round number. With a true flake rate p per run, n runs catch it with probability
     1-(1-p)^n: 54 percent at p = 5 percent and 79 percent at p = 10 percent for n = 15, so it is no proof either. The
