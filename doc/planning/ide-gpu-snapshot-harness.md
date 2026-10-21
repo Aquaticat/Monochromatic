@@ -2536,10 +2536,12 @@ No second renderer exists, and the only memory the minimap adds beyond its textu
   2,048 rows render with no inked pixel,
   and one render of 8,192 rows fails with a wgpu validation error
   (a buffer binding of 201,326,592 bytes over the limit 134,217,728).
-  The chunk is 512 rows so a chunk is a factor of two inside what one render holds.
+  The chunk is 512 rows so a chunk is a factor of two inside what one render holds
+  (on the merged tip of 2026-10-21, with selected rows drawn once,
+  eight chunks still draw every inked pixel and twelve come out blank, so the margin there is larger).
   `the_densest_chunks_are_not_blank`,
   `the_chunk_size_leaves_a_factor_of_two_inside_what_one_render_holds`,
-  and the positive control `one_render_of_four_dense_chunks_comes_out_blank` in
+  and the positive control `one_render_of_every_dense_chunk_comes_out_blank` in
   `src/native/minimap_dense_tests.rs` hold this.
 - The slice texture is narrow (the minimap's width times the scale),
   so the 128 MiB rule of the coordinator's message is far away

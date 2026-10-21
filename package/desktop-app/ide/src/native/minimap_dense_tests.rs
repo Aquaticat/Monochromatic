@@ -218,17 +218,21 @@ fn the_chunk_size_leaves_a_factor_of_two_inside_what_one_render_holds() {
 }
 
 /// Positive control:
-/// the same text drawn as one render of four chunks comes out blank,
+/// the same text drawn as one render of every chunk of the widest window comes out blank,
 /// so the checks above can tell a blank render from a good one,
 /// and the cut into chunks is what keeps the renderer's fixed buffers sufficient.
+/// Measured on the merged tip of 2026-10-21 (selected rows drawn once):
+/// eight chunks (4096 rows) still drew every inked pixel and twelve (6144 rows) came out blank,
+/// so this control takes the whole slice rather than a count that the scene's size moves.
 #[test]
-fn one_render_of_four_dense_chunks_comes_out_blank() {
+fn one_render_of_every_dense_chunk_comes_out_blank() {
     let chunks = chunks_of(1100, 64, true);
-    let (together, apart, height) = together_and_apart(&chunks, 4);
+    let (together, apart, height) = together_and_apart(&chunks, chunks.len());
     assert!(apart > 0);
     assert_eq!(
         together, 0,
-        "one render of {height} rows drew {together} inked pixels where four renders drew {apart}"
+        "one render of {height} rows drew {together} inked pixels where {} renders drew {apart}",
+        chunks.len()
     );
 }
 
