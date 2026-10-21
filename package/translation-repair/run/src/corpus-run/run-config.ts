@@ -1180,7 +1180,7 @@ export function runClientFrom(
 
   /**
    Providers whose credential a call found refused, held out for the rest of
-   the run: the router reads them to route, and the dryness view below reads
+   the run: the router reads them to route, and `providerDryness` reads
    them for the benches. ONE CLIENT PER RUN is what a corpus pass builds
    (`corpus-pass-run.ts`), so a 401 is learned once per run there; the commands
    that build a client per slice or per arm learn it again for each.
