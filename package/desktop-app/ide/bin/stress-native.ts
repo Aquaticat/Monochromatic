@@ -1,11 +1,12 @@
-// Run a filtered set of the IDE's native tests many times at once under optional CPU load and count failures per test.
-// What: builds the test binary once, starts one bounded GPU container, runs several `cargo nextest run --stress-count`
-// invocations inside it at the same time (each test is its own process, as in `test:native`), optionally with
-// `stress-ng` busy loops on the host in a memory-capped `systemd-run --user` unit, then prints for every test how often
-// it passed, was flaky (passed after a retry) and failed, with the first failure's panic text and the log files.
-// Why: the native flakes appear only when many tests share one GPU and a busy host, a filtered `test:native` runs one
-// test at a time (it passes --no-capture), and a rate means nothing without the number of runs behind it.
-// The pure helpers are tested in stress-native.test.ts; the container and the load unit are the only side effects.
+// Run a filtered set of the IDE's native tests many times at once on two starved CPUs and count failures per test.
+// What: builds the test binary once in a container with the normal build bound, then starts a second GPU container
+// that is limited to 2 CPUs and 2 GiB of memory, runs several `cargo nextest run --stress-count` invocations inside it
+// at the same time (each test is its own process, as in `test:native`), and prints for every test how often it passed,
+// was flaky (passed after a retry) and failed, with the first failure's panic text and the log files.
+// Why: the native flakes appear only when tests contend for CPU and the GPU; the tests contend with each other inside
+// the 2-CPU cap, so the run never loads the machine it runs on, and a rate means nothing without the runs behind it.
+// A filtered `test:native` runs one test at a time (it passes --no-capture), which is why this tool exists.
+// The pure helpers are tested in stress-native-report.test.ts; the containers are the only side effects.
 
 import { spawn, spawnSync } from 'node:child_process';
 import { createWriteStream, mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync } from 'node:fs';
@@ -22,24 +23,22 @@ type Options = {
   readonly count: number;
   /** Nextest invocations that run at the same time in the container. */
   readonly copies: number;
-  /** Host CPUs kept busy by `stress-ng` during the run; zero starts no load. */
-  readonly load: number;
   /** Retries per test (`--retries`); the run proves the harness shows a pass after retry as FLAKY. */
   readonly retries: number;
-  /** Test processes each copy runs at once (`--test-threads`); zero keeps the container's own bound. */
+  /** Test processes each copy runs at once (`--test-threads`). */
   readonly threads: number;
   /** Longest wall time of the whole run, after which the container is removed. */
   readonly deadlineMinutes: number;
 };
 
-const usage = `Usage: node bin/stress-native.ts --filter <nextest filter expression> [--count 20] [--copies 4] [--load 0] [--retries 0] [--threads 0] [--deadline-minutes 60]
+const usage = `Usage: node bin/stress-native.ts --filter <nextest filter expression> [--count 20] [--copies 4] [--retries 0] [--threads 2] [--deadline-minutes 60]
   --filter    nextest filter expression, for example 'test(rows_arriving_in_view)'; every selected test runs in each copy
   --count     iterations per copy, run one after the other
-  --copies    concurrent nextest invocations in one container (each runs its tests in separate processes)
-  --load      host CPUs kept busy by stress-ng in a memory-capped systemd user unit while the run lasts
+  --copies    concurrent nextest invocations in the 2-CPU container (each runs its tests in separate processes)
   --retries   nextest retries per test, 0 by default
-  --threads   test processes each copy runs at once, 0 for the container's bound; copies times threads is the load on the GPU
-  --deadline-minutes  the container and the load unit are removed after this long, whatever has finished`;
+  --threads   test processes each copy runs at once, 2 by default; copies times threads processes share 2 CPUs
+  --deadline-minutes  the container is removed after this long, whatever has finished
+The run never uses more than 2 CPUs and 2 GiB of memory, apart from the one build.`;
 
 /**
  * Read the command line.
@@ -58,7 +57,7 @@ const parse = (argv: readonly string[]): Options => {
     }
     values.set(name.slice(2), value);
   }
-  const known = ['filter', 'count', 'copies', 'load', 'retries', 'threads', 'deadline-minutes'];
+  const known = ['filter', 'count', 'copies', 'retries', 'threads', 'deadline-minutes'];
   for (const name of values.keys()) {
     if (!known.includes(name)) {
       throw new Error(`Unknown option --${name}.\n${usage}`);
@@ -82,9 +81,8 @@ const parse = (argv: readonly string[]): Options => {
     filter,
     count: Math.max(1, whole('count', 20)),
     copies: Math.max(1, whole('copies', 4)),
-    load: whole('load', 0),
     retries: whole('retries', 0),
-    threads: whole('threads', 0),
+    threads: Math.max(1, whole('threads', 2)),
     deadlineMinutes: Math.max(1, whole('deadline-minutes', 60)),
   };
 };
@@ -99,7 +97,9 @@ if ((statSync(privateRoot).mode & 0o077) !== 0) {
 }
 const logs = mkdtempSync(join(privateRoot, 'stress-'));
 const name = 'ide-stress-' + process.pid;
-const loadUnit = 'ide-stress-load-' + process.pid;
+const buildName = 'ide-stress-build-' + process.pid;
+/** Bound of the container that runs the tests: starving the tests themselves is the only load the tool makes. */
+const runBound = ['--memory=2g', '--cpus=2', '--pids-limit=2048', '--ulimit', 'nofile=4096:4096'];
 const image = 'localhost/monochromatic/ide';
 const packageDirectory = resolve('.');
 const rootClippyConfig = resolve(packageDirectory, '../../../clippy.toml');
@@ -107,10 +107,10 @@ const rootClippyConfig = resolve(packageDirectory, '../../../clippy.toml');
 const podman = (args: readonly string[], inherit = false) =>
   spawnSync('podman', args, { encoding: 'utf8', stdio: inherit ? 'inherit' : ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024 });
 
-/** Remove the container and the load unit; safe to call twice. */
+/** Remove both containers; safe to call twice. */
 const cleanUp = (): void => {
   podman(['rm', '--force', '--time', '0', name]);
-  spawnSync('systemctl', ['--user', 'stop', loadUnit], { stdio: 'ignore' });
+  podman(['rm', '--force', '--time', '0', buildName]);
 };
 process.on('SIGINT', () => {
   cleanUp();
@@ -120,21 +120,6 @@ process.on('SIGTERM', () => {
   cleanUp();
   process.exit(143);
 });
-
-const startLoad = (): void => {
-  if (options.load === 0) {
-    return;
-  }
-  // The load ends by itself after the deadline; MemoryMax keeps a runaway unit from reaching the host's other jobs.
-  const result = spawnSync('systemd-run', [
-    '--user', `--unit=${loadUnit}`, '--collect', '--property=MemoryMax=1G', `--property=CPUQuota=${options.load * 100}%`,
-    'stress-ng', '--cpu', String(options.load), '--timeout', `${options.deadlineMinutes}m`,
-  ], { encoding: 'utf8' });
-  if (result.status !== 0) {
-    throw new Error('Could not start the load unit: ' + result.stderr);
-  }
-  console.error(`Load: stress-ng with ${options.load} busy CPU loops in unit ${loadUnit}`);
-};
 
 /** The video memory of the largest card, read from sysfs, or nothing when no card reports it. */
 const videoMemory = (): { used: number; total: number } | undefined => {
@@ -165,10 +150,10 @@ const sample = (): void => {
   pressure.samples += 1;
 };
 
-/** Run one bounded command in the container and wait for it; output goes to `logFile`. */
-const execute = (command: readonly string[], logFile: string): Promise<number> =>
+/** Run one command in a container and wait for it; output goes to `logFile`. */
+const execute = (container: string, command: readonly string[], logFile: string): Promise<number> =>
   new Promise(done => {
-    const child = spawn('podman', ['exec', ...limits.environmentArguments, name, ...command], { stdio: ['ignore', 'pipe', 'pipe'] });
+    const child = spawn('podman', ['exec', ...limits.environmentArguments, container, ...command], { stdio: ['ignore', 'pipe', 'pipe'] });
     // The log grows while the run goes on, so its progress can be read from outside.
     const log = createWriteStream(logFile);
     child.stdout.pipe(log, { end: false });
@@ -178,9 +163,10 @@ const execute = (command: readonly string[], logFile: string): Promise<number> =
     });
   });
 
-try {
+/** Start a detached container that sleeps until the deadline; builds and tests run in it through `podman exec`. */
+const startContainer = (container: string, bound: readonly string[]): void => {
   const started = podman([
-    'run', '--detach', '--rm', '--network=none', '--name', name, ...gpuArguments, ...limits.limitArguments,
+    'run', '--detach', '--rm', '--network=none', '--name', container, ...gpuArguments, ...bound,
     '--security-opt', 'label=disable',
     '--volume', packageDirectory + ':/work', '--volume', 'ide-cargo:/cargo',
     '--volume', rootClippyConfig + ':/clippy-conf/clippy.toml:ro', '--env', 'CLIPPY_CONF_DIR=/clippy-conf',
@@ -191,30 +177,37 @@ try {
   if (started.status !== 0) {
     throw new Error('Could not start the container: ' + started.stderr);
   }
-  // One build of the test binary and the scripted language server, so the copies below only run it.
+};
+
+try {
+  // One build of the test binary and the scripted language server, with the normal build bound (the only run that may
+  // use more than 2 CPUs), so the copies below only run it.
+  startContainer(buildName, limits.limitArguments);
   for (const build of [['cargo', 'build', '--bin', 'ide-scripted-lsp'], ['cargo', 'nextest', 'run', '--bin', 'monochromatic-ide', '--no-run']]) {
-    const status = await execute(build, join(logs, 'build.log'));
+    const status = await execute(buildName, build, join(logs, 'build.log'));
     if (status !== 0) {
       process.stderr.write(readFileSync(join(logs, 'build.log')));
       throw new Error('The build failed: ' + build.join(' '));
     }
   }
-  startLoad();
+  podman(['rm', '--force', '--time', '0', buildName]);
+  startContainer(name, runBound);
+  console.error('Run bound: 2 CPUs, 2g memory, 2048 processes; tests contend with each other, nothing else loads the host');
   const began = Date.now();
   sample();
   const sampler = setInterval(sample, 5000);
   const runs = Array.from({ length: options.copies }, (_, copy) =>
-    execute([
+    execute(name, [
       'cargo', 'nextest', 'run', '--bin', 'monochromatic-ide', '--filter-expr', options.filter, '--no-fail-fast',
       '--stress-count', String(options.count), '--retries', String(options.retries),
-      ...(options.threads > 0 ? ['--test-threads', String(options.threads)] : []),
+      '--test-threads', String(options.threads),
       '--status-level', 'pass', '--final-status-level', 'none', '--failure-output', 'immediate',
     ], join(logs, `copy-${copy}.log`)));
   await Promise.all(runs);
   clearInterval(sampler);
   sample();
   const tally: Tally = summarize(Array.from({ length: options.copies }, (_, copy) => readFileSync(join(logs, `copy-${copy}.log`), 'utf8')));
-  console.log(`Stress run: filter ${options.filter}, ${options.copies} copies x ${options.count} iterations, load ${options.load} CPUs, retries ${options.retries}, threads ${options.threads || limits.testThreads}, ${Math.round((Date.now() - began) / 1000)} s`);
+  console.log(`Stress run: filter ${options.filter}, ${options.copies} copies x ${options.count} iterations, 2 CPUs, retries ${options.retries}, threads ${options.threads} per copy, ${Math.round((Date.now() - began) / 1000)} s`);
   console.log(`Logs: ${logs}`);
   console.log(`Pressure: video memory peak ${(pressure.vramPeak / 2 ** 30).toFixed(2)} of ${(pressure.vramTotal / 2 ** 30).toFixed(2)} GiB (all programs), load average peak ${pressure.loadPeak.toFixed(1)}, ${pressure.samples} samples`);
   console.log(tally.report);
