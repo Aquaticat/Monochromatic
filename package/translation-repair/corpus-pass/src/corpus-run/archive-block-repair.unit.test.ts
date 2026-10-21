@@ -528,7 +528,10 @@ await describe({
             // CLASS NINETY-FOUR: a removal takes its own separator with it, so
             // the document does not end in the blank line the removed block owned.
             expect(repaired.targetText,).toBe('The cat sleeps.');
-            expect(repaired.findings,).toHaveLength(2);
+            // One line per block says what became of it; the stage's findings (ledger B714) stand ahead of them.
+            expect(repaired.findings.filter(function saysWhatBecameOfBlock(finding,): boolean {
+              return finding.startsWith('archive block reviewed and revised: ',);
+            },),).toHaveLength(2);
           },
         },),
         it({
