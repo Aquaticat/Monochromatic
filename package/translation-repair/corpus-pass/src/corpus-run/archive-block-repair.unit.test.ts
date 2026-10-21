@@ -791,7 +791,7 @@ await describe({
               },
             },);
             /** Seats whose review reply nothing can read. */
-            const mute: readonly RosterModelId[] = [ROSTER[2], ROSTER[3],];
+            const mute: ReadonlySet<RosterModelId> = new Set([ROSTER[2], ROSTER[3],],);
             /** Lines the pass logged, behind their levels. */
             const lines: string[] = [];
             const repaired = await repairArchiveBlocks({
@@ -799,7 +799,7 @@ await describe({
                 chatText: inner.chatText,
                 chatJson: async (request,) => {
                   if (
-                    mute.includes(request.modelId,)
+                    mute.has(request.modelId,)
                     && (request.responseFormat?.json_schema.name === 'archive_block_review')
                   ) {
                     return {

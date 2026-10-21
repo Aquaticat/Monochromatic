@@ -389,24 +389,36 @@ export async function repairArchiveBlocks(
     // zheermao20's letter block lost Qwen twice. They stand ahead of the line
     // saying what became of the block, under a header naming it, and each
     // stays as the stage worded it so a count by wording still counts voices.
-    if (outcome.findings.length > 0) {
+    /**
+     What the stage reported for this block.
+     */
+    const { findings: reviewFindings, } = outcome;
+    /**
+     How many findings that is.
+     */
+    const reviewFindingCount = reviewFindings.length;
+    if (reviewFindingCount > 0) {
       findings.push(
-        `archive block review findings (${String(outcome.findings.length,)}): ${identity}`,
-        ...outcome.findings,
+        `archive block review findings (${String(reviewFindingCount,)}): ${identity}`,
+        ...reviewFindings,
       );
+      /**
+       The findings, each quoted so one over several lines stays on one line
+       of the log.
+       */
+      const quotedFindings = reviewFindings
+        .map(function quoted(finding,): string {
+          return JSON.stringify(finding,);
+        },)
+        .join(', ',);
       repairLog.info(
-        `block ${identity} review recorded ${String(outcome.findings.length,)} ${
+        `block ${identity} review recorded ${String(reviewFindingCount,)} ${
           wordForCount({
-            count: outcome.findings.length,
+            count: reviewFindingCount,
             one: 'finding',
             many: 'findings',
           },)
-        }: ${
-          outcome.findings.map(function quoted(finding,): string {
-            return JSON.stringify(finding,);
-          },)
-            .join(', ',)
-        }`,
+        }: ${quotedFindings}`,
       );
     }
     if (outcome.kind === 'retained') {
