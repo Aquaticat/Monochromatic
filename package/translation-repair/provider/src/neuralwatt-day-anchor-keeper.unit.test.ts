@@ -194,6 +194,26 @@ await describe({
       },
     },),
     it({
+      name: 'SHARES ONE RETRY AMONG THE CALLS THAT ARRIVE WHILE IT IS IN FLIGHT: two readings at once make one quota read',
+      fn: async ctx => {
+        await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-retry-', },);
+        const { client, clock, exchanges, } = scriptedClient({
+          dir: scratch.path,
+          clockStart: START,
+          quota: [DOWN, GOOD,],
+        },);
+        await consoleLinesDuring({
+          run: async function readings(): Promise<void> {
+            await client.energy({ signal: SIGNAL, },);
+            clock.setTo('2026-10-20T23:16:01.000Z',);
+            await Promise.all([client.energy({ signal: SIGNAL, },), client.energy({ signal: SIGNAL, },),],);
+          },
+          sinon: ctx.sinon,
+        },);
+        expect(quotaExchangesOf({ exchanges, },).length,).toBe(2,);
+      },
+    },),
+    it({
       name: 'WARNS ONCE FOR AN OUTAGE OF THE QUOTA that lasts through several retries, naming the missing field',
       fn: async ctx => {
         await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-retry-', },);
