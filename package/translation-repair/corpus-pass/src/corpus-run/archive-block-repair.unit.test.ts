@@ -768,6 +768,76 @@ await describe({
     },),
 
     describe({
+      name: `${repairArchiveBlocks.name} keeps the review stage's findings (ledger B714)`,
+      children: [
+        it({
+          name: 'CARRIES THE STAGE\'S FINDINGS INTO WHAT THE ARTIFACT RECORDS AND THE LOG, so a block that lost '
+            + 'voices to the review round shows it: two of four seats answer in a shape nothing can read, and the '
+            + 'block\'s record names the voices lost ahead of the line saying the block was revised',
+          fn: async () => {
+            /** Unclaimed block the review revises. */
+            const blockText = 'The cat won an award.';
+            const targetText = blockText;
+            const block = blockAt({ targetText, blockText, blockId: 'block/0', });
+            /** Key the block is recorded under. */
+            const identity = archiveBlockIdentity({ block, targetText, },);
+            /** Scripted reviewer revising the block. */
+            const inner = correctionClient({
+              replacementFor: function replacement(): string {
+                return 'The cat sleeps.';
+              },
+            },);
+            /** Seats whose review reply nothing can read. */
+            const mute: readonly RosterModelId[] = [ROSTER[2], ROSTER[3],];
+            /** Lines the pass logged, behind their levels. */
+            const lines: string[] = [];
+            const repaired = await repairArchiveBlocks({
+              client: {
+                chatText: inner.chatText,
+                chatJson: async (request,) => {
+                  if (
+                    mute.includes(request.modelId,)
+                    && (request.responseFormat?.json_schema.name === 'archive_block_review')
+                  ) {
+                    return {
+                      kind: 'schema-mismatch',
+                      rawText: '',
+                      reason: 'truncated-completion',
+                      detail: 'provider reported a truncating completion (model stopped with finish_reason=length)',
+                    };
+                  }
+                  return await inner.chatJson(request,);
+                },
+                quotas: inner.quotas,
+              },
+              modelIds: ROSTER,
+              targetText,
+              sourceContexts: new Map([[identity, '猫在睡觉。',],],),
+              blocks: [block,],
+              signal: new AbortController().signal,
+              exchangeTimeoutMs: HANG_STOP_MS,
+              l: levelCapturingLogger({ lines, },),
+              stageSettings: SCRIPTED_STAGE_SETTINGS,
+            },);
+            /** The stage's findings that name a voice lost. */
+            const lost = repaired.findings.filter(function namesVoiceLost(finding,): boolean {
+              return finding.startsWith('stage-voice-lost (archive-block-review',);
+            },);
+            expect(lost.length,).toBeGreaterThan(0,);
+            // The block's own line stays last, so the findings ahead of it are its.
+            expect(repaired.findings.at(-1,),).toBe(`archive block reviewed and revised: ${identity}`,);
+            expect(repaired.findings,).toContain(
+              `archive block review findings (${String(repaired.findings.length - 2,)}): ${identity}`,
+            );
+            expect(lines.some(function logsLoss(line,): boolean {
+              return line.includes('stage-voice-lost (archive-block-review',) && line.includes(identity,);
+            },),).toBe(true,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
       name: `${repairArchiveBlocks.name} re-seated under a hold (ledger X12)`,
       children: [
         it({
