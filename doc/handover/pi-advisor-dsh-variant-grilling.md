@@ -704,21 +704,40 @@ Implementation,
    `DshAdvisorAgentSurface.assembleContext` forwards
    `assembleContextFor(agent, signal)` from `@deepseek-ai/dsh-agent`,
    matching the agent-loop's own assembly call shape.
+   Measured defect 2 (fixture 1, 2026-10-20):
+   after the first fix, calls failed with
+   `advisor: no scoped models with configured auth`.
+   Root cause:
+   `createDshAdvisorRunContext` exposed no `getScopedModels` seam,
+   so scope resolution fell into pi-only argv and settings branches
+   and resolved zero entries in DSH.
+   Fixed (`07ad8133c5`):
+   the run context exposes `getScopedModels` backed by the catalog
+   `getAvailable()` routes, the DSH equivalent of pi's live scope.
+   Boundary re-probe (2026-10-20):
+   the unknown-slug parity error now fires exactly
+   (`advisor: model slug "no-such-model-slug" was not found in scoped
+   models`) listing the ten scoped slugs,
+   the eight `llmgateway-devpass` overlay models plus
+   `deepseek-official/deepseek-flash` and `deepseek-official/deepseek-v4-pro`.
    Measured (fixture 1):
    agent sessions expose no command-invocation surface
    (no command tool or commands service),
    so `/advisor` parity moves to the user boundary after Q10,
    the plan's known gap.
    QUEUED:
-   fixture re-probe of the unknown-slug parity error (in flight),
-   leading-slash task-line dispatch probe (in flight),
-   fixture 1 plan-faithful empty-home rerun,
    fixture 2 config-merge and `defaultReviewerModel` fall-through
    (config observability is limited: the tool result reports the
    chosen reviewer model; `/advisor status` needs command dispatch
    or the user boundary),
-   fixture 3 `/advisor off`/`on` toggle (same dependency),
+   fixture 1 plan-faithful empty-home rerun (same observability),
+   fixture 3 `/advisor off`/`on` toggle and `/advisor` command parity
+   at the user boundary after Q10,
    then the Q10 live install.
+   Measured (2026-10-20):
+   a leading-slash task line (`/advisor status`) reaches headless
+   agents as an ordinary user message with no command dispatch,
+   closing the dispatch probe.
    Parallel (subagent `5b28eefd`): DONE
    (see the monochromatic-lint incident section).
 5. Tests, lint, and `mise` tasks for every new and moved package;
