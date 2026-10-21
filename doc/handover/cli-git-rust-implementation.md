@@ -1989,6 +1989,15 @@ that is verification, not a decision for the user.
   `config-invalid` failure and the legacy-config warning are rendered by `diagnostics.rs`, not `policy_events.rs`, and
   had no hint in 0.2.7; the fix (both renderers use `event_hints`) ships in 0.2.8 with
   `binary_hint_tests.rs` (bulk add, invalid configuration, root context).
+  0.2.8 released and installed 2026-10-21 (container gate 2101 passed, 5 skipped; installed binary verified: an
+  invalid `cli-git.config.jsonc` now prints a `config-invalid` event with its hint). Planned work is done, so the
+  mutation campaigns started unasked as unit `cli-git-mut-m028` (MemoryMax 24G, script `~/temp/agent/m028-run.ts`: a
+  container gate with image tag `m028`, then `native:mutation:scoped --timeout 300` per file). Files: command_discard,
+  rule_worktree_dirty, auto_push_dirty_paths, discard_audit, command_stash, rule_linked_worktree,
+  rule_linked_worktree_messages, policy_checks, auto_push_reconcile, landing_invariant, event_hints, diagnostics.
+  Logs `~/temp/agent/m028-mutation-<file>.log`, gate log `~/temp/agent/m028-container.log`. Do not edit `src/native`
+  while it runs; read results when the unit ends, kill survivors with tests, update planted-control anchors if a
+  guarded line moves. A survivor fix is a 0.2.9 candidate; mutation never blocks a release.
   Triage 2026-10-20 later: 1338 closed (both oxlint gates zero, end-to-end checks passed); 480 closed (no repro on
   the native wrapper: annotated, lightweight and scoped tag pushes from a linked worktree exit 0); 629 closed (the
   Rust helpers `executable` (new `fixture_executable.rs`, `#[path]`-included by `test_support.rs` and
