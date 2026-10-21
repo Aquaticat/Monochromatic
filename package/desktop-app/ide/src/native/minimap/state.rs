@@ -4,9 +4,10 @@
 /// The key the newest request and the picture on screen are valid for,
 ///  and the worker the window starts on first use.
 use crate::native::minimap_worker::{Key, MinimapWorker};
-/// The two timers the state owns:
+/// The three timers the state owns:
 ///  one polls the worker's replies,
-///  the other holds the quiet time.
+///  one holds the quiet time,
+///  and one waits for a frame to draw a picture.
 use slint::Timer;
 /// When the newest request was posted.
 use std::time::Instant;
@@ -54,6 +55,8 @@ pub(in crate::native) struct MinimapState {
     pub(super) poll: Timer,
     /// Posts a request after the quiet time.
     pub(super) debounce: Timer,
+    /// Asks for a frame when a picture handed to the GPU is still waiting after the time a frame needs to come.
+    pub(super) redraw: Timer,
     /// What the newest request was for.
     pub(in crate::native) posted: Option<Key>,
     /// When the newest request was posted.
@@ -104,6 +107,7 @@ impl MinimapState {
             worker: None,
             poll: Timer::default(),
             debounce: Timer::default(),
+            redraw: Timer::default(),
             posted: None,
             last_post: None,
             noted: None,
