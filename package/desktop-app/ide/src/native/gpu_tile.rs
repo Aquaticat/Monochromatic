@@ -1,7 +1,7 @@
 //! The code view and the minimap on the GPU:
 //!  the textures the source tile,
 //!  the gutter's wrap indicator,
-//!  and the minimap's slice are drawn into,
+//!  and the minimap's stacked textures are drawn into,
 //!  and the rendering notifier that draws them with one Vello renderer.
 //!
 //! Slint hands its wgpu device to the notifier only when the first frame is set up,
@@ -16,8 +16,8 @@
 /// Reads of the textures for the native tests.
 #[cfg(test)]
 mod readback;
-/// The minimap's slice,
-/// rendered in chunks.
+/// The minimap's picture,
+/// rendered in chunks into textures that stack.
 mod slice;
 /// The textures,
 /// the pictures,
@@ -28,7 +28,7 @@ mod types;
 pub(super) use readback::render_scene;
 /// The small types,
 /// shared with the slice.
-use types::{Outcome, Picture, Placement, Target};
+use types::{MinimapTexture, Outcome, Picture, Placement, Target};
 
 /// The window the textures are shown in,
 ///  and the chaining of the debug frame records.
@@ -71,23 +71,26 @@ struct Inner {
     /// Vello's renderer,
     /// made at setup.
     renderer: Option<Renderer>,
-    /// The textures of the pictures,
+    /// The textures of the tile and the wrap indicator,
     /// by [`Picture::slot`].
-    targets: [Option<Target>; 3],
+    targets: [Option<Target>; 2],
+    /// The textures of the minimap's picture,
+    /// top first.
+    minimap: Vec<MinimapTexture>,
     /// A tile scene not drawn yet.
     pending_tile: Option<TileScene>,
     /// A wrap indicator scene not drawn yet.
     pending_sign: Option<TileScene>,
-    /// The chunks of a minimap slice not drawn yet,
-    /// with the row of the whole picture the slice's first row is.
+    /// The chunks of a minimap picture not drawn yet,
+    /// with the row of the whole picture the picture's first row is.
     pending_minimap: Option<(Vec<TileScene>, u32)>,
-    /// Small textures the chunks of a slice are rendered into before they are copied into the slice's texture.
+    /// Small textures the chunks of a picture are rendered into before they are copied into its textures.
     scratch: Vec<Target>,
     /// Tile scenes rendered into the texture so far.
     tiles_rendered: u64,
     /// Wrap indicator scenes rendered so far.
     signs_rendered: u64,
-    /// Minimap slices rendered so far.
+    /// Minimap pictures rendered so far.
     minimaps_rendered: u64,
     /// Minimap chunks rendered so far.
     minimap_chunks_rendered: u64,
@@ -125,23 +128,23 @@ impl GpuTile {
         self.inner.borrow_mut().pending_sign = Some(scene);
     }
 
-    /// Make the slice of the minimap's picture,
+    /// Make the minimap's picture,
     /// given as the scenes of its chunks from the top,
     /// whose first row is the row `top` of the whole picture,
     /// the one to draw at the next frame;
-    /// a slice not drawn yet is replaced.
+    /// a picture not drawn yet is replaced.
     pub(super) fn submit_minimap(&self, chunks: Vec<TileScene>, top: u32) {
         self.inner.borrow_mut().pending_minimap = Some((chunks, top));
     }
 
-    /// Forget the minimap's texture and any slice waiting,
-    /// so the next slice makes a new texture and a new image.
+    /// Forget the minimap's textures and any picture waiting,
+    /// so the next picture makes new textures and new images.
     /// The window calls this when it clears the image,
     /// for another file.
     pub(super) fn forget_minimap(&self) {
         let mut inner = self.inner.borrow_mut();
         inner.pending_minimap = None;
-        inner.targets[Picture::Minimap.slot()] = None;
+        inner.minimap.clear();
     }
 
     /// How many tile scenes the GPU has rendered into a texture,
@@ -174,16 +177,17 @@ impl GpuTile {
         return self.inner.borrow().read(Picture::Sign);
     }
 
-    /// The minimap's texture read back from the GPU as straight RGBA,
-    /// or nothing before a slice is drawn.
+    /// The minimap's textures read back from the GPU as straight RGBA and stacked into one buffer,
+    /// row by row from the top of the picture,
+    /// or nothing before a picture is drawn.
     #[cfg(test)]
     pub(super) fn read_minimap(&self) -> Option<slint::SharedPixelBuffer<slint::Rgba8Pixel>> {
-        return self.inner.borrow().read(Picture::Minimap);
+        return self.inner.borrow().read_stack();
     }
 
-    /// How many minimap slices the GPU has rendered into a texture,
+    /// How many minimap pictures the GPU has rendered into textures,
     /// for the structural tests:
-    /// a scroll inside the bands of the slice renders none.
+    /// a scroll inside the bands of the picture renders none.
     #[cfg(test)]
     pub(super) fn minimaps_rendered(&self) -> u64 {
         return self.inner.borrow().minimaps_rendered;
@@ -191,19 +195,24 @@ impl GpuTile {
 
     /// How many minimap chunks the GPU has rendered,
     /// for the structural tests:
-    /// a tall slice is several renders.
+    /// a tall picture is several renders.
     #[cfg(test)]
     pub(super) fn minimap_chunks_rendered(&self) -> u64 {
         return self.inner.borrow().minimap_chunks_rendered;
     }
 
-    /// The size of the minimap's texture in physical pixels,
-    /// or nothing before the first slice is drawn.
+    /// The width and height in physical pixels of each texture of the minimap's picture,
+    /// top first,
+    /// or nothing before the first picture is drawn.
     #[cfg(test)]
-    pub(super) fn minimap_size(&self) -> Option<(u32, u32)> {
-        return self.inner.borrow().targets[Picture::Minimap.slot()]
-            .as_ref()
-            .map(|target| return (target.width, target.height));
+    pub(super) fn minimap_texture_sizes(&self) -> Vec<(u32, u32)> {
+        return self
+            .inner
+            .borrow()
+            .minimap
+            .iter()
+            .map(|texture| return (texture.target.width, texture.target.height))
+            .collect();
     }
 
     /// The size of the tile's texture in physical pixels,
@@ -279,6 +288,38 @@ impl Inner {
         ));
     }
 
+    /// The minimap's textures read back from the GPU and stacked into one buffer of their common width,
+    /// or nothing when there is no texture or the textures differ in width.
+    #[cfg(test)]
+    fn read_stack(&self) -> Option<slint::SharedPixelBuffer<slint::Rgba8Pixel>> {
+        let (device, queue) = self.device.as_ref()?;
+        let first = self.minimap.first()?;
+        let width = first.target.width;
+        let height: u32 = self
+            .minimap
+            .iter()
+            .map(|texture| return texture.target.height)
+            .sum();
+        let mut stacked = slint::SharedPixelBuffer::<slint::Rgba8Pixel>::new(width, height);
+        let mut row = 0;
+        for texture in &self.minimap {
+            if texture.target.width != width {
+                return None;
+            }
+            let part = readback::read_texture(
+                device,
+                queue,
+                &texture.target.texture,
+                (width, texture.target.height),
+            );
+            let start = row as usize * width as usize;
+            let slots = stacked.make_mut_slice();
+            slots[start..start + part.as_slice().len()].copy_from_slice(part.as_slice());
+            row += texture.target.height;
+        }
+        return Some(stacked);
+    }
+
     /// What:
     ///  Take the device of the first frame and make Vello's renderer for it.
     ///  The largest texture the device offers is recorded for the tile's height.
@@ -331,7 +372,8 @@ impl Inner {
     /// Release the renderer and the textures before the device goes away.
     fn teardown(&mut self) {
         self.renderer = None;
-        self.targets = [None, None, None];
+        self.targets = [None, None];
+        self.minimap = Vec::new();
         self.scratch = Vec::new();
         self.device = None;
     }
@@ -359,7 +401,7 @@ impl Inner {
             self.draw(Picture::Sign, &scene, &mut outcome);
         }
         if let Some((chunks, top)) = self.pending_minimap.take() {
-            self.draw_slice(&chunks, top, &mut outcome);
+            self.draw_stack(&chunks, top, &mut outcome);
         }
         return outcome;
     }
@@ -405,7 +447,6 @@ impl Inner {
                 label: Some(match picture {
                     Picture::Tile => "ide source tile",
                     Picture::Sign => "ide wrap indicator",
-                    Picture::Minimap => "ide minimap",
                 }),
                 size: wgpu::Extent3d {
                     width: scene.width,
@@ -441,7 +482,6 @@ impl Inner {
             Ok(()) => match picture {
                 Picture::Tile => self.tiles_rendered += 1,
                 Picture::Sign => self.signs_rendered += 1,
-                Picture::Minimap => {}
             },
             Err(error) => {
                 tracing::error!(%error, ?picture, "the GPU could not render a scene");

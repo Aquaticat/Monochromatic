@@ -1,18 +1,29 @@
-//! The minimap's slice:
+//! The minimap's picture:
 //!  rendered in chunks of at most 512 rows,
-//!  each into a small scratch texture and then copied into the one texture of the slice.
+//!  each into a small scratch texture and then copied into a texture of the picture.
+//!  A picture taller than the device's texture limit is several textures,
+//!  each of whole chunks, stacked one below the other.
 //!
 //! Vello 0.11 sizes its scratch buffers with fixed constants,
 //!  and a scene that needs more than they hold renders blank without an error
 //!  (`doc/planning/ide-vello-buffer-sizes.md`),
-//!  so a tall slice is never one render.
+//!  so a tall picture is never one render.
+//! Nor is it one texture past the limit:
+//!  a texture of more than about 128 MiB renders wrong without an error
+//!  (`doc/troubleshooting/vello-silent-blank-or-corrupt-frames-at-fixed-buffer-limits.md`),
+//!  so the textures stay within the device's side limit and the byte rule of the source tile.
 //! The copy is a GPU command;
 //! no pixel is touched by the CPU.
 
 /// The device,
 /// the textures,
 /// and the outcome the window applies.
-use super::{Inner, Outcome, Picture, Placement, Target};
+use super::{Inner, MinimapTexture, Outcome, Placement, Target};
+/// The markup's record of one texture of the picture.
+use crate::native::ui::MinimapSlice;
+/// How the chunks are grouped into textures,
+/// and the device's limit as the shaped text records it.
+use ide_app::minimap::{texture_rows, texture_runs};
 /// The scene of a chunk and the size of its region.
 use ide_app::tile_scene::TileScene;
 /// The image import.
@@ -21,13 +32,13 @@ use slint::Image;
 use slint::wgpu_30::wgpu;
 
 /// The scratch textures kept at most;
-/// the chunks of a slice are all one size but the last.
+/// the chunks of a picture are all one size but the last.
 const SCRATCH_KEPT: usize = 4;
 
-/// Draw the slice.
+/// Draw the picture.
 impl Inner {
     /// What:
-    ///  The uses of the slice's texture:
+    ///  The uses of a texture of the picture:
     ///  the picture's usual uses,
     ///  and the chunks are copied into it.
     /// Why:
@@ -47,9 +58,9 @@ impl Inner {
     ///  the one kept from an earlier chunk of that size,
     ///  or a new one.
     /// Why:
-    ///  The chunks of a slice are one size but the last,
-    ///  and the next slice's are the same,
-    ///  so a few small textures serve every slice.
+    ///  The chunks of a picture are one size but the last,
+    ///  and the next picture's are the same,
+    ///  so a few small textures serve every picture.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
@@ -87,58 +98,42 @@ impl Inner {
     }
 
     /// What:
-    ///  Render the chunks of the minimap's slice,
+    ///  Make the textures of a picture of `width` pixels across whose textures are `sizes` tall,
     ///  top first,
-    ///  into the slice's texture,
-    ///  making a new texture and a new image when the slice's size changed,
-    ///  and say where the slice stands in the whole picture.
+    ///  unless the picture already has textures of exactly these sizes.
+    ///  Nothing when the device refuses to show a texture as an image.
     /// Why:
-    ///  The chunks stack without a gap,
-    ///  so the slice is as wide as they are and as tall as they are together.
+    ///  Rendering into the same texture needs no new image,
+    ///  and the frame that follows samples the new content;
+    ///  a picture of another shape starts from new textures and new images.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function drawSlice(chunks: TileScene[], top: number, outcome: Outcome): void;
+    /// function textures(device: GPUDevice, width: number, heights: number[], outcome: Outcome): boolean;
     /// ```
-    pub(super) fn draw_slice(&mut self, chunks: &[TileScene], top: u32, outcome: &mut Outcome) {
-        let Some((device, queue)) = self.device.clone() else {
-            return;
-        };
-        let Some(first) = chunks.first() else {
-            return;
-        };
-        let width = first.width;
-        let mut height = 0;
-        let mut ragged = false;
-        for chunk in chunks {
-            height += chunk.height;
-            ragged |= chunk.width != width;
+    fn stack_textures(
+        &mut self,
+        device: &wgpu::Device,
+        shape: (u32, &[u32]),
+        outcome: &mut Outcome,
+    ) -> bool {
+        let (width, heights) = shape;
+        let reusable = self.minimap.len() == heights.len()
+            && self
+                .minimap
+                .iter()
+                .zip(heights)
+                .all(|(kept, height)| return kept.target.width == width && kept.target.height == *height);
+        if reusable {
+            return true;
         }
-        let limit = device.limits().max_texture_dimension_2d;
-        if ragged || width == 0 || height == 0 || width > limit || height > limit {
-            tracing::error!(
-                width,
-                height,
-                limit,
-                ragged,
-                "a minimap slice does not fit a texture of this device"
-            );
-            outcome.errors.push(format!(
-                "Cannot draw source: a {width}x{height} minimap does not fit a texture of this device \
-                 (at most {limit} on a side)"
-            ));
-            return;
-        }
-        let reusable = match &self.targets[Picture::Minimap.slot()] {
-            Some(target) => target.width == width && target.height == height,
-            None => false,
-        };
-        if !reusable {
+        self.minimap.clear();
+        for height in heights {
             let texture = device.create_texture(&wgpu::TextureDescriptor {
                 label: Some("ide minimap slice"),
                 size: wgpu::Extent3d {
                     width,
-                    height,
+                    height: *height,
                     depth_or_array_layers: 1,
                 },
                 mip_level_count: 1,
@@ -149,58 +144,140 @@ impl Inner {
                 view_formats: &[],
             });
             match Image::try_from(texture.clone()) {
-                Ok(image) => outcome.images.push((Picture::Minimap, image)),
+                Ok(image) => self.minimap.push(MinimapTexture {
+                    target: Target {
+                        texture,
+                        width,
+                        height: *height,
+                    },
+                    image,
+                }),
                 Err(error) => {
                     tracing::error!(%error, "the minimap texture could not be shown as an image");
                     outcome.errors.push(format!("Cannot draw source: {error}"));
-                    return;
+                    self.minimap.clear();
+                    return false;
                 }
             }
-            self.targets[Picture::Minimap.slot()] = Some(Target {
-                texture,
-                width,
-                height,
-            });
         }
-        let Some(target) = self.targets[Picture::Minimap.slot()].as_ref() else {
+        return true;
+    }
+
+    /// What:
+    ///  Render the chunks of the minimap's picture,
+    ///  top first,
+    ///  into its textures,
+    ///  making new textures and new images when the picture's shape changed,
+    ///  and say where the picture stands in the whole picture.
+    /// Why:
+    ///  The chunks stack without a gap,
+    ///  so the picture is as wide as they are and as tall as they are together;
+    ///  the textures hold whole chunks each,
+    ///  none taller than the device's limit,
+    ///  and the textures stack without a gap as the chunks do.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// function drawStack(chunks: TileScene[], top: number, outcome: Outcome): void;
+    /// ```
+    pub(super) fn draw_stack(&mut self, chunks: &[TileScene], top: u32, outcome: &mut Outcome) {
+        let Some((device, queue)) = self.device.clone() else {
             return;
         };
-        let slice = target.texture.clone();
-        let mut row = 0;
-        for chunk in chunks {
-            let scratch = self.scratch(&device, width, chunk.height);
-            if let Err(error) = self.render(&device, &queue, &scratch, chunk) {
-                tracing::error!(%error, row, "the GPU could not render a chunk of the minimap");
-                outcome.errors.push(format!("Cannot draw source: {error}"));
-                return;
-            }
-            let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-                label: Some("ide minimap chunk copy"),
-            });
-            encoder.copy_texture_to_texture(
-                wgpu::TexelCopyTextureInfo {
-                    texture: &scratch,
-                    mip_level: 0,
-                    origin: wgpu::Origin3d::ZERO,
-                    aspect: wgpu::TextureAspect::All,
-                },
-                wgpu::TexelCopyTextureInfo {
-                    texture: &slice,
-                    mip_level: 0,
-                    origin: wgpu::Origin3d { x: 0, y: row, z: 0 },
-                    aspect: wgpu::TextureAspect::All,
-                },
-                wgpu::Extent3d {
-                    width,
-                    height: chunk.height,
-                    depth_or_array_layers: 1,
-                },
+        let Some(first) = chunks.first() else {
+            return;
+        };
+        let width = first.width;
+        let heights: Vec<u32> = chunks.iter().map(|chunk| return chunk.height).collect();
+        let height: u32 = heights.iter().sum();
+        let ragged = chunks.iter().any(|chunk| return chunk.width != width);
+        let limit = device.limits().max_texture_dimension_2d;
+        // The texture limit the shaped text records is the device's, unless a test lowered it.
+        let runs = texture_runs(
+            &heights,
+            width,
+            limit.min(ide_app::shaped_text::texture_dimension()),
+        );
+        let allowed = u64::from(texture_rows(width, limit));
+        let mut oversize = false;
+        for run in &runs {
+            let rows: u64 = heights[run.clone()].iter().map(|rows| return u64::from(*rows)).sum();
+            oversize |= rows > allowed;
+        }
+        if ragged || width == 0 || height == 0 || width > limit || oversize {
+            tracing::error!(
+                width,
+                height,
+                limit,
+                ragged,
+                "a minimap picture does not fit the textures of this device"
             );
-            queue.submit(std::iter::once(encoder.finish()));
-            row += chunk.height;
-            self.minimap_chunks_rendered += 1;
+            outcome.errors.push(format!(
+                "Cannot draw source: a {width}x{height} minimap does not fit a texture of this device \
+                 (at most {limit} on a side)"
+            ));
+            return;
+        }
+        let sizes: Vec<u32> = runs
+            .iter()
+            .map(|run| return heights[run.clone()].iter().sum())
+            .collect();
+        if !self.stack_textures(&device, (width, &sizes), outcome) {
+            return;
+        }
+        let mut shown = Vec::with_capacity(runs.len());
+        let mut start = 0;
+        for (run, texture_height) in runs.iter().zip(&sizes) {
+            let Some(held) = self.minimap.get(shown.len()) else {
+                return;
+            };
+            let texture = held.target.texture.clone();
+            shown.push(MinimapSlice {
+                image: held.image.clone(),
+                top: (top + start) as f32,
+                height: *texture_height as f32,
+            });
+            start += texture_height;
+            let mut row = 0;
+            for chunk in &chunks[run.clone()] {
+                let scratch = self.scratch(&device, width, chunk.height);
+                if let Err(error) = self.render(&device, &queue, &scratch, chunk) {
+                    tracing::error!(%error, row, "the GPU could not render a chunk of the minimap");
+                    outcome.errors.push(format!("Cannot draw source: {error}"));
+                    return;
+                }
+                let mut encoder = device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                    label: Some("ide minimap chunk copy"),
+                });
+                encoder.copy_texture_to_texture(
+                    wgpu::TexelCopyTextureInfo {
+                        texture: &scratch,
+                        mip_level: 0,
+                        origin: wgpu::Origin3d::ZERO,
+                        aspect: wgpu::TextureAspect::All,
+                    },
+                    wgpu::TexelCopyTextureInfo {
+                        texture: &texture,
+                        mip_level: 0,
+                        origin: wgpu::Origin3d { x: 0, y: row, z: 0 },
+                        aspect: wgpu::TextureAspect::All,
+                    },
+                    wgpu::Extent3d {
+                        width,
+                        height: chunk.height,
+                        depth_or_array_layers: 1,
+                    },
+                );
+                queue.submit(std::iter::once(encoder.finish()));
+                row += chunk.height;
+                self.minimap_chunks_rendered += 1;
+            }
         }
         self.minimaps_rendered += 1;
-        outcome.minimap = Some(Placement { width, height, top });
+        outcome.minimap = Some(Placement {
+            width,
+            top,
+            slices: shown,
+        });
     }
 }

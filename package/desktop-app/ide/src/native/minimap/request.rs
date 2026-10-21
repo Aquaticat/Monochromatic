@@ -29,14 +29,14 @@ use ide_app::find::FindRange;
 use ide_app::find_navigation::paint_ranges;
 /// The inks of the selection and match fills,
 /// the geometry that names the bands the track shows,
-/// and the size of a band and of the texture that holds the bands.
-use ide_app::minimap::{BAND, Fills, Geometry, most_bands};
+/// and the size of a band.
+use ide_app::minimap::{BAND, Fills, Geometry};
 /// A wrap width must be a positive number of pixels.
 use ide_app::wrap::has_wrap_width;
-/// Toolkit images,
+/// The list of the picture's textures,
 ///  weak handles,
 ///  and the timers.
-use slint::{ComponentHandle, Image, TimerMode};
+use slint::{ComponentHandle, ModelRc, TimerMode};
 /// Shared state and its cell,
 ///  the syntax snapshot a job shares,
 ///  and the clock of the newest request.
@@ -97,17 +97,9 @@ pub(super) fn key_of(window: &AppWindow, current: &State) -> Option<Key> {
         (Arc::as_ptr(&ranges).cast::<()>() as usize, ranges.len())
     };
     let active = present(current).active;
-    let scale = window.window().scale_factor();
     let geometry = Geometry::new(current.row_map.height(), height);
-    let bands = geometry.bands_for(
-        -window.get_scroll_y(),
-        BAND,
-        most_bands(
-            ide_app::shaped_text::texture_dimension(),
-            scale,
-            f64::from(geometry.scale()),
-        ),
-    );
+    // A track taller than one texture is drawn as several that stack, so every band the track shows is kept.
+    let bands = geometry.bands_for(-window.get_scroll_y(), BAND, usize::MAX);
     return Some(Key {
         stamp: displayed(current),
         styles: Arc::as_ptr(&current.styles).cast::<()>() as usize,
@@ -121,6 +113,7 @@ pub(super) fn key_of(window: &AppWindow, current: &State) -> Option<Key> {
         scale: window.window().scale_factor().to_bits(),
         size: (width.to_bits(), height.to_bits()),
         window: (bands.start, bands.end),
+        texture_limit: ide_app::shaped_text::texture_dimension(),
         selection,
         find,
         active: active.map(range_pair),
@@ -254,7 +247,7 @@ pub(in crate::native) fn note(window: &AppWindow, state: &Rc<RefCell<State>>) {
         let gpu = current.gpu.clone();
         drop(current);
         gpu.forget_minimap();
-        window.set_minimap_image(Image::default());
+        window.set_minimap_slices(ModelRc::default());
         let mut again = state.borrow_mut();
         again.minimap.debounce.stop();
         post(window, state, &mut again, key);

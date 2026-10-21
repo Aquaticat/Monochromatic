@@ -90,6 +90,7 @@ pub(super) static OFF_WORKER_BUILDS: AtomicU64 = AtomicU64::new(0);
 ///  the display scale,
 /// the minimap's size,
 /// the bands near the visible part of the picture,
+/// the device's texture limit,
 /// and what the window draws over the text (the selection,
 /// the matches,
 /// and the annotations).
@@ -127,6 +128,9 @@ pub(super) struct Key {
     /// The numbers of the first band the picture holds and of the one past its last,
     /// counted from the top of the text.
     pub(super) window: (usize, usize),
+    /// The largest texture side the device offers as the shaped text records it:
+    /// the textures the picture is stacked from are cut for it.
+    pub(super) texture_limit: u32,
     /// The selected characters,
     /// nothing while the caret is alone.
     pub(super) selection: Option<(usize, usize)>,

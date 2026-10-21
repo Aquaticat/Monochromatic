@@ -1,7 +1,8 @@
 //! The minimap of a tall window stays a picture of the text,
 //!  the window's own shaped lines drawn small,
 //!  and never turns into blocks.
-//!  The texture it is drawn into never passes the device's limit.
+//!  The textures it is drawn into never pass the device's limit,
+//!  and a window taller than the limit gets several that stack.
 //! Nothing here waits on the window thread:
 //! every wait advances timers and lets the workers answer.
 
@@ -137,11 +138,14 @@ fn the_minimap_of_a_tall_window_is_a_picture_of_glyphs_not_blocks() {
             glyph_rows * 10 >= inked_rows * 9,
             "only {glyph_rows} of {inked_rows} inked rows rise and fall like glyphs at {height}"
         );
-        assert!(
-            image.height() <= texture_dimension(),
-            "a texture of {} rows passes the device's limit",
-            image.height()
-        );
+        let sizes = opened.source.borrow().gpu.minimap_texture_sizes();
+        assert!(!sizes.is_empty(), "no texture was drawn");
+        for (width, rows) in &sizes {
+            assert!(
+                *rows <= texture_dimension() && *width <= texture_dimension(),
+                "a texture of {width}x{rows} passes the device's limit"
+            );
+        }
         let stats = opened
             .source
             .borrow()
@@ -286,6 +290,25 @@ fn a_picture_taller_than_the_device_limit_covers_the_whole_track() {
         window.get_minimap_picture_height() + 1.0 >= track,
         "the picture is {} rows of a track of {track}",
         window.get_minimap_picture_height()
+    );
+    // The rows are in several textures, each within the limit, that together are the rows the window places.
+    let sizes = opened.source.borrow().gpu.minimap_texture_sizes();
+    assert!(sizes.len() >= 2, "the picture is one texture: {sizes:?}");
+    for (width, rows) in &sizes {
+        assert!(
+            *rows <= limit && *width <= limit,
+            "a texture of {width}x{rows} passes the limit {limit}"
+        );
+    }
+    assert_eq!(
+        sizes.iter().map(|(_, rows)| return *rows).sum::<u32>(),
+        image.height(),
+        "the textures together are the rows that were read back"
+    );
+    assert_eq!(
+        window.get_minimap_picture_height(),
+        image.height() as f32,
+        "the markup places the rows that were read back"
     );
     assert_eq!(
         window.get_error_message().to_string(),

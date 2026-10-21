@@ -8,10 +8,10 @@ use crate::native::minimap_worker::Reply;
 ///  its state,
 ///  and the displayed text's stamp.
 use crate::native::{AppWindow, State, annotate::displayed};
-/// Toolkit images,
+/// The list of the picture's textures,
 ///  weak handles,
 ///  and the timers.
-use slint::{ComponentHandle, Image, TimerMode};
+use slint::{ComponentHandle, ModelRc, TimerMode};
 /// Shared state and its cell,
 ///  and the poll period.
 use std::{cell::RefCell, rc::Rc, time::Duration};
@@ -62,15 +62,16 @@ pub(in crate::native) fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, r
     drop(current);
     if reply.chunks.is_empty() {
         gpu.forget_minimap();
-        window.set_minimap_image(Image::default());
+        window.set_minimap_slices(ModelRc::default());
         window.set_minimap_picture_width(0.0);
         window.set_minimap_picture_height(0.0);
         window.set_minimap_picture_top(reply.top as f32);
     } else {
         // The markup draws the picture at exactly this many physical pixels, so no pixel of it is resampled, and
-        // starts it at the row of the whole picture the worker built it from; the GPU sets these with the image.
+        // starts it at the row of the whole picture the worker built it from; the GPU sets these with the images
+        // of its textures, which are as many as the device's texture limit asks for.
         gpu.submit_minimap(reply.chunks, reply.top);
-        // The GPU draws the slice just before the next frame, and a slice changes no property the window
+        // The GPU draws the picture just before the next frame, and a picture changes no property the window
         // watches, so an idle window would keep the old picture until something else drew a frame.
         window.window().request_redraw();
     }
