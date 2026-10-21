@@ -57,7 +57,8 @@ export type ConsolidationPolishGateOutcome = {
   readonly choice: PolishChoice;
 
   /**
-   Text role shipping after conservative tie rule.
+   Text role shipping after the tie rule: the polished text wins a tie, and
+   the approved base ships every other outcome without a clear polish win.
    */
   readonly ships: 'polished' | 'base';
 
@@ -115,6 +116,7 @@ function polishVotesFor(
 export type ConsolidationPolishSettlementRule =
   | 'polished-lead'
   | 'base-lead'
+  | 'tie-polished-wins'
   | 'unsettled';
 
 /**
@@ -149,6 +151,15 @@ export type ConsolidationPolishSettlement = {
 
 /**
  Settles naturalness ballots and names the rule that decided.
+
+ POLISHED TEXT WINS TIES (owner, 2026-10-21). Asked "What should a 2 to 2
+ polish-gate tie do?", the owner chose "Polished text wins ties". Before it a
+ tie settled on `neither` and the base shipped, so CuspariaKLSY21 slice 1
+ (base, base, polished, polished) kept the base. A TIE NEEDS THE MINIMUM IN
+ TOTAL: the usable ballots, refusals included, number at least
+ {@link CONSOLIDATION_POLISH_GATE_QUORUM}, so a lone vote still settles
+ nothing, and it needs a vote to tie on: refusals alone are no tie. Every
+ other rule is as it was: a lead needs the minimum on its own side.
 
  @param ballots - usable ballots
 
@@ -192,6 +203,22 @@ export function readConsolidationPolishSettlement(
       base,
     };
   }
+  /**
+   Whether the two texts drew the same number of votes, at least one each.
+   */
+  const tiedOnVotes = (polished === base) && (polished > 0);
+  /**
+   Whether the usable ballots, refusals included, reach the minimum.
+   */
+  const meetsMinimum = ballots.length >= CONSOLIDATION_POLISH_GATE_QUORUM;
+  if (tiedOnVotes && meetsMinimum) {
+    return {
+      choice: 'polished',
+      rule: 'tie-polished-wins',
+      polished,
+      base,
+    };
+  }
   return {
     choice: CONTEST_REFUSAL,
     rule: 'unsettled',
@@ -201,11 +228,12 @@ export function readConsolidationPolishSettlement(
 }
 
 /**
- Settles naturalness ballots with approved base winning every tie.
+ Settles naturalness ballots with the polished text winning every tie, and the
+ approved base every other outcome without a clear winner.
 
  @param ballots - usable ballots
 
- @returns Clear winner or refusal
+ @returns Clear winner, the polished text on a tie, or refusal
 
  @example
  ```ts
@@ -215,7 +243,11 @@ export function readConsolidationPolishSettlement(
 export function settleConsolidationPolishBallots(
   { ballots, }: { readonly ballots: readonly ConsolidationPolishBallot[]; },
 ): PolishChoice {
-  return readConsolidationPolishSettlement({ ballots, },).choice;
+  /**
+   Choice the settlement reached, its rule and tally dropped.
+   */
+  const { choice, } = readConsolidationPolishSettlement({ ballots, },);
+  return choice;
 }
 
 /**
@@ -313,16 +345,30 @@ export async function gateConsolidationPolish(
     return [ballot,];
   },);
   /**
-   Panel choice from ballots.
+   Panel choice from ballots, the rule that decided and the tally it read.
    */
-  const choice = settleConsolidationPolishBallots({ ballots, },);
+  const {
+    choice,
+    rule,
+    polished,
+    base,
+  } = readConsolidationPolishSettlement({ ballots, },);
   /**
-   Approved base wins every non-clear outcome.
+   Approved base wins every outcome without a polished choice.
    */
   const ships = (choice === 'polished') ? 'polished' as const : 'base' as const;
   gl.info(
-    `consolidation polish gate: ${String(ballots.length,)}/${String(outcomes.length,)} usable, settled on ${choice}, ships ${ships}`,
+    `consolidation polish gate: ${String(ballots.length,)}/${String(outcomes.length,)} usable, polished ${
+      String(polished,)
+    }, base ${String(base,)}, settled on ${choice} by rule ${rule}, ships ${ships}`,
   );
+  if (rule === 'tie-polished-wins') {
+    gl.info(
+      `consolidation polish gate tied ${String(polished,)} to ${String(base,)} between polished and base `
+        + `(${String(ballots.length,)} usable ballots, minimum ${String(CONSOLIDATION_POLISH_GATE_QUORUM,)}), `
+        + 'so polished wins the tie (owner, 2026-10-21, "Polished text wins ties")',
+    );
+  }
   return {
     choice,
     ships,
@@ -338,6 +384,14 @@ export async function gateConsolidationPolish(
               many: 'ballots',
             },)
           }, below ${String(CONSOLIDATION_POLISH_GATE_QUORUM,)} needed to settle`,
+        ]
+        : []),
+      // A TIE IS SAID IN THE FINDINGS, as the rule that shipped the polished
+      // text, so the artifact tells a tie win from a lead.
+      ...((rule === 'tie-polished-wins')
+        ? [
+          `consolidation-polish-gate tied ${String(polished,)} to ${String(base,)} between polished and base, `
+          + 'so polished wins the tie (owner, 2026-10-21)',
         ]
         : []),
       // A SHORT BENCH IS SAID IN THE FINDINGS, as the gathers say it (ledger X8).
