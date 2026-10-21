@@ -298,6 +298,11 @@ TODO | DONE
    If `command -v docker podman nerdctl ctr crictl` prints nothing,
     the shell is not on the machine that runs the container,
     or the CLI sits outside this shell's `PATH`.
+   A `command not found` for a command that exists also comes from an invisible character
+    pasted before the name
+    (a non-breaking space;
+     bash ignores an ordinary leading space);
+    retype the command before concluding the CLI is absent.
    Confirm the machine first:
     `curl --silent --write-out '%{http_code}\n' --output /dev/null http://127.0.0.1:7677/-/ping`
     prints `200` only on the host,
