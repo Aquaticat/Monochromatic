@@ -155,11 +155,11 @@ Existing sessions are read as before.
 - Composition and config:
   `dsh --profile web --dump-config` shows the row patched by the profile
   patch layer with the adopted values.
+- Client half:
+  confirmed by the workspace owner on 2026-10-21 after a page reload
+  (rewind control on message hover and `/rewind` in the composer).
 - Not exercised here:
-  the client half in a browser
-  (rewind control on message hover),
-  and a live `/rewind` run;
-  the open browser page needs a reload to pull the new client module.
+  a live `/rewind` run against a disposable message.
 
 ## Revisit triggers
 
