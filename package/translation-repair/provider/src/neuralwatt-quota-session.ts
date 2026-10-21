@@ -103,6 +103,9 @@ export type NeuralWattQuotaSession = {
 
  @param retryPolicy - transient-retry pacing
 
+ @param now - clock the time of a reading and the spacing of baseline attempts are read from; the system clock where
+ none is given
+
  @returns Session surface
 
  @example
@@ -121,6 +124,7 @@ export function createNeuralWattQuotaSession(
     readonly baseUrl: string;
     readonly transport: ModelTransport;
     readonly retryPolicy: RetryPolicy;
+    readonly now?: () => Date;
   },
 ): NeuralWattQuotaSession {
   /**

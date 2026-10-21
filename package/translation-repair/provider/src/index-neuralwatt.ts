@@ -101,6 +101,10 @@ export {
   planSpendBetween,
 } from './neuralwatt-quota.ts';
 export {
+  createNeuralWattQuotaSession,
+  type NeuralWattQuotaSession,
+} from './neuralwatt-quota-session.ts';
+export {
   neuralWattIdFor,
   type NeuralWattSpelling,
   neuralWattShowsPictures,

@@ -153,6 +153,12 @@ export type NeuralWattPlanSpend =
     readonly kind: 'measured';
     readonly kwh: number;
     readonly inOverage: boolean;
+
+    /**
+     When the starting reading was taken, as an ISO 8601 instant, present only where it was not the run's first read:
+     the first read failed and a later one took its place, so energy spent before this instant is not counted.
+     */
+    readonly laterStartAt?: string;
   }
   | {
     readonly kind: 'not-comparable';
