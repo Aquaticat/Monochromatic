@@ -1422,9 +1422,15 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     `monochromatic-ide.previous`. The agent's worktree (it was locked by the session process; I checked its HEAD is in
     `origin/main` and unlocked it), branch (local and remote), my two scratch trees and 24 cadence artifact
     directories are removed; no units or containers were left.
+    Tile-stall agent `a0b5a3cdf2d733095` (started 2026-10-21, own worktree off `origin/main`, branch push only): decides
+    by intervention why the tile hand-over stalls slot 50 and whether the stall moved from slot 35 or the fix changed
+    the timing; fixes only if the frame-shift probe shows it; brief quotes `NLG`, `NLD`, `RXI`. On its report: verify,
+    scan `ps`, `podman ps`, `systemctl --user list-units`, merge in a scratch worktree, gates once, own stall A/B with
+    `~/temp/agent/redraw-stall-ab.mjs`, reinstall if the binary changed, remove its worktree (unlock first only after
+    checking its HEAD is in `origin/main`) and branch.
     Open, in order: (1) the stall at slot 50 of the scripted scroll, the tile hand-over in
-    `src/native/render/present.rs` (an intervention, not a log reading, decides it; the frame-shift probe above is the
-    measure); (2) the flake work, in `doc/handover/ide-native-flakes.md`:
+    `src/native/render/present.rs` (the agent above is on it; an intervention, not a log reading, decides it; the
+    frame-shift probe above is the measure); (2) the flake work, in `doc/handover/ide-native-flakes.md`:
     fixed with counts (refused-tile test 10 of 360 to 0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160
     to 0 of 160, find-box menu test by its guard, see the LANDED block above); open: the annotation stability tests
     (cause unknown, frames kept under `target/flake-frames/` for the next failure), the two incomplete ledger entries,
