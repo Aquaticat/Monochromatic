@@ -37,6 +37,7 @@ import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_BEDROCK_ONLY_VISION_UNSEATED,
   SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_OPENROUTER_UNMEASURED_HYPER_ID,
   SEAT_HYPER_TEXT_BEDROCK,
   SEAT_HYPER_VISION,
   SEAT_OPENROUTER_ONLY_CHECKER,
@@ -47,7 +48,6 @@ import {
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import {
   bedrockServesLabel,
-  hyperServesLabel,
   openRouterServesLabel,
 } from './catalog-lookups.test-fixture.ts';
 
@@ -75,14 +75,16 @@ await describe({
             + 'row fails here rather than as one lost voice per call',
           fn: async () => {
             /**
-             Roster ids no catalog has a row for under the roster's own spelling.
+             Roster ids no catalog has a row for, under the roster's own spelling
+             or, for a Hyper seat that kept its roster name through a newer Hyper
+             id, under the card the row sits on.
              */
             const unserved = ROSTER_MODEL_IDS.filter(function nobodyServes(modelId,): boolean {
               // A decision-only seat is served by the decisions endpoint, which
               // has no chat catalog row by design.
               if (isDecisionSeat({ modelId, },))
                 return false;
-              return (!syntheticServes(modelId,)) && (!hyperServesLabel(modelId,)) && (!bedrockServesLabel(modelId,))
+              return (!syntheticServes(modelId,)) && (!hyperIdFor({ modelId, },).served) && (!bedrockServesLabel(modelId,))
                 && (!openRouterServesLabel(modelId,));
             },);
             expect(unserved,).toStrictEqual([],);
@@ -216,6 +218,18 @@ await describe({
               served: true,
               id: SEAT_HYPER_VISION,
             },);
+          },
+        },),
+
+        it({
+          name: 'ANSWERS a seat that kept its roster name through a newer Hyper id with that id, since the '
+            + 'roster id and the wire id no longer match and the lookup must follow the card',
+          fn: async () => {
+            expect(hyperIdFor({ modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, },),)
+              .toEqual({
+                served: true,
+                id: SEAT_HYPER_OPENROUTER_UNMEASURED_HYPER_ID,
+              },);
           },
         },),
 

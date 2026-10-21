@@ -79,7 +79,18 @@ const RATE_UNIT_TOKENS = 1_000_000;
  reader comparing seats can see what an unseated model would have cost.
  */
 const HYPER_CREDIT_RATES = {
+  // Read 2026-10-20, separately from `HYPER_PRICE_READ_ON`: USD 0.33 in, 1.31 out and
+  // 0.03 cache hit, the same as `deepseek-v4.1-flash`. The seat sends this id
+  // since 2026-10-20, and the SPEND line labels a Hyper call by the id on the
+  // wire, so this is the row that prices its spend.
+  'deepseek-v4.1-flash-1017': {
+    input: 6.6,
+    output: 26.2,
+    cacheCreate: 0,
+    cacheHit: 0.6,
+  },
   // Read 2026-10-11: USD 0.33 in and 1.31 out (was 0.30 and 1.20 on 2026-09-11).
+  // Kept for the logs written before 2026-10-20, which label the seat by this id.
   'deepseek-v4.1-flash': {
     input: 6.6,
     output: 26.2,

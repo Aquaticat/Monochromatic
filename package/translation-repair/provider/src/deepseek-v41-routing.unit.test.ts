@@ -10,7 +10,11 @@ import {
   EveryProviderDryError,
   OPENROUTER_CHAT_URL,
 } from '../dist/final/node/index.mjs';
-import { SEAT_HYPER_OPENROUTER_UNMEASURED, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
+import {
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_OPENROUTER_UNMEASURED_HYPER_ID,
+  SEAT_HYPER_OPENROUTER_UNMEASURED_OPENROUTER_ID,
+} from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 
 /** Both serving protocols carry the same invented answer. */
 const ANSWER = '{"animal":"cat","count":7}';
@@ -64,9 +68,9 @@ await describe({
   children: [
     ...[
       { name: 'prefers Hyper when both approved routes are wet', hyper: false, openrouter: false,
-        url: HYPER_MESSAGES_URL, model: SEAT_HYPER_OPENROUTER_UNMEASURED },
+        url: HYPER_MESSAGES_URL, model: SEAT_HYPER_OPENROUTER_UNMEASURED_HYPER_ID },
       { name: 'uses the OpenRouter spelling when Hyper is dry', hyper: true, openrouter: false,
-        url: OPENROUTER_CHAT_URL, model: 'deepseek/deepseek-v4.1-flash' },
+        url: OPENROUTER_CHAT_URL, model: SEAT_HYPER_OPENROUTER_UNMEASURED_OPENROUTER_ID },
     ].map(row => it({
       name: row.name,
       fn: async () => {

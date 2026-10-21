@@ -66,6 +66,19 @@ export const SEAT_HYPER_ONLY = 'glm-5.3' as const;
 export const SEAT_HYPER_OPENROUTER_UNMEASURED = 'deepseek-v4.1-flash' as const;
 
 /**
+ Spelling Charm Hyper takes on the wire for that seat since 2026-10-20: the
+ 1017 weights (`deepseek-ai/DeepSeek-V4.1-Flash-1017`), beside the seat's
+ roster id, which is unchanged.
+ */
+export const SEAT_HYPER_OPENROUTER_UNMEASURED_HYPER_ID = 'deepseek-v4.1-flash-1017' as const;
+
+/**
+ Spelling OpenRouter takes on the wire for that seat since 2026-10-20: the
+ 1017 weights, beside the seat's roster id, which is unchanged.
+ */
+export const SEAT_HYPER_OPENROUTER_UNMEASURED_OPENROUTER_ID = 'deepseek/deepseek-v4.1-flash-1017' as const;
+
+/**
  Only Bedrock serves it; text only; a seated judge and measured writer.
  */
 export const SEAT_BEDROCK_ONLY_TEXT = 'google.gemma-4-e2b' as const;

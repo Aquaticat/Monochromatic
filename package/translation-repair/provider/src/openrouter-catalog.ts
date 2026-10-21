@@ -196,7 +196,7 @@ export type OpenRouterModelInfo = {
 
  @example
  ```ts
- const info = OPENROUTER_MODELS['deepseek/deepseek-v4.1-flash'];
+ const info = OPENROUTER_MODELS['deepseek/deepseek-v4.1-flash-1017'];
  ```
  */
 export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterModelInfo>> = servedRecord({

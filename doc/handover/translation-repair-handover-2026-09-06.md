@@ -666,8 +666,8 @@ its "Next" list is still the queue the merge went ahead of.
       the day boundary and the account-wide count,
       the DeepSeek 1017 weights and the `zheermao19` run.
       Its "Next" is the queue:
-      gate and land w247,
-      w248 and w249,
+      gate and land w247 and w249
+      (w248 landed as `d8cf1933f4`),
       rebuild,
       set `FROZEN`,
       recalibrate the energy margin,

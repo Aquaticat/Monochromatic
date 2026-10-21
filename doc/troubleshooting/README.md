@@ -21,6 +21,8 @@ Problems with test execution and test suite organization:
 - Duplicate describe blocks causing missing or misattributed test output
 - Test suite organization best practices
 - [Sinon drops an injected undefined exception](sinon-undefined-exception-sentinel.md)
+- [chai 6.3.0 `truncateThreshold` cuts failing compare values](chai-failure-value-truncation.md),
+   and any finite replacement threshold is non-monotonic
 
 ### [Editor Setup](editors.md)
 
@@ -327,7 +329,8 @@ and XML editing crates for the monorepo manager
 Found while choosing meow's cache key hash and measuring it on a second machine:
 
 - [`gxhash` needs the `aes` target feature](gxhash-aes-target-feature.md)
-  and has no software fallback (historical: no repository code uses `gxhash` any more)
+  and has no software fallback (historical:
+  no repository code uses `gxhash` any more)
 - [Rust hash crates hide backends behind features and cfg](rust-hash-crate-build-and-test-quirks.md),
   and some test suites pass while testing nothing
 - [`rustup` proxies auto-install into the default home](rustup-proxy-auto-install-default-home.md)
@@ -344,6 +347,8 @@ For common issues:
   ** → [Build performance](performance.build.md)
 - **Test failures not showing?
   ** → [Duplicate describe blocks](testing.md#duplicate-describe-blocks-causing-missing-or-misattributed-test-output)
+- **A failing comparison prints `[ …(N) ]` instead of the values?
+  ** → [chai `truncateThreshold` cut](chai-failure-value-truncation.md)
 - **TypeScript path warnings?
   ** → [dprint configuration](typescript.md#typescript-path-warnings-with-dprint)
 - **Learning Rust HTML fails dprint and Stylelint?

@@ -40,6 +40,7 @@ import {
 } from '../dist/final/node/index.mjs';
 import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
+  SEAT_HYPER_OPENROUTER_UNMEASURED_OPENROUTER_ID,
   SEAT_HYPER_VISION,
   SEAT_SYNTHETIC_VISION_WITHHELD,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
@@ -213,7 +214,7 @@ await describe({
              */
             const body: unknown = JSON.parse(exchange.bodyJson ?? '{}',);
             expect(body,).toMatchObject({
-              model: 'deepseek/deepseek-v4.1-flash',
+              model: SEAT_HYPER_OPENROUTER_UNMEASURED_OPENROUTER_ID,
               stream: true,
               stream_options: { include_usage: true, },
               provider: {
@@ -911,7 +912,7 @@ await describe({
                 return line.slice(line.indexOf('SPEND ',),);
               },);
             expect(spent,).toEqual([
-              'SPEND provider=openrouter model=deepseek/deepseek-v4.1-flash prompt=342 completion=400 cost=0.5 '
+              `SPEND provider=openrouter model=${SEAT_HYPER_OPENROUTER_UNMEASURED_OPENROUTER_ID} prompt=342 completion=400 cost=0.5 `
               + 'endpoint=Inceptron cached=128',
             ],);
           },

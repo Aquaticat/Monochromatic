@@ -112,6 +112,26 @@ mise run test -- \
 The package estimates ordinary input cost because its retained usage does not establish a cache-token breakdown.
 The table preserves quoted cache rates for consumers that do retain that evidence.
 
+## A renamed served id needs its own row
+
+On 2026-10-20 the `deepseek-v4.1-flash` seat moved to Charm Hyper's `deepseek-v4.1-flash-1017`
+(the owner:
+"Migrate to deepseek v4 flash 1017 where possible.").
+The SPEND line labels a Hyper call by the id on the wire,
+so the price table needs a row under the new id,
+and the `hyper price table` test fails without one for the same reason it failed here.
+The public list read on that day quotes the new id at the old id's rates
+(USD 0.33 in,
+1.31 out and 0.03 cache hit per million),
+so the row converts to 6.6,
+26.2,
+0 and 0.6 hypercredits.
+The old row stays for the logs written before the move.
+`HYPER_PRICE_READ_ON` stays at 2026-10-11:
+only the DeepSeek rows of the list were read on 2026-10-20,
+so the row carries its own date in `package/translation-repair/run/src/corpus-run/hyper-price.ts`
+and the snapshot date does not claim a full re-read.
+
 ## OpenRouter remains a separate accounting path
 
 OpenRouter's advertised base rates and scheduled overrides are not necessarily a serving endpoint's billed rate.

@@ -36,6 +36,11 @@ export const GLM_5_3_FLASH_ON_NEURALWATT: NeuralWattCard = {
  NeuralWatt's side of the DeepSeek V4.1 Flash card, whose listing states a
  maximum output of 393,216 tokens.
 
+ THE SERVED ID IS ALREADY THE 1017 WEIGHTS. The listing's `huggingface_id`
+ for `deepseek-v4.1-flash` reads `deepseek-ai/DeepSeek-V4.1-Flash-1017`
+ (`GET https://api.neuralwatt.com/v1/models`, 2026-10-20), so the owner's
+ migration to the 1017 weights of the same day changed nothing on this side.
+
  @example
  ```ts
  const side = DEEPSEEK_V4_1_FLASH_ON_NEURALWATT;
