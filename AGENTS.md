@@ -608,6 +608,20 @@ RXI:
  run in `podman run --memory=2g --cpus=2 --rm` or `mvm`,
  stating bounds.
 
+NLG:
+ Never generate synthetic host load in any session or subagent:
+ no `stress-ng`,
+ busy loops,
+ `--stress-count`,
+ or repeated full test runs;
+ cap the test's own container (`--cpus=2`) instead.
+
+NLD:
+ Every subagent brief quotes the synthetic-load ban;
+ before closing its worktree,
+ stop every process and `systemd-run` unit the subagent left (check `ps`,
+ `systemctl --user list-units`).
+
 BOX:
  Third-party benchmarks run mount-free,
  inputs baked into the image.
