@@ -527,7 +527,9 @@ never a judge's string.
 
 Found on 2026-10-21 (UTC) in run zheermao20, the email letter block (`block/14`) of `zheermao101`.
 Red `4e0cbc1b5f`,
-fixed in `e0dbf84a38`.
+fixed in `e0dbf84a38`
+(with `3ebf976751`, which brought the new verdict function under the fixed-length-cut,
+count-noun and duplicate-body scans that the first fix commit failed).
 Four reviews were heard:
 two `revise` replies and two `source-supported` replies
 (minimax-m3, reply `8cddb6a0`; the GLM-5.3-Flash re-ask on OpenRouter, reply `38241cf7`).
