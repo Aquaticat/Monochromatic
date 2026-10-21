@@ -4,11 +4,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
-import {
-  isArchiveReferenceQuoteAnchored,
-  isArchiveSourceQuoteAnchored,
-  isVerifiableEditorialArchiveBlock,
-} from './archive-block-evidence.ts';
+import { archiveReplyVerdict, } from './archive-reply-verdict.ts';
 import { recordArchiveBlockNaturalness, } from './archive-block-naturalness.ts';
 import { replacementCandidates, } from './archive-replacement-candidates.ts';
 import {
@@ -226,32 +222,30 @@ export async function runArchiveBlockReviewStage(
       };
     },);
   /**
-   Replies whose claimed source support exists verbatim.
+   Replies whose claimed source support exists verbatim, each reply dropped
+   logged with the test that refused it and the numbers that decided it (ledger
+   B715): the run zheermao20 dropped two of four replies and said only that
+   two assessments were eligible.
    */
   const anchoredVoices = voices
     .filter(function supportIsAnchored(voice,): boolean {
-    if (voice.value
-      .disposition
-      === 'source-supported') {
-      // A CITED PAGE ANCHORS TOO (ledger B28): a detail the page the original
-      // links states is the translator's knowledge. Only a page's own text
-      // counts, never an attested line, which quotes the archive back.
-      return isArchiveSourceQuoteAnchored({
-        sourceContext: sourceText,
-        sourceQuote: voice.value
-          .sourceQuote,
-      },)
-        || isArchiveReferenceQuoteAnchored({
-          referenceContext: referenceContext ?? '',
-          sourceQuote: voice.value
-            .sourceQuote,
-        },);
-    }
-    if (voice.value
-      .disposition
-      === 'editorial-context')
-      return isVerifiableEditorialArchiveBlock({ blockText, });
-    return true;
+    /**
+     Whether this reply is evidence, and why not when it is not.
+     */
+    const verdict = archiveReplyVerdict({
+      disposition: voice.value
+        .disposition,
+      sourceQuote: voice.value
+        .sourceQuote,
+      sourceContext: sourceText,
+      referenceContext: referenceContext ?? '',
+      blockText,
+    },);
+    if (verdict.kind === 'stands')
+      return true;
+    reviewLog.warn(`archive review dropped the ${voice.value
+      .disposition} reply of ${voice.modelId}: ${verdict.reason}`,);
+    return false;
   },);
   /**
    Revisions earn publication through the independent selector, not through

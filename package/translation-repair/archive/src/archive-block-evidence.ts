@@ -6,11 +6,11 @@ import {
   maskHtmlComments,
   parseMarkdownBody,
 } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
-  normalizePunctuation,
-  rendersAsNothing,
-} from '@monochromatic-dev/translation-repair-typography/ts';
-import { referencePageTexts, } from '@monochromatic-dev/translation-repair-reference/ts';
+  quoteIsIn,
+  referencePageTexts,
+} from '@monochromatic-dev/translation-repair-reference/ts';
 import { wordStarts, } from '@monochromatic-dev/translation-repair-markup/ts';
 import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
@@ -19,7 +19,7 @@ import type { ReadonlyEntry, } from '@monochromatic-dev/translation-repair-share
 /**
  Minimum Unicode characters an exact source anchor must carry.
  */
-const MINIMUM_SOURCE_QUOTE_CHARACTERS = 4;
+export const MINIMUM_SOURCE_QUOTE_CHARACTERS = 4;
 
 /**
  Translation-side apparatus prefixes accepted only with roster agreement.
@@ -50,7 +50,7 @@ const EDITORIAL_PREFIXES: readonly string[] = [
  shownCodePointCount({ text: '猫\u{200B}在', },); // 2
  ```
  */
-function shownCodePointCount({ text, }: { readonly text: string; },): number {
+export function shownCodePointCount({ text, }: { readonly text: string; },): number {
   /**
    Code points seen so far.
    */
@@ -70,6 +70,18 @@ function shownCodePointCount({ text, }: { readonly text: string; },): number {
  not, and the words are what the anchor asks about. The minimum is counted in
  characters a reader sees, not UTF-16 units, as it says: a zero-width space, a
  filler and a space anchor nothing.
+
+ WHITESPACE IS SET ASIDE ON BOTH SIDES (ledger B715), by `quoteIsIn`, the
+ comparison the reference attestation makes of a quote it verifies (Mio22,
+ ledger B25). The readers are told to preserve line breaks, so a transcript of
+ a chat screenshot wraps mid-sentence where the picture does, and a reviewer
+ quoting the sentence whole quotes the words and not the wrap: zheermao101
+ (run zheermao20) lost an assessment to a 39-character sentence a raw
+ `includes` could not find across "罪恶\n的呢". The trade is the attestation's:
+ with spaces gone, Latin words can meet across a boundary the text does not
+ have, and the four-character minimum is what bounds that. A quote stitched
+ from two pictures still refuses, since the heading and the picture's own
+ words stand between two transcripts on the sheet.
 
  @param sourceContext - expected source section
 
@@ -95,16 +107,11 @@ export function isArchiveSourceQuoteAnchored(
    Quote without accidental boundary whitespace.
    */
   const normalizedQuote = sourceQuote.trim();
-  /**
-   Section as the evidence fold reads it.
-   */
-  const foldedContext = normalizePunctuation({ text: sourceContext, },);
-  /**
-   Quote as the evidence fold reads it.
-   */
-  const foldedQuote = normalizePunctuation({ text: normalizedQuote, },);
   return (shownCodePointCount({ text: normalizedQuote, },) >= MINIMUM_SOURCE_QUOTE_CHARACTERS)
-    && foldedContext.includes(foldedQuote,);
+    && quoteIsIn({
+      quote: normalizedQuote,
+      text: sourceContext,
+    },);
 }
 
 /**

@@ -31,6 +31,10 @@ export {
   runArchiveBlockReviewStage,
 } from './archive-block-review-stage.ts';
 export {
+  archiveReplyVerdict,
+  type ArchiveReplyVerdict,
+} from './archive-reply-verdict.ts';
+export {
   ARCHIVE_BLOCK_DECLINE_CONSEQUENCE,
   ARCHIVE_BLOCK_IDENTITY_RULE,
   ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT,
