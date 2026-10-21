@@ -41,6 +41,18 @@ export function handClock(
 }
 
 /**
+ A day that started at 00:00 UTC on 2026-10-20, for the cases that count ledger lines and do not care where the day
+ starts; `neuralwatt-day.unit.test.ts` covers where it does.
+ */
+export const MIDNIGHT_DAY: {
+  readonly kind: 'anchored';
+  readonly start: Date
+} = {
+  kind: 'anchored',
+  start: new Date('2026-10-20T00:00:00.000Z',),
+};
+
+/**
  One ledger line as the ledger writes it.
 
  @param entry - fields of the line

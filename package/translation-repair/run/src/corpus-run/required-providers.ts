@@ -11,6 +11,7 @@ import {
   createSyntheticClient,
   hyperIsDry,
   neuralWattIsDry,
+  neuralWattDayStartFrom,
   neuralWattLedgerFromEnv,
   openRouterIsDry,
   syntheticIsDry,
@@ -282,6 +283,7 @@ export async function assertRequiredProvidersReady(
         const client = createNeuralWattClient({
           apiKey: key,
           ledger: neuralWattLedgerFromEnv({ env, },),
+          dayStartSetting: neuralWattDayStartFrom({ env, },),
           transport,
         },);
         await gateProvider({

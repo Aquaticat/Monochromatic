@@ -568,7 +568,9 @@ with an automatic merge repaired in `1001a94d91`.
 Gate g120 on `1001a94d91` ran green,
 with 2561 pass and 0 fail,
 and the three commits landed in `dc4982c9cb` over `main` at `86fec6f872`.
-The guard against a next member is proposed and not decided (the paragraph "Open" of this entry names its shapes).
+The guard against a next member was decided and built on 2026-10-21 (UTC):
+the rotation sweep,
+`mise run //package/translation-repair/source-scan:test:rotation-sweep` (the paragraph "Guard" of this entry).
 No production caller passes `fanOut`,
 so production behaviour is unchanged,
 and no cache version constant moved.
@@ -712,31 +714,138 @@ Git merged two identical additions placed at different lines without asking.
 `1001a94d91` keeps the copy already on `main` in both files,
 so `pass-contest.ts` is as on `main` and the contest case passes the whole bench once.
 
-Open:
-the guard,
-so that a next member is found by a check and not by a sheet edit.
-Two shapes are proposed,
-and none is decided.
+Guard:
+the rotation sweep,
+decided by the main session and built on 2026-10-21 (UTC) as an explicitly invoked mise task.
+The other shape proposed in this entry,
+a test-only override seam in `stage` like `StageSettings.editorBenchStart`,
+was not chosen:
+it needs no loader and no bundle shape,
+but it adds a setting to production code that only tests use.
 
-The first is the rotation sweep as an expensive mise task:
-the suite of every family package,
-once per salt.
-Its loader depends on the shape of the bundled code.
-The scratch `salt-loader.mjs` rewrites the source form `return hash % size;`,
-or matches the minified bundle with a regular expression on `.reduce(function(acc,byte){...},2166136261)%size`.
-A bundler that emits another shape,
-or a change of the hash,
-leaves the salt doing nothing and the sweep passing,
-so a sweep needs a positive control that must go red before its green counts.
-The first loader printed a marker line to the stderr of the built commands,
-which failed the `bench` and `coverage-census` cases that compare that stderr;
-the later sweep ran silent,
-and all forty runs of the four packages that had failed exited 0.
+Running it:
+`mise run //package/translation-repair/source-scan:test:rotation-sweep`,
+narrowed with `-- --package <directory>` and `-- --salt <n>`,
+each repeatable.
+The task builds every package that can reach `stage` through its manifest's dependencies,
+then runs each of their unit test files once per salt from 0 to 9,
+in the package's directory and with no key and no setting of the package.
+At its first run that was 26 packages and 1152 test files;
+`source-scan` itself is left out,
+since its tests read source and docs and ask no seat.
+It exits non-zero if any salt fails a case that salt 0 passes,
+and lists each such case once,
+with the test file,
+the tags the harness logged for the case and the salts that fail it.
+A file holding such a case runs again under that salt,
+and a case that fails only once is listed as a flake and does not fail the sweep.
+A case that is red under salt 0 is listed as red with no shift and fails the sweep as well,
+since it cannot be read against the salts and would hide its own dependence on the rotation.
 
-The second is a test-only override seam in `stage`,
-like `StageSettings.editorBenchStart` for the editor seats.
-It needs no loader and no bundle shape,
-and it adds a setting to production code that only tests use.
+How the salt is applied:
+a loader,
+`source-scan/src/rotation-sweep/rotation-salt-hooks.test-fixture.ts`,
+registered with `module.registerHooks` and imported with `node --import`
+(synchronous in-thread hooks,
+stability 1.2,
+release candidate,
+in the Node documentation read on 2026-10-21 (UTC)
+for Node 26.12.0).
+The salt travels in the loader's own URL (`...rotation-salt-hooks.test-fixture.ts?salt=3`),
+so no production source reads the environment,
+and the loader writes nothing to the standard output or standard error of the process under test.
+The hook renames the declaration `function benchRotation(` to `benchRotationUnsalted`
+and appends a wrapper under the old name that answers `(unsalted + salt) % size`,
+and zero for an empty bench.
+It does not read the body,
+so it serves the minified bundle (`...,2166136261)%size}`) and the source (`return hash % size;`) alike,
+and it refuses a module that declares the function more than once.
+The built `stage` is one file (`dist/final/node/index.mjs`) with the family's siblings left as imports,
+so every package's tests reach the same rewritten module by the package name;
+the `coverage-census` bundle holds a copy of its own,
+which the hook rewrites as well.
+The sweep passed the `bench` and `coverage-census` suites under every salt,
+which compare the standard error of built commands,
+so the loader added nothing to it.
+
+What keeps the sweep honest:
+the pitfall the first loader showed,
+a rewrite that matches a bundle shape and leaves the salt doing nothing,
+is closed by a canary.
+Before any suite runs,
+the sweep asks the built `stage` for the rotation of three prompts over every bench size from one to nine,
+with no shift and under each salt to be run,
+and stops unless each answer moved by exactly the salt modulo its bench.
+A bundle shape the loader no longer matches therefore stops the sweep and cannot pass it.
+Positive controls were run on the finished task on 2026-10-21 (UTC),
+each by taking one pin out of a test and putting it back:
+- `stage-quorum.unit.test.ts`,
+  "counts exactly half of an even roster as quorum",
+  without the `fanOut: 'whole-bench'` of `38b8c172b8`:
+  the sweep reported `FAIL under salts 2, 3, 6, 7`
+  with the case's file and tags,
+  the salts this entry names for the case,
+  no other salt failed it,
+  and the task exited 1.
+- `pass-seams-reseat.unit.test.ts` in `corpus-pass`,
+  "THE PREPARATION SEAM WIRES ITS HOOK",
+  without the `fanOut: 'whole-bench'` of `1305066161`:
+  `FAIL under salts 1, 2, 3`,
+  the salts this entry names for the case,
+  which shows the hook reaches `stage` through another package's tests.
+  The two controls ran together as `-- --package stage --package corpus-pass`,
+  over 132 test files.
+- The contest case of the same file,
+  without its `fanOut`,
+  was red under salt 0 itself
+  (the first sweep that ran it listed it as red with no shift and exited 0,
+  which is why a case red with no shift now fails the sweep).
+After both pins were put back,
+the full sweep ran clean:
+1152 test files of 26 packages under salts 0 to 9,
+no case failing under a salt that salt 0 passes,
+none red with no shift,
+no flake,
+and the line `rotation sweep: clean` with exit 0.
+
+Cost:
+one full sweep (ten salts,
+the builds included) took 824 s on 2026-10-21 (UTC),
+809 s of it in the task after the builds,
+and each shifted salt took 77 to 86 s over the 1152 test files with 28 files at once.
+It is one measurement on a host shared with other agents,
+whose load average read above 12 throughout and up to 41 at the end,
+so it is an order of magnitude and not a figure.
+A run narrowed to one package is much cheaper:
+`-- --package stage` took 75 s with the builds,
+about 1 s for each salt after them.
+The cost is why the sweep is a task run on request and not part of `test:unit`.
+
+When it must run:
+before a commit that changes the text of a sheet lands
+(a prompt,
+a house rule or floor wording that a sheet splices,
+or a scripted case that names a seat),
+and in the pre-launch checks of `mistake-prevention.md` ("Before a run launches",
+step 13).
+It is not run on every commit.
+A case it lists is made independent of the rotation as "Orders and seats that a prompt hash decides" says
+(`fanOut: 'whole-bench'`,
+a pinned start,
+or a comparison by seat),
+and the sweep is run again.
+
+Limits:
+ten salts cover the starts of a bench of up to nine seats,
+the largest in the family,
+and a larger bench needs more salts and a larger bound in the canary
+(`SALT_COUNT` in `rotation-sweep.test-fixture.ts` and `LARGEST_BENCH` in `rotation-sweep-canary.test-fixture.ts`).
+The sweep reads only the packages that reach `stage` through their manifests,
+and a case that depends on the rotation through anything other than `benchRotation`
+(a seat chosen by another hash,
+a bench of another stage) is not moved by it.
+Nothing yet checks that the bound follows the roster;
+that stays open.
 
 Recurrence:
 B627 and B631,

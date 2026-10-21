@@ -308,6 +308,17 @@ this section is the readiness reading of it.
   a refused credential holding out the provider instead of the seat,
   and the readonly types),
   so the rotation restarts at `zheermao101` on the combined build.
+- It restarted on `31ce5369e1`,
+  the combined build:
+  `zheermao20` and `CuspariaKLSY20` shipped SETTLED with no class traced to code
+  ([the pass log of 2026-10-21](translation-repair-openrouter-2026-09-03-2026-10-21.md)).
+  `zheermao20`'s letter fell back toward the archive's wording,
+  for a cause the log shows and that is design:
+  the archive block review picks one whole revision,
+  and only two narrow ones reached it.
+  `XingZ60` is held:
+  the fixes in w253 and w254 change the build when they land,
+  and the rotation then restarts at `zheermao101`.
 - The entries never run on a recent build are the rest of the 92-entry corpus.
   The owner's rule stands:
   "We never ever need a all 92 entries launch";

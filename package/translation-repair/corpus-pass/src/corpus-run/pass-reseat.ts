@@ -1,4 +1,7 @@
-import { tagged, } from '@monochromatic-dev/module-logger/ts';
+import {
+  type Logger,
+  tagged,
+} from '@monochromatic-dev/module-logger/ts';
 
 import type { RepairSliceSeating, } from '@monochromatic-dev/translation-repair-assembly/ts';
 import type {
@@ -84,7 +87,13 @@ export function translateReseatFor(
 
 /**
  What the repair lane takes from a seat reading: its roster, whose checkers
- the line names.
+ the line names, and which of them are padding.
+
+ A CHECKER NO WET PROVIDER SERVES IS PADDING (ledger B711): the bench is
+ padded with ranked seats nobody serves only while fewer than its width are
+ served, and the stage reads them as unreachable. The zheermao20 chunks were
+ re-seated with Qwen3.8-27B as a checker after Synthetic ran dry and nothing
+ in the line said it was padding, so the line names them beside the bench.
 
  @param seats - benches as of this chunk
 
@@ -104,9 +113,23 @@ function repairSeatingOf(
   const checkers = seats.repairModels
     .checkerModelIds
     .join(',',);
+  /**
+   Models of the reading that no wet provider serves.
+   */
+  const unserved = new Set(seats.unserved,);
+  /**
+   Checkers on the bench that no wet provider serves, for the line.
+   */
+  const padding = seats.repairModels
+    .checkerModelIds
+    .filter(function isUnserved(modelId,): boolean {
+      return unserved.has(modelId,);
+    },);
   return {
     seating: { repairModels: seats.repairModels, },
-    line: `chunk re-seated under a hold: checkers=${checkers}`,
+    line: `chunk re-seated under a hold: checkers=${checkers} unserved-checkers=${
+      (padding.length === 0) ? 'none' : padding.join(',',)
+    }`,
   };
 }
 
@@ -171,6 +194,8 @@ export type LanesHooks = {
 
  @param entryId - entry the log lines are tagged with
 
+ @param l - logger the lines go to, the entry's tagged logger when absent
+
  @returns Re-seating and per-chunk wait for both lanes
 
  @example
@@ -183,16 +208,14 @@ export function lanesHooksFor(
     client,
     signal,
     entryId,
+    l = tagged({ tag: entryId, },),
   }: {
     readonly client: SeatReadingClient;
     readonly signal: AbortSignal;
     readonly entryId: string;
+    readonly l?: Logger;
   },
 ): LanesHooks {
-  /**
-   Entry logger every reading writes to.
-   */
-  const l = tagged({ tag: entryId, },);
   /**
    Each lane's own re-seating, so neither hands the other a roster it read
    (`pass-reseat-hook.ts`).

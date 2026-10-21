@@ -717,8 +717,16 @@ section "The first keyed call".
 Status:
 found 2026-10-20 at about 23:15 UTC by the owner
 (`The stop logic should obviously count total free energy used per day. Every neuralwatt day starts at 15:15`);
-the fix is being built in w247,
-and this entry gains its commits when it lands.
+fixed by red `6ec47d7dd0` and fix `bc429ded8d`
+(the account's free energy over the day that starts at the quota's anchor),
+`1567eae36e` and `538a151a44`,
+the tracking-alias rows by red `3d5081a77f` and fix `5f09a2f4fb`,
+docs `7a8883aefe`,
+and the anchor retry by red `8f666261b4` and fix `2b94188c26`
+(an unknown anchor is learned on a later reading instead of refusing NeuralWatt for the run),
+with tests `dd6e8141ce` and `4dfa4ba1b3` and docs `a0fdb0aa19`.
+Gate g136 on `a0fdb0aa19` ran 2680 pass and 0 fail,
+and the work landed in `31ce5369e1` on 2026-10-21 (UTC).
 Two defects in one meter.
 The ledger counted only the calls this pipeline sent,
 although the free energy is the account's,
@@ -804,3 +812,105 @@ a failure is scoped to the narrowest thing it names
 a model's refusal to that model on that provider,
 a request's size to that request),
 and a test pins the scope with a second provider that serves the same seat.
+
+### P19: the NeuralWatt hold took a published mean for this pipeline's use and doubled it on an argument nothing measured
+
+Status:
+found 2026-10-21 reading the settled calls of `zheermao19`;
+fixed in w250
+(red `d07508fd21`,
+fix `8f238ff4f4`,
+docs `35e5434b80` and `a665d2d028`),
+merged with the P17 work and landed in `31ce5369e1` on 2026-10-21 (UTC) after gate g136
+(2680 pass,
+0 fail).
+The meter held each call at the energy matrix's mean for its prompt-size bucket times a margin of 2.
+The run's 197 settled calls,
+nearly all in the 4,096 to 16,384 token bucket,
+measured DeepSeek V4.1 Flash at a mean of 0.0758 Wh against the matrix's 0.0696
+and GLM-5.3-Flash at 0.3725 Wh against 0.1015:
+GLM was held at about half of its use,
+and DeepSeek at 1.8 times its.
+The margin's argument was prefill
+(a mean over a cached share h understates a fresh prompt by at most 1/(1-h)),
+and the energy was in decoding:
+a call's energy tracked its completion tokens with a correlation of 0.87 for both models,
+which no prompt-size bucket can see.
+
+The figures were a published mean over other people's traffic
+and a margin derived from a model of the work that the first measurement did not support.
+The design said to recalibrate from the first run,
+and that was right;
+what it lacked was a way to see how far off it was before then,
+and the margin was the guess standing in for it.
+The rule for next time:
+a published per-request figure that sizes a hold is a placeholder until the pipeline's own settled calls replace it,
+and the replacement reads the settled lines for what drives the spread
+(here completion tokens,
+not prompt size)
+before choosing any multiplier.
+Record:
+`doc/decision/translation-repair-neuralwatt-provider.md`,
+section "The margin".
+
+### P20: a failed first quota read stayed the run's starting reading for good
+
+Status:
+named in the lead's brief of 2026-10-21 (UTC),
+from `createNeuralWattQuotaSession` read against the day anchor keeper;
+the behaviour is the lead's ruling of that day;
+fixed by red `da0ec11dd6` and fix `d8c2b5451d`,
+with the docs commit that carries this entry.
+On the red commit nine cases of the provider package fail:
+two reworded cases of the quota session suite,
+six new ones there,
+and one new case for the end-of-run sentence;
+on the fix commit the package's whole unit run,
+its lint,
+its type check and the 49 source scans pass.
+`createNeuralWattQuotaSession` kept its one baseline attempt with `state.attempt ??= tryBaseline(...)`,
+so a first quota read that failed stored `{ taken: false }` for the whole run.
+`planSpend` then answered "the starting reading could not be taken" at the end,
+though the day anchor keeper had read the same endpoint successfully a minute or more after the failure
+(it tries its own read again through `readNow`,
+no sooner than 60 seconds after a failure),
+and the warning on the failed read said the end report "will have no starting reading" as if nothing could change that.
+A run whose quota endpoint recovered within minutes still ended with no plan-energy line.
+
+The cause is two readers of one endpoint keeping two failure rules:
+the keeper stored a failure with the time it happened and the spacing before the next attempt,
+and the session stored the failure as the answer.
+A once-only memo of a read that can fail is a decision never to look again.
+
+The fix:
+`ensureBaseline` tries again no sooner than 60 seconds after the last failure on the injected clock,
+with one attempt in flight serving every caller,
+and takes the spacing from `NEURALWATT_QUOTA_RETRY_SECONDS` in `neuralwatt-day.ts`,
+which the keeper now shares.
+Tracing the callers showed that nothing asks `ensureBaseline` a second time in a run:
+the keeper's retry and the key allowance's refresh both read through `readNow`.
+So a `readNow` that succeeds after a failed baseline takes the baseline's place as well,
+with no extra read,
+and the cases that go through a client are red without it.
+A baseline taken after a failure is not the run's start:
+the measured spend carries `laterStartAt`,
+and `describePlanSpend` says the comparison starts at that later reading,
+gives its time and says that plan energy spent before it is not counted.
+A baseline taken on the first try reads as before.
+A run whose every attempt fails says how many attempts failed and when the last was.
+The failed read is warned about once,
+with wording that no longer promises an empty report.
+The end report of the run package (`run/src/corpus-run/run-providers.ts`) only prints `describePlanSpend`
+and needed no change;
+a run-level case cannot move the clock,
+so the label is pinned in the provider package's cases and not in the run package's.
+
+The rule for next time:
+an attempt at a read that can fail is stored as a result only when it succeeded;
+a failure is stored with its time and the spacing before the next attempt,
+and a figure measured from a start that moved carries that start wherever it is printed.
+Record:
+`doc/decision/translation-repair-neuralwatt-provider.md`,
+section "The spend report",
+and `mistake-prevention-stored-files-and-cached-decisions.md`,
+"Cached decisions".

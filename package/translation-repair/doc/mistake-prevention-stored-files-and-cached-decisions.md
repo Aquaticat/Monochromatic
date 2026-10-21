@@ -67,6 +67,22 @@ and whose readers are pinned by `cache-account-read.unit.test.ts` and `cache-acc
 The search for the packages whose tests name a moved constant is habit;
 no task lists them.
 
+A run's own memo of a read that failed is a cached decision too (ledger P20).
+The NeuralWatt quota session kept its baseline attempt with `??=` on a promise,
+so a first read that failed was the answer for the whole run,
+while the day anchor keeper,
+reading the same endpoint,
+tried again after 60 seconds and succeeded.
+The rule:
+a memo over a read that can fail stores the success;
+a failure is stored with its time and the spacing before the next attempt,
+on an injected clock,
+and a figure whose start moved says so where it is printed.
+A case drives the failure,
+the retry inside the spacing,
+the retry after it and every attempt failing,
+as `neuralwatt-quota-session.unit.test.ts` does.
+
 ## Files a later run reads back
 
 What happened:

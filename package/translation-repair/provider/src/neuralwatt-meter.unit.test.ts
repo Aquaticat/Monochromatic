@@ -26,7 +26,7 @@ import {
  A day with room for many calls.
  */
 const ROOMY: NeuralWattEnergy = {
-  day: '2026-10-20',
+  dayStart: '2026-10-20T19:15:08.000Z',
   dailyWh: 550,
   spentWh: 0.014,
   reckonedWh: 0.5,
@@ -63,6 +63,20 @@ await describe({
         },),
 
         it({
+          name: 'READS A DAY WITH NO ANCHOR AS DRY WHATEVER ELSE IT HOLDS, since a day that cannot be placed cannot be '
+            + 'counted, and a day with the key\'s allowance blocked as dry as well',
+          fn: async () => {
+            /**
+             The roomy reading with the day start taken out.
+             */
+            const { dayStart: _dayStart, ...unanchored } = ROOMY;
+            expect(neuralWattIsDry({ energy: unanchored, },),).toBe(true,);
+            expect(neuralWattIsDry({ energy: { ...ROOMY, keyBlockedUntil: '2026-10-21T19:15:08.000Z', }, },),).toBe(true,);
+            expect(neuralWattIsDry({ energy: { ...ROOMY, keyAllowance: { remainingUsd: 3, blocked: false, }, }, },),).toBe(false,);
+          },
+        },),
+
+        it({
           name: 'READS A DAY BY WHAT IS LEFT ALONE: the spend, the holds and the calls of the day change nothing '
             + 'while the remainder fits the smallest call, and a reading still carrying the old billedToday flag is '
             + 'wet when its remainder is',
@@ -83,14 +97,30 @@ await describe({
       name: neuralWattMeterLevel.name,
       children: [
         it({
-          name: 'RENDERS WHAT IS LEFT AND THE RECKONED SHARE TO THREE PLACES as '
-            + 'two tokens with no value carrying a space',
+          name: 'RENDERS WHAT IS LEFT, THE RECKONED SHARE AND THE ACCOUNT FIGURE TO THREE PLACES, the day start and the '
+            + 'key allowance as tokens with no value carrying a space, \'none\' for what was not read',
           fn: async () => {
             /**
              Tokens for a day with room.
              */
             const level = neuralWattMeterLevel({ energy: ROOMY, },);
-            expect(level,).toEqual(['neuralwattWh=549.986', 'neuralwattReckonedWh=0.500',],);
+            expect(level,).toEqual([
+              'neuralwattWh=549.986',
+              'neuralwattReckonedWh=0.500',
+              'neuralwattAccountWh=none',
+              'neuralwattDayStart=2026-10-20T19:15:08.000Z',
+              'neuralwattKeyAllowance=none',
+            ],);
+            expect(neuralWattMeterLevel({
+              energy: { ...ROOMY, accountWh: 4.0951, keyAllowance: { remainingUsd: 3.25, blocked: false, }, },
+            },),).toEqual([
+              'neuralwattWh=549.986',
+              'neuralwattReckonedWh=0.500',
+              'neuralwattAccountWh=4.095',
+              'neuralwattDayStart=2026-10-20T19:15:08.000Z',
+              'neuralwattKeyRemainingUsd=3.25',
+              'neuralwattKeyBlocked=no',
+            ],);
             expect(level.some(function hasSpace(token,): boolean {
               return token.includes(' ',);
             },),).toBe(false,);
@@ -103,7 +133,12 @@ await describe({
           fn: async () => {
             expect(neuralWattMeterLevel({
               energy: { ...ROOMY, remainingWh: -0.00449, reckonedWh: 1.23456, },
-            },),).toEqual(['neuralwattWh=-0.004', 'neuralwattReckonedWh=1.235',],);
+            },).slice(0, 2,),).toEqual(['neuralwattWh=-0.004', 'neuralwattReckonedWh=1.235',],);
+            /**
+             The reading of a run that could not place its day.
+             */
+            const { dayStart: _dayStart, ...unanchored } = ROOMY;
+            expect(neuralWattMeterLevel({ energy: unanchored, },),).toContain('neuralwattDayStart=none',);
           },
         },),
       ],

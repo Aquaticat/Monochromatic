@@ -1,5 +1,9 @@
 import { errorName, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import {
+  keyAllowanceOf,
+  type NeuralWattKeyAllowance,
+} from './neuralwatt-key-allowance.ts';
 
 //region NeuralWatt quota
 // THE ONE SIGNAL OF PLAN ENERGY SPENT, read twice a run.
@@ -123,6 +127,17 @@ export type NeuralWattQuota = {
    The subscription, absent for an account with none.
    */
   readonly subscription?: NeuralWattSubscription;
+
+  /**
+   The per-key cap, absent for an uncapped key or one that will not read
+   (`neuralwatt-key-allowance.ts`).
+   */
+  readonly keyAllowance?: NeuralWattKeyAllowance;
+
+  /**
+   Why `key.allowance` will not read, an authored phrase; the rest of the reply is still good.
+   */
+  readonly keyAllowanceProblem?: string;
 };
 
 /**
@@ -138,6 +153,12 @@ export type NeuralWattPlanSpend =
     readonly kind: 'measured';
     readonly kwh: number;
     readonly inOverage: boolean;
+
+    /**
+     When the starting reading was taken, as an ISO 8601 instant, present only where it was not the run's first read:
+     the first read failed and a later one took its place, so energy spent before this instant is not counted.
+     */
+    readonly laterStartAt?: string;
   }
   | {
     readonly kind: 'not-comparable';
@@ -305,13 +326,32 @@ export function parseNeuralWattQuota({ bodyText, }: { readonly bodyText: string;
     throw new NeuralWattQuotaShapeError({ detail: 'snapshot_at is not a string', },);
   if (subscription === undefined)
     throw new NeuralWattQuotaShapeError({ detail: 'subscription is absent', },);
+
+  /**
+   The per-key cap, or why it will not read; neither breaks the rest of the reply.
+   */
+  const {
+    allowance,
+    problem,
+  } = keyAllowanceOf({ key: parsed.key, },);
+  /**
+   The key's part of the reading, each absent field left out.
+   */
+  const keyPart = {
+    ...((allowance === undefined) ? {} : { keyAllowance: allowance, }),
+    ...((problem === undefined) ? {} : { keyAllowanceProblem: problem, }),
+  };
   if (subscription === null)
-    return { snapshotAt, };
+    return {
+      snapshotAt,
+      ...keyPart,
+    };
   if (!isJsonRecord(subscription,))
     throw new NeuralWattQuotaShapeError({ detail: 'subscription is neither an object nor null', },);
   return {
     snapshotAt,
     subscription: subscriptionOf({ subscription, },),
+    ...keyPart,
   };
 }
 
@@ -381,9 +421,17 @@ export function planSpendBetween(
 }
 
 /**
+ What the end report says of a comparison that starts at a later reading, so that the operator does not read it as
+ covering the whole run.
+ */
+const LATER_START_NOTE = 'the first reading of the run failed, so this comparison starts at that later reading and '
+  + 'plan energy spent before it is not counted';
+
+/**
  The sentence a run's end prints about plan energy.
 
- @param spend - result of `planSpendBetween`
+ @param spend - difference or reason for none, carrying `laterStartAt` where starting reading followed failed first read,
+ because comparison from later start must not read as covering whole run
 
  @returns Plain statement, with what the figure cannot see
 
@@ -395,17 +443,30 @@ export function planSpendBetween(
 export function describePlanSpend({ spend, }: { readonly spend: NeuralWattPlanSpend; },): string {
   if (spend.kind === 'not-comparable')
     return `NeuralWatt plan energy: no difference to report, because ${spend.reason}`;
+
+  /**
+   Where the comparison starts and what it leaves out, said only where the starting reading was taken after the run's
+   first read failed.
+   */
+  const laterStart = (spend.laterStartAt === undefined)
+    ? undefined
+    : `the later reading taken at ${spend.laterStartAt}`;
   if (spend.kwh === 0)
-    return 'NeuralWatt plan energy: no plan energy was spent between the start and the end of the run; '
-      + 'the free daily energy is not in this figure';
+    return (laterStart === undefined)
+      ? 'NeuralWatt plan energy: no plan energy was spent between the start and the end of the run; '
+        + 'the free daily energy is not in this figure'
+      : `NeuralWatt plan energy: no plan energy was spent between ${laterStart} and the end of the run; ${LATER_START_NOTE}; `
+        + 'the free daily energy is not in this figure';
 
   /**
    The difference in watt-hours, without float dust.
    */
   const wh = Number((spend.kwh * WH_PER_KWH).toFixed(WH_DECIMALS,),);
-  return `NeuralWatt PLAN ENERGY SPENT: ${String(wh,)} Wh of the owner's plan were charged between the start `
-    + `and the end of the run${spend.inOverage ? ', and the plan is in overage' : ''}; anything else done on the `
-    + 'account in that time is in this figure too';
+  return `NeuralWatt PLAN ENERGY SPENT: ${String(wh,)} Wh of the owner's plan were charged between ${
+    laterStart ?? 'the start'
+  } and the end of the run${spend.inOverage ? ', and the plan is in overage' : ''}; ${
+    (laterStart === undefined) ? '' : `${LATER_START_NOTE}; `
+  }anything else done on the account in that time is in this figure too`;
 }
 
 //endregion NeuralWatt quota

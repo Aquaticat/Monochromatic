@@ -5,8 +5,11 @@
 
  THE FIGURES ARE THE MATRIX'S OF 2026-10-20 (`generated_at` 2026-10-20, a
  7-day window, `Wh_per_request` mean on the charged basis) from
- `https://portal.neuralwatt.com/api/energy-pricing/matrix`, pinned here so a
- change to the table in the source is a change to this file too.
+ `https://portal.neuralwatt.com/api/energy-pricing/matrix`, EXCEPT THE 4,096 TO
+ 16,384 TOKEN BUCKET, which is the pipeline's own mean over the settled calls of
+ run `zheermao19` (build `5b5dca49a9`, 2026-10-20): 140 DeepSeek V4.1 Flash
+ calls for 10.613 Wh and 48 GLM-5.3-Flash calls for 17.882 Wh. They are pinned
+ here so a change to the table in the source is a change to this file too.
 
  @module
  */
@@ -25,26 +28,28 @@ import {
 } from '../dist/final/node/index.mjs';
 
 /**
- The matrix's bucket means for `deepseek-v4.1-flash`, by prompt-token bucket.
+ The bucket means for `deepseek-v4.1-flash`, by prompt-token bucket: the
+ matrix's, and the measured one for 4,096 to 16,384 tokens.
  */
 const DEEPSEEK_MEANS = [
   0.0011364,
   0.0073264,
   0.0233012,
-  0.06962,
+  0.0758,
   0.1394705,
   0.2784429,
   0.6078422,
 ] as const;
 
 /**
- The matrix's bucket means for `glm-5.3-flash`, by prompt-token bucket.
+ The bucket means for `glm-5.3-flash`, by prompt-token bucket: the matrix's,
+ and the measured one for 4,096 to 16,384 tokens.
  */
 const GLM_MEANS = [
   0.0030471,
   0.0088908,
   0.0389276,
-  0.1014855,
+  0.3725,
   0.2008592,
   0.3999211,
   0.9089305,
@@ -63,10 +68,10 @@ await describe({
       name: estimateNeuralWattWh.name,
       children: [
         it({
-          name: 'READS THE MATRIX\'S MEAN FOR THE PROMPT\'S BUCKET and holds it against a margin above one, for '
-            + 'each bucket of each model',
+          name: 'READS THE MEAN FOR THE PROMPT\'S BUCKET and holds it at a margin of one, since the bucket the '
+            + 'pipeline\'s calls fall in carries its own measured mean, for each bucket of each model',
           fn: async () => {
-            expect(NEURALWATT_ENERGY_MARGIN,).toBeGreaterThan(1,);
+            expect(NEURALWATT_ENERGY_MARGIN,).toBe(1,);
             INSIDE.forEach(function check(promptTokens, index,): void {
               expect(estimateNeuralWattWh({ servedId: 'deepseek-v4.1-flash', promptTokens, },).bucketMeanWh,).toBeCloseTo(
                 DEEPSEEK_MEANS[index] ?? Number.NaN,

@@ -59,6 +59,20 @@ so a function one package exports and another uses still counts as reached.
   task-list-number,
   living-doc-link and position-reference scans read the docs too.
   Its description says it spends no quota.
+- The `test:rotation-sweep` task (ledger B701):
+  runs every unit test file of every family package that can reach the stage package once per salt from 0 to 9,
+  each salt moving the start of `benchRotation` by that many seats,
+  and lists the cases a salt fails that salt 0 passes,
+  with the file,
+  the case and the salts.
+  The move is made by a loader under `src/rotation-sweep/` that rewrites `benchRotation` as the built bundle loads,
+  so no production source reads the environment and no test-only seam sits in `stage`.
+  It builds the packages first,
+  costs ten full runs of the family's unit tests,
+  and is run before a sheet text change lands and in the readiness pre-launch checks,
+  never per commit.
+  Narrow it with `-- --package <directory>` and `-- --salt <n>`,
+  each repeatable.
 
 ## Family dependencies
 
@@ -72,6 +86,9 @@ because there is no production code.
 
 Development dependencies other than `test-fixture` (`devDependencies`):
 
+- `adjudication`
+  (its keyless child runner,
+  for the rotation sweep)
 - `document-structure`
 - `markup`
 - `run`
@@ -95,6 +112,8 @@ The scans read the source of every family package as text,
 so none of them is a dependency.
 The `test:unit` task declares no `depends`,
 so build those four first with `mise run //package/translation-repair/<sibling>:build`.
+The unit tests of the rotation sweep also load the built `adjudication`,
+which the `test:rotation-sweep` task builds with every other package it sweeps.
 The `source-scans` task builds them first.
 
 Run the scans with `mise run //package/translation-repair/source-scan:test:unit`,

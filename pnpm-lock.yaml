@@ -7439,6 +7439,9 @@ importers:
       '@monochromatic-dev/module-test':
         specifier: workspace:*
         version: link:../../module/test
+      '@monochromatic-dev/translation-repair-adjudication':
+        specifier: workspace:*
+        version: link:../adjudication
       '@monochromatic-dev/translation-repair-document-structure':
         specifier: workspace:*
         version: link:../document-structure

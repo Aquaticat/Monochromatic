@@ -157,6 +157,7 @@ named for that subject and listed here.
   - [Counts in printed text](mistake-prevention-messages-labels-and-counts.md#counts-in-printed-text)
   - [What a catch charges](mistake-prevention-messages-labels-and-counts.md#what-a-catch-charges)
   - [Log lines that report nothing done](mistake-prevention-messages-labels-and-counts.md#log-lines-that-report-nothing-done)
+  - [Counts that include calls never made](mistake-prevention-messages-labels-and-counts.md#counts-that-include-calls-never-made)
   - [Provider names in failures](mistake-prevention-messages-labels-and-counts.md#provider-names-in-failures)
 - [Preventing mistakes: moves, splits and rewrite scripts](mistake-prevention-moves-splits-and-rewrite-scripts.md):
   Rules for moving or rewriting many files at once:
@@ -285,3 +286,15 @@ not a memory of having done it.
     and the meter's day or period boundary is taken from the account's reply,
     not from a documentation page;
     a limit recorded as invisible names the endpoints read and what each lacked.
+13. The rotation sweep is clean when a sheet's text or a seat-naming case changed (B701):
+    `mise run //package/translation-repair/source-scan:test:rotation-sweep` ends on `rotation sweep: clean`
+    and exits 0,
+    after any commit since the last sweep that changed a prompt,
+    a house rule or floor wording that a sheet splices,
+    or a scripted case that names a seat.
+    It runs the unit tests of every package that can reach `stage` ten times
+    (824 s,
+    builds included,
+    on 2026-10-21 (UTC)),
+    and its report states the number of test files and the salts it ran,
+    so a run narrowed by `-- --package` or `-- --salt` is read as a narrowed run and not as the sweep.

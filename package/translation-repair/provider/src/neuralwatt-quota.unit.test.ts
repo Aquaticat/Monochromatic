@@ -259,6 +259,44 @@ await describe({
         },),
 
         it({
+          name: 'SAYS THE COMPARISON STARTS AT A LATER READING WHEN THE FIRST READ FAILED, with that reading\'s time, '
+            + 'and that energy spent before it is not counted, whether the difference is nonzero or zero',
+          fn: async () => {
+            /**
+             The sentence for a nonzero difference measured from a later reading.
+             */
+            const spent = describePlanSpend({
+              spend: { kind: 'measured', kwh: 0.05, inOverage: false, laterStartAt: '2026-10-20T12:01:00.000Z', },
+            },);
+            expect(spent,).toContain('PLAN ENERGY SPENT',);
+            expect(spent,).toContain('50 Wh',);
+            expect(spent,).toContain('2026-10-20T12:01:00.000Z',);
+            expect(spent,).toContain('the first reading of the run failed',);
+            expect(spent,).toContain('starts at that later reading',);
+            expect(spent,).toContain('before it is not counted',);
+            expect(spent,).not.toContain('between the start and the end of the run',);
+            /**
+             The sentence for no difference measured from a later reading.
+             */
+            const still = describePlanSpend({
+              spend: { kind: 'measured', kwh: 0, inOverage: false, laterStartAt: '2026-10-20T12:01:00.000Z', },
+            },);
+            expect(still,).toContain('no plan energy was spent',);
+            expect(still,).toContain('2026-10-20T12:01:00.000Z',);
+            expect(still,).toContain('before it is not counted',);
+            expect(still,).toContain('free daily energy',);
+          },
+        },),
+
+        it({
+          name: 'SAYS NOTHING OF A LATER READING WHEN THE FIRST READ WAS THE START, the sentences as they were',
+          fn: async () => {
+            expect(describePlanSpend({ spend: { kind: 'measured', kwh: 0.05, inOverage: false, }, },),).not.toContain('later',);
+            expect(describePlanSpend({ spend: { kind: 'measured', kwh: 0, inOverage: false, }, },),).not.toContain('later',);
+          },
+        },),
+
+        it({
           name: 'SAYS WHY WHEN THE READINGS COULD NOT BE COMPARED',
           fn: async () => {
             expect(describePlanSpend({ spend: { kind: 'not-comparable', reason: 'the billing period rolled over', }, },),)

@@ -143,10 +143,12 @@ const MARKED_CLASSES: readonly string[] = [
   'NestingBoundError',
   'NeuralWattAllowanceError',
   'NeuralWattAllowanceOverrideError',
+  'NeuralWattDayStartOverrideError',
   'NeuralWattLedgerShapeError',
   'NeuralWattModelNotServedError',
   'NeuralWattQuotaShapeError',
   'NeuralWattReservationSettledError',
+  'NeuralWattUsageShapeError',
   'NoProviderForModelError',
   'NothingInFlightError',
   'OffRosterModelError',
@@ -229,6 +231,7 @@ const NAMED_PARTS: Record<string, string> = {
   'ALLOW_DRIFT_VAR': 'environment variable name',
   'HARD_CAP_VAR': 'environment variable name',
   'NEURALWATT_DAILY_WH_VAR': 'environment variable name',
+  'NEURALWATT_DAY_START_VAR': 'environment variable name',
   'energy.day': 'UTC date the NeuralWatt ledger computed from its clock',
   'energy.remainingWh .toFixed(WH_DECIMALS,)': 'watt-hours the NeuralWatt ledger computed, fixed to three places',
   'energy.reservedWh .toFixed(WH_DECIMALS,)': 'watt-hours the NeuralWatt ledger computed, fixed to three places',
@@ -467,6 +470,9 @@ const WITHHELD: Record<string, string> = {
   UnhandledMemberInvariantError: 'names the discriminant of a value the types say cannot exist, which is '
     + 'whatever text that value carries under `kind`; unreachable while every chain names every member of its '
     + 'union, so the boundary never has to print it',
+  SweepOptionRefusalError: 'the rotation sweep\'s own refusal of a command line, printed by `rotationSweepMain` '
+    + 'and never through the boundary; its sentence names the option and value the operator typed, which is all it '
+    + 'carries, so the marker would mean nothing where no boundary reads it',
 };
 
 //endregion Marked message inventory

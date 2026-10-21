@@ -557,10 +557,10 @@ await describe({
 
         expect(process.exitCode,).toBe(0,);
         expect(
-          printed.lines.includes('SEAT hf:openai/gpt-oss-120b asked=1 usable=1 unusable=0 threw=0 abandoned=0',),
+          printed.lines.includes('SEAT hf:openai/gpt-oss-120b asked=1 usable=1 unusable=0 threw=0 abandoned=0 unreachable=0',),
         ).toBe(true,);
         expect(
-          printed.lines.includes('SEAT gemma-4-26b-a4b-it asked=2 usable=0 unusable=0 threw=2 abandoned=0',),
+          printed.lines.includes('SEAT gemma-4-26b-a4b-it asked=2 usable=0 unusable=0 threw=2 abandoned=0 unreachable=0',),
         ).toBe(true,);
         expect(dark.startsWith(
           'SEATS DARK: 1 of 2 seats asked produced nothing usable this run: '
@@ -594,7 +594,7 @@ await describe({
 
         expect(process.exitCode,).toBe(REFUSED_AS_STATED,);
         expect(printed.lines[0],).toBe(`editor-calibrate: ${STATED_MESSAGE}`,);
-        expect(printed.lines[1],).toBe('SEAT minimax-m3 asked=1 usable=0 unusable=1 threw=0 abandoned=0',);
+        expect(printed.lines[1],).toBe('SEAT minimax-m3 asked=1 usable=0 unusable=1 threw=0 abandoned=0 unreachable=0',);
         expect((printed.lines[2] ?? '').startsWith('SEATS DARK: 1 of 1 seat asked',),).toBe(true,);
       },
     },),
@@ -620,7 +620,7 @@ await describe({
 
         expect(process.exitCode,).toBe(0,);
         expect(printed.lines.length,).toBe(1,);
-        expect(printed.lines[0],).toBe('SEAT minimax-m3 asked=1 usable=1 unusable=0 threw=0 abandoned=0',);
+        expect(printed.lines[0],).toBe('SEAT minimax-m3 asked=1 usable=1 unusable=0 threw=0 abandoned=0 unreachable=0',);
       },
     },),
     it({

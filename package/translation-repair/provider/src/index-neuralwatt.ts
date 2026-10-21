@@ -10,6 +10,8 @@ export {
   neuralWattChatUrlFor,
   type NeuralWattModelInfo,
   neuralWattQuotaUrlFor,
+  neuralWattModelsUrlFor,
+  neuralWattUsageByModelUrlFor,
 } from './neuralwatt-catalog.ts';
 export {
   createNeuralWattClient,
@@ -18,13 +20,42 @@ export {
   NeuralWattModelNotServedError,
 } from './neuralwatt-client.ts';
 export {
+  aliasNamesOf,
+  type NeuralWattAliasMap,
+} from './neuralwatt-aliases.ts';
+export {
   type NeuralWattComments,
   readNeuralWattComments,
 } from './neuralwatt-comments.ts';
 export {
+  NEURALWATT_DAY_START_VAR,
+  type NeuralWattDayStart,
+  NeuralWattDayStartOverrideError,
+  neuralWattDayAfter,
+  neuralWattDayStartAt,
+  neuralWattDayStartFrom,
+  neuralWattDayStartOfInstant,
+} from './neuralwatt-day.ts';
+export {
+  dayIsClosed,
+  energyOfDay,
+  entryIsInDay,
+} from './neuralwatt-day-energy.ts';
+export {
+  type NeuralWattDay,
   NeuralWattAllowanceError,
   type NeuralWattEnergy,
 } from './neuralwatt-energy.ts';
+export {
+  blockedUntilOf,
+  keyAllowanceOf,
+  type NeuralWattKeyAllowance,
+  type NeuralWattKeyAllowanceReading,
+} from './neuralwatt-key-allowance.ts';
+export {
+  coveredWhOf,
+  NeuralWattUsageShapeError,
+} from './neuralwatt-usage.ts';
 export {
   estimateNeuralWattWh,
   NEURALWATT_ENERGY_MARGIN,
@@ -69,6 +100,10 @@ export {
   parseNeuralWattQuota,
   planSpendBetween,
 } from './neuralwatt-quota.ts';
+export {
+  createNeuralWattQuotaSession,
+  type NeuralWattQuotaSession,
+} from './neuralwatt-quota-session.ts';
 export {
   neuralWattIdFor,
   type NeuralWattSpelling,

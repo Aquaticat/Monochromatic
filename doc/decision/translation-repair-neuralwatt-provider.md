@@ -119,7 +119,8 @@ because nothing reports it and overage is the owner's plan.
   (a non-negative number;
   anything else is refused at once).
 - **A call holds its estimate before it is sent.**
-  The estimate is the matrix mean for the model and the prompt-size bucket,
+  The estimate is the bucket mean for the model and the prompt-size bucket,
+  the matrix's or the pipeline's measured one ("The margin"),
   times the margin.
   The prompt size is the request body's bytes over `PROMPT_BYTES_PER_TOKEN`,
   rounded up.
@@ -154,79 +155,84 @@ because nothing reports it and overage is the owner's plan.
 
 ### The margin
 
-The margin is 2,
-uniform across models and buckets.
+The margin is 1,
+uniform across models and buckets,
+since 2026-10-21;
+it was 2 until the first keyed runs were read.
 
 - **What it sizes.**
   Only the hold a call has while in flight.
   Settlement replaces it with the measured figure,
   so the margin decides how much is held and never how much was spent.
-- **Why this much.**
-  The matrix's means come from traffic whose prompts were mostly served from the prefix cache
-  (the matrix prints the share per bucket),
-  and this pipeline's prompts are mostly fresh.
-  If a bucket's energy were wholly prefill,
-  a mean over a cached share h would understate a fresh prompt by 1/(1-h).
-  For the lightest bucket with a cached share
-  (256 to 1,023 tokens,
-  DeepSeek V4.1 Flash,
-  h of 0.458)
-  that is 1.84,
-  and 2 is the smallest whole number at or above it.
-  For the sheet-sized buckets of 1,024 to 16,383 tokens the same bound reads 2.65 to 3.29
-  (GLM-5.3-Flash 1.45 to 1.57),
-  so 2 sits in the middle of the range there and is not claimed to cover the heavier buckets.
-  The true multiplier lies between 1 and the bound,
-  because decode work,
-  which these reasoning models spend heavily,
-  does not scale with fresh prompt tokens.
+- **The measured means.**
+  Run `zheermao19`
+  (build `5b5dca49a9`,
+  2026-10-20)
+  settled 197 NeuralWatt calls,
+  and nearly all fell in the 4,096 to 16,383 token bucket:
+  140 of 143 DeepSeek V4.1 Flash calls for 10.613 Wh,
+  48 of 54 GLM-5.3-Flash calls for 17.882 Wh.
+  Their means,
+  0.0758 and 0.3725 Wh,
+  replace the matrix's 0.0696 and 0.1015 for that bucket.
+  Every estimate in the run was exactly twice its bucket's matrix mean,
+  so the bucket each call was held in is the one its logged prompt tokens name.
+  The other buckets keep the matrix's figures:
+  the run held two to four calls in each.
+  The matrix was near for DeepSeek and read GLM at about a quarter of its use;
+  its means come from traffic whose prompts were mostly served from the prefix cache,
+  and this pipeline's sheets are fresh.
+- **The spread is in the output.**
+  The largest single calls were 0.840 Wh for DeepSeek,
+  eleven times its mean,
+  and 1.626 Wh for GLM,
+  4.4 times its mean.
+  Joined to the `SPEND` line of the same stamp
+  (193 of the 197 calls have one),
+  a call's energy tracked its completion tokens with a correlation of 0.87 for both models:
+  about 0.057 Wh per thousand completion tokens for DeepSeek
+  and 0.100 for GLM.
+  A prompt-size bucket cannot see that before the call is sent;
+  the completion cap bounds the worst call,
+  and GLM's three calls at its cap of 18,316 completion tokens measured 1.312 to 1.626 Wh.
+  The first design's argument for 2 rested on prefill
+  (a mean over a cached share h understates a fresh prompt by at most 1/(1-h)),
+  and the run showed decode is where these reasoning models spend.
+- **Why 1.**
+  With the bucket that matters at its measured mean,
+  a hold at the mean is right on average.
+  A short hold costs only at the moment the day runs out,
+  bounded by the calls in flight then:
+  in that run up to 30 calls settled within one minute,
+  and 30 GLM calls each 1.25 Wh past the mean would overrun the day by about 37 Wh
+  (6.8 percent of 550 Wh),
+  a bound no measured minute came near.
+  A margin of 2 held DeepSeek at 1.8 times its use at that run's figures,
+  and a larger margin sends the last calls of every day to a paid provider while the free energy still covers them;
+  the owner asked for the margin "as small as can be justified,
+  so free energy is not left unspent".
 - **What it can strand.**
   At the end of a day a call is refused only if its hold does not fit,
-  so what is left unspent is less than one hold of the size being sent.
-  At the matrix means and a margin of 2,
-  per bucket of prompt tokens
-  (DeepSeek V4.1 Flash first,
-  GLM-5.3-Flash second,
-  each in watt-hours and as a share of 550 Wh):
-  - Under 256:
-    0.0023 (0.0004 percent) and 0.0061 (0.0011 percent).
-  - 256 to 1,023:
-    0.0147 (0.0027 percent) and 0.0178 (0.0032 percent).
-  - 1,024 to 4,095:
-    0.0466 (0.0085 percent) and 0.0779 (0.0142 percent).
-  - 4,096 to 16,383:
-    0.1392 (0.0253 percent) and 0.2030 (0.0369 percent).
-  - 16,384 to 65,535:
-    0.2789 (0.0507 percent) and 0.4017 (0.0730 percent).
-  - 65,536 to 262,143:
-    0.5569 (0.1013 percent) and 0.7998 (0.1454 percent).
-  - 262,144 to 1,048,575:
-    1.2157 (0.2210 percent) and 1.8179 (0.3305 percent).
-
-  A larger margin raises every figure and refuses large prompts earlier in the day.
-  A smaller one lets more calls start together on a remainder that may not cover them.
-  Calls in flight at the moment work stops are not counted in the table:
-  their holds are freed as they settle,
-  but nothing sends again that day if the run has ended.
+  so what is left unspent is less than one hold of the size being sent:
+  at a margin of 1,
+  from 0.0011 Wh
+  (DeepSeek under 256 tokens)
+  to 0.9089 Wh
+  (GLM from 262,144 tokens up,
+  0.17 percent of 550 Wh),
+  and 0.0758 and 0.3725 Wh in the measured bucket.
 - **What the margin cannot do.**
   It cannot stop plan spend by itself.
-  If the real energy of a fresh prompt is several times the estimate,
-  the calls in flight together can pass the day's end by their combined excess before the first one settles.
-  At the prefill-dominated bound,
-  and with 64 calls in flight,
-  a figure assumed because no ceiling is set,
-  the excess is about 6 Wh in the 4,096 to 16,383 bucket and about 62 Wh in the 16,384 to 65,535 bucket,
-  both for DeepSeek V4.1 Flash.
-  That bound is an upper limit that decode-heavy reasoning calls do not reach.
-  Settlement at the measured figure corrects the ledger as each call ends,
-  so the overshoot is bounded by the calls already in flight when the day runs out;
-  the owner accepted that risk on 2026-10-20
+  The calls in flight together can pass the day's end by their combined excess before the first one settles;
+  settlement at the measured figure corrects the ledger as each call ends,
+  and an overrun shows in the plan-energy difference a run prints at its end.
+  The owner accepted that risk on 2026-10-20
   ("I can tolerate some potential losses").
-- **Recalibrate from the first keyed run.**
+- **Recalibrate from later runs.**
   Every settled call logs its measured energy beside its estimate and its prompt tokens,
-  so the first run supplies the pipeline's own means per bucket,
-  which replace the matrix's.
-  Until then the margin is a start and not a measurement.
+  and the `SPEND` line of the same stamp carries its completion tokens,
+  so a later run can replace the other buckets' figures,
+  or bucket by completion tokens once a run supplies enough calls to set a per-model rate.
 
 ### The spend report
 
@@ -236,6 +242,15 @@ and prints the difference in `subscription.kwh_used` and whether `in_overage` is
 The reading exists only in a keyed run that made a NeuralWatt call;
 no test reads it,
 and a failed read never blocks a call.
+A starting read that fails is tried again,
+no sooner than 60 seconds after the last failure on the injected clock,
+the spacing of the day anchor's retry,
+and a later read of the quota that the run makes for its own reasons takes its place the same way.
+A comparison that starts at such a later reading is printed as starting there:
+the line gives the reading's time and says that plan energy spent before it is not counted.
+A run whose every start read fails says how many failed and when the last was.
+The warning on the first failure is written once.
+Ledger P20 in `package/translation-repair/doc/audit-ledger-providers-routing-and-seating.md` records the miss.
 Its end report is registered when the run client is built and printed by `reportingRefusals`
 (`run/src/corpus-run/run-end-report.ts`).
 
@@ -262,9 +277,13 @@ The key's value is masked in every logged exchange by the same credential maskin
 - **The owner's other use of covered models.**
   The free energy is per account.
   Anything the owner runs on DeepSeek V4.1 Flash or GLM-5.3-Flash outside this pipeline spends the same 550 Wh,
-  and the ledger does not know it.
-  The ledger can then say energy is left when the account has none,
-  and the owner's plan is charged for the calls sent past that point.
+  and the ledger alone does not know it.
+  The account-wide count ("The day boundary and the account-wide count") reads it back from the by-model usage
+  on every meter reading,
+  so the stop now sees that use,
+  tracking-alias calls included,
+  as of the last reading;
+  a call the owner makes between two readings is still unseen until the next one.
   No per-request field tells free energy from plan energy
   (the first keyed call reported a cost on a free request).
   The quota difference in the spend report is the only signal of plan energy spent,
@@ -284,8 +303,8 @@ The key's value is masked in every logged exchange by the same credential maskin
   A reservation lives in the process that made it.
   Two pipeline processes run at once on one ledger each read the other's settled lines but not its holds,
   so together they can start more than the remainder covers.
-  The margin bounds the effect;
-  nothing else does.
+  Only the calls each process has in flight at once bound the effect,
+  the same exposure as at the end of a day ("The margin").
 
 ## The first keyed call
 
@@ -331,7 +350,9 @@ The billed stop was removed
 The one call also shows the estimate running high:
 2.8 times the measured figure in the 1,024 to 4,095 bucket.
 One call is no mean;
-the margin stays until a run's settled lines give per-bucket figures.
+the margin stays until a run's settled lines give per-bucket figures
+(they did with `zheermao19`;
+see "The margin").
 
 ## The day boundary and the account-wide count
 
@@ -340,7 +361,7 @@ The owner,
 `The stop logic should obviously count total free energy used per day. Every neuralwatt day starts at 15:15`.
 Two read-only calls the same minute
 (no inference;
-raw output in `/var/home/user/temp/agent/x15-fix/neuralwatt/usage-probe.out` and `quota-shape.out`)
+the raw output was kept outside the repository)
 settled both points.
 
 - **The day starts at 19:15 UTC.**
@@ -370,8 +391,91 @@ never less than the ledger's own settled lines,
 plus the calls in flight;
 the meter's blind spot for the owner's other use,
 in "What the meter cannot see",
-closes when that lands.
+closed when that landed.
 Ledger P17 in `package/translation-repair/doc/audit-ledger-providers-routing-and-seating.md` records the miss.
+
+### What landed
+
+- **The anchor and where it comes from.**
+  A NeuralWatt day is the 24 hours from the latest instant,
+  at or before now,
+  whose UTC time of day is that of the quota's `subscription.current_period_start`.
+  Where the quota gives none,
+  `TRANSLATION_REPAIR_NEURALWATT_DAY_START` (`HH:MM`,
+  UTC) does;
+  where neither does,
+  the day is unknown and NeuralWatt is dry and refused,
+  with one warning that names the missing field and both remedies.
+  There is no midnight fallback,
+  since an assumed 00:00 UTC would count the wrong day's energy.
+  Run start logs the anchor and its source.
+- **An unknown anchor is tried again.**
+  Only a known anchor is kept for the run.
+  While it is unknown,
+  a later reading or call reads the quota afresh
+  (not the failed starting reading,
+  which that fresh reading then replaces as the comparison's start),
+  no sooner than 60 seconds after the last failed attempt on the injected clock;
+  calls in between stay refused.
+  The outage is warned about once,
+  and the day finally learned is logged with its source.
+  One transient quota failure at the start of a run therefore no longer sends the whole run to a paid provider.
+- **What a day has spent.**
+  The larger of the account's covered energy since the anchor and the ledger's own settled energy since it,
+  never their sum,
+  plus the holds of calls in flight.
+  The ledger's days are the anchored days too.
+  The by-model reply's echoed `period` is checked against the window asked,
+  and a reply for another window is refused.
+  With the route unreadable,
+  the last figure for the same day stands,
+  else the ledger counts alone,
+  with one warning per outage that names the endpoint and the status.
+  `energy_kwh` is consumed energy,
+  so a flex row is counted at more than it was charged,
+  which errs on the safe side.
+- **Tracking aliases count.**
+  A call made under an alias such as `nw-flash` shows in `products[]` with the alias as its `requested_model`,
+  so a count of card ids alone would miss the owner's DeepSeek V4.1 Flash use through it.
+  `GET /v1/models` is read at each account reading,
+  and an entry counts,
+  with its `-flex` twin,
+  when its `metadata.huggingface_id` equals that of a covered model's own entry,
+  so an alias that moves is followed.
+  With that listing unreadable,
+  every `nw-` row that is not a speed lane and was served by a covered model counts,
+  with one warning per outage.
+  Speed lanes never count.
+- **The key's own cap.**
+  The owner set a 1 kWh daily limit on this key on 2026-10-20.
+  The quota reports it as `key.allowance`,
+  which still read `null` that day,
+  so what a live cap reports is unconfirmed;
+  the pipeline reads only the fields the schema states.
+  A blocked cap holds NeuralWatt dry until its `reset_at`,
+  or until the next day's anchor where it names none,
+  with a warning;
+  a cap that will not read is warned about once and ignored.
+  The 550 Wh is under the 1 kWh,
+  so the cap is a backstop and the free-energy stop stays the primary one.
+- **The cost of the count.**
+  Each account reading makes three GET requests:
+  the quota (for the cap),
+  the models listing and the by-model usage.
+  The budget layer reads the meter every 60 seconds.
+  The `METERS` line carries `neuralwattAccountWh`,
+  `neuralwattDayStart` and the cap's fields beside the two it had.
+
+### Assumptions left
+
+- A flex twin is named `<id>-flex`.
+  The catalog names none,
+  and the listing's own twin entries are read when it has them.
+- The anchor is kept to the second (`19:15:08`),
+  as the quota reports it;
+  whether the service's day boundary is the second or the minute is not measured.
+- The cap's USD figures are not converted to energy,
+  and no kWh field is invented for it.
 
 ## Not verifiable without a key
 
@@ -429,8 +533,8 @@ open to the owner's veto.
   It reports the plan and not the free energy,
   and it is limited to one request per second.
 - **A per-model or per-bucket margin.**
-  Nothing measured separates them yet;
-  the first keyed run supplies the data.
+  The measured per-model means in the bucket the pipeline's calls fall in do that work;
+  a margin over them would only scale every hold alike.
 - **Seating either model in a new role,
   or lifting a hold,
   because the energy is free.**

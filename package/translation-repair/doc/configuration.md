@@ -68,12 +68,67 @@ each uses an empty export as given.
     the owner having said "Use the neuralwatt free energy front and center."
     Optional and loud like the others.
     The owner's account carries 550 Wh of free energy a day on DeepSeek V4.1 Flash and GLM-5.3-Flash,
-    reset at 00:00 UTC and not carried over;
+    not carried over;
     nothing reports what is left of it and overage is charged to the owner's plan,
     so the package meters it itself from a durable ledger
     (`doc/decision/translation-repair-neuralwatt-provider.md`).
+    The owner,
+    2026-10-20:
+    "The stop logic should obviously count total free energy used per day.
+    Every neuralwatt day starts at `15:15`"
+    (15:15 EDT for the owner in America/New_York).
+    A NeuralWatt day is therefore the 24 hours from the latest instant,
+    at or before now,
+    whose UTC time of day is that of the quota's `subscription.current_period_start`
+    (`GET /v1/quota` answered `2026-10-20T19:15:08Z`,
+    which is 15:15 EDT for the owner in America/New_York),
+    never midnight UTC and never a local time,
+    so daylight saving does not move it.
+    What the day has spent is the larger of two figures,
+    never their sum:
+    the covered energy the whole account used since the day began
+    (`GET /v1/usage/by-model`,
+    the rows of the served models and their `-flex` lanes,
+    read at run start and at each meter reading,
+    the reply's echoed period checked against the window asked),
+    and the ledger's own settled energy since the day began,
+    plus the holds of calls in flight.
+    Calls made under a tracking alias such as `nw-flash` count too:
+    a usage row for one carries the alias as its `requested_model`,
+    so `GET /v1/models` is read at each account reading for the aliases (and their `-flex` twins)
+    whose `metadata.huggingface_id` is that of a covered model,
+    since aliases move.
+    Where that listing cannot be read,
+    every `nw-` row that is not a speed lane and was served by a covered model counts,
+    with one warning per outage.
+    Speed lanes never count.
+    Flex energy is counted as consumed rather than as charged,
+    which over-counts and so errs on the safe side.
+    When the by-model route cannot be read the last figure for the same day stands,
+    else the ledger counts alone,
+    with one warning per outage naming the endpoint and status.
     The `METERS` line carries `neuralwatt=`,
-    and `neuralwattWh=` and `neuralwattReckonedWh=` among its numbers.
+    and `neuralwattWh=` (left in the day),
+    `neuralwattReckonedWh=` (the share resting on estimates),
+    `neuralwattAccountWh=` (the account's covered energy,
+    or `none`)
+    and `neuralwattDayStart=` (the day's first instant,
+    ISO UTC,
+    or `none`) among its numbers.
+    The run logs at start where the day starts and which source said so.
+    The owner also caps this key at 1 kWh a day;
+    the quota reply carries it as `key.allowance`,
+    which still read `null` on 2026-10-20,
+    so what a live cap reports is unconfirmed.
+    When present it is read at each meter reading:
+    `neuralwattKeyAllowance=none` for an uncapped key,
+    else `neuralwattKeyRemainingUsd=` and `neuralwattKeyBlocked=yes|no`,
+    and a blocked cap holds NeuralWatt dry until its `reset_at` (the next day start where it names none)
+    with a warning.
+    A cap that will not read is warned about once and ignored.
+    The free-energy stop stays the primary one;
+    the 550 Wh is under the 1 kWh cap,
+    so the cap is a backstop.
     A cost a request reports does not stop the provider;
     it is a nominal figure that free-energy requests carry too,
     and it appears on the `SPEND` line as `cost=`.
@@ -91,6 +146,23 @@ each uses an empty export as given.
     Set it to 0 on a day without a promotion,
     when the account has no free energy and the first request would be billed to the plan;
     anything that is not a non-negative number is refused at once.
+
+-   `TRANSLATION_REPAIR_NEURALWATT_DAY_START`.
+    The UTC time of day a NeuralWatt day starts at,
+    written `HH:MM` with two digits each,
+    such as `19:15`.
+    Read only when the quota reply carries no usable `subscription.current_period_start`;
+    the quota's own period start wins when both exist.
+    When neither gives a time of day the day is unknown:
+    NeuralWatt is marked dry and refused until it is learned,
+    with one warning naming the missing field and both remedies.
+    The quota is then read again,
+    no sooner than 60 seconds after each failed attempt,
+    so a transient failure at the start of a run does not refuse NeuralWatt for the whole run;
+    the day finally learned is logged with its source.
+    There is no midnight fallback,
+    since an assumed 00:00 UTC would count the wrong day's energy.
+    A value that is not `HH:MM` is refused at once.
 
 -   `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY`.
     Bearer token for the second provider,
@@ -244,7 +316,7 @@ The guard stops a start nobody meant,
 a built file run by hand from a shell that happens to hold keys;
 it is not access control.
 
-Every command ends by printing one `SEAT <model> asked=N usable=N unusable=N threw=N abandoned=N` line per seat to stderr,
+Every command ends by printing one `SEAT <model> asked=N usable=N unusable=N threw=N abandoned=N unreachable=N` line per seat to stderr,
 and a `SEATS DARK:` line naming every seat that was asked and never once produced a usable answer.
 `asked` counts calls that settled.
 `abandoned` counts calls the caller left before they settled,
@@ -252,10 +324,23 @@ chiefly the replies a round cut at its straggler deadline after quorum;
 they are in no other column,
 so a seat with a large `abandoned` was waited on less often than `asked` says
 and is neither withheld nor named dark for them.
-A dark seat is a provider that cannot serve it,
-a key that was never injected,
+`unreachable` counts calls the provider router refused with `NoProviderForModelError` before any request was sent,
+because no wet provider serves the seat (or the owner culled it);
+since 2026-10-21 they are in no other column either
+(audit ledger B711),
+where before that they were counted as `asked` and `threw`.
+A seat only the router refused prints `asked=0` and its `unreachable` count,
+is never withheld by the tally and is not named dark,
+since it was never asked;
+the `unserved=` field of the `JUDGE SEATS` lines names it while it sits on a bench.
+The `SEATS DARK:` line states its count over the seats asked.
+A dark seat is a provider that errors on it
 or a model that answers nothing readable;
 the run log names which.
+A seat no provider could take at all,
+because its provider has no key or no wet provider serves it,
+is refused by the router before any request,
+counts `unreachable` and is not dark.
 Do not read a run with a dark seat as a comparison of the roster.
 
 The first time a provider rejects its credential with HTTP 401,
@@ -302,6 +387,19 @@ and `unreadable-treated-as-spendable` when its meter could not be read,
 which routes as spendable by recorded policy (`package/translation-repair/provider/src/provider-budget.ts`).
 `wet` says the meter reports money left;
 it says nothing of whether a credential is accepted.
+
+The line goes on to name the benches' sizes and two lists of seats.
+`withheld=` names the models the slowness and cost rules took from a bench.
+`unserved=<models or none>` names,
+since 2026-10-21,
+every model on a bench of the reading that no wet provider serves:
+it stays seated and is lost at call time as unreachable,
+so a bench count includes it
+(`doc/decision/translation-repair-short-bench-share.md`).
+`threw-withheld=` names the seats the run withheld for failing every real ask,
+and never a seat the router only refused.
+The repair lane's `chunk re-seated under a hold: checkers=<models>` line ends with `unserved-checkers=<models or none>`,
+naming the checkers that are padding the bench with no wet provider behind them.
 
 ## Where a run writes
 

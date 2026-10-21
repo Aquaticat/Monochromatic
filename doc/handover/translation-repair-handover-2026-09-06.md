@@ -665,19 +665,17 @@ its "Next" list is still the queue the merge went ahead of.
       the stop built and removed,
       the day boundary and the account-wide count,
       the DeepSeek 1017 weights and the `zheermao19` run.
-      Its "Next" is the queue:
+      Its "Next" is the queue.
       w248 landed as `d8cf1933f4` and w249 as `624c5ff583`;
-      the energy recalibration is committed in keyless worktree w250
-      (`d07508fd21` to `a665d2d028`,
-      ledger P19);
-      w247 handed back and is merged with w250 and main in keyless worktree w252;
-      its agent now makes a failed anchor read retry instead of refusing NeuralWatt for the run,
-      takes the scratch paths out of the decision record's day-boundary section
-      and records the aliases and the key allowance there;
-      then gate w252 once and land,
-      rebuild,
-      set `FROZEN`,
-      then restart the rotation at `zheermao101` on the combined build.
+      the energy recalibration (ledger P19),
+      the account-wide day with its alias rows
+      and the anchor retry (ledger P17)
+      landed together as `31ce5369e1` after gate g136
+      (2680 pass,
+      0 fail).
+      `zheermao20` runs on that build from 02:15 UTC on 2026-10-21;
+      read it when it settles,
+      then go on with CuspariaKLSY and the rest.
     - The class of the `zheermao15` read is ledger B702.
     - The guard of B701 is decided
       (2026-10-21 (UTC),
@@ -685,10 +683,19 @@ its "Next" list is still the queue the merge went ahead of.
       the rotation sweep as an explicitly invoked mise task,
       since it repeats the census exactly and needs no production change,
       where a test-only seam in `stage` would put a test hook in production code.
-      A Sonnet agent builds it in keyless worktree w251,
-      with a positive control that reintroduces one member;
-      review,
-      gate and land it when it hands back.
+      It landed as `7c9d5fa35f` after gate g137
+      (2690 pass,
+      0 fail):
+      `mise run //package/translation-repair/source-scan:test:rotation-sweep`.
+      Its positive control failed stage-quorum under salts 2,
+      3,
+      6 and 7
+      and pass-seams-reseat under salts 1,
+      2 and 3;
+      the full sweep ran clean in 824 s.
+      A launch needs it clean after any commit since the last sweep that changed a sheet's text
+      or a seat-naming case
+      (pre-launch step 13 in `package/translation-repair/doc/mistake-prevention.md`).
     - Done:
       the seat-window census (B701) integrated in `dc4982c9cb`,
       the owner's confirmation of B696 and B698,
