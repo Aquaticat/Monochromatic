@@ -5170,7 +5170,7 @@ Slint's FemtoVG drawing through wgpu 30 on the Vulkan backend (`renderer-femtovg
 design C of `doc/planning/ide-vello-text.md`).
 There is no OpenGL renderer and no software renderer in the executable,
 and no fallback to either:
-`mise run //package/desktop-app/ide:inspect:software-renderer` fails if Slint's software renderer is linked again.
+`mise run //package/desktop-app/ide:inspect:no-software-renderer` fails if Slint's software renderer is linked again.
 A host without a Vulkan driver for a hardware GPU therefore cannot start the IDE
 (see below for the message it gets).
 
@@ -5476,7 +5476,7 @@ and the compositor has no command that invokes an element's default action.
 No script in this package used those two tools;
 the native tests that need them use `ElementHandle` of `i-slint-backend-testing` in the test process.
 
-`mise run //package/desktop-app/ide:inspect:software-renderer` runs `cargo tree` over every feature of the package
+`mise run //package/desktop-app/ide:inspect:no-software-renderer` runs `cargo tree` over every feature of the package
 and fails if the software renderer is in the graph.
 It also runs the same query with `--features slint/renderer-software` and with `--features slint/mcp`,
 and fails unless both reach the renderer,
