@@ -53,15 +53,15 @@ const CASES: readonly ScanCase[] = [
   },
   {
     name: 'reads an escaped opener as literal text',
-    text: 'the cat \\[^1] and \\{paws} and \\<Tail/>',
+    text: String.raw`the cat \[^1] and \{paws} and \<Tail/>`,
     atoms: [],
   },
   {
     name: 'keeps an escaped close inside an expression\'s quoted string, so the expression closes on the real '
       + 'one',
-    text: '{"a\\}b"}',
+    text: String.raw`{"a\}b"}`,
     atoms: [
-      { kind: 'mdx-expression', value: '{"a\\}b"}', },
+      { kind: 'mdx-expression', value: String.raw`{"a\}b"}`, },
     ],
   },
   {

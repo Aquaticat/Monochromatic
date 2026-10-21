@@ -69,7 +69,7 @@ await describe({
       name: 'READS NOTHING FROM A LINE THAT IS NOT A COMMENT, a data line quoting the comment included',
       fn: async () => {
         expect(sseCommentOf({
-          line: 'data: {"choices":[{"delta":{"content":": energy {\\"energy_kwh\\":9}"}}]}',
+          line: String.raw`data: {"choices":[{"delta":{"content":": energy {\"energy_kwh\":9}"}}]}`,
           name: 'energy',
         },),).toBe('',);
         expect(sseCommentOf({ line: `  ${ENERGY_LINE}`, name: 'energy', },),).toBe('',);

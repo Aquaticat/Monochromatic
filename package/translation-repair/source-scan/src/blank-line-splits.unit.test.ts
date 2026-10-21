@@ -268,7 +268,7 @@ await describe({
             {
               path: 'naps.unit.test.ts',
               isTest: true,
-              text: 'export const naps = (text: string) => text.split(\'\\n\\n\',);',
+              text: String.raw`export const naps = (text: string) => text.split('\n\n',);`,
             },
           ],
         },),).toStrictEqual([

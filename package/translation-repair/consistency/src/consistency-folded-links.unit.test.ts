@@ -98,7 +98,7 @@ await describe({
           linksOf({ english: ' [_](u "t")\'kit', },).marks,
           linksOf({ english: ' ![ ](u)\'kit', },).marks,
           linksOf({ english: ' [x](u)\'kit', },).marks,
-          linksOf({ english: ' [\\]](u)\'kit', },).marks,
+          linksOf({ english: String.raw` [\]](u)'kit`, },).marks,
           linksOf({ english: ' [](u)\'kit', },).marks,
         ],).toEqual([[6,], [6,], [10,], [7,], [], [], [],],);
       },

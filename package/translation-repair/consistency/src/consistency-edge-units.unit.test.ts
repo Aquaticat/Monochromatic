@@ -52,11 +52,11 @@ await describe({
             + 'backslash one unit alone',
           fn: async () => {
             expect({
-              stop: unitsOf({ text: 'a\\.', },),
-              bracket: unitsOf({ text: '\\)', },),
-              escapedBackslash: unitsOf({ text: 'a\\\\.', },),
-              threeBackslashes: unitsOf({ text: '\\\\\\*', },),
-              beforeLetter: unitsOf({ text: '\\a', },),
+              stop: unitsOf({ text: String.raw`a\.`, },),
+              bracket: unitsOf({ text: String.raw`\)`, },),
+              escapedBackslash: unitsOf({ text: String.raw`a\\.`, },),
+              threeBackslashes: unitsOf({ text: String.raw`\\\*`, },),
+              beforeLetter: unitsOf({ text: String.raw`\a`, },),
               atEnd: unitsOf({ text: 'a\\', },),
               beforeLineFeed: unitsOf({ text: '\\\n', },),
             },).toEqual({
@@ -81,8 +81,8 @@ await describe({
               space: unitsOf({ text: 'a&nbsp;b', },),
               sevenDigits: unitsOf({ text: '&#0000039;', },),
               beyondFirstPlane: unitsOf({ text: '&#128049;', },),
-              afterEscapedBackslash: unitsOf({ text: '\\\\&amp;', },),
-              escapedAmpersand: unitsOf({ text: '\\&amp;', },),
+              afterEscapedBackslash: unitsOf({ text: String.raw`\\&amp;`, },),
+              escapedAmpersand: unitsOf({ text: String.raw`\&amp;`, },),
             },).toEqual({
               named: ['0-5:&',],
               numeric: ['0-5:\'',],
@@ -142,7 +142,7 @@ await describe({
           name: 'COUNTS CHARACTERS BEYOND THE FIRST PLANE AS ONE and gives a reference that shows two code points as one unit',
           fn: async () => {
             expect({
-              cat: unitsOf({ text: '🐱\\.', },),
+              cat: unitsOf({ text: String.raw`🐱\.`, },),
               twoCodePoints: unitsOf({ text: '&NotEqualTilde;', },),
             },).toEqual({
               cat: ['0-1:🐱', '1-3:.',],

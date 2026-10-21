@@ -107,7 +107,7 @@ In the morning Ta dozes on the windowsill[^1], and Ta's DATA stays with @ta_cat.
         const leaked = validateTranslatedSlice({
           sourceText: '早上它在所谓的“窗台”上打盹。',
           pageText: 'In the morning it dozes on the so-called “windowsill.”',
-          candidateText: 'In the morning it dozes on the so-called \\"windowsill.\\"',
+          candidateText: String.raw`In the morning it dozes on the so-called \"windowsill.\"`,
         },);
         expect(leaked.kind,).toBe('invalid',);
         expect(
@@ -119,9 +119,9 @@ In the morning Ta dozes on the windowsill[^1], and Ta's DATA stays with @ta_cat.
          sequence, so it is a rendering rather than a leak.
          */
         const carried = validateTranslatedSlice({
-          sourceText: '早上它在所谓的 \\"窗台\\" 上打盹。',
+          sourceText: String.raw`早上它在所谓的 \"窗台\" 上打盹。`,
           pageText: 'In the morning it dozes on the so-called “windowsill.”',
-          candidateText: 'In the morning it dozes on the so-called \\"windowsill.\\"',
+          candidateText: String.raw`In the morning it dozes on the so-called \"windowsill.\"`,
         },);
         expect(carried.kind,).toBe('valid',);
       },

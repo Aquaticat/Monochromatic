@@ -125,7 +125,7 @@ await describe({
             expect([
               wholeSpanOf({ text: 'The cats bowl', start: 4, end: 8, },),
               wholeSpanOf({ text: 'See Q&A; then', start: 4, end: 7, },),
-              wholeSpanOf({ text: 'He said (the cats\\) was here', start: 9, end: 17, },),
+              wholeSpanOf({ text: String.raw`He said (the cats\) was here`, start: 9, end: 17, },),
             ],).toEqual([
               { start: 4, end: 8, },
               { start: 4, end: 7, },
@@ -138,8 +138,8 @@ await describe({
             + 'backslash, so the span ends where the quote\'s own words end',
           fn: async () => {
             expect([
-              wholeSpanOf({ text: 'See cats\\. Then', start: 4, end: 9, },),
-              wholeSpanOf({ text: 'He said (the cats\\) was here', start: 9, end: 18, },),
+              wholeSpanOf({ text: String.raw`See cats\. Then`, start: 4, end: 9, },),
+              wholeSpanOf({ text: String.raw`He said (the cats\) was here`, start: 9, end: 18, },),
               wholeSpanOf({ text: 'See cats&nbsp;then', start: 4, end: 11, },),
             ],).toEqual([
               { start: 4, end: 8, },
@@ -154,7 +154,7 @@ await describe({
           fn: async () => {
             expect([
               wholeSpanOf({ text: 'See dogs&amp; cats now', start: 9, end: 18, },),
-              wholeSpanOf({ text: 'He said \\*kittens* now', start: 9, end: 18, },),
+              wholeSpanOf({ text: String.raw`He said \*kittens* now`, start: 9, end: 18, },),
               wholeSpanOf({ text: 'He said dogs&amp; cats now', start: 8, end: 16, },),
             ],).toEqual([
               { start: 8, end: 18, },

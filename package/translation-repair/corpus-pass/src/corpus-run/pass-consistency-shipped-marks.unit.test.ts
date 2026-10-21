@@ -232,14 +232,14 @@ const PLAIN_REFERENCES: readonly Case[] = [
  the escaped emphasis on both sides of the words.
  */
 const ESCAPES: readonly Case[] = [
-  { name: 'B1 escaped star', second: 'The ⟦2kittens2⟧\\*’ bowl is empty.', },
-  { name: 'B2 escaped underscore', second: 'The ⟦2kittens2⟧\\_’ bowl is empty.', },
-  { name: 'B3 escaped bracket', second: 'The ⟦2kittens2⟧\\]’ bowl is empty.', },
-  { name: 'B4 escaped backslash', second: 'The ⟦2kittens2⟧\\\\’ bowl is empty.', },
-  { name: 'B5 escaped tilde', second: 'The ⟦2kittens2⟧\\~’ bowl is empty.', },
-  { name: 'B06 escaped stars on both sides', second: 'The \\*⟦2kittens2⟧\\*’ bowl is empty.', },
-  { name: 'B6 leading escaped star', first: 'He ate ⟦1’tis the cat1⟧ now.', second: 'He ate ’\\*⟦2the kitten2⟧ now.', },
-  { name: 'B7 leading escaped bracket', first: 'He ate ⟦1’tis the cat1⟧ now.', second: 'He ate ’\\[⟦2the kitten2⟧ now.', },
+  { name: 'B1 escaped star', second: String.raw`The ⟦2kittens2⟧\*’ bowl is empty.`, },
+  { name: 'B2 escaped underscore', second: String.raw`The ⟦2kittens2⟧\_’ bowl is empty.`, },
+  { name: 'B3 escaped bracket', second: String.raw`The ⟦2kittens2⟧\]’ bowl is empty.`, },
+  { name: 'B4 escaped backslash', second: String.raw`The ⟦2kittens2⟧\\’ bowl is empty.`, },
+  { name: 'B5 escaped tilde', second: String.raw`The ⟦2kittens2⟧\~’ bowl is empty.`, },
+  { name: 'B06 escaped stars on both sides', second: String.raw`The \*⟦2kittens2⟧\*’ bowl is empty.`, },
+  { name: 'B6 leading escaped star', first: 'He ate ⟦1’tis the cat1⟧ now.', second: String.raw`He ate ’\*⟦2the kitten2⟧ now.`, },
+  { name: 'B7 leading escaped bracket', first: 'He ate ⟦1’tis the cat1⟧ now.', second: String.raw`He ate ’\[⟦2the kitten2⟧ now.`, },
 ];
 
 /**
@@ -502,7 +502,7 @@ const COMMENT_SHAPES: readonly Case[] = [
   },
   {
     name: 'V5c reference after an escaped backslash is a reference',
-    second: 'The ⟦2kittens2⟧ bowl is empty \\\\&#39; x.',
+    second: String.raw`The ⟦2kittens2⟧ bowl is empty \\&#39; x.`,
     everywhere: true,
   },
 ];
@@ -514,8 +514,8 @@ const COMMENT_SHAPES: readonly Case[] = [
 const CARRIED: readonly (Case & { readonly carries: string; })[] = [
   {
     name: 'V5b escaped ampersand is no reference',
-    second: 'The ⟦2kittens2⟧ bowl is empty \\&#39; x.',
-    carries: 'The dogs’ bowl is empty \\&#39; x.',
+    second: String.raw`The ⟦2kittens2⟧ bowl is empty \&#39; x.`,
+    carries: String.raw`The dogs’ bowl is empty \&#39; x.`,
   },
   {
     name: 'S0 chosen words end in a reference of a plain character',
@@ -543,7 +543,7 @@ const CARRIED: readonly (Case & { readonly carries: string; })[] = [
   },
   {
     name: 'S4 chosen words end in an escaped full stop, which is cut whole like a plain one',
-    first: 'The ⟦1cats\\.1⟧ bowl is full.',
+    first: String.raw`The ⟦1cats\.1⟧ bowl is full.`,
     second: 'The ⟦2kittens2⟧ bowl is empty.',
     carries: 'The cats bowl is empty.',
   },
@@ -561,15 +561,15 @@ const CARRIED: readonly (Case & { readonly carries: string; })[] = [
   },
   {
     name: 'S7 judges quote the chosen words up to the backslash that escapes the full stop ending them, which is cut whole',
-    first: 'The ⟦1cats\\1⟧. bowl is full.',
+    first: String.raw`The ⟦1cats\1⟧. bowl is full.`,
     second: 'The ⟦2kittens2⟧ bowl is empty.',
     carries: 'The cats bowl is empty.',
   },
   {
     name: 'S8 judges quote the receiving words up to the backslash that escapes the full stop ending them, which stays beside them',
     first: 'The ⟦1cats1⟧ bowl is full.',
-    second: 'The ⟦2dogs\\2⟧. bowl is empty.',
-    carries: 'The cats\\. bowl is empty.',
+    second: String.raw`The ⟦2dogs\2⟧. bowl is empty.`,
+    carries: String.raw`The cats\. bowl is empty.`,
   },
   {
     name: 'K8 quotation marker that is text, in the middle of a line',
@@ -682,19 +682,19 @@ function insideWord(
 const SPAN_EDGES: readonly EdgePage[] = [
   {
     name: 'E1 chosen quote ends in an escaped closing parenthesis',
-    template: 'He said (⟦1the cats\\)1⟧ was here. He said the ⟦2kittens2⟧ was there. A ⟦3cat3⟧ naps.',
+    template: String.raw`He said (⟦1the cats\)1⟧ was here. He said the ⟦2kittens2⟧ was there. A ⟦3cat3⟧ naps.`,
     shipped: '## One\n\nHe said (the cats\\) was here. He said the the cats was there. A the cats naps.',
     outcomes: ALL_CARRIED,
   },
   {
     name: 'E1b the same, the receiving words in a sentence of their own',
-    template: 'He said (⟦1the cats\\)1⟧ was here. He said ⟦2the kittens2⟧ was there. A ⟦3cat3⟧ naps.',
+    template: String.raw`He said (⟦1the cats\)1⟧ was here. He said ⟦2the kittens2⟧ was there. A ⟦3cat3⟧ naps.`,
     shipped: '## One\n\nHe said (the cats\\) was here. He said the cats was there. A the cats naps.',
     outcomes: ALL_CARRIED,
   },
   {
     name: 'E3c chosen quote ends in an escaped closing bracket',
-    template: 'He said [⟦1the cats\\]1⟧ was here. He said ⟦2the kittens2⟧ was there. A ⟦3cat3⟧ naps.',
+    template: String.raw`He said [⟦1the cats\]1⟧ was here. He said ⟦2the kittens2⟧ was there. A ⟦3cat3⟧ naps.`,
     shipped: '## One\n\nHe said [the cats\\] was here. He said the cats was there. A the cats naps.',
     outcomes: ALL_CARRIED,
   },
@@ -706,37 +706,37 @@ const SPAN_EDGES: readonly EdgePage[] = [
   },
   {
     name: 'F2 receiving quote ends in an escaped full stop, which stays beside the words like a plain one',
-    template: 'The ⟦1dogs’1⟧ bowl is full. See ⟦2kittens\\.2⟧ Then more. A ⟦3cat3⟧ naps.',
+    template: String.raw`The ⟦1dogs’1⟧ bowl is full. See ⟦2kittens\.2⟧ Then more. A ⟦3cat3⟧ naps.`,
     shipped: '## One\n\nThe dogs’ bowl is full. See dogs’\\. Then more. A dogs’ naps.',
     outcomes: ALL_CARRIED,
   },
   {
     name: 'F2b control: the receiving quote stops before the escaped full stop',
-    template: 'The ⟦1dogs’1⟧ bowl is full. See ⟦2kittens2⟧\\. Then more. A ⟦3cat3⟧ naps.',
+    template: String.raw`The ⟦1dogs’1⟧ bowl is full. See ⟦2kittens2⟧\. Then more. A ⟦3cat3⟧ naps.`,
     shipped: '## One\n\nThe dogs’ bowl is full. See dogs’\\. Then more. A dogs’ naps.',
     outcomes: ALL_CARRIED,
   },
   {
     name: 'F3 chosen quote ends in an escaped full stop, which no place carries',
-    template: 'The ⟦1dogs\\.1⟧ Bowl full. The ⟦2kittens2⟧. A ⟦3cat3⟧ naps.',
+    template: String.raw`The ⟦1dogs\.1⟧ Bowl full. The ⟦2kittens2⟧. A ⟦3cat3⟧ naps.`,
     shipped: '## One\n\nThe dogs\\. Bowl full. The dogs. A dogs naps.',
     outcomes: ALL_CARRIED,
   },
   {
     name: 'F3b chosen and receiving quotes both end in an escaped full stop',
-    template: 'The ⟦1dogs\\.1⟧ Bowl full. The ⟦2kittens\\.2⟧ Then. A ⟦3cat3⟧ naps.',
+    template: String.raw`The ⟦1dogs\.1⟧ Bowl full. The ⟦2kittens\.2⟧ Then. A ⟦3cat3⟧ naps.`,
     shipped: '## One\n\nThe dogs\\. Bowl full. The dogs\\. Then. A dogs naps.',
     outcomes: ALL_CARRIED,
   },
   {
     name: 'F4 receiving quote begins at the character an escape escapes, so the whole escape is replaced',
-    template: 'The ⟦1dogs’1⟧ bowl is full. He said \\⟦2*kittens*2⟧ now. A ⟦3cat3⟧ naps.',
+    template: String.raw`The ⟦1dogs’1⟧ bowl is full. He said \⟦2*kittens*2⟧ now. A ⟦3cat3⟧ naps.`,
     shipped: '## One\n\nThe dogs’ bowl is full. He said dogs’ now. A dogs’ naps.',
     outcomes: ALL_CARRIED,
   },
   {
     name: 'F4b control: an escaped parenthesis whose quote leaves the escape whole',
-    template: 'The ⟦1dogs’1⟧ bowl is full. He said \\⟦2(kittens)2⟧ now. A ⟦3cat3⟧ naps.',
+    template: String.raw`The ⟦1dogs’1⟧ bowl is full. He said \⟦2(kittens)2⟧ now. A ⟦3cat3⟧ naps.`,
     shipped: '## One\n\nThe dogs’ bowl is full. He said \\(dogs’) now. A dogs’ naps.',
     outcomes: ALL_CARRIED,
   },
@@ -837,8 +837,8 @@ const SPAN_EDGES: readonly EdgePage[] = [
   },
   insideWord({ name: 'M1 control: no unit, the quote begins inside a word', before: 'See kittens bowl now.', marked: 'See k⟦2ittens2⟧ bowl now.', },),
   insideWord({ name: 'M2 control: no unit, the quote ends inside a word', before: 'See kittens now.', marked: 'See ⟦2kitt2⟧ens now.', },),
-  insideWord({ name: 'M7 control: the quote begins at the character an escape escapes', before: 'See x\\*y now.', marked: 'See x\\⟦2*y2⟧ now.', },),
-  insideWord({ name: 'M10 control: the quote ends at the backslash of an escape', before: 'See kittens\\* now.', marked: 'See ⟦2kittens\\2⟧* now.', },),
+  insideWord({ name: 'M7 control: the quote begins at the character an escape escapes', before: String.raw`See x\*y now.`, marked: String.raw`See x\⟦2*y2⟧ now.`, },),
+  insideWord({ name: 'M10 control: the quote ends at the backslash of an escape', before: String.raw`See kittens\* now.`, marked: String.raw`See ⟦2kittens\2⟧* now.`, },),
   insideWord({ name: 'N7 control: the quote ends before a hyphen between letters', before: 'The so-called team.', marked: 'The ⟦2so2⟧-called team.', },),
   {
     name: 'N2 the quote ends inside the reference of AT&amp;T, whose whole reference then stands before the T of the word',
