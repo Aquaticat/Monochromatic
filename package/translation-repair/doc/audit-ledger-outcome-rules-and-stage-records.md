@@ -653,6 +653,9 @@ Decisions taken in this session, open to the owner's veto:
   rather than a composite of the revisions that match,
   so the shipped text does not depend on which reviewers answered in a matching shape.
   A removal is such a revision.
+  **Replaced on 2026-10-21 (UTC) by B803**:
+  a revision that adds or removes lines is read by a line diff and composes when its hunks do not collide,
+  and only a removal of the whole block still builds no composite.
 - A line two revisions change is an overlap even when both change it identically.
   Agreeing on a line is no reason to merge revisions that differ elsewhere,
   and the only merge the slate trusts is of byte-identical whole revisions.
