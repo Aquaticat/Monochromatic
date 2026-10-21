@@ -720,22 +720,59 @@ The katex shim and the rounds behind it,
   which has no `node_modules` above it;
   the gate script refuses any other worktree.
 
+The landings and the restart,
+2026-10-21:
+
+- Gate g146 on the w262 merge failed lint:
+  oxlint 1.89.0,
+  which main had taken in `148f47c951`,
+  added `unicorn(prefer-string-raw)`,
+  and 18 test files wrote backslash-bearing strings as escapes.
+  `b81dbe9b0c` rewrote those 106 lines as `String.raw`,
+  each value unchanged,
+  and gate g147 was green
+  (2732 pass,
+  0 fail).
+  w262 landed as `c0d0325899`.
+- w260,
+  merged with `b81dbe9b0c` and main,
+  had gate g148 green at `2a336603bf`
+  (2732 pass,
+  0 fail)
+  and a clean rotation sweep under salts 0 to 9;
+  it landed as `2a336603bf`.
+- Corrective comments were posted on `b1a88def13`
+  (commitcomment-206042846:
+  9 of 14 cases failed before the fix,
+  not 9 of 15)
+  and on `97e17dc6dc`
+  (commitcomment-206042849:
+  the run package's readers-bench cases stay red from that commit until `d1e463bb46`).
+- The branch worktree was rebuilt at `2a336603bf`.
+  The corpus-pass build digests to
+  `sha256-tree-v1:5d4265dfab83b5a6e61b5b8c23d597519c7ca24293065473c883ec82af54c78c`
+  there and in the gated `tr-w260` alike,
+  and the launcher holds that digest as the rotation's frozen build.
+  No second sweep ran:
+  the clean sweep was on the same commit.
+- `zheermao22`
+  (entry `zheermao101`)
+  started at 21:05:30 UTC,
+  and its START line names the frozen digest.
+
 Next,
 in order:
-land w262 when g146 is green;
-gate w260 and run its rotation sweep,
-then land it
-and post the corrective comments on `b1a88def13`
-(9 of 14,
-not 9 of 15)
-and `97e17dc6dc`
-(its run tests stay red until `d1e463bb46`,
-which its message does not say);
-rebuild the branch worktree,
-freeze the new digest in the launcher,
-run the rotation sweep,
-and restart the rotation at `zheermao101`.
+read `zheermao22` when it ends,
+then continue the rotation with `CuspariaKLSY`,
+`XingZ60`,
+`yingying`,
+`hulicaijia`,
+`mikaela_khara`,
+`shi_Yumiaoya`
+and `TianqiChen666`.
 The `@deepseek-ai/dsh-*` lockfile drift
 (alpha.4 to rc.2,
 from `package/dsh-plugin`)
 is another session's and stays out of these commits.
+Whether oxlint 1.89.0 also breaks lint in packages outside translation-repair is unmeasured;
+those packages are other owners'.
