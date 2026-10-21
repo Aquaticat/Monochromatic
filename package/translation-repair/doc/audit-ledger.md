@@ -172,7 +172,9 @@ named for that subject and listed here.
   straight against curly quotes,
   layout-only differences,
   case folds,
-  and answers checked before they were folded.
+  answers checked before they were folded,
+  and an archive review quote of a screenshot refused for the picture's own line breaks,
+  its dropped reply left unlogged (B715).
 - [Audit ledger: text that shows nothing](audit-ledger-text-that-shows-nothing.md):
   Text a reader sees as blank that passed for wording,
   because the check asked `trim()` or asked nothing.

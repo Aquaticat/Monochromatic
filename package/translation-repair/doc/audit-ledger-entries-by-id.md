@@ -389,6 +389,7 @@ which lists every file of this record.
 - [B709, positions compared across texts](audit-ledger-positions-compared-across-texts.md)
 - [B710, operator refusals printed as faults](audit-ledger-operator-refusals-printed-as-faults.md)
 - [B711, which seats a quorum counts](audit-ledger-which-seats-a-quorum-counts.md)
+- [B715, folds and quote forms](audit-ledger-folds-and-quote-forms.md)
 - [D1 to D11, docs and comments that disagreed with the code](audit-ledger-docs-against-code.md)
 - [D12, doc conventions and their guards](audit-ledger-doc-conventions-and-their-guards.md)
 - [D13 to D21, docs and comments that disagreed with the code](audit-ledger-docs-against-code.md)

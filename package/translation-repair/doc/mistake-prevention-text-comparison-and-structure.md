@@ -214,12 +214,20 @@ split a slate's stake with the incumbent,
 or came back onto a consolidation slate as a lane text,
 because each site asked whether it changed anything by bytes,
 or by bytes and one rewrap of the base (ledger B26).
+A reviewer's sentence-long quote of a screenshot transcript was dropped as unanchored,
+because the transcript keeps the picture's line breaks
+(the readers are told to preserve them)
+and the quote, written as the sentence, had none (ledger B715).
 
 The rule:
 first say which question the comparison asks.
 A model's quote against the document it quotes takes the evidence fold (`normalizePunctuation`),
 which also maps the corner brackets,
 because a model quoting a Chinese passage paraphrases them.
+A quote of a picture's transcript or a cited page takes `quoteIsIn` (`reference/src/reference-attest-match.ts`) as well,
+which sets every whitespace character aside on both sides:
+a transcript wraps where the picture does and a quote does not.
+A new anchor of a quote against evidence text reuses it and does not write a second whitespace rule.
 Two renderings compared as one wording take the typography fold (`straightenQuotes`),
 which maps curly and straight only,
 because a rendering that kept 「」 is another rendering;

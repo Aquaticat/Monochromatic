@@ -27,11 +27,13 @@ The groups that follow name the main ones.
   `runArchiveBlockReviewStage`,
   `buildArchiveBlockReviewMessages`,
   `isVerifiableEditorialArchiveBlock`,
+  `archiveReplyVerdict`,
   `archiveBlockSelectionEvidence`,
   `withArchiveOriginal`.
   Declared in `archive-block-review-stage.ts`,
   `archive-block-review-wire.ts`,
   `archive-block-evidence.ts`,
+  `archive-reply-verdict.ts`,
   and `archive-block-selection-evidence.ts`.
 - Archive disputes:
   read off the repair lane's chunks the slices whose archive rendering the adjudicators accepted a claim against,
