@@ -21,11 +21,13 @@ import {
 
 import {
   isDecisionSeat,
+  MODEL_CARDS,
   ROSTER_MODEL_IDS,
 } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   bedrockIdFor,
   hyperIdFor,
+  OPENROUTER_MODELS,
   openRouterIdFor,
   reachOf,
   readsImages,
@@ -397,9 +399,12 @@ await describe({
         },),
 
         it({
-          name: 'SENDS gemma pictures through Bedrock alone, where its transcription was measured (2026-09-08), '
-            + 'and not through OpenRouter, whose listing field alone cannot widen the reader roster',
+          name: 'SENDS gemma pictures through Bedrock alone until its OpenRouter transcription is measured: the '
+            + 'listing reports image input there (2026-10-21) and the hold `openrouter-pictures-unmeasured` keeps '
+            + 'the route shut, so a field of the listing alone cannot widen the reader roster',
           fn: async () => {
+            expect(OPENROUTER_MODELS['google/gemma-4-26b-a4b-it'].readsImages,).toBe(true,);
+            expect(MODEL_CARDS[SEAT_HYPER_TEXT_BEDROCK].holds,).toContain('openrouter-pictures-unmeasured',);
             expect(visionReachOf({ modelId: SEAT_HYPER_TEXT_BEDROCK, },),).toEqual({
               neuralwatt: false,
               synthetic: false,
