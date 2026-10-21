@@ -1356,6 +1356,22 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     `inspect:software-renderer`) were not tried on Depot. The one probe run consumed about 38 s of the 2x8 sandbox and
     was not entered in `doc/planning/depot-admission-ledger.json`. The scratch worktree and probe file are removed;
     the decision record `doc/decision/depot-ci-adoption.md` is unchanged (a change needs the owner's acceptance).
+    Owner decisions after that: stop the Depot check here (the non-GPU gates were not tried on Depot); rename the
+    guard `inspect:software-renderer` to `inspect:no-software-renderer` (the owner asked why a software renderer
+    task still exists: it is the guard that fails when that renderer is linked, `cargo tree` only, no rendering; renamed
+    2026-10-21 in `mise.toml`, the IDE README and the troubleshooting doc; older notes in this file and the planning and
+    handover docs keep the old name for their recorded results, so read `inspect:software-renderer` there as the
+    renamed task).
+    Namespace (`nsc` v0.0.587, workspace "Personal", installed by the owner), checked 2026-10-21 for GPU CI: the docs
+    (machine shapes, `nsc create` reference, Linux and macOS compute pages, docs index) name no GPU shape, no GPU
+    feature and no Vulkan or `/dev/dri`; Apple M4 Pro and M5 Max Linux is early access with no GPU statement, macOS
+    mentions Metal only. With the owner's approval one probe instance was created and destroyed
+    (`nsc create --machine_type linux/amd64:2x4 --duration 10m --bare`, id `1v2fprmgr0h4a`, probe script
+    `~/temp/agent/nsc-probe.mjs`): kernel 7.1.4, no `/dev/dri`, no `/sys/class/drm`, no `nvidia-smi`, no Vulkan ICD
+    directory, `/dev/kvm` present, 2 CPUs and 4 GB; `lspci` is not installed there, so the PCI bus was not listed (the
+    missing `/sys/class/drm` carries the result); `nsc list` afterwards shows no instances. So neither Depot CI nor a
+    standard Namespace Linux instance gives this app a GPU; the GPU gates stay local. Unprobed: Namespace Apple
+    Silicon Linux early access, other shapes, macOS (Metal, not the Vulkan path the owner accepted).
     Open, in order: (1) the unexplained redraw on picture handoff in `src/native/minimap/picture.rs` (the remaining
     identical frames; a cause by measurement first); (2) the flake work, in `doc/handover/ide-native-flakes.md`:
     fixed with counts (refused-tile test 10 of 360 to 0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160 to 0 of 160); open:
