@@ -139,11 +139,7 @@ pub(in crate::native) fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, r
         // starts it at the row of the whole picture the worker built it from; the GPU sets these with the images
         // of its textures, which are as many as the device's texture limit asks for.
         gpu.submit_minimap(reply.chunks, reply.top);
-        if std::env::var("IDE_X_PICTURE").as_deref() == Ok("now") {
-            ask_for_a_frame(window);
-        } else {
-            ask_for_a_frame_unless_one_comes(window, state);
-        }
+        ask_for_a_frame_unless_one_comes(window, state);
     }
     tracing::debug!(
         id = reply.id,

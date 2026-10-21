@@ -210,6 +210,10 @@ mod overscan_tile_tests;
 /// A picture asks for a frame of its own only when no frame draws it first.
 #[cfg(test)]
 mod picture_frame_tests;
+/// A finished tile is swapped in by the next scroll step's frame,
+/// and by the poll only when no step is due.
+#[cfg(test)]
+mod tile_step_tests;
 /// Real pointer events select by character,
 ///  word,
 ///  and line,
@@ -538,6 +542,20 @@ struct State {
     /// scrolledAt?: number;
     /// ```
     scrolled_at: Option<Instant>,
+    /// What:
+    ///  When the view last moved by a scroll step,
+    ///  on the system clock.
+    /// Why:
+    ///  The poll of the tile worker leaves a finished tile for the next step
+    ///  while a step is due,
+    ///  so the tile is swapped in by the frame of that step.
+    ///  `scrolled_at` runs on a clock the tests hold still.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// steppedAt?: number;
+    /// ```
+    stepped_at: Option<Instant>,
     /// What:
     ///  `Rc<VecModel<f32>>` is a shared,
     ///  growable toolkit list of floats.

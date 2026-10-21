@@ -143,12 +143,6 @@ impl GpuTile {
         self.inner.borrow_mut().pending_minimap = Some((chunks, top));
     }
 
-    /// TEMPORARY: whether a tile or a wrap indicator waits for a frame to draw it.
-    pub(super) fn tile_waiting(&self) -> bool {
-        let inner = self.inner.borrow();
-        return inner.pending_tile.is_some() || inner.pending_sign.is_some();
-    }
-
     /// Whether a picture of the minimap waits for a frame to draw it.
     pub(super) fn minimap_waiting(&self) -> bool {
         return self.inner.borrow().pending_minimap.is_some();
@@ -428,15 +422,7 @@ pub(super) fn bind(window: &AppWindow, gpu: &GpuTile) {
         };
         let outcome = match state {
             RenderingState::RenderingSetup => inner.borrow_mut().setup(device, queue),
-            RenderingState::BeforeRendering => {
-                let began = std::time::Instant::now();
-                let tiles = inner.borrow().tiles_rendered;
-                let outcome = inner.borrow_mut().draw_pending();
-                if inner.borrow().tiles_rendered != tiles {
-                    tracing::debug!(us = began.elapsed().as_micros() as u64, "x: drew a pending tile before the frame");
-                }
-                outcome
-            }
+            RenderingState::BeforeRendering => inner.borrow_mut().draw_pending(),
             RenderingState::RenderingTeardown => {
                 inner.borrow_mut().teardown();
                 return;

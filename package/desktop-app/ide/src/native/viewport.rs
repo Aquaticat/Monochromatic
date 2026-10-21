@@ -29,8 +29,9 @@ pub(super) use ide_app::shaped_text::band_clip;
 use ide_app::wrap::has_wrap_width;
 /// ComponentHandle supplies weak references for callback lifetimes.
 use slint::ComponentHandle;
-/// Checked shared ownership remains confined to the UI thread.
-use std::{cell::RefCell, rc::Rc};
+/// Checked shared ownership remains confined to the UI thread,
+/// and the system clock times the scroll steps.
+use std::{cell::RefCell, rc::Rc, time::Instant};
 
 /// What:
 ///  The materialized tile spans this many view heights:
@@ -379,9 +380,8 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         let mut reported = None;
         if let Some(window) = weak.upgrade() {
             reported = Some(window.window().scale_factor());
-            if tile::x_hold() {
-                tile::poll(&window, &state);
-            }
+            // A tile that finished since the last step is taken in this step's frame, not in a frame of its own.
+            tile::poll(&window, &state);
         }
         tracing::debug!(
             target: "monochromatic_ide::native::frame",
@@ -398,6 +398,7 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         if offset != current.offset {
             // `Some(...)` records this moment as the latest scroll.
             current.scrolled_at = Some(rows::quiet_now());
+            current.stepped_at = Some(Instant::now());
         }
         let changed = place_scrolled(&mut current, offset, viewport_width, height);
         drop(current);

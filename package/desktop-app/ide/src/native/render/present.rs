@@ -191,12 +191,12 @@ pub(in crate::native) fn show(window: &AppWindow, state: &Rc<RefCell<State>>, fr
         window.set_image_width(tile.width as f32 / factor);
         window.set_image_height(tile.height as f32 / factor);
         gpu.submit_tile(tile);
-        x_ask(window, &gpu, "IDE_X_TILE");
+        window.window().request_redraw();
     }
     if let Some(mark) = sign {
         window.set_wrap_sign_width(SIGN_WIDTH);
         gpu.submit_sign(mark);
-        x_ask(window, &gpu, "IDE_X_SIGN");
+        window.window().request_redraw();
     }
     // Rows above the tile can change without a repaint; the image and the line numbers follow the map.
     // The scroll extent is set before the offset, so the old extent cannot clamp the new offset.
@@ -231,34 +231,4 @@ pub(in crate::native) fn show(window: &AppWindow, state: &Rc<RefCell<State>>, fr
         head = position.head,
         "source reading state presented"
     );
-}
-
-thread_local! {
-    /// TEMPORARY experiment timer.
-    static X_TIMER: slint::Timer = slint::Timer::default();
-}
-
-/// TEMPORARY experiment switch: `now` (default) asks at once, `none` never, `wait` asks after 20 ms if still waiting.
-fn x_ask(window: &AppWindow, gpu: &crate::native::gpu_tile::GpuTile, name: &str) {
-    match std::env::var(name).as_deref() {
-        Ok("none") => {}
-        Ok("wait") => {
-            let weak = window.as_weak();
-            let gpu = gpu.clone();
-            X_TIMER.with(|timer| {
-                timer.start(
-                    slint::TimerMode::SingleShot,
-                    std::time::Duration::from_millis(20),
-                    move || {
-                        let Some(active) = weak.upgrade() else { return };
-                        if gpu.tile_waiting() {
-                            tracing::debug!("x: asking for a frame to draw a tile no frame had drawn");
-                            active.window().request_redraw();
-                        }
-                    },
-                );
-            });
-        }
-        _ => window.window().request_redraw(),
-    }
 }
