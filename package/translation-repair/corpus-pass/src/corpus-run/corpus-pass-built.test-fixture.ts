@@ -36,8 +36,8 @@ const BUILT_DIRECTORY = join(
  */
 export const WRITER_GRACE_BUILT_IN: string = 'WRITER GRACE built in: writer rounds (editor, refiner, translate, '
   + 'produceConsolidations, archive-block-review) abandon stragglers 180000ms after quorum rather than the '
-  + '120000ms every other round waits, the owner\'s decision of 2026-09-06 (archive-block-review joined on '
-  + '2026-10-21, open to the owner\'s veto); TRANSLATION_REPAIR_WRITER_GRACE_MS moves it for one launch';
+  + '120000ms every other round waits, the owner\'s decision of 2026-09-06; '
+  + 'TRANSLATION_REPAIR_WRITER_GRACE_MS moves it for one launch';
 
 /**
  Refusal the run client raises while no provider key is set.

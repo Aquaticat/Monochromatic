@@ -252,8 +252,7 @@ export function writerGraceOverrideNote(
     + `${String(grace.writerMs,)}ms after quorum rather than the ${String(grace.roundMs,)}ms every other round waits`;
 
   if (grace.source === 'built-in') {
-    return `WRITER GRACE built in: ${windows}, the owner's decision of 2026-09-06 `
-      + '(archive-block-review joined on 2026-10-21, open to the owner\'s veto); '
+    return `WRITER GRACE built in: ${windows}, the owner's decision of 2026-09-06; `
       + `${WRITER_GRACE_VAR} moves it for one launch`;
   }
   return `WRITER GRACE OVERRIDDEN by ${WRITER_GRACE_VAR}: ${windows}`;
