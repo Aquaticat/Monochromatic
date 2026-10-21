@@ -2,6 +2,11 @@ import {
   compacted,
   referencePageTexts,
 } from '@monochromatic-dev/translation-repair-reference/ts';
+import { wholeOpening, } from '@monochromatic-dev/translation-repair-markup/ts';
+import {
+  countedCharacters,
+  wordForCount,
+} from '@monochromatic-dev/translation-repair-typography/ts';
 
 import {
   isArchiveReferenceQuoteAnchored,
@@ -21,9 +26,9 @@ import {
 // decision passed (the "two layers reading one refusal" mistake, ledger B40).
 
 /**
- Characters of a quote's opening a refusal line quotes, by code point.
+ UTF-16 units of a quote's opening a refusal line quotes, cut so it never ends inside a character.
  */
-const OPENING_CHARACTERS = 20;
+const OPENING_UNITS = 20;
 
 /**
  The longest opening of a quote that a text holds, with whitespace set aside on both sides.
@@ -158,7 +163,7 @@ export function archiveReplyVerdict(
       return { kind: 'stands', };
     return {
       kind: 'dropped',
-      reason: `the block of ${String(blockText.length,)} characters is not wholly apparatus (every line it shows must `
+      reason: `the block of ${countedCharacters({ count: blockText.length, },)} is not wholly apparatus (every line it shows must `
         + 'be a contributor declaration, an apparatus label or pictures alone, or the block closed comments alone)',
     };
   }
@@ -182,7 +187,7 @@ export function archiveReplyVerdict(
   if (shown < MINIMUM_SOURCE_QUOTE_CHARACTERS) {
     return {
       kind: 'dropped',
-      reason: `its quote shows ${String(shown,)} characters a reader sees, below the ${
+      reason: `its quote shows ${countedCharacters({ count: shown, },)} a reader sees, below the ${
         String(MINIMUM_SOURCE_QUOTE_CHARACTERS,)
       } an anchor needs`,
     };
@@ -212,11 +217,10 @@ export function archiveReplyVerdict(
   /**
    Quote's opening as the line quotes it.
    */
-  const opening = quoteCharacters.slice(
-    0,
-    OPENING_CHARACTERS,
-  )
-    .join('',);
+  const opening = wholeOpening({
+    text: quoteCharacters.join('',),
+    units: OPENING_UNITS,
+  },);
   /**
    Longest opening of the quote the expected section holds.
    */
@@ -226,13 +230,19 @@ export function archiveReplyVerdict(
   },);
   return {
     kind: 'dropped',
-    reason: `its quote runs ${String(quoteCharacters.length,)} characters with whitespace set aside and opens ${
+    reason: `its quote runs ${countedCharacters({ count: quoteCharacters.length, },)} with whitespace set aside and opens ${
       JSON.stringify(opening,)
     }; it is no span of the expected section and its picture transcripts (${
-      String(sectionLength,)
-    } characters, the longest opening of the quote found there ${String(sectionOpening,)} of ${
+      countedCharacters({ count: sectionLength, },)
+    }, the longest opening of the quote found there ${String(sectionOpening,)} of ${
       String(quoteCharacters.length,)
-    }) or of any of the ${String(pages.length,)} cited pages (the longest opening found in one, ${
+    }) or of any of the ${String(pages.length,)} ${
+      wordForCount({
+        count: pages.length,
+        one: 'cited page',
+        many: 'cited pages',
+      },)
+    } (the longest opening found in one, ${
       String(Math.max(
         0,
         ...pageOpenings,

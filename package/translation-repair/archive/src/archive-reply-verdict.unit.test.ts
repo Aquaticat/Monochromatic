@@ -113,7 +113,7 @@ await describe({
           kind: 'dropped',
           reason: 'its quote runs 24 characters with whitespace set aside and opens "Mittenshadanolderbro"; it is no '
             + 'span of the expected section and its picture transcripts (10 characters, the longest opening of the '
-            + 'quote found there 0 of 24) or of any of the 1 cited pages (the longest opening found in one, 17)',
+            + 'quote found there 0 of 24) or of any of the 1 cited page (the longest opening found in one, 17)',
         },);
       },
     },),
