@@ -44,7 +44,7 @@ pub(super) use request::note;
 mod picture;
 /// The tests hand finished pictures to the window directly.
 #[cfg(test)]
-pub(super) use picture::apply;
+pub(super) use picture::{PICTURE_FRAMES_ASKED, apply};
 
 /// The minimap as a scroll control:
 ///  press,

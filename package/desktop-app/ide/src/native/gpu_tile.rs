@@ -143,6 +143,11 @@ impl GpuTile {
         self.inner.borrow_mut().pending_minimap = Some((chunks, top));
     }
 
+    /// Whether a picture of the minimap waits for a frame to draw it.
+    pub(super) fn minimap_waiting(&self) -> bool {
+        return self.inner.borrow().pending_minimap.is_some();
+    }
+
     /// Forget the minimap's textures and any picture waiting,
     /// so the next picture makes new textures and new images.
     /// The window calls this when it clears the image,

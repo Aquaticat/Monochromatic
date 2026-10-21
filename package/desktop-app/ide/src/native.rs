@@ -207,6 +207,9 @@ mod navigation_tests;
 /// and leaving it re-centers the tile once.
 #[cfg(test)]
 mod overscan_tile_tests;
+/// A picture asks for a frame of its own only when no frame draws it first.
+#[cfg(test)]
+mod picture_frame_tests;
 /// Real pointer events select by character,
 ///  word,
 ///  and line,
