@@ -159,6 +159,39 @@ await describe({
           },
         },),
         it({
+          name: 'removes the entry a delivery names, even when a dequeue took another one',
+          fn: async () => {
+            /**
+             Delivery record Claude Code writes when the notification becomes a turn.
+             */
+            const delivery = JSON.stringify({
+              type: 'user',
+              origin: { kind: 'task-notification', },
+              message: { content: notification('b',), },
+            },);
+            /**
+             Queue where a stale prompt sits ahead of the notification, so the dequeue takes the prompt.
+             */
+            const queued = [
+              queueLine({ operation: 'enqueue', content: 'earlier prompt', },),
+              queueLine({ operation: 'enqueue', content: notification('b',), },),
+              queueLine({ operation: 'dequeue', },),
+            ];
+
+            expect(hasQueuedTaskNotification(queued,),).toBe(true,);
+            expect(hasQueuedTaskNotification([...queued, delivery,],),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'ignores a delivery that carries no text',
+          fn: async () => {
+            expect(hasQueuedTaskNotification([
+              queueLine({ operation: 'enqueue', content: notification('a',), },),
+              JSON.stringify({ type: 'user', origin: { kind: 'task-notification', }, },),
+            ],),).toBe(true,);
+          },
+        },),
+        it({
           name: 'skips a truncated line and a tool result carrying a plain string',
           fn: async () => {
             expect(hasQueuedTaskNotification([

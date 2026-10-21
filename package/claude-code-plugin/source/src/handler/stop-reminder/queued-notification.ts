@@ -37,6 +37,11 @@ const QUEUE_OPERATION_TYPE = 'queue-operation' as const;
 const NOTIFICATION_MARKER = '<task-notification>' as const;
 
 /**
+ Origin kind Claude Code puts on the user record that delivers a queued notification.
+ */
+const NOTIFICATION_ORIGIN = 'task-notification' as const;
+
+/**
  What `findIndex` returns when no entry matches.
  */
 const NOT_FOUND = -1 as const;
@@ -84,6 +89,45 @@ function isToolResultRecord(record: TranscriptRecord,): boolean {
   return content.some(function isToolResult(block,) {
     return block.type === 'tool_result';
   },);
+}
+
+/**
+ Removes the first entry carrying the given text.
+
+ @param queue - queue before the removal
+
+ @param content - text of the entry to remove
+
+ @returns the queue without that entry, or unchanged when it left the queue earlier
+
+ @example
+ ```ts
+ removeByContent({ queue: [{ content: 'a', pendingNotification: false }], content: 'a' }); // []
+ ```
+ */
+function removeByContent(
+  {
+    queue,
+    content,
+  }: {
+    readonly queue: readonly QueueEntry[];
+    readonly content: string;
+  },
+): readonly QueueEntry[] {
+  /**
+   Position of the first entry with this text.
+   */
+  const index = queue.findIndex(function sameContent(entry,) {
+    return entry.content === content;
+  },);
+
+  if (index === NOT_FOUND) {
+    return queue;
+  }
+  return queue.toSpliced(
+    index,
+    1,
+  );
 }
 
 /**
@@ -136,20 +180,10 @@ function applyQueueOperation(
     ];
   }
   if (record.operation === 'remove') {
-    /**
-     Position of the first entry with this text, or `-1` when it left the queue earlier.
-     */
-    const index = queue.findIndex(function sameContent(entry,) {
-      return entry.content === content;
+    return removeByContent({
+      queue,
+      content,
     },);
-
-    if (index === NOT_FOUND) {
-      return queue;
-    }
-    return queue.toSpliced(
-      index,
-      1,
-    );
   }
   return queue;
 }
@@ -177,14 +211,15 @@ function replayLine(
     readonly line: string;
   },
 ): readonly QueueEntry[] {
-  // Cheap pre-filter: only queue records and tool results change the answer.
+  // Cheap pre-filter: only queue records, delivered notifications, and tool results change the answer.
   if ((!line.includes(QUEUE_OPERATION_TYPE,))
+    && (!line.includes(NOTIFICATION_ORIGIN,))
     && (!line.includes('"tool_result"',))) {
     return queue;
   }
 
   /**
-   Parsed record for a line that might be a queue change or a tool result.
+   Parsed record for a line that might be a queue change, a delivery, or a tool result.
    */
   const record = parseRecord(line,);
 
@@ -195,6 +230,27 @@ function replayLine(
     return applyQueueOperation({
       queue,
       record,
+    },);
+  }
+
+  /**
+   Text of a delivered notification; the delivery names its entry even when a `dequeue` took another.
+   */
+  const delivered = record
+    .message
+    ?.content;
+  /**
+   Origin kind of the record, present only on records Claude Code attributes to a source.
+   */
+  const originKind = record
+    .origin
+    ?.kind;
+
+  if ((originKind === NOTIFICATION_ORIGIN)
+    && ((typeof delivered) === 'string')) {
+    return removeByContent({
+      queue,
+      content: delivered,
     },);
   }
   // Everything queued is absorbed into a tool result, so what came before it cannot be pending.

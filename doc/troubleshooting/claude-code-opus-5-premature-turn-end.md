@@ -1064,6 +1064,53 @@ Reading them, most are real waits on the user (a sudo authorization, batch appro
 policy already covers, but the 0.60 cutoff was set under five labels and is now applied to six; see #1772.
 The new label's precision against a human label is unmeasured.
 
+### False block on a finished task, 2026-10-21
+
+A stop that said "Type-check, lint, and the unit test are running in the background" was blocked with the reason
+that no background task was running.
+The verdict log (record at 00:51:37 UTC, session `0eae2765`) shows `waits_on_background_work` at 0.63 and an empty
+`backgroundTasks` list.
+The transcript explains the empty list.
+The type-check task started at 00:51:31, its completion notification entered Claude Code's input queue at 00:51:36.452,
+the final message was written at 00:51:36.725, the hook ran at 00:51:37.2, and the notification was delivered at
+00:51:39.
+The agent was right that it was waiting, and the Stop event no longer listed the task because it had just finished.
+This answers part of the "Not yet known" question below: `background_tasks` lists running tasks only, so it is empty
+in the moment between a task ending and its notification being delivered.
+
+The transcript records the queue as `queue-operation` records (`enqueue`, `dequeue`, `remove`, `popAll`).
+The hook now replays them and treats a queued `<task-notification>` as a wake that is already certain: the stop is
+released without a Luna request and logged as skipped with the detail `a task notification is queued`.
+Replaying has two measured pitfalls.
+Of the 46 transcripts that hold queue records, 31 notifications were never removed, 26 of them with at least 100
+lines after; counting them would release every later stop of such a session.
+Resetting the replayed queue at each tool result fixed that, because Claude Code absorbs queued input into the next
+tool result (6,609 `remove` records with reason `absorbed_mid_turn`).
+Before the reset, a stale entry at the head of the queue also made a `dequeue` take the wrong entry.
+
+A delivery record (a user record with origin `task-notification`) also removes the entry it names, because a
+`dequeue` takes the head of the queue and a stale prompt ahead of the notification made it take the wrong one.
+
+Measured on the 5,260 assistant records that hold only prose, in the transcripts under 200 MB (four larger files
+skipped; the corpus grew while this was measured, so only the rates compare):
+201 are flagged, and 188 of them (94%) had a notification delivered within 40 lines after.
+That proxy undercounts, since a notification absorbed into the next tool result leaves no delivery record, and
+assistant text is often followed by tool calls in the same turn, which is not a stop.
+Two of the 13 without a nearby delivery were read: one was prose followed by tool calls, the other was a session-limit
+message with three notifications still queued.
+The other 11 were not examined.
+Against the real false block the built bundle releases it, and the same transcript with the one `enqueue` line removed
+reproduces the original block, so the change is what releases it.
+
+Limits:
+
+- The queue records are an internal transcript format of Claude Code 2.1.305.
+   If it changes, the check finds nothing and the hook behaves as before, which is the old false block, not a new
+   failure.
+- Whether the `enqueue` record is already on disk when the hook starts is not verified.
+   The timestamps say it was written 0.8 s before the hook ran; the bundle check replayed the file afterward.
+- A flagged stop whose notification never arrives is released once; the next stop is judged normally.
+
 ### Not yet known
 
 - Agreement between Luna's label and a human label.
