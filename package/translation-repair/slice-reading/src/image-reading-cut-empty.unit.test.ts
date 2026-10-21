@@ -37,10 +37,7 @@ import {
   messageText,
   type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
-import type {
-  ProviderName,
-  RosterModelId,
-} from '@monochromatic-dev/translation-repair-shared-contract';
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { readPastRefusal, } from '../dist/final/node/index.mjs';
 import { SEAT_SYNTHETIC_VISION_WITHHELD, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixture/ts/hang-stop.test-fixture.ts';
@@ -65,6 +62,11 @@ const CUT: ChatTextReply = {
 };
 
 /**
+ What a recorded ask reads as when it carried no `otherThan` hint.
+ */
+const NO_HINT = 'no hint';
+
+/**
  One scripted step: a reply, or the router's refusal to serve it elsewhere.
  */
 type Step = ChatTextReply | 'nowhere-else';
@@ -74,7 +76,7 @@ type Step = ChatTextReply | 'nowhere-else';
 
  @param steps - what each ask gets, in order; the last one repeats
 
- @returns Client, the `otherThan` hint of each ask, and each ask's prompt
+ @returns Client, the `otherThan` hint of each ask (or the no-hint word), and each ask's prompt
 
  @example
  ```ts
@@ -85,13 +87,13 @@ function scriptedClient(
   { steps, }: { readonly steps: readonly Step[]; },
 ): {
   readonly client: ModelClient;
-  readonly hints: (ProviderName | undefined)[];
+  readonly hints: string[];
   readonly prompts: string[];
 } {
   /**
    The `otherThan` hint of each ask.
    */
-  const hints: (ProviderName | undefined)[] = [];
+  const hints: string[] = [];
   /**
    Prompt text of each ask.
    */
@@ -105,7 +107,7 @@ function scriptedClient(
          Request as this package's own contract describes it.
          */
         const asked = request as ChatTextRequest;
-        hints.push(asked.otherThan,);
+        hints.push(asked.otherThan ?? NO_HINT,);
         prompts.push(asked.messages
           .map(function text(message,): string {
             return messageText({ message, },);
@@ -211,7 +213,7 @@ await describe({
         const reading = await readOnce({ client, l: tagged({ tag: 'cut-empty-test', },), },);
 
         expect(reading.kind,).toBe('read',);
-        expect(hints,).toEqual([undefined, 'neuralwatt',],);
+        expect(hints,).toEqual([NO_HINT, 'neuralwatt',],);
         expect(new Set(prompts,).size,).toBe(2,);
         expect(prompts[1],).toContain('Small-text pass',);
       },
@@ -225,7 +227,7 @@ await describe({
         const reading = await readOnce({ client, l: tagged({ tag: 'cut-empty-test', },), },);
 
         expect(reading.kind,).toBe('read',);
-        expect(hints,).toEqual([undefined, 'neuralwatt', undefined,],);
+        expect(hints,).toEqual([NO_HINT, 'neuralwatt', NO_HINT,],);
       },
     },),
 
@@ -284,7 +286,7 @@ await describe({
         const reading = await readOnce({ client, l: tagged({ tag: 'cut-empty-test', },), },);
 
         expect(reading.kind,).toBe('read',);
-        expect(hints,).toEqual([undefined, undefined,],);
+        expect(hints,).toEqual([NO_HINT, NO_HINT,],);
       },
     },),
   ],

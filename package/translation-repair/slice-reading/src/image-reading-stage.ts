@@ -15,7 +15,10 @@ import {
   type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import type {
+  ProviderName,
+  RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Image reading stage
 // ONE CALL THAT READS A PICTURE, screened before anybody is allowed to use what
@@ -189,6 +192,20 @@ export type ImageReading = {
     | 'reports-no-text'
     | 'empty-reply'
     | 'reader-failed';
+
+  /**
+   Set on an `empty-reply` whose finish reason was `length`: the completion
+   cap ended the model while it was still reasoning, before any answer.
+   That is the one empty reply a second ask has been seen to change
+   (`image-reading-past-refusal.ts`), and the only one marked.
+   */
+  readonly cutByLength?: true;
+
+  /**
+   Provider that served the cut reply, so the second ask can go elsewhere.
+   Set only together with `cutByLength`, and only when the client said.
+   */
+  readonly servedBy?: ProviderName;
 };
 
 /**
@@ -238,6 +255,10 @@ export function isTransientReadingReason(
 
  @param perspective - distinct visual scan responsibility
 
+ @param otherThan - provider the exchange must not be served by, set on the
+ second ask of a reply the completion cap cut, which the router serves
+ elsewhere or refuses with `NoProviderForModelError`
+
  @param signal - abort honoured for the whole exchange
 
  @param perCallTimeoutMs - deadline bounding the exchange
@@ -262,6 +283,7 @@ export async function readImageAsset(
     bytes,
     assetName,
     perspective = IMAGE_READING_PERSPECTIVES[0],
+    otherThan,
     signal,
     perCallTimeoutMs,
     l,
@@ -271,6 +293,7 @@ export async function readImageAsset(
     readonly bytes: Uint8Array;
     readonly assetName: string;
     readonly perspective?: ImageReadingPerspective;
+    readonly otherThan?: ProviderName;
     readonly signal: AbortSignal;
     readonly perCallTimeoutMs: number;
     readonly l: Logger;
@@ -335,9 +358,27 @@ export async function readImageAsset(
     },],
     signal,
     exchangeTimeoutMs: perCallTimeoutMs,
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((otherThan === undefined) ? {} : { otherThan, }),
   },);
 
   if (reply.text === '') {
+    // CUT BY THE LENGTH LIMIT IS MARKED, because it is the one empty reply
+    // that varies between asks: a reasoning model spent its whole completion
+    // cap thinking (XingZ6016, 2026-10-21: 18316 completion tokens, 0 content
+    // characters, finish reason length) and wrote no answer.
+    if (reply.finishReason === 'length') {
+      rl.warn(
+        `${modelId} returned nothing for ${assetName}: the completion limit cut it before an answer (finish reason length`
+          + `${(reply.servedBy === undefined) ? '' : ` on ${reply.servedBy}`})`,
+      );
+      return {
+        kind: 'unavailable',
+        reason: 'empty-reply',
+        cutByLength: true,
+        ...((reply.servedBy === undefined) ? {} : { servedBy: reply.servedBy, }),
+      };
+    }
     rl.warn(`${modelId} returned nothing for ${assetName}`,);
     return {
       kind: 'unavailable',
