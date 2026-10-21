@@ -687,10 +687,15 @@ its "Next" list is still the queue the merge went ahead of.
       (2690 pass,
       0 fail):
       `mise run //package/translation-repair/source-scan:test:rotation-sweep`.
-      Its positive control reported the two unpinned members under the salts the ledger names,
-      and the full sweep over 26 packages ran clean in about 824 s.
-      It runs before a sheet text change lands and in the pre-launch checks
-      (step 13 of the list in `package/translation-repair/doc/mistake-prevention.md`).
+      Its positive control failed stage-quorum under salts 2,
+      3,
+      6 and 7
+      and pass-seams-reseat under salts 1,
+      2 and 3;
+      the full sweep ran clean in 824 s.
+      A launch needs it clean after any commit since the last sweep that changed a sheet's text
+      or a seat-naming case
+      (pre-launch step 13 in `package/translation-repair/doc/mistake-prevention.md`).
     - Done:
       the seat-window census (B701) integrated in `dc4982c9cb`,
       the owner's confirmation of B696 and B698,
