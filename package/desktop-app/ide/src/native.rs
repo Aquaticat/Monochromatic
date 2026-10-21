@@ -210,10 +210,6 @@ mod overscan_tile_tests;
 /// A picture asks for a frame of its own only when no frame draws it first.
 #[cfg(test)]
 mod picture_frame_tests;
-/// A finished tile is swapped in by the next scroll step's frame,
-/// and by the poll only when no step is due.
-#[cfg(test)]
-mod tile_step_tests;
 /// Real pointer events select by character,
 ///  word,
 ///  and line,
@@ -329,6 +325,10 @@ mod tile_pass;
 /// a frame is rendered and the tile's texture is read back.
 #[cfg(test)]
 mod tile_reads;
+/// A finished tile is swapped in by the next scroll step's frame,
+/// and by the poll only when no step is due.
+#[cfg(test)]
+mod tile_step_tests;
 /// Windowed rows must not redirect an in-progress click after scrolling.
 #[cfg(test)]
 mod tree_pointer_tests;
