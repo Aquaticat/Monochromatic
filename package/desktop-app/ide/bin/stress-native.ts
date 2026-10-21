@@ -197,6 +197,7 @@ try {
   }
   startLoad();
   const began = Date.now();
+  sample();
   const sampler = setInterval(sample, 5000);
   const runs = Array.from({ length: options.copies }, (_, copy) =>
     execute([
@@ -206,6 +207,7 @@ try {
     ], join(logs, `copy-${copy}.log`)));
   await Promise.all(runs);
   clearInterval(sampler);
+  sample();
   const tally: Tally = summarize(Array.from({ length: options.copies }, (_, copy) => readFileSync(join(logs, `copy-${copy}.log`), 'utf8')));
   console.log(`Stress run: filter ${options.filter}, ${options.copies} copies x ${options.count} iterations, load ${options.load} CPUs, retries ${options.retries}, ${Math.round((Date.now() - began) / 1000)} s`);
   console.log(`Logs: ${logs}`);
