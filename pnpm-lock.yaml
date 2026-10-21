@@ -386,7 +386,7 @@ overrides:
   fast-xml-parser: '>=5.7.0'
   jspdf>canvg: '-'
   jspdf>dompurify: '-'
-  micromark-extension-math>katex: '-'
+  micromark-extension-math>katex: link:package/shim/katex
   nanoid: '>=5.1.15'
   node-domexception: link:package/shim/node-domexception
   postcss: '>=8.5.26'
@@ -4892,6 +4892,24 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 26.6.5
+
+  package/shim/katex:
+    devDependencies:
+      '@monochromatic-dev/config-typescript':
+        specifier: workspace:*
+        version: link:../../config/typescript
+      '@monochromatic-dev/module-test':
+        specifier: workspace:*
+        version: link:../../module/test
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.5
+      remark-math:
+        specifier: 'catalog:'
+        version: 6.0.0
+      typescript:
+        specifier: 'catalog:'
+        version: 7.1.0-beta
 
   package/shim/node-domexception:
     devDependencies:
@@ -13256,6 +13274,7 @@ snapshots:
     dependencies:
       '@types/katex': 0.16.8
       devlop: 1.1.0
+      katex: link:package/shim/katex
       micromark-factory-space: 2.1.0
       micromark-util-character: 2.1.1
       micromark-util-symbol: 2.0.1
