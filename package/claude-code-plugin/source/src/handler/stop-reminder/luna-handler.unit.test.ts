@@ -59,6 +59,29 @@ const TOOL = JSON.stringify({ type: 'assistant', message: { content: [{ type: 't
 const TEXT = JSON.stringify({ type: 'assistant', message: { content: [{ type: 'text', text: 'blocked', },], }, },);
 
 /**
+ Transcript line for a tool result returned to the model.
+ */
+const TOOL_RESULT = JSON.stringify({
+  type: 'user',
+  message: { content: [{ type: 'tool_result', tool_use_id: 'x', },], },
+},);
+
+/**
+ Text Claude Code queues when a background task finishes.
+ */
+const NOTIFICATION = '<task-notification>\n<task-id>b1</task-id>\n<status>completed</status>\n</task-notification>';
+
+/**
+ Transcript line for the finished task's notification entering the queue.
+ */
+const ENQUEUE = JSON.stringify({ type: 'queue-operation', operation: 'enqueue', content: NOTIFICATION, },);
+
+/**
+ Transcript line for that notification being delivered.
+ */
+const REMOVE = JSON.stringify({ type: 'queue-operation', operation: 'remove', content: NOTIFICATION, },);
+
+/**
  Builds the gateway response for one chosen label.
 
  @param situation - label Luna chooses
@@ -426,6 +449,40 @@ await describe({
             expect(record?.outcome,).toBe('skipped',);
             expect(record?.action,).toBe('release',);
             expect(record?.detail,).toBe('a subagent is running',);
+          },
+        },),
+        it({
+          name: 'when a finished task\'s notification is queued, though the task list is already empty',
+          fn: async () => {
+            const h = await harness({
+              lines: [...OPEN, TOOL_RESULT, ENQUEUE,],
+              reply: verdictReply('waits_on_background_work',),
+            },);
+
+            const output = await h.run({ background_tasks: [], },);
+
+            expect(output.decision,).toBeUndefined();
+            expect(h.requests,).toHaveLength(0,);
+            const [record,] = await records(h.logPath,);
+            expect(record?.outcome,).toBe('skipped',);
+            expect(record?.action,).toBe('release',);
+            expect(record?.detail,).toBe('a task notification is queued',);
+          },
+        },),
+        it({
+          name: 'not when the queued notification was already delivered or a later tool result outdates it',
+          fn: async () => {
+            const counts = await Promise.all([
+              [...OPEN, TOOL_RESULT, ENQUEUE, REMOVE,],
+              [...OPEN, ENQUEUE, TOOL_RESULT,],
+            ].map(async function askedFor(lines,) {
+              const h = await harness({ lines, reply: verdictReply('announces_own_next_step',), },);
+
+              await h.run({ background_tasks: [], },);
+              return h.requests.length;
+            },),);
+
+            expect(counts,).toStrictEqual([1, 1,],);
           },
         },),
         it({

@@ -10,6 +10,9 @@
 //! // process.stderr.write(JSON.stringify({ schemaVersion: 1, sequence: 0, type: 'engine-failure', ... }) + '\n');
 //! ```
 
+/// The hint that follows an engine failure line.
+use super::event_hints::{engine_failure_hint, push_hint_field};
+
 /// What:
 ///  The event schema version every line carries.
 ///       `u32` is an unsigned 32-bit integer (siblings `u8`,
@@ -194,11 +197,15 @@ pub fn json_string(text: &str) -> String {
 /// ```
 pub fn render_engine_failure(sequence: u64, code: EngineFailureCode, message: &str) -> String {
     // `format!` builds the owned line; `{{` and `}}` are literal braces.
-    return format!(
-        "{{\"schemaVersion\":{SCHEMA_VERSION},\"sequence\":{sequence},\"type\":\"engine-failure\",\"code\":{},\"message\":{}}}\n",
-        json_string(engine_failure_code_name(code)),
+    let name: &str = engine_failure_code_name(code);
+    let mut line: String = format!(
+        "{{\"schemaVersion\":{SCHEMA_VERSION},\"sequence\":{sequence},\"type\":\"engine-failure\",\"code\":{},\"message\":{}",
+        json_string(name),
         json_string(message)
     );
+    push_hint_field(&mut line, engine_failure_hint(name));
+    line.push_str("}\n");
+    return line;
 }
 
 /// What:
@@ -221,12 +228,15 @@ pub fn render_configuration_warning(
     message: &str,
     path: &str,
 ) -> String {
-    return format!(
-        "{{\"schemaVersion\":{SCHEMA_VERSION},\"sequence\":{sequence},\"type\":\"configuration-warning\",\"code\":{},\"message\":{},\"path\":{}}}\n",
+    let mut line: String = format!(
+        "{{\"schemaVersion\":{SCHEMA_VERSION},\"sequence\":{sequence},\"type\":\"configuration-warning\",\"code\":{},\"message\":{},\"path\":{}",
         json_string(code),
         json_string(message),
         json_string(path)
     );
+    push_hint_field(&mut line, engine_failure_hint(code));
+    line.push_str("}\n");
+    return line;
 }
 
 /// Encoding and field-order controls stay out of the release executable.

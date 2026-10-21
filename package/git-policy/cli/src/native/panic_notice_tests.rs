@@ -34,19 +34,30 @@ fn secret() -> String {
 #[test]
 fn the_notice_names_only_the_location() {
     let location: &std::panic::Location<'static> = std::panic::Location::caller();
-    assert_eq!(
-        panic_notice(Some(location)),
-        format!(
-            "cli-git: internal error at {}:{}:{}; its message is not shown because it may contain repository content.\n",
-            location.file(),
-            location.line(),
-            location.column()
-        )
+    let with_location: String = panic_notice(Some(location));
+    assert!(
+        with_location.starts_with(
+            format!(
+                "cli-git: internal error at {}:{}:{}; its message is not shown because it may contain repository content.",
+                location.file(),
+                location.line(),
+                location.column()
+            )
+            .as_str()
+        ),
+        "{with_location}"
     );
-    assert_eq!(
-        panic_notice(None),
-        "cli-git: internal error; its message is not shown because it may contain repository content.\n"
+    assert!(with_location.contains(" Hint: if you were running a Git command, run it again;"), "{with_location}");
+    assert!(with_location.ends_with("report this location.\n"), "{with_location}");
+    let without_location: String = panic_notice(None);
+    assert!(
+        without_location.starts_with(
+            "cli-git: internal error; its message is not shown because it may contain repository content."
+        ),
+        "{without_location}"
     );
+    assert!(without_location.contains(" Hint: if you were running a Git command, run it again;"), "{without_location}");
+    assert!(without_location.ends_with("report the command you ran.\n"), "{without_location}");
 }
 
 /// What:

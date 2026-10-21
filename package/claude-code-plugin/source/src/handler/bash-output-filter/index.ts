@@ -81,6 +81,7 @@ function bashOutputFilterHandler(event: ReadonlyDeep<PreToolUseInput>,): BashOut
    */
   const forceBackground = shouldForceBackground({
     ...(event.agent_id === undefined ? {} : { agentId: event.agent_id, }),
+    command: bashInput.command,
     env: process.env,
   },);
 

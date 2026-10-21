@@ -1234,6 +1234,62 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     and the 131,072-tile rule, and could carry the patch through `[patch.crates-io]` if a larger target is ever
     needed. Note: at exactly 131,072 tiles the default `ptcl` has no dynamic room, so a scene needing one more chunk
     there fails loudly with bit 16.
+    Owner addition of 2026-10-20: "proven unfixably flaky" is a very, very high bar; "in many cases we can change our
+    code, our tests, split the tests, and more instead". Zero retry overrides is the expected outcome. A test may go under
+    retries only when the report lists every alternative tried or ruled out with evidence (deterministic product code,
+    waiting on the real condition, splitting the test, injected clock or renderer state, waiting for GPU idle, less
+    parallel GPU use, a restructured assertion), and the cause lies outside our code and outside what a restructured
+    test controls; difficulty, effort or load-dependence alone never qualify; an undiagnosed flake stays an open,
+    instrumented flake and is not retried. Sent to agent `af624c22739073177`.
+    Owner instruction of 2026-10-20 that REPLACES the run-count rule in the next paragraph: "I suggest you properly fix the
+    flakes instead. And we should never run a full test against one snapshot of code. If some tests are confirmed
+    unfixably flaky, make the test harness run the specific tests more instead." My reading (stated to the owner, not
+    contradicted so far): nobody repeats the whole suite on one snapshot to judge it; one full `test:native` run per
+    snapshot is the gate; flakes are fixed at their cause; a test proven unfixably flaky gets a nextest per-test retry
+    override that keeps the pass-after-retry visible (FLAKY in the summary) and an entry in a ledger. Agent
+    `af624c22739073177` (started 2026-10-20) builds a per-test stress tool (a mise task), reproduces each known flake
+    (listed in its brief: the annotation stability tests, `find_box_context_menu_runs_each_entry`,
+    `refused_tile_tests`, `wrap_clip_tests`, the older `write_wait_tests` and `watch_tests`, the `wrap_tests` `settled`
+    early return; the CPU minimap test is the stage 5 and 6 agent's and disappears with it), fixes causes, and adds the
+    nextest config and ledger only for tests it proves unfixable. For stage 5 and 6 verification I now run
+    `test:native` once on the merged snapshot and rely on the per-test stress tool for any test that fails.
+    Owner question of 2026-10-20, "Do we really need 15 or more full test:native runs? I thought we fixed the
+    flakes?": no, 15 was my round number. With a true flake rate p per run, n runs catch it with probability
+    1-(1-p)^n: 54 percent at p = 5 percent and 79 percent at p = 10 percent for n = 15, so it is no proof either. The
+    four causes found by the flake agent are fixed (three batches of 15 passed since, one at load 50); the residual
+    repeat offender is the CPU minimap test `an_external_edit_of_fifty_thousand_lines_renders_only_the_band_it_touches`
+    (1 of 20 on the baseline), which stage 5 and 6 delete; one nine-level pixel difference and
+    `find_box_context_menu_runs_each_entry` were each seen once. Rule I adopted (veto-open): a change that adds or
+    rewrites tests that read pixels or wait on timers (stage 5 and 6 does) gets 15 consecutive full runs; any other
+    change gets 3 full runs. The "15 or more" in the stage 5 and 6 brief stands for that reason only.
+    LANDED 2026-10-20 (pushed as `6a44ec419f`; the IDE tree equals the one I verified: `lint`, `test:bin`, `build`,
+    `inspect:software-renderer` pass, `test:native` 15 of 15 at 264 tests under a load average of about 50; the first
+    push attempt failed twice, a hook message and then a plain non-fast-forward because others pushed, and the third
+    attempt after re-merging `origin/main` succeeded; the agent worktree, its local and remote branches and the scratch
+    worktree are removed, no strays). The IDE was reinstalled with the selection fix and the memory hint:
+    `~/.local/bin/monochromatic-ide` sha256 prefix `ab91c5f45960a4e7` (equal to the release build), previous binary
+    `monochromatic-ide.previous` (`80c27b37e4224602`). Before this install the shipped binary blanked or staled the code
+    view on a tall selection. I did not rerun the agent's cadence and memory measurements. The next paragraph is the
+    pre-landing state of this entry.
+    Report in from agent `ae0713008b220a655` (selection fix and memory hint; verification in progress in the scratch
+    worktree `~/temp/agent/ide-integrate2`, merged with `origin/main`): the bug reproduced in the SHIPPED app (release
+    binary of `origin/main`, nested compositor, 1147x2000, `/tmp/ide-gpu-fixture/code.rs`): 30 to 39 selected rows are
+    fine; 42 or more keep stale glyph ink under the new fills; select-all followed by a scroll to the end blanks the whole
+    code view (I viewed `~/temp/agent/vello-fix/shots-before-d/sel-all-scroll.png`, blue fills and no text, and the
+    after shot with the text present). The study's row-height clip was not enough: select-all on the 16,384 px limit
+    (682 dense rows) overflowed the lines buffer, because each clipped copy of a run is flattened again and a fully
+    selected row cost three copies per glyph; `reach` and `meets` in `src/tile_scene/split.rs` drop copies a run's
+    glyphs (plus half a font size) cannot reach (I read the diff and accept it). `MemoryHints::MemoryUsage` measured in
+    the app: video memory idle 499 to 288 MiB (`code.rs` tall) and 476 to 216 MiB (`big.rs`), after scroll 505 to 358
+    and 483 to 259; RSS equal; first frame and cadence inside the noise floor; a parallel `test:native` demand fell from
+    about 11 GiB to about 5.3 GiB (card shared and full, so GTT spill; the study's 9.4 and 4.0 were sums of probe
+    figures). Detection of the silent blank is impossible in Vello 0.11 without a patch (`robust` is
+    `cfg!(feature = "debug_layers")`, `WgpuEngine` is `pub(crate)`). Decisions I took (veto-open): keep the memory
+    hint; accept `reach`/`meets`; for detection prefer a pre-encode estimate of lines and tiles (no GPU wait, bounded
+    cost) over a sentinel-texel readback after each render (a GPU sync per tile render), to be done in
+    `src/native/gpu_tile.rs` after the minimap agent lands. Queued: parallel `test:native` still wants about 5.3 GiB of
+    video memory plus GTT; decide on a test-thread cap or a device budget after stage 5 and 6; two items outside this
+    scope: the doc `doc/planning/ide-gpu-snapshot-harness.md` has 56 older `semantic-line-breaks` findings.
     Agent `ae0713008b220a655` (started 2026-10-20) reproduces the
     selection blank in the real app, fixes the clip structure with a failing test first, applies e1 and measures VRAM,
     RSS, first frame and cadence with `matrix-load.mjs`. Verification of both uses `~/temp/agent/matrix-load.mjs` and at least 15

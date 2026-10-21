@@ -118,6 +118,38 @@ await describe({
         },),
 
         it({
+          name: 'carries the account figure, the day start and the key allowance fields of the anchored NeuralWatt '
+            + 'day through as levels, their values holding colons and dots, and the state from the neuralwatt field alone',
+          fn: async () => {
+            /**
+             A record as `takeReading` writes one since the NeuralWatt day moved to the quota's anchor.
+             */
+            const line = '[info] [2026-10-20T23:15:00.000Z] [t] [takeReading] METERS '
+              + 'neuralwatt=wet synthetic=dry bedrock=dry hyper=wet openrouter=wet neuralwattWh=545.905 '
+              + 'neuralwattReckonedWh=0.000 neuralwattAccountWh=4.095 neuralwattDayStart=2026-10-20T19:15:08.000Z '
+              + 'neuralwattKeyRemainingUsd=3.25 neuralwattKeyBlocked=no syntheticWeekly=0%';
+
+            expect(readMeterLine({ line, },),).toEqual({
+              at: Date.parse('2026-10-20T23:15:00.000Z',),
+              neuralwatt: 'wet',
+              synthetic: 'dry',
+              hyper: 'wet',
+              bedrock: 'dry',
+              openrouter: 'wet',
+              levels: [
+                'neuralwattWh=545.905',
+                'neuralwattReckonedWh=0.000',
+                'neuralwattAccountWh=4.095',
+                'neuralwattDayStart=2026-10-20T19:15:08.000Z',
+                'neuralwattKeyRemainingUsd=3.25',
+                'neuralwattKeyBlocked=no',
+                'syntheticWeekly=0%',
+              ],
+            },);
+          },
+        },),
+
+        it({
           name: 'reads a record from a build that printed neuralwattBilled as one more '
             + 'level token and takes its state from the neuralwatt field alone',
           fn: async () => {

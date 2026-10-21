@@ -283,7 +283,13 @@ pub fn run_process(arguments: &[OsString], environment: &[(OsString, OsString)])
             );
             write_stream(
                 &mut std::io::stderr(),
-                format!("cli-git: cannot start {}: {error}\n", real_git.display()).as_str(),
+                format!(
+                    "cli-git: cannot start {}: {error}. Hint: if you moved or upgraded Git, check that the file exists and is executable with `ls -l {}`, \
+                     then reinstall Git or the wrapper; no Git command ran.\n",
+                    real_git.display(),
+                    real_git.display()
+                )
+                .as_str(),
             );
             return ENGINE_FAILURE_EXIT_CODE;
         }

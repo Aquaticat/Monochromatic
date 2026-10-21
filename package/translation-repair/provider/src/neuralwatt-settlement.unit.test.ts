@@ -42,6 +42,7 @@ import type { TransportExchange, } from '@monochromatic-dev/translation-repair-p
 import {
   consoleLinesDuring,
   jsonRecordOf,
+  MIDNIGHT_DAY,
 } from './neuralwatt-ledger.test-fixture.ts';
 import {
   ask,
@@ -136,7 +137,7 @@ await describe({
           return entry.includes('BILLED',);
         },),).toBe(false,);
         expect(runSpendUsd({ provider: 'neuralwatt', },),).toBe(before,);
-        expect(await ledger.read(),).toMatchObject({ reservedWh: 0, calls: 1, },);
+        expect(await ledger.read({ day: MIDNIGHT_DAY, },),).toMatchObject({ reservedWh: 0, calls: 1, },);
       },
     },),
 
@@ -252,7 +253,7 @@ await describe({
         /**
          The day after the costed call.
          */
-        const energy = await ledger.read();
+        const energy = await ledger.read({ day: MIDNIGHT_DAY, },);
         expect(energy.remainingWh,).toBeCloseTo(550 - 0.015, 12,);
         expect('billedToday' in energy,).toBe(false,);
       },
@@ -289,7 +290,7 @@ await describe({
         expect(lines.some(function says(entry,): boolean {
           return entry.includes('0.0150 Wh measured against',);
         },),).toBe(true,);
-        expect(await ledger.read(),).toMatchObject({ reservedWh: 0, calls: 0, },);
+        expect(await ledger.read({ day: MIDNIGHT_DAY, },),).toMatchObject({ reservedWh: 0, calls: 0, },);
       },
     },),
   ],

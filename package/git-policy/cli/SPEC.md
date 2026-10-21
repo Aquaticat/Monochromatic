@@ -3070,6 +3070,15 @@ stripped before real Git.
 Escape-looking option values and pathspecs remain ordinary Git arguments.
 The legacy fixed-rule implementations no longer participate in dispatch.
 
+### Hints
+
+A finding, an engine failure and a warn-unsafe notice may carry an additive `hint` string field after `message`.
+The hint guesses what the person was trying to do and names the next step; it never changes `message`, `code` or `fix`.
+Every finding code of a policy whose message has no alternative of its own, and every engine failure code,
+has a hint, and the test suite fails when one is added without it.
+Plain stderr notices that report a divergence from real Git's behavior end with a hint in the same voice.
+A reader that ignores unknown fields is unaffected.
+
 ### Discarding commands
 
 `linked-worktree-only` guards every command form that can overwrite or delete uncommitted work:

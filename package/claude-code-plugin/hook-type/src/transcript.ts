@@ -60,6 +60,18 @@ type TranscriptRecord = {
   readonly type?: string;
 
   /**
+   Queue action on a `queue-operation` record: `enqueue`, `dequeue`, or `remove`.
+   */
+  readonly operation?: string;
+
+  /**
+   Queued text on a `queue-operation` record, such as a `<task-notification>` block.
+
+   Absent on a `dequeue`, which takes the head of the queue without naming it.
+   */
+  readonly content?: string;
+
+  /**
    `true` for records belonging to a subagent branch rather than the main thread.
    */
   readonly isSidechain?: boolean;

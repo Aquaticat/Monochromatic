@@ -61,7 +61,7 @@ const SIGNAL = new AbortController().signal;
  */
 function energyOf({ remainingWh, }: { readonly remainingWh: number; },): NeuralWattEnergy {
   return {
-    day: '2026-10-20',
+    dayStart: '2026-10-20T19:15:08.000Z',
     dailyWh: 550,
     spentWh: 550 - remainingWh,
     reckonedWh: 0.5,
@@ -176,15 +176,22 @@ await describe({
 
         it({
           name: 'PRINTS WHAT IT READ AS KEY=VALUE FIELDS WITH NO SPACE IN A VALUE: the watt-hours left to three places '
-            + 'and the share that rests on estimates, with no field about cost',
+            + 'the share that rests on estimates, the account figure, the day start and the key allowance, with no field '
+            + 'about cost',
           fn: async () => {
             expect(neuralWattMeterLevel({ energy: energyOf({ remainingWh: 549.9856, }), },),).toEqual([
               'neuralwattWh=549.986',
               'neuralwattReckonedWh=0.500',
+              'neuralwattAccountWh=none',
+              'neuralwattDayStart=2026-10-20T19:15:08.000Z',
+              'neuralwattKeyAllowance=none',
             ],);
             expect(neuralWattMeterLevel({ energy: energyOf({ remainingWh: 1, }), },),).toEqual([
               'neuralwattWh=1.000',
               'neuralwattReckonedWh=0.500',
+              'neuralwattAccountWh=none',
+              'neuralwattDayStart=2026-10-20T19:15:08.000Z',
+              'neuralwattKeyAllowance=none',
             ],);
           },
         },),
@@ -202,7 +209,13 @@ await describe({
             },);
             expect(wet.neuralwatt,).toEqual({
               state: 'wet',
-              fields: ['neuralwattWh=100.000', 'neuralwattReckonedWh=0.500',],
+              fields: [
+                'neuralwattWh=100.000',
+                'neuralwattReckonedWh=0.500',
+                'neuralwattAccountWh=none',
+                'neuralwattDayStart=2026-10-20T19:15:08.000Z',
+                'neuralwattKeyAllowance=none',
+              ],
             },);
             /**
              Meters read with it dry.

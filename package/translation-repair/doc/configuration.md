@@ -68,12 +68,67 @@ each uses an empty export as given.
     the owner having said "Use the neuralwatt free energy front and center."
     Optional and loud like the others.
     The owner's account carries 550 Wh of free energy a day on DeepSeek V4.1 Flash and GLM-5.3-Flash,
-    reset at 00:00 UTC and not carried over;
+    not carried over;
     nothing reports what is left of it and overage is charged to the owner's plan,
     so the package meters it itself from a durable ledger
     (`doc/decision/translation-repair-neuralwatt-provider.md`).
+    The owner,
+    2026-10-20:
+    "The stop logic should obviously count total free energy used per day.
+    Every neuralwatt day starts at `15:15`"
+    (15:15 EDT for the owner in America/New_York).
+    A NeuralWatt day is therefore the 24 hours from the latest instant,
+    at or before now,
+    whose UTC time of day is that of the quota's `subscription.current_period_start`
+    (`GET /v1/quota` answered `2026-10-20T19:15:08Z`,
+    which is 15:15 EDT for the owner in America/New_York),
+    never midnight UTC and never a local time,
+    so daylight saving does not move it.
+    What the day has spent is the larger of two figures,
+    never their sum:
+    the covered energy the whole account used since the day began
+    (`GET /v1/usage/by-model`,
+    the rows of the served models and their `-flex` lanes,
+    read at run start and at each meter reading,
+    the reply's echoed period checked against the window asked),
+    and the ledger's own settled energy since the day began,
+    plus the holds of calls in flight.
+    Calls made under a tracking alias such as `nw-flash` count too:
+    a usage row for one carries the alias as its `requested_model`,
+    so `GET /v1/models` is read at each account reading for the aliases (and their `-flex` twins)
+    whose `metadata.huggingface_id` is that of a covered model,
+    since aliases move.
+    Where that listing cannot be read,
+    every `nw-` row that is not a speed lane and was served by a covered model counts,
+    with one warning per outage.
+    Speed lanes never count.
+    Flex energy is counted as consumed rather than as charged,
+    which over-counts and so errs on the safe side.
+    When the by-model route cannot be read the last figure for the same day stands,
+    else the ledger counts alone,
+    with one warning per outage naming the endpoint and status.
     The `METERS` line carries `neuralwatt=`,
-    and `neuralwattWh=` and `neuralwattReckonedWh=` among its numbers.
+    and `neuralwattWh=` (left in the day),
+    `neuralwattReckonedWh=` (the share resting on estimates),
+    `neuralwattAccountWh=` (the account's covered energy,
+    or `none`)
+    and `neuralwattDayStart=` (the day's first instant,
+    ISO UTC,
+    or `none`) among its numbers.
+    The run logs at start where the day starts and which source said so.
+    The owner also caps this key at 1 kWh a day;
+    the quota reply carries it as `key.allowance`,
+    which still read `null` on 2026-10-20,
+    so what a live cap reports is unconfirmed.
+    When present it is read at each meter reading:
+    `neuralwattKeyAllowance=none` for an uncapped key,
+    else `neuralwattKeyRemainingUsd=` and `neuralwattKeyBlocked=yes|no`,
+    and a blocked cap holds NeuralWatt dry until its `reset_at` (the next day start where it names none)
+    with a warning.
+    A cap that will not read is warned about once and ignored.
+    The free-energy stop stays the primary one;
+    the 550 Wh is under the 1 kWh cap,
+    so the cap is a backstop.
     A cost a request reports does not stop the provider;
     it is a nominal figure that free-energy requests carry too,
     and it appears on the `SPEND` line as `cost=`.
@@ -91,6 +146,23 @@ each uses an empty export as given.
     Set it to 0 on a day without a promotion,
     when the account has no free energy and the first request would be billed to the plan;
     anything that is not a non-negative number is refused at once.
+
+-   `TRANSLATION_REPAIR_NEURALWATT_DAY_START`.
+    The UTC time of day a NeuralWatt day starts at,
+    written `HH:MM` with two digits each,
+    such as `19:15`.
+    Read only when the quota reply carries no usable `subscription.current_period_start`;
+    the quota's own period start wins when both exist.
+    When neither gives a time of day the day is unknown:
+    NeuralWatt is marked dry and refused until it is learned,
+    with one warning naming the missing field and both remedies.
+    The quota is then read again,
+    no sooner than 60 seconds after each failed attempt,
+    so a transient failure at the start of a run does not refuse NeuralWatt for the whole run;
+    the day finally learned is logged with its source.
+    There is no midnight fallback,
+    since an assumed 00:00 UTC would count the wrong day's energy.
+    A value that is not `HH:MM` is refused at once.
 
 -   `TRANSLATION_REPAIR_CHARM_HYPER_API_KEY`.
     Bearer token for the second provider,

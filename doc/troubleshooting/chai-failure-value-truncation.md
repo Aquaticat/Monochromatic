@@ -474,9 +474,12 @@ and `test/globalErr.js` that asserted the leaky partial
 
 ### Upstream filing artifact
 
-Draft issue for `chaijs/chai`,
- fileable as-is per the check above;
- posting is an external action and waits for the repository owner's go-ahead.
+Draft issue for `chaijs/chai`.
+ All six constraints hold,
+ so the draft below is technically fileable;
+ the repository owner decided on 2026-10-20 to keep it local and not post
+ to `chaijs/chai`.
+ Treat posting as closed unless the owner reopens it.
 
 ~~~md
 Title: objDisplay's shape-summary replacement is non-monotonic in truncateThreshold
@@ -519,7 +522,10 @@ verified by a human-run reproduction script.
 
 ## Next action
 
-The module-test-side fix choice for issue 610 is pending a decision on the
-issue thread;
-the upstream draft above is fileable once the repository owner authorizes
-posting to `chaijs/chai`.
+The module-test-side fix choice for issue 610 is recorded as a proposal:
+ [doc/planning/module-test-failure-value-diff.md](../planning/module-test-failure-value-diff.md).
+ The whole-value render options were rejected after a sizing correction
+ (real findings are `174`-character sentences,
+ so any cap hides the differing entry),
+ leaving a difference-first structural diff in `package/module/test-diagnostic`.
+ The upstream draft stays local per the 2026-10-20 owner decision.

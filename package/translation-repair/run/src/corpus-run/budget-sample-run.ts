@@ -11,6 +11,7 @@ import {
   createOpenRouterClient,
   createProviderBudgets,
   createSyntheticClient,
+  neuralWattDayStartFrom,
   neuralWattLedgerFromEnv,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import { PROVIDER_ORDER, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
@@ -106,6 +107,7 @@ export async function sampleBudgets(
     neuralwatt: createNeuralWattClient({
       apiKey: keys.neuralwatt,
       ledger: neuralWattLedgerFromEnv({ env, },),
+      dayStartSetting: neuralWattDayStartFrom({ env, },),
       transport,
     },),
     synthetic: createSyntheticClient({

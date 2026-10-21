@@ -2,12 +2,15 @@
 //!  so these tests need no GPU and no display,
 //!  and none of them reads the process environment.
 
-/// The choice and the errors under test.
-use super::{AdapterSummary, GpuDeviceError, Variables, choose_adapters};
+/// The choice and the errors under test,
+///  and the description of the device that is opened.
+use super::{AdapterSummary, GpuDeviceError, Variables, choose_adapters, device_description};
 /// The power order the choice parses and the order it returns.
 use super::{adapter::PowerOrder, choice::AdapterOrder};
-/// The adapter kinds.
-use slint::wgpu_30::wgpu::DeviceType;
+/// The adapter kinds,
+///  the limits,
+///  and the allocator's memory hint.
+use slint::wgpu_30::wgpu::{DeviceType, Limits, MemoryHints};
 
 /// An adapter description of the given kind.
 fn adapter(name: &str, device_type: DeviceType, driver: &str) -> AdapterSummary {
@@ -526,4 +529,23 @@ fn the_name_errors_carry_every_remedy_too() {
             assert!(message.contains(needle), "missing {needle:?} in: {message}");
         }
     }
+}
+
+/// The device asks wgpu's allocator for small blocks:
+/// with the default hint a bare device holds 193.6 MiB of video memory and a process 458.2 MiB,
+/// with this one 13.6 and 234.4.
+#[test]
+fn the_device_description_asks_for_the_memory_usage_hint_and_keeps_the_limits() {
+    let limits = Limits {
+        max_texture_dimension_2d: 16_384,
+        ..Limits::default()
+    };
+    let description = device_description(limits);
+    assert!(
+        matches!(description.memory_hints, MemoryHints::MemoryUsage),
+        "the hint is {:?}",
+        description.memory_hints
+    );
+    assert_eq!(description.required_limits.max_texture_dimension_2d, 16_384);
+    assert_eq!(description.label, Some("ide gpu device"));
 }

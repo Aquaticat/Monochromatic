@@ -145,9 +145,42 @@ pub fn direct(fixture: &Fixture) -> Command {
     return command;
 }
 
-/// Run a command to completion,
+/// The bytes without their additive `"hint"` fields.
+///  Most binary tests pin the incumbent's event shape, which has no hint;
+///  the hint text is checked by tests that use `observe_raw`.
+pub fn without_hint_fields(bytes: &[u8]) -> Vec<u8> {
+    let marker: &[u8] = b",\"hint\":\"";
+    let mut kept: Vec<u8> = Vec::with_capacity(bytes.len());
+    let mut index: usize = 0;
+    while index < bytes.len() {
+        if bytes[index..].starts_with(marker) {
+            index += marker.len();
+            while index < bytes.len() && bytes[index] != b'"' {
+                index += if bytes[index] == b'\\' { 2 } else { 1 };
+            }
+            index += 1;
+        } else {
+            kept.push(bytes[index]);
+            index += 1;
+        }
+    }
+    return kept;
+}
+
+/// Run a command to completion and observe it without its hint fields,
 ///  feeding `input` to its standard input.
 pub fn observe(command: &mut Command, input: &[u8]) -> Observed {
+    let raw: Observed = observe_raw(command, input);
+    return Observed {
+        code: raw.code,
+        stdout: without_hint_fields(raw.stdout.as_slice()),
+        stderr: without_hint_fields(raw.stderr.as_slice()),
+    };
+}
+
+/// Run a command to completion with every byte of its output kept,
+///  feeding `input` to its standard input.
+pub fn observe_raw(command: &mut Command, input: &[u8]) -> Observed {
     let mut child = command
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())

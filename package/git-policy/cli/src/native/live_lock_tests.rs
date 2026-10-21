@@ -44,12 +44,15 @@ fn the_notice_names_the_holder_the_lock_and_both_durations() {
         Duration::from_millis(5900),
         Duration::from_secs(1800),
     );
-    assert_eq!(
-        line,
-        "cli-git: still waiting for process 4242 to release the hook lock (/repo/.git/cli-git/hook.lock) \
-         after 5 seconds; giving up after 1800 seconds (CLI_GIT_LOCK_WAIT_SECONDS changes this), \
-         leaving the lock in place."
+    assert!(
+        line.starts_with(
+            "cli-git: still waiting for process 4242 to release the hook lock (/repo/.git/cli-git/hook.lock) \
+             after 5 seconds; giving up after 1800 seconds (CLI_GIT_LOCK_WAIT_SECONDS changes this), \
+             leaving the lock in place."
+        ),
+        "{line}"
     );
+    assert!(line.contains(" Hint: if you started another Git command"), "{line}");
     let anonymous: String = slow_wait_line(
         "the hook lock",
         Path::new("/x"),

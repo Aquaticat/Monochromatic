@@ -102,6 +102,8 @@ function envWith(
 ): Readonly<Record<string, string>> {
   return {
     TRANSLATION_REPAIR_NEURALWATT_API_KEY: 'whisker-key-0005',
+    // The day's start, which the unreachable quota cannot give: 15:15 EDT in America/New_York is 19:15 UTC.
+    TRANSLATION_REPAIR_NEURALWATT_DAY_START: '19:15',
     [NEURALWATT_LEDGER_VARIABLE]: join(
       ledgerDir,
       'neuralwatt-energy.jsonl',
@@ -145,7 +147,7 @@ await describe({
         );
         // The meters are read together, so the order they are asked in is not the contract.
         expect(seen.map(function seenOf(exchange,): string {
-          return `${exchange.method} ${exchange.url} ${exchange.headers.Authorization ?? ''}`;
+          return `${exchange.method} ${exchange.url.split('?',)[0] ?? ''} ${exchange.headers.Authorization ?? ''}`;
         },).toSorted(function byText(
           left,
           right,
@@ -155,6 +157,9 @@ await describe({
             right,
           },);
         },),).toEqual([
+          'GET https://api.neuralwatt.com/v1/models Bearer whisker-key-0005',
+          'GET https://api.neuralwatt.com/v1/quota Bearer whisker-key-0005',
+          'GET https://api.neuralwatt.com/v1/usage/by-model Bearer whisker-key-0005',
           'GET https://api.synthetic.new/v2/quotas Bearer whisker-key-0001',
           'GET https://hyper.charm.land/v1/credits Bearer whisker-key-0002',
           'GET https://openrouter.ai/api/v1/credits Bearer whisker-key-0004',
@@ -185,7 +190,7 @@ await describe({
       },
     },),
     it({
-      name: 'SAYS routing would avoid NeuralWatt when the environment grants it no energy, reading its ledger over no HTTP',
+      name: 'SAYS routing would avoid NeuralWatt when the environment grants it no energy, and sends it no chat request',
       fn: async () => {
         await using scratch = await scratchDir({ prefix: 'budget-run-', },);
         const seen: TransportExchange[] = [];
@@ -206,9 +211,42 @@ await describe({
         expect(lines.at(-1,),).toBe(
           `[sampleBudgets] SAMPLED: routing would avoid neuralwatt, use synthetic, use bedrock, use hyper, use openrouter${SUMMARY_CLOSING}`,
         );
-        expect(seen.some(function reachedNeuralWatt(exchange,): boolean {
-          return exchange.url.includes('neuralwatt',);
+        // THE METER READS THE ACCOUNT'S TWO ROUTES FOR THE DAY'S START; no energy is spent reading them.
+        expect(seen.some(function sentChat(exchange,): boolean {
+          return exchange.url.includes('neuralwatt',) && (exchange.method === 'POST');
         },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'SAYS routing would avoid NeuralWatt when its day start can be learned from neither the quota nor the '
+        + 'environment, and asks only the quota of it',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'budget-run-', },);
+        const seen: TransportExchange[] = [];
+        const {
+          logger,
+          lines,
+        } = capturingLoggerPair();
+
+        await sampleBudgets({
+          env: Object.fromEntries(Object.entries(envWith({
+            ledgerDir: scratch.path,
+            extra: {},
+          },),).filter(function keeps([name,],): boolean {
+            return name !== 'TRANSLATION_REPAIR_NEURALWATT_DAY_START';
+          },),),
+          transport: unreachableTransport({ seen, },),
+          l: logger,
+        },);
+
+        expect(lines.at(-1,),).toBe(
+          `[sampleBudgets] SAMPLED: routing would avoid neuralwatt, use synthetic, use bedrock, use hyper, use openrouter${SUMMARY_CLOSING}`,
+        );
+        expect(seen.filter(function reachedNeuralWatt(exchange,): boolean {
+          return exchange.url.includes('neuralwatt',);
+        },).map(function urlOf(exchange,): string {
+          return exchange.url;
+        },),).toEqual(['https://api.neuralwatt.com/v1/quota',],);
       },
     },),
     it({

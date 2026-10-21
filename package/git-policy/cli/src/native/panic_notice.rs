@@ -67,7 +67,9 @@ pub fn panic_notice(location: Option<&Location<'_>>) -> String {
         Some(found) => {
             return format!(
                 "cli-git: internal error at {}:{}:{}; its message is not shown because it may \
-                 contain repository content.\n",
+                 contain repository content. Hint: if you were running a Git command, run it again; your files are \
+                 not changed by this notice, so `git status` shows where things stand. If it repeats, report this \
+                 location.\n",
                 found.file(),
                 found.line(),
                 found.column()
@@ -76,7 +78,8 @@ pub fn panic_notice(location: Option<&Location<'_>>) -> String {
         None => {
             return String::from(
                 "cli-git: internal error; its message is not shown because it may contain \
-                 repository content.\n",
+                 repository content. Hint: if you were running a Git command, run it again; `git status` shows where \
+                 things stand. If it repeats, report the command you ran.\n",
             );
         }
     }

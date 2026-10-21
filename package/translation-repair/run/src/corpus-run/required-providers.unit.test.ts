@@ -27,6 +27,7 @@ import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-gloss
 import {
   fetchTransport,
   type ModelTransport,
+  type TransportExchange,
 } from '@monochromatic-dev/translation-repair-provider-stream';
 import { HYPER_CREDITS_URL, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
@@ -112,6 +113,47 @@ const DRY_SYNTHETIC_WEEKLY_ONLY_BODY = JSON.stringify({
  */
 async function unreachedTransport(): ReturnType<ModelTransport> {
   throw new Error('the gate asked a meter this case never answers',);
+}
+
+/**
+ Transport answering the two read-only routes NeuralWatt's meter reads for the day: the quota, whose
+ `current_period_start` places the day, and the by-model usage, whose period echoes the window asked and whose rows
+ show no covered energy used.
+
+ @param exchange - the request
+
+ @returns The reply
+
+ @example
+ ```ts
+ const reply = await neuralWattAccountTransport(exchange,);
+ ```
+ */
+async function neuralWattAccountTransport(exchange: TransportExchange,): ReturnType<ModelTransport> {
+  if (exchange.url.includes('/usage/by-model',)) {
+    /**
+     Query the request carried.
+     */
+    const { searchParams, } = new URL(exchange.url,);
+    return {
+      status: 200,
+      bodyText: JSON.stringify({
+        period: {
+          start: (searchParams.get('start_date',) ?? '').replace('Z', '+00:00',),
+          end: (searchParams.get('end_date',) ?? '').replace('Z', '000+00:00',),
+        },
+        models: [],
+        products: [],
+      },),
+    };
+  }
+  return {
+    status: 200,
+    bodyText: JSON.stringify({
+      snapshot_at: '2026-10-20T20:00:00Z',
+      subscription: { plan: 'max', current_period_start: '2026-10-20T19:15:08Z', kwh_used: 13.9, },
+    },),
+  };
 }
 
 /**
@@ -506,8 +548,9 @@ await describe({
           },
         },),
         it({
-          name: 'READS NEURALWATT OFF THE ENERGY LEDGER THE HANDED ENVIRONMENT NAMES, over no HTTP, wet under its '
-            + 'day\'s allowance and dry at none, and REFUSES A MISSING KEY before reading anything',
+          name: 'READS NEURALWATT OFF THE ENERGY LEDGER THE HANDED ENVIRONMENT NAMES, floored by the account\'s two '
+            + 'read-only routes, wet under its day\'s allowance and dry at none, and REFUSES A MISSING KEY before '
+            + 'reading anything',
           fn: async () => {
             /**
              Directory holding this case's empty ledger.
@@ -532,7 +575,7 @@ await describe({
                     [NEURALWATT_LEDGER_PATH_VAR]: join(dir, 'neuralwatt-energy.jsonl',),
                     [NEURALWATT_DAILY_WH_VAR]: dailyWh,
                   },
-                  transport: unreachedTransport,
+                  transport: (key === '') ? unreachedTransport : neuralWattAccountTransport,
                   signal: AbortSignal.timeout(HANG_STOP_MS,),
                 },);
               },);

@@ -19,21 +19,25 @@ use vello::kurbo::Shape;
 ///  the ink,
 /// the glyph ids,
 /// the layout origin,
-/// and the x range it is clipped to.
+/// and the x range and y band it is clipped to.
 /// Why:
 ///  A selected ligature is drawn twice,
 /// once clipped to each side of the selection edge;
-///  a test tells the two apart by their clip and ink.
+///  a test tells the two apart by their clip and ink,
+///  and tells a clip as tall as a row from one as tall as the tile by its band.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type DrawnRun = { clip?: [number, number]; ink: Rgba; ids: number[]; origin: [number, number]; left: number; right: number; baseline: number };
+/// type DrawnRun = { clip?: [number, number]; band?: [number, number]; ink: Rgba; ids: number[]; origin: [number, number]; left: number; right: number; baseline: number };
 /// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct DrawnRun {
     /// The x range this run is clipped to,
     ///  or nothing when it is drawn unclipped.
     pub clip: Option<(f32, f32)>,
+    /// The y range this run is clipped to,
+    ///  or nothing when it is drawn unclipped.
+    pub band: Option<(f32, f32)>,
     /// Straight RGBA ink.
     pub ink: [u8; 4],
     /// Glyph ids in drawing order.
@@ -50,20 +54,23 @@ pub struct DrawnRun {
 
 /// What:
 ///  One stroke as it is drawn:
-///  the stroke and the x range it is clipped to.
+///  the stroke and the x range and y band it is clipped to.
 /// Why:
 ///  Underlines under a selection are drawn twice in different inks,
 /// as glyphs are.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type DrawnStroke = { clip?: [number, number]; stroke: StrokeItem };
+/// type DrawnStroke = { clip?: [number, number]; band?: [number, number]; stroke: StrokeItem };
 /// ```
 #[derive(Clone)]
 pub struct DrawnStroke {
     /// The x range this stroke is clipped to,
     ///  or nothing when it is drawn unclipped.
     pub clip: Option<(f32, f32)>,
+    /// The y range this stroke is clipped to,
+    ///  or nothing when it is drawn unclipped.
+    pub band: Option<(f32, f32)>,
     /// The stroked path.
     pub stroke: StrokeItem,
 }
@@ -82,10 +89,22 @@ pub struct DrawnStroke {
 pub fn drawn_runs(items: &[Item]) -> Vec<DrawnRun> {
     let mut runs: Vec<DrawnRun> = Vec::new();
     let mut clip: Option<(f32, f32)> = None;
+    let mut band: Option<(f32, f32)> = None;
     for item in items {
         match item {
-            Item::Clip { left, right } => clip = Some((*left, *right)),
-            Item::Unclip => clip = None,
+            Item::Clip {
+                left,
+                right,
+                top,
+                bottom,
+            } => {
+                clip = Some((*left, *right));
+                band = Some((*top, *bottom));
+            }
+            Item::Unclip => {
+                clip = None;
+                band = None;
+            }
             Item::Glyphs(run) => {
                 let mut ids: Vec<u32> = Vec::new();
                 let mut left = f32::MAX;
@@ -99,6 +118,7 @@ pub fn drawn_runs(items: &[Item]) -> Vec<DrawnRun> {
                 }
                 runs.push(DrawnRun {
                     clip,
+                    band,
                     ink: run.ink,
                     ids,
                     origin: run.origin,
@@ -129,12 +149,25 @@ pub fn drawn_runs(items: &[Item]) -> Vec<DrawnRun> {
 pub fn drawn_strokes(items: &[Item]) -> Vec<DrawnStroke> {
     let mut strokes: Vec<DrawnStroke> = Vec::new();
     let mut clip: Option<(f32, f32)> = None;
+    let mut band: Option<(f32, f32)> = None;
     for item in items {
         match item {
-            Item::Clip { left, right } => clip = Some((*left, *right)),
-            Item::Unclip => clip = None,
+            Item::Clip {
+                left,
+                right,
+                top,
+                bottom,
+            } => {
+                clip = Some((*left, *right));
+                band = Some((*top, *bottom));
+            }
+            Item::Unclip => {
+                clip = None;
+                band = None;
+            }
             Item::Stroke(stroke) => strokes.push(DrawnStroke {
                 clip,
+                band,
                 stroke: stroke.clone(),
             }),
             Item::Glyphs(_) => {}

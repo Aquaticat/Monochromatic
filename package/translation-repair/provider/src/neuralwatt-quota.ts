@@ -1,5 +1,9 @@
 import { errorName, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import {
+  keyAllowanceOf,
+  type NeuralWattKeyAllowance,
+} from './neuralwatt-key-allowance.ts';
 
 //region NeuralWatt quota
 // THE ONE SIGNAL OF PLAN ENERGY SPENT, read twice a run.
@@ -123,6 +127,17 @@ export type NeuralWattQuota = {
    The subscription, absent for an account with none.
    */
   readonly subscription?: NeuralWattSubscription;
+
+  /**
+   The per-key cap, absent for an uncapped key or one that will not read
+   (`neuralwatt-key-allowance.ts`).
+   */
+  readonly keyAllowance?: NeuralWattKeyAllowance;
+
+  /**
+   Why `key.allowance` will not read, an authored phrase; the rest of the reply is still good.
+   */
+  readonly keyAllowanceProblem?: string;
 };
 
 /**
@@ -305,13 +320,32 @@ export function parseNeuralWattQuota({ bodyText, }: { readonly bodyText: string;
     throw new NeuralWattQuotaShapeError({ detail: 'snapshot_at is not a string', },);
   if (subscription === undefined)
     throw new NeuralWattQuotaShapeError({ detail: 'subscription is absent', },);
+
+  /**
+   The per-key cap, or why it will not read; neither breaks the rest of the reply.
+   */
+  const {
+    allowance,
+    problem,
+  } = keyAllowanceOf({ key: parsed.key, },);
+  /**
+   The key's part of the reading, each absent field left out.
+   */
+  const keyPart = {
+    ...((allowance === undefined) ? {} : { keyAllowance: allowance, }),
+    ...((problem === undefined) ? {} : { keyAllowanceProblem: problem, }),
+  };
   if (subscription === null)
-    return { snapshotAt, };
+    return {
+      snapshotAt,
+      ...keyPart,
+    };
   if (!isJsonRecord(subscription,))
     throw new NeuralWattQuotaShapeError({ detail: 'subscription is neither an object nor null', },);
   return {
     snapshotAt,
     subscription: subscriptionOf({ subscription, },),
+    ...keyPart,
   };
 }
 
