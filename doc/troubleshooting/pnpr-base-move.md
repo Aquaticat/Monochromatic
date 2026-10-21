@@ -102,17 +102,20 @@ const DEFAULT_NAMESPACE: &str = "default";
 
 `pnpr upgrade-storage` converts the earlier layout into that tree and writes the marker last,
  so an interrupted conversion resumes
- (documents move after their blobs, `pnpr/crates/pnpr/src/upgrade_storage.rs`).
+ (documents move after their blobs,
+`pnpr/crates/pnpr/src/upgrade_storage.rs`).
  It drops the earlier `.package-index` and `.pnpr-uploads` records
  (`const DROPPED: [&str; 2] = [".package-index", ".pnpr-uploads"];`,
  `pnpr/crates/pnpr/src/upgrade_storage/plan.rs:19`),
  and refuses stores it cannot convert unambiguously
- (`check_unambiguous`, `pnpr/crates/pnpr/src/upgrade_storage/plan.rs:49`).
+ (`check_unambiguous`,
+`pnpr/crates/pnpr/src/upgrade_storage/plan.rs:49`).
 
 ### npm routes always mount under the ecosystem base
 
 The earlier base mounted the npm surface at the site root whenever npm was the only ecosystem
- (`pnpr/crates/pnpr/src/server/routing.rs` at base `8f20a3f`, lines 232-236):
+ (`pnpr/crates/pnpr/src/server/routing.rs` at base `8f20a3f`,
+lines 232-236):
 
 ```rust
 // pnpr/crates/pnpr/src/server/routing.rs (base 8f20a3f)
@@ -174,9 +177,12 @@ The registry directory endpoint confirms the mount
   and `GET /npm/~monochromatic-dev/@monochromatic-dev/module-or-throw` answers `200`
   with the exact document body.
   The earlier `404`s were probes against the root surface.
-- "The `404` is a claim or gate mask (`RegistrySource::Unclaimed`, `hosted_gate::MaskNotFound`)."
-  The read path resolves: the `@monochromatic-dev/*` pattern claims the name
-  (`PackagePattern::Scope`, `pnpr/crates/registry/src/package_pattern.rs:145`),
+- "The `404` is a claim or gate mask (`RegistrySource::Unclaimed`,
+  `hosted_gate::MaskNotFound`)."
+  The read path resolves:
+  the `@monochromatic-dev/*` pattern claims the name
+  (`PackagePattern::Scope`,
+  `pnpr/crates/registry/src/package_pattern.rs:145`),
   the gate allows `$all` and reads the `default` namespace
   (`pnpr/crates/pnpr/src/server/package_reads.rs:369`),
   and the document path matches the converted tree
@@ -267,9 +273,13 @@ Works cleanly,
   plus `layout.json` (`{"layout":1}`) at the store root
   and `.pnpr-cache/layout.json`.
   `!40` and `!2f` are the escaped `@` and `/` of the package name
-  (`ESCAPE = b'!'`, `pnpr/crates/storage/src/layout.rs:29`).
+  (`ESCAPE = b'!'`,
+  `pnpr/crates/storage/src/layout.rs:29`).
 - `pnpr verify` passes the document:
-  `Packages checked: 1`, `Versions checked: 1`, `Missing blobs: 0`, `Corrupted blobs: 0`.
+  `Packages checked: 1`,
+  `Versions checked: 1`,
+  `Missing blobs: 0`,
+  `Corrupted blobs: 0`.
 - `pnpr export --out <dir>` round-trips it:
   `Export completed successfully: Packages: 1, Versions: 1`.
   The synthetic version declares no `dist.tarball`,
@@ -372,7 +382,8 @@ Tradeoffs:
 
 ### Keep root URLs with a reverse-proxy rewrite (proposed, host-side)
 
-The host's Caddy block (`doc/runbook/deploy-pnpr-registry.md`, Stage C) is a plain `reverse_proxy`.
+The host's Caddy block (`doc/runbook/deploy-pnpr-registry.md`,
+Stage C) is a plain `reverse_proxy`.
  A path rewrite or redirect there can map `/~<registry>/` onto `/npm/~<registry>/`,
  keeping old URLs and old lockfiles working.
 
@@ -392,14 +403,17 @@ Tradeoffs:
   which the conversion moved.
 - Deciding whether the migration lost documents by probing the root URLs.
   Wrong surface;
-  `pnpr verify`, `pnpr export --out`, and the `/npm/...` reads all see the documents.
+  `pnpr verify`,
+  `pnpr export --out`,
+  and the `/npm/...` reads all see the documents.
   Named here so the reading is not re-derived.
 - `pnpr export <dir>` (positional).
   The subcommand takes `--out <DIR>` (`unexpected argument '/export' found`).
   The directory must also exist and be writable by the container uid
   (`Permission denied (os error 13)` otherwise).
 - Config with the old `web:` block on the new base.
-  `pnpr config-check` rejects it (`unknown field \`web\`, expected one of ... ui ...`).
+  `pnpr config-check` rejects it (`unknown field \`web\`,
+  expected one of ... ui ...`).
 
 ## Upstream filing decision
 
@@ -409,7 +423,12 @@ Tradeoffs:
  plus searches for `authorization_endpoint` and the URL surface
  returned no matching issue or pull request
  (checked 2026-10-21;
- hits were unrelated: pnpm/pnpm#8002, #14758, #5797, #2694, #11131).
+ hits were unrelated:
+pnpm/pnpm#8002,
+#14758,
+#5797,
+#2694,
+#11131).
  The standing 2026-09-15 decision that agents do not file upstream themselves also applies.
  Both behaviors are deliberate upstream designs,
  so the walk ends at constraint 1 and nothing is filed.
@@ -451,7 +470,8 @@ Tradeoffs:
 3. **Are they supporting this use case?**
    Yes;
    both surfaces are declared
-   (`mount_bases`, `pnpr/crates/pnpr/src/server/ecosystem.rs:44`).
+   (`mount_bases`,
+   `pnpr/crates/pnpr/src/server/ecosystem.rs:44`).
 4. **Would the repo welcome our contribution?**
    Not applicable at this constraint.
 5. **Will they likely fix it?**
