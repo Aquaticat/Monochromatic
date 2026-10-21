@@ -1293,6 +1293,10 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     (c) the `minimap_build` to `minimap_worker` rename stands (already in the code, `src/native/minimap_worker.rs`).
     Still open from that note: the stale `TEXTURE_DIMENSION` doc; dense-selection cost until full-height clipping in
     `split.rs` and `encode.rs` is fixed.
+    Agent `a4d54af4e63faea6b` (started 2026-10-21 after the owner's decision (a), its own worktree off `origin/main`,
+    branch push only) builds the stacked textures with a failing test first; its brief quotes `NLG`, `NLD` and `RXI`
+    and limits it to one full `test:native`; on its report I verify the numbers, scan `ps`, `podman ps` and
+    `systemctl --user list-units`, merge in a scratch worktree, run the gates once, land, and reinstall.
     Open, in order: (1) stacked textures for a window taller than the texture limit; (2) the flake work, in `doc/handover/ide-native-flakes.md`: fixed with counts (refused-tile test 10 of 360 to
     0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160 to 0 of 160); open:
     `find_box_context_menu_runs_each_entry`,
