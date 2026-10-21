@@ -2375,6 +2375,8 @@ every session's Bash commands share one \`claude-code-bash\` cgroup,
 and \`systemd-oomd\` kills it whole when other sessions' builds fill it.
 Name the unit so it can be found,
 and cap its memory.
+and its CPU (\`--property=CPUQuota=<threads>00%\`),
+because a transient unit sits outside the shared CPU cap that \`claude-cpu-watch\` applies to Bash commands.
 Rationale:
 \`doc/troubleshooting/systemd-oomd-reaps-terminal-scope-with-the-agent-in-it.md\`.
 

@@ -53,6 +53,8 @@ every session's Bash commands share one `claude-code-bash` cgroup,
 and `systemd-oomd` kills it whole when other sessions' builds fill it.
 Name the unit so it can be found,
 and cap its memory.
+and its CPU (`--property=CPUQuota=<threads>00%`),
+because a transient unit sits outside the shared CPU cap that `claude-cpu-watch` applies to Bash commands.
 Rationale:
 `doc/troubleshooting/systemd-oomd-reaps-terminal-scope-with-the-agent-in-it.md`.
 
@@ -665,6 +667,20 @@ RXI:
  stress/bench/load):
  run in `podman run --memory=2g --cpus=2 --rm` or `mvm`,
  stating bounds.
+
+NLG:
+ Never generate synthetic host load in any session or subagent:
+ no `stress-ng`,
+ busy loops,
+ `--stress-count`,
+ or repeated full test runs;
+ cap the test's own container (`--cpus=2`) instead.
+
+NLD:
+ Every subagent brief quotes the synthetic-load ban;
+ before closing its worktree,
+ stop every process and `systemd-run` unit the subagent left (check `ps`,
+ `systemctl --user list-units`).
 
 BOX:
  Third-party benchmarks run mount-free,
