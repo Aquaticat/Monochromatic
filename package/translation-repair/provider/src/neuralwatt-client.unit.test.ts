@@ -535,12 +535,13 @@ await describe({
           return `${exchange.method} ${exchange.url.split('?',)[0] ?? ''}`;
         },),).toEqual([
           `GET ${BASE_URL}/quota`,
+          `GET ${BASE_URL}/models`,
           `GET ${BASE_URL}/usage/by-model`,
           `POST ${BASE_URL}/chat/completions`,
           `POST ${BASE_URL}/chat/completions`,
         ],);
         expect(exchanges[0]?.headers.Authorization ?? exchanges[0]?.headers.authorization,).toBe('Bearer test-key',);
-        expect(exchanges[1]?.url,).toBe(
+        expect(exchanges[2]?.url,).toBe(
           `${BASE_URL}/usage/by-model?start_date=2026-10-20T05:05:25.000Z&end_date=2026-10-20T12:00:00.000Z`,
         );
       },

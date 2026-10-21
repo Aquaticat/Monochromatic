@@ -10,6 +10,7 @@ export {
   neuralWattChatUrlFor,
   type NeuralWattModelInfo,
   neuralWattQuotaUrlFor,
+  neuralWattModelsUrlFor,
   neuralWattUsageByModelUrlFor,
 } from './neuralwatt-catalog.ts';
 export {
@@ -18,6 +19,10 @@ export {
   type NeuralWattClient,
   NeuralWattModelNotServedError,
 } from './neuralwatt-client.ts';
+export {
+  aliasNamesOf,
+  type NeuralWattAliasMap,
+} from './neuralwatt-aliases.ts';
 export {
   type NeuralWattComments,
   readNeuralWattComments,

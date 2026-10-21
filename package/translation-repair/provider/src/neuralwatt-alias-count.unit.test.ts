@@ -22,8 +22,10 @@ import {
   KIMI_LISTED_AS,
   LISTED_MODELS,
   modelEntryOf,
-  modelsExchangesOf,
   modelsReply,
+} from './neuralwatt-models-listing.test-fixture.ts';
+import {
+  modelsExchangesOf,
   quotaReply,
   scriptedClient,
   SIGNAL,
@@ -122,14 +124,13 @@ await describe({
         const lines = await consoleLinesDuring({
           run: async function readings(): Promise<void> {
             // IN ORDER, since each reading meets the next scripted answer of the routes.
-            accounts.push(Number((await client.energy({ signal: SIGNAL, },)).accountWh,),);
-            accounts.push(Number((await client.energy({ signal: SIGNAL, },)).accountWh,),);
+            accounts.push(Number((await client.energy({ signal: SIGNAL, },)).accountWh,), Number((await client.energy({ signal: SIGNAL, },)).accountWh,));
           },
           sinon: ctx.sinon,
         },);
         expect(accounts.map(function rounded(wh,): number {
-          return Math.round(wh * 1000,);
-        },),).toEqual([3500, 3500,],);
+          return Math.round(wh * 1_000,);
+        },),).toEqual([3_500, 3_500,],);
         expect(lines.filter(function names(line,): boolean {
           return line.includes('/models',) && line.includes('503',);
         },).length,).toBe(1,);

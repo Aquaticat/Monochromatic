@@ -147,6 +147,23 @@ export function neuralWattQuotaUrlFor({ baseUrl, }: { readonly baseUrl: string; 
 }
 
 /**
+ Models listing URL, which names what each tracking alias points at.
+
+ @param baseUrl - base address, overridable for tests
+
+ @returns Absolute URL to GET
+
+ @example
+ ```ts
+ neuralWattModelsUrlFor({ baseUrl: NEURALWATT_BASE_URL, },);
+ // => 'https://api.neuralwatt.com/v1/models'
+ ```
+ */
+export function neuralWattModelsUrlFor({ baseUrl, }: { readonly baseUrl: string; },): string {
+  return `${baseUrl}/models`;
+}
+
+/**
  By-model usage URL for a window, which counts every key on the account.
 
  FULL TIMESTAMPS: a date-only window with the same day at both ends came back

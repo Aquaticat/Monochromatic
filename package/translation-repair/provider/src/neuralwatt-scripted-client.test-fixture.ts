@@ -10,6 +10,10 @@ import type {
   TransportReply,
 } from '@monochromatic-dev/translation-repair-provider-stream';
 import { handClock, } from './neuralwatt-ledger.test-fixture.ts';
+import {
+  LISTED_MODELS,
+  modelsReply,
+} from './neuralwatt-models-listing.test-fixture.ts';
 import { SEAT_HYPER_OPENROUTER_UNMEASURED, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 
 //region NeuralWatt scripted client test support
@@ -356,85 +360,6 @@ export function usageRowOf({
 }
 
 /**
- The backend model DeepSeek V4.1 Flash and the tracking alias `nw-flash` both list as `metadata.huggingface_id`.
- */
-export const DEEPSEEK_LISTED_AS = 'deepseek-ai/DeepSeek-V4.1-Flash-1017';
-
-/**
- The backend model the large tracking alias lists, which the free energy does not cover.
- */
-export const KIMI_LISTED_AS = 'moonshotai/Kimi-K3';
-
-/**
- One entry of the `GET /v1/models` listing, with the fields these cases read.
-
- @param id - the name a request uses
-
- @param listedAs - its `metadata.huggingface_id`
-
- @returns The entry
-
- @example
- ```ts
- const entry = modelEntryOf({ id: 'nw-flash', listedAs: DEEPSEEK_LISTED_AS, },);
- ```
- */
-export function modelEntryOf(
-  {
-    id,
-    listedAs,
-  }: {
-    readonly id: string;
-    readonly listedAs: string
-  },
-): Readonly<Record<string, unknown>> {
-  return {
-    id,
-    object: 'model',
-    owned_by: 'neuralwatt',
-    metadata: { huggingface_id: listedAs, },
-  };
-}
-
-/**
- The listing as it stood on 2026-10-20 for the names these cases use: the two covered models, the flash and large
- aliases with their flex twins, and a model nothing here covers.
- */
-export const LISTED_MODELS: readonly Readonly<Record<string, unknown>>[] = [
-  modelEntryOf({ id: 'deepseek-v4.1-flash', listedAs: DEEPSEEK_LISTED_AS, },),
-  modelEntryOf({ id: 'glm-5.3-flash', listedAs: 'zai-org/GLM-5.3-Flash', },),
-  modelEntryOf({ id: 'nw-flash', listedAs: DEEPSEEK_LISTED_AS, },),
-  modelEntryOf({ id: 'nw-flash-flex', listedAs: DEEPSEEK_LISTED_AS, },),
-  modelEntryOf({ id: 'nw-large', listedAs: KIMI_LISTED_AS, },),
-  modelEntryOf({ id: 'nw-large-flex', listedAs: KIMI_LISTED_AS, },),
-  modelEntryOf({ id: 'kimi-k3', listedAs: KIMI_LISTED_AS, },),
-];
-
-/**
- A `GET /v1/models` reply listing the given entries.
-
- @param entries - the listing
-
- @returns The reply
-
- @example
- ```ts
- const models = [modelsReply({ entries: LISTED_MODELS, },),];
- ```
- */
-export function modelsReply(
-  { entries, }: { readonly entries: readonly Readonly<Record<string, unknown>>[]; },
-): TransportReply {
-  return {
-    status: 200,
-    bodyText: JSON.stringify({
-      object: 'list',
-      data: entries,
-    },),
-  };
-}
-
-/**
  Builds a client over a scripted transport and a ledger file in a given
  directory.
 
@@ -545,7 +470,9 @@ export function scriptedClient(
             ? (scriptedUsage as (exchange: TransportExchange,) => TransportReply)(exchange,)
             : scriptedUsage as TransportReply,);
         }
-        if ((exchange.method === 'GET') && exchange.url.endsWith('/models',)) {
+        if ((exchange.method === 'GET')
+          && exchange.url
+          .endsWith('/models',)) {
           counts.models += 1;
 
           /**
@@ -643,7 +570,9 @@ export function modelsExchangesOf(
   { exchanges, }: { readonly exchanges: readonly TransportExchange[]; },
 ): readonly TransportExchange[] {
   return exchanges.filter(function isModelsGet(exchange,): boolean {
-    return (exchange.method === 'GET') && exchange.url.endsWith('/models',);
+    return (exchange.method === 'GET')
+      && exchange.url
+      .endsWith('/models',);
   },);
 }
 

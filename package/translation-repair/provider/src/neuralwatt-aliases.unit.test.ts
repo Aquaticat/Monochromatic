@@ -26,8 +26,8 @@ import {
   LISTED_MODELS,
   modelEntryOf,
   modelsReply,
-  usageRowOf,
-} from './neuralwatt-scripted-client.test-fixture.ts';
+} from './neuralwatt-models-listing.test-fixture.ts';
+import { usageRowOf, } from './neuralwatt-scripted-client.test-fixture.ts';
 
 /**
  The window the cases ask for.

@@ -87,6 +87,7 @@ await describe({
               return `${exchange.method} ${exchange.url.split('?',)[0] ?? ''}`;
             },),).toEqual([
               `GET ${BASE_URL}/quota`,
+              `GET ${BASE_URL}/models`,
               `GET ${BASE_URL}/usage/by-model`,
               `POST ${BASE_URL}/chat/completions`,
             ],);

@@ -107,6 +107,28 @@ function isUsageRead(exchange: TransportExchange,): boolean {
 }
 
 /**
+ The models listing the account answers: the two covered models and no alias, which is all these cases need.
+ */
+const MODELS_BODY = JSON.stringify({
+  object: 'list',
+  data: [
+    { id: 'deepseek-v4.1-flash', metadata: { huggingface_id: 'deepseek-ai/DeepSeek-V4.1-Flash-1017', }, },
+    { id: 'glm-5.3-flash', metadata: { huggingface_id: 'zai-org/GLM-5.3-Flash', }, },
+  ],
+},);
+
+/**
+ Whether an exchange is the models listing.
+
+ @param exchange - the exchange
+
+ @returns Whether it is
+ */
+function isModelsRead(exchange: TransportExchange,): boolean {
+  return exchange.url.endsWith('/models',);
+}
+
+/**
  Transport answering NeuralWatt's routes, recording what it was asked.
 
  @param exchanges - where each exchange is recorded
@@ -123,6 +145,8 @@ function scriptedNeuralWatt(
 ) {
   return async function answer(exchange: TransportExchange,) {
     exchanges.push(exchange,);
+    if (isModelsRead(exchange,))
+      return { status: 200, bodyText: MODELS_BODY, };
     if (isUsageRead(exchange,))
       return { status: 200, bodyText: usageBodyFor({ exchange, },), };
     return (exchange.method === 'GET')
@@ -160,6 +184,7 @@ await describe({
           return `${exchange.method} ${exchange.url.split('?',)[0] ?? ''}`;
         },),).toEqual([
           'GET https://api.neuralwatt.com/v1/quota',
+          'GET https://api.neuralwatt.com/v1/models',
           'GET https://api.neuralwatt.com/v1/usage/by-model',
           'POST https://api.neuralwatt.com/v1/chat/completions',
         ],);
@@ -281,6 +306,8 @@ await describe({
           transport: async function answer(exchange: TransportExchange,) {
             if (exchange.method !== 'GET')
               return { status: 200, bodyText: NEURALWATT_STREAM, };
+            if (isModelsRead(exchange,))
+              return { status: 200, bodyText: MODELS_BODY, };
             if (isUsageRead(exchange,))
               return { status: 200, bodyText: usageBodyFor({ exchange, },), };
             const bodyText = quotas[Math.min(reads.count, quotas.length - 1,)] ?? QUOTA_BODY;

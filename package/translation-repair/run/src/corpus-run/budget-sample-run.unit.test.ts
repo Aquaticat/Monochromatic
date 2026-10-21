@@ -157,6 +157,7 @@ await describe({
             right,
           },);
         },),).toEqual([
+          'GET https://api.neuralwatt.com/v1/models Bearer whisker-key-0005',
           'GET https://api.neuralwatt.com/v1/quota Bearer whisker-key-0005',
           'GET https://api.neuralwatt.com/v1/usage/by-model Bearer whisker-key-0005',
           'GET https://api.synthetic.new/v2/quotas Bearer whisker-key-0001',

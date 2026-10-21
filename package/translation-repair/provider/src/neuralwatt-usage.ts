@@ -1,5 +1,9 @@
 import { errorName, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
+import {
+  type NeuralWattAliasMap,
+  servedByCoveredAlias,
+} from './neuralwatt-aliases.ts';
 import { NEURALWATT_MODELS, } from './neuralwatt-catalog.ts';
 
 //region NeuralWatt account usage
@@ -16,6 +20,11 @@ import { NEURALWATT_MODELS, } from './neuralwatt-catalog.ts';
 // tiers" and "Speed lanes are billed normally" (`https://docs.neuralwatt.com/billing/daily-free-energy`). A model
 // the free energy does not cover (the account's `mimo-v2.6-pro` had used 3.83 kWh that day) must not count
 // against it.
+//
+// A CALL MADE UNDER A TRACKING ALIAS counts too (`nw-flash`, whose row carries the alias as its `requested_model`):
+// the names that point at a covered model come from the models listing, or from the served model of the row where
+// the listing cannot be read (`neuralwatt-aliases.ts`). The owner uses DeepSeek V4.1 Flash on the same account, and a
+// count blind to the alias undercounts.
 //
 // `energy_kwh` IS CONSUMED ENERGY. A flex request is charged at 0.65 of what it consumed
 // (`https://docs.neuralwatt.com/api/usage`), so counting consumed energy for a flex row over-counts what the free
@@ -128,11 +137,56 @@ function echoedAt({
 }
 
 /**
+ Whether a usage row is for a call that counts against the free energy: a covered model's name or its flex twin, or
+ an alias of one.
+
+ @param row - a `products[]` row
+
+ @param covered - the covered models' names with their flex twins
+
+ @param aliases - the tracking aliases, or that they could not be told
+
+ @returns Whether the row counts
+
+ @example
+ ```ts
+ rowIsCovered({ row, covered, aliases, },);
+ ```
+ */
+function rowIsCovered(
+  {
+    row,
+    covered,
+    aliases,
+  }: {
+    readonly row: Readonly<Record<string, unknown>>;
+    readonly covered: ReadonlySet<string>;
+    readonly aliases: NeuralWattAliasMap;
+  },
+): boolean {
+  /**
+   The name the call used.
+   */
+  const requestedModel = String(row.requested_model,);
+  if (covered.has(requestedModel,))
+    return true;
+  if (aliases.known)
+    return aliases.names
+      .has(requestedModel,);
+  return servedByCoveredAlias({
+    requestedModel,
+    servedModelId: String(row.served_model_id,),
+  },);
+}
+
+/**
  Reads the covered energy out of a by-model reply, after checking that it answers for the window asked.
 
  @param bodyText - body of a 200 reply
 
  @param asked - the window the request named
+
+ @param aliases - the tracking aliases that point at a covered model, or that the listing could not say
 
  @returns Watt-hours the covered models' rows add up to
 
@@ -141,19 +195,21 @@ function echoedAt({
 
  @example
  ```ts
- const accountWh = coveredWhOf({ bodyText: reply.bodyText, asked: { start, end, }, },);
+ const accountWh = coveredWhOf({ bodyText: reply.bodyText, asked: { start, end, }, aliases, },);
  ```
  */
 export function coveredWhOf(
   {
     bodyText,
     asked,
+    aliases,
   }: {
     readonly bodyText: string;
     readonly asked: {
       readonly start: Date;
       readonly end: Date
     };
+    readonly aliases: NeuralWattAliasMap;
   },
 ): number {
   /**
@@ -224,7 +280,11 @@ export function coveredWhOf(
   ): number {
     if (!isJsonRecord(row,))
       throw new NeuralWattUsageShapeError({ detail: 'a products row is not an object', },);
-    if (!covered.has(String(row.requested_model,),))
+    if (!rowIsCovered({
+      row,
+      covered,
+      aliases,
+    },))
       return running;
 
     /**

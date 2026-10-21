@@ -7,7 +7,11 @@ import {
   exchangeFailureLogText,
   type ModelTransport,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
-import { readAccountCoveredWh, } from './neuralwatt-account-read.ts';
+import {
+  readAccountCoveredWh,
+  readAliasMap,
+} from './neuralwatt-account-read.ts';
+import type { NeuralWattAliasMap, } from './neuralwatt-aliases.ts';
 import {
   decideNeuralWattDayAnchor,
   type NeuralWattDayAnchor,
@@ -132,6 +136,7 @@ export function createNeuralWattDaySession(
     readOnce: boolean;
     refreshing?: Promise<void>;
     accountOutage: boolean;
+    aliasOutage: boolean;
     allowanceOutage: boolean;
     allowanceMalformed: boolean;
     blockedWarned: boolean;
@@ -140,10 +145,52 @@ export function createNeuralWattDaySession(
   } = {
     readOnce: false,
     accountOutage: false,
+    aliasOutage: false,
     allowanceOutage: false,
     allowanceMalformed: false,
     blockedWarned: false,
   };
+
+  /**
+   Reads which names are tracking aliases of a covered model, falling back to the usage rows' own served model.
+
+   Never throws for a failed read: the count then goes by the served model, with one warning per outage.
+
+   @param signal - abort signal for the read
+
+   @returns The aliases, or that they could not be told
+   */
+  async function readAliases({ signal, }: { readonly signal: AbortSignal; },): Promise<NeuralWattAliasMap> {
+    /**
+     Logger pre-tagged with this function's name.
+     */
+    const rl = tagged({
+      tag: readAliases.name,
+      l,
+    },);
+
+    /**
+     What the models route gave, or why it gave none.
+     */
+    const map = await readAliasMap({
+      headers,
+      baseUrl,
+      transport,
+      retryPolicy,
+      signal,
+    },);
+    if (map.known) {
+      state.aliasOutage = false;
+      return map;
+    }
+    if (!state.aliasOutage)
+      rl.warn(
+        `NeuralWatt GET /models could not be used (${map.why}); the tracking aliases are not told apart, so every nw- `
+          + 'row that a covered model served is counted in the account figure instead',
+      );
+    state.aliasOutage = true;
+    return map;
+  }
 
   /**
    Reads the account's covered energy since a day's start, keeping the figure for that day.
@@ -172,6 +219,11 @@ export function createNeuralWattDaySession(
     },);
     try {
       /**
+       The tracking aliases whose calls count too.
+       */
+      const aliases = await readAliases({ signal, },);
+
+      /**
        Covered energy of the whole account from the day's start to now.
        */
       const wh = await readAccountCoveredWh({
@@ -183,6 +235,7 @@ export function createNeuralWattDaySession(
           start,
           end: now(),
         },
+        aliases,
         signal,
       },);
       state.account = {
