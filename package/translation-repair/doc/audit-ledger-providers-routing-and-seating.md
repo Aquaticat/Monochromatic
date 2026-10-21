@@ -804,3 +804,41 @@ a failure is scoped to the narrowest thing it names
 a model's refusal to that model on that provider,
 a request's size to that request),
 and a test pins the scope with a second provider that serves the same seat.
+
+### P19: the NeuralWatt hold took a published mean for this pipeline's use and doubled it on an argument nothing measured
+
+Status:
+found 2026-10-21 reading the settled calls of `zheermao19`;
+fixed in w250
+(red `d07508fd21`,
+fix `8f238ff4f4`,
+docs `35e5434b80`),
+and this entry gains its landing when it lands.
+The meter held each call at the energy matrix's mean for its prompt-size bucket times a margin of 2.
+The run's 197 settled calls,
+nearly all in the 4,096 to 16,384 token bucket,
+measured DeepSeek V4.1 Flash at a mean of 0.0758 Wh against the matrix's 0.0696
+and GLM-5.3-Flash at 0.3725 Wh against 0.1015:
+GLM was held at about half of its use,
+and DeepSeek at 1.8 times its.
+The margin's argument was prefill
+(a mean over a cached share h understates a fresh prompt by at most 1/(1-h)),
+and the energy was in decoding:
+a call's energy tracked its completion tokens with a correlation of 0.87 for both models,
+which no prompt-size bucket can see.
+
+The figures were a published mean over other people's traffic
+and a margin derived from a model of the work that the first measurement did not support.
+The design said to recalibrate from the first run,
+and that was right;
+what it lacked was a way to see how far off it was before then,
+and the margin was the guess standing in for it.
+The rule for next time:
+a published per-request figure that sizes a hold is a placeholder until the pipeline's own settled calls replace it,
+and the replacement reads the settled lines for what drives the spread
+(here completion tokens,
+not prompt size)
+before choosing any multiplier.
+Record:
+`doc/decision/translation-repair-neuralwatt-provider.md`,
+section "The margin".
