@@ -51,6 +51,14 @@ function twoPlaces({ value, }: { readonly value: number; },): string {
 }
 
 /**
+ An entry with the number of matched pictures that came from it.
+ */
+type EntryCount = {
+  readonly entry: string;
+  readonly count: number;
+};
+
+/**
  Entry a picture belongs to: the first directory of its path under the pictures
  directory, which is how the corpus lays out a person's pictures.
 
@@ -66,10 +74,10 @@ function twoPlaces({ value, }: { readonly value: number; },): string {
  */
 function entryOf({ assetName, }: { readonly assetName: string; },): string {
   /**
-   Where the first directory ends.
+   The path's directories and its file name.
    */
-  const slash = assetName.indexOf('/',);
-  return (slash === -1) ? NO_ENTRY_DIRECTORY : assetName.slice(0, slash,);
+  const [first = assetName, ...rest] = assetName.split('/',);
+  return (rest.length === 0) ? NO_ENTRY_DIRECTORY : first;
 }
 
 /**
@@ -106,15 +114,28 @@ function entriesLine({ matchedAssets, }: { readonly matchedAssets: readonly stri
   /**
    Each entry with its count, most pictures first.
    */
-  const ordered = [...counts.entries(),].toSorted(function mostFirst(
-    [leftEntry, leftCount,],
-    [rightEntry, rightCount,],
-  ): number {
-    return (rightCount - leftCount) || compareCodePoints({
-      left: leftEntry,
-      right: rightEntry,
+  const ordered: readonly EntryCount[] = [...counts.keys(),]
+    .map(function counted(entry,): EntryCount {
+      return {
+        entry,
+        count: counts.get(entry,) ?? 0,
+      };
+    },)
+    .toSorted(function mostFirst(
+      left,
+      right,
+    ): number {
+      /**
+       How many more pictures the right entry has.
+       */
+      const difference = right.count - left.count;
+      if (difference !== 0)
+        return difference;
+      return compareCodePoints({
+        left: left.entry,
+        right: right.entry,
+      },);
     },);
-  },);
   return `ENTRIES: ${String(matchedAssets.length,)} matched ${
     wordForCount({
       count: matchedAssets.length,
@@ -129,8 +150,8 @@ function entriesLine({ matchedAssets, }: { readonly matchedAssets: readonly stri
     },)
   }: ${
     ordered
-      .map(function named([entry, count,],): string {
-        return `${entry} ${String(count,)}`;
+      .map(function named(one,): string {
+        return `${one.entry} ${String(one.count,)}`;
       },)
       .join(', ',)
   }.`;
@@ -240,11 +261,15 @@ function adviceForFewReadings(
     }, fewer than the ${String(MINIMUM_PRODUCED_READINGS,)} a verdict needs, and pictures were left untried:`
       + ` ask again with a larger --sample (${String(MINIMUM_PRODUCED_READINGS,)} or more).`;
   }
-  return `NEXT: keep the hold '${HOLD}'; ${String(matched,)} pictures matched but the candidate gave few readings:`
-    + ' read the per-picture reasons printed above'
-    + (everyPictureTried
-      ? ', then ask again.'
-      : ', then ask again, with a larger --sample if the reasons are about the pictures and not the candidate.');
+
+  /**
+   What to do about the pictures: a larger sample only helps where pictures were left.
+   */
+  const closing = everyPictureTried
+    ? 'then ask again.'
+    : 'then ask again, with a larger --sample if the reasons are about the pictures and not the candidate.';
+  return `NEXT: keep the hold '${HOLD}'; ${String(matched,)} pictures matched but the candidate gave few readings: `
+    + `read the per-picture reasons printed above, ${closing}`;
 }
 
 /**
