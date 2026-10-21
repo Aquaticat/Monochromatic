@@ -15,13 +15,13 @@ use super::{
     render::{Paint, job, stamp_for},
     tall_window_tests::{hold_the_pass, mixed, resize_without_frame, settled_tile},
     theme_tests::switch,
-    tile::TileBounds,
+    tile::{TileBounds, apply, requested},
     tile_build::{FAIL_NEXT_BUILD, build_tile},
     tile_reads::shown,
     wrap_tests::{long_text, open, settled},
 };
 /// Bounded waiting that advances native timers until a state the test checks holds.
-use crate::native::waiting_tests::Waiting;
+use crate::native::waiting_tests::{Facts, Waiting};
 /// Toolkit events.
 use slint::{
     ComponentHandle, platform::update_timers_and_animations,
@@ -71,12 +71,62 @@ fn a_refused_tile_keeps_the_text_on_screen_and_names_the_failure() {
     window.hide().expect("close wrap window");
 }
 
-/// A tile the painter refuses on the worker frees its job:
-/// the poll stops,
-/// the displayed text stays,
-/// and the next placement of the view gets its tile.
+/// The reply of a failed worker build frees the job the window waits for and names the failure:
+/// the window stops waiting for a tile that will not come,
+/// and the same placement can be asked for again.
+/// The reply is applied directly,
+/// because a later render can ask for the same tile again in the very timer pass that took the reply,
+/// and a test that polls would sometimes see that second request instead of the freed job.
 #[test]
-fn a_failed_worker_tile_frees_its_job_and_the_next_placement_gets_its_tile() {
+fn a_failed_worker_reply_frees_its_job_and_names_the_failure() {
+    let (_project, opened) = open(&long_text(800));
+    let window = &opened.window;
+    settled(&opened);
+    // The job is held as the window holds it while the worker builds.
+    {
+        let mut current = opened.source.borrow_mut();
+        let wanted = requested(&current);
+        current.tile_job = Some(wanted);
+    }
+    apply(
+        window,
+        &opened.source,
+        Err(anyhow::anyhow!("the painter refused the tile")),
+    );
+    assert!(
+        opened.source.borrow().tile_job.is_none(),
+        "the failed job is still held {}",
+        Facts {
+            window,
+            source: &opened.source
+        }
+    );
+    let failures = opened.source.borrow().worker_failures.clone();
+    assert!(
+        failures.len() == 1 && failures[0].contains("Cannot render source"),
+        "the failed worker tile was not named once: {failures:?}"
+    );
+    assert!(
+        window
+            .get_error_message()
+            .to_string()
+            .contains("the painter refused the tile"),
+        "the window does not show the failure: {:?}",
+        window.get_error_message()
+    );
+    window.hide().expect("close wrap window");
+}
+
+/// A tile the painter refuses on the worker leaves the displayed text on screen,
+/// and the view still gets its tile afterwards:
+/// the failure is reported once,
+/// the next request of the same tile is built,
+/// the poll stops once nothing is in flight,
+/// and the text is not blank.
+/// The test waits for these end states,
+/// because a render that follows the failure may ask for the tile again within the same timer pass.
+#[test]
+fn a_view_whose_worker_tile_failed_still_gets_its_tile() {
     let (_project, opened) = open(&long_text(800));
     let window = &opened.window;
     settled(&opened);
@@ -88,7 +138,13 @@ fn a_failed_worker_tile_frees_its_job_and_the_next_placement_gets_its_tile() {
         // pass, so the test waits for the failure the state recorded when it named it.
         let mut waiting = Waiting::slow();
         while !(!opened.source.borrow().worker_failures.is_empty()) {
-            waiting.step("the failed worker tile was not reported");
+            waiting.step(format_args!(
+                "the failed worker tile was not reported {}",
+                Facts {
+                    window,
+                    source: &opened.source
+                }
+            ));
         }
     }
     assert!(
@@ -96,18 +152,7 @@ fn a_failed_worker_tile_frees_its_job_and_the_next_placement_gets_its_tile() {
         "the failed worker tile was not named: {:?}",
         opened.source.borrow().worker_failures
     );
-    assert!(
-        opened.source.borrow().tile_job.is_none(),
-        "the failed job is still held"
-    );
-    {
-        let mut waiting = Waiting::slow();
-        while !(!opened.source.borrow().tile_poll.running()) {
-            update_timers_and_animations();
-            waiting.step("the poll of a failed job did not stop");
-        }
-    }
-    // One more step of the view asks for the tile again, and it arrives.
+    // One more step of the view asks for the tile again if nothing has yet, and the tile arrives.
     scroll_to(window, 12_030.0);
     {
         let mut waiting = Waiting::slow();
@@ -122,9 +167,33 @@ fn a_failed_worker_tile_frees_its_job_and_the_next_placement_gets_its_tile() {
                     break;
                 }
             }
-            waiting.step("the tile after a failed one did not arrive");
+            waiting.step(format_args!(
+                "the tile after a failed one did not arrive {}",
+                Facts {
+                    window,
+                    source: &opened.source
+                }
+            ));
         }
     }
+    {
+        let mut waiting = Waiting::slow();
+        while !(!opened.source.borrow().tile_poll.running()) {
+            update_timers_and_animations();
+            waiting.step(format_args!(
+                "the poll did not stop once the tile had arrived {}",
+                Facts {
+                    window,
+                    source: &opened.source
+                }
+            ));
+        }
+    }
+    assert_eq!(
+        opened.source.borrow().worker_failures.len(),
+        1,
+        "the one refused build was reported more than once"
+    );
     assert!(
         has_ink(window, &opened.source),
         "the text is blank after the retry"

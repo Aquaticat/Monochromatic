@@ -154,6 +154,23 @@ pub(super) fn reader(root: &Path, name: &str) -> Reader {
     window.window().take_snapshot().expect("initial layout");
     // The layout gave the view its width; a tile for it may still be on the worker.
     super::overscan_tile_tests::settle_tile(&source);
+    // What: The highlighting reply of the opened text is waited for, then the tile it asks for is settled.
+    // Why: The reply arrives on the reload timer's schedule, after the first frame (still missing when the
+    //      measurement pass had finished in 28 of 160 runs of a probe under load on 2026-10-20). It installs new
+    //      styles and renders again, which asks the worker for another tile and another pass, so a test that
+    //      counted renders, compared frames, or waited for a failed tile met it in the middle of its steps.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // await until(() => source.syntaxRevision === source.document.revision); await settleTile(source);
+    // ```
+    {
+        let mut waiting = Waiting::slow();
+        while !(source.borrow().syntax_revision == Some(source.borrow().document.revision())) {
+            waiting.step("the highlighting reply of the opened text did not arrive");
+        }
+    }
+    super::overscan_tile_tests::settle_tile(&source);
     window.invoke_focus_source();
     return Reader {
         window,
@@ -277,6 +294,31 @@ pub(super) fn selection(reader: &Reader) -> (usize, usize) {
     return (
         position.anchor.min(position.head),
         position.anchor.max(position.head),
+    );
+}
+
+/// A reader is handed over with the highlighting of its text applied and nothing left for the workers to answer
+///  about the first frame:
+///  the highlighting reply installs new styles and renders again,
+///  so a test that met it in the middle of its steps counted a render it did not cause,
+///  compared frames of two renders,
+///  or found a failed tile asked for again.
+/// Measured on 2026-10-20 under load,
+///  the reply was still missing after the first layout and the measurement pass in 28 of 160 runs.
+#[test]
+fn a_reader_is_opened_with_its_highlighting_applied() {
+    let fixture = tempfile::tempdir().expect("disposable find project");
+    fs::write(fixture.path().join("plain.txt"), "plain text\n").expect("plain fixture");
+    let opened = reader(fixture.path(), "plain.txt");
+    let current = opened.source.borrow();
+    assert_eq!(
+        current.syntax_revision,
+        Some(current.document.revision()),
+        "the highlighting reply of the opened text is still missing"
+    );
+    assert!(
+        current.tile_job.is_none() && current.scroll_wanted.is_none(),
+        "a tile is still on its way to the opened view"
     );
 }
 

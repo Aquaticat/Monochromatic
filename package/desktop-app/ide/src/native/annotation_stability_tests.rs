@@ -34,7 +34,7 @@ use super::rows::hold_clock;
 /// Two renders of one scene differ by one level in a few texels on the GPU.
 use super::tile_reads::{same_pixels, same_texel};
 /// Bounded waiting that advances native timers until a state the test checks holds.
-use crate::native::waiting_tests::Waiting;
+use crate::native::waiting_tests::{Facts, Waiting};
 /// Snapshot records exactly as the Language module builds them.
 use ide_app::language::{
     diagnostics::{Diagnostic, DiagnosticsSnapshot, Severity, SourceGroup},
@@ -211,18 +211,38 @@ fn unshifted_rows(
     height: f32,
 ) -> String {
     let mut rows = Vec::new();
+    let mut largest = 0;
+    let mut columns = (usize::MAX, 0);
     let mut y = TEXT_TOP + 1.0;
     while y < height - 2.0 {
-        if band(current, y) != band(previous, y + 1.0) {
+        let now = band(current, y);
+        let then = band(previous, y + 1.0);
+        if now != then {
             rows.push(y as usize);
+            for (column, (one, other)) in now.iter().zip(then.iter()).enumerate() {
+                if one != other {
+                    columns = (columns.0.min(column), columns.1.max(column));
+                }
+                largest = largest
+                    .max(one.r.abs_diff(other.r))
+                    .max(one.g.abs_diff(other.g))
+                    .max(one.b.abs_diff(other.b))
+                    .max(one.a.abs_diff(other.a));
+            }
         }
         y += 1.0;
     }
+    let contiguous = match (rows.first(), rows.last()) {
+        (Some(first), Some(last)) => last - first + 1 == rows.len(),
+        _ => true,
+    };
     return format!(
-        "{} rows differ exactly, the first {:?} and the last {:?}",
+        "{} rows differ exactly, the first {:?} and the last {:?}, contiguous {contiguous}, largest channel difference {largest}, columns {} to {} of the band, the differing rows {rows:?}",
         rows.len(),
         rows.first(),
-        rows.last()
+        rows.last(),
+        columns.0,
+        columns.1
     );
 }
 
@@ -306,8 +326,8 @@ fn letter_room(line: usize) -> usize {
 /// function moved(before: [Frame, RowMap], after: [Frame, RowMap], line: number, rows: number): number;
 /// ```
 fn moved(
-    before: (&SharedPixelBuffer<Rgba8Pixel>, &RowMap),
-    after: (&SharedPixelBuffer<Rgba8Pixel>, &RowMap),
+    before: (&SharedPixelBuffer<Rgba8Pixel>, &RowMap, &str),
+    after: (&SharedPixelBuffer<Rgba8Pixel>, &RowMap, &str),
     line: usize,
     rows: usize,
 ) -> f32 {
@@ -316,15 +336,103 @@ fn moved(
     // Everything left of the line's number is where its letter may stand.
     let skip = letter_room(line);
     for row in 0..rows {
+        let old = &band(before.0, from + row as f32)[skip..];
+        let new = &band(after.0, to + row as f32)[skip..];
+        let kept = if same_pixels(old, new) {
+            String::new()
+        } else {
+            keep_frames("moved", before.0, after.0)
+        };
         assert!(
-            same_pixels(
-                &band(before.0, from + row as f32)[skip..],
-                &band(after.0, to + row as f32)[skip..]
-            ),
-            "line {line} changed its pixels in row {row} of its code row"
+            same_pixels(old, new),
+            "line {line} changed its pixels in row {row} of its code row (window rows {} and {}); {}; {kept}; \
+             facts before {}; facts after {}",
+            from + row as f32,
+            to + row as f32,
+            level_difference(old, new),
+            before.2,
+            after.2
         );
     }
     return to - from;
+}
+
+/// What:
+///  Write two frames that a comparison found different to `target/flake-frames/`, as PPM images, and say where.
+/// Why:
+///  A difference that shows only now and then cannot be looked at again; the files are the evidence of the next one.
+fn keep_frames(
+    name: &str,
+    first: &SharedPixelBuffer<Rgba8Pixel>,
+    second: &SharedPixelBuffer<Rgba8Pixel>,
+) -> String {
+    let directory = std::path::Path::new("target/flake-frames");
+    if fs::create_dir_all(directory).is_err() {
+        return "frames not kept".to_string();
+    }
+    let stamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |elapsed| elapsed.as_millis());
+    for (label, frame) in [("first", first), ("second", second)] {
+        let mut bytes = format!("P6\n{} {}\n255\n", frame.width(), frame.height()).into_bytes();
+        for pixel in frame.as_slice() {
+            bytes.extend_from_slice(&[pixel.r, pixel.g, pixel.b]);
+        }
+        let _ = fs::write(directory.join(format!("{name}-{stamp}-{label}.ppm")), bytes);
+    }
+    return format!("frames kept as target/flake-frames/{name}-{stamp}-first and -second.ppm");
+}
+
+/// What:
+///  A frame, the vertical mapping the reader paints with now, and the tile facts of that moment.
+/// Why:
+///  A failed comparison names the state each of its two frames was taken in.
+fn shot(reader: &Reader) -> (SharedPixelBuffer<Rgba8Pixel>, RowMap, String) {
+    return (
+        frame(&reader.window),
+        map(reader),
+        Facts {
+            window: &reader.window,
+            source: &reader.source,
+        }
+        .to_string(),
+    );
+}
+
+/// What:
+///  How two runs of texels differ:
+///  how many texels,
+///  the largest difference of any channel,
+///  and the first differing texel with both colors.
+/// Why:
+///  The size of a difference tells render noise (one level) from a changed picture (many levels).
+fn level_difference(left: &[Rgba8Pixel], right: &[Rgba8Pixel]) -> String {
+    let mut count = 0;
+    let mut largest = 0;
+    let mut first = None;
+    let mut columns = (usize::MAX, 0);
+    for (index, (one, other)) in left.iter().zip(right.iter()).enumerate() {
+        let worst = one
+            .r
+            .abs_diff(other.r)
+            .max(one.g.abs_diff(other.g))
+            .max(one.b.abs_diff(other.b))
+            .max(one.a.abs_diff(other.a));
+        if worst > 0 {
+            count += 1;
+            largest = largest.max(worst);
+            columns = (columns.0.min(index), columns.1.max(index));
+            if first.is_none() {
+                first = Some((index, *one, *other));
+            }
+        }
+    }
+    return format!(
+        "{count} of {} texels differ, by {largest} levels at most, in columns {} to {} of the compared part, the first {first:?}",
+        left.len(),
+        columns.0,
+        columns.1
+    );
 }
 
 /// What:
@@ -377,18 +485,18 @@ fn rows_arriving_in_view_move_only_lines_beneath_them() {
     let (_directory, reader) = fixture_reader(&numbered(14));
     let window = &reader.window;
     update_timers_and_animations();
-    let plain = (frame(window), map(&reader));
+    let plain = shot(&reader);
     let caret = (window.get_caret_x(), window.get_caret_y());
     // Hints arrive first: one above line 3 and one above line 6.
     let hints = vec![hint(at(3, 8), ": u32"), hint(at(6, 4), "n:")];
     inject(&reader, hints.clone(), Vec::new());
-    let hinted = (frame(window), map(&reader));
+    let hinted = shot(&reader);
     let row = BLOCK_GAP + ROW_HEIGHT;
     let mut movement = Vec::new();
     for line in 0..14 {
         movement.push(moved(
-            (&plain.0, &plain.1),
-            (&hinted.0, &hinted.1),
+            (&plain.0, &plain.1, &plain.2),
+            (&hinted.0, &hinted.1, &hinted.2),
             line,
             24,
         ));
@@ -409,7 +517,10 @@ fn rows_arriving_in_view_move_only_lines_beneath_them() {
     while y < TEXT_TOP + first_block {
         assert!(
             same_pixels(band(&plain.0, y), band(&hinted.0, y)),
-            "a pixel above the first changed line moved in window row {y}"
+            "a pixel above the first changed line moved in window row {y}; {}; facts before {}; facts after {}",
+            level_difference(band(&plain.0, y), band(&hinted.0, y)),
+            plain.2,
+            hinted.2
         );
         y += 1.0;
     }
@@ -422,7 +533,7 @@ fn rows_arriving_in_view_move_only_lines_beneath_them() {
         problem(at(9, 0), at(9, 4), Severity::Warning, "W1", "unused line"),
     ];
     inject(&reader, hints, problems);
-    let diagnosed = (frame(window), map(&reader));
+    let diagnosed = shot(&reader);
     let mut later = Vec::new();
     for line in 0..14 {
         // Underlines appear on lines 6 and 9; the part of their rows above the underline band is compared.
@@ -431,8 +542,8 @@ fn rows_arriving_in_view_move_only_lines_beneath_them() {
             rows = ABOVE_UNDERLINE;
         }
         later.push(moved(
-            (&hinted.0, &hinted.1),
-            (&diagnosed.0, &diagnosed.1),
+            (&hinted.0, &hinted.1, &hinted.2),
+            (&diagnosed.0, &diagnosed.1, &diagnosed.2),
             line,
             rows,
         ));
@@ -452,7 +563,10 @@ fn rows_arriving_in_view_move_only_lines_beneath_them() {
     while above < TEXT_TOP + first_changed {
         assert!(
             same_pixels(band(&hinted.0, above), band(&diagnosed.0, above)),
-            "a pixel above the first changed line moved in window row {above}"
+            "a pixel above the first changed line moved in window row {above}; {}; facts before {}; facts after {}",
+            level_difference(band(&hinted.0, above), band(&diagnosed.0, above)),
+            hinted.2,
+            diagnosed.2
         );
         above += 1.0;
     }
@@ -579,6 +693,11 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
     // The scroll re-centers the tile on the worker; the frames are compared only once it is swapped in.
     super::overscan_tile_tests::settle_tile(&reader.source);
     let before = frame(window);
+    let before_facts = Facts {
+        window,
+        source: &reader.source,
+    }
+    .to_string();
     // What: From here on the scrolling rule reads a clock this test holds and moves by exactly the time it means.
     // Why: Sleeping through the 200 ms quiet time and racing it in the other direction both depend on the host's
     //      load; a render that came 200 ms after a scroll step on a loaded host once showed the rows early.
@@ -598,7 +717,16 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
         "rows above the view moved the offset while the reader was scrolling"
     );
     assert_eq!(reader.source.borrow().row_map.block_height(10), 0.0);
-    assert_eq!(difference(&before, &frame(window)), None);
+    let seen = frame(window);
+    assert_eq!(
+        difference(&before, &seen),
+        None,
+        "a frame of the same state differs; facts at the first frame {before_facts}; facts now {}",
+        Facts {
+            window,
+            source: &reader.source
+        }
+    );
     // A hint for a visible line arrives together with the one above the view while the reader still scrolls.
     scroll(window, offset);
     inject(
@@ -628,7 +756,12 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
     while y < TEXT_TOP + shown.block_top(104) - (offset + row) {
         assert!(
             same_pixels(band(&before, y), band(&after, y)),
-            "a visible pixel above the new row moved in window row {y}"
+            "a visible pixel above the new row moved in window row {y}; {}; facts at the first frame {before_facts}; facts now {}",
+            level_difference(band(&before, y), band(&after, y)),
+            Facts {
+                window,
+                source: &reader.source
+            }
         );
         y += 1.0;
     }
@@ -673,7 +806,6 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
 #[test]
 fn a_reload_holds_row_space_until_annotations_return() {
     let (directory, reader) = fixture_reader(&numbered(14));
-    let window = &reader.window;
     let hints = vec![hint(at(3, 8), ": u32"), hint(at(6, 4), "n:")];
     let problems = vec![problem(
         at(6, 10),
@@ -683,7 +815,7 @@ fn a_reload_holds_row_space_until_annotations_return() {
         "wrong value",
     )];
     inject(&reader, hints.clone(), problems.clone());
-    let annotated = (frame(window), map(&reader));
+    let annotated = shot(&reader);
     let revision = reader.source.borrow().document.revision();
     // Line 12 changes without changing its length, so every annotated position stays valid.
     let changed = numbered(14).replace("line 012: value", "line 012: other");
@@ -695,7 +827,7 @@ fn a_reload_holds_row_space_until_annotations_return() {
         }
     }
     update_timers_and_animations();
-    let held = (frame(window), map(&reader));
+    let held = shot(&reader);
     assert_eq!(held.1, annotated.1, "the reload changed where lines are");
     let mut movement = Vec::new();
     for line in 0..12 {
@@ -705,8 +837,8 @@ fn a_reload_holds_row_space_until_annotations_return() {
             rows = ABOVE_UNDERLINE;
         }
         movement.push(moved(
-            (&annotated.0, &annotated.1),
-            (&held.0, &held.1),
+            (&annotated.0, &annotated.1, &annotated.2),
+            (&held.0, &held.1, &held.2),
             line,
             rows,
         ));
@@ -730,12 +862,15 @@ fn a_reload_holds_row_space_until_annotations_return() {
     }
     // The same annotations arrive for the new text: every line above the changed one is as before the change.
     inject(&reader, hints, problems);
-    let returned = (frame(window), map(&reader));
+    let returned = shot(&reader);
     let mut back = TEXT_TOP;
     while back < TEXT_TOP + returned.1.block_top(12) {
         assert!(
             same_pixels(band(&annotated.0, back), band(&returned.0, back)),
-            "window row {back} differs after the annotations returned"
+            "window row {back} differs after the annotations returned; {}; facts before {}; facts after {}",
+            level_difference(band(&annotated.0, back), band(&returned.0, back)),
+            annotated.2,
+            returned.2
         );
         back += 1.0;
     }
@@ -815,14 +950,15 @@ fn scrolling_across_annotated_lines_is_rigid() {
     let end = start + (window.get_viewport_height() * 2.0) as usize;
     window.set_scroll_y(-(start as f32));
     update_timers_and_animations();
-    let mut previous = frame(window);
+    let mut previous_shot = shot(&reader);
     let first_tile = reader.source.borrow().first;
     let mut tiles = 0;
     for offset in start + 1..=end {
         let rendered_before = reader.source.borrow().gpu.tiles_rendered();
         window.set_scroll_y(-(offset as f32));
         update_timers_and_animations();
-        let current = frame(window);
+        let current_shot = shot(&reader);
+        let (previous, current) = (&previous_shot.0, &current_shot.0);
         // A frame that drew a new tile scene is a second render of the text: Vello's render noise applies to it.
         // Scrolling inside a tile shows the very same texture, so those frames are compared exactly.
         let re_rendered = reader.source.borrow().gpu.tiles_rendered() != rendered_before;
@@ -831,25 +967,34 @@ fn scrolling_across_annotated_lines_is_rigid() {
             // The previous frame's last row is the viewport's clip edge; its pixels may be a level off (see
             // `within_one_level`). Every other row is the previous frame's row shifted by one, exactly,
             // unless the frame drew a new tile.
-            let shifted = band(&previous, y + 1.0);
+            let shifted = band(previous, y + 1.0);
             let moved = if re_rendered {
-                same_pixels(band(&current, y), shifted)
+                same_pixels(band(current, y), shifted)
             } else if y + 2.0 < height {
-                band(&current, y) == shifted
+                band(current, y) == shifted
             } else {
-                within_one_level(band(&current, y), shifted)
+                within_one_level(band(current, y), shifted)
+            };
+            let kept = if moved {
+                String::new()
+            } else {
+                keep_frames("rigid", previous, current)
             };
             assert!(
                 moved,
-                "the frame at offset {offset} is not the previous one shifted by one row (window row {y}); {}",
-                unshifted_rows(&current, &previous, height)
+                "the frame at offset {offset} is not the previous one shifted by one row (window row {y}); {kept}; {}; \
+                 re_rendered {re_rendered}, tiles_rendered before the step {rendered_before}; facts at the \
+                 previous frame {}; facts at this frame {}",
+                unshifted_rows(current, previous, height),
+                previous_shot.2,
+                current_shot.2
             );
             y += 1.0;
         }
         if reader.source.borrow().first != first_tile {
             tiles += 1;
         }
-        previous = current;
+        previous_shot = current_shot;
     }
     assert!(
         tiles > 0,
