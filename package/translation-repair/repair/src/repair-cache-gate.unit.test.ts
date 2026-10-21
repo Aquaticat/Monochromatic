@@ -17,6 +17,7 @@ import {
 
 import { stageQuorumUnmetFinding, } from '@monochromatic-dev/translation-repair-stage';
 import {
+  cacheRefusalLine,
   cacheRefusalsOf,
   frontMatterRepairOutcome,
 } from '../dist/final/node/index.mjs';
@@ -72,6 +73,59 @@ await describe({
       name: 'ADMITS a slice every stage heard to quorum',
       fn: async () => {
         expect(cacheRefusalsOf({ outcome: HEARD, },),).toStrictEqual([],);
+      },
+    },),
+  ],
+},);
+
+/**
+ Settled outcome whose repair patch won, so the slice's text changed, while the
+ introduced-defect probe closed short of quorum (zheermao21 slice 3 had this
+ shape: `changedSliceIndices` held it and the log still said it shipped
+ unchanged).
+ */
+const CHANGED_BUT_PROBE_SHORT = {
+  ...HEARD,
+  changed: true,
+  repairedText: 'The kitten naps on the sunny windowsill.',
+  findings: [stageQuorumUnmetFinding({ shortfall: 'introduced-defect-probe 1/3', },),],
+};
+
+await describe({
+  name: cacheRefusalLine.name,
+  children: [
+    it({
+      name: 'DOES NOT SAY A CHANGED SLICE SHIPS UNCHANGED when a probe closed short of quorum',
+      fn: async () => {
+        /**
+         Warn line a changed, quorum-unmet settlement prints.
+         */
+        const line = cacheRefusalLine({
+          sliceIndex: 3,
+          refusals: cacheRefusalsOf({ outcome: CHANGED_BUT_PROBE_SHORT, },),
+          changed: CHANGED_BUT_PROBE_SHORT.changed,
+        },);
+        expect(line,).not.toContain('ships unchanged',);
+        expect(line,).toContain('stage-quorum-unmet (introduced-defect-probe 1/3)',);
+        expect(line,).toContain('NOT cached',);
+        expect(line,).toContain('the slice\'s text changed',);
+      },
+    },),
+    it({
+      name: 'SAYS AN UNCHANGED SLICE DID NOT CHANGE, and still that nothing is cached',
+      fn: async () => {
+        /**
+         Warn line a settlement no critic was heard on prints.
+         */
+        const line = cacheRefusalLine({
+          sliceIndex: 4,
+          refusals: cacheRefusalsOf({ outcome: { ...HEARD, heardCritics: 0, }, },),
+          changed: false,
+        },);
+        expect(line,).toContain('chunk 4: no critic was heard',);
+        expect(line,).toContain('NOT cached',);
+        expect(line,).toContain('the slice\'s text did not change',);
+        expect(line,).not.toContain('the slice\'s text changed',);
       },
     },),
   ],
