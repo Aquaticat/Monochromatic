@@ -77,38 +77,6 @@ jobs:
       - name: Expose node, pnpm, and uv to later steps
         run: printf '%s\n' "$(dirname "$(mise which node)")" "$(dirname "$(mise which pnpm)")" "$(dirname "$(mise which uv)")" >> "$GITHUB_PATH"
 
-      # [DEBUG-401] Temporary diagnosis for the publish 401 incident opened 2026-10-16.
-      # Prints the decoded claims of the minted workload token (never the token itself)
-      # and publish-shaped PUTs to @monochromatic-dev/oidc-claims-probe, which is outside
-      # the trust list: check_workload_request refuses it with 403 when authentication
-      # works, so no state can change. The workload credential is `pnpr_workload_` plus
-      # the JWT, the shape package/config/pnpr/src/publish-steps.ts sends. Remove when the
-      # incident closes.
-      - name: Debug workload claims and publish response (DEBUG-401)
-        run: |
-          node --input-type=module-typescript -e '
-          const requestUrl = process.env.ACTIONS_ID_TOKEN_REQUEST_URL + "&audience=" + encodeURIComponent("https://pnpr.c.aquati.cat");
-          const response = await fetch(requestUrl, { headers: { authorization: "bearer " + process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN } });
-          const body = await response.json();
-          if (typeof body.value !== "string") throw new Error("id token request failed: " + JSON.stringify(body));
-          const token = body.value;
-          console.log("::add-mask::" + token);
-          const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64url").toString("utf8"));
-          console.log("claims: " + JSON.stringify(payload, null, 2));
-          const paths = ["/~monochromatic-dev/@monochromatic-dev%2foidc-claims-probe", "/npm/~monochromatic-dev/@monochromatic-dev%2foidc-claims-probe"];
-          const credentials = [["workload credential", "Bearer pnpr_workload_" + token], ["raw JWT (control)", "Bearer " + token]];
-          for (const path of paths) {
-            for (const [label, authorization] of credentials) {
-              const probe = await fetch("https://pnpr.c.aquati.cat" + path, {
-                method: "PUT",
-                headers: { authorization, "content-type": "application/json" },
-                body: "{}",
-              });
-              console.log("probe " + path + " with " + label + " -> " + probe.status + " " + await probe.text());
-            }
-          }
-          '
-
       - name: Install dependencies with every direct dependency linked per package
         run: mise exec node pnpm -- pnpm install --frozen-lockfile
 
