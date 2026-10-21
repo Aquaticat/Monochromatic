@@ -29,6 +29,11 @@ const ASKED = {
 };
 
 /**
+ The name map of a case that meets no alias.
+ */
+const NO_ALIASES = { known: true, names: new Set<string>(), } as const;
+
+/**
  The period a reply echoes for that window, spelled as the service spells it.
  */
 const ECHO = {
@@ -70,10 +75,12 @@ await describe({
                 ],
               },),
               asked: ASKED,
+              aliases: NO_ALIASES,
             },),).toBeCloseTo(3.5, 9,);
             expect(coveredWhOf({
               bodyText: bodyOf({ period: ECHO, products: [], },),
               asked: ASKED,
+              aliases: NO_ALIASES,
             },),).toBe(0,);
           },
         },),
@@ -89,6 +96,7 @@ await describe({
                 products: [],
               },),
               asked: ASKED,
+              aliases: NO_ALIASES,
             },),).toBe(0,);
             for (
               const period of [
@@ -103,6 +111,7 @@ await describe({
                 return coveredWhOf({
                   bodyText: bodyOf({ period, products: [], },),
                   asked: ASKED,
+                  aliases: NO_ALIASES,
                 },);
               },);
               expect(refusal,).toBeInstanceOf(NeuralWattUsageShapeError,);
@@ -139,7 +148,7 @@ await describe({
                What the reader raised for this body.
                */
               const refusal = caught(function readBroken(): unknown {
-                return coveredWhOf({ bodyText, asked: ASKED, },);
+                return coveredWhOf({ bodyText, asked: ASKED, aliases: NO_ALIASES, },);
               },);
               expect(refusal,).toBeInstanceOf(NeuralWattUsageShapeError,);
               expect((refusal as Error).message,).toContain(phrase,);

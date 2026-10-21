@@ -329,6 +329,8 @@ export function usageReply(
 
  @param kwh - energy consumed, in kWh
 
+ @param servedModelId - the backend model that served it, as the route spells it
+
  @returns The row
 
  @example
@@ -339,15 +341,96 @@ export function usageReply(
 export function usageRowOf({
   requestedModel,
   kwh,
+  servedModelId = `served/${requestedModel}`,
 }: {
   readonly requestedModel: string;
-  readonly kwh: number
+  readonly kwh: number;
+  readonly servedModelId?: string
 },): UsageRow {
   return {
     requested_model: requestedModel,
-    served_model_id: `served/${requestedModel}`,
+    served_model_id: servedModelId,
     requests: 1,
     energy_kwh: kwh,
+  };
+}
+
+/**
+ The backend model DeepSeek V4.1 Flash and the tracking alias `nw-flash` both list as `metadata.huggingface_id`.
+ */
+export const DEEPSEEK_LISTED_AS = 'deepseek-ai/DeepSeek-V4.1-Flash-1017';
+
+/**
+ The backend model the large tracking alias lists, which the free energy does not cover.
+ */
+export const KIMI_LISTED_AS = 'moonshotai/Kimi-K3';
+
+/**
+ One entry of the `GET /v1/models` listing, with the fields these cases read.
+
+ @param id - the name a request uses
+
+ @param listedAs - its `metadata.huggingface_id`
+
+ @returns The entry
+
+ @example
+ ```ts
+ const entry = modelEntryOf({ id: 'nw-flash', listedAs: DEEPSEEK_LISTED_AS, },);
+ ```
+ */
+export function modelEntryOf(
+  {
+    id,
+    listedAs,
+  }: {
+    readonly id: string;
+    readonly listedAs: string
+  },
+): Readonly<Record<string, unknown>> {
+  return {
+    id,
+    object: 'model',
+    owned_by: 'neuralwatt',
+    metadata: { huggingface_id: listedAs, },
+  };
+}
+
+/**
+ The listing as it stood on 2026-10-20 for the names these cases use: the two covered models, the flash and large
+ aliases with their flex twins, and a model nothing here covers.
+ */
+export const LISTED_MODELS: readonly Readonly<Record<string, unknown>>[] = [
+  modelEntryOf({ id: 'deepseek-v4.1-flash', listedAs: DEEPSEEK_LISTED_AS, },),
+  modelEntryOf({ id: 'glm-5.3-flash', listedAs: 'zai-org/GLM-5.3-Flash', },),
+  modelEntryOf({ id: 'nw-flash', listedAs: DEEPSEEK_LISTED_AS, },),
+  modelEntryOf({ id: 'nw-flash-flex', listedAs: DEEPSEEK_LISTED_AS, },),
+  modelEntryOf({ id: 'nw-large', listedAs: KIMI_LISTED_AS, },),
+  modelEntryOf({ id: 'nw-large-flex', listedAs: KIMI_LISTED_AS, },),
+  modelEntryOf({ id: 'kimi-k3', listedAs: KIMI_LISTED_AS, },),
+];
+
+/**
+ A `GET /v1/models` reply listing the given entries.
+
+ @param entries - the listing
+
+ @returns The reply
+
+ @example
+ ```ts
+ const models = [modelsReply({ entries: LISTED_MODELS, },),];
+ ```
+ */
+export function modelsReply(
+  { entries, }: { readonly entries: readonly Readonly<Record<string, unknown>>[]; },
+): TransportReply {
+  return {
+    status: 200,
+    bodyText: JSON.stringify({
+      object: 'list',
+      data: entries,
+    },),
   };
 }
 
@@ -362,6 +445,8 @@ export function usageRowOf({
  @param chat - replies to chat completions, in order, the last repeating
 
  @param quota - replies to quota reads, in order, the last repeating; an error stands for a read the connection dropped
+
+ @param models - replies to listing reads, in order, the last repeating; the listing of 2026-10-20 where none is given
 
  @returns Client, ledger, and what the transport saw
 
@@ -380,6 +465,7 @@ export function scriptedClient(
     },],
     quota = [quotaReply({ kwhUsed: 13.9023, }),],
     usage = [usageReply({ rows: [], },),],
+    models = [modelsReply({ entries: LISTED_MODELS, },),],
     clockStart = '2026-10-20T12:00:00.000Z',
     dayStartSetting,
   }: {
@@ -388,6 +474,7 @@ export function scriptedClient(
     readonly chat?: readonly TransportReply[];
     readonly quota?: readonly (Error | TransportReply)[];
     readonly usage?: readonly UsageScript[];
+    readonly models?: readonly (Error | TransportReply)[];
     readonly clockStart?: string;
     readonly dayStartSetting?: { readonly msOfDay: number; };
   },
@@ -409,6 +496,7 @@ export function scriptedClient(
     chat: 0,
     quota: 0,
     usage: 0,
+    models: 0,
   };
 
   /**
@@ -456,6 +544,18 @@ export function scriptedClient(
           return Promise.resolve((typeof scriptedUsage) === 'function'
             ? (scriptedUsage as (exchange: TransportExchange,) => TransportReply)(exchange,)
             : scriptedUsage as TransportReply,);
+        }
+        if ((exchange.method === 'GET') && exchange.url.endsWith('/models',)) {
+          counts.models += 1;
+
+          /**
+           What this listing read is scripted to get.
+           */
+          const listed = models[Math.min(
+            counts.models - 1,
+            models.length - 1,
+          )] ?? NO_SCRIPT_REPLY;
+          return Error.isError(listed,) ? Promise.reject(listed,) : Promise.resolve(listed,);
         }
         if (exchange.method === 'GET') {
           counts.quota += 1;
@@ -524,6 +624,26 @@ export function quotaExchangesOf(
     return (exchange.method === 'GET')
       && exchange.url
       .endsWith('/quota',);
+  },);
+}
+
+/**
+ Listing exchanges among those seen.
+
+ @param exchanges - everything the transport saw
+
+ @returns The GETs
+
+ @example
+ ```ts
+ const reads = modelsExchangesOf({ exchanges, },);
+ ```
+ */
+export function modelsExchangesOf(
+  { exchanges, }: { readonly exchanges: readonly TransportExchange[]; },
+): readonly TransportExchange[] {
+  return exchanges.filter(function isModelsGet(exchange,): boolean {
+    return (exchange.method === 'GET') && exchange.url.endsWith('/models',);
   },);
 }
 
