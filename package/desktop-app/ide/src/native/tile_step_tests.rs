@@ -43,8 +43,10 @@ fn tiles_applied(state: &Rc<RefCell<State>>) -> u64 {
     return state.borrow().tiles_applied;
 }
 
-/// Open a window, settle its first tile,
-/// and scroll out of that tile, so the worker builds another;
+/// Open a window,
+/// settle its first tile,
+/// and scroll out of that tile,
+/// so the worker builds another;
 /// return the offset the window is at.
 fn leave_the_tile(window: &AppWindow, state: &Rc<RefCell<State>>) -> f32 {
     let height = window.get_viewport_height();

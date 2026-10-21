@@ -168,7 +168,9 @@ fn start_poll(window: &AppWindow, state: &Rc<RefCell<State>>, current: &mut Stat
 /// in every scroll measured (`doc/handover/ide-gpu-stages-5-6.md`).
 ///  A step of an input at 50 Hz or more comes sooner than this wait,
 /// and takes the tile in its own frame;
-/// the poll, 20 ms later, takes a tile no step came for.
+/// the poll,
+/// 20 ms later,
+/// takes a tile no step came for.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
