@@ -1,15 +1,19 @@
 //! The small types the code view and the minimap share on the GPU:
 //!  a texture with its size,
 //!  the pictures that have one,
-//!  where the minimap's slice stands,
+//!  where the minimap's textures stand,
 //!  and what a step of the notifier changed for the window.
 
-/// The window the outcome is applied to.
-use crate::native::AppWindow;
-/// The image import.
-use slint::Image;
+/// The window the outcome is applied to,
+/// and the markup's record of one texture of the minimap.
+use crate::native::{AppWindow, ui::MinimapSlice};
 /// Slint's own wgpu types.
 use slint::wgpu_30::wgpu;
+/// The image import,
+/// and the shared list the window shows the minimap's textures from.
+use slint::{Image, Model, ModelRc, VecModel};
+/// The list is shared with the window.
+use std::rc::Rc;
 
 /// What:
 ///  One texture and the size it was made with.
@@ -32,15 +36,13 @@ pub(super) struct Target {
     pub(super) height: u32,
 }
 
-/// The pictures the GPU draws for the window.
+/// The pictures the GPU draws for the window into one texture each.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Picture {
     /// The source tile.
     Tile,
     /// The gutter's wrap indicator.
     Sign,
-    /// The minimap's slice of the picture of the whole text.
-    Minimap,
 }
 
 /// Where a picture's texture is kept.
@@ -50,30 +52,92 @@ impl Picture {
         return match self {
             Self::Tile => 0,
             Self::Sign => 1,
-            Self::Minimap => 2,
         };
     }
 }
 
 /// What:
-///  Where the minimap's texture stands in the whole picture:
-///  its size and its first row.
+///  One texture of the minimap's picture:
+///  the texture,
+///  and the image that shows it.
 /// Why:
-///  The window places the image with these numbers in the same step that shows the texture,
-///  so a new slice never appears at the old slice's place.
+///  A picture taller than the device's texture limit is several of these.
+///  The image is kept so a texture that is drawn into again is shown without a new image.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Placement = { width: number; height: number; top: number };
+/// type MinimapTexture = { target: Target; image: Image };
 /// ```
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) struct MinimapTexture {
+    /// The texture and its size.
+    pub(super) target: Target,
+    /// The image that shows the texture.
+    pub(super) image: Image,
+}
+
+/// What:
+///  Where the minimap's picture stands in the whole picture:
+///  its width,
+///  its first row,
+///  and the textures that stack to make it.
+/// Why:
+///  The window places the images with these numbers in the same step that shows the textures,
+///  so a new picture never appears at the old picture's place.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Placement = { width: number; top: number; slices: { image: Image; top: number; height: number }[] };
+/// ```
 pub(super) struct Placement {
-    /// Width of the texture in physical pixels.
+    /// Width of every texture in physical pixels.
     pub(super) width: u32,
-    /// Height of the texture in physical pixels.
-    pub(super) height: u32,
-    /// The row of the whole picture the texture's first row is.
+    /// The row of the whole picture the first texture's first row is.
     pub(super) top: u32,
+    /// The textures from the top,
+    /// each starting on the row where the one before ends.
+    pub(super) slices: Vec<MinimapSlice>,
+}
+
+/// How many times the window was given a new list of the minimap's textures,
+/// counted for the tests:
+/// a picture of the same shape must change the rows of the list it has and never replace it.
+#[cfg(test)]
+pub(in crate::native) static SLICE_LISTS_SET: std::sync::atomic::AtomicU64 =
+    std::sync::atomic::AtomicU64::new(0);
+
+/// What:
+///  Show `slices` on `window`,
+///  changing only the rows of the list the window already holds when it has the same number of them,
+///  and only the rows whose texture,
+///  first row,
+///  or height differ.
+/// Why:
+///  The markup draws one image for each row of the list,
+///  and a new list makes it drop and make every image again,
+///  which a picture of the same bands at another place does not need;
+///  the window thread does this inside a frame of a scroll.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function showSlices(window: AppWindow, slices: MinimapSlice[]): void;
+/// ```
+fn show_slices(window: &AppWindow, slices: Vec<MinimapSlice>) {
+    let shown = window.get_minimap_slices();
+    let Some(list) = shown.as_any().downcast_ref::<VecModel<MinimapSlice>>() else {
+        #[cfg(test)]
+        SLICE_LISTS_SET.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        window.set_minimap_slices(ModelRc::from(Rc::new(VecModel::from(slices))));
+        return;
+    };
+    if list.row_count() != slices.len() {
+        list.set_vec(slices);
+        return;
+    }
+    for (row, slice) in slices.into_iter().enumerate() {
+        if list.row_data(row).as_ref() != Some(&slice) {
+            list.set_row_data(row, slice);
+        }
+    }
 }
 
 /// What:
@@ -91,8 +155,8 @@ pub(super) struct Placement {
 pub(super) struct Outcome {
     /// Pictures that have a new texture to show.
     pub(super) images: Vec<(Picture, Image)>,
-    /// Where the minimap's slice stands,
-    /// when one was drawn.
+    /// Where the minimap's textures stand,
+    /// when a picture was drawn.
     pub(super) minimap: Option<Placement>,
     /// Failures to show as the window's error.
     pub(super) errors: Vec<String>,
@@ -106,12 +170,16 @@ impl Outcome {
             match picture {
                 Picture::Tile => window.set_source_image(image),
                 Picture::Sign => window.set_wrap_sign(image),
-                Picture::Minimap => window.set_minimap_image(image),
             }
         }
         if let Some(place) = self.minimap {
+            let mut height = 0.0;
+            for slice in &place.slices {
+                height += slice.height;
+            }
+            show_slices(window, place.slices);
             window.set_minimap_picture_width(place.width as f32);
-            window.set_minimap_picture_height(place.height as f32);
+            window.set_minimap_picture_height(height);
             window.set_minimap_picture_top(place.top as f32);
         }
         if let Some(message) = self.errors.last() {

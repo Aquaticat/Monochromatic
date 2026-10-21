@@ -3,6 +3,8 @@
 //!  the rows of the whole picture that a run of bands makes up,
 //!  and the chunks a slice is rendered in.
 
+/// A texture's bytes are bounded as the source tile's are.
+use crate::shaped_text::MAX_RASTER_BYTES;
 /// The bands are counted along the text's height.
 use std::ops::Range;
 
@@ -60,6 +62,67 @@ pub fn chunk_rows(rows: &Range<usize>) -> Vec<Range<usize>> {
 }
 
 /// What:
+///  The most rows one texture of the minimap's picture may have when it is `width` pixels wide,
+///  on a device whose textures are at most `limit` pixels on a side:
+///  the side limit,
+///  or fewer when the bytes of the texture would pass the rule the source tile keeps
+///  ([`MAX_RASTER_BYTES`]).
+/// Why:
+///  Vello 0.11 renders a texture of more than about 128 MiB wrong without any error
+///  (`doc/troubleshooting/vello-silent-blank-or-corrupt-frames-at-fixed-buffer-limits.md`),
+///  so the picture is stacked from textures that stay well inside that,
+///  whatever the device's limit allows.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function textureRows(width: number, limit: number): number;
+/// ```
+pub fn texture_rows(width: u32, limit: u32) -> u32 {
+    let by_bytes = MAX_RASTER_BYTES / 4 / u64::from(width.max(1));
+    return u64::from(limit).min(by_bytes).min(u64::from(u32::MAX)) as u32;
+}
+
+/// What:
+///  How the chunks of a picture,
+///  given by their `heights` from the top,
+///  are grouped into the textures that are
+///  stacked to show it:
+///  the chunk numbers of each texture,
+///  top first,
+///  each texture at most [`texture_rows`] tall for a picture `width` pixels wide on a device of `limit`.
+///  A chunk taller than that is a texture of its own,
+///  which the GPU then refuses with a message.
+/// Why:
+///  A texture is made of whole chunks,
+///  because the GPU renders and copies a chunk as it was built,
+///  and a stack of textures that abut shows the same rows as one texture would,
+///  so the cut between two textures is a cut between two chunks,
+///  which is already seamless.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function textureRuns(heights: number[], width: number, limit: number): [number, number][];
+/// ```
+pub fn texture_runs(heights: &[u32], width: u32, limit: u32) -> Vec<Range<usize>> {
+    let most = u64::from(texture_rows(width, limit));
+    let mut runs = Vec::new();
+    let mut start = 0;
+    let mut rows: u64 = 0;
+    for (index, height) in heights.iter().enumerate() {
+        if index > start && rows + u64::from(*height) > most {
+            runs.push(start..index);
+            start = index;
+            rows = 0;
+        }
+        rows += u64::from(*height);
+    }
+    if start < heights.len() {
+        runs.push(start..heights.len());
+    }
+    return runs;
+}
+
+/// What:
 ///  How tall a band of the text is,
 ///  in logical pixels of the text:
 ///  thirty-two code rows,
@@ -98,8 +161,10 @@ pub fn band_count(height: f32, step: f32) -> usize {
 ///  at display `scale` and `ratio` rows of the picture for each logical pixel of the text.
 ///  Never under one.
 /// Why:
-///  The texture a slice is drawn into is bounded by the device,
-///  so the window never asks for more bands than one texture can hold.
+///  The texture a slice is drawn into is bounded by the device.
+///  The window stacks textures for a picture of more bands than that
+///  (`texture_runs`),
+///  so this is the size of one of them and no cap on the picture.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts

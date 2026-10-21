@@ -2727,6 +2727,9 @@ No second renderer exists, and the only memory the minimap adds beyond its textu
   and the rest of the track is blank.
   The alternative is a second slice texture or a smaller scale for such a window.
   Which is wanted?
+  Answered on 2026-10-21 by the owner: stack several textures so the minimap covers the whole window.
+  Built on branch `worktree-agent-a4d54af4e63faea6b`; see `doc/handover/ide-gpu-stages-5-6.md`,
+  section "Stacked textures".
 - `minimap_build` became `minimap_worker`.
   The old name no longer described a build of a picture.
 - The CPU-drawn picture was an exact area average;

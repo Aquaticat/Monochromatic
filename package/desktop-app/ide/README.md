@@ -3370,10 +3370,14 @@ and `render/MainMinimap.kt`.
 - The slice is the bands the track shows and one on each side.
   A band is 768 logical px of the text from a fixed distance from its top (`BAND`),
   so the cuts do not move with the scroll,
-  and a slice holds as many bands as its texture may hold:
-  at most the device's texture side in rows (`most_bands` in `src/minimap/plan.rs`,
-  used where the key is made,
-  so a taller track shows a picture that ends where the texture ends).
+  and a slice holds every band the track shows,
+  however tall that is.
+  The GPU draws a slice into as many textures as the device's texture side asks for
+  (`texture_runs` in `src/minimap/plan.rs`:
+  whole chunks,
+  each texture at most the device's side in rows
+  and at most the source tile's byte rule),
+  and the markup stacks them one below the other without a gap (`ui/minimap.slint`).
 - The slice is rendered in chunks of at most 512 rows (`CHUNK_ROWS`).
   Vello 0.11 sizes the buffers of one render with fixed constants,
   and a scene that needs more renders blank with no error
@@ -3483,8 +3487,8 @@ section "Stages 5 and 6".
 - There is no quick pass of a coarse picture:
   a picture of a new wrap width arrives as one reply,
   after the lines of the bands near the view are shaped.
-- A window taller than the device's texture limit has a picture that ends where the texture ends,
-  and the rest of the track is blank (the slice never passes the limit).
+- A window taller than the device's texture limit has a picture of several stacked textures that covers the
+  whole track (owner decision of 2026-10-21).
   A selection that covers the whole slice makes the render cost grow with its rows until the tile code clips
   rectangles per row (see `doc/planning/ide-gpu-snapshot-harness.md`,
   "Stages 5 and 6").
@@ -3535,7 +3539,13 @@ and `src/native/tall_window_minimap_tests.rs`
 (a window of 3,500 and of 12,000 px keeps a picture with the texture of glyphs,
 rendered in chunks that are not
 blank,
-and a long file in a tall window keeps its picture within the device's texture limit),
+and a long file in a tall window keeps its picture within the device's texture limit;
+a window of 12,000 px over the harness device of 8,192 px gets two textures that cover the track,
+and a picture cut for a limit of 1,536 and of 1,024 rows is three and four textures whose texels,
+seams,
+and composited column equal the one texture's),
+and `src/native/minimap_seam_tests.rs`
+(the chunks stacked equal one render of the picture at scales 1 and 1.5),
 and `src/native/minimap_dense_tests.rs`
 (the densest chunks are not blank,
 one render of four dense chunks is blank as the positive control,
@@ -3559,7 +3569,11 @@ and a frame scaled down keeps the coverage of its edges).
 `minimap-line-key-scale`,
 `minimap-work-budget`,
 `minimap-cancel`,
-`minimap-bands-fit-the-device`,
+`minimap-bands-uncapped`,
+`minimap-texture-limit-key`,
+`minimap-texture-runs`,
+`minimap-texture-top`,
+`minimap-slices-in-place`,
 `minimap-most-bands`,
 `minimap-chunk-rows`,
 `minimap-chunk-size`,

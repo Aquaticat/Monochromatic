@@ -314,9 +314,10 @@ impl Geometry {
     /// Why:
     ///  Only the bands near the visible part of the picture are drawn;
     ///  the extra band on each side lets a scroll of up to a band move the picture without a new one.
-    ///  The picture is drawn into one texture,
-    ///  so it holds at most `most` bands:
-    ///  a track taller than that keeps the bands from its top and leaves the rest of the track blank.
+    ///  A picture of more bands than one texture holds is drawn as several textures that stack,
+    ///  so the window passes no cap.
+    ///  A caller that can show only `most` bands gets the bands from the one the track starts in,
+    ///  and the rest of the track is left without a picture.
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts

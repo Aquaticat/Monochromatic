@@ -132,10 +132,12 @@ pub(super) fn sign_pixels(
 }
 
 /// What:
-///  The minimap's texture as straight RGBA,
-///  read back after a frame that draws the slice the window thread last handed over,
+///  The minimap's textures as straight RGBA,
+///  stacked in one buffer,
+///  read back after a frame that draws the picture the window thread last handed over,
 ///  or nothing when none was drawn yet.
-///  The texture holds the rows `window.get_minimap_picture_top()` and below of the whole picture.
+///  The buffer holds the rows `window.get_minimap_picture_top()` and below of the whole picture,
+///  as many as the textures together have.
 /// Why:
 ///  The minimap is a texture the toolkit shows as an image,
 ///  which the toolkit cannot read back,
