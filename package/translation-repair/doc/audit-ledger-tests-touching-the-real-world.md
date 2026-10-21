@@ -547,7 +547,8 @@ substituted via a throwing workspace shim)".
 
 Status:
 the cause is found and the rule is recorded;
-no guard refuses a run whose parent directories hold a `node_modules`.
+a search of `package/translation-repair` and `package/dev-script` found no guard
+that refuses a run whose parent directories hold a `node_modules`.
 
 Found on 2026-10-21 (UTC) while tracing B801.
 Every scratch worktree sat under one directory that held its own `node_modules`,

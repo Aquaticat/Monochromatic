@@ -1921,6 +1921,12 @@ Its `index.d.cts` also exports a `KatexOptions` type:
 once `katex` resolves to a package that has a `types` field,
 TypeScript no longer falls back to `@types/katex`
 for `micromark-extension-math`'s `import type { KatexOptions } from 'katex'`.
+Measured on 2026-10-21 (UTC) with a probe that typed `{ trust: true }` as `HtmlOptions`:
+with the type left out of the shim,
+`trust` (a real katex option) was an unknown property,
+so the types of the real package were not reached;
+with the shim as committed,
+it type-checks.
 
 #### Verification
 
