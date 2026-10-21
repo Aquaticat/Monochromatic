@@ -28,12 +28,17 @@ fn brush(ink: [u8; 4]) -> Color {
 
 /// What:
 ///  Write `items` to a new scene for a texture `height` pixels tall.
-///  A clip item clips to its two x positions and the texture's full height.
+///  A clip item clips to its two x positions and its band of y positions,
+///  cut to the texture.
 /// Why:
 ///  The window thread and the tile worker both end a build here,
 ///  so the scene of a tile does not depend on which of them built it.
 ///  Glyphs are drawn unhinted at their fractional positions,
 /// as the layout placed them.
+///  The band keeps a clip as tall as one row and not as tall as the texture:
+///  Vello gives every tile a clip covers its own slot in a buffer of fixed size,
+///  and a clip as tall as a texture of 8,000 rows costs about 36,000 slots per selected row,
+///  so about 58 selected rows used the whole buffer and the render drew nothing.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -56,11 +61,24 @@ pub fn encode(items: &[Item], height: f32) -> Scene {
                     .brush(brush(run.ink))
                     .draw(Fill::NonZero, run.glyphs.iter().copied());
             }
-            Item::Clip { left, right } => {
+            Item::Clip {
+                left,
+                right,
+                top,
+                bottom,
+            } => {
+                // A band that reaches past the texture is cut to it, and a band wholly outside it is empty.
+                let band_top = top.clamp(0.0, height);
+                let band_bottom = bottom.clamp(band_top, height);
                 scene.push_clip_layer(
                     Fill::NonZero,
                     Affine::IDENTITY,
-                    &Rect::new(f64::from(*left), 0.0, f64::from(*right), f64::from(height)),
+                    &Rect::new(
+                        f64::from(*left),
+                        f64::from(band_top),
+                        f64::from(*right),
+                        f64::from(band_bottom),
+                    ),
                 );
             }
             Item::Unclip => scene.pop_layer(),
