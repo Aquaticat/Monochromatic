@@ -170,6 +170,14 @@ The source guard `minimap-slices-in-place` removes the fix in a disposable copy.
 - The cadence was measured with the nested compositor only, on a host that other sessions load;
   the pressure stall values are in `~/temp/agent/a4d5-q1.jsonl` and `a4d5-q2.jsonl`.
 
+#### Gates of the fix
+
+Run once each on tip `105686effa`:
+`lint` 0 findings; `test:native` 274 passed, 5 skipped; `test` 797 passed, 1 skipped; `test:bin` 60 passed;
+`build` finished; `inspect:software-renderer` not linked, as before.
+`inspect:source-guards` for `minimap-slices-in-place` only (1 of 148 guards): baseline passes, removed fails with
+`the window was given a new list of textures`, restored passes.
+
 ### Gates of the stacked textures
 
 Run once each, in this order, on tip `89924c2a12` (the tree that this section's commit follows):
