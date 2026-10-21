@@ -384,6 +384,7 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
             target: "monochromatic_ide::native::frame",
             viewport_width,
             height,
+            offset,
             "the view reported its size"
         );
         let mut current = state.borrow_mut();

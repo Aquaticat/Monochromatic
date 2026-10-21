@@ -73,7 +73,9 @@ pub(in crate::native) fn apply(window: &AppWindow, state: &Rc<RefCell<State>>, r
         gpu.submit_minimap(reply.chunks, reply.top);
         // The GPU draws the picture just before the next frame, and a picture changes no property the window
         // watches, so an idle window would keep the old picture until something else drew a frame.
-        window.window().request_redraw();
+        if std::env::var_os("IDE_NO_PICTURE_REDRAW").is_none() {
+            window.window().request_redraw();
+        }
     }
     tracing::debug!(
         id = reply.id,
