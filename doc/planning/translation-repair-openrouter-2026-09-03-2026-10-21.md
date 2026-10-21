@@ -5,6 +5,12 @@ Entries:
 zheermao20,
 CuspariaKLSY20.
 
+The passes after the rotation restarted on build `3637592bd4`
+(`zheermao21`,
+`CuspariaKLSY21` and `XingZ6016`)
+are recorded in
+[the rotation restart](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart.md).
+
 Part of [Translation repair: OpenRouter as the paid fallback provider](translation-repair-openrouter-2026-09-03.md),
 which lists every file of this record.
 
