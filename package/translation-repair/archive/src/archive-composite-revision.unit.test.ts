@@ -571,13 +571,121 @@ await describe({
       },
     },),
     it({
-      name: 'BUILDS NO COMPOSITE WHEN A REVISION HAS ANOTHER LINE COUNT, and says the counts: lines cannot be '
-        + 'matched against the block\'s',
+      name: 'REPLACES THE LINE-COUNT REFUSAL (ledger B803): A REVISION THAT ADDS A LINE COMPOSES WITH A REVISION OF '
+        + 'ANOTHER LINE, and the log names the added line by where it goes',
       fn: async () => {
-        /** Revision that adds a fifth line. */
-        const longer = `${THIRD_LINE}\nIt then naps again.`;
-        const { lines, } = await review({
-          answers: [FIRST_LINE, longer, RETAIN, RETAIN,],
+        /** Revision that adds a line after the second. */
+        const withAddedLine = [LINE_1, LINE_2, 'It naps at noon.', LINE_3, LINE_4,].join('\n',);
+        const { outcome, lines, } = await review({
+          answers: [FIRST_LINE, withAddedLine, RETAIN, RETAIN,],
+          best: 3,
+        },);
+        expect(slateLine({ lines, },),).toContain('comparing 2 admissible revisions in 4 candidates',);
+        expect(outcome.text,).toBe(
+          ['The cat naps by the window.', LINE_2, 'It naps at noon.', LINE_3, LINE_4,].join('\n',),
+        );
+        expect(logged({
+          lines,
+          parts: [
+            'archive composite built',
+            '2 revisions',
+            'candidate 2 adds 1 line after line 2',
+          ],
+        },),).toBe(true,);
+        expect(logged({
+          lines,
+          parts: ['has 5 lines',],
+        },),).toBe(false,);
+      },
+    },),
+    it({
+      name: 'A REVISION THAT REMOVES A LINE COMPOSES WITH A REVISION OF ANOTHER LINE: the removal is one hunk, and '
+        + 'the other revision\'s reworded line stands beside it',
+      fn: async () => {
+        /** Revision that drops the third line. */
+        const withoutThird = [LINE_1, LINE_2, LINE_4,].join('\n',);
+        /** Revision of the last line. */
+        const lastLine = [LINE_1, LINE_2, LINE_3, 'The dog howls at the mailman.',].join('\n',);
+        const { outcome, lines, } = await review({
+          answers: [withoutThird, lastLine, RETAIN, RETAIN,],
+          best: 3,
+        },);
+        expect(outcome.text,).toBe([LINE_1, LINE_2, 'The dog howls at the mailman.',].join('\n',),);
+        expect(logged({
+          lines,
+          parts: [
+            'archive composite built',
+            'candidate 1 removes line 3',
+            'candidate 2 replaces line 4 with 1 line',
+          ],
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'A REVISION THAT BOTH REMOVES AND ADDS LINES COMPOSES, each of its hunks keeping its place beside '
+        + 'the other revisions\' hunks: a hunk that ends where another begins does not overlap it',
+      fn: async () => {
+        /** Revision that drops the second line and adds one before the last. */
+        const movedAround = [LINE_1, LINE_3, 'The bird sings in the tree.', LINE_4,].join('\n',);
+        /** Revision of the first line. */
+        const first = FIRST_LINE;
+        /** Revision of the last line, which the added line sits before. */
+        const last = [LINE_1, LINE_2, LINE_3, 'The dog howls at the mailman.',].join('\n',);
+        const { outcome, lines, } = await review({
+          answers: [movedAround, first, last, RETAIN,],
+          best: 4,
+        },);
+        expect(slateLine({ lines, },),).toContain('comparing 3 admissible revisions in 5 candidates',);
+        expect(outcome.text,).toBe([
+          'The cat naps by the window.',
+          LINE_3,
+          'The bird sings in the tree.',
+          'The dog howls at the mailman.',
+        ].join('\n',),);
+        expect(logged({
+          lines,
+          parts: [
+            'candidate 1 removes line 2 and adds 1 line before line 4',
+          ],
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'MARKS THE LINES OF THE COMPOSITE EACH CONTRIBUTOR\'S ASSESSMENTS COVER when the revisions add and '
+        + 'remove lines: positions in the composite, which no longer match the block\'s',
+      fn: async () => {
+        /** Revision that adds a line after the first. */
+        const withAddedLine = [LINE_1, 'It stretches first.', LINE_2, LINE_3, LINE_4,].join('\n',);
+        /** Revision that drops the third line. */
+        const withoutThird = [LINE_1, LINE_2, LINE_4,].join('\n',);
+        /** The composite of the two. */
+        const composite = [LINE_1, 'It stretches first.', LINE_2, LINE_4,].join('\n',);
+        const { prompts, } = await review({
+          answers: [withAddedLine, withoutThird, RETAIN, RETAIN,],
+          best: 3,
+        },);
+        const sheet = selectSheetOf({ prompts, },);
+        const number = numberOf({ sheet, text: composite, },);
+        expect(number,).toBeGreaterThan(0,);
+        expect(sheet.assessments
+          .filter(function onComposite({ candidate, },): boolean {
+            return candidate === number;
+          },)
+          .map(function covered({ coversLines, fromCandidate, },): string {
+            return `${String(fromCandidate,)}:${JSON.stringify(coversLines,)}`;
+          },),).toEqual(['1:[2]', '2:[4]',],);
+      },
+    },),
+    it({
+      name: 'BUILDS NO COMPOSITE WHEN TWO REVISIONS ADD AT THE SAME PLACE: which added line comes first is '
+        + 'undetermined, so the overlap rule of ledger B712 holds and the log names the place',
+      fn: async () => {
+        /** Revision that adds a line after the second. */
+        const addsNoon = [LINE_1, LINE_2, 'It naps at noon.', LINE_3, LINE_4,].join('\n',);
+        /** Revision that adds another line at the same place. */
+        const addsDusk = [LINE_1, LINE_2, 'It naps at dusk.', LINE_3, LINE_4,].join('\n',);
+        const { outcome, lines, } = await review({
+          answers: [addsNoon, addsDusk, RETAIN, RETAIN,],
           best: 1,
         },);
         expect(slateLine({ lines, },),).toContain('in 3 candidates',);
@@ -585,9 +693,150 @@ await describe({
           lines,
           parts: [
             'archive composite not built',
-            'candidate 2 has 5 lines',
-            'the block\'s 4',
+            'overlap',
+            'after line 2',
+            'candidates 1 and 2',
           ],
+        },),).toBe(true,);
+        expect(outcome.text,).toBe(addsNoon,);
+      },
+    },),
+    it({
+      name: 'BUILDS NO COMPOSITE WHEN AN ADDED LINE FALLS INSIDE LINES ANOTHER REVISION REMOVES: the added line '
+        + 'would sit in a gap the other revision closes',
+      fn: async () => {
+        /** Revision that adds a line between the second and third. */
+        const addsBetween = [LINE_1, LINE_2, 'It naps at noon.', LINE_3, LINE_4,].join('\n',);
+        /** Revision that drops the second and third lines. */
+        const dropsBoth = [LINE_1, LINE_4,].join('\n',);
+        const { lines, } = await review({
+          answers: [addsBetween, dropsBoth, RETAIN, RETAIN,],
+          best: 1,
+        },);
+        expect(slateLine({ lines, },),).toContain('in 3 candidates',);
+        expect(logged({
+          lines,
+          parts: [
+            'archive composite not built',
+            'overlap',
+            'after line 2',
+            'candidates 1 and 2',
+          ],
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'BUILDS NO COMPOSITE WHEN ONE REVISION REWORDS A LINE ANOTHER REMOVES, and says the log\'s line',
+      fn: async () => {
+        /** Revision that drops the second line. */
+        const withoutSecond = [LINE_1, LINE_3, LINE_4,].join('\n',);
+        /** Revision that rewords the second line. */
+        const reworded = [LINE_1, 'It sings to the birds.', LINE_3, LINE_4,].join('\n',);
+        const { lines, } = await review({
+          answers: [withoutSecond, reworded, RETAIN, RETAIN,],
+          best: 1,
+        },);
+        expect(logged({
+          lines,
+          parts: [
+            'archive composite not built',
+            'overlap on line 2',
+            'candidates 1 and 2',
+          ],
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'BUILDS NO COMPOSITE WHEN THE REVISION BESIDE AN ADDITION IS A REMOVAL OF THE WHOLE BLOCK: a removal '
+        + 'edits no line, it is a verdict on the block, so nothing combines with it',
+      fn: async () => {
+        /** Revision that adds a line after the second. */
+        const addsNoon = [LINE_1, LINE_2, 'It naps at noon.', LINE_3, LINE_4,].join('\n',);
+        const { lines, } = await review({
+          answers: [addsNoon, '', RETAIN, RETAIN,],
+          best: 1,
+        },);
+        expect(logged({
+          lines,
+          parts: [
+            'archive composite not built',
+            'removal',
+          ],
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'BUILDS NO COMPOSITE OF AN ADDITION BESIDE A REVISION EQUAL TO THE ARCHIVE: the revision that equals '
+        + 'the block changes no line, so one contributor is nothing to combine',
+      fn: async () => {
+        /** Revision that adds a line after the second. */
+        const addsNoon = [LINE_1, LINE_2, 'It naps at noon.', LINE_3, LINE_4,].join('\n',);
+        const { lines, } = await review({
+          answers: [addsNoon, BLOCK, RETAIN, RETAIN,],
+          best: 1,
+        },);
+        expect(slateLine({ lines, },),).toContain('comparing 2 admissible revisions in 2 candidates',);
+        expect(logged({
+          lines,
+          parts: [
+            'archive composite not built',
+            '1 of 2',
+          ],
+        },),).toBe(true,);
+      },
+    },),
+    it({
+      name: 'COMPOSES ADDED AND REMOVED LINES AROUND LIST MARKERS, QUOTES AND BLANK LINES: a quoted list whose '
+        + 'blank quote lines repeat keeps its shape, and a straight apostrophe in an added line is restored to '
+        + 'the page\'s own',
+      fn: async () => {
+        /** Quoted list block with a repeated blank quote line between paragraphs. */
+        const list = ['> - first cat', '> - second cat', '>', '> The cat’s nap.', '>', '> The end.',].join('\n',);
+        /** Revision that adds a list item and a straight apostrophe. */
+        const addsItem = [
+          '> - first cat',
+          '> - second cat',
+          '> - third cat, the owner\'s',
+          '>',
+          '> The cat’s nap.',
+          '>',
+          '> The end.',
+        ].join('\n',);
+        /** Revision that removes the middle paragraph and one blank quote line with it. */
+        const dropsMiddle = ['> - first cat', '> - second cat', '>', '> The end.',].join('\n',);
+        const { outcome, } = await review({
+          answers: [addsItem, dropsMiddle, RETAIN, RETAIN,],
+          best: 3,
+          blockText: list,
+        },);
+        expect(outcome.text,).toBe(
+          ['> - first cat', '> - second cat', '> - third cat, the owner’s', '>', '> The end.',].join('\n',),
+        );
+      },
+    },),
+    it({
+      name: 'WITHHOLDS A COMPOSITE WHOSE REMOVALS TOGETHER DROP EVERY MARKER OF A NOTE: each revision removes a '
+        + 'line with one of the note\'s two markers, which leaves the note referenced, and together they drop both',
+      fn: async () => {
+        /** Block citing the page\'s note on two lines among others. */
+        const cited = 'Cats[^1] nap.\nDogs bark.\nBirds[^1] sing.\nFish swim.';
+        const page = `${cited}\n\n[^1]: A note.`;
+        const { outcome, lines, } = await review({
+          answers: ['Dogs bark.\nBirds[^1] sing.\nFish swim.', 'Cats[^1] nap.\nDogs bark.\nFish swim.', RETAIN, RETAIN,],
+          best: 1,
+          blockText: cited,
+          targetText: page,
+        },);
+        expect(slateLine({ lines, },),).toContain('comparing 2 admissible revisions in 3 candidates',);
+        expect(logged({
+          lines,
+          parts: [
+            'archive composite not built',
+            'footnote',
+          ],
+        },),).toBe(true,);
+        expect(outcome.findings.some(function refusesComposite(finding,): boolean {
+          return finding.startsWith('archive-revision-refused (composite(',);
         },),).toBe(true,);
       },
     },),
