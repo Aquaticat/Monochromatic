@@ -7,9 +7,9 @@ one file per invocation)
 plus two follow-ups the measurements force
 (test inflow and the existing backlog).
 Status:
-proposal;
-the five decisions in [Open questions](#open-questions) are unanswered.
-Nothing here is implemented.
+accepted as the L2+F1+R1+I1+B1 package and implemented in `module-logger` `0.4.5`;
+[the decision record](../decision/module-logger-log-accumulation.md) is canonical.
+The option set in [Open questions](#open-questions) and the measurements stay here as the evidence trail.
 
 ## Measurements (2026-10-22)
 
