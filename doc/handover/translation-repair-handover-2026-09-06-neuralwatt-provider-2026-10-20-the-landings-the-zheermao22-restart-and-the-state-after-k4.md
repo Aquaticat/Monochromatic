@@ -308,3 +308,55 @@ State after K4 landed:
 - `google.gemma-4-e2b` is served only by Bedrock,
   so with Bedrock off it stays an unserved seat under the 2026-09-09 short-bench rule;
   open to the owner's veto.
+
+State after `tr-w263` landed,
+2026-10-22 (UTC):
+- `tr-w267` landed `8e2d156d72` after gate g152.
+  Gate g151 had failed on the line limit:
+  the rewrap left `wire-the-heading-aligner.md` at 2,256 lines,
+  so it was filed by subject as an index and eight files,
+  with the pointers by position that crossed files turned into relative links.
+- `tr-w263` landed `e336d8efc7` after gate g154
+  (2,744 tests,
+  no failure),
+  and its worktree is retired.
+  Its K1 ledger entry is B807.
+  The corrective comment on `e13dc11c610e` is commitcomment-206074575.
+  Gate g153 had failed because this handover held 1,017 lines and the streams ledger 1,010:
+  the lead session had landed docs-only commits without running
+  `mise run //package/translation-repair/source-scan:test:unit`,
+  the only task that runs the line-limit guard,
+  so main was red.
+  Both files were split by subject in `tr-w263`,
+  D35 moved to `audit-ledger-markdown-linter-gate-and-the-split-of-long-docs.md`,
+  and the prevention docs now require that task before any docs-only landing.
+- `tr-w268` brings the 20 `doc/audit` docs and six troubleshooting docs made under the family's scopes under the Markdown guards
+  (45 stems),
+  and files the picture-reading audit by subject.
+  It merged main as `e82d2cb260`,
+  carrying its closed account of D35 into the new D35 file;
+  gate g155 runs on it,
+  and it lands when green.
+  Left out:
+  the three repository-policy docs and two oxlint plugin troubleshooting docs,
+  which belong to other owners,
+  and six troubleshooting docs whose only finding is `rust/require-rustdoc` on fenced Rust quoted word for word.
+  Exempting those six needs a linter configuration change,
+  which needs the owner's approval first.
+- `tr-w265` waits for its B762 rename agent;
+  then it merges main,
+  which now holds `tr-w263`'s changes to the consolidation sheets and cache versions,
+  gates and lands.
+- The ledger numbers B800 to B809 that `tr-w260` reserved are stale:
+  main's ledger already holds B803 to B807 from other rounds,
+  so a new entry takes the next number free on main.
+- `XingZ6017` still runs in the branch worktree;
+  read it when it ends,
+  with the `XingZ6016` read as the template.
+  After `tr-w265` lands and no pass runs there:
+  rebuild the branch worktree,
+  digest it,
+  set the launcher's frozen digest,
+  run the rotation sweep,
+  and restart the rotation at `zheermao23`,
+  then `CuspariaKLSY23` and `XingZ6018`.
