@@ -1462,27 +1462,32 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     Verified by me: branch tip `7e051535a2`, net diff one doc file, no stray units or containers (the busy processes
     in `ps` were another session's translation workers); the agent's worktree and branch (local and remote) and my
     scratch tree are removed.
-    Tail agent `a52afe09d606ed6ed` (started 2026-10-22, own worktree off `origin/main`, branch push only; brief quotes
-    `NLG`, `NLD`, `RXI`): builds the single-shot re-poll for the rest of `STEP_WAIT` in `src/native/tile.rs`, and
-    pushes it only if 40 alternating runs per tree show the slow mode gone with the median not rising, and 16 runs
-    of the 120-step scroll keep the slot 50 stall at 0; adds a test and a guard shown to fail; gates once on its final
-    snapshot. On its report: verify, scan `ps`, `podman ps`, `systemctl --user list-units`, read the product diff,
-    merge in a scratch worktree, gates once, own latency A/B, push, reinstall if the binary changed, remove its worktree
-    and branch.
-    Tail agent reported 2026-10-22 (branch `worktree-agent-a52afe09d606ed6ed`, product tip `9f21309e6d`, last doc commit
-    `6d17994673`, not merged): single-shot `tile_wake` timer in `src/native/tile/wait.rs` for the rest of the wait; slow
-    mode (tile applied late) A 70 of 140, B 0 of 100; median not raised; agent gates pass (`test:native` 282, `test` 797,
-    six source guards shown to fail). Its open cost: stalls in the 120-step scroll B 16 in 60 runs (14 runs) against A
-    10 in 62 (10 runs), slot 50 B 1 of 60 (first, spinning build) against A 1 of 62; too few runs to decide, and a tile
-    taken in an input gap over 20 ms is a possible new extra frame. My check in progress (unit `wake-all`, trees
-    `~/temp/agent/ab-wake-a` = `origin/main`, `~/temp/agent/land-wake` = merged; driver `~/temp/agent/wake-all.mjs`,
-    rows `wake-lat-ab.jsonl`, `wake-lat-aa.jsonl`, log `wake-all.log`): latency 40 pairs, A against A 20 pairs, stall
-    A/B 20 pairs, at whatever load there is (3.8 when started; the A against A pairs measure the spread that load
-    adds). Land only if the stall counts of B are not worse than A beyond the spread of A
-    against A; else report to the owner with the numbers. Then gates once on the merged snapshot, push, reinstall,
-    remove worktrees and the branch.
-    Open, in order: (1) the stalls away from slot 50 (slot 33 and 72, one run each; undecided; a larger alternating pass with a same-binary control, under whatever load there is) and the
-    +20 ms tail (the tail agent above);
+    Tail agent `a52afe09d606ed6ed` LANDED 2026-10-22 (branch tip `6d17994673`, product tip `9f21309e6d`; merge tip
+    `cbb2d47e52` on `origin/main`): a single-shot `tile_wake` timer (`src/native/tile/wait.rs`, `wake_delay` rounds up
+    to a whole millisecond because its first build spun on sub-millisecond waits) takes a tile left for the next
+    scroll step as soon as the 20 ms wait ends; `poll` stays the only taker and stops the wake-up first. Three new
+    tests and three new guards (`tile-wakes-when-the-wait-ends`, `tile-wake-cancelled-by-the-poll`,
+    `tile-wake-covers-whole-milliseconds`), each shown by the agent to fail when its line is removed; the module
+    move to `tile/wait.rs` was forced by the 300 line limit of `tile.rs`.
+    The agent's counts (2 wheel steps of 1500 px, tile late when applied over 30 ms after the last wheel event): late
+    A 70 of 140, B 0 of 100; its 120-step stalls B 16 in 60 runs against A 10 in 62, slot 50 B 1 of 60 (the spinning
+    first build) against A 1 of 62. Its open cost: a tile taken in an input gap over 20 ms is an extra frame.
+    My check (own trees, load 4 to 9 from other sessions, alternating arms): latency A late 19 of 40 with median
+    frame 37.8 ms, B late 0 of 40 with median frame 30.2 ms (B frame over 36 ms in 1 run, A in 20); A against A (20
+    pairs) late 10 and 11 of 20, so the baseline is bimodal at about half and the effect is far outside the spread;
+    120-step stalls A 5 in 5 of 20 runs, B 2 in 2 of 20, slot 50 in none. So the stall cost the agent feared was not
+    seen at these counts; counts this small cannot exclude a small rate. Gates on the merged snapshot, once each:
+    lint, `test:native` 282 of 282 (5 skipped), `test` 797 of 797, `test:bin`, `build`,
+    `inspect:no-software-renderer`, six tile source guards (6 of 156) all pass.
+    Installed 2026-10-22: `~/.local/bin/monochromatic-ide` sha256 prefix `27b877741a056ecf`, equal to the release
+    binary of the tree it was built in (the tree held a later merge of `origin/main` that touched no IDE file); the
+    previous binary (`854d0998238b249b`) is `monochromatic-ide.previous`. The agent's worktree, branch, my two trees
+    and guard directories are removed; no units or containers were left. Not run: drag scenario, scales other than 1,
+    a real compositor, input slower than 50 Hz, step lengths other than 16 ms, the other 150 guards, the doc text of
+    the agent has about 200 semantic-line-break findings (older text 480) that are not reflowed.
+    Open, in order: (1) the stalls away from slot 50 (slot 33 and 72, one run each; undecided; a larger alternating
+    pass with a same-binary control, under whatever load there is) and whether a tile taken in an input gap over 20 ms
+    costs a frame;
     (2) the flake work, in `doc/handover/ide-native-flakes.md`:
     fixed with counts (refused-tile test 10 of 360 to 0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160
     to 0 of 160, find-box menu test by its guard, see the LANDED block above); open: the annotation stability tests
