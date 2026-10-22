@@ -51,7 +51,7 @@ const validCases: readonly ValidCase[] = [
   { input: '{ /* block */ "a": 1 }', value: { a: 1, }, },
   { input: '{\n  "a": 1, // inline\n  "b": 2\n}', value: { a: 1, b: 2, }, },
   {
-    input: '{ "n": -1.5e3, "s": "x\\u0041", "b": true, "z": null }',
+    input: String.raw`{ "n": -1.5e3, "s": "x\u0041", "b": true, "z": null }`,
     value: {
       n: -1_500,
       s: 'xA',

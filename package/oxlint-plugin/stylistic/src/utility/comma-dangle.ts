@@ -521,8 +521,10 @@ function containerPenultimateToken(
    Container close delimiter: the pattern's own brace when an annotation follows, else the container tail.
    */
   const closeToken = isNode(typeAnnotation,)
-    ? context.sourceCode.getTokenBefore(typeAnnotation,)
-    : context.sourceCode.getLastToken(container,);
+    ? context.sourceCode
+      .getTokenBefore(typeAnnotation,)
+    : context.sourceCode
+      .getLastToken(container,);
   if (closeToken === null)
     return NO_TOKEN;
   /**

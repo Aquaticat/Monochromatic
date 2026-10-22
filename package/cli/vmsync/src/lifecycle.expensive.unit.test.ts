@@ -150,7 +150,7 @@ if (process.env.VMSYNC_E2E_GUEST !== 'windows') {
     args: ['push', VM, BUNDLE_PATH, '/home/ubuntu/index.mjs',],
   },);
   /** Guest path to the vmsync bundle, as reported by mvm push. */
-  const BUNDLE = pushOutput.match(/ -> (\S+) in VM /u,)?.[1] ?? '/mnt/shared/index.mjs';
+  const BUNDLE = (/ -> (\S+) in VM /u.exec(pushOutput))?.[1] ?? '/mnt/shared/index.mjs';
 
   /**
    Guest command to run vmsync with sudo.

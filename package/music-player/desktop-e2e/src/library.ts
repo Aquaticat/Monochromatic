@@ -289,7 +289,7 @@ async function writeFallbackBase(library: string,): Promise<void> {
           join(
             library,
             `Fallback ${String(index + 1,)
-            .padStart(
+              .padStart(
               2,
               '0',
             )}.wav`,
@@ -308,7 +308,7 @@ async function writeFallbackBase(library: string,): Promise<void> {
           join(
             artist,
             `${String(index + 1,)
-            .padStart(
+              .padStart(
               2,
               '0',
             )} Mid tone.wav`,

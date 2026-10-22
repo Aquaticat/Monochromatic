@@ -79,17 +79,21 @@ export const indentation: CreateOnceRule = {
         if (expectation.expectedWidth === expectation.actualWidth)
           continue;
         context.report({
-          loc: context.sourceCode.getLocFromIndex(expectation.contentStart,),
+          loc: context.sourceCode
+            .getLocFromIndex(expectation.contentStart,),
           messageId: 'unexpectedIndentation',
           data: {
             expected: expectation.expectedWidth,
             actual: expectation.actualWidth,
           },
           fix(fixer: ForeignBorrowed<Fixer>,): ReturnType<Fixer['replaceTextRange']> {
-            return fixer.replaceTextRange([
-              expectation.lineStart,
-              expectation.contentStart,
-            ], ' '.repeat(expectation.expectedWidth,),);
+            return fixer.replaceTextRange(
+              [
+                expectation.lineStart,
+                expectation.contentStart,
+              ],
+              ' '.repeat(expectation.expectedWidth,),
+            );
           },
         },);
       }

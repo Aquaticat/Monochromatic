@@ -109,7 +109,7 @@ export const plants = [
     name: 'object content past its declared size is accepted',
     file: 'package/git-policy/cli/src/native/candidate_batch.rs',
     edits: [{
-      from: "if terminator[0] != b'\\n' {",
+      from: String.raw`if terminator[0] != b'\n' {`,
       to: 'if false {'
     }],
   },

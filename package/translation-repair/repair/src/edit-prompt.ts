@@ -266,8 +266,8 @@ function regionBlock(
       return issue.claims
         .map(function toSummary(member,) {
           return `- issue (${member.claim
-          .category}, ${issue.severity}): ${flattenSpace({ text: member.claim
-            .summary, },)}`;
+            .category}, ${issue.severity}): ${flattenSpace({ text: member.claim
+              .summary, },)}`;
         },);
     },);
 

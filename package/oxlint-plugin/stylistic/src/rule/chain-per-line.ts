@@ -206,7 +206,8 @@ export const chainPerLine: CreateOnceRule = {
       /**
        First break offset; defined because an empty `breaks` returned above.
        */
-      const firstBreak = nonNullishOrThrow(breaks[0],).breakOffset;
+      const firstBreak = nonNullishOrThrow(breaks[0],)
+        .breakOffset;
       /**
        Whether the region is free of comments the render would reflow.
        */

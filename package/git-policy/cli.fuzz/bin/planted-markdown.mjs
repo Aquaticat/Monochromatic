@@ -17,8 +17,8 @@ export const markdownPlants = [
     name: 'linter standard error without a final line feed is accepted',
     file: 'package/git-policy/cli/src/native/markdown_linter_output.rs',
     edits: [{
-      from: "let Some(body) = text.strip_suffix('\\n') else {",
-      to: "let Some(body) = text.strip_suffix('\\n').or(Some(text)) else {",
+      from: String.raw`let Some(body) = text.strip_suffix('\n') else {`,
+      to: String.raw`let Some(body) = text.strip_suffix('\n').or(Some(text)) else {`,
     }],
   },
   {

@@ -1,15 +1,30 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawnSync } from 'node:child_process';
 
 //region Test the actual inline classifier in a disposable Node consumer, never mutate committed HTML
-const html = readFileSync(join(process.cwd(), 'questions', 'keyboard-map.prototype.html'), 'utf8');
-const program = html.match(/<script>([\s\S]*?)<\/script>/)?.[1];
+const html = readFileSync(
+  join(
+    process.cwd(),
+    'questions',
+    'keyboard-map.prototype.html'
+  ),
+  'utf8'
+);
+const program = (/<script>([\s\S]*?)<\/script>/.exec(html))?.[1];
 if (!program) throw new Error('Expected one keyboard-map program.');
 const boundary = program.indexOf('//region Authored transitions');
-if (boundary < 0) throw new Error('Keyboard-map classifier boundary differs.');
-const source = program.slice(0, boundary);
+if (boundary === (-1)) throw new Error('Keyboard-map classifier boundary differs.');
+const source = program.slice(
+  0,
+  boundary
+);
 const mutations = {
   'without-player-owner': "  if (request.owner !== 'player') return 'unbound';",
   'without-composition-owner': "  if (request.composing) return 'owner';",
@@ -19,8 +34,13 @@ let candidate = source;
 const mutation = process.argv[2];
 if (mutation !== undefined) {
   const needle = mutations[mutation];
-  if (!needle || source.split(needle).length !== 2) throw new Error('Unknown mutation or changed keymap guard target.');
-  candidate = source.replace(needle, '');
+  if ((!needle) || (source.split(needle)
+    .length
+    !== 2)) throw new Error('Unknown mutation or changed keymap guard target.');
+  candidate = source.replace(
+    needle,
+    ''
+  );
 }
 const cases = `
 const base = { platform: 'windows-linux', key: ' ', ctrlKey: false, metaKey: false,
@@ -60,14 +80,37 @@ catch (error) { if (!String(error).includes('Unknown keyboard-map platform.')) t
 if (!rejected) throw new Error('Unknown keyboard platform was accepted.');
 console.log('Keymap classifier and ownership tests passed.');
 `;
-const fixture = mkdtempSync(join(tmpdir(), 'keymap-scope-'));
+const fixture = mkdtempSync(join(
+  tmpdir(),
+  'keymap-scope-'
+));
 try {
-  const path = join(fixture, 'consumer.mjs');
-  writeFileSync(path, candidate + cases);
-  const result = spawnSync(process.execPath, [path], { encoding: 'utf8', maxBuffer: 1024 * 1024 });
-  if (result.stdout) console.log(result.stdout.trim());
-  if (result.status !== 0) throw new Error('Keymap consumer failed: ' + result.stderr);
+  const path = join(
+    fixture,
+    'consumer.mjs'
+  );
+  writeFileSync(
+    path,
+    candidate + cases
+  );
+  const result = spawnSync(
+    process.execPath,
+    [path],
+    {
+      encoding: 'utf8',
+      maxBuffer: 1_024 * 1_024
+    }
+  );
+  if (result.stdout) console.log(result.stdout
+    .trim());
+  if (result.status !== 0) throw new Error(`Keymap consumer failed: ${  result.stderr}`);
 } finally {
-  rmSync(fixture, { recursive: true, force: true });
+  rmSync(
+    fixture,
+    {
+      recursive: true,
+      force: true
+    }
+  );
 }
 //endregion

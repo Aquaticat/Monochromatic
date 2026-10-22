@@ -309,7 +309,7 @@ function firstLetterLike(
     first.at,
   )}${model.character}${text.slice(first.at
     + first.character
-    .length,)}`;
+      .length,)}`;
 }
 
 /**
@@ -348,7 +348,7 @@ function patternFor(
     chosen.core
       .slice(chosen.slotStart
         + chosen.slot
-        .length,)
+          .length,)
   }`;
 }
 

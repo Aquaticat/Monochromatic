@@ -235,7 +235,7 @@ export async function runArchiveBlockReviewStage(
       if (verdict.kind === 'stands')
         return true;
       reviewLog.warn(`archive review dropped the ${voice.value
-      .disposition} reply of ${voice.modelId}: ${verdict.reason}`,);
+        .disposition} reply of ${voice.modelId}: ${verdict.reason}`,);
       return false;
     },);
   /**

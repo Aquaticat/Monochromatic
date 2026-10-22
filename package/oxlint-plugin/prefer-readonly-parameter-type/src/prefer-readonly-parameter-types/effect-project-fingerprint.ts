@@ -266,7 +266,8 @@ export function effectProjectFingerprint({
   },);
   updateHashPlainValue({
     digest,
-    value: project.parsedCommandLine.options,
+    value: project.parsedCommandLine
+      .options,
   },);
   /**
    Resolved compiler-option identity validated by incremental entries.
@@ -274,7 +275,8 @@ export function effectProjectFingerprint({
   const optionsDigest = createHash('sha256',);
   updateHashPlainValue({
     digest: optionsDigest,
-    value: project.parsedCommandLine.options,
+    value: project.parsedCommandLine
+      .options,
   },);
   fileNames.forEach(function hashSource(fileName,): void {
     /**
@@ -384,7 +386,8 @@ export function effectProjectFingerprint({
     },
     shared: {
       ambientSurfaceDigest: ambientSurface.digest('hex',),
-      checkingOptions: checkingOptionsKey(project.parsedCommandLine.options,),
+      checkingOptions: checkingOptionsKey(project.parsedCommandLine
+        .options,),
     },
   };
 }

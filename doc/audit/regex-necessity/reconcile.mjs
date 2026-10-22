@@ -1,6 +1,11 @@
 // Reconcile: correct the already-filed issues in place, then file the remaining
 // sites. Resume-safe via a ledger keyed by span identity.
-import { readFileSync, writeFileSync, appendFileSync, existsSync, } from 'node:fs';
+import {
+  readFileSync,
+  writeFileSync,
+  appendFileSync,
+  existsSync,
+} from 'node:fs';
 import { execFileSync, } from 'node:child_process';
 import { join, } from 'node:path';
 
@@ -11,31 +16,70 @@ import { fileURLToPath, } from 'node:url';
  Repository root, derived from this file's committed location rather than a
  hardcoded path, so the harness runs from any clone.
  */
-const ROOT = fileURLToPath(new URL('../../../..', import.meta.url)).replace(/\/$/, '');
+const ROOT = fileURLToPath(new URL(
+  '../../../..',
+  import.meta.url
+))
+  .replace(
+  /\/$/,
+  ''
+  );
 
 /**
  Scratch working directory. The harness writes mirrors and ledgers here, never
  into the repository. Override with REGEX_AUDIT_WORK.
  */
-const AUDIT = process.env.REGEX_AUDIT_WORK ?? `${homedir()}/temp/agent/regex-audit`;
+const AUDIT = process.env
+  .REGEX_AUDIT_WORK
+  ?? `${homedir()}/temp/agent/regex-audit`;
 
-const LEDGER = join(AUDIT, 'filed2.jsonl');
+const LEDGER = join(
+  AUDIT,
+  'filed2.jsonl'
+);
 const GATE_ISSUE = '679';
 const INDEX_ISSUE = '680';
-const DELAY_MS = 1200;
-const OLD_LABELS = ['ready-for-agent', 'enhancement', 'difficulty:easy', 'difficulty:medium', 'difficulty:hard', 'app:music-player', 'deferred-new-packages', 'needs-triage'];
+const DELAY_MS = 1_200;
+const OLD_LABELS = [
+  'ready-for-agent',
+  'enhancement',
+  'difficulty:easy',
+  'difficulty:medium',
+  'difficulty:hard',
+  'app:music-player',
+  'deferred-new-packages',
+  'needs-triage'
+];
 
-const payloads = JSON.parse(readFileSync(join(AUDIT, 'payloads.json'), 'utf8'));
-const previous = readFileSync(join(AUDIT, 'filed.jsonl'), 'utf8').split('\n')
+const payloads = JSON.parse(readFileSync(
+  join(
+    AUDIT,
+    'payloads.json'
+  ),
+  'utf8'
+));
+const previous = readFileSync(
+  join(
+    AUDIT,
+    'filed.jsonl'
+  ),
+  'utf8'
+)
+  .split('\n')
   .filter((line) => line.trim() !== '')
   .map((line) => JSON.parse(line));
 
 const done = new Set();
 if (existsSync(LEDGER)) {
-  for (const line of readFileSync(LEDGER, 'utf8').split('\n')) {
+  for (const line of readFileSync(
+    LEDGER,
+    'utf8'
+  )
+    .split('\n')) {
     if (line.trim() === '') continue;
     try {
-      done.add(JSON.parse(line).siteId);
+      done.add(JSON.parse(line)
+        .siteId);
     } catch (error) {
       console.error(`unreadable ledger line: ${String(error)}`);
     }
@@ -49,38 +93,87 @@ for (const record of previous) {
   const key = `${record.repoPath}:${record.line}`;
   const list = byLine.get(key) ?? [];
   list.push(record);
-  byLine.set(key, list);
+  byLine.set(
+    key,
+    list
+  );
 }
-for (const list of byLine.values()) list.sort((left, right) => (left.title < right.title ? -1 : 1));
+for (const list of byLine.values()) list.sort((
+  left,
+  right
+) => (left.title < right.title ? -1 : 1));
 
 const payloadByLine = new Map();
 for (const payload of payloads) {
   const key = `${payload.repoPath}:${payload.line}`;
   const list = payloadByLine.get(key) ?? [];
   list.push(payload);
-  payloadByLine.set(key, list);
+  payloadByLine.set(
+    key,
+    list
+  );
 }
-for (const list of payloadByLine.values()) list.sort((left, right) => (left.column - right.column) || (left.offset - right.offset));
+for (const list of payloadByLine.values()) list.sort((
+  left,
+  right
+) => (left.column - right.column) || (left.offset - right.offset));
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+function sleep(ms) { return new Promise((resolve) => setTimeout(
+  resolve,
+  ms
+)); }
 
 function bodyOf(payload) {
-  const record = JSON.parse(readFileSync(payload.file, 'utf8'));
-  return record.body.replaceAll('#INDEX', `#${INDEX_ISSUE}`).replaceAll('#GATE', `#${GATE_ISSUE}`);
+  const record = JSON.parse(readFileSync(
+    payload.file,
+    'utf8'
+  ));
+  return record.body
+    .replaceAll(
+    '#INDEX',
+    `#${INDEX_ISSUE}`
+    )
+    .replaceAll(
+    '#GATE',
+    `#${GATE_ISSUE}`
+    );
 }
 
-function run(args, label) {
-  for (const attempt of [1, 2, 3]) {
+function run(
+  args,
+  label
+) {
+  for (const attempt of [
+    1,
+    2,
+    3
+  ]) {
     try {
-      return execFileSync('gh', args, { cwd: ROOT, encoding: 'utf8', timeout: 180_000, }).trim();
+      return execFileSync(
+        'gh',
+        args,
+        {
+          cwd: ROOT,
+          encoding: 'utf8',
+          timeout: 180_000,
+        }
+      )
+        .trim();
     } catch (error) {
-      const message = String(error).slice(0, 200);
+      const message = String(error)
+        .slice(
+        0,
+        200
+        );
       if (attempt === 3) {
         console.error(`FAILED ${label} :: ${message}`);
         return null;
       }
       console.error(`retry ${attempt} ${label} :: ${message}`);
-      execFileSync('sleep', [String(15 * attempt), ]);
+      execFileSync(
+        'sleep',
+        [String(15 * attempt), ]
+      );
     }
   }
   return null;
@@ -90,7 +183,10 @@ let edited = 0;
 let created = 0;
 let skipped = 0;
 let failed = 0;
-const bodyPath = join(AUDIT, 'current-body.md');
+const bodyPath = join(
+  AUDIT,
+  'current-body.md'
+);
 
 for (const [key, filedList] of byLine) {
   const candidates = payloadByLine.get(key) ?? [];
@@ -105,18 +201,51 @@ for (const [key, filedList] of byLine) {
       skipped += 1;
       continue;
     }
-    const number = filed.url.split('/').pop();
-    writeFileSync(bodyPath, bodyOf(payload), 'utf8');
-    const args = ['issue', 'edit', number, '--body-file', bodyPath,];
-    for (const label of OLD_LABELS) args.push('--remove-label', label);
-    for (const label of payload.labels) args.push('--add-label', label);
-    const result = run(args, `edit #${number}`);
+    const number = filed.url
+      .split('/')
+      .pop();
+    writeFileSync(
+      bodyPath,
+      bodyOf(payload),
+      'utf8'
+    );
+    const args = [
+      'issue',
+      'edit',
+      number,
+      '--body-file',
+      bodyPath,
+    ];
+    for (const label of OLD_LABELS) args.push(
+      '--remove-label',
+      label
+    );
+    for (const label of payload.labels) args.push(
+      '--add-label',
+      label
+    );
+    const result = run(
+      args,
+      `edit #${number}`
+    );
     if (result === null) {
       failed += 1;
       continue;
     }
     edited += 1;
-    appendFileSync(LEDGER, `${JSON.stringify({ siteId: payload.siteId, action: 'edited', number, url: filed.url, repoPath: payload.repoPath, line: payload.line, title: payload.title, })}\n`, 'utf8');
+    appendFileSync(
+      LEDGER,
+      `${JSON.stringify({
+        siteId: payload.siteId,
+        action: 'edited',
+        number,
+        url: filed.url,
+        repoPath: payload.repoPath,
+        line: payload.line,
+        title: payload.title,
+      })}\n`,
+      'utf8'
+    );
     console.log(`edited ${edited} #${number} ${payload.repoPath}:${payload.line}`);
     await sleep(DELAY_MS);
   }
@@ -129,17 +258,50 @@ for (const payload of payloads) {
     skipped += 1;
     continue;
   }
-  writeFileSync(bodyPath, bodyOf(payload), 'utf8');
-  const record = JSON.parse(readFileSync(payload.file, 'utf8'));
-  const args = ['issue', 'create', '--title', record.title, '--body-file', bodyPath,];
-  for (const label of payload.labels) args.push('--label', label);
-  const url = run(args, `create ${payload.repoPath}:${payload.line}`);
-  if (url === null || url === '') {
+  writeFileSync(
+    bodyPath,
+    bodyOf(payload),
+    'utf8'
+  );
+  const record = JSON.parse(readFileSync(
+    payload.file,
+    'utf8'
+  ));
+  const args = [
+    'issue',
+    'create',
+    '--title',
+    record.title,
+    '--body-file',
+    bodyPath,
+  ];
+  for (const label of payload.labels) args.push(
+    '--label',
+    label
+  );
+  const url = run(
+    args,
+    `create ${payload.repoPath}:${payload.line}`
+  );
+  if ((url === null) || (url === '')) {
     failed += 1;
     continue;
   }
   created += 1;
-  appendFileSync(LEDGER, `${JSON.stringify({ siteId: payload.siteId, action: 'created', number: url.split('/').pop(), url, repoPath: payload.repoPath, line: payload.line, title: record.title, })}\n`, 'utf8');
+  appendFileSync(
+    LEDGER,
+    `${JSON.stringify({
+      siteId: payload.siteId,
+      action: 'created',
+      number: url.split('/')
+        .pop(),
+      url,
+      repoPath: payload.repoPath,
+      line: payload.line,
+      title: record.title,
+    })}\n`,
+    'utf8'
+  );
   console.log(`created ${created} ${url} ${payload.repoPath}:${payload.line}`);
   await sleep(DELAY_MS);
 }

@@ -360,10 +360,10 @@ export function emitCorpus(): string {
       return [
         '  () => {',
         `    const merged = deepmerge(${values.map(emitConstArgument,)
-        .join(', ',)});`,
+          .join(', ',)});`,
       // Contextually typed, so an empty array must stay a bare literal to match an empty tuple.
         `    const check: typeof merged = ${emitLiteral(result,)
-        .replaceAll(
+          .replaceAll(
           '([] as never[])',
           '[]',
         )};`,

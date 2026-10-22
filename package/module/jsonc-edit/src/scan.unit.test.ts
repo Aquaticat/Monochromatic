@@ -52,7 +52,7 @@ await describe({
         it({
           name: 'honors backslash escapes so an escaped quote does not end the string',
           fn: async () => {
-            const scan = scanString({ source: '"a\\"b"', index: 0, },);
+            const scan = scanString({ source: String.raw`"a\"b"`, index: 0, },);
             expect(scan.value,).toBe('a"b',);
             expect(scan.end,).toBe(6,);
           },
