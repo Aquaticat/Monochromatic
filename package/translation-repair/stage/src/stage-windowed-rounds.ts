@@ -293,6 +293,8 @@ export async function runWindowedRounds<ValueT,>(
       ...roundRequest,
       modelIds,
       heardNeeded: neededWith(0,),
+      // Sized again at every refusal inside the round (owner, 2026-10-22).
+      heardNeededAfterRefusals: neededWith,
     },);
     /**
      Seats the router refused in that round.
@@ -370,6 +372,10 @@ export async function runWindowedRounds<ValueT,>(
       // A refused seat hands its place to the next pending one in this round.
       reserve: pending.slice(asking.length,),
       heardNeeded: heardNeeded - heardSeats.size,
+      // Sized again at every refusal inside the round (owner, 2026-10-22).
+      heardNeededAfterRefusals: function neededAfter(refused,): number {
+        return neededWith(refusedSeats.size + refused,) - heardSeats.size;
+      },
     },);
     /* oxlint-enable no-await-in-loop */
     // The window, then every reserve seat the round took, leave `pending`.

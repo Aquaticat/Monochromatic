@@ -29,6 +29,47 @@ await describe({
             expect(findUncertainty('A fact stated plainly.',),).toBe(NO_MATCH,);
           },
         },),
+        it({
+          name: 'matches an admitted gap in each spoken form',
+          fn: async () => {
+            const admissions = [
+              ["I didn't check whether the release job runs the tests.", "i didn't check",],
+              ['I did not check which controller the board uses.', 'i did not check',],
+              ["I haven't verified this, and CI has to cover it.", "i haven't verified",],
+              ['I have not read the final reports yet.', 'i have not read',],
+              ["I haven't tested an actual reboot.", "i haven't tested",],
+              ["I haven't confirmed that.", "i haven't confirmed",],
+              ['I did not run the combined task.', 'i did not run',],
+              ['Not verified by me: the agent says the lint run exits 1.', 'not verified',],
+              ['Not checked: whether FRC collides with a retired code.', 'not checked',],
+              ['Not tested yet: two commits running at once.', 'not tested',],
+            ] as const;
+
+            for (const [text, phrase,] of admissions) {
+              expect(findUncertainty(text,),).toEqual({ phrase, },);
+            }
+          },
+        },),
+        it({
+          name: 'matches an admitted gap written with a curly apostrophe',
+          fn: async () => {
+            expect(findUncertainty('I didn’t check whether the release can save that cache.',),)
+              .toEqual({ phrase: "i didn't check", },);
+          },
+        },),
+        it({
+          name: 'leaves a negation that is not an admitted gap alone',
+          fn: async () => {
+            expect(findUncertainty("I haven't deleted anything, and I didn't touch the other session's files.",),)
+              .toBe(NO_MATCH,);
+          },
+        },),
+        it({
+          name: 'leaves the bare adjectives untested and unverified alone',
+          fn: async () => {
+            expect(findUncertainty('The merge is untested and the version job is unverified.',),).toBe(NO_MATCH,);
+          },
+        },),
       ],
     },),
     describe({
@@ -199,6 +240,43 @@ await describe({
           name: 'strips inline code',
           fn: async () => {
             const cleaned = stripNonProseRegions('use `maybe` here',);
+            expect(cleaned.includes('maybe',),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'strips a single-quoted string',
+          fn: async () => {
+            const cleaned = stripNonProseRegions("the word 'maybe' appears here",);
+            expect(cleaned.includes('maybe',),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'keeps text between two contractions on the same line',
+          fn: async () => {
+            const cleaned = stripNonProseRegions("The workflow's comments say it works, but I didn't check.",);
+            expect(cleaned.includes('comments say it works',),).toBe(true,);
+            expect(findUncertainty(cleaned,),).toEqual({ phrase: "i didn't check", },);
+          },
+        },),
+        it({
+          name: 'finds a hedge between two contractions, which a paired apostrophe used to hide',
+          fn: async () => {
+            const prose = stripNonProseRegions("It doesn't build, probably because the cache isn't warm.",);
+            expect(findUncertainty(prose,),).toEqual({ phrase: 'probably', },);
+          },
+        },),
+        it({
+          name: 'strips a quote that opens or closes at the very edge of the text',
+          fn: async () => {
+            const cleaned = stripNonProseRegions("'maybe' is the word, and so is 'perhaps'",);
+            expect(cleaned.includes('maybe',),).toBe(false,);
+            expect(cleaned.includes('perhaps',),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'still strips a quote that opens after a contraction',
+          fn: async () => {
+            const cleaned = stripNonProseRegions("It doesn't mean 'maybe' here.",);
             expect(cleaned.includes('maybe',),).toBe(false,);
           },
         },),

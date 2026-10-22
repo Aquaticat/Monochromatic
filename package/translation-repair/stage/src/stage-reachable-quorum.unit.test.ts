@@ -39,6 +39,72 @@ await describe({
         },),
 
         it({
+          name: 'CLOSES ONE VOICE BELOW EVERY LIVE SEAT where the reachable seats are exactly the bench quorum, so '
+            + 'the straggler grace can open on the last of them (owner, 2026-10-22, "Let the grace open"): seven '
+            + 'seats with three dark leave four, which close on three',
+          fn: async () => {
+            expect(reachableQuorum({ benchSize: 7, unreachable: 3, },),).toEqual({
+              needed: 3,
+              reachable: 4,
+              benchQuorum: 4,
+              short: true,
+            },);
+            expect(reachableQuorum({ benchSize: 11, unreachable: 5, },),).toEqual({
+              needed: 5,
+              reachable: 6,
+              benchQuorum: 6,
+              short: true,
+            },);
+          },
+        },),
+
+        it({
+          name: 'WAITS ON EVERY LIVE SEAT UNDER THE RULE OF 2026-09-09 when the last-seat grace is off, as a reader of '
+            + 'a record written before 2026-10-22 asks: seven seats with three dark need all four',
+          fn: async () => {
+            expect(reachableQuorum({
+              benchSize: 7,
+              unreachable: 3,
+              lastSeatGrace: false,
+            },),).toEqual({
+              needed: 4,
+              reachable: 4,
+              benchQuorum: 4,
+              short: false,
+            },);
+            expect(reachableQuorum({
+              benchSize: 11,
+              unreachable: 7,
+              lastSeatGrace: false,
+            },),).toEqual(reachableQuorum({
+              benchSize: 11,
+              unreachable: 7,
+            },),);
+          },
+        },),
+
+        it({
+          name: 'KEEPS THE TWO-VOICE FLOOR where the reachable seats are exactly a bench quorum of two, so one judge '
+            + 'alone never decides, and LEAVES a seated bench of one or two on its own quorum of one',
+          fn: async () => {
+            expect(reachableQuorum({ benchSize: 3, unreachable: 1, },),).toEqual({
+              needed: 2,
+              reachable: 2,
+              benchQuorum: 2,
+              short: false,
+            },);
+            expect(reachableQuorum({ benchSize: 4, unreachable: 2, },).needed,).toBe(MIN_STAGE_VOICES,);
+            expect(reachableQuorum({ benchSize: 1, unreachable: 0, },),).toEqual({
+              needed: 1,
+              reachable: 1,
+              benchQuorum: 1,
+              short: false,
+            },);
+            expect(reachableQuorum({ benchSize: 2, unreachable: 0, },).needed,).toBe(1,);
+          },
+        },),
+
+        it({
           name: 'SIZES THE QUORUM ON THE REACHABLE SEATS once they are fewer than the bench quorum, at half of them '
             + 'rounded up and never under the two-voice floor: seven of eleven seats dark leaves four, which close '
             + 'on two',

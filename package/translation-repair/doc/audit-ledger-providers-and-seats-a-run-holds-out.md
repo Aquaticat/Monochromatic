@@ -2,7 +2,8 @@
 
 A provider an owner ruling keeps off,
 a seat the tally never withheld although its streams carried nothing,
-and a meter line that read a held provider differently from the router.
+a meter line that read a held provider differently from the router,
+and a model an owner answer took off the late-judge bench.
 
 Part of [Audit ledger](audit-ledger.md),
 which lists every file of this record.
@@ -224,3 +225,87 @@ Recurrence:
 
 Cache account:
 none.
+
+## B815: Qwen3.8-27B sat on the lane contest and consolidation benches, and the grace cut 40 of its 95 streams
+
+Status:
+fixed on 2026-10-22 (UTC) in `tr-w277`,
+on the owner's answer "Remove from both benches",
+red `99eca0e2af`,
+fix `9639e19d85`,
+reseat test follow-on `89067fb49a` (M287).
+Cache versions:
+the consolidate (31) and lane-contest (15) keys hash the judges' ids,
+so the bench change rides inside both numbers,
+which then moved to 32 and 16 with B816.
+The reading of "both benches" is open to the owner's veto.
+
+The question and the evidence put to the owner:
+B810 (`audit-ledger-provider-streams-usage-and-retries.md`) ended by asking
+whether `hf:Qwen/Qwen3.8-27B` should sit on the consolidation and late-judge benches at all while Synthetic serves it.
+In `XingZ6017`,
+served by Synthetic,
+40 of its 95 streams were cut after the grace with no answer,
+and the mean consolidation slice cost rose from 149 s to 315 s and 346 s while it was seated.
+On `Carena0442`,
+when Hyper served it,
+17 of 19 lane-contest rounds and 7 of 14 consolidation-gate rounds cut it
+(TSDoc of `LATE_JUDGE_DROPPED`,
+`run-config.ts`).
+
+The reading recorded:
+"both benches" is the lane-contest bench and the consolidation bench,
+which are seated from one list,
+the late judges (`RUN_LATE_JUDGES`,
+filtered by `judgeSeatsFor` in `run-seats.ts`;
+the consolidation slate's judges are taken from it).
+Qwen keeps its wide seats
+(the critic,
+the panel and the judges of both lanes),
+where `run-seats.ts` still seats it per provider
+and `HYPER_SLOW_JUDGES` still withholds it where Hyper would serve it.
+The wider reading,
+"remove it from every judge seat",
+was not taken,
+because the question the answer followed named two benches.
+
+What changed:
+the `hf:Qwen/Qwen3.8-27B` card in `shared-contract/src/model-cards.ts` holds `late-judge-dropped` beside
+`openrouter-dropped`,
+and `LATE_JUDGE_DROPPED` in `run-config.ts` reads that hold,
+so `RUN_LATE_JUDGES` is seven whichever provider is wet
+(it was eight with Synthetic wet and seven with it dry).
+The `JUDGE SEATS` line reads `late=7 slate=7` with every provider wet,
+where it read `late=8 slate=8`.
+The hold is on the card and not in `run-seats.ts`,
+so the seat stays off the bench when Synthetic goes dry and when only OpenRouter is left.
+
+Red and green:
+`run-seats.unit.test.ts` now expects the late judges without Qwen while the wide and select seats keep it
+(the case for OpenRouter alone),
+and `run-seats-read.unit.test.ts` expects the new counts in the `JUDGE SEATS` line.
+The red commit fails against the card,
+which held only `openrouter-dropped`.
+The run package's tests were run on the fix commit;
+the corpus-pass package's were not,
+which is the follow-on.
+
+The follow-on:
+`pass-seams-reseat.unit.test.ts` in the corpus-pass package failed at load after the fix commit,
+because its fixture guard found that a Synthetic dry-out no longer takes a late judge.
+Of the 31 views with at least one provider dry,
+4 take a late judge (`hf:moonshotai/Kimi-K3`):
+Synthetic and Hyper dry with OpenRouter wet,
+with any of NeuralWatt and Bedrock.
+`89067fb49a` moved the contest and consolidation reseat cases to that view.
+The process mistake is M287.
+
+Not verified:
+B810 does not split the 95 streams by bench,
+so how many of the 40 cuts fell on the two benches left is not known from the record.
+No run has gathered since the change,
+so the round time it saves is not measured.
+
+Open to the owner's veto:
+the reading of "both benches",
+and with it whether the wide seats keep Qwen.

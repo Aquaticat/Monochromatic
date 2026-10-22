@@ -214,6 +214,17 @@ and resuming a session cannot lose the count.
    if I remember,
    from what I recall,
    as far as I know
+- **Admitted gaps**:
+   I didn't check,
+   I haven't verified,
+   I haven't tested,
+   I haven't read,
+   I haven't confirmed,
+   I haven't run,
+   not verified,
+   not checked,
+   not tested
+   (each also in the "did not" and "have not" forms)
 
 ## Installation
 

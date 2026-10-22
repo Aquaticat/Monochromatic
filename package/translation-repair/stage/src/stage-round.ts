@@ -1,4 +1,5 @@
 import type { Logger, } from '@monochromatic-dev/module-logger/ts';
+import { once, } from 'node:events';
 import { settleWithin, } from '@monochromatic-dev/module-async-time/ts';
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
@@ -166,18 +167,107 @@ async function nextSettled(
 }
 
 /**
+ What the next router refusal settles to in the race `awaitHeard` runs, in
+ place of an ask's position: no position is negative, so it names no ask.
+ */
+const REFUSAL_NOTED = -1;
+
+/**
+ One stretch of a round between router refusals: aborting `controller` marks
+ the next refusal and settles `noted`.
+
+ @example
+ ```ts
+ const tick: RefusalTick = freshRefusalTick();
+ ```
+ */
+type RefusalTick = {
+  /**
+   Aborted at the refusal that ends this stretch.
+   */
+  readonly controller: AbortController;
+
+  /**
+   Settles to {@link REFUSAL_NOTED} once `controller` aborts.
+   */
+  readonly noted: Promise<number>;
+};
+
+/**
+ Router refusals a round has seen so far, and the stretch the next one ends.
+
+ @example
+ ```ts
+ const refusals: RefusalTally = { count: 0, tick: freshRefusalTick(), };
+ ```
+ */
+type RefusalTally = {
+  /**
+   Seats the router refused this round, reserve seats included.
+   */
+  count: number;
+
+  /**
+   Stretch the next refusal ends.
+   */
+  tick: RefusalTick;
+};
+
+/**
+ Opens a stretch the next router refusal ends.
+
+ ONE PROMISE PER STRETCH, not one per pass of `awaitHeard`'s loop: every
+ pass races the same `noted`, so the signal never gathers a listener per pass.
+
+ @returns Stretch whose `noted` settles once its controller aborts
+
+ @example
+ ```ts
+ refusals.tick = freshRefusalTick();
+ ```
+ */
+function freshRefusalTick(): RefusalTick {
+  /**
+   Aborted at the refusal that ends this stretch.
+   */
+  const controller = new AbortController();
+  return {
+    controller,
+    noted: (async function untilRefusal(): Promise<number> {
+      await once(
+        controller.signal,
+        'abort',
+      );
+      return REFUSAL_NOTED;
+    })(),
+  };
+}
+
+/**
  Waits until enough voices are heard, or until every ask has settled.
 
  Counts HEARD voices rather than settled calls, because a call that came back
  unusable moves the round no closer to a quorum and waiting on it is the same
  waiting this module exists to bound.
 
+ THE NEED IS READ AGAIN AT EVERY SETTLED ASK AND EVERY ROUTER REFUSAL, since
+ the owner's answer of 2026-10-22 ("Let the grace open"): a refusal shrinks
+ the bench the quorum is sized on, and a round sized before it would wait
+ on every live seat where the bench, read again, closes one voice short of
+ them. A refused seat that hands its place to a reserve seat settles no ask,
+ so the refusal wakes the wait itself.
+
  @param asks - in-flight asks, one per model
 
- @param heardNeeded - voices this round must hear before the grace starts
+ @param neededNow - voices this round must hear before the grace starts, on
+ the refusals seen so far
+
+ @param refusals - router refusals this round has seen
 
  @param signal - the caller's abort, whose reason is what the round rejects
  with when an ask rejects, whichever ask ended first
+
+ @returns Voices the round needed when the wait ended
 
  @throws The caller's abort reason, once an ask rejected after the caller aborted
 
@@ -187,20 +277,22 @@ async function nextSettled(
 
  @example
  ```ts
- await awaitHeard({ asks, heardNeeded: 2, signal, },);
+ const needed = await awaitHeard({ asks, neededNow, refusals, signal, },);
  ```
  */
 async function awaitHeard<ValueT,>(
   {
     asks,
-    heardNeeded,
+    neededNow,
+    refusals,
     signal,
   }: {
     readonly asks: readonly Promise<RoundOutcome<ValueT>>[];
-    readonly heardNeeded: number;
+    readonly neededNow: () => number;
+    readonly refusals: Readonly<RefusalTally>;
     readonly signal: AbortSignal;
   },
-): Promise<void> {
+): Promise<number> {
   /**
    Asks still to settle, keyed by position so the winner can be removed
    without identity comparisons on promises.
@@ -227,16 +319,23 @@ async function awaitHeard<ValueT,>(
    Voices heard so far this round.
    */
   const counters = { heard: 0, };
-  while ((counters.heard < heardNeeded) && (pending.size > 0)) {
-    /* oxlint-disable no-await-in-loop -- the loop IS the wait: each pass consumes exactly one settled ask and re-races the rest */
+  while ((counters.heard < neededNow()) && (pending.size > 0)) {
+    /* oxlint-disable no-await-in-loop -- the loop IS the wait: each pass consumes exactly one settled ask or one refusal and re-races the rest */
     /**
-     Position of the ask that settled first among those still pending.
+     Position of the ask that settled first among those still pending, or
+     {@link REFUSAL_NOTED} where a router refusal came first.
      */
     const settled = await nextSettled({
-      pending: pending.values(),
+      pending: [
+        ...pending.values(),
+        refusals.tick
+          .noted,
+      ],
       signal,
     },);
     /* oxlint-enable no-await-in-loop */
+    if (settled === REFUSAL_NOTED)
+      continue;
     pending.delete(settled,);
 
     /* oxlint-disable no-await-in-loop -- reading an already-settled promise, which suspends for one microtask rather than for a call */
@@ -250,6 +349,7 @@ async function awaitHeard<ValueT,>(
       === true)
       counters.heard += 1;
   }
+  return neededNow();
 }
 
 /**
@@ -299,6 +399,13 @@ function refusedByRouter<ValueT,>(
 
  @param heardNeeded - voices still needed for quorum, which starts the grace
 
+ @param heardNeededAfterRefusals - voices still needed once the router has
+ refused the given number of this round's seats, reserve seats included;
+ the round waits for the lesser of this and `heardNeeded`, read again at
+ every refusal, so a bench the refusals leave short opens its grace on the
+ quorum it now has (owner, 2026-10-22, "Let the grace open"). Absent, the
+ round waits for `heardNeeded` alone.
+
  @param reserve - pending seats past this round's window, in the order the
  gather would ask them; a seat the router refuses for want of a wet provider
  hands its place to the next of these at once, so the refusal costs the
@@ -331,6 +438,7 @@ export async function runGatherRound<ValueT,>(
     stage,
     l,
     heardNeeded,
+    heardNeededAfterRefusals,
     reserve = [],
     graceMs,
     decision,
@@ -346,6 +454,7 @@ export async function runGatherRound<ValueT,>(
     readonly stage: string;
     readonly l: Logger;
     readonly heardNeeded: number;
+    readonly heardNeededAfterRefusals?: (refused: number,) => number;
     readonly reserve?: readonly RosterModelId[];
     readonly graceMs: number;
     readonly decision?: StageDecision;
@@ -399,6 +508,48 @@ export async function runGatherRound<ValueT,>(
    took them; their outcomes sit after the window's.
    */
   const taken: RosterModelId[] = [];
+
+  /**
+   Router refusals this round has seen, which the wait for quorum reads.
+   */
+  const refusals: RefusalTally = {
+    count: 0,
+    tick: freshRefusalTick(),
+  };
+
+  /**
+   Counts a seat the router refused and wakes the wait for quorum, which
+   reads the need again; any other outcome leaves both alone.
+
+   @param outcome - outcome of the seat a slot just asked
+   */
+  function noteRefusal({ outcome, }: { readonly outcome: RoundOutcome<ValueT>; },): void {
+    if (!refusedByRouter({ outcome, },))
+      return;
+    refusals.count += 1;
+    /**
+     Stretch this refusal ends.
+     */
+    const ended = refusals.tick;
+    refusals.tick = freshRefusalTick();
+    ended.controller
+      .abort();
+  }
+
+  /**
+   Voices this round must hear before the grace opens, on the refusals seen
+   so far: never more than `heardNeeded`.
+
+   @returns Heard voices the wait for quorum stops at
+   */
+  function neededNow(): number {
+    return (heardNeededAfterRefusals === undefined)
+      ? heardNeeded
+      : Math.min(
+        heardNeeded,
+        heardNeededAfterRefusals(refusals.count,),
+      );
+  }
 
   /**
    Asks one seat and records its outcome at its position.
@@ -509,7 +660,9 @@ export async function runGatherRound<ValueT,>(
    no grace, 2,852 s of the 4,575 s its rounds took. The refused seat stays
    on the bench, as the owner's rule of 2026-09-09 has it
    (`doc/decision/translation-repair-short-bench-share.md`); only its place
-   in this round passes on.
+   in this round passes on. Since 2026-10-22 each refusal also wakes the
+   wait, which sizes the need again (`heardNeededAfterRefusals`), so a bench
+   a refusal leaves with exactly its quorum closes one voice below it.
    */
   const asks = modelIds.map(async function askSlot(
     modelId,
@@ -522,6 +675,7 @@ export async function runGatherRound<ValueT,>(
       modelId,
       position: index,
     },);
+    noteRefusal({ outcome, },);
     /**
      Reserve seat next in line, if any is left.
      */
@@ -535,14 +689,20 @@ export async function runGatherRound<ValueT,>(
         modelId: next,
         position: (modelIds.length + taken.length) - 1,
       },);
+      noteRefusal({ outcome, },);
       next = reserve[taken.length];
     }
     return outcome;
   },);
 
-  await awaitHeard({
+  /**
+   Voices the round needed when the wait for quorum ended, after every
+   refusal it saw.
+   */
+  const neededAtQuorum = await awaitHeard({
     asks,
-    heardNeeded,
+    neededNow,
+    refusals,
     signal,
   },);
 
@@ -646,7 +806,7 @@ export async function runGatherRound<ValueT,>(
       // A round that never reaches quorum stops waiting once nothing is
       // pending, so its "quorum" mark is only when the last ask settled
       // (ledger P12).
-      quorum: (heard >= heardNeeded)
+      quorum: (heard >= neededAtQuorum)
         ? {
           kind: 'stood',
           toQuorumMs: quorumAt - startedAt,
@@ -654,7 +814,7 @@ export async function runGatherRound<ValueT,>(
         }
         : {
           kind: 'never',
-          needed: heardNeeded,
+          needed: neededAtQuorum,
         },
     },),
   );

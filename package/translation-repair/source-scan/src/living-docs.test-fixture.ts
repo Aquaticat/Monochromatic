@@ -9,6 +9,7 @@ import {
 } from 'node:path';
 
 import { familyPackages, } from './family-source.test-fixture.ts';
+import { linkTargets, } from './markdown-link-targets.test-fixture.ts';
 
 //region Living repository-level docs
 // The repository-level translation-repair docs that state current fact and are
@@ -73,6 +74,7 @@ export const OTHER_STEMS: readonly string[] = [
   'artifact-archive-text',
   'artifact-stores-',
   'barrel-star-export-drops-ambiguous-names',
+  'cli-git-temporary-worktree-policy-inputs',
   'corpus-text-reached-a-public-repository',
   'coverage-wire-rerun-trade',
   'critic-attribution',
@@ -81,15 +83,20 @@ export const OTHER_STEMS: readonly string[] = [
   'editor-and-refiner-seating',
   'every-volume-guard-is-blind-to-one-model',
   'flagged-slice-replacement-rate',
+  'forbidden-strings-builtin-rule-fixture-tokens',
   'glm-4-7-flash-across-every-stage',
   'incumbent-almost-never-wins-a-contest',
   'introduced-defect-probe-false-negatives',
   'introduced-defect-probe-gating',
   'line-structure-loss-when-a-replacement-ships',
   'llm-assisted-block-pairing',
+  'mise-detached-worktree-trust',
+  'mise-inline-node-arguments',
   'naturalness-lane-reach',
+  'node-lookup-in-agent-command-context',
   'nul-bytes-land-invisibly-in-source',
   'one-sided-pairing-census',
+  'oxlint-type-aware-cgroup-memory',
   'pgrep-wait-loop-matches-itself',
   'reading-a-picture-at-the-user-boundary',
   'relocation-signature-at-flagged-slices',
@@ -167,48 +174,6 @@ type LivingRepositoryDocs = {
    */
   readonly operations: readonly string[];
 };
-
-/**
- Every Markdown link target in a text: what follows each `](` up to its `)`,
- without a fragment.
-
- @param text - Markdown text
-
- @returns Targets in text order
-
- @example
- ```ts
- linkTargets({ text: 'see [the nap log](naps.md#noon)', },); // ['naps.md']
- ```
- */
-function linkTargets({ text, }: { readonly text: string; },): readonly string[] {
-  return text
-    .split('](',)
-    .slice(1,)
-    .flatMap(function target(after,): readonly string[] {
-      /**
-       Where the target closes.
-       */
-      const end = after.indexOf(')',);
-      if (end === (-1))
-        return [];
-      /**
-       Target with any fragment.
-       */
-      const whole = after.slice(
-        0,
-        end,
-      );
-      /**
-       Where a fragment opens, or the end.
-       */
-      const fragment = whole.indexOf('#',);
-      return [fragment === (-1) ? whole : whole.slice(
-        0,
-        fragment,
-      ),];
-    },);
-}
 
 /**
  The Markdown a package keeps: every `.md` directly under its `doc`, sorted, then its README.

@@ -89,6 +89,16 @@
  634 stretches between blank lines of those archives hold one, and 25 of those stretches hold nothing else, so the sheet lists
  them empty under their own number.
 
+ Rides inside 3 too: the quorum rule of 2026-10-22 (owner, "Let the grace open"; ledger B816), under which a short
+ bench whose live seats are exactly its quorum closes one voice below it once the straggler grace ends
+ (`stage/src/stage-reachable-quorum.ts`). The section and block pairing rounds gather through that rule, and the rule
+ is in no key, so this number could not retire a record when it changed; the account of 2026-10-18 above holds for it:
+ a build whose pipeline digest differs discards the namespace before it reads it, so no pairing settled under the old
+ rule outlives the code that settled it. Run zheermao23, armed for 2026-10-22 19:16 UTC on `65e8325303`, may write
+ pairings under 3 on a digest no build holding the rule has. The digest does not hold a dependency, the Node binary or
+ the environment, and the rule changes none of them. The consolidate, lane-contest, translate slice, repair slice,
+ refine, consistency and page title versions move for the same rule (32, 16, 25, 43, 14, 7, 6).
+
  @example
  ```ts
  const material = JSON.stringify({ version: PAIRING_CACHE_VERSION, question, source, target, pictures, roster, },);

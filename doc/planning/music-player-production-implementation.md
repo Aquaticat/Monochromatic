@@ -767,6 +767,42 @@ Unit suite and detekt pass. The half circle at the bottom left of the
 human's screenshots is a system overlay (it shows on the launcher too), not the app. The blank band above the seek
 row when nothing plays is the deck heading's reserved lines (same `minLines` mechanism, `TransportDeck.kt`); left as is.
 
+RELEASED `music-player-v0.1.10` (pre-release, run `39754580630`, 13 assets) on 2026-10-22 with these fixes. 0.1.9 was
+never released (its run was cancelled as superseded; no tag or release exists). The arm64 and x86_64 APK hashes match
+`SHA256SUMS`, `gh attestation verify --repo Aquaticats/Monochromatic` exits 0 for the arm64 APK, the manifest
+`versionName` is `0.1.10`, and the arm64 APK installed over the human's 0.1.8 on the Pixel 6 (same signing key, data
+kept). A screenshot of the release build shows the one-row top bar, the deck gutters and the larger control gap. Both
+APK byte sizes equal the 0.1.8 sizes (17,948,369 and 20,389,299). The cause is unknown and not investigated; the
+installed build shows the new layout, so the build contains the fixes. Not checked on a device: a long folder name with
+the middle ellipsis, the fold.
+
+Merge of the Alpine and Windows workflows into `music-player-release.yml`, branch `chore/music-player-ci-merge` (the
+human's rule: the tests run on a release or a manual run only, and the two standalone workflows go away). The jobs
+`test-alpine` and `test-windows` gate `checksums`; a flaky test can therefore block a release, and a failed job is
+rerun with `gh run rerun --failed` (veto-open). Compilation is not shared between the test jobs and the release builds.
+The first dry run (`39756720608`, commit `4a0994eb2b`) passed both Alpine jobs and failed all three Windows jobs on one
+test, `session::tests::an_unreadable_session_path_loads_as_defaults_and_is_logged_with_the_read_error` (1515 passed,
+1 failed): Windows reports reading a directory as `PermissionDenied` ("Access is denied."), the assertion accepted only
+the Linux text. The code was right and the test was Linux-only; why the standalone Windows workflow had not caught it
+earlier was not investigated. Fix `57fc69a67e` compares with the platform's own error for the same read. Second
+dry run `39761698854` is in flight (bounded watcher, 90 minutes). Next: if every job passes, merge `origin/main` into the
+branch, fast-forward main, push, remove the worktree `/home/user/temp/agent/ci-merge`.
+
+Desktop type sizes, 2026-10-22 (open). The human's screenshot of the desktop looked off and they asked for "Music", the
+purple heading letter, folder names, the right pane title and track titles two smaller. I cut them by 2 px in
+`574de143f6` (`Theme.title-large - 2px`, `Theme.body-large - 2px` in `bars.slint`, `folders.slint`, `tracks.slint`;
+lint and 1546 desktop tests passed). The human then said the Slint tokens are unreliable and the sizes should match
+Android. Android sets no sizes of its own (stock Material 3: titleLarge 22 sp, bodyLarge 16 sp), the same numbers the
+desktop had, so the human chose "match Android's rendered look" on the Pixel 9 Pro Fold emulator at default display
+and font size, folded and opened. Agent `ab20e5cb0d50462c7` measured cap heights from emulator captures (390 dpi, font
+scale 1.0, no density override): titles and group headings 16.0 dp (22 sp), folder names and track titles 11.5 dp
+(16 sp); the folded top bar title is 11.5 dp (`titleMedium`). Captures: `/home/user/temp/agent/fold-type-sizes/`
+(invented library, on this machine only). Result: commit `1b078497b9` sets the five desktop texts to plain `22px` and
+`16px` (no `Theme` size tokens at those sites), which equals the sizes before the 2 px cut; 1546 desktop tests passed.
+Not measured: the desktop rendered beside the emulator. Known difference: the desktop uses "Inter Variable"
+(`app_window.slint:65`), Android the system font. Open: whether the human still sees a problem; other desktop screens
+still use the `Theme` size tokens (settings, search, deck), left alone because the human named five texts.
+
 In flight 2026-10-18 after 0.1.6: the license polish branch `fix/music-player-license-polish` reported; its entry is
 "2026-10-18, license polish after 0.1.6" above. Merge, then release 0.1.7. Not started, mine: a quiet-host perfetto
 trace for the 10,000-track jank (p = 0.089, optional), re-check of issues 1079 to 1081 and 1069 (Depot trial CI

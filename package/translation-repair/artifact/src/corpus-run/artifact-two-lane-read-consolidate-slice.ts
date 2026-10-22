@@ -236,6 +236,9 @@ function parseShippedTense(
 
  @param quorumBasisRequired - whether review rounds retain their wider quorum
 
+ @param lastSeatGrace - whether review rounds were decided with the last-seat
+ grace of 2026-10-22 (generation twenty on)
+
  @param tenseRecorded - whether the generation records the tense candidates of the shipped wording
 
  @returns Parsed consolidation slice
@@ -255,6 +258,7 @@ export function parseConsolidateSlice(
     correctionChainRequired = false,
     everyBodyBlockReviewed = false,
     quorumBasisRequired = false,
+    lastSeatGrace = false,
     tenseRecorded = false,
   }: {
     readonly value: unknown;
@@ -265,6 +269,7 @@ export function parseConsolidateSlice(
     readonly correctionChainRequired?: boolean;
     readonly everyBodyBlockReviewed?: boolean;
     readonly quorumBasisRequired?: boolean;
+    readonly lastSeatGrace?: boolean;
     readonly tenseRecorded?: boolean;
   },
 ): ArtifactConsolidateSlice {
@@ -372,6 +377,7 @@ export function parseConsolidateSlice(
           correctionChainRequired,
           everyBodyBlockReviewed,
           quorumBasisRequired,
+          lastSeatGrace,
         },),
       }
       : {}),

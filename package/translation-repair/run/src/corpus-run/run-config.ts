@@ -280,10 +280,13 @@ const WIDE_SEAT_DROPPED: ReadonlySet<RosterModelId> = holdSet({ hold: 'wide-seat
  the lane contest, the consolidation slate's judges and the consolidation
  gate. Those rounds seat the whole roster, `glm-5.3` included, since they were
  built after the wide-seat drop; only the owner's 2026-09-02 decision on
- GLM-5.3-Flash reaches them, for the reason on {@link WIDE_SEAT_DROPPED};
- Qwen3.8-27B (17 of 19 lane-contest and 7 of 14 consolidation-gate rounds
- cut on Carena0442 when Hyper served it) is seated per provider by
- `run-seats.ts`, not dropped here.
+ GLM-5.3-Flash reaches them, for the reason on {@link WIDE_SEAT_DROPPED}.
+ Qwen3.8-27B was seated here per provider by `run-seats.ts` until the owner's
+ answer of 2026-10-22 (UTC), "Remove from both benches": 17 of 19 lane-contest
+ and 7 of 14 consolidation-gate rounds cut on Carena0442 when Hyper served it,
+ and in XingZ6017, served by Synthetic, 40 of 95 streams cut after the grace
+ with no answer (ledger B810, B815). Its card holds it off these rounds now,
+ whichever provider would serve it.
  Pairing and insertion-admission rounds are not judgments of text and lost no
  voice to the window (27 of 27 and 9 of 9 heard), so they keep the roster.
  */
@@ -320,9 +323,10 @@ export const RUN_WIDE_SEATS: readonly RosterModelId[] = RUN_ROSTER
 
 /**
  Judges for the lane contest, the consolidation slate and the consolidation
- gate: the roster less {@link LATE_JUDGE_DROPPED}. Eight since 2026-09-02
- with Synthetic wet, seven with it dry, of which six judge the consolidation
- slate (`run-seats.ts`).
+ gate: the roster less {@link LATE_JUDGE_DROPPED}. Eight from 2026-09-02
+ with Synthetic wet, seven with it dry; seven either way since Qwen3.8-27B
+ left on 2026-10-22, the seat `run-seats.ts` used to withhold while Synthetic
+ was dry.
  */
 export const RUN_LATE_JUDGES: readonly RosterModelId[] = RUN_ROSTER
   .filter(function stillJudges(modelId,): boolean {

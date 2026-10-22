@@ -65,6 +65,9 @@ function isNotRunReason(
 
  @param quorumBasisRequired - whether generation records its wider review quorum
 
+ @param lastSeatGrace - whether review rounds were decided with the last-seat
+ grace of 2026-10-22 (generation twenty on)
+
  @returns Parsed polish record
 
  @example
@@ -80,6 +83,7 @@ export function parseConsolidationPolish(
     correctionChainRequired = false,
     everyBodyBlockReviewed = false,
     quorumBasisRequired = false,
+    lastSeatGrace = false,
   }: {
     readonly value: unknown;
     readonly path: string;
@@ -87,6 +91,7 @@ export function parseConsolidationPolish(
     readonly correctionChainRequired?: boolean;
     readonly everyBodyBlockReviewed?: boolean;
     readonly quorumBasisRequired?: boolean;
+    readonly lastSeatGrace?: boolean;
   },
 ): ArtifactConsolidationPolish {
   /**
@@ -256,6 +261,7 @@ export function parseConsolidationPolish(
           correctionChainRequired,
           everyBodyBlockReviewed,
           quorumBasisRequired,
+          lastSeatGrace,
         },),
       }
       : {}),

@@ -325,6 +325,24 @@ and flattening the chain renderer to one region
 indent broke both `renderCanonical` nesting guards and both chain autofix convergence tests.
 Both mutations are kept as `gfp-mutation-1.patch` and `gfp-mutation-2.patch` in the scratch probe directory.
 
+Measurement correction (2026-10-22):
+a whole-set corpus run built on a stale `dist` bundle (written seconds before
+`chain-render.ts`'s final write of the same minute,
+so the bundle still held the pre-`310a3fa94c` flat renderer) reported a two-cycle between
+`stylistic(indentation)` and `stylistic(chain-per-line)` on 86 and 43 residual diagnostics across
+four corpus files.
+Rebuilding puts the renderer back on the model's widths,
+and those four files then converge to zero diagnostics in one to three `--fix` passes.
+Lesson:
+rebuild the package before any lint-based measurement;
+`mise run //package/oxlint-plugin/stylistic:test:unit` builds first,
+ad-hoc oxlint runs do not.
+
+Separate incident found by the same sweep (not this rule):
+`stylistic/comma-dangle`'s fixer corrupts `;`-terminated type literals of destructured
+parameters;
+see `doc/troubleshooting/oxlint-stylistic-comma-dangle-type-literal-fix.md`.
+
 ## Verified workarounds
 
 - `stylistic/indentation` in `package/oxlint-plugin/stylistic`,

@@ -41,6 +41,9 @@ import {
 
  @param quorumBasisRequired - whether generation records its wider quorum basis
 
+ @param lastSeatGrace - whether generation decided its rounds with the
+ last-seat grace of 2026-10-22 (generation twenty on)
+
  @returns Cross-validated review round
 
  @example
@@ -55,12 +58,14 @@ export function parseNaturalnessReviewRound(
     paragraphDigestsRequired,
     everyBodyBlockReviewed = false,
     quorumBasisRequired = false,
+    lastSeatGrace = false,
   }: {
     readonly value: unknown;
     readonly path: string;
     readonly paragraphDigestsRequired: boolean;
     readonly everyBodyBlockReviewed?: boolean;
     readonly quorumBasisRequired?: boolean;
+    readonly lastSeatGrace?: boolean;
   },
 ): ArtifactNaturalnessReviewRound {
   /**
@@ -242,6 +247,7 @@ export function parseNaturalnessReviewRound(
     seats,
     quorumOver,
     unreachable,
+    lastSeatGrace,
   },);
   if (record.verdict !== verdict) {
     throw new ArtifactParseError({

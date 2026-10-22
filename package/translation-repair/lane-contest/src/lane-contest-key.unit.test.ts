@@ -115,7 +115,13 @@ await describe({
         // refused.
         // Version 14 (2026-10-21) re-keys every ballot cast before the contest
         // ballot gave its reason before its choice.
-        expect(key,).toBe('0b7d94bdcf02ddec71b8665ab116609c303f7f707e1db0d5af073233076b5ae2',);
+        // Version 15 (2026-10-21) re-keys every ballot cast before the answer
+        // schemas declared their properties in alphabetical order (ledger
+        // B762).
+        // Version 16 (2026-10-22) re-keys every ballot cast before a short
+        // bench closed one voice fewer than every live seat once the straggler
+        // grace ended (ledger B816).
+        expect(key,).toBe('fcdb9c7c27d192aad9758e5a2bcdc2f34f7a27ebc2b260dd9a75e8349e611ba5',);
       },
     },),
     it({

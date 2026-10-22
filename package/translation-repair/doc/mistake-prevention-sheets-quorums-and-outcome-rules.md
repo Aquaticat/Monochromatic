@@ -140,6 +140,33 @@ and a seat that answered once among many silent asks.
 A new wrapper that classifies an abort reads the abort reason and the delivered counts,
 and not the fact that the signal aborted.
 
+A bench or roster change is tested where the bench is read (ledger M287).
+Taking `hf:Qwen/Qwen3.8-27B` off the late-judge bench ran the run package's tests only,
+and the corpus-pass file `pass-seams-reseat.unit.test.ts` threw at load,
+because its fixture guard found that a Synthetic dry-out no longer takes a late judge.
+A change to a bench or a roster
+(a hold on a model card,
+a roster list,
+a seat set that `judgeSeatsFor` builds)
+runs the unit tests of every package that reads `judgeSeatsFor` or the bench constants,
+and not only the package it edits:
+`rg --files-with-matches '<NAME>' package/translation-repair --glob '*.ts'`
+for `judgeSeatsFor` and each constant that moved lists them,
+and on 2026-10-22 it found corpus-pass,
+probe,
+repair,
+run,
+stage and translate-stage.
+A hold on a card also runs the provider package's tests,
+whose `roster-seats.unit.test.ts` holds every seat's holds against its card,
+and which names neither of those
+(ledger M287,
+the fourth miss).
+A case that guards its own fixture reads the views it needs from a measurement of the new bench,
+not from the view the old bench made distinct:
+the 31 views with a provider dry were counted,
+and 4 take a late judge.
+
 ## Sheets every model reads
 
 What happened:

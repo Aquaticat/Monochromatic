@@ -18,6 +18,10 @@ import {
 } from './stage-reachable-quorum.ts';
 import type { UnreadableCause, } from './recovery-nudge.ts';
 import type { StageDecision, } from './stage-decision-call.ts';
+import type {
+  HeardVoice,
+  StageGather,
+} from './stage-gather.ts';
 import {
   runRecoveryRound,
   type SharedRoundRequest,
@@ -82,91 +86,6 @@ export const STAGE_RETRY_ROUNDS = 3;
  ```
  */
 export const SEAT_WITHHOLD_ASKS: number = STAGE_RETRY_ROUNDS + 1;
-
-/**
- One heard voice with its speaker.
-
- @example
- ```ts
- const voice: HeardVoice<CriticReportWire> = { modelId, value: report, };
- ```
- */
-export type HeardVoice<ValueT,> = {
-  /**
-   Model that answered.
-   */
-  readonly modelId: RosterModelId;
-
-  /**
-   Validated reply value.
-   */
-  readonly value: ValueT;
-};
-
-/**
- Everything a quorum gather produced.
-
- @example
- ```ts
- const { voices, quorumMet, } = await gatherStageVoices({ ... },);
- ```
- */
-export type StageGather<ValueT,> = {
-  /**
-   Heard voices in arrival-round then roster order.
-   */
-  readonly voices: readonly HeardVoice<ValueT>[];
-
-  /**
-   Whether at least half the roster, rounded up, was heard; on a bench
-   short of that for want of wet providers, at least half the reachable
-   seats and never fewer than two (`reachableQuorum`, 2026-09-09).
-   */
-  readonly quorumMet: boolean;
-
-  /**
-   Voices the gather closed its round on: the number `quorumMet` compared the
-   heard voices with, and the one a short bench's finding names. Handed back
-   so a caller that needs it (the checker stage, whose recheck counts an
-   issue's ballots against it) never sizes it a second time or reads it back
-   out of a finding's wording.
-   */
-  readonly quorum: number;
-
-  /**
-   Degradation findings in scorecard-stable wording: a short bench, each
-   asked seat that stayed unheard, and the round's shortfall. Empty where
-   every asked seat was heard on a bench no seat of which was refused.
-   */
-  readonly findings: readonly string[];
-
-  /**
-   Seats some round asked, so a caller taking its majority over "everyone
-   asked" counts the window, not the bench: a seat the window spared was
-   never silent.
-   */
-  readonly asked: ReadonlySet<RosterModelId>;
-
-  /**
-   Seats the router refused because no wet provider serves them, so a
-   caller sizing its minimum by the reachable bench (the select stage since
-   the owner's decision of 2026-09-09) counts the bench that could answer
-   rather than the bench that was seated.
-   */
-  readonly unreachable: ReadonlySet<RosterModelId>;
-
-  /**
-   Seats that answered but nothing could read, still unread after the
-   recovery round: a reply the completion cap cut before its content, or a
-   shape the guard refused. They were reached and they answered, so a
-   caller telling an outage from a bench it could not read counts them as
-   answering. On 2026-09-16 Mio13 was interrupted `provider-unavailable`
-   at 4 of 12 heard with every provider wet, seven seats having spent
-   their whole completion cap reasoning about one chat translation and
-   sent no content (class thirty-one).
-   */
-  readonly unreadable: ReadonlySet<RosterModelId>;
-};
 
 /**
  What the rounds produced: the voices heard, which seats were asked at
@@ -348,7 +267,10 @@ export async function gatherStageVoices<ValueT,>(
    SIZED ON THE REACHABLE BENCH SINCE 2026-09-09 (`reachableQuorum`): a
    seat the router refuses for want of a wet provider is not a voice the
    gather can wait for, and counting it cost `hulicaijia` its entry that
-   evening.
+   evening. Since 2026-10-22 a bench left with exactly its quorum of live
+   seats closes one voice below it (owner, "Let the grace open"), and a
+   refusal inside a round sizes the need again through
+   `heardNeededAfterRefusals`.
 
    @param unreachable - seats the router has refused so far
 
@@ -477,6 +399,13 @@ export async function gatherStageVoices<ValueT,>(
         // `pending.slice(outcomes.length)`.
         reserve: pending.slice(asking.length,),
         heardNeeded: quorumNeeded - collected.length,
+        // SIZED AGAIN AT EVERY REFUSAL INSIDE THE ROUND, not only between
+        // rounds: round 0 is sized before the router has named a seat, and a
+        // bench its refusals leave with exactly its quorum closes one voice
+        // below it (owner, 2026-10-22, "Let the grace open").
+        heardNeededAfterRefusals: function neededAfter(refused,): number {
+          return quorumNeededWith(unreachableSeats.size + refused,) - collected.length;
+        },
       },);
       /* oxlint-enable no-await-in-loop */
       for (const { modelId, } of outcomes)

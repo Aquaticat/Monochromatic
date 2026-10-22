@@ -51,6 +51,11 @@ lists them,
 one search for each constant that moved (ledger M284).
 The search is added to the declaring packages' own run and does not replace it:
 a case that pins a key hashed from the version without naming the constant is red in the declaring package alone.
+Both runs follow the bump commit itself:
+on 2026-10-22 the declaring packages had run before `eb4db609ff`,
+so five pinned keys stayed red until the unit tests of 16 packages ran after it (ledger M287).
+A move of the artifact generation searches the old number as text as well,
+since the run package's tests print it (`read-at-generation=19`) without naming any constant.
 A change rides inside a version only when no record has been written at that number,
 and the evidence for that is the `START tip=` line of every run log begun since the number was set,
 each tip read against the commit that set it;

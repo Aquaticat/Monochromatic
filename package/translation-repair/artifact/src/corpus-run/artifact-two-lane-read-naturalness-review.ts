@@ -38,6 +38,9 @@ import { parseNaturalnessReviewRound, } from './artifact-two-lane-read-naturalne
 
  @param quorumBasisRequired - whether generation stores the effective wider quorum
 
+ @param lastSeatGrace - whether generation decided its rounds with the
+ last-seat grace of 2026-10-22 (generation twenty on)
+
  @returns Cross-validated review audit
 
  @example
@@ -53,6 +56,7 @@ export function parseNaturalnessReview(
     correctionChainRequired = false,
     everyBodyBlockReviewed = false,
     quorumBasisRequired = false,
+    lastSeatGrace = false,
   }: {
     readonly value: unknown;
     readonly path: string;
@@ -60,6 +64,7 @@ export function parseNaturalnessReview(
     readonly correctionChainRequired?: boolean;
     readonly everyBodyBlockReviewed?: boolean;
     readonly quorumBasisRequired?: boolean;
+    readonly lastSeatGrace?: boolean;
   },
 ): ArtifactNaturalnessReview {
   /**
@@ -87,6 +92,7 @@ export function parseNaturalnessReview(
       paragraphDigestsRequired: true,
       everyBodyBlockReviewed,
       quorumBasisRequired,
+      lastSeatGrace,
     },);
   }
   /**
@@ -140,6 +146,7 @@ export function parseNaturalnessReview(
         paragraphDigestsRequired: correctionChainRequired,
         everyBodyBlockReviewed,
         quorumBasisRequired,
+        lastSeatGrace,
       },);
     },);
   if (rounds.length !== (correctionCount + 1)) {

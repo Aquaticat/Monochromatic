@@ -109,9 +109,12 @@ await describe({
             + 'showed a bare quote line where the note had stood; and from 10 to 11 with the cut of the notes from the prober, '
             + 'the resolution checker and the objection correction\'s slate: a stored refinement was judged over texts that '
             + 'showed every note between translators; and from 11 to 12 with the ballots that give their reason first (owner, 2026-10-21): '
-            + 'a stored refinement was chosen on a selection ballot that asked for the candidate before its reason)',
+            + 'a stored refinement was chosen on a selection ballot that asked for the candidate before its reason; '
+            + 'and from 12 to 13 with the answer schemas in alphabetical order (ledger B762): a stored refinement was '
+            + 'answered under the old reply keys; and from 13 to 14 with the quorum rule of 2026-10-22 (ledger B816): a '
+            + 'stored refinement was gathered before a short bench could close one voice fewer than every live seat)',
           fn: async () => {
-            expect(refineSliceKey(BASE,),).toBe('d13040874079f9ca26b8ba3ba7e9a562c115470b98efed7de74ce84f92b5b091',);
+            expect(refineSliceKey(BASE,),).toBe('8a6031524ebe923e2a759203d39ff0d6e4834935e5c4d19bc240f0fcc06064de',);
           },
         },),
 

@@ -220,4 +220,32 @@
       },
     },
   },
+  // Rust fenced in a troubleshooting doc quotes upstream source word for word, so no Rust rule judges it.
+  // The repository owner's decision of 2026-10-22 UTC: "Exempt code blocks from rust rules in
+  // doc/troubleshooting/**/*.md". The pattern reaches only the fences of Markdown files under that tree,
+  // so every Markdown rule still applies to those files and Rust fences elsewhere stay checked.
+  // Keep this block after snippet-burn-down: the later block wins the merge.
+  {
+    "name": "troubleshooting-quoted-fences",
+    "files": [
+      "doc/troubleshooting/**/*.md/*.rs",
+    ],
+    "rules": {
+      "rust/max-lines": {
+        "severity": "off",
+      },
+      "rust/require-rustdoc": {
+        "severity": "off",
+      },
+      "rust/require-explicit-types": {
+        "severity": "off",
+      },
+      "rust/tests-in-sidecars": {
+        "severity": "off",
+      },
+      "rust/avoidable-closure": {
+        "severity": "off",
+      },
+    },
+  },
 ]

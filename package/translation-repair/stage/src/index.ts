@@ -128,11 +128,13 @@ export {
   rotatedBench,
 } from './stage-fanout-window.ts';
 export {
-  gatherStageVoices,
   type HeardVoice,
+  type StageGather,
+} from './stage-gather.ts';
+export {
+  gatherStageVoices,
   SEAT_WITHHOLD_ASKS,
   STAGE_RETRY_ROUNDS,
-  type StageGather,
 } from './stage-quorum.ts';
 export {
   MIN_STAGE_VOICES,

@@ -109,18 +109,21 @@ await describe({
   name: judgeSeatsFor.name,
   children: [
     it({
-      name: 'WITHHOLDS the Hyper-slow judge from both benches when Hyper would serve it and SEATS it when '
-        + 'Synthetic does, with the static drops holding either way',
+      name: 'WITHHOLDS the Hyper-slow judge from the wide seats when Hyper would serve it and SEATS it there when '
+        + 'Synthetic does, KEEPS it off the late-judge bench either way, with the static drops holding either way',
       fn: async () => {
         expect(HYPER_SLOW_JUDGES.has(QWEN,),).toBe(true,);
         expect(RUN_WIDE_SEATS.includes(QWEN,),).toBe(true,);
-        expect(RUN_LATE_JUDGES.includes(QWEN,),).toBe(true,);
+        // THE OWNER'S ANSWER OF 2026-10-22: "Remove from both benches", the
+        // consolidation slate and the late-judge rounds (ledger B815). The
+        // consolidation slate's judges are the late judges, so the hold reaches both.
+        expect(RUN_LATE_JUDGES.includes(QWEN,),).toBe(false,);
 
         const dry = judgeSeatsFor({ dry: SYNTHETIC_DRY, },);
         expect(dry.wideSeats.includes(QWEN,),).toBe(false,);
         expect(dry.lateJudges.includes(QWEN,),).toBe(false,);
         expect(dry.wideSeats.length,).toBe(RUN_WIDE_SEATS.length - 1,);
-        expect(dry.lateJudges.length,).toBe(RUN_LATE_JUDGES.length - 1,);
+        expect(dry.lateJudges,).toEqual(RUN_LATE_JUDGES,);
         expect(dry.repairModels.criticModelIds,).toEqual(dry.wideSeats,);
         expect(dry.repairModels.panelModelIds,).toEqual(dry.wideSeats,);
         expect(dry.repairModels.judgeModelIds,).toEqual(dry.selectJudges,);
@@ -270,12 +273,13 @@ await describe({
     },),
 
     it({
-      name: 'SEATS the Hyper-slow judge again when Hyper is dry too and OpenRouter would serve it, since '
-        + 'the withholding is about Hyper\'s serving speed and not about the model',
+      name: 'SEATS the Hyper-slow judge again in the wide and select seats when Hyper is dry too and OpenRouter would '
+        + 'serve it, since the withholding is about Hyper\'s serving speed and not about the model, and KEEPS it off '
+        + 'the late-judge bench, which its card holds it from',
       fn: async () => {
         const seats = judgeSeatsFor({ dry: OPENROUTER_ONLY, },);
         expect(seats.wideSeats.includes(QWEN,),).toBe(true,);
-        expect(seats.lateJudges.includes(QWEN,),).toBe(true,);
+        expect(seats.lateJudges.includes(QWEN,),).toBe(false,);
         expect(seats.selectJudges.includes(QWEN,),).toBe(true,);
       },
     },),

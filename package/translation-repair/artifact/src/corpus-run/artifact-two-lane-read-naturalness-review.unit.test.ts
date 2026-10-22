@@ -933,5 +933,93 @@ await describe({
           .toThrow(`at ${REVIEW_PATH}.rounds[0].quorumOver: expected safe integer quorum basis covering every recorded seat`,);
       },
     },),
+
+    it({
+      name: 'READS A ROUND WHOSE LIVE SEATS ARE EXACTLY ITS QUORUM under the rule of its generation: seven seats with '
+        + 'three out of reach and three of the four live seats accepting is acceptable under the last-seat grace of '
+        + 'generation twenty and quorum-not-met under the rule of 2026-09-09 that nineteen was written under, and each '
+        + 'generation refuses the verdict of the other',
+      fn: async () => {
+        /**
+         Round over a bench of seven, three seats out of reach, the fourth
+         live seat cut at the grace.
+
+         @param verdict - verdict the round records
+
+         @returns Review value as an artifact carries it
+         */
+        function reviewDeciding(
+          { verdict, }: { readonly verdict: string; },
+        ): unknown {
+          return {
+            correctionCount: 0,
+            rounds: [{
+              quorumOver: 7,
+              unreachable: 3,
+              candidateDigest: hashContent({ content: FINAL_TEXT, },),
+              paragraphCount: 1,
+              seats: [
+                unusableSeat({ modelId: 'hf:cat/Cat-A', },),
+                acceptableSeat({ modelId: 'hf:cat/Cat-B', },),
+                acceptableSeat({ modelId: 'hf:cat/Cat-C', },),
+                acceptableSeat({ modelId: 'hf:cat/Cat-D', },),
+              ],
+              usable: 3,
+              verdict,
+              findings: [],
+            },],
+          };
+        }
+        /**
+         Reads a review under the given rule.
+
+         @param value - review to read
+
+         @param lastSeatGrace - whether the generation read has the last-seat grace
+
+         @returns Parsed review
+         */
+        function readUnder(
+          {
+            value,
+            lastSeatGrace,
+          }: {
+            readonly value: unknown;
+            readonly lastSeatGrace: boolean;
+          },
+        ): unknown {
+          return parseNaturalnessReview({
+            value,
+            path: REVIEW_PATH,
+            finalText: FINAL_TEXT,
+            quorumBasisRequired: true,
+            lastSeatGrace,
+          },);
+        }
+
+        expect(readUnder({
+          value: reviewDeciding({ verdict: 'acceptable', },),
+          lastSeatGrace: true,
+        },),).toEqual(reviewDeciding({ verdict: 'acceptable', },),);
+        expect(readUnder({
+          value: reviewDeciding({ verdict: 'quorum-not-met', },),
+          lastSeatGrace: false,
+        },),).toEqual(reviewDeciding({ verdict: 'quorum-not-met', },),);
+        expect(() =>
+          readUnder({
+            value: reviewDeciding({ verdict: 'quorum-not-met', },),
+            lastSeatGrace: true,
+          },)
+        ,)
+          .toThrow(`at ${REVIEW_PATH}.rounds[0].verdict: expected acceptable, derived from seat statuses and quorum`,);
+        expect(() =>
+          readUnder({
+            value: reviewDeciding({ verdict: 'acceptable', },),
+            lastSeatGrace: false,
+          },)
+        ,)
+          .toThrow(`at ${REVIEW_PATH}.rounds[0].verdict: expected quorum-not-met, derived from seat statuses and quorum`,);
+      },
+    },),
   ],
 },);

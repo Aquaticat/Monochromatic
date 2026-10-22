@@ -334,11 +334,15 @@ export function uniqueNaturalnessFindings(
  @param unreachable - bench seats the review counted out of reach (ledger
  E3), none in a record written before it counted them
 
+ @param lastSeatGrace - whether the round was decided with the last-seat
+ grace of 2026-10-22, as a round of generation twenty or later was
+ (`artifactGenerationLetsGraceOpenOnLastSeat`)
+
  @returns Verdict implied by quorum and rejection
 
  @example
  ```ts
- const verdict = naturalnessVerdictOf({ seats, });
+ const verdict = naturalnessVerdictOf({ seats, lastSeatGrace: true, });
  ```
  */
 export function naturalnessVerdictOf(
@@ -346,10 +350,12 @@ export function naturalnessVerdictOf(
     seats,
     quorumOver = seats.length,
     unreachable = 0,
+    lastSeatGrace,
   }: {
     readonly seats: readonly ArtifactNaturalnessReviewSeat[];
     readonly quorumOver?: number;
     readonly unreachable?: number;
+    readonly lastSeatGrace: boolean;
   },
 ): ArtifactNaturalnessReviewRound['verdict'] {
   /**
@@ -366,6 +372,7 @@ export function naturalnessVerdictOf(
   const { needed, } = reachableQuorum({
     benchSize: quorumOver,
     unreachable,
+    lastSeatGrace,
   },);
   if (usable.length < needed)
     return 'quorum-not-met';
