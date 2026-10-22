@@ -6,6 +6,7 @@ import {
 import {
   bedrockLedgerFromEnv,
   createBedrockClient,
+  createClaudeClient,
   createDeepSeekClient,
   createHyperClient,
   createNeuralWattClient,
@@ -140,6 +141,16 @@ export async function sampleBudgets(
       : {
         xiaomi: createXiaomiClient({
           apiKey: keys.xiaomi,
+          transport,
+        },),
+      }),
+    // THE CLAUDE KEY LIKEWISE, when set: its meter is the run's own priced spend and a billing flag, so the sample
+    // reads it wet, and the line carries `anthropicUsdSpent`.
+    ...((keys.anthropic === '')
+      ? {}
+      : {
+        anthropic: createClaudeClient({
+          apiKey: keys.anthropic,
           transport,
         },),
       }),

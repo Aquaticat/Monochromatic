@@ -2,8 +2,10 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   type BedrockClient,
+  type ClaudeClient,
   bedrockLedgerFromEnv,
   createBedrockClient,
+  createClaudeClient,
   createDeepSeekClient,
   createHyperClient,
   createNeuralWattClient,
@@ -30,6 +32,7 @@ import type { ModelTransport, } from '@monochromatic-dev/translation-repair-prov
 import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { createDecisionsClient, } from '../decisions-client.ts';
 import {
+  CLAUDE_KEY_VARIABLE,
   DEEPSEEK_KEY_VARIABLE,
   XIAOMI_KEY_VARIABLE,
 } from './direct-key-variables.ts';
@@ -94,6 +97,11 @@ export type ConfiguredProviders = {
    Xiaomi's own API client, when its key is set; it serves one model.
    */
   readonly xiaomi?: XiaomiClient;
+
+  /**
+   The owner's Claude key client (Anthropic's own API), when its key is set; it serves Sonnet 5.5 and Haiku 5.5.
+   */
+  readonly anthropic?: ClaudeClient;
 
   /**
    Third provider client, when its key is set.
@@ -238,6 +246,14 @@ export function configureProviders(
     key: env[XIAOMI_KEY_VARIABLE] ?? '',
   },);
   /**
+   The owner's Claude key, optional likewise: a run without it seats no Claude card, and never borrows another
+   provider's key in its place.
+   */
+  const claudeKey = keyUnlessOff({
+    provider: 'anthropic',
+    key: env[CLAUDE_KEY_VARIABLE] ?? '',
+  },);
+  /**
    Whether no provider at all is configured, which nothing can run on.
    */
   const noKeyAtAll = (neuralWattKey === '')
@@ -246,12 +262,13 @@ export function configureProviders(
     && (bedrockKey === '')
     && (deepSeekKey === '')
     && (xiaomiKey === '')
+    && (claudeKey === '')
     && (openRouterKey === '');
   if (noKeyAtAll) {
     throw new RunConfigError({
       variable: 'TRANSLATION_REPAIR_NEURALWATT_API_KEY, TRANSLATION_REPAIR_SYNTHETIC_API_KEY, '
         + 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY, TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY, '
-        + `${DEEPSEEK_KEY_VARIABLE}, ${XIAOMI_KEY_VARIABLE} `
+        + `${DEEPSEEK_KEY_VARIABLE}, ${XIAOMI_KEY_VARIABLE}, ${CLAUDE_KEY_VARIABLE} `
         + 'or TRANSLATION_REPAIR_OPENROUTER_API_KEY',
     },);
   }
@@ -269,6 +286,10 @@ export function configureProviders(
   if (xiaomiKey === '')
     rl.info(
       `${XIAOMI_KEY_VARIABLE} is not set, so Xiaomi is unconfigured: its meter reads dry and no call goes there`,
+    );
+  if (claudeKey === '')
+    rl.info(
+      `${CLAUDE_KEY_VARIABLE} is not set, so the Claude route is unconfigured: its meter reads dry and no call goes there`,
     );
 
   /**
@@ -371,6 +392,16 @@ export function configureProviders(
     },);
 
   /**
+   The Claude client when configured; it paces itself to the key's stated request rate and logs its limits once.
+   */
+  const anthropic = (claudeKey === '')
+    ? undefined
+    : createClaudeClient({
+      apiKey: claudeKey,
+      transport,
+    },);
+
+  /**
    Providers whose credential a call found refused, held out for the rest of
    the run.
    */
@@ -386,6 +417,7 @@ export function configureProviders(
     ...((bedrock === undefined) ? {} : { bedrock, }),
     ...((deepseek === undefined) ? {} : { deepseek, }),
     ...((xiaomi === undefined) ? {} : { xiaomi, }),
+    ...((anthropic === undefined) ? {} : { anthropic, }),
     ...((openrouter === undefined) ? {} : { openrouter, }),
     heldOut: function credentialRefused(provider,): boolean {
       return credentialHolds.isHeld({ provider, },);
@@ -399,6 +431,7 @@ export function configureProviders(
     ...((bedrock === undefined) ? {} : { bedrock, }),
     ...((deepseek === undefined) ? {} : { deepseek, }),
     ...((xiaomi === undefined) ? {} : { xiaomi, }),
+    ...((anthropic === undefined) ? {} : { anthropic, }),
     ...((openrouter === undefined) ? {} : { openrouter, }),
     ...((decisions === undefined) ? {} : { decisions, }),
     credentialHolds,

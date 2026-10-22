@@ -398,6 +398,11 @@ export const RUN_CHECKER_ORDER: readonly RosterModelId[] = [
   'hf:Qwen/Qwen3.8-27B',
   'xiaomi/mimo-v2.6-flash',
   'hf:moonshotai/Kimi-K3',
+  // HAIKU 5.5 JOINS THE ORDER AT THE OWNER'S "Haiku wide" (2026-10-22), UNMEASURED AS A CHECKER, so it sits behind the
+  // three the benchmark ranks and in front of the two it ranks lowest: it fills the bench only when a provider
+  // serving one of those three is dry, and it does not displace a measured checker from the static bench of three. It
+  // sends no effort; the effort bench decides that.
+  'claude-haiku-5-5',
   'google.gemma-4-31b',
   'inception/mercury-2.5',
 ];
@@ -642,6 +647,12 @@ export const RUN_MODELS: RunRepairModels = {
   // successor, and the next `editor-calibrate` re-reads it.
   editorModelIds: [
     'hf:zai-org/GLM-5.3-Flash',
+    // SONNET 5.5 SEATS AS AN EDITOR ON THE OWNER'S WORD OF 2026-10-22, "Sonnet edits, Haiku wide", on the owner's own
+    // Claude key, with no effort sent: the owner declined to pick one ("Why don't you bench?"), so the card named by
+    // the model alone sends none and Anthropic's own default applies. UNMEASURED AS AN EDITOR: the next
+    // `editor-calibrate` re-reads the seat, and a run without the Claude key leaves it unserved like any provider-less
+    // seat. It sits ahead of `glm-5.3`, which has no provider while Hyper is empty.
+    'claude-sonnet-5-5',
     'glm-5.3',
     'deepseek-v4.1-flash',
   ],
@@ -1230,6 +1241,7 @@ export function runClientFrom(
     bedrock,
     deepseek,
     xiaomi,
+    anthropic,
     openrouter,
   } = clients;
 
@@ -1259,6 +1271,8 @@ export function runClientFrom(
       paces: {
         ...((hyper === undefined) ? {} : { hyper: hyper.pace, }),
         ...((xiaomi === undefined) ? {} : { xiaomi: xiaomi.pace, }),
+        // The Claude key states 1000 requests a minute; its window fills before the account's limit answers 429.
+        ...((anthropic === undefined) ? {} : { anthropic: anthropic.pace, }),
       },
       // Conditional spread keeps the decisions transport absent where the
       // OpenRouter key is unset.
@@ -1272,7 +1286,7 @@ export function runClientFrom(
       String(hyper !== undefined,)
     } bedrock=${String(bedrock !== undefined,)} deepseek=${String(deepseek !== undefined,)} xiaomi=${
       String(xiaomi !== undefined,)
-    } openrouter=${String(openrouter !== undefined,)}`,
+    } anthropic=${String(anthropic !== undefined,)} openrouter=${String(openrouter !== undefined,)}`,
   );
 
   return {
