@@ -178,8 +178,9 @@ export async function consolidateDocument(
 
     /**
      The claims the repair lane's panel accepted per slice, as the sheet
-     block `acceptedRepairClaimsNote` writes them, for the final polish gate
-     and the key; a slice the panel accepted nothing on has no entry.
+     block `acceptedRepairClaimsNote` writes them, for the final polish (its
+     writers, the judges of their rewrites and its gate) and the key; a slice
+     the panel accepted nothing on has no entry.
      */
     readonly acceptedRepairClaimNotes?: ReadonlyMap<number, string>;
     /**

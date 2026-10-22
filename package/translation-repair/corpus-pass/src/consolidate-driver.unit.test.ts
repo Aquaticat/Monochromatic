@@ -1147,6 +1147,24 @@ function polishingClient({ sheets, }: { readonly sheets: string[]; },): ModelCli
 }
 
 /**
+ Whether a request is a ballot of the judges who choose among the final polish
+ writers' rewrites, whose sheet is the only one that heads the base "CURRENT
+ English translation" (ledger B805).
+
+ @param sheet - a request as the client recorded it
+
+ @returns Whether it is such a ballot
+
+ @example
+ ```ts
+ const judged = sheets.filter(isRewriteJudgeSheet,);
+ ```
+ */
+function isRewriteJudgeSheet(sheet: string,): boolean {
+  return sheet.includes('candidate_ballot',) && sheet.includes('CURRENT English translation',);
+}
+
+/**
  Drives one contested slice against a cache that answers every key, and
  records the key the driver looked up.
 
@@ -2803,9 +2821,7 @@ await describe({
                   return sheet.includes('refine_report',);
                 },),
                 // The refine selection's evidence is the only sheet that heads the base "CURRENT English translation".
-                rewriteJudgeSheets: sheets.filter(function isRewriteJudge(sheet,): boolean {
-                  return sheet.includes('candidate_ballot',) && sheet.includes('CURRENT English translation',);
-                },),
+                rewriteJudgeSheets: sheets.filter(isRewriteJudgeSheet,),
               };
             }
             const withClaims = await drive({ notes: new Map([[0, note,],],), },);
@@ -2887,9 +2903,7 @@ await describe({
                 writerSheets: sheets.filter(function isWriter(sheet,): boolean {
                   return sheet.includes('refine_report',);
                 },),
-                rewriteJudgeSheets: sheets.filter(function isRewriteJudge(sheet,): boolean {
-                  return sheet.includes('candidate_ballot',) && sheet.includes('CURRENT English translation',);
-                },),
+                rewriteJudgeSheets: sheets.filter(isRewriteJudgeSheet,),
               };
             }
             const disputed = await drive({ disputes: new Map([[0, dispute,],],), },);

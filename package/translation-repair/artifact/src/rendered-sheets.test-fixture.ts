@@ -10,8 +10,6 @@ import { buildLaneContestMessages, } from '@monochromatic-dev/translation-repair
 import {
   buildEditorMessages,
   buildRefineMessages,
-  buildRefineSelectionContext,
-  type RefineStageMode,
 } from '@monochromatic-dev/translation-repair-repair';
 import {
   buildConsolidateGateMessages,
@@ -24,8 +22,6 @@ import {
   buildResolutionMessages,
 } from '@monochromatic-dev/translation-repair-adjudication';
 import {
-  acceptedRepairClaimsNote,
-  archiveDisputeNote,
   buildAbsoluteNaturalnessReviewMessages,
   buildCoverageMessages,
 } from '@monochromatic-dev/translation-repair-archive';
@@ -48,56 +44,18 @@ import { evidenceSheets, } from '@monochromatic-dev/translation-repair-repair/ts
 import { carrySheets, } from './rendered-sheets-carry.test-fixture.ts';
 import { deathRecordedSheets, } from './rendered-sheets-death.test-fixture.ts';
 import { judgeSheets, } from './rendered-sheets-judges.test-fixture.ts';
+import {
+  ARCHIVE_DISPUTE,
+  polishSlateSheets,
+  REPAIR_CLAIMS,
+} from './rendered-sheets-polish.test-fixture.ts';
 import { slateSheets, } from '@monochromatic-dev/translation-repair-repair/ts/rendered-sheets-slates.test-fixture.ts';
 
 export type { RenderedSheet, } from '@monochromatic-dev/translation-repair-repair/ts/rendered-sheets-texts.test-fixture.ts';
-
-/**
- The claims the repair panel accepted for the invented slice, written by the
- builder production uses (ledger B731), which the polish gate, the polish
- writers and the judges of the writers' rewrites are all shown (ledger B805).
- */
-export const REPAIR_CLAIMS: string = acceptedRepairClaimsNote({
-  claims: ['fluency/grammar minor: the narration is told in the present',],
-},);
-
-/**
- The note on the disputed archive rendering of the invented slice, written by
- the builder production uses, which the polish gate, the polish writers and the
- judges of the writers' rewrites are all shown (ledger B805).
- */
-export const ARCHIVE_DISPUTE: string = archiveDisputeNote({
-  dispute: {
-    sliceIndex: 0,
-    standIn: REPAIR,
-    standInEligible: true,
-    acceptedClaims: ['accuracy/mistranslation major: the narration is told in the past, not the present',],
-  },
-},);
-
-/**
- The kinds of question the refine stage asks its judges, which the polish
- round asks both of.
- */
-const POLISH_MODES: readonly {
-  readonly name: string;
-  readonly mode: RefineStageMode;
-}[] = [
-  {
-    name: 'polish refine slate',
-    mode: { kind: 'comparative', },
-  },
-  {
-    name: 'polish refine objection slate',
-    mode: {
-      kind: 'objection-correction',
-      groups: [{
-        origin: 'consolidation gate',
-        objections: ['The tense shifts mid-paragraph.',],
-      },],
-    },
-  },
-];
+export {
+  ARCHIVE_DISPUTE,
+  REPAIR_CLAIMS,
+} from './rendered-sheets-polish.test-fixture.ts';
 
 //region Rendered sheets
 // EVERY MODEL-FACING SHEET, rendered once with invented cat fixtures, so a
@@ -304,29 +262,7 @@ export function renderedSheets(): readonly RenderedSheet[] {
       },),
     },
     // The judges of the polish writers' rewrites, who read what the writers and the gate read (ledger B805).
-    ...POLISH_MODES.map(function polishSlate({ name, mode, },): RenderedSheet {
-      return {
-        name,
-        text: joined({
-          messages: buildCandidateSelectMessages({
-            ...buildRefineSelectionContext({
-              mode,
-              sourceText: SOURCE,
-              repairedText: ARCHIVE,
-              referenceContext: REFERENCES,
-              identityContext: IDENTITY,
-              acceptedRepairClaimsNote: REPAIR_CLAIMS,
-              archiveDisputeNote: ARCHIVE_DISPUTE,
-            },),
-            rendered: [
-              ARCHIVE,
-              REPAIR,
-            ],
-            sourceText: SOURCE,
-          },),
-        },),
-      };
-    },),
+    ...polishSlateSheets(),
     {
       name: 'translate slate',
       text: joined({

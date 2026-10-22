@@ -2016,6 +2016,10 @@ const HELD_TESTS: Readonly<Record<string, {
     why: SENTINEL,
   },
   'repair/refine-prompt.ts#buildRefineMessages': {
+    tests: 2,
+    why: ASSEMBLED,
+  },
+  'repair/refine-selection-context.ts#noteEvidence': {
     tests: 1,
     why: ASSEMBLED,
   },

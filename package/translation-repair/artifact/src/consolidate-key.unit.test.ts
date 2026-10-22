@@ -418,9 +418,10 @@ await describe({
         // text, shows the polish gate the claims the repair panel accepted, and
         // has every ballot give its reason before its choice, which moved this
         // literal.
-        // Version 30 (2026-10-22) shows the polish writers the claims the repair
-        // panel accepted, as the polish gate is shown them (ledger B805), which
-        // moved this literal to the value this expectation names.
+        // Version 30 (2026-10-22) shows the polish writers and the judges of their
+        // rewrites the claims the repair panel accepted and the dispute note, as
+        // the polish gate is shown them (ledger B805), which moved this literal
+        // to the value this expectation names.
         expect(consolidateSliceKey(SLICE,),).toBe(
           '3ed486e0f84ed1ed0101eb4c2cb832d310a885b8a81cb1ac0bce56ff2560e7e2',
         );

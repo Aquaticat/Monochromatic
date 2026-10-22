@@ -131,7 +131,8 @@ export async function applyFinalPolish(
       ? {}
       : { archiveDisputeNote: subject.archiveDisputeNote, }),
     // THE CLAIMS THE REPAIR PANEL ACCEPTED, disputing the archive or not, for
-    // the gate (CuspariaKLSY21 slice 0, 2026-10-21) and the writers (ledger B805).
+    // the gate (CuspariaKLSY21 slice 0, 2026-10-21), the writers and the judges
+    // of their rewrites (ledger B805).
     ...((subject.acceptedRepairClaimsNote === undefined)
       ? {}
       : { acceptedRepairClaimsNote: subject.acceptedRepairClaimsNote, }),

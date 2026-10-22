@@ -227,7 +227,7 @@ await describe({
           /**
            The fence line, the note and the closing fence that follow the label.
            */
-          const [, fence = '', ...rest] = sheet.slice(at,).split('\n',);
+          const [, fence = '', ...rest] = sheet.slice(at + 1,).split('\n',);
           expect(fence.length,).toBeGreaterThan('====='.length,);
           expect(fence.replaceAll('=', '',),).toBe('',);
           expect(rest.join('\n',).startsWith(`${note}\n${fence}`,),).toBe(true,);

@@ -201,7 +201,8 @@ export type ConsolidationPolishGateSubject = {
    they dispute the archive, as the block `acceptedRepairClaimsNote` writes
    them: the evidence the producers wrote against, which a judge deciding a
    rewording of their text reads too (CuspariaKLSY21 slice 0, 2026-10-21), and
-   which the polish writers read as well (ledger B805).
+   which the polish writers and the judges of their rewrites read as well
+   (ledger B805).
    Absent where the panel accepted nothing.
    */
   readonly acceptedRepairClaimsNote?: string;

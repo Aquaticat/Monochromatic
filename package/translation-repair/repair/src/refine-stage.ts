@@ -136,8 +136,13 @@ export type RefineStageResult = {
  their rule, when the original cites any (class forty-one)
 
  @param acceptedRepairClaimsNote - the claims the repair panel accepted for
- the slice, which the final polish passes so its writers meet the evidence its
- gate judges them against (ledger B805); absent for the repair lane's own
+ the slice, which the final polish passes so its writers and the judges of
+ their rewrites meet the evidence its gate judges against (ledger B805);
+ absent for the repair lane's own refinement
+
+ @param archiveDisputeNote - the note on a disputed archive rendering, which
+ the final polish passes to the writers and the judges for the same reason
+ (ledger B805); absent on an undisputed slice and for the repair lane's own
  refinement
 
  @param declaredNames - same declarations as strings to compare, since a
@@ -181,6 +186,7 @@ export async function runRefineStage(
     identityContext,
     referenceContext,
     acceptedRepairClaimsNote,
+    archiveDisputeNote,
     declaredNames,
     declaredSubjectForms,
     mode,
@@ -200,6 +206,7 @@ export async function runRefineStage(
     readonly identityContext?: string;
     readonly referenceContext?: string;
     readonly acceptedRepairClaimsNote?: string;
+    readonly archiveDisputeNote?: string;
     readonly declaredNames: readonly string[];
     readonly declaredSubjectForms?: readonly string[];
     readonly mode: RefineStageMode;
@@ -247,6 +254,7 @@ export async function runRefineStage(
     ...(identityContext === undefined ? {} : { identityContext, }),
     ...(referenceContext === undefined ? {} : { referenceContext, }),
     ...((acceptedRepairClaimsNote === undefined) ? {} : { acceptedRepairClaimsNote, }),
+    ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),
     ...((mode.kind === 'objection-correction') ? { objectionGroups: mode.groups, } : {}),
   },);
 
@@ -424,6 +432,11 @@ export async function runRefineStage(
     repairedText,
     ...(referenceContext === undefined ? {} : { referenceContext, }),
     ...(identityContext === undefined ? {} : { identityContext, }),
+    // THE JUDGES READ WHAT THEIR WRITERS READ (ledger B805): a rewrite made to
+    // an accepted claim or a dispute was otherwise judged by readers who could
+    // not see why it differs from the current text.
+    ...((acceptedRepairClaimsNote === undefined) ? {} : { acceptedRepairClaimsNote, }),
+    ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),
   },);
   /**
    Candidate decision over structurally admissible rewrites.
