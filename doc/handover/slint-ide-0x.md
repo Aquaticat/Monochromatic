@@ -1668,9 +1668,14 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     push, clean up, add a LANDED block here and a note on issue 1794.
     Owner request of 2026-10-22: "Please setup gh releases CI." Existing state I found: the music player has
     `.github/workflows/music-player-release.yml` (decision `doc/decision/music-player-releases.md`), `forbidden-strings`
-    has binary releases inside `cargo-publish.yml` (`build-binary`, `create-release`), the nested compositor is only
-    published to crates.io (`nws-detect`, `nws-publish-crate`; `mise` builds it from source through the
-    `cargo:monochromatic-nested-wayland-session` backend), and the IDE (`publish = false`, 0.1.0) has no release path.
+    has binary releases inside `cargo-publish.yml` (`build-binary`, `create-release`), and the IDE (`publish = false`,
+    0.1.0) has no release path. CORRECTION, my error: I first wrote here and told the owner in the question that the
+    nested compositor was only published to crates.io and that `mise` built it from source. That was wrong. The
+    compositor has had GitHub releases since 0.1.2 (`gh release list` shows seven, v0.1.2 to v0.6.1, all immutable and
+    not pre-releases, each with x86_64 and aarch64 gnu `.tar.gz` archives), `nws-build-binary` and `nws-create-release`
+    exist since `6c0c5de42c`, `[package.metadata.binstall]` is in its `Cargo.toml`, and a cargo-binstall probe finds
+    the archive. I had read only grep lines of `cargo-publish.yml` and never the nws jobs. The owner's choice of "the
+    nested compositor binaries" rested on that wrong premise, and I told the owner so.
     Question asked (which products): the owner chose both the IDE and the compositor binaries. Settled, adopted from the
     music player decision without asking: version bump on `main` triggers, dispatch dry run defaults to true, every file
     attested, immutable tags, one `gh release create` with all assets, pre-releases, first real release only with the
@@ -1680,6 +1685,14 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     dispatched from `main`, so after each branch is verified and landed I dispatch a dry run
     (`gh workflow run ... -f dry-run=true`), read the run, and send fixes back; no real release is cut without the
     owner. Follow-up not done: switching the `mise` backend for the compositor to the prebuilt release.
+    Compositor agent handed back (branch `worktree-agent-aedec3def05fc4366`, tip `420b7ceb2e`, not on `main`): it found
+    the release jobs and binstall metadata already present (see the correction above) and only hardened them: a dry
+    run now builds every target, a smoke run and an archive verification step, licenses inside the archives, a
+    checksums file in the same `gh release create`, the release tag looked up first (job `nws-release-state`), the
+    release waits for the crates.io publish, runner `ubuntu-24.04` instead of `ubuntu-latest`, `--locked`. I read the
+    whole diff of the workflow and it matches its report. I dispatched a dry run on that branch
+    (`gh workflow run cargo-publish.yml --ref worktree-agent-aedec3def05fc4366 -f crate=monochromatic-nested-wayland-session -f dry-run=true`;
+    dry run: no crates.io upload, no attestation, no release); its result is read next, then the branch lands.
     Stall pass agent `ae05d7039f46336dc` (started 2026-10-22, own worktree off `origin/main`, branch push only; brief
     quotes `NLG`, `NLD`, `RXI`, `NQH`): at least 60 alternating stall pairs (tree A = before the wake-up, tree B =
     `origin/main`) plus 30 A against A pairs for the spread; keeps the debug timeline of every stalled run and decides
