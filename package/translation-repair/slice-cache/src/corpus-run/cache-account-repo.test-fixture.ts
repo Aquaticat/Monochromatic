@@ -31,7 +31,7 @@ import { scratchDirWith, } from '@monochromatic-dev/translation-repair-test-fixt
  const commit: RepoCommit = { hash: 'f6e93ed5f0000000000000000000000000000000', seconds: 1_788_000_000, subject: 'teach Tabby a longer nap', };
  ```
  */
-type RepoCommit = {
+export type RepoCommit = {
   /**
    Full object id.
    */
@@ -132,7 +132,7 @@ const FIRST_COMMIT_SECONDS = Date.parse('2026-09-01T10:00:00Z',) / MS_PER_SECOND
  const commit = await commitAt({ cloneDir, day: 1, subject: 'teach Tabby a longer nap', },);
  ```
  */
-async function commitAt(
+export async function commitAt(
   {
     cloneDir,
     day,
@@ -222,7 +222,7 @@ async function commitAt(
  await writeAtRepo({ cloneDir, path: 'src/nap.ts', text: 'export const NAP = 1;\n', },);
  ```
  */
-async function writeAtRepo(
+export async function writeAtRepo(
   {
     cloneDir,
     path,
@@ -358,171 +358,6 @@ export async function moveFileAt(
     day,
     subject,
   },);
-}
-
-/**
- One file written whole, with where it goes.
-
- @example
- ```ts
- const write: FileWrite = { path: 'src/nap.ts', text: 'export const NAP = 3;\n', };
- ```
- */
-type FileWrite = {
-  /**
-   Path from the repository's top.
-   */
-  readonly path: string;
-
-  /**
-   File's text.
-   */
-  readonly text: string;
-};
-
-/**
- Runs one git command against the repository that makes no commit, hermetic
- against user and system configuration. A merge asks for an identity even when
- it stops before its commit, so the command carries the one every commit here
- is made under.
-
- @param cloneDir - repository directory
-
- @param args - arguments after the repository option
-
- @example
- ```ts
- await gitAt({ cloneDir, args: ['switch', '--create', 'side',], },);
- ```
- */
-async function gitAt(
-  {
-    cloneDir,
-    args,
-  }: {
-    readonly cloneDir: string;
-    readonly args: readonly string[];
-  },
-): Promise<void> {
-  await spawnKeyless({
-    file: REAL_GIT,
-    args: [
-      '-C',
-      cloneDir,
-      ...args,
-    ],
-    extra: {
-      GIT_CONFIG_GLOBAL: devNull,
-      GIT_CONFIG_SYSTEM: devNull,
-      GIT_AUTHOR_NAME: 'Tabby',
-      GIT_AUTHOR_EMAIL: 'tabby@example.invalid',
-      GIT_COMMITTER_NAME: 'Tabby',
-      GIT_COMMITTER_EMAIL: 'tabby@example.invalid',
-    },
-  },);
-}
-
-/**
- Commits one file on a side branch, then merges the branch back with a merge
- commit, writing the resolution's files before the merge commits. A merge
- whose resolution writes a cache version neither side holds is how a value
- comes to stand in no ordinary commit: two branches that each took the next
- number, met by a merge that took the one after (ledger B814). With no
- resolution files the merge only brings the side branch in.
-
- @param cloneDir - repository directory
-
- @param day - days after the first commit's time for the side commit; the
- merge commits a day later
-
- @param side - file the side branch commits
-
- @param resolution - files the merge writes over what it merged, none for a
- plain merge
-
- @param subject - merge commit's subject
-
- @returns The side commit and the merge commit
-
- @example
- ```ts
- const { merge, } = await commitMergeAt({ cloneDir, day: 5, side, resolution: [], subject: 'merge the nap', },);
- ```
- */
-export async function commitMergeAt(
-  {
-    cloneDir,
-    day,
-    side,
-    resolution,
-    subject,
-  }: {
-    readonly cloneDir: string;
-    readonly day: number;
-    readonly side: FileWrite;
-    readonly resolution: readonly FileWrite[];
-    readonly subject: string;
-  },
-): Promise<{
-  readonly sideCommit: RepoCommit;
-  readonly merge: RepoCommit;
-}> {
-  await gitAt({
-    cloneDir,
-    args: [
-      'switch',
-      '--quiet',
-      '--create',
-      'side',
-    ],
-  },);
-  /**
-   The side branch's one commit.
-   */
-  const sideCommit = await commitFileAt({
-    cloneDir,
-    day,
-    path: side.path,
-    text: side.text,
-    subject: `${subject} (side)`,
-  },);
-  await gitAt({
-    cloneDir,
-    args: [
-      'switch',
-      '--quiet',
-      '-',
-    ],
-  },);
-  await gitAt({
-    cloneDir,
-    args: [
-      'merge',
-      '--quiet',
-      '--no-commit',
-      '--no-ff',
-      'side',
-    ],
-  },);
-  await Promise.all(resolution.map(async function written(write,): Promise<void> {
-    await writeAtRepo({
-      cloneDir,
-      path: write.path,
-      text: write.text,
-    },);
-  },),);
-  /**
-   The merge, concluded by the commit.
-   */
-  const merge = await commitAt({
-    cloneDir,
-    day: day + 1,
-    subject,
-  },);
-  return {
-    sideCommit,
-    merge,
-  };
 }
 
 /**

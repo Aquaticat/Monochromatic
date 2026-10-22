@@ -49,8 +49,14 @@ function commitsOnceEach({ commits, }: { readonly commits: readonly SourceCommit
   /**
    Each hash with its commit; a map keeps where a key was first set, and a later naming carries the same commit.
    */
-  const byHash = new Map(commits.map(function keyed(commit,): readonly [string, SourceCommit] {
-    return [commit.hash, commit,];
+  const byHash = new Map(commits.map(function keyed(commit,): readonly [
+    string,
+    SourceCommit,
+  ] {
+    return [
+      commit.hash,
+      commit,
+    ];
   },),);
   return Array.from(byHash.values(),);
 }

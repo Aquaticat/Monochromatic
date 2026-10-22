@@ -19,9 +19,9 @@ import {
 
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
 import { cacheVersionSetting, } from '../../dist/final/node/index.mjs';
+import { commitMergeAt, } from './cache-account-merge.test-fixture.ts';
 import {
   commitFileAt,
-  commitMergeAt,
   makeCacheAccountRepo,
   moveFileAt,
 } from './cache-account-repo.test-fixture.ts';

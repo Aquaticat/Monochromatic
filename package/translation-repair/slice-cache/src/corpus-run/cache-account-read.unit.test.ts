@@ -276,6 +276,40 @@ await describe({
           },
         },),
         it({
+          name: 'READS AN OCTOPUS MERGE\'S THREE MARK COLUMNS, so a line marked `+++` or `---` in every column '
+            + 'counts and is not taken for a file header',
+          fn: async () => {
+            /**
+             Combined diff of a merge of three parents that writes 6 over 5.
+             */
+            const diff = [
+              '@@@@ -1,1 -1,1 -1,1 +1,1 @@@@',
+              '---export const NAP_CACHE_VERSION = 5;',
+              '+++export const NAP_CACHE_VERSION = 6;',
+            ].join('\n',);
+            expect(declarationLineCounts({
+              diff,
+              version: {
+                name: 'NAP_CACHE_VERSION',
+                value: 5,
+              },
+            },),).toEqual({
+              added: 0,
+              removed: 1,
+            },);
+            expect(declarationLineCounts({
+              diff,
+              version: {
+                name: 'NAP_CACHE_VERSION',
+                value: 6,
+              },
+            },),).toEqual({
+              added: 1,
+              removed: 0,
+            },);
+          },
+        },),
+        it({
           name: 'LEAVES A HISTORICAL LINE THAT DOES NOT READ UNCOUNTED rather than refusing the whole history',
           fn: async () => {
             expect(declarationLineCounts({

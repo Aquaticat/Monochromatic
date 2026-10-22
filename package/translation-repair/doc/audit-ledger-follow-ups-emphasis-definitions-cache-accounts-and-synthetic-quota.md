@@ -623,7 +623,8 @@ and a line the resolution wrote is marked `+` in every column.
 A merge that only brings in a side branch's change prints no line of its own.
 
 Fixed:
-`cacheVersionSetting` passes `-m` and keeps each hash once, where it first stands,
+`cacheVersionSetting` passes `-m` and keeps each hash once,
+where it first stands,
 and `declarationLineCounts` reads as many mark columns as each hunk header says.
 A line marked `+` in every column counts as added,
 one marked `-` in every column as removed,
@@ -636,6 +637,18 @@ The cases:
 and finds the side commit and not the merge where the merge only brought the value in;
 `cache-account-read.unit.test.ts` counts a combined diff's added,
 removed and brought-in lines.
+
+A second reading of the fix found one more column fault,
+fixed before it landed.
+The reader set aside every line opening with `+++` or `---` as a file header,
+but a merge of three parents marks a line its resolution wrote `+++`
+and one it removed `---`,
+so an octopus merge that set a version would have been refused the same way.
+A file header never reads as a declaration,
+so the reader now sets no line aside,
+and a case counts an octopus merge's `+++` and `---` lines
+(red on the first fix,
+where both counted nothing).
 
 After the fix the audit names `ba30e7ac6` as the setting of 31,
 and the other seven versions as before.

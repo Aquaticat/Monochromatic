@@ -351,6 +351,94 @@ function hunkMarkColumns({ line, }: { readonly line: string; },): number {
 }
 
 /**
+ One hunk of a diff: how many mark columns open its lines, and the lines
+ under its header. The lines before any header read as one column, as a
+ diff written without headers does.
+ */
+type DiffHunk = {
+  readonly columns: number;
+  readonly lines: readonly string[];
+};
+
+/**
+ Where one hunk header stands among a diff's lines, with the mark columns
+ the hunk under it opens.
+ */
+type HunkHeader = {
+  readonly index: number;
+  readonly columns: number;
+};
+
+/**
+ Splits a diff into its hunks by their header lines.
+
+ @param diff - `git show` output, or lines written without a header
+
+ @returns Hunks in diff order, the lines before the first header first
+
+ @example
+ ```ts
+ diffHunksOf({ diff: '@@@ -1 -1 +1 @@@\n++a', },); // [{ columns: 1, lines: [] }, { columns: 2, lines: ['++a'] }]
+ ```
+ */
+function diffHunksOf({ diff, }: { readonly diff: string; },): readonly DiffHunk[] {
+  /**
+   The diff's lines.
+   */
+  const lines = diff.split('\n',);
+  /**
+   Where each header stands, with the columns it opens.
+   */
+  const headers = lines.flatMap(function headerAt(
+    line,
+    index,
+  ): readonly HunkHeader[] {
+    return line.startsWith(`${HUNK_MARK}${HUNK_MARK}`,)
+      ? [{
+        index,
+        columns: hunkMarkColumns({ line, },),
+      },]
+      : [];
+  },);
+  /**
+   Lines before the first header.
+   */
+  const preamble: DiffHunk = {
+    columns: 1,
+    lines: lines.slice(
+      0,
+      headers
+        .at(0,)
+        ?.index
+        ?? lines.length,
+    ),
+  };
+  return [
+    preamble,
+    ...headers.map(function hunkUnder(
+      header,
+      order,
+    ): DiffHunk {
+      return {
+        columns: header.columns,
+        lines: lines.slice(
+          header.index + 1,
+          headers
+            .at(order + 1,)
+            ?.index
+            ?? lines.length,
+        ),
+      };
+    },),
+  ];
+}
+
+/**
+ Which way one line of a diff runs.
+ */
+type LineChange = 'added' | 'removed' | 'neither';
+
+/**
  Which way one line of a diff runs: added where every mark column is `+`,
  removed where every one is `-`, neither otherwise. In a merge's combined
  diff a line marked `+` in some columns and not others stood in a parent
@@ -365,7 +453,7 @@ function hunkMarkColumns({ line, }: { readonly line: string; },): number {
  lineChangeOf({ marks: '++', },); // 'added'
  ```
  */
-function lineChangeOf({ marks, }: { readonly marks: string; },): 'added' | 'removed' | 'neither' {
+function lineChangeOf({ marks, }: { readonly marks: string; },): LineChange {
   /**
    Each mark column.
    */
@@ -394,6 +482,10 @@ function lineChangeOf({ marks, }: { readonly marks: string; },): 'added' | 'remo
  marked added in every column. Such a line stands in no ordinary commit, so
  the merge is the commit that set it.
 
+ NO LINE IS SET ASIDE AS A FILE HEADER: `--- a/path` and `+++ b/path` never
+ read as a declaration, while a merge of three parents marks a line its
+ resolution wrote `+++` and one it removed `---`, and those count.
+
  @param diff - `git show` output for one commit, a merge's combined diff
  included
 
@@ -419,59 +511,44 @@ export function declarationLineCounts(
   readonly removed: number;
 } {
   /**
-   Mark columns of the hunk being read: one until a header says otherwise.
+   Which way each line declaring this value runs, hunk by hunk.
    */
-  let columns = 1;
-  /**
-   Declarations of this value added so far.
-   */
-  let added = 0;
-  /**
-   And removed.
-   */
-  let removed = 0;
-  for (const line of diff.split('\n',)) {
-    if (line.startsWith(`${HUNK_MARK}${HUNK_MARK}`,)) {
-      columns = hunkMarkColumns({ line, },);
-      continue;
-    }
-    if (line.startsWith('+++',) || line.startsWith('---',))
-      continue;
-    /**
-     Which way the line runs, by its marks.
-     */
-    const change = lineChangeOf({
-      marks: line.slice(
-        0,
-        columns,
-      ),
+  const changes = diffHunksOf({ diff, },)
+    .flatMap(function hunkChanges(hunk,): readonly LineChange[] {
+      return hunk.lines
+        .filter(function declaresVersion(line,): boolean {
+          /**
+           What the line declares, its marks removed.
+           */
+          const reading = readDeclaration({
+            line: line
+              .slice(hunk.columns,)
+              .trim(),
+          },);
+          return (reading.kind === 'version')
+            && (reading.name === version.name)
+            && (Number(reading.digits,) === version.value);
+        },)
+        .map(function changeOf(line,): LineChange {
+          return lineChangeOf({
+            marks: line.slice(
+              0,
+              hunk.columns,
+            ),
+          },);
+        },);
     },);
-    if (change === 'neither')
-      continue;
-    /**
-     What the line declares, its marks removed.
-     */
-    const reading = readDeclaration({
-      line: line
-        .slice(columns,)
-        .trim(),
-    },);
-    /**
-     Whether it declares this constant at this value.
-     */
-    const declares = (reading.kind === 'version')
-      && (reading.name === version.name)
-      && (Number(reading.digits,) === version.value);
-    if (!declares)
-      continue;
-    if (change === 'added')
-      added += 1;
-    else
-      removed += 1;
-  }
   return {
-    added,
-    removed,
+    added: changes
+      .filter(function isAdded(change,): boolean {
+        return change === 'added';
+      },)
+      .length,
+    removed: changes
+      .filter(function isRemoved(change,): boolean {
+        return change === 'removed';
+      },)
+      .length,
   };
 }
 
