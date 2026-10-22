@@ -15,7 +15,7 @@ import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-st
 // `{keyword: value, ...}` text, appended after a blank line to a description the node already has.
 //
 // A KEYWORD THE FEATURE REFUSES THAT NO SDK STRIPS STOPS THE BODY: `oneOf`, `not`, `if`, `then`, `else`, `pattern`,
-// `patternProperties`, `propertyNames`, `contains`, `prefixItems` and any other keyword outside the allowlist below
+// `patternProperties`, `propertyNames`, `contains`, `prefixItems` and any other keyword outside `ALLOWED_KEYWORDS`
 // would answer HTTP 400 on every call of the stage, which the retry ladder returns unretried and the router counts as a
 // lost voice. It fails here, at build time of the body, naming the keyword and where it sits.
 //

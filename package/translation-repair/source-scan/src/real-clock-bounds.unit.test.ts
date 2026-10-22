@@ -243,6 +243,13 @@ const SCRIPTED_CLOCK = 'a window on the case\'s own injected clock, which the ca
   + 'back; no timer is armed with it';
 
 /**
+ Why a deadline handed to a client keeps its value: the client arms a timer with it, the case reads the delay back
+ from the timer and clears it, and the scripted transport answers at once, so no case waits for it.
+ */
+const ARMED_DEADLINE_READ_BACK = 'a deadline the client arms a timer with, whose delay the case reads back; the '
+  + 'scripted transport answers at once and the client clears the timer, so nothing waits for it';
+
+/**
  Why a launch value keeps its value: the case reads it back in a printed line.
  */
 const PRINTED = 'a value the case reads back in a printed line, as given; no timer is armed with it';
@@ -337,9 +344,24 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     bound: 'read back',
     reason: RECORD_FIELD,
   },
-  'provider/claude-client.unit.test.ts#<module>: freshForMs: 1_000': { count: 1, bound: 'other', reason: SCRIPTED_CLOCK, },
-  'provider/claude-client.unit.test.ts#<module>: statedWaitMs: statedWaitMsOf({ error: failure, },)': {
+  'provider/claude-call-deadline.unit.test.ts#<module>: exchangeTimeoutMs: LONGER_DEADLINE_MS': {
     count: 1,
+    bound: 'read back',
+    reason: ARMED_DEADLINE_READ_BACK,
+  },
+  'provider/claude-call-deadline.unit.test.ts#<module>: exchangeTimeoutMs: RUN_DEADLINE_MS': {
+    count: 3,
+    bound: 'read back',
+    reason: ARMED_DEADLINE_READ_BACK,
+  },
+  'provider/claude-call-deadline.unit.test.ts#armedForClaude: exchangeTimeoutMs: exchangeTimeoutMs': {
+    count: 1,
+    bound: 'other',
+    reason: HANDED_ON,
+  },
+  'provider/claude-client.unit.test.ts#<module>: freshForMs: 1_000': { count: 2, bound: 'other', reason: SCRIPTED_CLOCK, },
+  'provider/claude-client.unit.test.ts#<module>: statedWaitMs: statedWaitMsOf({ error: failure, },)': {
+    count: 2,
     bound: 'read back',
     reason: 'the wait a refusal states, read back in what the budgets hold',
   },
