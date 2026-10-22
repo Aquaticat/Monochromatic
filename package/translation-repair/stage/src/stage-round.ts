@@ -755,8 +755,8 @@ export async function runGatherRound<ValueT,>(
     ms: graceMs,
   },);
   // A DRY REFUSAL THAT LANDED IN THE WINDOW ENDS THE RUN TOO. `allSettled` swallows the ask that raised it, and the
-  // position would come out below as a silent seat in an ordinary thin roster, so the refusal `askOnce` recorded as it
-  // ended is raised here. Before quorum it already surfaced through `awaitHeard`.
+  // position would come out of the assembly as a silent seat in an ordinary thin roster, so the refusal `askOnce`
+  // recorded as it ended is raised here. Before quorum it already surfaced through `awaitHeard`.
   const [dryRefusal,] = dryRefusals;
   if (dryRefusal !== undefined)
     throw dryRefusal;

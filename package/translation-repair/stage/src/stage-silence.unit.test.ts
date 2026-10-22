@@ -16,7 +16,6 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
-  everyStageHeard,
   refinementIsResumable,
   silentStageLabel,
   silentStagesOf,
@@ -47,35 +46,23 @@ await describe({
     },),
 
     describe({
-      name: everyStageHeard.name,
+      name: silentStagesOf.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'ANSWERS true for findings that carry no shortfall, lost voices included',
+          name: 'NAMES nothing for findings that carry no shortfall, lost voices included',
           fn: async () => {
-            expect(everyStageHeard({ findings: [], },),).toBe(true,);
-            expect(everyStageHeard({
+            expect(silentStagesOf({ findings: [], },),).toStrictEqual([],);
+            expect(silentStagesOf({
               findings: [
                 'stage-voice-lost (critic hf:zai-org/GLM-5.3-Flash)',
                 'stage-short (critic 5/6)',
               ],
-            },),).toBe(true,);
+            },),).toStrictEqual([],);
           },
         },),
         it({
-          name: 'ANSWERS false when any stage fell short of quorum, wherever the finding sits',
-          fn: async () => {
-            expect(everyStageHeard({
-              findings: [
-                'stage-voice-lost (editor minimax-m3)',
-                stageQuorumUnmetFinding({ shortfall: 'editor 1/3', },),
-                'non-translation-dominance (0.2)',
-              ],
-            },),).toBe(false,);
-          },
-        },),
-        it({
-          name: 'NAMES every silent stage and nothing else, in order',
+          name: 'NAMES every silent stage and nothing else, in order, wherever the finding sits',
           fn: async () => {
             expect(silentStagesOf({
               findings: [

@@ -7,6 +7,7 @@ import {
   EveryProviderDryError,
   type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
+import { refusalText, } from '@monochromatic-dev/translation-repair-document-structure/ts';
 import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/ts';
 
 //region Pass dry stop
@@ -159,7 +160,7 @@ function tripOn(
       tag: tripOn.name,
       l,
     },)
-      .error(`every provider is out of budget, so the pass stops starting entries (cause: ${error.message})`,);
+      .error(`every provider is out of budget, so the pass stops starting entries (cause: ${refusalText({ error, },)})`,);
     controller.abort(error,);
   }
 }

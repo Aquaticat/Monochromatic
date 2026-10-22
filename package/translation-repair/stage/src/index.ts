@@ -169,7 +169,6 @@ export {
   type StageSettings,
 } from './stage-settings.ts';
 export {
-  everyStageHeard,
   refinementIsResumable,
   silentStageLabel,
   silentStagesOf,

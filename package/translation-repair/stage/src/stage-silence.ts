@@ -181,31 +181,4 @@ export function refinementIsResumable(
   return silentStagesOfSettlement({ settlement, },).length === 0;
 }
 
-/**
- Whether a settlement was reached with every stage at or above quorum, which
- is what a cache may keep and a resumed run may trust.
-
- A stage that lost some voices but kept quorum still counts as heard; the
- `stage-voice-lost` findings it leaves are a different number and are not
- read here.
-
- @param findings - findings a settlement carries
-
- @returns Whether no stage fell short of quorum
-
- @example
- ```ts
- if (everyStageHeard({ findings: outcome.findings, },)) await cache.persist(...);
- ```
- */
-export function everyStageHeard(
-  { findings, }: { readonly findings: readonly string[]; },
-): boolean {
-  /**
-   Findings that say a stage fell short.
-   */
-  const silent = silentStagesOf({ findings, },);
-  return silent.length === 0;
-}
-
 //endregion Stage silence
