@@ -830,6 +830,12 @@ failures, another thread owns them).
 
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 
+- Desktop CJK font (written 2026-10-22, found by the text-size research): under `LANG=en_US.UTF-8` the Slint app draws
+  Han and kana from Droid Sans Fallback (`DroidSansFallbackFull.ttf`), while the browsers and Android use Noto Sans
+  CJK; under ja or zh locales it uses Noto Sans CJK. Evidence and open questions are in the troubleshooting doc's
+  section "CJK fonts". A decision is the human's (embed a CJK font and its size cost, versus leaving the system
+  fallback): not asked yet, to be put to them with pros, cons and a ranking.
+
 - Android large library (written 2026-10-18, branch `fix/music-player-android-large-library`, not merged): the media
   store was asked for the document column `last_modified` once per fingerprint (sweep, page measure pass, track
   load) and the provider logged a stack each time; the audit's "idle" count was the page pass that follows every
