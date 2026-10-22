@@ -76,7 +76,14 @@ const SIX_SEATS: readonly RosterModelId[] = [
 /**
  How a scripted seat behaves when asked.
  */
-type SeatRole = 'refused' | 'slow' | 'fast' | 'failing';
+type SeatRole = 'refused' | 'slow' | 'stuck' | 'fast' | 'failing';
+
+/**
+ How long a stuck seat holds its call before failing in transport: long
+ against the grace, short against the test's wall clock, so a round that
+ waited for it ends in a failed assertion within seconds rather than a hang.
+ */
+const STUCK_MS = 1000;
 
 /**
  Client scripted per seat: refused by the router, answering only when the
@@ -133,6 +140,29 @@ function scriptedClient(
         await untilAborted({ signal: request.signal, },);
         throw request.signal.reason;
       }
+      // THE STUCK SEAT answers nothing either, but gives up in transport after
+      // STUCK_MS if no round cut it first, so the old rule's wait on it ends.
+      // A plain timer, cleared on the cut: `AbortSignal.timeout` arms an
+      // unreferenced one, and with nothing else pending the process exited
+      // with the test's top-level await unsettled rather than failing it.
+      if (role === 'stuck') {
+        /** Fires when the seat gives up. */
+        const givingUp = new AbortController();
+        /** The seat's own clock. */
+        const timer = setTimeout(function giveUp() {
+          givingUp.abort();
+        }, STUCK_MS,);
+        await untilAborted({
+          signal: AbortSignal.any([
+            request.signal,
+            givingUp.signal,
+          ],),
+        },);
+        clearTimeout(timer,);
+        if (request.signal.aborted)
+          throw request.signal.reason;
+        throw new Error('scripted stuck seat gave up',);
+      }
 
       /**
        Scripted payload for the answering call.
@@ -185,6 +215,49 @@ function refusedFirstBench(): {
       return [modelId, 'refused',];
     if (index === 1)
       return [modelId, 'slow',];
+    return [modelId, 'fast',];
+  },),);
+  return {
+    rotated,
+    roles,
+  };
+}
+
+/**
+ The six seats in the prompt's rotation, with the first three refused by the
+ router, the fourth stuck and the last two answering at once. The round-0
+ window is the first four (quorum three of six, plus one spare); the first
+ two refusals hand their places to the last two seats and the third has no
+ seat left to hand on to, so three seats are out of reach and the three that
+ could answer are exactly the bench quorum.
+
+ @returns Rotated seats and the role of each
+ */
+function quorumOfLiveSeatsBench(): {
+  readonly rotated: readonly RosterModelId[];
+  readonly roles: ReadonlyMap<RosterModelId, SeatRole>;
+} {
+  /**
+   Seats in the order the gather will ask them.
+   */
+  const rotated = rotatedBench({
+    modelIds: SIX_SEATS,
+    messages: MESSAGES,
+  },);
+  /**
+   Behaviour per rotated position.
+   */
+  const roles = new Map<RosterModelId, SeatRole>(rotated.map(function roleAt(
+    modelId,
+    index,
+  ): readonly [
+    RosterModelId,
+    SeatRole,
+  ] {
+    if (index < 3)
+      return [modelId, 'refused',];
+    if (index === 3)
+      return [modelId, 'stuck',];
     return [modelId, 'fast',];
   },),);
   return {
@@ -350,6 +423,126 @@ await describe({
         },);
         expect(calls[SEAT_HYPER_OPENROUTER_VISION_EDITOR],).toBe(1,);
         expect(calls[SEAT_SYNTHETIC_VISION_NO_OPENROUTER],).toBeGreaterThan(1,);
+      },
+    },),
+
+    it({
+      name: 'THE GATHER LETS THE GRACE OPEN IN THE FIRST ROUND where the refusals leave exactly the bench quorum '
+        + 'within reach (owner, 2026-10-22, "Let the grace open"): it closes on two of the three live seats, cuts the '
+        + 'stuck one at the grace and never asks it again',
+      fn: async () => {
+        /** Call count per seat. */
+        const calls: Record<string, number> = {};
+        /** Rotation and roles. */
+        const {
+          rotated,
+          roles,
+        } = quorumOfLiveSeatsBench();
+        /** Gather under test. */
+        const gather = await gatherStageVoices({
+          client: scriptedClient({
+            roles,
+            calls,
+          },),
+          modelIds: SIX_SEATS,
+          messages: MESSAGES,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: HANG_STOP_MS,
+          responseFormat: PURR_FORMAT,
+          validate: isPurrReply,
+          stage: 'critic',
+          l,
+          graceMs: GRACE_MS,
+        },);
+        expect(gather.quorumMet,).toBe(true,);
+        expect(gather.quorum,).toBe(2,);
+        expect(gather.voices.length,).toBe(2,);
+        expect(gather.unreachable.size,).toBe(3,);
+        expect(calls[seatAt({
+          rotated,
+          index: 3,
+        },)],).toBe(1,);
+        expect(gather.findings,).toContain('stage-short-bench (critic reachable 3 of 6, quorum 2)',);
+      },
+    },),
+
+    it({
+      name: 'A WINDOWED STAGE LETS THE GRACE OPEN IN THE FIRST ROUND the same way, closing on two of the three '
+        + 'live seats without asking the stuck one again',
+      fn: async () => {
+        /** Call count per seat. */
+        const calls: Record<string, number> = {};
+        /** Rotation and roles. */
+        const {
+          rotated,
+          roles,
+        } = quorumOfLiveSeatsBench();
+        /** Rounds under test. */
+        const rounds = await runWindowedRounds({
+          client: scriptedClient({
+            roles,
+            calls,
+          },),
+          modelIds: SIX_SEATS,
+          messages: MESSAGES,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: HANG_STOP_MS,
+          responseFormat: PURR_FORMAT,
+          validate: isPurrReply,
+          stage: 'lane-contest',
+          l,
+          graceMs: GRACE_MS,
+        },);
+        /** Seats heard. */
+        const heard = rounds.outcomes.filter(function wasHeard({ voice, },): boolean {
+          return voice.heard;
+        },);
+        expect(heard.length,).toBe(2,);
+        expect(rounds.quorum.needed,).toBe(2,);
+        expect(rounds.unreachable,).toBe(3,);
+        expect(calls[seatAt({
+          rotated,
+          index: 3,
+        },)],).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'A WHOLE-BENCH ROUND LETS THE GRACE OPEN the same way, sizing its need again as the refusals land',
+      fn: async () => {
+        /** Call count per seat. */
+        const calls: Record<string, number> = {};
+        /** Roles: three refused, one slow, two answering. */
+        const { roles, } = quorumOfLiveSeatsBench();
+        /** Rounds under test. */
+        const rounds = await runWindowedRounds({
+          client: scriptedClient({
+            roles,
+            calls,
+          },),
+          modelIds: SIX_SEATS,
+          messages: MESSAGES,
+          signal: new AbortController().signal,
+          exchangeTimeoutMs: HANG_STOP_MS,
+          responseFormat: PURR_FORMAT,
+          validate: isPurrReply,
+          stage: 'lane-contest',
+          l,
+          graceMs: GRACE_MS,
+          fanOut: 'whole-bench',
+        },);
+        /** Seats heard. */
+        const heard = rounds.outcomes.filter(function wasHeard({ voice, },): boolean {
+          return voice.heard;
+        },);
+        expect(heard.length,).toBe(2,);
+        expect(rounds.quorum.needed,).toBe(2,);
+        /** The stuck seat's outcome, which the grace cut before it gave up. */
+        const stuck = rounds.outcomes.find(function isStuck({ modelId, },): boolean {
+          return roles.get(modelId,) === 'stuck';
+        },);
+        expect(stuck?.voice.heard,).toBe(false,);
+        expect(calls[stuck?.modelId ?? ''],).toBe(1,);
       },
     },),
   ],
