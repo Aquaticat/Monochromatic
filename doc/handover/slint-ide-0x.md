@@ -1451,6 +1451,12 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     equal to the release binary of the verified tree; the previous binary (`8706732d98cdd82c`) is
     `monochromatic-ide.previous`. The agent's worktree, branch (local and remote) and my two scratch trees are removed;
     no units, containers or stray processes were left (scanned after the report).
+    Latency and rare-stall agent `a0d7b8bed3990e6c8` (started 2026-10-21, own worktree off `origin/main`, branch push
+    only; brief quotes `NLG`, `NLD`, `RXI`): measures the idle latency of the 20 ms wait (merged binary against a binary
+    with the wait disabled, at least 20 runs each) and runs at least 16 more merged and 16 fix-disabled scroll runs to
+    decide by intervention whether stalls away from slot 50 are the host or the fix. On its report: verify, scan `ps`,
+    `podman ps`, `systemctl --user list-units`, read any product diff, gates once per snapshot, own check, push,
+    reinstall if the binary changed, remove its worktree and branch.
     Open, in order: (1) rare stalls elsewhere in the scripted scroll (slot 33 and 72 in one run each of 16 merged runs),
     and the idle latency of the 20 ms wait, to be measured on a quiet host; the frame-shift probe is the measure;
     (2) the flake work, in `doc/handover/ide-native-flakes.md`:
