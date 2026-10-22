@@ -14,6 +14,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import {
   exchangeFailureLogText,
@@ -94,6 +95,39 @@ await describe({
         expect(exchangeFailureLogText({ error: failure, },),).not.toContain('Qx4d',);
         expect(errorChainText({ error: failure, },),).not.toContain('Qx4d',);
         expect(exchanges.length,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'REFUSES EVERY MODEL BUT THE EIGHT CLAUDE CARDS before any request is built, by a named error: the key lists '
+        + 'Opus, Fable and older models, so a roster model of another provider and an Opus id both stop at the client',
+      fn: async () => {
+        for (const modelId of [
+          'hf:moonshotai/Kimi-K3',
+          'deepseek-v4.1-flash',
+          'claude-opus-5-5',
+          'claude-sonnet-5',
+          'claude-haiku-4-5',
+        ] as readonly string[]) {
+          const { transport, exchanges, } = scripted({
+            replies: [{
+              status: 200,
+              bodyText: claudeStreamOf({ text: '{"spot":"sunbeam"}', stopReason: 'end_turn', usage: PLAIN_USAGE, }),
+            },],
+          },);
+
+          const failure: unknown = await rejectionOf(
+            () =>
+              askCat({
+                client: createClaudeClient({ apiKey: CLAUDE_CAT_KEY, transport, retryPolicy: ONE_QUICK_RETRY, },),
+                modelId: modelId as RosterModelId,
+              },),
+          );
+
+          expect((failure as Error).name,).toBe('ClaudeModelNotServedError',);
+          expect((failure as Error).message,).toContain(modelId,);
+          expect((failure as Error).message,).not.toContain(CLAUDE_CAT_KEY,);
+          expect(exchanges.length,).toBe(0,);
+        }
       },
     },),
   ],
