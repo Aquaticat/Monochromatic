@@ -588,3 +588,72 @@ at 15:23 UTC read the Synthetic meter:
 and `syntheticThrottled=none`.
 So `weeklyTokenLimit` still holds `percentRemaining` and `nextRegenAt` as a number and a string,
 and issue 1779 was closed with that reading.
+
+## B814: the cache-account audit read a version set in a merge resolution as in no commit
+
+Found on 2026-10-22 (UTC) by the lead,
+running the audit `cache-account-audit` at `c5bf2368d3` before the launch of zheermao23.
+It refused `CONSOLIDATE_CACHE_VERSION = 31 in package/translation-repair/artifact/src/consolidate-key.ts is not in any commit`,
+although 31 was committed.
+
+Outcome written on 2026-10-22 (UTC).
+Red `2464ee7f7`,
+fixed in `c1cbb3384`.
+
+The cause:
+the translation-repair branch moved the number from 29 to 30 in `a40de882b` (B762)
+while main moved it from 29 to 30 for B805 in `27db2c256`,
+and the merge that met the two (`ba30e7ac6`) wrote 31 in its resolution.
+No ordinary commit holds 31.
+`cacheVersionSetting` asked `git log -S` for the commits that change how often the declaration appears,
+and without `-m` git lists no merge at all.
+Had it listed the merge,
+`declarationLineCounts` would still have read nothing:
+`git show` writes a merge as a combined diff,
+with one mark column for each parent (`++export const ...`),
+and the reader took one column and read the rest of the line as the declaration,
+which then did not read.
+
+Probed with git 2.56.0 on a throwaway repository before the fix:
+`git log -S` without `-m` lists no merge;
+with `-m` it lists a merge once for each parent its diff against differs,
+so a hash can repeat;
+`git show` on a merge prints a combined diff whose hunk header opens with one `@` more than it has columns,
+and a line the resolution wrote is marked `+` in every column.
+A merge that only brings in a side branch's change prints no line of its own.
+
+Fixed:
+`cacheVersionSetting` passes `-m` and keeps each hash once, where it first stands,
+and `declarationLineCounts` reads as many mark columns as each hunk header says.
+A line marked `+` in every column counts as added,
+one marked `-` in every column as removed,
+and one that only some parents lacked as neither,
+since the merge brought it in and did not write it.
+So a merge that only brings in a side commit sets nothing,
+and the side commit stays the setting.
+The cases:
+`cache-account-setting.unit.test.ts` finds the merge that set a value in its resolution,
+and finds the side commit and not the merge where the merge only brought the value in;
+`cache-account-read.unit.test.ts` counts a combined diff's added,
+removed and brought-in lines.
+
+After the fix the audit names `ba30e7ac6` as the setting of 31,
+and the other seven versions as before.
+The account of 31 said how 30 was reached but not how 31 was:
+it gave the reason the number left 29 and said main set 30 "while this change was written".
+It now names both commits that set 30,
+the merge that set 31,
+and the evidence that no pass ran on a build holding either 30:
+the last runs,
+zheermao22 and XingZ6017,
+log `START tip=2a336603bf`,
+which holds neither `27db2c256` nor `a40de882b` (`git merge-base --is-ancestor`).
+
+Cache keys and artifacts:
+none moves.
+The audit reads git and the source and writes nothing a pass reads.
+
+Recurrence:
+`mistake-prevention-stored-files-and-cached-decisions.md`,
+"Cached decisions",
+the paragraph on history readers and merges.

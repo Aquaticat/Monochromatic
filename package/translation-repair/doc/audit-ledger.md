@@ -428,7 +428,9 @@ named for that subject and listed here.
   a clock-zone slip in that account (B672),
   the request to read the words of a place with recorded definitions,
   which reads the page the other way and was not built (B673),
-  and the judge seats line that printed `wet` for a meter that said nothing (B686).
+  the judge seats line that printed `wet` for a meter that said nothing (B686),
+  Synthetic's removed five-hour window and concurrency limit (B691),
+  and the cache-account audit that read a version set in a merge resolution as in no commit (B814).
 - [Audit ledger: the package split, configs, scans and messages](audit-ledger-package-split-configs-scans-and-messages.md):
   What the split of the package into 36 found in the moved code and its tooling:
   a build config that lacked a plugin,

@@ -415,6 +415,7 @@ which lists every file of this record.
 - [B811, runner reports and probes](audit-ledger-runner-reports-and-probes.md)
 - [B812, output decided by arrival order](audit-ledger-output-decided-by-arrival-order.md)
 - [B813, clocks and durations](audit-ledger-clocks-and-durations.md)
+- [B814, follow-ups on emphasis definitions, cache accounts and the Synthetic quota shape](audit-ledger-follow-ups-emphasis-definitions-cache-accounts-and-synthetic-quota.md)
 - [D1 to D11, docs and comments that disagreed with the code](audit-ledger-docs-against-code.md)
 - [D12, doc conventions and their guards](audit-ledger-doc-conventions-and-their-guards.md)
 - [D13 to D21, docs and comments that disagreed with the code](audit-ledger-docs-against-code.md)
