@@ -960,10 +960,58 @@ State after K4 landed:
   (K1,
   K2,
   K3 and the run-off wording)
-  is still being worked;
-  gate and land it after `tr-w265` or before,
-  whichever is ready first,
-  one gate at a time.
+  is done in twelve commits:
+  NeuralWatt GLM text calls send `reasoning_effort` `low`,
+  the stream guards count only generated text and refuse bounds past the call deadline,
+  the polish writers see the accepted repair claims
+  (`CONSOLIDATE_CACHE_VERSION` 29 to 30),
+  and the run-off line tells a tie from a plurality.
+  Its K1 ledger entry took B803,
+  which main already holds for K4,
+  so it is renumbered.
+  Decided,
+  open to the owner's veto:
+  the first-content window goes from 120 s to 180 s,
+  since the logs record only time to first byte,
+  a lower bound,
+  and the largest healthy first byte was 115.7 s;
+  the idle window stays 120 s.
+  Also decided:
+  the polish round's rewrite judges are shown the same accepted claims,
+  by the rule that judges of a text see what its writer saw,
+  and the dispute note reaches the polish writers if the polish gate is shown it.
+  An agent makes these changes after merging main;
+  then gate and land it,
+  one gate at a time with `tr-w265`.
+  Commit `e13dc11c610e` has scope `translate-stage` where the package name is `translation-repair-translate-stage`;
+  it gets a corrective commit comment once it lands.
+- `tr-w266` landed `a334a5f794` after gate g150
+  (2,735 tests,
+  no failure).
+  The older family docs are rewrapped in `tr-w267`
+  (36 docs read by a shared stem list in `living-docs.test-fixture.ts`,
+  5,511 findings to none,
+  words and parsed tree unchanged in all 36);
+  gate g151 runs on `0994fbf492`,
+  and it lands when green.
+  Left after it,
+  decided and open to the owner's veto:
+  the 20 `doc/audit` docs
+  (1,432 findings)
+  and the 14 troubleshooting docs
+  (171 findings)
+  made under the family's commit scopes are the family's,
+  so a next round rewraps them and adds their stems;
+  six of those troubleshooting docs hold only `rust/require-rustdoc` on fenced Rust code,
+  which a rewrap cannot clear,
+  so that round reads each fence first.
+  The three repository-policy docs
+  (`doc/planning/unused-import-lint-policy.md`,
+  `doc/decision/corpus-deny-list-for-forbidden-strings.md`,
+  `doc/decision/forbidden-strings-cannot-gate-corpus-text-by-shape.md`;
+  136 findings)
+  govern the whole repository,
+  so they are left to their owners.
 - `google.gemma-4-e2b` is served only by Bedrock,
   so with Bedrock off it stays an unserved seat under the 2026-09-09 short-bench rule;
   open to the owner's veto.
