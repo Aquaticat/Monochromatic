@@ -217,7 +217,9 @@ or by bytes and one rewrap of the base (ledger B26).
 A reviewer's sentence-long quote of a screenshot transcript was dropped as unanchored,
 because the transcript keeps the picture's line breaks
 (the readers are told to preserve them)
-and the quote, written as the sentence, had none (ledger B715).
+and the quote,
+written as the sentence,
+had none (ledger B715).
 
 The rule:
 first say which question the comparison asks.
@@ -982,7 +984,8 @@ as the locator does (ledger B645).
 The slot a judge gives beside a quote is evidence for every quote that contains the located words,
 as the quotes themselves are (ledger B658).
 Two readers of one apostrophe read one twin of the English a reader sees,
-and a link counts as a closing bracket only when its label ends in a closing mark (ledger B659, B660).
+and a link counts as a closing bracket only when its label ends in a closing mark (ledger B659,
+B660).
 
 What enforces it:
 the consistency pass's own tests,

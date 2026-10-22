@@ -115,194 +115,386 @@ Filed in:
 
 ### THE PASS IS FINISHED AND THE FREEZE IS LIFTED
 
-`DONE processed=5 of pending=5; artifacts=5/92 elapsed=19109264ms`, `Finished in 19111.45s`, exit 0.
-All five artifacts are in `~/translation-repair-runs-flagged-20260818/artifacts`. The producing path
-is free: builds, tests and `#120`/`#121` fixes can all land.
+`DONE processed=5 of pending=5; artifacts=5/92 elapsed=19109264ms`,
+`Finished in 19111.45s`,
+exit 0.
+All five artifacts are in `~/translation-repair-runs-flagged-20260818/artifacts`.
+The producing path
+is free:
+builds,
+tests and `#120`/`#121` fixes can all land.
 
 ### `#107` IS ANSWERED, AND THE ANSWER IS A NULL
 
-`doc/audit/flagged-slice-replacement-rate.md`. Five entries, 42 slices.
+`doc/audit/flagged-slice-replacement-rate.md`.
+Five entries,
+42 slices.
 
   pre-registered ledger reading   flagged 26 of 32  0.8125    unflagged 38 of 52  0.7308
   contested slices only           flagged 14 of 16  0.8750    unflagged 20 of 21  0.9524
 
-THE SIGN FLIPS WITH THE DENOMINATOR, which is what a difference smaller than the instrument looks
-like. As archive survival: flagged 2 of 16 at 0.125, unflagged 1 of 21 at 0.048, natural six-entry
-pool 2 of 39 at 0.051. The contested cut rests on two survivals against one; moving one slice changes
+THE SIGN FLIPS WITH THE DENOMINATOR,
+which is what a difference smaller than the instrument looks
+like.
+As archive survival:
+flagged 2 of 16 at 0.125,
+unflagged 1 of 21 at 0.048,
+natural six-entry
+pool 2 of 39 at 0.051.
+The contested cut rests on two survivals against one;
+moving one slice changes
 the direction.
 
-THE NULL COUNTS, per `QPC`: the same reader reports 1.0000 against 0.0000 under `--control shipped`,
+THE NULL COUNTS,
+per `QPC`:
+the same reader reports 1.0000 against 0.0000 under `--control shipped`,
 so it is shown able to display a difference and does not display one here.
 
-WHAT DID DIFFER is contest availability, 16 of 16 flagged slices held a vote against 21 of 26
-unflagged, which is about whether a candidate arrived rather than how judging went. Critic attention
-runs the OTHER way, 12.7 claims per hundred source characters at flagged slices against 15.2.
+WHAT DID DIFFER is contest availability,
+16 of 16 flagged slices held a vote against 21 of 26
+unflagged,
+which is about whether a candidate arrived rather than how judging went.
+Critic attention
+runs the OTHER way,
+12.7 claims per hundred source characters at flagged slices against 15.2.
 
 ### SHEET ONE IS GRADED TO ITEM 7 AND SHEET TWO IS OPEN (2026-08-18 afternoon)
 
 The user graded items 1 to 7 of the first relocation sheet and said it was
-"once again, impossible to grade". Their comments, verbatim, are the requirements:
+"once again,
+impossible to grade".
+Their comments,
+verbatim,
+are the requirements:
 
   1 [N]  2 [N]
-  3 [? The matching might have been broken.]
-  4 [N, but 姐妹 obviously is better translated to "girl" or "woman" here, depending on the final age of the subject.]
-  5 [? Maybe there is a matching issue]
-  6 [? Semantic wrapping is paramount even when original Chinese text didn't,
-  for maintainability. And I don't see an issue with the original translated text.]
-  7 [??? Once again, semantic wrapping, and I don't see an issue with the original passage.]
+  3 [?
+  The matching might have been broken.]
+  4 [N,
+  but 姐妹 obviously is better translated to "girl" or "woman" here,
+  depending on the final age of the subject.]
+  5 [?
+  Maybe there is a matching issue]
+  6 [?
+  Semantic wrapping is paramount even when original Chinese text didn't,
+  for maintainability.
+  And I don't see an issue with the original translated text.]
+  7 [???
+  Once again,
+  semantic wrapping,
+  and I don't see an issue with the original passage.]
 
-PRESERVED BEFORE ANYTHING WAS REGENERATED: `relocation-sheet.graded-v1.md` and
-`relocation-manifest.v1.json` are copies, and `relocation-grades-v1.json` holds the seven grades
-joined to entry, lane, slice and flag. The generator overwrites `relocation-sheet.md` wholesale, so
+PRESERVED BEFORE ANYTHING WAS REGENERATED:
+`relocation-sheet.graded-v1.md` and
+`relocation-manifest.v1.json` are copies,
+and `relocation-grades-v1.json` holds the seven grades
+joined to entry,
+lane,
+slice and flag.
+The generator overwrites `relocation-sheet.md` wholesale,
+so
 that copy is the only record of their work.
 
 SHEET TWO IS BUILT AND OPEN IN GHOSTTY WITH HX:
-`~/translation-repair-runs-flagged-20260818/relocation-sheet.md`, items 8 to 21, 41 KB, built by
-`~/temp/agent/relocation-sheet-2.mjs`, zero quota. Seven flagged runs merged whole, seven controls,
-one rewrap-only item dropped. Three independent boxes per item, `damaged` / `unnecessary` /
-`mismatch`, plus free `notes`. Wrapping normalised away for display, blank lines kept. Blinding
-deliberately dropped. Full rationale in `#107`.
+`~/translation-repair-runs-flagged-20260818/relocation-sheet.md`,
+items 8 to 21,
+41 KB,
+built by
+`~/temp/agent/relocation-sheet-2.mjs`,
+zero quota.
+Seven flagged runs merged whole,
+seven controls,
+one rewrap-only item dropped.
+Three independent boxes per item,
+`damaged` / `unnecessary` /
+`mismatch`,
+plus free `notes`.
+Wrapping normalised away for display,
+blank lines kept.
+Blinding
+deliberately dropped.
+Full rationale in `#107`.
 
-STILL WAITING FROM BEFORE: `~/translation-repair-runs-20260817/damage-sheet.md`, 20 items, ungraded,
-which `#68` needs. And `#96`'s licence question, recommendation already written in
+STILL WAITING FROM BEFORE:
+`~/translation-repair-runs-20260817/damage-sheet.md`,
+20 items,
+ungraded,
+which `#68` needs.
+And `#96`'s licence question,
+recommendation already written in
 `doc/planning/artifact-archive-text.md`.
 
 ### THE BIGGEST FINDING OF THE NIGHT IS NOT ABOUT `#107`
 
-`doc/audit/incumbent-almost-never-wins-a-contest.md`. Over the six NATURALLY accumulated entries, not
-hand picked, the archive's wording survives a contested vote 2 times in 39. Mean winning weight 3.31
-for a fresh candidate against 0.42 for the incumbent. Eleven of thirteen retentions are defaults
+`doc/audit/incumbent-almost-never-wins-a-contest.md`.
+Over the six NATURALLY accumulated entries,
+not
+hand picked,
+the archive's wording survives a contested vote 2 times in 39.
+Mean winning weight 3.31
+for a fresh candidate against 0.42 for the incumbent.
+Eleven of thirteen retentions are defaults
 where nothing was offered against it.
 
-BOTH ARTEFACT EXPLANATIONS ARE RULED OUT: the incumbent is on the ballot anonymously by design, and
-its slot varies across the 39 judged slices, 13/10/5/3/3/5. It competes blind, from a moving
-position, and loses.
+BOTH ARTEFACT EXPLANATIONS ARE RULED OUT:
+the incumbent is on the ballot anonymously by design,
+and
+its slot varies across the 39 judged slices,
+13/10/5/3/3/5.
+It competes blind,
+from a moving
+position,
+and loses.
 
-That bears on `#84`, on `#96`, and on whether this pipeline is described as repairing or translating:
+That bears on `#84`,
+on `#96`,
+and on whether this pipeline is described as repairing or translating:
 `#83` entered the incumbent into selection on the premise it would sometimes win.
 
 ### WHAT TO DO NEXT, in order
 
-  1  `#120` defect 6 LANDED in `d0403c9f0`; the remaining five defects are open, then `#121`;
-  2  `#122`, wire `package/cli/markdown-lint`'s add-only `semantic-line-breaks` fix into the ship
-     path, then re-run `~/temp/agent/wrap-census.mjs` and confirm soft-wrapping loss goes to zero
+  1  `#120` defect 6 LANDED in `d0403c9f0`;
+  the remaining five defects are open,
+  then `#121`;
+  2  `#122`,
+  wire `package/cli/markdown-lint`'s add-only `semantic-line-breaks` fix into the ship
+     path,
+  then re-run `~/temp/agent/wrap-census.mjs` and confirm soft-wrapping loss goes to zero
      with the paragraph counts unchanged;
-  3  the `#107` window widening the locality measurement bounds: show the judge n-1, n, n+1. Longest
-     flagged run anywhere is three and every relocation pair is adjacent, so that window is enough
+  3  the `#107` window widening the locality measurement bounds:
+  show the judge n-1,
+  n,
+  n+1.
+  Longest
+     flagged run anywhere is three and every relocation pair is adjacent,
+  so that window is enough
      in every case measured;
   4  optionally `mise run //package/module/translation-repair:rendering-audit-settled -- --archive
-     ~/translation-repair-runs-flagged-20260818/artifacts` (moved on 2026-10-18 to `//package/translation-repair/probe:rendering-audit-settled`) which SPENDS QUOTA unless `--cap 0`, then
-     `rendering-audit-settled-report` for `#107`'s reading A, the relocation pairs.
+     ~/translation-repair-runs-flagged-20260818/artifacts` (moved on 2026-10-18 to `//package/translation-repair/probe:rendering-audit-settled`) which SPENDS QUOTA unless `--cap 0`,
+  then
+     `rendering-audit-settled-report` for `#107`'s reading A,
+  the relocation pairs.
 
 ### Sol is closed out: issue `#444` filed, no further effort this session
 
-The user's instruction is launch-and-forget and focus on the pipeline. `Aquaticat/Monochromatic#444`
-carries the full report: three runs at `--thinking xhigh` exiting 124 with zero bytes and NO session
-file written, against a smoke test on the same model and level that answered in 2.2 seconds and wrote
-a five-record session. Three variants were launched and are forgotten; if any returns, add a comment
+The user's instruction is launch-and-forget and focus on the pipeline.
+`Aquaticat/Monochromatic#444`
+carries the full report:
+three runs at `--thinking xhigh` exiting 124 with zero bytes and NO session
+file written,
+against a smoke test on the same model and level that answered in 2.2 seconds and wrote
+a five-record session.
+Three variants were launched and are forgotten;
+if any returns,
+add a comment
 to `#444` and move on.
 
-`--thinking` must stay `xhigh` or `max` for this use, per the user, so lowering effort is not a
+`--thinking` must stay `xhigh` or `max` for this use,
+per the user,
+so lowering effort is not a
 workaround.
 
 ### The main-worktree `package.json` change is explained
 
 `~/.pi/agent/sessions/--var-home-user-Monochromatic--/2026-08-18T01-36-53-044Z_*.jsonl` is a
-concurrent `pi` session, model `gpt-5.3-codex-spark`, prompt "commit all", which ran
+concurrent `pi` session,
+model `gpt-5.3-codex-spark`,
+prompt "commit all",
+which ran
 `git add package.json pnpm-lock.yaml && git commit -m "chore(root): add open code review..."` at
-01:37Z. That is the `@monochromatic-dev/cli-open-code-review-issue` dependency. Not this session's
-work, correctly left alone per `EC1`, and no longer a mystery.
+01:37Z.
+That is the `@monochromatic-dev/cli-open-code-review-issue` dependency.
+Not this session's
+work,
+correctly left alone per `EC1`,
+and no longer a mystery.
 
 ### Sol is closed out: `#444` filed, corrected twice, no further effort
 
-THE CAUSE IS THE ROUTE, not the prompt. `openai-codex/gpt-5.6-sol` produced exactly ONE response, at
-02:02:53Z, and has produced nothing since: about eleven calls, every one hanging until killed with
-zero bytes on stdout and stderr, regardless of prompt size, content, argv or `@file` delivery,
-thinking level, or context-file discovery.
+THE CAUSE IS THE ROUTE,
+not the prompt.
+`openai-codex/gpt-5.6-sol` produced exactly ONE response,
+at
+02:02:53Z,
+and has produced nothing since:
+about eleven calls,
+every one hanging until killed with
+zero bytes on stdout and stderr,
+regardless of prompt size,
+content,
+argv or `@file` delivery,
+thinking level,
+or context-file discovery.
 
-TWO CONTROLS SETTLE IT. The exact 51-byte prompt that succeeded at 02:02Z now exits 124. And the
-DEFAULT provider, same flags and same `--thinking xhigh` and same prompt, answers `ALIVE` in seconds.
-So pi works, `--print` works, `xhigh` works, and the prompt works.
+TWO CONTROLS SETTLE IT.
+The exact 51-byte prompt that succeeded at 02:02Z now exits 124.
+And the
+DEFAULT provider,
+same flags and same `--thinking xhigh` and same prompt,
+answers `ALIVE` in seconds.
+So pi works,
+`--print` works,
+`xhigh` works,
+and the prompt works.
 
-A PROMPT-SIZE STORY WAS BUILT AND RETRACTED. A ladder at 80, 120, 160, 200, 500, 1000, 2000 and 4000
-bytes all hung, and a 260-byte trivially-answerable prompt hung, which looked like a size threshold
-between 51 and 80 bytes. It was not: every one of those runs happened AFTER whatever changed, and
-the baseline was never re-run. A missing control. `#444` carries the retraction and was retitled.
+A PROMPT-SIZE STORY WAS BUILT AND RETRACTED.
+A ladder at 80,
+120,
+160,
+200,
+500,
+1000,
+2000 and 4000
+bytes all hung,
+and a 260-byte trivially-answerable prompt hung,
+which looked like a size threshold
+between 51 and 80 bytes.
+It was not:
+every one of those runs happened AFTER whatever changed,
+and
+the baseline was never re-run.
+A missing control.
+`#444` carries the retraction and was retitled.
 
-DO NOT SPEND MORE ON THIS. The user's instruction is launch-and-forget and focus on the pipeline, and
+DO NOT SPEND MORE ON THIS.
+The user's instruction is launch-and-forget and focus on the pipeline,
+and
 `--thinking` must stay `xhigh` or `max` for this use so lowering effort is not a workaround.
 
 ### Two settled pools, which must not be confused
 
-`~/translation-repair-runs-20260817/artifacts`, SIX entries, NATURAL ACCUMULATION, may feed a draw.
-`~/translation-repair-runs-flagged-20260818/artifacts`, FIVE entries, HAND PICKED for carrying
-displacement flags, may serve `#107`'s comparison and may NOT feed any precision, damage or
-accumulation draw. `corpus-pass` warns about this itself whenever `--only` is used.
+`~/translation-repair-runs-20260817/artifacts`,
+SIX entries,
+NATURAL ACCUMULATION,
+may feed a draw.
+`~/translation-repair-runs-flagged-20260818/artifacts`,
+FIVE entries,
+HAND PICKED for carrying
+displacement flags,
+may serve `#107`'s comparison and may NOT feed any precision,
+damage or
+accumulation draw.
+`corpus-pass` warns about this itself whenever `--only` is used.
 
 ### One thing is waiting on the user
 
-`#60`'s DAMAGE SHEET IS WRITTEN AND UNGRADED: `~/translation-repair-runs-20260817/damage-sheet.md`,
-20 items, 33 KB, outside the repository. The manifest beside it keeps the probe's verdicts, which
-the sheet deliberately does not show. Grading it is what `#68` needs.
+`#60`'s DAMAGE SHEET IS WRITTEN AND UNGRADED:
+`~/translation-repair-runs-20260817/damage-sheet.md`,
+20 items,
+33 KB,
+outside the repository.
+The manifest beside it keeps the probe's verdicts,
+which
+the sheet deliberately does not show.
+Grading it is what `#68` needs.
 
 `#96` ALSO NEEDS A DECISION and the recommendation is already written in
-`doc/planning/artifact-archive-text.md`: store `targetText` whole, since the premise that it doubles
-artifact size was measured and is false, at 0.6 to 0.9 percent. The remaining objection is a licence
-question, which is the user's call and not an agent's.
+`doc/planning/artifact-archive-text.md`:
+store `targetText` whole,
+since the premise that it doubles
+artifact size was measured and is false,
+at 0.6 to 0.9 percent.
+The remaining objection is a licence
+question,
+which is the user's call and not an agent's.
 
 ### Concurrent work in the MAIN worktree, which is not mine and was not touched
 
 `/var/home/user/Monochromatic` carries uncommitted changes to `package.json` and `pnpm-lock.yaml`,
-adding `@monochromatic-dev/cli-open-code-review-issue` as a workspace dependency. Nothing in this
-session made them and nothing in this session touched them, per `EC1`. They were checked only to
-confirm they were not a side effect of building here. Leave them for whoever is doing that work.
+adding `@monochromatic-dev/cli-open-code-review-issue` as a workspace dependency.
+Nothing in this
+session made them and nothing in this session touched them,
+per `EC1`.
+They were checked only to
+confirm they were not a side effect of building here.
+Leave them for whoever is doing that work.
 
 ### What landed tonight, newest first
 
   d39fb47a4  the two pools separated in this document
-  (lock fix)  runs directory is created before it is locked, so a fresh directory works at all
-  4149fb0d2  `describeAbandon`: a lost voice now says WHY, not just that it was lost
-  ada369720  `#118`: keep what a cut stream delivered, report it on both paths, name the model
+  (lock fix)  runs directory is created before it is locked,
+  so a fresh directory works at all
+  4149fb0d2  `describeAbandon`:
+  a lost voice now says WHY,
+  not just that it was lost
+  ada369720  `#118`:
+  keep what a cut stream delivered,
+  report it on both paths,
+  name the model
   0b6d9afb0  tests for which delivery rows a damage draw counts
-  b71ea7328  `#60`: damage draw reads the version 2 ledger, BOTH lanes
-  7aa4866fa  `#119`: end runaway calls in the drain, proven by strip
+  b71ea7328  `#60`:
+  damage draw reads the version 2 ledger,
+  BOTH lanes
+  7aa4866fa  `#119`:
+  end runaway calls in the drain,
+  proven by strip
   fd62d7b37  the runaway watch the drain calls
-  8517282c1  both channels scanned, so thinking runaways are caught
+  8517282c1  both channels scanned,
+  so thinking runaways are caught
   bf15afaf1  the verse false positive fixed by raising the bar for speaking
   8eb62c0ac  the degeneration detector itself
 
 ### Numbers measured tonight that should not be re-derived
 
-  replacement rate      0.740, 37 of 50 slices, six entries, translate lane, 0 withdrawn
-                        held from 0.739 at 23 slices, so it survived a doubled denominator
-  displacement flags    0 across the six settled entries; 29 of 92 entries flagged corpus-wide,
-                        66 flagged slices against 1260, about 5 percent
-  damage draw           69 shipped regions in the pool, 32 repair and 37 translate; 20 drawn;
-                        probe flagged 2, silent 18
-  degeneration          threshold 0.1 distinct; varied prose 0.9909, structured output 1.0000,
-                        a cycling phrase 0.0015, verse with a refrain 0.036
+  replacement rate      0.740,
+  37 of 50 slices,
+  six entries,
+  translate lane,
+  0 withdrawn
+                        held from 0.739 at 23 slices,
+  so it survived a doubled denominator
+  displacement flags    0 across the six settled entries;
+  29 of 92 entries flagged corpus-wide,
+                        66 flagged slices against 1260,
+  about 5 percent
+  damage draw           69 shipped regions in the pool,
+  32 repair and 37 translate;
+  20 drawn;
+                        probe flagged 2,
+  silent 18
+  degeneration          threshold 0.1 distinct;
+  varied prose 0.9909,
+  structured output 1.0000,
+                        a cycling phrase 0.0015,
+  verse with a refrain 0.036
   strip evidence        with the runaway guard inert the drain reads 3,060,000 characters;
-                        the healthy long call logs 1,652,574 in BOTH runs, which is the control
+                        the healthy long call logs 1,652,574 in BOTH runs,
+  which is the control
 
 ### Retracted claims, so they are not repeated
 
-  "GLM is slow"                     retracted; it is a tail on this workload, not a slow model
-  "1349 streams, mean firstByte"    retracted; survivorship bias, `#118` was the cause
-  "an abandoned call leaves nothing" retracted; streaming means partial text always exists
-  "storing targetText doubles size"  retracted; measured at 0.6 to 0.9 percent
-  "the grace re-measure is owed"     retracted; it was delivered the same morning in
-                                     `doc/audit/straggler-grace-remeasure.md`, 0.039 against 0.138
-  "1,590,838 chars is degeneration"  retracted; `chars` counts raw event bytes, envelope included
+  "GLM is slow"                     retracted;
+  it is a tail on this workload,
+  not a slow model
+  "1349 streams,
+  mean firstByte"    retracted;
+  survivorship bias,
+  `#118` was the cause
+  "an abandoned call leaves nothing" retracted;
+  streaming means partial text always exists
+  "storing targetText doubles size"  retracted;
+  measured at 0.6 to 0.9 percent
+  "the grace re-measure is owed"     retracted;
+  it was delivered the same morning in
+                                     `doc/audit/straggler-grace-remeasure.md`,
+  0.039 against 0.138
+  "1,590,838 chars is degeneration"  retracted;
+  `chars` counts raw event bytes,
+  envelope included
 
 ## Purpose of this handover, and the worktree its commands assume
 
 Written 2026-08-16 because the user's machine is stuttering and a hard reboot would otherwise lose the state.
 Updated after every step from here rather than at the end.
-Companion to `doc/planning/two-lane-corpus-pass.md`, which holds the design record;
+Companion to `doc/planning/two-lane-corpus-pass.md`,
+which holds the design record;
 this file holds the WORKING STATE.
 
-Worktree: `/var/home/user/worktrees/translation-repair`, branch `translation-repair-rebased`.
-All commands below assume it, not the main worktree.
+Worktree:
+`/var/home/user/worktrees/translation-repair`,
+branch `translation-repair-rebased`.
+All commands below assume it,
+not the main worktree.
 
 ## The one sentence
 
@@ -312,81 +504,149 @@ and the fix is always to give the absence its own name rather than let it borrow
 
 ## Standing instruction: `no-non-null-assertion` names the wrong fix
 
-**From the user, 2026-08-16.**
+**From the user,
+2026-08-16.**
 `oxlint`'s `typescript(no-non-null-assertion)` prints help text suggesting optional chaining
-(`x?.y` in place of `x!.y`). Do not follow it.
+(`x?.y` in place of `x!.y`).
+Do not follow it.
 The fix in this repo is `nonNullishOrThrow` from `@monochromatic-dev/module-or-throw/ts`,
 added as a `workspace:*` dependency where a package does not already carry one;
 `translation-repair` already does (`package/module/translation-repair/package.json:23` (moved on 2026-10-18 to
 `package/translation-repair/*/package.json`)).
 
-The suggestion is not merely stylistically off, it changes what the code MEANS:
+The suggestion is not merely stylistically off,
+it changes what the code MEANS:
 `x!.y` throws where the value is missing and `x?.y` yields `undefined`,
 so following the help text turns a loud failure into a silent one,
 which is the defect class this whole session exists to close.
 The repo's own configuration already states the intent
-(`package/config/oxlint/src/rule/restriction.ts:214`: "Ban non-null assertion (!): use nonNullishOrThrow instead").
+(`package/config/oxlint/src/rule/restriction.ts:214`:
+"Ban non-null assertion (!):
+use nonNullishOrThrow instead").
 
-Per the user, the message documented the correct fix not long before, so this reads as a REGRESSION
+Per the user,
+the message documented the correct fix not long before,
+so this reads as a REGRESSION
 in wording rather than as a rule anyone re-decided.
-What is measured so far: the help text (`Consider using the optional chain operator ...`) appears
-nowhere in this repository outside `node_modules`, so it is emitted by oxlint's built-in
+What is measured so far:
+the help text (`Consider using the optional chain operator ...`) appears
+nowhere in this repository outside `node_modules`,
+so it is emitted by oxlint's built-in
 `typescript/no-non-null-assertion` rather than by any config or plugin here,
-while the correct fix IS documented on this side, in
+while the correct fix IS documented on this side,
+in
 `package/config/oxlint/src/rule/restriction.ts:214` and
-`package/oxlint-plugin/no-restricted-syntax/README.md` (lines 60, 139, 204).
-The cause is NOT established beyond that: no oxlint source has been read for it.
+`package/oxlint-plugin/no-restricted-syntax/README.md` (lines 60,
+139,
+204).
+The cause is NOT established beyond that:
+no oxlint source has been read for it.
 Do not attribute it to the oxlint maintainers and do not file anything upstream on this evidence.
 Tracked for the user to fix properly in `#442`.
 
 ## Standing instruction: fixtures are cat-themed invention, and adapting is not inventing
 
-**From the user, 2026-08-17**, on a fixture I wrote for the rendering audit:
-"Ensure everything is cat-themed. Cats don't hand over letters to Li Ming by hand."
+**From the user,
+2026-08-17**,
+on a fixture I wrote for the rendering audit:
+"Ensure everything is cat-themed.
+Cats don't hand over letters to Li Ming by hand."
 
-The fixture in question was not corpus content, and that was checked rather than assumed: `git grep`
-against the corpus clone at the pinned commit (`~/one-among-us/data`, `a41fc607`) reports zero files
-for `没有离开`, `三封信`, `在窗台上`, `第二天把三封信`, `她没有离开`, `睡了一整天`, and zero for the
-English side (`gave three letters`, `the windowsill`, `slept on the windowsill`).
-The single hit anywhere was `交给了`, an ordinary verb phrase, in an unrelated sentence.
-Nothing had been committed either: the file was untracked when the question was asked.
+The fixture in question was not corpus content,
+and that was checked rather than assumed:
+`git grep`
+against the corpus clone at the pinned commit (`~/one-among-us/data`,
+`a41fc607`) reports zero files
+for `没有离开`,
+`三封信`,
+`在窗台上`,
+`第二天把三封信`,
+`她没有离开`,
+`睡了一整天`,
+and zero for the
+English side (`gave three letters`,
+`the windowsill`,
+`slept on the windowsill`).
+The single hit anywhere was `交给了`,
+an ordinary verb phrase,
+in an unrelated sentence.
+Nothing had been committed either:
+the file was untracked when the question was asked.
 
-WHAT WAS ACTUALLY WRONG is worth keeping, because it is subtler than a licensing slip.
-The sentence was ADAPTED from the fixture written into task `#85` by an earlier review, with the
-place and person swapped, rather than invented here.
-An inherited skeleton is weaker than the standard even when it carries no corpus text, and it is how
+WHAT WAS ACTUALLY WRONG is worth keeping,
+because it is subtler than a licensing slip.
+The sentence was ADAPTED from the fixture written into task `#85` by an earlier review,
+with the
+place and person swapped,
+rather than invented here.
+An inherited skeleton is weaker than the standard even when it carries no corpus text,
+and it is how
 a non-cat example survives three rewrites.
-Write fixtures; do not adapt them.
+Write fixtures;
+do not adapt them.
 
-THE CHECK IS CHEAP, so run it rather than reasoning about it: `git grep --fixed-strings --count` for
-each distinctive span in the corpus clone, before a fixture is committed and before one is sent to
+THE CHECK IS CHEAP,
+so run it rather than reasoning about it:
+`git grep --fixed-strings --count` for
+each distinctive span in the corpus clone,
+before a fixture is committed and before one is sent to
 any model.
 
-WHERE CORPUS TEXT MAY GO, unchanged: to the production provider, which is ZDR and retains no
-content. Not into the repository, and not into any other external tool. The sol reviews in this
+WHERE CORPUS TEXT MAY GO,
+unchanged:
+to the production provider,
+which is ZDR and retains no
+content.
+Not into the repository,
+and not into any other external tool.
+The sol reviews in this
 handover were four source files with no corpus content and no fixtures beyond what those files hold.
 
 ## Standing instruction: the accumulation bar is six, and only the user restores fifteen
 
 ### THE ACCUMULATION BAR IS NOW SIX, EVERYWHERE, AND IT IS PROVISIONAL
 
-Lowered by the user 2026-08-17 from the "15+" set on 2026-08-14, in their words low but defensible
-at this early stage, to be flipped back to 15 "when we're more confident".
+Lowered by the user 2026-08-17 from the "15+" set on 2026-08-14,
+in their words low but defensible
+at this early stage,
+to be flipped back to 15 "when we're more confident".
 
-RESTORING IT TO 15 IS THE USER'S CALL AND NOBODY ELSE'S, and the user said so explicitly when this
-was first written down as "the trigger is confidence": confidence will need their approval AFTER an
-agent already believes it is confident. Two steps, in that order. An agent reaching its own
-threshold is the moment to ASK, never the moment to act, and "we're more confident now" is not a
-reason to raise the bar unasked. Nobody should read a six-entry result as having met the older bar
+RESTORING IT TO 15 IS THE USER'S CALL AND NOBODY ELSE'S,
+and the user said so explicitly when this
+was first written down as "the trigger is confidence":
+confidence will need their approval AFTER an
+agent already believes it is confident.
+Two steps,
+in that order.
+An agent reaching its own
+threshold is the moment to ASK,
+never the moment to act,
+and "we're more confident now" is not a
+reason to raise the bar unasked.
+Nobody should read a six-entry result as having met the older bar
 either.
 
-It lives in prose only; there is no constant. `#60` carries the authoritative statement and the
-reason. Older passages in `doc/handover/translation-repair.md` still reason about fifteen (bands per
-draw, hours to accumulate, when a draw stops reproducing); those are correct FOR FIFTEEN and are
-kept as the record of what was computed then. Read them as superseded arithmetic rather than as the
+It lives in prose only;
+there is no constant.
+`#60` carries the authoritative statement and the
+reason.
+Older passages in `doc/handover/translation-repair.md` still reason about fifteen (bands per
+draw,
+hours to accumulate,
+when a draw stops reproducing);
+those are correct FOR FIFTEEN and are
+kept as the record of what was computed then.
+Read them as superseded arithmetic rather than as the
 current bar.
 
-WHAT SIX BUYS, stated plainly so it is not read as more: it unblocks `#60`'s redraw under the new
-bar, and it is a real step for `#115`, whose confound was two entries against two. It does NOT make
-claims about particular entries safe, and it does not separate an effect from an entry, which is the
+WHAT SIX BUYS,
+stated plainly so it is not read as more:
+it unblocks `#60`'s redraw under the new
+bar,
+and it is a real step for `#115`,
+whose confound was two entries against two.
+It does NOT make
+claims about particular entries safe,
+and it does not separate an effect from an entry,
+which is the
 confound `#115` measured and could not break at two.

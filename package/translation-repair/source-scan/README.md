@@ -22,7 +22,8 @@ so a function one package exports and another uses still counts as reached.
   `wall-clock-reads.unit.test.ts`,
   `message-names-only.unit.test.ts`,
   `position-references.unit.test.ts`,
-  `living-doc-links.unit.test.ts` and `own-unit-tests.unit.test.ts`.
+  `living-doc-links.unit.test.ts`,
+  `markdown-lint-clean.unit.test.ts` and `own-unit-tests.unit.test.ts`.
   Every scan reads the family as one program:
   `readPackageSource` reads the TypeScript under the `src` of every family package,
   and `readPackageTexts` adds each family package's README,
@@ -57,7 +58,8 @@ so a function one package exports and another uses still counts as reached.
   README or task file,
   because the clock-time,
   task-list-number,
-  living-doc-link and position-reference scans read the docs too.
+  living-doc-link,
+  Markdown lint and position-reference scans read the docs too.
   Its description says it spends no quota.
 - The `test:rotation-sweep` task (ledger B701):
   runs every unit test file of every family package that can reach the stage package once per salt from 0 to 9,
@@ -88,7 +90,7 @@ Development dependencies other than `test-fixture` (`devDependencies`):
 
 - `adjudication`
   (its keyless child runner,
-  for the rotation sweep)
+  for the rotation sweep and the Markdown lint scan)
 - `document-structure`
 - `markup`
 - `run`
@@ -112,8 +114,9 @@ The scans read the source of every family package as text,
 so none of them is a dependency.
 The `test:unit` task declares no `depends`,
 so build those four first with `mise run //package/translation-repair/<sibling>:build`.
-The unit tests of the rotation sweep also load the built `adjudication`,
-which the `test:rotation-sweep` task builds with every other package it sweeps.
+The unit tests of the rotation sweep and the Markdown lint scan also load the built `adjudication`,
+which the `test:rotation-sweep` task builds with every other package it sweeps
+and the `source-scans` task builds beside the four.
 The `source-scans` task builds them first.
 
 Run the scans with `mise run //package/translation-repair/source-scan:test:unit`,

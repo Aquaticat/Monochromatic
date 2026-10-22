@@ -13,7 +13,8 @@ the rules the move keeps,
 and the controls that prove the move changed no behaviour.
 It was written before any file moved,
 so the map and the rules could be read and vetoed as they stood;
-the sections headed "After the move, measured" and "Measured after the move" were added after the move.
+the sections headed "After the move,
+measured" and "Measured after the move" were added after the move.
 
 ## Lint cost, measured
 
@@ -102,7 +103,8 @@ the outputs are under `/var/home/user/temp/agent/tr-fan/s245/split/lint/`.
   the eviction in the paired rounds needs more of the family than that.
 - The bound is the cause of the warm cost (`cost-probe4b.txt`):
   with the bounds raised to 4096 MiB and 65,536 entries in `w165`
-  (uncommitted, in the plugin source
+  (uncommitted,
+  in the plugin source
   and in the rebuilt `@monochromatic-dev/config-oxlint` bundle the root config loads),
   the cache emptied,
   and every package linted once and then again,
@@ -111,7 +113,8 @@ the outputs are under `/var/home/user/temp/agent/tr-fan/s245/split/lint/`.
   `probe` 3.33 s and `bench` 3.13 s.
   The family's warm cache is 8269 entries and 508,090,059 bytes,
   about twice both current bounds.
-  A first attempt (`cost-probe4.txt`, second round 312.84 s) edited only the plugin source,
+  A first attempt (`cost-probe4.txt`,
+  second round 312.84 s) edited only the plugin source,
   which the bundle the root config loads does not read,
   so it measured the old bounds.
 - The cold round's cost is the analysis run once per project that reaches a module,

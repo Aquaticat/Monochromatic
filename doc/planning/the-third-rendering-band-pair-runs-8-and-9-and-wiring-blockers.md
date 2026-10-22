@@ -18,30 +18,45 @@ Scored flat against the eight-entry reading it agrees on six of twelve,
 excluding `Zha_Ke#1` for the reason `#154` and `#157` both give:
 that row replays a slice built before either landed.
 
-THE FLAT RATE ANSWERS THREE DIFFERENT QUESTIONS AT ONCE, so it is not the number to read.
+THE FLAT RATE ANSWERS THREE DIFFERENT QUESTIONS AT ONCE,
+so it is not the number to read.
 The bed's own note records that `neither` in the reading means the two lanes TIED,
 "not that both were bad".
-A contest that picks a lane there has broken a tie, not contradicted the reading.
+A contest that picks a lane there has broken a tie,
+not contradicted the reading.
 And a slice with no standing text has nothing to contest at all,
 so its `neither` is structural rather than a judgement.
 
 Split three ways:
 
-- The reading named a lane and standing text existed, seven slices: the contest agrees on six.
-    The one miss is `Acheron#2`, where the reading says translate and the contest chose repair.
-- The reading called the lanes tied, three slices: the contest broke toward repair on all three.
-- No standing text, two slices: `Zha_Ke#0` and `Acheron#0`, both necessarily `neither`.
+- The reading named a lane and standing text existed,
+  seven slices:
+  the contest agrees on six.
+    The one miss is `Acheron#2`,
+  where the reading says translate and the contest chose repair.
+- The reading called the lanes tied,
+  three slices:
+  the contest broke toward repair on all three.
+- No standing text,
+  two slices:
+  `Zha_Ke#0` and `Acheron#0`,
+  both necessarily `neither`.
 
 THE TIE-BREAK LEAN IS WORTH WATCHING AND IS NOT YET A FINDING.
 Three of three toward repair is what a systematic lean would look like
 and also what three coin flips look like one time in four.
-Run 9 is the second draw, on the identical build and the identical replayed slices,
+Run 9 is the second draw,
+on the identical build and the identical replayed slices,
 and it is the thing that can tell those apart.
 
-WHAT THE GATE SHIPPED: consolidated at eight slices, standing at three, no gate at two.
+WHAT THE GATE SHIPPED:
+consolidated at eight slices,
+standing at three,
+no gate at two.
 Judge participation was healthy throughout:
 six judges available at every slice that had one,
-five or six ballots, and zero abstentions anywhere.
+five or six ballots,
+and zero abstentions anywhere.
 So nothing in this run was decided by a panel that had lost voices,
 which is the confound `#156` would introduce if the runaway guard were letting streams through.
 
@@ -49,60 +64,87 @@ which is the confound `#156` would introduce if the runaway guard were letting s
 
 Run 9 finished on 2026-08-21 with all thirteen slices recorded,
 on the dist frozen for run 8 and the identical replayed slices.
-It is the second draw the run 8 section asked for, and it answers more than the question it was bought for.
+It is the second draw the run 8 section asked for,
+and it answers more than the question it was bought for.
 
 ### The tie-break lean does not survive
 
 Run 8 broke all three tied slices toward repair.
 Run 9 broke two toward repair and one toward translate:
 
-- `keyword233#0`: repair in both runs.
-- `keyword233#1`: repair in both runs.
-- `Weideriche_#0`: repair in run 8, TRANSLATE in run 9.
+- `keyword233#0`:
+  repair in both runs.
+- `keyword233#1`:
+  repair in both runs.
+- `Weideriche_#0`:
+  repair in run 8,
+  TRANSLATE in run 9.
 
-Same slice, same build, same inputs, opposite answer.
+Same slice,
+same build,
+same inputs,
+opposite answer.
 Three of three was the coin-flip outcome the run 8 section warned it might be,
 and the second draw is what separates that from a systematic lean.
-IT WAS NOT A LEAN. Nothing here licenses a decline policy that assumes the contest favours repair.
+IT WAS NOT A LEAN.
+Nothing here licenses a decline policy that assumes the contest favours repair.
 
 ### The contest moved a slice between strata, which the flat rate hides
 
 `Acheron#0` was scored in run 8 as having no standing text and therefore a structural `neither`.
-That reading of it was backwards, and this run shows why.
-`standingText` is what the contest LEAVES STANDING, not an input it was handed.
+That reading of it was backwards,
+and this run shows why.
+`standingText` is what the contest LEAVES STANDING,
+not an input it was handed.
 Run 8 recorded zero standing characters there because the contest chose `neither`;
 run 9 chose repair on the same slice and left 255 characters standing.
 So the stratum labelled "no standing text to contest" is not a property of the slice at all.
-It is a restatement of the contest having declined, and it cannot be read as a condition the contest faced.
+It is a restatement of the contest having declined,
+and it cannot be read as a condition the contest faced.
 
-Only `Zha_Ke#0` is genuinely in that stratum in both runs, with zero standing characters and no ballots.
+Only `Zha_Ke#0` is genuinely in that stratum in both runs,
+with zero standing characters and no ballots.
 
-The stratified rate moves accordingly, on a denominator that is itself a run-to-run variable:
-six of seven in run 8, six of eight in run 9.
+The stratified rate moves accordingly,
+on a denominator that is itself a run-to-run variable:
+six of seven in run 8,
+six of eight in run 9.
 THE NUMERATOR DID NOT MOVE AND THE DENOMINATOR DID.
 Reporting either as a percentage invites a comparison the data does not support.
 
 ### The larger finding: the consolidation's decisiveness is not reproducible
 
-Run 8 recorded `judged` at every slice that reached the consolidation panel, with zero declines.
+Run 8 recorded `judged` at every slice that reached the consolidation panel,
+with zero declines.
 Run 9 recorded `declined-indecision` at three of them:
-`lintong#1`, `Weideriche_#0` and `Weideriche_#1`.
+`lintong#1`,
+`Weideriche_#0` and `Weideriche_#1`.
 
-That is zero declines against three, out of thirteen slices, with nothing changed but the draw.
+That is zero declines against three,
+out of thirteen slices,
+with nothing changed but the draw.
 It carries straight through to what ships:
 
-- Run 8: consolidated at eight slices, standing at three, no gate at two.
-- Run 9: consolidated at six slices, standing at three, no gate at four.
+- Run 8:
+  consolidated at eight slices,
+  standing at three,
+  no gate at two.
+- Run 9:
+  consolidated at six slices,
+  standing at three,
+  no gate at four.
 
 Measurement 1 in this document asks how often the roster backs a consolidation.
 The band pair says that number has a spread of at least two slices in thirteen,
-roughly fifteen percent of the bed, before any change to the pipeline is considered.
+roughly fifteen percent of the bed,
+before any change to the pipeline is considered.
 A SINGLE RUN CANNOT RESOLVE ANYTHING SMALLER THAN THAT.
 
 ### What this settles for `#130`
 
 The ship decision cannot rest on one thirteen-slice run.
-Both candidate readings of run 8, that the contest leans toward repair
+Both candidate readings of run 8,
+that the contest leans toward repair
 and that the consolidation is decisive enough to ship at eight of thirteen,
 are inside the band the second run measured.
 
@@ -127,17 +169,20 @@ and the range is four to six rather than five to six.
 `Weideriche_#0` is the only slice whose contest choice flipped,
 repair in run 8 and translate in run 9,
 and it is also the largest participation loss in the pair,
-six ballots down to four, with one abstention.
+six ballots down to four,
+with one abstention.
 The flip cannot be separated from the voice loss on the evidence of two runs.
 Whatever else run 9 shows,
 it does not show that the repair lean survives or fails on the panel's reasoning,
 because the panel that reversed it was two voices short.
 
 Two slices do carry a clean reading.
-`Weideriche_#1` declined at six ballots, up from five in run 8,
+`Weideriche_#1` declined at six ballots,
+up from five in run 8,
 holding the same contest choice both times,
 so a full and slightly larger panel reached a different gate outcome on identical inputs.
-`lintong#1` declined at five ballots against six, also holding its contest choice.
+`lintong#1` declined at five ballots against six,
+also holding its contest choice.
 
 Participation change is neither necessary nor sufficient for outcome change here.
 `Zha_Ke#1` and `Zha_Ke#3` each lost a ballot and held their outcomes,
@@ -177,22 +222,28 @@ Run 8 decided 11 slices and shipped a consolidation over the standing text at al
 Run 9 decided 9 and shipped a consolidation at all 9.
 The consolidation never lost to standing on a slice where the panel reached a decision.
 
-That is a rate of one, which on its own is a warning rather than a result:
+That is a rate of one,
+which on its own is a warning rather than a result:
 a stage that always wins may not be discriminating at all.
-The controls are what separate those two readings, and they are measurement four.
+The controls are what separate those two readings,
+and they are measurement four.
 
 ### Two: consolidations are NOT structurally valid without a repair round
 
-Run 8 produced 77 candidates, of which 62 validated on first emission.
-Run 9 produced 76, of which 58 did.
+Run 8 produced 77 candidates,
+of which 62 validated on first emission.
+Run 9 produced 76,
+of which 58 did.
 So roughly one candidate in five arrives structurally invalid.
 
 The repair round helps and does not close it.
-After repair, run 8 carries 70 valid of 77 and run 9 carries 67 of 76,
+After repair,
+run 8 carries 70 valid of 77 and run 9 carries 67 of 76,
 leaving 7 and 9 candidates that never became valid.
 
 THE ANSWER IS NO.
-The repair round is required, not optional,
+The repair round is required,
+not optional,
 and about one candidate in ten survives it still invalid.
 Any wiring of this stage has to say what happens to those.
 
@@ -206,11 +257,14 @@ where the repair lane makes her qualities the agent.
 
 The shipped consolidation takes the repair lane's rendering of 坚强不屈
 and the translate lane's agent structure in the closing sentence.
-It is the merge this measurement was written to check for, and it is not a near miss.
+It is the merge this measurement was written to check for,
+and it is not a near miss.
 
-It happened in BOTH runs, with the two shipped texts differing only in the
+It happened in BOTH runs,
+with the two shipped texts differing only in the
 punctuation of the final sentence.
-Of everything the band pair measured, this is the most stable result in it.
+Of everything the band pair measured,
+this is the most stable result in it.
 
 ### Four: the control slices, where a tie is a pass
 
@@ -219,26 +273,36 @@ so the criterion is that the consolidation never loses what the winner had.
 
 `keyword233#0` passes in both runs.
 The archive's invented timeframe and its invented shared-experience clause are both gone,
-心灵感悟 is restored, and the channel's opening is rendered rather than assumed.
-Four archive defects fixed, nothing lost.
+心灵感悟 is restored,
+and the channel's opening is rendered rather than assumed.
+Four archive defects fixed,
+nothing lost.
 
-`Weideriche_#0` passes in both runs, and it carries the most serious archive error in the reading.
+`Weideriche_#0` passes in both runs,
+and it carries the most serious archive error in the reading.
 Both shipped texts say the person was happy to be CALLED older sister
 rather than declaring their pronouns,
 neither calls them a girl where the Chinese says 人,
 and both restore the thoughtfulness sentence the archive dropped.
 
 NO DEGRADATION ON THE EASY SLICES.
-The failure condition `#138` set, that a stage improving hard slices while degrading easy ones
-refuses this whole shape, is not triggered by either run.
+The failure condition `#138` set,
+that a stage improving hard slices while degrading easy ones
+refuses this whole shape,
+is not triggered by either run.
 
 ### What looked like a 96 percent deletion is the pre-`#157` mis-slicing
 
 `Zha_Ke#1` shows a standing text of 3,875 characters against a shipped 155 in run 8
-and 174 in run 9, which reads like catastrophic deletion.
+and 174 in run 9,
+which reads like catastrophic deletion.
 It is not.
-That slice's source is 41 characters, and the incumbent, repair, translate and standing
-texts are all the same 3,875, because the declined blocks had not yet left the slice.
+That slice's source is 41 characters,
+and the incumbent,
+repair,
+translate and standing
+texts are all the same 3,875,
+because the declined blocks had not yet left the slice.
 Runs 8 and 9 both ran on the dist frozen before `#157`.
 
 Measured against its own source the consolidation expanded by 3.78 and 4.24,
@@ -248,13 +312,17 @@ instead of carrying a mis-sliced blob forward.
 
 THE RATIO BAND IS ITSELF WORTH KEEPING.
 English characters per Chinese character stayed inside 2.09 to 4.24 across all 24 shipped
-consolidations in the pair, so a slice falling far outside it names either a mis-slicing
-or a deletion, and neither contest can see either.
+consolidations in the pair,
+so a slice falling far outside it names either a mis-slicing
+or a deletion,
+and neither contest can see either.
 
 ### `#151` is a blocker for this wiring, and here is the size of it
 
-Both lanes emit one clause per line, which is what `#122` shipped.
-The consolidation path has no assembly step, so nothing re-applies the wrapper,
+Both lanes emit one clause per line,
+which is what `#122` shipped.
+The consolidation path has no assembly step,
+so nothing re-applies the wrapper,
 and whether a shipped consolidation is wrapped depends on what the producer happened to emit.
 
 Seven of the 11 shipped consolidations in run 8 lost the wrapping the lanes had,
@@ -264,13 +332,18 @@ It is not even stable between runs:
 
 So wiring this stage as it stands would regress line structure on roughly three slices in five
 that it touches.
-`#151` lands before `#138` wires anything, not after.
+`#151` lands before `#138` wires anything,
+not after.
 
 ### Where this leaves the shape
 
-The shape survives its own controls, on both runs, including the one slice designed to fail it.
-Two things stand between it and wiring, and both are named above:
-`#151` for the line structure, and a stated policy for the candidates that never validate.
+The shape survives its own controls,
+on both runs,
+including the one slice designed to fail it.
+Two things stand between it and wiring,
+and both are named above:
+`#151` for the line structure,
+and a stated policy for the candidates that never validate.
 
 ## `#151` landed, and it corrects the first measurement above
 
@@ -289,32 +362,46 @@ because a consolidation is often shorter than the lanes it was built from
 and would read as under-wrapped against their line count.
 Characters per line is the honest metric.
 
-Before the fix, shipped consolidations ran at 138, 140, 155, 174, 176, 184 and 272
-characters per line, which is prose on one line.
-After it, every shipped consolidation lands between 20 and 44,
+Before the fix,
+shipped consolidations ran at 138,
+140,
+155,
+174,
+176,
+184 and 272
+characters per line,
+which is prose on one line.
+After it,
+every shipped consolidation lands between 20 and 44,
 against a lane density of 20 to 58 on the same slices.
 The rule corrected 10 of the 11 real consolidations in run 8 and 8 of the 9 in run 9.
 
-`Acheron#1` is the one that stays above its lanes, at 88 and 92 against 58.
+`Acheron#1` is the one that stays above its lanes,
+at 88 and 92 against 58.
 It is also the shortest consolidation in the pair at 176 and 184 characters,
 and the rule found one semantic boundary in it.
-That is the rule applied, not the rule skipped.
+That is the rule applied,
+not the rule skipped.
 
 ### The correction: two of those consolidations were only re-wrappings
 
 Re-deriving demotion found slices the gate had called a change
 where the only difference from the standing text was where the lines break.
 
-`gaoyanger#1` in BOTH runs, and `keyword233#0` in run 8.
+`gaoyanger#1` in BOTH runs,
+and `keyword233#0` in run 8.
 All three ship 198 or 221 characters against a standing text of the same length,
 and once wrapped they are the standing text exactly.
 
 So measurement one above overstates.
 The roster backed a consolidation carrying a real content change
-at 9 of 11 decided slices in run 8, not 11 of 11,
-and at 8 of 9 in run 9, not 9 of 9.
+at 9 of 11 decided slices in run 8,
+not 11 of 11,
+and at 8 of 9 in run 9,
+not 9 of 9.
 
-That rate is still high, and it is now a rate about content rather than about whitespace.
+That rate is still high,
+and it is now a rate about content rather than about whitespace.
 Nothing in either contest could have told those apart,
 because the gate compares an unwrapped consolidation against the standing text
 and a line break reads to it as a difference.
@@ -322,8 +409,11 @@ and a line break reads to it as a difference.
 ### What this does to the blocker
 
 `#151` was the first of the two things standing between this shape and wiring.
-It is done, tested, and verified on the measured population.
-The second, a stated policy for the roughly one candidate in ten that never validates,
+It is done,
+tested,
+and verified on the measured population.
+The second,
+a stated policy for the roughly one candidate in ten that never validates,
 is what remains.
 
 ## The second blocker, measured: a slate with no valid candidate shipped anyway
@@ -345,14 +435,18 @@ so the standing text ships and nothing else can.
 
 `Zha_Ke#1` finished the repair round with FIVE candidates and ZERO valid ones,
 in run 8 and again in run 9,
-and a consolidation shipped at both, recorded as `judged`.
+and a consolidation shipped at both,
+recorded as `judged`.
 
 The guard was right to refuse them.
-The page as it stands is two blocks, a paragraph and an html block.
-Two candidates produced one block, one produced a paragraph and an `mdxJsxFlowElement`,
+The page as it stands is two blocks,
+a paragraph and an html block.
+Two candidates produced one block,
+one produced a paragraph and an `mdxJsxFlowElement`,
 and the rest did not parse as MDX at all.
 Every candidate was structurally wrong about the page it was writing into,
-the guard said so five times, and the slice shipped one of them regardless.
+the guard said so five times,
+and the slice shipped one of them regardless.
 
 THAT IS THE WORST PLACE FOR THIS HOLE TO SIT.
 The one slice in the pair whose input was corrupt
@@ -365,13 +459,15 @@ without putting the question to the gate at all.
 The gate answers which of two renderings is more faithful,
 and that question is meaningless when one of them is structurally not the page.
 
-This is adopted rather than asked, per the settled-decision rule:
+This is adopted rather than asked,
+per the settled-decision rule:
 both halves come from policy already in the lane this stage reuses verbatim.
 Veto invited.
 
 ## The first measurement, restated once the floor is in it
 
-The section "`#151` landed, and it corrects the first measurement above"
+The section "`#151` landed,
+and it corrects the first measurement above"
 put the rate at 9 of 11 decided slices in run 8 and 8 of 9 in run 9.
 Both numbers predate the validity floor,
 and the floor moves them again.
@@ -388,7 +484,8 @@ Two of the three whitespace demotions are unchanged by the archive-aware half of
 Re-running the demotion check with the wrapped standing text as a second key
 finds the same three slices it found with one key:
 `gaoyanger#1` in both runs and `keyword233#0` in run 8.
-Every standing text in the band pair is lane output, which is already wrapped,
+Every standing text in the band pair is lane output,
+which is already wrapped,
 so the archive case the second key exists for is not exercised by this population.
 It closes a hole the pair does not happen to contain,
 which is why it needed a written guard rather than a measured one.

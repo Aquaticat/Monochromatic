@@ -778,9 +778,9 @@ The landings and the restart,
     (`neuralwatt-client.ts:392` and `:424` send it on picture calls only),
     so `glm-5.3-flash` runs at its default `max`.
     Four of its text calls ended at the 18,316-token cap with no content
-    (SPEND lines at 21:17:32,
-    21:20:36,
-    21:37:15 and 21:40:06 UTC),
+    (SPEND lines at 21:17:32 UTC,
+    21:20:36 UTC,
+    21:37:15 UTC and 21:40:06 UTC),
     and three of the Hyper re-asks after them capped too.
     The owner's lift ("only for NeuralWatt") covers text calls as well.
   - K2:
@@ -814,8 +814,33 @@ The landings and the restart,
   `alignmentFindings=1`)
   after 2355731 ms
   (39.3 min).
-  Its read against the source is running,
-  written to `CuspariaKLSY22-read.md` in the reads folder.
+  Its read
+  (`CuspariaKLSY22-read.md` in the reads folder,
+  23:41 UTC)
+  found the page mixed:
+  slices 0 to 2 better than `CuspariaKLSY21`'s,
+  slice 3 worse
+  ("When she came to" loses 又;
+  "rushed" and "her friend" added).
+  No new ruling was shown to act:
+  the three polish gates settled by lead,
+  and the one consolidation tie
+  (slice 2,
+  weight 1)
+  left no slate in the artifact to say whether a run-off was owed.
+  It confirms two findings of the `zheermao22` read on a second entry:
+  102 of 103 Hyper vote replies have their keys in alphabetical order,
+  against reason first on all 44 from NeuralWatt and OpenRouter;
+  and 33 `inception/mercury-2.5` streams were abandoned with no content,
+  each waited out to the grace,
+  because the tally never counts an abandoned call against its seat
+  (`seat-tally.ts:120` to `122`).
+  It also shows the run still asks Bedrock once per run and is refused with HTTP 401 before holding it out,
+  though the owner ruled to leave Bedrock off,
+  and that `METERS` lines read `bedrock=wet` while `JUDGE SEATS` reads `bedrock=dry`.
+  NeuralWatt's plan meter rose 37.3 Wh over the run against 21.11 Wh of this run's own calls;
+  the rest is most likely other use of the account in that window,
+  which is unverified.
 - `XingZ6017`
   (entry `XingZ60`)
   started at 23:05:12 UTC,
@@ -830,12 +855,68 @@ K3 and the run-off line that says "2 tied finalists" for a plurality
 (`translate-runoff.ts:90`)
 in a new scratch worktree,
 and K4 in a second one;
+then a third round:
+Bedrock off by configuration so no run asks it,
+the `METERS` and `JUDGE SEATS` readings of a held provider made to agree,
+a seat whose streams keep ending with no content counted against that seat
+(it is never counted now,
+so every round waits it out),
+and Hyper's key order
+(either schema keys whose alphabetical order is the declared order,
+or a keyed probe first if that is cheaper to decide);
 gate each,
 land,
 rebuild the branch worktree once no pass runs there,
 digest,
 sweep,
 and restart the rotation at `zheermao23`.
+K4 is done in `tr-w264`
+(ledger B803,
+open to the owner's veto,
+landed `f829fc31b6` after gate g149 passed with 2,734 tests and no failure):
+the composite now reads each revision by a line diff and composes hunks that do not collide.
+Replayed over the `zheermao22` artifact,
+none of the three refused attempts builds under it either,
+since each pair collides on a real line
+(the letter's two revisions both change line 7),
+so it would not have changed what shipped.
+The letter that shipped is the one complete revision,
+chosen by the judges over whole texts,
+not a fallback.
+The same worktree breaks the B712 and B714 ledger entries at their semantic boundaries:
+that file failed the Markdown linter on main,
+as do eight more translation-repair docs
+(96 findings in all),
+which the gate never lints.
+`tr-w266` fixes those and adds a guard so the gate does
+(ledger D35,
+head `0a7cef6278`):
+a source scan in `source-scans` runs the Markdown linter over the package docs and the living repository docs
+and fails on any finding.
+It stays red until `tr-w264` lands,
+since the B712 file is fixed there,
+so the order is:
+gate g149,
+land `tr-w264`,
+merge main into `tr-w266`,
+gate it,
+land.
+Outside the D27 living set,
+33 older translation-repair docs
+(`the-third-rendering*`,
+`two-lane-*`,
+`wire-the-heading-aligner`,
+`critic-attribution`,
+`artifact-stores-*` and others)
+carry 5,423 line-break findings.
+The `--fix` rewrap changes neither their words nor their parsed tree,
+so a later round fixes them too and widens the guard to them;
+the D27 archive families
+(history segments,
+dated snapshots,
+run-continuity parts,
+interface candidates)
+stay byte for byte.
 Meanwhile the rotation continues on `2a336603bf` for evidence:
 finish the read of `CuspariaKLSY22`,
 record both reads in the pass log and the readiness signal,
@@ -851,3 +932,86 @@ from `package/dsh-plugin`)
 is another session's and stays out of these commits.
 Whether oxlint 1.89.0 also breaks lint in packages outside translation-repair is unmeasured;
 those packages are other owners'.
+
+State after K4 landed:
+- `tr-w266` merged main cleanly at `9a69585ed1`;
+  gate g150 runs on it,
+  and it lands when green.
+- The `CuspariaKLSY22` read is filed:
+  landed `f2d0885976`
+  (the gemma-lift restart planning files for `cuspariaklsy22`,
+  the pass log index and the readiness signal).
+- The third round is in `tr-w265`.
+  Bedrock off (B760),
+  silent abandons counted against the seat (B761)
+  and `METERS` agreeing with `JUDGE SEATS` (B763)
+  are fixed there with their tests green.
+  Hyper's key order (B762) has its scan written red:
+  sixteen answer schemas declare their properties out of alphabetical order.
+  Decided,
+  open to the owner's veto:
+  rename or reorder so that every schema's declared order is its alphabetical order,
+  keeping the ruling "Reason first everywhere" and the exceptions B732 recorded,
+  instead of a keyed probe of where Hyper sorts,
+  because that order holds on every provider whatever the probe would show.
+  An agent does the rename in `tr-w265` after merging main;
+  then gate it and land.
+- `tr-w263`
+  (K1,
+  K2,
+  K3 and the run-off wording)
+  is done in twelve commits:
+  NeuralWatt GLM text calls send `reasoning_effort` `low`,
+  the stream guards count only generated text and refuse bounds past the call deadline,
+  the polish writers see the accepted repair claims
+  (`CONSOLIDATE_CACHE_VERSION` 29 to 30),
+  and the run-off line tells a tie from a plurality.
+  Its K1 ledger entry took B803,
+  which main already holds for K4,
+  so it is renumbered.
+  Decided,
+  open to the owner's veto:
+  the first-content window goes from 120 s to 180 s,
+  since the logs record only time to first byte,
+  a lower bound,
+  and the largest healthy first byte was 115.7 s;
+  the idle window stays 120 s.
+  Also decided:
+  the polish round's rewrite judges are shown the same accepted claims,
+  by the rule that judges of a text see what its writer saw,
+  and the dispute note reaches the polish writers if the polish gate is shown it.
+  An agent makes these changes after merging main;
+  then gate and land it,
+  one gate at a time with `tr-w265`.
+  Commit `e13dc11c610e` has scope `translate-stage` where the package name is `translation-repair-translate-stage`;
+  it gets a corrective commit comment once it lands.
+- `tr-w266` landed `a334a5f794` after gate g150
+  (2,735 tests,
+  no failure).
+  The older family docs are rewrapped in `tr-w267`
+  (36 docs read by a shared stem list in `living-docs.test-fixture.ts`,
+  5,511 findings to none,
+  words and parsed tree unchanged in all 36);
+  gate g151 runs on `0994fbf492`,
+  and it lands when green.
+  Left after it,
+  decided and open to the owner's veto:
+  the 20 `doc/audit` docs
+  (1,432 findings)
+  and the 14 troubleshooting docs
+  (171 findings)
+  made under the family's commit scopes are the family's,
+  so a next round rewraps them and adds their stems;
+  six of those troubleshooting docs hold only `rust/require-rustdoc` on fenced Rust code,
+  which a rewrap cannot clear,
+  so that round reads each fence first.
+  The three repository-policy docs
+  (`doc/planning/unused-import-lint-policy.md`,
+  `doc/decision/corpus-deny-list-for-forbidden-strings.md`,
+  `doc/decision/forbidden-strings-cannot-gate-corpus-text-by-shape.md`;
+  136 findings)
+  govern the whole repository,
+  so they are left to their owners.
+- `google.gemma-4-e2b` is served only by Bedrock,
+  so with Bedrock off it stays an unserved seat under the 2026-09-09 short-bench rule;
+  open to the owner's veto.
