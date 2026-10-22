@@ -71,12 +71,21 @@ export function capturedHeadersOf(
     readonly wanted: readonly string[];
   },
 ): Readonly<Record<string, string>> {
-  return Object.fromEntries([...headers.entries(),]
-    .filter(function isAsked([name,],): boolean {
+  return Object.fromEntries([...headers.keys(),]
+    .filter(function isAsked(name,): boolean {
       return isWantedHeader({
         name,
         wanted,
       },);
+    },)
+    .map(function pairOf(name,): readonly [
+      string,
+      string
+    ] {
+      return [
+        name,
+        headers.get(name,) ?? '',
+      ];
     },),);
 }
 

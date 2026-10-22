@@ -415,7 +415,9 @@ export async function fetchTransport(
       credentials,
     },),
     // Conditional spread keeps the member absent when no header was captured.
-    ...((Object.keys(captured,).length === 0) ? {} : { headers: captured, }),
+    ...((Object.keys(captured,)
+      .length
+      === 0) ? {} : { headers: captured, }),
   };
 }
 

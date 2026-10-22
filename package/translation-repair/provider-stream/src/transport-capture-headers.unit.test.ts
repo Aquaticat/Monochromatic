@@ -99,7 +99,9 @@ await describe({
             },
           ),);
 
-        expect(await fetchTransport(exchangeAsking({}),),).toEqual({
+        expect(
+          await fetchTransport(exchangeAsking({}),),
+        ).toEqual({
           status: 200,
           bodyText: '{}',
         },);
@@ -119,7 +121,9 @@ await describe({
             { status: 200, },
           ),);
 
-        expect(await fetchTransport(exchangeAsking({ captureHeaders: ['retry-after',], },),),).toEqual({
+        expect(
+          await fetchTransport(exchangeAsking({ captureHeaders: ['retry-after',], },),),
+        ).toEqual({
           status: 200,
           bodyText: '{}',
         },);
