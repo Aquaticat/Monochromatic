@@ -48,6 +48,12 @@ const FIELD_TAB_LIMIT = 12;
 const TAB_SETTLE_MS = 150;
 
 /**
+ Wait after End moves the keyboard to the last Settings row: a move between rows writes no state line, so the key is
+ waited out and the Enter press that follows proves the move happened.
+ */
+const END_SETTLE_MS = 250;
+
+/**
  Settle time after the double Shift that should do nothing on Settings.
  */
 const DOUBLE_SHIFT_SETTLE_MS = 700;
@@ -165,12 +171,8 @@ export async function checkSettings(
     id: 'settings/licenses-row',
     title: 'End and Enter on the Licenses row open the Licenses page, and Escape returns to Settings with the list focused',
     body: async function licensesRowOpensAndEscapeReturns(): Promise<string> {
-      await press({
-        session,
-        act: tapKey('end',),
-        until: isSettingsPage,
-        what: 'the keyboard on the last row of Settings',
-      },);
+      await session.tap('end',);
+      await wait(END_SETTLE_MS,);
       /**
        The state with the Licenses page open.
        */
