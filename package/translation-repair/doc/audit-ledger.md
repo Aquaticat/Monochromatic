@@ -128,6 +128,10 @@ named for that subject and listed here.
   the Markdown linter,
   links that lead nowhere,
   and references by position.
+- [Audit ledger: the Markdown linter's gate and the split of long docs](audit-ledger-markdown-linter-gate-and-the-split-of-long-docs.md):
+  The gate that runs the Markdown linter over the family's docs (D35),
+  the older docs it reads through name stems,
+  and the docs filed by subject or by a span of dates to stay within the line limit.
 - [Audit ledger: found while fixing, stages, seats and pairing keys](audit-ledger-found-while-fixing-stages-seats-and-pairing-keys.md):
   Defects met while fixing another finding,
   in how the stages stop,
@@ -777,6 +781,7 @@ Filed in:
 
 - [Audit ledger: docs and comments that disagreed with the code](audit-ledger-docs-against-code.md)
 - [Audit ledger: doc conventions and their guards](audit-ledger-doc-conventions-and-their-guards.md)
+- [Audit ledger: the Markdown linter's gate and the split of long docs](audit-ledger-markdown-linter-gate-and-the-split-of-long-docs.md)
 
 ## Found while fixing
 

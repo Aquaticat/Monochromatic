@@ -419,7 +419,7 @@ which lists every file of this record.
 - [D30, docs and comments that disagreed with the code](audit-ledger-docs-against-code.md)
 - [D31 to D33, doc conventions and their guards](audit-ledger-doc-conventions-and-their-guards.md)
 - [D34, docs and comments that disagreed with the code](audit-ledger-docs-against-code.md)
-- [D35, doc conventions and their guards](audit-ledger-doc-conventions-and-their-guards.md)
+- [D35, the Markdown linter's gate and the split of long docs](audit-ledger-markdown-linter-gate-and-the-split-of-long-docs.md)
 - [L1 to L13, the repair lane](audit-ledger-repair-lane.md)
 - [L14, the repair lane's smaller items](audit-ledger-repair-lane-smaller-items.md)
 - [L15, the repair lane](audit-ledger-repair-lane.md)

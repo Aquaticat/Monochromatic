@@ -295,6 +295,12 @@ where the linter's offsets go wrong (D27).
 A fix of a class of findings across the docs ships with the guard that reads the class,
 committed first and shown failing on an unfixed doc,
 because a sweep that gates nothing is undone by the next paragraph.
+A docs-only change that lands without a gate runs `mise run //package/translation-repair/source-scan:test:unit` first.
+The line-limit guard runs only in that task,
+since the `source-scans` task lists the Markdown lint guard and not the line-limit guard,
+so a handover or ledger edit can pass the linter and still cross 1,000 lines
+(ledger D35:
+gate g153 found two files past the bound that docs-only commits had left).
 
 What enforces it:
 `markdown-lint-clean.unit.test.ts` in `source-scan` runs the linter over the package docs,
