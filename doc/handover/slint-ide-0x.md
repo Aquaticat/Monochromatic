@@ -1541,9 +1541,12 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     to 0.75 fails as the guard. Its `test:bin` gate is red on the real snapshot for a reason that is not the share:
     see the next paragraph.
     HOLD, 2026-10-22: `origin/main` has files that no longer parse. Commits `68415aeb53` and `3da31bdc3a` (repo-wide
-    `style(*)`, from an `oxlint --fix` style run by a session that is not this one and not `monochromatic-09`) left 52
-    JS and TS files failing `node --check`, 19 of them in `package/desktop-app/ide` (the `bin/inspect-*.mjs` scripts,
-    `bin/nested-compositor.mjs`, two `design` scripts). `test:bin` fails on `main` because of
+    `style(*)`, from an `oxlint --fix` style run by a session that is not this one and not `monochromatic-09`) left 20
+    `.mjs` files failing `node --check` that parsed before them, 17 of them in `package/desktop-app/ide` (the
+    `bin/inspect-*.mjs` scripts, `bin/nested-compositor.mjs`, two `design` scripts). My first count was 52; 32 of those
+    were TypeScript files that `node --check` rejects in their old versions as well (it does not strip types), and
+    redone with `module.stripTypeScriptTypes` 1849 of 1850 TS files parse before and after, none broken by the commits.
+    The issue and both peer sessions were corrected. `test:bin` fails on `main` because of
     `bin/nested-compositor.mjs`. Owner instruction: open an issue and let MiMo take it; it is
     https://github.com/Aquaticats/Monochromatic/issues/1794 (list of files and the measure are in it). I restored the 17
     IDE files from before the style commits only in the scratch tree `land-share` (uncommitted, not pushed) and did
