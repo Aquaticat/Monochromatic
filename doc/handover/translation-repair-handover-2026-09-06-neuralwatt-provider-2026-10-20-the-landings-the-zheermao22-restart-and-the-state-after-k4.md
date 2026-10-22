@@ -433,3 +433,42 @@ State after `XingZ6017` settled,
   take its digest,
   update `FROZEN`,
   and launch `zheermao23` after 19:15 UTC.
+
+State before `zheermao23`,
+2026-10-22 (UTC):
+
+- `tr-w265`,
+  `tr-w270` and `tr-w271` landed together as `50fba44c46` after gate g160 (2764 pass,
+  0 fail).
+  That carries the recalibrated NeuralWatt holds (B808),
+  the Mercury first-content window of 90000 ms (B809,
+  open to the owner's veto),
+  and the B762 rename.
+  The consecutive-abandonment hold (B810) was rejected on the evidence;
+  whether Qwen should keep its late-bench seat is left for the owner.
+- The docs round landed as `c5bf2368d3` (ledger B808 to B813,
+  with outcomes in four planning records).
+- The cache-account audit at `c5bf2368d3` refused `CONSOLIDATE_CACHE_VERSION = 31` as in no commit,
+  although it was committed:
+  31 was written by the resolution of merge `ba30e7ac6`,
+  which met two changes that each took 30.
+  The audit asked `git log -S` without `-m`,
+  which lists no merge,
+  and its diff reader took one mark column where a merge's combined diff has one for each parent (B814).
+  Fixed and landed as `5ea518be84` after gate g162 (2764 pass,
+  0 fail);
+  a second reading before the landing also fixed the reader for a merge of three parents.
+  Rerun on the branch,
+  the audit finds all eight versions,
+  31 at `ba30e7ac6`.
+  No pass ran on a build holding either 30:
+  the last runs logged `START tip=2a336603bf`.
+- The branch worktree is at `5ea518be84`,
+  installed and built.
+  Its digest is unchanged,
+  `sha256-tree-v1:67326356ce7fa367567181d84b21b00e4acf10ac55c763103e5b858cff451311`,
+  since the audit is not part of the pass's build,
+  and the launcher's `FROZEN` holds it.
+- Next:
+  launch `zheermao23` (entry `zheermao101`) at or after 19:15 UTC on 2026-10-22 through the launcher,
+  then `CuspariaKLSY23` and `XingZ6018`.
