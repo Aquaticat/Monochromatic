@@ -2,8 +2,8 @@
  Guards that the family's living Markdown passes the repository's Markdown
  linter (ledger D27 and D35). The repository's `lint:monochromatic-lint` task
  walks the whole tree and reports tens of thousands of findings outside this
- family, and no task of a family package ran it, so 88 `semantic-line-breaks`
- findings stood in the package docs and the living repository-level docs
+ family, and no task of a family package ran it, so 90 `semantic-line-breaks`
+ findings stood in nine docs of the package and the living repository-level docs
  on `main` with every gate green: the linter's finding count was read by no one.
 
  WHAT IS READ is what the other doc scans read: the package's and the family's
@@ -52,7 +52,10 @@ import {
   REPOSITORY_ROOT,
 } from './living-docs.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
-import { expectNoFindings, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scan-findings.test-fixture.ts';
+import {
+  expectFindingsAsListed,
+  expectNoFindings,
+} from '@monochromatic-dev/translation-repair-test-fixture/ts/scan-findings.test-fixture.ts';
 
 /**
  The linter's command name, as the repository's tasks run it.
@@ -237,23 +240,26 @@ await describe({
           'The cat naps,\nand the kitten purrs.\n',
           'utf8',
         );
-        expect(await lintFindings({
-          paths: [
-            join(
-              'doc',
-              'runs-on.md',
+        expectFindingsAsListed({
+          findings: await lintFindings({
+            paths: [
+              join(
+                'doc',
+                'runs-on.md',
+              ),
+              join(
+                'doc',
+                'broken.md',
+              ),
+            ],
+            cwd: scratch.path,
+            configuration: join(
+              REPOSITORY_ROOT,
+              'monochromatic-lint.config.jsonc',
             ),
-            join(
-              'doc',
-              'broken.md',
-            ),
-          ],
-          cwd: scratch.path,
-          configuration: join(
-            REPOSITORY_ROOT,
-            'monochromatic-lint.config.jsonc',
-          ),
-        },),).toEqual([`${join('doc', 'runs-on.md',)}:1:14 markdown/semantic-line-breaks`,],);
+          },),
+          listed: [`${join('doc', 'runs-on.md',)}:1:14 markdown/semantic-line-breaks`,],
+        },);
       },
     },),
     it({
