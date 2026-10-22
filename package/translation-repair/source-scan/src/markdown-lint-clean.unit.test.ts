@@ -8,8 +8,11 @@
 
  WHAT IS READ is what the other doc scans read: the package's and the family's
  docs and READMEs (`readPackageDocPaths`), the living repository-level docs
- (`readLivingRepositoryDocs`), and the package split plan, which every package
- README links and no split audit pins. The dated snapshots, history segments,
+ (`readLivingRepositoryDocs`), the package split plan, which every package
+ README links and no split audit pins, and the older repository-level docs
+ whose names do not start with `translation-repair` (`OTHER_STEMS`, the list
+ `doc-line-limit.unit.test.ts` reads too, so a new file under a listed stem is
+ read the day it is added; ledger D35). The dated snapshots, history segments,
  run-continuity parts and interface-candidate files are the archives that
  ledger D27 keeps byte for byte, and they are not read.
 
@@ -47,9 +50,12 @@ import {
   isJsonRecord,
 } from '@monochromatic-dev/translation-repair-document-structure';
 import {
+  OTHER_STEMS,
   readLivingRepositoryDocs,
   readPackageDocPaths,
+  readStemDocs,
   REPOSITORY_ROOT,
+  staleStemFindings,
 } from './living-docs.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import {
@@ -183,7 +189,7 @@ async function lintFindings(
 /**
  Every Markdown doc the guard reads, from the repository root.
 
- @returns Package docs, then the living repository-level docs, then the extras
+ @returns Package docs, then the living repository-level docs, then the extras, then the older docs found by stem
 
  @throws {@link Error} when the living docs cannot be located
 
@@ -204,6 +210,7 @@ async function readLintedDocs(): Promise<readonly string[]> {
     ...currentPlanning,
     ...operations,
     ...EXTRA_DOCS,
+    ...await readStemDocs({ stems: OTHER_STEMS, },),
   ];
 }
 
@@ -277,13 +284,32 @@ await describe({
       },
     },),
     it({
-      name: 'FINDS NO MARKDOWN LINT FINDING in the package docs, their READMEs, the living repository-level docs or '
-        + 'the package split plan',
+      name: 'FINDS a stem no doc\'s name starts with, and passes a stem a doc and a split file of it both open',
+      fn: async () => {
+        expect(staleStemFindings({
+          stems: ['cat-nap-', 'dog-walk', 'cat-bowl',],
+          paths: [
+            join('doc', 'planning', 'cat-nap-on-the-sofa.md',),
+            join('doc', 'planning', 'cat-bowl.md',),
+            join('doc', 'planning', 'cat-bowl-and-water.md',),
+          ],
+        },),).toEqual([
+          'no doc\'s name starts with the stem dog-walk; drop it from OTHER_STEMS or rename the doc back',
+        ],);
+      },
+    },),
+    it({
+      name: 'FINDS NO MARKDOWN LINT FINDING in the package docs, their READMEs, the living repository-level docs, '
+        + 'the package split plan or the older docs OTHER_STEMS names',
       fn: async () => {
         /**
          Every doc the guard reads.
          */
         const paths = await readLintedDocs();
+        expect(paths.some(function isOlderDoc(path,): boolean {
+          return path.endsWith('wire-the-heading-aligner.md',);
+        },),).toBe(true,);
+        expectNoFindings({ findings: staleStemFindings({ stems: OTHER_STEMS, paths, },), },);
         expect(paths.some(function isPassLog(path,): boolean {
           return path.includes('translation-repair-openrouter-2026-09-03-',);
         },),).toBe(true,);

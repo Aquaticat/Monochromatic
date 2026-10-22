@@ -1,16 +1,21 @@
 # Seating the editor and refiner columns on the full-roster calibration
 
 Decided 2026-08-25 from the finished 40-slice full-roster calibration,
-launched 2026-08-25T01:30Z and finished in 42518 seconds, zero `[error]` lines.
-Read with `~/temp/agent/standing-from-log.mjs`, whose self-test reproduces
+launched 2026-08-25T01:30Z and finished in 42518 seconds,
+zero `[error]` lines.
+Read with `~/temp/agent/standing-from-log.mjs`,
+whose self-test reproduces
 a prior run exactly and which derives the Bonferroni critical value from the row count
 rather than hardcoding one.
 
-The owner delegated this: "You have authorization to drop models that are exceptionally bad."
+The owner delegated this:
+"You have authorization to drop models that are exceptionally bad."
 
 ## What the run measured
 
-Two columns, scored separately, both against a ten-seat Bonferroni threshold of z = 2.81.
+Two columns,
+scored separately,
+both against a ten-seat Bonferroni threshold of z = 2.81.
 
 ```text
 EDITOR   114 judged rounds from 31 of 40 slices, pooled 1177/7438 = 15.82%
@@ -44,7 +49,8 @@ REFINER   22 judged rounds from 22 of 40 slices, pooled 126/853 = 14.77%
 
 ## The refiner column carries no deflation, which is why it decides more than its size suggests
 
-Its 22 rounds came from 22 distinct slices, exactly one each,
+Its 22 rounds came from 22 distinct slices,
+exactly one each,
 so the within-slice correlation that deflates the editor column by 1.92x does not exist here at all.
 Twenty-two independent rounds outrank 114 correlated ones for this purpose,
 because the effective sample is the count of independent slices rather than of rounds.
@@ -54,33 +60,50 @@ the refiner column looked thin and turned out to be the cleaner of the two instr
 
 ## Decision one: `hf:zai-org/GLM-5.2` is the first-choice writer in both columns
 
-Best in both, and the only seat clearing on the strong side of both after deflation.
-Its editor margin is not close: z 9.83 raw, 5.12 deflated, against a threshold of 2.81.
+Best in both,
+and the only seat clearing on the strong side of both after deflation.
+Its editor margin is not close:
+z 9.83 raw,
+5.12 deflated,
+against a threshold of 2.81.
 
 ## Decision two: `hf:Qwen/Qwen3.8-27B` is a refiner before it is an editor
 
-It clears decisively as a refiner (z 4.35, undeflated) and fails as an editor (1.97 deflated).
-Where the two roles compete for one seat, it takes the refiner one.
+It clears decisively as a refiner (z 4.35,
+undeflated) and fails as an editor (1.97 deflated).
+Where the two roles compete for one seat,
+it takes the refiner one.
 
 ## Decision three: the roster is NOT narrowed, and `gemma-4-26b-a4b-it` stays
 
-It is measurably last in both columns and significantly so, z -3.45 and -2.99 after deflation.
+It is measurably last in both columns and significantly so,
+z -3.45 and -2.99 after deflation.
 The owner's authorization to drop exceptionally bad models would cover it on those numbers alone.
-It stays anyway, for a reason the numbers do not show and the pipeline's shape does:
+It stays anyway,
+for a reason the numbers do not show and the pipeline's shape does:
 
 -   A losing candidate does not degrade the output.
-    Judges choose among candidates; one that never wins costs a call and changes nothing that ships.
-    "Worst" here means "least often preferred", not "harmful".
+    Judges choose among candidates;
+    one that never wins costs a call and changes nothing that ships.
+    "Worst" here means "least often preferred",
+    not "harmful".
 -   The cost argument is the only argument for dropping it,
     and the owner's standing guideline makes cost a non-constraint.
--   It answers cleanly: zero cut voices, zero zero-content streams, zero reasoning volume.
-    It is not misbehaving, which is what "exceptionally bad" was authorized against.
+-   It answers cleanly:
+    zero cut voices,
+    zero zero-content streams,
+    zero reasoning volume.
+    It is not misbehaving,
+    which is what "exceptionally bad" was authorized against.
 -   `#136` set the precedent on `GLM-4.7-Flash` and it holds:
     a seat is not dropped for placing last on a preference measure.
 
-WHAT WOULD CHANGE THIS: evidence that its candidates dilute judging rather than merely lose,
+WHAT WOULD CHANGE THIS:
+evidence that its candidates dilute judging rather than merely lose,
 or that its schema mismatches (4 of the 6 in an earlier run) cost rounds the roster needed.
-Neither is measured. Both are measurable, and neither is measured yet.
+Neither is measured.
+Both are measurable,
+and neither is measured yet.
 
 ## What this standing is NOT
 
@@ -91,5 +114,7 @@ In particular `qwen3.8-max` places second here while recording 281 zero-content 
 which is an accounting artifact of its tool-call channel and not a delivery failure.
 
 Neither column is a verdict about model quality in general.
-It measures which seat writes text these judges prefer, on this corpus, under these house rules,
+It measures which seat writes text these judges prefer,
+on this corpus,
+under these house rules,
 at this date.

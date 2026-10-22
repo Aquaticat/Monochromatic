@@ -1428,6 +1428,16 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     scan `ps`, `podman ps`, `systemctl --user list-units`, merge in a scratch worktree, gates once, own stall A/B with
     `~/temp/agent/redraw-stall-ab.mjs`, reinstall if the binary changed, remove its worktree (unlock first only after
     checking its HEAD is in `origin/main`) and branch.
+    Reported 2026-10-21, branch `worktree-agent-a0b5a3cdf2d733095` tip `f75106b086` (base `b4e9063c3a`), not yet merged:
+    by intervention, the explicit `request_redraw()` after `submit_tile` is not the cause (removing it leaves the slot 50
+    stall in 6 of 6 runs); the setters of the tile swap ask for a frame themselves. The fix holds the swap: the 20 ms tile
+    poll leaves a finished tile while the last scroll step is under 20 ms old, and the step takes the tile at the end of
+    `on_viewport_changed`. The agent's own 8 pairs: slot 50 stall 0 of 8 against 8 of 8, stalls in total 1 against 13.
+    Its first poll order broke the 50,000 line external edit test (20 of 20 against 0 of 20); the shipped order polls
+    after the step. Agent gates: `test:native` 279, `test` 797, `test:bin` 60, lint, build, renderer guard, three new
+    source guards shown to fail. Unverified by me until the next lines are filled in: its counts, the idle latency of the
+    20 ms wait, a slot 33 stall and odd ticks in its fix runs. My checks: trees `~/temp/agent/ab-tile-a` (origin/main)
+    and `~/temp/agent/land-tile` (merged); then stall A/B, gates once, push, reinstall, cleanup.
     Open, in order: (1) the stall at slot 50 of the scripted scroll, the tile hand-over in
     `src/native/render/present.rs` (the agent above is on it; an intervention, not a log reading, decides it; the
     frame-shift probe above is the measure); (2) the flake work, in `doc/handover/ide-native-flakes.md`:

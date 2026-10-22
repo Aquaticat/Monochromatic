@@ -98,15 +98,23 @@ What 7 events do support is a firmer estimate:
  roughly 1.7% of distinct shipped regions draw a majority,
  about 1 in 59.
 The 7 are spread one apiece across 7 different entries
- (`AmbeR_the_anpa`, `Kotori`, `LCG_Akiball`, `MTF_0615`, `MeowBot233`, `Mio`,
+ (`AmbeR_the_anpa`,
+`Kotori`,
+`LCG_Akiball`,
+`MTF_0615`,
+`MeowBot233`,
+`Mio`,
  `Mizuki_Yuuki`),
 so this is a low per-entry base rate rather than one pathological document
  inflating a total.
 
-The direction of the decision is unchanged, but the ARGUMENT has to change with
+The direction of the decision is unchanged,
+but the ARGUMENT has to change with
  the evidence.
 It no longer rests on the majority column barely moving.
-It rests on the rate being low and, more importantly, on nobody yet knowing
+It rests on the rate being low and,
+more importantly,
+on nobody yet knowing
  whether those 7 regions were damaged at all.
 Probers keep making claims;
  what stays rare is a majority agreeing on one region.
@@ -123,9 +131,11 @@ so the screen is demonstrably capable of rejecting a claim rather than merely
  and `degradedRosterRegions` at zero,
 so the probe is reaching everything it should rather than skipping quietly.
 
-ONE SCOPE LIMIT MATTERS FOR THE GRADING, NOT FOR THE GATING.
+ONE SCOPE LIMIT MATTERS FOR THE GRADING,
+NOT FOR THE GATING.
 The probe runs inside the accuracy stage and the naturalness lane runs after it,
- so on a slice the lane rewrote, the probe judged wording that did not ship.
+ so on a slice the lane rewrote,
+the probe judged wording that did not ship.
 For the GATING question this is harmless:
  a gate would act during candidate selection,
  which is also before the lane runs,
