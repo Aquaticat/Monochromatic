@@ -26,9 +26,10 @@ export const LISTING_URL: Readonly<Record<CardProvider, string>> = {
   openrouter: 'https://openrouter.ai/api/v1/models',
   bedrock: `${BEDROCK_MANTLE_BASE_URL}/v1/models`,
   neuralwatt: `${NEURALWATT_BASE_URL}/models`,
-  // THE TWO DIRECT PROVIDERS SPEAK THE OPENAI-COMPATIBLE PROTOCOL, whose listing is `GET /models`. DeepSeek
-  // documents it; Xiaomi's API reference was read on 2026-10-22 without a listing page, so its address is the
-  // protocol's and has not been fetched (no key was used to write this).
+  // THE TWO DIRECT PROVIDERS SPEAK THE OPENAI-COMPATIBLE PROTOCOL, whose listing is `GET /models`. NEITHER ADDRESS
+  // WAS PROBED by the change that added them (no key was used and nothing was fetched): DeepSeek's rests on its
+  // documentation, and Xiaomi's API reference was read on 2026-10-22 without a listing page, so its address is the
+  // protocol's alone.
   deepseek: `${DEEPSEEK_BASE_URL}/models`,
   xiaomi: `${XIAOMI_BASE_URL}/models`,
 };

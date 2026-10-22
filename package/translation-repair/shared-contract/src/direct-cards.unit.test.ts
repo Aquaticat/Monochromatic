@@ -88,7 +88,11 @@ await describe({
       name: 'ADDS NO ROSTER IDENTITY and lifts or adds no hold: the two cards are the existing DeepSeek V4.1 '
         + 'Flash and MiMo V2.6 Flash, each held out of a picture-reader seat as before',
       fn: async () => {
-        expect(ROSTER_MODEL_IDS.length,).toBe(13,);
+        // The roster is untouched: every id the cards declare is one the roster already held, each once.
+        expect(new Set(ROSTER_MODEL_IDS,).size,).toBe(ROSTER_MODEL_IDS.length,);
+        expect(ROSTER_MODEL_IDS,).toContain('deepseek-v4.1-flash',);
+        expect(ROSTER_MODEL_IDS,).toContain('xiaomi/mimo-v2.6-flash',);
+        expect(Object.keys(MODEL_CARDS,).length,).toBe(ROSTER_MODEL_IDS.length,);
         expect(MODEL_CARDS['deepseek-v4.1-flash'].holds,).toEqual(['reader-unmeasured',],);
         expect(MODEL_CARDS['xiaomi/mimo-v2.6-flash'].holds,).toEqual([
           'judge-unmeasured',

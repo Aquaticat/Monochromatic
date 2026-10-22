@@ -64,7 +64,7 @@ These checks establish wire and modality compatibility,
 not actual-output quality.
 Fresh schema-9 passage validation remains mandatory before this replacement contributes readiness evidence.
 
-## Running out of budget is normal, and the five providers run out differently
+## Running out of budget is normal, and the seven providers run out differently
 
 They are not the same kind of limit,
 and a former version of this section had Charm Hyper backwards.
@@ -72,6 +72,8 @@ There is one meter per provider,
 in `PROVIDER_ORDER` (NeuralWatt,
 Synthetic,
 Bedrock,
+DeepSeek,
+Xiaomi,
 Hyper,
 OpenRouter;
 `package/translation-repair/shared-contract/src/provider-name.ts`).
@@ -217,7 +219,8 @@ when two providers were metered:
 ```
 
 Since Bedrock joined on 2026-09-07 the line carried four states,
-and since NeuralWatt joined on 2026-10-20 it carries five,
+since NeuralWatt joined on 2026-10-20 it carried five,
+and since DeepSeek and Xiaomi joined on 2026-10-22 it carries seven,
 one per provider in `PROVIDER_ORDER`,
 then every number each meter reported,
 `neuralwattWh=`,

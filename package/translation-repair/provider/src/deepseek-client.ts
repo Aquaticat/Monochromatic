@@ -61,7 +61,7 @@ import {
 //     Streams end in `[DONE]`; the documentation says a streaming request
 //     that waits receives `: keep-alive` comment lines, which the stream
 //     reader skips, and that a request not started after 10 minutes is closed.
-//   - The meter is `GET /user/balance` (`balance()` below).
+//   - The meter is `GET /user/balance` (`credits` on the client built here).
 //
 // THE LIMIT: 2,500 concurrent requests for `deepseek-flash` per account, over
 // which DeepSeek answers HTTP 429 (`https://api-docs.deepseek.com/quick_start/rate_limit`,

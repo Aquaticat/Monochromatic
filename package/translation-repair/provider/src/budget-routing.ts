@@ -326,7 +326,8 @@ export function bedrockIsDry(
  given to use "as you wish", and a balance too small for the next call
  surfaces as `402 Insufficient Balance` at the wire
  (`https://api-docs.deepseek.com/quick_start/error_codes`, read 2026-10-22),
- which the caller ORs into the dryness it passes back in. Bedrock alone
+ which the router passes to `markRefused` as a payment refusal, and the budget layer then holds the provider dry until the
+ meter's level moves (`provider-budget.ts`). Bedrock alone
  carries a margin, because its overshoot reaches the owner's card; DeepSeek's
  money is prepaid.
  */

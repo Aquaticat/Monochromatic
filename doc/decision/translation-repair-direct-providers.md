@@ -34,7 +34,17 @@ the same seats are reached by one more route.
 
 ## Facts the design rests on
 
-All read or probed on 2026-10-22 unless stated.
+All read in the providers' documentation on 2026-10-22,
+or taken from the parent session's probes of that day,
+unless stated.
+This change probed nothing:
+it used no key and made no request.
+The statements that rest on documentation alone are the prices,
+the context and output ceilings,
+the rate limits,
+the error codes,
+the claim that `deepseek-flash` is the 1017 build,
+and the addresses of the model listings.
 
 - DeepSeek serves `deepseek-flash` (roster seat `deepseek-v4.1-flash`) on `https://api.deepseek.com/chat/completions`.
   Its `response_format` of type `json_schema` is refused with HTTP 400,
@@ -152,6 +162,11 @@ An absent key leaves the provider unconfigured,
 with one info line naming the variable,
 printed after the no-key refusal so a launch with no key at all still prints its refusal alone.
 No key falls back to another provider's.
+A 401 from either provider reaches the log without the provider's own words,
+because a refusal of a key may echo a fragment of it (DeepSeek's documented text shows the last four characters),
+the transport's mask finds whole credentials and not tails,
+and masking every four-character piece of a key would rewrite ordinary words in answers that carry no refusal.
+The status alone is what the router and an operator act on (`withoutRefusedKeyBody` in `provider/src/direct-client.ts`).
 Neither is a valid `--require-providers` value:
 no arm can depend on an optional route being ready.
 Both names are in the no-key error text,
@@ -203,11 +218,9 @@ No call was made with a key to check it.
 
 - No real key was used and no request left the machine:
   every test runs over a recorded transport,
-  and the `roster-card` listing address for Xiaomi is the OpenAI-compatible protocol's,
-  not fetched.
+  and neither `roster-card` listing address was fetched (DeepSeek's rests on its documentation,
+  Xiaomi's on the
+  OpenAI-compatible protocol's).
 - The rotation sweep and the gate were not run.
 - The cap census maps both providers' served ids to their seats,
   but no call has been counted.
-- Several of the new modules have no own test file and are on the own-unit-tests allowlist,
-  reached by `direct-client.unit.test.ts`,
-  `direct-parts.unit.test.ts` and `direct-providers.unit.test.ts`.

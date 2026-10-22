@@ -293,6 +293,21 @@ each uses an empty export as given.
     Set it when the console reads a different balance;
     anything that is not a non-negative number is refused at once.
 
+-   `DEEPSEEK_API_KEY` and `TRANSLATION_REPAIR_XIAOMI_MIMO_API_KEY`.
+    Bearer tokens for the two direct providers,
+    granted by the owner on 2026-10-22,
+    each for one model:
+    DeepSeek V4.1 Flash on the first and MiMo V2.6 Flash on the second.
+    Both are optional and never fall back to another key:
+    an unset one leaves its provider unconfigured,
+    with one info line naming the variable,
+    and neither is accepted by `--require-providers`.
+    The `METERS` line carries `deepseek=` and `deepseekUsd=`,
+    and `xiaomi=` and `xiaomiUsdSpent=`
+    (`doc/decision/translation-repair-direct-providers.md`).
+    A 401 from either provider reaches the log without the provider's own words,
+    since a refusal may echo a fragment of the key that the transport's mask would not find.
+
 Every key lives in the sops-encrypted,
 gitignored `.env.local.json` at the repository root,
 which `mise run` decrypts into the task's environment.
@@ -764,16 +779,3 @@ restore the code those entries were settled under and resume there,
 or move the older artifacts to an archive directory and pay for their re-run.
 Deleting them is the one thing to avoid:
 it costs the same re-run and destroys a sound result of the generation that wrote it.
-
--   `DEEPSEEK_API_KEY` and `TRANSLATION_REPAIR_XIAOMI_MIMO_API_KEY`.
-    Bearer tokens for the two direct providers,
-    granted by the owner on 2026-10-22,
-    each for one model:
-    DeepSeek V4.1 Flash on the first and MiMo V2.6 Flash on the second.
-    Both are optional and never fall back to another key:
-    an unset one leaves its provider unconfigured,
-    with one info line naming the variable,
-    and neither is accepted by `--require-providers`.
-    The `METERS` line carries `deepseek=` and `deepseekUsd=`,
-    and `xiaomi=` and `xiaomiUsdSpent=`
-    (`doc/decision/translation-repair-direct-providers.md`).

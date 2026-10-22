@@ -14,8 +14,8 @@ import type {
 //   "I've added TRANSLATION_REPAIR_XIAOMI_MIMO_API_KEY in main worktree's json
 //   file. ... You may only use v2.6-flash with this key."
 //
-// NEITHER KEY IS MODEL-SCOPED (the parent session's probes of 2026-10-22: DeepSeek
-// `GET /models` lists `deepseek-flash` and `deepseek-v4-pro`; Xiaomi's lists
+// NEITHER KEY IS MODEL-SCOPED (as the parent session reported its listings of 2026-10-22, which this change did
+// NOT repeat: DeepSeek `GET /models` lists `deepseek-flash` and `deepseek-v4-pro`; Xiaomi's lists
 // `mimo-v2.6-pro`, `mimo-v2.6-pro-ultraspeed` and the speech models beside
 // `mimo-v2.6-flash`), so the lock is in our code, three ways: the served-id
 // type of each is a single literal (`roster-id.ts`), each side appears on one
@@ -35,7 +35,7 @@ import type {
 
  THE SERVED ID IS `deepseek-flash`, AND THE 1017 CLAIM RESTS ON DEEPSEEK'S
  DOCUMENTATION. `GET https://api.deepseek.com/models` lists `deepseek-flash` and
- `deepseek-v4-pro` only, and there is no dated 1017 id. The pricing page
+ `deepseek-v4-pro` only, and there is no dated 1017 id (the parent session's listing; not fetched by this change). The pricing page
  (`https://api-docs.deepseek.com/quick_start/pricing`, read 2026-10-22) says
  `deepseek-flash` "is now served by DeepSeek-V4.1-Flash-1017", lists a context
  of 1M and a maximum output of 384K (393,216 tokens, the figure NeuralWatt
@@ -43,7 +43,7 @@ import type {
  `system_fingerprint`, which the client logs.
 
  IMAGE INPUT IS PROBED, NOT MEASURED: a red pixel was answered "Red" on
- 2026-10-22, so the side reports images; the card's `reader-unmeasured` hold
+ 2026-10-22 (the parent session's probe; not repeated by this change), so the side reports images; the card's `reader-unmeasured` hold
  still keeps pictures off this model, as on its NeuralWatt side.
 
  PRICED AT PEAK, ALWAYS. The page lists 0.006 (cache hit), 0.3 (cache miss) and
@@ -70,14 +70,14 @@ export const DEEPSEEK_V4_1_FLASH_ON_DEEPSEEK: DeepSeekCard = {
  Xiaomi's side of the MiMo V2.6 Flash card.
 
  The served id is `mimo-v2.6-flash`, the id the pay-as-you-go key answers to
- (`GET https://api.xiaomimimo.com/v1/models`, parent session's probe of
- 2026-10-22). The chat reference
+ (`GET https://api.xiaomimimo.com/v1/models` as the parent session's probe of
+ 2026-10-22 reported it; this change fetched no listing). The chat reference
  (`https://mimo.mi.com/docs/en-US/api/chat/openai-api`, read 2026-10-22) gives
  `max_completion_tokens` a range of 1 to 131,072 with that default for this
  model, the same ceiling OpenRouter's listing states.
 
  IMAGE INPUT IS PROBED, NOT MEASURED: a picture sent as an `image_url` data
- URL was accepted and read on 2026-10-22, with `image_tokens` in the usage; the
+ URL was accepted and read on 2026-10-22 (the parent session's probe; not repeated by this change), with `image_tokens` in the usage; the
  card's `reader-unmeasured` hold keeps pictures off this model.
 
  PRICES are the overseas real-time rates of the pay-as-you-go page
