@@ -1871,8 +1871,8 @@ that is verification, not a decision for the user.
   Queue after the gate is green (QWD): (a) UX3, task 58: `advance_local_branch` (`auto_push_reconcile.rs`) refuses
   any tracked status line, so the user's question "shouldn't this auto merge?" is answered YES: local main stays
   behind origin/main whenever another session leaves tracked edits (seen 4 times today, merges 46a264639b,
-  0b97c22d5d, 70b86d8a6a, 964b905891, 9562c6729132). Plan: fast-forward when `git diff --name-only <local>
-  <merge_oid>` is disjoint from the status paths (both sides of renames, `-z`), run `git merge --ff-only`, then
+  0b97c22d5d, 70b86d8a6a, 964b905891, 9562c6729132). Plan: fast-forward when `git diff --name-only <local> <merge_oid>`
+  is disjoint from the status paths (both sides of renames, `-z`), run `git merge --ff-only`, then
   verify the status output is unchanged and report otherwise; add tests (disjoint, overlapping, staged rename, rename
   source overlap) and a binary-level one against a moved remote; (b) task 57, audit log: record every guarded
   command that passed (linked clean) and every hatch use, with command, arguments, cwd, pid, parent pid, time, plus a
@@ -1919,6 +1919,16 @@ that is verification, not a decision for the user.
   `~/temp/agent`, exit code appended), never as a foreground wait; advance independent work while they run and read
   the result when the completion notice arrives. A foreground clippy/test call with a long timeout counts as blocking.
   Chat promises do not persist; this entry is the record.
+  Scope pointer (issue 1793):
+  added 2026-10-22.
+  This standing procedure is narrower than the blanket bash-output-filter hook policy,
+  which deliberately backgrounds every main-agent Bash call.
+  Its owner decision (2026-10-21),
+  blanket scope,
+  exceptions,
+  opt-out,
+  and result and working-directory trade-offs are recorded in the `Force background` section of
+  `package/claude-code-plugin/bash-output-filter/README.md`.
   Status 2026-10-20 night, later: the landing-invariant warning is DONE and committed (`landing_invariant.rs`, 4+3
   host tests, binary `an_explicit_path_commit_keeps_other_staged_entries_without_a_warning`; clippy clean). It is not
   in 0.2.5, so it needs 0.2.6 (batch it with whatever else lands next). `rm --cached` and `worktree remove --force`
