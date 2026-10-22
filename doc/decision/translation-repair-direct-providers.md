@@ -37,8 +37,9 @@ the same seats are reached by one more route.
 All read in the providers' documentation on 2026-10-22,
 or taken from the parent session's probes of that day,
 unless stated.
-This change probed nothing:
-it used no key and made no request.
+This change itself used no key and made no request;
+every live probe cited here was run by the parent session on 2026-10-22 with the owner's keys,
+and none was repeated by this change.
 The statements that rest on documentation alone are the prices,
 the context and output ceilings,
 the rate limits,
@@ -130,19 +131,31 @@ so a fleet that is dry except for Xiaomi still ends the run for every other mode
 Only an always-wet meter gets this reading:
 a provider with a real meter that is wet but does not serve the model keeps its own reading,
 so a model whose serving providers are all dry is still a lost seat and not the end of the run.
-The `EveryProviderDryError` text then says `xiaomi` dry for a provider whose meter is wet but useless for that call.
+The `EveryProviderDryError` text states which cause applies:
+"Xiaomi has refused a call for payment" when Xiaomi itself read dry,
+and "Xiaomi's meter reads wet but it serves only MiMo V2.6 Flash,
+not the model asked" when it was counted dry for serving nothing here,
+with the measured clause reading `xiaomi wet but not serving this model` beside the `xiaomi=wet` of the `METERS` line.
+A funded real-meter provider that serves only some models (DeepSeek,
+for one) has the other effect:
+it keeps its own wet reading,
+so a model it does not serve is a lost seat per call and the run does not stop.
 
 How the hold behaves,
 in both directions (pinned in `provider-budget-xiaomi-hold.unit.test.ts`):
 the budget layer clears a payment mark when the meter's level text changes,
 and the level here is the run's own spend.
 
-- With no call settling after the refusal the spend does not move,
-  so a 402 holds Xiaomi dry for the rest of the process.
-  This is intended:
-  a 402 means the account is out of money,
-  and the process cannot know that it was topped up,
-  so a top-up within a run takes effect on the next launch.
+- With no in-flight call settling after the 402 the spend does not move,
+  so the refusal holds Xiaomi dry for the rest of the process.
+  That is the current behaviour,
+  and the precondition matters:
+  in a busy run every Xiaomi call already in flight settles after the refusal and moves the spend,
+  so the hold clears early (next item) and Xiaomi flaps rather than staying out.
+  The process cannot know that the account was topped up,
+  so a top-up within a run is seen on the next launch.
+  Xiaomi's error list names 402 as "Insufficient Balance"
+  but this change did not check what else may return 402.
 - A call that was already in flight settles after the refusal and moves the spend,
   which clears the mark early and lets one more call through to meet the refusal again.
   The cost is one extra refused request per such settle.
@@ -193,10 +206,27 @@ with the cached count read from the usage block.
 Xiaomi's chat reference lists `max_completion_tokens` and not `max_tokens`,
 and the shared wire body sends `max_tokens`.
 It is kept,
-because it was measured on 2026-10-22 (`w287-xingz18/xiaomi-max-tokens-probe.out`):
-on `mimo-v2.6-flash` with a cap of 64,
-both `max_tokens` and `max_completion_tokens` returned `finish_reason` "length"
-with `completion_tokens` 64 (`reasoning_tokens` 22 included).
+because the parent session measured it on 2026-10-22 with the owner's Xiaomi key
+(a probe this change did not run or repeat).
+On `mimo-v2.6-flash` with a cap of 64,
+both members returned `finish_reason` "length" with `completion_tokens` 64
+(`reasoning_tokens` 22 included).
+The two result lines,
+as the probe wrote them:
+
+```jsonl
+{"field":"max_tokens","status":200,"finish":"length","usage":{"completion_tokens":64,"prompt_tokens":28,"total_tokens":92,"completion_tokens_details":{"reasoning_tokens":22},"prompt_tokens_details":{"cached_tokens":0}}}
+{"field":"max_completion_tokens","status":200,"finish":"length","usage":{"completion_tokens":64,"prompt_tokens":28,"total_tokens":92,"completion_tokens_details":{"reasoning_tokens":22},"prompt_tokens_details":{"cached_tokens":0}}}
+```
+
+The limit of this evidence:
+it is one non-streamed call pair at a cap of 64.
+The production body streams with `stream_options`,
+and no call has shown the member honoured on a stream or at the real cap (13,082 style values).
+The first streamed Xiaomi call of a real run should show `completion_tokens` at or under the cap on its `SPEND` line.
+The probe's output file is kept in the parent session's scratch area (`w287-xingz18/xiaomi-max-tokens-probe.out`)
+and is a convenience only:
+this section stands without it.
 
 ## No zero data retention
 
@@ -212,15 +242,23 @@ The client cannot ask for a build:
 `deepseek-flash` is the only wire id,
 and the claim that it is the 1017 build rests on DeepSeek's documentation,
 with `system_fingerprint` logged per call as the only evidence a reader can compare across days.
-No call was made with a key to check it.
+This change made no call with a key to check it.
 
 ## Not done
 
-- No real key was used and no request left the machine:
+- **Undecided:
+  recovery from a Xiaomi 402 within a run.**
+  The owner has not ruled on it.
+  If a run should recover (a top-up,
+  or a 402 that was transient),
+  the Xiaomi meter level needs a coarse time bucket so the mark clears on a schedule.
+
+- This change used no real key and sent no request:
   every test runs over a recorded transport,
   and neither `roster-card` listing address was fetched (DeepSeek's rests on its documentation,
-  Xiaomi's on the
-  OpenAI-compatible protocol's).
+  Xiaomi's on the OpenAI-compatible protocol's).
+  The keyed probes this record cites were the parent session's,
+  not this change's.
 - The rotation sweep and the gate were not run.
 - The cap census maps both providers' served ids to their seats,
   but no call has been counted.
