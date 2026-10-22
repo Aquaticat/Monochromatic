@@ -293,12 +293,17 @@ Code:
   The six effort cards carry `judge-unmeasured`,
   so no derived bench seats them until the effort bench names a level.
   Two cards of one model share a wire model,
-  so no bench arm may seat two of them together.
+  so no bench may seat two of them together:
+  `assertOneWireModelPerBench` (`shared-contract/src/bench-wire-model.ts`) refuses it,
+  and `run-config.ts` calls it at load on every list in `RUN_BENCHES`.
 - Seats in `run/src/corpus-run/run-config.ts`:
   Sonnet 5.5 in `editorModelIds` ahead of `glm-5.3`,
   Haiku 5.5 in the wide seats through its card holds
   and in `RUN_CHECKER_ORDER` behind the three the 2026-09-27 benchmark ranks,
   so it fills the checker bench only when a provider serving one of those three is dry.
+  The editor calibration (`editor-calibrate`) seats Sonnet 5.5 by name beside the roster's writers
+  and gives Haiku 5.5, which holds `writer-unmeasured`, no editor or refiner chair.
+  That second part is the narrower reading of "Haiku wide" and is open to the owner's veto.
 - Sonnet 5.5 cache reads are priced at 0.10 USD a million,
   from the owner's brief of the pricing page.
   The API skill bundled with the session lists 0.20 for the same line.
@@ -314,8 +319,38 @@ Code:
   Where a refusal's `stop_details` sits on a stream is not documented,
   so `claude-stream-facts.ts` looks in the delta,
   on the frame and in the message.
-  Whether `output_config.format` accepts every stage's schema is unverified.
-- `max_tokens` is the pooled-p99 cap of `completion-cap.ts`,
-  and thinking counts against it,
-  so a long adaptive-thinking answer may be cut at that cap.
+- Whether `output_config.format` accepts every stage's schema is still unverified live.
+  The bundled API skill says every object needs `additionalProperties: false`
+  and that the numeric,
+  string and array bounds are not supported;
+  `claude-schema.ts` sends exactly that,
+  `corpus-pass/src/claude-schemas.unit.test.ts` reads all 23 schema-declaring files through the body builder,
+  and the block pairing and contest ballot schemas were closed at source.
+  The one bound dropped anywhere is `minimum: 1` on a naturalness finding's paragraph,
+  which `isAbsoluteNaturalnessReviewWire` rejects below one.
+  One owner-run probe per distinct schema shape would close it.
+- Thinking streams only if `display: "summarized"` does what the skill says.
+  The default `omitted` leaves the stream silent while the model thinks,
+  which the idle guard (`STREAM_FIRST_CONTENT_MS`, 180 s)
+  would read as a stall and cut,
+  and every attempt that delivered something is billed.
+  The request now asks for the summary,
+  the skill says billing is the same under every setting,
+  and both are unverified here:
+  whether summary text arrives in time to reset the guard,
+  and whether a think longer than the window still produces no `thinking_delta` before its summary is ready.
+  If a cut still shows in the first live log,
+  the alternative is a `firstContentMs` on the Claude cards above the measured think time.
+- `max_tokens` is 32,000 on every Claude card,
+  a starting value:
+  thinking counts against it on both models,
+  and the pooled p99 of 13,082 measured on other providers could be spent thinking.
+  A call that runs to it costs at most 0.32 USD on Sonnet.
+  The cap census reads the `SPEND` lines of the first live calls and flags the card when its own p99 disagrees.
+- Each stage's system prompt is marked for the five-minute cache on every call.
+  A write costs 2.50 against 2.00 base on Sonnet,
+  and pays back only if the same prefix is read again within five minutes.
+  That holds for instructions that repeat and not for a system text that embeds per-call content,
+  and no test shows which stages are which.
+  The `cached=` field of the first live `SPEND` lines settles it.
 - The effort bench and the rotation sweep were not run.

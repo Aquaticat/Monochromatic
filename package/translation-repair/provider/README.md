@@ -340,13 +340,21 @@ and at `low`,
 `medium` and `high`),
 and `cardFor` throws `ClaudeModelNotServedError` for any other model before a request is built.
 `claude-body.ts` builds the request:
-`thinking: {type: "adaptive"}` always,
+`thinking: {type: "adaptive", display: "summarized"}` always,
+so the stream carries `thinking_delta` events while the model thinks
+(the default `omitted` streams empty thinking blocks,
+and the stream idle guard would read a long think as a stalled stream),
 the card's effort in `output_config.effort`,
 structured output by `output_config.format` and never a forced tool,
 no `temperature`,
 `top_p`,
 `top_k` or assistant prefill,
 and one ephemeral cache breakpoint on the system block.
+`claude-schema.ts` narrows each stage schema to what structured outputs accept before it is sent:
+`additionalProperties: false` on every object,
+and the numeric,
+string and array bounds dropped,
+which the reply guards of the stages still enforce.
 `claude-stream-facts.ts` reads the stop reason,
 a refusal's category and the four usage counts,
 `claude-cost.ts` prices them in USD (`SPEND` line),
@@ -358,4 +366,8 @@ and records a billing error (402,
 or the older 400 naming a low credit balance) on itself,
 which `claudeIsDry` reads as dry for the rest of the run (`claude-spend.ts`).
 `retry-after-header.ts` and status 529 extend the retry ladder for Anthropic's 429 and 529 replies.
+A `retry-after` past the ladder's reach rides on the failure as `retryAfterMs`,
+and `statedWaitMsOf` takes the larger of that and the body's stated wait,
+so the budget layer holds Anthropic out for the wait the header names.
+The 401 guard shared with the DeepSeek and Xiaomi routes is `refused-key-body.ts`.
 The record is the last section of `doc/decision/translation-repair-direct-providers.md`.
