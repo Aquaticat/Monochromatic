@@ -84,9 +84,10 @@ mod limit;
 /// export { RASTER_MARGIN, UNWRAPPED_RASTER_WIDTH, bandClip, fitClip, fitViewport, rasterFits, rasterWidth, tileCap } from './limit';
 /// ```
 pub use limit::{
-    BIN_SIDE, DEFAULT_TEXTURE_DIMENSION, MAX_BINS, MAX_RASTER_BYTES, MAX_STACK_TEXTURES,
+    BIN_SIDE, CAP_SLACK, DEFAULT_TEXTURE_DIMENSION, MAX_BINS, MAX_RASTER_BYTES, MAX_STACK_TEXTURES,
     RASTER_MARGIN, STACK_VIEW_ROOM, UNWRAPPED_RASTER_WIDTH, band_clip, fit_clip, fit_viewport,
-    raster_fits, raster_width, set_texture_dimension, stack_fits, stack_rows, texture_dimension,
+    raster_fits, raster_width, set_texture_dimension, stack_cap, stack_fits, stack_rows,
+    texture_dimension,
     texture_fits, texture_heights, tile_cap, tile_texture_rows,
 };
 

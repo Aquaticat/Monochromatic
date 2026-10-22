@@ -289,24 +289,57 @@ pub fn texture_heights(columns: u64, rows: u64) -> Vec<u32> {
 }
 
 /// What:
+///  Logical pixels a tile may be taller than the height the window asked it for,
+///  for the rounding of its edges to whole code rows and the sizes of a tile's partial lines.
+/// Why:
+///  A cap exactly as tall as the asked height would cut the overscan the re-center keeps clear
+///  every time a rounding added a row.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const CAP_SLACK = 6 * CODE_ROW;
+/// ```
+pub const CAP_SLACK: f32 = 6.0 * CODE_ROW;
+
+/// What:
 ///  The tallest tile in logical pixels whose stack of textures,
 ///  `columns` physical pixels wide at display `scale`,
 ///  stays within [`stack_rows`].
 ///  One code row is kept free for the rounding of the texture's size up to whole pixels,
 ///  and the answer is never under one code row.
 /// Why:
-///  A tile is a stack of textures of the text area's width,
-///  so the limits on its memory are limits on its height.
-///  The bound holds the view of the tallest window the device can show,
-///  so a tile of that height always holds a view.
+///  This is the bound that no frame may pass whatever the window asked for;
+///  the shaper guards every frame with it,
+///  and the window asks for less ([`tile_cap`]).
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function tileCap(columns: number, scale: number): number;
+/// function stackCap(columns: number, scale: number): number;
 /// ```
-pub fn tile_cap(columns: u64, scale: f32) -> f32 {
+pub fn stack_cap(columns: u64, scale: f32) -> f32 {
     let rows = stack_rows(columns.max(1));
     return ((rows as f32 / scale).floor() - CODE_ROW).max(CODE_ROW);
+}
+
+/// What:
+///  The tallest tile in logical pixels that the window lets a raster `columns` physical pixels wide at display
+///  `scale` be when it wants a tile `wanted` logical pixels tall:
+///  what one texture holds, or `wanted` and [`CAP_SLACK`] when that is more,
+///  and never more than [`stack_cap`].
+/// Why:
+///  A tile is a stack of textures of the text area's width, so a window larger than one texture allows gets
+///  several, but a tile that the view and its overscan do not need is not made:
+///  a line wrapped to thousands of rows is cut to the rows near the view exactly as it was
+///  when a tile was one texture, and only a window whose three views are taller than one texture
+///  stacks more.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function tileCap(columns: number, scale: number, wanted: number): number;
+/// ```
+pub fn tile_cap(columns: u64, scale: f32, wanted: f32) -> f32 {
+    let single = ((tile_texture_rows(columns.max(1)) as f32 / scale).floor() - CODE_ROW).max(CODE_ROW);
+    return stack_cap(columns, scale).min(single.max(wanted + CAP_SLACK));
 }
 
 /// What:
@@ -408,7 +441,7 @@ pub fn fit_clip(
     if stack_fits(columns, rows) {
         return clip;
     }
-    return band_clip(first_top, bottom, (from, to), tile_cap(columns, scale));
+    return band_clip(first_top, bottom, (from, to), stack_cap(columns, scale));
 }
 
 /// What:

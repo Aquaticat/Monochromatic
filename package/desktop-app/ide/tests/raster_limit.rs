@@ -1,5 +1,5 @@
-//! The limit of one tile's texture,
-//! in bytes and in the device's texture size:
+//! The limit of a tile that is drawn across stacked textures,
+//! in the device's texture size, Vello's bin count, and the textures a stack may have:
 //!  the rules that size a clip,
 //!  and the guard that cuts a frame to the limit when the lines are taller than the map the caller chose its clip from.
 //! No window is opened.
@@ -13,16 +13,14 @@ use ide_app::row_map::{CODE_ROW, RowMap};
 /// the viewport,
 /// and the rules under test.
 use ide_app::shaped_text::{
-    TextShaper, Viewport, band_clip, fit_clip, set_texture_dimension, texture_dimension,
-    texture_fits, tile_cap,
+    TextShaper, Viewport, band_clip, fit_clip, set_texture_dimension, stack_cap, stack_fits,
+    stack_rows, texture_dimension, texture_fits, texture_heights, tile_cap, tile_texture_rows,
 };
 /// The palette of the tile,
-/// the limit,
 /// and the items whose ink is read back.
 use ide_app::{
     code_colors::CodeColors,
-    shaped_text::MAX_RASTER_BYTES,
-    tile_scene::{Item, paint_tile, tile_items},
+    tile_scene::{Item, paint_stack, tile_items},
 };
 
 /// Display scales of ordinary and fractional displays.
@@ -37,6 +35,12 @@ const COLUMNS: [u64; 12] = [
     1, 24, 200, 782, 1354, 1920, 3840, 7680, 100_000, 600_000, 699_000, 1_000_000,
 ];
 
+/// Heights in logical pixels that a window asks a tile for:
+/// nothing,
+/// three views of an ordinary window,
+/// and three views of a window far taller than one texture.
+const WANTED: [f32; 3] = [0.0, 1980.0, 36_000.0];
+
 /// A palette for painting.
 fn colors() -> CodeColors {
     return CodeColors {
@@ -47,37 +51,69 @@ fn colors() -> CodeColors {
 }
 
 /// The cap is never under one code row,
-/// and a clip made for it fits the raster limit,
-/// for every width and scale,
+/// never over the stack's bound,
+/// and a clip made for it fits the stack,
+/// for every width, scale, and asked height,
 /// including the widths where one code row is all the cap allows.
 #[test]
-fn a_clip_made_for_the_cap_fits_the_raster_limit_at_every_width_and_scale() {
+fn a_clip_made_for_the_cap_fits_the_stack_at_every_width_and_scale() {
     for scale in SCALES {
         for columns in COLUMNS {
-            let cap = tile_cap(columns, scale);
-            assert!(
-                cap >= CODE_ROW,
-                "columns {columns} scale {scale}: cap {cap}"
-            );
-            // Sums stay exact in single precision at ten million pixels, which is above every cap but the narrowest.
-            let Some(clip) = band_clip(0.0, 10_000_000.0, (5_000_000.0, 5_010_000.0), cap) else {
+            for wanted in WANTED {
+                let cap = tile_cap(columns, scale, wanted);
                 assert!(
-                    texture_fits(columns, (10_000_000.0_f32 * scale).ceil() as u64),
-                    "columns {columns} scale {scale}: ten million pixels were let through and do not fit"
+                    cap >= CODE_ROW,
+                    "columns {columns} scale {scale} wanted {wanted}: cap {cap}"
                 );
-                continue;
-            };
-            let rows = ((clip.bottom - clip.top).max(CODE_ROW) * scale).ceil() as u64;
-            // A width where even one code row is past the limit has nothing to cut to.
-            let one_row = (CODE_ROW * scale).ceil() as u64;
-            if texture_fits(columns, one_row) {
                 assert!(
-                    texture_fits(columns, rows),
-                    "columns {columns} scale {scale}: a clip of {rows} rows passes the limit"
+                    cap <= stack_cap(columns, scale),
+                    "columns {columns} scale {scale} wanted {wanted}: cap {cap} is over the stack's"
+                );
+                // Sums stay exact in single precision at ten million pixels, which is above every cap but the narrowest.
+                let Some(clip) = band_clip(0.0, 10_000_000.0, (5_000_000.0, 5_010_000.0), cap)
+                else {
+                    assert!(
+                        stack_fits(columns, (10_000_000.0_f32 * scale).ceil() as u64),
+                        "columns {columns} scale {scale}: ten million pixels were let through and do not fit"
+                    );
+                    continue;
+                };
+                let rows = ((clip.bottom - clip.top).max(CODE_ROW) * scale).ceil() as u64;
+                // A width where even one code row is past the limit has nothing to cut to.
+                let one_row = (CODE_ROW * scale).ceil() as u64;
+                if stack_fits(columns, one_row) {
+                    assert!(
+                        stack_fits(columns, rows),
+                        "columns {columns} scale {scale}: a clip of {rows} rows passes the limit"
+                    );
+                }
+            }
+        }
+    }
+}
+
+/// A window the device can show always has its view held by the cap,
+/// at every scale and width the device allows:
+/// the tile never goes under the view and the room that the re-center keeps clear.
+#[test]
+fn the_cap_holds_the_view_of_the_tallest_window_the_device_can_show() {
+    for side in [8192_u32, 16_384] {
+        set_texture_dimension(side);
+        for scale in [1.0_f32, 1.5, 2.0, 3.0] {
+            for columns in [200_u64, 1358, 3840, 7259, 8192, 16_384] {
+                if columns > u64::from(side) {
+                    continue;
+                }
+                let view = side as f32 / scale;
+                let cap = tile_cap(columns, scale, view * 3.0);
+                assert!(
+                    cap >= view + 4.0 * CODE_ROW,
+                    "side {side} scale {scale} columns {columns}: cap {cap} does not hold a view of {view}"
                 );
             }
         }
     }
+    set_texture_dimension(8192);
 }
 
 /// The guard leaves a frame that fits as it is,
@@ -90,10 +126,10 @@ fn a_clip_made_for_the_cap_fits_the_raster_limit_at_every_width_and_scale() {
 fn the_guard_keeps_a_fitting_frame_and_cuts_a_larger_one_around_its_middle() {
     for scale in SCALES {
         for columns in COLUMNS {
-            if !texture_fits(columns, (CODE_ROW * scale).ceil() as u64 * 2) {
+            if !stack_fits(columns, (CODE_ROW * scale).ceil() as u64 * 2) {
                 continue;
             }
-            let cap = tile_cap(columns, scale);
+            let cap = stack_cap(columns, scale);
             let first_top = 480.0;
             for lines in [cap * 0.3, cap * 0.99, cap * 1.5, cap * 7.3] {
                 let bottom = first_top + (lines / CODE_ROW).ceil() * CODE_ROW;
@@ -101,16 +137,13 @@ fn the_guard_keeps_a_fitting_frame_and_cuts_a_larger_one_around_its_middle() {
                 let whole = ((bottom - first_top) * scale).ceil() as u64;
                 match fitted {
                     None => assert!(
-                        texture_fits(columns, whole),
+                        stack_fits(columns, whole),
                         "columns {columns} scale {scale}: {lines} px passed as they are"
                     ),
                     Some(clip) => {
-                        assert!(!texture_fits(columns, whole), "a fitting frame was cut");
+                        assert!(!stack_fits(columns, whole), "a fitting frame was cut");
                         let rows = ((clip.bottom - clip.top) * scale).ceil() as u64;
-                        assert!(
-                            texture_fits(columns, rows),
-                            "the cut frame passes the limit"
-                        );
+                        assert!(stack_fits(columns, rows), "the cut frame passes the limit");
                         assert!(clip.top >= 0.0 && clip.bottom <= bottom - first_top);
                         assert_eq!(clip.top % CODE_ROW, 0.0);
                         assert_eq!(clip.bottom % CODE_ROW, 0.0);
@@ -161,12 +194,12 @@ fn a_frame_taller_than_its_map_held_is_cut_to_the_limit_and_painted() {
     let view = shaper.prepare_rows(&document, viewport, &[], &map);
     let whole = view.map.block_top(lines.min(300));
     assert!(
-        u64::from(view.width) * (whole as u64) * 4 > MAX_RASTER_BYTES,
-        "the fixture's lines ({whole} px at {} columns) are within one raster",
+        !stack_fits(u64::from(view.width), whole as u64),
+        "the fixture's lines ({whole} px at {} columns) are within the stack",
         view.width
     );
     assert!(
-        u64::from(view.width) * u64::from(view.height) * 4 <= MAX_RASTER_BYTES,
+        stack_fits(u64::from(view.width), u64::from(view.height)),
         "the frame is {}x{}, past the limit",
         view.width,
         view.height
@@ -184,8 +217,17 @@ fn a_frame_taller_than_its_map_held_is_cut_to_the_limit_and_painted() {
         }
     }
     assert!(glyph_runs > 0, "the cut frame draws no glyph");
-    let scene = paint_tile(&view, colors(), 0.0).expect("a frame within the limit builds a scene");
-    assert_eq!((scene.width, scene.height), (view.width, view.height));
+    let stack = paint_stack(&view, colors(), 0.0).expect("a frame within the limit builds a stack");
+    assert_eq!((stack.width, stack.height), (view.width, view.height));
+    let mut together = 0;
+    for texture in &stack.textures {
+        assert!(texture_fits(
+            u64::from(texture.width),
+            u64::from(texture.height)
+        ));
+        together += texture.height;
+    }
+    assert_eq!(together, view.height);
 }
 
 /// A caller's clip that is itself too tall is cut too,
@@ -212,7 +254,7 @@ fn a_clip_asked_for_that_passes_the_limit_is_cut_and_one_that_fits_is_kept() {
     let tall = shaper.prepare_rows(&document, viewport, &[], &map);
     let cut = tall.viewport.clip.expect("a clip");
     assert!(cut.bottom - cut.top < 90_000.0);
-    assert!(u64::from(tall.width) * u64::from(tall.height) * 4 <= MAX_RASTER_BYTES);
+    assert!(stack_fits(u64::from(tall.width), u64::from(tall.height)));
     let small = ide_app::shaped_text::Clip {
         top: 240.0,
         bottom: 1_200.0,
@@ -223,10 +265,10 @@ fn a_clip_asked_for_that_passes_the_limit_is_cut_and_one_that_fits_is_kept() {
 }
 
 /// A 2000 px tall window at display scale 2 on a device whose textures are at most 8192 px on a side:
-/// the tile is cut to the device's limit on both sides and still holds the whole view with overscan,
-/// where the tile of three views (12,000 physical pixels) would not fit a texture.
+/// the tile of three views (12,000 physical rows) is not cut,
+/// it is two textures that together hold the whole view with overscan.
 #[test]
-fn a_tile_at_scale_two_in_a_2000_px_window_fits_a_device_limited_to_8192() {
+fn a_tile_at_scale_two_in_a_2000_px_window_is_two_textures_on_a_device_limited_to_8192() {
     assert_eq!(
         texture_dimension(),
         8192,
@@ -236,47 +278,54 @@ fn a_tile_at_scale_two_in_a_2000_px_window_fits_a_device_limited_to_8192() {
     let view_height = 2000.0_f32;
     // The text area of a 1147 px wide window, in physical pixels.
     let columns = (1147.0_f32 * scale).ceil() as u64;
-    let cap = tile_cap(columns, scale);
+    let cap = tile_cap(columns, scale, view_height * 3.0);
     assert!(
-        cap * scale <= 8192.0,
-        "a tile of {cap} px at scale {scale} is {} physical rows, past 8192",
-        cap * scale
+        cap >= view_height * 3.0,
+        "the cap {cap} px does not hold the three views that the window asks for"
     );
-    assert!(
-        cap > view_height,
-        "the cap {cap} px does not hold the 2000 px view that the window shows"
-    );
-    // A whole-document tile of three views is cut around the middle to a clip that fits the texture.
+    // A whole-document tile of three views is not cut: it fits the stack.
     let first_top = 0.0;
     let bottom = view_height * 3.0;
-    let clip = fit_clip(first_top, bottom, None, columns, scale).expect("three views do not fit");
-    let rows = ((clip.bottom - clip.top) * scale).ceil() as u64;
-    assert!(
-        texture_fits(columns, rows),
-        "the cut tile is {columns} by {rows}"
+    assert_eq!(
+        fit_clip(first_top, bottom, None, columns, scale),
+        None,
+        "three views were cut"
     );
-    assert!(
-        clip.bottom - clip.top >= view_height,
-        "the cut tile {} px does not hold the view",
-        clip.bottom - clip.top
-    );
+    let rows = (bottom * scale).ceil() as u64;
+    assert!(!texture_fits(columns, rows), "one texture holds the tile");
+    let heights = texture_heights(columns, rows);
+    assert_eq!(heights.len(), 2, "heights {heights:?}");
+    assert_eq!(u64::from(heights[0] + heights[1]), rows);
+    assert_eq!(u64::from(heights[0]), tile_texture_rows(columns));
 }
 
-/// The device's texture size bounds a tile on its own when the byte limit would allow more.
+/// The device's texture size bounds a texture of the stack on its own when the bin count would allow more,
+/// and the stack is as tall as its textures allow.
 #[test]
-fn the_texture_size_of_the_device_bounds_the_tile() {
+fn the_texture_size_of_the_device_bounds_each_texture_of_the_stack() {
     set_texture_dimension(4096);
-    // 200 columns would allow 83,000 rows within 64 MiB; the device allows 4096.
-    let cap = tile_cap(200, 1.0);
-    assert!(
-        cap <= 4096.0,
-        "a tile of {cap} px on a device limited to 4096"
-    );
+    // 200 columns are one bin wide: 256 bins would allow 65,536 rows; the device allows 4096.
+    assert_eq!(tile_texture_rows(200), 4096);
     assert!(texture_fits(200, 4096) && !texture_fits(200, 4097));
     assert!(
         !texture_fits(4097, 1),
         "a tile wider than the texture size fits"
     );
+    assert_eq!(texture_heights(200, 10_000), vec![4096, 4096, 1808]);
+    assert!(stack_fits(200, 4 * 4096) && !stack_fits(200, 4 * 4096 + 1));
     set_texture_dimension(8192);
-    assert!(tile_cap(200, 1.0) > 4096.0);
+    assert!(tile_texture_rows(200) > 4096);
+    assert_eq!(stack_rows(200), 4 * 8192);
+}
+
+/// The stack never holds fewer rows than the tallest window the device can show and the room for its re-center,
+/// whatever the width: at 16,384 columns the bin count allows 1024 rows to a texture and four textures are not enough.
+#[test]
+fn a_stack_is_never_under_the_tallest_window_and_its_room() {
+    set_texture_dimension(16_384);
+    assert_eq!(tile_texture_rows(16_384), 1024);
+    assert_eq!(stack_rows(16_384), 16_384 + 1024);
+    assert!(stack_fits(16_384, 16_384 + 1024) && !stack_fits(16_384, 16_384 + 1025));
+    assert!(!stack_fits(16_385, 1));
+    set_texture_dimension(8192);
 }

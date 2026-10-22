@@ -119,6 +119,14 @@ pub(super) fn tile_size(window: &AppWindow, source: &Rc<RefCell<State>>) -> (u32
     return gpu.tile_size().expect("a tile texture");
 }
 
+/// The width and height in physical pixels of each texture of the tile, top first,
+///  after a frame that draws the scene the window thread last handed over.
+pub(super) fn tile_textures(window: &AppWindow, source: &Rc<RefCell<State>>) -> Vec<(u32, u32)> {
+    let _frame = snapshot(window.window());
+    let gpu = source.borrow().gpu.clone();
+    return gpu.tile_texture_sizes();
+}
+
 /// The wrap indicator's pixels as straight RGBA,
 ///  read back after a frame,
 ///  or nothing when none was drawn yet.

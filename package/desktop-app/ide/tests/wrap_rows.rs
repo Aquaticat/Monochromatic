@@ -26,20 +26,21 @@ use ide_app::row_map::{CODE_ROW, Place, RowMap};
 /// Shaper,
 /// viewport,
 /// the clip of a very tall line,
-/// and the device's texture size.
-use ide_app::shaped_text::{Clip, TextShaper, Viewport, texture_dimension};
+/// and the device's texture size and the stack's rows.
+use ide_app::shaped_text::{
+    Clip, TextShaper, Viewport, stack_fits, stack_rows, texture_dimension,
+};
 /// What a tile draws,
 /// read as data.
 use ide_app::tile_scene::{
-    paint_tile,
+    paint_stack, paint_tile,
     read::{center_y, drawn_runs, drawn_strokes},
     tile_items,
 };
 /// The wrap indicator chain.
 use ide_app::wrap_sign::{SIGN_PAIRS, Sign, SignCoverage, choose_sign};
-/// Palette of the paint tests,
-/// and the limit of one tile texture.
-use ide_app::{code_colors::CodeColors, shaped_text::MAX_RASTER_BYTES};
+/// Palette of the paint tests.
+use ide_app::code_colors::CodeColors;
 
 /// Which symbols the fonts of a test show.
 enum Coverage {
@@ -651,11 +652,11 @@ fn underlines_across_a_wrap_break_stand_on_their_own_rows() {
 /// never a panic;
 ///  the window never asks for one,
 /// because it clips a tile of a very tall line (`Viewport::clip`).
-///  The limit is 64 MiB of pixels and the device's texture size:
-/// at a text width of 782 px that is about 894 rows at scale 1 (about 75,000
-///  characters in one line) and about 223 rows at scale 2 (about 18,700).
+///  The limit is four textures of the device's texture size and Vello's bin count (`stack_rows`):
+/// at a text width of 782 px on a device of 8192 that is 32,768 pixel rows,
+/// about 1,365 rows at scale 1 (about 117,000 characters in one line) and about 683 rows at scale 2.
 #[test]
-fn a_tile_past_the_texture_limit_is_refused_not_painted() {
+fn a_tile_past_the_stack_limit_is_refused_not_painted() {
     // 15,000 characters at 100 px, scale 3: 1,350 rows of 72 physical pixels, 300 px wide, 117 MB.
     let document = Document::new(&"x".repeat(15_000));
     let mut shaper = TextShaper::new();
@@ -680,29 +681,34 @@ fn a_tile_past_the_texture_limit_is_refused_not_painted() {
         "the shaper did not cut the oversized frame"
     );
     assert!(
-        paint_tile(&view, PALETTE, 0.0).is_ok(),
-        "the cut frame is within the limit and builds a scene"
+        paint_stack(&view, PALETTE, 0.0).is_ok(),
+        "the cut frame is within the limit and builds a stack"
     );
-    view.height = (MAX_RASTER_BYTES / 4 / u64::from(view.width)) as u32 + 1;
-    let refused = paint_tile(&view, PALETTE, 0.0);
+    // A frame that one texture cannot hold is not a tile, and is painted as a stack.
+    assert!(
+        paint_tile(&view, PALETTE, 0.0).is_err(),
+        "a frame of several textures was painted as one"
+    );
+    view.height = stack_rows(u64::from(view.width)) as u32 + 1;
+    let refused = paint_stack(&view, PALETTE, 0.0);
     let mut message = None;
     if let Some(error) = refused.err() {
         message = Some(format!("{error:#}"));
     }
     let refused_with_limit = match message.as_deref() {
-        Some(text) => text.contains("tile texture limit"),
+        Some(text) => text.contains("tile stack limit"),
         None => false,
     };
     assert!(
         refused_with_limit,
-        "the oversized tile was not refused with the texture limit: {message:?}"
+        "the oversized tile was not refused with the stack limit: {message:?}"
     );
-    // The device's texture size bounds the side as well, whatever the bytes.
-    view.height = texture_dimension() + 1;
-    view.width = 4;
+    // The device's texture size bounds the width as well, whatever the rows.
+    view.height = 4;
+    view.width = texture_dimension() + 1;
     assert!(
-        paint_tile(&view, PALETTE, 0.0).is_err(),
-        "a tile taller than the device's texture size was accepted"
+        paint_stack(&view, PALETTE, 0.0).is_err(),
+        "a tile wider than the device's texture size was accepted"
     );
 }
 
@@ -798,7 +804,7 @@ fn a_clipped_tile_holds_the_pixels_of_its_band() {
 /// and every code row of it has ink.
 #[test]
 fn a_line_past_the_real_limit_paints_inside_a_clip() {
-    let document = Document::new(&words(100_000));
+    let document = Document::new(&words(300_000));
     let mut shaper = TextShaper::new();
     let plain = RowMap::plain(1);
     for scale in [1.0_f32, 2.0] {
@@ -809,7 +815,7 @@ fn a_line_past_the_real_limit_paints_inside_a_clip() {
         let whole = shaper.prepare_rows(&document, base, &[], &plain);
         let rows = whole.rows[0].visual_rows();
         let columns = u64::from(whole.width);
-        let limit_rows = MAX_RASTER_BYTES / 4 / columns;
+        let limit_rows = stack_rows(columns);
         assert!(
             (rows as f32 * CODE_ROW * scale) as u64 > limit_rows,
             "scale {scale}: {rows} rows of the line fit one raster of {limit_rows} rows"
@@ -820,14 +826,14 @@ fn a_line_past_the_real_limit_paints_inside_a_clip() {
             "scale {scale}: the whole line was not cut"
         );
         assert!(
-            u64::from(whole.width) * u64::from(whole.height) * 4 <= MAX_RASTER_BYTES,
+            stack_fits(columns, u64::from(whole.height)),
             "scale {scale}: the frame of the whole line passes the limit"
         );
         // The painter still refuses a frame past the limit that did not come through the shaper.
         let mut oversized = shaper.prepare_rows(&document, base, &[], &plain);
         oversized.height = limit_rows as u32 + 1;
         assert!(
-            paint_tile(&oversized, PALETTE, 0.0).is_err(),
+            paint_stack(&oversized, PALETTE, 0.0).is_err(),
             "scale {scale}: a frame past the limit was painted"
         );
         // A band of 150 code rows from the middle of the line: well inside the limit at both scales.
@@ -847,7 +853,7 @@ fn a_line_past_the_real_limit_paints_inside_a_clip() {
         );
         let scene = paint_tile(&clipped, PALETTE, 0.0).expect("the clipped band is painted");
         assert!(
-            u64::from(scene.width) * u64::from(scene.height) * 4 <= MAX_RASTER_BYTES
+            stack_fits(u64::from(scene.width), u64::from(scene.height))
                 && scene.height <= texture_dimension(),
             "scale {scene_scale}: the clipped texture passes the limit",
             scene_scale = scale

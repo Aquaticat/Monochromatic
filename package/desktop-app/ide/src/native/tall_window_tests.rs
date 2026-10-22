@@ -23,14 +23,17 @@ use super::{
 };
 /// The open reader and the pixels of the shown image.
 use super::{
-    tile_reads::{shown, tile_size},
+    tile_reads::{shown, tile_size, tile_textures},
     wrap_tests::{long_text, measured, open},
 };
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
 /// The code row the raster edges are rounded to,
 /// and the limit one raster may not pass.
-use ide_app::{row_map::CODE_ROW, shaped_text::MAX_RASTER_BYTES, shaped_text::texture_dimension};
+use ide_app::{
+    row_map::CODE_ROW,
+    shaped_text::{stack_fits, texture_dimension, texture_fits},
+};
 /// Toolkit events.
 use slint::{
     ComponentHandle, LogicalSize,
@@ -126,7 +129,7 @@ fn a_tall_window_over_unmeasured_wrapped_lines_paints_text_and_names_no_failure(
             let current = opened.source.borrow();
             let view = current.shaped.as_ref().expect("a shown frame");
             assert!(
-                u64::from(view.width) * u64::from(view.height) * 4 <= MAX_RASTER_BYTES,
+                stack_fits(u64::from(view.width), u64::from(view.height)),
                 "height {height}: the raster passes the limit"
             );
             let offset = -window.get_scroll_y();
@@ -157,8 +160,8 @@ fn a_tall_window_over_unmeasured_wrapped_lines_paints_text_and_names_no_failure(
 
 /// What `tile_for` found.
 struct Built {
-    /// The raster in bytes.
-    bytes: u64,
+    /// The raster is within the stack of textures a tile may be.
+    fits: bool,
     /// The shaper had to cut the clip the window asked for.
     cut: bool,
     /// The raster holds the view,
@@ -178,7 +181,7 @@ struct Built {
 /// shaped on the shaper the window uses,
 /// with the map as the window holds it before its measurement of the whole text (`measured` false)
 /// or after (`measured` true);
-/// the answer is the raster in bytes,
+/// the answer is whether the raster is within the stack of textures a tile may be,
 /// whether the shaper had to cut the clip the window asked for,
 /// and whether the raster holds the view.
 fn tile_for(
@@ -219,9 +222,9 @@ fn tile_for(
         } = &mut current;
         shaper.prepare_rows(document, viewport, styles, row_map)
     };
-    let bytes = u64::from(view.width) * u64::from(view.height) * 4;
+    let fits = stack_fits(u64::from(view.width), u64::from(view.height));
     let cut = view.viewport.clip != asked.clip;
-    let cap = tile_cap(current.width, scale);
+    let cap = tile_cap(current.width, scale, height);
     let view_top = current.offset.max(0.0);
     let top = view.origin;
     let bottom = view.origin + view.height as f32 / scale;
@@ -243,7 +246,7 @@ fn tile_for(
     };
     let accepted = window_holds(&current, built, view_top, height);
     return Built {
-        bytes,
+        fits,
         cut,
         holds: holds || !holdable,
         holdable,
@@ -271,18 +274,16 @@ fn no_window_size_or_scale_makes_a_raster_past_the_limit() {
                         format!("scale {scale} width {text_width} height {height} offset {offset}");
                     let stale = tile_for(&text, scale, text_width, height, offset, false);
                     assert!(
-                        stale.bytes <= MAX_RASTER_BYTES,
-                        "{label}: a raster of {} bytes before the measurement",
-                        stale.bytes
+                        stale.fits,
+                        "{label}: a raster past the limit before the measurement"
                     );
                     if stale.cut {
                         cuts_before_measurement += 1;
                     }
                     let found = tile_for(&text, scale, text_width, height, offset, true);
                     assert!(
-                        found.bytes <= MAX_RASTER_BYTES,
-                        "{label}: a raster of {} bytes after the measurement",
-                        found.bytes
+                        found.fits,
+                        "{label}: a raster past the limit after the measurement"
                     );
                     assert!(
                         found.holds,
@@ -348,12 +349,12 @@ fn a_tall_window_over_wrapped_text_finishes_the_measurement_pass() {
 
 /// A 2000 px tall window at display scales 1 and 2 on a device whose textures are at most 8192 px on a side
 /// (the harness device is limited to that):
-/// the tile's texture is within the limit on both sides and within the byte limit,
-/// holds the view with overscan,
-/// and is drawn with text.
-/// A tile of three views would be 6,048 px at scale 1 and 12,096 px at scale 2.
+/// the tile is stacked from textures that are each within the limit on both sides,
+/// together hold the view with overscan,
+/// and are drawn with text.
+/// A tile of three views is 6,048 px at scale 1 and 12,096 px at scale 2: one texture at the first, two at the second.
 #[test]
-fn a_2000_px_window_gets_a_tile_texture_within_the_devices_limit_at_both_scales() {
+fn a_2000_px_window_gets_a_tile_of_textures_within_the_devices_limit_at_both_scales() {
     for scale in [1.0_f32, 2.0] {
         let (_project, opened) = open(&mixed(6000));
         let window = &opened.window;
@@ -368,19 +369,34 @@ fn a_2000_px_window_gets_a_tile_texture_within_the_devices_limit_at_both_scales(
         update_timers_and_animations();
         settled_tile(&opened);
         let (width, height) = tile_size(window, &opened.source);
+        let textures = tile_textures(window, &opened.source);
         println!(
-            "TILE scale {scale}: window 2000 px tall, texture {width} x {height} px ({} MiB), device limit {}",
-            u64::from(width) * u64::from(height) * 4 / (1024 * 1024),
+            "TILE scale {scale}: window 2000 px tall, {} textures {textures:?} of {width} x {height} px in all, device limit {}",
+            textures.len(),
             texture_dimension()
         );
-        assert!(
-            width <= texture_dimension() && height <= texture_dimension(),
-            "scale {scale}: the texture {width}x{height} passes the device's {} px limit",
-            texture_dimension()
+        let mut together = 0;
+        for (across, down) in &textures {
+            assert!(
+                *across <= texture_dimension() && *down <= texture_dimension(),
+                "scale {scale}: the texture {across}x{down} passes the device's {} px limit",
+                texture_dimension()
+            );
+            assert!(
+                texture_fits(u64::from(*across), u64::from(*down)),
+                "scale {scale}: the texture {across}x{down} passes the limit of one texture"
+            );
+            together += down;
+        }
+        assert_eq!(together, height, "scale {scale}: the textures do not add up");
+        assert_eq!(
+            textures.len(),
+            if scale > 1.5 { 2 } else { 1 },
+            "scale {scale}: {textures:?}"
         );
         assert!(
-            u64::from(width) * u64::from(height) * 4 <= MAX_RASTER_BYTES,
-            "scale {scale}: the texture {width}x{height} passes the byte limit"
+            stack_fits(u64::from(width), u64::from(height)),
+            "scale {scale}: the tile {width}x{height} passes the limit of the stack"
         );
         {
             let current = opened.source.borrow();

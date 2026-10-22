@@ -26,7 +26,7 @@ use super::{
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
 /// Library types that give the expected values.
-use ide_app::{row_map::CODE_ROW, shaped_text::MAX_RASTER_BYTES, shaped_text::texture_dimension};
+use ide_app::{row_map::CODE_ROW, shaped_text::stack_fits};
 /// Toolkit models and events.
 use slint::{ComponentHandle, Model, platform::update_timers_and_animations};
 
@@ -118,7 +118,7 @@ fn a_line_past_the_raster_limit_is_painted_in_a_clip_that_follows_the_view() {
             window.get_viewport_height(),
         )
     };
-    let cap = tile_cap(width, scale);
+    let cap = tile_cap(width, scale, height);
     assert!(
         line_rows as f32 * CODE_ROW > cap,
         "the fixture line takes {line_rows} rows, which one raster of {cap} px holds"
@@ -144,7 +144,7 @@ fn a_line_past_the_raster_limit_is_painted_in_a_clip_that_follows_the_view() {
         let current = opened.source.borrow();
         let view = current.shaped.as_ref().expect("shaped view");
         assert!(
-            u64::from(view.width) * u64::from(view.height) * 4 <= MAX_RASTER_BYTES,
+            stack_fits(u64::from(view.width), u64::from(view.height)),
             "offset {target}: the raster passes the limit"
         );
         let top = view.origin;
@@ -200,7 +200,7 @@ fn a_clip_stays_within_the_raster_limit_for_every_window_size() {
         (782.0, 3.0, 1000.0),
         (1300.0, 1.5, 4000.0),
     ] {
-        let cap = tile_cap(width, scale);
+        let cap = tile_cap(width, scale, height * 3.0);
         for view in [0.0_f32, 12_345.0, 400_000.0] {
             let band = ((view - height).max(0.0), view + 2.0 * height);
             let Some(clip) = band_clip(0.0, 1_000_000.0, band, cap) else {
@@ -209,12 +209,8 @@ fn a_clip_stays_within_the_raster_limit_for_every_window_size() {
             let columns = ((width + 24.0).ceil() * scale).ceil() as u64;
             let rows = ((clip.bottom - clip.top) * scale).ceil() as u64;
             assert!(
-                columns * rows * 4 <= MAX_RASTER_BYTES,
+                stack_fits(columns, rows),
                 "width {width} scale {scale} height {height}: a raster of {columns}x{rows} passes the limit"
-            );
-            assert!(
-                rows <= u64::from(texture_dimension()),
-                "width {width} scale {scale} height {height}: a raster of {rows} rows passes the device's texture size"
             );
             assert_eq!(clip.top % CODE_ROW, 0.0);
             assert_eq!(clip.bottom % CODE_ROW, 0.0);
@@ -222,7 +218,7 @@ fn a_clip_stays_within_the_raster_limit_for_every_window_size() {
         }
     }
     // Lines that fit are not clipped.
-    assert!(band_clip(0.0, 1000.0, (0.0, 3000.0), tile_cap(782.0, 1.0)).is_none());
+    assert!(band_clip(0.0, 1000.0, (0.0, 3000.0), tile_cap(782.0, 1.0, 660.0)).is_none());
 }
 
 /// Opening the file shapes each of its lines once on the window thread,

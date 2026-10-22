@@ -1,4 +1,4 @@
-//! The byte rule of a tile's texture and the floor of Vello's per-tile command list.
+//! The limit of one texture of a tile, the floor of Vello's per-tile command list, and Vello's bin count.
 //!
 //! Vello 0.11 gives every 16 by 16 pixel tile of the picture 64 `u32` of its command list (`ptcl`) before it stores
 //!  any command (`vello_shaders-0.11.0/shader/shared/ptcl.wgsl:6`),
@@ -19,7 +19,9 @@
 //! No window is opened.
 
 /// The rule and the texture side limit under test.
-use ide_app::shaped_text::{MAX_RASTER_BYTES, set_texture_dimension, texture_fits};
+use ide_app::shaped_text::{
+    MAX_BINS, MAX_RASTER_BYTES, set_texture_dimension, texture_fits, tile_texture_rows,
+};
 
 /// Elements of Vello 0.11's command list at its default size.
 const VELLO_PTCL_ELEMENTS: u64 = 1 << 23;
@@ -29,6 +31,17 @@ const PTCL_FLOOR_PER_TILE: u64 = 64;
 const TILE_SIDE: u64 = 16;
 /// Bytes of one texel of the tile texture (`Rgba8Unorm`).
 const TEXEL_BYTES: u64 = 4;
+/// Pixels on a side of one bin of Vello's coarse stage: 16 tiles of 16 pixels.
+const BIN_SIDE: u64 = 256;
+
+/// The number of bins Vello 0.11 counts for a picture `columns` by `rows` pixels
+/// (`vello-0.11.0/src/render.rs`: the product of the coarse stage's workgroup counts, which are
+/// `ceil(width_in_tiles / 16)` and `ceil(height_in_tiles / 16)`, warns above 256).
+fn bins(columns: u64, rows: u64) -> u64 {
+    let tiles_across = columns.div_ceil(TILE_SIDE);
+    let tiles_down = rows.div_ceil(TILE_SIDE);
+    return tiles_across.div_ceil(16) * tiles_down.div_ceil(16);
+}
 
 /// The number of tiles Vello lays over a picture `columns` by `rows` pixels.
 fn tiles(columns: u64, rows: u64) -> u64 {
@@ -84,6 +97,7 @@ fn no_accepted_tile_uses_more_than_three_quarters_of_the_command_list_floor() {
                 tallest(columns).expect("a one pixel tall texture fits any width up to the side");
             assert!(texture_fits(columns, rows));
             assert!(!texture_fits(columns, rows + 1));
+            assert_eq!(tile_texture_rows(columns), rows);
             let used = tiles(columns, rows);
             largest = largest.max(used);
             assert!(
@@ -94,11 +108,59 @@ fn no_accepted_tile_uses_more_than_three_quarters_of_the_command_list_floor() {
             columns += columns.div_ceil(40).max(1);
         }
     }
-    // Positive control: the sweep reaches the rule's own size (65,536 tiles, 64 MiB), so it does not skip the tall ones.
+    // Positive control: a width on the bin grid reaches the rule's own size (65,536 tiles, 64 MiB),
+    // so the sweep does not skip the tall ones.
+    set_texture_dimension(32_768);
+    let on_grid = tallest(1024).expect("a texture 1024 wide fits");
+    assert_eq!(tiles(1024, on_grid), 65_536);
     assert!(
-        largest >= MAX_RASTER_BYTES / TEXEL_BYTES / (TILE_SIDE * TILE_SIDE),
-        "the sweep reached {largest} tiles"
+        largest * TILE_SIDE * TILE_SIDE * TEXEL_BYTES >= MAX_RASTER_BYTES / 2,
+        "the sweep reached only {largest} tiles"
     );
     // Positive control: a texture twice the rule's size would not be allowed.
     assert!(tiles(1024, 16_384 * 2) > allowed);
+}
+
+/// No texture the code accepts,
+/// at any width and on any side limit in use or plausible,
+/// covers more than 256 bins by Vello's own formula,
+/// so the renderer never logs "Trying to paint too large image" for a tile.
+#[test]
+fn no_accepted_texture_covers_more_bins_than_vello_counts_before_it_warns() {
+    for side in [8192_u32, 16_384, 32_768] {
+        set_texture_dimension(side);
+        let mut columns: u64 = 1;
+        while columns <= u64::from(side) {
+            let rows = tallest(columns).expect("a one pixel tall texture fits any width up to the side");
+            assert!(
+                bins(columns, rows) <= MAX_BINS,
+                "side {side}: a texture {columns} by {rows} covers {} bins",
+                bins(columns, rows)
+            );
+            // The next row would be the first to pass the limit, unless the side stops it.
+            if rows < u64::from(side) {
+                assert!(
+                    bins(columns, rows + 1) > MAX_BINS || rows + 1 > u64::from(side),
+                    "side {side}: a texture {columns} by {rows} is not the tallest of its bin count"
+                );
+            }
+            columns += 1 + columns / 97;
+        }
+    }
+}
+
+/// The tile of the scale 2 measurement: 1358 columns.
+/// The byte rule alone allowed 12,288 rows (66,748,416 bytes),
+/// which is 6 by 48 = 288 bins and made Vello log its warning at every render;
+/// on the bin grid the most is 42 bins, 10,752 rows.
+#[test]
+fn the_texture_of_the_scale_two_measurement_is_on_the_bin_grid() {
+    set_texture_dimension(16_384);
+    // Positive control: the old rule's size counts more bins than Vello accepts.
+    assert!(1358 * 12_288 * TEXEL_BYTES <= MAX_RASTER_BYTES);
+    assert_eq!(bins(1358, 12_288), 288);
+    assert!(!texture_fits(1358, 12_288));
+    assert!(texture_fits(1358, 10_752));
+    assert_eq!(bins(1358, 10_752), 252);
+    assert_eq!(tile_texture_rows(1358), 42 * BIN_SIDE);
 }
