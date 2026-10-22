@@ -7,6 +7,8 @@ import {
   createOpenRouterClient,
   createProviderBudgets,
   createSyntheticClient,
+  createCredentialHolds,
+  type CredentialHolds,
   type Decider,
   describePlanSpend,
   type HyperClient,
@@ -83,6 +85,13 @@ export type ConfiguredProviders = {
    decision-only seats.
    */
   readonly decisions?: Decider;
+
+  /**
+   Providers whose credential a call found refused, held out for the rest of
+   the run. Built here, beside the budgets, so the `METERS` line the budgets
+   print reads a held provider as dry as the routed view does.
+   */
+  readonly credentialHolds: CredentialHolds;
 
   /**
    Shared budget view every provider is routed by.
@@ -289,6 +298,12 @@ export function configureProviders(
     },);
 
   /**
+   Providers whose credential a call found refused, held out for the rest of
+   the run.
+   */
+  const credentialHolds = createCredentialHolds();
+
+  /**
    Shared budget view every provider is routed by.
    */
   const budgets = createProviderBudgets({
@@ -297,6 +312,9 @@ export function configureProviders(
     ...((hyper === undefined) ? {} : { hyper, }),
     ...((bedrock === undefined) ? {} : { bedrock, }),
     ...((openrouter === undefined) ? {} : { openrouter, }),
+    heldOut: function credentialRefused(provider,): boolean {
+      return credentialHolds.isHeld({ provider, },);
+    },
   },);
 
   return {
@@ -306,6 +324,7 @@ export function configureProviders(
     ...((bedrock === undefined) ? {} : { bedrock, }),
     ...((openrouter === undefined) ? {} : { openrouter, }),
     ...((decisions === undefined) ? {} : { decisions, }),
+    credentialHolds,
     budgets,
   };
 }

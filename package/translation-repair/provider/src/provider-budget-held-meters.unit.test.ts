@@ -109,6 +109,7 @@ await describe({
             const budgets = createProviderBudgets({
               ...WET_METERS,
               freshForMs: FRESH_MS,
+              rateLimitBackoffMs: FRESH_MS,
               now: () => clock.now,
             },);
             // The refusal names a return ten freshness windows away, so the hold outlasts the meter reading.

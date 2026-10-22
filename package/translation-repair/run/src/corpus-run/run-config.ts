@@ -37,7 +37,6 @@ import {
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   type BudgetView,
-  createCredentialHolds,
   createRoutingClient,
   foldCredentialHolds,
   readsImages,
@@ -1168,6 +1167,7 @@ export function runClientFrom(
   const {
     decisions,
     budgets,
+    credentialHolds,
     ...clients
   } = configureProviders({
     env,
@@ -1185,14 +1185,11 @@ export function runClientFrom(
     openrouter,
   } = clients;
 
-  /**
-   Providers whose credential a call found refused, held out for the rest of
-   the run: the router reads them to route, and `providerDryness` reads
-   them for the benches. ONE CLIENT PER RUN is what a corpus pass builds
-   (`corpus-pass-run.ts`), so a 401 is learned once per run there; the commands
-   that build a client per slice or per arm learn it again for each.
-   */
-  const credentialHolds = createCredentialHolds();
+  // THE HOLDS ON A REFUSED CREDENTIAL come from `configureProviders`, which gives them to the budgets too, so the
+  // `METERS` line reads a held provider as dry as the router and `providerDryness` do. The router reads them to
+  // route, and `providerDryness` reads them for the benches. ONE CLIENT PER RUN is what a corpus pass builds
+  // (`corpus-pass-run.ts`), so a 401 is learned once per run there; the commands that build a client per slice or
+  // per arm learn it again for each.
 
   /**
    Routed client with stable compatibility quota surface.
