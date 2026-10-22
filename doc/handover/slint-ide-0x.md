@@ -1563,6 +1563,23 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     report: verify the diff and the compared outputs, run the gates once on the merge, push, then land the 90 percent
     share (rebase `~/temp/agent/land-share`) and the minimap agent. The 15 other `.mjs` files in `bin/` (30 minus the 15 that broke)
     stay as they are until the owner says otherwise (a conversion of all of them is a separate decision).
+    LANDED, 2026-10-22, conversion agent `a973fa0a05208c348` (merge tip `dd134c167a` on `origin/main`, ancestry
+    confirmed; branch tip `de2cd5834e`, 4 commits). While it ran, another session put the 17 files back as `.mjs` on
+    `main` (`0c2f35836d`) and re-applied the formatting (`60d4795f95`, which says `Closes #1794`), so the merge had
+    modify/delete conflicts. I resolved them by the owner's decision: the 17 `.ts` files equal the agent's branch tip
+    byte for byte (`git diff` against the tip is empty) and the restored `.mjs` are removed. The formatted `.mjs`
+    versions are in history at `60d4795f95`. Gates once on the merged snapshot: `lint` passes, `test:bin` 71 of 71,
+    `test` 797 passed and 1 skipped (no Rust changed, so no `test:native`). My checks of its report: all 17 parse with
+    `stripTypeScriptTypes`; `nested-compositor.ts` differs from its pre-corruption `.mjs` only by types, TSDoc and one
+    equivalent `.map(Number)` rewrite; the report's "line counts are unchanged" was wrong (the files grew 10 to 15
+    percent from TSDoc and types), and I read only that one diff by hand, the rest rests on the agent's old-against-new
+    runs of 12 scripts with equal verdicts. Known limits it reported: `inspect:language-confinement` and
+    `inspect:language-lifecycle` fail in the same way before and after (rust-analyzer does not start under the mise
+    task environment; run directly with `node` the confinement script passes 114 of 114); the design scripts write
+    frames whose bytes differ from the old script's (cause not isolated). Agent worktree and branch removed locally and
+    on the remote; no stray unit, process or container. The HOLD above is lifted: `test:bin` is green on `main`.
+    Next, one at a time: the stacking branch, the minimap branch, the 90 percent share (its scratch tree
+    `land-share` still holds uncommitted `.mjs` restores that must be discarded, not pushed).
     The code tile stacking agent `a074735d16c6106a5` has handed back (branch `worktree-agent-a074735d16c6106a5`, product
     snapshot `628fb36f39`, tip `0a541c6008`, 13 commits, pushed, not on `main`; I read the markup, the stack builder and
     the viewport diffs and found no defect; no stray unit or process). Its numbers: captures at 7680x4320 scale 1
