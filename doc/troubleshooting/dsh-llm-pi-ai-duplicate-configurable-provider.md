@@ -131,9 +131,16 @@ historical failing plugin build is the parent of the fix commit
 ```sh // reproducer outline
 git -C /var/home/user/Monochromatic worktree add "${HOME}/temp/agent/dupdir-repro" a9fd6a5851^
 # build package/dsh-plugin/neuralwatt in that worktree, then link and run it:
+DSH_HOME="${HOME}/temp/agent/dsh-home-dupdir" dsh --profile dupdir --from-default-profile headless --dump-config
 DSH_HOME="${HOME}/temp/agent/dsh-home-dupdir" dsh plugin --profile dupdir add "${HOME}/temp/agent/dupdir-repro/package/dsh-plugin/neuralwatt"
 DSH_HOME="${HOME}/temp/agent/dsh-home-dupdir" dsh dupdir --json "reply with exactly: pong"
 ```
+
+The `--from-default-profile headless` step matters:
+ the one-shot `--json` flag
+belongs to the headless app,
+ so a profile initialized from any other
+template rejects it.
 
 The recorded run of that harness is `~/temp/agent/nw-run-err.txt`,
  quoted in
