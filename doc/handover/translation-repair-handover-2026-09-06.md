@@ -36,6 +36,29 @@ named for that subject and listed here.
   the meter and the stop built and removed,
   the day boundary and the account-wide count,
   the DeepSeek V4.1 Flash 1017 weights and the first run on it.
+  It lists the files that continue it,
+  and each of them is listed in this record too.
+- [Translation repair handover 2026-09-06: the NeuralWatt rotation reads and the first fix rounds, 2026-10-21](translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20-zheermao20-to-zheermao21-reads-and-the-w253-to-w257-fix-rounds.md):
+  The runs `zheermao20` and `CuspariaKLSY20` and their reads,
+  the seating investigation,
+  the fixes of w253 and w254,
+  the archive block review round,
+  and the reads of `zheermao21` and `CuspariaKLSY21`.
+- [Translation repair handover 2026-09-06: the reboot, Gemma measured and the katex shim, 2026-10-21](translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20-the-reboot-gemma-measured-and-the-katex-shim.md):
+  The reboot,
+  the owner's rulings on the picture bench and on request parameters,
+  the Gemma measurement
+  and the katex shim.
+- [Translation repair handover 2026-09-06: the landings, the zheermao22 restart and the state after K4, 2026-10-21](translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20-the-landings-the-zheermao22-restart-and-the-state-after-k4.md):
+  The newest file of the record,
+  for the current state and the next steps:
+  the landings of w262 and w260,
+  the runs `zheermao22`,
+  `CuspariaKLSY22`
+  and `XingZ6017`,
+  the classes K1 to K4,
+  the queue after them
+  and the state after K4 landed.
 - [Translation repair handover 2026-09-06: the checkpoint of 2026-10-18, the package split, the shared lint analysis and the rounds after it](translation-repair-handover-2026-09-06-checkpoint-2026-10-18-package-split-shared-lint-analysis-and-follow-ups.md):
   The checkpoint of 2026-10-18,
   the package split with the shared lint analysis and the rounds that landed after it,
@@ -665,7 +688,9 @@ its "Next" list is still the queue the merge went ahead of.
       the stop built and removed,
       the day boundary and the account-wide count,
       the DeepSeek 1017 weights and the `zheermao19` run.
-      Its "Next" is the queue.
+      Its "Next" section,
+      now filed in [the rotation reads and the first fix rounds](translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20-zheermao20-to-zheermao21-reads-and-the-w253-to-w257-fix-rounds.md#next),
+      is the queue.
       w248 landed as `d8cf1933f4` and w249 as `624c5ff583`;
       the energy recalibration (ledger P19),
       the account-wide day with its alias rows

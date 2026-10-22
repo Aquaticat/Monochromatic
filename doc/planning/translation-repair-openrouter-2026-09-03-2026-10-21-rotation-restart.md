@@ -59,7 +59,7 @@ so that no file passes the repository's limit of 1,000 lines:
   The `START` lines of `zheermao21` and `CuspariaKLSY21` carry both as given;
   the picture-stop read names the tip `3637592bd4`.
 - It is the merge that gate g138 landed on 2026-10-21 (UTC),
-  as [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20.md#next) records.
+  as [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20-zheermao20-to-zheermao21-reads-and-the-w253-to-w257-fix-rounds.md#next) records.
 - The corpus input is the pin `a41fc607ea` (`corpusSha` `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`).
 - The archive block review fixes B712 to B715 are not in this build:
   the review still picks one whole revision,
@@ -130,7 +130,7 @@ Both settled reads checked the two changes of this build in the log.
 
 ## Where the reads disagree with each other, the readiness signal or the handover
 
-[The readiness signal](translation-repair-readiness-signal.md) and [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20.md)
+[The readiness signal](translation-repair-readiness-signal.md) and [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20-zheermao20-to-zheermao21-reads-and-the-w253-to-w257-fix-rounds.md)
 state the outcome of the three passes in short:
 `zheermao21` and `CuspariaKLSY21` shipped SETTLED,
 `XingZ6016` stopped INCOMPLETE after 6.7 min with the text `visual evidence incomplete for 1 referenced assets`,
@@ -237,7 +237,7 @@ by file:
 
 ## What follows
 
-From [the readiness signal](translation-repair-readiness-signal.md) and [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20.md#next):
+From [the readiness signal](translation-repair-readiness-signal.md) and [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20-zheermao20-to-zheermao21-reads-and-the-w253-to-w257-fix-rounds.md#next):
 
 - The rotation on this build cannot finish with every page SETTLED,
   so no further entry runs on it,

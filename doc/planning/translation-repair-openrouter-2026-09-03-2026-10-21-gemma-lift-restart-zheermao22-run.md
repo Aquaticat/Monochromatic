@@ -30,7 +30,7 @@ and its `START` line (log line 196) carries both values as given;
 the artifact's `tip` and `pipelineDigest` carry the same two.
 `zheermao21` ran on `3637592bd4`
 and pipeline `sha256-tree-v1:06c97a69446dc452fa2c602da834c36febb7f0d7b4b1010b5dfa9fab81097eec`.
-[The handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20.md) records the launch at 21:05:30 UTC;
+[The handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20-the-landings-the-zheermao22-restart-and-the-state-after-k4.md) records the launch at 21:05:30 UTC;
 the `START` line carries no time.
 The log's first timestamped line is 21:05:44.369 UTC (`republish: 0 settled pages judged`)
 and its last is 22:24:46.483 UTC (a `stream quota` line);

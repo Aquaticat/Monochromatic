@@ -528,7 +528,7 @@ Not recommended by the read:
 ### What followed on 2026-10-21
 
 The owner ruled on two points just before the machine was rebooted
-(from [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20.md#next)):
+(from [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20-the-reboot-gemma-measured-and-the-katex-shim.md)):
 
 - On the picture bench:
   "Yes try gemma".

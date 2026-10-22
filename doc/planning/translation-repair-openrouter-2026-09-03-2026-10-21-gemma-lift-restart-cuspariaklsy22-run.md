@@ -397,7 +397,7 @@ and lists the key order by `servedBy`:
   the question is moot.
 
 The same finding is in the `zheermao22` read as 200 of 227 multi-key objects
-(see [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20.md)),
+(see [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20-the-landings-the-zheermao22-restart-and-the-state-after-k4.md)),
 so this entry confirms it on a second entry.
 
 #### Tied finalists run off
