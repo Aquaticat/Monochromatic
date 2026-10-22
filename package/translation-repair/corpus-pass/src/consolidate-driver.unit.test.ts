@@ -2759,8 +2759,8 @@ await describe({
       children: [
         it({
           name: 'KEYS A SLICE THE PANEL ACCEPTED CLAIMS ON under those claims, and every polish gate sheet and '
-            + 'every polish writer sheet of it carries them, where a slice with none keys as before and neither '
-            + 'mentions them (ledger B805)',
+            + 'every polish writer sheet and every sheet of the judges of the writers\' rewrites carries them, where a '
+            + 'slice with none keys as before and none mentions them (ledger B805)',
           fn: async () => {
             /** Note the panel's accepted claim is written as. */
             const note = 'REPAIR PANEL CLAIMS ACCEPTED: (1) accuracy/mistranslation minor: the nap is softened.';
@@ -2776,6 +2776,7 @@ await describe({
               readonly keys: readonly string[];
               readonly gateSheets: readonly string[];
               readonly writerSheets: readonly string[];
+              readonly rewriteJudgeSheets: readonly string[];
             }> {
               /** Every key the driver asked the cache for. */
               const keys: string[] = [];
@@ -2801,6 +2802,10 @@ await describe({
                 writerSheets: sheets.filter(function isWriter(sheet,): boolean {
                   return sheet.includes('refine_report',);
                 },),
+                // The refine selection's evidence is the only sheet that heads the base "CURRENT English translation".
+                rewriteJudgeSheets: sheets.filter(function isRewriteJudge(sheet,): boolean {
+                  return sheet.includes('candidate_ballot',) && sheet.includes('CURRENT English translation',);
+                },),
               };
             }
             const withClaims = await drive({ notes: new Map([[0, note,],],), },);
@@ -2815,6 +2820,15 @@ await describe({
             expect(withClaims.writerSheets.every(function carries(sheet,): boolean {
               return sheet.includes(note,);
             },),).toBe(true,);
+            expect(withClaims.rewriteJudgeSheets.length,).toBeGreaterThan(0,);
+            expect(withClaims.rewriteJudgeSheets.every(function carries(sheet,): boolean {
+              return sheet.includes(note,);
+            },),).toBe(true,);
+            // THE CONTROL REACHES THE REWRITE JUDGES TOO, or "never mentions" would hold of no sheet at all.
+            expect(without.rewriteJudgeSheets.length,).toBeGreaterThan(0,);
+            expect(without.rewriteJudgeSheets.some(function carries(sheet,): boolean {
+              return sheet.includes('REPAIR PANEL CLAIMS ACCEPTED',);
+            },),).toBe(false,);
             // THE CONTROL REACHES THE WRITER TOO, or "never mentions" would hold of no sheet at all.
             expect(without.writerSheets.length,).toBeGreaterThan(0,);
             expect(without.writerSheets.some(function carries(sheet,): boolean {
@@ -2825,6 +2839,72 @@ await describe({
             expect(without.gateSheets.some(function carries(sheet,): boolean {
               return sheet.includes('REPAIR PANEL CLAIMS ACCEPTED',);
             },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'SHOWS THE POLISH WRITERS AND THE JUDGES OF THEIR REWRITES the dispute note of a disputed slice, as it '
+            + 'shows the polish gate, where an undisputed slice shows none of them a dispute heading (ledger B805)',
+          fn: async () => {
+            /**
+             Wording of the note, as the archive package writes one for the claim.
+             */
+            const dispute: ArchiveDispute = {
+              sliceIndex: 0,
+              standIn: 'a repair wording for slice 0',
+              standInEligible: true,
+              acceptedClaims: ['accuracy/addition major: the tabby purrs in the sun.',],
+            };
+            /**
+             Heading the dispute note opens with.
+             */
+            const heading = 'ARCHIVE RENDERING DISPUTED';
+            /**
+             Every sheet one drive sent.
+
+             @param disputes - disputes per slice, none left out
+             @returns Gate, writer and rewrite judge sheets
+             */
+            async function drive(
+              { disputes, }: { readonly disputes?: ReadonlyMap<number, ArchiveDispute>; },
+            ): Promise<{
+              readonly gateSheets: readonly string[];
+              readonly writerSheets: readonly string[];
+              readonly rewriteJudgeSheets: readonly string[];
+            }> {
+              /** Everything each call sent. */
+              const sheets: string[] = [];
+              await driveWith({
+                contests: [contestSettling({ sliceIndex: 0, lane: 'repair', },),],
+                client: polishingClient({ sheets, },),
+                polishConfig: polishOn({ seats: RESEATED, },),
+                ...((disputes === undefined) ? {} : { archiveDisputes: disputes, }),
+              },);
+              return {
+                gateSheets: sheets.filter(function isGate(sheet,): boolean {
+                  return sheet.includes('consolidation_polish_gate',);
+                },),
+                writerSheets: sheets.filter(function isWriter(sheet,): boolean {
+                  return sheet.includes('refine_report',);
+                },),
+                rewriteJudgeSheets: sheets.filter(function isRewriteJudge(sheet,): boolean {
+                  return sheet.includes('candidate_ballot',) && sheet.includes('CURRENT English translation',);
+                },),
+              };
+            }
+            const disputed = await drive({ disputes: new Map([[0, dispute,],],), },);
+            const undisputed = await drive({},);
+            for (const role of ['gateSheets', 'writerSheets', 'rewriteJudgeSheets',] as const) {
+              expect(disputed[role].length,).toBeGreaterThan(0,);
+              expect(disputed[role].every(function carries(sheet,): boolean {
+                return sheet.includes(dispute.acceptedClaims[0] ?? '',);
+              },),).toBe(true,);
+              // THE CONTROL REACHES THE ROLE TOO, or "shows none" would hold of no sheet at all.
+              expect(undisputed[role].length,).toBeGreaterThan(0,);
+              expect(undisputed[role].some(function carries(sheet,): boolean {
+                return sheet.includes(heading,);
+              },),).toBe(false,);
+            }
           },
         },),
       ],

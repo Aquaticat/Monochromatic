@@ -30,7 +30,10 @@ import {
   parseDocument,
   type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract';
-import { runRefineStage, } from '../dist/final/node/index.mjs';
+import {
+  type RefineStageMode,
+  runRefineStage,
+} from '../dist/final/node/index.mjs';
 import { runsDirPointedAt, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/runs-dir-pointed.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from '@monochromatic-dev/translation-repair-stage/ts/stage-settings.test-fixture.ts';
@@ -264,6 +267,14 @@ function scriptedRefiner(
  @param referenceContext - what the pages the original cites say, when a
  case hands any in
 
+ @param acceptedRepairClaimsNote - claims the repair panel accepted, when a
+ case hands any in
+
+ @param archiveDisputeNote - the note on a disputed archive rendering, when a
+ case hands one in
+
+ @param mode - why the stage runs, comparative unless a case says otherwise
+
  @param repairedText - slice the stage refines, the fixture's unless a case
  brings its own
 
@@ -282,12 +293,18 @@ async function runFixture(
   {
     identityContext,
     referenceContext,
+    acceptedRepairClaimsNote,
+    archiveDisputeNote,
+    mode = { kind: 'comparative', },
     repairedText = REPAIRED_TEXT,
     logger = l,
     stageSettings = SCRIPTED_STAGE_SETTINGS,
   }: {
     readonly identityContext?: string;
     readonly referenceContext?: string;
+    readonly acceptedRepairClaimsNote?: string;
+    readonly archiveDisputeNote?: string;
+    readonly mode?: RefineStageMode;
     readonly repairedText?: string;
     readonly logger?: Logger;
     readonly stageSettings?: StageSettings;
@@ -297,7 +314,7 @@ async function runFixture(
   const slice = deriveRefinableEnvelopes({ document: parseDocument({ text: repairedText, },), },);
   return runRefineStage({
     declaredNames: [],
-    mode: { kind: 'comparative', },
+    mode,
     sliceIndex: 0,
     client,
     refinerModelIds: REFINERS,
@@ -308,6 +325,8 @@ async function runFixture(
     definitions: slice.definitions,
     ...(identityContext === undefined ? {} : { identityContext, }),
     ...(referenceContext === undefined ? {} : { referenceContext, }),
+    ...((acceptedRepairClaimsNote === undefined) ? {} : { acceptedRepairClaimsNote, }),
+    ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),
     signal: new AbortController().signal,
     perCallTimeoutMs: HANG_STOP_MS,
     l: logger,
@@ -499,6 +518,98 @@ await describe({
                 text: heading,
               },),).toEqual([],);
             }
+          },
+        },),
+
+        it({
+          name: 'CARRIES the claims the repair panel accepted and the note on a disputed archive rendering onto the '
+            + 'rewriter\'s sheet and each of the four judges\' sheets, in either mode (ledger B805: the judges '
+            + 'of the polish round\'s rewrites were never shown what their writers were)',
+          fn: async () => {
+            /**
+             Claims the panel accepted, headed as the archive package writes them.
+             */
+            const claims = 'REPAIR PANEL CLAIMS ACCEPTED: (1) accuracy/mistranslation minor: the sunbathing is softened.';
+            /**
+             Note on the disputed archive rendering.
+             */
+            const dispute = 'ARCHIVE RENDERING DISPUTED: (1) accuracy/addition major: the cat purrs in the sun.';
+            /**
+             One mode of each kind the stage asks.
+             */
+            const modes: readonly RefineStageMode[] = [
+              { kind: 'comparative', },
+              {
+                kind: 'objection-correction',
+                groups: [{
+                  origin: 'consolidation gate',
+                  objections: ['The light moves across the wall, not the floor.',],
+                },],
+              },
+            ];
+            for (const mode of modes) {
+              /**
+               Exchanges the stage asked in this mode, in order.
+               */
+              const asked: AskedSheet[] = [];
+              // oxlint-disable-next-line no-await-in-loop -- one mode at a time, each reading its own record
+              await runFixture(scriptedRefiner({
+                newText: SMOOTH_TEXT,
+                ballot: 1,
+                asked,
+              },), {
+                acceptedRepairClaimsNote: claims,
+                archiveDisputeNote: dispute,
+                mode,
+              },);
+              for (const note of [claims, dispute,]) {
+                expect(stagesCarrying({
+                  asked,
+                  text: note,
+                },),).toEqual(STAGES_OF_A_JUDGED_REWRITE,);
+              }
+            }
+          },
+        },),
+
+        it({
+          name: 'PRINTS neither the REPAIR PANEL CLAIMS ACCEPTED nor the ARCHIVE RENDERING DISPUTED heading on the '
+            + 'rewriter\'s sheet or any of the four judges\' sheets where no note was handed in, an empty one '
+            + 'included',
+          fn: async () => {
+            /**
+             Exchanges the same run asked with no note in.
+             */
+            const bare: AskedSheet[] = [];
+            await runFixture(scriptedRefiner({
+              newText: SMOOTH_TEXT,
+              ballot: 1,
+              asked: bare,
+            },),);
+            /**
+             Exchanges the same run asked with empty notes in.
+             */
+            const empty: AskedSheet[] = [];
+            await runFixture(scriptedRefiner({
+              newText: SMOOTH_TEXT,
+              ballot: 1,
+              asked: empty,
+            },), {
+              acceptedRepairClaimsNote: '',
+              archiveDisputeNote: '',
+            },);
+            // THE CONTROL REACHES EVERY SHEET, or "carries none" would hold of no sheet at all.
+            expect(stagesAsked({ asked: bare, },),).toEqual(STAGES_OF_A_JUDGED_REWRITE,);
+            expect(stagesAsked({ asked: empty, },),).toEqual(STAGES_OF_A_JUDGED_REWRITE,);
+            for (const heading of ['REPAIR PANEL CLAIMS ACCEPTED', 'ARCHIVE RENDERING DISPUTED',]) {
+              expect(stagesCarrying({ asked: bare, text: heading, },),).toEqual([],);
+              expect(stagesCarrying({ asked: empty, text: heading, },),).toEqual([],);
+            }
+            expect(empty.map(function sheetOf(entry,): string {
+              return entry.sheet;
+            },),).toEqual(bare.map(function sheetOf(entry,): string {
+              return entry.sheet;
+            },),);
           },
         },),
 

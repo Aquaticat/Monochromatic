@@ -313,6 +313,82 @@ await describe({
       },
     },),
     it({
+      name: 'CARRIES the dispute note and the accepted claims to the polish WRITERS and to the JUDGES of their '
+        + 'rewrites as well as the gate (ledger B805: a judge of a text sees what its writer saw), and a slice with '
+        + 'neither shows them no such block',
+      fn: async () => {
+        /**
+         Polishes one slice and returns the sheets of the writers and of the rewrite judges.
+
+         @param notes - which notes the slice carries, none for a slice with neither
+         @returns Every refiner sheet and every rewrite ballot sheet the polish sent
+         */
+        async function sheetsWith(
+          { notes = false, }: { readonly notes?: boolean; },
+        ): Promise<{ readonly writers: readonly string[]; readonly judges: readonly string[]; }> {
+          /** Every sheet the polish sent, by reply schema. */
+          const sheetsBySchema = new Map<string, readonly string[]>();
+          await applyFinalPolish({
+            client: recordingClient({ gateSheets: [], sheetsBySchema, },),
+            settlement: {
+              terminal: 'consolidated',
+              text: 'The tabby spent the whole afternoon napping in the warm window.',
+              floor: { kind: 'proposals', validModelIds: [], },
+              verdicts: [],
+              rewrapped: false,
+              demoted: false,
+              findings: [],
+            },
+            subject: {
+              sourceText: '虎斑猫整个下午都在温暖的窗边打盹。',
+              incumbentText: 'The tabby dozed by the warm window all afternoon long.',
+              ...(notes
+                ? {
+                  archiveDisputeNote: DISPUTE_NOTE,
+                  acceptedRepairClaimsNote: REPAIR_CLAIMS_NOTE,
+                }
+                : {}),
+            },
+            lineStructured: false,
+            sliceIndex: 2,
+            polishConfig: {
+              refinerModelIds: [ROSTER[0],],
+              judgeModelIds: ROSTER,
+              gateModelIds: ROSTER,
+              declaredNames: [],
+              definitions: '',
+            },
+            eligible: true,
+            signal: AbortSignal.timeout(HANG_STOP_MS,),
+            perCallTimeoutMs: HANG_STOP_MS,
+            l: tagged({ tag: 'polish-judge-notes-test', },),
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
+          },);
+          return {
+            writers: sheetsBySchema.get('refine_report',) ?? [],
+            judges: sheetsBySchema.get('candidate_ballot',) ?? [],
+          };
+        }
+        const withNotes = await sheetsWith({ notes: true, },);
+        const without = await sheetsWith({},);
+        for (const role of ['writers', 'judges',] as const) {
+          expect(withNotes[role].length,).toBeGreaterThan(0,);
+          for (const note of [DISPUTE_NOTE, REPAIR_CLAIMS_NOTE,]) {
+            expect(withNotes[role].every(function carriesNote(sheet,): boolean {
+              return sheet.includes(note,);
+            },),).toBe(true,);
+          }
+          // THE CONTROL REACHES THE ROLE TOO, or "no such block" would hold of no sheet at all.
+          expect(without[role].length,).toBeGreaterThan(0,);
+          for (const heading of ['REPAIR PANEL CLAIMS ACCEPTED', 'ARCHIVE RENDERING DISPUTED',]) {
+            expect(without[role].some(function mentions(sheet,): boolean {
+              return sheet.includes(heading,);
+            },),).toBe(false,);
+          }
+        }
+      },
+    },),
+    it({
       name: 'REFUSES a polish that lands on a disputed wording (ledger B29): the consolidation refuses the '
         + 'archive\'s disputed reading as standing, lane offer and proposal, and the polish ran after it '
         + 'without the list',
