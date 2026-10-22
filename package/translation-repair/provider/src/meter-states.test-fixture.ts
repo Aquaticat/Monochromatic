@@ -21,6 +21,8 @@ export function metersAllWet(): Promise<ProviderRecord<MeterState>> {
     neuralwatt: 'wet',
     synthetic: 'wet',
     bedrock: 'wet',
+    deepseek: 'wet',
+    xiaomi: 'wet',
     hyper: 'wet',
     openrouter: 'wet',
   },);

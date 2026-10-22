@@ -104,6 +104,8 @@ const ONE_SYNTHETIC_SLOT = {
   synthetic: 1,
   hyper: Number.POSITIVE_INFINITY,
   bedrock: Number.POSITIVE_INFINITY,
+  deepseek: Number.POSITIVE_INFINITY,
+  xiaomi: Number.POSITIVE_INFINITY,
   openrouter: Number.POSITIVE_INFINITY,
 };
 
@@ -116,6 +118,8 @@ type PerProvider<ValueT,> = {
   readonly synthetic?: ValueT;
   readonly hyper?: ValueT;
   readonly bedrock?: ValueT;
+  readonly deepseek?: ValueT;
+  readonly xiaomi?: ValueT;
   readonly openrouter?: ValueT;
 };
 
@@ -164,6 +168,8 @@ function stubProviders(
     synthetic: text.synthetic ?? '{"spot":"windowsill"}',
     hyper: text.hyper ?? '{"spot":"radiator"}',
     bedrock: text.bedrock ?? '{"spot":"cat tree"}',
+    deepseek: text.deepseek ?? '{"spot":"laundry basket"}',
+    xiaomi: text.xiaomi ?? '{"spot":"laundry basket"}',
     openrouter: text.openrouter ?? '{"spot":"laundry basket"}',
   };
 
@@ -175,6 +181,8 @@ function stubProviders(
     synthetic: refusals.synthetic ?? (((status.synthetic ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
     hyper: refusals.hyper ?? (((status.hyper ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
     bedrock: refusals.bedrock ?? (((status.bedrock ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
+    deepseek: refusals.deepseek ?? (((status.deepseek ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
+    xiaomi: refusals.xiaomi ?? (((status.xiaomi ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
     openrouter: refusals.openrouter ?? (((status.openrouter ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
   };
 
@@ -209,6 +217,8 @@ function stubProviders(
       synthetic: callerFor('synthetic',),
       hyper: callerFor('hyper',),
       bedrock: callerFor('bedrock',),
+      deepseek: callerFor('deepseek',),
+      xiaomi: callerFor('xiaomi',),
       openrouter: callerFor('openrouter',),
     },
   };
@@ -238,6 +248,8 @@ function stubBudgets(
       synthetic: 0,
       hyper: 0,
       bedrock: 0,
+      deepseek: 0,
+      xiaomi: 0,
       openrouter: 0,
     },
     onHoldEnd,
@@ -271,6 +283,10 @@ function stubBudgets(
     // models these cases route, and a wet meter on a provider that serves
     // nothing would turn an all-dry ending into a no-provider one.
     bedrock: dry.bedrock ?? true,
+    // DRY UNLESS A CASE SAYS OTHERWISE, like Bedrock: the two direct providers
+    // each serve one model, and `direct-routing.unit.test.ts` has their cases.
+    deepseek: dry.deepseek ?? true,
+    xiaomi: dry.xiaomi ?? true,
     openrouter: dry.openrouter ?? false,
   };
 
@@ -520,6 +536,8 @@ await describe({
             synthetic: 429,
             hyper: 429,
             bedrock: 0,
+            deepseek: 0,
+            xiaomi: 0,
             openrouter: 402,
           },
         },);
@@ -579,6 +597,8 @@ await describe({
             synthetic: true,
             hyper: true,
             bedrock: true,
+            deepseek: true,
+            xiaomi: true,
             openrouter: true,
           },
           holdsMs: {
@@ -586,6 +606,8 @@ await describe({
             synthetic: 5,
             hyper: 20,
             bedrock: 0,
+            deepseek: 0,
+            xiaomi: 0,
             openrouter: 20,
           },
           onHoldEnd: function syntheticComesBack(): void {
@@ -624,6 +646,8 @@ await describe({
             synthetic: 5,
             hyper: 0,
             bedrock: 0,
+            deepseek: 0,
+            xiaomi: 0,
             openrouter: 0,
           },
           onHoldEnd: function syntheticComesBack(): void {
@@ -703,6 +727,8 @@ await describe({
           neuralwatt: 0,
           synthetic: 0,
           bedrock: 0,
+          deepseek: 0,
+          xiaomi: 0,
           hyper: 0,
           openrouter: 0,
         },);
@@ -720,6 +746,8 @@ await describe({
             synthetic: true,
             hyper: true,
             bedrock: true,
+            deepseek: true,
+            xiaomi: true,
             openrouter: true,
           },
         },);
@@ -737,11 +765,14 @@ await describe({
           'EveryProviderDryError: Every provider is out of budget at once: NeuralWatt has no free daily energy left, '
             + 'Synthetic has no weekly credit left (or no five-hour request left, on a reply '
             + 'that still carries that window), Charm Hyper has no balance left, Amazon Bedrock has no credit left '
-            + 'short of the owner\'s card, and OpenRouter has no credit left. Nothing further can be bought, so this '
-            + 'run ends. NeuralWatt\'s free energy returns at 00:00 UTC; Synthetic regenerates on its own schedule; '
-            + 'Hyper and OpenRouter refill on purchase; Bedrock\'s credit is never topped up. '
-            + 'Measured at the decision: meters read neuralwatt dry, synthetic dry, bedrock dry, hyper dry, openrouter dry; '
-            + 'holds neuralwatt 0ms, synthetic 0ms, bedrock 0ms, hyper 0ms, openrouter 0ms.',
+            + 'short of the owner\'s card, DeepSeek has no balance left (or says its account is unavailable), Xiaomi '
+            + 'has refused a call for payment, and OpenRouter has no credit left. Nothing further can be bought, so '
+            + 'this run ends. NeuralWatt\'s free energy returns at 00:00 UTC; Synthetic regenerates on its own '
+            + 'schedule; Hyper, DeepSeek, Xiaomi and OpenRouter refill on purchase; Bedrock\'s credit is never '
+            + 'topped up. '
+            + 'Measured at the decision: meters read neuralwatt dry, synthetic dry, bedrock dry, deepseek dry, '
+            + 'xiaomi dry, hyper dry, openrouter dry; '
+            + 'holds neuralwatt 0ms, synthetic 0ms, bedrock 0ms, deepseek 0ms, xiaomi 0ms, hyper 0ms, openrouter 0ms.',
         );
         expect(called,).toEqual([],);
         expect(holdReads.count,).toBe(1,);

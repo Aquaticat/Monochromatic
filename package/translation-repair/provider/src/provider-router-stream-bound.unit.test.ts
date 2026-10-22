@@ -90,6 +90,8 @@ function stubFullyWetBudgets(): ReturnType<typeof stubWetBudgets> {
         synthetic: 0,
         hyper: 0,
         bedrock: 0,
+        deepseek: 0,
+        xiaomi: 0,
         openrouter: 0,
       };
     },
@@ -120,6 +122,8 @@ function stubBudgetsDryOnceRefused(): ReturnType<typeof stubWetBudgets> {
         synthetic: refused.has('synthetic',),
         hyper: refused.has('hyper',),
         bedrock: refused.has('bedrock',),
+        deepseek: refused.has('deepseek',),
+        xiaomi: refused.has('xiaomi',),
         openrouter: refused.has('openrouter',),
       };
     },
@@ -225,6 +229,8 @@ function stubProviders(
       synthetic: callerFor('synthetic',),
       hyper: callerFor('hyper',),
       bedrock: callerFor('bedrock',),
+      deepseek: callerFor('deepseek',),
+      xiaomi: callerFor('xiaomi',),
       openrouter: callerFor('openrouter',),
     },
   };

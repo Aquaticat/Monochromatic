@@ -79,6 +79,8 @@ function budgetsReading({ openrouterDry, }: { readonly openrouterDry: boolean; }
           synthetic: false,
           hyper: false,
           bedrock: true,
+          deepseek: true,
+          xiaomi: true,
           openrouter: openrouterDry,
         };
       },
@@ -105,6 +107,8 @@ function budgetsReading({ openrouterDry, }: { readonly openrouterDry: boolean; }
           synthetic: 0,
           hyper: 0,
           bedrock: 0,
+          deepseek: 0,
+          xiaomi: 0,
           openrouter: 0,
         };
       },

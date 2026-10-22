@@ -128,6 +128,8 @@ function stubProviders(): {
       synthetic: callerFor('synthetic',),
       hyper: callerFor('hyper',),
       bedrock: callerFor('bedrock',),
+      deepseek: callerFor('deepseek',),
+      xiaomi: callerFor('xiaomi',),
       openrouter: callerFor('openrouter',),
     },
   };
@@ -169,6 +171,8 @@ function stubBudgets(): {
           synthetic: 0,
           hyper: 0,
           bedrock: 0,
+          deepseek: 0,
+          xiaomi: 0,
           openrouter: 0,
         };
       },

@@ -145,6 +145,8 @@ const ALL_WET = {
   synthetic: false,
   hyper: false,
   bedrock: true,
+  deepseek: true,
+  xiaomi: true,
   openrouter: false,
 } as const;
 
@@ -184,6 +186,8 @@ await describe({
           synthetic: false,
           hyper: true,
           bedrock: true,
+          deepseek: true,
+          xiaomi: true,
           openrouter: true,
         },);
         expect(await hyperOnly.read({ signal: SIGNAL, },),).toEqual({
@@ -191,6 +195,8 @@ await describe({
           synthetic: true,
           hyper: false,
           bedrock: true,
+          deepseek: true,
+          xiaomi: true,
           openrouter: true,
         },);
         expect(await openRouterOnly.read({ signal: SIGNAL, },),).toEqual({
@@ -198,6 +204,8 @@ await describe({
           synthetic: true,
           hyper: true,
           bedrock: true,
+          deepseek: true,
+          xiaomi: true,
           openrouter: false,
         },);
       },
@@ -273,6 +281,8 @@ await describe({
           synthetic: false,
           hyper: true,
           bedrock: true,
+          deepseek: true,
+          xiaomi: true,
           openrouter: true,
         },);
       },
@@ -316,6 +326,8 @@ await describe({
           synthetic: 'unreadable',
           hyper: 'dry',
           bedrock: 'dry',
+          deepseek: 'dry',
+          xiaomi: 'dry',
           openrouter: 'wet',
         },);
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual({
@@ -323,6 +335,8 @@ await describe({
           synthetic: false,
           hyper: true,
           bedrock: true,
+          deepseek: true,
+          xiaomi: true,
           openrouter: false,
         },);
       },
@@ -406,6 +420,8 @@ await describe({
           synthetic: 0,
           hyper: 300,
           bedrock: 0,
+          deepseek: 0,
+          xiaomi: 0,
           openrouter: 0,
         },);
 
@@ -421,6 +437,8 @@ await describe({
           synthetic: 0,
           hyper: 0,
           bedrock: 0,
+          deepseek: 0,
+          xiaomi: 0,
           openrouter: 0,
         },);
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual(ALL_WET,);
@@ -580,6 +598,8 @@ await describe({
           synthetic: 0,
           hyper: 0,
           bedrock: 0,
+          deepseek: 0,
+          xiaomi: 0,
           openrouter: 0,
         },);
         // The refuser is still spendable at once; only the dry providers are out.
@@ -588,6 +608,8 @@ await describe({
           synthetic: false,
           hyper: true,
           bedrock: true,
+          deepseek: true,
+          xiaomi: true,
           openrouter: true,
         },);
       },
@@ -618,6 +640,8 @@ await describe({
           synthetic: 300,
           hyper: 0,
           bedrock: 0,
+          deepseek: 0,
+          xiaomi: 0,
           openrouter: 0,
         },);
       },
@@ -824,6 +848,8 @@ await describe({
           synthetic: 50,
           hyper: 50,
           bedrock: 0,
+          deepseek: 0,
+          xiaomi: 0,
           openrouter: 0,
         },);
       },
