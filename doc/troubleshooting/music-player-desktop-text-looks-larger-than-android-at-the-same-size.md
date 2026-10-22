@@ -481,8 +481,28 @@ The human's own comparison, and the instrument behind it:
     The effect is about half the step from 16 to 17, leaves width alone, and also acts on the 16 px folder names and
     the 22 px titles (plus 2 percent in cap height), which the human found matching, so it does not single out the
     track titles.
-    Which monitor the human's comparison ran on has not been asked; the human's browser (Firefox) was not part of this
-    measurement, and an agent is adding it.
+    The human's comparison ran on the 15.6 inch panel (scale 3), which is the case where the effect fits: 16 px about 3
+    percent taller, 14 px not.
+    That made the autohinter the candidate for "track titles looked bigger at 16 but identical at 14".
+- The same comparison with Firefox ESR 153.5.1 (the human's browser; the replica at scales 1, 2 and 3 in the nested
+  compositor with a private profile, captures bit-identical across reruns) nulls that candidate:
+  - Firefox applies the same x-height fit as the app: x-height and cap height are equal to the app's at every size
+    and scale measured (16 px: 9 and 12, 18 and 24, 27 and 36 at scales 1, 2, 3; 14 px: 8 and 11, 16 and 21, 23 and
+    30), where Chromium at scales 2 and 3 is nominal.
+  - Ink mass over the app's is 1.000 at all three scales in both builds (Chromium 0.997 to 1.067), the share of pixels
+    at 90 percent of peak or more is within 0.2 percent (8243 against 8258 at scale 3), and edge fuzz is equal
+    (0.075 and 0.075 at scale 3).
+    The earlier "app 5 to 8 percent lighter" is a Chromium property only.
+  - Mean luma difference to the app after whole-pixel alignment: Firefox 0.15 to 0.38 at scale 3, Chromium 0.90 to 1.18.
+  - What remains between the app and the Firefox replica: the app's baseline is 1 device pixel (0.33 logical px)
+    higher at scale 3 (at 14 px as well as 16 px), the bold playing row's stems differ in weight in both directions
+    depending on scale (6 to 9 stems), and the app's stem core is slightly thinner at scale 3 (width at 75 percent of
+    peak 0.89 against 1.02 device px).
+  - None of these singles out 16 px. So the rasterization candidate is null for the human's comparison, the geometry
+    was measured equal, and why the 16 px track titles looked bigger remains unexplained by any instrument here.
+    The human's perception is the only instrument left, and the text size setting lets them choose the size.
+  - Not measured: the human's real fontconfig and `gfx.font_rendering` outcome in a windowed Firefox (the private
+    profile used the human's font preferences without reading the rest of the profile), and perception itself.
 - The human then asked for a text size setting in the real app, with a stepper of 1 px for each element.
 
 ## Hypotheses
@@ -495,8 +515,8 @@ Measured and null are results of an instrument; speculation is not.
 - Renderer weight: null for femtovg (0.94 to 1.005 of Chromium's mass, depending on scale).
   Renderer hinting: measured difference, vertical only. The autohinter makes the x-height and cap height of 16 px
   text up to 3 percent taller at scales 2 and 3 (equal at scale 1, shorter at fractional scales), with widths equal.
-  Candidate for "bigger at 16 px", not shown to be it, because it depends on the scale of the monitor used and also
-  affects text the human found matching.
+  Null for "bigger at 16 px" as the human saw it: Firefox, the browser they compared with, applies the same fit and
+  matches the app in height, ink mass and edge sharpness.
   The software renderer, which is not the shipped default, is not exercised.
 - Font file or axes (`opsz`, `wght`): null. Both sides draw the default instance; Chromium ignores `opsz` for this
   system font (positive control moved width, `opsz` did not).

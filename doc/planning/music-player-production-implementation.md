@@ -847,10 +847,11 @@ Inter, and Firefox renders the replica like Chromium (the replica sets `font-ker
 `palt` on kana; use `auto` next time). The rasterization agent found one real difference: the app's autohinter
 rescales runs vertically so the x-height lands on a whole pixel, giving 16 px text 3 percent taller x-height and cap at
 scales 2 and 3 with equal widths (equal at scale 1, shorter at 1.25 and 1.5). Whether it explains "track titles looked
-bigger at 16, identical at 14" depends on which monitor the comparison ran on; not asked yet, and a Firefox arm of the
-rasterization comparison is still running (agent `aa1182a3a786bf6e5`, resumed). Next: ask the human the monitor
-question when the Firefox arm reports; if the autohinter is the cause, the fix is an upstream/femtovg question, not an
-app size change.
+bigger at 16, identical at 14" depends on the monitor; the human answered scale 3 (15.6 inch), where it fit. The Firefox
+arm then nulled it: Firefox applies the same x-height fit, and matches the app in height, ink mass and edge sharpness
+(remaining: app baseline 1 device px higher at scale 3, bold row weight, thinner stem core). So no instrument explains
+the 16 vs 17 px impression; the text size setting is the answer for the human. A no-hinting build (agent
+`acb7f52bc58b6c1a3`) was started and stopped by me for that reason, nothing built or left running.
 
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 
