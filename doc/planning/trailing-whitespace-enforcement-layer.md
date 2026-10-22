@@ -5,9 +5,12 @@
 Recommendation written 2026-10-22,
 answering the question the issue [#585][] triage raised:
 "Should we enforce this in our git wrapper instead?"
-Nothing here is accepted yet.
-Explicit acceptance unlocks the `doc/decision/` record
-and the implementation steps in [Next actions](#next-actions).
+Decided by the owner on 2026-10-22:
+none of the options.
+Trailing whitespace is not enforced,
+`.editorconfig`'s trim rule stays inspiration,
+and issue [#585][] is closed as not planned.
+The record is `doc/decision/trailing-whitespace.md`.
 
 ## Question
 
@@ -419,13 +422,13 @@ A > C > D > B.
 - A rule from upstream oxlint.
   The 1.89.0 rules table has no trailing-whitespace rule to enable.
 
-## Next actions
+## Outcome
 
-On explicit acceptance of an option:
-
-1.  Record the accepted option in `doc/decision/`.
-2.  Implement the accepted option,
-    with `Closes #585` in the commit body when the work completes the issue.
-3.  Post the outcome to issue [#585][] when the user asks for it.
+The owner chose not to enforce trailing whitespace on 2026-10-22,
+so nothing here is implemented.
+The decision,
+its rejected options and its accepted limits live in
+`doc/decision/trailing-whitespace.md`,
+and issue [#585][] is closed as not planned.
 
 [#585]: https://github.com/Aquaticats/Monochromatic/issues/585
