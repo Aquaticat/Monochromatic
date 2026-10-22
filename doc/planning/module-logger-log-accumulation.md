@@ -411,6 +411,24 @@ Landing order:
    issue comment on 576,
    and the audit ledger T9 status update.
 
+## Rollout (2026-10-22)
+
+- The retention sweep's first real run bounded the main checkout
+  before the purge:
+  a `file-enforcer` verify at 08:15 UTC
+  (stamp `node_modules/.monochromatic/.logger-retention-sweep`)
+  trimmed the measured 19 GB and 1,761,904 entries
+  to the R1 caps in one pass.
+- The authorized purge then removed every pre-2026-10-08 logger file
+  from all 153 linked worktrees:
+  44,570 files and 722 MiB deleted,
+  53,313 files and 535.6 MiB kept in the window,
+  537 files and 49.1 MiB preserved in `translation-repair-runs*`.
+  A confirming walk after deletion reports 0 expired entries.
+- The main checkout after both passes holds
+  47,005 in-window files (511 MiB) spanning 2026-10-17 to 2026-10-22,
+  plus the sweep stamp.
+
 ## Risks and limits
 
 - npm consumers of 0.4.x see the destination change on upgrade.
