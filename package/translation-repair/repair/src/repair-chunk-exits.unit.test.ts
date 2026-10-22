@@ -258,7 +258,7 @@ function scriptedChunkClient(
                 severity: '',
                 evidence: '',
                 omittedText: '',
-                reason: '',
+                verdictReason: '',
               };
             },
           ),

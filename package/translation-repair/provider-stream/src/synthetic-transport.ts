@@ -116,6 +116,18 @@ export type TransportExchange = {
    addressing; the transport is one function serving both.
    */
   readonly wireFormat?: StreamWireFormat;
+
+  /**
+   Silence allowed before the first generated text, in place of the shared
+   window (`STREAM_FIRST_CONTENT_MS`), for a model whose own card measured a
+   shorter one (ledger B809). Absent means the shared window.
+
+   NAMED BY THE CALLER because only the client knows the card of the model it
+   addresses; the transport is one function serving every client. It reaches
+   the guard of every attempt of the retry ladder, since the ladder hands each
+   attempt this same exchange.
+   */
+  readonly firstContentMs?: number;
 };
 
 /**
@@ -304,6 +316,7 @@ export async function fetchTransport(
     signal,
     maxAnswerChars,
     wireFormat,
+    firstContentMs,
   } = exchange;
 
   /**
@@ -314,6 +327,8 @@ export async function fetchTransport(
     label,
     // Conditional spread keeps the knob absent instead of undefined.
     ...((provider === undefined) ? {} : { provider, }),
+    // Conditional spread keeps the window absent, so the shared one stands.
+    ...((firstContentMs === undefined) ? {} : { firstContentMs, }),
   },);
 
   /**

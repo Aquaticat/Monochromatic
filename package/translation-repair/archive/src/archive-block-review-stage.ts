@@ -284,7 +284,7 @@ export async function runArchiveBlockReviewStage(
     ...voices
       .map(function recordFinding(voice,): string {
       return voice.value
-        .finding;
+        .assessment;
     },),
     ...(anchoredVoices.length
       === voices

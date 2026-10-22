@@ -83,7 +83,7 @@ const FRESH = 'The cat fell asleep beside the window. She woke at four in the af
 /**
  Phrase separating the gate's sheet from the slate judge's.
  */
-const GATE_MARKER = 'Return JSON: reason one sentence';
+const GATE_MARKER = 'Return JSON: assessment one sentence';
 
 /**
  What a scenario has the slate judges do.
@@ -335,7 +335,7 @@ async function settleScenario(
         scenario,
         wanted: (scenario.judge === 'standing') ? scenario.standingText : (scenario.proposals[0]?.translation ?? ''),
       },),
-    reason: 'it says what the original says',
+    assessment: 'it says what the original says',
   },);
 
   /**

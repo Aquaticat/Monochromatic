@@ -123,13 +123,14 @@ export const REFINE_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
           items: {
             type: 'object',
             required: [
-              'paragraph',
               'newText',
+              'paragraph',
             ],
             additionalProperties: false,
+            // DECLARED IN THE ORDER THE KEYS SORT (ledger B762), since no ruling fixes the order of the two.
             properties: {
-              paragraph: { type: 'integer', },
               newText: { type: 'string', },
+              paragraph: { type: 'integer', },
             },
           },
         },

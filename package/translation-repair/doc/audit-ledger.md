@@ -202,7 +202,9 @@ named for that subject and listed here.
 - [Audit ledger: runner reports and probes](audit-ledger-runner-reports-and-probes.md):
   Report and probe commands that printed a claim their own figures deny,
   or bought work nothing could use,
-  and a picture reader measurement whose next step named the sample when the trusted records had limited the count (B800).
+  a picture reader measurement whose next step named the sample when the trusted records had limited the count (B800),
+  and the coverage rounds over an untranslated tail,
+  examined and kept (B811).
 - [Audit ledger: footnote markers and link destinations](audit-ledger-footnote-markers-and-link-destinations.md):
   Scans for footnote markers and link destinations that disagreed with the parse,
   about where a marker is a reference or where an address ends,
@@ -252,14 +254,16 @@ named for that subject and listed here.
 - [Audit ledger: clocks and durations](audit-ledger-clocks-and-durations.md):
   Durations measured on the system clock,
   test bounds on the real clock a loaded machine could outrun,
-  and the archive block review round that waited the readers' window for writer voices (B713).
+  the archive block review round that waited the readers' window for writer voices (B713),
+  and the held review seat that landed before quorum under load (B813).
 - [Audit ledger: output decided by arrival order](audit-ledger-output-decided-by-arrival-order.md):
   Findings,
   refusals and log lines whose content or order depended on which concurrent work ended first,
   the scan that looks for it,
   and the seat-window family,
   tests that named a seat the rotated first round no longer asked (B701),
-  among them the composite cases of the archive block review (B734).
+  among them the composite cases of the archive block review (B734)
+  and the run-off line cases of the translate stage (B812).
 - [Audit ledger: failures under a caller's stop](audit-ledger-failures-under-a-callers-stop.md):
   Fan-outs that dropped,
   mislabelled or doubled a member's own failure once the caller had stopped the work.
@@ -424,7 +428,9 @@ named for that subject and listed here.
   a clock-zone slip in that account (B672),
   the request to read the words of a place with recorded definitions,
   which reads the page the other way and was not built (B673),
-  and the judge seats line that printed `wet` for a meter that said nothing (B686).
+  the judge seats line that printed `wet` for a meter that said nothing (B686),
+  Synthetic's removed five-hour window and concurrency limit (B691),
+  and the cache-account audit that read a version set in a merge resolution as in no commit (B814).
 - [Audit ledger: the package split, configs, scans and messages](audit-ledger-package-split-configs-scans-and-messages.md):
   What the split of the package into 36 found in the moved code and its tooling:
   a build config that lacked a plugin,
@@ -439,6 +445,7 @@ named for that subject and listed here.
   Sheets that withheld a claim the judges needed:
   the repair panel's accepted claims that never reached the polish gate (B731),
   the ballots whose reply shape asked for the choice before the reason (B732),
+  sixteen answer schemas whose declared key order is not the order Hyper returns (B762),
   and the same claims,
   which the polish writers were never shown,
   nor the dispute note,
@@ -478,13 +485,17 @@ named for that subject and listed here.
   stream events,
   usage counts,
   and the refusals a retry decision reads,
-  with the stream guards whose windows could not fire and whose progress was any body bytes (B804).
+  with the stream guards whose windows could not fire and whose progress was any body bytes (B804),
+  the rounds that waited five minutes on a stream that sent only comment lines (B809),
+  and the seat abandoned again and again,
+  where the evidence rejected a hold (B810).
 - [Audit ledger: NeuralWatt replies cut at the default effort and the picture energy estimate](audit-ledger-neuralwatt-replies-cut-at-the-default-effort-and-the-energy-estimate.md):
   Calls to NeuralWatt that ran at the provider's default reasoning effort and were cut at the length cap:
   the picture reader's reply the length limit cut (B718),
   a picture call sent at the provider's default effort (B719),
   the energy estimate that counted a picture as base64 text (B720),
-  and a text call sent at the provider's default effort (B807).
+  a text call sent at the provider's default effort (B807),
+  and the energy hold that read the pipeline's own use at a third of what a rotation of entries measured (B808).
 - [Audit ledger: branches no input reaches, kept as quiet answers](audit-ledger-unreachable-branches-kept-as-quiet-answers.md):
   Branches no input reaches that answered quietly where a loud refusal belongs,
   most met when a coverage census asked for them to be removed,
@@ -512,6 +523,10 @@ named for that subject and listed here.
   Gemma listed as unable to read a picture on OpenRouter before any transcription was measured (B721),
   the readers bench counted by text reach where a picture needs vision reach (B722),
   and a picture reader measurement that lived in a scratch script (B723).
+- [Audit ledger: providers and seats a run holds out](audit-ledger-providers-and-seats-a-run-holds-out.md):
+  A provider an owner ruling keeps off that every run still asked (B760),
+  a seat never withheld although its streams carried nothing (B761),
+  and a meter line that read a held provider differently from the router (B763).
 - [Audit ledger: blocks and quotes read off the parse](audit-ledger-blocks-and-quotes-read-off-the-parse.md):
   Blocks,
   quotes and code spans counted by a blank-line split or a scan of their own,

@@ -105,8 +105,8 @@ const KEY = consistencyKey({
  */
 function replyOf({ seat, }: { readonly seat: RosterModelId; },): string {
   return JSON.stringify({
-    reason: `${seat} words the first place best.`,
-    quotes: [
+    assessment: `${seat} words the first place best.`,
+    candidateQuotes: [
       { label: 'OCCURRENCE 1', quote: 'The cat naps.', },
       { label: 'OCCURRENCE 2', quote: 'The kitten naps.', },
     ],
@@ -224,7 +224,7 @@ function oneSeatAnswers({ seat, }: { readonly seat: RosterModelId; },): SeatBeha
     ? { kind: 'answers', text: replyOf({ seat, },), }
     : {
       kind: 'answers',
-      text: JSON.stringify({ reason: 'A place that is not on the sheet.', quotes: [], choice: 'OCCURRENCE 9', keep: [], },),
+      text: JSON.stringify({ assessment: 'A place that is not on the sheet.', candidateQuotes: [], choice: 'OCCURRENCE 9', keep: [], },),
     };
 }
 
@@ -519,8 +519,8 @@ await describe({
                 return {
                   kind: 'answers',
                   text: JSON.stringify({
-                    reason: `${seat} words the first place best.`,
-                    quotes: [
+                    assessment: `${seat} words the first place best.`,
+                    candidateQuotes: [
                       { label: 'OCCURRENCE 1', quote: 'The cat naps.', slot: 'cat', },
                       { label: 'OCCURRENCE 2', quote: 'The kitten naps.', slot: 'kitten', },
                     ],

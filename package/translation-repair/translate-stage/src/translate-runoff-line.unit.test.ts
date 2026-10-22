@@ -187,13 +187,13 @@ function scriptedClient(
        */
       const needle = (request.modelId === JUDGES[2]) ? otherWord : ownWord.value;
       const ballot: unknown = {
+        assessment: 'fixture',
         best: rejects
           ? 0
           : candidateCarrying({
             content,
             needle,
           },),
-        reason: 'fixture',
       };
       if (!request.validate(ballot,))
         throw new Error('the fixture ballot failed the wire guard',);
@@ -247,6 +247,10 @@ async function declinedThenRunoff(
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     perCallTimeoutMs: HANG_STOP_MS,
     l,
+    // The scenarios read the interested judge's own rendering, so every translator is asked: a window of quorum plus one
+    // translators, rotated by the prompt text, may leave that translator out and the judge with no rendering of its own
+    // (ledger B701).
+    fanOut: 'whole-bench',
     stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
   /**
@@ -272,6 +276,9 @@ async function declinedThenRunoff(
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     perCallTimeoutMs: HANG_STOP_MS,
     l,
+    // Every judge is asked for the same reason: the scenarios script each judge's ballot, and a rotated window may leave
+    // the declining or the interested judge out.
+    fanOut: 'whole-bench' as const,
     stageSettings: SCRIPTED_STAGE_SETTINGS,
   };
   const first = await judgeTranslateSlate(judging,);

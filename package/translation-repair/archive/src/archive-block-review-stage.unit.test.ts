@@ -107,9 +107,9 @@ const l = tagged({ tag: 'archive-block-review-stage-test', },);
 
 /** Acceptable absolute-naturalness reply. */
 const ACCEPTABLE_NATURALNESS = {
-  acceptable: true,
+  isAcceptable: true,
   findings: [],
-  reason: 'Publication-ready wording.',
+  assessment: 'Publication-ready wording.',
 } as const;
 
 /**
@@ -131,7 +131,7 @@ function anchoredReviewReplyFor(
       disposition: 'source-supported',
       sourceQuote: '窗边安静地睡觉',
       replacementText: '',
-      finding: 'Expected section supports this sentence.',
+      assessment: 'Expected section supports this sentence.',
     }
     : ACCEPTABLE_NATURALNESS;
 }
@@ -332,7 +332,7 @@ await describe({
                 disposition: 'source-supported',
                 sourceQuote: modelId === reviewers[0] ? '窗边安静地睡觉' : '不存在的来源句子',
                 replacementText: '',
-                finding: 'Source support claim.',
+                assessment: 'Source support claim.',
               };
             },
           },),
@@ -462,7 +462,7 @@ await describe({
                 disposition: 'source-supported',
                 sourceQuote: reviewers.indexOf(modelId,) < quorum ? '窗边安静地睡觉' : '不存在的来源句子',
                 replacementText: '',
-                finding: 'Source support claim.',
+                assessment: 'Source support claim.',
               };
             },
           },),
@@ -500,9 +500,9 @@ await describe({
                 disposition: 'revise',
                 sourceQuote: '',
                 replacementText: written,
-                finding: 'Remove unsupported award claim.',
+                assessment: 'Remove unsupported award claim.',
               }
-              : { best: 1, reason: 'Only supported details remain.', },
+              : { best: 1, assessment: 'Only supported details remain.', },
           },),
           modelIds: ROSTER,
           sourceText: '猫在窗边打盹。',
@@ -538,9 +538,9 @@ await describe({
                 disposition: 'revise',
                 sourceQuote: '猫在窗边睡觉',
                 replacementText: corrected,
-                finding: 'The quoted source supports sleeping, but not the award.',
+                assessment: 'The quoted source supports sleeping, but not the award.',
               }
-              : { best: 1, reason: 'Keep the supported detail and remove the unsupported claim.', },
+              : { best: 1, assessment: 'Keep the supported detail and remove the unsupported claim.', },
           },),
           modelIds: ROSTER,
           sourceText: '猫在窗边睡觉。',
@@ -572,11 +572,11 @@ await describe({
                 disposition: 'revise',
                 sourceQuote: '',
                 replacementText: 'The cat sleeps by the window.',
-                finding: 'Remove unsupported award claim.',
+                assessment: 'Remove unsupported award claim.',
               }
               : {
                 best: 1,
-                reason: 'Only supported details remain.',
+                assessment: 'Only supported details remain.',
               },
           },),
           modelIds: ROSTER,
@@ -626,11 +626,11 @@ await describe({
                 disposition: 'revise',
                 sourceQuote: '',
                 replacementText: letter,
-                finding: 'The block carries no translation.',
+                assessment: 'The block carries no translation.',
               }
               : {
                 best: 1,
-                reason: 'Only the letter carries content.',
+                assessment: 'Only the letter carries content.',
               },
           },),
           modelIds: ROSTER,
@@ -671,11 +671,11 @@ await describe({
                 disposition: 'revise',
                 sourceQuote: '',
                 replacementText: '',
-                finding: 'The rename is not in the original.',
+                assessment: 'The rename is not in the original.',
               }
               : {
                 best: 1,
-                reason: 'Removal is the only candidate.',
+                assessment: 'Removal is the only candidate.',
               },
           },),
           modelIds: ROSTER,
@@ -734,11 +734,11 @@ await describe({
                   disposition: 'revise',
                   sourceQuote: '',
                   replacementText,
-                  finding: 'The award is not in the original.',
+                  assessment: 'The award is not in the original.',
                 }
                 : {
                   best: 1,
-                  reason: 'Removal is the only supported answer.',
+                  assessment: 'Removal is the only supported answer.',
                 },
             },),
             modelIds: ROSTER,
@@ -801,11 +801,11 @@ await describe({
                 disposition: 'revise',
                 sourceQuote: '',
                 replacementText: '',
-                finding: 'Remove the attribution block.',
+                assessment: 'Remove the attribution block.',
               }
               : {
                 best: 1,
-                reason: 'Remove the only candidate.',
+                assessment: 'Remove the only candidate.',
               },
           },),
           modelIds: ROSTER,
@@ -839,15 +839,15 @@ await describe({
                 disposition: 'source-supported',
                 sourceQuote: '窗边安静地睡觉',
                 replacementText: '',
-                finding: 'Expected section supports this sentence.',
+                assessment: 'Expected section supports this sentence.',
               }
               : {
-                acceptable: false,
+                isAcceptable: false,
                 findings: [{
                   paragraph: 1,
                   problem: 'Awkward archive wording.',
                 },],
-                reason: 'Revision is required.',
+                assessment: 'Revision is required.',
               },
           },),
           modelIds: ROSTER,
@@ -953,11 +953,11 @@ await describe({
                 disposition: 'revise',
                 sourceQuote: '',
                 replacementText: 'The cat sleeps.',
-                finding: 'Remove unsupported award claim.',
+                assessment: 'Remove unsupported award claim.',
               }
               : {
                 best: 0,
-                reason: 'No correction is yet acceptable.',
+                assessment: 'No correction is yet acceptable.',
               },
           },),
           modelIds: ROSTER,
@@ -998,9 +998,9 @@ await describe({
                 disposition: 'revise',
                 sourceQuote: '',
                 replacementText: 'The cat sleeps by the window.',
-                finding: 'Remove unsupported sister claim.',
+                assessment: 'Remove unsupported sister claim.',
               }
-              : { best: 1, reason: 'Only supported details remain.', },
+              : { best: 1, assessment: 'Only supported details remain.', },
           },),
           modelIds: ROSTER,
           sourceText: '猫在窗边安静地睡觉。',
@@ -1049,7 +1049,7 @@ await describe({
                 disposition: 'source-supported',
                 sourceQuote: 'an older sister who was also a tabby',
                 replacementText: '',
-                finding: 'The cited page states the sister.',
+                assessment: 'The cited page states the sister.',
               }
               : ACCEPTABLE_NATURALNESS,
           },),
@@ -1094,7 +1094,7 @@ await describe({
                     disposition: 'source-supported',
                     sourceQuote,
                     replacementText: '',
-                    finding: 'Supported.',
+                    assessment: 'Supported.',
                   }
                   : ACCEPTABLE_NATURALNESS,
               },),
@@ -1172,7 +1172,7 @@ await describe({
                   '不存在的来源句子',
                 ][reviewers.indexOf(modelId,)] ?? '猫在',
                 replacementText: '',
-                finding: 'Source support claim.',
+                assessment: 'Source support claim.',
               };
             },
           },),
@@ -1222,7 +1222,7 @@ await describe({
                 disposition: 'editorial-context',
                 sourceQuote: '',
                 replacementText: '',
-                finding: 'Apparatus.',
+                assessment: 'Apparatus.',
               }
               : ACCEPTABLE_NATURALNESS,
           },),

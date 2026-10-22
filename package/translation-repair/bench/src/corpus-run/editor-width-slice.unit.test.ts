@@ -330,7 +330,7 @@ function scriptedClient(
         return replyWith({
           reply: {
             best: 1,
-            reason: 'fixture panel always names the first seat',
+            assessment: 'fixture panel always names the first seat',
           },
           request,
         },);

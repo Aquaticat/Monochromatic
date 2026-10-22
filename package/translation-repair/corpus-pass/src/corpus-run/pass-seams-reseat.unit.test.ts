@@ -328,10 +328,10 @@ async function contestRun(
       later,
       asked,
       answer: JSON.stringify({
-        choice: 'repair',
+        verdict: 'repair',
         unsupported: [],
         dropped: [],
-        reason: 'the original supports it',
+        assessment: 'the original supports it',
       },),
     },),
     // Only the repair lane's chunks are read, for damage claims and dispute
@@ -509,8 +509,8 @@ async function admissionAsked({ later, }: { readonly later: BudgetView; },): Pro
     asked,
     answer: JSON.stringify({
       coverage: 'none',
-      quote: '',
-      reason: 'the archive carries none of it',
+      copiedSpan: '',
+      assessment: 'the archive carries none of it',
     },),
   },);
   // THE LANES' READING, taken before the admission as `runPassEntry` takes it.

@@ -166,7 +166,7 @@ async function ballotSheets(): Promise<readonly string[]> {
        */
       const scripted: unknown = {
         best: 1,
-        reason: 'fixture',
+        assessment: 'fixture',
       };
       if (!request.validate(scripted,))
         throw new Error('scripted ballot failed the candidate guard',);

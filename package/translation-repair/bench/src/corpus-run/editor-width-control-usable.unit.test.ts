@@ -162,7 +162,7 @@ function judgeBacking({ wanted, }: { readonly wanted: string; },): ModelClient {
           text: sheet,
           wanted,
         },),
-        reason: 'fixture',
+        assessment: 'fixture',
       };
       if (!request.validate(ballot,))
         throw new Error('scripted ballot failed the candidate guard',);

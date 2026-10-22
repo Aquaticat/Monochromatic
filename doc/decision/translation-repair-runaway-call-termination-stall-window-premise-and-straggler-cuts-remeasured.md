@@ -212,3 +212,24 @@ on the evidence of the current roster,
 and stays open for the owner to loosen the first-content window if the next runs show healthy streams cut,
 or to tighten it once `firstContent` figures show how long healthy first text takes.
 The first-content figure of 180000 ms was chosen by the parent session and is open to the owner's veto.
+
+Status of 2026-10-22 (UTC):
+the first-content window is now also a per-card setting,
+and the `inception/mercury-2.5` card names 90000 ms
+(ledger B809,
+red `731c541fa2`,
+fix `9614ff8336`);
+every other card keeps the shared 180000 ms.
+The evidence is that,
+in the 24 pass logs on disk (`CuspariaKLSY16` to `XingZ6017`),
+4636 Mercury streams delivered text and the longest of them ended at 56772 ms,
+no Mercury stream that ran 60 s or more without text ever delivered any (130 such streams),
+and 26 rounds of `XingZ6017` waited about 301 s each
+on one stream that sent only `: OPENROUTER PROCESSING` comment lines.
+The 90000 ms is bounded from above by the elapsed time of streams that delivered text,
+because `XingZ6017` predates the `firstContent` field this decision names,
+so it is not the measurement of first text that this decision waits for.
+The window is 59 percent over that longest elapsed time.
+It is open to the owner's veto
+(`firstContentMs` in `package/translation-repair/shared-contract/src/model-cards.ts`),
+and the owner may ask for it to wait until `firstContent` figures from the next pass log are read.

@@ -131,10 +131,10 @@ function gateClient(
        This seat's ballot.
        */
       const value: unknown = {
-        choice: (choiceFor === undefined) ? choice : choiceFor(request.modelId,),
+        verdict: (choiceFor === undefined) ? choice : choiceFor(request.modelId,),
         unsupported: [],
         dropped: [],
-        reason: 'the cat naps either way',
+        assessment: 'the cat naps either way',
       };
       if (!request.validate(value,))
         throw new Error('scripted polish gate ballot failed validation',);

@@ -110,11 +110,11 @@ function revisingClient({ replacement, }: { readonly replacement: string; },): M
           disposition: 'revise',
           sourceQuote: '',
           replacementText: replacement,
-          finding: 'Reword the archive-only block.',
+          assessment: 'Reword the archive-only block.',
         }
         : {
           best: 1,
-          reason: 'The correction is the better wording.',
+          assessment: 'The correction is the better wording.',
         };
       if (!request.validate(value,))
         throw new Error(`scripted ${schema} reply failed validator`,);

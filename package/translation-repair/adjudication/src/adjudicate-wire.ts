@@ -231,27 +231,10 @@ export const ADJUDICATION_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
       type: 'object',
       required: ['verdicts',],
       additionalProperties: false,
+      // DECLARED IN THE ORDER THE KEYS SORT (ledger B762), because Charm Hyper
+      // returns a tool call's keys alphabetically and the reason must still
+      // come before the vote there.
       properties: {
-        verdicts: {
-          type: 'array',
-          items: {
-            type: 'object',
-            required: [
-              'claim',
-              'reason',
-              'vote',
-            ],
-            additionalProperties: false,
-            // REASON DECLARED BEFORE VOTE, as the sheet's reply shape shows it
-            // (owner, 2026-09-27, "Reason before vote").
-            properties: {
-              claim: { type: 'integer', },
-              reason: { type: 'string', },
-              vote: { type: 'string', },
-              severity: { type: 'string', },
-            },
-          },
-        },
         groups: {
           type: 'array',
           items: {
@@ -264,6 +247,27 @@ export const ADJUDICATION_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
             properties: {
               group: { type: 'integer', },
               sameDefect: { type: 'boolean', },
+            },
+          },
+        },
+        verdicts: {
+          type: 'array',
+          items: {
+            type: 'object',
+            required: [
+              'claim',
+              'reason',
+              'vote',
+            ],
+            additionalProperties: false,
+            // REASON DECLARED BEFORE VOTE, as the sheet's reply shape shows it
+            // (owner, 2026-09-27, "Reason before vote"); severity sorts
+            // between them and is optional, so it costs the reason nothing.
+            properties: {
+              claim: { type: 'integer', },
+              reason: { type: 'string', },
+              severity: { type: 'string', },
+              vote: { type: 'string', },
             },
           },
         },

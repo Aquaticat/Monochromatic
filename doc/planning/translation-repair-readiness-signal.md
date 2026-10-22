@@ -373,7 +373,27 @@ this section is the readiness reading of it.
   `METERS` and `JUDGE SEATS` made to agree,
   no-content abandons counted against the seat,
   Hyper key-order handling).
-  `XingZ6017` is running.
+  `XingZ6017` SETTLED in 268.7 min over 118 slices
+  ([the run](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-xingz6017-run.md)).
+  The page is better than the unfinished archive in 64 of the 88 slices that have a counterpart,
+  and keeps one factual error about when she died,
+  one game and one contributor under two names,
+  and 29 em-dash runs the source does not carry.
+  Synthetic,
+  Hyper and NeuralWatt ran dry in turn after Bedrock was held out at its first ask,
+  OpenRouter alone carried the run for about 114 min and spent 9.218 USD,
+  and 24 rounds waited 250 s or more on a dead stream that held the quorum.
+  NeuralWatt's measured energy was 2.84 times its estimate;
+  that no stop line fired at the dry reading is the designed behaviour,
+  and ledger B808 recalibrated the under-reading estimate on 2026-10-22 (UTC).
+  Hung rounds (B809) were fixed in part
+  by a first-content window of 90000 ms on the Mercury card (open to the owner's veto),
+  and a hold on seats re-asked after abandoned calls (B810) was examined and rejected;
+  the coverage rounds over an untranslated tail (B811) were examined and kept unchanged.
+  The run's build lacked commits `e336d8efc7` (B804 to B807) and `f829fc31b6` (B803),
+  so its K2 split (52 mercury abandonments) and its K3 lost claims (6 verified)
+  are a baseline from before those fixes,
+  not recurrences after them.
 - The entries never run on a recent build are the rest of the 92-entry corpus.
   The owner's rule stands:
   "We never ever need a all 92 entries launch";

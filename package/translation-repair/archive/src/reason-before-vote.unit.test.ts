@@ -38,8 +38,8 @@ await describe({
       fn: async () => {
         expectReasonFirstInSchema({
           format: ABSOLUTE_NATURALNESS_REVIEW_RESPONSE_FORMAT,
-          reason: 'reason',
-          vote: 'acceptable',
+          reason: 'assessment',
+          vote: 'isAcceptable',
         },);
         /** The user half of one review sheet. */
         const user = messageText({
@@ -54,8 +54,8 @@ await describe({
         },);
         expectReasonBeforeVoteInText({
           text: user.slice(user.indexOf('Return only JSON',),),
-          reason: 'reason one sentence',
-          vote: 'acceptable boolean',
+          reason: 'assessment one sentence',
+          vote: 'isAcceptable boolean',
         },);
       },
     },),
@@ -63,7 +63,7 @@ await describe({
       name: 'ASKS THE COVERAGE JUDGE for the reason first, in the schema and the instruction, before the coverage '
         + 'verdict',
       fn: async () => {
-        expectReasonFirstInSchema({ format: COVERAGE_RESPONSE_FORMAT, reason: 'reason', vote: 'coverage', },);
+        expectReasonFirstInSchema({ format: COVERAGE_RESPONSE_FORMAT, reason: 'assessment', vote: 'coverage', },);
         /** Every message of one coverage question, joined. */
         const sheet = buildCoverageMessages({
           sourcePassage: '猫睡了。',
@@ -76,18 +76,18 @@ await describe({
           .join('\n',);
         expectReasonBeforeVoteInText({
           text: sheet.slice(sheet.indexOf('Reply with JSON only',),),
-          reason: '"reason":',
+          reason: '"assessment":',
           vote: '"coverage":',
         },);
       },
     },),
     it({
-      name: 'ASKS THE ARCHIVE BLOCK REVIEW for its finding, the reason it gives, first in the schema and the '
+      name: 'ASKS THE ARCHIVE BLOCK REVIEW for its assessment, the reason it gives, first in the schema and the '
         + 'instruction, before the disposition',
       fn: async () => {
         expectReasonFirstInSchema({
           format: ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT,
-          reason: 'finding',
+          reason: 'assessment',
           vote: 'disposition',
         },);
         /** Every message of one review, joined. */
@@ -103,7 +103,7 @@ await describe({
           .join('\n',);
         expectReasonBeforeVoteInText({
           text: sheet.slice(sheet.indexOf('Reply with JSON only',),),
-          reason: '"finding":',
+          reason: '"assessment":',
           vote: '"disposition":',
         },);
       },

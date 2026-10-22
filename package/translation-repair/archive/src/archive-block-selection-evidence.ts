@@ -293,7 +293,7 @@ export function archiveBlockSelectionEvidence(
     const {
       disposition,
       replacementText,
-      finding,
+      assessment: finding,
     } = voice.value;
     /**
      Retention points at original text, not an unused replacement field.

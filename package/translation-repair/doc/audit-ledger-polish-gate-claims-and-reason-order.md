@@ -203,9 +203,359 @@ the consistency schemas were already reason first,
 and the other two sheets do not carry these ballots.
 The archive block review has no version of its own.
 
+Note of 2026-10-22 (UTC):
+the key names in this entry are the names of the day.
+B762 renamed several of them in the reply,
+and its entry lists the current names.
+
 Consequence found in the same change:
 five cases of `archive-composite-revision.unit.test.ts` failed on the new sheet text,
 and are recorded as B734.
+
+## B762: sixteen answer schemas declare their properties in an order Hyper does not keep
+
+Status:
+fixed on 2026-10-22 (UTC),
+guard written red on 2026-10-21 (UTC) `d5562122314a`,
+fix `a40de882b5`.
+
+Found while the order of reason and vote (B732) was being checked against the replies of the two logs.
+Charm Hyper returns the keys of a tool call in alphabetical order:
+200 of 227 multi-key objects in zheermao22,
+and 102 of 103 vote replies in CuspariaKLSY22
+(a reply whose keys were already in alphabetical order cannot show it).
+NeuralWatt,
+OpenRouter and Synthetic follow the declared order.
+So on Hyper the ruling of 2026-10-21,
+"Reason first everywhere",
+holds only where `reason` sorts before the choice,
+and in most ballots it does not.
+
+Does the repo sort:
+no.
+`canonicalPromptValue` digests the messages for the uniqueness check and never reaches a request body,
+`buildAnthropicBody` and `renderToolSystemPrompt` place the schema as declared,
+and no other path reorders a schema or a reply.
+Whether Hyper sorts the schema it sends the model or the reply the model wrote is not known from the stored replies,
+and no probe of it was made.
+The only order that holds on every provider is one where declared order and alphabetical order agree.
+
+The guard:
+`source-scan/src/schema-property-order.unit.test.ts` reads every object literal that is the value of a `properties` key
+in non-test source,
+and names the file,
+the line,
+the declared order and the alphabetical order.
+Its fixture case passes first and shows each form:
+bare and quoted keys,
+a sorted member,
+a one-key member,
+a spread,
+a computed key,
+an object that merely holds keys and a test file.
+The package-wide case was red with sixteen findings and is green now.
+The task `source-scan:source-scans` lists the file.
+
+The sixteen schemas,
+as they were declared and the order they have now:
+- `adjudication/adjudicate-wire.ts:234`:
+  `verdicts`,
+  `groups` must read `groups`,
+  `verdicts`.
+- `adjudication/adjudicate-wire.ts:247`:
+  `claim`,
+  `reason`,
+  `vote`,
+  `severity` must read `claim`,
+  `reason`,
+  `severity`,
+  `vote`.
+- `adjudication/candidate-select-wire.ts:362`:
+  `reason`,
+  `best`.
+- `adjudication/critic-wire.ts:158`:
+  `summary` before `sourceQuote`.
+- `adjudication/introduced-defect-wire.ts:741`:
+  `region`,
+  `verdict`,
+  `category`,
+  `severity`,
+  `evidence`,
+  `omittedText`,
+  `reason`.
+- `archive/absolute-naturalness-review-wire.ts:120`:
+  `reason`,
+  `findings`,
+  `acceptable`.
+- `archive/archive-block-review-wire.ts:314`:
+  `finding`,
+  `disposition`,
+  `sourceQuote`,
+  `replacementText`.
+- `archive/coverage-wire.ts:406`:
+  `reason`,
+  `quote`,
+  `coverage`.
+- `artifact/page-title-lexicon-wire.ts:286`:
+  `title`,
+  `rendering`.
+- `consistency/consistency-choice.ts:80`:
+  `reason`,
+  `choice`.
+- `consistency/consistency-wire.ts:387`:
+  `reason`,
+  `quotes`,
+  `choice`,
+  `keep`.
+- `lane-contest/contest-ballot-wire.ts:138`:
+  `reason`,
+  `unsupported`,
+  `dropped`,
+  `choice`.
+- `rendering-audit/rendering-audit-wire.ts:341`:
+  `verdict`,
+  `findings`.
+- `repair/edit-wire.ts:124`:
+  `region`,
+  `newText`.
+- `repair/refine-wire.ts:130`:
+  `paragraph`,
+  `newText`.
+- `translate-floor/translate-repair-wire.ts:220`:
+  `resolution`,
+  `translation`,
+  `explanation`.
+
+What changed:
+the declared order of each of the sixteen is now its alphabetical order,
+and the reply instruction of each sheet that lists the keys lists them in that order.
+Every reader destructures by property name,
+so a reordered reply changed nothing in a reader.
+
+Reordered only,
+nothing renamed,
+because no ruling fixes their order:
+- the panel verdict (`adjudication/src/adjudicate-wire.ts`):
+  `groups` then `verdicts`,
+  and each verdict reads `claim`,
+  `reason`,
+  `severity`,
+  `vote`.
+- the critic (`adjudication/src/critic-wire.ts`):
+  `sourceQuote` before `summary`.
+- the page title lexicon (`artifact/src/page-title-lexicon-wire.ts`):
+  `rendering` then `title`.
+- the rendering audit (`rendering-audit/src/rendering-audit-wire.ts`):
+  `findings` then `verdict`,
+  and the six fields of a finding in alphabetical order
+  (`candidateFocus`,
+  `candidateLocator`,
+  `category`,
+  `reason`,
+  `sourceFocus`,
+  `sourceLocator`).
+  The scan cannot read the finding schema,
+  which is built from a list,
+  so `rendering-audit-wire.unit.test.ts` pins it.
+- the editor's rewrite (`repair/src/edit-wire.ts`):
+  `newText` then `region`.
+- the refinement rewrite (`repair/src/refine-wire.ts`):
+  `newText` then `paragraph`.
+
+Renamed,
+because a ruling fixes the order and the old name sorted elsewhere
+(old name to new name,
+and why):
+- the select ballot (`adjudication/src/candidate-select-wire.ts`):
+  `reason` to `assessment`.
+  `reason` sorts after `best`,
+  `assessment` before it.
+- the absolute naturalness review (`archive/src/absolute-naturalness-review-wire.ts`):
+  `reason` to `assessment`,
+  and `acceptable` to `isAcceptable`.
+  `acceptable` sorts before `assessment`,
+  so the choice is named as the question it answers and now sorts after `findings`.
+- the archive block review (`archive/src/archive-block-review-wire.ts`):
+  `finding` to `assessment`,
+  with `replacementText` before `sourceQuote`.
+  `finding` was its reason and sorts after `disposition`.
+- the coverage judge (`archive/src/coverage-wire.ts`):
+  `reason` to `assessment`,
+  and `quote` to `copiedSpan`.
+  `quote` sorts before `reason`,
+  and `copiedSpan` is the span copied from the translation,
+  which sorts between the reason and `coverage`.
+- the choice-only consistency ballot (`consistency/src/consistency-choice.ts`):
+  `reason` to `assessment`.
+- the consistency ballot (`consistency/src/consistency-wire.ts`):
+  `reason` to `assessment`,
+  and `quotes` to `candidateQuotes`.
+  `quotes` sorts after `choice`,
+  and the quotes are the analysis the choice rests on.
+- the contest ballot (`lane-contest/src/contest-ballot-wire.ts`):
+  `reason` to `assessment`,
+  `choice` to `verdict`,
+  and `archive` to `verdictOnArchive`,
+  with `dropped` before `unsupported`.
+  `choice` sorts before the two lists and `archive` before the reason;
+  `verdictOnArchive` sorts after `verdict`,
+  so the archive answer stays behind the lane answer.
+  The schema spreads the archive member in,
+  which the scan skips,
+  so `contest-ballot-wire.unit.test.ts` pins its place.
+- the introduced-defect wire (`adjudication/src/introduced-defect-wire.ts`):
+  `reason` to `verdictReason`,
+  and the rest in alphabetical order
+  (`category`,
+  `evidence`,
+  `omittedText`,
+  `region`,
+  `severity`,
+  `verdict`).
+  The ruling of B732 keeps this reason last,
+  and `verdictReason` sorts after `verdict`.
+- the rewrite wire (`translate-floor/src/translate-repair-wire.ts`):
+  `explanation` to `translatorNote`.
+  The ruling of B732 keeps the explanation after the translation,
+  and `translatorNote` sorts after `translation`,
+  where `explanation` sorted before `resolution`.
+
+Names chosen,
+and why:
+- `assessment` is the reason wherever a ballot gives its reason first.
+  It sorts before every other key of those ballots,
+  and one name serves the select ballot,
+  the naturalness review,
+  the archive block review,
+  the coverage judge,
+  both consistency ballots and the contest ballot.
+  The panel verdict keeps `reason`,
+  which already sorts where the ruling wants it,
+  because a stored record spells it.
+- `verdict` is the vote of the contest ballot and `verdictOnArchive` its archive answer.
+  `verdictReason` is the reason that comes last in the introduced-defect wire.
+  The three share a stem,
+  so a reader sees which answer a key belongs to.
+- `isAcceptable` is a yes or no and reads as the question.
+  `candidateQuotes` and `copiedSpan` say whose words the field holds.
+  `translatorNote` says who writes the explanation and where it goes.
+
+Where the names live:
+only the reply is renamed.
+The wire types,
+their guards,
+the response formats,
+the reply instructions and the one function per reply that maps it to the internal shape carry the new names.
+The internal shapes,
+the cache files,
+the stored ballots,
+the artifacts and the ledgers keep the old spelling,
+so a record written before reads as it did and no reading under two spellings (as B107 did) is needed.
+The mapping functions are
+`readConsistencyBallotWire` and `readConsistencyChoiceWire` (`consistency`),
+the readers in `lane-contest-wire.ts`,
+`consolidate-gate-wire.ts` and `consolidation-polish-gate-wire.ts`,
+the introduced-defect screen,
+`candidate-select-count.ts`,
+`coverage-verdict.ts`,
+`archive-block-selection-evidence.ts`,
+the naturalness review stage and `translate-repair.ts`.
+A reader of a log meets both spellings:
+the reply text says `assessment` where the stored ballot says `reason`.
+
+Tests:
+`reason-before-vote.unit.test.ts` in `lane-contest`,
+`consolidate`,
+`adjudication` and `archive` still pass over `reason-order.test-fixture.ts`:
+each asks that the schema declares and requires the reason first and that the rendered instruction names it first.
+The scripted replies of the consistency,
+contest,
+select,
+coverage,
+introduced-defect and rewrite tests,
+and the fixtures of `provider`,
+`repair` and `run`,
+spell the new reply keys.
+Two pins are hand-written because the scan cannot read the schema:
+the finding schema of the rendering audit and the archive member of the contest ballot.
+`source-scan:source-scans` is green with no allow-list.
+
+Cache account:
+the key of each version this account moves hashes the version,
+the shape of the run and the texts,
+not the sheet,
+so a record written under the old reply instruction would be served under the new
+and the number moves wherever a sheet carries a renamed or reordered schema
+(as B732 did).
+- `CONSOLIDATE_CACHE_VERSION` 30 to 31
+  (main set 30 for B805 while this change was written,
+  so this change took the next number when it merged main):
+  the contest ballot of both gates,
+  the naturalness review,
+  the coverage judge,
+  the select ballot and the introduced-defect check over a polish.
+- `LANE_CONTEST_CACHE_VERSION` 14 to 15:
+  the contest ballot.
+- `TRANSLATE_SLICE_CACHE_VERSION` 23 to 24:
+  the rewrite wire,
+  the select ballot and the coverage judge.
+- `SLICE_CACHE_VERSION` 41 to 42:
+  the panel verdict,
+  the critic,
+  the introduced-defect check,
+  the select ballot,
+  the coverage judge and the editor's rewrite.
+- `REFINE_CACHE_VERSION` 12 to 13:
+  the refinement rewrite,
+  the select ballot and the introduced-defect check.
+- `PAGE_TITLE_CACHE_VERSION` 4 to 5:
+  the page title lexicon reply.
+Stay:
+`CONSISTENCY_CACHE_VERSION` 6,
+because only the reply is renamed,
+what a stored answer must contain is what it was,
+and its key digests the exact sheet,
+whose reply instruction changed;
+`PAIRING_CACHE_VERSION` 3,
+since no pairing sheet carries a schema of this change.
+The rendering audit has no version:
+the only callers of `runRenderingAudit` are the probe runners
+`probe/src/corpus-run/audit-sensitivity-run.ts` and `rendering-audit-settled-buy.ts`.
+Evidence:
+`cache-account-audit` read eight versions,
+and `git log` shows the five slice versions and the consolidate version last set in `4b9fc9e645` on 2026-10-21 (UTC),
+the page title version in `28f4b8fc75`.
+It found 0 slice-cache records under this worktree's runs directory,
+and no control that finds records was run,
+so that absence shows nothing.
+The pass that writes records runs in another worktree that this change did not read,
+so whether a record stands at the old numbers is not known and none of the changes rides inside an old number.
+No record has been written at any new number.
+
+Known limits:
+- Whether Hyper sorts the schema it sends the model or the reply the model wrote was not probed.
+  The decision here is that declared order equals alphabetical order,
+  which holds on both readings.
+- The scan reads literal `properties` objects in non-test source.
+  A schema built by spread or `Object.fromEntries` needs a pin of its own.
+- The reason of the rewrite wire and the introduced-defect wire stays after the content it explains,
+  by the rulings of B732,
+  so a reply cut short by the completion cap still loses it first.
+- A key named for its sort position is a cost to the reader of a log,
+  who now meets two names for one field.
+- Whether a ballot written reason first moves votes is not measured.
+
+Open to the owner's veto:
+the names chosen and the decision to rename rather than probe Hyper.
+
+The rule for next time:
+a ruling about the order of keys in a reply is checked against a provider that reorders them,
+and what the reply order depends on is stated beside the ruling.
+A key is named for its role so that it sorts where the ruling puts it,
+and a schema is declared in the order its keys sort.
+Recurrence:
+`mistake-prevention-sheets-quorums-and-outcome-rules.md`,
+"Ballots give their reason first".
 
 ## B805: the polish writers were never shown the claims the polish gate judged them against
 

@@ -31,7 +31,7 @@ import { scratchDirWith, } from '@monochromatic-dev/translation-repair-test-fixt
  const commit: RepoCommit = { hash: 'f6e93ed5f0000000000000000000000000000000', seconds: 1_788_000_000, subject: 'teach Tabby a longer nap', };
  ```
  */
-type RepoCommit = {
+export type RepoCommit = {
   /**
    Full object id.
    */
@@ -132,7 +132,7 @@ const FIRST_COMMIT_SECONDS = Date.parse('2026-09-01T10:00:00Z',) / MS_PER_SECOND
  const commit = await commitAt({ cloneDir, day: 1, subject: 'teach Tabby a longer nap', },);
  ```
  */
-async function commitAt(
+export async function commitAt(
   {
     cloneDir,
     day,
@@ -222,7 +222,7 @@ async function commitAt(
  await writeAtRepo({ cloneDir, path: 'src/nap.ts', text: 'export const NAP = 1;\n', },);
  ```
  */
-async function writeAtRepo(
+export async function writeAtRepo(
   {
     cloneDir,
     path,

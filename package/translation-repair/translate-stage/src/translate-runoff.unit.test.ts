@@ -209,7 +209,7 @@ function scriptedRig(
             content,
             needle,
           },),
-          reason: 'fixture',
+          assessment: 'fixture',
         };
         if (!request.validate(ballot,))
           throw new Error('the fixture ballot failed the wire guard',);

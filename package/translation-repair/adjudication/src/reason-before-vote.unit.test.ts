@@ -4,7 +4,7 @@
  "Reason before vote").
 
  THE REPLY IS READ BY PROPERTY NAME (`isCandidateBallotAsSent` destructures
- `best` and `reason`), so the order changes only what a model writes first.
+ `best` and `assessment`), so the order changes only what a model writes first.
  Fixtures are cat-themed invention.
 
  @module
@@ -30,7 +30,7 @@ await describe({
     it({
       name: 'DECLARES AND REQUIRES THE REASON FIRST in the schema, before the candidate number',
       fn: async () => {
-        expectReasonFirstInSchema({ format: CANDIDATE_SELECT_RESPONSE_FORMAT, reason: 'reason', vote: 'best', },);
+        expectReasonFirstInSchema({ format: CANDIDATE_SELECT_RESPONSE_FORMAT, reason: 'assessment', vote: 'best', },);
       },
     },),
     it({
@@ -45,7 +45,7 @@ await describe({
         },).at(0,)?.content ?? '';
         expectReasonBeforeVoteInText({
           text: system,
-          reason: '{"reason": "..."',
+          reason: '{"assessment": "..."',
           vote: '"best": 1}',
         },);
       },

@@ -121,7 +121,7 @@ function scriptedJudges(
        */
       const scripted: unknown = {
         best: ballots[request.modelId] ?? 0,
-        reason: 'scripted',
+        assessment: 'scripted',
       };
       if (!request.validate(scripted,))
         throw new Error('stub script failed the ballot guard',);

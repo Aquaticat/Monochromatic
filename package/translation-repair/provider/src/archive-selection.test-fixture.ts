@@ -169,7 +169,7 @@ export function archiveSelectionFixture(
     disposition: 'source-supported',
     sourceQuote: ARCHIVE_TEST_SOURCE,
     replacementText: '',
-    finding: 'Valid retention opinion.',
+    assessment: 'Valid retention opinion.',
   };
   /**
    Invalid retention evidence remains in audit findings, not selector authority.
@@ -177,7 +177,7 @@ export function archiveSelectionFixture(
   const unanchored = {
     ...retained,
     sourceQuote: 'This is not in the source.',
-    finding: 'Unanchored retention opinion.',
+    assessment: 'Unanchored retention opinion.',
   };
   /**
    Both complete and incomplete schema-valid revisions require independent selection.
@@ -186,7 +186,7 @@ export function archiveSelectionFixture(
     disposition: 'revise',
     sourceQuote: '',
     replacementText: ARCHIVE_TEST_CORRECTION,
-    finding: 'Correct the spelling without changing meaning.',
+    assessment: 'Correct the spelling without changing meaning.',
   };
   /**
    Incomplete value tests that independent selection receives the actual proposal.
@@ -194,7 +194,7 @@ export function archiveSelectionFixture(
   const partial = {
     ...corrected,
     replacementText: ARCHIVE_TEST_PARTIAL,
-    finding: 'A competing partial proposal.',
+    assessment: 'A competing partial proposal.',
   };
   /**
    Fixed review shapes make the guard independent of prompt-rotated model order.
@@ -312,7 +312,7 @@ export function archiveSelectionFixture(
           text,
           wanted: selection === 'original' ? ARCHIVE_TEST_BLOCK : ARCHIVE_TEST_CORRECTION,
         },),
-        reason: 'Fixture selects the exact intended block.',
+        assessment: 'Fixture selects the exact intended block.',
       };
       if (!request.validate(value,))
         throw new Error('Invalid fixture selector reply',);

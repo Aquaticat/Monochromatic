@@ -112,7 +112,7 @@ await describe({
           },
         },),).toEqual({
           best: '2',
-          reason: `${TYPED_BALLOT_REASON}: probabilities {"0":0.1,"1":0.2,"2":0.7}, confidence 0.6`,
+          assessment: `${TYPED_BALLOT_REASON}: probabilities {"0":0.1,"1":0.2,"2":0.7}, confidence 0.6`,
         },);
         expect(decision.read({},),).toBe(NO_TYPED_ANSWER,);
       },
@@ -137,7 +137,7 @@ await describe({
           },
         },),).toEqual({
           best: '2',
-          reason: `${TYPED_BALLOT_REASON}: probabilities unreported, confidence unreported`,
+          assessment: `${TYPED_BALLOT_REASON}: probabilities unreported, confidence unreported`,
         },);
       },
     },),
@@ -162,7 +162,7 @@ await describe({
             /**
              Ballot as the wire expects it.
              */
-            const ballot: unknown = { best: 2, reason: 'written', };
+            const ballot: unknown = { best: 2, assessment: 'written', };
             if (!request.validate(ballot,))
               throw new Error('the fixture ballot failed the wire guard',);
             return {

@@ -192,16 +192,16 @@ await describe({
                 name: 'page_consistency_choice',
                 schema: {
                   type: 'object',
-                  required: ['reason', 'choice',],
+                  required: ['assessment', 'choice',],
                   additionalProperties: false,
                   properties: {
-                    reason: { type: 'string', },
+                    assessment: { type: 'string', },
                     choice: { type: 'string', enum: ['OCCURRENCE 3', 'OCCURRENCE 4',], },
                   },
                 },
               },
             },);
-            expect(Object.keys(format.json_schema.schema.properties as Record<string, unknown>,),).toEqual(['reason', 'choice',],);
+            expect(Object.keys(format.json_schema.schema.properties as Record<string, unknown>,),).toEqual(['assessment', 'choice',],);
           },
         },),
       ],
@@ -222,11 +222,11 @@ await describe({
                 name: 'page_consistency',
                 schema: {
                   type: 'object',
-                  required: ['reason', 'quotes', 'choice', 'keep',],
+                  required: ['assessment', 'candidateQuotes', 'choice', 'keep',],
                   additionalProperties: false,
                   properties: {
-                    reason: { type: 'string', },
-                    quotes: {
+                    assessment: { type: 'string', },
+                    candidateQuotes: {
                       type: 'array',
                       items: {
                         type: 'object',
@@ -246,8 +246,8 @@ await describe({
               },
             },);
             expect(Object.keys(format.json_schema.schema.properties as Record<string, unknown>,),).toEqual([
-              'reason',
-              'quotes',
+              'assessment',
+              'candidateQuotes',
               'choice',
               'keep',
             ],);

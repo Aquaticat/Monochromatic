@@ -111,7 +111,7 @@ await describe({
             + 'showed every note between translators; and from 11 to 12 with the ballots that give their reason first (owner, 2026-10-21): '
             + 'a stored refinement was chosen on a selection ballot that asked for the candidate before its reason)',
           fn: async () => {
-            expect(refineSliceKey(BASE,),).toBe('6f551b50d2a054c096cb3b1a29b9007f739feb4506deeebf5fe1db99c204b29f',);
+            expect(refineSliceKey(BASE,),).toBe('d13040874079f9ca26b8ba3ba7e9a562c115470b98efed7de74ce84f92b5b091',);
           },
         },),
 

@@ -99,7 +99,7 @@ function scriptedProducer(
           ? {
             resolution: 'revised',
             translation,
-            explanation: 'the line break is back',
+            translatorNote: 'the line break is back',
           }
           : { translation, };
         return {

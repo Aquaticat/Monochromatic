@@ -528,6 +528,20 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       // since 2026-09-21: it bills far more tokens than it streams (ledger P7,
       // 2026-09-28).
       rawCharsPerToken: 0.9,
+      // FIRST TEXT WITHIN 90 SECONDS (ledger B809, read on 2026-10-22 UTC).
+      // In XingZ6017, twenty-six rounds waited 250 to 360 s on a stream of
+      // this model (two rounds on two in a row) that sent only `: OPENROUTER PROCESSING` comment lines
+      // (about 727 of them, first byte under a second, a gap never past a
+      // second) until the gateway ended it with HTTP 502 at about 301 s; the
+      // retry then answered in 5 to 9 s. Over the 24 pass logs on disk
+      // (CuspariaKLSY16 to XingZ6017) 4,636 streams of this model delivered
+      // text, p50 6.7 s, p99 20.3 s, the longest 56,772 ms from arming to the
+      // end of the stream, so the first text came no later than that; and of
+      // the 130 streams that ran a minute or more with no text, none
+      // delivered any. 90,000 ms is 59 percent over the longest, the margin
+      // B804 gave the shared window over its own longest observation (56
+      // percent). The shared window is 180,000 ms. Open to the owner's veto.
+      firstContentMs: 90_000,
     },
     // Own p99 3,063 over 136 OpenRouter calls, under the pooled 90th (read
     // at 20:05 UTC on 2026-09-09).

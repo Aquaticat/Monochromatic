@@ -324,7 +324,7 @@ function judgingClient({ rendering, }: { readonly rendering: string; },): ModelC
         ? { translation: rendering, }
         : {
           best: candidateNumberCarrying({ sheet: content, sentinel: FRESH_SENTINEL, },),
-          reason: 'fixture',
+          assessment: 'fixture',
         };
       if (!request.validate(reply,)) {
         return {

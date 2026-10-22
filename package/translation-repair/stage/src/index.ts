@@ -156,6 +156,7 @@ export {
   roundLine,
   type RoundLineQuorum,
 } from './stage-round-line.ts';
+export { StragglerCutError, } from './straggler-cut.ts';
 export {
   type RoundOutcome,
   runGatherRound,

@@ -76,8 +76,8 @@ function voiceOf(
     modelId,
     value: {
       coverage,
-      quote,
-      reason: 'fixture',
+      copiedSpan: quote,
+      assessment: 'fixture',
     },
   };
 }
@@ -438,19 +438,19 @@ await describe({
           fn: async () => {
             expect(isCoverageReportWire({
               coverage: 'full',
-              quote: '',
-              reason: 'it is in there somewhere',
+              copiedSpan: '',
+              assessment: 'it is in there somewhere',
             },),).toBe(false,);
             expect(isCoverageReportWire({
               coverage: 'partial',
-              quote: '   ',
-              reason: 'whitespace is not evidence',
+              copiedSpan: '   ',
+              assessment: 'whitespace is not evidence',
             },),).toBe(false,);
             // Nor is a quote no reader sees, which trim() keeps (ledger B40).
             expect(isCoverageReportWire({
               coverage: 'full',
-              quote: '\u{3164}',
-              reason: 'a filler is not evidence',
+              copiedSpan: '\u{3164}',
+              assessment: 'a filler is not evidence',
             },),).toBe(false,);
           },
         },),
@@ -460,8 +460,8 @@ await describe({
           fn: async () => {
             expect(isCoverageReportWire({
               coverage: 'none',
-              quote: 'She watches the birds outside.',
-              reason: 'contradicts itself',
+              copiedSpan: 'She watches the birds outside.',
+              assessment: 'contradicts itself',
             },),).toBe(false,);
           },
         },),
@@ -471,25 +471,25 @@ await describe({
           fn: async () => {
             expect(isCoverageReportWire({
               coverage: 'none',
-              quote: '',
-              reason: 'nothing renders it',
+              copiedSpan: '',
+              assessment: 'nothing renders it',
             },),).toBe(true,);
             // A quote showing nothing quotes nothing, so it agrees with no coverage
             // (ledger B40).
             expect(isCoverageReportWire({
               coverage: 'none',
-              quote: '\u{200B}',
-              reason: 'nothing renders it',
+              copiedSpan: '\u{200B}',
+              assessment: 'nothing renders it',
             },),).toBe(true,);
             expect(isCoverageReportWire({
               coverage: 'full',
-              quote: 'She watches the birds outside.',
-              reason: 'rendered here',
+              copiedSpan: 'She watches the birds outside.',
+              assessment: 'rendered here',
             },),).toBe(true,);
             expect(isCoverageReportWire({
               coverage: 'mostly',
-              quote: 'She watches the birds outside.',
-              reason: 'not one of the three',
+              copiedSpan: 'She watches the birds outside.',
+              assessment: 'not one of the three',
             },),).toBe(false,);
           },
         },),

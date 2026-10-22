@@ -346,7 +346,7 @@ function recordingClient(
          */
         const ballot: unknown = {
           best: 1,
-          reason: 'the cat is the whole point',
+          assessment: 'the cat is the whole point',
         };
         if (!request.validate(ballot,))
           throw new Error('scripted ballot failed the wire guard',);

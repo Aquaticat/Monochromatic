@@ -167,7 +167,7 @@ await describe({
                     : 'Mittens spoke of her self-surgery.',
                 },],
               }
-              : { best: 1, reason: 'Fixture decision.', };
+              : { best: 1, assessment: 'Fixture decision.', };
             if (!request.validate(value,))
               throw new Error('Invalid fixture reply',);
             return {

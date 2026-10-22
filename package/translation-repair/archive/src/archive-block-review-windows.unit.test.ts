@@ -92,11 +92,11 @@ async function reviewWith(
           disposition: 'revise',
           sourceQuote: '',
           replacementText: modelId === STRAGGLER ? LATE_REVISION : QUICK_REVISION,
-          finding: 'Remove the unsupported award claim.',
+          assessment: 'Remove the unsupported award claim.',
         }
         : {
           best: 1,
-          reason: 'Only supported details remain.',
+          assessment: 'Only supported details remain.',
         },
     },),
     modelIds: ROSTER,

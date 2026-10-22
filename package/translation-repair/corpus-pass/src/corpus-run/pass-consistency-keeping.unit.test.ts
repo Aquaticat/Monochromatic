@@ -164,7 +164,7 @@ function writersAndJudges({ offender, }: { readonly offender: 'sentence' | 'refr
       return {
         kind: 'answers',
         text: JSON.stringify({
-          reason: 'It carries the chosen words.',
+          assessment: 'It carries the chosen words.',
           choice: offending?.label ?? alternative?.label ?? 'CANDIDATE 1',
         },),
       };
@@ -199,7 +199,7 @@ function sentenceRunsIntoChosenRefrain({ sheet, }: Parameters<SeatScript>[0],): 
     return {
       kind: 'answers',
       text: JSON.stringify({
-        reason: 'It carries the chosen words.',
+        assessment: 'It carries the chosen words.',
         choice: candidateTextsOf({ sheet, },).find(function isAlternative({ current, },): boolean {
           return !current;
         },)?.label ?? 'CANDIDATE 1',

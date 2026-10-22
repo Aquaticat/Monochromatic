@@ -218,7 +218,7 @@ function driftingClient({ ballot = 0, }: {
          */
         const ballotReply: unknown = {
           best: ballot,
-          reason: 'fixture',
+          assessment: 'fixture',
         };
         if (!request.validate(ballotReply,)) {
           return {

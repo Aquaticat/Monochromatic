@@ -40,14 +40,17 @@ export type AbsoluteNaturalnessFinding = {
 
  @example
  ```ts
- const reply: AbsoluteNaturalnessReviewWire = { acceptable: true, findings: [], reason: 'publication-ready English' };
+ const reply: AbsoluteNaturalnessReviewWire = { assessment: 'publication-ready English', findings: [], isAcceptable: true };
  ```
  */
 export type AbsoluteNaturalnessReviewWire = {
   /**
-   Whether whole candidate meets absolute naturalness floor.
+   Concise explanation of verdict.
+
+   NAMED `assessment` so that it sorts first, which keeps the reason ahead of the verdict on a provider that returns a
+   tool call's keys alphabetically (owner, 2026-10-21, "Reason first everywhere"; ledger B762).
    */
-  readonly acceptable: boolean;
+  readonly assessment: string;
 
   /**
    Actionable naturalness defects, empty only for acceptable candidate.
@@ -55,9 +58,11 @@ export type AbsoluteNaturalnessReviewWire = {
   readonly findings: readonly AbsoluteNaturalnessFinding[];
 
   /**
-   Concise explanation of verdict.
+   Whether whole candidate meets absolute naturalness floor.
+
+   NAMED `isAcceptable` so that it sorts after `findings` (ledger B762).
    */
-  readonly reason: string;
+  readonly isAcceptable: boolean;
 };
 
 /**
@@ -117,8 +122,9 @@ export const ABSOLUTE_NATURALNESS_REVIEW_RESPONSE_FORMAT: JsonSchemaResponseForm
     strict: true,
     schema: {
       type: 'object',
+      // DECLARED IN THE ORDER THE KEYS SORT (ledger B762), the reason first by the owner's ruling of 2026-10-21.
       properties: {
-        reason: { type: 'string', },
+        assessment: { type: 'string', },
         findings: {
           type: 'array',
           items: {
@@ -137,12 +143,12 @@ export const ABSOLUTE_NATURALNESS_REVIEW_RESPONSE_FORMAT: JsonSchemaResponseForm
             additionalProperties: false,
           },
         },
-        acceptable: { type: 'boolean', },
+        isAcceptable: { type: 'boolean', },
       },
       required: [
-        'reason',
+        'assessment',
         'findings',
-        'acceptable',
+        'isAcceptable',
       ],
       additionalProperties: false,
     },
@@ -166,9 +172,9 @@ export function isAbsoluteNaturalnessReviewWire(
 ): value is AbsoluteNaturalnessReviewWire {
   if (!isJsonRecord(value,))
     return false;
-  if (!('acceptable' in value))
+  if (!('isAcceptable' in value))
     return false;
-  if ((typeof value.acceptable) !== 'boolean')
+  if ((typeof value.isAcceptable) !== 'boolean')
     return false;
   if (!('findings' in value))
     return false;
@@ -200,15 +206,15 @@ export function isAbsoluteNaturalnessReviewWire(
       return !rendersAsNothing({ text: problem, },);
     },))
     return false;
-  if (!('reason' in value))
+  if (!('assessment' in value))
     return false;
-  if ((typeof value.reason) !== 'string')
+  if ((typeof value.assessment) !== 'string')
     return false;
   /**
    Findings after array and element validation.
    */
   const { findings, } = value;
-  if (value.acceptable)
+  if (value.isAcceptable)
     return findings.length === 0;
   return findings.length > 0;
 }
@@ -381,7 +387,7 @@ In this review, a candidate obeying a house rule is never unacceptable for it, a
         'STRUCTURALLY CORRECTABLE PARAGRAPHS:',
         paragraphs,
         '',
-        'Return only JSON: reason one sentence, given before the verdict; findings objects with paragraph and problem; acceptable boolean.',
+        'Return only JSON: assessment one sentence, given before the verdict; findings objects with paragraph and problem; isAcceptable boolean.',
       ].join('\n',),
     },
   ];

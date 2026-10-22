@@ -30,6 +30,29 @@ export function recordingTransport(
 }
 
 /**
+ A transport that keeps each whole exchange it is handed and refuses it, for
+ tests that read what a client puts on the exchange besides the body.
+
+ @param seen - where the exchanges go
+
+ @returns Transport recording each exchange
+
+ @example
+ ```ts
+ const transport = keepingTransport({ seen, },);
+ ```
+ */
+export function keepingTransport(
+  { seen, }: { readonly seen: TransportExchange[]; },
+): (exchange: TransportExchange,) => Promise<never> {
+  return async function keep(exchange,): Promise<never> {
+    seen.push(exchange,);
+    await Promise.resolve();
+    throw new Error('recorded, not sent',);
+  };
+}
+
+/**
  Awaits a call whose failure is expected, since the transport records and
  refuses every body.
 

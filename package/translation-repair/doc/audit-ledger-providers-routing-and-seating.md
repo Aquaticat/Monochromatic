@@ -853,6 +853,19 @@ Record:
 `doc/decision/translation-repair-neuralwatt-provider.md`,
 section "The margin".
 
+Update of 2026-10-22 (UTC):
+the figures this entry names,
+0.0758 and 0.3725 Wh,
+were the table's for the 4,096 to 16,384 token bucket until `a55cb37c91`.
+Ledger B808 replaced them with the means of the rotation `zheermao22`,
+`CuspariaKLSY22` and `XingZ6017`:
+0.1958 Wh for DeepSeek V4.1 Flash and 0.9577 Wh for GLM-5.3-Flash in that bucket,
+and 0.3205 and 1.2239 Wh in the 16,384 to 65,536 token bucket,
+which had held the matrix's 0.1395 and 0.2009 Wh.
+The rule of this entry held again:
+one run of one entry was a placeholder for a workload that is a rotation of entries,
+and the rotation measured 2.6 times that run's means.
+
 ### P20: a failed first quota read stayed the run's starting reading for good
 
 Status:

@@ -1,7 +1,8 @@
 # Audit ledger: clocks and durations
 
 Durations measured on the system clock,
-and test bounds on the real clock a loaded machine could outrun.
+and test bounds on the real clock a loaded machine could outrun,
+among them the held review seat that landed before quorum under load (B813).
 
 Part of [Audit ledger](audit-ledger.md),
 which lists every file of this record.
@@ -867,3 +868,69 @@ whether the extra 60 seconds turns the cut into a rewrite or into a cap-cut empt
 and how often a review round reaches the window at all.
 The cost is at most 60 seconds on a review round with a straggler past 120 seconds,
 bounded by the 360000 ms call deadline.
+
+## B813: the held review seat landed before quorum once under the sweep's load, and a bounds entry said it never could
+
+Status:
+fixed on 2026-10-22 (UTC),
+fix `94b50fca0f`,
+cache versions none.
+A member of the family of B318 and B713,
+found by the rotation sweep.
+
+What the sweep showed:
+the case "KEEPS THE READERS' WINDOW IN THE SELECTION ROUND (ledger B713)" of
+`package/translation-repair/archive/src/archive-block-review-windows.unit.test.ts`
+was red once with no shift (salt 0) in a full rotation sweep,
+and it passed alone.
+
+The cause:
+the scripted review client (`archive/src/scripted-review-client.test-fixture.ts`)
+held the straggler for `HELD_REPLY_MS` = 25 ms
+counted from the straggler's own request.
+The stage's own work between the three peers' answers and the quorum tally is real time,
+and under the sweep's load it took longer than 25 ms.
+The held seat therefore landed before quorum,
+and the readers' window had no straggler to cut.
+The real-clock bounds entries
+(`package/translation-repair/source-scan/src/real-clock-bounds.unit.test.ts`)
+claimed the held seat lands after quorum "on any machine",
+which was false:
+the claim covered the client's own timer and left out the stage's work after the client returns.
+
+The fix:
+the hold is 1000 ms,
+still far inside the 60000 ms hang stop that the writers' window waits,
+and both bounds entries now say why.
+After the fix the archive sweep was clean over salts 0 to 9.
+
+What was tried and dropped before the commit:
+a client-side barrier that holds the straggler until every unheld seat has answered.
+The unheld seats answer synchronously,
+so the barrier holds nothing;
+the slow part is the stage after the client returns,
+which no client-side signal can see.
+
+Why B713 did not catch it:
+B713 used a straggler delay of 25 ms "past peers that answer at once"
+and said of its cases that the green case "cannot fail on load".
+That reasoning covers the delay between the peers and the held seat,
+and leaves out the work the stage does between the last peer's answer and the tally.
+The second case of B713,
+the readers' window in the selection round,
+is the one that failed.
+
+Not measured:
+how long the stage's own work takes under the sweep's load.
+The hold of 1000 ms is a size chosen to be far above 25 ms,
+and no run measured the longest stage span.
+
+Cache versions:
+none moves.
+The change is in a test fixture and a test file.
+
+Recurrence:
+`mistake-prevention-tests-clocks-and-arrival-order.md`,
+"Tests on the real clock":
+a real-clock hold in a test fixture is sized against the stage's own work under load,
+and no bound entry claims "on any machine" for it.

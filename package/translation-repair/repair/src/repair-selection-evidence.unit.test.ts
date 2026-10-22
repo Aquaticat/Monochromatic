@@ -71,7 +71,7 @@ function judges(): { readonly client: ModelClient; readonly prompts: string[]; }
     chatJson: async <ValueT,>(request: ChatJsonRequest<ValueT>): Promise<ChatJsonOutcome<ValueT>> => {
       const prompt = JSON.stringify(request.messages.filter(message => message.role === 'user'));
       prompts.push(prompt);
-      const value = { best: prompt.includes('DOCUMENT SOURCE MARKER') && prompt.includes('NEARBY SOURCE MARKER') ? 2 : 1, reason: 'Fixture decision from supplied source evidence.', };
+      const value = { best: prompt.includes('DOCUMENT SOURCE MARKER') && prompt.includes('NEARBY SOURCE MARKER') ? 2 : 1, assessment: 'Fixture decision from supplied source evidence.', };
       if (!request.validate(value)) throw new Error('Invalid fixture ballot');
       return { kind: 'ok', value, rawText: JSON.stringify(value), };
     },

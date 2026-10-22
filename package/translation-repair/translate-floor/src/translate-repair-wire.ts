@@ -55,7 +55,7 @@ export type RepairResolution = typeof REPAIR_RESOLUTIONS[number];
  const wire: TranslateRepairWire = {
    resolution: 'unable',
    translation: '',
-   explanation: 'the footnote definition is not in this passage',
+   translatorNote: 'the footnote definition is not in this passage',
  };
  ```
  */
@@ -72,8 +72,11 @@ export type TranslateRepairWire = {
 
   /**
    Why, in the model's own words; recorded whatever the resolution.
+
+   NAMED `translatorNote` so that it sorts after `translation`, which the owner's ruling of 2026-10-21 asks of the
+   explanation (it follows the text it explains; ledger B732, B762).
    */
-  readonly explanation: string;
+  readonly translatorNote: string;
 };
 
 /**
@@ -98,11 +101,11 @@ export function isTranslateRepairWire(value: unknown,): value is TranslateRepair
   const {
     resolution,
     translation,
-    explanation,
+    translatorNote,
   } = value;
   if ((typeof translation) !== 'string')
     return false;
-  if ((typeof explanation) !== 'string')
+  if ((typeof translatorNote) !== 'string')
     return false;
   if ((typeof resolution) !== 'string')
     return false;
@@ -139,12 +142,12 @@ const REPAIR_RULES =
 Answer in one of exactly three ways:
 
 - "revised": you can fix every finding without changing anything else about your translation. Put the whole corrected translation in "translation".
-- "unable": you cannot fix them, and say why in "explanation". Your earlier translation still stands as a candidate.
-- "as-intended": your translation is right as it is and the finding is a fact about the passage or the check rather than about your work. Say why in "explanation". A footnote marker whose definition is not in this passage is the usual case.
+- "unable": you cannot fix them, and say why in "translatorNote". Your earlier translation still stands as a candidate.
+- "as-intended": your translation is right as it is and the finding is a fact about the passage or the check rather than about your work. Say why in "translatorNote". A footnote marker whose definition is not in this passage is the usual case.
 
 Do not rewrite for style, and do not translate anything you were not given.
 
-Reply with ONLY a JSON object of shape {"resolution": "...", "translation": "...", "explanation": "..."}. Use an empty string for "translation" unless the resolution is "revised". No prose, no code fences, no commentary.`;
+Reply with ONLY a JSON object of shape {"resolution": "...", "translation": "...", "translatorNote": "..."}. Use an empty string for "translation" unless the resolution is "revised". No prose, no code fences, no commentary.`;
 
 /**
  Builds the follow-up turn for one candidate's author.
@@ -214,16 +217,17 @@ export const TRANSLATE_REPAIR_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
       required: [
         'resolution',
         'translation',
-        'explanation',
+        'translatorNote',
       ],
       additionalProperties: false,
+      // DECLARED IN THE ORDER THE KEYS SORT (ledger B762): the note follows the translation it explains.
       properties: {
         resolution: {
           type: 'string',
           enum: [...REPAIR_RESOLUTIONS,],
         },
         translation: { type: 'string', },
-        explanation: { type: 'string', },
+        translatorNote: { type: 'string', },
       },
     },
   },

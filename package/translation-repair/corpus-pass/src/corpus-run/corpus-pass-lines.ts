@@ -6,6 +6,7 @@ import {
   corpusPinOverrideNote,
   type CorpusPinSetting,
   HARD_CAP_VAR,
+  type ProviderOff,
   spendCeilingOverrideNote,
 } from '@monochromatic-dev/translation-repair-run/ts';
 import { PASS_MS_PER_MINUTE, } from './corpus-pass-limits.ts';
@@ -247,6 +248,29 @@ export function passRequiredLines({ providers, }: { readonly providers: readonly
   if (providers.length === 0)
     return [];
   return [`REQUIRED-PROVIDERS ${providers.join(',',)} status=wet`,];
+}
+
+/**
+ Lines saying which providers the run leaves off and why, so a launch states that Bedrock is not asked rather than
+ a run finding out by a refusal (the owner's ruling of 2026-10-20).
+
+ @param off - providers left off, none when nothing is
+
+ @returns One line for each, in the order given, none when nothing is off
+
+ @example
+ ```ts
+ const lines = passProvidersOffLines({ off: [{ provider: 'bedrock', reason: 'the owner left it off', },], },);
+ // => ['PROVIDER OFF bedrock: the owner left it off',]
+ ```
+ */
+export function passProvidersOffLines({ off, }: { readonly off: readonly ProviderOff[]; },): readonly string[] {
+  return off.map(function lineOf({
+    provider,
+    reason,
+  },): string {
+    return `PROVIDER OFF ${provider}: ${reason}`;
+  },);
 }
 
 /**

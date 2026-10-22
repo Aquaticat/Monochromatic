@@ -4,8 +4,8 @@
  read with its name whole; a refusal for one that does not read as
  `NAME = digits;`; a hash cited by nine characters; and a diff's added and
  removed declarations of one value,
- where a longer name or value holding it, a move and a historical line that
- does not read are each told apart.
+ where a longer name or value holding it, a move, a historical line that
+ does not read and a line a merge only brought in are each told apart.
 
  @module
  */
@@ -50,6 +50,21 @@ diff --git a/src/purr-version.ts b/src/purr-version.ts
 +++ b/src/purr-version.ts
 @@ -0,0 +1 @@
 +export const PURR_CACHE_VERSION = 3;`;
+
+/**
+ A merge's combined diff, one mark column per parent: the resolution writes
+ 3 in place of each side's 1 and 2, and a second constant stands in the
+ second parent already, so the merge only brings it in.
+ */
+const MERGE_DIFF = `diff --cc src/nap-key.ts
+index 1111111,2222222..3333333
+--- a/src/nap-key.ts
++++ b/src/nap-key.ts
+@@@ -1,1 -1,2 +1,2 @@@
+- export const NAP_CACHE_VERSION = 1;
+ -export const NAP_CACHE_VERSION = 2;
+++export const NAP_CACHE_VERSION = 3;
++ export const PURR_CACHE_VERSION = 4;`;
 
 await describe({
   name: '',
@@ -205,6 +220,92 @@ await describe({
             },),).toEqual({
               added: 1,
               removed: 1,
+            },);
+          },
+        },),
+        it({
+          name: 'COUNTS WHAT A MERGE RESOLUTION WROTE, marked added against every parent, and not what one parent '
+            + 'already held, since a merge that only brings a line in sets nothing (ledger B814)',
+          fn: async () => {
+            expect(declarationLineCounts({
+              diff: MERGE_DIFF,
+              version: {
+                name: 'NAP_CACHE_VERSION',
+                value: 3,
+              },
+            },),).toEqual({
+              added: 1,
+              removed: 0,
+            },);
+            expect(declarationLineCounts({
+              diff: MERGE_DIFF,
+              version: {
+                name: 'NAP_CACHE_VERSION',
+                value: 2,
+              },
+            },),).toEqual({
+              added: 0,
+              removed: 0,
+            },);
+            expect(declarationLineCounts({
+              diff: MERGE_DIFF,
+              version: {
+                name: 'PURR_CACHE_VERSION',
+                value: 4,
+              },
+            },),).toEqual({
+              added: 0,
+              removed: 0,
+            },);
+          },
+        },),
+        it({
+          name: 'COUNTS A LINE A MERGE REMOVED FROM EVERY PARENT AS REMOVED, so a value the resolution dropped is '
+            + 'not taken as standing',
+          fn: async () => {
+            expect(declarationLineCounts({
+              diff: '@@@ -1 -1 +0,0 @@@\n--export const NAP_CACHE_VERSION = 5;',
+              version: {
+                name: 'NAP_CACHE_VERSION',
+                value: 5,
+              },
+            },),).toEqual({
+              added: 0,
+              removed: 1,
+            },);
+          },
+        },),
+        it({
+          name: 'READS AN OCTOPUS MERGE\'S THREE MARK COLUMNS, so a line marked `+++` or `---` in every column '
+            + 'counts and is not taken for a file header',
+          fn: async () => {
+            /**
+             Combined diff of a merge of three parents that writes 6 over 5.
+             */
+            const diff = [
+              '@@@@ -1,1 -1,1 -1,1 +1,1 @@@@',
+              '---export const NAP_CACHE_VERSION = 5;',
+              '+++export const NAP_CACHE_VERSION = 6;',
+            ].join('\n',);
+            expect(declarationLineCounts({
+              diff,
+              version: {
+                name: 'NAP_CACHE_VERSION',
+                value: 5,
+              },
+            },),).toEqual({
+              added: 0,
+              removed: 1,
+            },);
+            expect(declarationLineCounts({
+              diff,
+              version: {
+                name: 'NAP_CACHE_VERSION',
+                value: 6,
+              },
+            },),).toEqual({
+              added: 1,
+              removed: 0,
             },);
           },
         },),

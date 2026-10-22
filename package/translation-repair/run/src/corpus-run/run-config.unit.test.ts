@@ -583,6 +583,8 @@ await describe({
                   [BEDROCK_LEDGER_PATH_VAR]: join(dir, 'bedrock-spend.jsonl',),
                   [BEDROCK_CREDIT_USD_VAR]: creditUsd,
                 },
+                // BEDROCK IS LEFT OFF BY DEFAULT (`providers-off.ts`); this case is about the client it builds when on.
+                off: [],
                 transport: async function refuseEveryMeter() {
                   return { status: 400, bodyText: '{}', };
                 },

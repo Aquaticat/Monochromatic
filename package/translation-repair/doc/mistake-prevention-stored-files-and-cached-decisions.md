@@ -67,6 +67,19 @@ and whose readers are pinned by `cache-account-read.unit.test.ts` and `cache-acc
 The search for the packages whose tests name a moved constant is habit;
 no task lists them.
 
+A history reader that asks git for the commits that touched a line sees no merge unless it says so (ledger B814).
+`git log -S` lists a merge only with `-m`,
+and then once for each parent its diff against differs;
+`git show` writes a merge as a combined diff with a mark column per parent,
+so a reader of one column reads none of its lines.
+Two branches that each take the next cache number meet in a merge that takes the one after,
+and that value stands in no ordinary commit.
+The rule:
+a reader of git history is tested on a throwaway repository holding a merge whose resolution writes something
+no parent holds,
+and a merge that only brings in a side commit;
+`cache-account-setting.unit.test.ts` holds both.
+
 A run's own memo of a read that failed is a cached decision too (ledger P20).
 The NeuralWatt quota session kept its baseline attempt with `??=` on a promise,
 so a first read that failed was the answer for the whole run,

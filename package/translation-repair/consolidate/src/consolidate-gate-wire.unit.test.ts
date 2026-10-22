@@ -144,10 +144,10 @@ await describe({
           fn: async () => {
             for (const choice of [ 'consolidated', 'standing', 'neither', ])
               expect(isConsolidateGateWire({
-                choice,
+                verdict: choice,
                 unsupported: [],
                 dropped: [],
-                reason: 'the original supports it',
+                assessment: 'the original supports it',
               },),).toBe(true,);
           },
         },),
@@ -155,10 +155,10 @@ await describe({
           name: 'REFUSES a lane name, which belongs to the other contest',
           fn: async () => {
             expect(isConsolidateGateWire({
-              choice: 'repair',
+              verdict: 'repair',
               unsupported: [],
               dropped: [],
-              reason: 'x',
+              assessment: 'x',
             },),).toBe(false,);
           },
         },),
@@ -168,10 +168,10 @@ await describe({
             // NO WORDING OF A FINDING MAY COST A VOICE, which is what the lane
             // contest's calibration paid two voices to learn.
             expect(isConsolidateGateWire({
-              choice: 'standing',
+              verdict: 'standing',
               unsupported: [ 'napping in the sun', ],
               dropped: [ 'the second bowl', ],
-              reason: 'x',
+              assessment: 'x',
             },),).toBe(true,);
           },
         },),
@@ -182,14 +182,14 @@ await describe({
           fn: async () => {
             /** The whole reply first, then that reply with one part taken away or broken. */
             const replies: readonly unknown[] = [
-              { choice: 'standing', unsupported: [], dropped: [], reason: 'the original supports it', },
+              { verdict: 'standing', unsupported: [], dropped: [], assessment: 'the original supports it', },
               'standing',
               null,
-              { unsupported: [], dropped: [], reason: 'the original supports it', },
-              { choice: 'standing', dropped: [], reason: 'the original supports it', },
-              { choice: 'standing', unsupported: [], reason: 'the original supports it', },
-              { choice: 'standing', unsupported: [], dropped: [], },
-              { choice: 'standing', unsupported: [], dropped: [], reason: 7, },
+              { unsupported: [], dropped: [], assessment: 'the original supports it', },
+              { verdict: 'standing', dropped: [], assessment: 'the original supports it', },
+              { verdict: 'standing', unsupported: [], assessment: 'the original supports it', },
+              { verdict: 'standing', unsupported: [], dropped: [], },
+              { verdict: 'standing', unsupported: [], dropped: [], assessment: 7, },
             ];
             expect(replies.map(function usable(reply,): boolean {
               return isConsolidateGateWire(reply,);
@@ -208,10 +208,10 @@ await describe({
           fn: async () => {
             const ballot = readConsolidateGateBallot({
               wire: {
-                choice: 'standing',
+                verdict: 'standing',
                 unsupported: [ 'consolidated (invents an afternoon)', ],
                 dropped: [],
-                reason: 'x',
+                assessment: 'x',
               },
             },);
             expect(ballot.unsupported,).toEqual([ 'consolidated', ],);
@@ -222,10 +222,10 @@ await describe({
           fn: async () => {
             const ballot = readConsolidateGateBallot({
               wire: {
-                choice: 'standing',
+                verdict: 'standing',
                 unsupported: [ 'consolidating the two loses the ledge', ],
                 dropped: [],
-                reason: 'x',
+                assessment: 'x',
               },
             },);
             expect(ballot.unsupported,).toEqual([],);
@@ -236,10 +236,10 @@ await describe({
           fn: async () => {
             const ballot = readConsolidateGateBallot({
               wire: {
-                choice: 'consolidated',
+                verdict: 'consolidated',
                 unsupported: [],
                 dropped: [ 'the window ledge', ],
-                reason: 'the original names a sill',
+                assessment: 'the original names a sill',
               },
             },);
             expect(ballot.dropped,).toEqual([],);
@@ -513,10 +513,10 @@ await describe({
              Reply whose list fields are a null and a bare word.
              */
             const reply: unknown = {
-              choice: 'standing',
+              verdict: 'standing',
               unsupported: null,
               dropped: 'none',
-              reason: 'the original supports it',
+              assessment: 'the original supports it',
             };
 
             expect(isConsolidateGateWire(reply,),).toBe(true,);

@@ -19,6 +19,7 @@ import {
 
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary';
 import { cacheVersionSetting, } from '../../dist/final/node/index.mjs';
+import { commitMergeAt, } from './cache-account-merge.test-fixture.ts';
 import {
   commitFileAt,
   makeCacheAccountRepo,
@@ -151,6 +152,69 @@ await describe({
             path: 'package/stray/src/stage-cache-version.ts',
           },
         },),).toEqual(moved,);
+      },
+    },),
+    it({
+      name: 'FINDS A MERGE THAT SET THE VALUE IN ITS RESOLUTION, a value no commit of either side holds, since a '
+        + 'merge that meets two changes taking one number takes the next (ledger B814)',
+      fn: async () => {
+        await using repo = await makeCacheAccountRepo({ versions: 'one', },);
+        /**
+         The merge whose resolution writes the stage version at 3.
+         */
+        const { merge, } = await commitMergeAt({
+          cloneDir: repo.path,
+          day: 5,
+          side: {
+            path: 'src/nap.ts',
+            text: 'export const NAP = 3;\n',
+          },
+          resolution: [{
+            path: 'src/stage-cache-version.ts',
+            text: 'export const STAGE_CACHE_VERSION = 3;\n',
+          },],
+          subject: 'merge the longer nap',
+        },);
+
+        expect(await cacheVersionSetting({
+          root: repo.path,
+          sources: 'src',
+          version: {
+            ...STAGE_VERSION,
+            value: 3,
+            declaration: 'STAGE_CACHE_VERSION = 3',
+          },
+        },),).toEqual(merge,);
+      },
+    },),
+    it({
+      name: 'FINDS THE SIDE COMMIT AND NOT THE MERGE where a side branch set the value and the merge only brought '
+        + 'it in, since a merge that writes nothing of its own sets nothing',
+      fn: async () => {
+        await using repo = await makeCacheAccountRepo({ versions: 'one', },);
+        /**
+         The side branch's commit setting the stage version at 2.
+         */
+        const { sideCommit, } = await commitMergeAt({
+          cloneDir: repo.path,
+          day: 5,
+          side: {
+            path: 'src/stage-cache-version.ts',
+            text: 'export const STAGE_CACHE_VERSION = 2;\n',
+          },
+          resolution: [],
+          subject: 'merge the stage cache version',
+        },);
+
+        expect(await cacheVersionSetting({
+          root: repo.path,
+          sources: 'src',
+          version: {
+            ...STAGE_VERSION,
+            value: 2,
+            declaration: 'STAGE_CACHE_VERSION = 2',
+          },
+        },),).toEqual(sideCommit,);
       },
     },),
     it({

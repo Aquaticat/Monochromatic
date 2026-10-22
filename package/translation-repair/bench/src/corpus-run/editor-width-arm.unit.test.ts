@@ -227,11 +227,11 @@ await describe({
               },
               [JUDGES[0]]: {
                 best: 3,
-                reason: 'the composite is the only whole-chunk candidate that repairs both sentences',
+                assessment: 'the composite is the only whole-chunk candidate that repairs both sentences',
               },
               [JUDGES[1]]: {
                 best: 3,
-                reason: 'the composite is the only whole-chunk candidate that repairs both sentences',
+                assessment: 'the composite is the only whole-chunk candidate that repairs both sentences',
               },
             },
           },),

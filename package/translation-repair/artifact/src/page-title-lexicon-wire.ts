@@ -134,7 +134,7 @@ For each title give the one English rendering every passage should use, under th
 
 ${HOUSE_POLICY_BLOCK}
 
-Reply with JSON only: {"titles":[{"title":1,"rendering":"..."}]}, one entry per title.`,
+Reply with JSON only: {"titles":[{"rendering":"...","title":1}]}, one entry per title.`,
     },
     {
       role: 'user',
@@ -279,13 +279,14 @@ export const PAGE_TITLE_LEXICON_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
           items: {
             type: 'object',
             required: [
-              'title',
               'rendering',
+              'title',
             ],
             additionalProperties: false,
+            // DECLARED IN THE ORDER THE KEYS SORT (ledger B762), since no ruling fixes the order of the two.
             properties: {
-              title: { type: 'integer', },
               rendering: { type: 'string', },
+              title: { type: 'integer', },
             },
           },
         },

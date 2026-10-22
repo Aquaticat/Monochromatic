@@ -346,9 +346,9 @@ Your task is to say whether the places render it alike, which rendering the whol
 
 In each paragraph the repeated wording is enclosed between ${marks.open} and ${marks.close}; the marks are not part of the text.
 
-Reply with one JSON object whose keys come in this order: reason, quotes, choice, keep. Write the reason first and choose after it:
-- "reason": one to three sentences. Say whether the renderings differ in meaning or only in wording, which rendering is the most faithful to the ORIGINAL under the house rules, name any word of the rendering you choose that renders ORIGINAL outside the marked wording (the other places must not be given such a word), and, for any OCCURRENCE you list in "keep", what in its surroundings calls for different wording.
-- "quotes": one entry per OCCURRENCE, in order, each {"label": the label, "quote": the quote}. The quote is the exact words of that OCCURRENCE's TRANSLATION that render the marked wording and no other words: copy them character for character, including capitals, spacing and line breaks, and take only the words that render the marked wording, from its first word to its last, without the punctuation that closes the sentence. Leave out a word before or after them that renders ORIGINAL outside the marked wording, such as an "also" that renders a word standing before the marked wording. The quote must appear exactly once in that TRANSLATION: when the same words appear more than once in it, or when the TRANSLATION does not render the marked wording at all, or carries no English, give an empty quote and that OCCURRENCE is left as it stands.${frameClauses}
+Reply with one JSON object whose keys come in this order: assessment, candidateQuotes, choice, keep. Write the assessment first and choose after it:
+- "assessment": one to three sentences. Say whether the renderings differ in meaning or only in wording, which rendering is the most faithful to the ORIGINAL under the house rules, name any word of the rendering you choose that renders ORIGINAL outside the marked wording (the other places must not be given such a word), and, for any OCCURRENCE you list in "keep", what in its surroundings calls for different wording.
+- "candidateQuotes": one entry per OCCURRENCE, in order, each {"label": the label, "quote": the quote}. The quote is the exact words of that OCCURRENCE's TRANSLATION that render the marked wording and no other words: copy them character for character, including capitals, spacing and line breaks, and take only the words that render the marked wording, from its first word to its last, without the punctuation that closes the sentence. Leave out a word before or after them that renders ORIGINAL outside the marked wording, such as an "also" that renders a word standing before the marked wording. The quote must appear exactly once in that TRANSLATION: when the same words appear more than once in it, or when the TRANSLATION does not render the marked wording at all, or carries no English, give an empty quote and that OCCURRENCE is left as it stands.${frameClauses}
 - "choice": the label of the OCCURRENCE whose rendering (for a frame, whose pattern) is the most faithful to the ORIGINAL under the house rules and so the one the others should follow. The ORIGINAL is the standard: never choose a rendering because it came first, came last, or is the commonest. When the renderings agree, name any one of them and keep none.
 - "keep": the labels of the OCCURRENCES whose surroundings call for different wording from the chosen one, such as a different speaker, a person or tense the sentence forces, quoted speech, or a play on the neighbouring words. A difference of taste is no reason to keep. Never list the chosen label.
 
@@ -518,14 +518,14 @@ export function buildConsistencyMessages(
             ): string {
               return consistencyLabel({ position, },);
             },),
-          // NO QUOTED FIELD NAME HERE: the reply shape that follows is where `"reason"` is shown before `"choice"`.
+          // NO QUOTED FIELD NAME HERE: the reply shape that follows is where `"assessment"` is shown before `"choice"`.
           fields: [
             'the choice',
             'the kept places',
             'the label of each quote',
           ],
         },)
-      }\nReply with JSON only: {"reason":"...","quotes":[{"label":"<the label of the OCCURRENCE>","quote":"..."${(subject.repeat
+      }\nReply with JSON only: {"assessment":"...","candidateQuotes":[{"label":"<the label of the OCCURRENCE>","quote":"..."${(subject.repeat
         .kind
         === 'refrain') ? ',"slot":"..."' : ''}}],"choice":"<the label of the OCCURRENCE you choose>","keep":[]}`,
     },

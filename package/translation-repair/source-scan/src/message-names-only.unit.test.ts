@@ -188,6 +188,7 @@ const MARKED_CLASSES: readonly string[] = [
   'StageBenchStartError',
   'StageRosterRepeatError',
   'StatedRefusalError',
+  'StragglerCutError',
   'StreamCutShortError',
   'StreamBoundError',
   'StreamBoundsOutsideCallTimeoutError',
