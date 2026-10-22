@@ -89,6 +89,10 @@ export function buildClaudeBody(
   const turns = speakingTurns({ messages, },);
   if (turns.at(-1,)?.role === 'assistant')
     throw new ClaudePrefillError();
+  /**
+   Every system message, joined into the one field this protocol takes.
+   */
+  const instruction = systemTextOf({ messages, },);
   return {
     model: card.wireModel,
     max_tokens: maxTokens,
@@ -100,7 +104,20 @@ export function buildClaudeBody(
     // `disabled` or `between_tools` (which turns thinking off on Sonnet 5.5), and never `budget_tokens`, which both
     // models answer with HTTP 400.
     thinking: { type: 'adaptive', },
-    system: systemTextOf({ messages, },),
+    // THE STABLE PREFIX IS THE SYSTEM FIELD. Every call of a stage opens on the same instruction (house policy, the
+    // rules, the reply block) and differs in the sheet it shows, which is the user turn, so one ephemeral breakpoint
+    // on the last system block caches what hundreds of calls repeat. The default time to live of five minutes stands,
+    // with no `ttl` member: the brief asks for 5 minutes, priced at the 5-minute write rate on the card. A prefix under
+    // 286 tokens on either model is not cached, silently, and costs nothing extra.
+    ...((instruction === '')
+      ? {}
+      : {
+        system: [{
+          type: 'text',
+          text: instruction,
+          cache_control: { type: 'ephemeral', },
+        },],
+      }),
     messages: turns,
     // STRUCTURED OUTPUT BY `output_config.format`, NEVER BY A FORCED TOOL. The parent session's probe of 2026-10-22
     // (`sonnet-route-probe.out`): Sonnet 5.5 answered `output_config.format` with adaptive thinking (192 thinking
