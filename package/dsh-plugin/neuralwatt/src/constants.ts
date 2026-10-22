@@ -41,4 +41,11 @@ export const NEURALWATT_API_KEY_ENV = 'NEURALWATT_API_KEY';
  */
 export const NEURALWATT_LISTING_TIMEOUT_MS = 10_000;
 
+/**
+ Settings namespace the route is written to: the `llm-pi-ai` profile entry
+ owns the single pi-ai adapter instance, and its volatile `providers` field is
+ the layer that merges this route in beside the hand-declared ones.
+ */
+export const NEURALWATT_SETTINGS_NAMESPACE = 'llm-pi-ai';
+
 //endregion Public API
