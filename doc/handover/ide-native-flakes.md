@@ -510,6 +510,53 @@ Video memory sits at the card's limit in full runs (next section),
 which is one candidate for the second;
 unproven.
 
+## The runtime task is safe for concurrent callers
+
+`build` and `test` both depend on `runtime`, so starting them together ran the task twice in one tree.
+One caller failed with `ENOENT: no such file or directory, rename 'target/debug/runtime/grammars/awk.so.new'`,
+because both copied to the same staging name and the first rename took the file away from the second.
+
+The staging name was one of several shared writes.
+Both callers also ran `ide-runtime fetch` and `build` in the one directory `target/runtime-config`;
+the first paired start into a cold tree failed in both callers with 22 failed `git fetch` runs
+(`unable to create temporary file`, `cannot open '.git/FETCH_HEAD'`).
+Unique staging names alone would therefore not have been enough.
+
+The fix is in `package/desktop-app/ide/bin/runtime-publish.ts` and in the `runtime` task of
+`package/desktop-app/ide/mise.toml`:
+- A kernel `flock` on `target/runtime.lock` serializes everything from the `ide-runtime` build to the last publish.
+  The kernel drops it when its holder dies, so a killed run leaves no stale lock.
+- Each file is staged as `<name>.<pid>.<random>.new` beside its destination, renamed into place,
+  and left alone when the destination already holds the same bytes.
+- `manifest.json`, which the build script reads first and which makes the directory valid, is written last.
+- Staging files left by a killed run are swept under the lock, because the build script embeds every file under
+  `queries` and `licenses`.
+
+Measured in one worktree with the grammars built,
+deleting `target/debug/runtime` and `target/release/runtime` before each pair
+(2 CPUs and 4 GiB per caller, two `mise run //package/desktop-app/ide:runtime` started at the same moment):
+- Before the fix, 20 paired starts: 10 pairs had one failed caller (10 of 40 runs), every one the `awk.so.new` ENOENT.
+  This is the positive control: the harness sees the failure.
+- After the fix, 20 paired starts: 0 failed callers (0 of 40 runs).
+  One pair took 307 s because a cargo process of another session held the package cache lock of the shared
+  `ide-cargo` volume (`Blocking waiting for file lock on package cache`); the others took 4 to 10 s.
+- A SHA-256 over every path, file type and file content of `target/debug/runtime` (1622 entries, no links)
+  is `671506250b7c783e868b239ef2e61bd02e30827aad7ee24ac2ec7b7f4ad51e37` before the fix,
+  after a single caller with the fix, and after every paired start that ended in a tree
+  (20 before the fix, 44 after; `release/runtime` equals `debug/runtime`).
+- A reader polling every 2 ms during 8 further pairs, like the build script, found a readable manifest 4045 times
+  and an incomplete tree 0 times.
+  An earlier probe reported 136 and then 3 incomplete states; both were the harness deleting the tree under the reader
+  (the probe read the manifest, then the harness removed the files), not the task, and the harness now removes the
+  manifest first.
+
+`bin/runtime-publish.test.ts` (part of `test:bin`) holds the unit checks.
+Its concurrent-publishers test fails with the same `ENOENT ... .so.new` when the staging name is made fixed again
+(shown on the commit that added it, then restored), and a second test checks that a lock whose holder is killed is
+released.
+A caller that waits for the lock prints
+`Waiting for another runtime preparation to release target/runtime.lock` after one second.
+
 ## Test thread count against video memory
 
 The third session measured this per process and decided:
