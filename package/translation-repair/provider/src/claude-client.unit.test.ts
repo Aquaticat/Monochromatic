@@ -15,6 +15,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
+import { warnLinesDuring, } from '@monochromatic-dev/translation-repair-typography/ts/console-warn-lines.test-fixture.ts';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import {
   exchangeFailureLogText,
@@ -128,6 +129,72 @@ await describe({
           expect((failure as Error).message,).not.toContain(CLAUDE_CAT_KEY,);
           expect(exchanges.length,).toBe(0,);
         }
+      },
+    },),
+    it({
+      name: 'ANSWERS A REFUSAL AS A REFUSAL OUTCOME AND NOT AS AN OUTAGE: stop_reason refusal is a 200, so the seat has '
+        + 'no answer for that call, the partial text is discarded, the category is logged, and nothing is retried or '
+        + 'thrown for the router to hold the provider out for',
+      fn: async () => {
+        const { transport, exchanges, } = scripted({
+          replies: [{
+            status: 200,
+            bodyText: claudeStreamOf({
+              text: 'The cat is on the',
+              stopReason: 'refusal',
+              stopDetails: { type: 'refusal', category: 'cyber', explanation: 'declined', },
+              usage: PLAIN_USAGE,
+            }),
+          },],
+        },);
+
+        const { result: reply, warned, } = await warnLinesDuring({
+          run: async () =>
+            await askCat({
+              client: createClaudeClient({ apiKey: CLAUDE_CAT_KEY, transport, retryPolicy: ONE_QUICK_RETRY, },),
+              modelId: 'claude-haiku-5-5',
+            },),
+        },);
+
+        expect(reply.text,).toBe('',);
+        expect(reply.finishReason,).toBe('refusal',);
+        expect(reply.refusal,).toContain('cyber',);
+        expect(reply.usage,).toEqual({ prompt_tokens: 100, completion_tokens: 10, total_tokens: 110, },);
+        expect(exchanges.length,).toBe(1,);
+        expect(warned.some(function namesCategory(line,): boolean {
+          return line.includes('claude-haiku-5-5',) && line.includes('refusal',) && line.includes('cyber',);
+        },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'READS A REFUSAL WITH NO CATEGORY as a refusal too, the category null being a permanent valid state, and '
+        + 'hands it to the caller as the refusal-shaped outcome',
+      fn: async () => {
+        const { transport, exchanges, } = scripted({
+          replies: [{
+            status: 200,
+            bodyText: claudeStreamOf({
+              text: '',
+              stopReason: 'refusal',
+              stopDetails: { type: 'refusal', category: null, explanation: null, },
+              usage: PLAIN_USAGE,
+            }),
+          },],
+        },);
+
+        const outcome = await createClaudeClient({ apiKey: CLAUDE_CAT_KEY, transport, retryPolicy: ONE_QUICK_RETRY, },)
+          .chatJson({
+            modelId: 'claude-sonnet-5-5',
+            messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
+            signal: new AbortController().signal,
+            validate: function isSpot(value: unknown,): value is { readonly spot: string; } {
+              return (typeof value) === 'object';
+            },
+          },);
+
+        expect(outcome.kind,).toBe('refusal-shaped',);
+        expect(exchanges.length,).toBe(1,);
       },
     },),
   ],
