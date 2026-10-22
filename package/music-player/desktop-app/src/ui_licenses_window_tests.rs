@@ -91,14 +91,17 @@ fn the_licenses_row_is_a_labelled_button_under_an_about_heading_in_both_forms() 
             Some("Third-party notices"),
             "width {width}"
         );
-        // The row sits one 44 px heading below the switch row, 16 px in from the pane edges, and is as tall as every row.
+        // The row sits one 44 px heading below the Reset text sizes row that ends the group before About, 16 px in from the
+        // pane edges, and is as tall as every row.
         let switch = only(&app, "SettingsPage::switch-touch");
-        let (switch_x, switch_y, switch_width, switch_height) = box_of(&switch);
+        let reset = only(&app, "SettingsPage::reset-touch");
+        let (switch_x, _switch_y, switch_width, _switch_height) = box_of(&switch);
+        let (_reset_x, reset_y, _reset_width, reset_height) = box_of(&reset);
         let (x, y, row_wide, row_high) = box_of(&touch);
         assert_eq!((x, row_high), (SIDE_MARGIN, ROW_HEIGHT), "width {width}");
         assert_eq!(x, switch_x, "width {width}");
         assert_eq!(row_wide, switch_width.min(row_width(list_pane_width(width))), "width {width}");
-        assert_eq!(y, switch_y + switch_height + HEADING_HEIGHT, "width {width}");
+        assert_eq!(y, reset_y + reset_height + HEADING_HEIGHT, "width {width}");
     }
 }
 

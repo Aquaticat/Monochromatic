@@ -261,12 +261,15 @@ fn selecting_by_keyboard_changes_only_the_selection_and_shifts_nothing() {
     assert_eq!(selected_flags(&app), vec![false, true], "Up from the switch row lands on the already selected row");
     press(&app, Key::UpArrow);
     assert_eq!(selected_flags(&app), vec![true, false]);
-    // End jumps to the Licenses row, the last stop, and leaves the selection where it was; Up reaches the switch row,
-    // which selects nothing either, and a second Up returns to a template row.
+    // End jumps to the Licenses row, the last stop, and leaves the selection where it was; six Ups pass the Reset text
+    // sizes row and the four Text size steppers and reach the switch row, which select nothing either, and one more Up
+    // returns to a template row.
     press(&app, Key::End);
     assert_eq!(selected_flags(&app), vec![true, false]);
-    press(&app, Key::UpArrow);
-    assert_eq!(selected_flags(&app), vec![true, false]);
+    for _ in 0..6 {
+        press(&app, Key::UpArrow);
+        assert_eq!(selected_flags(&app), vec![true, false]);
+    }
     press(&app, Key::UpArrow);
     assert_eq!(selected_flags(&app), vec![false, true]);
     press(&app, Key::Home);

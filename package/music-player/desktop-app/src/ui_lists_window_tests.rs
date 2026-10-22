@@ -604,7 +604,8 @@ fn the_settings_list_has_a_scrollbar_when_its_rows_do_not_fit() {
 
 #[test]
 fn the_settings_list_has_no_scrollbar_when_its_rows_fit() {
-    let (app, _host) = fresh_window_at(443.0, 800.0);
+    // 1400 px holds the whole list, including the Text size group (four stepper rows and the Reset row).
+    let (app, _host) = fresh_window_at(443.0, 1400.0);
     crate::ui_settings::open_settings(&app);
     advance(200);
     assert_eq!(bars_on_screen(&app), Vec::<(f32, f32, f32)>::new(), "nothing to scroll, nothing to draw");

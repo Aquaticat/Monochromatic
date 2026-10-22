@@ -248,13 +248,13 @@ component TextSizeRow inherits Rectangle {
     callback decrease();
     callback increase();
     callback touched();
-    // Fires with the row's window y and height when the keyboard arrives on it, so the page scrolls it into view.
+    // Fires with the row's y inside its group and its height when the keyboard arrives on it, so the page scrolls it into view.
     callback reveal(length, length);
 
     property <bool> stacked: self.width < root.stack-below;
     changed keyboard-focused => {
         if (self.keyboard-focused) {
-            root.reveal(self.absolute-position.y, self.height);
+            root.reveal(self.y, self.height);
         }
     }
     height: root.stacked ? 12px + label-line.preferred-height + 4px + 48px + 8px : root.row-height;
@@ -401,6 +401,13 @@ export component SettingsPage inherits Rectangle {
     changed selected-index => {
         root.focus-index = root.selected-index;
     }
+    // A template row is rebuilt whenever the rows are projected again, which would lose a handler on the row itself, so the
+    // list scrolls to a template row from here, using the row pitch.
+    changed focus-index => {
+        if (root.focus-index < root.rows.length) {
+            root.reveal(group.y + root.focus-index * (root.row-height + root.row-gap), root.row-height);
+        }
+    }
 
     // Takes keyboard focus when the page opens, so Up, Down and Enter act on the list at once.
     init => {
@@ -411,15 +418,18 @@ export component SettingsPage inherits Rectangle {
         list-focus.focus();
     }
 
-    // Scrolls the list so that a row the keyboard just reached shows whole: `row-y` is the row's window y and `row-height`
-    // its height. A window shorter than the list (the Text size group made it longer than a 600 px window) would otherwise
-    // leave the ring on a row below the fold.
+    // Scrolls the list so that a row the keyboard just reached shows whole: `row-y` is the row's y inside the list content and
+    // `row-height` its height. A window shorter than the list (the Text size group made it longer than a 600 px window)
+    // would otherwise leave the ring on a row below the fold. The row keeps 8 px of margin inside the viewport, more than
+    // the 3 px its focus ring reaches, so the viewport's edge never cuts the ring; a row so near the top that only the
+    // first heading would be left out scrolls to the very top.
     function reveal(row-y: length, row-height: length) {
-        let top = row-y - body-flick.absolute-position.y;
-        if (top < 0px) {
-            body-flick.content-y = min(0px, body-flick.content-y - top);
-        } else if (top + row-height > body-flick.height) {
-            body-flick.content-y = max(body-flick.height - body-flick.content-height, body-flick.content-y - (top + row-height - body-flick.height));
+        let view-top = -body-flick.content-y;
+        let view-bottom = view-top + body-flick.height;
+        if (row-y - 8px < view-top) {
+            body-flick.content-y = row-y - 8px < 52px ? 0px : -(row-y - 8px);
+        } else if (row-y + row-height + 8px > view-bottom) {
+            body-flick.content-y = max(body-flick.height - body-flick.content-height, -(row-y + row-height + 8px - body-flick.height));
         }
     }
 
@@ -605,11 +615,6 @@ export component SettingsPage inherits Rectangle {
                     for row[index] in root.rows : row-box := Rectangle {
                         property <bool> selected: root.wide && index == root.selected-index;
                         property <bool> keyboard-focused: list-focus.ring && index == root.focus-index;
-                        changed keyboard-focused => {
-                            if (self.keyboard-focused) {
-                                root.reveal(self.absolute-position.y, self.height);
-                            }
-                        }
                         // Group rounding for the state layers, or the pill when the row is selected.
                         property <length> radius-top: self.selected ? root.pill-radius : (index == 0 ? root.group-radius : root.joint-radius);
                         property <length> radius-bottom: self.selected ? root.pill-radius : (index == root.rows.length - 1 ? root.group-radius : root.joint-radius);
@@ -723,7 +728,7 @@ export component SettingsPage inherits Rectangle {
                 // The Playback group: one switch row, 16 px in from each window edge, with the group rounding at all four
                 // corners (D109). The row is the toggle target. It is never a selection: it has no pill and no checked
                 // state of a selected row, so the selected template and the editor beside it stay as they are (D110, D129).
-                VerticalLayout {
+                switch-group := VerticalLayout {
                     padding-left: root.side-margin;
                     padding-right: root.side-margin;
 
@@ -733,7 +738,7 @@ export component SettingsPage inherits Rectangle {
                         property <bool> keyboard-focused: list-focus.ring && root.focus-index == root.rows.length;
                         changed keyboard-focused => {
                             if (self.keyboard-focused) {
-                                root.reveal(self.absolute-position.y, self.height);
+                                root.reveal(switch-group.y + self.y, self.height);
                             }
                         }
                         // True when the row is too narrow for the switch beside the text (the list pane of a window
@@ -863,7 +868,7 @@ export component SettingsPage inherits Rectangle {
                 // The Text size group: one stepper row for each of four texts and the Reset text sizes row, 16 px in from each
                 // window edge and 2 px apart, with the group rounding at its two ends. Like the switch row, none of its rows is
                 // a selection, so the selected template and the editor beside it stay as they are.
-                VerticalLayout {
+                sizes-group := VerticalLayout {
                     padding-left: root.side-margin;
                     padding-right: root.side-margin;
                     spacing: root.row-gap;
@@ -876,7 +881,7 @@ export component SettingsPage inherits Rectangle {
                         keyboard-focused: list-focus.ring && root.focus-index == root.first-stepper-index + index;
                         radius-top: index == 0 ? root.group-radius : root.joint-radius;
                         radius-bottom: root.joint-radius;
-                        reveal(row-y, row-height) => { root.reveal(row-y, row-height); }
+                        reveal(row-y, row-height) => { root.reveal(sizes-group.y + row-y, row-height); }
                         touched => {
                             Focus.ring-visible = false;
                             root.focus-index = root.first-stepper-index + index;
@@ -893,7 +898,7 @@ export component SettingsPage inherits Rectangle {
                         property <bool> keyboard-focused: list-focus.ring && root.focus-index == root.reset-index;
                         changed keyboard-focused => {
                             if (self.keyboard-focused) {
-                                root.reveal(self.absolute-position.y, self.height);
+                                root.reveal(sizes-group.y + self.y, self.height);
                             }
                         }
                         height: root.row-height;
@@ -975,7 +980,7 @@ export component SettingsPage inherits Rectangle {
 
                 // The About group: one row that opens the Licenses page, with the group rounding at all four corners. Like the
                 // switch row it is never a selection, so the selected template and the editor beside it stay as they are.
-                VerticalLayout {
+                about-group := VerticalLayout {
                     padding-left: root.side-margin;
                     padding-right: root.side-margin;
 
@@ -983,7 +988,7 @@ export component SettingsPage inherits Rectangle {
                         property <bool> keyboard-focused: list-focus.ring && root.focus-index == root.licenses-index;
                         changed keyboard-focused => {
                             if (self.keyboard-focused) {
-                                root.reveal(self.absolute-position.y, self.height);
+                                root.reveal(about-group.y + self.y, self.height);
                             }
                         }
                         height: root.row-height;

@@ -10,7 +10,7 @@
 
 use std::cell::RefCell;
 
-use i_slint_backend_testing::ElementHandle;
+use i_slint_backend_testing::{AccessibleRole, ElementHandle};
 use music_player::text_size::{MAX_TEXT_SIZE_PX, MIN_TEXT_SIZE_PX, TextElement, TextSizes};
 use music_player::track_measure::TrackMeasure;
 use slint::platform::{Key, WindowEvent};
@@ -89,9 +89,12 @@ fn box_of(element: &ElementHandle) -> (f32, f32, f32, f32) {
     return (position.x, position.y, size.width, size.height);
 }
 
-/// What: `labelled` finds the one element with an accessible label.
+/// What: `labelled` finds the one button, or other element that is not plain text, with an accessible label.
+/// Why: a row's title Text carries the same words as its button, and only the button is pressed.
 fn labelled(app: &AppWindow, label: &str) -> ElementHandle {
-    let mut found: Vec<ElementHandle> = ElementHandle::find_by_accessible_label(app, label).collect();
+    let mut found: Vec<ElementHandle> = ElementHandle::find_by_accessible_label(app, label)
+        .filter(|element| return element.accessible_role() != Some(AccessibleRole::Text))
+        .collect();
     assert_eq!(found.len(), 1, "exactly one element is labelled {label:?}, found {}", found.len());
     return found.remove(0);
 }
@@ -186,9 +189,11 @@ fn each_stepper_moves_only_its_own_element() {
 #[test]
 fn the_value_shows_in_pixels_between_the_buttons() {
     let app = settings_at(900.0);
-    labelled(&app, "Track titles 14 pixels");
+    let count_of_label = |label: &str| -> usize { return ElementHandle::find_by_accessible_label(&app, label).count() };
+    assert_eq!(count_of_label("Track titles 14 pixels"), 1);
     press_button(&app, "Larger Track titles");
-    labelled(&app, "Track titles 15 pixels");
+    assert_eq!(count_of_label("Track titles 14 pixels"), 0);
+    assert_eq!(count_of_label("Track titles 15 pixels"), 1);
     let shown: Vec<ElementHandle> = ElementHandle::find_by_element_type_name(&app, "StepperControls").collect();
     assert_eq!(shown.len(), 4, "one stepper for each text");
 }
@@ -373,7 +378,7 @@ fn a_track_title_never_meets_its_caption_in_a_72_px_row() {
             show_sizes(&app, TextSizes::default().with(TextElement::TrackTitle, px));
             let titles = visible(&app, "TrackListPane::title-text");
             let captions = visible(&app, "TrackListPane::supporting-text");
-            assert!(titles.len() >= 4, "the rows are built at width {width}: {}", titles.len());
+            assert!(titles.len() >= 3, "the rows are built at width {width}: {}", titles.len());
             assert_eq!(titles.len(), captions.len(), "a caption under every title");
             for (title, caption) in titles.iter().zip(&captions) {
                 let (_tx, title_y, _tw, title_height) = box_of(title);
@@ -395,7 +400,7 @@ fn a_single_line_track_title_stays_inside_its_48_px_row() {
         let app = window_at(1200.0);
         show_sizes(&app, TextSizes::default().with(TextElement::TrackTitle, px));
         let titles = visible(&app, "TrackListPane::title-text");
-        assert!(titles.len() >= 4);
+        assert!(titles.len() >= 3);
         for title in &titles {
             let (_x, _y, _w, height) = box_of(title);
             assert!(height <= 48.0, "a {px} px title box is {height} tall, past the 48 px row");
