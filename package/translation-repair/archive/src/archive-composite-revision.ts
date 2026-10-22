@@ -10,11 +10,17 @@ import {
 import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typography/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
+  describeCollisions,
+  describeHunk,
+  hunkCollisions,
+  hunksBetween,
+  type LineHunk,
+} from './archive-composite-hunks.ts';
+import {
   counted,
   linesOf,
-  numbered,
-  sharedLines,
 } from './archive-composite-lines.ts';
+import { spliceHunks, } from './archive-composite-splice.ts';
 import { revisionFootnoteFindings, } from './archive-revision-footnotes.ts';
 import {
   REVISION_SHAPE_REFUSED,
@@ -35,29 +41,37 @@ import {
 //
 // THE RULE IS NARROW BY DESIGN, and each narrowing is recorded so a reader can
 // veto it.
-// - Every revision that changes the block keeps its line count. One that does
-//   not has no lines to match against the block's, and then no composite is
-//   built, rather than one from the revisions that do match, because the
-//   shipped text would depend on which reviewers happened to answer in a
-//   matching shape. A removal is such a revision.
-// - The changed lines of all of them are pairwise disjoint. A line two
-//   revisions change is an overlap even when both change it identically:
-//   agreeing on a line is no reason to merge revisions that differ elsewhere,
-//   and the only merge the slate already trusts is of byte-identical whole
-//   revisions. Three revisions of which two are disjoint build nothing for the
-//   same reason: choosing the pair needs a rule, and the only one to hand
-//   (roster order) would make the shipped text depend on who answered first.
-// - A revision equal to the block changes no line. It is no contributor and
-//   does not count toward the two a composite needs.
+// - A revision is read as the hunks that turn the block into it, by a line
+//   diff (`archive-composite-hunks.ts`), so a revision that adds or removes
+//   lines composes like one that rewords them. This replaces the rule of
+//   ledger B712 that every revision keep the block's line count (ledger B803:
+//   zheermao22 drew revisions of 34 lines for a block of 36, and 23 for one of
+//   24). A removal, a revision of the whole block with nothing in its place,
+//   edits none of the block's lines and still builds no composite.
+// - The hunks of all of them are pairwise disjoint. A line two revisions
+//   replace is an overlap even when both change it identically, and so is an
+//   insertion at a gap another revision inserts at or spans: agreeing on a
+//   line is no reason to merge revisions that differ elsewhere, and the only
+//   merge the slate already trusts is of byte-identical whole revisions. An
+//   overlap keeps the outcome of ledger B712 for the whole block: no composite
+//   is built, and the log says where the revisions overlap.
+// - Three revisions of which two are disjoint build nothing for the same
+//   reason: choosing the pair needs a rule, and the only one to hand (roster
+//   order) would make the shipped text depend on who answered first.
+// - A revision equal to the block has no hunk. It is no contributor and does
+//   not count toward the two a composite needs.
 // - A line is the text up to and including its line ending, so a carriage
 //   return stays with its line and a trailing newline is a change to the last
 //   line, never a line of its own.
+// - A revision that differs from the block by more than the alignment's table
+//   holds (`ALIGNMENT_CELL_LIMIT`) is not aligned line by line: its differing
+//   stretch is one hunk, which collides with more and never changes its text.
 // - The composite goes through the gates every revision passed (shape,
 //   footnotes), since a composite is text no model read as a whole.
 // - The outcome names what each revision contributed (its candidate number
-//   and the lines it changed), because no reviewer proposed the composite and
-//   the judges' sheet can show its assessments only through its contributors'
-//   (ledger B716, `archive-block-selection-evidence.ts`).
+//   and the composite's lines it put there), because no reviewer proposed the
+//   composite and the judges' sheet can show its assessments only through its
+//   contributors' (ledger B716, `archive-block-selection-evidence.ts`).
 // - It stands after the reviewers' revisions and before the block as the
 //   archive wrote it, as the editor lane's composite stands last among its
 //   proposals (`editor-candidates.ts`).
@@ -83,7 +97,7 @@ export type CompositeRevisionOutcome = {
 };
 
 /**
- One revision a composite carries, and the lines of the block it changed.
+ One revision a composite carries, and the lines of the composite it put there.
  */
 export type CompositeContribution = {
   /**
@@ -92,8 +106,10 @@ export type CompositeContribution = {
    */
   readonly candidate: number;
   /**
-   Zero-based positions of the block's lines the revision changed, which the
-   composite takes from it.
+   Zero-based positions of the composite's lines the revision put there: the
+   lines it changed or added, and for a hunk that only removes lines, the line
+   that now follows the cut. They number the composite's lines, which are the
+   block's own only while no revision adds or removes lines (ledger B803).
    */
   readonly changed: readonly number[];
 };
@@ -108,7 +124,7 @@ const NO_COMPOSITE: CompositeRevisionOutcome = {
 };
 
 /**
- One revision that changes the block, and the lines it changes.
+ One revision that changes the block, and the hunks that turn the block into it.
  */
 type ChangingRevision = {
   /**
@@ -120,13 +136,9 @@ type ChangingRevision = {
    */
   readonly candidate: Candidate<string>;
   /**
-   Its lines.
+   The stretches of the block it replaces, in block order.
    */
-  readonly lines: readonly string[];
-  /**
-   Zero-based positions of the lines it changes.
-   */
-  readonly changed: readonly number[];
+  readonly hunks: readonly LineHunk[];
 };
 
 /**
@@ -219,7 +231,7 @@ export function compositeOfDisjointRevisions(
     return NO_COMPOSITE;
   }
   /**
-   Each differing revision with the lines it changes.
+   Each differing revision with the hunks that turn the block into it.
    */
   const changing: ChangingRevision[] = [];
   for (const {
@@ -228,60 +240,39 @@ export function compositeOfDisjointRevisions(
   } of differing) {
     if (candidate.value === '') {
       compositeLog.info(
-        `archive composite not built: candidate ${String(number,)} is a removal, which has no lines to match`,
-      );
-      return NO_COMPOSITE;
-    }
-    /**
-     Lines of this revision.
-     */
-    const lines = linesOf({ text: candidate.value, },);
-    if (lines.length !== blockLines.length) {
-      compositeLog.info(
-        `archive composite not built: candidate ${String(number,)} has ${
-          counted({
-            count: lines.length,
-            one: 'line',
-            many: 'lines',
-          },)
-        } against the block's ${
-          counted({
-            count: blockLines.length,
-            one: 'line',
-            many: 'lines',
-          },)
-        }, and lines can only be matched one for one`,
+        `archive composite not built: candidate ${String(number,)} is a removal, which edits no line of the block to combine`,
       );
       return NO_COMPOSITE;
     }
     changing.push({
       number,
       candidate,
-      lines,
-      changed: lines.flatMap(function changedAt(
-        line,
-        index,
-      ): readonly number[] {
-        return line === blockLines[index] ? [] : [index,];
+      hunks: hunksBetween({
+        base: blockLines,
+        revision: linesOf({ text: candidate.value, },),
       },),
     },);
   }
   /**
-   What each pair of revisions that share a line shares, as the log says it.
+   What each pair of revisions that collide collide on, as the log says it.
    */
   const overlaps: string[] = [];
   for (const [position, first,] of changing.entries()) {
     for (const second of changing.slice(position + 1,)) {
       /**
-       Lines both change.
+       Block lines both replace and gaps an insertion of either meets.
        */
-      const shared = sharedLines({
-        left: first.changed,
-        right: second.changed,
+      const collisions = hunkCollisions({
+        left: first.hunks,
+        right: second.hunks,
       },);
-      if (shared.length > 0) {
+      if ((collisions.lines
+        .length
+        > 0) || (collisions.gaps
+          .length
+          > 0)) {
         overlaps.push(
-          `${numbered({ indexes: shared, },)} (candidates ${String(first.number,)} and ${String(second.number,)})`,
+          `${describeCollisions({ collisions, },)} (candidates ${String(first.number,)} and ${String(second.number,)})`,
         );
       }
     }
@@ -300,7 +291,7 @@ export function compositeOfDisjointRevisions(
           one: 'line',
           many: 'lines',
         },)
-      }`,
+      }; revisions that overlap are not combined`,
     );
     return NO_COMPOSITE;
   }
@@ -326,21 +317,18 @@ export function compositeOfDisjointRevisions(
    */
   const label = describeProducer(producer,);
   /**
-   Block with every revision's changed lines applied.
+   The block with every revision's hunks applied, and the lines each put there.
    */
-  const combined = blockLines
-    .map(function lineOf(
-      line,
-      index,
-    ): string {
-      /**
-       Revision changing this line, when one does.
-       */
-      const owner = changing.find(function changesLine({ changed, },): boolean {
-        return changed.includes(index,);
-      },);
-      return owner === undefined ? line : (owner.lines[index] ?? line);
-    },)
+  const spliced = spliceHunks({
+    base: blockLines,
+    revisions: changing.map(function hunksOf({ hunks, },): readonly LineHunk[] {
+      return hunks;
+    },),
+  },);
+  /**
+   Combined text.
+   */
+  const combined = spliced.lines
     .join('',);
   if (rendersAsNothing({ text: combined, },)) {
     compositeLog.info(
@@ -386,7 +374,7 @@ export function compositeOfDisjointRevisions(
         one: 'revision',
         many: 'revisions',
       },)
-    } changing disjoint lines, of the block's ${
+    } changing disjoint stretches of lines, of the block's ${
       counted({
         count: blockLines.length,
         one: 'line',
@@ -395,9 +383,14 @@ export function compositeOfDisjointRevisions(
     }: ${
       changing.map(function describeChange({
         number,
-        changed,
+        hunks,
       },): string {
-        return `candidate ${String(number,)} ${numbered({ indexes: changed, },)}`;
+        return `candidate ${String(number,)} ${
+          hunks.map(function describeOne(hunk,): string {
+            return describeHunk({ hunk, },);
+          },)
+            .join(' and ',)
+        }`;
       },)
         .join('; ',)
     }`,
@@ -409,13 +402,13 @@ export function compositeOfDisjointRevisions(
       rendered: combined,
     },
     withheld: [],
-    contributions: changing.map(function toContribution({
-      number,
-      changed,
-    },): CompositeContribution {
+    contributions: changing.map(function toContribution(
+      { number, },
+      index,
+    ): CompositeContribution {
       return {
         candidate: number,
-        changed,
+        changed: spliced.positions[index] ?? [],
       };
     },),
   };

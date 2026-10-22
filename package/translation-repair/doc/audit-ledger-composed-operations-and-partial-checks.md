@@ -608,3 +608,185 @@ changed the bodies of existing cases.
 Recurrence:
 `mistake-prevention.md`,
 "Refusals inside a composed operation".
+
+## B803: the composite of disjoint archive revisions refused every revision that added or removed a line
+
+Status:
+fixed on 2026-10-21 (UTC),
+red `b052d7f8dc`,
+fix `5b2f83dde0`.
+Found in the read of `zheermao22` (trace K4).
+**This replaces the line-count refusal that B712 recorded as a decision open to the owner's veto**,
+and the owner may keep it or veto it as B712 allowed.
+No cache version and no artifact schema version moved.
+
+What the run showed:
+`compositeOfDisjointRevisions` matched a revision to the block line for line,
+and built nothing when any revision that changed the block had another line count.
+It was tried three times in the pass and built nothing three times.
+At 21:10:56 UTC the email (`block/20`) drew five revisions,
+and the log said `candidate 2 has 23 lines against the block's 24 lines`.
+At 21:15:30 UTC the email's label (`block/19`) said `2 revisions overlap on line 1 (candidates 1 and 2), of the block's 1 line`.
+At 21:21:58 UTC the letter (`block/14`) said `candidate 1 has 34 lines against the block's 36 lines`.
+
+What the refusal did and did not decide:
+a refused composite is not a fallback.
+The composite is one more candidate beside the reviewers' whole revisions,
+and a refusal only leaves it off the slate.
+The shipped text was chosen afterwards by the judges' ballots over whole texts:
+the letter by `candidate 1 from glm-5.3 won weight 3.5 (ballots: 5)` at 21:25:09 UTC,
+the email by `candidate 5 from deepseek-v4.1-flash won weight 3 (ballots: 5)` at 21:14:09 UTC,
+and the label by `candidate 2 from hf:Qwen/Qwen3.8-27B won weight 3 (ballots: 6)` at 21:15:51 UTC.
+So a fix to the composite can put one more candidate before the judges and cannot make them choose it.
+The letter that shipped was the 34-line revision of `glm-5.3` itself,
+which fixed five hunks and left the rest.
+The composite the refusal withheld was of that revision and the 36-line revision of `inception/mercury-2.5`,
+and under the new rule those two collide (see the replay).
+
+The fix:
+`hunksBetween` (`archive/src/archive-composite-hunks.ts`) reads a revision as the hunks that turn the block into it,
+by a longest-common-subsequence line diff;
+`hunkCollisions` finds the block lines two revisions both replace and the gaps an insertion meets;
+`spliceHunks` (`archive/src/archive-composite-splice.ts`) applies the hunks of several revisions together.
+The package held no line diff to reuse.
+`assembly-structural-withdrawal.ts` cuts a common prefix and suffix in characters on pages,
+and `document-structure/src/align-blocks-walk.ts` is a Needleman-Wunsch walk over the parsed blocks of two languages
+that pairs by a similarity score (`scorePairing`) and pays a gap penalty to leave a block unpartnered,
+which is not a diff of equal lines.
+Revisions whose hunks collide keep the outcome of B712 for the whole block:
+no composite,
+and the log line names the lines or the place and says that revisions that overlap are not combined.
+The gates are unchanged:
+shape,
+footnotes,
+and the combined text showing a reader nothing.
+`CompositeContribution.changed` now numbers the composite's lines,
+which the judges' sheet reads as `coversLines`,
+and the note on that sheet (`COMPOSITE_ASSESSMENTS_NOTE`,
+`archive-block-selection-evidence.ts`) and the TSDoc of
+`coversLines` now say what a removal is credited with.
+The red commit's case for a hunk that removes a line and adds one before the last line expected the log to say
+"before line 4",
+and the fix commit corrects it to "after line 3",
+since an insertion is worded by the line before its gap (and "before line 1" at the start).
+
+Bound:
+after the common prefix and suffix are cut the table holds at most `ALIGNMENT_CELL_LIMIT` cells (4,000,000,
+each 4 bytes),
+so time and space are bounded by that figure whatever a reviewer writes.
+A stretch that would need more is one hunk from the first differing line to the last,
+which collides with more and never changes a revision's text.
+A block of 36 lines against a revision of 36 lines fills at most 1,369 cells.
+The test file aligns 1,500 lines all unlike their revision (inside the limit) and cuts 2,100 (outside it).
+
+Replay over the three refused attempts,
+keyless,
+from the stored replies in the run directory of `zheermao22` and the pinned page
+(each block's text hashes to the `textDigest` the log carries for it):
+none of the three builds under the new rule.
+- The email:
+  five admissible revisions,
+  and every pair collides.
+  The least colliding pair,
+  the revisions of `gemma-4-26b-a4b-it` and `minimax-m3`,
+  share only line 15.
+  The shipped email came from one whole revision and still would.
+- The email's label:
+  the same overlap on line 1 of 1.
+- The letter:
+  the slate of two revisions (the third was withheld by the shape floor,
+  with the same finding the log printed),
+  the 34-line revision with hunks at lines 3 to 4,
+  7,
+  11 to 13,
+  23 and 26 to 28,
+  and the 36-line revision with one hunk at lines 6 to 8.
+  They collide on line 7,
+  where the first writes "guilty" and the second "cat ...
+  unforgivable".
+  Their only collision is the one line,
+  and the second revision has no other hunk,
+  so even a region-level merge would add nothing to the first revision's text.
+
+So the narrowness fixed here did not decide the letter of this run,
+and the letter would have shipped the same text under the new rule.
+The new rule decides blocks where the revisions that add or remove lines are disjoint from the others,
+which the tests cover and the corpus has not yet shown.
+
+Decisions taken in this session,
+open to the owner's veto:
+- Overlapping hunks keep the B712 outcome for the whole block.
+  A composite from the hunks of the revisions that do not collide,
+  leaving the colliding region to one of them,
+  would need a rule for which one,
+  and B712 refused to make the shipped text depend on who answered first.
+- A removal of the whole block (an empty replacement) builds no composite.
+  It is a verdict on the block and edits none of its lines.
+- Hunks that only touch combine.
+  A hunk that ends where another begins,
+  and an insertion at the edge of a hunk,
+  share no block line and no gap inside either.
+  Two insertions at one gap,
+  and an insertion inside lines another revision replaces or removes,
+  collide,
+  since the order of two added lines is undetermined and a gap inside a cut has no place.
+- The alignment is deterministic and says which of two identical lines a deletion is attributed to:
+  lines both texts start with are kept first,
+  and a tie between deleting and inserting deletes first.
+  A paragraph removed from between blank quote lines loses the blank line after it.
+- A reviewer who only removed lines is credited,
+  in `coversLines`,
+  with the line that now follows the cut,
+  or the last line when the cut is at the end.
+  The note on the select sheet says so:
+  it used to say the lines that reviewer changed,
+  which would have been false for a line the reviewer did not write.
+  Crediting a removal with nothing would have left its assessment covering no line.
+  The wording change moves the prompt digest of the select rounds that hold a composite and no other,
+  and no cache version.
+- A line is still the text through its line ending,
+  so a revision that adds a line after a last line with no ending replaces that last line,
+  and a trailing newline is still a change to the last line.
+
+Not measured:
+whether the judges choose a composite of revisions that add and remove lines,
+and whether such a composite reads coherently across lines;
+both need a run.
+The replay's slate order for the email follows what the log shows
+(candidate 1 has 24 lines,
+candidate 2 has 23,
+candidate 5 is `deepseek-v4.1-flash`),
+and the order of the middle three is a guess that changes no collision.
+The `glm-5.3` and `hf:moonshotai/Kimi-K3` attribution on the label's identical pair is from the reply files' provider
+and token counts and is a guess too.
+
+Cache account:
+none moves.
+The archive block review is not cached and its result is stored under no key
+(`page-check/src/corpus-run/archive-block-repair.ts` opens no cache),
+as B714 recorded.
+The stored decisions that read its replies are the prompt payloads,
+keyed by the model-plus-message digest:
+a review round's own prompt is unchanged,
+and a composite that is newly built joins the selection sheet,
+so the sheet's digest moves for exactly the blocks whose slate changed.
+The archive text a pass ships is hashed by `repairSliceKey` as `targetText` and by the pairing question key as its target
+blocks,
+so those keys move for exactly the entries whose archive block changed.
+`mise run //package/translation-repair/slice-cache:cache-account-audit` on the tree at `5b2f83dde0` read eight versions
+(`CONSOLIDATE_CACHE_VERSION` 29,
+`CONSISTENCY_CACHE_VERSION` 6,
+`LANE_CONTEST_CACHE_VERSION` 14,
+`REFINE_CACHE_VERSION` 12,
+`SLICE_CACHE_VERSION` 41,
+`PAGE_TITLE_CACHE_VERSION` 4,
+`PAIRING_CACHE_VERSION` 3,
+`TRANSLATE_SLICE_CACHE_VERSION` 23),
+listed the fix commit as riding inside all eight,
+and found no slice-cache record in the worktree's runs directory (0),
+which is no evidence either way in a keyless worktree.
+The reasons none moves are the ones from the source in this entry.
+
+Recurrence:
+`mistake-prevention-sheets-quorums-and-outcome-rules.md`,
+"Refusals inside a composed operation".

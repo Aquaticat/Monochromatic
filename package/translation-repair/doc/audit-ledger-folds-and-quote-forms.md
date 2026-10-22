@@ -525,14 +525,19 @@ never a judge's string.
 
 ## B715: the archive review's source-quote anchor compared a screenshot quote with the picture's own line breaks, and a dropped reply was never logged
 
-Found on 2026-10-21 (UTC) in run zheermao20, the email letter block (`block/14`) of `zheermao101`.
+Found on 2026-10-21 (UTC) in run zheermao20,
+the email letter block (`block/14`) of `zheermao101`.
 Red `4e0cbc1b5f`,
 fixed in `e0dbf84a38`
-(with `3ebf976751`, which brought the new verdict function under the fixed-length-cut,
+(with `3ebf976751`,
+which brought the new verdict function under the fixed-length-cut,
 count-noun and duplicate-body scans that the first fix commit failed).
 Four reviews were heard:
 two `revise` replies and two `source-supported` replies
-(minimax-m3, reply `8cddb6a0`; the GLM-5.3-Flash re-ask on OpenRouter, reply `38241cf7`).
+(minimax-m3,
+reply `8cddb6a0`;
+the GLM-5.3-Flash re-ask on OpenRouter,
+reply `38241cf7`).
 The log read `2 eligible assessments from 4 heard reviews`,
 so both `source-supported` replies had been dropped as unanchored,
 and no line said which test refused which reply.
@@ -564,14 +569,17 @@ output `b715-replay-after.txt`).
 The picture readings were rebuilt by the real `readImagePair` through `promptUniqueClient` over a read-only
 `promptPayloadStore` on the run's `prompt-payloads`,
 with the entry's photos from the working copy of the corpus:
-all 12 reader prompts (four readers, three pictures) hit a stored reply by digest,
+all 12 reader prompts (four readers,
+three pictures) hit a stored reply by digest,
 which proves the bytes and the reader prompt are the run's,
-and the overlaps reproduce the log (0.990, 0.971 and 0.976).
+and the overlaps reproduce the log (0.990,
+0.971 and 0.976).
 The reader lengths in the log lines count characters that are not whitespace (`solidCharacters`):
 minimax-m3's `photo1.webp` reply holds 559 of them in 596 characters,
 which the log's `559 characters` and the stream's `598 content chars` (UTF-16 units) both fit.
 The sheet's section text was rebuilt from source with the real `archiveBlockSourceContexts`
-(2,402 characters: the section and three transcripts of Kimi-K3 for `photo1.webp`,
+(2,402 characters:
+the section and three transcripts of Kimi-K3 for `photo1.webp`,
 Qwen3.8-27B for `photo2.webp` and Kimi-K3 for `photo3.webp`),
 not read from the run,
 which holds replies only.
@@ -582,7 +590,8 @@ not a copy of the sheet.
   The chosen transcript keeps the screenshot's hard wrap (`罪恶` then a line break then `的呢`),
   the longest folded opening of the quote found in the text was 22 of 39,
   and with whitespace set aside the quote is a span of every one of the four `photo1.webp` readings.
-  Refused for a line break the reviewer left out: a normalization mismatch,
+  Refused for a line break the reviewer left out:
+  a normalization mismatch,
   and a defect.
   The readers are told to preserve line breaks (`slice-reading/src/image-reading-stage.ts`),
   so a wrapped transcript is the designed shape.
@@ -610,7 +619,8 @@ not a copy of the sheet.
 `isArchiveSourceQuoteAnchored` asks `quoteIsIn` (`reference/src/reference-attest-match.ts`),
 the comparison the reference attestation already makes of a quote it verifies
 (Mio22 lost a quorum on one space,
-B25): the evidence fold,
+B25):
+the evidence fold,
 every whitespace character set aside on both sides,
 the shown-character minimum counted first and unchanged.
 `isArchiveReferenceQuoteAnchored` inherits it through the same function.

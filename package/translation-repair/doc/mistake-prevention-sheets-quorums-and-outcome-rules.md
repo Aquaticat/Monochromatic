@@ -455,6 +455,17 @@ its pair step's skip line stays without a case,
 since a bounded probe over 6,000 generated pairs reached it in none of the 5,773 that passed the step.
 A precedence between a step's refusals has a case for each mix of them.
 
+The composite the archive block review builds from disjoint revisions matched each revision to the block line for line,
+and so built nothing when any revision added or removed a line (ledger B712).
+In `zheermao22` it was tried three times and built nothing three times,
+the email and the letter on a line count (ledger B803).
+A refusal on a count mismatch is a narrowness where the mismatch is an ordinary edit:
+a reviewer who drops or adds a line has not written a malformed revision.
+The composite now reads each revision as the hunks a line diff makes to the block,
+and refuses only where hunks collide.
+Position pairing is for lists parallel by construction
+("Pairing by position" in the doc on comparing text and reading structure).
+
 The rule:
 a step that can refuse on input a page can carry refuses as its sibling refusals do,
 leaving the steps that held applied,
@@ -470,11 +481,31 @@ Before a step's throw is kept as unreachable,
 a bounded probe over generated input counts what reaches it,
 beside a count of what passed the step,
 so a null is read from a probe that exercised the path.
+A composition of edits to one text aligns each edit to the text by a diff and refuses where edits collide,
+never where their lengths differ.
+The diff is bounded by a stated cell limit and total beyond it (coarser hunks,
+not a refusal),
+and its tie rule is stated,
+so identical lines attribute an edit the same way every time.
 
 What enforces it:
 the reorder and pass relabel cases on the unmovable definition;
+`archive-composite-revision.unit.test.ts` (added lines,
+removed lines,
+both in one revision,
+collisions at a line and at a gap,
+list markers,
+quotes,
+blank lines and a note's markers)
+and `archive-composite-hunks.unit.test.ts` (the diff held against a plain table over generated lines,
+the bound and the tie rule);
 habit and review for the probe,
 whose counts the batch's ledger record states.
+A search of the package's source for refusals on differing counts found the pairings of lists that are parallel by
+construction (page headings,
+signatures,
+list items),
+and no other comparison of a reviewer's edit with its base.
 
 ## Checks on one part of a composed text
 

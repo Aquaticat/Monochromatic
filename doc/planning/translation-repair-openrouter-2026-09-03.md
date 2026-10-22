@@ -809,3 +809,19 @@ named for that subject and listed here.
   - [The page of CuspariaKLSY21](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart-cuspariaklsy21-page.md)
   - [The XingZ6016 picture stop](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart-xingz6016.md)
   - [The causes of the rotation 21 findings](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart-causes.md)
+- [OpenRouter and the corpus passes: the rotation restarted on build 2a336603bf after the Gemma readers were lifted (2026-10-21)](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart.md):
+  What was read on 2026-10-21 of the first passes after the rotation restarted a second time;
+  one entry settled with its letter regressed,
+  one settled with a mixed page,
+  and one is running.
+  Entries:
+  zheermao22,
+  CuspariaKLSY22,
+  XingZ6017.
+  Files:
+  - [The run of zheermao22](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-zheermao22-run.md)
+  - [The letter of zheermao22](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-zheermao22-letter.md)
+  - [The page of zheermao22](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-zheermao22-page.md)
+  - [The run of CuspariaKLSY22](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-cuspariaklsy22-run.md)
+  - [The providers of CuspariaKLSY22](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-cuspariaklsy22-providers.md)
+  - [The page of CuspariaKLSY22](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-cuspariaklsy22-page.md)

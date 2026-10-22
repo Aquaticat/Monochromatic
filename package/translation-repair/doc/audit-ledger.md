@@ -221,7 +221,8 @@ named for that subject and listed here.
 - [Audit ledger: composed operations and checks on a part](audit-ledger-composed-operations-and-partial-checks.md):
   One refusal inside a composed operation that stopped the whole,
   or left no finding,
-  and checks that vouched for a whole text on one part of it.
+  checks that vouched for a whole text on one part of it,
+  and a composite of archive revisions that refused any revision whose line count differed (B803).
 - [Audit ledger: test cases that cannot fail](audit-ledger-test-cases-that-cannot-fail.md):
   Cases and guards that would pass with the behaviour they name removed,
   a pass-through that no case depended on,
