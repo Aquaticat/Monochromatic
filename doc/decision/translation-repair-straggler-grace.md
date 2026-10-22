@@ -690,7 +690,8 @@ remove `archive-block-review` from `WRITER_STAGE_LABELS` and pass `grace.roundMs
 
 ## Decision 2026-10-22: a short bench closes one voice below every live seat, so the grace can cut the last one
 
-Decided by the owner, asked with two options after the read of the corpus pass `XingZ6017`
+Decided by the owner,
+asked with two options after the read of the corpus pass `XingZ6017`
 (audit ledger B809 and B816).
 
 The evidence put beside the question:
@@ -739,7 +740,9 @@ What changed:
   `STRAGGLER_GRACE_MS` stays 120000 ms and `WRITER_GRACE_MS` stays 180000 ms.
   What moved is whether the grace may start on a short bench.
 - A refusal the router gives inside a round sizes the need again,
-  so round 0, which is sized before the router names any seat, opens its grace on the quorum the refusals leave
+  so round 0,
+  which is sized before the router names any seat,
+  opens its grace on the quorum the refusals leave
   (`runGatherRound` in `stage-round.ts`).
 - Artifact generation 20 reads a stored naturalness round under the rule it was gathered by,
   and a build of 20 refuses to resume a run directory stamped 19 or earlier.

@@ -254,7 +254,9 @@ The rule now:
 - A refusal inside a round,
   a slot handing its place to a reserve seat included,
   sizes the need again (`heardNeededAfterRefusals` in `runGatherRound`),
-  so round 0, which is sized before the router names any seat, opens its grace on the quorum the refusals leave.
+  so round 0,
+  which is sized before the router names any seat,
+  opens its grace on the quorum the refusals leave.
   The gather and the windowed stages both pass it.
 
 What this does not change:
