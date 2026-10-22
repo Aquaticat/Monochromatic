@@ -1079,7 +1079,8 @@ last wheel event.
 ### Images (under `~/temp/agent/cs-shots/` and `~/temp/agent/cstack/`)
 
 - `cs-shots/B-w8-s1-dark`, `B-w8-s1-light`, `B-w4-s2-dark`, `B-w4-s2-light`, `B-t-s2-dark`, `B-t-s2-light`:
-  shots `s0` to `s3` of the stack scenario; `A-*` the same of origin/main; `F-*` the positive control of the seam measure.
+  shots `s0` to `s3` of the stack scenario; `A-*` the same of origin/main;
+  `F-*` the positive control of the seam measure.
 - `cstack/v-b8-s1.png`, `v-b8l-s1.png`, `v-b8-s1-crop.png`, `v-tl-s3.png`, `v-w4l-s2.png`:
   the views that were looked at.
 
