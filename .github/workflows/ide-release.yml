@@ -235,6 +235,7 @@ jobs:
     - name: Install node
       run: |
         set -euo pipefail
+        mise --version
         mise install node
         mise exec node -- node --version
 

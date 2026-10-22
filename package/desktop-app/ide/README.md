@@ -6138,10 +6138,16 @@ with the parser load no longer renewing the marker,
 ### Releases
 
 GitHub pre-releases come from `.github/workflows/ide-release.yml`
-(decided on 2026-10-22, [decision][ide-releases]; steps in the [runbook][release-the-ide]).
-A push to `main` that changes `version` in `Cargo.toml` starts a build and, when the tag `ide-v<version>` is free,
+(decided on 2026-10-22,
+[decision][ide-releases];
+steps in the [runbook][release-the-ide]).
+A push to `main` that changes `version` in `Cargo.toml` starts a build and,
+when the tag `ide-v<version>` is free,
 a pre-release with three files:
-`ide-<version>-linux-x64.tar.gz` (the executable from `bundle`, the launcher entry, the license texts,
+`ide-<version>-linux-x64.tar.gz`
+(the executable from `bundle`,
+the launcher entry,
+the license texts,
 and `INSTALL.txt`),
 `ide-<version>-third-party-licenses.txt`,
 and `SHA256SUMS`.
