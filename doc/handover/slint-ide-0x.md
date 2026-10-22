@@ -1574,12 +1574,18 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     window (the panic over 16,384 px was the compositor's, which also panics at 1100x8400 scale 2, so that part is not
     reproduced end to end); nine guards shown to fail; its gates passed on `628fb36f39` (`test:native -- 'all()'` 288
     passed, serial). Open in its report: late tiles B 2 of 80 against A 0 of 80 (pass 1 had 2 of 40 at 52.6 and 238.6
-    ms, pass 2 0 of 40) with the evidence removed, so I am measuring it: unit `stack-all`, trees
-    `~/temp/agent/ab-stack-a` (`origin/main`) and `~/temp/agent/land-stack` (`origin/main` plus the branch, docs
-    resolved with `-X theirs` for this measurement only), 60 alternating latency pairs and 20 A against A pairs, late
-    meaning applied more than 30 ms after the last wheel event, files `stack-lat-ab.jsonl` and `stack-lat-aa.jsonl`.
+    ms, pass 2 0 of 40) with the evidence removed, so I measured it (unit `stack-all`, trees of `origin/main` and of `origin/main` plus the
+    branch with docs resolved by `-X theirs` for the measurement only, both removed; 60 alternating latency pairs and
+    20 A against A pairs; rows kept in `~/temp/agent/stack-lat-ab.jsonl` and `stack-lat-aa.jsonl`).
     Three older guards (`failed-job-freed`, `overscan-early-return`, `minimap-scroll-notes-bands`) have anchors that
     were already absent on `main`; the agent did not repair them, and one of mine to repair after the landings.
+    My latency measurement of the stacking branch (2026-10-22, release builds of `origin/main` as A and of `origin/main`
+    plus the branch as B, 1100x660 window, one app run at a time): 60 alternating pairs, late tiles (applied more than
+    30 ms after the last wheel event) A 0 of 60 and B 0 of 60, median apply 20.8 ms in both, median frame 30.3 ms and
+    29.8 ms, one frame over 36 ms in each; the A against A control of 20 pairs 0 of 20 and 0 of 20. The agent's own 2
+    late tiles of 80 on B (applied at 52.6 and 238.6 ms, evidence removed) did not reproduce, so the combined count
+    is B 2 of 140 against A 0 of 140; the cause of those two runs is not known and a load burst is not shown. At this
+    window size the stack is one texture, so this measures the one-texture path only.
     The minimap lag agent `afaeefdb803099e40` has handed back (branch `worktree-agent-afaeefdb803099e40`, tip
     `fbe4f73b2b`, pushed, not on `main`, not yet verified by me): blank-track frames in a 3,777 px fling fell from
     0.45 to 0.01 (A/A control 0.43), by a `LEAD` of 8 bands on the heading side; seven guards shown to fail; its own
