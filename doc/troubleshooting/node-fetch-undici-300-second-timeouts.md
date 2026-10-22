@@ -157,7 +157,20 @@ reading the body with `await response.text()`.
   36 of 36 calls returned in 3.3 s to 82.9 s (`synthetic-effort-probe-3.out`).
 - Streamed requests whose server sends a chunk at least every 300 s:
   the body timer restarts on every chunk.
-  The Synthetic streamed probe (`synthetic-effort-probe-5.ts`) is the provider-side check of this case.
+- Synthetic,
+  streamed (`synthetic-effort-probe-5.ts`),
+  the same hard question,
+  1,200 s abort signal,
+  four models:
+  26 of 39 calls returned HTTP 200 after 336.3 s to 1,135.2 s,
+  every one past the 300 s limits that ended the non-streamed calls
+  (`synthetic-effort-probe-5.out`).
+  The other 13 calls are not undici timer cases:
+  five ended at the 1,200 s abort signal,
+  and eight in one cluster ended with cause `Error: read ECONNABORTED`
+  (`TypeError: terminated` mid-stream,
+  or `TypeError: fetch failed` before headers),
+  a dropped connection rather than a timer.
 
 ## Verified workarounds
 
