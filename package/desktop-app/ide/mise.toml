@@ -64,8 +64,12 @@ description = "Prepare pinned Helix grammars, queries, and notices for the measu
 shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
-const { cpSync, copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } = await import('node:fs')
-const { dirname, join } = await import('node:path')
+const { existsSync, mkdirSync, readFileSync, readdirSync } = await import('node:fs')
+const { dirname, join, resolve } = await import('node:path')
+// Callers that depend on this task can start together (build and test, or two sessions in one tree). The helper module
+// holds the lock that serializes them and the publishing functions that stage each file under a name of its own, skip
+// a file that is already current, and rename into place (bin/runtime-publish.ts, tested in runtime-publish.test.ts).
+const { publishBytes, publishFile, publishTree, removeStaging, withExclusiveLock } = await import(resolve('bin/runtime-publish.ts'))
 const revision = 'ba40e547426b0f9896c8bdc699a4ab11f2b37dbc'
 // REUSE-layout sources keep license texts in LICENSES/ and the copyright line only in source headers.
 // Accept them only when every header names one license whose text is present; otherwise the notice is missing.
@@ -82,39 +86,49 @@ const metadata = JSON.parse(runCargo(['metadata', '--format-version', '1'], { ne
 const loader = metadata.packages.find(item => item.name === 'helix-loader')
 if (!loader?.source?.endsWith('#' + revision)) throw new Error('Cargo did not resolve the pinned helix-loader revision')
 const source = join(dirname(dirname(loader.manifest_path)), 'runtime')
-runCargo(['build', '--no-default-features', '--bin', 'ide-runtime'])
-const privateEnvironment = ['env', '--unset=CARGO_MANIFEST_DIR', 'XDG_CONFIG_HOME=/work/target/runtime-config', 'XDG_CACHE_HOME=/work/target/runtime-cache', 'XDG_DATA_HOME=/work/target/runtime-data']
-runBounded([...privateEnvironment, '/work/target/debug/ide-runtime', 'fetch', source], { network: true })
-runBounded([...privateEnvironment, '/work/target/debug/ide-runtime', 'build', source])
-const built = 'target/runtime-config/helix/runtime'
-const grammars = readdirSync(join(built, 'grammars'), { withFileTypes: true }).filter(entry => entry.isFile() && entry.name.endsWith('.so'))
-const selected = JSON.parse(readFileSync(join(built, 'selected-grammars.json'), 'utf8'))
-if (grammars.length !== selected.length || !selected.every(name => grammars.some(entry => entry.name === name + '.so'))) {
-  throw new Error('Built grammar files do not match the selected runtime inventory')
-}
-for (const profile of ['debug', 'release']) {
-  const destination = join('target', profile, 'runtime')
-  mkdirSync(join(destination, 'grammars'), { recursive: true })
-  cpSync(join(built, 'queries'), join(destination, 'queries'), { recursive: true })
-  copyFileSync(join(built, 'Helix-LICENSE'), join(destination, 'Helix-LICENSE'))
-  for (const grammar of grammars) {
-    const output = join(destination, 'grammars', grammar.name)
-    copyFileSync(join(built, 'grammars', grammar.name), output + '.new')
-    renameSync(output + '.new', output)
-    const name = grammar.name.slice(0, -3)
-    const sourceRoot = join(built, 'grammars', 'sources', name)
-    const notices = readdirSync(sourceRoot).filter(file => /^(?:licen[cs]e|copying|notice|authors)(?:[._-]|$)/i.test(file))
-    const headers = notices.length ? '' : reuseHeaders(sourceRoot, name)
-    const licenseDirectory = join(destination, 'licenses', name)
-    mkdirSync(licenseDirectory, { recursive: true })
-    if (headers) {
-      writeFileSync(join(licenseDirectory, 'REUSE-headers.txt'), headers)
-      notices.push('LICENSES')
-    }
-    for (const notice of notices) cpSync(join(sourceRoot, notice), join(licenseDirectory, notice), { recursive: true })
+mkdirSync('target', { recursive: true })
+// Everything below writes shared state: the ide-runtime binary, the private fetch and build directory
+// target/runtime-config (git checkouts and compiled grammars), and target/<profile>/runtime. One caller at a time does
+// it; the next one finds the grammars built and publishes nothing that is already current. The kernel releases the lock
+// when its holder ends in any way, so a killed run leaves none behind.
+await withExclusiveLock({ lockFile: 'target/runtime.lock', work: () => {
+  runCargo(['build', '--no-default-features', '--bin', 'ide-runtime'])
+  const privateEnvironment = ['env', '--unset=CARGO_MANIFEST_DIR', 'XDG_CONFIG_HOME=/work/target/runtime-config', 'XDG_CACHE_HOME=/work/target/runtime-cache', 'XDG_DATA_HOME=/work/target/runtime-data']
+  runBounded([...privateEnvironment, '/work/target/debug/ide-runtime', 'fetch', source], { network: true })
+  runBounded([...privateEnvironment, '/work/target/debug/ide-runtime', 'build', source])
+  const built = 'target/runtime-config/helix/runtime'
+  const grammars = readdirSync(join(built, 'grammars'), { withFileTypes: true }).filter(entry => entry.isFile() && entry.name.endsWith('.so'))
+  const selected = JSON.parse(readFileSync(join(built, 'selected-grammars.json'), 'utf8'))
+  if (grammars.length !== selected.length || !selected.every(name => grammars.some(entry => entry.name === name + '.so'))) {
+    throw new Error('Built grammar files do not match the selected runtime inventory')
   }
-  writeFileSync(join(destination, 'manifest.json'), JSON.stringify({ helixRevision: revision, grammars: grammars.map(entry => entry.name) }, null, 2))
-}
+  for (const profile of ['debug', 'release']) {
+    const destination = join('target', profile, 'runtime')
+    mkdirSync(join(destination, 'grammars'), { recursive: true })
+    // The build script reads manifest.json and then every file it lists, and embeds every file below queries and
+    // licenses. A reader must see the previous or the new version of each file and never a half-written one, so each
+    // file goes through a staging name of its own, and the manifest, which makes the directory valid, is written last.
+    removeStaging({ root: destination })
+    publishTree({ source: join(built, 'queries'), destination: join(destination, 'queries') })
+    publishFile({ source: join(built, 'Helix-LICENSE'), output: join(destination, 'Helix-LICENSE') })
+    for (const grammar of grammars) {
+      publishFile({ source: join(built, 'grammars', grammar.name), output: join(destination, 'grammars', grammar.name) })
+      const name = grammar.name.slice(0, -3)
+      const sourceRoot = join(built, 'grammars', 'sources', name)
+      const notices = readdirSync(sourceRoot).filter(file => /^(?:licen[cs]e|copying|notice|authors)(?:[._-]|$)/i.test(file))
+      const headers = notices.length ? '' : reuseHeaders(sourceRoot, name)
+      const licenseDirectory = join(destination, 'licenses', name)
+      mkdirSync(licenseDirectory, { recursive: true })
+      if (headers) {
+        publishBytes({ output: join(licenseDirectory, 'REUSE-headers.txt'), bytes: Buffer.from(headers) })
+        notices.push('LICENSES')
+      }
+      for (const notice of notices) publishTree({ source: join(sourceRoot, notice), destination: join(licenseDirectory, notice) })
+    }
+    const manifest = JSON.stringify({ helixRevision: revision, grammars: grammars.map(entry => entry.name) }, null, 2)
+    publishBytes({ output: join(destination, 'manifest.json'), bytes: Buffer.from(manifest) })
+  }
+} })
 """
 
 [tasks.notices]
@@ -367,8 +381,8 @@ description = "Check in the build container that cargo-nextest reads .config/nex
 run = "node bin/check-nextest-config.mjs"
 
 [tasks."test:bin"]
-description = "Check the compositor version reader, the container bound, and the frame-pattern analysis of the bin scripts with node:test"
-run = "node --test bin/nested-compositor.test.mjs bin/container-bounds.test.ts bin/cadence.test.ts bin/stress-native-report.test.ts"
+description = "Check the compositor version reader, the container bound, the frame-pattern analysis, and the runtime publishing helpers of the bin scripts with node:test"
+run = "node --test bin/nested-compositor.test.mjs bin/container-bounds.test.ts bin/cadence.test.ts bin/stress-native-report.test.ts bin/runtime-publish.test.ts"
 
 [tasks."test:ignored"]
 description = "Run the gitignore matching unit tests, the tree and reader tests that carry its answers, and the rule file notification test"
