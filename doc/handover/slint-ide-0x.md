@@ -1534,6 +1534,27 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     in `package/desktop-app/ide/bin/container-bounds.ts` (21 of 28 CPUs, 46 GiB), because the owner decided it on
     2026-10-18 ("use 75 percent ... and keep that") and the README numbers were measured at 21 CPUs; a question about
     raising it went to the owner.
+    Owner answer of 2026-10-22: raise the container share to 90 percent (25 of 28 CPUs, 55 GiB). Built and gated in the
+    scratch tree `~/temp/agent/land-share` (commit "feat(desktop-app-ide): the build and test containers take 90
+    percent of the host", not pushed): unfiltered `test:native` 283 passed and 5 skipped in 51.7 s in the 25 CPU
+    container, `test` 797 passed, lint and `inspect:no-software-renderer` pass, and `test:bin` with the share put back
+    to 0.75 fails as the guard. Its `test:bin` gate is red on the real snapshot for a reason that is not the share:
+    see the next paragraph.
+    HOLD, 2026-10-22: `origin/main` has files that no longer parse. Commits `68415aeb53` and `3da31bdc3a` (repo-wide
+    `style(*)`, from an `oxlint --fix` style run by a session that is not this one and not `monochromatic-09`) left 52
+    JS and TS files failing `node --check`, 19 of them in `package/desktop-app/ide` (the `bin/inspect-*.mjs` scripts,
+    `bin/nested-compositor.mjs`, two `design` scripts). `test:bin` fails on `main` because of
+    `bin/nested-compositor.mjs`. Owner instruction: open an issue and let MiMo take it; it is
+    https://github.com/Aquaticats/Monochromatic/issues/1794 (list of files and the measure are in it). I restored the 17
+    IDE files from before the style commits only in the scratch tree `land-share` (uncommitted, not pushed) and did
+    not touch the other packages. Held until the fix is on `main`: pushing the 90 percent change and landing the
+    minimap fling agent, because their `test:bin` gates cannot be green. The IDE `test:bin` gate is the only gate known
+    to be red; the other gates passed on the snapshot.
+    The minimap lag agent `afaeefdb803099e40` has handed back (branch `worktree-agent-afaeefdb803099e40`, tip
+    `fbe4f73b2b`, pushed, not on `main`, not yet verified by me): blank-track frames in a 3,777 px fling fell from
+    0.45 to 0.01 (A/A control 0.43), by a `LEAD` of 8 bands on the heading side; seven guards shown to fail; its own
+    gates passed. Its report is the input to the verification, which waits for the hold above and for the code tile
+    stacking agent `a074735d16c6106a5` (still running), whose branch touches other files in the same package.
     Stall pass agent `ae05d7039f46336dc` (started 2026-10-22, own worktree off `origin/main`, branch push only; brief
     quotes `NLG`, `NLD`, `RXI`, `NQH`): at least 60 alternating stall pairs (tree A = before the wake-up, tree B =
     `origin/main`) plus 30 A against A pairs for the spread; keeps the debug timeline of every stalled run and decides
