@@ -728,9 +728,9 @@ desktop `notices` job: `bin/third-party-notices.mjs` refused `notices/slint-roya
 the vendored license text, so the same failure would have hit the real release on `main`. Restored the text from
 `20c672e553` in `5b5e9be057` (hash matches again). A license text is verbatim legal text: never reflow it. Second dry
 run `39735861225` is checking the desktop jobs (fat LTO build time on the runners) and the checksums job with the new
-per-ABI Android asset names. Still queued: the desktop `opt-level = "s"` speed study (agent `a4345debcb3daaf90`), a
-rebuilt-APK emulator re-check of the paused seek (A5), full Android verification after the seek change, then merge,
-release, and the doc and `verify-release-assets.ts` updates for the per-ABI file names.
+per-ABI Android asset names. After the seek change: `test:unit` passed (134 result files) and `lint:detekt` passed on
+`f07136486d`. Still queued: the rebuilt-APK emulator re-check of the paused seek (A5, agent `a3a56c97f13907b04`), the
+second dry run, then merge and release. The release asset check is done with `gh` (no verifier script is in the repo).
 
 In flight 2026-10-18 after 0.1.6: the license polish branch `fix/music-player-license-polish` reported; its entry is
 "2026-10-18, license polish after 0.1.6" above. Merge, then release 0.1.7. Not started, mine: a quiet-host perfetto
