@@ -536,7 +536,27 @@ the `vello.scene` error above is the only candidate.
 
 ## Gates on the final tip
 
-Run once each on the final code tip (the documents after it change no code):
+Third session,
+final code tip `7529ea3e1a` (the commits after it change only this document):
+`lint` passes (once,
+at `b103fed788`,
+which differs from the code tip only in this document),
+`test:native 'all()'` 283 passed and 5 skipped with no FLAKY,
+FAIL or SLOW line (174.7 s,
+one test at a time),
+`test` 797 passed and 1 skipped,
+`test:bin` 60 passed,
+`build` finished the release profile (once more after an earlier attempt of this session collided with a concurrent
+`runtime` task of the same tree and failed before compiling),
+`inspect:no-software-renderer` reports the software renderer is not linked.
+An earlier snapshot of this session (`51c1aed3ab`) passed the same gates (283 passed and 5 skipped in 198.6 s,
+797 passed and 1 skipped,
+60 passed);
+the later commits changed one test file (the picture test) and this document.
+`inspect:*-guards` were not run:
+no guard changed.
+
+Second session:
 `lint` passes (rustfmt diffs fixed with `format:rust`,
 semantic-line-break findings fixed),
 `test:native -- 'all()'` 275 passed and 5 skipped with no FLAKY or FAIL line (177 s),
