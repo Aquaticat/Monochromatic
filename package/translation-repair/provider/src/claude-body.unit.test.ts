@@ -45,6 +45,8 @@ import {
 
  @param withSchema - whether the call states the nap schema
 
+ @param schema - a schema of the caller's own, which replaces the nap schema
+
  @param extra - loose members the request carries beyond its declared ones, as a caller might add
 
  @returns The first exchange's body, parsed
@@ -62,11 +64,13 @@ async function bodySentFor(
       { role: 'user', content: 'Where does the cat sleep?', },
     ],
     withSchema = false,
+    schema,
     extra = {},
   }: {
     readonly modelId: RosterModelId;
     readonly messages?: Parameters<ReturnType<typeof createClaudeClient>['chatText']>[0]['messages'];
     readonly withSchema?: boolean;
+    readonly schema?: Readonly<Record<string, unknown>>;
     readonly extra?: Readonly<Record<string, unknown>>;
   },
 ): Promise<Record<string, unknown>> {
@@ -81,7 +85,9 @@ async function bodySentFor(
       modelId,
       messages,
       signal: SIGNAL,
-      ...(withSchema ? { responseFormat: NAP_SCHEMA, } : {}),
+      ...(schema === undefined
+        ? (withSchema ? { responseFormat: NAP_SCHEMA, } : {})
+        : { responseFormat: { type: 'json_schema', json_schema: { name: 'cat_naps', strict: true, schema, }, }, }),
       ...extra,
     },);
   return firstBodyOf({ exchanges, },);
@@ -117,17 +123,19 @@ await describe({
       },
     },),
     it({
-      name: 'SENDS ADAPTIVE THINKING ON EVERY CARD AND NEVER A WAY TO TURN IT OFF OR BUDGET IT: no disabled, no '
-        + 'between_tools, no budget_tokens (the API answers 400 to a budget on both models), because the owner ruled '
-        + '"we should never disable thinking on anything"',
+      name: 'SENDS ADAPTIVE THINKING WITH ITS SUMMARY SHOWN ON EVERY CARD AND NEVER A WAY TO TURN IT OFF OR BUDGET IT: '
+        + 'no disabled, no between_tools, no budget_tokens (the API answers 400 to a budget on both models), because '
+        + 'the owner ruled "we should never disable thinking on anything"; display summarized because the default '
+        + 'omitted streams empty thinking blocks, so the idle guard would see nothing for the whole think (C2)',
       fn: async () => {
         await Promise.all(ANTHROPIC_SERVED_IDS.map(async function checkCard(modelId,) {
           await Promise.all([false, true,].map(async function checkSchemaChoice(withSchema,) {
             const body = await bodySentFor({ modelId, withSchema, },);
-            expect(body.thinking,).toEqual({ type: 'adaptive', },);
+            expect(body.thinking,).toEqual({ type: 'adaptive', display: 'summarized', },);
             expect(JSON.stringify(body,),).not.toContain('disabled',);
             expect(JSON.stringify(body,),).not.toContain('between_tools',);
             expect(JSON.stringify(body,),).not.toContain('budget_tokens',);
+            expect(JSON.stringify(body,),).not.toContain('omitted',);
           },),);
         },),);
       },
@@ -234,6 +242,82 @@ await describe({
         },);
         expect(body.system,).toBeUndefined();
         expect(JSON.stringify(body,),).not.toContain('cache_control',);
+      },
+    },),
+
+    it({
+      name: 'SENDS A SCHEMA THE STRUCTURED-OUTPUT FEATURE ACCEPTS (C1): additionalProperties false on every object, '
+        + 'including those under properties and items, and none of the numeric, string or array bounds it does not '
+        + 'support, with the caller\'s own schema left untouched',
+      fn: async () => {
+        /**
+         A schema that breaks each rule the feature states: bare objects at three depths, an object that allows more
+         members, and a bound of every unsupported kind.
+         */
+        const written = {
+          type: 'object',
+          properties: {
+            spot: { type: 'string', minLength: 1, maxLength: 40, },
+            hours: { type: 'integer', minimum: 1, maximum: 24, multipleOf: 1, },
+            naps: {
+              type: 'array',
+              minItems: 1,
+              maxItems: 9,
+              uniqueItems: true,
+              items: {
+                type: 'object',
+                properties: {
+                  paragraph: { type: 'integer', minimum: 1, exclusiveMinimum: 0, },
+                  inner: {
+                    type: 'object',
+                    properties: { whisker: { type: 'string', enum: ['left', 'right',], }, },
+                    required: ['whisker',],
+                    additionalProperties: true,
+                  },
+                },
+                required: ['paragraph', 'inner',],
+              },
+            },
+          },
+          required: ['spot', 'hours', 'naps',],
+        };
+        /**
+         The same schema as written, to show the call did not edit it.
+         */
+        const copy = structuredClone(written,);
+        const body = await bodySentFor({ modelId: 'claude-haiku-5-5', schema: written, },);
+        expect(body.output_config,).toEqual({
+          format: {
+            type: 'json_schema',
+            schema: {
+              type: 'object',
+              properties: {
+                spot: { type: 'string', },
+                hours: { type: 'integer', },
+                naps: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      paragraph: { type: 'integer', },
+                      inner: {
+                        type: 'object',
+                        properties: { whisker: { type: 'string', enum: ['left', 'right',], }, },
+                        required: ['whisker',],
+                        additionalProperties: false,
+                      },
+                    },
+                    required: ['paragraph', 'inner',],
+                    additionalProperties: false,
+                  },
+                },
+              },
+              required: ['spot', 'hours', 'naps',],
+              additionalProperties: false,
+            },
+          },
+        },);
+        expect(written,).toEqual(copy,);
       },
     },),
 
