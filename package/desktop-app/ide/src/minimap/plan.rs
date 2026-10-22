@@ -140,6 +140,111 @@ pub fn texture_runs(heights: &[u32], width: u32, limit: u32) -> Vec<Range<usize>
 pub const BAND: f32 = 768.0;
 
 /// What:
+///  How many bands the picture holds beyond the track on the side the view is heading toward.
+/// Why:
+///  A fling moves the track by several bands in the time a picture takes to be requested,
+///  built, and drawn (about a tenth of a second);
+///  a picture that held one band ahead ran out under the track and left the rows beyond it blank
+///  (`doc/handover/ide-gpu-stages-5-6.md`, "The minimap picture in a fling").
+///  The side the view is leaving keeps one band, as a view at rest does.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const LEAD = 8;
+/// ```
+pub const LEAD: usize = 8;
+
+/// What:
+///  Which way the view last moved far enough to tell,
+///  and the position of the top of the track (in logical pixels of the text) where that was decided.
+/// Why:
+///  The window of bands a request names must not change with every step of a scroll,
+///  or each step would post a new request;
+///  a heading changes only when the track has moved a whole band against it,
+///  so the lead stays on the same side through a fling and after it,
+///  and a view that only creeps back and forth within a band keeps its heading.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type Heading = { kind: 'still' | 'down' | 'up'; at: number };
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum Heading {
+    /// No movement of a whole band seen yet.
+    Still {
+        /// The top of the track when the heading began.
+        at: f32,
+    },
+    /// The track moved toward the end of the text.
+    Down {
+        /// The top of the track when the heading was last confirmed.
+        at: f32,
+    },
+    /// The track moved toward the start of the text.
+    Up {
+        /// The top of the track when the heading was last confirmed.
+        at: f32,
+    },
+}
+
+impl Heading {
+    /// What:
+    ///  The heading after the top of the track is seen at `from`,
+    ///  with bands `step` tall.
+    ///  A move of at least a band from the position where the heading was decided sets the heading to that direction
+    ///  and moves the position there;
+    ///  a smaller move changes nothing.
+    /// Why:
+    ///  The position is where the heading was last confirmed,
+    ///  not the previous step,
+    ///  so a fling that moves a band every few steps confirms its direction again and again
+    ///  and a creep of less than a band never flips it.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// follow(from: number, step: number): Heading;
+    /// ```
+    #[must_use]
+    pub fn follow(self, from: f32, step: f32) -> Self {
+        let moved = from - self.at();
+        if moved.abs() < step {
+            return self;
+        }
+        if moved > 0.0 {
+            return Self::Down { at: from };
+        }
+        return Self::Up { at: from };
+    }
+
+    /// The position of the top of the track where the heading was decided.
+    fn at(self) -> f32 {
+        return match self {
+            Self::Still { at } | Self::Down { at } | Self::Up { at } => at,
+        };
+    }
+
+    /// What:
+    ///  The bands a window holds before the track and after it:
+    ///  one on each side at rest,
+    ///  and `LEAD` on the side the view is heading toward.
+    /// Why:
+    ///  The picture a fling needs next is on the side it is heading toward.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// margins(): [number, number];
+    /// ```
+    #[must_use]
+    pub fn margins(self) -> (usize, usize) {
+        return match self {
+            Self::Still { .. } => (1, 1),
+            Self::Down { .. } => (1, LEAD),
+            Self::Up { .. } => (LEAD, 1),
+        };
+    }
+}
+
+/// What:
 ///  How many bands of `step` logical pixels cover a text `height` logical pixels tall.
 /// Why:
 ///  The window thread and the worker count the bands the same way,
