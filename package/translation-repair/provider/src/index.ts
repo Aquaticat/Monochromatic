@@ -7,6 +7,10 @@ export * from './index-hold.ts';
 export * from './index-neuralwatt.ts';
 export { extractAnthropicCompletion, } from './anthropic-completion.ts';
 export {
+  RETRY_AFTER_HEADER,
+  retryAfterHeaderMsOf,
+} from './retry-after-header.ts';
+export {
   type AnthropicContentBlock,
   type AnthropicImageSource,
   contentBlocksFor,
