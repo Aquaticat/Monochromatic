@@ -263,12 +263,24 @@ All measured on this machine.
 
 ### CJK fonts
 
+Correction, found after the first version of this section was committed: the measurements below were taken with a
+scratch `XDG_CONFIG_HOME`, which removes the human's user fontconfig fragment
+`~/.config/fontconfig/conf.d/50-noto-cjk-fallback.conf` (present, 420 bytes, dated 2026-08-11).
+`doc/troubleshooting/slint-hangul-split-jamo-droid-sans-fallback.md` documents that without that fragment fontique's
+`FcFontMatch` returns Droid Sans Fallback, and with it Noto CJK is chosen.
+So the Droid Sans Fallback result describes a machine without the fragment, not the human's session.
+The earlier text claimed the desktop app draws Droid under the human's locale and queued a decision about embedding a
+CJK font; both claims are withdrawn.
+A rerun with the real `XDG_CONFIG_HOME` is assigned to the agents that build the comparison; its result is not in this
+section yet.
+
 Measured by a subagent in the repository's nested compositor (`--headless --scale 3`, the built release binary,
 an invented library of three silent one-second files named with 直骨令刃海角, クリーチャー and a Latin name, a transient
-unit capped at 4 GiB and 200 percent CPU), by `/proc/<pid>/maps`, `strace --follow-forks --trace=openat` and an
-image match (ImageMagick RMSE on thresholded ink, lower is closer) against Chromium renderings at 14 px, scale 3:
+unit capped at 4 GiB and 200 percent CPU, scratch `XDG_CONFIG_HOME`), by `/proc/<pid>/maps`,
+`strace --follow-forks --trace=openat` and an image match (ImageMagick RMSE on thresholded ink, lower is closer)
+against Chromium renderings at 14 px, scale 3:
 - With `LANG=en_US.UTF-8`, which is what this machine's user manager has (`systemctl --user show-environment`),
-  the app draws both the Han string and the kana from
+  and no user fontconfig fragment, the app draws both the Han string and the kana from
   `/usr/share/fonts/google-droid-sans-fonts/DroidSansFallbackFull.ttf` (Droid Sans Fallback, a plain `.ttf`).
   No `.ttc` and no Noto Sans CJK file is opened in the trace, and the maps hold no `NotoSansCJK` line.
   RMSE for the Han string: Droid Sans Fallback 0.0326; Noto Sans CJK SC 0.1586, HK 0.1625, KR 0.1629, TC 0.1638,
@@ -278,7 +290,8 @@ image match (ImageMagick RMSE on thresholded ink, lower is closer) against Chrom
   match the SC face best, with a weaker margin (0.1048 at weight 450 or 500; ambiguous at weight 400).
 - Chromium and Firefox draw untagged Han and kana with Noto Sans CJK SC; Android orders zh-Hans first in its
   `fonts.xml` and draws Noto Sans CJK from `NotoSansCJK-Regular.ttc`.
-  So under the human's locale the desktop app's CJK glyphs come from a different font than every reference.
+  Without the fontconfig fragment the app's CJK glyphs come from a different font than every reference;
+  with the fragment (the human's session) the expected pick is Noto Sans CJK, not yet confirmed by a run.
 - The Latin text is drawn from the Inter Variable embedded in the binary (`import "fonts/InterVariable.ttf"` in
   `ui/app_window.slint`; the bytes occur at offset 3253407 of the release binary, and the file's SHA-256 equals the
   installed `~/.local/share/fonts/InterVariable.ttf`), not from a system file.
@@ -366,8 +379,9 @@ Measured and null are results of an instrument; speculation is not.
   mention text, and the legibility studies (Piepenbrock 2014, Dobres 2016 and 2017) report a dark-on-light advantage
   that grows as characters get smaller, which concerns legibility and not perceived size.
 - The within-app hierarchy: speculation, see the section "The within-app scale".
-- Mixed-script lines: the desktop's CJK glyphs come from Droid Sans Fallback under `LANG=en_US.UTF-8` while every
-  reference uses Noto Sans CJK; the effect on the feel is speculation, and the five texts the human named are Latin.
+- Mixed-script lines: without the human's fontconfig fragment the desktop's CJK glyphs come from Droid Sans Fallback
+  while every reference uses Noto Sans CJK; in the human's session the fragment selects Noto CJK, so this is open
+  until the rerun, and the five texts the human named are Latin.
 
 The only instrument that can measure perceived size is the human; a controlled test on them is proposed in
 "Not exercised".

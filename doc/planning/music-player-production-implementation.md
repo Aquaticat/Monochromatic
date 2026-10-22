@@ -830,11 +830,11 @@ failures, another thread owns them).
 
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 
-- Desktop CJK font (written 2026-10-22, found by the text-size research): under `LANG=en_US.UTF-8` the Slint app draws
-  Han and kana from Droid Sans Fallback (`DroidSansFallbackFull.ttf`), while the browsers and Android use Noto Sans
-  CJK; under ja or zh locales it uses Noto Sans CJK. Evidence and open questions are in the troubleshooting doc's
-  section "CJK fonts". A decision is the human's (embed a CJK font and its size cost, versus leaving the system
-  fallback): not asked yet, to be put to them with pros, cons and a ranking.
+- Desktop CJK font (written 2026-10-22, withdrawn the same day): an agent found the Slint app drawing CJK from Droid Sans
+  Fallback, but it ran with a scratch `XDG_CONFIG_HOME`, which removes the human's
+  `~/.config/fontconfig/conf.d/50-noto-cjk-fallback.conf` (the repo's
+  `doc/troubleshooting/slint-hangul-split-jamo-droid-sans-fallback.md` documents this). The embed-a-CJK-font decision is
+  not needed on the human's machine; the rerun with the real config is assigned to the comparison agents.
 
 - Android large library (written 2026-10-18, branch `fix/music-player-android-large-library`, not merged): the media
   store was asked for the document column `last_modified` once per fingerprint (sweep, page measure pass, track
@@ -1101,6 +1101,14 @@ Decision numbers D122 to D130 are taken; the next free one is D131.
 ### Mistakes made in this effort, and what corrected them
 
 Read these before repeating them. Each one cost the human a correction.
+
+- A CJK font finding was measured in an environment that removed the thing being asked about (2026-10-22): my brief told
+  the agent to use scratch XDG directories, including `XDG_CONFIG_HOME`, so the human's fontconfig fragment
+  `50-noto-cjk-fallback.conf` was absent and the app drew Droid Sans Fallback; the repo already documented exactly this
+  in `doc/troubleshooting/slint-hangul-split-jamo-droid-sans-fallback.md`, and I committed the wrong claim before a
+  reviewer's pasted note led me to read that doc. Before briefing an agent to reproduce a rendering result, search
+  `doc/troubleshooting/` for the tool and keep the real fontconfig, `HOME` and `XDG_CONFIG_HOME`; scratch only the data,
+  state and cache directories.
 
 - Large-text layouts shipped without a render at a phone width (reported 2026-10-22 on 0.1.8): the model-level tests
   and the fold emulator never reached the stacked deck or the two-line top bar, so a missing deck gutter, an 8 dp
