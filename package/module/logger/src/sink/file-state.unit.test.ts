@@ -18,10 +18,10 @@ await describe({ name: 'user log directory', children: [
       environment: { XDG_STATE_HOME: '/ignored', }, }), '/fixture-home/Library/Logs/monochromatic');
   } }),
   it({ name: 'uses Windows local application data with an absolute home fallback', fn: async function windowsState() {
-    assert.equal(userLogDirectory({ platform: 'win32', home: 'C:\\fixture-home',
-      environment: { LOCALAPPDATA: 'D:\\fixture-local', }, }), String.raw`D:\fixture-local\monochromatic\Log`);
+    assert.equal(userLogDirectory({ platform: 'win32', home: String.raw`C:\fixture-home`,
+      environment: { LOCALAPPDATA: String.raw`D:\fixture-local`, }, }), String.raw`D:\fixture-local\monochromatic\Log`);
     for (const configured of [undefined, '', 'relative',]) {
-      assert.equal(userLogDirectory({ platform: 'win32', home: 'C:\\fixture-home',
+      assert.equal(userLogDirectory({ platform: 'win32', home: String.raw`C:\fixture-home`,
         environment: { LOCALAPPDATA: configured, }, }), String.raw`C:\fixture-home\AppData\Local\monochromatic\Log`);
     }
   } }),
