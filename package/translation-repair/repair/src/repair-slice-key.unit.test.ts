@@ -174,7 +174,7 @@ await describe({
         // VERSION 43 ON 2026-10-22 (a short bench closes one voice below every live seat once the grace ends, ledger B816):
         // moved the same way.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('232973ab6873abef98fb2b041d6bbf74694121a580f27f73e217a2bf961c6785',);
+          .toBe('ce98ec079272db7d44c1b0dc8ad8309c57bd6e908de8bbca6212e77787d93761',);
       },
     },),
     it({

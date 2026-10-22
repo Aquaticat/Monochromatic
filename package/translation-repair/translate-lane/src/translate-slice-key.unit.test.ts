@@ -83,11 +83,15 @@ const INCUMBENT_TEXT = 'The cat sleeps on the windowsill.\n';
  Version 22 also cuts the translators' notes from the surrounding existing translation the candidate selection slate shows,
  which a heading that names the original in its own words had left whole, and from the translation the coverage sheet shows.
  These questions changed without input fields.
+ Version 23 has the selection ballot and the coverage judge give their reasons before their votes.
+ Version 24 declares the answer schemas of the translate lane in alphabetical order (ledger B762).
+ Version 25 gathers under the quorum rule that lets a short bench close one voice fewer than every live seat once the
+ straggler grace ends (ledger B816).
 
  The roster feeding {@link RUN_SHAPE} is invented, so a production roster change
  leaves this alone.
  */
-const LEGACY_WINDOWLESS_KEY = '79e5c916f277f8036837271bd6eb8d716685c83ed24e6c62d6d7a716e34f9c03';
+const LEGACY_WINDOWLESS_KEY = 'c5ea936a36263365fc3bf62b366b1b203ef650ab75ee9e8eeca5cb35c58702ee';
 
 /**
  One slice's key, with whatever this case wants to vary.

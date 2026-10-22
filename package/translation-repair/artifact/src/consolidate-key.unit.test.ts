@@ -422,10 +422,13 @@ await describe({
         // rewrites the claims the repair panel accepted and the dispute note, as
         // the polish gate is shown them (ledger B805), which moved this literal.
         // Version 31 (2026-10-22) declares every answer schema of the settlement
-        // in the order its keys sort (ledger B762), which moved this literal to
-        // the value this expectation names.
+        // in the order its keys sort (ledger B762), which moved this literal.
+        // Version 32 (2026-10-22) settles under the quorum rule that lets a
+        // short bench close one voice fewer than every live seat once the
+        // straggler grace ends (ledger B816), which moved this literal to the
+        // value this expectation names.
         expect(consolidateSliceKey(SLICE,),).toBe(
-          '1894bcec90abbaa689f8ba5e1e9723e3116f353d205b9b3eeff191e55219e3b6',
+          '91b9a46fe40ad07a1299345c52c9e534d66af2c7b7b8337a221446a176980d68',
         );
       },
     },),
