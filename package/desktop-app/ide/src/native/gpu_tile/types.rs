@@ -1,12 +1,15 @@
 //! The small types the code view and the minimap share on the GPU:
 //!  a texture with its size,
-//!  the pictures that have one,
+//!  a texture of a stack with the image that shows it,
 //!  where the minimap's textures stand,
 //!  and what a step of the notifier changed for the window.
 
 /// The window the outcome is applied to,
-/// and the markup's record of one texture of the minimap.
-use crate::native::{AppWindow, ui::MinimapSlice};
+/// and the markup's record of one texture of the minimap and of the tile.
+use crate::native::{
+    AppWindow,
+    ui::{MinimapSlice, SourceSlice},
+};
 /// Slint's own wgpu types.
 use slint::wgpu_30::wgpu;
 /// The image import,
@@ -36,39 +39,20 @@ pub(super) struct Target {
     pub(super) height: u32,
 }
 
-/// The pictures the GPU draws for the window into one texture each.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(super) enum Picture {
-    /// The source tile.
-    Tile,
-    /// The gutter's wrap indicator.
-    Sign,
-}
-
-/// Where a picture's texture is kept.
-impl Picture {
-    /// The place of this picture's texture among the targets.
-    pub(super) fn slot(self) -> usize {
-        return match self {
-            Self::Tile => 0,
-            Self::Sign => 1,
-        };
-    }
-}
-
 /// What:
-///  One texture of the minimap's picture:
+///  One texture of a stack,
+///  the minimap's picture or the source tile:
 ///  the texture,
 ///  and the image that shows it.
 /// Why:
-///  A picture taller than the device's texture limit is several of these.
+///  A picture taller than one texture may be is several of these.
 ///  The image is kept so a texture that is drawn into again is shown without a new image.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type MinimapTexture = { target: Target; image: Image };
+/// type StackTexture = { target: Target; image: Image };
 /// ```
-pub(super) struct MinimapTexture {
+pub(super) struct StackTexture {
     /// The texture and its size.
     pub(super) target: Target,
     /// The image that shows the texture.
@@ -106,11 +90,12 @@ pub(in crate::native) static SLICE_LISTS_SET: std::sync::atomic::AtomicU64 =
     std::sync::atomic::AtomicU64::new(0);
 
 /// What:
-///  Show `slices` on `window`,
-///  changing only the rows of the list the window already holds when it has the same number of them,
+///  Show `slices` in the list `shown` that a window property holds,
+///  changing only the rows of the list when it has the same number of them,
 ///  and only the rows whose texture,
 ///  first row,
-///  or height differ.
+///  or height differ;
+///  a new list is returned for the window to take when it holds none of ours yet.
 /// Why:
 ///  The markup draws one image for each row of the list,
 ///  and a new list makes it drop and make every image again,
@@ -119,42 +104,52 @@ pub(in crate::native) static SLICE_LISTS_SET: std::sync::atomic::AtomicU64 =
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function showSlices(window: AppWindow, slices: MinimapSlice[]): void;
+/// function showSlices<Slice>(shown: Slice[], slices: Slice[]): Slice[] | undefined;
 /// ```
-fn show_slices(window: &AppWindow, slices: Vec<MinimapSlice>) {
-    let shown = window.get_minimap_slices();
-    let Some(list) = shown.as_any().downcast_ref::<VecModel<MinimapSlice>>() else {
+fn show_slices<Slice: Clone + PartialEq + 'static>(
+    shown: ModelRc<Slice>,
+    slices: Vec<Slice>,
+) -> Option<ModelRc<Slice>> {
+    let Some(list) = shown.as_any().downcast_ref::<VecModel<Slice>>() else {
         #[cfg(test)]
         SLICE_LISTS_SET.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-        window.set_minimap_slices(ModelRc::from(Rc::new(VecModel::from(slices))));
-        return;
+        return Some(ModelRc::from(Rc::new(VecModel::from(slices))));
     };
     if list.row_count() != slices.len() {
         list.set_vec(slices);
-        return;
+        return None;
     }
     for (row, slice) in slices.into_iter().enumerate() {
         if list.row_data(row).as_ref() != Some(&slice) {
             list.set_row_data(row, slice);
         }
     }
+    return None;
 }
 
 /// What:
 ///  What a step of the notifier changed for the window:
-///  new images to show and messages to display.
+///  new textures to show and messages to display.
 /// Why:
 ///  The window's setters run after the shared state is released,
 ///  so a setter that reaches back into the application cannot find it borrowed.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Outcome = { images: [Picture, Image][]; minimap?: Placement; errors: string[] };
+/// type Outcome = { sign?: Image; tile?: SourceSlice[]; minimap?: Placement; errors: string[] };
 /// ```
 #[derive(Default)]
 pub(super) struct Outcome {
-    /// Pictures that have a new texture to show.
-    pub(super) images: Vec<(Picture, Image)>,
+    /// The device's largest texture side,
+    /// which the window is never larger than,
+    /// when the device arrived.
+    pub(super) texture_limit: Option<u32>,
+    /// The wrap indicator's image,
+    /// when it has a new texture to show.
+    pub(super) sign: Option<Image>,
+    /// The textures of the source tile from the top,
+    /// when the tile has new ones to show.
+    pub(super) tile: Option<Vec<SourceSlice>>,
     /// Where the minimap's textures stand,
     /// when a picture was drawn.
     pub(super) minimap: Option<Placement>,
@@ -166,18 +161,25 @@ pub(super) struct Outcome {
 impl Outcome {
     /// Set the images and the last error on `window`.
     pub(super) fn apply(self, window: &AppWindow) {
-        for (picture, image) in self.images {
-            match picture {
-                Picture::Tile => window.set_source_image(image),
-                Picture::Sign => window.set_wrap_sign(image),
-            }
+        if let Some(limit) = self.texture_limit {
+            window.set_texture_limit(i32::try_from(limit).unwrap_or(i32::MAX));
+        }
+        if let Some(image) = self.sign {
+            window.set_wrap_sign(image);
+        }
+        if let Some(slices) = self.tile
+            && let Some(list) = show_slices(window.get_source_slices(), slices)
+        {
+            window.set_source_slices(list);
         }
         if let Some(place) = self.minimap {
             let mut height = 0.0;
             for slice in &place.slices {
                 height += slice.height;
             }
-            show_slices(window, place.slices);
+            if let Some(list) = show_slices(window.get_minimap_slices(), place.slices) {
+                window.set_minimap_slices(list);
+            }
             window.set_minimap_picture_width(place.width as f32);
             window.set_minimap_picture_height(height);
             window.set_minimap_picture_top(place.top as f32);

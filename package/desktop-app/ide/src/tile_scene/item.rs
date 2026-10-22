@@ -154,3 +154,28 @@ pub struct TileScene {
     /// Texture height in physical pixels.
     pub height: u32,
 }
+
+/// What:
+///  The scenes of a tile that is drawn across several textures,
+///  top first,
+///  and the size of the tile.
+/// Why:
+///  A tile past what one texture may be is stacked from several,
+///  each with its own scene,
+///  and the window shows them one below the other with no gap,
+///  so the tile is as wide as they are and as tall as they are together.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// type TileStack = { textures: TileScene[]; width: number; height: number };
+/// ```
+pub struct TileStack {
+    /// The scene of each texture,
+    ///  top first;
+    ///  each one starts on the row where the one before it ends.
+    pub textures: Vec<TileScene>,
+    /// Width of every texture in physical pixels.
+    pub width: u32,
+    /// Height of the textures together in physical pixels.
+    pub height: u32,
+}

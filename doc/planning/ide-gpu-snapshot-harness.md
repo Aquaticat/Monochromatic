@@ -461,9 +461,15 @@ and nothing is painted by such a test.
 
 The container arguments for the render nodes moved to `bin/gpu-arguments.ts`,
 read by `mise.toml` and by the eleven guard inspection scripts
-(`bin/inspect-*-guards.mjs`,
-`inspect-watch-scope.mjs`,
-`inspect-refresh-latency.mjs`)
+(`bin/inspect-*-guards.mjs`
+(now `bin/inspect-*-guards.ts`,
+renamed 2026-10-22),
+`inspect-watch-scope.mjs`
+(now `inspect-watch-scope.ts`,
+renamed 2026-10-22),
+`inspect-refresh-latency.mjs`
+(now `inspect-refresh-latency.ts`,
+renamed 2026-10-22))
 that start their own containers around native tests.
 Those scripts lost `SLINT_BACKEND=headless`,
 `SLINT_MCP_PORT=0` and `--features slint/mcp`,
@@ -667,7 +673,10 @@ and why:
 - The opt-in inspection builds that pass `--features slint/mcp` (`mcp`,
   `inspect:native`,
   `bin/inspect-idle-cost.mjs`,
-  `bin/inspect-log-stall.mjs`) link the software renderer again,
+  `bin/inspect-log-stall.mjs`;
+  both now `.ts`,
+  renamed 2026-10-22)
+  link the software renderer again,
   because Slint's MCP server takes its screenshots with it and the selector feature `mcp` turns it on.
   `mise run mcp` also defaults to `SLINT_BACKEND=headless`,
   which draws the application on the CPU in that run.
@@ -2612,7 +2621,10 @@ No second renderer exists, and the only memory the minimap adds beyond its textu
 
 ### Guard evidence
 
-- All 45 `minimap-*` guards of `bin/inspect-source-guards.mjs` were run in a disposable copy:
+- All 45 `minimap-*` guards of `bin/inspect-source-guards.mjs`
+  (now `bin/inspect-source-guards.ts`,
+  renamed 2026-10-22)
+  were run in a disposable copy:
   each fails its named test when removed and passes restored.
   New ones: glyph runs (`minimap-renders-glyphs`,
   `minimap-glyph-inks`),

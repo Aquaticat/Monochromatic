@@ -813,7 +813,7 @@ fn a_view_with_more_lines_than_the_allowance_is_left_to_the_worker() {
     // where the texture limit of the device does not cut it below the allowance:
     // a 300 px wide tile on a device limited to 8192 px holds 340 lines, which the allowance covers.
     for (width, scale) in [(1100.0_f32, 1.0_f32), (1100.0, 2.0), (3800.0, 1.0)] {
-        let cap = tile_cap(width, scale);
+        let cap = tile_cap(width, scale, 1.0e9);
         let columns = ((width + 24.0).ceil() * scale).ceil() as u64;
         let bytes = columns * (cap * scale).floor() as u64 * 4;
         assert!(
@@ -1172,7 +1172,8 @@ fn a_frame_drawn_right_after_a_resize_event_is_wrapped_to_the_new_width() {
     window.hide().expect("close wrap window");
 }
 
-/// A view taller than the tallest tile one raster can hold (`tile_cap`) is left to the worker too:
+/// A view taller than the tallest stack of textures a tile may be (`tile_cap` of a view that asks for everything) is
+/// left to the worker too:
 /// nothing of it is
 ///  shaped or painted on the window thread.
 /// No raster can hold such a view whole,
@@ -1187,7 +1188,7 @@ fn a_view_taller_than_the_clip_cap_is_left_to_the_worker() {
     settled(&opened);
     let window = &opened.window;
     let text_width = 3600.0;
-    let cap = tile_cap(wrap_width(text_width).expect("a width"), 1.0);
+    let cap = tile_cap(wrap_width(text_width).expect("a width"), 1.0, 1.0e9);
     let height = cap + 400.0;
     start_counting(&opened);
     change_width(&opened, text_width, height);

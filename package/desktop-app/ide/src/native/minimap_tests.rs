@@ -33,7 +33,7 @@ use super::{
 /// Bounded waiting that advances native timers until a state the test checks holds.
 use crate::native::waiting_tests::Waiting;
 /// Library types that give the expected values.
-use ide_app::minimap::{BAND, Geometry, band_count};
+use ide_app::minimap::{BAND, Geometry, Heading, LEAD, band_count};
 /// An empty scene stands for a finished picture in the accept rule's tests.
 use ide_app::tile_scene::TileScene;
 /// Toolkit events,
@@ -633,11 +633,19 @@ fn the_picture_is_built_on_the_worker_and_stays_inside_its_bounds() {
 }
 
 /// The bands a scroll to `offset` shows,
-/// in the reader's window.
+/// in the reader's window,
+/// with the heading the window has now.
 fn bands_at(reader: &Reader, offset: f32) -> std::ops::Range<usize> {
     let shape = geometry(reader);
+    let heading = reader.source.borrow().minimap.heading;
     // A track taller than one texture is stacked from several, so no band the track shows is left out.
-    return shape.bands_for(offset, BAND, usize::MAX);
+    return shape.bands_toward(offset, BAND, usize::MAX, heading);
+}
+
+/// The scroll offset at which the top of the track is `top` logical pixels down the text.
+fn offset_of_top(shape: &Geometry, top: f32) -> f32 {
+    let overhang = shape.slide(shape.max_offset());
+    return shape.max_offset() * (top * shape.scale() / overhang);
 }
 
 /// The numbers of the bands a picture holds.
@@ -762,6 +770,80 @@ fn a_scroll_posts_a_request_only_when_it_names_other_bands() {
         window.get_minimap_picture_top() > first
             || window.get_minimap_picture_top() + window.get_minimap_picture_height() > top,
         "the new picture reaches further down the text"
+    );
+    window.hide().expect("close minimap window");
+}
+
+/// A fling outruns a picture that holds one band beyond the track:
+/// the view is a few bands further on before the next picture is built and drawn,
+/// and the rows beyond the picture are blank.
+/// The picture asked for during a fling holds `LEAD` bands on the side the view is heading toward,
+/// so the track a few bands later is still inside it,
+/// and one asked for after the view turns holds them on the other side.
+#[test]
+fn a_fling_is_given_a_picture_that_reaches_the_bands_it_is_heading_toward() {
+    let (_project, opened) = open(&long_text(2000));
+    settled(&opened);
+    picture_shown(&opened);
+    let window = &opened.window;
+    let shape = geometry(&opened);
+    let track_text = shape.track() / shape.scale();
+    // The text the shown picture holds,
+    // as the first and one past the last logical pixel of the text.
+    let held = |reader: &Reader| {
+        let shown = reader.source.borrow().minimap.shown.expect("a picture");
+        return (shown.window.0 as f32 * BAND, shown.window.1 as f32 * BAND);
+    };
+    // Three steps of a band and a half each, as a fling that no picture keeps up with.
+    let start = offset_of_top(&shape, 20.0 * BAND);
+    scroll_to(window, start);
+    for step in 1..=3 {
+        scroll_to(
+            window,
+            offset_of_top(&shape, (20.0 + 1.5 * step as f32) * BAND),
+        );
+    }
+    let down_top = (20.0 + 4.5) * BAND;
+    let Heading::Down { at } = opened.source.borrow().minimap.heading else {
+        panic!("a fling down is not heading down");
+    };
+    assert!(
+        (at - down_top).abs() < 1.0,
+        "heading down confirmed at {at}, not {down_top}"
+    );
+    picture_of_bands(&opened, &bands_at(&opened, offset_of_top(&shape, down_top)));
+    calm(&opened);
+    let (first, end) = held(&opened);
+    let reached = down_top + (LEAD as f32 - 1.0) * BAND;
+    assert!(
+        first <= down_top && reached + track_text <= end,
+        "the picture holds the text from {first} to {end}; the track {} bands further on needs {reached} to {}",
+        LEAD - 1,
+        reached + track_text
+    );
+    // The view turns and flings up: the lead is before the track now.
+    for step in 1..=3 {
+        scroll_to(
+            window,
+            offset_of_top(&shape, down_top - 1.5 * step as f32 * BAND),
+        );
+    }
+    let up_top = down_top - 4.5 * BAND;
+    let Heading::Up { at: turned_at } = opened.source.borrow().minimap.heading else {
+        panic!("a fling up is not heading up");
+    };
+    assert!(
+        (turned_at - up_top).abs() < 1.0,
+        "heading up confirmed at {turned_at}, not {up_top}"
+    );
+    picture_of_bands(&opened, &bands_at(&opened, offset_of_top(&shape, up_top)));
+    calm(&opened);
+    let (first_up, end_up) = held(&opened);
+    let reached_back = up_top - (LEAD as f32 - 1.0) * BAND;
+    assert!(
+        reached_back >= first_up && up_top + track_text <= end_up,
+        "the picture holds the text from {first_up} to {end_up}; the track {} bands further back needs {reached_back} from",
+        LEAD - 1
     );
     window.hide().expect("close minimap window");
 }

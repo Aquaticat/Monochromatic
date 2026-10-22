@@ -319,6 +319,15 @@ The key's value is masked in every logged exchange by the same credential maskin
   tracking-alias calls included,
   as of the last reading;
   a call the owner makes between two readings is still unseen until the next one.
+  One such user is known:
+  the owner's dsh harness,
+  whose NeuralWatt route (`package/dsh-plugin/neuralwatt`) reads `NEURALWATT_API_KEY`,
+  is on the same account (owner,
+  2026-10-22).
+  Its use of other models shows only in the plan figure (`PLAN ENERGY SPENT`),
+  which is why runs that made no NeuralWatt call printed 37.3,
+  54.3,
+  326.9 and 255.7 Wh there.
   No per-request field tells free energy from plan energy
   (the first keyed call reported a cost on a free request).
   The quota difference in the spend report is the only signal of plan energy spent,

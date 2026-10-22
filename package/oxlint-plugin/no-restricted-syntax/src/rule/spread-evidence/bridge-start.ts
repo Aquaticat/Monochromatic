@@ -15,7 +15,7 @@ import {
   SemanticBridgeError,
   type SemanticBridgeFailureReason,
 } from '@monochromatic-dev/oxlint-plugin-prefer-readonly-parameter-type/ts/prefer-readonly-parameter-types/semantic-bridge-error.ts';
-import { initializeSemanticBridge, } from '@monochromatic-dev/oxlint-plugin-prefer-readonly-parameter-type/ts/prefer-readonly-parameter-types/typescript-sync-adapter.ts';
+import { initializeSemanticBridge, } from '@monochromatic-dev/oxlint-plugin-prefer-readonly-parameter-type/ts/prefer-readonly-parameter-types/semantic-bridge-lifecycle.ts';
 
 /**
  Module logger for the bridge start.

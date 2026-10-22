@@ -333,7 +333,8 @@ QIV:
  generator reach (stale cache,
  one-file lint,
  narrow fuzzer,
- wrong assertion);
+ wrong assertion,
+ unawaited lazy suite);
  list unexercised surfaces.
 
 QNB:
@@ -1126,7 +1127,7 @@ VA5:
 
 PP1:
  `async`/`await` only:
- no promise chains or `new Promise`.
+ no promise chains or `new Promise` except a callback-API boundary bridge that resolves or rejects once.
 
 PP2:
  Concurrent async work:
@@ -1172,6 +1173,11 @@ TP1:
  on an undefined-method error,
  fetch current docs immediately;
  test the simplest invocation first.
+
+TPF:
+ Facade packages:
+ probe every exports-map subpath and confirm the runtime binding with `typeof`;
+ the root export and type definitions alone never prove a binding exists.
 
 ### Dependency management
 
@@ -1242,6 +1248,10 @@ TCV:
  direct/delegated),
  not just the happy path;
  passing tests show completeness only after comparing test names against branches.
+
+TRV:
+ A green test run counts only when its output contains the expected suite and test names;
+ an unawaited lazy suite exits 0 while running nothing.
 
 GFP:
  A guard test proves nothing until shown to fail:

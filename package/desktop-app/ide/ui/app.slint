@@ -14,6 +14,14 @@ import "../asset/font/InterVariable-Italic.ttf";
 import "../asset/font/JetBrainsMono-Variable.ttf";
 import "../asset/font/JetBrainsMono-VariableItalic.ttf";
 
+// One texture of the source tile: the image, the row of the tile its first row is, and its height, in physical pixels.
+// A tile taller than one texture may be is several of these, each below the one before it.
+export struct SourceSlice {
+    image: image,
+    top: float,
+    height: float,
+}
+
 export struct SourceSelection {
     x: float,
     y: float,
@@ -27,6 +35,12 @@ export component AppWindow inherits Window {
     preferred-height: 660px;
     min-width: 480px;
     min-height: 320px;
+    // The surface the window is drawn on is a texture of the GPU, and the toolkit's surface configuration panics when
+    // a side passes the device's limit, so the window is never larger than that in physical pixels, at any scale.
+    // Until the device's own side is told, the most common one holds.
+    in property <int> texture-limit: 16384;
+    max-width: root.texture-limit * 1phx;
+    max-height: root.texture-limit * 1phx;
     background: Surface.background;
     default-font-family: "Inter Variable";
     forward-focus: code-focus;
@@ -155,7 +169,8 @@ export component AppWindow inherits Window {
     public function reset-references-scroll() { reference-list.reset-scroll(); }
 
     in property <bool> source-available: true;
-    in property <image> source-image;
+    // The textures of the source tile, from the top; they abut, so they read as one image.
+    in property <[SourceSlice]> source-slices;
     in property <[SourceSelection]> source-selections;
     // Visible in-file find matches except the active one, which is the selection itself.
     in property <[SourceSelection]> source-matches;
@@ -476,12 +491,15 @@ export component AppWindow inherits Window {
                         border-color: Palette.foreground.with-alpha(0.7);
                     }
 
-                    Image {
+                    // Each texture sits at whole physical rows below the tile's top, at exactly its size, so the textures
+                    // meet without a gap or an overlap and nothing is resampled.
+                    for slice in root.source-slices: Image {
                         x: root.gutter-width;
-                        y: root.image-y * 1px;
+                        y: root.image-y * 1px + slice.top * 1phx;
                         width: root.image-width * 1px;
-                        height: root.image-height * 1px;
-                        source: root.source-image;
+                        height: slice.height * 1phx;
+                        source: slice.image;
+                        image-fit: fill;
                     }
 
                     // Width probes for the gutter: one bold letter, and the widest line number of at least three digits.

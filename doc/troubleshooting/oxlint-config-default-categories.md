@@ -26,7 +26,9 @@ ten lines in eight files changed content rather than leading whitespace,
 for example `unicorn(no-useless-spread)` rewriting
 `return [...text.slice(0, index)].length + within;` to
 `return text.slice(0, index).length + within;` in
-`package/desktop-app/ide/bin/inspect-language-confinement.mjs:39`,
+`package/desktop-app/ide/bin/inspect-language-confinement.mjs:39`
+(now `package/desktop-app/ide/bin/inspect-language-confinement.ts`,
+renamed 2026-10-22),
 and `unicorn(prefer-string-starts-ends-with)` rewriting a regex `.test`
 call to `String.prototype.startsWith` in
 `package/music-player/design/template-editor-scenes-test.mjs:70`.
@@ -129,6 +131,16 @@ node_modules/.pnpm/oxlint@1.89.0_oxlint-tsgolint@7.0.2004/node_modules/oxlint/bi
   package/music-player/design/template-editor-scenes-test.mjs \
   package/music-player/truepeak-core.bench/analysis/tags-sweep.mjs
 ```
+
+The `package/desktop-app/ide` files in that command were renamed on 2026-10-22
+to TypeScript files of the same base names
+(`bin/inspect-language-confinement.ts`,
+`bin/inspect-language-lifecycle.ts`,
+`bin/inspect-language-mise.ts`,
+`bin/inspect-language.ts`,
+`design/wrap-annotation-shots.ts`),
+see issue 1794;
+the command is kept as it was run.
 
 Works cleanly with `probe-categories-off.json`:
 `--print-config` prints `"categories": {"correctness":"allow"}`

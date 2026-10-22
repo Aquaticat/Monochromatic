@@ -978,7 +978,9 @@ Everything is compared in logical pixels, scale 1 against scale 2, 1100x660, dar
   The positive control of the tile measure is the synthetic 1 px roll, not a code fault.
   The fault is visible in a 6x crop as a row of squashed glyphs
   (`seam-compare-scale2-clean-left-fault-right.png`).
-- Tile seam: the code tile is one texture, so it has no seam inside it.
+- Tile seam: the code tile is one texture, so it has no seam inside it
+  (true of an ordinary window; a tile taller than a texture has seams since 2026-10-22, measured in the section
+  "The code tile stacked across textures").
   What can go wrong at a tile is a swap that places the text one pixel off.
   The measure is the phase of the text rows modulo the line pitch, against the gutter numbers' phase
   (which the markup places).
@@ -1012,11 +1014,15 @@ Everything is compared in logical pixels, scale 1 against scale 2, 1100x660, dar
   split and the clipping of the selection rows per texture); lower the scale of a view that does not fit (cheap, soft
   text); leave it (affects only windows of more than 16.7 million physical pixels of text).
   Not fixed here: it is a new feature, not a defect of the checked paths.
+  Closed on 2026-10-22 by stacking the code tile: see the section "The code tile stacked across textures".
 - A physical window taller or wider than the device's texture limit panics the application:
   1100x8400 at scale 2 (2200x16800) ended with `wgpu error: Validation Error ... In Surface::configure ... Requested was
   (2200, 16800), maximum extent for either dimension is 16384`.
   The panic is raised in the toolkit's surface configuration.
   Real displays are far below that, so a stacked minimap is reachable only in a window of about 16,000 physical rows.
+  Closed on 2026-10-22 at the cause (the window is held to the texture side); the panic could not be reproduced end to
+  end in the nested compositor, whose own output surface panics first at that size:
+  see the section "The code tile stacked across textures".
 - At every scale 2 window of 3,700 px the application logs `vello::render: Trying to paint too large image.
   1358x12288` at warn level (243 lines in 9 runs; 2 for 1376x12144).
   It is the Vello warning for more than 256 coarse workgroups
@@ -1029,6 +1035,8 @@ Everything is compared in logical pixels, scale 1 against scale 2, 1100x660, dar
   256 pixel grid counts more than 256 bins: it fires at scale 2, where the tile is at the cap, not at scale 1.
   The only evidence that such a tile renders correctly outside the view: in the recorded scroll through the overscan
   at scale 2 (`sr2d`, frames 7 to 10) the view moved through those rows with 0 periodicity violations.
+  Closed on 2026-10-22: each texture of the tile is cut to at most 256 bins, and no run of the new build logged the
+  warning (see the section "The code tile stacked across textures").
 - During a fling the minimap picture lags the box: in one run the track had 91 to 94 blank rows at its bottom 3.5 s
   after a 3,777 px touchpad scroll (the fling went on for more than 10 s), and 0 blank rows once the scroll had
   stopped.
@@ -1046,5 +1054,354 @@ Everything is compared in logical pixels, scale 1 against scale 2, 1100x660, dar
 
 - Fractional scales (the stack is whole physical pixels by construction), a real compositor, the drag scenario.
 - The stall probe of the cadence work at scale 2.
-- A readback of the rows of the 64 MiB tile outside the view.
+- A readback of the rows of the 64 MiB tile outside the view
+  (closed on 2026-10-22 for the stacked tile: the native tests read every texture back and compare it with one
+  texture; see the section "The code tile stacked across textures").
 - Gates, because no product code changed.
+
+## The code tile stacked across textures
+
+Session of 2026-10-22 on branch `worktree-agent-a074735d16c6106a5`, base `8864316eb2` (origin/main).
+Owner decision (2026-10-22): the code tile stacks textures as the minimap does, and a window whose tile does not fit a
+texture never shows wrong output, soft text or a notice instead.
+It closes the three findings of the section "Scale 2, the light scheme and the seams, measured in the compositor":
+the blank bands in a 7680x4320 window, the surface panic of a window past the texture limit, and the Vello warning
+"Trying to paint too large image".
+
+### What changed
+
+- `src/shaped_text/limit.rs`: a texture holds at most `tile_texture_rows(columns)` rows:
+  the device's side, and `256 * floor(256 / ceil(columns / 256))` rows, where Vello counts at most 256 bins of 256 by
+  256 pixels (this is what its coarse stage counts before the warning, and 256 bins are exactly 64 MiB, so the old byte
+  rule is implied).
+  The tile of 1358 columns is 10,752 rows (42 bins) and not 12,288 (288 bins).
+  `stack_rows` is the most rows of a stack: four textures, or the side plus 1,024 rows when that is more, so the view of
+  the tallest window the device can show is always held.
+  `texture_heights` cuts a tile into whole textures from the top, the rest last.
+  `tile_cap(columns, scale, wanted)` is the larger of what one texture holds and `wanted` plus six code rows, within the
+  stack: an ordinary window still gets one texture, and a line wrapped over thousands of rows is clipped as before.
+- `src/tile_scene.rs`, `tile_scene/item.rs`, `tile_scene/encode.rs`: `paint_stack` builds one scene for each texture
+  (`tile_items_in`).
+  A scene holds the rows, hints, messages and underlines that can reach its rows, placed from its first row by a whole
+  number of pixels, so a glyph that two textures share is drawn at the same fractional position in both;
+  selection and find fills of the tile are clip bands that `encode` cuts to the texture.
+  The caret, the find boxes and the wrap indicator are drawn by the markup and need no split.
+- `src/native/gpu_tile/source.rs` (new), `types.rs`, `probe.rs`, `readback.rs`: the textures of a tile are made once
+  for a shape and reused for a tile of the same shape; the window is given a `[SourceSlice]` list (image, first row,
+  height) that is changed in place (`show_slices`, the lesson of the hitch of the minimap's stack).
+- `ui/app.slint`, `src/native/start.rs`, `gpu_tile.rs`: `source-slices` is drawn by a `for` loop at whole physical rows
+  from the tile's top; `texture-limit` (told at start and again when the device arrives) bounds `max-width` and
+  `max-height` of the window in physical pixels.
+- `src/native/viewport.rs`, `render/paint.rs`, `tile_build/job.rs`, `render/present.rs`: the cap and the re-center edge
+  use the stack and the view; the re-center keeps its rule (a view must stay a quarter of a view clear of the tile's
+  edges) over the whole stack, so a window of one texture behaves as before.
+
+### Evidence
+
+- New or changed native tests in `src/native/tile_stack_tests.rs`, `tall_window_tests.rs`, `wrap_clip_tests.rs` and
+  `wrap_resize_tests.rs`, and in `tests/raster_limit.rs`, `tile_vello_limit.rs` and `wrap_rows.rs`.
+  A stack drawn at lowered texture limits, read back and put one below the other, equals the one texture at every texel
+  (selected and plain rows; hints, messages and underlines of all severities with a cut through them at every code
+  row); the same in the window's composited frame, with a cut inside the view; a stack one row lower is not equal
+  (a positive control in each).
+  At one padding a row of an underline's wave differs by an alpha of 4 of 255 at a cut (32 texels):
+  the test allows a faint fringe of at most 64 texels of alpha 8 or less, and nothing else.
+  The window frame is compared below the rows that show the path of the project, which a test names at random.
+- Bin rule: no accepted texture covers more than 256 bins by Vello's own formula, at sides 8192, 16,384 and 32,768 and
+  every width (`no_accepted_texture_covers_more_bins_than_vello_counts_before_it_warns`).
+- The window's `texture-limit` is the device's side after a frame, not the default of the markup (16,384, made
+  different from the 8,192 of the test device so that a test can tell them apart).
+- Source guards (`bin/inspect-source-guards.mjs`), each shown with a baseline pass, a fail with the guard removed and a
+  pass restored, in a disposable copy: `stack-bin-rule`, `clip-texture-side`, `stack-own-top`, `stack-band-cut`,
+  `stack-slices-abut`, `stack-textures-reused`, `window-texture-limit-told`, `window-max-width`, `window-max-height`,
+  and `minimap-slices-in-place` with its anchor moved to the generic `show_slices`.
+  `clip-cap` is gone (the byte rule is implied by the bin rule, so its mutation changes nothing).
+  Three older guards, `failed-job-freed`, `overscan-early-return` and `minimap-scroll-notes-bands`, already had absent
+  anchors on origin/main (indentation); they were not run and not repaired here.
+
+### Measurements
+
+Release builds of origin/main (A, `~/temp/agent/cs-a`) and of this branch (B, the branch worktree itself), the nested
+compositor headless on the RX 7600 (texture limit 16,384), `uni.rs` (30,000 identical lines) for the periodic measures.
+Measured under the load of the host (load average 8 to 14 from other sessions, no wait for quiet).
+
+#### Windows past the old limit (rows of ink, no blank band)
+
+The scenario settles, clicks the minimap, jumps two pages and waits (shots `s0` to `s3`).
+The code columns only; rows with any ink out of the window's rows; the longest blank run.
+
+- 7680x4320 at scale 1, dark: A has 1,405 to 1,553 inked rows of 4,320, the last inked row is 3,061 or 3,287 and the
+  blank runs are 160 to 1008 (or 21 to 1016) and the rest below the last inked row (1,258 and 1,032 px).
+  B has 2,879 to 2,897 inked rows (about 66 percent, text rows at a 24 px pitch), the last inked row is 4,319 and no
+  blank run is over 30 px (the longest is 24 px at the banner of `s0` and 11 px after).
+  Light, the same counts.
+- 3840x2160 at scale 2 (7680x4320 physical): A has 1,580 to 1,629 inked rows and a blank band of 936 to 959 px at the
+  bottom; B has 2,782 to 2,826 inked rows (64.5 percent) in dark and in light, the last inked row 4,319.
+- 1100x8100 at scale 2 (2200x16200): A has 7,966 to 8,014 inked rows and a blank band of 1,955 to 1,969 px at the
+  bottom (last inked row 14,244); B has 10,454 to 10,492 inked rows (64.5 percent), the last 16,199, dark and light.
+- Looked at with the image viewer (images below): the window downscaled and 4x crops at cuts, scale 1 and 2, dark and
+  light: every line is drawn, the line numbers run on without a gap, the caret and the tooltip are where they were.
+- The tile of the 7680x4320 window is, by the rule and not by a readback, 7 textures of 2,048 rows (7,259 columns are
+  29 bins across and 8 bins down), 12,960 rows in all; cuts fall inside the 4,320 rows of the view.
+
+#### Seams (text phase, no gap, no overlap)
+
+`~/temp/agent/cstack/seam.py`: the text columns of a row equal those of the row one line pitch below (24 px times the
+scale) over the whole window below the banner, and the distance from the top of each line's text to the top of its
+line number, and between consecutive lines, is constant.
+
+- B, 24 shots (6 captures, 4 shots each): 0 rows differ in 16 shots; the line pitch is 24 (scale 1) or 48 (scale 2) on
+  every line and the text to number distance is 2 (scale 1) or 3 (scale 2) on every line.
+  The other 8 hold the language banner (`s0` of every capture, 6 shots) or the tooltip of a diagnostic (`s1` of the
+  two tall captures, 144 rows, read in a crop); they are not seams.
+- Positive control: a release build with the slices placed one row too far apart (`top += held.target.height + 1`,
+  temporary, reverted, `git status` clean): 35 rows differ in 3 runs at 7680x4320 (rows 1858 to 1874, 3903 to 3915 and
+  3923 to 3927), line pitches 5, 20 and 25 appear, and the text to number distance takes 4 values; at 1100x8100 and
+  scale 2, 32 rows differ at row 8119 and a pitch of 49 appears.
+  Against 0 rows in every settled shot of the clean build.
+
+#### Vello warning
+
+- The build before the change logged `vello::render: Trying to paint too large image. 6838x2400.` 5 times in each of 3
+  runs (the 3840x2160 and the 1100x8100 windows at scale 2, and one at 7680x4320).
+  The 6 runs of the new build logged none.
+  The same runs, the same log level: the old build is the positive control.
+
+#### Window past the texture limit
+
+- A window of 1100x8400 at scale 2 (2200x16800) could not be tried end to end: the nested compositor's own output
+  surface panics first, in `Surface::configure` ("Requested was (2200, 16800), maximum extent for either dimension is
+  16384"), before the application starts, with A and with B alike.
+  So the panic named in the earlier finding was probably the compositor's and not the application's.
+  What is verified is the bound the owner asked for: the markup holds the window to the device's side
+  (`the_window_is_never_larger_than_the_devices_texture_side` and the three guards above).
+  A real compositor that grants a larger window was not available.
+
+#### Scroll cadence
+
+120 steps of 25 px every 16 ms (the `scroll` scenario of `inspect:cadence`, release, 1100x660, `big.rs`), the frame
+shift probe of `mm-stall.mjs`, arms alternating per pair.
+A tick in which the text did not move is a stall.
+At this size the stack is one texture, so these runs measure the one texture path.
+
+- A against B, 22 pairs (23 runs of B, as one pair was repeated after another session removed an artifact directory):
+  B had 4 stalls in 3 of 23 runs (slots 45, 49 and 50, 139); A had 1 in 1 of 22 (slot 127).
+- A against A, the same binary, 15 pairs (28 usable runs of 30, the frames of 2 were gone): 7 stalls in 7 runs
+  (25 percent) at slots 61 to 128.
+  The spread of one binary (1 of 22 and 7 of 28 runs) covers B (3 of 23).
+- Other odd ticks (a tick that moved two steps, or the end of the scroll): one run of B had 11 and 27, two runs of A
+  had 2 and 6 in all; none in the same-binary control.
+
+#### Idle latency of the tile hand-over
+
+Two wheel steps of 1500 px, 16 ms apart, nothing after; the tile is late when it is applied more than 30 ms after the
+last wheel event.
+40 pairs, twice.
+
+- First pass: A 0 late of 40 (applied 1.4 to 21.6 ms, median 20.9); B 2 late of 40, in pairs 29 and 30 (applied at
+  52.6 and 238.6 ms, first frame at 86.7 and 311.3 ms); the other 38 runs of B applied at 20.4 to 21.5 ms.
+- Second pass: A 0 late of 40 (applied 20.3 to 21.1, median 20.8); B 0 late of 40 (applied 20.3 to 21.5, median 20.8).
+- So B was late in 2 of 80 runs against 0 of 80 for A: two runs in a row of one pass, none in the other.
+  The artifact directories were removed after each run, so the two late runs were not examined and are not attributed.
+  A burst of load is likely (A, measured in the same minutes, was on time), but a count of 2 in 80 cannot separate that
+  from an effect of the change.
+  The criterion of 0 late in 40 was met by the second pass and not by the first.
+
+### Limits that the change brings
+
+- A tile placed by a map that still counts unmeasured lines as one row can be taller than three views:
+  the frame guard (`fit_clip`) cuts it to the bound of the stack (four textures, 28,608 rows at 2226 columns, 255 MB)
+  and not to the three views of the window, because the guard does not know the view.
+  Measured by holding the measurement pass of a 2000 px window over `mixed(6000)`: 19,368 rows in 3 textures at scale 1
+  where the settled tile is 6,576 rows in one.
+  Before the change the same case was cut to one texture.
+  The tile is correct and bounded, and the next placement after the pass replaces it;
+  a view past it is not shown wrong.
+  The window test of the textures (`a_2000_px_window_gets_a_tile_of_textures_...`) failed once in the full run because
+  the pass was late under 21 parallel tests (4 textures at scale 2); it now waits for the pass.
+- A tile of another shape (a different number or size of textures) is shown by the frame after the one that drew it:
+  the first frame of a window, and a re-center to a tile of another shape.
+  `source_typography_repaints_without_changing_selection` compared its first frame, taken before that, with a later one
+  and failed in every run alone; it now takes a frame first.
+  A tile of the same shape is drawn in place and shows in the frame that draws it (`a_tile_of_the_same_shape_...`).
+
+### Not run
+
+- A window past the limit in a real compositor; fractional scales; the drag scenario; a stack at scale 1.5.
+- The cadence at sizes where the stack is more than one texture (7680x4320): those windows were captured, their scroll
+  was not measured.
+- A readback of the tile's textures in the running application
+  (the tests read them in the harness; the captures read the composited window).
+
+### Images (under `~/temp/agent/cs-shots/` and `~/temp/agent/cstack/`)
+
+- `cs-shots/B-w8-s1-dark`, `B-w8-s1-light`, `B-w4-s2-dark`, `B-w4-s2-light`, `B-t-s2-dark`, `B-t-s2-light`:
+  shots `s0` to `s3` of the stack scenario; `A-*` the same of origin/main;
+  `F-*` the positive control of the seam measure.
+- `cstack/v-b8-s1.png`, `v-b8l-s1.png`, `v-b8-s1-crop.png`, `v-tl-s3.png`, `v-w4l-s2.png`:
+  the views that were looked at.
+
+### Gates
+
+Product snapshot `628fb36f39` (later commits change documents only), one run each of `build`,
+`inspect:no-software-renderer`, `test` (801 passed, 1 skipped), `test:bin` and `test:native -- 'all()'`
+(288 passed, 5 skipped); `lint` ran on the same tree before the commit (0 findings).
+The first snapshot, `9250c1981a`, failed two native tests, so the gates ran again on a new snapshot (no rerun):
+
+- `source_typography_repaints_without_changing_selection` failed every time it ran alone:
+  the frame it kept first was taken before the window showed the first tile (a tile of a new shape is shown by the
+  frame after the one that drew it), so its comparison with a later frame of the same weight failed;
+  the test now takes a frame first.
+- `a_2000_px_window_gets_a_tile_of_textures_within_the_devices_limit_at_both_scales` got 4 textures where 2 were
+  expected, once in the full run and not in 3 runs alone: the measurement pass was late under the load of 21 parallel
+  tests.
+  Holding the pass reproduced a tile past three views (see "Limits that the change brings"), the test now waits for
+  the pass.
+- Lint found 89 breaks of the documentation line rule in new comments, a file of 332 code lines (limit 300; the
+  underline frame moved to `src/tile_scene/frame.rs`), and a closure that `show_slices` took (it now returns the new
+  list); all fixed on the new snapshot.
+- The source guards were run on the earlier snapshot; the refactor moved no anchor they use.
+### The minimap picture in a fling
+
+Session of 2026-10-22 on branch `worktree-agent-afaeefdb803099e40`, base `212d45cdfb`.
+It settles the finding "During a fling the minimap picture lags the box" of the previous subsection
+(there "not examined further").
+The lag is a defect of ours, with a measured cause and a fix; the code tile outrun that the same subsection
+mentions (647 blank rows at the bottom of the code view) is out of scope and was not touched.
+
+#### Measure and its positive control
+
+- Release build of `origin/main` (`212d45cdfb`; sha256 prefix `27b877741a056ecf`, the same binary as the installed one),
+  `monochromatic-nested-wayland-session` 0.6.1 with `--headless --gpu /dev/dri/renderD128`, 1100x660, scale 1, dark.
+  The file is 50,000 identical lines (`let value = compute(alpha, beta); // note`), so every row of the picture repeats.
+  The input is the previous subsection's: `scroll 600 330 0 3777 steps=8 step-ms=16`,
+  recorded with `record DIR 30 bmp` from 0.5 s before the command to 5 s after it (about 28 to 30 frames per second).
+- A row of the minimap track (logical rows 32 to 660, columns 995 to 1095) is blank when all its pixels are one colour.
+  Per frame the script reads the longest blank run from the bottom (`trail`) and from the top (`lead`) of the track.
+  A frame is "blank" when either run is at least 8 rows (two code lines).
+  Scripts and results are in `~/temp/agent/mmlag/` (`mm-lag2.mjs`, `ab.mjs`, `sum.mjs`).
+- Positive control: a file of 100 lines (the picture ends above the bottom of the track).
+  The metric reads 163 blank rows at the bottom in 60 of 60 frames, and a screenshot of the same run shows the
+  picture ending 163 rows above the bottom of the track.
+  Frames before the input and a settled track read 0 to 2 rows.
+- The spread: runs of one binary against itself, A against A2, alternating, in the same sessions as the other arms.
+
+#### Counts before the fix
+
+Share of the recorded frames from the command on that have at least 8 blank rows (20 runs per arm,
+arms rotating A, B, A2 per round, one app run at a time, under the load there was):
+
+- A: mean 0.449 (sd 0.037); A2 (the same binary): mean 0.433 (sd 0.101).
+  Frames per run 153; frames per run with a blank track A 46 to 78 (median 70).
+  Largest blank run per run: A mean 309 rows (260 to 370) of the 628 rows of the track.
+  The last blank frame is frame 152 of 153 in A and in A2: the lag does not end within the 5 s that were recorded.
+- An earlier batch with the first script version, 16 alternating pairs: A mean 0.464 (sd 0.123), A2 0.412 (sd 0.167).
+  Those runs were loaded harder and their spread is wider; the difference between the arms stays inside it.
+- 1100x3700 (the previous subsection's window), 10 frames per second, 7 rounds: A 0.678 of frames (sd 0.033),
+  A2 0.689 (sd 0.038), largest run 304 and 285 rows of the 3,668 of the track.
+- Slower flings: 1000 px in 8 steps: 0 blank frames in 5 of 5 runs of A; 2000 px in 8 steps: A 0.021 of frames
+  (largest run 16 rows), 3777 px: 0.45.
+  The lag starts at flings of about 15,000 px per second of input and grows with the speed;
+  the 120-step scroll of the cadence tool (3,000 px in about 2 s) does not show it.
+
+#### Cause
+
+Interventions on a build of `origin/main` with two temporary environment switches (`IDE_X_MARGIN` for the bands kept on
+each side of the track, `IDE_X_SLIDE_MS` for the period of requests during a scroll; removed, never committed),
+8 rounds of the four arms alternating, share of blank frames:
+
+- Control, margin 1 (the shipped value): 0.390 (sd 0.233; these runs recorded 19 to 22 frames per second under a heavier
+  load, so the spread is wide).
+- Margin 8 on both sides: 0.010.
+- Request period 16 ms instead of 60 ms: 0.102.
+- Both: 0.067 (one run in the arm lost its whole track for four recorded frames, as one run of the margin arm did;
+  such frames also appear in 4 of 4,650 frames of the first batch at low frame rates
+  and in 0 of 9,158 in the later batch;
+  they are not examined here).
+
+The coverage of the picture is the cause; the pace of the requests is a smaller part.
+The debug log of a fling of A (`monochromatic_ide::native::minimap=debug`) gives the chain:
+
+- A picture is requested for the bands the track shows at that moment and one band on each side
+  (`Geometry::bands_for`, one band is 768 px of text or 128 rows of the picture).
+- The worker builds it in 3.0 ms on average (3.8 ms at most), but it is handed to the GPU 33 ms after the request
+  (the 20 ms poll of replies plus the frame in which the window thread takes it), and the next request follows
+  66 ms after the last one (the 60 ms `SLIDE` period plus the poll).
+- In the fling the top of the picture moves 256 to 384 picture rows from one picture to the next
+  (about 3,900 rows per second, 23,000 px of text per second, still so after 5 s).
+  A picture that holds 128 rows beyond the track is exhausted about 33 ms after it is on screen, and the next one
+  arrives about 66 ms after that.
+  The rows beyond the end of the picture are blank, and each picture lands further down than the last,
+  which is the flicker between a short and a full picture in the recorded frames.
+- Not tried: keeping the old picture under the new one.
+  The new picture covers more in the direction of travel than the old one did, so it would help only after a turn.
+
+#### Fix
+
+The window of bands a request names holds `LEAD` (8) bands on the side the view is heading toward and one on the other,
+and one on each side at rest (`Heading`, `Geometry::bands_toward` in `src/minimap/`).
+`Heading` is a state of the window (`MinimapState::heading`), updated by `minimap::note` from the top of the track:
+a move of a whole band from where the heading was decided sets it, a smaller creep never flips it.
+That keeps the key stable between requests: the pace and the number of requests are those of before
+(77 requests in the 5 s of a fling in both, from the debug logs of one run each, a gap of 66.6 and 66.5 ms
+between pictures, no frame asked for by the hand-over wait).
+What changes is the size of a picture: 14.8 bands and 477 lines against 7.9 and 257, and 5.0 ms of worker time against
+3.0 (7.7 ms at most against 3.8).
+Not done: a reversal still has one band behind the track until the heading turns (a band of movement and a request),
+and the first 100 to 150 ms of a fling still have the old picture, since the heading needs a whole band to be set.
+
+Counts after, same conditions, 20 rounds of A, B and A2:
+
+- 1100x660, 3777 px: B has 0.012 of frames with a blank track (sd 0.003; two frames per run, the first two or three
+  frames of the fling; the largest run per run 122 rows (1 to 203)), against A 0.449 and A2 0.433.
+  The last blank frame of B is frame 4 after the command at the latest.
+  Blank rows summed over the frames of a run: A 5,526, A2 5,438, B 137.
+- 1100x3700, 7 rounds: B 0.020 (one frame per run, the largest run 76 rows) against A 0.678 and A2 0.689.
+  In the first round a settled track at the end reads 1 blank row in B and 22 to 27 in A and A2.
+- 2000 px in 8 steps: B 0 blank frames in 5 of 5 runs (A 0.021).
+
+Stalls (the frame-shift probe of the 120-step scroll, `mm-stall.mjs`, release builds, nested window, slot 50 is the
+tile hand-over):
+
+- A against B, 20 pairs: A 1 stalled tick in 19 usable runs (slot 31), B 4 in 20 (slots 140, 39, 94 and 118);
+  slot 50: 0 of 19 and 0 of 20.
+- A against A (A2), 15 pairs: A 2 in 14 usable runs (slots 66 and 31), A2 5 in 14 (slots 97, 73, 121, 142, 125);
+  slot 50: 0 in both.
+  The same binary differs by 3 stalls in 14 runs, so B's 4 in 20 is inside the spread.
+  One run per batch lost its probe (a failed frame read) and is left out.
+- No stall at slot 50 in any of the 67 usable runs.
+
+#### Tests and guards
+
+- `the_window_of_a_fling_reaches_ahead_on_the_side_it_heads_toward` and `a_heading_follows_the_track_by_whole_bands`
+  (`tests/minimap.rs`) hold the window and the heading rule without a window of the application.
+- `a_fling_is_given_a_picture_that_reaches_the_bands_it_is_heading_toward`
+  (`src/native/minimap_tests.rs`) flings down and up through the real window and checks that the shown picture holds
+  the text the track reaches `LEAD - 1` bands further on, in the direction of the fling.
+- The existing guards `minimap-bands-uncapped` and `minimap-window-margin` were re-anchored to the new code.
+  New guards in `bin/inspect-source-guards.mjs`: `minimap-lead-down`, `minimap-lead-up`, `minimap-heading-needs-a-band`,
+  `minimap-heading-followed` and `minimap-window-has-heading`.
+  All seven (the two re-anchored and the five new) ran in a disposable copy,
+  each as baseline passes, guard removed fails (the named test, with the named message), restored passes:
+  7 of 161 guards; the other 154 were not run.
+  The guard run used the tip `8880ec6752`.
+
+#### Gates
+
+Run once each on the tip `8880ec6752` (the last code commit; a first `lint` run found five shadowed names, five line
+breaks and a missing impl doc in the new code, fixed in that commit, and `lint` passes on it):
+`lint` 0 findings; `test` 799 passed, 1 skipped; `test:native -- 'all()'` 283 passed, 5 skipped (224 s);
+`test:bin` 60 passed; `build` finished; `inspect:no-software-renderer` passes.
+Commits: `d6668b1aa9` (code, unbuilt), `b2b4cfd851` (rustfmt and guards), `8164722cbb` (README and docs),
+`8880ec6752` (lint fixes).
+
+#### Limits
+
+- Headless compositor on the GPU, its recorder as the clock, a synthetic touchpad fling; no real touchpad,
+  no real compositor, no drag scenario.
+- The metric counts rows of one colour in the track; a picture that is there but wrong is not seen.
+- The load of the host was not controlled; the arms alternated and a same-binary arm gave the spread.
+- The measured B binary was built from commit `b2b4cfd851` plus documentation; the final tip differs from it only in
+  comments and the README.
+- The window the previous subsection saw at 3.5 s (91 to 94 blank rows) was reproduced in kind (22 to 27 blank rows at
+  5 s in A) but not in number; fling speed varies from run to run with the load.
