@@ -63,6 +63,11 @@ const SECOND_ROW_OFFSET_PX = 90;
 const ROWS_FROM_LICENSES_TO_SWITCH = 6;
 
 /**
+ How long the app is given to move the keyboard position after a navigation key of the Settings list, in milliseconds.
+ */
+const MOVE_SETTLE_MS = 250;
+
+/**
  How many times the app process is looked for after Ctrl+Q.
  */
 const EXIT_LOOKS = 40;
@@ -334,25 +339,20 @@ async function runFirstLaunch(context: RunContext,): Promise<void> {
         until: isSettingsPage,
         what: 'Settings',
       },);
-      await press({
-        session,
-        act: tapKey('end',),
-        until: function noChange(state: UiState,): boolean {
-          return isSettingsPage(state,) && !state.auto_play_on_select;
-        },
-        what: 'the keyboard position on the last row, the Licenses row, with nothing toggled',
-      },);
+      // A move between rows writes no state line, so each key is waited out for a moment instead of waited for: waiting for
+      // a newer line only passed when a late hint-badge line of the chord happened to arrive.
+      await session.tap('end',);
+      await wait(MOVE_SETTLE_MS,);
       // The Licenses row is the last stop; the switch row is six rows above it, past the Reset text sizes row and the four
       // Text size stepper rows.
-      for (let rowsUp = 0; rowsUp < ROWS_FROM_LICENSES_TO_SWITCH; rowsUp += 1)
-        await press({
-          session,
-          act: tapKey('up',),
-          until: function noChangeAfterUp(state: UiState,): boolean {
-            return isSettingsPage(state,) && !state.auto_play_on_select;
-          },
-          what: 'the keyboard position one row up with nothing toggled',
-        },);
+      for (let rowsUp = 0; rowsUp < ROWS_FROM_LICENSES_TO_SWITCH; rowsUp += 1) {
+        await session.tap('up',);
+        await wait(MOVE_SETTLE_MS,);
+      }
+      expect({
+        condition: isSettingsPage(await session.last(),) && !(await session.last()).auto_play_on_select,
+        message: 'moving the keyboard position toggled the setting or left Settings',
+      },);
       /**
        The state after Space on the switch row.
        */

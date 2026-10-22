@@ -52,6 +52,12 @@ const EXIT_LOOKS = 40;
 const EXIT_LOOK_PAUSE_MS = 200;
 
 /**
+ How long the app is given to move the keyboard position after a navigation key, in milliseconds. A move between rows
+ writes no state line, so it is waited out instead of waited for.
+ */
+const MOVE_SETTLE_MS = 250;
+
+/**
  How many Down presses lead from the first Settings row to the first stepper: the two template rows and the switch row.
  */
 const DOWNS_TO_FIRST_STEPPER = 3;
@@ -229,6 +235,24 @@ async function quitApp(session: Session,): Promise<void> {
 }
 
 /**
+ Taps a navigation key of the Settings list and gives the app a moment to move the keyboard position, which writes no
+ state line.
+
+ @param session - the running launch
+
+ @param key - key name
+
+ @example
+ ```ts
+ await move(session, 'down',);
+ ```
+ */
+async function move(session: Session, key: string,): Promise<void> {
+  await session.tap(key,);
+  await wait(MOVE_SETTLE_MS,);
+}
+
+/**
  Opens Settings and puts the keyboard on the first stepper row, Pane titles.
 
  @param session - the running launch
@@ -250,19 +274,10 @@ async function openSettingsOnFirstStepper(session: Session,): Promise<void> {
     until: isSettingsPage,
     what: 'Settings',
   },);
-  await press({
-    session,
-    act: tapKey('home',),
-    until: isSettingsPage,
-    what: 'the keyboard position on the first row',
-  },);
+  await wait(MOVE_SETTLE_MS,);
+  await move(session, 'home',);
   for (let step = 0; step < DOWNS_TO_FIRST_STEPPER; step += 1)
-    await press({
-      session,
-      act: tapKey('down',),
-      until: isSettingsPage,
-      what: 'the keyboard position one row down',
-    },);
+    await move(session, 'down',);
 }
 
 /**
@@ -276,12 +291,7 @@ async function openSettingsOnFirstStepper(session: Session,): Promise<void> {
  ```
  */
 async function nextRow(session: Session,): Promise<void> {
-  await press({
-    session,
-    act: tapKey('down',),
-    until: isSettingsPage,
-    what: 'the keyboard position one row down',
-  },);
+  await move(session, 'down',);
 }
 
 /**
@@ -389,18 +399,8 @@ async function runFirstLaunch(context: RunContext,): Promise<void> {
     id: 'text-size/reset-row-restores-the-defaults',
     title: 'End, Up and Enter on the Reset text sizes row put all four sizes back, and the row then does nothing',
     body: async function resetRow(): Promise<string> {
-      await press({
-        session,
-        act: tapKey('end',),
-        until: isSettingsPage,
-        what: 'the keyboard position on the last row, the Licenses row',
-      },);
-      await press({
-        session,
-        act: tapKey('up',),
-        until: isSettingsPage,
-        what: 'the keyboard position on the Reset text sizes row',
-      },);
+      await move(session, 'end',);
+      await move(session, 'up',);
       await press({
         session,
         act: tapKey('enter',),
