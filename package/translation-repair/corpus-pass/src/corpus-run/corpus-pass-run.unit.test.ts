@@ -23,6 +23,7 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,
   expect,
@@ -956,7 +957,9 @@ await describe({
           overrides: {
             settle: async function settle({ entry, endRun, },): Promise<EntryOutcome> {
               watched.settled.push(entry.id,);
-              endRun({ error: new EveryProviderDryError({ measured: 'the seat reading found every meter dry', },), },);
+              nonNullishOrThrow(endRun,)({
+                error: new EveryProviderDryError({ measured: 'the seat reading found every meter dry', },),
+              },);
               return { kind: 'stopped', };
             },
           },

@@ -5,6 +5,7 @@ import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
 import type {
+  EveryProviderDryError,
   JsonSchemaResponseFormat,
   ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
@@ -20,7 +21,7 @@ import {
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { monotonicMs, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { roundLine, } from './stage-round-line.ts';
-import { endsTheRun, } from './stage-run-end.ts';
+import { isDryRefusal, } from './stage-run-end.ts';
 import { StragglerCutError, } from './straggler-cut.ts';
 
 //region Stage round
@@ -515,7 +516,7 @@ export async function runGatherRound<ValueT,>(
    Refusals that end the run, as the asks that met them raised them, kept so the grace window's wait, which swallows a
    rejected ask, can raise the first.
    */
-  const dryRefusals: unknown[] = [];
+  const dryRefusals: EveryProviderDryError[] = [];
 
   /**
    Router refusals this round has seen, which the wait for quorum reads.
@@ -626,7 +627,7 @@ export async function runGatherRound<ValueT,>(
       // where the transport built it.
       // EVERY PROVIDER DRY ENDS THE RUN, so the round fails with it rather than turning it into an abandoned
       // straggler: no other seat can be served either.
-      if (endsTheRun({ error, },)) {
+      if (isDryRefusal(error,)) {
         dryRefusals.push(error,);
         throw error;
       }
@@ -757,6 +758,9 @@ export async function runGatherRound<ValueT,>(
   // A DRY REFUSAL THAT LANDED IN THE WINDOW ENDS THE RUN TOO. `allSettled` swallows the ask that raised it, and the
   // position would come out of the assembly as a silent seat in an ordinary thin roster, so the refusal `askOnce`
   // recorded as it ended is raised here. Before quorum it already surfaced through `awaitHeard`.
+  /**
+   The first such refusal, absent when none landed.
+   */
   const [dryRefusal,] = dryRefusals;
   if (dryRefusal !== undefined)
     throw dryRefusal;

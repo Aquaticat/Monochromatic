@@ -13,6 +13,23 @@ import { EveryProviderDryError, } from '@monochromatic-dev/translation-repair-pr
 // the provider package of its own.
 
 /**
+ Whether a raised value is the refusal that ends the run, narrowing it to its class so a caller can keep and rethrow it.
+
+ @param error - what the call raised
+
+ @returns Whether the router found every provider out of budget
+
+ @example
+ ```ts
+ if (isDryRefusal(error))
+   throw error;
+ ```
+ */
+export function isDryRefusal(error: unknown,): error is EveryProviderDryError {
+  return error instanceof EveryProviderDryError;
+}
+
+/**
  Whether a failed call's error ends the run instead of costing one seat its voice.
 
  @param error - what the call raised
@@ -26,7 +43,7 @@ import { EveryProviderDryError, } from '@monochromatic-dev/translation-repair-pr
  ```
  */
 export function endsTheRun({ error, }: { readonly error: unknown; },): boolean {
-  return error instanceof EveryProviderDryError;
+  return isDryRefusal(error,);
 }
 
 //endregion Stage run end

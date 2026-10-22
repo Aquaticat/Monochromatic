@@ -14,7 +14,10 @@ import {
 
 import { EveryProviderDryError, } from '@monochromatic-dev/translation-repair-provider';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
-import { endsTheRun, } from '../dist/final/node/index.mjs';
+import {
+  isDryRefusal,
+  endsTheRun,
+} from '../dist/final/node/index.mjs';
 
 await describe({
   name: endsTheRun.name,
@@ -33,6 +36,26 @@ await describe({
         expect(endsTheRun({ error: new NoProviderForModelError({ modelId: 'minimax-m3', reason: 'no provider serves this model', },), },),).toBe(false,);
         expect(endsTheRun({ error: new Error('connection reset',), },),).toBe(false,);
         expect(endsTheRun({ error: 'the cat sat', },),).toBe(false,);
+      },
+    },),
+  ],
+},);
+
+await describe({
+  name: isDryRefusal.name,
+  children: [
+    it({
+      name: 'ANSWERS YES ONLY FOR THE ROUTER\'S EVERY-PROVIDER-DRY REFUSAL, narrowing it to its class, and no for any other value',
+      fn: async () => {
+        /**
+         The refusal the router raised.
+         */
+        const dry = new EveryProviderDryError({ measured: 'every meter dry', },);
+        expect(isDryRefusal(dry,),).toBe(true,);
+        expect(
+          isDryRefusal(new Error('connection reset',),),
+        ).toBe(false,);
+        expect(isDryRefusal('the cat sat',),).toBe(false,);
       },
     },),
   ],

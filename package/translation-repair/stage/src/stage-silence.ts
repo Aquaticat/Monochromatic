@@ -178,7 +178,9 @@ export function silentStagesOfSettlement(
 export function refinementIsResumable(
   { settlement, }: Parameters<typeof silentStagesOfSettlement>[0],
 ): boolean {
-  return silentStagesOfSettlement({ settlement, },).length === 0;
+  return silentStagesOfSettlement({ settlement, },)
+    .length
+    === 0;
 }
 
 //endregion Stage silence
