@@ -17,7 +17,9 @@ import {
 
 import {
   everyStageHeard,
+  silentStageLabel,
   silentStagesOf,
+  silentStagesOfRecord,
   STAGE_QUORUM_UNMET_PREFIX,
   stageQuorumUnmetFinding,
 } from '../dist/final/node/index.mjs';
@@ -83,6 +85,61 @@ await describe({
               'stage-quorum-unmet (critic 0/6)',
               'stage-quorum-unmet (checker 1/3)',
             ],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: silentStageLabel.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SPELLS heard against asked, and where the stage ran when it ran once for each of several places',
+          fn: async () => {
+            expect(silentStageLabel({ stage: 'critic', heard: 2, asked: 6, },),).toBe('critic 2/6',);
+            expect(silentStageLabel({
+              stage: 'panel',
+              heard: 0,
+              asked: 6,
+              where: 'cluster/abc',
+            },),).toBe('panel 0/6 (cluster/abc)',);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: silentStagesOfRecord.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES A SILENT STAGE THE RECORD CARRIES AS DATA even when every finding about it was relocated, '
+            + 'which the XingZ6018 slice 85 record had: its panel findings began `panel-packet (cluster/...): `',
+          fn: async () => {
+            /**
+             The relocated finding the XingZ6018 record held, which the prefix reader misses.
+             */
+            const relocated = 'panel-packet (cluster/140d): stage-quorum-unmet (panel 0/6)';
+            expect(silentStagesOf({ findings: [relocated,], },),).toStrictEqual([],);
+            expect(silentStagesOfRecord({
+              record: {
+                findings: [relocated,],
+                silentStages: ['panel 0/6 (cluster/140d)',],
+              },
+            },),).toStrictEqual(['panel 0/6 (cluster/140d)',],);
+          },
+        },),
+        it({
+          name: 'NAMES THE DATA FIRST, then the stages that left an unrelocated finding, and nothing for a stage that heard',
+          fn: async () => {
+            expect(silentStagesOfRecord({
+              record: {
+                findings: [stageQuorumUnmetFinding({ shortfall: 'checker 1/3', },), 'stage-voice-lost (editor x)',],
+                silentStages: ['panel 0/6 (cluster/a)',],
+              },
+            },),).toStrictEqual(['panel 0/6 (cluster/a)', 'stage-quorum-unmet (checker 1/3)',],);
+            expect(silentStagesOfRecord({ record: { findings: [], silentStages: [], }, },),).toStrictEqual([],);
           },
         },),
       ],

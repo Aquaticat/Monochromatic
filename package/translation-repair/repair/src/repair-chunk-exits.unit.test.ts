@@ -31,6 +31,7 @@ import {
   type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import {
+  cacheRefusalsOf,
   repairChunk,
   repairPreparedDocument,
 } from '../dist/final/node/index.mjs';
@@ -142,6 +143,10 @@ type ChunkScript = {
    */
   readonly panelVote: 'supported' | 'unsupported';
   /**
+   Whether every panelist answers in a shape nothing can read, so the panel hears nobody.
+   */
+  readonly panelDeaf?: boolean;
+  /**
    Edits the editor writes, by region.
    */
   readonly edits: readonly EditWire[];
@@ -224,6 +229,8 @@ function scriptedChunkClient(
             .join('\n',),
         ],
       );
+      if ((stage === 'panel_ballot') && (script.panelDeaf === true))
+        return { kind: 'schema-mismatch', rawText: '{}', detail: 'the script made the panel deaf', };
       /**
        Scripted wire reply for the stage.
        */
@@ -383,6 +390,30 @@ await describe({
               .map(function toStatus(issue,) {
                 return issue.status;
               },),).toEqual(['rejected',],);
+          },
+        },),
+        it({
+          name: 'RECORDS A PANEL THAT HEARD NOBODY AS DATA on the outcome and refuses to cache it, though the '
+            + 'panel\'s own finding is located by cluster and the critics were all heard: the settlement reads '
+            + '"nothing to edit" exactly as XingZ6018 slice 85 did',
+          fn: async () => {
+            const { outcome, sent, } = await runChunk({
+              script: {
+                claims: [CLAIMS.chase,],
+                panelVote: 'supported',
+                panelDeaf: true,
+                edits: [],
+                checks: everyIssue({ verdict: 'fixed', },),
+              },
+            },);
+            expect(sent.has('editor_report',),).toBe(false,);
+            expect(outcome.heardCritics,).toBe(MODELS.criticModelIds.length,);
+            expect(outcome.silentStages.length,).toBe(1,);
+            expect(outcome.silentStages[0],).toContain('panel 0/3 (cluster/',);
+            expect(outcome.findings.some(function isLocated(finding,): boolean {
+              return finding.startsWith('panel-packet (cluster/',) && finding.includes('stage-quorum-unmet (panel 0/3)',);
+            },),).toBe(true,);
+            expect(cacheRefusalsOf({ outcome, },).length,).toBe(1,);
           },
         },),
         it({
