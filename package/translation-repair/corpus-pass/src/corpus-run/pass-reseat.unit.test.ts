@@ -302,6 +302,49 @@ await describe({
           },
         },),
         it({
+          name: 'DROPS HAIKU 5.5 FROM THE NEXT SEATING WHEN THE CLAUDE KEY GOES FROM WET TO HELD (R3 of the second '
+            + 'review): the first seating, with the key wet, takes Haiku as the fourth of the order, and once '
+            + 'holds.anthropic is set the router reads the key dry and the next seating has no Haiku in the repair '
+            + 'checker bench; the same rig with no hold on the key seats Haiku again',
+          fn: async () => {
+            /** Rig whose dryness reads fold a running hold in, as the router\'s view does. */
+            const rig = viewClient({ view: MIMO_UNSERVED_CLAUDE_WET, },);
+            rig.holds.synthetic = DRY_HOLD_MS;
+            /** Client whose dryness answers the base view with every held provider read dry. */
+            const folding = {
+              ...rig.client,
+              providerDryness: async (): Promise<BudgetView> => {
+                rig.counter.reads += 1;
+                return Object.fromEntries(Object.entries(MIMO_UNSERVED_CLAUDE_WET,)
+                  .map(function foldHold([provider, dry,],): readonly [string, boolean] {
+                    return [provider, dry || (rig.holds[provider as keyof typeof rig.holds] > 0),];
+                  },),) as BudgetView;
+              },
+            };
+            const hooks = lanesHooksFor({
+              client: folding,
+              signal: new AbortController().signal,
+              entryId: 'mittens',
+            },);
+            /** Seating while the Claude key is wet. */
+            const wetSeating = await hooks.beforeSlice({ lane: 'repair', },);
+            // THE NEGATIVE ARM: nothing else changed between the readings, so Haiku is seated again.
+            /** Seating a second time with the Claude key still wet. */
+            const stillWetSeating = await hooks.beforeSlice({ lane: 'repair', },);
+            rig.holds.anthropic = DRY_HOLD_MS;
+            /** Seating once the Claude key is held. */
+            const heldSeating = await hooks.beforeSlice({ lane: 'repair', },);
+
+            expect(wetSeating.repairModels?.checkerModelIds,).toContain('claude-haiku-5-5',);
+            expect(stillWetSeating.repairModels?.checkerModelIds,).toContain('claude-haiku-5-5',);
+            expect(heldSeating.repairModels?.checkerModelIds,).not.toContain('claude-haiku-5-5',);
+            // THE FIFTH OF THE ORDER FILLS THE PLACE, and the bench rotates between chunks, so the case reads
+            // membership and not the order of the three.
+            expect(heldSeating.repairModels?.checkerModelIds,).toContain('google.gemma-4-31b',);
+            expect(heldSeating.repairModels?.checkerModelIds?.length,).toBe(3,);
+          },
+        },),
+        it({
           name: 'COSTS NOTHING while nothing is held: no dryness read, nothing to seat, so a pass under wet '
             + 'providers asks its meters exactly as often as before',
           fn: async () => {
