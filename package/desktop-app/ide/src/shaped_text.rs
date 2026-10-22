@@ -84,9 +84,10 @@ mod limit;
 /// export { RASTER_MARGIN, UNWRAPPED_RASTER_WIDTH, bandClip, fitClip, fitViewport, rasterFits, rasterWidth, tileCap } from './limit';
 /// ```
 pub use limit::{
-    DEFAULT_TEXTURE_DIMENSION, MAX_RASTER_BYTES, RASTER_MARGIN, UNWRAPPED_RASTER_WIDTH, band_clip,
-    fit_clip, fit_viewport, raster_fits, raster_width, set_texture_dimension, texture_dimension,
-    texture_fits, tile_cap,
+    BIN_SIDE, DEFAULT_TEXTURE_DIMENSION, MAX_BINS, MAX_RASTER_BYTES, MAX_STACK_TEXTURES,
+    RASTER_MARGIN, STACK_VIEW_ROOM, UNWRAPPED_RASTER_WIDTH, band_clip, fit_clip, fit_viewport,
+    raster_fits, raster_width, set_texture_dimension, stack_fits, stack_rows, texture_dimension,
+    texture_fits, texture_heights, tile_cap, tile_texture_rows,
 };
 
 /// Shaping of single lines and virtual rows with the shared font setup.
