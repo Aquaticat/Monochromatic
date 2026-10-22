@@ -234,10 +234,11 @@ export function createFileSink({
   /**
    Writes a single record as a JSONL line to this sink's log file,
    creating that file with this first record.
+   The returned completion is this batch's complete append,
+   shared with same-batch records so pending-write tracking covers queued records;
+   unverified and rejected writes share one completed promise.
 
    @param record - Log record to write.
-
-   @returns This batch's complete append; shared completion for unverified writes.
 
    @mutates record - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
    */
