@@ -530,7 +530,7 @@ What the read did not do:
   so what the contest,
   polish and gate sheets showed is known only from the ballot texts that quote them.
 - It did not trace code for the classes,
-  except for the side checks named above.
+  except for the side checks in "Traces and side checks".
 - It did not run a spread measurement.
 - It did not check the host for the cause of any slowness.
 - It did not probe any provider.
