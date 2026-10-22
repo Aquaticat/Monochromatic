@@ -1,4 +1,5 @@
 import {
+  beyondBoundClausesOf,
   type BudgetView,
   EveryProviderDryError,
   type NeuralWattReturn,
@@ -20,6 +21,65 @@ import type { JudgeSeatPhase, } from './run-seats-wait.ts';
  What the refusal reads off the run client: how long each provider is held, and what the run knows of NeuralWatt's day.
  */
 export type RefusalClient = Pick<RunClient, 'neuralwattReturn' | 'providerHolds'>;
+
+/**
+ What the run knows of NeuralWatt's day, for the words of a wait or a refusal.
+
+ @param client - run client, whose NeuralWatt day is read when it reports one
+
+ @returns The day, or that none was decided where the client reports none
+
+ @example
+ ```ts
+ const neuralwatt = neuralwattOf({ client, },);
+ ```
+ */
+export function neuralwattOf({ client, }: { readonly client: Pick<RunClient, 'neuralwattReturn'>; },): NeuralWattReturn {
+  return client.neuralwattReturn?.() ?? { kind: 'unanchored', };
+}
+
+/**
+ The clauses of an unreachable writing bench with the return of a NeuralWatt that reads dry, which no wait took because it
+ is past the bound, so the refusal states when the energy comes back.
+
+ @param clauses - one clause per writing bench below its floor
+
+ @param dry - the dryness view the reading stopped on
+
+ @param client - run client, whose NeuralWatt day is read when it reports one
+
+ @returns The clauses, with the return clause last where NeuralWatt reads dry and its day start is decided
+
+ @example
+ ```ts
+ const stated = withNeuralWattReturn({ clauses: ['editors 0 of 3 reachable, floor 2',], dry, client, },);
+ ```
+ */
+export function withNeuralWattReturn(
+  {
+    clauses,
+    dry,
+    client,
+  }: {
+    readonly clauses: readonly string[];
+    readonly dry: BudgetView;
+    readonly client: Pick<RunClient, 'neuralwattReturn'>;
+  },
+): readonly string[] {
+  /**
+   The sentence about NeuralWatt's return, empty where NeuralWatt is not dry, its day start is not decided, or every
+   provider is dry, which the run-ending refusal states itself.
+   */
+  const beyond = (dry.neuralwatt && (!PROVIDER_ORDER.every(function isDry(provider,): boolean {
+    return dry[provider];
+  },)))
+    ? beyondBoundClausesOf({ neuralwatt: neuralwattOf({ client, },), },)
+    : [];
+  return [
+    ...clauses,
+    ...beyond,
+  ];
+}
 
 /**
  The router's refusal for a seat reading that found every provider dry with nothing left to wait out.

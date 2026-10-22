@@ -11,7 +11,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import {
-  beyondBoundClauseOf,
+  beyondBoundClausesOf,
   holdReasonOf,
   NEURALWATT_RETURN_WAIT_BOUND_MS,
 } from '../dist/final/node/index.mjs';
@@ -48,6 +48,7 @@ await describe({
           fn: async () => {
             expect(holdReasonOf({
               holds: { ...NO_HOLDS, neuralwatt: 48_000, hyper: 900_000, },
+              shortest: 48_000,
               neuralwatt: XINGZ_DAY,
             },),).toBe('neuralwatt, whose day starts again at 19:15:08 UTC',);
           },
@@ -59,6 +60,7 @@ await describe({
           fn: async () => {
             expect(holdReasonOf({
               holds: { ...NO_HOLDS, synthetic: 5_000, hyper: 5_000, openrouter: 9_000, },
+              shortest: 5_000,
               neuralwatt: XINGZ_DAY,
             },),).toBe('synthetic, hyper',);
           },
@@ -67,32 +69,32 @@ await describe({
         it({
           name: 'NAMES NOBODY where nothing is held',
           fn: async () => {
-            expect(holdReasonOf({ holds: NO_HOLDS, neuralwatt: XINGZ_DAY, },),).toBe('no provider',);
+            expect(holdReasonOf({ holds: NO_HOLDS, shortest: 0, neuralwatt: XINGZ_DAY, },),).toBe('no provider',);
           },
         },),
       ],
     },),
 
     describe({
-      name: beyondBoundClauseOf.name,
+      name: beyondBoundClausesOf.name,
       concurrency: 1,
       children: [
         it({
           name: 'STATES THE DAY START AND THE BOUND for a run that decided one, so a refusal names when NeuralWatt '
             + 'returns and why it was not waited for',
           fn: async () => {
-            expect(beyondBoundClauseOf({ neuralwatt: XINGZ_DAY, },),).toBe(
+            expect(beyondBoundClausesOf({ neuralwatt: XINGZ_DAY, },),).toEqual([
               'NeuralWatt reads dry and its day starts again at 19:15:08 UTC, which is past the '
                 + `${String(NEURALWATT_RETURN_WAIT_BOUND_MS / 1_000,)} s this run waits for it`,
-            );
+            ],);
           },
         },),
 
         it({
           name: 'SAYS NOTHING where the run decided no day start or NeuralWatt is off',
           fn: async () => {
-            expect(beyondBoundClauseOf({ neuralwatt: { kind: 'unanchored', }, },),).toBe('',);
-            expect(beyondBoundClauseOf({ neuralwatt: { kind: 'off', }, },),).toBe('',);
+            expect(beyondBoundClausesOf({ neuralwatt: { kind: 'unanchored', }, },),).toEqual([],);
+            expect(beyondBoundClausesOf({ neuralwatt: { kind: 'off', }, },),).toEqual([],);
           },
         },),
       ],

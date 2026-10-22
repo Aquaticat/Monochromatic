@@ -120,5 +120,12 @@ export {
   type NeuralWattSpelling,
   neuralWattShowsPictures,
 } from './neuralwatt-reach.ts';
+export {
+  NEURALWATT_RETURN_MARGIN_MS,
+  NEURALWATT_RETURN_WAIT_BOUND_MS,
+  neuralWattReturnWaitMs,
+  type NeuralWattReturnWait,
+} from './neuralwatt-return-hold.ts';
+export { createNeuralWattReturnMark, } from './neuralwatt-return-mark.ts';
 
 //endregion NeuralWatt public index

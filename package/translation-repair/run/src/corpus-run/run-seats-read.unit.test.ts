@@ -920,9 +920,9 @@ await describe({
              Every provider dry but Xiaomi, whose meter can never read dry by itself.
              */
             const xiaomiWet: BudgetView = { ...ALL_DRY, xiaomi: false, };
-            // THE ROSTER PIN: the seats a Xiaomi-only fleet reaches, among the roster and the checkers. The refusal below
-            // does not depend on it, since it reads the providers and not the roster, but the case means "a fleet with
-            // one wet provider that serves one seat", and this line says which seat that is today.
+            // THE ROSTER PIN: the seats a Xiaomi-only fleet reaches, among the roster and the checkers. The refusal
+            // this case asserts does not depend on it, since it reads the providers and not the roster, but the case
+            // means "a fleet with one wet provider that serves one seat", and this line says which seat that is today.
             const { seats, } = await readPhaseSeats({
               client: viewClient({ providerDryness: scriptedViews({ views: [xiaomiWet,], },).read, },),
               phase: 'page consistency',

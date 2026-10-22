@@ -18,7 +18,32 @@ import {
   NEURALWATT_RETURN_MARGIN_MS,
   NEURALWATT_RETURN_WAIT_BOUND_MS,
   neuralWattReturnWaitMs,
+  type NeuralWattReturnWait,
 } from '../dist/final/node/index.mjs';
+
+/**
+ No wait: the energy is not what is spent, or the return is not near.
+ */
+const NONE: NeuralWattReturnWait = { kind: 'none', };
+
+/**
+ A wait of so many milliseconds.
+
+ @param ms - the wait
+
+ @returns The wait
+
+ @example
+ ```ts
+ const wait = waitOf({ ms: 48_000, },);
+ ```
+ */
+function waitOf({ ms, }: { readonly ms: number; },): NeuralWattReturnWait {
+  return {
+    kind: 'wait',
+    ms,
+  };
+}
 
 /**
  A reading of a day whose energy is spent, the day starting at 19:15:08 UTC.
@@ -38,14 +63,14 @@ const SPENT_DAY = {
 
  @param at - the wall clock's instant
 
- @returns Milliseconds to wait, or nothing where no return is near enough or known
+ @returns The wait, or that there is none where no return is near enough or known
 
  @example
  ```ts
  const wait = waitAt({ at: '2026-10-23T19:14:20.000Z', },);
  ```
  */
-function waitAt({ at, }: { readonly at: string; },): number | undefined {
+function waitAt({ at, }: { readonly at: string; },): NeuralWattReturnWait {
   return neuralWattReturnWaitMs({
     energy: SPENT_DAY,
     now: new Date(at,),
@@ -61,8 +86,8 @@ await describe({
     it({
       name: 'IS THE 48 SECONDS XINGZ6019 STOOD SHORT FOR: spent at 19:14:20 UTC, the day starting again at 19:15:08',
       fn: async () => {
-        expect(waitAt({ at: '2026-10-23T19:14:20.000Z', },),).toBe(48_000,);
-        expect(waitAt({ at: '2026-10-22T19:14:20.000Z', },),).toBe(48_000,);
+        expect(waitAt({ at: '2026-10-23T19:14:20.000Z', },),).toEqual(waitOf({ ms: 48_000, },),);
+        expect(waitAt({ at: '2026-10-22T19:14:20.000Z', },),).toEqual(waitOf({ ms: 48_000, },),);
       },
     },),
 
@@ -74,7 +99,7 @@ await describe({
           now: new Date('2026-10-23T19:14:20.000Z',),
           boundMs: NEURALWATT_RETURN_WAIT_BOUND_MS,
           marginMs: NEURALWATT_RETURN_MARGIN_MS,
-        },),).toBe(48_000 + NEURALWATT_RETURN_MARGIN_MS,);
+        },),).toEqual(waitOf({ ms: 48_000 + NEURALWATT_RETURN_MARGIN_MS, },),);
       },
     },),
 
@@ -86,7 +111,7 @@ await describe({
           now: new Date('2026-10-22T23:59:50.000Z',),
           boundMs: NEURALWATT_RETURN_WAIT_BOUND_MS,
           marginMs: 0,
-        },),).toBe(20_000,);
+        },),).toEqual(waitOf({ ms: 20_000, },),);
       },
     },),
 
@@ -94,15 +119,17 @@ await describe({
       name: 'READS A DAY THAT HAS JUST STARTED AS A WHOLE DAY AWAY, past any bound, since the energy of that day is '
         + 'what is spent',
       fn: async () => {
-        expect(waitAt({ at: '2026-10-23T19:15:08.000Z', },),).toBeUndefined();
+        expect(waitAt({ at: '2026-10-23T19:15:08.000Z', },),).toEqual(NONE,);
       },
     },),
 
     it({
       name: 'NAMES NO WAIT PAST THE BOUND and one at the bound',
       fn: async () => {
-        expect(waitAt({ at: '2026-10-23T19:10:08.000Z', },),).toBe(NEURALWATT_RETURN_WAIT_BOUND_MS,);
-        expect(waitAt({ at: '2026-10-23T19:10:07.999Z', },),).toBeUndefined();
+        expect(waitAt({ at: '2026-10-23T19:10:08.000Z', },),).toEqual(
+          waitOf({ ms: NEURALWATT_RETURN_WAIT_BOUND_MS, },),
+        );
+        expect(waitAt({ at: '2026-10-23T19:10:07.999Z', },),).toEqual(NONE,);
       },
     },),
 
@@ -135,7 +162,7 @@ await describe({
             boundMs: NEURALWATT_RETURN_WAIT_BOUND_MS,
             marginMs: 0,
           },),
-        ],).toEqual([undefined, undefined, undefined,],);
+        ],).toEqual([NONE, NONE, NONE,],);
       },
     },),
   ],

@@ -10,7 +10,7 @@ import {
 import type { QuotaSnapshot, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type { XiaomiSpend, } from './xiaomi-spend.ts';
 import { modelDarkReason, } from './model-dark-reason.ts';
-import { neuralWattTimeOfDayUtc, } from './neuralwatt-day.ts';
+import { neuralWattTimeOfDayShort, } from './neuralwatt-day.ts';
 
 //region Budget routing
 // WHICH PROVIDER SERVES ONE CALL, decided from budget and saturation rather
@@ -87,11 +87,6 @@ export type NeuralWattReturn =
     };
 
 /**
- The milliseconds of a time of day that starts on a whole second.
- */
-const WHOLE_SECOND_MILLIS = '.000';
-
-/**
  The opening clause about NeuralWatt, which says only what the run knows of it: spent when a day start is decided, refused
  until one is learned when none is, and absent when NeuralWatt is off and so has no energy to be out of.
 
@@ -132,18 +127,9 @@ function returnClauseOf({ day, }: { readonly day: NeuralWattReturn; },): string 
     return 'NeuralWatt\'s day start was not decided for this run, so no time of day can be stated for its return; ';
 
   /**
-   The time of day with its milliseconds.
-   */
-  const withMillis = neuralWattTimeOfDayUtc({ msOfDay: day.msOfDay, },);
-  /**
    The time of day, whole seconds where the day starts on one.
    */
-  const timeOfDay = withMillis.endsWith(WHOLE_SECOND_MILLIS,)
-    ? withMillis.slice(
-      0,
-      -WHOLE_SECOND_MILLIS.length,
-    )
-    : withMillis;
+  const timeOfDay = neuralWattTimeOfDayShort({ msOfDay: day.msOfDay, },);
   return `NeuralWatt's free energy returns when its day starts again, at ${timeOfDay} UTC, the day start this run `
     + 'decided or learned; ';
 }

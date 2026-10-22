@@ -22,6 +22,8 @@ import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-p
 import type { HyperClient, } from './hyper-client.ts';
 import type { XiaomiClient, } from './xiaomi-client.ts';
 import type { NeuralWattClient, } from './neuralwatt-client.ts';
+import type { NeuralWattEnergy, } from './neuralwatt-energy.ts';
+import type { NeuralWattReturnWait, } from './neuralwatt-return-hold.ts';
 import {
   neuralWattIsDry,
   neuralWattMeterLevel,
@@ -104,6 +106,12 @@ export type MeterLevel = {
    `key=value` tokens naming what was read, no value carrying a space.
    */
   readonly fields: readonly string[];
+
+  /**
+   How long until a dry reading is over, when the meter knows and the wait is worth taking: NeuralWatt's spent day
+   starting again within the bound (`neuralWattReturnWaitMs`). Absent for every other reading.
+   */
+  readonly returnsInMs?: number;
 };
 
 /**
@@ -125,6 +133,11 @@ export type MeterRecord = {
    so nothing is being encoded twice and nothing is lost.
    */
   readonly fields: readonly string[];
+
+  /**
+   How long until a dry reading is over, when the meter said so (`MeterLevel.returnsInMs`).
+   */
+  readonly returnsInMs?: number;
 };
 
 /**
@@ -178,6 +191,8 @@ export async function meterRecordOf(
         ? 'dry'
         : 'wet',
       fields: level.fields,
+      // Conditional spread keeps an absent return absent instead of undefined.
+      ...((level.returnsInMs === undefined) ? {} : { returnsInMs: level.returnsInMs, }),
     };
   } catch (error) {
     // A monitoring failure must not become an outage: the router's failover
@@ -210,6 +225,11 @@ export async function meterRecordOf(
 }
 
 /**
+ The wait of a meter whose reader names no return.
+ */
+const NO_RETURN: NeuralWattReturnWait = { kind: 'none', };
+
+/**
  Meter of a provider that was never configured: dry, with nothing to report.
 
  DRY RATHER THAN UNREADABLE, because absence is known rather than failed: the
@@ -240,6 +260,8 @@ export const UNCONFIGURED_METER: MeterRecord = {
 
  @param openrouter - fourth provider's credits reader, absent when unconfigured
 
+ @param returnWaitMsOf - how long a spent NeuralWatt day waits for its return, absent where no return is named
+
  @param signal - abort signal of whichever call started this reading
 
  @returns Every provider's meter record, keyed by name
@@ -258,6 +280,7 @@ export async function readEveryMeter(
     deepseek,
     xiaomi,
     openrouter,
+    returnWaitMsOf,
     signal,
   }: {
     readonly neuralwatt?: Pick<NeuralWattClient, 'energy'>;
@@ -267,6 +290,7 @@ export async function readEveryMeter(
     readonly deepseek?: Pick<DeepSeekClient, 'credits'>;
     readonly xiaomi?: Pick<XiaomiClient, 'spend'>;
     readonly openrouter?: Pick<OpenRouterClient, 'credits'>;
+    readonly returnWaitMsOf?: (args: { readonly energy: NeuralWattEnergy; },) => NeuralWattReturnWait;
     readonly signal: AbortSignal;
   },
 ): Promise<ProviderRecord<MeterRecord>> {
@@ -293,10 +317,16 @@ export async function readEveryMeter(
            Ledger reading the verdict and the numbers are both drawn from.
            */
           const energy = await neuralwatt.energy({ signal, },);
+          /**
+           How long until the spent day starts again, when that is worth waiting for.
+           */
+          const wait = returnWaitMsOf?.({ energy, }) ?? NO_RETURN;
 
           return {
             dry: neuralWattIsDry({ energy, },),
             fields: neuralWattMeterLevel({ energy, },),
+            // Conditional spread keeps an absent return absent instead of undefined.
+            ...((wait.kind === 'wait') ? { returnsInMs: wait.ms, } : {}),
           };
         },
       },),

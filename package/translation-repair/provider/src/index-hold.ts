@@ -14,6 +14,10 @@ export {
   reachPastCredentialHolds,
 } from './credential-hold.ts';
 export {
+  beyondBoundClausesOf,
+  holdReasonOf,
+} from './hold-reason.ts';
+export {
   modelDarkReason,
   refuseDarkModel,
 } from './model-dark-reason.ts';

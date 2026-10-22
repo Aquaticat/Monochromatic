@@ -2,7 +2,11 @@ import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/ts';
-import { EveryProviderDryError, } from './budget-routing.ts';
+import {
+  EveryProviderDryError,
+  type NeuralWattReturn,
+} from './budget-routing.ts';
+import { holdReasonOf, } from './hold-reason.ts';
 import type {
   BudgetView,
   ProviderBudgets,
@@ -36,6 +40,11 @@ import {
  Logger root for the wait.
  */
 const l = contextRoot({ tag: 'translation-repair', },);
+
+/**
+ What the run knows of NeuralWatt's day for a budget view that reports none.
+ */
+const UNKNOWN_DAY: NeuralWattReturn = { kind: 'unanchored', };
 
 /**
  How often a call waiting out a provider hold checks whether it was aborted.
@@ -325,15 +334,24 @@ export async function readBudgetsPastHolds(
   const held = PROVIDER_ORDER.map(function holdOf(provider,): string {
     return `${provider} ${String(holds[provider],)}ms`;
   },);
+  /**
+   Whose hold is the shortest, and for NeuralWatt when its day starts again, for the lines.
+   */
+  const reason = holdReasonOf({
+    holds,
+    shortest,
+    neuralwatt: budgets.neuralwattReturn?.() ?? UNKNOWN_DAY,
+  },);
   rl.warn(
-    `${modelId}: every provider held out by refusals (${held.join(', ',)}); `
-      + `waiting ${String(shortest,)}ms for the shortest hold to end rather than ending the run`,
+    `${modelId}: every provider is out for now (${held.join(', ',)}); `
+      + `waiting ${String(shortest,)}ms for the shortest hold to end, ${reason}, rather than ending the run`,
   );
   await waitOutHold({
     ms: shortest,
     signal,
     pollMs,
   },);
+  rl.info(`${modelId}: waited ${String(shortest,)}ms for ${reason}; reading the budgets again`,);
 
   /**
    What the budgets look like once the shortest hold has ended.

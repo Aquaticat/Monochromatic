@@ -31,7 +31,7 @@ import {
 const SIGNAL = new AbortController().signal;
 
 /**
- Milliseconds after 00:00 UTC the account's day starts at: 19:15:08.
+ Milliseconds after 00:00 UTC the account's day starts at: 19:15:08 UTC.
  */
 const DAY_START_MS_OF_DAY = 69_308_000;
 
@@ -90,7 +90,7 @@ function clientBefore({ msBeforeReturn, }: { readonly msBeforeReturn: number; },
       }),
     },
     wallNow: () => new Date(Date.UTC(
-      2026,
+      2_026,
       9,
       23,
       0,
@@ -132,15 +132,16 @@ await describe({
         expect(reads.count,).toBe(2,);
         expect(lines.some(function waitLine(line,): boolean {
           return line.startsWith('warn JUDGE SEATS phase=lanes short of quorum',)
-            && (/waiting [1-9]\d*ms/).test(line,)
+            && line.includes('waiting ',) && (!line.includes('waiting 0ms',))
             && line.includes('neuralwatt, whose day starts again at 19:15:08 UTC',);
         },),).toBe(true,);
         expect(lines.some(function endLine(line,): boolean {
-          return line.startsWith('info JUDGE SEATS phase=lanes waited ',) && (/waited [1-9]\d*ms/).test(line,)
+          return line.startsWith('info JUDGE SEATS phase=lanes waited ',) && (!line.startsWith('info JUDGE SEATS phase=lanes waited 0ms',))
             && line.includes('for neuralwatt, whose day starts again at 19:15:08 UTC',);
         },),).toBe(true,);
         expect(lines.some(function seatsLine(line,): boolean {
-          return line.startsWith('info JUDGE SEATS phase=lanes neuralwatt=wet',) && (/waited=[1-9]\d*ms/).test(line,);
+          return line.startsWith('info JUDGE SEATS phase=lanes neuralwatt=wet',) && line.includes('waited=',)
+            && (!line.includes('waited=0ms',));
         },),).toBe(true,);
       },
     },),

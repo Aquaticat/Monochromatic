@@ -28,7 +28,7 @@ import {
 const SIGNAL = new AbortController().signal;
 
 /**
- Milliseconds after 00:00 UTC the account's day starts at: 19:15:08.
+ Milliseconds after 00:00 UTC the account's day starts at: 19:15:08 UTC.
  */
 const DAY_START_MS_OF_DAY = 69_308_000;
 
@@ -38,9 +38,23 @@ const DAY_START_MS_OF_DAY = 69_308_000;
 const FRESH_MS = 600_000;
 
 /**
+ What a NeuralWatt reading carries that these cases move.
+ */
+type Reading = {
+  readonly dayStart: string;
+  readonly dailyWh: number;
+  readonly spentWh: number;
+  readonly reckonedWh: number;
+  readonly reservedWh: number;
+  readonly remainingWh: number;
+  readonly calls: number;
+  readonly keyBlockedUntil?: string;
+};
+
+/**
  A reading of a day whose energy is spent.
  */
-const SPENT_DAY = {
+const SPENT_DAY: Reading = {
   dayStart: '2026-10-22T19:15:08.000Z',
   dailyWh: 550,
   spentWh: 550,
@@ -48,12 +62,12 @@ const SPENT_DAY = {
   reservedWh: 0,
   remainingWh: 0,
   calls: 40,
-} as const;
+};
 
 /**
  A reading of the day that began at the return.
  */
-const FRESH_DAY = {
+const FRESH_DAY: Reading = {
   dayStart: '2026-10-23T19:15:08.000Z',
   dailyWh: 550,
   spentWh: 0,
@@ -61,7 +75,7 @@ const FRESH_DAY = {
   reservedWh: 0,
   remainingWh: 550,
   calls: 0,
-} as const;
+};
 
 /**
  Budgets over a NeuralWatt meter that reads the spent day first and the fresh one afterwards.
@@ -94,7 +108,7 @@ function budgetsBefore(
     readonly msBeforeReturn: number;
     readonly clock?: { now: number; };
     readonly reads: { count: number; };
-    readonly spent?: typeof SPENT_DAY & { readonly keyBlockedUntil?: string; };
+    readonly spent?: Reading;
     readonly returnWaitBoundMs?: number;
   },
 ): ReturnType<typeof createProviderBudgets> {
@@ -110,7 +124,7 @@ function budgetsBefore(
     // Conditional spread keeps the real clock where the case advances none.
     ...((clock === undefined) ? {} : { now: () => clock.now, }),
     wallNow: () => new Date(Date.UTC(
-      2026,
+      2_026,
       9,
       23,
       0,
