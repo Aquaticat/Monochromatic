@@ -708,8 +708,14 @@ used only if it saves more than 10% and at least 5 MB, and is not measurably slo
 almost never quiet, so speed is measured interleaved with a same-binary control. Measured sizes with `s` against the
 fat-LTO opt-level 3 build: Android arm64 `libmusicplayer_native.so` 15.84 to 12.77 MB (3.07 MB, 19%) and x86_64 18.28
 to 14.60 MB (3.68 MB, 20%): both under the 5 MB bar, so Android stays at opt-level 3. Desktop Linux binary 44.01 to
-34.32 MB (9.69 MB, 22%): clears both size bars, so only the desktop speed study continues. The two crates share the
-`CARGO_PROFILE_MUSIC` preset in `file-enforcer.config.ts`; a desktop-only `s` needs a separate preset.
+34.32 MB (9.69 MB, 22%): clears both size bars, so the desktop speed study ran. Result (throwaway bench crate with
+the three hot paths, one pinned core, 30 interleaved rounds of five variants, same-binary control A2 within 1.2% on
+every median): `s` everywhere cut the bench binary 19.8% and left the true-peak meter unchanged, but slowed decoding
+21% (AAC), 31% (FLAC), 47% (Ogg Vorbis) and 75% (MP3), and the Turso cache 13% (get) to 21% (put CPU). Keeping
+`truepeak-core` and `symphonia` at opt-level 3 removes the decode cost but keeps only 1.3% of the saving. Under the
+human's rule (use `s` only if it is not measurably slower) `opt-level = "s"` is rejected for desktop and Android, and
+both stay at opt-level 3. Not exercised: Slint rendering, Opus (libopus), ARM, a real device. The two crates share the
+`CARGO_PROFILE_MUSIC` preset in `file-enforcer.config.ts`, so no separate preset is needed.
 
 Same branch, 2026-10-22, media session position and release dry run. The session position now re-anchors against the
 engine (`SessionPositionAnchor`), and `PlayerController.seek` announces the seek, because the scrubber, the seek
