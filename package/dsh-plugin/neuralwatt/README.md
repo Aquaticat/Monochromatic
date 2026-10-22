@@ -97,6 +97,15 @@ the pin,
 pi-ai's URL-based detection for `https://api.neuralwatt.com/v1/`
 finds no known effort format and silently drops reasoning from requests.
 
+The route also pins `compat.supportsDeveloperRole: false` so the system prompt
+travels as the classic `system` role.
+`mimo-v2.6-pro` rejects the `developer`
+role pi-ai otherwise picks for reasoning-capable models,
+answering
+`400 unsupported_message_role`;
+the diagnosis lives in
+[`neuralwatt-rejects-developer-role.md`](../../doc/troubleshooting/neuralwatt-rejects-developer-role.md).
+
 Declaring the `off` level is a behavior change for models whose server default
 is thinking on:
 `mimo-v2.6-pro` previously received no reasoning parameter
