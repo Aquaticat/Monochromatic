@@ -13,7 +13,8 @@ which lists every file of this record.
 ## The gate's refusal policy, measured rather than asked
 
 I had this down as a values question and was about to put it to the owner.
-That was wrong, and the correction is worth recording:
+That was wrong,
+and the correction is worth recording:
 under a quality-first guideline,
 a decision that measurement cannot settle means the measurement is wrong or too small,
 not that the decision is a preference.
@@ -55,7 +56,8 @@ A judge answering `neither` still fills these in.
 Across the 11 live cases,
 the ballots name the standing text faulty 24 times and the consolidation 15 times.
 At no live case is the consolidation named faulty more often than the standing text;
-the worst it does is tie, at 4 of the 11.
+the worst it does is tie,
+at 4 of the 11.
 
 So blocking on a refusal plurality would,
 at every case it would have fired on,
@@ -75,11 +77,15 @@ which is the instrument and the panel agreeing.
 
 ### What the control turned up on its own
 
-The other 2 are a defect, and a different one from the question above.
-`lintong#2` and `Weideriche_#0`, both in run 8,
+The other 2 are a defect,
+and a different one from the question above.
+`lintong#2` and `Weideriche_#0`,
+both in run 8,
 shipped a consolidation that the ballots name faulty MORE often than the standing text:
-4 against 3, and 3 against 2.
-Neither is a refusal-plurality case, so no refusal policy would have caught them.
+4 against 3,
+and 3 against 2.
+Neither is a refusal-plurality case,
+so no refusal policy would have caught them.
 
 The gate's `choice` field and its own evidence fields disagree there,
 and nothing reads the evidence,
@@ -101,7 +107,8 @@ Every other one leaves the slice with whatever the lane contest put there,
 and one of them,
 `no-standing-text`,
 carries the EMPTY STRING as its text:
-the contest named neither lane, so nothing stands.
+the contest named neither lane,
+so nothing stands.
 
 A record with a plain `text` field per slice would therefore hand a consumer an empty string to write
 over every passage whose contest declined,
@@ -130,9 +137,11 @@ and `contest.` and `pairing.` were both missing from that list.
 
 Measured on a throwaway directory:
 writing one file per namespace and then opening the repair cache at a new generation deleted
-`abc.json`, `contest.abc.json` and `pairing.abc.json`,
+`abc.json`,
+`contest.abc.json` and `pairing.abc.json`,
 reporting `discarding 3 cached slices` as though all three were its own.
-`translate.` and `picture.` survived, because they were registered.
+`translate.` and `picture.` survived,
+because they were registered.
 
 So every repair-lane generation change since the pairing cache landed has silently thrown away
 that entry's whole block pairing and every contest ballot it had bought,
@@ -150,7 +159,8 @@ which is how the self-referential hole was found.
 `#138` asks for the verification every other stage got:
 run the pipeline the way an operator runs it,
 then read what it produced.
-Two runs, because the first must show a consolidation reaching an artifact
+Two runs,
+because the first must show a consolidation reaching an artifact
 and the second must show a resumed settlement being read back and accepted
 rather than silently re-bought.
 
@@ -169,10 +179,14 @@ so a failed write costs no bought work.
 That leaves a second pass two possibilities,
 neither of which exercises the resume path:
 
--   The artifact is still there, so `settledEntryIds` skips the entry outright.
-    Nothing is bought, and nothing is read back either.
--   The artifact is removed, so the entry re-runs.
-    Its cache is already gone, so every stage re-buys from the roster.
+-   The artifact is still there,
+    so `settledEntryIds` skips the entry outright.
+    Nothing is bought,
+    and nothing is read back either.
+-   The artifact is removed,
+    so the entry re-runs.
+    Its cache is already gone,
+    so every stage re-buys from the roster.
 
 The path where a stage opens its cache,
 finds a settlement written by an earlier run,
@@ -184,13 +198,15 @@ is reached only when an entry did NOT settle.
 The run's slice cache is copied aside while the pass runs,
 by a poller outside the package that never writes into the run directory.
 The second run restores that capture into a fresh runs directory
-at the same pipeline digest, with no artifacts,
+at the same pipeline digest,
+with no artifacts,
 so every entry re-runs and every stage opens a cache that already holds its answers.
 
 The bytes are the ones the real pass wrote.
 What the second run proves is exactly what a resume proves,
 and more of it than an interrupted run would:
-every stage resumes, rather than whichever ones happened to be finished when the interruption landed.
+every stage resumes,
+rather than whichever ones happened to be finished when the interruption landed.
 
 The pipeline digest was checked to be reproducible before either run:
 two builds of the same source produced
@@ -212,10 +228,16 @@ so the measurement `#165` names comes free from a run bought for something else.
 
 ### What each run has to show, stated before either was read
 
-Run 1, over `Acheron`, `Weideriche_`, `Zha_Ke`, `gaoyanger`, `keyword233` and `lintong`:
+Run 1,
+over `Acheron`,
+`Weideriche_`,
+`Zha_Ke`,
+`gaoyanger`,
+`keyword233` and `lintong`:
 
 -   Every artifact parses through `parseSettledArtifactV2`.
-    This is the seam nothing has covered: the parser's own tests are built by hand,
+    This is the seam nothing has covered:
+    the parser's own tests are built by hand,
     and the six-artifact compatibility check exercised only the `unrecorded` path.
     Builder output carrying a settled consolidation had never met the whole-artifact parser.
 -   Every artifact records `consolidation` as `settled`.
@@ -224,11 +246,14 @@ Run 1, over `Acheron`, `Weideriche_`, `Zha_Ke`, `gaoyanger`, `keyword233` and `l
     so zero across the whole set would be a finding to record against those,
     not evidence that the wiring failed.
 
-Run 2, restored from the capture into a fresh directory:
+Run 2,
+restored from the capture into a fresh directory:
 
 -   ZERO `reportStreamProgress` lines in its log.
-    That is the primary instrument, because it covers every stage rather than the consolidation alone.
-    Run 1 is its positive control: the same instrument counts in the hundreds there.
+    That is the primary instrument,
+    because it covers every stage rather than the consolidation alone.
+    Run 1 is its positive control:
+    the same instrument counts in the hundreds there.
 -   Every artifact's `consolidation` field byte-identical to run 1's.
     A resumed settlement is returned exactly as it was persisted,
     so a settlement the validator refused would be re-bought and would differ.
@@ -252,7 +277,8 @@ the ballots name the consolidation faulty more often than the standing text at f
 and at two the gate shipped the consolidation anyway.
 The task asked whether the evidence is right before anything acts on it.
 
-It is not, and the reason is structural rather than a question about any particular slice.
+It is not,
+and the reason is structural rather than a question about any particular slice.
 
 ### What the evidence field actually is
 
@@ -272,37 +298,48 @@ Every differential comes from the asymmetric ballots.
 Of 217 gate ballots across runs 6 to 9:
 
 -   106 name neither rendering faulty.
--   35 name both, and therefore discriminate nothing.
+-   35 name both,
+    and therefore discriminate nothing.
 -   63 name only the standing text faulty.
 -   13 name only the consolidation faulty.
 
-Read over the population, the evidence favours the consolidation by nearly five to one.
-The five disagreeing slices are local inversions of that, not a trend it hides.
+Read over the population,
+the evidence favours the consolidation by nearly five to one.
+The five disagreeing slices are local inversions of that,
+not a trend it hides.
 
 The second measurement is the one that settles it.
-Of the 76 asymmetric ballots, 74 name faulty exactly the rendering they voted AGAINST.
+Of the 76 asymmetric ballots,
+74 name faulty exactly the rendering they voted AGAINST.
 Two do not.
 
 The evidence field agrees with the ballot's own choice 97 percent of the time.
-It is a restatement of the vote, not a second opinion about the text.
+It is a restatement of the vote,
+not a second opinion about the text.
 Counting it beside the vote counts the same judge twice.
 
 ### What the five disagreements turn out to be
 
 Every disagreement is one or two ballots wide:
-`lintong#2` and `Weideriche_#0` in run 8 by one, `Zha_Ke#1` in run 8 by two,
+`lintong#2` and `Weideriche_#0` in run 8 by one,
+`Zha_Ke#1` in run 8 by two,
 `Zha_Ke#1` and `Acheron#0` in run 9 by one.
 
-At `lintong#2` the panel was two for the consolidation, one for the standing text and one for neither,
-and the single asymmetric evidence ballot is the one standing vote, naming the rendering it voted against.
-At `Weideriche_#0` the panel was five to one, and the disagreement is again the single dissenting vote.
+At `lintong#2` the panel was two for the consolidation,
+one for the standing text and one for neither,
+and the single asymmetric evidence ballot is the one standing vote,
+naming the rendering it voted against.
+At `Weideriche_#0` the panel was five to one,
+and the disagreement is again the single dissenting vote.
 
 Calling that "the panel's evidence points the other way"
 describes what every majority vote looks like from the minority.
 
 ### Decided: nothing weighs on this signal
 
-No refusal, no ballot weighting, no surfacing.
+No refusal,
+no ballot weighting,
+no surfacing.
 A mechanism built on this field would act on the dissenting vote a second time,
 under the appearance of independent evidence,
 and would cost the slices where the same field favours the consolidation by 63 ballots to 13.
@@ -312,7 +349,8 @@ two ballots in 217 name a fault in the rendering they nonetheless preferred.
 That is the legitimate reading of a minor fault against a larger gain,
 and at that rate it needs no machinery.
 
-WHAT REMAINS OPEN, and is a different question:
+WHAT REMAINS OPEN,
+and is a different question:
 `unsupportedRaw` and `droppedRaw` carry the judge's own wording rather than a rendering name,
 so they may carry content the name lists cannot.
 Nothing reads them either.
@@ -325,27 +363,33 @@ so a proposal differing from the standing text only in its line breaks
 would collapse into the incumbent and buy no ballots.
 It was deferred with one question owed:
 does `wrapReplacementText` split a line on the slices where line structure carries meaning?
-If it never does, the change is free.
+If it never does,
+the change is free.
 
 ### The band pair cannot answer it
 
 Zero of the band pair's thirteen slices are `lineStructured`.
 Measuring there returns a clean null from a probe that could not have shown anything else.
-The corpus can answer it: `isLineStructured` trips on 211 slices across 34 of the 92 pairs.
+The corpus can answer it:
+`isLineStructured` trips on 211 slices across 34 of the 92 pairs.
 
 ### It splits, on nine slices in ten
 
-Over those 211 slices, wrapping the archive's own English changes 189.
-It never joins lines. It splits them.
+Over those 211 slices,
+wrapping the archive's own English changes 189.
+It never joins lines.
+It splits them.
 
 Of the 1091 non-empty lines those passages already carry,
-621 survive the wrap intact and 470 are broken, adding 750 lines net.
+621 survive the wrap intact and 470 are broken,
+adding 750 lines net.
 
 The archive's English is the right thing to wrap for this question.
 `TRANSLATE_LINE_STRUCTURE_RULE` asks the producer to keep the passage's line structure,
 so a proposal that obeyed it carries the structure that text carries.
 Wrapping proposals before the judges would therefore show them
-text breaking a rule they were told to enforce, on 189 slices rather than none.
+text breaking a rule they were told to enforce,
+on 189 slices rather than none.
 
 `#162`'s free version is off the table.
 Its remaining item is a re-run comparison,
@@ -355,7 +399,8 @@ because the band pair cannot measure the degradation the item is about.
 ### The larger finding, which is not about proposals
 
 None of the three shipped wrap sites is gated on `lineStructured`:
-`repair-wrap.ts`, `translate-wrap.ts` and `consolidate-wrap.ts` all wrap unconditionally.
+`repair-wrap.ts`,
+`translate-wrap.ts` and `consolidate-wrap.ts` all wrap unconditionally.
 
 So the pipeline already does to its own output what `#162` was worried about doing to proposals.
 A producer that follows the line-structure rule has 43 percent of its lines broken at assembly,
@@ -367,30 +412,36 @@ replacements were arriving as one long line,
 326 `semantic-line-breaks` findings,
 seventeen of them flattening a multi-line archive passage.
 The wrap is a repair for a producer that lost the structure.
-On a slice where the producer kept it, the same repair is damage,
+On a slice where the producer kept it,
+the same repair is damage,
 and nothing currently tells the two apart.
 
 `#167` carries the decision.
 
 ### Reading the two runs, in order of authority
 
-The capture completeness check is a LOWER BOUND, not a verdict.
+The capture completeness check is a LOWER BOUND,
+not a verdict.
 It can compare the captured settlement count against what the artifact says was worth persisting,
-except at `slate-kept-standing`, where persistence turns on a decision the artifact does not record.
+except at `slate-kept-standing`,
+where persistence turns on a decision the artifact does not record.
 A settled-slate file the discard raced away therefore passes the check silently.
 
 So the order is:
 
 -   Run 2's `reportStreamProgress` count is the authoritative instrument.
     Zero means every stage resumed.
--   A small nonzero count is a diagnosis, not a verdict.
+-   A small nonzero count is a diagnosis,
+    not a verdict.
     The completeness check's per-entry namespace census says which entry and which namespace to look at,
     and only after that split can a re-buy be called a raced capture or a refused settlement.
 -   `vub-compare` covers the consolidation field alone,
     so it confirms rather than decides.
 
-If an entry caps or fails in run 1, the verification proceeds on the settled subset.
-A failed entry keeps its cache in run 1's own directory, by the same rule that discards a settled one,
+If an entry caps or fails in run 1,
+the verification proceeds on the settled subset.
+A failed entry keeps its cache in run 1's own directory,
+by the same rule that discards a settled one,
 so re-running that entry in place is the one resume case reached organically rather than restored.
 It is worth taking if it happens and not worth buying.
 
@@ -401,22 +452,33 @@ on a band of 2.09 to 4.24 drawn from the 24 shipped consolidations of the band p
 and owed a re-measurement on a wider population before it decided anything.
 
 Measured over every paired slice of the pinned corpus as the ARCHIVE carries it,
-1259 slices across 92 pairs, at no quota cost.
+1259 slices across 92 pairs,
+at no quota cost.
 
 ### What the archive's own ratios look like
 
-Prose slices, 1048 of them:
-minimum 0.01, fifth percentile 1.06, first quartile 2.40, median 2.96,
-third quartile 3.52, ninety-fifth percentile 5.11, maximum 521.86.
+Prose slices,
+1048 of them:
+minimum 0.01,
+fifth percentile 1.06,
+first quartile 2.40,
+median 2.96,
+third quartile 3.52,
+ninety-fifth percentile 5.11,
+maximum 521.86.
 
-Line-structured slices, 211 of them, are not a separate distribution worth its own band:
-median 3.06 against prose's 2.96, and a ninety-fifth percentile of 4.33 against 5.11.
+Line-structured slices,
+211 of them,
+are not a separate distribution worth its own band:
+median 3.06 against prose's 2.96,
+and a ninety-fifth percentile of 4.33 against 5.11.
 Item 3 of the task asked whether verse needs checking separately.
 On this measurement it does not.
 
 ### The proposed band would fire on a quarter of the corpus
 
-281 of 1048 prose slices fall outside 2.09 to 4.24, which is 27 percent.
+281 of 1048 prose slices fall outside 2.09 to 4.24,
+which is 27 percent.
 190 sit below the low end and 91 above the high end.
 Across everything it is 328 of 1259.
 
@@ -428,47 +490,76 @@ and it does not describe the population it would run over.
 
 Sweeping the cutoffs over the same 1259 slices:
 
--   Below 2.09 flags 223, below 1.5 flags 107, below 1.0 flags 26,
-    below 0.8 flags 15, below 0.7 flags 14, below 0.5 flags 6.
--   Above 4.24 flags 105, above 6 flags 44, above 8 flags 30,
-    above 10 flags 23, above 15 flags 15, above 20 flags 11.
+-   Below 2.09 flags 223,
+    below 1.5 flags 107,
+    below 1.0 flags 26,
+    below 0.8 flags 15,
+    below 0.7 flags 14,
+    below 0.5 flags 6.
+-   Above 4.24 flags 105,
+    above 6 flags 44,
+    above 8 flags 30,
+    above 10 flags 23,
+    above 15 flags 15,
+    above 20 flags 11.
 
-So a band around 0.8 to 10 flags roughly 38 slices, three percent,
+So a band around 0.8 to 10 flags roughly 38 slices,
+three percent,
 which is a set small enough to read one by one.
 The furthest outliers are the ones the task wanted found:
-`shihai4h#53` at 521.86, `Zha_Ke#1` at 94.78, three `windward0032` slices between 55 and 85,
+`shihai4h#53` at 521.86,
+`Zha_Ke#1` at 94.78,
+three `windward0032` slices between 55 and 85,
 and at the other end three `shi_Yumiaoya` slices at 0.01 to 0.02.
 
-WHAT THIS DOES NOT SETTLE. Whether those outliers are mis-sliced or are correctly paired
-passages the archive simply left mostly untranslated is a reading, not a ratio,
+WHAT THIS DOES NOT SETTLE.
+Whether those outliers are mis-sliced or are correctly paired
+passages the archive simply left mostly untranslated is a reading,
+not a ratio,
 and the flagged set is now small enough that the reading is affordable.
 The action on a breach is still undecided,
 and `#71` records what recording a finding and never acting on it costs.
 
 ### The shape of the outliers, and a second instrument
 
-Reading the 38 slices a 0.8 to 10 band would flag, by SHAPE rather than by wording:
+Reading the 38 slices a 0.8 to 10 band would flag,
+by SHAPE rather than by wording:
 
 At the short end the source carries many blocks and the target carries one.
-`shi_Yumiaoya#2`, `#3` and `#4` pair 11 to 15 Chinese blocks against a single English HEADING
+`shi_Yumiaoya#2`,
+`#3` and `#4` pair 11 to 15 Chinese blocks against a single English HEADING
 of twelve to fourteen characters.
 At the long end the source carries one block and the target carries several:
 `shihai4h#53` pairs a 21-character HTML block against 28 blocks and 10959 characters,
-and `windward0032#0`, `#8`, `#10` and `#14` each pair a bare Chinese heading
+and `windward0032#0`,
+`#8`,
+`#10` and `#14` each pair a bare Chinese heading
 against an English heading plus its body.
 
-So under nearly every outlier is a block-count disparity, which is unit-free
+So under nearly every outlier is a block-count disparity,
+which is unit-free
 and does not fire on a passage that is faithful but terse.
 
-Measured over the same 1259 slices, 1104 of them, 88 percent, carry EQUAL block counts.
-A gap of more than one flags 43 slices, more than two flags 15, more than three flags 9.
+Measured over the same 1259 slices,
+1104 of them,
+88 percent,
+carry EQUAL block counts.
+A gap of more than one flags 43 slices,
+more than two flags 15,
+more than three flags 9.
 
 The two instruments are complementary rather than nested.
-Of the 38 ratio outliers, 17 also carry a block gap above one, and 21 do not.
-Of the 43 block-gap flags, 26 sit inside the ratio band.
-Their union is 64 slices, five percent, which is the candidate set worth reading.
+Of the 38 ratio outliers,
+17 also carry a block gap above one,
+and 21 do not.
+Of the 43 block-gap flags,
+26 sit inside the ratio band.
+Their union is 64 slices,
+five percent,
+which is the candidate set worth reading.
 
-CAVEAT, and it matters before anything is built on these numbers:
+CAVEAT,
+and it matters before anything is built on these numbers:
 this is the RAW archive slicing.
 `prepareDocumentPair` was called with no `blockPairings`,
 so the LLM-assisted pairing stage `#131` shipped has not run over these slices.

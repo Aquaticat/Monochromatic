@@ -6,6 +6,7 @@ import type {
   SelectionTally,
 } from '@monochromatic-dev/translation-repair-house-rule/ts';
 import type {
+  RunoffBasis,
   TranslateCandidateValue,
   TranslateOrigin,
   TranslateSlateEntry,
@@ -138,6 +139,13 @@ export type TranslateStageResult = {
    where the round decided, rejected, or backed the whole slate.
    */
   readonly runoffFinalists?: readonly Candidate<TranslateCandidateValue>[];
+
+  /**
+   Why those are the finalists, present exactly when `runoffFinalists` is:
+   the candidates tied at the top, or the leader and its runner-up where one
+   candidate led and fell short of the minimum weight (ledger B806).
+   */
+  readonly runoffBasis?: RunoffBasis;
 
   /**
    How a slate declined in its challenge round shipped anyway over wording

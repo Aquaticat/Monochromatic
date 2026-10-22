@@ -7,9 +7,12 @@ kill the running corpus accumulation and restart it into a fresh artifacts direc
 Do not let a running pass finish first.
 
 Stated by the repository owner on 2026-08-13:
-"Always kill and restart. We'll actually run out of actionable items at some point."
+"Always kill and restart.
+We'll actually run out of actionable items at some point."
 
-RESTATED BY THE OWNER ON 2026-08-19, unprompted and mid-action, as
+RESTATED BY THE OWNER ON 2026-08-19,
+unprompted and mid-action,
+as
 "Always stop and restart."
 It arrived while a 92-entry pass launched minutes earlier was being killed,
 because reading `#107` immediately after launching turned up a measured and specified fix for
@@ -34,14 +37,16 @@ The goal is a pool that describes the pipeline as it now stands.
 
 ## Why a stale pool is worse than a restarted one
 
-A pass stamps `tip`, the repository commit at pass start,
+A pass stamps `tip`,
+the repository commit at pass start,
 onto every artifact it writes.
 `readHeadSha()` runs once in `corpus-pass.ts` and the value is reused for the whole pass,
 so a pass that outlives a fix keeps stamping the pre-fix commit on everything it settles.
 Every entry it produces after that point is unusable for any measurement that needs the current pipeline,
 and it costs the same budget as a usable one.
 
-Measured on 2026-08-13, immediately before this decision:
+Measured on 2026-08-13,
+immediately before this decision:
 the accumulation directory held 22 settled entries across four recorded tips,
 and none of the four contained the chunk or union governance fixes that had landed that evening.
 The pool of entries settled under the current pipeline was zero while the directory looked full.
@@ -87,9 +92,11 @@ A change confined to the readers does not,
 and restarting for one would burn the accumulation over a typo.
 
 The two families are disjoint and can be checked rather than judged.
-`corpus-pass.ts` imports none of `artifact-eligible.ts`, `artifact-pool.ts` or `artifact-generation.ts`;
+`corpus-pass.ts` imports none of `artifact-eligible.ts`,
+`artifact-pool.ts` or `artifact-generation.ts`;
 those are reached only through `pipeline-barrel.ts` and the four rate-producing readers.
-Before restarting, confirm the changed file is on the path the pass actually runs.
+Before restarting,
+confirm the changed file is on the path the pass actually runs.
 
 Worked example from the session that set this policy:
 the empty-pool guard landed before pass14 started and is in its tip,

@@ -1,15 +1,21 @@
 # The critics are shown the wrong paragraph
 
 Found 2026-08-20 by reading one entry's source and translation end to end,
-after the owner said to stop asking and measure, and not to hesitate to read the corpus.
-No corpus text here: slice indices, lengths and ratios only.
+after the owner said to stop asking and measure,
+and not to hesitate to read the corpus.
+No corpus text here:
+slice indices,
+lengths and ratios only.
 
 ## What reading `saurikissa` showed
 
 Its Chinese and English say the same things in the same order.
-The slicer still paired them wrongly, because the ENGLISH SPLITS A PARAGRAPH THE
-CHINESE KEEPS WHOLE: a request for advice sits inside the previous Chinese paragraph
-and stands alone in English. Everything after that point runs one block out of step.
+The slicer still paired them wrongly,
+because the ENGLISH SPLITS A PARAGRAPH THE
+CHINESE KEEPS WHOLE:
+a request for advice sits inside the previous Chinese paragraph
+and stands alone in English.
+Everything after that point runs one block out of step.
 
 Reading each pair the critics were actually given:
 
@@ -35,18 +41,26 @@ Every stage behaves correctly on the input it was handed,
 and the result is that content the original DOES carry leaves the page.
 
 It also explains why `#107`'s relocation window helps:
-when the pairing is off by one block, the correct source IS the neighbour,
+when the pairing is off by one block,
+the correct source IS the neighbour,
 so showing the neighbours hands the critic the right text by accident.
-THE WINDOW IS A WORKAROUND FOR MISPAIRING, not a fix for it,
+THE WINDOW IS A WORKAROUND FOR MISPAIRING,
+not a fix for it,
 and its measured benefit should be read that way.
 
-It explains the panel accepting less under the window, the judges declining a lane
-contest, and the repair lane deleting the specifics of a life. One cause underneath.
+It explains the panel accepting less under the window,
+the judges declining a lane
+contest,
+and the repair lane deleting the specifics of a life.
+One cause underneath.
 
 ## How widespread
 
-Chinese is denser than English, so a correctly paired slice sits in a narrow band of
-character ratios. Against each entry's own median, at a 2.5x threshold either way:
+Chinese is denser than English,
+so a correctly paired slice sits in a narrow band of
+character ratios.
+Against each entry's own median,
+at a 2.5x threshold either way:
 
 ```text
   lintong             4 slices   median 2.36   outliers 3
@@ -60,84 +74,146 @@ character ratios. Against each entry's own median, at a 2.5x threshold either wa
   POOLED             15 of 80 slices        18.8%
 ```
 
-THIS UNDERCOUNTS. On `saurikissa` the ratio test flags four slices and reading found
-six. A pair can be completely mismatched and still have an ordinary ratio, which is
-exactly what happens when two adjacent paragraphs are similar in length. Treat 18.8%
+THIS UNDERCOUNTS.
+On `saurikissa` the ratio test flags four slices and reading found
+six.
+A pair can be completely mismatched and still have an ordinary ratio,
+which is
+exactly what happens when two adjacent paragraphs are similar in length.
+Treat 18.8%
 as a floor.
 
 ## What follows
 
-FIX THE PAIRING, and everything downstream is measuring something different.
-Judging any stage, lane or rule on runs made with mispaired input is judging it on
-noise, and several conclusions recorded this week rest on exactly that.
+FIX THE PAIRING,
+and everything downstream is measuring something different.
+Judging any stage,
+lane or rule on runs made with mispaired input is judging it on
+noise,
+and several conclusions recorded this week rest on exactly that.
 
-THE REPAIR LANE IS NOT TO BE DISCARDED over this, per the owner on 2026-08-20:
-some entries were translated by a person, and those translations contain passages done
-right and better than a fresh rendering. The incumbent is evidence and a starting point
-worth preserving where it is right, which is what
+THE REPAIR LANE IS NOT TO BE DISCARDED over this,
+per the owner on 2026-08-20:
+some entries were translated by a person,
+and those translations contain passages done
+right and better than a fresh rendering.
+The incumbent is evidence and a starting point
+worth preserving where it is right,
+which is what
 `doc/decision/translation-repair-output-goal.md` already decided.
 The defect here is that the pipeline cannot currently tell where it IS right,
 because it is comparing it against the wrong paragraph.
 
 ## It is not stale artifacts, and it is not `#98`
 
-TWO CANDIDATE EXPLANATIONS, both checked and both wrong.
+TWO CANDIDATE EXPLANATIONS,
+both checked and both wrong.
 
-NOT STALE. `align-blocks.ts` landed 2026-07-26, nearly a month before these runs, and
-it is wired into subdivision through `group-aligned.ts` and `slice-pair.ts`, whose own
-comment says pairing by shared index "was tried and is wrong". The run settled TODAY
+NOT STALE.
+`align-blocks.ts` landed 2026-07-26,
+nearly a month before these runs,
+and
+it is wired into subdivision through `group-aligned.ts` and `slice-pair.ts`,
+whose own
+comment says pairing by shared index "was tried and is wrong".
+The run settled TODAY
 mispairs `saurikissa` exactly as the older ones do.
 
-NOT `#98`. That holds the SECTION-level shortcut, where equal chunk counts pair by
-index and report nothing. `saurikissa` has one section on each side, so its section
-pairing is correct. The drift is INSIDE the section, between paragraphs, which is
+NOT `#98`.
+That holds the SECTION-level shortcut,
+where equal chunk counts pair by
+index and report nothing.
+`saurikissa` has one section on each side,
+so its section
+pairing is correct.
+The drift is INSIDE the section,
+between paragraphs,
+which is
 `alignBlocks`' job.
 
 ## Why the block aligner cannot see it
 
-Its scoring is, by design, language-neutral: block kind, shared script-neutral tokens,
-and a plausible length ratio. On this entry:
+Its scoring is,
+by design,
+language-neutral:
+block kind,
+shared script-neutral tokens,
+and a plausible length ratio.
+On this entry:
 
-KIND CARRIES NOTHING, because every block on both sides is a paragraph, so the
+KIND CARRIES NOTHING,
+because every block on both sides is a paragraph,
+so the
 kind-match score is constant across every candidate pairing.
 
-TOKEN OVERLAP CARRIES ALMOST NOTHING, because the tokens it counts are Latin words,
-digit runs and component names. Chinese and English paragraphs of ordinary prose share
-none. `AirPods` is the rare exception.
+TOKEN OVERLAP CARRIES ALMOST NOTHING,
+because the tokens it counts are Latin words,
+digit runs and component names.
+Chinese and English paragraphs of ordinary prose share
+none.
+`AirPods` is the rare exception.
 
-LENGTH RATIO IS ALL THAT REMAINS, and one weak signal cannot hold a monotone walk on
+LENGTH RATIO IS ALL THAT REMAINS,
+and one weak signal cannot hold a monotone walk on
 course across eleven blocks.
 
-THE ANCHORS EXIST AND IT CANNOT READ THEM. This entry carries transliterated names on
-both sides throughout: a friend's name, three place names, a subculture's name, and a
-person referred to by a Latin initialism. Every one is a strong pairing signal and
-every one is invisible to a matcher comparing Latin tokens, because the Chinese side
+THE ANCHORS EXIST AND IT CANNOT READ THEM.
+This entry carries transliterated names on
+both sides throughout:
+a friend's name,
+three place names,
+a subculture's name,
+and a
+person referred to by a Latin initialism.
+Every one is a strong pairing signal and
+every one is invisible to a matcher comparing Latin tokens,
+because the Chinese side
 is not Latin.
 
 ## The fix is one already written down for headings
 
-`#71` proposed exactly this for the section aligner: "a matcher that scored heading
-similarity, including transliteration and shared Latin substrings". The same matcher is
-what the BLOCK aligner needs, and for the same reason.
+`#71` proposed exactly this for the section aligner:
+"a matcher that scored heading
+similarity,
+including transliteration and shared Latin substrings".
+The same matcher is
+what the BLOCK aligner needs,
+and for the same reason.
 
-That makes transliteration-aware scoring a shared dependency of `#71`, `#98` and this,
-rather than three separate alignment tasks, and it moves it ahead of every stage-tuning
-question: no prompt, window, panel rule or lane choice can be judged on runs whose
+That makes transliteration-aware scoring a shared dependency of `#71`,
+`#98` and this,
+rather than three separate alignment tasks,
+and it moves it ahead of every stage-tuning
+question:
+no prompt,
+window,
+panel rule or lane choice can be judged on runs whose
 critics were shown the wrong paragraph.
 
 ## Settled with correct pairing
 
-Two runs on the corrected build, 2026-08-20.
+Two runs on the corrected build,
+2026-08-20.
 
-FIRST RUN found two defects in the pairing code itself, which is what a live run
-is for. `saurikissa` paired 16 of 16 and settled cleanly; `lintong` collapsed
-from five slices to one, because all six models paired one translation block
-with two originals and the reader refused every reply. A translation may MERGE
-paragraphs exactly as it may split them, and the reader forbade the mirror of the
-case it allowed. Separately, pairing was bought on every resume, which
+FIRST RUN found two defects in the pairing code itself,
+which is what a live run
+is for.
+`saurikissa` paired 16 of 16 and settled cleanly;
+`lintong` collapsed
+from five slices to one,
+because all six models paired one translation block
+with two originals and the reader refused every reply.
+A translation may MERGE
+paragraphs exactly as it may split them,
+and the reader forbade the mirror of the
+case it allowed.
+Separately,
+pairing was bought on every resume,
+which
 `pass-entry`'s own test caught.
 
-SECOND RUN, with merges carried and the pairing cached:
+SECOND RUN,
+with merges carried and the pairing cached:
 
 ```text
                     slices   alignment findings   pairing
@@ -146,7 +222,8 @@ SECOND RUN, with merges carried and the pairing cached:
 ```
 
 `lintong`'s nine pairs over seven original and five translation blocks is more
-pairs than target blocks, which only a merge can produce.
+pairs than target blocks,
+which only a merge can produce.
 
 ### What moved
 
@@ -162,43 +239,65 @@ pairs than target blocks, which only a merge can produce.
     paired                18       83%          71.4%
 ```
 
-`saurikissa` resolves more than any earlier arm, and `lintong`'s panel accepts a
+`saurikissa` resolves more than any earlier arm,
+and `lintong`'s panel accepts a
 larger share than any earlier arm.
 
 ### What this does NOT show
 
-ARCHIVE RETENTION FELL against the window arm, and that is not evidence either
-way. `doc/decision/translation-repair-output-goal.md` decides the output is
-judged against the ORIGINAL, never against the input translation, and retention
-counts archive words. The window scores 91% partly by resolving six issues: an
-arm that resolves thirty-four necessarily diverges more from the incumbent, and
+ARCHIVE RETENTION FELL against the window arm,
+and that is not evidence either
+way.
+`doc/decision/translation-repair-output-goal.md` decides the output is
+judged against the ORIGINAL,
+never against the input translation,
+and retention
+counts archive words.
+The window scores 91% partly by resolving six issues:
+an
+arm that resolves thirty-four necessarily diverges more from the incumbent,
+and
 a rare-word test cannot separate "removed what it should not have" from
 "repaired a great deal correctly".
 
 So the pairing work establishes that every stage now reads the paragraph it
-should. It does not establish that the output is better, because that is a
-source-anchored judgement and nothing here makes one. It is the same wall
+should.
+It does not establish that the output is better,
+because that is a
+source-anchored judgement and nothing here makes one.
+It is the same wall
 `doc/planning/which-lane-ships.md` reaches.
 
 ## Reading the paired output against the Chinese
 
-The measurements above cannot say whether the OUTPUT is better, because they
-compare against the incumbent. This is a reading against the original, which is
+The measurements above cannot say whether the OUTPUT is better,
+because they
+compare against the incumbent.
+This is a reading against the original,
+which is
 the decided standard.
 
-`saurikissa` slice 1, the opening of the story.
+`saurikissa` slice 1,
+the opening of the story.
 
-WHAT THE ARCHIVE SAID: that she stepped into the internet under her present name
-and was met with suspicion; that she was transparent about her missteps "when she
-was a child"; and that "after she realized the dangers of Esu culture" she hoped
+WHAT THE ARCHIVE SAID:
+that she stepped into the internet under her present name
+and was met with suspicion;
+that she was transparent about her missteps "when she
+was a child";
+and that "after she realized the dangers of Esu culture" she hoped
 to use her experience to help friends.
 
-WHAT THE PAIRED RUN SHIPS: that she reappeared online under her present name A
-SECOND TIME and was initially not trusted; that she did not shy away from
-discussing her participation during her MINOR YEARS; and that she hoped to use
+WHAT THE PAIRED RUN SHIPS:
+that she reappeared online under her present name A
+SECOND TIME and was initially not trusted;
+that she did not shy away from
+discussing her participation during her MINOR YEARS;
+and that she hoped to use
 her experience to help friends.
 
-THREE GAINS, each checkable against the Chinese:
+THREE GAINS,
+each checkable against the Chinese:
 
 ```text
 第二次        "a second time"    the archive dropped it entirely; restored
@@ -208,40 +307,62 @@ THREE GAINS, each checkable against the Chinese:
                                  GONE. The Chinese carries no such clause
 ```
 
-THE THIRD IS THE ONE THAT MATTERS. That inserted clause is the defect four
-critics independently reported under the mispaired build, which the panel
-rejected two votes to three, and which
+THE THIRD IS THE ONE THAT MATTERS.
+That inserted clause is the defect four
+critics independently reported under the mispaired build,
+which the panel
+rejected two votes to three,
+and which
 `doc/audit/the-judge-can-see-a-candidate-saying-less.md` recorded as a rejection
-with no relocation available to justify it. With the paragraph paired correctly
+with no relocation available to justify it.
+With the paragraph paired correctly
 the claim survives and the clause is gone from shipped text.
 
 ### What is worse, stated too
 
-REGISTER SLIPS IN PLACES. The mother's exasperated-but-fond line becomes "Ah, what a
-headache of a child she is", where the archive had "Oh, you troublesome,
-endearing soul". The paired rendering is closer to the words and further from the
-voice, and it uses the present tense of someone who has died.
+REGISTER SLIPS IN PLACES.
+The mother's exasperated-but-fond line becomes "Ah,
+what a
+headache of a child she is",
+where the archive had "Oh,
+you troublesome,
+endearing soul".
+The paired rendering is closer to the words and further from the
+voice,
+and it uses the present tense of someone who has died.
 
-SPACING ARTEFACTS appear inside sentences, two spaces where one belongs, which no
+SPACING ARTEFACTS appear inside sentences,
+two spaces where one belongs,
+which no
 stage currently checks.
 
 ### The verdict this supports
 
-ON FIDELITY TO THE ORIGINAL, which is the decided standard, the paired output is
-better than the archive on this passage: it restores a dropped fact, sharpens a
-vague one, and removes an invention.
+ON FIDELITY TO THE ORIGINAL,
+which is the decided standard,
+the paired output is
+better than the archive on this passage:
+it restores a dropped fact,
+sharpens a
+vague one,
+and removes an invention.
 
-ON VOICE it is somewhat worse in at least one place, and that is a real cost on a
+ON VOICE it is somewhat worse in at least one place,
+and that is a real cost on a
 memorial page rather than a rounding error.
 
-Neither observation generalises from one passage. What it does establish is that
-the question is now ANSWERABLE by reading, which it was not while the critics
+Neither observation generalises from one passage.
+What it does establish is that
+the question is now ANSWERABLE by reading,
+which it was not while the critics
 were shown the wrong paragraph.
 
 ## Reading `lintong` complete, both lanes against the Chinese
 
-`lintong` is three slices, short enough to judge entirely rather than in part.
-Read at corpus `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`, against the run in
+`lintong` is three slices,
+short enough to judge entirely rather than in part.
+Read at corpus `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`,
+against the run in
 `~/temp/agent/pairing2-20260820`.
 
 ### The repair lane corrects a factual claim about the person
@@ -257,28 +378,33 @@ The repair lane returns "a girl with a rather strong possessive streak".
 Four more in the same passage:
 
 -   粘人 is absent from the archive.
-    The repair lane restores it as "she was clingy, always wanting to be close".
+    The repair lane restores it as "she was clingy,
+    always wanting to be close".
 
 -   可能是因为我吧 is absent from the archive.
     The repair lane restores it as "Maybe that's because of me",
     which is the partner taking responsibility and the most personal clause in
     the passage.
 
--   The clause about what she made you do turns on 逼, to force or compel.
+-   The clause about what she made you do turns on 逼,
+    to force or compel.
     The archive softens it to "her tendency to ask others to do things when they
     are not in the mood for it".
     The repair lane returns "loved to force you into doing things you didn't
     like".
 
--   熟人 is acquaintances, not friends.
-    The archive says "not her friends", which reverses who she was willing to
+-   熟人 is acquaintances,
+    not friends.
+    The archive says "not her friends",
+    which reverses who she was willing to
     trouble.
     The repair lane returns "not mere acquaintances".
 
 ### The translate lane preserved every one of them
 
 On both prose slices the translate lane returned the incumbent unchanged:
-`changedSliceCount` is 1, and the one slice it changed is the `## 简介` heading.
+`changedSliceCount` is 1,
+and the one slice it changed is the `## 简介` heading.
 So on this entry the two lanes are not close.
 The lane built to re-translate from the original kept an archive sentence that
 misdescribes the person,
@@ -289,7 +415,8 @@ It does not settle `#130`:
 one entry is not a corpus,
 and the reading in `## Reading the paired output against the Chinese` shows the
 repair lane losing register on `saurikissa`.
-It does refute the simplest framing, that the translate lane is the safer
+It does refute the simplest framing,
+that the translate lane is the safer
 default because it owes the archive nothing.
 
 ### Costs, stated
@@ -305,16 +432,20 @@ rather than a slip.
 Nothing in the pipeline checks tense consistency within a passage,
 and the archive was not consistent either.
 
-瓶 IS A BOTTLE, rendered "can".
-Minor, and the archive says "can" too.
+瓶 IS A BOTTLE,
+rendered "can".
+Minor,
+and the archive says "can" too.
 
 ### One paragraph never reached a slice at all
 
 The closing Chinese paragraph,
-the friend's closing paragraph, its dream request and its date,
+the friend's closing paragraph,
+its dream request and its date,
 appears in no slice's source,
 while its English rendering sits in the incumbent of slice 2.
-The repair lane, shown English with no original behind it,
+The repair lane,
+shown English with no original behind it,
 deleted the rendering of the dream request and left a bare `> ` line in the shipped
 text.
 
@@ -325,12 +456,15 @@ and which also renders further blocks of its own,
 was never placed on either side.
 A sweep over 20000 admissible monotone pairings lost a source block in 6.8% of
 them.
-Fixed in `4434618ea`, with the sweep reporting zero violations after.
+Fixed in `4434618ea`,
+with the sweep reporting zero violations after.
 
-CONFIRMED AGAINST THE ROSTER'S ACTUAL PAIRING, not inferred from the shape of
+CONFIRMED AGAINST THE ROSTER'S ACTUAL PAIRING,
+not inferred from the shape of
 the output.
 A settled run discards its pairing cache by design,
-so a fresh single-entry run was read mid-flight, before settlement:
+so a fresh single-entry run was read mid-flight,
+before settlement:
 
 ```json
 [{"source":0,"target":0},{"source":1,"target":1},{"source":1,"target":2},
@@ -340,7 +474,8 @@ so a fresh single-entry run was read mid-flight, before settlement:
 
 Original 6 is paired with translation block 3,
 which originals 2 through 5 already claimed,
-AND with block 4, which nothing had claimed:
+AND with block 4,
+which nothing had claimed:
 exactly the merge-then-split shape.
 Under the old rule it matched neither branch and was placed nowhere.
 Under the fix all seven originals are placed,
@@ -379,9 +514,11 @@ so no range disagrees with itself and the check passes.
 
 `assertSliceCoverage` closes that,
 comparing the carving against the chunk pair that went in,
-per side, and refusing three distinct faults:
+per side,
+and refusing three distinct faults:
 a block placed nowhere,
-a block placed twice, which inflates a run past its budget,
+a block placed twice,
+which inflates a run past its budget,
 and blocks placed out of document order,
 which gathers text from two places into one slice.
 
@@ -401,36 +538,50 @@ which the pipeline masks by design.
 ## Verified at the artifact, not at the unit test
 
 A fresh single-entry run of `lintong` into `~/temp/agent/pairfix-20260820`,
-on the fixed build, settling 3 slices with zero alignment findings:
+on the fixed build,
+settling 3 slices with zero alignment findings:
 
 -   The closing Chinese paragraph now reaches slice 2's source.
 
--   the dream request ships, as "Visit me in my dreams when you have time...",
+-   the dream request ships,
+    as "Visit me in my dreams when you have time...",
     where the previous run deleted it.
 
--   The date ships, as "October 2022."
+-   The date ships,
+    as "October 2022."
 
--   No continuation opens with a stray space, and no line ends in whitespace.
+-   No continuation opens with a stray space,
+    and no line ends in whitespace.
 
 -   No blockquote stump remains.
-    Counting only a `>` line NOT followed by more blockquote, since a `>` line
+    Counting only a `>` line NOT followed by more blockquote,
+    since a `>` line
     between two paragraphs INSIDE a blockquote is ordinary and the archive
     carries several:
-    archive 0, before the fix 1, after the fix 0.
+    archive 0,
+    before the fix 1,
+    after the fix 0.
     A first count that flagged every bare `>` reported a failure that was not
-    one, which is why the discriminator is stated here rather than the verdict
+    one,
+    which is why the discriminator is stated here rather than the verdict
     alone.
 
-WHAT THE REPAIR LANE RETURNED THIS TIME, on the passage read earlier:
+WHAT THE REPAIR LANE RETURNED THIS TIME,
+on the passage read earlier:
 "a girl who is quite possessive" for 占有欲比较强烈,
-"She was clingy, too." for 粘人,
-"Maybe it's because of me." for 可能是因为我吧,
+"She was clingy,
+too."
+for 粘人,
+"Maybe it's because of me."
+for 可能是因为我吧,
 "her tendency to force you to do things you don't like" for the 逼 clause,
 and "not her acquaintances" for the 熟人 clause.
 Every correction the earlier reading identified survives a re-run with a
-different sample, which is worth more than any one of them appearing once.
+different sample,
+which is worth more than any one of them appearing once.
 
-STILL UNCHECKED BY ANY STAGE: the tense is still mixed within the passage,
+STILL UNCHECKED BY ANY STAGE:
+the tense is still mixed within the passage,
 "Lin Tong **is** a girl" beside "she **was** clingy" and "**Likes** to trouble".
 
 ## The guard immediately found a second way to lose text
@@ -473,7 +624,9 @@ WHAT THIS SAYS ABOUT THE FIRST FUZZ ROUND.
 An earlier sweep with indices drawn without regard to a section's real block
 counts reported 378 of 920 failing.
 That number is meaningless:
-`readBlockPairing` refuses an out-of-range pair, so production never produces
-one, and the sweep was measuring a shape that cannot occur.
+`readBlockPairing` refuses an out-of-range pair,
+so production never produces
+one,
+and the sweep was measuring a shape that cannot occur.
 Bounding the indices by each section's actual counts is what turned a scary
 number into the one real defect.

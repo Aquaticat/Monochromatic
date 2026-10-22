@@ -210,8 +210,9 @@ await describe({
   children: [
     it({
       name: 'SENDS THE CHAT COMPLETIONS BODY with the NeuralWatt spelling of each seat, streaming usage on, the '
-        + 'schema in the system prompt and the response format, the measured ceiling as max_tokens, and NO reasoning '
-        + 'parameter, store or sampling knob, the bearer key in the header',
+        + 'schema in the system prompt and the response format, the measured ceiling as max_tokens, the one '
+        + 'documented reasoning_effort on the GLM seat and none on the DeepSeek seat, no store or sampling knob, the '
+        + 'bearer key in the header',
       fn: async () => {
         await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-client-', },);
         const { client, exchanges, } = scripted({ dir: scratch.path, },);
@@ -249,7 +250,9 @@ await describe({
         expect(body.stream_options,).toEqual({ include_usage: true, },);
         expect(body.max_tokens,).toBe(COMPLETION_CAP[SEAT_HYPER_OPENROUTER_VISION_EDITOR],);
         expect(body.response_format,).toMatchObject({ type: 'json_schema', },);
-        for (const absent of ['temperature', 'reasoning', 'reasoning_effort', 'thinking', 'store', 'provider',])
+        // The one parameter this provider may be sent, since the owner's lift of 2026-10-21 (ledger B807).
+        expect(body.reasoning_effort,).toBe('low',);
+        for (const absent of ['temperature', 'reasoning', 'thinking', 'store', 'provider',])
           expect(Object.hasOwn(body, absent,),).toBe(false,);
         expect(JSON.stringify(body.messages,),).toContain(SCHEMA_BLOCK_HEADING,);
         expect(JSON.stringify(body.messages,),).toContain('spot',);
@@ -260,7 +263,12 @@ await describe({
           signal: SIGNAL,
         },),];
         expect(ask2.text,).toBe('{"spot":"sunbeam"}',);
-        expect(jsonRecordOf({ text: chatExchangesOf({ exchanges, },)[1]?.bodyJson ?? '{}', },).model,).toBe('deepseek-v4.1-flash',);
+        /**
+         Body of the second ask, on the DeepSeek seat, whose card names no effort.
+         */
+        const secondBody = jsonRecordOf({ text: chatExchangesOf({ exchanges, },)[1]?.bodyJson ?? '{}', },);
+        expect(secondBody.model,).toBe('deepseek-v4.1-flash',);
+        expect(Object.hasOwn(secondBody, 'reasoning_effort',),).toBe(false,);
       },
     },),
 

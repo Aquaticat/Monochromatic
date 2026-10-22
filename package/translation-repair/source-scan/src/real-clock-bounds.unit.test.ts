@@ -157,6 +157,7 @@ const BOUND_KEYS: ReadonlySet<string> = new Set([
   'cooldownMs',
   'exchangeTimeoutMs',
   'firstByteMs',
+  'firstContentMs',
   'freshForMs',
   'graceMs',
   'hardCapMs',
@@ -170,7 +171,7 @@ const BOUND_KEYS: ReadonlySet<string> = new Set([
   'statedWaitMs',
   'streamBoundMs',
   'streamBoundMsOverride',
-  'streamFirstByteMs',
+  'streamFirstContentMs',
   'streamIdleMs',
   'timeout',
   'timeoutMs',
@@ -303,6 +304,26 @@ const WRITER_GRACE_READ_BACK = 'a window of a writer grace the case reads back: 
   + 'asserted whole, or a grace handed to writerGraceOverrideNote and read back in its line; no round runs under it';
 
 /**
+ Why the values handed to the pure check of stream bounds keep their numbers: each case reads the
+ check's refusal or its silence, and the check arms no timer.
+ */
+const PURE_BOUND_CHECK = 'a duration handed to the pure check of stream bounds, whose refusal or silence the case reads; '
+  + 'the check arms no timer';
+
+/**
+ Why a stream window of the content-progress cases keeps its value: the window is the thing the case
+ reaches or stays inside.
+ */
+const STREAM_WINDOW_REACHED = 'the window of a guard the case means to reach with a stream that sends no text, or to stay '
+  + 'inside with a stream that sends text every few milliseconds; it is 31 times the pause between two chunks';
+
+/**
+ Why the pause between two chunks of a timed body keeps its value.
+ */
+const CHUNK_PACING = 'the pause between two chunks of a scripted body, so a stream lasts longer than the window under test; '
+  + 'load only lengthens it';
+
+/**
  Bounds that keep a value of their own, keyed `path#site: form value`.
  */
 const LISTED: Readonly<Record<string, ListedBound>> = {
@@ -347,14 +368,17 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     bound: 'read back',
     reason: RECORD_FIELD,
   },
+  'provider-stream/abandon-kind-answer-reasoning.unit.test.ts#<module>: firstContentMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'provider-stream/abandon-kind-answer-reasoning.unit.test.ts#cutAfter: firstByteMs: firstByteMs': {
     count: 1,
     bound: 'other',
     reason: HANDED_ON,
   },
+  'provider-stream/abandon-kind-answer-reasoning.unit.test.ts#cutAfter: firstContentMs: firstByteMs': { count: 1, bound: 'other', reason: HANDED_ON, },
   'provider-stream/abandon-kind.unit.test.ts#<module>: firstByteMs: -1': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'provider-stream/abandon-kind.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'provider-stream/abandon-kind.unit.test.ts#cutWith: firstByteMs: firstByteMs': { count: 1, bound: 'other', reason: HANDED_ON, },
+  'provider-stream/abandon-kind.unit.test.ts#cutWith: firstContentMs: firstByteMs': { count: 1, bound: 'other', reason: HANDED_ON, },
   'archive/archive-block-review-windows.unit.test.ts#<module>: roundMs: 0': {
     count: 1,
     bound: 'reached',
@@ -391,6 +415,34 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     reason: HANDED_ON,
   },
   'document-structure/all-in-input-order.unit.test.ts#settle: wait of module-async-time 0': { count: 1, bound: 'other', reason: TIMER_TURN, },
+  'provider-stream/stream-bound-config.unit.test.ts#<module>: perCallTimeoutMs: DEADLINE_MS': { count: 2, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#<module>: streamFirstContentMs: 180_000': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#<module>: streamFirstContentMs: STREAM_FIRST_CONTENT_MS': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#<module>: streamIdleMs: 120_000': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#<module>: streamIdleMs: STREAM_IDLE_MS': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#badDeadline: perCallTimeoutMs: bad': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#badDeadline: streamFirstContentMs: 120_000': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#badDeadline: streamIdleMs: 120_000': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#badFirstContent: perCallTimeoutMs: DEADLINE_MS': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#badFirstContent: streamFirstContentMs: bad': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#badFirstContent: streamIdleMs: 120_000': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#badIdle: perCallTimeoutMs: DEADLINE_MS': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#badIdle: streamFirstContentMs: 120_000': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#badIdle: streamIdleMs: bad': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#equal: perCallTimeoutMs: DEADLINE_MS': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#equal: streamFirstContentMs: DEADLINE_MS': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#equal: streamIdleMs: 120_000': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#idleAbove: perCallTimeoutMs: DEADLINE_MS': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#idleAbove: streamFirstContentMs: 120_000': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#idleAbove: streamIdleMs: DEADLINE_MS + 1': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#shipped: perCallTimeoutMs: DEADLINE_MS': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#shipped: streamFirstContentMs: 600_000': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-bound-config.unit.test.ts#shipped: streamIdleMs: 600_000': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'provider-stream/stream-content-progress.unit.test.ts#<module>: firstContentMs: WINDOW_MS': { count: 5, bound: 'reached', reason: STREAM_WINDOW_REACHED, },
+  'provider-stream/stream-content-progress.unit.test.ts#<module>: idleMs: WINDOW_MS': { count: 4, bound: 'reached', reason: STREAM_WINDOW_REACHED, },
+  'provider-stream/stream-content-progress.unit.test.ts#drainTimed: firstContentMs: firstContentMs': { count: 1, bound: 'other', reason: HANDED_ON, },
+  'provider-stream/stream-content-progress.unit.test.ts#drainTimed: idleMs: idleMs': { count: 1, bound: 'other', reason: HANDED_ON, },
+  'provider-stream/stream-content-progress.unit.test.ts#timedResponse: wait of module-async-time GAP_MS': { count: 1, bound: 'other', reason: CHUNK_PACING, },
   'provider/bedrock-client.unit.test.ts#<module>: createBedrockClient of the built package (none)': {
     count: 1,
     bound: 'other',
@@ -460,6 +512,7 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     bound: 'read back',
     reason: RECORD_FIELD,
   },
+  'provider-stream/corpus-run/cap-census-log.test-fixture.ts#streamLine: firstContentMs: 3_644': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 120_000': { count: 1, bound: 'read back', reason: PRINTED, },
   'corpus-pass/corpus-run/corpus-pass-lines.unit.test.ts#<module>: hardCapMs: 25_200_000': {
     count: 2,
@@ -522,6 +575,12 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     bound: 'other',
     reason: SAME_TURN_METER,
   },
+  'run/corpus-run/run-call-config-builder.unit.test.ts#<module>: perCallTimeoutMs: 360_000': { count: 2, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'run/corpus-run/run-call-config-builder.unit.test.ts#<module>: streamFirstContentMs: 120_000': { count: 2, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'run/corpus-run/run-call-config-builder.unit.test.ts#<module>: streamIdleMs: 90_000': { count: 2, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'run/corpus-run/run-call-config-builder.unit.test.ts#shipped: perCallTimeoutMs: 360_000': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'run/corpus-run/run-call-config-builder.unit.test.ts#shipped: streamFirstContentMs: 600_000': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
+  'run/corpus-run/run-call-config-builder.unit.test.ts#shipped: streamIdleMs: 600_000': { count: 1, bound: 'other', reason: PURE_BOUND_CHECK, },
   'slice-cache/corpus-run/pass-schema-guard.unit.test.ts#emptyVersionTwoArtifact: perCallTimeoutMs: 600_000': {
     count: 1,
     bound: 'read back',
@@ -537,12 +596,12 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     bound: 'read back',
     reason: RECALL_CALL_CONFIG,
   },
-  'probe/corpus-run/recall-benchmark-run.unit.test.ts#<module>: streamFirstByteMs: 600_000': {
+  'probe/corpus-run/recall-benchmark-run.unit.test.ts#<module>: streamFirstContentMs: 180_000': {
     count: 1,
     bound: 'read back',
     reason: RECALL_CALL_CONFIG,
   },
-  'probe/corpus-run/recall-benchmark-run.unit.test.ts#<module>: streamIdleMs: 600_000': {
+  'probe/corpus-run/recall-benchmark-run.unit.test.ts#<module>: streamIdleMs: 120_000': {
     count: 1,
     bound: 'read back',
     reason: RECALL_CALL_CONFIG,
@@ -562,7 +621,9 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     bound: 'read back',
     reason: RECORD_FIELD,
   },
+  'run/corpus-run/run-timing-report.test-fixture.ts#timedCallLine: firstContentMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'run/corpus-run/run-timing.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'run/corpus-run/run-timing.unit.test.ts#<module>: firstContentMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'bench/corpus-run/sentinel-probe-run.unit.test.ts#<module>: perCallTimeoutMs: CALL_TIMEOUT_MS': {
     count: 1,
     bound: 'read back',
@@ -636,6 +697,7 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
   },
   'provider/neuralwatt-routing.unit.test.ts#<module>: freshForMs: 0': { count: 1, bound: 'read back', reason: SCRIPTED_CLOCK, },
   'provider/openrouter-abandoned-spend.unit.test.ts#<module>: firstByteMs: 500': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'provider/openrouter-abandoned-spend.unit.test.ts#<module>: firstContentMs: 500': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'stage/overlapped-map.unit.test.ts#settle: wait of module-async-time 0': { count: 1, bound: 'other', reason: TIMER_TURN, },
   'provider/provider-budget.unit.test.ts#<module>: cooldownMs: 10_000': { count: 7, bound: 'read back', reason: SCRIPTED_CLOCK, },
   'provider/provider-budget.unit.test.ts#<module>: cooldownMs: 300': { count: 2, bound: 'read back', reason: SCRIPTED_CLOCK, },
@@ -677,6 +739,7 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     bound: 'read back',
     reason: RECORD_FIELD,
   },
+  'provider/provider-router-stream-bound.unit.test.ts#chatText: firstContentMs: 15_000': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'provider/provider-router-stream-bound.unit.test.ts#routerOver: modelHoldMs: HOLD_MS': {
     count: 1,
     bound: 'read back',
@@ -813,6 +876,7 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
       + 'bound field of the error the reading case builds',
   },
   'provider/stream-bound.unit.test.ts#<module>: firstByteMs: 15_000': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'provider/stream-bound.unit.test.ts#<module>: firstContentMs: 15_000': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'provider/stream-bound.unit.test.ts#<module>: wait of module-async-time SHORT_BOUND_MS * 2': {
     count: 1,
     bound: 'reached',
@@ -820,9 +884,12 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
       + 'any machine',
   },
   'provider-stream/stream-cut.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'provider-stream/stream-cut.unit.test.ts#<module>: firstContentMs: -1': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'provider-stream/stream-cut.unit.test.ts#<module>: firstContentMs: 55': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'provider-stream/stream-drain.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'provider-stream/stream-drain.unit.test.ts#<module>: firstContentMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'provider-stream/stream-drain.unit.test.ts#<module>: idleMs: 60_000': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
-  'provider-stream/stream-idle-guard.unit.test.ts#<module>: firstByteMs: TINY_MS': {
+  'provider-stream/stream-idle-guard.unit.test.ts#<module>: firstContentMs: TINY_MS': {
     count: 3,
     bound: 'reached',
     reason: 'the window the tripping cases reach, waited out by polling the guard\'s own signal, and the one the '
@@ -836,9 +903,10 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
       + 'disposal case defuses',
   },
   'provider-stream/stream-idle-guard.unit.test.ts#<module>: wait of module-async-time TINY_MS': {
-    count: 1,
+    count: 3,
     bound: 'other',
-    reason: 'a real span so the first byte lands past zero; the case asserts only lower bounds, which load widens',
+    reason: 'a real span so the first byte lands past zero, and two more so the first text lands past the first byte '
+      + 'and a later piece of text past the first text; the cases assert only lower bounds, which load widens',
   },
   'provider-stream/stream-idle-guard.unit.test.ts#settle: setTimeout TINY_MS * 5': {
     count: 1,
@@ -852,6 +920,7 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     reason: 'the poll interval of a wait that ends on the guard\'s own signal, not on time',
   },
   'provider-stream/stream-overrun.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'provider-stream/stream-overrun.unit.test.ts#<module>: firstContentMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'provider/synthetic-client.unit.test.ts#<module>: exchangeTimeoutMs: 50': {
     count: 1,
     bound: 'reached',
@@ -875,6 +944,7 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     reason: 'the hold that keeps the queued call waiting past its own deadline',
   },
   'provider/transient-retry.unit.test.ts#<module>: firstByteMs: 10': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'provider/transient-retry.unit.test.ts#<module>: firstContentMs: 10': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'provider/transient-retry.unit.test.ts#<module>: setTimeout 0': {
     count: 1,
     bound: 'reached',

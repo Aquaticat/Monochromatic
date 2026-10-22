@@ -171,10 +171,12 @@ export function reviewParagraphsOf(
  their rule, when the original cites any (class forty-one)
 
  @param archiveDisputeNote - accepted claims against the archive rendering
- on a disputed slice, which the gate reads (ledger S12)
+ on a disputed slice, which the gate reads (ledger S12) and the writers and the
+ judges of their rewrites read too (ledger B805)
 
  @param acceptedRepairClaimsNote - every claim the repair panel accepted for
- the slice, which the gate reads beside the dispute note
+ the slice, which the writers, the judges of their rewrites and the gate read
+ beside the dispute note (ledger B805)
 
  @param disputedWordings - wordings the slice refuses, which the rule refuses
  as the polished text as it does every other text on the slice (ledger B29)
@@ -311,6 +313,12 @@ export async function runConsolidationPolishRound(
     definitions,
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
+    // THE CLAIMS THE REPAIR PANEL ACCEPTED AND THE NOTE ON A DISPUTED ARCHIVE
+    // RENDERING reach the writers and the judges of their rewrites as they reach
+    // the gate (ledger B805): the gate judged a polish against evidence the
+    // writers never saw, and the judges chose among the rewrites without it.
+    ...((acceptedRepairClaimsNote === undefined) ? {} : { acceptedRepairClaimsNote, }),
+    ...((archiveDisputeNote === undefined) ? {} : { archiveDisputeNote, }),
     declaredNames: config.declaredNames,
     ...((config.declaredSubjectForms === undefined) ? {} : { declaredSubjectForms: config.declaredSubjectForms, }),
     mode,

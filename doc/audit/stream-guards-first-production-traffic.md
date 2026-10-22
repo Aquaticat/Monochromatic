@@ -19,7 +19,8 @@ ninetieth percentile     1689688
 largest                  5558524
 ```
 
-RAW CHARACTERS ARE WIRE BYTES, envelope included,
+RAW CHARACTERS ARE WIRE BYTES,
+envelope included,
 which is the only length column production records.
 Nothing here reports generated characters,
 and that gap decides how the rest of this document reads.
@@ -43,7 +44,8 @@ It was not stalled,
 and the idle guard could never have seen it:
 both idle constants sit at 600000 ms and the largest gap was under half a second.
 
-WHAT ENDED IT WAS THE STRAGGLER GRACE, exactly as designed,
+WHAT ENDED IT WAS THE STRAGGLER GRACE,
+exactly as designed,
 180000 ms after quorum.
 That is the first direct look at what the grace actually cuts,
 and it cut a call that was still producing.
@@ -79,7 +81,8 @@ Before tonight both printed the same three words and nothing else.
 No `degenerate in` line appears anywhere in the window.
 The single `cut` line is the straggler above.
 
-THE OBVIOUS SEARCH LIES, and it is worth writing down.
+THE OBVIOUS SEARCH LIES,
+and it is worth writing down.
 Grepping this log for `cut` returns ten confident matches,
 every one of them the word "cute" inside a rationale about 撒娇.
 The searches that answer the question are `stream .*: cut` and `degenerate in`.
@@ -104,7 +107,8 @@ because:
 
 -   the progress line reports raw characters twice and generated characters never,
     so the size of the thinking trace is unknown;
--   the opening excerpt is shown only on a cut, and this stream completed;
+-   the opening excerpt is shown only on a cut,
+    and this stream completed;
 -   and had it been shown it would have carried envelope rather than words,
     since `partialText` is the raw event stream and every such body opens
     `data: {"id":"`,
@@ -131,7 +135,8 @@ and today nobody knows which.
 
 ## The straggler grace is almost entirely a GLM-5.2 tax
 
-Read at 1148 completed-or-cut streams, four hours into the pass.
+Read at 1148 completed-or-cut streams,
+four hours into the pass.
 Call counts are near enough equal across the roster that this is a RATE difference
 rather than a volume artefact:
 
@@ -164,7 +169,8 @@ It is verbose on this workload and the grace ends verbose calls.
 The reading that matters is that the window's cost falls on one voice,
 so the ensemble it protects loses the same member over and over.
 
-AND NOTHING RE-ASKS IT, which is by design and worth stating so it is not mistaken for a bug.
+AND NOTHING RE-ASKS IT,
+which is by design and worth stating so it is not mistaken for a bug.
 `stage-quorum.ts` runs three retry rounds after the initial fan-out,
 and the loop reads `if ((round > 0) && (collected.length >= quorumNeeded)) break`.
 A voice lost while quorum is already satisfied is therefore never re-asked.
@@ -174,7 +180,8 @@ on the stages where this happens the ensemble is effectively five of six,
 always missing the same member,
 rather than five of six missing a different one each time.
 
-CHECKED AND CLEARED while looking at this, so it is not re-investigated:
+CHECKED AND CLEARED while looking at this,
+so it is not re-investigated:
 `isRetryableAttempt` in `attempt-retry.ts` would call these truncated replies retryable,
 and its only caller is `benchmark.ts`.
 That is not a production gap.
@@ -209,11 +216,15 @@ Five hand-picked entries are not a corpus sample and this does not replace the e
 and the reason it gives is that silence cannot discriminate on this provider:
 
 > Across 32 successful streams,
-> time to first byte ran p50 95.6 s, p75 123 s, p90 134 s, max 147.5 s.
+> time to first byte ran p50 95.6 s,
+> p75 123 s,
+> p90 134 s,
+> max 147.5 s.
 > A window cannot separate "stalled and silent" from "working and silent"
 > when working looks like that.
 
-MEASURED OVER THIS PASS, working no longer looks like that:
+MEASURED OVER THIS PASS,
+working no longer looks like that:
 
 ```text
                 p50     p75     p90     p99      max
@@ -229,7 +240,8 @@ than the figure the constant rests on.
 Every one of the 395 received a first byte:
 zero progress lines carry the negative `firstByteMs` that marks a call which never got one.
 
-THIS DISTRIBUTION IS UNCENSORED, which the old one was not.
+THIS DISTRIBUTION IS UNCENSORED,
+which the old one was not.
 The old sample was taken with a 150 s window live,
 so anything slower was aborted instead of recorded,
 and the guard's own comment says so.
@@ -237,15 +249,19 @@ Here both windows sit at 600000 ms and neither fired,
 so these maxima are maxima rather than the shadow of a guard.
 
 IT IS ALSO THE UNBIASED SUCCESSOR TO A RETRACTED FIGURE.
-A reading of "1349 streams, mean firstByte 1822 ms" was retracted for survivorship bias,
+A reading of "1349 streams,
+mean firstByte 1822 ms" was retracted for survivorship bias,
 because abandoned calls were excluded by construction.
-Since `#118`, progress is reported on the cut path too,
+Since `#118`,
+progress is reported on the cut path too,
 so an abandoned call is in this sample rather than missing from it.
 
 WHAT IT DOES NOT SAY.
 It does not say the constants are wrong,
 and it does not explain the gap between the two readings:
-different stage shapes, provider capacity, routing and time of day are all unexcluded,
+different stage shapes,
+provider capacity,
+routing and time of day are all unexcluded,
 and one pass over five entries is one workload.
 What it does say is that the stated reason for disabling the guard
 is not what the current traffic looks like,
@@ -275,7 +291,8 @@ THE MIDDLE IS STABLE ACROSS FIVE DAYS AND THREE WORKLOADS,
 at one to one and a third seconds,
 and none of them resembles the 95.6 second median the constant was set from.
 
-THE TAIL IS REAL, and it is the half a single pass could not have shown.
+THE TAIL IS REAL,
+and it is the half a single pass could not have shown.
 One call waited 183 seconds for its first byte and another 92.
 Counted over the 5470 streams in the three logs:
 
@@ -291,7 +308,8 @@ largest gap over   30 s    4 streams
                   120 s    0 streams
 ```
 
-SO A SHORT WINDOW IS NOT FREE, which is the correction this second reading makes to the first.
+SO A SHORT WINDOW IS NOT FREE,
+which is the correction this second reading makes to the first.
 A 30 second first-byte window would have fired on about one call in 550,
 and at six voices a stage that is roughly one stage in ninety losing a voice to the guard itself.
 A 300 second window would have fired on none of the 5470
@@ -310,7 +328,8 @@ If a call reaches its first byte in about a second,
 then one still running 180 s after quorum is not waiting to start;
 it is producing.
 The single abandonment in this window proves it directly:
-2915229 characters delivered, largest gap 460 ms.
+2915229 characters delivered,
+largest gap 460 ms.
 `doc/audit/straggler-grace-remeasure.md` measured what widening the grace did to voice loss
 and did not measure this,
 so the two readings sit beside each other rather than in conflict.

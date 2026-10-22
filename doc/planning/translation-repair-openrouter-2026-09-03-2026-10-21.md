@@ -125,7 +125,7 @@ naming `glm-5.3`,
   and the start line `NeuralWatt quota at the start of the run: 3.1687 kWh charged this period`.
   The first reading is 0.826 Wh under zheermao19's last,
   a gap this read did not explain.
-  The bucket means are in [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20.md#next).
+  The bucket means are in [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20-zheermao20-to-zheermao21-reads-and-the-w253-to-w257-fix-rounds.md#next).
 
 The condition that is new against zheermao19 is that the bench was not short:
 seven seats are rostered for consolidation,
@@ -164,7 +164,7 @@ The seating is as documented:
   So `glm-5.3` reads `asked=4 threw=4` though it was never sent a request,
   and Qwen's 137 throws are almost all such refusals.
   The fix is queued in keyless worktree w254;
-  its account is in [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20.md#next).
+  its account is in [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20-zheermao20-to-zheermao21-reads-and-the-w253-to-w257-fix-rounds.md#next).
 
 ### The page
 
@@ -676,14 +676,14 @@ and the `closed on a short bench` lines with 12 fallback decisions (none;
   only two narrow revisions reached it,
   and Qwen's reply was cut by the 120 s grace after quorum.
   Fixes for the three gaps the investigation found are queued
-  in [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20.md#next):
+  in [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20-zheermao20-to-zheermao21-reads-and-the-w253-to-w257-fix-rounds.md#next):
   a composite candidate of disjoint revisions,
   the writer window for the review round,
   the stage's findings kept in the artifact,
   and a trace of why both `source-supported` replies were dropped as unanchored.
 - The seating investigation's one defect is queued in w254,
   and the two defects of the NeuralWatt quota session and the rotation sweep in w253;
-  both are in [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20.md#next).
+  both are in [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20-zheermao20-to-zheermao21-reads-and-the-w253-to-w257-fix-rounds.md#next).
 - The next run on this build meets the same bench:
   Synthetic 0%,
   Hyper 0,
@@ -786,7 +786,7 @@ The run ended with `SEATS DARK: 3 of 10 seats asked produced nothing usable this
   The closing line reads `NeuralWatt plan energy: no plan energy was spent between the start and the end of the run`.
   The bucket means,
   and what two runs can and cannot say about the estimate,
-  are in [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20.md#next).
+  are in [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20-zheermao20-to-zheermao21-reads-and-the-w253-to-w257-fix-rounds.md#next).
 
 `DESTINATIONS CuspariaKLSY source=0 page=0 dropped=0` is the same as in CuspariaKLSY18 and CuspariaKLSY19.
 The entry holds no link,

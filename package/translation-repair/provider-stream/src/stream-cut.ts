@@ -81,7 +81,7 @@ export type StreamOutcome = 'completed' | 'cut' | 'degenerate' | 'overrun';
  throw new StreamCutShortError({
    label: 'hf:whiskers',
    partialText: 'It is a cat. It did a backflip. It cras',
-   progress: { firstByteMs: 812, maxGapMs: 43, chars: 9_211, },
+   progress: { firstByteMs: 812, firstContentMs: 1_340, maxGapMs: 43, chars: 9_211, },
    cause: new Error('aborted',),
  },);
  ```
@@ -281,6 +281,7 @@ export function reportStreamProgress(
    */
   const sample = `stream ${label}: ${outcome}, elapsed ${String(progress.elapsedMs,)}ms, `
     + `firstByte ${String(progress.firstByteMs,)}ms, `
+    + `firstContent ${String(progress.firstContentMs,)}ms, `
     + `maxGap ${String(progress.maxGapMs,)}ms, ${String(progress.chars,)} raw ${
       wordForCount({
         count: progress.chars,

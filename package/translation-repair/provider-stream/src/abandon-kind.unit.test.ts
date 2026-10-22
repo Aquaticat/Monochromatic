@@ -51,6 +51,7 @@ function cutWith(
     partialText,
     progress: {
       firstByteMs,
+      firstContentMs: firstByteMs,
       maxGapMs: 0,
       chars: partialText.length,
       elapsedMs: 120,

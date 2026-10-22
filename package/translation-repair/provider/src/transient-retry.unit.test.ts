@@ -1026,6 +1026,7 @@ await describe({
               partialText: 'data: {"purr":"lo',
               progress: {
                 firstByteMs: 10,
+                firstContentMs: 10,
                 maxGapMs: 5,
                 elapsedMs: 40,
                 chars: 17,

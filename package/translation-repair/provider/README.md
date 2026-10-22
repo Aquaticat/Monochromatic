@@ -122,8 +122,9 @@ The groups that follow name the main ones.
   A picture in a request is held by its patches,
   round(width / 28) times round(height / 28) tokens read off the file header,
   not by its base64 length (ledger B720),
-  and a NeuralWatt card side may name a `pictureReasoningEffort`
-  that the client sends as `reasoning_effort` on picture calls only (ledger B719).
+  and a NeuralWatt card side may name a `pictureReasoningEffort` and a `textReasoningEffort`
+  that the client sends as `reasoning_effort` on a call that carries a picture and on one that does not
+  (ledger B719 and B807).
   Declared in `neuralwatt-ledger.ts`,
   `neuralwatt-ledger-config.ts`,
   `neuralwatt-estimate.ts`,

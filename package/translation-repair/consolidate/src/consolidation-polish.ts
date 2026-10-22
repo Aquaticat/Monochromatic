@@ -98,10 +98,12 @@ function objectionPolishFindings(
  their rule, when the original cites any (class forty-one)
 
  @param archiveDisputeNote - accepted claims against the archive rendering
- on a disputed slice, for the gate (ledger S12)
+ on a disputed slice, for the gate (ledger S12), the writers and the judges of
+ their rewrites (ledger B805)
 
  @param acceptedRepairClaimsNote - every claim the repair panel accepted for
- the slice, disputing or not, for the gate
+ the slice, disputing or not, for the writers, the judges of their rewrites and
+ the gate (ledger B805)
 
  @param disputedWordings - wordings the slice refuses, which the polish may
  not land on any more than a proposal may (ledger B29)

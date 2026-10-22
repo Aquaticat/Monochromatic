@@ -2,10 +2,14 @@ import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/
 import { judgeTranslateSlate, } from './translate-judge.ts';
 import {
   requireTranslateAbsence,
+  type RunoffBasis,
   TranslateAbsenceError,
   type TranslateAbsenceReason,
 } from '@monochromatic-dev/translation-repair-translate-floor/ts';
-import { runoffFinding, } from './translate-runoff.ts';
+import {
+  runoffFinalistsPhrase,
+  runoffFinding,
+} from './translate-runoff.ts';
 import type { TranslateStageResult, } from './translate-stage-result.ts';
 
 //region Translate retry
@@ -380,8 +384,11 @@ export async function judgeSlateWithRetry(
       if (isRetriedDecline({ reason: result.decision, },)
         && (kept !== undefined)
         && (kept.length < offeredCount)) {
+        // A ROUND THAT LEAVES NO WINNER IS A TIE OR A PLURALITY SHORT OF THE
+        // MINIMUM (ledger B806), so the line says what the round did and not
+        // what it was.
         l.info(
-          `translate stage: run-off tied again over ${String(offeredCount,)} ${
+          `translate stage: run-off left no winner over ${String(offeredCount,)} ${
             wordForCount({
               count: offeredCount,
               one: 'finalist',
@@ -438,7 +445,7 @@ export async function judgeSlateWithRetry(
       },);
     }
     l.info(
-      `translate stage: run-off tied again over ${String(offeredCount,)} ${
+      `translate stage: run-off left no winner over ${String(offeredCount,)} ${
         wordForCount({
           count: offeredCount,
           one: 'finalist',
@@ -476,14 +483,17 @@ export async function judgeSlateWithRetry(
 
  @param first - the single round's decline, which kept the incumbent
 
- @param finalists - candidates the tie backed, fewer than the whole slate
+ @param finalists - candidates the round backed, fewer than the whole slate
+
+ @param basis - why they are the finalists: tied at the top, or the leader and its runner-up where one candidate led and
+ fell short of the minimum weight, which the line announcing the run-off says (ledger B806)
 
  @returns The run-off's decision, or the first round's decline, with the
  findings of both rounds
 
  @example
  ```ts
- const decided = await runoffTiedFinalists({ judging, first, finalists, },);
+ const decided = await runoffTiedFinalists({ judging, first, finalists, basis: 'tied-at-top', },);
  ```
  */
 export async function runoffTiedFinalists(
@@ -491,10 +501,12 @@ export async function runoffTiedFinalists(
     judging,
     first,
     finalists,
+    basis,
   }: {
     readonly judging: Parameters<typeof judgeTranslateSlate>[0];
     readonly first: TranslateStageResult;
     readonly finalists: NonNullable<TranslateStageResult['runoffFinalists']>;
+    readonly basis: RunoffBasis;
   },
 ): Promise<TranslateStageResult> {
   /**
@@ -504,12 +516,9 @@ export async function runoffTiedFinalists(
 
   l.info(
     `translate stage: ${first.decision}; the standing drew no ballot, so the same panel is asked again over the ${
-      String(finalists.length,)
-    } tied ${
-      wordForCount({
+      runoffFinalistsPhrase({
         count: finalists.length,
-        one: 'finalist',
-        many: 'finalists',
+        basis,
       },)
     }`,
   );

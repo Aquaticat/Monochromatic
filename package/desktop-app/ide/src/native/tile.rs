@@ -150,8 +150,43 @@ fn start_poll(window: &AppWindow, state: &Rc<RefCell<State>>, current: &mut Stat
             let (Some(active), Some(shared)) = (weak_window.upgrade(), weak_state.upgrade()) else {
                 return;
             };
+            if step_due(&shared.borrow()) {
+                tracing::debug!("leaving a finished tile for the next scroll step");
+                return;
+            }
             poll(&active, &shared);
         });
+}
+
+/// What:
+///  How long after a scroll step the poll leaves a finished tile for the next step to take.
+/// Why:
+///  A scroll draws a frame at every step of the input,
+/// and the setters that swap a tile in ask the toolkit for a frame of their own;
+/// a tile taken between two steps is a second frame in that step's time.
+///  In the nested compositor's recording the text then did not move for one tick,
+/// in every scroll measured (`doc/handover/ide-gpu-stages-5-6.md`).
+///  A step of an input at 50 Hz or more comes sooner than this wait,
+/// and takes the tile in its own frame;
+/// the poll,
+/// 20 ms later,
+/// takes a tile no step came for.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// const STEP_WAIT_MS = 20;
+/// ```
+const STEP_WAIT: Duration = Duration::from_millis(20);
+
+/// Whether the view stepped so recently that the next step,
+/// and the frame it draws,
+/// is due before the poll comes again.
+fn step_due(current: &State) -> bool {
+    // False when the view never stepped; otherwise whether the last step is within the wait.
+    return match current.stepped_at {
+        Some(at) => at.elapsed() < STEP_WAIT,
+        None => false,
+    };
 }
 
 /// Whether a finished tile still describes what is displayed,

@@ -281,7 +281,7 @@ await describe({
               lines: ['', '-5', '1e3',].flatMap(function pairFor(content, second,): readonly string[] {
                 return [
                   `[info] [2026-09-28T10:00:0${String(second,)}.000Z] [translation-repair] [reportStreamProgress] stream `
-                    + `${HYPER_ID}: completed, elapsed 7304ms, firstByte 3644ms, maxGap 421ms, 2977 raw chars, `
+                    + `${HYPER_ID}: completed, elapsed 7304ms, firstByte 3644ms, firstContent 3644ms, maxGap 421ms, 2977 raw chars, `
                     + `0 unreadable frames, ${content} content chars, 0 reasoning chars`,
                   spendLine({
                     stamp: `2026-09-28T10:00:0${String(second,)}.020Z`,

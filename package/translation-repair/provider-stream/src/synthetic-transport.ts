@@ -1,5 +1,6 @@
 import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 
+import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   credentialsOfHeaders,
   maskCredentials,
@@ -70,6 +71,15 @@ export type TransportExchange = {
    what produced the retracted conclusion that one vendor's models were slow.
    */
   readonly label: string;
+
+  /**
+   Provider this exchange goes to, named by its client, which the stream guard
+   puts in the line that reports a cut stream (ledger B804). The model id in
+   `label` does not say it: `deepseek-v4.1-flash` is served by three providers,
+   and a silent stream means a different thing on each. Absent where the
+   caller does not know it.
+   */
+  readonly provider?: ProviderName;
 
   /**
    HTTP method; the Synthetic surface needs only these two.
@@ -287,6 +297,7 @@ export async function fetchTransport(
   const {
     url,
     label,
+    provider,
     method,
     headers,
     bodyJson,
@@ -299,7 +310,11 @@ export async function fetchTransport(
    Silence guard for this exchange. Armed before the request so its window
    also covers a provider that never sends response headers.
    */
-  using guard = armIdleGuard({ label, },);
+  using guard = armIdleGuard({
+    label,
+    // Conditional spread keeps the knob absent instead of undefined.
+    ...((provider === undefined) ? {} : { provider, }),
+  },);
 
   /**
    Dependent signal derived locally so the platform request never holds the

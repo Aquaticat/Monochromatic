@@ -1428,9 +1428,38 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     scan `ps`, `podman ps`, `systemctl --user list-units`, merge in a scratch worktree, gates once, own stall A/B with
     `~/temp/agent/redraw-stall-ab.mjs`, reinstall if the binary changed, remove its worktree (unlock first only after
     checking its HEAD is in `origin/main`) and branch.
-    Open, in order: (1) the stall at slot 50 of the scripted scroll, the tile hand-over in
-    `src/native/render/present.rs` (the agent above is on it; an intervention, not a log reading, decides it; the
-    frame-shift probe above is the measure); (2) the flake work, in `doc/handover/ide-native-flakes.md`:
+    LANDED 2026-10-21 (tile-stall agent `a0b5a3cdf2d733095`, tip `f75106b086`, base `b4e9063c3a`; merge tip
+    `e2b9ac2415` on `origin/main`): by intervention, the explicit `request_redraw()` after `submit_tile` is not the
+    cause (removing it leaves the slot 50 stall in 6 of 6 runs; the earlier attribution was wrong on that point); the
+    setters of the tile swap ask for a frame themselves, which is not isolated further. The fix holds the swap: the
+    20 ms tile poll (`src/native/tile.rs`, `STEP_WAIT`) leaves a finished tile while the last scroll step is under
+    20 ms old, and the step takes the tile at the end of `on_viewport_changed` (`src/native/viewport.rs`). With no step
+    coming, the poll takes the tile 20 ms later. The agent's first poll order broke the 50,000 line external edit test
+    (20 of 20 failures against 0 of 20); the shipped order polls after the step. Section "The extra frame at a tile
+    hand-over" in `doc/handover/ide-gpu-stages-5-6.md`.
+    My A/B (8 pairs, release, `big.rs`, 1100x660, scroll, frame-shift probe, one app run at a time): baseline
+    (`origin/main` before the merge) stall at slot 50 in 8 of 8 runs, 12 stalls in total (slots 50, 98, 142, 74);
+    merged tree 0 of 8 at slot 50, 1 stall in total (slot 72). The agent's own 8 pairs: 0 of 8 against 8 of 8, 1 against
+    13 stalls; its one stall was at slot 33, mine at slot 72, so a rare stall elsewhere remains and is undecided
+    (host or fix). Gates on the merged tree, once each: lint, `test:native` 279 of 279 (5 skipped), `test` 797 of
+    797, `test:bin`, `build`, `inspect:no-software-renderer`, the three new source guards (`tile-left-for-next-step`,
+    `tile-taken-by-the-step`, `tile-taken-by-the-poll-when-idle`) pass; the agent showed each fails when its guarded
+    line is removed. Not run: the idle latency of the 20 ms wait (a tile finishing within 20 ms after the last step waits
+    up to one more poll period; reasoned, not measured), input slower than 50 Hz (keeps the old extra frame), the drag
+    scenario, scales other than 1, the sign indicator intervention, a real compositor, the other 150 guards.
+    Installed 2026-10-21 (third install this day): `~/.local/bin/monochromatic-ide` sha256 prefix `854d0998238b249b`,
+    equal to the release binary of the verified tree; the previous binary (`8706732d98cdd82c`) is
+    `monochromatic-ide.previous`. The agent's worktree, branch (local and remote) and my two scratch trees are removed;
+    no units, containers or stray processes were left (scanned after the report).
+    Latency and rare-stall agent `a0d7b8bed3990e6c8` (started 2026-10-21, own worktree off `origin/main`, branch push
+    only; brief quotes `NLG`, `NLD`, `RXI`): measures the idle latency of the 20 ms wait (merged binary against a binary
+    with the wait disabled, at least 20 runs each) and runs at least 16 more merged and 16 fix-disabled scroll runs to
+    decide by intervention whether stalls away from slot 50 are the host or the fix. On its report: verify, scan `ps`,
+    `podman ps`, `systemctl --user list-units`, read any product diff, gates once per snapshot, own check, push,
+    reinstall if the binary changed, remove its worktree and branch.
+    Open, in order: (1) rare stalls elsewhere in the scripted scroll (slot 33 and 72 in one run each of 16 merged runs),
+    and the idle latency of the 20 ms wait, to be measured on a quiet host; the frame-shift probe is the measure;
+    (2) the flake work, in `doc/handover/ide-native-flakes.md`:
     fixed with counts (refused-tile test 10 of 360 to 0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160
     to 0 of 160, find-box menu test by its guard, see the LANDED block above); open: the annotation stability tests
     (cause unknown, frames kept under `target/flake-frames/` for the next failure), the two incomplete ledger entries,

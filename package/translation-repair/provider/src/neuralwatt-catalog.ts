@@ -34,19 +34,21 @@ import {
 // normally" (`https://docs.neuralwatt.com/billing/daily-free-energy`).
 //
 // REASONING IS ON BY DEFAULT on both models (GLM-5.3-Flash always, at the
-// listing's default effort of `max`; DeepSeek V4.1 Flash at `high`). The
-// pipeline sends no reasoning parameter on a text call, so the energy such a
-// call uses includes whatever thinking the default spends, and the matrix
-// means the meter estimates from are over traffic that ran the same defaults.
+// listing's default effort of `max`; DeepSeek V4.1 Flash at `high`). A call
+// that sends no effort spends whatever thinking the default spends, and the
+// matrix the meter estimates from was drawn over traffic that ran the same
+// defaults, so a call at a shallower effort uses less than its hold.
 //
-// THE ONE PARAMETER THIS PROVIDER MAY BE SENT, since 2026-10-21, on a call that
-// carries a picture and only where the card's NeuralWatt side names one
-// (`pictureReasoningEffort`, `low` on GLM-5.3-Flash). The owner: "NeuralWatt is
-// a special case of all the providers: It implements what it documents
-// correctly, almost always - I'm lifting the ban on passing params, but only
-// for NeuralWatt." The standing rule of 2026-08-25 ("don't set any thinking
-// parameter or budget tokens", recorded at the Synthetic body) holds for every
-// other provider and for every NeuralWatt text call.
+// THE ONE PARAMETER THIS PROVIDER MAY BE SENT, since 2026-10-21, and only where
+// the card's NeuralWatt side names one: `reasoning_effort`, `low` on
+// GLM-5.3-Flash for a call that carries a picture (`pictureReasoningEffort`)
+// and for one that does not (`textReasoningEffort`), and none on DeepSeek V4.1
+// Flash, whose supported efforts the repo does not record. The owner:
+// "NeuralWatt is a special case of all the providers: It implements what it
+// documents correctly, almost always - I'm lifting the ban on passing params,
+// but only for NeuralWatt." The standing rule of 2026-08-25 ("don't set any
+// thinking parameter or budget tokens", recorded at the Synthetic body) holds
+// for every other provider.
 
 /**
  Base address every NeuralWatt route hangs off.
@@ -99,6 +101,12 @@ export type NeuralWattModelInfo = {
    row has the field.
    */
   readonly pictureReasoningEffort?: NeuralWattReasoningEffort;
+
+  /**
+   Reasoning effort a call carrying no picture sends, when the card names
+   one. Read by this provider's client alone, like the picture effort.
+   */
+  readonly textReasoningEffort?: NeuralWattReasoningEffort;
 };
 
 /**
@@ -126,6 +134,10 @@ export const NEURALWATT_MODELS: Readonly<Record<NeuralWattServedId, NeuralWattMo
       ...((neuralwatt.pictureReasoningEffort === undefined)
         ? {}
         : { pictureReasoningEffort: neuralwatt.pictureReasoningEffort, }),
+      // Conditional spread keeps the knob absent instead of undefined.
+      ...((neuralwatt.textReasoningEffort === undefined)
+        ? {}
+        : { textReasoningEffort: neuralwatt.textReasoningEffort, }),
     };
   },
 },);

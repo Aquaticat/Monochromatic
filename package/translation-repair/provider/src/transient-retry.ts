@@ -435,7 +435,8 @@ async function attemptExchange(
  a caller abort stops retrying at the next boundary.
 
  @param provider - provider this exchange goes to, carried onto the failure raised when a caller abort stops the
- ladder over a retryable reply; the ladder cannot tell whose reply it is retrying
+ ladder over a retryable reply, and onto the exchange handed to the transport so the stream guard that cuts a silent
+ stream can name whose stream it cut (ledger B804); the ladder cannot tell whose reply it is retrying
 
  @param transport - HTTP seam performing each attempt
 
@@ -489,6 +490,17 @@ export async function exchangeWithRetry(
     l,
   },);
 
+  /**
+   The exchange as the transport receives it, naming the provider it goes to
+   unless the caller already named one.
+   */
+  const named = (exchange.provider === undefined)
+    ? {
+      ...exchange,
+      provider,
+    }
+    : exchange;
+
   for (
     let attempt = 0;
     attempt <= policy.limit;
@@ -500,7 +512,7 @@ export async function exchangeWithRetry(
      */
     const outcome = await attemptExchange({
       transport,
-      exchange,
+      exchange: named,
       // Conditional spread keeps the check absent instead of undefined, which
       // `exactOptionalPropertyTypes` refuses for an optional property.
       ...(verify === undefined

@@ -21,6 +21,16 @@ import { HOUSE_FORM_CORRECTION_KEEPS_MEANING, } from '@monochromatic-dev/transla
 // the absolute naturalness review had rejected, with no fallback. Its loop
 // went on 2026-09-01; the mode, its sheets and its "no correction" outcome
 // stayed, built by tests alone, until B47 took them out.
+//
+// THE NOTES THE WRITERS READ (ledger B805). The final polish hands its writers
+// the claims the repair panel accepted and the note on a disputed archive
+// rendering, as it hands both to its gate. The judges who choose among the
+// writers' rewrites read neither, so a rewrite made to a claim was judged by
+// readers who could not see why it differed from the CURRENT text, under a
+// criterion that a candidate says exactly what the CURRENT text says. A judge
+// of a text sees what its writer saw: both notes reach the evidence, and where
+// either is shown the criteria let a candidate correct what a supported claim
+// names.
 
 /**
  Judges whose objections an objection correction answers.
@@ -119,6 +129,57 @@ export function objectionsHeading(
 }
 
 /**
+ Heading the polish gate and the polish writers give the note on a disputed
+ archive rendering, which the judges' evidence gives it too.
+ */
+const DISPUTE_HEADING = 'ARCHIVE RENDERING DISPUTED';
+
+/**
+ Heading the polish gate and the polish writers give the claims the repair
+ panel accepted, which the judges' evidence gives them too.
+ */
+const CLAIMS_HEADING = 'REPAIR PANEL CLAIMS ACCEPTED';
+
+/**
+ What the task adds where a note is shown, so a candidate that corrects what a
+ supported claim names is not read as a departure from the CURRENT text.
+ */
+const CLAIM_CORRECTION_TASK = ' Where the evidence carries accepted claims against the CURRENT text, a candidate may '
+  + 'also correct what a claim the ORIGINAL supports names as wrong.';
+
+/**
+ Evidence block for one note, nothing where the slice has none.
+
+ @param label - heading the note carries on the other sheets
+
+ @param note - the note as the archive package writes it, absent or empty for
+ a slice that has none
+
+ @returns One block, or none
+
+ @example
+ ```ts
+ const blocks = noteEvidence({ label: 'REPAIR PANEL CLAIMS ACCEPTED', note, },);
+ ```
+ */
+function noteEvidence(
+  {
+    label,
+    note,
+  }: {
+    readonly label: string;
+    readonly note?: string;
+  },
+): readonly SelectEvidence[] {
+  return ((note === undefined) || (note === ''))
+    ? []
+    : [{
+      label,
+      text: note,
+    },];
+}
+
+/**
  Inputs candidate selector receives after refinement generation.
 
  @example
@@ -163,6 +224,16 @@ export type RefineSelectionContext = {
  @param identityContext - declared names and handles the refiner was told
  survive exactly, so its judges are told so too (ledger B28)
 
+ @param acceptedRepairClaimsNote - the claims the repair panel accepted for the
+ slice, as the block `acceptedRepairClaimsNote` of the archive package writes
+ them, which the final polish hands its writers and its gate, so the judges of
+ the writers' rewrites read them too (ledger B805); absent or empty for the
+ repair lane's own refinement
+
+ @param archiveDisputeNote - the note on a disputed archive rendering, as the
+ archive package writes it, shown to the judges for the same reason (ledger
+ B805); absent or empty on an undisputed slice
+
  @returns Candidate-ranking context with review findings fenced as evidence
 
  @example
@@ -177,33 +248,64 @@ export function buildRefineSelectionContext(
     repairedText,
     referenceContext,
     identityContext,
+    acceptedRepairClaimsNote,
+    archiveDisputeNote,
   }: {
     readonly mode: RefineStageMode;
     readonly sourceText: string;
     readonly repairedText: string;
     readonly referenceContext?: string;
     readonly identityContext?: string;
+    readonly acceptedRepairClaimsNote?: string;
+    readonly archiveDisputeNote?: string;
   },
 ): RefineSelectionContext {
+  /**
+   The note on a disputed archive rendering, none on an undisputed slice.
+   */
+  const disputeEvidence = noteEvidence({
+    label: DISPUTE_HEADING,
+    ...((archiveDisputeNote === undefined) ? {} : { note: archiveDisputeNote, }),
+  },);
+  /**
+   The claims the repair panel accepted, none where it accepted nothing.
+   */
+  const claimsEvidence = noteEvidence({
+    label: CLAIMS_HEADING,
+    ...((acceptedRepairClaimsNote === undefined) ? {} : { note: acceptedRepairClaimsNote, }),
+  },);
+  /**
+   Whether either note is shown, which changes what a candidate may do.
+   */
+  const noted = (disputeEvidence.length + claimsEvidence.length) > 0;
   /**
    The declared names and then the references, as evidence the judges read
    beside the texts: the names the refiner was told survive exactly (ledger
    B28), and the pages the original cites (class forty-one), each none when
-   the page has none.
+   the page has none. The dispute note and the accepted claims follow them, in
+   the order the polish gate's sheet gives them (ledger B805).
    */
   const pageEvidence = [
     ...declaredNamesEvidence((identityContext === undefined) ? {} : { identityContext, },),
     ...citedReferenceEvidence(
       (referenceContext === undefined) ? {} : { referenceContext, },
     ),
+    ...disputeEvidence,
+    ...claimsEvidence,
   ];
   if (mode.kind === 'comparative') {
     return {
-      task: 'Each candidate is a revision of the CURRENT English translation below, meant to read more naturally without changing what it says.',
+      task: `Each candidate is a revision of the CURRENT English translation below, meant to read more naturally without changing what it says.${
+        noted ? CLAIM_CORRECTION_TASK : ''
+      }`,
       criteria: [
-        `Says exactly what the CURRENT text says: nothing added, dropped, softened, sharpened, or reattributed. ${HOUSE_FORM_CORRECTION_KEEPS_MEANING}`,
+        noted
+          ? `Says what the CURRENT text says, apart from a correction an accepted claim the ORIGINAL supports asks for: nothing else added, dropped, softened, sharpened, or reattributed. ${HOUSE_FORM_CORRECTION_KEEPS_MEANING}`
+          : `Says exactly what the CURRENT text says: nothing added, dropped, softened, sharpened, or reattributed. ${HOUSE_FORM_CORRECTION_KEEPS_MEANING}`,
         'Faithful to the Chinese ORIGINAL.',
-        'Reads more naturally than the CURRENT text by a clear margin, or brings it into line with a house rule of form.',
+        noted
+          ? 'Reads more naturally than the CURRENT text by a clear margin, brings it into line with a house rule of form, or corrects what an accepted claim the ORIGINAL supports names as wrong.'
+          : 'Reads more naturally than the CURRENT text by a clear margin, or brings it into line with a house rule of form.',
       ],
       evidence: [
         {
@@ -221,13 +323,16 @@ export function buildRefineSelectionContext(
   return {
     task: `Each candidate corrects the CURRENT English translation where the ${
       objectingJudgesOf({ groups: mode.groups, },)
-    } objected to it.`,
+    } objected to it.${noted ? CLAIM_CORRECTION_TASK : ''}`,
     criteria: [
       'Faithful to the Chinese ORIGINAL: nothing it does not say, and nothing it says left out.',
       'Resolves each objection the ORIGINAL supports. An objection is a claim: one the ORIGINAL does not '
         + 'support is ignored, and a candidate acting on it has introduced an error.',
-      'Changes nothing an objection the ORIGINAL supports does not concern, beyond a clear naturalness fix '
-        + `that keeps the meaning. ${HOUSE_FORM_CORRECTION_KEEPS_MEANING}`,
+      `${
+        noted
+          ? 'Changes nothing a supported objection or an accepted claim the ORIGINAL supports does not concern'
+          : 'Changes nothing an objection the ORIGINAL supports does not concern'
+      }, beyond a clear naturalness fix that keeps the meaning. ${HOUSE_FORM_CORRECTION_KEEPS_MEANING}`,
       'Reads as natural English.',
     ],
     evidence: [

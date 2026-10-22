@@ -221,6 +221,9 @@ The DONE line's `offPin=` also counted finished entries the pin holds whose Engl
 and is now `unpairedArtifacts=` (ledger B375):
 a field's name says the population it counts,
 every part of it.
+The line announcing a run-off said "the 2 tied finalists" for a leader at 1.5 against a runner-up at 1,
+because the code that chose the finalists dropped which of two cases it had chosen them on
+and the line was written from the finalists alone (ledger B806).
 
 The rule:
 a message naming a label,
@@ -234,11 +237,17 @@ so the message has the spelling to say.
 An error class shared by several throwers names only what each thrower tells it,
 through a required parameter,
 never a default fixed for the thrower that came first.
+A word that names a case ("tied",
+"rejected") is printed only where the data the message is written from tells the cases apart:
+where the code that chose a value drops which case it chose,
+the value carries the case beside it to the message,
+and the case is a required parameter of the function that words it.
 
 What enforces it:
 the relabel cases pin both conflicts whole and a case-folded spelling;
 `MalformedCompletionError` takes its wire format as a required parameter,
 and the Anthropic readers' tests pin the contract they name;
+`translate-runoff-line.unit.test.ts` builds a tie and a plurality through the real judging and reads the run-off line of each;
 habit and review elsewhere.
 
 ## One field carrying two kinds of text

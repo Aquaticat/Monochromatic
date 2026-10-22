@@ -123,6 +123,7 @@ const TIMED_CALL_LINE = `[info] [${WRITTEN_STAMP}] [translation-repair] [reportS
     label: 'hf:whiskers',
     progress: {
       firstByteMs: 40,
+      firstContentMs: 40,
       maxGapMs: 4,
       chars: 512,
       elapsedMs: 10_000,

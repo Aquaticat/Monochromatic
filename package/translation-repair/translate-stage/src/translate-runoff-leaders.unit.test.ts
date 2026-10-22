@@ -142,6 +142,7 @@ await describe({
         },);
         expect(runoff,).toEqual({
           kind: 'narrowed',
+          basis: 'leader-and-runner-up',
           finalists: [
             SLATE_OF_FOUR[0],
             SLATE_OF_FOUR[3],
@@ -175,6 +176,7 @@ await describe({
         },);
         expect(runoff,).toEqual({
           kind: 'narrowed',
+          basis: 'tied-at-top',
           finalists: [
             SLATE_OF_FOUR[0],
             SLATE_OF_FOUR[1],
@@ -203,6 +205,7 @@ await describe({
         },);
         expect(runoff,).toEqual({
           kind: 'narrowed',
+          basis: 'tied-at-top',
           finalists: [
             SLATE_OF_THREE[0],
             SLATE_OF_THREE[1],
@@ -237,6 +240,7 @@ await describe({
           disposition: 'indecision',
         },),).toEqual({
           kind: 'narrowed',
+          basis: 'leader-and-runner-up',
           finalists: [
             SLATE_OF_FOUR[0],
             SLATE_OF_FOUR[2],

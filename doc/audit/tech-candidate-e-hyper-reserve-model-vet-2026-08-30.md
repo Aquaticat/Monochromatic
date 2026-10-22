@@ -1,16 +1,27 @@
 # Candidate E Hyper reserve model vet report
 
-- Status: completed without recommendation
-- Lifecycle phase: rejected at hard gate
-- Subject: Candidate E Hyper reserve model
-- Scope: select third distinct vision-capable author and auditor model identity for Candidate E Hyper-only operation
-- Started: 2026-08-30
-- Last updated: 2026-08-30
-- Governing skill revision: `c8475388d533e4f1c4065682ed2437a29cad3dc1`
-- Governing skill SHA-256: `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`
-- Compatibility fingerprint: `14a0cad284fcd75ccc038d31083bd2c3935ddb659c0f21aa1b4b87becd555f22`
-- Active audit owner: primary agent session
-- Prior compatible report: none found
+- Status:
+  completed without recommendation
+- Lifecycle phase:
+  rejected at hard gate
+- Subject:
+  Candidate E Hyper reserve model
+- Scope:
+  select third distinct vision-capable author and auditor model identity for Candidate E Hyper-only operation
+- Started:
+  2026-08-30
+- Last updated:
+  2026-08-30
+- Governing skill revision:
+  `c8475388d533e4f1c4065682ed2437a29cad3dc1`
+- Governing skill SHA-256:
+  `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`
+- Compatibility fingerprint:
+  `14a0cad284fcd75ccc038d31083bd2c3935ddb659c0f21aa1b4b87becd555f22`
+- Active audit owner:
+  primary agent session
+- Prior compatible report:
+  none found
 
 ## Context
 
@@ -60,10 +71,12 @@ and browser overlays are not applicable.
 
 ### Provider and ecosystem index
 
-- Current checked-in Hyper catalog: enumerate every `HYPER_MODELS` row,
+- Current checked-in Hyper catalog:
+  enumerate every `HYPER_MODELS` row,
   without negative filter,
   in catalog order.
-- Current provider catalog evidence: verify listed model,
+- Current provider catalog evidence:
+  verify listed model,
   image capability,
   output ceiling,
   and shared identity.
@@ -126,25 +139,36 @@ Discovery is saturated for current provider and active project roster.
 
 ### `qwen3.8-27b`
 
-- Discovery: current Hyper catalog.
-- Screening: exits.
-- Hard-gate failure: same model identity as current Qwen primary,
+- Discovery:
+  current Hyper catalog.
+- Screening:
+  exits.
+- Hard-gate failure:
+  same model identity as current Qwen primary,
   so cannot restore candidate or voter diversity.
-- Existing evidence: complete Hyper author output and strict audit output succeeded.
+- Existing evidence:
+  complete Hyper author output and strict audit output succeeded.
 
 ### `kimi-k3`
 
-- Discovery: current Hyper catalog.
-- Screening: exits as reserve.
-- Hard-gate failures: same identity as current Kimi seat;
+- Discovery:
+  current Hyper catalog.
+- Screening:
+  exits as reserve.
+- Hard-gate failures:
+  same identity as current Kimi seat;
   Hyper author consumed full 16,000-token ceiling without answer content.
-- Existing evidence: audit and resolver outputs can conform on smaller response envelopes.
+- Existing evidence:
+  audit and resolver outputs can conform on smaller response envelopes.
 
 ### `minimax-m3`
 
-- Discovery: checked-in Hyper allowlist and live provider catalog.
-- Screening: exits after targeted validation.
-- Static evidence: active Hyper-only roster identity,
+- Discovery:
+  checked-in Hyper allowlist and live provider catalog.
+- Screening:
+  exits after targeted validation.
+- Static evidence:
+  active Hyper-only roster identity,
   live image capability true,
   provider maximum output 512,000 tokens,
   with project answer ceiling 32,000 tokens.
@@ -154,32 +178,46 @@ Discovery is saturated for current provider and active project roster.
 - Runtime complete-author response consumed full 32,000-token project ceiling,
   ended `max_tokens`,
   and was unparseable JSON.
-- Hard-gate failure: did not return complete fixed-key author response within actual project envelope.
+- Hard-gate failure:
+  did not return complete fixed-key author response within actual project envelope.
 
 ### `gpt-oss-120b`
 
-- Discovery: current Hyper catalog.
-- Screening: exits.
-- Hard-gate failure: image capability false.
-- Additional concern: output ceiling 13,107 tokens is below measured failed Kimi author ceiling.
+- Discovery:
+  current Hyper catalog.
+- Screening:
+  exits.
+- Hard-gate failure:
+  image capability false.
+- Additional concern:
+  output ceiling 13,107 tokens is below measured failed Kimi author ceiling.
 
 ### `gemma-4-26b-a4b-it`
 
-- Discovery: current Hyper catalog.
-- Screening: exits.
-- Hard-gate failure: image capability false.
+- Discovery:
+  current Hyper catalog.
+- Screening:
+  exits.
+- Hard-gate failure:
+  image capability false.
 
 ### `deepseek-v4-pro-0813`
 
-- Discovery: current Hyper catalog.
-- Screening: exits.
-- Hard-gate failure: image capability false.
+- Discovery:
+  current Hyper catalog.
+- Screening:
+  exits.
+- Hard-gate failure:
+  image capability false.
 
 ### `deepseek-v4-flash-0731`
 
-- Discovery: current Hyper catalog.
-- Screening: exits.
-- Hard-gate failure: live `capabilities.vision` is false.
+- Discovery:
+  current Hyper catalog.
+- Screening:
+  exits.
+- Hard-gate failure:
+  live `capabilities.vision` is false.
 - Width-64 structured-shape success does not satisfy image hard gate.
 
 ### Live vision rows outside active roster
@@ -233,11 +271,16 @@ and translation quality are directly applicable and require fresh validation.
 Cost receives no criterion because standing quality rule makes cost non-constraint.
 Hard gates stay outside score.
 
-- Publication fidelity and English quality: weight 5.
-- Strict schema reliability: weight 5.
-- Complete-document output capacity: weight 4.
-- Concrete audit-defect recall: weight 3.
-- End-to-end latency: weight 1.
+- Publication fidelity and English quality:
+  weight 5.
+- Strict schema reliability:
+  weight 5.
+- Complete-document output capacity:
+  weight 4.
+- Concrete audit-defect recall:
+  weight 3.
+- End-to-end latency:
+  weight 1.
 
 Ratings use 0 through 4 only after every finalist receives same author,
 auditor,
@@ -291,86 +334,121 @@ and zero retries.
 
 ### Official MiniMax capability
 
-- Candidate: MiniMax M3 through existing Hyper service.
-- Claim: native multimodality and long context fit complete source plus image.
-- Status: documentation support confirmed;
+- Candidate:
+  MiniMax M3 through existing Hyper service.
+- Claim:
+  native multimodality and long context fit complete source plus image.
+- Status:
+  documentation support confirmed;
   provider-bound author validation failed.
 - Primary sources:
   `https://www.minimax.io/models/text/m3` and
   `https://github.com/MiniMax-AI/MiniMax-M3`,
   accessed 2026-08-30.
-- Evidence: both describe native multimodal model;
+- Evidence:
+  both describe native multimodal model;
   official page states 1M upstream context with guaranteed minimum 512K.
-- Outcome: pass documentation gate;
+- Outcome:
+  pass documentation gate;
   complete-author runtime later failed.
 
 ### Official tool schema capability
 
-- Candidate: MiniMax M3.
-- Claim: accepts Anthropic-compatible tool schemas.
-- Status: Hyper gateway validation completed.
+- Candidate:
+  MiniMax M3.
+- Claim:
+  accepts Anthropic-compatible tool schemas.
+- Status:
+  Hyper gateway validation completed.
 - Primary source:
   `https://platform.minimax.io/docs/guides/text-m3-function-call`,
   accessed 2026-08-30.
-- Evidence: guide shows Anthropic `tools[].input_schema`,
+- Evidence:
+  guide shows Anthropic `tools[].input_schema`,
   tool-use blocks,
   and complete reasoning preservation.
-- Outcome: pass documentation gate;
+- Outcome:
+  pass documentation gate;
   forced-tool auditor passed while complete author failed.
 
 ### Hyper live model capability
 
-- Candidate: every current Hyper model.
-- Claim: model id,
+- Candidate:
+  every current Hyper model.
+- Claim:
+  model id,
   output ceiling,
   and image capability.
-- Status: primary operational evidence.
+- Status:
+  primary operational evidence.
 - Primary source:
   `https://hyper.charm.land/v1/models`,
   accessed and saved 2026-08-30.
 - Command:
   `curl --silent --show-error --fail https://hyper.charm.land/v1/models`.
-- Result: 29 rows,
+- Result:
+  29 rows,
   11 with `capabilities.vision: true`;
   `minimax-m3` reports 512,000 context and output tokens.
-- Outcome: MiniMax passes provider static gate;
+- Outcome:
+  MiniMax passes provider static gate;
   current active-roster peers fail identity or image gates.
 
 ### MiniMax targeted validation
 
-- Candidate: `minimax-m3`.
-- Claim: same model can fill complete immutable-shell author and quote-bound auditor seats.
-- Evidence type: direct provider and consumer-boundary validation.
-- Date: 2026-08-30.
-- Preflight: fresh live catalog still reported vision true and output at least 32,000;
+- Candidate:
+  `minimax-m3`.
+- Claim:
+  same model can fill complete immutable-shell author and quote-bound auditor seats.
+- Evidence type:
+  direct provider and consumer-boundary validation.
+- Date:
+  2026-08-30.
+- Preflight:
+  fresh live catalog still reported vision true and output at least 32,000;
   provider budget sample reported Hyper wet with balance 7,055.
-- Command: `mise run //package/module/translation-repair:prototype-hyper-reserve-evaluation` (task removed before
+- Command:
+  `mise run //package/module/translation-repair:prototype-hyper-reserve-evaluation` (task removed before
   2026-10-18 and tasks now live in `package/translation-repair/<package>/mise.toml`).
-- Build evidence: package `buildAndTest` passed 871 suite verdicts with no failures before spend.
-- Independent review: advisor found no pre-commit or pre-spend blocker and required fresh catalog plus budget preflight,
+- Build evidence:
+  package `buildAndTest` passed 871 suite verdicts with no failures before spend.
+- Independent review:
+  advisor found no pre-commit or pre-spend blocker and required fresh catalog plus budget preflight,
   both performed.
-- Actual dispatch: 2 Hyper `minimax-m3` payloads and zero retries.
-- Provider evidence: manifest-bound `providerSelection: hyper-only` used routing branch whose isolation was previously GFP-proven;
+- Actual dispatch:
+  2 Hyper `minimax-m3` payloads and zero retries.
+- Provider evidence:
+  manifest-bound `providerSelection: hyper-only` used routing branch whose isolation was previously GFP-proven;
   no Synthetic route was eligible.
-- Duration: 154,875 milliseconds.
+- Duration:
+  154,875 milliseconds.
 - Private run root:
   `~/temp/agent/prototype-Carena-minimax-reserve-evaluation-20260830/`.
 - Preserved private evidence:
   `~/Downloads/Carena0442-minimax-reserve-validation-rejected-20260830/`.
-- Preservation check: all 8 files byte-identical by relative-path SHA-256 lists.
+- Preservation check:
+  all 8 files byte-identical by relative-path SHA-256 lists.
 
 Author record:
 
-- prompt tokens: 14,407
-- completion tokens: 32,000
-- finish reason: `max_tokens`
-- response text characters: 19,650
-- reasoning stream characters: 119,487
+- prompt tokens:
+  14,407
+- completion tokens:
+  32,000
+- finish reason:
+  `max_tokens`
+- response text characters:
+  19,650
+- reasoning stream characters:
+  119,487
 - all 23 slot keys appeared,
   but provider output lacked final outer JSON brace
-- persisted state: `spent-unusable`
-- failure type: `schema-mismatch`
-- failure detail: `unparseable-json`
+- persisted state:
+  `spent-unusable`
+- failure type:
+  `schema-mismatch`
+- failure detail:
+  `unparseable-json`
 
 Appending missing byte would parse output,
 but caller repair is forbidden:
@@ -379,9 +457,12 @@ Schema-rejected output is operational evidence only and was not read or scored a
 
 Auditor record:
 
-- prompt tokens: 38,925
-- completion tokens: 20,917
-- finish reason: `tool_use`
+- prompt tokens:
+  38,925
+- completion tokens:
+  20,917
+- finish reason:
+  `tool_use`
 - strict structural response completed
 - exact-anchor admission retained 4 findings across 3 candidates
 - duplicate-key pruning rejected 1 additional finding
@@ -411,7 +492,8 @@ Sensitivity cannot change hard-gate outcome.
 
 ## Ranking
 
-Recommendation: none.
+Recommendation:
+none.
 
 No current active Hyper roster model distinct from Qwen3.8-27B and Kimi-K3 satisfies every required author and auditor gate under tested request contract.
 MiniMax ranks first among rejected reserve candidates because it alone passed identity,

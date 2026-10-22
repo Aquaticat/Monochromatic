@@ -40,9 +40,19 @@ export const GLM_5_3_FLASH_ON_NEURALWATT: NeuralWattCard = {
   // the choice rests on the one failure at `max` and on the listing's ordering,
   // and the first keyed run at `low` is the measurement. A transcription is not
   // a deduction, so the depth is not what the reading needs.
-  // Text calls send nothing: the owner's lift covers NeuralWatt, and the energy
-  // matrix was measured on the defaults.
   pictureReasoningEffort: 'low',
+  // LOW ON A TEXT CALL TOO, 2026-10-21 (zheermao22, ledger B807). The owner's
+  // lift covers NeuralWatt text calls, and a text call at the default `max` ran
+  // to the 18316-token cap with 0 content characters in 11 of 288 text calls
+  // over the pass logs from zheermao19 to zheermao22 (4 in zheermao22 alone,
+  // 29 percent of that run's NeuralWatt energy). The uncapped calls do not sit
+  // well under the cap either: p50 2125 tokens, p90 7573, p99 15731, largest
+  // 18262. DeepSeek V4.1 Flash, at its own default `high`, capped on 12 of 819
+  // text calls, so `high` is not trusted to cure it here. NO MEASUREMENT EXISTS
+  // AT `low` FOR TEXT: the first keyed run is the measurement, and the energy
+  // matrix the meter estimates from was drawn on the defaults, so the hold per
+  // call may now be larger than the call uses.
+  textReasoningEffort: 'low',
 };
 
 /**
@@ -53,6 +63,13 @@ export const GLM_5_3_FLASH_ON_NEURALWATT: NeuralWattCard = {
  for `deepseek-v4.1-flash` reads `deepseek-ai/DeepSeek-V4.1-Flash-1017`
  (`GET https://api.neuralwatt.com/v1/models`, 2026-10-20), so the owner's
  migration to the 1017 weights of the same day changed nothing on this side.
+
+ NO REASONING EFFORT IS NAMED HERE, picture or text (ledger B807). The repo
+ records this model's default (`high`, `neuralwatt-catalog.ts`) and that its
+ reasoning is on by default, and records no `supported_efforts` list for it;
+ the GLM list in ledger B719 is that model's alone. A call that sends an
+ effort the model does not list is a guess at a provider's reply, so none is
+ sent. It capped on 12 of 819 text calls at the default.
 
  @example
  ```ts

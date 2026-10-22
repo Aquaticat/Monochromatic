@@ -203,6 +203,7 @@ function stubProviders(
             partialText: '',
             progress: {
               firstByteMs: 15_000,
+              firstContentMs: 15_000,
               maxGapMs: 15_000,
               chars: 30,
               elapsedMs: BOUND_MS,

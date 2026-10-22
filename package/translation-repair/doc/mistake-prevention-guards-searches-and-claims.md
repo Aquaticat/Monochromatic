@@ -958,3 +958,39 @@ its header names what it cannot reach (ledger B339).
 `scan-findings.unit.test.ts` holds each helper's whole failure text.
 Issue 610 holds the cause in the test package,
 so a comparison outside a scan can still print a count where what differs runs past 40 characters.
+
+## A bound is read against the deadline it sits under
+
+What happened:
+the two windows of the stream guard were 600000 ms beside a per-call deadline of 360000 ms,
+so for three runs neither could fire,
+and the artifact stamped both numbers without anything reading them together.
+The guard also counted any body bytes as progress,
+so a comment line that OpenRouter sends while it waits kept a silent stream open until the straggler grace
+ended eleven of them (ledger B804).
+
+The rule:
+a bound that ends a call is checked,
+where both numbers are read,
+against the deadline that would pre-empt it,
+and the configuration is refused when the bound is not shorter,
+or is not a positive finite number.
+The check throws when the configuration is built,
+naming each setting,
+its value,
+the deadline and both ways out.
+Progress for such a bound is the output the bound is for:
+a content or a reasoning delta,
+never bytes of any kind.
+A test hands the guard a comment line,
+a blank line and an empty delta,
+and reads the cut.
+The bound's value is set from the largest observation of a healthy call,
+with the sample's censoring stated,
+and the percentile is named only when the cost of a cut is stated beside it.
+
+What enforces it:
+`stream-bound-config.unit.test.ts` refuses the pair that shipped and each unusable number.
+`run-call-config-builder.unit.test.ts` drives `runCallConfigOf`.
+`stream-content-progress.unit.test.ts` holds the three silent shapes as cuts
+and a content and a reasoning delta as progress.

@@ -5,11 +5,15 @@ under `package/translation-repair`.
 
 Four items were left after the page-definitions work of B665 to B667,
 and the lead had them closed on 2026-10-18 on top of `7c21a56fc2`
-(a clock-zone slip in the account of the third, B672,
-and a request to read the words of a place with recorded definitions that was not built, B673, followed):
+(a clock-zone slip in the account of the third,
+B672,
+and a request to read the words of a place with recorded definitions that was not built,
+B673,
+followed):
 the emphasis readers that still parsed without the page's definitions (B668),
 the contradictions in the TSDoc of the consistency cache version (B669),
-the pairing cache version, which no account had read between `d614a0c1d` and `29d606470` (B670),
+the pairing cache version,
+which no account had read between `d614a0c1d` and `29d606470` (B670),
 and the Synthetic meter reader that refused a body on 2026-10-18 (B671).
 
 ## B668: emphasis was read without the page's definitions in three places
@@ -32,7 +36,9 @@ What the three calls were,
 read from the callers:
 
 - `joinedMarksOf` and `marksPastMarkupOf` called it only when the caller passed no `emphasis`.
-  Their one production caller, `readProof` in `consistency-fold-apostrophes.ts`, always passed the `emphasis` of
+  Their one production caller,
+  `readProof` in `consistency-fold-apostrophes.ts`,
+  always passed the `emphasis` of
   `proseViewOf({ english })`,
   which was parsed without definitions,
   so the claim failed one step earlier than the three calls the brief named.
@@ -42,7 +48,8 @@ read from the callers:
 
 What changed:
 every reader takes an optional `definitions` and hands it to the parse.
-That is `joinedMarksOf` (also to `foldedLinksOf`, so the links and the delimiters agree),
+That is `joinedMarksOf` (also to `foldedLinksOf`,
+so the links and the delimiters agree),
 `marksPastMarkupOf`,
 `readProof`,
 `proofViewOf` (whose remembered view is now found by the English and the definitions,
@@ -64,14 +71,16 @@ to keep `consistency-loose-marks.ts` under the line limit.
 What stays read alone,
 and why:
 the words of the places.
-The planner, the apply stage and the reader of a record share `bringsAtEdge` and the loose-mark readers,
+The planner,
+the apply stage and the reader of a record share `bringsAtEdge` and the loose-mark readers,
 and the reader of a record holds no page,
 so a definition handed to two of them and not the third would let the pass plan a splice that the reader refuses.
 The pass would have to record the definitions the way generation 18 records those that move a slot (B665)
 before the words of a place could be read with them.
 This is open.
 The proof of an apostrophe over a whole page (`withProvenApostrophes`,
-`pageApostropheFormOf`, the gains check) reads the page text,
+`pageApostropheFormOf`,
+the gains check) reads the page text,
 which holds the page's definitions,
 and a locator given no page (`locateWords` with the recorded `definitions`) still proves over the haystack alone.
 That is open too,
@@ -117,11 +126,14 @@ reading the paragraph that B657 added.
 Outcome written on 2026-10-18.
 Fixed in `895259a704`.
 
-The TSDoc said, in the paragraph on version five and again in its general rule,
+The TSDoc said,
+in the paragraph on version five and again in its general rule,
 that a change to a sheet's wording moves the number,
 and recorded in the paragraph of B657 a sheet change that did not.
 The key digests the exact sheet
-(`consistencyKey` hashes the version, the stage, the hash of the messages and the roster),
+(`consistencyKey` hashes the version,
+the stage,
+the hash of the messages and the roster),
 so a change of wording moves the key and not the number.
 The number moves for what the key does not digest,
 the reply shape (the response format is no part of the messages) and what a ballot must contain to be usable.
@@ -179,7 +191,10 @@ Evidence:
   That no longer holds:
   `corpus-pass-TianqiChen66626` wrote three block pairings under 3 and the section marker between 20:58 and 21:00 UTC
   on 2026-10-18
-  (the first account here printed the files' local times, 16:58 to 17:00 EDT, and labelled them UTC; B672).
+  (the first account here printed the files' local times,
+  16:58 to 17:00 EDT,
+  and labelled them UTC;
+  B672).
   They resume only for the build that wrote them.
   A search of the slice-cache files under `~/temp/agent` (the throwaway checkouts left out,
   and three directories it could not list) found those and no other file newer than the bump;
@@ -240,16 +255,23 @@ Follow-up written on 2026-10-18.
 The refusal now says what arrived,
 so the next reading settles the open point without the body being kept.
 `QuotaShapeError` ends its message with the received top-level key names and the JSON type of each
-(`received subscription:object, freeToolCalls:object`, or `received {}` for an empty object),
+(`received subscription:object, freeToolCalls:object`,
+or `received {}` for an empty object),
 or the type of a body that is no object (`received array`),
 and never a value.
-Key names are bounded to twenty listed, forty characters each, printable ASCII only,
+Key names are bounded to twenty listed,
+forty characters each,
+printable ASCII only,
 since a key is provider text that reaches a log.
 The meter warning carries the message whole.
-Red tests: `provider-stream/src/synthetic-quota.unit.test.ts` (five bodies)
+Red tests:
+`provider-stream/src/synthetic-quota.unit.test.ts` (five bodies)
 and `provider/src/provider-meter-state.unit.test.ts`
-(an empty body and the older shape, with values that must not appear).
-Guard demo: with the line that adds the received description removed, both cases fail.
+(an empty body and the older shape,
+with values that must not appear).
+Guard demo:
+with the line that adds the received description removed,
+both cases fail.
 
 Open:
 the first reading after this change says what the provider returns,
@@ -315,13 +337,16 @@ the prevention doc says so and names the check on the source.
 
 Raised on 2026-10-18 by the lead as generation 19 of the artifact:
 the pass records the smallest set of the page's definitions that change how the words of a place read,
-the planner, the apply stage and the reader of a record read the words with them,
+the planner,
+the apply stage and the reader of a record read the words with them,
 and the proof of an apostrophe takes them too.
 
 Outcome written on 2026-10-18.
-Red tests for the words were committed and withdrawn (`920ab9bf80`, `6a7daffc75`).
+Red tests for the words were committed and withdrawn (`920ab9bf80`,
+`6a7daffc75`).
 What was built is the proof of the apostrophe taking the definitions a caller gives
-(red `262b62fae2`, fixed in `aababac6fe`),
+(red `262b62fae2`,
+fixed in `aababac6fe`),
 which the lead named and which stands on its own.
 No generation was added,
 and `ARTIFACT_SCHEMA_VERSION_V18` is still what the pass writes.
@@ -330,10 +355,14 @@ What was tried,
 and what it showed:
 
 - The mechanism was built in `consistency` and not committed:
-  a counter that records, for any located place,
+  a counter that records,
+  for any located place,
   the cut of the page's definitions that gives the span its slot and its word reading;
   the same cut joined for the two places of a splice
-  and handed to `looseMarksOf`, `withLooseMarksOf`, `inReceivingForm`, `bringsAtEdge` and `gainsBesideKeptMark`;
+  and handed to `looseMarksOf`,
+  `withLooseMarksOf`,
+  `inReceivingForm`,
+  `bringsAtEdge` and `gainsBesideKeptMark`;
   and a `definitions` carried on the plan so the check of the gains reads the replaced words with them.
 - The mark at the end of words reads as an apostrophe of its word after closing markup
   only when the parse of the words closes something,
@@ -361,9 +390,11 @@ and what it showed:
 What the search did not show:
 a random search of 1,799,159 pages and quotes found no located place that records definitions,
 and the hand-built page for `Take *[*]a*’ now.` found one at the first try.
-The null was a sample that rarely held an opener, a reference and a closer in that order,
+The null was a sample that rarely held an opener,
+a reference and a closer in that order,
 and it is not evidence that the case cannot occur
-(mistake-prevention, searches and censuses that miss).
+(mistake-prevention,
+searches and censuses that miss).
 
 No difference between the pass and the reader exists today for the words:
 both read them alone,
@@ -375,24 +406,34 @@ Options for the lead,
 none taken:
 
 - Leave the words read alone.
-  Pros: the reachable case is read as the page reads it,
+  Pros:
+  the reachable case is read as the page reads it,
   nothing changes in a record,
   no generation moves,
   and a running pass is not cut off from the run directories of generation 18
   (`assertResumableSchemaGeneration` refuses another generation).
-  Cons: a span that only a definition balances stays unlocated.
+  Cons:
+  a span that only a definition balances stays unlocated.
 - Record the page's reading of the edge marks of a located span
   (which edge holds an apostrophe of its word) in place of definitions.
-  Pros: the reader takes the page's reading as the counter had it, in every case, with no parse of a fragment.
-  Cons: a new key and so a generation,
+  Pros:
+  the reader takes the page's reading as the counter had it,
+  in every case,
+  with no parse of a fragment.
+  Cons:
+  a new key and so a generation,
   and the pass-schema guard cuts a build off from older run directories.
-- Make the markup test read the span with the definitions and by pairing, then record the definitions.
-  Pros: `*a [b*] c*’` is located and read as the page reads it.
-  Cons: the largest change,
+- Make the markup test read the span with the definitions and by pairing,
+  then record the definitions.
+  Pros:
+  `*a [b*] c*’` is located and read as the page reads it.
+  Cons:
+  the largest change,
   it unlocates places that are carried today (the span `[*]a*’` of `Take *[*]a*’ now.` cuts the page's emphasis),
   and it needs a generation.
 
-Ranking: leaving the words read alone,
+Ranking:
+leaving the words read alone,
 then recording the edge readings,
 then the definitions with the markup test,
 because the first changes nothing the reachable case needs changed,

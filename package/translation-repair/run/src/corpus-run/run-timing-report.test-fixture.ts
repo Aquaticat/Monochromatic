@@ -77,6 +77,7 @@ export function timedCallLine(
       label: 'hf:whiskers',
       progress: {
         firstByteMs: 40,
+        firstContentMs: 40,
         maxGapMs: 4,
         chars: 512,
         elapsedMs,

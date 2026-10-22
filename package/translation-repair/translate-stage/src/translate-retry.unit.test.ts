@@ -40,6 +40,7 @@ import {
   type TranslateStageResult,
 } from '../dist/final/node/index.mjs';
 import { candidateCarrying, } from '@monochromatic-dev/translation-repair-test-fixture/ts/translate-ballot.test-fixture.ts';
+import { capturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixture/ts/hang-stop.test-fixture.ts';
 import { SCRIPTED_STAGE_SETTINGS, } from '@monochromatic-dev/translation-repair-stage/ts/stage-settings.test-fixture.ts';
 
@@ -278,6 +279,8 @@ function scriptedRig(
  @param laneTexts - lane texts the slate offers beside the proposals, none
  by default
 
+ @param lines - where the lines the judging logs go, none by default
+
  @returns Stage result plus the judge calls it cost
 
  @example
@@ -293,6 +296,7 @@ async function judgedUnder(
     judges = JUDGES,
     renderings = RENDERINGS,
     laneTexts = [],
+    lines,
   }: {
     readonly ballotFor: (
       judging: number,
@@ -304,12 +308,17 @@ async function judgedUnder(
     readonly judges?: readonly RosterModelId[];
     readonly renderings?: readonly string[];
     readonly laneTexts?: readonly LaneText[];
+    readonly lines?: string[];
   },
 ): Promise<{
   readonly result: TranslateStageResult;
   readonly judgeCalls: number;
   readonly judgePrompts: readonly string[];
 }> {
+  /**
+   Logger for the judging, keeping its lines where a case asked for them.
+   */
+  const logger = (lines === undefined) ? l : capturingLogger({ messages: lines, },);
   /**
    Translator whose rendering carries the word the scripts ask for, known
    only once the slate is produced, since the rig renders in call order.
@@ -344,7 +353,7 @@ async function judgedUnder(
     lineStructured: false,
     signal: AbortSignal.timeout(HANG_STOP_MS,),
     perCallTimeoutMs: HANG_STOP_MS,
-    l,
+    l: logger,
     stageSettings: SCRIPTED_STAGE_SETTINGS,
   },);
 
@@ -388,7 +397,7 @@ async function judgedUnder(
       lineStructured: false,
       signal: AbortSignal.timeout(HANG_STOP_MS,),
       perCallTimeoutMs: HANG_STOP_MS,
-      l,
+      l: logger,
       stageSettings: SCRIPTED_STAGE_SETTINGS,
     },
   },);
@@ -555,15 +564,25 @@ await describe({
         // Judging 1: C dozes, F naps, G curls, yawns unnamed: a tie of three of
         // four. Judging 2: C dozes, F naps, G rejects: a tie of two of three.
         // Judging 3: C dozes, F dozes, G naps: dozes at weight 2.
+        /** Lines the judging logged. */
+        const lines: string[] = [];
         const { result, judgeCalls, } = await judgedUnder({
           incumbentKind: 'absent',
           translators: FOUR_TRANSLATORS,
           judges: DISINTERESTED_JUDGES,
           renderings: FOUR_RENDERINGS,
           ballotFor: narrowTwice,
+          lines,
         },);
         expect(result.origin,).toBe('fresh',);
         expect(result.text.includes('dozes',),).toBe(true,);
+        // The second narrowing is announced without calling the round before it a tie: a round that leaves no winner is
+        // a tie or a plurality short of the minimum (ledger B806).
+        expect(
+          lines.some(function announcesSecondNarrowing(line,): boolean {
+            return line.includes('run-off left no winner over 3 finalists and narrowed to 2; asking the same panel over them',);
+          },),
+        ).toBe(true,);
         expect(result.findings.includes('translate-runoff (finalists 3 of 4)',),).toBe(true,);
         expect(result.findings.includes('translate-runoff (finalists 2 of 3)',),).toBe(true,);
         expect(judgeCalls,).toBe(DISINTERESTED_JUDGES.length * 3,);

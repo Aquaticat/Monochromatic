@@ -56,12 +56,15 @@ which lists every file of these commitments.
   The rows of B619 are fixed by n166,
   n168 and n169,
   landed with n171 in the tests `555bb74aa0` and the code `29d6064708`,
-  with the rows left to them taken by n173 (`ff6be38eef`, `43428948cb`).
+  with the rows left to them taken by n173 (`ff6be38eef`,
+  `43428948cb`).
   Landed with them:
   a carry choice with no strict majority is run off among its tied leaders,
-  with the quorum, window and label rules of the bench's run-off,
+  with the quorum,
+  window and label rules of the bench's run-off,
   and a second split keeps the page as it stands (B641;
-  the lead's adoption of the owner's run-off rule of 2026-10-11, open to the owner's veto).
+  the lead's adoption of the owner's run-off rule of 2026-10-11,
+  open to the owner's veto).
   Extended on 2026-10-18 to a lone leader (B656):
   when the choices reach the quorum and no label has a strict majority,
   the finalists are the labels with the top count;
@@ -72,8 +75,10 @@ which lists every file of these commitments.
   The rule covers the first round of a group and a carry choice alike.
   The sheet of a carry choice's run-off says that a first round was split and the judge is asked again (B657).
   The rule holds from artifact generation 18,
-  and the readers of generation 17 and earlier keep the rule they were written under, ties only (B664).
-  The pass now stamps generation 19, which adds the stricter recount of a carry's outcomes (B682).
+  and the readers of generation 17 and earlier keep the rule they were written under,
+  ties only (B664).
+  The pass now stamps generation 19,
+  which adds the stricter recount of a carry's outcomes (B682).
   A carry whose choice split and names finalists must record its run-off from generation 18 (B666).
   A located place of a frame also records the page definitions that move its slot from generation 18 (B665).
   It extends the owner's run-off rule of 2026-10-11 ("Run off the tied finalists"),

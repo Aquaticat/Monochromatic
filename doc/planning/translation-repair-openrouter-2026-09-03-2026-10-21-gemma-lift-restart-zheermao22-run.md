@@ -30,7 +30,7 @@ and its `START` line (log line 196) carries both values as given;
 the artifact's `tip` and `pipelineDigest` carry the same two.
 `zheermao21` ran on `3637592bd4`
 and pipeline `sha256-tree-v1:06c97a69446dc452fa2c602da834c36febb7f0d7b4b1010b5dfa9fab81097eec`.
-[The handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20.md) records the launch at 21:05:30 UTC;
+[The handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20-the-landings-the-zheermao22-restart-and-the-state-after-k4.md) records the launch at 21:05:30 UTC;
 the `START` line carries no time.
 The log's first timestamped line is 21:05:44.369 UTC (`republish: 0 settled pages judged`)
 and its last is 22:24:46.483 UTC (a `stream quota` line);
@@ -742,7 +742,9 @@ read with `git show` and `git grep`.
   and `:424` sends `reasoning_effort` only then;
   the header comment (`:66` to `73`) says "no reasoning parameter on a text call" with the owner’s lift of
   2026-10-21 ("only for NeuralWatt") applied to pictures.
-  Ledger B719 (`audit-ledger-provider-streams-usage-and-retries.md:518` to `545`) records that the model’s documented
+  Ledger B719
+  (`audit-ledger-neuralwatt-replies-cut-at-the-default-effort-and-the-energy-estimate.md:71` to `98`)
+  records that the model’s documented
   `default_effort` is `max` and `supported_efforts` are `max`,
   `high` and `low`.
   The cap is `model-cards.ts:84` (18,316,

@@ -62,6 +62,7 @@ impl State {
             row_key: None,
             offset: 0.0,
             scrolled_at: None,
+            stepped_at: None,
             row_tops: rows::top_model(),
             row_numbers: rows::mark_model(),
             row_marks: rows::mark_model(),

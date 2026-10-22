@@ -77,6 +77,9 @@ const WRITERS: Readonly<Record<string, string>> = {
     + 'text by offset, so the text it shows is the stored text; the note is outside every envelope',
   'refiner': 'rewrites whole paragraphs, spliced back by the envelope\'s offsets over the exact base text; a '
     + 'note it keeps stands carried, one it leaves out is put back after the slice',
+  'polish refiner': 'the refiner of the final polish, which rewrites whole paragraphs of the base as the refiner does '
+    + 'and is also shown the claims the repair panel accepted (ledger B805); a note it keeps stands carried, one it '
+    + 'leaves out is put back after the slice',
   'translate writer': 'shows the archive as the existing translation only, and its wording is judged without '
     + 'the note; a note it keeps stands carried, one it leaves out is put back after the slice',
   'consolidation writer': 'shows the archive and both candidates as evidence for the wording it writes; a note '

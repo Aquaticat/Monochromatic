@@ -313,7 +313,7 @@ const CREDENTIAL_LABEL = 'hf:whiskers-key';
  Names of the clock readings a progress line states, which differ on every
  run.
  */
-const CLOCK_READINGS: readonly string[] = ['elapsed', 'firstByte', 'maxGap',];
+const CLOCK_READINGS: readonly string[] = ['elapsed', 'firstByte', 'firstContent', 'maxGap',];
 
 /**
  Frame carrying text on the answer channel, and the gateway's name for the
@@ -456,7 +456,7 @@ async function progressLineOf(
   };
   using guard = armIdleGuard({
     label: CREDENTIAL_LABEL,
-    firstByteMs: HANG_STOP_MS,
+    firstContentMs: HANG_STOP_MS,
     idleMs: HANG_STOP_MS,
   },);
   /**
@@ -526,7 +526,7 @@ function cutLine(
     readonly served: string;
   },
 ): string {
-  return `stream ${CREDENTIAL_LABEL}: cut, elapsed Xms, firstByte Xms, maxGap Xms, ${String(rawChars,)} raw chars, `
+  return `stream ${CREDENTIAL_LABEL}: cut, elapsed Xms, firstByte Xms, firstContent Xms, maxGap Xms, ${String(rawChars,)} raw chars, `
     + `0 unreadable frames, ${String(contentChars,)} content chars, 0 reasoning chars${served}, `
     + `opening ${JSON.stringify(opening,)}`;
 }
@@ -597,7 +597,7 @@ await describe({
 
         using overrunGuard = armIdleGuard({
           label: 'hf:whiskers',
-          firstByteMs: HANG_STOP_MS,
+          firstContentMs: HANG_STOP_MS,
           idleMs: HANG_STOP_MS,
         },);
 
@@ -635,7 +635,7 @@ await describe({
 
         using degenerateGuard = armIdleGuard({
           label: 'hf:whiskers',
-          firstByteMs: HANG_STOP_MS,
+          firstContentMs: HANG_STOP_MS,
           idleMs: HANG_STOP_MS,
         },);
 
@@ -680,7 +680,7 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:whiskers',
-          firstByteMs: HANG_STOP_MS,
+          firstContentMs: HANG_STOP_MS,
           idleMs: HANG_STOP_MS,
         },);
 
@@ -730,7 +730,7 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:whiskers',
-          firstByteMs: HANG_STOP_MS,
+          firstContentMs: HANG_STOP_MS,
           idleMs: HANG_STOP_MS,
         },);
 
@@ -780,7 +780,7 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:whiskers',
-          firstByteMs: HANG_STOP_MS,
+          firstContentMs: HANG_STOP_MS,
           idleMs: HANG_STOP_MS,
         },);
 
@@ -831,7 +831,7 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:whiskers',
-          firstByteMs: HANG_STOP_MS,
+          firstContentMs: HANG_STOP_MS,
           idleMs: HANG_STOP_MS,
         },);
 
@@ -885,7 +885,7 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:whiskers',
-          firstByteMs: HANG_STOP_MS,
+          firstContentMs: HANG_STOP_MS,
           idleMs: HANG_STOP_MS,
         },);
 
@@ -914,6 +914,7 @@ await describe({
          */
         const progress = {
           firstByteMs: 40,
+          firstContentMs: 40,
           maxGapMs: 4,
           chars: 512,
           elapsedMs: 830,
@@ -965,7 +966,7 @@ await describe({
           'hf:whiskers: stream cut after 12 characters (refused by ProviderHttpError from synthetic with HTTP 503)',
         );
         expect(refusalText({ error: stalled, },),).toBe(
-          'hf:whiskers: stream cut after 12 characters (Stalled: hf:whiskers emitted nothing for 60000ms (body))',
+          'hf:whiskers: stream cut after 12 characters (Stalled: hf:whiskers emitted no content or reasoning for 60000ms (body))',
         );
       },
     },),
@@ -993,7 +994,7 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:mittens',
-          firstByteMs: HANG_STOP_MS,
+          firstContentMs: HANG_STOP_MS,
           idleMs: HANG_STOP_MS,
         },);
 
@@ -1023,7 +1024,7 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:sable',
-          firstByteMs: HANG_STOP_MS,
+          firstContentMs: HANG_STOP_MS,
           idleMs: HANG_STOP_MS,
         },);
 
@@ -1065,7 +1066,7 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:sable',
-          firstByteMs: HANG_STOP_MS,
+          firstContentMs: HANG_STOP_MS,
           idleMs: HANG_STOP_MS,
         },);
 
@@ -1236,7 +1237,7 @@ await describe({
           },),
           credentials: [WHISKER_KEY,],
         },),).toBe(
-          'stream hf:whiskers-key: completed, elapsed Xms, firstByte Xms, maxGap Xms, '
+          'stream hf:whiskers-key: completed, elapsed Xms, firstByte Xms, firstContent Xms, maxGap Xms, '
             + `${String(frame.length,)} raw chars, 0 unreadable frames, 4 content chars, 0 reasoning chars, `
             + `served by ${JSON.stringify(CREDENTIAL_MARKER,)}`,
         );
