@@ -261,6 +261,53 @@ image match (ImageMagick RMSE on thresholded ink, lower is closer) against Chrom
   Whether the CJK difference contributes to the feel is not tested: the human named Latin text in their screenshot
   ("Music", "A", "ABM", "32ki", "Creature").
 
+### The human's perception test, round 1
+
+A local page (`text-size-test.html`, scratch only) drew samples in the human's own browser at their display's real
+size and asked, for each, how its text looks next to a Wikipedia-style article paragraph (default sans-serif, 16 px),
+and whether the size suits a list row or a pane title.
+The sample order was random and unlabeled.
+One person, one session (2026-10-22 11:35 UTC), so these are ordinal answers from n = 1.
+
+The display it ran on is not the one of the earlier screenshot:
+- The page reported `devicePixelRatio` 2, a 1026 by 1840 CSS px window and a 1080 by 1920 screen.
+  `kscreen-doctor --outputs` lists three monitors (DP-3, HDMI-A-1, DP-2) at scale 2 in portrait geometry 1080 by 1920,
+  and EDID bytes 21 and 22 of each give 60 by 34 cm.
+  So the test ran on a 3840 pixel panel 600 mm long, 0.156 mm per physical pixel, 0.3125 mm per CSS px
+  (about 1.18 times the 0.2656 mm of the HDMI-A-2 panel at scale 3 that the app screenshot came from).
+  Which of the three monitors the browser sat on was not recorded.
+
+Answers (scale: much smaller -2, smaller -1, about the same 0, larger 1, much larger 2):
+- List rows, Inter Variable: 13 px gave -1 and "too small"; 14 px gave 0 and "right"; 15 px gave 1 and "right";
+  16 px gave 1 and "too large"; 18 px gave 2 and "too large"; 20 px gave 2 and "too large".
+- The control (the default sans-serif at 16 px, the same font size as the reference) gave 2 and "too large" as list
+  rows, and 1 when shown as part of the typeface comparison.
+- Pane titles, Inter Variable: 18 px gave 1 and "right"; 20 px gave 1 and "right"; 22 px gave 2 and "too large";
+  24 px gave 2 and "too large".
+- Same size number 16 in four typefaces: Inter Variable 1, Liberation Sans 1, Noto Sans 1, the control 1.
+
+What it shows, and its limits:
+- The 2 px cut is reproduced on the human's display in a controlled, unlabeled test:
+  rows at 14 px look the same size as 16 px article text, 16 px rows look larger and too large,
+  titles at 18 and 20 px are right and 22 px is too large.
+  The sizes the human chose by feel (20 and 14) are inside the "right" answers; the original 22 and 16 are not.
+- The control failed as a size reference: text of exactly the reference's font size looked one to two steps larger
+  when shown as short list rows than when shown as a wrapped paragraph, and the two control answers differ by one step
+  (test-retest noise of one step).
+  So the "larger" answers measure how the row format looks against a paragraph, not only the font size.
+  Speculation: short isolated lines with row padding read as larger than the same text in a dense paragraph;
+  round 2 (`?round=2` of the page) shows paragraph samples against the paragraph and rows against a rows reference, to
+  separate the format from the size.
+- Typefaces were not told apart: Inter, Liberation Sans and Noto Sans at 16 px received the same answer as the control,
+  although Liberation Sans is 5.7 percent narrower. In this one test the face difference was not perceived as a size
+  difference, a null for the face hypothesis with the limits of n = 1 and a one-step resolution.
+- The preferred sizes (rows 14 to 15 px, titles 18 to 20 px) are in CSS px and sit on a monitor whose CSS px is 1.18
+  times larger than the monitor of the earlier choice (rows 14 px, titles 20 px, both chosen on the scale 3 panel).
+  The same CSS px sizes were accepted on both. Speculation: the judgment follows the CSS px convention more than the
+  physical size; two monitors, an unmeasured viewing distance and a different task do not prove it.
+- The test showed web renderings, not the Slint app itself. A second page that shows real screenshots of the app at
+  true size is being prepared.
+
 ## Hypotheses
 
 Each is scored against the target (0.91 for the titles, 0.875 for the names and track titles).
