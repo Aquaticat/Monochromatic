@@ -43,6 +43,8 @@ import {
 
 import { isAsciiDigits, } from '@monochromatic-dev/translation-repair-markup';
 import {
+  DOC_FAMILIES,
+  OTHER_STEMS,
   readPackageDocPaths,
   REPOSITORY_ROOT,
   withFiles,
@@ -101,28 +103,6 @@ const COUNTER_NAME_EXEMPTIONS: readonly { readonly opening: string; readonly rea
  Words that count a file where a subject belongs, when digits follow them.
  */
 const COUNTER_WORDS: ReadonlySet<string> = new Set(['part', 'segment', 'subpart', 'chunk', 'section', 'page',],);
-
-/**
- Stems of repository-level translation-repair docs whose names do not start
- with `translation-repair`.
- */
-const OTHER_STEMS: readonly string[] = [
-  'the-third-rendering',
-  'two-lane-outcome-vocabulary',
-  'wire-the-heading-aligner',
-];
-
-/**
- Repository `doc` families read.
- */
-const FAMILIES: readonly string[] = [
-  'audit',
-  'decision',
-  'handover',
-  'planning',
-  'runbook',
-  'troubleshooting',
-];
 
 /**
  Lines in a text as `wc --lines` counts them: its line feeds, plus one for a
@@ -341,7 +321,7 @@ async function readGuardedDocs(): Promise<readonly string[]> {
   /**
    Docs in each repository family the guard reads.
    */
-  const families = await Promise.all(FAMILIES.map(async function inFamily(family,): Promise<readonly string[]> {
+  const families = await Promise.all(DOC_FAMILIES.map(async function inFamily(family,): Promise<readonly string[]> {
     return (await readdir(join(REPOSITORY_ROOT, 'doc', family,),))
       .filter(function isTranslationRepair(name,): boolean {
         return name.endsWith('.md',) && (name.startsWith('translation-repair',) || OTHER_STEMS.some(function opens(stem,): boolean {

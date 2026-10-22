@@ -62,6 +62,46 @@ const CURRENT_PLANNING: readonly string[] = [
 ];
 
 /**
+ Name stems of the repository-level docs that belong to the family although their names do not start with
+ `translation-repair`: a doc is the family's when its file name starts with one of these. A stem that is a whole doc
+ name also takes the files that doc is split into. Every guard that decides which docs are the family's reads this
+ list, so none can disagree with another (ledger D35).
+ */
+export const OTHER_STEMS: readonly string[] = [
+  'accumulation-generation-restart',
+  'artifact-archive-text',
+  'artifact-stores-',
+  'coverage-wire-rerun-trade',
+  'critic-attribution',
+  'duplicate-accepted-issues',
+  'editor-and-refiner-seating',
+  'introduced-defect-probe-gating',
+  'llm-assisted-block-pairing',
+  'naturalness-lane-reach',
+  'one-sided-pairing-census',
+  'slice-vocabulary-rename',
+  'the-lane-contest',
+  'the-third-rendering',
+  'translation-pipeline-redesign',
+  'two-lane-',
+  'when-an-image-reading-makes-no-sense',
+  'which-lane-ships',
+  'wire-the-heading-aligner',
+];
+
+/**
+ Directories under the repository's `doc` whose files are read for the family's docs.
+ */
+export const DOC_FAMILIES: readonly string[] = [
+  'audit',
+  'decision',
+  'handover',
+  'planning',
+  'runbook',
+  'troubleshooting',
+];
+
+/**
  One neighbour of a record's index, judged for whether it is a file of that record.
  */
 type JudgedNeighbour = {
@@ -252,6 +292,77 @@ async function translationRepairDocs({ family, }: { readonly family: string; },)
         family,
         name,
       );
+    },);
+}
+
+/**
+ Every Markdown doc of the repository's `doc` families whose file name starts with one of the stems, sorted within each
+ family so failures read in a stable order.
+
+ @param stems - name stems that mark a doc as the family's
+
+ @returns Paths from the repository root
+
+ @example
+ ```ts
+ const paths = await readStemDocs({ stems: ['the-cat-nap',], },);
+ ```
+ */
+export async function readStemDocs({ stems, }: { readonly stems: readonly string[]; },): Promise<readonly string[]> {
+  return (await Promise.all(DOC_FAMILIES.map(async function inFamily(family,): Promise<readonly string[]> {
+    return (await readdir(join(
+      REPOSITORY_ROOT,
+      'doc',
+      family,
+    ),))
+      .filter(function hasStem(name,): boolean {
+        return name.endsWith('.md',) && stems.some(function opens(stem,): boolean {
+          return name.startsWith(stem,);
+        },);
+      },)
+      .toSorted()
+      .map(function underFamily(name,): string {
+        return join(
+          'doc',
+          family,
+          name,
+        );
+      },);
+  },),)).flat();
+}
+
+/**
+ Every stem that no doc's file name starts with, each as one finding, so a doc renamed away from its stem cannot leave
+ the stem reading nothing.
+
+ @param stems - name stems that mark a doc as the family's
+
+ @param paths - docs' paths from the repository root
+
+ @returns Findings, in the order of the stems
+
+ @example
+ ```ts
+ staleStemFindings({ stems: ['cat-nap',], paths: ['doc/planning/dog-walk.md',], },); // one finding
+ ```
+ */
+export function staleStemFindings(
+  {
+    stems,
+    paths,
+  }: {
+    readonly stems: readonly string[];
+    readonly paths: readonly string[];
+  },
+): readonly string[] {
+  return stems
+    .filter(function matchesNone(stem,): boolean {
+      return !paths.some(function opens(path,): boolean {
+        return basename(path,).startsWith(stem,);
+      },);
+    },)
+    .map(function finding(stem,): string {
+      return `no doc's name starts with the stem ${stem}; drop it from OTHER_STEMS or rename the doc back`;
     },);
 }
 
