@@ -837,6 +837,48 @@ await describe({
     },),
 
     it({
+      name: 'LOGS A DARK MODEL ONCE PER COOLDOWN and not once per refused call: a fleet with a dark model repeated the '
+        + 'warn every round, so a read of the run found the same line hundreds of times',
+      fn: async () => {
+        const { callers, } = stubProviders({},);
+        const { budgets, } = stubBudgets({
+          dry: {
+            neuralwatt: true,
+            synthetic: true,
+            hyper: true,
+            bedrock: true,
+            deepseek: true,
+            xiaomi: false,
+            openrouter: true,
+          },
+        },);
+        const lines: string[] = [];
+        const clock = { now: 0, };
+        const client = createRoutingClient({
+          callers,
+          budgets,
+          holdPollMs: 1,
+          l: levelCapturingLogger({ lines, },),
+          now: () => clock.now,
+        },);
+        /**
+         Warn lines about the model going dark.
+         */
+        const darkLines = (): number => lines.filter(function wentDark(line,): boolean {
+          return line.startsWith('warn ',) && line.includes(`${SEAT_SYNTHETIC_TEXT_EVERYWHERE} went dark`,);
+        },).length;
+
+        await ask({ client, modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, },);
+        await ask({ client, modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, },);
+        await ask({ client, modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, },);
+        expect(darkLines(),).toBe(1,);
+        clock.now += 300_000;
+        await ask({ client, modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, },);
+        expect(darkLines(),).toBe(2,);
+      },
+    },),
+
+    it({
       name: 'ENDS THE RUN, with the stop line naming Xiaomi, when every provider reads dry but Xiaomi and Xiaomi serves '
         + 'only checker seats in the run\'s roster, and loses the seat as before when Xiaomi serves a writer seat',
       fn: async () => {

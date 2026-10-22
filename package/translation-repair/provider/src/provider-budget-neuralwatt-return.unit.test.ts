@@ -262,6 +262,92 @@ await describe({
     },),
 
     it({
+      name: 'NAMES NO RETURN FOR ENERGY HELD BY CALLS IN FLIGHT: a day whose settled spend leaves more than the smallest '
+        + 'call and whose reservations alone leave less releases them in seconds, not at the day start',
+      fn: async () => {
+        const budgets = budgetsBefore({
+          msBeforeReturn: 48_000,
+          clock: { now: 1_000, },
+          reads: { count: 0, },
+          spent: { ...SPENT_DAY, spentWh: 100, reservedWh: 449.99, remainingWh: 0.01, },
+        },);
+        expect((await budgets.read({ signal: SIGNAL, },)).neuralwatt,).toBe(true,);
+        expect(budgets.holds().neuralwatt,).toBe(0,);
+        expect(budgets.neuralwattDryness().kind,).toBe('reserved',);
+      },
+    },),
+
+    it({
+      name: 'TELLS A REFUSAL HOLD FROM THE DAY START: a refusal that holds NeuralWatt longer than its return is the hold '
+        + 'that won, and the day start is not named for it',
+      fn: async () => {
+        const reads = { count: 0, };
+        const clock = { now: 1_000, };
+        const budgets = budgetsBefore({ msBeforeReturn: 48_000, clock, reads, },);
+        await budgets.read({ signal: SIGNAL, },);
+        expect(budgets.neuralwattHeldByReturn(),).toBe(true,);
+        await budgets.markRefused({ provider: 'neuralwatt', signal: SIGNAL, statedWaitMs: 120_000, },);
+        expect(budgets.holds().neuralwatt,).toBeGreaterThan(48_000,);
+        expect(budgets.neuralwattHeldByReturn(),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'READS THE METER AGAIN WHEN A TIMER FIRES A MILLISECOND EARLY: the return counts as passed two milliseconds '
+        + 'before it, the slack Node\'s timers were measured to need',
+      fn: async () => {
+        const reads = { count: 0, };
+        const clock = { now: 1_000, };
+        const budgets = budgetsBefore({ msBeforeReturn: 48_000, clock, reads, },);
+        await budgets.read({ signal: SIGNAL, },);
+        clock.now += 47_998;
+        expect((await budgets.read({ signal: SIGNAL, },)).neuralwatt,).toBe(false,);
+        expect(reads.count,).toBe(2,);
+      },
+    },),
+
+    it({
+      name: 'ENDS THE RUN WITH THE DAY START STATED when the account still reads the day spent after the return was waited '
+        + 'for, and offers no return to park for: the router waited for it already',
+      fn: async () => {
+        /**
+         The monotonic instant the case began at, from which the wall clock stub moves with real time.
+         */
+        const began = performance.now();
+        const budgets = createProviderBudgets({
+          neuralwatt: {
+            energy: async () => SPENT_DAY,
+            dayAnchor: () => ({ known: true, msOfDay: DAY_START_MS_OF_DAY, }),
+          },
+          freshForMs: FRESH_MS,
+          // The wall clock reads 50 ms before the day start when the case begins and moves with real time, so the day
+          // start passes during the wait and the next reading names the day after.
+          wallNow: () => new Date(Date.UTC(
+            2_026,
+            9,
+            23,
+            0,
+            0,
+            0,
+            (DAY_START_MS_OF_DAY - 50) + Math.round(performance.now() - began,),
+          ),),
+          returnMarginMs: 20,
+        },);
+        const thrown = await rejectionOf(() => readBudgetsPastHolds({
+          budgets,
+          modelId: 'glm-5.3',
+          signal: SIGNAL,
+          refused: NOBODY_REFUSED,
+          pollMs: 10,
+        },),);
+        expect(thrown,).toBeInstanceOf(EveryProviderDryError,);
+        expect((thrown as Error).message,).toContain('after waiting',);
+        expect((thrown as Error).message,).toContain('at 19:15:08 UTC',);
+        expect((thrown as EveryProviderDryError).neuralwattReturnsInMs,).toBeUndefined();
+      },
+    },),
+
+    it({
       name: 'READS THE METER AGAIN AT THE RETURN, although the reading is still fresh, and finds the new day wet',
       fn: async () => {
         const reads = { count: 0, };

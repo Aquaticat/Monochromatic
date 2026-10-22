@@ -28,6 +28,7 @@ import {
   EveryProviderDryError,
   hyperIsDry,
   hyperMeterLevel,
+  type NeuralWattDryness,
   NO_PROVIDER,
   providerServing,
   routeProviderFor,
@@ -970,6 +971,40 @@ await describe({
               cited: true,
               reading: true,
             },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'the all-dry refusal states why NeuralWatt reads dry',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'STATES THE DAY START AND THE DISTANCE for a spent day, and the key\'s own time for a blocked key, '
+            + 'and neither a day start nor a return for energy held by calls in flight: only the true cause',
+          fn: async () => {
+            /**
+             The message for one cause of NeuralWatt's dryness.
+             */
+            const messageFor = (neuralwattDryness: NeuralWattDryness,): string => new EveryProviderDryError({
+              measured: 'meters read every provider dry',
+              neuralwatt: { kind: 'at', msOfDay: 69_308_000, },
+              neuralwattDryness,
+            },).message;
+
+            const spent = messageFor({ kind: 'spent-day', dayStart: '2026-10-23T19:15:08.000Z', returnsInMs: 301_000, },);
+            expect(spent,).toContain('at 19:15:08 UTC (in 5 min 1 s)',);
+
+            const blocked = messageFor({ kind: 'key-blocked', until: '2026-10-23T05:00:00.000Z', },);
+            expect(blocked,).toContain('blocked until 2026-10-23T05:00:00.000Z',);
+            expect(blocked,).not.toContain('day starts again',);
+            expect(blocked,).not.toContain('19:15:08',);
+
+            const reserved = messageFor({ kind: 'reserved', },);
+            expect(reserved,).toContain('held by calls in flight',);
+            expect(reserved,).not.toContain('day starts again',);
+            expect(reserved,).not.toContain('19:15:08',);
           },
         },),
       ],

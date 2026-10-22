@@ -69,6 +69,10 @@ const FRESH_DAY = {
 
  @param returnWaitBoundMs - the bound the budgets put on a return they name as a hold, which the seat reader does not have
 
+ @param spent - the first NeuralWatt reading, the spent day unless the case says otherwise
+
+ @param syntheticWet - whether Synthetic, the only other configured provider, has budget
+
  @returns The client the reader takes, and the energy reads counted
 
  @example
@@ -80,9 +84,13 @@ function clientBefore(
   {
     msBeforeReturn,
     returnWaitBoundMs = 300_000,
+    spent = SPENT_DAY,
+    syntheticWet = true,
   }: {
     readonly msBeforeReturn: number;
     readonly returnWaitBoundMs?: number;
+    readonly spent?: Readonly<Record<string, unknown>>;
+    readonly syntheticWet?: boolean;
   },
 ) {
   const reads = { count: 0, };
@@ -90,13 +98,13 @@ function clientBefore(
     neuralwatt: {
       energy: async () => {
         reads.count += 1;
-        return (reads.count === 1) ? SPENT_DAY : FRESH_DAY;
+        return (reads.count === 1) ? spent : FRESH_DAY;
       },
       dayAnchor: () => ({ known: true, msOfDay: DAY_START_MS_OF_DAY, }),
     },
     synthetic: {
       quotas: async () => ({
-        weekly: { percentRemaining: 50, nextRegenAt: '2026-10-25T00:00:00.000Z', },
+        weekly: { percentRemaining: syntheticWet ? 50 : 0, nextRegenAt: '2026-10-25T00:00:00.000Z', },
       }),
     },
     wallNow: () => new Date(Date.UTC(
@@ -118,6 +126,7 @@ function clientBefore(
       providerMeterStates: () => budgets.readStates({ signal: SIGNAL, },),
       providerHolds: budgets.holds,
       neuralwattReturn: budgets.neuralwattReturn,
+      neuralwattDryness: budgets.neuralwattDryness,
     },
   };
 }
@@ -177,6 +186,51 @@ await describe({
           return line.startsWith('warn JUDGE SEATS phase=lanes short of quorum',)
             && line.includes('neuralwatt, whose day starts again at 19:15:08 UTC',);
         },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'STATES THE KEY\'S OWN TIME FOR A BLOCKED KEY and not a day start: NeuralWatt dry because the key\'s '
+        + 'allowance is blocked comes back when the block lifts, so the refusal names that and no return it does not have',
+      fn: async () => {
+        const lines: string[] = [];
+        const { client, reads, } = clientBefore({
+          msBeforeReturn: 48_000,
+          spent: { ...SPENT_DAY, remainingWh: 400, keyBlockedUntil: '2026-10-23T05:00:00.000Z', },
+        },);
+        const refusal = await rejectionOf({
+          promise: readPhaseSeats({
+            client,
+            phase: 'lanes',
+            signal: SIGNAL,
+            l: levelCapturingLogger({ lines, },),
+            pollMs: 5,
+          },),
+        },);
+        expect(refusal,).toBeInstanceOf(WritingBenchUnreachableError,);
+        expect((refusal as WritingBenchUnreachableError).message,).toContain(
+          'NeuralWatt reads dry because its key allowance is blocked until 2026-10-23T05:00:00.000Z',
+        );
+        expect((refusal as WritingBenchUnreachableError).message,).not.toContain('day starts again',);
+        expect(reads.count,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'WAITS FOR NEURALWATT WITH EVERY PROVIDER DRY: Synthetic spent too, the return 60 ms away, and the reading '
+        + 'waits for the hold and seats the NeuralWatt writers instead of ending the run',
+      fn: async () => {
+        const lines: string[] = [];
+        const { client, reads, } = clientBefore({ msBeforeReturn: 60, syntheticWet: false, },);
+        const { unreachableWriters, } = await readPhaseSeats({
+          client,
+          phase: 'lanes',
+          signal: SIGNAL,
+          l: levelCapturingLogger({ lines, },),
+          pollMs: 5,
+        },);
+        expect(unreachableWriters,).toEqual([],);
+        expect(reads.count,).toBe(2,);
       },
     },),
 

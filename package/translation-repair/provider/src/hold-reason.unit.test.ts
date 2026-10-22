@@ -55,6 +55,19 @@ await describe({
         },),
 
         it({
+          name: 'NAMES NO DAY START when the hold that won on NeuralWatt is a refusal\'s and not its return: a 60 s '
+            + 'rate-limit hold is a rate limit, whatever time the day starts',
+          fn: async () => {
+            expect(holdReasonOf({
+              holds: { ...NO_HOLDS, neuralwatt: 60_000, },
+              shortest: 60_000,
+              neuralwatt: XINGZ_DAY,
+              neuralwattHeldByReturn: false,
+            },),).toBe('neuralwatt',);
+          },
+        },),
+
+        it({
           name: 'NAMES THE PROVIDERS THAT HOLD THE SHORTEST HOLD in spending order, and the refusals they stand for as '
             + 'plain names',
           fn: async () => {
