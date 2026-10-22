@@ -830,6 +830,12 @@ failures, another thread owns them).
 
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 
+- Text-size research follow-ups (written 2026-10-22, from a reviewer's note the human pasted), not started: (1) identical
+  text at integer and half-pixel origins and in light and dark, to see whether femtovg's pixel rounding changes the
+  apparent weight; (2) a native desktop app's text (a Qt or GTK list) as a second control beside the replica; (3) read
+  what the human's KDE session supplies for `org.gnome.desktop.interface` `font-name` through the settings portal,
+  since Slint's winit backend reads only that key (`xdg_desktop_settings.rs:78`); (4) a fuller comparison of Android's
+  line height and letter spacing against the desktop rows.
 - Desktop CJK font (written 2026-10-22, withdrawn the same day): an agent found the Slint app drawing CJK from Droid Sans
   Fallback, but it ran with a scratch `XDG_CONFIG_HOME`, which removes the human's
   `~/.config/fontconfig/conf.d/50-noto-cjk-fallback.conf` (the repo's
