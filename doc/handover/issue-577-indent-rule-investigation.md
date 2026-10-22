@@ -68,13 +68,25 @@ anchor line.
 - Scratch assets under `~/temp/agent/indent-probe-2026-10-22/` (`probe4.mjs`,
   `probe4b.mjs`,
   `sweep.mjs`,
+  `spot.mjs`,
+  `probe-render.mjs`,
   `full4.json`,
   `full4b.json`,
+  `residuals.json`,
   `sweep-report.txt`,
+  `sweep-report-2.txt`,
+  `comma-repro/`,
   `gfp-mutation-1.patch`,
   `gfp-mutation-2.patch`) are
   disposable;
-  the troubleshooting doc carries everything needed to rebuild them.
+  the troubleshooting docs carry everything needed to rebuild them.
+- Measurement lesson:
+  a lint-based corpus run is only as current as the built `dist` bundle it loads
+  (a stale bundle once reported a false `stylistic(indentation)` versus `stylistic(chain-per-line)`
+  oscillation;
+  see "Measurement correction" in
+  `doc/troubleshooting/oxlint-typescript-indent-rule.md`).
+  Rebuild with `mise run //package/oxlint-plugin/stylistic:test:unit` before measuring.
 - Test-helper lesson for future engine tests:
   an `offsetOf`-style `after` parameter must mean "strictly
   after",
@@ -84,6 +96,12 @@ anchor line.
 
 ## Queue
 
+1.  Fix `stylistic/comma-dangle`'s type-literal corruption (separate incident from the indent rule):
+    the trigger,
+    repros,
+    and the quick-fix tradeoff live in
+    `doc/troubleshooting/oxlint-stylistic-comma-dangle-type-literal-fix.md`.
+    Land it before anyone enables the rule or runs a whole-set `--fix` sweep over real files.
 1.  Enable `stylistic/indentation` in `package/config/oxlint/src/rule/style.ts` (the sibling rules there sit
     at `warn`),
     then run one `--fix` sweep over the repository and commit the normalization separately from
