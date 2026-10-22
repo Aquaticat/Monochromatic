@@ -4,10 +4,10 @@
 
 Three failure modes this session were predicted by no current rule,
 or were allowed only by reading a rule against its measured practice (GAP).
-Each proposal tightens an existing rule,
-keeps the rule under the RLM budget,
+Each proposal tightens an existing rule
 and carries the evidence that produced it.
 Nothing here edits `AGENTS.md` before the user accepts.
+"What landed after acceptance" records the measured landing.
 
 ## Proposal 1: TP1 probes facade subpaths and runtime bindings
 
@@ -38,8 +38,9 @@ TP1:
 ```
 
 Evidence:
-39 words after whitespace normalization (RLM holds),
-and both incidents above resolved only after a subpath probe
+39 words and 279 characters after whitespace normalization,
+so RLM fails on its character half and the landing splits the wording;
+both incidents in the spotted failure mode resolved only after a subpath probe
 (`require.resolve('typescript/sync')`) and a runtime `typeof` check.
 
 Risks:
@@ -74,7 +75,8 @@ QIV:
 ```
 
 Evidence:
-41 words after whitespace normalization (RLM holds);
+41 words and 285 characters after whitespace normalization,
+so RLM fails on its character half and the landing splits the wording;
 the suite-reach check now names
 `semantic bridge teardown when the native channel dies`
 and its three `it` names before any green claim.
@@ -133,11 +135,37 @@ and the convention mismatch is already recorded in
 ("The plan's `*.type.test.ts` convention does not exist in this workspace").
 Nothing to propose.
 
-## What accepting unlocks
+## What landed after acceptance
 
-Acceptance of a proposal is the user's answer in the question tool.
-On acceptance,
-the matching `AGENTS.md` rule is edited,
-`file-enforcer` is checked first (WC2),
-and the edit commits as `docs(AGENTS.md)` work.
-Until then the proposals stay here and in the handover queue.
+The question tool recorded all three adoptions on 2026-10-22.
+Landing measured each adopted text against RLM first:
+the TP1 and QIV replacements came in at 279 and 285 characters
+against a 199-character largest existing rule,
+so their oversized clauses split into fresh tagged rules (RLM's remedy):
+
+- TP1 stays as written;
+  its facade clause became `TPF` beside it (173 chars):
+  probe every exports-map subpath and confirm the runtime binding with `typeof`.
+- QIV gained only "unawaited lazy suite" in its reach list (196 chars);
+  its green-run sentence became `TRV` in "Package completeness" (148 chars).
+- PP1 landed as adopted (130 chars).
+
+`TP2` was unusable for the facade rule:
+it is retired in `forbidden-strings.append.local.txt`,
+so CRN forbids reuse.
+`TPF` and `TRV` are fresh codes,
+NCD-checked against both forbidden-strings appendixes,
+the repository's `*.md` files,
+and the installed skills.
+
+Measurement note:
+the 199-character figure excludes the `CODE:` prefix,
+while RLM's literal wording counts the whole rule;
+under that stricter reading 12 pre-existing rules measure 201 to 204 characters.
+All four landed rules pass under both readings.
+
+`CLAUDE.md` regenerated via `mise run sync:files` (WC2)
+and committed with the edit as `70cc839d92`.
+A commit-message correction (279 and 285,
+not 283 and 284) is posted
+as commit comment `206152288`.
