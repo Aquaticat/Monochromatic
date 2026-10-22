@@ -536,6 +536,89 @@ await describe({
       },
     },),
     it({
+      name: 'PARKS UNTIL NEURALWATT\'S RETURN AND RESUMES THE INTERRUPTED ENTRY when every provider read dry and the '
+        + 'return is 301 s away, inside what the pass has left: no STOP line, no INCOMPLETE, REATTEMPT or STALLED '
+        + 'line for the interrupted attempt, and the entries behind it keep their order',
+      fn: async (ctx) => {
+        resetRunSpend();
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using scratch = await scratchDir({ prefix: 'corpus-pass-queue-', },);
+        /**
+         Milliseconds the park waited for.
+         */
+        const waits: number[] = [];
+        const dryStop = createPassDryStop({
+          passLeftMs: () => HANG_STOP_MS,
+          waitMs: async function waitMs({ ms, },): Promise<void> {
+            waits.push(ms,);
+          },
+        },);
+        /**
+         Client whose every call meets the dry router, naming NeuralWatt's return 301 s away.
+         */
+        async function refuseDryNamingReturn(): Promise<never> {
+          throw new EveryProviderDryError({
+            measured: 'meters read every provider dry',
+            neuralwatt: { kind: 'at', msOfDay: 69_308_000, },
+            neuralwattReturnsInMs: 301_000,
+          },);
+        }
+        const dryClient = dryStop.guard({
+          client: {
+            chatText: refuseDryNamingReturn,
+            chatJson: refuseDryNamingReturn,
+            quotas: async () => {
+              throw new Error('quotas unused',);
+            },
+          },
+        },);
+        /**
+         Entries attempted.
+         */
+        const made: string[] = [];
+        await runPassQueue({
+          pending: [pairOf({ id: 'tabby', },), pairOf({ id: 'mittens', },),],
+          attempts: new Map(),
+          attemptsPath: join(
+            scratch.path,
+            'attempts.json',
+          ),
+          sliceCacheDir: join(
+            scratch.path,
+            'slice-cache',
+          ),
+          pipelineDigest: GENERATION,
+          dryStop,
+          softBudgetMs: HANG_STOP_MS,
+          spendCeilingUsd: 20,
+          start: 0,
+          now: clockReading({ instants: [0,], },),
+          settle: async function settle({ entry, },) {
+            made.push(entry.id,);
+            if (made.length === 1) {
+              await rejectionOf(async function dryCall(): Promise<unknown> {
+                return await dryClient.chatText({
+                  modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                  messages: [],
+                  signal: dryStop.signal,
+                },);
+              },);
+              return { kind: 'stopped', };
+            }
+            return { kind: 'settled', };
+          },
+        },);
+
+        expect(made,).toEqual(['tabby', 'tabby', 'mittens',],);
+        expect(waits,).toEqual([301_000,],);
+        expect(dryStop.tripped(),).toBe(false,);
+        expect(printed.lines.some(function isStopOrVerdict(line,): boolean {
+          return line.startsWith('STOP ',) || line.startsWith('REATTEMPT',) || line.startsWith('STALLED',)
+            || line.startsWith('INCOMPLETE',);
+        },),).toBe(false,);
+      },
+    },),
+    it({
       name: 'PRINTS THE STOP LINE EVEN WHEN THE ENTRY THAT MET THE DRY ROUTER WAS THE LAST ONE, once, so the cause is '
         + 'on the log however the queue ended',
       fn: async (ctx) => {

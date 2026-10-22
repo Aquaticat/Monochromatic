@@ -18,9 +18,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 import {
   createProviderBudgets,
+  EveryProviderDryError,
   NOBODY_REFUSED,
   readBudgetsPastHolds,
 } from '../dist/final/node/index.mjs';
+import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 
 /**
  Abort signal every read here carries.
@@ -92,6 +94,8 @@ const FRESH_DAY: Reading = {
 
  @param withXiaomi - whether the fleet carries a Xiaomi client, whose meter reads wet always, as the live roster's does
 
+ @param marginMs - milliseconds the budgets add to a return (none unless the case moves it)
+
  @returns Budgets that trust a reading for {@link FRESH_MS} and add no margin to a return
 
  @example
@@ -107,6 +111,7 @@ function budgetsBefore(
     spent = SPENT_DAY,
     returnWaitBoundMs = 300_000,
     withXiaomi = false,
+    marginMs = 0,
   }: {
     readonly msBeforeReturn: number;
     readonly clock?: { now: number; };
@@ -114,6 +119,7 @@ function budgetsBefore(
     readonly spent?: Reading;
     readonly returnWaitBoundMs?: number;
     readonly withXiaomi?: boolean;
+    readonly marginMs?: number;
   },
 ): ReturnType<typeof createProviderBudgets> {
   return createProviderBudgets({
@@ -138,7 +144,7 @@ function budgetsBefore(
       0,
       DAY_START_MS_OF_DAY - msBeforeReturn,
     ),),
-    returnMarginMs: 0,
+    returnMarginMs: marginMs,
     returnWaitBoundMs,
   },);
 }
@@ -205,6 +211,53 @@ await describe({
           await heldFor({ msBeforeReturn: 60_000, },),
           await heldFor({ msBeforeReturn: 60_001, },),
         ],).toEqual([60_000, 0,],);
+      },
+    },),
+
+    it({
+      name: 'HOLDS THE RETURN AT ANY DISTANCE for a caller that names no bound, and none past the bound a caller names: '
+        + 'the router names 300 s, the seat reader names none, and the production margin sits outside the bound',
+      fn: async () => {
+        const far = budgetsBefore({ msBeforeReturn: 82_800_000, clock: { now: 1_000, }, reads: { count: 0, }, },);
+        await far.read({ signal: SIGNAL, },);
+        expect(far.holds().neuralwatt,).toBe(82_800_000,);
+        expect(far.holds({ returnBoundMs: 300_000, },).neuralwatt,).toBe(0,);
+        /**
+         The hold a router call would wait out at a distance, with the production margin of a second.
+         */
+        const heldAt = async function heldAt({ msBeforeReturn, }: { readonly msBeforeReturn: number; },): Promise<number> {
+          const budgets = budgetsBefore({
+            msBeforeReturn,
+            clock: { now: 1_000, },
+            reads: { count: 0, },
+            marginMs: 1_000,
+          },);
+          await budgets.read({ signal: SIGNAL, },);
+          return budgets.holds({ returnBoundMs: 300_000, },).neuralwatt;
+        };
+        expect([
+          await heldAt({ msBeforeReturn: 300_000, }),
+          await heldAt({ msBeforeReturn: 300_001, }),
+        ],).toEqual([301_000, 0,],);
+      },
+    },),
+
+    it({
+      name: 'ENDS THE ROUTER\'S CALL AT THE BOUND AND STATES THE DISTANCE: every provider dry and NeuralWatt 301 s from '
+        + 'its day start throws the refusal with the milliseconds to the return on it, which the pass reads to park '
+        + 'instead of stopping, and the message states the time of day',
+      fn: async () => {
+        const budgets = budgetsBefore({ msBeforeReturn: 301_000, clock: { now: 1_000, }, reads: { count: 0, }, },);
+        const thrown = await rejectionOf(() => readBudgetsPastHolds({
+          budgets,
+          modelId: 'glm-5.3',
+          signal: SIGNAL,
+          refused: NOBODY_REFUSED,
+          pollMs: 1,
+        },),);
+        expect(thrown,).toBeInstanceOf(EveryProviderDryError,);
+        expect((thrown as EveryProviderDryError).neuralwattReturnsInMs,).toBe(301_000,);
+        expect((thrown as Error).message,).toContain('at 19:15:08 UTC',);
       },
     },),
 

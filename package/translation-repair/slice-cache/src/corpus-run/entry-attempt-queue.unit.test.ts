@@ -307,6 +307,85 @@ await describe({
       },
     },),
     it({
+      name: 'RESUMES AN ENTRY A WAIT INTERRUPTED at the front of the queue after the wait, reading no verdict for the '
+        + 'interrupted attempt: no REATTEMPT, no STALLED, no INCOMPLETE line, and the entries behind it keep their order',
+      fn: async () => {
+        /**
+         What happened, in order: attempts by id, and the waits taken before an attempt.
+         */
+        const events: string[] = [];
+        /**
+         Whether a wait is pending after the first attempt.
+         */
+        const pending = { wait: false, };
+        /**
+         Lines the queue printed.
+         */
+        const printed: string[] = [];
+        const original = console.log;
+        console.log = function capture(line: string,): void {
+          printed.push(line,);
+        };
+        try {
+          await runAttemptQueue({
+            pending: [{ id: 'tabby', }, { id: 'mainecoon', },],
+            cachedCountFor: async () => 0,
+            stopBeforeNext: () => false,
+            beforeNext: async function beforeNext(): Promise<void> {
+              if (pending.wait) {
+                events.push('wait',);
+                pending.wait = false;
+              }
+            },
+            interrupted: function interrupted(): boolean {
+              return pending.wait;
+            },
+            attempt: async function attempt({ entry, },): Promise<AttemptOutcome> {
+              events.push(entry.id,);
+              // The first attempt is cut by a wait the caller takes before the next one.
+              if (events.length === 1)
+                pending.wait = true;
+              return { kind: 'settled', };
+            },
+          },);
+        } finally {
+          console.log = original;
+        }
+        expect(events,).toEqual(['tabby', 'wait', 'tabby', 'mainecoon',],);
+        expect(printed,).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'ENDS WITHOUT RESUMING when the budget is gone after the wait, since the wait came before the stop check',
+      fn: async () => {
+        /**
+         Attempts made.
+         */
+        const attempts: string[] = [];
+        /**
+         Whether the wait has been taken.
+         */
+        const waited = { done: false, };
+        await runAttemptQueue({
+          pending: [{ id: 'tabby', },],
+          cachedCountFor: async () => 0,
+          stopBeforeNext: () => waited.done,
+          beforeNext: async function beforeNext(): Promise<void> {
+            if (attempts.length > 0)
+              waited.done = true;
+          },
+          interrupted: () => attempts.length === 1,
+          attempt: async function attempt({ entry, },): Promise<AttemptOutcome> {
+            attempts.push(entry.id,);
+            return { kind: 'settled', };
+          },
+        },);
+        expect(attempts,).toEqual(['tabby',],);
+      },
+    },),
+
+    it({
       name: 'QUEUES NO SECOND ATTEMPT FOR AN ENTRY THE RUN STOPPED DURING, even one that cached more than it had, '
         + 'since the caller names the stop and a further attempt would meet the same refusal',
       fn: async () => {

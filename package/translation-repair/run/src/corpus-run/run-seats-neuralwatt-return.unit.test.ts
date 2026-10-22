@@ -67,6 +67,8 @@ const FRESH_DAY = {
 
  @param msBeforeReturn - how long before NeuralWatt's day starts again the wall clock reads
 
+ @param returnWaitBoundMs - the bound the budgets put on a return they name as a hold, which the seat reader does not have
+
  @returns The client the reader takes, and the energy reads counted
 
  @example
@@ -74,7 +76,15 @@ const FRESH_DAY = {
  const { client, } = clientBefore({ msBeforeReturn: 60, },);
  ```
  */
-function clientBefore({ msBeforeReturn, }: { readonly msBeforeReturn: number; },) {
+function clientBefore(
+  {
+    msBeforeReturn,
+    returnWaitBoundMs = 300_000,
+  }: {
+    readonly msBeforeReturn: number;
+    readonly returnWaitBoundMs?: number;
+  },
+) {
   const reads = { count: 0, };
   const budgets = createProviderBudgets({
     neuralwatt: {
@@ -99,6 +109,7 @@ function clientBefore({ msBeforeReturn, }: { readonly msBeforeReturn: number; },
       DAY_START_MS_OF_DAY - msBeforeReturn,
     ),),
     returnMarginMs: 0,
+    returnWaitBoundMs,
   },);
   return {
     reads,
@@ -142,6 +153,29 @@ await describe({
         expect(lines.some(function seatsLine(line,): boolean {
           return line.startsWith('info JUDGE SEATS phase=lanes neuralwatt=wet',) && line.includes('waited=',)
             && (!line.includes('waited=0ms',));
+        },),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'WAITS FOR A RETURN PAST THE 300 s A ROUTER CALL WAITS, since the seat reader sits outside every exchange and '
+        + 'is bounded by what the pass has left, the way Hyper\'s stated holds are: a return 80 ms away under a 60 ms '
+        + 'bound is waited for and the NeuralWatt writers are seated',
+      fn: async () => {
+        const lines: string[] = [];
+        const { client, reads, } = clientBefore({ msBeforeReturn: 80, returnWaitBoundMs: 60, },);
+        const { unreachableWriters, } = await readPhaseSeats({
+          client,
+          phase: 'lanes',
+          signal: SIGNAL,
+          l: levelCapturingLogger({ lines, },),
+          pollMs: 5,
+        },);
+        expect(unreachableWriters,).toEqual([],);
+        expect(reads.count,).toBe(2,);
+        expect(lines.some(function waitLine(line,): boolean {
+          return line.startsWith('warn JUDGE SEATS phase=lanes short of quorum',)
+            && line.includes('neuralwatt, whose day starts again at 19:15:08 UTC',);
         },),).toBe(true,);
       },
     },),

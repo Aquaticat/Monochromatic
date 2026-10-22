@@ -236,6 +236,116 @@ await describe({
     },),
 
     it({
+      name: 'PARKS INSTEAD OF STOPPING when every provider reads dry and NeuralWatt\'s return is 301 s away, inside what '
+        + 'the pass has left: the calls in flight end with the refusal, the pass is not tripped, and after the wait '
+        + 'until the return the signal is live again, with a line at the start naming the reason and the return '
+        + 'time in UTC and one at the end',
+      fn: async () => {
+        /**
+         Milliseconds the park waited for.
+         */
+        const waits: number[] = [];
+        const lines: string[] = [];
+        const dryStop = createPassDryStop({
+          l: levelCapturingLogger({ lines, },),
+          passLeftMs: () => 3_600_000,
+          waitMs: async function waitMs({ ms, },): Promise<void> {
+            waits.push(ms,);
+          },
+        },);
+        const dry = new EveryProviderDryError({
+          measured: 'meters read every provider dry',
+          neuralwatt: { kind: 'at', msOfDay: 69_308_000, },
+          neuralwattReturnsInMs: 301_000,
+        },);
+        const client = dryStop.guard({ client: throwingClient({ thrown: dry, },), },);
+
+        expect(await rejectionOf(async function call(): Promise<unknown> {
+          return await client.chatText(requestWith({ signal: dryStop.signal, },),);
+        },),).toBe(dry,);
+        expect(dryStop.tripped(),).toBe(false,);
+        expect(dryStop.parked(),).toBe(true,);
+        expect(dryStop.signal.aborted,).toBe(true,);
+        expect(dryStop.takeStopNotes(),).toEqual([],);
+
+        await dryStop.awaitPark();
+        expect(waits,).toEqual([301_000,],);
+        expect(dryStop.parked(),).toBe(false,);
+        expect(dryStop.tripped(),).toBe(false,);
+        expect(dryStop.signal.aborted,).toBe(false,);
+        expect(lines.length,).toBe(2,);
+        expect(lines[0],).toContain('parked',);
+        expect(lines[0],).toContain('every provider is out of budget',);
+        expect(lines[0],).toContain('19:15:08 UTC',);
+        expect(lines[1],).toContain('resumes',);
+      },
+    },),
+
+    it({
+      name: 'STOPS, stating the return time, when NeuralWatt\'s return is past what the pass has left: the park is for '
+        + 'a return the pass can still use',
+      fn: async () => {
+        const dryStop = createPassDryStop({ passLeftMs: () => 300_000, },);
+        dryStop.trip({
+          error: new EveryProviderDryError({
+            measured: 'seat reading',
+            neuralwatt: { kind: 'at', msOfDay: 69_308_000, },
+            neuralwattReturnsInMs: 301_000,
+          },),
+        },);
+        expect(dryStop.tripped(),).toBe(true,);
+        expect(dryStop.parked(),).toBe(false,);
+        const [note = '',] = dryStop.takeStopNotes();
+        expect(note,).toContain('19:15:08 UTC',);
+      },
+    },),
+
+    it({
+      name: 'STOPS ON A DRY REFUSAL THAT ARRIVES RIGHT AFTER A PARK ENDED, since the account has not yet shown the new '
+        + 'day, and parks again for one that arrives later',
+      fn: async () => {
+        /**
+         Clock the gate reads, moved by the case.
+         */
+        const clock = { now: 1_000, };
+        const dryStop = createPassDryStop({
+          passLeftMs: () => 90_000_000,
+          now: () => clock.now,
+          waitMs: async function waitMs({ ms, },): Promise<void> {
+            clock.now += ms;
+          },
+        },);
+        /**
+         A refusal naming a return 301 s away.
+         */
+        const refusal = (): EveryProviderDryError => new EveryProviderDryError({
+          measured: 'seat reading',
+          neuralwatt: { kind: 'at', msOfDay: 69_308_000, },
+          neuralwattReturnsInMs: 301_000,
+        },);
+        dryStop.trip({ error: refusal(), },);
+        await dryStop.awaitPark();
+        clock.now += 1_000;
+        dryStop.trip({ error: refusal(), },);
+        expect(dryStop.tripped(),).toBe(true,);
+
+        const later = createPassDryStop({
+          passLeftMs: () => 90_000_000,
+          now: () => clock.now,
+          waitMs: async function waitMs({ ms, },): Promise<void> {
+            clock.now += ms;
+          },
+        },);
+        later.trip({ error: refusal(), },);
+        await later.awaitPark();
+        clock.now += 3_600_000;
+        later.trip({ error: refusal(), },);
+        expect(later.tripped(),).toBe(false,);
+        expect(later.parked(),).toBe(true,);
+      },
+    },),
+
+    it({
       name: 'LEAVES EVERY OTHER FAILURE ALONE: it propagates unchanged and the stop is not tripped',
       fn: async () => {
         const dryStop = createPassDryStop();
