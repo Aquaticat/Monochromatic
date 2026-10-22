@@ -1553,6 +1553,16 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     not touch the other packages. Held until the fix is on `main`: pushing the 90 percent change and landing the
     minimap fling agent, because their `test:bin` gates cannot be green. The IDE `test:bin` gate is the only gate known
     to be red; the other gates passed on the snapshot.
+    Owner decision of 2026-10-22 on the 17 IDE files: convert them to TypeScript instead of restoring them as `.mjs`
+    (reason given: the oxlint setup did not corrupt any of the 1,850 `.ts` files and did corrupt `.mjs` ones; the
+    owner also asked why `.mjs` was used, and the answer is that no rule required it, the inspection scripts of
+    2026-10-05 to 2026-10-19 began as plain `.mjs` that `node` runs without a build step, and 30 `.mjs` against 10 `.ts`
+    remain in `bin/`). Running: conversion agent `a973fa0a05208c348` (own worktree off `origin/main`, branch push only;
+    brief quotes `NLG`, `NLD`, `RXI`, `NQH`, `FHU`; starts from each file's valid version at `68415aeb53~1`, updates every
+    reference, runs old against new for each script, lint and type tasks, `test:bin`, `test`, one each). On its
+    report: verify the diff and the compared outputs, run the gates once on the merge, push, then land the 90 percent
+    share (rebase `~/temp/agent/land-share`) and the minimap agent. The 15 other `.mjs` files in `bin/` (30 minus the 15 that broke)
+    stay as they are until the owner says otherwise (a conversion of all of them is a separate decision).
     The minimap lag agent `afaeefdb803099e40` has handed back (branch `worktree-agent-afaeefdb803099e40`, tip
     `fbe4f73b2b`, pushed, not on `main`, not yet verified by me): blank-track frames in a 3,777 px fling fell from
     0.45 to 0.01 (A/A control 0.43), by a `LEAD` of 8 bands on the heading side; seven guards shown to fail; its own
