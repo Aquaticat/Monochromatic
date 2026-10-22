@@ -286,15 +286,15 @@ From the `XingZ6017` read
   That no stop line fired when the meter went dry is the designed behaviour:
   dry is a routing verdict and calls in flight settle.
   The defect is the under-reading estimate,
-  which is being fixed separately as ledger B808.
+  which ledger B808 recalibrated on 2026-10-22 (UTC).
 - Streams that never answered held rounds open in two ways.
   A dead stream held the quorum in 24 rounds that waited 250 s or more (N1;
-  being fixed as ledger B809),
+  fixed in part as ledger B809),
   and Qwen,
   re-seated when Synthetic came back at a 2 percent balance,
   had 40 calls cut with no answer and slowed consolidation from 149 s to 315 s and 346 s a slice
   (N2;
-  the re-asking of abandoned seats is being fixed as ledger B810).
+  a hold on re-asking abandoned seats was examined and rejected as ledger B810).
 - Text calls on NeuralWatt still ended at the completion cap with no content 13 times (K1,
   29.91 Wh).
   The picture call did not:
@@ -392,8 +392,10 @@ From [the handover](../handover/translation-repair-handover-2026-09-06-neuralwat
   the NeuralWatt energy estimate (ledger B808),
   rounds held open by a hung stream (ledger B809) and
   seats re-asked after their calls were abandoned (ledger B810).
-  They are being fixed,
-  and this record claims no outcome for them.
+  On 2026-10-22 (UTC) B808 recalibrated the estimate,
+  B809 was fixed in part by a first-content window of 90000 ms on the Mercury card (open to the owner's veto),
+  and B810 was examined and rejected;
+  no run has measured the fixes yet.
   The coverage rounds over an untranslated tail (ledger B811) were examined and kept unchanged.
 - Meanwhile the rotation continues on `2a336603bf` for evidence:
   the reads of `CuspariaKLSY22` and `XingZ6017` are filed,

@@ -194,7 +194,7 @@ it was 2 until the first keyed runs were read.
   555.188 Wh,
   the whole of that NeuralWatt day),
   because the rotation measured 2.6 times the old figures in the main bucket,
-and `XingZ6017` alone measured 2.84 times its hold.
+  and `XingZ6017` alone measured 2.84 times its hold.
   The 4,096 to 16,384 token bucket now holds 0.1958 Wh for DeepSeek V4.1 Flash (558 calls)
   and 0.9577 Wh for GLM-5.3-Flash (298 calls).
   The 16,384 to 65,536 token bucket,

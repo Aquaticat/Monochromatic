@@ -74,11 +74,12 @@ dry is a routing verdict,
 and calls already in flight settle.
 It is not a defect.
 The defect is that the energy estimate under-read the measured energy by 2.84 times,
-which is being fixed separately as ledger B808.
-Two more of the findings are being fixed as ledger entries,
-without a claim here about their outcome:
+which ledger B808 recalibrated on 2026-10-22 (UTC).
+Two more of the findings went to ledger entries on 2026-10-22 (UTC):
 rounds held open by a hung stream (B809),
-and seats re-asked after their calls were abandoned (B810).
+fixed in part by a first-content window of 90000 ms on the Mercury card that is open to the owner's veto,
+and seats re-asked after their calls were abandoned (B810),
+where a hold was examined and rejected because it forwent more answers than it saved cuts.
 The coverage rounds over an untranslated tail (B811) were examined and kept:
 they are the first of the two signatures the absence verdict requires,
 so the length bound alone cannot stand in for them.
@@ -396,7 +397,7 @@ the wall-clock overlap was not measured exactly.
 - Abandoned calls not counted by the seat tally:
   confirmed
   (the providers file;
-  being fixed as ledger B810).
+  examined and rejected as ledger B810).
 
 ### K3, hand-checked
 
@@ -526,7 +527,8 @@ quorum equals the bench and the grace never starts.
 It is the K2 mechanism with a different bound:
 K2 is cut by the grace,
 this is cut by the gateway at about 301 s.
-Being fixed as ledger B809.
+Fixed in part as ledger B809,
+by a first-content window of 90000 ms on the Mercury card (open to the owner's veto).
 
 N2,
 a provider returning at a low balance re-seats a seat that then costs grace:
@@ -536,7 +538,7 @@ between 02:43:28 and 03:29:10 UTC,
 and consolidation slices ran 315 to 346 s.
 The tally never counts abandoned calls,
 so the seat is never withheld.
-Being fixed as ledger B810.
+Examined and rejected as ledger B810.
 
 N3,
 the NeuralWatt estimate (prompt-based) under-reads by 2.84 times over the pass,
@@ -549,7 +551,7 @@ over the six runs on this build it read 1.23,
 1.39,
 1.94 and 2.84 in the order they ran,
 and `XingZ60` alone sent most of its calls with 16,384 prompt tokens or more.
-Being fixed as ledger B808.
+Recalibrated as ledger B808.
 That no stop line fired at the dry reading is the designed behaviour and not part of this class.
 
 N4,

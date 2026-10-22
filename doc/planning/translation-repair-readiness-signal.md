@@ -385,9 +385,10 @@ this section is the readiness reading of it.
   and 24 rounds waited 250 s or more on a dead stream that held the quorum.
   NeuralWatt's measured energy was 2.84 times its estimate;
   that no stop line fired at the dry reading is the designed behaviour,
-  and the under-reading estimate is being fixed as ledger B808.
-  Hung rounds (B809) and
-  seats re-asked after abandoned calls (B810) are also being fixed;
+  and ledger B808 recalibrated the under-reading estimate on 2026-10-22 (UTC).
+  Hung rounds (B809) were fixed in part
+  by a first-content window of 90000 ms on the Mercury card (open to the owner's veto),
+  and a hold on seats re-asked after abandoned calls (B810) was examined and rejected;
   the coverage rounds over an untranslated tail (B811) were examined and kept unchanged.
   The run's build lacked commits `e336d8efc7` (B804 to B807) and `f829fc31b6` (B803),
   so its K2 split (52 mercury abandonments) and its K3 lost claims (6 verified)

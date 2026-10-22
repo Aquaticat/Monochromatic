@@ -214,7 +214,10 @@ Rounds that waited 250 s or more with quorum unmet:
 1 in the contest and 13 in consolidation,
 24 in all,
 122 round-min.
-The fix is being worked as ledger B809 (no outcome is claimed here).
+Ledger B809 gave the Mercury card a first-content window of its own,
+90000 ms (open to the owner's veto),
+on 2026-10-22 (UTC);
+no run has measured it yet.
 
 #### Streams cut by the grace (K2, recurring)
 
@@ -252,7 +255,8 @@ so this split is a baseline from before the fix.
   `inception/mercury-2.5 asked=1455 ... abandoned=52` and
   `hf:Qwen/Qwen3.8-27B asked=67 ... abandoned=43`.
   Every later round waits for the seat again.
-  The re-asking of abandoned seats is being fixed as ledger B810 (no outcome is claimed here).
+  Ledger B810 examined a hold on re-asking abandoned seats and rejected it on 2026-10-22 (UTC):
+  at every setting tried it forwent more answers than it saved cuts.
 
 #### Qwen came back for 47 minutes and was wasted (new, N2)
 
@@ -329,7 +333,8 @@ answered with the three reads' figures beside it.
   and calls already in flight settle.
   The defect is the estimate:
   it under-read the measured energy by 2.84 times,
-  and that is being fixed separately as ledger B808 (no outcome is claimed here).
+  and ledger B808 recalibrated it from the rotation's settled calls on 2026-10-22 (UTC);
+  no run has measured the new figures yet.
 - The estimate on each `settleNeuralWattCall` line scales with prompt size
   (0.3725 Wh for 8264 prompt tokens on the `glm-5.3-flash` picture call at line 485,
   0.0389 Wh for 2152 on a `glm-5.3-flash` text call and 0.0233 Wh for 2153 on a `deepseek-v4.1-flash` text call,
