@@ -814,8 +814,33 @@ The landings and the restart,
   `alignmentFindings=1`)
   after 2355731 ms
   (39.3 min).
-  Its read against the source is running,
-  written to `CuspariaKLSY22-read.md` in the reads folder.
+  Its read
+  (`CuspariaKLSY22-read.md` in the reads folder,
+  23:41 UTC)
+  found the page mixed:
+  slices 0 to 2 better than `CuspariaKLSY21`'s,
+  slice 3 worse
+  ("When she came to" loses 又;
+  "rushed" and "her friend" added).
+  No new ruling was shown to act:
+  the three polish gates settled by lead,
+  and the one consolidation tie
+  (slice 2,
+  weight 1)
+  left no slate in the artifact to say whether a run-off was owed.
+  It confirms two findings of the `zheermao22` read on a second entry:
+  102 of 103 Hyper vote replies have their keys in alphabetical order,
+  against reason first on all 44 from NeuralWatt and OpenRouter;
+  and 33 `inception/mercury-2.5` streams were abandoned with no content,
+  each waited out to the grace,
+  because the tally never counts an abandoned call against its seat
+  (`seat-tally.ts:120` to `122`).
+  It also shows the run still asks Bedrock once per run and is refused with HTTP 401 before holding it out,
+  though the owner ruled to leave Bedrock off,
+  and that `METERS` lines read `bedrock=wet` while `JUDGE SEATS` reads `bedrock=dry`.
+  NeuralWatt's plan meter rose 37.3 Wh over the run against 21.11 Wh of this run's own calls;
+  the rest is most likely other use of the account in that window,
+  which is unverified.
 - `XingZ6017`
   (entry `XingZ60`)
   started at 23:05:12 UTC,
@@ -830,12 +855,69 @@ K3 and the run-off line that says "2 tied finalists" for a plurality
 (`translate-runoff.ts:90`)
 in a new scratch worktree,
 and K4 in a second one;
+then a third round:
+Bedrock off by configuration so no run asks it,
+the `METERS` and `JUDGE SEATS` readings of a held provider made to agree,
+a seat whose streams keep ending with no content counted against that seat
+(it is never counted now,
+so every round waits it out),
+and Hyper's key order
+(either schema keys whose alphabetical order is the declared order,
+or a keyed probe first if that is cheaper to decide);
 gate each,
 land,
 rebuild the branch worktree once no pass runs there,
 digest,
 sweep,
 and restart the rotation at `zheermao23`.
+K4 is done in `tr-w264`
+(ledger B803,
+open to the owner's veto,
+head `484f1d205b`,
+gate g149 running):
+the composite now reads each revision by a line diff and composes hunks that do not collide.
+Replayed over the `zheermao22` artifact,
+none of the three refused attempts builds under it either,
+since each pair collides on a real line
+(the letter's two revisions both change line 7),
+so it would not have changed what shipped.
+The letter that shipped is the one complete revision,
+chosen by the judges over whole texts,
+not a fallback.
+The same worktree breaks the B712 and B714 ledger entries at their semantic boundaries:
+that file failed the Markdown linter on main,
+as do eight more translation-repair docs
+(96 findings in all),
+which the gate never lints.
+`tr-w266` fixes those and adds a guard so the gate does
+(ledger D35,
+head `0a7cef6278`):
+a source scan in `source-scans` runs the Markdown linter over the package docs and the living repository docs
+and fails on any finding.
+It stays red until `tr-w264` lands,
+since the B712 file is fixed there,
+so the order is:
+gate g149,
+land `tr-w264`,
+merge main into `tr-w266`,
+gate it,
+land.
+Outside the D27 living set,
+33 older translation-repair docs
+(`the-third-rendering*`,
+`two-lane-*`,
+`wire-the-heading-aligner`,
+`critic-attribution`,
+`artifact-stores-*` and others)
+carry 5,423 line-break findings.
+The `--fix` rewrap changes neither their words nor their parsed tree,
+so a later round fixes them too and widens the guard to them;
+the D27 archive families
+(history segments,
+dated snapshots,
+run-continuity parts,
+interface candidates)
+stay byte for byte.
 Meanwhile the rotation continues on `2a336603bf` for evidence:
 finish the read of `CuspariaKLSY22`,
 record both reads in the pass log and the readiness signal,

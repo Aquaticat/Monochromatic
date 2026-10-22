@@ -406,6 +406,7 @@ which lists every file of this record.
 - [B763, providers and seats a run holds out](audit-ledger-providers-and-seats-a-run-holds-out.md)
 - [B800, runner reports and probes](audit-ledger-runner-reports-and-probes.md)
 - [B801 to B802, tests touching the real world](audit-ledger-tests-touching-the-real-world.md)
+- [B803, composed operations and checks on a part](audit-ledger-composed-operations-and-partial-checks.md)
 - [D1 to D11, docs and comments that disagreed with the code](audit-ledger-docs-against-code.md)
 - [D12, doc conventions and their guards](audit-ledger-doc-conventions-and-their-guards.md)
 - [D13 to D21, docs and comments that disagreed with the code](audit-ledger-docs-against-code.md)

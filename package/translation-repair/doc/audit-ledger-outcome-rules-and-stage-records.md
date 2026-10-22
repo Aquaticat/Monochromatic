@@ -624,12 +624,16 @@ the review asks each reviewer for the complete corrected block and tells each to
 and `decideBestCandidate` returns one whole candidate.
 The letter block (36 lines) drew two revisions,
 one changing lines 3 and 6 to 9 (the cat and evil wording),
-the other lines 12, 13 and 26 (fearing death, scraping by, "as a trans woman" and the inclusive "us").
+the other lines 12,
+13 and 26 (fearing death,
+scraping by,
+"as a trans woman" and the inclusive "us").
 The sets are disjoint,
 the judges named both sets of fixes real,
 and the slate had no text carrying both.
 The consolidation stage was built on the same argument for slices
-(`consolidate-wire.ts`: no selection can produce text that is neither candidate),
+(`consolidate-wire.ts`:
+no selection can produce text that is neither candidate),
 and the archive review never applied it.
 
 The fix:
@@ -643,16 +647,23 @@ and records the one built as the finding `archive-composite-offered (composite(.
 and one a gate refused under `archive-revision-refused`.
 The editor lane's composite (`editor-candidates.ts`) is assembled from per-envelope winners over a patch outcome,
 a different mechanism,
-so what is shared is the producer kind and the producer helpers (`describeProducer`, `producerModelIds`),
+so what is shared is the producer kind and the producer helpers (`describeProducer`,
+`producerModelIds`),
 and no body is copied.
 The log says at the decision point why no composite was built,
-with candidate numbers, line numbers and counts, never the archive's wording.
+with candidate numbers,
+line numbers and counts,
+never the archive's wording.
 
-Decisions taken in this session, open to the owner's veto:
+Decisions taken in this session,
+open to the owner's veto:
 - A line count that differs on any revision that changes the block builds no composite,
   rather than a composite of the revisions that match,
   so the shipped text does not depend on which reviewers answered in a matching shape.
   A removal is such a revision.
+  **Replaced on 2026-10-21 (UTC) by B803**:
+  a revision that adds or removes lines is read by a line diff and composes when its hunks do not collide,
+  and only a removal of the whole block still builds no composite.
 - A line two revisions change is an overlap even when both change it identically.
   Agreeing on a line is no reason to merge revisions that differ elsewhere,
   and the only merge the slate trusts is of byte-identical whole revisions.
@@ -667,7 +678,9 @@ Decisions taken in this session, open to the owner's veto:
   and a trailing newline is a change to the last line,
   so it composes with a revision of another line and collides with a revision of the last.
 - The composite is candidate number three of four on a two-revision slate:
-  revisions in the order the stage hears them (round, then roster; `stage-quorum.ts`),
+  revisions in the order the stage hears them (round,
+  then roster;
+  `stage-quorum.ts`),
   then the composite,
   then the archive block.
   Existing candidate numbers do not move,
@@ -675,17 +688,20 @@ Decisions taken in this session, open to the owner's veto:
 
 The red commit holds sixteen cases over the real stage on a scripted bench;
 fifteen failed on the previous tree,
-on the slate size, the decision log line or the winning text,
+on the slate size,
+the decision log line or the winning text,
 and none on a missing export.
 One guard passed before and keeps passing (one revision logs nothing and offers no composite).
-The red commit's message says fifteen cases; the file holds sixteen.
+The red commit's message says fifteen cases;
+the file holds sixteen.
 The one case that first failed in the fix commit's own run used a zero-width space,
 which the slice grammar reads as a blank paragraph and the shape gate withheld before a composite was tried;
 it now uses a Hangul filler.
 
 Not measured:
 whether judges choose the composite.
-The investigation's census of stored `prompt-payloads/` for disjoint, line-preserving slates,
+The investigation's census of stored `prompt-payloads/` for disjoint,
+line-preserving slates,
 and a replay of the zheermao20 select round with the composite,
 need paid calls or runs directories this worktree does not hold.
 A composite is text no model read as a whole,
@@ -720,7 +736,9 @@ It is the third dropped stage record after B142 and B162.
 The fix:
 each block whose stage reported findings contributes a header
 `archive block review findings (N): <identity>`,
-the N findings exactly as the stage worded them (so a count by their wording, `stage-voice-lost`, still counts voices),
+the N findings exactly as the stage worded them (so a count by their wording,
+`stage-voice-lost`,
+still counts voices),
 and then the existing line saying what became of the block.
 The pass log carries the same findings.
 They reach the artifact through `PassPreparation`'s `alignmentFindings` (`carryingPassFindings` in `pass-prepare.ts`).
@@ -737,10 +755,13 @@ both taken from the same object in `document-lanes.ts`;
 `settled-tally.ts` prints its length;
 `repair-translation.ts` spreads it into the repair result's findings.
 No reader re-derives the list from the archive (the rebuild carves the stored archive text and does not rerun the review).
-`ARTIFACT_SCHEMA_VERSION_V19` is unmoved: the field is the same array of strings,
-and the addition is a vocabulary of findings, not a key.
+`ARTIFACT_SCHEMA_VERSION_V19` is unmoved:
+the field is the same array of strings,
+and the addition is a vocabulary of findings,
+not a key.
 
-Cache account, measured:
+Cache account,
+measured:
 `mise run //package/translation-repair/slice-cache:cache-account-audit` on the tree at `46f2959d96`
 read eight versions
 (`CONSISTENCY_CACHE_VERSION` 6,

@@ -22,13 +22,15 @@ The groups that follow name the main ones.
   review one archive block that no source block claims,
   where reviewers keep it on source or editorial support or revise it,
   and judges choose between the revisions,
-  one composite of revisions that changed disjoint lines,
+  one composite of revisions that changed disjoint stretches of lines,
+  a revision being read as the hunks a line diff makes to the block,
+  so a revision may add or remove lines,
   and the unchanged block;
   the evidence checks and the selection evidence for that choice.
   The round waits the writers' straggler window,
   since each revision is a whole candidate.
   The composite reaches the judges with its contributors' own assessments,
-  each marked with the lines that contributor changed,
+  each marked with the composite's lines that contributor put there,
   since no reviewer proposed the composite.
   Names:
   `runArchiveBlockReviewStage`,
@@ -38,6 +40,9 @@ The groups that follow name the main ones.
   `archiveBlockSelectionEvidence`,
   `withArchiveOriginal`,
   `CompositeNotOnSlateError`,
+  `hunksBetween`,
+  `hunkCollisions`,
+  `spliceHunks`,
   `voicesAsRead`.
   Declared in `archive-block-review-stage.ts`,
   `archive-block-review-wire.ts`,
@@ -46,6 +51,8 @@ The groups that follow name the main ones.
   `archive-block-selection-evidence.ts`,
   `archive-composite-revision.ts`,
   `archive-composite-lines.ts`,
+  `archive-composite-hunks.ts`,
+  `archive-composite-splice.ts`,
   and `archive-voices-as-read.ts`.
 - Archive disputes:
   read off the repair lane's chunks the slices whose archive rendering the adjudicators accepted a claim against,

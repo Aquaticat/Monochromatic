@@ -34,8 +34,10 @@ type ArchiveSelectionAssessment = {
  */
 type ArchiveCompositeAssessment = ArchiveSelectionAssessment & {
   /**
-   Lines of the composite, counted from one, that the reviewer's revision
-   changed and so the only lines the assessment covers.
+   Lines of the composite, counted from one, that the reviewer's revision put
+   there and so the only lines the assessment covers: the lines it changed or
+   added, and for lines it only removed, the line that now follows the cut
+   (ledger B803).
    */
   readonly coversLines: readonly number[];
   /**
@@ -57,7 +59,8 @@ const ASSESSMENTS_LABEL = 'PRIOR REVIEW ASSESSMENTS, opinions to check against t
  */
 const COMPOSITE_ASSESSMENTS_NOTE = '. A composite candidate was proposed by no reviewer: its entries are its '
   + 'contributors\' own assessments, copied from the candidate named in fromCandidate, and each covers only the '
-  + 'lines listed in coversLines (counted from one), the lines that reviewer changed; no reviewer assessed the '
+  + 'lines listed in coversLines (counted from one in the composite), the lines that reviewer put there, or, for '
+  + 'lines that reviewer only removed, the line that now follows the cut; no reviewer assessed the '
   + 'composite as a whole';
 
 /**
