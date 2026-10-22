@@ -273,8 +273,8 @@ const cases = [
   {
     name: 'failed-job-freed',
     file: 'src/native/tile.rs',
-    before: '            state.borrow_mut().tile_job = None;\n',
-    after: '',
+    before: '                current.tile_job = None;\n                #[cfg(debug_assertions)]\n                current.worker_failures.push(message.clone());',
+    after: '                #[cfg(debug_assertions)]\n                current.worker_failures.push(message.clone());',
     native: true,
     test: 'a_failed_worker_tile_frees_its_job_and_the_next_placement_gets_its_tile',
     failure: 'the failed job is still held'
@@ -717,8 +717,8 @@ const cases = [
   {
     name: 'overscan-early-return',
     file: 'src/native/viewport.rs',
-    before: '                super::minimap::note(&window, &state);\n            }\n            return;\n        }',
-    after: '                super::minimap::note(&window, &state);\n            }\n        }',
+    before: '        if changed {\n            render(&window, &state);\n        } else {',
+    after: '        if true {\n            render(&window, &state);\n        } else {',
     native: true,
     test: 'scrolling_inside_the_overscan_tile_does_no_source_work',
     failure: 'scrolling inside the overscan tile must not enter render'
@@ -1514,8 +1514,8 @@ const cases = [
   {
     name: 'minimap-scroll-notes-bands',
     file: 'src/native/viewport.rs',
-    before: '                super::minimap::note(&window, &state);',
-    after: '                let _ = &window;',
+    before: '            super::minimap::note(&window, &state);',
+    after: '            let _ = &window;',
     native: true,
     test: 'a_scroll_posts_a_request_only_when_it_names_other_bands',
     failure: 'the picture of the scrolled bands did not arrive'
