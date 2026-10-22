@@ -38,10 +38,10 @@ pub(super) mod wait;
 /// Applying what a pass measured,
 ///  from the poll.
 use pass::apply_pass;
-/// Both timers of the tile poll run this.
-use wait::poll_unless_step_due;
 /// The measurement key and the pass request that the render and the tests also use.
 pub(super) use pass::{current_key, sync_pass};
+/// Both timers of the tile poll run this.
+use wait::poll_unless_step_due;
 
 /// What:
 ///  Position and width of one materialized tile:
