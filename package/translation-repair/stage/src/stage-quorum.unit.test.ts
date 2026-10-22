@@ -1572,7 +1572,7 @@ await describe({
         // with the re-ask aborted once by the round's own cut, is the bound. A
         // ceiling on the elapsed time stood here, which a loaded machine could
         // outlast (`mistake-prevention.md`, "Tests on the real clock").
-        expect(cuts,).toEqual(['AbortError: This operation was aborted',],);
+        expect(cuts,).toEqual(['StragglerCutError: the round closed its grace window on this call after quorum stood',],);
       },
     },),
 
@@ -1643,7 +1643,7 @@ await describe({
         // ceiling a case sets.
         expect(cut,).toEqual({
           aborted: true,
-          reason: 'AbortError: This operation was aborted',
+          reason: 'StragglerCutError: the round closed its grace window on this call after quorum stood',
         },);
         expect(gather.findings,).toContain('stage-voice-lost (critic hf:moonshotai/Kimi-K3)',);
       },

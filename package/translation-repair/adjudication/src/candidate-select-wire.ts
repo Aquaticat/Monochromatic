@@ -193,7 +193,7 @@ export const CANDIDATE_NONE = 0;
 
  @example
  ```ts
- const ballot: CandidateBallotWire = { best: 2, reason: 'keeps the source clause order', };
+ const ballot: CandidateBallotWire = { best: 2, assessment: 'keeps the source clause order', };
  ```
  */
 export type CandidateBallotWire = {
@@ -205,8 +205,11 @@ export type CandidateBallotWire = {
 
   /**
    Why, in one line; recorded so a selection can be audited later.
+
+   NAMED `assessment` so that it sorts before `best` and Charm Hyper, which returns a tool call's keys alphabetically,
+   still gives the reason first (ledger B762). The recorded ballot keeps the name `reason`.
    */
-  readonly reason: string;
+  readonly assessment: string;
 };
 
 /**
@@ -218,7 +221,7 @@ export type CandidateBallotWire = {
 
  @example
  ```ts
- isCandidateBallotWire({ best: 1, reason: 'most natural', },);
+ isCandidateBallotWire({ best: 1, assessment: 'most natural', },);
  ```
  */
 export function isCandidateBallotWire(value: unknown,): value is CandidateBallotWire {
@@ -230,12 +233,12 @@ export function isCandidateBallotWire(value: unknown,): value is CandidateBallot
    */
   const {
     best,
-    reason,
+    assessment,
   } = value;
   return ((typeof best) === 'number')
     && Number.isInteger(best,)
     && (best >= CANDIDATE_NONE)
-    && ((typeof reason) === 'string');
+    && ((typeof assessment) === 'string');
 }
 
 /**
@@ -277,7 +280,7 @@ function isCanonicalIndexText(text: string,): boolean {
 
  @example
  ```ts
- const sent: CandidateBallotAsSent = { best: '2', reason: 'keeps the clause order', };
+ const sent: CandidateBallotAsSent = { best: '2', assessment: 'keeps the clause order', };
  ```
  */
 export type CandidateBallotAsSent = {
@@ -290,7 +293,7 @@ export type CandidateBallotAsSent = {
   /**
    Why, in one line.
    */
-  readonly reason: string;
+  readonly assessment: string;
 };
 
 /**
@@ -303,7 +306,7 @@ export type CandidateBallotAsSent = {
 
  @example
  ```ts
- isCandidateBallotAsSent({ best: '1', reason: 'most natural', },);
+ isCandidateBallotAsSent({ best: '1', assessment: 'most natural', },);
  ```
  */
 export function isCandidateBallotAsSent(value: unknown,): value is CandidateBallotAsSent {
@@ -317,11 +320,11 @@ export function isCandidateBallotAsSent(value: unknown,): value is CandidateBall
    */
   const {
     best,
-    reason,
+    assessment,
   } = value;
   return ((typeof best) === 'string')
     && isCanonicalIndexText(best,)
-    && ((typeof reason) === 'string');
+    && ((typeof assessment) === 'string');
 }
 
 /**
@@ -333,7 +336,7 @@ export function isCandidateBallotAsSent(value: unknown,): value is CandidateBall
 
  @example
  ```ts
- const ballot = readCandidateBallotWire({ sent: { best: '8', reason: 'the eighth', }, },);
+ const ballot = readCandidateBallotWire({ sent: { best: '8', assessment: 'the eighth', }, },);
  ```
  */
 export function readCandidateBallotWire(
@@ -341,7 +344,7 @@ export function readCandidateBallotWire(
 ): CandidateBallotWire {
   return {
     best: ((typeof sent.best) === 'string') ? Number(sent.best,) : sent.best,
-    reason: sent.reason,
+    assessment: sent.assessment,
   };
 }
 
@@ -355,12 +358,13 @@ export const CANDIDATE_SELECT_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
     schema: {
       type: 'object',
       required: [
-        'reason',
+        'assessment',
         'best',
       ],
       additionalProperties: false,
+      // DECLARED IN THE ORDER THE KEYS SORT (ledger B762), the reason first by the owner's ruling of 2026-10-21.
       properties: {
-        reason: { type: 'string', },
+        assessment: { type: 'string', },
         best: { type: 'integer', },
       },
     },
@@ -503,7 +507,7 @@ export function buildCandidateSelectMessages(
           + `Answer ${String(CANDIDATE_NONE,)} for "best" when NO candidate is acceptable. `
           + `Declining is a real answer and is better than endorsing a candidate you would not ship; `
           + `${declineConsequence}.\n\n`
-          + `Reply with ONLY a JSON object of shape {"reason": "...", "best": 1}. `
+          + `Reply with ONLY a JSON object of shape {"assessment": "...", "best": 1}. `
           + `No prose, no code fences.`,
     },
     {

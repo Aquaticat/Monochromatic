@@ -19,7 +19,7 @@ import type { StageDecision, } from '@monochromatic-dev/translation-repair-stage
 // (`buildCandidateSelectMessages`), as a state object, and one choice
 // question over the candidate numbers plus the decline. A decision seat
 // answers with a number and a distribution and never a reason, so the
-// ballot's `reason` carries the distribution, which is the audit trail a
+// ballot's `assessment` carries the distribution, which is the audit trail a
 // typed judge can give.
 //
 // THE HOUSE RULES TRAVEL IN THE STATE (the whole-package audit, 2026-09-27).
@@ -93,7 +93,7 @@ function readTypedBallot(
   // which no answer said (ledger T8).
   return {
     best: best.choice,
-    reason: `${TYPED_BALLOT_REASON}: probabilities ${
+    assessment: `${TYPED_BALLOT_REASON}: probabilities ${
       (best.probabilities === undefined) ? UNREPORTED : JSON.stringify(best.probabilities,)
     }, confidence ${(best.confidence === undefined) ? UNREPORTED : String(best.confidence,)}`,
   };

@@ -84,6 +84,14 @@ export const CONTEST_POLICY: string = [
  reply is read by property name, so the order changes only what a model
  writes first.
 
+ THE KEYS ARE NAMED SO THAT THEY SORT IN THAT ORDER (ledger B762): `assessment`
+ is the reason, `dropped` and `unsupported` the two findings lists, `verdict`
+ the choice and `verdictOnArchive` the archive answer. Charm Hyper returns a
+ tool call's keys alphabetically, so a schema declared in another order gives
+ the reason first on three providers and last on one. The ballot a reader
+ builds from the reply keeps the names `reason`, `choice` and `archive` it is
+ stored under.
+
  NAMED PER CONTEST, because the schema name is what a provider log and a
  degradation finding call this stage, and two stages sharing one name are two
  stages nobody can tell apart afterwards.
@@ -115,7 +123,7 @@ export function contestResponseFormat(
    so a third contest added later cannot inherit a choice nobody made.
    */
   const archiveProperty = asksArchive
-    ? { archive: { type: 'string', }, }
+    ? { verdictOnArchive: { type: 'string', }, }
     : {};
 
   /**
@@ -126,7 +134,7 @@ export function contestResponseFormat(
    model that ignores it is kept from losing its lane ballot too.
    */
   const archiveRequired: readonly string[] = asksArchive
-    ? ['archive',]
+    ? ['verdictOnArchive',]
     : [];
 
   return {
@@ -135,24 +143,29 @@ export function contestResponseFormat(
       name: schemaName,
       schema: {
         type: 'object',
+        // DECLARED IN THE ORDER THE KEYS SORT (ledger B762), which is the order the owner ruled on 2026-10-21
+        // ("Reason first everywhere"): the assessment, the two findings lists, the verdict, then the verdict on the
+        // archive where this contest asks for one. `verdictOnArchive` sorts after `verdict`, so a provider that
+        // returns a tool call's keys alphabetically keeps the archive answer behind the reason and the choice. The
+        // scan of `source-scan` passes over the spread member, so `contest-ballot-wire.unit.test.ts` pins its place.
         properties: {
-          reason: { type: 'string', },
-          unsupported: {
-            type: 'array',
-            items: { type: 'string', },
-          },
+          assessment: { type: 'string', },
           dropped: {
             type: 'array',
             items: { type: 'string', },
           },
-          choice: { type: 'string', },
+          unsupported: {
+            type: 'array',
+            items: { type: 'string', },
+          },
+          verdict: { type: 'string', },
           ...archiveProperty,
         },
         required: [
-          'reason',
-          'unsupported',
+          'assessment',
           'dropped',
-          'choice',
+          'unsupported',
+          'verdict',
           ...archiveRequired,
         ],
       },

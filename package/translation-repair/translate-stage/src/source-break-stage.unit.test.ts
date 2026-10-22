@@ -59,7 +59,7 @@ await describe({
               expect(userText,).toContain(SOURCE,);
             }
             /** A compliant first answer should not trigger an author-repair schema. */
-            const value: unknown = writing ? { translation: TRANSLATED, } : { best: 1, reason: 'Faithful lines and visible break.', };
+            const value: unknown = writing ? { translation: TRANSLATED, } : { best: 1, assessment: 'Faithful lines and visible break.', };
             if (!request.validate(value,))
               throw new Error('Unexpected role or response schema',);
             return { kind: 'ok', value, rawText: JSON.stringify(value,), };

@@ -6,8 +6,8 @@ import {
   CONSISTENCY_CACHE_VERSION,
   type ConsistencyChoiceVoice,
   type ConsistencyVoice,
-  isConsistencyBallotWire,
-  isConsistencyChoiceWire,
+  isConsistencyBallot,
+  isConsistencyChoiceBallot,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
 import {
   hashContent,
@@ -201,13 +201,13 @@ function isConsistencyCacheValue(value: unknown,): value is ConsistencyCacheValu
   if (value.kind === undefined) {
     return voices.every(function isVoice(voice,): boolean {
       return isJsonRecord(voice,) && ((typeof voice.seat) === 'string')
-        && isConsistencyBallotWire(voice,);
+        && isConsistencyBallot(voice,);
     },);
   }
   if (value.kind === 'choice') {
     return voices.every(function isVoice(voice,): boolean {
       return isJsonRecord(voice,) && ((typeof voice.seat) === 'string')
-        && isConsistencyChoiceWire(voice,);
+        && isConsistencyChoiceBallot(voice,);
     },);
   }
   return (value.kind === 'writers') && voices.every(function isVoice(voice,): boolean {

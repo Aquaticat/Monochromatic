@@ -157,7 +157,7 @@ function recordingClient(
         : (schema === 'candidate_ballot')
           ? {
             best: 1,
-            reason: 'the box is the whole point',
+            assessment: 'the box is the whole point',
           }
           : undefined;
       if ((value === undefined) || (!request.validate(value,)))

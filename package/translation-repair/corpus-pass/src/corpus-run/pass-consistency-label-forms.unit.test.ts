@@ -149,8 +149,8 @@ function firstRoundInOtherForms({ seat, }: { readonly seat: RosterModelId; },): 
   return {
     kind: 'answers',
     text: JSON.stringify({
-      reason: `${seat} words the first place best.`,
-      quotes: [
+      assessment: `${seat} words the first place best.`,
+      candidateQuotes: [
         { label: '1', quote: 'The cat naps.', },
         { label: ' occurrence 2', quote: 'The kitten naps.', },
         { label: 'Occurrence 3', quote: 'The tabby naps.', },
@@ -174,7 +174,7 @@ function firstRoundInOtherForms({ seat, }: { readonly seat: RosterModelId; },): 
  ```
  */
 function runOffInOtherForms({ seat, }: { readonly seat: RosterModelId; }): SeatBehaviour {
-  return { kind: 'answers', text: JSON.stringify({ reason: `${seat} prefers its place.`, choice: FORMS.get(seat,), },), };
+  return { kind: 'answers', text: JSON.stringify({ assessment: `${seat} prefers its place.`, choice: FORMS.get(seat,), },), };
 }
 
 /**
@@ -336,8 +336,8 @@ await describe({
           name: 'STORES EACH CHOICE AS THE SHOWN LABEL IT NAMES when the labels are given, and as heard when they are not',
           fn: async () => {
             const voices = [
-              { modelId: SEAT_HYPER_ONLY, value: { reason: 'r', choice: 'Candidate 2', }, },
-              { modelId: SEAT_BEDROCK_ONLY_TEXT, value: { reason: 'r', choice: '1', }, },
+              { modelId: SEAT_HYPER_ONLY, value: { assessment: 'r', choice: 'Candidate 2', }, },
+              { modelId: SEAT_BEDROCK_ONLY_TEXT, value: { assessment: 'r', choice: '1', }, },
             ];
             expect(
               choiceRecordOf({ quorum: 2, voices, findings: [], labels: ['CANDIDATE 1', 'CANDIDATE 2',], },).voices.map(

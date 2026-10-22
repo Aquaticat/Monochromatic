@@ -194,22 +194,22 @@ function rejectingClient(
         : (schema === 'candidate_ballot')
         ? {
           best: 0,
-          reason: rejection,
+          assessment: rejection,
         }
         : (schema === 'consolidate_gate')
         ? {
-          choice: 'consolidated',
+          verdict: 'consolidated',
           unsupported: [],
           dropped: [],
-          reason: 'faithful',
+          assessment: 'faithful',
         }
         : (schema === 'refine_report')
         ? { rewrites: [], }
         : (schema === 'absolute_naturalness_review')
         ? {
-          acceptable: true,
+          isAcceptable: true,
           findings: [],
-          reason: 'publication-ready',
+          assessment: 'publication-ready',
         }
         : undefined;
       if (value === undefined)

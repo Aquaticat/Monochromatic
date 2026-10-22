@@ -6,10 +6,14 @@
  THE FIGURES ARE THE MATRIX'S OF 2026-10-20 (`generated_at` 2026-10-20, a
  7-day window, `Wh_per_request` mean on the charged basis) from
  `https://portal.neuralwatt.com/api/energy-pricing/matrix`, EXCEPT THE 4,096 TO
- 16,384 TOKEN BUCKET, which is the pipeline's own mean over the settled calls of
- run `zheermao19` (build `5b5dca49a9`, 2026-10-20): 140 DeepSeek V4.1 Flash
- calls for 10.613 Wh and 48 GLM-5.3-Flash calls for 17.882 Wh. They are pinned
- here so a change to the table in the source is a change to this file too.
+ 16,384 AND 16,384 TO 65,536 TOKEN BUCKETS, which are the pipeline's own means
+ over the settled calls of the three-run rotation `zheermao22`,
+ `CuspariaKLSY22` and `XingZ6017` (2026-10-21 and 2026-10-22, all in one
+ NeuralWatt day): 4,096 to 16,384 tokens, 558 DeepSeek V4.1 Flash calls for
+ 109.253 Wh (0.1958) and 298 GLM-5.3-Flash calls for 285.402 Wh (0.9577);
+ 16,384 to 65,536 tokens, 385 DeepSeek calls for 123.392 Wh (0.3205) and 30 GLM
+ calls for 36.716 Wh (1.2239). They are pinned here so a change to the table in
+ the source is a change to this file too.
 
  @module
  */
@@ -29,28 +33,29 @@ import {
 
 /**
  The bucket means for `deepseek-v4.1-flash`, by prompt-token bucket: the
- matrix's, and the measured one for 4,096 to 16,384 tokens.
+ matrix's, and the measured ones for 4,096 to 16,384 and 16,384 to 65,536
+ tokens.
  */
 const DEEPSEEK_MEANS = [
   0.0011364,
   0.0073264,
   0.0233012,
-  0.0758,
-  0.1394705,
+  0.1958,
+  0.3205,
   0.2784429,
   0.6078422,
 ] as const;
 
 /**
  The bucket means for `glm-5.3-flash`, by prompt-token bucket: the matrix's,
- and the measured one for 4,096 to 16,384 tokens.
+ and the measured ones for 4,096 to 16,384 and 16,384 to 65,536 tokens.
  */
 const GLM_MEANS = [
   0.0030471,
   0.0088908,
   0.0389276,
-  0.3725,
-  0.2008592,
+  0.9577,
+  1.2239,
   0.3999211,
   0.9089305,
 ] as const;

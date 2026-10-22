@@ -142,6 +142,7 @@ named for that subject and listed here.
   - [Readers of the package's own log lines](mistake-prevention-inputs-defaults-and-values-read-from-text.md#readers-of-the-packages-own-log-lines)
   - [Provider fields read by their documentation](mistake-prevention-inputs-defaults-and-values-read-from-text.md#provider-fields-read-by-their-documentation)
   - [Two layers reading one refusal](mistake-prevention-inputs-defaults-and-values-read-from-text.md#two-layers-reading-one-refusal)
+  - [Rulings held as prose](mistake-prevention-inputs-defaults-and-values-read-from-text.md#rulings-held-as-prose)
 - [Preventing mistakes: messages, labels and counts](mistake-prevention-messages-labels-and-counts.md):
   Rules for what a refusal,
   finding or printed line says:
@@ -161,6 +162,7 @@ named for that subject and listed here.
   - [Log lines that report nothing done](mistake-prevention-messages-labels-and-counts.md#log-lines-that-report-nothing-done)
   - [Counts that include calls never made](mistake-prevention-messages-labels-and-counts.md#counts-that-include-calls-never-made)
   - [Provider names in failures](mistake-prevention-messages-labels-and-counts.md#provider-names-in-failures)
+  - [Two readers of one fact](mistake-prevention-messages-labels-and-counts.md#two-readers-of-one-fact)
 - [Preventing mistakes: moves, splits and rewrite scripts](mistake-prevention-moves-splits-and-rewrite-scripts.md):
   Rules for moving or rewriting many files at once:
   the dry run,

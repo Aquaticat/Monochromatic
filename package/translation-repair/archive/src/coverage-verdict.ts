@@ -271,7 +271,7 @@ function weighVoice(
     document,
     side: 'target',
     quote: voice.value
-      .quote,
+      .copiedSpan,
     ...((original === undefined) ? {} : { original, }),
   },);
   if (!located.located) {
@@ -280,7 +280,7 @@ function weighVoice(
       anchored: false,
       misattributed: false,
       quote: voice.value
-        .quote,
+        .copiedSpan,
       matched: '',
     };
   }
@@ -299,7 +299,7 @@ function weighVoice(
     anchored: !misattributed,
     misattributed,
     quote: voice.value
-      .quote,
+      .copiedSpan,
     matched: misattributed ? '' : matchedRegion({
       document,
       anchors: located.anchors,

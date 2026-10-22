@@ -233,6 +233,21 @@ export type OpenRouterCard = ServedCard<OpenRouterServedId> & {
    streams, or `'unmeasured'` for the median of the measured models.
    */
   readonly rawCharsPerToken: number | 'unmeasured';
+
+  /**
+   Silence allowed before this model's first generated text, in place of the
+   shared first-content window of the stream guard (`STREAM_FIRST_CONTENT_MS`),
+   when a measurement of this model alone supports a shorter one; absent where
+   the shared window stands. It can only be shorter than the shared window: a
+   card that needs a longer one is a decision about the shared window.
+
+   THE PRECEDENT IS THE BEDROCK CARD'S `streamBoundMs`: a bound that comes from
+   one model's own measurement, not one number for every call. The shared
+   window is set against the providers that send no comment lines, so it says
+   nothing of an OpenRouter model whose gateway writes `: OPENROUTER PROCESSING`
+   while it waits for the upstream provider (ledger B804, B809).
+   */
+  readonly firstContentMs?: number;
 };
 
 /**

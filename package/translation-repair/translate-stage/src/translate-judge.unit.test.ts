@@ -188,7 +188,7 @@ function driftingClient(): {
          */
         const ballot: unknown = {
           best: 0,
-          reason: 'fixture',
+          assessment: 'fixture',
         };
         if (!request.validate(ballot,)) {
           return {
@@ -930,7 +930,7 @@ await describe({
                  */
                 const ballot: unknown = {
                   best: 1,
-                  reason: 'the only candidate on this hand-built slate',
+                  assessment: 'the only candidate on this hand-built slate',
                 };
                 if (!request.validate(ballot,)) {
                   return {

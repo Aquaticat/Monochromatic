@@ -173,17 +173,17 @@ function evidenceClient(
             disposition: 'revise',
             sourceQuote: '',
             replacementText: 'Aside B',
-            finding: 'Remove unsupported archive-only wording.',
+            assessment: 'Remove unsupported archive-only wording.',
           }
           : {
             disposition: 'source-supported',
             sourceQuote: 'Cats purr.',
             replacementText: '',
-            finding: 'The original supports it.',
+            assessment: 'The original supports it.',
           },
         candidate_ballot: {
           best: 1,
-          reason: 'Correction removes unsupported wording.',
+          assessment: 'Correction removes unsupported wording.',
         },
       };
       /**

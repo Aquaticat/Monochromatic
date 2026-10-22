@@ -360,3 +360,76 @@ State after `tr-w263` landed,
   run the rotation sweep,
   and restart the rotation at `zheermao23`,
   then `CuspariaKLSY23` and `XingZ6018`.
+
+State after `XingZ6017` settled,
+2026-10-22 (UTC):
+
+- `XingZ6017` reached `DONE` 1/1 at 03:34:09 UTC after 268.7 min,
+  settled with 118 slices.
+  It ran on `2a336603bf`,
+  before `e336d8efc7` (first-content window 180 s,
+  notes to the polish writers)
+  and `f829fc31b6` (K4 by line diff) landed,
+  so its K2 and K3 counts are a baseline from before those fixes.
+- At its end the meters read NeuralWatt at -5.188 Wh against the 550 Wh day that started at 19:15:08 UTC on 2026-10-21,
+  Hyper at a balance of 0,
+  Synthetic dry,
+  Bedrock held out after one HTTP 401,
+  and OpenRouter at 4.15 USD.
+- The next pass (`zheermao23`) waits for the NeuralWatt day starting at 19:15 UTC on 2026-10-22:
+  before then only OpenRouter can serve,
+  and this pass spent 9.2 USD there in the 114 min it carried the run alone.
+- The fixes for that window,
+  each in its own keyless worktree from `24c736ea80`:
+  - `tr-w270`:
+    the NeuralWatt estimate read 2.84 times under what the calls used (ledger B808).
+  - `tr-w271`:
+    rounds held open by streams that never answer,
+    and seats asked again after they were abandoned (B809,
+    B810).
+  - `tr-w272`:
+    the per-slice coverage rounds over the untranslated tail,
+    about 12 min of preparation (B811).
+  - `tr-w273`:
+    the `XingZ6017` read filed in the pass log and readiness signal.
+- `tr-w270` (B808) is committed (`648737d056` red,
+  `a55cb37c91` fix) and waits for its gate.
+  The new holds are pooled means over `zheermao22`,
+  `CuspariaKLSY22` and `XingZ6017`:
+  in the 4,096 to 16,384 bucket DeepSeek 0.1958 Wh (558 calls) and GLM 0.9577 Wh (298 calls),
+  in the 16,384 to 65,536 bucket DeepSeek 0.3205 Wh (385 calls) and GLM 1.2239 Wh (30 calls,
+  all from `XingZ6017`).
+  The margin stays 1.
+  Replayed against each run,
+  the table holds `zheermao22` at 1.8 times its use,
+  `CuspariaKLSY22` at 1.3 and `XingZ6017` at 0.92.
+  The three runs used 555.188 Wh together,
+  all of that NeuralWatt day.
+  The ratio follows the entry and not the date (1.23,
+  2.00,
+  0.87,
+  1.39,
+  1.94,
+  2.84 over six runs in order).
+  `doc/decision/translation-repair-neuralwatt-provider.md` and ledger P19 still cite the old figures;
+  the docs round updates them.
+- `tr-w272` (B811) changed nothing,
+  and the worktree was retired:
+  the coverage rounds are the first of the two signatures `doc/decision/translation-repair-absence-verdict.md` requires,
+  and a majority `carried` or `partly-carried` tail verdict keeps a row out,
+  whatever the bound says.
+  Over 36 logs,
+  1249 rounds,
+  all on the `XingZ60` page,
+  returned 955 `absent` and 294 `split`,
+  and no other verdict.
+  Left open:
+  ending a round once its outcome is fixed would save at most about 7 of the 12 min.
+  That conflicts with the grace decision in `doc/decision/translation-repair-straggler-grace.md`.
+  The order in which voices arrive is not logged,
+  so a first step would be logging it.
+- The last landing should be done by 16:30 UTC;
+  then rebuild the branch worktree,
+  take its digest,
+  update `FROZEN`,
+  and launch `zheermao23` after 19:15 UTC.

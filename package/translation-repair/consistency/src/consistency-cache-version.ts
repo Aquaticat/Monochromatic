@@ -112,6 +112,15 @@
  sheet can make. Of the 92 pinned English archives 10 hold a note their original lacks (34 notes in all), so a sheet changes for
  at most those 10 entries.
 
+ Stays at 6 for the alphabetical reply keys (owner decision of 2026-10-21 under the ruling "Reason first everywhere"; ledger B762):
+ the three judging sheets ask for `assessment`, `candidateQuotes`, `choice` and `keep`, and the choice-only sheets for
+ `assessment` and `choice`, where they asked for `reason`, `quotes`, `choice` and `keep` and for `reason` and `choice`. Only the
+ reply is renamed. A function in `consistency-wire.ts` and one in `consistency-choice.ts` map the reply to the ballot, and the
+ ballot, its guard and the stored answer keep the names `reason` and `quotes`, so what a stored answer must contain and what
+ makes it usable are what they were. The key digests the exact sheet, whose reply instruction changed, so each judge asks anew
+ under a key of its own and an answer stored under the old sheet is never found: the rule that a change to a sheet's wording
+ moves the key and not the number.
+
  @example
  ```ts
  const material = JSON.stringify({ version: CONSISTENCY_CACHE_VERSION, sheet, roster, },);

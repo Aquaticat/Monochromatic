@@ -71,7 +71,7 @@ const FINDS_NOTHING = JSON.stringify({
       severity: '',
       evidence: '',
       omittedText: '',
-      reason: '',
+      verdictReason: '',
     },
   ],
 },);
@@ -88,7 +88,7 @@ const QUOTES_THE_ADDITION = JSON.stringify({
       severity: 'minor',
       evidence: 'It purrs.',
       omittedText: '',
-      reason: 'The cat is given a purr the original does not state.',
+      verdictReason: 'The cat is given a purr the original does not state.',
     },
   ],
 },);

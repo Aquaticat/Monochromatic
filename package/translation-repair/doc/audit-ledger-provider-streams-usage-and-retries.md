@@ -3,7 +3,8 @@
 Provider fields read otherwise than the provider documents them:
 stream events,
 usage counts,
-and the refusals a retry decision reads.
+the refusals a retry decision reads,
+and the rounds that waited on a stream that sent only comment lines or on a seat abandoned again and again.
 
 Part of [Audit ledger](audit-ledger.md),
 which lists every file of this record.
@@ -644,3 +645,292 @@ a bound is checked,
 at the place both numbers are read,
 against the deadline that would pre-empt it,
 and progress means the output the bound is for.
+
+## B809: rounds waited five minutes on one stream that sent only comment lines
+
+Status:
+fixed in part on 2026-10-22 (UTC),
+red `731c541fa2`,
+fix `9614ff8336`,
+docs `cd456d450e`,
+count correction `6eb6109ed7`,
+cache versions none.
+Found in the read of the corpus pass `XingZ6017`
+(23:05 UTC on 2026-10-21 to 03:34 UTC on 2026-10-22,
+build `2a336603bf`)
+and fixed in `w271`.
+The per-card window of this entry is open to the owner's veto.
+
+What the run showed:
+27 rounds took 250 s or more.
+26 of them waited on an `inception/mercury-2.5` stream with one signature.
+The first byte came at 735 to 975 ms,
+the largest silence between chunks was 530 to 779 ms,
+and the stream held 18181 raw characters
+(727 lines of `: OPENROUTER PROCESSING` and their blank lines;
+every raw count is a multiple of 25),
+0 answer characters and 0 reasoning characters.
+The stream "completed" at about 301.3 s with an HTTP 502 inside a 200 stream
+(`code 502, type provider_unavailable`),
+the ladder retried it at once,
+and the retry answered in 5 to 9 s.
+The 301 s is the gateway's bound,
+which is an inference;
+the call deadline is 360 s.
+Those 26 rounds held 28 such streams,
+because the coverage round at line 1199 and the review round at line 31111 each held two in a row.
+Line 31111 was 267 s,
+then 92 s until the 360 s deadline,
+and it ended with no quorum.
+The 27th round,
+line 37385,
+was a slow live `hf:Qwen/Qwen3.8-27B` stream that answered at 303.6 s with its gaps under 68 s;
+it is correct to wait for it.
+No round of the 27 was a stream with no first byte or one that delivered text and then went quiet.
+The rounds that waited on a comment-only stream,
+by log line:
+1199,
+1683,
+8015,
+13102,
+13298,
+13881,
+15503,
+16005,
+16732,
+17268,
+17524,
+27349,
+28776,
+30503,
+31065,
+31111,
+31348,
+31730,
+32531,
+33466,
+34300,
+35153,
+35511,
+35778,
+35959 and 36388.
+The per-round table is `classification.md` in `~/temp/agent/tr-fan/tr-w271-notes/`,
+outside the repository.
+
+Why the grace never applied:
+a consolidation bench of 7 with 3 seats unreachable needs 4 voices,
+which is every live seat
+(`quorumNeeded=4 quorumOver=7 unreachable=3`,
+line 28777),
+and a repair checker or probe bench of 3 with Kimi-K3 unreachable needs 2 of 2 live seats.
+`reachableQuorum` (`stage-reachable-quorum.ts`) returns the bench quorum
+whenever the reachable seats are not fewer than it,
+and the straggler grace opens only once the quorum stands,
+so it cannot open before the one hung voice.
+This is the owner's rule of 2026-09-09 (a quorum sized on the reachable bench) working as written,
+and it is not changed.
+
+What the code already did:
+the first-content window of 180000 ms (B804,
+`2866c62ebd` and `e2c0cbbf90`) lives in the transport,
+resets only on a content or reasoning delta,
+and its abort is retried by `exchangeWithRetry`;
+it does not depend on quorum or grace.
+Two of the guards this entry first looked for,
+a first-content cut whether or not a quorum stands
+and a stall bound on a stream whose text stopped,
+were therefore present at the worktree's base:
+the first-content window cuts comment-only streams at 180 s,
+and the idle window of 120000 ms bounds a stream whose text stopped.
+Neither had a log to act on in the run,
+which predates both.
+Under that code each of the 26 rounds would have ended its bad stream at 180 s instead of 301 s,
+about 186 s per round instead of about 306 s.
+
+What changed:
+the shared window is set against providers that send no comment lines
+and says nothing of an OpenRouter model whose gateway writes them.
+A card can now name a window of its own,
+as the Bedrock card names its stream bound:
+`OpenRouterCard.firstContentMs` (`shared-contract`),
+`TransportExchange.firstContentMs`,
+which `fetchTransport` hands to `armIdleGuard`,
+and the OpenRouter client copies the card's window onto each exchange
+(`openRouterFirstContentWindowFor`,
+`openrouter-catalog.ts`).
+Only the Mercury card names one,
+90000 ms.
+
+The evidence for 90000 ms:
+`seat-stream-stats.ts` over the 24 pass logs on disk (`CuspariaKLSY16` to `XingZ6017`) found
+4636 Mercury streams that delivered text,
+with elapsed p50 6680 ms,
+p99 20250 ms and longest 56772 ms.
+The first text comes no later than the end of the stream,
+so 56772 ms bounds it from above.
+No Mercury stream that ran 60 s or more without text ever delivered any
+(130 such streams,
+96 with raw counts that are multiples of 25).
+The window is 59 percent over the longest observation,
+the margin B804 gave the shared window (56 percent).
+The other six OpenRouter models in the logs
+(`deepseek/deepseek-v4.1-flash`,
+`deepseek/deepseek-v4.1-flash-1017`,
+`google/gemma-4-26b-a4b-it`,
+`minimax/minimax-m3`,
+`xiaomi/mimo-v2.6-flash`
+and `z-ai/glm-5.3-flash`)
+show no stream silent for 60 s or more,
+so none has the evidence and none gets a window.
+With the card window each of the 26 rounds ends its bad stream at 90 s and the retry answers in about 6 s,
+about 96 s per round instead of about 306 s;
+the round of line 31111 takes about 190 s instead of 360 s.
+
+Red and green:
+`transport-first-content-window.unit.test.ts` in the provider-stream package
+cuts a stream of comment lines at a window named on the exchange
+and reads the same stream whole on an exchange that names none.
+`openrouter-first-content-window.unit.test.ts` in the provider package reads the window off the Mercury exchange,
+none off the exchange of a card that names none,
+and pins the card's window at least half again over 56772 ms and under the shared window.
+The red commit failed on both assertions that name the window,
+and its control passed.
+The fix commit also moves the exchange-keeping test transport into `recording-transport.test-fixture.ts`
+(`provider-named-exchange.unit.test.ts` used its own copy)
+and lists the new test bounds in `real-clock-bounds.unit.test.ts`.
+The count correction `6eb6109ed7` made the card comment,
+the guard note and both test headers say 26 rounds,
+where they had said 28:
+28 is the count of such streams.
+
+Fits the decisions:
+`doc/decision/translation-repair-straggler-grace.md` says
+"No grace change is authorized before active runs finish and matched evidence exists",
+and this change touches no grace window and no round-ending rule.
+The first-content window is a stream guard set in
+`doc/decision/translation-repair-runaway-call-termination-stall-window-premise-and-straggler-cuts-remeasured.md`,
+which says it stays open for the owner to loosen the window if the next runs show healthy streams cut,
+or to tighten it once `firstContent` figures show how long healthy first text takes.
+`XingZ6017` predates the `firstContent` field,
+so the figure used is the elapsed time of a stream that delivered text,
+an upper bound on the first text,
+which can only make the window safer than the true figure would.
+That is tightening for one model on a bound from above,
+not the measurement the decision names,
+and it is flagged here and in that decision's section "The windows armed on 2026-10-21".
+
+Not verified:
+the whole path (guard cut,
+ladder retry,
+second attempt returned to the caller) with the real transport has no test.
+Each leg has one:
+`stream-content-progress.unit.test.ts` and the new transport test for the cut,
+and `transient-retry.unit.test.ts` for the ladder retrying a `StreamCutShortError`.
+A test over the real clock at 90 s was not written.
+The gateway's 301 s bound is inferred.
+Whether Mercury's hang rate (about 5 percent of its calls in `XingZ6017`,
+no hour without one) continues is unknown.
+
+Open to the owner's veto:
+90000 ms for the Mercury card (`firstContentMs` in `model-cards.ts`);
+whether to read `firstContent` figures from the next pass log before keeping it;
+and,
+as a policy question the evidence cannot settle,
+whether a short bench that needs every live seat should wait on its last seat at all
+(the rule of 2026-09-09;
+no change made).
+
+## B810: a seat abandoned again and again is asked every round; the evidence rejects a hold
+
+Status:
+examined on 2026-10-22 (UTC) in `w271`;
+no code change,
+because a hold on a seat abandoned again and again was tested against the log and rejected.
+Found in the read of `XingZ6017`.
+
+What the run showed:
+98 `abandoned 120000ms after quorum` lines:
+`inception/mercury-2.5` 52,
+`hf:Qwen/Qwen3.8-27B` 43,
+`deepseek-v4.1-flash` 2 and
+`minimax-m3` 1.
+The tally counts an abandoned call as `abandoned` and in neither `asked` nor `threw` (B421,
+revised 2026-10-19),
+so no seat is withheld for it.
+After Synthetic read wet at 02:39:44 UTC on 2026-10-22,
+Qwen was seated again.
+Of its 95 streams from then on,
+40 were cut with 0 answer characters (28 to 49 thousand reasoning characters) and 50 answered
+(`qwen-era-out.txt`).
+The mean consolidation slice cost rose from 149 s to 315 s and 346 s,
+and fell to 104 s when Synthetic went dry at 03:26:35 UTC.
+
+The two seats are different.
+Mercury's cuts are the comment-only hangs of B809,
+about 5 percent of its 1535 streams,
+independent of each other:
+the longest run of consecutive silent cuts in `XingZ6017` was 2.
+Qwen's cuts are a working seat's slow tail.
+The streams that answered carry 15 to 50 thousand reasoning characters,
+the same range as the cut ones,
+and took,
+over the whole run,
+p50 82 s,
+p90 160 s and longest 304 s,
+while the cut ones land at 125 to 193 s
+because quorum arrives in seconds and the grace is 120 s.
+The grace is the owner's choice of 2026-09-03,
+taken with the 60 s window's cuts all read as reasoning streams still working,
+and 7 cut streams at 120 s.
+
+The hold,
+simulated (`hold-sim.ts`,
+`run-census.ts`,
+in `~/temp/agent/tr-fan/tr-w271-notes/`):
+a seat held for H minutes after N consecutive silent abandonments with no answer between,
+over Qwen's 95 streams.
+
+- N=3 and a hold of 10 min:
+  20 cuts avoided,
+  25 answers forgone.
+- N=4 and a hold of 10 min:
+  18 avoided,
+  24 forgone.
+- N=4 and a hold of 30 min:
+  25 avoided,
+  34 forgone.
+- N=5 and a hold of 10 min:
+  8 avoided,
+  14 forgone.
+- N=6:
+  never fires.
+
+At every setting tried the hold forgoes more answers than the cuts it avoids,
+because Qwen answers about 55 percent of the time.
+Over 17 pass logs the longest run of consecutive silent cuts by Qwen was 5 (`XingZ6017`)
+and by Mercury 9 (`CuspariaKLSY22`,
+a day Mercury hung on 33 of 69 streams).
+A hold also turns a bench of five reachable seats into four,
+which is the shape of B809 again:
+the quorum becomes every live seat,
+so the grace cannot open,
+and the wall-clock saved is smaller than the cuts avoided suggest.
+Quality comes before speed,
+and the protection of B421 is doing what it was built for,
+so no abandonment-counting hold was built.
+
+Not built:
+a dead-seat hold,
+N=6 consecutive silent cuts and then ten minutes,
+would have fired only on Mercury in `CuspariaKLSY22`
+and on no Qwen run in 17 logs.
+One log is thin evidence,
+and the first-content window of B809 now ends such a stream before the grace does.
+
+What stays open,
+for the owner:
+whether `hf:Qwen/Qwen3.8-27B` should sit on the consolidation and late-judge benches at all
+while Synthetic serves it at 2 percent,
+the question `HYPER_SLOW_JUDGES` and `HYPER_SLOW_SELECT_JUDGES` (`run-seats.ts`)
+answered for Hyper with the owner's authorization.
+The figures of this entry are the evidence to put beside it.

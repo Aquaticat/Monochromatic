@@ -322,9 +322,9 @@ export async function reviewAbsoluteNaturalness(
     const reply = voice.value;
     return {
       modelId: outcome.modelId,
-      status: reply.acceptable ? 'acceptable' : 'unacceptable',
+      status: reply.isAcceptable ? 'acceptable' : 'unacceptable',
       findings: reply.findings,
-      reason: reply.reason,
+      reason: reply.assessment,
     };
   },);
   /**

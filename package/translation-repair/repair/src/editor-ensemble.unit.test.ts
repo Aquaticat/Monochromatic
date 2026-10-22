@@ -127,7 +127,7 @@ function backingClient({ backed, }: { readonly backed: string; },): ModelClient 
             .join('\n',),
           needle: backed,
         },),
-        reason: 'scripted',
+        assessment: 'scripted',
       };
       if (!request.validate(scripted,))
         throw new Error('stub script failed the ballot guard',);

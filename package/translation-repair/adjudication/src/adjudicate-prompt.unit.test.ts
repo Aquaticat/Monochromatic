@@ -139,7 +139,7 @@ await describe({
             /**
              Where the reply shape the sheet shows names each field.
              */
-            const shape = system.slice(system.indexOf('{"verdicts"',),);
+            const shape = system.slice(system.indexOf('{"groups"',),);
             expect(shape.indexOf('"reason"',),).toBeGreaterThan(0,);
             expect(shape.indexOf('"reason"',),).toBeLessThan(shape.indexOf('"vote"',),);
           },

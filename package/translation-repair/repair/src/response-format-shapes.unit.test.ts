@@ -78,14 +78,14 @@ await describe({
       name: 'CANDIDATE_SELECT_RESPONSE_FORMAT',
       children: [
         it({
-          name: 'names the candidate_ballot schema and requires reason and best on every ballot, so a '
+          name: 'names the candidate_ballot schema and requires assessment and best on every ballot, so a '
             + 'ballot cannot name a candidate without a reason attached, the reason declared before the '
             + 'candidate number (owner, 2026-10-21, "Reason first everywhere")',
           fn: async () => {
             expect(CANDIDATE_SELECT_RESPONSE_FORMAT.json_schema.name,).toBe('candidate_ballot',);
             const schema = JSON.stringify(CANDIDATE_SELECT_RESPONSE_FORMAT.json_schema.schema,);
-            expect(schema,).toContain('"required":["reason","best"]',);
-            expect(schema.indexOf('"reason":{',),).toBeLessThan(schema.indexOf('"best":{',),);
+            expect(schema,).toContain('"required":["assessment","best"]',);
+            expect(schema.indexOf('"assessment":{',),).toBeLessThan(schema.indexOf('"best":{',),);
           },
         },),
       ],
@@ -94,15 +94,15 @@ await describe({
       name: 'COVERAGE_RESPONSE_FORMAT',
       children: [
         it({
-          name: 'names the coverage_report schema, requires reason, quote and coverage, the reason '
+          name: 'names the coverage_report schema, requires assessment, copiedSpan and coverage, the reason '
             + 'declared before the verdict (owner, 2026-10-21, "Reason first everywhere"), and limits '
             + 'coverage to full, partial or none, so a wider or narrower degree could not reach the '
             + 'guard even mislabeled',
           fn: async () => {
             expect(COVERAGE_RESPONSE_FORMAT.json_schema.name,).toBe('coverage_report',);
             const schema = JSON.stringify(COVERAGE_RESPONSE_FORMAT.json_schema.schema,);
-            expect(schema,).toContain('"required":["reason","quote","coverage"]',);
-            expect(schema.indexOf('"reason":{',),).toBeLessThan(schema.indexOf('"coverage":{',),);
+            expect(schema,).toContain('"required":["assessment","copiedSpan","coverage"]',);
+            expect(schema.indexOf('"assessment":{',),).toBeLessThan(schema.indexOf('"coverage":{',),);
             expect(schema,).toContain('"enum":["full","partial","none"]',);
           },
         },),
@@ -134,7 +134,7 @@ await describe({
             expect(EDITOR_RESPONSE_FORMAT.json_schema.name,).toBe('editor_report',);
             const schema = JSON.stringify(EDITOR_RESPONSE_FORMAT.json_schema.schema,);
             expect(schema,).toContain('"required":["edits"]',);
-            expect(schema,).toContain('"required":["region","newText"]',);
+            expect(schema,).toContain('"required":["newText","region"]',);
           },
         },),
       ],
@@ -144,7 +144,7 @@ await describe({
       children: [
         it({
           name: 'names the introduced_defect_report schema and requires EVERY field on every check by '
-            + 'design: region, verdict, category, severity, evidence, omittedText and reason are all '
+            + 'design: category, evidence, omittedText, region, severity, verdict and verdictReason are all '
             + 'required rather than optional, since an optional field is where per-model structured '
             + 'output diverges most and a lost voice here costs a whole region\'s telemetry',
           fn: async () => {
@@ -152,7 +152,7 @@ await describe({
             const schema = JSON.stringify(INTRODUCED_DEFECT_RESPONSE_FORMAT.json_schema.schema,);
             expect(schema,).toContain('"required":["checks"]',);
             expect(schema,).toContain(
-              '"required":["region","verdict","category","severity","evidence","omittedText","reason"]',
+              '"required":["category","evidence","omittedText","region","severity","verdict","verdictReason"]',
             );
           },
         },),
@@ -168,7 +168,7 @@ await describe({
             expect(REFINE_RESPONSE_FORMAT.json_schema.name,).toBe('refine_report',);
             const schema = JSON.stringify(REFINE_RESPONSE_FORMAT.json_schema.schema,);
             expect(schema,).toContain('"required":["rewrites"]',);
-            expect(schema,).toContain('"required":["paragraph","newText"]',);
+            expect(schema,).toContain('"required":["newText","paragraph"]',);
           },
         },),
       ],
@@ -208,12 +208,12 @@ await describe({
       children: [
         it({
           name: 'names the translation_repair_report schema, requires resolution, translation and '
-            + 'explanation, and limits resolution to revised, unable or as-intended, so a reply cannot '
+            + 'translatorNote, and limits resolution to revised, unable or as-intended, so a reply cannot '
             + 'claim a repair happened while withholding the text or the reasoning behind it',
           fn: async () => {
             expect(TRANSLATE_REPAIR_RESPONSE_FORMAT.json_schema.name,).toBe('translation_repair_report',);
             const schema = JSON.stringify(TRANSLATE_REPAIR_RESPONSE_FORMAT.json_schema.schema,);
-            expect(schema,).toContain('"required":["resolution","translation","explanation"]',);
+            expect(schema,).toContain('"required":["resolution","translation","translatorNote"]',);
             expect(schema,).toContain('"enum":["revised","unable","as-intended"]',);
           },
         },),

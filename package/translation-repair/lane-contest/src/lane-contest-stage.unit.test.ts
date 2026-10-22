@@ -274,11 +274,11 @@ function archiveBallot(
   },
 ): string {
   return JSON.stringify({
-    choice,
-    unsupported: [],
+    assessment: 'the original supports it',
     dropped: [],
-    reason: 'the original supports it',
-    archive,
+    unsupported: [],
+    verdict: choice,
+    verdictOnArchive: archive,
   },);
 }
 
@@ -554,16 +554,16 @@ await describe({
             const outcome = await contest({
               replyByModel: [
                 JSON.stringify({
-                  choice: 'translate',
-                  unsupported: [ 'repair', ],
+                  assessment: 'the repair candidate adds an afternoon the original never mentions',
                   dropped: [],
-                  reason: 'the repair candidate adds an afternoon the original never mentions',
+                  unsupported: [ 'repair', ],
+                  verdict: 'translate',
                 },),
                 JSON.stringify({
-                  choice: 'translate',
-                  unsupported: [ 'repair', ],
+                  assessment: 'same',
                   dropped: [],
-                  reason: 'same',
+                  unsupported: [ 'repair', ],
+                  verdict: 'translate',
                 },),
                 ballot({ choice: 'neither', },),
               ],

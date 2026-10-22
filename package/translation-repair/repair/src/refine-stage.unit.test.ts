@@ -241,7 +241,7 @@ function scriptedRefiner(
         }
         : {
           best: modelBallot,
-          reason: 'scripted',
+          assessment: 'scripted',
         };
       if (!request.validate(scripted,))
         throw new Error(`stub script failed the ${stage} guard`,);

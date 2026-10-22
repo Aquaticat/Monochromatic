@@ -448,6 +448,9 @@ and traced the spread to completion tokens,
 which a prompt bucket cannot see.
 A provider's published mean that sizes a hold is a placeholder until the pipeline's own settled calls replace it,
 and the replacement reads what drives the spread before choosing any multiplier.
+The replacement is drawn from the rotation of entries the pipeline runs and not from one run:
+the means of one run of one entry (`zheermao19`) read 2.6 times low in the main bucket
+once three entries were pooled (ledger B808).
 `neuralwatt-estimate.unit.test.ts` pins each figure with the run it came from.
 
 An owner's lift of a ban is applied at the scope the owner's words state (ledger B807).
@@ -585,3 +588,27 @@ from a child process;
 at exit 6 with its stated line alone,
 and one that never reads it running past an unreadable commit (ledger B394);
 no scan finds an operator's mistake still thrown as a class the printer reads as a fault.
+
+## Rulings held as prose
+
+What happened:
+the owner ruled on 2026-10-20 to leave Bedrock off rather than issue a new key (ledger B760),
+and the ruling stood in a handover only.
+Every run afterwards held the expired key,
+asked Bedrock once,
+and was refused with HTTP 401 before it held the provider out.
+
+The rule:
+an owner ruling that changes what a run does is data the run reads
+(`PROVIDERS_LEFT_OFF` in `run/src/corpus-run/providers-off.ts`),
+with the reason beside it,
+and the launch prints it.
+Code that serves the ruling reuses an existing path
+(here the unset key),
+and a brief that says a mechanism exists is checked against the source before it is relied on.
+
+What enforces it:
+`run-client-bedrock-off.unit.test.ts` sets the key and asserts the transport sees no Bedrock exchange;
+`providers-off.unit.test.ts` pins the list;
+the required-providers gate refuses an off provider with the reason "left off".
+A second ruling of this kind is outside what these can see until it is added to the list.

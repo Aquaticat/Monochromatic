@@ -327,6 +327,37 @@ const CHUNK_PACING = 'the pause between two chunks of a scripted body, so a stre
  Bounds that keep a value of their own, keyed `path#site: form value`.
  */
 const LISTED: Readonly<Record<string, ListedBound>> = {
+  'provider-stream/cut-stream.test-fixture.ts#cutStreamError: firstByteMs: (firstByte === \'never\') ? -1 : FIRST_BYTE_MS': {
+    count: 1,
+    bound: 'read back',
+    reason: RECORD_FIELD,
+  },
+  'provider-stream/cut-stream.test-fixture.ts#cutStreamError: firstContentMs: generatedAny ? FIRST_BYTE_MS : -1': {
+    count: 1,
+    bound: 'read back',
+    reason: RECORD_FIELD,
+  },
+  'provider/provider-budget-held-meters.unit.test.ts#budgetsOnClock: freshForMs: FRESH_MS': {
+    count: 1,
+    bound: 'other',
+    reason: SCRIPTED_CLOCK,
+  },
+  'provider/provider-budget-held-meters.unit.test.ts#budgetsOnClock: rateLimitBackoffMs: FRESH_MS': {
+    count: 1,
+    bound: 'other',
+    reason: SCRIPTED_CLOCK,
+  },
+  'provider/provider-budget-held-meters.unit.test.ts#holdThenLapse: statedWaitMs: 10 * FRESH_MS': {
+    count: 1,
+    bound: 'other',
+    reason: SCRIPTED_CLOCK,
+  },
+  'stage/seat-tally-silent.unit.test.ts#<module>: graceMs: 30': {
+    count: 1,
+    bound: 'reached',
+    reason: 'the grace window the round closes on the call that waits for the cut: that call ends only by the cut, '
+      + 'so the window is reached on any machine',
+  },
   'provider-stream/abandon-kind-answer-reasoning.unit.test.ts#<module>: firstByteMs: 40': {
     count: 1,
     bound: 'read back',
@@ -357,14 +388,15 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     count: 1,
     bound: 'reached',
     reason: 'the readers\' window of 0 the selection case reaches: its straggler answers only after the reply delay of '
-      + 'the scripted client, which every other seat answers before, so the window closes on it on any machine; '
+      + 'the scripted client, a second, by which the stage has tallied the other seats, so the window closes on it; '
       + 'the writers\' window beside it is the hang stop',
   },
   'archive/scripted-review-client.test-fixture.ts#chatJson: wait of module-async-time HELD_REPLY_MS': {
     count: 1,
     bound: 'reached',
-    reason: 'makes the held seat late: its peers answer in microtasks, so it lands after quorum on any machine, '
-      + 'inside a window that is the hang stop and outside one of 0',
+    reason: 'makes the held seat late: a second gives the stage time to tally its peers, which answer at once, so it '
+      + 'lands after quorum, inside a window that is the hang stop and outside one of 0 (at 25 ms it landed before '
+      + 'quorum under the rotation sweep\'s load)',
   },
   'archive/absolute-naturalness-review-stage.unit.test.ts#<module>: wait of module-async-time 0': {
     count: 1,
@@ -895,6 +927,8 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
   },
   'provider-stream/stream-overrun.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'provider-stream/stream-overrun.unit.test.ts#<module>: firstContentMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'provider-stream/transport-first-content-window.unit.test.ts#<module>: firstContentMs: WINDOW_MS': { count: 1, bound: 'reached', reason: STREAM_WINDOW_REACHED, },
+  'provider-stream/transport-first-content-window.unit.test.ts#keepAliveResponse: wait of module-async-time GAP_MS': { count: 1, bound: 'other', reason: CHUNK_PACING, },
   'provider/synthetic-client.unit.test.ts#<module>: exchangeTimeoutMs: 50': {
     count: 1,
     bound: 'reached',

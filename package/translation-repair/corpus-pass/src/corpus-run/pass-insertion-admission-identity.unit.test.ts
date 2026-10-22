@@ -117,8 +117,8 @@ function recordingClient({ sheets, }: { readonly sheets: string[]; },): ModelCli
        */
       const value: unknown = {
         coverage: 'none',
-        quote: '',
-        reason: 'scripted',
+        copiedSpan: '',
+        assessment: 'scripted',
       };
       if (!request.validate(value,))
         throw new Error('scripted coverage reply failed wire guard',);

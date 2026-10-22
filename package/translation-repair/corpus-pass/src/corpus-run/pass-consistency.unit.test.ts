@@ -1135,8 +1135,8 @@ function groupOneBallots({ seat, }: { readonly seat: RosterModelId; },): SeatBeh
   return {
     kind: 'answers',
     text: JSON.stringify({
-      reason: 'The renderings differ in wording and force, not core meaning.',
-      quotes: (GROUP_ONE_QUOTES[position] ?? []).map(function quoteOf([quote, slot,], at,) {
+      assessment: 'The renderings differ in wording and force, not core meaning.',
+      candidateQuotes: (GROUP_ONE_QUOTES[position] ?? []).map(function quoteOf([quote, slot,], at,) {
         return { label: `OCCURRENCE ${String(at + 1,)}`, quote, slot, };
       },),
       choice: (position < 2) ? 'OCCURRENCE 3' : 'OCCURRENCE 4',

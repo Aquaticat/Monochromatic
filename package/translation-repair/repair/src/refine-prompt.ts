@@ -296,7 +296,7 @@ ${
             : `These must survive a rewrite: every number, date, name, handle, link and footnote marker, ${SURVIVAL_FORM}. Do not add information, drop information, soften a statement, sharpen a statement, or change who did what to whom.`
         }
 
-Reply with ONLY a JSON object of shape {"rewrites": [{"paragraph": 1, "newText": "..."}]}. Include only the paragraphs you are changing. No prose, no code fences.`,
+Reply with ONLY a JSON object of shape {"rewrites": [{"newText": "...", "paragraph": 1}]}. Include only the paragraphs you are changing. No prose, no code fences.`,
       },
       {
         role: 'user',

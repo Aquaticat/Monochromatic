@@ -81,7 +81,7 @@ const FINALISTS = ['OCCURRENCE 1', 'OCCURRENCE 2',];
  ```
  */
 function replyOf({ seat, }: { readonly seat: RosterModelId; },): string {
-  return JSON.stringify({ reason: `${seat} words the first place best.`, choice: 'OCCURRENCE 1', },);
+  return JSON.stringify({ assessment: `${seat} words the first place best.`, choice: 'OCCURRENCE 1', },);
 }
 
 /**
@@ -131,7 +131,7 @@ function everySeatAnswers({ seat, }: { readonly seat: RosterModelId; },): SeatBe
 function oneSeatAnswers({ seat, }: { readonly seat: RosterModelId; },): SeatBehaviour {
   return (seat === SEAT_HYPER_ONLY)
     ? { kind: 'answers', text: replyOf({ seat, },), }
-    : { kind: 'answers', text: JSON.stringify({ reason: 'A place that is not on the sheet.', choice: 'OCCURRENCE 9', },), };
+    : { kind: 'answers', text: JSON.stringify({ assessment: 'A place that is not on the sheet.', choice: 'OCCURRENCE 9', },), };
 }
 
 /**

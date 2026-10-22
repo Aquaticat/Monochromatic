@@ -27,8 +27,14 @@ import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typogra
 // without that choice and those floors.
 //
 // REASON BEFORE CHOICE (the owner's ruling of 2026-10-11): the reply schema
-// declares `reason` first, the sheet's reply shape shows it first, and the
+// declares the reason first, the sheet's reply shape shows it first, and the
 // sheet says to write it before choosing.
+//
+// THE REPLY AND THE STORED BALLOT SPELL TWO KEYS DIFFERENTLY (ledger B762). The reply calls the reason `assessment` and the
+// quotes `candidateQuotes`, names that sort before `choice`, so a provider that returns a tool call's keys alphabetically
+// still gives the reason, then the quotes, then the choice and the places to keep. The ballot a gather stores (and the
+// cache and the run's artifacts read back) keeps the names `reason` and `quotes` it was stored under, so no stored record
+// changes spelling: `readConsistencyBallotWire` is the one place the reply becomes a stored ballot.
 
 /**
  Word every place's label begins with.
@@ -67,12 +73,42 @@ export type ConsistencyQuoteWire = {
 
  @example
  ```ts
- const ballot: ConsistencyBallotWire = { reason: 'Both say it alike.', quotes: [], choice: 'OCCURRENCE 1', keep: [], };
+ const wire: ConsistencyBallotWire = { assessment: 'Both say it alike.', candidateQuotes: [], choice: 'OCCURRENCE 1', keep: [], };
  ```
  */
 export type ConsistencyBallotWire = {
   /**
    Why the judge chose as it did, written before the choice.
+   */
+  readonly assessment: string;
+
+  /**
+   One quote per place.
+   */
+  readonly candidateQuotes: readonly ConsistencyQuoteWire[];
+
+  /**
+   Label of the place every place should follow.
+   */
+  readonly choice: string;
+
+  /**
+   Labels of the places whose surroundings call for different wording.
+   */
+  readonly keep: readonly string[];
+};
+
+/**
+ One judge's ballot as the gather stores it and the counting reads it.
+
+ @example
+ ```ts
+ const ballot: ConsistencyBallot = { reason: 'Both say it alike.', quotes: [], choice: 'OCCURRENCE 1', keep: [], };
+ ```
+ */
+export type ConsistencyBallot = {
+  /**
+   Why the judge chose as it did.
    */
   readonly reason: string;
 
@@ -157,7 +193,7 @@ function isConsistencyQuoteWire(value: unknown,): value is ConsistencyQuoteWire 
 
  @param value - parsed provider value
 
- @returns Whether it carries a reason, a list of quotes, a choice and a list
+ @returns Whether it carries an assessment, a list of quotes, a choice and a list
  of kept labels
 
  @example
@@ -166,6 +202,33 @@ function isConsistencyQuoteWire(value: unknown,): value is ConsistencyQuoteWire 
  ```
  */
 export function isConsistencyBallotWire(value: unknown,): value is ConsistencyBallotWire {
+  if (!isJsonRecord(value,))
+    return false;
+  if (((typeof value.assessment) !== 'string') || ((typeof value.choice) !== 'string'))
+    return false;
+  if ((!isJsonArray(value.candidateQuotes,)) || (!isJsonArray(value.keep,)))
+    return false;
+  return value.candidateQuotes
+    .every(isConsistencyQuoteWire,)
+    && value.keep
+    .every(function isLabel(entry,): boolean {
+        return (typeof entry) === 'string';
+      },);
+}
+
+/**
+ Whether a parsed stored value has the shape of a stored ballot, whatever it names.
+
+ @param value - parsed stored value, such as a voice read back from the cache
+
+ @returns Whether it carries a reason, a list of quotes, a choice and a list of kept labels
+
+ @example
+ ```ts
+ isConsistencyBallot(JSON.parse(text,),);
+ ```
+ */
+export function isConsistencyBallot(value: unknown,): value is ConsistencyBallot {
   if (!isJsonRecord(value,))
     return false;
   if (((typeof value.reason) !== 'string') || ((typeof value.choice) !== 'string'))
@@ -178,6 +241,27 @@ export function isConsistencyBallotWire(value: unknown,): value is ConsistencyBa
     .every(function isLabel(entry,): boolean {
         return (typeof entry) === 'string';
       },);
+}
+
+/**
+ The reply as the ballot a gather stores.
+
+ @param wire - reply of the right shape
+
+ @returns The ballot, its assessment stored as the reason and its candidate quotes as the quotes
+
+ @example
+ ```ts
+ const ballot = readConsistencyBallotWire({ wire, },);
+ ```
+ */
+export function readConsistencyBallotWire({ wire, }: { readonly wire: ConsistencyBallotWire; },): ConsistencyBallot {
+  return {
+    reason: wire.assessment,
+    quotes: wire.candidateQuotes,
+    choice: wire.choice,
+    keep: wire.keep,
+  };
 }
 
 /**
@@ -237,7 +321,7 @@ function shownOnceLabelsOf(
  const [canonical,] = canonicalBallotOf({ ballot, labels: consistencyLabels({ count: 2, },), },);
  ```
  */
-export function canonicalBallotOf<BallotT extends ConsistencyBallotWire,>(
+export function canonicalBallotOf<BallotT extends ConsistencyBallot,>(
   {
     ballot,
     labels,
@@ -314,7 +398,7 @@ export function isUsableConsistencyBallot(
     ballot,
     labels,
   }: {
-    readonly ballot: ConsistencyBallotWire;
+    readonly ballot: ConsistencyBallot;
     readonly labels: readonly string[];
   },
 ): boolean {
@@ -346,14 +430,14 @@ export function usableConsistencyBallotFor(
 ): (value: unknown,) => value is ConsistencyBallotWire {
   return function isUsableBallot(value: unknown,): value is ConsistencyBallotWire {
     return isConsistencyBallotWire(value,) && isUsableConsistencyBallot({
-      ballot: value,
+      ballot: readConsistencyBallotWire({ wire: value, },),
       labels,
     },);
   };
 }
 
 /**
- Structured-output constraint for consistency replies, built for one ask. `reason` is declared first, `slot` is the one
+ Structured-output constraint for consistency replies, built for one ask. `assessment` is declared first, `slot` is the one
  optional property, and the three fields that name a place (`choice`, each kept place and the label of each quote) list the
  labels the sheet showed as an `enum`, so a provider that enforces the schema can answer with no other.
 
@@ -376,17 +460,17 @@ export function consistencyResponseFormat(
       schema: {
         type: 'object',
         required: [
-          'reason',
-          'quotes',
+          'assessment',
+          'candidateQuotes',
           'choice',
           'keep',
         ],
         additionalProperties: false,
         // REASON DECLARED BEFORE CHOICE, as the sheet's reply shape shows it
-        // (owner, 2026-10-11, "Reason before vote").
+        // (owner, 2026-10-11, "Reason before vote"), in the order the keys sort (ledger B762).
         properties: {
-          reason: { type: 'string', },
-          quotes: {
+          assessment: { type: 'string', },
+          candidateQuotes: {
             type: 'array',
             items: {
               type: 'object',

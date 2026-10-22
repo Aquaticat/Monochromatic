@@ -72,7 +72,7 @@ function catCheck(
     severity: 'major',
     evidence,
     omittedText,
-    reason: 'the second clause is gone',
+    verdictReason: 'the second clause is gone',
   };
 }
 

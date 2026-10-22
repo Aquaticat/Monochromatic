@@ -1,4 +1,4 @@
-import type { ConsistencyBallotWire, } from './consistency-wire.ts';
+import type { ConsistencyBallot, } from './consistency-wire.ts';
 
 //region Consistency count types
 // The shapes the counting of a repeated wording's ballots reads and returns
@@ -12,7 +12,7 @@ import type { ConsistencyBallotWire, } from './consistency-wire.ts';
  const voice: ConsistencyVoice = { seat: 'glm-5.3', reason: 'Same.', quotes: [], choice: 'OCCURRENCE 1', keep: [], };
  ```
  */
-export type ConsistencyVoice = ConsistencyBallotWire & {
+export type ConsistencyVoice = ConsistencyBallot & {
   /**
    Seat that answered.
    */

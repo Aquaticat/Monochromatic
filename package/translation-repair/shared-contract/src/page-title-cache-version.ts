@@ -56,11 +56,20 @@
  house rule moves with it; the pairing version stays, since no pairing sheet carries the house rule. No record has been written at
  four, which this change sets first.
 
+ Five covers the reply of the page title reading declaring its keys in alphabetical order (owner decision of 2026-10-21
+ under the ruling "Reason first everywhere"; ledger B762): the lexicon sheet (`artifact/src/page-title-lexicon-wire.ts`) asks
+ for `rendering` before `title`, where it asked for `title` first, and says so in its reply instruction.
+ The key hashes the titles, the identity and the roster and not the sheet, so a record written under the old sheet would be
+ served under the new one. The audit `cache-account-audit` found no slice-cache record under this worktree's runs
+ directory and no control that finds records was run, so whether one stands at four is not known and the number moves, as
+ the consolidate, lane-contest, repair slice, refine and translate versions move for the same ballots. The pairing sheets
+ carry no schema of this change, so the pairing version stays. No record has been written at five, which this change sets first.
+
  @example
  ```ts
  const material = JSON.stringify({ version: PAGE_TITLE_CACHE_VERSION, source, titles, identity, roster, },);
  ```
  */
-export const PAGE_TITLE_CACHE_VERSION = 4;
+export const PAGE_TITLE_CACHE_VERSION = 5;
 
 //endregion Page title cache version

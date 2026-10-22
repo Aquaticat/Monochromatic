@@ -69,7 +69,7 @@ const ROSTER: readonly RosterModelId[] = [
  */
 type ScriptedCoverage = {
   readonly coverage: 'full' | 'partial' | 'none';
-  readonly quote: string;
+  readonly copiedSpan: string;
 };
 
 /**
@@ -151,7 +151,7 @@ function preparedGap(
 
  @example
  ```ts
- const client = coverageClient({ replies: [{ coverage: 'none', quote: '' }] });
+ const client = coverageClient({ replies: [{ coverage: 'none', copiedSpan: '' }] });
  ```
  */
 function coverageClient(
@@ -198,7 +198,7 @@ function coverageClient(
       }
       const value: unknown = {
         ...reply,
-        reason: 'scripted',
+        assessment: 'scripted',
       };
       if (!request.validate(value,))
         throw new Error('scripted coverage reply failed wire guard',);
@@ -332,7 +332,7 @@ function preparedHalves({ targetText, }: { readonly targetText: string; },): Pre
 
  @example
  ```ts
- const replies = unanimous({ coverage: 'none', quote: '' });
+ const replies = unanimous({ coverage: 'none', copiedSpan: '' });
  ```
  */
 function unanimous(reply: ScriptedCoverage,): readonly ScriptedCoverage[] {
@@ -709,7 +709,7 @@ async function deficitAdmission(
    The admission.
    */
   const admission = await decidePassInsertionAdmission({
-    client: coverageClient({ replies: unanimous({ coverage: 'none', quote: '', },), },),
+    client: coverageClient({ replies: unanimous({ coverage: 'none', copiedSpan: '', },), },),
     prepared: preparedContainerDeficit({ archiveShort, },),
     modelIds: ROSTER,
     overlap: 1,
@@ -767,8 +767,8 @@ function seatRecordingCoverageClient(
        */
       const value: unknown = {
         coverage: 'none',
-        quote: '',
-        reason: 'scripted',
+        copiedSpan: '',
+        assessment: 'scripted',
       };
       if (!request.validate(value,))
         throw new Error('scripted coverage reply failed wire guard',);
@@ -906,7 +906,7 @@ await describe({
             const admission = await runAdmission({
               sourcePassage: 'The cat record is linked at [memo](https://example.test/cat-record).',
               targetText: LONG_TARGET,
-              replies: unanimous({ coverage: 'none', quote: '', },),
+              replies: unanimous({ coverage: 'none', copiedSpan: '', },),
             },);
             expect([...admission.positions,],).toEqual([0,],);
           },
@@ -917,7 +917,7 @@ await describe({
             const admission = await runAdmission({
               sourcePassage: '猫的记录没有译文。',
               targetText: 'Cat.',
-              replies: unanimous({ coverage: 'none', quote: '', },),
+              replies: unanimous({ coverage: 'none', copiedSpan: '', },),
             },);
             expect([...admission.positions,],).toEqual([0,],);
           },
@@ -930,7 +930,7 @@ await describe({
             const admission = await runAdmission({
               sourcePassage: '猫的记录没有译文。',
               targetText: LONG_TARGET,
-              replies: unanimous({ coverage: 'none', quote: '', },),
+              replies: unanimous({ coverage: 'none', copiedSpan: '', },),
             },);
             expect([...admission.positions,],).toEqual([],);
             expect(
@@ -947,7 +947,7 @@ await describe({
             const admission = await runAdmission({
               sourcePassage: '[Cat](https://example.test/cat-record) sleeps.',
               targetText: LONG_TARGET,
-              replies: unanimous({ coverage: 'full', quote: '## Cats\n\nThe cat sleeps in warm sunlight.', },),
+              replies: unanimous({ coverage: 'full', copiedSpan: '## Cats\n\nThe cat sleeps in warm sunlight.', },),
             },);
             expect([...admission.positions,],).toEqual([],);
             expect(admission.carried,).toEqual([{
@@ -970,7 +970,7 @@ await describe({
             const admission = await runAdmission({
               sourcePassage: '[Cat](https://example.test/cat-record) sleeps and dreams.',
               targetText: LONG_TARGET,
-              replies: unanimous({ coverage: 'partial', quote: 'The cat sleeps in warm sunlight.', },),
+              replies: unanimous({ coverage: 'partial', copiedSpan: 'The cat sleeps in warm sunlight.', },),
             },);
             expect([...admission.positions,],).toEqual([],);
             expect(admission.carried,).toEqual([],);
@@ -996,11 +996,11 @@ await describe({
               sourcePassage: '[Cat](https://example.test/cat-record) sleeps.',
               targetText: LONG_TARGET,
               replies: [
-                { coverage: 'full', quote: '## Cats\n\nThe cat sleeps in warm sunlight.', },
-                { coverage: 'none', quote: '', },
+                { coverage: 'full', copiedSpan: '## Cats\n\nThe cat sleeps in warm sunlight.', },
+                { coverage: 'none', copiedSpan: '', },
                 COVERAGE_VOICE_LOST,
               ],
-              followupReplies: unanimous({ coverage: 'none', quote: '', },),
+              followupReplies: unanimous({ coverage: 'none', copiedSpan: '', },),
             },);
             expect([...admission.positions,],).toEqual([],);
             expect(
@@ -1022,10 +1022,10 @@ await describe({
             const admission = await decidePassInsertionAdmission({
               client: coverageClient({
                 replies: [
-                  { coverage: 'full', quote: 'Cat.', },
-                  { coverage: 'partial', quote: 'Cat.', },
-                  { coverage: 'none', quote: '', },
-                  ...unanimous({ coverage: 'none', quote: '', },),
+                  { coverage: 'full', copiedSpan: 'Cat.', },
+                  { coverage: 'partial', copiedSpan: 'Cat.', },
+                  { coverage: 'none', copiedSpan: '', },
+                  ...unanimous({ coverage: 'none', copiedSpan: '', },),
                 ],
               },),
               prepared: preparedHalves({ targetText: 'Cat.', },),
@@ -1057,12 +1057,12 @@ await describe({
             const admission = await decidePassInsertionAdmission({
               client: coverageClient({
                 replies: [
-                  { coverage: 'full', quote: 'Cat.', },
-                  { coverage: 'partial', quote: 'Cat.', },
-                  { coverage: 'none', quote: '', },
-                  { coverage: 'full', quote: 'Cat.', },
-                  { coverage: 'partial', quote: 'Cat.', },
-                  { coverage: 'none', quote: '', },
+                  { coverage: 'full', copiedSpan: 'Cat.', },
+                  { coverage: 'partial', copiedSpan: 'Cat.', },
+                  { coverage: 'none', copiedSpan: '', },
+                  { coverage: 'full', copiedSpan: 'Cat.', },
+                  { coverage: 'partial', copiedSpan: 'Cat.', },
+                  { coverage: 'none', copiedSpan: '', },
                 ],
               },),
               prepared: preparedHalves({ targetText: 'Cat.', },),
@@ -1106,7 +1106,7 @@ await describe({
             const admission = await runAdmission({
               sourcePassage: '[Cat](https://example.test/cat-record/) sleeps.',
               targetText: `${LONG_TARGET}\nhttps://example.test/cat-record`,
-              replies: unanimous({ coverage: 'none', quote: '', },),
+              replies: unanimous({ coverage: 'none', copiedSpan: '', },),
             },);
             expect([...admission.positions,],).toEqual([],);
           },
@@ -1117,7 +1117,7 @@ await describe({
             const admission = await runAdmission({
               sourcePassage: '[Cat memo][memo]\n\n[memo]: https://example.test/cat-record',
               targetText: LONG_TARGET,
-              replies: unanimous({ coverage: 'none', quote: '', },),
+              replies: unanimous({ coverage: 'none', copiedSpan: '', },),
             },);
             expect([...admission.positions,],).toEqual([0,],);
           },
@@ -1139,8 +1139,8 @@ await describe({
             const admission = await decidePassInsertionAdmission({
               client: coverageClient({
                 replies: [
-                  ...unanimous({ coverage: 'none', quote: '', },),
-                  ...unanimous({ coverage: 'none', quote: '', },),
+                  ...unanimous({ coverage: 'none', copiedSpan: '', },),
+                  ...unanimous({ coverage: 'none', copiedSpan: '', },),
                 ],
               },),
               prepared: preparedDefinition({ definition: '[^1]: 猫在夜里回家了。', },),
@@ -1174,8 +1174,8 @@ await describe({
             const admission = await decidePassInsertionAdmission({
               client: coverageClient({
                 replies: [
-                  ...unanimous({ coverage: 'none', quote: '', },),
-                  ...unanimous({ coverage: 'none', quote: '', },),
+                  ...unanimous({ coverage: 'none', copiedSpan: '', },),
+                  ...unanimous({ coverage: 'none', copiedSpan: '', },),
                 ],
               },),
               prepared: preparedDefinition({ definition: '[^2]: 猫不喜欢洗澡。', },),
@@ -1207,7 +1207,7 @@ await describe({
             + 'to spend the whole-page budget',
           fn: async () => {
             const admission = await decidePassInsertionAdmission({
-              client: coverageClient({ replies: unanimous({ coverage: 'none', quote: '', },), },),
+              client: coverageClient({ replies: unanimous({ coverage: 'none', copiedSpan: '', },), },),
               prepared: preparedStoppedArchive({ tailLast: true, },),
               modelIds: ROSTER,
               overlap: 1,
@@ -1230,7 +1230,7 @@ await describe({
             + 'and the interior keeps the whole-page budget',
           fn: async () => {
             const admission = await decidePassInsertionAdmission({
-              client: coverageClient({ replies: unanimous({ coverage: 'none', quote: '', },), },),
+              client: coverageClient({ replies: unanimous({ coverage: 'none', copiedSpan: '', },), },),
               prepared: preparedStoppedArchive({ tailLast: false, },),
               modelIds: ROSTER,
               overlap: 1,

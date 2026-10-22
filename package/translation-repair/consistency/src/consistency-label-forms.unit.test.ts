@@ -19,6 +19,7 @@ import {
 
 import {
   choiceTallyOf,
+  type ConsistencyBallotWire,
   type ConsistencyChoiceVoice,
   consistencyLabels,
   type ConsistencyVoice,
@@ -57,6 +58,46 @@ function replyOf({ choice, }: { readonly choice: string; },): { readonly reason:
   return {
     reason: 'The kitten reads better here.',
     choice,
+  };
+}
+
+/**
+ Builds one reply that only chooses, as the judge writes it (ledger B762).
+
+ @param choice - what the judge wrote
+
+ @returns The reply
+
+ @example
+ ```ts
+ const reply = wireReplyOf({ choice: 'Occurrence 3', },);
+ ```
+ */
+function wireReplyOf({ choice, }: { readonly choice: string; },): { readonly assessment: string; readonly choice: string; } {
+  return {
+    assessment: 'The kitten reads better here.',
+    choice,
+  };
+}
+
+/**
+ Spells a stored first-round ballot with the reply's own keys (ledger B762).
+
+ @param ballot - ballot as stored
+
+ @returns The reply that would have been stored as that ballot
+
+ @example
+ ```ts
+ const reply = ballotWireOf({ ballot: ballotVoiceOf({ seat: 'a', choice: '2', keep: [], labels: ['1', '2',], },), },);
+ ```
+ */
+function ballotWireOf({ ballot, }: { readonly ballot: ConsistencyVoice; },): ConsistencyBallotWire {
+  return {
+    assessment: ballot.reason,
+    candidateQuotes: ballot.quotes,
+    choice: ballot.choice,
+    keep: ballot.keep,
   };
 }
 
@@ -142,11 +183,11 @@ await describe({
               '3',
               ' 4 ',
             ].map(function accepted(choice,): boolean {
-              return validate(replyOf({ choice, },),);
+              return validate(wireReplyOf({ choice, },),);
             },),).toEqual([true, true, true, true, true, true,],);
             const validateCandidates = usableChoiceFor({ labels: CANDIDATES, },);
             expect(['Candidate 2', 'candidate 4', '2', '4',].map(function accepted(choice,): boolean {
-              return validateCandidates(replyOf({ choice, },),);
+              return validateCandidates(wireReplyOf({ choice, },),);
             },),).toEqual([true, true, true, true,],);
           },
         },),
@@ -167,11 +208,11 @@ await describe({
               'OCCURRENCE 3 and OCCURRENCE 4',
               'the third',
             ].map(function accepted(choice,): boolean {
-              return validate(replyOf({ choice, },),);
+              return validate(wireReplyOf({ choice, },),);
             },),).toEqual([false, false, false, false, false, false, false, false, false, false,],);
             // A sheet whose two labels share a number: the bare number fits both, so it names neither.
             const ambiguous = usableChoiceFor({ labels: ['CANDIDATE 1', 'OCCURRENCE 1',], },);
-            expect([ambiguous(replyOf({ choice: '1', },),), ambiguous(replyOf({ choice: 'occurrence 1', },),),],).toEqual([
+            expect([ambiguous(wireReplyOf({ choice: '1', },),), ambiguous(wireReplyOf({ choice: 'occurrence 1', },),),],).toEqual([
               false,
               true,
             ],);
@@ -253,12 +294,14 @@ await describe({
           fn: async () => {
             const validate = usableConsistencyBallotFor({ labels: consistencyLabels({ count: 3, },), },);
             expect(
-              validate(ballotVoiceOf({
-              seat: 'minimax',
-              choice: 'occurrence 2',
-              keep: ['1', ' Occurrence 3 ',],
-              labels: ['1', ' OCCURRENCE 2 ', 'occurrence 3',],
-            },),),
+              validate(ballotWireOf({
+                ballot: ballotVoiceOf({
+                  seat: 'minimax',
+                  choice: 'occurrence 2',
+                  keep: ['1', ' Occurrence 3 ',],
+                  labels: ['1', ' OCCURRENCE 2 ', 'occurrence 3',],
+                },),
+              },),),
             ).toBe(true,);
           },
         },),
@@ -274,7 +317,7 @@ await describe({
               ballotVoiceOf({ seat: 'a', choice: '1', keep: ['2', 'OCCURRENCE 2',], labels: ['1',], },),
               ballotVoiceOf({ seat: 'a', choice: '1', keep: [], labels: ['2', 'occurrence 2',], },),
             ].map(function accepted(ballot,): boolean {
-              return validate(ballot,);
+              return validate(ballotWireOf({ ballot, },),);
             },),).toEqual([false, false, false, false, false,],);
             expect(isUsableConsistencyBallot({
               ballot: ballotVoiceOf({ seat: 'a', choice: '1', keep: ['2',], labels: ['1', '2',], },),

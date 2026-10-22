@@ -284,6 +284,20 @@ function unreadBeforeReading(): MeterState {
 }
 
 /**
+ The hold of a run that holds no provider out for a reason its meter cannot show.
+
+ @returns Not held
+
+ @example
+ ```ts
+ const held = notHeldOut();
+ ```
+ */
+function notHeldOut(): boolean {
+  return false;
+}
+
+/**
  Builds the cached budget view every provider is routed by.
 
  @param neuralwatt - first provider's energy meter, which is all this reads
@@ -300,6 +314,10 @@ function unreadBeforeReading(): MeterState {
 
  @param rateLimitBackoffMs - how long a refusal on a wet meter holds a
  provider out while another provider can take the traffic
+
+ @param heldOut - whether the run holds a provider out for a reason its meter cannot show, such as a refused
+ credential; the `METERS` line prints such a provider as dry. It changes only the printed word, never the routed view
+ or the states the budgets report (default: no provider is held out)
 
  @param now - clock, injectable so tests do not wait; `monotonicMs` by
  default, since a hold read on the system clock lasted an hour longer when
@@ -322,6 +340,7 @@ export function createProviderBudgets(
     freshForMs = BUDGET_FRESH_MS,
     cooldownMs = REFUSAL_COOLDOWN_MS,
     rateLimitBackoffMs = RATE_LIMIT_BACKOFF_MS,
+    heldOut = notHeldOut,
     now = monotonicMs,
   }: {
     readonly neuralwatt?: Pick<NeuralWattClient, 'energy'>;
@@ -332,6 +351,7 @@ export function createProviderBudgets(
     readonly freshForMs?: number;
     readonly cooldownMs?: number;
     readonly rateLimitBackoffMs?: number;
+    readonly heldOut?: (provider: ProviderName,) => boolean;
     readonly now?: () => number;
   },
 ): ProviderBudgetsWithStates {
@@ -365,121 +385,6 @@ export function createProviderBudgets(
       levels: providerRecord({ of: noLevelBeforeReading, },),
     },),
   };
-
-  /**
-   Reads every meter once, for everyone waiting on this reading.
-
-   THE FIRST CALLER'S SIGNAL GOVERNS, which is a real consequence worth
-   naming rather than hiding. If that caller aborts, every read rejects,
-   each provider reports as spendable, and the reading resolves WET for
-   every sharer. That is this file's answer for an unreadable meter anyway,
-   and the router still recovers a real refusal through failover.
-
-   @param signal - abort signal of whichever call started this reading
-
-   @returns Every provider's dryness, unreadable meters counting as spendable
-
-   @example
-   ```ts
-   cache.reading = takeReading({ signal, },);
-   ```
-   */
-  async function takeReading(
-    { signal, }: { readonly signal: AbortSignal; },
-  ): Promise<MeterReading> {
-    /**
-     Logger pre-tagged with this function's name.
-     */
-    const rl = tagged({
-      tag: takeReading.name,
-      l,
-    },);
-
-    /**
-     Every meter's record, keyed by provider, read together.
-     */
-    const meters = await readEveryMeter({
-      ...((neuralwatt === undefined) ? {} : { neuralwatt, }),
-      ...((synthetic === undefined) ? {} : { synthetic, }),
-      ...((hyper === undefined) ? {} : { hyper, }),
-      ...((bedrock === undefined) ? {} : { bedrock, }),
-      ...((openrouter === undefined) ? {} : { openrouter, }),
-      signal,
-    },);
-
-    // INFO RATHER THAN DEBUG, because this line is the only record that a
-    // provider was AVAILABLE at a given moment, and a run does not record debug.
-    // It carries the meter state rather than the routed bit, so an unreadable
-    // meter cannot be read back later as a provider that was up.
-    // Refusals alone cannot measure a duty cycle: `NoProviderForModelError`
-    // appears only where something happened to ask for a model that provider
-    // serves, so a quiet period reads identically to a healthy one. This is
-    // bounded by the freshness window rather than by call volume, so it costs
-    // about one line a minute however busy the run is.
-    //
-    // IT CARRIES THE NUMBERS TOO, added after reading one back. `hyper=dry`
-    // alone could not be told from a threshold in `budget-routing.ts` being
-    // wrong, and answering that took a live call to the provider, which is not
-    // available for a moment that has already passed.
-    //
-    // STATES FIRST, IN PROVIDER ORDER, THEN EVERY NUMBER, so the reader in
-    // `meter-sample-read.ts` finds each provider's state by name and older
-    // lines without the third state still read.
-    /**
-     Each provider's state, as `name=state`.
-     */
-    const stateFields = PROVIDER_ORDER.map(function stateOf(provider,): string {
-      /**
-       This provider's meter record.
-       */
-      const meter = meters[provider];
-      return `${provider}=${meter.state}`;
-    },);
-    /**
-     Every number every meter reported, in provider order.
-     */
-    const levelFields = PROVIDER_ORDER.flatMap(function fieldsOf(provider,): readonly string[] {
-      /**
-       This provider's meter record.
-       */
-      const meter = meters[provider];
-      return meter.fields;
-    },);
-    rl.info(`METERS ${[
-      ...stateFields,
-      ...levelFields,
-    ].join(' ',)}`,);
-    return {
-      view: providerRecord({
-        of: function dryOf(provider,): boolean {
-          /**
-           This provider's meter record.
-           */
-          const meter = meters[provider];
-          return routesAsDry({ state: meter.state, },);
-        },
-      },),
-      states: providerRecord({
-        of: function stateOf(provider,): MeterState {
-          /**
-           This provider's meter record.
-           */
-          const meter = meters[provider];
-          return meter.state;
-        },
-      },),
-      levels: providerRecord({
-        of: function levelOf(provider,): string {
-          /**
-           This provider's meter record.
-           */
-          const meter = meters[provider];
-          return meter.fields
-            .join(' ',);
-        },
-      },),
-    };
-  }
 
   /**
    Which providers last refused us for payment and have not moved since,
@@ -591,6 +496,143 @@ export function createProviderBudgets(
    */
   function holdLeftOn(provider: ProviderName,): number {
     return holdLeft({ provider, },);
+  }
+
+  /**
+   Reads every meter once, for everyone waiting on this reading.
+
+   THE FIRST CALLER'S SIGNAL GOVERNS, which is a real consequence worth
+   naming rather than hiding. If that caller aborts, every read rejects,
+   each provider reports as spendable, and the reading resolves WET for
+   every sharer. That is this file's answer for an unreadable meter anyway,
+   and the router still recovers a real refusal through failover.
+
+   @param signal - abort signal of whichever call started this reading
+
+   @returns Every provider's dryness, unreadable meters counting as spendable
+
+   @example
+   ```ts
+   cache.reading = takeReading({ signal, },);
+   ```
+   */
+  async function takeReading(
+    { signal, }: { readonly signal: AbortSignal; },
+  ): Promise<MeterReading> {
+    /**
+     Logger pre-tagged with this function's name.
+     */
+    const rl = tagged({
+      tag: takeReading.name,
+      l,
+    },);
+
+    /**
+     Every meter's record, keyed by provider, read together.
+     */
+    const meters = await readEveryMeter({
+      ...((neuralwatt === undefined) ? {} : { neuralwatt, }),
+      ...((synthetic === undefined) ? {} : { synthetic, }),
+      ...((hyper === undefined) ? {} : { hyper, }),
+      ...((bedrock === undefined) ? {} : { bedrock, }),
+      ...((openrouter === undefined) ? {} : { openrouter, }),
+      signal,
+    },);
+
+    // INFO RATHER THAN DEBUG, because this line is the only record that a
+    // provider was AVAILABLE at a given moment, and a run does not record debug.
+    // It carries the meter state rather than the routed bit, so an unreadable
+    // meter cannot be read back later as a provider that was up.
+    // Refusals alone cannot measure a duty cycle: `NoProviderForModelError`
+    // appears only where something happened to ask for a model that provider
+    // serves, so a quiet period reads identically to a healthy one. This is
+    // bounded by the freshness window rather than by call volume, so it costs
+    // about one line a minute however busy the run is.
+    //
+    // IT CARRIES THE NUMBERS TOO, added after reading one back. `hyper=dry`
+    // alone could not be told from a threshold in `budget-routing.ts` being
+    // wrong, and answering that took a live call to the provider, which is not
+    // available for a moment that has already passed.
+    //
+    // STATES FIRST, IN PROVIDER ORDER, THEN EVERY NUMBER, so the reader in
+    // `meter-sample-read.ts` finds each provider's state by name and older
+    // lines without the third state still read.
+    /**
+     What every meter reported, joined as `paidOut` compares it with the level at a payment refusal.
+     */
+    const levelsOf = providerRecord({
+      of: function levelOf(provider,): string {
+        /**
+         This provider's meter record.
+         */
+        const meter = meters[provider];
+        return meter.fields
+          .join(' ',);
+      },
+    },);
+    /**
+     Each provider's state, as `name=state`.
+     */
+    const stateFields = PROVIDER_ORDER.map(function stateOf(provider,): string {
+      /**
+       This provider's meter record.
+       */
+      const meter = meters[provider];
+      // A PROVIDER THE RUN HAS HELD OUT PRINTS DRY, whatever its meter says,
+      // because the line is the record of when a provider was AVAILABLE and a
+      // held provider was not. CuspariaKLSY22 printed `bedrock=wet` on all 27
+      // lines while its `JUDGE SEATS` lines read `bedrock=dry` from the second:
+      // the key was refused on the first call, the meter is the configured
+      // credit less the package's own ledger, and a refused key cannot move
+      // it. Three things hold a provider out beyond its meter, and the router
+      // and the seat readers fold all three in: a refused credential, a timed
+      // hold after a refusal and a refusal for payment. ONLY THE PRINTED WORD
+      // MOVES: the state `readStates` returns stays what the meter said,
+      // because `markRefused` judges a refusal against it (a wet meter makes
+      // it a rate limit).
+      if (heldOut(provider,) || (holdLeft({ provider, },) > 0)
+        || paidOut({
+          provider,
+          levels: levelsOf,
+        },))
+        return `${provider}=dry`;
+      return `${provider}=${meter.state}`;
+    },);
+    /**
+     Every number every meter reported, in provider order.
+     */
+    const levelFields = PROVIDER_ORDER.flatMap(function fieldsOf(provider,): readonly string[] {
+      /**
+       This provider's meter record.
+       */
+      const meter = meters[provider];
+      return meter.fields;
+    },);
+    rl.info(`METERS ${[
+      ...stateFields,
+      ...levelFields,
+    ].join(' ',)}`,);
+    return {
+      view: providerRecord({
+        of: function dryOf(provider,): boolean {
+          /**
+           This provider's meter record.
+           */
+          const meter = meters[provider];
+          return routesAsDry({ state: meter.state, },);
+        },
+      },),
+      states: providerRecord({
+        of: function stateOf(provider,): MeterState {
+          /**
+           This provider's meter record.
+           */
+          const meter = meters[provider];
+          return meter.state;
+        },
+      },),
+      levels: levelsOf,
+    };
   }
 
   /**

@@ -19,8 +19,10 @@ import {
   choiceTallyOf,
   type ConsistencyChoiceVoice,
   consistencyChoiceResponseFormat,
+  isConsistencyChoiceBallot,
   isConsistencyChoiceWire,
   isUsableChoice,
+  readConsistencyChoiceWire,
   usableChoiceFor,
   usableChoicesOf,
 } from '../dist/final/node/index.mjs';
@@ -82,10 +84,10 @@ await describe({
                 name: 'page_consistency_choice',
                 schema: {
                   type: 'object',
-                  required: ['reason', 'choice',],
+                  required: ['assessment', 'choice',],
                   additionalProperties: false,
                   properties: {
-                    reason: { type: 'string', },
+                    assessment: { type: 'string', },
                     choice: { type: 'string', enum: ['CANDIDATE 1', 'CANDIDATE 2',], },
                   },
                 },
@@ -93,8 +95,8 @@ await describe({
             },);
             // The order the keys are written in is the order the reply is asked in.
             expect(JSON.stringify(format.json_schema.schema,),).toBe(
-              '{"type":"object","required":["reason","choice"],"additionalProperties":false,'
-              + '"properties":{"reason":{"type":"string"},"choice":{"type":"string","enum":["CANDIDATE 1","CANDIDATE 2"]}}}',
+              '{"type":"object","required":["assessment","choice"],"additionalProperties":false,'
+              + '"properties":{"assessment":{"type":"string"},"choice":{"type":"string","enum":["CANDIDATE 1","CANDIDATE 2"]}}}',
             );
           },
         },),
@@ -105,17 +107,58 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'ACCEPTS A RECORD WITH A STRING REASON AND A STRING CHOICE, and nothing else',
+          name: 'ACCEPTS A RECORD WITH A STRING ASSESSMENT AND A STRING CHOICE, and nothing else',
           fn: async () => {
             expect([
-              isConsistencyChoiceWire({ reason: 'r', choice: 'CANDIDATE 1', },),
-              isConsistencyChoiceWire({ reason: 'r', },),
+              isConsistencyChoiceWire({ assessment: 'r', choice: 'CANDIDATE 1', },),
+              isConsistencyChoiceWire({ assessment: 'r', },),
               isConsistencyChoiceWire({ choice: 'CANDIDATE 1', },),
-              isConsistencyChoiceWire({ reason: 1, choice: 'CANDIDATE 1', },),
-              isConsistencyChoiceWire({ reason: 'r', choice: ['CANDIDATE 1',], },),
+              isConsistencyChoiceWire({ assessment: 1, choice: 'CANDIDATE 1', },),
+              isConsistencyChoiceWire({ assessment: 'r', choice: ['CANDIDATE 1',], },),
               isConsistencyChoiceWire('CANDIDATE 1',),
               isConsistencyChoiceWire(null,),
             ],).toEqual([true, false, false, false, false, false, false,],);
+          },
+        },),
+        it({
+          name: 'REFUSES A REPLY THAT STILL SPELLS THE REASON `reason`, since the reply key is `assessment` (ledger B762)',
+          fn: async () => {
+            expect(isConsistencyChoiceWire({ reason: 'r', choice: 'CANDIDATE 1', },),).toBe(false,);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: isConsistencyChoiceBallot.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS A CHOICE AS STORED UNDER THE SPELLING IT WAS STORED UNDER, `reason`, so a cache written before the '
+            + 'reply key was renamed still counts (ledger B762), and refuses the reply spelling and the rest',
+          fn: async () => {
+            expect([
+              isConsistencyChoiceBallot({ reason: 'r', choice: 'CANDIDATE 1', },),
+              isConsistencyChoiceBallot({ seat: 'a', reason: 'r', choice: 'CANDIDATE 1', },),
+              isConsistencyChoiceBallot({ assessment: 'r', choice: 'CANDIDATE 1', },),
+              isConsistencyChoiceBallot({ reason: 'r', },),
+              isConsistencyChoiceBallot({ reason: 1, choice: 'CANDIDATE 1', },),
+              isConsistencyChoiceBallot(null,),
+            ],).toEqual([true, true, false, false, false, false,],);
+          },
+        },),
+      ],
+    },),
+    describe({
+      name: readConsistencyChoiceWire.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'STORES THE ASSESSMENT AS THE REASON and keeps the choice, so what a gather stores is spelled as before',
+          fn: async () => {
+            expect(readConsistencyChoiceWire({ wire: { assessment: 'It reads better.', choice: 'CANDIDATE 2', }, },),).toEqual({
+              reason: 'It reads better.',
+              choice: 'CANDIDATE 2',
+            },);
           },
         },),
       ],
@@ -145,9 +188,9 @@ await describe({
           fn: async () => {
             const validate = usableChoiceFor({ labels: LABELS, },);
             expect([
-              validate({ reason: 'It reads better.', choice: 'CANDIDATE 1', },),
-              validate({ reason: 'It reads better.', choice: 'CANDIDATE 3', },),
-              validate({ reason: '', choice: 'CANDIDATE 1', },),
+              validate({ assessment: 'It reads better.', choice: 'CANDIDATE 1', },),
+              validate({ assessment: 'It reads better.', choice: 'CANDIDATE 3', },),
+              validate({ assessment: '', choice: 'CANDIDATE 1', },),
               validate({ choice: 'CANDIDATE 1', },),
             ],).toEqual([true, false, false, false,],);
           },

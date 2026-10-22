@@ -67,7 +67,7 @@ function settlementEnding(
 /**
  Marker only the consolidate gate's sheet carries.
  */
-const GATE_MARKER = 'Return JSON: reason one sentence';
+const GATE_MARKER = 'Return JSON: assessment one sentence';
 
 /**
  The slice the empty-standing cases buy for.
@@ -122,9 +122,9 @@ function countingClient(): {
          Scripted reply for the role this call plays.
          */
         const value: unknown = sent.includes(GATE_MARKER,)
-          ? { choice: 'consolidated', unsupported: [], dropped: [], reason: 'the lane text is faithful', }
+          ? { verdict: 'consolidated', unsupported: [], dropped: [], assessment: 'the lane text is faithful', }
           : (request.responseFormat?.json_schema.name === 'candidate_ballot')
-          ? { best: 1, reason: 'the only candidate reads well', }
+          ? { best: 1, assessment: 'the only candidate reads well', }
           : undefined;
         if (value === undefined) {
           asked.producer += 1;

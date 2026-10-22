@@ -93,7 +93,7 @@ type FixtureModelId = (typeof ROSTER)[number];
  this stage never asks the lane contest anything, so within one settlement the
  phrase appears in the gate sheet alone.
  */
-const GATE_MARKER = 'Return JSON: reason one sentence';
+const GATE_MARKER = 'Return JSON: assessment one sentence';
 
 /**
  The slice every case decides about.
@@ -477,22 +477,22 @@ function standingPolishClient(
         : (schema === 'candidate_ballot')
         ? {
           best: choosingPolish ? 1 : 0,
-          reason: choosingPolish
+          assessment: choosingPolish
             ? 'same meaning in more idiomatic English'
             : 'no consolidation clearly improves the standing text',
         }
         : (schema === 'consolidation_polish_gate')
         ? {
-          choice: 'polished',
+          verdict: 'polished',
           unsupported: [],
           dropped: [],
-          reason: 'same meaning in more idiomatic English',
+          assessment: 'same meaning in more idiomatic English',
         }
         : (schema === 'absolute_naturalness_review')
         ? {
-          acceptable: true,
+          isAcceptable: true,
           findings: [],
-          reason: 'whole passage is publication-ready',
+          assessment: 'whole passage is publication-ready',
         }
         : {};
       if (!request.validate(value,))
@@ -524,7 +524,7 @@ function standingPolishClient(
 function judgeBallot({ best, }: { readonly best: number; },): string {
   return JSON.stringify({
     best,
-    reason: 'it says what the original says',
+    assessment: 'it says what the original says',
   },);
 }
 

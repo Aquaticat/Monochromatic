@@ -142,11 +142,11 @@ function contextClient(
           disposition: 'revise',
           sourceQuote: '',
           replacementText: 'Mittens sat by the stove.',
-          finding: 'Remove the brother the original does not name.',
+          assessment: 'Remove the brother the original does not name.',
         },
         candidate_ballot: {
           best: 1,
-          reason: 'Keep the archive block.',
+          assessment: 'Keep the archive block.',
         },
       };
       /**

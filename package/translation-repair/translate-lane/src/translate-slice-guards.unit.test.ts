@@ -177,7 +177,7 @@ function scriptedClient(
               content,
               needle: rendering,
             },),
-            reason: 'the scripted rendering',
+            assessment: 'the scripted rendering',
           }
           : undefined;
       if ((value === undefined) || (!request.validate(value,))) {

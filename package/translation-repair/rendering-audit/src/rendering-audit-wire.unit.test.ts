@@ -177,5 +177,32 @@ await describe({
           expect(asked.includes(`"${field}"`,),).toBe(true,);
       },
     },),
+    it({
+      name:
+        'DECLARES and REQUIRES the keys of the reply and of each finding in alphabetical order, since Charm Hyper '
+        + 'returns a tool call\'s keys alphabetically and the scan of `source-scan` cannot read a schema built from a list',
+      fn: async () => {
+        // OVER THE SERIALIZED FORM, which keeps the order the keys were declared in.
+        const asked = JSON.stringify(RENDERING_AUDIT_RESPONSE_FORMAT,);
+        const sorted = [
+          'candidateFocus',
+          'candidateLocator',
+          'category',
+          'reason',
+          'sourceFocus',
+          'sourceLocator',
+        ];
+        expect([...FINDING_FIELDS,],).toEqual(sorted,);
+        expect(asked.includes('"required":["findings","verdict"]',),).toBe(true,);
+        expect(asked.includes(`"required":${JSON.stringify(sorted,)}`,),).toBe(true,);
+        expect(asked.includes(
+          `"properties":{${sorted.map(function declared(field,): string {
+            return `"${field}":{"type":"string"}`;
+          },).join(',',)}}`,
+        ),).toBe(true,);
+        expect(asked.indexOf('"properties":{"findings":',),).toBeGreaterThan(-1,);
+        expect(asked.indexOf('"verdict":{"type":"string"}',),).toBeGreaterThan(asked.indexOf('"findings":{"type":"array"',),);
+      },
+    },),
   ],
 },);

@@ -179,22 +179,22 @@ function objectingClient(
         ? {
           // A phrase of the consolidation, since the slate shows it wrapped.
           best: candidateNumberOf({ sheet, text: 'purring for you', },),
-          reason: 'the fuller rendering',
+          assessment: 'the fuller rendering',
         }
         : (schema === 'consolidate_gate')
         ? {
-          choice: gateChoice,
+          verdict: gateChoice,
           unsupported: (gateChoice === 'standing') ? ['consolidated',] : [],
           dropped: [],
-          reason: (gateChoice === 'standing') ? objection : 'faithful',
+          assessment: (gateChoice === 'standing') ? objection : 'faithful',
         }
         : (schema === 'refine_report')
         ? { rewrites: [], }
         : (schema === 'absolute_naturalness_review')
         ? {
-          acceptable: true,
+          isAcceptable: true,
           findings: [],
-          reason: 'publication-ready',
+          assessment: 'publication-ready',
         }
         : {};
       if (!request.validate(value,))

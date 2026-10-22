@@ -222,18 +222,22 @@ export type RenderingAuditReportWire = {
  Every field a finding carries, named once so the guard and the schema cannot
  drift apart.
 
+ LISTED IN ALPHABETICAL ORDER (ledger B762), because the schema takes its
+ property order from this list and `source-scan` cannot see a schema built
+ from a list: `rendering-audit-wire.unit.test.ts` pins the order instead.
+
  @example
  ```ts
  FINDING_FIELDS.includes('sourceFocus',);
  ```
  */
 export const FINDING_FIELDS = [
-  'category',
-  'sourceLocator',
-  'sourceFocus',
-  'candidateLocator',
   'candidateFocus',
+  'candidateLocator',
+  'category',
   'reason',
+  'sourceFocus',
+  'sourceLocator',
 ] as const;
 
 /**
@@ -334,12 +338,14 @@ export const RENDERING_AUDIT_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
     schema: {
       type: 'object',
       required: [
-        'verdict',
         'findings',
+        'verdict',
       ],
       additionalProperties: false,
+      // DECLARED IN THE ORDER THE KEYS SORT (ledger B762): the findings, each of which carries its reason, come before
+      // the verdict they support. The owner's ruling of 2026-10-21 leaves this audit outside "Reason first everywhere"
+      // and fixes no order of the two.
       properties: {
-        verdict: { type: 'string', },
         findings: {
           type: 'array',
           items: {
@@ -357,6 +363,7 @@ export const RENDERING_AUDIT_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
             },),),
           },
         },
+        verdict: { type: 'string', },
       },
     },
   },

@@ -95,12 +95,12 @@ function correctionClient(
           disposition: 'revise',
           sourceQuote: '',
           replacementText: replacementFor(prompt,),
-          finding: 'Remove unsupported archive-only wording.',
+          assessment: 'Remove unsupported archive-only wording.',
         }
         : schema === 'candidate_ballot'
         ? {
           best: 1,
-          reason: 'Correction removes unsupported wording.',
+          assessment: 'Correction removes unsupported wording.',
         }
         : { pairs: [{ source: 0, target: 0, },], };
       if (!request.validate(value,))

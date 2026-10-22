@@ -260,14 +260,14 @@ function recordingClient({ checkerSheets, }: { readonly checkerSheets: string[];
               severity: '',
               evidence: '',
               omittedText: '',
-              reason: '',
+              verdictReason: '',
             };
           },),
         }
         : (stage === 'refine_report')
         ? { rewrites: [{ paragraph: 1, newText: SMOOTH_TEXT, },], }
         : (stage === 'candidate_ballot')
-        ? { best: 1, reason: 'scripted', }
+        ? { best: 1, assessment: 'scripted', }
         : undefined;
       if (scripted === undefined)
         throw new Error(`stub has no script for stage ${stage}`,);

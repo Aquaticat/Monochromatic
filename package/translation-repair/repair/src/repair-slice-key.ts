@@ -587,8 +587,23 @@ import type { RepairModels, } from '@monochromatic-dev/translation-repair-assemb
  which holds the commit that set 40 (`git merge-base --is-ancestor`), so records may stand at 40 and the change
  cannot ride inside it; no search of any slice-cache directory was made, and the number moves. The consolidate, lane-contest, translate and refine versions move for the
  same ballots (29, 14, 23, 12). No record has been written at 41, which this change sets first.
+
+ Version 42 covers the answer schemas of the repair lane declaring their properties in alphabetical order, and the keys that
+ moved to make it so (owner decision of 2026-10-21 under the ruling "Reason first everywhere"; ledger B762): Charm Hyper
+ returns a tool call's keys alphabetically, so only a declared order that is alphabetical gives every provider the same
+ order. The panel verdict (`groups` before `verdicts`, and `severity` before `vote` in each), the critic (`sourceQuote` before
+ `summary`), the introduced-defect check (`verdictReason`, the reason that stays last, in place of `reason`), the candidate
+ selection and the coverage judge (`assessment`, `copiedSpan`), and the editor's rewrite (`newText` before `region`) changed
+ their reply keys, instructions or both. The consolidate, lane-contest, translate and refine versions move for the same
+ sheets (30, 15, 24, 13).
+ The key hashes the version, the shape of the run and the texts, not the sheet and not the rule that reads the
+ ballots, so a record written before would be served after. The previous number was set in `4b9fc9e645`, and this worktree's
+ runs directory holds no slice-cache record (the audit `cache-account-audit` found 0, and no control that finds records was
+ run, since the pass that writes them runs in another worktree this change does not read), so whether a record stands at
+ 41 is not known and the change cannot ride inside it: the number moves. No record has been written at 42, which this
+ change sets first.
  */
-export const SLICE_CACHE_VERSION = 41;
+export const SLICE_CACHE_VERSION = 42;
 /**
  Everything about a repair run that changes what the models are ASKED, folded
  into every cache key.

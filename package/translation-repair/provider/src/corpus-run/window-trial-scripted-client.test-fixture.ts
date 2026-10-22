@@ -203,7 +203,7 @@ export function scriptedTrialClient(
         return Promise.resolve(replyWith({
           report: {
             best: sheet.includes(WINDOW_LABEL,) ? wideBallot : narrowBallot,
-            reason: 'fixture',
+            assessment: 'fixture',
           },
           request,
         },),);

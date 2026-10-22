@@ -21,6 +21,7 @@ import {
   passLaunchLines,
   passOnlyLines,
   passPlanLine,
+  passProvidersOffLines,
   passRequiredLines,
   passStartLine,
 } from '../../dist/final/node/index.mjs';
@@ -310,6 +311,37 @@ await describe({
               'openrouter',
               'hyper',
             ], },),).toEqual(['REQUIRED-PROVIDERS openrouter,hyper status=wet',],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: passProvidersOffLines.name,
+      children: [
+        it({
+          name: 'SAYS NOTHING when no provider is off',
+          fn: async () => {
+            expect(passProvidersOffLines({ off: [], },),).toEqual([],);
+          },
+        },),
+        it({
+          name: 'NAMES EACH PROVIDER THAT IS OFF AND WHY, one line each in the order given, so the launch says Bedrock '
+            + 'is not asked instead of the run finding out by a refusal',
+          fn: async () => {
+            expect(passProvidersOffLines({ off: [
+              {
+                provider: 'bedrock',
+                reason: 'the cat tore up the key',
+              },
+              {
+                provider: 'hyper',
+                reason: 'the dog ate the balance',
+              },
+            ], },),).toEqual([
+              'PROVIDER OFF bedrock: the cat tore up the key',
+              'PROVIDER OFF hyper: the dog ate the balance',
+            ],);
           },
         },),
       ],

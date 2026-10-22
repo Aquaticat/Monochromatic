@@ -164,7 +164,7 @@ function deepVoiceClient(
           content,
           needle,
         },),
-        reason: 'scripted',
+        assessment: 'scripted',
       };
       if (!request.validate(ballot,))
         throw new Error('scripted ballot failed the wire guard',);

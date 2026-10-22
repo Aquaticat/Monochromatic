@@ -321,14 +321,173 @@ export function cacheVersionsIn(
 }
 
 /**
- Lines a unified diff adds and removes that declare one version at its
- current value, read as {@link cacheVersionsIn} reads the source.
+ Character a hunk header opens with, repeated once more than the diff has
+ mark columns: `@@` over one parent, `@@@` over two.
+ */
+const HUNK_MARK = '@';
+
+/**
+ Mark columns of the hunks that follow a header line.
+
+ @param line - hunk header, `@@ -1 +1 @@` or `@@@ -1 -1 +1 @@@`
+
+ @returns One for a diff against one parent, one per parent for a merge's
+ combined diff
+
+ @example
+ ```ts
+ hunkMarkColumns({ line: '@@@ -1,2 -1,2 +1,2 @@@', },); // 2
+ ```
+ */
+function hunkMarkColumns({ line, }: { readonly line: string; },): number {
+  /**
+   Offset of the first character past the header's opening run.
+   */
+  const end = Array.from(line,)
+    .findIndex(function pastRun(character,): boolean {
+      return character !== HUNK_MARK;
+    },);
+  return ((end === (-1)) ? line.length : end) - 1;
+}
+
+/**
+ One hunk of a diff: how many mark columns open its lines, and the lines
+ under its header. The lines before any header read as one column, as a
+ diff written without headers does.
+ */
+type DiffHunk = {
+  readonly columns: number;
+  readonly lines: readonly string[];
+};
+
+/**
+ Where one hunk header stands among a diff's lines, with the mark columns
+ the hunk under it opens.
+ */
+type HunkHeader = {
+  readonly index: number;
+  readonly columns: number;
+};
+
+/**
+ Splits a diff into its hunks by their header lines.
+
+ @param diff - `git show` output, or lines written without a header
+
+ @returns Hunks in diff order, the lines before the first header first
+
+ @example
+ ```ts
+ diffHunksOf({ diff: '@@@ -1 -1 +1 @@@\n++a', },); // [{ columns: 1, lines: [] }, { columns: 2, lines: ['++a'] }]
+ ```
+ */
+function diffHunksOf({ diff, }: { readonly diff: string; },): readonly DiffHunk[] {
+  /**
+   The diff's lines.
+   */
+  const lines = diff.split('\n',);
+  /**
+   Where each header stands, with the columns it opens.
+   */
+  const headers = lines.flatMap(function headerAt(
+    line,
+    index,
+  ): readonly HunkHeader[] {
+    return line.startsWith(`${HUNK_MARK}${HUNK_MARK}`,)
+      ? [{
+        index,
+        columns: hunkMarkColumns({ line, },),
+      },]
+      : [];
+  },);
+  /**
+   Lines before the first header.
+   */
+  const preamble: DiffHunk = {
+    columns: 1,
+    lines: lines.slice(
+      0,
+      headers
+        .at(0,)
+        ?.index
+        ?? lines.length,
+    ),
+  };
+  return [
+    preamble,
+    ...headers.map(function hunkUnder(
+      header,
+      order,
+    ): DiffHunk {
+      return {
+        columns: header.columns,
+        lines: lines.slice(
+          header.index + 1,
+          headers
+            .at(order + 1,)
+            ?.index
+            ?? lines.length,
+        ),
+      };
+    },),
+  ];
+}
+
+/**
+ Which way one line of a diff runs.
+ */
+type LineChange = 'added' | 'removed' | 'neither';
+
+/**
+ Which way one line of a diff runs: added where every mark column is `+`,
+ removed where every one is `-`, neither otherwise. In a merge's combined
+ diff a line marked `+` in some columns and not others stood in a parent
+ already, so the merge brought it in and did not write it.
+
+ @param marks - line's mark columns
+
+ @returns Which way it runs
+
+ @example
+ ```ts
+ lineChangeOf({ marks: '++', },); // 'added'
+ ```
+ */
+function lineChangeOf({ marks, }: { readonly marks: string; },): LineChange {
+  /**
+   Each mark column.
+   */
+  const columns = Array.from(marks,);
+  if (columns.every(function plus(mark,): boolean {
+    return mark === '+';
+  },))
+    return 'added';
+  if (columns.every(function minus(mark,): boolean {
+    return mark === '-';
+  },))
+    return 'removed';
+  return 'neither';
+}
+
+/**
+ Lines a diff adds and removes that declare one version at its current
+ value, read as {@link cacheVersionsIn} reads the source.
 
  A HISTORICAL LINE THAT DOES NOT READ is no declaration of this value and is
  left uncounted, not refused: the source may once have written one another
  way, and only the current source has to read.
 
- @param diff - `git show` output for one commit
+ A MERGE'S COMBINED DIFF IS READ TOO (ledger B814): `git show` writes a merge
+ with one mark column per parent, and a declaration its resolution wrote is
+ marked added in every column. Such a line stands in no ordinary commit, so
+ the merge is the commit that set it.
+
+ NO LINE IS SET ASIDE AS A FILE HEADER: `--- a/path` and `+++ b/path` never
+ read as a declaration, while a merge of three parents marks a line its
+ resolution wrote `+++` and one it removed `---`, and those count.
+
+ @param diff - `git show` output for one commit, a merge's combined diff
+ included
 
  @param version - constant and value looked for
 
@@ -336,7 +495,7 @@ export function cacheVersionsIn(
 
  @example
  ```ts
- declarationLineCounts({ diff: '+export const A_CACHE_VERSION = 2;', version, },); // { added: 1, removed: 0 }
+ declarationLineCounts({ diff: '@@ -1 +1 @@\n+export const A_CACHE_VERSION = 2;', version, },); // { added: 1, removed: 0 }
  ```
  */
 export function declarationLineCounts(
@@ -352,42 +511,44 @@ export function declarationLineCounts(
   readonly removed: number;
 } {
   /**
-   Changed lines declaring this constant at this value, file headers aside.
+   Which way each line declaring this value runs, hunk by hunk.
    */
-  const declaring = diff
-    .split('\n',)
-    .filter(function declaresVersion(line,): boolean {
-      if (line.startsWith('+++',) || line.startsWith('---',))
-        return false;
-      /**
-       Whether the diff adds or removes this line.
-       */
-      const changed = line.startsWith('+',) || line.startsWith('-',);
-      if (!changed)
-        return false;
-      /**
-       The changed line, its diff mark removed.
-       */
-      const written = line
-        .slice(1,)
-        .trim();
-      /**
-       What it declares.
-       */
-      const reading = readDeclaration({ line: written, },);
-      return (reading.kind === 'version')
-        && (reading.name === version.name)
-        && (Number(reading.digits,) === version.value);
+  const changes = diffHunksOf({ diff, },)
+    .flatMap(function hunkChanges(hunk,): readonly LineChange[] {
+      return hunk.lines
+        .filter(function declaresVersion(line,): boolean {
+          /**
+           What the line declares, its marks removed.
+           */
+          const reading = readDeclaration({
+            line: line
+              .slice(hunk.columns,)
+              .trim(),
+          },);
+          return (reading.kind === 'version')
+            && (reading.name === version.name)
+            && (Number(reading.digits,) === version.value);
+        },)
+        .map(function changeOf(line,): LineChange {
+          return lineChangeOf({
+            marks: line.slice(
+              0,
+              hunk.columns,
+            ),
+          },);
+        },);
     },);
-  /**
-   Those the diff adds.
-   */
-  const added = declaring.filter(function isAdded(line,): boolean {
-    return line.startsWith('+',);
-  },);
   return {
-    added: added.length,
-    removed: declaring.length - added.length,
+    added: changes
+      .filter(function isAdded(change,): boolean {
+        return change === 'added';
+      },)
+      .length,
+    removed: changes
+      .filter(function isRemoved(change,): boolean {
+        return change === 'removed';
+      },)
+      .length,
   };
 }
 

@@ -284,7 +284,7 @@ async function repairOneCandidate(
   /**
    Characters of finding text this answer has to address.
 
-   COUNTED BECAUSE THE REPAIR WIRE EXPLAINS ITSELF. Its `explanation` field
+   COUNTED BECAUSE THE REPAIR WIRE EXPLAINS ITSELF. Its `translatorNote` field
    answers these findings, and the producing wire has no such field, so the
    slice alone does not bound what a correct answer here can run to.
    */
@@ -360,7 +360,7 @@ async function repairOneCandidate(
   const {
     resolution,
     translation,
-    explanation,
+    translatorNote: explanation,
   } = answer.value;
   if (resolution !== 'revised') {
     rl.warn(`${voice.modelId} answered ${resolution} to its findings (${explanation}), so ${fate}`,);

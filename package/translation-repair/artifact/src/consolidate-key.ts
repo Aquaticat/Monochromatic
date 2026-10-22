@@ -445,8 +445,27 @@ import type { LaneText, } from '@monochromatic-dev/translation-repair-translate-
  sheet is what it was (`refine-prompt.unit.test.ts`, "LEAVES THE SHEET UNCHANGED WHEN NO CLAIMS WERE ACCEPTED"). The
  lane-contest, translate slice and repair slice versions stay, since none of their sheets is a polish writer's. No record
  has been written at 30, which this change sets first.
+
+ 31 covers the answer schemas of the settlement declaring their properties in alphabetical order, and the keys that moved
+ to make it so (owner decision of 2026-10-21 under the ruling "Reason first everywhere"; ledger B762): the contest ballot of
+ the consolidation gate and the polish gate (`assessment`, `dropped`, `unsupported`, `verdict`), the absolute naturalness
+ review (`assessment`, `findings`, `isAcceptable`), the coverage judge (`assessment`, `copiedSpan`, `coverage`), the
+ candidate selection (`assessment`, `best`) and the introduced-defect check over a polish (`verdictReason`) changed their
+ reply keys, instructions or both. The archive block review (`assessment`, `disposition`, `replacementText`, `sourceQuote`)
+ has no version of its own. The lane-contest, translate slice, repair slice and refine versions move for the same sheets
+ (15, 24, 42, 13).
+ The key hashes the version, the shape of the run and the texts, not the sheet and not the rule that reads the
+ ballots, so a record written before would be served after. 29 was set in `4b9fc9e645`, and this worktree's runs
+ directory holds no slice-cache record (the audit `cache-account-audit` found 0, and no control that finds records was
+ run, since the pass that writes them runs in another worktree this change does not read), so whether a record stands at
+ 29 is not known and the change cannot ride inside it: the number moves. This change moved it to 30 in `a40de882b`
+ while main moved it to 30 for B805 in `27db2c256`, so the merge that met the two (`ba30e7ac6`) set 31 in its
+ resolution, and each 30 keeps one meaning. The audit names that merge as the setting since ledger B814; before, it
+ refused 31 as in no commit. No pass ran on a build holding either 30: the last runs, zheermao22 and XingZ6017, log
+ `START tip=2a336603bf`, which holds neither commit (`git merge-base --is-ancestor`). No record has been written at
+ 31, which this change sets first.
  */
-export const CONSOLIDATE_CACHE_VERSION = 30;
+export const CONSOLIDATE_CACHE_VERSION = 31;
 
 /**
  What a line-structured slice appends to its key material.

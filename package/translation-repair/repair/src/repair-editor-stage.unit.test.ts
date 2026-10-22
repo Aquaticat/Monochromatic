@@ -458,7 +458,7 @@ await describe({
             return replyWith({
               report: {
                 best: 3,
-                reason: 'the composite is the only whole-chunk candidate that repairs both sentences',
+                assessment: 'the composite is the only whole-chunk candidate that repairs both sentences',
               },
               request,
             },);

@@ -11,10 +11,12 @@ import type {
   ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup/ts';
+import { deliveredNoContent, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type {
   ReadonlyEntry,
   RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import { StragglerCutError, } from './straggler-cut.ts';
 
 //region Seat tally
 // WHAT EVERY SEAT WAS ASKED AND WHAT IT GAVE BACK, counted at the client seam
@@ -65,9 +67,13 @@ import type {
  `usable` is text returned or a JSON outcome of kind `ok`; `unusable` is a
  JSON outcome the guard rejected (refusal-shaped or off-schema); `threw` is a
  call that never returned an outcome at all and was not abandoned by its
- caller; `abandoned` is a call whose caller aborted its signal before it
+ caller; `silent` is a call the round's own grace window cut, after quorum
+ stood, that had delivered no answer characters and no reasoning characters:
+ an ask the seat failed, counted in `asked` (ledger B761); `abandoned` is any
+ other call whose caller aborted its signal before it
  settled, which is counted beside the others and in none of them: it is not an
- ask the seat answered or failed (ledger B421); `unreachable` is a call the
+ ask the seat answered or failed (ledger B421), a slow reasoner cut with
+ reasoning on its way among them; `unreachable` is a call the
  provider router refused with `NoProviderForModelError` before any request was
  sent, which is counted beside the others and in none of them for the same
  reason: no provider was asked, so the seat neither answered nor failed
@@ -78,7 +84,7 @@ import type {
  const outcome: SeatOutcome = 'threw';
  ```
  */
-export type SeatOutcome = 'usable' | 'unusable' | 'threw' | 'abandoned' | 'unreachable';
+export type SeatOutcome = 'usable' | 'unusable' | 'threw' | 'silent' | 'abandoned' | 'unreachable';
 
 /**
  Counts for one seat over the life of the tally.
@@ -95,9 +101,11 @@ export type SeatCount = {
   readonly modelId: RosterModelId;
 
   /**
-   Calls that settled, whatever came back; a call the caller abandoned is not
-   one, and neither is a call the router refused, so neither can raise a seat
-   toward its withholding or lower it.
+   Calls that settled, whatever came back, and the calls the round's grace
+   window cut with nothing delivered (`silent`); a call the caller abandoned
+   or the round cut with content on its way is not one, and neither is a call
+   the router refused, so none of those can raise a seat toward its
+   withholding or lower it.
    */
   readonly asked: number;
 
@@ -117,8 +125,17 @@ export type SeatCount = {
   readonly threw: number;
 
   /**
+   Calls the round's grace window cut after quorum stood, that had delivered
+   no answer characters and no reasoning characters: a dead stream, which the
+   seat failed to answer inside the window. In `asked`, and a failed ask for
+   the withholding rule beside `threw`.
+   */
+  readonly silent: number;
+
+  /**
    Calls the caller abandoned before they settled: a straggler a round cut
-   off after quorum, a stage deadline, an entry stop. Not in `asked`.
+   off after quorum with answer or reasoning characters on its way, a stage
+   deadline, an entry stop. Not in `asked`.
    */
   readonly abandoned: number;
 
@@ -161,9 +178,11 @@ export type SeatTally = {
   readonly dark: () => readonly SeatCount[];
 
   /**
-   Seats asked at least `minAsks` times that threw on every one of those asks,
-   so no call they made ever returned an outcome. Calls the router refused are
-   not asks, so they neither count toward `minAsks` nor break a run of throws.
+   Seats asked at least `minAsks` times whose every ask failed: threw, or was
+   cut by the round's grace window with nothing delivered, so no call they
+   made ever returned an outcome. Calls the router refused and calls cut with
+   content on their way are not asks, so they neither count toward `minAsks`
+   nor break a run of failures.
 
    @param args - the number of asks a seat must have been given before it counts
 
@@ -187,6 +206,7 @@ type SeatCounter = {
   usable: number;
   unusable: number;
   threw: number;
+  silent: number;
   abandoned: number;
   unreachable: number;
 };
@@ -235,6 +255,7 @@ export function createSeatTally(): SeatTally {
       usable: 0,
       unusable: 0,
       threw: 0,
+      silent: 0,
       abandoned: 0,
       unreachable: 0,
     };
@@ -263,6 +284,7 @@ export function createSeatTally(): SeatTally {
         usable: counter.usable,
         unusable: counter.unusable,
         threw: counter.threw,
+        silent: counter.silent,
         abandoned: counter.abandoned,
         unreachable: counter.unreachable,
       };
@@ -287,7 +309,9 @@ export function createSeatTally(): SeatTally {
         return;
       }
       counter.asked += 1;
-      if (outcome === 'usable')
+      if (outcome === 'silent')
+        counter.silent += 1;
+      else if (outcome === 'usable')
         counter.usable += 1;
       else if (outcome === 'unusable')
         counter.unusable += 1;
@@ -303,8 +327,8 @@ export function createSeatTally(): SeatTally {
     },
     withheld({ minAsks, },): readonly SeatCount[] {
       return snapshot()
-        .filter(function threwOnEveryAsk(count,): boolean {
-          return (count.asked >= minAsks) && (count.threw === count.asked);
+        .filter(function failedEveryAsk(count,): boolean {
+          return (count.asked >= minAsks) && ((count.threw + count.silent) === count.asked);
         },);
     },
     reset(): void {
@@ -414,25 +438,38 @@ export function seatTallyClient(
     },);
     if (withheldCount === undefined)
       return;
+    /**
+     The seat's asks, counted and named by the word for the count.
+     */
+    const asks = `${String(withheldCount.asked,)} ${
+      wordForCount({
+        count: withheldCount.asked,
+        one: 'ask',
+        many: 'asks',
+      },)
+    }`;
+    // THE WORDS FOR A SEAT THAT ONLY THREW STAY AS THEY WERE (ledger B711); a seat with asks the round cut with nothing
+    // delivered says both ways its asks failed.
     throw new NoProviderForModelError({
       modelId,
-      reason: `the run withheld it after it threw on all ${String(withheldCount.asked,)} ${
-        wordForCount({
-          count: withheldCount.asked,
-          one: 'ask',
-          many: 'asks',
-        },)
-      } and does not ask it again`,
+      reason: (withheldCount.silent === 0)
+        ? `the run withheld it after it threw on all ${asks} and does not ask it again`
+        : `the run withheld it after all ${asks} failed (${String(withheldCount.threw,)} threw, ${
+          String(withheldCount.silent,)
+        } ended with nothing delivered) and does not ask it again`,
     },);
   }
 
   /**
    Counts a call that threw: as unreachable when the inner client refused the
    seat with `NoProviderForModelError`, since no request was sent and so no
-   ask was made; otherwise as abandoned when the caller had aborted its
-   signal, since an abort is the caller leaving the call (a straggler cut off
-   after quorum, a stage deadline, an entry stop) and not the seat failing to
-   answer, so it is not an ask either; otherwise as threw.
+   ask was made; otherwise, when the signal had aborted, as silent where the
+   abort was the round's grace window closing on a stream that had delivered
+   no answer and no reasoning (a failed ask of the seat, ledger B761), and as
+   abandoned in every other case, since an abort is the caller leaving the call
+   (a straggler cut off after quorum with content on its way, a stage
+   deadline, an entry stop) and not the seat failing to answer, so it is not an
+   ask either; otherwise as threw.
 
    @param modelId - seat the call went to
 
@@ -462,9 +499,14 @@ export function seatTallyClient(
       return;
     }
     if (signal.aborted) {
+      // ONLY THE ROUND'S OWN GRACE CUT, WITH NOTHING DELIVERED, IS THE SEAT'S FAILURE. A caller's stop, an entry's hard
+      // cap or an operator's abort lands on every call in flight, empty or not, and says nothing of any seat; a stream
+      // cut with reasoning on its way is a model still working (Qwen, 43,372 reasoning characters and no answer yet).
       tally.record({
         modelId,
-        outcome: 'abandoned',
+        outcome: ((signal.reason instanceof StragglerCutError) && deliveredNoContent({ error, },))
+          ? 'silent'
+          : 'abandoned',
       },);
       return;
     }
@@ -592,7 +634,8 @@ export function seatReportLines(
    */
   const perSeat = counts.map(function toLine(count,): string {
     return `SEAT ${count.modelId} asked=${String(count.asked,)} usable=${String(count.usable,)} `
-      + `unusable=${String(count.unusable,)} threw=${String(count.threw,)} abandoned=${String(count.abandoned,)} `
+      + `unusable=${String(count.unusable,)} threw=${String(count.threw,)} silent=${String(count.silent,)} `
+      + `abandoned=${String(count.abandoned,)} `
       + `unreachable=${String(count.unreachable,)}`;
   },);
 
@@ -604,9 +647,13 @@ export function seatReportLines(
    */
   const named = dark
     .map(function describe(count,): string {
+      /**
+       The silent count, named only where there is one so the line reads as it did for every seat that has none.
+       */
+      const silent = (count.silent === 0) ? '' : `, silent ${String(count.silent,)}`;
       return `${count.modelId} (asked ${String(count.asked,)}, unusable ${
         String(count.unusable,)
-      }, threw ${String(count.threw,)})`;
+      }, threw ${String(count.threw,)}${silent})`;
     },)
     .join('; ',);
 

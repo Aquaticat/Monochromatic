@@ -84,7 +84,7 @@ await describe({
             expect(
               isCandidateBallotWire({
                 best: 1,
-                reason: 'reads most naturally',
+                assessment: 'reads most naturally',
               },),
             ).toBe(true,);
           },
@@ -97,7 +97,7 @@ await describe({
             expect(
               isCandidateBallotWire({
                 best: CANDIDATE_NONE,
-                reason: 'none of these fix the dropped clause',
+                assessment: 'none of these fix the dropped clause',
               },),
             ).toBe(true,);
           },
@@ -113,7 +113,7 @@ await describe({
             expect(
               isCandidateBallotWire({
                 best: 999,
-                reason: 'the ninth one, whichever that was',
+                assessment: 'the ninth one, whichever that was',
               },),
             ).toBe(true,);
           },
@@ -127,7 +127,7 @@ await describe({
             expect(
               isCandidateBallotWire({
                 best: 1,
-                reason: '',
+                assessment: '',
               },),
             ).toBe(true,);
           },
@@ -140,7 +140,7 @@ await describe({
             expect(
               isCandidateBallotWire({
                 best: 2,
-                reason: 'closer to the original',
+                assessment: 'closer to the original',
                 confidence: 0.8,
                 runnerUp: 1,
               },),
@@ -160,7 +160,7 @@ await describe({
               expect(
                 isCandidateBallotWire({
                   best,
-                  reason: 'the last one',
+                  assessment: 'the last one',
                 },),
               ).toBe(false,);
           },
@@ -179,7 +179,7 @@ await describe({
               expect(
                 isCandidateBallotWire({
                   best,
-                  reason: 'somewhere around there',
+                  assessment: 'somewhere around there',
                 },),
               ).toBe(false,);
           },
@@ -193,7 +193,7 @@ await describe({
             expect(
               isCandidateBallotWire({
                 best: '1',
-                reason: 'reads most naturally',
+                assessment: 'reads most naturally',
               },),
             ).toBe(false,);
           },
@@ -213,7 +213,7 @@ await describe({
               expect(
                 isCandidateBallotWire({
                   best: 1,
-                  reason,
+                  assessment: reason,
                 },),
               ).toBe(false,);
           },
@@ -255,7 +255,7 @@ await describe({
               expect(
                 isCandidateBallotAsSent({
                   best,
-                  reason: 'a fine cat',
+                  assessment: 'a fine cat',
                 },),
               ).toBe(true,);
           },
@@ -274,7 +274,7 @@ await describe({
               expect(
                 isCandidateBallotAsSent({
                   best,
-                  reason: 'the cat in the window',
+                  assessment: 'the cat in the window',
                 },),
               ).toBe(true,);
           },
@@ -304,7 +304,7 @@ await describe({
               expect(
                 isCandidateBallotAsSent({
                   best,
-                  reason: 'somewhere around there',
+                  assessment: 'somewhere around there',
                 },),
               ).toBe(false,);
           },
@@ -318,7 +318,7 @@ await describe({
             expect(
               isCandidateBallotAsSent({
                 best: '1',
-                reason: 7,
+                assessment: 7,
               },),
             ).toBe(false,);
             expect(isCandidateBallotAsSent(null,),).toBe(false,);
@@ -341,34 +341,34 @@ await describe({
               readCandidateBallotWire({
                 sent: {
                   best: '8',
-                  reason: 'the eighth cat',
+                  assessment: 'the eighth cat',
                 },
               },),
             ).toStrictEqual({
               best: 8,
-              reason: 'the eighth cat',
+              assessment: 'the eighth cat',
             },);
             expect(
               readCandidateBallotWire({
                 sent: {
                   best: '0',
-                  reason: 'no cat here',
+                  assessment: 'no cat here',
                 },
               },),
             ).toStrictEqual({
               best: CANDIDATE_NONE,
-              reason: 'no cat here',
+              assessment: 'no cat here',
             },);
             expect(
               readCandidateBallotWire({
                 sent: {
                   best: 3,
-                  reason: 'the third cat',
+                  assessment: 'the third cat',
                 },
               },),
             ).toStrictEqual({
               best: 3,
-              reason: 'the third cat',
+              assessment: 'the third cat',
             },);
           },
         },),

@@ -14,6 +14,7 @@ import {
   passDoneLine,
   passLaunchLines,
   passPlanLine,
+  passProvidersOffLines,
   passRequiredLines,
   passStartLine,
 } from './corpus-pass-lines.ts';
@@ -31,6 +32,7 @@ import {
   assertRequiredProvidersReady,
   lockRunsDir,
   prepareRunsLayout,
+  PROVIDERS_LEFT_OFF,
   readRequiredProviders,
   RUN_PER_CALL_TIMEOUT_MS,
 } from '@monochromatic-dev/translation-repair-run/ts';
@@ -199,6 +201,11 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
 
   for (const requiredLine of passRequiredLines({ providers: requiredProviders, },))
     console.log(requiredLine,);
+
+  // SAID AT EVERY LAUNCH, whether or not its key is in the environment: the client this run builds reads an off
+  // provider's key as unset, so no call goes to it, and the line is where the run says so.
+  for (const offLine of passProvidersOffLines({ off: PROVIDERS_LEFT_OFF, },))
+    console.log(offLine,);
 
   /**
    Shared client using measured production provider concurrency.
