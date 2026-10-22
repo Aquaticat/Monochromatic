@@ -184,8 +184,9 @@ await describe({
             * NEURALWATT_ENERGY_MARGIN,
           12,
         );
-        // The 4,096 to 16,384 bucket, 0.3725 Wh for this model, not the top bucket's 0.9089.
-        expect(held.wh,).toBeCloseTo(0.3725, 12,);
+        // The 4,096 to 16,384 bucket, 0.9577 Wh for this model (the measured mean of the three-run rotation pool, see
+        // the estimate's module note), not the top bucket's matrix figure of 0.9089.
+        expect(held.wh,).toBeCloseTo(0.9577, 12,);
       },
     },),
 
