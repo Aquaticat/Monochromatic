@@ -49,6 +49,7 @@ import {
 import { quotingFailure, } from '@monochromatic-dev/translation-repair-test-fixture/ts/quoting-failure.test-fixture.ts';
 import {
   SEAT_HYPER_ONLY,
+  SEAT_OPENROUTER_ONLY_CHECKER,
   SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { withFreshRunSeats, } from '@monochromatic-dev/translation-repair-stage/ts/corpus-run/fresh-run-seats.test-fixture.ts';
@@ -909,6 +910,46 @@ await describe({
             ],);
           },
         },),
+        it({
+          name: 'STOPS THE ENTRY WITH THE BENCH ERROR AND NOT THE RUN-ENDING REFUSAL when every provider reads dry but '
+            + 'Xiaomi, whose wet meter serves only the seat pinned here, since a wet provider is something the run can '
+            + 'still buy from and a lost seat is not the end of the run; a roster change that gave Xiaomi more seats '
+            + 'changes the pin and not the refusal',
+          fn: async () => {
+            /**
+             Every provider dry but Xiaomi, whose meter can never read dry by itself.
+             */
+            const xiaomiWet: BudgetView = { ...ALL_DRY, xiaomi: false, };
+            // THE ROSTER PIN: the seats a Xiaomi-only fleet reaches, among the roster and the checkers. The refusal below
+            // does not depend on it, since it reads the providers and not the roster, but the case means "a fleet with
+            // one wet provider that serves one seat", and this line says which seat that is today.
+            const { seats, } = await readPhaseSeats({
+              client: viewClient({ providerDryness: scriptedViews({ views: [xiaomiWet,], },).read, },),
+              phase: 'page consistency',
+              signal: new AbortController().signal,
+              l: levelCapturingLogger({ lines: [], },),
+              pollMs: 5,
+            },);
+            expect([...seats.roster, ...seats.checkers,].filter(function isServed(modelId,): boolean {
+              return !seats.unserved.includes(modelId,);
+            },),).toEqual([SEAT_OPENROUTER_ONLY_CHECKER,],);
+            /**
+             What the seat reading stopped with.
+             */
+            const refusal = await rejectionOf({
+              promise: readPhaseSeats({
+                client: viewClient({ providerDryness: scriptedViews({ views: [xiaomiWet,], },).read, },),
+                phase: 'lanes',
+                signal: new AbortController().signal,
+                l: levelCapturingLogger({ lines: [], },),
+                pollMs: 5,
+              },),
+            },);
+            expect(refusal,).toBeInstanceOf(WritingBenchUnreachableError,);
+            expect(refusal,).not.toBeInstanceOf(EveryProviderDryError,);
+          },
+        },),
+
         it({
           name: 'ENDS THE RUN WITH THE EVERY-PROVIDER-DRY REFUSAL when every provider still reads dry after the one wait '
             + 'for the shortest hold, as it does when none was held',

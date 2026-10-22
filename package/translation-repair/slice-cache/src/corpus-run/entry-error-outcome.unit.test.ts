@@ -11,6 +11,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { EveryProviderDryError, } from '@monochromatic-dev/translation-repair-provider';
+import { modelDarkRefusal, } from '@monochromatic-dev/translation-repair-provider/ts/model-dark-refusal.test-fixture.ts';
 import { TranslationRepairInterruptedError, } from '@monochromatic-dev/translation-repair-translate-stage';
 import { PromptPayloadStoreError, } from '@monochromatic-dev/translation-repair-stage';
 import {
@@ -93,6 +94,17 @@ await describe({
               },);
             },
           },);
+        },),
+
+        it({
+          name: 'MAPS A MODEL-DARK REFUSAL to resumable ERROR like any operational failure, since a model whose own '
+            + 'providers are dry costs one seat its voice and does not stop the run',
+          fn: async () => {
+            expect(entryErrorOutcome({ error: modelDarkRefusal({ modelId: 'glm-5.3', },), },),).toEqual({
+              status: 'ERROR',
+              outcome: { kind: 'resumable-failure', },
+            },);
+          },
         },),
 
         it({

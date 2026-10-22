@@ -24,6 +24,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 import { EveryProviderDryError, } from '@monochromatic-dev/translation-repair-provider';
+import { modelDarkRefusal, } from '@monochromatic-dev/translation-repair-provider/ts/model-dark-refusal.test-fixture.ts';
 import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   mapOverlapped,
@@ -414,6 +415,37 @@ await describe({
           0,
           1,
         ],);
+      },
+    },),
+
+    it({
+      name: 'THROWS THE EARLIEST POSITION\'S FAILURE when a later position raised a model-dark refusal first, since '
+        + 'a model whose own providers are dry costs one item its voice and does not end the run, so it outranks nothing',
+      fn: async () => {
+        const run = gatedRun({ count: 3, },);
+        const failure = collected({
+          run: mapOverlapped({
+            items: ITEMS.slice(
+              0,
+              3,
+            ),
+            overlap: 3,
+            oneItem: run.oneItem,
+            signal: NEVER_STOPPED,
+            l: QUIET,
+            nameOf: catName,
+          },),
+        },);
+        await settle();
+        nonNullishOrThrow(run.gates[2],).reject(modelDarkRefusal({ modelId: 'glm-5.3', },),);
+        await settle();
+        /**
+         What the earlier item throws, second in time.
+         */
+        const earlier = new Error('the first item broke after it',);
+        nonNullishOrThrow(run.gates[0],).reject(earlier,);
+        nonNullishOrThrow(run.gates[1],).resolve('fine',);
+        expect(await failure,).toBe(earlier,);
       },
     },),
 

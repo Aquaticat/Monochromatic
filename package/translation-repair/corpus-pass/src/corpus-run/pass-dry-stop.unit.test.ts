@@ -19,6 +19,7 @@ import {
   type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { createPassDryStop, } from '../../dist/final/node/index.mjs';
+import { modelDarkRefusal, } from '@monochromatic-dev/translation-repair-provider/ts/model-dark-refusal.test-fixture.ts';
 import { levelCapturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
@@ -98,6 +99,22 @@ await describe({
         },),).toBe(dry,);
         expect(dryStop.signal.aborted,).toBe(true,);
         expect(dryStop.signal.reason,).toBe(dry,);
+      },
+    },),
+
+    it({
+      name: 'DOES NOT TRIP ON A MODEL-DARK REFUSAL from chat text, rethrowing it with the signal untouched, since a '
+        + 'model whose own providers are dry is a lost seat and the run goes on',
+      fn: async () => {
+        const dryStop = createPassDryStop();
+        const dark = modelDarkRefusal({ modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR, },);
+        const client = dryStop.guard({ client: throwingClient({ thrown: dark, },), },);
+
+        expect(await rejectionOf(async function call(): Promise<unknown> {
+          return await client.chatText(requestWith({ signal: dryStop.signal, },),);
+        },),).toBe(dark,);
+        expect(dryStop.signal.aborted,).toBe(false,);
+        expect(dryStop.tripped(),).toBe(false,);
       },
     },),
 
