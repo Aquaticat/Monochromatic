@@ -331,6 +331,19 @@ jobs:
   # Wayland stack) and it installs the system -dev libraries it links before
   # every compile. Its jobs are gated identically to forbidden-strings' but on
   # the nested-wayland-session Cargo.toml and the matching dispatch crate.
+  # Its release differs from forbidden-strings' in these ways
+  # (doc/decision/nested-wayland-session-releases.md):
+  # - The binary matrix also runs in a dry run: every target builds, is smoke-run,
+  #   packaged and verified, and its archive is uploaded for one day. Attestation
+  #   and the release stay behind !inputs.dry-run.
+  # - nws-release-state looks the release tag up first. A real run for a version
+  #   whose tag exists builds nothing and creates nothing, and does not fail,
+  #   because immutable releases cannot be replaced.
+  # - The release waits for nws-publish-crate, so no immutable release exists for a
+  #   version that is not on crates.io (cargo-binstall reads the registry manifest).
+  # - The release carries a checksums file beside the archives, and each archive
+  #   holds the licenses beside the binary and README.
+  # The archives are found by [package.metadata.binstall] in the crate's Cargo.toml.
 
   nws-detect:
     runs-on: ubuntu-latest
@@ -488,15 +501,56 @@ jobs:
           mise exec rust -- cargo publish --no-verify
         fi
 
-  nws-build-binary:
+  # Answers one question for the jobs below: does this version's release tag exist
+  # already? Releases are immutable here, so an existing tag cannot be refilled or
+  # replaced; a real run then skips the build and the release without failing.
+  # A dry run builds regardless, since dry-running the current version is the usual case.
+  nws-release-state:
     needs: nws-detect
-    if: ${{ needs.nws-detect.outputs.should_publish == 'true' && !inputs.dry-run }}
+    if: ${{ needs.nws-detect.outputs.should_publish == 'true' }}
+    runs-on: ubuntu-latest
+    outputs:
+      tag_exists: ${{ steps.state.outputs.tag_exists }}
+    permissions:
+      contents: read
+    steps:
+    - name: Look up the release tag
+      id: state
+      env:
+        GH_TOKEN: ${{ github.token }}
+        VERSION: ${{ needs.nws-detect.outputs.version }}
+        REPO: ${{ github.repository }}
+      run: |
+        set -euo pipefail
+        tag="monochromatic-nested-wayland-session-v${VERSION}"
+        # A 404 means the tag is absent; any other failure (rate limit, outage) must fail
+        # this job rather than read as "absent" and fail later at `gh release create`.
+        if reply=$(gh api "repos/${REPO}/git/ref/tags/${tag}" 2>&1); then
+          echo "::notice::Tag ${tag} already exists; a real run skips the build and the release."
+          echo 'tag_exists=true' >> "$GITHUB_OUTPUT"
+        elif printf '%s' "$reply" | grep --quiet 'HTTP 404'; then
+          echo "Tag ${tag} does not exist yet."
+          echo 'tag_exists=false' >> "$GITHUB_OUTPUT"
+        else
+          printf '%s\n' "$reply" >&2
+          exit 1
+        fi
+
+  nws-build-binary:
+    needs: [nws-detect, nws-release-state]
+    # Not gated on !inputs.dry-run: a dry run builds every target too. A real run
+    # builds only while the release tag is free.
+    if: ${{ needs.nws-detect.outputs.should_publish == 'true' && (inputs.dry-run || needs.nws-release-state.outputs.tag_exists != 'true') }}
     strategy:
       fail-fast: false
       matrix:
         include:
+        # The archive links the glibc of its build host, so the runners are named, not
+        # ubuntu-latest: GitHub moves that label to Ubuntu 26.04 (glibc 2.43) in November 2026,
+        # which would raise the floor of every release archive. The arm64 runner is Ubuntu 24.04
+        # for the same glibc. The gpc-build-binary matrix does the same.
         - target: x86_64-unknown-linux-gnu
-          runner: ubuntu-latest
+          runner: ubuntu-24.04
         - target: aarch64-unknown-linux-gnu
           runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
@@ -509,8 +563,11 @@ jobs:
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
       with:
         fetch-depth: 1
+        # The build only reads the tree; nothing here needs the token in .git/config.
+        persist-credentials: false
 
     - name: Install system libraries the crate links
+      # The same set as nws-publish-crate; the Containerfile names the Fedora equivalents.
       run: |
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends \
@@ -520,13 +577,42 @@ jobs:
 
     - name: Add rust target
       shell: bash
-      run: rustup target add ${{ matrix.target }}
+      env:
+        TARGET: ${{ matrix.target }}
+      run: rustup target add "$TARGET"
 
+    - name: Show the toolchain that builds the release
+      shell: bash
+      run: rustc --version --verbose
+
+    # --locked builds the dependency versions the published crate's Cargo.lock
+    # records; the release profile in Cargo.toml applies fat LTO and one codegen unit.
     - name: Build binary
       shell: bash
       working-directory: package/cli/nested-wayland-session
-      run: cargo build --release --target ${{ matrix.target }}
+      env:
+        TARGET: ${{ matrix.target }}
+      run: cargo build --release --locked --target "$TARGET"
 
+    # Each runner is native for its target, so the binary can run here. A build that
+    # links but cannot start, or that reports another version than Cargo.toml, fails
+    # before anything is packaged. Output format: `<bin name> <version>` (clap).
+    - name: Smoke-run the binary
+      shell: bash
+      env:
+        VERSION: ${{ needs.nws-detect.outputs.version }}
+        TARGET: ${{ matrix.target }}
+      run: |
+        set -euo pipefail
+        bin='monochromatic-nested-wayland-session'
+        got=$("package/cli/nested-wayland-session/target/${TARGET}/release/${bin}" --version)
+        want="${bin} ${VERSION}"
+        printf 'got:  %s\nwant: %s\n' "$got" "$want"
+        [ "$got" = "$want" ]
+
+    # Layout is {name}-{version}-{target}/{bin}, the bin-dir of [package.metadata.binstall];
+    # the archive name is its pkg-url file name. The licenses sit beside the binary because
+    # the crate is LGPL-3.0-or-later and the archive is a redistribution.
     - name: Package binary archive
       id: pkg
       shell: bash
@@ -535,13 +621,12 @@ jobs:
         TARGET: ${{ matrix.target }}
       run: |
         set -euo pipefail
-        bin='monochromatic-nested-wayland-session'
-        stage_dir="monochromatic-nested-wayland-session-${VERSION}-${TARGET}"
-        mkdir -p "dist/${stage_dir}"
-        cp "package/cli/nested-wayland-session/target/${TARGET}/release/${bin}" "dist/${stage_dir}/"
-        if [ -f package/cli/nested-wayland-session/README.md ]; then
-          cp package/cli/nested-wayland-session/README.md "dist/${stage_dir}/"
-        fi
+        crate='monochromatic-nested-wayland-session'
+        stage_dir="${crate}-${VERSION}-${TARGET}"
+        mkdir -p "dist/${stage_dir}/LICENSES"
+        cp "package/cli/nested-wayland-session/target/${TARGET}/release/${crate}" "dist/${stage_dir}/"
+        cp package/cli/nested-wayland-session/README.md "dist/${stage_dir}/"
+        cp package/cli/nested-wayland-session/LICENSES/*.txt "dist/${stage_dir}/LICENSES/"
         archive="${stage_dir}.tar.gz"
         (cd dist && tar czf "${archive}" "${stage_dir}")
         archive_path="dist/${archive}"
@@ -549,27 +634,53 @@ jobs:
         echo "archive_name=${archive}" >> "$GITHUB_OUTPUT"
         ls -la dist/
 
+    # Extracts the archive as a consumer would and runs the extracted binary, so a
+    # wrong layout or a binary damaged by packaging fails here, not at install time.
+    - name: Verify the archive
+      shell: bash
+      env:
+        VERSION: ${{ needs.nws-detect.outputs.version }}
+        TARGET: ${{ matrix.target }}
+        ARCHIVE_PATH: ${{ steps.pkg.outputs.archive_path }}
+      run: |
+        set -euo pipefail
+        crate='monochromatic-nested-wayland-session'
+        stage_dir="${crate}-${VERSION}-${TARGET}"
+        check_dir=$(mktemp -d)
+        tar xzf "$ARCHIVE_PATH" -C "$check_dir"
+        for member in "${crate}" README.md LICENSES/LGPL-3.0-or-later.txt LICENSES/GPL-3.0-or-later.txt; do
+          test -f "${check_dir}/${stage_dir}/${member}"
+        done
+        test -x "${check_dir}/${stage_dir}/${crate}"
+        got=$("${check_dir}/${stage_dir}/${crate}" --version)
+        printf 'extracted binary: %s\n' "$got"
+        [ "$got" = "${crate} ${VERSION}" ]
+
     - name: Attest binary provenance
+      if: ${{ !inputs.dry-run }}
       uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
       with:
         subject-path: ${{ steps.pkg.outputs.archive_path }}
 
+    # Uploaded in a dry run too, so the archive layout can be inspected and the
+    # binary run before anything is released. A dry run's copy lives one day.
     - name: Upload archive as workflow artifact
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
       with:
         name: nws-bin-${{ matrix.target }}
         path: ${{ steps.pkg.outputs.archive_path }}
         if-no-files-found: error
-        retention-days: 7
+        retention-days: ${{ inputs.dry-run && 1 || 7 }}
 
-  # Tag / asset names follow cargo-binstall's default templates
-  # ({name}-v{version} tag, {name}-{version}-{target}.tar.gz asset,
-  # {name}-{version}-{target}/{bin} inside), so
-  # `cargo binstall monochromatic-nested-wayland-session` works with no
-  # [package.metadata.binstall], matching forbidden-strings.
+  # Immutable releases (repo setting) means `gh release create` must include every
+  # asset at creation time, so every archive and the checksums file go up in one call.
+  # Tag / asset names are the ones [package.metadata.binstall] in the crate's Cargo.toml
+  # names: {name}-v{version} tag, {name}-{version}-{target}.tar.gz asset.
+  # Needs nws-publish-crate so no immutable release exists for a version that is not
+  # on crates.io: cargo-binstall reads the metadata from the registry copy of the manifest.
   nws-create-release:
-    needs: [nws-detect, nws-build-binary]
-    if: ${{ needs.nws-detect.outputs.should_publish == 'true' && !inputs.dry-run }}
+    needs: [nws-detect, nws-release-state, nws-publish-crate, nws-build-binary]
+    if: ${{ needs.nws-detect.outputs.should_publish == 'true' && !inputs.dry-run && needs.nws-release-state.outputs.tag_exists != 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -581,6 +692,22 @@ jobs:
         pattern: nws-bin-*
         path: assets
         merge-multiple: true
+
+    # A missing archive would become a permanent gap in an immutable release, so the
+    # expected set is named here instead of trusting whatever the artifacts hold.
+    - name: Write the checksums file
+      env:
+        VERSION: ${{ needs.nws-detect.outputs.version }}
+      run: |
+        set -euo pipefail
+        crate='monochromatic-nested-wayland-session'
+        cd assets
+        for target in x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu; do
+          test -f "${crate}-${VERSION}-${target}.tar.gz"
+        done
+        test "$(ls | wc --lines)" -eq 2
+        sha256sum -- *.tar.gz > "${crate}-${VERSION}-sha256sums.txt"
+        cat "${crate}-${VERSION}-sha256sums.txt"
 
     - name: Create GitHub release with all archives
       env:
@@ -595,7 +722,7 @@ jobs:
         gh release create "$tag" assets/* \
           --repo "$REPO" \
           --title "nested-wayland-session v${VERSION}" \
-          --notes "monochromatic-nested-wayland-session v${VERSION}. crates.io: https://crates.io/crates/monochromatic-nested-wayland-session/${VERSION}. Linux only (x86_64 and aarch64 gnu)." \
+          --notes "monochromatic-nested-wayland-session v${VERSION}. crates.io: https://crates.io/crates/monochromatic-nested-wayland-session/${VERSION}. Linux only (x86_64 and aarch64 gnu). Verify an archive with sha256sum --check against the checksums file or with gh attestation verify." \
           --target "$SHA"
 
   # forbidden-regex: the regex engine LIBRARY powering forbidden-strings.
