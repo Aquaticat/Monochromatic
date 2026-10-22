@@ -834,7 +834,20 @@ In flight 2026-10-18 after 0.1.6: the license polish branch `fix/music-player-li
 trace for the 10,000-track jank (p = 0.089, optional), re-check of issues 1079 to 1081 and 1069 (Depot trial CI
 failures, another thread owns them).
 
-In flight 2026-10-22, desktop text size setting (agent `a985cccccf228921d`, worktree
+Text size setting reported 2026-10-22 (branch `feat/music-player-text-size-setting`, 7 commits plus my merge of main
+`d960d0f09f`, one conflict in `desktop-e2e/src/auto-play-session.ts` resolved to the branch side because main's only
+change there was the formatting commit). Agent report: 1592 package tests pass (baseline 1546), `lint:slint`, clippy and
+cargo check clean, e2e `text-size` 5 of 5, `auto-play` 4 of 4, `settings` 6 of 6. Not run by the agent: the `narrow`
+e2e session, `lint:types` for `desktop-e2e`, the whole e2e suite once. I am running the package tests and lints on the
+merged tree (unit `tss-verify`, logs `/home/user/temp/agent/text-size-setting/merged-*.log`). Next: fast-forward main,
+release (say the version), run the whole e2e suite once, update the troubleshooting doc, remove the worktree
+`/home/user/temp/agent/text-size-setting/wt`, delete the branch on origin (the `cli-git` wrapper pushed it). Also: the
+human's real `~/.config/musicplayer/session.json` mtime moved during the agent's run with no writer of ours (the journal
+shows only the agent's scratch units), so the human's own app or another session wrote it; contents still the old
+8-key shape. Troubleshooting note to write: `systemd-run --property=StandardOutput=file:` does not truncate, use
+`truncate:`. The stacked layout's header uses other tokens, so the pane-title size does not apply there; ask if wanted.
+
+Earlier entry, desktop text size setting in flight (agent `a985cccccf228921d`, worktree
 `/home/user/temp/agent/text-size-setting/wt`, branch `feat/music-player-text-size-setting`): the human asked for a
 setting in the real app after the replica comparison; their answers: per-element sizes you type, controlled by a 1 px
 stepper. Adopted by me, veto-open: four elements (pane titles, group heading letter, folder names, track titles) with
