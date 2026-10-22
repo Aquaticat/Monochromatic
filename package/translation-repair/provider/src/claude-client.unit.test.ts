@@ -28,7 +28,11 @@ import {
   exchangeFailureLogText,
   ProviderHttpError,
 } from '@monochromatic-dev/translation-repair-provider-stream';
-import { createClaudeClient, } from '../dist/final/node/index.mjs';
+import {
+  CLAUDE_PACE_WINDOW_MS,
+  CLAUDE_REQUESTS_PER_MINUTE,
+  createClaudeClient,
+} from '../dist/final/node/index.mjs';
 import {
   askCat,
   errorChainText,
@@ -39,6 +43,7 @@ import {
 import {
   CLAUDE_CAT_KEY,
   claudeStreamOf,
+  headedReply,
   PLAIN_USAGE,
 } from './claude-client.test-fixture.ts';
 
@@ -276,6 +281,76 @@ await describe({
         },),).toBe(true,);
         // 1,000 plain tokens at 2 and 100 completion tokens at 10 USD a million.
         expect(runSpendUsd({ provider: 'anthropic', },),).toBeCloseTo(0.003, 10,);
+      },
+    },),
+    it({
+      name: 'LOGS THE RATE-LIMIT HEADERS ONCE, on the first reply of the run, and asks the transport for them and for '
+        + 'retry-after on every exchange: the key lists 1000 requests, 2,000,000 input and 400,000 output tokens a '
+        + 'minute, and a run should read its own limits off the wire rather than off a probe',
+      fn: async () => {
+        const { transport, exchanges, } = scripted({
+          replies: [headedReply({
+            bodyText: claudeStreamOf({ text: '{"spot":"sunbeam"}', stopReason: 'end_turn', usage: PLAIN_USAGE, }),
+            headers: {
+              'anthropic-ratelimit-requests-limit': '1000',
+              'anthropic-ratelimit-requests-remaining': '999',
+              'anthropic-ratelimit-input-tokens-limit': '2000000',
+              'anthropic-ratelimit-output-tokens-limit': '400000',
+            },
+          },),],
+        },);
+        const client = createClaudeClient({ apiKey: CLAUDE_CAT_KEY, transport, retryPolicy: ONE_QUICK_RETRY, },);
+
+        const { logged, } = await infoLinesDuring({
+          run: async () => {
+            await askCat({ client, modelId: 'claude-haiku-5-5', },);
+            await askCat({ client, modelId: 'claude-haiku-5-5', },);
+          },
+        },);
+
+        /**
+         Lines that carry the headers.
+         */
+        const limitLines = logged.filter(function carriesLimits(line,): boolean {
+          return line.includes('anthropic-ratelimit-',);
+        },);
+        expect(limitLines.length,).toBe(1,);
+        const [limitLine = '',] = limitLines;
+        expect(limitLine,).toContain('anthropic-ratelimit-requests-limit=1000',);
+        expect(limitLine,).toContain('anthropic-ratelimit-requests-remaining=999',);
+        expect(limitLine,).toContain('anthropic-ratelimit-input-tokens-limit=2000000',);
+        expect(limitLine,).toContain('anthropic-ratelimit-output-tokens-limit=400000',);
+        expect(limitLine,).not.toContain(CLAUDE_CAT_KEY,);
+        for (const exchange of exchanges)
+          expect(exchange.captureHeaders,).toEqual(['retry-after', 'anthropic-ratelimit-*',],);
+      },
+    },),
+
+    it({
+      name: 'PACES EVERY ATTEMPT THROUGH A REQUEST WINDOW of 1000 starts a minute, the key\'s stated rate: Haiku on the '
+        + 'wide panel and the checker bench fans out hundreds of calls a run, and a window with no place left reads '
+        + 'as a wait the router can see',
+      fn: async () => {
+        expect(CLAUDE_REQUESTS_PER_MINUTE,).toBe(1_000,);
+        expect(CLAUDE_PACE_WINDOW_MS,).toBe(60_000,);
+        const { transport, } = scripted({
+          replies: [{
+            status: 200,
+            bodyText: claudeStreamOf({ text: '{"spot":"sunbeam"}', stopReason: 'end_turn', usage: PLAIN_USAGE, }),
+          },],
+        },);
+        const client = createClaudeClient({
+          apiKey: CLAUDE_CAT_KEY,
+          transport,
+          retryPolicy: ONE_QUICK_RETRY,
+          requestsPerMinute: 2,
+        },);
+
+        expect(client.pace.waitMs(),).toBe(0,);
+        await askCat({ client, modelId: 'claude-haiku-5-5', },);
+        expect(client.pace.waitMs(),).toBe(0,);
+        await askCat({ client, modelId: 'claude-sonnet-5-5', },);
+        expect(client.pace.waitMs(),).toBeGreaterThan(0,);
       },
     },),
   ],

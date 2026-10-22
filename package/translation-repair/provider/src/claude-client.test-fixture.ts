@@ -5,6 +5,7 @@
  @module
  */
 
+import type { TransportReply, } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   anthropicBlockDelta,
   anthropicBlockStart,
@@ -128,3 +129,40 @@ export function claudeStreamOf(
  Key every case here sends. Invented.
  */
 export const CLAUDE_CAT_KEY = 'sk-ant-cat-key-whisker-9f3c7a-Qx4d';
+
+/**
+ A success reply that carries response headers, typed as the status-and-body pair the shared script helper takes so
+ the extra member passes through it unchanged.
+
+ @param bodyText - the whole stream
+ @param headers - response headers by lower-case name
+
+ @returns The reply
+
+ @example
+ ```ts
+ const reply = headedReply({ bodyText, headers: { 'anthropic-ratelimit-requests-limit': '1000', }, },);
+ ```
+ */
+export function headedReply(
+  {
+    bodyText,
+    headers,
+  }: {
+    readonly bodyText: string;
+    readonly headers: Readonly<Record<string, string>>;
+  },
+): {
+  readonly status: number;
+  readonly bodyText: string;
+} {
+  /**
+   The reply as the transport seam types it.
+   */
+  const reply: TransportReply = {
+    status: 200,
+    bodyText,
+    headers,
+  };
+  return reply;
+}
