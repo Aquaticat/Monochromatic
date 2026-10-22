@@ -710,6 +710,23 @@ await describe({
         },),
 
         it({
+          name: 'KEEPS THE MILLISECONDS of a day start that does not fall on a whole second, which only a setting or a '
+            + 'quota reply with a fraction can give',
+          fn: async () => {
+            /**
+             The message for a day that starts half a second into 19:15:08 UTC.
+             */
+            const { message, } = new EveryProviderDryError({
+              neuralwatt: {
+                kind: 'at',
+                msOfDay: 69_308_500,
+              },
+            },);
+            expect(message,).toContain('at 19:15:08.500 UTC,',);
+          },
+        },),
+
+        it({
           name: 'SAYS NEURALWATT IS OFF, naming no time of day, when the run has no NeuralWatt client',
           fn: async () => {
             /**

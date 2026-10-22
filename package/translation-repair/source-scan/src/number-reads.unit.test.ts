@@ -268,7 +268,7 @@ const HELD_READS: Readonly<Record<string, {
     calls: 1,
     why: PLAIN_DECIMAL,
   },
-  'provider/neuralwatt-day-anchor.ts#decideNeuralWattDayAnchor: new Date': {
+  'provider/neuralwatt-day.ts#neuralWattTimeOfDayUtc: new Date': {
     calls: 1,
     why: EPOCH_MILLISECONDS,
   },

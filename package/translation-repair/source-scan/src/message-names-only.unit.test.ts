@@ -350,6 +350,8 @@ const NAMED_PARTS: Record<string, string> = {
   'measured': 'meter states and hold durations, composed by the caller from two booleans and two numbers',
   'xiaomiCause': 'one of two fixed sentences, chosen by whether Xiaomi was counted dry for serving nothing here',
   'xiaomiRefill': 'a fixed sentence about Xiaomi\'s recovery, or nothing',
+  'returnClauseOf({ day: neuralwatt, },)': 'one of three fixed sentences about NeuralWatt\'s return, naming at most the '
+    + 'UTC time of day the run decided its day starts at, composed from a number of milliseconds',
   'dir': 'directory path',
   'endpoint': 'upstream display name as the gateway spelled it, the same field the SPEND line prints, or the word unnamed',
   'errorType': 'gateway failure kind read off its metadata, or the word unnamed; in StreamErrorEventError, a documented '
