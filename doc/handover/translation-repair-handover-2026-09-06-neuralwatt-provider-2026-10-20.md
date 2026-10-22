@@ -889,7 +889,35 @@ that file failed the Markdown linter on main,
 as do eight more translation-repair docs
 (96 findings in all),
 which the gate never lints.
-`tr-w266` fixes those and adds a guard so the gate does.
+`tr-w266` fixes those and adds a guard so the gate does
+(ledger D35,
+head `0a7cef6278`):
+a source scan in `source-scans` runs the Markdown linter over the package docs and the living repository docs
+and fails on any finding.
+It stays red until `tr-w264` lands,
+since the B712 file is fixed there,
+so the order is:
+gate g149,
+land `tr-w264`,
+merge main into `tr-w266`,
+gate it,
+land.
+Outside the D27 living set,
+33 older translation-repair docs
+(`the-third-rendering*`,
+`two-lane-*`,
+`wire-the-heading-aligner`,
+`critic-attribution`,
+`artifact-stores-*` and others)
+carry 5,423 line-break findings.
+The `--fix` rewrap changes neither their words nor their parsed tree,
+so a later round fixes them too and widens the guard to them;
+the D27 archive families
+(history segments,
+dated snapshots,
+run-continuity parts,
+interface candidates)
+stay byte for byte.
 Meanwhile the rotation continues on `2a336603bf` for evidence:
 finish the read of `CuspariaKLSY22`,
 record both reads in the pass log and the readiness signal,
