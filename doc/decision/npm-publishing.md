@@ -78,6 +78,10 @@ and listed ten packages nobody had readiness-checked.
 The changesets release workflow replaces it.
 Issue #307 closes by construction;
 issue #306's build and tarball checks move to the release workflow.
+Issue #287's stale `module-numeric-const` filter
+(the package renamed to `module-const` in `9e571fc5c4` on 2026-05-28)
+disappears with the file;
+`changeset:build` fails on any publish-plan name the workspace does not carry.
 
 ### Published surface is the built artifact; `./ts` is stripped at publish
 
