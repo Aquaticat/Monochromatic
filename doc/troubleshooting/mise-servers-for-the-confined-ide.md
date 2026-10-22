@@ -67,7 +67,8 @@ Measured with `hyperfine` (15 runs, 2 warmups), host load average about 60 to 80
 - The IDE's resolution (three commands, sandboxed, on the language thread): 179 to 639 ms over four runs of
   `inspect:language-mise` (179, 479, 545, 639), and 415 ms in the headless window run.
 
-`inspect:language-mise` (`package/desktop-app/ide/bin/inspect-language-mise.mjs`) passed 43 of 43 checks
+`inspect:language-mise` (`package/desktop-app/ide/bin/inspect-language-mise.mjs`,
+now `inspect-language-mise.ts`, renamed 2026-10-22) passed 43 of 43 checks
 with the launcher's `PATH`:
 `bash-language-server` answered a hover (`Function: **greet**`),
 `taplo` and `marksman` started, and `marksman` answered a hover on a wiki link;
