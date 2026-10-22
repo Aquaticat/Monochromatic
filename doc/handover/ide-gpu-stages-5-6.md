@@ -891,3 +891,146 @@ Everything is compared in logical pixels, scale 1 against scale 2, 1100x660, dar
 - The stall probe of the cadence work at scale 2.
 - A readback of the rows of the 64 MiB tile outside the view.
 - Gates, because no product code changed.
+
+### The minimap picture in a fling
+
+Session of 2026-10-22 on branch `worktree-agent-afaeefdb803099e40`, base `212d45cdfb`.
+It settles the finding "During a fling the minimap picture lags the box" of the previous subsection
+(there "not examined further").
+The lag is a defect of ours, with a measured cause and a fix; the code tile outrun that the same subsection
+mentions (647 blank rows at the bottom of the code view) is out of scope and was not touched.
+
+#### Measure and its positive control
+
+- Release build of `origin/main` (`212d45cdfb`; sha256 prefix `27b877741a056ecf`, the same binary as the installed one),
+  `monochromatic-nested-wayland-session` 0.6.1 with `--headless --gpu /dev/dri/renderD128`, 1100x660, scale 1, dark.
+  The file is 50,000 identical lines (`let value = compute(alpha, beta); // note`), so every row of the picture repeats.
+  The input is the previous subsection's: `scroll 600 330 0 3777 steps=8 step-ms=16`,
+  recorded with `record DIR 30 bmp` from 0.5 s before the command to 5 s after it (about 28 to 30 frames per second).
+- A row of the minimap track (logical rows 32 to 660, columns 995 to 1095) is blank when all its pixels are one colour.
+  Per frame the script reads the longest blank run from the bottom (`trail`) and from the top (`lead`) of the track.
+  A frame is "blank" when either run is at least 8 rows (two code lines).
+  Scripts and results are in `~/temp/agent/mmlag/` (`mm-lag2.mjs`, `ab.mjs`, `sum.mjs`).
+- Positive control: a file of 100 lines (the picture ends above the bottom of the track).
+  The metric reads 163 blank rows at the bottom in 60 of 60 frames, and a screenshot of the same run shows the
+  picture ending 163 rows above the bottom of the track.
+  Frames before the input and a settled track read 0 to 2 rows.
+- The spread: runs of one binary against itself, A against A2, alternating, in the same sessions as the other arms.
+
+#### Counts before the fix
+
+Share of the recorded frames from the command on that have at least 8 blank rows (20 runs per arm,
+arms rotating A, B, A2 per round, one app run at a time, under the load there was):
+
+- A: mean 0.449 (sd 0.037); A2 (the same binary): mean 0.433 (sd 0.101).
+  Frames per run 153; frames per run with a blank track A 46 to 78 (median 70).
+  Largest blank run per run: A mean 309 rows (260 to 370) of the 628 rows of the track.
+  The last blank frame is frame 152 of 153 in A and in A2: the lag does not end within the 5 s that were recorded.
+- An earlier batch with the first script version, 16 alternating pairs: A mean 0.464 (sd 0.123), A2 0.412 (sd 0.167).
+  Those runs were loaded harder and their spread is wider; the difference between the arms stays inside it.
+- 1100x3700 (the previous subsection's window), 10 frames per second, 7 rounds: A 0.678 of frames (sd 0.033),
+  A2 0.689 (sd 0.038), largest run 304 and 285 rows of the 3,668 of the track.
+- Slower flings: 1000 px in 8 steps: 0 blank frames in 5 of 5 runs of A; 2000 px in 8 steps: A 0.021 of frames
+  (largest run 16 rows), 3777 px: 0.45.
+  The lag starts at flings of about 15,000 px per second of input and grows with the speed;
+  the 120-step scroll of the cadence tool (3,000 px in about 2 s) does not show it.
+
+#### Cause
+
+Interventions on a build of `origin/main` with two temporary environment switches (`IDE_X_MARGIN` for the bands kept on
+each side of the track, `IDE_X_SLIDE_MS` for the period of requests during a scroll; removed, never committed),
+8 rounds of the four arms alternating, share of blank frames:
+
+- Control, margin 1 (the shipped value): 0.390 (sd 0.233; these runs recorded 19 to 22 frames per second under a heavier
+  load, so the spread is wide).
+- Margin 8 on both sides: 0.010.
+- Request period 16 ms instead of 60 ms: 0.102.
+- Both: 0.067 (one run in the arm lost its whole track for four recorded frames, as one run of the margin arm did;
+  such frames also appear in 4 of 4,650 frames of the first batch at low frame rates and in 0 of 9,158 in the later batch;
+  they are not examined here).
+
+The coverage of the picture is the cause; the pace of the requests is a smaller part.
+The debug log of a fling of A (`monochromatic_ide::native::minimap=debug`) gives the chain:
+
+- A picture is requested for the bands the track shows at that moment and one band on each side
+  (`Geometry::bands_for`, one band is 768 px of text or 128 rows of the picture).
+- The worker builds it in 3.0 ms on average (3.8 ms at most), but it is handed to the GPU 33 ms after the request
+  (the 20 ms poll of replies plus the frame in which the window thread takes it), and the next request follows
+  66 ms after the last one (the 60 ms `SLIDE` period plus the poll).
+- In the fling the top of the picture moves 256 to 384 picture rows from one picture to the next
+  (about 3,900 rows per second, 23,000 px of text per second, still so after 5 s).
+  A picture that holds 128 rows beyond the track is exhausted about 33 ms after it is on screen, and the next one
+  arrives about 66 ms after that.
+  The rows beyond the end of the picture are blank, and each picture lands further down than the last,
+  which is the flicker between a short and a full picture in the recorded frames.
+- Not tried: keeping the old picture under the new one.
+  The new picture covers more in the direction of travel than the old one did, so it would help only after a turn.
+
+#### Fix
+
+The window of bands a request names holds `LEAD` (8) bands on the side the view is heading toward and one on the other,
+and one on each side at rest (`Heading`, `Geometry::bands_toward` in `src/minimap/`).
+`Heading` is a state of the window (`MinimapState::heading`), updated by `minimap::note` from the top of the track:
+a move of a whole band from where the heading was decided sets it, a smaller creep never flips it.
+That keeps the key stable between requests: the pace and the number of requests are those of before
+(77 requests in the 5 s of a fling in both, from the debug logs of one run each, a gap of 66.6 and 66.5 ms
+between pictures, no frame asked for by the hand-over wait).
+What changes is the size of a picture: 14.8 bands and 477 lines against 7.9 and 257, and 5.0 ms of worker time against
+3.0 (7.7 ms at most against 3.8).
+Not done: a reversal still has one band behind the track until the heading turns (a band of movement and a request),
+and the first 100 to 150 ms of a fling still have the old picture, since the heading needs a whole band to be set.
+
+Counts after, same conditions, 20 rounds of A, B and A2:
+
+- 1100x660, 3777 px: B has 0.012 of frames with a blank track (sd 0.003; two frames per run, the first two or three
+  frames of the fling; the largest run per run 122 rows (1 to 203)), against A 0.449 and A2 0.433.
+  The last blank frame of B is frame 4 after the command at the latest.
+  Blank rows summed over the frames of a run: A 5,526, A2 5,438, B 137.
+- 1100x3700, 7 rounds: B 0.020 (one frame per run, the largest run 76 rows) against A 0.678 and A2 0.689.
+  In the first round a settled track at the end reads 1 blank row in B and 22 to 27 in A and A2.
+- 2000 px in 8 steps: B 0 blank frames in 5 of 5 runs (A 0.021).
+
+Stalls (the frame-shift probe of the 120-step scroll, `mm-stall.mjs`, release builds, nested window, slot 50 is the
+tile hand-over):
+
+- A against B, 20 pairs: A 1 stalled tick in 19 usable runs (slot 31), B 4 in 20 (slots 140, 39, 94 and 118);
+  slot 50: 0 of 19 and 0 of 20.
+- A against A (A2), 15 pairs: A 2 in 14 usable runs (slots 66 and 31), A2 5 in 14 (slots 97, 73, 121, 142, 125);
+  slot 50: 0 in both.
+  The same binary differs by 3 stalls in 14 runs, so B's 4 in 20 is inside the spread.
+  One run per batch lost its probe (a failed frame read) and is left out.
+- No stall at slot 50 in any of the 67 usable runs.
+
+#### Tests and guards
+
+- `the_window_of_a_fling_reaches_ahead_on_the_side_it_heads_toward` and `a_heading_follows_the_track_by_whole_bands`
+  (`tests/minimap.rs`) hold the window and the heading rule without a window of the application.
+- `a_fling_is_given_a_picture_that_reaches_the_bands_it_is_heading_toward`
+  (`src/native/minimap_tests.rs`) flings down and up through the real window and checks that the shown picture holds
+  the text the track reaches `LEAD - 1` bands further on, in the direction of the fling.
+- The existing guards `minimap-bands-uncapped` and `minimap-window-margin` were re-anchored to the new code.
+  New guards in `bin/inspect-source-guards.mjs`: `minimap-lead-down`, `minimap-lead-up`, `minimap-heading-needs-a-band`,
+  `minimap-heading-followed` and `minimap-window-has-heading`.
+  All seven (the two re-anchored and the five new) ran in a disposable copy, each as baseline passes, guard removed fails
+  (the named test, with the named message), restored passes: 7 of 161 guards; the other 154 were not run.
+  The guard run used the tip `8880ec6752`.
+
+#### Gates
+
+Run once each on the tip `8880ec6752` (the last code commit; a first `lint` run found five shadowed names, five line
+breaks and a missing impl doc in the new code, fixed in that commit, and `lint` passes on it):
+`lint` 0 findings; `test` 799 passed, 1 skipped; `test:native -- 'all()'` 283 passed, 5 skipped (224 s);
+`test:bin` 60 passed; `build` finished; `inspect:no-software-renderer` passes.
+Commits: `d6668b1aa9` (code, unbuilt), `b2b4cfd851` (rustfmt and guards), `8164722cbb` (README and docs),
+`8880ec6752` (lint fixes).
+
+#### Limits
+
+- Headless compositor on the GPU, its recorder as the clock, a synthetic touchpad fling; no real touchpad,
+  no real compositor, no drag scenario.
+- The metric counts rows of one colour in the track; a picture that is there but wrong is not seen.
+- The load of the host was not controlled; the arms alternated and a same-binary arm gave the spread.
+- The measured B binary was built from commit `b2b4cfd851` plus documentation; the final tip differs from it only in
+  comments and the README.
+- The window the previous subsection saw at 3.5 s (91 to 94 blank rows) was reproduced in kind (22 to 27 blank rows at
+  5 s in A) but not in number; fling speed varies from run to run with the load.
