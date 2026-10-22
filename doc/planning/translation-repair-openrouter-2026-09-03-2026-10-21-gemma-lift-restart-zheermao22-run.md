@@ -742,7 +742,9 @@ read with `git show` and `git grep`.
   and `:424` sends `reasoning_effort` only then;
   the header comment (`:66` to `73`) says "no reasoning parameter on a text call" with the owner’s lift of
   2026-10-21 ("only for NeuralWatt") applied to pictures.
-  Ledger B719 (`audit-ledger-provider-streams-usage-and-retries.md:518` to `545`) records that the model’s documented
+  Ledger B719
+  (`audit-ledger-neuralwatt-replies-cut-at-the-default-effort-and-the-energy-estimate.md:71` to `98`)
+  records that the model’s documented
   `default_effort` is `max` and `supported_efforts` are `max`,
   `high` and `low`.
   The cap is `model-cards.ts:84` (18,316,

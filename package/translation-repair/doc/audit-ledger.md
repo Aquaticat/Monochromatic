@@ -474,11 +474,13 @@ named for that subject and listed here.
   stream events,
   usage counts,
   and the refusals a retry decision reads,
-  with the picture reader's reply the length limit cut (B718),
-  a NeuralWatt picture call sent at the provider's default effort (B719),
-  and the NeuralWatt energy estimate that counted a picture as base64 text (B720),
-  the stream guards whose windows could not fire and whose progress was any body bytes (B804),
-  and a NeuralWatt text call sent at the provider's default effort (B807).
+  with the stream guards whose windows could not fire and whose progress was any body bytes (B804).
+- [Audit ledger: NeuralWatt replies cut at the default effort and the picture energy estimate](audit-ledger-neuralwatt-replies-cut-at-the-default-effort-and-the-energy-estimate.md):
+  Calls to NeuralWatt that ran at the provider's default reasoning effort and were cut at the length cap:
+  the picture reader's reply the length limit cut (B718),
+  a picture call sent at the provider's default effort (B719),
+  the energy estimate that counted a picture as base64 text (B720),
+  and a text call sent at the provider's default effort (B807).
 - [Audit ledger: branches no input reaches, kept as quiet answers](audit-ledger-unreachable-branches-kept-as-quiet-answers.md):
   Branches no input reaches that answered quietly where a loud refusal belongs,
   most met when a coverage census asked for them to be removed,
@@ -836,6 +838,7 @@ Filed in:
 - [Audit ledger: tests touching the real world](audit-ledger-tests-touching-the-real-world.md)
 - [Audit ledger: positions compared across texts](audit-ledger-positions-compared-across-texts.md)
 - [Audit ledger: provider streams, usage counts and retries](audit-ledger-provider-streams-usage-and-retries.md)
+- [Audit ledger: NeuralWatt replies cut at the default effort and the picture energy estimate](audit-ledger-neuralwatt-replies-cut-at-the-default-effort-and-the-energy-estimate.md)
 - [Audit ledger: copies of shared code in tests and scans](audit-ledger-copies-in-tests-and-scans.md)
 - [Audit ledger: files a later run reads back](audit-ledger-files-a-later-run-reads-back.md)
 - [Audit ledger: footnote markers and link destinations](audit-ledger-footnote-markers-and-link-destinations.md)
