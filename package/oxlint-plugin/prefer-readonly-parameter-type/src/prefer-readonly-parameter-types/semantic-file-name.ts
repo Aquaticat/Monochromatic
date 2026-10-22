@@ -84,6 +84,9 @@ export function configuredProjectConfigFileName({
 }: {
   readonly project: Project;
 },): string {
+  /**
+   Config file name TypeScript resolved for the project.
+   */
   const { configFileName, } = project;
   if (configFileName === undefined)
     throw new SemanticBridgeError({

@@ -81,7 +81,7 @@ export function overlayFileSystem({
        Overlay text for the path, absent when the overlay does not hold it.
        */
       const overlayText = overlays.get(normalizeSemanticFileName(fileName,),);
-      return overlayText === undefined ? serverFS.useOS : overlayText;
+      return overlayText ?? serverFS.useOS;
     },
     /**
      Reports positive overlay presence or delegates unknown paths to real filesystem.
