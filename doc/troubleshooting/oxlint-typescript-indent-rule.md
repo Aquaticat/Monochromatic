@@ -260,7 +260,7 @@ the autofix rewrites these):
   1,256 opener-line closers,
   186 owner-line closers;
 - corpus-level consequence:
-  the rule's autofix normalizes 20,722 leading-whitespace runs in one sweep,
+  the rule's autofix normalizes 20,722 to 20,725 leading-whitespace runs in one sweep (two runs),
   which the
   user accepted ("I don't care about huge sweeping changes").
 
@@ -300,11 +300,25 @@ The shipped rule and fixer were verified at three levels (suite commands in "Imp
   one `oxlint --fix` pass with `stylistic/indentation` alone reaches the fixed point,
   the next pass changes
   nothing,
-  20,722 leading-whitespace runs change across 1,792 of 7,091 files,
+  20,725 leading-whitespace runs change across 1,793 of 7,091 files (20,722 across 1,792 in the
+  first run;
+  concurrent sessions edit the corpus),
   zero lines change beyond their
   leading whitespace,
   zero files change line count,
-  and zero diagnostics remain.
+  and zero diagnostics remain;
+- whole-set sweep (same script,
+  every fixture rule enabled):
+  the corpus reaches a fixed point.
+  An eight-pass cap reads `stable=false` only because a few files need three cascade layers
+  (pass 9 moved 3 files,
+  passes 10 and 11 one each,
+  pass 12 none);
+  `stylistic/indentation` and `stylistic(chain-per-line)` leave zero diagnostics in parseable
+  files.
+  The remaining 26 chain and 14 indent diagnostics sit inside the 3,716 files the
+  `stylistic(comma-dangle)` corruption made unparseable,
+  where no fixer applies.
 
 Churn decomposition (probe variant `probe4b.mjs` dumps as-written mismatch ids,
 compared against the sweep's
@@ -333,6 +347,9 @@ so the bundle still held the pre-`310a3fa94c` flat renderer) reported a two-cycl
 four corpus files.
 Rebuilding puts the renderer back on the model's widths,
 and those four files then converge to zero diagnostics in one to three `--fix` passes.
+The fresh whole-set sweep reaches a fixed point at pass 12 (the eight-pass cap is depth,
+not a
+cycle).
 Lesson:
 rebuild the package before any lint-based measurement;
 `mise run //package/oxlint-plugin/stylistic:test:unit` builds first,
@@ -350,7 +367,7 @@ see `doc/troubleshooting/oxlint-stylistic-comma-dangle-type-literal-fix.md`.
   `package/test-fixture/oxlint-stylistic/.oxlintrc.fixture.json`,
   checks and autofixes the model.
   Tradeoff:
-  the first sweep rewrites 20,722 leading-whitespace runs across 1,792 files,
+  the sweep rewrites 20,722 to 20,725 leading-whitespace runs across 1,792 to 1,793 files,
   and repository-wide
   enablement in `package/config/oxlint/src/rule/style.ts` is still queued.
 - Probe-guided manual correction:
