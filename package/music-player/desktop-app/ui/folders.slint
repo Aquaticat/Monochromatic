@@ -302,13 +302,13 @@ export component FolderPickerPane inherits Rectangle {
                             }
                         }
                     }
-                    // Heading label: 22 px (Android's group heading size) in primary, 8 px below the section gap, aligned
+                    // Heading label: 20 px (2 px under Android's 22 px) in primary, 8 px below the section gap, aligned
                     // with the names.
                     if row.section-start: Text {
                         x: 4px;
                         y: parent.section-gap + 8px;
                         text: row.heading;
-                        font-size: 22px;
+                        font-size: 20px;
                         color: Theme.primary;
                     }
                     // Width probe: the name at the heavier selected weight, never shown. Every name is sized by this one,
@@ -317,7 +317,7 @@ export component FolderPickerPane inherits Rectangle {
                         visible: false;
                         wrap: no-wrap;
                         text: row.section-start ? "" : row.name;
-                        font-size: 16px;
+                        font-size: 14px;
                         font-weight: 500;
                     }
                     // Name label: plain text in the 48 px target, empty for heading rows.
@@ -329,8 +329,8 @@ export component FolderPickerPane inherits Rectangle {
                         wrap: no-wrap;
                         overflow: elide;
                         text: row.section-start ? "" : row.name;
-                        // 16 px, Android's folder name size; the width probe above uses the same size.
-                        font-size: 16px;
+                        // 14 px (2 px under Android's 16 px); the width probe above uses the same size.
+                        font-size: 14px;
                         font-weight: parent.selected ? 500 : 400;
                         vertical-alignment: center;
                         color: parent.selected ? Theme.primary : Theme.on-surface;

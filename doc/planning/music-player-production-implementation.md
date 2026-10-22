@@ -785,8 +785,11 @@ test, `session::tests::an_unreadable_session_path_loads_as_defaults_and_is_logge
 1 failed): Windows reports reading a directory as `PermissionDenied` ("Access is denied."), the assertion accepted only
 the Linux text. The code was right and the test was Linux-only; why the standalone Windows workflow had not caught it
 earlier was not investigated. Fix `57fc69a67e` compares with the platform's own error for the same read. Second
-dry run `39761698854` is in flight (bounded watcher, 90 minutes). Next: if every job passes, merge `origin/main` into the
-branch, fast-forward main, push, remove the worktree `/home/user/temp/agent/ci-merge`.
+dry run `39761698854` passed every job (both Alpine and all three Windows test jobs, the builds, `checksums` and the dry
+`release`). Merged 2026-10-22: `origin/main` merged into the branch cleanly, main fast-forwarded to `a616aa14f4` and
+pushed; the worktree `/home/user/temp/agent/ci-merge` is removed. The standalone workflows survive only on
+`origin/research/depot-pool-routing-20261018`. Still veto-open: the test jobs gate the release. Not yet exercised: a real
+release run with the merged workflow (the next release is its first).
 
 Desktop type sizes, 2026-10-22 (open). The human's screenshot of the desktop looked off and they asked for "Music", the
 purple heading letter, folder names, the right pane title and track titles two smaller. I cut them by 2 px in
@@ -799,6 +802,9 @@ scale 1.0, no density override): titles and group headings 16.0 dp (22 sp), fold
 (16 sp); the folded top bar title is 11.5 dp (`titleMedium`). Captures: `/home/user/temp/agent/fold-type-sizes/`
 (invented library, on this machine only). Result: commit `1b078497b9` sets the five desktop texts to plain `22px` and
 `16px` (no `Theme` size tokens at those sites), which equals the sizes before the 2 px cut; 1546 desktop tests passed.
+The human then said the desktop still felt wrong, cause unknown, and told me to cut each of the five 2 px anyway: the
+sizes are now plain `20px` (titles, heading letter) and `14px` (folder names, track titles), which are 2 px under
+Android on purpose and are the human's decision, not a measured match.
 Not measured: the desktop rendered beside the emulator. Known difference: the desktop uses "Inter Variable"
 (`app_window.slint:65`), Android the system font. Open: whether the human still sees a problem; other desktop screens
 still use the `Theme` size tokens (settings, search, deck), left alone because the human named five texts.

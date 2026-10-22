@@ -349,8 +349,8 @@ export component UnfoldedFoldersHeader inherits Rectangle {
         width: max(0px, root.width - 16px - 8px - open-pill.width - 8px);
         height: parent.height;
         text: root.title;
-        // 22 px, the size Android draws its unfolded header title at (measured as a 16 dp cap height on the Pixel 9 Pro Fold).
-        font-size: 22px;
+        // 20 px: the human asked for 2 px under Android's 22 px, which looked wrong on desktop at 22 px.
+        font-size: 20px;
         color: Theme.on-surface;
         vertical-alignment: center;
         wrap: no-wrap;
@@ -381,8 +381,8 @@ export component UnfoldedTrackHeader inherits Rectangle {
         height: parent.height;
         width: max(0px, root.width - 16px - 8px - 48px - (root.show-search ? 56px : 0px));
         text: root.folder-title;
-        // 22 px, the same size as the left pane header and as Android's unfolded header title.
-        font-size: 22px;
+        // 20 px, the same size as the left pane header.
+        font-size: 20px;
         color: Theme.on-surface;
         vertical-alignment: center;
         overflow: elide;
