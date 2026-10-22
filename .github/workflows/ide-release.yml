@@ -583,7 +583,7 @@ jobs:
         The program is built with the [Slint](https://slint.dev) toolkit, which this project uses under the GNU General Public License, version 3 only; the license texts are in `LICENSES/` of the archive.
         The complete source code of this release is the tree at [@TAG@](https://github.com/@REPO@/tree/@TAG@); every Rust crate it uses is published on crates.io under the name and version its notices give.
 
-        The program carries the license notices of everything built into it: its own license texts, the font notices, Helix's license and a notice for every bundled grammar, the Rust standard library notice and every Rust crate. `monochromatic-ide --licenses` prints them; the archive holds them as `THIRD-PARTY-LICENSES.txt`, and they are the file `ide-@VERSION@-third-party-licenses.txt` here.
+        The program carries the license notices of everything built into it: its own license texts, the font notices, Helix's license, a notice for every bundled grammar, and the license text of every Rust crate it is built from. `monochromatic-ide --licenses` prints them; the archive holds them as `THIRD-PARTY-LICENSES.txt`, and they are the file `ide-@VERSION@-third-party-licenses.txt` here.
 
         ## Verify a download
 
