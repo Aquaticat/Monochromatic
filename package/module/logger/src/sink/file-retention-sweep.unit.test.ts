@@ -620,13 +620,13 @@ await describe({
               directory: root.path,
               policy: {
                 maxAgeDays: 14,
-                maxBytes: 1,
+                maxBytes: 100,
                 maxFiles: 2,
               },
               now: NOW,
             },);
-            // One oldest deletion satisfies maxFiles, so the aged file behind
-            // the fresh one is left alone.
+            // One oldest deletion satisfies both caps, so the aged file
+            // behind the fresh one is left alone.
             expect(await tree(root.path,),).toEqual([
               STAMP_NAME,
               '2026-10-22',
