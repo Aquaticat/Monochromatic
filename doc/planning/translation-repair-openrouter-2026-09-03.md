@@ -828,3 +828,16 @@ named for that subject and listed here.
   - [The run of XingZ6017](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-xingz6017-run.md)
   - [The providers of XingZ6017](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-xingz6017-providers.md)
   - [The page of XingZ6017](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-xingz6017-page.md)
+- [OpenRouter and the corpus passes: the rotation on build 8864316eb2 after the owner's answers (2026-10-22)](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart.md):
+  What was read on 2026-10-22 of the passes on the build that landed the owner's answers of that day;
+  zheermao23 settled with NeuralWatt dry and the Mercury window never reached,
+  CuspariaKLSY23 settled,
+  and XingZ6018 was launched.
+  Entries:
+  zheermao23,
+  CuspariaKLSY23,
+  XingZ6018.
+  Files:
+  - [The run of zheermao23](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-zheermao23-run.md)
+  - [The stages of zheermao23](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-zheermao23-stages.md)
+  - [The evidence of zheermao23](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-zheermao23-evidence.md)

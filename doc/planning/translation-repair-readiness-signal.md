@@ -394,6 +394,24 @@ this section is the readiness reading of it.
   so its K2 split (52 mercury abandonments) and its K3 lost claims (6 verified)
   are a baseline from before those fixes,
   not recurrences after them.
+- It restarted on `8864316eb2`
+  (digest `sha256-tree-v1:4e516f924c6f…`),
+  the build that carries those fixes and the owner's answers of 2026-10-22
+  ([the restart overview](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart.md)).
+  `zheermao23` SETTLED in 49.4 min of pass
+  ([the run](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-zheermao23-run.md)),
+  against 79.0 min for `zheermao22`.
+  Its read covers the log,
+  the seats and the slice verdicts;
+  the shipped page was not read line by line.
+  NeuralWatt made no call,
+  since its day was spent before the launch,
+  and Synthetic ran dry at 13:11 UTC,
+  so Hyper and OpenRouter carried the rest.
+  Mercury's first content came within 12,820 ms on every call that returned content,
+  so its 90,000 ms window never fired.
+  `CuspariaKLSY23` finished in 17.1 min (its read is in progress),
+  and `XingZ6018` is running.
 - The entries never run on a recent build are the rest of the 92-entry corpus.
   The owner's rule stands:
   "We never ever need a all 92 entries launch";
