@@ -88,6 +88,20 @@ const SYNTHETIC_DRY: BudgetView = {
 };
 
 /**
+ Synthetic and Hyper dry: the view the late-bench cases read once the hold
+ began. Since Qwen3.8-27B left the late judges on 2026-10-22 (ledger B815),
+ Synthetic dry alone takes no late judge. `hf:moonshotai/Kimi-K3` leaves the
+ late judges only when Synthetic and Hyper read dry while OpenRouter, the one
+ provider left to serve it and one it is withheld on, reads wet: of the 31
+ views with a provider dry, measured on 2026-10-22, those four alone take a
+ late judge.
+ */
+const SYNTHETIC_AND_HYPER_DRY: BudgetView = {
+  ...SYNTHETIC_DRY,
+  hyper: true,
+};
+
+/**
  Hold Synthetic's refusal registers, which is what makes a hook read again.
  */
 const HOLD_MS = 40;
@@ -113,9 +127,9 @@ const REPAIR = 'The cat fell asleep by the window.';
 const TRANSLATE = 'The cat had fallen asleep beside the window.';
 
 /**
- The one seat both benches under test lose when Synthetic goes dry: first of
- the late judges and of the slate judges, and among the writers, while every
- provider is wet.
+ The one seat both benches under test lose when Synthetic and Hyper go dry:
+ first of the late judges and of the slate judges, and among the writers,
+ while every provider is wet.
  */
 const LOST_SEAT = (function lostSeat(): RosterModelId {
   /**
@@ -123,9 +137,9 @@ const LOST_SEAT = (function lostSeat(): RosterModelId {
    */
   const wet = judgeSeatsFor({ dry: ALL_WET, },).lateJudges;
   /**
-   Late judges while Synthetic is dry.
+   Late judges while Synthetic and Hyper are dry.
    */
-  const dry = new Set(judgeSeatsFor({ dry: SYNTHETIC_DRY, },).lateJudges,);
+  const dry = new Set(judgeSeatsFor({ dry: SYNTHETIC_AND_HYPER_DRY, },).lateJudges,);
   /**
    Seats the dry-out takes.
    */
@@ -860,9 +874,9 @@ await describe({
              */
             const control = await contestAsked({ later: ALL_WET, },);
             /**
-             Seats asked once Synthetic reads dry after the phase's own reading.
+             Seats asked once Synthetic and Hyper read dry after the phase's own reading.
              */
-            const moved = await contestAsked({ later: SYNTHETIC_DRY, },);
+            const moved = await contestAsked({ later: SYNTHETIC_AND_HYPER_DRY, },);
             expect({
               controlAskedLost: control.includes(LOST_SEAT,),
               movedAskedAny: moved.length > 0,
@@ -1053,9 +1067,9 @@ await describe({
              */
             const control = await consolidationAsked({ later: ALL_WET, },);
             /**
-             Seats asked once Synthetic reads dry after the phase's own reading.
+             Seats asked once Synthetic and Hyper read dry after the phase's own reading.
              */
-            const moved = await consolidationAsked({ later: SYNTHETIC_DRY, },);
+            const moved = await consolidationAsked({ later: SYNTHETIC_AND_HYPER_DRY, },);
             expect({
               controlAskedLost: control.includes(LOST_SEAT,),
               movedAskedAny: moved.length > 0,
