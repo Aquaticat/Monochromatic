@@ -1089,7 +1089,7 @@ await describe({
                 expect(run.stdout,).toBe(`${POPULATION_LINE}\n\nBUYING 1 of 3 selectable subjects\n\n`,);
                 expect(run.stderr,).toBe(
                   'rendering-audit-settled: TRANSLATION_REPAIR_NEURALWATT_API_KEY, TRANSLATION_REPAIR_SYNTHETIC_API_KEY, '
-                    + 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY, TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY or '
+                    + 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY, TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY, DEEPSEEK_API_KEY, TRANSLATION_REPAIR_XIAOMI_MIMO_API_KEY or '
                     + 'TRANSLATION_REPAIR_OPENROUTER_API_KEY is not set; run under mise so sops injects it\n',
                 );
                 expect(await readdir(runsDir,),).toEqual([],);

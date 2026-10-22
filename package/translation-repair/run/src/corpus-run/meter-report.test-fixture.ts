@@ -186,6 +186,16 @@ type SampleOverrides = {
   readonly bedrock?: MeterSample['bedrock'];
 
   /**
+   What the DeepSeek meter said.
+   */
+  readonly deepseek?: MeterSample['deepseek'];
+
+  /**
+   What the Xiaomi meter said.
+   */
+  readonly xiaomi?: MeterSample['xiaomi'];
+
+  /**
    Numbers beside the states.
    */
   readonly levels?: MeterSample['levels'];
@@ -217,6 +227,8 @@ export function sampleOf({ overrides, }: { readonly overrides: SampleOverrides; 
     hyper: 'wet',
     openrouter: 'wet',
     bedrock: 'wet',
+    deepseek: 'absent',
+    xiaomi: 'absent',
     levels: [],
     ...overrides,
   };

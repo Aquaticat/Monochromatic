@@ -205,7 +205,7 @@ await describe({
             },);
           },
         },),).toBe(
-          'this command needs <served id>. Usage: roster-card <synthetic|hyper|openrouter|bedrock|neuralwatt> <served id>',
+          'this command needs <served id>. Usage: roster-card <synthetic|hyper|openrouter|bedrock|neuralwatt|deepseek|xiaomi> <served id>',
         );
       },
     },),

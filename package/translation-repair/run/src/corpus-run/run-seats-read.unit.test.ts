@@ -68,6 +68,8 @@ const ALL_WET: BudgetView = {
   neuralwatt: false,
   synthetic: false,
   bedrock: false,
+  deepseek: false,
+  xiaomi: false,
   hyper: false,
   openrouter: false,
 };
@@ -79,6 +81,8 @@ const ALL_DRY: BudgetView = {
   neuralwatt: true,
   synthetic: true,
   bedrock: true,
+  deepseek: true,
+  xiaomi: true,
   hyper: true,
   openrouter: true,
 };
@@ -90,6 +94,8 @@ const SYNTHETIC_DRY: BudgetView = {
   neuralwatt: true,
   synthetic: true,
   bedrock: false,
+  deepseek: false,
+  xiaomi: false,
   hyper: false,
   openrouter: false,
 };
@@ -104,6 +110,8 @@ const SYNTHETIC_AND_HYPER_DRY: BudgetView = {
   neuralwatt: false,
   synthetic: true,
   bedrock: false,
+  deepseek: false,
+  xiaomi: false,
   hyper: true,
   openrouter: false,
 };
@@ -115,6 +123,8 @@ const NO_HOLDS = {
   neuralwatt: 0,
   synthetic: 0,
   bedrock: 0,
+  deepseek: 0,
+  xiaomi: 0,
   hyper: 0,
   openrouter: 0,
 };
@@ -127,6 +137,8 @@ const BEDROCK_ALONE: BudgetView = {
   neuralwatt: true,
   synthetic: true,
   bedrock: false,
+  deepseek: true,
+  xiaomi: true,
   hyper: true,
   openrouter: true,
 };
@@ -143,6 +155,8 @@ const ALL_METERS_WET: Readonly<Record<keyof BudgetView, MeterState>> = {
   neuralwatt: 'wet',
   synthetic: 'wet',
   bedrock: 'wet',
+  deepseek: 'wet',
+  xiaomi: 'wet',
   hyper: 'wet',
   openrouter: 'wet',
 };
@@ -269,7 +283,7 @@ await describe({
               l: levelCapturingLogger({ lines, },),
             },);
             expect(lines,).toEqual([
-              'info JUDGE SEATS phase=lanes neuralwatt=wet synthetic=wet bedrock=wet hyper=wet openrouter=wet wide=7 select=8 '
+              'info JUDGE SEATS phase=lanes neuralwatt=wet synthetic=wet bedrock=wet deepseek=wet xiaomi=wet hyper=wet openrouter=wet wide=7 select=8 '
                 + 'late=7 slate=7 checkers=3 translators=8 readers=6 seeing=6 writers=9 roster=9 withheld=none unserved=none '
                 + 'threw-withheld=hf:Qwen/Qwen3.8-27B (threw 4 of 4 asks) waited=0ms',
             ],);
@@ -287,7 +301,7 @@ await describe({
               l: levelCapturingLogger({ lines: mixedLines, },),
             },);
             expect(mixedLines,).toEqual([
-              'info JUDGE SEATS phase=lanes neuralwatt=wet synthetic=wet bedrock=wet hyper=wet openrouter=wet wide=7 select=8 '
+              'info JUDGE SEATS phase=lanes neuralwatt=wet synthetic=wet bedrock=wet deepseek=wet xiaomi=wet hyper=wet openrouter=wet wide=7 select=8 '
                 + 'late=7 slate=7 checkers=3 translators=8 readers=6 seeing=6 writers=9 roster=9 withheld=none unserved=none '
                 + 'threw-withheld=none waited=0ms',
             ],);
@@ -306,6 +320,8 @@ await describe({
                   neuralwatt: true,
                   synthetic: false,
                   bedrock: true,
+                  deepseek: false,
+                  xiaomi: false,
                   hyper: false,
                   openrouter: false,
                 }),
@@ -313,6 +329,8 @@ await describe({
                   neuralwatt: 'dry',
                   synthetic: 'unreadable',
                   bedrock: 'unreadable',
+                  deepseek: 'wet',
+                  xiaomi: 'wet',
                   hyper: 'wet',
                   openrouter: 'wet',
                 }),
@@ -323,7 +341,7 @@ await describe({
             },);
             expect(lines.length,).toBe(1,);
             expect(lines[0],).toContain(
-              'info JUDGE SEATS phase=lanes neuralwatt=dry synthetic=unreadable-treated-as-spendable bedrock=dry hyper=wet openrouter=wet ',
+              'info JUDGE SEATS phase=lanes neuralwatt=dry synthetic=unreadable-treated-as-spendable bedrock=dry deepseek=wet xiaomi=wet hyper=wet openrouter=wet ',
             );
           },
         },),
@@ -351,7 +369,8 @@ await describe({
             expect(lines[1],).toContain(
               'info JUDGE SEATS phase=lanes neuralwatt=unreadable-treated-as-spendable '
                 + 'synthetic=unreadable-treated-as-spendable '
-                + 'bedrock=unreadable-treated-as-spendable hyper=unreadable-treated-as-spendable '
+                + 'bedrock=unreadable-treated-as-spendable deepseek=unreadable-treated-as-spendable '
+                + 'xiaomi=unreadable-treated-as-spendable hyper=unreadable-treated-as-spendable '
                 + 'openrouter=unreadable-treated-as-spendable ',
             );
           },

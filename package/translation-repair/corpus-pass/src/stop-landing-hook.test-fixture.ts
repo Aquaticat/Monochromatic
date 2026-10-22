@@ -152,6 +152,8 @@ const BEDROCK_ALONE: BudgetView = {
   neuralwatt: true,
   synthetic: true,
   bedrock: false,
+  deepseek: true,
+  xiaomi: true,
   hyper: true,
   openrouter: true,
 };
@@ -163,6 +165,8 @@ const HYPER_HELD: ProviderRecord<number> = {
   neuralwatt: 0,
   synthetic: 0,
   bedrock: 0,
+  deepseek: 0,
+  xiaomi: 0,
   hyper: 60_000,
   openrouter: 0,
 };
@@ -174,6 +178,8 @@ const NONE_HELD: ProviderRecord<number> = {
   neuralwatt: 0,
   synthetic: 0,
   bedrock: 0,
+  deepseek: 0,
+  xiaomi: 0,
   hyper: 0,
   openrouter: 0,
 };

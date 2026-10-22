@@ -53,6 +53,8 @@ await describe({
           synthetic: false,
           hyper: false,
           bedrock: false,
+          deepseek: false,
+          xiaomi: false,
           openrouter: false,
         },);
         expect(readsImages({ modelId: SEAT_OPENROUTER_DECISIONS, },),).toBe(false,);
@@ -105,6 +107,8 @@ await describe({
             synthetic: true,
             hyper: true,
             bedrock: true,
+            deepseek: false,
+            xiaomi: false,
             openrouter: false,
           },
         },);
@@ -120,6 +124,8 @@ await describe({
             synthetic: false,
             hyper: false,
             bedrock: false,
+            deepseek: true,
+            xiaomi: true,
             openrouter: true,
           },
         },);

@@ -80,6 +80,28 @@ await describe({
           hyper: 'whisker-key-0002',
           bedrock: 'whisker-key-0003',
           openrouter: 'whisker-key-0004',
+          deepseek: '',
+          xiaomi: '',
+        },);
+      },
+    },),
+    it({
+      name: 'READS the two direct providers\' keys when set and refuses nothing when they are not',
+      fn: async () => {
+        expect(readProviderKeys({
+          env: {
+            ...ALL_FIVE,
+            DEEPSEEK_API_KEY: 'whisker-key-0006',
+            TRANSLATION_REPAIR_XIAOMI_MIMO_API_KEY: 'whisker-key-0007',
+          },
+        },),).toEqual({
+          neuralwatt: 'whisker-key-0005',
+          synthetic: 'whisker-key-0001',
+          hyper: 'whisker-key-0002',
+          bedrock: 'whisker-key-0003',
+          openrouter: 'whisker-key-0004',
+          deepseek: 'whisker-key-0006',
+          xiaomi: 'whisker-key-0007',
         },);
       },
     },),

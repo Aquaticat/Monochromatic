@@ -51,6 +51,8 @@ const BEDROCK_AND_OPENROUTER: BudgetView = {
   neuralwatt: true,
   synthetic: true,
   bedrock: false,
+  deepseek: false,
+  xiaomi: false,
   hyper: true,
   openrouter: false,
 };
@@ -65,6 +67,8 @@ const NEURALWATT_AND_BEDROCK: BudgetView = {
   neuralwatt: false,
   synthetic: true,
   bedrock: false,
+  deepseek: true,
+  xiaomi: true,
   hyper: true,
   openrouter: true,
 };
@@ -76,6 +80,8 @@ const NO_HOLDS = {
   neuralwatt: 0,
   synthetic: 0,
   bedrock: 0,
+  deepseek: 0,
+  xiaomi: 0,
   hyper: 0,
   openrouter: 0,
 };
@@ -94,6 +100,8 @@ const HYPER_AND_OPENROUTER_DRY: BudgetView = {
   neuralwatt: true,
   synthetic: false,
   bedrock: false,
+  deepseek: true,
+  xiaomi: true,
   hyper: true,
   openrouter: true,
 };

@@ -238,14 +238,6 @@ export function configureProviders(
     key: env[XIAOMI_KEY_VARIABLE] ?? '',
   },);
   /**
-   Logger pre-tagged with this function's name.
-   */
-  const rl = tagged({ tag: configureProviders.name, },);
-  if (deepSeekKey === '')
-    rl.info(`${DEEPSEEK_KEY_VARIABLE} is not set, so DeepSeek is unconfigured: its meter reads dry and no call goes there`,);
-  if (xiaomiKey === '')
-    rl.info(`${XIAOMI_KEY_VARIABLE} is not set, so Xiaomi is unconfigured: its meter reads dry and no call goes there`,);
-  /**
    Whether no provider at all is configured, which nothing can run on.
    */
   const noKeyAtAll = (neuralWattKey === '')
@@ -263,6 +255,17 @@ export function configureProviders(
         + 'or TRANSLATION_REPAIR_OPENROUTER_API_KEY',
     },);
   }
+
+  // THE INFO LINES COME AFTER THE NO-KEY REFUSAL, so a launch with no key at all leaves stdout empty and says its
+  // refusal alone.
+  /**
+   Logger pre-tagged with this function's name.
+   */
+  const rl = tagged({ tag: configureProviders.name, },);
+  if (deepSeekKey === '')
+    rl.info(`${DEEPSEEK_KEY_VARIABLE} is not set, so DeepSeek is unconfigured: its meter reads dry and no call goes there`,);
+  if (xiaomiKey === '')
+    rl.info(`${XIAOMI_KEY_VARIABLE} is not set, so Xiaomi is unconfigured: its meter reads dry and no call goes there`,);
 
   /**
    Fifth provider client when configured, over the durable energy ledger the

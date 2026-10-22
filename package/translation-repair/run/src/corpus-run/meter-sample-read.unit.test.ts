@@ -54,6 +54,8 @@ await describe({
               hyper: 'dry',
               neuralwatt: 'absent',
               bedrock: 'absent',
+              deepseek: 'absent',
+              xiaomi: 'absent',
               openrouter: 'absent',
               levels: [],
             },);
@@ -77,6 +79,8 @@ await describe({
               hyper: 'wet',
               neuralwatt: 'absent',
               bedrock: 'absent',
+              deepseek: 'absent',
+              xiaomi: 'absent',
               openrouter: 'wet',
               levels: [
                 'syntheticWeekly=0%',
@@ -106,6 +110,8 @@ await describe({
               synthetic: 'dry',
               hyper: 'wet',
               bedrock: 'dry',
+              deepseek: 'absent',
+              xiaomi: 'absent',
               openrouter: 'wet',
               levels: [
                 'neuralwattWh=549.986',
@@ -135,6 +141,8 @@ await describe({
               synthetic: 'dry',
               hyper: 'wet',
               bedrock: 'dry',
+              deepseek: 'absent',
+              xiaomi: 'absent',
               openrouter: 'wet',
               levels: [
                 'neuralwattWh=545.905',
@@ -166,6 +174,8 @@ await describe({
               synthetic: 'dry',
               hyper: 'wet',
               bedrock: 'dry',
+              deepseek: 'absent',
+              xiaomi: 'absent',
               openrouter: 'wet',
               levels: [
                 'neuralwattWh=549.986',
@@ -193,6 +203,8 @@ await describe({
               hyper: 'wet',
               neuralwatt: 'absent',
               bedrock: 'absent',
+              deepseek: 'absent',
+              xiaomi: 'absent',
               openrouter: 'absent',
               levels: [],
             },);
@@ -215,6 +227,8 @@ await describe({
               hyper: 'dry',
               neuralwatt: 'absent',
               bedrock: 'absent',
+              deepseek: 'absent',
+              xiaomi: 'absent',
               openrouter: 'absent',
               levels: [
                 'syntheticWeekly=97%',
@@ -243,6 +257,8 @@ await describe({
               hyper: 'dry',
               neuralwatt: 'absent',
               bedrock: 'absent',
+              deepseek: 'absent',
+              xiaomi: 'absent',
               openrouter: 'absent',
               levels: [
                 'syntheticWeekly=64.5%',
@@ -270,6 +286,8 @@ await describe({
               hyper: 'wet',
               neuralwatt: 'absent',
               bedrock: 'absent',
+              deepseek: 'absent',
+              xiaomi: 'absent',
               openrouter: 'absent',
               levels: ['hyperResetsAt=03:00',],
             },);
@@ -375,6 +393,8 @@ await describe({
               hyper: 'dry',
               neuralwatt: 'absent',
               bedrock: 'absent',
+              deepseek: 'absent',
+              xiaomi: 'absent',
               openrouter: 'absent',
               levels: [],
             },);
@@ -387,6 +407,8 @@ await describe({
               hyper: 'dry',
               neuralwatt: 'absent',
               bedrock: 'absent',
+              deepseek: 'absent',
+              xiaomi: 'absent',
               openrouter: 'absent',
               levels: ['hyperBalance=0',],
             },);

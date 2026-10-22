@@ -846,6 +846,8 @@ function entryClient(
       neuralwatt: 0,
       synthetic: 0,
       bedrock: 0,
+      deepseek: 0,
+      xiaomi: 0,
       hyper: 0,
       openrouter: 0,
     }),

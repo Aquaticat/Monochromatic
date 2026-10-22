@@ -478,7 +478,7 @@ await describe({
             },),
           },);
         },).toThrow(
-          'roster-card\'s provider is one of synthetic, hyper, openrouter, bedrock, neuralwatt, and "cat nip" is none of them',
+          'roster-card\'s provider is one of synthetic, hyper, openrouter, bedrock, neuralwatt, deepseek, xiaomi, and "cat nip" is none of them',
         );
         expect(function bothWrong(): void {
           readAsk({
@@ -491,7 +491,7 @@ await describe({
             },),
           },);
         },).toThrow(
-          'roster-card\'s provider is one of synthetic, hyper, openrouter, bedrock, neuralwatt, and "Hyper" is none of them; '
+          'roster-card\'s provider is one of synthetic, hyper, openrouter, bedrock, neuralwatt, deepseek, xiaomi, and "Hyper" is none of them; '
             + 'roster-card\'s served id is written empty',
         );
       },

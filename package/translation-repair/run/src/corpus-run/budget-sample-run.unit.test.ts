@@ -143,7 +143,7 @@ await describe({
         },);
 
         expect(lines.at(-1,),).toBe(
-          `[sampleBudgets] SAMPLED: routing would use neuralwatt, use synthetic, use bedrock, use hyper, use openrouter${SUMMARY_CLOSING}`,
+          `[sampleBudgets] SAMPLED: routing would use neuralwatt, use synthetic, use bedrock, avoid deepseek, avoid xiaomi, use hyper, use openrouter${SUMMARY_CLOSING}`,
         );
         // The meters are read together, so the order they are asked in is not the contract.
         expect(seen.map(function seenOf(exchange,): string {
@@ -185,7 +185,7 @@ await describe({
         },);
 
         expect(lines.at(-1,),).toBe(
-          `[sampleBudgets] SAMPLED: routing would use neuralwatt, use synthetic, avoid bedrock, use hyper, use openrouter${SUMMARY_CLOSING}`,
+          `[sampleBudgets] SAMPLED: routing would use neuralwatt, use synthetic, avoid bedrock, avoid deepseek, avoid xiaomi, use hyper, use openrouter${SUMMARY_CLOSING}`,
         );
       },
     },),
@@ -209,7 +209,7 @@ await describe({
         },);
 
         expect(lines.at(-1,),).toBe(
-          `[sampleBudgets] SAMPLED: routing would avoid neuralwatt, use synthetic, use bedrock, use hyper, use openrouter${SUMMARY_CLOSING}`,
+          `[sampleBudgets] SAMPLED: routing would avoid neuralwatt, use synthetic, use bedrock, avoid deepseek, avoid xiaomi, use hyper, use openrouter${SUMMARY_CLOSING}`,
         );
         // THE METER READS THE ACCOUNT'S TWO ROUTES FOR THE DAY'S START; no energy is spent reading them.
         expect(seen.some(function sentChat(exchange,): boolean {
@@ -240,13 +240,47 @@ await describe({
         },);
 
         expect(lines.at(-1,),).toBe(
-          `[sampleBudgets] SAMPLED: routing would avoid neuralwatt, use synthetic, use bedrock, use hyper, use openrouter${SUMMARY_CLOSING}`,
+          `[sampleBudgets] SAMPLED: routing would avoid neuralwatt, use synthetic, use bedrock, avoid deepseek, avoid xiaomi, use hyper, use openrouter${SUMMARY_CLOSING}`,
         );
         expect(seen.filter(function reachedNeuralWatt(exchange,): boolean {
           return exchange.url.includes('neuralwatt',);
         },).map(function urlOf(exchange,): string {
           return exchange.url;
         },),).toEqual(['https://api.neuralwatt.com/v1/quota',],);
+      },
+    },),
+    it({
+      name: 'SAMPLES THE TWO DIRECT PROVIDERS when their keys are set: DeepSeek is asked its balance with its own key, '
+        + 'and Xiaomi, which documents no balance, is read from the run\'s own spend and sent no request',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'budget-run-', },);
+        const seen: TransportExchange[] = [];
+        const {
+          logger,
+          lines,
+        } = capturingLoggerPair();
+
+        await sampleBudgets({
+          env: envWith({
+            ledgerDir: scratch.path,
+            extra: {
+              DEEPSEEK_API_KEY: 'whisker-key-0006',
+              TRANSLATION_REPAIR_XIAOMI_MIMO_API_KEY: 'whisker-key-0007',
+            },
+          },),
+          transport: unreachableTransport({ seen, },),
+          l: logger,
+        },);
+
+        // A meter that cannot be read is spendable, as for every other provider; Xiaomi answers wet.
+        expect(lines.at(-1,),).toBe(
+          `[sampleBudgets] SAMPLED: routing would use neuralwatt, use synthetic, use bedrock, use deepseek, use xiaomi, use hyper, use openrouter${SUMMARY_CLOSING}`,
+        );
+        expect(seen.filter(function reachedDirect(exchange,): boolean {
+          return exchange.url.includes('deepseek',) || exchange.url.includes('xiaomi',);
+        },).map(function lineOf(exchange,): string {
+          return `${exchange.method} ${exchange.url} ${exchange.headers.Authorization ?? ''}`;
+        },),).toEqual(['GET https://api.deepseek.com/user/balance Bearer whisker-key-0006',],);
       },
     },),
     it({

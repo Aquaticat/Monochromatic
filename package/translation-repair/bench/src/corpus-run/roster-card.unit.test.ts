@@ -81,7 +81,7 @@ await describe({
         expect(run,).toEqual({
           code: REFUSED_AS_STATED,
           stdout: '',
-          stderr: 'roster-card: roster-card\'s provider is one of synthetic, hyper, openrouter, bedrock, neuralwatt, '
+          stderr: 'roster-card: roster-card\'s provider is one of synthetic, hyper, openrouter, bedrock, neuralwatt, deepseek, xiaomi, '
             + 'and "bogus" is none of them\n',
         },);
       },
@@ -104,7 +104,7 @@ await describe({
           code: REFUSED_AS_STATED,
           stdout: '',
           stderr: 'roster-card: --flag is not a flag this command reads. '
-            + 'Usage: roster-card <synthetic|hyper|openrouter|bedrock|neuralwatt> <served id>\n',
+            + 'Usage: roster-card <synthetic|hyper|openrouter|bedrock|neuralwatt|deepseek|xiaomi> <served id>\n',
         },);
       },
     },),
@@ -121,8 +121,8 @@ await describe({
         expect(run,).toEqual({
           code: REFUSED_AS_STATED,
           stdout: '',
-          stderr: 'roster-card: this command needs <synthetic|hyper|openrouter|bedrock|neuralwatt> <served id>. '
-            + 'Usage: roster-card <synthetic|hyper|openrouter|bedrock|neuralwatt> <served id>\n',
+          stderr: 'roster-card: this command needs <synthetic|hyper|openrouter|bedrock|neuralwatt|deepseek|xiaomi> <served id>. '
+            + 'Usage: roster-card <synthetic|hyper|openrouter|bedrock|neuralwatt|deepseek|xiaomi> <served id>\n',
         },);
       },
     },),

@@ -85,6 +85,8 @@ function everyReading(): readonly BudgetView[] {
       synthetic: dryAt(0,),
       hyper: dryAt(1,),
       bedrock: dryAt(2,),
+      deepseek: dryAt(3,),
+      xiaomi: dryAt(3,),
       openrouter: dryAt(3,),
     };
   },);
@@ -127,6 +129,8 @@ await describe({
           synthetic: true,
           hyper: true,
           bedrock: false,
+          deepseek: false,
+          xiaomi: false,
           openrouter: false,
         };
         /** Bench it seats. */
@@ -181,6 +185,8 @@ await describe({
           synthetic: false,
           hyper: false,
           bedrock: false,
+          deepseek: false,
+          xiaomi: false,
           openrouter: false,
         };
         expect(judgeSeatsFor({ dry, },).checkers,).toEqual([
