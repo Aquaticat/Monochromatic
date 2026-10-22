@@ -9,14 +9,15 @@ which lists every file of this record.
 ## B816: a short bench waited on its last live seat, so one stream that held without content held the whole round
 
 Status:
-fixed on 2026-10-22 (UTC) in `w279`,
+fixed on 2026-10-22 (UTC) in `tr-w277`,
 on the owner's answer "Let the grace open",
 red `42855d2266`,
 fix `1ed1690ab6`,
 artifact generation 20 in `19dc276377`,
 cache versions in `eb4db609ff`,
 TSDocs in `9ed9b5d14a`.
-Two corpus-pass cases that name moved cache versions stay red on that head (M287).
+The pins in other packages that the version and generation moves left behind moved in `205eed4f57` and `aed73b727b`,
+and the TSDoc and scan fixes are in `8de619e404` (M287).
 
 What B809 showed:
 26 of the 27 rounds that took 250 s or more in `XingZ6017` waited on one comment-only stream,

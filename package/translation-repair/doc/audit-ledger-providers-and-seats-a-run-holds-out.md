@@ -229,7 +229,7 @@ none.
 ## B815: Qwen3.8-27B sat on the lane contest and consolidation benches, and the grace cut 40 of its 95 streams
 
 Status:
-fixed on 2026-10-22 (UTC) in `w279`,
+fixed on 2026-10-22 (UTC) in `tr-w277`,
 on the owner's answer "Remove from both benches",
 red `99eca0e2af`,
 fix `9639e19d85`,
