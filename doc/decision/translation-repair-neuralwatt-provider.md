@@ -512,6 +512,28 @@ Ledger P17 in `package/translation-repair/doc/audit-ledger-providers-routing-and
 - The cap's USD figures are not converted to energy,
   and no kWh field is invented for it.
 
+### When a pass launches
+
+The owner,
+2026-10-22 at about 12:30 UTC:
+"You don't need to align launches to NeuralWatt starts."
+A pass launches when its build is ready,
+whatever the hour,
+and no pass waits for 19:15 UTC.
+This retires the wait recorded for `zheermao23` in
+`doc/planning/translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart.md`
+and the handovers of 2026-10-22.
+
+A pass that runs across the boundary takes the new day as it comes:
+`dayFor` in `package/translation-repair/provider/src/neuralwatt-day-session.ts`
+works out the day's first instant from the clock at every reading,
+and the case "DROPS A FIGURE FROM A PREVIOUS DAY AFTER AN OUTAGE"
+in `package/translation-repair/provider/src/neuralwatt-day.unit.test.ts`
+moves one client's clock past the anchor and reads the new day's start and its full 550 Wh.
+Before the boundary,
+with the day spent,
+NeuralWatt stays dry and the other providers serve.
+
 ## Not verifiable without a key
 
 - How NeuralWatt handles a picture on either model.
