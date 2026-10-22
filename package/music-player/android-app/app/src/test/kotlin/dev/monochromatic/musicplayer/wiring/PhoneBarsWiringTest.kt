@@ -66,6 +66,9 @@ private const val ONE_LINE_TRIGGER_MAX_DP: Float = 60f
 /** Name of the invented folder, short enough to fit one line at large text. */
 private const val SHORT_FOLDER = "Music"
 
+/** Name of the invented folder, too long to fit beside the three actions at large text. */
+private const val LONG_FOLDER = "Aster Vale with a very long invented folder name that cannot fit beside the actions"
+
 // What:     `class PhoneBarsWiringTest` groups the cases of the phone's deck and top bar at large text.
 // Why:      The layout rules are pure and tested on the JVM; these cases pin that the composables really apply them,
 //           through the bounds the screen shows.
@@ -83,8 +86,8 @@ class PhoneBarsWiringTest {
     @get:Rule
     val composeTestRule = createComposeRule()
 
-    /** Renders the top row above the deck, the way the phone's cover screen stacks them, at large text. */
-    private fun renderPhoneScreen() {
+    /** Renders the top row, titled [folder], above the deck, the way the phone's cover screen stacks them. */
+    private fun renderPhoneScreen(folder: String = SHORT_FOLDER) {
         composeTestRule.setContent {
             MaterialTheme(colorScheme = darkColorScheme()) {
                 CompositionLocalProvider(
@@ -92,7 +95,7 @@ class PhoneBarsWiringTest {
                 ) {
                     Column(modifier = Modifier.fillMaxSize()) {
                         coverTopRow(
-                            folderTitle = SHORT_FOLDER,
+                            folderTitle = folder,
                             pickerOpen = false,
                             onToggleFolderPicker = { },
                             onOpen = { },
@@ -169,6 +172,35 @@ class PhoneBarsWiringTest {
         val firstSegment = placedBounds("Repeat track")
         val gap = firstSegment.top - next.bottom
         assertTrue("transport buttons end $gap dp above the mode control", gap >= CONTROL_GAP_DP - EDGE_SLACK_DP)
+    }
+
+    @Test
+    fun aShortFolderTitleSharesTheRowWithTheActions() {
+        renderPhoneScreen()
+        val trigger = placedBounds("Folder: $SHORT_FOLDER")
+        val settings = placedBounds("Settings")
+        assertTrue(
+            "settings starts ${settings.top} dp down, below the title's bottom at ${trigger.bottom} dp",
+            settings.top < trigger.bottom,
+        )
+    }
+
+    @Test
+    fun aLongFolderTitleStaysOnOneLineBesideTheActions() {
+        renderPhoneScreen(folder = LONG_FOLDER)
+        val trigger = placedBounds("Folder: $LONG_FOLDER")
+        val search = placedBounds("Search music")
+        val settings = placedBounds("Settings")
+        val height = trigger.bottom - trigger.top
+        assertTrue("folder trigger is $height dp tall for a long title", height <= ONE_LINE_TRIGGER_MAX_DP)
+        assertTrue(
+            "settings starts ${settings.top} dp down, below the title's bottom at ${trigger.bottom} dp",
+            settings.top < trigger.bottom,
+        )
+        assertTrue(
+            "title ends ${trigger.right} dp across, past the search button at ${search.left} dp",
+            trigger.right <= search.left + EDGE_SLACK_DP,
+        )
     }
 
     @Test
