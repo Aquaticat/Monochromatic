@@ -11,6 +11,16 @@
 
 export { createFileSink, } from './sink/file.ts';
 
+//region Retention policy surface of the file sink
+export {
+  DEFAULT_LOG_MAX_AGE_DAYS,
+  DEFAULT_LOG_MAX_BYTES,
+  DEFAULT_LOG_MAX_FILES,
+  NO_LOG_RETENTION_SWEEP,
+  type LogRetentionPolicy,
+} from './sink/file-retention-policy.ts';
+//endregion Retention policy surface of the file sink
+
 //region Internal seams
 export { userLogDirectory as _userLogDirectory, } from './sink/file-state.ts';
 // Underscore-prefixed re-exports let `file.unit.test.ts` exercise the ancestor
