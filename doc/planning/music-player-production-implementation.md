@@ -816,9 +816,15 @@ until the next release or a dry run. The research into why the desktop text felt
 `doc/troubleshooting/music-player-desktop-text-looks-larger-than-android-at-the-same-size.md` (committed); still to land
 there: the CJK font each app picks (agent `aab39f469b16ca605`, report `/home/user/temp/agent/slint-cjk/report.md`) and
 the primary-source note (agent `a96478631545325e9`, output `/home/user/temp/agent/text-size-research/findings.md`, to move
-to `doc/research/text-size-perception-sources.md`). Waiting on the human: a perception test page, opened in their
-browser (`/home/user/temp/agent/type-shots/perception/text-size-test.html`, local only, verified with `agent-browser`
-in light and dark, not yet taken); its pasted results go into the troubleshooting doc's hypotheses.
+to `doc/research/text-size-perception-sources.md`). Round 1 of the human's perception test came back and is in the troubleshooting doc. Waiting on the human, all local
+only and verified with `agent-browser`: (1) the millimetre test page
+`/home/user/temp/agent/type-shots/perception/text-size-test-mm.html` (needs their eye distances and a ruler check,
+once per monitor; their monitors are three 27 inch 4K and one 15.6 inch 4K, which the page recognises); (2) the static
+HTML replica of the app window, `/home/user/temp/agent/slint-replica/replica.html` (matches the real app within 1 px
+at scale 1 and 2, dark and light, measured by the agent and spot-checked by the lead), to be compared on screen with
+the real app started by `node /home/user/temp/agent/slint-real/launch.ts A` or `B` (two builds, 22/16 and 20/14,
+mapping hidden in `/home/user/temp/agent/slint-real/key.json`, which settings writes go only under a scratch
+directory).
 Not measured: the desktop rendered beside the emulator. Known difference: the desktop uses "Inter Variable"
 (`app_window.slint:65`), Android the system font. Open: whether the human still sees a problem; other desktop screens
 still use the `Theme` size tokens (settings, search, deck), left alone because the human named five texts.
