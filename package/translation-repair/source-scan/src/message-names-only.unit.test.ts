@@ -89,6 +89,8 @@ const MARKED_CLASSES: readonly string[] = [
   'CheckerIndependenceError',
   'CheckerQuorumError',
   'CitedReferenceFetchError',
+  'ClaudeModelNotServedError',
+  'ClaudePrefillError',
   'CollapsedHeadingError',
   'CompositeNotOnSlateError',
   'ConsistencyInvariantError',

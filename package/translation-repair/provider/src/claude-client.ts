@@ -6,6 +6,8 @@ import {
   wordForCount,
 } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
+  ANTHROPIC_EFFORTS,
+  ANTHROPIC_WIRE_MODELS,
   completionCapFor,
   perModelLimiter,
   type RosterModelId,
@@ -218,7 +220,21 @@ function cardFor({ modelId, }: { readonly modelId: RosterModelId; },): ClaudeMod
   const spelling = claudeIdFor({ modelId, },);
   if (!spelling.served)
     throw new ClaudeModelNotServedError({ modelId, },);
-  return CLAUDE_MODELS[spelling.id];
+
+  /**
+   The card's row of the catalog.
+   */
+  const row = CLAUDE_MODELS[spelling.id];
+  // THE LOCK A SECOND TIME, AT RUN TIME: the types already hold every row to the two granted wire models and the three
+  // efforts, and the cards' unit tests fail on a third, so these two branches cannot run unless a card is edited past
+  // both. They stop the call before a request is built, which is the only place a stray model id would cost money.
+  /* v8 ignore next 2 -- @preserve */
+  if (!(ANTHROPIC_WIRE_MODELS as readonly string[]).includes(row.wireModel,))
+    throw new ClaudeModelNotServedError({ modelId: row.wireModel, },);
+  /* v8 ignore next 2 -- @preserve */
+  if ((row.effort !== undefined) && (!(ANTHROPIC_EFFORTS as readonly string[]).includes(row.effort,)))
+    throw new ClaudeModelNotServedError({ modelId: `${row.id} at effort ${row.effort}`, },);
+  return row;
 }
 
 /**
@@ -484,7 +500,7 @@ export function createClaudeClient(
 
         // BYTES RATHER THAN CHARACTERS: this corpus is Chinese.
         /**
-         The failure this reply is, thrown below once the billing flag has read it.
+         The failure this reply is, thrown once the billing flag has read it.
          */
         const failure = failureForReply({
           provider: 'anthropic',

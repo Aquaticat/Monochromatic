@@ -36,14 +36,15 @@ import type {
 //     writing for the translate lane or a transcription from a picture.
 //   - `claude-haiku-5-5` (no effort) is a wide seat (critics, adjudication panel, select judges) and takes a place on
 //     the checker order. `late-judge-dropped` keeps it off the roster-wide rounds after the lanes (lane contest,
-//     consolidation), which the owner did not name; `writer-unmeasured` and `reader-unmeasured` as above.
+//     consolidation), which the owner did not name; `writer-unmeasured` and `reader-unmeasured` for the reason given for
+//     Sonnet.
 //
 // THE PRICES ARE THE ANTHROPIC PRICING PAGE AS THE OWNER'S BRIEF CARRIES IT (read 2026-10-22). The bundled API skill
 // of the same day lists Sonnet 5.5 cache reads at 0.20 USD a million; the brief's 0.10 is used here, since the brief
 // carries the pricing page and the skill is a cached copy. The difference is on cache reads only.
 //
 // NO ZERO DATA RETENTION is promised by this route. The owner's ruling of 2026-10-05 (the corpus is public, PII is
-// allowed) and the grant above are what permit it.
+// allowed) and the owner's grant quoted in this note are what permit it.
 
 /**
  Sonnet 5.5's prices: 2 USD in, 10 out, 2.50 for a five-minute cache write and 0.10 for a cache hit, per million

@@ -1533,15 +1533,23 @@ const HELD_TESTS: Readonly<Record<string, {
     why: SETTING,
   },
   'run/corpus-run/run-providers.ts#configureProviders': {
-    tests: 17,
+    tests: 20,
     why: SETTING,
   },
   'run/corpus-run/budget-sample-run.ts#sampleBudgets': {
-    tests: 2,
+    tests: 3,
     why: SETTING,
   },
   'provider/direct-usage.ts#fingerprintOf': {
     tests: 1,
+    why: PROTOCOL,
+  },
+  'provider/claude-body.ts#buildClaudeBody': {
+    tests: 1,
+    why: SENTINEL,
+  },
+  'provider/claude-stream-facts.ts#claudeStreamFactsOf': {
+    tests: 4,
     why: PROTOCOL,
   },
   'run/corpus-run/run-timing-parse.ts#countIn': {

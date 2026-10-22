@@ -20,7 +20,7 @@ import {
  const usage: ClaudeStreamUsage = { input: 100, cacheWrite: 0, cacheRead: 0, output: 10, };
  ```
  */
-export type ClaudeStreamUsage = {
+type ClaudeStreamUsage = {
   /**
    Prompt tokens past the last cache breakpoint.
    */
@@ -56,11 +56,11 @@ export const PLAIN_USAGE: ClaudeStreamUsage = {
  Body of a whole Messages stream: a thinking block, a text block, and the terminator.
 
  @param text - the answer the text block carries, empty for none
- 
+
  @param stopReason - why the model stopped
- 
+
  @param stopDetails - the `stop_details` object the closing frame carries, absent for none
- 
+
  @param usage - counts the stream reports
 
  @returns Stream text
@@ -160,7 +160,7 @@ export const CLAUDE_CAT_KEY = 'sk-ant-cat-key-whisker-9f3c7a-Qx4d';
  the extra member passes through it unchanged.
 
  @param bodyText - the whole stream
- 
+
  @param headers - response headers by lower-case name
 
  @returns The reply
