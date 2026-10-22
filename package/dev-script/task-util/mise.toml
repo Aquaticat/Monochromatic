@@ -40,7 +40,9 @@ runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', parseUsageArg
 # JS files go to `node --check`, the parser that will run them; TypeScript
 # files to `transpileModule` from `typescript/sync`, the compiler's own
 # parser, which unlike `node --experimental-strip-types --check` does not
-# false-positive on type-only syntax. Post-`--` paths are repo-relative or
+# false-positive on type-only syntax. Declaration files parse under their
+# non-declaration suffix because typescript@7.1.0-beta panics in output
+# generation for .d.* fileNames. Post-`--` paths are repo-relative or
 # absolute files or directories; omitted checks every changed and untracked
 # JS/TS file. Exits 1 when anything fails to parse.
 [tasks."lint:parse"]
@@ -118,20 +120,34 @@ if (typeScriptFiles.length > 0) {
   const requireFromRoot = createRequire(join(repoRoot, 'package.json'));
   const typescriptSyncPath = requireFromRoot.resolve('typescript/sync');
   const { API } = await import(pathToFileURL(typescriptSyncPath).href);
+  const errorText = (error) => String(error instanceof Error ? error.message : error).split('\n')[0];
+  // typescript@7.1.0-beta panics in output generation for .d.* fileNames because
+  // transpileModule always emits and declaration files have nothing to emit, so
+  // parse declaration content under the matching non-declaration suffix; the
+  // parse grammar is identical and parse diagnostics still report.
+  const parseName = (file) => file.replace(/\.d\.(mts|cts|ts)$/u, '.$1');
   const api = new API();
   try {
     for (const file of typeScriptFiles) {
       const source = readFileSync(file, 'utf8');
-      const output = api.transpileModule(source, { fileName: file, reportDiagnostics: true });
-      for (const diagnostic of output.diagnostics ?? []) {
-        const position = diagnostic.startPosition;
-        const location = position === undefined ? file : `${file}:${position.line + 1}:${position.character + 1}`;
-        const message = typeof diagnostic.text === 'string' ? diagnostic.text : JSON.stringify(diagnostic.text);
-        problems.push(`${location}: TS${diagnostic.code} ${message}`);
+      try {
+        const output = api.transpileModule(source, { fileName: parseName(file), reportDiagnostics: true });
+        for (const diagnostic of output.diagnostics ?? []) {
+          const position = diagnostic.startPosition;
+          const location = position === undefined ? file : `${file}:${position.line + 1}:${position.character + 1}`;
+          const message = typeof diagnostic.text === 'string' ? diagnostic.text : JSON.stringify(diagnostic.text);
+          problems.push(`${location}: TS${diagnostic.code} ${message}`);
+        }
+      } catch (error) {
+        problems.push(`${file}: typescript/sync transpileModule threw: ${errorText(error)}`);
       }
     }
   } finally {
-    api.close();
+    try {
+      api.close();
+    } catch (error) {
+      problems.push(`typescript/sync api.close threw: ${errorText(error)}`);
+    }
   }
 }
 
