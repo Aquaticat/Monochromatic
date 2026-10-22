@@ -224,9 +224,35 @@ export const ARTIFACT_SCHEMA_VERSION_V16 = 16;
 export const ARTIFACT_SCHEMA_VERSION_V17 = 17;
 
 /**
- Generation nineteen, the one the pass writes (`artifact-two-lane-build.ts`, `pass-schema-guard.ts`): the recount of the
+ Generation twenty, the one the pass writes (`artifact-two-lane-build.ts`, `pass-schema-guard.ts`): a naturalness review round whose
+ reachable seats are exactly its bench quorum closes one voice below them (owner, 2026-10-22, "Let the grace open";
+ `reachableQuorum` in `stage-reachable-quorum.ts`), which the readers of generation nineteen and earlier do not apply to files written
+ before.
+
+ WHAT MOVED FROM NINETEEN, in the verdict a reader derives and in no field it records. A round over a bench of seven with three seats
+ out of reach and three usable seats was `quorum-not-met` under nineteen, which needed all four live seats, and is decided by its
+ seats here, which need three. A bench whose reachable seats are a quorum of two keeps the two-voice floor, so it still needs both.
+
+ WHY A GENERATION AND NOT THE READER ALONE: a reader recomputes each round's verdict from its seats and refuses a record whose stored
+ verdict differs (`parseNaturalnessReviewRound`), so a file of nineteen that recorded `quorum-not-met` on such a round would be refused
+ under the new rule. A reader gates the rule on the generation the file records (`artifactGenerationLetsGraceOpenOnLastSeat`).
+
+ A BUILD OF THIS GENERATION REFUSES TO RESUME A RUN DIRECTORY STAMPED NINETEEN OR EARLIER (`assertResumableSchemaGeneration`,
+ `pass-schema-guard.ts`): a pass settles only into a directory whose files it writes itself. That is expected and no loss, since
+ `readSettledArtifact` still reads those files, each under its own generation's rules.
+
+ Everything else the generation nineteen record holds is this generation's too, so the key vocabulary is nineteen's. The cache keys
+ of the passes do not read the generation; the caches whose gathers the rule moves carry their own version bumps.
+ */
+export const ARTIFACT_SCHEMA_VERSION_V20 = 20;
+
+/**
+ Generation nineteen, the one the pass wrote until generation twenty: the recount of the
  `consistency` section reads containment of the judges' quotes and the inline code of a span as the locator reads them (review of
  2026-10-18), which the readers of generation eighteen and earlier do not apply to files written before.
+
+ A READER OF THIS GENERATION DERIVES A NATURALNESS VERDICT UNDER THE RULE OF 2026-09-09, which generation twenty replaced: a round
+ whose reachable seats are exactly its bench quorum needs every one of them.
 
  WHAT MOVED FROM EIGHTEEN, in the recount and in no field it records. A quote is contained in another only where no joint of a longer
  word stands at an edge of the match, the locator's own test of an apostrophe, a hyphen or a joint of digits (`containsWords`,
@@ -402,6 +428,7 @@ export const TWO_LANE_GENERATIONS: readonly number[] = [
   ARTIFACT_SCHEMA_VERSION_V17,
   ARTIFACT_SCHEMA_VERSION_V18,
   ARTIFACT_SCHEMA_VERSION_V19,
+  ARTIFACT_SCHEMA_VERSION_V20,
 ];
 
 /**
@@ -430,7 +457,8 @@ export type TwoLaneArtifactGeneration =
   | typeof ARTIFACT_SCHEMA_VERSION_V16
   | typeof ARTIFACT_SCHEMA_VERSION_V17
   | typeof ARTIFACT_SCHEMA_VERSION_V18
-  | typeof ARTIFACT_SCHEMA_VERSION_V19;
+  | typeof ARTIFACT_SCHEMA_VERSION_V19
+  | typeof ARTIFACT_SCHEMA_VERSION_V20;
 
 /**
  Narrows numeric artifact version to known two-lane generation.
@@ -767,6 +795,26 @@ export function artifactGenerationReadsLineEndingsAsCodePadding(
 }
 
 /**
+ Reports whether generation derives a naturalness verdict with the last-seat grace: a round whose reachable seats are exactly its
+ bench quorum closes one voice below them, never under two (owner, 2026-10-22). An older round was decided when such a bench needed
+ every live seat, and its reader keeps that rule, so the verdict it recorded is not refused for a rule it was not written under.
+
+ @param generation - known two-lane artifact generation
+
+ @returns Whether `reachableQuorum` reads the round with its last-seat grace on
+
+ @example
+ ```ts
+ artifactGenerationLetsGraceOpenOnLastSeat({ generation: 20, });
+ ```
+ */
+export function artifactGenerationLetsGraceOpenOnLastSeat(
+  { generation, }: { readonly generation: TwoLaneArtifactGeneration; },
+): boolean {
+  return generation >= ARTIFACT_SCHEMA_VERSION_V20;
+}
+
+/**
  Reports whether generation may record a unit carried in part: a splice chosen
  for a block whose places are not all ones code can move the chosen words into,
  the others `kept-current`. An older section was written when one such place
@@ -792,7 +840,8 @@ export function artifactGenerationCarriesPartialUnits(
 
  @param generation - known two-lane artifact generation
 
- @returns Polish and absolute-review requirements for generation
+ @returns Polish and absolute-review requirements for generation, and the
+ quorum rule its review rounds were decided under
 
  @example
  ```ts
@@ -807,6 +856,7 @@ export function artifactGenerationReadingRequirements(
   readonly correctionChainRequired: boolean;
   readonly everyBodyBlockReviewed: boolean;
   readonly quorumBasisRequired: boolean;
+  readonly lastSeatGrace: boolean;
   readonly tenseRecorded: boolean;
 } {
   return {
@@ -815,6 +865,7 @@ export function artifactGenerationReadingRequirements(
     correctionChainRequired: artifactGenerationRequiresNaturalnessCorrectionChain({ generation, }),
     everyBodyBlockReviewed: artifactGenerationReviewsEveryBodyBlock({ generation, }),
     quorumBasisRequired: generation >= ARTIFACT_SCHEMA_VERSION_V14,
+    lastSeatGrace: artifactGenerationLetsGraceOpenOnLastSeat({ generation, }),
     tenseRecorded: artifactGenerationRecordsTense({ generation, }),
   };
 }
@@ -1098,7 +1149,7 @@ export type SettledArtifact = {
    Which generation this is, stated rather than inferred from which fields
    happen to be present.
    */
-  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V19;
+  readonly artifactSchemaVersion: typeof ARTIFACT_SCHEMA_VERSION_V20;
 
   /**
    Corpus entry this covers.

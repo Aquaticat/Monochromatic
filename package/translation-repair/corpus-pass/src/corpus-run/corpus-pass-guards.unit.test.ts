@@ -321,7 +321,7 @@ await describe({
                 ['Mittens',],
               ],
             ],),
-            writes: 19,
+            writes: 20,
           },).message}`,
         );
       },
@@ -362,7 +362,7 @@ await describe({
                 ['Mittens',],
               ],
             ],),
-            writes: 19,
+            writes: 20,
           },).message}`,
         );
       },
@@ -404,13 +404,16 @@ await describe({
                 ['Mittens',],
               ],
             ],),
-            writes: 19,
+            writes: 20,
           },).message}`,
         );
       },
     },),
     it({
-      name: 'STATES THE REFUSAL OF AN ARTIFACT THAT CARRIES THE LABEL OF THIS GENERATION AND NOT ITS BODY',
+      name: 'REFUSES A RESUME INTO A DIRECTORY OF GENERATION NINETEEN ARTIFACTS, which this pass no longer writes: it names them '
+        + 'and leaves them alone, since their naturalness verdicts were decided under the rule of 2026-09-09 and a resumed '
+        + 'directory would mix them with verdicts decided under the last-seat grace of twenty; the files stay readable by their '
+        + 'reader',
       fn: async () => {
         await using scratch = await scratchDir({ prefix: 'corpus-pass-guards-', },);
         await writeFile(
@@ -435,12 +438,52 @@ await describe({
           driftAllowed: false,
         },);
 
+        expect(refusal,).toBeInstanceOf(SchemaGenerationError,);
+        expect(String(refusal,),).toBe(
+          `SchemaGenerationError: ${new SchemaGenerationError({
+            foreign: new Map([
+              [
+                'schema version 19',
+                ['Mittens',],
+              ],
+            ],),
+            writes: 20,
+          },).message}`,
+        );
+      },
+    },),
+    it({
+      name: 'STATES THE REFUSAL OF AN ARTIFACT THAT CARRIES THE LABEL OF THIS GENERATION AND NOT ITS BODY',
+      fn: async () => {
+        await using scratch = await scratchDir({ prefix: 'corpus-pass-guards-', },);
+        await writeFile(
+          join(
+            scratch.path,
+            'Mittens.json',
+          ),
+          JSON.stringify({
+            artifactSchemaVersion: 20,
+            id: 'Mittens',
+            tip: FIXED_TIP,
+            pipelineDigest: RECORDED_DIGEST,
+          },),
+        );
+
+        /**
+         What the guards threw.
+         */
+        const refusal = await refusalOf({
+          artifactsDir: scratch.path,
+          pipelineDigest: RECORDED_DIGEST,
+          driftAllowed: false,
+        },);
+
         expect(refusal,).toBeInstanceOf(MislabelledArtifactError,);
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect(String(refusal,),).toBe(
           `MislabelledArtifactError: ${new MislabelledArtifactError({
             entryId: 'Mittens',
-            writes: 19,
+            writes: 20,
           },).message}`,
         );
       },

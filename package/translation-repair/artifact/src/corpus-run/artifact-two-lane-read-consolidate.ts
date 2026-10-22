@@ -145,6 +145,9 @@ function assertConsolidationCoversContest(
 
  @param quorumBasisRequired - whether review rounds retain their wider quorum
 
+ @param lastSeatGrace - whether review rounds were decided with the last-seat
+ grace of 2026-10-22 (generation twenty on)
+
  @param tenseRecorded - whether the generation records the tense candidates of the shipped wording
 
  @returns What the stage settled, that it did not run, or that this artifact
@@ -170,6 +173,7 @@ export function parseConsolidation(
     correctionChainRequired = false,
     everyBodyBlockReviewed = false,
     quorumBasisRequired = false,
+    lastSeatGrace = false,
     tenseRecorded = false,
   }: {
     readonly value: unknown;
@@ -181,6 +185,7 @@ export function parseConsolidation(
     readonly correctionChainRequired?: boolean;
     readonly everyBodyBlockReviewed?: boolean;
     readonly quorumBasisRequired?: boolean;
+    readonly lastSeatGrace?: boolean;
     readonly tenseRecorded?: boolean;
   },
 ): ParsedConsolidation {
@@ -244,6 +249,7 @@ export function parseConsolidation(
         correctionChainRequired,
         everyBodyBlockReviewed,
         quorumBasisRequired,
+        lastSeatGrace,
         tenseRecorded,
       },);
     },);

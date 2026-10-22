@@ -75,6 +75,11 @@ export type ReachableQuorum = {
 
  @param unreachable - seats the router refused for want of a wet provider
 
+ @param lastSeatGrace - whether a bench left with exactly its quorum closes
+ one voice below it, the rule since 2026-10-22; false reads a record written
+ under the rule of 2026-09-09, which waited on every live seat, as an
+ artifact of generation 19 or older was
+
  @returns Voices needed, the reachable count and bench quorum it was sized
  by, and whether the bench was short
 
@@ -88,9 +93,11 @@ export function reachableQuorum(
   {
     benchSize,
     unreachable,
+    lastSeatGrace = true,
   }: {
     readonly benchSize: number;
     readonly unreachable: number;
+    readonly lastSeatGrace?: boolean;
   },
 ): ReachableQuorum {
   /**
@@ -102,7 +109,7 @@ export function reachableQuorum(
    Voices the seated bench needs for a quorum.
    */
   const benchQuorum = rosterQuorumSize({ rosterSize: benchSize, },);
-  if (reachable === benchQuorum && benchQuorum > MIN_STAGE_VOICES) {
+  if (lastSeatGrace && (reachable === benchQuorum) && (benchQuorum > MIN_STAGE_VOICES)) {
     return {
       needed: benchQuorum - 1,
       reachable,

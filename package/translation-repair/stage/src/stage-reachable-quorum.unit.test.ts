@@ -59,6 +59,31 @@ await describe({
         },),
 
         it({
+          name: 'WAITS ON EVERY LIVE SEAT UNDER THE RULE OF 2026-09-09 when the last-seat grace is off, as a reader of '
+            + 'a record written before 2026-10-22 asks: seven seats with three dark need all four',
+          fn: async () => {
+            expect(reachableQuorum({
+              benchSize: 7,
+              unreachable: 3,
+              lastSeatGrace: false,
+            },),).toEqual({
+              needed: 4,
+              reachable: 4,
+              benchQuorum: 4,
+              short: false,
+            },);
+            expect(reachableQuorum({
+              benchSize: 11,
+              unreachable: 7,
+              lastSeatGrace: false,
+            },),).toEqual(reachableQuorum({
+              benchSize: 11,
+              unreachable: 7,
+            },),);
+          },
+        },),
+
+        it({
           name: 'KEEPS THE TWO-VOICE FLOOR where the reachable seats are exactly a bench quorum of two, so one judge '
             + 'alone never decides, and LEAVES a seated bench of one or two on its own quorum of one',
           fn: async () => {

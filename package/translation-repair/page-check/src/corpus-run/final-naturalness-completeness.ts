@@ -100,6 +100,8 @@ export function assertFinalNaturalnessComplete(
       correctionChainRequired: true,
       everyBodyBlockReviewed: true,
       quorumBasisRequired: true,
+      // The pass's own review rounds, decided under the rule it gathers by.
+      lastSeatGrace: true,
     },);
   }
 }
