@@ -40,7 +40,7 @@ The run before this one is read in
 
 ## XingZ6019
 
-- Launched at 18:54 UTC on 2026-10-22 on the frozen build above,
+- Launched at 18:54 UTC on 2026-10-22 on the frozen build `sha256-tree-v1:44ce3051...`,
   entry `XingZ60`.
 - Ended `DONE processed=0`,
   `artifacts=0/1` at 19:14:20 UTC,

@@ -4,7 +4,8 @@ What was read on 2026-10-22 of how each provider ran out during `XingZ6018` (ent
 how the router and the stage layer behaved after the dry signal,
 the third recheck of the Mercury first-content window,
 and the other seats.
-This is the first run of the rotation in which every provider went dry.
+In this run the every-provider-dry refusal printed,
+which it had not in the passes before it on this build.
 
 The log,
 the stages and the plan energy are in
