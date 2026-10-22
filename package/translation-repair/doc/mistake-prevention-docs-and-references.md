@@ -299,9 +299,15 @@ because a sweep that gates nothing is undone by the next paragraph.
 What enforces it:
 `markdown-lint-clean.unit.test.ts` in `source-scan` runs the linter over the package docs,
 the READMEs,
-the living repository-level docs and the package split plan,
+the living repository-level docs,
+the package split plan
+and the older repository-level docs whose names open with a stem of `OTHER_STEMS` in `living-docs.test-fixture.ts`,
 and fails on any finding;
 the archives that D27 keeps byte for byte are not read.
+A new family doc whose name opens with no listed stem is not read,
+so its stem is added to that list when the doc is written
+(`doc-line-limit.unit.test.ts` reads the same list),
+and a stem no doc opens fails the guard.
 The test finds the linter on the path that `mise` gives its tasks,
 so it runs under `mise run` and fails with the error of a missing program elsewhere.
 The linter is a `cargo:monochromatic-lint` tool the root `mise.toml` does not pin,

@@ -791,7 +791,10 @@ Fix:
   It runs `monochromatic-lint` from the repository root over the package docs and READMEs,
   the living repository-level docs of `readLivingRepositoryDocs`,
   and `doc/planning/translation-repair-package-split.md`,
-  which every package README links and no split audit pins.
+  which every package README links and no split audit pins
+  (and,
+  since the item on the older repository-level docs closed,
+  the docs `OTHER_STEMS` names).
   It reads the linter's JSON lines and fails on any finding,
   each named `path:line:column rule`.
   A run that exits other than 0 or 1 (a missing path,
@@ -825,10 +828,82 @@ the history,
 run-continuity and interface-candidate files)
 are not read,
 and the 2026-08-29 snapshot still carries its one finding.
-Repository-level docs outside the `translation-repair` name stems,
+
+The older repository-level docs
+(closed 2026-10-22 (UTC),
+the owner's veto open):
+the first fix left unread the repository-level docs whose names do not start with `translation-repair`,
 among them `doc/planning/the-third-rendering*.md`,
 `doc/handover/two-lane-outcome-vocabulary*.md` and `doc/planning/wire-the-heading-aligner.md`,
-which `doc-line-limit.unit.test.ts` counts as the family's through its `OTHER_STEMS`,
-fail the linter too and are not read by this guard:
-D27 names none of them,
-and whether they join the living set is the owner's decision.
+which `doc-line-limit.unit.test.ts` counted as the family's through its own list of name stems.
+D27 named none of them,
+and the entry left it to the owner whether they join the living set.
+The lead session decided that they do,
+since a rewrap by the linter's `--fix` changes neither their words nor their parsed tree,
+and the owner can veto the decision.
+
+The rule that picks them:
+
+- `OTHER_STEMS` in `living-docs.test-fixture.ts` lists name stems,
+  and a Markdown file directly under `doc/audit`,
+  `doc/decision`,
+  `doc/handover`,
+  `doc/planning`,
+  `doc/runbook` or `doc/troubleshooting` is the family's when its name starts with one of them.
+  A stem that is a whole doc name also takes the files that doc is split into.
+  `doc-line-limit.unit.test.ts` and `markdown-lint-clean.unit.test.ts` both read the list,
+  so the two guards cannot disagree about who the family's older docs are,
+  and a new file under a listed stem is linted and counted the day it is added.
+- A stem is listed when the doc it names is the family's by its name (the three stems the line limit already held)
+  or by its history and its text:
+  the doc was created under a family commit scope,
+  its subject is the pipeline's lanes,
+  stores,
+  critics or probes,
+  and it is a planning,
+  decision or handover record of the family.
+  A family doc whose name opens with no listed stem is not read until its stem is added.
+- A stem that no doc's name starts with fails the guard,
+  so a doc renamed away from its stem cannot leave the stem reading nothing.
+- The guard failed on the unrewrapped docs first:
+  5,510 distinct findings (5,511 linter records) in 34 of the 36 docs the list reads,
+  all `markdown/semantic-line-breaks`.
+
+What was done:
+
+- The 34 docs went through `--fix`:
+  1 audit doc (164 findings),
+  6 decision records (115),
+  8 handover files (1,953) and
+  19 planning docs (3,279).
+  The linter now reports nothing on all 36.
+  None holds a character outside the Basic Multilingual Plane,
+  so `--fix` was safe (D27).
+- Each of the 36 has the same whitespace-normalised words and the same parsed tree of Markdown nodes as before
+  (`~/temp/agent/tr-fan/w267-scratch/verify.ts`,
+  which compares the file against `a334a5f794`:
+  words with the `>` that opens a quoted line left out,
+  since a rewrapped quote gains one per new line,
+  and the tree with text values whitespace-normalised and code,
+  inline code and HTML compared exactly;
+  its controls show a split heading,
+  a loosened list,
+  a break inside a code span and
+  a break after an ordered-list marker each read as different).
+
+Still open,
+and not decided here:
+Markdown the same stems do not reach that fails the linter today.
+Twenty more `doc/audit` docs were created under family commit scopes
+(1,432 findings;
+for example `reading-a-picture-at-the-user-boundary.md` with 294,
+`where-a-round-spends-its-wall-clock.md` with 187
+and `the-critics-are-shown-the-wrong-paragraph.md` with 153).
+Three repository-policy docs the family wrote (`doc/planning/unused-import-lint-policy.md`,
+`doc/decision/corpus-deny-list-for-forbidden-strings.md` and
+`doc/decision/forbidden-strings-cannot-gate-corpus-text-by-shape.md`) carry 136 findings,
+and 14 troubleshooting docs written under family scopes carry 171,
+of which six hold only the Rust documentation rule on fenced Rust code,
+which a rewrap cannot clear.
+Whether any of them is the family's is the owner's decision;
+each joins the guard by one stem in `OTHER_STEMS` once it is a family doc and its findings are fixed.
