@@ -20,6 +20,7 @@ export {
   createClaudeClient,
   type ClaudeClient,
 } from './claude-client.ts';
+export { claudeCostOf, } from './claude-cost.ts';
 export {
   claudeStreamFactsOf,
   type ClaudeStreamFacts,

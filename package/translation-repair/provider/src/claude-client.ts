@@ -35,6 +35,9 @@ import {
   CLAUDE_VERSION_HEADER,
   claudeMessagesUrlFor,
 } from './claude-catalog.ts';
+import {
+  claudeCostOf,
+} from './claude-cost.ts';
 import { claudeIdFor, } from './claude-reach.ts';
 import { claudeStreamFactsOf, } from './claude-stream-facts.ts';
 import { RETRY_AFTER_HEADER, } from './retry-after-header.ts';
@@ -243,12 +246,13 @@ export function createClaudeClient(
     const card = cardFor({ modelId: request.modelId, },);
 
     /**
-     Model id the request carries.
+     What the call is named by in logs, on the exchange and on the SPEND line: the card, so the effort cards that
+     share a wire model stay apart in the record.
      */
-    const servedId = card.wireModel;
+    const label = card.id;
 
     return await limiterFor(request.modelId,)(async function performExchange() {
-      rl.debug(`-> ${servedId}: ${String(request.messages.length,)} ${
+      rl.debug(`-> ${label}: ${String(request.messages.length,)} ${
         wordForCount({
           count: request.messages.length,
           one: 'message',
@@ -279,7 +283,7 @@ export function createClaudeClient(
         : armCallDeadline({
           signal: request.signal,
           timeoutMs: request.exchangeTimeoutMs,
-          label: servedId,
+          label,
         },);
 
       /**
@@ -290,7 +294,7 @@ export function createClaudeClient(
         transport: guardedTransport,
         exchange: {
           url: claudeMessagesUrlFor({ baseUrl, },),
-          label: servedId,
+          label,
           method: 'POST',
           headers,
           bodyJson,
@@ -304,7 +308,7 @@ export function createClaudeClient(
         verify: wholeMessage,
       },);
       if (!isSuccessStatus({ status: reply.status, },)) {
-        rl.warn(`<- ${servedId}: HTTP ${String(reply.status,)}`,);
+        rl.warn(`<- ${label}: HTTP ${String(reply.status,)}`,);
 
         // BYTES RATHER THAN CHARACTERS: this corpus is Chinese.
         throw failureForReply({
@@ -328,6 +332,19 @@ export function createClaudeClient(
        */
       const facts = claudeStreamFactsOf({ bodyText: reply.bodyText, },);
 
+      /**
+       The cost and cache fields the SPEND line carries, each absent where the stream reported no usage to price.
+       */
+      const spendFields = (facts.usage === undefined)
+        ? {}
+        : {
+          costUsd: claudeCostOf({
+            prices: card.prices,
+            usage: facts.usage,
+          },),
+          cachedTokens: facts.usage.cacheRead,
+        };
+
       if (facts.refusal !== undefined) {
         /**
          Category the refusal named, in words for the log and the record.
@@ -338,15 +355,16 @@ export function createClaudeClient(
         // A REFUSAL IS A 200 AND NOT AN OUTAGE: the model's classifier declined this one call, so the seat has no
         // answer for it and the provider stays where its meter puts it. Whatever text streamed before a mid-stream
         // decline is incomplete and is dropped. The tokens it spent are billed and reported as any call's are.
-        rl.warn(`<- ${servedId}: refusal (${named}); the seat has no answer for this call`,);
+        rl.warn(`<- ${label}: refusal (${named}); the seat has no answer for this call`,);
         reportSpend({
           provider: 'anthropic',
-          label: servedId,
+          label,
           extracted,
+          ...spendFields,
         },);
         return {
           text: '',
-          refusal: `${servedId} refused the call (${named})`,
+          refusal: `${label} refused the call (${named})`,
           finishReason: 'refusal',
           ...((extracted.usage === undefined) ? {} : { usage: extracted.usage, }),
         };
@@ -356,7 +374,7 @@ export function createClaudeClient(
        Answer length for the completion log line.
        */
       const textLength = extracted.text.length;
-      rl.debug(`<- ${servedId}: ${String(textLength,)} ${
+      rl.debug(`<- ${label}: ${String(textLength,)} ${
         wordForCount({
           count: textLength,
           one: 'char',
@@ -365,8 +383,9 @@ export function createClaudeClient(
       }${formatUsageNote({ extracted, },)}`,);
       reportSpend({
         provider: 'anthropic',
-        label: servedId,
+        label,
         extracted,
+        ...spendFields,
       },);
       return extracted;
     },);
