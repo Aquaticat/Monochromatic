@@ -65,6 +65,9 @@ use std::{fs, sync::Arc, time::Duration};
 /// a test moves its held clock by this.
 const QUIET_PASSED: Duration = Duration::from_millis(250);
 
+/// Longer than the 200 ms quiet time, in real time.
+const STALL: Duration = Duration::from_millis(300);
+
 /// Characters per line of the numbered fixture:
 ///  `line NNN: value` and its terminator.
 const LINE: usize = 16;
@@ -429,31 +432,40 @@ fn shot_once(reader: &Reader) -> (SharedPixelBuffer<Rgba8Pixel>, RowMap, String)
     );
 }
 
+/// The tile and worker facts of the reader's window now.
+fn facts_of(reader: &Reader) -> String {
+    return Facts {
+        window: &reader.window,
+        source: &reader.source,
+    }
+    .to_string();
+}
+
 /// What:
 ///  `shot_once` plus a second frame of the same state, compared with the first.
 /// Why:
 ///  The rigid scroll takes hundreds of frames and keeps `shot_once`;
 ///  the comparisons with a few frames use this one.
 fn shot(reader: &Reader) -> (SharedPixelBuffer<Rgba8Pixel>, RowMap, String) {
+    let before = facts_of(reader);
     let first = frame(&reader.window);
     // A second frame of the same state tells a frame that is wrong from a state that is different:
     // when a comparison fails, the facts of both of its frames say whether each frame drew its state the same
-    // way twice.
+    // way twice, and whether the tile counters moved between the two frames.
     let again = frame(&reader.window);
+    let after = facts_of(reader);
     let repeatable = match difference(&first, &again) {
         Some(found) => format!("no, {found}"),
         None => "yes".to_string(),
     };
+    let mut moved_between = String::new();
+    if before != after {
+        moved_between = format!("; facts before the two frames {before}");
+    }
     return (
         first,
         map(reader),
-        format!(
-            "{} second frame of the same state equal: {repeatable}",
-            Facts {
-                window: &reader.window,
-                source: &reader.source,
-            }
-        ),
+        format!("{after} second frame of the same state equal: {repeatable}{moved_between}"),
     );
 }
 
@@ -921,9 +933,6 @@ fn a_reader_that_stalls_past_the_quiet_time_still_has_rows_wait() {
         }
     }
 }
-
-/// Longer than the 200 ms quiet time, in real time.
-const STALL: Duration = Duration::from_millis(300);
 
 /// After an external change the old rows are not painted,
 ///  but their space stays,
