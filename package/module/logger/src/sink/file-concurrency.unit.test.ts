@@ -26,6 +26,8 @@ await describe({
         /** Consumer-facing built sink must persist both small and multi-write records. */
         const sink = createFileSink({ directory: join(directory, 'node_modules/.monochromatic',), });
         expect(await sink.verify(),).toBe(true,);
+        /** Drain the retention sweep so the reader sees one settled artifact. */
+        await sink.flush();
         await sink.write({ level: 'info', timestamp: -1, message: 'ordinary record', },);
         /** Each payload crosses the filesystem helper's chunk boundary and includes JSON escapes. */
         const messages = ['a', 'b',].map(function largeMessage(marker,) {
@@ -36,14 +38,23 @@ await describe({
         },),);
         /** Read the persisted artifact rather than inspecting append calls. */
         const logDirectory = join(directory, 'node_modules/.monochromatic',);
-        const filenames = await readdir(logDirectory,);
+        /** The root holds one day directory plus the retention stamp; the log sits one level down. */
+        const entries = await readdir(logDirectory, { withFileTypes: true, },);
+        const nested = await Promise.all(entries.map(async function collect(entry,) {
+          if (!entry.isDirectory())
+            return entry.name.endsWith('.log.jsonl',) ? [entry.name,] : [];
+          const inner = await readdir(join(logDirectory, entry.name,),);
+          return inner.filter((name: string,) => name.endsWith('.log.jsonl',),)
+            .map((name: string,) => join(entry.name, name,),);
+        },),);
+        const filenames = nested.flat();
         expect(filenames,).toHaveLength(1,);
         const [filename,] = filenames;
         if (filename === undefined)
           throw new Error('The verified sink did not create its log file',);
         const persisted = await readFile(join(logDirectory, filename,), 'utf8',);
         const rows = persisted.trimEnd().split('\n',);
-        expect(rows,).toHaveLength(4,);
+        expect(rows,).toHaveLength(3,);
         /** Parsing errors report their location without including the full record. */
         const records = rows.map(function parseRecord(row, index,) {
           try {
@@ -53,12 +64,12 @@ await describe({
             throw new Error(`Malformed JSONL record at index ${index}`, { cause: error, },);
           }
         },);
-        expect(records.slice(1,).map(function recordTime(entry,) {
+        expect(records.map(function recordTime(entry,) {
           return entry.timestamp;
         },),)
           .toEqual([-1, 0, 1,],);
-        expect(records[2]?.message === messages[0],).toBe(true,);
-        expect(records[3]?.message === messages[1],).toBe(true,);
+        expect(records[1]?.message === messages[0],).toBe(true,);
+        expect(records[2]?.message === messages[1],).toBe(true,);
       },
     },),
   ],

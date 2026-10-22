@@ -1,4 +1,14 @@
-import { stat, } from 'node:fs/promises';
+import { existsSync, } from 'node:fs';
+import {
+  chmod,
+  mkdir,
+  mkdtemp,
+  readFile,
+  readdir,
+  rm,
+  stat,
+} from 'node:fs/promises';
+import { homedir, } from 'node:os';
 import {
   dirname,
   join,
@@ -14,12 +24,15 @@ import {
   _findNodeModulesUp as findNodeModulesUp,
   _NO_NODE_MODULES_FOUND as NO_NODE_MODULES_FOUND,
   createFileSink,
+  DEFAULT_LOG_MAX_BYTES,
+  DEFAULT_LOG_MAX_FILES,
+  NO_LOG_RETENTION_SWEEP,
 } from '@monochromatic-dev/module-logger/node';
 
 /**
  Mock `stat` that always throws an ENOENT-like error, so `findNodeModulesUp`
  walks the whole tree and exhausts without matching.
- 
+
  @returns Never; always throws.
  */
 function statAlwaysMissing(): never {
@@ -32,7 +45,7 @@ function statAlwaysMissing(): never {
 
 /**
  Mock `stat` that always throws an unexpected permission error.
- 
+
  @returns Never; always throws.
  */
 function statAlwaysDenied(): never {
@@ -45,9 +58,9 @@ function statAlwaysDenied(): never {
 
 /**
  Builds a LogRecord for write-path tests.
- 
+
  @param message - Message body.
- 
+
  @returns Record at a fixed timestamp.
  */
 function record({ message, }: { readonly message: string; },): LogRecord {
@@ -58,13 +71,113 @@ function record({ message, }: { readonly message: string; },): LogRecord {
   };
 }
 
+/**
+ Disposable sink destination under the agent scratch directory,
+ so no in-process sink ever probes or sweeps shared log state.
+
+ @returns Async-disposable destination root.
+ */
+async function scratchDestination() {
+  /**
+   Agent scratch root, made private before fixtures are created inside it.
+   */
+  const scratch = join(
+    homedir(),
+    'temp',
+    'agent',
+  );
+  await mkdir(
+    scratch,
+    {
+      recursive: true,
+      mode: 0o700,
+    },
+  );
+  await chmod(scratch, 0o700,);
+  const path = await mkdtemp(join(
+    scratch,
+    'logger-file-',),
+  );
+  return {
+    path,
+    async [Symbol.asyncDispose](): Promise<void> {
+      await rm(
+        path,
+        {
+          recursive: true,
+          force: true,
+        },
+      );
+    },
+  };
+}
+
+/**
+ Every entry name in a destination, one and two levels deep,
+ so stamps, probes, and day-directory logs all stay visible.
+
+ @param directory - Destination root to list.
+
+ @returns Sorted `name` and `day/name` entry names.
+ */
+async function entryNames(directory: string,): Promise<string[]> {
+  /**
+   Root entries of the destination, expanded one level into directories.
+   */
+  const entries = await readdir(
+    directory,
+    { withFileTypes: true, },
+  );
+  const names = await Promise.all(entries.map(async function listEntry(entry,) {
+    if (!entry.isDirectory())
+      return [entry.name,];
+    /**
+     Names directly inside one root directory.
+     */
+    const inner = await readdir(join(
+      directory,
+      entry.name,
+    ),);
+    return [
+      entry.name,
+      ...inner.map(function withParent(name: string,) {
+        return `${entry.name}/${name}`;
+      },),
+    ];
+  },),);
+  return names.flat()
+    .toSorted();
+}
+
+/**
+ Paths of the sink log files under a destination,
+ descending one level and skipping stamps and probe residue.
+
+ @param directory - Destination root to search.
+
+ @returns Absolute paths of every `*.log.jsonl` file.
+ */
+async function logFiles(directory: string,): Promise<string[]> {
+  return (await entryNames(directory,))
+    .filter(function isLog(name: string,) {
+      return name.endsWith('.log.jsonl',);
+    },)
+    .map(function toPath(name: string,) {
+      return join(
+        directory,
+        name,
+      );
+    },);
+}
+
 await describe({
   name: 'file sink',
   children: [
     it({
       name: 'exposes callable verify and write methods',
       fn: async () => {
-        const sink = createFileSink();
+        // The sentinel keeps even an accidental verify away from shared state.
+        const sink = createFileSink({ retention: NO_LOG_RETENTION_SWEEP, },);
         expect(typeof sink.verify,).toBe('function',);
         expect(typeof sink.write,).toBe('function',);
       },
@@ -73,8 +186,12 @@ await describe({
     it({
       name: 'verify resolves a boolean',
       fn: async () => {
-        const resolved = await createFileSink().verify();
-        expect(typeof resolved,).toBe('boolean',);
+        await using destination = await scratchDestination();
+        const sink = createFileSink({
+          directory: destination.path,
+          retention: NO_LOG_RETENTION_SWEEP,
+        },);
+        expect(typeof (await sink.verify()),).toBe('boolean',);
       },
     },),
 
@@ -82,9 +199,15 @@ await describe({
       name: 'verify reports availability when running in a package with ancestor node_modules',
       fn: async () => {
         // Tests run from within the monorepo, so an ancestor node_modules
-        // always exists. Availability proves find-up located it AND that
-        // mkdir/appendFile/readFile all succeeded.
-        expect(await createFileSink().verify(),).toBe(true,);
+        // always exists. `environment: {}` keeps the lookup on the real
+        // ancestor path even when the harness redirects
+        // MONOCHROMATIC_LOG_DIRECTORY. NO_LOG_RETENTION_SWEEP keeps that
+        // shared destination unswept, and a zero-record sink leaves zero
+        // files because the writability probe is always removed.
+        expect(await createFileSink({
+          environment: {},
+          retention: NO_LOG_RETENTION_SWEEP,
+        },).verify(),).toBe(true,);
       },
     },),
 
@@ -94,8 +217,16 @@ await describe({
         // Regression guard for the race that used to return false to late
         // callers. The memo now lives in the instance closure, not a module
         // global, so a fresh sink exercises it cleanly.
-        const sink = createFileSink();
-        const [a, b, c,] = await Promise.all([
+        await using destination = await scratchDestination();
+        const sink = createFileSink({
+          directory: destination.path,
+          retention: NO_LOG_RETENTION_SWEEP,
+        },);
+        const [
+          a,
+          b,
+          c,
+        ] = await Promise.all([
           sink.verify(),
           sink.verify(),
           sink.verify(),
@@ -164,19 +295,25 @@ await describe({
         // Verification resolves the log path; without it the path stays
         // unset, so write takes the unset-guard early return, resolving as a
         // silent no-op rather than throwing or writing.
-        const sink = createFileSink();
-        await expect(
-          sink.write(record({ message: 'before verify', },),),
-        )
-          .resolves
+        await using destination = await scratchDestination();
+        const sink = createFileSink({
+          directory: destination.path,
+          retention: NO_LOG_RETENTION_SWEEP,
+        },);
+        expect(await sink.write(record({ message: 'before verify', },),),)
           .toBeUndefined();
+        expect(await entryNames(destination.path,),).toEqual([],);
       },
     },),
 
     it({
-      name: 'a verified sink accepts records across levels and message shapes',
+      name: 'a verified sink accepts records across levels and message shapes in one log file',
       fn: async () => {
-        const sink = createFileSink();
+        await using destination = await scratchDestination();
+        const sink = createFileSink({
+          directory: destination.path,
+          retention: NO_LOG_RETENTION_SWEEP,
+        },);
         await sink.verify();
 
         const messages = [
@@ -189,6 +326,171 @@ await describe({
         for (const message of messages)
           // oxlint-disable-next-line no-await-in-loop -- sequential appends keep file order deterministic
           await sink.write(record({ message, },),);
+
+        // One process keeps one log file under its day directory.
+        const entries = await entryNames(destination.path,);
+        expect(entries,).toHaveLength(2,);
+        const [
+          dayName,
+          logEntry,
+        ] = entries;
+        expect(dayName ?? '',).toHaveLength(10,);
+        expect((logEntry ?? '').startsWith(`${dayName ?? ''}/${dayName ?? ''}T`,),).toBe(true,);
+        expect((logEntry ?? '').endsWith('.log.jsonl',),).toBe(true,);
+        const files = await logFiles(destination.path,);
+        expect(files,).toHaveLength(1,);
+        const [logPath,] = files;
+        if (logPath === undefined)
+          throw new Error('Verified file sink did not create its log file',);
+        const rows = (await readFile(
+          logPath,
+          'utf8',
+        )).trimEnd()
+          .split('\n',);
+        expect(rows.map(function parse(row: string,): unknown {
+          return JSON.parse(row,);
+        },),).toEqual(messages.map(function toRecord(message: string,) {
+          return record({ message, },);
+        },),);
+      },
+    },),
+
+    it({
+      name: 'creates no files at verification and one day-directory log with the first record',
+      fn: async () => {
+        await using destination = await scratchDestination();
+        const sink = createFileSink({
+          directory: destination.path,
+          retention: NO_LOG_RETENTION_SWEEP,
+        },);
+        expect(await sink.verify(),).toBe(true,);
+        // Verification proves writability through a probe round-trip that is
+        // always removed, so a zero-record process leaves zero files.
+        expect(await entryNames(destination.path,),).toEqual([],);
+        await sink.write(record({ message: 'first record', },),);
+        expect(await logFiles(destination.path,),).toHaveLength(1,);
+        expect((await entryNames(destination.path,)).filter(function probeResidue(name: string,) {
+          return name.endsWith('.probe.tmp',);
+        },),).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'sweeps at verification and leaves only the retention stamp when no record is written',
+      fn: async () => {
+        await using destination = await scratchDestination();
+        const sink = createFileSink({
+          directory: destination.path,
+          retention: {
+            maxAgeDays: 14,
+            maxBytes: DEFAULT_LOG_MAX_BYTES,
+            maxFiles: DEFAULT_LOG_MAX_FILES,
+          },
+        },);
+        expect(await sink.verify(),).toBe(true,);
+        await sink.flush();
+        expect(await entryNames(destination.path,),).toEqual(['.logger-retention-sweep',],);
+      },
+    },),
+
+    it({
+      name: 'leaves the destination untouched with NO_LOG_RETENTION_SWEEP',
+      fn: async () => {
+        await using destination = await scratchDestination();
+        const sink = createFileSink({
+          directory: destination.path,
+          retention: NO_LOG_RETENTION_SWEEP,
+        },);
+        expect(await sink.verify(),).toBe(true,);
+        await sink.flush();
+        expect(await entryNames(destination.path,),).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'MONOCHROMATIC_LOG_FILE=off disables verify and writes even with an explicit directory',
+      fn: async ({ sinon, },) => {
+        await using destination = await scratchDestination();
+        const directory = join(
+          destination.path,
+          'explicit',
+        );
+        const sink = createFileSink({
+          environment: { MONOCHROMATIC_LOG_FILE: 'off', },
+          directory,
+        },);
+        /** A record that cannot serialize proves writes stop before JSON. */
+        const cyclic: Record<string, unknown> = {
+          level: 'info',
+          timestamp: 0,
+          message: 'dropped',
+        };
+        cyclic.self = cyclic;
+        const warnings = sinon.stub(console, 'warn',);
+        expect(await sink.verify(),).toBe(false,);
+        expect(await sink.write(cyclic,),).toBeUndefined();
+        expect(warnings.called,).toBe(false,);
+        // The disabled sink never touches the filesystem, so the explicit
+        // destination is never even created.
+        expect((await entryNames(destination.path,)).includes('explicit',),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'reads the kill switch from the injectable environment object',
+      fn: async () => {
+        await using destination = await scratchDestination();
+        const sink = createFileSink({
+          environment: {
+            MONOCHROMATIC_LOG_FILE: 'off',
+            MONOCHROMATIC_LOG_DIRECTORY: destination.path,
+          },
+        },);
+        expect(await sink.verify(),).toBe(false,);
+        expect(await entryNames(destination.path,),).toEqual([],);
+      },
+    },),
+
+    it({
+      name: 'prefers the explicit directory parameter over the environment destination',
+      fn: async () => {
+        await using destination = await scratchDestination();
+        const explicit = join(
+          destination.path,
+          'explicit',
+        );
+        const configured = join(
+          destination.path,
+          'configured',
+        );
+        const sink = createFileSink({
+          environment: { MONOCHROMATIC_LOG_DIRECTORY: configured, },
+          directory: explicit,
+          retention: NO_LOG_RETENTION_SWEEP,
+        },);
+        expect(await sink.verify(),).toBe(true,);
+        await sink.write(record({ message: 'explicit wins', },),);
+        expect(await logFiles(explicit,),).toHaveLength(1,);
+        /** The environment destination is never even created. */
+        expect(existsSync(configured,),).toBe(false,);
+      },
+    },),
+
+    it({
+      name: 'uses MONOCHROMATIC_LOG_DIRECTORY when no directory parameter is given',
+      fn: async () => {
+        await using destination = await scratchDestination();
+        const configured = join(
+          destination.path,
+          'configured',
+        );
+        const sink = createFileSink({
+          environment: { MONOCHROMATIC_LOG_DIRECTORY: configured, },
+          retention: NO_LOG_RETENTION_SWEEP,
+        },);
+        expect(await sink.verify(),).toBe(true,);
+        await sink.write(record({ message: 'environment destination', },),);
+        expect(await logFiles(configured,),).toHaveLength(1,);
       },
     },),
   ],
