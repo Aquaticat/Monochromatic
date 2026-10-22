@@ -58,9 +58,9 @@ const KEEP_ALIVES = 80;
 const PROCESSING = ': OPENROUTER PROCESSING\n\n';
 
 /**
- Request init the stubbed fetch is handed, probed for its signal.
+ Request init the stubbed fetch is handed, which always carries the transport's dependent signal.
  */
-type CapturedInit = { readonly signal?: AbortSignal; };
+type CapturedInit = { readonly signal: AbortSignal; };
 
 /**
  Builds a response whose body sends {@link KEEP_ALIVES} comment lines one per
@@ -76,7 +76,7 @@ type CapturedInit = { readonly signal?: AbortSignal; };
  const response = keepAliveResponse({ signal, },);
  ```
  */
-function keepAliveResponse({ signal, }: { readonly signal: AbortSignal | undefined; },): Response {
+function keepAliveResponse({ signal, }: { readonly signal: AbortSignal; },): Response {
   /**
    Encoder, since a body carries bytes.
    */
@@ -84,7 +84,7 @@ function keepAliveResponse({ signal, }: { readonly signal: AbortSignal | undefin
   return new Response(
     new ReadableStream<Uint8Array>({
       async start(controller,): Promise<void> {
-        signal?.addEventListener(
+        signal.addEventListener(
           'abort',
           function tearDown() {
             controller.error(signal.reason,);
@@ -92,13 +92,13 @@ function keepAliveResponse({ signal, }: { readonly signal: AbortSignal | undefin
           { once: true, },
         );
         for (let sent = 0; sent < KEEP_ALIVES; sent += 1) {
-          if (signal?.aborted === true)
+          if (signal.aborted)
             return;
           controller.enqueue(encoder.encode(PROCESSING,),);
           // oxlint-disable-next-line no-await-in-loop -- the pause between two comment lines is the case
           await wait(GAP_MS,);
         }
-        if (signal?.aborted !== true) {
+        if (!signal.aborted) {
           controller.enqueue(encoder.encode(
             `data: ${JSON.stringify({ choices: [{ index: 0, delta: { content: 'meow', }, finish_reason: null, },], },)}\n\n`,
           ),);
@@ -110,18 +110,16 @@ function keepAliveResponse({ signal, }: { readonly signal: AbortSignal | undefin
 }
 
 /**
- Exchange of a chat call that names the given first-content window, or none.
-
- @param firstContentMs - window to name, absent to name none
+ Exchange of a chat call to the Mercury seat that names no first-content window.
 
  @returns Exchange for {@link fetchTransport}
 
  @example
  ```ts
- const exchange = exchangeNaming({ firstContentMs: undefined, },);
+ const exchange = { ...unwindowedExchange(), firstContentMs: 250, };
  ```
  */
-function exchangeNaming({ firstContentMs, }: { readonly firstContentMs: number | undefined; },): TransportExchange {
+function unwindowedExchange(): TransportExchange {
   return {
     url: 'https://example.org/cat-chat',
     label: 'inception/mercury-2.5',
@@ -130,8 +128,6 @@ function exchangeNaming({ firstContentMs, }: { readonly firstContentMs: number |
     headers: {},
     bodyJson: '{}',
     signal: new AbortController().signal,
-    // Conditional spread keeps the knob absent instead of undefined.
-    ...((firstContentMs === undefined) ? {} : { firstContentMs, }),
   };
 }
 
@@ -140,7 +136,8 @@ await describe({
   concurrency: 1,
   children: [
     it({
-      name: 'CUTS A COMMENT-ONLY STREAM AT THE WINDOW THE EXCHANGE NAMES, where the shared 180 s window would still be open',
+      name: 'CUTS A COMMENT-ONLY STREAM AT THE WINDOW THE EXCHANGE NAMES, where the shared 180 s window would still be open, '
+        + 'and KEEPS THE SHARED WINDOW FOR AN EXCHANGE THAT NAMES NONE, so the same stream is read whole',
       fn: async ctx => {
         ctx.sinon
           .stub(
@@ -149,13 +146,13 @@ await describe({
           )
           .callsFake(async function streamingFetch(_url, init,) {
             await Promise.resolve();
-            return keepAliveResponse({ signal: (init as CapturedInit | undefined)?.signal, },);
+            return keepAliveResponse({ signal: (init as CapturedInit).signal, },);
           },);
 
-        /** Value caught from the exchange. */
+        /** Value caught from the exchange that names the window. */
         let caught: unknown;
         try {
-          await fetchTransport(exchangeNaming({ firstContentMs: WINDOW_MS, },),);
+          await fetchTransport({ ...unwindowedExchange(), firstContentMs: WINDOW_MS, },);
         }
         catch (error) {
           caught = error;
@@ -165,23 +162,9 @@ await describe({
         expect(((caught as StreamCutShortError).cause as StreamStalledError).message,).toContain(
           `for ${String(WINDOW_MS,)}ms (first-content)`,
         );
-      },
-    },),
 
-    it({
-      name: 'KEEPS THE SHARED WINDOW FOR AN EXCHANGE THAT NAMES NONE, so the same stream is read whole',
-      fn: async ctx => {
-        ctx.sinon
-          .stub(
-            globalThis,
-            'fetch',
-          )
-          .callsFake(async function streamingFetch(_url, init,) {
-            await Promise.resolve();
-            return keepAliveResponse({ signal: (init as CapturedInit | undefined)?.signal, },);
-          },);
-
-        const reply = await fetchTransport(exchangeNaming({ firstContentMs: undefined, },),);
+        // The same stream under an exchange that names no window is read whole.
+        const reply = await fetchTransport(unwindowedExchange(),);
         expect(reply.status,).toBe(200,);
         expect(reply.bodyText,).toContain('meow',);
       },

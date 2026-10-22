@@ -895,6 +895,8 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
   },
   'provider-stream/stream-overrun.unit.test.ts#<module>: firstByteMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
   'provider-stream/stream-overrun.unit.test.ts#<module>: firstContentMs: 40': { count: 1, bound: 'read back', reason: RECORD_FIELD, },
+  'provider-stream/transport-first-content-window.unit.test.ts#<module>: firstContentMs: WINDOW_MS': { count: 1, bound: 'reached', reason: STREAM_WINDOW_REACHED, },
+  'provider-stream/transport-first-content-window.unit.test.ts#keepAliveResponse: wait of module-async-time GAP_MS': { count: 1, bound: 'other', reason: CHUNK_PACING, },
   'provider/synthetic-client.unit.test.ts#<module>: exchangeTimeoutMs: 50': {
     count: 1,
     bound: 'reached',

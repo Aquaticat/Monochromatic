@@ -33,7 +33,10 @@ import { createOpenRouterClient, } from '../dist/final/node/index.mjs';
 import { STREAM_FIRST_CONTENT_MS, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { MODEL_CARDS, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { TransportExchange, } from '@monochromatic-dev/translation-repair-provider-stream';
-import { settled, } from './recording-transport.test-fixture.ts';
+import {
+  keepingTransport,
+  settled,
+} from './recording-transport.test-fixture.ts';
 import {
   SEAT_OPENROUTER_ONLY,
   SEAT_OPENROUTER_ONLY_CHECKER,
@@ -77,11 +80,7 @@ async function exchangeFor(
    */
   const client = createOpenRouterClient({
     apiKey: 'whiskers',
-    transport: async function keep(exchange,): Promise<never> {
-      seen.push(exchange,);
-      await Promise.resolve();
-      throw new Error('recorded, not sent',);
-    },
+    transport: keepingTransport({ seen, },),
     retryPolicy: { limit: 0, baseMs: 1, },
   },);
   await settled(client.chatText({
@@ -118,7 +117,8 @@ await describe({
 
     it({
       name: 'KEEPS THE MERCURY WINDOW HALF AGAIN OVER THE LONGEST STREAM THAT DELIVERED TEXT, AND UNDER THE SHARED WINDOW',
-      fn: () => {
+      fn: async () => {
+        await Promise.resolve();
         const window = MODEL_CARDS[SEAT_OPENROUTER_ONLY].openrouter?.firstContentMs;
         expect(window,).toBeDefined();
         expect(window as number,).toBeGreaterThanOrEqual(LONGEST_MERCURY_TEXT_STREAM_MS * 1.5,);
