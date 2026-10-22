@@ -462,7 +462,9 @@ and nothing is painted by such a test.
 The container arguments for the render nodes moved to `bin/gpu-arguments.ts`,
 read by `mise.toml` and by the eleven guard inspection scripts
 (`bin/inspect-*-guards.mjs`,
-`inspect-watch-scope.mjs` (now `inspect-watch-scope.ts`, renamed 2026-10-22),
+`inspect-watch-scope.mjs`
+(now `inspect-watch-scope.ts`,
+renamed 2026-10-22),
 `inspect-refresh-latency.mjs`)
 that start their own containers around native tests.
 Those scripts lost `SLINT_BACKEND=headless`,
@@ -667,7 +669,10 @@ and why:
 - The opt-in inspection builds that pass `--features slint/mcp` (`mcp`,
   `inspect:native`,
   `bin/inspect-idle-cost.mjs`,
-  `bin/inspect-log-stall.mjs`; both now `.ts`, renamed 2026-10-22) link the software renderer again,
+  `bin/inspect-log-stall.mjs`;
+  both now `.ts`,
+  renamed 2026-10-22)
+  link the software renderer again,
   because Slint's MCP server takes its screenshots with it and the selector feature `mcp` turns it on.
   `mise run mcp` also defaults to `SLINT_BACKEND=headless`,
   which draws the application on the CPU in that run.

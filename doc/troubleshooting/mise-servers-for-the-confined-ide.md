@@ -68,7 +68,9 @@ Measured with `hyperfine` (15 runs, 2 warmups), host load average about 60 to 80
   `inspect:language-mise` (179, 479, 545, 639), and 415 ms in the headless window run.
 
 `inspect:language-mise` (`package/desktop-app/ide/bin/inspect-language-mise.mjs`,
-now `inspect-language-mise.ts`, renamed 2026-10-22) passed 43 of 43 checks
+now `inspect-language-mise.ts`,
+renamed 2026-10-22)
+passed 43 of 43 checks
 with the launcher's `PATH`:
 `bash-language-server` answered a hover (`Function: **greet**`),
 `taplo` and `marksman` started, and `marksman` answered a hover on a wiki link;
