@@ -873,8 +873,7 @@ and restart the rotation at `zheermao23`.
 K4 is done in `tr-w264`
 (ledger B803,
 open to the owner's veto,
-head `484f1d205b`,
-gate g149 running):
+landed `f829fc31b6` after gate g149 passed with 2,734 tests and no failure):
 the composite now reads each revision by a line diff and composes hunks that do not collide.
 Replayed over the `zheermao22` artifact,
 none of the three refused attempts builds under it either,
@@ -933,3 +932,38 @@ from `package/dsh-plugin`)
 is another session's and stays out of these commits.
 Whether oxlint 1.89.0 also breaks lint in packages outside translation-repair is unmeasured;
 those packages are other owners'.
+
+State after K4 landed:
+- `tr-w266` merged main cleanly at `9a69585ed1`;
+  gate g150 runs on it,
+  and it lands when green.
+- The `CuspariaKLSY22` read is filed:
+  landed `f2d0885976`
+  (the gemma-lift restart planning files for `cuspariaklsy22`,
+  the pass log index and the readiness signal).
+- The third round is in `tr-w265`.
+  Bedrock off (B760),
+  silent abandons counted against the seat (B761)
+  and `METERS` agreeing with `JUDGE SEATS` (B763)
+  are fixed there with their tests green.
+  Hyper's key order (B762) has its scan written red:
+  sixteen answer schemas declare their properties out of alphabetical order.
+  Decided,
+  open to the owner's veto:
+  rename or reorder so that every schema's declared order is its alphabetical order,
+  keeping the ruling "Reason first everywhere" and the exceptions B732 recorded,
+  instead of a keyed probe of where Hyper sorts,
+  because that order holds on every provider whatever the probe would show.
+  An agent does the rename in `tr-w265` after merging main;
+  then gate it and land.
+- `tr-w263`
+  (K1,
+  K2,
+  K3 and the run-off wording)
+  is still being worked;
+  gate and land it after `tr-w265` or before,
+  whichever is ready first,
+  one gate at a time.
+- `google.gemma-4-e2b` is served only by Bedrock,
+  so with Bedrock off it stays an unserved seat under the 2026-09-09 short-bench rule;
+  open to the owner's veto.

@@ -2,8 +2,7 @@
 
 What was read on 2026-10-21 of the first passes of the rotation after it restarted a second time,
 on the build that lifted the Gemma picture readers.
-One entry settled and its read is filed,
-one settled and its read is running,
+Two entries settled and their reads are filed,
 and one is running.
 Entries:
 zheermao22,
@@ -40,8 +39,23 @@ so that no file passes the repository's limit of 1,000 lines:
   the recurrence of earlier findings,
   the comparison with `zheermao21`).
 - `CuspariaKLSY22`:
-  settled;
-  its read against the source is running and has no file here yet.
+  [the run](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-cuspariaklsy22-run.md)
+  (log,
+  the new rulings and whether they fired,
+  what became of the findings of the `CuspariaKLSY21` read,
+  the classes named,
+  the open items,
+  what is decided and not yet landed),
+  [the providers](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-cuspariaklsy22-providers.md)
+  (NeuralWatt meter and plan energy,
+  seats,
+  the stalled `inception/mercury-2.5` seat,
+  quorums)
+  and [the page](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-cuspariaklsy22-page.md)
+  (the shipped page line by line,
+  the comparison with `CuspariaKLSY21`,
+  what became of the page findings of that read,
+  the departures classified).
 - `XingZ6017`:
   running;
   it has no file here yet.
@@ -100,7 +114,12 @@ so that no file passes the repository's limit of 1,000 lines:
   `repairChanged=4`,
   `alignmentFindings=1`) after 2355731 ms (39.3 min),
   as the handover records.
-  Its read is running.
+  The page is mixed:
+  slices 0 to 2 are better than those of `CuspariaKLSY21` and slice 3 is worse.
+  The read names two classes by mechanism
+  (the alphabetical key order of Hyper replies,
+  and the full-grace wait on a seat whose stream is dead)
+  and one open item for the owner (the plan energy).
 - `XingZ6017` (entry `XingZ60`):
   running.
   It is the first `XingZ60` run since the Gemma readers were lifted;
@@ -149,6 +168,55 @@ From the `zheermao22` read:
   an overlap,
   34 against 36 lines).
 
+## What the second settled run shows about the build
+
+From the `CuspariaKLSY22` read
+(23:41 UTC on 2026-10-21;
+[the run](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-cuspariaklsy22-run.md),
+[the providers](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-cuspariaklsy22-providers.md) and
+[the page](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-cuspariaklsy22-page.md)):
+
+- The run took 39.3 min and SETTLED,
+  3.3 times the 11.8 min of `CuspariaKLSY21`.
+  Three things changed at once (the build,
+  Hyper turning wet,
+  and a stalled `inception/mercury-2.5`),
+  so the read credits nothing to the build unless a line of code or a log line ties it there.
+- The page is mixed:
+  slices 0 to 2 are better than those of `CuspariaKLSY21` and slice 3 is worse.
+  Five of the twelve wording choices the read of `CuspariaKLSY21` marked are gone,
+  two changed form and five recur.
+- No new ruling was shown to act.
+  No polish gate tied.
+  The accepted-claims note cannot be seen in any stored record.
+  One consolidation tie (slice 2) left no slate in the artifact to say whether a run-off was owed.
+- Hyper returned its keys in alphabetical order:
+  102 of 103 stored Hyper replies that carry a vote put the vote before the reason,
+  against 44 of 44 from NeuralWatt and OpenRouter with the reason first.
+  This confirms the `zheermao22` finding on a second entry.
+- 33 of 69 `inception/mercury-2.5` streams were abandoned with no content after 120 s of grace.
+  Rounds with 100 s or more of grace rose from 0 to 33,
+  and the repair lane took 21.4 min against 3.2.
+  The seat tally never counts an abandoned call against its seat,
+  so every round waited the seat out.
+- The run asked Bedrock once and got HTTP 401,
+  although the owner ruled to leave Bedrock off,
+  and then held it out.
+  Every `METERS` line read `bedrock=wet` while the `JUDGE SEATS` lines read `bedrock=dry` from the second line on.
+- The NeuralWatt plan figure rose 37.3 Wh over the run
+  (the first nonzero figure of this entry's series)
+  against 21.11 Wh of the run's own settled calls.
+  The other 16.2 Wh cannot be attributed from the log and is unverified;
+  the owner's dashboard for the window,
+  by model,
+  is the only way to settle it,
+  since the owner also uses the models of that key elsewhere.
+- Not exercised:
+  the Gemma picture lift,
+  the KaTeX shim,
+  the archive block review,
+  and the NeuralWatt retry spacing.
+
 ## Where the read agrees and differs with the handover
 
 [The handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20.md#next) states the outcome and the classes of `zheermao22` in short.
@@ -181,7 +249,7 @@ Differences found:
 
 ## What is not yet known
 
-- The reads of `CuspariaKLSY22` and `XingZ6017` are not filed.
+- The read of `XingZ6017` is not filed.
 - U1:
   why Hyper returns tool input with its keys in alphabetical order,
   so that the reason-before-vote ruling cannot be confirmed on Hyper without a keyed probe.
@@ -207,8 +275,15 @@ From [the handover](../handover/translation-repair-handover-2026-09-06-neuralwat
   then the branch worktree is rebuilt once no pass runs there,
   its digest taken and its rotation sweep run,
   and the rotation restarts at `zheermao23`.
+- From the `CuspariaKLSY22` read a further round of fixes is decided and not yet landed;
+  none of it is in the build:
+  Bedrock is to be off by configuration so that no run asks it,
+  the `METERS` and `JUDGE SEATS` readings of a held provider are to be made to agree,
+  a seat whose streams keep ending with no content is to be counted against that seat,
+  and Hyper's key order is to be handled.
+  The round is to be gated and landed after K1 to K4.
 - Meanwhile the rotation continues on `2a336603bf` for evidence:
-  the read of `CuspariaKLSY22` is to be finished,
+  the read of `CuspariaKLSY22` is filed,
   `XingZ6017` is read when it ends,
   and then the rotation continues with `yingying`,
   `hulicaijia`,

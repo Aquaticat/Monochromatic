@@ -358,7 +358,22 @@ this section is the readiness reading of it.
   the composite refuses line-count changes).
   The fixes are in progress,
   and the rotation restarts at `zheermao23` on the build that lands them.
-  `CuspariaKLSY22` SETTLED (read running) and `XingZ6017` is running.
+  `CuspariaKLSY22` SETTLED in 39.3 min with a mixed page
+  (slices 0 to 2 better than `CuspariaKLSY21`'s,
+  slice 3 worse),
+  and no new ruling was shown to act.
+  The run asked Bedrock once and got HTTP 401 although the owner ruled to leave it off,
+  its `METERS` line read `bedrock=wet` while `JUDGE SEATS` read `bedrock=dry`,
+  33 `inception/mercury-2.5` streams were abandoned with no content,
+  and Hyper returned its keys in alphabetical order on 102 of 103 vote replies.
+  NeuralWatt's plan meter rose 37.3 Wh against 21.11 Wh of the run's own calls;
+  the rest is unverified without the owner's dashboard.
+  A round of fixes for these is decided and not yet landed
+  (Bedrock off by configuration,
+  `METERS` and `JUDGE SEATS` made to agree,
+  no-content abandons counted against the seat,
+  Hyper key-order handling).
+  `XingZ6017` is running.
 - The entries never run on a recent build are the rest of the 92-entry corpus.
   The owner's rule stands:
   "We never ever need a all 92 entries launch";
