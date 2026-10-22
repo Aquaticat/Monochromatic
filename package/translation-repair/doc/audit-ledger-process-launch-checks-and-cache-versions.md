@@ -512,7 +512,7 @@ and nothing in the landing steps ran it.
 
 Prevention:
 `mistake-prevention-tasks-builds-and-bulk-output.md`,
-"Tasks, builds and bulk output":
+in its one section:
 a change that adds,
 removes or renames a workspace package runs `mise run file-enforcer` in its worktree before it lands
 and commits what that run writes to files derived from the workspace,
