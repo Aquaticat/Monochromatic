@@ -1112,7 +1112,18 @@ fn fifty_thousand_lines_give_a_bounded_picture_without_blocking_the_window() {
         stats.lines,
         stats.units
     );
-    assert_eq!(stats.shaped, stats.lines, "a cold build shapes its lines");
+    // What: Every line of the last picture was shaped by its build or taken from the row cache.
+    // Why: The window thread applies every picture the worker has finished in one poll, so a loaded host hands this
+    //      test the third picture of the open (a new highlighting reply or a settled extent asks for another
+    //      build), whose lines an earlier build, applied or dropped, left in the cache. Whether a cold build
+    //      shapes every line is not visible here; `tests/minimap_scene.rs` asserts it on a build with an empty
+    //      cache.
+    assert_eq!(
+        stats.shaped + stats.reused,
+        stats.lines,
+        "every line of the picture is shaped or reused; pictures applied {}, last build {stats:?}",
+        opened.source.borrow().minimap.images_set
+    );
     assert_eq!(stats.skipped, 0, "no line was left out");
     assert_eq!(OFF_WORKER_BUILDS.load(Ordering::SeqCst), 0);
     window.hide().expect("close minimap window");

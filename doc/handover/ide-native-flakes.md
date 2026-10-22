@@ -1,7 +1,11 @@
-# Native suite flakes: state after the second flake session
+# Native suite flakes: state after the third flake session
 
-The branch is `worktree-agent-a5d7faec36a652c16`,
-package `package/desktop-app/ide`.
+The section "Third session" below is the third session (branch `worktree-agent-a4671ba160cf3feec`,
+2026-10-22);
+the sections after it are the second session (branch `worktree-agent-a5d7faec36a652c16`),
+kept as they were
+where the third session did not change them.
+Package `package/desktop-app/ide`.
 No test runs under retries,
 and `.config/nextest.toml` of the package is unchanged.
 The owner rule of 2026-10-20 (recorded in `doc/handover/slint-ide-0x.md`) holds:
@@ -9,6 +13,298 @@ The owner rule of 2026-10-20 (recorded in `doc/handover/slint-ide-0x.md`) holds:
 and a retry override needs a report that lists every alternative tried or ruled out with evidence.
 No test met that bar,
 so there is no override.
+
+## Third session (2026-10-22): conditions and results
+
+### Conditions
+
+Every count below was taken with the permitted tool under the load the host had:
+the host's load average peaked at 8 to 56 across runs (the tool samples it),
+video memory sat at 6.0 to 7.98 of 7.98 GiB in every run,
+and my own real jobs ran beside the hunts (`test:native`,
+`test`,
+`build`,
+a 21-thread subset run).
+No synthetic load was started.
+Contention was raised only by the tool's own parameters:
+up to 8 copies with 4 test threads each,
+32 test processes sharing the 2 CPUs.
+The build container used 8 CPUs (`IDE_CONTAINER_CPUS=8`) for the tool's build.
+
+A filtered `test:native` (the gate form `'all()'` included) runs one test at a time:
+the sum of the 283 test durations of the gate run is 198.5 s and its wall time 198.6 s (mean concurrency 1.0);
+nextest's own help says so:
+"--no-capture:
+Run tests serially and do not capture output".
+Only an unfiltered run uses the thread count of the bound.
+
+### Fixed in this session
+
+#### Task `test:native:stress` prepared nothing
+
+On a fresh worktree the task failed at its first build (`build.rs`:
+`target/debug/runtime/manifest.json` cannot be read),
+because `test:native` depends on `runtime` and `notices` and the stress task did not.
+It depends on both now (`package/desktop-app/ide/mise.toml`).
+
+#### The picture test of fifty thousand lines (`minimap_tests::fifty_thousand_lines_give_a_bounded_picture_without_blocking_the_window`)
+
+New flake,
+found by a 21-thread subset run in the tool (1 failure in 127 tests),
+then reproduced at will.
+Cause:
+the window thread applies every finished picture in one poll,
+so a loaded host hands the test the third picture of the open as the first one it sees.
+Each open asks for several builds (the first width,
+a highlighting reply,
+a settled extent);
+a later build finds its lines in the worker's row cache and shapes none,
+and the test read that build's statistics as the cold build's
+("a cold build shapes its lines",
+left 0,
+right 97,
+"pictures applied 3,
+lines shaped by all of them 291").
+The running total of applied pictures cannot stand in for the cold build either,
+because a dropped picture also fills the cache (3 applied,
+65 shaped by them,
+97 reused by the last).
+Fix:
+the test asserts what the last picture can show (every line shaped or reused,
+none skipped);
+a cold build shaping every line stays asserted on an empty cache in `tests/minimap_scene.rs`.
+Counts under the same conditions (tool,
+8 copies x 50 iterations,
+1 thread each,
+2 CPUs):
+before 317 of 400 failed,
+after the first version of the fix 1 of 400 failed (the cumulative check above),
+after the final version 0 of 400.
+
+### Open item 1: the annotation stability tests
+
+Not reproduced;
+the cause is not found;
+they stay open and instrumented,
+and are not retried.
+Counts of this session
+(rows_arriving_in_view = `rows_arriving_in_view_move_only_lines_beneath_them`,
+rigid = `scrolling_across_annotated_lines_is_rigid`),
+all with 0 failures:
+
+- 6 copies x 60 iterations,
+  2 threads each,
+  load average peak 56.1,
+  video memory 7.98 of 7.98:
+  360 runs each of rows_arriving_in_view,
+  `rows_arriving_above_the_view_move_no_visible_pixel`,
+  `a_reload_holds_row_space_until_annotations_return`,
+  `rows_above_the_view_wait_until_scrolling_has_stopped` and `the_noise_tolerance_tells_a_shifted_row_from_a_re_render`.
+- 4 copies x 8 iterations,
+  2 threads each,
+  beside my gate runs,
+  build and test runs,
+  load average peak 18.7:
+  32 runs each of all six tests of the file including rigid,
+  and two disposable probes in the same process model:
+  32 runs of 150 inject-and-remove cycles (9,600 pairs of window frames,
+  134,400 line comparisons)
+  and 32 runs of six passes of 300 one-row scroll steps of the rigid test (57,600 steps).
+- 8 copies x 40 iterations,
+  4 threads each (32 test processes on 2 CPUs),
+  load average peak 34.7:
+  320 runs each of the five tests above and of the new stall guard (1,920 runs).
+- 6 copies x 10 iterations,
+  3 threads each:
+  60 runs of rigid.
+
+This session ran rows_arriving_in_view 737 times and rigid 92 times;
+with the 1,310 runs of the two in the earlier sessions that is no failure in about 2,100 runs of the two.
+No frame was kept,
+because no comparison failed.
+
+What the records of the one failure say (`~/temp/agent/stress-lV2AMP`,
+banned heavy-load tool,
+8 copies x 60 iterations):
+
+- The failures came in a burst,
+  not at random.
+  `copy-7.log` has rigid (iteration 57 of 60,
+  8.3 s) and rows_arriving_in_view (iteration 57,
+  9.0 s) 0.7 s apart;
+  `copy-2.log` has rigid at iteration 56;
+  `copy-4.log` has `wrap_tests::opening_fifty_thousand_lines_never_blocks_the_window_thread` failing at iteration 55
+  in `fs::write` of its fixture with `StorageFull` ("No space left on device").
+  The container's `/tmp` is an overlay on the host disk (checked:
+  1.9 T,
+  `df` in a container),
+  so the host disk was full at that time for every process that wrote to it.
+  Whether the full disk touched pixels is unknown.
+- The rows_arriving_in_view message names line 1,
+  row 8,
+  and 4 of 696 texels that differ by up to 104 levels,
+  the first at compared index 1 (146 against 250).
+  `letter_room(1)` starts the compared part at the left edge of the one digit of line 1's number,
+  so index 1 is the digit's second column,
+  and a one-pixel shift of that digit's stem explains four texels in a row.
+  The digit is drawn by the toolkit's FemtoVG renderer (a `Text` with `opacity: 0.6` in `ui/app.slint`,
+  glyphs from `femtovg-0.27.0` `text.rs`,
+  placed at `glyph.x.trunc()` with a sub-pixel bin of `glyph.x.fract()` in
+  tenths),
+  not by the Vello tile.
+  A sub-pixel bin that flips for a tiny difference in x would produce exactly this,
+  and it is not shown;
+  the rigid failure of the same burst (45 non-contiguous rows,
+  largest difference 135 levels) is also a glyph-sized
+  difference.
+- Both frames of that failure were not kept (the frame keeping was added afterwards),
+  so the hypothesis cannot be tested.
+
+What is now in the tests for the next failure:
+
+- Every comparison that fails keeps both frames in `target/flake-frames/` (as before).
+- `shot()` takes a second frame of the same state and the facts of a failed comparison say whether it was equal to
+  the first (`second frame of the same state equal: yes` or the first differing pixel),
+  and,
+  when the tile counters moved between the two frames,
+  the counters before them.
+  A frame that is not repeatable is a renderer glitch;
+  a repeatable frame that differs from the other moment is a state difference.
+- Next step on a failure:
+  open `target/flake-frames/*-first.ppm` and `-second.ppm`,
+  find the texels,
+  and compare with the repeatability fact.
+
+### Open item 2: the two incomplete entries
+
+#### The scroll quiet-time test
+
+Complete.
+Cause:
+the scrolling rule asked the real clock whether 200 ms had passed since the last scroll step,
+so a host that did not run the window thread for that long showed rows early
+(commit `3bcdc17603`,
+2026-10-12,
+made the clock one a test can hold).
+Evidence now:
+the new test `a_reader_that_stalls_past_the_quiet_time_still_has_rows_wait` holds the clock,
+scrolls,
+sleeps 300 ms of real time (the stand-in for the stalled host),
+and requires the rows to wait.
+Guard proof:
+with `quiet_now` in `src/native/rows/quiet.rs` made to ignore the held clock (disposable edit,
+restored),
+the guard failed 20 of 20;
+the same body written against the real clock (a disposable copy) failed 10 of 10 with
+"rows above the view moved the offset while the reader was scrolling" (2433 against 2407);
+with the clock held the guard passed 10 of 10,
+then 320 of 320 and 32 of 32 under the load above.
+The original test itself passed 20 of 20 with the clock ignored,
+and a copy of it with the real clock and no stall passed 600 of 600 under the tool,
+so the natural failure is not reproducible with the tool and the stall is the control.
+`rows_above_the_view_wait_until_scrolling_has_stopped` after the fix:
+600 of 600,
+360 of 360,
+32 of 32,
+320 of 320,
+60 of 60.
+
+#### `the_view_follows_the_caret_through_every_visual_row`
+
+Cause (inferred,
+not reproduced):
+`measured()` in `wrap_tests.rs` said the measurement had finished while a newer pass was still running.
+`TileWorker::take_pass` closed the pass on the finishing output of a replaced pass
+(commit `0e390da7ca`,
+2026-10-19,
+found through `wrap_clip_tests`);
+the caret test counts the rows of the map right after `settled`,
+and the recorded failure (162 rows counted,
+121 in the map after the Down presses) is rows counted before the
+newer pass shrank the map.
+The failures were recorded on the minimap branch (before 2026-10-15) and on `main`;
+no later failure of this test is recorded.
+Evidence:
+
+- The guard of that fix,
+  `tile_build::pass_tests::the_finish_of_a_replaced_pass_leaves_the_newer_pass_open`,
+  failed 20 of 20 with the fix reverted (disposable edit,
+  restored) and passes with it.
+- With the fix reverted and the highlighting-reply wait of `reader()` disabled (both disposable),
+  the caret test still passed 600 of 600 and the known wrap clip test `revealing_a_late_row_of_an_unmeasured_last_line...`
+  600 of 600 under the tool (it failed about 1 in 100 at one CPU when it was found).
+  The tool does not reproduce the natural failure of either,
+  so the link between this test and the fix rests on the mechanism and on the dates,
+  not on a count.
+- A before count at the old commit is impossible:
+  `2255008ede` runs on the winit backend,
+  which needs a display (`Error initializing winit event loop`),
+  and the GPU snapshot harness replaced it.
+- After:
+  600 of 600 (6 copies x 100,
+  load average peak 40.4),
+  600 of 600 (the reverted arm),
+  60 of 60
+  (6 copies x 10 with 3 threads each),
+  10 of 10 beside the guard runs.
+- The test now names the rows counted,
+  the wrap width and the viewport width at that moment,
+  the rows in the map
+  after the Down presses,
+  and the facts of both moments if its last assertion fails.
+
+An undiagnosed recurrence stays open:
+this entry is "fixed by inference".
+
+### Open item 3: video memory
+
+Measured,
+no change made.
+Method:
+a sampler (a short read-only Node script of the session,
+not kept,
+a loop over `/proc` with the fdinfo and sysfs reads named here,
+2 s interval,
+2,765 s,
+1,374 samples)
+read the video memory (`drm-memory-vram`) and the system memory mapped for the card (`drm-memory-gtt`) of every
+test process from `/proc/<pid>/fdinfo`,
+and the card's counters from sysfs,
+while the runs above went on.
+Results:
+
+- One test process holds 0.28 GiB typically and 0.52 GiB at most.
+- 21 test processes at once (the tool with 21 threads,
+  a 127-test subset):
+  2.37 GiB in all.
+  32 at once (8 copies x 4 threads):
+  3.42 GiB.
+  All test processes of all sessions at the busiest moment (32 of them):
+  3.62 GiB.
+- The card sat at 98 percent or more in 156 of 1,374 samples,
+  with other programs (desktop,
+  browsers,
+  other sessions) holding up to 7.39 GiB of it.
+  So the card is full without the tests,
+  and halving their parallelism would free well under a third of it.
+- The card spilled into system memory (card GTT peak 12.66 GiB,
+  of which the tests 4.63 GiB),
+  and no test failed or slowed in the way a lack of video memory would show:
+  every failure of this session has another cause (the picture test above,
+  stall control,
+  guard proofs).
+- The full-run comparison (default threads against a cap) was not made,
+  because it needs a second full run of one snapshot.
+  The subset runs above stand in for it:
+  the 21-thread subset (127 tests,
+  126 passed,
+  the one failure being the picture test above,
+  reproduced at 8 processes) and
+  the 32-process hunts passed at a card as full as the full runs.
+- Whether the textures could be freed or shared was not examined further:
+  nothing shows that video memory matters,
+  and the smallest correct change is none.
+  `IDE_CONTAINER_TEST_THREADS` stays the override if a failure is ever attributed to video memory.
 
 ## The stress tool
 
@@ -216,6 +512,11 @@ unproven.
 
 ## Test thread count against video memory
 
+The third session measured this per process and decided:
+no cap (section "Open item 3:
+video memory" above).
+The second session's text follows.
+
 The card reports 7.98 GiB.
 One reading with no run of mine active:
 0.5 GiB (a desktop session and other agents share the card).
@@ -239,7 +540,27 @@ the `vello.scene` error above is the only candidate.
 
 ## Gates on the final tip
 
-Run once each on the final code tip (the documents after it change no code):
+Third session,
+final code tip `7529ea3e1a` (the commits after it change only this document):
+`lint` passes (once,
+at `b103fed788`,
+which differs from the code tip only in this document),
+`test:native 'all()'` 283 passed and 5 skipped with no FLAKY,
+FAIL or SLOW line (174.7 s,
+one test at a time),
+`test` 797 passed and 1 skipped,
+`test:bin` 60 passed,
+`build` finished the release profile (once more after an earlier attempt of this session collided with a concurrent
+`runtime` task of the same tree and failed before compiling),
+`inspect:no-software-renderer` reports the software renderer is not linked.
+An earlier snapshot of this session (`51c1aed3ab`) passed the same gates (283 passed and 5 skipped in 198.6 s,
+797 passed and 1 skipped,
+60 passed);
+the later commits changed one test file (the picture test) and this document.
+`inspect:*-guards` were not run:
+no guard changed.
+
+Second session:
 `lint` passes (rustfmt diffs fixed with `format:rust`,
 semantic-line-break findings fixed),
 `test:native -- 'all()'` 275 passed and 5 skipped with no FLAKY or FAIL line (177 s),
@@ -338,24 +659,68 @@ and the entries above.
   failed in gate runs;
   after:
   the rerun passed.
-- The scroll quiet-time test and the find reveal test.
+- The scroll quiet-time test (`rows_above_the_view_wait_until_scrolling_has_stopped`).
   Cause:
-  a clock the test could not hold;
+  the scrolling rule read the real clock,
+  so a stalled window thread showed rows before 200 ms of stillness counted.
+  Fix:
+  `3bcdc17603` (a clock a test can hold);
+  the guard `a_reader_that_stalls_past_the_quiet_time_still_has_rows_wait` (third session) stalls 300 ms with the
+  clock held.
+  Before:
+  the guard fails 20 of 20 with the held clock ignored,
+  and 10 of 10 as a real-clock copy (deterministic stand-in;
+  the natural rate is not recorded and not reproducible with the tool).
+  After:
+  the guard 10 of 10,
+  320 of 320,
+  32 of 32;
+  the test 600 of 600,
+  360 of 360,
+  32 of 32,
+  320 of 320 and 60 of 60.
+- The find reveal test.
+  Cause:
   a line the test measured too late.
   Fix:
   recorded in `doc/handover/slint-ide-0x.md` ("Both flaky tests of the guard runs were fixed").
   Before:
-  3 of 16 at baseline for find reveal.
+  3 of 16 at baseline.
   After:
-  no recurrence recorded.
+  no recurrence recorded;
+  not re-measured in the third session.
 - `the_view_follows_the_caret_through_every_visual_row`.
-  Cause (package `README.md`):
-  the test read the row map before the measurement had finished shrinking it.
+  Cause (inferred;
+  package `README.md`,
+  third session):
+  the test counted the map's rows while a measurement pass was still running;
+  `measured()` was true early because a replaced pass closed the newest one (`0e390da7ca`).
   Before:
-  3 of 23 on the minimap branch and 1 of 10 on `main`.
-  Fix and after-count:
-  not verified in this session;
-  the test passed in the one full run of this tip.
+  3 of 23 on the minimap branch and 1 of 10 on `main`,
+  before the GPU harness (not reproducible now).
+  Fix:
+  `0e390da7ca` (guard `tile_build::pass_tests::the_finish_of_a_replaced_pass_leaves_the_newer_pass_open`,
+  20 of 20 failing without it).
+  After:
+  0 of 600,
+  0 of 600 with the fix and the reader's highlighting wait reverted,
+  0 of 60 (tool,
+  load average 20 to 40).
+  The link between this test and that fix is inference;
+  the test now names counts,
+  widths and facts if it fails.
+- `minimap_tests::fifty_thousand_lines_give_a_bounded_picture_without_blocking_the_window` (third session).
+  Cause:
+  the test read the statistics of the third picture applied in one poll as those of the cold build.
+  Fix:
+  the test asserts shaped or reused for the last picture;
+  the cold-build claim lives in `tests/minimap_scene.rs`.
+  Before:
+  317 of 400 (tool,
+  8 copies,
+  1 thread each).
+  After:
+  0 of 400 (1 of 400 with the first version of the fix).
 - `tall_window_minimap_tests`.
   Cause:
   the fixture read the minimap picture of the window before it was resized.
@@ -400,8 +765,10 @@ and the entries above.
   with the wait and 90 of 90 without it (no baseline failure to compare with).
 - Open:
   the annotation stability tests above (one failure each of `rows_arriving_in_view...` and
-  `scrolling_across_annotated_lines_is_rigid` in 480 heavy runs;
-  0 failures in 1,310 tool runs of the two).
+  `scrolling_across_annotated_lines_is_rigid` in 480 heavy runs,
+  in a burst with a full host disk;
+  0 failures in about 2,100 tool runs of the two,
+  829 of them in the third session at load average up to 56).
 - Open and not reproduced:
   `write_wait_tests`,
   the two `watch_tests`,
@@ -409,21 +776,37 @@ and the entries above.
 
 ## What was not run
 
+Second and third sessions:
+
 - A repeat of any full `test:native`:
   one per snapshot,
   as the rules require.
-- A comparison of a capped and an uncapped full run for video memory.
+  The third session's gate was the filtered form `'all()'`,
+  which runs one test at a time;
+  an unfiltered run at the bound's thread count was not made on any snapshot of this session.
+- A comparison of a capped and an uncapped full run for video memory;
+  the 21- and 32-process subset runs and the sampler stand in for it.
 - The guard runners (`inspect:*-guards`),
-  because no guard changed.
-- Any run with host load:
-  the tool is the only repeated-run mechanism.
-- The annotation tests under the heavy-load conditions that showed their failures.
+  because no guard changed (the third session changed tests,
+  the stress task's dependencies and this document).
+- The banned heavy-load conditions of the one annotation failure;
+  the nearest permitted ones are the 32-process runs of the third session.
+  The rigid test ran at 18 processes at most (6 copies x 3 threads),
+  not 32,
+  because one run of it takes minutes.
+- A before count for the caret test (the backend that showed its failures no longer runs).
 
 ## Next steps
 
 1.  When an annotation stability test fails again,
-    read `target/flake-frames/` of that run before changing anything.
+    read `target/flake-frames/` of that run and the repeatability fact of its message before changing anything.
 2.  If a `vello.scene` error recurs,
-    propose a thread cap with that failure as the evidence.
+    measure its video memory with a sampler like the third session's before proposing a thread cap.
 3.  Re-run the stress tool for the menu tests after any change of the find bar layout:
-   the click position depends on the sidebar width and the find box padding.
+    the click position depends on the sidebar width and the find box padding.
+4.  A new failure in a subset run is worth its own hunt:
+    the picture test failed 1 in 127 in a 21-thread subset run and 317 of 400 in its own hunt
+    (8 copies,
+    1 thread each),
+    though no earlier hunt had it in its filter.
+    Run each suspect alone at 8 copies with 1 to 4 threads before calling it stable.

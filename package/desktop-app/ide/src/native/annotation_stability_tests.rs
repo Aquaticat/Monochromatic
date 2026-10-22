@@ -65,6 +65,10 @@ use std::{fs, sync::Arc, time::Duration};
 /// a test moves its held clock by this.
 const QUIET_PASSED: Duration = Duration::from_millis(250);
 
+/// Longer than the 200 ms quiet time,
+/// in real time.
+const STALL: Duration = Duration::from_millis(300);
+
 /// Characters per line of the numbered fixture:
 ///  `line NNN: value` and its terminator.
 const LINE: usize = 16;
@@ -417,7 +421,7 @@ fn kept_if_different(
 ///  and the tile facts of that moment.
 /// Why:
 ///  A failed comparison names the state each of its two frames was taken in.
-fn shot(reader: &Reader) -> (SharedPixelBuffer<Rgba8Pixel>, RowMap, String) {
+fn shot_once(reader: &Reader) -> (SharedPixelBuffer<Rgba8Pixel>, RowMap, String) {
     return (
         frame(&reader.window),
         map(reader),
@@ -426,6 +430,44 @@ fn shot(reader: &Reader) -> (SharedPixelBuffer<Rgba8Pixel>, RowMap, String) {
             source: &reader.source,
         }
         .to_string(),
+    );
+}
+
+/// The tile and worker facts of the reader's window now.
+fn facts_of(reader: &Reader) -> String {
+    return Facts {
+        window: &reader.window,
+        source: &reader.source,
+    }
+    .to_string();
+}
+
+/// What:
+///  `shot_once` plus a second frame of the same state,
+///  compared with the first.
+/// Why:
+///  The rigid scroll takes hundreds of frames and keeps `shot_once`;
+///  the comparisons with a few frames use this one.
+fn shot(reader: &Reader) -> (SharedPixelBuffer<Rgba8Pixel>, RowMap, String) {
+    let before = facts_of(reader);
+    let first = frame(&reader.window);
+    // A second frame of the same state tells a frame that is wrong from a state that is different:
+    // when a comparison fails, the facts of both of its frames say whether each frame drew its state the same
+    // way twice, and whether the tile counters moved between the two frames.
+    let again = frame(&reader.window);
+    let after = facts_of(reader);
+    let repeatable = match difference(&first, &again) {
+        Some(found) => format!("no, {found}"),
+        None => "yes".to_string(),
+    };
+    let mut moved_between = String::new();
+    if before != after {
+        moved_between = format!("; facts before the two frames {before}");
+    }
+    return (
+        first,
+        map(reader),
+        format!("{after} second frame of the same state equal: {repeatable}{moved_between}"),
     );
 }
 
@@ -848,6 +890,54 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
     }
 }
 
+/// What:
+///  A reader that stands still for longer than the quiet time between a scroll step and the arrival of rows above the
+///  view (a loaded host that does not run the window thread for 300 ms does exactly this) still has them wait,
+///  because the scrolling rule reads the clock the test holds and not the real one.
+/// Why:
+///  This is the deterministic stand-in for the load that made `rows_above_the_view_wait_until_scrolling_has_stopped`
+///  fail before the rule's clock could be held:
+///  with the real clock,
+///  the rows are shown at once and the offset
+///  moves (the ledger in `doc/handover/ide-native-flakes.md` records the control that fails this way).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// holdClock(now); scroll(); await sleep(300); inject(); expect(rowsShown()).toBe(false);
+/// ```
+#[test]
+fn a_reader_that_stalls_past_the_quiet_time_still_has_rows_wait() {
+    let (_directory, reader) = fixture_reader(&numbered(200));
+    let window = &reader.window;
+    let offset = 100.0 * 24.0 + 7.0;
+    let row = BLOCK_GAP + ROW_HEIGHT;
+    idle();
+    window.set_scroll_y(-offset);
+    update_timers_and_animations();
+    super::overscan_tile_tests::settle_tile(&reader.source);
+    let mut now = std::time::Instant::now();
+    hold_clock(Some(now));
+    scroll(window, offset);
+    // The window thread is not run for longer than the 200 ms of stillness.
+    std::thread::sleep(STALL);
+    inject(&reader, vec![hint(at(10, 4), "a:")], Vec::new());
+    assert_eq!(
+        -window.get_scroll_y(),
+        offset,
+        "rows above the view moved the offset after the real time passed while the held clock did not"
+    );
+    assert_eq!(reader.source.borrow().row_map.block_height(10), 0.0);
+    // The held clock moving by the quiet time is what shows them.
+    now += QUIET_PASSED;
+    hold_clock(Some(now));
+    {
+        let mut waiting = Waiting::eventually();
+        while !(reader.source.borrow().row_map.block_height(10) == row) {
+            waiting.step("rows that waited for the held clock were never shown");
+        }
+    }
+}
+
 /// After an external change the old rows are not painted,
 ///  but their space stays,
 ///  so no line moves;
@@ -1008,14 +1098,14 @@ fn scrolling_across_annotated_lines_is_rigid() {
     let end = start + (window.get_viewport_height() * 2.0) as usize;
     window.set_scroll_y(-(start as f32));
     update_timers_and_animations();
-    let mut previous_shot = shot(&reader);
+    let mut previous_shot = shot_once(&reader);
     let first_tile = reader.source.borrow().first;
     let mut tiles = 0;
     for offset in start + 1..=end {
         let rendered_before = reader.source.borrow().gpu.tiles_rendered();
         window.set_scroll_y(-(offset as f32));
         update_timers_and_animations();
-        let current_shot = shot(&reader);
+        let current_shot = shot_once(&reader);
         let (previous, current) = (&previous_shot.0, &current_shot.0);
         // A frame that drew a new tile scene is a second render of the text: Vello's render noise applies to it.
         // Scrolling inside a tile shows the very same texture, so those frames are compared exactly.
