@@ -6135,6 +6135,47 @@ and so did `a_start_removes_cache_folders_of_other_builds_unused_for_30_days` in
 with the parser load no longer renewing the marker,
 `a_marker_renewed_by_a_running_copy_keeps_its_folder` failed.
 
+### Releases
+
+GitHub pre-releases come from `.github/workflows/ide-release.yml`
+(decided on 2026-10-22,
+[decision][ide-releases];
+steps in the [runbook][release-the-ide]).
+A push to `main` that changes `version` in `Cargo.toml` starts a build and,
+when the tag `ide-v<version>` is free,
+a pre-release with three files:
+`ide-<version>-linux-x64.tar.gz`
+(the executable from `bundle`,
+the launcher entry,
+the license texts,
+and `INSTALL.txt`),
+`ide-<version>-third-party-licenses.txt`,
+and `SHA256SUMS`.
+Only Linux x86_64 is built,
+and the requirements under [What the host provides](#what-the-host-provides) apply to it.
+
+The workflow runs the same tasks as a local build in the bounded container:
+`bundle`,
+then `inspect:no-software-renderer`,
+and `inspect:bundle` with the checks `inventory`,
+`license-texts`,
+and `crate-licenses`,
+which need no window.
+It also requires that `--version` prints `monochromatic-ide <version>`,
+that the dynamic section of the executable lists only the loader,
+`libc`,
+`libm`,
+`libgcc_s`,
+and `libfontconfig`,
+that no symbol needs a glibc newer than 2.39,
+and that the build leaves `Cargo.lock` as committed.
+Raising the version therefore needs a refreshed `Cargo.lock`.
+The other `inspect:bundle` checks and the test tasks need a Wayland session or a GPU and are not run by CI.
+A manual dispatch with `dry-run` true builds and verifies everything without creating a tag or a release.
+
+[ide-releases]: ../../../doc/decision/ide-releases.md
+[release-the-ide]: ../../../doc/runbook/release-the-ide.md
+
 ### Measured on 2026-10-06
 
 - Size:
