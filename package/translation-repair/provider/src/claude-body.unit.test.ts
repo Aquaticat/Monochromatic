@@ -115,5 +115,46 @@ await describe({
         expect(body['tool_choice'],).toBeUndefined();
       },
     },),
+    it({
+      name: 'SENDS ADAPTIVE THINKING ON EVERY CARD AND NEVER A WAY TO TURN IT OFF OR BUDGET IT: no disabled, no '
+        + 'between_tools, no budget_tokens (the API answers 400 to a budget on both models), because the owner ruled '
+        + '"we should never disable thinking on anything"',
+      fn: async () => {
+        for (const modelId of ANTHROPIC_SERVED_IDS) {
+          for (const withSchema of [false, true,]) {
+            const body = await bodySentFor({ modelId, withSchema, },);
+            expect(body['thinking'],).toEqual({ type: 'adaptive', },);
+            expect(JSON.stringify(body,),).not.toContain('disabled',);
+            expect(JSON.stringify(body,),).not.toContain('between_tools',);
+            expect(JSON.stringify(body,),).not.toContain('budget_tokens',);
+          }
+        }
+      },
+    },),
+
+    it({
+      name: 'SENDS THE EFFORT THE CARD NAMES as output_config.effort, one level per effort card, and none at all on '
+        + 'the card that names none, which leaves the model its own default (Sonnet high, Haiku medium)',
+      fn: async () => {
+        for (const [modelId, effort,] of [
+          ['claude-sonnet-5-5', undefined,],
+          ['claude-sonnet-5-5-effort-low', 'low',],
+          ['claude-sonnet-5-5-effort-medium', 'medium',],
+          ['claude-sonnet-5-5-effort-high', 'high',],
+          ['claude-haiku-5-5', undefined,],
+          ['claude-haiku-5-5-effort-low', 'low',],
+          ['claude-haiku-5-5-effort-medium', 'medium',],
+          ['claude-haiku-5-5-effort-high', 'high',],
+        ] as const) {
+          for (const withSchema of [false, true,]) {
+            const body = await bodySentFor({ modelId, withSchema, },);
+            expect(
+              (body['output_config'] as Readonly<Record<string, unknown>> | undefined)?.['effort'],
+            ).toBe(effort,);
+            expect(body['model'],).toBe(modelId.startsWith('claude-sonnet',) ? 'claude-sonnet-5-5' : 'claude-haiku-5-5',);
+          }
+        }
+      },
+    },),
   ],
 },);
