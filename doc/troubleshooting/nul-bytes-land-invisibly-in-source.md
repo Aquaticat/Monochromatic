@@ -117,7 +117,15 @@ Run `od` on the line.
 ## How widespread it was: measured, not guessed
 
 Every tracked text file in the repository was scanned after the fix,
-6870 of them across `.ts`, `.tsx`, `.js`, `.mjs`, `.rs`, `.md`, `.toml`, `.json`, `.yaml` and `.yml`,
+6870 of them across `.ts`,
+`.tsx`,
+`.js`,
+`.mjs`,
+`.rs`,
+`.md`,
+`.toml`,
+`.json`,
+`.yaml` and `.yml`,
 reading each one and counting `String.fromCharCode(0)`:
 
 ```text
