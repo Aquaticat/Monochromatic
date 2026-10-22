@@ -50,6 +50,9 @@ const MODEL_ID = SEAT_SYNTHETIC_VISION_WITHHELD;
 
  @param holds - what the holds report
 
+ @param holdsByAsk - what successive asks for the holds report, the last repeating, in place of `holds`, for holds that
+ end while a wait goes on
+
  @param neuralwatt - the NeuralWatt day the budgets report to a refusal that ends the run
 
  @param neuralwattAfter - the day the budgets report once this many reads have happened, in place of `neuralwatt`, for a
@@ -66,11 +69,13 @@ function scriptedBudgets(
   {
     views,
     holds,
+    holdsByAsk,
     neuralwatt = { kind: 'unanchored', },
     neuralwattAfter,
   }: {
     readonly views: readonly BudgetView[];
     readonly holds: ProviderRecord<number>;
+    readonly holdsByAsk?: readonly ProviderRecord<number>[];
     readonly neuralwatt?: NeuralWattReturn;
     readonly neuralwattAfter?: { readonly reads: number; readonly day: NeuralWattReturn; };
   },
@@ -108,8 +113,15 @@ function scriptedBudgets(
         throw new Error('not asked here',);
       },
       holds: function holdsNow(): ProviderRecord<number> {
+        /**
+         The holds this ask reads, the scripted sequence's entry for it or the fixed ones.
+         */
+        const asked = holdsByAsk?.[Math.min(
+          holdAsks.count,
+          holdsByAsk.length - 1,
+        )] ?? holds;
         holdAsks.count += 1;
-        return { ...holds, };
+        return { ...asked, };
       },
       neuralwattReturn: function neuralwattReturn(): NeuralWattReturn {
         return ((neuralwattAfter !== undefined) && (reads.count >= neuralwattAfter.reads))
@@ -145,6 +157,11 @@ const SYNTHETIC_BACK: BudgetView = {
   xiaomi: true,
   openrouter: true,
 };
+
+/**
+ NeuralWatt back, the others still dry.
+ */
+const NEURALWATT_BACK: BudgetView = { ...ALL_DRY, neuralwatt: false, };
 
 /**
  Nobody held.
@@ -533,14 +550,14 @@ await describe({
 
         it({
           name: 'ENDS THE RUN when every provider reads dry with no hold to wait out, and when they still '
-            + 'read dry after the shortest hold ended, waiting at most once',
+            + 'read dry after the hold that was running ended and no other hold is left',
           fn: async () => {
             /**
              Both cases, run side by side since neither touches the other.
              */
             const outcomes = await Promise.all(([
-              [NO_HOLDS, 1,],
-              [{
+              [[NO_HOLDS,], 1,],
+              [[{
                 neuralwatt: 0,
                 synthetic: 5,
                 hyper: 20,
@@ -548,15 +565,16 @@ await describe({
                 deepseek: 0,
                 xiaomi: 0,
                 openrouter: 0,
-              }, 2,],
-            ] as const).map(async function endsTheRun([holds, expectedReads,],): Promise<{
+              }, NO_HOLDS,], 2,],
+            ] as const).map(async function endsTheRun([holdsByAsk, expectedReads,],): Promise<{
               readonly thrown: unknown;
               readonly reads: number;
               readonly expectedReads: number;
             }> {
               const { budgets, reads, } = scriptedBudgets({
                 views: [ALL_DRY,],
-                holds,
+                holds: NO_HOLDS,
+                holdsByAsk,
               },);
               try {
                 await readBudgetsPastHolds({
@@ -597,6 +615,64 @@ await describe({
             if (waited === undefined)
               throw new Error('the waited case did not run',);
             expect((waited.thrown as Error).message,).toContain('after waiting 5ms',);
+          },
+        },),
+
+        it({
+          name: 'KEEPS WAITING WHILE A HOLD STILL RUNS: a shorter hold on a provider that still reads dry ends first, '
+            + 'and the wait goes on for the NeuralWatt return behind it instead of ending the run short of it',
+          fn: async () => {
+            const { budgets, reads, holdAsks, } = scriptedBudgets({
+              views: [ALL_DRY, ALL_DRY, NEURALWATT_BACK,],
+              holds: NO_HOLDS,
+              holdsByAsk: [
+                {
+                  ...NO_HOLDS,
+                  hyper: 5,
+                  neuralwatt: 12,
+                },
+                {
+                  ...NO_HOLDS,
+                  neuralwatt: 7,
+                },
+                NO_HOLDS,
+              ],
+            },);
+            expect(await readBudgetsPastHolds({
+              budgets,
+              modelId: MODEL_ID,
+              signal: SIGNAL,
+              refused: NOBODY_REFUSED,
+              pollMs: 1,
+            },),).toEqual(NEURALWATT_BACK,);
+            expect(reads.count,).toBe(3,);
+            expect(holdAsks.count,).toBe(2,);
+          },
+        },),
+
+        it({
+          name: 'BOUNDS THE WAITS ONLY BY THE CALL\'S ABORT: holds that never end are waited on until the call is '
+            + 'aborted, which ends the wait with its reason',
+          fn: async () => {
+            const aborted = new AbortController();
+            const { budgets, } = scriptedBudgets({
+              views: [ALL_DRY,],
+              holds: {
+                ...NO_HOLDS,
+                hyper: 1_000_000,
+              },
+            },);
+            setTimeout(function giveUp(): void {
+              aborted.abort(new Error('caller gave up',),);
+            }, 30,);
+            const thrown = await rejectionOf(() => readBudgetsPastHolds({
+              budgets,
+              modelId: MODEL_ID,
+              signal: aborted.signal,
+              refused: NOBODY_REFUSED,
+              pollMs: 1,
+            },),);
+            expect((thrown as Error).message,).toBe('caller gave up',);
           },
         },),
       ],

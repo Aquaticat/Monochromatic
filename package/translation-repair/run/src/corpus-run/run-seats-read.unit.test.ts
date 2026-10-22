@@ -863,6 +863,63 @@ await describe({
           },
         },),
         it({
+          name: 'KEEPS WAITING WHILE A HOLD STILL RUNS: a rate-limit hold that ends first leaves the editors bench short, '
+            + 'and the lanes wait goes on for the hold behind it (the NeuralWatt return) instead of stopping the entry '
+            + 'short of it',
+          fn: async () => {
+            const script = scriptedViews({
+              views: [
+                BEDROCK_ALONE,
+                BEDROCK_ALONE,
+                ALL_WET,
+              ],
+            },);
+            /**
+             Holds asked so far.
+             */
+            const asks = { count: 0, };
+            /**
+             The holds each ask reads: the rate-limit hold and the return, then the return alone, then none.
+             */
+            const holdsByAsk = [
+              {
+                ...NO_HOLDS,
+                synthetic: 10,
+                neuralwatt: 30,
+              },
+              {
+                ...NO_HOLDS,
+                neuralwatt: 20,
+              },
+              NO_HOLDS,
+            ];
+            const lines: string[] = [];
+            const seats = await readJudgeSeats({
+              client: viewClient({
+                providerDryness: script.read,
+                providerHolds: () => {
+                  const asked = holdsByAsk[Math.min(
+                    asks.count,
+                    holdsByAsk.length - 1,
+                  )] ?? NO_HOLDS;
+                  asks.count += 1;
+                  return asked;
+                },
+              },),
+              phase: 'lanes',
+              signal: new AbortController().signal,
+              l: levelCapturingLogger({ lines, },),
+              pollMs: 5,
+            },);
+            expect(script.counter.reads,).toBe(3,);
+            expect(seats.translators,).toEqual(RUN_TRANSLATORS,);
+            expect(lines.filter(function isError(line,): boolean {
+              return line.startsWith('error ',);
+            },),).toEqual([],);
+          },
+        },),
+
+        it({
           name: 'STOPS A PHASE THAT DOES NOT GO ON WITHOUT ITS WRITERS exactly as before when the cause is not every '
             + 'provider dry, so the lanes on Bedrock alone still refuse with the bench error and still say the entry stops',
           fn: async () => {
