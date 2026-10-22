@@ -28,6 +28,15 @@ and the results-only comment landed on issue #577 as `issuecomment-6339427646`.
 The separate `stylistic/comma-dangle` type-literal corruption found during the sweeps is now fixed
 (`0a49269a48`),
 recorded in `doc/troubleshooting/oxlint-stylistic-comma-dangle-type-literal-fix.md`.
+The queue's remaining items then landed:
+`package/config/oxlint/src/rule/style.ts` enables `stylistic/indentation` at `warn` (`a0de3e051f`),
+and one normalization sweep (`68415aeb53`) rewrote 21,441 leading-whitespace lines
+in 1,845 git-clean files,
+whitespace only.
+The sweep's rules-only config pitfall is recorded in
+`doc/troubleshooting/oxlint-config-default-categories.md`,
+and one new queue item remains
+(the format catch-up under "Queue").
 
 ## Findings
 
@@ -56,6 +65,19 @@ Of the changed lines,
 9,921 are direct model disagreements and 10,801 are cascade followers of a moved
 anchor line.
 
+The landed normalization sweep (`68415aeb53`,
+2026-10-22) ran over 7,333 candidates
+(the corpus had grown from 7,091),
+changed 1,845 files and 21,441 leading-whitespace lines with zero content-line
+edits and zero line-count changes
+(verified per file against `HEAD`),
+and converged in one fix pass.
+It ran the indentation rule alone with
+`categories: { "correctness": "off" }`,
+so the default-category fixes that a rules-only config would also apply
+stayed out of the commit
+(see `doc/troubleshooting/oxlint-config-default-categories.md`).
+
 ## Assumptions and limits
 
 - Sweeping normalization is accepted (user:
@@ -65,14 +87,18 @@ anchor line.
   and hanging function-expression
   bodies flat are treated as drift to normalize,
   not as conventions to preserve.
-- `package/config/oxlint/src/rule/style.ts` does not enable `stylistic/indentation` yet;
-  repository lint
-  still passes mis-indented TypeScript.
-  Enablement plus one normalization sweep commit is queued in
-  "Queue",
-  not done here,
-  because concurrent sessions hold uncommitted work in the same tree and a
-  corpus-wide autofix would rewrite their files.
+- `package/config/oxlint/src/rule/style.ts` enables `stylistic/indentation` at `warn` (`a0de3e051f`)
+  and the one normalization sweep is committed (`68415aeb53`).
+  The sweep snapshot `git status --porcelain` immediately before running and
+  skipped the three concurrently dirty paths
+  (`mise.toml`,
+  `package/config/pnpr/config.yaml`,
+  `scratchpad/`),
+  so concurrent sessions' uncommitted work stayed untouched.
+  Remaining limit:
+  files that drifted under other already-enabled rules are queued for a
+  format catch-up under "Queue",
+  not normalized here.
 - Scratch assets under `~/temp/agent/indent-probe-2026-10-22/` (`probe4.mjs`,
   `probe4b.mjs`,
   `sweep.mjs`,
@@ -115,13 +141,25 @@ anchor line.
     root cause,
     and landed fix live in
     `doc/troubleshooting/oxlint-stylistic-comma-dangle-type-literal-fix.md`.
-1.  Enable `stylistic/indentation` in `package/config/oxlint/src/rule/style.ts` (the sibling rules there sit
-    at `warn`),
-    then run one `--fix` sweep over the repository and commit the normalization separately from
-    the enablement.
-    The sweep rewrites ~20k lines in 1,792 to 1,793 files;
-    run it on git-clean paths only (snapshot `git status --porcelain` first and skip every dirty or
-    untracked file) so concurrent agents' work stays untouched.
+1.  Done:
+    `stylistic/indentation` is enabled at `warn` in
+    `package/config/oxlint/src/rule/style.ts` (`a0de3e051f`),
+    and the normalization sweep is committed separately (`68415aeb53`):
+    21,441 leading-whitespace lines in 1,845 of 7,333 git-clean candidates,
+    whitespace only,
+    one fix pass.
+1.  Format catch-up under the full repository config.
+    A mirror run of `oxlint --fix` with the root config additionally rewrites
+    at least 292 content lines in 48 same-line-count files
+    and rewraps line counts in 145 more files:
+    pre-existing drift under already-enabled rules,
+    for example TSDoc `* ` prefixes in `oxlint.config.ts` and `.pnpmfile.mjs`,
+    `String.raw` and numeric-separator fixes in `package/desktop-app/ide/bin/`,
+    and per-line splits in `doc/audit/regex-necessity/*.mjs`.
+    Run `mise run format:oxlint` when the tree is quiet
+    (or one filtered sweep on git-clean paths),
+    review the non-whitespace diffs,
+    and commit the catch-up separately from anything else.
 
 ## Commits
 
@@ -147,3 +185,8 @@ anchor line.
 - `fix(*): stop comma-dangle inserting inside type-annotated pattern annotations` (`0a49269a48`,
   red-first fixtures,
   close-delimiter lookup skips the pattern's type annotation)
+- `chore(config-oxlint): enable stylistic/indentation at warn` (`a0de3e051f`)
+- `style(*): normalize leading indentation to the indent model` (`68415aeb53`,
+  1,845 git-clean files,
+  leading whitespace only,
+  one fix pass)
