@@ -785,6 +785,16 @@ earlier was not investigated. Fix `57fc69a67e` compares with the platform's own 
 dry run `39761698854` is in flight (bounded watcher, 90 minutes). Next: if every job passes, merge `origin/main` into the
 branch, fast-forward main, push, remove the worktree `/home/user/temp/agent/ci-merge`.
 
+Desktop type sizes, 2026-10-22 (open). The human's screenshot of the desktop looked off and they asked for "Music", the
+purple heading letter, folder names, the right pane title and track titles two smaller. I cut them by 2 px in
+`574de143f6` (`Theme.title-large - 2px`, `Theme.body-large - 2px` in `bars.slint`, `folders.slint`, `tracks.slint`;
+lint and 1546 desktop tests passed). The human then said the Slint tokens are unreliable and the sizes should match
+Android. Android sets no sizes of its own (stock Material 3: titleLarge 22 sp, bodyLarge 16 sp), the same numbers the
+desktop had, so the human chose "match Android's rendered look" on the Pixel 9 Pro Fold emulator at default display
+and font size, folded and opened. Agent `ab20e5cb0d50462c7` captures and measures that; next: measure the desktop at the
+same logical size, set the desktop sizes from the measured dp values as plain numbers (no `Theme` size tokens for these
+five), keep the sizes the same in the narrow layouts, run lint and tests, merge, release.
+
 In flight 2026-10-18 after 0.1.6: the license polish branch `fix/music-player-license-polish` reported; its entry is
 "2026-10-18, license polish after 0.1.6" above. Merge, then release 0.1.7. Not started, mine: a quiet-host perfetto
 trace for the 10,000-track jank (p = 0.089, optional), re-check of issues 1079 to 1081 and 1069 (Depot trial CI
