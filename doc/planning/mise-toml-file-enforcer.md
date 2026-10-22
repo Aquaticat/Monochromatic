@@ -221,12 +221,18 @@ A workable kind set is roughly seven to nine:
 will not normalize via D's incremental edits.
 
 Resolution:
- a separate one-time pass via `emptyTomlEdit + tomlSet` reparses each
-`mise.toml` and emits canonical output.
- After that one pass,
- splice mode keeps the
-canonical form stable for subsequent edits.
- Document this as a setup step.
+ a dedicated byte-preserving normalizer in `@monochromatic-dev/module-toml-edit`
+ (`normalizeTableHeaderKeyQuoting`) rewrites only literal-quoted table-header
+ key segments to basic strings.
+ `file-enforcer` calls it through `manageMiseManifests` for the hand-authored
+ manifests, and `mise.no-env.toml` is normalized before `generateMiseToml`
+ regenerates the root `mise.toml`.
+ The `emptyTomlEdit + tomlSet` canonical reparse was rejected because it
+ reformats the whole document (comments, spacing, ordering), while the header
+ normalizer touches nothing else.
+ The one-time workspace pass landed in `e72b7076`
+ (62 manifests, 248 headers), so splice mode now starts from the canonical
+ form and keeps it stable.
 
 ### 9. Managed-task tracking on kind shrinkage
 
@@ -298,15 +304,10 @@ Generator must explicitly never touch `*/mise.local.toml`.
 2. **Dragon 9:
     defer or track?
    ** Pick before v1 implementation.
-3. **Quoting normalization:
-    do the one-time pass on landing,
-    or skip?
-   ** If
-   skipped,
-    the mixed quoting persists forever (splice mode preserves it).
-    If
-   done,
-    all 92 files get one structural rewrite commit.
+3. **Quoting normalization:**
+   resolved by doing the one-time pass on landing.
+   `e72b7076` normalized 62 manifests (248 headers), and `manageMiseManifests`
+   keeps them canonical on every `file-enforcer` run.
 4. **First kind to implement?
    ** Smallest blast radius is probably `ts-library`
    (modules with no build,
@@ -355,6 +356,19 @@ Generator must explicitly never touch `*/mise.local.toml`.
   should re-read `src/pipeline/toml.ts` and `src/io/write-toml.ts` before
   designing,
    since the API surface may have grown.
+- Quoting normalization (#61) shipped before the kind system:
+   `e72b7076` is the
+  one-time pass,
+   and `manageMiseManifests` in
+  `package/dev-script/file-enforcer/src/mise/manage-mise-manifests.ts` is the
+  standing enforcer.
+  Measured after the pass: `git grep -n "\[tasks\.'" -- '*.toml'` returns zero
+  matches, and a second `mise run sync:files` writes nothing.
+- Normalization is byte-preserving by design:
+   a dprint TOML rule cannot do it
+  (the TOML plugin's `quote_style` only affects string values, not key
+  quoting),
+   and the canonical reparse reformats unrelated whitespace.
 - This document captures investigation state;
-   decisions on the five open
-  questions above are required before implementation begins.
+   open questions 1, 2, 4, and 5
+  still need decisions before the kind system lands.

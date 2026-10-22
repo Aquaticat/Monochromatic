@@ -73,6 +73,12 @@ node package/dev-script/file-enforcer/src/index.ts --watch
    preserving comments
   and unmutated whitespace via splice mode;
    throws when dest does not exist
+- `manageMiseManifests({ manifestGlobs })`:
+   normalizes `mise.toml` task-header key quoting across every manifest matched
+  by the caller's globs,
+   rewriting literal-quoted header keys as basic strings while
+  preserving every other byte;
+   canonical manifests produce no write
 
 ### Staleness cache
 
@@ -515,6 +521,10 @@ All production source files are under 100 lines per the monorepo coding guidelin
    `installPackage`
 - `merge.ts`:
    merge generated index with hand-maintained overrides
+- `mise/manage-mise-manifests.ts`:
+   `manageMiseManifests()` normalizes mise task-header key quoting across
+  caller-supplied manifest globs,
+   reusing the byte-preserving toml-edit normalizer
 - `mod.ts`:
    re-exports for the public API
 - `index.ts`:
