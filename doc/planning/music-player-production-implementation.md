@@ -841,8 +841,16 @@ stepper. Adopted by me, veto-open: four elements (pane titles, group heading let
 defaults 20, 20, 14, 14 (today's values), clamp 10 to 32 px, a reset action, session persistence, desktop only (Android
 follows the system font size). When it reports: review the diff, run the package tests and lints once, merge main into
 the branch, fast-forward main, then release (say the version) and update the troubleshooting doc and this handover.
-Also pending from the replica agent: why matching the original build B needed a track title of 17 px in the replica (the
-source says 16).
+Answered 2026-10-22 by two reports (both in the troubleshooting doc): the human's Firefox ESR draws generic `sans-serif`
+as Inter Variable (their `font.name.sans-serif.x-western` pref), so the test page's reference paragraph and control were
+Inter, and Firefox renders the replica like Chromium (the replica sets `font-kerning: normal`, which Firefox turns into
+`palt` on kana; use `auto` next time). The rasterization agent found one real difference: the app's autohinter
+rescales runs vertically so the x-height lands on a whole pixel, giving 16 px text 3 percent taller x-height and cap at
+scales 2 and 3 with equal widths (equal at scale 1, shorter at 1.25 and 1.5). Whether it explains "track titles looked
+bigger at 16, identical at 14" depends on which monitor the comparison ran on; not asked yet, and a Firefox arm of the
+rasterization comparison is still running (agent `aa1182a3a786bf6e5`, resumed). Next: ask the human the monitor
+question when the Firefox arm reports; if the autohinter is the cause, the fix is an upstream/femtovg question, not an
+app size change.
 
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 
