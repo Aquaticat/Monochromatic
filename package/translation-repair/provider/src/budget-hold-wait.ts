@@ -275,6 +275,10 @@ export async function readBudgetsPastHolds(
    */
   const firstRead = await budgets.read({ signal, },);
   /**
+   What the run knows of NeuralWatt's day, for a refusal that ends the run to state the return time from.
+   */
+  const neuralwatt = budgets.neuralwattReturn?.();
+  /**
    What each provider's budget looks like right now.
    */
   const first = dryForTheModelAsked({
@@ -339,6 +343,8 @@ export async function readBudgetsPastHolds(
         reach,
         dry: firstRead,
       },),
+      // Conditional spread keeps the day absent on budgets that report none.
+      ...(neuralwatt === undefined ? {} : { neuralwatt, }),
     },);
   }
 
@@ -395,6 +401,8 @@ export async function readBudgetsPastHolds(
         reach,
         dry: secondRead,
       },),
+      // Conditional spread keeps the day absent on budgets that report none.
+      ...(neuralwatt === undefined ? {} : { neuralwatt, }),
     },);
   }
   return second;

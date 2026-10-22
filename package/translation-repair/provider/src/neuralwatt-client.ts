@@ -32,6 +32,8 @@ import {
   neuralWattChatUrlFor,
 } from './neuralwatt-catalog.ts';
 import type { NeuralWattDayStart, } from './neuralwatt-day.ts';
+import type { NeuralWattDayAnchor, } from './neuralwatt-day-anchor.ts';
+import { createNeuralWattAnchorKeeper, } from './neuralwatt-day-anchor-keeper.ts';
 import { createNeuralWattDaySession, } from './neuralwatt-day-session.ts';
 import {
   NeuralWattAllowanceError,
@@ -168,6 +170,13 @@ export type NeuralWattClient = ModelCaller & {
   readonly energy: (args: { readonly signal: AbortSignal; },) => Promise<NeuralWattEnergy>;
 
   /**
+   Where this run's NeuralWatt day starts, as far as it has been decided: the time of day the quota's period start (or
+   the day-start setting) gave, or that none is known. READ WITHOUT DECIDING, so no quota is read by asking: it is for
+   a message built while the run ends, which states when the free energy returns.
+   */
+  readonly dayAnchor: () => NeuralWattDayAnchor;
+
+  /**
    Reads the quota again and reports the plan energy spent since the first
    call of the run; call once, at the run's end.
    */
@@ -289,6 +298,15 @@ export function createNeuralWattClient(
   },);
 
   /**
+   Keeper of the day anchor, which learns it again while it is unknown and reports what it has decided.
+   */
+  const anchors = createNeuralWattAnchorKeeper({
+    quota,
+    setting: dayStartSetting,
+    now,
+  },);
+
+  /**
    The day the account has, which the ledger counts in.
    */
   const days = createNeuralWattDaySession({
@@ -298,7 +316,7 @@ export function createNeuralWattClient(
     retryPolicy,
     quota,
     now,
-    setting: dayStartSetting,
+    anchors,
   },);
 
   /**
@@ -575,6 +593,7 @@ export function createNeuralWattClient(
     chatText,
     chatJson,
     energy,
+    dayAnchor: anchors.decided,
     planSpend: quota.planSpend,
   };
 }

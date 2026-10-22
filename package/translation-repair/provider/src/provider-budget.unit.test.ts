@@ -908,12 +908,6 @@ await describe({
       fn: async () => {
         /** Stub providers with budget everywhere. */
         const { synthetic, hyper, openrouter, } = stubProviders({},);
-        /** Energy reading the stub NeuralWatt client answers with. */
-        const energy = {
-          remainingWh: 500,
-          reckonedWh: 0,
-          dayStart: '2026-10-21T19:15:08.000Z',
-        };
         /** The anchor the stub client has decided, none at first. */
         const decided: { anchor: { readonly known: false; } | { readonly known: true; readonly msOfDay: number; }; } = {
           anchor: { known: false, },
@@ -923,7 +917,10 @@ await describe({
         /** Budget view over a stub NeuralWatt client. */
         const withClient = createProviderBudgets({
           neuralwatt: {
-            energy: async () => energy,
+            // Asking for the NeuralWatt day must not read the energy.
+            energy: async () => {
+              throw new Error('the energy ledger must not be read to state the day',);
+            },
             dayAnchor: () => decided.anchor,
           },
           synthetic,

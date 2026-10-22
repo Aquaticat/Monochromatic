@@ -10,6 +10,7 @@ import {
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { QuotaSnapshot, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type { XiaomiSpend, } from './xiaomi-spend.ts';
+import { neuralWattTimeOfDayUtc, } from './neuralwatt-day.ts';
 
 //region Budget routing
 // WHICH PROVIDER SERVES ONE CALL, decided from budget and saturation rather
@@ -47,6 +48,84 @@ import type { XiaomiSpend, } from './xiaomi-spend.ts';
 // that point nothing can be bought at all.
 
 /**
+ What the run knows of when NeuralWatt's free energy returns, for the refusal that ends the run to state.
+
+ THREE CASES, because the answers differ: a run with no NeuralWatt client has no energy to return, a run whose client
+ never learned its day start (no usable quota reading and no day-start setting) can name no time, and a run that
+ decided the day start at launch states it. THE OWNER'S RULING OF 2026-10-20: the day is "not 00:00 UTC".
+
+ @example
+ ```ts
+ const day: NeuralWattReturn = { kind: 'at', msOfDay: 69_308_000, };
+ ```
+ */
+export type NeuralWattReturn =
+  | {
+    /**
+     The day start was decided: it recurs at this time of day in UTC.
+     */
+    readonly kind: 'at';
+
+    /**
+     Milliseconds after 00:00 UTC the day starts at.
+     */
+    readonly msOfDay: number;
+  }
+    | {
+    /**
+     NeuralWatt is configured, but the run learned no day start.
+     */
+      readonly kind: 'unanchored';
+    }
+    | {
+    /**
+     NeuralWatt is off for this run: it has no client.
+     */
+      readonly kind: 'off';
+    };
+
+/**
+ The milliseconds of a time of day that starts on a whole second.
+ */
+const WHOLE_SECOND_MILLIS = '.000';
+
+/**
+ The clause saying when NeuralWatt's free energy returns, one of three fixed sentences with at most a time of day.
+
+ @param day - what the run knows of NeuralWatt's day
+
+ @returns A clause ending in a semicolon and a space
+
+ @example
+ ```ts
+ returnClauseOf({ day: { kind: 'at', msOfDay: 69_308_000, }, },);
+ // => 'NeuralWatt\'s free energy returns when its day starts again, at 19:15:08 UTC, the day start decided at the start of this run; '
+ ```
+ */
+function returnClauseOf({ day, }: { readonly day: NeuralWattReturn; },): string {
+  if (day.kind === 'off')
+    return 'NeuralWatt is off for this run, so it returns no energy; ';
+  if (day.kind === 'unanchored')
+    return 'NeuralWatt\'s day start was not decided for this run, so no time of day can be stated for its return; ';
+
+  /**
+   The time of day with its milliseconds.
+   */
+  const withMillis = neuralWattTimeOfDayUtc({ msOfDay: day.msOfDay, },);
+  /**
+   The time of day, whole seconds where the day starts on one.
+   */
+  const timeOfDay = withMillis.endsWith(WHOLE_SECOND_MILLIS,)
+    ? withMillis.slice(
+      0,
+      -WHOLE_SECOND_MILLIS.length,
+    )
+    : withMillis;
+  return `NeuralWatt's free energy returns when its day starts again, at ${timeOfDay} UTC, the day start decided at `
+    + 'the start of this run; ';
+}
+
+/**
  Refusal raised when no provider has budget left.
 
  ENDS THE RUN, at the owner's instruction. Every other budget state leaves
@@ -80,6 +159,9 @@ export class EveryProviderDryError extends Error {
    so the sentence about Xiaomi names the cause that applies: a payment
    refusal, or a wet meter that cannot serve this call
 
+   @param neuralwatt - what the run knows of NeuralWatt's day, so the sentence about its return states the account's
+   own time of day and never midnight; "not decided" where the caller has none
+
    @example
    ```ts
    new EveryProviderDryError({ measured: 'meters read synthetic dry, hyper dry, openrouter dry; holds synthetic 0ms, hyper 0ms, openrouter 0ms', },);
@@ -89,9 +171,11 @@ export class EveryProviderDryError extends Error {
     {
       measured = 'no reading cited',
       unserving = [],
+      neuralwatt = { kind: 'unanchored', },
     }: {
       readonly measured?: string;
       readonly unserving?: readonly ProviderName[];
+      readonly neuralwatt?: NeuralWattReturn;
     } = {},
   ) {
     /**
@@ -118,7 +202,7 @@ export class EveryProviderDryError extends Error {
         + 'that window), Charm Hyper has no balance left, Amazon Bedrock has no credit left short of the owner\'s '
         + `card, DeepSeek has no balance left (or says its account is unavailable), ${xiaomiCause}`
         + 'and OpenRouter has no credit left. Nothing further can be bought, so this run ends. '
-        + 'NeuralWatt\'s free energy returns at 00:00 UTC; Synthetic regenerates on its own schedule; Hyper, '
+        + `${returnClauseOf({ day: neuralwatt, },)}Synthetic regenerates on its own schedule; Hyper, `
         + `DeepSeek and OpenRouter refill on purchase; ${xiaomiRefill}`
         + 'Bedrock\'s credit is never topped up. '
         + `Measured at the decision: ${measured}.`,
@@ -493,6 +577,9 @@ export function providerServing(
  limit already taken, which is the overflow trigger; a provider with no such
  limit is never saturated
 
+ @param neuralwatt - what the run knows of NeuralWatt's day, which the refusal that ends the run states the return
+ time from; absent where the caller has none
+
  @returns Provider to call, or why none can be
 
  @throws {@link EveryProviderDryError} when no provider has budget left,
@@ -508,10 +595,12 @@ export function routeProviderFor(
     reach,
     dry,
     saturated,
+    neuralwatt,
   }: {
     readonly reach: ModelReach;
     readonly dry: ProviderRecord<boolean>;
     readonly saturated: ProviderRecord<boolean>;
+    readonly neuralwatt?: NeuralWattReturn;
   },
 ): ProviderChoice {
   if (PROVIDER_ORDER.every(function isDry(provider,): boolean {
@@ -540,6 +629,8 @@ export function routeProviderFor(
           .join(', ',)
       }; no holds read at this decision`,
       unserving,
+      // Conditional spread keeps the day absent where the caller has none.
+      ...((neuralwatt === undefined) ? {} : { neuralwatt, }),
     },);
   }
 

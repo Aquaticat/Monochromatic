@@ -16,6 +16,7 @@ import {
   providerRecord,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { ModelClient, } from './chat-contract.ts';
+import type { NeuralWattReturn, } from './budget-routing.ts';
 import {
   type MeterState,
   readEveryMeter,
@@ -185,6 +186,13 @@ export type ProviderBudgets = {
    hold rather than declare the run over.
    */
   readonly holds: () => ProviderRecord<number>;
+
+  /**
+   What the run knows of NeuralWatt's day, which the refusal that ends the run states when the free energy returns
+   from: the time of day the run decided its day starts at, that the client never learned one, or that NeuralWatt is
+   off. ABSENT ON A VIEW THAT KNOWS NOTHING OF NEURALWATT, which the refusal then words as "not decided".
+   */
+  readonly neuralwattReturn?: () => NeuralWattReturn;
 };
 
 /**
@@ -210,6 +218,12 @@ export type ProviderBudgetsWithStates = ProviderBudgets & {
    hold or a payment refusal changes the routed bit and never this state.
    */
   readonly readStates: (args: { readonly signal: AbortSignal; },) => Promise<ProviderRecord<MeterState>>;
+
+  /**
+   What the run knows of NeuralWatt's day: off with no NeuralWatt client, unanchored while its client has decided no
+   day start, and the decided time of day once it has. READ OFF THE CLIENT'S DECISION, not off the `METERS` text.
+   */
+  readonly neuralwattReturn: () => NeuralWattReturn;
 };
 
 /**
@@ -353,7 +367,7 @@ export function createProviderBudgets(
     heldOut = notHeldOut,
     now = monotonicMs,
   }: {
-    readonly neuralwatt?: Pick<NeuralWattClient, 'energy'>;
+    readonly neuralwatt?: Pick<NeuralWattClient, 'energy'> & { readonly dayAnchor?: NeuralWattClient['dayAnchor']; };
     readonly synthetic?: Pick<ModelClient, 'quotas'>;
     readonly hyper?: Pick<HyperClient, 'credits'>;
     readonly bedrock?: Pick<BedrockClient, 'credits'>;
@@ -726,6 +740,22 @@ export function createProviderBudgets(
   }
 
   return {
+    neuralwattReturn: function neuralwattReturn(): NeuralWattReturn {
+      if (neuralwatt === undefined)
+        return { kind: 'off', };
+      // A stub client that carries no anchor decided none.
+      /**
+       What the client has decided, without asking it to decide.
+       */
+      const anchor = neuralwatt.dayAnchor?.() ?? { known: false, };
+      if (!anchor.known)
+        return { kind: 'unanchored', };
+      return {
+        kind: 'at',
+        msOfDay: anchor.msOfDay,
+      };
+    },
+
     readStates: async function readStates({ signal, },): Promise<ProviderRecord<MeterState>> {
       /**
        Meter reading this call reports the states of.
