@@ -80,10 +80,10 @@ export function deepSeekCostOf(
   /**
    Prompt tokens not served from the cache: as named, else what the cache
    did not account for, so the whole prompt is priced as misses when the
-   block split nothing.
+   block split nothing; and never more than the prompt leaves after the hits.
    */
-  const missTokens = split.missTokens ?? Math.max(
-    0,
+  const missTokens = Math.min(
+    split.missTokens ?? (usage.prompt_tokens - hitTokens),
     usage.prompt_tokens - hitTokens,
   );
 

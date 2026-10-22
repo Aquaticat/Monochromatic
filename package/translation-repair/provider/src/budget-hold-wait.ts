@@ -6,6 +6,7 @@ import {
   dryForTheModelAsked,
   EveryProviderDryError,
   type ModelReach,
+  unservingMeters,
 } from './budget-routing.ts';
 import type {
   BudgetView,
@@ -156,6 +157,8 @@ function everyProviderDry(
 
  @param holds - hold left per provider
 
+ @param unserving - providers whose wet meter was read dry for serving nothing here, so their clause says why
+
  @returns One clause a reader can tell exhaustion from holds by
 
  @throws Error when a provider reads wet, which no call reaches:
@@ -165,7 +168,7 @@ function everyProviderDry(
 
  @example
  ```ts
- measuredAt({ view, refused: NOBODY_REFUSED, holds: budgets.holds(), },);
+ measuredAt({ view, refused: NOBODY_REFUSED, holds: budgets.holds(), unserving: [], },);
  // => 'meters read synthetic dry, hyper dry, openrouter dry; holds synthetic 0ms, hyper 0ms, openrouter 0ms'
  ```
  */
@@ -174,10 +177,12 @@ function measuredAt(
     view,
     refused,
     holds,
+    unserving,
   }: {
     readonly view: BudgetView;
     readonly refused: ProviderName | typeof NOBODY_REFUSED;
     readonly holds: ProviderRecord<number>;
+    readonly unserving: readonly ProviderName[];
   },
 ): string {
   /**
@@ -198,7 +203,7 @@ function measuredAt(
           + 'read dry',
       );
     }
-    return `${provider} dry${
+    return `${provider} ${unserving.includes(provider,) ? 'wet but not serving this model' : 'dry'}${
       (refused === provider) ? ' (just refused this call)' : ''
     }`;
   },);
@@ -266,11 +271,15 @@ export async function readBudgetsPastHolds(
   },);
 
   /**
+   What each provider's budget reads right now, before any provider is counted dry for serving nothing here.
+   */
+  const firstRead = await budgets.read({ signal, },);
+  /**
    What each provider's budget looks like right now.
    */
   const first = dryForTheModelAsked({
     reach,
-    dry: await budgets.read({ signal, },),
+    dry: firstRead,
   },);
   /**
    The same view with the refusal that routed here folded in.
@@ -321,6 +330,14 @@ export async function readBudgetsPastHolds(
         view: first,
         refused,
         holds,
+        unserving: unservingMeters({
+          reach,
+          dry: firstRead,
+        },),
+      },),
+      unserving: unservingMeters({
+        reach,
+        dry: firstRead,
       },),
     },);
   }
@@ -349,10 +366,17 @@ export async function readBudgetsPastHolds(
    a hold that has just expired is the provider coming back. Folding the
    refusal in a second time would send the call to an all-dry error after
    waiting for exactly the hold that would have cleared it.
+
+   READ BEFORE ANY PROVIDER IS COUNTED DRY FOR SERVING NOTHING HERE, so the
+   refusal text can tell that cause from a payment refusal.
+   */
+  const secondRead = await budgets.read({ signal, },);
+  /**
+   The view after the wait.
    */
   const second = dryForTheModelAsked({
     reach,
-    dry: await budgets.read({ signal, },),
+    dry: secondRead,
   },);
   if (everyProviderDry({ view: second, },)) {
     throw new EveryProviderDryError({
@@ -361,8 +385,16 @@ export async function readBudgetsPastHolds(
           view: second,
           refused: NOBODY_REFUSED,
           holds: budgets.holds(),
+          unserving: unservingMeters({
+            reach,
+            dry: secondRead,
+          },),
         },)
       }`,
+      unserving: unservingMeters({
+        reach,
+        dry: secondRead,
+      },),
     },);
   }
   return second;

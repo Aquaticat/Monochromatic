@@ -75,22 +75,46 @@ export class EveryProviderDryError extends Error {
    composed by the caller from the dryness record and the holds, and "no
    reading cited" where the caller has none
 
+   @param unserving - providers whose meter read wet but which were counted
+   dry because they serve nothing for the model asked (`unservingMeters`),
+   so the sentence about Xiaomi names the cause that applies: a payment
+   refusal, or a wet meter that cannot serve this call
+
    @example
    ```ts
    new EveryProviderDryError({ measured: 'meters read synthetic dry, hyper dry, openrouter dry; holds synthetic 0ms, hyper 0ms, openrouter 0ms', },);
    ```
    */
   public constructor(
-    { measured = 'no reading cited', }: { readonly measured?: string; } = {},
+    {
+      measured = 'no reading cited',
+      unserving = [],
+    }: {
+      readonly measured?: string;
+      readonly unserving?: readonly ProviderName[];
+    } = {},
   ) {
+    /**
+     Whether Xiaomi is in the count only because it serves other models: its meter reads wet, so no payment refusal
+     is behind it.
+     */
+    const xiaomiWetButUnserving = unserving.includes('xiaomi',);
     super(
-      'Every provider is out of budget at once: NeuralWatt has no free daily energy left, '
-        + 'Synthetic has no weekly credit left (or no five-hour request left, on a reply that still carries '
-        + 'that window), Charm Hyper has no balance left, Amazon Bedrock has no credit left short of the owner\'s '
-        + 'card, DeepSeek has no balance left (or says its account is unavailable), Xiaomi has refused a call '
-        + 'for payment, and OpenRouter has no credit left. Nothing further can be bought, so this run ends. '
-        + 'NeuralWatt\'s free energy returns at 00:00 UTC; Synthetic regenerates on its own schedule; Hyper, '
-        + 'DeepSeek, Xiaomi and OpenRouter refill on purchase; Bedrock\'s credit is never topped up. '
+      `Every provider is out of budget at once: NeuralWatt has no free daily energy left, `
+        + `Synthetic has no weekly credit left (or no five-hour request left, on a reply that still carries `
+        + `that window), Charm Hyper has no balance left, Amazon Bedrock has no credit left short of the owner's `
+        + `card, DeepSeek has no balance left (or says its account is unavailable), ${
+         xiaomiWetButUnserving
+          ? 'Xiaomi\'s meter reads wet but it serves only MiMo V2.6 Flash, not the model asked, '
+          : 'Xiaomi has refused a call for payment, '
+         }and OpenRouter has no credit left. Nothing further can be bought, so this run ends. `
+        + `NeuralWatt's free energy returns at 00:00 UTC; Synthetic regenerates on its own schedule; Hyper, `
+        + `DeepSeek and OpenRouter refill on purchase; ${
+         xiaomiWetButUnserving
+          ? ''
+          : 'Xiaomi, once refused for payment, is read again only after one of its calls settles, so a top-up is '
+            + 'seen on the next launch; '
+         }Bedrock's credit is never topped up. `
         + `Measured at the decision: ${measured}.`,
     );
     this.name = 'EveryProviderDryError';
@@ -115,6 +139,38 @@ export type ModelReach = ProviderRecord<boolean>;
  (`xiaomi-spend.ts`) and only a payment refusal at the wire marks it dry.
  */
 const ALWAYS_WET_METERS: ReadonlySet<ProviderName> = new Set<ProviderName>(['xiaomi',],);
+
+/**
+ The providers `dryForTheModelAsked` flips: an always-wet meter that reads wet and serves nothing for the model asked.
+
+ A provider that read dry itself, a payment refusal among the causes, is not listed, so the refusal text can tell the
+ two causes apart.
+
+ @param reach - providers that serve the model asked
+
+ @param dry - dryness per provider, budget reading and anything learned at the wire taken together
+
+ @returns The providers read dry only because they serve nothing here, in spending order
+
+ @example
+ ```ts
+ const flipped = unservingMeters({ reach, dry, },);
+ ```
+ */
+export function unservingMeters(
+  {
+    reach,
+    dry,
+  }: {
+    readonly reach: ModelReach;
+    readonly dry: ProviderRecord<boolean>;
+  },
+): readonly ProviderName[] {
+  return PROVIDER_ORDER.filter(function flipped(provider,): boolean {
+    return ALWAYS_WET_METERS.has(provider,) && (!dry[provider])
+      && (!reach[provider]);
+  },);
+}
 
 /**
  The dryness the run-ending stop reads for one model: a provider whose meter cannot read dry, and which does not serve
@@ -460,14 +516,23 @@ export function routeProviderFor(
     // THE READING IT DECIDED ON, cited (ledger P12): this refusal said "no
     // reading cited" where the router had the whole dryness record in hand.
     // EVERY PROVIDER READS DRY HERE: this branch runs only when `isDry` held
-    // for every provider in `PROVIDER_ORDER`, so each clause says "dry".
+    // for every provider in `PROVIDER_ORDER`, so each clause says "dry", or, for a wet meter that serves nothing
+    // here, why it counts as dry.
+    /**
+     Providers read dry only for serving nothing here, whose clause says so instead of "dry".
+     */
+    const unserving = unservingMeters({
+      reach,
+      dry,
+    },);
     throw new EveryProviderDryError({
       measured: `meters read ${
         PROVIDER_ORDER.map(function stateOf(provider,): string {
-          return `${provider} dry`;
+          return unserving.includes(provider,) ? `${provider} wet but not serving this model` : `${provider} dry`;
         },)
           .join(', ',)
       }; no holds read at this decision`,
+      unserving,
     },);
   }
 
