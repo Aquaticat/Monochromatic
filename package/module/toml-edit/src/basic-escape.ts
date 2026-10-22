@@ -18,11 +18,11 @@
  Named single-character basic-string escapes keyed by codepoint.
  */
 const NAMED_BASIC_ESCAPES: Record<number, string> = {
-  0x08: '\\b',
-  0x09: '\\t',
-  0x0A: '\\n',
-  0x0C: '\\f',
-  0x0D: '\\r',
+  0x08: String.raw`\b`,
+  0x09: String.raw`\t`,
+  0x0A: String.raw`\n`,
+  0x0C: String.raw`\f`,
+  0x0D: String.raw`\r`,
 };
 
 /**

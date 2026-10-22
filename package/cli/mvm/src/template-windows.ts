@@ -315,7 +315,7 @@ async function installVirtioFs({
   // Push WinFsp MSI to guest via file transfer (not on virtio-win ISO)
   rl.info('pushing WinFsp MSI to guest...',);
   await guestFilePush({
-    guestPath: 'C:\\winfsp.msi',
+    guestPath: String.raw`C:\winfsp.msi`,
     hostPath: winfspMsiPath,
   },);
 
@@ -323,7 +323,7 @@ async function installVirtioFs({
   rl.info('installing WinFsp...',);
   await guestExecWait({
     command:
-      'Start-Process msiexec -ArgumentList /i,C:\\winfsp.msi,/qn,/norestart,INSTALLLEVEL=1000,/log,C:\\winfsp-install.log -Wait',
+      String.raw`Start-Process msiexec -ArgumentList /i,C:\winfsp.msi,/qn,/norestart,INSTALLLEVEL=1000,/log,C:\winfsp-install.log -Wait`,
   },);
 
   // Install all-in-one guest tools MSI from virtio-win CDROM (provides VirtioFsSvc)

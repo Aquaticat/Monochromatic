@@ -1060,7 +1060,7 @@ await describe({
             suggestion: '/tmp/setup.sh',
           },
           {
-            guestPath: 'Temp\\setup.ps1',
+            guestPath: String.raw`Temp\setup.ps1`,
             meta: {
               ...AGENT_ROUTE,
               osFamily: 'windows',

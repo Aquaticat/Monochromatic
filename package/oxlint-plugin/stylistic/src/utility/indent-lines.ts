@@ -62,7 +62,8 @@ export function lineTableOf(sourceText: string,): IndentLineTable {
       arr: pieces,
       index: lineIndex,
     },);
-    const width = leadingWhitespace(piece,).length;
+    const width = leadingWhitespace(piece,)
+      .length;
     widths.push(width,);
     contentStarts.push(at({
       arr: lineStarts,
@@ -86,7 +87,10 @@ export function lineTableOf(sourceText: string,): IndentLineTable {
  Parameters for {@link inTemplateFlagsOf}.
  */
 export type InTemplateFlagsOfParams = {
-  readonly templateSpans: readonly (readonly [number, number])[];
+  readonly templateSpans: readonly (readonly [
+    number,
+    number
+  ])[];
   readonly contentStarts: readonly number[];
 };
 

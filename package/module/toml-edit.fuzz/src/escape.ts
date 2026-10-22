@@ -42,13 +42,13 @@ const SHORT_UNICODE_WIDTH = 4;
  Named single-character escapes keyed by codepoint.
  */
 const NAMED_ESCAPES: Record<number, string> = {
-  0x08: '\\b',
-  0x09: '\\t',
-  0x0A: '\\n',
-  0x0C: '\\f',
-  0x0D: '\\r',
-  0x22: '\\"',
-  0x5C: '\\\\',
+  0x08: String.raw`\b`,
+  0x09: String.raw`\t`,
+  0x0A: String.raw`\n`,
+  0x0C: String.raw`\f`,
+  0x0D: String.raw`\r`,
+  0x22: String.raw`\"`,
+  0x5C: String.raw`\\`,
 };
 
 /**

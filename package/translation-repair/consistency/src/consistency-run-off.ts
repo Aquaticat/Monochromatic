@@ -257,7 +257,7 @@ export function buildConsistencyRunOffMessages(
       ? `${fence} ${label} TRANSLATION ${fence}\n(this slice carries no English)\n`
       : (shownAt === undefined)
         ? `${fence} ${label} TRANSLATION ${fence}\n${view.english
-        .text}\n`
+          .text}\n`
         : `${fence} ${label} TRANSLATION ${fence}\n(the same slice as ${shownAt}: read the TRANSLATION shown there)\n`;
     /**
      The place's slot, for a frame.

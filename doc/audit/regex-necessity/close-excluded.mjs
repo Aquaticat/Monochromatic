@@ -1,21 +1,47 @@
 // Close the issues filed for sites later excluded on provenance: generated output
 // and user-provided reference material.
-import { readFileSync, writeFileSync, } from 'node:fs';
+import {
+  readFileSync,
+  writeFileSync,
+} from 'node:fs';
 import { execFileSync, } from 'node:child_process';
 import { join, } from 'node:path';
 import { homedir, } from 'node:os';
 
-const AUDIT = process.env.REGEX_AUDIT_WORK ?? `${homedir()}/temp/agent/regex-audit`;
-const ROOT = readFileSync(join(AUDIT, 'repo-root.txt'), 'utf8').trim();
+const AUDIT = process.env
+  .REGEX_AUDIT_WORK
+  ?? `${homedir()}/temp/agent/regex-audit`;
+const ROOT = readFileSync(
+  join(
+    AUDIT,
+    'repo-root.txt'
+  ),
+  'utf8'
+)
+  .trim();
 
-const ledger = readFileSync(join(AUDIT, 'filed2.jsonl'), 'utf8').split('\n')
+const ledger = readFileSync(
+  join(
+    AUDIT,
+    'filed2.jsonl'
+  ),
+  'utf8'
+)
+  .split('\n')
   .filter((line) => line.trim() !== '')
   .map((line) => JSON.parse(line));
-const payloads = JSON.parse(readFileSync(join(AUDIT, 'payloads.json'), 'utf8'));
+const payloads = JSON.parse(readFileSync(
+  join(
+    AUDIT,
+    'payloads.json'
+  ),
+  'utf8'
+));
 const liveSiteIds = new Set(payloads.map((payload) => payload.siteId));
 
 const templateIssues = ledger
-  .filter((entry) => entry.repoPath.endsWith('template-editor.template.html'))
+  .filter((entry) => entry.repoPath
+    .endsWith('template-editor.template.html'))
   .map((entry) => `#${entry.number}`);
 
 const GENERATED_COMMENT = `This site is in generated output, so there is nothing to change here.
@@ -30,27 +56,84 @@ const UPLOADS_COMMENT = `This file is user-provided reference material rather th
 
 Closing as wontfix. The exclusion and its evidence are recorded in \`doc/audit/regex-necessity.md\` and in the harness's provenance exclusions (\`doc/audit/regex-necessity/supplement.mjs\`).`;
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const bodyPath = join(AUDIT, 'close-comment.md');
+function sleep(ms) { return new Promise((resolve) => setTimeout(
+  resolve,
+  ms
+)); }
+const bodyPath = join(
+  AUDIT,
+  'close-comment.md'
+);
 
 let closed = 0;
 let failed = 0;
 
 for (const entry of ledger) {
   if (liveSiteIds.has(entry.siteId)) continue;
-  const isUploads = entry.repoPath.includes('/uploads/');
+  const isUploads = entry.repoPath
+    .includes('/uploads/');
   const comment = isUploads ? UPLOADS_COMMENT : GENERATED_COMMENT;
   const label = isUploads ? 'wontfix' : 'duplicate';
-  writeFileSync(bodyPath, comment, 'utf8');
+  writeFileSync(
+    bodyPath,
+    comment,
+    'utf8'
+  );
   try {
-    execFileSync('gh', ['issue', 'comment', String(entry.number), '--body-file', bodyPath, ], { cwd: ROOT, encoding: 'utf8', timeout: 120_000, });
-    execFileSync('gh', ['issue', 'edit', String(entry.number), '--add-label', label, ], { cwd: ROOT, encoding: 'utf8', timeout: 120_000, });
-    execFileSync('gh', ['issue', 'close', String(entry.number), '--reason', isUploads ? 'not planned' : 'duplicate', ], { cwd: ROOT, encoding: 'utf8', timeout: 120_000, });
+    execFileSync(
+      'gh',
+      [
+        'issue',
+        'comment',
+        String(entry.number),
+        '--body-file',
+        bodyPath,
+      ],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        timeout: 120_000,
+      }
+    );
+    execFileSync(
+      'gh',
+      [
+        'issue',
+        'edit',
+        String(entry.number),
+        '--add-label',
+        label,
+      ],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        timeout: 120_000,
+      }
+    );
+    execFileSync(
+      'gh',
+      [
+        'issue',
+        'close',
+        String(entry.number),
+        '--reason',
+        isUploads ? 'not planned' : 'duplicate',
+      ],
+      {
+        cwd: ROOT,
+        encoding: 'utf8',
+        timeout: 120_000,
+      }
+    );
     closed += 1;
     console.log(`closed #${entry.number} (${label}) ${entry.repoPath}:${entry.line}`);
   } catch (error) {
     failed += 1;
-    console.error(`FAILED #${entry.number}: ${String(error).slice(0, 200)}`);
+    console.error(`FAILED #${entry.number}: ${String(error)
+      .slice(
+        0,
+        200
+      )}`);
   }
   await sleep(900);
 }

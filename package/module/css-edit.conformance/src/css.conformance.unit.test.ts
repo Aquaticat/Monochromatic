@@ -58,7 +58,7 @@ const validCases: readonly ValidCase[] = [
   { label: 'block at-rule', input: '@media (width > 1px) { .a { top: 0; } }', topLevelKinds: ['atRule',], },
   { label: 'unknown at-rule with declaration body', input: '@mixin --m { top: 0; }', topLevelKinds: ['atRule',], },
   { label: 'nested at-rules', input: '@layer a { @layer b { .x { top: 0; } } }', topLevelKinds: ['atRule',], },
-  { label: 'escaped at-keyword', input: '@\\6d ixin --m { top: 0; }', topLevelKinds: ['atRule',], },
+  { label: 'escaped at-keyword', input: String.raw`@\6d ixin --m { top: 0; }`, topLevelKinds: ['atRule',], },
   { label: 'at-rule prelude with nested parens', input: '@supports (not (display: flex)) { .a { top: 0; } }', topLevelKinds: ['atRule',], },
   //endregion At-rules
 

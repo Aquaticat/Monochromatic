@@ -197,7 +197,7 @@ function exerciseScenario(options: {
         key: string,
       ): void {
         void `${key}=${value}:${String(options.lru
-        .has(key,),)}`;
+          .has(key,),)}`;
       },
     },);
   void options.lru

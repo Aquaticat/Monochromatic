@@ -13,7 +13,7 @@ import { analyzeCadence, FrameFormatError, formatCadence, frameHash, inputWindow
 const bmp = ({ pixels, gap = 40, marker = 0 }: { pixels: readonly number[]; gap?: number; marker?: number }) => {
   const bytes = new Uint8Array(14 + gap + pixels.length);
   bytes[0] = 0x42;
-  bytes[1] = 0x4d;
+  bytes[1] = 0x4D;
   new DataView(bytes.buffer).setUint32(10, 14 + gap, true);
   bytes.fill(marker, 14, 14 + gap);
   bytes.set(pixels, 14 + gap);
@@ -37,7 +37,7 @@ test('the pixel offset field decides where the hash starts', () => {
 });
 
 test('a file that is not a BMP, or whose offset lies outside it, is refused with a message naming the problem', () => {
-  assert.throws(() => frameHash(new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])), FrameFormatError);
+  assert.throws(() => frameHash(new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])), FrameFormatError);
   assert.throws(() => frameHash(new Uint8Array(5)), FrameFormatError);
   const broken = bmp({ pixels: [1] });
   new DataView(broken.buffer).setUint32(10, broken.length + 1, true);
@@ -56,9 +56,9 @@ test('a view into a larger buffer hashes only its own bytes', () => {
 
 test('the input window is the recorder rate times the time of the first and of the last moment', () => {
   assert.equal(recordFps, 60);
-  assert.deepEqual(inputWindow({ offsetMs: 500, inputMs: 1920 }), { firstSlot: 30, lastSlot: 145 });
+  assert.deepEqual(inputWindow({ offsetMs: 500, inputMs: 1_920 }), { firstSlot: 30, lastSlot: 145 });
   assert.deepEqual(inputWindow({ offsetMs: 0, inputMs: 0 }), { firstSlot: 0, lastSlot: 0 });
-  assert.deepEqual(inputWindow({ offsetMs: 508, inputMs: 1000 }), { firstSlot: 30, lastSlot: 90 });
+  assert.deepEqual(inputWindow({ offsetMs: 508, inputMs: 1_000 }), { firstSlot: 30, lastSlot: 90 });
 });
 
 test('every frame that changes counts as changed and no run is reported', () => {
@@ -101,7 +101,7 @@ test('a window of one slot, an empty recording, and a first slot of zero compare
 });
 
 test('a frozen pipeline shows as one long run and a smooth one as none', () => {
-  const frozen = analyzeCadence({ hashes: hashesOf('a' + 'b'.repeat(30) + 'c'), window: { firstSlot: 0, lastSlot: 31 } });
+  const frozen = analyzeCadence({ hashes: hashesOf(`a${  'b'.repeat(30)  }c`), window: { firstSlot: 0, lastSlot: 31 } });
   assert.deepEqual([frozen.longestIdenticalRun, frozen.identicalRuns], [29, [{ start: 2, length: 29 }]]);
   const smooth = analyzeCadence({ hashes: Array.from({ length: 120 }, (_, slot) => String(slot)), window: { firstSlot: 0, lastSlot: 119 } });
   assert.deepEqual([smooth.changed, smooth.identical, smooth.identicalRuns], [119, 0, []]);

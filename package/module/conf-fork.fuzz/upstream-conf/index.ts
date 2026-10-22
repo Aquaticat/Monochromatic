@@ -14,29 +14,32 @@ import {
 } from 'dot-prop';
 import envPaths from 'env-paths';
 import {writeFileSync as atomicWriteFileSync} from 'atomically';
-import {Ajv2020 as Ajv, type ValidateFunction as AjvValidateFunction} from 'ajv/dist/2020.js';
+import {
+  Ajv2020 as Ajv,
+  type ValidateFunction as AjvValidateFunction
+} from 'ajv/dist/2020.js';
 import ajvFormatsModule from 'ajv-formats';
 import debounceFn from 'debounce-fn';
 import semver from 'semver';
-import {type JSONSchema} from 'json-schema-typed';
+import type {JSONSchema} from 'json-schema-typed';
 import {
   concatUint8Arrays,
   stringToUint8Array,
   uint8ArrayToString,
 } from 'uint8array-extras';
-import {
-  type Deserialize,
-  type Migrations,
-  type OnDidChangeCallback,
-  type Options,
-  type Serialize,
-  type Unsubscribe,
-  type OnDidAnyChangeCallback,
-  type BeforeEachMigrationCallback,
-  type DotNotationKeyOf,
-  type DotNotationValueOf,
-  type PartialObjectDeep,
-  type Schema,
+import type {
+  Deserialize,
+  Migrations,
+  OnDidChangeCallback,
+  Options,
+  Serialize,
+  Unsubscribe,
+  OnDidAnyChangeCallback,
+  BeforeEachMigrationCallback,
+  DotNotationKeyOf,
+  DotNotationValueOf,
+  PartialObjectDeep,
+  Schema,
 } from './types.ts';
 
 type EncryptionAlgorithm = NonNullable<Options<Record<string, unknown>>['encryptionAlgorithm']>;
@@ -48,13 +51,16 @@ const supportedEncryptionAlgorithms = new Set<EncryptionAlgorithm>([
   'aes-256-ctr',
 ]);
 
-const isSupportedEncryptionAlgorithm = (value: unknown): value is EncryptionAlgorithm => typeof value === 'string' && supportedEncryptionAlgorithms.has(value as EncryptionAlgorithm);
+function isSupportedEncryptionAlgorithm(value: unknown): value is EncryptionAlgorithm { return ((typeof value) === 'string') && supportedEncryptionAlgorithms.has(value as EncryptionAlgorithm); }
 
-const createPlainObject = <T = Record<string, unknown>>(): T => Object.create(null);
+function createPlainObject<T = Record<string, unknown>>(): T { return Object.create(null); }
 
-const isExist = <T = unknown>(data: T): boolean => data !== undefined;
+function isExist<T = unknown>(data: T): boolean { return data !== undefined; }
 
-const checkValueType = (key: string, value: unknown): void => {
+function checkValueType(
+  key: string,
+  value: unknown
+): void {
   const nonJsonTypes = new Set([
     'undefined',
     'symbol',
@@ -66,12 +72,15 @@ const checkValueType = (key: string, value: unknown): void => {
   if (nonJsonTypes.has(type)) {
     throw new TypeError(`Setting a value of type \`${type}\` for key \`${key}\` is not allowed as it's not supported by JSON`);
   }
-};
+}
 
 const INTERNAL_KEY = '__internal__';
 const MIGRATION_KEY = `${INTERNAL_KEY}.migrations.version`;
 
-export default class Conf<T extends Record<string, any> = Record<string, unknown>> implements Iterable<[keyof T, T[keyof T]]> {
+export default class Conf<T extends Record<string, any> = Record<string, unknown>> implements Iterable<[
+  keyof T,
+  T[keyof T]
+]> {
 	/**
 	Get the path to the config file.
 	*/
@@ -112,24 +121,41 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
 	Get an item.
 
 	@param key - The key of the item to get.
+  
 	@param defaultValue - The default value if the item does not exist.
 
 	Tip: To get all items, see `.store`.
 	*/
   get<Key extends keyof T>(key: Key): T[Key];
-  get<Key extends keyof T>(key: Key, defaultValue: Required<T>[Key]): Required<T>[Key];
+  get<Key extends keyof T>(
+    key: Key,
+    defaultValue: Required<T>[Key]
+  ): Required<T>[Key];
   get<Key extends DotNotationKeyOf<T>>(key: Key): DotNotationValueOf<T, Key>;
-  get<Key extends DotNotationKeyOf<T>>(key: Key, defaultValue: NonNullable<DotNotationValueOf<T, Key>>): NonNullable<DotNotationValueOf<T, Key>>;
+  get<Key extends DotNotationKeyOf<T>>(
+    key: Key,
+    defaultValue: NonNullable<DotNotationValueOf<T, Key>>
+  ): NonNullable<DotNotationValueOf<T, Key>>;
 	// This overload is used for dot-notation access.
 	// We exclude `keyof T` and `DotNotationKeyOf<T>` as an incorrect type for the default value should not fall through to this overload.
-  get<Key extends string, Value = unknown>(key: Exclude<Key, DotNotationKeyOf<T>>, defaultValue?: Value): Value;
-  get(key: string, defaultValue?: unknown): unknown {
-    if (typeof key !== 'string') {
+  get<Key extends string, Value = unknown>(
+    key: Exclude<Key, DotNotationKeyOf<T>>,
+    defaultValue?: Value
+  ): Value;
+  get(
+    key: string,
+    defaultValue?: unknown
+  ): unknown {
+    if ((typeof key) !== 'string') {
       throw new TypeError(`Expected \`key\` to be of type \`string\`, got ${typeof key}`);
     }
 
-    if (this.#options.accessPropertiesByDotNotation) {
-      return this._get(key, defaultValue);
+    if (this.#options
+      .accessPropertiesByDotNotation) {
+      return this._get(
+        key,
+        defaultValue
+      );
     }
 
     const {store} = this;
@@ -140,19 +166,32 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
 	Set an item or multiple items at once.
 
 	@param {key|object} - You can use [dot-notation](https://github.com/sindresorhus/dot-prop) in a key to access nested properties. Or a hashmap of items to set at once.
+  
 	@param value - Must be JSON serializable. Trying to set the type `undefined`, `function`, or `symbol` will result in a `TypeError`.
 	*/
-  set<Key extends keyof T>(key: Key, value?: T[Key]): void;
-  set<Key extends DotNotationKeyOf<T>>(key: Key, Value?: DotNotationValueOf<T, Key>): void;
+  set<Key extends keyof T>(
+    key: Key,
+    value?: T[Key]
+  ): void;
+  set<Key extends DotNotationKeyOf<T>>(
+    key: Key,
+    Value?: DotNotationValueOf<T, Key>
+  ): void;
 	// Fallback for dynamic dot-notation paths that can't be statically typed
-  set(key: string, value: unknown): void;
+  set(
+    key: string,
+    value: unknown
+  ): void;
   set(object: PartialObjectDeep<T>): void;
-  set<Key extends keyof T>(key: PartialObjectDeep<T> | string, value?: unknown): void {
-    if (typeof key !== 'string' && typeof key !== 'object') {
+  set<Key extends keyof T>(
+    key: PartialObjectDeep<T> | string,
+    value?: unknown
+  ): void {
+    if (((typeof key) !== 'string') && ((typeof key) !== 'object')) {
       throw new TypeError(`Expected \`key\` to be of type \`string\` or \`object\`, got ${typeof key}`);
     }
 
-    if (typeof key !== 'object' && value === undefined) {
+    if (((typeof key) !== 'object') && (value === undefined)) {
       throw new TypeError('Use `delete()` to clear values');
     }
 
@@ -163,26 +202,44 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
 		// Read from the file instead of the cache so that changes made by another process are not lost when writing.
     const store = this._readStore();
 
-    const set = (key: string, value?: T[Key] | T | unknown): void => {
-      checkValueType(key, value);
-      if (this.#options.accessPropertiesByDotNotation) {
-        setProperty(store, key, value);
+    function set(
+      key: string,
+      value?: T[Key] | T | unknown
+    ): void {
+      checkValueType(
+        key,
+        value
+      );
+      if (this.#options
+        .accessPropertiesByDotNotation) {
+        setProperty(
+          store,
+          key,
+          value
+        );
       } else {
-        if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        if ((key === '__proto__') || (key === 'constructor')
+          || (key === 'prototype')) {
           return;
         }
 
         store[key as Key] = value as T[Key];
       }
-    };
+    }
 
-    if (typeof key === 'object') {
+    if ((typeof key) === 'object') {
       const object = key;
       for (const [key, value] of Object.entries(object)) {
-        set(key, value);
+        set(
+          key,
+          value
+        );
       }
     } else {
-      set(key, value);
+      set(
+        key,
+        value
+      );
     }
 
     this.store = store;
@@ -196,8 +253,12 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
   has<Key extends keyof T>(key: Key): boolean;
   has<Key extends DotNotationKeyOf<T>>(key: Key): boolean;
   has(key: string): boolean {
-    if (this.#options.accessPropertiesByDotNotation) {
-      return hasProperty(this.store, key);
+    if (this.#options
+      .accessPropertiesByDotNotation) {
+      return hasProperty(
+        this.store,
+        key
+      );
     }
 
     return key in this.store;
@@ -212,6 +273,7 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
 	The `value` must be JSON serializable. Trying to set the type like `undefined`, `function`, or `symbol` will result in a `TypeError`.
 
 	@param key - The key of the array to append to. You can use [dot-notation](https://github.com/sindresorhus/dot-prop) to access nested properties.
+  
 	@param value - The item to append. Must be JSON serializable.
 
 	@example
@@ -227,20 +289,43 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
 	//=> ['first']
 	```
 	*/
-  appendToArray<Key extends keyof T>(key: Key, value: T[Key] extends ReadonlyArray<infer U> ? U : unknown): void;
-  appendToArray<Key extends DotNotationKeyOf<T>>(key: Key, value: DotNotationValueOf<T, Key> extends ReadonlyArray<infer U> ? U : unknown): void;
-  appendToArray(key: string, value: unknown): void {
-    checkValueType(key, value);
+  appendToArray<Key extends keyof T>(
+    key: Key,
+    value: T[Key] extends readonly (infer U)[] ? U : unknown
+  ): void;
+  appendToArray<Key extends DotNotationKeyOf<T>>(
+    key: Key,
+    value: DotNotationValueOf<T, Key> extends readonly (infer U)[] ? U : unknown
+  ): void;
+  appendToArray(
+    key: string,
+    value: unknown
+  ): void {
+    checkValueType(
+      key,
+      value
+    );
     const store = this._readStore();
-    const array = this.#options.accessPropertiesByDotNotation
-      ? getProperty(store, key, [])
+    const array = this.#options
+      .accessPropertiesByDotNotation
+      ? getProperty(
+        store,
+        key,
+        []
+      )
       : (key in store ? store[key] as unknown : []);
 
     if (!Array.isArray(array)) {
       throw new TypeError(`The key \`${key}\` is already set to a non-array value`);
     }
 
-    this.set(key, [...(array as unknown[]), value]);
+    this.set(
+      key,
+      [
+        ...(array as unknown[]),
+        value
+      ]
+    );
   }
 
 	/**
@@ -255,12 +340,19 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
   reset(...keys: string[]): void {
     for (const key of keys) {
 			// The defaults are stored as a flat object, so a dot-notation key has to be resolved to reach a nested default.
-      const defaultValue = this.#options.accessPropertiesByDotNotation
-        ? getProperty(this.#defaultValues, key)
+      const defaultValue = this.#options
+        .accessPropertiesByDotNotation
+        ? getProperty(
+          this.#defaultValues,
+          key
+        )
         : this.#defaultValues[key as keyof T];
 
       if (isExist(defaultValue)) {
-        this.set(key, defaultValue);
+        this.set(
+          key,
+          defaultValue
+        );
       }
     }
   }
@@ -274,8 +366,12 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
   delete<Key extends DotNotationKeyOf<T>>(key: Key): void;
   delete(key: string): void {
     const store = this._readStore();
-    if (this.#options.accessPropertiesByDotNotation) {
-      deleteProperty(store, key);
+    if (this.#options
+      .accessPropertiesByDotNotation) {
+      deleteProperty(
+        store,
+        key
+      );
     } else {
 			// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete store[key];
@@ -294,9 +390,17 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
 
     for (const key of Object.keys(this.#defaultValues)) {
       if (isExist(this.#defaultValues[key])) {
-        checkValueType(key, this.#defaultValues[key]);
-        if (this.#options.accessPropertiesByDotNotation) {
-          setProperty(newStore as Record<string, any>, key, this.#defaultValues[key]);
+        checkValueType(
+          key,
+          this.#defaultValues[key]
+        );
+        if (this.#options
+          .accessPropertiesByDotNotation) {
+          setProperty(
+            newStore as Record<string, any>,
+            key,
+            this.#defaultValues[key]
+          );
         } else {
           (newStore as any)[key] = this.#defaultValues[key];
         }
@@ -310,7 +414,9 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
 	Watches the given `key`, calling `callback` on any changes.
 
 	@param key - The key to watch.
+  
 	@param callback - A callback function that is called on any changes. When a `key` is first set `oldValue` will be `undefined`, and when a key is deleted `newValue` will be `undefined`.
+  
 	@returns A function, that when called, will unsubscribe.
 
 	@example
@@ -320,18 +426,30 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
 	unsubscribe();
 	```
 	*/
-  onDidChange<Key extends keyof T>(key: Key, callback: OnDidChangeCallback<T[Key]>): Unsubscribe;
-  onDidChange<Key extends DotNotationKeyOf<T>>(key: Key, callback: OnDidChangeCallback<DotNotationValueOf<T, Key>>): Unsubscribe;
-  onDidChange<Key extends string>(key: Key, callback: OnDidChangeCallback<any>): Unsubscribe {
-    if (typeof key !== 'string') {
+  onDidChange<Key extends keyof T>(
+    key: Key,
+    callback: OnDidChangeCallback<T[Key]>
+  ): Unsubscribe;
+  onDidChange<Key extends DotNotationKeyOf<T>>(
+    key: Key,
+    callback: OnDidChangeCallback<DotNotationValueOf<T, Key>>
+  ): Unsubscribe;
+  onDidChange<Key extends string>(
+    key: Key,
+    callback: OnDidChangeCallback<any>
+  ): Unsubscribe {
+    if ((typeof key) !== 'string') {
       throw new TypeError(`Expected \`key\` to be of type \`string\`, got ${typeof key}`);
     }
 
-    if (typeof callback !== 'function') {
+    if ((typeof callback) !== 'function') {
       throw new TypeError(`Expected \`callback\` to be of type \`function\`, got ${typeof callback}`);
     }
 
-    return this._handleValueChange(() => this.get(key), callback);
+    return this._handleValueChange(
+      () => this.get(key),
+      callback
+    );
   }
 
 	/**
@@ -340,6 +458,7 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
 	`oldValue` and `newValue` will be the config object before and after the change, respectively. You must compare `oldValue` to `newValue` to find out what changed.
 
 	@param callback - A callback function that is called on any changes.
+  
 	@returns A function, that when called, will unsubscribe.
 
 	@example
@@ -350,7 +469,7 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
 	```
 	*/
   onDidAnyChange(callback: OnDidAnyChangeCallback<T>): Unsubscribe {
-    if (typeof callback !== 'function') {
+    if ((typeof callback) !== 'function') {
       throw new TypeError(`Expected \`callback\` to be of type \`function\`, got ${typeof callback}`);
     }
 
@@ -361,7 +480,8 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
 	Get the item count.
 	*/
   get size(): number {
-    return Object.keys(this.store).length;
+    return Object.keys(this.store)
+      .length;
   }
 
 	/**
@@ -381,7 +501,8 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
 	```
 	*/
   get store(): T {
-    if (!this.#options.cache) {
+    if (!this.#options
+      .cache) {
       return this._readUserStore();
     }
 
@@ -393,16 +514,35 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
     this._ensureDirectory();
 
 		// Preserve existing internal data if it exists and the new value doesn't contain it
-    if (!hasProperty(value, INTERNAL_KEY)) {
+    if (!hasProperty(
+      value,
+      INTERNAL_KEY
+    )) {
       try {
 				// Read directly from file to avoid recursion during migration
-        const data = fs.readFileSync(this.path, this.#encryptionKey ? null : 'utf8');
+        const data = fs.readFileSync(
+          this.path,
+          this.#encryptionKey ? null : 'utf8'
+        );
         const dataString = this._decryptData(data);
         const currentStore = this._deserialize(dataString);
-        if (hasProperty(currentStore, INTERNAL_KEY)) {
+        if (hasProperty(
+          currentStore,
+          INTERNAL_KEY
+        )) {
 					// Copy first. The caller's object must not be changed, and it may be the same object the `store` getter handed out, which must never contain the internal key.
-          value = Object.assign(createPlainObject(), value);
-          setProperty(value, INTERNAL_KEY, getProperty(currentStore, INTERNAL_KEY));
+          value = Object.assign(
+            createPlainObject(),
+            value
+          );
+          setProperty(
+            value,
+            INTERNAL_KEY,
+            getProperty(
+              currentStore,
+              INTERNAL_KEY
+            )
+          );
         }
       } catch {
 				// Silently ignore errors when trying to preserve internal data
@@ -416,12 +556,19 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
     }
 
     this._write(value);
-    this.events.dispatchEvent(new Event('change'));
+    this.events
+      .dispatchEvent(new Event('change'));
   }
 
-  * [Symbol.iterator](): IterableIterator<[keyof T, T[keyof T]]> {
+  * [Symbol.iterator](): IterableIterator<[
+    keyof T,
+    T[keyof T]
+  ]> {
     for (const [key, value] of Object.entries(this.store)) {
-      yield [key, value];
+      yield [
+        key,
+        value
+      ];
     }
   }
 
@@ -430,7 +577,8 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
 	*/
   _closeWatcher(): void {
     if (this.#watcher) {
-      this.#watcher.close();
+      this.#watcher
+        .close();
       this.#watcher = undefined;
     }
 
@@ -444,21 +592,28 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
 
   private _readStore(): T {
     try {
-      const data = fs.readFileSync(this.path, this.#encryptionKey ? null : 'utf8');
+      const data = fs.readFileSync(
+        this.path,
+        this.#encryptionKey ? null : 'utf8'
+      );
       const dataString = this._decryptData(data);
       const deserializedData = this._deserialize(dataString);
       if (!this.#isInMigration) {
         this._validate(deserializedData);
       }
 
-      return Object.assign(createPlainObject(), deserializedData);
+      return Object.assign(
+        createPlainObject(),
+        deserializedData
+      );
     } catch (error: unknown) {
       if ((error as any)?.code === 'ENOENT') {
         this._ensureDirectory();
         return createPlainObject();
       }
 
-      if (this.#options.clearInvalidConfig) {
+      if (this.#options
+        .clearInvalidConfig) {
         const errorInstance = error as Error;
 				// Handle JSON parsing errors (existing behavior)
         if (errorInstance.name === 'SyntaxError') {
@@ -466,7 +621,8 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
         }
 
 				// Handle schema validation errors (new behavior)
-        if (errorInstance.message?.startsWith('Config schema violation:')) {
+        if (errorInstance.message
+          ?.startsWith('Config schema violation:')) {
           return createPlainObject();
         }
 
@@ -498,24 +654,27 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
   private _decryptData(data: string | Uint8Array): string {
     const encryptionKey = this.#encryptionKey;
     if (!encryptionKey) {
-      return typeof data === 'string' ? data : uint8ArrayToString(data);
+      return (typeof data) === 'string' ? data : uint8ArrayToString(data);
     }
 
 		// Check if an initialization vector has been used to encrypt the data.
     const encryptionAlgorithm = this.#encryptionAlgorithm;
     const authenticationTagLength = encryptionAlgorithm === 'aes-256-gcm' ? 16 : 0;
     const separatorCodePoint = ':'.codePointAt(0);
-    const separatorByte = typeof data === 'string' ? data.codePointAt(16) : data[16];
-    const hasSeparator = separatorCodePoint !== undefined && separatorByte === separatorCodePoint;
+    const separatorByte = (typeof data) === 'string' ? data.codePointAt(16) : data[16];
+    const hasSeparator = (separatorCodePoint !== undefined) && (separatorByte === separatorCodePoint);
     if (!hasSeparator) {
       if (encryptionAlgorithm === 'aes-256-cbc') {
-        return typeof data === 'string' ? data : uint8ArrayToString(data);
+        return (typeof data) === 'string' ? data : uint8ArrayToString(data);
       }
 
       throw new Error('Failed to decrypt config data.');
     }
 
-    const getEncryptedPayload = (dataUpdate: Uint8Array): {ciphertext: Uint8Array; authenticationTag?: Uint8Array} => {
+    function getEncryptedPayload(dataUpdate: Uint8Array): {
+      ciphertext: Uint8Array;
+      authenticationTag?: Uint8Array
+    } {
       if (authenticationTagLength === 0) {
         return {ciphertext: dataUpdate};
       }
@@ -526,26 +685,48 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
       }
 
       return {
-        ciphertext: dataUpdate.slice(0, authenticationTagStart),
+        ciphertext: dataUpdate.slice(
+          0,
+          authenticationTagStart
+        ),
         authenticationTag: dataUpdate.slice(authenticationTagStart),
       };
-    };
+    }
 
-    const initializationVector = data.slice(0, 16);
+    const initializationVector = data.slice(
+      0,
+      16
+    );
     const slice = data.slice(17);
-    const dataUpdate = typeof slice === 'string' ? stringToUint8Array(slice) : slice;
+    const dataUpdate = (typeof slice) === 'string' ? stringToUint8Array(slice) : slice;
 
-    const decrypt = (salt: string | Uint8Array): string => {
-      const {ciphertext, authenticationTag} = getEncryptedPayload(dataUpdate);
-      const password = crypto.pbkdf2Sync(encryptionKey, salt, 10_000, 32, 'sha512');
-      const decipher = crypto.createDecipheriv(encryptionAlgorithm, password, initializationVector);
+    function decrypt(salt: string | Uint8Array): string {
+      const {
+        ciphertext,
+        authenticationTag
+      } = getEncryptedPayload(dataUpdate);
+      const password = crypto.pbkdf2Sync(
+        encryptionKey,
+        salt,
+        10_000,
+        32,
+        'sha512'
+      );
+      const decipher = crypto.createDecipheriv(
+        encryptionAlgorithm,
+        password,
+        initializationVector
+      );
 
       if (authenticationTag) {
         (decipher as crypto.DecipherGCM).setAuthTag(authenticationTag);
       }
 
-      return uint8ArrayToString(concatUint8Arrays([decipher.update(ciphertext), decipher.final()]));
-    };
+      return uint8ArrayToString(concatUint8Arrays([
+        decipher.update(ciphertext),
+        decipher.final()
+      ]));
+    }
 
     try {
       return decrypt(initializationVector);
@@ -557,7 +738,7 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
     }
 
     if (encryptionAlgorithm === 'aes-256-cbc') {
-      return typeof data === 'string' ? data : uint8ArrayToString(data);
+      return (typeof data) === 'string' ? data : uint8ArrayToString(data);
     }
 
     throw new Error('Failed to decrypt config data.');
@@ -566,22 +747,37 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
   private _handleStoreChange(callback: OnDidAnyChangeCallback<T>): Unsubscribe {
     let currentValue = this.store;
 
-    const onChange = (): void => {
+    function onChange(): void {
       const oldValue = currentValue;
       const newValue = this.store;
 
-      if (isDeepStrictEqual(newValue, oldValue)) {
+      if (isDeepStrictEqual(
+        newValue,
+        oldValue
+      )) {
         return;
       }
 
       currentValue = newValue;
-      callback.call(this, newValue, oldValue);
-    };
+      callback.call(
+        this,
+        newValue,
+        oldValue
+      );
+    }
 
-    this.events.addEventListener('change', onChange);
+    this.events
+      .addEventListener(
+      'change',
+      onChange
+      );
 
     return () => {
-      this.events.removeEventListener('change', onChange);
+      this.events
+        .removeEventListener(
+        'change',
+        onChange
+        );
     };
   }
 
@@ -591,27 +787,46 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
   ): Unsubscribe {
     let currentValue = getter();
 
-    const onChange = (): void => {
+    function onChange(): void {
       const oldValue = currentValue;
       const newValue = getter();
 
-      if (isDeepStrictEqual(newValue, oldValue)) {
+      if (isDeepStrictEqual(
+        newValue,
+        oldValue
+      )) {
         return;
       }
 
       currentValue = newValue;
-      callback.call(this, newValue, oldValue);
-    };
+      callback.call(
+        this,
+        newValue,
+        oldValue
+      );
+    }
 
-    this.events.addEventListener('change', onChange);
+    this.events
+      .addEventListener(
+      'change',
+      onChange
+      );
 
     return () => {
-      this.events.removeEventListener('change', onChange);
+      this.events
+        .removeEventListener(
+        'change',
+        onChange
+        );
     };
   }
 
   private _deserialize: Deserialize<T> = value => JSON.parse(value);
-  private _serialize: Serialize<T> = value => JSON.stringify(value, undefined, '\t');
+  private _serialize: Serialize<T> = value => JSON.stringify(
+    value,
+    undefined,
+    '\t'
+  );
 
   private _validate(data: T | unknown): void {
     if (!this.#validator) {
@@ -619,18 +834,26 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
     }
 
     const valid = this.#validator(data);
-    if (valid || !this.#validator.errors) {
+    if (valid || (!this.#validator
+      .errors)) {
       return;
     }
 
-    const errors = this.#validator.errors
-      .map(({instancePath, message = ''}) => `\`${instancePath.slice(1)}\` ${message}`);
-    throw new Error('Config schema violation: ' + errors.join('; '));
+    const errors = this.#validator
+      .errors
+      .map(({
+        instancePath,
+        message = ''
+      }) => `\`${instancePath.slice(1)}\` ${message}`);
+    throw new Error(`Config schema violation: ${  errors.join('; ')}`);
   }
 
   private _ensureDirectory(): void {
 		// Ensure the directory exists as it could have been deleted in the meantime.
-    fs.mkdirSync(path.dirname(this.path), {recursive: true});
+    fs.mkdirSync(
+      path.dirname(this.path),
+      {recursive: true}
+    );
   }
 
   private _write(value: T): void {
@@ -642,10 +865,27 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
     const encryptionKey = this.#encryptionKey;
     if (encryptionKey) {
       const initializationVector = crypto.randomBytes(16);
-      const password = crypto.pbkdf2Sync(encryptionKey, initializationVector, 10_000, 32, 'sha512');
-      const cipher = crypto.createCipheriv(this.#encryptionAlgorithm, password, initializationVector);
-      const encryptedData = concatUint8Arrays([cipher.update(stringToUint8Array(data)), cipher.final()]);
-      const encryptedParts = [initializationVector, stringToUint8Array(':'), encryptedData];
+      const password = crypto.pbkdf2Sync(
+        encryptionKey,
+        initializationVector,
+        10_000,
+        32,
+        'sha512'
+      );
+      const cipher = crypto.createCipheriv(
+        this.#encryptionAlgorithm,
+        password,
+        initializationVector
+      );
+      const encryptedData = concatUint8Arrays([
+        cipher.update(stringToUint8Array(data)),
+        cipher.final()
+      ]);
+      const encryptedParts = [
+        initializationVector,
+        stringToUint8Array(':'),
+        encryptedData
+      ];
 
       if (this.#encryptionAlgorithm === 'aes-256-gcm') {
         encryptedParts.push((cipher as crypto.CipherGCM).getAuthTag());
@@ -656,17 +896,33 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
 
 		// Temporary workaround for Conf being packaged in a Ubuntu Snap app.
 		// See https://github.com/sindresorhus/conf/pull/82
-    if (process.env.SNAP) {
-      fs.writeFileSync(this.path, data, {mode: this.#options.configFileMode});
+    if (process.env
+      .SNAP) {
+      fs.writeFileSync(
+        this.path,
+        data,
+        {mode: this.#options
+          .configFileMode}
+      );
     } else {
       try {
-        atomicWriteFileSync(this.path, data, {mode: this.#options.configFileMode});
+        atomicWriteFileSync(
+          this.path,
+          data,
+          {mode: this.#options
+            .configFileMode}
+        );
       } catch (error: unknown) {
 				// Fix for https://github.com/sindresorhus/electron-store/issues/106
 				// Sometimes on Windows, we will get an EXDEV error when atomic writing
 				// (even though to the same directory), so we fall back to non atomic write
         if ((error as any)?.code === 'EXDEV') {
-          fs.writeFileSync(this.path, data, {mode: this.#options.configFileMode});
+          fs.writeFileSync(
+            this.path,
+            data,
+            {mode: this.#options
+              .configFileMode}
+          );
           return;
         }
 
@@ -683,61 +939,101 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
     }
 
 		// Use fs.watch on Windows and macOS, fs.watchFile on Linux for better reliability
-    if (process.platform === 'win32' || process.platform === 'darwin') {
-      this.#debouncedChangeHandler ??= debounceFn(() => {
-        this.#cachedStore = undefined;
-        this.events.dispatchEvent(new Event('change'));
-      }, {wait: 100});
+    if ((process.platform === 'win32') || (process.platform === 'darwin')) {
+      this.#debouncedChangeHandler ??= debounceFn(
+        () => {
+          this.#cachedStore = undefined;
+          this.events
+            .dispatchEvent(new Event('change'));
+        },
+        {wait: 100}
+      );
 
 			// Watch the directory instead of the file to handle atomic writes (rename events)
       const directory = path.dirname(this.path);
       const basename = path.basename(this.path);
 
-      this.#watcher = fs.watch(directory, {persistent: false, encoding: 'utf8'}, (_eventType, filename) => {
-        if (filename && filename !== basename) {
-          return;
-        }
+      this.#watcher = fs.watch(
+        directory,
+        {
+          persistent: false,
+          encoding: 'utf8'
+        },
+        (
+          _eventType,
+          filename
+        ) => {
+          if (filename && (filename !== basename)) {
+            return;
+          }
 
-        if (typeof this.#debouncedChangeHandler === 'function') {
-          this.#debouncedChangeHandler();
+          if ((typeof this.#debouncedChangeHandler) === 'function') {
+            this.#debouncedChangeHandler();
+          }
         }
-      });
+      );
     } else {
 			// Fs.watchFile is used on Linux for better cross-platform reliability
-      this.#debouncedChangeHandler ??= debounceFn(() => {
-        this.#cachedStore = undefined;
-        this.events.dispatchEvent(new Event('change'));
-      }, {wait: 1000});
+      this.#debouncedChangeHandler ??= debounceFn(
+        () => {
+          this.#cachedStore = undefined;
+          this.events
+            .dispatchEvent(new Event('change'));
+        },
+        {wait: 1_000}
+      );
 
-      fs.watchFile(this.path, {persistent: false}, (_current, _previous) => {
-        if (typeof this.#debouncedChangeHandler === 'function') {
-          this.#debouncedChangeHandler();
+      fs.watchFile(
+        this.path,
+        {persistent: false},
+        (
+          _current,
+          _previous
+        ) => {
+          if ((typeof this.#debouncedChangeHandler) === 'function') {
+            this.#debouncedChangeHandler();
+          }
         }
-      });
+      );
       this.#watchFile = true;
     }
   }
 
-  private _migrate(migrations: Migrations<T>, versionToMigrate: string, beforeEachMigration?: BeforeEachMigrationCallback<T>): void {
+  private _migrate(
+    migrations: Migrations<T>,
+    versionToMigrate: string,
+    beforeEachMigration?: BeforeEachMigrationCallback<T>
+  ): void {
 		// Read the version straight from the file, since `_readUserStore()` removes the key it is stored under.
 		// An earlier version could leave a range in the file when a migration failed partway through. A range cannot be compared as a version, so treat it as unknown and let the migrations run again.
-    const storedVersion = getProperty(this._readStore(), MIGRATION_KEY, '0.0.0');
+    const storedVersion = getProperty(
+      this._readStore(),
+      MIGRATION_KEY,
+      '0.0.0'
+    );
     let previousMigratedVersion = this._isVersionInRangeFormat(storedVersion) ? '0.0.0' : storedVersion;
 
     const newerVersions = Object.keys(migrations)
-      .filter(candidateVersion => this._shouldPerformMigration(candidateVersion, previousMigratedVersion, versionToMigrate));
+      .filter(candidateVersion => this._shouldPerformMigration(
+        candidateVersion,
+        previousMigratedVersion,
+        versionToMigrate
+      ));
 
     let storeBackup = structuredClone(this.store);
 
     for (const version of newerVersions) {
       try {
         if (beforeEachMigration) {
-          beforeEachMigration(this, {
-            fromVersion: previousMigratedVersion,
-            toVersion: version,
-            finalVersion: versionToMigrate,
-            versions: newerVersions,
-          });
+          beforeEachMigration(
+            this,
+            {
+              fromVersion: previousMigratedVersion,
+              toVersion: version,
+              finalVersion: versionToMigrate,
+              versions: newerVersions,
+            }
+          );
         }
 
         const migration = migrations[version];
@@ -745,7 +1041,10 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
 
 				// A range is not a concrete version, so recording it would leave a value behind that nothing can compare against.
         if (!this._isVersionInRangeFormat(version)) {
-          this._set(MIGRATION_KEY, version);
+          this._set(
+            MIGRATION_KEY,
+            version
+          );
         }
 
         previousMigratedVersion = version;
@@ -754,22 +1053,31 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
 				// Restore backup (validation is skipped during migration)
         this.store = storeBackup;
 
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        throw new Error(`Something went wrong during the migration! Changes applied to the store until this failed migration will be restored. ${errorMessage}`);
+        const errorMessage = Error.isError(error,) ? error.message : String(error);
+        throw new Error(
+          `Something went wrong during the migration! Changes applied to the store until this failed migration will be restored. ${errorMessage}`,
+          { cause: error }
+        );
       }
     }
 
-    if (this._isVersionInRangeFormat(previousMigratedVersion) || !semver.eq(previousMigratedVersion, versionToMigrate)) {
-      this._set(MIGRATION_KEY, versionToMigrate);
+    if (this._isVersionInRangeFormat(previousMigratedVersion) || (!semver.eq(
+      previousMigratedVersion,
+      versionToMigrate
+    ))) {
+      this._set(
+        MIGRATION_KEY,
+        versionToMigrate
+      );
     }
   }
 
   private _containsReservedKey(key: string | PartialObjectDeep<T>): boolean {
-    if (typeof key === 'string') {
+    if ((typeof key) === 'string') {
       return this._isReservedKeyPath(key);
     }
 
-    if (!key || typeof key !== 'object') {
+    if ((!key) || ((typeof key) !== 'object')) {
       return false;
     }
 
@@ -777,7 +1085,7 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
   }
 
   private _objectContainsReservedKey(value: unknown): boolean {
-    if (!value || typeof value !== 'object') {
+    if ((!value) || ((typeof value) !== 'object')) {
       return false;
     }
 
@@ -795,27 +1103,43 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
   }
 
   private _isReservedKeyPath(candidate: string): boolean {
-    return candidate === INTERNAL_KEY || candidate.startsWith(`${INTERNAL_KEY}.`);
+    return (candidate === INTERNAL_KEY) || candidate.startsWith(`${INTERNAL_KEY}.`);
   }
 
   private _isVersionInRangeFormat(version: string): boolean {
     return semver.clean(version) === null;
   }
 
-  private _shouldPerformMigration(candidateVersion: string, previousMigratedVersion: string, versionToMigrate: string): boolean {
+  private _shouldPerformMigration(
+    candidateVersion: string,
+    previousMigratedVersion: string,
+    versionToMigrate: string
+  ): boolean {
     if (this._isVersionInRangeFormat(candidateVersion)) {
-      if (previousMigratedVersion !== '0.0.0' && semver.satisfies(previousMigratedVersion, candidateVersion)) {
+      if ((previousMigratedVersion !== '0.0.0') && semver.satisfies(
+        previousMigratedVersion,
+        candidateVersion
+      )) {
         return false;
       }
 
-      return semver.satisfies(versionToMigrate, candidateVersion);
+      return semver.satisfies(
+        versionToMigrate,
+        candidateVersion
+      );
     }
 
-    if (semver.lte(candidateVersion, previousMigratedVersion)) {
+    if (semver.lte(
+      candidateVersion,
+      previousMigratedVersion
+    )) {
       return false;
     }
 
-    if (semver.gt(candidateVersion, versionToMigrate)) {
+    if (semver.gt(
+      candidateVersion,
+      versionToMigrate
+    )) {
       return false;
     }
 
@@ -823,14 +1147,31 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
   }
 
   private _get<Key extends keyof T>(key: Key): T[Key] | undefined;
-  private _get<Key extends keyof T, Default = unknown>(key: Key, defaultValue: Default): T[Key] | Default;
-  private _get<Key extends keyof T, Default = unknown>(key: Key | string, defaultValue?: Default): T[Key] | Default | undefined {
-    return getProperty(this.store, key as string, defaultValue as T[Key]);
+  private _get<Key extends keyof T, Default = unknown>(
+    key: Key,
+    defaultValue: Default
+  ): T[Key] | Default;
+  private _get<Key extends keyof T, Default = unknown>(
+    key: Key | string,
+    defaultValue?: Default
+  ): T[Key] | Default | undefined {
+    return getProperty(
+      this.store,
+      key as string,
+      defaultValue as T[Key]
+    );
   }
 
-  private _set(key: string, value: unknown): void {
+  private _set(
+    key: string,
+    value: unknown
+  ): void {
     const store = this._readStore();
-    setProperty(store, key, value);
+    setProperty(
+      store,
+      key,
+      value
+    );
 
     this.store = store;
   }
@@ -857,27 +1198,36 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
         throw new Error('Please specify the `projectName` option.');
       }
 
-      options.cwd = envPaths(options.projectName, {suffix: options.projectSuffix}).config;
+      options.cwd = envPaths(
+        options.projectName,
+        {suffix: options.projectSuffix}
+      )
+        .config;
     }
 
-    if (typeof options.fileExtension === 'string') {
-      options.fileExtension = options.fileExtension.replace(/^\.+/, '');
+    if ((typeof options.fileExtension) === 'string') {
+      options.fileExtension = options.fileExtension
+        .replace(
+        /^\.+/,
+        ''
+        );
     }
 
     return options;
   }
 
   #setupValidator(options: Partial<Options<T>>): void {
-    if (!(options.schema ?? options.ajvOptions ?? options.rootSchema)) {
+    if (!(options.schema ?? options.ajvOptions
+      ?? options.rootSchema)) {
       return;
     }
 
-    if (options.schema && typeof options.schema !== 'object') {
+    if (options.schema && ((typeof options.schema) !== 'object')) {
       throw new TypeError('The `schema` option must be an object.');
     }
 
 		// The `properties` keyword belongs to the `schema` option. The type already excludes it from `rootSchema`, but JavaScript callers can still pass it, and it would be dropped without a word.
-    if (options.rootSchema && 'properties' in options.rootSchema) {
+    if (options.rootSchema && ('properties' in options.rootSchema)) {
       throw new TypeError('The `rootSchema` option must not contain a `properties` key. Use the `schema` option for properties.');
     }
 
@@ -902,13 +1252,19 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
   }
 
   #captureSchemaDefaults(schemaConfig: Schema<T> | undefined): void {
-    const schemaEntries = Object.entries(schemaConfig ?? {}) as Array<[keyof T, JSONSchema | undefined]>;
+    const schemaEntries = Object.entries(schemaConfig ?? {}) as [
+      keyof T,
+      JSONSchema | undefined
+    ][];
     for (const [key, schemaDefinition] of schemaEntries) {
-      if (!schemaDefinition || typeof schemaDefinition !== 'object') {
+      if ((!schemaDefinition) || ((typeof schemaDefinition) !== 'object')) {
         continue;
       }
 
-      if (!Object.hasOwn(schemaDefinition, 'default')) {
+      if (!Object.hasOwn(
+        schemaDefinition,
+        'default'
+      )) {
         continue;
       }
 
@@ -923,7 +1279,10 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
 
   #applyDefaultValues(options: Partial<Options<T>>): void {
     if (options.defaults) {
-      Object.assign(this.#defaultValues, options.defaults);
+      Object.assign(
+        this.#defaultValues,
+        options.defaults
+      );
     }
   }
 
@@ -938,9 +1297,12 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
   }
 
   #resolvePath(options: Partial<Options<T>>): string {
-    const normalizedFileExtension = typeof options.fileExtension === 'string' ? options.fileExtension : undefined;
+    const normalizedFileExtension = (typeof options.fileExtension) === 'string' ? options.fileExtension : undefined;
     const fileExtension = normalizedFileExtension ? `.${normalizedFileExtension}` : '';
-    return path.resolve(options.cwd!, `${options.configName ?? 'config'}${fileExtension}`);
+    return path.resolve(
+      options.cwd!,
+      `${options.configName ?? 'config'}${fileExtension}`
+    );
   }
 
   #initializeStore(options: Partial<Options<T>>): void {
@@ -951,17 +1313,27 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
     }
 
     const fileStore = this._readStore();
-    const storeWithDefaults = Object.assign(createPlainObject(), options.defaults ?? {}, fileStore);
+    const storeWithDefaults = Object.assign(
+      createPlainObject(),
+      options.defaults ?? {},
+      fileStore
+    );
     this._validate(storeWithDefaults);
     try {
-      assert.deepEqual(fileStore, storeWithDefaults);
+      assert.deepEqual(
+        fileStore,
+        storeWithDefaults
+      );
     } catch {
       this.store = storeWithDefaults;
     }
   }
 
   #runMigrations(options: Partial<Options<T>>): void {
-    const {migrations, projectVersion} = options;
+    const {
+      migrations,
+      projectVersion
+    } = options;
     if (!migrations) {
       return;
     }
@@ -976,23 +1348,40 @@ export default class Conf<T extends Record<string, any> = Record<string, unknown
       const isNewStore = !fs.existsSync(this.path);
 
       const fileStore = this._readStore();
-      const storeWithDefaults = Object.assign(createPlainObject(), options.defaults ?? {}, fileStore);
+      const storeWithDefaults = Object.assign(
+        createPlainObject(),
+        options.defaults ?? {},
+        fileStore
+      );
       try {
-        assert.deepEqual(fileStore, storeWithDefaults);
+        assert.deepEqual(
+          fileStore,
+          storeWithDefaults
+        );
       } catch {
         this._write(storeWithDefaults);
       }
 
       if (isNewStore) {
-        this._set(MIGRATION_KEY, projectVersion);
+        this._set(
+          MIGRATION_KEY,
+          projectVersion
+        );
         return;
       }
 
-      this._migrate(migrations, projectVersion, options.beforeEachMigration);
+      this._migrate(
+        migrations,
+        projectVersion,
+        options.beforeEachMigration
+      );
     } finally {
       this.#isInMigration = false;
     }
   }
 }
 
-export type {Options, Schema} from './types.ts';
+export type {
+  Options,
+  Schema
+} from './types.ts';

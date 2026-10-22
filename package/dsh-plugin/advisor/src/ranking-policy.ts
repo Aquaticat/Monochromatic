@@ -93,7 +93,7 @@ export function dshRankDefaultCandidates(
   const windowEvidence = ranked
     .map(function toWindowEvidence(entry,) {
       return `${entry.canonicalSlug}=${String(entry.model
-      .contextWindow,)}`;
+        .contextWindow,)}`;
     },)
     .join(', ',);
   return {

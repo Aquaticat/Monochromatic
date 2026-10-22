@@ -86,8 +86,11 @@ const ROW_A = WIDE_POINTS.trackRow;
  Row B: the second track row of the folder on screen.
  */
 const ROW_B = {
-  x: WIDE_POINTS.trackRow.x,
-  y: WIDE_POINTS.trackRow.y + SECOND_ROW_OFFSET_PX,
+  x: WIDE_POINTS.trackRow
+    .x,
+  y: WIDE_POINTS.trackRow
+    .y
+    + SECOND_ROW_OFFSET_PX,
 } as const;
 
 /**
@@ -189,7 +192,10 @@ async function keepTrackFromMovingOn(session: Session,): Promise<void> {
   await press({
     session,
     act: chordKeys({
-      mods: ['ctrl', 'shift',],
+      mods: [
+        'ctrl',
+        'shift',
+      ],
       key: '1',
     },),
     until: modeIs(0,),
@@ -269,7 +275,10 @@ async function runFirstLaunch(context: RunContext,): Promise<void> {
   /**
    Library indexes of rows A and B, set by the first check.
    */
-  const rows = { a: NO_INDEX, b: NO_INDEX, };
+  const rows = {
+    a: NO_INDEX,
+    b: NO_INDEX,
+  };
   await recorder.check({
     id: 'auto-play/off-by-default-click-selects-paused',
     title: 'with no saved setting Auto-play on select is off, and a click on another row selects it paused (D124, D129)',
@@ -311,7 +320,8 @@ async function runFirstLaunch(context: RunContext,): Promise<void> {
         session,
         act: clickAt(ROW_B,),
         until: function rowBSelectedPaused(state: UiState,): boolean {
-          return (state.current_index !== rows.a) && (state.current_index !== NO_INDEX) && !state.playing;
+          return (state.current_index !== rows.a) && (state.current_index !== NO_INDEX)
+            && (!state.playing);
         },
         what: 'a click on row B selecting it paused and stopping row A',
       },);
@@ -319,7 +329,7 @@ async function runFirstLaunch(context: RunContext,): Promise<void> {
       await session.shot('auto-play-off-row-b-selected',);
       await wait(STAYS_PAUSED_MS,);
       expect({
-        condition: !(await session.last()).playing && ((await session.last()).current_index === rows.b),
+        condition: (!(await session.last()).playing) && ((await session.last()).current_index === rows.b),
         message: 'row B started playing by itself with the setting off',
       },);
       return `row A ${rows.a} played; the click on row B ${rows.b} left it paused with the setting off`;
@@ -333,7 +343,10 @@ async function runFirstLaunch(context: RunContext,): Promise<void> {
       await press({
         session,
         act: chordKeys({
-          mods: ['ctrl', 'alt',],
+          mods: [
+            'ctrl',
+            'alt',
+          ],
           key: 's',
         },),
         until: isSettingsPage,
@@ -413,7 +426,7 @@ async function runFirstLaunch(context: RunContext,): Promise<void> {
         session,
         act: clickAt(ROW_B,),
         until: function rowBPaused(state: UiState,): boolean {
-          return (state.current_index === rows.b) && !state.playing;
+          return (state.current_index === rows.b) && (!state.playing);
         },
         what: 'a click on the playing row B pausing it',
       },);

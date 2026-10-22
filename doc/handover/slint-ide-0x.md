@@ -1525,6 +1525,39 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     Owner statement of 2026-10-22: "The host CAN handle multiple jobs at once, that's the exact reason I bought this
     CPU." Real jobs may therefore run in parallel, each capped (`CPUQuota`, `MemoryMax`); `NLG` still bans synthetic
     load, and measurements still alternate arms with a same-binary control (`NQH`) because parallel jobs add load.
+    Owner statement of 2026-10-22, later: "Use my system (almost) fully instead of limiting to only a very limited
+    subset of it." The host measured that day: 28 threads, 61 GiB (about 32 GiB available), load average 7 to 13 from
+    the agents and other sessions. Applied: rule `FHU` in `AGENTS.md` (commit `ea7937c9fd`); my gate and scratch units
+    now use `CPUQuota` near 2400% and `MemoryMax` near 36G (they were 1200% and 32G, and 600% in the agents' briefs);
+    the three running agents were told by message that the cap is lifted for real jobs; later briefs say the same and
+    still quote `NLG`, `NLD`, `RXI`, `NQH`. Not changed without the owner: the IDE container share `hostShare = 0.75`
+    in `package/desktop-app/ide/bin/container-bounds.ts` (21 of 28 CPUs, 46 GiB), because the owner decided it on
+    2026-10-18 ("use 75 percent ... and keep that") and the README numbers were measured at 21 CPUs; a question about
+    raising it went to the owner.
+    Owner answer of 2026-10-22: raise the container share to 90 percent (25 of 28 CPUs, 55 GiB). Built and gated in the
+    scratch tree `~/temp/agent/land-share` (commit "feat(desktop-app-ide): the build and test containers take 90
+    percent of the host", not pushed): unfiltered `test:native` 283 passed and 5 skipped in 51.7 s in the 25 CPU
+    container, `test` 797 passed, lint and `inspect:no-software-renderer` pass, and `test:bin` with the share put back
+    to 0.75 fails as the guard. Its `test:bin` gate is red on the real snapshot for a reason that is not the share:
+    see the next paragraph.
+    HOLD, 2026-10-22: `origin/main` has files that no longer parse. Commits `68415aeb53` and `3da31bdc3a` (repo-wide
+    `style(*)`, from an `oxlint --fix` style run by a session that is not this one and not `monochromatic-09`) left 20
+    `.mjs` files failing `node --check` that parsed before them, 17 of them in `package/desktop-app/ide` (the
+    `bin/inspect-*.mjs` scripts, `bin/nested-compositor.mjs`, two `design` scripts). My first count was 52; 32 of those
+    were TypeScript files that `node --check` rejects in their old versions as well (it does not strip types), and
+    redone with `module.stripTypeScriptTypes` 1849 of 1850 TS files parse before and after, none broken by the commits.
+    The issue and both peer sessions were corrected. `test:bin` fails on `main` because of
+    `bin/nested-compositor.mjs`. Owner instruction: open an issue and let MiMo take it; it is
+    https://github.com/Aquaticats/Monochromatic/issues/1794 (list of files and the measure are in it). I restored the 17
+    IDE files from before the style commits only in the scratch tree `land-share` (uncommitted, not pushed) and did
+    not touch the other packages. Held until the fix is on `main`: pushing the 90 percent change and landing the
+    minimap fling agent, because their `test:bin` gates cannot be green. The IDE `test:bin` gate is the only gate known
+    to be red; the other gates passed on the snapshot.
+    The minimap lag agent `afaeefdb803099e40` has handed back (branch `worktree-agent-afaeefdb803099e40`, tip
+    `fbe4f73b2b`, pushed, not on `main`, not yet verified by me): blank-track frames in a 3,777 px fling fell from
+    0.45 to 0.01 (A/A control 0.43), by a `LEAD` of 8 bands on the heading side; seven guards shown to fail; its own
+    gates passed. Its report is the input to the verification, which waits for the hold above and for the code tile
+    stacking agent `a074735d16c6106a5` (still running), whose branch touches other files in the same package.
     Stall pass agent `ae05d7039f46336dc` (started 2026-10-22, own worktree off `origin/main`, branch push only; brief
     quotes `NLG`, `NLD`, `RXI`, `NQH`): at least 60 alternating stall pairs (tree A = before the wake-up, tree B =
     `origin/main`) plus 30 A against A pairs for the spread; keeps the debug timeline of every stalled run and decides
@@ -1564,12 +1597,25 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
       bound, about 24 CPUs at the peak). The owner's statement above allows parallel real jobs, each capped; it is
       recorded as an overrun of the brief, not hidden. Cleanup was verified by me: no `flk` units, no stress
       container, no process in its worktree; its worktree and branch are removed, local and remote.
-    Running (started 2026-10-22): runtime task agent `a70cd9e6f7ed2044f` (own worktree off `origin/main`, branch push
-    only; brief quotes `NLG`, `NLD`, `RXI`, `NQH`): reproduces the `runtime` task race with at least 20 paired starts
-    and a positive control, fixes it by atomic staging or a freshness check, keeps single-caller output byte-identical
-    (tree hash), one unfiltered `test:native`. My own unfiltered `test:native` of snapshot `052cc29638` runs in the unit
-    `full-native` (scratch tree `~/temp/agent/full-native`, `CPUQuota=1200%`, `MemoryMax=32G`); its count goes into the
-    next handover update, then the unit and tree are removed.
+    First unfiltered full `test:native` runs at the thread bound (2026-10-22): snapshot `052cc29638` 283 passed and 5
+    skipped in 35.9 s (unit `full-native`, `CPUQuota=1200%`), and the runtime merge snapshot 283 passed and 5 skipped
+    in 44.2 s, both with no FLAKY, SLOW or FAIL line; the serial filtered run of the same tests took 176 s. These are
+    snapshots, not flake counts.
+    LANDED, runtime task agent `a70cd9e6f7ed2044f` (merge tip `bbbf0d0a23` on `origin/main`; `mise.toml`, new
+    `bin/runtime-publish.ts` and `bin/runtime-publish.test.ts`, section "The runtime task is safe for concurrent
+    callers" in `doc/handover/ide-native-flakes.md`; no change to the shipped binary, so no reinstall). Cause: two
+    callers shared the staging name `<grammar>.so.new` and one renamed it away (`ENOENT` on `awk.so.new`), and both
+    shared `target/runtime-config` for the fetch and build. Fix: an exclusive `flock` on `target/runtime.lock` around the
+    whole preparation (the kernel drops it when its holder dies), unique staging names per file, skip of an equal file,
+    manifest published last, stale staging swept under the lock. Evidence: paired starts of the unfixed task failed in
+    10 of 20 pairs (the positive control); after the fix 0 in 20, 0 in 24 more, and 0 in a final 20 on the last code;
+    my own 5 pairs on the merge snapshot 0 of 10 callers failed. The tree hash of `target/debug/runtime` (1622
+    entries) is unchanged for a single caller. The guard tests (11) fail with a fixed staging name (I forced it in the
+    scratch tree: `test:bin` status 1, then restored). Gates once on my snapshot: lint, unfiltered `test:native`, `test`
+    797 passed, `test:bin`, `inspect:no-software-renderer`. Deviations of the agent: fix commit `0e749d3a72` uses the
+    scope `desktop-app/ide` where the repo scope is `desktop-app-ide` (not amended, per the never-amend rule); gates ran
+    at 8 CPUs and 16 GiB; one pair took 307 s waiting on another session's cargo lock on the shared `ide-cargo`
+    volume. Cleanup verified: no `ide-rt` unit, no `flock` process, worktree and branches removed.
     Open, in order: (1) the stalls away from slot 50 (slot 33 and 72, one run each; undecided; a larger alternating
     pass with a same-binary control, under whatever load there is; the stall pass agent) and whether a tile taken in an
     input gap over 20 ms costs a frame; (1b) the code tile stack and the minimap fling lag (the two agents above);
@@ -1578,11 +1624,9 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     to 0 of 160, find-box menu test by its guard, quiet-time test, minimap picture test 317 of 400 to 0 of 400, see the
     LANDED blocks above); open: the annotation stability tests (not reproduced in about 2,100 runs; instrumented, frames
     kept under `target/flake-frames/` for the next failure; a full host disk is a suspect for the one old failure),
-    the caret test (fixed by inference only), (2a) the `runtime` mise task is unsafe for two concurrent callers in one
-    tree, and (2b) my gate `test:native -- 'all()'` is a filtered run and so runs one test at a time (`--no-capture`),
-    which means no unfiltered full run at the thread bound has been recorded on any snapshot (running: one
-    unfiltered `test:native` on the snapshot `6620fda00a`; from now on gates use the unfiltered task; queued: an agent
-    to fix 2a). The video-memory question is closed by measurement (no cap).
+    the caret test (fixed by inference only). Closed: (2a) the `runtime` task race (see its LANDED block) and (2b) the
+    serial gate (my filtered `test:native -- 'all()'` ran one test at a time; the gates now use the unfiltered task and
+    the first two unfiltered runs passed). The video-memory question is closed by measurement (no cap).
     Full `test:native` passes are snapshots, not flake counts. (3) Scale 2, light scheme and seam checks: done, see the
     scale agent's LANDED block.
     The prevention proposal `doc/planning/agents-cannot-load-the-host.md` waits for the owner: a fresh Claude session and

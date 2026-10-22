@@ -301,7 +301,7 @@ await describe({
         it({
           name: 'reads parsed token data',
           fn: async () => {
-            const tokens = tokenize({ css: '@\\6d ixin', },);
+            const tokens = tokenize({ css: String.raw`@\6d ixin`, },);
             const atKeyword = nonNullishOrThrow(tokens[0],);
             expect(tokenData(atKeyword,),).toEqual({ value: 'mixin', },);
           },

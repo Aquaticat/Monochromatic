@@ -834,6 +834,25 @@ In flight 2026-10-18 after 0.1.6: the license polish branch `fix/music-player-li
 trace for the 10,000-track jank (p = 0.089, optional), re-check of issues 1079 to 1081 and 1069 (Depot trial CI
 failures, another thread owns them).
 
+In flight 2026-10-22, desktop text size setting (agent `a985cccccf228921d`, worktree
+`/home/user/temp/agent/text-size-setting/wt`, branch `feat/music-player-text-size-setting`): the human asked for a
+setting in the real app after the replica comparison; their answers: per-element sizes you type, controlled by a 1 px
+stepper. Adopted by me, veto-open: four elements (pane titles, group heading letter, folder names, track titles) with
+defaults 20, 20, 14, 14 (today's values), clamp 10 to 32 px, a reset action, session persistence, desktop only (Android
+follows the system font size). When it reports: review the diff, run the package tests and lints once, merge main into
+the branch, fast-forward main, then release (say the version) and update the troubleshooting doc and this handover.
+Answered 2026-10-22 by two reports (both in the troubleshooting doc): the human's Firefox ESR draws generic `sans-serif`
+as Inter Variable (their `font.name.sans-serif.x-western` pref), so the test page's reference paragraph and control were
+Inter, and Firefox renders the replica like Chromium (the replica sets `font-kerning: normal`, which Firefox turns into
+`palt` on kana; use `auto` next time). The rasterization agent found one real difference: the app's autohinter
+rescales runs vertically so the x-height lands on a whole pixel, giving 16 px text 3 percent taller x-height and cap at
+scales 2 and 3 with equal widths (equal at scale 1, shorter at 1.25 and 1.5). Whether it explains "track titles looked
+bigger at 16, identical at 14" depends on the monitor; the human answered scale 3 (15.6 inch), where it fit. The Firefox
+arm then nulled it: Firefox applies the same x-height fit, and matches the app in height, ink mass and edge sharpness
+(remaining: app baseline 1 device px higher at scale 3, bold row weight, thinner stem core). So no instrument explains
+the 16 vs 17 px impression; the text size setting is the answer for the human. A no-hinting build (agent
+`acb7f52bc58b6c1a3`) was started and stopped by me for that reason, nothing built or left running.
+
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 
 - Text-size research follow-ups (written 2026-10-22, from a reviewer's note the human pasted), not started: (1) identical

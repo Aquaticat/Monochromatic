@@ -67,20 +67,20 @@ export type CollectIndentNodeRecordsParams = {
  ```
  */
 function isExpectationNode(value: unknown,): value is ExpectationNode {
-  return (typeof value === 'object')
+  return ((typeof value) === 'object')
     && (value !== null)
-    && (typeof Reflect.get(
+    && ((typeof Reflect.get(
       value,
       'type',
-    ) === 'string')
-    && (typeof Reflect.get(
+    )) === 'string')
+    && ((typeof Reflect.get(
       value,
       'start',
-    ) === 'number')
-    && (typeof Reflect.get(
+    )) === 'number')
+    && ((typeof Reflect.get(
       value,
       'end',
-    ) === 'number');
+    )) === 'number');
 }
 
 /**
@@ -155,11 +155,11 @@ export function collectIndentNodeRecords({
    Open-node frames with child cursors; the stack replaces recursion in the
    structural walk.
    */
-  const openFrames: Array<{
+  const openFrames: {
     recordIndex: number;
     children: readonly ExpectationNode[];
     childIndex: number;
-  }> = [{
+  }[] = [{
     recordIndex: 0,
     children: childNodesOf({
       node: root,
@@ -175,7 +175,9 @@ export function collectIndentNodeRecords({
       arr: openFrames,
       index: openFrames.length - 1,
     },);
-    if (frame.childIndex >= frame.children.length) {
+    if (frame.childIndex
+      >= frame.children
+        .length) {
       openFrames.pop();
       continue;
     }
@@ -222,13 +224,23 @@ export function collectIndentNodeRecords({
  */
 export function collectTemplateSpans(
   records: readonly IndentNodeRecord[],
-): readonly (readonly [number, number])[] {
-  const spans: Array<readonly [number, number]> = [];
+): readonly (readonly [
+  number,
+  number
+])[] {
+  const spans: (readonly [
+    number,
+    number
+  ])[] = [];
   for (const record of records) {
-    if (record.node.type === 'TemplateLiteral') {
+    if (record.node
+      .type
+      === 'TemplateLiteral') {
       spans.push([
-        record.node.start,
-        record.node.end,
+        record.node
+          .start,
+        record.node
+          .end,
       ],);
     }
   }
@@ -289,7 +301,8 @@ export function effectiveRecordIndexOf({
       arr: records,
       index: current,
     },);
-    if (!DECL_BODY_WRAPPER_KINDS.has(record.node.type))
+    if (!DECL_BODY_WRAPPER_KINDS.has(record.node
+      .type))
       return current;
     current = record.parentIndex;
   }
@@ -346,7 +359,9 @@ export function tokenOwnerRecordIndexes({
     return at({
       arr: records,
       index: topIndex,
-    },).node.end;
+    },)
+      .node
+      .end;
   }
   let recordCursor = 0;
   for (
@@ -357,13 +372,17 @@ export function tokenOwnerRecordIndexes({
     const tokenStart = at({
       arr: tokens,
       index: tokenIndex,
-    },).start;
+    },)
+      .start;
     while (
       (recordCursor < records.length)
         && (at({
           arr: records,
           index: recordCursor,
-        },).node.start <= tokenStart)
+        },)
+          .node
+          .start
+          <= tokenStart)
     ) {
       while (
         (containmentStack.length > 0)

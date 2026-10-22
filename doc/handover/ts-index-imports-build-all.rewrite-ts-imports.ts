@@ -103,7 +103,7 @@ for (const rel of new Glob('package/**/*.{ts,tsx,mts}').scanSync(root)) {
   );
   if (!text.includes(scoped)) continue;
   let hits = 0;
-  const next = text.replace(
+  const next = text.replaceAll(
     re,
     (
       _m,

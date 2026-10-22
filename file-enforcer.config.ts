@@ -295,7 +295,7 @@ function errorHasCode(
     readonly code: string;
   },
 ): boolean {
-  return (error instanceof Error)
+  return (Error.isError(error,))
     && ('code' in error)
     && ((error as NodeErrorCodeCarrier).code === code);
 }
@@ -356,7 +356,7 @@ async function packageJsonLicenseExpression(
     readonly license?: unknown;
   };
 
-  return (typeof packageJson.license === 'string')
+  return ((typeof packageJson.license) === 'string')
     ? packageJson.license
     : undefined;
 }
@@ -381,11 +381,14 @@ async function cargoTomlLicenseExpression(
    values are ignored unless they resolve to a direct string in this manifest.
    */
   const license = getTomlProperty({
-    path: ['package', 'license',],
+    path: [
+      'package',
+      'license',
+    ],
     content: await cat([manifestPath,],),
   },) as string | undefined;
 
-  return (typeof license === 'string')
+  return ((typeof license) === 'string')
     ? license
     : undefined;
 }
@@ -428,7 +431,10 @@ async function unlinkIfExists(
     await unlink(filePath,);
   }
   catch (error) {
-    if (errorHasCode({ error, code: ABSENT_PATH_ERROR_CODE, },))
+    if (errorHasCode({
+      error,
+      code: ABSENT_PATH_ERROR_CODE,
+    },))
       return;
 
     throw error;
@@ -509,7 +515,10 @@ async function collectPackageLicenseTextIds(): Promise<Map<string, Set<PackageLi
 
   return new Map(Array.from(
     packageLicenseExpressions,
-    function toPackageTextIds([packageDir, expressions,]): readonly [string, Set<PackageLicenseTextId>] {
+    function toPackageTextIds([packageDir, expressions,]): readonly [
+      string,
+      Set<PackageLicenseTextId>
+    ] {
       /**
        Known license text identifiers required by all expressions in this package.
        */
@@ -518,7 +527,10 @@ async function collectPackageLicenseTextIds(): Promise<Map<string, Set<PackageLi
         for (const textId of licenseTextIdsForExpression({ expression, },))
           textIds.add(textId,);
 
-      return [packageDir, textIds,];
+      return [
+        packageDir,
+        textIds,
+      ];
     },
   ),);
 }
@@ -647,7 +659,7 @@ function selectBrowserslistQueries(
   { config, }: { readonly config: Readonly<Record<string, readonly string[] | undefined>>; },
 ): readonly string[] {
   return config[BROWSERSLIST_CONFIG_ENVIRONMENT]
-    ?? config['defaults']
+    ?? config.defaults
     ?? [];
 }
 
@@ -1009,14 +1021,16 @@ function isCanonicalSkillPath({ filePath, }: { readonly filePath: string; }): bo
    Path segments checked without filesystem resolution so traversal cannot escape destination root.
    */
   const segments = filePath.split('/',);
-  return segments.length === 4
-    && segments[0] === '.agents'
-    && segments[1] === 'skills'
-    && segments[2] !== ''
-    && segments[2] !== '.'
-    && segments[2] !== '..'
-    && segments[3]?.endsWith('.md',) === true
-    && !filePath.includes('\\',);
+  return (segments.length === 4)
+    && (segments[0] === '.agents')
+    && (segments[1] === 'skills')
+    && (segments[2] !== '')
+    && (segments[2] !== '.')
+    && (segments[2] !== '..')
+    && (segments[3]
+      ?.endsWith('.md',)
+      === true)
+    && (!filePath.includes('\\',));
 }
 
 /**
@@ -1048,15 +1062,21 @@ function toSkillMirrorManifest(
     readonly manifestPath: string;
   },
 ): SkillMirrorManifest {
-  if (value === null
-    || (typeof value) !== 'object'
+  if ((value === null)
+    || ((typeof value) !== 'object')
     || Array.isArray(value,))
-    throw new SkillMirrorManifestError({ manifestPath, reason: 'expected a JSON object', },);
+    throw new SkillMirrorManifestError({
+      manifestPath,
+      reason: 'expected a JSON object',
+    },);
 
   for (const key of Reflect.ownKeys(value,)) {
-    if ((typeof key) !== 'string'
-      || !isCanonicalSkillPath({ filePath: key, })
-      || (typeof Reflect.get(value, key,)) !== 'string')
+    if (((typeof key) !== 'string')
+      || (!isCanonicalSkillPath({ filePath: key, }))
+      || ((typeof Reflect.get(
+        value,
+        key,
+      )) !== 'string'))
       throw new SkillMirrorManifestError({
         manifestPath,
         reason: `unsafe ownership entry ${String(key,)}`,
@@ -1089,10 +1109,16 @@ async function readSkillMirrorManifest(
    */
   let content: string;
   try {
-    content = await readFile(manifestPath, 'utf8',);
+    content = await readFile(
+      manifestPath,
+      'utf8',
+    );
   }
   catch (readError: unknown) {
-    if (errorHasCode({ error: readError, code: ABSENT_PATH_ERROR_CODE, },))
+    if (errorHasCode({
+      error: readError,
+      code: ABSENT_PATH_ERROR_CODE,
+    },))
       return {};
 
     throw readError;
@@ -1111,7 +1137,10 @@ async function readSkillMirrorManifest(
       reason: `invalid JSON: ${String(parseError,)}`,
     },);
   }
-  return toSkillMirrorManifest({ value: parsed, manifestPath, },);
+  return toSkillMirrorManifest({
+    value: parsed,
+    manifestPath,
+  },);
 }
 
 /**
@@ -1128,7 +1157,10 @@ async function readSkillMirrorManifest(
  */
 function hashSkillContent({ content, }: { readonly content: string; }): string {
   return createHash('sha256',)
-    .update(content, 'utf8',)
+    .update(
+    content,
+    'utf8',
+    )
     .digest('hex',);
 }
 
@@ -1216,7 +1248,10 @@ async function mirrorSkillsToDestination(
     },)
     .map(async function removeOwnedStaleMirror(canonicalPath,): Promise<void> {
       await unlinkIfExists({
-        filePath: mirrorDestinationPath({ canonicalPath, destinationRoot, }),
+        filePath: mirrorDestinationPath({
+          canonicalPath,
+          destinationRoot,
+        }),
       },);
     },),);
 
@@ -1247,7 +1282,10 @@ async function mirrorSkills(): Promise<void> {
   /**
    Canonical files ordered by raw path before JSON construction.
    */
-  const orderedSkills = [...skills,].sort(function compareSkillPaths(left, right,): number {
+  const orderedSkills = [...skills,].sort(function compareSkillPaths(
+    left,
+    right,
+  ): number {
     /**
      Normalized left path used for deterministic code-unit ordering.
      */
@@ -1266,7 +1304,10 @@ async function mirrorSkills(): Promise<void> {
    Current ownership mapping excludes every destination-only skill by construction.
    */
   const manifest: SkillMirrorManifest = Object.fromEntries(orderedSkills.map(
-    function toManifestEntry(skill,): readonly [string, string] {
+    function toManifestEntry(skill,): readonly [
+      string,
+      string
+    ] {
       return [
         canonicalSkillPath({ filePath: skill.path, },),
         hashSkillContent({ content: skill.content, },),
@@ -1280,7 +1321,11 @@ async function mirrorSkills(): Promise<void> {
   /**
    Serialized ownership manifest produced once at local ownership boundary.
    */
-  const manifestText = `${JSON.stringify(manifest, null, 2,)}\n`;
+  const manifestText = `${JSON.stringify(
+    manifest,
+    null,
+    2,
+  )}\n`;
 
   await Promise.all(SKILL_MIRROR_DESTINATION_ROOTS.map(
     async function syncDestination(destinationRoot,): Promise<void> {
@@ -1496,7 +1541,10 @@ const CARGO_WORKSPACE_BLOCK = `# Standalone crate: its own workspace root, so no
  console.log(CARGO_DYLINT_DIRS.includes('package/desktop-app/ide'));
  ```
  */
-const CARGO_DYLINT_DIRS: readonly string[] = ['package/desktop-app/ide', 'package/linter/monochromatic-lint',];
+const CARGO_DYLINT_DIRS: readonly string[] = new Set([
+  'package/desktop-app/ide',
+  'package/linter/monochromatic-lint',
+]);
 
 /**
  `check-cfg` list that declares the `dylint_lib` cfg name with any value, written inside an existing
@@ -1568,25 +1616,119 @@ type CargoSharedDependency = {
  ```
  */
 const CARGO_SHARED_DEPENDENCIES: readonly CargoSharedDependency[] = [
-  { table: 'dependencies', name: 'aho-corasick', value: '1', },
-  { table: 'dependencies', name: 'anyhow', value: '1', },
-  { table: 'dependencies', name: 'arbitrary', value: { version: '1', features: ['derive',], }, },
-  { table: 'dependencies', name: 'clap', value: { version: '4', features: ['derive',], }, },
-  { table: 'dependencies', name: 'i-slint-backend-winit', value: '1.18.1', },
-  { table: 'dependencies', name: 'ignore', value: '0.4', },
-  { table: 'dependencies', name: 'libfuzzer-sys', value: { version: '0.4', features: ['arbitrary-derive',], }, },
-  { table: 'dependencies', name: 'memchr', value: '2', },
-  { table: 'dependencies', name: 'opus', value: '0.4', },
-  { table: 'dependencies', name: 'rayon', value: '1', },
-  { table: 'dependencies', name: 'regex', value: '1', },
-  { table: 'dependencies', name: 'ringbuf', value: '0.5', },
-  { table: 'dependencies', name: 'serde', value: { version: '1', features: ['derive',], }, },
-  { table: 'dependencies', name: 'serde_json', value: '1', },
-  { table: 'dependencies', name: 'symphonia', value: { version: '0.6', features: ['all',], }, },
-  { table: 'dependencies', name: 'tracing', value: '0.1', },
-  { table: 'dependencies', name: 'tracing-appender', value: '0.2', },
-  { table: 'dependencies', name: 'tracing-subscriber', value: { version: '0.3', features: ['env-filter',], }, },
-  { table: 'build-dependencies', name: 'slint-build', value: '1.18.1', },
+  {
+    table: 'dependencies',
+    name: 'aho-corasick',
+    value: '1',
+  },
+  {
+    table: 'dependencies',
+    name: 'anyhow',
+    value: '1',
+  },
+  {
+    table: 'dependencies',
+    name: 'arbitrary',
+    value: {
+      version: '1',
+      features: ['derive',],
+    },
+  },
+  {
+    table: 'dependencies',
+    name: 'clap',
+    value: {
+      version: '4',
+      features: ['derive',],
+    },
+  },
+  {
+    table: 'dependencies',
+    name: 'i-slint-backend-winit',
+    value: '1.18.1',
+  },
+  {
+    table: 'dependencies',
+    name: 'ignore',
+    value: '0.4',
+  },
+  {
+    table: 'dependencies',
+    name: 'libfuzzer-sys',
+    value: {
+      version: '0.4',
+      features: ['arbitrary-derive',],
+    },
+  },
+  {
+    table: 'dependencies',
+    name: 'memchr',
+    value: '2',
+  },
+  {
+    table: 'dependencies',
+    name: 'opus',
+    value: '0.4',
+  },
+  {
+    table: 'dependencies',
+    name: 'rayon',
+    value: '1',
+  },
+  {
+    table: 'dependencies',
+    name: 'regex',
+    value: '1',
+  },
+  {
+    table: 'dependencies',
+    name: 'ringbuf',
+    value: '0.5',
+  },
+  {
+    table: 'dependencies',
+    name: 'serde',
+    value: {
+      version: '1',
+      features: ['derive',],
+    },
+  },
+  {
+    table: 'dependencies',
+    name: 'serde_json',
+    value: '1',
+  },
+  {
+    table: 'dependencies',
+    name: 'symphonia',
+    value: {
+      version: '0.6',
+      features: ['all',],
+    },
+  },
+  {
+    table: 'dependencies',
+    name: 'tracing',
+    value: '0.1',
+  },
+  {
+    table: 'dependencies',
+    name: 'tracing-appender',
+    value: '0.2',
+  },
+  {
+    table: 'dependencies',
+    name: 'tracing-subscriber',
+    value: {
+      version: '0.3',
+      features: ['env-filter',],
+    },
+  },
+  {
+    table: 'build-dependencies',
+    name: 'slint-build',
+    value: '1.18.1',
+  },
 ];
 
 /**
@@ -1597,9 +1739,7 @@ const CARGO_SHARED_DEPENDENCIES: readonly CargoSharedDependency[] = [
  const preset: CargoProfileSpec = { release: { lto: true } };
  ```
  */
-type CargoProfileSpec = {
-  readonly [profileName: string]: { readonly [key: string]: CanonicalTomlValue; };
-};
+type CargoProfileSpec = Readonly<Record<string, Readonly<Record<string, CanonicalTomlValue>>>>;
 
 /**
  Scanner profile: full optimization plus fail-closed panic/overflow behavior.
@@ -1610,7 +1750,14 @@ type CargoProfileSpec = {
  ```
  */
 const CARGO_PROFILE_SCANNER: CargoProfileSpec = {
-  release: { lto: true, 'codegen-units': 1, 'opt-level': 3, panic: 'unwind', 'overflow-checks': true, strip: true, },
+  release: {
+    lto: true,
+    'codegen-units': 1,
+    'opt-level': 3,
+    panic: 'unwind',
+    'overflow-checks': true,
+    strip: true,
+  },
 };
 
 /**
@@ -1622,7 +1769,13 @@ const CARGO_PROFILE_SCANNER: CargoProfileSpec = {
  ```
  */
 const CARGO_PROFILE_OVERFLOW: CargoProfileSpec = {
-  release: { lto: true, 'codegen-units': 1, 'opt-level': 3, 'overflow-checks': true, strip: true, },
+  release: {
+    lto: true,
+    'codegen-units': 1,
+    'opt-level': 3,
+    'overflow-checks': true,
+    strip: true,
+  },
 };
 
 /**
@@ -1634,7 +1787,12 @@ const CARGO_PROFILE_OVERFLOW: CargoProfileSpec = {
  ```
  */
 const CARGO_PROFILE_LINTER: CargoProfileSpec = {
-  release: { lto: true, 'codegen-units': 1, 'opt-level': 3, strip: true, },
+  release: {
+    lto: true,
+    'codegen-units': 1,
+    'opt-level': 3,
+    strip: true,
+  },
 };
 
 /**
@@ -1646,7 +1804,11 @@ const CARGO_PROFILE_LINTER: CargoProfileSpec = {
  ```
  */
 const CARGO_PROFILE_BENCH: CargoProfileSpec = {
-  release: { lto: true, 'codegen-units': 1, 'opt-level': 3, },
+  release: {
+    lto: true,
+    'codegen-units': 1,
+    'opt-level': 3,
+  },
 };
 
 /**
@@ -1658,7 +1820,11 @@ const CARGO_PROFILE_BENCH: CargoProfileSpec = {
  ```
  */
 const CARGO_PROFILE_MUSIC: CargoProfileSpec = {
-  release: { strip: 'symbols', lto: 'fat', 'codegen-units': 1, },
+  release: {
+    strip: 'symbols',
+    lto: 'fat',
+    'codegen-units': 1,
+  },
 };
 
 /**
@@ -1707,20 +1873,92 @@ const CARGO_PROFILE_BY_DIR: Record<string, CargoProfileSpec> = {
  ```
  */
 const CARGO_STATIC_ENFORCEMENTS: readonly CargoEnforcement[] = [
-  { guardPath: ['package',], path: ['package', 'edition',], value: CARGO_CANONICAL_EDITION, },
-  { guardPath: ['package', 'license',], path: ['package', 'license',], value: CARGO_CANONICAL_LICENSE, },
-  { guardPath: ['package', 'publish',], path: ['package', 'publish',], value: false, },
+  {
+    guardPath: ['package',],
+    path: [
+      'package',
+      'edition',
+    ],
+    value: CARGO_CANONICAL_EDITION,
+  },
+  {
+    guardPath: [
+      'package',
+      'license',
+    ],
+    path: [
+      'package',
+      'license',
+    ],
+    value: CARGO_CANONICAL_LICENSE,
+  },
+  {
+    guardPath: [
+      'package',
+      'publish',
+    ],
+    path: [
+      'package',
+      'publish',
+    ],
+    value: false,
+  },
   ...Object.entries(CARGO_LINTS_CLIPPY_KEYS,)
     .map(function lintsEnforcement([key, value,],): CargoEnforcement {
-      return { guardPath: ['lints', 'clippy',], path: ['lints', 'clippy', key,], value, };
+      return {
+        guardPath: [
+          'lints',
+          'clippy',
+        ],
+        path: [
+          'lints',
+          'clippy',
+          key,
+        ],
+        value,
+      };
     },),
   ...CARGO_SHARED_DEPENDENCIES.map(function dependencyEnforcement(
-    { table, name, value, },
+    {
+      table,
+      name,
+      value,
+    },
   ): CargoEnforcement {
-    return { guardPath: [table, name,], path: [table, name,], value, };
+    return {
+      guardPath: [
+        table,
+        name,
+      ],
+      path: [
+        table,
+        name,
+      ],
+      value,
+    };
   },),
-  { guardPath: ['package', 'repository',], path: ['package', 'repository',], value: CARGO_REPOSITORY_URL, },
-  { guardPath: ['package', 'repository',], path: ['package', 'readme',], value: CARGO_README_FILENAME, },
+  {
+    guardPath: [
+      'package',
+      'repository',
+    ],
+    path: [
+      'package',
+      'repository',
+    ],
+    value: CARGO_REPOSITORY_URL,
+  },
+  {
+    guardPath: [
+      'package',
+      'repository',
+    ],
+    path: [
+      'package',
+      'readme',
+    ],
+    value: CARGO_README_FILENAME,
+  },
 ];
 
 /**
@@ -1785,8 +2023,15 @@ function cargoProfileEnforcements(
       return Object.entries(keys,)
         .map(function profileKeyEnforcement([key, value,],): CargoEnforcement {
           return {
-            guardPath: ['profile', profileName,],
-            path: ['profile', profileName, key,],
+            guardPath: [
+              'profile',
+              profileName,
+            ],
+            path: [
+              'profile',
+              profileName,
+              key,
+            ],
             value,
           };
         },);
@@ -1806,7 +2051,7 @@ function cargoProfileEnforcements(
  ```
  */
 function usesDylintAttributes({ manifestPath, }: { readonly manifestPath: string; },): boolean {
-  return CARGO_DYLINT_DIRS.includes(cargoPackageDir({ manifestPath, },),);
+  return CARGO_DYLINT_DIRS.has(cargoPackageDir({ manifestPath, },),);
 }
 
 /**
@@ -1828,8 +2073,17 @@ function cargoDylintEnforcements(
     return [];
 
   return [{
-    guardPath: ['lints', 'rust', 'unexpected_cfgs',],
-    path: ['lints', 'rust', 'unexpected_cfgs', 'check-cfg',],
+    guardPath: [
+      'lints',
+      'rust',
+      'unexpected_cfgs',
+    ],
+    path: [
+      'lints',
+      'rust',
+      'unexpected_cfgs',
+      'check-cfg',
+    ],
     value: CARGO_DYLINT_CHECK_CFG,
   },];
 }
@@ -1852,7 +2106,14 @@ function cargoDylintBlocks(
   if (!usesDylintAttributes({ manifestPath, },))
     return [];
 
-  return [{ absentPath: ['lints', 'rust', 'unexpected_cfgs',], text: CARGO_DYLINT_BLOCK, },];
+  return [{
+    absentPath: [
+      'lints',
+      'rust',
+      'unexpected_cfgs',
+    ],
+    text: CARGO_DYLINT_BLOCK,
+  },];
 }
 
 /**
@@ -1874,16 +2135,31 @@ function buildCargoManifestPlan(
     enforcements: [
       ...CARGO_STATIC_ENFORCEMENTS,
       {
-        guardPath: ['package', 'repository',],
-        path: ['package', 'homepage',],
+        guardPath: [
+          'package',
+          'repository',
+        ],
+        path: [
+          'package',
+          'homepage',
+        ],
         value: cargoHomepage({ manifestPath, },),
       },
       ...cargoProfileEnforcements({ manifestPath, },),
       ...cargoDylintEnforcements({ manifestPath, },),
     ],
     blocks: [
-      { absentPath: ['lints', 'clippy',], text: CARGO_LINTS_BLOCK, },
-      { absentPath: ['workspace',], text: CARGO_WORKSPACE_BLOCK, },
+      {
+        absentPath: [
+          'lints',
+          'clippy',
+        ],
+        text: CARGO_LINTS_BLOCK,
+      },
+      {
+        absentPath: ['workspace',],
+        text: CARGO_WORKSPACE_BLOCK,
+      },
       ...cargoDylintBlocks({ manifestPath, },),
     ],
   };

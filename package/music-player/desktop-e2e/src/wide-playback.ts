@@ -156,7 +156,7 @@ export async function checkPlayback(
           session,
           act: tapKey('enter',),
           until: function rowIsSelectedAndPaused(state: UiState,): boolean {
-            return (state.current_index === ringIndex) && !state.playing;
+            return (state.current_index === ringIndex) && (!state.playing);
           },
           what: 'the row selected and paused',
         },);
