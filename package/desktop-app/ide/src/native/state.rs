@@ -83,6 +83,7 @@ impl State {
             tile_job: None,
             tile_worker: None,
             tile_poll: Timer::default(),
+            tile_wake: Timer::default(),
             minimap: minimap::MinimapState::new(),
             #[cfg(debug_assertions)]
             renders: 0,

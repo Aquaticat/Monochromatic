@@ -31,11 +31,17 @@ use std::{
 ///  and applying what it measured.
 mod pass;
 
+/// The wait for the next scroll step before a finished tile is taken,
+///  and the wake-up for its end.
+pub(super) mod wait;
+
 /// Applying what a pass measured,
 ///  from the poll.
 use pass::apply_pass;
 /// The measurement key and the pass request that the render and the tests also use.
 pub(super) use pass::{current_key, sync_pass};
+/// Both timers of the tile poll run this.
+use wait::poll_unless_step_due;
 
 /// What:
 ///  Position and width of one materialized tile:
@@ -150,43 +156,8 @@ fn start_poll(window: &AppWindow, state: &Rc<RefCell<State>>, current: &mut Stat
             let (Some(active), Some(shared)) = (weak_window.upgrade(), weak_state.upgrade()) else {
                 return;
             };
-            if step_due(&shared.borrow()) {
-                tracing::debug!("leaving a finished tile for the next scroll step");
-                return;
-            }
-            poll(&active, &shared);
+            poll_unless_step_due(&active, &shared);
         });
-}
-
-/// What:
-///  How long after a scroll step the poll leaves a finished tile for the next step to take.
-/// Why:
-///  A scroll draws a frame at every step of the input,
-/// and the setters that swap a tile in ask the toolkit for a frame of their own;
-/// a tile taken between two steps is a second frame in that step's time.
-///  In the nested compositor's recording the text then did not move for one tick,
-/// in every scroll measured (`doc/handover/ide-gpu-stages-5-6.md`).
-///  A step of an input at 50 Hz or more comes sooner than this wait,
-/// and takes the tile in its own frame;
-/// the poll,
-/// 20 ms later,
-/// takes a tile no step came for.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// const STEP_WAIT_MS = 20;
-/// ```
-const STEP_WAIT: Duration = Duration::from_millis(20);
-
-/// Whether the view stepped so recently that the next step,
-/// and the frame it draws,
-/// is due before the poll comes again.
-fn step_due(current: &State) -> bool {
-    // False when the view never stepped; otherwise whether the last step is within the wait.
-    return match current.stepped_at {
-        Some(at) => at.elapsed() < STEP_WAIT,
-        None => false,
-    };
 }
 
 /// Whether a finished tile still describes what is displayed,
@@ -223,6 +194,8 @@ fn measured_rows_match(current: &State, built: &TileBuilt) -> bool {
 pub(super) fn poll(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let (polled, pass) = {
         let mut current = state.borrow_mut();
+        // This poll takes whatever has finished, so a wake-up still waiting for the end of the wait has no work left.
+        current.tile_wake.stop();
         let Some(mut worker) = current.tile_worker.take() else {
             current.tile_poll.stop();
             return;
