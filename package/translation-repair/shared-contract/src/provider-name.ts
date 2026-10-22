@@ -42,6 +42,24 @@
 // plan"), so the provider reads dry the moment its own meter says the day's
 // energy is spent (`neuralwatt-ledger.ts`) and the walk down this order goes
 // on to Synthetic. Record: `doc/decision/translation-repair-neuralwatt-provider.md`.
+//
+// DEEPSEEK AND XIAOMI JOINED ON 2026-10-22, AFTER BEDROCK AND AHEAD OF HYPER AND
+// OPENROUTER. OPEN TO THE OWNER'S VETO. The owner granted both keys that day
+// for one model each: "You can also use the DEEPSEEK_API_KEY as you wish, but
+// you may only use deepseek v4.1 flash 1017 with that key" and "You may only
+// use v2.6-flash with this key" (the Xiaomi MiMo key). The reason for the
+// place is the Bedrock precedent of 2026-09-07 over again: Hyper's balance is
+// never renewed and is what the Hyper-only seats run on, so a seat another
+// provider can serve spends elsewhere first, and OpenRouter is where the owner
+// would rather buy. DeepSeek's prepaid balance was given to use "as you wish",
+// so it is money already set aside and goes before Hyper's. Xiaomi bills per
+// token and serves only the one seat OpenRouter otherwise serves, at the same
+// listed price, so it goes ahead of OpenRouter and behind the balances that do
+// not renew. DeepSeek sits ahead of Xiaomi because its money is prepaid and
+// Xiaomi's is bought as it is used. Neither route promises zero data
+// retention; the owner's ruling of 2026-10-05 that the corpus is public and
+// PII is allowed, and the grants above, are what permit it. Record:
+// `doc/decision/translation-repair-direct-providers.md`.
 
 /**
  Every provider, in the order the owner prefers to spend on them.
@@ -58,6 +76,8 @@ export const PROVIDER_ORDER = [
   'neuralwatt',
   'synthetic',
   'bedrock',
+  'deepseek',
+  'xiaomi',
   'hyper',
   'openrouter',
 ] as const;
@@ -81,7 +101,7 @@ export type ProviderName = typeof PROVIDER_ORDER[number];
 
  @example
  ```ts
- const dry: ProviderRecord<boolean> = { neuralwatt: false, synthetic: false, hyper: true, bedrock: false, openrouter: false, };
+ const dry: ProviderRecord<boolean> = { neuralwatt: false, synthetic: false, bedrock: false, deepseek: false, xiaomi: false, hyper: true, openrouter: false, };
  ```
  */
 export type ProviderRecord<ValueT,> = Readonly<Record<ProviderName, ValueT>>;
@@ -105,6 +125,8 @@ export function providerRecord<ValueT,>(
     neuralwatt: of('neuralwatt',),
     synthetic: of('synthetic',),
     bedrock: of('bedrock',),
+    deepseek: of('deepseek',),
+    xiaomi: of('xiaomi',),
     hyper: of('hyper',),
     openrouter: of('openrouter',),
   };
@@ -120,9 +142,9 @@ export function providerRecord<ValueT,>(
  @example
  ```ts
  otherProviders({ provider: 'hyper', },);
- // => ['neuralwatt', 'synthetic', 'bedrock', 'openrouter',]
+ // => ['neuralwatt', 'synthetic', 'bedrock', 'deepseek', 'xiaomi', 'openrouter',]
  otherProviders({ provider: 'synthetic', },);
- // => ['neuralwatt', 'bedrock', 'hyper', 'openrouter',]
+ // => ['neuralwatt', 'bedrock', 'deepseek', 'xiaomi', 'hyper', 'openrouter',]
  ```
  */
 export function otherProviders(
