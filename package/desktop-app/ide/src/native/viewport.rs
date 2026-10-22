@@ -46,7 +46,7 @@ use std::{cell::RefCell, rc::Rc, time::Instant};
 /// ```ts
 /// const TILE_VIEWS = 3;
 /// ```
-const TILE_VIEWS: f32 = 3.0;
+pub(super) const TILE_VIEWS: f32 = 3.0;
 
 /// What:
 ///  How close,
@@ -128,7 +128,7 @@ pub(super) fn holds(current: &State, bounds: TileBounds, view: f32, height: f32)
 /// }
 /// ```
 fn recenter_edge(width: f32, scale: f32, height: f32) -> f32 {
-    let room = (render::tile_cap(width, scale) - height) / 2.0 - 2.0 * CODE_ROW;
+    let room = (render::tile_cap(width, scale, height) - height) / 2.0 - 2.0 * CODE_ROW;
     return (RECENTER_EDGE_VIEWS * height).min(room);
 }
 
@@ -270,7 +270,7 @@ pub(super) fn place(current: &mut State, offset: f32, viewport_width: f32, heigh
     current.first = first;
     current.count = last.saturating_sub(first) + 1 + TILE_SPARE_LINES;
     current.width = width;
-    current.clip = clip_for(current, (tile_start, tile_end));
+    current.clip = clip_for(current, (tile_start, tile_end), height);
     return true;
 }
 
@@ -289,14 +289,14 @@ pub(super) fn place(current: &mut State, offset: f32, viewport_width: f32, heigh
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function clipFor(current: State, band: [top: number, bottom: number]): Clip | undefined;
+/// function clipFor(current: State, band: [top: number, bottom: number], view: number): Clip | undefined;
 /// ```
-fn clip_for(current: &State, band: (f32, f32)) -> Option<Clip> {
+fn clip_for(current: &State, band: (f32, f32), view: f32) -> Option<Clip> {
     let lines = current.document.text().len_lines();
     let end = (current.first + current.count).min(lines);
     let first_top = current.row_map.block_top(current.first);
     let bottom = current.row_map.block_top(end);
-    let cap = render::tile_cap(current.width, current.scale);
+    let cap = render::tile_cap(current.width, current.scale, view);
     let clip = band_clip(first_top, bottom, band, cap);
     if let Some(chosen) = clip {
         tracing::debug!(

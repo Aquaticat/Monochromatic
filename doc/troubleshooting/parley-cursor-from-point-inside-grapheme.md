@@ -284,7 +284,9 @@ the equal split does not depend on what the glyphs look like.
 
 ### IDE guard control
 
-`package/desktop-app/ide/bin/inspect-source-guards.mjs`,
+`package/desktop-app/ide/bin/inspect-source-guards.mjs`
+(now `package/desktop-app/ide/bin/inspect-source-guards.ts`,
+renamed 2026-10-22),
 guard `grapheme-snap`,
 replaces the snapped return in `ShapedRow::hit` with the raw Parley index in a disposable copy.
 The run recorded here used the files of commit `8dab09180`;

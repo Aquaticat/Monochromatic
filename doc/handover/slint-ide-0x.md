@@ -1563,11 +1563,168 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     report: verify the diff and the compared outputs, run the gates once on the merge, push, then land the 90 percent
     share (rebase `~/temp/agent/land-share`) and the minimap agent. The 15 other `.mjs` files in `bin/` (30 minus the 15 that broke)
     stay as they are until the owner says otherwise (a conversion of all of them is a separate decision).
+    LANDED, 2026-10-22, conversion agent `a973fa0a05208c348` (merge tip `dd134c167a` on `origin/main`, ancestry
+    confirmed; branch tip `de2cd5834e`, 4 commits). While it ran, another session put the 17 files back as `.mjs` on
+    `main` (`0c2f35836d`) and re-applied the formatting (`60d4795f95`, which says `Closes #1794`), so the merge had
+    modify/delete conflicts. I resolved them by the owner's decision: the 17 `.ts` files equal the agent's branch tip
+    byte for byte (`git diff` against the tip is empty) and the restored `.mjs` are removed. The formatted `.mjs`
+    versions are in history at `60d4795f95`. Gates once on the merged snapshot: `lint` passes, `test:bin` 71 of 71,
+    `test` 797 passed and 1 skipped (no Rust changed, so no `test:native`). My checks of its report: all 17 parse with
+    `stripTypeScriptTypes`; `nested-compositor.ts` differs from its pre-corruption `.mjs` only by types, TSDoc and one
+    equivalent `.map(Number)` rewrite; the report's "line counts are unchanged" was wrong (the files grew 10 to 15
+    percent from TSDoc and types), and I read only that one diff by hand, the rest rests on the agent's old-against-new
+    runs of 12 scripts with equal verdicts. Known limits it reported: `inspect:language-confinement` and
+    `inspect:language-lifecycle` fail in the same way before and after (rust-analyzer does not start under the mise
+    task environment; run directly with `node` the confinement script passes 114 of 114); the design scripts write
+    frames whose bytes differ from the old script's (cause not isolated). Agent worktree and branch removed locally and
+    on the remote; no stray unit, process or container. The HOLD above is lifted: `test:bin` is green on `main`.
+    Next, one at a time: the stacking branch, the minimap branch, the 90 percent share (its scratch tree
+    `land-share` still holds uncommitted `.mjs` restores that must be discarded, not pushed).
+    The code tile stacking agent `a074735d16c6106a5` has handed back (branch `worktree-agent-a074735d16c6106a5`, product
+    snapshot `628fb36f39`, tip `0a541c6008`, 13 commits, pushed, not on `main`; I read the markup, the stack builder and
+    the viewport diffs and found no defect; no stray unit or process). Its numbers: captures at 7680x4320 scale 1
+    went from 1,405 to 1,553 inked rows of 4,320 to 2,879 to 2,897 (about 66 percent), 3840x2160 scale 2 from about
+    1,600 to about 2,800 inked rows, 1100x8100 scale 2 from about 8,000 to about 10,470, last row inked in every B
+    capture; seam measure 0 differing rows in 16, with a positive control of 32 to 35 differing rows; the Vello
+    warning 5 times in each of 3 runs before and 0 in 6 runs after; cadence 22 pairs B 4 stalls in 3 of 23 runs against
+    A 1 in 1 of 22, and a same-binary control 7 stalls in 7 of 28 runs (inside the spread); `texture-limit` clamps the
+    window (the panic over 16,384 px was the compositor's, which also panics at 1100x8400 scale 2, so that part is not
+    reproduced end to end); nine guards shown to fail; its gates passed on `628fb36f39` (`test:native -- 'all()'` 288
+    passed, serial). Open in its report: late tiles B 2 of 80 against A 0 of 80 (pass 1 had 2 of 40 at 52.6 and 238.6
+    ms, pass 2 0 of 40) with the evidence removed, so I measured it (unit `stack-all`, trees of `origin/main` and of `origin/main` plus the
+    branch with docs resolved by `-X theirs` for the measurement only, both removed; 60 alternating latency pairs and
+    20 A against A pairs; rows kept in `~/temp/agent/stack-lat-ab.jsonl` and `stack-lat-aa.jsonl`).
+    Three older guards (`failed-job-freed`, `overscan-early-return`, `minimap-scroll-notes-bands`) have anchors that
+    were already absent on `main`; the agent did not repair them, and one of mine to repair after the landings.
+    My latency measurement of the stacking branch (2026-10-22, release builds of `origin/main` as A and of `origin/main`
+    plus the branch as B, 1100x660 window, one app run at a time): 60 alternating pairs, late tiles (applied more than
+    30 ms after the last wheel event) A 0 of 60 and B 0 of 60, median apply 20.8 ms in both, median frame 30.3 ms and
+    29.8 ms, one frame over 36 ms in each; the A against A control of 20 pairs 0 of 20 and 0 of 20. The agent's own 2
+    late tiles of 80 on B (applied at 52.6 and 238.6 ms, evidence removed) did not reproduce, so the combined count
+    is B 2 of 140 against A 0 of 140; the cause of those two runs is not known and a load burst is not shown. At this
+    window size the stack is one texture, so this measures the one-texture path only.
+    LANDED, 2026-10-22, code tile stacking agent `a074735d16c6106a5` (merge tip `7ae6dfbde2` on `origin/main`, ancestry
+    confirmed; branch tip `0a541c6008`). One conflict, in `bin/inspect-source-guards.mjs`: main had reformatted the
+    file (`3da31bdc3a`) while the branch replaced the `clip-cap` and `clip-texture-side` cases with nine stacking cases
+    and followed the `Slice` rename in `minimap-slices-in-place`. I kept main's formatted file and re-applied exactly
+    those edits (the `diff` against main shows nothing else; the nine new objects were generated from the branch's own
+    lines). Gates once on the merged snapshot: `lint` passes, unfiltered `test:native` 289 passed and 5 skipped,
+    `test:bin` 71 of 71, `test` 801 passed and 1 skipped, `inspect:no-software-renderer` passes. Because I resolved
+    the guards file by hand, I ran the ten guards the merge touched in a disposable copy of `target`: each passes at
+    baseline, fails with its guard removed, passes restored (10 of 163 guards; the other 153 were not run). Installed
+    the new IDE: `monochromatic-ide` is now `9c046da1e4f2...` (equal to `dist/monochromatic-ide` after `bundle`), the
+    previous binary `27b877741a05...` is kept as `~/.local/bin/monochromatic-ide.previous`. I have not yet opened
+    the installed binary in the nested compositor; that check is after the minimap landing, which installs again.
+    Agent worktree and branch removed locally and on the remote; scratch tree, guard cache and artifacts removed.
     The minimap lag agent `afaeefdb803099e40` has handed back (branch `worktree-agent-afaeefdb803099e40`, tip
     `fbe4f73b2b`, pushed, not on `main`, not yet verified by me): blank-track frames in a 3,777 px fling fell from
     0.45 to 0.01 (A/A control 0.43), by a `LEAD` of 8 bands on the heading side; seven guards shown to fail; its own
     gates passed. Its report is the input to the verification, which waits for the hold above and for the code tile
     stacking agent `a074735d16c6106a5` (still running), whose branch touches other files in the same package.
+    LANDED, 2026-10-22, minimap lag agent `afaeefdb803099e40` (merge tip `f0c616addd` on `origin/main`, ancestry
+    confirmed; branch tip `fbe4f73b2b`). I read the whole source diff (`Heading`, `LEAD`, `bands_toward`, `follow`,
+    the reset on another file) and found no defect; I did not repeat its 3,777 px fling measurement. Conflicts: the
+    handover `doc/handover/ide-gpu-stages-5-6.md` (both appended, kept both, rewrapped two lines over 120 characters)
+    and `bin/inspect-source-guards.mjs` (main's formatted file kept; the two changed cases and five new cases
+    re-applied from the branch's own lines, `diff` against main shows only those). Gates once on the merged
+    snapshot: `lint` passes, unfiltered `test:native` 290 passed and 5 skipped, `test:bin` 71 of 71, `test` 803 passed
+    and 1 skipped, `inspect:no-software-renderer` passes. The seven touched guards each pass at baseline, fail with the
+    guard removed and pass restored in a disposable copy (7 of 168 guards; the other 161 were not run). The push
+    merged in one newer doc-only commit of mine (the stacking record), which was not gated. Installed again:
+    `monochromatic-ide` is `1ab8ee28af3c...` (equal to `dist/monochromatic-ide`); `.previous` is now the stacking
+    build `9c046da1e4f2...`. User boundary check: the installed binary run in the nested compositor
+    (`design/soft-wrap-shots.ts`, light and dark, six frames, exit 0) draws the wrapped source, the tree and the minimap
+    picture; frames are in `~/temp/agent/smoke-installed`. Agent worktree and branch removed locally and on the remote.
+    LANDED, 2026-10-22, the 90 percent container share (merge tip `0436ea512e` on `origin/main`, ancestry confirmed;
+    my commit `001d74da17`: `hostShare = 0.9` in `bin/container-bounds.ts`, its test, the README). It merged cleanly.
+    Gates once on the merged snapshot: `lint` passes, unfiltered `test:native` 290 passed and 5 skipped (the first
+    run at the new bound), `test:bin` 71 of 71, `test` 803 passed and 1 skipped, `inspect:no-software-renderer`
+    passes. No product code, so no reinstall. The uncommitted `.mjs` restores in the old scratch tree `land-share`
+    were not pushed; that tree is superseded and has been removed.
+    LANDED, 2026-10-22, the three stale guard anchors repaired (merge tip `3ad1271c94` on `origin/main`, ancestry
+    confirmed; guards file only, no product code). `failed-job-freed` now anchors on the failure path of
+    `src/native/tile.rs` (`current.tile_job = None;` before the debug-only `worker_failures` push) and names the test
+    that was renamed to `a_failed_worker_reply_frees_its_job_and_names_the_failure`; `overscan-early-return` now
+    turns the `if changed { render } else { note }` branch of `src/native/viewport.rs` into `if true`, because the
+    early `return;` it guarded is gone; `minimap-scroll-notes-bands` only needed the indentation of its anchor.
+    The static anchor check reports 0 absent anchors of 168. All three were proved in a disposable copy: baseline
+    passes, guard removed fails, restored passes (3 of 168 guards; the other 165 were not run in this pass). The first
+    run stopped at `failed-job-freed` because the test name was stale, which is how the rename was found. Gates once
+    on the merged snapshot: `lint` passes, `test:bin` 71 of 71, `test` 803 passed and 1 skipped,
+    `inspect:no-software-renderer` passes (no Rust changed, so no `test:native`).
+    State after this series: no IDE agent is running; `origin/main` holds the conversion, the stacked tile, the
+    minimap lead, the 90 percent share and the repaired anchors; the installed IDE is the minimap build. Open items:
+    the annotation stability tests (not reproduced), the caret test (fixed by inference only), the stacking branch
+    measured only on the one-texture path (no run at a window tall enough to need more than one texture), the late
+    tiles B 2 of 140 against A 0 of 140 (cause unknown), dense-selection cost, the blind spot for a chunk shifted by a
+    whole line, and the 15 other `.mjs` files in `bin/`.
+    Owner decision of 2026-10-22 (question "convert the 15 other `.mjs` files?", answer "Convert all 15
+    (Recommended)"): convert them to TypeScript like the first 17. Running: the second conversion agent (Sonnet, own
+    worktree off `origin/main`, branch push only; brief quotes `NLG`, `NLD`, `RXI`, `NQH`, `FHU`; converts
+    `inspect-source-guards` in its own commit and merges `origin/main` before it reports, because other sessions edit
+    that file; reports real line counts). On its report: verify the diff, the compared outputs and the line counts
+    myself, merge in a scratch tree (the guards file may conflict again: keep main's semantic changes), gates once
+    (`lint`, `test:bin` 71, `test`), prove two or three guards in a disposable copy because the guards script changes,
+    push, clean up, add a LANDED block here and a note on issue 1794.
+    Owner request of 2026-10-22: "Please setup gh releases CI." Existing state I found: the music player has
+    `.github/workflows/music-player-release.yml` (decision `doc/decision/music-player-releases.md`), `forbidden-strings`
+    has binary releases inside `cargo-publish.yml` (`build-binary`, `create-release`), and the IDE (`publish = false`,
+    0.1.0) has no release path. CORRECTION, my error: I first wrote here and told the owner in the question that the
+    nested compositor was only published to crates.io and that `mise` built it from source. That was wrong. The
+    compositor has had GitHub releases since 0.1.2 (`gh release list` shows seven, v0.1.2 to v0.6.1, all immutable and
+    not pre-releases, each with x86_64 and aarch64 gnu `.tar.gz` archives), `nws-build-binary` and `nws-create-release`
+    exist since `6c0c5de42c`, `[package.metadata.binstall]` is in its `Cargo.toml`, and a cargo-binstall probe finds
+    the archive. I had read only grep lines of `cargo-publish.yml` and never the nws jobs. The owner's choice of "the
+    nested compositor binaries" rested on that wrong premise, and I told the owner so.
+    Question asked (which products): the owner chose both the IDE and the compositor binaries. Settled, adopted from the
+    music player decision without asking: version bump on `main` triggers, dispatch dry run defaults to true, every file
+    attested, immutable tags, one `gh release create` with all assets, pre-releases, first real release only with the
+    owner's go-ahead. Running: two Sonnet agents in their own worktrees, branch push only (an IDE workflow
+    `ide-release.yml` with its decision and runbook, Linux x86_64; compositor jobs added to `cargo-publish.yml` with
+    Linux x86_64 and arm64 archives and `[package.metadata.binstall]`, no version bump). A new workflow can only be
+    dispatched from `main`, so after each branch is verified and landed I dispatch a dry run
+    (`gh workflow run ... -f dry-run=true`), read the run, and send fixes back; no real release is cut without the
+    owner. Follow-up not done: switching the `mise` backend for the compositor to the prebuilt release.
+    Compositor agent handed back (branch `worktree-agent-aedec3def05fc4366`, tip `420b7ceb2e`, not on `main`): it found
+    the release jobs and binstall metadata already present (see the correction above) and only hardened them: a dry
+    run now builds every target, a smoke run and an archive verification step, licenses inside the archives, a
+    checksums file in the same `gh release create`, the release tag looked up first (job `nws-release-state`), the
+    release waits for the crates.io publish, runner `ubuntu-24.04` instead of `ubuntu-latest`, `--locked`. I read the
+    whole diff of the workflow and it matches its report. I dispatched a dry run on that branch
+    (`gh workflow run cargo-publish.yml --ref worktree-agent-aedec3def05fc4366 -f crate=monochromatic-nested-wayland-session -f dry-run=true`;
+    dry run: no crates.io upload, no attestation, no release). Result, run `39829260282`: success; `nws-detect`,
+    `nws-publish-crate` (the `cargo publish --dry-run` step), `nws-release-state` and both `nws-build-binary` jobs
+    (x86_64 on `ubuntu-24.04`, aarch64 on `ubuntu-24.04-arm`, so the arm64 build and smoke run are proved on a real
+    runner) succeeded, `nws-create-release` and every other crate's jobs were skipped. I downloaded the two archives:
+    each holds the binary, `README.md` and `LICENSES/GPL-3.0-or-later.txt` and `LGPL-3.0-or-later.txt`, and the
+    extracted x86_64 binary prints `monochromatic-nested-wayland-session 0.6.1`. LANDED, 2026-10-22: merge tip
+    `c6f9787ba1` on `origin/main`, ancestry confirmed; `actionlint` exits 0 on the merged workflow; the push started no
+    workflow run (the push path filter lists only `Cargo.toml` files). Not proved: the real release path (attestation,
+    the checksums file in `gh release create`, `nws-create-release` after `nws-publish-crate`), which only the next
+    real release exercises, and that release needs the owner's go-ahead. Agent worktree and branches removed.
+    LANDED, 2026-10-22, conversion of the 15 other `.mjs` files (agent `afeb812862ba874cb`, branch tip `213bcc5ab4`;
+    merge tip `0f93cc19df` on `origin/main`, ancestry confirmed). Gates on the merged snapshot in a capped unit
+    (`conv2-gates`): merge clean, `lint` 0, `test:bin` 71 of 71, `test` 803 run 803 passed 1 skipped,
+    `inspect:no-software-renderer` 0 (`test:native` not run: no native file changed). The guards script's diff
+    (`inspect-source-guards`) was read in full: types and `replaceOne({...})`/`run({...})` object parameters only,
+    one added `throw` for a guard that names no test kind, cases untouched. Open: the agent saw the `clip-chosen`
+    guard's removed run panic at `src/native/tile_reads.rs:187:45` instead of the expected failure; being checked in a
+    disposable copy (unit `conv2-guards`, guards `clip-chosen`, `failed-job-freed`, `minimap-scroll-notes-bands`).
+    IDE release workflow agent `a286368be67434dfd` handed back (branch tip `b79ed220b1`): `ide-release.yml` (641
+    lines), `doc/decision/ide-releases.md`, `doc/runbook/release-the-ide.md`, README `### Releases`. I read the whole
+    workflow: detect job (version bump trigger, dispatch dry run defaults true, real release only on `main`, existing
+    tag skips), build in the repository's podman image tasks on `ubuntu-24.04`, gates (`--version`, shared libraries
+    and glibc floor 2.39, `inspect:no-software-renderer`, `inspect:bundle` window-free checks, tracked files
+    unchanged), tarball plus notices file plus `SHA256SUMS`, attestation only when not a dry run, one
+    `gh release create --prerelease`. `actionlint` 1.7.12 exits 0 on the merged workflow. LANDED: merge tip
+    `e976345c28` on `origin/main`, ancestry confirmed; the push started no run (path filter lists only the IDE
+    `Cargo.toml`). Dry run dispatched from `main`: `gh workflow run ide-release.yml --ref main -f dry-run=true`, run
+    `39832705367`, watched by a bounded background `gh run watch`; on its end: download the artifacts, check archive,
+    notices and `SHA256SUMS`, run the extracted binary `--version`, record the cold build time in the decision, send
+    failures back to the agent. Two owner decisions still to ask before the first real release: (1) licensing of the
+    shipped bytes (Slint used under `GPL-3.0-only` by the `about.toml` default that the owner never decided, inside a
+    package whose manifest says `LGPL-3.0-or-later`); (2) toolchain and reproducibility (the stable compiler comes
+    from the unpinned Fedora image, not `mise.lock`; no caches; whether to pin the image, Zig and nextest later).
     Stall pass agent `ae05d7039f46336dc` (started 2026-10-22, own worktree off `origin/main`, branch push only; brief
     quotes `NLG`, `NLD`, `RXI`, `NQH`): at least 60 alternating stall pairs (tree A = before the wake-up, tree B =
     `origin/main`) plus 30 A against A pairs for the spread; keeps the debug timeline of every stalled run and decides

@@ -2218,18 +2218,44 @@ and the shaper counts its passes (`TextShaper::tab_passes`).
 
 #### Lines taller than one raster
 
-A tile is one texture,
-and a texture may hold 64 MiB (`MAX_RASTER_BYTES`)
-and at most the device's texture side (8192 px unless the device says more).
+A tile is a stack of textures one below the other (`TileStack`,
+`src/tile_scene.rs`),
+and a window shows them as one picture:
+the markup draws one `Image` for each texture at the tile's top plus the rows above it (`source-slices`),
+so the textures abut on whole physical rows with no gap and no overlap.
+A texture holds at most the device's texture side (8192 px unless the device says more)
+and at most 256 bins of 256 by 256 pixels,
+which is what Vello's coarse stage counts before it logs `Trying to paint too large image`
+and is also exactly 64 MiB (`MAX_RASTER_BYTES`).
 The raster is as wide as the text area plus 24 px,
-so its height is limited:
-at a text width of 782 px that is 866 code rows at scale 1 and 215 at scale 2
-(about 74,000 and 18,500 characters of ordinary text in one line).
-A window whose three view heights pass the limit is limited the same way:
-at a text width of 1918 px and scale 2 the cap is 2,135 px,
-less than three views of 1,080 px.
-`render::tile_cap` (`src/native/render/paint.rs`) is the largest tile height in logical pixels,
-one code row short of the limit for rounding.
+so a texture's height is `256 * floor(256 / ceil(width / 256))` rows (`tile_texture_rows`):
+16,384 rows at a width of 806 px,
+10,752 at 1,358 px (the old byte rule allowed 12,288,
+which is 288 bins and
+made Vello log its warning at every render at scale 2),
+2,048 at 7,259 px.
+A tile that one texture holds is one texture,
+so an ordinary window draws exactly what it drew before the stack.
+A tile taller than a texture is cut at whole rows from its top into textures of `tile_texture_rows` and a rest.
+Each texture has its own scene (`tile_items_in`):
+the rows,
+hints,
+messages and underlines that can reach it,
+placed from its first row by a whole number of pixels,
+so a glyph that two textures share is drawn in each at the same fractional position,
+and a clip band is cut to the texture (`encode`),
+so a selected row at a seam is cut where the textures meet.
+The stack holds at most four textures or the device's side plus 1,024 rows,
+whichever is more (`stack_rows`),
+so the view of the tallest window the device can show (never taller than its texture side) is always held.
+A window is never larger than the device's texture side in either direction,
+in physical pixels
+(`max-width` and `max-height` of `AppWindow`,
+set from the device's side):
+the toolkit's surface configuration would panic past it.
+`render::tile_cap` (`src/native/render/paint.rs`) is the largest tile height in logical pixels:
+the larger of what one texture holds and three views plus six code rows,
+within the stack's bound.
 A tile of lines taller than that is clipped instead of refused (`Viewport::clip`,
 `viewport::band_clip`):
 
@@ -3140,7 +3166,11 @@ and `render/MainMinimap.kt`.
   `Geometry::target`).
   The picture holds only the bands near the visible part of it:
   the bands the track shows and one more on each side (`Geometry::bands_for`),
-  so the work and the memory follow the view and not the length of the file.
+  and `LEAD` more on the side a fling is heading toward (`Heading`,
+  `Geometry::bands_toward`),
+  so the work and the memory follow the view and not the length of the file,
+  and a fling that moves the track by several bands in the time a picture takes
+  does not run past the picture's end.
   Every line in the bands is drawn;
   nothing is sampled.
 - The inks are the syntax classes and the palette of the source text in the dark and the light scheme
@@ -4763,14 +4793,15 @@ scripts start,
 and of the `image` build.
 With nothing set,
 the bound is a computed share of the machine that runs the task:
-75 percent of the CPUs the process may use (`os.availableParallelism()`) and 75 percent of the physical memory
+90 percent of the CPUs the process may use (`os.availableParallelism()`) and 90 percent of the physical memory
 (`os.totalmem()`),
 each rounded down,
 with at least one CPU and 2 GiB.
 The process limit is 256 per CPU with a floor of 512,
 and the descriptor limit is 4096.
 No CPU count or memory size is written in the repository.
-The owner decided on 2026-10-18 that the containers use 75 percent of the host and keep that;
+The owner decided on 2026-10-18 that the containers use 75 percent of the host,
+and on 2026-10-22 raised it to 90 percent ("Use my system (almost) fully");
 the share is the constant `hostShare` in the module.
 
 A caller on a loaded host,
@@ -4811,6 +4842,93 @@ but the installed cargo-nextest reads the control group quota through Rust's `av
 so on a quota of two CPUs it already ran two tests at once (measured with 48 sleeping tests).
 The variable makes the count explicit and lets `IDE_CONTAINER_TEST_THREADS` override it;
 see [the troubleshooting note](../../../doc/troubleshooting/container-nproc-ignores-cpu-quota.md).
+
+### The IDE bin scripts are TypeScript
+
+Every script of `bin/` and `design/` is a TypeScript file
+(the compositor module,
+the inspection,
+guard,
+and capture scripts,
+`install.ts`,
+`check-nextest-config.ts`,
+and the test file `nested-compositor.test.ts`),
+and the tasks run them with `node` directly (`node bin/inspect-cadence.ts`).
+Node strips the types of a `.ts` file before it runs,
+so nothing is built,
+and the files use only syntax that stripping can erase:
+no enums,
+parameter properties,
+or namespaces,
+and an import of another TypeScript file names the `.ts` extension.
+Functions of two or more parameters take one destructured object,
+except where the caller dictates the signature (a callback of `map`,
+`filter`,
+`reduce`,
+or `sort`,
+or an event listener).
+
+Until 2026-10-22 these files were plain `.mjs` files,
+a habit with no rule behind it.
+Two repository-wide style commits (`68415aeb53` and `3da31bdc3a`,
+issue 1794) left 17 of those `.mjs` files unparseable,
+while none of the TypeScript files they touched was broken,
+so those 17 were converted instead of restored:
+
+- `bin/nested-compositor.ts`:
+  the compositor name and the check of its version,
+  tested by `bin/nested-compositor.test.ts`.
+- The inspections that measure or exercise a real IDE or server:
+  `bin/inspect-bundle.ts`,
+  `bin/inspect-cadence.ts`,
+  `bin/inspect-find-reference.ts`,
+  `bin/inspect-idle-cost.ts`,
+  `bin/inspect-language.ts`,
+  `bin/inspect-language-confinement.ts`,
+  `bin/inspect-language-lifecycle.ts`,
+  `bin/inspect-language-mise.ts`,
+  `bin/inspect-language-reap-rate.ts`,
+  `bin/inspect-log-stall.ts`,
+  `bin/inspect-server-watches.ts`,
+  `bin/inspect-watch-limit.ts`,
+  and `bin/inspect-watch-scope.ts`.
+- The control for the bundle checks:
+  `bin/inspect-bundle-guards.ts`.
+- The two capture scripts of the design notes:
+  `design/soft-wrap-shots.ts` and `design/wrap-annotation-shots.ts`.
+
+The 15 `.mjs` scripts that were still parseable were converted the same way on 2026-10-22,
+by the owner's decision to convert all of them:
+`bin/check-nextest-config.ts`,
+`bin/install.ts`,
+`bin/nested-compositor.test.ts`,
+`bin/inspect-refresh-latency.ts`,
+and the guard inspections
+`bin/inspect-annotation-guards.ts`,
+`bin/inspect-find-guards.ts`,
+`bin/inspect-ignored-guards.ts`,
+`bin/inspect-language-guards.ts`,
+`bin/inspect-language-lifecycle-guards.ts`,
+`bin/inspect-language-navigation-guards.ts`,
+`bin/inspect-search-guards.ts`,
+`bin/inspect-sidebar-guards.ts`,
+`bin/inspect-source-guards.ts`,
+`bin/inspect-theme-guards.ts`,
+and `bin/inspect-watch-guards.ts`.
+Only types,
+the one-object call shape,
+and the few narrowings that the strict options demand were added to them;
+their layout and behavior are otherwise as before.
+No `tsconfig.json` and no `lint:types` or `lint:oxlint` task covers this directory,
+because the package is a Rust crate and not a workspace package,
+so a type error shows only when a script runs.
+The converted files were checked with the strict options of `package/config/typescript/tsconfig.options.json`
+(`strict`,
+`noUncheckedIndexedAccess`,
+`exactOptionalPropertyTypes`,
+`erasableSyntaxOnly`)
+from a scratch `tsconfig.json`,
+and `module.stripTypeScriptTypes` accepts each of them.
 
 ### Running the tests
 
@@ -4872,7 +4990,7 @@ which made a debug build show frozen frames that the optimized build does not ha
 
 Measured on 2026-10-19 and 2026-10-20 in the bounded container (21 CPUs,
 46 GiB) on a 28-CPU host,
-with `bin/inspect-cadence.mjs` for the cadence (see [Frame cadence check](#frame-cadence-check)).
+with `bin/inspect-cadence.ts` for the cadence (see [Frame cadence check](#frame-cadence-check)).
 Other sessions shared the host,
 so the load average at the start of each run is given.
 
@@ -4969,7 +5087,7 @@ The pure part,
 the frame hash and the window and run counting,
 is in `bin/cadence.ts`
 and tested by `bin/cadence.test.ts` through `mise run //package/desktop-app/ide:test:bin`.
-The script `bin/inspect-cadence.mjs` only drives the compositor.
+The script `bin/inspect-cadence.ts` only drives the compositor.
 
 Tuning variables:
 `IDE_CADENCE_SETTLE` (milliseconds to wait after startup,
@@ -5374,20 +5492,22 @@ The tile's texture is bounded by the device.
 `src/shaped_text/limit.rs` holds the largest texture side (`texture_dimension`,
 8192 until a device says otherwise),
 which `src/gpu_device.rs` records when it opens the device and `src/native/gpu_tile.rs` checks at the first frame.
-`tile_cap` (the tallest tile in logical pixels) is the smaller of the 64 MiB byte limit and the texture side,
+`tile_cap` (the tallest tile in logical pixels) is bound by the stack (`stack_rows`,
+textures of `tile_texture_rows`),
 one code row short for rounding,
 and a tile of lines taller than that is clipped as described in "Lines taller than one raster".
-`paint_tile` refuses a view past either limit with a diagnostic instead of letting the GPU reject the texture.
+`paint_tile` refuses a view past one texture and `paint_stack` a view past the stack with a diagnostic
+instead of letting the GPU reject the texture.
 The native test device is limited to 8192 px (wgpu's guaranteed minimum),
 so every test run proves the rule on this host too,
 whose own GPU offers 16384.
 In a window 2,000 px tall over `mixed(6000)` lines at a text width of 1,100 px
-(`a_2000_px_window_gets_a_tile_texture_within_the_devices_limit_at_both_scales`),
-the tile is a texture of 1113 by 8160 px at scale 1 (the texture side binds)
-and 2226 by 7488 px,
-63 MiB,
-at scale 2 (the byte limit binds),
-where three views would be 12,000 physical rows at scale 2.
+(`a_2000_px_window_gets_a_tile_of_textures_within_the_devices_limit_at_both_scales`),
+three views are 6,048 physical rows at scale 1,
+a texture of 1113 by 6048 px (the side of 8192 holds it),
+and 12,096 rows at scale 2,
+two textures of 2226 px by 7168 and 4928 rows (7168 is 28 bins of 256 high,
+the most that 9 bins across allow).
 
 Stages 5 and 6 of `doc/planning/ide-vello-text.md` are done:
 the minimap is drawn by the same renderer,
@@ -5829,7 +5949,7 @@ warnings and errors by default and more with `RUST_LOG` (see "Log").
 ### Install and launcher entry
 
 `mise run //package/desktop-app/ide:install` runs `bundle`,
-then `bin/install.mjs`,
+then `bin/install.ts`,
 which copies `dist/monochromatic-ide` to `~/.local/bin/monochromatic-ide` (mode 0755)
 and `share/applications/monochromatic.ide.desktop` to `${XDG_DATA_HOME:-~/.local/share}/applications`,
 each through a private file renamed into place,
@@ -6039,6 +6159,47 @@ and so did `a_start_removes_cache_folders_of_other_builds_unused_for_30_days` in
 ("the folder used a day ago was removed");
 with the parser load no longer renewing the marker,
 `a_marker_renewed_by_a_running_copy_keeps_its_folder` failed.
+
+### Releases
+
+GitHub pre-releases come from `.github/workflows/ide-release.yml`
+(decided on 2026-10-22,
+[decision][ide-releases];
+steps in the [runbook][release-the-ide]).
+A push to `main` that changes `version` in `Cargo.toml` starts a build and,
+when the tag `ide-v<version>` is free,
+a pre-release with three files:
+`ide-<version>-linux-x64.tar.gz`
+(the executable from `bundle`,
+the launcher entry,
+the license texts,
+and `INSTALL.txt`),
+`ide-<version>-third-party-licenses.txt`,
+and `SHA256SUMS`.
+Only Linux x86_64 is built,
+and the requirements under [What the host provides](#what-the-host-provides) apply to it.
+
+The workflow runs the same tasks as a local build in the bounded container:
+`bundle`,
+then `inspect:no-software-renderer`,
+and `inspect:bundle` with the checks `inventory`,
+`license-texts`,
+and `crate-licenses`,
+which need no window.
+It also requires that `--version` prints `monochromatic-ide <version>`,
+that the dynamic section of the executable lists only the loader,
+`libc`,
+`libm`,
+`libgcc_s`,
+and `libfontconfig`,
+that no symbol needs a glibc newer than 2.39,
+and that the build leaves `Cargo.lock` as committed.
+Raising the version therefore needs a refreshed `Cargo.lock`.
+The other `inspect:bundle` checks and the test tasks need a Wayland session or a GPU and are not run by CI.
+A manual dispatch with `dry-run` true builds and verifies everything without creating a tag or a release.
+
+[ide-releases]: ../../../doc/decision/ide-releases.md
+[release-the-ide]: ../../../doc/runbook/release-the-ide.md
 
 ### Measured on 2026-10-06
 

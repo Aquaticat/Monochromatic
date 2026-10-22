@@ -1,4 +1,4 @@
-// The frame-pattern analysis behind the IDE's cadence check (inspect-cadence.mjs), in one place.
+// The frame-pattern analysis behind the IDE's cadence check (inspect-cadence.ts), in one place.
 // What: the hash of one recorded BMP frame, the frame slots that an input stream covers, the count of frames that
 // changed against the frame before them, the runs of identical frames, and the text the check prints.
 // Why: a recorder photographs the window at a steady 60 Hz whether or not the application drew, so a frame identical

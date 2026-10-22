@@ -8,7 +8,7 @@ import { noOpaqueParameterEffects, } from './no-opaque-parameter-effects.ts';
 import { noReadonlyParameterMutations, } from './no-readonly-parameter-mutations.ts';
 import { preferReadonlyParameterTypes, } from './prefer-readonly-parameter-types.ts';
 import { initializeExternalImplementationApi, } from './prefer-readonly-parameter-types/external-implementation-project.ts';
-import { initializeSemanticBridge, } from './prefer-readonly-parameter-types/typescript-sync-adapter.ts';
+import { initializeSemanticBridge, } from './prefer-readonly-parameter-types/semantic-bridge-lifecycle.ts';
 
 export {
   classifyReadonlyType,
@@ -17,8 +17,16 @@ export {
 } from './prefer-readonly-parameter-types/readonly-classifier.ts';
 
 export {
+  isTerminalSemanticChannelFailure,
+} from './prefer-readonly-parameter-types/semantic-channel-failure.ts';
+
+export {
   closeSemanticBridge,
   initializeSemanticBridge,
+  retireSemanticBridgeAfterChannelFailure,
+} from './prefer-readonly-parameter-types/semantic-bridge-lifecycle.ts';
+
+export {
   openSemanticFile,
   semanticBridgeCacheStats,
   type SemanticBridgeCacheStats,

@@ -851,10 +851,13 @@ Update 2026-10-22: the text size setting is merged to main (merge commit after `
 once on main (122 of 123 passed; `settings/licenses-row` waited for a state line that End does not write, fixed in
 `7f4f59b175` with a settle, then `settings` passed 6 of 6 twice and `desktop-e2e` `lint:types` and `test:unit` pass),
 and 0.1.12 was bumped in both manifests and both lock files (`ab27df9ad7`), which started release run `39785231437`
-(about 29 minutes). The worktree and the remote branch are gone. To do when the run ends: check the release assets
-(13 expected; the `asset-*` download fix from `3148e097d4` is verified only if exactly the 13 appear), verify one file
-and its attestation as a user would, install the arm64 APK on the Pixel 6, add the 0.1.12 result to the troubleshooting
-doc, and tell the human the setting shipped (Settings, Text size).
+(about 29 minutes). The worktree and the remote branch are gone. Result: release 0.1.12 is live as a pre-release with
+exactly the 13 expected assets (the `asset-*` download fix from `3148e097d4` is verified), all 12 files match
+`SHA256SUMS`, and the attestation check on `linux-x64.tar.gz` exits 0. Not done: the arm64 APK was not installed on the
+Pixel 6 because it was not connected (`adb devices` empty); the Android code is unchanged except the version number.
+The human was told the setting shipped and chose, for the folded (stacked) layout, to leave the header as it is: the
+Pane titles size acts only in the wide layout (decision 2026-10-22; the folded header's folder title keeps its own
+text style). Still open on the human's side: trying the setting on the 15.6 inch panel.
 
 Earlier entry, desktop text size setting in flight (agent `a985cccccf228921d`, worktree
 `/home/user/temp/agent/text-size-setting/wt`, branch `feat/music-player-text-size-setting`): the human asked for a

@@ -12,8 +12,9 @@ use crate::native::{
 };
 /// The rectangles a frame hands to the window.
 use ide_app::shaped_text::ReadingRect;
-/// The scene the GPU draws into a texture.
-use ide_app::tile_scene::TileScene;
+/// The scene the GPU draws into a texture,
+/// and the scenes of a tile that is drawn across several.
+use ide_app::tile_scene::{TileScene, TileStack};
 /// Toolkit models carry owned source presentation data.
 use slint::{ComponentHandle, ModelRc, SharedString, VecModel};
 /// UI callbacks share state without cross-thread synchronization.
@@ -58,12 +59,13 @@ fn model_rows(rectangles: &[ReadingRect]) -> Vec<SourceSelection> {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type Frame = { scene?: Scene; matchesChanged: boolean; scale: number; scrolled?: number; sign?: Scene };
+/// type Frame = { scene?: Scene[]; matchesChanged: boolean; scale: number; scrolled?: number; sign?: Scene };
 /// ```
 pub(in crate::native) struct Frame {
-    /// Scene of a newly built tile,
+    /// Scenes of a newly built tile,
+    /// one for each texture of its stack,
     /// when one was swapped in.
-    pub(in crate::native) scene: Option<TileScene>,
+    pub(in crate::native) scene: Option<TileStack>,
     /// Whether the match rectangles changed and must be handed over again.
     pub(in crate::native) matches_changed: bool,
     /// Physical pixels per logical pixel,

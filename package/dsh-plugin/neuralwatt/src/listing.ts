@@ -350,7 +350,13 @@ export function mapNeuralWattProviders({
       apiKeyEnv: NEURALWATT_API_KEY_ENV,
       api: NEURALWATT_API,
       baseURL: NEURALWATT_BASE_URL,
-      compat: { supportsReasoningEffort: true },
+      // NeuralWatt rejects the developer role (unsupported_message_role on
+      // mimo-v2.6-pro), and pi-ai URL auto-detection enables it for reasoning
+      // models, so pin the classic system role for every served model.
+      compat: {
+        supportsReasoningEffort: true,
+        supportsDeveloperRole: false
+      },
       models: mappedServiceableModels({ listing }),
     },
   };

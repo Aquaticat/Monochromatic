@@ -30,7 +30,7 @@ use ide_app::find_navigation::paint_ranges;
 /// The inks of the selection and match fills,
 /// the geometry that names the bands the track shows,
 /// and the size of a band.
-use ide_app::minimap::{BAND, Fills, Geometry};
+use ide_app::minimap::{BAND, Fills, Geometry, Heading};
 /// A wrap width must be a positive number of pixels.
 use ide_app::wrap::has_wrap_width;
 /// The list of the picture's textures,
@@ -99,7 +99,13 @@ pub(super) fn key_of(window: &AppWindow, current: &State) -> Option<Key> {
     let active = present(current).active;
     let geometry = Geometry::new(current.row_map.height(), height);
     // A track taller than one texture is drawn as several that stack, so every band the track shows is kept.
-    let bands = geometry.bands_for(-window.get_scroll_y(), BAND, usize::MAX);
+    // The side the view is heading toward holds extra bands, so a fling does not outrun the picture.
+    let bands = geometry.bands_toward(
+        -window.get_scroll_y(),
+        BAND,
+        usize::MAX,
+        current.minimap.heading,
+    );
     return Some(Key {
         stamp: displayed(current),
         styles: Arc::as_ptr(&current.styles).cast::<()>() as usize,
@@ -128,6 +134,37 @@ pub(super) fn key_of(window: &AppWindow, current: &State) -> Option<Key> {
 /// A match as the two characters it lies between.
 fn range_pair(range: FindRange) -> (usize, usize) {
     return (range.start, range.end);
+}
+
+/// What:
+///  Update which way the view is heading from where the top of the track is now.
+/// Why:
+///  The picture holds extra bands on the side the view is heading toward;
+/// the heading must be settled before the key is made,
+/// and it changes only after a whole band of movement,
+/// so a step of a scroll never changes the key by itself.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function follow(window: AppWindow, current: State): void;
+/// ```
+fn follow(window: &AppWindow, current: &mut State) {
+    let Some(top) = track_top(window, current) else {
+        return;
+    };
+    current.minimap.heading = current.minimap.heading.follow(top, BAND);
+}
+
+/// The top of the part of the picture the track shows,
+/// in logical pixels of the text,
+/// or nothing while the minimap has no size.
+fn track_top(window: &AppWindow, current: &State) -> Option<f32> {
+    let (width, height) = current.minimap.size;
+    if width < 1.0 || height < 1.0 {
+        return None;
+    }
+    let geometry = Geometry::new(current.row_map.height(), height);
+    return Some(geometry.track_top(-window.get_scroll_y()));
 }
 
 /// Post a request for the picture `key` describes,
@@ -229,6 +266,7 @@ fn flush(window: &AppWindow, state: &Rc<RefCell<State>>) {
 /// ```
 pub(in crate::native) fn note(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let mut current = state.borrow_mut();
+    follow(window, &mut current);
     let Some(key) = key_of(window, &current) else {
         return;
     };
@@ -242,7 +280,15 @@ pub(in crate::native) fn note(window: &AppWindow, state: &Rc<RefCell<State>>) {
         None => false,
     };
     if other_file {
-        // Another file: the picture on screen is wrong, not just old.
+        // Another file: the picture on screen is wrong, not just old, and the heading was the other text's.
+        if let Some(top) = track_top(window, &current) {
+            current.minimap.heading = Heading::Still { at: top };
+        }
+        let Some(at_rest) = key_of(window, &current) else {
+            return;
+        };
+        // The look just kept was made with the other text's heading.
+        current.minimap.noted = Some(at_rest);
         current.minimap.shown = None;
         let gpu = current.gpu.clone();
         drop(current);
@@ -250,7 +296,7 @@ pub(in crate::native) fn note(window: &AppWindow, state: &Rc<RefCell<State>>) {
         window.set_minimap_slices(ModelRc::default());
         let mut again = state.borrow_mut();
         again.minimap.debounce.stop();
-        post(window, state, &mut again, key);
+        post(window, state, &mut again, at_rest);
         return;
     }
     let mut since = None;

@@ -172,6 +172,10 @@ pub fn run(options: Options) -> anyhow::Result<()> {
     // The app id must be stamped by the backend before the window below exists.
     crate::launcher::install_backend()?;
     let window = AppWindow::new()?;
+    // The launcher has opened the device and recorded its texture size: the window is never larger than that.
+    window.set_texture_limit(
+        i32::try_from(ide_app::shaped_text::texture_dimension()).unwrap_or(i32::MAX),
+    );
     window.set_source_available(file_path.is_some());
     let state = Rc::new(RefCell::new(State::new(&source, file_path)));
     window.set_file_label(SharedString::from(label));

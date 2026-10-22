@@ -1,7 +1,7 @@
 //! The code view and the minimap on the GPU:
-//!  the textures the source tile,
+//!  the stacked textures the source tile is drawn into,
 //!  the gutter's wrap indicator,
-//!  and the minimap's stacked textures are drawn into,
+//!  and the minimap's stacked textures,
 //!  and the rendering notifier that draws them with one Vello renderer.
 //!
 //! Slint hands its wgpu device to the notifier only when the first frame is set up,
@@ -22,25 +22,28 @@ mod readback;
 /// The minimap's picture,
 /// rendered in chunks into textures that stack.
 mod slice;
+/// The source tile,
+/// rendered into textures that stack.
+mod source;
 /// The textures,
 /// the pictures,
 /// and the outcome of a step.
 mod types;
 /// A scene rendered without a window.
 #[cfg(test)]
-pub(super) use readback::render_scene;
+pub(super) use readback::{render_scene, render_stack};
 /// How often the window was given a new list of textures.
 #[cfg(test)]
 pub(super) use types::SLICE_LISTS_SET;
 /// The small types,
-/// shared with the slice.
-use types::{MinimapTexture, Outcome, Picture, Placement, Target};
+/// shared with the slice and the source tile.
+use types::{Outcome, Placement, StackTexture, Target};
 
 /// The window the textures are shown in,
 ///  and the chaining of the debug frame records.
 use super::{AppWindow, frame_trace};
-/// The tile scene that is drawn into a texture.
-use ide_app::tile_scene::TileScene;
+/// The tile scenes that are drawn into textures.
+use ide_app::tile_scene::{TileScene, TileStack};
 /// Slint's own wgpu types,
 /// the ones the window's device is made of.
 use slint::wgpu_30::wgpu;
@@ -60,7 +63,7 @@ use vello::{
 ///  Everything the notifier and the window thread share:
 ///  the device once Slint has one,
 ///  the renderer,
-///  the three textures,
+///  the textures,
 ///  and the scenes waiting to be drawn.
 /// Why:
 ///  The window thread hands a scene over at any time and the notifier draws it at the next frame,
@@ -77,14 +80,16 @@ struct Inner {
     /// Vello's renderer,
     /// made at setup.
     renderer: Option<Renderer>,
-    /// The textures of the tile and the wrap indicator,
-    /// by [`Picture::slot`].
-    targets: [Option<Target>; 2],
+    /// The texture of the wrap indicator.
+    sign: Option<Target>,
+    /// The textures of the source tile,
+    /// top first.
+    tile: Vec<StackTexture>,
     /// The textures of the minimap's picture,
     /// top first.
-    minimap: Vec<MinimapTexture>,
-    /// A tile scene not drawn yet.
-    pending_tile: Option<TileScene>,
+    minimap: Vec<StackTexture>,
+    /// The scenes of a tile not drawn yet.
+    pending_tile: Option<TileStack>,
     /// A wrap indicator scene not drawn yet.
     pending_sign: Option<TileScene>,
     /// The chunks of a minimap picture not drawn yet,
@@ -92,8 +97,14 @@ struct Inner {
     pending_minimap: Option<(Vec<TileScene>, u32)>,
     /// Small textures the chunks of a picture are rendered into before they are copied into its textures.
     scratch: Vec<Target>,
-    /// Tile scenes rendered into the texture so far.
+    /// Tiles rendered into their textures so far.
     tiles_rendered: u64,
+    /// Scenes of tiles rendered so far,
+    /// one for each texture of a tile.
+    tile_textures_rendered: u64,
+    /// Textures made for tiles so far:
+    /// a tile of the shape the last one had makes none.
+    tile_textures_made: u64,
     /// Wrap indicator scenes rendered so far.
     signs_rendered: u64,
     /// Minimap pictures rendered so far.
@@ -123,10 +134,10 @@ pub(super) struct GpuTile {
 
 /// Hand scenes over.
 impl GpuTile {
-    /// Make the tile scene the one to draw at the next frame;
-    /// a scene not drawn yet is replaced.
-    pub(super) fn submit_tile(&self, scene: TileScene) {
-        self.inner.borrow_mut().pending_tile = Some(scene);
+    /// Make the scenes of the tile the ones to draw at the next frame;
+    /// a tile not drawn yet is replaced.
+    pub(super) fn submit_tile(&self, stack: TileStack) {
+        self.inner.borrow_mut().pending_tile = Some(stack);
     }
 
     /// Make the scene of the wrap indicator the one to draw at the next frame.
@@ -205,6 +216,7 @@ impl Inner {
     fn setup(&mut self, device: &wgpu::Device, queue: &wgpu::Queue) -> Outcome {
         let mut outcome = Outcome::default();
         let limit = device.limits().max_texture_dimension_2d;
+        outcome.texture_limit = Some(limit);
         if limit != ide_app::shaped_text::texture_dimension() {
             tracing::warn!(
                 limit,
@@ -240,7 +252,8 @@ impl Inner {
     /// Release the renderer and the textures before the device goes away.
     fn teardown(&mut self) {
         self.renderer = None;
-        self.targets = [None, None];
+        self.sign = None;
+        self.tile = Vec::new();
         self.minimap = Vec::new();
         self.scratch = Vec::new();
         self.device = None;
@@ -262,11 +275,11 @@ impl Inner {
         if self.renderer.is_none() || self.device.is_none() {
             return outcome;
         }
-        if let Some(scene) = self.pending_tile.take() {
-            self.draw(Picture::Tile, &scene, &mut outcome);
+        if let Some(stack) = self.pending_tile.take() {
+            self.draw_tile(&stack, &mut outcome);
         }
         if let Some(scene) = self.pending_sign.take() {
-            self.draw(Picture::Sign, &scene, &mut outcome);
+            self.draw_sign(&scene, &mut outcome);
         }
         if let Some((chunks, top)) = self.pending_minimap.take() {
             self.draw_stack(&chunks, top, &mut outcome);
@@ -275,9 +288,11 @@ impl Inner {
     }
 
     /// What:
-    ///  Render `scene` into the texture of `picture`,
+    ///  Render `scene`,
+    ///  the gutter's wrap indicator,
+    ///  into its texture,
     ///  making a new texture,
-    /// and setting a new image on the window,
+    /// and giving the window a new image,
     /// when the size changed.
     /// Why:
     ///  Rendering into the same texture needs no new image,
@@ -285,9 +300,9 @@ impl Inner {
     ///
     /// In TS you'd write (pseudocode):
     /// ```ts
-    /// function draw(picture: Picture, scene: TileScene, outcome: Outcome): void;
+    /// function drawSign(scene: TileScene, outcome: Outcome): void;
     /// ```
-    fn draw(&mut self, picture: Picture, scene: &TileScene, outcome: &mut Outcome) {
+    fn draw_sign(&mut self, scene: &TileScene, outcome: &mut Outcome) {
         let Some((device, queue)) = self.device.clone() else {
             return;
         };
@@ -297,7 +312,6 @@ impl Inner {
                 width = scene.width,
                 height = scene.height,
                 limit,
-                ?picture,
                 "a scene does not fit a texture of this device"
             );
             outcome.errors.push(format!(
@@ -306,16 +320,13 @@ impl Inner {
             ));
             return;
         }
-        let reusable = match &self.targets[picture.slot()] {
+        let reusable = match &self.sign {
             Some(target) => target.width == scene.width && target.height == scene.height,
             None => false,
         };
         if !reusable {
             let texture = device.create_texture(&wgpu::TextureDescriptor {
-                label: Some(match picture {
-                    Picture::Tile => "ide source tile",
-                    Picture::Sign => "ide wrap indicator",
-                }),
+                label: Some("ide wrap indicator"),
                 size: wgpu::Extent3d {
                     width: scene.width,
                     height: scene.height,
@@ -329,30 +340,27 @@ impl Inner {
                 view_formats: &[],
             });
             match Image::try_from(texture.clone()) {
-                Ok(image) => outcome.images.push((picture, image)),
+                Ok(image) => outcome.sign = Some(image),
                 Err(error) => {
                     tracing::error!(%error, "the texture could not be shown as an image");
                     outcome.errors.push(format!("Cannot draw source: {error}"));
                     return;
                 }
             }
-            self.targets[picture.slot()] = Some(Target {
+            self.sign = Some(Target {
                 texture,
                 width: scene.width,
                 height: scene.height,
             });
         }
-        let Some(target) = self.targets[picture.slot()].as_ref() else {
+        let Some(target) = self.sign.as_ref() else {
             return;
         };
         let texture = target.texture.clone();
         match self.render(&device, &queue, &texture, scene) {
-            Ok(()) => match picture {
-                Picture::Tile => self.tiles_rendered += 1,
-                Picture::Sign => self.signs_rendered += 1,
-            },
+            Ok(()) => self.signs_rendered += 1,
             Err(error) => {
-                tracing::error!(%error, ?picture, "the GPU could not render a scene");
+                tracing::error!(%error, "the GPU could not render the wrap indicator");
                 outcome.errors.push(format!("Cannot draw source: {error}"));
             }
         }

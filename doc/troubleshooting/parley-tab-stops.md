@@ -114,7 +114,10 @@ Output:
 
 ### IDE guard controls
 
-`package/desktop-app/ide/bin/inspect-source-guards.mjs` removes one tab guard at a time in a disposable copy
+`package/desktop-app/ide/bin/inspect-source-guards.mjs`
+(now `package/desktop-app/ide/bin/inspect-source-guards.ts`,
+renamed 2026-10-22)
+removes one tab guard at a time in a disposable copy
 and requires the named test to fail.
 The run recorded here used the files of commit `8dab09180`;
 logs are in `~/temp/agent/ide-source-guard-bX6gco/`.
@@ -206,7 +209,10 @@ Tradeoffs:
   stop mutating advances in-place",
   merged 2026-08-29) replaces the in-place `finish()` with a lazy calculation that spaces graphemes on their right,
   and linebender/parley#731 (merged 2026-08-06) stops optional ligatures from forming where letter spacing applies.
-  The tab guards in `bin/inspect-source-guards.mjs` should be rerun after the upgrade.
+  The tab guards in `bin/inspect-source-guards.mjs`
+  (now `bin/inspect-source-guards.ts`,
+  renamed 2026-10-22)
+  should be rerun after the upgrade.
 
 ## What does not work
 

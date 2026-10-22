@@ -19,8 +19,8 @@ const hostOf = ({ cpus, memoryGiB }: { cpus: number; memoryGiB: number }) => ({ 
 // The host of the owner's decision: 28 CPUs and 61.83 GiB (66,394,247,168 bytes), a "64 GB" machine.
 const ownerHost = { cpus: 28, memoryBytes: 66_394_247_168 };
 
-test('three quarters of a 28 CPU, 64 GB host is 21 CPUs and 46 GiB', () => {
-  assert.deepEqual(hostBound(ownerHost), { cpus: 21, memoryGiB: 46 });
+test('nine tenths of a 28 CPU, 64 GB host is 25 CPUs and 55 GiB', () => {
+  assert.deepEqual(hostBound(ownerHost), { cpus: 25, memoryGiB: 55 });
 });
 
 test('a one CPU, 2 GB host keeps one CPU and the 2 GiB floor', () => {
@@ -30,9 +30,9 @@ test('a one CPU, 2 GB host keeps one CPU and the 2 GiB floor', () => {
 
 test('the share is rounded down, never up', () => {
   assert.equal(hostBound(hostOf({ cpus: 3, memoryGiB: 8 })).cpus, 2);
-  assert.equal(hostBound(hostOf({ cpus: 5, memoryGiB: 8 })).cpus, 3);
-  assert.equal(hostBound(hostOf({ cpus: 8, memoryGiB: 5 })).memoryGiB, 3);
-  assert.equal(hostBound(hostOf({ cpus: 8, memoryGiB: 6 })).memoryGiB, 4);
+  assert.equal(hostBound(hostOf({ cpus: 5, memoryGiB: 8 })).cpus, 4);
+  assert.equal(hostBound(hostOf({ cpus: 8, memoryGiB: 5 })).memoryGiB, 4);
+  assert.equal(hostBound(hostOf({ cpus: 8, memoryGiB: 6 })).memoryGiB, 5);
 });
 
 test('the process limit keeps a floor of 512 and grows with the CPU count', () => {
@@ -44,9 +44,9 @@ test('the process limit keeps a floor of 512 and grows with the CPU count', () =
 
 test('with nothing set, every value is computed from the host', () => {
   const bounds = containerBounds({ environment: {}, host: ownerHost });
-  assert.deepEqual(bounds.limitArguments, ['--memory=46g', '--cpus=21', '--pids-limit=5376', '--ulimit', 'nofile=4096:4096']);
-  assert.deepEqual(bounds.environmentArguments, ['--env', 'CARGO_BUILD_JOBS=21', '--env', 'NEXTEST_TEST_THREADS=21']);
-  assert.deepEqual(bounds.imageBuildArguments, ['--memory=46g', '--cpu-period=100000', '--cpu-quota=2100000']);
+  assert.deepEqual(bounds.limitArguments, ['--memory=55g', '--cpus=25', '--pids-limit=6400', '--ulimit', 'nofile=4096:4096']);
+  assert.deepEqual(bounds.environmentArguments, ['--env', 'CARGO_BUILD_JOBS=25', '--env', 'NEXTEST_TEST_THREADS=25']);
+  assert.deepEqual(bounds.imageBuildArguments, ['--memory=55g', '--cpu-period=100000', '--cpu-quota=2500000']);
 });
 
 test('a small host yields the conservative bound the repository used before', () => {
@@ -106,8 +106,8 @@ test('jobs, test threads, processes, and open files can each be overridden', () 
 
 test('an empty variable counts as unset', () => {
   const bounds = containerBounds({ environment: { IDE_CONTAINER_CPUS: '', IDE_CONTAINER_MEMORY: '' }, host: ownerHost });
-  assert.equal(bounds.cpus, '21');
-  assert.equal(bounds.memory, '46g');
+  assert.equal(bounds.cpus, '25');
+  assert.equal(bounds.memory, '55g');
 });
 
 const malformed: [string, string][] = [

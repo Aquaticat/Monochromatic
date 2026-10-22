@@ -11,6 +11,9 @@
 /// Items to scene:
 ///  the one place a Vello scene is written.
 mod encode;
+/// The underline runs of an annotation frame,
+/// in the texture they reach.
+mod frame;
 /// The data of the paint commands.
 mod item;
 /// A tile's items as what each draw command shows,
@@ -21,15 +24,15 @@ mod split;
 /// The line style of each severity as strokes.
 mod underline;
 
-/// Hint and diagnostic inks and the underline runs they are laid out in.
-use crate::annotation_layout::AnnotationFrame;
 /// The palette that turns a syntax role into an ink.
 use crate::code_colors::{CodeColors, ink};
-/// The row map says where a line's code row starts.
-use crate::row_map::CODE_ROW;
 /// Shaped rows and the frame they belong to,
-///  and the largest texture a tile may be.
-use crate::shaped_text::{ShapedView, texture_dimension, texture_fits};
+///  the textures a tile is stacked from,
+///  and the largest tile.
+use crate::shaped_text::{
+    ShapedView, stack_fits, stack_rows, texture_dimension, texture_fits, texture_heights,
+    tile_texture_rows,
+};
 /// Failures of the layout walk reach the caller.
 use anyhow::{Result, bail};
 /// A shaped paragraph and its positioned runs.
@@ -40,16 +43,18 @@ use vello::Glyph;
 
 /// Items to scene.
 pub use encode::encode;
+/// The underline runs of a texture.
+use frame::underline_frame;
 /// The paint commands of a tile.
-pub use item::{GlyphItem, Item, StrokeItem, TileScene};
+pub use item::{GlyphItem, Item, StrokeItem, TileScene, TileStack};
 /// A selection edge on whole pixels,
 /// and the change of ink at the edges of a selection.
 pub use split::snapped;
 /// The change of ink at the edges of a selection,
 ///  and where a drawing lies.
 use split::{Place, split};
-/// The geometry of one underline run.
-use underline::underline_items;
+/// The rows of a tile one texture holds.
+use std::ops::Range;
 
 /// What:
 ///  Physical pixels a glyph or visual row may lie outside the tile and still be kept.
@@ -277,76 +282,6 @@ fn selected_intervals(
 }
 
 /// What:
-///  The paint items of `frame`'s underline runs.
-/// Why:
-///  The runs are already ordered mildest first,
-///  so the worst style ends on top of an overlap.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function underlineFrame(items: Item[], view: ShapedView, frame: AnnotationFrame, colors: CodeColors, horizontal: number): void;
-/// ```
-fn underline_frame(
-    items: &mut Vec<Item>,
-    view: &ShapedView,
-    frame: &AnnotationFrame,
-    colors: CodeColors,
-    horizontal: f32,
-) {
-    let Some(top_row) = view.rows.first() else {
-        return;
-    };
-    let scale = view.viewport.scale;
-    let width = view.width as f32;
-    for run in &frame.underlines {
-        // The run lies on a materialized code row; the same mapping placed that row's selection rectangles.
-        let code_top = view.map.code_top(run.row) + run.offset;
-        let mut intervals: Vec<(f32, f32)> = Vec::new();
-        for rectangle in &view.selections {
-            // A rectangle lies on the run's visual row when its top is that row's top, within rounding.
-            if (rectangle.y - code_top).abs() < CODE_ROW * 0.5 {
-                intervals.push(snapped(
-                    (rectangle.x - horizontal) * scale,
-                    (rectangle.x + rectangle.width - horizontal) * scale,
-                ));
-            }
-        }
-        let geometry = underline::Geometry {
-            span: (
-                (run.x - horizontal) * scale,
-                (run.x + run.width - horizontal) * scale,
-            ),
-            // Every row shares one baseline, so the first row's is the baseline of all of them.
-            line: (code_top - view.origin) * scale
-                + top_row.baseline
-                + crate::annotation_paint::DROP * scale,
-            scale,
-            severity: run.severity,
-        };
-        let severity_ink = frame.colors.severity(run.severity);
-        split(
-            items,
-            &intervals,
-            (severity_ink, colors.selected),
-            Place {
-                extent: (-CULL_MARGIN, width + CULL_MARGIN),
-                band: row_band(
-                    geometry.line - CODE_ROW * scale / 2.0,
-                    geometry.line + CODE_ROW * scale / 2.0,
-                ),
-                // The wave's slopes and the dashes' ends reach a little past the span; ink outside the texture is never seen.
-                reach: (
-                    (geometry.span.0 - crate::annotation_paint::PERIOD * scale).max(0.0),
-                    (geometry.span.1 + crate::annotation_paint::PERIOD * scale).min(width),
-                ),
-            },
-            &geometry,
-            underline_items,
-        );
-    }
-}
-
-/// What:
 ///  The paint items of one shaped view:
 ///  every row's glyphs with the selected part in the selection ink,
 ///  then the hint and message texts,
@@ -367,12 +302,50 @@ fn underline_frame(
 /// function tileItems(view: ShapedView, colors: CodeColors, horizontal: number): Item[];
 /// ```
 pub fn tile_items(view: &ShapedView, colors: CodeColors, horizontal: f32) -> Result<Vec<Item>> {
+    return tile_items_in(view, colors, horizontal, 0..view.height);
+}
+
+/// What:
+///  The paint items of the `rows` of one shaped view,
+///  placed from the first of those rows:
+///  the items of [`tile_items`] that can reach one texture of the stack the tile is drawn across.
+/// Why:
+///  The texture is `rows.end - rows.start` pixels tall and its top is the tile's row `rows.start`.
+///  The shift is a whole number of pixels,
+///  so a glyph that two textures share is drawn in each at the same fractional position,
+///  and the two halves meet as one drawing would.
+///  Rows,
+/// hints,
+/// and underlines wholly outside the texture are left out,
+///  so the renderer's buffers hold one texture's share and not the tile's.
+///
+/// # Errors
+/// A layout holds an inline box,
+/// which source text never produces.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function tileItemsIn(view: ShapedView, colors: CodeColors, horizontal: number, rows: [number, number]): Item[];
+/// ```
+pub fn tile_items_in(
+    view: &ShapedView,
+    colors: CodeColors,
+    horizontal: f32,
+    rows: Range<u32>,
+) -> Result<Vec<Item>> {
     let mut items: Vec<Item> = Vec::new();
     let factor = view.viewport.scale;
-    let size = (view.width as f32, view.height as f32);
+    let shift = rows.start as f32;
+    let size = (view.width as f32, (rows.end - rows.start) as f32);
     for row in &view.rows {
         // Rows are placed by the frame's vertical mapping, relative to the top of the tile.
-        let row_y = (row.top - view.origin) * factor;
+        let row_y = (row.top - view.origin) * factor - shift;
+        // A row whose layout lies wholly outside the texture paints nothing in it.
+        if row_y + row.baseline_shift + row.layout.height() < -CULL_MARGIN
+            || row_y + row.baseline_shift > size.1 + CULL_MARGIN
+        {
+            continue;
+        }
         let selected = selected_intervals(view, row, horizontal);
         let inking = Inking {
             colors,
@@ -386,7 +359,10 @@ pub fn tile_items(view: &ShapedView, colors: CodeColors, horizontal: f32) -> Res
         for text in &frame.texts {
             // A virtual row lies its rise above the code row of the line it belongs to.
             let top = view.map.code_top(text.line) - text.rise;
-            let origin = ((text.x - horizontal) * factor, (top - view.origin) * factor);
+            let origin = (
+                (text.x - horizontal) * factor,
+                (top - view.origin) * factor - shift,
+            );
             let inking = Inking {
                 colors,
                 fixed: Some(text.ink),
@@ -394,20 +370,20 @@ pub fn tile_items(view: &ShapedView, colors: CodeColors, horizontal: f32) -> Res
             };
             layout_items(&mut items, &text.layout, origin, &inking, size)?;
         }
-        underline_frame(&mut items, view, frame, colors, horizontal);
+        underline_frame(&mut items, view, frame, colors, horizontal, &rows);
     }
     return Ok(items);
 }
 
 /// What:
-///  The scene of one shaped view,
+///  The scene of one shaped view as one texture,
 ///  with the size of the texture it is drawn into.
 /// Why:
-///  The tile worker and the window thread build the same scene from the same rows,
-///  so a tile built on either looks the same.
+///  A view that one texture holds is the common case,
+///  and the tests read its scene whole.
 ///
 /// # Errors
-/// The view is larger than a texture of the tile may be (the device's texture size or 64 MiB),
+/// The view is larger than one texture may be (the device's texture size and Vello's bin count),
 /// or a layout holds an inline box,
 /// which source text never produces.
 ///
@@ -416,22 +392,74 @@ pub fn tile_items(view: &ShapedView, colors: CodeColors, horizontal: f32) -> Res
 /// function paintTile(view: ShapedView, colors: CodeColors, horizontal: number): TileScene;
 /// ```
 pub fn paint_tile(view: &ShapedView, colors: CodeColors, horizontal: f32) -> Result<TileScene> {
-    // The window never asks for a view past the limit, because the shaper cuts a tile of a very tall line to a clip;
-    // this guards a caller that did not, since the GPU would reject a texture past its size with a validation error.
-    // The 64 MiB byte rule is also what keeps Vello's command list large enough: its default size serves 131,072 tiles
-    // of 16 by 16 pixels, 128 MiB of texture, and a render past that is wrong with no failure reported.
-    // `tests/tile_vello_limit.rs` holds the rule to half of that floor.
     if !texture_fits(u64::from(view.width), u64::from(view.height)) {
         bail!(
-            "Source viewport {}x{} exceeds the tile texture limit ({} px on a side and 64 MiB); reduce the window size or scale",
+            "Source viewport {}x{} does not fit one texture ({} rows of this width, {} px on a side); paint it as a stack",
             view.width,
             view.height,
+            tile_texture_rows(u64::from(view.width)),
             texture_dimension()
         );
     }
     let items = tile_items(view, colors, horizontal)?;
     return Ok(TileScene {
         scene: encode(&items, view.height as f32),
+        width: view.width,
+        height: view.height,
+    });
+}
+
+/// What:
+///  The scenes of one shaped view across the textures that stack to show it:
+///  one scene for each of the heights [`texture_heights`] gives for the view's width and height,
+///  top first.
+/// Why:
+///  A window larger than one texture allows is drawn across several,
+///  each within the device's texture size and Vello's bin count,
+///  and the textures abut without a gap or an overlap,
+///  so the stack shows the rows one texture would.
+///  The tile worker and the window thread build the same stack from the same rows,
+///  so a tile built on either looks the same.
+///
+/// # Errors
+/// The view is taller than the stack may be ([`stack_rows`]) or wider than a texture may be,
+/// or a layout holds an inline box,
+/// which source text never produces.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function paintStack(view: ShapedView, colors: CodeColors, horizontal: number): TileStack;
+/// ```
+pub fn paint_stack(view: &ShapedView, colors: CodeColors, horizontal: f32) -> Result<TileStack> {
+    // The window never asks for a view past the limit, because the shaper cuts a tile of a very tall line to a clip;
+    // this guards a caller that did not, since the GPU would reject a texture past its size with a validation error.
+    // The bin rule is what keeps every render inside Vello's coarse stage, and the 64 MiB byte rule it implies is what
+    // keeps Vello's command list large enough: its default size serves 131,072 tiles of 16 by 16 pixels, 128 MiB of
+    // texture, and a render past that is wrong with no failure reported.
+    // `tests/tile_vello_limit.rs` holds the rule to half of that floor.
+    if !stack_fits(u64::from(view.width), u64::from(view.height)) {
+        bail!(
+            "Source viewport {}x{} exceeds the tile stack limit ({} rows of this width, {} px on a side); reduce the window size or scale",
+            view.width,
+            view.height,
+            stack_rows(u64::from(view.width)),
+            texture_dimension()
+        );
+    }
+    let mut textures = Vec::new();
+    let mut top = 0_u32;
+    for height in texture_heights(u64::from(view.width), u64::from(view.height)) {
+        let rows = top..top + height;
+        let items = tile_items_in(view, colors, horizontal, rows)?;
+        textures.push(TileScene {
+            scene: encode(&items, height as f32),
+            width: view.width,
+            height,
+        });
+        top += height;
+    }
+    return Ok(TileStack {
+        textures,
         width: view.width,
         height: view.height,
     });

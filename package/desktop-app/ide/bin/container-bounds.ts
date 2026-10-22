@@ -14,10 +14,12 @@ import {
 /**
  Share of the host's maximum that a container may use unless the caller says otherwise.
  
- Owner decision of 2026-10-18 (recorded in doc/handover/slint-ide-0x.md): the containers use 75 percent of the host's
- CPUs and memory, computed from the host at run time; a loaded host lowers it with the variables below.
+ Owner decisions (recorded in doc/handover/slint-ide-0x.md): on 2026-10-18 the containers used 75 percent of the
+ host's CPUs and memory; on 2026-10-22, after "Use my system (almost) fully instead of limiting to only a very limited
+ subset of it", the owner chose 90 percent. The share is computed from the host at run time; a loaded host lowers it
+ with the variables below.
  */
-export const hostShare = 0.75;
+export const hostShare = 0.9;
 
 /**
  Smallest memory in GiB that the toolchain image and a cargo build work in.

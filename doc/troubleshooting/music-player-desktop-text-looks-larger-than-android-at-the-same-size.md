@@ -504,6 +504,12 @@ The human's own comparison, and the instrument behind it:
   - Not measured: the human's real fontconfig and `gfx.font_rendering` outcome in a windowed Firefox (the private
     profile used the human's font preferences without reading the rest of the profile), and perception itself.
 - The human then asked for a text size setting in the real app, with a stepper of 1 px for each element.
+  It shipped in release 0.1.12 (Settings, Text size): four rows (pane titles, group heading letter, folder names, track
+  titles) with defaults 20, 20, 14 and 14 px, limits 10 to 32 px, a Reset row, and persistence in `session.json`.
+  Desktop only; Android follows the system font size.
+  Verified: 1592 package tests, lints, the whole end-to-end suite (123 scenarios), and the 0.1.12 release assets
+  against `SHA256SUMS` with one attestation check.
+  Not verified by the human yet: how the setting feels on the 15.6 inch panel at the sizes they prefer.
 
 ## Hypotheses
 

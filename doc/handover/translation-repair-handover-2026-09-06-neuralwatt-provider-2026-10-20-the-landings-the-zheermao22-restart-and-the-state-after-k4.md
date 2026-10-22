@@ -505,3 +505,163 @@ State after the owner's answers,
   with Mercury's first-content figures for the recheck,
   then launch `CuspariaKLSY23` and `XingZ6018`,
   each as soon as the one before is read.
+
+State after `zheermao23` and the direct-route probes,
+2026-10-22 (UTC):
+
+- `zheermao23` settled at 13:21 UTC:
+  `DONE 1/1`,
+  49.4 min,
+  unit result `success`.
+  Its read is in `doc/planning/translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-zheermao23-run.md`,
+  with its stages and evidence in sibling files,
+  under the new rotation record `doc/planning/translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart.md`.
+  A second reader checked every figure against the log:
+  93 confirmed,
+  3 wrong and fixed before filing,
+  4 with no log line,
+  which the evidence file lists.
+- The run made no NeuralWatt chat call:
+  its 924 `SPEND` lines are Hyper 555,
+  OpenRouter 191 and Synthetic 178,
+  since the NeuralWatt day that began at 19:15:08 UTC on 2026-10-21 was already spent.
+  The end line `PLAN ENERGY SPENT: 326.9 Wh` reads the account-wide quota,
+  "kWh charged this period",
+  so that energy was spent by other use of the owner's NeuralWatt account,
+  not by this run.
+  What spent it was first left for the owner to read on the NeuralWatt dashboard (12:31 to 13:21 UTC);
+  the owner answered later on 2026-10-22 that the NeuralWatt key of the dsh harness is on the same account
+  (see the state after the `CuspariaKLSY23` read).
+- Mercury recheck,
+  first of three runs:
+  `inception/mercury-2.5` was asked 121 times,
+  118 usable,
+  3 unusable,
+  none abandoned;
+  on the calls that returned content,
+  its first content came at most 12,820 ms after the request,
+  so the 90,000 ms window never fired;
+  two streams ended empty with no content,
+  which is not a window cut.
+  The rotation's other two runs are read the same way before the recheck is called settled.
+- `CuspariaKLSY23` (entry `CuspariaKLSY`) launched at 13:22:07 UTC and settled at 13:43 UTC:
+  `DONE 1/1`,
+  17.1 min,
+  unit result `success`.
+  Corrected on 2026-10-22:
+  the log's last time is 13:39:30 UTC (`Finished in 1041.98s`);
+  13:43 UTC was when the unit's result was read.
+  Its read is being drafted.
+- `XingZ6018` (entry `XingZ60`) launched at 13:44:40 UTC;
+  the launcher printed `FROZEN BUILD MATCHES; run continues`,
+  and the run logged `START tip=8864316eb2`.
+- The owner,
+  at about 13:40 UTC:
+  "I've added TRANSLATION_REPAIR_XIAOMI_MIMO_API_KEY in main worktree's json file.
+  You may copy the file here or something.
+  You may only use v2.6-flash with this key."
+  Then:
+  "You can also use the DEEPSEEK_API_KEY as you wish,
+  but you may only use deepseek v4.1 flash 1017 with that key."
+  The branch worktree's `.env.local.json` now matches the main checkout's.
+- Probes of both keys,
+  output masked:
+  the Xiaomi key is pay-as-you-go at `https://api.xiaomimimo.com/v1`,
+  and its model listing names `mimo-v2.6-pro` and other models besides `mimo-v2.6-flash`,
+  so the key does not hold the owner's limit and the package must.
+  `mimo-v2.6-flash` takes `json_schema` and `json_object`,
+  reads pictures,
+  accepts `max_tokens` 32000,
+  reasons by default,
+  and ends every stream in `[DONE]`.
+  Xiaomi has no balance endpoint.
+- DeepSeek lists `deepseek-flash` and `deepseek-v4-pro`;
+  its docs say `deepseek-flash` is served by DeepSeek-V4.1-Flash-1017,
+  and replies echo `deepseek-flash`,
+  so only the docs tie the id to 1017.
+  It refuses `json_schema` with HTTP 400 ("This response_format type is unavailable now"),
+  takes `json_object`,
+  reads pictures,
+  accepts `max_tokens` 32000,
+  and `/user/balance` reports a USD balance.
+- Prices,
+  USD per million tokens,
+  from each provider's own page:
+  `mimo-v2.6-flash` 0.0028 cached input,
+  0.14 input,
+  0.28 output;
+  `deepseek-flash` at peak 0.006 cached input,
+  0.3 input,
+  1.2 output,
+  half that off peak.
+- Adopted design for the direct routes:
+  two providers,
+  `deepseek` and `xiaomi`,
+  ordered after Bedrock and ahead of Hyper
+  (open to the owner's veto),
+  since Hyper's balance is never topped up and the Hyper-only seats need it;
+  one shared OpenAI-compatible client with a thin wrapper for each;
+  one served id per provider,
+  enforced in code by a test shown red first;
+  a balance meter for DeepSeek and a spend-reporting meter for Xiaomi;
+  both key names in every credential mask and scan;
+  neither offers zero data retention,
+  which the owner's PII ruling of 2026-10-05 allows.
+  The decision record is `doc/decision/translation-repair-direct-providers.md`,
+  written with the implementation.
+- The implementation is in progress in a scratch worktree.
+  It lands after gate g166 and a rotation sweep,
+  and goes live in the branch worktree's rebuild after `XingZ6018` settles,
+  with the new digest as the launcher's `FROZEN`.
+- Next:
+  read `XingZ6018` when it settles,
+  with the Mercury recheck;
+  file the `CuspariaKLSY23` read after a second reader checks it;
+  land the direct routes;
+  rebuild,
+  and launch the next rotation on the new build.
+
+State after the `CuspariaKLSY23` read,
+2026-10-22 (UTC):
+
+- The read of `CuspariaKLSY23` is filed in three files under the answers-restart record,
+  starting at `doc/planning/translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-cuspariaklsy23-run.md`.
+  A second reader checked it against the log:
+  137 confirmed and 6 wrong,
+  all 6 fixed before filing.
+- Its headlines:
+  SETTLED in 17.1 min against 39.3 min for `CuspariaKLSY22`;
+  Mercury was asked 64 times,
+  all 64 streams completed,
+  and the slowest first content was 21,327 ms,
+  so the 90,000 ms window did not fire in the second run of three either;
+  for the fourth `CuspariaKLSY` run in a row the repair lane left tense issues unresolved
+  (4 accepted,
+  2 of them major);
+  `minimax-m3` on Hyper ended at its cap with no content three times,
+  once at 21,645 tokens against a card cap of 10,822,
+  which is not yet traced;
+  Kimi on Hyper was cut once at the 120 s grace.
+- The owner,
+  after the `CuspariaKLSY23` read:
+  "Yes on the same account."
+  The question was whether the NeuralWatt key of the owner's dsh harness
+  (`package/dsh-plugin/neuralwatt`,
+  which reads `NEURALWATT_API_KEY`)
+  is on the same account as `TRANSLATION_REPAIR_NEURALWATT_API_KEY`.
+  So the plan-energy rises in runs that made no NeuralWatt call
+  (37.3,
+  54.3,
+  326.9 and 255.7 Wh)
+  are that harness's use of the shared account,
+  not a defect of the package.
+  No budget change follows:
+  the NeuralWatt stop already counts every covered request on the account since the day's anchor
+  (`doc/decision/translation-repair-neuralwatt-provider.md`,
+  "The day boundary and the account-wide count").
+- Next:
+  read `XingZ6018` when it settles,
+  with the third Mercury recheck;
+  land the direct routes;
+  rebuild,
+  and launch the next rotation on the new build.

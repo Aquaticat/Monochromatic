@@ -11,7 +11,8 @@
 use ide_app::line_rows::LineRows;
 /// The geometry and its constants.
 use ide_app::minimap::{
-    Geometry, MIN_BOX, NARROWEST, Target, WIDTH, band_count, text_span, text_x, width_for,
+    BAND, Geometry, Heading, LEAD, MIN_BOX, NARROWEST, Target, WIDTH, band_count, text_span,
+    text_x, width_for,
 };
 /// The vertical mapping the minimap shows.
 use ide_app::row_map::{CODE_ROW, RowMap};
@@ -319,6 +320,87 @@ fn a_cap_on_the_bands_keeps_those_from_the_top_of_the_track() {
             );
         }
     }
+}
+
+/// A view heading down holds `LEAD` bands past the track and one before it,
+/// a view heading up the other way round,
+/// and a view at rest one on each side:
+/// the window of a fling reaches the bands the next picture needs.
+#[test]
+fn the_window_of_a_fling_reaches_ahead_on_the_side_it_heads_toward() {
+    let step = BAND;
+    let content = 50_000.0 * CODE_ROW;
+    let geometry = Geometry::new(content, 600.0);
+    let offset = geometry.max_offset() * 0.4;
+    let still = geometry.bands_for(offset, step, usize::MAX);
+    assert_eq!(
+        geometry.bands_toward(offset, step, usize::MAX, Heading::Still { at: 7.0 }),
+        still,
+        "a view at rest keeps one band on each side"
+    );
+    let down = geometry.bands_toward(offset, step, usize::MAX, Heading::Down { at: 0.0 });
+    let up = geometry.bands_toward(offset, step, usize::MAX, Heading::Up { at: 0.0 });
+    assert_eq!(
+        down.start, still.start,
+        "heading down keeps one band behind"
+    );
+    assert_eq!(
+        down.end,
+        still.end - 1 + LEAD,
+        "heading down holds the lead after the track"
+    );
+    assert_eq!(up.end, still.end, "heading up keeps one band behind");
+    assert_eq!(
+        up.start,
+        still.start + 1 - LEAD,
+        "heading up holds the lead before the track"
+    );
+    // The window never leaves the text: at its ends the lead is cut short.
+    let total = band_count(content, step);
+    let last = geometry.bands_toward(
+        geometry.max_offset(),
+        step,
+        usize::MAX,
+        Heading::Down { at: 0.0 },
+    );
+    assert_eq!(last.end, total);
+    let first = geometry.bands_toward(0.0, step, usize::MAX, Heading::Up { at: 0.0 });
+    assert_eq!(first.start, 0);
+    // A cap on the bands still wins over the lead.
+    let capped = geometry.bands_toward(offset, step, 3, Heading::Down { at: 0.0 });
+    assert!(capped.len() <= 3, "{} bands past the cap", capped.len());
+}
+
+/// A heading is confirmed by a move of a whole band from where it was decided,
+/// kept through a creep of less than a band either way,
+/// and turned by a whole band against it.
+#[test]
+fn a_heading_follows_the_track_by_whole_bands() {
+    let step = BAND;
+    let still = Heading::Still { at: 1_000.0 };
+    assert_eq!(
+        still.follow(1_000.0 + step - 1.0, step),
+        still,
+        "less than a band changes nothing"
+    );
+    assert_eq!(still.follow(1_000.0 - step + 1.0, step), still);
+    let down = still.follow(1_000.0 + step, step);
+    assert_eq!(down, Heading::Down { at: 1_000.0 + step });
+    // A creep back within a band keeps the heading and the place where it was decided.
+    assert_eq!(down.follow(1_000.0 + step - 100.0, step), down);
+    assert_eq!(down.follow(1_000.0 + 2.0 * step - 1.0, step), down);
+    // The next band confirms it again, one step further.
+    assert_eq!(
+        down.follow(1_000.0 + 2.0 * step, step),
+        Heading::Down {
+            at: 1_000.0 + 2.0 * step
+        }
+    );
+    // A whole band back turns it.
+    assert_eq!(down.follow(1_000.0, step), Heading::Up { at: 1_000.0 });
+    assert_eq!(Heading::Still { at: 0.0 }.margins(), (1, 1));
+    assert_eq!(down.margins(), (1, LEAD));
+    assert_eq!(Heading::Up { at: 0.0 }.margins(), (LEAD, 1));
 }
 
 /// The picture is the text's whole width shrunk to the minimap's,

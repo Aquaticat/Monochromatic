@@ -4,6 +4,8 @@
 /// The key the newest request and the picture on screen are valid for,
 ///  and the worker the window starts on first use.
 use crate::native::minimap_worker::{Key, MinimapWorker};
+/// Which way the view is heading.
+use ide_app::minimap::Heading;
 /// The three timers the state owns:
 ///  one polls the worker's replies,
 ///  one holds the quiet time,
@@ -67,6 +69,9 @@ pub(in crate::native) struct MinimapState {
     pub(super) noted: Option<Key>,
     /// What the picture on screen is valid for.
     pub(in crate::native) shown: Option<Key>,
+    /// Which way the view last moved by a whole band,
+    /// which names the side of the picture that holds the extra bands.
+    pub(in crate::native) heading: Heading,
     /// Number of the last request posted.
     pub(super) next_id: u64,
     /// Number of the request whose picture is on screen.
@@ -112,6 +117,7 @@ impl MinimapState {
             last_post: None,
             noted: None,
             shown: None,
+            heading: Heading::Still { at: 0.0 },
             next_id: 0,
             shown_id: 0,
             awaited: 0,

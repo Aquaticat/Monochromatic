@@ -8,6 +8,8 @@
 ///  the source state,
 ///  and the palette read from the window.
 use super::code_colors;
+/// How many view heights a tile spans.
+use crate::native::viewport::TILE_VIEWS;
 /// Virtual-row texts and diagnostic marks are positioned against the frame's shaped rows.
 use crate::native::{
     AppWindow, State, annotate, find::present::present, tile::TileBounds, tile_build::TileJob,
@@ -78,23 +80,26 @@ impl Paint {
 }
 
 /// What:
-///  The tallest tile in logical pixels whose raster stays within the raster limit
-///  at wrap width `width` and display `scale`.
+///  The tallest tile in logical pixels at wrap width `width` and display `scale` that the window lets a raster be
+///  for a view `view` logical pixels tall:
+///  what one texture holds,
+/// or the tile of `TILE_VIEWS` views when that is more,
+/// within the stack's bound.
 /// Why:
-///  A tile is one image of the text area's width,
-/// so the limit on its bytes is a limit on its height;
+///  A tile is a stack of textures of the text area's width,
+///  so the limit on its memory is a limit on its height;
 ///  a tile of lines taller than this is clipped to the rows near the view instead of being refused.
 ///  One code row is kept free for the rounding of the raster's size up to whole pixels.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function tileCap(width: number, scale: number): number;
+/// function tileCap(width: number, scale: number, view: number): number;
 /// ```
-pub(in crate::native) fn tile_cap(width: f32, scale: f32) -> f32 {
+pub(in crate::native) fn tile_cap(width: f32, scale: f32, view: f32) -> f32 {
     let wrap = has_wrap_width(width).then_some(width);
     let raster = raster_width(wrap);
     let columns = ((raster * scale).ceil() as u64).max(1);
-    return raster_cap(columns, scale);
+    return raster_cap(columns, scale, view * TILE_VIEWS);
 }
 
 /// The viewport of a tile at `bounds`:
