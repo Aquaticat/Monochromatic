@@ -332,6 +332,11 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     bound: 'read back',
     reason: RECORD_FIELD,
   },
+  'provider-stream/cut-stream.test-fixture.ts#cutStreamError: firstContentMs: generatedAny ? FIRST_BYTE_MS : -1': {
+    count: 1,
+    bound: 'read back',
+    reason: RECORD_FIELD,
+  },
   'provider/provider-budget-held-meters.unit.test.ts#budgetsOnClock: freshForMs: FRESH_MS': {
     count: 1,
     bound: 'other',
