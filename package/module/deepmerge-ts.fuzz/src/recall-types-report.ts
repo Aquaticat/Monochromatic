@@ -113,7 +113,7 @@ async function readJob(job: string,): Promise<{
   } catch (error) {
     if (Error.isError(error,)
       && error.message
-      .includes('ENOENT',)) {
+        .includes('ENOENT',)) {
       return {
         diagnostics: [],
         ms: 0,

@@ -92,7 +92,7 @@ export async function createTask(input: TaskCreateInput,): Promise<Task> {
     null,
     timestamp,
     timestamp,
-  );
+    );
 
   /**
    Read-back of the freshly inserted row; absence indicates a write/read race.
@@ -143,7 +143,7 @@ export async function updateTask(
     title: input.title
       ?.trim()
       ?? currentTask
-      .title,
+        .title,
     updatedAt: nowIso(),
   };
 
@@ -165,7 +165,7 @@ export async function updateTask(
     updated.status,
     updated.updatedAt,
     id,
-  );
+    );
 
   return getTaskById(id,);
 }

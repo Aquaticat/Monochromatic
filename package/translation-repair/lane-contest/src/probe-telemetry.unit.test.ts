@@ -328,27 +328,27 @@ await describe({
                   {
                     entryId: 'Kitten',
                     readings: [
-                  {
-                    heardProbers: 3,
-                    configuredProbers: 3,
-                    regions: [
-                      catTally({
-                        envelopeId: 'envelope/shared',
-                        corroborated: 3,
-                      },),
+                      {
+                        heardProbers: 3,
+                        configuredProbers: 3,
+                        regions: [
+                          catTally({
+                            envelopeId: 'envelope/shared',
+                            corroborated: 3,
+                          },),
+                        ],
+                      },
+                      {
+                        heardProbers: 3,
+                        configuredProbers: 3,
+                        regions: [
+                          catTally({
+                            envelopeId: 'envelope/shared',
+                            corroborated: 1,
+                          },),
+                        ],
+                      },
                     ],
-                  },
-                  {
-                    heardProbers: 3,
-                    configuredProbers: 3,
-                    regions: [
-                      catTally({
-                        envelopeId: 'envelope/shared',
-                        corroborated: 1,
-                      },),
-                    ],
-                  },
-                  ],
                   },
                 ],
               },);
@@ -374,37 +374,37 @@ await describe({
                   {
                     entryId: 'Kitten',
                     readings: [
-                  {
-                    heardProbers: 3,
-                    configuredProbers: 3,
-                    regions: [
-                      catTally({
-                        envelopeId: 'envelope/shared',
-                        corroborated: 1,
-                        claims: catClaims({
-                          count: 1,
-                          admissibility: 'corroborated',
-                          prefix: 'first',
-                        },),
-                      },),
+                      {
+                        heardProbers: 3,
+                        configuredProbers: 3,
+                        regions: [
+                          catTally({
+                            envelopeId: 'envelope/shared',
+                            corroborated: 1,
+                            claims: catClaims({
+                              count: 1,
+                              admissibility: 'corroborated',
+                              prefix: 'first',
+                            },),
+                          },),
+                        ],
+                      },
+                      {
+                        heardProbers: 3,
+                        configuredProbers: 3,
+                        regions: [
+                          catTally({
+                            envelopeId: 'envelope/shared',
+                            corroborated: 1,
+                            claims: catClaims({
+                              count: 1,
+                              admissibility: 'corroborated',
+                              prefix: 'second',
+                            },),
+                          },),
+                        ],
+                      },
                     ],
-                  },
-                  {
-                    heardProbers: 3,
-                    configuredProbers: 3,
-                    regions: [
-                      catTally({
-                        envelopeId: 'envelope/shared',
-                        corroborated: 1,
-                        claims: catClaims({
-                          count: 1,
-                          admissibility: 'corroborated',
-                          prefix: 'second',
-                        },),
-                      },),
-                    ],
-                  },
-                  ],
                   },
                 ],
               },);
@@ -424,22 +424,22 @@ await describe({
                 {
                   entryId: 'Kitten',
                   readings: [
-                {
-                  heardProbers: 3,
-                  configuredProbers: 3,
-                  regions: [
-                    catTally({
-                      envelopeId: 'envelope/one',
-                      corroborated: 3,
-                    },),
-                    catTally({
-                      envelopeId: 'envelope/two',
-                      corroborated: 1,
-                    },),
-                    catTally({ envelopeId: 'envelope/three', },),
+                    {
+                      heardProbers: 3,
+                      configuredProbers: 3,
+                      regions: [
+                        catTally({
+                          envelopeId: 'envelope/one',
+                          corroborated: 3,
+                        },),
+                        catTally({
+                          envelopeId: 'envelope/two',
+                          corroborated: 1,
+                        },),
+                        catTally({ envelopeId: 'envelope/three', },),
+                      ],
+                    },
                   ],
-                },
-                ],
                 },
               ],
             },);
@@ -459,17 +459,17 @@ await describe({
                 {
                   entryId: 'Kitten',
                   readings: [
-                {
-                  heardProbers: 2,
-                  configuredProbers: 3,
-                  regions: [catTally({ envelopeId: 'envelope/short', },),],
-                },
-                {
-                  heardProbers: 3,
-                  configuredProbers: 3,
-                  regions: [catTally({ envelopeId: 'envelope/whole', },),],
-                },
-                ],
+                    {
+                      heardProbers: 2,
+                      configuredProbers: 3,
+                      regions: [catTally({ envelopeId: 'envelope/short', },),],
+                    },
+                    {
+                      heardProbers: 3,
+                      configuredProbers: 3,
+                      regions: [catTally({ envelopeId: 'envelope/whole', },),],
+                    },
+                  ],
                 },
               ],
             },);

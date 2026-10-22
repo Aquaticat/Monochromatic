@@ -29,19 +29,19 @@ export type CorpusCommitState =
   /**
    The clone answered and the revision names no commit in it (exit status 1).
    */
-  | 'lacking'
+    | 'lacking'
   /**
    Git could not open the clone as a repository: the probe of the commit and
    the probe of the clone's git directory both ended at exit status 128.
    */
-  | 'unopened'
+    | 'unopened'
   /**
    The probe got no answer: git was stopped by a signal, never started, ended
    with a status this probe does not read, or died (exit status 128) in a
    clone whose git directory it could name, as it does on a commit object it
    cannot inflate.
    */
-  | 'unasked';
+    | 'unasked';
 
 /**
  What the probe of the pinned commit came to: its answer, or that it got none
@@ -120,23 +120,23 @@ type GitDirAnswer =
      */
     readonly kind: 'named';
   }
-  | {
+    | {
     /**
      Git could not open the clone (exit status 128).
      */
-    readonly kind: 'unopened';
-  }
-  | {
+      readonly kind: 'unopened';
+    }
+    | {
     /**
      Git ended another way, which answers nothing.
      */
-    readonly kind: 'failed';
+      readonly kind: 'failed';
 
     /**
      What the child failed with, kept beside the commit probe's own.
      */
-    readonly failure: SubprocessError;
-  };
+      readonly failure: SubprocessError;
+    };
 
 /**
  Asks a clone for its git directory, after the probe of its commit ended at

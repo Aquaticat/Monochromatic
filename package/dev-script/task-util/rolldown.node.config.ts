@@ -19,14 +19,14 @@ import {
  */
 const config: NodeFlavorConfig = nodeConfig({
   input: [
-      './src/command.ts',
-      './src/append.ts',
-      './src/depends.ts',
-      './src/oxlint-wrapper.ts',
-      './src/pnpm-filter.ts',
-      './src/tsc-filter.ts',
-      './src/testing.ts',
-    ],
+    './src/command.ts',
+    './src/append.ts',
+    './src/depends.ts',
+    './src/oxlint-wrapper.ts',
+    './src/pnpm-filter.ts',
+    './src/tsc-filter.ts',
+    './src/testing.ts',
+  ],
 },);
 
 export default config;

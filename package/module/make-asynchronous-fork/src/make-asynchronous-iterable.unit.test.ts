@@ -158,8 +158,8 @@ await describe({
         },);
         expect(
           await collect(fn({
-          args: [[0, null, 1]],
-        },),),
+            args: [[0, null, 1]],
+          },),),
         ).toEqual([
           0,
           null,

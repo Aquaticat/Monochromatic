@@ -444,10 +444,10 @@ await describe({
               + `it: ${verdict.findings.join(' ',)}`;
           },),
           `[repairOneCandidate] translate-repair ${SEAT_SYNTHETIC_VISION_NO_OPENROUTER}: refused by `
-          + 'ProviderHttpError from synthetic with HTTP 503 (the provider said: "the later cat is napping in the sun"), as the '
-          + 'caller stopped the repair',
+            + 'ProviderHttpError from synthetic with HTTP 503 (the provider said: "the later cat is napping in the sun"), as the '
+            + 'caller stopped the repair',
           `[repairOneCandidate] translate-repair ${TRANSLATOR}: refused by ProviderHttpError from synthetic with HTTP 429 (the `
-          + 'provider said: "the first cat is out of treats"), as the caller stopped the repair',
+            + 'provider said: "the first cat is out of treats"), as the caller stopped the repair',
         ],);
       },
     },),
@@ -571,9 +571,9 @@ await describe({
           throw new Error(`the fixture's candidate must fail the publication rule, and the floor said ${verdict.kind}`,);
         expect(said,).toEqual([
           `[repairOneCandidate] ${TRANSLATOR}: candidate fails the publication rule, so its author is asked about `
-          + `it: ${verdict.findings.join(' ',)}`,
+            + `it: ${verdict.findings.join(' ',)}`,
           `[repairOneCandidate] translate-repair ${TRANSLATOR}: refused by ProviderHttpError from synthetic with HTTP 503 (the `
-          + 'provider said: "the cat is napping in the sun"), as the caller stopped the repair',
+            + 'provider said: "the cat is napping in the sun"), as the caller stopped the repair',
         ],);
       },
     },),

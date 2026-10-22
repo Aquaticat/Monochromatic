@@ -181,8 +181,8 @@ export function parseJsonlLines({ text, }: { readonly text: string; },): readonl
     throw new Error('JSONL text must end with a newline',);
   return lines
     .slice(
-      0,
-      -1,
+    0,
+    -1,
     )
     .map(function parseLine(line,): unknown {
       return JSON.parse(line,);

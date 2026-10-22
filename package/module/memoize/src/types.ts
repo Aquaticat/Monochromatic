@@ -22,21 +22,21 @@ export const DEFAULT_MAX_CACHE_SIZE = 1_024;
  */
 export type MemoizeOptions<
   TArgs extends readonly unknown[],
-> = {
+  > = {
   /**
    Computes cache key from arguments; must be deterministic.
    Required because variadic argument hashing is error-prone, so the caller owns key derivation.
    */
-  readonly keyFn: (
-    this: void,
-    ...args: TArgs
-  ) => string;
+    readonly keyFn: (
+      this: void,
+      ...args: TArgs
+    ) => string;
   /**
    Sync store backend for cache persistence.
    Defaults to a fresh in-memory SyncStore with LRU eviction at {@link DEFAULT_MAX_CACHE_SIZE}.
    */
-  readonly store?: SyncStore;
-};
+    readonly store?: SyncStore;
+  };
 
 /**
  Options for async memoization via {@link MemoizedAsyncFunction}.
@@ -52,21 +52,21 @@ export type MemoizeOptions<
  */
 export type MemoizeAsyncOptions<
   TArgs extends readonly unknown[],
-> = {
+  > = {
   /**
    Computes cache key from arguments; must be deterministic.
    Required because variadic argument hashing is error-prone, so the caller owns key derivation.
    */
-  readonly keyFn: (
-    this: void,
-    ...args: TArgs
-  ) => string;
+    readonly keyFn: (
+      this: void,
+      ...args: TArgs
+    ) => string;
   /**
    Async store backend for cache persistence.
    Defaults to a fresh in-memory Store with LRU eviction at {@link DEFAULT_MAX_CACHE_SIZE}.
    */
-  readonly store?: Store;
-};
+    readonly store?: Store;
+  };
 
 /**
  Call-site options passed to a memoized function on each invocation.
@@ -80,17 +80,17 @@ export type MemoizeAsyncOptions<
  */
 export type MemoizedCallOptions<
   TArgs extends readonly unknown[],
-> = {
+  > = {
   /**
    Original function arguments as a tuple, spread into both `keyFn` and the wrapped function.
    */
-  readonly args: TArgs;
+    readonly args: TArgs;
   /**
    Salt appended to cache key; change it to invalidate the cache
    (e.g. `String(time % 3600000)` for hourly expiry) without recreating the memoized function.
    */
-  readonly salt: string;
-};
+    readonly salt: string;
+  };
 
 /**
  Memoized synchronous function with cache management methods.
@@ -110,28 +110,28 @@ export type MemoizedCallOptions<
 export type MemoizedFunction<
   TArgs extends readonly unknown[],
   TReturn,
-> = {
-  (
-    this: void,
-    options: MemoizedCallOptions<TArgs>,
-  ): TReturn;
+  > = {
+    (
+      this: void,
+      options: MemoizedCallOptions<TArgs>,
+    ): TReturn;
   /**
    Underlying SyncStore, exposed for inspection and direct manipulation.
    */
-  readonly store: SyncStore;
+    readonly store: SyncStore;
   /**
    Wipe all cached entries.
    */
-  readonly clear: () => void;
+    readonly clear: () => void;
   /**
    Remove a specific entry by its full cache key (keyFn result plus salt).
    */
-  readonly delete: (key: string,) => void;
+    readonly delete: (key: string,) => void;
   /**
    Current number of cached entries.
    */
-  readonly size: number;
-};
+    readonly size: number;
+  };
 
 /**
  Memoized asynchronous function with cache management methods.
@@ -151,24 +151,24 @@ export type MemoizedFunction<
 export type MemoizedAsyncFunction<
   TArgs extends readonly unknown[],
   TReturn,
-> = {
-  (
-    this: void,
-    options: MemoizedCallOptions<TArgs>,
-  ): Promise<TReturn>;
+  > = {
+    (
+      this: void,
+      options: MemoizedCallOptions<TArgs>,
+    ): Promise<TReturn>;
   /**
    Underlying Store, exposed for inspection and direct manipulation.
    */
-  readonly store: Store;
+    readonly store: Store;
   /**
    Wipe all cached entries and drop any in-flight deduplication state.
    */
-  readonly clear: () => Promise<void>;
+    readonly clear: () => Promise<void>;
   /**
    Remove a specific entry by its full cache key (keyFn result plus salt).
    */
-  readonly delete: (key: string,) => Promise<void>;
-};
+    readonly delete: (key: string,) => Promise<void>;
+  };
 
 /**
  Named-parameter options for sync memoization, extending {@link MemoizeOptions}
@@ -189,15 +189,15 @@ export type MemoizedAsyncFunction<
 export type MemoizeNamedOptions<
   TArgs extends readonly unknown[],
   TReturn,
-> = MemoizeOptions<TArgs> & {
+  > = MemoizeOptions<TArgs> & {
   /**
    Pure synchronous function to memoize; impure functions produce incorrect cached results.
    */
-  readonly fn: (
-    this: void,
-    ...args: TArgs
-  ) => TReturn;
-};
+    readonly fn: (
+      this: void,
+      ...args: TArgs
+    ) => TReturn;
+  };
 
 /**
  Named-parameter options for async memoization, extending {@link MemoizeAsyncOptions}
@@ -218,12 +218,12 @@ export type MemoizeNamedOptions<
 export type MemoizeAsyncNamedOptions<
   TArgs extends readonly unknown[],
   TReturn,
-> = MemoizeAsyncOptions<TArgs> & {
+  > = MemoizeAsyncOptions<TArgs> & {
   /**
    Pure async function to memoize; impure functions produce incorrect cached results.
    */
-  readonly fn: (
-    this: void,
-    ...args: TArgs
-  ) => Promise<TReturn>;
-};
+    readonly fn: (
+      this: void,
+      ...args: TArgs
+    ) => Promise<TReturn>;
+  };

@@ -212,8 +212,8 @@ export async function createSeededRepository({
       'add',
       '--',
       ...seedFiles.map(function seedPath(file,) {
-      return file.path;
-    },),
+        return file.path;
+      },),
     ],
   },);
   await realGit({
@@ -282,17 +282,17 @@ export async function installExtras({
         .hookEvents,
     },)
       .reduce(
-        async function configAfter(
-          previous,
-          args,
-        ) {
+      async function configAfter(
+        previous,
+        args,
+      ) {
         await previous;
         await realGit({
           repository,
           args,
         },);
       },
-        Promise.resolve(),
+      Promise.resolve(),
       );
   }
 }

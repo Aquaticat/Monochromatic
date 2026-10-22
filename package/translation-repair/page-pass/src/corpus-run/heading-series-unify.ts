@@ -219,7 +219,7 @@ type ArchiveSeriesStyle =
      */
     readonly style: OrdinalStyle;
   }
-  | { readonly rendered: false; };
+    | { readonly rendered: false; };
 
 /**
  The archive heads fewer than two of the series, heads them in more than one

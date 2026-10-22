@@ -20,23 +20,23 @@ export type QuoteOccurrences =
      */
     readonly kind: 'none';
   }
-  | {
+    | {
     /**
      The text stands exactly once.
      */
-    readonly kind: 'once';
+      readonly kind: 'once';
 
     /**
      Offset of that one occurrence.
      */
-    readonly at: number;
-  }
-  | {
+      readonly at: number;
+    }
+    | {
     /**
      The text stands more than once, overlaps included.
      */
-    readonly kind: 'many';
-  };
+      readonly kind: 'many';
+    };
 
 /**
  Where a text stands inside another: nowhere, once, or more than once,

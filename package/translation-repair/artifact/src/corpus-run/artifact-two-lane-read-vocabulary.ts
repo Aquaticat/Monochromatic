@@ -46,7 +46,7 @@ export type UnknownKeyPolicy =
    inside a raw lane result: those are typed by the live pipeline, they grow
    by addition, and a later field there is not a later version here.
    */
-  | 'tolerate';
+    | 'tolerate';
 
 /**
  Keys each outcome member may carry, including its own discriminator.
@@ -104,10 +104,10 @@ const DELIVERY_KINDS: Readonly<Record<ArtifactSliceDelivery['kind'], true>> = {
 const WITHDRAWAL_REASONS: Readonly<Record<
   Extract<ArtifactSliceDelivery, { readonly kind: 'replacement-withdrawn'; }>['reason'],
   true
->> = {
-  'assembly-integrity': true,
-  'blocked-non-translation': true,
-};
+  >> = {
+    'assembly-integrity': true,
+    'blocked-non-translation': true,
+  };
 
 /**
  Members a decision comparison may name, keyed by the frozen
@@ -125,10 +125,10 @@ const COMPARISON_KINDS: Readonly<Record<ArtifactDecisionComparison['kind'], true
 const COMPARISON_VERDICTS: Readonly<Record<
   Extract<ArtifactDecisionComparison, { readonly kind: 'comparable'; }>['verdict'],
   true
->> = {
-  same: true,
-  different: true,
-};
+  >> = {
+    same: true,
+    different: true,
+  };
 
 /**
  Lanes an undecided pair may name, keyed by the frozen
@@ -137,10 +137,10 @@ const COMPARISON_VERDICTS: Readonly<Record<
 const UNDECIDED_LANE_NAMES: Readonly<Record<
   Extract<ArtifactDecisionComparison, { readonly kind: 'not-comparable'; }>['undecidedLanes'][number],
   true
->> = {
-  repair: true,
-  translate: true,
-};
+  >> = {
+    repair: true,
+    translate: true,
+  };
 
 /**
  Fields this version gives a MEANING to on some outcome member.

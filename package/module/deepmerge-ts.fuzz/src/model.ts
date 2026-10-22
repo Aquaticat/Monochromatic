@@ -118,7 +118,7 @@ function hasEnumerable(
     .call(
     record,
     key,
-  );
+    );
 }
 
 /**
@@ -349,21 +349,21 @@ type Bucket =
     readonly kind: 'array';
     readonly items: readonly (readonly unknown[])[];
   }
-  | {
-    readonly kind: 'map';
-    readonly items: readonly ReadonlyMap<unknown, unknown>[];
-  }
-  | {
-    readonly kind: 'mixed';
-  }
-  | {
-    readonly kind: 'record';
-    readonly items: readonly object[];
-  }
-  | {
-    readonly kind: 'set';
-    readonly items: readonly ReadonlySet<unknown>[];
-  };
+    | {
+      readonly kind: 'map';
+      readonly items: readonly ReadonlyMap<unknown, unknown>[];
+    }
+    | {
+      readonly kind: 'mixed';
+    }
+    | {
+      readonly kind: 'record';
+      readonly items: readonly object[];
+    }
+    | {
+      readonly kind: 'set';
+      readonly items: readonly ReadonlySet<unknown>[];
+    };
 
 /**
  Bucket meaning the inputs share no mergeable kind.
@@ -502,13 +502,13 @@ function mergeAt(
   if (bucket.kind === 'array') {
     return bucket.items
       .flatMap(function elementsOf(array,) {
-      return [...array,];
-    },);
+        return [...array,];
+      },);
   }
   return new Set(bucket.items
     .flatMap(function elementsOf(set,) {
-    return [...set,];
-  },),);
+      return [...set,];
+    },),);
 }
 
 /**

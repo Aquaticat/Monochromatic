@@ -174,15 +174,15 @@ function aliasesOf({ metadata, }: { readonly metadata: FrontMatterBlock; },): re
 
   return ALIAS_SEPARATORS
     .reduce<readonly string[]>(
-      function splitOn(
-        pieces,
-        separator,
-      ): readonly string[] {
-        return pieces.flatMap(function split(piece,): readonly string[] {
-          return piece.split(separator,);
-        },);
-      },
-      [joined,],
+    function splitOn(
+      pieces,
+      separator,
+    ): readonly string[] {
+      return pieces.flatMap(function split(piece,): readonly string[] {
+        return piece.split(separator,);
+      },);
+    },
+    [joined,],
     )
     .map(function trim(piece,): string {
       return piece.trim();

@@ -66,14 +66,14 @@ export type QuoteLocation =
       ...SpanAnchor[]
     ];
   }
-  | {
-    readonly located: false;
+    | {
+      readonly located: false;
 
     /**
      Which check refused, in scorecard-stable wording.
      */
-    readonly reason: string;
-  };
+      readonly reason: string;
+    };
 
 /**
  Binds one located region to its blocks.
@@ -158,7 +158,7 @@ function bindQuoteRegion(
         .slice(
         spanStart,
         spanEnd,
-      ),
+        ),
     };
   }
 
@@ -404,7 +404,7 @@ export function locateQuote(
     needle,
     at + 1,
   ))
-  {
+    {
     return {
       located: false,
       reason: `ambiguous-quote (${side})`,

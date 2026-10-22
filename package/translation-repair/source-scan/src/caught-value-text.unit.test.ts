@@ -119,10 +119,10 @@ const HELD: Readonly<Record<string, string>> = {
     'a directory listing or log read failure printed to the terminal of the cap-census command; no provider is called',
   'run/corpus-run/cli-refusal.ts#framesOf':
     'destructures the stack and the message, but the message is only searched for in the stack to find where its '
-    + 'header ends, and only the lines after that end are printed',
+      + 'header ends, and only the lines after that end are printed',
   'coverage-census/corpus-run/coverage-census-steps.ts#commandExit':
     'a child process failure whose message is the command line and exit code (nano-spawn result.js), the '
-    + 'output going to a log file; no provider is called',
+      + 'output going to a log file; no provider is called',
   'coverage-census/corpus-run/coverage-probe-pair.ts#readPair':
     'a corpus read failure on the probe\'s own command; the corpus is public and no provider is called',
   'bench/corpus-run/editor-standing-read-artifact.ts#readStandingArtifact':
@@ -139,7 +139,7 @@ const HELD: Readonly<Record<string, string>> = {
     'reads the message of a ProducerRosterError, the only class its catch lets through, which declares it safe',
   'page-check/corpus-run/publish-defects.ts#defectOf':
     'reads the message of the refusal class a check names, which the step type holds to a class declaring '
-    + 'messageNamesOnly',
+      + 'messageNamesOnly',
   'run/corpus-run/run-timing-report-run.ts#reportRunTiming':
     'reads the message of a NothingInFlightError, the only class the clause lets through, which declares it safe',
   'insertion/corpus-run/runner-closure.ts#readEntryText':
@@ -154,8 +154,8 @@ const HELD: Readonly<Record<string, string>> = {
     'copies the digits after the position phrase and nothing else of the message (offsetIn)',
   'provider/transient-retry.ts#sleepBackoff':
     'the rejection of a timers/promises sleep under an aborted signal: an AbortError whose message is the fixed '
-    + 'phrase "The operation was aborted" and whose cause, not its message, holds the abort reason (measured on Node '
-    + 'with a custom abort reason)',
+      + 'phrase "The operation was aborted" and whose cause, not its message, holds the abort reason (measured on Node '
+      + 'with a custom abort reason)',
 };
 
 /**
@@ -562,8 +562,8 @@ await describe({
                 .join('\n',)
                 // The fixture writes `@{` where a placeholder opens, so no string literal here holds a whole one.
                 .replaceAll(
-                  '@{',
-                  '${',
+                '@{',
+                '${',
                 ),
               isTest: false,
             },

@@ -327,44 +327,44 @@ export function restoreNameGlossLines(
        longer word carrying its letters ("Pipit" for "Pip") neither draws
        the gloss nor places it (ledger B23).
        */
-      const at = wordStarts({
-        text: current.replacementText,
-        needle: gloss.name,
-        end: 'word',
-      },)[0] ?? NOT_FOUND;
-      if (at === NOT_FOUND)
-        return current;
-      if (glossed({
-        text: current.replacementText,
-        gloss,
-        at,
-      },))
-        return current;
+        const at = wordStarts({
+          text: current.replacementText,
+          needle: gloss.name,
+          end: 'word',
+        },)[0] ?? NOT_FOUND;
+        if (at === NOT_FOUND)
+          return current;
+        if (glossed({
+          text: current.replacementText,
+          gloss,
+          at,
+        },))
+          return current;
       /**
        Cut at the end of the line carrying the name.
        */
-      const cut = lineEndAfter({
-        text: current.replacementText,
-        at,
-      },);
+        const cut = lineEndAfter({
+          text: current.replacementText,
+          at,
+        },);
       /**
        Shipped text up to the cut.
        */
-      const head = current.replacementText
-        .slice(
+        const head = current.replacementText
+          .slice(
           0,
           cut,
-        );
+          );
       /**
        Shipped text from the cut.
        */
-      const rest = current.replacementText
-        .slice(cut,);
-      findings.push(`name-gloss-restored (slice ${String(row.sliceIndex,)}: "${gloss.line}")`,);
-      return {
-        sliceIndex: current.sliceIndex,
-        replacementText: `${head}\n${gloss.line}${rest}`,
-      };
+        const rest = current.replacementText
+          .slice(cut,);
+        findings.push(`name-gloss-restored (slice ${String(row.sliceIndex,)}: "${gloss.line}")`,);
+        return {
+          sliceIndex: current.sliceIndex,
+          replacementText: `${head}\n${gloss.line}${rest}`,
+        };
       },
       row,
     );

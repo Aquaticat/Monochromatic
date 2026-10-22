@@ -210,9 +210,9 @@ await describe({
               .map(function toName(tool,) {
                 return tool.name;
               },),).toEqual([
-              'web_search',
-              'web_fetch',
-            ],);
+                'web_search',
+                'web_fetch',
+              ],);
             expect(JSON.stringify(result.tools[0]?.inputSchema,),).toContain('"query"',);
           },
         },),

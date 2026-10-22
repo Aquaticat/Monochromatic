@@ -74,8 +74,8 @@ export function cutoffDay({
   return new Date(cutoffMs,)
     .toISOString()
     .slice(
-      0,
-      DAY_KEY_LENGTH,
+    0,
+    DAY_KEY_LENGTH,
     );
 }
 //endregion Age windows key every owned name by its UTC day prefix

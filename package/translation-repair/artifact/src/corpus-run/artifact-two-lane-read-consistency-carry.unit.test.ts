@@ -131,7 +131,7 @@ await describe({
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.runOff: expected an object.',
               'ArtifactParseError: artifact parse failed at cat.runOff.winner: '
-              + 'expected no key here beyond finalists, ballots, usable, quorum.',
+                + 'expected no key here beyond finalists, ballots, usable, quorum.',
             ],);
           },
         },),
@@ -214,7 +214,7 @@ await describe({
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.carry: expected an object.',
               'ArtifactParseError: artifact parse failed at cat.carry.winner: '
-              + 'expected no key here beyond label, candidates, ballots, usable, quorum, runOff, decision.',
+                + 'expected no key here beyond label, candidates, ballots, usable, quorum, runOff, decision.',
             ],);
           },
         },),
@@ -233,9 +233,9 @@ await describe({
               'ArtifactParseError: artifact parse failed at cat.carry.candidates: expected an array.',
               'ArtifactParseError: artifact parse failed at cat.carry.candidates[0]: expected an object.',
               'ArtifactParseError: artifact parse failed at cat.carry.candidates[0].author: '
-              + 'expected no key here beyond label, kind, writers, text.',
+                + 'expected no key here beyond label, kind, writers, text.',
               'ArtifactParseError: artifact parse failed at cat.carry.candidates[0].kind: '
-              + 'expected one of current, splice, writer.',
+                + 'expected one of current, splice, writer.',
               'ArtifactParseError: artifact parse failed at cat.carry.candidates[0].writers: expected an array.',
               'ArtifactParseError: artifact parse failed at cat.carry.candidates[0].text: expected a string.',
             ],);
@@ -273,7 +273,7 @@ await describe({
               'ArtifactParseError: artifact parse failed at cat.carry.decision.kind: expected one of chosen, none, failed.',
               'ArtifactParseError: artifact parse failed at cat.carry.decision.reason: expected no key here beyond kind, label.',
               'ArtifactParseError: artifact parse failed at cat.carry.decision.reason: '
-              + 'expected one of no-alternative, no-quorum, no-majority.',
+                + 'expected one of no-alternative, no-quorum, no-majority.',
               'ArtifactParseError: artifact parse failed at cat.carry.decision.label: expected no key here beyond kind, reason.',
               'ArtifactParseError: artifact parse failed at cat.carry.decision.detail: expected a string.',
               'ArtifactParseError: artifact parse failed at cat.carry.decision.label: expected a string.',

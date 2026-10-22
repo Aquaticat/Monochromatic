@@ -52,29 +52,29 @@ async function readPages(
    */
   const pages = await allInInputOrder({
     members: ids.map(async function readPage(id,): Promise<
-    readonly {
-      readonly id: string;
-      readonly text: string
-    }[]
-  > {
-    try {
+      readonly {
+        readonly id: string;
+        readonly text: string
+      }[]
+      > {
+      try {
       /**
        Page text at the pin, with CRLF folded.
        */
-      const text = await readCorpusFile({
-        pin,
-        relPath: `people/${id}/page.md`,
-      },);
-      return [{
-        id,
-        text,
-      },];
-    } catch (error) {
-      if (isMissingCorpusObject(error,))
-        return [];
-      throw error;
-    }
-  },),
+        const text = await readCorpusFile({
+          pin,
+          relPath: `people/${id}/page.md`,
+        },);
+        return [{
+          id,
+          text,
+        },];
+      } catch (error) {
+        if (isMissingCorpusObject(error,))
+          return [];
+        throw error;
+      }
+    },),
   },);
   return pages.flat();
 }

@@ -182,21 +182,21 @@ function objectingClient(
           assessment: 'the fuller rendering',
         }
         : (schema === 'consolidate_gate')
-        ? {
-          verdict: gateChoice,
-          unsupported: (gateChoice === 'standing') ? ['consolidated',] : [],
-          dropped: [],
-          assessment: (gateChoice === 'standing') ? objection : 'faithful',
-        }
-        : (schema === 'refine_report')
-        ? { rewrites: [], }
-        : (schema === 'absolute_naturalness_review')
-        ? {
-          isAcceptable: true,
-          findings: [],
-          assessment: 'publication-ready',
-        }
-        : {};
+          ? {
+            verdict: gateChoice,
+            unsupported: (gateChoice === 'standing') ? ['consolidated',] : [],
+            dropped: [],
+            assessment: (gateChoice === 'standing') ? objection : 'faithful',
+          }
+          : (schema === 'refine_report')
+            ? { rewrites: [], }
+            : (schema === 'absolute_naturalness_review')
+              ? {
+                isAcceptable: true,
+                findings: [],
+                assessment: 'publication-ready',
+              }
+              : {};
       if (!request.validate(value,))
         throw new Error(`synthetic ${schema} reply failed validation`,);
       return {

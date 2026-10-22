@@ -81,29 +81,29 @@ export type ContainerReading =
      */
     readonly container: CarriedContainer;
   }
-  | {
-    readonly kind: 'unread';
+    | {
+      readonly kind: 'unread';
 
     /**
      Halves in their slices.
      */
-    readonly pair: ContainerHalfPair;
+      readonly pair: ContainerHalfPair;
 
     /**
      Side whose slice the parse refused.
      */
-    readonly side: Side;
+      readonly side: Side;
 
     /**
      Slice the parse refused.
      */
-    readonly sliceIndex: number;
+      readonly sliceIndex: number;
 
     /**
      The parser's own account.
      */
-    readonly detail: string;
-  };
+      readonly detail: string;
+    };
 
 /**
  One side's blocks inside a container, slice by slice, or the first slice
@@ -118,19 +118,19 @@ type SideCount =
      */
     readonly byPosition: ReadonlyMap<number, number>;
   }
-  | {
-    readonly kind: 'unread';
+    | {
+      readonly kind: 'unread';
 
     /**
      Slice the parse refused.
      */
-    readonly sliceIndex: number;
+      readonly sliceIndex: number;
 
     /**
      The parser's own account.
      */
-    readonly detail: string;
-  };
+      readonly detail: string;
+    };
 
 /**
  Text of one side of one slice with comments and lone container tags

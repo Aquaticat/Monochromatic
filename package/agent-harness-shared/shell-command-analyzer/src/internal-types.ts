@@ -148,11 +148,11 @@ type RedirectsWorkItem = {
  */
 type WorkItem =
   | NodeWorkItem
-  | WordWorkItem
-  | PartsWorkItem
-  | ArithmeticWorkItem
-  | TestWorkItem
-  | RedirectsWorkItem;
+    | WordWorkItem
+    | PartsWorkItem
+    | ArithmeticWorkItem
+    | TestWorkItem
+    | RedirectsWorkItem;
 
 /**
  Boolean feature flags gathered while walking AST.

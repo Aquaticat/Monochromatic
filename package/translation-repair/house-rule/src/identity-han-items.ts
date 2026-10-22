@@ -37,15 +37,15 @@ function declaredItems({ value, }: { readonly value: string; },): readonly strin
   // ONE PASS PER SEPARATOR, each splitting what the previous one left.
   return Array.from(ITEM_SEPARATORS,)
     .reduce<readonly string[]>(
-      function splitOn(
-        items,
-        separator,
-      ): readonly string[] {
-        return items.flatMap(function pieces(item,): readonly string[] {
-          return item.split(separator,);
-        },);
-      },
-      [value,],
+    function splitOn(
+      items,
+      separator,
+    ): readonly string[] {
+      return items.flatMap(function pieces(item,): readonly string[] {
+        return item.split(separator,);
+      },);
+    },
+    [value,],
     )
     .map(function trimmed(item,): string {
       return item.trim();

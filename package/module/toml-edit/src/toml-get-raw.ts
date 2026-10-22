@@ -77,7 +77,7 @@ export function tomlGetRaw(
       located.value
         .origin
         .range[1],
-    );
+      );
   }
   if (located.kind
     === 'table') {
@@ -94,7 +94,7 @@ export function tomlGetRaw(
       located.table
         .headerOrigin
         .range[1],
-    );
+      );
   }
   /**
    First AoT instance header so the slice starts at the collection's top.
@@ -117,7 +117,7 @@ export function tomlGetRaw(
       .range[0],
     last.headerOrigin
       .range[1],
-  );
+    );
 }
 
 /**

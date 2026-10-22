@@ -227,8 +227,8 @@ export async function readIndexedDbRecords(): Promise<readonly LogRecord[]> {
   const batches = await settle({
     request: database
       .transaction(
-        BATCH_STORE,
-        'readonly',
+      BATCH_STORE,
+      'readonly',
       )
       .objectStore(BATCH_STORE,)
       .getAll(),

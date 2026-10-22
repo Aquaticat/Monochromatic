@@ -183,13 +183,13 @@ function bindScrollIgnore(element: HTMLElement,): void {
            Request body shape varies by whether the href is a valid URL.
            */
           const body: Record<string, string> = v
-              .safeParse(
-                v.pipe(
-                  v.string(),
-                  v.url(),
-                ),
-                anchor.href,
-              )
+            .safeParse(
+            v.pipe(
+              v.string(),
+              v.url(),
+            ),
+            anchor.href,
+            )
             .success
             ? { link: anchor.href, }
             : { metadataOuterHtml: metadata.outerHTML, };

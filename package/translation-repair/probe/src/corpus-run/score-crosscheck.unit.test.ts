@@ -50,11 +50,11 @@ const POOL_STAMP = await builtPipelineDigest({ packageEntry: PROBE_ENTRY, },);
 const CLOSING_NOTES = [
   '',
   'NOTE the floor column reads against MIN_JUDGED_CLAIMS=30, which is a provisional guard rather than a '
-  + 'calibrated threshold. An author clearing neither arm is not excluded from the run; it simply cannot carry '
-  + 'a per-author rate yet.',
+    + 'calibrated threshold. An author clearing neither arm is not excluded from the run; it simply cannot carry '
+    + 'a per-author rate yet.',
   'NOTE this crosscheck can bar a claim\'s AUTHORS and cannot bar its adjudicators: the whole roster sits as '
-  + 'critics, panel and judges, so no seat outside the panel exists to bar one with. It measures whether a '
-  + 'verdict survives being re-asked without its author, never precision.',
+    + 'critics, panel and judges, so no seat outside the panel exists to bar one with. It measures whether a '
+    + 'verdict survives being re-asked without its author, never precision.',
 ];
 
 /**

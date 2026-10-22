@@ -68,7 +68,7 @@ export function parseOgg(buf) {
   while (offset + 27 <= buf.length) {
     if (
       buf[offset] !== 0x4f || buf[offset + 1] !== 0x67
-      || buf[offset + 2] !== 0x67 || buf[offset + 3] !== 0x53
+        || buf[offset + 2] !== 0x67 || buf[offset + 3] !== 0x53
     ) {
       // Lost sync: scan forward to the next "OggS" capture pattern.
       const next = buf.indexOf('OggS', offset + 1, 'latin1');
@@ -295,7 +295,7 @@ export function parseMp3(buf) {
     // Only Layer III with a defined bitrate/rate is a real frame; else keep scanning.
     if (
       versionBits === 1 || layerBits !== 1 || bitrateIndex === 0
-      || bitrateIndex === 15 || rateIndex === 3
+        || bitrateIndex === 15 || rateIndex === 3
     ) {
       offset += 1;
       continue;

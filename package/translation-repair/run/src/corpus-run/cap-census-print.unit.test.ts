@@ -165,7 +165,7 @@ await describe({
           fn: async () => {
             expect(capCensusProviderLine({ reading: readingOf({ calls: 12, sinceCaps: 3, atCap: 1, },), },),).toBe(
               '  hyper: 12 calls, p99 321; since the caps 3 calls, 1 at the cap (33.33%): '
-              + '1 with content, 0 with none, 0 unpaired',
+                + '1 with content, 0 with none, 0 unpaired',
             );
           },
         },),
@@ -174,7 +174,7 @@ await describe({
           fn: async () => {
             expect(capCensusProviderLine({ reading: readingOf({ calls: 1, sinceCaps: 1, atCap: 0, },), },),).toBe(
               '  hyper: 1 call, p99 321; since the caps 1 call, 0 at the cap (0.00%): '
-              + '0 with content, 0 with none, 0 unpaired',
+                + '0 with content, 0 with none, 0 unpaired',
             );
           },
         },),
@@ -183,7 +183,7 @@ await describe({
           fn: async () => {
             expect(capCensusProviderLine({ reading: readingOf({ calls: 2, sinceCaps: 0, atCap: 0, },), },),).toBe(
               '  hyper: 2 calls, p99 321; since the caps 0 calls, 0 at the cap (n/a): '
-              + '0 with content, 0 with none, 0 unpaired',
+                + '0 with content, 0 with none, 0 unpaired',
             );
           },
         },),
@@ -208,7 +208,7 @@ await describe({
               printed,
             },),).toEqual([
               'cap-census: 3 logs, 2 pass-run logs, 40 completed calls, 6 on ids no card names, 4 paths unreadable; '
-              + 'lines left out for a stamp the logger did not write: 5',
+                + 'lines left out for a stamp the logger did not write: 5',
               CAP_CENSUS_CLOSING_NOTE,
             ],);
           },
@@ -233,7 +233,7 @@ await describe({
               printed,
             },),).toEqual([
               'cap-census: 1 log, 1 pass-run log, 1 completed call, 1 on ids no card names, 1 path unreadable; '
-              + 'lines left out for a stamp the logger did not write: 1',
+                + 'lines left out for a stamp the logger did not write: 1',
               CAP_CENSUS_CLOSING_NOTE,
             ],);
           },
@@ -257,7 +257,7 @@ await describe({
             },).slice(1,),).toEqual([
               `${SEAT}: card cap ${String(COMPLETION_CAP[SEAT],)}, rule reads ${String(COMPLETION_CAP[SEAT],)}`,
               '  hyper: 4 calls, p99 321; since the caps 4 calls, 0 at the cap (0.00%): '
-              + '0 with content, 0 with none, 0 unpaired',
+                + '0 with content, 0 with none, 0 unpaired',
               CAP_CENSUS_CLOSING_NOTE,
             ],);
           },
@@ -281,7 +281,7 @@ await describe({
             },).slice(1,),).toEqual([
               `${SEAT}: card cap ${String(COMPLETION_CAP[SEAT],)} (pooled placeholder), rule reads nothing (too few calls)`,
               '  hyper: 1 call, p99 321; since the caps 1 call, 0 at the cap (0.00%): '
-              + '0 with content, 0 with none, 0 unpaired',
+                + '0 with content, 0 with none, 0 unpaired',
               CAP_CENSUS_CLOSING_NOTE,
             ],);
           },
@@ -343,12 +343,12 @@ await describe({
             },).slice(1,),).toEqual([
               `${SEAT}: card cap ${String(COMPLETION_CAP[SEAT],)}, rule reads ${String(COMPLETION_CAP[SEAT],)}`,
               '  hyper: 2 calls, p99 321; since the caps 2 calls, 0 at the cap (0.00%): '
-              + '0 with content, 0 with none, 0 unpaired',
+                + '0 with content, 0 with none, 0 unpaired',
               '  hyper: 3 calls, p99 321; since the caps 3 calls, 0 at the cap (0.00%): '
-              + '0 with content, 0 with none, 0 unpaired',
+                + '0 with content, 0 with none, 0 unpaired',
               `${SEAT}: card cap ${String(COMPLETION_CAP[SEAT],)}, rule reads nothing (too few calls)`,
               '  hyper: 1 call, p99 321; since the caps 1 call, 0 at the cap (0.00%): '
-              + '0 with content, 0 with none, 0 unpaired',
+                + '0 with content, 0 with none, 0 unpaired',
               CAP_CENSUS_CLOSING_NOTE,
             ],);
           },

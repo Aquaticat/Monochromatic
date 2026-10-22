@@ -223,8 +223,8 @@ function bindingsOf({ program, }: { readonly program: TreeNode; },): Bindings {
 function lineOf({ file, node, }: { readonly file: SourceText; readonly node: TreeNode; },): number {
   return file.text
     .slice(
-      0,
-      node.start,
+    0,
+    node.start,
     )
     .split('\n',)
     .length;
@@ -389,7 +389,7 @@ function findingsOfFile({ file, }: { readonly file: SourceText; },): readonly st
         found.push({ at: node.start, text: `${place}: ${(node.type === 'NewExpression') ? 'new ' : ''}${spawner} ${refusal}`, },);
     }
     if (((node.type === 'ExportAllDeclaration') || (node.type === 'ExportNamedDeclaration')
-        || (node.type === 'ImportExpression'))
+      || (node.type === 'ImportExpression'))
       && SPAWN_MODULES.has(literalText({ node: node.source, },),)) {
       found.push({
         at: node.start,

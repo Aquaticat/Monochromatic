@@ -119,17 +119,17 @@ function thirdSlice(
      */
     const startOffset = texts
       .slice(
-        0,
-        sliceIndex,
+      0,
+      sliceIndex,
       )
       .reduce(
-        function past(
-          offset,
-          earlier,
-        ): number {
-          return offset + earlier.length + 2;
-        },
-        0,
+      function past(
+        offset,
+        earlier,
+      ): number {
+        return offset + earlier.length + 2;
+      },
+      0,
       );
     return pair({
       sliceIndex,

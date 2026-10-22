@@ -38,7 +38,7 @@ export const TRANSLATE_CHALLENGE_TASK: string = `${TRANSLATE_SELECTION_TASK} A p
  */
 export type TranslateJudgeResponsibility =
   | 'initial-selection'
-  | 'decline-challenge';
+    | 'decline-challenge';
 
 /**
  The task one slate judging pass asks: the first round's, or the challenge

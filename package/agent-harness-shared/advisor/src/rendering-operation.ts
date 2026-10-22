@@ -102,16 +102,16 @@ export function renderAdvisorOperationSummary({
     /**
      Icon and text remain distinguishable without color.
      */
-    const icon = attempt.state === 'succeeded' ? '✓' : attempt.state === 'failed' ? '×' : attempt.state === 'cancelled' ? '■' : attempt.state === 'empty' ? '?' : '…';
+      const icon = attempt.state === 'succeeded' ? '✓' : attempt.state === 'failed' ? '×' : attempt.state === 'cancelled' ? '■' : attempt.state === 'empty' ? '?' : '…';
     /**
      Color is a second cue rather than the only indication of state.
      */
-    const color = attempt.state === 'succeeded' ? 'success' : attempt.state === 'failed' ? 'error' : (attempt.state === 'cancelled') || (attempt.state === 'empty') ? 'warning' : attempt.state === 'running' ? 'accent' : 'dim';
-    return theme.fg(
-      color,
-      `${icon} ${attempt.model} #${String(attempt.attempt,)} ${attempt.state}`,
-    );
-  },)
+      const color = attempt.state === 'succeeded' ? 'success' : attempt.state === 'failed' ? 'error' : (attempt.state === 'cancelled') || (attempt.state === 'empty') ? 'warning' : attempt.state === 'running' ? 'accent' : 'dim';
+      return theme.fg(
+        color,
+        `${icon} ${attempt.model} #${String(attempt.attempt,)} ${attempt.state}`,
+      );
+    },)
     .join('; ',);
   /**
    Missing remote settlement is disclosed rather than displayed as complete zero usage.

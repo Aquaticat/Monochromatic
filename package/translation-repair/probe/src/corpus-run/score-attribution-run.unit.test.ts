@@ -108,7 +108,7 @@ await describe({
           'POOL 1 entry across 1 pipeline generation',
           'POPULATION eligible=0 ineligible=1 chunks=0',
           'NOTE no entry carries attribution yet. Entries settled before it existed record none, and they '
-          + 'are excluded rather than counted as critics that raised nothing.',
+            + 'are excluded rather than counted as critics that raised nothing.',
         ],);
       },
     },),
@@ -135,8 +135,8 @@ await describe({
           'POOL 2 entries across 1 pipeline generation',
           'POOL   1 artifact unreadable, passed through to be reported as malformed: Biscuit',
           'WARNING 1 artifact could not be read and is in NEITHER population this report counts, so every '
-          + 'count is over the rest. Named rather than summarized, because a truncated artifact is a '
-          + 'different problem from a malformed one:',
+            + 'count is over the rest. Named rather than summarized, because a truncated artifact is a '
+            + 'different problem from a malformed one:',
           '  Biscuit.json: could not read Biscuit.json as JSON (SyntaxError at byte 12)',
           'POPULATION eligible=1 ineligible=1 chunks=1',
         ],);
@@ -198,11 +198,11 @@ await describe({
           '\nSUPPORT sole=0 multi=0 selfRepeated=0 unattributed=1 partialJoin=1',
           SUPPORT_NOTE,
           'WARNING 1 accepted issue joined only SOME of its claims to attribution. It is held out of every '
-          + 'other count in this report rather than counted as support, because the unattributed member may '
-          + 'have come from a critic that got no credit. A nonzero number here is a defect in the join, not a '
-          + 'fact about critics.',
+            + 'other count in this report rather than counted as support, because the unattributed member may '
+            + 'have come from a critic that got no credit. A nonzero number here is a defect in the join, not a '
+            + 'fact about critics.',
           'WARNING 1 accepted issue on ELIGIBLE entries carries no attribution, meaning a claim id the index '
-          + 'does not hold. That is a defect in the join, not a quiet critic.',
+            + 'does not hold. That is a defect in the join, not a quiet critic.',
         ],);
       },
     },),

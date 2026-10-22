@@ -102,8 +102,8 @@ export function getSortedItems(feeds: readonly FeedWOutline[],): ItemWDate[] {
     return itemB.pubDateDate
       .getTime()
       - itemA
-      .pubDateDate
-      .getTime();
+        .pubDateDate
+        .getTime();
   },);
   innerL.debug(`${String(result.length,)} sorted items`,);
   return result;
@@ -246,7 +246,7 @@ function getNormalizedItem(item: Item,): NormalizedItem {
   const newItem: Record<
     string,
     string | AtomFeed.Link<string> | AtomFeed.Category[]
-  > = {};
+    > = {};
   if (atomEntry.title
     !== undefined)
     newItem.title = atomEntry.title;
@@ -263,7 +263,7 @@ function getNormalizedItem(item: Item,): NormalizedItem {
    */
   const pubDate = atomEntry.updated
     ?? atomEntry
-    .published;
+      .published;
   if (pubDate !== undefined)
     newItem.pubDate = pubDate;
   if (atomEntry.id

@@ -119,11 +119,11 @@ export async function failedCasesOf(
     exitCode: run.code,
   },)
     .map(function named(name,): FailedCase {
-    return {
-      file: familyPath,
-      name,
-    };
-  },);
+      return {
+        file: familyPath,
+        name,
+      };
+    },);
 }
 
 /**

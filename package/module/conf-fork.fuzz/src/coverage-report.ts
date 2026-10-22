@@ -142,10 +142,10 @@ function packageRelative(url: string,): string {
 function coveredFunctions(script: V8Script,): number {
   return script.functions
     .filter(function executed(fn,): boolean {
-    return (fn.ranges[0]
-      ?.count
-      ?? 0) > 0;
-  },)
+      return (fn.ranges[0]
+        ?.count
+        ?? 0) > 0;
+    },)
     .length;
 }
 
@@ -273,11 +273,11 @@ function checkBaseline({
     /**
      Covered functions for this file in the current run.
      */
-    const got = current.get(file,) ?? 0;
-    return (got < expected)
-      ? [`${file}: ${String(got,)} < baseline ${String(expected,)}`,]
-      : [];
-  },);
+      const got = current.get(file,) ?? 0;
+      return (got < expected)
+        ? [`${file}: ${String(got,)} < baseline ${String(expected,)}`,]
+        : [];
+    },);
   if (regressions.length > 0)
     throw new Error(`coverage regressed:\n  ${regressions.join('\n  ',)}`,);
   console.log(`coverage gate passed: ${String(baseline.size,)} files at or above baseline`,);

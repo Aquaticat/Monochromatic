@@ -63,7 +63,7 @@ await describe({
         },),).toEqual({ kind: 'missing', },);
         expect(lines,).toEqual([
           `Mittens: skipped, CorpusReadError: corpus read failed for ${corpus.commitSha}:people/Mittens/page.en.md `
-          + '(missing-object); the commit has no such path: check the path, or pin a commit that has it.',
+            + '(missing-object); the commit has no such path: check the path, or pin a commit that has it.',
         ],);
       },
     },),
@@ -80,7 +80,7 @@ await describe({
         },),).toEqual({ kind: 'missing', },);
         expect(lines,).toEqual([
           `Mittens: skipped, CorpusReadError: corpus read failed for ${corpus.commitSha}:people/Mittens/page.md `
-          + '(missing-object); the commit has no such path: check the path, or pin a commit that has it.',
+            + '(missing-object); the commit has no such path: check the path, or pin a commit that has it.',
         ],);
       },
     },),

@@ -31,25 +31,25 @@ export type VmsyncArgs =
     imagePath: string;
     name?: string;
   }
-  | {
-    cmd: 'boot';
-    name: string;
-  }
-  | {
-    cmd: 'sync';
-    name: string;
-  }
-  | {
-    cmd: 'status';
-    name: string;
-  }
-  | { cmd: 'list'; }
-  | {
-    cmd: 'config';
-    name: string;
-    memory?: string;
-    cpus?: number;
-  };
+    | {
+      cmd: 'boot';
+      name: string;
+    }
+    | {
+      cmd: 'sync';
+      name: string;
+    }
+    | {
+      cmd: 'status';
+      name: string;
+    }
+    | { cmd: 'list'; }
+    | {
+      cmd: 'config';
+      name: string;
+      memory?: string;
+      cpus?: number;
+    };
 
 //endregion Result types
 

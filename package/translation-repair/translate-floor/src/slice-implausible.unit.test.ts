@@ -346,8 +346,8 @@ await describe({
             expect(refusal,).toBeInstanceOf(SliceBlockCountRefusalError,);
             expect((refusal as Error).message,).toBe(
               'slice block count could not be read off the parse: MdxParseError: MDX body refused to parse at '
-              + '3:13 (micromark-extension-mdx-jsx/unexpected-character); corpus documents compile as MDX '
-              + 'upstream, so failure signals corruption or an unsupported construct.',
+                + '3:13 (micromark-extension-mdx-jsx/unexpected-character); corpus documents compile as MDX '
+                + 'upstream, so failure signals corruption or an unsupported construct.',
             );
           },
         },),

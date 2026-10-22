@@ -82,19 +82,19 @@ function underscoreGroups({ digits, }: { readonly digits: string; },): string {
   return Array.from(
     digits,
     function each(
-    digit,
-    index,
-  ) {
+      digit,
+      index,
+    ) {
     /**
      Position from the right so groups of three align to the low digits.
      */
-    const fromRight = digits.length - index;
+      const fromRight = digits.length - index;
     /**
      Whether a grouping underscore precedes this digit.
      */
-    const needsUnderscore = (index > 0) && ((fromRight % UNDERSCORE_GROUP_SIZE) === 0);
-    return needsUnderscore ? `_${digit}` : digit;
-  },
+      const needsUnderscore = (index > 0) && ((fromRight % UNDERSCORE_GROUP_SIZE) === 0);
+      return needsUnderscore ? `_${digit}` : digit;
+    },
   )
     .join('',);
 }
@@ -116,21 +116,21 @@ const decimalIntegerArbitrary: Arbitrary<ValueSample> = tuple(
   /**
    Sign prefix kept separate so underscores only land between magnitude digits.
    */
-  const sign = value < 0 ? '-' : '';
+    const sign = value < 0 ? '-' : '';
   /**
    Unsigned magnitude digits before optional grouping.
    */
-  const magnitude = Math.abs(value,)
-    .toString(DECIMAL_RADIX,);
+    const magnitude = Math.abs(value,)
+      .toString(DECIMAL_RADIX,);
   /**
    Magnitude with grouping underscores applied when selected.
    */
-  const body = grouped ? underscoreGroups({ digits: magnitude, },) : magnitude;
-  return {
-    text: `${sign}${body}`,
-    value,
-  };
-},);
+    const body = grouped ? underscoreGroups({ digits: magnitude, },) : magnitude;
+    return {
+      text: `${sign}${body}`,
+      value,
+    };
+  },);
 
 /**
  Non-negative integers rendered in hex, octal, or binary (no sign, per spec).
@@ -143,11 +143,11 @@ const radixIntegerArbitrary: Arbitrary<ValueSample> = tuple(
     radix,
     prefix,
   },],) {
-  return {
-    text: `${prefix}${value.toString(radix,)}`,
-    value,
-  };
-},);
+    return {
+      text: `${prefix}${value.toString(radix,)}`,
+      value,
+    };
+  },);
 
 /**
  Deterministic integer examples spanning every spelling family.
@@ -208,21 +208,21 @@ const finiteFloatArbitrary: Arbitrary<ValueSample> = tuple(
   /**
    Sign and magnitude split so the fractional dot always sits after a digit.
    */
-  const sign = intPart < 0 ? '-' : '';
+    const sign = intPart < 0 ? '-' : '';
   /**
    Unsigned integer-part digits with no leading zeros.
    */
-  const magnitude = Math.abs(intPart,)
-    .toString(DECIMAL_RADIX,);
+    const magnitude = Math.abs(intPart,)
+      .toString(DECIMAL_RADIX,);
   /**
    Assembled float spelling, sign through optional exponent.
    */
-  const text = `${sign}${magnitude}.${frac.toString(DECIMAL_RADIX,)}${exponent}`;
-  return {
-    text,
-    value: Number(text,),
-  };
-},);
+    const text = `${sign}${magnitude}.${frac.toString(DECIMAL_RADIX,)}${exponent}`;
+    return {
+      text,
+      value: Number(text,),
+    };
+  },);
 
 /**
  Special float spellings: signed infinities and the three `nan` forms.

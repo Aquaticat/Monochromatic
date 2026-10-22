@@ -193,7 +193,7 @@ function removeInValue(
     === 'array') && ((typeof head) === 'number')) {
     if ((head < 0) || (head
       >= value.elements
-      .length))
+        .length))
       return NOT_REMOVED;
     if (tail.length
       === 0) {
@@ -201,11 +201,11 @@ function removeInValue(
         kind: 'array',
         elements: value.elements
           .filter(function notDropped(
-          _el,
-          i,
-        ) {
-          return i !== head;
-        },),
+            _el,
+            i,
+          ) {
+            return i !== head;
+          },),
         origin: { kind: 'synthetic', },
       };
     }
@@ -225,7 +225,7 @@ function removeInValue(
         .with(
         head,
         newEl,
-      ),
+        ),
       origin: { kind: 'synthetic', },
     };
   }
@@ -266,11 +266,11 @@ function removeFromInlineTable(
         kind: 'inline-table',
         entries: value.entries
           .filter(function notDropped(
-          _e,
-          i,
-        ) {
-          return i !== j;
-        },),
+            _e,
+            i,
+          ) {
+            return i !== j;
+          },),
         origin: { kind: 'synthetic', },
       };
     }
@@ -293,7 +293,7 @@ function removeFromInlineTable(
           ...entry,
           value: nested,
         },
-      ),
+        ),
       origin: { kind: 'synthetic', },
     };
   }

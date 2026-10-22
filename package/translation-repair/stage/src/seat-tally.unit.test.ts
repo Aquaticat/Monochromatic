@@ -781,7 +781,7 @@ await describe({
 
             expect(String(fromText,),).toBe(
               'NoProviderForModelError: no provider can take gemma-4-26b-a4b-it: the run withheld it after it '
-              + 'threw on all 4 asks and does not ask it again',
+                + 'threw on all 4 asks and does not ask it again',
             );
             expect(String(fromJson,),).toBe(String(fromText,),);
             expect(tally.counts(),).toStrictEqual([{
@@ -937,7 +937,7 @@ await describe({
 
             expect(String(third,),).toBe(
               'NoProviderForModelError: no provider can take gemma-4-26b-a4b-it: the run withheld it after it '
-              + 'threw on all 2 asks and does not ask it again',
+                + 'threw on all 2 asks and does not ask it again',
             );
             expect(tally.counts(),).toStrictEqual([{
               modelId: SEAT_HYPER_TEXT_BEDROCK,
@@ -1046,7 +1046,7 @@ await describe({
 
             expect(String(withheldCall,),).toBe(
               'NoProviderForModelError: no provider can take glm-5.3: the run withheld it after it threw on all '
-              + '4 asks and does not ask it again',
+                + '4 asks and does not ask it again',
             );
             expect(tally.counts(),).toStrictEqual([{
               modelId: SEAT_HYPER_ONLY,
@@ -1256,7 +1256,7 @@ await describe({
             expect(lines.length,).toBe(4,);
             expect(lines[3],).toContain(
               'SEATS DARK: 1 of 2 seats asked produced nothing usable this run: gemma-4-26b-a4b-it (asked 1, '
-              + 'unusable 0, threw 1). ',
+                + 'unusable 0, threw 1). ',
             );
           },
         },),

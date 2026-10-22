@@ -170,8 +170,8 @@ export async function checkEmptyFolder(
        */
       const headline = state.first_run_title
         .replace(
-          '\n',
-          ' | ',
+        '\n',
+        ' | ',
         );
       return `pane "${headline}", shot ${await session.shot('states-no-audio',)}`;
     },

@@ -66,8 +66,8 @@ function summarize({ changes, }: { readonly changes: Changes; },): string {
         .length,)}):`,
       ...changes.toExempt
         .map(function plusLine(name,): string {
-        return `  + ${name}`;
-      },),
+          return `  + ${name}`;
+        },),
     ]
     : [];
   /**
@@ -81,8 +81,8 @@ function summarize({ changes, }: { readonly changes: Changes; },): string {
         .length,)}):`,
       ...changes.toRevert
         .map(function minusLine(name,): string {
-        return `  - ${name}`;
-      },),
+          return `  - ${name}`;
+        },),
     ]
     : [];
   return [
@@ -204,7 +204,7 @@ async function runCli(): Promise<void> {
   const total = changes.toExempt
     .length
     + changes.toRevert
-    .length;
+      .length;
   /**
    Spinner shown while writing changes.
    */

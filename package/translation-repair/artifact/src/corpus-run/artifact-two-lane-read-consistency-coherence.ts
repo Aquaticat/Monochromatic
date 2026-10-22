@@ -184,91 +184,91 @@ function assertOutcomesFollow(
   const chosen = group.occurrences[winningPositionOf({ group, },)];
   group.occurrences
     .forEach(function checkOne(
-    occurrence,
-    at,
-  ): void {
+      occurrence,
+      at,
+    ): void {
     /**
      Where the place sits, for the parse error.
      */
-    const here = `${path}.occurrences[${String(at,)}]`;
-    if (chosen === undefined) {
-      if (occurrence.outcome !== 'untouched')
-        throw new ArtifactParseError({
-          path: `${here}.outcome`,
-          reason: 'untouched, since no place won',
-        },);
-      return;
-    }
-    if (occurrence === chosen) {
-      if (occurrence.outcome !== 'chosen')
-        throw new ArtifactParseError({
-          path: `${here}.outcome`,
-          reason: 'chosen, for the winning place',
-        },);
-      return;
-    }
-    if (occurrence.rendering
-      .kind
-      === 'unlocated') {
-      if (occurrence.outcome !== 'unlocated')
-        throw new ArtifactParseError({
-          path: `${here}.outcome`,
-          reason: 'unlocated, for a place whose rendering is not located',
-        },);
-      return;
-    }
-    if (isKeptByMajority({
-      voices,
-      label: occurrence.label,
-    },)) {
-      if (occurrence.outcome !== 'kept-context')
-        throw new ArtifactParseError({
-          path: `${here}.outcome`,
-          reason: 'kept-context, for a place a strict majority keeps',
-        },);
-      return;
-    }
-    if (chosen.rendering
-      .kind
-      !== 'located') {
-      throw new ConsistencyInvariantError({ invariant: 'a winner is named only where its own rendering is located, and the winner was recounted before the outcomes', },);
-    }
+      const here = `${path}.occurrences[${String(at,)}]`;
+      if (chosen === undefined) {
+        if (occurrence.outcome !== 'untouched')
+          throw new ArtifactParseError({
+            path: `${here}.outcome`,
+            reason: 'untouched, since no place won',
+          },);
+        return;
+      }
+      if (occurrence === chosen) {
+        if (occurrence.outcome !== 'chosen')
+          throw new ArtifactParseError({
+            path: `${here}.outcome`,
+            reason: 'chosen, for the winning place',
+          },);
+        return;
+      }
+      if (occurrence.rendering
+        .kind
+        === 'unlocated') {
+        if (occurrence.outcome !== 'unlocated')
+          throw new ArtifactParseError({
+            path: `${here}.outcome`,
+            reason: 'unlocated, for a place whose rendering is not located',
+          },);
+        return;
+      }
+      if (isKeptByMajority({
+        voices,
+        label: occurrence.label,
+      },)) {
+        if (occurrence.outcome !== 'kept-context')
+          throw new ArtifactParseError({
+            path: `${here}.outcome`,
+            reason: 'kept-context, for a place a strict majority keeps',
+          },);
+        return;
+      }
+      if (chosen.rendering
+        .kind
+        !== 'located') {
+        throw new ConsistencyInvariantError({ invariant: 'a winner is named only where its own rendering is located, and the winner was recounted before the outcomes', },);
+      }
     /**
      What moving the chosen words over this place amounts to.
      */
-    const plan = planConsistencyEdit({
-      chosen: asLocated({
-        rendering: chosen.rendering,
-        path: `${path}.occurrences`,
-      },),
-      target: asLocated({
-        rendering: occurrence.rendering,
-        path: `${here}.rendering`,
-      },),
-      framed: group.repeat
-        .kind
-        === 'refrain',
+      const plan = planConsistencyEdit({
+        chosen: asLocated({
+          rendering: chosen.rendering,
+          path: `${path}.occurrences`,
+        },),
+        target: asLocated({
+          rendering: occurrence.rendering,
+          path: `${here}.rendering`,
+        },),
+        framed: group.repeat
+          .kind
+          === 'refrain',
       // A generation fifteen section kept no mark beside a span, so its splice is recounted by the words alone.
-      marks: 'unrecorded',
-    },);
+        marks: 'unrecorded',
+      },);
     /**
      Whether the outcome is one a replacement can end in.
      */
-    const replacing = (occurrence.outcome === 'replaced') || (occurrence.outcome === 'kept-floor')
-      || (occurrence.outcome === 'overlapped');
-    if ((plan.kind === 'same') !== (occurrence.outcome === 'consistent')) {
-      throw new ArtifactParseError({
-        path: `${here}.outcome`,
-        reason: 'consistent for a place that already carries the chosen words, and for no other',
-      },);
-    }
-    if ((plan.kind === 'replace') && (!replacing)) {
-      throw new ArtifactParseError({
-        path: `${here}.outcome`,
-        reason: 'replaced, kept-floor or overlapped, for a place the chosen words would replace',
-      },);
-    }
-  },);
+      const replacing = (occurrence.outcome === 'replaced') || (occurrence.outcome === 'kept-floor')
+        || (occurrence.outcome === 'overlapped');
+      if ((plan.kind === 'same') !== (occurrence.outcome === 'consistent')) {
+        throw new ArtifactParseError({
+          path: `${here}.outcome`,
+          reason: 'consistent for a place that already carries the chosen words, and for no other',
+        },);
+      }
+      if ((plan.kind === 'replace') && (!replacing)) {
+        throw new ArtifactParseError({
+          path: `${here}.outcome`,
+          reason: 'replaced, kept-floor or overlapped, for a place the chosen words would replace',
+        },);
+      }
+    },);
 }
 
 /**
@@ -332,7 +332,7 @@ export function assertAskedGroupCoherent(
   },);
   if (voices.length
     !== group.verdict
-    .usable) {
+      .usable) {
     throw new ArtifactParseError({
       path: `${path}.verdict.usable`,
       reason: 'the number of ballots that can be counted against the places',
@@ -340,15 +340,15 @@ export function assertAskedGroupCoherent(
   }
   group.occurrences
     .forEach(function agrees(
-    occurrence,
-    at,
-  ): void {
-    assertRenderingAgrees({
-      group,
       occurrence,
-      path: `${path}.occurrences[${String(at,)}]`,
+      at,
+    ): void {
+      assertRenderingAgrees({
+        group,
+        occurrence,
+        path: `${path}.occurrences[${String(at,)}]`,
+      },);
     },);
-  },);
   /**
    The winner the ballots give.
    */
@@ -360,18 +360,18 @@ export function assertAskedGroupCoherent(
     labels,
     renderings: group.occurrences
       .map(function asCounted(
-      occurrence,
-      at,
-    ): ConsistencyRendering {
-      return (occurrence.rendering
-        .kind
-        === 'located')
-        ? asLocated({
-          rendering: occurrence.rendering,
-          path: `${path}.occurrences[${String(at,)}].rendering`,
-        },)
-        : occurrence.rendering;
-    },),
+        occurrence,
+        at,
+      ): ConsistencyRendering {
+        return (occurrence.rendering
+          .kind
+          === 'located')
+          ? asLocated({
+            rendering: occurrence.rendering,
+            path: `${path}.occurrences[${String(at,)}].rendering`,
+          },)
+          : occurrence.rendering;
+      },),
   },);
   if (!sameWinner({
     left: expected,

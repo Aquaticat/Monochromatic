@@ -246,7 +246,7 @@ await describe({
               edits: [],
               findings: [
                 'consistency-writers-not-asked (OCCURRENCE 2): the translators bench was not asked: '
-                + 'translators 0 of 8 reachable, floor 2; no provider has named its return',
+                  + 'translators 0 of 8 reachable, floor 2; no provider has named its return',
               ],
               asked: [],
             },);
@@ -274,7 +274,7 @@ await describe({
               edits: [{ kind: 'splice', placePositions: [1,], sliceIndex: 1, start: 6, end: 21, text: 'the cat naps', },],
               findings: [
                 'consistency-writers-not-asked (OCCURRENCE 2): the translators bench was not asked: '
-                + 'translators 0 of 8 reachable, floor 2; no provider has named its return',
+                  + 'translators 0 of 8 reachable, floor 2; no provider has named its return',
               ],
               kindsAsked: ['choice',],
             },);
@@ -419,10 +419,10 @@ await describe({
               writersAsked: false,
               findings: [
                 'consistency-writers-not-asked (OCCURRENCE 2): the words that render the repeated wording lie in no single '
-                + 'block of the English, so no paragraph can be rewritten',
+                  + 'block of the English, so no paragraph can be rewritten',
                 'consistency-writers-not-asked (OCCURRENCE 3): the paragraph that holds the words that render the repeated '
-                + 'wording overlaps the words of another receiving place of the group that lie outside it, so no paragraph '
-                + 'can be rewritten',
+                  + 'wording overlaps the words of another receiving place of the group that lie outside it, so no paragraph '
+                  + 'can be rewritten',
               ],
             },);
             const applied = applyConsistency({
@@ -483,7 +483,7 @@ await describe({
               edits: [{ kind: 'splice', placePositions: [1,], sliceIndex: 1, start: 6, end: 22, text: 'the cat naps', },],
               findings: [
                 'consistency-writers-not-asked (OCCURRENCE 2): the words that render the repeated wording lie in no single '
-                + 'block of the English, so no paragraph can be rewritten',
+                  + 'block of the English, so no paragraph can be rewritten',
               ],
               kindsAsked: ['choice',],
             },);

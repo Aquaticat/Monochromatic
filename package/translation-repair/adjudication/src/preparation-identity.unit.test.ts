@@ -58,7 +58,7 @@ await describe({
         it({
           name:
             'NAMES THE SAME PREPARATION THE SAME WAY, and one whose slices are governed line by line apart from '
-            + 'the same slices governed freely, since the flag changes what every stage may do to a slice',
+              + 'the same slices governed freely, since the flag changes what every stage may do to a slice',
           fn: async () => {
             /**
              Every slice of the pair, marked as governed line by line.
@@ -88,7 +88,7 @@ await describe({
         it({
           name:
             'ACCEPTS what a preparation produces and either scheme this reader understands, which is the '
-            + 'control the refusals are read against: a predicate refusing everything would pass them all',
+              + 'control the refusals are read against: a predicate refusing everything would pass them all',
           fn: async () => {
             expect(isPreparationIdentityShaped({ value: FRESH_IDENTITY, },),).toBe(true,);
             expect(isPreparationIdentityShaped({ value: `sha256-preparation-v1:${HEX_HALF}`, },),).toBe(true,);
@@ -98,7 +98,7 @@ await describe({
         it({
           name:
             'REFUSES a scheme it does not understand, and a hex half without its scheme name, since a later '
-            + 'scheme is a different string on purpose and a bare hex string names no scheme at all',
+              + 'scheme is a different string on purpose and a bare hex string names no scheme at all',
           fn: async () => {
             expect(isPreparationIdentityShaped({ value: `sha256-preparation-v3:${HEX_HALF}`, },),).toBe(false,);
             expect(isPreparationIdentityShaped({ value: `sha256-tree-v1:${HEX_HALF}`, },),).toBe(false,);
@@ -110,7 +110,7 @@ await describe({
         it({
           name:
             'REFUSES a hex half one character short or one long, which is a truncated or padded value rather '
-            + 'than a digest',
+              + 'than a digest',
           fn: async () => {
             expect(isPreparationIdentityShaped({ value: `sha256-preparation-v2:${HEX_HALF.slice(1,)}`, },),)
               .toBe(false,);
@@ -120,7 +120,7 @@ await describe({
         it({
           name:
             'REFUSES a character no lowercase hex digest carries, upper case included, since this module only '
-            + 'emits lower case and another spelling would name a second slicing',
+              + 'emits lower case and another spelling would name a second slicing',
           fn: async () => {
             expect(isPreparationIdentityShaped({ value: `sha256-preparation-v2:${HEX_HALF.toUpperCase()}`, },),)
               .toBe(false,);
@@ -147,7 +147,7 @@ await describe({
         it({
           name:
             'REFUSES a value no preparation produced, naming the whole shape an identity has and the value it '
-            + 'was handed, so a caller can tell what is missing without reading this module',
+              + 'was handed, so a caller can tell what is missing without reading this module',
           fn: async () => {
             /**
              What brandsWhiskers raised, read for its class as well as its wording.

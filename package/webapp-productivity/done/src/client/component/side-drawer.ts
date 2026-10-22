@@ -100,7 +100,7 @@ class SideDrawer extends HTMLElement {
       function handleClose(): void {
         closeFn();
       },
-    );
+      );
 
     // Light-dismiss: close when clicking the backdrop area (outside the drawer)
     panel.addEventListener(
@@ -188,7 +188,7 @@ class SideDrawer extends HTMLElement {
           //endregion Popover panel
         ],
       },),
-    );
+      );
   }
 }
 

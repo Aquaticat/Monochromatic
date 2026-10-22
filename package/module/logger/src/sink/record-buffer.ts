@@ -211,16 +211,16 @@ export function createRecordBuffer(
   );
   globalThis.document
     ?.addEventListener(
-      'visibilitychange',
-      function flushWhenHidden(): void {
+    'visibilitychange',
+    function flushWhenHidden(): void {
         /**
          Current page visibility; the listener only fires where a document exists.
          */
-        const visibility = globalThis.document
-          ?.visibilityState;
-        if (visibility === 'hidden')
-          drain();
-      },
+      const visibility = globalThis.document
+        ?.visibilityState;
+      if (visibility === 'hidden')
+        drain();
+    },
     );
 
   return {

@@ -132,11 +132,11 @@ const PAGES: ReadonlyMap<string, string> = new Map([
   ],
   ...[...FLAGGED_IDS,
     'Tabby',].map(function infoOf(id,): readonly [string, string] {
-    return [
-      `people/${id}/info.yml`,
-      'info:\n  born: \'2019-05-02\'\n',
-    ];
-  },),
+      return [
+        `people/${id}/info.yml`,
+        'info:\n  born: \'2019-05-02\'\n',
+      ];
+    },),
   [
     'people/Mimi/page.md',
     FLAGGED_SOURCE,
@@ -157,11 +157,11 @@ const PAGES: ReadonlyMap<string, string> = new Map([
  */
 const KEPT_REPORT: readonly string[] = [
   'untranslated: window moved replacement by 0.00 over 1 entry; narrow-a 0/1 narrow-b 0/1 wide 0/1; wide moved 0 down '
-  + 'and 0 up, against a band of 0 down and 0 up; 0 incomplete, 0 dropped for a short panel, 0 slices left out for an '
-  + 'arm the ledger holds twice',
+    + 'and 0 up, against a band of 0 down and 0 up; 0 incomplete, 0 dropped for a short panel, 0 slices left out for an '
+    + 'arm the ledger holds twice',
   'control-unflagged: window moved replacement by 0.00 over 1 entry; narrow-a 0/1 narrow-b 0/1 wide 0/1; wide moved 0 '
-  + 'down and 0 up, against a band of 0 down and 0 up; 0 incomplete, 0 dropped for a short panel, 0 slices left out '
-  + 'for an arm the ledger holds twice',
+    + 'down and 0 up, against a band of 0 down and 0 up; 0 incomplete, 0 dropped for a short panel, 0 slices left out '
+    + 'for an arm the ledger holds twice',
 ];
 
 /**
@@ -343,11 +343,11 @@ await describe({
           `Mittens/1 (untranslated): ${ armsOf({ sliceIndex: 1, },) }`,
           `Mittens/2 (control-unflagged): ${ armsOf({ sliceIndex: 2, },) }`,
           'Whiskers: skipped, CorpusReadError: corpus read failed for people/Whiskers/page.en.md at '
-          + `${CAT_PIN.commitSha} (missing-object); the commit has no such path: check the path, or pin a `
-          + 'commit that has it.',
+            + `${CAT_PIN.commitSha} (missing-object); the commit has no such path: check the path, or pin a `
+            + 'commit that has it.',
           'bought 2 slices this run; 0 refused',
           'ledger read for this report: 6 rows under every protocol; 0 whole lines left out as no trial row of this build; '
-          + 'last line whole',
+            + 'last line whole',
           ...KEPT_REPORT,
         ],);
         expect((await readTrialLedger({
@@ -429,7 +429,7 @@ await describe({
           ) }; 6 arms already bought`,
           'bought 0 slices this run; 0 refused',
           'ledger read for this report: 6 rows under every protocol; 0 whole lines left out as no trial row of this build; '
-          + 'last line whole',
+            + 'last line whole',
           ...KEPT_REPORT,
         ],);
         expect(rig.served
@@ -563,7 +563,7 @@ await describe({
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect(String(refusal,),).toBe(
           'StatedRefusalError: 5 slices refused in a row, which is a fault in the run rather than in the slices; '
-          + 'stopping before the rest of the draw is spent producing slates nobody judges',
+            + 'stopping before the rest of the draw is spent producing slates nobody judges',
         );
         expect(walkLines({ lines, },),).toEqual([OPENING_FRESH,],);
       },
@@ -614,7 +614,7 @@ await describe({
           'Mittens3/1 (untranslated): narrow-a=replaced',
           'bought 1 slice this run; 4 refused',
           'ledger read for this report: 0 rows under every protocol; 0 whole lines left out as no trial row of this build; '
-          + 'last line whole',
+            + 'last line whole',
         ],);
       },
     },),
@@ -705,8 +705,8 @@ await describe({
         expect(refusal,).toBeInstanceOf(WindowEvidenceError,);
         expect(String(refusal,),).toBe(
           'WindowEvidenceError: 0 of the judge sheets carried SURROUNDING ORIGINAL where 4 should have. The wide arm is '
-          + 'the only thing this trial varies, so if it did not carry the window then all three arms saw the same evidence '
-          + 'and every row bought after this point would report a false null. Nothing has been spent beyond the first slice.',
+            + 'the only thing this trial varies, so if it did not carry the window then all three arms saw the same evidence '
+            + 'and every row bought after this point would report a false null. Nothing has been spent beyond the first slice.',
         );
       },
     },),
@@ -763,10 +763,10 @@ await describe({
 
         expect(String(refusal,),).toBe(
           `TrialLedgerLineError: window trial ledger ${path}: line 1 ends in a newline and does not parse as JSON `
-          + '(SyntaxError). A kill mid-append leaves only an unterminated last line, which the next append removes, '
-          + 'so this line was written by something else: a build that appended a row onto such a fragment, or two '
-          + 'runs appending at once. What it bought cannot be read from here. Remove that line by hand to buy its '
-          + 'arms again, or move the ledger aside to start a fresh one.',
+            + '(SyntaxError). A kill mid-append leaves only an unterminated last line, which the next append removes, '
+            + 'so this line was written by something else: a build that appended a row onto such a fragment, or two '
+            + 'runs appending at once. What it bought cannot be read from here. Remove that line by hand to buy its '
+            + 'arms again, or move the ledger aside to start a fresh one.',
         );
         expect(touched,).toEqual([]);
         expect(lines,).toEqual([]);
@@ -840,7 +840,7 @@ await describe({
           OPENING_FRESH,
           'bought 0 slices this run; 0 refused',
           'ledger read for this report: 0 rows under every protocol; 0 whole lines left out as no trial row of this build; '
-          + 'last line whole',
+            + 'last line whole',
         ],);
       },
     },),

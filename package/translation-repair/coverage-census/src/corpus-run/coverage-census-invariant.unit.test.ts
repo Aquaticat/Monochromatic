@@ -135,7 +135,7 @@ await describe({
               [],
             ].map((rows,) => invariantThrowCountLine({ rows, },)),).toEqual([
               'invariant throws, counted apart from the cold stretches: 4 stretches (library source 2, entry file 1, '
-              + 'other package 1)',
+                + 'other package 1)',
               'invariant throws, counted apart from the cold stretches: 1 stretch (other package 1)',
               'invariant throws, counted apart from the cold stretches: 0 stretches',
             ],);

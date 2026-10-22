@@ -564,8 +564,8 @@ await describe({
             },);
             expect(String(refusal,),).toBe(
               'ConsistencyInvariantError: unreachable: the text around the slices of the page holds 1 piece for 1 slice, '
-              + 'and it must hold one more piece than there are slices: the text before the first, between each two and after '
-              + 'the last',
+                + 'and it must hold one more piece than there are slices: the text before the first, between each two and after '
+                + 'the last',
             );
           },
         },),

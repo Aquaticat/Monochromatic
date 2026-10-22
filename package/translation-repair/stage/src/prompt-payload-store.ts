@@ -111,7 +111,7 @@ export type PromptPayloadStore = {
    */
   readonly read: (args: { readonly promptDigest: string; },) => Promise<
     ChatTextReply | typeof PROMPT_PAYLOAD_MISSING
-  >;
+    >;
 
   /**
    Persists first completed payload before exposing it to caller.

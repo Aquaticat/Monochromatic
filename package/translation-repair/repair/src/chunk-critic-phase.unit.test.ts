@@ -387,8 +387,8 @@ await describe({
          */
         const survivingIds = new Set(phase.claims
           .map(function toClaimId(claim,) {
-          return computeIssueClaimId({ claim, },);
-        },),);
+            return computeIssueClaimId({ claim, },);
+          },),);
 
         expect(phase.claimAttributions.length,).toBeGreaterThan(0,);
         for (const attribution of phase.claimAttributions)

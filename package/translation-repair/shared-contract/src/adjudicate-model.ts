@@ -136,9 +136,9 @@ export type PanelBallot = {
  */
 export type AdjudicationStatus =
   | 'accepted'
-  | 'rejected'
-  | 'needs-human'
-  | 'source-defect';
+    | 'rejected'
+    | 'needs-human'
+    | 'source-defect';
 
 /**
  Weighted vote counts over one claim, kept on the issue for calibration

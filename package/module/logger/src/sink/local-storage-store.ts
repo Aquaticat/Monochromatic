@@ -70,12 +70,12 @@ export function createLocalStorageStore(): { readonly persist: (batch: string,) 
     nonce: Math.random()
       .toString(NONCE_RADIX,)
       .slice(
-        2,
-        2 + NONCE_LENGTH,
+      2,
+      2 + NONCE_LENGTH,
       )
       .padEnd(
-        NONCE_LENGTH,
-        '0',
+      NONCE_LENGTH,
+      '0',
       ),
   };
 
@@ -338,7 +338,7 @@ export function createLocalStorageStore(): { readonly persist: (batch: string,) 
           .setItem(
           ownKey(state.lineCounter,),
           batch,
-        );
+          );
         state.lineCounter++;
         state.usedChars += batchChars;
         // A landed write re-arms a single give-up report for the next episode.

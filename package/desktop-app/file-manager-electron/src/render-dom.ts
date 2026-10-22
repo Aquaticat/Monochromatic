@@ -367,7 +367,7 @@ function updateSelectionHighlight(
         .toggle(
         'selected',
         index === selected,
-      );
+        );
     },);
 }
 
@@ -485,29 +485,29 @@ export function renderStrip(
           /**
            New rail wrapper the pane sticks within.
            */
-          const wrapper = document.createElement('div',);
-          wrapper.className = 'rail';
+            const wrapper = document.createElement('div',);
+            wrapper.className = 'rail';
 
           /**
            New sticky pane element.
            */
-          const paneElement = buildPaneElement({
-            handlers,
-            pane,
-          },);
-          wrapper.append(paneElement,);
-          stores.railElements
-            .set(
-            rail.id,
-            wrapper,
-          );
-          stores.paneElements
-            .set(
-            rail.id,
-            paneElement,
-          );
-          return wrapper;
-        })();
+            const paneElement = buildPaneElement({
+              handlers,
+              pane,
+            },);
+            wrapper.append(paneElement,);
+            stores.railElements
+              .set(
+              rail.id,
+              wrapper,
+              );
+            stores.paneElements
+              .set(
+              rail.id,
+              paneElement,
+              );
+            return wrapper;
+          })();
 
         railElement.style
           .marginTop = `${rail.marginTopPx}px`;
@@ -528,7 +528,7 @@ export function renderStrip(
           .toggle(
           'active',
           strip.active === rail.id,
-        );
+          );
         fillPaneListing({
           handlers,
           pane,

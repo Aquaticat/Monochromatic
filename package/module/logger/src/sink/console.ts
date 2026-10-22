@@ -69,11 +69,11 @@ function detectVerbose(): boolean {
   try {
     if (((typeof process) !== 'undefined')
       && Array
-      .isArray(process.argv,)
+        .isArray(process.argv,)
       && process
-      .argv
-      .includes('--verbose',))
-    {
+        .argv
+        .includes('--verbose',))
+      {
       return true;
     }
   }
@@ -341,7 +341,7 @@ function groupRuns(records: readonly LogRecord[],): Run[] {
       const tail = runs.at(-1,);
       if ((tail !== undefined) && (tail.level
         === record
-        .level)) {
+          .level)) {
         tail.records
           .push(record,);
         return runs;

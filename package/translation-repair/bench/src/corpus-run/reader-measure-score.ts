@@ -277,10 +277,10 @@ export function seatedBandOf({ records, }: { readonly records: readonly TrustedR
       tallies.set(
         reading.modelId,
         {
-        total: tally.total + 1,
-        byAll: tally.byAll + (stand.byAll ? 1 : 0),
-        byNone: tally.byNone + (stand.byNone ? 1 : 0),
-      },
+          total: tally.total + 1,
+          byAll: tally.byAll + (stand.byAll ? 1 : 0),
+          byNone: tally.byNone + (stand.byNone ? 1 : 0),
+        },
       );
     }
   }
@@ -314,13 +314,13 @@ export function seatedBandOf({ records, }: { readonly records: readonly TrustedR
         return reader.total;
       },)
       .reduce(
-        function sum(
-          left,
-          right,
-        ): number {
-          return left + right;
-        },
-        0,
+      function sum(
+        left,
+        right,
+      ): number {
+        return left + right;
+      },
+      0,
       ),
   };
 }

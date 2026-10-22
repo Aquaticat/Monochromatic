@@ -99,26 +99,26 @@ export type CandidateProducer =
      */
     readonly modelId: RosterModelId;
   }
-  | {
-    readonly kind: 'composite';
+    | {
+      readonly kind: 'composite';
 
     /**
      Models whose work the composite carries, in assembly order.
      */
-    readonly contributors: readonly RosterModelId[];
-  }
-  | {
-    readonly kind: 'incumbent';
+      readonly contributors: readonly RosterModelId[];
+    }
+    | {
+      readonly kind: 'incumbent';
 
     /**
      Models that independently produced text identical to the incumbent's and
      were collapsed into it, discounted when they judge it although it is not
      their work. Empty in the ordinary case, where the incumbent stands alone.
      */
-    readonly matched: readonly RosterModelId[];
-  }
-  | {
-    readonly kind: 'lane';
+      readonly matched: readonly RosterModelId[];
+    }
+    | {
+      readonly kind: 'lane';
 
     /**
      Which lane's text this is: what the repair lane or the translate lane
@@ -127,14 +127,14 @@ export type CandidateProducer =
      2026-09-17). Nobody on the roster owns it as a whole, exactly as with
      the incumbent.
      */
-    readonly lane: 'repair' | 'translate';
+      readonly lane: 'repair' | 'translate';
 
     /**
      Models whose proposals reproduced this lane's text and were collapsed
      into it, discounted when they judge it. Empty in the ordinary case.
      */
-    readonly matched: readonly RosterModelId[];
-  };
+      readonly matched: readonly RosterModelId[];
+    };
 
 /**
  Every model with a stake in a candidate, so callers can weigh or exclude all
@@ -463,7 +463,7 @@ export type CandidateWeight = {
  */
 export type SelectionDisposition =
   | 'indecision'
-  | 'rejection';
+    | 'rejection';
 
 /**
  What a selection round decided.
@@ -530,39 +530,39 @@ export type SelectionOutcome<ValueT,> =
      */
     readonly perCandidate: readonly CandidateWeight[];
   }
-  | {
-    readonly kind: 'declined';
+    | {
+      readonly kind: 'declined';
 
     /**
      Why nothing was selected, in scorecard-stable wording.
      */
-    readonly reason: string;
+      readonly reason: string;
 
     /**
      Which kind of failure this was, so callers can answer the two very
      different questions separately.
      */
-    readonly disposition: SelectionDisposition;
+      readonly disposition: SelectionDisposition;
 
     /**
      What the round counted.
      */
-    readonly tally: SelectionTally;
+      readonly tally: SelectionTally;
 
     /**
      {@inheritDoc SelectionOutcome.findings}
      */
-    readonly findings: readonly string[];
+      readonly findings: readonly string[];
 
     /**
      {@inheritDoc SelectionOutcome.ballots}
      */
-    readonly ballots: readonly SelectionBallot[];
+      readonly ballots: readonly SelectionBallot[];
 
     /**
      What every candidate drew, whether or not it won.
      */
-    readonly perCandidate: readonly CandidateWeight[];
-  };
+      readonly perCandidate: readonly CandidateWeight[];
+    };
 
 //endregion Candidate selection model

@@ -66,12 +66,12 @@ export function renderValueNode(
      */
     const parts = value.elements
       .map(function each(el,) {
-      return renderValueNode({
-        value: el,
-        options,
-        depth: depth + 1,
+        return renderValueNode({
+          value: el,
+          options,
+          depth: depth + 1,
+        },);
       },);
-    },);
     return assembleArrayParts({
       parts,
       options,
@@ -86,18 +86,18 @@ export function renderValueNode(
     /**
      Encoded dotted key so each segment reuses canonical key spelling.
      */
-    const keyText = entry.keySegments
-      .map(function eachSeg(seg,) {
-      return encodeKey({ key: seg, },);
-    },)
-      .join('.',);
-    return `${keyText} = ${
+      const keyText = entry.keySegments
+        .map(function eachSeg(seg,) {
+          return encodeKey({ key: seg, },);
+        },)
+        .join('.',);
+      return `${keyText} = ${
       renderValueNode({
         value: entry.value,
         options,
         depth: depth + 1,
       },)
     }`;
-  },);
+    },);
   return assembleInlineTableParts({ parts, },);
 }

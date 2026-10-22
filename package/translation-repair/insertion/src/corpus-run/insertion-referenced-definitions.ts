@@ -37,7 +37,7 @@ type Referrer =
     readonly kind: 'slice';
     readonly sliceIndex: number;
   }
-  | { readonly kind: 'page'; };
+    | { readonly kind: 'page'; };
 
 /**
  An unresolved row that defines a label the shipping page references and

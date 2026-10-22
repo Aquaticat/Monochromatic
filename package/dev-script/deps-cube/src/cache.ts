@@ -279,7 +279,7 @@ export function createCache(
       return CACHE_MISS;
     if ((ttlMs !== undefined) && ((Date.now()
       - entry
-      .fetchedAt) > ttlMs))
+        .fetchedAt) > ttlMs))
       return CACHE_MISS;
     // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- caller asserts T; cache file shape is opaque at this layer.
     return entry.value as T;

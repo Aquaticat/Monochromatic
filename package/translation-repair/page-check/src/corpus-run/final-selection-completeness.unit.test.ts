@@ -98,32 +98,32 @@ function sourceWith(
         },],
       }
       : polished
-      ? {
-        kind: 'settled',
-        slices: [{
-          sliceIndex: 0,
-          terminal: 'gate-kept-standing',
-          shipped: { kind: 'unchanged', },
-          rewrapped: false,
-          demoted: false,
-          verdicts: [],
-          polish: {
-            kind: 'settled',
-            baseText: ARCHIVE,
-            proposedText: 'The cat rested.',
-            text: 'The cat rested.',
-            changed: true,
-            refinersHeard: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
-            contributors: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
-            roundCount: 1,
-            findings: [],
-          },
-        },],
-      }
-      : {
-        kind: 'settled',
-        slices: [],
-      },
+        ? {
+          kind: 'settled',
+          slices: [{
+            sliceIndex: 0,
+            terminal: 'gate-kept-standing',
+            shipped: { kind: 'unchanged', },
+            rewrapped: false,
+            demoted: false,
+            verdicts: [],
+            polish: {
+              kind: 'settled',
+              baseText: ARCHIVE,
+              proposedText: 'The cat rested.',
+              text: 'The cat rested.',
+              changed: true,
+              refinersHeard: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+              contributors: [SEAT_HYPER_OPENROUTER_VISION_EDITOR,],
+              roundCount: 1,
+              findings: [],
+            },
+          },],
+        }
+        : {
+          kind: 'settled',
+          slices: [],
+        },
   } as unknown as WouldShipSource;
 }
 

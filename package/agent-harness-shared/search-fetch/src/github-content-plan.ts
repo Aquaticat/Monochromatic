@@ -226,8 +226,8 @@ function refPathSplits(
   );
   return segments
     .slice(
-      0,
-      maximumRefSegments,
+    0,
+    maximumRefSegments,
     )
     .map(function mapRefSegment(
       _ignoredSegment: string,
@@ -240,8 +240,8 @@ function refPathSplits(
       return {
         ref: segments
           .slice(
-            0,
-            refSegments,
+          0,
+          refSegments,
           )
           .join(URL_SLASH,),
         path: segments

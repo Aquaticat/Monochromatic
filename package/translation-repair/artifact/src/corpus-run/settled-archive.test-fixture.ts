@@ -332,7 +332,7 @@ export async function makeCorpus(
     readonly cloneDir: string;
     readonly commitSha: string;
   }
-> {
+  > {
   // Fresh temp directory holding the throwaway repository.
   return await scratchDirWith({
     prefix: 'settled-audit-corpus-',

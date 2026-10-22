@@ -23,13 +23,13 @@
  */
 export type AtomKind =
   | 'link-url'
-  | 'image-url'
-  | 'reference'
-  | 'footnote'
-  | 'inline-code'
-  | 'container-tag'
-  | 'number'
-  | 'foreign-run';
+    | 'image-url'
+    | 'reference'
+    | 'footnote'
+    | 'inline-code'
+    | 'container-tag'
+    | 'number'
+    | 'foreign-run';
 
 /**
  One thing a rewrite must carry through unchanged and in place.
@@ -145,14 +145,14 @@ const DIGIT_BLOCKS = {
 function isDigit(codePoint: number,): boolean {
   return ((codePoint
     >= DIGIT_BLOCKS.ascii
-    .first) && (codePoint
-      <= DIGIT_BLOCKS.ascii
-      .last))
+      .first) && (codePoint
+        <= DIGIT_BLOCKS.ascii
+          .last))
     || ((codePoint
       >= DIGIT_BLOCKS.fullwidth
-      .first) && (codePoint
-        <= DIGIT_BLOCKS.fullwidth
-        .last));
+        .first) && (codePoint
+          <= DIGIT_BLOCKS.fullwidth
+            .last));
 }
 
 /**
@@ -279,7 +279,7 @@ export function scanTextAtoms({ text, }: { readonly text: string; },): readonly 
     }
     else if (
       (run.kind === 'number')
-      && NUMBER_SEPARATORS.includes(character,)
+        && NUMBER_SEPARATORS.includes(character,)
         && (nextPoint !== undefined)
         && isDigit(nextPoint,)
     ) {

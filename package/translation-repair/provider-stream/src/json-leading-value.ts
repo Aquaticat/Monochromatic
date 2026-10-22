@@ -204,8 +204,8 @@ export function readJsonBeforeTrailingText({ text, }: { readonly text: string; }
     readonly value: unknown;
     readonly trailing: number;
   }
-  | { readonly parsed: false; }
-{
+    | { readonly parsed: false; }
+  {
   /**
    Logger pre-tagged with this function's name.
    */
@@ -232,8 +232,8 @@ export function readJsonBeforeTrailingText({ text, }: { readonly text: string; }
   const attempt = parseModelJson({
     text: characters
       .slice(
-        0,
-        end,
+      0,
+      end,
       )
       .join('',),
   },);

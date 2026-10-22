@@ -70,13 +70,13 @@ const TRANSLATE_SCHEMA = 'translation_report';
 const MODELS = {
   translatorModelIds: ['hf:cat/Cat-A',
     'hf:cat/Cat-B',].map(function toId(id,) {
-    return id as unknown as RosterModelId;
-  },),
+      return id as unknown as RosterModelId;
+    },),
   judgeModelIds: ['hf:cat/Cat-A',
     'hf:cat/Cat-B',
     'hf:cat/Cat-C',].map(function toId(id,) {
-    return id as unknown as RosterModelId;
-  },),
+      return id as unknown as RosterModelId;
+    },),
 };
 
 /**
@@ -617,20 +617,20 @@ await describe({
           .map(function carries(sheet,): readonly boolean[] {
             return [sheet.includes(TENSE_BLOCK_LINE,), sheet.includes(DEATH_LINE,),];
           },),).toEqual(Array.from(
-          { length: 3 * MODELS.judgeModelIds.length, },
-          function carriesBoth(): readonly boolean[] {
-            return [true, true,];
-          },
-        ),);
+            { length: 3 * MODELS.judgeModelIds.length, },
+            function carriesBoth(): readonly boolean[] {
+              return [true, true,];
+            },
+          ),);
         expect(rig.translateSheets
           .map(function carries(sheet,): boolean {
             return sheet.includes(DEATH_LINE,);
           },),).toEqual(Array.from(
-          { length: MODELS.translatorModelIds.length, },
-          function carriesIdentity(): boolean {
-            return true;
-          },
-        ),);
+            { length: MODELS.translatorModelIds.length, },
+            function carriesIdentity(): boolean {
+              return true;
+            },
+          ),);
       },
     },),
     it({

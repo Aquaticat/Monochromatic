@@ -34,8 +34,8 @@ export type Authority = {
    */
   readonly origin:
     | 'the archive\'s signature rendering'
-    | 'the page\'s signature rendering'
-    | 'the pinyin reading of the original\'s handle';
+      | 'the page\'s signature rendering'
+      | 'the pinyin reading of the original\'s handle';
 };
 
 /**

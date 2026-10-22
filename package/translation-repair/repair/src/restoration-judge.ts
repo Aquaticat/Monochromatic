@@ -198,12 +198,12 @@ export async function runRestorationJudge(
    */
   const ballots = gather.voices
     .map(function toBallot(voice,) {
-    return resolveRestorationJudgment({
-      wire: voice.value,
-      seedIds: plan.seedIds,
-    },)
-      .verdicts;
-  },);
+      return resolveRestorationJudgment({
+        wire: voice.value,
+        seedIds: plan.seedIds,
+      },)
+        .verdicts;
+    },);
 
   l.info(
     `restoration judge: ${String(gather.voices
@@ -220,32 +220,32 @@ export async function runRestorationJudge(
     /**
      Verdicts cast on this seed across heard judges.
      */
-    const cast = ballots.flatMap(function toVerdict(ballot,): readonly RestorationVerdict[] {
+      const cast = ballots.flatMap(function toVerdict(ballot,): readonly RestorationVerdict[] {
       /**
        This judge's verdict on the seed, when cast.
        */
-      const verdict = ballot[seedId];
-      return verdict === undefined ? [] : [verdict,];
-    },);
-    if ((cast.length === 0) || (!gather.quorumMet)) {
+        const verdict = ballot[seedId];
+        return verdict === undefined ? [] : [verdict,];
+      },);
+      if ((cast.length === 0) || (!gather.quorumMet)) {
+        return [
+          seedId,
+          {
+            verdict: 'absent',
+            judged: false,
+            votes: cast.length,
+          },
+        ];
+      }
       return [
         seedId,
         {
-          verdict: 'absent',
-          judged: false,
+          verdict: lowerMedianVerdict({ cast, },),
+          judged: true,
           votes: cast.length,
         },
       ];
-    }
-    return [
-      seedId,
-      {
-        verdict: lowerMedianVerdict({ cast, },),
-        judged: true,
-        votes: cast.length,
-      },
-    ];
-  },),);
+    },),);
 }
 
 //endregion Restoration judge stage

@@ -185,7 +185,7 @@ export function consistencySlicesOf(
         .find(function namesSlice(candidate,): boolean {
           return candidate.sliceIndex
             === slice.target
-            .sliceIndex;
+              .sliceIndex;
         },);
       if (row === undefined) {
         throw new ConsistencyInvariantError({ invariant:

@@ -301,8 +301,8 @@ await describe({
         it({
           name:
             'FINDS NOTHING MISSING in a page that carries every wording in slice order, which is the '
-            + 'control the failing cases rest on: a check that reported every page as broken would satisfy '
-            + 'them all and say nothing',
+              + 'control the failing cases rest on: a check that reported every page as broken would satisfy '
+              + 'them all and say nothing',
           fn: async () => {
             const check = pageCarriesEveryWording({
               artifact: artifactShipping([FIRST_NAP, SECOND_NAP,],),
@@ -318,8 +318,8 @@ await describe({
         it({
           name:
             'FINDS NOTHING MISSING for an inserted wording whose lane text ends in the two spaces the '
-            + 'insertion composer cuts (class one hundred one, shi_Yumiaoya15, 2026-09-23): the page '
-            + 'carries the body the splice wrote, and the check reads the wording the same way',
+              + 'insertion composer cuts (class one hundred one, shi_Yumiaoya15, 2026-09-23): the page '
+              + 'carries the body the splice wrote, and the check reads the wording the same way',
           fn: async () => {
             const check = pageCarriesEveryWording({
               artifact: artifactOver([
@@ -343,8 +343,8 @@ await describe({
         it({
           name:
             'NAMES THE SLICE AND ITS SIZE for a wording the page lost, and quotes neither. A run '
-            + 'directory holds unlicensed corpus wording, so a finding a reader can paste anywhere has to '
-            + 'be an index and a count',
+              + 'directory holds unlicensed corpus wording, so a finding a reader can paste anywhere has to '
+              + 'be an index and a count',
           fn: async () => {
             const check = pageCarriesEveryWording({
               artifact: artifactShipping([FIRST_NAP, SECOND_NAP,],),
@@ -363,9 +363,9 @@ await describe({
         it({
           name:
             'REPORTS A PAGE THAT CARRIES BOTH WORDINGS IN THE WRONG ORDER, which is what the cursor is '
-            + 'for. Slices are contiguous and ordered in the document, so a page holding the second '
-            + 'passage above the first is not the page the artifact describes, and a check that only '
-            + 'asked whether each wording occurs somewhere would pass it',
+              + 'for. Slices are contiguous and ordered in the document, so a page holding the second '
+              + 'passage above the first is not the page the artifact describes, and a check that only '
+              + 'asked whether each wording occurs somewhere would pass it',
           fn: async () => {
             const check = pageCarriesEveryWording({
               artifact: artifactShipping([FIRST_NAP, SECOND_NAP,],),
@@ -384,9 +384,9 @@ await describe({
         it({
           name:
             'ADVANCES PAST A WORDING RATHER THAN PAST ITS START, so a later slice whose text also appears '
-            + 'inside an earlier one is matched at its own position. Searching from where the previous '
-            + 'match BEGAN would let two slices claim one stretch of page and report a page that lost a '
-            + 'passage as complete',
+              + 'inside an earlier one is matched at its own position. Searching from where the previous '
+              + 'match BEGAN would let two slices claim one stretch of page and report a page that lost a '
+              + 'passage as complete',
           fn: async () => {
             const check = pageCarriesEveryWording({
               artifact: artifactShipping([FIRST_NAP, THIRD_NAP,],),
@@ -400,8 +400,8 @@ await describe({
         it({
           name:
             'COUNTS A SILENT SLICE AND REQUIRES NOTHING OF THE PAGE FOR IT, since a slice that ships no '
-            + 'wording has none to look for. Requiring something there would report every unfilled anchor '
-            + 'as a lost passage, which is a state already made ordinary rather than fatal',
+              + 'wording has none to look for. Requiring something there would report every unfilled anchor '
+              + 'as a lost passage, which is a state already made ordinary rather than fatal',
           fn: async () => {
             const check = pageCarriesEveryWording({
               artifact: artifactShipping([FIRST_NAP, '', SECOND_NAP,],),
@@ -423,8 +423,8 @@ await describe({
         it({
           name:
             'WEIGHS A CORRECT PAGE AT EXACTLY WHAT THE ARCHIVE PLUS ITS ONE SWAP COMES TO, which is the '
-            + 'control every failing case here rests on. Measured the same way against six real published '
-            + 'pages, on five that grew and one that shrank, the prediction was exact on all six',
+              + 'control every failing case here rests on. Measured the same way against six real published '
+              + 'pages, on five that grew and one that shrank, the prediction was exact on all six',
           fn: async () => {
             const weight = pageWeighsWhatItShould({
               artifact: artifactOver(ONE_SWAP,),
@@ -471,9 +471,9 @@ await describe({
         it({
           name:
             'WEIGHS A SHIPPED TEXT BY THE EDGES ITS SPAN KEEPS, not by the line endings its lane wrapped '
-            + 'it in (class seventy-five, CuspariaKLSY2): the splice writes a replacement with the '
-            + 'replaced span\'s own leading and trailing line endings, so a lane\'s trailing newline '
-            + 'never reaches the page and must not be counted as a character the page then lost',
+              + 'it in (class seventy-five, CuspariaKLSY2): the splice writes a replacement with the '
+              + 'replaced span\'s own leading and trailing line endings, so a lane\'s trailing newline '
+              + 'never reaches the page and must not be counted as a character the page then lost',
           fn: async () => {
             const weight = pageWeighsWhatItShould({
               artifact: artifactOver([{
@@ -500,9 +500,9 @@ await describe({
         it({
           name:
             'REFUTES A PAGE THAT LOST TEXT NO SLICE DECIDED ON, which the wording scan cannot: this is the '
-            + 'case that failed as a live control before the arithmetic existed. Two hundred characters cut '
-            + 'from a real page left every wording in place and in order, because the wordings cover the '
-            + 'slices and a page is mostly the text between them',
+              + 'case that failed as a live control before the arithmetic existed. Two hundred characters cut '
+              + 'from a real page left every wording in place and in order, because the wordings cover the '
+              + 'slices and a page is mostly the text between them',
           fn: async () => {
             /**
              Correct page with its unsliced tail removed, which no reading covers.
@@ -536,7 +536,7 @@ await describe({
         it({
           name:
             'REFUTES A PAGE THAT GAINED TEXT NO SLICE DECIDED ON, since an assembler that duplicated a '
-            + 'passage is as wrong as one that dropped it and neither shows up in an occurrence scan',
+              + 'passage is as wrong as one that dropped it and neither shows up in an occurrence scan',
           fn: async () => {
             const weight = pageWeighsWhatItShould({
               artifact: artifactOver(ONE_SWAP,),
@@ -554,8 +554,8 @@ await describe({
         it({
           name:
             'REPORTS AN ARTIFACT WRITTEN BEFORE THE ARCHIVE TEXT WAS STORED AS UNWEIGHABLE RATHER THAN AS '
-            + 'AGREEING, because a whole run of those would otherwise read as a run that was checked. It '
-            + 'cannot refute a page either, which is a different statement from finding it correct',
+              + 'AGREEING, because a whole run of those would otherwise read as a run that was checked. It '
+              + 'cannot refute a page either, which is a different statement from finding it correct',
           fn: async () => {
             const weight = pageWeighsWhatItShould({
               artifact: artifactOver(ONE_SWAP,),
@@ -571,9 +571,9 @@ await describe({
         it({
           name:
             'TREATS A FILLED ANCHOR AS A FLOOR RATHER THAN AN EQUALITY, and stays one-sided about it. '
-            + '`spliceSlices` composes the separators around an inserted rendering rather than carrying '
-            + 'them in any row, so those characters are real and uncounted: a longer page is expected and '
-            + 'a shorter one still lost text',
+              + '`spliceSlices` composes the separators around an inserted rendering rather than carrying '
+              + 'them in any row, so those characters are real and uncounted: a longer page is expected and '
+              + 'a shorter one still lost text',
           fn: async () => {
             /**
              Archive with nothing where the anchor sits, and the anchor filled.
@@ -623,7 +623,7 @@ await describe({
         it({
           name:
             'SUBTRACTS WHAT THE ARCHIVE HELD UNDER A SLICE THAT SHIPS NOTHING, so the page a correct publish '
-            + 'writes over it weighs exactly what is expected, and the wording scan counts that slice silent',
+              + 'writes over it weighs exactly what is expected, and the wording scan counts that slice silent',
           fn: async () => {
             /**
              First slice swapped for a longer wording, second slice emptied.
@@ -645,12 +645,12 @@ await describe({
              */
             const page = ARCHIVE_TWO_SLICES
               .replace(
-                OLD_NAP,
-                FIRST_NAP,
+              OLD_NAP,
+              FIRST_NAP,
               )
               .replace(
-                OLD_PERCH,
-                '',
+              OLD_PERCH,
+              '',
               );
 
             expect(pageWeighsWhatItShould({
@@ -714,7 +714,7 @@ await describe({
         it({
           name:
             'PUBLISHES A CORRECT PAGE WITHOUT COMPLAINT, which is the control the refusals rest on: a '
-            + 'guard that refused everything would satisfy them all and stop every entry',
+              + 'guard that refused everything would satisfy them all and stop every entry',
           fn: async () => {
             expect(() => {
               refusePageThatDisagrees({
@@ -733,7 +733,7 @@ await describe({
         it({
           name:
             'REFUSES A PAGE MISSING A WORDING, naming the entry and the slice so the refusal is actionable '
-            + 'from a log line alone',
+              + 'from a log line alone',
           fn: async () => {
             /**
              Whatever the guard raised, caught so its class and text can be read.
@@ -754,21 +754,21 @@ await describe({
         it({
           name:
             'REFUSES TWO RENDERINGS SWAPPED BETWEEN THEIR SLICES, which the arithmetic cannot see. Both '
-            + 'wordings are present and the page is exactly as long as it should be, so the length '
-            + 'invariant agrees with it and only the ordered scan disagrees. This is the case that keeps '
-            + 'the scan in the guard beside the arithmetic',
+              + 'wordings are present and the page is exactly as long as it should be, so the length '
+              + 'invariant agrees with it and only the ordered scan disagrees. This is the case that keeps '
+              + 'the scan in the guard beside the arithmetic',
           fn: async () => {
             /**
              Page a correct publish produces over both slices.
              */
             const correct = ARCHIVE_TWO_SLICES
               .replace(
-                OLD_NAP,
-                FIRST_NAP,
+              OLD_NAP,
+              FIRST_NAP,
               )
               .replace(
-                OLD_PERCH,
-                SECOND_NAP,
+              OLD_PERCH,
+              SECOND_NAP,
               );
 
             /**
@@ -776,12 +776,12 @@ await describe({
              */
             const swapped = ARCHIVE_TWO_SLICES
               .replace(
-                OLD_NAP,
-                SECOND_NAP,
+              OLD_NAP,
+              SECOND_NAP,
               )
               .replace(
-                OLD_PERCH,
-                FIRST_NAP,
+              OLD_PERCH,
+              FIRST_NAP,
               );
 
             // THE PREMISE OF THE CASE, asserted rather than assumed: if these ever
@@ -831,8 +831,8 @@ await describe({
         it({
           name:
             'REFUSES A PAGE THAT LOST TEXT NO SLICE DECIDED ON even though every wording is present, which '
-            + 'is the case a live control caught: two hundred characters cut from a real page left the '
-            + 'occurrence scan reporting nothing missing',
+              + 'is the case a live control caught: two hundred characters cut from a real page left the '
+              + 'occurrence scan reporting nothing missing',
           fn: async () => {
             /**
              Correct page with its unsliced tail removed, which no reading covers.
@@ -864,8 +864,8 @@ await describe({
         it({
           name:
             'QUOTES NO PASSAGE IN ITS REFUSAL, which is a corpus rule rather than a style one. A run '
-            + 'directory holds unlicensed wording and an error message travels further than the directory '
-            + 'it was raised in: into logs, into a pass report, into a session transcript',
+              + 'directory holds unlicensed wording and an error message travels further than the directory '
+              + 'it was raised in: into logs, into a pass report, into a session transcript',
           fn: async () => {
             /**
              Whatever the guard raised, caught so its text can be inspected.
@@ -886,8 +886,8 @@ await describe({
         it({
           name:
             'ACCEPTS A PAGE LONGER THAN THE SUM WHERE AN ANCHOR WAS FILLED, because `spliceSlices` composes '
-            + 'the separators around an inserted rendering rather than carrying them in any row. Refusing '
-            + 'on that would stop every entry that fills a gap, which is the work this pipeline exists for',
+              + 'the separators around an inserted rendering rather than carrying them in any row. Refusing '
+              + 'on that would stop every entry that fills a gap, which is the work this pipeline exists for',
           fn: async () => {
             expect(() => {
               refusePageThatDisagrees({
@@ -915,7 +915,7 @@ await describe({
         it({
           name:
             'SAYS A FILLED ANCHOR MAKES THE EXPECTATION A FLOOR in the refusal of a page shorter than that '
-            + 'floor, and says no such thing where no anchor was filled and the two sides compare outright',
+              + 'floor, and says no such thing where no anchor was filled and the two sides compare outright',
           fn: async () => {
             /**
              Refusal of a page holding the inserted wording and nothing of
@@ -989,8 +989,8 @@ await describe({
         it({
           name:
             'NAMES AN ENTRY SETTLED AND NEVER PUBLISHED, which is the serious half. A pass builds its '
-            + 'skip set from the artifacts on disk, so no pass settles that entry again, and the archive '
-            + 'ships for it until the next pass started there writes its page from the artifact',
+              + 'skip set from the artifacts on disk, so no pass settles that entry again, and the archive '
+              + 'ships for it until the next pass started there writes its page from the artifact',
           fn: async () => {
             expect(pairPublishedPages({
               settled: ['BookshopCat', 'Mittens',],
@@ -1006,8 +1006,8 @@ await describe({
         it({
           name:
             'NAMES AN ENTRY PUBLISHED AND NOT SETTLED SEPARATELY: publishing runs before the artifact '
-            + 'write, so a crash between them leaves this, and the page ships as it stands until a pass '
-            + 'settles the entry again',
+              + 'write, so a crash between them leaves this, and the page ships as it stands until a pass '
+              + 'settles the entry again',
           fn: async () => {
             expect(pairPublishedPages({
               settled: ['BookshopCat',],

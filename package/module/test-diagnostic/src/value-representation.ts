@@ -96,8 +96,8 @@ export function valueKind(value: unknown,): string {
     .toString
     .call(value,)
     .slice(
-      TYPED_TAG_PREFIX_LENGTH,
-      -1,
+    TYPED_TAG_PREFIX_LENGTH,
+    -1,
     );
   return tag === 'Array'
     ? 'ArrayLike'
@@ -718,8 +718,8 @@ export function enumerableKeys(value: object,): (string | symbol)[] {
     if (Object.prototype
       .propertyIsEnumerable
       .call(
-        value,
-        key,
+      value,
+      key,
       ))
       keys.push(key,);
   }

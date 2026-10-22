@@ -137,12 +137,12 @@ export function formatImmatureReport({
     ? undefined
     : new Date(
       Math.max(...picks.map(function pickMaturity(pick,): number {
-      return matureAt({
-        publishedAt: pick.publishedAt,
-        minutes,
-      },)
-        .getTime();
-    },),),
+        return matureAt({
+          publishedAt: pick.publishedAt,
+          minutes,
+        },)
+          .getTime();
+      },),),
     );
   return [
     `pnpm update refused ${String(picks.length,)} version(s) younger than minimumReleaseAge:`,

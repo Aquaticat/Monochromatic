@@ -54,8 +54,8 @@ await describe({
     it({
       name:
         'PLACES ALL FOUR COUNTS where the sentence says they are, which is what stops a summary '
-        + 'drifting from the settlement it summarises: served-and-resolved reads as a fraction, and '
-        + 'accepted and unenveloped ride in the parenthesis, so a transposed pair still renders',
+          + 'drifting from the settlement it summarises: served-and-resolved reads as a fraction, and '
+          + 'accepted and unenveloped ride in the parenthesis, so a transposed pair still renders',
       fn: async () => {
         expect(describeChunkSettlement({
           sliceIndex: SLICE_INDEX,

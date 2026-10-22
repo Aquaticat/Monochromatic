@@ -211,7 +211,7 @@ export function parseNaturalnessConfirmations(
   // no-loop design and legitimately carries no earlier acceptable reading.
   if ((final.verdict === 'acceptable')
     && (!confirmationDigests.includes(final.candidateDigest,)))
-  {
+    {
     throw new ArtifactParseError({
       path: `${path}.confirmations`,
       reason: 'earlier acceptable reading of exact final candidate',

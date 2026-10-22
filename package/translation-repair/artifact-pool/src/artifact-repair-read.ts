@@ -126,17 +126,17 @@ export type RecordRepairReading =
      */
     readonly kind: 'unrecorded';
   }
-  | {
+    | {
     /**
      Artifact carries repair provenance for this issue.
      */
-    readonly kind: 'recorded';
+      readonly kind: 'recorded';
 
     /**
      Provenance as a grading sheet reads it.
      */
-    readonly repair: GradableRepair;
-  };
+      readonly repair: GradableRepair;
+    };
 
 /**
  Parses one issue record's repair provenance.

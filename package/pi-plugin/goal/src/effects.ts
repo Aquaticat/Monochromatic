@@ -67,16 +67,16 @@ function applyGoalEffects(
     if (effect.type === 'set_footer') {
       context.ui
         .setStatus(
-          GOAL_STATUS_KEY,
-          effect.text,
+        GOAL_STATUS_KEY,
+        effect.text,
         );
       continue;
     }
     if (effect.type === 'clear_footer') {
       context.ui
         .setStatus(
-          GOAL_STATUS_KEY,
-          undefined,
+        GOAL_STATUS_KEY,
+        undefined,
         );
       continue;
     }
@@ -104,8 +104,8 @@ function applyGoalEffects(
     if (effect.type === 'notify') {
       context.ui
         .notify(
-          effect.message,
-          effect.level,
+        effect.message,
+        effect.level,
         );
       continue;
     }

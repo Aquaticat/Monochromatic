@@ -95,9 +95,9 @@ export function renderToolbarStyles(): string[] {
       rule: CONTROL_SELECTOR
         .split(', ',)
         .map(
-          function addHover(sel,): string {
-            return `${sel}:hover`;
-          },
+        function addHover(sel,): string {
+          return `${sel}:hover`;
+        },
         )
         .join(', ',),
       decls: { 'background-color': BG_CONTROL_HOVER, },

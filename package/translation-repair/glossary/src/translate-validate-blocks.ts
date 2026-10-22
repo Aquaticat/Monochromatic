@@ -240,10 +240,10 @@ export function compareBlocks(
       floor,
       source,
     },)
-    && sameShape({
-      left: source,
-      right: candidate,
-    },)
+      && sameShape({
+        left: source,
+        right: candidate,
+      },)
   )
     return [];
 
@@ -283,9 +283,9 @@ export function compareBlocks(
    Finding for a candidate the floor is not inside.
    */
   const missing = appearsInOrder({
-      floor,
-      candidate,
-    },)
+    floor,
+    candidate,
+  },)
     ? []
     : [
       `The ${floorName} is ${String(floor.length,)} ${

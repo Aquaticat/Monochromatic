@@ -487,8 +487,8 @@ export function buildIntroducedDefectMessages(
    neighbour can at least recognise a passage that has moved.
    */
   const nearbyBlock = ((neighbouringSourceText === undefined)
-      || (neighbouringSourceText === ''))
-      && (incumbentShown === '')
+    || (neighbouringSourceText === ''))
+    && (incumbentShown === '')
     ? ''
     : `${fence} NEARBY ORIGINAL, CONTEXT ONLY ${fence}
 ${neighbouringSourceText ?? ''}

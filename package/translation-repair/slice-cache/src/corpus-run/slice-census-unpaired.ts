@@ -109,8 +109,8 @@ export function sliceCensusUnpairedLines(
           },);
       },)
       .slice(
-        0,
-        UNPAIRED_ENTRIES_LISTED,
+      0,
+      UNPAIRED_ENTRIES_LISTED,
       )
       .map(function unpairedLine(row,): string {
         return `CENSUS   ${row.entryId}: source sections ${

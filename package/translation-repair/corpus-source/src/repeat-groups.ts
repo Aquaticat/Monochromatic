@@ -77,11 +77,11 @@ function placementOf(
    */
   const holdingWhole = holdingStart
     .filter(function holdsEnd(slice,): boolean {
-    return span.endOffset <= slice.endOffset;
-  },)
+      return span.endOffset <= slice.endOffset;
+    },)
     .map(function indexOfSlice(slice,): number {
-    return slice.sliceIndex;
-  },);
+      return slice.sliceIndex;
+    },);
   if (holdingWhole.length > 0) {
     return {
       kind: 'placed',
@@ -224,18 +224,18 @@ function placedRepeat(
    */
   const located = repeat.spans
     .map(function withPlacement(span,): LocatedSpan {
-    return {
-      span,
-      placement: placementOf({
-        slices,
+      return {
         span,
-      },),
-      line: lineOf({
-        lineStarts,
-        offset: span.startOffset,
-      },),
-    };
-  },);
+        placement: placementOf({
+          slices,
+          span,
+        },),
+        line: lineOf({
+          lineStarts,
+          offset: span.startOffset,
+        },),
+      };
+    },);
 
   /**
    Occurrences a slice holds whole, with the slot a refrain leaves open.
@@ -388,38 +388,38 @@ export function repeatGroupsOf(
    */
   const maximal: FoundRepeat[] = maximalRunsOf({ stream, },)
     .map(function maximalFound(run,): FoundRepeat {
-    return {
-      kind: 'maximal',
-      prefix: '',
-      suffix: '',
-      length: run.length,
-      spans: run.starts
-        .map(function runSpan(start,) {
+      return {
+        kind: 'maximal',
+        prefix: '',
+        suffix: '',
+        length: run.length,
+        spans: run.starts
+          .map(function runSpan(start,) {
         /**
          Stream index of the run's last character.
          */
-        const last = (start + run.length) - 1;
-        return {
-          startOffset: nonNullishOrThrow(wording.offsets[start],),
-          endOffset: wordingEndAt({
-            wording,
-            index: last,
+            const last = (start + run.length) - 1;
+            return {
+              startOffset: nonNullishOrThrow(wording.offsets[start],),
+              endOffset: wordingEndAt({
+                wording,
+                index: last,
+              },),
+              quoted: touchesQuotation({
+                counts: quotedCounts,
+                start,
+                end: start + run.length,
+              },),
+              width: run.length,
+              slotStartOffset: nonNullishOrThrow(wording.offsets[start],),
+              slotEndOffset: wordingEndAt({
+                wording,
+                index: last,
+              },),
+            };
           },),
-          quoted: touchesQuotation({
-            counts: quotedCounts,
-            start,
-            end: start + run.length,
-          },),
-          width: run.length,
-          slotStartOffset: nonNullishOrThrow(wording.offsets[start],),
-          slotEndOffset: wordingEndAt({
-            wording,
-            index: last,
-          },),
-        };
-      },),
-    };
-  },);
+      };
+    },);
 
   /**
    Refrain frames, each clause with the slot it leaves open.
@@ -440,25 +440,25 @@ export function repeatGroupsOf(
           /**
            Stream index of the clause's last character.
            */
-          const last = clause.end - 1;
-          return {
-            startOffset: nonNullishOrThrow(wording.offsets[clause.start],),
-            endOffset: wordingEndAt({
-              wording,
-              index: last,
-            },),
-            quoted: clause.quoted,
-            width: clause.end - clause.start,
-            slotStartOffset: nonNullishOrThrow(wording.offsets[clause.start + frame.prefixLength],),
-            slotEndOffset: wordingEndAt({
-              wording,
-              index: last - frame.suffixLength,
-            },),
-          };
-        },),
+            const last = clause.end - 1;
+            return {
+              startOffset: nonNullishOrThrow(wording.offsets[clause.start],),
+              endOffset: wordingEndAt({
+                wording,
+                index: last,
+              },),
+              quoted: clause.quoted,
+              width: clause.end - clause.start,
+              slotStartOffset: nonNullishOrThrow(wording.offsets[clause.start + frame.prefixLength],),
+              slotEndOffset: wordingEndAt({
+                wording,
+                index: last - frame.suffixLength,
+              },),
+            };
+          },),
       };
     },
-  );
+    );
 
   /**
    Repeats that count, before any two that overlap are told apart: a repeat left out for quoted speech or

@@ -196,9 +196,9 @@ export async function executeWebSearchTool(options: ExecuteToolOptions,): Promis
    */
   const providerResponse = await options.client
     .search({
-    input: searchInput,
-    ...(options.signal === undefined ? {} : { signal: options.signal, }),
-  },);
+      input: searchInput,
+      ...(options.signal === undefined ? {} : { signal: options.signal, }),
+    },);
   /**
    Local policy-filtered response.
    */
@@ -299,9 +299,9 @@ export async function executeWebFetchTool(options: ExecuteToolOptions,): Promise
    */
   const providerResponse = await options.client
     .fetch({
-    input: fetchInput,
-    ...(options.signal === undefined ? {} : { signal: options.signal, }),
-  },);
+      input: fetchInput,
+      ...(options.signal === undefined ? {} : { signal: options.signal, }),
+    },);
   /**
    Model-visible response after removing base64-backed Markdown images.
    */

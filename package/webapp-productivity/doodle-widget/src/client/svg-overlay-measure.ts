@@ -101,10 +101,10 @@ export function measureSvgOverlay({
     clone: cloneNode,
     offsetX: svgRect.left
       - containerRect
-      .left,
+        .left,
     offsetY: svgRect.top
       - containerRect
-      .top,
+        .top,
     width: svgRect.width,
     height: svgRect.height,
   };

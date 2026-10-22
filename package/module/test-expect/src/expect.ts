@@ -181,43 +181,43 @@ function buildRejectsMatchers(promise: Promise<unknown>,): AsyncMatcherSet {
      @mutates expected - `chaiExpect(error,).to.be.instanceOf` and `chaiExpect(message,).to.match` may inspect caller hooks.
      */
     async function rejectsToThrow(
-    expected?: string | RegExp | (abstract new(...args: never) => unknown),
-  ): Promise<void> {
+      expected?: string | RegExp | (abstract new(...args: never) => unknown),
+    ): Promise<void> {
     /**
      Captured rejection value reused across the string, regex, and constructor branches.
      */
-    const error = await getRejection();
-    if (expected === undefined) {
+      const error = await getRejection();
+      if (expected === undefined) {
       /**
        getRejection already verified the promise rejected; nothing more to check
        */
-      return;
-    }
-    if ((typeof expected) === 'string') {
+        return;
+      }
+      if ((typeof expected) === 'string') {
       /**
        Stringified rejection used for substring containment when an expected string was supplied.
        */
-      const message = caughtValueText(error,);
-      chaiExpect(message,)
-        .to
-        .include(expected,);
-    }
-    else if (expected instanceof RegExp) {
+        const message = caughtValueText(error,);
+        chaiExpect(message,)
+          .to
+          .include(expected,);
+      }
+      else if (expected instanceof RegExp) {
       /**
        Stringified rejection used for regex matching when an expected pattern was supplied.
        */
-      const message = caughtValueText(error,);
-      chaiExpect(message,)
-        .to
-        .match(expected,);
-    }
-    else {
-      chaiExpect(error,)
-        .to
-        .be
-        .instanceOf(expected,);
-    }
-  };
+        const message = caughtValueText(error,);
+        chaiExpect(message,)
+          .to
+          .match(expected,);
+      }
+      else {
+        chaiExpect(error,)
+          .to
+          .be
+          .instanceOf(expected,);
+      }
+    };
 
   return matchers;
 }
@@ -404,8 +404,8 @@ expectImpl.stringMatching =
    ```
    */
   function stringMatching(pattern: RegExp,): SinonMatcher {
-  return sinonMatch(pattern,);
-};
+    return sinonMatch(pattern,);
+  };
 
 expectImpl.objectContaining =
   /**
@@ -423,10 +423,10 @@ expectImpl.objectContaining =
    ```
    */
   function objectContaining(
-  obj: Readonly<Record<string, unknown>>,
-): SinonMatcher {
-  return sinonMatch(obj,);
-};
+    obj: Readonly<Record<string, unknown>>,
+  ): SinonMatcher {
+    return sinonMatch(obj,);
+  };
 
 /**
  Matches any value. Useful as a placeholder in `toHaveBeenCalledWith`.
@@ -458,10 +458,10 @@ expectImpl.any =
    ```
    */
   function any(
-  ctor: abstract new(...args: never) => unknown,
-): SinonMatcher {
-  return sinonMatch.instanceOf(ctor,);
-};
+    ctor: abstract new(...args: never) => unknown,
+  ): SinonMatcher {
+    return sinonMatch.instanceOf(ctor,);
+  };
 
 expectImpl.arrayContaining =
   /**
@@ -479,19 +479,19 @@ expectImpl.arrayContaining =
    ```
    */
   function arrayContaining(
-  arr: readonly unknown[],
-): SinonMatcher {
-  return sinonMatch(
-    function matchArrayContaining(actual: unknown,): boolean {
-      if (!Array.isArray(actual,))
-        return false;
-      return arr.every(function isContained(item,) {
-        return actual.includes(item,);
-      },);
-    },
-    `arrayContaining([${arr.join(', ',)}])`,
-  );
-};
+    arr: readonly unknown[],
+  ): SinonMatcher {
+    return sinonMatch(
+      function matchArrayContaining(actual: unknown,): boolean {
+        if (!Array.isArray(actual,))
+          return false;
+        return arr.every(function isContained(item,) {
+          return actual.includes(item,);
+        },);
+      },
+      `arrayContaining([${arr.join(', ',)}])`,
+    );
+  };
 
 //endregion Asymmetric matchers
 

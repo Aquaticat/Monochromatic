@@ -79,9 +79,9 @@ export function isAsciiDigit({ character, }: { readonly character: string; },): 
 export function isAsciiDigits({ text, }: { readonly text: string; },): boolean {
   return (text !== '')
     && Array.from(text,)
-    .every(function digit(character,): boolean {
-    return isAsciiDigit({ character, },);
-  },);
+      .every(function digit(character,): boolean {
+        return isAsciiDigit({ character, },);
+      },);
 }
 
 /**

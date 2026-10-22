@@ -122,7 +122,7 @@ export type SatisfiesOrThrowPredicateOptions<Value, Candidate = unknown,> = {
  */
 export type SatisfiesOrThrowOptions<Value, Candidate = unknown,> =
   | SatisfiesOrThrowEqualityOptions<Value>
-  | SatisfiesOrThrowPredicateOptions<Value, Candidate>;
+    | SatisfiesOrThrowPredicateOptions<Value, Candidate>;
 
 /**
  Options for async-capable custom-predicate satisfaction checks.
@@ -161,7 +161,7 @@ export type SatisfiesOrThrowAsyncPredicateOptions<Value, Candidate = unknown,> =
  */
 export type SatisfiesOrThrowAsyncOptions<Value, Candidate = unknown,> =
   | SatisfiesOrThrowEqualityOptions<Value>
-  | SatisfiesOrThrowAsyncPredicateOptions<Value, Candidate>;
+    | SatisfiesOrThrowAsyncPredicateOptions<Value, Candidate>;
 
 /**
  Formats values that appear in satisfaction failure messages.
@@ -248,7 +248,7 @@ export function satisfiesOrThrow<const Value, const PredicateCandidate = unknown
   options: SatisfiesOrThrowOptions<Value, PredicateCandidate>,
 ):
   | (<const Candidate,>(candidate: Candidate) => Candidate & Value)
-  | (<const Candidate extends PredicateCandidate,>(candidate: Candidate) => Candidate) {
+    | (<const Candidate extends PredicateCandidate,>(candidate: Candidate) => Candidate) {
   if (options.predicate === undefined) {
     return function judgeSatisfiesEquality<const Candidate,>(
       candidate: Candidate,
@@ -355,7 +355,7 @@ export function satisfiesOrThrowAsync<const Value, const PredicateCandidate = un
   options: SatisfiesOrThrowAsyncOptions<Value, PredicateCandidate>,
 ):
   | (<const Candidate,>(candidate: Candidate) => Promise<Candidate & Value>)
-  | (<const Candidate extends PredicateCandidate,>(candidate: Candidate) => Promise<Candidate>) {
+    | (<const Candidate extends PredicateCandidate,>(candidate: Candidate) => Promise<Candidate>) {
   if (options.predicate === undefined) {
     return async function judgeSatisfiesEqualityAsync<const Candidate,>(
       candidate: Candidate,
@@ -382,9 +382,9 @@ export function satisfiesOrThrowAsync<const Value, const PredicateCandidate = un
 
   return async function judgeSatisfiesPredicateAsync<
     const Candidate extends PredicateCandidate,
-  >(
+    >(
     candidate: Candidate,
-  ): Promise<Candidate> {
+    ): Promise<Candidate> {
     /**
      Awaited predicate result, checked at runtime to protect JavaScript callers
      and unsafe casts.

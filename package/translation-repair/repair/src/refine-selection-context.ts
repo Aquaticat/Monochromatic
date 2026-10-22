@@ -95,19 +95,19 @@ export type RefineStageMode =
      */
     readonly kind: 'comparative';
   }
-  | {
+    | {
     /**
      Correction of what judges objected to, the input remaining the fallback.
      */
-    readonly kind: 'objection-correction';
+      readonly kind: 'objection-correction';
 
     /**
      Objections by the judges they come from, each set under its own
      heading: the slate's reasons where it was declined twice and the gate's
      where it objected (fourteenth and fifteenth addenda).
      */
-    readonly groups: readonly ObjectionGroup[];
-  };
+      readonly groups: readonly ObjectionGroup[];
+    };
 
 /**
  Heading every sheet gives an objection correction's objections.

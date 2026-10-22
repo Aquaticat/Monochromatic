@@ -134,14 +134,14 @@ export async function consoleLinesDuring(
   }
   sinon
     .stub(
-      console,
-      'info',
+    console,
+    'info',
     )
     .callsFake(keep,);
   sinon
     .stub(
-      console,
-      'warn',
+    console,
+    'warn',
     )
     .callsFake(keep,);
   await run();

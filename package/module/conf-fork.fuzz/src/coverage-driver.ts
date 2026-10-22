@@ -254,16 +254,16 @@ function exercise(): void {
     );
     ensure(
       config.get({
-      key: 'missing',
-      defaultValue: 'fallback',
-    },) === 'fallback',
+        key: 'missing',
+        defaultValue: 'fallback',
+      },) === 'fallback',
       'default readback',
     );
     ensure(
       config.get({
-      key: 'missing',
-      defaultValue: 'fallback2',
-    },) === 'fallback2',
+        key: 'missing',
+        defaultValue: 'fallback2',
+      },) === 'fallback2',
       'object default readback',
     );
     ensure(
@@ -404,7 +404,7 @@ function exercise(): void {
     ensure(
       config.size
         === Object.keys(config.store,)
-        .length,
+          .length,
       'store size',
     );
     ensure(
@@ -538,9 +538,9 @@ function exercise(): void {
     });
     ensure(
       tolerant.get({
-      key: 'theme',
-      defaultValue: 'cleared',
-    },) === 'cleared',
+        key: 'theme',
+        defaultValue: 'cleared',
+      },) === 'cleared',
       'cleared invalid config',
     );
   }

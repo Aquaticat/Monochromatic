@@ -211,7 +211,7 @@ function projectProbe(source: string,): unknown {
  */
 type EncodeResult =
   | { readonly skipped: true; }
-  | { readonly text: string; };
+    | { readonly text: string; };
 
 /**
  Encode `input`, or skip when a null member makes the encoder reject.

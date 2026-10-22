@@ -19,10 +19,10 @@ type TomlKeySegmentView =
     readonly type: 'TOMLBare';
     readonly name: string;
   }
-  | {
-    readonly type: 'TOMLQuoted';
-    readonly value: string;
-  };
+    | {
+      readonly type: 'TOMLQuoted';
+      readonly value: string;
+    };
 
 /**
  Dotted key segments viewed as read-only path data.
@@ -68,8 +68,8 @@ export function keyNameOf({ key, }: { readonly key: TomlKeySegmentView; },): str
 export function keysOf({ key, }: { readonly key: TomlKeyView; },): readonly string[] {
   return key.keys
     .map(function nameOf(k: TomlKeySegmentView,) {
-    return keyNameOf({ key: k, },);
-  },);
+      return keyNameOf({ key: k, },);
+    },);
 }
 
 /**

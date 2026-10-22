@@ -748,394 +748,394 @@ await describe({
     describe({
       name: 'breadcrumb suites',
       children: [
-    describe({
-      name: 'flush deadline',
-      children: [
-    it({
-      name: 'exports a positive default flush deadline',
-      fn: async () => {
-        expect(DEFAULT_FLUSH_DEADLINE_MS,)
-          .toBeGreaterThan(0,);
-      },
-    },),
-
-    it({
-      name: 'flush resolves once the deadline elapses when a write never settles',
-      timeout: DEADLINE_TEST_TIMEOUT_MS,
-      fn: async ({ sinon, },) => {
-        const warn = sinon.stub(
-          console,
-          'warn',
-        );
-        const {
-          logger,
-          initPromise,
-        } = createLogger({
-          flushDeadlineMs: SHORT_DEADLINE_MS,
-          sinks: [wedgedWriteSink(),],
-        },);
-        await initPromise;
-        logger.info('stuck',);
-
-        const elapsed = await timeFlush({ flush: logger.flush, },);
-        expect(elapsed,)
-          .toBeGreaterThanOrEqual(SHORT_DEADLINE_MS - DEADLINE_TOLERANCE_MS,);
-        expect(deadlineBreadcrumbs({ warn, },),)
-          .toBe(1,);
-        expect(deadlineBreadcrumbMessages({ warn, },)[0],)
-          .toContain(`${SHORT_DEADLINE_MS}ms`,);
-      },
-    },),
-
-    it({
-      name: 'a second flush after an abandoned write does not wait out the deadline again',
-      timeout: DEADLINE_TEST_TIMEOUT_MS,
-      fn: async ({ sinon, },) => {
-        sinon.stub(
-          console,
-          'warn',
-        );
-        const {
-          logger,
-          initPromise,
-        } = createLogger({
-          flushDeadlineMs: SHORT_DEADLINE_MS,
-          sinks: [wedgedWriteSink(),],
-        },);
-        await initPromise;
-        logger.info('stuck',);
-        await logger.flush();
-
-        const elapsed = await timeFlush({ flush: logger.flush, },);
-        expect(elapsed,)
-          .toBeLessThan(FAST_FLUSH_MS,);
-      },
-    },),
-
-    it({
-      name: 'flush resolves once the deadline elapses when a flush hook never settles',
-      timeout: DEADLINE_TEST_TIMEOUT_MS,
-      fn: async ({ sinon, },) => {
-        const warn = sinon.stub(
-          console,
-          'warn',
-        );
-        const hookWedged = recordingSink({
-          flush: function flushForever(): Promise<void> {
-            return neverSettles();
-          },
-        },);
-        const {
-          logger,
-          initPromise,
-        } = createLogger({
-          flushDeadlineMs: SHORT_DEADLINE_MS,
-          sinks: [hookWedged.sink,],
-        },);
-        await initPromise;
-
-        const elapsed = await timeFlush({ flush: logger.flush, },);
-        expect(elapsed,)
-          .toBeGreaterThanOrEqual(SHORT_DEADLINE_MS - DEADLINE_TOLERANCE_MS,);
-        expect(deadlineBreadcrumbs({ warn, },),)
-          .toBe(1,);
-      },
-    },),
-
-    it({
-      name: 'flush resolves once the deadline elapses when a verify never settles',
-      timeout: DEADLINE_TEST_TIMEOUT_MS,
-      fn: async ({ sinon, },) => {
-        const warn = sinon.stub(
-          console,
-          'warn',
-        );
-        const verifyWedged = recordingSink({
-          verify: function verifyForever(): Promise<boolean> {
-            return neverSettles();
-          },
-        },);
-        const { logger, } = createLogger({
-          flushDeadlineMs: SHORT_DEADLINE_MS,
-          sinks: [verifyWedged.sink,],
-        },);
-
-        const elapsed = await timeFlush({ flush: logger.flush, },);
-        expect(elapsed,)
-          .toBeGreaterThanOrEqual(SHORT_DEADLINE_MS - DEADLINE_TOLERANCE_MS,);
-        expect(deadlineBreadcrumbs({ warn, },),)
-          .toBe(1,);
-      },
-    },),
-
-    it({
-      name: 'a flush that settles inside the deadline reports no breadcrumb',
-      fn: async ({ sinon, },) => {
-        const warn = sinon.stub(
-          console,
-          'warn',
-        );
-        const quick = recordingSink({ writeDelayMs: 1, },);
-        const {
-          logger,
-          initPromise,
-        } = createLogger({
-          flushDeadlineMs: SHORT_DEADLINE_MS,
-          sinks: [quick.sink,],
-        },);
-        await initPromise;
-        logger.info('fast',);
-        await logger.flush();
-
-        expect(messages({ recording: quick, },),)
-          .toEqual(['fast',],);
-        expect(deadlineBreadcrumbs({ warn, },),)
-          .toBe(0,);
-      },
-    },),
-      ],
-    },),
-
-    describe({
-      name: 'verify liveness',
-      children: [
-        it({
-          name: 'exports a positive default verify timeout',
-          fn: async () => {
-            expect(DEFAULT_VERIFY_TIMEOUT_MS,)
-              .toBeGreaterThan(0,);
-          },
-        },),
-
-        it({
-          name: 'a verify that never settles no longer starves the sinks after it',
-          timeout: DEADLINE_TEST_TIMEOUT_MS,
-          fn: async ({ sinon, },) => {
-            const warn = sinon.stub(
-              console,
-              'warn',
-            );
-            const wedged = recordingSink({
-              verify: function verifyForever(): Promise<boolean> {
-                return neverSettles();
+        describe({
+          name: 'flush deadline',
+          children: [
+            it({
+              name: 'exports a positive default flush deadline',
+              fn: async () => {
+                expect(DEFAULT_FLUSH_DEADLINE_MS,)
+                  .toBeGreaterThan(0,);
               },
-            },);
-            const later = recordingSink();
-            const {
-              logger,
-              initPromise,
-            } = createLogger({
-              sinks: [
-                wedged.sink,
-                later.sink,
-              ],
-              verifyTimeoutMs: SHORT_DEADLINE_MS,
-            },);
-            await initPromise;
-            logger.info('after init',);
-            await logger.flush();
+            },),
 
-            expect(messages({ recording: later, },),)
-              .toEqual(['after init',],);
-            expect(messages({ recording: wedged, },),)
-              .toEqual([],);
-            expect(verifyBreadcrumbs({ warn, },),)
-              .toBe(1,);
-          },
+            it({
+              name: 'flush resolves once the deadline elapses when a write never settles',
+              timeout: DEADLINE_TEST_TIMEOUT_MS,
+              fn: async ({ sinon, },) => {
+                const warn = sinon.stub(
+                  console,
+                  'warn',
+                );
+                const {
+                  logger,
+                  initPromise,
+                } = createLogger({
+                  flushDeadlineMs: SHORT_DEADLINE_MS,
+                  sinks: [wedgedWriteSink(),],
+                },);
+                await initPromise;
+                logger.info('stuck',);
+
+                const elapsed = await timeFlush({ flush: logger.flush, },);
+                expect(elapsed,)
+                  .toBeGreaterThanOrEqual(SHORT_DEADLINE_MS - DEADLINE_TOLERANCE_MS,);
+                expect(deadlineBreadcrumbs({ warn, },),)
+                  .toBe(1,);
+                expect(deadlineBreadcrumbMessages({ warn, },)[0],)
+                  .toContain(`${SHORT_DEADLINE_MS}ms`,);
+              },
+            },),
+
+            it({
+              name: 'a second flush after an abandoned write does not wait out the deadline again',
+              timeout: DEADLINE_TEST_TIMEOUT_MS,
+              fn: async ({ sinon, },) => {
+                sinon.stub(
+                  console,
+                  'warn',
+                );
+                const {
+                  logger,
+                  initPromise,
+                } = createLogger({
+                  flushDeadlineMs: SHORT_DEADLINE_MS,
+                  sinks: [wedgedWriteSink(),],
+                },);
+                await initPromise;
+                logger.info('stuck',);
+                await logger.flush();
+
+                const elapsed = await timeFlush({ flush: logger.flush, },);
+                expect(elapsed,)
+                  .toBeLessThan(FAST_FLUSH_MS,);
+              },
+            },),
+
+            it({
+              name: 'flush resolves once the deadline elapses when a flush hook never settles',
+              timeout: DEADLINE_TEST_TIMEOUT_MS,
+              fn: async ({ sinon, },) => {
+                const warn = sinon.stub(
+                  console,
+                  'warn',
+                );
+                const hookWedged = recordingSink({
+                  flush: function flushForever(): Promise<void> {
+                    return neverSettles();
+                  },
+                },);
+                const {
+                  logger,
+                  initPromise,
+                } = createLogger({
+                  flushDeadlineMs: SHORT_DEADLINE_MS,
+                  sinks: [hookWedged.sink,],
+                },);
+                await initPromise;
+
+                const elapsed = await timeFlush({ flush: logger.flush, },);
+                expect(elapsed,)
+                  .toBeGreaterThanOrEqual(SHORT_DEADLINE_MS - DEADLINE_TOLERANCE_MS,);
+                expect(deadlineBreadcrumbs({ warn, },),)
+                  .toBe(1,);
+              },
+            },),
+
+            it({
+              name: 'flush resolves once the deadline elapses when a verify never settles',
+              timeout: DEADLINE_TEST_TIMEOUT_MS,
+              fn: async ({ sinon, },) => {
+                const warn = sinon.stub(
+                  console,
+                  'warn',
+                );
+                const verifyWedged = recordingSink({
+                  verify: function verifyForever(): Promise<boolean> {
+                    return neverSettles();
+                  },
+                },);
+                const { logger, } = createLogger({
+                  flushDeadlineMs: SHORT_DEADLINE_MS,
+                  sinks: [verifyWedged.sink,],
+                },);
+
+                const elapsed = await timeFlush({ flush: logger.flush, },);
+                expect(elapsed,)
+                  .toBeGreaterThanOrEqual(SHORT_DEADLINE_MS - DEADLINE_TOLERANCE_MS,);
+                expect(deadlineBreadcrumbs({ warn, },),)
+                  .toBe(1,);
+              },
+            },),
+
+            it({
+              name: 'a flush that settles inside the deadline reports no breadcrumb',
+              fn: async ({ sinon, },) => {
+                const warn = sinon.stub(
+                  console,
+                  'warn',
+                );
+                const quick = recordingSink({ writeDelayMs: 1, },);
+                const {
+                  logger,
+                  initPromise,
+                } = createLogger({
+                  flushDeadlineMs: SHORT_DEADLINE_MS,
+                  sinks: [quick.sink,],
+                },);
+                await initPromise;
+                logger.info('fast',);
+                await logger.flush();
+
+                expect(messages({ recording: quick, },),)
+                  .toEqual(['fast',],);
+                expect(deadlineBreadcrumbs({ warn, },),)
+                  .toBe(0,);
+              },
+            },),
+          ],
         },),
 
-        it({
-          name: 'a verify that answers after the time limit stays unavailable',
-          timeout: DEADLINE_TEST_TIMEOUT_MS,
-          fn: async ({ sinon, },) => {
-            sinon.stub(
-              console,
-              'warn',
-            );
-            const slow = recordingSink({
-              verify: verifyTrueAfter({ delayMs: SHORT_DEADLINE_MS * 3, },),
-            },);
-            const {
-              logger,
-              initPromise,
-            } = createLogger({
-              sinks: [slow.sink,],
-              verifyTimeoutMs: SHORT_DEADLINE_MS,
-            },);
-            await initPromise;
+        describe({
+          name: 'verify liveness',
+          children: [
+            it({
+              name: 'exports a positive default verify timeout',
+              fn: async () => {
+                expect(DEFAULT_VERIFY_TIMEOUT_MS,)
+                  .toBeGreaterThan(0,);
+              },
+            },),
+
+            it({
+              name: 'a verify that never settles no longer starves the sinks after it',
+              timeout: DEADLINE_TEST_TIMEOUT_MS,
+              fn: async ({ sinon, },) => {
+                const warn = sinon.stub(
+                  console,
+                  'warn',
+                );
+                const wedged = recordingSink({
+                  verify: function verifyForever(): Promise<boolean> {
+                    return neverSettles();
+                  },
+                },);
+                const later = recordingSink();
+                const {
+                  logger,
+                  initPromise,
+                } = createLogger({
+                  sinks: [
+                    wedged.sink,
+                    later.sink,
+                  ],
+                  verifyTimeoutMs: SHORT_DEADLINE_MS,
+                },);
+                await initPromise;
+                logger.info('after init',);
+                await logger.flush();
+
+                expect(messages({ recording: later, },),)
+                  .toEqual(['after init',],);
+                expect(messages({ recording: wedged, },),)
+                  .toEqual([],);
+                expect(verifyBreadcrumbs({ warn, },),)
+                  .toBe(1,);
+              },
+            },),
+
+            it({
+              name: 'a verify that answers after the time limit stays unavailable',
+              timeout: DEADLINE_TEST_TIMEOUT_MS,
+              fn: async ({ sinon, },) => {
+                sinon.stub(
+                  console,
+                  'warn',
+                );
+                const slow = recordingSink({
+                  verify: verifyTrueAfter({ delayMs: SHORT_DEADLINE_MS * 3, },),
+                },);
+                const {
+                  logger,
+                  initPromise,
+                } = createLogger({
+                  sinks: [slow.sink,],
+                  verifyTimeoutMs: SHORT_DEADLINE_MS,
+                },);
+                await initPromise;
             // Let the late answer arrive, then log and drain.
-            await wait(SHORT_DEADLINE_MS * 4,);
-            expect(function logAfterLateAnswer() {
-              logger.info('late',);
-            },)
-              .toThrow('No logging backends available',);
-            await logger.flush();
+                await wait(SHORT_DEADLINE_MS * 4,);
+                expect(function logAfterLateAnswer() {
+                  logger.info('late',);
+                },)
+                  .toThrow('No logging backends available',);
+                await logger.flush();
 
-            expect(messages({ recording: slow, },),)
-              .toEqual([],);
-          },
-        },),
+                expect(messages({ recording: slow, },),)
+                  .toEqual([],);
+              },
+            },),
 
-        it({
-          name: 'sinks verify concurrently rather than one after another',
-          timeout: DEADLINE_TEST_TIMEOUT_MS,
-          fn: async () => {
-            const firstStarted = Promise.withResolvers<void>();
-            const secondStarted = Promise.withResolvers<void>();
-            const release = Promise.withResolvers<void>();
-            const first = recordingSink({ verify: async function firstVerification() {
-              firstStarted.resolve();
-              await release.promise;
-              return true;
-            }, });
-            const second = recordingSink({ verify: async function secondVerification() {
-              secondStarted.resolve();
-              await release.promise;
-              return true;
-            }, });
-            const { initPromise, } = createLogger({
-              sinks: [
-                first.sink,
-                second.sink,
-              ],
-            },);
+            it({
+              name: 'sinks verify concurrently rather than one after another',
+              timeout: DEADLINE_TEST_TIMEOUT_MS,
+              fn: async () => {
+                const firstStarted = Promise.withResolvers<void>();
+                const secondStarted = Promise.withResolvers<void>();
+                const release = Promise.withResolvers<void>();
+                const first = recordingSink({ verify: async function firstVerification() {
+                  firstStarted.resolve();
+                  await release.promise;
+                  return true;
+                }, });
+                const second = recordingSink({ verify: async function secondVerification() {
+                  secondStarted.resolve();
+                  await release.promise;
+                  return true;
+                }, });
+                const { initPromise, } = createLogger({
+                  sinks: [
+                    first.sink,
+                    second.sink,
+                  ],
+                },);
             // Both verifications must start before either can complete.
-            await Promise.all([firstStarted.promise, secondStarted.promise]);
-            release.resolve();
-            await initPromise;
-          },
+                await Promise.all([firstStarted.promise, secondStarted.promise]);
+                release.resolve();
+                await initPromise;
+              },
+            },),
+
+            it({
+              name: 'a record logged while sinks verify at different speeds reaches each exactly once',
+              timeout: DEADLINE_TEST_TIMEOUT_MS,
+              fn: async () => {
+                const quick = recordingSink({ verify: verifyTrueAfter({ delayMs: 1, },), },);
+                const slow = recordingSink({ verify: verifyTrueAfter({ delayMs: SLOW_WRITE_MS, },), },);
+                const {
+                  logger,
+                  initPromise,
+                } = createLogger({
+                  sinks: [
+                    quick.sink,
+                    slow.sink,
+                  ],
+                },);
+                logger.info('early',);
+                await initPromise;
+                logger.info('late',);
+                await logger.flush();
+
+                expect(messages({ recording: quick, },),)
+                  .toEqual([
+                    'early',
+                    'late',
+                  ],);
+                expect(messages({ recording: slow, },),)
+                  .toEqual([
+                    'early',
+                    'late',
+                  ],);
+              },
+            },),
+          ],
         },),
 
-        it({
-          name: 'a record logged while sinks verify at different speeds reaches each exactly once',
-          timeout: DEADLINE_TEST_TIMEOUT_MS,
-          fn: async () => {
-            const quick = recordingSink({ verify: verifyTrueAfter({ delayMs: 1, },), },);
-            const slow = recordingSink({ verify: verifyTrueAfter({ delayMs: SLOW_WRITE_MS, },), },);
-            const {
-              logger,
-              initPromise,
-            } = createLogger({
-              sinks: [
-                quick.sink,
-                slow.sink,
-              ],
-            },);
-            logger.info('early',);
-            await initPromise;
-            logger.info('late',);
-            await logger.flush();
+        describe({
+          name: 'abandoned writes',
+          children: [
+            it({
+              name: 'a write rejecting after the deadline abandoned it is reported once, never left unhandled, and does not retire the sink',
+              timeout: DEADLINE_TEST_TIMEOUT_MS,
+              fn: async ({ sinon, },) => {
+                const warn = sinon.stub(
+                  console,
+                  'warn',
+                );
+                using unhandled = captureUnhandledRejections();
+                const parked = parkedFirstWriteSink();
+                const {
+                  logger,
+                  initPromise,
+                } = createLogger({
+                  flushDeadlineMs: SHORT_DEADLINE_MS,
+                  sinks: [parked.sink,],
+                },);
+                await initPromise;
+                logger.info('parked',);
+                await logger.flush();
+                expect(deadlineBreadcrumbs({ warn, },),)
+                  .toBe(1,);
 
-            expect(messages({ recording: quick, },),)
-              .toEqual([
-                'early',
-                'late',
-              ],);
-            expect(messages({ recording: slow, },),)
-              .toEqual([
-                'early',
-                'late',
-              ],);
-          },
+                parked.settleParked.reject(new Error('late failure',),);
+                await wait(1,);
+                logger.info('after',);
+
+                const elapsed = await timeFlush({ flush: logger.flush, },);
+                expect(elapsed,)
+                  .toBeLessThan(FAST_FLUSH_MS,);
+                expect(messages({ recording: parked, },),)
+                  .toEqual(['after',],);
+                expect(unhandled.reasons,)
+                  .toHaveLength(0,);
+                expect(
+                  breadcrumbMessages({
+                    warn,
+                    needle: 'sink write promise rejected while being tracked',
+                  },),
+                )
+                  .toHaveLength(1,);
+                expect(deadlineBreadcrumbs({ warn, },),)
+                  .toBe(1,);
+              },
+            },),
+
+            it({
+              name: 'a write resolving after the deadline abandoned it still lands and the sink keeps working',
+              timeout: DEADLINE_TEST_TIMEOUT_MS,
+              fn: async ({ sinon, },) => {
+                const warn = sinon.stub(
+                  console,
+                  'warn',
+                );
+                using unhandled = captureUnhandledRejections();
+                const parked = parkedFirstWriteSink();
+                const {
+                  logger,
+                  initPromise,
+                } = createLogger({
+                  flushDeadlineMs: SHORT_DEADLINE_MS,
+                  sinks: [parked.sink,],
+                },);
+                await initPromise;
+                logger.info('parked',);
+                await logger.flush();
+
+                parked.settleParked.resolve();
+                await wait(1,);
+                logger.info('after',);
+                await logger.flush();
+
+                expect(messages({ recording: parked, },),)
+                  .toEqual([
+                    'parked',
+                    'after',
+                  ],);
+                expect(unhandled.reasons,)
+                  .toHaveLength(0,);
+                expect(
+                  breadcrumbMessages({
+                    warn,
+                    needle: 'sink write promise rejected',
+                  },),
+                )
+                  .toHaveLength(0,);
+                expect(deadlineBreadcrumbs({ warn, },),)
+                  .toBe(1,);
+              },
+            },),
+          ],
         },),
-      ],
-    },),
-
-    describe({
-      name: 'abandoned writes',
-      children: [
-        it({
-          name: 'a write rejecting after the deadline abandoned it is reported once, never left unhandled, and does not retire the sink',
-          timeout: DEADLINE_TEST_TIMEOUT_MS,
-          fn: async ({ sinon, },) => {
-            const warn = sinon.stub(
-              console,
-              'warn',
-            );
-            using unhandled = captureUnhandledRejections();
-            const parked = parkedFirstWriteSink();
-            const {
-              logger,
-              initPromise,
-            } = createLogger({
-              flushDeadlineMs: SHORT_DEADLINE_MS,
-              sinks: [parked.sink,],
-            },);
-            await initPromise;
-            logger.info('parked',);
-            await logger.flush();
-            expect(deadlineBreadcrumbs({ warn, },),)
-              .toBe(1,);
-
-            parked.settleParked.reject(new Error('late failure',),);
-            await wait(1,);
-            logger.info('after',);
-
-            const elapsed = await timeFlush({ flush: logger.flush, },);
-            expect(elapsed,)
-              .toBeLessThan(FAST_FLUSH_MS,);
-            expect(messages({ recording: parked, },),)
-              .toEqual(['after',],);
-            expect(unhandled.reasons,)
-              .toHaveLength(0,);
-            expect(
-              breadcrumbMessages({
-                warn,
-                needle: 'sink write promise rejected while being tracked',
-              },),
-            )
-              .toHaveLength(1,);
-            expect(deadlineBreadcrumbs({ warn, },),)
-              .toBe(1,);
-          },
-        },),
-
-        it({
-          name: 'a write resolving after the deadline abandoned it still lands and the sink keeps working',
-          timeout: DEADLINE_TEST_TIMEOUT_MS,
-          fn: async ({ sinon, },) => {
-            const warn = sinon.stub(
-              console,
-              'warn',
-            );
-            using unhandled = captureUnhandledRejections();
-            const parked = parkedFirstWriteSink();
-            const {
-              logger,
-              initPromise,
-            } = createLogger({
-              flushDeadlineMs: SHORT_DEADLINE_MS,
-              sinks: [parked.sink,],
-            },);
-            await initPromise;
-            logger.info('parked',);
-            await logger.flush();
-
-            parked.settleParked.resolve();
-            await wait(1,);
-            logger.info('after',);
-            await logger.flush();
-
-            expect(messages({ recording: parked, },),)
-              .toEqual([
-                'parked',
-                'after',
-              ],);
-            expect(unhandled.reasons,)
-              .toHaveLength(0,);
-            expect(
-              breadcrumbMessages({
-                warn,
-                needle: 'sink write promise rejected',
-              },),
-            )
-              .toHaveLength(0,);
-            expect(deadlineBreadcrumbs({ warn, },),)
-              .toBe(1,);
-          },
-        },),
-      ],
-    },),
       ],
     },),
 

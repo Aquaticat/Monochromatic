@@ -241,7 +241,7 @@ function finalizeResult(result: OxlintRunResult,): void {
     !== undefined)
     && (result.signalName
       !== ''))
-  {
+    {
     console.error(`[task-oxlint] oxlint terminated by signal: ${result.signalName}`,);
     process.exitCode = 1;
   }

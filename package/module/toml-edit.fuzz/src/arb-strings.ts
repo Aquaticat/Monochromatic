@@ -108,8 +108,8 @@ const multilineBasicStringArbitrary: Arbitrary<ValueSample> = basicContent.map(f
    */
   const inner = basicStringLiteral({ content, },)
     .slice(
-      1,
-      -1,
+    1,
+    -1,
     );
   return {
     text: `"""${inner}"""`,

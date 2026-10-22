@@ -145,8 +145,8 @@ function databaseUrl(token: string,): URL {
   url
     .searchParams
     .set(
-      'token',
-      token,
+    'token',
+    token,
     );
   return url;
 }

@@ -131,8 +131,8 @@ await describe({
     it({
       name:
         'pairs every prepared slice with the archive wording it was judged against, '
-        + 'including a slice the lane left alone, because a rate needs its denominator '
-        + 'and leaving a slice alone is a decision rather than an absence',
+          + 'including a slice the lane left alone, because a rate needs its denominator '
+          + 'and leaving a slice alone is a decision rather than an absence',
       fn: async () => {
         /**
          Wordings for a lane that changed the first slice only.
@@ -164,7 +164,7 @@ await describe({
     it({
       name:
         'keeps document order and the global index, which is what a comparison joins two lanes on, '
-        + 'rather than the position within this list',
+          + 'rather than the position within this list',
       fn: async () => {
         /**
          Wordings built from decisions given out of order.
@@ -185,7 +185,7 @@ await describe({
     it({
       name:
         'REFUSES a lane that left a prepared slice undecided, because the alternative is a shorter list '
-        + 'that every later count silently reads as a smaller document',
+          + 'that every later count silently reads as a smaller document',
       fn: async () => {
         /**
          Failure the builder raised.
@@ -208,7 +208,7 @@ await describe({
     it({
       name:
         'REFUSES a decision naming a slice this preparation never produced, which is how two different '
-        + 'preparations of one entry would otherwise be joined without anything noticing',
+          + 'preparations of one entry would otherwise be joined without anything noticing',
       fn: async () => {
         /**
          Failure the builder raised.
@@ -235,9 +235,9 @@ await describe({
     it({
       name:
         'records a slice the lane never reached as UNEXAMINED rather than as agreeing with the archive, '
-        + 'which is what the repair lane`s whole-document block needs: it returns from inside the slice loop, '
-        + 'so the slices after the crossing were never looked at and reporting the archive wording as their '
-        + 'decision would state a choice nobody took',
+          + 'which is what the repair lane`s whole-document block needs: it returns from inside the slice loop, '
+          + 'so the slices after the crossing were never looked at and reporting the archive wording as their '
+          + 'decision would state a choice nobody took',
       fn: async () => {
         /**
          Wordings for a lane that stopped after the first slice.
@@ -265,9 +265,9 @@ await describe({
     it({
       name:
         'REFUSES a decision that comes AFTER an unexamined slice, since `not-evaluated` describes '
-        + 'one shape and no other: a lane that stopped, so an evaluated prefix and an unevaluated '
-        + 'suffix. Decisions for slices 0 and 2 with 1 unexamined is a slice that was DROPPED, and '
-        + 'accepting it would let that pass as an early stop',
+          + 'one shape and no other: a lane that stopped, so an evaluated prefix and an unevaluated '
+          + 'suffix. Decisions for slices 0 and 2 with 1 unexamined is a slice that was DROPPED, and '
+          + 'accepting it would let that pass as an early stop',
       fn: async () => {
         /**
          Failure the builder raised.
@@ -290,7 +290,7 @@ await describe({
     it({
       name:
         'still REFUSES a decision naming an unknown slice under the not-evaluated policy, because that policy '
-        + 'forgives a lane that stopped early and not one that describes another slicing',
+          + 'forgives a lane that stopped early and not one that describes another slicing',
       fn: async () => {
         /**
          Failure the builder raised.
@@ -313,8 +313,8 @@ await describe({
     it({
       name:
         'accepts a NAMED unfilled slice under `refuse` and still refuses every other gap, which is the '
-        + 'difference between a lane that examined a passage and could not fill it and a lane that lost '
-        + 'one: the first can say which slices, the second cannot',
+          + 'difference between a lane that examined a passage and could not fill it and a lane that lost '
+          + 'one: the first can say which slices, the second cannot',
       fn: async () => {
         /**
          Wordings where the lane decided the first slice and could not fill
@@ -353,8 +353,8 @@ await describe({
     it({
       name:
         'REFUSES a slice reported as unfilled AND decided, since what the lane accepted there would be '
-        + 'unstated, and refuses one this preparation never produced, the same way it refuses a '
-        + 'decision naming a foreign slice',
+          + 'unstated, and refuses one this preparation never produced, the same way it refuses a '
+          + 'decision naming a foreign slice',
       fn: async () => {
         /**
          Failure raised by a slice claimed twice.
@@ -401,8 +401,8 @@ await describe({
     it({
       name:
         'names a slice the lane reached with NO VOICE HEARD as the archive standing by default, which is a '
-        + 'different fact from the archive being chosen: nobody answered, so nobody chose anything, and the '
-        + 'outcome carries no wording for a reader to mistake for one',
+          + 'different fact from the archive being chosen: nobody answered, so nobody chose anything, and the '
+          + 'outcome carries no wording for a reader to mistake for one',
       fn: async () => {
         /**
          Wordings where the second slice met silence.
@@ -424,7 +424,7 @@ await describe({
     it({
       name:
         'REFUSES a slice reported as unheard AND decided, since whether anyone answered for it would be '
-        + 'unstated, and refuses an unheard index this preparation never produced',
+          + 'unstated, and refuses an unheard index this preparation never produced',
       fn: async () => {
         /**
          Failure raised by a slice claimed both ways.
@@ -472,7 +472,7 @@ await describe({
     it({
       name:
         'REFUSES a slice reported as unheard AND unfilled, because only one of those has an incumbent to '
-        + 'stand on and the two disagree about whether the archive translates the passage at all',
+          + 'stand on and the two disagree about whether the archive translates the passage at all',
       fn: async () => {
         /**
          Failure raised by the contradiction.
@@ -498,8 +498,8 @@ await describe({
     it({
       name:
         'REFUSES an unheard slice the archive never translated, the MIRROR of the unfilled rule: '
-        + '`incumbent-fallback` says the archive`s wording stands here, so reporting it at a place with no '
-        + 'archive wording would record a passage as covered by a translation that does not exist',
+          + '`incumbent-fallback` says the archive`s wording stands here, so reporting it at a place with no '
+          + 'archive wording would record a passage as covered by a translation that does not exist',
       fn: async () => {
         /**
          Failure raised by a fallback with nothing to fall back on.
@@ -523,8 +523,8 @@ await describe({
     it({
       name:
         'REFUSES an UNFILLED slice that comes after an unexamined one, not only a decision, because a lane '
-        + 'that stopped cannot report reaching a later slice by any route: an unfilled slice sitting after '
-        + 'an unexamined one asserts the lane resumed after stopping',
+          + 'that stopped cannot report reaching a later slice by any route: an unfilled slice sitting after '
+          + 'an unexamined one asserts the lane resumed after stopping',
       fn: async () => {
         /**
          Failure raised by reaching a slice after the stop.
@@ -548,7 +548,7 @@ await describe({
     it({
       name:
         'REFUSES an UNHEARD slice after an unexamined one for the same reason, since hearing nobody at a '
-        + 'slice still means the lane got there',
+          + 'slice still means the lane got there',
       fn: async () => {
         /**
          Failure raised by reaching a slice after the stop.

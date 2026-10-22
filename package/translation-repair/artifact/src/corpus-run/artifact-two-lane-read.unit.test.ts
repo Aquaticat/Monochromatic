@@ -442,7 +442,7 @@ await describe({
     it({
       name:
         'reports an artifact written before archiveText existed as UNRECORDED rather than as empty, '
-        + 'since a file that never carried the field cannot say the entry had no English',
+          + 'since a file that never carried the field cannot say the entry had no English',
       fn: async () => {
         const parsed = parseSettledTwoLaneArtifact({ value: artifactWith(), },);
         expect(parsed.preparation
@@ -618,8 +618,8 @@ await describe({
     it({
       name:
         'reads a whole artifact, RECOMPUTES its comparison, and hands back each raw lane result unread: '
-        + 'a reader wanting a field this version does not check gets it from the artifact rather than '
-        + 'from a later generation of this parser',
+          + 'a reader wanting a field this version does not check gets it from the artifact rather than '
+          + 'from a later generation of this parser',
       fn: async () => {
         /**
          One valid artifact, read back.
@@ -640,9 +640,9 @@ await describe({
           .map(function toVerdict(row,): string {
             return row.laneRelation;
           },),).toEqual([
-          'translate-only',
-          'gap-remains',
-        ],);
+            'translate-only',
+            'gap-remains',
+          ],);
 
         // The whole raw record, including fields version 2 never described.
         expect(parsed.lanes
@@ -655,9 +655,9 @@ await describe({
     it({
       name:
         'reads a SETTLED CONTEST against the comparison it derived for itself, rather than against one '
-        + 'a test typed out. The gap slice here leaves both lanes carrying nothing, so a filter reading '
-        + 'verdict names rather than lane wording would offer it to the roster as a contest between two '
-        + 'empty candidates',
+          + 'a test typed out. The gap slice here leaves both lanes carrying nothing, so a filter reading '
+          + 'verdict names rather than lane wording would offer it to the roster as a contest between two '
+          + 'empty candidates',
       fn: async () => {
         /**
          Artifact whose contest answers the one slice the two lanes worded
@@ -697,7 +697,7 @@ await describe({
     it({
       name:
         'REFUSES a contest answering the GAP slice, where neither lane put down wording and there is '
-        + 'therefore nothing for a roster to choose between',
+          + 'therefore nothing for a roster to choose between',
       fn: async () => {
         /**
          What contestsAGap raised, read for its class as well as its wording.
@@ -730,8 +730,8 @@ await describe({
     it({
       name:
         'REFUSES a key on a lane ENVELOPE and ACCEPTS the same key inside that lane`s RESULT, which is '
-        + 'the schema-ownership rule in one pair: version 2 says a lane is a result beside a ledger, and '
-        + 'says nothing at all about what a result holds',
+          + 'the schema-ownership rule in one pair: version 2 says a lane is a result beside a ledger, and '
+          + 'says nothing at all about what a result holds',
       fn: async () => {
         /**
          What extraOnEnvelope raised, read for its class as well as its wording.
@@ -775,10 +775,10 @@ await describe({
     it({
       name:
         'REFUSES A THIRD LANE on the lanes record itself, which the "REFUSES a key on a lane ENVELOPE" case '
-        + 'cannot reach: '
-        + 'that one pins the keys INSIDE a lane, and this shape names exactly two lanes, so a file '
-        + 'recording a third lane`s deliveries would otherwise be read as an ordinary two-lane '
-        + 'artifact with one lane`s work silently dropped',
+          + 'cannot reach: '
+          + 'that one pins the keys INSIDE a lane, and this shape names exactly two lanes, so a file '
+          + 'recording a third lane`s deliveries would otherwise be read as an ordinary two-lane '
+          + 'artifact with one lane`s work silently dropped',
       fn: async () => {
         /**
          What thirdLane raised, read for its class as well as its wording.
@@ -813,8 +813,8 @@ await describe({
     it({
       name:
         'REFUSES a nested `null` in the call configuration and ACCEPTS one in an unknown raw addition: '
-        + 'the writer controls every byte of the first and leaves an unset key out, and controls none of '
-        + 'the second',
+          + 'the writer controls every byte of the first and leaves an unset key out, and controls none of '
+          + 'the second',
       fn: async () => {
         /**
          What nullInConfig raised, read for its class as well as its wording.
@@ -844,8 +844,8 @@ await describe({
     it({
       name:
         'REFUSES a raw result whose slices are in the WRONG ORDER, even though every row is right: the '
-        + 'ledger and the result are joined by position because both are stated in document order, and '
-        + 'joining by slice index instead would report that everything matched',
+          + 'ledger and the result are joined by position because both are stated in document order, and '
+          + 'joining by slice index instead would report that everything matched',
       fn: async () => {
         /**
          The repair result with its two correct rows swapped.
@@ -899,7 +899,7 @@ await describe({
     it({
       name:
         'REFUSES two ledgers of equal length covering DIFFERENT slices, which a length check alone reads '
-        + 'as a matching pair and which no later join could recover from',
+          + 'as a matching pair and which no later join could recover from',
       fn: async () => {
         /**
          Translate ledger renumbered so it covers slices 1 and 2.
@@ -949,8 +949,8 @@ await describe({
     it({
       name:
         'REFUSES a ledger that names one slice TWICE, which every other relation reads as a matching '
-        + 'pair: the evidence joins by POSITION and agrees, the two lanes join by position and agree, '
-        + 'and the row count still equals the prepared slice count',
+          + 'pair: the evidence joins by POSITION and agrees, the two lanes join by position and agree, '
+          + 'and the row count still equals the prepared slice count',
       fn: async () => {
         /**
          Repair ledger whose two rows both claim slice 0.
@@ -1017,9 +1017,9 @@ await describe({
     it({
       name:
         'REFUSES a ledger whose rows are PERMUTED rather than repeated, which the first version of this '
-        + 'check let through: distinctness was the rule, and a ledger naming slice 1 then slice 0 is '
-        + 'perfectly distinct while every positional join in this reader reads each row against the '
-        + 'wrong slice of the preparation',
+          + 'check let through: distinctness was the rule, and a ledger naming slice 1 then slice 0 is '
+          + 'perfectly distinct while every positional join in this reader reads each row against the '
+          + 'wrong slice of the preparation',
       fn: async () => {
         // Both ledgers reversed, so each lane still agrees with itself and with
         // the other, and only the anchor to document order is broken.
@@ -1084,8 +1084,8 @@ await describe({
     it({
       name:
         'ACCEPTS a BLOCKED repair run that withdrew nothing by assembly, which is the case a reader that '
-        + 'recomputed the status would refuse: a blocked run whose slices all agreed with the archive '
-        + 'produces no withdrawal at all, and is an ordinary artifact',
+          + 'recomputed the status would refuse: a blocked run whose slices all agreed with the archive '
+          + 'produces no withdrawal at all, and is an ordinary artifact',
       fn: async () => {
         expect(parseSettledTwoLaneArtifact({
           value: artifactWith({
@@ -1103,8 +1103,8 @@ await describe({
     it({
       name:
         'REFUSES a run whose status and deliveries could not have happened together, in both directions: '
-        + 'an unblocked run carrying a withdrawal by whole-document refusal, and a blocked one carrying a '
-        + 'shipped replacement, since a blocked run never assembles anything',
+          + 'an unblocked run carrying a withdrawal by whole-document refusal, and a blocked one carrying a '
+          + 'shipped replacement, since a blocked run never assembles anything',
       fn: async () => {
         /**
          An unblocked run naming the refusal that only a blocked one produces.
@@ -1181,8 +1181,8 @@ await describe({
     it({
       name:
         'REFUSES an index set the ledger rows do not produce, and reads the WITHDRAWN set as the '
-        + 'assembly guard`s alone: a run refused as a whole never assembled anything, so counting its '
-        + 'withdrawals would make every blocked document look like one the guard tore apart',
+          + 'assembly guard`s alone: a run refused as a whole never assembled anything, so counting its '
+          + 'withdrawals would make every blocked document look like one the guard tore apart',
       fn: async () => {
         /**
          What shippedDisagrees raised, read for its class as well as its wording.
@@ -1231,8 +1231,8 @@ await describe({
     it({
       name:
         'REFUSES a row whose two axes cannot both be true, which every field parsing on its own cannot '
-        + 'catch: a document carrying a shipped replacement at a slice its lane says it had nothing to '
-        + 'do at is a row this reader would otherwise hand on as fact',
+          + 'catch: a document carrying a shipped replacement at a slice its lane says it had nothing to '
+          + 'do at is a row this reader would otherwise hand on as fact',
       fn: async () => {
         /**
          What axesDisagree raised, read for its class as well as its wording.
@@ -1265,7 +1265,7 @@ await describe({
     it({
       name:
         'REFUSES a recorded comparison the ledgers do not derive, since a stored comparison is a claim '
-        + 'about two ledgers stored beside it and nothing has to trust it',
+          + 'about two ledgers stored beside it and nothing has to trust it',
       fn: async () => {
         /**
          The derived comparison with one lane relation changed to something
@@ -1306,9 +1306,9 @@ await describe({
     it({
       name:
         'REFUSES a recorded comparison carrying MORE rows than the two ledgers derive, which the '
-        + 'row-by-row check beside it cannot reach: that walk visits the DERIVED rows, so a row recorded '
-        + 'past the end of them is never read, and the file`s claim about a slice its own ledgers do not '
-        + 'cover would be dropped without a word',
+          + 'row-by-row check beside it cannot reach: that walk visits the DERIVED rows, so a row recorded '
+          + 'past the end of them is never read, and the file`s claim about a slice its own ledgers do not '
+          + 'cover would be dropped without a word',
       fn: async () => {
         /**
          What version 2's rules derive from the two ledgers, which is two rows
@@ -1345,8 +1345,8 @@ await describe({
     it({
       name:
         'ACCEPTS a recorded comparison whose rows carry the same values in a different KEY ORDER, which '
-        + 'is what a file read off disk holds: key order is not part of what a row says, and refusing it '
-        + 'would fail artifacts over a difference no reader can see',
+          + 'is what a file read off disk holds: key order is not part of what a row says, and refusing it '
+          + 'would fail artifacts over a difference no reader can see',
       fn: async () => {
         /**
          The same comparison with every key written in the opposite order.
@@ -1366,8 +1366,8 @@ await describe({
     it({
       name:
         'REFUSES text that differs only by Unicode COMPOSITION, since the contract compares character '
-        + 'for character with no normalization: a reader that quietly normalized would report two '
-        + 'derivations as agreeing when the bytes on disk do not',
+          + 'for character with no normalization: a reader that quietly normalized would report two '
+          + 'derivations as agreeing when the bytes on disk do not',
       fn: async () => {
         /**
          Archive wording written composed in the ledger.
@@ -1470,8 +1470,8 @@ await describe({
     it({
       name:
         'REFUSES every generation but the five that wrote this shape, including a MISSING one and a '
-        + 'version spelled as text: dispatch has already chosen this reader by the time it is called, '
-        + 'so a file arriving here under another version is a caller reading the wrong file',
+          + 'version spelled as text: dispatch has already chosen this reader by the time it is called, '
+          + 'so a file arriving here under another version is a caller reading the wrong file',
       fn: async () => {
         expect([
           undefined,
@@ -1498,8 +1498,8 @@ await describe({
     it({
       name:
         'ACCEPTS an identity that is syntactically an identity and describes some other preparation, '
-        + 'which pins the SYNTAX-ONLY boundary: the inputs the identity hashes are not in the file, so a '
-        + 'standalone reader cannot tell one from another and must not pretend otherwise',
+          + 'which pins the SYNTAX-ONLY boundary: the inputs the identity hashes are not in the file, so a '
+          + 'standalone reader cannot tell one from another and must not pretend otherwise',
       fn: async () => {
         /**
          A well formed identity of a preparation nobody here ran.
@@ -1550,7 +1550,7 @@ await describe({
     it({
       name:
         'REFUSES a translate lane whose counts or status disagree with what it recorded per slice, which '
-        + 'is the lane`s own arithmetic checked against its own rows',
+          + 'is the lane`s own arithmetic checked against its own rows',
       fn: async () => {
         /**
          What countDisagrees raised, read for its class as well as its wording.
@@ -1595,9 +1595,9 @@ await describe({
     it({
       name:
         'REFUSES each lane`s own status ON THE OTHER LANE, in both directions. The two allowed sets sit '
-        + 'a few lines apart in one file, so a reader that offered either set to both lanes would take '
-        + 'a repair result claiming it was complete and a translate result claiming it was unchanged, '
-        + 'and every relation the reader checks after it reads a status it was never asked to doubt',
+          + 'a few lines apart in one file, so a reader that offered either set to both lanes would take '
+          + 'a repair result claiming it was complete and a translate result claiming it was unchanged, '
+          + 'and every relation the reader checks after it reads a status it was never asked to doubt',
       fn: async () => {
         /**
          What repairBorrowsTranslate raised, read for its class as well as its wording.
@@ -1643,9 +1643,9 @@ await describe({
     it({
       name:
         'CARRIES THE REPAIR LANE`S BALLOTS THROUGH, verbatim reasons included, which is the whole '
-        + 'reason the rounds are recorded: this lane can delete a declared name from a translation, '
-        + 'and until the rounds landed in the artifact the only way to see it happen was to run a '
-        + 'live probe against the real judging sheet',
+          + 'reason the rounds are recorded: this lane can delete a declared name from a translation, '
+          + 'and until the rounds landed in the artifact the only way to see it happen was to run a '
+          + 'live probe against the real judging sheet',
       fn: async () => {
         /**
          One judged round of the shape the editor stage now records.
@@ -1737,7 +1737,7 @@ await describe({
     it({
       name:
         'REFUSES a lane selection naming a lane directly, since a decided contest is recorded as a '
-        + 'contest with its ballots and a bare lane name would be a verdict with nothing behind it',
+          + 'contest with its ballots and a bare lane name would be a verdict with nothing behind it',
       fn: async () => {
         /**
          What unknownSelection raised, read for its class as well as its wording.
@@ -1756,9 +1756,9 @@ await describe({
     it({
       name:
         'POSITIVE CONTROL for the "READS A GENERATION 3 BODY TO EXACTLY WHAT GENERATION 4 READS TO" case: '
-        + 're-spelling the body actually moves the '
-        + 'index everywhere it appears, so a re-speller that changed nothing would make the equality '
-        + 'that follows say nothing at all',
+          + 're-spelling the body actually moves the '
+          + 'index everywhere it appears, so a re-speller that changed nothing would make the equality '
+          + 'that follows say nothing at all',
       fn: async () => {
         /**
          Generation 4 body as JSON text.
@@ -1782,8 +1782,8 @@ await describe({
     it({
       name:
         'READS A GENERATION 3 BODY TO EXACTLY WHAT GENERATION 4 READS TO, which is what the key '
-        + 'vocabulary is for: the two files differ only in how the index is spelled, and a reader that '
-        + 'holds one spelling reports the older file`s ledger as naming no slices at all',
+          + 'vocabulary is for: the two files differ only in how the index is spelled, and a reader that '
+          + 'holds one spelling reports the older file`s ledger as naming no slices at all',
       fn: async () => {
         /**
          Older body's reading.
@@ -1809,8 +1809,8 @@ await describe({
     it({
       name:
         'REFUSES a generation 3 body that declares generation 4, rather than reading its ledger rows '
-        + 'as carrying no index: a relabelled file is the one failure the vocabulary cannot see, since '
-        + 'the label is the only thing that picks the spelling',
+          + 'as carrying no index: a relabelled file is the one failure the vocabulary cannot see, since '
+          + 'the label is the only thing that picks the spelling',
       fn: async () => {
         /**
          What the reader did with an older body under the current label.

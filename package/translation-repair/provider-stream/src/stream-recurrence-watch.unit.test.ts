@@ -103,8 +103,8 @@ function uniqueText(
       return (from + at)
         .toString(COUNTER_BASE,)
         .padStart(
-          UNIT_CHARS,
-          '.',
+        UNIT_CHARS,
+        '.',
         );
     },
   )
@@ -191,8 +191,8 @@ await describe({
             from: 500_000,
           },)
             .slice(
-              0,
-              LOOP_PERIOD,
+            0,
+            LOOP_PERIOD,
             )
             .repeat(400,),
         },);
@@ -214,8 +214,8 @@ await describe({
             from: 500_000,
           },)
             .slice(
-              0,
-              LOOP_PERIOD,
+            0,
+            LOOP_PERIOD,
             )
             .repeat(100,),
         },).kind,)

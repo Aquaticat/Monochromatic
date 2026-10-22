@@ -353,9 +353,9 @@ await describe({
               },),),
             ],).toEqual([
               'ConsistencyInvariantError: unreachable: a unit has at least one receiving place, and a unit is made from a '
-              + 'group of receivers',
+                + 'group of receivers',
               'ConsistencyInvariantError: unreachable: a unit has at least one receiving place, and a unit is made from a '
-              + 'group of receivers',
+                + 'group of receivers',
             ],);
           },
         },),

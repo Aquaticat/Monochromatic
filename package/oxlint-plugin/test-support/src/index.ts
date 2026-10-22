@@ -610,14 +610,14 @@ export async function runOxlintFixture(
    */
   const pluginDiagnostics = diagnostics
     .filter(
-      function keepPluginDiagnostic(
-        diagnostic,
-      ): diagnostic is OxlintRuleDiagnostic {
-        if ((typeof diagnostic.code) !== 'string')
-          return false;
-        return diagnostic.code
-          .startsWith(codePrefix,);
-      },
+    function keepPluginDiagnostic(
+      diagnostic,
+    ): diagnostic is OxlintRuleDiagnostic {
+      if ((typeof diagnostic.code) !== 'string')
+        return false;
+      return diagnostic.code
+        .startsWith(codePrefix,);
+    },
     );
   return pluginDiagnostics;
 }

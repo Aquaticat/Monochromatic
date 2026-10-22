@@ -64,7 +64,7 @@ export type AlignedRun =
      */
     readonly targetRun: readonly DocumentNode[];
   }
-  | {
+    | {
     /**
      Original blocks nothing rendered, and the place their rendering belongs.
 
@@ -74,18 +74,18 @@ export type AlignedRun =
      of the one beside it". Folding also cannot be undone later: once the
      span covers them, every reader downstream sees one passage.
      */
-    readonly kind: 'insertion';
+      readonly kind: 'insertion';
 
     /**
      Original-side blocks, in document order.
      */
-    readonly sourceRun: readonly DocumentNode[];
+      readonly sourceRun: readonly DocumentNode[];
 
     /**
      Boundary in the translation their rendering would be written at.
      */
-    readonly targetOffset: number;
-  };
+      readonly targetOffset: number;
+    };
 
 /**
  A run of translation blocks the archive's note seals, with the originals

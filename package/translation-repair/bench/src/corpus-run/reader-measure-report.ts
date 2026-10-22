@@ -321,7 +321,7 @@ function verdictLines(
     return [
       'RESULT: both clauses met.',
       `NEXT: remove '${HOLD}' from the holds of ${modelId} in shared-contract/src/model-cards.ts, rebuild, and run the package checks;`
-      + ' that seats it as a picture reader on OpenRouter (zero data retention on every request).',
+        + ' that seats it as a picture reader on OpenRouter (zero data retention on every request).',
     ];
   }
   if (verdict.kind === 'inconclusive') {
@@ -344,8 +344,8 @@ function verdictLines(
   return [
     ...verdict.clauses
       .map(function failed(clause,): string {
-      return `RESULT: ${clause} clause failed.`;
-    },),
+        return `RESULT: ${clause} clause failed.`;
+      },),
     `NEXT: keep the hold '${HOLD}' on ${modelId}.`,
   ];
 }
@@ -406,7 +406,7 @@ export function renderMeasureReport(
         many: 'pictures',
       },)
     } matched,`
-    + ` ${String(candidate.produced,)} ${
+      + ` ${String(candidate.produced,)} ${
       wordForCount({
         count: candidate.produced,
         one: 'reading',
@@ -421,7 +421,7 @@ export function renderMeasureReport(
         many: 'readings',
       },)
     }; seated floor ${twoPlaces({ value: band.floorCorroboratedByAll, },)}`
-    + ` corroborated by all, seated ceiling ${twoPlaces({ value: band.ceilingCorroboratedByNone, },)} corroborated by none.`,
+      + ` corroborated by all, seated ceiling ${twoPlaces({ value: band.ceilingCorroboratedByNone, },)} corroborated by none.`,
     candidateLine({
       candidate,
       band,

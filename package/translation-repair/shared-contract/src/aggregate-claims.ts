@@ -214,14 +214,14 @@ function claimsShareDefect(
 ): boolean {
   return left.spans
     .some(function anyPairOverlaps(leftSpan,) {
-    return right.spans
-      .some(function pairOverlaps(rightSpan,) {
-      return spansOverlap({
-        left: leftSpan,
-        right: rightSpan,
-      },);
+      return right.spans
+        .some(function pairOverlaps(rightSpan,) {
+          return spansOverlap({
+            left: leftSpan,
+            right: rightSpan,
+          },);
+        },);
     },);
-  },);
 }
 
 /**
@@ -243,16 +243,16 @@ function claimPosition(
   return claim
     .spans
     .reduce(
-      function toMinStart(
-        min,
-        span,
-      ) {
+    function toMinStart(
+      min,
+      span,
+    ) {
       return Math.min(
         min,
         span.startOffset,
       );
     },
-      Number.POSITIVE_INFINITY,
+    Number.POSITIVE_INFINITY,
     );
 }
 
@@ -393,11 +393,11 @@ export function aggregateClaims(
             min,
             member,
           ) {
-          return Math.min(
-            min,
-            claimPosition({ claim: member.claim, },),
-          );
-        },
+            return Math.min(
+              min,
+              claimPosition({ claim: member.claim, },),
+            );
+          },
           Number.POSITIVE_INFINITY,
         ),
         members: group,

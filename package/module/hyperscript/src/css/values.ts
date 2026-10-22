@@ -46,7 +46,7 @@ export type ExtractLiteral<T,> = T extends string ? string extends T ? never
   : T
   : T extends number ? number extends T ? never
     : T
-  : never;
+    : never;
 
 /**
  CSS named colors (the 148 CSS Color Level 4 keywords).
@@ -122,8 +122,8 @@ export type CssDeprecatedSystemColor = 'ActiveBorder' | 'ActiveCaption' | 'AppWo
  */
 export type StrictValue<T,> =
   | Exclude<ExtractLiteral<T>, CssNamedColor | CssDeprecatedSystemColor>
-  | CssValue
-  | ([number,] extends [T,] ? number : never);
+    | CssValue
+    | ([number,] extends [T,] ? number : never);
 
 //endregion
 

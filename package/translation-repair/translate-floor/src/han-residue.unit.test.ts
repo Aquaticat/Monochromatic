@@ -235,7 +235,7 @@ await describe({
               candidateText: '猫睡了。',
             },),).toEqual([
               'Your translation repeats the ORIGINAL untranslated, in all but whitespace. Write the passage in English; '
-              + 'keep only the names, handles, links and code the original carries.',
+                + 'keep only the names, handles, links and code the original carries.',
             ],);
           },
         },),

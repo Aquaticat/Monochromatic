@@ -33,8 +33,8 @@ const CANONICAL_FORMATTER_PATH = 'package/module/caught-value/src/index.ts';
 function isCanonicalFormatterFile(fileName: string,): boolean {
   return fileName
     .replaceAll(
-      '\\',
-      '/',
+    '\\',
+    '/',
     )
     .endsWith(CANONICAL_FORMATTER_PATH,);
 }

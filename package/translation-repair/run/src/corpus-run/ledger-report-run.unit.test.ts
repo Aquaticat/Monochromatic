@@ -191,7 +191,7 @@ await describe({
             `  UNREADABLE ${FIRST_NAME}: ledger file ${FIRST_NAME} has no usable at`,
             `  1 of 1 ledger file could not be read. ${SHORTFALL_SENTENCE}`,
             'NOTHING COUNTED. Every ledger file this run wrote refused to read, so this is a run whose '
-            + 'record was lost rather than a run that recorded nothing.',
+              + 'record was lost rather than a run that recorded nothing.',
           ],
           returned: 2,
           left: 'unset',

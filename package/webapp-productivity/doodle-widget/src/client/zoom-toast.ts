@@ -19,10 +19,10 @@ const TOAST_DURATION_MS = 3_000;
  */
 type ToastTimer =
   | { readonly kind: 'idle'; }
-  | {
-    readonly kind: 'pending';
-    readonly id: ReturnType<typeof setTimeout>;
-  };
+    | {
+      readonly kind: 'pending';
+      readonly id: ReturnType<typeof setTimeout>;
+    };
 
 /**
  Auto-dismiss timer container.

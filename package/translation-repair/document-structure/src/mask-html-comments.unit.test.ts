@@ -49,8 +49,8 @@ await describe({
         expect(
           masked
             .slice(
-              regions[0]?.startOffset,
-              regions[0]?.endOffset,
+            regions[0]?.startOffset,
+            regions[0]?.endOffset,
             )
             .trim(),
         ).toBe('',);

@@ -13,8 +13,8 @@ import {
  */
 const config: NodeFlavorConfig = nodeConfig({
   input: [
-      './src/index.ts',
-    ],
+    './src/index.ts',
+  ],
 },);
 
 export default config;

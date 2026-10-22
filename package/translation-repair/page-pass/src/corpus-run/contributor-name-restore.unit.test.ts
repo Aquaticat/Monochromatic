@@ -388,10 +388,10 @@ await describe({
             restored: [restoredRow,],
             findings: [
               'contributor-name-restored (slice 1: "### Ten: Brocade Cat" to "### Ten: Jinmao" in a heading; '
-              + 'the pinyin reading of the original\'s handle)',
+                + 'the pinyin reading of the original\'s handle)',
               `contributor-name-restored (slice 1: "<p style="text-align: end;">—${name}, February 10, 2025</p>" to `
-              + '"<p style="text-align: end;">—Jinmao, February 10, 2025</p>" in a signature; '
-              + 'the pinyin reading of the original\'s handle)',
+                + '"<p style="text-align: end;">—Jinmao, February 10, 2025</p>" in a signature; '
+                + 'the pinyin reading of the original\'s handle)',
             ],
           };
         },),);

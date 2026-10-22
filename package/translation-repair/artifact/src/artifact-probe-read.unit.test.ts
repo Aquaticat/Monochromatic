@@ -428,9 +428,9 @@ await describe({
           .map(function toIssueId(entry,) {
             return entry.issueId;
           },),).toEqual([
-          'adjudicated/nap',
-          'adjudicated/chase',
-        ],);
+            'adjudicated/nap',
+            'adjudicated/chase',
+          ],);
         expect(reading.owned,).toHaveLength(2,);
       },
     },),
@@ -483,9 +483,9 @@ await describe({
         // corroborated.
         expect(Object.keys(claim ?? {},)
           .toSorted(),).toEqual([
-          'admissibility',
-          'modelId',
-        ],);
+            'admissibility',
+            'modelId',
+          ],);
       },
     },),
 
@@ -573,9 +573,9 @@ await describe({
           .map(function toRefined(entry,) {
             return entry.refined;
           },),).toEqual([
-          true,
-          false,
-        ],);
+            true,
+            false,
+          ],);
       },
     },),
 

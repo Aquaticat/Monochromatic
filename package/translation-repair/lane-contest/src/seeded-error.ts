@@ -215,10 +215,10 @@ export function applySeededErrors(
       if (state
         .seededText
         .includes(
-          spec.needle,
-          at + 1,
+        spec.needle,
+        at + 1,
         ))
-      {
+        {
         throw new SeedApplicationError({
           seedId: spec.id,
           reason: 'needle occurs more than once',
@@ -263,8 +263,8 @@ export function applySeededErrors(
       const before = state
         .seededText
         .slice(
-          0,
-          at,
+        0,
+        at,
         );
 
       /**

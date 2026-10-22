@@ -36,7 +36,7 @@ export type AdvisorToolDefinition<TParameters extends TSchema = TSchema,> =
   ToolDefinition<
     TParameters,
     AdvisorDetails | AdvisorProgressDetails
-  >;
+    >;
 
 /**
  Tool result shape returned by Advisor execution.

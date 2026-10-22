@@ -174,8 +174,8 @@ function renderFrequencyRow(
             attrs: { role: 'cell', },
             text: String(entry.count,)
               .padStart(
-                countWidth,
-                FIGURE_SPACE,
+              countWidth,
+              FIGURE_SPACE,
               ),
           },
         ),
@@ -189,8 +189,8 @@ function renderFrequencyRow(
                 .toFixed(1,)
             }%`
               .padStart(
-                pctWidth,
-                FIGURE_SPACE,
+              pctWidth,
+              FIGURE_SPACE,
               ),
           },
         ),

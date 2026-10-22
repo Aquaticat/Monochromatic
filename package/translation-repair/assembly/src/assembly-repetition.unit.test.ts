@@ -109,9 +109,9 @@ await describe({
               return finding.phrase;
             },)
               .toSorted(),).toStrictEqual([
-              'at the garden lantern',
-              'cat the garden lanterns were burning bright',
-            ],);
+                'at the garden lantern',
+                'cat the garden lanterns were burning bright',
+              ],);
           },
         },),
         it({
@@ -253,7 +253,7 @@ await describe({
               // run can cross it.
               shippedText:
                 `${FIRST_PASSAGE} ${SECOND_PASSAGE} The kitten dozes quietly. ${FIRST_PASSAGE} `
-                + `Another sentence entirely, unrelated. ${SECOND_PASSAGE}`,
+                  + `Another sentence entirely, unrelated. ${SECOND_PASSAGE}`,
             },);
 
             expect(findings.length,).toBe(2,);

@@ -51,22 +51,22 @@ export type ConsistencyRepeat =
      */
     readonly wording: string;
   }
-  | {
+    | {
     /**
      A frame repeated with a varying slot.
      */
-    readonly kind: 'refrain';
+      readonly kind: 'refrain';
 
     /**
      Characters every occurrence begins with.
      */
-    readonly prefix: string;
+      readonly prefix: string;
 
     /**
      Characters every occurrence ends with.
      */
-    readonly suffix: string;
-  };
+      readonly suffix: string;
+    };
 
 /**
  One place the sheet shows.
@@ -459,44 +459,44 @@ export function buildConsistencyMessages(
    */
   const placeBlocks = subject.occurrences
     .map(function blockOf(
-    view,
-    position,
-  ): string {
+      view,
+      position,
+    ): string {
     /**
      This place's label.
      */
-    const label = consistencyLabel({ position, },);
+      const label = consistencyLabel({ position, },);
     /**
      Place that already shows this slice's English, if one does.
      */
-    const shownAt = firstOfSlice.get(view.sliceIndex,);
-    if (shownAt === undefined)
-      firstOfSlice.set(
-        view.sliceIndex,
-        label,
-      );
+      const shownAt = firstOfSlice.get(view.sliceIndex,);
+      if (shownAt === undefined)
+        firstOfSlice.set(
+          view.sliceIndex,
+          label,
+        );
     /**
      The place's English, shown once per slice.
      */
-    const english = (view.english
-      .kind
-      === 'absent')
-      ? `${fence} ${label} TRANSLATION ${fence}\n(this slice carries no English)\n`
-      : (shownAt === undefined)
-      ? `${fence} ${label} TRANSLATION ${fence}\n${view.english
+      const english = (view.english
+        .kind
+        === 'absent')
+        ? `${fence} ${label} TRANSLATION ${fence}\n(this slice carries no English)\n`
+        : (shownAt === undefined)
+          ? `${fence} ${label} TRANSLATION ${fence}\n${view.english
         .text}\n`
-      : `${fence} ${label} TRANSLATION ${fence}\n(the same slice as ${shownAt}: quote from the TRANSLATION shown there)\n`;
+          : `${fence} ${label} TRANSLATION ${fence}\n(the same slice as ${shownAt}: quote from the TRANSLATION shown there)\n`;
     /**
      The place's slot, for a frame.
      */
-    const slot = (view.slotSource === undefined)
-      ? ''
-      : `${fence} ${label} SLOT IN THE ORIGINAL ${fence}\n${view.slotSource}\n`;
-    return `${fence} ${label} ORIGINAL ${fence}\n${markedParagraph({
+      const slot = (view.slotSource === undefined)
+        ? ''
+        : `${fence} ${label} SLOT IN THE ORIGINAL ${fence}\n${view.slotSource}\n`;
+      return `${fence} ${label} ORIGINAL ${fence}\n${markedParagraph({
       view,
       marks,
     },)}\n${slot}${english}`;
-  },);
+    },);
   return [
     {
       role: 'system',

@@ -123,8 +123,8 @@ export function prepareAdvisorArguments(
   const extraKeys = Object
     .keys(args,)
     .filter(function isExtraKey(key,) {
-    return (key !== 'model') && (key !== 'question');
-  },);
+      return (key !== 'model') && (key !== 'question');
+    },);
   if (extraKeys.length
     > 0)
     throw new Error(`advisor: unsupported argument fields: ${extraKeys.join(', ',)}`,);

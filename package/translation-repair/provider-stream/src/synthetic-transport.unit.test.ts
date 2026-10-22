@@ -55,8 +55,8 @@ await describe({
         const callerHeaders = { Authorization: 'Bearer cat-key', };
         const fetchStub = ctx.sinon
           .stub(
-            globalThis,
-            'fetch',
+          globalThis,
+          'fetch',
           )
           .resolves(new Response(
             '{"cat":"喵"}',
@@ -91,8 +91,8 @@ await describe({
       fn: async ctx => {
         const fetchStub = ctx.sinon
           .stub(
-            globalThis,
-            'fetch',
+          globalThis,
+          'fetch',
           )
           .resolves(new Response(
             '{}',
@@ -119,8 +119,8 @@ await describe({
       fn: async ctx => {
         ctx.sinon
           .stub(
-            globalThis,
-            'fetch',
+          globalThis,
+          'fetch',
           )
           .resolves(new Response(
             'upstream napping',
@@ -147,8 +147,8 @@ await describe({
       fn: async ctx => {
         ctx.sinon
           .stub(
-            globalThis,
-            'fetch',
+          globalThis,
+          'fetch',
           )
           .callsFake(async function abortAwareFetch(_url, init,) {
             /**
@@ -188,8 +188,8 @@ await describe({
       fn: async ctx => {
         const fetchStub = ctx.sinon
           .stub(
-            globalThis,
-            'fetch',
+          globalThis,
+          'fetch',
           )
           .resolves(new Response(
             '{}',
@@ -214,8 +214,8 @@ await describe({
       fn: async ctx => {
         ctx.sinon
           .stub(
-            globalThis,
-            'fetch',
+          globalThis,
+          'fetch',
           )
           .resolves(new Response(
             `{"error":{"message":"rejected Bearer ${WHISKER_KEY}, token ${WHISKER_KEY}"}}`,
@@ -243,8 +243,8 @@ await describe({
       fn: async ctx => {
         ctx.sinon
           .stub(
-            globalThis,
-            'fetch',
+          globalThis,
+          'fetch',
           )
           .resolves(new Response(
             `{"error":"rejected whisker\\u002dkey\\u002d7421, whisker%2Dkey%2D7421, ${
@@ -275,8 +275,8 @@ await describe({
       fn: async ctx => {
         ctx.sinon
           .stub(
-            globalThis,
-            'fetch',
+          globalThis,
+          'fetch',
           )
           .callsFake(async function splitBody() {
             return pieceResponse({
@@ -310,8 +310,8 @@ await describe({
       fn: async ctx => {
         ctx.sinon
           .stub(
-            globalThis,
-            'fetch',
+          globalThis,
+          'fetch',
           )
           .callsFake(async function cutBody() {
             return pieceResponse({
@@ -346,8 +346,8 @@ await describe({
       fn: async ctx => {
         ctx.sinon
           .stub(
-            globalThis,
-            'fetch',
+          globalThis,
+          'fetch',
           )
           .callsFake(async function cutBody() {
             return pieceResponse({
@@ -387,8 +387,8 @@ await describe({
         const failure = quotingFailure();
         ctx.sinon
           .stub(
-            globalThis,
-            'fetch',
+          globalThis,
+          'fetch',
           )
           .rejects(failure,);
         /** Value caught from the exchange the runtime refused. */
@@ -423,8 +423,8 @@ await describe({
         const steering = new Error('user steered away',);
         ctx.sinon
           .stub(
-            globalThis,
-            'fetch',
+          globalThis,
+          'fetch',
           )
           .rejects(steering,);
         /**
@@ -456,8 +456,8 @@ await describe({
       fn: async ctx => {
         ctx.sinon
           .stub(
-            globalThis,
-            'fetch',
+          globalThis,
+          'fetch',
           )
           .resolves(new Response(
             frameOf({
@@ -509,8 +509,8 @@ await describe({
         },);
         ctx.sinon
           .stub(
-            globalThis,
-            'fetch',
+          globalThis,
+          'fetch',
           )
           .callsFake(async function freshBody() {
             return new Response(

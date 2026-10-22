@@ -141,8 +141,8 @@ await describe({
       fn: async ctx => {
         ctx.sinon
           .stub(
-            globalThis,
-            'fetch',
+          globalThis,
+          'fetch',
           )
           .callsFake(async function streamingFetch(_url, init,) {
             await Promise.resolve();

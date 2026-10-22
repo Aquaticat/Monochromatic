@@ -113,7 +113,7 @@ export function settlementContextOf(
       ? {}
       : { neighbouringSourceText: subject.neighbouringSourceText, }),
     ...(((subject.neighbouringIncumbentText === undefined)
-        || (subject.neighbouringIncumbentText === ''))
+      || (subject.neighbouringIncumbentText === ''))
       ? {}
       : { neighbouringIncumbentText: subject.neighbouringIncumbentText, }),
   };

@@ -38,104 +38,104 @@ export type ArtifactComparisonFault =
      */
     readonly translateRows: number;
   }
-  | {
+    | {
     /**
      One position names a different slice in each ledger.
      */
-    readonly kind: 'slice-positions';
+      readonly kind: 'slice-positions';
 
     /**
      Position in both ledgers.
      */
-    readonly position: number;
+      readonly position: number;
 
     /**
      Slice the repair ledger names there.
      */
-    readonly repairSliceIndex: number;
+      readonly repairSliceIndex: number;
 
     /**
      Slice the translate ledger names there.
      */
-    readonly translateSliceIndex: number;
-  }
-  | {
+      readonly translateSliceIndex: number;
+    }
+    | {
     /**
      One slice carries a different original in each ledger.
      */
-    readonly kind: 'different-originals';
+      readonly kind: 'different-originals';
 
     /**
      Slice they disagree on.
      */
-    readonly sliceIndex: number;
-  }
-  | {
+      readonly sliceIndex: number;
+    }
+    | {
     /**
      One slice carries a different archive wording in each ledger.
      */
-    readonly kind: 'different-archive-wordings';
+      readonly kind: 'different-archive-wordings';
 
     /**
      Slice they disagree on.
      */
-    readonly sliceIndex: number;
-  }
-  | {
+      readonly sliceIndex: number;
+    }
+    | {
     /**
      The archive holds wording at one slice to one ledger and none to the
      other.
      */
-    readonly kind: 'different-archive-kinds';
+      readonly kind: 'different-archive-kinds';
 
     /**
      Slice they disagree on.
      */
-    readonly sliceIndex: number;
+      readonly sliceIndex: number;
 
     /**
      Whether the archive holds wording there, to the repair ledger.
      */
-    readonly repairKind: 'present' | 'absent';
+      readonly repairKind: 'present' | 'absent';
 
     /**
      Same, to the translate ledger.
      */
-    readonly translateKind: 'present' | 'absent';
-  }
-  | {
+      readonly translateKind: 'present' | 'absent';
+    }
+    | {
     /**
      Version 2's rules and the pipeline's derive different numbers of rows.
      */
-    readonly kind: 'derivation-lengths';
+      readonly kind: 'derivation-lengths';
 
     /**
      Rows version 2's rules derive.
      */
-    readonly frozenRows: number;
+      readonly frozenRows: number;
 
     /**
      Rows the pipeline derives.
      */
-    readonly liveRows: number;
-  }
-  | {
+      readonly liveRows: number;
+    }
+    | {
     /**
      Version 2's rules and the pipeline's disagree about one row.
      */
-    readonly kind: 'derivations-differ';
+      readonly kind: 'derivations-differ';
 
     /**
      Slice the row describes.
      */
-    readonly sliceIndex: number;
+      readonly sliceIndex: number;
 
     /**
      Fields they disagree on, named and never quoted: the rows carry slice
      text.
      */
-    readonly fields: readonly ComparisonRowField[];
-  };
+      readonly fields: readonly ComparisonRowField[];
+    };
 
 /**
  Writes the sentence a comparison refusal carries.

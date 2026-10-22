@@ -298,8 +298,8 @@ export function combineEstimates({ estimates, }: { readonly estimates: readonly 
     const downgraded = Math.max(
       0,
       Math.max(...estimates.map(function rank(estimate,) {
-      return RANK_BY_CONFIDENCE[estimate.confidence];
-    },),) - 1,
+        return RANK_BY_CONFIDENCE[estimate.confidence];
+      },),) - 1,
     );
     return {
       basis: uniqueBasis(estimates,),
@@ -310,8 +310,8 @@ export function combineEstimates({ estimates, }: { readonly estimates: readonly 
       lo: Math.max(
         0,
         Math.min(...estimates.map(function lo(estimate,) {
-        return estimate.lo;
-      },),),
+          return estimate.lo;
+        },),),
       ),
       point,
     };

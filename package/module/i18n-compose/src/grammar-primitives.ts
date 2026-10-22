@@ -64,11 +64,11 @@ export type GrammaticalGender = 'masculine' | 'feminine' | 'neuter';
  */
 export type PersonNumberKey =
   | '1s'
-  | '2s'
-  | '3s'
-  | '1p'
-  | '2p'
-  | '3p';
+    | '2s'
+    | '3s'
+    | '1p'
+    | '2p'
+    | '3p';
 
 /**
  Builds a {@link PersonNumberKey} from a person and number pair.

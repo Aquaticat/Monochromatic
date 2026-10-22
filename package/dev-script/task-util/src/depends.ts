@@ -68,17 +68,17 @@ import {
 const parser = object({
   sources: multiple(
     optional(option(
-    '-s',
-    '--sources',
-    string(),
-  ),),
+      '-s',
+      '--sources',
+      string(),
+    ),),
   ),
   outputs: multiple(
     optional(option(
-    '-o',
-    '--outputs',
-    string(),
-  ),),
+      '-o',
+      '--outputs',
+      string(),
+    ),),
   ),
   sourceTimeStrategy: optional(option(
     '--source-time-strategy',

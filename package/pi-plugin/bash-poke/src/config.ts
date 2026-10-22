@@ -33,14 +33,14 @@ type SettingsFileRead =
   | {
     readonly state: 'absent';
   }
-  | {
-    readonly state: 'present';
-    readonly text: string;
-  }
-  | {
-    readonly state: 'unreadable';
-    readonly failure: string;
-  };
+    | {
+      readonly state: 'present';
+      readonly text: string;
+    }
+    | {
+      readonly state: 'unreadable';
+      readonly failure: string;
+    };
 
 /**
  Result of decoding settings text.
@@ -50,10 +50,10 @@ type SettingsJsonParse =
     readonly state: 'parsed';
     readonly value: unknown;
   }
-  | {
-    readonly state: 'invalid';
-    readonly failure: string;
-  };
+    | {
+      readonly state: 'invalid';
+      readonly failure: string;
+    };
 
 //endregion Types
 

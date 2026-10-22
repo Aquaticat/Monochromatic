@@ -66,9 +66,9 @@ export function commonGitPathsForPlatform({
     const localGitRoots = environment.LOCALAPPDATA === undefined
       ? []
       : [win32.join(
-          environment.LOCALAPPDATA,
-          'Programs',
-        ),];
+        environment.LOCALAPPDATA,
+        'Programs',
+      ),];
 
     return [
       ...programFilesRoots,

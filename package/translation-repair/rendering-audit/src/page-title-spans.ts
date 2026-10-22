@@ -212,17 +212,17 @@ export function repeatedTitleSpans(
       return left.at - right.at;
     },)
     .reduce(
-      function tally(
-        seen,
-        placed,
-      ) {
-        seen.set(
-          placed.text,
-          (seen.get(placed.text,) ?? 0) + 1,
-        );
-        return seen;
-      },
-      new Map<string, number>(),
+    function tally(
+      seen,
+      placed,
+    ) {
+      seen.set(
+        placed.text,
+        (seen.get(placed.text,) ?? 0) + 1,
+      );
+      return seen;
+    },
+    new Map<string, number>(),
     );
   return [...counts.entries(),]
     .filter(function repeatedAndUnpaired([span, occurrences,]: ReadonlyEntry<string, number>,): boolean {

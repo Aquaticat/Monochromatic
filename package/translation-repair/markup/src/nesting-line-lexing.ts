@@ -200,13 +200,13 @@ export function indentationOf({ line, }: { readonly line: string; },): Indentati
       end,
     ),)
       .reduce(
-        function widened(
-          columns,
-          character,
-        ): number {
-          return columns + ((character === '\t') ? TAB_COLUMNS : 1);
-        },
-        0,
+      function widened(
+        columns,
+        character,
+      ): number {
+        return columns + ((character === '\t') ? TAB_COLUMNS : 1);
+      },
+      0,
       ),
     end,
   };

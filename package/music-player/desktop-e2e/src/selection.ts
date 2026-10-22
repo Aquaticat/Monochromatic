@@ -121,11 +121,11 @@ export function sessionsFor(
     .filter(function isNeeded(rule,): boolean {
       return (only === '')
         || rule.exact
-        .includes(only,)
+          .includes(only,)
         || rule.prefixes
-        .some(function startsWithPrefix(prefix,): boolean {
-          return only.startsWith(prefix,);
-        },);
+          .some(function startsWithPrefix(prefix,): boolean {
+            return only.startsWith(prefix,);
+          },);
     },)
     .map(function nameOf(rule,): SessionName {
       return rule.name;

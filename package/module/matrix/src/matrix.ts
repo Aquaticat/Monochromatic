@@ -132,30 +132,30 @@ function matchesExclude({
 },): boolean {
   if ((exclude.os
     !== undefined) && (!testMatcher({
-    matcher: exclude.os,
-    value: combination.os,
-  },))) {
+      matcher: exclude.os,
+      value: combination.os,
+    },))) {
     return false;
   }
   if ((exclude.user
     !== undefined) && (!testMatcher({
-    matcher: exclude.user,
-    value: combination.user,
-  },))) {
+      matcher: exclude.user,
+      value: combination.user,
+    },))) {
     return false;
   }
   if ((exclude.runtime
     !== undefined) && (!testMatcher({
-    matcher: exclude.runtime,
-    value: combination.runtime,
-  },))) {
+      matcher: exclude.runtime,
+      value: combination.runtime,
+    },))) {
     return false;
   }
   if ((exclude.file
     !== undefined) && (!testMatcher({
-    matcher: exclude.file,
-    value: combination.file,
-  },))) {
+      matcher: exclude.file,
+      value: combination.file,
+    },))) {
     return false;
   }
   return true;

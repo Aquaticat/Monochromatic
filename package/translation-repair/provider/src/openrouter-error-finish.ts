@@ -60,7 +60,7 @@ export type ErrorFinishReading =
      */
     readonly nativeReason?: string;
   }
-  | { readonly found: false; };
+    | { readonly found: false; };
 
 /**
  Reading given when no choice stopped on an error finish.

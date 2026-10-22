@@ -79,8 +79,8 @@ export async function createBypassFixture(): Promise<BypassFixture> {
     .update('wgtest',)
     .digest('hex',)
     .slice(
-      0,
-      STATE_KEY_LENGTH,
+    0,
+    STATE_KEY_LENGTH,
     );
   /**
    Final state path used by checks.

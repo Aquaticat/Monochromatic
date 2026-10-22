@@ -253,15 +253,15 @@ await describe({
                 category: 'accuracy/omission',
               },),
               `  issues-withheld ${heard} corroborated=0 removal=${String(ROSTER_SIZE,)} contradicted=0 `
-              + 'unanchored=0 preExisting=0 none=0 uncertain=0',
+                + 'unanchored=0 preExisting=0 none=0 uncertain=0',
               `  issues-rendered ${heard} corroborated=0 removal=0 contradicted=0 unanchored=0 preExisting=0 `
-              + `none=${String(ROSTER_SIZE,)} uncertain=0`,
+                + `none=${String(ROSTER_SIZE,)} uncertain=0`,
               ...claimLinesOf({
                 admissibility: 'corroborated',
                 category: 'accuracy/addition',
               },),
               `  issues-absent ${heard} corroborated=${String(ROSTER_SIZE,)} removal=0 contradicted=0 `
-              + 'unanchored=0 preExisting=0 none=0 uncertain=0',
+                + 'unanchored=0 preExisting=0 none=0 uncertain=0',
             ],);
             expect(
               listRenderedIn({

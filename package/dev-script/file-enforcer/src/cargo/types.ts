@@ -26,10 +26,10 @@ import type { Path, } from '../types.ts';
  */
 export type CanonicalTomlValue =
   | string
-  | number
-  | boolean
-  | readonly CanonicalTomlValue[]
-  | { readonly [key: string]: CanonicalTomlValue; };
+    | number
+    | boolean
+    | readonly CanonicalTomlValue[]
+    | { readonly [key: string]: CanonicalTomlValue; };
 
 /**
  One guarded keyed enforcement.

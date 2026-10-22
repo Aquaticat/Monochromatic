@@ -207,17 +207,17 @@ export type CarryChoice =
      */
     readonly label: string;
   }
-  | {
+    | {
     /**
      No candidate won, so the place's English stands.
      */
-    readonly kind: 'none';
+      readonly kind: 'none';
 
     /**
      Why: the usable choices missed the quorum, or no label has more than half.
      */
-    readonly reason: 'no-quorum' | 'no-majority';
-  };
+      readonly reason: 'no-quorum' | 'no-majority';
+    };
 
 /**
  Counts the choices among a place's candidates.

@@ -97,17 +97,17 @@ export type AnthropicImageSource =
      */
     readonly data: string;
   }
-  | {
+    | {
     /**
      Discriminator marking a picture the provider fetches itself.
      */
-    readonly type: 'url';
+      readonly type: 'url';
 
     /**
      Address the picture is fetched from.
      */
-    readonly url: string;
-  };
+      readonly url: string;
+    };
 
 /**
  One run of content inside an Anthropic message.
@@ -129,17 +129,17 @@ export type AnthropicContentBlock =
      */
     readonly text: string;
   }
-  | {
+    | {
     /**
      Discriminator marking a picture.
      */
-    readonly type: 'image';
+      readonly type: 'image';
 
     /**
      Where the picture is.
      */
-    readonly source: AnthropicImageSource;
-  };
+      readonly source: AnthropicImageSource;
+    };
 
 /**
  Reads one picture reference into the source shape the Messages API takes.
@@ -178,8 +178,8 @@ export function readImageSource(
    */
   const parameters = url
     .slice(
-      DATA_PREFIX.length,
-      mark,
+    DATA_PREFIX.length,
+    mark,
     )
     .split(PARAMETER_MARK,);
 

@@ -21,9 +21,9 @@ for (const capture of [...comparison.witnesses, ...baseline.captures]) {
   const hash = createHash('sha256').update(png).digest('hex');
   const dimensions = capture.cropPixels;
   if (png.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
-      png.readUInt32BE(16) !== dimensions.width || png.readUInt32BE(20) !== dimensions.height ||
-      !['inner', 'cover'].includes(capture.panel) || !['light', 'dark'].includes(capture.scheme) ||
-      ![1, 2].includes(capture.fontScale)) {
+    png.readUInt32BE(16) !== dimensions.width || png.readUInt32BE(20) !== dimensions.height ||
+    !['inner', 'cover'].includes(capture.panel) || !['light', 'dark'].includes(capture.scheme) ||
+    ![1, 2].includes(capture.fontScale)) {
     throw new Error(`${file}: filename review capture dimension or environment failed.`);
   }
   for (let offset = 8; offset < png.length;) {
@@ -112,7 +112,7 @@ if (command === 'build') {
     if (!html.includes(marker)) throw new Error(`Filename review is missing ${marker}.`);
   }
   if (/__FILENAME_REVIEW_IMAGES__|<script\b[^>]*\bsrc=|<link\b[^>]*\bhref=|<img\b[^>]*\bsrc="https?:/i.test(html) ||
-      (html.match(/<form\b/g) ?? []).length !== 1) {
+    (html.match(/<form\b/g) ?? []).length !== 1) {
     throw new Error('Filename review is not a self-contained evidence-only form with optional observations.');
   }
   if (/<input\b[^>]*\btype="radio"|name="placement"|name="visibility"|data\.get\('(placement|visibility)'\)|<textarea\b(?:[^"'<>]|"[^"]*"|'[^']*')*?\srequired(?:\s|=|>)/i.test(html)) {

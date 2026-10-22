@@ -134,7 +134,7 @@ export function propertyIsReadonly({
 const settledClassificationsByProject = new WeakMap<
   Project,
   Map<number, ReadonlyClassification>
->();
+  >();
 
 /**
  One finished classification and whether an unresolved type above it decided the answer.

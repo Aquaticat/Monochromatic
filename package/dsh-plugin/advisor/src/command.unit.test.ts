@@ -38,7 +38,7 @@ function commandFixture(
   return {
     getConfig: () => Promise.resolve({} as Awaited<
       ReturnType<RunDshAdvisorCommandOptions['getConfig']>
-    >),
+      >),
     state: createDshAdvisorSessionState({
       initialEnabled: true,
     },),

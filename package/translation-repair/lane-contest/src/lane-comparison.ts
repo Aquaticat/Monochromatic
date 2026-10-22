@@ -49,21 +49,21 @@ export type SliceLaneVerdict =
   /**
    Repair's document changed this slice and translate's did not.
    */
-  | 'repair-only'
+    | 'repair-only'
   /**
    Translate's document changed this slice and repair's did not.
    */
-  | 'translate-only'
+    | 'translate-only'
   /**
    Both documents changed this slice to the SAME wording, character for
    character.
    */
-  | 'both-agree'
+    | 'both-agree'
   /**
    Both documents changed this slice and the two wordings differ, which is the
    case a human has to read.
    */
-  | 'both-differ'
+    | 'both-differ'
   /**
    Neither document carries anything here, and the archive never did either:
    the passage is still MISSING.
@@ -73,7 +73,7 @@ export type SliceLaneVerdict =
    keep. Every anchor neither lane filled read as the archive standing until
    2026-08-16.
    */
-  | 'gap-remains';
+    | 'gap-remains';
 
 /**
  Whether the two lanes' own decisions can be compared on a slice, and how they

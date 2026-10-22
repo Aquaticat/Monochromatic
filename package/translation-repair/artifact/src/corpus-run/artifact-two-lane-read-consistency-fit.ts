@@ -63,29 +63,29 @@ function assertNotAskedFits(
   const slicesSeen = new Set<number>();
   group.occurrences
     .forEach(function fits(
-    occurrence,
-    at,
-  ): void {
-    if ((outcome === 'consistent') && slicesSeen.has(occurrence.sliceIndex,)) {
-      throw new ArtifactParseError({
-        path: `${path}.occurrences[${String(at,)}].sliceIndex`,
-        reason: 'a slice of its own, since the pass asks the bench when two places stand in one slice',
-      },);
-    }
-    slicesSeen.add(occurrence.sliceIndex,);
-    if ((occurrence.outcome !== outcome)
-      || (occurrence.rendering
-        .kind
-        !== 'unlocated')
-      || (occurrence.rendering
-        .reason
-        !== 'not-asked')) {
-      throw new ArtifactParseError({
-        path: `${path}.occurrences[${String(at,)}]`,
-        reason: `a place with outcome ${outcome} and no rendering looked for, since the bench was not asked`,
-      },);
-    }
-  },);
+      occurrence,
+      at,
+    ): void {
+      if ((outcome === 'consistent') && slicesSeen.has(occurrence.sliceIndex,)) {
+        throw new ArtifactParseError({
+          path: `${path}.occurrences[${String(at,)}].sliceIndex`,
+          reason: 'a slice of its own, since the pass asks the bench when two places stand in one slice',
+        },);
+      }
+      slicesSeen.add(occurrence.sliceIndex,);
+      if ((occurrence.outcome !== outcome)
+        || (occurrence.rendering
+          .kind
+          !== 'unlocated')
+        || (occurrence.rendering
+          .reason
+          !== 'not-asked')) {
+        throw new ArtifactParseError({
+          path: `${path}.occurrences[${String(at,)}]`,
+          reason: `a place with outcome ${outcome} and no rendering looked for, since the bench was not asked`,
+        },);
+      }
+    },);
   if ((group.verdict
     .kind
     === 'not-asked') && (group.verdict
@@ -137,74 +137,74 @@ export function assertGroupFits(
 ): void {
   group.occurrences
     .forEach(function fits(
-    occurrence,
-    at,
-  ): void {
+      occurrence,
+      at,
+    ): void {
     /**
      Where the place sits, for the parse error.
      */
-    const here = `${path}.occurrences[${String(at,)}]`;
+      const here = `${path}.occurrences[${String(at,)}]`;
     /**
      The label this position carries.
      */
-    const expected = consistencyLabel({ position: at, },);
-    if (occurrence.label !== expected) {
-      throw new ArtifactParseError({
-        path: `${here}.label`,
-        reason: `the label ${expected}, since the places are labelled in order`,
-      },);
-    }
-    if (!sliceIndexes.has(occurrence.sliceIndex,)) {
-      throw new ArtifactParseError({
-        path: `${here}.sliceIndex`,
-        reason: 'a slice the comparison names',
-      },);
-    }
+      const expected = consistencyLabel({ position: at, },);
+      if (occurrence.label !== expected) {
+        throw new ArtifactParseError({
+          path: `${here}.label`,
+          reason: `the label ${expected}, since the places are labelled in order`,
+        },);
+      }
+      if (!sliceIndexes.has(occurrence.sliceIndex,)) {
+        throw new ArtifactParseError({
+          path: `${here}.sliceIndex`,
+          reason: 'a slice the comparison names',
+        },);
+      }
     /**
      Whether this group has a slot.
      */
-    const framed = group.repeat
-      .kind
-      === 'refrain';
+      const framed = group.repeat
+        .kind
+        === 'refrain';
     // EACH OFFSET IS HELD TO THE KIND OF REPEAT ON ITS OWN: a place of a run
     // that carries one slot offset alone says something no run has.
-    if ((framed !== (occurrence.slotStartOffset !== undefined))
-      || (framed !== (occurrence.slotEndOffset !== undefined))) {
-      throw new ArtifactParseError({
-        path: here,
-        reason: 'both slot offsets on a place of a frame, and neither on any other',
-      },);
-    }
-    if (framed && (occurrence.slotStartOffset !== undefined)
-      && (occurrence.slotEndOffset !== undefined)
-      && ((occurrence.slotStartOffset >= occurrence.slotEndOffset)
-        || (occurrence.slotStartOffset < occurrence.startOffset)
-        || (occurrence.slotEndOffset > occurrence.endOffset))) {
-      throw new ArtifactParseError({
-        path: here,
-        reason: 'a slot that starts before it ends and lies inside its place',
-      },);
-    }
+      if ((framed !== (occurrence.slotStartOffset !== undefined))
+        || (framed !== (occurrence.slotEndOffset !== undefined))) {
+        throw new ArtifactParseError({
+          path: here,
+          reason: 'both slot offsets on a place of a frame, and neither on any other',
+        },);
+      }
+      if (framed && (occurrence.slotStartOffset !== undefined)
+        && (occurrence.slotEndOffset !== undefined)
+        && ((occurrence.slotStartOffset >= occurrence.slotEndOffset)
+          || (occurrence.slotStartOffset < occurrence.startOffset)
+          || (occurrence.slotEndOffset > occurrence.endOffset))) {
+        throw new ArtifactParseError({
+          path: here,
+          reason: 'a slot that starts before it ends and lies inside its place',
+        },);
+      }
     // A SLOT IS NO CONDITION OF A PLACE BEING LOCATED IN GENERATION SIXTEEN: a
     // frame's place may be located with none, only a place of another kind
     // cannot have one.
-    if ((occurrence.rendering
-      .kind
-      === 'located') && (artifactGenerationCountsBySpan({ generation, },)
-        ? ((!framed) && (occurrence.rendering
-          .slot
-          !== undefined))
-        : (framed !== (occurrence.rendering
-          .slot
-          !== undefined)))) {
-      throw new ArtifactParseError({
-        path: `${here}.rendering`,
-        reason: artifactGenerationCountsBySpan({ generation, },)
-          ? 'a slot in the rendering of a place of a frame only'
-          : 'a slot in the rendering of a place of a frame, and in no other',
-      },);
-    }
-  },);
+      if ((occurrence.rendering
+        .kind
+        === 'located') && (artifactGenerationCountsBySpan({ generation, },)
+          ? ((!framed) && (occurrence.rendering
+            .slot
+            !== undefined))
+          : (framed !== (occurrence.rendering
+            .slot
+            !== undefined)))) {
+        throw new ArtifactParseError({
+          path: `${here}.rendering`,
+          reason: artifactGenerationCountsBySpan({ generation, },)
+            ? 'a slot in the rendering of a place of a frame only'
+            : 'a slot in the rendering of a place of a frame, and in no other',
+        },);
+      }
+    },);
   if ((group.occurrences
     .length
     < 2) && (!((group.verdict

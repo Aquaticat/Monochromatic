@@ -136,44 +136,44 @@ catch (error) {
   // nano-spawn throws SubprocessError when the process fails
   match(error,)
     .when(
-      function isSubprocessError(
-        candidate,
-      ): candidate is {
-        readonly exitCode?: number;
-        readonly signalName?: string;
-        readonly message: string;
-      } {
-        return (candidate !== null)
-          && ((typeof candidate) === 'object')
-          && ('exitCode' in candidate);
-      },
-      function handleSubprocessError(subprocessError,): void {
-        match(subprocessError.signalName,)
-          .when(
-            function hasSignal(signal,): signal is string {
-              return signal !== undefined;
-            },
-            function logSignal(signal,): void {
-              console.error(`Command terminated by signal: ${signal}`,);
-            },
-          );
+    function isSubprocessError(
+      candidate,
+    ): candidate is {
+      readonly exitCode?: number;
+      readonly signalName?: string;
+      readonly message: string;
+    } {
+      return (candidate !== null)
+        && ((typeof candidate) === 'object')
+        && ('exitCode' in candidate);
+    },
+    function handleSubprocessError(subprocessError,): void {
+      match(subprocessError.signalName,)
+        .when(
+        function hasSignal(signal,): signal is string {
+          return signal !== undefined;
+        },
+        function logSignal(signal,): void {
+          console.error(`Command terminated by signal: ${signal}`,);
+        },
+        );
 
         // Exit with 0 if allowFailure is true, otherwise use the command's exit code
-        match(args.allowFailure,)
-          .with(
-            false,
-            function exitWithCode(): void {
-              process.exitCode = subprocessError.exitCode
-                ?? 1;
-            },
-          )
-          .with(
-            true,
-            function allowFailureNoop(): void {
+      match(args.allowFailure,)
+        .with(
+        false,
+        function exitWithCode(): void {
+          process.exitCode = subprocessError.exitCode
+            ?? 1;
+        },
+        )
+        .with(
+        true,
+        function allowFailureNoop(): void {
               // Let script end naturally with exit code 0
-            },
-          );
-      },
+        },
+        );
+    },
     )
     .otherwise(function handleUnknownError(): void {
       console.error(
@@ -183,16 +183,16 @@ catch (error) {
       );
       match(args.allowFailure,)
         .with(
-          false,
-          function rethrowError(): void {
-            throw error;
-          },
+        false,
+        function rethrowError(): void {
+          throw error;
+        },
         )
         .with(
-          true,
-          function allowFailureNoop(): void {
+        true,
+        function allowFailureNoop(): void {
             // Let script end naturally with exit code 0
-          },
+        },
         );
     },);
 }

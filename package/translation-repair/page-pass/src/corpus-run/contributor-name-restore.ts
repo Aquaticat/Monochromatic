@@ -70,7 +70,7 @@ type LineRestoration =
      */
     readonly origin: Authority['origin'];
   }
-  | { readonly rewritten: false; };
+    | { readonly rewritten: false; };
 
 /**
  A line left as it is.

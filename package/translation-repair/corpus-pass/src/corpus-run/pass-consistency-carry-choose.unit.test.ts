@@ -282,7 +282,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
             expect(String(refusal,),).toBe(
               'ConsistencyInvariantError: unreachable: the splice won for OCCURRENCE 2, none of whose receiving places has '
-              + 'words that code can move, and a splice is offered only when some receiving place of the block can be spliced',
+                + 'words that code can move, and a splice is offered only when some receiving place of the block can be spliced',
             );
           },
         },),
@@ -330,7 +330,7 @@ await describe({
               ],
               findings: [
                 'consistency-partly-carried (OCCURRENCE 2 and OCCURRENCE 3): the splice won, so code moved the chosen words '
-                + 'into OCCURRENCE 3 and left OCCURRENCE 2 as it was, since code cannot move them there',
+                  + 'into OCCURRENCE 3 and left OCCURRENCE 2 as it was, since code cannot move them there',
               ],
             },);
           },

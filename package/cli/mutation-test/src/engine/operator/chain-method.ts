@@ -198,7 +198,7 @@ export function chainMethodReplacements(options: {
               .slice(
               object.start,
               object.end,
-            ),
+              ),
             operator: 'method',
             description: `removed .${name} call`,
           },);

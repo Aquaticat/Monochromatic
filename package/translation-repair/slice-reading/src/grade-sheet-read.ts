@@ -47,13 +47,13 @@ export type GradeVerdict =
   /**
    Graded `N`: a false positive.
    */
-  | 'false-positive'
+    | 'false-positive'
   /**
    Left blank, or answered with something that is not a verdict. Kept as its
    own state rather than folded into either: an item the grader declined to
    score belongs in no precision denominator.
    */
-  | 'unscored'
+    | 'unscored'
   /**
    Answered `Duplicate`: this item is the same underlying defect as an earlier
    item in the same sample.
@@ -69,7 +69,7 @@ export type GradeVerdict =
    defect of its own, tracked separately; it is simply not the thing precision
    measures.
    */
-  | 'duplicate';
+    | 'duplicate';
 
 /**
  One item read back off a graded sheet.

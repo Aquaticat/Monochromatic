@@ -104,7 +104,7 @@ export function configPaths(
     .XDG_DATA_DIRS
     ?? '/usr/local/share:/usr/share').split(
     ':',
-  );
+    );
 
   /**
    Mutable accumulator filled by the directory loops below.
@@ -167,7 +167,7 @@ export function applicationDirs(): readonly string[] {
     .XDG_DATA_DIRS
     ?? '/usr/local/share:/usr/share').split(
     ':',
-  );
+    );
 
   /**
    Ascending priority: system dirs first, user dir last
@@ -175,8 +175,8 @@ export function applicationDirs(): readonly string[] {
   const dirs = [
     ...dataDirs.toReversed()
       .map(function ensureTrailingSlash(dir,) {
-      return `${stripTrailingSlashes(dir,)}/applications/`;
-    },),
+        return `${stripTrailingSlashes(dir,)}/applications/`;
+      },),
     `${dataHome}/applications/`,
   ];
 

@@ -75,7 +75,7 @@ export function materializeDocument(
       },);
     },
     {},
-  );
+    );
 }
 
 /**
@@ -158,9 +158,9 @@ function foldTable(
    */
   const bodyKvs = table.body
     .filter(function isKv(b,): b is Extract<Block, { kind: 'keyvalue'; }> {
-    return b.kind
-      === 'keyvalue';
-  },);
+      return b.kind
+        === 'keyvalue';
+    },);
   return bodyKvs.reduce<Record<string, unknown>>(
     function foldKv(
       acc: Readonly<Record<string, unknown>>,

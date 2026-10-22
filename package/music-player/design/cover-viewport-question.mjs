@@ -14,7 +14,7 @@ const images = {
 function imageData(name) {
   const bytes = readFileSync(join(question, 'render', name));
   if (bytes.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
-      bytes.readUInt32BE(16) !== 1080 || bytes.readUInt32BE(20) !== 2424) {
+    bytes.readUInt32BE(16) !== 1080 || bytes.readUInt32BE(20) !== 2424) {
     throw new Error(`${name}: expected a sanitized physical cover PNG.`);
   }
   const chunks = [];

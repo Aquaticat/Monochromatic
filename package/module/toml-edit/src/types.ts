@@ -141,10 +141,10 @@ export type TomlEditState = {
 export type TomlWrappedInput = {
   readonly tomlKind:
     | 'integer'
-    | 'float'
-    | 'local-date'
-    | 'local-date-time'
-    | 'local-time';
+      | 'float'
+      | 'local-date'
+      | 'local-date-time'
+      | 'local-time';
   readonly value: number | bigint | string;
 };
 

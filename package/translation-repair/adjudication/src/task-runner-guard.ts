@@ -121,17 +121,17 @@ export type TaskRunnerVerdict =
      */
     readonly allowed: true;
   }
-  | {
+    | {
     /**
      The process holds provider keys and does not name this command.
      */
-    readonly allowed: false;
+      readonly allowed: false;
 
     /**
      The refusal's whole text, which names no variable's value.
      */
-    readonly says: string;
-  };
+      readonly says: string;
+    };
 
 /**
  Counts the variables of an environment that hold a provider key.

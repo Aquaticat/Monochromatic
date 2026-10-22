@@ -63,13 +63,13 @@ export function advisorContentText(
     return content;
   return content
     .filter(function isTextBlock(block,) {
-    return block.type === 'text';
-  },)
+      return block.type === 'text';
+    },)
     .map(function readText(
       block: ForeignBorrowed<TextContent>,
     ) {
-    return block.text;
-  },)
+      return block.text;
+    },)
     .join(separator,);
 }
 
@@ -133,8 +133,8 @@ function toolCallText(
       key,
       value,
     ],) {
-    return `${key}=${JSON.stringify(value,)}`;
-  },)
+      return `${key}=${JSON.stringify(value,)}`;
+    },)
     .join(', ',);
   return `${block.name}(${argsText})`;
 }

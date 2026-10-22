@@ -39,13 +39,13 @@ import type {
 function coverageOf({ repeat, }: { readonly repeat: FoundRepeat; },): number {
   return repeat.spans
     .reduce(
-      function widthSum(
-        total,
-        span,
-      ): number {
-        return total + span.width;
-      },
-      0,
+    function widthSum(
+      total,
+      span,
+    ): number {
+      return total + span.width;
+    },
+    0,
     );
 }
 

@@ -83,17 +83,17 @@ export function buildValueFromInput(
       kind: 'inline-table',
       entries: Object.entries(input,)
         .map(function each([key, value,],): KeyValueNode {
-        return {
-          kind: 'keyvalue',
-          keySegments: [key,],
-          value: buildValueFromInput({
-            input: value,
-            options,
-          },),
-          origin: { kind: 'synthetic', },
-          commentsBefore: [],
-        };
-      },),
+          return {
+            kind: 'keyvalue',
+            keySegments: [key,],
+            value: buildValueFromInput({
+              input: value,
+              options,
+            },),
+            origin: { kind: 'synthetic', },
+            commentsBefore: [],
+          };
+        },),
       origin: { kind: 'synthetic', },
     };
   }

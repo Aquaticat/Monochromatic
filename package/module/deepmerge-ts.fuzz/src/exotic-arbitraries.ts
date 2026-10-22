@@ -217,59 +217,59 @@ export const exoticLeafArbitrary: Arbitrary<unknown> = oneof(
     max: 255,
   },)
     .map(function toTypedArray(byte,) {
-    return new Uint8Array([byte,],);
-  },),
+      return new Uint8Array([byte,],);
+    },),
   constant(null,)
     .map(function toBuffer() {
-    return new ArrayBuffer(2,);
-  },),
+      return new ArrayBuffer(2,);
+    },),
   constant(null,)
     .map(function toDataView() {
-    return new DataView(new ArrayBuffer(2,),);
-  },),
+      return new DataView(new ArrayBuffer(2,),);
+    },),
   string({ maxLength: 2, },)
     .map(function toBoxedString(text,) {
     // oxlint-disable-next-line unicorn/new-for-builtins, no-new-wrappers -- a boxed primitive is the leaf under test.
-    return new String(text,);
-  },),
+      return new String(text,);
+    },),
   integer({
     min: -2,
     max: 2,
   },)
     .map(function toBoxedNumber(value,) {
     // oxlint-disable-next-line unicorn/new-for-builtins, no-new-wrappers -- a boxed primitive is the leaf under test.
-    return new Number(value,);
-  },),
+      return new Number(value,);
+    },),
   boolean()
     .map(function toBoxedBoolean(value,) {
     // oxlint-disable-next-line unicorn/new-for-builtins, no-new-wrappers -- a boxed primitive is the leaf under test.
-    return new Boolean(value,);
-  },),
+      return new Boolean(value,);
+    },),
   string({ maxLength: 3, },)
     .map(function toError(message,) {
-    return new Error(message,);
-  },),
+      return new Error(message,);
+    },),
   constant(null,)
     .map(function toWeakMap() {
-    return new WeakMap();
-  },),
+      return new WeakMap();
+    },),
   constant(null,)
     .map(function toWeakSet() {
-    return new WeakSet();
-  },),
+      return new WeakSet();
+    },),
   integer()
     .map(function toPromise(value,) {
-    return Promise.resolve(value,);
-  },),
+      return Promise.resolve(value,);
+    },),
   integer()
     .map(function toFunctionWithProps(value,) {
-    return Object.assign(
-      function leafFunction(): number {
-        return value;
-      },
-      { value, },
-    );
-  },),
+      return Object.assign(
+        function leafFunction(): number {
+          return value;
+        },
+        { value, },
+      );
+    },),
 );
 
 /**
@@ -362,8 +362,8 @@ const exoticScope = letrec<{
         { maxLength: 3, },
       )
         .map(function toForeignArray(values,) {
-        return foreign(JSON.stringify(values,),);
-      },),
+          return foreign(JSON.stringify(values,),);
+        },),
       items.map(function toSet(values,) {
         return new Set(values,);
       },),
@@ -379,8 +379,8 @@ const exoticScope = letrec<{
         },
       )
         .map(function toMap(pairs,) {
-        return new Map(pairs,);
-      },),
+          return new Map(pairs,);
+        },),
       uniqueArray(
         tuple(
           keyArbitrary,

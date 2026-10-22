@@ -99,7 +99,7 @@ await describe({
             const document = [
               'The shelter opens at eight and closes late.',
               'Marmalade spent her first fortnight refusing to come out from behind the radiator in the back office, '
-              + 'where the volunteers left her a bowl every morning and pretended not to watch.',
+                + 'where the volunteers left her a bowl every morning and pretended not to watch.',
               'By March she was sleeping in the window.',
             ].join('\n\n',);
             const attempt = deleteOneSentence({ cleanText: document, },);
@@ -271,8 +271,8 @@ await describe({
             /** Year the damaged text now states. */
             const statedYear = attempt.damagedText
               .slice(
-                yearAt,
-                yearAt + '2011'.length,
+              yearAt,
+              yearAt + '2011'.length,
               );
             expect(sourceText.includes(statedYear,),).toBe(false,);
           },

@@ -107,17 +107,17 @@ export async function runFile(
   const chunks: Buffer[] = [];
   child.stdout
     .on(
-      'data',
-      function collectStdout(chunk: Buffer,) {
-        chunks.push(chunk,);
-      },
+    'data',
+    function collectStdout(chunk: Buffer,) {
+      chunks.push(chunk,);
+    },
     );
   child.stderr
     .on(
-      'data',
-      function collectStderr(chunk: Buffer,) {
-        chunks.push(chunk,);
-      },
+    'data',
+    function collectStderr(chunk: Buffer,) {
+      chunks.push(chunk,);
+    },
     );
   /**
    Kill timer for a hung file.

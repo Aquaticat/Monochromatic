@@ -72,7 +72,7 @@ await describe({
         ],);
         expect(unified.findings,).toEqual([
           'title-reference-ambiguous (slice 1: 「午后猫语」 rendered by the heading of slice 0 as "Afternoon Cat Murmurs", '
-          + 'but the slice offers more than one span to read)',
+            + 'but the slice offers more than one span to read)',
         ],);
       },
     },),
@@ -102,7 +102,7 @@ await describe({
         expect(textsOf({ rows: unified.replacements, },)[1],).toBe('—— Yunmao \u{201C}Afternoon Cat Murmurs.\u{201D}',);
         expect(unified.findings,).toEqual([
           'title-reference-unified (slice 1: "Afternoon Cat Talk" to "Afternoon Cat Murmurs"; 「午后猫语」 rendered by the '
-          + 'heading of slice 0 as "Afternoon Cat Murmurs")',
+            + 'heading of slice 0 as "Afternoon Cat Murmurs")',
         ],);
       },
     },),

@@ -55,8 +55,8 @@ export function appendAdvisorOperationRecord(
 ): void {
   session
     .append(
-      'advisor/operation',
-      operation,
+    'advisor/operation',
+    operation,
     );
 }
 

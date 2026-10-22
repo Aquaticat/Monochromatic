@@ -107,7 +107,7 @@ class TopNav extends HTMLElement {
           },),
         ],
       },),
-    );
+      );
   }
 }
 

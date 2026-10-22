@@ -279,7 +279,7 @@ const degraded = await degradedHostResolution();
 if (preferred.value
   .includes(':',)
   || degraded.value
-  .includes(':',))
+    .includes(':',))
   throw new Error('real-host identity contains forbidden colon',);
 console.log(JSON.stringify({
   platform: platform(),

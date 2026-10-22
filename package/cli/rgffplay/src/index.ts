@@ -181,29 +181,29 @@ async function findFiles({
     ],
   )
     .then(
-      function extractStdout({ stdout, }: Readonly<{ stdout: string; }>,): string {
-        return stdout;
-      },
-      function handleRgError(err: unknown,) {
+    function extractStdout({ stdout, }: Readonly<{ stdout: string; }>,): string {
+      return stdout;
+    },
+    function handleRgError(err: unknown,) {
         // rg exits 1 when no files match the glob
-        if ((err !== null)
-          && (err !== undefined)
-          && ((typeof err) === 'object')
-          && ('exitCode' in err))
+      if ((err !== null)
+        && (err !== undefined)
+        && ((typeof err) === 'object')
+        && ('exitCode' in err))
         {
           /**
            Process exit code pulled off the spawn error so the no-match case (1) can be rethrown with a clearer message.
            */
-          const { exitCode, } = err;
-          if (exitCode === 1) {
-            throw new Error(
-              `No files matching glob "${glob}" in "${musicDir}"`,
-              { cause: err, },
-            );
-          }
+        const { exitCode, } = err;
+        if (exitCode === 1) {
+          throw new Error(
+            `No files matching glob "${glob}" in "${musicDir}"`,
+            { cause: err, },
+          );
         }
-        throw err;
-      },
+      }
+      throw err;
+    },
     );
 
   /**
@@ -211,9 +211,9 @@ async function findFiles({
    */
   const files = rgOutput.split('\0',)
     .filter(function nonEmpty(f,) {
-    return f.length
-      > 0;
-  },);
+      return f.length
+        > 0;
+    },);
 
   if (files.length
     === 0)

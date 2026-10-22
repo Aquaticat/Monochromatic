@@ -284,8 +284,8 @@ export async function listExempted({
     },);
     return parseExemptedQuery({ stdout, },)
       .filter(function inScopeName(name,): boolean {
-      return inScope.has(name,);
-    },);
+        return inScope.has(name,);
+      },);
   } catch (error) {
     if (error instanceof AdbCommandError) {
       fl.warn(`query-op unavailable; falling back to per-app appops get: ${error.message}`,);

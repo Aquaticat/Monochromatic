@@ -86,8 +86,8 @@ await describe({
                 return spec.id;
               },)
               .slice(
-                0,
-                trace.startOrder.length,
+              0,
+              trace.startOrder.length,
               );
             expect(trace.startOrder,).toEqual(scheduledIds,);
 

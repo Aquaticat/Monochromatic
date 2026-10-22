@@ -26,7 +26,7 @@ await describe({
       fn: async () => {
         expectTypeOf<
           LastArrayElement<[string, (error: unknown) => void]>
-        >().toEqualTypeOf<(error: unknown) => void>();
+          >().toEqualTypeOf<(error: unknown) => void>();
         expectTypeOf<LastArrayElement<EmptyTuple>>().toEqualTypeOf<never>();
       },
     },),
@@ -36,7 +36,7 @@ await describe({
       fn: async () => {
         expectTypeOf<
           DropLastArrayElement<[string, (error: unknown) => void]>
-        >().toEqualTypeOf<[string]>();
+          >().toEqualTypeOf<[string]>();
         expectTypeOf<DropLastArrayElement<[string]>>().toEqualTypeOf<EmptyTuple>();
       },
     },),
@@ -46,13 +46,13 @@ await describe({
       fn: async () => {
         expectTypeOf<
           StringEndsWith<'readFileSync', 'Sync' | 'Stream'>
-        >().toEqualTypeOf<true>();
+          >().toEqualTypeOf<true>();
         expectTypeOf<
           StringEndsWith<'readFile', 'Sync' | 'Stream'>
-        >().toEqualTypeOf<false>();
+          >().toEqualTypeOf<false>();
         expectTypeOf<
           StringEndsWith<symbol, 'Sync' | 'Stream'>
-        >().toEqualTypeOf<false>();
+          >().toEqualTypeOf<false>();
       },
     },),
   ],

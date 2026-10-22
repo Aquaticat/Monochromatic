@@ -228,8 +228,8 @@ export function createWatchRerunQueue(
 
     runningState
       .set(
-        'running',
-        true,
+      'running',
+      true,
       );
     /**
      Cleanup that clears active state even when rerun or reporter code throws unexpectedly.

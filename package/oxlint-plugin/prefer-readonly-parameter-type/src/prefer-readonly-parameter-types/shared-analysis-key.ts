@@ -60,11 +60,11 @@ export type SharedKey =
     readonly digest: string;
     readonly parts: Readonly<Record<string, string>>;
   }
-  | {
-    readonly eligible: false;
-    readonly reason: string;
-    readonly detail?: string;
-  };
+    | {
+      readonly eligible: false;
+      readonly reason: string;
+      readonly detail?: string;
+    };
 
 /**
  Resolver of cross-project keys for the sources of one project snapshot.
@@ -82,11 +82,11 @@ type ModuleTargets =
     readonly complete: true;
     readonly targets: readonly string[];
   }
-  | {
-    readonly complete: false;
-    readonly reason: string;
-    readonly detail?: string;
-  };
+    | {
+      readonly complete: false;
+      readonly reason: string;
+      readonly detail?: string;
+    };
 
 /**
  Tests whether the effect analysis treats a program file as owned source it can inspect.
@@ -201,7 +201,7 @@ function resolveModuleTargets({
      */
     const handle = symbol?.valueDeclaration
       ?? symbol?.declarations
-      .at(0,);
+        .at(0,);
     /**
      Resolved declaration whose file the reference reaches.
      */
@@ -233,11 +233,11 @@ type ClosureEntries =
     readonly complete: true;
     readonly entries: readonly string[];
   }
-  | {
-    readonly complete: false;
-    readonly reason: string;
-    readonly detail?: string;
-  };
+    | {
+      readonly complete: false;
+      readonly reason: string;
+      readonly detail?: string;
+    };
 
 /**
  Builds the cross-project key resolver for one project snapshot.

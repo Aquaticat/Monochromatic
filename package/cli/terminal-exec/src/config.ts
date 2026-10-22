@@ -117,7 +117,7 @@ export async function parseConfigFiles(
       const line = rawLine.trim();
       if ((line.length
         === 0) || line
-        .startsWith('#',))
+          .startsWith('#',))
         continue;
 
       if (line.startsWith('/',)) {

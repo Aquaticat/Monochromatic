@@ -77,11 +77,11 @@ const config = model !== undefined ? { model, } : {};
 const results = await Promise.all(
   args.files
     .map(function countFile(filePath: string,) {
-    return countFileTokens({
-      filePath,
-      config,
-    },);
-  },),
+      return countFileTokens({
+        filePath,
+        config,
+      },);
+    },),
 );
 
 for (const result of results)

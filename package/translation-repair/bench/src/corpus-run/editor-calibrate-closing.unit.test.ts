@@ -96,7 +96,7 @@ await describe({
 
             expect(printed.lines,).toEqual([
               '  reached a rewriter on 0 of 2 slices; 2 slices carried no paragraph over the eligibility floor, so '
-              + 'no refiner was asked there and their silence is not evidence about any model',
+                + 'no refiner was asked there and their silence is not evidence about any model',
             ],);
           },
         },),

@@ -83,8 +83,8 @@ function holds({
   return Object.prototype
     .propertyIsEnumerable
     .call(
-      record,
-      key,
+    record,
+    key,
     );
 }
 

@@ -174,7 +174,7 @@ await describe({
             expect(run.stderr,).toBe([
               'score-verify: could not read probe-verify-manifest.json as JSON (ENOENT)',
               '  Nothing was read past that file, so this run was not examined. Re-run the pass to rewrite it, '
-              + 'or name a run directory that has it.',
+                + 'or name a run directory that has it.',
               '',
             ].join('\n',),);
           },

@@ -201,13 +201,13 @@ function numberOfHex({ digits, }: { readonly digits: string; },): number {
     .toLowerCase()
     .split('',)
     .reduce(
-      function append(
-        total,
-        digit,
-      ): number {
-        return (total * HEX_BASE) + HEX_DIGITS.indexOf(digit,);
-      },
-      0,
+    function append(
+      total,
+      digit,
+    ): number {
+      return (total * HEX_BASE) + HEX_DIGITS.indexOf(digit,);
+    },
+    0,
     );
 }
 
@@ -462,7 +462,7 @@ function decodeView(
   };
   while (cursor.read
     < view.text
-    .length) {
+      .length) {
     /**
      Next position that opens an escape, or the text's end.
      */
@@ -470,7 +470,7 @@ function decodeView(
       .indexOf(
       decoder.opener,
       cursor.read,
-    );
+      );
     /**
      End of the plain run before it.
      */
@@ -480,22 +480,22 @@ function decodeView(
       .slice(
       cursor.read,
       stop,
-    ),);
+      ),);
     // The plain run's origins, copied in one move each: a typed array's own
     // copy from an offset, where the write never runs past the read.
     starts.set(
       view.starts
         .subarray(
-          cursor.read,
-          stop,
+        cursor.read,
+        stop,
         ),
       cursor.write,
     );
     ends.set(
       view.ends
         .subarray(
-          cursor.read,
-          stop,
+        cursor.read,
+        stop,
         ),
       cursor.write,
     );
@@ -606,14 +606,14 @@ export function decodedViewsOf(
      */
     const next = frontier.views
       .flatMap(function decodeEach(view,): readonly TextView[] {
-      return DECODERS.flatMap(function decodeWith(decoder,): readonly TextView[] {
-        return decodeView({
-          view,
-          decoder,
-          wanted: wantedOrOpening,
+        return DECODERS.flatMap(function decodeWith(decoder,): readonly TextView[] {
+          return decodeView({
+            view,
+            decoder,
+            wanted: wantedOrOpening,
+          },);
         },);
       },);
-    },);
     /**
      Views whose text no earlier view has, since two chains that decode
      independent escapes in either order read the same text.
@@ -625,9 +625,9 @@ export function decodedViewsOf(
       return ![
         ...found,
         ...next.slice(
-        0,
-        at,
-      ),
+          0,
+          at,
+        ),
       ].some(function sameText(other,): boolean {
         return other.text === view.text;
       },);

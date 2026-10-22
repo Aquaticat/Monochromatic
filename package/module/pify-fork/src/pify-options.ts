@@ -52,7 +52,7 @@ export type PifyOptions<
   MultiArgs extends boolean = false,
   ErrorFirst extends boolean = true,
   ExcludeMain extends boolean = false,
-> = {
+  > = {
   /**
    Collect every callback result into one array instead of only the second
    argument. Rejections then carry the full callback argument list, error
@@ -60,41 +60,41 @@ export type PifyOptions<
    
    @defaultValue false
    */
-  readonly multiArgs?: MultiArgs;
+    readonly multiArgs?: MultiArgs;
   /**
    Member keys to promisify. While present and truthy, only these members are
    promisified and `exclude` is ignored, matching upstream `pify`.
    */
-  readonly include?: Includes;
+    readonly include?: Includes;
   /**
    Member keys to leave untouched. Only consulted while `include` is absent,
    matching upstream `pify`.
    
    @defaultValue `[/\.+(?:Sync|Stream)$\/]`
    */
-  readonly exclude?: Excludes;
+    readonly exclude?: Excludes;
   /**
    Whether the callback reports a leading error argument. Falsy means every
    callback argument resolves the promise, matching upstream `pify`.
    
    @defaultValue true
    */
-  readonly errorFirst?: ErrorFirst;
+    readonly errorFirst?: ErrorFirst;
   /**
    Promise constructor used instead of the native one, matching upstream
    `pify`'s `promiseModule`.
    
    @defaultValue Promise
    */
-  readonly promiseModule?: PromiseConstructor;
+    readonly promiseModule?: PromiseConstructor;
   /**
    Keep a function module's own call un-promisified while its members are
    promisified, matching upstream `pify`.
    
    @defaultValue false
    */
-  readonly excludeMain?: ExcludeMain;
-};
+    readonly excludeMain?: ExcludeMain;
+  };
 
 /**
  Any caller-supplied `pify` options record, before defaults merge: generic
@@ -120,12 +120,12 @@ export type PromisifyOptions<
   Excludes extends readonly unknown[],
   MultiArgs extends boolean,
   ErrorFirst extends boolean,
-> = {
-  readonly multiArgs: MultiArgs;
-  readonly include: Includes;
-  readonly exclude: Excludes;
-  readonly errorFirst: ErrorFirst;
-};
+  > = {
+    readonly multiArgs: MultiArgs;
+    readonly include: Includes;
+    readonly exclude: Excludes;
+    readonly errorFirst: ErrorFirst;
+  };
 
 /**
  Options record after {@link resolvePifyOptions}: every slot present with the

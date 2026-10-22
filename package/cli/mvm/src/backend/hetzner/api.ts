@@ -295,11 +295,11 @@ export function fetchAllPages<T>(
       // oxlint-disable-next-line no-await-in-loop -- deliberate sequential pagination
       const body = await hcloud<
         & { readonly meta: { readonly pagination: { readonly next_page?: number; }; }; }
-        & Readonly<Record<string, readonly T[]>>
-      >({
-        method: 'GET',
-        path: `${path}${sep}page=${String(pagination.page,)}&per_page=${String(PER_PAGE,)}`,
-      },);
+          & Readonly<Record<string, readonly T[]>>
+        >({
+          method: 'GET',
+          path: `${path}${sep}page=${String(pagination.page,)}&per_page=${String(PER_PAGE,)}`,
+        },);
       items.push(...(body[key] ?? []),);
       /**
        Next page number; absent (null on the wire) on the last page.

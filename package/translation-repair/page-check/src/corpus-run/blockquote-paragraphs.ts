@@ -165,8 +165,8 @@ export function paragraphWords(
 ): string {
   return lines
     .slice(
-      range.first,
-      range.last + 1,
+    range.first,
+    range.last + 1,
     )
     .map(function words(line,): string {
       return splitQuotedLine({ line, },)

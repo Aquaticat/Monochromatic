@@ -119,10 +119,10 @@ export function inTemplateFlagsOf({
   for (const contentStart of contentStarts) {
     while (
       (spanCursor < templateSpans.length)
-      && (at({
-        arr: templateSpans,
-        index: spanCursor,
-      },)[0] < contentStart)
+        && (at({
+          arr: templateSpans,
+          index: spanCursor,
+        },)[0] < contentStart)
     ) {
       openSpanIndexes.push(spanCursor,);
       spanCursor += 1;

@@ -30,12 +30,12 @@ import type { WouldShipSource, } from './would-ship-text.ts';
  */
 export type PublishCheck =
   | 'archive-original'
-  | 'contributor-names'
-  | 'destinations'
-  | 'front-matter'
-  | 'headings'
-  | 'no-valid-wording'
-  | 'page-agreement';
+    | 'contributor-names'
+    | 'destinations'
+    | 'front-matter'
+    | 'headings'
+    | 'no-valid-wording'
+    | 'page-agreement';
 
 /**
  One failed content check the page shipped with.

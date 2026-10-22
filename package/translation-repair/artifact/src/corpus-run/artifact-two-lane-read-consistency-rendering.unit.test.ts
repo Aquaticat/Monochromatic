@@ -135,7 +135,7 @@ await describe({
               recorded,
               { kind: 'located', quote: 'a[b]c', start: 0, markBefore: '\'', slot: 'b', },
               'ArtifactParseError: artifact parse failed at cat.rendering.definitions: '
-              + 'expected no key here beyond kind, quote, start, markBefore, markAfter, slot.',
+                + 'expected no key here beyond kind, quote, start, markBefore, markAfter, slot.',
             ],);
           },
         },),
@@ -175,7 +175,7 @@ await describe({
             ],);
             expect(renderingRefusal({ value: { kind: 'unlocated', reason: 'slot-empty', }, generation: 17, },),).toBe(
               'ArtifactParseError: artifact parse failed at cat.rendering.reason: expected a reason generation sixteen gives, '
-              + 'which locates a place on its quote and not its slot.',
+                + 'which locates a place on its quote and not its slot.',
             );
           },
         },),
@@ -191,11 +191,11 @@ await describe({
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.rendering.start: expected no key here beyond kind, quote, slot.',
               'ArtifactParseError: artifact parse failed at cat.rendering.markBefore: '
-              + 'expected no key here beyond kind, quote, slot.',
+                + 'expected no key here beyond kind, quote, slot.',
               'ArtifactParseError: artifact parse failed at cat.rendering.markAfter: '
-              + 'expected no key here beyond kind, quote, start, slot.',
+                + 'expected no key here beyond kind, quote, start, slot.',
               'ArtifactParseError: artifact parse failed at cat.rendering.reason: '
-              + 'expected no key here beyond kind, quote, start, markBefore, markAfter, slot.',
+                + 'expected no key here beyond kind, quote, start, markBefore, markAfter, slot.',
             ],);
           },
         },),

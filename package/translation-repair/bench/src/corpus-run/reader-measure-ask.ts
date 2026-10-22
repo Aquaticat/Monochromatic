@@ -118,7 +118,7 @@ export function readMeasureAsk(
   const problems = [
     ...((rosterId !== undefined)
       && openRouterIdFor({ modelId: rosterId, },)
-      .served
+        .served
       ? []
       : [`--model ${JSON.stringify(modelWritten,)} is not a roster model that OpenRouter serves`,]),
     ...((trustedDirs.length === 0)

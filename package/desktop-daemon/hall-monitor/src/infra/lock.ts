@@ -160,7 +160,7 @@ export function splitOnWhitespace(s: string,): string[] {
       const c = s.charAt(idx,);
       if (
         (c === ' ')
-        || (c === '\t')
+          || (c === '\t')
           || (c === '\n')
           || (c === '\r')
           || (c === '\f')
@@ -205,8 +205,8 @@ async function findSocketOwnerPid(): Promise<number> {
    */
   const line = unix.split('\n',)
     .find(function matchHallMonitor(l,) {
-    return l.includes('@hall-monitor',);
-  },);
+      return l.includes('@hall-monitor',);
+    },);
   if (line === undefined)
     throw new Error('Socket in use but could not find owner PID.',);
   /**

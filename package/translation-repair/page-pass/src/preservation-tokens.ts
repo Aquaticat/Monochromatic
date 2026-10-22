@@ -205,8 +205,8 @@ export function contentTokens(
        */
       const word = text
         .slice(
-          runStart,
-          index,
+        runStart,
+        index,
         )
         .toLowerCase();
       if ((word.length > 1) && (!STOP_WORDS.has(word,)))
@@ -288,8 +288,8 @@ export function properNouns(
     if ((back >= 0) && (!SENTENCE_ENDS.includes(nonNullishOrThrow(text[back],),))) {
       names.add(text
         .slice(
-          index,
-          end,
+        index,
+        end,
         )
         .toLowerCase(),);
     }

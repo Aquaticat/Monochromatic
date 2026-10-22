@@ -181,26 +181,26 @@ await describe({
         type PastEnd = Extract<
           ArrayAtDiagnostics<readonly [10], 1>[number],
           { readonly direction: 'past-end'; }
-        >;
+          >;
         type BeforeStart = Extract<
           ArrayAtDiagnostics<readonly [10, 20, 30], -4>[number],
           { readonly direction: 'before-start'; }
-        >;
+          >;
         type LargePastEnd = Extract<
           ArrayAtDiagnostics<readonly [10, 20, 30], 100_000>[number],
           { readonly direction: 'past-end'; }
-        >;
+          >;
         type LargeBeforeStart = Extract<
           ArrayAtDiagnostics<readonly [10, 20, 30], -1_000_000_000>[number],
           { readonly direction: 'before-start'; }
-        >;
+          >;
         type ZeroPaddedDifference = Extract<
           ArrayAtDiagnostics<
             readonly [10, 20, 30, 40, 50, 60, 70, 80, 90, 100],
             10
-          >[number],
+            >[number],
           { readonly direction: 'past-end'; }
-        >;
+          >;
 
         expectTypeOf<PastEnd['distance']>().toEqualTypeOf<1>();
         expectTypeOf<PastEnd['maximumPositiveIndex']>().toEqualTypeOf<0>();
@@ -367,7 +367,7 @@ export function rejectsInvalidUnionIndex(index: 0 | 2,): void {
  */
 type ValidCorrelatedInput =
   | { readonly array: readonly [10]; readonly index: 0; }
-  | { readonly array: readonly [10, 20]; readonly index: 1; };
+    | { readonly array: readonly [10, 20]; readonly index: 1; };
 
 /**
  Invalid input alternatives containing one impossible member.
@@ -379,7 +379,7 @@ type ValidCorrelatedInput =
  */
 type InvalidCorrelatedInput =
   | { readonly array: readonly [10]; readonly index: 1; }
-  | { readonly array: readonly [10, 20]; readonly index: 1; };
+    | { readonly array: readonly [10, 20]; readonly index: 1; };
 
 /**
  Verifies valid correlated input preserves result union.

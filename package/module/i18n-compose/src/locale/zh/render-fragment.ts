@@ -75,9 +75,9 @@ export function makeChineseFragmentRenderer<
   S extends string,
   V extends string,
   N extends string,
->(
+  >(
   deps: FragmentDeps<L, S, V, N>,
-): (fragment: Fragment<L, S, V, N>,) => string {
+  ): (fragment: Fragment<L, S, V, N>,) => string {
   /**
    Destructured locale dependencies captured for use across every sub-renderer below.
    */

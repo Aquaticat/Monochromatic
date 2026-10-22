@@ -100,9 +100,9 @@ await describe({
         const { dayStart: _dayStart, ...unanchored } = ROOMY;
         expect(new NeuralWattAllowanceError({ model: 'glm-5.3-flash', estimateWh: 0.3, energy: unanchored, },).message,)
           .toBe(
-            'NeuralWatt\'s day start is unknown, so the call to glm-5.3-flash was not sent: the quota reply gave no '
-              + 'subscription.current_period_start and TRANSLATION_REPAIR_NEURALWATT_DAY_START is not set; make GET '
-              + '/v1/quota readable or set TRANSLATION_REPAIR_NEURALWATT_DAY_START=HH:MM (UTC)',
+          'NeuralWatt\'s day start is unknown, so the call to glm-5.3-flash was not sent: the quota reply gave no '
+            + 'subscription.current_period_start and TRANSLATION_REPAIR_NEURALWATT_DAY_START is not set; make GET '
+            + '/v1/quota readable or set TRANSLATION_REPAIR_NEURALWATT_DAY_START=HH:MM (UTC)',
           );
       },
     },),

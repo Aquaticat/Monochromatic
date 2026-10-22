@@ -58,8 +58,8 @@ const MODELS = {
   },),
   judgeModelIds: ['hf:cat/Cat-A',
     'hf:cat/Cat-B',].map(function toId(id,) {
-    return id as unknown as RosterModelId;
-  },),
+      return id as unknown as RosterModelId;
+    },),
 };
 
 /**
@@ -183,7 +183,7 @@ await describe({
 
         expect(warnings,).toEqual([
           'Mittens/0 (relocation): refused, Mittens/0 has no neighbouring section carrying text, so its wide arm '
-          + 'would be its narrow arm and the pair would report a false null',
+            + 'would be its narrow arm and the pair would report a false null',
         ],);
       },
     },),
@@ -316,11 +316,11 @@ await describe({
           .map(function carries(sheet,): readonly boolean[] {
             return [sheet.includes(tenseLine,), sheet.includes(DEATH_LINE,),];
           },),).toEqual(Array.from(
-          { length: 3 * MODELS.judgeModelIds.length, },
-          function carriesBoth(): readonly boolean[] {
-            return [true, true,];
-          },
-        ),);
+            { length: 3 * MODELS.judgeModelIds.length, },
+            function carriesBoth(): readonly boolean[] {
+              return [true, true,];
+            },
+          ),);
       },
     },),
     it({
@@ -342,13 +342,13 @@ await describe({
           done: new Set(['narrow-a',
             'narrow-b',
             'wide',].map(function toKey(arm,) {
-            return trialKey({ row: {
-              protocol: 'protocol-one',
-              entryId: 'Mittens',
-              sliceIndex: 0,
-              arm,
-            }, },);
-          },),),
+              return trialKey({ row: {
+                protocol: 'protocol-one',
+                entryId: 'Mittens',
+                sliceIndex: 0,
+                arm,
+              }, },);
+            },),),
           models: MODELS,
           signal: AbortSignal.timeout(HANG_STOP_MS,),
           perCallTimeoutMs: HANG_STOP_MS,

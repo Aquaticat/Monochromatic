@@ -129,13 +129,13 @@ export function continuePan({
    */
   const dx = event.clientX
     - panState
-    .panStartPointerX;
+      .panStartPointerX;
   /**
    Companion to {@link dx} on the y axis.
    */
   const dy = event.clientY
     - panState
-    .panStartPointerY;
+      .panStartPointerY;
 
   if (!panState.dragExceededThreshold) {
     if ((Math.abs(dx,)

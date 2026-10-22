@@ -485,7 +485,7 @@ await describe({
         await settle();
         expect(shop.warned,).toEqual([
           'twin memo: the buy for a shared key was abandoned (refused by ProviderHttpError from synthetic with HTTP 429 '
-          + '(the provider said: "the cat is out of credit")), so any twin waiting on it asks for itself',
+            + '(the provider said: "the cat is out of credit")), so any twin waiting on it asks for itself',
         ],);
         nonNullishOrThrow(shop.gates[1],).resolve({
           record: 'r3',
@@ -574,7 +574,7 @@ await describe({
         await settle();
         expect(shop.warned,).toEqual([
           'twin memo: the buy for a shared key was abandoned (refused by ProviderHttpError from synthetic with HTTP 503 '
-          + '(the provider said: "the cat is napping in the sun")), so any twin waiting on it asks for itself',
+            + '(the provider said: "the cat is napping in the sun")), so any twin waiting on it asks for itself',
         ],);
       },
     },),

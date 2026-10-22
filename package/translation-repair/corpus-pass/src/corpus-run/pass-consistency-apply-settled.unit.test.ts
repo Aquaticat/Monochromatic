@@ -50,16 +50,16 @@ await describe({
               return gainFindingOf({ sliceIndex: 3, id, reason, },);
             },),).toEqual([
               'slice 3: the consistency replacement of group 1 OCCURRENCE 2 was left out because the apostrophe it carries in '
-              + 'would read as a quotation mark there, since another quotation mark of the page could pair with it; the place '
-              + 'keeps its words',
+                + 'would read as a quotation mark there, since another quotation mark of the page could pair with it; the place '
+                + 'keeps its words',
               'slice 3: the consistency replacement of group 1 OCCURRENCE 2 was left out because the apostrophe it carries in '
-              + 'would make the apostrophe that another replacement carries in lose its proof; the place keeps its words',
+                + 'would make the apostrophe that another replacement carries in lose its proof; the place keeps its words',
               'slice 3: the consistency replacement of group 1 OCCURRENCE 2 was left out because the floors refuse the slice '
-              + 'with it: the cat left | the dog came; the place keeps its words',
+                + 'with it: the cat left | the dog came; the place keeps its words',
               'slice 3: the consistency replacement of group 1 OCCURRENCE 2 was left out because its words overlap the words '
-              + 'of another replacement that is made; the place keeps its words',
+                + 'of another replacement that is made; the place keeps its words',
               'slice 3: the consistency replacement of group 1 OCCURRENCE 2 was left out because the floors refused the other '
-              + 'replacements of its slice, which keeps its wording whole; the place keeps its words',
+                + 'replacements of its slice, which keeps its wording whole; the place keeps its words',
             ],);
           },
         },),

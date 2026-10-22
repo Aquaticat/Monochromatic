@@ -165,14 +165,14 @@ export async function runCompilerFailureCase(input: CompilerFailureCase): Promis
         '--version'
       ],
       {
-      cwd: directory,
-      stdout: stdoutFile.fd,
-      stderr: stderrFile.fd,
-      env: { PATH: `${directory}${delimiter}${process.env
+        cwd: directory,
+        stdout: stdoutFile.fd,
+        stderr: stderrFile.fd,
+        env: { PATH: `${directory}${delimiter}${process.env
         .PATH
         ?? ''}` },
-      timeout: 10_000,
-    }
+        timeout: 10_000,
+      }
     );
   } catch (error) {
     if ((!(error instanceof SubprocessError)) || (error.exitCode === undefined)) throw error;

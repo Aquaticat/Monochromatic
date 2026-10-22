@@ -33,10 +33,10 @@ type DisposableProject = {
 /** Worker selection for one Oxlint process. */
 type WorkerSelection =
   | { readonly kind: 'default'; }
-  | {
-    readonly kind: 'fixed';
-    readonly count: number;
-  };
+    | {
+      readonly kind: 'fixed';
+      readonly count: number;
+    };
 
 /** Captured Oxlint output whether diagnostics make process exit nonzero. */
 type OxlintCapture = {

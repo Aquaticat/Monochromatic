@@ -443,13 +443,13 @@ function parseSituationResponse(raw: string,): SituationVerdict {
    */
   const total = [...scores.values(),]
     .reduce(
-      function sum(
-        running,
-        score,
-      ) {
-        return running + score;
-      },
-      0,
+    function sum(
+      running,
+      score,
+    ) {
+      return running + score;
+    },
+    0,
     );
   if (Math.abs(total - 1,) > DISTRIBUTION_TOLERANCE) {
     throw new LunaResponseError('Luna distribution is not normalized',);

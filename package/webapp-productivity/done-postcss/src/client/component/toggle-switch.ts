@@ -174,7 +174,7 @@ class ToggleSwitch extends HTMLElement {
           },),
         ],
       },),
-    );
+      );
   }
 }
 

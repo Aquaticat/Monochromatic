@@ -90,7 +90,7 @@ await describe({
     it({
       name:
         'accepts the only shape hearing nobody can take: the archive`s own wording, carried forward, '
-        + 'claiming no change',
+          + 'claiming no change',
       fn: async () => {
         assertUnheardKeptIncumbent({
           sliceIndex: 4,
@@ -106,7 +106,7 @@ await describe({
     it({
       name:
         'REFUSES a record that heard nobody and carries wording of its own, since a rendering nobody '
-        + 'produced would be written into the document',
+          + 'produced would be written into the document',
       fn: async () => {
         expect(function wroteWhatNobodySaid() {
           assertUnheardKeptIncumbent({
@@ -124,8 +124,8 @@ await describe({
     it({
       name:
         'REFUSES a record that heard nobody and claims a change, because the shipped set is built from '
-        + 'that flag: the document would carry a replacement while the wording ledger reported that '
-        + 'nobody produced one, which is the contradiction the two axes exist to make impossible',
+          + 'that flag: the document would carry a replacement while the wording ledger reported that '
+          + 'nobody produced one, which is the contradiction the two axes exist to make impossible',
       fn: async () => {
         /**
          What claimedAChange raised, read for its class as well as its wording.
@@ -149,7 +149,7 @@ await describe({
     it({
       name:
         'says nothing about a record that DID hear somebody, whatever it decided, since this rule is '
-        + 'about silence and a lane that was answered may legitimately replace the archive wording',
+          + 'about silence and a lane that was answered may legitimately replace the archive wording',
       fn: async () => {
         assertUnheardKeptIncumbent({
           sliceIndex: 4,
@@ -165,7 +165,7 @@ await describe({
     it({
       name:
         'names hearing nobody in one place, because the driver, the wording builder and this rule all '
-        + 'ask it, and two spellings would eventually disagree about which slice fell between them',
+          + 'ask it, and two spellings would eventually disagree about which slice fell between them',
       fn: async () => {
         expect(heardNobody({
           record: recordFor({

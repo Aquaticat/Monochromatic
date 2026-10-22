@@ -62,7 +62,7 @@ export type SliceAlignmentAssessment = {
    */
   readonly kind:
     | 'within-limit'
-    | 'incumbent-dominates-source';
+      | 'incumbent-dominates-source';
 
   /**
    Source code points the predicate read, whitespace-trimmed.

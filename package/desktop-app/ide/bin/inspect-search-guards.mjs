@@ -44,11 +44,11 @@ const cases = [
   { name: 'record-limit', file: 'src/search_io.rs', before: 'if bytes.len() > MAX_SEARCH_RECORD {', after: 'if false {', test: 'exact_record_limit_has_an_observed_boundary', failure: 'record(&mut rejected' },
   { name: 'scope-containment', file: 'src/search_worker/request.rs', before: 'workspace.resolve(selected)?', after: 'fs::canonicalize(workspace.root().join(selected))?', integration: 'search_scope', test: 'invalid_scope_is_an_error_and_a_later_valid_scope_recovers', failure: 'result.results.paths.is_err()' },
   { name: 'eof-cancellation', file: 'src/search_process.rs', alter: text => {
-      const start = text.indexOf('        let waited = tokio::select! {');
-      const end = text.indexOf('        if let Some(status) = waited {', start);
-      if (start < 0 || end < start) throw new Error('EOF wait cancellation boundary is absent');
-      return text.slice(0, start) + '        let waited = Some(child.wait().await);\n' + text.slice(end);
-    }, test: 'cancellation_after_stdout_eof_still_reaps_the_running_child', failure: 'EOF must retain cancellation during process wait' },
+    const start = text.indexOf('        let waited = tokio::select! {');
+    const end = text.indexOf('        if let Some(status) = waited {', start);
+    if (start < 0 || end < start) throw new Error('EOF wait cancellation boundary is absent');
+    return text.slice(0, start) + '        let waited = Some(child.wait().await);\n' + text.slice(end);
+  }, test: 'cancellation_after_stdout_eof_still_reaps_the_running_child', failure: 'EOF must retain cancellation during process wait' },
   // Whole-model replacement recreates Slint's repeated rows; this is a lifecycle control, not a custom guard.
   { name: 'model-replacement-click', native: true, test: 'replacement_query_cancels_a_held_result_click', control: true },
   { name: 'pending-open-focus', file: 'src/native/navigation/open.rs', before: 'if !window.get_search_open() {', after: 'if true {', occurrence: 1, native: true, test: 'pending_file_open_does_not_steal_search_input_focus', failure: 'asynchronous source install stole query focus' },

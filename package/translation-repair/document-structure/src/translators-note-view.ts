@@ -200,17 +200,17 @@ export function shownTranslation(
         // The runs before this one, laid end to end, are where it starts in the shown text.
         shownStart: runs
           .slice(
-            0,
-            index,
+          0,
+          index,
           )
           .reduce(
-            function laidEnd(
-              total,
-              before,
-            ): number {
-              return total + (before.to - before.from);
-            },
-            0,
+          function laidEnd(
+            total,
+            before,
+          ): number {
+            return total + (before.to - before.from);
+          },
+          0,
           ),
         storedStart: run.from,
         length: run.to - run.from,

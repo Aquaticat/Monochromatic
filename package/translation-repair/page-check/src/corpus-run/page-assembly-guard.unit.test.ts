@@ -463,7 +463,7 @@ await describe({
         expect(assembly.trimmed,).toEqual([],);
         expect(assembly.findings,).toEqual([
           'assembly-container-half-withheld (slice 2 beside slice 1: one container\'s halves ship together, and '
-          + 'slice 1 ships nothing)',
+            + 'slice 1 ships nothing)',
         ],);
       },
     },),

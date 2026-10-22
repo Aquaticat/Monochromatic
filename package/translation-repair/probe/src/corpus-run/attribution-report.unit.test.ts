@@ -153,8 +153,8 @@ await describe({
          */
         const quiet = report.critics
           .find(function isQuiet(critic,) {
-          return critic.modelId === QUIET;
-        },);
+            return critic.modelId === QUIET;
+          },);
 
         expect(quiet?.chunksHeard,).toBe(1,);
         expect(quiet?.claimsRaised,).toBe(0,);
@@ -240,15 +240,15 @@ await describe({
         expect(
           report.critics
             .find(function isTabby(critic,) {
-            return critic.modelId === TABBY;
-          },)?.acceptedHits,
+              return critic.modelId === TABBY;
+            },)?.acceptedHits,
         ).toBe(0,);
         // Raising it still counts; only the ACCEPTED credit is withheld.
         expect(
           report.critics
             .find(function isTabby(critic,) {
-            return critic.modelId === TABBY;
-          },)?.claimsRaised,
+              return critic.modelId === TABBY;
+            },)?.claimsRaised,
         ).toBe(1,);
       },
     },),
@@ -295,8 +295,8 @@ await describe({
         expect(
           report.critics
             .map(function toHits(critic,) {
-            return critic.acceptedHits;
-          },),
+              return critic.acceptedHits;
+            },),
         ).toStrictEqual([1, 1,],);
       },
     },),
@@ -323,8 +323,8 @@ await describe({
          */
         const tabby = report.critics
           .find(function isTabby(critic,) {
-          return critic.modelId === TABBY;
-        },);
+            return critic.modelId === TABBY;
+          },);
 
         // One distinct claim, two emissions of it. The difference between these
         // two numbers IS the self-repetition, so collapsing them loses it.
@@ -359,8 +359,8 @@ await describe({
         expect(
           report.critics
             .find(function isTabby(critic,) {
-            return critic.modelId === TABBY;
-          },)?.acceptedHits,
+              return critic.modelId === TABBY;
+            },)?.acceptedHits,
         ).toBe(0,);
       },
     },),

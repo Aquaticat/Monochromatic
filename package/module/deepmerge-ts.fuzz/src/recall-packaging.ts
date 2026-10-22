@@ -367,9 +367,9 @@ async function probeRelease(version: string,): Promise<Readonly<Record<string, s
         return line.includes('error',) || line.includes('Error',);
       },)
       ?? output.slice(
-      0,
-      FAILURE_EXCERPT,
-    );
+        0,
+        FAILURE_EXCERPT,
+      );
     return [
       entry.name,
       `fail: ${reason.trim()}`,

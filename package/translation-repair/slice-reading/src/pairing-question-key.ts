@@ -65,15 +65,15 @@ export function pairingQuestionKey(
 ): string {
   return createHash('sha256',)
     .update(
-      JSON.stringify({
-        version: PAIRING_CACHE_VERSION,
-        question,
-        source: sourceTexts,
-        target: targetTexts,
-        pictures: pictureContext,
-        roster: modelIds,
-      },),
-      'utf8',
+    JSON.stringify({
+      version: PAIRING_CACHE_VERSION,
+      question,
+      source: sourceTexts,
+      target: targetTexts,
+      pictures: pictureContext,
+      roster: modelIds,
+    },),
+    'utf8',
     )
     .digest('hex',);
 }

@@ -127,9 +127,9 @@ export function createIteration<Key, Value>(context: IterationContext<Key, Value
     for (const [key, item] of context.readOldCache()) {
       if ((!context.readCache()
         .has(key,)) && (!context.deleteIfExpired({
-        key,
-        item,
-      },)))
+          key,
+          item,
+        },)))
         yield [
           key,
           item,
@@ -172,9 +172,9 @@ export function createIteration<Key, Value>(context: IterationContext<Key, Value
     for (const [key, item] of context.readOldCache()) {
       if ((!context.readCache()
         .has(key,)) && (!context.deleteIfExpired({
-        key,
-        item,
-      },)))
+          key,
+          item,
+        },)))
         yield [
           key,
           item.value,
@@ -207,9 +207,9 @@ export function createIteration<Key, Value>(context: IterationContext<Key, Value
     for (const [key, item] of [...context.readOldCache()].toReversed()) {
       if ((!context.readCache()
         .has(key,)) && (!context.deleteIfExpired({
-        key,
-        item,
-      },)))
+          key,
+          item,
+        },)))
         yield [
           key,
           item.value,

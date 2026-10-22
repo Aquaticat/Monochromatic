@@ -679,7 +679,7 @@ The cat also likes sunbathing.
     it({
       name:
         'ECHOES the section pairing it consumed and OMITS the field when the deterministic aligner decided, '
-        + 'so an artifact records the value slicing was built on rather than a copy assembled beside it',
+          + 'so an artifact records the value slicing was built on rather than a copy assembled beside it',
       fn: async () => {
         /**
          Prepared by the deterministic aligner, which supplies no pairing.

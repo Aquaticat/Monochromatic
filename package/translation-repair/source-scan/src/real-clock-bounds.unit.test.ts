@@ -1321,8 +1321,8 @@ function valueText(
     return '(none)';
   return file.text
     .slice(
-      value.start,
-      value.end,
+    value.start,
+    value.end,
     )
     .split('\n',)
     .map(function trimmed(line,): string {
@@ -1534,7 +1534,7 @@ await describe({
               'import { HANG_STOP_MS, } from \'./hang-stop.test-fixture.ts\';',
               'const TINY_MS = 20;',
               'export async function purr({ graceMs = 50, perCallTimeoutMs = HANG_STOP_MS, }: { graceMs?: number; '
-              + 'perCallTimeoutMs?: number; },): Promise<void> {',
+                + 'perCallTimeoutMs?: number; },): Promise<void> {',
               '  AbortSignal.timeout(5_000,);',
               '  AbortSignal.timeout(HANG_STOP_MS,);',
               '  AbortSignal.timeout(HANG_STOP_MS * 8,);',

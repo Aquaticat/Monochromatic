@@ -8,13 +8,13 @@ const templateFile = join(question, 'current.template.html');
 const outputFile = join(question, 'current.html');
 const overflowPng = readFileSync(join(render, 'search-cover-viewport-refinement-s200.png'));
 if (overflowPng.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
-    overflowPng.readUInt32BE(16) !== 1080 || overflowPng.readUInt32BE(20) !== 2424) {
+  overflowPng.readUInt32BE(16) !== 1080 || overflowPng.readUInt32BE(20) !== 2424) {
   throw new Error('Accepted D56 cover capture has wrong physical panel size.');
 }
 const overflowUrl = `data:image/png;base64,${overflowPng.toString('base64')}`;
 const floatingPng = readFileSync(join(render, 'search-floating-inner-results-light-s200.png'));
 if (floatingPng.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
-    floatingPng.readUInt32BE(16) !== 2076 || floatingPng.readUInt32BE(20) !== 2152) {
+  floatingPng.readUInt32BE(16) !== 2076 || floatingPng.readUInt32BE(20) !== 2152) {
   throw new Error('Accepted D57 floating capture has wrong physical panel size.');
 }
 const floatingUrl = `data:image/png;base64,${floatingPng.toString('base64')}`;
@@ -24,7 +24,7 @@ const e2Captures = Object.fromEntries(['player', 'empty', 'results'].map((state)
     : `search-e2-complete-7p5-${state}-inner-light-s200.png`;
   const png = readFileSync(join(render, name));
   if (png.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
-      png.readUInt32BE(16) !== 2076 || png.readUInt32BE(20) !== 2152) {
+    png.readUInt32BE(16) !== 2076 || png.readUInt32BE(20) !== 2152) {
     throw new Error(`${name}: accepted E2 capture has wrong physical panel size.`);
   }
   return [state, `data:image/png;base64,${png.toString('base64')}`];
@@ -39,7 +39,7 @@ const captures = Object.fromEntries(['inner', 'cover'].map((panel) => [panel,
       const png = readFileSync(join(render, name));
       const dimensions = panel === 'inner' ? [2076, 2152] : [1080, 2424];
       if (png.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
-          png.readUInt32BE(16) !== dimensions[0] || png.readUInt32BE(20) !== dimensions[1]) {
+        png.readUInt32BE(16) !== dimensions[0] || png.readUInt32BE(20) !== dimensions[1]) {
         throw new Error(`${name}: wrong physical panel or non-PNG evidence.`);
       }
       return [scheme, `data:image/png;base64,${png.toString('base64')}`];
@@ -52,8 +52,8 @@ if (command === 'build') {
     throw new Error('Selected review must have exactly one embedded capture slot.');
   }
   if (template.split('__ACCEPTED_COVER_OVERFLOW__').length !== 2 ||
-      template.split('__ACCEPTED_INNER_FLOATING__').length !== 2 ||
-      template.split('__ACCEPTED_E2_CAPTURE_MAP__').length !== 2) {
+    template.split('__ACCEPTED_INNER_FLOATING__').length !== 2 ||
+    template.split('__ACCEPTED_E2_CAPTURE_MAP__').length !== 2) {
     throw new Error('Selected review must embed each accepted study exactly once.');
   }
   writeFileSync(outputFile, template.replace('__SELECTED_CAPTURES__', JSON.stringify(captures))
@@ -71,13 +71,13 @@ if (command === 'build') {
     throw new Error('Embedded selected rasters differ from sanitized physical-panel sources.');
   }
   if (!html.includes(`id="accepted-overflow" src="${overflowUrl}"`) ||
-      !html.includes(`id="accepted-floating" src="${floatingUrl}"`)) {
+    !html.includes(`id="accepted-floating" src="${floatingUrl}"`)) {
     throw new Error('Accepted rasters differ from the sanitized physical-panel sources.');
   }
   const e2Begin = html.indexOf('const acceptedE2Captures = ');
   const e2End = html.indexOf(';\nconst e2State = ', e2Begin);
   if (e2Begin < 0 || e2End < 0 ||
-      JSON.stringify(JSON.parse(html.slice(e2Begin + 'const acceptedE2Captures = '.length, e2End))) !== JSON.stringify(e2Captures)) {
+    JSON.stringify(JSON.parse(html.slice(e2Begin + 'const acceptedE2Captures = '.length, e2End))) !== JSON.stringify(e2Captures)) {
     throw new Error('Accepted E2 player/Search rasters differ from sanitized sources.');
   }
   for (const marker of ['Search A, with reachable folded-cover results',
@@ -94,9 +94,9 @@ if (command === 'build') {
     if (!html.includes(marker)) throw new Error(`Selected review contract missing ${marker}.`);
   }
   if (html.includes('data-variant="right"') || html.includes('data-variant="mirrored"') ||
-      html.includes('__SELECTED_CAPTURES__') || html.includes('__ACCEPTED_COVER_OVERFLOW__') ||
-      html.includes('__ACCEPTED_INNER_FLOATING__') || html.includes('__ACCEPTED_E2_CAPTURE_MAP__') ||
-      html.includes('id="control-image"') || html.includes('<script src=')) {
+    html.includes('__SELECTED_CAPTURES__') || html.includes('__ACCEPTED_COVER_OVERFLOW__') ||
+    html.includes('__ACCEPTED_INNER_FLOATING__') || html.includes('__ACCEPTED_E2_CAPTURE_MAP__') ||
+    html.includes('id="control-image"') || html.includes('<script src=')) {
     throw new Error('Rejected options or external scripts leaked into the selected review.');
   }
   console.log('Validated the self-contained A-only native Fold Search review.');

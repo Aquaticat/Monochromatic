@@ -43,13 +43,13 @@ import type { ArtifactKeyVocabulary, } from '../artifact-key-vocabulary.ts';
  */
 export type ParsedConsolidation =
   | ArtifactConsolidation
-  | {
+    | {
     /**
      Artifact names no consolidation, which for every artifact settled to
      date means it was written before the field existed.
      */
-    readonly kind: 'unrecorded';
-  };
+      readonly kind: 'unrecorded';
+    };
 
 /**
  Refuses a settled stage that does not answer exactly the slices the contest

@@ -208,7 +208,7 @@ async function runCommand({
       function captureChunk(chunk: string,): void {
         captured.push(chunk,);
       },
-    );
+      );
     /**
      Raw exit event of the tool process.
      */

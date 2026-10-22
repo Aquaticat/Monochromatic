@@ -198,12 +198,12 @@ export async function runDerivabilityProbe(
    */
   const ballots = gather.voices
     .map(function toBallot(voice,) {
-    return resolveDerivabilityJudgment({
-      wire: voice.value,
-      seedIds: plan.seedIds,
-    },)
-      .verdicts;
-  },);
+      return resolveDerivabilityJudgment({
+        wire: voice.value,
+        seedIds: plan.seedIds,
+      },)
+        .verdicts;
+    },);
 
   l.info(
     `derivability probe: ${String(gather.voices
@@ -220,32 +220,32 @@ export async function runDerivabilityProbe(
     /**
      Verdicts cast on this seed across heard judges.
      */
-    const cast = ballots.flatMap(function toVerdict(ballot,): readonly DerivabilityVerdict[] {
+      const cast = ballots.flatMap(function toVerdict(ballot,): readonly DerivabilityVerdict[] {
       /**
        This judge's verdict on the seed, when cast.
        */
-      const verdict = ballot[seedId];
-      return verdict === undefined ? [] : [verdict,];
-    },);
-    if ((cast.length === 0) || (!gather.quorumMet)) {
+        const verdict = ballot[seedId];
+        return verdict === undefined ? [] : [verdict,];
+      },);
+      if ((cast.length === 0) || (!gather.quorumMet)) {
+        return [
+          seedId,
+          {
+            verdict: 'derivable',
+            judged: false,
+            votes: cast.length,
+          },
+        ];
+      }
       return [
         seedId,
         {
-          verdict: 'derivable',
-          judged: false,
+          verdict: upperMedianVerdict({ cast, },),
+          judged: true,
           votes: cast.length,
         },
       ];
-    }
-    return [
-      seedId,
-      {
-        verdict: upperMedianVerdict({ cast, },),
-        judged: true,
-        votes: cast.length,
-      },
-    ];
-  },),);
+    },),);
 }
 
 //endregion Derivability probe stage

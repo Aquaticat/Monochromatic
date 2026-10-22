@@ -149,8 +149,8 @@ await describe({
         },);
         expect(printed.lines,).toEqual([
           `INCOMPLETE mittens: target page absent at the pin (corpus read failed for ${clone.commitSha}:`
-          + 'people/mittens/page.en.md (missing-object); the commit has no such path: check the path, or pin a '
-          + 'commit that has it.)',
+            + 'people/mittens/page.en.md (missing-object); the commit has no such path: check the path, or pin a '
+            + 'commit that has it.)',
         ],);
       },
     },),
@@ -187,8 +187,8 @@ await describe({
         },);
         expect(printed.lines,).toEqual([
           'ONLY tabby (chosen by hand in place of every pending pair at the pin; if still pending it runs in '
-          + 'the pass\'s own order; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
-          + 'entry never enters a pool later draws treat as natural accumulation)',
+            + 'the pass\'s own order; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
+            + 'entry never enters a pool later draws treat as natural accumulation)',
         ],);
       },
     },),
@@ -224,8 +224,8 @@ await describe({
         },);
         expect(printed.lines,).toEqual([
           'ONLY biscuit,tabby (chosen by hand in place of every pending pair at the pin; those still pending '
-          + 'run in the pass\'s own order; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
-          + 'entry never enters a pool later draws treat as natural accumulation)',
+            + 'run in the pass\'s own order; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
+            + 'entry never enters a pool later draws treat as natural accumulation)',
         ],);
       },
     },),

@@ -222,11 +222,11 @@ function sharedRepository(random: Parameters<ScenarioDefinition['repository']>[0
           _unused,
           index,
         ) {
-        return `shared base line ${String(index,)} ${String(random.integer({
+          return `shared base line ${String(index,)} ${String(random.integer({
           min: 0,
           max: LINE_SUFFIX_MAX,
         },),)}`;
-      },
+        },
       ),),
     },],
     hooks: 'hookdir',
@@ -299,8 +299,8 @@ const sharedOverlapping: ScenarioDefinition = {
             .exitCode
             === 1)
             && attempt.outcome
-            .stderr
-            .includes('"type":"core-finding"',);
+              .stderr
+              .includes('"type":"core-finding"',);
         },),
         detail: failed.map(function describe(attempt,) {
           return `${attempt.label} exited ${String(attempt.outcome

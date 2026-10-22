@@ -169,4 +169,4 @@ export function unpairedViewMembers({
 export const UNPAIRED_VIEW_INTERFACES: ReadonlyMap<
   string,
   ReadonlySet<string>
-> = UNPAIRED_VIEW_MEMBERS;
+  > = UNPAIRED_VIEW_MEMBERS;

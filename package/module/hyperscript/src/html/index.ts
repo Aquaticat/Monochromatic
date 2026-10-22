@@ -97,24 +97,24 @@ export const VOID_ELEMENTS: Set<string> = new Set<string>([
 export function escapeHtml(raw: string,): string {
   return raw
     .replaceAll(
-      '&',
-      '&amp;',
+    '&',
+    '&amp;',
     )
     .replaceAll(
-      '<',
-      '&lt;',
+    '<',
+    '&lt;',
     )
     .replaceAll(
-      '>',
-      '&gt;',
+    '>',
+    '&gt;',
     )
     .replaceAll(
-      '"',
-      '&quot;',
+    '"',
+    '&quot;',
     )
     .replaceAll(
-      "'",
-      '&#39;',
+    "'",
+    '&#39;',
     );
 }
 

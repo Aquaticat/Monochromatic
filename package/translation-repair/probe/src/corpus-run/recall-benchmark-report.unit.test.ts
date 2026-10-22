@@ -209,7 +209,7 @@ await describe({
               keptAt: '/cats/runs/recall-scorecard/stamp.json',
             },),).toEqual([
               'SCORECARD dispatched=2 coverage=0.500 planted=3 detected=2 detectionRate=0.667 policyDeclined=0 '
-              + 'detectionRateExcludingPolicy=0.750',
+                + 'detectionRateExcludingPolicy=0.750',
               'SCORECARD kept at /cats/runs/recall-scorecard/stamp.json',
               'DERIVABILITY nonDerivable=1 detectionExcludingUnfair=0.800',
               'REPAIR judged=4 restored=2 partial=1 strict=0.500 lenient=0.750',
@@ -230,11 +230,11 @@ await describe({
               keptAt: '/cats/runs/recall-scorecard/stamp.json',
             },),).toEqual([
               'SCORECARD dispatched=2 coverage=0.500 planted=3 detected=2 detectionRate=0.667 policyDeclined=1 '
-              + 'detectionRateExcludingPolicy=0.750',
+                + 'detectionRateExcludingPolicy=0.750',
               'SCORECARD kept at /cats/runs/recall-scorecard/stamp.json',
               'NOTE policyDeclined counts seeds the panel ruled a source defect at the seed region rather than a '
-              + 'translation error. Those are the policy working, not recall failing, which is why the '
-              + 'excluding-policy rate sits beside the raw one instead of replacing it.',
+                + 'translation error. Those are the policy working, not recall failing, which is why the '
+                + 'excluding-policy rate sits beside the raw one instead of replacing it.',
               'DERIVABILITY nonDerivable=1 detectionExcludingUnfair=0.800',
               'REPAIR judged=4 restored=2 partial=1 strict=0.500 lenient=0.750',
             ],);
@@ -264,7 +264,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(StatedRefusalError,);
             expect(String(refusal,),).toBe(
               'StatedRefusalError: the bench dispatched 0 entries and planted 0 seeds, so none of its rates '
-              + 'measures anything; the scorecard is kept at /cats/runs/recall-scorecard/stamp.json',
+                + 'measures anything; the scorecard is kept at /cats/runs/recall-scorecard/stamp.json',
             );
           },
         },),
@@ -285,7 +285,7 @@ await describe({
 
             expect(String(refusal,),).toBe(
               'StatedRefusalError: the bench dispatched 1 entry and planted 0 seeds, so none of its rates '
-              + 'measures anything; the scorecard is kept at /cats/runs/recall-scorecard/stamp.json',
+                + 'measures anything; the scorecard is kept at /cats/runs/recall-scorecard/stamp.json',
             );
           },
         },),
@@ -306,7 +306,7 @@ await describe({
 
             expect(String(refusal,),).toBe(
               'StatedRefusalError: the bench dispatched 0 entries and planted 1 seed, so none of its rates '
-              + 'measures anything; the scorecard is kept at /cats/runs/recall-scorecard/stamp.json',
+                + 'measures anything; the scorecard is kept at /cats/runs/recall-scorecard/stamp.json',
             );
           },
         },),

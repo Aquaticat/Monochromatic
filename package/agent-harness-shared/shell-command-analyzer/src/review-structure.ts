@@ -103,9 +103,9 @@ function projectNode(value: unknown): unknown {
     if (Array.isArray(value.parts) && (value.parts
       .length
       > 0)) return {
-      type,
-      parts: value.parts,
-    };
+        type,
+        parts: value.parts,
+      };
     return {
       type,
       value: value.value,
@@ -150,13 +150,13 @@ function projectNode(value: unknown): unknown {
   };
   if (((type === 'CommandExpansion') || (type === 'ProcessSubstitution')
     || (type === 'ArithmeticCommandExpansion')) && (value.script === undefined))
-      throw new ShellReviewSyntaxError('Bash nested execution has no complete parsed script');
+    throw new ShellReviewSyntaxError('Bash nested execution has no complete parsed script');
   if (((type === 'ArithmeticExpansion') || (type === 'ArithmeticCommand')) && (value.expression === undefined))
-      throw new ShellReviewSyntaxError('Bash arithmetic has no complete parsed expression');
+    throw new ShellReviewSyntaxError('Bash arithmetic has no complete parsed expression');
   return Object.fromEntries(Object.entries(value)
     .filter(function structuralField([field,]) {
-    return structuralFields.has(field) && (!((type === 'ArithmeticCommand') && (field === 'body')));
-  }));
+      return structuralFields.has(field) && (!((type === 'ArithmeticCommand') && (field === 'body')));
+    }));
 }
 
 /**

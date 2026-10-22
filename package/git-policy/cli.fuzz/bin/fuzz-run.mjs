@@ -73,8 +73,8 @@ export function executedUnitsIn(text) {
     return 0;
   const nonDigitAt = afterSpace.split('')
     .findIndex(function isNotDigit(character) {
-    return !'0123456789'.includes(character);
-  });
+      return !'0123456789'.includes(character);
+    });
   const digitCount = nonDigitAt === (-1)
     ? afterSpace.length
     : nonDigitAt;

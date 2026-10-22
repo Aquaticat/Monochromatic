@@ -440,7 +440,7 @@ function extractStateParam(s: string,): string {
       const ampIdx = s.indexOf(`&${STATE_PARAM}`,);
       return ampIdx === (-1) ? (-1) : (ampIdx + 1
         + STATE_PARAM
-        .length);
+          .length);
     })();
   if (payloadStart === (-1))
     return '';

@@ -137,15 +137,15 @@ export function printDigestStanding(
         name: 'EDITOR ',
         perChunk: group.readings
           .flatMap(function editorOf(reading,) {
-          return reading.editor;
-        },),
+            return reading.editor;
+          },),
       },
       {
         name: 'REFINER',
         perChunk: group.readings
           .flatMap(function refinerOf(reading,) {
-          return reading.refiner;
-        },),
+            return reading.refiner;
+          },),
       },
     ]
   ) {

@@ -389,8 +389,8 @@ await describe({
               changed: [[1, 'Then ’Bowl 1 of the folks is empty.',],],
               findings: [
                 'slice 2: the consistency replacement of group 2 OCCURRENCE 2 was left out because the apostrophe it carries in '
-                + 'would read as a quotation mark there, since another quotation mark of the page could pair with it; the place '
-                + 'keeps its words',
+                  + 'would read as a quotation mark there, since another quotation mark of the page could pair with it; the place '
+                  + 'keeps its words',
               ],
               keptBecause: ['none', 'gain-pairs',],
             },);
@@ -417,8 +417,8 @@ await describe({
             const finding = seen.findings[0] ?? '';
             expect(finding,).toBe(
               'slice 1: the consistency replacement of group 1 OCCURRENCE 2 was left out because the floors refuse the slice '
-              + 'with it: translate-refused-declared-name (slice 1: archive text carries "kennel" and the replacement does '
-              + 'not; keeping the archive text); the place keeps its words',
+                + 'with it: translate-refused-declared-name (slice 1: archive text carries "kennel" and the replacement does '
+                + 'not; keeping the archive text); the place keeps its words',
             );
           },
         },),

@@ -82,8 +82,8 @@ function partsOf({ stdout, }: { readonly stdout: string; },): {
   const lines = stdout
     .split('\n',)
     .slice(
-      0,
-      -1,
+    0,
+    -1,
     );
   return {
     report: lines.filter(function isReport(line,): boolean {
@@ -131,16 +131,16 @@ await describe({
             },),).toEqual([
               'cache-account-audit: 2 cache versions under src',
               `  PAIRING_CACHE_VERSION = 4 (src/pairing-cache-version.ts): set in ${citedHash({ hash: pairing.hash, },)} `
-              + `at ${utcMinutes({ seconds: pairing.seconds, },)}`,
+                + `at ${utcMinutes({ seconds: pairing.seconds, },)}`,
               `  STAGE_CACHE_VERSION = 1 (src/stage-cache-version.ts): set in ${citedHash({ hash: repo.stageSet.hash, },)} `
-              + `at ${utcMinutes({ seconds: repo.stageSet.seconds, },)}`,
+                + `at ${utcMinutes({ seconds: repo.stageSet.seconds, },)}`,
               `source commits since ${citedHash({ hash: repo.stageSet.hash, },)}: 3, named by an account: 1, by none: 2`,
               `  ${citedHash({ hash: repo.purrAdded.hash, },)} ${utcMinutes({ seconds: repo.purrAdded.seconds, },)} `
-              + `[rides inside: PAIRING_CACHE_VERSION, STAGE_CACHE_VERSION] ${repo.purrAdded.subject}`,
+                + `[rides inside: PAIRING_CACHE_VERSION, STAGE_CACHE_VERSION] ${repo.purrAdded.subject}`,
               `  ${citedHash({ hash: pairing.hash, },)} ${utcMinutes({ seconds: pairing.seconds, },)} `
-              + `[rides inside: STAGE_CACHE_VERSION] ${pairing.subject}`,
+                + `[rides inside: STAGE_CACHE_VERSION] ${pairing.subject}`,
               `slice-cache records under 1 runs directory found in ${join(repo.path, 'node_modules', '.monochromatic',)}, `
-              + `${runs.path}: 1`,
+                + `${runs.path}: 1`,
               'directories the search could not list, whose runs the count leaves out: 0',
               `newest slice-cache record: ${utcMinutes({ seconds: repo.betweenSeconds, },)} ${record}`,
               'cache versions set after it: 1 of 2',
@@ -230,7 +230,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(StatedRefusalError,);
             expect(String(refusal,),).toBe(
               'StatedRefusalError: no cache version is declared under src; run this from the package directory, '
-              + 'as mise run //package/translation-repair/slice-cache:cache-account-audit does.',
+                + 'as mise run //package/translation-repair/slice-cache:cache-account-audit does.',
             );
           },
         },),
@@ -262,7 +262,7 @@ await describe({
 
             expect(String(refusal,),).toBe(
               'StatedRefusalError: STAGE_CACHE_VERSION = 7 in src/stage-cache-version.ts is not in any commit; '
-              + 'commit it, then run the audit again.',
+                + 'commit it, then run the audit again.',
             );
           },
         },),
@@ -291,7 +291,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(StatedRefusalError,);
             expect(String(refusal,),).toBe(
               'StatedRefusalError: src/nap.ts is tracked but missing from the working tree; restore it or '
-              + 'commit its removal, then run the audit again.',
+                + 'commit its removal, then run the audit again.',
             );
           },
         },),
@@ -357,7 +357,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(StatedRefusalError,);
             expect(String(refusal,),).toBe(
               'CacheAccountReadError: src/whisker-cache-version.ts declares a cache version the audit cannot read: '
-              + '"export const WHISKER_CACHE_VERSION: number = 3;". Write it as NAME = digits; so every constant is checked.',
+                + '"export const WHISKER_CACHE_VERSION: number = 3;". Write it as NAME = digits; so every constant is checked.',
             );
           },
         },),
@@ -425,21 +425,21 @@ await describe({
                 ],
               },),
               report: [
-              'cache-account-audit: 2 cache versions under src',
-              `  PAIRING_CACHE_VERSION = 4 (src/pairing-cache-version.ts): set in ${citedHash({ hash: pairing.hash, },)} `
-              + `at ${utcMinutes({ seconds: pairing.seconds, },)}`,
-              `  STAGE_CACHE_VERSION = 1 (src/stage-cache-version.ts): set in ${citedHash({ hash: repo.stageSet.hash, },)} `
-              + `at ${utcMinutes({ seconds: repo.stageSet.seconds, },)}`,
-              `source commits since ${citedHash({ hash: repo.stageSet.hash, },)}: 3, named by an account: 1, by none: 2`,
-              `  ${citedHash({ hash: repo.purrAdded.hash, },)} ${utcMinutes({ seconds: repo.purrAdded.seconds, },)} `
-              + `[rides inside: PAIRING_CACHE_VERSION, STAGE_CACHE_VERSION] ${repo.purrAdded.subject}`,
-              `  ${citedHash({ hash: pairing.hash, },)} ${utcMinutes({ seconds: pairing.seconds, },)} `
-              + `[rides inside: STAGE_CACHE_VERSION] ${pairing.subject}`,
-              `slice-cache records under 2 runs directories found in ${join(top, 'node_modules', '.monochromatic',)}, `
-              + `${runs.path}, ${under.path}: 2`,
-              'directories the search could not list, whose runs the count leaves out: 0',
-              `newest slice-cache record: ${utcMinutes({ seconds: repo.betweenSeconds, },)} ${record}`,
-              'cache versions set after it: 1 of 2',
+                'cache-account-audit: 2 cache versions under src',
+                `  PAIRING_CACHE_VERSION = 4 (src/pairing-cache-version.ts): set in ${citedHash({ hash: pairing.hash, },)} `
+                  + `at ${utcMinutes({ seconds: pairing.seconds, },)}`,
+                `  STAGE_CACHE_VERSION = 1 (src/stage-cache-version.ts): set in ${citedHash({ hash: repo.stageSet.hash, },)} `
+                  + `at ${utcMinutes({ seconds: repo.stageSet.seconds, },)}`,
+                `source commits since ${citedHash({ hash: repo.stageSet.hash, },)}: 3, named by an account: 1, by none: 2`,
+                `  ${citedHash({ hash: repo.purrAdded.hash, },)} ${utcMinutes({ seconds: repo.purrAdded.seconds, },)} `
+                  + `[rides inside: PAIRING_CACHE_VERSION, STAGE_CACHE_VERSION] ${repo.purrAdded.subject}`,
+                `  ${citedHash({ hash: pairing.hash, },)} ${utcMinutes({ seconds: pairing.seconds, },)} `
+                  + `[rides inside: STAGE_CACHE_VERSION] ${pairing.subject}`,
+                `slice-cache records under 2 runs directories found in ${join(top, 'node_modules', '.monochromatic',)}, `
+                  + `${runs.path}, ${under.path}: 2`,
+                'directories the search could not list, whose runs the count leaves out: 0',
+                `newest slice-cache record: ${utcMinutes({ seconds: repo.betweenSeconds, },)} ${record}`,
+                'cache versions set after it: 1 of 2',
               ],
             },);
             expect(run.code,).toBe(0,);
@@ -472,7 +472,7 @@ await describe({
             },);
             expect(run.stderr,).toBe(
               'cache-account-audit: no cache version is declared under src; run this from the package directory, '
-              + 'as mise run //package/translation-repair/slice-cache:cache-account-audit does.\n',
+                + 'as mise run //package/translation-repair/slice-cache:cache-account-audit does.\n',
             );
             expect(run.code,).toBe(REFUSED_AS_STATED,);
           },
@@ -495,7 +495,7 @@ await describe({
             expect(run.stdout,).toBe('',);
             expect(run.stderr,).toBe(
               'cache-account-audit: --runs-under needs a value written after it. '
-              + 'Usage: cache-account-audit [--runs-under <directory holding runs directories> ...]\n',
+                + 'Usage: cache-account-audit [--runs-under <directory holding runs directories> ...]\n',
             );
             expect(run.code,).toBe(REFUSED_AS_STATED,);
           },
@@ -518,7 +518,7 @@ await describe({
             expect(run.stdout,).toBe('',);
             expect(run.stderr,).toBe(
               'cache-account-audit: --tabby is not a flag this command reads. '
-              + 'Usage: cache-account-audit [--runs-under <directory holding runs directories> ...]\n',
+                + 'Usage: cache-account-audit [--runs-under <directory holding runs directories> ...]\n',
             );
             expect(run.code,).toBe(REFUSED_AS_STATED,);
           },

@@ -681,7 +681,7 @@ export class Child {
       .info(
       `spawned pid=${String(handle.pid
         ?? '?',)} command=${this.#command}`,
-    );
+      );
 
     /**
      Captured for the sync exit listener that needs class state.
@@ -714,7 +714,7 @@ export class Child {
             ?? '?',)} code=${
             code === null ? '?' : String(code,)
           } signal=${signal ?? '?'}`,
-        );
+          );
       },
     );
   }
@@ -776,7 +776,7 @@ export class Child {
       .info(
       `stopping pid=${String(handle.pid
         ?? '?',)} (${this.#killSignal})`,
-    );
+      );
 
     /**
      Listener registered BEFORE kill so a synchronous-exit fake cannot lose the event.
@@ -800,7 +800,7 @@ export class Child {
         `${this.#killSignal} timed out after ${
           String(this.#stopTimeout,)
         }ms; escalating to SIGKILL`,
-      );
+        );
       this.#sendSignal(
         handle,
         'SIGKILL',

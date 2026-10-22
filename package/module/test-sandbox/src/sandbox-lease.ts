@@ -55,15 +55,15 @@ function installMethodSlot(slot: MethodSlot,): void {
   );
   if ((current?.value
     !== slot.original
-    .value) || (current?.writable
-      !== slot.original
-      .writable)
+      .value) || (current?.writable
+        !== slot.original
+          .writable)
     || (current?.configurable
       !== slot.original
-      .configurable)
+        .configurable)
     || (current?.enumerable
       !== slot.original
-      .enumerable))
+        .enumerable))
     throw methodSlotConflict({
       slot,
       operation: 'install mock',
@@ -86,13 +86,13 @@ function installMethodSlot(slot: MethodSlot,): void {
   );
   registry.targets
     .set(
-      slot.target,
-      properties,
+    slot.target,
+    properties,
     );
   registry.getters
     .set(
-      slot.get,
-      slot,
+    slot.get,
+    slot,
     );
 }
 
@@ -251,26 +251,26 @@ export function createMethodReplacement({
     new Proxy(
       originalRestore,
       {
-    apply(
-      method: typeof originalRestore,
-      receiver: unknown,
-      args: unknown[],
-    ): unknown {
-      release();
-      return Reflect.apply(
-        method,
-        receiver,
-        args,
-      );
-    },
-  }
+        apply(
+          method: typeof originalRestore,
+          receiver: unknown,
+          args: unknown[],
+        ): unknown {
+          release();
+          return Reflect.apply(
+            method,
+            receiver,
+            args,
+          );
+        },
+      }
     ),
   );
   installMethodSlot(slot,);
   slot.owners
     .set(
-      owner,
-      replacement,
+    owner,
+    replacement,
     );
   leases.add(release,);
   return replacement;

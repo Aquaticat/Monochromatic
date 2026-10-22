@@ -115,9 +115,9 @@ function polishVotesFor(
  */
 export type ConsolidationPolishSettlementRule =
   | 'polished-lead'
-  | 'base-lead'
-  | 'tie-polished-wins'
-  | 'unsettled';
+    | 'base-lead'
+    | 'tie-polished-wins'
+    | 'unsettled';
 
 /**
  What the ballots settled, the rule that decided and the tally it read.
@@ -368,7 +368,7 @@ export async function gateConsolidationPolish(
       ...((rule === 'tie-polished-wins')
         ? [
           `consolidation-polish-gate tied ${String(polished,)} to ${String(base,)} between polished and base, `
-          + 'so polished wins the tie (owner, 2026-10-21)',
+            + 'so polished wins the tie (owner, 2026-10-21)',
         ]
         : []),
       // A SHORT BENCH IS SAID IN THE FINDINGS, as the gathers say it (ledger X8).

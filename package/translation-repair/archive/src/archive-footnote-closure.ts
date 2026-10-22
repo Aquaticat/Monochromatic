@@ -108,15 +108,15 @@ export function closeFootnoteRelabel(
    */
   const archiveLeft = [...input.archive
     .entries(),].filter(function unplaced([key,]: ReadonlyEntry<string, string>,): boolean {
-    return !suppliedFrom.has(key,);
-  },);
+      return !suppliedFrom.has(key,);
+    },);
   /**
    Original identities still needing correspondence.
    */
   const originalLeft = [...input.original
     .entries(),].filter(function unaccounted([key,]: ReadonlyEntry<string, string>,): boolean {
-    return !suppliedTo.has(key,);
-  },);
+      return !suppliedTo.has(key,);
+    },);
   /**
    The sole remaining archive candidate, when one exists.
    */
@@ -170,8 +170,8 @@ export function closeFootnoteRelabel(
    */
   const unaccounted = [...input.original
     .keys(),].filter(function unknown(key,): boolean {
-    return !establishedTo.has(key,);
-  },);
+      return !establishedTo.has(key,);
+    },);
   if ((collisions.length > 0) && (unaccounted.length > 0))
     return {
       kind: 'open',

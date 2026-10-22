@@ -107,9 +107,9 @@ export function recordReturnEffects({
     addEffectSlots({
       target: summary.directReturned,
       values: expressionOrigins({
-    project,
-    bindingOriginBySymbolId,
-    node: returned,
+        project,
+        bindingOriginBySymbolId,
+        node: returned,
       },),
     },);
     /* And the same question asked of the result's elements, because a returned container of

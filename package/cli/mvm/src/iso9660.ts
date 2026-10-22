@@ -172,7 +172,7 @@ export function createIso({
     nextSector += Math.ceil(f.data
       .length
       / L
-      .SECTOR_SIZE,)
+        .SECTOR_SIZE,)
       || 1;
     return {
       data: f.data,
@@ -205,7 +205,7 @@ export function createIso({
    */
   const pvd = L.PVD_SECTOR
     * L
-    .SECTOR_SIZE;
+      .SECTOR_SIZE;
   iso[pvd] = 1;
   L.writeStr({
     buf: iso,
@@ -311,7 +311,7 @@ export function createIso({
    */
   const vdst = L.VDST_SECTOR
     * L
-    .SECTOR_SIZE;
+      .SECTOR_SIZE;
   iso[vdst] = 255;
   L.writeStr({
     buf: iso,
@@ -360,7 +360,7 @@ export function createIso({
    */
   let pos = L.ROOT_DIRECTORY_SECTOR
     * L
-    .SECTOR_SIZE;
+      .SECTOR_SIZE;
   pos += writeDirEntry({
     buf: iso,
     isDir: true,
@@ -400,7 +400,7 @@ export function createIso({
       entry.data,
       entry.sector
         * L
-        .SECTOR_SIZE,
+          .SECTOR_SIZE,
     );
   }
   //endregion

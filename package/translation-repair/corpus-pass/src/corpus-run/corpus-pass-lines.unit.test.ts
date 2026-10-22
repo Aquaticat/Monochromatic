@@ -71,8 +71,8 @@ await describe({
           fn: async () => {
             expect(passOnlyLines({ onlyIds: new Set(['tabby',],), },),).toEqual([
               'ONLY tabby (chosen by hand in place of every pending pair at the pin; if still pending it runs in '
-              + 'the pass\'s own order; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
-              + 'entry never enters a pool later draws treat as natural accumulation)',
+                + 'the pass\'s own order; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
+                + 'entry never enters a pool later draws treat as natural accumulation)',
             ],);
           },
         },),
@@ -86,8 +86,8 @@ await describe({
               'Tabby',
             ],), },),).toEqual([
               'ONLY Tabby,mittens,😺 (chosen by hand in place of every pending pair at the pin; those still pending '
-              + 'run in the pass\'s own order; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
-              + 'entry never enters a pool later draws treat as natural accumulation)',
+                + 'run in the pass\'s own order; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
+                + 'entry never enters a pool later draws treat as natural accumulation)',
             ],);
           },
         },),
@@ -136,7 +136,7 @@ await describe({
               hardCapMs: 25_200_000,
             }, },),).toBe(
               'START tip=deadbeef pipeline=sha256-tree-v1:cafe files=189 pending=1 done=0 soft=259200000ms '
-              + 'hard=25200000ms',
+                + 'hard=25200000ms',
             );
           },
         },),
@@ -176,14 +176,14 @@ await describe({
               hardCapMs: 600_000,
             },),).toEqual([
               'CAP OVERRIDDEN by TRANSLATION_REPAIR_HARD_CAP_MINUTES: entries run under 10 minutes rather than '
-              + 'the built-in 420',
+                + 'the built-in 420',
             ],);
             expect(passLaunchLines({
               ...UNCHANGED,
               hardCapMs: 450_000,
             },),).toEqual([
               'CAP OVERRIDDEN by TRANSLATION_REPAIR_HARD_CAP_MINUTES: entries run under 7.5 minutes rather than '
-              + 'the built-in 420',
+                + 'the built-in 420',
             ],);
           },
         },),
@@ -195,12 +195,12 @@ await describe({
               hardCapMs: 60_000,
             },),).toEqual([
               'CAP OVERRIDDEN by TRANSLATION_REPAIR_HARD_CAP_MINUTES: entries run under 1 minute rather than '
-              + 'the built-in 420',
+                + 'the built-in 420',
               'CAP TOO TIGHT: an attempt runs 60000ms, which is not longer than the 360000ms one model exchange is '
-              + 'allowed. Attempts are cut before an exchange can return, so no slice caches, every attempt '
-              + 'reports no progress, and the queue drops the entry as stalled after its second try. Raise the '
-              + 'ceiling above one exchange to buy anything, or keep it here to exercise the stall path '
-              + 'deliberately.',
+                + 'allowed. Attempts are cut before an exchange can return, so no slice caches, every attempt '
+                + 'reports no progress, and the queue drops the entry as stalled after its second try. Raise the '
+                + 'ceiling above one exchange to buy anything, or keep it here to exercise the stall path '
+                + 'deliberately.',
             ],);
           },
         },),
@@ -213,10 +213,10 @@ await describe({
               perCallMs: 25_200_000,
             },),).toEqual([
               'CAP TOO TIGHT: an attempt runs 25200000ms, which is not longer than the 25200000ms one model '
-              + 'exchange is allowed. Attempts are cut before an exchange can return, so no slice caches, every '
-              + 'attempt reports no progress, and the queue drops the entry as stalled after its second try. '
-              + 'Raise the ceiling above one exchange to buy anything, or keep it here to exercise the stall '
-              + 'path deliberately.',
+                + 'exchange is allowed. Attempts are cut before an exchange can return, so no slice caches, every '
+                + 'attempt reports no progress, and the queue drops the entry as stalled after its second try. '
+                + 'Raise the ceiling above one exchange to buy anything, or keep it here to exercise the stall '
+                + 'path deliberately.',
             ],);
           },
         },),
@@ -228,7 +228,7 @@ await describe({
               spendCeilingUsd: 5,
             },),).toEqual([
               'SPEND CEILING OVERRIDDEN by TRANSLATION_REPAIR_RUN_SPEND_CEILING_USD: new entries stop once this '
-              + 'run has spent 5 USD on openrouter rather than the built-in 20',
+                + 'run has spent 5 USD on openrouter rather than the built-in 20',
             ],);
           },
         },),

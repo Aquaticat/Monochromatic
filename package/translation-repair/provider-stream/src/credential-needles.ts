@@ -69,8 +69,8 @@ const ALIGNMENTS: readonly number[] = [
 function base64Of({ bytes, }: { readonly bytes: Uint8Array; },): string {
   return btoa(String.fromCodePoint(...bytes,),)
     .replaceAll(
-      '=',
-      '',
+    '=',
+    '',
     );
 }
 
@@ -89,12 +89,12 @@ function base64Of({ bytes, }: { readonly bytes: Uint8Array; },): string {
 function urlSafeOf({ text, }: { readonly text: string; },): string {
   return text
     .replaceAll(
-      '+',
-      '-',
+    '+',
+    '-',
     )
     .replaceAll(
-      '/',
-      '_',
+    '/',
+    '_',
     );
 }
 
@@ -213,8 +213,8 @@ export function needlesOf({ credential, }: { readonly credential: string; },): r
    */
   const escaped = JSON.stringify(credential,)
     .slice(
-      1,
-      -1,
+    1,
+    -1,
     );
   /**
    Spellings of the text, before the plus form of each is added.

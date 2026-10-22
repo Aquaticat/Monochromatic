@@ -244,9 +244,9 @@ function walkedHunks(
     }
     else if (
       (column >= revision.length)
-      || ((row < base.length)
-        && ((table[((row + 1) * width) + column] ?? 0) >= (table[(row * width) + column
-          + 1] ?? 0)))
+        || ((row < base.length)
+          && ((table[((row + 1) * width) + column] ?? 0) >= (table[(row * width) + column
+            + 1] ?? 0)))
     ) {
       // A tie deletes before it inserts, and deleting is the only step once the revision's lines run out.
       row += 1;
@@ -356,7 +356,7 @@ export function hunksBetween(
   // alignment than the longest common subsequence, which can only make more revisions collide.
   if (
     (middleBase.length === 0)
-    || (middleRevision.length === 0)
+      || (middleRevision.length === 0)
       || (((middleBase.length + 1) * (middleRevision.length + 1)) > cellLimit)
   ) {
     return [{
@@ -577,8 +577,8 @@ export function describeCollisions({ collisions, }: { readonly collisions: HunkC
       === 0 ? [] : [numbered({ indexes: collisions.lines, },),]),
     ...collisions.gaps
       .map(function gapWords(gap,): string {
-      return `the place ${placed({ gap, },)}`;
-    },),
+        return `the place ${placed({ gap, },)}`;
+      },),
   ].join(' and ',);
 }
 

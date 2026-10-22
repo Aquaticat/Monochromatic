@@ -122,7 +122,7 @@ await describe({
           children: [$({ tag: 'atom:title', text: 'Feed', },),],
         },),)
           .toBe(
-            '<feed xmlns:atom="http://www.w3.org/2005/Atom"><atom:title>Feed</atom:title></feed>',
+          '<feed xmlns:atom="http://www.w3.org/2005/Atom"><atom:title>Feed</atom:title></feed>',
           );
       },
     },),

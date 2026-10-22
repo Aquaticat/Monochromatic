@@ -116,7 +116,7 @@ const effectiveCache = pipelineChanged ? undefined : cache;
  */
 const gitDatesReusable = (!pipelineChanged) && (cache?.headSha
   === gitCtx
-  .headSha);
+    .headSha);
 
 /**
  Map from absolute file path to resolved publication/update dates.

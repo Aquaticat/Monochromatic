@@ -195,8 +195,8 @@ async function openSpoolWriter(
     stream.on(
       'error',
       function onSpoolStreamError(error: Error, ): void {
-      l.warn(`spool stream failed for ${path}: ${caughtValueText(error, )}`, );
-    },
+        l.warn(`spool stream failed for ${path}: ${caughtValueText(error, )}`, );
+      },
     );
     l.debug(`spooling job ${jobId} to ${path}`, );
 

@@ -425,8 +425,8 @@ await describe({
          Source function whose `locked` property conflicts with the target's.
          */
         function source(): void {
-            void 0;
-          }
+          void 0;
+        }
         Object.defineProperty(
           source,
           'locked',
@@ -442,8 +442,8 @@ await describe({
          copy.
          */
         function target(): void {
-            void 0;
-          }
+          void 0;
+        }
         Object.defineProperty(
           target,
           'locked',
@@ -477,8 +477,8 @@ await describe({
          as some React Native runtimes report through `Reflect.ownKeys`.
          */
         function source(): void {
-            void 0;
-          }
+          void 0;
+        }
         Object.defineProperty(
           source,
           'arguments',
@@ -503,8 +503,8 @@ await describe({
          Target function that must stay free of both properties.
          */
         function target(): void {
-            void 0;
-          }
+          void 0;
+        }
         mimicFunction({
           to: target,
           from: source,
@@ -528,14 +528,14 @@ await describe({
          Source function whose prototype must not become own on the target.
          */
         function source(): void {
-            void 0;
-          }
+          void 0;
+        }
         /**
          Target function keeping its own prototype property.
          */
         function target(): void {
-            void 0;
-          }
+          void 0;
+        }
         mimicFunction({
           to: target,
           from: source,
@@ -613,8 +613,8 @@ await describe({
          Target function receiving the wrapped `toString`.
          */
         function target(): void {
-            void 0;
-          }
+          void 0;
+        }
         /**
          Source function whose body text is wrapped.
          */

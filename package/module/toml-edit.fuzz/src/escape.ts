@@ -109,8 +109,8 @@ export function basicStringLiteral({ content, }: { readonly content: string; },)
   const body = Array.from(
     content,
     function each(scalar,) {
-    return escapeScalar({ scalar, },);
-  },
+      return escapeScalar({ scalar, },);
+    },
   )
     .join('',);
   return `"${body}"`;

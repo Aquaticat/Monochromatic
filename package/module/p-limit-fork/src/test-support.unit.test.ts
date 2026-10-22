@@ -79,7 +79,7 @@ await describe({
             setTimeout(function markFired(): void {
               state.timerFired = true;
             },
-            0,
+              0,
             );
             await yieldTurn();
             expect(state.timerFired,).toBe(true,);

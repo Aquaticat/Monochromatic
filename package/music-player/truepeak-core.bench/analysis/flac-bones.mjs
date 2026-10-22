@@ -381,8 +381,8 @@ async function loadTargets() {
   const tracks = await loadTracks(CORPUS_PATH);
   return tracks.filter((track) =>
     track.dur > SHORT_MAX_SECS
-    && track.full > LOUD_LINEAR
-    && track.path.toLowerCase().endsWith('.flac'));
+      && track.full > LOUD_LINEAR
+      && track.path.toLowerCase().endsWith('.flac'));
 }
 //endregion
 
@@ -553,7 +553,7 @@ function reportUnderReads({ label, rows }) {
   const clamps = rows.filter((row) => row.ur - 0.8 > 0.5).length;
   console.log(
     `  ${label}: ur ${line} | clamps=${clamps}/${rows.length}`
-    + ` | mean coverage=${(meanCoverage * 100).toFixed(1)}%`,
+      + ` | mean coverage=${(meanCoverage * 100).toFixed(1)}%`,
   );
 }
 //endregion
@@ -576,7 +576,7 @@ async function analyzeStage() {
   console.log(`duration |profile - corpus|: ${fmtDur}`);
   console.log(
     `  within ${MISMATCH_LIMIT_SECS}s: ${within}/${diffs.length}`
-    + ` (${((within / diffs.length) * 100).toFixed(2)}%)`,
+      + ` (${((within / diffs.length) * 100).toFixed(2)}%)`,
   );
   const offenders = profiled
     .map((track, index) => ({ path: track.path, diff: diffs[index] }))
@@ -616,7 +616,7 @@ async function analyzeStage() {
   if (padOneMedian > 0.1) {
     console.log(
       `rank too weak (pad +-1 median ${(padOneMedian * 100).toFixed(1)}% > 10%);`
-      + ' skipping probe simulation (force with the simulate stage)',
+        + ' skipping probe simulation (force with the simulate stage)',
     );
     return;
   }

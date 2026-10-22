@@ -148,20 +148,20 @@ export function deriveSeed({
       index,
     ) {
     // Labels are ASCII, so code points and code units coincide.
-    return text.codePointAt(index,) ?? 0;
-  },
+      return text.codePointAt(index,) ?? 0;
+    },
   )
     .reduce(
-      function fnvStep(
-        hash,
-        unit,
-      ) {
-    return Math.imul(
-      hash ^ unit,
-      FNV_PRIME,
-    ) >>> 0;
-  },
-      FNV_OFFSET,
+    function fnvStep(
+      hash,
+      unit,
+    ) {
+      return Math.imul(
+        hash ^ unit,
+        FNV_PRIME,
+      ) >>> 0;
+    },
+    FNV_OFFSET,
     );
 }
 
@@ -336,8 +336,8 @@ export function parseSeed({
    */
   const seed = trimmed.split('',)
     .every(function isDecimalDigit(character,) {
-    return DECIMAL_DIGITS.includes(character,);
-  },) ? Number(trimmed,) : Number.NaN;
+      return DECIMAL_DIGITS.includes(character,);
+    },) ? Number(trimmed,) : Number.NaN;
   if ((!Number.isSafeInteger(seed,)) || (seed < 0)
     || (seed >= SEED_MODULUS))
     throw new SeededRandomError(`seed must be a decimal unsigned 32-bit integer, got ${text}`,);

@@ -34,8 +34,8 @@ export const CORPUS_COMMIT_VAR = 'TRANSLATION_REPAIR_CORPUS_COMMIT';
  */
 export type CorpusPinSource =
   | 'fallback'
-  | typeof CORPUS_CLONE_DIR_VAR
-  | typeof CORPUS_COMMIT_VAR;
+    | typeof CORPUS_CLONE_DIR_VAR
+    | typeof CORPUS_COMMIT_VAR;
 
 /**
  One resolved pin beside where each half came from.

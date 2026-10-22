@@ -249,8 +249,8 @@ await describe({
         },);
         expect(warned,).toEqual([
           `[translation-repair] [reaskElsewhereNudged] ${SEAT_SYNTHETIC_TEXT_EVERYWHERE}: no re-ask elsewhere `
-          + '(refused by ProviderHttpError from synthetic with HTTP 400 (the provider said: "the cat refused this passage")); '
-          + 'keeping the first answer',
+            + '(refused by ProviderHttpError from synthetic with HTTP 400 (the provider said: "the cat refused this passage")); '
+            + 'keeping the first answer',
         ],);
       },
     },),

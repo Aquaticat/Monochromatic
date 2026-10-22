@@ -28,7 +28,7 @@ import {
 type InjectionApi = Pick<
   ExtensionAPI,
   'getFlag' | 'sendMessage' | 'sendUserMessage'
->;
+  >;
 
 /**
  Build an extension API stub with only injection-related methods.

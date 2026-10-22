@@ -110,11 +110,11 @@ export async function api<TResponse = unknown,>(
      Human-readable error surfaced both via toast and the thrown `Error`.
      */
     const message = (
-        ((typeof error) === 'object')
+      ((typeof error) === 'object')
         && (error !== null)
-          && ('error' in error)
-          && ((typeof error.error) === 'string')
-      )
+        && ('error' in error)
+        && ((typeof error.error) === 'string')
+    )
       ? error.error
       : 'Request failed';
     showToast(message,);

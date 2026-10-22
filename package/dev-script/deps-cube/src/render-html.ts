@@ -152,12 +152,12 @@ async function bundleController(): Promise<string> {
 function escapeForScriptTag(js: string,): string {
   return js
     .replaceAll(
-      '</script',
-      String.raw`<\/script`,
+    '</script',
+    String.raw`<\/script`,
     )
     .replaceAll(
-      '<!--',
-      String.raw`<\!--`,
+    '<!--',
+    String.raw`<\!--`,
     );
 }
 

@@ -155,7 +155,7 @@ function matchesExact(
     === 'keyvalue'
     ? block.keySegments
     : block.kind
-        === 'table'
+      === 'table'
       ? block.headerSegments
       : null;
   return (segs !== null)

@@ -100,8 +100,8 @@ export async function getIndexHtmlBody(
     class: 'feeds',
     children: filteredItems
       .slice(
-        0,
-        LIMIT,
+      0,
+      LIMIT,
       )
       .map(function renderItem(
         item,

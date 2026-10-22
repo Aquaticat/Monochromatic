@@ -117,7 +117,7 @@ await describe({
             expect(run.code,).toBe(REFUSED_AS_STATED,);
             expect(run.stdout,).toBe(
               `BENCH 1 slice, widths ${widths.join(', ',)}, width ${String(repeated,)} run twice, `
-              + `roster of ${String(RUN_ROSTER.length,)}\n`,
+                + `roster of ${String(RUN_ROSTER.length,)}\n`,
             );
             expect(run.stderr,).toBe(noKeyRefusal({ command: 'roster-bench', },),);
           },

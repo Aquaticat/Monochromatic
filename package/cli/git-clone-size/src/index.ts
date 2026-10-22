@@ -153,9 +153,9 @@ const abortController = new AbortController();
 process.once(
   'SIGINT',
   function onSigint(): void {
-  rl.debug('SIGINT received; aborting probes and finalizing',);
-  abortController.abort();
-},
+    rl.debug('SIGINT received; aborting probes and finalizing',);
+    abortController.abort();
+  },
 );
 
 /**

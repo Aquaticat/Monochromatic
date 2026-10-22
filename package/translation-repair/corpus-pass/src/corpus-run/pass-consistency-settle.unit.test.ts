@@ -609,7 +609,7 @@ await describe({
               outcomes: ['kept-current', 'chosen', 'kept-current',],
               findings: [
                 'run-off asked: the choices reached no strict majority, so the finalists are OCCURRENCE 1 (2 ballots) and '
-                + 'OCCURRENCE 2 (2 ballots), of 4 usable in all',
+                  + 'OCCURRENCE 2 (2 ballots), of 4 usable in all',
                 'page-consistency-run-off 3/3',
               ],
               receivers: ['OCCURRENCE 1', 'OCCURRENCE 3',],
@@ -641,7 +641,7 @@ await describe({
               outcomes: ['consistent', 'kept-current', 'chosen',],
               findings: [
                 'run-off asked: the choices reached no strict majority, so the finalists are OCCURRENCE 1 (2 ballots), '
-                + 'OCCURRENCE 2 (1 ballot) and OCCURRENCE 3 (1 ballot), of 4 usable in all',
+                  + 'OCCURRENCE 2 (1 ballot) and OCCURRENCE 3 (1 ballot), of 4 usable in all',
                 'page-consistency-run-off 3/3',
               ],
             },);
@@ -701,9 +701,9 @@ await describe({
             expect(tieWithoutRunOff,).toBeInstanceOf(ConsistencyInvariantError,);
             expect([String(tieWithoutRunOff,), String(runOffWithoutTie,),],).toEqual([
               'ConsistencyInvariantError: unreachable: the choices had finalists and the bench was not asked again, and '
-              + 'finalists are run off before the group is settled',
+                + 'finalists are run off before the group is settled',
               'ConsistencyInvariantError: unreachable: a run-off was heard for choices that had no finalists, and the bench '
-              + 'is asked again only when the choices have finalists',
+                + 'is asked again only when the choices have finalists',
             ],);
           },
         },),
@@ -735,9 +735,9 @@ await describe({
               },),
             ],).toEqual([
               'the choices reached no strict majority, so the finalists are OCCURRENCE 1 (2 ballots) and OCCURRENCE 2 '
-              + '(2 ballots), of 4 usable in all',
+                + '(2 ballots), of 4 usable in all',
               'the choices reached no strict majority, so the finalists are OCCURRENCE 1 (2 ballots), OCCURRENCE 2 '
-              + '(1 ballot) and OCCURRENCE 3 (1 ballot), of 4 usable in all',
+                + '(1 ballot) and OCCURRENCE 3 (1 ballot), of 4 usable in all',
               '',
             ],);
           },
@@ -754,7 +754,7 @@ await describe({
               asked,
             },),).toBe(
               'the choices reached no strict majority, so the finalists are OCCURRENCE 1 (1 ballot) and OCCURRENCE 2 '
-              + '(1 ballot), of 2 usable in all',
+                + '(1 ballot), of 2 usable in all',
             );
           },
         },),
@@ -863,7 +863,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
             expect(String(refusal,),).toBe(
               'ConsistencyInvariantError: unreachable: the pass carries to each receiving place once, and the records that '
-              + 'name OCCURRENCE 2 number 0',
+                + 'name OCCURRENCE 2 number 0',
             );
           },
         },),
@@ -914,7 +914,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
             expect(String(refusal,),).toBe(
               'ConsistencyInvariantError: unreachable: the pass carries to each receiving place once, and the number of '
-              + 'carries differs from the number of receiving places (carried: 2, receiving: 1)',
+                + 'carries differs from the number of receiving places (carried: 2, receiving: 1)',
             );
           },
         },),

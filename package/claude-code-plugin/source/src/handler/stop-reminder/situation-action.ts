@@ -40,11 +40,11 @@ type SituationAction =
     readonly kind: 'release';
     readonly why: string;
   }
-  | {
-    readonly kind: 'block';
-    readonly why: string;
-    readonly reason: readonly string[];
-  };
+    | {
+      readonly kind: 'block';
+      readonly why: string;
+      readonly reason: readonly string[];
+    };
 
 /**
  Opening clause of every block reason from this table.

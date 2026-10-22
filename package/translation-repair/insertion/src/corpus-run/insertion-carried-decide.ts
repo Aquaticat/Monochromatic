@@ -49,38 +49,38 @@ export type FoldDecision =
      */
     readonly carried: ChunkPair;
   }
-  | {
+    | {
     /**
      Fold where the carrier's archive span renders the passage alone, so the
      carrier's own source moves to its far neighbour (class one hundred
      seventy-nine).
      */
-    readonly kind: 'shift';
+      readonly kind: 'shift';
 
     /**
      Paired neighbour that takes the passage's source.
      */
-    readonly carrier: PairedNeighbour;
+      readonly carrier: PairedNeighbour;
 
     /**
      Paired slice on the carrier's far side that takes the carrier's own
      source.
      */
-    readonly receiver: PairedNeighbour;
+      readonly receiver: PairedNeighbour;
 
     /**
      The carried slice as prepared.
      */
-    readonly carried: ChunkPair;
-  }
-  | {
-    readonly kind: 'aside';
+      readonly carried: ChunkPair;
+    }
+    | {
+      readonly kind: 'aside';
 
     /**
      Why the passage stays carried.
      */
-    readonly reason: string;
-  };
+      readonly reason: string;
+    };
 
 /**
  A region the anchoring placed.

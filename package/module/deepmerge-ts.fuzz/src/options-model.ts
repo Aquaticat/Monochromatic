@@ -496,10 +496,10 @@ export type IntoPrediction =
     readonly modelled: false;
     readonly region: string;
   }
-  | {
-    readonly modelled: true;
-    readonly expected: unknown;
-  };
+    | {
+      readonly modelled: true;
+      readonly expected: unknown;
+    };
 
 /**
  Predict the target of `deepmergeIntoCustom` (or

@@ -57,8 +57,8 @@ function handleSearch(event: CustomEvent<{ query: string; }>,): void {
   globalThis.location
     .href = query.length
       === 0
-    ? '/search'
-    : `/search?q=${encodeURIComponent(query,)}`;
+      ? '/search'
+      : `/search?q=${encodeURIComponent(query,)}`;
 }
 
 /**
@@ -101,7 +101,7 @@ document.querySelector<HTMLElement>('search-bar',)
   'search',
   // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- CustomEvent handler must be cast to EventListener for addEventListener
   handleSearch as EventListener,
-);
+  );
 
 if (pageData.query
   .length

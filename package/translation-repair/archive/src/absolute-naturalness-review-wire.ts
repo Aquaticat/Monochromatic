@@ -110,7 +110,7 @@ export type AbsoluteNaturalnessReviewSubject = {
  */
 export type AbsoluteNaturalnessReviewPerspective =
   | 'defect-discovery'
-  | 'acceptance-challenge';
+    | 'acceptance-challenge';
 
 /**
  Structured-output contract for absolute naturalness reviewer.

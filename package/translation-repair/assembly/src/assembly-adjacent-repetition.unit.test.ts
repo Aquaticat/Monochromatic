@@ -94,9 +94,9 @@ await describe({
               .toSorted(function ascending(left, right,): number {
                 return left - right;
               },),).toStrictEqual([
-              4,
-              7,
-            ],);
+                4,
+                7,
+              ],);
           },
         },),
         it({

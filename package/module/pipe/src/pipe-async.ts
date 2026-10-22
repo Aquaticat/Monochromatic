@@ -106,7 +106,7 @@ export function pipeAsync<
   TStep7,
   TStep8,
   TStep9,
->(
+  >(
   args: {
     readonly fn1: AsyncStep<TInput, TStep1>;
     readonly fn2: AsyncStep<TStep1, TStep2>;
@@ -119,7 +119,7 @@ export function pipeAsync<
     readonly fn9: AsyncStep<TStep8, TStep9>;
     readonly l?: Logger;
   } & NoStepsAfter9,
-): (value: TInput | Promise<TInput>,) => Promise<Awaited<TStep9>>;
+  ): (value: TInput | Promise<TInput>,) => Promise<Awaited<TStep9>>;
 /**
  Creates a reusable asynchronous left-to-right pipeline function, delegating
  each call to {@link runPipeAsync}.

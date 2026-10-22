@@ -381,10 +381,10 @@ export async function checkBadges(
        */
       const flashed = session.states()
         .filter(function showedBadges(state,): boolean {
-        return (state.seq > after) && (state.badges
-          .length
-          > 0);
-      },);
+          return (state.seq > after) && (state.badges
+            .length
+            > 0);
+        },);
       expect({
         condition: flashed.length === 0,
         message: `badges flashed: ${

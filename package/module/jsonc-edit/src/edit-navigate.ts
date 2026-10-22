@@ -60,10 +60,10 @@ function childAt({
      */
     const entry = node.entries
       .findLast(function matchesKey(candidate,): boolean {
-      return candidate.key
-        .value
-        === segment;
-    },);
+        return candidate.key
+          .value
+          === segment;
+      },);
     return (entry === undefined)
       ? NODE_ABSENT
       : entry.value;
@@ -221,9 +221,9 @@ export function jsoncKeys({
     throw new JsoncTypeError({ message: 'jsoncKeys: target is not an object', },);
   return node.entries
     .map(function keyOf(entry,): string {
-    return entry.key
-      .value;
-  },);
+      return entry.key
+        .value;
+    },);
 }
 
 //endregion Read API

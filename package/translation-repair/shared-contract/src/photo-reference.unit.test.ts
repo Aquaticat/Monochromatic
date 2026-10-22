@@ -90,10 +90,10 @@ await describe({
               .map(function toName(reference,): string {
                 return reference.assetName;
               },),).toEqual([
-              'tabby.webp',
-              'mittens.webp',
-              'sill.jpg',
-            ],);
+                'tabby.webp',
+                'mittens.webp',
+                'sill.jpg',
+              ],);
           },
         },),
 
@@ -130,10 +130,10 @@ await describe({
               .map(function toName(reference,): string {
                 return reference.assetName;
               },),).toEqual([
-              'tabby.webp',
-              'mittens.webp',
-              'sill.webp',
-            ],);
+                'tabby.webp',
+                'mittens.webp',
+                'sill.webp',
+              ],);
           },
         },),
 
@@ -151,9 +151,9 @@ await describe({
               .map(function toName(reference,): string {
                 return reference.assetName;
               },),).toEqual([
-              'one.webp',
-              'two.webp',
-            ],);
+                'one.webp',
+                'two.webp',
+              ],);
           },
         },),
 

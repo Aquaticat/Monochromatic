@@ -58,37 +58,37 @@ function assertCandidatesFit(
   const seen = new Set<string>();
   carry.candidates
     .forEach(function fits(
-    candidate,
-    at,
-  ): void {
+      candidate,
+      at,
+    ): void {
     /**
      Where the candidate sits, for the parse error.
      */
-    const here = `${path}.candidates[${String(at,)}]`;
-    if (candidate.label !== `CANDIDATE ${String(at + 1,)}`) {
-      throw new ArtifactParseError({
-        path: `${here}.label`,
-        reason: `the label CANDIDATE ${String(at + 1,)}, since the candidates are labelled in order`,
-      },);
-    }
-    if ((candidate.kind === 'writer') && (candidate.writers
-      .length
-      === 0)) {
-      throw new ArtifactParseError({
-        path: `${here}.writers`,
-        reason: 'a seat at least, since a writer candidate is a writer\'s paragraph',
-      },);
-    }
-    for (const seat of candidate.writers) {
-      if (seen.has(seat,)) {
+      const here = `${path}.candidates[${String(at,)}]`;
+      if (candidate.label !== `CANDIDATE ${String(at + 1,)}`) {
         throw new ArtifactParseError({
-          path: `${here}.writers`,
-          reason: 'a seat in one candidate only, since a seat gives one reply',
+          path: `${here}.label`,
+          reason: `the label CANDIDATE ${String(at + 1,)}, since the candidates are labelled in order`,
         },);
       }
-      seen.add(seat,);
-    }
-  },);
+      if ((candidate.kind === 'writer') && (candidate.writers
+        .length
+        === 0)) {
+        throw new ArtifactParseError({
+          path: `${here}.writers`,
+          reason: 'a seat at least, since a writer candidate is a writer\'s paragraph',
+        },);
+      }
+      for (const seat of candidate.writers) {
+        if (seen.has(seat,)) {
+          throw new ArtifactParseError({
+            path: `${here}.writers`,
+            reason: 'a seat in one candidate only, since a seat gives one reply',
+          },);
+        }
+        seen.add(seat,);
+      }
+    },);
   /**
    How many candidates are the current English and the splice.
    */

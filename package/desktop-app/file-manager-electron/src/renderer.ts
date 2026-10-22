@@ -174,17 +174,17 @@ async function bootFileManager(): Promise<void> {
   session.stores
     .listings
     .set(
-      opened.id,
-      rootListing,
+    opened.id,
+    rootListing,
     );
   installKeyboard({ session, },);
   session.stripElement
     .addEventListener(
-      'scroll',
-      function reportOnScroll(): void {
-        reportState({ session, },);
-      },
-      { passive: true, },
+    'scroll',
+    function reportOnScroll(): void {
+      reportState({ session, },);
+    },
+    { passive: true, },
     );
   renderAndReport({ session, },);
 }

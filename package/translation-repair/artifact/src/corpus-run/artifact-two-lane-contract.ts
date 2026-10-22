@@ -441,24 +441,24 @@ export const TWO_LANE_GENERATIONS: readonly number[] = [
  */
 export type TwoLaneArtifactGeneration =
   | typeof ARTIFACT_SCHEMA_VERSION_V2
-  | typeof ARTIFACT_SCHEMA_VERSION_V3
-  | typeof ARTIFACT_SCHEMA_VERSION_V4
-  | typeof ARTIFACT_SCHEMA_VERSION_V5
-  | typeof ARTIFACT_SCHEMA_VERSION_V6
-  | typeof ARTIFACT_SCHEMA_VERSION_V7
-  | typeof ARTIFACT_SCHEMA_VERSION_V8
-  | typeof ARTIFACT_SCHEMA_VERSION_V9
-  | typeof ARTIFACT_SCHEMA_VERSION_V10
-  | typeof ARTIFACT_SCHEMA_VERSION_V11
-  | typeof ARTIFACT_SCHEMA_VERSION_V12
-  | typeof ARTIFACT_SCHEMA_VERSION_V13
-  | typeof ARTIFACT_SCHEMA_VERSION_V14
-  | typeof ARTIFACT_SCHEMA_VERSION_V15
-  | typeof ARTIFACT_SCHEMA_VERSION_V16
-  | typeof ARTIFACT_SCHEMA_VERSION_V17
-  | typeof ARTIFACT_SCHEMA_VERSION_V18
-  | typeof ARTIFACT_SCHEMA_VERSION_V19
-  | typeof ARTIFACT_SCHEMA_VERSION_V20;
+    | typeof ARTIFACT_SCHEMA_VERSION_V3
+    | typeof ARTIFACT_SCHEMA_VERSION_V4
+    | typeof ARTIFACT_SCHEMA_VERSION_V5
+    | typeof ARTIFACT_SCHEMA_VERSION_V6
+    | typeof ARTIFACT_SCHEMA_VERSION_V7
+    | typeof ARTIFACT_SCHEMA_VERSION_V8
+    | typeof ARTIFACT_SCHEMA_VERSION_V9
+    | typeof ARTIFACT_SCHEMA_VERSION_V10
+    | typeof ARTIFACT_SCHEMA_VERSION_V11
+    | typeof ARTIFACT_SCHEMA_VERSION_V12
+    | typeof ARTIFACT_SCHEMA_VERSION_V13
+    | typeof ARTIFACT_SCHEMA_VERSION_V14
+    | typeof ARTIFACT_SCHEMA_VERSION_V15
+    | typeof ARTIFACT_SCHEMA_VERSION_V16
+    | typeof ARTIFACT_SCHEMA_VERSION_V17
+    | typeof ARTIFACT_SCHEMA_VERSION_V18
+    | typeof ARTIFACT_SCHEMA_VERSION_V19
+    | typeof ARTIFACT_SCHEMA_VERSION_V20;
 
 /**
  Narrows numeric artifact version to known two-lane generation.
@@ -886,10 +886,10 @@ export function artifactGenerationReadingRequirements(
  */
 export type ArtifactJsonValue =
   | boolean
-  | number
-  | string
-  | readonly ArtifactJsonValue[]
-  | { readonly [key: string]: ArtifactJsonValue; };
+    | number
+    | string
+    | readonly ArtifactJsonValue[]
+    | { readonly [key: string]: ArtifactJsonValue; };
 
 /**
  The slicing both lanes ran over, recorded once.

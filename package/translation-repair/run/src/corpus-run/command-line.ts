@@ -92,14 +92,14 @@ type OptionReading =
     readonly name: string;
     readonly value: string;
   }
-  | {
-    readonly kind: 'switch';
-    readonly name: string;
-  }
-  | {
-    readonly kind: 'refused';
-    readonly says: string;
-  };
+    | {
+      readonly kind: 'switch';
+      readonly name: string;
+    }
+    | {
+      readonly kind: 'refused';
+      readonly says: string;
+    };
 
 /**
  Whether an argument is a minus sign before digits, which this package's
@@ -411,8 +411,8 @@ function countRefusals(
    */
   const missing = names
     .slice(
-      positionals.length,
-      least,
+    positionals.length,
+    least,
     )
     .map(function shown(name,): string {
       return `<${name}>`;

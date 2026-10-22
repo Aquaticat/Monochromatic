@@ -47,14 +47,14 @@ export type NeuralWattAliasMap =
      */
     readonly names: ReadonlySet<string>;
   }
-  | {
-    readonly known: false;
+    | {
+      readonly known: false;
 
     /**
      Why the listing gave no map, an authored phrase.
      */
-    readonly why: string;
-  };
+      readonly why: string;
+    };
 
 /**
  The model a listing entry points at.
@@ -163,16 +163,16 @@ export function aliasNamesOf({ bodyText, }: { readonly bodyText: string; },): Ne
           && (!entry.id
             .endsWith(SPEED_SUFFIX,))
           && pointerOf({ entry, },)
-          .some(function isCovered(pointer,): boolean {
-            return coveredPointers.has(pointer,);
-          },);
+            .some(function isCovered(pointer,): boolean {
+              return coveredPointers.has(pointer,);
+            },);
       },)
       .flatMap(function withTwin(entry,): readonly string[] {
         return entry.id
           .endsWith(FLEX_SUFFIX,) ? [entry.id,] : [
-          entry.id,
-          `${entry.id}${FLEX_SUFFIX}`,
-        ];
+            entry.id,
+            `${entry.id}${FLEX_SUFFIX}`,
+          ];
       },),),
   };
 }

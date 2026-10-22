@@ -202,7 +202,7 @@ await describe({
         it({
           name:
             'NAMES THE SOURCES THAT DIFFER FROM A COMMIT, relative to the package as a census names them: one edited '
-            + 'and not committed, one added and committed since, and not one left as it was',
+              + 'and not committed, one added and committed since, and not one left as it was',
           fn: async () => {
             await using repository = await scratchDir({ prefix: REPOSITORY_PREFIX, },);
             await gitIn({
@@ -258,9 +258,9 @@ await describe({
         it({
           name:
             'NAMES EVERY CHANGED FILE IN THE WORK TREE, relative to the package, since a census reads the sources of '
-            + 'other packages the suite loads too: one asked about only inside the package left their stretches matched '
-            + 'by line across an edit (ledger B62). Names git would quote, a space, a double quote, a newline and Han, '
-            + 'come back as the census names them',
+              + 'other packages the suite loads too: one asked about only inside the package left their stretches matched '
+              + 'by line across an edit (ledger B62). Names git would quote, a space, a double quote, a newline and Han, '
+              + 'come back as the census names them',
           fn: async () => {
             await using repository = await scratchDir({ prefix: REPOSITORY_PREFIX, },);
             await gitIn({

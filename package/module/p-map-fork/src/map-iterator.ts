@@ -29,7 +29,7 @@ import {
  */
 export type SourceIterator<Element> =
   | Iterator<Element | Promise<Element>, unknown, undefined>
-  | AsyncIterator<Element | Promise<Element>, unknown, undefined>;
+    | AsyncIterator<Element | Promise<Element>, unknown, undefined>;
 
 /**
  One yielded source item projected deep-read-only: the runners pass it into

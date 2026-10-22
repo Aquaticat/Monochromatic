@@ -126,12 +126,12 @@ export async function countTokens({
    */
   const response = await client.messages
     .countTokens({
-    model,
-    messages: [{
-      role: 'user',
-      content,
-    },],
-  },);
+      model,
+      messages: [{
+        role: 'user',
+        content,
+      },],
+    },);
 
   rl.debug(`counted inputTokens=${String(response.input_tokens,)}`,);
 

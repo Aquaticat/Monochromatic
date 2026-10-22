@@ -136,7 +136,7 @@ await describe({
               },
             },),).toEqual([
               '  longest outage: at least 30m, and NOT BOUNDED ABOVE '
-              + '(2026-08-25T10:30:00.000Z .. 2026-08-25T11:00:00.000Z)',
+                + '(2026-08-25T10:30:00.000Z .. 2026-08-25T11:00:00.000Z)',
               '    no reading before it found this provider up, so it may have begun earlier than the record',
             ],);
           },
@@ -152,7 +152,7 @@ await describe({
               },
             },),).toEqual([
               '  longest outage: at least 30m, and NOT BOUNDED ABOVE '
-              + '(2026-08-25T10:30:00.000Z .. 2026-08-25T11:00:00.000Z)',
+                + '(2026-08-25T10:30:00.000Z .. 2026-08-25T11:00:00.000Z)',
               '    no reading after it found this provider up, so it may still be running',
             ],);
           },
@@ -170,7 +170,7 @@ await describe({
               },
             },),).toEqual([
               '  longest outage: at least 0s, and NOT BOUNDED ABOVE '
-              + '(2026-08-25T10:30:00.000Z .. 2026-08-25T11:00:00.000Z)',
+                + '(2026-08-25T10:30:00.000Z .. 2026-08-25T11:00:00.000Z)',
               '    no reading before it found this provider up, so it may have begun earlier than the record',
               '    no reading after it found this provider up, so it may still be running',
             ],);

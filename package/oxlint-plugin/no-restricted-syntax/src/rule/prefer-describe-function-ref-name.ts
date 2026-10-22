@@ -270,8 +270,8 @@ function isCallableBinding(
     return (
       (init.type
         === 'FunctionExpression')
-      || (init.type
-        === 'ArrowFunctionExpression')
+        || (init.type
+          === 'ArrowFunctionExpression')
         || (init.type
           === 'ClassExpression')
     );

@@ -240,18 +240,18 @@ export const functionOutcomeArb: Arbitrary<FunctionOutcome> = oneof(
   },),
   string()
     .map(function toReject(payload: string,): FunctionOutcome {
-    return {
-      kind: 'rejectError',
-      payload,
-    };
-  },),
+      return {
+        kind: 'rejectError',
+        payload,
+      };
+    },),
   constantFrom(...THROWN_LITERALS,)
     .map(function toThrow(payload: unknown,): FunctionOutcome {
-    return {
-      kind: 'throwValue',
-      payload,
-    };
-  },),
+      return {
+        kind: 'throwValue',
+        payload,
+      };
+    },),
 );
 
 /**
@@ -300,11 +300,11 @@ export const baseUrlSpecArb: Arbitrary<BaseUrlSpec> = oneof(
   } satisfies BaseUrlSpec,),
   constantFrom(...BASE_URL_STRINGS,)
     .map(function toStringBase(value: string,): BaseUrlSpec {
-    return {
-      kind: 'string',
-      value,
-    };
-  },),
+      return {
+        kind: 'string',
+        value,
+      };
+    },),
   constant({
     kind: 'url',
     value: '',

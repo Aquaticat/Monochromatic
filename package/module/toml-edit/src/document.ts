@@ -44,28 +44,28 @@ export type Origin =
     readonly range: Span;
     readonly astNode: ForeignBorrowed<AST.TOMLNode>;
   }
-  | { readonly kind: 'synthetic'; };
+    | { readonly kind: 'synthetic'; };
 
 /**
  A TOML value: scalar leaf, array, or inline table.
  */
 export type ValueNode =
   | ScalarNode
-  | ArrayNode
-  | InlineTableNode;
+    | ArrayNode
+    | InlineTableNode;
 
 /**
  TOML scalar kinds, mirroring `AST.TOMLValue['kind']`.
  */
 export type ScalarKind =
   | 'string'
-  | 'integer'
-  | 'float'
-  | 'boolean'
-  | 'offset-date-time'
-  | 'local-date-time'
-  | 'local-date'
-  | 'local-time';
+    | 'integer'
+    | 'float'
+    | 'boolean'
+    | 'offset-date-time'
+    | 'local-date-time'
+    | 'local-date'
+    | 'local-time';
 
 /**
  A primitive value leaf.
@@ -158,5 +158,5 @@ export type FillerBlock = {
  */
 export type Block =
   | FillerBlock
-  | KeyValueNode
-  | TableNode;
+    | KeyValueNode
+    | TableNode;

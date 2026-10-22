@@ -307,7 +307,7 @@ async function probeOne(
     ? 0
     : Math.floor((Date.now()
       - new Date(createdAt,)
-      .getTime()) / MS_PER_DAY,);
+        .getTime()) / MS_PER_DAY,);
 
   /**
    Weekly download count from the npm registry; surfaces popularity as a visual channel.
@@ -394,7 +394,7 @@ async function probeOne(
         return a + b;
       },
       0,
-    );
+      );
   /**
    Bytes Linguist attributes to TypeScript; `undefined` when Linguist did not run or did not detect TS.
    */
@@ -426,7 +426,7 @@ async function probeOne(
     ? undefined
     : Math.floor((Date.now()
       - new Date(lastCommitDate,)
-      .getTime()) / MS_PER_DAY,);
+        .getTime()) / MS_PER_DAY,);
 
   /**
    Discriminated reason for any unknown GH-derived field, or {@link NO_UNKNOWN_REASON} when all three are known.

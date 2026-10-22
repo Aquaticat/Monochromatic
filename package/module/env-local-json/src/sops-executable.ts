@@ -117,8 +117,8 @@ export async function resolveSopsExecutable({
   const extensions = process.platform === 'win32'
     ? (env.PATHEXT ?? '').split(';',)
       .filter(function hasExtension(value,): boolean {
-      return value !== '';
-    },)
+        return value !== '';
+      },)
     : ['',];
   /**
    Final extension list; Windows always includes the conventional defaults.

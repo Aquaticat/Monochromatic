@@ -107,8 +107,8 @@ async function findGlobalNodeModules(): Promise<string | typeof NOT_FOUND> {
   const home = process.env
     .HOME
     ?? process
-    .env
-    .USERPROFILE;
+      .env
+      .USERPROFILE;
   if (home === undefined) {
     rl.info('no HOME or USERPROFILE set',);
     return NOT_FOUND;

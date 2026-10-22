@@ -96,27 +96,27 @@ export function parseSampleRows({
     /**
      Fields of one CSV line.
      */
-    const fields = line.split(',',);
+      const fields = line.split(',',);
     /**
      UTC time of the row.
      */
-    const time = fields[0] ?? '';
+      const time = fields[0] ?? '';
     /**
      Tctl field of the row.
      */
-    const tctl = fields[1] ?? '';
+      const tctl = fields[1] ?? '';
     /**
      Package watts field of the row.
      */
-    const watts = fields[PACKAGE_WATTS_COLUMN] ?? '';
-    if ((tctl === '') || (watts === '')
-      || (Date.parse(time,) < cutoff)) return [];
-    return [{
-      time,
-      tctl: Number(tctl,),
-      watts: Number(watts,),
-    },];
-  },);
+      const watts = fields[PACKAGE_WATTS_COLUMN] ?? '';
+      if ((tctl === '') || (watts === '')
+        || (Date.parse(time,) < cutoff)) return [];
+      return [{
+        time,
+        tctl: Number(tctl,),
+        watts: Number(watts,),
+      },];
+    },);
 }
 
 /**
@@ -189,9 +189,9 @@ export function summarizeBuckets(rows: readonly SampleRow[],): readonly BucketSu
         index - SETTLED_SAMPLES,
         index,
       )
-      .every(function sameBucket(other,) {
-        return other === bucket;
-      },);
+        .every(function sameBucket(other,) {
+          return other === bucket;
+        },);
     return isSettled ? [{
       bucket: bucket ?? 0,
       tctl: row.tctl,
@@ -203,8 +203,8 @@ export function summarizeBuckets(rows: readonly SampleRow[],): readonly BucketSu
   const grouped = Map.groupBy(
     settled,
     function byBucket(row,): number {
-    return row.bucket;
-  },
+      return row.bucket;
+    },
   );
   return grouped.entries()
     .toArray()
@@ -212,35 +212,35 @@ export function summarizeBuckets(rows: readonly SampleRow[],): readonly BucketSu
       [a,],
       [b,],
     ): number {
-    return a - b;
-  },)
+      return a - b;
+    },)
     .map(function summarize([bucket, bucketRows,]): BucketSummary {
     /**
      Ascending Tctl values of the bucket.
      */
-    const sorted = bucketRows.map(function tctlOf(row,): number {
-      return row.tctl;
-    },)
-      .toSorted(function ascending(
-        a,
-        b,
-      ): number {
-      return a - b;
+      const sorted = bucketRows.map(function tctlOf(row,): number {
+        return row.tctl;
+      },)
+        .toSorted(function ascending(
+          a,
+          b,
+        ): number {
+          return a - b;
+        },);
+      return {
+        bucket,
+        count: sorted.length,
+        median: percentile({
+          sorted,
+          fraction: MEDIAN_FRACTION,
+        },),
+        p90: percentile({
+          sorted,
+          fraction: P90_FRACTION,
+        },),
+        max: sorted.at(-1,) ?? 0,
+      };
     },);
-    return {
-      bucket,
-      count: sorted.length,
-      median: percentile({
-        sorted,
-        fraction: MEDIAN_FRACTION,
-      },),
-      p90: percentile({
-        sorted,
-        fraction: P90_FRACTION,
-      },),
-      max: sorted.at(-1,) ?? 0,
-    };
-  },);
 }
 
 /**
@@ -341,9 +341,9 @@ export function columnStats({
     /**
      UTC time of the row.
      */
-    const time = row[0] ?? '';
-    return (time >= from) && (time <= to);
-  },);
+      const time = row[0] ?? '';
+      return (time >= from) && (time <= to);
+    },);
   /**
    Statistics per requested column.
    */
@@ -363,8 +363,8 @@ export function columnStats({
         a,
         b,
       ): number {
-      return a - b;
-    },);
+        return a - b;
+      },);
     return [{
       name,
       median: values[Math.floor(values.length / 2,)] ?? 0,

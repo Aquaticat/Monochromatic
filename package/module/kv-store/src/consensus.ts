@@ -70,7 +70,7 @@ export function pickMajority<TBackend = unknown,>({
     ) {
       return bucketB.length
         - bucketA
-        .length;
+          .length;
     },);
 
   /**
@@ -85,7 +85,7 @@ export function pickMajority<TBackend = unknown,>({
   return {
     hasMajority: leaderBucket.length
       > Math
-      .floor(totalCount / 2,),
+        .floor(totalCount / 2,),
     value: leaderKey,
   };
 }

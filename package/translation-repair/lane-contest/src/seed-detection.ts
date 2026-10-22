@@ -41,9 +41,9 @@ import {
  */
 export type SeedDetectionVerdict =
   | 'accepted'
-  | 'declined-protective'
-  | 'declined-other'
-  | 'undetected';
+    | 'declined-protective'
+    | 'declined-other'
+    | 'undetected';
 
 /**
  Adjudication status the panel lands on when it judges the ORIGINAL at fault
@@ -179,10 +179,10 @@ export function gradeSeedDetection(
     const verdict: SeedDetectionVerdict = covering.includes('accepted',)
       ? 'accepted'
       : covering.includes(PROTECTIVE_STATUS,)
-      ? 'declined-protective'
-      : covering.length > 0
-      ? 'declined-other'
-      : 'undetected';
+        ? 'declined-protective'
+        : covering.length > 0
+          ? 'declined-other'
+          : 'undetected';
     return [
       application.spec
         .id,

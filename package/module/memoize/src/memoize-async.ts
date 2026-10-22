@@ -73,9 +73,9 @@ import {
 export async function memoizeAsync<
   const TArgs extends readonly unknown[],
   const TReturn,
->(
+  >(
   options: MemoizeAsyncNamedOptions<TArgs, TReturn>,
-): Promise<MemoizedAsyncFunction<TArgs, TReturn>> {
+  ): Promise<MemoizedAsyncFunction<TArgs, TReturn>> {
   /**
    Caller-provided function plus key derivation extracted from `options` for closure capture.
    */

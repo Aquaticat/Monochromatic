@@ -198,9 +198,9 @@ await describe({
     it({
       name:
         'READS THE LANE, where version 2 keeps these records, rather than the '
-        + 'artifact root where version 1 kept them. This is the whole point of '
-        + 'the function: every reader of these records asked the root, got '
-        + '`undefined` from raw JSON, and reported an empty corpus',
+          + 'artifact root where version 1 kept them. This is the whole point of '
+          + 'the function: every reader of these records asked the root, got '
+          + '`undefined` from raw JSON, and reported an empty corpus',
       fn: async () => {
         /**
          Records as this reader lifts them.
@@ -218,9 +218,9 @@ await describe({
     it({
       name:
         'REFUSES AN ARTIFACT CARRYING THE RETIRED ROOT KEY at all, which is a '
-        + 'stronger guarantee than preferring the lane over it. Version 2 names '
-        + 'its top-level keys exactly, so the two spellings can never coexist '
-        + 'for a reader to pick the wrong one between',
+          + 'stronger guarantee than preferring the lane over it. Version 2 names '
+          + 'its top-level keys exactly, so the two spellings can never coexist '
+          + 'for a reader to pick the wrong one between',
       fn: async () => {
         /**
          What retiredKeyPresent raised, read for its class as well as its wording.
@@ -240,8 +240,8 @@ await describe({
     it({
       name:
         'ACCEPTS AN EMPTY ISSUE LIST, because an entry the critics filed nothing '
-        + 'about still writes `issues: []`, and refusing it would turn an '
-        + 'ordinary quiet entry into a parse failure',
+          + 'about still writes `issues: []`, and refusing it would turn an '
+          + 'ordinary quiet entry into a parse failure',
       fn: async () => {
         /**
          Entry that settled without a single filed issue.
@@ -259,9 +259,9 @@ await describe({
     it({
       name:
         'REFUSES AN ABSENT ISSUE LIST rather than reading it as an entry that '
-        + 'filed nothing. Absence means this reader and the writer disagree '
-        + 'about where the records live, and answering that with an empty list '
-        + 'is exactly what hid the moved path',
+          + 'filed nothing. Absence means this reader and the writer disagree '
+          + 'about where the records live, and answering that with an empty list '
+          + 'is exactly what hid the moved path',
       fn: async () => {
         /**
          What noIssues raised, read for its class as well as its wording.
@@ -283,9 +283,9 @@ await describe({
     it({
       name:
         'REFUSES AN ABSENT FINDING LIST on the same reasoning, and this is the '
-        + 'sharper half: findings exist to notice a stage going quiet, so a '
-        + 'reader that answers their absence with silence reports the one '
-        + 'condition it was built to detect',
+          + 'sharper half: findings exist to notice a stage going quiet, so a '
+          + 'reader that answers their absence with silence reports the one '
+          + 'condition it was built to detect',
       fn: async () => {
         /**
          What noFindings raised, read for its class as well as its wording.

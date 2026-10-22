@@ -87,8 +87,8 @@ export function readonlyCollectionSuggestions({
     || (owner === undefined)
     || (owner.name
       !== parameter.type
-      .typeName
-      .text)
+        .typeName
+        .text)
     || (owner.declarations
       .length
       === 0)
@@ -97,11 +97,11 @@ export function readonlyCollectionSuggestions({
       /**
        Resolved owner declaration used for exact provenance check.
        */
-      const declaration = handle.resolve(project,);
-      return (declaration !== undefined)
-        && project.program
-        .isSourceFileDefaultLibrary(declaration.getSourceFile(),);
-    },)))
+        const declaration = handle.resolve(project,);
+        return (declaration !== undefined)
+          && project.program
+            .isSourceFileDefaultLibrary(declaration.getSourceFile(),);
+      },)))
     return [];
   /**
    Semantic type arguments whose complete reachability must be readonly.

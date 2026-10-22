@@ -106,12 +106,12 @@ export type PreservationMode =
      */
     readonly sourceText: string;
   }
-  | {
+    | {
     /**
      Apply without the gate, for a stage licensed to rewrite wholesale.
      */
-    readonly mode: 'skip';
-  };
+      readonly mode: 'skip';
+    };
 
 /**
  One rejected operation with its scorecard-stable reason.
@@ -332,7 +332,7 @@ export function applyPatchOperations(
     );
     if ((current !== envelope.baseText)
       || (hashContent({ content: current, },) !== envelope.baseHash))
-    {
+      {
       rejected.push({
         operation,
         reason: 'envelope-drift',

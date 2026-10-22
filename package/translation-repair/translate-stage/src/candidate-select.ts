@@ -436,7 +436,7 @@ export async function decideBestCandidate<ValueT,>(
     // that judge decide would put one model back in control of the stage.
     sl.info(
       `winner drew only weight ${String(leader[1],)} (ballots: ${String(counted.ballots,)}, abstentions: `
-      + `${String(counted.abstentions,)}) against a minimum of ${minimumLabel}; keeping the fallback`,
+        + `${String(counted.abstentions,)}) against a minimum of ${minimumLabel}; keeping the fallback`,
     );
     return {
       kind: 'declined',
@@ -456,7 +456,7 @@ export async function decideBestCandidate<ValueT,>(
     // for (owner, 2026-09-09).
     sl.info(
       `winner was named by ${String(leaderBallots,)} ballot against a floor of ${String(MIN_SELECTION_BALLOTS,)}; `
-      + 'keeping the fallback',
+        + 'keeping the fallback',
     );
     return {
       kind: 'declined',
@@ -484,7 +484,7 @@ export async function decideBestCandidate<ValueT,>(
   }
   sl.info(
     `candidate ${String(leader[0],)} from ${describeProducer(winner.producer,)} won `
-    + `weight ${String(leader[1],)} (ballots: ${String(counted.ballots,)})`,
+      + `weight ${String(leader[1],)} (ballots: ${String(counted.ballots,)})`,
   );
   return {
     kind: 'selected',
@@ -499,11 +499,11 @@ export async function decideBestCandidate<ValueT,>(
         RUNOFF_UNDER_MINIMUM_FINDING,
       ]
       : condemnedDecides
-      ? [
-        ...roundFindings,
-        CONDEMNED_FALLBACK_UNDER_MINIMUM_FINDING,
-      ]
-      : roundFindings,
+        ? [
+          ...roundFindings,
+          CONDEMNED_FALLBACK_UNDER_MINIMUM_FINDING,
+        ]
+        : roundFindings,
     ballots,
     perCandidate,
   };

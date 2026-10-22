@@ -486,8 +486,8 @@ await describe({
           "  console.log(JSON.stringify({ read: true }));",
           '} catch (error) {',
           '  console.log(JSON.stringify({ isCorpusReadError: error instanceof CorpusReadError, name: error.name, '
-          + 'message: error.message, code: error.code, members: (error.errors ?? []).map(function facts(member) { '
-          + 'return { name: member.name, code: member.code }; }), cause: error.cause?.code }));',
+            + 'message: error.message, code: error.code, members: (error.errors ?? []).map(function facts(member) { '
+            + 'return { name: member.name, code: member.code }; }), cause: error.cause?.code }));',
           '}',
         ].join('\n',);
         /**

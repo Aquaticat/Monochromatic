@@ -38,7 +38,7 @@ const store = {
   indexes: new WeakMap<
     Project,
     Map<string, CachedFinalEffectIndex>
-  >(),
+    >(),
 };
 
 /**
@@ -141,8 +141,8 @@ export function cacheFinalEffectIndex({
   );
   store.indexes
     .set(
-      project,
-      snapshotIndexes,
+    project,
+    snapshotIndexes,
     );
   counters.writeCount++;
 }
@@ -173,7 +173,7 @@ export function clearFinalEffectIndexCache(): void {
   store.indexes = new WeakMap<
     Project,
     Map<string, CachedFinalEffectIndex>
-  >();
+    >();
   counters.hitCount = 0;
   counters.writeCount = 0;
 }

@@ -283,8 +283,8 @@ function openingTagNameOf({ text, }: { readonly text: string; },): string {
   const opening = text
     .trimStart()
     .slice(
-      0,
-      16,
+    0,
+    16,
     );
   if (!opening.startsWith('<',)) {
     throw new Error(
@@ -311,8 +311,8 @@ function openingTagNameOf({ text, }: { readonly text: string; },): string {
   },);
   return rest
     .slice(
-      0,
-      Math.min(...lengthsBefore,),
+    0,
+    Math.min(...lengthsBefore,),
     )
     .toLowerCase();
 }
@@ -433,8 +433,8 @@ function spliceOnlyKindOf(
       return spliceOnlyKindOfTag({ name, },);
     },)
       .slice(
-        0,
-        1,
+      0,
+      1,
       );
   }
   if (type !== 'heading')
@@ -680,8 +680,8 @@ export function blockStandingOf(
         && (end <= node.endOffset);
     },)
     .slice(
-      0,
-      1,
+    0,
+    1,
     )
     .map(function standingOf(node,): BlockStanding {
       return standingIn({

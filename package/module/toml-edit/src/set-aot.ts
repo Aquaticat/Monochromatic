@@ -80,12 +80,12 @@ export function doAotReplace(
       headerOrigin: { kind: 'synthetic', },
       body: Object.entries(el,)
         .map(function eachEntry([key, v,],) {
-        return makeKeyValue({
-          segments: [key,],
-          value: v,
-          options: edit.canonical,
-        },);
-      },),
+          return makeKeyValue({
+            segments: [key,],
+            value: v,
+            options: edit.canonical,
+          },);
+        },),
       commentsBefore: [],
     };
   },);
@@ -137,12 +137,12 @@ function spliceInstances(
         .length
         === header.length)
       && block.headerSegments
-      .every(function eq(
-        seg,
-        i,
-      ) {
-        return seg === header[i];
-      },);
+        .every(function eq(
+          seg,
+          i,
+        ) {
+          return seg === header[i];
+        },);
   }
   /**
    First existing-instance index so the replacements land in the same place.

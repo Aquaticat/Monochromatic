@@ -113,8 +113,8 @@ export function definitionLabelOrder(
 ): readonly string[] {
   return activeFootnoteMarkers({ text, },)
     .filter(function definition(marker,): boolean {
-    return marker.kind === 'definition';
-  },)
+      return marker.kind === 'definition';
+    },)
     .map(function label(marker,): string { return marker.rawLabel; },);
 }
 
@@ -174,13 +174,13 @@ function tailContinuesDefinition({ tail, }: { readonly tail: string; },): boolea
    */
   const indent = Array.from(lead.slice(lead.lastIndexOf('\n',) + 1,),)
     .reduce(
-      function columns(
-        sum,
-        character,
-      ): number {
-        return sum + ((character === '\t') ? TAB_COLUMNS : 1);
-      },
-      0,
+    function columns(
+      sum,
+      character,
+    ): number {
+      return sum + ((character === '\t') ? TAB_COLUMNS : 1);
+    },
+    0,
     );
   /**
    Line feeds before the comment, a blank line being two.
@@ -352,12 +352,12 @@ export function reorderFootnoteDefinitions(
       node,
       index,
     ): string {
-    return text.slice(
-      nonNullishOrThrow(definitions[index],)
-        .endOffset,
-      node.startOffset,
-    );
-  },);
+      return text.slice(
+        nonNullishOrThrow(definitions[index],)
+          .endOffset,
+        node.startOffset,
+      );
+    },);
   if (gaps.some(function containsContent(gap,): boolean {
     for (const character of gap) {
       if (!' \t\r\n'.includes(character,))
@@ -408,8 +408,8 @@ export function reorderFootnoteDefinitions(
   const reparsed = parseDocument({ text: rewritten, },)
     .nodes
     .filter(function definition(node,): boolean {
-    return node.zone === DEFINITION_ZONE;
-  },);
+      return node.zone === DEFINITION_ZONE;
+    },);
   // A MOVE THAT WOULD CHANGE THE PARSE IS REFUSED LIKE ANY OTHER (ledger T8,
   // eighteenth batch): the definitions stand, said in a note, and the rename
   // before it stands too. It once threw, which kept every relabel of the page
@@ -422,8 +422,8 @@ export function reorderFootnoteDefinitions(
   ): boolean {
     return node.text
       !== sorted[index]
-      ?.node
-      .text;
+        ?.node
+        .text;
   },))
     return {
       text,

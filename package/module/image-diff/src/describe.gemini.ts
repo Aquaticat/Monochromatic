@@ -23,10 +23,10 @@ const l = tagged({ tag: 'image-diff', },);
  */
 type GenerateContentPart =
   | { readonly text: string; }
-  | { readonly inline_data: {
-    readonly mime_type: string;
-    readonly data: string;
-  }; };
+    | { readonly inline_data: {
+      readonly mime_type: string;
+      readonly data: string;
+    }; };
 
 /**
  Request body for the Gemini generateContent API.
@@ -78,8 +78,8 @@ function resolveGeminiDescribeKey(): string | typeof ABSENT {
   const key = process.env
     .IMAGE_DIFF_GEMINI_API_KEY
     ?? process
-    .env
-    .GEMINI_API_KEY;
+      .env
+      .GEMINI_API_KEY;
   if ((key === undefined) || (key === ''))
     return ABSENT;
   return key;

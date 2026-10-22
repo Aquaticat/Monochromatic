@@ -207,7 +207,7 @@ export function taggedToInput({ tree, }: { readonly tree: unknown; },): unknown 
            
            @mutates taggedEntry - Recursive child traversal can invoke caller-owned array, proxy, and accessor hooks.
            */
-          function entry(taggedEntry,) {
+        function entry(taggedEntry,) {
           /**
            Tagged key and child selected by current entry.
            */

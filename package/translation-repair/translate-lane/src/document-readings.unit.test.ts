@@ -672,7 +672,7 @@ await describe({
             ].map(async function keyFor(seed,): Promise<string> {
               const { cache, persisted, } = recordingCache({ resumed: new Map(), },);
               await readDocumentPictures({
-              readOcr: sawText,
+                readOcr: sawText,
                 client,
                 slices: [sliceOf({
                   text: showing({ assetName: 'noticeboard.webp', },),

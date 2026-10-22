@@ -570,8 +570,8 @@ await describe({
 
         expect(ran.logged.slice(0, 1,),).toEqual([
           'info Cat1: skipped, CorpusReadError: corpus read failed for '
-          + `${ran.commitSha}:people/Cat1/page.en.md (missing-object); `
-          + 'the commit has no such path: check the path, or pin a commit that has it.',
+            + `${ran.commitSha}:people/Cat1/page.en.md (missing-object); `
+            + 'the commit has no such path: check the path, or pin a commit that has it.',
         ],);
         expect(ran.passages,).toEqual(['猫二。',],);
       },

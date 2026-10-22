@@ -123,8 +123,8 @@ export function makeDescriptor<T,>(
     ): PromiseLike<R1 | R2> {
       return run({ effectiveConcurrency: DEFAULT_CONCURRENCY, },)
         .then(
-          onfulfilled,
-          onrejected,
+        onfulfilled,
+        onrejected,
         );
     },
     [RUN_WITH_CONTEXT]: runWithContext,

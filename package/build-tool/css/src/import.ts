@@ -124,7 +124,7 @@ function resolveSpecifier({
   // Try relative first: CSS treats `@import 'foo.css'` as relative.
   if ((!isPackageSpecifier(specifier,))
     || ((!specifier.includes('/',)) && (!specifier.startsWith('@',))))
-  {
+    {
     /**
      Attempt to resolve as relative path
      */

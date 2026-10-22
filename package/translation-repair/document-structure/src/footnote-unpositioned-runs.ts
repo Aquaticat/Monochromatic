@@ -464,8 +464,8 @@ function referenceSpells(
   const padded = body.slice(hexadecimal ? '#x'.length : '#'.length,)
     .toLowerCase()
     .padStart(
-      width,
-      '0',
+    width,
+    '0',
     );
   /**
    The bracket's own code in that base.

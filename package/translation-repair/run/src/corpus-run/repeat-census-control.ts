@@ -41,17 +41,17 @@ export const CONTROL_MAXIMAL_LINES: readonly number[] = [
  */
 export type ControlReading =
   | 'absent'
-  | {
+    | {
     /**
      Whether a refrain group stands on every one of the refrain's four lines.
      */
-    readonly refrainCoversLines17To37: boolean;
+      readonly refrainCoversLines17To37: boolean;
 
     /**
      Whether a maximal group stands on both lines of the repeated sentence.
      */
-    readonly maximalCoversLines35And55: boolean;
-  };
+      readonly maximalCoversLines35And55: boolean;
+    };
 
 /**
  Builds the reading of a census that found the control entry, under the names

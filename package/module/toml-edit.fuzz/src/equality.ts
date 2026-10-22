@@ -32,11 +32,11 @@ import type { TomlEditOptions, } from '@monochromatic-dev/module-toml-edit/ts/ty
  */
 export type SemanticValue =
   | string
-  | number
-  | boolean
-  | Date
-  | readonly SemanticValue[]
-  | { readonly [key: string]: SemanticValue; };
+    | number
+    | boolean
+    | Date
+    | readonly SemanticValue[]
+    | { readonly [key: string]: SemanticValue; };
 
 /**
  Key whose ordinary property assignment changes a plain object's prototype.
@@ -250,7 +250,7 @@ export function semanticEquals(
       if (pair.a
         .length
         !== pair.b
-        .length) return false;
+          .length) return false;
       for (const [index, element,] of pair.a
         .entries()) {
         stack.push({

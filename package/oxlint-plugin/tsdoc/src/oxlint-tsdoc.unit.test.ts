@@ -123,9 +123,9 @@ await describe({
             // Every diagnostic should be require-tsdoc since file has no TSDoc at all
             const requireTsdocCount = diagnostics
               .filter(
-                function isRequireTsdoc(d,): boolean {
-                  return d.code === 'tsdoc(require-tsdoc)';
-                },
+              function isRequireTsdoc(d,): boolean {
+                return d.code === 'tsdoc(require-tsdoc)';
+              },
               )
               .length;
             // function, arrow, class, type, interface, enum, const = at least 7

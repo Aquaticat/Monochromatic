@@ -30,10 +30,10 @@ export type SubjectRef<S extends string,> =
     readonly kind: 'subject.key';
     readonly subject: S;
   }
-  | {
-    readonly kind: 'subject.externalName';
-    readonly text: string;
-  };
+    | {
+      readonly kind: 'subject.externalName';
+      readonly text: string;
+    };
 
 /**
  Possessor in a `noun.possessed` phrase.
@@ -47,10 +47,10 @@ export type Possessor<S extends string,> =
     readonly kind: 'possessor.subject';
     readonly subject: S;
   }
-  | {
-    readonly kind: 'possessor.externalName';
-    readonly text: string;
-  };
+    | {
+      readonly kind: 'possessor.externalName';
+      readonly text: string;
+    };
 
 //endregion Subject references
 
@@ -87,28 +87,28 @@ export type NounPhrase<S extends string, N extends string,> =
     readonly kind: 'noun.bare';
     readonly noun: N;
   }
-  | {
-    readonly kind: 'noun.counted';
-    readonly count: number;
-    readonly noun: N;
-  }
-  | {
-    readonly kind: 'noun.definite';
-    readonly noun: N;
-  }
-  | {
-    readonly kind: 'noun.indefinite';
-    readonly noun: N;
-  }
-  | {
-    readonly kind: 'noun.possessed';
-    readonly possessor: Possessor<S>;
-    readonly noun: N;
-  }
-  | {
-    readonly kind: 'noun.externalText';
-    readonly text: string;
-  };
+    | {
+      readonly kind: 'noun.counted';
+      readonly count: number;
+      readonly noun: N;
+    }
+    | {
+      readonly kind: 'noun.definite';
+      readonly noun: N;
+    }
+    | {
+      readonly kind: 'noun.indefinite';
+      readonly noun: N;
+    }
+    | {
+      readonly kind: 'noun.possessed';
+      readonly possessor: Possessor<S>;
+      readonly noun: N;
+    }
+    | {
+      readonly kind: 'noun.externalText';
+      readonly text: string;
+    };
 
 //endregion Noun phrases
 
@@ -130,11 +130,11 @@ export type Adverbial<S extends string, N extends string,> =
     readonly relation: 'at' | 'in' | 'to' | 'from';
     readonly place: NounPhrase<S, N>;
   }
-  | {
-    readonly kind: 'adverbial.time';
-    readonly relation: 'at' | 'before' | 'after';
-    readonly time: NounPhrase<S, N> | ExternalText;
-  };
+    | {
+      readonly kind: 'adverbial.time';
+      readonly relation: 'at' | 'before' | 'after';
+      readonly time: NounPhrase<S, N> | ExternalText;
+    };
 
 //endregion Adverbials
 
@@ -235,32 +235,32 @@ export type WhQuestion<S extends string, V extends string, N extends string,> =
     readonly tense?: Tense;
     readonly terminator?: '?';
   }
-  | {
-    readonly kind: 'sentence.question.wh.object';
-    readonly wh: 'what';
-    readonly subject: SubjectRef<S>;
-    readonly verb: V;
-    readonly adverbials?: readonly Adverbial<S, N>[];
-    readonly tense?: Tense;
-    readonly terminator?: '?';
-  }
-  | {
-    readonly kind: 'sentence.question.wh.adverbial';
-    readonly wh: 'where' | 'when' | 'why' | 'how';
-    readonly subject: SubjectRef<S>;
-    readonly predicate: VerbPhrase<S, V, N>;
-    readonly tense?: Tense;
-    readonly terminator?: '?';
-  };
+    | {
+      readonly kind: 'sentence.question.wh.object';
+      readonly wh: 'what';
+      readonly subject: SubjectRef<S>;
+      readonly verb: V;
+      readonly adverbials?: readonly Adverbial<S, N>[];
+      readonly tense?: Tense;
+      readonly terminator?: '?';
+    }
+    | {
+      readonly kind: 'sentence.question.wh.adverbial';
+      readonly wh: 'where' | 'when' | 'why' | 'how';
+      readonly subject: SubjectRef<S>;
+      readonly predicate: VerbPhrase<S, V, N>;
+      readonly tense?: Tense;
+      readonly terminator?: '?';
+    };
 
 /**
  Full sentence: declarative, yes/no question, wh-question, or imperative.
  */
 export type Sentence<S extends string, V extends string, N extends string,> =
   | DeclarativeSentence<S, V, N>
-  | YesNoQuestion<S, V, N>
-  | WhQuestion<S, V, N>
-  | ImperativeSentence<S, V, N>;
+    | YesNoQuestion<S, V, N>
+    | WhQuestion<S, V, N>
+    | ImperativeSentence<S, V, N>;
 
 //endregion Sentences
 
@@ -277,14 +277,14 @@ export type FragmentPart<Label extends string, S extends string, N extends strin
     readonly kind: 'part.label';
     readonly label: Label;
   }
-  | {
-    readonly kind: 'part.nounPhrase';
-    readonly phrase: NounPhrase<S, N>;
-  }
-  | {
-    readonly kind: 'part.externalText';
-    readonly text: string;
-  };
+    | {
+      readonly kind: 'part.nounPhrase';
+      readonly phrase: NounPhrase<S, N>;
+    }
+    | {
+      readonly kind: 'part.externalText';
+      readonly text: string;
+    };
 
 /**
  UI text that is not a complete sentence.
@@ -300,11 +300,11 @@ export type FragmentPart<Label extends string, S extends string, N extends strin
  */
 export type Fragment<Label extends string, S extends string, V extends string,
   N extends string,> =
-    | {
-      readonly kind: 'fragment.nounPhrase';
-      readonly phrase: NounPhrase<S, N>;
-      readonly capitalization?: Capitalization;
-    }
+  | {
+    readonly kind: 'fragment.nounPhrase';
+    readonly phrase: NounPhrase<S, N>;
+    readonly capitalization?: Capitalization;
+  }
     | {
       readonly kind: 'fragment.verbPhrase';
       readonly phrase: VerbPhrase<S, V, N>;

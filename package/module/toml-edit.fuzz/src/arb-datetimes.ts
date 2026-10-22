@@ -35,8 +35,8 @@ function pad({
 },): string {
   return value.toString(10,)
     .padStart(
-      width,
-      '0',
+    width,
+    '0',
     );
 }
 
@@ -58,7 +58,7 @@ const dateTextArbitrary: Arbitrary<string> = tuple(
   },),
 )
   .map(function build([year, month, day,],) {
-  return `${pad({
+    return `${pad({
     value: year,
     width: 4,
   },)}-${pad({
@@ -68,7 +68,7 @@ const dateTextArbitrary: Arbitrary<string> = tuple(
     value: day,
     width: 2,
   },)}`;
-},);
+  },);
 
 /**
  Arbitrary valid wall-clock time as `HH:MM:SS`, half with fractional seconds.
@@ -94,7 +94,7 @@ const timeTextArbitrary: Arbitrary<string> = tuple(
   ),
 )
   .map(function build([hour, minute, second, fraction,],) {
-  return `${pad({
+    return `${pad({
     value: hour,
     width: 2,
   },)}:${pad({
@@ -104,7 +104,7 @@ const timeTextArbitrary: Arbitrary<string> = tuple(
     value: second,
     width: 2,
   },)}${fraction}`;
-},);
+  },);
 
 /**
  Arbitrary timezone designator: Zulu or a signed offset.
@@ -129,14 +129,14 @@ const offsetTextArbitrary: Arbitrary<string> = oneof(
     },),
   )
     .map(function build([sign, hour, minute,],) {
-    return `${sign}${pad({
+      return `${sign}${pad({
       value: hour,
       width: 2,
     },)}:${pad({
       value: minute,
       width: 2,
     },)}`;
-  },),
+    },),
 );
 
 /**
@@ -153,8 +153,8 @@ const offsetDateTimeArbitrary: Arbitrary<ValueSample> = tuple(
   offsetTextArbitrary,
 )
   .map(function build([date, time, separator, offset,],) {
-  return { text: `${date}${separator}${time}${offset}`, };
-},);
+    return { text: `${date}${separator}${time}${offset}`, };
+  },);
 
 /**
  Local datetimes: date and time with no offset.
@@ -169,8 +169,8 @@ const localDateTimeArbitrary: Arbitrary<ValueSample> = tuple(
   ),
 )
   .map(function build([date, time, separator,],) {
-  return { text: `${date}${separator}${time}`, };
-},);
+    return { text: `${date}${separator}${time}`, };
+  },);
 
 /**
  Local dates.

@@ -123,19 +123,19 @@ async function lint({
   /** Process result whether Oxlint exits zero or not. */
   const settled = await spawn('oxlint', args, { cwd: ROOT, env: environment, },)
     .then(
-      function succeeded(result,): { stdout: string; stderr: string; exitCode: number; } {
-        return { stdout: result.stdout, stderr: result.stderr, exitCode: 0, };
-      },
-      function failed(error: unknown,): { stdout: string; stderr: string; exitCode: number; } {
-        if (((typeof error) !== 'object') || (error === null) || (!('stdout' in error)) || (!('stderr' in error))
-          || (!('exitCode' in error)))
-          throw error;
-        return {
-          stdout: String(error.stdout,),
-          stderr: String(error.stderr,),
-          exitCode: Number(error.exitCode,),
-        };
-      },
+    function succeeded(result,): { stdout: string; stderr: string; exitCode: number; } {
+      return { stdout: result.stdout, stderr: result.stderr, exitCode: 0, };
+    },
+    function failed(error: unknown,): { stdout: string; stderr: string; exitCode: number; } {
+      if (((typeof error) !== 'object') || (error === null) || (!('stdout' in error)) || (!('stderr' in error))
+        || (!('exitCode' in error)))
+        throw error;
+      return {
+        stdout: String(error.stdout,),
+        stderr: String(error.stderr,),
+        exitCode: Number(error.exitCode,),
+      };
+    },
     );
   /** Parsed report, whose diagnostics array is all these cases read. */
   const report = JSON.parse(settled.stdout,) as { readonly diagnostics: readonly ReportedDiagnostic[]; };

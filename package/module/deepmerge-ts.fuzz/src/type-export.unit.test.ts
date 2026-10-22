@@ -83,16 +83,16 @@ await describe({
       fn: async () => {
         expectTypeOf<keyof DeepMergeFunctionsDefaults>().toEqualTypeOf<
           'mergeArrays' | 'mergeCircularReferences' | 'mergeMaps' | 'mergeOthers' | 'mergeRecords' | 'mergeSets'
-        >();
+          >();
         expectTypeOf<keyof DeepMergeIntoFunctionsDefaults>().toEqualTypeOf<
           'mergeArrays' | 'mergeCircularReferences' | 'mergeMaps' | 'mergeOthers' | 'mergeRecords' | 'mergeSets'
-        >();
+          >();
         expectTypeOf<keyof DeepMergeFunctionsDefaultsFastUnsafe>().toEqualTypeOf<
           'mergeArrays' | 'mergeMaps' | 'mergeOthers' | 'mergeRecords' | 'mergeSets'
-        >();
+          >();
         expectTypeOf<keyof DeepMergeIntoFunctionsDefaultsFastUnsafe>().toEqualTypeOf<
           'mergeArrays' | 'mergeMaps' | 'mergeOthers' | 'mergeRecords' | 'mergeSets'
-        >();
+          >();
       },
     },),
     it({

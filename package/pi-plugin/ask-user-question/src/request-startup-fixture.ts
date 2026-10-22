@@ -127,13 +127,13 @@ export async function runStartupFixture(scenario: string,): Promise<string> {
       scenario,
     ],
     {
-    cwd: directory.path,
-    stdio: [
-      'ignore',
-      'pipe',
-      'pipe',
-    ],
-  },
+      cwd: directory.path,
+      stdio: [
+        'ignore',
+        'pipe',
+        'pipe',
+      ],
+    },
   );
   /**
    Both streams retained so shutdown noise also fails verification.
@@ -148,17 +148,17 @@ export async function runStartupFixture(scenario: string,): Promise<string> {
     .setEncoding('utf8',);
   child.stdout
     .on(
-      'data',
-      function captureOutput(chunk: string,): void {
-    output.stdout += chunk;
-  },
+    'data',
+    function captureOutput(chunk: string,): void {
+      output.stdout += chunk;
+    },
     );
   child.stderr
     .on(
-      'data',
-      function captureError(chunk: string,): void {
-    output.stderr += chunk;
-  },
+    'data',
+    function captureError(chunk: string,): void {
+      output.stderr += chunk;
+    },
     );
   /**
    Close waits for all stderr before evaluating child outcome.

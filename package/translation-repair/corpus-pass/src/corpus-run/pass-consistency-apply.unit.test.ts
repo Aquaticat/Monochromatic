@@ -1006,29 +1006,29 @@ function editSetsFrom(
 function groupsOf({ model, }: { readonly model: ArrangementModel; },): readonly ArrangementGroup[] {
   return model.slices
     .reduce(
-      function withSlice(
-        shapes,
-        {
-          slice,
-          places,
-        },
-      ): readonly (readonly ArrangementPlace[])[] {
-        return shapes.flatMap(function extended(shape,): readonly (readonly ArrangementPlace[])[] {
-          return coreSetsOf({
-            slice,
-            count: places,
-          },)
-            .map(function placed(cores,): readonly ArrangementPlace[] {
-              return [
-                ...shape,
-                ...cores.map(function placeOf(core,): ArrangementPlace {
-                  return { slice, core, };
-                },),
-              ];
-            },);
-        },);
+    function withSlice(
+      shapes,
+      {
+        slice,
+        places,
       },
-      NO_SHAPES,
+    ): readonly (readonly ArrangementPlace[])[] {
+      return shapes.flatMap(function extended(shape,): readonly (readonly ArrangementPlace[])[] {
+        return coreSetsOf({
+          slice,
+          count: places,
+        },)
+          .map(function placed(cores,): readonly ArrangementPlace[] {
+            return [
+              ...shape,
+              ...cores.map(function placeOf(core,): ArrangementPlace {
+                return { slice, core, };
+              },),
+            ];
+          },);
+      },);
+    },
+    NO_SHAPES,
     )
     .flatMap(function setsOver(places,): readonly ArrangementGroup[] {
       return editSetsFrom({
@@ -1091,8 +1091,8 @@ function settledArrangementGroup({ group, }: { readonly group: ArrangementGroup;
         ? edit.slice
           .text
           .slice(
-            edit.start,
-            edit.end,
+          edit.start,
+          edit.end,
           )
         : 'mew',
     };
@@ -1109,8 +1109,8 @@ function settledArrangementGroup({ group, }: { readonly group: ArrangementGroup;
             english: slice.text,
             quote: slice.text
               .slice(
-                core.start,
-                core.end,
+              core.start,
+              core.end,
               ),
           };
         },),
@@ -1533,7 +1533,7 @@ await describe({
               [
                 2,
                 '## Three\n\nIn the evening, the sunny window put the kitten to sleep, and the fish snacks smiled too. '
-                + 'So this cat must be a sweet little treasure.',
+                  + 'So this cat must be a sweet little treasure.',
               ],
               [3, '## Four\n\nThe rain in the yard sent the kitten running home. So this cat must be a warm little treasure.',],
             ],);
@@ -1612,7 +1612,7 @@ await describe({
                 [
                   0,
                   '## One\n\nThe window sun made the kitten fall asleep. The kitchen was warm. '
-                  + 'The window sun made the kitten fall asleep.',
+                    + 'The window sun made the kitten fall asleep.',
                 ],
               ],
               editsPlanned: [[0,], [1,],],
@@ -1623,7 +1623,7 @@ await describe({
                 [
                   0,
                   '## One\n\nThe window sun made the kitten fall asleep. The kitchen was warm. '
-                  + 'The window sun made the kitten fall asleep.',
+                    + 'The window sun made the kitten fall asleep.',
                 ],
               ],
             },);
@@ -1837,19 +1837,19 @@ await describe({
               backwardGaveWay: [['none', 'none', 'none', 'none',], ['none', { group: 0, label: 'OCCURRENCE 3', },],],
               forwardFindings: [
                 'slice 2: the consistency replacement of group 1 OCCURRENCE 2 was left out because it changes the words that '
-                + 'group 2 OCCURRENCE 3 located',
+                  + 'group 2 OCCURRENCE 3 located',
               ],
               backwardFindings: [
                 'slice 2: the consistency replacement of group 2 OCCURRENCE 2 was left out because it changes the words that '
-                + 'group 1 OCCURRENCE 3 located',
+                  + 'group 1 OCCURRENCE 3 located',
               ],
               forwardWarned: [
                 'warn [applyConsistency] slice 2: the consistency replacement of group 1 OCCURRENCE 2 was left out because it '
-                + 'changes the words that group 2 OCCURRENCE 3 located',
+                  + 'changes the words that group 2 OCCURRENCE 3 located',
               ],
               backwardWarned: [
                 'warn [applyConsistency] slice 2: the consistency replacement of group 2 OCCURRENCE 2 was left out because it '
-                + 'changes the words that group 1 OCCURRENCE 3 located',
+                  + 'changes the words that group 1 OCCURRENCE 3 located',
               ],
             },);
           },
@@ -1905,7 +1905,7 @@ await describe({
               cutting: [['chosen', 'overlapped',], ['chosen', 'replaced', 'replaced', 'replaced',],],
               cuttingFindings: [
                 'slice 2: the consistency replacement of group 1 OCCURRENCE 2 was left out because it changes the words that '
-                + 'group 2 OCCURRENCE 3 located',
+                  + 'group 2 OCCURRENCE 3 located',
               ],
             },);
           },
@@ -2029,7 +2029,7 @@ await describe({
               ],
               backwardThird: [
                 '## Three\n\nIn the evening, the sunlight on the sill lulled the kitten to sleep, and So this cat must be a '
-                + 'sweet little treasure.',
+                  + 'sweet little treasure.',
               ],
               forwardFindings: [],
               backwardFindings: [],
@@ -2155,9 +2155,9 @@ await describe({
               changed: [1, 3,],
               findings: [
                 'slice 2: the consistency replacement of group 1 OCCURRENCE 2 was left out because it changes the words that '
-                + 'group 2 OCCURRENCE 3 located',
+                  + 'group 2 OCCURRENCE 3 located',
                 'slice 2: the consistency replacement of group 2 OCCURRENCE 3 was left out because it changes the words that '
-                + 'group 1 OCCURRENCE 2 located',
+                  + 'group 1 OCCURRENCE 2 located',
               ],
             },);
             expect(readBackOf({ applied, page, },),).toEqual(writtenOf({ applied, },),);
@@ -2284,9 +2284,9 @@ await describe({
               refusalOf({ changed: { ...group, outcomes: [], }, }),
             ],).toEqual([
               'ConsistencyInvariantError: unreachable: OCCURRENCE 2 of group 1 has no rendering or outcome, '
-              + 'and both are made for every place',
+                + 'and both are made for every place',
               'ConsistencyInvariantError: unreachable: OCCURRENCE 1 of group 1 has no rendering or outcome, '
-              + 'and both are made for every place',
+                + 'and both are made for every place',
             ],);
           },
         },),
@@ -2310,7 +2310,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
             expect(String(refusal,),).toBe(
               'ConsistencyInvariantError: unreachable: OCCURRENCE 2 of group 1 was to be replaced and no replacement was applied, '
-              + 'left out or refused, and every pending replacement is one of the three',
+                + 'left out or refused, and every pending replacement is one of the three',
             );
           },
         },),
@@ -2359,7 +2359,7 @@ await describe({
             expect(overlapping,).toBeInstanceOf(ConsistencyInvariantError,);
             expect(String(overlapping,),).toBe(
               'ConsistencyInvariantError: unreachable: the replacements group 1 OCCURRENCE 2 and group 1 OCCURRENCE 3 of slice 1 '
-              + 'overlap, and no two replacements of one group address the same words',
+                + 'overlap, and no two replacements of one group address the same words',
             );
             expect(outcomesOf({ groups: appliedTo({ group: groupWithTwoEdits({ splice: { start: 0, end: 16, }, }), },).groups, },),)
               .toEqual([['chosen', 'replaced', 'replaced',],],);

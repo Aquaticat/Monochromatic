@@ -59,8 +59,8 @@ function quotePrefix({ line, }: { readonly line: string; },): {
         cursor.at,
         cursor.at + MAX_MARKER_INDENT,
       )
-      .trimStart()
-      .length);
+        .trimStart()
+        .length);
     if (line[indented] !== '>')
       return {
         depth: cursor.depth,
@@ -86,17 +86,17 @@ function quotePrefix({ line, }: { readonly line: string; },): {
 export function quoteDepth({ text, }: { readonly text: string; },): number {
   return text.split('\n',)
     .reduce(
-      function deepest(
-        most,
-        line,
-      ): number {
-    return Math.max(
+    function deepest(
       most,
-      quotePrefix({ line, },)
-        .depth,
-    );
-  },
-      0,
+      line,
+    ): number {
+      return Math.max(
+        most,
+        quotePrefix({ line, },)
+          .depth,
+      );
+    },
+    0,
     );
 }
 
@@ -219,8 +219,8 @@ export function clampQuoteDepth(
       const markers = Array.from(
         { length: bound, },
         function marker(): string {
-        return '>';
-      },
+          return '>';
+        },
       )
         .join(' ',);
       return (rest === '') ? markers : `${markers} ${rest}`;

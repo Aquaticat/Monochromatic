@@ -122,20 +122,20 @@ const CHANNEL_LABELS: Record<ChannelKey, string> = {
 function escapeAttr(raw: string,): string {
   return raw
     .replaceAll(
-      '&',
-      '&amp;',
+    '&',
+    '&amp;',
     )
     .replaceAll(
-      '"',
-      '&quot;',
+    '"',
+    '&quot;',
     )
     .replaceAll(
-      '<',
-      '&lt;',
+    '<',
+    '&lt;',
     )
     .replaceAll(
-      '>',
-      '&gt;',
+    '>',
+    '&gt;',
     );
 }
 

@@ -65,7 +65,7 @@ type InclusionScope = {
 const inclusionScopeByProject = new WeakMap<
   Project,
   Map<string, InclusionScope>
->();
+  >();
 
 /**
  Selects exact non-declaration source scope admitted by ownership policy.

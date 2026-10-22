@@ -360,31 +360,31 @@ async function exerciseLocalStorage(): Promise<void> {
     .clear();
   globalThis.localStorage
     .setItem(
-      buildLogKey({
-        index: 0,
-        nonce: 'seed',
-        stamp: 1,
-      },),
-      '{"level":"info","message":"prior run","timestamp":0}',
+    buildLogKey({
+      index: 0,
+      nonce: 'seed',
+      stamp: 1,
+    },),
+    '{"level":"info","message":"prior run","timestamp":0}',
     );
   globalThis.localStorage
     .setItem(
-      buildLogKey({
-        index: 0,
-        nonce: 'later',
-        stamp: 2,
-      },),
-      '{"level":"info","message":"second prior run","timestamp":0}',
+    buildLogKey({
+      index: 0,
+      nonce: 'later',
+      stamp: 2,
+    },),
+    '{"level":"info","message":"second prior run","timestamp":0}',
     );
   globalThis.localStorage
     .setItem(
-      'monochromatic.log.7',
-      'foreign flat key',
+    'monochromatic.log.7',
+    'foreign flat key',
     );
   globalThis.localStorage
     .setItem(
-      'host.setting',
-      'left alone',
+    'host.setting',
+    'left alone',
     );
   await walkBufferedSink({ sink: sinks.createLocalStorageSink(), },);
   await walkStandIns({

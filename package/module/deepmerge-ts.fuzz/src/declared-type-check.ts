@@ -204,17 +204,17 @@ async function runTsc(dir: string,): Promise<string> {
   const chunks: string[] = [];
   child.stdout
     .on(
-      'data',
-      function collect(chunk: Buffer,) {
-    chunks.push(chunk.toString('utf8',),);
-  },
+    'data',
+    function collect(chunk: Buffer,) {
+      chunks.push(chunk.toString('utf8',),);
+    },
     );
   child.stderr
     .on(
-      'data',
-      function collect(chunk: Buffer,) {
-    chunks.push(chunk.toString('utf8',),);
-  },
+    'data',
+    function collect(chunk: Buffer,) {
+      chunks.push(chunk.toString('utf8',),);
+    },
     );
   await once(
     child,
@@ -297,10 +297,10 @@ export async function checkCases(
   const diagnostics = (await runTsc(dir,))
     .split('\n',)
     .reduce<string[]>(
-      function group(
-        acc,
-        line,
-      ) {
+    function group(
+      acc,
+      line,
+    ) {
       // Continuation lines are indented and belong to the preceding diagnostic.
       if (line.includes('error TS',))
         acc.push(line,);
@@ -308,7 +308,7 @@ export async function checkCases(
         acc[acc.length - 1] = `${acc.at(-1,) ?? ''}\n${line}`;
       return acc;
     },
-      [],
+    [],
     );
   /**
    Source lines, for quoting each failing case.
@@ -339,8 +339,8 @@ export async function checkCases(
         first,
         last,
       },) {
-      return (line >= first) && (line <= last);
-    },);
+        return (line >= first) && (line <= last);
+      },);
     if (span === undefined) {
       stray.push(diagnostic,);
       continue;

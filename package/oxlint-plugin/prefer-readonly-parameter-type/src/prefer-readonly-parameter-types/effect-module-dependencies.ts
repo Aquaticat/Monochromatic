@@ -152,7 +152,7 @@ export function directModuleDependencies({
      */
     const handle = symbol?.valueDeclaration
       ?? symbol?.declarations
-      .at(0,);
+        .at(0,);
     /**
      Resolved declaration whose owning file names the dependency.
      */

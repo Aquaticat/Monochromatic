@@ -320,8 +320,8 @@ function groupTwoWritersAndBench(
         translation: (position < 2)
           ? current.replace(words, chosen.replace(' also', '',),)
           : (position === 2)
-          ? current.replace(words, chosen,)
-          : current,
+            ? current.replace(words, chosen,)
+            : current,
       },),
     };
   }
@@ -566,8 +566,8 @@ function crossingWritersAndBench(
       text: JSON.stringify({
         translation: currentParagraphOf({ sheet, },)
           .replace(
-            (numbered === '') ? sheetBlockOf({ sheet, label: 'THE WORDS TO REPLACE', },) : numbered,
-            sheetBlockOf({ sheet, label: 'CHOSEN RENDERING', },),
+          (numbered === '') ? sheetBlockOf({ sheet, label: 'THE WORDS TO REPLACE', },) : numbered,
+          sheetBlockOf({ sheet, label: 'CHOSEN RENDERING', },),
           )
           .replace('was warm', 'felt warm',),
       },),
@@ -1068,13 +1068,13 @@ function groupOnePage(): ReturnType<typeof prepareDocumentPair> {
     ].join('\n',),
     targetText: [
       '## One\n\nSo she must have been a girl who loved life.\nUnder the lights,\nin the plainest of lives,\n'
-      + 'she held the most distant of dreams close to her heart.\n',
+        + 'she held the most distant of dreams close to her heart.\n',
       '## Two\n\nSo she was a girl of extraordinary perseverance,\nI suppose.\nYou see,\namid the starry night,\n'
-      + 'in the frailest of bodies,\nshe bore the most unyielding pressure.\n',
+        + 'in the frailest of bodies,\nshe bore the most unyielding pressure.\n',
       '## Three\n\nSo she was a girl who could be trusted,\nwasn\'t she?\nYou see,\nfar across the mountains and seas,\n'
-      + 'she gave the clearest directions in the most complicated of situations.\n',
+        + 'she gave the clearest directions in the most complicated of situations.\n',
       '## Four\n\nSo she was a gentle,\ntender-hearted girl,\nwasn\'t she?\nJust look:\ninside the headpiece,\n'
-      + 'in the narrowest of spaces,\nshe held up the most perfect world.\n',
+        + 'in the narrowest of spaces,\nshe held up the most perfect world.\n',
     ].join('\n',),
   },);
 }
@@ -1421,7 +1421,7 @@ await describe({
               [
                 0,
                 'The sunny window put the kitten to sleep.\n\nIn the evening, the sunny window put the '
-                + 'kitten to sleep, and the fish snacks smiled too.',
+                  + 'kitten to sleep, and the fish snacks smiled too.',
               ],
             ],);
           },
@@ -1568,7 +1568,7 @@ await describe({
             expect(changedTexts({ consistency: run.consistency, },)[1],).toEqual([
               2,
               '## Three\n\nIn the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks '
-              + 'smiled too. So this cat must be a sweet little treasure.',
+                + 'smiled too. So this cat must be a sweet little treasure.',
             ],);
           },
         },),
@@ -1623,9 +1623,9 @@ await describe({
               return line.includes('the run-off counted',);
             },),).toEqual([
               'info [runPassConsistency] [decideAskedGroup] the run-off counted '
-              + `${String(refrain.verdict.kind === 'asked' ? refrain.verdict.runOff?.usable : -1,)} usable of `
-              + `${String(refrain.verdict.kind === 'asked' ? refrain.verdict.runOff?.ballots.length : -1,)} heard `
-              + `(quorum ${String(refrain.verdict.kind === 'asked' ? refrain.verdict.runOff?.quorum : -1,)}): OCCURRENCE 1 won`,
+                + `${String(refrain.verdict.kind === 'asked' ? refrain.verdict.runOff?.usable : -1,)} usable of `
+                + `${String(refrain.verdict.kind === 'asked' ? refrain.verdict.runOff?.ballots.length : -1,)} heard `
+                + `(quorum ${String(refrain.verdict.kind === 'asked' ? refrain.verdict.runOff?.quorum : -1,)}): OCCURRENCE 1 won`,
             ],);
             const runOffSheets = run.sheets.filter(function isRunOff(sheet,): boolean {
               return sheetKindOf({ sheet, },) === 'run-off';
@@ -1935,7 +1935,7 @@ await describe({
               archive[0] as string,
               archive[1] as string,
               '## Three\n\nIn the evening, the sunlight lulled the kitten to sleep, and the kitten to sleep again. '
-              + 'So this cat has to be a sweet little darling.',
+                + 'So this cat has to be a sweet little darling.',
               archive[3] as string,
             ];
             const [missing, empty, ambiguous,] = [
@@ -1956,7 +1956,7 @@ await describe({
             },),).toEqual([1, 2, 3,],);
             expect(nonNullishOrThrow(missing.consistency.slices[1],).text,).toBe(
               '## Three\n\nIn the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks '
-              + 'smiled too. So this cat must be a sweet little treasure.',
+                + 'smiled too. So this cat must be a sweet little treasure.',
             );
           },
         },),
@@ -2162,7 +2162,7 @@ await describe({
               slices: [],
               findings: [
                 'the consistency pass stopped (unreachable: slice 2 of the preparation has no comparison row, and the '
-                + 'comparison is derived from rows of that preparation), so no slice was changed',
+                  + 'comparison is derived from rows of that preparation), so no slice was changed',
               ],
             },);
             expect(asked,).toEqual([],);
@@ -2608,13 +2608,13 @@ await describe({
             const modelIds = RUN_LATE_JUDGES.slice(0, 2,);
             const bare = createHash('sha256',)
               .update(
-                JSON.stringify({
-                  version: CONSISTENCY_CACHE_VERSION,
-                  stage: 'ballots',
-                  sheet: hashContent({ content: JSON.stringify(messages,), },),
-                  roster: modelIds,
-                },),
-                'utf8',
+              JSON.stringify({
+                version: CONSISTENCY_CACHE_VERSION,
+                stage: 'ballots',
+                sheet: hashContent({ content: JSON.stringify(messages,), },),
+                roster: modelIds,
+              },),
+              'utf8',
               )
               .digest('hex',);
             const keys = {
@@ -2672,10 +2672,10 @@ await describe({
             const { result: run, warned: warnings, } = await warnLinesDuring({
               run: async function passWithTheNameDropped(): Promise<CatRun> {
                 return await runCatPass({
-              behave: slotWithTheName,
-              entryCacheDir: dir.path,
-              prepared,
-              english: [archive[0] as string, named, archive[2] as string, archive[3] as string,],
+                  behave: slotWithTheName,
+                  entryCacheDir: dir.path,
+                  prepared,
+                  english: [archive[0] as string, named, archive[2] as string, archive[3] as string,],
                 },);
               },
             },);
@@ -3212,7 +3212,7 @@ await describe({
               writersAsked: true,
               notAsked: [
                 'group 1: consistency-writers-not-asked (OCCURRENCE 1): the words that render the repeated wording lie in no '
-                + 'single block of the English, so no paragraph can be rewritten',
+                  + 'single block of the English, so no paragraph can be rewritten',
               ],
             },);
             // The reader refuses a section whose overlapped place names its own group, so reading it back is the proof.
@@ -3257,7 +3257,7 @@ await describe({
               kinds: [['current',], ['current', 'splice', 'writer',],],
               notAsked: [
                 'group 1: consistency-writers-not-asked (OCCURRENCE 1): the words that render the repeated wording lie in no '
-                + 'single block of the English, so no paragraph can be rewritten',
+                  + 'single block of the English, so no paragraph can be rewritten',
               ],
             },);
             expect(parseConsistency({
@@ -3506,7 +3506,7 @@ await describe({
               kinds: [['current', 'splice',], ['current', 'splice',], ['current', 'splice',],],
               partly: [
                 'group 1: consistency-partly-carried (OCCURRENCE 1 and OCCURRENCE 2): the splice won, so code moved the '
-                + 'chosen words into OCCURRENCE 2 and left OCCURRENCE 1 as it was, since code cannot move them there',
+                  + 'chosen words into OCCURRENCE 2 and left OCCURRENCE 1 as it was, since code cannot move them there',
               ],
             },);
             expect(lines.some(stopsTheEntry,),).toBe(false,);
@@ -3628,7 +3628,7 @@ await describe({
                   kinds: [['current',], ['current', 'splice',], ['current', 'splice',],],
                   partly: [
                     'group 1: consistency-partly-carried (OCCURRENCE 2 and OCCURRENCE 3): the splice won, so code moved the '
-                    + 'chosen words into OCCURRENCE 3 and left OCCURRENCE 2 as it was, since code cannot move them there',
+                      + 'chosen words into OCCURRENCE 3 and left OCCURRENCE 2 as it was, since code cannot move them there',
                   ],
                 },
                 writerSheets: true,
@@ -3734,8 +3734,8 @@ await describe({
             },).toEqual({
               errors: [
                 'error [runPassConsistency] JUDGE SEATS phase=page consistency writing bench unreachable: '
-                + 'translators 0 of 8 reachable, floor 2; no provider has named its return, so the phase goes on '
-                + 'without its writers',
+                  + 'translators 0 of 8 reachable, floor 2; no provider has named its return, so the phase goes on '
+                  + 'without its writers',
               ],
               stops: [],
               writerSheets: 0,

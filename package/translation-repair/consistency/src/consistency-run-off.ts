@@ -256,9 +256,9 @@ export function buildConsistencyRunOffMessages(
       === 'absent')
       ? `${fence} ${label} TRANSLATION ${fence}\n(this slice carries no English)\n`
       : (shownAt === undefined)
-      ? `${fence} ${label} TRANSLATION ${fence}\n${view.english
+        ? `${fence} ${label} TRANSLATION ${fence}\n${view.english
         .text}\n`
-      : `${fence} ${label} TRANSLATION ${fence}\n(the same slice as ${shownAt}: read the TRANSLATION shown there)\n`;
+        : `${fence} ${label} TRANSLATION ${fence}\n(the same slice as ${shownAt}: read the TRANSLATION shown there)\n`;
     /**
      The place's slot, for a frame.
      */
@@ -377,8 +377,8 @@ export function runOffWinnerOf(
       reason: (decided.reason === 'no-quorum')
         ? 'run-off-no-quorum'
         : (decided.reason === 'no-majority')
-        ? 'run-off-tied'
-        : decided.reason,
+          ? 'run-off-tied'
+          : decided.reason,
     },
   };
 }

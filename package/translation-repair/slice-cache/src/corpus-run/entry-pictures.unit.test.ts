@@ -152,7 +152,7 @@ async function makeThrowawayCorpus(
   AsyncDisposable & {
     readonly pin: CorpusPin;
   }
-> {
+  > {
   // Fresh directory holding the throwaway repository.
   return await scratchDirWith({
     prefix: 'entry-pictures-corpus-',

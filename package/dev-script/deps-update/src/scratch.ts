@@ -184,9 +184,9 @@ export async function createScratchWorkspace({
       await rm(
         dir,
         {
-        recursive: true,
-        force: true,
-      },
+          recursive: true,
+          force: true,
+        },
       );
     },
   };

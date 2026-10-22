@@ -279,7 +279,7 @@ await describe({
             },);
             expect(String(refusal,),).toBe(
               'ConsistencyInvariantError: unreachable: slice 0 of the page left out a splice and has no plan, and only a slice '
-              + 'with a plan leaves one out',
+                + 'with a plan leaves one out',
             );
           },
         },),
@@ -331,7 +331,7 @@ await describe({
             },);
             expect(String(refusal,),).toBe(
               'ConsistencyInvariantError: unreachable: slice 0 of the page left out a splice and has no plan, and only a slice '
-              + 'with a plan leaves one out',
+                + 'with a plan leaves one out',
             );
           },
         },),

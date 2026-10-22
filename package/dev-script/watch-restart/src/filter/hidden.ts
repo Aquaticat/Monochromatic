@@ -109,9 +109,9 @@ function containsHiddenSegment(path: string,): boolean {
     if (
       isPathSeparator(path.charAt(cursorIndex,),)
         && hasHiddenSegmentAt({
-        path,
-        idx: cursorIndex + 1,
-      },)
+          path,
+          idx: cursorIndex + 1,
+        },)
     ) {
       return true;
     }

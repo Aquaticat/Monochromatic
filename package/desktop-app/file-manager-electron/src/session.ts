@@ -92,13 +92,13 @@ function countOverlaps({ session, }: { readonly session: RendererSession; },): n
       return count
         + rects
           .slice(index + 1,)
-        .filter(function intersects(other,): boolean {
+          .filter(function intersects(other,): boolean {
             return (rect.left < other.right)
               && (other.left < rect.right)
               && (rect.top < other.bottom)
               && (other.top < rect.bottom);
           },)
-        .length;
+          .length;
     },
     0,
   );
@@ -348,8 +348,8 @@ async function openEntry(
     session.stores
       .listings
       .set(
-        spawned.id,
-        listing,
+      spawned.id,
+      listing,
       );
 
   renderAndReport({ session, },);

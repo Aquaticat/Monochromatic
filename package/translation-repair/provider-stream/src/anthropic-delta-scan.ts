@@ -220,7 +220,7 @@ type FrameIndex =
      */
     readonly index: number;
   }
-  | { readonly present: false; };
+    | { readonly present: false; };
 
 /**
  Reads the position a frame named for its block.
@@ -324,8 +324,8 @@ function readPayload(
     readonly ok: true;
     readonly frame: Readonly<Record<string, unknown>>;
   }
-  | { readonly ok: false; }
-{
+    | { readonly ok: false; }
+  {
   try {
     /**
      Whatever that payload parsed to, before any shape is assumed.
@@ -436,8 +436,8 @@ export function scanAnthropicDeltas(): DeltaScanner {
     state
       .blockTypes
       .set(
-        at.index,
-        blockType,
+      at.index,
+      blockType,
       );
   }
 

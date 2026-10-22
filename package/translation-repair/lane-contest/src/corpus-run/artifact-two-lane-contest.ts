@@ -44,12 +44,12 @@ export type ArtifactContestVerdict =
      */
     readonly lane: 'repair' | 'translate';
   }
-  | {
+    | {
     /**
      Enough voices were heard and none of the lanes carried them, which
      includes a tie: the stage ships nothing on one by design.
      */
-    readonly kind: 'settled-neither';
+      readonly kind: 'settled-neither';
 
     /**
      What the roster made of the archive rendering, when it made anything.
@@ -59,28 +59,28 @@ export type ArtifactContestVerdict =
      question was ever asked. Every artifact written before today parses
      unchanged because of this, and the exact-keys guard needs no exception.
      */
-    readonly archive?: 'endorsed' | 'declined';
-  }
-  | {
+      readonly archive?: 'endorsed' | 'declined';
+    }
+    | {
     /**
      Too few voices arrived to settle anything, so nothing was decided here
      and the slice is not evidence about either lane.
      */
-    readonly kind: 'quorum-not-met';
-  }
-  | {
+      readonly kind: 'quorum-not-met';
+    }
+    | {
     /**
      Only one lane had a passage to work on here, so the lane named ships by
      the rule `soleLaneOf` states and no roster was asked.
      */
-    readonly kind: 'sole-lane';
+      readonly kind: 'sole-lane';
 
     /**
      Lane that applies, which is the one the other lane marked
      `not-applicable`.
      */
-    readonly lane: 'repair' | 'translate';
-  };
+      readonly lane: 'repair' | 'translate';
+    };
 
 /**
  One contested slice as the roster left it.
@@ -258,12 +258,12 @@ export type SoleLaneReading =
      */
     readonly lane: 'repair' | 'translate';
   }
-  | {
+    | {
     /**
      Both lanes or neither had a passage, so the roster is the question.
      */
-    readonly kind: 'both-lanes';
-  };
+      readonly kind: 'both-lanes';
+    };
 
 /**
  Names the one lane a slice applies to, when the other lane recorded
@@ -404,17 +404,17 @@ export type ArtifactLaneSelection =
      */
     readonly kind: 'pending-human-decision';
   }
-  | {
+    | {
     /**
      Every slice where the lanes offer different wording was settled: by the
      roster, or by rule where one lane alone applies (`sole-lane`).
      */
-    readonly kind: 'contested';
+      readonly kind: 'contested';
 
     /**
      One record per eligible slice, in comparison-row order.
      */
-    readonly slices: readonly ArtifactContestSlice[];
-  };
+      readonly slices: readonly ArtifactContestSlice[];
+    };
 
 //endregion Lane contest record

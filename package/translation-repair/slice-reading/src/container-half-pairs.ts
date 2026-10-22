@@ -217,7 +217,7 @@ export function bothHalvesInserted({ pair, }: { readonly pair: ContainerHalfPair
   return pair.open
     .insertion
     && pair.close
-    .insertion;
+      .insertion;
 }
 
 //endregion Container half pairs

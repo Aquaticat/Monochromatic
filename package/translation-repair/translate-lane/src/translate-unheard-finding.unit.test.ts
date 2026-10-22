@@ -34,8 +34,8 @@ await describe({
       fn: async () => {
         expect(unheardCacheDiscardFinding({ sliceIndex: 4, },),).toBe(
           'translate-discarded-unheard-slice chunk 4; cached record heard no translator, which this '
-          + 'driver never caches, so it was written by another build and the slice was asked again '
-          + 'rather than settled on a wording nobody produced',
+            + 'driver never caches, so it was written by another build and the slice was asked again '
+            + 'rather than settled on a wording nobody produced',
         );
       },
     },),

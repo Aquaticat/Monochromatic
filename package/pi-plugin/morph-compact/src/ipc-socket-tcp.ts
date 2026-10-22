@@ -172,7 +172,7 @@ export async function createOneShotTcpServer(
           close();
           reject(err,);
         },
-      );
+        );
 
       // Bind to localhost with OS-assigned port
       handles.server
@@ -187,14 +187,14 @@ export async function createOneShotTcpServer(
             ?.address();
           if (
             (addrInfo !== undefined)
-            && (addrInfo !== null)
+              && (addrInfo !== null)
               && ((typeof addrInfo) !== 'string')
               && ('port' in addrInfo)
           ) {
             resolve(`${addrInfo.address}:${addrInfo.port}`,);
           }
         },
-      );
+        );
 
       // Auto-cleanup after idle timeout
       handles.idleTimer = setTimeout(

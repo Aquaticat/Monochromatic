@@ -288,8 +288,8 @@ function holdingOf(
       end: receiver.rendering
         .start
         + receiver.rendering
-        .core
-        .length,
+          .core
+          .length,
     },);
     return {
       kind: 'held',
@@ -306,7 +306,7 @@ function holdingOf(
       throw error;
     context.l
       .error(
-        `the carry to ${receiver.label} could not be made (${exchangeFailureLogText({ error, },)}); the place keeps its English`,
+      `the carry to ${receiver.label} could not be made (${exchangeFailureLogText({ error, },)}); the place keeps its English`,
       );
     return {
       kind: 'failed',

@@ -43,16 +43,16 @@ export type AlignmentStep =
      */
     readonly targetIndex: number;
   }
-  | {
+    | {
     /**
      The original carries a block the translation does not.
      */
-    readonly kind: 'source-only';
+      readonly kind: 'source-only';
 
     /**
      Original-side block index.
      */
-    readonly sourceIndex: number;
+      readonly sourceIndex: number;
 
     /**
      Whether this block CONTINUES the pairing of the step before it.
@@ -61,18 +61,18 @@ export type AlignmentStep =
      second and later originals ride along with the rendering that covers
      them. The mirror of the same field on `target-only`.
      */
-    readonly continuesPairing?: true;
-  }
-  | {
+      readonly continuesPairing?: true;
+    }
+    | {
     /**
      The translation carries a block the original does not.
      */
-    readonly kind: 'target-only';
+      readonly kind: 'target-only';
 
     /**
      Translation-side block index.
      */
-    readonly targetIndex: number;
+      readonly targetIndex: number;
 
     /**
      Whether this block CONTINUES the pairing of the step before it, rather
@@ -87,8 +87,8 @@ export type AlignmentStep =
      The deterministic walk never sets it, because a block it skips genuinely
      stands alone.
      */
-    readonly continuesPairing?: true;
-  };
+      readonly continuesPairing?: true;
+    };
 
 /**
  Cell of the score table plus the move that produced it.

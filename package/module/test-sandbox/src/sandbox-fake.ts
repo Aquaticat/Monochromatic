@@ -91,44 +91,44 @@ export function guardFakeMutators({
         new Proxy(
           method,
           {
-        apply(
-          original: typeof method,
-          receiver: unknown,
-          args: unknown[],
-        ): unknown {
-          if (operation === 'restore') {
-            if (generation.restored || ((owner.phase === 'completed') && (!restoring())))
-              return undefined;
-          }
-          else {
-            requireRunningOwner({
-              owner,
-              operation: `Sinon fake.${operation}`,
-            },);
-            if (contextualMethod && (operation === 'set'))
-              throw new SandboxOwnershipError(`Sinon fake.set cannot convert context-owned data-method property "${String(key,)}" to a setter. Stub an existing accessor property, or use callsFake/value for method behavior.`,);
-            if (generation.restored)
-              throw new SandboxOwnershipError(`Sinon fake.${operation} belongs to a restored replacement. Create a new fake instead.`,);
-            if ((target !== undefined) && (key !== undefined))
-              requireUnownedProperty({
-                target,
-                key,
-                operation: `Sinon fake.${operation}`,
-              },);
-          }
+            apply(
+              original: typeof method,
+              receiver: unknown,
+              args: unknown[],
+            ): unknown {
+              if (operation === 'restore') {
+                if (generation.restored || ((owner.phase === 'completed') && (!restoring())))
+                  return undefined;
+              }
+              else {
+                requireRunningOwner({
+                  owner,
+                  operation: `Sinon fake.${operation}`,
+                },);
+                if (contextualMethod && (operation === 'set'))
+                  throw new SandboxOwnershipError(`Sinon fake.set cannot convert context-owned data-method property "${String(key,)}" to a setter. Stub an existing accessor property, or use callsFake/value for method behavior.`,);
+                if (generation.restored)
+                  throw new SandboxOwnershipError(`Sinon fake.${operation} belongs to a restored replacement. Create a new fake instead.`,);
+                if ((target !== undefined) && (key !== undefined))
+                  requireUnownedProperty({
+                    target,
+                    key,
+                    operation: `Sinon fake.${operation}`,
+                  },);
+              }
           /**
            A failed restoration remains retryable and reportable.
            */
-          const result: unknown = Reflect.apply(
-            original,
-            receiver,
-            args,
-          );
-          if (operation === 'restore')
-            generation.restored = true;
-          return result;
-        },
-      },
+              const result: unknown = Reflect.apply(
+                original,
+                receiver,
+                args,
+              );
+              if (operation === 'restore')
+                generation.restored = true;
+              return result;
+            },
+          },
         ),
       );
     }
@@ -153,23 +153,23 @@ export function guardFakeMutators({
         new Proxy(
           method,
           {
-        apply(
-          original: typeof method,
-          receiver: unknown,
-          args: unknown[],
-        ): unknown {
+            apply(
+              original: typeof method,
+              receiver: unknown,
+              args: unknown[],
+            ): unknown {
           /**
            Configure local behavior freely, but preserve root descriptor authority on the result.
            */
-          const result: unknown = Reflect.apply(
-            original,
-            receiver,
-            args,
-          );
-          guardResult(result,);
-          return result;
-        },
-      },
+              const result: unknown = Reflect.apply(
+                original,
+                receiver,
+                args,
+              );
+              guardResult(result,);
+              return result;
+            },
+          },
         ),
       );
     }

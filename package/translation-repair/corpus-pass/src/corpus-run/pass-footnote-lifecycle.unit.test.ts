@@ -49,10 +49,10 @@ function cacheKey(targetText: string): string {
 await describe({
   name: 'actual pass footnote preparation lifecycle',
   children: [{ protectedOriginal: false, crossed: false }, { protectedOriginal: true, crossed: false }, { protectedOriginal: false, crossed: true }]
-      .map(({ protectedOriginal, crossed }) => it({
+    .map(({ protectedOriginal, crossed }) => it({
       name: protectedOriginal ? 'retains the original preparation and cache identity when relabeling is withheld'
         : crossed ? 'reorders after forced elimination while refusing to cache the incomplete initial agreement'
-        : 'reprepares changed target text with fresh cache keys and current node metadata, then reuses both warm recipes',
+          : 'reprepares changed target text with fresh cache keys and current node metadata, then reuses both warm recipes',
       fn: async () => {
         await using owned = await scratchDir({ prefix: 'footnote-pass-lifecycle-' });
         const entryCacheDir = owned.path;
@@ -115,10 +115,10 @@ await describe({
         const cacheFiles = (await readdir(entryCacheDir)).filter(file => file.startsWith('pairing.') && file.endsWith('.json'));
         const cached = new Map(
           await Promise.all(cacheFiles.map(async file => {
-          const envelope = JSON.parse(await readFile(join(entryCacheDir, file), 'utf8')) as { readonly cacheKey: string; readonly record: PairedSectionRecord; };
-          expect(file).toBe(`pairing.${envelope.cacheKey}.json`);
-          return [envelope.cacheKey, envelope.record] as const;
-        })),
+            const envelope = JSON.parse(await readFile(join(entryCacheDir, file), 'utf8')) as { readonly cacheKey: string; readonly record: PairedSectionRecord; };
+            expect(file).toBe(`pairing.${envelope.cacheKey}.json`);
+            return [envelope.cacheKey, envelope.record] as const;
+          })),
         );
         expect((await readFile(join(entryCacheDir, 'pairing-generation.txt'), 'utf8')).trim()).toBe(generation);
         const initialKey = cacheKey(archiveText);

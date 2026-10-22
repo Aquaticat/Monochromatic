@@ -69,22 +69,22 @@ async function resolveMise(): Promise<string> {
     /**
      File metadata distinguishes executable candidates from directories without sync I/O.
      */
-    const candidatePath = join(
-      path,
-      name,
-    );
+      const candidatePath = join(
+        path,
+        name,
+      );
     /**
      Missing PATH entries are expected, not process execution errors.
      */
-    const metadata = await stat(
-      candidatePath,
-      { throwIfNoEntry: false, },
-    );
-    return {
-      path: candidatePath,
-      isFile: metadata?.isFile() === true,
-    };
-  },),);
+      const metadata = await stat(
+        candidatePath,
+        { throwIfNoEntry: false, },
+      );
+      return {
+        path: candidatePath,
+        isFile: metadata?.isFile() === true,
+      };
+    },),);
   /**
    First existing candidate preserves normal PATH precedence.
    */
@@ -343,18 +343,18 @@ if (${JSON.stringify(fails,)}) { throw new Error(${JSON.stringify(`fixture ${pha
       ...args,
     ],
     {
-    cwd: root,
-    timeout: CHILD_TIMEOUT_MS,
-    env: fixtureEnvironment({
-      root,
-      mise,
-    },),
-    stdio: [
-      'ignore',
-      'pipe',
-      'pipe',
-    ],
-  },
+      cwd: root,
+      timeout: CHILD_TIMEOUT_MS,
+      env: fixtureEnvironment({
+        root,
+        mise,
+      },),
+      stdio: [
+        'ignore',
+        'pipe',
+        'pipe',
+      ],
+    },
   );
   /**
    Close waits for process termination and pipe shutdown before disposable cleanup.

@@ -60,8 +60,8 @@ await describe({
               stdout: [
                 `ledger-report: 0 contests under ${scratch.path}`,
                 'NOTHING RECORDED. This run wrote no ledger, which is not the same as a run whose models '
-                + 'wrote nothing: every run started before candidate-ledger.ts landed has none, and so does '
-                + 'any run launched without TRANSLATION_REPAIR_RUNS_DIR set.',
+                  + 'wrote nothing: every run started before candidate-ledger.ts landed has none, and so does '
+                  + 'any run launched without TRANSLATION_REPAIR_RUNS_DIR set.',
                 '',
               ].join('\n',),
               stderr: '',

@@ -59,17 +59,17 @@ export type ArchiveFloorVerdict =
      */
     readonly admitted: true;
   }
-  | {
+    | {
     /**
      The rule refuses the archive, so no refusal may keep it.
      */
-    readonly admitted: false;
+      readonly admitted: false;
 
     /**
      The rule's findings as the consolidation words them.
      */
-    readonly reason: string;
-  };
+      readonly reason: string;
+    };
 
 /**
  Asks the publication rule whether the archive wording a translate refusal

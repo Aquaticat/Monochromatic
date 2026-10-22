@@ -91,8 +91,8 @@ export function parseAverageMhz(cpuinfo: string,): number {
       total,
       mhz,
     ) {
-    return total + mhz;
-  },
+      return total + mhz;
+    },
     0,
   ) / clocks.length,);
 }
@@ -144,8 +144,8 @@ export function chipletWatts({
       total,
       watts,
     ) {
-    return total + watts;
-  },
+      return total + watts;
+    },
     0,
   );
 }
@@ -197,11 +197,11 @@ export async function samplePower({
     === EXPECTED_CORES
     ? await Promise.all(sensors.coreEnergyFiles
       .map(async function readCore(file,) {
-      return Number(await readFile(
-        file,
-        'utf8',
-      ),);
-    },),)
+        return Number(await readFile(
+          file,
+          'utf8',
+        ),);
+      },),)
     : [];
   /**
    Counters and read time to keep for the next pass.
@@ -220,8 +220,8 @@ export async function samplePower({
       _unused,
       index,
     ) {
-    return index;
-  },
+      return index;
+    },
   );
   /**
    Core numbers 8 to 15.

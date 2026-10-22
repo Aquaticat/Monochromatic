@@ -50,7 +50,7 @@ export type MemoizeOptions<
   TArgs extends readonly unknown[],
   TResult,
   CacheKeyType,
-> = {
+  > = {
   /**
    Derives the cache key from the argument tuple. By default only the first
    argument is considered, which works for primitives and identity-comparable
@@ -61,7 +61,7 @@ export type MemoizeOptions<
    
    @example ([url, options],) => JSON.stringify([url, options],)
    */
-  readonly cacheKey?: (args: TArgs) => CacheKeyType;
+    readonly cacheKey?: (args: TArgs) => CacheKeyType;
   /**
    Cache storage to read and write. Must implement `.has(key)`, `.get(key)`,
    `.set(key, value)`, and `.delete(key)`, and may implement `.clear()`;
@@ -73,7 +73,7 @@ export type MemoizeOptions<
    @example new WeakMap()
    */
   // oxlint-disable-next-line no-restricted-syntax/no-optional-escape -- external-boundary mirror of upstream p-memoize's `Options.cache` union `CacheStorage | false`
-  readonly cache?: CacheStorage<CacheKeyType, TResult> | false;
+    readonly cache?: CacheStorage<CacheKeyType, TResult> | false;
   /**
    Decides whether a fulfilled value is written to the cache. Runs after the
    function fulfills and before `cache.set`: omit to always write, return
@@ -82,8 +82,8 @@ export type MemoizeOptions<
    
    @example (value,) => value !== undefined
    */
-  readonly shouldCache?: ShouldCache<CacheKeyType, TResult, TArgs>;
-};
+    readonly shouldCache?: ShouldCache<CacheKeyType, TResult, TArgs>;
+  };
 
 /**
  One memoized call: the argument tuple forwarded into the memoized
@@ -129,10 +129,10 @@ export type MemoizedCall<TArgs extends readonly unknown[]> = {
 export type MemoizedFunction<
   TArgs extends readonly unknown[],
   TResult,
-> = (
-  this: unknown,
-  call: MemoizedCall<TArgs>,
-) => Promise<TResult>;
+  > = (
+    this: unknown,
+    call: MemoizedCall<TArgs>,
+  ) => Promise<TResult>;
 
 //endregion Types
 
@@ -171,7 +171,7 @@ export function pMemoize<
   const TArgs extends unknown[],
   TResult,
   CacheKeyType = TArgs[0],
->(
+  >(
   {
     fn,
     options,
@@ -185,7 +185,7 @@ export function pMemoize<
      */
     readonly options?: MemoizeOptions<TArgs, TResult, CacheKeyType>;
   },
-): MemoizedFunction<TArgs, TResult> {
+  ): MemoizedFunction<TArgs, TResult> {
   /**
    Default cache key: the first argument, matching upstream `p-memoize`'s
    `arguments_ => arguments_[0]`.
@@ -344,28 +344,28 @@ export function pMemoize<
        Cache key derived from the argument tuple, recomputed on every call
        like upstream so a throwing `cacheKey` throws synchronously.
        */
-      const key = cacheKey(args,);
+        const key = cacheKey(args,);
       /**
        Promise of the call already in flight for this key, when one exists.
        */
-      const inFlight = promiseCache.get(key,);
+        const inFlight = promiseCache.get(key,);
 
-      if (inFlight !== undefined)
-        return inFlight;
+        if (inFlight !== undefined)
+          return inFlight;
 
       /**
        Promise of this call, registered below so concurrent callers join it.
        */
-      const promise = runCall({
-        thisValue: this,
-        args,
-        key,
-      },);
-      promiseCache.set(
-        key,
-        promise,
-      );
-      return promise;
+        const promise = runCall({
+          thisValue: this,
+          args,
+          key,
+        },);
+        promiseCache.set(
+          key,
+          promise,
+        );
+        return promise;
       },
       'name',
       {

@@ -177,11 +177,11 @@ export type NeuralWattReserveOutcome =
     readonly granted: true;
     readonly reservation: NeuralWattReservation;
   }
-  | {
-    readonly granted: false;
-    readonly energy: NeuralWattEnergy;
-    readonly estimateWh: number;
-  };
+    | {
+      readonly granted: false;
+      readonly energy: NeuralWattEnergy;
+      readonly estimateWh: number;
+    };
 
 /**
  The ledger surface a client and a meter hold.
@@ -324,8 +324,8 @@ export function createNeuralWattLedger(
         running,
         hold,
       ): number {
-      return running + hold.wh;
-    },
+        return running + hold.wh;
+      },
       0,
     );
   }

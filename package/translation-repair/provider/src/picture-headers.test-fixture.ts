@@ -142,7 +142,7 @@ export function lossy({
     .copy(
     chunk,
     START_CODE_AT,
-  );
+    );
   chunk.writeUInt16LE(
     width,
     FRAME_WIDTH_AT,

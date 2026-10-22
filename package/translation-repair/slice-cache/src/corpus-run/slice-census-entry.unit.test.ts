@@ -266,7 +266,7 @@ async function throwawayCorpus(
       readonly commitSha: string;
     };
   }
-> {
+  > {
   // Fresh temp directory holding the throwaway repository.
   return await scratchDirWith({
     prefix: 'whiskers-slice-census-',
@@ -502,7 +502,7 @@ await describe({
     it({
       name:
         'CARVES the sections through a supplied recipe and labels the row settled, since the slice sizes '
-        + 'then describe the slicing the lanes judged rather than the deterministic baseline',
+          + 'then describe the slicing the lanes judged rather than the deterministic baseline',
       fn: async () => {
         await using corpus = await throwawayCorpus({ targetPage: FULL_TARGET_PAGE, },);
 
@@ -548,7 +548,7 @@ await describe({
     it({
       name:
         'CARVES the blocks through a supplied recipe, so a block the roster declined leaves the slice, '
-        + 'and labels a recipe with a defaulted half as partial',
+          + 'and labels a recipe with a defaulted half as partial',
       fn: async () => {
         await using corpus = await throwawayCorpus({
           sourcePage: BLOCKY_SOURCE_PAGE,

@@ -84,11 +84,11 @@ const MARKUP_MARKERS = [
  */
 export type IneligibleReason =
   | 'not-a-paragraph'
-  | 'hard-break'
-  | 'carries-markup'
-  | 'too-short'
-  | 'too-long'
-  | 'parse-degraded';
+    | 'hard-break'
+    | 'carries-markup'
+    | 'too-short'
+    | 'too-long'
+    | 'parse-degraded';
 
 /**
  One paragraph's eligibility verdict.
@@ -107,19 +107,19 @@ export type ParagraphEligibility =
      */
     readonly node: DocumentNode;
   }
-  | {
-    readonly eligible: false;
+    | {
+      readonly eligible: false;
 
     /**
      Block that was skipped.
      */
-    readonly node: DocumentNode;
+      readonly node: DocumentNode;
 
     /**
      First rule that excluded it, in check order.
      */
-    readonly reason: IneligibleReason;
-  };
+      readonly reason: IneligibleReason;
+    };
 
 /**
  Builds a skip verdict, so the rule chain reads as one expression per rule
@@ -194,8 +194,8 @@ function carriesHardBreak({ text, }: { readonly text: string; },): boolean {
 
   return lines
     .slice(
-      0,
-      -1,
+    0,
+    -1,
     )
     .some(function endsInBreak(line,): boolean {
       return line.endsWith('  ',) || line.endsWith('\\',);

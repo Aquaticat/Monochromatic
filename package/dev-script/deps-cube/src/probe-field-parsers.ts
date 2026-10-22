@@ -103,16 +103,16 @@ export const REPO_UNPARSEABLE: unique symbol = Symbol('deps-cube repository fiel
 function parseGithubShorthand(s: string,): GithubOwnerRepo | typeof NOT_SHORTHAND {
   if (s.length
     <= GITHUB_SHORTHAND_PREFIX
-    .length)
+      .length)
     return NOT_SHORTHAND;
   if (s
     .slice(
-      0,
-      GITHUB_SHORTHAND_PREFIX.length,
+    0,
+    GITHUB_SHORTHAND_PREFIX.length,
     )
     .toLowerCase()
     !== GITHUB_SHORTHAND_PREFIX)
-  {
+    {
     return NOT_SHORTHAND;
   }
   /**
@@ -511,22 +511,22 @@ export function classifyLicense(license: NpmVersion['license'],): LicenseClass {
     return 'permissive';
   if (raw.startsWith('GPL',)
     || raw
-    .startsWith('LGPL',)
+      .startsWith('LGPL',)
     || raw
-    .startsWith('AGPL',)
+      .startsWith('AGPL',)
     || raw
-    .includes('COPYLEFT',))
-  {
+      .includes('COPYLEFT',))
+    {
     return 'copyleft';
   }
   if ((raw === 'UNLICENSED')
     || raw
-    .startsWith('SEE LICENSE',)
+      .startsWith('SEE LICENSE',)
     || raw
-    .startsWith('SEE LGPL-3.0-OR-LATER.TXT',)
+      .startsWith('SEE LGPL-3.0-OR-LATER.TXT',)
     || raw
-    .startsWith('PROPRIETARY',))
-  {
+      .startsWith('PROPRIETARY',))
+    {
     return 'non-oss';
   }
   return 'unknown';

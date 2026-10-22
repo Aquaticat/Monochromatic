@@ -123,42 +123,42 @@ function exerciseScenario(options: {
 },): void {
   options.lru
     .set({
-    key: 'a',
-    value: 'alpha',
-  },);
+      key: 'a',
+      value: 'alpha',
+    },);
   options.lru
     .set({
-    key: 'b',
-    value: 'beta',
-  },);
+      key: 'b',
+      value: 'beta',
+    },);
   options.lru
     .set({
-    key: 'c',
-    value: 'gamma',
-  },);
+      key: 'c',
+      value: 'gamma',
+    },);
   options.lru
     .set({
-    key: 'a',
-    value: 'alpha-2',
-  },);
+      key: 'a',
+      value: 'alpha-2',
+    },);
   options.lru
     .set({
-    key: 'd',
-    value: 'delta',
-    maxAge: 50,
-  },);
+      key: 'd',
+      value: 'delta',
+      maxAge: 50,
+    },);
   options.lru
     .set({
-    key: 'e',
-    value: 'epsilon',
-    maxAge: Number.NaN,
-  },);
+      key: 'e',
+      value: 'epsilon',
+      maxAge: Number.NaN,
+    },);
   options.lru
     .set({
-    key: 'f',
-    value: 'zeta',
-    maxAge: 0,
-  },);
+      key: 'f',
+      value: 'zeta',
+      maxAge: 0,
+    },);
   void options.lru
     .get('d',);
   void options.lru
@@ -192,14 +192,14 @@ function exerciseScenario(options: {
     .values()];
   options.lru
     .forEach({
-    callback: function visit(
-      value: string,
-      key: string,
-    ): void {
-      void `${key}=${value}:${String(options.lru
+      callback: function visit(
+        value: string,
+        key: string,
+      ): void {
+        void `${key}=${value}:${String(options.lru
         .has(key,),)}`;
-    },
-  },);
+      },
+    },);
   void options.lru
     .size;
   void options.lru

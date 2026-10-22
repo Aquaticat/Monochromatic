@@ -36,7 +36,7 @@ export function spliceReplacement(options: {
   if ((options.start < 0)
     || (options.end
       > options.source
-      .length)
+        .length)
     || (options.start > options.end))
     throw new Error(
       `replacement span ${String(options.start,)}..${String(options.end,)} out of bounds for source of length ${String(options.source

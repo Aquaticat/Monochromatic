@@ -92,66 +92,66 @@ export function guardSandboxCapability<Target extends object,>({
   return new Proxy(
     target,
     {
-    apply(
-      method: Target,
-      receiver: unknown,
-      args: unknown[],
-    ): unknown {
-      requireRunningOwner({
-        owner,
-        operation,
-      },);
-      return invoke({
-        method,
-        receiver,
-        args,
-        operation,
-      },);
-    },
-    get(
-      object: Target,
-      property: string | symbol,
-      receiver: unknown,
-    ): unknown {
+      apply(
+        method: Target,
+        receiver: unknown,
+        args: unknown[],
+      ): unknown {
+        requireRunningOwner({
+          owner,
+          operation,
+        },);
+        return invoke({
+          method,
+          receiver,
+          args,
+          operation,
+        },);
+      },
+      get(
+        object: Target,
+        property: string | symbol,
+        receiver: unknown,
+      ): unknown {
       /**
        Function metadata and noncallable values pass through unchanged.
        */
-      const value: unknown = Reflect.get(
-        object,
-        property,
-        receiver,
-      );
-      if ((typeof value) !== 'function')
-        return value;
+        const value: unknown = Reflect.get(
+          object,
+          property,
+          receiver,
+        );
+        if ((typeof value) !== 'function')
+          return value;
       /**
        Stable wrappers preserve equality when callers repeatedly read a factory.
        */
-      const existing = methods.get(property,);
-      if (existing?.original === value)
-        return existing.guarded;
+        const existing = methods.get(property,);
+        if (existing?.original === value)
+          return existing.guarded;
       /**
        Object methods receive their owning object. Function call/apply/bind retain the guarded callable receiver.
        */
-      const guarded = guardSandboxCapability({
-        target: value,
-        owner,
-        operation: `${operation}.${String(property,)}`,
-        invoke(invocation: SandboxInvocation,): unknown {
-          return invoke({
-            ...invocation,
-            receiver: (invocation.receiver === receiver) && ((typeof object) !== 'function') ? object : invocation.receiver,
-          },);
-        },
-      },);
-      methods.set(
-        property,
-        {
-          original: value,
-          guarded,
-        },
-      );
-      return guarded;
+        const guarded = guardSandboxCapability({
+          target: value,
+          owner,
+          operation: `${operation}.${String(property,)}`,
+          invoke(invocation: SandboxInvocation,): unknown {
+            return invoke({
+              ...invocation,
+              receiver: (invocation.receiver === receiver) && ((typeof object) !== 'function') ? object : invocation.receiver,
+            },);
+          },
+        },);
+        methods.set(
+          property,
+          {
+            original: value,
+            guarded,
+          },
+        );
+        return guarded;
+      },
     },
-  },
   );
 }

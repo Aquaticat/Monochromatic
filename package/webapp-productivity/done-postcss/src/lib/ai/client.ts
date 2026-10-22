@@ -125,10 +125,10 @@ export type ChatCompletionResult =
     ok: true;
     content: string;
   }
-  | {
-    ok: false;
-    error: string;
-  };
+    | {
+      ok: false;
+      error: string;
+    };
 
 //endregion Types
 

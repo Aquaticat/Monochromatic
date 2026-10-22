@@ -187,20 +187,20 @@ function identifierLength({ rest, }: { readonly rest: string; },): number {
  */
 type DeclarationReading =
   | { readonly kind: 'none'; }
-  | {
-    readonly kind: 'version';
+    | {
+      readonly kind: 'version';
 
     /**
      Constant's name.
      */
-    readonly name: string;
+      readonly name: string;
 
     /**
      Its value as written.
      */
-    readonly digits: string;
-  }
-  | { readonly kind: 'unreadable'; };
+      readonly digits: string;
+    }
+    | { readonly kind: 'unreadable'; };
 
 /**
  Reads one source line as a cache version declaration, the one reading both

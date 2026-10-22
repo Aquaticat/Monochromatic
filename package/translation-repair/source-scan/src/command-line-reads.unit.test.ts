@@ -72,7 +72,7 @@ const HAND_OFF = 'reportingRefusals';
 const ALLOWED: Readonly<Record<string, string>> = {
   'run/corpus-run/command-line.ts: imports parseArgs from node:util':
     'the one reader of the whole line, which hands parseArgs the arguments after the script and reads its '
-    + 'tokens against the declaration',
+      + 'tokens against the declaration',
 };
 
 /**
@@ -307,24 +307,24 @@ function commandLineReadsOf({ file, }: { readonly file: SourceText; },): {
       reads.push(`${file.path}: reads argv off process`,);
     if (
       (node.type === 'MemberExpression')
-      && utilNames.has(identifierName({ node: unwrapped({ node: node.object, },).inner, },),)
-      && (propertyName({
-        node,
-        key: 'property',
-      },) === 'parseArgs')
+        && utilNames.has(identifierName({ node: unwrapped({ node: node.object, },).inner, },),)
+        && (propertyName({
+          node,
+          key: 'property',
+        },) === 'parseArgs')
     )
       reads.push(`${file.path}: reads parseArgs off node:util`,);
     if (
       (node.type === 'VariableDeclarator')
-      && isTreeNode(node.id,)
-      && (node.id.type === 'ObjectPattern')
-      && processNames.has(identifierName({ node: unwrapped({ node: node.init, },).inner, },),)
-      && (node.id.properties as readonly TreeNode[]).some(function namesArgv(property,): boolean {
-        return (property.type === 'Property') && (propertyName({
-          node: property,
-          key: 'key',
-        },) === 'argv');
-      },)
+        && isTreeNode(node.id,)
+        && (node.id.type === 'ObjectPattern')
+        && processNames.has(identifierName({ node: unwrapped({ node: node.init, },).inner, },),)
+        && (node.id.properties as readonly TreeNode[]).some(function namesArgv(property,): boolean {
+          return (property.type === 'Property') && (propertyName({
+            node: property,
+            key: 'key',
+          },) === 'argv');
+        },)
     )
       reads.push(`${file.path}: destructures argv from process`,);
     if (node.type === 'ImportExpression') {
@@ -435,7 +435,7 @@ await describe({
               text: [
                 'await reportingRefusals({ what: \'nap-report\', argv: process.argv, run: async () => {}, },);',
                 'await reportingRefusals({ what: \'purr-report\', argv: [\'node\', \'purr.mjs\',], run: '
-                + 'async () => {}, },);',
+                  + 'async () => {}, },);',
               ].join('\n',),
               isTest: false,
             },

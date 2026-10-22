@@ -551,8 +551,8 @@ await describe({
           probePath,
           '',
           {
-          mode: 0o777,
-        },
+            mode: 0o777,
+          },
         );
         /**
          Probe permission bits after the umask reduction.

@@ -41,12 +41,12 @@ import type { PackageProbe, } from '../probe.ts';
  */
 export type ToggleKey =
   | 'isLeaf'
-  | 'tsMajority'
-  | 'large'
-  | 'recent'
-  | 'permissive'
-  | 'copyleft'
-  | 'hasKnownRepo';
+    | 'tsMajority'
+    | 'large'
+    | 'recent'
+    | 'permissive'
+    | 'copyleft'
+    | 'hasKnownRepo';
 
 /**
  Three-state filter value: "don't care", "must be true", or "must be false".
@@ -74,15 +74,15 @@ export type ToggleState = Readonly<Record<ToggleKey, ToggleValue>>;
  */
 export type DataDimKey =
   | 'logSourceBytes'
-  | 'logDaysStale'
-  | 'logInstallSize'
-  | 'logDownloads'
-  | 'tsRatio'
-  | 'runtimeDepCount'
-  | 'transitiveDepCount'
-  | 'logPackageAge'
-  | 'isLeafNumeric'
-  | 'licenseClassNumeric';
+    | 'logDaysStale'
+    | 'logInstallSize'
+    | 'logDownloads'
+    | 'tsRatio'
+    | 'runtimeDepCount'
+    | 'transitiveDepCount'
+    | 'logPackageAge'
+    | 'isLeafNumeric'
+    | 'licenseClassNumeric';
 
 /**
  Identifier for one of the six visual channels deck.gl draws on.
@@ -483,9 +483,9 @@ export function searchMatches(
     .toLowerCase();
   if ((search.length
     >= 2) && search
-    .startsWith('/',)
+      .startsWith('/',)
     && search
-    .endsWith('/',)) {
+      .endsWith('/',)) {
     /**
      Body between the `/.../` delimiters; capped to a benign length so a pathological pattern cannot hang the page.
      */

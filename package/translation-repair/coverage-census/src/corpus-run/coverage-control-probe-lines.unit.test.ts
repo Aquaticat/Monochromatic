@@ -170,9 +170,9 @@ await describe({
               decoysTaken: 1,
             }, },), },),).toEqual([
               'COVERAGE control HELD over 1 damaged case: absence votes appeared on 1 targeted cut '
-              + 'and on 1 of 1 equally large cut taken elsewhere',
+                + 'and on 1 of 1 equally large cut taken elsewhere',
               'COVERAGE control 0 cases could not be damaged: 0 because the roster never called them covered, '
-              + '0 because what the roster anchored on was the whole page',
+                + '0 because what the roster anchored on was the whole page',
               HELD_SENTENCE,
             ],);
           },
@@ -189,9 +189,9 @@ await describe({
               refusals: [NOT_CARRIED, LEFT_NOTHING,],
             }, },), },),).toEqual([
               'COVERAGE control DID NOT HOLD over 2 damaged cases: absence votes appeared on 0 targeted cuts '
-              + 'and on 0 of 2 equally large cuts taken elsewhere',
+                + 'and on 0 of 2 equally large cuts taken elsewhere',
               'COVERAGE control 2 cases could not be damaged: 1 because the roster never called them covered, '
-              + '1 because what the roster anchored on was the whole page',
+                + '1 because what the roster anchored on was the whole page',
               UNDAMAGED_ABSENCE,
               NOT_HELD_SENTENCE,
             ],);
@@ -202,9 +202,9 @@ await describe({
           fn: async () => {
             expect(controlLines({ control: resultWith({ changes: { refusals: [LEFT_NOTHING,], }, },), },),).toEqual([
               'COVERAGE control DID NOT HOLD over 0 damaged cases: absence votes appeared on 0 targeted cuts '
-              + 'and on 0 of 0 equally large cuts taken elsewhere',
+                + 'and on 0 of 0 equally large cuts taken elsewhere',
               'COVERAGE control 1 case could not be damaged: 0 because the roster never called them covered, '
-              + '1 because what the roster anchored on was the whole page',
+                + '1 because what the roster anchored on was the whole page',
               NOTHING_DAMAGED_SENTENCE,
             ],);
           },
@@ -217,9 +217,9 @@ await describe({
               sawAbsenceOnTarget: 1,
             }, },), },),).toEqual([
               'COVERAGE control DID NOT HOLD over 1 damaged case: absence votes appeared on 1 targeted cut '
-              + 'and on 0 of 0 equally large cuts taken elsewhere',
+                + 'and on 0 of 0 equally large cuts taken elsewhere',
               'COVERAGE control 0 cases could not be damaged: 0 because the roster never called them covered, '
-              + '0 because what the roster anchored on was the whole page',
+                + '0 because what the roster anchored on was the whole page',
               NO_DECOY_SENTENCE,
             ],);
           },
@@ -235,9 +235,9 @@ await describe({
               refusals: [NOT_CARRIED,],
             }, },), },),).toEqual([
               'COVERAGE control HELD over 1 damaged case: absence votes appeared on 1 targeted cut '
-              + 'and on 0 of 1 equally large cut taken elsewhere',
+                + 'and on 0 of 1 equally large cut taken elsewhere',
               'COVERAGE control 1 case could not be damaged: 1 because the roster never called them covered, '
-              + '0 because what the roster anchored on was the whole page',
+                + '0 because what the roster anchored on was the whole page',
               UNDAMAGED_ABSENCE,
               HELD_SENTENCE,
             ],);

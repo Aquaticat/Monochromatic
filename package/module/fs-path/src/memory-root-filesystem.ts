@@ -302,10 +302,10 @@ function resolveEntryPath({
 },): string {
   return pathSegments(path,)
     .reduce(
-      function step(
-        current: string,
-        name: string,
-      ): string {
+    function step(
+      current: string,
+      name: string,
+    ): string {
       /**
        Path of this segment under the directory resolved so far.
        */
@@ -331,7 +331,7 @@ function resolveEntryPath({
         tables,
       },);
     },
-      '/',
+    '/',
     );
 }
 

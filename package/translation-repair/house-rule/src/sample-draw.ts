@@ -276,8 +276,8 @@ function selectFromBand(
       },);
     },)
     .slice(
-      0,
-      count,
+    0,
+    count,
     )
     .map(function toCandidate(entry,) {
       return entry.candidate;

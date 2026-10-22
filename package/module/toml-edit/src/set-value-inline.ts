@@ -132,7 +132,7 @@ export function replaceInValue(
         .with(
         head,
         newEl,
-      ),
+        ),
       origin: { kind: 'synthetic', },
     };
   }
@@ -221,7 +221,7 @@ function replaceInInlineTable(
         .with(
         j,
         newEntry,
-      ),
+        ),
       origin: { kind: 'synthetic', },
     };
   }

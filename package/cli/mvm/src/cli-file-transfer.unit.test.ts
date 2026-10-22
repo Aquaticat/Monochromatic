@@ -605,9 +605,9 @@ await describe({
             expect(
               digest(
                 await readFile(join(
-              guestDirectoryPath,
-              't\u00F6\u00F6l.bin',
-            ),),
+                  guestDirectoryPath,
+                  't\u00F6\u00F6l.bin',
+                ),),
               ),
             ).toBe(digest(source.content,),);
             const destination = join(

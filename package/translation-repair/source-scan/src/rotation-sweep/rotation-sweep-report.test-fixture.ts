@@ -338,11 +338,11 @@ export function sweepPassed({ outcome, }: { readonly outcome: SweepOutcome; },):
     .length
     === 0)
     && outcome.results
-    .every(function clean(result,): boolean {
-    return result.failures
-      .length
-      === 0;
-  },);
+      .every(function clean(result,): boolean {
+        return result.failures
+          .length
+          === 0;
+      },);
 }
 
 //endregion Rotation sweep report

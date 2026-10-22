@@ -3,9 +3,9 @@
  */
 export type Metric =
   | 'cpu-pressure-some-avg10'
-  | 'memory-pressure-some-avg10'
-  | 'cpu-thermal-throttle-mhz'
-  | 'scheduler-lag-ms';
+    | 'memory-pressure-some-avg10'
+    | 'cpu-thermal-throttle-mhz'
+    | 'scheduler-lag-ms';
 
 /**
  Limits per metric, in the unit of the metric.

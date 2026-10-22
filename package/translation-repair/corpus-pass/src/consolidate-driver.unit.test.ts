@@ -1128,14 +1128,14 @@ function polishingClient({ sheets, }: { readonly sheets: string[]; },): ModelCli
       const value: unknown = (schema === 'translation_report')
         ? { translation: 'A cat asleep in the sun.', }
         : (schema === 'refine_report')
-        ? { rewrites: [{ paragraph: 1, newText: 'a repair wording for slice 0', },], }
-        : (schema === 'consolidation_polish_gate')
-        ? { verdict: 'polished', unsupported: [], dropped: [], assessment: 'equally faithful', }
-        : (schema === 'absolute_naturalness_review')
-        ? { isAcceptable: true, findings: [], assessment: 'publication-ready', }
-        : (schema === 'candidate_ballot')
-        ? { best: 1, assessment: 'it says what the original says', }
-        : { verdict: 'standing', unsupported: [], dropped: [], assessment: 'the original supports it', };
+          ? { rewrites: [{ paragraph: 1, newText: 'a repair wording for slice 0', },], }
+          : (schema === 'consolidation_polish_gate')
+            ? { verdict: 'polished', unsupported: [], dropped: [], assessment: 'equally faithful', }
+            : (schema === 'absolute_naturalness_review')
+              ? { isAcceptable: true, findings: [], assessment: 'publication-ready', }
+              : (schema === 'candidate_ballot')
+                ? { best: 1, assessment: 'it says what the original says', }
+                : { verdict: 'standing', unsupported: [], dropped: [], assessment: 'the original supports it', };
       return request.validate(value,)
         ? { kind: 'ok', value, rawText: JSON.stringify(value,), }
         : { kind: 'schema-mismatch', rawText: JSON.stringify(value,), detail: `fixture does not answer ${schema}`, };

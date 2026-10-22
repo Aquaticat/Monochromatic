@@ -890,9 +890,9 @@ await describe({
               return coherenceRefusal({ group, },);
             },),).toEqual([
               `ArtifactParseError: artifact parse failed at ${GROUP}.verdict.ballots[1].seat: `
-              + 'expected a seat heard once, since a gather hears each seat once.',
+                + 'expected a seat heard once, since a gather hears each seat once.',
               `ArtifactParseError: artifact parse failed at ${GROUP}.verdict.usable: `
-              + 'expected the number of ballots that can be counted against the places.',
+                + 'expected the number of ballots that can be counted against the places.',
             ],);
           },
         },),
@@ -913,9 +913,9 @@ await describe({
               return coherenceRefusal({ group, },);
             },),).toEqual([
               `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[1].rendering: `
-              + 'expected words that the quotes of more than half of all the usable ballots contain, as the place\'s English holds them.',
+                + 'expected words that the quotes of more than half of all the usable ballots contain, as the place\'s English holds them.',
               `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[1].rendering.reason: `
-              + 'expected a reason the usable ballots do not contradict.',
+                + 'expected a reason the usable ballots do not contradict.',
             ],);
           },
         },),
@@ -1028,11 +1028,11 @@ await describe({
               return coherenceRefusal({ group, },);
             },),).toEqual([
               `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[0].rendering: `
-              + 'expected the slot a strict majority of the usable ballots gave inside those words, and none where they gave none.',
+                + 'expected the slot a strict majority of the usable ballots gave inside those words, and none where they gave none.',
               `ArtifactParseError: artifact parse failed at ${GROUP}.verdict.winner: `
-              + 'expected the winner a strict majority of the usable ballots, reaching the quorum, give, after the run-off when they tied.',
+                + 'expected the winner a strict majority of the usable ballots, reaching the quorum, give, after the run-off when they tied.',
               `ArtifactParseError: artifact parse failed at ${GROUP}.verdict.winner: `
-              + 'expected the winner a strict majority of the usable ballots, reaching the quorum, give, after the run-off when they tied.',
+                + 'expected the winner a strict majority of the usable ballots, reaching the quorum, give, after the run-off when they tied.',
             ],);
           },
         },),
@@ -1065,7 +1065,7 @@ await describe({
             },),).toEqual([
               outcomeRefusal({ place: 0, expected: 'chosen, as the ballots and the renderings give for this place', }),
               `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[1].rendering: `
-              + 'expected words that the quotes of more than half of all the usable ballots contain, as the place\'s English holds them.',
+                + 'expected words that the quotes of more than half of all the usable ballots contain, as the place\'s English holds them.',
               outcomeRefusal({ place: 1, expected: 'kept-context, as the ballots and the renderings give for this place', }),
             ],);
           },
@@ -1158,9 +1158,9 @@ await describe({
               return coherenceRefusal({ group, },);
             },),).toEqual([
               `ArtifactParseError: artifact parse failed at ${GROUP}.carries: `
-              + 'expected a carry for OCCURRENCE 2, which the chosen words are carried to.',
+                + 'expected a carry for OCCURRENCE 2, which the chosen words are carried to.',
               `ArtifactParseError: artifact parse failed at ${GROUP}.carries: `
-              + 'expected one carry for each place the chosen words are carried to, in the order of the places.',
+                + 'expected one carry for each place the chosen words are carried to, in the order of the places.',
               outcomeRefusal({ place: 1, expected: 'kept-current, for a carry that decided as recorded', }),
               outcomeRefusal({
                 place: 1,
@@ -1188,7 +1188,7 @@ await describe({
             expect(coherenceRefusal({ group: frame, },),).toBe(NO_SPLICE_FOR_OCCURRENCE_TWO,);
             expect(coherenceRefusal({ group: frame, generation: 16, },),).toBe(
               `ArtifactParseError: artifact parse failed at ${GROUP}.carries: `
-              + 'expected no splice candidate for OCCURRENCE 2, whose frame or the chosen frame has no slot to move the words by.',
+                + 'expected no splice candidate for OCCURRENCE 2, whose frame or the chosen frame has no slot to move the words by.',
             );
             const alone: ArtifactConsistencyCarry = {
               ...CARRY,
@@ -1503,7 +1503,7 @@ await describe({
               group: groupOf({ over: { carries: [{ ...CARRY, usable: 3, },], }, }),
             },),).toBe(
               `ArtifactParseError: artifact parse failed at ${GROUP}.carries[0].usable: `
-              + 'expected the number of ballots that can be counted against the candidates.',
+                + 'expected the number of ballots that can be counted against the candidates.',
             );
           },
         },),

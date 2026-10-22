@@ -28,39 +28,39 @@ const originalSpawn = childProcess.spawn;
 childProcess.spawn = new Proxy(
   originalSpawn,
   {
-  apply(
-    target: typeof originalSpawn,
-    receiver: unknown,
-    parameters: Parameters<typeof originalSpawn>,
-  ): unknown {
+    apply(
+      target: typeof originalSpawn,
+      receiver: unknown,
+      parameters: Parameters<typeof originalSpawn>,
+    ): unknown {
     /**
      Arguments handed to the program.
      */
-    const [, args,] = parameters;
-    if (Array.isArray(args,) && args.includes('--api',)) {
-      refusals.count += 1;
-      throw Object.assign(
-        new Error('spawn ENOMEM',),
-        {
-        code: 'ENOMEM',
-        errno: -12,
-        syscall: 'spawn',
-      },
+      const [, args,] = parameters;
+      if (Array.isArray(args,) && args.includes('--api',)) {
+        refusals.count += 1;
+        throw Object.assign(
+          new Error('spawn ENOMEM',),
+          {
+            code: 'ENOMEM',
+            errno: -12,
+            syscall: 'spawn',
+          },
+        );
+      }
+      return Reflect.apply(
+        target,
+        receiver,
+        parameters,
       );
-    }
-    return Reflect.apply(
-      target,
-      receiver,
-      parameters,
-    );
+    },
   },
-},
 );
 syncBuiltinESMExports();
 process.once(
   'exit',
   function reportRefusals(): void {
-  process.stderr
-    .write(`[refuse-native-api-spawn] refused ${String(refusals.count,)} native spawns\n`,);
-},
+    process.stderr
+      .write(`[refuse-native-api-spawn] refused ${String(refusals.count,)} native spawns\n`,);
+  },
 );

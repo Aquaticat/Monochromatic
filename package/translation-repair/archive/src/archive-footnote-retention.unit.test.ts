@@ -22,7 +22,7 @@ await describe({
       fn: async () => {
         expect(closeFootnoteRelabel({ map: [{ from: 'A', to: 'X' }, { from: 'a', to: 'x' }],
           archiveLabels: ['A'], originalLabels: ['X'] })).toEqual({ kind: 'closed', map: [{ from: 'A', to: 'X' }],
-          correspondences: [{ from: 'A', to: 'X' }], eliminated: [], retained: [] });
+            correspondences: [{ from: 'A', to: 'X' }], eliminated: [], retained: [] });
       },
     }),
     it({

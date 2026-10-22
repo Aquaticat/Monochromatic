@@ -83,7 +83,7 @@ export const NOT_A_VERIFIED_READER: unique symbol = Symbol(
  */
 export type ReaderResultRelation =
   | typeof READER_RESULT_CARRIES_OPERAND
-  | typeof READER_RESULT_FRESH;
+    | typeof READER_RESULT_FRESH;
 
 /**
  Verified readers by default-library interface owner and member name.

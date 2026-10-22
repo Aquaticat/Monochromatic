@@ -88,10 +88,10 @@ export async function runCommand(
       command,
       [...args,],
       {
-      ...cwd === undefined ? {} : { cwd, },
-      ...env === undefined ? {} : { env, },
-      ...timeoutMs === undefined ? {} : { timeout: timeoutMs, },
-    },
+        ...cwd === undefined ? {} : { cwd, },
+        ...env === undefined ? {} : { env, },
+        ...timeoutMs === undefined ? {} : { timeout: timeoutMs, },
+      },
     );
     return {
       status: 0,

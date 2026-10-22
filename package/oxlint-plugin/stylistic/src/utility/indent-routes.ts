@@ -267,11 +267,11 @@ export function anchorLineIndexOf({
       : undefined;
     if (
       (constructRecord !== undefined)
-      && !BODY_KINDS.has(constructRecord.node.type)
-      && (lineIndexOf({
-        lineStarts,
-        offset: constructRecord.node.start,
-      },) < recordLine)
+        && !BODY_KINDS.has(constructRecord.node.type)
+        && (lineIndexOf({
+          lineStarts,
+          offset: constructRecord.node.start,
+        },) < recordLine)
     ) {
       return lineIndexOf({
         lineStarts,
@@ -350,11 +350,11 @@ export function bracketBaseLineIndexOf({
       : undefined;
     if (
       (constructRecord !== undefined)
-      && !BODY_KINDS.has(constructRecord.node.type)
-      && (lineIndexOf({
-        lineStarts,
-        offset: constructRecord.node.start,
-      },) < openLine)
+        && !BODY_KINDS.has(constructRecord.node.type)
+        && (lineIndexOf({
+          lineStarts,
+          offset: constructRecord.node.start,
+        },) < openLine)
     ) {
       return lineIndexOf({
         lineStarts,
@@ -365,7 +365,7 @@ export function bracketBaseLineIndexOf({
   }
   if (
     (owner.start < openOffset)
-    && (sourceText.charCodeAt(owner.end - 1,) === 125)
+      && (sourceText.charCodeAt(owner.end - 1,) === 125)
   ) {
     return lineIndexOf({
       lineStarts,

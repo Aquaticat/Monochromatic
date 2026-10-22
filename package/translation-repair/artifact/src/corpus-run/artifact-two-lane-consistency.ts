@@ -60,14 +60,14 @@ import type { UnplacedReason, } from '@monochromatic-dev/translation-repair-corp
  */
 export type ConsistencyOccurrenceOutcome =
   | 'chosen'
-  | 'replaced'
-  | 'consistent'
-  | 'kept-context'
-  | 'kept-floor'
-  | 'kept-current'
-  | 'overlapped'
-  | 'unlocated'
-  | 'untouched';
+    | 'replaced'
+    | 'consistent'
+    | 'kept-context'
+    | 'kept-floor'
+    | 'kept-current'
+    | 'overlapped'
+    | 'unlocated'
+    | 'untouched';
 
 /**
  Every outcome a place can have, keyed by the union so the compiler refuses a
@@ -100,13 +100,13 @@ export const CONSISTENCY_OCCURRENCE_OUTCOMES: Readonly<Record<ConsistencyOccurre
  */
 export type ConsistencyKeptReason =
   | 'gain-pairs'
-  | 'gain-unproves'
-  | 'gain-floors'
-  | 'gain-overlaps'
-  | 'gain-refused'
-  | 'edge-second-mark'
-  | 'edge-reading-changes'
-  | 'edge-reference-mark';
+    | 'gain-unproves'
+    | 'gain-floors'
+    | 'gain-overlaps'
+    | 'gain-refused'
+    | 'edge-second-mark'
+    | 'edge-reading-changes'
+    | 'edge-reference-mark';
 
 /**
  Every reason a place can have been left as it was for, keyed by the union so the compiler refuses a member the record
@@ -194,17 +194,17 @@ export type ArtifactConsistencyRendering =
      */
     readonly definitions?: string;
   }
-  | {
+    | {
     /**
      The rendering could not be pinned down.
      */
-    readonly kind: 'unlocated';
+      readonly kind: 'unlocated';
 
     /**
      Why.
      */
-    readonly reason: UnlocatedReason;
-  };
+      readonly reason: UnlocatedReason;
+    };
 
 /**
  A place of a group of the section, named by where its group stands and its label.
@@ -521,28 +521,28 @@ export type ArtifactConsistencyCarryDecision =
      */
     readonly label: string;
   }
-  | {
+    | {
     /**
      No candidate was chosen, so the place's English stands.
      */
-    readonly kind: 'none';
+      readonly kind: 'none';
 
     /**
      Why.
      */
-    readonly reason: ConsistencyCarryNoDecisionReason;
-  }
-  | {
+      readonly reason: ConsistencyCarryNoDecisionReason;
+    }
+    | {
     /**
      Trouble stopped the carry before a choice could be counted.
      */
-    readonly kind: 'failed';
+      readonly kind: 'failed';
 
     /**
      What went wrong, in words naming no corpus text.
      */
-    readonly detail: string;
-  };
+      readonly detail: string;
+    };
 
 /**
  Every kind of decision a carry can record, keyed by the union, for a reader.
@@ -626,51 +626,51 @@ export type ArtifactConsistencyVerdict =
      */
     readonly reason: ConsistencyNotAskedReason;
   }
-  | {
+    | {
     /**
      Trouble stopped the group before the bench's answer could be counted;
      the group's places stay as they stand.
      */
-    readonly kind: 'failed';
+      readonly kind: 'failed';
 
     /**
      What went wrong, in words naming no corpus text.
      */
-    readonly detail: string;
-  }
-  | {
+      readonly detail: string;
+    }
+    | {
     /**
      The bench was asked.
      */
-    readonly kind: 'asked';
+      readonly kind: 'asked';
 
     /**
      Every ballot heard, whether or not it could be counted.
      */
-    readonly ballots: readonly ArtifactConsistencyBallot[];
+      readonly ballots: readonly ArtifactConsistencyBallot[];
 
     /**
      Ballots that could be counted.
      */
-    readonly usable: number;
+      readonly usable: number;
 
     /**
      Voices the gather closed on, which the usable ballots had to reach.
      */
-    readonly quorum: number;
+      readonly quorum: number;
 
     /**
      The place every place followed, or why none. When the choices had
      finalists, the place the run-off chose, or the run-off's reason for none.
      */
-    readonly winner: ConsistencyWinner;
+      readonly winner: ConsistencyWinner;
 
     /**
      Generation sixteen: the bench asked once more among the finalists;
      absent when the choices had none.
      */
-    readonly runOff?: ArtifactConsistencyRunOff;
-  };
+      readonly runOff?: ArtifactConsistencyRunOff;
+    };
 
 /**
  The repeated source wording or frame of a group.
@@ -692,22 +692,22 @@ export type ArtifactConsistencyRepeat =
      */
     readonly wording: string;
   }
-  | {
+    | {
     /**
      A frame repeated with a varying slot.
      */
-    readonly kind: 'refrain';
+      readonly kind: 'refrain';
 
     /**
      Characters every place begins with.
      */
-    readonly prefix: string;
+      readonly prefix: string;
 
     /**
      Characters every place ends with.
      */
-    readonly suffix: string;
-  };
+      readonly suffix: string;
+    };
 
 /**
  One repeated wording and what the pass did about it.
@@ -825,12 +825,12 @@ export type ConsistencyOverride =
      */
     readonly text: string;
   }
-  | {
+    | {
     /**
      The pass left this slice as the stages settled it.
      */
-    readonly kind: 'untouched';
-  };
+      readonly kind: 'untouched';
+    };
 
 /**
  Reads what the consistency pass did to one slice.

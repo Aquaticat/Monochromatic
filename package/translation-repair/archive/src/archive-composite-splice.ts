@@ -125,10 +125,10 @@ export function spliceHunks(
       return (first.hunk
         .start
         - second.hunk
-        .start) || (first.hunk
-          .end
-          - second.hunk
-          .end);
+          .start) || (first.hunk
+            .end
+            - second.hunk
+              .end);
     },);
   /**
    Combined lines so far.

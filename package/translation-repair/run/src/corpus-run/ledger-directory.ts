@@ -146,10 +146,10 @@ type FileOutcome =
     readonly kind: 'round';
     readonly round: ReadRound;
   }
-  | {
-    readonly kind: 'refused';
-    readonly refusal: RefusedFile;
-  };
+    | {
+      readonly kind: 'refused';
+      readonly refusal: RefusedFile;
+    };
 
 /**
  Reads every contest a ledger directory holds, keeping what refused.

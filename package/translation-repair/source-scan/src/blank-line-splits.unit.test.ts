@@ -185,9 +185,9 @@ function blankLineSplitsIn({ file, }: { readonly file: SourceText; },): readonly
        */
       const [argument,] = args;
       return (SEARCH_MEMBERS.has(member,) && isTreeNode(argument,)
-          && (holdsBlankLine({ node: argument, },)
-            || matchesBlankLine({ node: argument, },)
-            || constants.has(identifierName({ node: argument, },),)))
+        && (holdsBlankLine({ node: argument, },)
+          || matchesBlankLine({ node: argument, },)
+          || constants.has(identifierName({ node: argument, },),)))
         ? [{
           start: node.start,
           member,
@@ -209,8 +209,8 @@ function blankLineSplitsIn({ file, }: { readonly file: SourceText; },): readonly
        */
       const line = file.text
         .slice(
-          0,
-          start,
+        0,
+        start,
         )
         .split('\n',)
         .length;

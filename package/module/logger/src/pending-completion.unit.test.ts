@@ -74,20 +74,20 @@ await describe({
             await logger.flush();
           },
         };
-          logger.info('abandoned observation',);
-          await logger.flush();
-          logger.info('new observation of the same operation',);
+        logger.info('abandoned observation',);
+        await logger.flush();
+        logger.info('new observation of the same operation',);
           /** Re-admitted work must remain part of the next flush until its operation settles. */
-          async function flush(): Promise<void> {
-            await logger.flush();
-            state.flushed = true;
-          }
-          const flushing = flush();
-          await wait(1,);
-          expect(state.flushed,).toBe(false,);
-          operation.resolve();
-          await flushing;
-          expect(state.delivered,).toBe(2,);
+        async function flush(): Promise<void> {
+          await logger.flush();
+          state.flushed = true;
+        }
+        const flushing = flush();
+        await wait(1,);
+        expect(state.flushed,).toBe(false,);
+        operation.resolve();
+        await flushing;
+        expect(state.delivered,).toBe(2,);
       },
     },),
   ],

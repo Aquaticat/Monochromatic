@@ -68,7 +68,7 @@ async function makeThrowawayClone(): Promise<
     readonly cloneDir: string;
     readonly commitSha: string;
   }
-> {
+  > {
   // Fresh temp directory holding the throwaway repository.
   return await scratchDirWith({
     prefix: 'translation-repair-corpus-',
@@ -488,7 +488,7 @@ await describe({
           'fatal: not a tree object',
           "fatal: cannot change to '/no/such/clone': No such file or directory\n",
           'fatal: not a git repository (or any parent up to mount point /)\n'
-          + 'Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).\n',
+            + 'Stopping at filesystem boundary (GIT_DISCOVERY_ACROSS_FILESYSTEM not set).\n',
         ].map(function kindOfStderr(stderr,): string {
           return new CorpusReadError({
             detail: 'people/gum/page.md at deadbeef',
@@ -586,15 +586,15 @@ await describe({
           },),
         ].map(String,),).toEqual([
           'CorpusReadError: corpus read failed for people/gum/page.en.md at deadbeef (missing-object);'
-          + ' the commit has no such path: check the path, or pin a commit that has it.',
+            + ' the commit has no such path: check the path, or pin a commit that has it.',
           'CorpusReadError: corpus read failed for people/gum/page.en.md at deadbeef (missing-commit);'
-          + ' the clone holds no commit by that revision: fetch it, or pin '
-          + 'a commit the clone holds.',
+            + ' the clone holds no commit by that revision: fetch it, or pin '
+            + 'a commit the clone holds.',
           'CorpusReadError: corpus read failed for people/gum/page.en.md at deadbeef (unreadable-clone);'
-          + ' git could not open the clone: check that the directory exists, is the top of a git repository, and'
-          + ' is one git may read.',
+            + ' git could not open the clone: check that the directory exists, is the top of a git repository, and'
+            + ' is one git may read.',
           'CorpusReadError: corpus read failed for people/gum/page.en.md at deadbeef (other);'
-          + ' the read failed another way: run the same git read in the clone by hand to see why.',
+            + ' the read failed another way: run the same git read in the clone by hand to see why.',
         ],);
       },
     },),

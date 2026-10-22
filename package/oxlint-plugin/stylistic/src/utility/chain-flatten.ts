@@ -150,7 +150,7 @@ function operatorTokenStart({
           === operator;
       },
     },
-  );
+    );
   if (token === null) {
     throw new Error('operator node missing operator token',);
   }

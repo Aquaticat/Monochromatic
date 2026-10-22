@@ -240,20 +240,20 @@ export function buildAdjudicationMessages(
      */
     const memberBlocks = cluster.members
       .map(function toClaimBlock(member,) {
-      claimIds.push(member.claimId,);
+        claimIds.push(member.claimId,);
 
       /**
        Evidence lines for every span of this claim.
        */
-      const evidence = member
-        .claim
-        .spans
-        .map(function toLine(span,) {
-          return evidenceLine({ span, },);
-        },)
-        .join('\n',);
+        const evidence = member
+          .claim
+          .spans
+          .map(function toLine(span,) {
+            return evidenceLine({ span, },);
+          },)
+          .join('\n',);
 
-      return `CLAIM ${claimIds.length}
+        return `CLAIM ${claimIds.length}
 - category: ${member.claim
   .category}
 - claimed severity: ${member.claim
@@ -261,7 +261,7 @@ export function buildAdjudicationMessages(
 - summary: ${flattenSpace({ text: member.claim
   .summary, },)}
 ${evidence}`;
-    },);
+      },);
 
     /**
      Group header; single-claim groups need no same-defect question.
@@ -343,8 +343,8 @@ ${evidence}`;
    what sits beside it, then what is alleged about the first.
    */
   const nearbyBlock = ((neighbouringSourceText === undefined)
-      || (neighbouringSourceText === ''))
-      && (incumbentShown === '')
+    || (neighbouringSourceText === ''))
+    && (incumbentShown === '')
     ? ''
     : `${fence} NEARBY ORIGINAL, CONTEXT ONLY ${fence}
 ${neighbouringSourceText ?? ''}

@@ -146,9 +146,9 @@ await describe({
           .map(function toModel(reading,): RosterModelId {
             return reading.modelId;
           },),).toEqual([
-          SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-          THIRD_READER,
-        ],);
+            SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+            THIRD_READER,
+          ],);
       },
     },),
     it({

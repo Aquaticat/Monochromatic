@@ -214,16 +214,16 @@ export async function prompt(
            */
           const clickedInDialog = (event.clientX
             >= rect
-            .left)
+              .left)
             && (event.clientX
               <= rect
-              .right)
+                .right)
             && (event.clientY
               >= rect
-              .top)
+                .top)
             && (event.clientY
               <= rect
-              .bottom);
+                .bottom);
 
           if (!clickedInDialog)
             dialog.close();

@@ -181,16 +181,16 @@ const lintStagedConcurrent: ScenarioDefinition = {
     await Promise.all(plans.flatMap(function planPaths(plan,) {
       return plan.paths
         .map(async function rewrite(path,) {
-        await writeWorktree({
-          ...context,
-          path,
-          bytes: synthesizeText({
-            random: context.random
-              .fork(plan.label,),
-            size: FILE_BYTES,
-          },),
+          await writeWorktree({
+            ...context,
+            path,
+            bytes: synthesizeText({
+              random: context.random
+                .fork(plan.label,),
+              size: FILE_BYTES,
+            },),
+          },);
         },);
-      },);
     },),);
     /**
      Explicit agents and the index agent started together.

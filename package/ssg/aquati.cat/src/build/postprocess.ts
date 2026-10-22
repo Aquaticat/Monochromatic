@@ -469,11 +469,11 @@ const staleFiles = fullScan
   /**
    Basename used for the stale-fingerprint pattern check, regardless of subdirectory depth.
    */
-  const name = basename(filePath,);
-  return STALE_HASH_PATTERN.test(name,)
-    || STALE_HASH_ZST_PATTERN
-    .test(name,);
-},);
+    const name = basename(filePath,);
+    return STALE_HASH_PATTERN.test(name,)
+      || STALE_HASH_ZST_PATTERN
+        .test(name,);
+  },);
 
 await cleanStaleFingerprints({ staleFiles, },);
 
@@ -486,13 +486,13 @@ const leafAssetFiles = fullScan
   /**
    Basename used for the stale-fingerprint pattern check independent of the full path.
    */
-  const name = basename(filePath,);
-  if (STALE_HASH_PATTERN.test(name,)
-    || STALE_HASH_ZST_PATTERN
-    .test(name,))
-    return false;
-  return !isLeafExcluded(filePath,);
-},);
+    const name = basename(filePath,);
+    if (STALE_HASH_PATTERN.test(name,)
+      || STALE_HASH_ZST_PATTERN
+        .test(name,))
+      return false;
+    return !isLeafExcluded(filePath,);
+  },);
 
 /**
  Runs fingerprint phases 1 and 2 together: hash leaf assets, then

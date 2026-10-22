@@ -60,17 +60,17 @@ export type PromisifiedModule<
   ErrorFirst extends boolean,
   Includes extends readonly (keyof Module)[],
   Excludes extends readonly (keyof Module)[],
-> = {
-  [Key in keyof Module]: Module[Key] extends (...callbackResults: infer CallbackArguments) => unknown
-    ? Key extends Includes[number]
-      ? Promisify<CallbackArguments, PromisifyOptions<Includes, Excludes, MultiArgs, ErrorFirst>>
-      : Key extends Excludes[number]
-        ? Module[Key]
-        : StringEndsWith<Key, 'Sync' | 'Stream'> extends true
+  > = {
+    [Key in keyof Module]: Module[Key] extends (...callbackResults: infer CallbackArguments) => unknown
+      ? Key extends Includes[number]
+        ? Promisify<CallbackArguments, PromisifyOptions<Includes, Excludes, MultiArgs, ErrorFirst>>
+        : Key extends Excludes[number]
           ? Module[Key]
-          : Promisify<CallbackArguments, PromisifyOptions<Includes, Excludes, MultiArgs, ErrorFirst>>
-    : Module[Key];
-};
+          : StringEndsWith<Key, 'Sync' | 'Stream'> extends true
+            ? Module[Key]
+            : Promisify<CallbackArguments, PromisifyOptions<Includes, Excludes, MultiArgs, ErrorFirst>>
+      : Module[Key];
+  };
 
 //endregion Types
 
@@ -123,7 +123,7 @@ export function pify<
   Arguments extends readonly unknown[],
   MultiArgs extends boolean = false,
   ErrorFirst extends boolean = true,
->(
+  >(
   {
     input,
     options,
@@ -134,10 +134,10 @@ export function pify<
     ) => unknown;
     readonly options?: PifyOptions<EmptyTuple, EmptyTuple, MultiArgs, ErrorFirst>;
   },
-): Promisify<[
-  FirstArgument,
-  ...Arguments
-], PromisifyOptions<EmptyTuple, EmptyTuple, MultiArgs, ErrorFirst>>;
+  ): Promisify<[
+    FirstArgument,
+    ...Arguments
+  ], PromisifyOptions<EmptyTuple, EmptyTuple, MultiArgs, ErrorFirst>>;
 /**
  Promisifies a module object (or a function module): selected function members
  become promisified wrappers while the rest of the object is preserved.
@@ -164,7 +164,7 @@ export function pify<
   Excludes extends readonly (keyof Module)[] = EmptyTuple,
   MultiArgs extends boolean = false,
   ErrorFirst extends boolean = true,
->(
+  >(
   {
     input,
     options,
@@ -172,7 +172,7 @@ export function pify<
     readonly input: Module;
     readonly options?: PifyOptions<Includes, Excludes, MultiArgs, ErrorFirst, true>;
   },
-): PromisifiedModule<Module, MultiArgs, ErrorFirst, Includes, Excludes>;
+  ): PromisifiedModule<Module, MultiArgs, ErrorFirst, Includes, Excludes>;
 /**
  Implementation behind both `pify` overloads.
  
@@ -242,45 +242,45 @@ export function pify(
      
      @returns Promisified call result, or the raw call under `excludeMain`.
      */
-    apply: function applyTrap(
-      target: WrappedFunction,
-      thisArgument: unknown,
-      argumentsList: readonly unknown[],
-    ): unknown {
+      apply: function applyTrap(
+        target: WrappedFunction,
+        thisArgument: unknown,
+        argumentsList: readonly unknown[],
+      ): unknown {
       /**
        Cached promisified wrapper for this target, built on first call.
        */
-      const cached = cache.get(target,);
-      if (cached)
-        return Reflect.apply(
-          cached,
-          thisArgument,
-          argumentsList,
-        );
+        const cached = cache.get(target,);
+        if (cached)
+          return Reflect.apply(
+            cached,
+            thisArgument,
+            argumentsList,
+          );
 
       /**
        Promisified wrapper for the target, or the raw target under
        `excludeMain` (upstream `pify` returns the target through the trap the
        same way).
        */
-      const pified = resolvedOptions.excludeMain
-        ? target
-        : createPromisifiedFunction({
-          fn: target,
-          options: resolvedOptions,
-          proxy,
-          unwrapped: target,
-        },);
-      cache.set(
-        target,
-        pified,
-      );
-      return Reflect.apply(
-        pified,
-        thisArgument,
-        argumentsList,
-      );
-    },
+        const pified = resolvedOptions.excludeMain
+          ? target
+          : createPromisifiedFunction({
+            fn: target,
+            options: resolvedOptions,
+            proxy,
+            unwrapped: target,
+          },);
+        cache.set(
+          target,
+          pified,
+        );
+        return Reflect.apply(
+          pified,
+          thisArgument,
+          argumentsList,
+        );
+      },
 
     /**
      Handles proxy member reads: promisifies selected function members and
@@ -293,54 +293,54 @@ export function pify(
      @returns Promisified wrapper for selected function members, the member
      itself otherwise.
      */
-    get: function getTrap(
-      target: object,
-      key: PropertyKey
-    ): unknown {
+      get: function getTrap(
+        target: object,
+        key: PropertyKey
+      ): unknown {
       /**
        Current member value, read before selection exactly like upstream
        `pify` (so accessor side effects fire in the same order).
        */
-      const property: unknown = Reflect.get(
-        target,
-        key,
-      );
-      if ((!keyFilter({
-        target,
-        key,
-      },)) || (property === Reflect.get(
-        Function.prototype,
-        key,
-      )))
-        return property;
+        const property: unknown = Reflect.get(
+          target,
+          key,
+        );
+        if ((!keyFilter({
+          target,
+          key,
+        },)) || (property === Reflect.get(
+          Function.prototype,
+          key,
+        )))
+          return property;
 
-      if (isCallable(property,)) {
+        if (isCallable(property,)) {
         /**
          Cached promisified wrapper for this function, built on first read.
          */
-        const cached = cache.get(property,);
-        if (cached)
-          return cached;
+          const cached = cache.get(property,);
+          if (cached)
+            return cached;
 
         /**
          Promisified wrapper replacing this function member.
          */
-        const pified = createPromisifiedFunction({
-          fn: property,
-          options: resolvedOptions,
-          proxy,
-          unwrapped: target,
-        },);
-        cache.set(
-          property,
-          pified,
-        );
-        return pified;
-      }
+          const pified = createPromisifiedFunction({
+            fn: property,
+            options: resolvedOptions,
+            proxy,
+            unwrapped: target,
+          },);
+          cache.set(
+            property,
+            pified,
+          );
+          return pified;
+        }
 
-      return property;
+        return property;
+      },
     },
-  },
   );
 
   return proxy;

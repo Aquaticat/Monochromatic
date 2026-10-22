@@ -12,7 +12,7 @@ function captureData({ floor, state }) {
   const name = `search-e2-complete-${floor}-${state}-inner-light-s200.png`;
   const png = readFileSync(join(question, 'render', name));
   if (png.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
-      png.readUInt32BE(16) !== 2076 || png.readUInt32BE(20) !== 2152) {
+    png.readUInt32BE(16) !== 2076 || png.readUInt32BE(20) !== 2152) {
     throw new Error(`${name}: expected the native 2076 x 2152 inner panel.`);
   }
   const chunks = [];
@@ -34,7 +34,7 @@ function expectedHtml() {
     Object.fromEntries(['player', 'empty', 'results'].map(state => [state, captureData({ floor, state })]))]));
   const source = readFileSync(template, 'utf8');
   if (source.split('__E2_CAPTURE_MAP__').length !== 2 ||
-      source.split('__E2_APK_SHA__').length !== 2) {
+    source.split('__E2_APK_SHA__').length !== 2) {
     throw new Error('Native E2 form must have one capture slot and one APK provenance slot.');
   }
   return source.replace('__E2_CAPTURE_MAP__', JSON.stringify(captures))

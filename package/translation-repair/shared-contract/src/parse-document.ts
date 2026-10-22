@@ -55,9 +55,9 @@ export type ParseFinding = {
    */
   readonly kind:
     | 'html-comment-skipped'
-    | 'unterminated-html-comment'
-    | 'invisible-line-masked'
-    | 'mdx-downgraded';
+      | 'unterminated-html-comment'
+      | 'invisible-line-masked'
+      | 'mdx-downgraded';
 
   /**
    Absolute start offset of the affected region in the full document text.

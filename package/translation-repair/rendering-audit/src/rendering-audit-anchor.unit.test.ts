@@ -38,8 +38,8 @@ await describe({
     it({
       name:
         'LOCATES a focus that occurs more than once in the document but only once inside its locator, '
-        + 'which is the whole reason the two spans are separate: the negator here appears twice, and a '
-        + 'rule demanding a document-unique quote would refuse the exact word the claim is about',
+          + 'which is the whole reason the two spans are separate: the negator here appears twice, and a '
+          + 'rule demanding a document-unique quote would refuse the exact word the claim is about',
       fn: async () => {
         const anchor = anchorLocatedSpan({
           text: SOURCE_TEXT,
@@ -57,7 +57,7 @@ await describe({
           .start,).toBe(SOURCE_TEXT.indexOf('不吃',),);
         expect(anchor.focus
           .end,).toBe(anchor.focus
-          .start + 1,);
+            .start + 1,);
         expect(anchor.locator
           .text,).toBe('她们不吃罐头',);
       },
@@ -65,8 +65,8 @@ await describe({
     it({
       name:
         'ACCEPTS a focus far below any character floor, since a floor never measured whether a quote '
-        + 'identifies anything: it measured length, and the padding it forced is what merged two '
-        + 'different defects into one',
+          + 'identifies anything: it measured length, and the padding it forced is what merged two '
+          + 'different defects into one',
       fn: async () => {
         const anchor = anchorLocatedSpan({
           text: CANDIDATE_TEXT,
@@ -115,7 +115,7 @@ await describe({
     it({
       name:
         'REFUSES a focus that sits in the document but OUTSIDE the locator, since a claim whose two '
-        + 'spans point at different sentences has not said where it is',
+          + 'spans point at different sentences has not said where it is',
       fn: async () => {
         const anchor = anchorLocatedSpan({
           text: SOURCE_TEXT,
@@ -176,8 +176,8 @@ await describe({
     it({
       name:
         'REFUSES A SPAN THAT SHOWS A READER NOTHING as empty, though the text holds it exactly once: a locator '
-        + 'of one ideographic space, and a focus of a zero-width space, a Hangul filler or one space inside a '
-        + 'locator that holds it once',
+          + 'of one ideographic space, and a focus of a zero-width space, a Hangul filler or one space inside a '
+          + 'locator that holds it once',
       fn: async () => {
         /**
          Original carrying each invisible character once.
@@ -231,7 +231,7 @@ await describe({
     it({
       name:
         'ANCHORS ACROSS A SOFT WRAP and returns the DOCUMENT`s own characters rather than the quote`s, '
-        + 'so a report never quotes a text back with wording it does not carry',
+          + 'so a report never quotes a text back with wording it does not carry',
       fn: async () => {
         /**
          Candidate wrapped mid-sentence, as a stored document is.
@@ -257,7 +257,7 @@ await describe({
     it({
       name:
         'ANCHORS A QUOTE TYPED WITH ASCII PUNCTUATION against a document holding the curly form, which '
-        + 'is the failure that discarded real evidence before the punctuation fold existed',
+          + 'is the failure that discarded real evidence before the punctuation fold existed',
       fn: async () => {
         /**
          Candidate holding a curly apostrophe, as the editing guide requires.

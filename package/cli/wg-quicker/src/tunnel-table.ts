@@ -139,8 +139,8 @@ export async function tableIsFree(
   },),);
   return probes.flat()
     .every(function probeIsEmpty(stdout: string,): boolean {
-    return stdout.trim() === '';
-  },);
+      return stdout.trim() === '';
+    },);
 }
 
 /**
@@ -231,9 +231,9 @@ function rulePreference(
    */
   const preference = Math.trunc(
     Number(line.slice(
-    0,
-    colon,
-  ),),
+      0,
+      colon,
+    ),),
   );
   return Number.isSafeInteger(preference,) && (preference > 0)
     ? preference
@@ -330,14 +330,14 @@ export async function findFreeBypassPreference(
    */
   const earliestUsed = [...used,].reduce(
     function lowerPreference(
-    current,
-    candidate,
-  ): number {
-    return Math.min(
       current,
       candidate,
-    );
-  },
+    ): number {
+      return Math.min(
+        current,
+        candidate,
+      );
+    },
     Number.MAX_SAFE_INTEGER,
   );
   /**

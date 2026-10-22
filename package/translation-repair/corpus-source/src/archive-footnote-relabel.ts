@@ -297,15 +297,15 @@ export function footnoteRelabelOf(
    */
   const sourceReferences = activeFootnoteMarkers({ text: sourceText, },)
     .filter(function reference(marker,): boolean {
-    return marker.kind === 'reference';
-  },);
+      return marker.kind === 'reference';
+    },);
   /**
    Archive syntax uses the same actual document boundary.
    */
   const targetReferences = activeFootnoteMarkers({ text: targetText, },)
     .filter(function reference(marker,): boolean {
-    return marker.kind === 'reference';
-  },);
+      return marker.kind === 'reference';
+    },);
   /**
    Correspondences the slices give, positionally.
    */

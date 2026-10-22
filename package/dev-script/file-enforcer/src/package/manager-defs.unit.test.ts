@@ -51,19 +51,19 @@ await describe({
                 def.check.length,
               )
                 .toBeGreaterThan(
-                  0,
+                0,
                 );
               expect(
                 def.search.length,
               )
                 .toBeGreaterThan(
-                  0,
+                0,
                 );
               expect(
                 def.install.length,
               )
                 .toBeGreaterThan(
-                  0,
+                0,
                 );
               /** install template must contain {pkg} placeholder */
               expect(def.install.includes('{pkg}',),).toBe(true,);

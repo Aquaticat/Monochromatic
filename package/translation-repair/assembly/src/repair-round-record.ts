@@ -164,98 +164,98 @@ export type RepairJudgedRound =
      */
     readonly voteWeight: number;
   }
-  | {
-    readonly kind: 'declined';
+    | {
+      readonly kind: 'declined';
 
     /**
      {@inheritDoc RepairJudgedRound.stage}
      */
-    readonly stage: RepairRoundStage;
+      readonly stage: RepairRoundStage;
 
     /**
      {@inheritDoc RepairJudgedRound.envelopeId}
      */
-    readonly envelopeId: string;
+      readonly envelopeId: string;
 
     /**
      {@inheritDoc RepairJudgedRound.slate}
      */
-    readonly slate: readonly RepairSlateEntry[];
+      readonly slate: readonly RepairSlateEntry[];
 
     /**
      {@inheritDoc RepairJudgedRound.ballots}
      */
-    readonly ballots: readonly SelectionBallot[];
+      readonly ballots: readonly SelectionBallot[];
 
     /**
      {@inheritDoc RepairJudgedRound.tally}
      */
-    readonly tally: SelectionTally;
+      readonly tally: SelectionTally;
 
     /**
      {@inheritDoc RepairJudgedRound.perCandidate}
      */
-    readonly perCandidate: readonly CandidateWeight[];
+      readonly perCandidate: readonly CandidateWeight[];
 
     /**
      Why nothing was selected, in scorecard-stable wording.
      */
-    readonly reason: string;
+      readonly reason: string;
 
     /**
      Whether judges could not agree or agreed to reject.
      */
-    readonly disposition: SelectionDisposition;
-  }
-  | {
+      readonly disposition: SelectionDisposition;
+    }
+    | {
     /**
      Sole distinct proposal, adopted without a vote: nothing to compare it
      against, so no judge was asked and no ballot exists.
      */
-    readonly kind: 'adopted';
+      readonly kind: 'adopted';
 
     /**
      Stage that adopted it.
      */
-    readonly stage: RepairRoundStage;
+      readonly stage: RepairRoundStage;
 
     /**
      Envelope it was the one proposal for.
      */
-    readonly envelopeId: string;
+      readonly envelopeId: string;
 
     /**
      The one entry, so the winner's authors are read the way a judged
      round's are.
      */
-    readonly slate: readonly RepairSlateEntry[];
+      readonly slate: readonly RepairSlateEntry[];
 
     /**
      Empty: no judge was asked. Carried so every reader of a round finds
      the vote fields in every kind.
      */
-    readonly ballots: readonly SelectionBallot[];
+      readonly ballots: readonly SelectionBallot[];
 
     /**
      All zero, for the same reason.
      */
-    readonly tally: SelectionTally;
+      readonly tally: SelectionTally;
 
     /**
      Empty: nothing was drawn.
      */
-    readonly perCandidate: readonly CandidateWeight[];
+      readonly perCandidate: readonly CandidateWeight[];
 
     /**
      Index of that entry, always the first.
      */
-    readonly selectedIndex: number;
+      readonly selectedIndex: number;
 
     /**
      Why no vote was held.
      */
-    readonly reason: string;
-  };
+      readonly reason: string;
+    };
 
 /**
  Records the slate a round was judged on.

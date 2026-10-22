@@ -127,9 +127,9 @@ function prune(): void {
     - RETENTION_MS;
   state.buffer = state.buffer
     .filter(function checkRetention(set,) {
-    return isAfterCutoff({
-      cutoff,
-      set,
+      return isAfterCutoff({
+        cutoff,
+        set,
+      },);
     },);
-  },);
 }

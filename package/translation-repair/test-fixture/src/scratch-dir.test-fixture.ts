@@ -125,7 +125,7 @@ export async function scratchDirWith<
     readonly path?: never;
     readonly [Symbol.asyncDispose]?: never;
   },
->(
+  >(
   {
     prefix,
     setup,
@@ -133,7 +133,7 @@ export async function scratchDirWith<
     readonly prefix: string;
     readonly setup: (dir: Pick<ScratchDir, 'path'>) => Promise<SetupT>;
   },
-): Promise<SetupT & ScratchDir> {
+  ): Promise<SetupT & ScratchDir> {
   /**
    Directory this call owns until `setup` finishes or throws.
    */

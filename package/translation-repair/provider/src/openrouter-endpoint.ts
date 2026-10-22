@@ -40,7 +40,7 @@ export type EndpointReading =
      */
     readonly name: string;
   }
-  | { readonly reported: false; };
+    | { readonly reported: false; };
 
 /**
  Reading given when no chunk named an upstream.

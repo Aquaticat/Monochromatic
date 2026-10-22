@@ -36,7 +36,7 @@ type McpConfig = {
     {
       env?: Record<string, string>;
     }
-  >;
+    >;
 };
 
 /**

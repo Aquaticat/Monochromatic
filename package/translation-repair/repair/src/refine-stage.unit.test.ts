@@ -184,10 +184,10 @@ function scriptedRefiner(
   }: {
     readonly newText?:
       | string
-      | ((modelId: RosterModelId) => string);
+        | ((modelId: RosterModelId) => string);
     readonly ballot:
       | number
-      | ((modelId: RosterModelId) => number);
+        | ((modelId: RosterModelId) => number);
     readonly paragraph?: number;
     readonly furtherRewrites?: readonly {
       readonly paragraph: number;
@@ -797,7 +797,7 @@ await describe({
               rounds: [],
               findings: [
                 `${SEAT_HYPER_OPENROUTER_VISION_EDITOR}: refine-atom-gate-refused (paragraph 1, protected atom `
-                + 'count changed)',
+                  + 'count changed)',
                 'refine-candidates (1/1 heard, 0 proposing)',
               ],
             },);
@@ -834,13 +834,13 @@ await describe({
               rounds: [],
               findings: [
                 `${SEAT_HYPER_OPENROUTER_VISION_EDITOR}: refine-atom-gate-refused (paragraph 2, protected atom 1 `
-                + 'changed)',
+                  + 'changed)',
                 'refine-candidates (1/1 heard, 0 proposing)',
               ],
             },);
             expect(linesNamingTheRefiner({ lines: logged.lines, },),).toEqual([
               `[runRefineStage] ${SEAT_HYPER_OPENROUTER_VISION_EDITOR}: protected atom 1 changed (number:17 became `
-              + 'number:18)',
+                + 'number:18)',
             ],);
           },
         },),

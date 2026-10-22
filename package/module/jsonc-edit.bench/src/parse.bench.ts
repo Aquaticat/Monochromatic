@@ -199,7 +199,7 @@ const commented = buildCommentedInput({ count: ENTRY_COUNT, },);
 
 console.log(
   `jsonc-edit parse benchmark: ${ENTRY_COUNT} entries, ${ITERATIONS} iterations\n`
-  + `clean ${clean.length} B, commented ${commented.length} B\n`,
+    + `clean ${clean.length} B, commented ${commented.length} B\n`,
 );
 
 console.log('CLEAN input (no comments or trailing commas):',);

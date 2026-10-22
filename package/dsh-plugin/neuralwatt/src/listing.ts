@@ -114,15 +114,15 @@ function stringListOrEmpty(value: unknown): readonly string[] {
  inventing a level.
  */
 const EFFORT_LEVEL_BY_SPELLING:
-Readonly<Record<string, keyof PiAiReasoningEfforts>> = {
-  none: 'off',
-  minimal: 'minimal',
-  low: 'low',
-  medium: 'medium',
-  high: 'high',
-  xhigh: 'xhigh',
-  max: 'max',
-};
+  Readonly<Record<string, keyof PiAiReasoningEfforts>> = {
+    none: 'off',
+    minimal: 'minimal',
+    low: 'low',
+    medium: 'medium',
+    high: 'high',
+    xhigh: 'xhigh',
+    max: 'max',
+  };
 
 /**
  Keep the effort keys that select thinking, so a dict whose only key is the

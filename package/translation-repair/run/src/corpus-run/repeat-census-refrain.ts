@@ -87,8 +87,8 @@ export function censusClausesOf(
      */
     const norm = sanitize({ line, },)
       .replace(
-        WHITESPACE_RUN,
-        '',
+      WHITESPACE_RUN,
+      '',
       );
 
     /**
@@ -180,7 +180,7 @@ function sharedSuffixLength({
   let length = 0;
   while (
     (length < a.length)
-    && (length < b.length)
+      && (length < b.length)
       && (a.charAt(a.length - 1
         - length,) === b.charAt(b.length - 1
           - length,))
@@ -231,8 +231,8 @@ function refrainFrames(
      */
     const lead = clause.text
       .slice(
-        0,
-        setting.prefixMinimum,
+      0,
+      setting.prefixMinimum,
       );
     /**
      Clauses already bucketed here.
@@ -387,25 +387,25 @@ export function refrainGroups(
     /**
      Occurrences of the frame's clauses.
      */
-    const occurrences = frame.members
-      .map(function occurrenceOfClause(index,): CensusOccurrence {
+      const occurrences = frame.members
+        .map(function occurrenceOfClause(index,): CensusOccurrence {
       /**
        Clause the occurrence is.
        */
-      const clause = nonNullishOrThrow(clauses[index],);
+          const clause = nonNullishOrThrow(clauses[index],);
+          return {
+            line: clause.line,
+            kind: clause.kind,
+            inQuote: clause.inQuote,
+          };
+        },);
       return {
-        line: clause.line,
-        kind: clause.kind,
-        inQuote: clause.inQuote,
+        kind: 'refrain',
+        length: 0,
+        occurrences,
+        flags: flagsOf({ occurrences, },),
       };
     },);
-    return {
-      kind: 'refrain',
-      length: 0,
-      occurrences,
-      flags: flagsOf({ occurrences, },),
-    };
-  },);
 }
 
 //endregion Repeat census refrain

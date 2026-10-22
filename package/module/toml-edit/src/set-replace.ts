@@ -78,15 +78,15 @@ function entryBlocks(
 ): readonly KeyValueNode[] {
   return Object.entries(value,)
     .map(function each([key, v,],) {
-    return makeKeyValue({
-      segments: [
-        ...prefix,
-        key,
-      ],
-      value: v,
-      options,
+      return makeKeyValue({
+        segments: [
+          ...prefix,
+          key,
+        ],
+        value: v,
+        options,
+      },);
     },);
-  },);
 }
 
 /**
@@ -138,7 +138,7 @@ export function doTableReplace(
           options: edit.canonical,
         },),
       },
-    ),
+      ),
   };
 }
 
@@ -178,9 +178,9 @@ export function doTopLevelReplace(
    */
   const kept = edit.blocks
     .filter(function keep(b,) {
-    return b.kind
-      !== 'keyvalue';
-  },);
+      return b.kind
+        !== 'keyvalue';
+    },);
   return {
     ...edit,
     blocks: [
@@ -221,7 +221,7 @@ export function isImplicitConstituent(
     === 'keyvalue'
     ? block.keySegments
     : block.kind
-        === 'table'
+      === 'table'
       ? block.headerSegments
       : null;
   if (segs === null)
@@ -280,11 +280,11 @@ export function doImplicitReplace(
    */
   const kept = edit.blocks
     .filter(function keep(b,) {
-    return !isImplicitConstituent({
-      block: b,
-      path,
+      return !isImplicitConstituent({
+        block: b,
+        path,
+      },);
     },);
-  },);
   /**
    First table header in the kept blocks; new keys must precede it.
    */

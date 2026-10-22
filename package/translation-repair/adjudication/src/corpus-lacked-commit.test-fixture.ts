@@ -190,7 +190,7 @@ export async function makeCloneHoldingOneCommit(): Promise<
     readonly cloneDir: string;
     readonly commitSha: string;
   }
-> {
+  > {
   return await scratchDirWith({
     prefix: 'translation-repair-lacked-commit-',
     setup: seedCloneHoldingOneCommit,

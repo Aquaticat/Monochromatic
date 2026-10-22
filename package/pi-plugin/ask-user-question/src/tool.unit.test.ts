@@ -289,9 +289,9 @@ await describe({
          */
         const lines = registeredTool(harness,)
           .renderCall(
-            { question: 'first line\nsecond line with detail\u001B', },
-            fakeTheme(),
-            {},
+          { question: 'first line\nsecond line with detail\u001B', },
+          fakeTheme(),
+          {},
           )
           .render(12,);
         /**

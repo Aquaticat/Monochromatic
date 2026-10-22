@@ -44,7 +44,7 @@ export function sortRootsByLengthDesc(
   ): number {
     return b.length
       - a
-      .length;
+        .length;
   },);
   return copy;
 }

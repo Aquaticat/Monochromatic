@@ -37,20 +37,20 @@ export type SelectDefaultModelOptions<TModel extends ModelPricing = ModelPricing
  */
 export type SelectDefaultModelFromContextEstimatesOptions<
   TModel extends ModelPricing = ModelPricing,
-> = {
+  > = {
   /**
    Effective scoped model set.
    */
-  readonly scope: EffectiveModelScope<TModel>;
+    readonly scope: EffectiveModelScope<TModel>;
   /**
    Estimated input tokens keyed by canonical scoped model slug.
    */
-  readonly estimatedInputTokensBySlug: ReadonlyMap<string, number>;
+    readonly estimatedInputTokensBySlug: ReadonlyMap<string, number>;
   /**
    Maximum output tokens requested.
    */
-  readonly maxOutputTokens: number;
-};
+    readonly maxOutputTokens: number;
+  };
 
 /**
  Options for scoring one scoped model.
@@ -335,7 +335,7 @@ export function buildCostRanking<TModel extends ModelPricing,>(
        */
       const estimatedInputTokens = options.estimatedInputTokensBySlug
         .get(
-          entry.canonicalSlug,
+        entry.canonicalSlug,
         );
       if (estimatedInputTokens === undefined) {
         throw new Error(

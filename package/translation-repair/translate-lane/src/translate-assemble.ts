@@ -140,7 +140,7 @@ export function assembleTranslation(
     // dispositions this count covers and sent a reader looking for an alignment
     // finding the other two never wrote. Which guard refused which slice is in
     // the findings, one per refusal, in three shapes.
-    + `${String(changed.length,)} changed, ${String(refused.length,)} refused by a guard`,
+      + `${String(changed.length,)} changed, ${String(refused.length,)} refused by a guard`,
   );
 
   /**

@@ -98,11 +98,11 @@ function correctionClient(
           assessment: 'Remove unsupported archive-only wording.',
         }
         : schema === 'candidate_ballot'
-        ? {
-          best: 1,
-          assessment: 'Correction removes unsupported wording.',
-        }
-        : { pairs: [{ source: 0, target: 0, },], };
+          ? {
+            best: 1,
+            assessment: 'Correction removes unsupported wording.',
+          }
+          : { pairs: [{ source: 0, target: 0, },], };
       if (!request.validate(value,))
         throw new Error(`scripted ${schema} reply failed validator`,);
       return {
@@ -695,7 +695,7 @@ await describe({
                 chatJson: async (request,) => {
                   if (
                     (request.responseFormat?.json_schema.name === 'archive_block_review')
-                    && reviewsEarlier(JSON.stringify(request.messages,),)
+                      && reviewsEarlier(JSON.stringify(request.messages,),)
                   )
                     askedEarlier.push(request.modelId,);
                   return await inner.chatJson(request,);
@@ -816,7 +816,7 @@ await describe({
                 chatJson: async (request,) => {
                   if (
                     mute.has(request.modelId,)
-                    && (request.responseFormat?.json_schema.name === 'archive_block_review')
+                      && (request.responseFormat?.json_schema.name === 'archive_block_review')
                   ) {
                     return {
                       kind: 'schema-mismatch',

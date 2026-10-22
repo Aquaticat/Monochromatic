@@ -152,7 +152,7 @@ function commonSuffixLength({
   let length = 0;
   while (
     (length < a.length)
-    && (length < b.length)
+      && (length < b.length)
       && (a[a.length - 1
         - length] === b[b.length - 1
           - length])
@@ -205,8 +205,8 @@ export function refrainFramesOf(
      */
     const head = clause.points
       .slice(
-        0,
-        REFRAIN_PREFIX_MINIMUM,
+      0,
+      REFRAIN_PREFIX_MINIMUM,
       )
       .join('',);
 
@@ -289,7 +289,7 @@ export function refrainFramesOf(
           - suffixLength;
         if (
           (leftSlot < REFRAIN_SLOT_MINIMUM)
-          || (rightSlot < REFRAIN_SLOT_MINIMUM)
+            || (rightSlot < REFRAIN_SLOT_MINIMUM)
             || (leftSlot > REFRAIN_SLOT_MAXIMUM)
             || (rightSlot > REFRAIN_SLOT_MAXIMUM)
         )
@@ -299,8 +299,8 @@ export function refrainFramesOf(
          */
         const prefix = left.points
           .slice(
-            0,
-            prefixLength,
+          0,
+          prefixLength,
           )
           .join('',);
         /**

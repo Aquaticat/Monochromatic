@@ -33,10 +33,10 @@ const TEXT_SIZE_FACTOR = 2;
  */
 type ActiveInput =
   | { readonly kind: 'idle'; }
-  | {
-    readonly kind: 'editing';
-    readonly input: HTMLInputElement;
-  };
+    | {
+      readonly kind: 'editing';
+      readonly input: HTMLInputElement;
+    };
 
 /**
  Text editing state container.

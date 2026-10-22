@@ -108,8 +108,8 @@ await describe({
             expect(comparison.unlisted,).toHaveLength(0,);
             expect(comparison.aliases
               .map(function toId(model,) {
-              return model.id;
-            },),).toStrictEqual(['syn:large:vision',],);
+                return model.id;
+              },),).toStrictEqual(['syn:large:vision',],);
           },
         },),
 
@@ -137,8 +137,8 @@ await describe({
               catalog: CATALOG,
             },).unlisted
               .map(function toId(model,) {
-              return model.id;
-            },),).toStrictEqual(['hf:someone/Newcomer-1',],);
+                return model.id;
+              },),).toStrictEqual(['hf:someone/Newcomer-1',],);
           },
         },),
 

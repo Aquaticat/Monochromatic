@@ -38,7 +38,7 @@ await describe({
     it({
       name:
         'NAMES ABSENCE as unrecorded rather than as the deterministic decider, because a file written '
-        + 'before the field cannot say which decider it ran and a rebuild from it is an assumption',
+          + 'before the field cannot say which decider it ran and a rebuild from it is an assumption',
       fn: async () => {
         expect(parseSectionPairing({
           value: undefined,
@@ -50,7 +50,7 @@ await describe({
     it({
       name:
         'READS the deterministic decider as its own answer, distinct from absence, since that is the '
-        + 'ordinary production case and an artifact written after the field says it out loud',
+          + 'ordinary production case and an artifact written after the field says it out loud',
       fn: async () => {
         expect(parseSectionPairing({
           value: { kind: 'deterministic', },
@@ -62,7 +62,7 @@ await describe({
     it({
       name:
         'READS a supplied pairing with its pairs in the order recorded, which is what a rebuild hands '
-        + 'back to the aligner in place of its own shape check',
+          + 'back to the aligner in place of its own shape check',
       fn: async () => {
         expect(parseSectionPairing({
           value: {
@@ -98,7 +98,7 @@ await describe({
     it({
       name:
         'ACCEPTS a supplied pairing that names no pairs, echoing what a direct caller consumed rather '
-        + 'than normalising it into the deterministic decider, because the two align differently',
+          + 'than normalising it into the deterministic decider, because the two align differently',
       fn: async () => {
         expect(parseSectionPairing({
           value: {
@@ -116,7 +116,7 @@ await describe({
     it({
       name:
         'REFUSES a decider this version does not name, at the kind path, so a later generation cannot be '
-        + 'read as one of the two this generation understands',
+          + 'read as one of the two this generation understands',
       fn: async () => {
         /**
          Refusal of an unknown decider.
@@ -135,7 +135,7 @@ await describe({
     it({
       name:
         'REFUSES pairs beside the deterministic decider and a missing list beside the supplied one, since '
-        + 'each is a record no builder writes and the exact-key guard is what keeps the file meaning one thing',
+          + 'each is a record no builder writes and the exact-key guard is what keeps the file meaning one thing',
       fn: async () => {
         /**
          Refusal of pairs the deterministic decider cannot carry.
@@ -170,8 +170,8 @@ await describe({
     it({
       name:
         'REFUSES a pairing that stands still or runs back on EITHER side, which is stricter than the block '
-        + 'pairing check on purpose: a section pairing is one translation section per original, and the '
-        + 'agreement step drops any target that fails to advance',
+          + 'pairing check on purpose: a section pairing is one translation section per original, and the '
+          + 'agreement step drops any target that fails to advance',
       fn: async () => {
         for (
           const [label, pairs,] of [
@@ -239,7 +239,7 @@ await describe({
     it({
       name:
         'REFUSES more pairs than the preparation aligned, since every supplied pair becomes one aligned '
-        + 'section and a longer list describes some other pair of documents',
+          + 'section and a longer list describes some other pair of documents',
       fn: async () => {
         /**
          Refusal of a pairing longer than the alignment.
@@ -270,7 +270,7 @@ await describe({
     it({
       name:
         'REFUSES a pair carrying a key this version does not name, at the pair path, for the reason the '
-        + 'block pairing reader gives: an unknown key is a claim this generation cannot interpret',
+          + 'block pairing reader gives: an unknown key is a claim this generation cannot interpret',
       fn: async () => {
         /**
          Refusal of a pair with an invented field.

@@ -103,20 +103,20 @@ export function toJsValue({
   if (node.kind === 'array')
     return node.elements
       .map(function elementToJs(element: JsoncValue,): JsonValue {
-      return toJsValue({ node: element, },);
-    },);
+        return toJsValue({ node: element, },);
+      },);
   return Object.fromEntries(
     node.entries
       .map(function entryToPair(entry,): readonly [
         string,
         JsonValue
       ] {
-      return [
-        entry.key
-          .value,
-        toJsValue({ node: entry.value, },),
-      ];
-    },),
+        return [
+          entry.key
+            .value,
+          toJsValue({ node: entry.value, },),
+        ];
+      },),
   );
 }
 

@@ -33,8 +33,8 @@ export class AdvisorOperationError extends Error {
      */
     const attempts = operation.attempts
       .map(function summary(attempt,): string {
-      return `${attempt.model} attempt ${String(attempt.attempt,)}: ${attempt.diagnostic ?? attempt.state}`;
-    },)
+        return `${attempt.model} attempt ${String(attempt.attempt,)}: ${attempt.diagnostic ?? attempt.state}`;
+      },)
       .join('; ',);
     super(`advisor: ${operation.end === 'caller' ? 'call cancelled' : operation.end === 'deadline' ? 'operation deadline expired' : 'no usable review'}${attempts === '' ? '' : `; ${attempts}`}`,);
     this.name = 'AdvisorOperationError';

@@ -51,7 +51,7 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
 export type SharedRoundRequest<ValueT,> = Omit<
   Parameters<typeof runGatherRound<ValueT>>[0],
   'heardNeeded' | 'modelIds' | 'reserve'
->;
+  >;
 
 /**
  Re-asks, once, every seat whose answer arrived and could not be read, each

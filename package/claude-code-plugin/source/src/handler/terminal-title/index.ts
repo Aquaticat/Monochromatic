@@ -124,7 +124,7 @@ function unexpectedHookEvent(hookEvent: never,): never {
 function titleForEvent(hookEvent: ReadonlyDeep<HookInput>,): string {
   if ((hookEvent.hook_event_name === 'PreToolUse')
     || (hookEvent.hook_event_name === 'PostToolUse'))
-  {
+    {
     return titleForTool(hookEvent,);
   }
   if (hookEvent.hook_event_name === 'PermissionRequest')

@@ -113,7 +113,7 @@ async function throwawayCorpus(
     readonly cloneDir: string;
     readonly commitSha: string;
   }
-> {
+  > {
   // Where the clone lives.
   return await scratchDirWith({
     prefix: 'whiskers-settled-carve-',
@@ -466,7 +466,7 @@ await describe({
         it({
           name:
             'LISTS nothing for a runs directory no pass has settled into, since a missing artifacts '
-            + 'subdirectory is an ordinary state rather than a fault',
+              + 'subdirectory is an ordinary state rather than a fault',
           fn: async () => {
             await using runs = await scratchDir({ prefix: 'whiskers-settled-runs-', },);
             expect(await listSettledEntryIds({ runsDir: runs.path, },),).toEqual([],);
@@ -569,7 +569,7 @@ await describe({
         it({
           name:
             'REPORTS an artifact from before the two-lane shape as legacy, since it records no preparation '
-            + 'and therefore no recipe to carve through',
+              + 'and therefore no recipe to carve through',
           fn: async () => {
             await using runs = await scratchDir({ prefix: 'whiskers-settled-runs-', },);
             await writeArtifactFile({
@@ -592,7 +592,7 @@ await describe({
         it({
           name:
             'READS the recipe a two-lane artifact records, beside its commit, with the supplied section pairing '
-            + 'and the stored block pairing as preparation inputs',
+              + 'and the stored block pairing as preparation inputs',
           fn: async () => {
             await using runs = await scratchDir({ prefix: 'whiskers-settled-runs-', },);
             await writeArtifact({
@@ -615,9 +615,9 @@ await describe({
             expect(settled.corpusSha,).toBe('b'.repeat(40,),);
             expect(settled.recipe
               .sectionPairing,).toEqual([{
-              source: 0,
-              target: 1,
-            },],);
+                source: 0,
+                target: 1,
+              },],);
             expect(settled.recipe
               .blockPairings,).toEqual(new Map(),);
             expect(settled.recipe
@@ -652,9 +652,9 @@ await describe({
               throw new Error(`expected a settled reading, got ${settled.kind}`,);
             expect(settled.recipe
               .unrecorded,).toEqual([
-              'sectionPairing',
-              'blockPairing',
-            ],);
+                'sectionPairing',
+                'blockPairing',
+              ],);
           },
         },),
       ],
@@ -667,7 +667,7 @@ await describe({
         it({
           name:
             'CARVES the pair at the artifact\'s own commit through its recipe, landing on the identity the '
-            + 'artifact records: the deterministic carve of the same pair lands elsewhere',
+              + 'artifact records: the deterministic carve of the same pair lands elsewhere',
           fn: async () => {
             await using corpus = await throwawayCorpus();
             await using runs = await scratchDir({ prefix: 'whiskers-settled-runs-', },);

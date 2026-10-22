@@ -192,10 +192,10 @@ try {
         .setEncoding('utf8',);
       child.stderr
         .on(
-          'data',
-          function captureError(chunk: string,): void {
-        output.stderr += chunk;
-      },
+        'data',
+        function captureError(chunk: string,): void {
+          output.stderr += chunk;
+        },
         );
       /**
        Close occurs after captured stderr has drained.

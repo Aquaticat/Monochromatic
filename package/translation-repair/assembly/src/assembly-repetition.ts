@@ -293,8 +293,8 @@ export function countPhrases(
      */
     const phrase = words
       .slice(
-        at,
-        at + length,
+      at,
+      at + length,
       )
       .join(' ',);
 

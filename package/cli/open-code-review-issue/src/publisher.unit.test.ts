@@ -325,7 +325,7 @@ await describe({
           }
           if (request.endpoint.endsWith('/issues/11',)
             || request.endpoint.endsWith('/issues/12',))
-          {
+            {
             const number = request.endpoint.endsWith('/11',) ? 11 : 12;
             return {
               status: 200,

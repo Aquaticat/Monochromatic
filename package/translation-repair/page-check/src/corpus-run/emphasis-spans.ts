@@ -67,8 +67,8 @@ export type EmphasisSpan = {
 export function oneLine({ text, }: { readonly text: string; },): string {
   return text
     .replaceAll(
-      '\n',
-      ' ',
+    '\n',
+    ' ',
     )
     .split(' ',)
     .filter(function hasWords(piece,): boolean {

@@ -161,9 +161,9 @@ export const dottedKeyArbitrary: Arbitrary<DottedKey> = uniqueArray(
   },
 )
   .map(function build(segments: readonly KeySegment[],) {
-  return {
-    text: segments.map(function each(segment,) { return segment.text; },)
-      .join('.',),
-    path: segments.map(function each(segment,) { return segment.name; },),
-  };
-},);
+    return {
+      text: segments.map(function each(segment,) { return segment.text; },)
+        .join('.',),
+      path: segments.map(function each(segment,) { return segment.name; },),
+    };
+  },);

@@ -385,11 +385,11 @@ await describe({
               return winnerRefusal({ group, },);
             },),).toEqual([
               `ArtifactParseError: artifact parse failed at ${GROUP}.verdict.runOff: `
-              + 'expected no run-off, since the usable ballots left no finalists.',
+                + 'expected no run-off, since the usable ballots left no finalists.',
               `ArtifactParseError: artifact parse failed at ${GROUP}.verdict.runOff: `
-              + 'expected a run-off among OCCURRENCE 1, OCCURRENCE 2, the finalists of ballots with no strict majority.',
+                + 'expected a run-off among OCCURRENCE 1, OCCURRENCE 2, the finalists of ballots with no strict majority.',
               `ArtifactParseError: artifact parse failed at ${GROUP}.verdict.runOff: `
-              + 'expected a run-off among OCCURRENCE 1, OCCURRENCE 2, the finalists of ballots with no strict majority.',
+                + 'expected a run-off among OCCURRENCE 1, OCCURRENCE 2, the finalists of ballots with no strict majority.',
             ],);
           },
         },),
@@ -408,14 +408,14 @@ await describe({
               return winnerRefusal({ group: groupOf({ choices: tied, runOff, }), },);
             },),).toEqual([
               `ArtifactParseError: artifact parse failed at ${GROUP}.verdict.runOff: `
-              + 'expected a quorum of one at least, each seat heard once, and the number of ballots that can be counted '
-              + 'against the finalists.',
+                + 'expected a quorum of one at least, each seat heard once, and the number of ballots that can be counted '
+                + 'against the finalists.',
               `ArtifactParseError: artifact parse failed at ${GROUP}.verdict.runOff: `
-              + 'expected a quorum of one at least, each seat heard once, and the number of ballots that can be counted '
-              + 'against the finalists.',
+                + 'expected a quorum of one at least, each seat heard once, and the number of ballots that can be counted '
+                + 'against the finalists.',
               `ArtifactParseError: artifact parse failed at ${GROUP}.verdict.runOff: `
-              + 'expected a quorum of one at least, each seat heard once, and the number of ballots that can be counted '
-              + 'against the finalists.',
+                + 'expected a quorum of one at least, each seat heard once, and the number of ballots that can be counted '
+                + 'against the finalists.',
             ],);
           },
         },),

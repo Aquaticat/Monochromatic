@@ -101,14 +101,14 @@ export async function cacheVersionSetting(
   const commits = commitsOnceEach({
     commits: cacheAccountCommitsOf({
       output: await cacheAccountGitOutput({
-      args: [
-        '-C',
-        root,
-        'log',
-        '-m',
-        CACHE_ACCOUNT_COMMIT_FORMAT,
-        '-S',
-        version.declaration,
+        args: [
+          '-C',
+          root,
+          'log',
+          '-m',
+          CACHE_ACCOUNT_COMMIT_FORMAT,
+          '-S',
+          version.declaration,
           '--',
           sources,
           ...preSplitSourcesOf({ sources, },),

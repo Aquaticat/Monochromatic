@@ -24,6 +24,6 @@
  */
 export type DeepReadonly<T,> = T extends Date ? T
   : T extends (...args: readonly never[]) => unknown ? T
-  : T extends readonly (infer U)[] ? readonly DeepReadonly<U>[]
-  : T extends object ? { readonly [K in keyof T]: DeepReadonly<T[K]>; }
-  : T;
+    : T extends readonly (infer U)[] ? readonly DeepReadonly<U>[]
+      : T extends object ? { readonly [K in keyof T]: DeepReadonly<T[K]>; }
+        : T;

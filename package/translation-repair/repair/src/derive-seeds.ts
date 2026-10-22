@@ -66,8 +66,8 @@ export function splitSentences({ text, }: { readonly text: string; },): readonly
        */
       const sentence = text
         .slice(
-          sentenceStart,
-          cursor + 1,
+        sentenceStart,
+        cursor + 1,
         )
         .trim();
       if (sentence !== '')
@@ -141,8 +141,8 @@ export function deriveOmissionSeeds(
       );
     },)
     .slice(
-      0,
-      maxSeeds,
+    0,
+    maxSeeds,
     );
 
   return chosen.map(function toSpec(

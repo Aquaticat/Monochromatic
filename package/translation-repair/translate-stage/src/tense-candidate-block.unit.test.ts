@@ -145,9 +145,9 @@ await describe({
               ],
               warned: [
                 '[translation-repair] [tenseCandidateGroups] the text on offer labelled CANDIDATE "repair" was refused by the shared '
-                + 'slice grammar (MDX body refused to parse at 1:25 (micromark-extension-mdx-expression/unexpected-eof); corpus '
-                + 'documents compile as MDX upstream, so failure signals corruption or an unsupported construct.), so its tense '
-                + 'candidates are not listed',
+                  + 'slice grammar (MDX body refused to parse at 1:25 (micromark-extension-mdx-expression/unexpected-eof); corpus '
+                  + 'documents compile as MDX upstream, so failure signals corruption or an unsupported construct.), so its tense '
+                  + 'candidates are not listed',
               ],
             },);
           },

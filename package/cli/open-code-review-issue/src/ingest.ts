@@ -38,7 +38,7 @@ function readResolvedHeadMetadata(
       .input
       .resolved_head
       === ''))
-  {
+    {
     return {};
   }
   return {
@@ -99,7 +99,7 @@ function parseJsonDocument(parsed: unknown,): NormalizedInput {
   if ((!isRecord(parsed,))
     || ((typeof parsed.status) !== 'string')
     || (!Array.isArray(parsed.comments,)))
-  {
+    {
     throw new InputValidationError('input is not a complete OCR result or comment array',);
   }
   /**

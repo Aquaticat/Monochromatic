@@ -80,9 +80,9 @@ export async function namingFixtureGit({
       ...args,
     ],
     extra: {
-    GIT_CONFIG_GLOBAL: devNull,
-    GIT_CONFIG_SYSTEM: devNull,
-  },
+      GIT_CONFIG_GLOBAL: devNull,
+      GIT_CONFIG_SYSTEM: devNull,
+    },
   },);
   return result.stdout;
 }

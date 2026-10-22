@@ -42,7 +42,7 @@ import type { IssueProbeReading, } from '@monochromatic-dev/translation-repair-a
 export type ProbeClaimAttribution = Pick<
   ScreenedDefectClaim,
   'modelId' | 'admissibility'
->;
+  >;
 
 /**
  A region tally whose claims carry attribution only.
@@ -58,12 +58,12 @@ export type ProbeClaimAttribution = Pick<
  */
 export type TelemetryRegionTally =
   & Omit<RegionDefectTally, 'claims'>
-  & {
+    & {
     /**
      Screened claims of this region, attribution only.
      */
-    readonly claims: readonly ProbeClaimAttribution[];
-  };
+      readonly claims: readonly ProbeClaimAttribution[];
+    };
 
 /**
  A probe reading whose region claims carry attribution only.
@@ -75,11 +75,11 @@ export type TelemetryRegionTally =
  */
 export type TelemetryProbeReading =
   & Omit<IssueProbeReading, 'regions'>
-  & {
+    & {
     /**
      Region tallies as the reader lifts them.
      */
-    readonly regions: readonly TelemetryRegionTally[];
-  };
+      readonly regions: readonly TelemetryRegionTally[];
+    };
 
 //endregion Probe attribution

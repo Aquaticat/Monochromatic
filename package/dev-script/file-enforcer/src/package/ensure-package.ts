@@ -107,7 +107,7 @@ function resolvePackageName(
     return UNPROVIDABLE_PACKAGE;
   return entry.overrides[manager]
     ?? entry
-    .effname;
+      .effname;
 }
 
 //endregion Resolve package name

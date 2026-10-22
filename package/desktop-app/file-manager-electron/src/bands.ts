@@ -114,16 +114,16 @@ function deepestDirectChildRow(
       return pane.parent === id;
     },)
     .reduce(
-      function deepest(
-        deepestRow,
-        child,
-      ): number {
+    function deepest(
+      deepestRow,
+      child,
+    ): number {
       return Math.max(
         deepestRow,
         child.row,
       );
     },
-      row,
+    row,
     );
 }
 
@@ -192,11 +192,11 @@ export function computeColumnLayouts(
       widestColumn,
       pane,
     ): number {
-    return Math.max(
-      widestColumn,
-      pane.column,
-    );
-  },
+      return Math.max(
+        widestColumn,
+        pane.column,
+      );
+    },
     -1,
   );
 

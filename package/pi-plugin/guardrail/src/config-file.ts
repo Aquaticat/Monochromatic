@@ -22,16 +22,16 @@ type ConfigReadResult =
      */
     readonly loaded: false;
   }
-  | {
+    | {
     /**
      Whether config file existed.
      */
-    readonly loaded: true;
+      readonly loaded: true;
     /**
      Parsed JSON value.
      */
-    readonly value: unknown;
-  };
+      readonly value: unknown;
+    };
 
 /**
  Error shape with optional Node filesystem code.

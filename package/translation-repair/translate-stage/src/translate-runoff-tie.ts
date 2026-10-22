@@ -88,13 +88,13 @@ export type RunoffTie<ValueT,> =
      */
     readonly basis: TieBasis;
   }
-  | {
+    | {
     /**
      Fewer than two drew weight, or some candidate drew less than the
      leaders, which a further run-off narrows instead.
      */
-    readonly kind: 'unbroken';
-  };
+      readonly kind: 'unbroken';
+    };
 
 /**
  One tied finalist with its preference.

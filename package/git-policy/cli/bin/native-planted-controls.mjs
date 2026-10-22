@@ -135,13 +135,13 @@ async function runPlantedControl({
   // running; the name is the last token of the line.
   const noticed = (run.status !== 0)
     && output.split('\n')
-    .some(function failedLine(line) {
-    return line.trimStart()
-      .startsWith('FAIL ')
-      && line.includes('[')
-      && line.trimEnd()
-      .endsWith(` ${control.failing}`);
-  });
+      .some(function failedLine(line) {
+        return line.trimStart()
+          .startsWith('FAIL ')
+          && line.includes('[')
+          && line.trimEnd()
+            .endsWith(` ${control.failing}`);
+      });
   await writeFile(
     join(
       evidence,

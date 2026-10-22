@@ -65,25 +65,25 @@ export type BlindGround = {
  */
 export type MarkdownGround =
   | BlindGround
-  | {
-    readonly kind: 'read';
+    | {
+      readonly kind: 'read';
 
     /**
      Shape the original carries, read by the strict grammar.
      */
-    readonly source: SliceSkeleton;
+      readonly source: SliceSkeleton;
 
     /**
      Shape the page carries, empty only where there is no page.
      */
-    readonly page: SliceSkeleton;
+      readonly page: SliceSkeleton;
 
     /**
      Grammar that read the page, since a plain-markdown reading is weaker
      evidence than a strict one.
      */
-    readonly pageGrammar: PageGrammar;
-  };
+      readonly pageGrammar: PageGrammar;
+    };
 
 /**
  Both sides of a front-matter slice, or the side no reader read.
@@ -95,19 +95,19 @@ export type MarkdownGround =
  */
 export type FrontMatterGround =
   | BlindGround
-  | {
-    readonly kind: 'read';
+    | {
+      readonly kind: 'read';
 
     /**
      Metadata the original declares.
      */
-    readonly source: FrontMatterBlock;
+      readonly source: FrontMatterBlock;
 
     /**
      Metadata the page carries, absent where there is no page.
      */
-    readonly page?: FrontMatterBlock;
-  };
+      readonly page?: FrontMatterBlock;
+    };
 
 /**
  Whether the floor can pass anything written for a slice.
@@ -119,9 +119,9 @@ export type FrontMatterGround =
  */
 export type FloorReach =
   | BlindGround
-  | {
-    readonly kind: 'comparable';
-  };
+    | {
+      readonly kind: 'comparable';
+    };
 
 /**
  What the floor said of a text on ground it could read: a pass or a
@@ -284,10 +284,10 @@ type FrontMatterSide =
     readonly kind: 'read';
     readonly block: FrontMatterBlock;
   }
-  | {
-    readonly kind: 'unread';
-    readonly detail: string;
-  };
+    | {
+      readonly kind: 'unread';
+      readonly detail: string;
+    };
 
 /**
  Reads one side's front matter, or says why it could not be read.

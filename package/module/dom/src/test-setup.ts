@@ -210,8 +210,8 @@ function parseTrailingExportClause(source: string,): {
   return {
     namedExports: source
       .slice(
-        openBrace + 1,
-        closeBrace,
+      openBrace + 1,
+      closeBrace,
       )
       .trim(),
     clauseStart: wordStart,

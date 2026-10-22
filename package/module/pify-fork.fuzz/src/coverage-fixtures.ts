@@ -260,18 +260,18 @@ Object.defineProperty(
   frozenModule,
   'prop',
   {
-  value(callback: (
-    error: unknown,
-    value: unknown
-  ) => void): void {
-    callback(
-      null,
-      'x',
-    );
+    value(callback: (
+      error: unknown,
+      value: unknown
+    ) => void): void {
+      callback(
+        null,
+        'x',
+      );
+    },
+    writable: false,
+    configurable: false,
   },
-  writable: false,
-  configurable: false,
-},
 );
 
 //endregion Module fixtures

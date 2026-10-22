@@ -25,7 +25,7 @@ await describe({
     it({
       name:
         'ORDERS BY SECTION rather than by insertion, so two runs that agreed the same pairings record the '
-        + 'same bytes however the sections happened to be asked',
+          + 'same bytes however the sections happened to be asked',
       fn: async () => {
         expect(sectionPairingsOf({
           blockPairings: new Map([
@@ -65,7 +65,7 @@ await describe({
     it({
       name:
         'ACCEPTS a map naming nothing and answers with a list naming nothing, which is the recorded form of '
-        + 'a roster asked about every section that committed to none of them',
+          + 'a roster asked about every section that committed to none of them',
       fn: async () => {
         expect(sectionPairingsOf({ blockPairings: new Map(), },),).toEqual([],);
       },
@@ -73,7 +73,7 @@ await describe({
     it({
       name:
         'KEEPS a section whose pairs are empty, since the roster having been asked and agreed nothing is '
-        + 'a different record from the section never having been asked at all',
+          + 'a different record from the section never having been asked at all',
       fn: async () => {
         expect(sectionPairingsOf({
           blockPairings: new Map([[

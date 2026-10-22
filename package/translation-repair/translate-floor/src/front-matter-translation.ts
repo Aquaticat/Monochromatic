@@ -100,12 +100,12 @@ type VisibleIdentityReading =
      */
     readonly alias: string;
   }
-  | {
+    | {
     /**
      Metadata uses another schema and carries no enforceable relation here.
      */
-    readonly kind: 'other-schema';
-  };
+      readonly kind: 'other-schema';
+    };
 
 /**
  Reads standard visible identity fields from parsed metadata, taking an alias

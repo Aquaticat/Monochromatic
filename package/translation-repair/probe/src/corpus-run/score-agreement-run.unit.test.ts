@@ -286,7 +286,7 @@ await describe({
         expect(printed.lines,).toStrictEqual([
           NO_MANIFEST_NOTE,
           'PRECISION items=0 gradeable=0 scored=0 realDefects=0 strict=n/a excluded=n/a lenient=n/a '
-          + 'duplicates=none unscored=none',
+            + 'duplicates=none unscored=none',
           'AGREEMENT compared=0 agreed=0 rate=n/a disagreed=none',
         ],);
       },

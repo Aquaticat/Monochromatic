@@ -192,10 +192,10 @@ await describe({
             dest: refusal.dest,
           }
           : refusal,).toEqual({
-          code: 'EISDIR',
-          syscall: 'rename',
-          dest: path,
-        },);
+            code: 'EISDIR',
+            syscall: 'rename',
+            dest: path,
+          },);
         expect(await readdir(dir,),).toEqual(['Mittens.json',],);
       },
     },),
@@ -291,9 +291,9 @@ await describe({
             syscall: refusal.syscall,
           }
           : refusal,).toEqual({
-          code: 'ENAMETOOLONG',
-          syscall: 'open',
-        },);
+            code: 'ENAMETOOLONG',
+            syscall: 'open',
+          },);
         expect(warned.length,).toBe(1,);
         /**
          What the warning says before and after the unique temporary name the write chose: this process's

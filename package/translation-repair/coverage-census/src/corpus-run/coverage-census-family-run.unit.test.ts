@@ -432,7 +432,7 @@ await describe({
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect(String(refusal,),).toBe(
           `StatedRefusalError: the suite of alpha failed (exit 1, 1 FAIL marker); its log is ${calls.suites[0]?.logPath ?? ''}; `
-          + 'a census of a failing suite would count code its failing tests skipped',
+            + 'a census of a failing suite would count code its failing tests skipped',
         );
         expect(calls.suites.length,).toBe(1,);
         expect(calls.tallies,).toEqual([],);
@@ -533,12 +533,12 @@ await describe({
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect(
           String(refusal,).includes(join(
-          scratch.path,
-          'delta',
-          'dist',
-          'final',
-          'node',
-        ),),
+            scratch.path,
+            'delta',
+            'dist',
+            'final',
+            'node',
+          ),),
         ).toBe(true,);
         expect(calls.suites,).toEqual([],);
       },

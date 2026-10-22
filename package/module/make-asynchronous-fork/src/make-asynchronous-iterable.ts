@@ -84,7 +84,7 @@ export type IterableValue<Wrapped extends IterableFunction> = Wrapped extends (.
  */
 export type AsyncIterableForm<Wrapped extends IterableFunction> = (call: IterableCall<Wrapped>,) => AsyncIterable<
   IterableValue<Wrapped>
->;
+  >;
 
 /**
  Wrapped iterable function plus its abort-signal variant.
@@ -245,7 +245,7 @@ export function makeAsynchronousIterable<const Wrapped extends IterableFunction>
       const outcome = getResult(await worker.request(pendingArguments.next,),) as IteratorResult<
         IterableValue<Wrapped>,
         unknown
-      >;
+        >;
       delete pendingArguments.next;
 
       if (outcome.done === true)
@@ -290,7 +290,7 @@ export function makeAsynchronousIterable<const Wrapped extends IterableFunction>
       return {
         [Symbol.asyncIterator]: function startSignaledIteration(): AsyncGenerator<
           IterableValue<Wrapped>
-        > {
+          > {
           return iterate({
             callArguments: call.args,
             signal,

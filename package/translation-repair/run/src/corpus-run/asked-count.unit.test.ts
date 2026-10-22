@@ -104,18 +104,18 @@ await describe({
       name: 'FALLS BACK when nobody named a count',
       fn: async () => {
         expect(countFrom({
-            typed: [],
-            asks: ASKS,
-          },),).toBe(FALLBACK,);
+          typed: [],
+          asks: ASKS,
+        },),).toBe(FALLBACK,);
       },
     },),
     it({
       name: 'READS the count that was named',
       fn: async () => {
         expect(countFrom({
-            typed: [String(ASKED_FOR,),],
-            asks: ASKS,
-          },),).toBe(ASKED_FOR,);
+          typed: [String(ASKED_FOR,),],
+          asks: ASKS,
+        },),).toBe(ASKED_FOR,);
       },
     },),
     it({
@@ -138,9 +138,9 @@ await describe({
            */
           const refusal = caught(function readsCount(): void {
             countFrom({
-            typed: [count,],
-            asks: ASKS,
-          },);
+              typed: [count,],
+              asks: ASKS,
+            },);
           },);
           expect(refusal,).toBeInstanceOf(StatedRefusalError,);
           return (refusal as Error).message;

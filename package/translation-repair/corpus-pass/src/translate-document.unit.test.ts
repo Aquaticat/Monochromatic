@@ -744,9 +744,9 @@ await describe({
     it({
       name:
         'DISCARDS a cached record that heard NO translator and buys that slice again, which closes '
-        + 'the other end of the no-caching rule: this driver never writes such a record, so one in a '
-        + 'cache came from another build, and resuming it would settle the archive standing by default '
-        + 'without anybody having been asked in this run',
+          + 'the other end of the no-caching rule: this driver never writes such a record, so one in a '
+          + 'cache came from another build, and resuming it would settle the archive standing by default '
+          + 'without anybody having been asked in this run',
       fn: async () => {
         const { persisted, } = await runDriver({},);
 
@@ -842,9 +842,9 @@ await describe({
           .map(function toIndex(record,): number {
             return record.sliceIndex;
           },),).toEqual(firstRun.slices
-          .map(function toIndex(record,): number {
-            return record.sliceIndex;
-          },),);
+            .map(function toIndex(record,): number {
+              return record.sliceIndex;
+            },),);
       },
     },),
 
@@ -891,7 +891,7 @@ await describe({
             .sliceCount,).toBe(1,);
           expect(twins.calls
             .translate,).toBe(single.calls
-            .translate,);
+              .translate,);
           expect(twins.persisted
             .size,).toBe(1,);
           expect(twins.result
@@ -901,16 +901,16 @@ await describe({
           expect(twins.result
             .slices[0]
             ?.outputText,).toBe(twins.result
-            .slices[1]
-            ?.outputText,);
+              .slices[1]
+              ?.outputText,);
           expect(twins.result
             .slices
             .map(function toIndex(record,): number {
               return record.sliceIndex;
             },),).toEqual([
-            0,
-            1,
-          ],);
+              0,
+              1,
+            ],);
         },),);
       },
     },),
@@ -918,9 +918,9 @@ await describe({
     it({
       name:
         'ASKS AGAIN for the twin of a slice NO translator answered, rather than reusing it within the '
-        + 'run. In-run memoization exists to make a cold run settle what a warm run settles, and a warm '
-        + 'run can only resume what reached the cache: nothing did here, so reusing it would make the '
-        + 'two disagree in exactly the case the memoization was added to fix',
+          + 'run. In-run memoization exists to make a cold run settle what a warm run settles, and a warm '
+          + 'run can only resume what reached the cache: nothing did here, so reusing it would make the '
+          + 'two disagree in exactly the case the memoization was added to fix',
       fn: async () => {
         /** Two byte-identical sections on both sides. */
         const twinSource = '## 第一节\n\n猫猫在窗台上打盹。\n\n## 第一节\n\n猫猫在窗台上打盹。\n';
@@ -949,7 +949,7 @@ await describe({
 
         expect(twins.calls
           .translate,).toBe(single.calls
-          .translate * 2,);
+            .translate * 2,);
 
         // WHAT ACTUALLY SEPARATES THE TWO BEHAVIOURS, and it is not the call
         // count: the resume branch refuses an unheard record whatever put it
@@ -1037,7 +1037,7 @@ await describe({
         const overClaimed = await runDriver({ resumed: overClaiming, },);
         expect(overClaimed.result
           .sliceCount - overClaimed.result
-          .resumedSliceCount,).toBe(overClaimingPoisoned,);
+            .resumedSliceCount,).toBe(overClaimingPoisoned,);
         expect(overClaimed.calls
           .translate,).toBeGreaterThan(0,);
         expect(overClaimed.result
@@ -1077,7 +1077,7 @@ await describe({
         const underClaimed = await runDriver({ resumed: underClaiming, },);
         expect(underClaimed.result
           .sliceCount - underClaimed.result
-          .resumedSliceCount,).toBe(underClaimingPoisoned,);
+            .resumedSliceCount,).toBe(underClaimingPoisoned,);
         expect(underClaimed.result
           .findings
           .filter(function namesDiscard(finding,): boolean {
@@ -1432,7 +1432,7 @@ The cat is doing the sleeping on the windowsill.
             .translateAttempts,).toBeGreaterThan(0,);
           expect(twin.calls
             .translateAttempts,).toBe(single.calls
-            .translateAttempts * 2,);
+              .translateAttempts * 2,);
           expect(twin.persisted
             .size,).toBe(0,);
         },),);
@@ -1592,7 +1592,7 @@ The cat is doing the sleeping on the windowsill.
           ?.findings,).toEqual([],);
         expect(anchored.calls
           .translateAttempts,).toBe(plain.calls
-          .translateAttempts,);
+            .translateAttempts,);
 
         // The page keeps what it had, and the passage is still reported.
         expect(anchored.result
@@ -1683,7 +1683,7 @@ The cat is doing the sleeping on the windowsill.
         expect(refusal,).toBe(ENTRY_DEADLINE_FAILURE,);
         expect(messages,).toEqual([
           '[translateDocument] [mapOverlapped] slice 1 failed (refused by RosterConfigurationError), and the caller '
-          + 'stopped the work',
+            + 'stopped the work',
         ],);
       },
     },),

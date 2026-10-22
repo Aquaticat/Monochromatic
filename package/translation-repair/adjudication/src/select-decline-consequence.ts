@@ -58,7 +58,7 @@ export const CHUNK_DECLINE_CONSEQUENCE: string = [
  */
 export const LEAVES_PASSAGE_UNTRANSLATED: string =
   'there is no existing translation of this passage, so declining every candidate leaves it untranslated '
-  + 'rather than falling back on anything';
+    + 'rather than falling back on anything';
 
 /**
  What a decline costs where the passage HAS wording that cannot ship: a

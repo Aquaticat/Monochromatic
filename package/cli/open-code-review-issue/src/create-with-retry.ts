@@ -73,10 +73,10 @@ type CreateAttempt =
     readonly kind: 'response';
     readonly response: IncludedResponse;
   }
-  | {
-    readonly kind: 'process-failure';
-    readonly error: GitHubProcessError | GitHubProcessTimeoutError;
-  };
+    | {
+      readonly kind: 'process-failure';
+      readonly error: GitHubProcessError | GitHubProcessTimeoutError;
+    };
 
 /**
  Creates one raw Issue request and captures retryable process failures.
@@ -115,7 +115,7 @@ async function attemptCreate({
   catch (error: unknown) {
     if ((error instanceof GitHubProcessError)
       || (error instanceof GitHubProcessTimeoutError))
-    {
+      {
       return {
         kind: 'process-failure',
         error,
@@ -152,7 +152,7 @@ function parseCreatedIssue({
       < 1)
     || ((typeof response.body
       .html_url) !== 'string'))
-  {
+    {
     throw new IssuePublicationError(`Issue creation failed with HTTP ${String(response.status,)}`,);
   }
   return {

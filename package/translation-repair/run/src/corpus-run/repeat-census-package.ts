@@ -97,18 +97,18 @@ export function packageControlOf({ entries, }: { readonly entries: readonly Entr
   return controlReadingOf({
     refrain: control.groups
       .some(function coversRefrain(group,): boolean {
-      return (group.kind === 'refrain') && coversAllLines({
-        held: occupiedLinesOf({ occurrences: group.occurrences, },),
-        lines: CONTROL_REFRAIN_LINES,
-      },);
-    },),
+        return (group.kind === 'refrain') && coversAllLines({
+          held: occupiedLinesOf({ occurrences: group.occurrences, },),
+          lines: CONTROL_REFRAIN_LINES,
+        },);
+      },),
     maximal: control.groups
       .some(function coversMaximal(group,): boolean {
-      return (group.kind === 'maximal') && coversAllLines({
-        held: occupiedLinesOf({ occurrences: group.occurrences, },),
-        lines: CONTROL_MAXIMAL_LINES,
-      },);
-    },),
+        return (group.kind === 'maximal') && coversAllLines({
+          held: occupiedLinesOf({ occurrences: group.occurrences, },),
+          lines: CONTROL_MAXIMAL_LINES,
+        },);
+      },),
   },);
 }
 
@@ -131,11 +131,11 @@ export function packageSummary({ entries, }: { readonly entries: readonly EntryG
   const placed = entries.flatMap(function groupsOf(entry,): readonly PlacedGroup[] {
     return entry.groups
       .map(function withEntry(group,): PlacedGroup {
-      return {
-        id: entry.id,
-        group,
-      };
-    },);
+        return {
+          id: entry.id,
+          group,
+        };
+      },);
   },);
   return {
     groups: placed.length,
@@ -161,8 +161,8 @@ export function packageSummary({ entries, }: { readonly entries: readonly EntryG
       ) {
         return total
           + entry.group
-          .unplaced
-          .length;
+            .unplaced
+            .length;
       },
       0,
     ),
@@ -176,8 +176,8 @@ export function packageSummary({ entries, }: { readonly entries: readonly EntryG
         unplacedLines: entry.group
           .unplaced
           .map(function lineOfUnplaced(occurrence,): number {
-          return occurrence.line;
-        },),
+            return occurrence.line;
+          },),
       };
     },),
     control: packageControlOf({ entries, },),

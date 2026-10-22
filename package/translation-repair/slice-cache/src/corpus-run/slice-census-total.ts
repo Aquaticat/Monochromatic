@@ -13,11 +13,11 @@ import type { EntryCensus, } from './slice-census-entry.ts';
  */
 type SliceCensusCountField =
   | 'unpairedSourceSections'
-  | 'unpairedSourceChars'
-  | 'unpairedTargetSections'
-  | 'unpairedTargetChars'
-  | 'targetOnlyBlocks'
-  | 'targetOnlyChars';
+    | 'unpairedSourceChars'
+    | 'unpairedTargetSections'
+    | 'unpairedTargetChars'
+    | 'targetOnlyBlocks'
+    | 'targetOnlyChars';
 
 /**
  Adds one count over every row.

@@ -115,13 +115,13 @@ export async function reportSpendCost({ line, }: { readonly line: CommandLineOf<
    */
   const reckonedCalls = tally.seats
     .reduce(
-      function sum(
-        total,
-        seat,
-      ): number {
-        return total + seat.reckonedCalls;
-      },
-      0,
+    function sum(
+      total,
+      seat,
+    ): number {
+      return total + seat.reckonedCalls;
+    },
+    0,
     );
 
   if (reckonedCalls > 0) {

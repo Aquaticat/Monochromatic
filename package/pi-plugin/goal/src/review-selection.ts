@@ -54,10 +54,10 @@ type PromptedReviewerOutcome =
     readonly eligible: true;
     readonly prompted: PromptedReviewer;
   }
-  | {
-    readonly eligible: false;
-    readonly diagnostic: string;
-  };
+    | {
+      readonly eligible: false;
+      readonly diagnostic: string;
+    };
 
 /**
  Candidate authentication outcome.
@@ -67,10 +67,10 @@ type AuthenticatedReviewerOutcome =
     readonly authenticated: true;
     readonly candidate: GoalReviewerCandidate;
   }
-  | {
-    readonly authenticated: false;
-    readonly diagnostic: string;
-  };
+    | {
+      readonly authenticated: false;
+      readonly diagnostic: string;
+    };
 
 /**
  Candidate not present in finite authenticated reviewer pool.

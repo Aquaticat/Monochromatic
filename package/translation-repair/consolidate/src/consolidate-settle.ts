@@ -89,13 +89,13 @@ import type {
  */
 export type ConsolidationTerminal =
   | 'incumbent-only'
-  | 'no-standing-text'
-  | 'slate-endorsed-standing'
-  | 'slate-unjudged-standing'
-  | 'slate-declined-standing'
-  | 'gate-kept-standing'
-  | 'wrap-erased-difference'
-  | 'consolidated';
+    | 'no-standing-text'
+    | 'slate-endorsed-standing'
+    | 'slate-unjudged-standing'
+    | 'slate-declined-standing'
+    | 'gate-kept-standing'
+    | 'wrap-erased-difference'
+    | 'consolidated';
 
 /**
  Which slate terminal a judged round ends in, per decision.

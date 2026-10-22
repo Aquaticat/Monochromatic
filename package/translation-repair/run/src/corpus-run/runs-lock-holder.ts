@@ -60,12 +60,12 @@ export type LockIdentity =
      */
     startTicks: string;
   }>
-  | Readonly<{
+    | Readonly<{
     /**
      Written by an earlier build, or on a system without `/proc`.
      */
-    kind: 'unrecorded';
-  }>;
+      kind: 'unrecorded';
+    }>;
 
 /**
  What a lock file records about its holder.
@@ -124,12 +124,12 @@ export type HolderRead =
      */
     holder: LockHolder;
   }>
-  | Readonly<{
+    | Readonly<{
     /**
      Lock file said nothing this can act on.
      */
-    kind: 'unreadable';
-  }>;
+      kind: 'unreadable';
+    }>;
 
 /**
  How a live holder was judged, which the refusal states so an operator knows
@@ -162,17 +162,17 @@ export type Liveness =
      */
     judgedBy: Exclude<HeldJudgement, 'race'>;
   }>
-  | Readonly<{
+    | Readonly<{
     /**
      The holder ended; the lock is taken over.
      */
-    state: 'gone';
+      state: 'gone';
 
     /**
      The evidence it ended, for the takeover line.
      */
-    judgedBy: 'boot' | 'identity' | 'pid';
-  }>;
+      judgedBy: 'boot' | 'identity' | 'pid';
+    }>;
 
 /**
  What the lock file carries on disk: the holder with its identity laid flat,

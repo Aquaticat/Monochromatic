@@ -265,11 +265,11 @@ export type SourceAnchorKind =
    The issue anchors an empty span: a real place in the original with no
    text at it, which is how an insertion is correctly anchored.
    */
-  | 'insertion-point'
+    | 'insertion-point'
   /**
    The issue anchors nothing in the original at all.
    */
-  | 'unanchored';
+    | 'unanchored';
 
 /**
  One anchored span the grading extraction reads: which document side it

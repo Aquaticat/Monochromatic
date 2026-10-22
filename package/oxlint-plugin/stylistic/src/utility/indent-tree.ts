@@ -360,14 +360,14 @@ export function tokenOwnerRecordIndexes({
     },).start;
     while (
       (recordCursor < records.length)
-      && (at({
-        arr: records,
-        index: recordCursor,
-      },).node.start <= tokenStart)
+        && (at({
+          arr: records,
+          index: recordCursor,
+        },).node.start <= tokenStart)
     ) {
       while (
         (containmentStack.length > 0)
-        && (topRecordEnd() <= tokenStart)
+          && (topRecordEnd() <= tokenStart)
       ) {
         containmentStack.pop();
       }
@@ -376,7 +376,7 @@ export function tokenOwnerRecordIndexes({
     }
     while (
       (containmentStack.length > 0)
-      && (topRecordEnd() <= tokenStart)
+        && (topRecordEnd() <= tokenStart)
     ) {
       containmentStack.pop();
     }

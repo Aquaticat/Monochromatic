@@ -53,7 +53,7 @@ export function onLoadSetCssFromUrlParams(allowedProperties?: Iterable<string>,)
           .setProperty(
           key,
           value,
-        );
+          );
       }
     }
   }
@@ -65,7 +65,7 @@ export function onLoadSetCssFromUrlParams(allowedProperties?: Iterable<string>,)
         .setProperty(
         key,
         value,
-      );
+        );
     }
   }
 }

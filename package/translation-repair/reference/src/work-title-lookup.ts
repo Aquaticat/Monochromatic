@@ -222,12 +222,12 @@ export function bareTitleOf(
 ): string {
   return title
     .replaceAll(
-      '《',
-      '',
+    '《',
+    '',
     )
     .replaceAll(
-      '》',
-      '',
+    '》',
+    '',
     );
 }
 

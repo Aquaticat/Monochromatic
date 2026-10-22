@@ -45,12 +45,12 @@ export type DefineCatalanLocaleInput<
   Subject extends string,
   Verb extends string,
   Noun extends string,
-> = {
-  readonly labels: Readonly<Record<Label, string>>;
-  readonly subjects: Readonly<Record<Subject, SubjectEntry>>;
-  readonly nouns: Readonly<Record<Noun, NounEntry>>;
-  readonly verbs: Readonly<Record<Verb, CatalanVerbEntry>>;
-};
+  > = {
+    readonly labels: Readonly<Record<Label, string>>;
+    readonly subjects: Readonly<Record<Subject, SubjectEntry>>;
+    readonly nouns: Readonly<Record<Noun, NounEntry>>;
+    readonly verbs: Readonly<Record<Verb, CatalanVerbEntry>>;
+  };
 
 /**
  Catalan does not pin any tokens out of the casing pipeline; the invariant set is empty.

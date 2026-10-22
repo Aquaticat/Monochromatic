@@ -369,23 +369,23 @@ await describe({
         /** The stored records, read back as the cache would hand them over. */
         const resumed = new Map([...first.persisted
           .entries(),].map(function toRecord([key, serialized,],): readonly [
-          string,
-          StoredRound,
-        ] {
-          return [
-            key,
-            storedRoundOf(serialized,),
-          ];
-        },),);
+            string,
+            StoredRound,
+          ] {
+            return [
+              key,
+              storedRoundOf(serialized,),
+            ];
+          },),);
         const second = await runRound({ resumed, },);
         expect(second.calls
           .count,).toBe(0,);
         expect(second.round
           .pairing,).toEqual(first.round
-          .pairing,);
+            .pairing,);
         expect(second.round
           .findings,).toEqual(first.round
-          .findings,);
+            .findings,);
       },
     },),
 
@@ -445,9 +445,9 @@ await describe({
             persisted: fresh.persisted.get(key,),
             warned: [
               `warn the section pairing cache misses: the record under ${key} does not fit its sections (${refusal}), `
-              + 'so the roster is asked again',
+                + 'so the roster is asked again',
               'warn the aligner refused sections on this document: asking 2 voices which of 3 original sections '
-              + 'render as which of 2 translation sections',
+                + 'render as which of 2 translation sections',
             ],
           },);
         },
@@ -462,14 +462,14 @@ await describe({
         /** The stored records, read back as the cache would hand them over. */
         const resumed = new Map([...first.persisted
           .entries(),].map(function toRecord([key, serialized,],): readonly [
-          string,
-          StoredRound,
-        ] {
-          return [
-            key,
-            storedRoundOf(serialized,),
-          ];
-        },),);
+            string,
+            StoredRound,
+          ] {
+            return [
+              key,
+              storedRoundOf(serialized,),
+            ];
+          },),);
         const second = await runRound({
           resumed,
           modelIds: OTHER_ROSTER,

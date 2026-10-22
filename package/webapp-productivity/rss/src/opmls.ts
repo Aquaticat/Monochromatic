@@ -91,8 +91,8 @@ export const OPMLS_SCHEMA: v.GenericSchema<string[], string[]> = v.array(
             === 'http:') || (u.protocol
               === 'https:'))
             && v
-            .DOMAIN_REGEX
-            .test(u.hostname,);
+              .DOMAIN_REGEX
+              .test(u.hostname,);
         },
         'Invalid HTTP(S) URL with valid domain',
       ),

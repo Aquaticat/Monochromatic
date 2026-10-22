@@ -503,7 +503,7 @@ await describe({
 
             expect(warned,).toEqual([
               '[gateProvider] hyper meter could not be read: refused by ProviderHttpError from hyper with HTTP 401 (the '
-              + 'provider said: "this cat has no collar tag")',
+                + 'provider said: "this cat has no collar tag")',
             ],);
             expect(result,).toBe(reason,);
           },

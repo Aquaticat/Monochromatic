@@ -149,7 +149,7 @@ async function main(): Promise<void> {
   catch (error) {
     if (
       (error !== null)
-      && ((typeof error) === 'object')
+        && ((typeof error) === 'object')
         && ('exitCode' in error)
     ) {
       /* oxlint-disable typescript/no-unsafe-type-assertion -- 'exitCode' in check above narrows to subprocess shape */
@@ -214,7 +214,7 @@ async function main(): Promise<void> {
         !== undefined)
         && (subprocessError.signalName
           !== ''))
-      {
+        {
         console.error(
           `[task-tsc] tsc terminated by signal: ${subprocessError.signalName}`,
         );

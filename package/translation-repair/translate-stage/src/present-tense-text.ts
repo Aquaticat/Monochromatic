@@ -154,12 +154,12 @@ export function visibleWords({ text, }: { readonly text: string; },): string {
    */
   const unmarked = text
     .replaceAll(
-      '*',
-      '',
+    '*',
+    '',
     )
     .replaceAll(
-      '`',
-      '',
+    '`',
+    '',
     );
   /**
    Paragraph with each link reduced to its label.
@@ -249,12 +249,12 @@ function maskSingleCurlyQuotations({ text, }: { readonly text: string; },): stri
    */
   const straight = text
     .replaceAll(
-      '‘',
-      '\'',
+    '‘',
+    '\'',
     )
     .replaceAll(
-      '’',
-      '\'',
+    '’',
+    '\'',
     );
   /**
    Offsets of the paired marks.

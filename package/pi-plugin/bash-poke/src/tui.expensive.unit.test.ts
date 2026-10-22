@@ -105,7 +105,7 @@ const SETTLE_MS = 1_000;
  nested agent from inside one is how recursive token burn starts.
  */
 const skipOptions = ((process.env.PI_CODING_AGENT !== undefined)
-    && (process.env[TUI_OVERRIDE_FLAG] !== '1'))
+  && (process.env[TUI_OVERRIDE_FLAG] !== '1'))
   ? {
     skip: `skipped inside a Pi session; set ${TUI_OVERRIDE_FLAG}=1 to run it anyway`,
   }

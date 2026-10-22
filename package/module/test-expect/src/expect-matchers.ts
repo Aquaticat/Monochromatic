@@ -150,31 +150,31 @@ export function buildMatchers(
        @mutates args - `chaiExpect(firstCallArgs,).to.deep.equal` may inspect caller getters or proxy traps.
        */
       function toHaveBeenCalledExactlyOnceWith(
-      ...args: readonly unknown[]
-    ): void {
+        ...args: readonly unknown[]
+      ): void {
       /* oxlint-disable no-unsafe-type-assertion -- actual is expected to be a sinon spy */
       /**
        Captured spy reference reused across the call-count and first-call argument assertions.
        */
-      const spy = actual as SinonSpy;
+        const spy = actual as SinonSpy;
       /* oxlint-enable no-unsafe-type-assertion */
 
-      chaiExpect(
-        spy.callCount,
-        'expected spy to have been called exactly once',
-      )
-        .to
-        .equal(1,);
+        chaiExpect(
+          spy.callCount,
+          'expected spy to have been called exactly once',
+        )
+          .to
+          .equal(1,);
       /**
        First spy-call arguments retained before assertion formatting.
        */
-      const firstCallArgs = spy.firstCall
-        .args;
-      chaiExpect(firstCallArgs,)
-        .to
-        .deep
-        .equal([...args,],);
-    },
+        const firstCallArgs = spy.firstCall
+          .args;
+        chaiExpect(firstCallArgs,)
+          .to
+          .deep
+          .equal([...args,],);
+      },
 
     toHaveBeenCalledTimes: function toHaveBeenCalledTimes(count: number,): void {
       a.to
@@ -200,31 +200,31 @@ export function buildMatchers(
        @mutates args - `chaiExpect(lastCall.args,).to.deep.equal` may inspect caller getters or proxy traps.
        */
       function toHaveBeenLastCalledWith(
-      ...args: readonly unknown[]
-    ): void {
+        ...args: readonly unknown[]
+      ): void {
       /* oxlint-disable no-unsafe-type-assertion -- actual is expected to be a sinon spy with lastCall property */
       /**
        Captured spy reference so the `lastCall` destructure below reads from a typed value.
        */
-      const spy = actual as SinonSpy;
+        const spy = actual as SinonSpy;
       /* oxlint-enable no-unsafe-type-assertion */
       /**
        Destructured most recent call so subsequent assertions read directly without re-accessing the spy.
        */
-      const { lastCall, } = spy;
+        const { lastCall, } = spy;
 
-      chaiExpect(
-        lastCall,
-        'expected spy to have been called at least once',
-      )
-        .to
-        .not
-        .equal(null,);
-      chaiExpect(lastCall.args,)
-        .to
-        .deep
-        .equal([...args,],);
-    },
+        chaiExpect(
+          lastCall,
+          'expected spy to have been called at least once',
+        )
+          .to
+          .not
+          .equal(null,);
+        chaiExpect(lastCall.args,)
+          .to
+          .deep
+          .equal([...args,],);
+      },
 
     toHaveBeenNthCalledWith:
       /**
@@ -237,32 +237,32 @@ export function buildMatchers(
        @mutates args - `chaiExpect(nthCall.args,).to.deep.equal` may inspect caller getters or proxy traps.
        */
       function toHaveBeenNthCalledWith(
-      n: number,
-      ...args: readonly unknown[]
-    ): void {
+        n: number,
+        ...args: readonly unknown[]
+      ): void {
       /* oxlint-disable no-unsafe-type-assertion -- actual is expected to be a sinon spy with getCall method */
       /**
        Captured spy reference so `getCall` below reads from a typed value.
        */
-      const spy = actual as SinonSpy;
+        const spy = actual as SinonSpy;
       /* oxlint-enable no-unsafe-type-assertion */
       /**
        Captured call at the requested 1-based index, reused for the null check and argument comparison.
        */
-      const nthCall = spy.getCall(n - 1,);
+        const nthCall = spy.getCall(n - 1,);
 
-      chaiExpect(
-        nthCall,
-        `expected spy to have been called at least ${String(n,)} times`,
-      )
-        .to
-        .not
-        .equal(null,);
-      chaiExpect(nthCall.args,)
-        .to
-        .deep
-        .equal([...args,],);
-    },
+        chaiExpect(
+          nthCall,
+          `expected spy to have been called at least ${String(n,)} times`,
+        )
+          .to
+          .not
+          .equal(null,);
+        chaiExpect(nthCall.args,)
+          .to
+          .deep
+          .equal([...args,],);
+      },
 
     toHaveReturned: function toHaveReturned(): void {
       /* oxlint-disable no-unsafe-type-assertion -- actual is expected to be a sinon spy */
@@ -276,9 +276,9 @@ export function buildMatchers(
        */
       const hasReturned = spy.getCalls()
         .some(function didReturn(call,) {
-        return call.exception
-          === undefined;
-      },);
+          return call.exception
+            === undefined;
+        },);
 
       chaiExpect(
         hasReturned,
@@ -286,7 +286,7 @@ export function buildMatchers(
       )
         .to
         .equal(
-          true,
+        true,
         );
     },
 
@@ -325,10 +325,10 @@ export function buildMatchers(
        @mutates expected - `a.to.have.returned` may inspect caller getters or proxy traps.
        */
       function toHaveReturnedWith(expected: unknown,): void {
-      a.to
-        .have
-        .returned(expected,);
-    },
+        a.to
+          .have
+          .returned(expected,);
+      },
 
     toHaveLastReturnedWith:
       /**
@@ -343,25 +343,25 @@ export function buildMatchers(
       /**
        Captured spy reference so the `lastCall` destructure below reads from a typed value.
        */
-      const spy = actual as SinonSpy;
+        const spy = actual as SinonSpy;
       /* oxlint-enable no-unsafe-type-assertion */
       /**
        Destructured most recent call so subsequent assertions read directly without re-accessing the spy.
        */
-      const { lastCall, } = spy;
+        const { lastCall, } = spy;
 
-      chaiExpect(
-        lastCall,
-        'expected spy to have been called at least once',
-      )
-        .to
-        .not
-        .equal(null,);
-      chaiExpect(lastCall.returnValue,)
-        .to
-        .deep
-        .equal(expected,);
-    },
+        chaiExpect(
+          lastCall,
+          'expected spy to have been called at least once',
+        )
+          .to
+          .not
+          .equal(null,);
+        chaiExpect(lastCall.returnValue,)
+          .to
+          .deep
+          .equal(expected,);
+      },
 
     toHaveNthReturnedWith:
       /**
@@ -374,32 +374,32 @@ export function buildMatchers(
        @mutates expected - `chaiExpect(nthCall.returnValue,).to.deep.equal` may inspect caller getters or proxy traps.
        */
       function toHaveNthReturnedWith(
-      n: number,
-      expected: unknown,
-    ): void {
+        n: number,
+        expected: unknown,
+      ): void {
       /* oxlint-disable no-unsafe-type-assertion -- actual is expected to be a sinon spy */
       /**
        Captured spy reference so `getCall` below reads from a typed value.
        */
-      const spy = actual as SinonSpy;
+        const spy = actual as SinonSpy;
       /* oxlint-enable no-unsafe-type-assertion */
       /**
        Captured call at the requested 1-based index, reused for the null check and return-value comparison.
        */
-      const nthCall = spy.getCall(n - 1,);
+        const nthCall = spy.getCall(n - 1,);
 
-      chaiExpect(
-        nthCall,
-        `expected spy to have been called at least ${String(n,)} times`,
-      )
-        .to
-        .not
-        .equal(null,);
-      chaiExpect(nthCall.returnValue,)
-        .to
-        .deep
-        .equal(expected,);
-    },
+        chaiExpect(
+          nthCall,
+          `expected spy to have been called at least ${String(n,)} times`,
+        )
+          .to
+          .not
+          .equal(null,);
+        chaiExpect(nthCall.returnValue,)
+          .to
+          .deep
+          .equal(expected,);
+      },
     //endregion sinon-chai matchers
   };
 }

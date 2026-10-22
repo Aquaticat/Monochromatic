@@ -232,11 +232,11 @@ function requireJudgedRound(
         entry,
         index,
       ): SelectionBallot {
-      return requireBallot({
-        value: entry,
-        path: `${path}.ballots[${String(index,)}]`,
-      },);
-    },),
+        return requireBallot({
+          value: entry,
+          path: `${path}.ballots[${String(index,)}]`,
+        },);
+      },),
     tally: {
       judgesAvailable: requireCount({
         value: tally.judgesAvailable,
@@ -263,11 +263,11 @@ function requireJudgedRound(
         entry,
         index,
       ): CandidateWeight {
-      return requireCandidateWeight({
-        value: entry,
-        path: `${path}.perCandidate[${String(index,)}]`,
-      },);
-    },),
+        return requireCandidateWeight({
+          value: entry,
+          path: `${path}.perCandidate[${String(index,)}]`,
+        },);
+      },),
   };
 
   // THE TWO OUTCOMES CARRY DIFFERENT FIELDS, and reading a declined round's
@@ -404,30 +404,30 @@ export function readRepairRounds(
     /**
      Where this chunk sits, for every message below it.
      */
-    const at = `${path}.chunks[${String(index,)}]`;
+      const at = `${path}.chunks[${String(index,)}]`;
 
     /**
      Chunk as a record.
      */
-    const record = requireRecord({
-      value: chunk,
-      path: at,
-    },);
-
-    return requireArray({
-      value: record.rounds,
-      path: `${at}.rounds`,
-    },)
-      .map(function toRound(
-        round,
-        roundIndex,
-      ): RepairJudgedRound {
-      return requireJudgedRound({
-        value: round,
-        path: `${at}.rounds[${String(roundIndex,)}]`,
+      const record = requireRecord({
+        value: chunk,
+        path: at,
       },);
+
+      return requireArray({
+        value: record.rounds,
+        path: `${at}.rounds`,
+      },)
+        .map(function toRound(
+          round,
+          roundIndex,
+        ): RepairJudgedRound {
+          return requireJudgedRound({
+            value: round,
+            path: `${at}.rounds[${String(roundIndex,)}]`,
+          },);
+        },);
     },);
-  },);
 }
 
 //endregion Artifact rounds read

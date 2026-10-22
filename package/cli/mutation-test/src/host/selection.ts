@@ -191,8 +191,8 @@ export function stemsRelated(options: {
    */
   const bareStem = options.testName
     .slice(
-      0,
-      -UNIT_TEST_SUFFIX.length,
+    0,
+    -UNIT_TEST_SUFFIX.length,
     );
   return (bareStem === options.sourceStem)
     || bareStem.startsWith(`${options.sourceStem}.`,);
@@ -240,8 +240,8 @@ export async function selectTests(options: {
     .at(-1,)
     ?? options.sourceFile)
     .replace(
-      '.ts',
-      '',
+    '.ts',
+    '',
     );
   /**
    Package-level integration test included for every source file when

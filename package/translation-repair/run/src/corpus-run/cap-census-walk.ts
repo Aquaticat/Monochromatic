@@ -54,12 +54,12 @@ type PendingPath = {
  */
 type Visit =
   | { readonly kind: 'log'; }
-  | {
-    readonly kind: 'children';
-    readonly children: readonly PendingPath[]
-  }
-  | { readonly kind: 'nothing'; }
-  | { readonly kind: 'unreadable'; };
+    | {
+      readonly kind: 'children';
+      readonly children: readonly PendingPath[]
+    }
+    | { readonly kind: 'nothing'; }
+    | { readonly kind: 'unreadable'; };
 
 /**
  Says on stderr that a path could not be read, with what the system answered.

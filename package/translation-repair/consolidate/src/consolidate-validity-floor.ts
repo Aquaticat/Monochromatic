@@ -64,15 +64,15 @@ export type SlateFloor =
      */
     readonly validModelIds: readonly string[];
   }
-  | {
-    readonly kind: 'incumbent-only';
+    | {
+      readonly kind: 'incumbent-only';
 
     /**
      Every voice whose proposal was refused, so the record says who wrote a
      candidate that could not ship rather than only that none could.
      */
-    readonly refusedModelIds: readonly string[];
-  };
+      readonly refusedModelIds: readonly string[];
+    };
 
 /**
  Decides whether a consolidation slate has anything the gate can be asked about.

@@ -70,8 +70,8 @@ export async function probeLogDirectory(directory: string,): Promise<void> {
    */
   const timestamp = new Date().toISOString()
     .replaceAll(
-      ':',
-      '-',
+    ':',
+    '-',
     );
   /**
    Probe path outside the log name family,
@@ -145,8 +145,8 @@ export function newLogFilePath(directory: string,): string {
    */
   const timestamp = new Date().toISOString()
     .replaceAll(
-      ':',
-      '-',
+    ':',
+    '-',
     );
   /**
    Day directory of this file's first record,

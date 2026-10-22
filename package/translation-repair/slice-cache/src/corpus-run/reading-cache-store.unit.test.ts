@@ -108,22 +108,22 @@ await describe({
        Two readers agreeing about a picture of a cat, as the pair stage
        records one.
        */
-      const record = {
-        kind: 'corroborated',
-        readings: [
-          {
-            modelId: 'whiskers/reader-a',
-            text: '喵喵 sat on the mat',
-          },
-          {
-            modelId: 'whiskers/reader-b',
-            text: '喵喵 sits on a mat',
-          },
-        ],
-        overlap: 0.71,
-      };
+        const record = {
+          kind: 'corroborated',
+          readings: [
+            {
+              modelId: 'whiskers/reader-a',
+              text: '喵喵 sat on the mat',
+            },
+            {
+              modelId: 'whiskers/reader-b',
+              text: '喵喵 sits on a mat',
+            },
+          ],
+          overlap: 0.71,
+        };
 
-      expect((await roundTrip({ record, },)).get(KEY,),).toStrictEqual(record,);
+        expect((await roundTrip({ record, },)).get(KEY,),).toStrictEqual(record,);
       },
     },),
     it({
@@ -135,12 +135,12 @@ await describe({
       /**
        A photograph of a cat, which the deterministic reader found nothing on.
        */
-      const record = {
-        kind: 'no-text',
-        characters: 3,
-      };
+        const record = {
+          kind: 'no-text',
+          characters: 3,
+        };
 
-      expect((await roundTrip({ record, },)).get(KEY,),).toStrictEqual(record,);
+        expect((await roundTrip({ record, },)).get(KEY,),).toStrictEqual(record,);
       },
     },),
     it({
@@ -150,28 +150,28 @@ await describe({
       /**
        A disagreement, with both readings kept.
        */
-      const record = {
-        kind: 'unavailable',
-        reason: 'readers-disagree',
-        perReader: [
-          '',
-          '',
-        ],
-        transient: false,
-        overlap: 0.11,
-        readings: [
-          {
-            modelId: 'whiskers/reader-a',
-            text: 'a tabby beside a bowl',
-          },
-          {
-            modelId: 'whiskers/reader-b',
-            text: 'handwritten notes about kibble',
-          },
-        ],
-      };
+        const record = {
+          kind: 'unavailable',
+          reason: 'readers-disagree',
+          perReader: [
+            '',
+            '',
+          ],
+          transient: false,
+          overlap: 0.11,
+          readings: [
+            {
+              modelId: 'whiskers/reader-a',
+              text: 'a tabby beside a bowl',
+            },
+            {
+              modelId: 'whiskers/reader-b',
+              text: 'handwritten notes about kibble',
+            },
+          ],
+        };
 
-      expect((await roundTrip({ record, },)).get(KEY,),).toStrictEqual(record,);
+        expect((await roundTrip({ record, },)).get(KEY,),).toStrictEqual(record,);
       },
     },),
     it({
@@ -183,14 +183,14 @@ await describe({
        A picture no reader was available for, where there was no reading to
        keep.
        */
-      const record = {
-        kind: 'unavailable',
-        reason: 'no-reader-available',
-        perReader: [ 'no vision reader in the roster', ],
-        transient: false,
-      };
+        const record = {
+          kind: 'unavailable',
+          reason: 'no-reader-available',
+          perReader: [ 'no vision reader in the roster', ],
+          transient: false,
+        };
 
-      expect((await roundTrip({ record, },)).get(KEY,),).toStrictEqual(record,);
+        expect((await roundTrip({ record, },)).get(KEY,),).toStrictEqual(record,);
       },
     },),
     it({
@@ -200,14 +200,14 @@ await describe({
       /**
        A verdict resting on one reader failing for now.
        */
-      const record = {
-        kind: 'unavailable',
-        reason: 'one-reader-only',
-        perReader: [ 'whiskers/reader-b: reader-failed', ],
-        transient: true,
-      };
+        const record = {
+          kind: 'unavailable',
+          reason: 'one-reader-only',
+          perReader: [ 'whiskers/reader-b: reader-failed', ],
+          transient: true,
+        };
 
-      expect((await roundTrip({ record, },)).has(KEY,),).toBe(false,);
+        expect((await roundTrip({ record, },)).has(KEY,),).toBe(false,);
       },
     },),
     it({
@@ -217,20 +217,20 @@ await describe({
       /**
        A verdict in the older shape, which cannot say whether it was transient.
        */
-      const record = {
-        kind: 'unavailable',
-        reason: 'no-reader-available',
-        perReader: [ 'whiskers/reader-a: reader-failed', ],
-      };
+        const record = {
+          kind: 'unavailable',
+          reason: 'no-reader-available',
+          perReader: [ 'whiskers/reader-a: reader-failed', ],
+        };
 
-      expect((await roundTrip({ record, },)).has(KEY,),).toBe(false,);
+        expect((await roundTrip({ record, },)).has(KEY,),).toBe(false,);
       },
     },),
     it({
       name: 'REFUSES a no-text record carrying no character count, since the count is what '
         + 'separates a clean nothing from a few characters below the line',
       fn: async () => {
-      expect((await roundTrip({ record: { kind: 'no-text', }, },)).has(KEY,),).toBe(false,);
+        expect((await roundTrip({ record: { kind: 'no-text', }, },)).has(KEY,),).toBe(false,);
       },
     },),
     it({
@@ -241,85 +241,85 @@ await describe({
       /**
        A photograph of a cat on a machine with no OCR reader installed.
        */
-      const record = {
-        kind: 'no-text',
-        deterministicUnavailable: 'ocr-tool-missing',
-        confirmedBy: [
-          'whiskers/reader-a',
-          'whiskers/reader-b',
-        ],
-      };
+        const record = {
+          kind: 'no-text',
+          deterministicUnavailable: 'ocr-tool-missing',
+          confirmedBy: [
+            'whiskers/reader-a',
+            'whiskers/reader-b',
+          ],
+        };
 
-      expect((await roundTrip({ record, },)).get(KEY,),).toStrictEqual(record,);
+        expect((await roundTrip({ record, },)).get(KEY,),).toStrictEqual(record,);
       },
     },),
     it({
       name: 'REFUSES a no-text record whose deterministic reader was unavailable for a reason that reader '
         + 'never gives',
       fn: async () => {
-      expect((await roundTrip({
-        record: {
-          kind: 'no-text',
-          deterministicUnavailable: 'nap-time',
-          confirmedBy: [
-            'whiskers/reader-a',
-            'whiskers/reader-b',
-          ],
-        },
-      },)).has(KEY,),).toBe(false,);
+        expect((await roundTrip({
+          record: {
+            kind: 'no-text',
+            deterministicUnavailable: 'nap-time',
+            confirmedBy: [
+              'whiskers/reader-a',
+              'whiskers/reader-b',
+            ],
+          },
+        },)).has(KEY,),).toBe(false,);
       },
     },),
     it({
       name: 'REFUSES a no-text record whose deterministic reader was unavailable and that names no readers '
         + 'confirming it, or readers that are not names, since that confirmation is then the whole verdict',
       fn: async () => {
-      expect((await roundTrip({
-        record: {
-          kind: 'no-text',
-          deterministicUnavailable: 'ocr-failed',
-        },
-      },)).has(KEY,),).toBe(false,);
-      expect((await roundTrip({
-        record: {
-          kind: 'no-text',
-          deterministicUnavailable: 'ocr-failed',
-          confirmedBy: [5,],
-        },
-      },)).has(KEY,),).toBe(false,);
+        expect((await roundTrip({
+          record: {
+            kind: 'no-text',
+            deterministicUnavailable: 'ocr-failed',
+          },
+        },)).has(KEY,),).toBe(false,);
+        expect((await roundTrip({
+          record: {
+            kind: 'no-text',
+            deterministicUnavailable: 'ocr-failed',
+            confirmedBy: [5,],
+          },
+        },)).has(KEY,),).toBe(false,);
       },
     },),
     it({
       name: 'REFUSES a corroborated record carrying no overlap, so a record written before '
         + 'agreement was measured cannot resume as though it had been',
       fn: async () => {
-      expect(
-        (await roundTrip({
-          record: {
-            kind: 'corroborated',
-            readings: [
-              {
-                modelId: 'whiskers/reader-a',
-                text: 'a cat',
-              },
-            ],
-          },
-        },)).has(KEY,),
-      ).toBe(false,);
+        expect(
+          (await roundTrip({
+            record: {
+              kind: 'corroborated',
+              readings: [
+                {
+                  modelId: 'whiskers/reader-a',
+                  text: 'a cat',
+                },
+              ],
+            },
+          },)).has(KEY,),
+        ).toBe(false,);
       },
     },),
     it({
       name: 'REFUSES a corroborated record whose reading does not name its model, because a '
         + 'transcription nobody is attributed for cannot be shown to a judge as evidence',
       fn: async () => {
-      expect(
-        (await roundTrip({
-          record: {
-            kind: 'corroborated',
-            readings: [ { text: 'a cat', }, ],
-            overlap: 0.9,
-          },
-        },)).has(KEY,),
-      ).toBe(false,);
+        expect(
+          (await roundTrip({
+            record: {
+              kind: 'corroborated',
+              readings: [ { text: 'a cat', }, ],
+              overlap: 0.9,
+            },
+          },)).has(KEY,),
+        ).toBe(false,);
       },
     },),
     it({
@@ -331,26 +331,26 @@ await describe({
       // guard's closing line passes it and the reason is the one field that
       // can refuse it; the same record under a reason the pair ends at is
       // resumed.
-      expect(
-        (await roundTrip({
-          record: {
-            kind: 'unavailable',
-            reason: 'reader-failed',
-            perReader: [ 'the call was lost', ],
-            transient: false,
-          },
-        },)).has(KEY,),
-      ).toBe(false,);
-      expect(
-        (await roundTrip({
-          record: {
-            kind: 'unavailable',
-            reason: 'one-reader-only',
-            perReader: [ 'the call was lost', ],
-            transient: false,
-          },
-        },)).has(KEY,),
-      ).toBe(true,);
+        expect(
+          (await roundTrip({
+            record: {
+              kind: 'unavailable',
+              reason: 'reader-failed',
+              perReader: [ 'the call was lost', ],
+              transient: false,
+            },
+          },)).has(KEY,),
+        ).toBe(false,);
+        expect(
+          (await roundTrip({
+            record: {
+              kind: 'unavailable',
+              reason: 'one-reader-only',
+              perReader: [ 'the call was lost', ],
+              transient: false,
+            },
+          },)).has(KEY,),
+        ).toBe(true,);
       },
     },),
     it({
@@ -362,70 +362,70 @@ await describe({
       // guard's closing line passes it and the kept readings are the one
       // field that can refuse it; the same record with readings that name
       // their model is resumed.
-      expect(
-        (await roundTrip({
-          record: {
-            kind: 'unavailable',
-            reason: 'readers-disagree',
-            perReader: [
-              '',
-              '',
-            ],
-            readings: [ 'a tabby beside a bowl', ],
-            transient: false,
-          },
-        },)).has(KEY,),
-      ).toBe(false,);
-      expect(
-        (await roundTrip({
-          record: {
-            kind: 'unavailable',
-            reason: 'readers-disagree',
-            perReader: [
-              '',
-              '',
-            ],
-            readings: [ { modelId: 'whiskers/reader-a', text: 'a tabby beside a bowl', }, ],
-            transient: false,
-          },
-        },)).has(KEY,),
-      ).toBe(true,);
+        expect(
+          (await roundTrip({
+            record: {
+              kind: 'unavailable',
+              reason: 'readers-disagree',
+              perReader: [
+                '',
+                '',
+              ],
+              readings: [ 'a tabby beside a bowl', ],
+              transient: false,
+            },
+          },)).has(KEY,),
+        ).toBe(false,);
+        expect(
+          (await roundTrip({
+            record: {
+              kind: 'unavailable',
+              reason: 'readers-disagree',
+              perReader: [
+                '',
+                '',
+              ],
+              readings: [ { modelId: 'whiskers/reader-a', text: 'a tabby beside a bowl', }, ],
+              transient: false,
+            },
+          },)).has(KEY,),
+        ).toBe(true,);
       },
     },),
     it({
       name: 'REFUSES a record whose kind this package does not define, which is what a file '
         + 'written by a later pipeline looks like to an earlier one',
       fn: async () => {
-      expect(
-        (await roundTrip({
-          record: {
-            kind: 'transcribed',
-            text: 'a cat',
-          },
-        },)).has(KEY,),
-      ).toBe(false,);
+        expect(
+          (await roundTrip({
+            record: {
+              kind: 'transcribed',
+              text: 'a cat',
+            },
+          },)).has(KEY,),
+        ).toBe(false,);
       },
     },),
     it({
       name: 'REFUSES a record that is not an object at all, since a truncated or '
         + 'hand-edited file can parse into a bare string',
       fn: async () => {
-      expect((await roundTrip({ record: 'no-text', },)).has(KEY,),).toBe(false,);
+        expect((await roundTrip({ record: 'no-text', },)).has(KEY,),).toBe(false,);
       },
     },),
     it({
       name: 'RESUMES nothing when the pipeline generation moved, because a reading produced '
         + 'by a different pipeline may have been produced under a different instruction',
       fn: async () => {
-      expect(
-        (await roundTrip({
-          record: {
-            kind: 'no-text',
-            characters: 0,
-          },
-          reopenGeneration: 'whiskers-pipeline-2',
-        },)).has(KEY,),
-      ).toBe(false,);
+        expect(
+          (await roundTrip({
+            record: {
+              kind: 'no-text',
+              characters: 0,
+            },
+            reopenGeneration: 'whiskers-pipeline-2',
+          },)).has(KEY,),
+        ).toBe(false,);
       },
     },),
 

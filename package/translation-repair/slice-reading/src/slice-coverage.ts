@@ -502,9 +502,9 @@ export function assertSliceCoverage(
           .nodes, ],
       },)
         .filter(function isNotSealed(id,): boolean {
-        return !sealed.source
-          .has(id,);
-      },),
+          return !sealed.source
+            .has(id,);
+        },),
       placed: placedSources,
     },
     {
@@ -516,9 +516,9 @@ export function assertSliceCoverage(
           .nodes, ],
       },)
         .filter(function isNotDeclinedOrSealed(id,): boolean {
-        return (!declined.has(id,)) && (!sealed.target
-          .has(id,));
-      },),
+          return (!declined.has(id,)) && (!sealed.target
+            .has(id,));
+        },),
       placed: placedTargets,
     },
   ];

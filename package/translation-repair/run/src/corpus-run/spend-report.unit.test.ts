@@ -92,21 +92,21 @@ await describe({
             '1 line carried the marker and would not parse, so this report\'s totals are short by whatever those calls cost',
             'metered seats, priced at rates read 2026-10-11:',
             '  qwen3.8-max: 200.00 credits (95.9%) over 2 calls, in 2000000=80.00 out 1000000=120.00, '
-            + '1 of them reckoned rather than reported',
+              + '1 of them reckoned rather than reported',
             '  gemma-4-26b-a4b-it: 8.64 credits (4.1%) over 1 call, in 1000000=1.96 out 1000000=6.68',
             'metered run total: 208.64 credits',
             'UNPRICED, and not free: 1 metered seat has no row in the price table read 2026-10-11. '
-            + 'This report\'s total omits whatever cost this seat would add',
+              + 'This report\'s total omits whatever cost this seat would add',
             '  whisker-mini-9: 1 call, in 10 out 20',
             'OpenRouter seats, billed in USD per token, each priced from the cost= its own lines carried:',
             '  minimax/minimax-m3: 0.0625 USD (100.0%) over 2 calls, in 15 out 25, a floor: 1 call carried no cost',
             'OpenRouter run total: 0.0625 USD, never summed with this report\'s credits',
             'subscription seats, which bill no credits and are metered as a percentage of a weekly allowance on '
-            + 'the METERS line:',
+              + 'the METERS line:',
             '  hf:zai-org/GLM-5.3-Flash: 1 call, in 300 out 40',
             'RECKONED, NOT REPORTED: 1 call was written as reckonings, an attempt abandoned before it finished or '
-            + 'a Bedrock attempt at its bound, so the tokens and cost this report shows for such calls are '
-            + 'estimates or bounds rather than what the wire said (ledger P14)',
+              + 'a Bedrock attempt at its bound, so the tokens and cost this report shows for such calls are '
+              + 'estimates or bounds rather than what the wire said (ledger P14)',
             '',
           ].join('\n',),
           stderr: '',
@@ -204,7 +204,7 @@ await describe({
           code: REFUSED_AS_STATED,
           stdout: '',
           stderr: 'spend-report: this command needs <log file>. '
-          + 'Usage: spend-report <log file> [<log file> ...]\n',
+            + 'Usage: spend-report <log file> [<log file> ...]\n',
         },);
       },
     },),

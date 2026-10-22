@@ -87,10 +87,10 @@ type DrawingStroke = {
  */
 type DrawingMode =
   | { readonly kind: 'idle'; }
-  | {
-    readonly kind: 'drawing';
-    readonly stroke: DrawingStroke;
-  };
+    | {
+      readonly kind: 'drawing';
+      readonly stroke: DrawingStroke;
+    };
 
 /**
  Line segment between two normalized points for incremental rendering.
@@ -216,12 +216,12 @@ export function normalizePointer({
   return [
     (event.clientX
       - rect
-      .left) / rect
-      .width,
+        .left) / rect
+          .width,
     (event.clientY
       - rect
-      .top) / rect
-      .height,
+        .top) / rect
+          .height,
   ];
 }
 

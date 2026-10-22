@@ -31,10 +31,10 @@ const HTTP_NOT_FOUND = 404;
  */
 export type ReconciliationResult =
   | { readonly kind: 'none'; }
-  | {
-    readonly kind: 'match';
-    readonly created: CreatedIssue;
-  };
+    | {
+      readonly kind: 'match';
+      readonly created: CreatedIssue;
+    };
 
 /**
  Builds repository REST endpoint prefix.
@@ -88,23 +88,23 @@ export async function readHighWater({
   const items: readonly unknown[] = response.body;
   return items
     .reduce<number>(
-      function greatestNumber(
-        greatest,
-        item,
-      ): number {
-    if ((!isRecord(item,))
-      || ((typeof item.number) !== 'number')
-      || (!Number.isInteger(item.number,))
-      || (item.number < 1))
-    {
-      throw new IssuePublicationError('Issue high-water response contains invalid number',);
-    }
-    return Math.max(
+    function greatestNumber(
       greatest,
-      item.number,
-    );
-  },
-      0,
+      item,
+    ): number {
+      if ((!isRecord(item,))
+        || ((typeof item.number) !== 'number')
+        || (!Number.isInteger(item.number,))
+        || (item.number < 1))
+        {
+        throw new IssuePublicationError('Issue high-water response contains invalid number',);
+      }
+      return Math.max(
+        greatest,
+        item.number,
+      );
+    },
+    0,
     );
 }
 
@@ -157,7 +157,7 @@ async function compareCandidate({
       !== issue.body)
     || ((typeof response.body
       .html_url) !== 'string'))
-  {
+    {
     return { kind: 'none', };
   }
   return {

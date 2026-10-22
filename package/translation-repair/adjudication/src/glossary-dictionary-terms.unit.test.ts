@@ -37,37 +37,37 @@ import { systemOf, } from '@monochromatic-dev/translation-repair-provider/ts/cha
  */
 const IDIOMATIC_ENGLISH =
   'The English says what the ORIGINAL means the way an English writer would say it, never the Chinese construction '
-  + 'word for word. A rendering that follows the Chinese construction into English no one writes is a mistranslation '
-  + 'however faithful each word looks: a stock phrase takes the English stock phrase for the same meaning; a word takes '
-  + 'the sense its context gives it rather than its first dictionary gloss (the place someone lived is their '
-  + 'surroundings, not the environment); a word the Chinese construction needs and English does not (相关 before a '
-  + 'noun, 巨大的 before an effect) is said plainly or left out; and an abstract noun the Chinese makes a subject or '
-  + 'object becomes the verb or adjective English uses (it had many causes, not there were many sides to the cause; '
-  + 'she was good-natured, not a person of such a good nature). The English already on the page carrying such a '
-  + 'construction is a mistranslation to correct, not a reading to keep.';
+    + 'word for word. A rendering that follows the Chinese construction into English no one writes is a mistranslation '
+    + 'however faithful each word looks: a stock phrase takes the English stock phrase for the same meaning; a word takes '
+    + 'the sense its context gives it rather than its first dictionary gloss (the place someone lived is their '
+    + 'surroundings, not the environment); a word the Chinese construction needs and English does not (相关 before a '
+    + 'noun, 巨大的 before an effect) is said plainly or left out; and an abstract noun the Chinese makes a subject or '
+    + 'object becomes the verb or adjective English uses (it had many causes, not there were many sides to the cause; '
+    + 'she was good-natured, not a person of such a good nature). The English already on the page carrying such a '
+    + 'construction is a mistranslation to correct, not a reading to keep.';
 
 /**
  Rule replacing the entries keyed on one sentence's grammar slip.
  */
 const GRAMMATICAL_ENGLISH =
   'Every sentence is grammatical English: a verb after make or let is bare (made her meet, never made her met), a verb\'s '
-  + 'preposition is written once before its object (turned into a small box, never turned into in a small box), a tag '
-  + 'question matches its clause (she deserved better, didn\'t she), a phrase attaches to the noun it describes, and a '
-  + 'pronoun keeps the speaker\'s own point of view (when I leave you all, never when I leave us).';
+    + 'preposition is written once before its object (turned into a small box, never turned into in a small box), a tag '
+    + 'question matches its clause (she deserved better, didn\'t she), a phrase attaches to the noun it describes, and a '
+    + 'pronoun keeps the speaker\'s own point of view (when I leave you all, never when I leave us).';
 
 /**
  Rule replacing the entry keyed on a credit line's comma.
  */
 const CREDIT_BY =
   'A credit naming who made a work (作者, 词 or 曲 before a name) reads by, lyrics by or music by before the name, '
-  + 'never ", author" before it.';
+    + 'never ", author" before it.';
 
 /**
  Rule replacing the entry keyed on one card-game line.
  */
 const GAME_JARGON =
   'A word used as a game\'s or a hobby\'s jargon takes that game\'s English term, never its everyday sense (in UNO, 加 '
-  + 'is stacking the draw cards on the next player, not adding).';
+    + 'is stacking the draw cards on the next player, not adding).';
 
 /**
  Every general rule the audit adds.

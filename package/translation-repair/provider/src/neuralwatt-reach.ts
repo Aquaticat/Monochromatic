@@ -38,12 +38,12 @@ export type NeuralWattSpelling =
      */
     readonly id: NeuralWattServedId;
   }
-  | {
+    | {
     /**
      Discriminator marking a model this provider does not serve.
      */
-    readonly served: false;
-  };
+      readonly served: false;
+    };
 
 /**
  How NeuralWatt spells one roster model, where it serves it at all.

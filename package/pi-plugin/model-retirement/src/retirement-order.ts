@@ -276,14 +276,14 @@ function compareEqualLengthDates(
   const sameDates = (left.dateRaws
     .length
     === right.dateRaws
-    .length)
+      .length)
     && left.dateRaws
-    .every(function matchesSameDate(
-      raw,
-      index
-    ) {
-      return raw === right.dateRaws[index];
-    },);
+      .every(function matchesSameDate(
+        raw,
+        index
+      ) {
+        return raw === right.dateRaws[index];
+      },);
   if (sameDates)
     return UNORDERED;
   if (left.dateRaws
@@ -297,7 +297,7 @@ function compareEqualLengthDates(
   if (left.dateRaws
     .length
     !== right.dateRaws
-    .length)
+      .length)
     return UNORDERED;
   return compareDateSequences({
     leftDates: left.dateRaws,
@@ -407,7 +407,7 @@ export function compareRecency(
   if (left.versionParts
     .length
     === right.versionParts
-    .length)
+      .length)
     return compareEqualLengthDates({
       left,
       right,
@@ -418,7 +418,7 @@ export function compareRecency(
   const shorterIsLeft = left.versionParts
     .length
     < right.versionParts
-    .length;
+      .length;
   /**
    Prefix comparison expressed in shorter and longer terms.
    */

@@ -112,7 +112,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(StatedRefusalError,);
             expect(String(refusal,),).toBe(
               `StatedRefusalError: the log ${missing} could not be read (ENOENT), so nothing was counted. `
-              + 'Name a log a pass, probe or calibration wrote, by a path that exists.',
+                + 'Name a log a pass, probe or calibration wrote, by a path that exists.',
             );
             expect(Error.isError(refusal,) && Error.isError(refusal.cause,),).toBe(true,);
           },
@@ -140,7 +140,7 @@ await describe({
 
             expect(String(refusal,),).toBe(
               `StatedRefusalError: the log ${directory} could not be read (EISDIR), so nothing was counted. `
-              + 'Name a log a pass, probe or calibration wrote, by a path that exists.',
+                + 'Name a log a pass, probe or calibration wrote, by a path that exists.',
             );
           },
         },),
@@ -184,7 +184,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(StatedRefusalError,);
             expect(String(refusal,),).toBe(
               'StatedRefusalError: the log /tmp/tabby.log is named more than once, so its lines would be counted '
-              + 'twice. Name each log once.',
+                + 'twice. Name each log once.',
             );
           },
         },),
@@ -206,7 +206,7 @@ await describe({
 
             expect(String(refusal,),).toBe(
               'StatedRefusalError: the log /tmp/cats/../tabby.log is named more than once, so its lines would be '
-              + 'counted twice. Name each log once.',
+                + 'counted twice. Name each log once.',
             );
           },
         },),

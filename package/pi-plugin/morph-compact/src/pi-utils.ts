@@ -101,8 +101,8 @@ function bashExecutionToText(
   else if (
     (msg.exitCode
       !== undefined)
-    && (msg.exitCode
-      !== 0)
+      && (msg.exitCode
+        !== 0)
   ) {
     sections.push(`\nCommand exited with code ${msg.exitCode}`,);
   }
@@ -396,13 +396,13 @@ export function serializeConversation(messages: Message[],): string {
                
                @mutates entry - `JSON.stringify` may invoke hooks on argument value.
                */
-              function fmtArg(entry,) {
+            function fmtArg(entry,) {
                 /**
                  Tool argument key and value.
                  */
-                const [key, value,] = entry;
-                return `${key}=${JSON.stringify(value,)}`;
-              },
+              const [key, value,] = entry;
+              return `${key}=${JSON.stringify(value,)}`;
+            },
             )
             .join(', ',);
           toolCalls.push(`${block.name}(${argsStr})`,);

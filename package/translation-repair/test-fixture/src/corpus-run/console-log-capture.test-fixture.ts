@@ -92,8 +92,8 @@ export function relayingConsoleLog({ sinon, }: { readonly sinon: DisposableSandb
    */
   const stub = sinon
     .stub(
-      console,
-      'log',
+    console,
+    'log',
     )
     .callThrough();
   return captureOver({ stub, },);

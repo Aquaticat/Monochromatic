@@ -271,12 +271,12 @@ await describe({
               require_parameters: true,
               sort: 'price',
               ignore: [
-                  'deepinfra',
-                  'wafer',
-                  'open-inference',
-                  'dekallm',
-                  'sail-research',
-                ],
+                'deepinfra',
+                'wafer',
+                'open-inference',
+                'dekallm',
+                'sail-research',
+              ],
               order: ['morph',],
             },);
             expect(openRouterProviderPreferencesFor({ servedId: 'openai/gpt-oss-120b', },),).toEqual({

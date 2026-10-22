@@ -34,15 +34,15 @@ import { renderedSheets, } from './rendered-sheets.test-fixture.ts';
  */
 const HOUSE_RULE_SENTENCES =
   'Words quoted as someone wrote or said them (a letter, a message, a quoted line, a blockquote of their words) keep the tense the '
-  + 'speaker used, because they are the speaker\'s own voice and the past belongs to the narration around them. A quotation moved '
-  + 'into the past is a defect to hold against a rendering, and keeping its present is never a tense inconsistency.';
+    + 'speaker used, because they are the speaker\'s own voice and the past belongs to the narration around them. A quotation moved '
+    + 'into the past is a defect to hold against a rendering, and keeping its present is never a tense inconsistency.';
 
 /**
  The one sentence every other sheet carries beside an instruction to move a line of the life to the past.
  */
 const REMINDER =
   'Words quoted as someone wrote or said them keep the speaker\'s own tense, so moving a quotation to the past is a defect and '
-  + 'keeping its present is not a tense inconsistency.';
+    + 'keeping its present is not a tense inconsistency.';
 
 /**
  Phrases that open the house tense rule in a sheet.
@@ -82,7 +82,7 @@ const LIFE_IN_THE_PAST_MARKER = 'the narrative of a life (what the person did, s
  */
 const EXCEPTION_BESIDE_THE_PAST =
   'except for the person\'s words quoted as they wrote or said them, which keep the speaker\'s own tense because they are the '
-  + 'speaker\'s own voice';
+    + 'speaker\'s own voice';
 
 /**
  The words with which the judge tail says no rule holds a life in the present.

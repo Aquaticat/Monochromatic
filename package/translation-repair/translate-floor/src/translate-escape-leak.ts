@@ -50,7 +50,7 @@ export function leakedEscapeFindings(
     return [];
   return [
     `Your translation carries a backslash before a quotation mark (${LEAKED_ESCAPE}), which is a JSON `
-    + 'escape leaked into the text; write the quotation marks themselves, with nothing before them.',
+      + 'escape leaked into the text; write the quotation marks themselves, with nothing before them.',
   ];
 }
 

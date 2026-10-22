@@ -101,12 +101,12 @@ function configureLinuxWayland(): void {
     .appendSwitch(
     'ozone-platform',
     'wayland',
-  );
+    );
   app.commandLine
     .appendSwitch(
     'enable-features',
     'WaylandWindowDecorations',
-  );
+    );
   process.env
     .XDG_SESSION_TYPE = 'wayland';
   mainLogger.info('Forced Chromium Ozone platform to Wayland for Linux.',);
@@ -233,7 +233,7 @@ async function createMainWindow(): Promise<BrowserWindow> {
     ): void {
       observeCounterTitleFromEvent({ title, },);
     },
-  );
+    );
 
   mainWindow.webContents
     .on(
@@ -244,7 +244,7 @@ async function createMainWindow(): Promise<BrowserWindow> {
           .getTitle(),
       },);
     },
-  );
+    );
 
   await mainWindow.loadFile(rendererHtmlPath,);
   mainLogger.info('Renderer loaded.',);

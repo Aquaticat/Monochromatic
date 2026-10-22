@@ -128,62 +128,62 @@ export type ConsolidationPolish =
      */
     readonly reason: 'front-matter' | 'not-configured' | 'unsafe-baseline';
   }
-  | {
+    | {
     /**
      Naturalness stage examined approved base.
      */
-    readonly kind: 'settled';
+      readonly kind: 'settled';
 
     /**
      Already-approved text before naturalness work.
      */
-    readonly baseText: string;
+      readonly baseText: string;
 
     /**
      Selected rewrite proposal before final fidelity gate.
      */
-    readonly proposedText: string;
+      readonly proposedText: string;
 
     /**
      Final text after conservative gate.
      */
-    readonly text: string;
+      readonly text: string;
 
     /**
      Whether final text differs from approved base.
      */
-    readonly changed: boolean;
+      readonly changed: boolean;
 
     /**
      Rewriters heard with usable answer.
      */
-    readonly refinersHeard: readonly RosterModelId[];
+      readonly refinersHeard: readonly RosterModelId[];
 
     /**
      Models contributing selected proposal.
      */
-    readonly contributors: readonly RosterModelId[];
+      readonly contributors: readonly RosterModelId[];
 
     /**
      Naturalness selection rounds retained for audit.
      */
-    readonly rounds: readonly RepairJudgedRound[];
+      readonly rounds: readonly RepairJudgedRound[];
 
     /**
      Final fidelity and naturalness gate, absent when no rewrite survived.
      */
-    readonly gate?: ConsolidationPolishGateOutcome;
+      readonly gate?: ConsolidationPolishGateOutcome;
 
     /**
      Absolute whole-passage approval bound to final text.
      */
-    readonly review: ConsolidationNaturalnessAudit;
+      readonly review: ConsolidationNaturalnessAudit;
 
     /**
      Findings from proposal, validation, gate and absolute review.
      */
-    readonly findings: readonly string[];
-  };
+      readonly findings: readonly string[];
+    };
 // NO UNSETTLED POLISH (ledger B52): a third kind recorded a correction loop
 // that never earned publication. Nothing has built it since the loop went on
 // 2026-09-01; artifacts never stored it and the consolidation cache refused to

@@ -258,24 +258,24 @@ type LineReading =
      */
     readonly row: WindowTrialRow;
   }
-  | {
+    | {
     /**
      Whole JSON that is no row of this build's shape, which is what a row an
      older build wrote under other field names reads as.
      */
-    readonly kind: 'not-a-row';
-  }
-  | {
+      readonly kind: 'not-a-row';
+    }
+    | {
     /**
      Text the parser refused.
      */
-    readonly kind: 'unparsed';
+      readonly kind: 'unparsed';
 
     /**
      Class name of the refusal, never its message, which quotes the line.
      */
-    readonly failure: string;
-  };
+      readonly failure: string;
+    };
 
 /**
  Reads one line of a ledger.
@@ -683,8 +683,8 @@ async function endAtLineBoundary({ path, }: { readonly path: string; },): Promis
    */
   const number = text
     .slice(
-      0,
-      tailAt,
+    0,
+    tailAt,
     )
     .split('\n',)
     .length;

@@ -242,9 +242,9 @@ await describe({
           fn: async () => {
             for (const reading of [
               'There is no visible text in this image. It is a painting of ships at sea, and I cannot discern any '
-              + 'words, names, signatures, dates, or inscriptions.',
+                + 'words, names, signatures, dates, or inscriptions.',
               'I cannot read any text in this image. There are no visible words, names, dates, numbers, or '
-              + 'addresses.',
+                + 'addresses.',
               'There is no text visible in this image.',
               'No text is visible in this image. It contains only two pen-and-ink drawings of fluffy cats.',
               'I cannot see any words, text, names, handles, dates, numbers, or addresses in this image.',

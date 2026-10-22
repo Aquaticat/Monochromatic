@@ -116,8 +116,8 @@ function elementsOf(sources: readonly Sourced[],): readonly unknown[] {
     return isContainer(source.value,)
       ? childrenOf(source.value,)
         .map(function valueOf([, element,],) {
-        return element;
-      },)
+          return element;
+        },)
       : [];
   },);
 }
@@ -148,11 +148,11 @@ function keysOf(sources: readonly Sourced[],): readonly unknown[] {
         return (container instanceof Map)
           || ((((typeof key) === 'string') || ((typeof key) === 'symbol'))
             && Object.prototype
-            .propertyIsEnumerable
-            .call(
+              .propertyIsEnumerable
+              .call(
               container,
               key,
-            ));
+              ));
       },)
       .map(function keyOf([key,],) {
         return key;
@@ -203,8 +203,8 @@ function checkPair(
    */
   const present = item.sources
     .filter(function isPresent(source,) {
-    return source.value !== undefined;
-  },);
+      return source.value !== undefined;
+    },);
   if (present.some(function foreign(source,) {
     return isContainer(source.value,) && triggersFalseCycle({
       ancestors: item.ancestors,

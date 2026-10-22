@@ -99,20 +99,20 @@ export type PastEndDiagnostic<
   LastIndex extends number = number,
   Length extends number = number,
   MinimumNegativeIndex extends number = MinimumNegativeBound<Length>,
-> = {
-  readonly code: 'out-of-range';
-  readonly message: `Index ${Index} is past the end by ${Distance}.`;
-  readonly hint:
-    `Use 0 through ${LastIndex}, or -1 through -${Length}.`;
-  readonly index: Index;
-  readonly length: Length;
-  readonly direction: 'past-end';
-  readonly distance: Distance;
-  readonly minimumPositiveIndex: 0;
-  readonly maximumPositiveIndex: LastIndex;
-  readonly minimumNegativeIndex: MinimumNegativeIndex;
-  readonly maximumNegativeIndex: -1;
-};
+  > = {
+    readonly code: 'out-of-range';
+    readonly message: `Index ${Index} is past the end by ${Distance}.`;
+    readonly hint:
+      `Use 0 through ${LastIndex}, or -1 through -${Length}.`;
+    readonly index: Index;
+    readonly length: Length;
+    readonly direction: 'past-end';
+    readonly distance: Distance;
+    readonly minimumPositiveIndex: 0;
+    readonly maximumPositiveIndex: LastIndex;
+    readonly minimumNegativeIndex: MinimumNegativeIndex;
+    readonly maximumNegativeIndex: -1;
+  };
 
 /**
  Diagnostic for negative index before first assigned position.
@@ -128,20 +128,20 @@ export type BeforeStartDiagnostic<
   LastIndex extends number = number,
   Length extends number = number,
   MinimumNegativeIndex extends number = MinimumNegativeBound<Length>,
-> = {
-  readonly code: 'out-of-range';
-  readonly message: `Index ${Index} is before the start by ${Distance}.`;
-  readonly hint:
-    `Use 0 through ${LastIndex}, or -1 through -${Length}.`;
-  readonly index: Index;
-  readonly length: Length;
-  readonly direction: 'before-start';
-  readonly distance: Distance;
-  readonly minimumPositiveIndex: 0;
-  readonly maximumPositiveIndex: LastIndex;
-  readonly minimumNegativeIndex: MinimumNegativeIndex;
-  readonly maximumNegativeIndex: -1;
-};
+  > = {
+    readonly code: 'out-of-range';
+    readonly message: `Index ${Index} is before the start by ${Distance}.`;
+    readonly hint:
+      `Use 0 through ${LastIndex}, or -1 through -${Length}.`;
+    readonly index: Index;
+    readonly length: Length;
+    readonly direction: 'before-start';
+    readonly distance: Distance;
+    readonly minimumPositiveIndex: 0;
+    readonly maximumPositiveIndex: LastIndex;
+    readonly minimumNegativeIndex: MinimumNegativeIndex;
+    readonly maximumNegativeIndex: -1;
+  };
 
 //endregion Range diagnostics
 
@@ -159,15 +159,15 @@ export type UnassignedSlotDiagnostic<
   Index extends number = number,
   ResolvedIndex extends number = number,
   Length extends number = number,
-> = {
-  readonly code: 'unassigned-slot';
-  readonly message:
-    `Index ${Index} resolves to unassigned array slot ${ResolvedIndex}.`;
-  readonly hint: 'Assign a value to that slot before reading it.';
-  readonly index: Index;
-  readonly length: Length;
-  readonly resolvedIndex: ResolvedIndex;
-};
+  > = {
+    readonly code: 'unassigned-slot';
+    readonly message:
+      `Index ${Index} resolves to unassigned array slot ${ResolvedIndex}.`;
+    readonly hint: 'Assign a value to that slot before reading it.';
+    readonly index: Index;
+    readonly length: Length;
+    readonly resolvedIndex: ResolvedIndex;
+  };
 
 //endregion Slot diagnostics
 
@@ -185,11 +185,11 @@ export type UnassignedSlotDiagnostic<
  */
 export type ArrayAtDiagnostic =
   | NonSafeIntegerDiagnostic
-  | EmptyArrayDiagnostic
-  | UnprovenSafeIntegerDiagnostic
-  | PastEndDiagnostic
-  | BeforeStartDiagnostic
-  | UnassignedSlotDiagnostic;
+    | EmptyArrayDiagnostic
+    | UnprovenSafeIntegerDiagnostic
+    | PastEndDiagnostic
+    | BeforeStartDiagnostic
+    | UnassignedSlotDiagnostic;
 
 /**
  Diagnostic that can survive TypeScript erasure and occur at runtime.
@@ -202,7 +202,7 @@ export type ArrayAtDiagnostic =
 export type RuntimeArrayAtDiagnostic = Exclude<
   ArrayAtDiagnostic,
   UnprovenSafeIntegerDiagnostic
->;
+  >;
 
 /**
  Non-empty runtime diagnostic collection accepted by `ArrayAtError`.

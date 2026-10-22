@@ -98,7 +98,7 @@ function sameJsonShape({
   }
   if (
     ((typeof left) !== 'object')
-    || (left === null)
+      || (left === null)
       || ((typeof right) !== 'object')
       || (right === null)
   ) return false;

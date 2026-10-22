@@ -35,7 +35,7 @@ const QUOTA_EXCEEDED_NAMES: ReadonlySet<string> = new Set([
 export function isQuotaExceededError(error: unknown,): boolean {
   return (
     ((typeof error) === 'object')
-    && (error !== null)
+      && (error !== null)
       && ('name' in error)
       && ((typeof error.name) === 'string')
       && QUOTA_EXCEEDED_NAMES.has(error.name,)

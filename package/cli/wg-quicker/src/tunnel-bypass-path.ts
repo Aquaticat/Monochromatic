@@ -65,8 +65,8 @@ export function bypassStateKey(
     .update(interfaceName,)
     .digest('hex',)
     .slice(
-      0,
-      STATE_KEY_LENGTH,
+    0,
+    STATE_KEY_LENGTH,
     );
 }
 

@@ -294,10 +294,10 @@ async function buildInternalFilter(
       !== undefined) && (options.include
         .length
         > 0))
-    || ((options.exclude
-      !== undefined) && (options.exclude
-        .length
-        > 0))
+      || ((options.exclude
+        !== undefined) && (options.exclude
+          .length
+          > 0))
   ) {
     filters.push(globFilter({
       ...(options.include
@@ -311,10 +311,10 @@ async function buildInternalFilter(
       !== undefined) && (options.includeRegex
         .length
         > 0))
-    || ((options.excludeRegex
-      !== undefined) && (options.excludeRegex
-        .length
-        > 0))
+      || ((options.excludeRegex
+        !== undefined) && (options.excludeRegex
+          .length
+          > 0))
   ) {
     filters.push(regexFilter({
       ...(options.includeRegex

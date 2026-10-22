@@ -107,8 +107,8 @@ export const BOARD_SENSOR_INDEXES: readonly number[] = Array.from(
     _unused,
     index,
   ): number {
-  return index + 1;
-},
+    return index + 1;
+  },
 );
 
 /**
@@ -131,8 +131,8 @@ export const MB_FAN_INPUTS: readonly number[] = Array.from(
     _unused,
     index,
   ): number {
-  return index + 1;
-},
+    return index + 1;
+  },
 );
 
 /**
@@ -155,8 +155,8 @@ export const MB_TEMPERATURE_INPUTS: readonly number[] = Array.from(
     _unused,
     index,
   ): number {
-  return index + MB_FIRST_TEMPERATURE_INPUT;
-},
+    return index + MB_FIRST_TEMPERATURE_INPUT;
+  },
 );
 
 /**
@@ -176,7 +176,7 @@ export const NOT_MEASURED: number = Number.NaN;
  */
 export const SAMPLE_HEADER: string =
   'utc_time,tctl_c,tccd1_c,tccd2_c,package_w,average_mhz,cpu_pressure_some_avg10,load1,cap_threads,'
-  + 'fan1_rpm,fan2_rpm,fan3_rpm,fan4_rpm,fan5_rpm,fan6_rpm,corsair_probe_c,'
+    + 'fan1_rpm,fan2_rpm,fan3_rpm,fan4_rpm,fan5_rpm,fan6_rpm,corsair_probe_c,'
     + 'chiplet1_w,chiplet2_w,board1_c,board2_c,board3_c,board4_c,board5_c,board6_c,acpi_c,nvme_c,burst,'
     + 'gpu_edge_c,gpu_w,igpu_edge_c,igpu_w,'
     + 'cpu_fan_rpm,pump_fan_rpm,sys_fan1_rpm,sys_fan2_rpm,sys_fan3_rpm,sys_fan4_rpm,sys_fan5_rpm,sys_fan6_rpm,'

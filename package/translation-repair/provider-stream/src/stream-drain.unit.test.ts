@@ -798,7 +798,7 @@ await describe({
 
         expect(warned,).toEqual([
           `[translation-repair] [drainBody] could not cancel https://stream.cat.example/landing?key=${CREDENTIAL_MARKER}: `
-          + 'refused by TypeError',
+            + 'refused by TypeError',
         ],);
         if ((outcome.kind !== 'raised') || (!(outcome.error instanceof StreamDegenerateError)))
           throw new Error('a degeneration error by construction',);

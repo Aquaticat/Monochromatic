@@ -52,7 +52,7 @@ export function demandCurrentCompositor() {
   }
   const version = readVersion(result.stdout);
   if (version === null) throw new Error('Could not read a version from `' + compositor + ' --version` (status ' + result.status + '): '
-      + result.stdout + result.stderr);
+    + result.stdout + result.stderr);
   const older = oldestCompositor.reduce((verdict, part, index) => verdict ?? (version[index] === part ? null : version[index] < part), null);
   if (older === true) {
     throw new Error('The nested compositor on PATH is ' + version.join('.') + ', older than ' + oldestCompositor.join('.')

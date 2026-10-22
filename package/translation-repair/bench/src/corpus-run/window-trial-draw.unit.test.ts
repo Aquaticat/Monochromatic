@@ -112,7 +112,7 @@ await describe({
                 sliceCount: 5,
                 relocation: [[1,
                   2,], [2,
-                  3,],],
+                    3,],],
               },),
             },);
             expect(flagged.length,).toBe(3,);

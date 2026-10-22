@@ -223,21 +223,21 @@ export async function runArchiveBlockReviewStage(
     /**
      Whether this reply is evidence, and why not when it is not.
      */
-    const verdict = archiveReplyVerdict({
-      disposition: voice.value
-        .disposition,
-      sourceQuote: voice.value
-        .sourceQuote,
-      sourceContext: sourceText,
-      referenceContext: referenceContext ?? '',
-      blockText,
-    },);
-    if (verdict.kind === 'stands')
-      return true;
-    reviewLog.warn(`archive review dropped the ${voice.value
+      const verdict = archiveReplyVerdict({
+        disposition: voice.value
+          .disposition,
+        sourceQuote: voice.value
+          .sourceQuote,
+        sourceContext: sourceText,
+        referenceContext: referenceContext ?? '',
+        blockText,
+      },);
+      if (verdict.kind === 'stands')
+        return true;
+      reviewLog.warn(`archive review dropped the ${voice.value
       .disposition} reply of ${voice.modelId}: ${verdict.reason}`,);
-    return false;
-  },);
+      return false;
+    },);
   /**
    Revisions earn publication through the independent selector, not through
    other reviewers' retention anchors. The initial review quorum still holds.
@@ -283,12 +283,12 @@ export async function runArchiveBlockReviewStage(
     ...(composite === undefined ? [] : [`archive-composite-offered (${describeProducer(composite.producer,)})`,]),
     ...voices
       .map(function recordFinding(voice,): string {
-      return voice.value
-        .assessment;
-    },),
+        return voice.value
+          .assessment;
+      },),
     ...(anchoredVoices.length
       === voices
-      .length ? [] : ['archive review discarded uncorroborated retention claim',]),
+        .length ? [] : ['archive review discarded uncorroborated retention claim',]),
   ],),];
   // AN UNHEARD ROSTER IS AN OUTAGE; AN UNANCHORED ONE IS A VERDICT. Only the
   // first interrupts. The second used to be thrown as `provider-unavailable`

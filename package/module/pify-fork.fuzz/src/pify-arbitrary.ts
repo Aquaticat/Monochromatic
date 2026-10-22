@@ -244,8 +244,8 @@ export const patternSlotArb: Arbitrary<SlotSpec> = record({
     array(
       constantFrom(...PATTERN_POOL,),
       {
-      maxLength: 3,
-    },
+        maxLength: 3,
+      },
     ),
     constant(undefined,),
   ),
@@ -264,9 +264,9 @@ export const functionBehaviorArb: Arbitrary<FunctionBehavior> = record(
     payload: array(
       callbackArgumentArb,
       {
-      minLength: 0,
-      maxLength: 4,
-    },
+        minLength: 0,
+        maxLength: 4,
+      },
     ),
   },
 );
@@ -303,9 +303,9 @@ export const moduleSpecArb: Arbitrary<ModuleSpec> = record(
     members: array(
       moduleMemberSpecArb,
       {
-      minLength: 1,
-      maxLength: 5,
-    },
+        minLength: 1,
+        maxLength: 5,
+      },
     ),
     values: integer({
       min: 0,
@@ -315,11 +315,11 @@ export const moduleSpecArb: Arbitrary<ModuleSpec> = record(
       /**
        Value members keyed positionally, built from the generated count.
        */
-      const values: Record<string, unknown> = {};
-      for (let index = 0; index < count; index += 1)
-        values[`value${index}`] = index;
-      return values;
-    },),
+        const values: Record<string, unknown> = {};
+        for (let index = 0; index < count; index += 1)
+          values[`value${index}`] = index;
+        return values;
+      },),
   },
 );
 

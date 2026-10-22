@@ -418,7 +418,7 @@ export function buildThresholdLineLayer(
   if (
     (dimMapping.x
       === 'logSourceBytes')
-    && (SOURCE_BYTES_THRESHOLD > xMin)
+      && (SOURCE_BYTES_THRESHOLD > xMin)
       && (SOURCE_BYTES_THRESHOLD < xMax)
   ) {
     segments.push({
@@ -439,7 +439,7 @@ export function buildThresholdLineLayer(
   if (
     (dimMapping.y
       === 'logDaysStale')
-    && (DAYS_STALE_THRESHOLD > yMin)
+      && (DAYS_STALE_THRESHOLD > yMin)
       && (DAYS_STALE_THRESHOLD < yMax)
   ) {
     segments.push({
@@ -460,8 +460,8 @@ export function buildThresholdLineLayer(
   if (
     (dimMapping.z
       === 'logInstallSize')
-    && (INSTALL_SIZE_THRESHOLD > bounds
-      .z[0])
+      && (INSTALL_SIZE_THRESHOLD > bounds
+        .z[0])
       && (INSTALL_SIZE_THRESHOLD < bounds
         .z[1])
   ) {

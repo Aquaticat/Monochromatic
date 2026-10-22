@@ -84,7 +84,7 @@ export async function getSortedFeeds(
     return extractDate(feedB,)
       .getTime()
       - extractDate(feedA,)
-      .getTime();
+        .getTime();
   },);
   innerL.debug(`sorted ${String(result.length,)} feeds`,);
   return result;

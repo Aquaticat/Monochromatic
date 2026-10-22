@@ -148,7 +148,7 @@ export function createSessionStorageStore(): { readonly persist: (batch: string,
           .setItem(
           storageKey(state.lineCounter,),
           batch,
-        );
+          );
         state.lineCounter++;
         state.usedChars += batchChars;
         // A landed write re-arms a single give-up report for the next episode.

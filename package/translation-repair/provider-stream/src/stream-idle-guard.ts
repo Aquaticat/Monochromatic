@@ -379,7 +379,7 @@ export function armIdleGuard(
       l,
     },)
       .warn(
-        `${(provider === undefined) ? '' : `${provider} `}${label}: no content or reasoning for ${
+      `${(provider === undefined) ? '' : `${provider} `}${label}: no content or reasoning for ${
           String(expiredMs,)
         }ms during ${phase}; ${describeChars({
           count: state.chars,

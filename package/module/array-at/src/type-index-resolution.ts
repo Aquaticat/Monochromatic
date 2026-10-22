@@ -31,19 +31,19 @@ import type {
 export type ResolveLiteralIndex<
   ArrayValue extends readonly unknown[],
   Index extends number,
-> = `${Index}` extends `-${infer MagnitudeText}`
-  ? CheckLiteralIndex<
-    ArrayValue,
-    Index,
-    MagnitudeText,
-    true
-  >
-  : CheckLiteralIndex<
-    ArrayValue,
-    Index,
-    `${Index}`,
-    false
-  >;
+  > = `${Index}` extends `-${infer MagnitudeText}`
+    ? CheckLiteralIndex<
+      ArrayValue,
+      Index,
+      MagnitudeText,
+      true
+      >
+    : CheckLiteralIndex<
+      ArrayValue,
+      Index,
+      `${Index}`,
+      false
+      >;
 
 /**
  Applies safe-integer and range checks after sign parsing.
@@ -58,27 +58,27 @@ type CheckLiteralIndex<
   Index extends number,
   MagnitudeText extends string,
   IsNegative extends boolean,
-> = IsUsableIndexText<MagnitudeText> extends false
-  ? ReturnType<typeof createNonSafeIntegerDiagnostic<Index>>
-  : [
-    ArrayValue['length'],
-    DecimalNumber<MagnitudeText>,
-  ] extends [
-    infer Length extends number,
-    infer Magnitude extends number,
-  ]
-    ? IsNegative extends true
-      ? ResolveNegativeLiteralIndex<
-        Index,
-        Length,
-        Magnitude
-      >
-      : ResolvePositiveLiteralIndex<
-        Index,
-        Length,
-        Magnitude
-      >
-    : never;
+  > = IsUsableIndexText<MagnitudeText> extends false
+    ? ReturnType<typeof createNonSafeIntegerDiagnostic<Index>>
+    : [
+      ArrayValue['length'],
+      DecimalNumber<MagnitudeText>,
+    ] extends [
+      infer Length extends number,
+      infer Magnitude extends number,
+    ]
+      ? IsNegative extends true
+        ? ResolveNegativeLiteralIndex<
+          Index,
+          Length,
+          Magnitude
+          >
+        : ResolvePositiveLiteralIndex<
+          Index,
+          Length,
+          Magnitude
+          >
+      : never;
 
 /**
  Resolves negative literal index or reports before-start distance.
@@ -92,15 +92,15 @@ type ResolveNegativeLiteralIndex<
   Index extends number,
   Length extends number,
   Magnitude extends number,
-> = [SubtractNumbers<Length, Magnitude>] extends [never]
-  ? ReturnType<typeof createBeforeStartDiagnostic<
-    Index,
-    SubtractNumbers<Magnitude, Length> & number,
-    Decrement<Length>,
-    Length,
-    NegativeNumber<Length>
-  >>
-  : SubtractNumbers<Length, Magnitude>;
+  > = [SubtractNumbers<Length, Magnitude>] extends [never]
+    ? ReturnType<typeof createBeforeStartDiagnostic<
+      Index,
+      SubtractNumbers<Magnitude, Length> & number,
+      Decrement<Length>,
+      Length,
+      NegativeNumber<Length>
+      >>
+    : SubtractNumbers<Length, Magnitude>;
 
 /**
  Resolves positive literal index or reports past-end distance.
@@ -117,23 +117,23 @@ type ResolvePositiveLiteralIndex<
   Index extends number,
   Length extends number,
   Magnitude extends number,
-> = [SubtractNumbers<Length, Magnitude>] extends [never]
-  ? ReturnType<typeof createPastEndDiagnostic<
-    Index,
-    SubtractNumbers<Magnitude, Decrement<Length>> & number,
-    Decrement<Length>,
-    Length,
-    NegativeNumber<Length>
-  >>
-  : SubtractNumbers<Length, Magnitude> extends 0
+  > = [SubtractNumbers<Length, Magnitude>] extends [never]
     ? ReturnType<typeof createPastEndDiagnostic<
       Index,
       SubtractNumbers<Magnitude, Decrement<Length>> & number,
       Decrement<Length>,
       Length,
       NegativeNumber<Length>
-    >>
-    : Magnitude;
+      >>
+    : SubtractNumbers<Length, Magnitude> extends 0
+      ? ReturnType<typeof createPastEndDiagnostic<
+        Index,
+        SubtractNumbers<Magnitude, Decrement<Length>> & number,
+        Decrement<Length>,
+        Length,
+        NegativeNumber<Length>
+        >>
+      : Magnitude;
 
 /**
  Returns dependent range or slot diagnostic for one literal index.
@@ -148,16 +148,16 @@ type ResolvePositiveLiteralIndex<
 export type LiteralIndexDiagnostic<
   ArrayValue extends readonly unknown[],
   Index extends number,
-> = ResolveLiteralIndex<ArrayValue, Index> extends infer Resolution
-  ? Resolution extends number
-    ? IsExactUndefined<ArrayValue[Resolution]> extends true
-      ? ReturnType<typeof createUnassignedSlotDiagnostic<
-        Index,
-        Resolution,
-        ArrayValue['length']
-      >>
-      : never
-    : Resolution extends ArrayAtDiagnostic
-      ? Resolution
-      : never
-  : never;
+  > = ResolveLiteralIndex<ArrayValue, Index> extends infer Resolution
+    ? Resolution extends number
+      ? IsExactUndefined<ArrayValue[Resolution]> extends true
+        ? ReturnType<typeof createUnassignedSlotDiagnostic<
+          Index,
+          Resolution,
+          ArrayValue['length']
+          >>
+        : never
+      : Resolution extends ArrayAtDiagnostic
+        ? Resolution
+        : never
+    : never;

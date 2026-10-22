@@ -198,7 +198,7 @@ function isNestedPlatformCommands(
 ): cmd is PlatformCommands {
   return (cmd.length
     > 0) && Array
-    .isArray(cmd[0],);
+      .isArray(cmd[0],);
 }
 
 //endregion Platform-aware execution

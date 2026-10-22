@@ -132,7 +132,7 @@ export type Placement =
      */
     digest: string;
   }>
-  | Readonly<{
+    | Readonly<{
     /**
      Artifact records a usable commit, and a pipeline THIS BUILD CANNOT NAME:
      either none at all, from before generation identity existed, or one
@@ -146,25 +146,25 @@ export type Placement =
      direction: checking out an old commit does not recreate an identity the
      artifact never carried.
      */
-    kind: 'legacy';
+      kind: 'legacy';
 
     /**
      Repo commit its pass started under, all the provenance it has.
      */
-    tip: string;
-  }>
-  | Readonly<{
+      tip: string;
+    }>
+    | Readonly<{
     /**
      Artifact would not parse at all.
      */
-    kind: 'malformed';
-  }>
-  | Readonly<{
+      kind: 'malformed';
+    }>
+    | Readonly<{
     /**
      Artifact parsed but recorded nothing that could identify it.
      */
-    kind: 'untagged';
-  }>;
+      kind: 'untagged';
+    }>;
 
 /**
  Reads which pipeline one artifact records.

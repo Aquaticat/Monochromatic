@@ -124,14 +124,14 @@ export function expandExcludeEntry(entry: string,): readonly PackageSpec[] {
     /**
      One version with surrounding whitespace removed.
      */
-    const trimmed = part.trim();
-    if (trimmed === '')
-      throw new PackageSpecError(entry,);
-    return {
-      name,
-      version: trimmed,
-    };
-  },);
+      const trimmed = part.trim();
+      if (trimmed === '')
+        throw new PackageSpecError(entry,);
+      return {
+        name,
+        version: trimmed,
+      };
+    },);
 }
 
 //endregion Parse

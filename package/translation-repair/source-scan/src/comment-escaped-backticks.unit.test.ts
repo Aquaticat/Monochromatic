@@ -112,8 +112,8 @@ function escapedBacktickLines({ files, }: { readonly files: readonly SourceText[
        */
       const firstLine = file.text
         .slice(
-          0,
-          comment.start,
+        0,
+        comment.start,
         )
         .split('\n',)
         .length;
@@ -125,8 +125,8 @@ function escapedBacktickLines({ files, }: { readonly files: readonly SourceText[
         const escapes = line
           .split(ESCAPED_BACKTICK,)
           .slice(
-            0,
-            -1,
+          0,
+          -1,
           )
           .some(function beforeEscape(before,): boolean {
             return !withoutTrailingBackslashes({ text: before, },)

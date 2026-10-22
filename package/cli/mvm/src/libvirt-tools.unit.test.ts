@@ -355,9 +355,9 @@ await describe({
           fn: async () => {
             expect(
               isMissingExecutable(Object.assign(
-              new Error('spawn virsh ENOENT',),
-              { code: 'ENOENT', },
-            ),),
+                new Error('spawn virsh ENOENT',),
+                { code: 'ENOENT', },
+              ),),
             ).toBe(true,);
           },
         },),

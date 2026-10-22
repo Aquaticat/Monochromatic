@@ -273,16 +273,16 @@ export type BudgetModelStrategy = 'same-provider' | 'any-provider';
  */
 export type BudgetModelOverride =
   | string
-  | {
+    | {
     /**
      Pinned provider/model slug.
      */
-    readonly model: string;
+      readonly model: string;
     /**
      Inline authentication, bypassing registry lookup.
      */
-    readonly auth: BudgetModelAuth;
-  };
+      readonly auth: BudgetModelAuth;
+    };
 
 /**
  Candidate metadata surfaced in budget-model errors.

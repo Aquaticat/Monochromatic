@@ -100,9 +100,9 @@ async function createFixtureTree(): Promise<FixtureTree> {
 
   await mkdir(
     join(
-    alphaPath,
-    'nested-one',
-  ),
+      alphaPath,
+      'nested-one',
+    ),
     { recursive: true, },
   );
   await mkdir(

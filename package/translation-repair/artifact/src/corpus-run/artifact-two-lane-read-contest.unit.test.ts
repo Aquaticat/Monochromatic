@@ -204,7 +204,7 @@ await describe({
     it({
       name:
         'ACCEPTS the pending kind, which every artifact settled before the contest existed carries '
-        + 'and which stays legal for exactly that reason',
+          + 'and which stays legal for exactly that reason',
       fn: async () => {
         expect(parseLaneSelection({
           value: { kind: 'pending-human-decision', },
@@ -217,7 +217,7 @@ await describe({
     it({
       name:
         'ACCEPTS a contest answering every eligible slice, carrying a win, a settled refusal and an '
-        + 'unheard roster side by side',
+          + 'unheard roster side by side',
       fn: async () => {
         /**
          Selection the reader returned, narrowed before its slices are read.
@@ -261,15 +261,15 @@ await describe({
             return slice.verdict
               .kind;
           },),).toEqual([
-          'lane-won',
-          'settled-neither',
-        ],);
+            'lane-won',
+            'settled-neither',
+          ],);
       },
     },),
     it({
       name:
         'ACCEPTS A SOLE-LANE VERDICT at an archive-absent insertion in a generation that records one, '
-        + 'with no ballots and no usable voices, since no roster was asked',
+          + 'with no ballots and no usable voices, since no roster was asked',
       fn: async () => {
         const selection = parseLaneSelection({
           value: {
@@ -313,7 +313,7 @@ await describe({
     it({
       name:
         'READS A ROSTER CONTEST AT AN ARCHIVE-ABSENT INSERTION UNCHANGED in a generation before sole-lane, '
-        + 'since that file asked the roster and its verdict is the one its ballots settle',
+          + 'since that file asked the roster and its verdict is the one its ballots settle',
       fn: async () => {
         const selection = parseLaneSelection({
           value: {
@@ -689,7 +689,7 @@ await describe({
     it({
       name:
         'KEEPS THE JUDGE each ballot names, so a settled page answers which models called a note '
-        + 'an addition (hulicaijia26, 2026-09-26)',
+          + 'an addition (hulicaijia26, 2026-09-26)',
       fn: async () => {
         /**
          Selection the reader returned, narrowed before its ballots are read.
@@ -829,9 +829,9 @@ await describe({
     it({
       name:
         'ROUND-TRIPS an ARCHIVE VERDICT on a ballot, and gives a ballot carrying none back with NO '
-        + 'archive key rather than an undefined one: the archive is judged as its own question, so a '
-        + 'ballot written before that question existed has to read as silent about it, and a key set '
-        + 'to undefined is not silence to anything that asks whether the ballot answered',
+          + 'archive key rather than an undefined one: the archive is judged as its own question, so a '
+          + 'ballot written before that question existed has to read as silent about it, and a key set '
+          + 'to undefined is not silence to anything that asks whether the ballot answered',
       fn: async () => {
         /**
          Selection whose one ballot judged the archive beside the two lanes.
@@ -903,8 +903,8 @@ await describe({
     it({
       name:
         'REFUSES an archive verdict this version does not describe, which the lane choice beside it '
-        + 'cannot catch: the two fields are read against different lists, and a judge answering the '
-        + 'archive question with a lane name would otherwise be recorded as having judged it',
+          + 'cannot catch: the two fields are read against different lists, and a judge answering the '
+          + 'archive question with a lane name would otherwise be recorded as having judged it',
       fn: async () => {
         /**
          What archiveVerdictUnknown raised, read for its class as well as its wording.
@@ -959,7 +959,7 @@ await describe({
     it({
       name:
         'REFUSES a field beside the pending kind, since a pending selection carrying a decision is '
-        + 'two answers at once',
+          + 'two answers at once',
       fn: async () => {
         expect(() => {
           parseLaneSelection({
@@ -1031,9 +1031,9 @@ await describe({
           expect(selection.slices
             .at(0,)
             ?.verdict,).toEqual({
-            kind: 'settled-neither',
-            archive,
-          },);
+              kind: 'settled-neither',
+              archive,
+            },);
         }
       },
     },),
@@ -1045,7 +1045,7 @@ await describe({
           [
             { kind: 'settled-neither', },
             '.verdict: expected settled-neither:endorsed, which is what these ballots settle on, rather than '
-            + 'settled-neither.',
+              + 'settled-neither.',
           ],
           [
             {
@@ -1053,7 +1053,7 @@ await describe({
               archive: 'declined',
             },
             '.verdict: expected settled-neither:endorsed, which is what these ballots settle on, rather than '
-            + 'settled-neither:declined.',
+              + 'settled-neither:declined.',
           ],
           [
             {

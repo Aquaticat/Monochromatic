@@ -111,11 +111,11 @@ export async function readReviewedFidelityReferences({
         || (spec.entryId === '.')
         || (spec.entryId === '..')
         || spec.entryId
-        .includes('/',)
+          .includes('/',)
         || spec.entryId
-        .includes('\\',)
+          .includes('\\',)
         || spec.entryId
-        .includes('\0',)) {
+          .includes('\0',)) {
         throw new FidelityReferenceError({
           referenceId: spec.id,
           operation: 'request',

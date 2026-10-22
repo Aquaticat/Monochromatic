@@ -273,8 +273,8 @@ function quotesPublishedWork({ block, }: { readonly block: string; },): boolean 
    */
   const attribution = nonNullishOrThrow(lines.at(-1,),)
     .replaceAll(
-      '>',
-      '',
+    '>',
+    '',
     )
     .trim();
   return attribution.includes('《',) && ATTRIBUTION_DASHES.some(function opens(dash,): boolean {

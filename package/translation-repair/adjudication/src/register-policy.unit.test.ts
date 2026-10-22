@@ -31,11 +31,11 @@ import { systemOf, } from '@monochromatic-dev/translation-repair-provider/ts/cha
  */
 const REGISTER_RULE =
   'The page is plain written English for a general reader, whatever the register of the ORIGINAL. '
-  + 'Chat shorthand and internet slang are rendered by the plain English words, never carried across and never matched by English slang: '
-  + 'OD is overdose (overdosing, overdosed), never OD or ODing, except where it is the means of a death or an '
-  + 'attempt, which the reader-protection rule keeps unnamed; jk 裙 is a sailor uniform; MtF is trans woman or '
-  + 'trans girl, as 药娘 is; '
-  + 'a work written as its initials takes its full title (TGT is The Grand Tour).';
+    + 'Chat shorthand and internet slang are rendered by the plain English words, never carried across and never matched by English slang: '
+    + 'OD is overdose (overdosing, overdosed), never OD or ODing, except where it is the means of a death or an '
+    + 'attempt, which the reader-protection rule keeps unnamed; jk 裙 is a sailor uniform; MtF is trans woman or '
+    + 'trans girl, as 药娘 is; '
+    + 'a work written as its initials takes its full title (TGT is The Grand Tour).';
 
 /**
  Cat-themed source, since neither sheet varies with what it is given.

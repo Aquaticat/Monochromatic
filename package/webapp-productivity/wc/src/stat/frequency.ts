@@ -86,7 +86,7 @@ export function computeFrequency(words: readonly string[],): FrequencyEntry[] {
     ): number {
       return (b.count - a.count)
         || a.word
-        .localeCompare(b.word,);
+          .localeCompare(b.word,);
     },
   );
 }

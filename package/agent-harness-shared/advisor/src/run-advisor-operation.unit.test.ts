@@ -22,12 +22,12 @@ function hostFixture() {
   const ctx = {
     cwd: '/fixture', getScopedModels: (): unknown => state.live,
     transcript: { ...testAdvisorTranscriptSerialization, buildContextEntries: () => { state.branchReads += 1;
-    return []; }, },
+      return []; }, },
     modelRegistry: {
       getAvailable: () => all,
       getProvider: (id: string) => id === 'first' ? first.provider : id === 'other' ? other.provider : undefined,
       getApiKeyAndHeaders: async () => { state.auth();
-      return { ok: true, apiKey: 'fixture', }; },
+        return { ok: true, apiKey: 'fixture', }; },
       find: (provider: string, id: string) => all.find(model => (model.provider === provider) && (model.id === id)),
     },
   } as unknown as AdvisorRunContext;

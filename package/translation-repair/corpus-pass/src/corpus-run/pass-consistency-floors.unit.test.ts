@@ -98,7 +98,7 @@ await describe({
               kind: 'refused',
               findings: [
                 'Your translation is 3 blocks (heading (level 2), paragraph, paragraph) and the PAGE AS IT STANDS is 2. '
-                + 'Add a block only to carry something the ORIGINAL has and the text you are replacing left out.',
+                  + 'Add a block only to carry something the ORIGINAL has and the text you are replacing left out.',
               ],
             },);
           },
@@ -125,7 +125,7 @@ await describe({
               kind: 'refused',
               findings: [
                 'the wording the slice carries is longer than its original can account for (400 against 2 code points), '
-                + 'so no replacement is made',
+                  + 'so no replacement is made',
               ],
             },);
           },
@@ -141,7 +141,7 @@ await describe({
               kind: 'refused',
               findings: [
                 'translate-refused-declared-name (slice 4: archive text carries "Mittens" and the replacement does not; '
-                + 'keeping the archive text)',
+                  + 'keeping the archive text)',
               ],
             },);
           },
@@ -164,7 +164,7 @@ await describe({
               kind: 'refused',
               findings: [
                 'translate-refused-declared-name (slice 4: archive text carries "Mittens" and the replacement does not; '
-                + 'keeping the archive text)',
+                  + 'keeping the archive text)',
               ],
             },);
           },
@@ -181,8 +181,8 @@ await describe({
               kind: 'refused',
               findings: [
                 'The PAGE AS IT STANDS carries 1 quoted passage (blockquotes at any depth, including inside a container '
-                + 'tag, a list, a footnote, or another blockquote) and your translation carries 0. Every quoted passage of '
-                + 'the PAGE AS IT STANDS has to stay a quoted passage in your translation, where it stands.',
+                  + 'tag, a list, a footnote, or another blockquote) and your translation carries 0. Every quoted passage of '
+                  + 'the PAGE AS IT STANDS has to stay a quoted passage in your translation, where it stands.',
               ],
             },);
             expect(floorsWith({

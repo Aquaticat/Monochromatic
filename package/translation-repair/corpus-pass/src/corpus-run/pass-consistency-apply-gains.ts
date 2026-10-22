@@ -203,17 +203,17 @@ export function editedStartOf(
       return other.start < edit.start;
     },)
     .reduce(
-      function shifted(
-        shift,
-        other,
-      ): number {
+    function shifted(
+      shift,
+      other,
+    ): number {
         /**
          How many characters longer the replacement's words are than the words they replace.
          */
-        const { length, } = other.text;
-        return shift + (length - (other.end - other.start));
-      },
-      edit.start,
+      const { length, } = other.text;
+      return shift + (length - (other.end - other.start));
+    },
+    edit.start,
     );
 }
 

@@ -160,11 +160,11 @@ export function scanGfmReferenceLiterals(
 ): readonly TextMarkerHit[] {
   return gfmMarkerSpans({ text: slice, },)
     .map(function hit(marker,): TextMarkerHit {
-    return {
-      identifier: marker.rawLabel,
-      localOffset: marker.startOffset,
-    };
-  },);
+      return {
+        identifier: marker.rawLabel,
+        localOffset: marker.startOffset,
+      };
+    },);
 }
 
 //endregion Text marker scanning
@@ -253,20 +253,20 @@ function collectRegionHits(
     if (prefix.trim() === '') {
       acc.definitions
         .push({
-        convention: 'fullwidth-bracket',
-        identifier: hit.identifier,
-        nodeId,
-      },);
+          convention: 'fullwidth-bracket',
+          identifier: hit.identifier,
+          nodeId,
+        },);
     }
     else {
       acc.references
         .push({
-        convention: 'fullwidth-bracket',
-        identifier: hit.identifier,
-        nodeId,
-        offset: bodyOffset + regionStart
-          + hit.localOffset,
-      },);
+          convention: 'fullwidth-bracket',
+          identifier: hit.identifier,
+          nodeId,
+          offset: bodyOffset + regionStart
+            + hit.localOffset,
+        },);
     }
   }
 
@@ -280,12 +280,12 @@ function collectRegionHits(
   for (const literal of literals) {
     acc.references
       .push({
-      convention: 'gfm',
-      identifier: normalizeFootnoteIdentifier({ identifier: literal.rawLabel, },),
-      nodeId,
-      offset: bodyOffset + regionStart
-        + literal.startOffset,
-    },);
+        convention: 'gfm',
+        identifier: normalizeFootnoteIdentifier({ identifier: literal.rawLabel, },),
+        nodeId,
+        offset: bodyOffset + regionStart
+          + literal.startOffset,
+      },);
   }
 }
 
@@ -373,13 +373,13 @@ function collectBlockHits(
     if (node.type === 'footnoteReference') {
       acc.references
         .push({
-        convention: 'gfm',
-        identifier: node.identifier,
-        nodeId,
-        offset: bodyOffset + nonNullishOrThrow(node.position
-          ?.start
-          .offset,),
-      },);
+          convention: 'gfm',
+          identifier: node.identifier,
+          nodeId,
+          offset: bodyOffset + nonNullishOrThrow(node.position
+            ?.start
+            .offset,),
+        },);
     }
     else if ((node.type === 'text') && (bounds !== NO_NODE_BOUNDS)) {
       /**
@@ -507,10 +507,10 @@ export function buildFootnoteGraph(
     if (block.type === 'footnoteDefinition') {
       acc.definitions
         .push({
-        convention: 'gfm',
-        identifier: block.identifier,
-        nodeId: `block/${String(blockIndex,)}`,
-      },);
+          convention: 'gfm',
+          identifier: block.identifier,
+          nodeId: `block/${String(blockIndex,)}`,
+        },);
     }
 
     collectBlockHits({

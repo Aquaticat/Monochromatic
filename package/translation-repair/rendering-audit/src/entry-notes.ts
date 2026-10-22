@@ -303,8 +303,8 @@ export function commentNoteLines(
        */
       const comment = document.text
         .slice(
-          finding.startOffset,
-          finding.endOffset,
+        finding.startOffset,
+        finding.endOffset,
         );
       return {
         anchor: commentAnchor({

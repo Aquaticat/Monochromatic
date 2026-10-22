@@ -43,40 +43,40 @@ export function aggregateAdvisorUsage(usages: readonly ReadonlyDeep<Usage>[],): 
       total: ReadonlyDeep<Usage>,
       usage: ReadonlyDeep<Usage>,
     ): ReadonlyDeep<Usage> {
-    return {
-      input: total.input + usage.input,
-      output: total.output + usage.output,
-      cacheRead: total.cacheRead + usage.cacheRead,
-      cacheWrite: total.cacheWrite + usage.cacheWrite,
-      totalTokens: total.totalTokens + usage.totalTokens,
-      ...((total.reasoning === undefined) && (usage.reasoning === undefined)
-        ? {} : { reasoning: (total.reasoning ?? 0) + (usage.reasoning ?? 0), }),
-      ...((total.cacheWrite1h === undefined) && (usage.cacheWrite1h === undefined)
-        ? {} : { cacheWrite1h: (total.cacheWrite1h ?? 0) + (usage.cacheWrite1h ?? 0), }),
-      cost: {
-        input: total.cost
-          .input
-          + usage.cost
-          .input,
-        output: total.cost
-          .output
-          + usage.cost
-          .output,
-        cacheRead: total.cost
-          .cacheRead
-          + usage.cost
-          .cacheRead,
-        cacheWrite: total.cost
-          .cacheWrite
-          + usage.cost
-          .cacheWrite,
-        total: total.cost
-          .total
-          + usage.cost
-          .total,
-      },
-    };
-  },
+      return {
+        input: total.input + usage.input,
+        output: total.output + usage.output,
+        cacheRead: total.cacheRead + usage.cacheRead,
+        cacheWrite: total.cacheWrite + usage.cacheWrite,
+        totalTokens: total.totalTokens + usage.totalTokens,
+        ...((total.reasoning === undefined) && (usage.reasoning === undefined)
+          ? {} : { reasoning: (total.reasoning ?? 0) + (usage.reasoning ?? 0), }),
+        ...((total.cacheWrite1h === undefined) && (usage.cacheWrite1h === undefined)
+          ? {} : { cacheWrite1h: (total.cacheWrite1h ?? 0) + (usage.cacheWrite1h ?? 0), }),
+        cost: {
+          input: total.cost
+            .input
+            + usage.cost
+              .input,
+          output: total.cost
+            .output
+            + usage.cost
+              .output,
+          cacheRead: total.cost
+            .cacheRead
+            + usage.cost
+              .cacheRead,
+          cacheWrite: total.cost
+            .cacheWrite
+            + usage.cost
+              .cacheWrite,
+          total: total.cost
+            .total
+            + usage.cost
+              .total,
+        },
+      };
+    },
     {
       input: 0,
       output: 0,

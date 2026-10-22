@@ -186,12 +186,12 @@ export function splitLines(text: string,): string[] {
    */
   const normalized = text
     .replaceAll(
-      '\r\n',
-      '\n',
+    '\r\n',
+    '\n',
     )
     .replaceAll(
-      '\r',
-      '\n',
+    '\r',
+    '\n',
     );
   /**
    Lines split on `\n`, still carrying a trailing empty segment when

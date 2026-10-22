@@ -62,7 +62,7 @@ export async function discoverTestFiles(cwd: string,): Promise<readonly string[]
       const { parentPath, } = entry;
       if (parentPath.includes('node_modules',)
         || parentPath
-        .includes('/dist/',))
+          .includes('/dist/',))
         return false;
       return true;
     },)

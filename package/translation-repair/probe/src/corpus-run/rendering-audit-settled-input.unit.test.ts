@@ -611,8 +611,8 @@ await describe({
         it({
           name:
             'VERIFIES an artifact built over a roster-paired preparation, by rebuilding with the recipe it '
-            + 'records: the bare carve disagrees with it, and until the rebuild every such artifact read '
-            + 'refused, on exactly the artifacts the check exists for',
+              + 'records: the bare carve disagrees with it, and until the rebuild every such artifact read '
+              + 'refused, on exactly the artifacts the check exists for',
           fn: async () => {
             await using corpus = await makeCorpus();
             await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);
@@ -665,9 +665,9 @@ await describe({
         it({
           name:
             'REPORTS a mismatch beside a missing recipe half as unverifiable rather than refused, naming the '
-            + 'halves the file lacks: the rebuild guessed those halves, so the disagreement may be the guess '
-            + 'rather than a moved slicing, which is the honest verdict for every artifact settled before '
-            + 'the recipe was recorded',
+              + 'halves the file lacks: the rebuild guessed those halves, so the disagreement may be the guess '
+              + 'rather than a moved slicing, which is the honest verdict for every artifact settled before '
+              + 'the recipe was recorded',
           fn: async () => {
             await using corpus = await makeCorpus();
             await using archive = await scratchDir({ prefix: 'settled-audit-archive-', },);

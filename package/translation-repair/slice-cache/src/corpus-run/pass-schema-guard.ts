@@ -348,27 +348,27 @@ function foreignGroups(
       return (classification.kind !== 'declared') || (classification.version !== writes);
     },)
     .reduce(
-      function group(
-        groups: Map<string, readonly string[]>,
-        {
-          entryId,
-          classification,
-        },
-      ): Map<string, readonly string[]> {
+    function group(
+      groups: Map<string, readonly string[]>,
+      {
+        entryId,
+        classification,
+      },
+    ): Map<string, readonly string[]> {
         /**
          Phrase this row is named under.
          */
-        const label = generationLabel({ classification, },);
+      const label = generationLabel({ classification, },);
 
-        return groups.set(
-          label,
-          [
-            ...(groups.get(label,) ?? []),
-            entryId,
-          ],
-        );
-      },
-      new Map<string, readonly string[]>(),
+      return groups.set(
+        label,
+        [
+          ...(groups.get(label,) ?? []),
+          entryId,
+        ],
+      );
+    },
+    new Map<string, readonly string[]>(),
     );
 }
 

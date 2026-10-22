@@ -83,16 +83,16 @@ export function createHelperConnection(request: HelperRequest,): HelperConnectio
   socket.on(
     'error',
     function onConnectionError(error: Error,): void {
-    rl.debug(`answer channel failed: ${String(error,)}`,);
-    controller.abort(new AnswerRequestEndedError(error,),);
-  },
+      rl.debug(`answer channel failed: ${String(error,)}`,);
+      controller.abort(new AnswerRequestEndedError(error,),);
+    },
   );
   socket.once(
     'close',
     function onConnectionClosed(): void {
-    rl.debug('answer channel closed',);
-    controller.abort(new AnswerRequestEndedError('request channel closed',),);
-  },
+      rl.debug('answer channel closed',);
+      controller.abort(new AnswerRequestEndedError('request channel closed',),);
+    },
   );
   return {
     socket,

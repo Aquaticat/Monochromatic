@@ -186,8 +186,8 @@ export function foldInvisibleVariants({ text, }: { readonly text: string; },): F
         text: folded
           .text
           .replaceAll(
-            entry.from,
-            entry.to,
+          entry.from,
+          entry.to,
           ),
         findings: [
           ...folded.findings,

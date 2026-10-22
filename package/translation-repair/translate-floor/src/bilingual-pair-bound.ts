@@ -324,8 +324,8 @@ function blockAround(
    */
   const counted = lines
     .slice(
-      start,
-      end,
+    start,
+    end,
     )
     .filter(function carries(line,): boolean {
       return carriesContent({ line, },);

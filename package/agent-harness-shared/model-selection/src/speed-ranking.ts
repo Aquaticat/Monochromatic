@@ -54,8 +54,8 @@ export function compareModelSpeed<TModel extends ModelPricing,>(
   const inputCostDiff = left.cost
     .input
     - right
-    .cost
-    .input;
+      .cost
+      .input;
   if (inputCostDiff !== 0)
     return inputCostDiff;
 

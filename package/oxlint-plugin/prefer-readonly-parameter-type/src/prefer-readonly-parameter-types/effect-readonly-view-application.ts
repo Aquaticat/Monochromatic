@@ -408,7 +408,7 @@ export function readonlyViewElementApplications({
         receiverSlot,
         callbackKey: callableKey(declaration,),
         observerParameterIndexes: (positions === undefined)
-            || (positions === OBSERVED_POSITIONS_UNAVAILABLE)
+          || (positions === OBSERVED_POSITIONS_UNAVAILABLE)
           ? []
           : positions,
       };
@@ -477,9 +477,9 @@ export function recordReadonlyViewApplications({
    Caller parameters owning receiver elements, when receiver can carry mutable state.
    */
   const receiverOrigins = expressionCanCarryMutableState({
-      checker,
-      node: receiver,
-    },)
+    checker,
+    node: receiver,
+  },)
     ? expressionElementOrigins({
       project,
       bindingOriginBySymbolId,

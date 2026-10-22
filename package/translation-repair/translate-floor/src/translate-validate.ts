@@ -77,23 +77,23 @@ export type SliceValidation =
      */
     readonly pageGrammar: PageGrammar;
   }
-  | {
-    readonly kind: 'invalid';
+    | {
+      readonly kind: 'invalid';
 
     /**
      One sentence per divergence, addressed to the model that wrote the
      candidate.
      */
-    readonly findings: readonly string[];
-  }
-  | {
-    readonly kind: 'unknown';
+      readonly findings: readonly string[];
+    }
+    | {
+      readonly kind: 'unknown';
 
     /**
      Why no comparison was possible.
      */
-    readonly detail: string;
-  };
+      readonly detail: string;
+    };
 
 /**
  Verdict where no grammar could read the original or the page: the floors

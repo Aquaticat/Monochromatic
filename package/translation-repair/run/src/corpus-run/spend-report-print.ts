@@ -182,13 +182,13 @@ export function printCost({ cost, }: { readonly cost: SpendCost; },): void {
     const nominalUsd = cost
       .freeEnergy
       .reduce(
-        function addUsd(
-          running,
-          seat,
-        ): number {
-          return running + seat.costUsd;
-        },
-        0,
+      function addUsd(
+        running,
+        seat,
+      ): number {
+        return running + seat.costUsd;
+      },
+      0,
       );
     if (nominalUsd > 0) {
       console.log(

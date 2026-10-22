@@ -333,14 +333,14 @@ export async function materialiseGitMarker({
         string,
       ],
     ): Promise<void> {
-    return writeFile(
-      join(
-        dir,
-        relative,
-      ),
-      content,
-    );
-  },),);
+      return writeFile(
+        join(
+          dir,
+          relative,
+        ),
+        content,
+      );
+    },),);
   l.debug(`materialised git marker under ${dir}`,);
 }
 

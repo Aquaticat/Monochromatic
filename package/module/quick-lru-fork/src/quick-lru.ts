@@ -227,8 +227,8 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
   }: QuickLruItemEntry<Key, Value>,): void {
     state.cache
       .set(
-        key,
-        item,
+      key,
+      item,
       );
     state.cacheSize += 1;
 
@@ -347,8 +347,8 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
       .has(key,))
       state.cache
         .set(
-          key,
-          item,
+        key,
+        item,
         );
     else
       insertRecentItem({
@@ -506,7 +506,7 @@ export function createQuickLru<Key, Value>(options: QuickLruOptions<Key, Value>,
     const item = state.cache
       .get(key,)
       ?? state.oldCache
-      .get(key,);
+        .get(key,);
     if (item !== undefined)
       return hasExpiryStamp(item)
         ? (item.expiry - Date.now())

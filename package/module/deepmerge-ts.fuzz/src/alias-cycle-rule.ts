@@ -37,14 +37,14 @@ export type Frame = {
  */
 export type CycleRule =
   | { readonly kind: 'merge'; }
-  | {
-    readonly kind: 'ancestor';
-    readonly result: unknown
-  }
-  | {
-    readonly kind: 'resolve-last';
-    readonly last: Sourced
-  };
+    | {
+      readonly kind: 'ancestor';
+      readonly result: unknown
+    }
+    | {
+      readonly kind: 'resolve-last';
+      readonly last: Sourced
+    };
 
 /**
  Whether a record-style key can index an object.
@@ -103,8 +103,8 @@ export function childSources({
     return Object.prototype
       .propertyIsEnumerable
       .call(
-        container,
-        key,
+      container,
+      key,
       )
       ? [{
         input: source.input,
@@ -145,8 +145,8 @@ export function triggersFalseCycle({
      */
     const holders = frame.sources
       .filter(function holds(candidate,) {
-      return candidate.value === source.value;
-    },);
+        return candidate.value === source.value;
+      },);
     return (holders.length > 0) && (!holders.some(function ownPath(candidate,) {
       return candidate.input === source.input;
     },));
@@ -182,8 +182,8 @@ export function ownCycleDepth({
   const index = ancestors.findLastIndex(function ownAncestor(frame,) {
     return frame.sources
       .some(function sameInput(candidate,) {
-      return (candidate.input === source.input) && (candidate.value === source.value);
-    },);
+        return (candidate.input === source.input) && (candidate.value === source.value);
+      },);
   },);
   return index === (-1) ? 0 : ancestors.length - index;
 }

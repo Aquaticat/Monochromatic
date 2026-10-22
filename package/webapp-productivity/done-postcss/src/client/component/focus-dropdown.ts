@@ -122,7 +122,7 @@ class FocusDropdown extends HTMLElement {
         }, },
       },),
       menu,
-    );
+      );
   }
 }
 

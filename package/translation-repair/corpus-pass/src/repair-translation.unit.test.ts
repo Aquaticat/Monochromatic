@@ -180,7 +180,7 @@ function scriptedClient(
   }: {
     readonly criticIssues:
       | readonly Record<string, unknown>[]
-      | ((request: ChatJsonRequest<unknown>,) => readonly Record<string, unknown>[]);
+        | ((request: ChatJsonRequest<unknown>,) => readonly Record<string, unknown>[]);
     readonly checkerVerdict?: string;
     readonly proberVerdict?: string;
     readonly proberEvidence?: string;
@@ -209,65 +209,65 @@ function scriptedClient(
             : criticIssues,
         }
         : stage === 'panel_ballot'
-        ? {
-          verdicts: oneBasedNumbers({
-            count: countMarker({ request, marker: '\nCLAIM ', },),
-          },)
-            .map(function toVerdict(claim,) {
-              return {
-                claim,
-                vote: 'supported',
-              };
-            },),
-        }
-        : stage === 'editor_report'
-        ? {
-          edits: Array.from(
-            { length: countMarker({ request, marker: 'REGION ', },) > 0 ? 1 : 0, },
-            function toEdit() {
-              return {
-                region: 1,
-                newText: 'The cat also loves chasing butterflies.',
-              };
-            },
-          ),
-        }
-        : stage === 'resolution_report'
-        ? {
-          checks: oneBasedNumbers({
-            count: countMarker({ request, marker: '\nISSUE ', },),
-          },)
-            .map(function toCheck(issue,) {
-              return {
-                issue,
-                verdict: checkerVerdict,
-              };
-            },),
-        }
-        : stage === 'introduced_defect_report'
-        ? {
-          checks: oneBasedNumbers({
+          ? {
+            verdicts: oneBasedNumbers({
+              count: countMarker({ request, marker: '\nCLAIM ', },),
+            },)
+              .map(function toVerdict(claim,) {
+                return {
+                  claim,
+                  vote: 'supported',
+                };
+              },),
+          }
+          : stage === 'editor_report'
+            ? {
+              edits: Array.from(
+                { length: countMarker({ request, marker: 'REGION ', },) > 0 ? 1 : 0, },
+                function toEdit() {
+                  return {
+                    region: 1,
+                    newText: 'The cat also loves chasing butterflies.',
+                  };
+                },
+              ),
+            }
+            : stage === 'resolution_report'
+              ? {
+                checks: oneBasedNumbers({
+                  count: countMarker({ request, marker: '\nISSUE ', },),
+                },)
+                  .map(function toCheck(issue,) {
+                    return {
+                      issue,
+                      verdict: checkerVerdict,
+                    };
+                  },),
+              }
+              : stage === 'introduced_defect_report'
+                ? {
+                  checks: oneBasedNumbers({
             // Counted as a fenced heading rather than a line start, because the
             // probe sheet chooses its fence against the enclosed text and so
             // has no fixed-width prefix to anchor on. The trailing space keeps
             // this off the `REPLACED REGIONS` banner.
-            count: countMarker({ request, marker: ' REGION ', },),
-          },)
-            .map(function toCheck(region,) {
-              return {
-                region,
-                verdict: proberVerdict,
-                category: proberEvidence === '' ? '' : 'accuracy/mistranslation',
-                severity: proberEvidence === '' ? '' : 'major',
-                evidence: proberEvidence,
-                omittedText: proberOmittedText,
-                verdictReason: proberEvidence === '' ? '' : 'absent before the edit',
-              };
-            },),
-        }
-        : stage === 'refine_report'
-        ? { rewrites: [], }
-        : undefined;
+                    count: countMarker({ request, marker: ' REGION ', },),
+                  },)
+                    .map(function toCheck(region,) {
+                      return {
+                        region,
+                        verdict: proberVerdict,
+                        category: proberEvidence === '' ? '' : 'accuracy/mistranslation',
+                        severity: proberEvidence === '' ? '' : 'major',
+                        evidence: proberEvidence,
+                        omittedText: proberOmittedText,
+                        verdictReason: proberEvidence === '' ? '' : 'absent before the edit',
+                      };
+                    },),
+                }
+                : stage === 'refine_report'
+                  ? { rewrites: [], }
+                  : undefined;
       if (scripted === undefined)
         throw new Error(`stub has no script for stage ${stage}`,);
       if (!request.validate(scripted,))
@@ -377,8 +377,8 @@ function steeringClient(
     ): Promise<ChatJsonOutcome<ValueT>> => {
       if ((abortOnStage !== undefined)
         && (request.responseFormat
-            ?.json_schema
-            .name
+          ?.json_schema
+          .name
           === abortOnStage))
         controller.abort(ENTRY_DEADLINE_FAILURE,);
       if (request.responseFormat
@@ -402,8 +402,8 @@ function steeringClient(
         }
       }
       if ((request.responseFormat
-          ?.json_schema
-          .name
+        ?.json_schema
+        .name
         === 'refine_report')
         && (refinerConcurrency !== undefined)) {
         refinerConcurrency.now += 1;
@@ -532,11 +532,11 @@ await describe({
         /** Critics credited with raising something, across every chunk. */
         const raisers = new Set(result.sliceCritics
           .flatMap(function toProposerIds(record,) {
-          return record.claimAttributions
-            .flatMap(function toIds(attribution,) {
-            return proposerIdsOf(attribution,);
-          },);
-        },),);
+            return record.claimAttributions
+              .flatMap(function toIds(attribution,) {
+                return proposerIdsOf(attribution,);
+              },);
+          },),);
 
         expect(raisers.size,).toBeGreaterThan(0,);
       },
@@ -561,8 +561,8 @@ await describe({
         /** Chunk indexes in recorded order. */
         const indexes = result.sliceCritics
           .map(function toIndex(record,) {
-          return record.sliceIndex;
-        },);
+            return record.sliceIndex;
+          },);
 
         expect(indexes,).toStrictEqual([...indexes,].toSorted(function ascending(
           left,
@@ -595,8 +595,8 @@ await describe({
               stage: request.responseFormat?.json_schema.name ?? '',
               text: request.messages
                 .map(function toText(message,) {
-                return messageText({ message, },);
-              },)
+                  return messageText({ message, },);
+                },)
                 .join('\n',),
             },);
             return await scriptedClient({ criticIssues: [MISTRANSLATION_ISSUE,], },)
@@ -623,8 +623,8 @@ await describe({
         expect(
           result.sliceCritics
             .some(function hasProposers(record,) {
-            return record.claimAttributions.length > 0;
-          },),
+              return record.claimAttributions.length > 0;
+            },),
         ).toBe(true,);
 
         /** Judging prompts, which must name no proposer. */
@@ -1073,7 +1073,7 @@ await describe({
         expect(second.status,).toBe(first.status,);
         expect(second.issues
           .length,).toBe(first.issues
-          .length,);
+            .length,);
       },
     },),
 
@@ -1484,7 +1484,7 @@ Meow meow meow meow.
         expect(fromPrepared.repairedText,).toBe(fromTexts.repairedText,);
         expect(fromPrepared.issues
           .length,).toBe(fromTexts.issues
-          .length,);
+            .length,);
         expect(fromPrepared.findings,).toEqual(fromTexts.findings,);
       },
     },),
@@ -1606,7 +1606,7 @@ Meow meow meow meow.
         // slice by slice does not see a shorter document here.
         expect(anchored.sliceTexts
           .length,).toBe(withAnchor.slices
-          .length,);
+            .length,);
         expect(anchored.changedSliceIndices,).not.toContain(anchorIndex,);
       },
     },),
@@ -1988,9 +1988,9 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
             .map(function toIndex(outcome,): number {
               return outcome.sliceIndex;
             },),).toEqual([
-            0,
-            1,
-          ],);
+              0,
+              1,
+            ],);
         },),);
       },
     },),
@@ -2214,9 +2214,9 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           .map(function toChunk(record,): number {
             return record.sliceIndex;
           },),).toEqual(first.issues
-          .map(function toChunk(record,): number {
-            return record.sliceIndex;
-          },),);
+            .map(function toChunk(record,): number {
+              return record.sliceIndex;
+            },),);
       },
     },),
 
@@ -2312,12 +2312,12 @@ The cat loves sunbathing on the windowsill. The cat hates butterflies.
           .filter(function isDiscard(finding,): boolean {
             return finding.startsWith('repair-discarded-contradictory-slice',);
           },),).toEqual([...contradicted.values(),].map(function toFinding(outcome,): string {
-          return resumedSliceDiscardFinding({
-            lane: 'repair',
-            sliceIndex: outcome.sliceIndex,
-            changed: outcome.changed,
-          },);
-        },),);
+            return resumedSliceDiscardFinding({
+              lane: 'repair',
+              sliceIndex: outcome.sliceIndex,
+              changed: outcome.changed,
+            },);
+          },),);
       },
     },),
 

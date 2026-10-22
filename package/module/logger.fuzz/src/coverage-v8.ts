@@ -127,7 +127,7 @@ export type UrlClass =
     readonly relPath: string;
     readonly absPath: string
   }
-  | { readonly kind: 'other'; };
+    | { readonly kind: 'other'; };
 
 /**
  Classify a V8 script URL as a shipped-implementation coverage target or not.
@@ -320,7 +320,7 @@ export function projectCovered(
         + 1;
     },
     0,
-  );
+    );
   return covered;
 }
 
@@ -381,7 +381,7 @@ export function fileCoverageFrom(
       covered: 0,
       total: 0,
     },
-  );
+    );
   return {
     covered: tally.covered,
     total: tally.total,

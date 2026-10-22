@@ -35,8 +35,8 @@ export function getArgumentValue(name: string,): string | typeof ARGUMENT_ABSENT
    */
   const argument = process.argv
     .find(function hasPrefix(entry,) {
-    return entry.startsWith(prefix,);
-  },);
+      return entry.startsWith(prefix,);
+    },);
   if (argument === undefined)
     return ARGUMENT_ABSENT;
   return argument.slice(prefix.length,);

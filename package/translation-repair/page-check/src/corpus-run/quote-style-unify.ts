@@ -330,32 +330,32 @@ function pageQuoteConvention(
       return slice.syntax !== 'front-matter';
     },)
     .reduce(
-      function add(
-        counted,
-        slice,
-      ): QuoteTally {
+    function add(
+      counted,
+      slice,
+    ): QuoteTally {
         /**
          The text the page carries at the slice.
          */
-        const text = pageTextOf({
-          pageText: carried,
-          sliceIndex: slice.target
-            .sliceIndex,
-        },);
+      const text = pageTextOf({
+        pageText: carried,
+        sliceIndex: slice.target
+          .sliceIndex,
+      },);
         /**
          The reading of the text, whose mask the tally reads.
          */
-        const { mask, } = readingOf({
-          page,
-          text,
-        },);
-        return tallyQuotes({
-          tally: counted,
-          text,
-          mask,
-        },);
-      },
-      EMPTY_TALLY,
+      const { mask, } = readingOf({
+        page,
+        text,
+      },);
+      return tallyQuotes({
+        tally: counted,
+        text,
+        mask,
+      },);
+    },
+    EMPTY_TALLY,
     );
   /**
    Whether curly doubles are the page's form.

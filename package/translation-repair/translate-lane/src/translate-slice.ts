@@ -214,7 +214,7 @@ export async function settleTranslateSlice(
           many: 'characters',
         },)
       } of target-only English, with the line breaks before it, out of translation, `
-      + `judging ${String(incumbentText.length,)} of ${String(archiveText.length,)}`,
+        + `judging ${String(incumbentText.length,)} of ${String(archiveText.length,)}`,
     );
 
   /**

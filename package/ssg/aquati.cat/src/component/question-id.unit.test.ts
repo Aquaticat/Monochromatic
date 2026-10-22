@@ -245,8 +245,8 @@ function expectedQuestionId(question: HashableQuestion,): string {
   return fingerprint32(parts.join(HASH_FIELD_SEPARATOR,),)
     .toString(HEX_RADIX,)
     .padStart(
-      HEX_DIGITS_32,
-      '0',
+    HEX_DIGITS_32,
+    '0',
     );
 }
 

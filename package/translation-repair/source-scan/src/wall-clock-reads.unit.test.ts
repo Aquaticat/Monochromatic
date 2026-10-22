@@ -216,14 +216,14 @@ function wallReadOf({ node, }: { readonly node: TreeNode; },): string {
       node.init,
     ]
     : (node.type === 'AssignmentExpression')
-    ? [
-      node.left,
-      node.right,
-    ]
-    : [
-      undefined,
-      undefined,
-    ];
+      ? [
+        node.left,
+        node.right,
+      ]
+      : [
+        undefined,
+        undefined,
+      ];
   return (isTreeNode(pattern,) && (pattern.type === 'ObjectPattern') && isGlobal({
     node: source,
     name: 'Date',

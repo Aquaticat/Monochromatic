@@ -35,34 +35,34 @@ export type Signal =
     readonly kind: 'shallow';
     readonly shallowBytes: number
   }
-  | {
-    readonly kind: 'deepen';
-    readonly deepen: DeepenResult
-  }
-  | {
-    readonly kind: 'refs';
-    readonly refs: LsRemoteResult
-  }
-  | {
-    readonly kind: 'storage';
-    readonly storageBytes: number
-  }
-  | {
-    readonly kind: 'commit';
-    readonly commit: HostCommitCountResult
-  }
-  | {
-    readonly kind: 'tree0';
-    readonly tree0: CommitCountResult
-  }
-  | {
-    readonly kind: 'churn';
-    readonly churn: ChurnResult
-  }
-  | {
-    readonly kind: 'none';
-    readonly which: string
-  };
+    | {
+      readonly kind: 'deepen';
+      readonly deepen: DeepenResult
+    }
+    | {
+      readonly kind: 'refs';
+      readonly refs: LsRemoteResult
+    }
+    | {
+      readonly kind: 'storage';
+      readonly storageBytes: number
+    }
+    | {
+      readonly kind: 'commit';
+      readonly commit: HostCommitCountResult
+    }
+    | {
+      readonly kind: 'tree0';
+      readonly tree0: CommitCountResult
+    }
+    | {
+      readonly kind: 'churn';
+      readonly churn: ChurnResult
+    }
+    | {
+      readonly kind: 'none';
+      readonly which: string
+    };
 
 /**
  Resolves the shared shallow-clone promise into a shallow signal.

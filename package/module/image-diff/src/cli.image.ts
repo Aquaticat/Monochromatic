@@ -18,7 +18,7 @@ import type { ImageInput, } from './types.ts';
 export function parseImageArg(arg: string,): ImageInput {
   if (arg.startsWith('http://',)
     || arg
-    .startsWith('https://',))
+      .startsWith('https://',))
     return { url: arg, };
   return { path: arg, };
 }

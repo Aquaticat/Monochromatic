@@ -73,7 +73,7 @@ export async function createStore(config: StoreConfig = {},): Promise<Store> {
    */
   const storeId = config.storeId
     ?? crypto
-    .randomUUID();
+      .randomUUID();
   /**
    Serializer applied on every `set`; defaults to superjson so structured values round-trip through string backends.
    */

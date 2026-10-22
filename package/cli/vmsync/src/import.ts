@@ -182,19 +182,19 @@ export function nameFromPath(imagePath: string,): string {
     );
   return Array
     .from(
-      { length: noExt.length, },
-      function sanitiseChar(
-        _: undefined,
-        idx: number,
-      ): string {
+    { length: noExt.length, },
+    function sanitiseChar(
+      _: undefined,
+      idx: number,
+    ): string {
         /**
          Char being inspected at this index; replaced when disallowed.
          */
-        const c = noExt.charAt(idx,);
-        return isNameChar(c,)
-          ? c
-          : '-';
-      },
+      const c = noExt.charAt(idx,);
+      return isNameChar(c,)
+        ? c
+        : '-';
+    },
     )
     .join('',);
 }

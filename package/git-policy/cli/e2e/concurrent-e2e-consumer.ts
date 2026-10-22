@@ -75,11 +75,11 @@ const WORK_ROOT = '/work';
 function splitFilter(text: string,): readonly string[] {
   return text.split(',',)
     .map(function trim(entry,) {
-    return entry.trim();
-  },)
+      return entry.trim();
+    },)
     .filter(function nonEmpty(entry,) {
-    return entry !== '';
-  },);
+      return entry !== '';
+    },);
 }
 
 //endregion Configuration
@@ -188,35 +188,35 @@ async function runSuite(): Promise<void> {
     },);
   },)
     .reduce<Promise<readonly ScenarioResult[]>>(
-      async function next(
-        previous,
-        {
-          gitVersion,
-          definition,
-        },
-      ) {
+    async function next(
+      previous,
+      {
+        gitVersion,
+        definition,
+      },
+    ) {
     /**
      Results so far.
      */
-    const done = await previous;
+      const done = await previous;
     /**
      This run's result.
      */
-    const result = await runScenario({
-      definition,
-      gitVersion,
-      seed,
-      workRoot: WORK_ROOT,
-      trace,
-    },);
-    console.log(formatResult(result,)
-      .join('\n',),);
-    return [
-      ...done,
-      result,
-    ];
-  },
-      Promise.resolve([],),
+      const result = await runScenario({
+        definition,
+        gitVersion,
+        seed,
+        workRoot: WORK_ROOT,
+        trace,
+      },);
+      console.log(formatResult(result,)
+        .join('\n',),);
+      return [
+        ...done,
+        result,
+      ];
+    },
+    Promise.resolve([],),
     );
   console.log(summarize(results,)
     .join('\n',),);

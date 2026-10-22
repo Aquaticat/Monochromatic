@@ -192,8 +192,8 @@ export async function widthControlHolds(
       return withoutASentence(slice.incumbentText,) !== '';
     },)
     .slice(
-      0,
-      CONTROL_SLICES,
+    0,
+    CONTROL_SLICES,
     );
 
   if (usable.length === 0)

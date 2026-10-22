@@ -1159,7 +1159,7 @@ await describe({
               return line.split('; retrying in',)[0] ?? '';
             },),).toEqual([
               '[translation-repair] [exchangeWithRetry] hf:whiskers: transport failure: refused by '
-              + 'ProviderHttpError from synthetic with HTTP 503 (the provider said: "the cat is napping")',
+                + 'ProviderHttpError from synthetic with HTTP 503 (the provider said: "the cat is napping")',
             ],);
           },
         },),

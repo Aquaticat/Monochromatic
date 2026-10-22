@@ -160,7 +160,7 @@ await describe({
             'spend-report: 1 log, 2 lines, 0 seats',
             NOTHING_RECORDED_LINE,
             '2 lines carried the marker and would not parse, so this report\'s totals are short by whatever '
-            + 'those calls cost',
+              + 'those calls cost',
           ],
           exitCode: 'unset',
         },);
@@ -201,12 +201,12 @@ await describe({
           lines: [
             'spend-report: 2 logs, 4 lines, 2 seats',
             '1 line carried the marker and would not parse, so this report\'s totals are short by whatever '
-            + 'those calls cost',
+              + 'those calls cost',
             'metered seats, priced at rates read 2026-10-11:',
             '  gemma-4-26b-a4b-it: 8.64 credits (100.0%) over 1 call, in 1000000=1.96 out 1000000=6.68',
             'metered run total: 8.64 credits',
             'subscription seats, which bill no credits and are metered as a percentage of a weekly allowance on '
-            + 'the METERS line:',
+              + 'the METERS line:',
             '  hf:zai-org/GLM-5.3-Flash: 1 call, in 300 out 40',
           ],
           exitCode: 'unset',
@@ -243,7 +243,7 @@ await describe({
             'spend-report: 1 log, 2 lines, 1 seat',
             'metered seats, priced at rates read 2026-10-11:',
             '  qwen3.8-max: 200.00 credits (100.0%) over 2 calls, in 2000000=80.00 out 1000000=120.00, '
-            + '2 of them reckoned rather than reported',
+              + '2 of them reckoned rather than reported',
             'metered run total: 200.00 credits',
             `RECKONED, NOT REPORTED: 2 calls were ${RECKONED_REASON}`,
           ],
@@ -278,7 +278,7 @@ await describe({
             'spend-report: 1 log, 1 line, 1 seat',
             'metered seats, priced at rates read 2026-10-11:',
             '  qwen3.8-max: 100.00 credits (100.0%) over 1 call, in 1000000=40.00 out 500000=60.00, '
-            + '1 of them reckoned rather than reported',
+              + '1 of them reckoned rather than reported',
             'metered run total: 100.00 credits',
             `RECKONED, NOT REPORTED: 1 call was ${RECKONED_REASON}`,
           ],
@@ -353,7 +353,7 @@ await describe({
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect(String(refusal,),).toBe(
           `StatedRefusalError: the log ${missing} could not be read (ENOENT), so nothing was counted. `
-          + 'Name a log a pass, probe or calibration wrote, by a path that exists.',
+            + 'Name a log a pass, probe or calibration wrote, by a path that exists.',
         );
       },
     },),
@@ -393,7 +393,7 @@ await describe({
 
         expect(String(refusal,),).toBe(
           `StatedRefusalError: the log ${twice} is named more than once, so its lines would be counted twice. `
-          + 'Name each log once.',
+            + 'Name each log once.',
         );
       },
     },),

@@ -75,9 +75,9 @@ export type BaselineOutcome =
     readonly taken: true;
     readonly quota: NeuralWattQuota;
   }
-  | {
-    readonly taken: false;
-  };
+    | {
+      readonly taken: false;
+    };
 
 /**
  Quota reads of one client.

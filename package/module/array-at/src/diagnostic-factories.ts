@@ -84,13 +84,13 @@ type RangeDiagnosticOptions<
   LastIndex extends number,
   Length extends number,
   MinimumNegativeIndex extends number,
-> = {
-  readonly index: Index;
-  readonly distance: Distance;
-  readonly lastIndex: LastIndex;
-  readonly length: Length;
-  readonly minimumNegativeIndex: MinimumNegativeIndex;
-};
+  > = {
+    readonly index: Index;
+    readonly distance: Distance;
+    readonly lastIndex: LastIndex;
+    readonly length: Length;
+    readonly minimumNegativeIndex: MinimumNegativeIndex;
+  };
 
 /**
  Creates diagnostic for index past array end.
@@ -124,25 +124,25 @@ export function createPastEndDiagnostic<
   const LastIndex extends number,
   const Length extends number,
   const MinimumNegativeIndex extends number,
->({
-  index,
-  distance,
-  lastIndex,
-  length,
-  minimumNegativeIndex,
-}: RangeDiagnosticOptions<
-  Index,
-  Distance,
-  LastIndex,
-  Length,
-  MinimumNegativeIndex
->): PastEndDiagnostic<
-  Index,
-  Distance,
-  LastIndex,
-  Length,
-  MinimumNegativeIndex
-> {
+  >({
+    index,
+    distance,
+    lastIndex,
+    length,
+    minimumNegativeIndex,
+  }: RangeDiagnosticOptions<
+    Index,
+    Distance,
+    LastIndex,
+    Length,
+    MinimumNegativeIndex
+    >): PastEndDiagnostic<
+      Index,
+      Distance,
+      LastIndex,
+      Length,
+      MinimumNegativeIndex
+      > {
   return {
     code: 'out-of-range',
     message: `Index ${index} is past the end by ${distance}.`,
@@ -190,25 +190,25 @@ export function createBeforeStartDiagnostic<
   const LastIndex extends number,
   const Length extends number,
   const MinimumNegativeIndex extends number,
->({
-  index,
-  distance,
-  lastIndex,
-  length,
-  minimumNegativeIndex,
-}: RangeDiagnosticOptions<
-  Index,
-  Distance,
-  LastIndex,
-  Length,
-  MinimumNegativeIndex
->): BeforeStartDiagnostic<
-  Index,
-  Distance,
-  LastIndex,
-  Length,
-  MinimumNegativeIndex
-> {
+  >({
+    index,
+    distance,
+    lastIndex,
+    length,
+    minimumNegativeIndex,
+  }: RangeDiagnosticOptions<
+    Index,
+    Distance,
+    LastIndex,
+    Length,
+    MinimumNegativeIndex
+    >): BeforeStartDiagnostic<
+      Index,
+      Distance,
+      LastIndex,
+      Length,
+      MinimumNegativeIndex
+      > {
   return {
     code: 'out-of-range',
     message: `Index ${index} is before the start by ${distance}.`,
@@ -252,15 +252,15 @@ export function createUnassignedSlotDiagnostic<
   const Index extends number,
   const ResolvedIndex extends number,
   const Length extends number,
->({
-  index,
-  length,
-  resolvedIndex,
-}: {
-  readonly index: Index;
-  readonly length: Length;
-  readonly resolvedIndex: ResolvedIndex;
-}): UnassignedSlotDiagnostic<Index, ResolvedIndex, Length> {
+  >({
+    index,
+    length,
+    resolvedIndex,
+  }: {
+    readonly index: Index;
+    readonly length: Length;
+    readonly resolvedIndex: ResolvedIndex;
+  }): UnassignedSlotDiagnostic<Index, ResolvedIndex, Length> {
   return {
     code: 'unassigned-slot',
     message: `Index ${index} resolves to unassigned array slot ${resolvedIndex}.`,

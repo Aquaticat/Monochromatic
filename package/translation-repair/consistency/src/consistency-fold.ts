@@ -151,28 +151,28 @@ export type SpanSearch =
      */
     readonly kind: 'none';
   }
-  | {
+    | {
     /**
      The quote's words stand exactly once.
      */
-    readonly kind: 'once';
+      readonly kind: 'once';
 
     /**
      Offset in the English where the span starts.
      */
-    readonly start: number;
+      readonly start: number;
 
     /**
      Exclusive offset in the English where the span ends.
      */
-    readonly end: number;
-  }
-  | {
+      readonly end: number;
+    }
+    | {
     /**
      The quote's words stand more than once, overlaps included.
      */
-    readonly kind: 'many';
-  };
+      readonly kind: 'many';
+    };
 
 /**
  The words of a quote in the fold, without the sentence punctuation, space and

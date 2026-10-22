@@ -124,8 +124,8 @@ function countingClient(): {
         const value: unknown = sent.includes(GATE_MARKER,)
           ? { verdict: 'consolidated', unsupported: [], dropped: [], assessment: 'the lane text is faithful', }
           : (request.responseFormat?.json_schema.name === 'candidate_ballot')
-          ? { best: 1, assessment: 'the only candidate reads well', }
-          : undefined;
+            ? { best: 1, assessment: 'the only candidate reads well', }
+            : undefined;
         if (value === undefined) {
           asked.producer += 1;
           throw new Error('a producer was asked over an empty standing',);

@@ -236,8 +236,8 @@ function boundedKeyOf({ key, }: { readonly key: string; },): string {
     },
   )
     .slice(
-      0,
-      RECEIVED_KEY_NAME_LENGTH,
+    0,
+    RECEIVED_KEY_NAME_LENGTH,
     )
     .join('',);
 }
@@ -267,8 +267,8 @@ function describedKeysOf({ record, }: { readonly record: Readonly<Record<string,
    */
   const listed = entries
     .slice(
-      0,
-      RECEIVED_KEYS_LISTED,
+    0,
+    RECEIVED_KEYS_LISTED,
     )
     .map(function described([key, value,],): string {
       return `${boundedKeyOf({ key, },)}:${jsonTypeOf({ value, },)}`;

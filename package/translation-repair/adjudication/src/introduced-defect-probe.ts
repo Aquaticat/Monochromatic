@@ -250,12 +250,12 @@ export async function runIntroducedDefectProbe(
         string,
         readonly IntroducedDefectCheckWire[],
       ] {
-      return [
-        voice.modelId,
-        voice.value
-          .checks,
-      ];
-    },),
+        return [
+          voice.modelId,
+          voice.value
+            .checks,
+        ];
+      },),
   );
 
   /**

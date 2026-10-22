@@ -38,7 +38,7 @@ const now = new Date().toISOString()
   .replaceAll(
   ':',
   '',
-);
+  );
 await mkdir(join(
   'bak',
   now,

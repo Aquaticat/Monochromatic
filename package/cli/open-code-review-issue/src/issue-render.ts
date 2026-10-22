@@ -32,12 +32,12 @@ function encodeSourcePath(path: string,): string {
     .map(function encodeSegment(segment,): string {
       return encodeURIComponent(segment,)
         .replaceAll(
-          '(',
-          '%28',
+        '(',
+        '%28',
         )
         .replaceAll(
-          ')',
-          '%29',
+        ')',
+        '%29',
         );
     },)
     .join('/',);

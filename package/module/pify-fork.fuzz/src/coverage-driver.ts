@@ -188,8 +188,8 @@ async function exercise(): Promise<void> {
     input: receiverModule,
   },)
     .read({
-    args: [],
-  },),);
+      args: [],
+    },),);
   /**
    Detached call through `Function.prototype.call`, observing the wrapper's
    receiver handling. The result is awaited through `Promise.resolve` because
@@ -199,10 +199,10 @@ async function exercise(): Promise<void> {
     input: errorFirstFixture,
   },)
     .call(
-      {},
-      {
-    args: [],
-  },
+    {},
+    {
+      args: [],
+    },
     );
   await swallow(Promise.resolve(detachedResult,),);
 
@@ -227,8 +227,8 @@ async function exercise(): Promise<void> {
     options: excludeMainOptions,
   },)
     .meow({
-    args: [],
-  },),);
+      args: [],
+    },),);
   swallowCall(function rawMainCall(): void {
     /**
      `excludeMain` keeps the own call raw, so the view is the raw function
@@ -270,8 +270,8 @@ async function exercise(): Promise<void> {
     },
   },)
     .read({
-    args: [],
-  },),);
+      args: [],
+    },),);
   /**
    Excluded member left raw: calling it through its own callback signature
    exercises the get trap's pass-through branch.
@@ -293,8 +293,8 @@ async function exercise(): Promise<void> {
       error: unknown,
       value: unknown,
     ): void {
-    observedRawOutcomes.push(`${caughtValueText(error,)}=${caughtValueText(value,)}`,);
-  },);
+      observedRawOutcomes.push(`${caughtValueText(error,)}=${caughtValueText(value,)}`,);
+    },);
   await swallow(pify({
     input: {
       read(callback: FixtureCallback,): void {
@@ -307,8 +307,8 @@ async function exercise(): Promise<void> {
     options: regexIncludeOptions,
   },)
     .read({
-    args: [],
-  },),);
+      args: [],
+    },),);
   /**
    Prototype-clashing member read through an empty include, reaching the
    selection quirk's short-circuit branch.
@@ -318,8 +318,8 @@ async function exercise(): Promise<void> {
     options: emptyIncludeOptions,
   },)
     .toString({
-    args: [],
-  },),);
+      args: [],
+    },),);
   /**
    Second wrap over the same target, reaching the shared decision cache's
    first-touch branch.
@@ -329,8 +329,8 @@ async function exercise(): Promise<void> {
     options: emptyIncludeOptions,
   },)
     .toString({
-    args: [],
-  },),);
+      args: [],
+    },),);
   /**
    Frozen member read through the proxy-invariant branch.
    */

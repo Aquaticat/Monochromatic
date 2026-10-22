@@ -138,8 +138,8 @@ function deterministicRefuses(
       return chunk.nodes[0]
         ?.kind
         === targetChunks[index]
-        ?.nodes[0]
-        ?.kind;
+          ?.nodes[0]
+          ?.kind;
     },);
   if (equalShape)
     return false;

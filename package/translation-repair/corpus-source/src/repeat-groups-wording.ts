@@ -242,27 +242,27 @@ export function hiddenRangesOf({ document, }: { readonly document: RepairDocumen
   return [
     ...document.parseFindings
       .filter(function isComment(finding,): boolean {
-      return isCommentFinding({ finding, },);
-    },)
+        return isCommentFinding({ finding, },);
+      },)
       .map(function commentRange(finding,): HiddenRange {
-      return {
-        startOffset: finding.startOffset,
-        endOffset: finding.endOffset,
-      };
-    },),
+        return {
+          startOffset: finding.startOffset,
+          endOffset: finding.endOffset,
+        };
+      },),
     ...document.containers
       .flatMap(function tagRanges(container,): readonly HiddenRange[] {
-      return [
-        {
-          startOffset: container.openerStartOffset,
-          endOffset: container.openerEndOffset,
-        },
-        {
-          startOffset: container.closerStartOffset,
-          endOffset: container.closerEndOffset,
-        },
-      ];
-    },),
+        return [
+          {
+            startOffset: container.openerStartOffset,
+            endOffset: container.openerEndOffset,
+          },
+          {
+            startOffset: container.closerStartOffset,
+            endOffset: container.closerEndOffset,
+          },
+        ];
+      },),
   ];
 }
 
@@ -373,7 +373,7 @@ export function wordingEndAt(
 ): number {
   return nonNullishOrThrow(wording.offsets[index],)
     + nonNullishOrThrow(wording.chars[index],)
-    .length;
+      .length;
 }
 
 /**

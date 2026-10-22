@@ -145,7 +145,7 @@ export type ParseResult =
     readonly ok: true;
     readonly edit: TomlEditState
   }
-  | { readonly ok: false; };
+    | { readonly ok: false; };
 
 /**
  Parse `source` in `mode`, counting a by-design rejection rather than throwing.

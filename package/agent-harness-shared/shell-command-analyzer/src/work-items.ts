@@ -395,8 +395,8 @@ function commandWordItems(
     ...assignmentWordItems({
       assignments: command.prefix
         .filter(function isAssignment(prefix,) {
-        return prefix.type === 'Assignment';
-      },),
+          return prefix.type === 'Assignment';
+        },),
       context,
     },),
     ...(command.name === undefined
@@ -407,16 +407,16 @@ function commandWordItems(
       })),
     ...command.args
       .flatMap(function argumentItems(argument,): WorkItem[] {
-      if (argument.type === 'Assignment')
-        return assignmentWordItems({
-          assignments: [argument,],
+        if (argument.type === 'Assignment')
+          return assignmentWordItems({
+            assignments: [argument,],
+            context,
+          },);
+        return wordWorkItems({
+          word: argument,
           context,
         },);
-      return wordWorkItems({
-        word: argument,
-        context,
-      },);
-    },),
+      },),
     ...redirectWordItems({
       redirects: [
         ...command.redirects,

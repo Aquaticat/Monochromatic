@@ -44,14 +44,14 @@ type CountedOutcome =
     readonly kind: 'chosen';
     readonly label: string
   }
-  | {
-    readonly kind: 'none';
-    readonly reason: string
-  }
-  | {
-    readonly kind: 'failed';
-    readonly detail: string
-  };
+    | {
+      readonly kind: 'none';
+      readonly reason: string
+    }
+    | {
+      readonly kind: 'failed';
+      readonly detail: string
+    };
 
 /**
  Whether two outcomes of a count name the same label or give the same reason
@@ -188,7 +188,7 @@ export function expectedWinnerOf(
   },);
   if ((runOff.quorum < 1) || (seats.size
     !== runOff.ballots
-    .length)
+      .length)
     || (usable !== runOff.usable)) {
     throw new ArtifactParseError({
       path: `${path}.verdict.runOff`,

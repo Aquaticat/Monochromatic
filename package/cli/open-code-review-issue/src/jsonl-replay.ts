@@ -106,7 +106,7 @@ function applyCheckpoint({
       state.groups
         .length
         - 1,
-    );
+      );
   }
 }
 

@@ -55,8 +55,8 @@ type ReadonlyMdastContent = DeepReadonlyData<RootContent>;
  */
 export type InspectionRejection =
   | 'unparseable'
-  | 'not-one-paragraph'
-  | 'carries-markup';
+    | 'not-one-paragraph'
+    | 'carries-markup';
 
 /**
  Result of reading one paragraph.
@@ -75,14 +75,14 @@ export type ParagraphInspection =
      */
     readonly atoms: readonly ProtectedAtom[];
   }
-  | {
-    readonly kind: 'rejected';
+    | {
+      readonly kind: 'rejected';
 
     /**
      Why inspection refused it.
      */
-    readonly reason: InspectionRejection;
-  };
+      readonly reason: InspectionRejection;
+    };
 
 /**
  mdast node kinds that carry structure a rewrite must not introduce; their
@@ -160,7 +160,7 @@ type ParseAttempt =
      */
     readonly root: ReadonlyMdastRoot;
   }
-  | { readonly kind: 'refused'; };
+    | { readonly kind: 'refused'; };
 
 /**
  Parses one paragraph under the strict grammar only.
@@ -254,10 +254,10 @@ export function inspectParagraph(
       .children
       .length
       !== 1)
-    || (alone.root
-      .children[0]
-      ?.type
-      !== 'paragraph')
+      || (alone.root
+        .children[0]
+        ?.type
+        !== 'paragraph')
   ) {
     return {
       kind: 'rejected',
@@ -332,14 +332,14 @@ export function inspectParagraph(
  */
 export type AtomGateVerdict =
   | { readonly kind: 'preserved'; }
-  | {
-    readonly kind: 'refused';
+    | {
+      readonly kind: 'refused';
 
     /**
      Scorecard-stable account of the first divergence.
      */
-    readonly detail: string;
-  };
+      readonly detail: string;
+    };
 
 /**
  Renders one atom for a gate refusal.

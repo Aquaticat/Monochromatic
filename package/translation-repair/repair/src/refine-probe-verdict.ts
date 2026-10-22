@@ -38,14 +38,14 @@ export type AdmittedClaimCounts = {
  */
 export type RefineProbeVerdict =
   | { readonly kind: 'kept'; }
-  | {
-    readonly kind: 'rolled-back';
+    | {
+      readonly kind: 'rolled-back';
 
     /**
      Why the rewrite was rolled back, in scorecard-stable wording.
      */
-    readonly finding: string;
-  };
+      readonly finding: string;
+    };
 
 /**
  Sums the claims the screen admitted across a report's regions.
@@ -81,7 +81,7 @@ function admittedClaimCounts(
       added: 0,
       dropped: 0,
     },
-  );
+    );
 }
 
 /**

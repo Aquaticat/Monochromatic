@@ -32,9 +32,9 @@ import { systemOf, } from '@monochromatic-dev/translation-repair-provider/ts/cha
  */
 const KEPT_SUBJECT =
   'A clause keeps the subject the ORIGINAL writes: where 我 (or a named person) does something, the English makes '
-  + 'I (or that person) the one who does it, and never hands the verb to another subject (they, the memories, the page) to make '
-  + 'the sentence smoother; the English already on the page moving a subject is a mistranslation to correct, not a '
-  + 'reading to keep.';
+    + 'I (or that person) the one who does it, and never hands the verb to another subject (they, the memories, the page) to make '
+    + 'the sentence smoother; the English already on the page moving a subject is a mistranslation to correct, not a '
+    + 'reading to keep.';
 
 /**
  Cat-themed source, since neither sheet varies with what it is given.

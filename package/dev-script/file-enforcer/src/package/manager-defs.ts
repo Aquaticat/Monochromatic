@@ -51,173 +51,173 @@ export type ManagerDef = {
  */
 export const MANAGERS: ReadonlyMap<PackageManager, ManagerDef> = new Map<PackageManager,
   ManagerDef>([
-  [
-    'brew',
-    {
-      check: [
-        'brew',
-        '--version',
-      ],
-      search: [
-        'brew',
-        'info',
-        '{pkg}',
-      ],
-      install: [
-        'brew',
-        'install',
-        '{pkg}',
-      ],
-      needsRoot: false,
-    },
-  ],
-  [
-    'apt',
-    {
-      check: [
-        'apt-get',
-        '--version',
-      ],
-      search: [
-        'apt-cache',
-        'show',
-        '{pkg}',
-      ],
-      install: [
-        'apt-get',
-        'install',
-        '--yes',
-        '{pkg}',
-      ],
-      needsRoot: true,
-    },
-  ],
-  [
-    'dnf',
-    {
-      check: [
-        'dnf',
-        '--version',
-      ],
-      search: [
-        'dnf',
-        'info',
-        '{pkg}',
-      ],
-      install: [
-        'dnf',
-        'install',
-        '--assumeyes',
-        '{pkg}',
-      ],
-      needsRoot: true,
-    },
-  ],
-  [
-    'pacman',
-    {
-      check: [
-        'pacman',
-        '--version',
-      ],
-      search: [
-        'pacman',
-        '-Si',
-        '{pkg}',
-      ],
-      install: [
-        'pacman',
-        '-S',
-        '--noconfirm',
-        '{pkg}',
-      ],
-      needsRoot: true,
-    },
-  ],
-  [
-    'apk',
-    {
-      check: [
-        'apk',
-        '--version',
-      ],
-      search: [
-        'apk',
-        'info',
-        '--description',
-        '{pkg}',
-      ],
-      install: [
-        'apk',
-        'add',
-        '{pkg}',
-      ],
-      needsRoot: true,
-    },
-  ],
-  [
-    'zypper',
-    {
-      check: [
-        'zypper',
-        '--version',
-      ],
-      search: [
-        'zypper',
-        'info',
-        '{pkg}',
-      ],
-      install: [
-        'zypper',
-        'install',
-        '--non-interactive',
-        '{pkg}',
-      ],
-      needsRoot: true,
-    },
-  ],
-  [
-    'scoop',
-    {
-      check: [
-        'scoop',
-        '--version',
-      ],
-      search: [
-        'scoop',
-        'info',
-        '{pkg}',
-      ],
-      install: [
-        'scoop',
-        'install',
-        '{pkg}',
-      ],
-      needsRoot: false,
-    },
-  ],
-  [
-    'choco',
-    {
-      check: [
-        'choco',
-        '--version',
-      ],
-      search: [
-        'choco',
-        'info',
-        '{pkg}',
-      ],
-      install: [
-        'choco',
-        'install',
-        '{pkg}',
-        '--yes',
-      ],
-      needsRoot: false,
-    },
-  ],
-],);
+    [
+      'brew',
+      {
+        check: [
+          'brew',
+          '--version',
+        ],
+        search: [
+          'brew',
+          'info',
+          '{pkg}',
+        ],
+        install: [
+          'brew',
+          'install',
+          '{pkg}',
+        ],
+        needsRoot: false,
+      },
+    ],
+    [
+      'apt',
+      {
+        check: [
+          'apt-get',
+          '--version',
+        ],
+        search: [
+          'apt-cache',
+          'show',
+          '{pkg}',
+        ],
+        install: [
+          'apt-get',
+          'install',
+          '--yes',
+          '{pkg}',
+        ],
+        needsRoot: true,
+      },
+    ],
+    [
+      'dnf',
+      {
+        check: [
+          'dnf',
+          '--version',
+        ],
+        search: [
+          'dnf',
+          'info',
+          '{pkg}',
+        ],
+        install: [
+          'dnf',
+          'install',
+          '--assumeyes',
+          '{pkg}',
+        ],
+        needsRoot: true,
+      },
+    ],
+    [
+      'pacman',
+      {
+        check: [
+          'pacman',
+          '--version',
+        ],
+        search: [
+          'pacman',
+          '-Si',
+          '{pkg}',
+        ],
+        install: [
+          'pacman',
+          '-S',
+          '--noconfirm',
+          '{pkg}',
+        ],
+        needsRoot: true,
+      },
+    ],
+    [
+      'apk',
+      {
+        check: [
+          'apk',
+          '--version',
+        ],
+        search: [
+          'apk',
+          'info',
+          '--description',
+          '{pkg}',
+        ],
+        install: [
+          'apk',
+          'add',
+          '{pkg}',
+        ],
+        needsRoot: true,
+      },
+    ],
+    [
+      'zypper',
+      {
+        check: [
+          'zypper',
+          '--version',
+        ],
+        search: [
+          'zypper',
+          'info',
+          '{pkg}',
+        ],
+        install: [
+          'zypper',
+          'install',
+          '--non-interactive',
+          '{pkg}',
+        ],
+        needsRoot: true,
+      },
+    ],
+    [
+      'scoop',
+      {
+        check: [
+          'scoop',
+          '--version',
+        ],
+        search: [
+          'scoop',
+          'info',
+          '{pkg}',
+        ],
+        install: [
+          'scoop',
+          'install',
+          '{pkg}',
+        ],
+        needsRoot: false,
+      },
+    ],
+    [
+      'choco',
+      {
+        check: [
+          'choco',
+          '--version',
+        ],
+        search: [
+          'choco',
+          'info',
+          '{pkg}',
+        ],
+        install: [
+          'choco',
+          'install',
+          '{pkg}',
+          '--yes',
+        ],
+        needsRoot: false,
+      },
+    ],
+  ],);
 
 /**
  Set of all known {@link PackageManager} names, derived from {@link MANAGERS}.

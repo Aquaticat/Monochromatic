@@ -144,7 +144,7 @@ export type ArchiveDispute =
      */
     readonly acceptedClaims: readonly string[];
   }
-  & (
+    & (
     | {
       /**
        The checkers confirmed every disputing issue resolved in the repair
@@ -153,22 +153,22 @@ export type ArchiveDispute =
        */
       readonly standInEligible: true;
     }
-    | {
+      | {
       /**
        The slice has no eligible standing: the archive's wording and the
        repair lane's text are both refused (owner, 2026-09-27, "No eligible
        standing").
        */
-      readonly standInEligible: false;
+        readonly standInEligible: false;
 
       /**
        Why the repair lane's text may not stand in, so the line and the
        refused-wording finding name it rather than blaming the checkers
        (ledger L12).
        */
-      readonly standInRefusal: StandInRefusal;
-    }
-  );
+        readonly standInRefusal: StandInRefusal;
+      }
+    );
 
 /**
  What the reading needs of a repaired chunk: its position, its text, its
@@ -389,12 +389,12 @@ export function archiveDisputesOf(
       const verdict: 'eligible' | StandInRefusal = withdrawn.has(chunk.sliceIndex,)
         ? 'withdrawn'
         : (!chunk.changed)
-        ? 'archive-wording'
-        : disputing.every(function isResolved(issue,): boolean {
+          ? 'archive-wording'
+          : disputing.every(function isResolved(issue,): boolean {
             return resolved.has(issue.issueId,);
           },)
-        ? 'eligible'
-        : 'unresolved';
+            ? 'eligible'
+            : 'unresolved';
       return [[
         chunk.sliceIndex,
         {

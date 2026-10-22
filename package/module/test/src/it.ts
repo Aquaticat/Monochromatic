@@ -275,7 +275,7 @@ async function runIt(
     if ((tracker.expected
       !== undefined) && (tracker.count
         !== tracker
-        .expected)) {
+          .expected)) {
       /**
        Synthetic cause naming the assertion-count mismatch so the failure surface mirrors a regular throw.
        */

@@ -147,12 +147,12 @@ await describe({
             expect(run.code,).toBe(REFUSED_AS_STATED,);
             expect(run.stdout,).toBe(
               `START tip=${await readHeadSha()} entries=0 seeds=0 `
-              + 'perBand={"small":0,"medium":0,"large":0} budget=43200000ms\n',
+                + 'perBand={"small":0,"medium":0,"large":0} budget=43200000ms\n',
             );
             expect(run.stderr,).toBe(
               'recall-benchmark: no entry at the pin can be seeded, so the benchmark would plant no seed and '
-              + 'measure nothing; check that the corpus clone and commit it reads hold entries with both pages and '
-              + 'a sentence worth deleting\n',
+                + 'measure nothing; check that the corpus clone and commit it reads hold entries with both pages and '
+                + 'a sentence worth deleting\n',
             );
           },
         },),
@@ -176,12 +176,12 @@ await describe({
             expect(run.code,).toBe(REFUSED_AS_STATED,);
             expect(run.stdout,).toBe(
               `START tip=${await readHeadSha()} entries=0 seeds=0 `
-              + 'perBand={"small":0,"medium":0,"large":0} budget=43200000ms\n',
+                + 'perBand={"small":0,"medium":0,"large":0} budget=43200000ms\n',
             );
             expect(run.stderr,).toBe(
               'recall-benchmark: no entry at the pin can be seeded, so the benchmark would plant no seed and '
-              + 'measure nothing; check that the corpus clone and commit it reads hold entries with both pages and '
-              + 'a sentence worth deleting\n',
+                + 'measure nothing; check that the corpus clone and commit it reads hold entries with both pages and '
+                + 'a sentence worth deleting\n',
             );
           },
         },),

@@ -89,7 +89,7 @@ class AsteriskPrefixConfigurationError extends Error {
 function isTsdocBlock(comment: ForeignBorrowed<Comment>,): boolean {
   return (comment.type === 'Block')
     && comment.value
-    .startsWith('*',);
+      .startsWith('*',);
 }
 
 /**
@@ -404,7 +404,7 @@ function checkComment({
      */
     const prefixIndex = content.length
       - content.trimStart()
-      .length;
+        .length;
     /**
      Whether line carries canonical marker rather than literal leading asterisk content.
      */

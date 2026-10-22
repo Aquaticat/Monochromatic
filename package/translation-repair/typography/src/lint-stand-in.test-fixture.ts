@@ -97,8 +97,8 @@ export async function standIn(
   const afterVersion = (behaviour === 'echo')
     ? 'process.stdout.write(input);'
     : (behaviour === 'fail-two')
-    ? 'process.stderr.write(input); process.exit(2);'
-    : 'process.kill(process.pid, \'SIGKILL\');';
+      ? 'process.stderr.write(input); process.exit(2);'
+      : 'process.kill(process.pid, \'SIGKILL\');';
   await writeFile(
     program,
     [

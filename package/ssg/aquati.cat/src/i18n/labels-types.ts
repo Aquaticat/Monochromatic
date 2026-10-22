@@ -16,14 +16,14 @@
  */
 export type Label =
   | 'siteName'
-  | 'siteDescription'
-  | 'chooseALang'
-  | 'searchPlaceholder'
-  | 'noResults'
-  | 'page'
-  | 'postNotInLang'
-  | 'redirectingToLangChooser'
-  | 'themeToggle'
-  | 'langSwitcher'
-  | 'published'
-  | 'updated';
+    | 'siteDescription'
+    | 'chooseALang'
+    | 'searchPlaceholder'
+    | 'noResults'
+    | 'page'
+    | 'postNotInLang'
+    | 'redirectingToLangChooser'
+    | 'themeToggle'
+    | 'langSwitcher'
+    | 'published'
+    | 'updated';

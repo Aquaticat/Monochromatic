@@ -164,7 +164,7 @@ await describe({
         expect(textsOf({ rows: unified.replacements, },)[1],).toBe('—— Yunmao \u{201C}Afternoon Cat Murmurs\u{201D}',);
         expect(unified.findings,).toEqual([
           'title-reference-unified (slice 1: "Cat Talk" to "Afternoon Cat Murmurs"; 「午后猫语」 rendered by the heading of '
-          + 'slice 0 as "Afternoon Cat Murmurs")',
+            + 'slice 0 as "Afternoon Cat Murmurs")',
         ],);
       },
     },),
@@ -287,7 +287,7 @@ await describe({
         expect(textsOf({ rows: unified.replacements, },)[1],).toBe('—— Yunmao \u{201C}The Cat\u{2019}s Afternoon\u{201D}',);
         expect(unified.findings,).toEqual([
           'title-reference-unified (slice 1: "Cat Afternoon" to "The Cat\u{2019}s Afternoon"; 「猫的午后」 rendered by the '
-          + 'headings of slices 0, 2 as "The Cat\u{2019}s Afternoon")',
+            + 'headings of slices 0, 2 as "The Cat\u{2019}s Afternoon")',
         ],);
       },
     },),

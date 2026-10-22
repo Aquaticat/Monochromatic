@@ -3613,11 +3613,11 @@ closeSemanticBridge();
         writeFileSync(
           inputPath,
           'type Item = { text: string; };\n'
-          + 'type Box = { item: Item; };\n'
-          + 'let held: Item | undefined;\n'
-          + 'export function firstItem(box: Box): Item { return box.item; }\n'
-          + 'export function storeItem(box: Box): void { held = firstItem(box); }\n'
-          + 'export function readHeld(): string { return held === undefined ? \'\' : held.text; }\n',
+            + 'type Box = { item: Item; };\n'
+            + 'let held: Item | undefined;\n'
+            + 'export function firstItem(box: Box): Item { return box.item; }\n'
+            + 'export function storeItem(box: Box): void { held = firstItem(box); }\n'
+            + 'export function readHeld(): string { return held === undefined ? \'\' : held.text; }\n',
         );
         /** Probe source printing cache counters and the retained verdict itself. */
         const probeSource = `import { readFileSync } from 'node:fs';\nimport { buildEffectSummaryIndex, closeSemanticBridge, effectSummaryCacheStats, openSemanticFile, NO_EFFECT_SUMMARY } from ${JSON.stringify(BUILT_ENTRY_URL)};\nconst [fileName, cacheRoot] = process.argv.slice(2);\nconst sourceText = readFileSync(fileName, 'utf8');\nconst session = openSemanticFile({ fileName, sourceText, hasBOM: false });\nconst index = buildEffectSummaryIndex({ project: session.project, activeSourceFile: session.sourceFile, cacheRootOverride: cacheRoot });\nconst declaration = session.nodeAtOffset(sourceText.indexOf('function storeItem') + 'function '.length).parent;\nconst summary = index.get(declaration);\nconst opaque = summary === NO_EFFECT_SUMMARY ? 'NO_SUMMARY' : [...summary.opaqueParameterIndexes].sort().join(',');\nconsole.log(JSON.stringify({ ...effectSummaryCacheStats(), opaque }));\ncloseSemanticBridge();\n`;

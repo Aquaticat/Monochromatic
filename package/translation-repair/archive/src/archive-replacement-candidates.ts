@@ -154,15 +154,15 @@ export function replacementCandidates(
       candidates.indexOf(existing,),
       1,
       {
-      ...existing,
-      producer: mergeProducers({
-        left: existing.producer,
-        right: {
-          kind: 'model',
-          modelId: voice.modelId,
-        },
-      },),
-    },
+        ...existing,
+        producer: mergeProducers({
+          left: existing.producer,
+          right: {
+            kind: 'model',
+            modelId: voice.modelId,
+          },
+        },),
+      },
     );
   }
   return {

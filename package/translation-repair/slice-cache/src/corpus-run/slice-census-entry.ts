@@ -523,7 +523,7 @@ export async function censusEntry(
    */
   const pairedSourceChars = alignment.pairs
     .reduce(
-      function addSource(
+    function addSource(
       running,
       pair,
     ): number {
@@ -535,7 +535,7 @@ export async function censusEntry(
         .length;
       return running + sectionChars;
     },
-      0,
+    0,
     );
 
   /**
@@ -543,7 +543,7 @@ export async function censusEntry(
    */
   const pairedTargetChars = alignment.pairs
     .reduce(
-      function addTarget(
+    function addTarget(
       running,
       pair,
     ): number {
@@ -555,7 +555,7 @@ export async function censusEntry(
         .length;
       return running + sectionChars;
     },
-      0,
+    0,
     );
 
   /**
@@ -563,16 +563,16 @@ export async function censusEntry(
    */
   const allSourceChars = sourceSections.reduce(
     function addSection(
-    running,
-    section,
-  ): number {
+      running,
+      section,
+    ): number {
     /**
      Characters this section carries.
      */
-    const sectionChars = section.text
-      .length;
-    return running + sectionChars;
-  },
+      const sectionChars = section.text
+        .length;
+      return running + sectionChars;
+    },
     0,
   );
 
@@ -581,16 +581,16 @@ export async function censusEntry(
    */
   const allTargetChars = targetSections.reduce(
     function addSection(
-    running,
-    section,
-  ): number {
+      running,
+      section,
+    ): number {
     /**
      Characters this section carries.
      */
-    const sectionChars = section.text
-      .length;
-    return running + sectionChars;
-  },
+      const sectionChars = section.text
+        .length;
+      return running + sectionChars;
+    },
     0,
   );
 
@@ -631,13 +631,13 @@ export async function censusEntry(
       .length,
     targetOnlyChars: measures.targetOnlyBlockChars
       .reduce(
-        function addBlock(
+      function addBlock(
         running,
         chars,
       ): number {
         return running + chars;
       },
-        0,
+      0,
       ),
     targetOnlyBlockChars: measures.targetOnlyBlockChars,
   };

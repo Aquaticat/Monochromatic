@@ -227,7 +227,7 @@ export function exportedCallable({
    */
   const handle = resolved.valueDeclaration
     ?? resolved.declarations
-    .at(0,);
+      .at(0,);
   /**
    Resolved implementation declaration node.
    */

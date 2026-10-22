@@ -67,12 +67,12 @@ export async function updateConfig(
   const updatedBoot = {
     memory: memory
       ?? config
-      .boot
-      .memory,
+        .boot
+        .memory,
     cpus: cpus
       ?? config
-      .boot
-      .cpus,
+        .boot
+        .cpus,
   };
 
   /**

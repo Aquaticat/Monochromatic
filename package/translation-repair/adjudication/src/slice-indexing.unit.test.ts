@@ -97,12 +97,12 @@ await describe({
             return slice.target
               .sliceIndex;
           },),).toEqual(prepared.slices
-          .map(function toPosition(
-            _slice,
-            position,
-          ): number {
-            return position;
-          },),);
+            .map(function toPosition(
+              _slice,
+              position,
+            ): number {
+              return position;
+            },),);
       },
     },),
     it({
@@ -205,7 +205,7 @@ await describe({
           .sliceIndex,).toBe(0,);
         expect(stamped.target
           .text,).toBe(disagreeing.target
-          .text,);
+            .text,);
         expect(function checkStamped() {
           assertSliceIndexing({ slices: [stamped,], },);
         },).not.toThrow();

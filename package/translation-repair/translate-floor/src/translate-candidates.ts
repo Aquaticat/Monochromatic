@@ -36,7 +36,7 @@ import { wordingKey, } from './wording-key.ts';
  */
 export type TranslateOrigin =
   | 'incumbent'
-  | 'fresh';
+    | 'fresh';
 
 /**
  One candidate translation with the fact that decides whether the slice was

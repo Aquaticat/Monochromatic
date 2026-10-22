@@ -421,7 +421,7 @@ await describe({
           lines: [
             'score-verify: refused by a thrown value that is not an Error',
             '  This is a fault in the command rather than in the run. The stack frames printed with it name the '
-            + 'built files it stopped in.',
+              + 'built files it stopped in.',
             '  (no frames: the thrown value is not an Error)',
           ],
         },);
@@ -459,7 +459,7 @@ await describe({
           lines: [
             'score-verify: refused by RangeError',
             '  This is a fault in the command rather than in the run. The stack frames printed with it name the '
-            + 'built files it stopped in.',
+              + 'built files it stopped in.',
             '  (no frames: this error recorded no stack)',
           ],
         },);

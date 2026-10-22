@@ -46,7 +46,7 @@ export type MorphCompactionFallback = {
  */
 export type MorphCompactionAttempt =
   | MorphCompactionSuccess
-  | MorphCompactionFallback;
+    | MorphCompactionFallback;
 
 /**
  Outcome of {@link handleBeforeCompact}, kept as a closed discriminated union
@@ -65,15 +65,15 @@ export type MorphBeforeCompactOutcome =
      */
     readonly result: CompactionResult<MorphCompactionDetails>;
   }
-  | {
+    | {
     /**
      Session is too small to compact; cancel pi's default summarizer.
      */
-    readonly kind: 'cancel';
-  }
-  | {
+      readonly kind: 'cancel';
+    }
+    | {
     /**
      Defer to pi's default compaction (missing key, abort, or failure).
      */
-    readonly kind: 'fallthrough';
-  };
+      readonly kind: 'fallthrough';
+    };

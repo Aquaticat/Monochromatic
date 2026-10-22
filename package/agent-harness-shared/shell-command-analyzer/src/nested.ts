@@ -80,8 +80,8 @@ function parseErrorsFromScript(script: ForeignBorrowed<UnbashScript>,): ShellPar
 function scriptFromExpansion(
   expansion:
     | ForeignBorrowed<UnbashArithmeticCommandExpansion>
-    | ForeignBorrowed<UnbashCommandExpansionPart>
-    | ForeignBorrowed<UnbashProcessSubstitutionPart>,
+      | ForeignBorrowed<UnbashCommandExpansionPart>
+      | ForeignBorrowed<UnbashProcessSubstitutionPart>,
 ): {
   readonly script: ParsedUnbashScript;
   readonly parseErrors: readonly ShellParseError[]
@@ -125,8 +125,8 @@ function visitExpansion(
   }: {
     readonly expansion:
       | ForeignBorrowed<UnbashArithmeticCommandExpansion>
-      | ForeignBorrowed<UnbashCommandExpansionPart>
-      | ForeignBorrowed<UnbashProcessSubstitutionPart>;
+        | ForeignBorrowed<UnbashCommandExpansionPart>
+        | ForeignBorrowed<UnbashProcessSubstitutionPart>;
     readonly context: ShellCommandContext;
   },
 ): VisitResult {

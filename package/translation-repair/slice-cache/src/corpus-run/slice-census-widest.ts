@@ -99,8 +99,8 @@ export function sliceCensusWidestLines(
     } of ${String(targetChars.length,)}`,
     ...widest
       .slice(
-        0,
-        REPORTED_PERCENTILES.length,
+      0,
+      REPORTED_PERCENTILES.length,
       )
       .map(function widestLine(row,): string {
         return `CENSUS   widest ${row.entryId}: chars in one slice: ${String(row.largest,)}`;

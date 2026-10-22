@@ -132,9 +132,9 @@ await describe({
         expect(proposals.length,).toBe(1,);
         expect([...creditedTo({ producer: proposals[0]?.producer ?? { kind: 'incumbent', matched: [], }, },),]
           .toSorted(),).toEqual([
-          SEAT_SYNTHETIC_VISION_WITHHELD,
-          SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-        ],);
+            SEAT_SYNTHETIC_VISION_WITHHELD,
+            SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+          ],);
       },
     },),
 

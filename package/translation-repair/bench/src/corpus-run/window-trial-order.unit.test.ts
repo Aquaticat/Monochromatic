@@ -169,21 +169,21 @@ await describe({
          */
         const under = ['protocol-one',
           'protocol-two',].map(function toPositions(protocol,) {
-          return Array.from(
-            { length: SLICE_COUNT, },
-            function toPosition(
-              _unused,
-              sliceIndex,
-            ) {
-              return armOrderFor({
-                protocol,
-                entryId: 'Mittens',
+            return Array.from(
+              { length: SLICE_COUNT, },
+              function toPosition(
+                _unused,
                 sliceIndex,
-              },)
-                .indexOf(TRIAL_ARMS.wide,);
-            },
-          );
-        },);
+              ) {
+                return armOrderFor({
+                  protocol,
+                  entryId: 'Mittens',
+                  sliceIndex,
+                },)
+                  .indexOf(TRIAL_ARMS.wide,);
+              },
+            );
+          },);
 
         expect(under[0],).not
           .toEqual(under[1],);

@@ -338,8 +338,8 @@ export function requirePlacedFunctions(
    */
   const named = misplaced
     .slice(
-      0,
-      MISPLACED_NAMED,
+    0,
+    MISPLACED_NAMED,
     )
     .map(function nameOf(fn,): string {
       return `${fn.bundle}:${String(fn.start,)} ${fn.name}`;
@@ -380,12 +380,12 @@ export type OwnSource =
      */
     readonly path: string;
   }
-  | {
+    | {
     /**
      A file elsewhere.
      */
-    readonly kind: 'foreign';
-  };
+      readonly kind: 'foreign';
+    };
 
 /**
  Names a source by its path inside its package, where it is one of a package's
@@ -586,8 +586,8 @@ export function kindTotalsOf({ rows, }: { readonly rows: readonly SourceRow[]; }
           total,
           row,
         ): number {
-        return total + row.stretches;
-      },
+          return total + row.stretches;
+        },
         0,
       ),
       lines: own.reduce(
@@ -595,8 +595,8 @@ export function kindTotalsOf({ rows, }: { readonly rows: readonly SourceRow[]; }
           total,
           row,
         ): number {
-        return total + row.lines;
-      },
+          return total + row.lines;
+        },
         0,
       ),
       uncalled: own.reduce(
@@ -604,8 +604,8 @@ export function kindTotalsOf({ rows, }: { readonly rows: readonly SourceRow[]; }
           total,
           row,
         ): number {
-        return total + row.uncalled;
-      },
+          return total + row.uncalled;
+        },
         0,
       ),
     },];

@@ -307,13 +307,13 @@ function phraseLength(
     return spelled.length;
   if (
     POSITIONS.has(word.text,)
-    && (flat.charAt(word.end,) === ')')
+      && (flat.charAt(word.end,) === ')')
       && ((flat.charAt(word.start - 1,) === '(')
         || flat.slice(
           0,
           word.start,
         )
-        .endsWith('(see ',))
+          .endsWith('(see ',))
   )
     return 1;
   /**
@@ -322,18 +322,18 @@ function phraseLength(
   const next = words[at + 1];
   if (
     (next !== undefined)
-    && POSITIONS.has(next.text,)
+      && POSITIONS.has(next.text,)
       && (!POSITION_MARKERS.has(word.text,))
       && adjoins({
-      flat,
-      left: word,
-      right: next,
-    },)
+        flat,
+        left: word,
+        right: next,
+      },)
       && (!comparesOrNames({
-      flat,
-      words,
-      at: at + 1,
-    },))
+        flat,
+        words,
+        at: at + 1,
+      },))
   )
     return WORD_THEN_POSITION;
   return 0;
@@ -479,7 +479,7 @@ export function unexempted(
       return !exemptions.some(function names(exemption,): boolean {
         return (exemption.path === found.path)
           && found.window
-          .includes(exemption.holds,);
+            .includes(exemption.holds,);
       },);
     },)
     .map(function located(found,): string {
@@ -521,7 +521,7 @@ export function staleExemptions(
       return !found.some(function isNamed(reference,): boolean {
         return (reference.path === exemption.path)
           && reference.window
-          .includes(exemption.holds,);
+            .includes(exemption.holds,);
       },);
     },)
     .map(function held(exemption,): string {

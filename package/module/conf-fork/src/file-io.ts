@@ -186,8 +186,8 @@ export function writeFileAtomic({
       filePath,
       data,
       {
-      mode,
-    },
+        mode,
+      },
     );
     return;
   }
@@ -204,8 +204,8 @@ export function writeFileAtomic({
       temporaryPath,
       data,
       {
-      mode,
-    },
+        mode,
+      },
     );
     renameSync(
       temporaryPath,
@@ -238,8 +238,8 @@ export function ensureDirectory({
   mkdirSync(
     directoryPath,
     {
-    recursive: true,
-  },
+      recursive: true,
+    },
   );
 }
 

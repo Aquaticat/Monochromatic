@@ -132,8 +132,8 @@ export async function run(
   }
   child.stdin
     .on(
-      'error',
-      onStdinError,
+    'error',
+    onStdinError,
     );
   if (input !== undefined)
     child.stdin

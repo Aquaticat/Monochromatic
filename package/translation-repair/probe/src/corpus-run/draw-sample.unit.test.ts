@@ -158,9 +158,9 @@ await describe({
             'POOL band=medium entries=0 contributing=0 accepted=0 perEntry=',
             'POOL band=large entries=0 contributing=0 accepted=0 perEntry=',
             `SAMPLE final=false seed=${PRELIMINARY_SEED} pool=2 drawn=2 unrecordedRepairs=2 unrecordedInPool=2 `
-            + `out=${join(runsDir, `grading-sheet-${PRELIMINARY_SEED}.md`,)} `
-            + `repairOut=${join(runsDir, `repair-sheet-${PRELIMINARY_SEED}.md`,)} `
-            + `manifest=${join(runsDir, `sample-manifest-${PRELIMINARY_SEED}.json`,)}`,
+              + `out=${join(runsDir, `grading-sheet-${PRELIMINARY_SEED}.md`,)} `
+              + `repairOut=${join(runsDir, `repair-sheet-${PRELIMINARY_SEED}.md`,)} `
+              + `manifest=${join(runsDir, `sample-manifest-${PRELIMINARY_SEED}.json`,)}`,
             '',
           ].join('\n',),
           stderr: '',
@@ -199,9 +199,9 @@ await describe({
             'POOL band=medium entries=0 contributing=0 accepted=0 perEntry=',
             'POOL band=large entries=0 contributing=0 accepted=0 perEntry=',
             `SAMPLE final=true seed=${FINAL_SEED} pool=2 drawn=2 unrecordedRepairs=0 unrecordedInPool=0 `
-            + `out=${join(runsDir, `grading-sheet-${FINAL_SEED}.md`,)} `
-            + `repairOut=${join(runsDir, `repair-sheet-${FINAL_SEED}.md`,)} `
-            + `manifest=${join(runsDir, `sample-manifest-${FINAL_SEED}.json`,)}`,
+              + `out=${join(runsDir, `grading-sheet-${FINAL_SEED}.md`,)} `
+              + `repairOut=${join(runsDir, `repair-sheet-${FINAL_SEED}.md`,)} `
+              + `manifest=${join(runsDir, `sample-manifest-${FINAL_SEED}.json`,)}`,
             '',
           ].join('\n',),
           stderr: '',

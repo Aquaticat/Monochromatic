@@ -90,7 +90,7 @@ await describe({
     it({
       name:
         'ROUND-TRIPS a settled contest, which is the half that fails silently: persist and resume '
-        + 'disagreeing about a file name costs a re-bought contest per slice per run and errors nowhere',
+          + 'disagreeing about a file name costs a re-bought contest per slice per run and errors nowhere',
       fn: async () => {
         expect(await roundTrip({
           outcome: {
@@ -108,7 +108,7 @@ await describe({
     it({
       name:
         'REFUSES a file whose BALLOT is missing a field, rather than resuming an outcome the artifact '
-        + 'reader will refuse after a whole document has been paid for',
+          + 'reader will refuse after a whole document has been paid for',
       fn: async () => {
         /**
          Ballot without the raw findings the reader requires.
@@ -127,7 +127,7 @@ await describe({
     it({
       name:
         'REFUSES a file whose usable count disagrees with its own ballots, which every relation '
-        + 'downstream reads as the number the quorum was measured against',
+          + 'downstream reads as the number the quorum was measured against',
       fn: async () => {
         expect(await roundTrip({
           outcome: {

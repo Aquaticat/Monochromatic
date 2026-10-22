@@ -929,7 +929,7 @@ await describe({
               quorumOver: 4,
             },],
           },)
-        ,)
+          ,)
           .toThrow(`at ${REVIEW_PATH}.rounds[0].quorumOver: expected safe integer quorum basis covering every recorded seat`,);
       },
     },),
@@ -1010,14 +1010,14 @@ await describe({
             value: reviewDeciding({ verdict: 'quorum-not-met', },),
             lastSeatGrace: true,
           },)
-        ,)
+          ,)
           .toThrow(`at ${REVIEW_PATH}.rounds[0].verdict: expected acceptable, derived from seat statuses and quorum`,);
         expect(() =>
           readUnder({
             value: reviewDeciding({ verdict: 'acceptable', },),
             lastSeatGrace: false,
           },)
-        ,)
+          ,)
           .toThrow(`at ${REVIEW_PATH}.rounds[0].verdict: expected quorum-not-met, derived from seat statuses and quorum`,);
       },
     },),

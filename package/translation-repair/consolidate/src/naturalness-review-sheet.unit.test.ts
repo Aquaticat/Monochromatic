@@ -98,12 +98,12 @@ function recordingClient({ reviewSheets, }: { readonly reviewSheets: string[]; }
       const value: unknown = (schema === 'refine_report')
         ? { rewrites: [{ paragraph: 1, newText: POLISHED, },], }
         : (schema === 'candidate_ballot')
-        ? { best: 1, assessment: 'more idiomatic', }
-        : (schema === 'consolidation_polish_gate')
-        ? { verdict: 'polished', unsupported: [], dropped: [], assessment: 'equally faithful', }
-        : (schema === 'absolute_naturalness_review')
-        ? { isAcceptable: true, findings: [], assessment: 'publication-ready', }
-        : {};
+          ? { best: 1, assessment: 'more idiomatic', }
+          : (schema === 'consolidation_polish_gate')
+            ? { verdict: 'polished', unsupported: [], dropped: [], assessment: 'equally faithful', }
+            : (schema === 'absolute_naturalness_review')
+              ? { isAcceptable: true, findings: [], assessment: 'publication-ready', }
+              : {};
       if (!request.validate(value,))
         throw new Error(`synthetic ${schema} reply failed validation`,);
       return {

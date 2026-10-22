@@ -96,7 +96,7 @@ export function renderPage(
     .replaceAll(
     '</',
     String.raw`<\/`,
-  );
+    );
 
   return `<!DOCTYPE html>\n${
     h({

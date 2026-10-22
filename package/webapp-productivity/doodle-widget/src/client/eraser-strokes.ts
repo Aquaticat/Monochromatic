@@ -140,8 +140,8 @@ export function eraseStrokesAt({
 
     for (let loopIndex = 0; loopIndex
       < stroke
-      .points
-      .length; loopIndex++) {
+        .points
+        .length; loopIndex++) {
       /**
        Skipped when undefined so sparse arrays do not break segment math.
        */

@@ -235,8 +235,8 @@ export function inPathToken(
     return token.startsWith(opener,);
   },) || carriesDottedName({ token, },)
     || PATH_MARKS.some(function holds(mark,): boolean {
-    return token.includes(mark,);
-  },);
+      return token.includes(mark,);
+    },);
 }
 
 /**

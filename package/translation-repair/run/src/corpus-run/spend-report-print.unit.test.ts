@@ -138,7 +138,7 @@ await describe({
           '  qwen3.8-max: 2.00 credits (100.0%) over 1 call, in 1000=1.00 out 500=1.00',
           'metered run total: 2.00 credits',
           'UNPRICED, and not free: 1 metered seat has no row in the price table read 2026-09-11. '
-          + 'This report\'s total omits whatever cost this seat would add',
+            + 'This report\'s total omits whatever cost this seat would add',
           '  whisker-mini-9: 1 call, in 10 out 20',
         ],);
       },
@@ -183,7 +183,7 @@ await describe({
           '  qwen3.8-max: 2.00 credits (100.0%) over 1 call, in 1000=1.00 out 500=1.00',
           'metered run total: 2.00 credits',
           'UNPRICED, and not free: 2 metered seats have no row in the price table read 2026-09-11. '
-          + 'This report\'s total omits whatever cost these seats would add',
+            + 'This report\'s total omits whatever cost these seats would add',
           '  whisker-mini-9: 1 call, in 10 out 20',
           '  whisker-mini-8: 3 calls, in 1 out 2',
         ],);
@@ -213,7 +213,7 @@ await describe({
           '  none priced: every metered call in these logs was on a seat the price table has no row for',
           'metered run total: 0.00 credits',
           'UNPRICED, and not free: 1 metered seat has no row in the price table read 2026-09-11. '
-          + 'This report\'s total omits whatever cost this seat would add',
+            + 'This report\'s total omits whatever cost this seat would add',
           '  whisker-mini-9: 1 call, in 10 out 20',
         ],);
       },
@@ -354,7 +354,7 @@ await describe({
           '  none. No call in these logs went to the metered provider',
           'metered run total: 0.00 credits',
           'subscription seats, which bill no credits and are metered as a percentage of a weekly allowance on the '
-          + 'METERS line:',
+            + 'METERS line:',
           '  hf:zai-org/GLM-5.3-Flash: 1 call, in 300 out 40',
         ],);
       },
@@ -385,7 +385,7 @@ await describe({
           '  none. No call in these logs went to the metered provider',
           'metered run total: 0.00 credits',
           'NeuralWatt seats, on the free daily energy, which bills no credits and is metered in watt-hours by the '
-          + 'energy ledger (neuralwattWh on the METERS line):',
+            + 'energy ledger (neuralwattWh on the METERS line):',
           '  deepseek-v4.1-flash: 1 call, in 3000 out 400',
         ],);
       },
@@ -414,8 +414,8 @@ await describe({
         },);
         expect(printed.lines.at(-1,),).toBe(
           'NeuralWatt nominal cost: 0.0004 USD reported across the calls of these logs; NeuralWatt reports a cost on '
-          + 'free-energy requests too, so this is not plan spend, which only the plan energy line at the end of a run '
-          + 'measures',
+            + 'free-energy requests too, so this is not plan spend, which only the plan energy line at the end of a run '
+            + 'measures',
         );
       },
     },),

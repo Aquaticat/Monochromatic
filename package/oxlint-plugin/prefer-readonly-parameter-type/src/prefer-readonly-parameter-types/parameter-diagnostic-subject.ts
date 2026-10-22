@@ -35,8 +35,8 @@ function quotedBindings(names: readonly string[],): string {
    */
   const leadingBindings = quoted
     .slice(
-      0,
-      -1,
+    0,
+    -1,
     )
     .join(', ',);
   return `${leadingBindings}, and ${finalBinding}`;

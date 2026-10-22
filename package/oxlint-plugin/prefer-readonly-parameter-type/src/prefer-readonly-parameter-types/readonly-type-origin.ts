@@ -23,13 +23,13 @@ import {
  */
 export type ReadonlyTypeOriginEvidence =
   | { readonly kind: 'authored'; }
-  | { readonly kind: 'none'; }
-  | { readonly kind: 'multiple'; }
-  | { readonly kind: 'uncertain'; }
-  | {
-    readonly kind: 'unique';
-    readonly origin: ReadonlyTypeOrigin;
-  };
+    | { readonly kind: 'none'; }
+    | { readonly kind: 'multiple'; }
+    | { readonly kind: 'uncertain'; }
+    | {
+      readonly kind: 'unique';
+      readonly origin: ReadonlyTypeOrigin;
+    };
 
 /**
  Returns distinct symbols exposing declarations for one type.

@@ -97,7 +97,7 @@ async function handleMorphCompactCommand({
       .notify(
       'MORPH_API_KEY not set (env or ~/.pi/agent/mcp.json): cannot compress',
       'warning',
-    );
+      );
     return;
   }
 
@@ -125,7 +125,7 @@ async function handleMorphCompactCommand({
     .notify(
     'Morph Compact: compressing session...',
     'info',
-  );
+    );
 
   try {
     /**
@@ -161,7 +161,7 @@ async function handleMorphCompactCommand({
       .notify(
       'Morph Compact: launched new session in a separate terminal',
       'info',
-    );
+      );
   }
   catch (error) {
     /**
@@ -172,7 +172,7 @@ async function handleMorphCompactCommand({
       .notify(
       `Morph Compact failed: ${message}`,
       'error',
-    );
+      );
   }
 }
 

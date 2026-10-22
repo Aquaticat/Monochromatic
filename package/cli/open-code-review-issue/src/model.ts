@@ -16,13 +16,13 @@
  */
 export type FindingCategory =
   | 'bug'
-  | 'security'
-  | 'performance'
-  | 'maintainability'
-  | 'test'
-  | 'style'
-  | 'documentation'
-  | 'other';
+    | 'security'
+    | 'performance'
+    | 'maintainability'
+    | 'test'
+    | 'style'
+    | 'documentation'
+    | 'other';
 
 /**
  OCR finding severities accepted by the adapter.

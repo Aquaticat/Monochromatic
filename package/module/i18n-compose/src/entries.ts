@@ -89,7 +89,7 @@ export type SubjectEntry = {
  */
 export type NounPlural =
   | string
-  | ((count: number,) => string);
+    | ((count: number,) => string);
 
 /**
  Vocabulary entry for a common noun.

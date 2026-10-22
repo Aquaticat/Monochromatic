@@ -133,7 +133,7 @@ catch (error) {
       !== undefined)
       && (subprocessError.signalName
         !== ''))
-    {
+      {
       console.error(
         `[task-pnpm] pnpm terminated by signal: ${subprocessError.signalName}`,
       );

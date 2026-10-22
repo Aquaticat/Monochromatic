@@ -305,7 +305,7 @@ export async function answered<const Result,>({
     const silentSeconds = Math.round((now - silence.since) / MS_PER_SECOND,);
     if ((now - silence.since)
       >= patience.limits
-      .unresponsiveLimitMs) {
+        .unresponsiveLimitMs) {
       throw new GuestAgentSilentError({
         cause: outcome.unanswered,
         reason: `The guest agent in ${patience.domain} has not answered a file command for ${

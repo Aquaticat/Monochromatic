@@ -94,7 +94,7 @@ export type CachedLookup =
     readonly kind: 'hit';
     readonly record: LookupRecord;
   }
-  | { readonly kind: 'miss'; };
+    | { readonly kind: 'miss'; };
 
 /**
  The package's directory under the user's cache home, which the lookup cache
@@ -186,8 +186,8 @@ export function lookupCachePath(
    */
   const digest = createHash('sha256',)
     .update(
-      query,
-      'utf8',
+    query,
+    'utf8',
     )
     .digest('hex',);
   return join(

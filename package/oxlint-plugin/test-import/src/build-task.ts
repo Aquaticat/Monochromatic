@@ -80,7 +80,7 @@ export function taskNameOfHeader({ line, }: {
   if (quoted.startsWith('"',)
     && quoted.endsWith('"',)
     && (quoted.length >= 2))
-  {
+    {
     return quoted.slice(
       1,
       -1,

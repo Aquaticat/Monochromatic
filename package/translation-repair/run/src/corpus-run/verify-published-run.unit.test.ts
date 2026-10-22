@@ -288,11 +288,11 @@ await describe({
             'CatEntry002: wordings=2 silent=0 chars=UNWEIGHED(artifact predates stored archive text) missing=0 consistency-groups=0 read-at-generation=20',
             'CatEntry003: wordings=2 silent=0 chars=18/expected 81 missing=2 consistency-groups=0 read-at-generation=20',
             '  WRONG LENGTH: page is -63 characters off what the archive plus every slice change comes to. '
-            + 'Text no slice decided on was lost or added',
+              + 'Text no slice decided on was lost or added',
             '  MISSING slice 0, 43 characters the page does not carry in order',
             '  MISSING slice 1, 35 characters the page does not carry in order',
             `  READ BY ANOTHER BUILD: settled by ${ SETTLED_BY }, read by ${ await builtPipelineDigest() }; `
-            + 'a pass started here on this build rewrites the page to this reading',
+              + 'a pass started here on this build rewrites the page to this reading',
             `verify-published: 2 of 3 pages carry every wording their artifacts promised; 1 of those at the length it implies, 1 ${ UNWEIGHED_NOTE }`,
           ],
         },);
@@ -323,12 +323,12 @@ await describe({
           code: 0,
           lines: [
             'verify-published: NO PUBLISHED TREE (ENOENT). 2 settled entries are unpublished, and the next pass started in '
-            + 'this runs directory writes each from its artifact',
+              + 'this runs directory writes each from its artifact',
             'verify-published: matched=0 settledWithNoPage=2 pageWithNoArtifact=0 declined=0',
             '  SETTLED AND NEVER PUBLISHED: CatEntry001. The archive ships for it until the next pass started in this runs '
-            + 'directory writes it from its artifact',
+              + 'directory writes it from its artifact',
             '  SETTLED AND NEVER PUBLISHED: CatEntry002. The archive ships for it until the next pass started in this runs '
-            + 'directory writes it from its artifact',
+              + 'directory writes it from its artifact',
             `verify-published: 0 of 0 pages carry every wording their artifacts promised; 0 of those at the length it implies, 0 ${ UNWEIGHED_NOTE }`,
           ],
         },);
@@ -352,7 +352,7 @@ await describe({
           runsDir,
         },)).lines[0],).toBe(
           'verify-published: NO PUBLISHED TREE (ENOENT). 1 settled entry is unpublished, and the next pass started in '
-          + 'this runs directory writes each from its artifact',
+            + 'this runs directory writes each from its artifact',
         );
       },
     },),
@@ -386,9 +386,9 @@ await describe({
           lines: [
             'verify-published: matched=1 settledWithNoPage=0 pageWithNoArtifact=2 declined=2',
             '  DECLINED AND PUBLISHED ANYWAY: DeclinedCat3. The archive\'s note says the page is the author\'s own English, '
-            + 'so no page should stand here; the next pass started in this runs directory removes it',
+              + 'so no page should stand here; the next pass started in this runs directory removes it',
             '  PUBLISHED AND NOT SETTLED: StrayCat2. It ships as it stands, with no artifact to check it against, until a '
-            + 'pass settles the entry again and overwrites it',
+              + 'pass settles the entry again and overwrites it',
             'CatEntry1: wordings=2 silent=0 chars=81=expected missing=0 consistency-groups=0 read-at-generation=20',
             `verify-published: 1 of 1 page carries every wording its artifact promised; 1 of those at the length it implies, 0 ${ UNWEIGHED_NOTE }`,
           ],
@@ -407,7 +407,7 @@ await describe({
           code: 2,
           lines: [
             'verify-published: NOTHING VERIFIED, no artifacts directory under the run (ENOENT). No page was read and no '
-            + 'artifact was compared, so this is not a clean run',
+              + 'artifact was compared, so this is not a clean run',
           ],
         },);
       },
@@ -428,7 +428,7 @@ await describe({
           code: 2,
           lines: [
             'verify-published: NOTHING VERIFIED, the artifacts directory holds no settled artifact. No page was read and no '
-            + 'artifact was compared, so this is not a clean run',
+              + 'artifact was compared, so this is not a clean run',
           ],
         },);
       },
@@ -459,7 +459,7 @@ await describe({
 
         expect(String(refusal,),).toBe(
           'DeclinedEntriesUnreadableError: the decline directory could not be listed (ENOTDIR); a pass reading it as no '
-          + 'declines would re-run every declined entry',
+            + 'declines would re-run every declined entry',
         );
         expect(printed.lines,).toEqual([]);
       },

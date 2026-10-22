@@ -55,14 +55,14 @@ async function openLogDatabase(): Promise<IDBDatabase> {
    */
   const request = globalThis.indexedDB
     .open(
-      DATABASE_NAME,
-      DATABASE_VERSION,
+    DATABASE_NAME,
+    DATABASE_VERSION,
     );
   request.onupgradeneeded = function createBatchStore(): void {
     request.result
       .createObjectStore(
-        BATCH_STORE,
-        { autoIncrement: true, },
+      BATCH_STORE,
+      { autoIncrement: true, },
       );
   };
   return await awaitRequest(request,);

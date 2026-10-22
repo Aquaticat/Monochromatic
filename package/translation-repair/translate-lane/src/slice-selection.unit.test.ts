@@ -338,13 +338,13 @@ await describe({
           records: [3,
             9,
             11,].map(function toRecord(sliceIndex,) {
-            return recordFor({
-              sliceIndex,
-              origin: 'fresh',
-              decision: 'judged',
-              voteWeight: 2,
-            },);
-          },),
+              return recordFor({
+                sliceIndex,
+                origin: 'fresh',
+                decision: 'judged',
+                voteWeight: 2,
+              },);
+            },),
           changedSliceIndices: [9,],
         },);
         expect(selections.map(function toIndex(selection,) {

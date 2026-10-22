@@ -117,7 +117,7 @@ await describe({
           },
         ] as unknown as Parameters<
           typeof dshAdvisorTranscriptSerialization.convertToLlm
-        >[0],);
+          >[0],);
         expect(converted.map((message,) => message.role,),).toEqual([
           'user',
           'assistant',
@@ -140,7 +140,7 @@ await describe({
           },
         ] as unknown as Parameters<
           typeof dshAdvisorTranscriptSerialization.serializeConversation
-        >[0],);
+          >[0],);
         expect(text,).toBe('[User]: hello',);
       },
     },),

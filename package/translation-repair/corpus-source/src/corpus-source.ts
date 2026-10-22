@@ -114,7 +114,7 @@ export type CorpusReadFailure =
    absent at a commit it holds, so only a probe of the commit tells the two
    apart.
    */
-  | 'missing-commit'
+    | 'missing-commit'
   /**
    Git could not open the clone as a repository, as the probe of the commit
    and the probe of the clone's own git directory both found (exit status
@@ -123,7 +123,7 @@ export type CorpusReadFailure =
    another repository is no clone), or is one git refuses to read. A clone git
    opens and then dies in is `other`.
    */
-  | 'unreadable-clone'
+    | 'unreadable-clone'
   /**
    Anything else at a clone git could open: a blob over the read ceiling, an
    object git cannot inflate, a git child stopped by a signal or never
@@ -131,7 +131,7 @@ export type CorpusReadFailure =
    sets `LC_ALL=C`), so no message language turns an absent page into this
    kind.
    */
-  | 'other';
+    | 'other';
 
 /**
  Stderr phrases with which git reports a path absent at a commit.

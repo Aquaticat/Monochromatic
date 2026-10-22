@@ -83,7 +83,7 @@ await describe({
           changed: false,
           findings: [
             'footnotes: archive labels stand, since the definitions the roster paired disagree: definition pair 1 '
-            + 'maps archive [^1] to original [^2], where definition pair 0 mapped that archive label to original [^1]',
+              + 'maps archive [^1] to original [^2], where definition pair 0 mapped that archive label to original [^1]',
           ],
           withheld: 'correspondence',
         },);
@@ -143,7 +143,7 @@ await describe({
           changed: false,
           findings: [
             `footnotes: archive labels stand, since the paired slices disagree: slice ${String(birdSlice,)} maps `
-            + `archive [^a] to original [^2], where slice ${String(catSlice,)} mapped that archive label to original [^1]`,
+              + `archive [^a] to original [^2], where slice ${String(catSlice,)} mapped that archive label to original [^1]`,
           ],
           withheld: 'correspondence',
         },);
@@ -180,7 +180,7 @@ await describe({
           changed: false,
           findings: [
             'footnotes: archive definitions stand: the footnote definitions are interleaved with other blocks, so '
-            + 'they keep their order',
+              + 'they keep their order',
           ],
         },);
         expect(messages,).toContain(

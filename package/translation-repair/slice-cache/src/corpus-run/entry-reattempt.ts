@@ -60,43 +60,43 @@ export type ReattemptVerdict =
      */
     readonly kind: 'settled';
   }
-  | {
+    | {
     /**
      Entry did not settle and bought no slice it did not already hold, so a
      further attempt inside this invocation would repeat this one.
      */
-    readonly kind: 'stalled';
+      readonly kind: 'stalled';
 
     /**
      Slices it holds, which is what it held before this attempt too.
      */
-    readonly cached: number;
-  }
-  | {
+      readonly cached: number;
+    }
+    | {
     /**
      Incomplete work explicitly forbids fresh whole-entry attempt.
      */
-    readonly kind: 'stopped';
-  }
-  | {
+      readonly kind: 'stopped';
+    }
+    | {
     /**
      The pipeline declined the entry by the archive's own note; its decline
      record stands where the artifact would and no pass attempts it again.
      */
-    readonly kind: 'declined';
-  }
-  | {
+      readonly kind: 'declined';
+    }
+    | {
     /**
      Entry did not settle and cached slices it did not have before, so the
      next attempt starts further along than this one did.
      */
-    readonly kind: 'earned';
+      readonly kind: 'earned';
 
     /**
      Slices this attempt bought.
      */
-    readonly gained: number;
-  };
+      readonly gained: number;
+    };
 
 /**
  Counts slices one entry has cached, across every lane sharing its directory.

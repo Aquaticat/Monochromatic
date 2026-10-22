@@ -8,7 +8,7 @@ const templateFile = join(question, 'floating-results.template.html');
 const outputFile = join(question, 'floating-results-review.html');
 const capture = readFileSync(join(question, 'render', 'search-floating-inner-results-light-s200.png'));
 if (capture.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
-    capture.readUInt32BE(16) !== 2076 || capture.readUInt32BE(20) !== 2152) {
+  capture.readUInt32BE(16) !== 2076 || capture.readUInt32BE(20) !== 2152) {
   throw new Error('Floating result capture must use the physical inner-panel resolution.');
 }
 const chunks = [];

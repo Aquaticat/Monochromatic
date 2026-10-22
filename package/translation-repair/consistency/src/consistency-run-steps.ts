@@ -222,7 +222,7 @@ function lineBreakBeforeMarkersAt(
   };
   while (
     (reading.at >= 0)
-    && ((text.charAt(reading.at,) === QUOTATION_MARKER) || HORIZONTAL_SPACE.has(text.charAt(reading.at,),))
+      && ((text.charAt(reading.at,) === QUOTATION_MARKER) || HORIZONTAL_SPACE.has(text.charAt(reading.at,),))
   ) {
     if (text.charAt(reading.at,) === QUOTATION_MARKER)
       reading.markers += 1;

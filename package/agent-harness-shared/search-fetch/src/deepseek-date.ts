@@ -125,38 +125,38 @@ function dateFilterShape(value: string,): DateFilterShape {
     return 'year';
   if (
     (value.length === MONTH_LENGTH)
-    && isDigitRange({
-      value,
-      start: 0,
-      end: FIRST_SEPARATOR_INDEX,
-    },)
+      && isDigitRange({
+        value,
+        start: 0,
+        end: FIRST_SEPARATOR_INDEX,
+      },)
       && (value[FIRST_SEPARATOR_INDEX] === DATE_SEPARATOR)
       && isDigitRange({
-      value,
-      start: FIRST_SEPARATOR_INDEX + 1,
-      end: MONTH_LENGTH,
-    },)
+        value,
+        start: FIRST_SEPARATOR_INDEX + 1,
+        end: MONTH_LENGTH,
+      },)
   )
     return 'month';
   if (
     (value.length === DAY_LENGTH)
-    && isDigitRange({
-      value,
-      start: 0,
-      end: FIRST_SEPARATOR_INDEX,
-    },)
+      && isDigitRange({
+        value,
+        start: 0,
+        end: FIRST_SEPARATOR_INDEX,
+      },)
       && (value[FIRST_SEPARATOR_INDEX] === DATE_SEPARATOR)
       && isDigitRange({
-      value,
-      start: FIRST_SEPARATOR_INDEX + 1,
-      end: SECOND_SEPARATOR_INDEX,
-    },)
+        value,
+        start: FIRST_SEPARATOR_INDEX + 1,
+        end: SECOND_SEPARATOR_INDEX,
+      },)
       && (value[SECOND_SEPARATOR_INDEX] === DATE_SEPARATOR)
       && isDigitRange({
-      value,
-      start: SECOND_SEPARATOR_INDEX + 1,
-      end: DAY_LENGTH,
-    },)
+        value,
+        start: SECOND_SEPARATOR_INDEX + 1,
+        end: DAY_LENGTH,
+      },)
   )
     return 'day';
   return 'other';

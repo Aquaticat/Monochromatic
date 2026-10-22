@@ -200,7 +200,7 @@ await describe({
               group: groupOf({ outcomes: ['untouched', 'replaced',], carries: [CARRY,], winner: FIRST_WON, },),
             },),).toBe(
               `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[0].outcome: `
-              + 'expected chosen, as the ballots and the renderings give for this place.',
+                + 'expected chosen, as the ballots and the renderings give for this place.',
             );
           },
         },),
@@ -217,7 +217,7 @@ await describe({
             ],).toEqual([
               'holds',
               `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[0].outcome: `
-              + 'expected untouched, as the ballots and the renderings give for this place.',
+                + 'expected untouched, as the ballots and the renderings give for this place.',
             ],);
           },
         },),
@@ -228,7 +228,7 @@ await describe({
               group: groupOf({ outcomes: ['chosen', 'replaced',], carries: [], winner: FIRST_WON, },),
             },),).toBe(
               `ArtifactParseError: artifact parse failed at ${GROUP}.carries: `
-              + 'expected a carry for OCCURRENCE 2, which the chosen words are carried to.',
+                + 'expected a carry for OCCURRENCE 2, which the chosen words are carried to.',
             );
           },
         },),

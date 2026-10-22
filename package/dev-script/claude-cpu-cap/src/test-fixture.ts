@@ -98,14 +98,14 @@ async function writeEntry({
   );
   await Promise.all(Object.entries(files,)
     .map(async function writeOne([name, text,],) {
-    await writeFile(
-      join(
-        dir,
-        name,
-      ),
-      text,
-    );
-  },),);
+      await writeFile(
+        join(
+          dir,
+          name,
+        ),
+        text,
+      );
+    },),);
 }
 
 /**
@@ -153,21 +153,21 @@ export async function makeHost({
         string,
         string
       ])[] {
-      return [
-        [
-          `energy${core + 2}_label`,
-          `Ecore${String(core,)
+        return [
+          [
+            `energy${core + 2}_label`,
+            `Ecore${String(core,)
             .padStart(
               CORE_LABEL_DIGITS,
               '0',
             )}`,
-        ],
-        [
-          `energy${core + 2}_input`,
-          '1000000',
-        ],
-      ];
-    },
+          ],
+          [
+            `energy${core + 2}_input`,
+            '1000000',
+          ],
+        ];
+      },
     )
       .flat(),
   );
@@ -178,11 +178,11 @@ export async function makeHost({
       'hwmon0',
     ),
     files: {
-    name: 'k10temp\n',
-    temp1_input: '61500\n',
-    temp3_input: '58000\n',
-    temp4_input: '57000\n',
-  },
+      name: 'k10temp\n',
+      temp1_input: '61500\n',
+      temp3_input: '58000\n',
+      temp4_input: '57000\n',
+    },
   },);
   await writeEntry({
     dir: join(
@@ -191,11 +191,11 @@ export async function makeHost({
       'hwmon1',
     ),
     files: {
-    name: 'zenergy\n',
-    energy1_label: 'Esocket0\n',
-    energy1_input: '1000000\n',
-    ...coreFiles,
-  },
+      name: 'zenergy\n',
+      energy1_label: 'Esocket0\n',
+      energy1_input: '1000000\n',
+      ...coreFiles,
+    },
   },);
   await writeEntry({
     dir: join(
@@ -204,14 +204,14 @@ export async function makeHost({
       'hwmon2',
     ),
     files: {
-    name: 'gigabyte_wmi\n',
-    temp1_input: '30000\n',
-    temp2_input: '31000\n',
-    temp3_input: '32000\n',
-    temp4_input: '33000\n',
-    temp5_input: '34000\n',
-    temp6_input: '35000\n',
-  },
+      name: 'gigabyte_wmi\n',
+      temp1_input: '30000\n',
+      temp2_input: '31000\n',
+      temp3_input: '32000\n',
+      temp4_input: '33000\n',
+      temp5_input: '34000\n',
+      temp6_input: '35000\n',
+    },
   },);
   await writeEntry({
     dir: join(
@@ -242,11 +242,11 @@ export async function makeHost({
       'hwmon5',
     ),
     files: {
-    name: 'amdgpu\n',
-    fan1_input: '900\n',
-    temp1_input: '45000\n',
-    power1_average: '12000000\n',
-  },
+      name: 'amdgpu\n',
+      fan1_input: '900\n',
+      temp1_input: '45000\n',
+      power1_average: '12000000\n',
+    },
   },);
   await writeEntry({
     dir: join(
@@ -277,10 +277,10 @@ export async function makeHost({
       'hwmon6',
     ),
     files: {
-    name: 'amdgpu\n',
-    temp1_input: '50000\n',
-    power1_input: '3000000\n',
-  },
+      name: 'amdgpu\n',
+      temp1_input: '50000\n',
+      power1_input: '3000000\n',
+    },
   },);
   await writeEntry({
     dir: join(
@@ -289,9 +289,9 @@ export async function makeHost({
       'pressure',
     ),
     files: {
-    cpu: `some avg10=${cpuPressure.toFixed(2,)} avg60=0.00 avg300=0.00 total=0\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n`,
-    memory: 'some avg10=0.00 avg60=0.00 avg300=0.00 total=0\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n',
-  },
+      cpu: `some avg10=${cpuPressure.toFixed(2,)} avg60=0.00 avg300=0.00 total=0\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n`,
+      memory: 'some avg10=0.00 avg60=0.00 avg300=0.00 total=0\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n',
+    },
   },);
   await writeFile(
     join(

@@ -266,7 +266,7 @@ export function renderImperative<S extends string, V extends string, N extends s
    */
   const verb = entry.imperative
     ?? entry
-    .base;
+      .base;
   /**
    Rendered object slot.
    */

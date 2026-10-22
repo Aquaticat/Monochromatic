@@ -121,7 +121,7 @@ export function parseLogKey(key: string,): { readonly parsed?: ParsedLogKey; } {
   const [stampText, nonce, indexText,] = segments;
   if (
     (stampText === undefined)
-    || (nonce === undefined)
+      || (nonce === undefined)
       || (indexText === undefined)
   )
     return {};

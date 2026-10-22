@@ -361,10 +361,10 @@ await describe({
 
         expect(readConfigFile(conf.path,)
           .items,).toEqual([
-          'first',
-          'external',
-          'second',
-        ],);
+            'first',
+            'external',
+            'second',
+          ],);
       },
     },),
 
@@ -422,10 +422,10 @@ await describe({
         },);
         expect(readConfigFile(conf.path,)
           .items,).toEqual([
-          'first',
-          'external',
-          'second',
-        ],);
+            'first',
+            'external',
+            'second',
+          ],);
       },
     },),
 

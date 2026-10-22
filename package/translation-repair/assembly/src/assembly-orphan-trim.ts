@@ -269,51 +269,51 @@ function labelledBlocksOf({ text, }: { readonly text: string; },): BlockLayout {
   const ended = text
     .split(LINE_BREAK,)
     .reduce(
-      function walkLine(
-        walk: BlockWalk,
-        line,
-      ): BlockWalk {
+    function walkLine(
+      walk: BlockWalk,
+      line,
+    ): BlockWalk {
         /**
          Offset just past this line's text.
          */
-        const lineEnd = walk.offset + line.length;
+      const lineEnd = walk.offset + line.length;
         /**
          Offset the next line begins at.
          */
-        const next = lineEnd + LINE_BREAK.length;
-        if (line.trim() === '') {
-          return {
-            ...closeBlock({
-              text,
-              walk,
-              blocks,
-            },),
-            offset: next,
-          };
-        }
-        /**
-         The walk once a definition line has closed what was open.
-         */
-        const closed = ((walk.openStart >= 0) && (definitionLabelOfLine({ line, },) !== ''))
-          ? closeBlock({
+      const next = lineEnd + LINE_BREAK.length;
+      if (line.trim() === '') {
+        return {
+          ...closeBlock({
             text,
             walk,
             blocks,
-          },)
-          : walk;
-        return {
-          openStart: (closed.openStart < 0) ? walk.offset : closed.openStart,
-          openEnd: lineEnd,
-          lastEnd: closed.lastEnd,
+          },),
           offset: next,
         };
-      },
-      {
-        openStart: -1,
-        openEnd: -1,
-        lastEnd: 0,
-        offset: 0,
-      },
+      }
+        /**
+         The walk once a definition line has closed what was open.
+         */
+      const closed = ((walk.openStart >= 0) && (definitionLabelOfLine({ line, },) !== ''))
+        ? closeBlock({
+          text,
+          walk,
+          blocks,
+        },)
+        : walk;
+      return {
+        openStart: (closed.openStart < 0) ? walk.offset : closed.openStart,
+        openEnd: lineEnd,
+        lastEnd: closed.lastEnd,
+        offset: next,
+      };
+    },
+    {
+      openStart: -1,
+      openEnd: -1,
+      lastEnd: 0,
+      offset: 0,
+    },
     );
   /**
    The walk with the last block closed.
@@ -387,33 +387,33 @@ export function cutDefinitionBlocks(
    */
   const joined = layout.blocks
     .reduce(
-      function keep(
-        state: KeptText,
-        entry,
-      ): KeptText {
-        if ((entry.label !== '') && labels.has(entry.label,)) {
-          return {
-            text: state.text,
-            pendingGap: (state.pendingGap === '') ? entry.gapBefore : state.pendingGap,
-          };
-        }
+    function keep(
+      state: KeptText,
+      entry,
+    ): KeptText {
+      if ((entry.label !== '') && labels.has(entry.label,)) {
+        return {
+          text: state.text,
+          pendingGap: (state.pendingGap === '') ? entry.gapBefore : state.pendingGap,
+        };
+      }
         /**
          Gap owed by the cut run just walked, else this block's own.
          */
-        const owed = (state.pendingGap === '') ? entry.gapBefore : state.pendingGap;
+      const owed = (state.pendingGap === '') ? entry.gapBefore : state.pendingGap;
         /**
          Gap written before this block, none at the start of the text.
          */
-        const gap = (state.text === '') ? '' : owed;
-        return {
-          text: `${state.text}${gap}${entry.block}`,
-          pendingGap: '',
-        };
-      },
-      {
-        text: '',
+      const gap = (state.text === '') ? '' : owed;
+      return {
+        text: `${state.text}${gap}${entry.block}`,
         pendingGap: '',
-      },
+      };
+    },
+    {
+      text: '',
+      pendingGap: '',
+    },
     );
   return `${joined.text}${layout.tail}`;
 }

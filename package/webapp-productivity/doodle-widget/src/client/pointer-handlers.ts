@@ -34,10 +34,10 @@ export type { ToolMode, } from './pointer-handler-deps.ts';
  */
 type PrevErasePoint =
   | { readonly kind: 'none'; }
-  | {
-    readonly kind: 'at';
-    readonly point: NormalizedPoint;
-  };
+    | {
+      readonly kind: 'at';
+      readonly point: NormalizedPoint;
+    };
 
 /**
  Attaches pointerdown, pointermove, pointerup, and pointercancel

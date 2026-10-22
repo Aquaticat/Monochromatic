@@ -378,7 +378,7 @@ export function placeSlices(
     if (slice === undefined) {
       throw new SliceSpliceError({
         message: `no slice ${String(replacement.sliceIndex,)} to write into: `
-        + `the document was sliced into ${String(slices.length,)} ${
+          + `the document was sliced into ${String(slices.length,)} ${
           wordForCount({
             count: slices.length,
             one: 'slice',
@@ -433,7 +433,7 @@ export function placeSlices(
   },),).size !== placed.length) {
     throw new SliceSpliceError({
       message: 'two replacements name one slice: whichever applied second would '
-      + 'overwrite the other, and the winner would depend on sort order',
+        + 'overwrite the other, and the winner would depend on sort order',
     },);
   }
 

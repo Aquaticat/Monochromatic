@@ -96,7 +96,7 @@ function tokenize(body) {
     if (char === '|') {
       atoms.push({ type: 'alternation', });
       index += 1;
-        continue;
+      continue;
     }
     if (char === '*') {
       const lazy = body[index + 1] === '?';

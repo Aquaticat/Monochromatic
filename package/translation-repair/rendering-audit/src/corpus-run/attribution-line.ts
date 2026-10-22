@@ -81,7 +81,7 @@ export type SignatureReading =
      */
     readonly signature: Signature;
   }
-  | { readonly signed: false; };
+    | { readonly signed: false; };
 
 /**
  Offset past the line's blockquote marks, whitespace and opening HTML tags.

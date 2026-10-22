@@ -196,9 +196,9 @@ await describe({
             expect(refusal,).toBeInstanceOf(CensusBaselineError,);
             expect(String(refusal,),).toBe(
               'CensusBaselineError: baseline /tmp/census.json does not read as a census this command wrote: it is '
-              + 'census format 2, written before invariant throws were counted apart: its cold stretches hold them '
-              + 'and record no text to tell them by, and this run leaves them out of its own, so each would read as '
-              + 'ran; take the baseline again',
+                + 'census format 2, written before invariant throws were counted apart: its cold stretches hold them '
+                + 'and record no text to tell them by, and this run leaves them out of its own, so each would read as '
+                + 'ran; take the baseline again',
             );
           },
         },),
@@ -216,15 +216,15 @@ await describe({
                   stretches: [STRETCH,],
                 },)
                   .slice(
-                    0,
-                    40,
+                  0,
+                  40,
                   ),
               },);
             },);
             expect(refusal,).toBeInstanceOf(CensusBaselineError,);
             expect(String(refusal,),).toBe(
               'CensusBaselineError: baseline /tmp/census.json does not read as a census this command wrote: it is '
-              + 'not JSON',
+                + 'not JSON',
             );
           },
         },),
@@ -264,7 +264,7 @@ await describe({
                   loadedSources: [],
                 },),
                 'it was taken with uncommitted changes under the package, so its lines match no commit a later reading '
-                + 'can compare the tree with; commit, then take the baseline again',
+                  + 'can compare the tree with; commit, then take the baseline again',
               ],
             ] as const) {
               /**
@@ -559,7 +559,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(CensusBaselineError,);
             expect(String(refusal,),).toBe(
               `CensusBaselineError: baseline ${path} does not read as a census this command wrote: it could not be `
-              + 'read (ENOENT)',
+                + 'read (ENOENT)',
             );
           },
         },),
@@ -581,7 +581,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(CensusBaselineError,);
             expect(String(refusal,),).toBe(
               `CensusBaselineError: baseline ${scratch.path} does not read as a census this command wrote: it could `
-              + 'not be read (EISDIR)',
+                + 'not be read (EISDIR)',
             );
             expect((refusal as Error).cause,).toBeInstanceOf(Error,);
           },
@@ -603,7 +603,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(CensusBaselineError,);
             expect(String(refusal,),).toBe(
               'CensusBaselineError: baseline /tmp/purr.json does not read as a census this command wrote: it is not '
-              + 'JSON',
+                + 'JSON',
             );
           },
         },),

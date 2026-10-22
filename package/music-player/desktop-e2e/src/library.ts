@@ -285,18 +285,18 @@ async function writeFallbackBase(library: string,): Promise<void> {
         _unused,
         index,
       ): Promise<void> {
-      return writeFile(
-        join(
-          library,
-          `Fallback ${String(index + 1,)
+        return writeFile(
+          join(
+            library,
+            `Fallback ${String(index + 1,)
             .padStart(
               2,
               '0',
             )}.wav`,
-        ),
-        shortTone,
-      );
-    },
+          ),
+          shortTone,
+        );
+      },
     ),
     ...Array.from(
       { length: FALLBACK_ARTIST_TRACKS, },
@@ -304,18 +304,18 @@ async function writeFallbackBase(library: string,): Promise<void> {
         _unused,
         index,
       ): Promise<void> {
-      return writeFile(
-        join(
-          artist,
-          `${String(index + 1,)
+        return writeFile(
+          join(
+            artist,
+            `${String(index + 1,)
             .padStart(
               2,
               '0',
             )} Mid tone.wav`,
-        ),
-        shortTone,
-      );
-    },
+          ),
+          shortTone,
+        );
+      },
     ),
   ],);
 }

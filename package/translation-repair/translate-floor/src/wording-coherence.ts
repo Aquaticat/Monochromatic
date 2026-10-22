@@ -27,10 +27,10 @@ import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typogra
  */
 export type WordingFault =
   | 'fallback-without-archive'
-  | 'missing-where-archive-holds'
-  | 'nothing-to-do-where-archive-holds'
-  | 'empty-decision-without-archive'
-  | 'wording-beside-absent-archive';
+    | 'missing-where-archive-holds'
+    | 'nothing-to-do-where-archive-holds'
+    | 'empty-decision-without-archive'
+    | 'wording-beside-absent-archive';
 
 /**
  What each fault says, after the slice it names.

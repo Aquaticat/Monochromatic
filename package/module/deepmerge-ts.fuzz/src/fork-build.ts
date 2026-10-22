@@ -146,18 +146,18 @@ export async function buildFork(): Promise<void> {
     CHECKOUT,
     WORK,
     {
-    recursive: true,
-    filter: function skipBuildState(source,) {
+      recursive: true,
+      filter: function skipBuildState(source,) {
       // Build state and Git metadata (which may hold sockets) are neither needed nor copyable.
-      return [
-        '/node_modules',
-        '/.pnpm-store',
-        '/.git',
-      ].every(function absent(segment,) {
-        return !source.includes(segment,);
-      },) && (!source.startsWith(`${CHECKOUT}/dist`,));
+        return [
+          '/node_modules',
+          '/.pnpm-store',
+          '/.git',
+        ].every(function absent(segment,) {
+          return !source.includes(segment,);
+        },) && (!source.startsWith(`${CHECKOUT}/dist`,));
+      },
     },
-  },
   );
   /**
    Upstream config with both source map switches turned on.

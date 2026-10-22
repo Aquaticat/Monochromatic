@@ -158,10 +158,10 @@ export type CheckingOptionsKey =
     readonly eligible: true;
     readonly digest: string;
   }
-  | {
-    readonly eligible: false;
-    readonly reason: string;
-  };
+    | {
+      readonly eligible: false;
+      readonly reason: string;
+    };
 
 /**
  Digests the keyed compiler options, or names the first option nobody classified.

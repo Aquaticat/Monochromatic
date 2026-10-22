@@ -123,8 +123,8 @@ function matchProviderModelReference<TModel extends ModelIdentity,>(
    */
   const provider = trimmedReference
     .slice(
-      0,
-      slashIndex,
+    0,
+    slashIndex,
     )
     .trim();
   /**
@@ -143,11 +143,11 @@ function matchProviderModelReference<TModel extends ModelIdentity,>(
     return (model.provider
       .toLowerCase()
       === provider
-      .toLowerCase())
+        .toLowerCase())
       && (model.id
         .toLowerCase()
         === modelId
-        .toLowerCase());
+          .toLowerCase());
   },);
   if (providerMatches.length
     === 1)

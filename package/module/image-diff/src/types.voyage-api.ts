@@ -29,10 +29,10 @@ export type VoyageContentItem =
     readonly type: 'image_url';
     readonly image_url: string;
   }
-  | {
-    readonly type: 'image_base64';
-    readonly image_base64: string;
-  };
+    | {
+      readonly type: 'image_base64';
+      readonly image_base64: string;
+    };
 
 /**
  Single input entry for the Voyage AI multimodal embeddings API request.

@@ -93,11 +93,11 @@ export function tomlDelete(
       ...edit,
       blocks: edit.blocks
         .filter(function keep(b,) {
-        return !isExactTable({
-          block: b,
-          path,
-        },);
-      },),
+          return !isExactTable({
+            block: b,
+            path,
+          },);
+        },),
     };
 
   if (edit.blocks
@@ -111,11 +111,11 @@ export function tomlDelete(
       ...edit,
       blocks: edit.blocks
         .filter(function keep(b,) {
-        return !isImplicitConstituent({
-          block: b,
-          path,
-        },);
-      },),
+          return !isImplicitConstituent({
+            block: b,
+            path,
+          },);
+        },),
     };
 
   return edit;

@@ -528,9 +528,9 @@ await describe({
           [],
           [
             'translate-archive-disputed (slice 0): the repair lane\'s adjudicators accepted 1 disputing claim(s) '
-            + '(accuracy/addition at any severity, any other accuracy claim the panel settled at major or worse) '
-            + 'against the archive rendering, so the repair lane\'s text stands in for it (classes one hundred seven '
-            + 'and one hundred seventy-six)',
+              + '(accuracy/addition at any severity, any other accuracy claim the panel settled at major or worse) '
+              + 'against the archive rendering, so the repair lane\'s text stands in for it (classes one hundred seven '
+              + 'and one hundred seventy-six)',
           ],
         ],);
       },
@@ -615,12 +615,12 @@ await describe({
         // question of which document ships is still unanswered here.
         expect(Object.keys(lanes,)
           .toSorted(),).toEqual([
-          'alignmentFindings',
-          'repair',
-          'repairDelivery',
-          'translate',
-          'translateDelivery',
-        ],);
+            'alignmentFindings',
+            'repair',
+            'repairDelivery',
+            'translate',
+            'translateDelivery',
+          ],);
       },
     },),
 
@@ -776,11 +776,11 @@ await describe({
         expect(lanes.repairDelivery
           .records
           .length,).toBe(lanes.repair
-          .sliceCount,);
+            .sliceCount,);
         expect(lanes.translateDelivery
           .records
           .length,).toBe(lanes.translate
-          .sliceCount,);
+            .sliceCount,);
 
         // Each ledger carries the slicing it was built over, and both lanes ran
         // over one preparation, so the two names agree. A consumer holding two
@@ -788,7 +788,7 @@ await describe({
         // named rather than being stamped where they are read.
         expect(lanes.repairDelivery
           .preparationIdentity,).toBe(lanes.translateDelivery
-          .preparationIdentity,);
+            .preparationIdentity,);
         expect(lanes.repairDelivery
           .preparationIdentity,).toMatch('sha256-preparation-v2:',);
 

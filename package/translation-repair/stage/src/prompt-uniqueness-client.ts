@@ -34,8 +34,8 @@ const l = contextRoot({ tag: 'translation-repair', },);
  */
 type PromptValue =
   | string
-  | readonly PromptValue[]
-  | { readonly [key: string]: PromptValue; };
+    | readonly PromptValue[]
+    | { readonly [key: string]: PromptValue; };
 
 /**
  Narrows a prompt value to a list, keeping its items typed as prompt values

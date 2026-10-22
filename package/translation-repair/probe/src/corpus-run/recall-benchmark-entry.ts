@@ -33,10 +33,10 @@ export type RecallSeedOutcome =
     readonly entry: BenchmarkEntry;
     readonly band: ReturnType<typeof bandOf>;
   }
-  | {
-    readonly kind: 'skipped';
-    readonly reason: string;
-  };
+    | {
+      readonly kind: 'skipped';
+      readonly reason: string;
+    };
 
 /**
  Builds the seeded benchmark entry for one corpus id, reporting why when it

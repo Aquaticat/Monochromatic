@@ -14,20 +14,20 @@
  */
 export type OperatorName =
   | 'arithmetic'
-  | 'equality'
-  | 'logical'
-  | 'conditional'
-  | 'boolean'
-  | 'string'
-  | 'unary'
-  | 'update'
-  | 'array'
-  | 'object'
-  | 'optional-chaining'
-  | 'block'
-  | 'method'
-  | 'arrow'
-  | 'regex';
+    | 'equality'
+    | 'logical'
+    | 'conditional'
+    | 'boolean'
+    | 'string'
+    | 'unary'
+    | 'update'
+    | 'array'
+    | 'object'
+    | 'optional-chaining'
+    | 'block'
+    | 'method'
+    | 'arrow'
+    | 'regex';
 
 /**
  Final classification of one executed (or filtered) mutant.
@@ -37,10 +37,10 @@ export type OperatorName =
  */
 export type MutantStatus =
   | 'killed'
-  | 'survived'
-  | 'timeout'
-  | 'compileError'
-  | 'runtimeError';
+    | 'survived'
+    | 'timeout'
+    | 'compileError'
+    | 'runtimeError';
 
 /**
  Candidate replacement produced by one operator for one AST node,

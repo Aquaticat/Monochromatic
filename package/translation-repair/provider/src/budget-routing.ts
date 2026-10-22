@@ -126,17 +126,17 @@ export type ProviderChoice =
      */
     readonly kind: ProviderName;
   }
-  | {
+    | {
     /**
      Discriminator marking a call no live provider can take.
      */
-    readonly kind: 'unreachable';
+      readonly kind: 'unreachable';
 
     /**
      Why, in terms a voice-loss record can carry.
      */
-    readonly reason: string;
-  };
+      readonly reason: string;
+    };
 
 /**
  Whether Synthetic's budget reading says nothing more can be bought there.

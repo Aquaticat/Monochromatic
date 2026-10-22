@@ -63,8 +63,8 @@ export async function familyDependencies({
     throw new Error(`${manifestPath} "dependencies" must be a JSON object when present`,);
   return Object.keys(dependencies,)
     .filter(function isMember(name: string,): boolean {
-    return name.startsWith(familyPrefix,);
-  },);
+      return name.startsWith(familyPrefix,);
+    },);
 }
 
 /**

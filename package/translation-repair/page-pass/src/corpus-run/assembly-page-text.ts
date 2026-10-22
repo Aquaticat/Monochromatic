@@ -194,7 +194,7 @@ export function rowsChangedBy(
   ): boolean {
     return row.replacementText
       !== before[index]
-      ?.replacementText;
+        ?.replacementText;
   },);
 }
 

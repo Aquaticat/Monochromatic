@@ -25,14 +25,14 @@
  */
 export type CustomChoice =
   | 'absent'
-  | 'defaultMerge'
-  | 'false'
-  | 'first'
-  | 'metaProbe'
-  | 'metaTag'
-  | 'skipNested'
-  | 'slotDefault'
-  | 'undefined';
+    | 'defaultMerge'
+    | 'false'
+    | 'first'
+    | 'metaProbe'
+    | 'metaTag'
+    | 'skipNested'
+    | 'slotDefault'
+    | 'undefined';
 
 /**
  Choice of `filterValues`: left out, `false`, a custom filter dropping both

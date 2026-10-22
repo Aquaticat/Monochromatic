@@ -416,10 +416,10 @@ export async function orchestrateRun(options: OrchestrateOptions,): Promise<RunO
         .length
         > 0) {
         confirmation.ids = [...await runRound(composeReshard({
-        entryOf: entryOrThrow,
-        timeoutFloorMs: options.timeoutFloorMs,
-        timeoutFactor: options.timeoutFactor,
-        packagePath: options.packagePath,
+          entryOf: entryOrThrow,
+          timeoutFloorMs: options.timeoutFloorMs,
+          timeoutFactor: options.timeoutFactor,
+          packagePath: options.packagePath,
           ids: confirmation.ids,
           size: 1,
         },),),];
@@ -448,14 +448,14 @@ export async function orchestrateRun(options: OrchestrateOptions,): Promise<RunO
         return (a.mutant
           .file
           < b.mutant
-          .file ? -1 : (a.mutant
-            .file
-            > b.mutant
-            .file ? 1 : 0))
+            .file ? -1 : (a.mutant
+              .file
+              > b.mutant
+                .file ? 1 : 0))
           || (a.mutant
             .start
             - b.mutant
-            .start);
+              .start);
       },),
     ignored,
     infraErrors,

@@ -57,7 +57,7 @@ function nonFiniteSurface(
   if (form === 'imperative')
     return entry.imperative
       ?? entry
-      .base;
+        .base;
   if (form === 'infinitive')
     return `to ${entry.base}`;
   return entry.gerund
@@ -136,9 +136,9 @@ export function makeEnglishFragmentRenderer<
   S extends string,
   V extends string,
   N extends string,
->(
+  >(
   deps: FragmentDeps<L, S, V, N>,
-): (fragment: Fragment<L, S, V, N>,) => string {
+  ): (fragment: Fragment<L, S, V, N>,) => string {
   /**
    Destructured locale dependencies captured for use across every sub-renderer below.
    */

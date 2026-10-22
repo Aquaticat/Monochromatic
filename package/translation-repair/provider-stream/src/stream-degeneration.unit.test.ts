@@ -40,7 +40,7 @@ import { watchForDegeneration, } from '../dist/final/node/index.mjs';
  */
 function verdictAfter({ chunks, }: { readonly chunks: readonly string[]; },): ReturnType<
   ReturnType<typeof watchForDegeneration>['verdict']
-> {
+  > {
   /**
    Detector under test.
    */

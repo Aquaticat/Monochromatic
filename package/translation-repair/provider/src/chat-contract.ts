@@ -319,9 +319,9 @@ export type ChatJsonRequest<ValueT,> = ChatTextRequest & {
  */
 export type SchemaMismatchReason =
   | 'caller-guard-rejected'
-  | 'unparseable-json'
-  | 'truncated-thinking'
-  | 'truncated-completion';
+    | 'unparseable-json'
+    | 'truncated-thinking'
+    | 'truncated-completion';
 
 /**
  How the nudged re-ask on another provider failed too, kept beside the first answer's own failure (the lead's ruling of
@@ -386,67 +386,67 @@ export type ChatJsonOutcome<ValueT,> =
      */
     readonly usage?: CompletionUsage;
   }
-  | {
+    | {
     /**
      The API refused outright or the answer reads as a refusal;
      reroute cross-family.
      */
-    readonly kind: 'refusal-shaped';
+      readonly kind: 'refusal-shaped';
 
     /**
      Verbatim model text for audit trails.
      */
-    readonly rawText: string;
+      readonly rawText: string;
 
     /**
      Refusal marker that fired;
      `api-refusal-field` when the message `refusal` field was set.
      Feeds the scorecard.
      */
-    readonly marker: string;
+      readonly marker: string;
 
     /**
      Token usage when reported; thinking tokens included.
      */
-    readonly usage?: CompletionUsage;
+      readonly usage?: CompletionUsage;
 
     /**
      How the nudged re-ask on another provider failed too, when one was made and failed.
      */
-    readonly reaskFailure?: ChatJsonReaskFailure;
-  }
-  | {
+      readonly reaskFailure?: ChatJsonReaskFailure;
+    }
+    | {
     /**
      Content is not valid JSON, failed the caller's guard,
      or was truncated by the provider (completion or thinking).
      */
-    readonly kind: 'schema-mismatch';
+      readonly kind: 'schema-mismatch';
 
     /**
      Verbatim model text for audit trails.
      */
-    readonly rawText: string;
+      readonly rawText: string;
 
     /**
      Machine-readable cause, for callers that branch on truncation.
      */
-    readonly reason?: SchemaMismatchReason;
+      readonly reason?: SchemaMismatchReason;
 
     /**
      What failed: parse step, guard, or completion truncation.
      */
-    readonly detail: string;
+      readonly detail: string;
 
     /**
      Token usage when reported; thinking tokens included.
      */
-    readonly usage?: CompletionUsage;
+      readonly usage?: CompletionUsage;
 
     /**
      How the nudged re-ask on another provider failed too, when one was made and failed.
      */
-    readonly reaskFailure?: ChatJsonReaskFailure;
-  };
+      readonly reaskFailure?: ChatJsonReaskFailure;
+    };
 
 /**
  What every provider's client can do, whichever protocol it speaks.

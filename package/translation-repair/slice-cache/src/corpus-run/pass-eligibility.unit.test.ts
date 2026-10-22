@@ -70,7 +70,7 @@ async function throwawayCorpus(): Promise<
     readonly cloneDir: string;
     readonly commitSha: string;
   }
-> {
+  > {
   // Where the clone lives.
   return await scratchDirWith({
     prefix: 'pass-eligibility-',
@@ -188,8 +188,8 @@ await describe({
     it({
       name:
         'SORTS the walk into complete pairs to run, settled sizes, named gaps and every complete pair at the '
-        + 'pin: a settled entry is sized and counted a pair but not run, and the entry missing its translation '
-        + 'is reported by name and side rather than dropped in silence',
+          + 'pin: a settled entry is sized and counted a pair but not run, and the entry missing its translation '
+          + 'is reported by name and side rather than dropped in silence',
       fn: async () => {
         await using corpus = await throwawayCorpus();
 
@@ -284,7 +284,7 @@ await describe({
     it({
       name:
         'PROPAGATES any other read failure, since an unreadable clone is a fault in the run and a walk that '
-        + 'stepped past it would report a smaller corpus than exists: this is the drop the register found',
+          + 'stepped past it would report a smaller corpus than exists: this is the drop the register found',
       fn: async () => {
         /**
          What the walk over a clone that does not exist raised.

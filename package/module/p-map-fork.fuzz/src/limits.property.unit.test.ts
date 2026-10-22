@@ -126,8 +126,8 @@ await describe({
                 return spec.id;
               },)
               .slice(
-                0,
-                trace.startOrder.length,
+              0,
+              trace.startOrder.length,
               );
             expect(trace.startOrder,).toEqual(scheduledIds,);
 
@@ -164,7 +164,7 @@ await describe({
             else
               expect([...trace.outcome.aggregated,]
                 .toSorted(),).toEqual([...startedFailures,]
-                .toSorted(),);
+                  .toSorted(),);
           },),
           {
             numRuns: fuzzRuns,

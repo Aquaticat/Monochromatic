@@ -54,7 +54,7 @@ export async function runAdvisor(options: ForeignHostCapability<AdvisorRunOption
    */
   const deadlineAtMs = startedAtMs
     + options.config
-    .timeoutMs;
+      .timeoutMs;
   /**
    Own cleanup even while preparation is awaiting host work.
    */
@@ -64,10 +64,10 @@ export async function runAdvisor(options: ForeignHostCapability<AdvisorRunOption
    */
   const signal = options.signal === undefined ? cancellation.controller
     .signal : AbortSignal.any([
-    options.signal,
-    cancellation.controller
-      .signal,
-  ],);
+      options.signal,
+      cancellation.controller
+        .signal,
+    ],);
   if (signal.aborted) {
     /**
      Empty operation preserves cancellation without invoking scope or provider capabilities.
@@ -152,7 +152,7 @@ export async function runAdvisor(options: ForeignHostCapability<AdvisorRunOption
       .some(function scopedEndpoint(entry: EffectiveModelScope['entries'][number],): boolean {
         return entry.canonicalSlug
           === input.candidate
-          .model;
+            .model;
       },))
       throw new Error(`advisor: ${input.candidate
         .model} left the effective scope before dispatch`,);
@@ -183,7 +183,7 @@ export async function runAdvisor(options: ForeignHostCapability<AdvisorRunOption
   }
   if ((!explicit)
     && options.config
-    .hedgingEnabled
+      .hedgingEnabled
     && (options.config
       .hedgeDelayMs
       === undefined))
@@ -216,7 +216,7 @@ export async function runAdvisor(options: ForeignHostCapability<AdvisorRunOption
       .collectionGraceMs,
     ...((!explicit)
       && options.config
-      .hedgingEnabled
+        .hedgingEnabled
       && (options.config
         .hedgeDelayMs
         !== undefined) ? { hedgeDelayMs: options.config
@@ -283,15 +283,15 @@ export async function runAdvisor(options: ForeignHostCapability<AdvisorRunOption
         .selection
         .defaultSelection
         === undefined ? {} : {
-        defaultSelectionReason: `Initial selection: ${prepared.initial
+          defaultSelectionReason: `Initial selection: ${prepared.initial
           .selection
           .defaultSelection
           .reason}`,
-        costRanking: prepared.initial
-          .selection
-          .defaultSelection
-          .ranking,
-      }),
+          costRanking: prepared.initial
+            .selection
+            .defaultSelection
+            .ranking,
+        }),
     },
   };
 }

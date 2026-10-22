@@ -160,8 +160,8 @@ function linkNameRefusal(
     kind: 'invalid',
     findings: [
       `The link text for ${href} names ${source}, whom this page's front matter declares "${rendering}", but your `
-      + `link text "${quoted}" does not carry "${rendering}". A declared name inside a title takes its declared form, `
-      + `whatever the existing translation calls the person there; keep the rest of the title as you rendered it.${
+        + `link text "${quoted}" does not carry "${rendering}". A declared name inside a title takes its declared form, `
+        + `whatever the existing translation calls the person there; keep the rest of the title as you rendered it.${
         handleClause
       }`,
     ],

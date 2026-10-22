@@ -363,7 +363,7 @@ await describe({
             },);
             expect(String(refusal,),).toBe(
               'ConsistencyInvariantError: unreachable: slice 1 starts at 0 in the page, before 46, where the slice before it ends, '
-              + 'so the slices do not follow each other in the page',
+                + 'so the slices do not follow each other in the page',
             );
           },
         },),

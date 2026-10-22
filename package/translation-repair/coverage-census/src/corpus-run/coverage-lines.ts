@@ -331,8 +331,8 @@ export function bundleLineAt(
    */
   const line = lines.lineStarts
     .findLastIndex(function startsAtOrBefore(start,): boolean {
-    return start <= offset;
-  },);
+      return start <= offset;
+    },);
   return {
     line,
     lineStart: nonNullishOrThrow(lines.lineStarts[line],),
@@ -384,8 +384,8 @@ export function entryAt(
     readonly originalLine?: unknown;
   } = lines.map
     .findEntry(
-      line,
-      column,
+    line,
+    column,
     );
   if (((typeof originalSource) !== 'string') || ((typeof originalLine) !== 'number'))
     return { kind: 'unmapped', };

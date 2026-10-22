@@ -178,7 +178,7 @@ await describe({
             'run-timing-report: 1 log, 1 line',
             NO_ROUND_LINE,
             'NOTHING IN FLIGHT: no call in this log carried a duration, so nothing can be counted in flight, '
-            + 'which is not the same as a run that made one call at a time.',
+              + 'which is not the same as a run that made one call at a time.',
           ],
           exitCode: 'unset',
         },);
@@ -216,7 +216,7 @@ await describe({
             'run-timing-report: 1 log, 1 line',
             NO_ROUND_LINE,
             'NOTHING IN FLIGHT: every timed call in this log took no time, so no span holds a call in flight, '
-            + 'which is not the same as a run that made one call at a time.',
+              + 'which is not the same as a run that made one call at a time.',
           ],
           exitCode: 'unset',
         },);
@@ -253,9 +253,9 @@ await describe({
             'run-timing-report: 1 log, 3 lines',
             NO_ROUND_LINE,
             '1 completion line carries no elapsed field, predating call durations and leaving no interval to '
-            + 'report. Any concurrency this report prints describes only the calls that could be timed.',
+              + 'report. Any concurrency this report prints describes only the calls that could be timed.',
             'Completion lines whose stamp the logger did not write: 1. No instant places their calls, so any '
-            + 'concurrency this report prints leaves them out.',
+              + 'concurrency this report prints leaves them out.',
             'calls in flight        mean 1.00, peak 1',
             '  busy against span    10.00s of calls across 10.00s of run',
           ],
@@ -293,9 +293,9 @@ await describe({
             'run-timing-report: 1 log, 2 lines',
             NO_ROUND_LINE,
             '2 completion lines carry no elapsed field, predating call durations and leaving no interval to '
-            + 'report. Any concurrency this report prints describes only the calls that could be timed.',
+              + 'report. Any concurrency this report prints describes only the calls that could be timed.',
             'NOTHING IN FLIGHT: no call in this log carried a duration, so nothing can be counted in flight, '
-            + 'which is not the same as a run that made one call at a time.',
+              + 'which is not the same as a run that made one call at a time.',
           ],
           exitCode: 'unset',
         },);
@@ -334,7 +334,7 @@ await describe({
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect(String(refusal,),).toBe(
           `StatedRefusalError: the log ${missing} could not be read (ENOENT), so nothing was counted. `
-          + 'Name a log a pass, probe or calibration wrote, by a path that exists.',
+            + 'Name a log a pass, probe or calibration wrote, by a path that exists.',
         );
       },
     },),

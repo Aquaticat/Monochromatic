@@ -389,8 +389,8 @@ function readIssueSupport(
    */
   const proposers = issue.claimIds
     .flatMap(function toProposers(claimId,): readonly ProposerView[] {
-    return proposersOf.get(claimId,) ?? [];
-  },);
+      return proposersOf.get(claimId,) ?? [];
+    },);
 
   return {
     contributors: [...new Set(proposers.map(function toModelId(proposer,): string {
@@ -398,8 +398,8 @@ function readIssueSupport(
     },),),],
     unresolvedClaims: issue.claimIds
       .filter(function isUnresolved(claimId,): boolean {
-      return !proposersOf.has(claimId,);
-    },)
+        return !proposersOf.has(claimId,);
+      },)
       .length,
     repeated: proposers.some(function isRepeat(proposer,): boolean {
       return proposer.emissionCount > 1;
@@ -473,8 +473,8 @@ export function buildAttributionReport(
       total,
       { sliceCritics, },
     ): number {
-    return total + sliceCritics.length;
-  },
+      return total + sliceCritics.length;
+    },
     0,
   );
 
@@ -514,14 +514,14 @@ export function buildAttributionReport(
 
     return entry.issues
       .filter(function isAccepted(issue,): boolean {
-      return issue.status === 'accepted';
-    },)
+        return issue.status === 'accepted';
+      },)
       .map(function toSupport(issue,): IssueSupport {
-      return readIssueSupport({
-        issue,
-        proposersOf,
+        return readIssueSupport({
+          issue,
+          proposersOf,
+        },);
       },);
-    },);
   },);
 
   /**

@@ -79,9 +79,9 @@ await describe({
             expect(run.stdout,).toBe('',);
             expect(run.stderr,).toBe(
               'corpus-pass: TRANSLATION_REPAIR_HARD_CAP_MINUTES must be a positive number of minutes; received '
-              + '"abc". This is the ceiling that stops one entry running away with a whole pass, so an '
-              + 'unreadable value is refused rather than quietly replaced by the default: an operator who set it '
-              + 'believes the run is bounded the way they asked for.\n',
+                + '"abc". This is the ceiling that stops one entry running away with a whole pass, so an '
+                + 'unreadable value is refused rather than quietly replaced by the default: an operator who set it '
+                + 'believes the run is bounded the way they asked for.\n',
             );
             /**
              Where the lock would stand had the pass claimed the directory.
@@ -119,9 +119,9 @@ await describe({
             expect(run.stdout,).toBe('',);
             expect(run.stderr,).toBe(
               'corpus-pass: TRANSLATION_REPAIR_RUN_SPEND_CEILING_USD must be a non-negative number of USD; '
-              + 'received "abc". This is the ceiling that stops a run spending past its allowance, so an '
-              + 'unreadable value is refused rather than quietly replaced by the default: an operator who set it '
-              + 'believes the run is bounded the way they asked for.\n',
+                + 'received "abc". This is the ceiling that stops a run spending past its allowance, so an '
+                + 'unreadable value is refused rather than quietly replaced by the default: an operator who set it '
+                + 'believes the run is bounded the way they asked for.\n',
             );
           },
         },),
@@ -186,14 +186,14 @@ await describe({
                 hardMs: 60_000,
               },),
               'CAP OVERRIDDEN by TRANSLATION_REPAIR_HARD_CAP_MINUTES: entries run under 1 minute rather than '
-              + 'the built-in 420',
+                + 'the built-in 420',
               WRITER_GRACE_BUILT_IN,
               pinLine({ clone, },),
               'CAP TOO TIGHT: an attempt runs 60000ms, which is not longer than the 360000ms one model '
-              + 'exchange is allowed. Attempts are cut before an exchange can return, so no slice caches, every '
-              + 'attempt reports no progress, and the queue drops the entry as stalled after its second try. '
-              + 'Raise the ceiling above one exchange to buy anything, or keep it here to exercise the stall '
-              + 'path deliberately.',
+                + 'exchange is allowed. Attempts are cut before an exchange can return, so no slice caches, every '
+                + 'attempt reports no progress, and the queue drops the entry as stalled after its second try. '
+                + 'Raise the ceiling above one exchange to buy anything, or keep it here to exercise the stall '
+                + 'path deliberately.',
               ...PROVIDERS_OFF_LINES,
               '',
             ].join('\n',),);
@@ -241,21 +241,21 @@ await describe({
             );
             expect(run.stderr,).toBe(
               'corpus-pass: 1 artifact in this directory records no readable pipeline:\n'
-              + '  tabby\n'
-              + '\n'
-              + 'Each one is an entry that has SILENTLY CEASED TO EXIST. The scheduler\n'
-              + 'counts every .json name as settled, so it will never be retried, and\n'
-              + 'the pool filter excludes an artifact of unknown generation, so it is\n'
-              + 'absent from every rate. Nothing else reports the gap.\n'
-              + '\n'
-              + 'Deleting the file is the whole remedy: the next pass re-runs that\n'
-              + 'entry from scratch.\n'
-              + '\n'
-              + 'It is no longer ROUTINE maintenance, and it used to be. Artifacts are\n'
-              + 'written to a temporary name and renamed once the entry completes, so a\n'
-              + 'pass killed at its hard cap leaves a .partial rather than half a\n'
-              + '.json. Reaching here now means a legacy artifact from before that, a\n'
-              + 'concurrent writer, a permission fault, or storage trouble.\n',
+                + '  tabby\n'
+                + '\n'
+                + 'Each one is an entry that has SILENTLY CEASED TO EXIST. The scheduler\n'
+                + 'counts every .json name as settled, so it will never be retried, and\n'
+                + 'the pool filter excludes an artifact of unknown generation, so it is\n'
+                + 'absent from every rate. Nothing else reports the gap.\n'
+                + '\n'
+                + 'Deleting the file is the whole remedy: the next pass re-runs that\n'
+                + 'entry from scratch.\n'
+                + '\n'
+                + 'It is no longer ROUTINE maintenance, and it used to be. Artifacts are\n'
+                + 'written to a temporary name and renamed once the entry completes, so a\n'
+                + 'pass killed at its hard cap leaves a .partial rather than half a\n'
+                + '.json. Reaching here now means a legacy artifact from before that, a\n'
+                + 'concurrent writer, a permission fault, or storage trouble.\n',
             );
           },
         },),

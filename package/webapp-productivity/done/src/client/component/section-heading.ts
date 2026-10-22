@@ -115,7 +115,7 @@ class SectionHeading extends HTMLElement {
       ?.addEventListener(
       'click',
       this.#toggle,
-    );
+      );
   }
 
   /**
@@ -213,7 +213,7 @@ class SectionHeading extends HTMLElement {
         class: 'content',
         children: [h({ tag: 'slot', },),],
       },),
-    );
+      );
   }
 }
 

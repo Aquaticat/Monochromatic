@@ -72,8 +72,8 @@ export async function capCensusPassRunReading(
   })();
   if (!head.split('\n',)
     .some(function opensRun(line,): boolean {
-    return line.startsWith(PASS_RUN_MARKER,);
-  },))
+      return line.startsWith(PASS_RUN_MARKER,);
+    },))
     return 'not-a-pass-run';
   return readCapLog({
     lines: (await readFile(

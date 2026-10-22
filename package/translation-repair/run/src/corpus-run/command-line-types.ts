@@ -81,29 +81,29 @@ export type CommandLineSpec<
   Valued extends string = string,
   Listed extends string = string,
   Switch extends string = string,
-> = {
+  > = {
   /**
    Flags written once with a value, each mapped to what the value is, as the
    usage line names it.
    */
-  readonly valued: Readonly<Record<Valued, string>>;
+    readonly valued: Readonly<Record<Valued, string>>;
 
   /**
    Flags that may be written any number of times, each with a value.
    */
-  readonly repeatable: Readonly<Record<Listed, string>>;
+    readonly repeatable: Readonly<Record<Listed, string>>;
 
   /**
    Flags written once with no value, each mapped to `true`, so a table
    naming the switches a command reads must name every one of them.
    */
-  readonly switches: Readonly<Record<Switch, true>>;
+    readonly switches: Readonly<Record<Switch, true>>;
 
   /**
    What the command reads after its flags.
    */
-  readonly positionals: PositionalSpec;
-};
+    readonly positionals: PositionalSpec;
+  };
 
 /**
  A command line read against what its command declares, offering only the

@@ -835,7 +835,7 @@ await describe({
         it({
           name:
             'BUYS NOTHING where the two lanes left the same wording, which is most of most documents: a '
-            + 'contest between two identical candidates has no question to put',
+              + 'contest between two identical candidates has no question to put',
           fn: async () => {
             /**
              Two slices both lanes agree on.
@@ -1013,9 +1013,9 @@ await describe({
             expect(rig.slices
               .at(0,)
               ?.verdict,).toEqual({
-              kind: 'lane-won',
-              lane: 'translate',
-            },);
+                kind: 'lane-won',
+                lane: 'translate',
+              },);
           },
         },),
         it({
@@ -1129,9 +1129,9 @@ await describe({
               .map(function nameSlice(slice,): number {
                 return slice.sliceIndex;
               },),).toEqual([
-              0,
-              1,
-            ],);
+                0,
+                1,
+              ],);
           },
         },),
         it({
@@ -1550,7 +1550,7 @@ await describe({
         it({
           name:
             'REFUSES TO PERSIST an unheard roster, because a provider down for one night is not a property '
-            + 'of the question and caching it would freeze that night into every later resume',
+              + 'of the question and caching it would freeze that night into every later resume',
           fn: async () => {
             /**
              One contested slice nobody answered.
@@ -1573,7 +1573,7 @@ await describe({
         it({
           name:
             'RESUMES a slice off the cache without calling anything, and does not write back what it just '
-            + 'read: a re-persisted resume is a write per slice per run for nothing',
+              + 'read: a re-persisted resume is a write per slice per run for nothing',
           fn: async () => {
             /**
              Ballots an earlier run bought, under the key this run derives.
@@ -1640,9 +1640,9 @@ await describe({
             expect(rig.slices
               .at(0,)
               ?.verdict,).toEqual({
-              kind: 'lane-won',
-              lane: 'repair',
-            },);
+                kind: 'lane-won',
+                lane: 'repair',
+              },);
           },
         },),
 

@@ -208,8 +208,8 @@ export async function runCriticStage(
    */
   const reports = gather.voices
     .map(function toReport(voice,) {
-    return voice.value;
-  },);
+      return voice.value;
+    },);
 
   /**
    Critics reporting a critical non-translation before anchoring;
@@ -218,9 +218,9 @@ export async function runCriticStage(
   const nonTranslationVotes = reports.filter(function votesNonTranslation(report,) {
     return report.issues
       .some(function isCriticalNonTranslation(issue,) {
-      return (issue.category === 'accuracy/non-translation')
-        && (issue.severity === 'critical');
-    },);
+        return (issue.category === 'accuracy/non-translation')
+          && (issue.severity === 'critical');
+      },);
   },)
     .length;
 
@@ -247,29 +247,29 @@ export async function runCriticStage(
     /**
      Report this critic returned.
      */
-    const report = voice.value;
-    return report.issues
-      .flatMap(function resolveOne(wire,): readonly IssueClaim[] {
+      const report = voice.value;
+      return report.issues
+        .flatMap(function resolveOne(wire,): readonly IssueClaim[] {
       /**
        Resolution of this wire issue.
        */
-      const resolution = resolveCriticIssue({
-        wire,
-        documents,
+          const resolution = resolveCriticIssue({
+            wire,
+            documents,
         // The quotes are read in the translation as the sheet showed it, cut against the same originals.
-        original,
-      },);
-      if (!resolution.resolved) {
-        findings.push(resolution.reason,);
-        return [];
-      }
-      emissions.push({
-        claimId: computeIssueClaimId({ claim: resolution.claim, },),
-        modelId: voice.modelId,
-      },);
-      return [resolution.claim,];
+            original,
+          },);
+          if (!resolution.resolved) {
+            findings.push(resolution.reason,);
+            return [];
+          }
+          emissions.push({
+            claimId: computeIssueClaimId({ claim: resolution.claim, },),
+            modelId: voice.modelId,
+          },);
+          return [resolution.claim,];
+        },);
     },);
-  },);
 
   l.info(
     `critic stage: ${String(reports.length,)}/${String(criticModelIds.length,)} heard, ${
@@ -295,8 +295,8 @@ export async function runCriticStage(
     heardCritics: reports.length,
     heardCriticIds: textsInCodePointOrder({ texts: gather.voices
       .map(function toModelId(voice,) {
-      return voice.modelId;
-    },), },),
+        return voice.modelId;
+      },), },),
     claimAttributions: collectClaimAttributions({ emissions, },),
     findings,
   };

@@ -143,5 +143,5 @@ export function capitalizeWh(wh: string,): string {
   return wh.charAt(0,)
     .toUpperCase()
     + wh
-    .slice(1,);
+      .slice(1,);
 }

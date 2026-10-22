@@ -176,39 +176,39 @@ export function suppressionRules(options: {
     /**
      Comment text without leading whitespace.
      */
-    const text = comment.value
-      .trim();
+      const text = comment.value
+        .trim();
 
-    if (text.startsWith(NEXT_LINE_DIRECTIVE,)) {
+      if (text.startsWith(NEXT_LINE_DIRECTIVE,)) {
       /**
        Families and reason after the next-line keyword.
        */
-      const tail = parseDirectiveTail(text.slice(NEXT_LINE_DIRECTIVE.length,),);
-      return [{
-        line: positionAt({
-          table: options.table,
-          offset: comment.start,
-        },)
-          .line
-          + 1,
-        families: tail.families,
-        reason: tail.reason,
-      },];
-    }
+        const tail = parseDirectiveTail(text.slice(NEXT_LINE_DIRECTIVE.length,),);
+        return [{
+          line: positionAt({
+            table: options.table,
+            offset: comment.start,
+          },)
+            .line
+            + 1,
+          families: tail.families,
+          reason: tail.reason,
+        },];
+      }
 
-    if (text.startsWith(FILE_DIRECTIVE,)) {
+      if (text.startsWith(FILE_DIRECTIVE,)) {
       /**
        Families and reason after the file-level keyword.
        */
-      const tail = parseDirectiveTail(text.slice(FILE_DIRECTIVE.length,),);
-      return [{
-        families: tail.families,
-        reason: tail.reason,
-      },];
-    }
+        const tail = parseDirectiveTail(text.slice(FILE_DIRECTIVE.length,),);
+        return [{
+          families: tail.families,
+          reason: tail.reason,
+        },];
+      }
 
-    return [];
-  },);
+      return [];
+    },);
 }
 
 /**
@@ -233,13 +233,13 @@ export function matchingSuppressions(options: {
 },): readonly SuppressionRule[] {
   return options.rules
     .filter(function matches(rule,): boolean {
-    if ((rule.line !== undefined) && (rule.line !== options.line))
-      return false;
+      if ((rule.line !== undefined) && (rule.line !== options.line))
+        return false;
 
-    return (rule.families
-      .size
-      === 0)
-      || rule.families
-      .has(options.operator,);
-  },);
+      return (rule.families
+        .size
+        === 0)
+        || rule.families
+          .has(options.operator,);
+    },);
 }

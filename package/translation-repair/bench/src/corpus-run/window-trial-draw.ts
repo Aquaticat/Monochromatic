@@ -249,8 +249,8 @@ export function controlSlices(
       return ((position % stride) === offset);
     },)
     .slice(
-      0,
-      wanted,
+    0,
+    wanted,
     )
     .map(function toSlice(sliceIndex,): TrialSlice {
       return {

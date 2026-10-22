@@ -194,8 +194,8 @@ await describe({
             },);
             expect(String(refusal,),).toBe(
               'ConsistencyInvariantError: unreachable: the text around the slices of the page holds 2 pieces for 2 slices, '
-              + 'and it must hold one more piece than there are slices: the text before the first, between each two and after '
-              + 'the last',
+                + 'and it must hold one more piece than there are slices: the text before the first, between each two and after '
+                + 'the last',
             );
           },
         },),
@@ -333,9 +333,9 @@ await describe({
             },);
             expect(refused,).toEqual([
               'ConsistencyInvariantError: unreachable: the page English handed to the proof ends at 14 and the slice spans 10 '
-              + 'to 19 in it, so the slice does not lie inside its page',
+                + 'to 19 in it, so the slice does not lie inside its page',
               'ConsistencyInvariantError: unreachable: the page English handed to the proof ends at 25 and the slice spans -1 '
-              + 'to 8 in it, so the slice does not lie inside its page',
+                + 'to 8 in it, so the slice does not lie inside its page',
             ],);
           },
         },),
@@ -357,7 +357,7 @@ await describe({
             },);
             expect(String(raised,),)
               .toBe(
-                'ConsistencyInvariantError: unreachable: the page English handed to the proof ends at 27 and the slice spans 16 '
+              'ConsistencyInvariantError: unreachable: the page English handed to the proof ends at 27 and the slice spans 16 '
                 + 'to 29 in it, so the slice does not lie inside its page',
               );
           },

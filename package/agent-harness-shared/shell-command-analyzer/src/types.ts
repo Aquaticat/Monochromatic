@@ -46,16 +46,16 @@ type ShellCommandContext = {
      */
     readonly kind: 'executed';
   }
-  | {
+    | {
     /**
      Command is stored in a function body and runs only if that function is called.
      */
-    readonly kind: 'functionDefinition';
+      readonly kind: 'functionDefinition';
     /**
      Function name whose body contains the command.
      */
-    readonly functionName: string;
-  }
+      readonly functionName: string;
+    }
 );
 
 //endregion Command context
@@ -95,9 +95,9 @@ type ShellEnvAssignment = {
  */
 type ShellRedirectKind =
   | 'file'
-  | 'fileDescriptor'
-  | 'heredoc'
-  | 'hereString';
+    | 'fileDescriptor'
+    | 'heredoc'
+    | 'hereString';
 
 /**
  Parsed redirect attached to a command or compound command.

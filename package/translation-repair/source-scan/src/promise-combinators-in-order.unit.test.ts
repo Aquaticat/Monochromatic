@@ -280,9 +280,9 @@ const NAMELESS_CLASS = '<class>';
  */
 type Reason =
   | 'cannot-reject'
-  | 'catches-own'
-  | 'settled-in-input-order'
-  | 'shared-abort';
+    | 'catches-own'
+    | 'settled-in-input-order'
+    | 'shared-abort';
 
 /**
  What a listed reason rests on: a name the call must still be made with,
@@ -296,13 +296,13 @@ type Reason =
  */
 type Anchor =
   | string
-  | {
+    | {
     /**
      Name the handler of a `try` whose block holds the call must hold, where
      what the reason rests on is what that catch does with a rejection.
      */
-    readonly inHandler: string;
-  };
+      readonly inHandler: string;
+    };
 
 /**
  One call the scan excuses.
@@ -445,10 +445,10 @@ type MemberKey =
     readonly kind: 'named';
     readonly name: string;
   }
-  | {
-    readonly kind: 'computed';
-    readonly key: TreeNode;
-  };
+    | {
+      readonly kind: 'computed';
+      readonly key: TreeNode;
+    };
 
 /**
  Code before a call that an anchor may stand in: a statement, or a loop's head.
@@ -516,8 +516,8 @@ function placeOf({ file, node, }: { readonly file: SourceText; readonly node: Tr
    */
   const lines = file.text
     .slice(
-      0,
-      node.start,
+    0,
+    node.start,
     )
     .split('\n',)
     .length;
@@ -1665,8 +1665,8 @@ function siblingsOf({ node, parent, }: { readonly node: TreeNode; readonly paren
         listed: true,
         before: list
           .slice(
-            0,
-            at,
+          0,
+          at,
           )
           .toReversed(),
         after: list.slice(at + 1,),

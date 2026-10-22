@@ -281,40 +281,40 @@ export function subdivideSealedChunkPair(
     unplacedTargetIds: grouped.unplacedTargetIds,
     slices: grouped.runs
       .map(function toSlice(
-      run,
-      sliceOffset,
-    ): ChunkPair {
+        run,
+        sliceOffset,
+      ): ChunkPair {
       /**
        Original side, built the same way whichever kind of run this is.
        */
-      const source = runToChunk({
-        run: run.sourceRun,
-        documentText: sourceText,
-        sliceIndex: baseIndex + sliceOffset,
-      },);
+        const source = runToChunk({
+          run: run.sourceRun,
+          documentText: sourceText,
+          sliceIndex: baseIndex + sliceOffset,
+        },);
 
       // Block-scale insertion: a run of originals nothing rendered gets a PLACE on
       // the translation side rather than blocks, so the lane can write there.
       // `runToChunk` would throw on the empty run this used to be handed,
       // which is why the fold this replaces existed at all.
-      if (run.kind === 'insertion')
+        if (run.kind === 'insertion')
+          return {
+            source,
+            target: makeInsertionChunk({
+              sliceIndex: baseIndex + sliceOffset,
+              offset: run.targetOffset,
+            },),
+          };
+
         return {
           source,
-          target: makeInsertionChunk({
+          target: runToChunk({
+            run: run.targetRun,
+            documentText: targetText,
             sliceIndex: baseIndex + sliceOffset,
-            offset: run.targetOffset,
           },),
         };
-
-      return {
-        source,
-        target: runToChunk({
-          run: run.targetRun,
-          documentText: targetText,
-          sliceIndex: baseIndex + sliceOffset,
-        },),
-      };
-    },),
+      },),
   };
 }
 

@@ -126,14 +126,14 @@ export function directEffectSummary({
       parameter,
       parameterIndex,
     ): void {
-    seedParameterSlots({
-      project,
-      parameter,
-      parameterIndex,
-      table,
-      bindingOriginBySymbolId,
+      seedParameterSlots({
+        project,
+        parameter,
+        parameterIndex,
+        table,
+        bindingOriginBySymbolId,
+      },);
     },);
-  },);
   /* A default initializer naming an earlier parameter makes the two aliases. Omitting the
    * argument, or passing `undefined`, means a write through the later name reaches the
    * earlier parameter's value, so both indexes have to answer for it. Registered after
@@ -395,18 +395,18 @@ export function directEffectSummary({
   }
   summary.directMutated
     .forEach(function seed(index,): void {
-    summary.mutated
-      .add(index,);
-  },);
+      summary.mutated
+        .add(index,);
+    },);
   summary.directInvoked
     .forEach(function seedInvocation(index,): void {
-    summary.invoked
-      .add(index,);
-  },);
+      summary.invoked
+        .add(index,);
+    },);
   summary.directOpaque
     .forEach(function seedOpacity(index,): void {
-    summary.opaque
-      .add(index,);
-  },);
+      summary.opaque
+        .add(index,);
+    },);
   return summary;
 }

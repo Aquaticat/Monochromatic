@@ -205,8 +205,8 @@ export async function validateEntry({
        */
       const shown = entry.onlyShowIn
         .some(function matchDesktop(d,) {
-        return desktops.includes(d.toLowerCase(),);
-      },);
+          return desktops.includes(d.toLowerCase(),);
+        },);
       if (!shown) {
         l.debug(`${entryId}: OnlyShowIn does not match current desktops`,);
         return NO_TERMINAL;
@@ -220,8 +220,8 @@ export async function validateEntry({
        */
       const hidden = entry.notShowIn
         .some(function matchDesktop(d,) {
-        return desktops.includes(d.toLowerCase(),);
-      },);
+          return desktops.includes(d.toLowerCase(),);
+        },);
       if (hidden) {
         l.debug(`${entryId}: NotShowIn matches current desktop`,);
         return NO_TERMINAL;
@@ -234,7 +234,7 @@ export async function validateEntry({
     .length
     > 0)
     && (!await executableExists({ name: entry.tryExec, },)))
-  {
+    {
     l.debug(`${entryId}: TryExec '${entry.tryExec}' not found`,);
     return NO_TERMINAL;
   }

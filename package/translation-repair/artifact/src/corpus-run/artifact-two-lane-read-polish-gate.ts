@@ -204,8 +204,8 @@ export function parsePolishGate(
   const ships = (record.ships === 'polished')
     ? 'polished' as const
     : (record.ships === 'base')
-    ? 'base' as const
-    : undefined;
+      ? 'base' as const
+      : undefined;
   if (ships === undefined) {
     throw new ArtifactParseError({
       path: `${path}.ships`,

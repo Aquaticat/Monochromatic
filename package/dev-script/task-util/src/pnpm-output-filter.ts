@@ -82,7 +82,7 @@ export function isAllowedCycleWarning(line: string,): boolean {
   const afterPrefix = line.slice(
     line.indexOf(CYCLE_WARNING_PREFIX,)
       + CYCLE_WARNING_PREFIX
-      .length,
+        .length,
   );
   /**
    Comma-separated cycle members extracted from the warning suffix.
@@ -94,24 +94,24 @@ export function isAllowedCycleWarning(line: string,): boolean {
     /**
      Whitespace-trimmed cycle entry; rejected outright when empty so a stray comma cannot pass the check.
      */
-    const trimmed = rawPath.trim();
-    if (trimmed.length
-      === 0)
-      return false;
+      const trimmed = rawPath.trim();
+      if (trimmed.length
+        === 0)
+        return false;
     // Strip everything up to and including the first `package/` occurrence
     // to normalize absolute paths from any monorepo root location.
     /**
      Position of the first `package/` segment; `-1` means the entry is not a workspace package path.
      */
-    const packagesIndex = trimmed.indexOf('package/',);
-    if (packagesIndex === (-1))
-      return false;
+      const packagesIndex = trimmed.indexOf('package/',);
+      if (packagesIndex === (-1))
+        return false;
     /**
      Repository-relative package path, normalised so the allow-list is independent of the monorepo's absolute location.
      */
-    const relativePath = trimmed.slice(packagesIndex,);
-    return ALLOWED_CYCLE_PACKAGES.has(relativePath,);
-  },);
+      const relativePath = trimmed.slice(packagesIndex,);
+      return ALLOWED_CYCLE_PACKAGES.has(relativePath,);
+    },);
 }
 
 /**

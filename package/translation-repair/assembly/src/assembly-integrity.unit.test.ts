@@ -826,8 +826,8 @@ await describe({
               '[^Note].',
             )
               .replace(
-                '[^1]:',
-                '[^note]:',
+              '[^1]:',
+              '[^note]:',
               );
 
             /**

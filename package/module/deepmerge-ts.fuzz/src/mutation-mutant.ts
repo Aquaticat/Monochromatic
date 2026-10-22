@@ -250,18 +250,18 @@ export function offsetOf(
    */
   const lineStart = lines
     .slice(
-      0,
-      position.line - 1,
+    0,
+    position.line - 1,
     )
     .reduce(
-      function addLine(
-        sum,
-        line,
-      ) {
+    function addLine(
+      sum,
+      line,
+    ) {
       return sum + line.length
         + 1;
     },
-      0,
+    0,
     );
   return (lineStart + position.column) - 1;
 }

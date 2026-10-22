@@ -32,9 +32,9 @@ import type {
  */
 export type SyntheticVendorFamily =
   | 'zai'
-  | 'qwen'
-  | 'moonshot'
-  | 'openai';
+    | 'qwen'
+    | 'moonshot'
+    | 'openai';
 
 /**
  Route a Bedrock model answers on, measured per model.
@@ -74,12 +74,12 @@ export type SeatHold =
    No producer calibration has measured its writing: no translator or
    consolidation seat.
    */
-  | 'writer-unmeasured'
+    | 'writer-unmeasured'
   /**
    No transcription has been measured: no picture-reader seat although a
    provider reports image input.
    */
-  | 'reader-unmeasured'
+    | 'reader-unmeasured'
   /**
    OpenRouter's listing reports image input for it, and no transcription has
    been measured through that route, so a picture is not sent there. The
@@ -88,43 +88,43 @@ export type SeatHold =
    (`bench`) passing its two clauses on a keyed run; no card carries it since
    `gemma-4-26b-a4b-it` passed on 2026-10-21.
    */
-  | 'openrouter-pictures-unmeasured'
+    | 'openrouter-pictures-unmeasured'
   /**
    A producer calibration measured it out of the translator seat.
    */
-  | 'translator-dropped'
+    | 'translator-dropped'
   /**
    Out of every nine-wide seat (critic, panel, judge) for wall clock or by
    the owner's decision.
    */
-  | 'wide-seat-dropped'
+    | 'wide-seat-dropped'
   /**
    Out of the roster-wide rounds after the lanes (contest, slate, gate).
    */
-  | 'late-judge-dropped'
+    | 'late-judge-dropped'
   /**
    OpenRouter serves it and the run does not buy it there, on cost.
    */
-  | 'openrouter-withheld'
+    | 'openrouter-withheld'
   /**
    OpenRouter stopped serving it for this run on 2026-09-09; named so the
    seat accounting can say so rather than infer it from an absent row.
    */
-  | 'openrouter-dropped'
+    | 'openrouter-dropped'
   /**
    Synthetic serves it and the run does not route it there: measured slower
    there than on another provider serving the same model.
    */
-  | 'synthetic-withheld'
+    | 'synthetic-withheld'
   /**
    Too slow in the select seats alone while Hyper serves it.
    */
-  | 'hyper-slow-select'
+    | 'hyper-slow-select'
   /**
    Out of every seat by the owner's decision, the card kept for the catalogs
    and the unit fixture: the seats go, the identity stays typed.
    */
-  | 'owner-culled';
+    | 'owner-culled';
 
 /**
  Completion cap for a model whose own calls were never measured: the pooled

@@ -71,7 +71,7 @@ process.once(
   function reportSpawns(): void {
     process.stderr
       .write(
-        `[observe-native-api-spawn] started ${String(spawns.started,)} native spawns, failed ${String(spawns.failed,)}\n`,
+      `[observe-native-api-spawn] started ${String(spawns.started,)} native spawns, failed ${String(spawns.failed,)}\n`,
       );
   },
 );

@@ -104,12 +104,12 @@ function descend({
   readonly root: BuildTable;
   readonly path: AbsolutePath;
 },): BuildContainer {
-    return path
-      .slice(
-        0,
-        -1,
-      )
-      .reduce<BuildContainer>(
+  return path
+    .slice(
+    0,
+    -1,
+    )
+    .reduce<BuildContainer>(
         /**
          Descends one path segment and creates missing child container.
          
@@ -123,32 +123,32 @@ function descend({
          
          @mutates current - Stores newly created child container when path prefix is absent.
          */
-        function step(
-          current,
-          seg,
-          index,
-        ) {
+    function step(
+      current,
+      seg,
+      index,
+    ) {
           /**
            Existing child at this step, if the prefix was already built.
            */
-          const existing = Array.isArray(current,)
-            ? (((typeof seg) === 'number') ? current[seg] : undefined)
-            : (((typeof seg) === 'string') ? current[seg] : undefined);
+      const existing = Array.isArray(current,)
+        ? (((typeof seg) === 'number') ? current[seg] : undefined)
+        : (((typeof seg) === 'string') ? current[seg] : undefined);
           /**
            Child to descend into, created to match the next segment's kind.
            */
-          const child: BuildNode = existing ?? (((typeof path[index + 1]) === 'number') ? [] : {});
-          if (existing === undefined) {
-            if (Array.isArray(current,)) {
-              if ((typeof seg) === 'number') current[seg] = child;
-            }
-            else if ((typeof seg) === 'string') current[seg] = child;
-          }
-          if (isLeaf(child,))
-            throw new Error('conformance decode: path descends through a scalar',);
-          return child;
-        },
-      root,
+      const child: BuildNode = existing ?? (((typeof path[index + 1]) === 'number') ? [] : {});
+      if (existing === undefined) {
+        if (Array.isArray(current,)) {
+          if ((typeof seg) === 'number') current[seg] = child;
+        }
+        else if ((typeof seg) === 'string') current[seg] = child;
+      }
+      if (isLeaf(child,))
+        throw new Error('conformance decode: path descends through a scalar',);
+      return child;
+    },
+    root,
     );
 }
 
@@ -176,24 +176,24 @@ function addKeyValue({
     /**
      Tagged value to place, computed before navigation.
      */
-    const value = contentToTagged({ node: content, },);
+  const value = contentToTagged({ node: content, },);
     /**
      Container holding the final segment.
      */
-    const parent = descend({
-      root,
-      path,
-    },);
+  const parent = descend({
+    root,
+    path,
+  },);
     /**
      Final path segment.
      */
-    const last = path.at(-1,) ?? '';
-    if (Array.isArray(parent,)) {
-      if ((typeof last) === 'number') parent[last] = value;
-      return;
-    }
-    if ((typeof last) === 'string') parent[last] = value;
+  const last = path.at(-1,) ?? '';
+  if (Array.isArray(parent,)) {
+    if ((typeof last) === 'number') parent[last] = value;
+    return;
   }
+  if ((typeof last) === 'string') parent[last] = value;
+}
 
   /**
    Ensure an empty table exists at `resolvedKey`, then insert its entries.
@@ -221,27 +221,27 @@ function addTable(
     /**
      Container holding the table's final segment.
      */
-    const parent = descend({
-      root,
-      path: resolvedKey,
-    },);
+  const parent = descend({
+    root,
+    path: resolvedKey,
+  },);
     /**
      Final segment naming the table within its parent.
      */
-    const last = resolvedKey.at(-1,) ?? '';
-    if (Array.isArray(parent,)) {
-      if (((typeof last) === 'number') && (parent[last] === undefined)) parent[last] = {};
-    }
-    else if (((typeof last) === 'string') && (parent[last] === undefined)) parent[last] = {};
-    for (const entry of entries)
-      addKeyValue({
-        root,
-        path: [
-          ...resolvedKey,
-          ...keyPath({ key: entry.key, },),
-        ],
-        content: entry.value,
-      },);
+  const last = resolvedKey.at(-1,) ?? '';
+  if (Array.isArray(parent,)) {
+    if (((typeof last) === 'number') && (parent[last] === undefined)) parent[last] = {};
+  }
+  else if (((typeof last) === 'string') && (parent[last] === undefined)) parent[last] = {};
+  for (const entry of entries)
+    addKeyValue({
+      root,
+      path: [
+        ...resolvedKey,
+        ...keyPath({ key: entry.key, },),
+      ],
+      content: entry.value,
+    },);
 }
 
 //endregion Document builder

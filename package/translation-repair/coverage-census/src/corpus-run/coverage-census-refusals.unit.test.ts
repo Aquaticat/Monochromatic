@@ -85,7 +85,7 @@ await describe({
         expect(process.exitCode,).toBe(REFUSED_AS_STATED,);
         expect(printed.lines,).toEqual([
           `coverage-census: baseline ${path} does not read as a census this command wrote: it could not be read `
-          + '(ENOENT)',
+            + '(ENOENT)',
         ],);
       },
     },),

@@ -156,9 +156,9 @@ export async function readPassVisualEvidence(
       /**
        Evidence from this entry, never a failed reading carried forward as support.
        */
-      const prior = priorReadings.get(reference.assetName,);
-      return (prior !== undefined) && (prior.kind !== 'unavailable');
-    },);
+        const prior = priorReadings.get(reference.assetName,);
+        return (prior !== undefined) && (prior.kind !== 'unavailable');
+      },);
   },);
   if (alreadyRead) {
     l.debug(`${readPassVisualEvidence.name}: every picture already has entry evidence`,);

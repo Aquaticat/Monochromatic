@@ -37,39 +37,39 @@ export type MvmArgs =
     serverType?: string;
     location?: string;
   }
-  | {
-    cmd: 'shell';
-    name: string;
-  }
-  | { cmd: 'list'; }
-  | { cmd: 'update'; }
-  | {
-    cmd: 'destroy';
-    name?: string;
-    all: boolean;
-  }
-  | {
-    cmd: 'exec';
-    name: string;
-    command: string;
-  }
-  | {
-    cmd: 'run';
-    command: string;
-    from?: string;
-  }
-  | {
-    cmd: 'push';
-    name: string;
-    hostPath: string;
-    guestPath: string;
-  }
-  | {
-    cmd: 'pull';
-    name: string;
-    guestPath: string;
-    hostPath: string;
-  };
+    | {
+      cmd: 'shell';
+      name: string;
+    }
+    | { cmd: 'list'; }
+    | { cmd: 'update'; }
+    | {
+      cmd: 'destroy';
+      name?: string;
+      all: boolean;
+    }
+    | {
+      cmd: 'exec';
+      name: string;
+      command: string;
+    }
+    | {
+      cmd: 'run';
+      command: string;
+      from?: string;
+    }
+    | {
+      cmd: 'push';
+      name: string;
+      hostPath: string;
+      guestPath: string;
+    }
+    | {
+      cmd: 'pull';
+      name: string;
+      guestPath: string;
+      hostPath: string;
+    };
 
 //endregion Result types
 

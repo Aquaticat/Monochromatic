@@ -149,8 +149,8 @@ function parseOwnedRoutes(
         === 0)
       || (!route.tokens
         .every(function stringToken(token,): token is string {
-        return (typeof token) === 'string';
-      },))) {
+          return (typeof token) === 'string';
+        },))) {
       throw new BypassStateError(`Invalid application-bypass route state: ${path}`,);
     }
     routes.push({

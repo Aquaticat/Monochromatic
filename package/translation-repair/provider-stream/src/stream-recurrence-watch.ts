@@ -262,8 +262,8 @@ export function watchForRecurrence(): RecurrenceDetector {
        */
       const earlier = state.buffer
         .slice(
-          0,
-          bufferLength - TAIL_CHARS,
+        0,
+        bufferLength - TAIL_CHARS,
         );
 
       state.consecutiveHits = earlier.includes(tail,) ? (state.consecutiveHits + 1) : 0;

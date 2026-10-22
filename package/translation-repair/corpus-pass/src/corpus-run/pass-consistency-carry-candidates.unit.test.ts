@@ -172,7 +172,7 @@ await describe({
               [],
               [
                 'Your translation is 3 blocks (heading (level 2), paragraph, paragraph) and the PAGE AS IT STANDS is 2. '
-                + 'Add a block only to carry something the ORIGINAL has and the text you are replacing left out.',
+                  + 'Add a block only to carry something the ORIGINAL has and the text you are replacing left out.',
               ],
             ],);
           },
@@ -307,7 +307,7 @@ await describe({
               ],
               findings: [
                 'consistency-candidate-refused (hyper-cat): the paragraph no longer holds the words of another place that '
-                + 'must stay as they are',
+                  + 'must stay as they are',
               ],
             },);
           },
@@ -345,14 +345,14 @@ await describe({
                 seats: ['bedrock-cat', 'vision-cat',],
                 findings: [
                   'consistency-candidate-refused (hyper-cat): the paragraph no longer holds, at the edge of the block, the '
-                  + 'words of a place that runs over it and must stay as they are',
+                    + 'words of a place that runs over it and must stay as they are',
                 ],
               },
               {
                 seats: ['hyper-cat', 'bedrock-cat',],
                 findings: [
                   'consistency-candidate-refused (vision-cat): the paragraph no longer holds, at the edge of the block, the '
-                  + 'words of a place that runs over it and must stay as they are',
+                    + 'words of a place that runs over it and must stay as they are',
                 ],
               },
             ],);

@@ -156,10 +156,10 @@ export function buildAdvisorContext(
    */
   const maxContextChars = options.maxContextChars
     ?? options
-    .config
-    .maxContextChars
+      .config
+      .maxContextChars
     ?? Number
-    .MAX_SAFE_INTEGER;
+      .MAX_SAFE_INTEGER;
   /**
    Truncated serialized conversation and metadata.
    */
@@ -242,8 +242,8 @@ export function maxContextCharsForAdvisorModel(
     options.model
       .contextWindow
       - options
-      .config
-      .maxAdvisorOutputTokens
+        .config
+        .maxAdvisorOutputTokens
       - reservedInputTokens,
   );
   /**

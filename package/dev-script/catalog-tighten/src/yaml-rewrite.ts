@@ -68,8 +68,8 @@ function lineKey(line: string,): string | typeof NO_KEY {
    */
   const rawKey = trimmed
     .slice(
-      0,
-      colonIdx,
+    0,
+    colonIdx,
     )
     .trimEnd();
   /**

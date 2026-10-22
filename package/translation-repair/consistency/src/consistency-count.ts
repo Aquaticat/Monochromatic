@@ -287,7 +287,7 @@ function locatedRendering(
     .slice(
     found.start,
     spanEnd,
-  );
+    );
   if (carriesOrCutsMarkup({ text: span, },)) {
     return {
       kind: 'unlocated',

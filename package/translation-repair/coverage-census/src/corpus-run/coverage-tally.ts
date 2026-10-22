@@ -368,8 +368,8 @@ function stretchesOf(
    */
   const firsts = pieces.offsets
     .slice(
-      0,
-      -1,
+    0,
+    -1,
     )
     .flatMap(function runStart(
       _offset,
@@ -517,19 +517,19 @@ export function createCoverageTally(): CoverageTally {
       pieces.set(
         bundle,
         {
-        offsets,
-        indexOf: new Map(offsets.map(function located(
-          offset,
-          index,
-        ) {
-          return [
+          offsets,
+          indexOf: new Map(offsets.map(function located(
             offset,
             index,
-          ] as const;
-        },),),
-        total: new Float64Array(offsets.length,),
-        covered: new Uint8Array(offsets.length,),
-      },
+          ) {
+            return [
+              offset,
+              index,
+            ] as const;
+          },),),
+          total: new Float64Array(offsets.length,),
+          covered: new Uint8Array(offsets.length,),
+        },
       );
     }
   }
@@ -607,9 +607,9 @@ export function createCoverageTally(): CoverageTally {
           );
           bundlePieces.covered
             .fill(
-              1,
-              from,
-              to,
+            1,
+            from,
+            to,
             );
         }
         for (const [piece, count,] of painted.entries())

@@ -98,7 +98,7 @@ await describe({
               `SENSITIVITY envelope/nap list=withheld issue=prior expected=damage-omission heard=${
                 String(asked.length,)
               }/${String(RUN_MODELS.checkerModelIds.length,)} corroborated=0 removal=0 contradicted=0 `
-              + `unanchored=0 preExisting=0 noneFound=${String(asked.length,)} uncertain=0`,
+                + `unanchored=0 preExisting=0 noneFound=${String(asked.length,)} uncertain=0`,
               ...sensitivityNotes({ production: 'withheld', },),
             ],);
           },

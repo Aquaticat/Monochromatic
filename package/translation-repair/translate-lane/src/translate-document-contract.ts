@@ -477,18 +477,18 @@ export type TranslateDisposition =
    Stage wanted to replace the incumbent and the alignment guard refused,
    because the source cannot account for the text being replaced.
    */
-  | 'refused-alignment'
+    | 'refused-alignment'
   /**
    Stage wanted to replace the incumbent and the quote guard refused, because
    the replacement carried fewer quoted passages than the archive does.
    */
-  | 'refused-quote-loss'
+    | 'refused-quote-loss'
   /**
    Stage wanted to replace the incumbent and the declared-name guard refused,
    because the replacement dropped a name the archive text carried and the
    documents declare.
    */
-  | 'refused-declared-name';
+    | 'refused-declared-name';
 
 /**
  Fields every settled translate slice record carries, whatever the driver
@@ -579,24 +579,24 @@ export type TranslateSliceRecord = TranslateSliceRecordFields & (
      */
     readonly droppedDeclaredNames: readonly string[];
   }
-  | {
+    | {
     /**
      The quote guard refused the replacement.
      */
-    readonly disposition: 'refused-quote-loss';
+      readonly disposition: 'refused-quote-loss';
 
     /**
      Quoted passages the guard compared, which are why it was refused.
      */
-    readonly quotedPassages: QuotedPassages;
-  }
-  | {
+      readonly quotedPassages: QuotedPassages;
+    }
+    | {
     /**
      What the driver did with the stage result, where neither a declared name
      nor a quoted passage refused it.
      */
-    readonly disposition: Exclude<TranslateDisposition, 'refused-declared-name' | 'refused-quote-loss'>;
-  }
+      readonly disposition: Exclude<TranslateDisposition, 'refused-declared-name' | 'refused-quote-loss'>;
+    }
 );
 
 /**

@@ -55,16 +55,16 @@ async function readEntry(
     readonly artifact: ReturnType<typeof parseSettledTwoLaneArtifact>;
     readonly pageText: string;
   }
-  | {
-    readonly kind: 'refused';
+    | {
+      readonly kind: 'refused';
 
     /**
      Class that refused this entry, named rather than quoted: a refusal
      message quotes the passage it disagrees about.
      */
-    readonly refusedBy: string;
-  }
-> {
+      readonly refusedBy: string;
+    }
+  > {
   try {
     return {
       kind: 'read',
@@ -262,7 +262,7 @@ export async function judgePublishedEntry(
     agreement,
     lines: [
       `${entryId}: wordings=${String(wordings,)} silent=${String(silentSlices,)} `
-      + `${weighedAs({ weight, },)} missing=${String(missing.length,)} ${
+        + `${weighedAs({ weight, },)} missing=${String(missing.length,)} ${
         consistencyColumnOf({
           groups: read.artifact
             .consistency
@@ -283,7 +283,7 @@ export async function judgePublishedEntry(
               many: 'characters',
             },)
           } off what the `
-          + 'archive plus every slice change comes to. Text no slice decided on was lost or added',
+            + 'archive plus every slice change comes to. Text no slice decided on was lost or added',
         ]
         : []),
       ...missing.map(function missingLine(gone,): string {
@@ -299,7 +299,7 @@ export async function judgePublishedEntry(
       ...(((agreement === 'disagreed') && (settledBy !== thisBuild))
         ? [
           `  READ BY ANOTHER BUILD: settled by ${settledBy}, read by ${thisBuild}; a pass `
-          + 'started here on this build rewrites the page to this reading',
+            + 'started here on this build rewrites the page to this reading',
         ]
         : []),
     ],

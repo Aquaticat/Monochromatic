@@ -37,10 +37,10 @@
  */
 type MemberOutcome =
   | { readonly kind: 'fulfilled'; }
-  | {
-    readonly kind: 'failure';
-    readonly error: unknown;
-  };
+    | {
+      readonly kind: 'failure';
+      readonly error: unknown;
+    };
 
 /**
  Awaits members that already run side by side, handing back every value in

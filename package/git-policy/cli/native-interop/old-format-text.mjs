@@ -26,8 +26,8 @@ export function excerpt({
   return text
     .trim()
     .slice(
-      0,
-      limit,
+    0,
+    limit,
     );
 }
 

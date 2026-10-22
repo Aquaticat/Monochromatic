@@ -111,7 +111,7 @@ export function reachableQuorum(
   const benchQuorum = rosterQuorumSize({ rosterSize: benchSize, },);
   if (
     lastSeatGrace
-    && (reachable === benchQuorum)
+      && (reachable === benchQuorum)
       && (benchQuorum > MIN_STAGE_VOICES)
   ) {
     return {

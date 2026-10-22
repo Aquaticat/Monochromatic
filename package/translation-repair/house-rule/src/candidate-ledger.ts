@@ -104,12 +104,12 @@ function launchMoment(): string {
   return new Date()
     .toISOString()
     .replaceAll(
-      ':',
-      '-',
+    ':',
+    '-',
     )
     .replaceAll(
-      '.',
-      '-',
+    '.',
+    '-',
     );
 }
 
@@ -143,8 +143,8 @@ export function ledgerFileName(
    */
   const padded = String(ordinal,)
     .padStart(
-      ORDINAL_DIGITS,
-      '0',
+    ORDINAL_DIGITS,
+    '0',
     );
   return `${launch}-${padded}${LEDGER_SUFFIX}`;
 }
@@ -195,17 +195,17 @@ export type ContestLedger =
      */
     readonly kind: 'unkept';
   }
-  | {
+    | {
     /**
      The launch named a runs directory, under which every contest is written.
      */
-    readonly kind: 'kept';
+      readonly kind: 'kept';
 
     /**
      Runs directory the launch named.
      */
-    readonly runsDir: string;
-  };
+      readonly runsDir: string;
+    };
 
 /**
  Reads where a launch keeps its judged contests from the environment an entry

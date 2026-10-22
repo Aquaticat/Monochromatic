@@ -110,11 +110,11 @@ function timedResponse(
       async start(controller,): Promise<void> {
         guard.signal
           .addEventListener(
-            'abort',
-            function tearDown() {
-              controller.error(guard.signal.reason,);
-            },
-            { once: true, },
+          'abort',
+          function tearDown() {
+            controller.error(guard.signal.reason,);
+          },
+          { once: true, },
           );
         for (const chunk of chunks) {
           if (guard.signal.aborted)

@@ -67,10 +67,10 @@ function setAtPath({
      */
     const matchIndex = node.entries
       .findLastIndex(function matchesKey(entry,): boolean {
-      return entry.key
-        .value
-        === segment;
-    },);
+        return entry.key
+          .value
+          === segment;
+      },);
     if (matchIndex !== (-1)) {
       /**
        Matched entry retained while its value is rebuilt.
@@ -80,16 +80,16 @@ function setAtPath({
         ...node,
         entries: node.entries
           .with(
-            matchIndex,
-            {
-              key: entry.key,
-              value: setAtPath({
-                node: entry.value,
-                path,
-                pathIndex: pathIndex + 1,
-                newNode,
-              },),
-            },
+          matchIndex,
+          {
+            key: entry.key,
+            value: setAtPath({
+              node: entry.value,
+              path,
+              pathIndex: pathIndex + 1,
+              newNode,
+            },),
+          },
           ),
       };
     }
@@ -111,7 +111,7 @@ function setAtPath({
       throw new JsoncPathNotFoundError({ path, },);
     if ((segment >= 0) && (segment
       < node.elements
-      .length)) {
+        .length)) {
       /**
        Matched element rebuilt while siblings retain identity.
        */
@@ -120,19 +120,19 @@ function setAtPath({
         ...node,
         elements: node.elements
           .with(
-            segment,
-            setAtPath({
-              node: element,
-              path,
-              pathIndex: pathIndex + 1,
-              newNode,
-            },),
+          segment,
+          setAtPath({
+            node: element,
+            path,
+            pathIndex: pathIndex + 1,
+            newNode,
+          },),
           ),
       };
     }
     if ((segment
       === node.elements
-      .length) && (pathIndex === (path.length - 1)))
+        .length) && (pathIndex === (path.length - 1)))
       return {
         ...node,
         elements: [
@@ -242,20 +242,20 @@ function deleteAtPath({
         ...node,
         entries: node.entries
           .filter(function keepOther(entry,): boolean {
-          return entry.key
-            .value
-            !== segment;
-        },),
+            return entry.key
+              .value
+              !== segment;
+          },),
       };
     /**
      Index of the last entry matching the key, or -1 when absent.
      */
     const matchIndex = node.entries
       .findLastIndex(function matchesKey(entry,): boolean {
-      return entry.key
-        .value
-        === segment;
-    },);
+        return entry.key
+          .value
+          === segment;
+      },);
     if (matchIndex === (-1))
       throw new JsoncPathNotFoundError({ path, },);
     /**
@@ -266,15 +266,15 @@ function deleteAtPath({
       ...node,
       entries: node.entries
         .with(
-          matchIndex,
-          {
-            key: entry.key,
-            value: deleteAtPath({
-              node: entry.value,
-              path,
-              pathIndex: pathIndex + 1,
-            },),
-          },
+        matchIndex,
+        {
+          key: entry.key,
+          value: deleteAtPath({
+            node: entry.value,
+            path,
+            pathIndex: pathIndex + 1,
+          },),
+        },
         ),
     };
   }
@@ -289,12 +289,12 @@ function deleteAtPath({
             _element: JsoncValue,
             index: number,
           ): boolean {
-          return index !== segment;
-        },),
+            return index !== segment;
+          },),
       };
     if ((segment < 0) || (segment
       >= node.elements
-      .length))
+        .length))
       throw new JsoncPathNotFoundError({ path, },);
     /**
      Matched element rebuilt while siblings retain identity.
@@ -304,12 +304,12 @@ function deleteAtPath({
       ...node,
       elements: node.elements
         .with(
-          segment,
-          deleteAtPath({
-            node: element,
-            path,
-            pathIndex: pathIndex + 1,
-          },),
+        segment,
+        deleteAtPath({
+          node: element,
+          path,
+          pathIndex: pathIndex + 1,
+        },),
         ),
     };
   }

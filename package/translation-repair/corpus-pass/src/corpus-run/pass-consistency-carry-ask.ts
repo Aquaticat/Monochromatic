@@ -211,13 +211,13 @@ export async function askCarryWriters(
           },),),
       ]
         .reduce(
-          function summed(
-            total: number,
-            paragraph,
-          ): number {
-            return total + codePointLength({ text: paragraph, },);
-          },
-          0,
+        function summed(
+          total: number,
+          paragraph,
+        ): number {
+          return total + codePointLength({ text: paragraph, },);
+        },
+        0,
         ),
     },),
     responseFormat: TRANSLATE_RESPONSE_FORMAT,

@@ -230,40 +230,40 @@ function scriptedChunkClient(
       const scripted: unknown = (stage === 'critic_report')
         ? { issues: script.claims, }
         : (stage === 'panel_ballot')
-        ? {
-          verdicts: Array.from(
-            { length: countMarker({ request, marker: '\nCLAIM ', },), },
-            function toVerdict(_unused, index,) {
-              return {
-                claim: index + 1,
-                reason: 'The quotes show it.',
-                vote: script.panelVote,
-              };
-            },
-          ),
-        }
-        : (stage === 'editor_report')
-        ? { edits: script.edits, }
-        : (stage === 'resolution_report')
-        ? { checks: script.checks(countMarker({ request, marker: '\nISSUE ', },),), }
-        : (stage === 'introduced_defect_report')
-        ? {
-          checks: Array.from(
-            { length: countMarker({ request, marker: ' REGION ', },), },
-            function toCheck(_unused, index,) {
-              return {
-                region: index + 1,
-                verdict: 'no-introduced-defect-found',
-                category: '',
-                severity: '',
-                evidence: '',
-                omittedText: '',
-                verdictReason: '',
-              };
-            },
-          ),
-        }
-        : undefined;
+          ? {
+            verdicts: Array.from(
+              { length: countMarker({ request, marker: '\nCLAIM ', },), },
+              function toVerdict(_unused, index,) {
+                return {
+                  claim: index + 1,
+                  reason: 'The quotes show it.',
+                  vote: script.panelVote,
+                };
+              },
+            ),
+          }
+          : (stage === 'editor_report')
+            ? { edits: script.edits, }
+            : (stage === 'resolution_report')
+              ? { checks: script.checks(countMarker({ request, marker: '\nISSUE ', },),), }
+              : (stage === 'introduced_defect_report')
+                ? {
+                  checks: Array.from(
+                    { length: countMarker({ request, marker: ' REGION ', },), },
+                    function toCheck(_unused, index,) {
+                      return {
+                        region: index + 1,
+                        verdict: 'no-introduced-defect-found',
+                        category: '',
+                        severity: '',
+                        evidence: '',
+                        omittedText: '',
+                        verdictReason: '',
+                      };
+                    },
+                  ),
+                }
+                : undefined;
       if (scripted === undefined)
         throw new Error(`this chunk has no script for stage ${stage}`,);
       if (!request.validate(scripted,))
@@ -431,9 +431,9 @@ await describe({
               .filter(function isRefusalCount(finding,): boolean {
                 return finding.startsWith('editor-rejected ',);
               },),).toEqual([
-              'editor-rejected preservation-lost-markup (1)',
-              'editor-rejected unchanged-region (1)',
-            ],);
+                'editor-rejected preservation-lost-markup (1)',
+                'editor-rejected unchanged-region (1)',
+              ],);
           },
         },),
         it({

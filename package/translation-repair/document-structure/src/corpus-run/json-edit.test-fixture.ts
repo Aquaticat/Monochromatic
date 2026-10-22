@@ -47,44 +47,44 @@ export type JsonEdit =
      */
     readonly value: unknown;
   }
-  | {
+    | {
     /**
      Takes the key at the path out of its object.
      */
-    readonly kind: 'remove';
+      readonly kind: 'remove';
 
     /**
      Where the key sits.
      */
-    readonly path: JsonPath;
-  }
-  | {
+      readonly path: JsonPath;
+    }
+    | {
     /**
      Adds a value to the end of the array at the path.
      */
-    readonly kind: 'append';
+      readonly kind: 'append';
 
     /**
      Where the array sits.
      */
-    readonly path: JsonPath;
+      readonly path: JsonPath;
 
     /**
      The value.
      */
-    readonly value: unknown;
-  }
-  | {
+      readonly value: unknown;
+    }
+    | {
     /**
      Takes the last value off the array at the path.
      */
-    readonly kind: 'dropLast';
+      readonly kind: 'dropLast';
 
     /**
      Where the array sits.
      */
-    readonly path: JsonPath;
-  };
+      readonly path: JsonPath;
+    };
 
 /**
  Builds an edit that puts a value at a path.
@@ -326,8 +326,8 @@ export function editedBy({
        */
       const parent = edit.path
         .slice(
-          0,
-          -1,
+        0,
+        -1,
         );
       if ((edit.kind === 'append') || (edit.kind === 'dropLast')) {
         return changedAt({

@@ -95,8 +95,8 @@ function identityKey({
   const minted = `#${registry.next}`;
   registry.identities
     .set(
-      value,
-      minted,
+    value,
+    minted,
     );
   registry.next += 1;
   return minted;
@@ -346,8 +346,8 @@ function objectKey({
       return Object.prototype
         .propertyIsEnumerable
         .call(
-          value,
-          key,
+        value,
+        key,
         );
     },)
     .map(function keyOfMember(key,) {

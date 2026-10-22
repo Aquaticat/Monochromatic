@@ -435,8 +435,8 @@ export function correctPinyinTones(
     text: rebuilt.text,
     changed: rebuilt.applied
       .map(function describe(rewrite,): string {
-      return `"${rewrite.from}" to "${rewrite.to}" for ${rewrite.character}`;
-    },),
+        return `"${rewrite.from}" to "${rewrite.to}" for ${rewrite.character}`;
+      },),
   };
 }
 

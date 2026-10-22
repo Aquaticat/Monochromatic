@@ -169,10 +169,10 @@ export function bufferToBase64(buffer: ArrayBuffer,): string {
    */
   const binary = Array
     .from(
-      bytes,
-      function byteToChar(byte,) {
-        return String.fromCodePoint(byte,);
-      },
+    bytes,
+    function byteToChar(byte,) {
+      return String.fromCodePoint(byte,);
+    },
     )
     .join('',);
   return btoa(binary,);

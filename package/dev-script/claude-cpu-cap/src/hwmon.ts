@@ -166,8 +166,8 @@ export async function readEnergyLabels(entries: readonly HwmonEntry[],): Promise
     return entry.name === 'zenergy';
   },)
     .map(function readDir(entry,) {
-    return labelsOf(entry.dir,);
-  },),);
+      return labelsOf(entry.dir,);
+    },),);
   return new Map(perDir.flat(),);
 }
 
@@ -208,8 +208,8 @@ export function coreEnergyFilesFrom(labels: ReadonlyMap<string, string>,): reado
       _unused,
       core,
     ): string {
-    return byCore.get(core,) ?? ABSENT;
-  },
+      return byCore.get(core,) ?? ABSENT;
+    },
   );
 }
 

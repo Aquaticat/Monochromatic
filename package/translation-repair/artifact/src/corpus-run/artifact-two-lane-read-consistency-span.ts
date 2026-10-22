@@ -286,7 +286,7 @@ export function assertSpanGroupCoherent(
   },);
   if (voices.length
     !== group.verdict
-    .usable) {
+      .usable) {
     throw new ArtifactParseError({
       path: `${path}.verdict.usable`,
       reason: 'the number of ballots that can be counted against the places',
@@ -297,16 +297,16 @@ export function assertSpanGroupCoherent(
    */
   const renderings = group.occurrences
     .map(function agrees(
-    occurrence,
-    at,
-  ): ConsistencyRendering {
-    return assertSpanRenderingAgrees({
-      group,
       occurrence,
-      path: `${path}.occurrences[${String(at,)}]`,
-      generation,
+      at,
+    ): ConsistencyRendering {
+      return assertSpanRenderingAgrees({
+        group,
+        occurrence,
+        path: `${path}.occurrences[${String(at,)}]`,
+        generation,
+      },);
     },);
-  },);
   if (!sameWinner({
     left: expectedWinnerOf({
       group,

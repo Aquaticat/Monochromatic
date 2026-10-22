@@ -71,8 +71,8 @@ await describe({
     it({
       name:
         'writes the scorecard under the scorecard directory, named by the start stamp and the tip, and '
-        + 'returns the path, with no colon in the name since an instant rendered verbatim is not a file name '
-        + 'everywhere',
+          + 'returns the path, with no colon in the name since an instant rendered verbatim is not a file name '
+          + 'everywhere',
       fn: async () => {
         /**
          Fresh runs directory.
@@ -108,7 +108,7 @@ await describe({
     it({
       name:
         'KEEPS BOTH RUNS when the benchmark is run twice, which is the loss this module exists to stop: '
-        + 'a twelve-hour run used to replace the previous one under a fixed name with no trace',
+          + 'a twelve-hour run used to replace the previous one under a fixed name with no trace',
       fn: async () => {
         /**
          Fresh runs directory.
@@ -166,7 +166,7 @@ await describe({
     it({
       name:
         'SEPARATES two runs of different builds started in the same instant, since the question a rerun '
-        + 'answers is whether a change moved the rate, and collapsing before and after into one file answers nothing',
+          + 'answers is whether a change moved the rate, and collapsing before and after into one file answers nothing',
       fn: async () => {
         /**
          Fresh runs directory.

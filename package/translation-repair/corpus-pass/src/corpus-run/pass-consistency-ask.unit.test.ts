@@ -602,7 +602,7 @@ await describe({
               return line.includes('could not be stored',);
             },),).toEqual([
               'warn [askConsistencyBench] [gatherThroughCache] page-consistency: the answer could not be stored (refused by Error); '
-              + 'it is counted all the same',
+                + 'it is counted all the same',
             ],);
           },
         },),

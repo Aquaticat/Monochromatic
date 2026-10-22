@@ -161,10 +161,10 @@ async function executeBodyRequest({
     inputPath,
     JSON.stringify(request.body,),
     {
-    encoding: 'utf8',
-    mode: 0o600,
-    flag: 'wx',
-  },
+      encoding: 'utf8',
+      mode: 0o600,
+      flag: 'wx',
+    },
   );
   // Await before async disposal so request file remains present through child completion.
   return await executeApi({

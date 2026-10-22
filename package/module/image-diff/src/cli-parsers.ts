@@ -33,12 +33,12 @@ export type ImageDiffArgs =
     provider?: Provider;
     model?: EmbeddingModel;
   }
-  | {
-    cmd: 'embed';
-    image: string;
-    provider?: Provider;
-    model?: EmbeddingModel;
-  };
+    | {
+      cmd: 'embed';
+      image: string;
+      provider?: Provider;
+      model?: EmbeddingModel;
+    };
 
 //endregion Result types
 

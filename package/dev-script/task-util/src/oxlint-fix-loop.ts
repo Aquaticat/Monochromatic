@@ -98,10 +98,10 @@ export type OxlintRunResult = {
  */
 export type FixLoopStopReason =
   | 'clean'
-  | 'stable'
-  | 'cycle'
-  | 'execution-error'
-  | 'cap';
+    | 'stable'
+    | 'cycle'
+    | 'execution-error'
+    | 'cap';
 
 /**
  Outcome of the fix loop: the final oracle run plus how and when it stopped.

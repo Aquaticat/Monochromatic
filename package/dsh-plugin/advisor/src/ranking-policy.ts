@@ -52,49 +52,49 @@ export function dshRankDefaultCandidates(
     /**
      Context-window comparison, widest first.
      */
-    const windowDelta = b
-      .scopedModel
-      .model
-      .contextWindow
-      - a
+      const windowDelta = b
         .scopedModel
-      .model
-      .contextWindow;
-    if (windowDelta
-      !== 0)
-      return windowDelta;
+        .model
+        .contextWindow
+        - a
+          .scopedModel
+          .model
+          .contextWindow;
+      if (windowDelta
+        !== 0)
+        return windowDelta;
     /**
      Name comparison, lexicographic ascending.
      */
-    const nameOrder = a
-      .scopedModel
-      .model
-      .name
-      .localeCompare(b
+      const nameOrder = a
         .scopedModel
         .model
-        .name,);
-    if (nameOrder
-      !== 0)
-      return nameOrder;
-    return a
-      .scopedModel
-      .canonicalSlug
-      .localeCompare(b
+        .name
+        .localeCompare(b
+          .scopedModel
+          .model
+          .name,);
+      if (nameOrder
+        !== 0)
+        return nameOrder;
+      return a
         .scopedModel
-        .canonicalSlug,);
-  },)
+        .canonicalSlug
+        .localeCompare(b
+          .scopedModel
+          .canonicalSlug,);
+    },)
     .map(function toScopedModel(candidate,) {
-    return candidate.scopedModel;
-  },);
+      return candidate.scopedModel;
+    },);
   /**
    Observed context windows in ranked order, recorded as decision evidence.
    */
   const windowEvidence = ranked
     .map(function toWindowEvidence(entry,) {
-    return `${entry.canonicalSlug}=${String(entry.model
+      return `${entry.canonicalSlug}=${String(entry.model
       .contextWindow,)}`;
-  },)
+    },)
     .join(', ',);
   return {
     ranked,

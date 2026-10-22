@@ -188,22 +188,22 @@ await describe({
 
             expect(rendered,).toEqual([
               'NOTE compare each accuracy region\'s three lines. list=none against list=withheld differ only '
-              + 'in the deterministic screen, which dismisses a claim restating the prior issue; '
-              + 'list=withheld against list=rendered differ only in the prompt, and rendered is the prompt '
-              + 'production abandoned because it silenced the stage. A region that reports damage with '
-              + 'list=none and goes quiet with list=withheld is one whose claims merely restate the prior '
-              + 'issue; one that goes quiet only with list=rendered is one the rendered prompt silences, '
-              + 'and its zeros would mean nothing in a run that rendered. Production sends list=rendered.',
+                + 'in the deterministic screen, which dismisses a claim restating the prior issue; '
+                + 'list=withheld against list=rendered differ only in the prompt, and rendered is the prompt '
+                + 'production abandoned because it silenced the stage. A region that reports damage with '
+                + 'list=none and goes quiet with list=withheld is one whose claims merely restate the prior '
+                + 'issue; one that goes quiet only with list=rendered is one the rendered prompt silences, '
+                + 'and its zeros would mean nothing in a run that rendered. Production sends list=rendered.',
               'NOTE the refinement/* lines test the naturalness framing under production\'s list. Its '
-              + 'control is refinement/clean: a claim there means the probe reads mere rephrasing as '
-              + 'damage, which would flag every refinement the lane ever ships.',
+                + 'control is refinement/clean: a claim there means the probe reads mere rephrasing as '
+                + 'damage, which would flag every refinement the lane ever ships.',
               'NOTE the deletion/* lines vary what the issue list SAYS, under both lists that carry one. '
-              + 'With list=rendered the prober reads the label; with list=withheld only the screen does. '
-              + 'deletion/unlabelled and deletion/mislabelled delete identical source-supported text; a '
-              + 'gap between them under list=rendered measures how far a false accepted issue can talk '
-              + 'the probe out of seeing real damage, and under list=withheld how far the screen dismisses '
-              + 'a real claim as restating it. deletion/licensed is the negative control, where silence '
-              + 'is correct.',
+                + 'With list=rendered the prober reads the label; with list=withheld only the screen does. '
+                + 'deletion/unlabelled and deletion/mislabelled delete identical source-supported text; a '
+                + 'gap between them under list=rendered measures how far a false accepted issue can talk '
+                + 'the probe out of seeing real damage, and under list=withheld how far the screen dismisses '
+                + 'a real claim as restating it. deletion/licensed is the negative control, where silence '
+                + 'is correct.',
             ],);
             expect(withheld[0]?.endsWith('Production sends list=withheld.',),).toBe(true,);
             expect(withheld.slice(1,),).toEqual(rendered.slice(1,),);

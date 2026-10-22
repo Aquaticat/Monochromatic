@@ -90,16 +90,16 @@ type NodeLinker = 'isolated' | 'hoisted' | 'pnp';
  */
 type Mutation =
   | 'none'
-  | 'stale-orphan'
-  | 'remove-lockfile'
-  | 'remove-workspace-yaml'
-  | 'remove-all-modules'
-  | 'remove-some-modules'
-  | 'orphan-store-copy'
-  | 'remove-virtual-store'
-  | 'remove-store'
-  | 'remove-pnp-cjs'
-  | 'remove-pnpm';
+    | 'stale-orphan'
+    | 'remove-lockfile'
+    | 'remove-workspace-yaml'
+    | 'remove-all-modules'
+    | 'remove-some-modules'
+    | 'orphan-store-copy'
+    | 'remove-virtual-store'
+    | 'remove-store'
+    | 'remove-pnp-cjs'
+    | 'remove-pnpm';
 
 /**
  Expected tool behaviour for a scenario.

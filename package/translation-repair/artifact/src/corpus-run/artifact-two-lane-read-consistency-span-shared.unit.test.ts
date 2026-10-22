@@ -237,11 +237,11 @@ await describe({
             },),).toBeUndefined();
             expect(refusalOf({ carriedTo, partialUnits: false, },),).toBe(
               'ArtifactParseError: artifact parse failed at cat.consistency.groups[0].carries: expected no splice candidate '
-              + 'for OCCURRENCE 2, whose words code cannot move: the frame or the chosen frame has no slot to move them by, '
-              + 'a single mark beside the words differs between the two places, the quotation marks inside the words '
-              + 'differ, the two hold a different number of block breaks (a blank line, or a line break the Markdown parse '
-              + 'reads as a new block), or a single mark stands beside the words and the chosen words end on that side in '
-              + 'another class of character than the receiving words, a letter or a digit against anything else.',
+                + 'for OCCURRENCE 2, whose words code cannot move: the frame or the chosen frame has no slot to move them by, '
+                + 'a single mark beside the words differs between the two places, the quotation marks inside the words '
+                + 'differ, the two hold a different number of block breaks (a blank line, or a line break the Markdown parse '
+                + 'reads as a new block), or a single mark stands beside the words and the chosen words end on that side in '
+                + 'another class of character than the receiving words, a letter or a digit against anything else.',
             );
           },
         },),
@@ -308,7 +308,7 @@ await describe({
               },),
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.consistency.groups[0].occurrences[2].outcome: '
-              + 'expected replaced, kept-floor, overlapped, for a carry that decided as recorded.',
+                + 'expected replaced, kept-floor, overlapped, for a carry that decided as recorded.',
             ],);
           },
         },),
@@ -372,8 +372,8 @@ await describe({
               partialUnits: true,
             },),).toBe(
               'ArtifactParseError: artifact parse failed at cat.consistency.groups[0].occurrences[2].keptBecause: expected a '
-              + 'reason OCCURRENCE 2 was left as it was for, one of gain-pairs, gain-unproves, gain-floors, gain-overlaps, '
-              + 'gain-refused, edge-second-mark, edge-reading-changes, edge-reference-mark; the record has none.',
+                + 'reason OCCURRENCE 2 was left as it was for, one of gain-pairs, gain-unproves, gain-floors, gain-overlaps, '
+                + 'gain-refused, edge-second-mark, edge-reading-changes, edge-reference-mark; the record has none.',
             );
             expect(assertCarriedOutcomes({
               carriedTo: [carriedAs({ label: 'OCCURRENCE 2', plan: 'replace', carry: ALONE, outcome: 'kept-current', },),],
@@ -430,7 +430,7 @@ await describe({
               },
             },),).toBe(
               'ArtifactParseError: artifact parse failed at cat.consistency.groups[0].occurrences[2].outcome: '
-              + 'expected replaced, kept-floor, overlapped, for a carry that decided as recorded.',
+                + 'expected replaced, kept-floor, overlapped, for a carry that decided as recorded.',
             );
           },
         },),

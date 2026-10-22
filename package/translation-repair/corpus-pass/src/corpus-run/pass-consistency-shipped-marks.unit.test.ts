@@ -984,8 +984,8 @@ function unmarked({ text, }: { readonly text: string; },): string {
       '',
     )
       .replaceAll(
-        `${digit}⟧`,
-        '',
+      `${digit}⟧`,
+      '',
       );
   }, text,);
 }

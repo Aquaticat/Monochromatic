@@ -183,7 +183,7 @@ await describe({
               read: { kind: 'unread', },
               warned: [
                 '[process-identity] no process identity on this system (refused by Error); a runs lock is '
-                + 'judged by process id alone',
+                  + 'judged by process id alone',
               ],
             },);
           },

@@ -120,8 +120,8 @@ function parseAutofillResponse(raw: string,): AutofillResult {
     const tags = Array.isArray(parsed.tags,)
       ? parsed.tags
         .filter(function isString(tag,): tag is string {
-        return (typeof tag) === 'string';
-      },)
+          return (typeof tag) === 'string';
+        },)
       : [];
 
     /**
@@ -130,8 +130,8 @@ function parseAutofillResponse(raw: string,): AutofillResult {
     const locations = Array.isArray(parsed.locations,)
       ? parsed.locations
         .filter(function isString(location,): location is string {
-        return (typeof location) === 'string';
-      },)
+          return (typeof location) === 'string';
+        },)
       : [];
 
     /* oxlint-disable typescript/no-unsafe-type-assertion -- validated by Set.has check */
@@ -139,8 +139,8 @@ function parseAutofillResponse(raw: string,): AutofillResult {
      Priority field, included only when the response carries a recognised value.
      */
     const priorityField: { priority?: TaskPriority; } = ((typeof parsed.priority) === 'string')
-        && VALID_PRIORITIES
-      .has(parsed.priority,)
+      && VALID_PRIORITIES
+        .has(parsed.priority,)
       ? { priority: parsed.priority as TaskPriority, }
       : {};
     /* oxlint-enable typescript/no-unsafe-type-assertion */
@@ -150,8 +150,8 @@ function parseAutofillResponse(raw: string,): AutofillResult {
      Complexity field, included only when the response carries a recognised value.
      */
     const complexityField: { complexity?: TaskComplexity; } = ((typeof parsed.complexity) === 'string')
-        && VALID_COMPLEXITIES
-      .has(parsed.complexity,)
+      && VALID_COMPLEXITIES
+        .has(parsed.complexity,)
       ? { complexity: parsed.complexity as TaskComplexity, }
       : {};
     /* oxlint-enable typescript/no-unsafe-type-assertion */
@@ -188,7 +188,7 @@ async function listAllLocations(): Promise<string[]> {
    */
   const rows = (await (await db
     .prepare(
-      'SELECT DISTINCT loc.value AS loc FROM tasks, json_each(tasks.locations) AS loc ORDER BY loc.value ASC',
+    'SELECT DISTINCT loc.value AS loc FROM tasks, json_each(tasks.locations) AS loc ORDER BY loc.value ASC',
     ))
     .all()) as { readonly loc: string; }[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */

@@ -185,13 +185,13 @@ export type ImageReading = {
    */
   readonly reason:
     | 'model-does-not-read-images'
-    | 'unknown-media-type'
-    | 'too-large-for-transport'
-    | 'too-short'
-    | 'reads-as-refusal'
-    | 'reports-no-text'
-    | 'empty-reply'
-    | 'reader-failed';
+      | 'unknown-media-type'
+      | 'too-large-for-transport'
+      | 'too-short'
+      | 'reads-as-refusal'
+      | 'reports-no-text'
+      | 'empty-reply'
+      | 'reader-failed';
 
   /**
    Set on an `empty-reply` whose finish reason was `length`: the completion

@@ -205,8 +205,8 @@ await describe({
         expect(messages,).toEqual([
           // THE ENTRY'S info.yml IS READ WITH THE PAIR, and this clone's entry has none.
           `ENTRY INFO entry=CatEntry1: no info.yml at the pin (corpus read failed for ${clone.commitSha}:people/CatEntry1/info.yml `
-          + '(missing-object); the commit has no such path: check the path, or pin a commit that has it.), '
-          + 'so no death is recorded for it',
+            + '(missing-object); the commit has no such path: check the path, or pin a commit that has it.), '
+            + 'so no death is recorded for it',
           'publish: wrote 2 slices into a page of 81 characters',
           'REPUBLISHED entry=CatEntry1 why=missing: page rewritten from its artifact',
           'republish: 1 settled page judged, 1 rewritten, 0 left',
@@ -394,8 +394,8 @@ await describe({
         ),).toBe(TARGET_DOC,);
         expect(messages,).toEqual([
           'ENTRY INFO entry=CatEntry1: The info.yml of entry CatEntry1 at the pin refused to parse at line 2 column 1 '
-          + '(BAD_INDENT); corpus metadata parses upstream, so this signals corruption. No death is recorded for the entry, and '
-          + 'it goes on as one whose info.yml records none',
+            + '(BAD_INDENT); corpus metadata parses upstream, so this signals corruption. No death is recorded for the entry, and '
+            + 'it goes on as one whose info.yml records none',
           'publish: wrote 2 slices into a page of 81 characters',
           'REPUBLISHED entry=CatEntry1 why=missing: page rewritten from its artifact',
           'republish: 1 settled page judged, 1 rewritten, 0 left',
@@ -435,8 +435,8 @@ await describe({
         // whichever ended first.
         expect(messages,).toEqual([
           `REPUBLISH LEFT entry=CatEntry1 why=missing: page left as it was; because=corpus read failed for `
-          + `${ABSENT_COMMIT}:people/CatEntry1/page.md (missing-commit); the clone holds no commit by `
-          + 'that revision: fetch it, or pin a commit the clone holds.',
+            + `${ABSENT_COMMIT}:people/CatEntry1/page.md (missing-commit); the clone holds no commit by `
+            + 'that revision: fetch it, or pin a commit the clone holds.',
           'republish: 1 settled page judged, 0 rewritten, 1 left',
         ],);
         await expect(readFile(

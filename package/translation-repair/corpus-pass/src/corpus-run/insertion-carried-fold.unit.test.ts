@@ -810,7 +810,7 @@ await describe({
             expect(shifted.findings,).toEqual([
               `${CARRIED_FOLDED_FINDING} (slice 3 into slice 2)`,
               `${CARRIED_SHIFTED_FINDING} (slice 2's own source joins slice 1: slice 2's archive span renders slice 3's `
-              + 'passage alone)',
+                + 'passage alone)',
             ],);
             expect(shifted.asides,).toEqual([],);
 
@@ -891,7 +891,7 @@ await describe({
             expect(mirrored.findings,).toEqual([
               `${CARRIED_FOLDED_FINDING} (slice 1 into slice 2)`,
               `${CARRIED_SHIFTED_FINDING} (slice 2's own source joins slice 3: slice 2's archive span renders slice 1's `
-              + 'passage alone)',
+                + 'passage alone)',
             ],);
             expect(mirrored.asides,).toEqual([],);
           },

@@ -475,26 +475,26 @@ function standingPolishClient(
           },],
         }
         : (schema === 'candidate_ballot')
-        ? {
-          best: choosingPolish ? 1 : 0,
-          assessment: choosingPolish
-            ? 'same meaning in more idiomatic English'
-            : 'no consolidation clearly improves the standing text',
-        }
-        : (schema === 'consolidation_polish_gate')
-        ? {
-          verdict: 'polished',
-          unsupported: [],
-          dropped: [],
-          assessment: 'same meaning in more idiomatic English',
-        }
-        : (schema === 'absolute_naturalness_review')
-        ? {
-          isAcceptable: true,
-          findings: [],
-          assessment: 'whole passage is publication-ready',
-        }
-        : {};
+          ? {
+            best: choosingPolish ? 1 : 0,
+            assessment: choosingPolish
+              ? 'same meaning in more idiomatic English'
+              : 'no consolidation clearly improves the standing text',
+          }
+          : (schema === 'consolidation_polish_gate')
+            ? {
+              verdict: 'polished',
+              unsupported: [],
+              dropped: [],
+              assessment: 'same meaning in more idiomatic English',
+            }
+            : (schema === 'absolute_naturalness_review')
+              ? {
+                isAcceptable: true,
+                findings: [],
+                assessment: 'whole passage is publication-ready',
+              }
+              : {};
       if (!request.validate(value,))
         throw new Error(`synthetic ${schema} reply failed validation`,);
       return {

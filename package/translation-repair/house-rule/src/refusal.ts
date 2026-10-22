@@ -76,12 +76,12 @@ export type RefusalScan =
      */
     readonly marker: string;
   }
-  | {
+    | {
     /**
      No marker fired in the opening window.
      */
-    readonly refusalShaped: false;
-  };
+      readonly refusalShaped: false;
+    };
 
 /**
  Scans one reply's opening window for refusal markers.

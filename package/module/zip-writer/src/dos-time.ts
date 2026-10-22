@@ -86,7 +86,7 @@ export function dosDateTime(date: Date,): DosDateTime {
     | ((date.getUTCMonth()
       + MONTH_OFFSET_TO_ONE_BASED) << DOS_DATE_MONTH_SHIFT)
     | date
-    .getUTCDate();
+      .getUTCDate();
   /**
    Packed DOS time word ready to write to the archive.
    */

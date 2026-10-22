@@ -198,12 +198,12 @@ export async function renderSvgOverlayToContext(
     .setAttribute(
     'width',
     String(exportWidth * scale,),
-  );
+    );
   info.clone
     .setAttribute(
     'height',
     String(exportHeight * scale,),
-  );
+    );
   /**
    Re-serialized SVG markup encoded as a data URL for Image loading
    */

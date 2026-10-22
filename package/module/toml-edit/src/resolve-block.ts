@@ -27,7 +27,7 @@ export type LocatedBlock =
     readonly kind: 'kv';
     readonly kv: KeyValueNode
   }
-  | TableSectionHit;
+    | TableSectionHit;
 
 /**
  Locate the entry block named by `path`.

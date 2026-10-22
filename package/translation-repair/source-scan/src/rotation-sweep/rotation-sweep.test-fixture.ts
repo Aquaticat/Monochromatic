@@ -263,10 +263,10 @@ type AskedRequest =
     readonly kind: 'request';
     readonly request: SweepRequest;
   }
-  | {
-    readonly kind: 'refused';
-    readonly says: string;
-  };
+    | {
+      readonly kind: 'refused';
+      readonly says: string;
+    };
 
 /**
  Reads the command line, keeping a refusal of it apart from a fault.

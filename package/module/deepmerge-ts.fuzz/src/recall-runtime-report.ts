@@ -79,8 +79,8 @@ function isDetection(value: unknown,): value is Detection {
 function testsOf(entry: Detection,): readonly string[] {
   return entry.failures
     .filter(function isTest(name,) {
-    return name.includes('] [',);
-  },);
+      return name.includes('] [',);
+    },);
 }
 
 if (import.meta.main) {

@@ -178,9 +178,9 @@ function encodeString(
 ): string {
   if (
     (existing !== undefined)
-    && (existing.node
-      .type
-      === 'TOMLValue')
+      && (existing.node
+        .type
+        === 'TOMLValue')
       && (existing.node
         .kind
         === 'string')
@@ -230,9 +230,9 @@ function encodeNumber(
 ): string {
   if (
     (existing !== undefined)
-    && (existing.node
-      .type
-      === 'TOMLValue')
+      && (existing.node
+        .type
+        === 'TOMLValue')
       && ((existing.node
         .kind
         === 'integer') || (existing.node

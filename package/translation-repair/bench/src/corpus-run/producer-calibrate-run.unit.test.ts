@@ -144,7 +144,7 @@ await describe({
               `  ${SEAT_SYNTHETIC_VISION_NO_OPENROUTER}: 0.0% (0 of 4 disinterested ballots, over 2 candidates)`,
               `  ${SEAT_HYPER_VISION}: 0.0% (0 of 4 disinterested ballots, over 2 candidates)`,
               '\nA lead smaller than its own denominator supports is not a lead.'
-              + ' Read the counts before seating anyone.',
+                + ' Read the counts before seating anyone.',
             ],);
           },
         },),
@@ -186,12 +186,12 @@ await describe({
               `  ${SEAT_HYPER_OPENROUTER_VISION_EDITOR}: 100.0% (2 of 2 disinterested ballots, over 1 candidate)`,
               `  ${SEAT_HYPER_VISION}: 0.0% (0 of 2 disinterested ballots, over 1 candidate)`,
               `  NO CANDIDATE OF THEIRS REACHED ANY SLATE: ${SEAT_SYNTHETIC_VISION_NO_OPENROUTER}, so the table covers 2 of 3 seats. `
-              + 'This seat does not record who answered, so a model that answered and was dropped before judging and a '
-              + 'provider that failed every call look alike from here; the SEAT lines at the end of this command say how '
-              + 'often each seat was asked and how many answers were usable, and the run log names the failure. Re-run '
-              + 'these seats before reading the table as a comparison of the roster.',
+                + 'This seat does not record who answered, so a model that answered and was dropped before judging and a '
+                + 'provider that failed every call look alike from here; the SEAT lines at the end of this command say how '
+                + 'often each seat was asked and how many answers were usable, and the run log names the failure. Re-run '
+                + 'these seats before reading the table as a comparison of the roster.',
               '\nA lead smaller than its own denominator supports is not a lead.'
-              + ' Read the counts before seating anyone.',
+                + ' Read the counts before seating anyone.',
             ],);
           },
         },),
@@ -253,8 +253,8 @@ await describe({
 
             expect(printed.lines
               .slice(
-                0,
-                4,
+              0,
+              4,
               ),).toEqual([
                 `CALIBRATE 2 slices, all 3 writing and all 3 judging (${CANDIDATES.join(', ',)}), at ${SCRIPTED_HEAD}`,
                 '  mittens#0: round 1 of 2',
@@ -339,8 +339,8 @@ await describe({
             expect(refusal,).toBeInstanceOf(StatedRefusalError,);
             expect(String(refusal,),).toBe(
               'StatedRefusalError: this translator roster cannot select anything: these judges could award at most 0.5 '
-              + 'to text this roster wrote, against a minimum of 2, so nothing it proposes could ever be selected. '
-              + `translators [${SEAT_HYPER_VISION}], judges [${SEAT_HYPER_VISION}]`,
+                + 'to text this roster wrote, against a minimum of 2, so nothing it proposes could ever be selected. '
+                + `translators [${SEAT_HYPER_VISION}], judges [${SEAT_HYPER_VISION}]`,
             );
             expect(asked,).toEqual({
               draws: [],
@@ -392,7 +392,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(StatedRefusalError,);
             expect(String(refusal,),).toBe(
               'StatedRefusalError: 2 slices were drawn and no round finished, so the calibration measured nothing '
-              + 'and prints no standing; the LOST lines name the error each slice was lost to',
+                + 'and prints no standing; the LOST lines name the error each slice was lost to',
             );
             expect(printed.lines,).toEqual([
               `CALIBRATE 2 slices, all 3 writing and all 3 judging (${CANDIDATES.join(', ',)}), at ${SCRIPTED_HEAD}`,
@@ -414,7 +414,7 @@ await describe({
 
             expect(String(refusal,),).toBe(
               'StatedRefusalError: 1 slice was drawn and no round finished, so the calibration measured nothing '
-              + 'and prints no standing; the LOST lines name the error each slice was lost to',
+                + 'and prints no standing; the LOST lines name the error each slice was lost to',
             );
             expect(printed.lines,).toEqual([
               `CALIBRATE 1 slice, all 3 writing and all 3 judging (${CANDIDATES.join(', ',)}), at ${SCRIPTED_HEAD}`,

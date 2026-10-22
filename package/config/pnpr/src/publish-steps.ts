@@ -243,8 +243,8 @@ export async function requestPublishToken({ audience, }: { readonly audience: st
   const response = await fetch(
     `${requestUrl}&audience=${encodeURIComponent(audience,)}`,
     {
-    headers: { authorization: `bearer ${requestToken}`, },
-  },
+      headers: { authorization: `bearer ${requestToken}`, },
+    },
   );
   /**
    Token value from GitHub, untrusted until narrowed.
@@ -340,13 +340,13 @@ export async function publishTarball(
         userconfig,
       ],
       {
-      env: {
-        ...inheritedEnvironment,
-        NODE_AUTH_TOKEN: token,
-      },
+        env: {
+          ...inheritedEnvironment,
+          NODE_AUTH_TOKEN: token,
+        },
       // Output is captured rather than inherited so the caller can recognize an `E403` refusal and retry it.
-      stdin: 'ignore',
-    },
+        stdin: 'ignore',
+      },
     );
     moduleLogger.info(result.output,);
   }

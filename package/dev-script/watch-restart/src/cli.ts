@@ -251,16 +251,16 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
     function flattenExt(raw,): string[] {
       return splitCommas(raw,);
     },
-  );
+    );
   /**
    Flattened, comma-split type list mapped to internal entity types.
    */
   const types: readonly WatchEntityType[] = args
     .type
     .flatMap(
-      function flattenType(raw,): string[] {
-        return splitCommas(raw,);
-      },
+    function flattenType(raw,): string[] {
+      return splitCommas(raw,);
+    },
     )
     .map(function mapTypeToken(token,): WatchEntityType {
       return parseTypeToken(token,);
@@ -276,8 +276,8 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
     ? undefined
     : splitCommas(args.events,)
       .map(function mapEventToken(token,): WatchEventKind {
-      return cliEventToInternal(token,);
-    },);
+        return cliEventToInternal(token,);
+      },);
   /**
    Compiled include regex list; throws here if any pattern is invalid.
    */
@@ -286,7 +286,7 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
     function mapIncludeRegex(pattern,): RegExp {
       return compileRegex(pattern,);
     },
-  );
+    );
   /**
    Compiled exclude regex list; throws here if any pattern is invalid.
    */
@@ -295,7 +295,7 @@ export function argsToOptions(args: ParsedArgs,): StartWatchRestartOptions {
     function mapExcludeRegex(pattern,): RegExp {
       return compileRegex(pattern,);
     },
-  );
+    );
   /**
    Tri-state hidden toggle; both-passed throws inside resolveBoolPair.
    */

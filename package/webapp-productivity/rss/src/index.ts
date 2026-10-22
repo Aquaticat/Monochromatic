@@ -50,7 +50,7 @@ const l = tagged({
 const memoizedGetSortedItems = await memoizeAsync({
   fn: async function fetchPipeline(): Promise<
     ReturnType<typeof getSortedItems>
-  > {
+    > {
     /**
      Inner logger tagged with this function name for traceable log lines.
      */

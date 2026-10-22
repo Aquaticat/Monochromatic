@@ -17,10 +17,10 @@ import dedent from 'string-dedent';
  */
 export type EnvLocalJsonPathFailureReason =
   | 'missing'
-  | 'not-a-file'
-  | 'not-a-directory'
-  | 'unreadable'
-  | 'unresolvable';
+    | 'not-a-file'
+    | 'not-a-directory'
+    | 'unreadable'
+    | 'unresolvable';
 
 /**
  Plain-language text for each path failure reason.
@@ -252,12 +252,12 @@ export class EnvLocalJsonSopsMissingError extends Error {
  */
 export type EnvLocalJsonDecryptFailureKind =
   | 'exit'
-  | 'signal'
-  | 'timeout'
-  | 'aborted'
-  | 'spawn'
-  | 'output-limit'
-  | 'unknown';
+    | 'signal'
+    | 'timeout'
+    | 'aborted'
+    | 'spawn'
+    | 'output-limit'
+    | 'unknown';
 
 /**
  Raised when sops cannot decrypt the store.
@@ -331,10 +331,10 @@ export class EnvLocalJsonDecryptError extends Error {
  */
 export type EnvLocalJsonShapeFailureReason =
   | 'not-json'
-  | 'not-object'
-  | 'non-string'
-  | 'blank'
-  | 'encrypted-token';
+    | 'not-object'
+    | 'non-string'
+    | 'blank'
+    | 'encrypted-token';
 
 /**
  Plain-language text for each shape failure reason.
@@ -425,14 +425,14 @@ export class EnvLocalJsonShapeError extends Error {
  */
 export type EnvLocalJsonWriteFailureReason =
   | 'invalid-key'
-  | 'blank-value'
-  | 'sops-exit'
-  | 'timeout'
-  | 'terminated'
-  | 'spawn'
-  | 'output-limit'
-  | 'permissions'
-  | 'rename';
+    | 'blank-value'
+    | 'sops-exit'
+    | 'timeout'
+    | 'terminated'
+    | 'spawn'
+    | 'output-limit'
+    | 'permissions'
+    | 'rename';
 
 /**
  Plain-language text for each write failure reason.

@@ -43,12 +43,12 @@ export type DefineChineseLocaleInput<
   Subject extends string,
   Verb extends string,
   Noun extends string,
-> = {
-  readonly labels: Readonly<Record<Label, string>>;
-  readonly subjects: Readonly<Record<Subject, SubjectEntry>>;
-  readonly nouns: Readonly<Record<Noun, NounEntry>>;
-  readonly verbs: Readonly<Record<Verb, ChineseVerbEntry>>;
-};
+  > = {
+    readonly labels: Readonly<Record<Label, string>>;
+    readonly subjects: Readonly<Record<Subject, SubjectEntry>>;
+    readonly nouns: Readonly<Record<Noun, NounEntry>>;
+    readonly verbs: Readonly<Record<Verb, ChineseVerbEntry>>;
+  };
 
 /**
  Chinese script never recases tokens; the invariant set is empty.

@@ -81,10 +81,10 @@ function switchRefusal(
     kind: 'invalid',
     findings: [
       'Your translation drops the address in the second person the ORIGINAL carries: where the ORIGINAL writes 你 '
-      + `or 您 ${times}, your translation carries no "you" and more third-person pronouns than the ORIGINAL writes `
-      + `there (${quoted}: ${String(rendered,)} against ${String(written,)}), so a pronoun stands where the address `
-      + 'stood. A pronoun the ORIGINAL writes is rendered as written where it stands: address the person the ORIGINAL '
-      + 'addresses.',
+        + `or 您 ${times}, your translation carries no "you" and more third-person pronouns than the ORIGINAL writes `
+        + `there (${quoted}: ${String(rendered,)} against ${String(written,)}), so a pronoun stands where the address `
+        + 'stood. A pronoun the ORIGINAL writes is rendered as written where it stands: address the person the ORIGINAL '
+        + 'addresses.',
     ],
   };
 }

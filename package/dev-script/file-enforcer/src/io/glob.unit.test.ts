@@ -98,7 +98,7 @@ await describe({
               },)
             )
               .toThrow(
-                'Wildcard count mismatch',
+              'Wildcard count mismatch',
               );
           },
         },),
@@ -113,7 +113,7 @@ await describe({
               },)
             )
               .toThrow(
-                'does not match pattern',
+              'does not match pattern',
               );
           },
         },),
@@ -128,7 +128,7 @@ await describe({
               },)
             )
               .toThrow(
-                'does not match pattern',
+              'does not match pattern',
               );
           },
         },),

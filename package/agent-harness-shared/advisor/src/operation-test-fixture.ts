@@ -199,7 +199,7 @@ export function operationFixture({
     const index = prepared.filter(function sameModel(model: string,): boolean {
       return model
         === input.candidate
-        .model;
+          .model;
     },)
       .length;
     prepared.push(input.candidate
@@ -304,14 +304,14 @@ export function operationFixture({
       return await runAdvisorOperation({
         candidates: Object.keys(plans,)
           .map(function candidate(model: string,) {
-          return {
-            model,
-            provider: model.split('/',)[0] ?? 'fixture',
-            contextChars: 20,
-            estimatedInputTokens: 5,
-            truncated: false,
-          };
-        },),
+            return {
+              model,
+              provider: model.split('/',)[0] ?? 'fixture',
+              contextChars: 20,
+              estimatedInputTokens: 5,
+              truncated: false,
+            };
+          },),
         startedAtMs: 0,
         deadlineAtMs: 200,
         collectionGraceMs: 30,

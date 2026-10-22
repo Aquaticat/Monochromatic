@@ -31,7 +31,7 @@ await describe({
       fn: async () => {
         expect($({ rule: '.card', decls: { display: 'flex', gap: cssRem(1,), }, },),)
           .toBe(
-            '.card{display:flex;gap:1rem}',
+          '.card{display:flex;gap:1rem}',
           );
       },
     },),
@@ -62,7 +62,7 @@ await describe({
           $({ rule: '.card > .title:first-child', decls: { 'font-weight': 'bold', }, },),
         )
           .toBe(
-            '.card > .title:first-child{font-weight:bold}',
+          '.card > .title:first-child{font-weight:bold}',
           );
       },
     },),
@@ -99,7 +99,7 @@ await describe({
           ],
         },),)
           .toBe(
-            '.btn{padding:0.5rem;&:hover{background-color:oklch(0.45 0.31 264)}&:focus-visible{outline:2px solid}}',
+          '.btn{padding:0.5rem;&:hover{background-color:oklch(0.45 0.31 264)}&:focus-visible{outline:2px solid}}',
           );
       },
     },),
@@ -213,7 +213,7 @@ await describe({
           },
         },),)
           .toBe(
-            '@property --color-fg{syntax:"<color>";inherits:true;initial-value:black}',
+          '@property --color-fg{syntax:"<color>";inherits:true;initial-value:black}',
           );
       },
     },),
@@ -229,7 +229,7 @@ await describe({
           },
         },),)
           .toBe(
-            '@font-face{font-family:"Aquaticat";src:url("aquaticat.woff2") format("woff2");font-display:swap}',
+          '@font-face{font-family:"Aquaticat";src:url("aquaticat.woff2") format("woff2");font-display:swap}',
           );
       },
     },),
@@ -284,7 +284,7 @@ await describe({
       fn: async () => {
         expect($({ at: 'namespace', params: 'url("http://www.w3.org/1999/xhtml")', },),)
           .toBe(
-            '@namespace url("http://www.w3.org/1999/xhtml");',
+          '@namespace url("http://www.w3.org/1999/xhtml");',
           );
       },
     },),
@@ -354,7 +354,7 @@ await describe({
           ],
         },),)
           .toBe(
-            '.card{display:flex;background-image:url(a);&:hover{opacity:0.8}}',
+          '.card{display:flex;background-image:url(a);&:hover{opacity:0.8}}',
           );
       },
     },),
@@ -395,7 +395,7 @@ await describe({
           children: [child, child,],
         },),)
           .toBe(
-            '.btn{display:flex;&:focus{color:var(--fg)}&:focus{color:var(--fg)}}',
+          '.btn{display:flex;&:focus{color:var(--fg)}&:focus{color:var(--fg)}}',
           );
       },
     },),
@@ -494,7 +494,7 @@ await describe({
 
         expect($({ rule: '.hero', decls: { ...flexCenter(), gap: cssRem(2,), }, },),)
           .toBe(
-            '.hero{display:flex;align-items:center;justify-content:center;gap:2rem}',
+          '.hero{display:flex;align-items:center;justify-content:center;gap:2rem}',
           );
       },
     },),
@@ -513,7 +513,7 @@ await describe({
               cursor: 'pointer', }, },),
         )
           .toBe(
-            '.btn{min-inline-size:44px;min-block-size:44px;cursor:pointer}',
+          '.btn{min-inline-size:44px;min-block-size:44px;cursor:pointer}',
           );
       },
     },),

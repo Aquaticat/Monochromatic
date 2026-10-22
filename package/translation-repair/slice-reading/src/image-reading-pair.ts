@@ -217,8 +217,8 @@ export type PairedReading = {
    */
   readonly reason:
     | 'no-reader-available'
-    | 'one-reader-only'
-    | 'readers-disagree';
+      | 'one-reader-only'
+      | 'readers-disagree';
 
   /**
    Whether this verdict rests on a reader that produced nothing for a reason

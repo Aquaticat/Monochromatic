@@ -546,9 +546,9 @@ await describe({
         expect(await failure,).toBe(reason,);
         expect(lines,).toEqual([
           'warn [mapOverlapped] cat b failed (refused by ProviderHttpError from synthetic with HTTP 429 (the provider said: "the '
-          + 'second cat is out of treats")), and the caller stopped the work',
+            + 'second cat is out of treats")), and the caller stopped the work',
           'warn [mapOverlapped] cat d failed (refused by ProviderHttpError from synthetic with HTTP 503 (the provider said: "the '
-          + 'fourth cat is napping in the sun")), and the caller stopped the work',
+            + 'fourth cat is napping in the sun")), and the caller stopped the work',
         ],);
       },
     },),
@@ -605,7 +605,7 @@ await describe({
         expect(await failure,).toBe(firstRefusal,);
         expect(lines,).toEqual([
           'warn [mapOverlapped] cat b failed (refused by ProviderHttpError from synthetic with HTTP 429 (the provider said: "the '
-          + 'second cat is out of treats")), and the caller stopped the work',
+            + 'second cat is out of treats")), and the caller stopped the work',
         ],);
       },
     },),
@@ -654,9 +654,9 @@ await describe({
         expect(await failure,).toBe(earlier,);
         expect(lines,).toEqual([
           'warn [mapOverlapped] cat b failed (refused by ProviderHttpError from synthetic with HTTP 429 (the provider said: "the '
-          + 'second cat is out of treats")), and the failure thrown is cat a\'s, which comes before it',
+            + 'second cat is out of treats")), and the failure thrown is cat a\'s, which comes before it',
           'warn [mapOverlapped] cat c failed (refused by ProviderHttpError from synthetic with HTTP 503 (the provider said: "the '
-          + 'third cat is napping in the sun")), and the failure thrown is cat a\'s, which comes before it',
+            + 'third cat is napping in the sun")), and the failure thrown is cat a\'s, which comes before it',
         ],);
       },
     },),
@@ -696,7 +696,7 @@ await describe({
         expect(await failure,).toBe(earlier,);
         expect(lines,).toEqual([
           'warn [mapOverlapped] cat b failed (refused by a thrown value that is not an Error), and the failure '
-          + 'thrown is cat a\'s, which comes before it',
+            + 'thrown is cat a\'s, which comes before it',
         ],);
       },
     },),

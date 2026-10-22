@@ -118,8 +118,8 @@ export const PAIRED_CATEGORIES = [
  */
 export const RENDERING_AUDIT_CATEGORIES: readonly (
   | typeof SOURCE_ONLY_CATEGORIES[number]
-  | typeof CANDIDATE_ONLY_CATEGORIES[number]
-  | typeof PAIRED_CATEGORIES[number]
+    | typeof CANDIDATE_ONLY_CATEGORIES[number]
+    | typeof PAIRED_CATEGORIES[number]
 )[] = [
   ...SOURCE_ONLY_CATEGORIES,
   ...CANDIDATE_ONLY_CATEGORIES,

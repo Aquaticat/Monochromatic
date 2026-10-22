@@ -287,8 +287,8 @@ export function extractAssertionExpression({
    */
   const joined = sourceLines
     .slice(
-      startIndex,
-      targetIndex + 1,
+    startIndex,
+    targetIndex + 1,
     )
     .map(function trimLine(line,) {
       return line.trim();
@@ -455,9 +455,9 @@ async function recordSiteForError({
     sites.set(
       node,
       {
-      location: `${basename(path,)}:${String(lineNumber,)}`,
-      expression,
-    },
+        location: `${basename(path,)}:${String(lineNumber,)}`,
+        expression,
+      },
     );
     return;
   }
@@ -594,12 +594,12 @@ export async function readAssertionSites(
      @mutates node - `Reflect.get` may invoke getters or proxy traps on error-like value.
      */
     function recordNode(node,) {
-    return recordSiteForError({
-      node,
-      sites,
-      readFile,
-    },);
-  },),);
+      return recordSiteForError({
+        node,
+        sites,
+        readFile,
+      },);
+    },),);
 
   return sites;
 }

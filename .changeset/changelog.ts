@@ -59,8 +59,8 @@ function commitLines(changeset: ChangesetWithCommit,): string[] {
    */
   const shortHash = changeset.commit
     .slice(
-      0,
-      SHORT_HASH_LENGTH,
+    0,
+    SHORT_HASH_LENGTH,
     );
   return [`Commit \`${shortHash}\`.`,];
 }

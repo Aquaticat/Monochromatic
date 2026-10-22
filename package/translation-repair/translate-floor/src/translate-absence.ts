@@ -41,7 +41,7 @@ export type IncumbentKind =
    Archive holds none, so there is nothing to fall back on and the slice is
    either filled by this run or left as the gap it is.
    */
-  | 'absent';
+    | 'absent';
 
 /**
  Why a slice with no incumbent could not be filled.
@@ -77,15 +77,15 @@ export type TranslateAbsenceReason =
    Every one of those ten would have been recorded as a property of the
    passage.
    */
-  | 'no-voice-heard'
+    | 'no-voice-heard'
   /**
    Judges could not settle on one candidate.
    */
-  | 'declined-indecision'
+    | 'declined-indecision'
   /**
    Judges rejected every candidate they were shown.
    */
-  | 'declined-rejection'
+    | 'declined-rejection'
   /**
    Judges declined the same slate TWICE, so the panel was asked again and
    still backed nothing.
@@ -98,7 +98,7 @@ export type TranslateAbsenceReason =
    anyway, keeping an incumbent where there is one and leaving the gap where
    there is not.
    */
-  | 'no-candidate-backed'
+    | 'no-candidate-backed'
   /**
    The floor could compare nothing written for this slice, so the stage
    asked nobody (ledger B43).
@@ -108,7 +108,7 @@ export type TranslateAbsenceReason =
    pass there, and a rendering nobody could check is not one to write into
    the page, so the gap stays until the grammar reads the passage.
    */
-  | 'unfloored';
+    | 'unfloored';
 
 /**
  Why a slice with no incumbent was left unfilled, including reasons no stage
@@ -134,7 +134,7 @@ export type UnfilledReason =
    length more likely merged that passage than dropped it, and writing it in
    would put a second rendering of it into a memorial document.
    */
-  | 'not-corroborated';
+    | 'not-corroborated';
 
 /**
  Raised when selection returned text that says nothing for a source that does.
@@ -206,7 +206,7 @@ export class BlankSelectionError extends Error {
  */
 export type RunoffBasis =
   | 'tied-at-top'
-  | 'leader-and-runner-up';
+    | 'leader-and-runner-up';
 
 /**
  Raised internally when one absent-passage slate produced no translation.

@@ -216,7 +216,7 @@ export function failureForReply(
 
   if (
     refusedAsBadRequest
-    && blamedOurJson
+      && blamedOurJson
       && overPassingSize
       && servedBySynthetic
   ) {

@@ -58,14 +58,14 @@ export type DirectoryReading<NameT extends string = string,> =
      */
     readonly names: readonly NameT[];
   }
-  | {
-    readonly kind: 'unreadable';
+    | {
+      readonly kind: 'unreadable';
 
     /**
      Filesystem reason, as a bounded token: `ENOENT`, `EACCES`, `ENOTDIR`.
      */
-    readonly reason: string;
-  };
+      readonly reason: string;
+    };
 
 /**
  Narrows a caught value to one carrying a filesystem error code.

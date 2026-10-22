@@ -118,8 +118,8 @@ export async function parseDesktopEntry(
      */
     const key = line
       .slice(
-        0,
-        eqIdx,
+      0,
+      eqIdx,
       )
       .trim();
     /**

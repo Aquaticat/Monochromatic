@@ -99,25 +99,25 @@ async function runAll(
     { length: WORKERS, },
     async function worker() {
     /* oxlint-disable eslint/no-await-in-loop -- each worker runs its files one after another. */
-    for (let file = queue.shift(); file !== undefined; file = queue.shift()) {
-      outcomes.set(
-        file,
-        await runChild({
-        args: [
-          ...commandArgs,
-          join(
-            'src',
-            file,
-          ),
-        ],
-        command,
-        cwd: PACKAGE,
-        timeoutMs: FILE_TIMEOUT_MS,
-      },),
-      );
-    }
+      for (let file = queue.shift(); file !== undefined; file = queue.shift()) {
+        outcomes.set(
+          file,
+          await runChild({
+            args: [
+              ...commandArgs,
+              join(
+                'src',
+                file,
+              ),
+            ],
+            command,
+            cwd: PACKAGE,
+            timeoutMs: FILE_TIMEOUT_MS,
+          },),
+        );
+      }
     /* oxlint-enable eslint/no-await-in-loop */
-  },
+    },
   ),);
   for (const file of files) {
     /**
@@ -131,8 +131,8 @@ async function runAll(
       for (const line of outcome.output
         .split('\n',)
         .filter(function nonEmpty(text,) {
-        return text.trim() !== '';
-      },)
+          return text.trim() !== '';
+        },)
         .slice(-TAIL_LINES,))
         console.log(`    ${line.slice(
           0,

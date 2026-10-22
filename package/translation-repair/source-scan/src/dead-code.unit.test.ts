@@ -334,10 +334,10 @@ function moduleLevelCode({ program, }: { readonly program: TreeNode; },): readon
       },);
     }
     return (bindingsDeclared({
-        declaration,
-        exported: false,
-      },)
-        .length === 0)
+      declaration,
+      exported: false,
+    },)
+      .length === 0)
       ? [statement,]
       : [];
   },);

@@ -125,7 +125,7 @@ export const requireReturnsCheck: CreateOnceRule = {
           && (result.docComment
             .returnsBlock
             !== undefined))
-        {
+          {
           context.report({
             loc: commentReportLoc(result.comment,),
             messageId: 'voidReturn',

@@ -47,12 +47,12 @@ const MISE_CONFIG_DIRECTORY_NAME = 'mise';
  */
 export type SopsIdentitySource =
   | 'MISE_SOPS_AGE_KEY'
-  | 'MISE_SOPS_AGE_KEY_FILE'
-  | 'SOPS_AGE_KEY_FILE'
-  | 'SOPS_AGE_KEY'
-  | 'mise-config-dir'
-  | 'xdg-config-home'
-  | 'home-config';
+    | 'MISE_SOPS_AGE_KEY_FILE'
+    | 'SOPS_AGE_KEY_FILE'
+    | 'SOPS_AGE_KEY'
+    | 'mise-config-dir'
+    | 'xdg-config-home'
+    | 'home-config';
 
 /**
  Resolved decryption identity.

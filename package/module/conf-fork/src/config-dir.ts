@@ -63,10 +63,10 @@ function windowsConfigDirectory(name: string,): string {
   const appData = process.env
     .APPDATA
     ?? path.join(
-    homedir(),
-    'AppData',
-    'Roaming',
-  );
+      homedir(),
+      'AppData',
+      'Roaming',
+    );
   return path.join(
     appData,
     name,
@@ -94,9 +94,9 @@ function xdgConfigDirectory(name: string,): string {
   const configRoot = process.env
     .XDG_CONFIG_HOME
     ?? path.join(
-    homedir(),
-    '.config',
-  );
+      homedir(),
+      '.config',
+    );
   return path.join(
     configRoot,
     name,

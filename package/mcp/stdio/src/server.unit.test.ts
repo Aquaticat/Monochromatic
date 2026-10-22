@@ -561,7 +561,7 @@ await describe({
                   (response.result as { tools: readonly { name: string; }[]; })
                     .tools
                     .map(
-                      tool => tool.name,
+                    tool => tool.name,
                     );
                 expect(names,).toEqual(['alpha', 'beta',],);
               },

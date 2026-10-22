@@ -208,9 +208,9 @@ await describe({
         const toolCall = content.at(2,);
         expect(toolCall?.type === 'toolCall' ? toolCall.arguments : undefined,)
           .toEqual(
-            {
-              question: 'q',
-            },
+          {
+            question: 'q',
+          },
           );
       },
     },),

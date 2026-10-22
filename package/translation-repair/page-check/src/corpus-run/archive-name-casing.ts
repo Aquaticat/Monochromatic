@@ -89,17 +89,17 @@ function nameForms(
         },);
     },)
     .reduce(
-      function tally(
-        byPhrase,
-        { phrase, },
-      ): Map<string, number> {
-        byPhrase.set(
-          phrase,
-          (byPhrase.get(phrase,) ?? 0) + 1,
-        );
-        return byPhrase;
-      },
-      new Map<string, number>(),
+    function tally(
+      byPhrase,
+      { phrase, },
+    ): Map<string, number> {
+      byPhrase.set(
+        phrase,
+        (byPhrase.get(phrase,) ?? 0) + 1,
+      );
+      return byPhrase;
+    },
+    new Map<string, number>(),
     );
   return new Set([...uses,]
     .filter(function oneCasing([
@@ -108,15 +108,15 @@ function nameForms(
     ]: ReadonlyEntry<string, number>,): boolean {
       return (count >= MIN_USES)
         && phraseOccurrences({
-        text: archiveText,
-        phrase,
-      },)
-        .every(function asWritten(at,): boolean {
-          return archiveText.slice(
-            at,
-            at + phrase.length,
-          ) === phrase;
-        },);
+          text: archiveText,
+          phrase,
+        },)
+          .every(function asWritten(at,): boolean {
+            return archiveText.slice(
+              at,
+              at + phrase.length,
+            ) === phrase;
+          },);
     },)
     .map(function phraseOf([phrase,]: ReadonlyEntry<string, number>,): string {
       return phrase;

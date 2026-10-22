@@ -63,17 +63,17 @@ export type NewestSliceRecord =
      */
     readonly kind: 'none';
   }
-  | {
+    | {
     /**
      The roots held one or more records.
      */
-    readonly kind: 'found';
+      readonly kind: 'found';
 
     /**
      The one written last.
      */
-    readonly record: SliceRecord;
-  };
+      readonly record: SliceRecord;
+    };
 
 /**
  What the slice caches under some runs directories hold.

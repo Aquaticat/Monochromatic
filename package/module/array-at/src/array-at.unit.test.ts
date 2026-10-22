@@ -27,7 +27,7 @@ import {
 type RuntimeDiagnosticCode = Exclude<
   ArrayAtDiagnostic['code'],
   'unproven-safe-integer'
->;
+  >;
 
 /**
  Runtime-only view bypassing static validation for negative tests.

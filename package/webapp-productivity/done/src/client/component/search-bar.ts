@@ -141,7 +141,7 @@ class SearchBar extends HTMLElement {
       },),
       backButton,
       input,
-    );
+      );
   }
 }
 

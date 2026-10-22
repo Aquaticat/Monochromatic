@@ -339,17 +339,17 @@ function unwrapParagraph(
       },);
     },)
     .reduce<readonly string[]>(
-      function unwrap(
-        current,
+    function unwrap(
+      current,
+      pair,
+    ): readonly string[] {
+      return unwrapWith({
+        lines: current,
+        range,
         pair,
-      ): readonly string[] {
-        return unwrapWith({
-          lines: current,
-          range,
-          pair,
-        },);
-      },
-      lines,
+      },);
+    },
+    lines,
     );
 }
 

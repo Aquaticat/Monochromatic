@@ -217,38 +217,38 @@ function disposeMerge(
   } = Object
     .entries(ballots,)
     .reduce(
-      function addOpinion(
-        masses: {
-          readonly same: number;
-          readonly distinct: number
-        },
-        [panelistId, ballot,]: ReadonlyEntry<string, PanelBallot>,
-      ) {
+    function addOpinion(
+      masses: {
+        readonly same: number;
+        readonly distinct: number
+      },
+      [panelistId, ballot,]: ReadonlyEntry<string, PanelBallot>,
+    ) {
         /**
          This panelist's opinion on the cluster, when given.
          */
-        const opinion = ballot.mergeOpinions[cluster.clusterId];
-        if (opinion === undefined)
-          return masses;
+      const opinion = ballot.mergeOpinions[cluster.clusterId];
+      if (opinion === undefined)
+        return masses;
 
         /**
          Weight of this panelist's opinion.
          */
-        const weight = config.weights?.[panelistId] ?? 1;
-        return opinion
-          ? {
-            same: masses.same + weight,
-            distinct: masses.distinct,
-          }
-          : {
-            same: masses.same,
-            distinct: masses.distinct + weight,
-          };
-      },
-      {
-        same: 0,
-        distinct: 0,
-      },
+      const weight = config.weights?.[panelistId] ?? 1;
+      return opinion
+        ? {
+          same: masses.same + weight,
+          distinct: masses.distinct,
+        }
+        : {
+          same: masses.same,
+          distinct: masses.distinct + weight,
+        };
+    },
+    {
+      same: 0,
+      distinct: 0,
+    },
     );
 
   return same > distinct;
@@ -303,35 +303,35 @@ export function tallyVotes(
       /**
        Every ballot on this member claim, and the tally they sum to.
        */
-      const reading = panelReadingForClaim({
-        claimId: member.claimId,
-        ballots,
-        configuredPanelists,
-        config,
-      },);
+        const reading = panelReadingForClaim({
+          claimId: member.claimId,
+          ballots,
+          configuredPanelists,
+          config,
+        },);
 
       /**
        Severity the claim settles at.
        */
-      const severity = finalSeverity({
-        member,
-        ballots,
-      },);
+        const severity = finalSeverity({
+          member,
+          ballots,
+        },);
 
-      return {
-        member,
-        tally: reading.tally,
-        reading,
-        status: heldIfNeutral({
-          status: decideStatus({
-            tally: reading.tally,
-            config,
+        return {
+          member,
+          tally: reading.tally,
+          reading,
+          status: heldIfNeutral({
+            status: decideStatus({
+              tally: reading.tally,
+              config,
+            },),
+            severity,
           },),
           severity,
-        },),
-        severity,
-      };
-    },);
+        };
+      },);
 
     /**
      Members a supported majority would have accepted at neutral, which the

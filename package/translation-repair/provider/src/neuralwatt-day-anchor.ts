@@ -49,9 +49,9 @@ export type NeuralWattDayAnchor =
      */
     readonly quota?: NeuralWattQuota;
   }
-  | {
-    readonly known: false;
-  };
+    | {
+      readonly known: false;
+    };
 
 /**
  Reads the quota afresh for a later attempt, saying nothing of a failure: the outage was warned about at the first one.
@@ -179,15 +179,15 @@ export async function decideNeuralWattDayAnchor(
   if (chosen === undefined) {
     if (warn)
       rl.warn(
-      `NeuralWatt is refused until its day start is learned: the day start is unknown, because ${
+        `NeuralWatt is refused until its day start is learned: the day start is unknown, because ${
         baseline.taken
           ? 'the quota reply carries no usable subscription.current_period_start'
           : 'the quota could not be read for subscription.current_period_start'
       } and ${NEURALWATT_DAY_START_VAR} is not set. Either make GET /v1/quota readable with `
-        + `subscription.current_period_start, or set ${NEURALWATT_DAY_START_VAR}=HH:MM (UTC; 19:15 for a 15:15 `
-        + 'day start in America/New_York during daylight saving time). Until then the quota is read again, no sooner '
-        + 'than a minute after each failed attempt, and this is not warned about again',
-    );
+          + `subscription.current_period_start, or set ${NEURALWATT_DAY_START_VAR}=HH:MM (UTC; 19:15 for a 15:15 `
+          + 'day start in America/New_York during daylight saving time). Until then the quota is read again, no sooner '
+          + 'than a minute after each failed attempt, and this is not warned about again',
+      );
     return { known: false, };
   }
 

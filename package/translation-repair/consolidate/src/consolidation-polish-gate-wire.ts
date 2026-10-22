@@ -420,7 +420,7 @@ export function buildConsolidationPolishGateMessages(
    is, or nothing where it accepted nothing.
    */
   const repairClaimsBlock = ((subject.acceptedRepairClaimsNote === undefined)
-      || (subject.acceptedRepairClaimsNote === ''))
+    || (subject.acceptedRepairClaimsNote === ''))
     ? []
     : [
       `${fence} REPAIR PANEL CLAIMS ACCEPTED ${fence}`,

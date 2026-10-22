@@ -99,17 +99,17 @@ const trailingCommentArbitrary: Arbitrary<string> = constantFrom(
 const tableBodyArbitrary: Arbitrary<string> = uniqueArray(
   keySegmentArbitrary,
   {
-  maxLength: MAX_BODY_ENTRIES,
-  selector: segmentName,
-},
+    maxLength: MAX_BODY_ENTRIES,
+    selector: segmentName,
+  },
 )
   .chain(function fill(keys: readonly KeySegment[],) {
-  return drawEach({
-    items: keys,
-    make: tableEntryLine,
-  },)
-    .map(function join(lines,) { return lines.join('\n',); },);
-},);
+    return drawEach({
+      items: keys,
+      make: tableEntryLine,
+    },)
+      .map(function join(lines,) { return lines.join('\n',); },);
+  },);
 
 /**
  Build a key-value block under `owner`, optionally dotted, optionally commented.
@@ -122,27 +122,27 @@ function keyValueBlockArbitrary({ owner, }: { readonly owner: string; },): Arbit
     keySegmentArbitrary,
   )
     .chain(function withTail(tail,) {
-    return oneof(
-      valueTextArbitrary.map(function bare(valueText,) { return {
-        key: owner,
-        valueText,
-      }; },),
-      valueTextArbitrary.map(function dotted(valueText,) {
-        return {
-          key: `${owner}.${tail.text}`,
+      return oneof(
+        valueTextArbitrary.map(function bare(valueText,) { return {
+          key: owner,
           valueText,
-        };
-      },),
-    );
-  },)
+        }; },),
+        valueTextArbitrary.map(function dotted(valueText,) {
+          return {
+            key: `${owner}.${tail.text}`,
+            valueText,
+          };
+        },),
+      );
+    },)
     .chain(function withComment(entry: {
       readonly key: string;
       readonly valueText: string;
     },) {
-    return trailingCommentArbitrary.map(function render(comment,) {
-      return `${entry.key} = ${entry.valueText}${comment}\n`;
+      return trailingCommentArbitrary.map(function render(comment,) {
+        return `${entry.key} = ${entry.valueText}${comment}\n`;
+      },);
     },);
-  },);
 }
 
 /**
@@ -180,18 +180,18 @@ function arrayOfTablesBlockArbitrary({ owner, }: { readonly owner: string; },): 
   return uniqueArray(
     keySegmentArbitrary,
     {
-    minLength: 1,
-    maxLength: MAX_AOT_INSTANCES,
-    selector: segmentName,
-  },
+      minLength: 1,
+      maxLength: MAX_AOT_INSTANCES,
+      selector: segmentName,
+    },
   )
     .chain(function instances(markers: readonly KeySegment[],) {
-    return drawEach({
-      items: markers,
-      make: instance,
-    },)
-      .map(function join(blocks,) { return blocks.join('',); },);
-  },);
+      return drawEach({
+        items: markers,
+        make: instance,
+      },)
+        .map(function join(blocks,) { return blocks.join('',); },);
+    },);
 }
 
 /**
@@ -221,34 +221,34 @@ function blockArbitrary(owner: string,): Arbitrary<Block> {
   return oneof(
     keyValueBlockArbitrary({ owner, },)
       .map(function tag(text,) {
-      return {
-        category: 'keyvalue',
-        text,
-      } as Block;
-    },),
+        return {
+          category: 'keyvalue',
+          text,
+        } as Block;
+      },),
     standardTableBlockArbitrary({ owner, },)
       .map(function tag(text,) {
-      return {
-        category: 'section',
-        text,
-      } as Block;
-    },),
+        return {
+          category: 'section',
+          text,
+        } as Block;
+      },),
     arrayOfTablesBlockArbitrary({ owner, },)
       .map(function tag(text,) {
-      return {
-        category: 'section',
-        text,
-      } as Block;
-    },),
+        return {
+          category: 'section',
+          text,
+        } as Block;
+      },),
   )
     .chain(function decorate(block,) {
-    return blockPrefixArbitrary.map(function render(prefix,) {
-      return {
-        category: block.category,
-        text: `${prefix}${block.text}`,
-      };
+      return blockPrefixArbitrary.map(function render(prefix,) {
+        return {
+          category: block.category,
+          text: `${prefix}${block.text}`,
+        };
+      },);
     },);
-  },);
 }
 
 /**
@@ -270,31 +270,31 @@ export const DOCUMENT_EXAMPLES: readonly string[] = [
 export const documentArbitrary: Arbitrary<string> = uniqueArray(
   bareName,
   {
-  maxLength: MAX_BLOCKS,
-},
+    maxLength: MAX_BLOCKS,
+  },
 )
   .chain(function build(owners: readonly string[],) {
-  return drawEach({
-    items: owners,
-    make: blockArbitrary,
-  },)
-    .map(function join(blocks,) {
+    return drawEach({
+      items: owners,
+      make: blockArbitrary,
+    },)
+      .map(function join(blocks,) {
     /**
      Bare key-value blocks, kept in generation order ahead of the sections.
      */
-    const keyValues = blocks.filter(function isKeyValue(block,) {
-      return block.category === 'keyvalue';
-    },);
+        const keyValues = blocks.filter(function isKeyValue(block,) {
+          return block.category === 'keyvalue';
+        },);
     /**
      Table and array-of-tables blocks, each opening its own header.
      */
-    const sections = blocks.filter(function isSection(block,) {
-      return block.category === 'section';
-    },);
-    return [
-      ...keyValues,
-      ...sections,
-    ].map(function text(block,) { return block.text; },)
-      .join('',);
+        const sections = blocks.filter(function isSection(block,) {
+          return block.category === 'section';
+        },);
+        return [
+          ...keyValues,
+          ...sections,
+        ].map(function text(block,) { return block.text; },)
+          .join('',);
+      },);
   },);
-},);

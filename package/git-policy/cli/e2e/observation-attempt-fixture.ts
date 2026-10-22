@@ -264,16 +264,16 @@ async function laterCaptureContents({
     return (other.startedAt > attempt.startedAt)
       && (other.mode === 'explicit')
       && other.captured
-      .some(function samePathAndBytes(entry,) {
-        return (entry.path === captured.path) && sameContent({
-          left: contentOf(entry.bytes,),
-          right: current,
-        },);
-      },)
+        .some(function samePathAndBytes(entry,) {
+          return (entry.path === captured.path) && sameContent({
+            left: contentOf(entry.bytes,),
+            right: current,
+          },);
+        },)
       && history.some(function carriesToken(commit,) {
         return moved.has(commit.oid,)
           && commit.message
-          .includes(`[${other.token}]`,);
+            .includes(`[${other.token}]`,);
       },);
   },);
   return landedLater ? [current,] : [];
@@ -324,8 +324,8 @@ export async function postCommitRuns(repository: ScenarioRepository,): Promise<R
   return new Map([...Map.groupBy(
     tokens,
     function byToken(token,) {
-    return token;
-  },
+      return token;
+    },
   ),].map(function runCount([token, tokenRuns,],) {
     return [
       token,
@@ -392,8 +392,8 @@ export async function observeAttempt({
    */
   const landedEventOid = extraction.events
     .find(function isLanded(event,) {
-    return event.type === 'commit-landed';
-  },)
+      return event.type === 'commit-landed';
+    },)
     ?.oid;
   /**
    Landing observations.
@@ -404,32 +404,32 @@ export async function observeAttempt({
      */
     const paths = await Promise.all(attempt.captured
       .map(async function landPath(captured,): Promise<PathLanding> {
-      return {
-        path: captured.path,
-        landed: stateOf(await treeBytes({
-          repository,
-          commit: commit.oid,
+        return {
           path: captured.path,
-        },),),
-        acceptable: [
-          ...await acceptableContents({
+          landed: stateOf(await treeBytes({
             repository,
-            captured,
+            commit: commit.oid,
+            path: captured.path,
+          },),),
+          acceptable: [
+            ...await acceptableContents({
+              repository,
+              captured,
             // An amend replaces the commit HEAD named at invocation, so its captured bytes are the only acceptable content.
-            ...(attempt.mode === 'amend' ? { parent: attempt.headBefore, } : (commit.parent === undefined ? {} : { parent: commit.parent, })),
-            headBefore: attempt.headBefore,
-          },),
-          ...await laterCaptureContents({
-            repository,
-            attempt,
-            captured,
-            ...(commit.parent === undefined ? {} : { parent: commit.parent, }),
-            attempts,
-            history,
-          },),
-        ],
-      };
-    },),);
+              ...(attempt.mode === 'amend' ? { parent: attempt.headBefore, } : (commit.parent === undefined ? {} : { parent: commit.parent, })),
+              headBefore: attempt.headBefore,
+            },),
+            ...await laterCaptureContents({
+              repository,
+              attempt,
+              captured,
+              ...(commit.parent === undefined ? {} : { parent: commit.parent, }),
+              attempts,
+              history,
+            },),
+          ],
+        };
+      },),);
     /**
      Signature verification when commits are signed.
      */

@@ -69,16 +69,16 @@ function trimTrailingWhitespace(trivia: CssTrivia,): readonly CssTrivia[] {
        
        @returns Whether the token is not plain whitespace.
        */
-      function isNotWhitespace(token,) {
-        return !isTokenWhitespace(token,);
-      },
+    function isNotWhitespace(token,) {
+      return !isTokenWhitespace(token,);
+    },
     )
     + 1;
   if (keepEnd === 0)
     return [];
   if (keepEnd
     === trivia.tokens
-    .length)
+      .length)
     return [trivia,];
   return [{
     kind: 'trivia',
@@ -86,7 +86,7 @@ function trimTrailingWhitespace(trivia: CssTrivia,): readonly CssTrivia[] {
       .slice(
       0,
       keepEnd,
-    ),
+      ),
   },];
 }
 

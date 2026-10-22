@@ -72,21 +72,21 @@ function buildToml({ root, }: { readonly root: Record<string, unknown>; },): str
          
          @mutates entry - Tagged child conversion may invoke proxy and accessor hooks recursively.
          */
-        function applyEntry(
-          current,
-          entry,
-        ) {
+      function applyEntry(
+        current,
+        entry,
+      ) {
           /**
            Tagged key and child selected by current entry.
            */
-          const [key, child,] = entry;
-          return tomlSet({
-            edit: current,
-            path: [key,],
-            value: taggedToInput({ tree: child, },),
-          },);
-        },
-        emptyTomlEdit(),
+        const [key, child,] = entry;
+        return tomlSet({
+          edit: current,
+          path: [key,],
+          value: taggedToInput({ tree: child, },),
+        },);
+      },
+      emptyTomlEdit(),
       ),
   },);
 }

@@ -154,7 +154,7 @@ function planted({
       );
     },
     original,
-  );
+    );
 }
 
 /**

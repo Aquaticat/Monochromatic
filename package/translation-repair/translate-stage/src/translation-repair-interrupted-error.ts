@@ -25,8 +25,8 @@ export class TranslationRepairInterruptedError extends Error {
    */
   public readonly reason:
     | 'carried-evidence-lost'
-    | 'page-footnote-integrity'
-    | 'provider-unavailable';
+      | 'page-footnote-integrity'
+      | 'provider-unavailable';
 
   /**
    Latest stage findings available when repair paused.
@@ -55,8 +55,8 @@ export class TranslationRepairInterruptedError extends Error {
     }: {
       readonly reason:
         | 'carried-evidence-lost'
-        | 'page-footnote-integrity'
-        | 'provider-unavailable';
+          | 'page-footnote-integrity'
+          | 'provider-unavailable';
       readonly findings: readonly string[];
     },
   ) {

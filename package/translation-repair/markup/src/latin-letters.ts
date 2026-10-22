@@ -379,8 +379,8 @@ export function latinWordSpans({ text, }: { readonly text: string; },): readonly
 export function lowerCaseLatinWords({ text, }: { readonly text: string; },): readonly string[] {
   return latinWordSpans({ text, },)
     .map(function lowered({ word, },): string {
-    return word.toLowerCase();
-  },);
+      return word.toLowerCase();
+    },);
 }
 
 /**

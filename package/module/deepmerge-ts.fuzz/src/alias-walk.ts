@@ -58,14 +58,14 @@ export function childrenOf(container: object,): readonly (readonly [
   }
   return Reflect.ownKeys(container,)
     .map(function keyed(key,) {
-    return [
-      key,
-      Reflect.get(
-        container,
+      return [
         key,
-      ),
-    ] as const;
-  },);
+        Reflect.get(
+          container,
+          key,
+        ),
+      ] as const;
+    },);
 }
 
 /**

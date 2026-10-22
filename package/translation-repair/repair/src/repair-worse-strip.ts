@@ -47,22 +47,22 @@ export type WorseStrip =
      */
     readonly stripped: false;
   }
-  | {
+    | {
     /**
      At least one edit was stripped.
      */
-    readonly stripped: true;
+      readonly stripped: true;
 
     /**
      Editor result with the reduced patch in place of the whole one.
      */
-    readonly editor: EditorStageResult;
+      readonly editor: EditorStageResult;
 
     /**
      Issues whose edits were stripped.
      */
-    readonly issueIds: readonly string[];
-  };
+      readonly issueIds: readonly string[];
+    };
 
 /**
  Strips from a patch every envelope's edit that serves an issue the checkers

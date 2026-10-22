@@ -100,7 +100,7 @@ function activateEscapedCallables({
        */
       const declaration = (symbol?.valueDeclaration
         ?? symbol?.declarations
-        .at(0,))?.resolve(project,);
+          .at(0,))?.resolve(project,);
       if ((declaration !== undefined)
         && isEffectCallableDeclaration(declaration,)) {
         stack.push(declaration,);

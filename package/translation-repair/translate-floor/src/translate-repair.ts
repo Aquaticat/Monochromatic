@@ -212,7 +212,7 @@ async function repairOneCandidate(
       standing: incumbentText,
       lineStructured,
     },)
-    && (disputedCopy.length === 0)
+      && (disputedCopy.length === 0)
   )
     return {
       voice,

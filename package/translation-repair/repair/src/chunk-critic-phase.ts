@@ -223,8 +223,8 @@ export async function runChunkCriticPhase(
   const survivingClaimIds = new Set(
     screening.claims
       .map(function toClaimId(claim,) {
-      return computeIssueClaimId({ claim, },);
-    },),
+        return computeIssueClaimId({ claim, },);
+      },),
   );
 
   /**

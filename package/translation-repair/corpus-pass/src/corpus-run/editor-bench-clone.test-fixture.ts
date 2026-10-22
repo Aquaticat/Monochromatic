@@ -116,7 +116,7 @@ export async function makeBenchClone(): Promise<
     readonly path: string;
     readonly commitSha: string;
   }
-> {
+  > {
   return await scratchDirWith({
     prefix: 'editor-bench-clone-',
     setup: seedBenchClone,

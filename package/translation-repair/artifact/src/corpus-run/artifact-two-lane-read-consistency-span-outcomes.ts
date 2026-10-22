@@ -91,88 +91,88 @@ export function assertSpanOutcomesFollow(
   const carriedTo: CarriedPlace[] = [];
   group.occurrences
     .forEach(function checkOne(
-    occurrence,
-    at,
-  ): void {
+      occurrence,
+      at,
+    ): void {
     /**
      Where the place sits, for the parse error.
      */
-    const here = `${path}.occurrences[${String(at,)}]`;
+      const here = `${path}.occurrences[${String(at,)}]`;
     /**
      Rendering of this place in the counter's form.
      */
-    const rendering = renderings[at];
+      const rendering = renderings[at];
     /**
      Fails the place's outcome unless it is the one named.
      */
-    function requireOutcome({ expected, }: { readonly expected: string; },): void {
-      if (occurrence.outcome !== expected) {
+      function requireOutcome({ expected, }: { readonly expected: string; },): void {
+        if (occurrence.outcome !== expected) {
+          throw new ArtifactParseError({
+            path: `${here}.outcome`,
+            reason: `${expected}, as the ballots and the renderings give for this place`,
+          },);
+        }
+      }
+      if (chosenAt === (-1)) {
+        requireOutcome({ expected: 'untouched', },);
+        return;
+      }
+      if (at === chosenAt) {
+        requireOutcome({ expected: 'chosen', },);
+        return;
+      }
+      if (rendering?.kind !== 'located') {
+        requireOutcome({ expected: 'unlocated', },);
+        return;
+      }
+      if (isKeptByMajority({
+        voices,
+        label: occurrence.label,
+      },)) {
+        requireOutcome({ expected: 'kept-context', },);
+        return;
+      }
+      if (chosen?.kind !== 'located') {
         throw new ArtifactParseError({
-          path: `${here}.outcome`,
-          reason: `${expected}, as the ballots and the renderings give for this place`,
+          path: `${path}.verdict.winner`,
+          reason: 'a place whose rendering is located, since a winner is named only where its own rendering is located',
         },);
       }
-    }
-    if (chosenAt === (-1)) {
-      requireOutcome({ expected: 'untouched', },);
-      return;
-    }
-    if (at === chosenAt) {
-      requireOutcome({ expected: 'chosen', },);
-      return;
-    }
-    if (rendering?.kind !== 'located') {
-      requireOutcome({ expected: 'unlocated', },);
-      return;
-    }
-    if (isKeptByMajority({
-      voices,
-      label: occurrence.label,
-    },)) {
-      requireOutcome({ expected: 'kept-context', },);
-      return;
-    }
-    if (chosen?.kind !== 'located') {
-      throw new ArtifactParseError({
-        path: `${path}.verdict.winner`,
-        reason: 'a place whose rendering is located, since a winner is named only where its own rendering is located',
-      },);
-    }
     /**
      What moving the chosen words over this place by code amounts to.
      */
-    const plan = planConsistencyEdit({
-      chosen,
-      target: rendering,
-      framed: group.repeat
-        .kind
-        === 'refrain',
-      marks,
-    },);
-    if (plan.kind === 'same') {
-      requireOutcome({ expected: 'consistent', },);
-      return;
-    }
-    receivers.push(occurrence.label,);
+      const plan = planConsistencyEdit({
+        chosen,
+        target: rendering,
+        framed: group.repeat
+          .kind
+          === 'refrain',
+        marks,
+      },);
+      if (plan.kind === 'same') {
+        requireOutcome({ expected: 'consistent', },);
+        return;
+      }
+      receivers.push(occurrence.label,);
     /**
      The carry recorded for this place.
      */
-    const carry = (group.carries ?? []).find(function carriesIt(entry,): boolean {
-      return entry.label === occurrence.label;
-    },);
-    if (carry === undefined) {
-      throw new ArtifactParseError({
-        path: `${path}.carries`,
-        reason: `a carry for ${occurrence.label}, which the chosen words are carried to`,
+      const carry = (group.carries ?? []).find(function carriesIt(entry,): boolean {
+        return entry.label === occurrence.label;
       },);
-    }
-    carriedTo.push({
-      occurrence,
-      here,
-      plan: plan.kind,
-      carry,
+      if (carry === undefined) {
+        throw new ArtifactParseError({
+          path: `${path}.carries`,
+          reason: `a carry for ${occurrence.label}, which the chosen words are carried to`,
+        },);
+      }
+      carriedTo.push({
+        occurrence,
+        here,
+        plan: plan.kind,
+        carry,
+      },);
     },);
-  },);
   assertCarriedOutcomes({
     carriedTo,
     path,

@@ -142,19 +142,19 @@ export function deriveEditableEnvelopes(
     .flatMap(function toIntervals(issue,): readonly IssueInterval[] {
       return issue.claims
         .flatMap(function claimIntervals(member,) {
-        return member
-          .claim
-          .spans
-          .flatMap(function spanInterval(span,): readonly IssueInterval[] {
-            if (span.side !== 'target')
-              return [];
-            return [{
-              start: span.startOffset,
-              end: span.endOffset,
-              issueId: issue.issueId,
-            },];
-          },);
-      },);
+          return member
+            .claim
+            .spans
+            .flatMap(function spanInterval(span,): readonly IssueInterval[] {
+              if (span.side !== 'target')
+                return [];
+              return [{
+                start: span.startOffset,
+                end: span.endOffset,
+                issueId: issue.issueId,
+              },];
+            },);
+        },);
     },)
     .toSorted(function byStart(
       left,

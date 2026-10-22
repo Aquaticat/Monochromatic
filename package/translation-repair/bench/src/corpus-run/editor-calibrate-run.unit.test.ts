@@ -260,7 +260,7 @@ await describe({
               `editor-calibrate: 1 slice, ${MODELS} models editing and judging each, 4 slices in flight`,
               'straggler window 300000ms (calibration default)',
               '  slice 1 of 1 (mittens chunk 0): 0 editor rounds, 0 refiner rounds (nothing eligible to rewrite), '
-              + '0 editors shipping',
+                + '0 editors shipping',
               '\nEDITOR standing over 0 judged rounds, from 0 of 1 slice',
               NO_ROUNDS_NOTE,
               '\nREFINER standing over 0 judged rounds, from 0 of 1 slice',
@@ -313,8 +313,8 @@ await describe({
               `editor-calibrate: 1 slice, ${MODELS} models editing and judging each, 1 slice in flight`,
               'straggler window 1234ms (TRANSLATION_REPAIR_STRAGGLER_GRACE_MS override)',
               'WRITER GRACE OVERRIDDEN by TRANSLATION_REPAIR_WRITER_GRACE_MS: writer rounds (editor, refiner, '
-              + 'translate, produceConsolidations, archive-block-review) abandon stragglers 60000ms after quorum rather than the 60000ms '
-              + 'every other round waits',
+                + 'translate, produceConsolidations, archive-block-review) abandon stragglers 60000ms after quorum rather than the 60000ms '
+                + 'every other round waits',
             ],);
           },
         },),
@@ -345,8 +345,8 @@ await describe({
             expect(printedLines.slice(0, 3,),).toEqual([
               '\nEDITOR standing over 0 judged rounds, from 0 of 1 slice; 1 round drew no ballot',
               '  NO JUDGED ROUNDS. The seat has no standing, since no ballot was cast on any round it produced: a '
-              + 'slate of one candidate, which is what every producer proposing the same wording leaves, needs no '
-              + 'vote, and a panel whose every judge abstained or failed casts none. Draw more slices.',
+                + 'slate of one candidate, which is what every producer proposing the same wording leaves, needs no '
+                + 'vote, and a panel whose every judge abstained or failed casts none. Draw more slices.',
               '\nEDITORS SHIPPED on 1 of 1 slice, 1 of them with no editor round judged at all',
             ],);
             // THE SIX SEATS CREDITED ARE PINNED AGAIN (n166, Z3). The lane seats six editors from a bench the prompt rotates, so

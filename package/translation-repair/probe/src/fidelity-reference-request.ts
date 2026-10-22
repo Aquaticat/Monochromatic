@@ -88,8 +88,8 @@ export function reviewedFidelityRequest({
     return !selected.some(function supportsRequestedDamage(spec,): boolean {
       return spec.damages
         .some(function requested(damage,): boolean {
-        return damage.kind === kind;
-      },);
+          return damage.kind === kind;
+        },);
     },);
   },);
   if (unavailable.length > 0) {

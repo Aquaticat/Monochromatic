@@ -45,17 +45,17 @@ export type ConsistencyFloorVerdict =
      */
     readonly kind: 'passes';
   }
-  | {
+    | {
     /**
      A floor refused the slice.
      */
-    readonly kind: 'refused';
+      readonly kind: 'refused';
 
     /**
      What the floors found, one sentence each.
      */
-    readonly findings: readonly string[];
-  };
+      readonly findings: readonly string[];
+    };
 
 /**
  Runs every floor on a changed slice.
@@ -157,7 +157,7 @@ export function consistencyFloorVerdict(
       kind: 'refused',
       findings: [
         'the wording the slice carries is longer than its original can account for '
-        + `(${String(alignment.incumbentCodePoints,)} against ${String(alignment.sourceCodePoints,)} code points), `
+          + `(${String(alignment.incumbentCodePoints,)} against ${String(alignment.sourceCodePoints,)} code points), `
           + 'so no replacement is made',
       ],
     };
