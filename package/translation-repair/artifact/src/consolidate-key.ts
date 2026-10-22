@@ -455,11 +455,15 @@ import type { LaneText, } from '@monochromatic-dev/translation-repair-translate-
  has no version of its own. The lane-contest, translate slice, repair slice and refine versions move for the same sheets
  (15, 24, 42, 13).
  The key hashes the version, the shape of the run and the texts, not the sheet and not the rule that reads the
- ballots, so a record written before would be served after. Main set 30 for B805 while this change was written, so this change takes the next number. 29 was set in `4b9fc9e645`, and this worktree's
- runs directory holds no slice-cache record (the audit `cache-account-audit` found 0, and no control that finds records was
+ ballots, so a record written before would be served after. 29 was set in `4b9fc9e645`, and this worktree's runs
+ directory holds no slice-cache record (the audit `cache-account-audit` found 0, and no control that finds records was
  run, since the pass that writes them runs in another worktree this change does not read), so whether a record stands at
- 29 is not known and the change cannot ride inside it: the number moves. No record has been written at 31, which this
- change sets first.
+ 29 is not known and the change cannot ride inside it: the number moves. This change moved it to 30 in `a40de882b`
+ while main moved it to 30 for B805 in `27db2c256`, so the merge that met the two (`ba30e7ac6`) set 31 in its
+ resolution, and each 30 keeps one meaning. The audit names that merge as the setting since ledger B814; before, it
+ refused 31 as in no commit. No pass ran on a build holding either 30: the last runs, zheermao22 and XingZ6017, log
+ `START tip=2a336603bf`, which holds neither commit (`git merge-base --is-ancestor`). No record has been written at
+ 31, which this change sets first.
  */
 export const CONSOLIDATE_CACHE_VERSION = 31;
 
