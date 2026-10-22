@@ -39,10 +39,14 @@ import {
 import { PAGE_TITLE_LEXICON_RESPONSE_FORMAT, } from '@monochromatic-dev/translation-repair-artifact';
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure';
 import {
+  CONSOLIDATE_GATE_RESPONSE_FORMAT,
+  CONSOLIDATION_POLISH_GATE_RESPONSE_FORMAT,
+} from '@monochromatic-dev/translation-repair-consolidate';
+import {
   consistencyChoiceResponseFormat,
   consistencyResponseFormat,
 } from '@monochromatic-dev/translation-repair-consistency';
-import { contestResponseFormat, } from '@monochromatic-dev/translation-repair-lane-contest';
+import { LANE_CONTEST_RESPONSE_FORMAT, } from '@monochromatic-dev/translation-repair-lane-contest';
 import {
   buildClaudeBody,
   CLAUDE_MODELS,
@@ -107,9 +111,11 @@ const SCHEMA_PRODUCERS: readonly SchemaProducer[] = [
   { file: 'consistency/src/consistency-wire.ts', formats: [consistencyResponseFormat({ labels: SHEET_LABELS, },),], },
   {
     file: 'lane-contest/src/contest-ballot-wire.ts',
+    // The builder is shared by three stages, so the schemas it makes are read as the stages send them.
     formats: [
-      contestResponseFormat({ schemaName: 'cat_contest', asksArchive: false, },),
-      contestResponseFormat({ schemaName: 'cat_contest_archive', asksArchive: true, },),
+      LANE_CONTEST_RESPONSE_FORMAT,
+      CONSOLIDATE_GATE_RESPONSE_FORMAT,
+      CONSOLIDATION_POLISH_GATE_RESPONSE_FORMAT,
     ],
   },
   { file: 'reference/src/reference-attest-confirm-wire.ts', formats: [REFERENCE_ATTEST_CONFIRM_RESPONSE_FORMAT,], },

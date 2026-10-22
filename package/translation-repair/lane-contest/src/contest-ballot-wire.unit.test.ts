@@ -113,6 +113,7 @@ await describe({
           fn: async () => {
             expect(contestResponseFormat({
               schemaName: 'cat_contest',
+              verdicts: ['tabby', CONTEST_REFUSAL,],
               asksArchive: false,
             },)
               .json_schema
@@ -124,6 +125,7 @@ await describe({
           fn: async () => {
             expect(contestResponseFormat({
               schemaName: 'cat_contest',
+              verdicts: ['tabby', CONTEST_REFUSAL,],
               asksArchive: false,
             },)
               .json_schema
@@ -171,7 +173,9 @@ await describe({
           fn: async () => {
             expect(contestResponseFormat({
               schemaName: 'cat_contest',
+              verdicts: ['tabby', CONTEST_REFUSAL,],
               asksArchive: true,
+              archiveVerdicts: ['publishable', 'flawed',],
             },)
               .json_schema
               .schema

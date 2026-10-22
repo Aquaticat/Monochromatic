@@ -59,7 +59,7 @@ import {
  inferred), both under `--isolatedDeclarations`, since the exported type is
  derived from this list. The compiler refuses either side without the other.
  */
-const GATE_NAMES: readonly [
+export const CONSOLIDATE_GATE_NAMES: readonly [
   'consolidated',
   'standing',
   typeof CONTEST_REFUSAL,
@@ -77,7 +77,7 @@ const GATE_NAMES: readonly [
  const choice: GateChoice = 'standing';
  ```
  */
-export type GateChoice = typeof GATE_NAMES[number];
+export type GateChoice = typeof CONSOLIDATE_GATE_NAMES[number];
 
 /**
  Whether a value is one of the names a judge may use.
@@ -94,7 +94,7 @@ export type GateChoice = typeof GATE_NAMES[number];
 export function isGateChoice(value: unknown,): value is GateChoice {
   return namesOneOf({
     value,
-    names: GATE_NAMES,
+    names: CONSOLIDATE_GATE_NAMES,
   },);
 }
 
@@ -224,12 +224,12 @@ export function readConsolidateGateBallot(
     choice: wire.verdict,
     unsupported: readCandidateNames({
       findings: unsupported,
-      names: GATE_NAMES,
+      names: CONSOLIDATE_GATE_NAMES,
     },),
     unsupportedRaw: unsupported,
     dropped: readCandidateNames({
       findings: dropped,
-      names: GATE_NAMES,
+      names: CONSOLIDATE_GATE_NAMES,
     },),
     droppedRaw: dropped,
     reason: wire.assessment,
