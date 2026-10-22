@@ -902,7 +902,7 @@ export type RunCallConfig = {
 
  @example
  ```ts
- const config = runCallConfigOf({ perCallTimeoutMs: 360_000, streamFirstContentMs: 120_000, streamIdleMs: 120_000, },);
+ const config = runCallConfigOf({ perCallTimeoutMs: 360_000, streamFirstContentMs: 180_000, streamIdleMs: 120_000, },);
  ```
  */
 export function runCallConfigOf(

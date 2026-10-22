@@ -199,7 +199,7 @@ await describe({
           corpusSha: world.pin.commitSha,
           callConfig: {
             perCallTimeoutMs: 360_000,
-            streamFirstContentMs: 120_000,
+            streamFirstContentMs: 180_000,
             streamIdleMs: 120_000,
           },
           entriesPerBand: 3,

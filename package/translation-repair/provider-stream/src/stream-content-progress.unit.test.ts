@@ -249,6 +249,8 @@ await describe({
         // The wire did carry bytes, which stay counted as the wire's.
         expect(cut.progress.chars,).toBeGreaterThan(0,);
         expect(cut.progress.firstByteMs,).toBeGreaterThanOrEqual(0,);
+        // No text ever came, which the progress line states beside the byte that did (ledger B804).
+        expect(cut.progress.firstContentMs,).toBeLessThan(0,);
       },
     },),
 
@@ -291,6 +293,8 @@ await describe({
         },);
         expect(stallMessageOf({ cut, },),).toContain('body',);
         expect(cut.generatedChars?.content,).toBe('The cat '.length,);
+        // The first words stamped the first text, no earlier than the first byte that carried them.
+        expect(cut.progress.firstContentMs,).toBeGreaterThanOrEqual(cut.progress.firstByteMs,);
       },
     },),
 

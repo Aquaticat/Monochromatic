@@ -99,6 +99,24 @@ await describe({
             expect(STREAM_IDLE_MS,).toBeGreaterThan(93_736,);
           },
         },),
+
+        it({
+          name: 'SETS THE FIRST-CONTENT WINDOW AT 180000 ms, 56 percent over the largest first byte, because the logged '
+            + 'first byte is only a lower bound on the wait for the first text (ledger B804)',
+          fn: async () => {
+            expect(STREAM_FIRST_CONTENT_MS,).toBe(180_000,);
+            // The idle window is a gap between pieces of text, which the logs measure directly, and stays as it was.
+            expect(STREAM_IDLE_MS,).toBe(120_000,);
+          },
+        },),
+
+        it({
+          name: 'STILL CUTS the 183755 ms first byte of a retired roster, which is the outer edge of what the older '
+            + 'logs hold and was set aside as evidence rather than cleared (ledger B804)',
+          fn: async () => {
+            expect(STREAM_FIRST_CONTENT_MS,).toBeLessThan(183_755,);
+          },
+        },),
       ],
     },),
 
@@ -204,6 +222,49 @@ await describe({
             expect(progress.chars,).toBe(18,);
             expect(progress.firstByteMs,).toBeGreaterThanOrEqual(0,);
             expect(progress.maxGapMs,).toBeGreaterThanOrEqual(0,);
+          },
+        },),
+
+        it({
+          name: 'reports no first content before generated text arrives, though a byte has, and none for an empty '
+            + 'total (ledger B804)',
+          fn: async () => {
+            using guard = armIdleGuard({
+              label: 'hf:mittens',
+              firstContentMs: HANG_STOP_MS,
+              idleMs: HANG_STOP_MS,
+            },);
+            guard.notify(25,);
+            guard.notifyGenerated({ content: 0, reasoning: 0, },);
+            expect(guard.progress().firstByteMs,).toBeGreaterThanOrEqual(0,);
+            expect(guard.progress().firstContentMs,).toBeLessThan(0,);
+          },
+        },),
+
+        it({
+          name: 'TIMES THE FIRST TEXT LATER THAN THE FIRST BYTE when the byte came first, on a reasoning delta as on a '
+            + 'content delta, and keeps the first reading when more text follows (ledger B804)',
+          fn: async () => {
+            using guard = armIdleGuard({
+              label: 'hf:mittens',
+              firstContentMs: HANG_STOP_MS,
+              idleMs: HANG_STOP_MS,
+            },);
+            guard.notify(25,);
+            await wait(TINY_MS,);
+            guard.notify(60,);
+            guard.notifyGenerated({ content: 0, reasoning: 4, },);
+
+            /**
+             What the guard measured at the first text.
+             */
+            const first = guard.progress();
+            expect(first.firstContentMs,).toBeGreaterThan(first.firstByteMs,);
+
+            await wait(TINY_MS,);
+            guard.notify(60,);
+            guard.notifyGenerated({ content: 9, reasoning: 4, },);
+            expect(guard.progress().firstContentMs,).toBe(first.firstContentMs,);
           },
         },),
 

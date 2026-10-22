@@ -50,6 +50,7 @@ function cutAfter(
     partialText: 'x'.repeat(wire,),
     progress: {
       firstByteMs,
+      firstContentMs: firstByteMs,
       maxGapMs: 0,
       chars: wire,
       elapsedMs: 120,
@@ -93,7 +94,7 @@ await describe({
             error: new StreamCutShortError({
               label: 'hf:whiskers',
               partialText: 'It is a cat. It did a backflip. It cras',
-              progress: { firstByteMs: 40, maxGapMs: 0, chars: 39, elapsedMs: 120, },
+              progress: { firstByteMs: 40, firstContentMs: 40, maxGapMs: 0, chars: 39, elapsedMs: 120, },
               cause: new Error('exchange torn down by abort',),
             },),
           },),

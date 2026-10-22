@@ -36,7 +36,7 @@ import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared
 // straggler grace after quorum.
 
 /**
- Silence allowed before the first generated text, 120_000 ms, set BELOW
+ Silence allowed before the first generated text, 180_000 ms, set BELOW
  `RUN_PER_CALL_TIMEOUT_MS` (360_000 in `corpus-run/run-config.ts`) so it can fire
  before the deadline does; `requireStreamBoundsInsideCallTimeout` refuses a
  configuration where it cannot. It was 600_000 under the name
@@ -52,27 +52,31 @@ import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared
  on Hyper), with 8 streams past 90 s, 5 past 100 s and none past 120 s; the
  7794 OpenRouter streams ran at most 11219 ms to the first byte, which a
  comment line can be, so for them the first byte says nothing of the wait for text.
- The bound sits at the
- largest observed wait plus 4 percent: the 99.9th percentile (88 s) would have
- cut 8 healthy streams to be sent again into a queue that had already cost them
- 90 to 116 s, and the maximum is what the sample supports clearing. The
- margin is thin, and a cut here costs a transport re-dispatch of that one
- call, not a voice. The sample is censored from above by the 120 s straggler
- grace and the 360 s deadline, and the cut streams that delivered text show a
- first byte of at most 48854 ms, so the censored part does not hide a slower
- healthy start.
+
+ THE MARGIN OVER A LOWER BOUND CAN HIDE A NEGATIVE ONE. A window of 120_000 ms
+ stood 3.7 percent over the largest first byte, and the wait for text it
+ bounds is at least that long, so a healthy slow stream could have been cut.
+ At 180_000 ms the margin over the largest first byte is 56 percent. The
+ 99.9th percentile (88 s) would have cut 8 healthy streams to be sent again
+ into a queue that had already cost them 90 to 116 s, and a cut here costs a
+ transport re-dispatch of that one call, not a voice. The sample is censored
+ from above by the 120 s straggler grace and the 360 s deadline, and the cut
+ streams that delivered text show a first byte of at most 48854 ms, so the
+ censored part does not hide a slower healthy start. The real figure is the
+ `firstContentMs` of the progress line `reportStreamProgress` writes for each
+ stream, which the next reading of the logs sets this bound against.
 
  THE OLDER TAIL EVIDENCE IS RETIRED, not contradicted. Two completions of
  retired rosters, a `hf:zai-org/GLM-5.2` stream at 183_755 ms and a pass-7
  completion at 347_099 ms
  (`doc/audit/stream-guards-first-production-traffic.md`,
- `doc/handover/translation-repair-history.md`), would be cut by this bound. The
- roster that produced them is gone, and the deadline they were set against
- is the one this bound must remain shorter than. See
+ `doc/handover/translation-repair-history.md`), would still be cut by this
+ bound. The roster that produced them is gone, and the deadline they were set
+ against is the one this bound must remain shorter than. See
  `doc/decision/translation-repair-runaway-call-termination.md` for the
  re-arming question this answers.
  */
-export const STREAM_FIRST_CONTENT_MS = 120_000;
+export const STREAM_FIRST_CONTENT_MS = 180_000;
 
 /**
  Silence allowed between generated pieces of text once the first has arrived,
@@ -200,7 +204,7 @@ export class StreamStalledError extends Error {
 
  @example
  ```ts
- const progress: StreamProgress = { firstByteMs: 812, maxGapMs: 43, chars: 9_211, elapsedMs: 4_210, };
+ const progress: StreamProgress = { firstByteMs: 812, firstContentMs: 1_340, maxGapMs: 43, chars: 9_211, elapsedMs: 4_210, };
  ```
  */
 export type StreamProgress = {
@@ -209,6 +213,19 @@ export type StreamProgress = {
    ever arrived, which is itself the diagnostic.
    */
   readonly firstByteMs: number;
+
+  /**
+   Milliseconds from arming to the first generated text, content or
+   reasoning; negative when none ever arrived, which with a first byte that
+   did is the diagnostic of a stream that sent only comment lines or empty
+   events.
+
+   THE QUANTITY THE FIRST-CONTENT WINDOW BOUNDS (ledger B804). The first byte
+   is only a lower bound on it, so the window was set against a figure that
+   could understate the wait; this reading is the wait itself, on the same
+   clock as the first byte.
+   */
+  readonly firstContentMs: number;
 
   /**
    Longest silence observed between consecutive body chunks.
@@ -284,7 +301,8 @@ export type IdleGuard = Disposable & {
  @param provider - names the provider that serves the call in the line that
  reports a cut, absent where the caller does not know it
 
- @param firstContentMs - silence allowed before the first generated text
+ @param firstContentMs - silence allowed before the first generated text, the
+ window and not the `firstContentMs` reading of {@link StreamProgress}
 
  @param idleMs - silence allowed between pieces of generated text afterwards
 
@@ -321,6 +339,7 @@ export function armIdleGuard(
     armedAt: monotonicMs(),
     lastChunkAt: 0,
     firstByteMs: -1,
+    firstContentMs: -1,
     maxGapMs: 0,
     chars: 0,
     content: 0,
@@ -435,6 +454,9 @@ export function armIdleGuard(
     }: GeneratedChars,): void {
       state.content = content;
       state.reasoning = reasoning;
+      // The first text is stamped on the same clock as the first byte, so the two readings subtract.
+      if ((state.firstContentMs < 0) && ((content + reasoning) > 0))
+        state.firstContentMs = monotonicMs() - state.armedAt;
       // A guard that has tripped stays tripped: a late piece of text must not arm a second window that logs a second cut.
       if (controller.signal
         .aborted)
@@ -448,6 +470,7 @@ export function armIdleGuard(
     progress(): StreamProgress {
       return {
         firstByteMs: state.firstByteMs,
+        firstContentMs: state.firstContentMs,
         maxGapMs: state.maxGapMs,
         chars: state.chars,
         elapsedMs: monotonicMs() - state.armedAt,

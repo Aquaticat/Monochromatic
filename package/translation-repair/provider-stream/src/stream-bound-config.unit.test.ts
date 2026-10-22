@@ -11,9 +11,10 @@
  WHAT THESE PIN: a bound at or above the deadline, not a number, not positive or
  not finite is refused by name with the values and the remedy; a consistent
  pair is accepted; and the shipped windows sit above the largest healthy first
- text and the largest healthy silence in the pass logs from `CuspariaKLSY20` to
+ byte and the largest healthy silence in the pass logs from `CuspariaKLSY20` to
  `zheermao22` (19542 completed streams that delivered text: first byte 115725
- ms, silence between two chunks 93736 ms).
+ ms, silence between two chunks 93736 ms), the first-content window by 56
+ percent because the first byte is only a lower bound on the wait for text.
 
  Fixtures are cat-themed invention.
 
@@ -67,7 +68,7 @@ await describe({
             expect(
               requireStreamBoundsInsideCallTimeout({
                 perCallTimeoutMs: DEADLINE_MS,
-                streamFirstContentMs: 120_000,
+                streamFirstContentMs: 180_000,
                 streamIdleMs: 120_000,
               },),
             ).toBeUndefined();
@@ -204,6 +205,15 @@ await describe({
             await Promise.resolve();
             expect(STREAM_FIRST_CONTENT_MS,).toBeGreaterThan(LARGEST_HEALTHY_FIRST_BYTE_MS,);
             expect(STREAM_IDLE_MS,).toBeGreaterThan(LARGEST_HEALTHY_SILENCE_MS,);
+          },
+        },),
+
+        it({
+          name: 'KEEPS THE FIRST-CONTENT BOUND HALF AGAIN OVER THE LARGEST FIRST BYTE, since the first byte is only a '
+            + 'lower bound on the wait for the first text and a margin of 3.7 percent could have been negative',
+          fn: async () => {
+            await Promise.resolve();
+            expect(STREAM_FIRST_CONTENT_MS,).toBeGreaterThanOrEqual(LARGEST_HEALTHY_FIRST_BYTE_MS * 1.5,);
           },
         },),
 

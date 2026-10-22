@@ -134,7 +134,7 @@ export class StreamBoundsOutsideCallTimeoutError extends Error {
 
  @example
  ```ts
- requireStreamBoundsInsideCallTimeout({ perCallTimeoutMs: 360_000, streamFirstContentMs: 120_000, streamIdleMs: 120_000, },);
+ requireStreamBoundsInsideCallTimeout({ perCallTimeoutMs: 360_000, streamFirstContentMs: 180_000, streamIdleMs: 120_000, },);
  ```
  */
 export function requireStreamBoundsInsideCallTimeout(
