@@ -19,7 +19,6 @@ import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.defaultMinSize
@@ -60,11 +59,9 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import dev.monochromatic.musicplayer.core.headingLineBudget
 
 // What:     `private val TOP_BAR_MIN_HEIGHT: Dp = 56.dp` is the minimum height of each top bar row.
 // Why:      The Material app bar uses 56dp, so the bars match the standard height.
@@ -153,7 +150,6 @@ private fun folderTitleTrigger(
     pickerOpen: Boolean,
     onToggleFolderPicker: () -> Unit,
     modifier: Modifier,
-    maxLines: Int = 1,
 ) {
     Row(
         modifier = modifier
@@ -166,14 +162,15 @@ private fun folderTitleTrigger(
             },
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        // The title takes the lines it needs up to maxLines. Reserving maxLines with minLines centered the caret under
-        // a short name and left a blank line above the actions on a phone at large text (PhoneBarsWiringTest).
+        // The title is always one line and a name too long for the room loses its middle, so both ends stay readable.
+        // A second line, or reserving one, left the caret under a short name and the actions on a row of their own
+        // on a phone at large text (PhoneBarsWiringTest).
         Text(
             text = folderTitle,
             modifier = Modifier.weight(1f, fill = false),
             style = MaterialTheme.typography.titleMedium,
-            maxLines = maxLines,
-            overflow = TextOverflow.Ellipsis,
+            maxLines = 1,
+            overflow = TextOverflow.MiddleEllipsis,
         )
         Icon(
             imageVector = if (pickerOpen) ARROW_DROP_UP_ICON else ARROW_DROP_DOWN_ICON,
@@ -268,38 +265,6 @@ fun coverTopRow(
     onSearch: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
-    /** Lines the folder title may use: two at large text sizes, where one line would cut the name to a stub. */
-    val titleLines: Int = headingLineBudget(LocalDensity.current.fontScale)
-    if (titleLines > 1) {
-        // At large text the three actions take most of the row, so the title gets its own full-width line and the
-        // actions sit on a second line at the end, instead of squeezing the title to a few letters.
-        Column(
-            modifier = modifier
-                .fillMaxWidth()
-                .windowInsetsPadding(WindowInsets.statusBars)
-                .padding(start = BAR_START_PADDING, end = BAR_END_PADDING),
-        ) {
-            folderTitleTrigger(
-                folderTitle = folderTitle,
-                pickerOpen = pickerOpen,
-                onToggleFolderPicker = onToggleFolderPicker,
-                modifier = Modifier.fillMaxWidth(),
-                maxLines = titleLines,
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth().heightIn(min = TOP_BAR_MIN_HEIGHT),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(ACTION_SPACING, Alignment.End),
-            ) {
-                if (onSearch != null) {
-                    searchButton(onSearch = onSearch)
-                }
-                openButton(onOpen = onOpen)
-                settingsButton(onSettings = onSettings)
-            }
-        }
-        return
-    }
     Row(
         modifier = modifier
             .fillMaxWidth()
