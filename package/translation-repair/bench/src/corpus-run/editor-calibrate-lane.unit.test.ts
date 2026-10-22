@@ -110,6 +110,25 @@ await describe({
             },);
           },
         },),
+        it({
+          name: 'SEATS SONNET 5.5 AS AN EDITOR BY NAME AND HAIKU 5.5 AS NO EDITOR (C4): the run\'s editor list names Sonnet, '
+            + 'which the roster-derived benches leave out (it holds judge-unmeasured), so the calibration must seat it by '
+            + 'name to measure it; and the owner said "Haiku wide", so the wide-only card takes no editor chair and the '
+            + 'calibration spends none of the Claude key on its edits',
+          fn: async () => {
+            /**
+             What the lane produced when every stage agreed on one edit.
+             */
+            const rounds = await runEditorLane({
+              slice: benchSliceOf({ entryId: 'mittens', index: 0, },),
+              client: shippingLaneClient(),
+              stageSettings: { ...SCRIPTED_STAGE_SETTINGS, editorBenchStart: PINNED_EDITOR_BENCH_START, },
+            },);
+
+            expect(rounds.editorShipped,).toContain('claude-sonnet-5-5',);
+            expect(rounds.editorShipped,).not.toContain('claude-haiku-5-5',);
+          },
+        },),
       ],
     },),
   ],
