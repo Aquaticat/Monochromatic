@@ -2606,12 +2606,20 @@ jobs:
       REPO: ${{ github.repository }}
       RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     steps:
+    # The test jobs also upload their smoke screenshots and logs as workflow artifacts (0.1.11 shipped eight of
+    # them as release assets under the old pattern '*'), so the release names only the asset and checksum artifacts.
     - name: Download all assets
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
       with:
-        pattern: '*'
+        pattern: asset-*
         path: assets
         merge-multiple: true
+
+    - name: Download SHA256SUMS
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        name: checksums
+        path: assets
 
     - name: Write the release notes
       run: |
