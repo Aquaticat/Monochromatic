@@ -7,7 +7,7 @@ This file tracks improvements needed across different packages in the monorepo,
 
 ### Quick Links
 
-- [**Module Library**](#module-library-packages-modulees):
+- [**Module Library**](#module-library-packagemodulees):
    Functional programming utilities
 - [**Configuration Packages**](#configuration-packages):
    Shareable tool configurations
