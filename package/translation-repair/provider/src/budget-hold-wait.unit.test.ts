@@ -65,6 +65,9 @@ const MODEL_ID = SEAT_SYNTHETIC_VISION_WITHHELD;
 
  @param neuralwatt - the NeuralWatt day the budgets report to a refusal that ends the run
 
+ @param neuralwattAfter - the day the budgets report once this many reads have happened, in place of `neuralwatt`, for a
+ day that changes while a hold is waited out
+
  @returns Budget view plus counts of reads and hold asks
 
  @example
@@ -77,10 +80,12 @@ function scriptedBudgets(
     views,
     holds,
     neuralwatt = { kind: 'unanchored', },
+    neuralwattAfter,
   }: {
     readonly views: readonly BudgetView[];
     readonly holds: ProviderRecord<number>;
     readonly neuralwatt?: NeuralWattReturn;
+    readonly neuralwattAfter?: { readonly reads: number; readonly day: NeuralWattReturn; };
   },
 ): {
   readonly budgets: ProviderBudgets;
@@ -120,7 +125,9 @@ function scriptedBudgets(
         return { ...holds, };
       },
       neuralwattReturn: function neuralwattReturn(): NeuralWattReturn {
-        return neuralwatt;
+        return ((neuralwattAfter !== undefined) && (reads.count >= neuralwattAfter.reads))
+          ? neuralwattAfter.day
+          : neuralwatt;
       },
     },
   };
@@ -342,6 +349,28 @@ await describe({
             },);
             expect((afterWait as EveryProviderDryError).message,).toContain('after waiting 5ms',);
             expect((afterWait as EveryProviderDryError).message,).toContain('at 19:15:08 UTC',);
+          },
+        },),
+
+        it({
+          name: 'READS THE NEURALWATT DAY AGAIN FOR THE REFUSAL AFTER THE WAIT, so a day start the run learned while the '
+            + 'hold was waited out is stated and the refusal does not say that no time of day can be stated',
+          fn: async () => {
+            /**
+             The refusal raised after the shortest hold ended, with the day start learned on the second budget read.
+             */
+            const afterWait = await refusalWithoutXiaomiServing({
+              budgets: scriptedBudgets({
+                views: [ALL_DRY,],
+                holds: { ...NO_HOLDS, synthetic: 5, },
+                neuralwatt: { kind: 'unanchored', },
+                neuralwattAfter: { reads: 2, day: { kind: 'at', msOfDay: 69_308_000, }, },
+              },).budgets,
+            },);
+            const { message, } = afterWait as EveryProviderDryError;
+            expect(message,).toContain('after waiting 5ms',);
+            expect(message,).toContain('at 19:15:08 UTC',);
+            expect(message,).not.toContain('no time of day can be stated',);
           },
         },),
 
