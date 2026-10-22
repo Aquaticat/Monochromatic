@@ -83,6 +83,7 @@ export {
   readPhaseSeats,
   type SeatReadingClient,
 } from './corpus-run/run-seats-read.ts';
+export { writtenRefusal, } from './corpus-run/run-seats-refusal.ts';
 export {
   type BenchName,
   type JudgeSeatPhase,

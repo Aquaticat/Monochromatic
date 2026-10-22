@@ -66,10 +66,10 @@ export type PassDryStop = {
   readonly tripped: () => boolean;
 
   /**
-   The one line saying why the pass starts no further entry, the first time it is asked after the trip; nothing before
-   the trip and nothing once it has been handed out, so the stop is announced exactly once.
+   The one line saying why the pass starts no further entry, the first time it is asked after the trip; none before
+   the trip and none once it has been handed out, so the stop is announced exactly once.
    */
-  readonly takeStopNote: () => string | undefined;
+  readonly takeStopNotes: () => readonly string[];
 };
 
 /**
@@ -261,12 +261,15 @@ export function createPassDryStop(
       return state.cause !== undefined;
     },
 
-    takeStopNote: function takeStopNote(): string | undefined {
+    takeStopNotes: function takeStopNotes(): readonly string[] {
       if ((state.cause === undefined) || state.noted)
-        return undefined;
+        return [];
       state.noted = true;
-      return 'STOP every provider is out of budget, so no further entry starts; the entries already settled keep '
-        + `their pages and the entry in flight is left resumable. Cause: ${state.cause.message}`;
+      return [
+        'STOP every provider is out of budget, so no further entry starts; the entries already settled keep '
+          + `their pages and the entry in flight is left resumable. Cause: ${state.cause
+            .message}`,
+      ];
     },
   };
 }

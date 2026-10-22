@@ -2,18 +2,15 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   type BudgetView,
-  everyProviderDry,
   EveryProviderDryError,
   HOLD_POLL_MS,
   type MeterState,
-  type NeuralWattReturn,
   shortestHold,
   waitOutHold,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import {
-  markFailureWritten,
   RUN_SEATS,
   SEAT_WITHHOLD_ASKS,
 } from '@monochromatic-dev/translation-repair-stage/ts';
@@ -33,8 +30,8 @@ import {
   benchesOf,
   PHASES_WITHOUT_WRITER_STOP,
   unreachableWritingBenches,
-  WritingBenchUnreachableError,
 } from './run-seats-floor.ts';
+import { writtenRefusal, } from './run-seats-refusal.ts';
 import {
   type BenchName,
   type JudgeSeatPhase,
@@ -70,7 +67,7 @@ import {
 export type SeatReadingClient = Pick<
   RunClient,
   'neuralwattReturn' | 'providerDryness' | 'providerHolds' | 'providerMeterStates'
->;
+  >;
 
 /**
  The state of a meter whose states could not be read: nothing was learned.
@@ -170,114 +167,6 @@ async function readMeterStates(
     l.warn(`judge seats: the meter states could not be read (${exchangeFailureLogText({ error, },)}); naming every meter unreadable`,);
     return providerRecord({ of: unreadableMeter, },);
   }
-}
-
-/**
- Refusal for a writing bench that stops the entry, marked as already written,
- since the reading writes its own `JUDGE SEATS` line before throwing it.
-
- WHEN EVERY PROVIDER READS DRY THE CAUSE IS THAT, NOT THE BENCH: the reading is the first to meet the dry state when
- an entry reaches its lanes with its preparation cached and so makes no chat call, and a bench error there ended the
- entry as a resumable failure that the pass visited and charged an attempt for, entry after entry, with no stop line.
- The owner ruled that the router's every-provider-dry refusal ends the run, so the reading raises that refusal, which
- the entry scheduler files as stopped work and hands to the pass (`endsTheRun`). A bench below its floor with a
- provider still wet stays the bench error.
-
- MARKED SO NO OUTER LAYER WRITES IT AGAIN (ledger B413). The reading runs in
- the per-slice hook of every slice-by-slice phase, so two slices side by side
- can each stop the entry; the overlapped map throws the lower one and wrote
- the higher one a second line under the caller's stop, and would write one
- without a stop too.
-
- @param phase - phase the reading was taken for
-
- @param clauses - one clause per writing bench below its floor
-
- @param dry - the dryness view the reading stopped on
-
- @param client - run client, whose holds and NeuralWatt day the dry refusal states
-
- @returns The refusal to throw
-
- @example
- ```ts
- throw writtenRefusal({ phase: 'lanes', clauses: ['editors 0 of 3 reachable, floor 2',], dry, client, },);
- ```
- */
-function writtenRefusal(
-  {
-    phase,
-    clauses,
-    dry,
-    client,
-  }: {
-    readonly phase: JudgeSeatPhase;
-    readonly clauses: readonly string[];
-    readonly dry: BudgetView;
-    readonly client: SeatReadingClient;
-  },
-): EveryProviderDryError | WritingBenchUnreachableError {
-  /**
-   The refusal the entry stops with.
-   */
-  const refusal = everyProviderDry({ view: dry, },)
-    ? everyProviderDryRefusal({
-      phase,
-      holds: client.providerHolds(),
-      neuralwatt: client.neuralwattReturn?.(),
-    },)
-    : new WritingBenchUnreachableError({
-      phase,
-      clauses,
-    },);
-  markFailureWritten({ error: refusal, },);
-  return refusal;
-}
-
-/**
- The router's refusal for a seat reading that found every provider dry with nothing left to wait out.
-
- @param phase - phase the reading was taken for
-
- @param holds - how long each provider's refusal still holds it out
-
- @param neuralwatt - what the run knows of NeuralWatt's day, absent where the client reports none
-
- @returns The refusal, stating the reading it was made on
-
- @example
- ```ts
- throw everyProviderDryRefusal({ phase: 'lanes', holds: client.providerHolds(), neuralwatt: undefined, },);
- ```
- */
-function everyProviderDryRefusal(
-  {
-    phase,
-    holds,
-    neuralwatt,
-  }: {
-    readonly phase: JudgeSeatPhase;
-    readonly holds: ProviderRecord<number>;
-    readonly neuralwatt: NeuralWattReturn | undefined;
-  },
-): EveryProviderDryError {
-  /**
-   Each provider's reading and hold, in the words the router's own refusal uses.
-   */
-  const measured = `the seat reading for ${phase} read ${
-    PROVIDER_ORDER.map(function dryClause(provider,): string {
-      return `${provider} dry`;
-    },).join(', ',)
-  }; holds ${
-    PROVIDER_ORDER.map(function holdClause(provider,): string {
-      return `${provider} ${String(holds[provider],)}ms`;
-    },).join(', ',)
-  }`;
-  return new EveryProviderDryError({
-    measured,
-    // Conditional spread keeps the day absent on a client that reports none.
-    ...((neuralwatt === undefined) ? {} : { neuralwatt, }),
-  },);
 }
 
 /**

@@ -33,10 +33,7 @@ import { unfilledPageFindings, } from '@monochromatic-dev/translation-repair-pag
 import { entryOverlap, } from './pass-overlap.ts';
 import { createPassPictureReader, } from './pass-seated-pictures.ts';
 import type { PassOutsideReads, } from './pass-outside-reads.ts';
-import {
-  endsTheRun,
-  type StageSettings,
-} from '@monochromatic-dev/translation-repair-stage/ts';
+import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 import type {
   PassPictureSources,
   PassVisualEvidenceReader,
@@ -111,8 +108,8 @@ import {
  @param stageSettings - straggler windows and contest ledger the entry file
  read for this launch
 
- @param endRun - told of the failure that ended the entry when it ends the run, before the entry is filed, so the pass
- stops however the failure reached the entry
+ @param endRun - told of the failure that ended the entry when it ends the run (`tallyCaughtEntry` says when), so the
+ pass stops however the failure reached the entry
 
  @returns Whether an artifact was written
 
@@ -525,17 +522,13 @@ async function runEntryPipeline(
     return { kind: 'settled', };
   }
   catch (error) {
-    // THE RUN HEARS OF A FAILURE THAT ENDS IT BEFORE THE ENTRY IS FILED, so the next entry is never started on the
-    // strength of a guarded call having met it: the seat reading ends an entry on the dry state before any call is
-    // made, and a layer may re-raise it past the signal.
-    if (endsTheRun({ error, },))
-      endRun?.({ error, },);
     return tallyCaughtEntry({
       entryId: entry.id,
       error,
       durationMs: monotonicMs() - t0,
       aborted: deadline.callSignal
         .aborted,
+      ...((endRun === undefined) ? {} : { endRun, }),
     },);
   }
 }

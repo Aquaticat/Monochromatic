@@ -737,7 +737,7 @@ await describe({
             expect(message,).not.toContain('UTC',);
             // THE OPENING NAMES NO NEURALWATT ENERGY EITHER: an off provider has none to be out of.
             expect(message,).not.toContain('has no free daily energy',);
-            expect(message,).toMatch(/^Every provider is out of budget at once: Synthetic has no weekly credit left/,);
+            expect(message.startsWith('Every provider is out of budget at once: Synthetic has no weekly credit left',),).toBe(true,);
           },
         },),
 

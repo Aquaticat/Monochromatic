@@ -152,7 +152,7 @@ await describe({
 
         expect(dryStop.signal.reason,).toBe(first,);
         expect(dryStop.tripped(),).toBe(true,);
-        const note = dryStop.takeStopNote() ?? '';
+        const [note = '',] = dryStop.takeStopNotes();
         expect(note.startsWith('STOP ',),).toBe(true,);
         expect(note,).toContain('every provider',);
         expect(note,).toContain('first reading',);
@@ -208,13 +208,13 @@ await describe({
     },),
 
     it({
-      name: 'HANDS OUT THE STOP NOTE ONCE: nothing before the trip, the note the first time after it, nothing after',
+      name: 'HANDS OUT THE STOP NOTE ONCE: none before the trip, the note the first time after it, none after',
       fn: async () => {
         const dryStop = createPassDryStop();
-        expect(dryStop.takeStopNote(),).toBeUndefined();
+        expect(dryStop.takeStopNotes(),).toEqual([],);
         dryStop.trip({ error: new EveryProviderDryError({ measured: 'seat reading', },), },);
-        expect(dryStop.takeStopNote(),).toContain('seat reading',);
-        expect(dryStop.takeStopNote(),).toBeUndefined();
+        expect(dryStop.takeStopNotes().length,).toBe(1,);
+        expect(dryStop.takeStopNotes(),).toEqual([],);
       },
     },),
 

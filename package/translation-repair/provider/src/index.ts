@@ -75,7 +75,6 @@ export {
   withDoneSentinel,
 } from './bedrock-stream-end.ts';
 export {
-  everyProviderDry,
   HOLD_POLL_MS,
   NOBODY_REFUSED,
   readBudgetsPastHolds,

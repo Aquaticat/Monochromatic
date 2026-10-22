@@ -30,11 +30,7 @@ import type { PassDryStop, } from './pass-dry-stop.ts';
  ```
  */
 function announceDryStop({ dryStop, }: { readonly dryStop: PassDryStop; },): void {
-  /**
-   The note, absent before the trip and once it has been printed.
-   */
-  const note = dryStop.takeStopNote();
-  if (note !== undefined)
+  for (const note of dryStop.takeStopNotes())
     console.log(note,);
 }
 

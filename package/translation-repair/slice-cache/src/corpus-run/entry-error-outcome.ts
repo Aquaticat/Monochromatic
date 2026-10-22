@@ -106,6 +106,10 @@ export function entryErrorOutcome(
  @param aborted - whether the entry's signal had aborted when it failed: the hard-ceiling abort fired, or the dry
  router stopped the run (the TALLY line prints it as `aborted=`)
 
+ @param endRun - told of the failure when it ends the run, before the entry is filed, so the pass stops starting
+ entries however the failure reached the entry: a guarded call carries it by the shared abort, the seat reading and a
+ layer that re-raises it reach here without one
+
  @returns Scheduling disposition, never a settlement
 
  @example
@@ -119,11 +123,13 @@ export function tallyCaughtEntry(
     error,
     durationMs,
     aborted,
+    endRun,
   }: {
     readonly entryId: string;
     readonly error: unknown;
     readonly durationMs: number;
     readonly aborted: boolean;
+    readonly endRun?: (args: { readonly error: unknown; },) => void;
   },
 ): EntryErrorOutcome['outcome'] {
   /**
@@ -134,6 +140,8 @@ export function tallyCaughtEntry(
    Tally and retry classification for caught state.
    */
   const classified = entryErrorOutcome({ error, },);
+  if (endsTheRun({ error, },))
+    endRun?.({ error, },);
   // THE FINDINGS REACH THE LOG, one line each, since the tally line carries the
   // reason alone and the sixth yuki418330012 pass of 2026-09-09 stopped twice
   // as carried-evidence-lost with nothing in the log saying which region.

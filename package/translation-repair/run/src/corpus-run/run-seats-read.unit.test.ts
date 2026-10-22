@@ -11,6 +11,7 @@
  @module
  */
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   DEFAULT_CONCURRENCY,
@@ -899,7 +900,7 @@ await describe({
               },),
             },);
             expect(refusal,).toBeInstanceOf(EveryProviderDryError,);
-            expect(Error.isError(refusal,) ? refusal.message : '',).toContain('19:15:08 UTC',);
+            expect(caughtValueText(refusal,),).toContain('19:15:08 UTC',);
             expect(lines.filter(function isError(line,): boolean {
               return line.startsWith('error ',);
             },),).toEqual([
