@@ -18,7 +18,7 @@
  the DeepSeek seat sends nothing (its transcription was never measured); and
  only the NeuralWatt side of a card may name a picture effort, so no other
  provider's client can be handed one. The text calls of the same seat have
- their own file, `neuralwatt-text-effort.unit.test.ts` (ledger B803).
+ their own file, `neuralwatt-text-effort.unit.test.ts` (ledger B807).
 
  Fixtures are cat-themed invention. No call reaches NeuralWatt.
 

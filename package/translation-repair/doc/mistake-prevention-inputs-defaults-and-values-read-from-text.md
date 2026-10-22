@@ -450,7 +450,7 @@ A provider's published mean that sizes a hold is a placeholder until the pipelin
 and the replacement reads what drives the spread before choosing any multiplier.
 `neuralwatt-estimate.unit.test.ts` pins each figure with the run it came from.
 
-An owner's lift of a ban is applied at the scope the owner's words state (ledger B803).
+An owner's lift of a ban is applied at the scope the owner's words state (ledger B807).
 "I'm lifting the ban on passing params,
 but only for NeuralWatt" was built for the one call kind that had failed that day,
 the picture reading,

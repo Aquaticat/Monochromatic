@@ -409,7 +409,7 @@ export function createNeuralWattClient(
        NeuralWatt side names one for the kind of call. `glm-5.3-flash` spent its
        whole completion cap reasoning at the default `max` on a dense
        screenshot (XingZ6016, ledger B719) and, on text, on 11 of 288 calls
-       over the pass logs from zheermao19 to zheermao22 (ledger B803).
+       over the pass logs from zheermao19 to zheermao22 (ledger B807).
        `deepseek-v4.1-flash` gets none: the repo records no efforts for it.
        */
       const bodyJson = JSON.stringify({

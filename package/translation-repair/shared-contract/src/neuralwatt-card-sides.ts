@@ -41,7 +41,7 @@ export const GLM_5_3_FLASH_ON_NEURALWATT: NeuralWattCard = {
   // and the first keyed run at `low` is the measurement. A transcription is not
   // a deduction, so the depth is not what the reading needs.
   pictureReasoningEffort: 'low',
-  // LOW ON A TEXT CALL TOO, 2026-10-21 (zheermao22, ledger B803). The owner's
+  // LOW ON A TEXT CALL TOO, 2026-10-21 (zheermao22, ledger B807). The owner's
   // lift covers NeuralWatt text calls, and a text call at the default `max` ran
   // to the 18316-token cap with 0 content characters in 11 of 288 text calls
   // over the pass logs from zheermao19 to zheermao22 (4 in zheermao22 alone,
@@ -64,7 +64,7 @@ export const GLM_5_3_FLASH_ON_NEURALWATT: NeuralWattCard = {
  (`GET https://api.neuralwatt.com/v1/models`, 2026-10-20), so the owner's
  migration to the 1017 weights of the same day changed nothing on this side.
 
- NO REASONING EFFORT IS NAMED HERE, picture or text (ledger B803). The repo
+ NO REASONING EFFORT IS NAMED HERE, picture or text (ledger B807). The repo
  records this model's default (`high`, `neuralwatt-catalog.ts`) and that its
  reasoning is on by default, and records no `supported_efforts` list for it;
  the GLM list in ledger B719 is that model's alone. A call that sends an

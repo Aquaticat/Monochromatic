@@ -475,8 +475,8 @@ named for that subject and listed here.
   with the picture reader's reply the length limit cut (B718),
   a NeuralWatt picture call sent at the provider's default effort (B719),
   and the NeuralWatt energy estimate that counted a picture as base64 text (B720),
-  a NeuralWatt text call sent at the provider's default effort (B803),
-  and the stream guards whose windows could not fire and whose progress was any body bytes (B804).
+  the stream guards whose windows could not fire and whose progress was any body bytes (B804),
+  and a NeuralWatt text call sent at the provider's default effort (B807).
 - [Audit ledger: branches no input reaches, kept as quiet answers](audit-ledger-unreachable-branches-kept-as-quiet-answers.md):
   Branches no input reaches that answered quietly where a loud refusal belongs,
   most met when a coverage census asked for them to be removed,

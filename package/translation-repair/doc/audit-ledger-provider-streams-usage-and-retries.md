@@ -589,7 +589,7 @@ Open to the owner's veto:
 `low`,
 not `high`.
 
-Widened on 2026-10-21 (UTC) by B803:
+Widened on 2026-10-21 (UTC) by B807:
 the lift covers the NeuralWatt text calls of the same seat too,
 and the standing rule of 2026-08-25 now holds for every other provider only,
 where this entry's ruling paragraph said "and for NeuralWatt text calls".
@@ -650,7 +650,171 @@ Not done:
 and a picture there has the same overcount.
 The owner's ruling named NeuralWatt.
 
-## B803: a NeuralWatt text call ran at the provider's default reasoning effort
+## B804: the stream guards could not fire, and a comment line counted as progress
+
+Status:
+fixed on 2026-10-21 (UTC),
+red `65b3695fc7b0816f4e3af187ae4c3a27560474cd`,
+fix `2866c62ebd7a361d94854fe1c43a1f70288eef7e`,
+cache versions none.
+Found in the read of the corpus pass for `zheermao22` (class K2) and fixed in `w263`.
+
+What the run showed:
+eleven `inception/mercury-2.5` streams were ended 120 s after quorum by the straggler grace,
+each with 0 answer characters and 0 reasoning characters on 7575 to 13000 raw characters
+(21:59:56 UTC to 22:23:44 UTC).
+All eleven raw counts are multiples of 25,
+the length of the comment line `: OPENROUTER PROCESSING` and its two line feeds.
+The log holds counts and not bytes,
+so that the bytes were those comments is an inference from eleven of eleven.
+Mercury's consolidation stream time was 1701 s against 462 s in `zheermao21`.
+
+What the code did:
+two defects,
+one hiding the other.
+`STREAM_FIRST_BYTE_MS` and `STREAM_IDLE_MS` were 600000 ms beside a per-call deadline of 360000 ms,
+so neither window could fire before the deadline did,
+and the artifact stamped `perCallTimeoutMs: 360000, streamFirstByteMs: 600000, streamIdleMs: 600000`
+without anything reading the pair.
+And `drainBody` told the guard about every chunk,
+so any body bytes reset the window,
+a comment line among them.
+Had the windows been shorter,
+Mercury's comment lines would still have kept them open.
+The straggler grace (`stage-round.ts`) was the only bound that ever ended these calls,
+and it ends them only after a quorum.
+
+What was measured,
+keyless,
+from the progress lines of the pass logs in the agent directory,
+`CuspariaKLSY20` to `zheermao22`
+(`~/temp/agent/tr-fan/w263-scratch/stream-stats.ts`,
+`stream-tails.ts`,
+`stream-long.ts`,
+`stream-empty.ts` and `stream-cutmercury.ts`,
+outside the repository;
+the live log `XingZ6017` left out):
+
+- 19542 completed streams carried text.
+  Their first byte,
+  leaving out OpenRouter streams whose first byte may be a comment line:
+  p50 1915 ms,
+  p99 11755 ms,
+  p99.9 88110 ms,
+  largest 115725 ms.
+  Their largest silence between two chunks:
+  p99.9 59008 ms,
+  largest 93736 ms.
+- The streams a bound cut after they had delivered text show a first byte of at most 48854 ms and a gap of at most
+  61642 ms,
+  so the sample is censored from above by the 120 s grace and the 360 s deadline,
+  and the censored part does not hide a slower healthy start.
+- The logs record the time to first byte and not the time to first text.
+  The first byte is a lower bound on the second,
+  and the first-content window is set against it.
+
+The choice:
+120000 ms for both windows,
+and the basis is the largest observation and not a percentile.
+A bound at p99.9 would cut about 20 healthy streams of the 19542,
+and each cut costs a paid call and a retry,
+so the bound sits above everything seen:
+the first-content window is 3.7 percent above the largest first byte (115725 ms),
+the idle window 28 percent above the largest gap (93736 ms).
+The first-content margin is thin.
+Streams of 2026-10-21 UTC and later are the evidence for loosening it,
+and the cut line now says what a cut stream had delivered.
+Both windows are below the 360 s deadline,
+so a stalled call ends in a third of its deadline at most,
+and Mercury's silent streams end at 120 s after their last text or at 120 s after arming,
+without waiting for a quorum.
+
+Older tail evidence now cut:
+a `hf:zai-org/GLM-5.2` first byte of 183755 ms,
+a pass-7 completion at 347099 ms and a mid-stream gap of 124992 ms
+(`doc/audit/stream-guards-first-production-traffic.md`,
+`doc/handover/translation-repair-history.md`)
+are longer than the new windows.
+They came from rosters that are gone,
+and the 347099 ms completion sits within 4 percent of the old deadline of 360000 ms,
+which the bound must remain shorter than.
+They are retired as evidence,
+not contradicted.
+
+The fix:
+`drainBody` hands the guard the running totals of content and reasoning characters
+(`generatedChars()` of the stream scanner),
+and the guard resets its window only when the total grows.
+The raw characters still count for the progress line.
+The phase names are `first-content` and `body`.
+`requireStreamBoundsInsideCallTimeout` (`stream-bound-config.ts`) refuses,
+by `StreamBoundsOutsideCallTimeoutError`,
+a bound that is equal to or longer than the deadline,
+or that is not a positive finite number,
+and so does a deadline that is not.
+`runCallConfigOf` in `run-config.ts` calls it,
+and `RUN_CALL_CONFIG` is built through it at module load,
+so a run with an inconsistent configuration ends before it spends anything.
+The key `streamFirstByteMs` of the stamped configuration is now `streamFirstContentMs`.
+Older artifacts keep the old key.
+The retry ladder (`exchangeWithRetry`) names the provider on the exchange it hands the transport,
+and the guard's cut line reads
+`<provider> <model>: no content or reasoning for <N>ms during <phase>; <N> raw chars on the wire, <N> content chars and <N> reasoning chars so far; aborting for retry`.
+
+Red and green:
+`stream-content-progress.unit.test.ts` cuts a stream of comment lines only,
+one of blank lines only,
+one of role-only and empty-content events,
+and one that falls to comment lines after its first words,
+and keeps a stream that sends a content delta or a reasoning delta every 8 ms.
+It failed with five assertion failures and its two controls passed.
+`stream-bound-config.unit.test.ts` refuses the pair that shipped,
+a bound equal to the deadline,
+and each of not-a-number,
+zero,
+a negative and infinity,
+and pins the shipped windows above the largest healthy observations and below the deadline.
+`run-call-config-builder.unit.test.ts` hands `runCallConfigOf` the shipped pair.
+`provider-named-exchange.unit.test.ts` reads the provider off the exchange of each of the five clients.
+Each failed before the fix,
+at import or on an assertion,
+and passes after it.
+
+Cache versions:
+none moves.
+The windows and the call configuration are in no cache key,
+as `perCallTimeoutMs` is not:
+they change how long a voice has to answer,
+not what it is asked.
+
+Not done:
+the time to first text is not logged,
+so the first-content window is set against the first byte.
+Adding `firstContentMs` to the stream progress line would let the next reading set it on the quantity it bounds.
+The straggler grace stays as a second bound after quorum.
+
+Limits:
+the first-content window is thin against a lower bound.
+A model that thinks for longer than 120 s before its first delta,
+with its thinking hidden from the stream,
+would now be cut where it was not.
+The logs read hold no such stream among the completed ones,
+but they do not record whether a model hid its thinking,
+so this is unmeasured.
+
+Open to the owner's veto:
+120000 ms for the first-content window.
+Changing it is `STREAM_FIRST_CONTENT_MS`.
+
+Recurrence:
+`mistake-prevention-guards-searches-and-claims.md`,
+"A bound is read against the deadline it sits under":
+a bound is checked,
+at the place both numbers are read,
+against the deadline that would pre-empt it,
+and progress means the output the bound is for.
+
+## B807: a NeuralWatt text call ran at the provider's default reasoning effort
 
 Status:
 fixed on 2026-10-21 (UTC),
@@ -817,167 +981,3 @@ Recurrence:
 `mistake-prevention-inputs-defaults-and-values-read-from-text.md`,
 "Provider fields read by their documentation":
 an owner's lift is built at the scope its words name.
-
-## B804: the stream guards could not fire, and a comment line counted as progress
-
-Status:
-fixed on 2026-10-21 (UTC),
-red `65b3695fc7b0816f4e3af187ae4c3a27560474cd`,
-fix `2866c62ebd7a361d94854fe1c43a1f70288eef7e`,
-cache versions none.
-Found in the read of the corpus pass for `zheermao22` (class K2) and fixed in `w263`.
-
-What the run showed:
-eleven `inception/mercury-2.5` streams were ended 120 s after quorum by the straggler grace,
-each with 0 answer characters and 0 reasoning characters on 7575 to 13000 raw characters
-(21:59:56 UTC to 22:23:44 UTC).
-All eleven raw counts are multiples of 25,
-the length of the comment line `: OPENROUTER PROCESSING` and its two line feeds.
-The log holds counts and not bytes,
-so that the bytes were those comments is an inference from eleven of eleven.
-Mercury's consolidation stream time was 1701 s against 462 s in `zheermao21`.
-
-What the code did:
-two defects,
-one hiding the other.
-`STREAM_FIRST_BYTE_MS` and `STREAM_IDLE_MS` were 600000 ms beside a per-call deadline of 360000 ms,
-so neither window could fire before the deadline did,
-and the artifact stamped `perCallTimeoutMs: 360000, streamFirstByteMs: 600000, streamIdleMs: 600000`
-without anything reading the pair.
-And `drainBody` told the guard about every chunk,
-so any body bytes reset the window,
-a comment line among them.
-Had the windows been shorter,
-Mercury's comment lines would still have kept them open.
-The straggler grace (`stage-round.ts`) was the only bound that ever ended these calls,
-and it ends them only after a quorum.
-
-What was measured,
-keyless,
-from the progress lines of the pass logs in the agent directory,
-`CuspariaKLSY20` to `zheermao22`
-(`~/temp/agent/tr-fan/w263-scratch/stream-stats.ts`,
-`stream-tails.ts`,
-`stream-long.ts`,
-`stream-empty.ts` and `stream-cutmercury.ts`,
-outside the repository;
-the live log `XingZ6017` left out):
-
-- 19542 completed streams carried text.
-  Their first byte,
-  leaving out OpenRouter streams whose first byte may be a comment line:
-  p50 1915 ms,
-  p99 11755 ms,
-  p99.9 88110 ms,
-  largest 115725 ms.
-  Their largest silence between two chunks:
-  p99.9 59008 ms,
-  largest 93736 ms.
-- The streams a bound cut after they had delivered text show a first byte of at most 48854 ms and a gap of at most
-  61642 ms,
-  so the sample is censored from above by the 120 s grace and the 360 s deadline,
-  and the censored part does not hide a slower healthy start.
-- The logs record the time to first byte and not the time to first text.
-  The first byte is a lower bound on the second,
-  and the first-content window is set against it.
-
-The choice:
-120000 ms for both windows,
-and the basis is the largest observation and not a percentile.
-A bound at p99.9 would cut about 20 healthy streams of the 19542,
-and each cut costs a paid call and a retry,
-so the bound sits above everything seen:
-the first-content window is 3.7 percent above the largest first byte (115725 ms),
-the idle window 28 percent above the largest gap (93736 ms).
-The first-content margin is thin.
-Streams of 2026-10-21 UTC and later are the evidence for loosening it,
-and the cut line now says what a cut stream had delivered.
-Both windows are below the 360 s deadline,
-so a stalled call ends in a third of its deadline at most,
-and Mercury's silent streams end at 120 s after their last text or at 120 s after arming,
-without waiting for a quorum.
-
-Older tail evidence now cut:
-a `hf:zai-org/GLM-5.2` first byte of 183755 ms,
-a pass-7 completion at 347099 ms and a mid-stream gap of 124992 ms
-(`doc/audit/stream-guards-first-production-traffic.md`,
-`doc/handover/translation-repair-history.md`)
-are longer than the new windows.
-They came from rosters that are gone,
-and the 347099 ms completion sits within 4 percent of the old deadline of 360000 ms,
-which the bound must remain shorter than.
-They are retired as evidence,
-not contradicted.
-
-The fix:
-`drainBody` hands the guard the running totals of content and reasoning characters
-(`generatedChars()` of the stream scanner),
-and the guard resets its window only when the total grows.
-The raw characters still count for the progress line.
-The phase names are `first-content` and `body`.
-`requireStreamBoundsInsideCallTimeout` (`stream-bound-config.ts`) refuses,
-by `StreamBoundsOutsideCallTimeoutError`,
-a bound that is equal to or longer than the deadline,
-or that is not a positive finite number,
-and so does a deadline that is not.
-`runCallConfigOf` in `run-config.ts` calls it,
-and `RUN_CALL_CONFIG` is built through it at module load,
-so a run with an inconsistent configuration ends before it spends anything.
-The key `streamFirstByteMs` of the stamped configuration is now `streamFirstContentMs`.
-Older artifacts keep the old key.
-The retry ladder (`exchangeWithRetry`) names the provider on the exchange it hands the transport,
-and the guard's cut line reads
-`<provider> <model>: no content or reasoning for <N>ms during <phase>; <N> raw chars on the wire, <N> content chars and <N> reasoning chars so far; aborting for retry`.
-
-Red and green:
-`stream-content-progress.unit.test.ts` cuts a stream of comment lines only,
-one of blank lines only,
-one of role-only and empty-content events,
-and one that falls to comment lines after its first words,
-and keeps a stream that sends a content delta or a reasoning delta every 8 ms.
-It failed with five assertion failures and its two controls passed.
-`stream-bound-config.unit.test.ts` refuses the pair that shipped,
-a bound equal to the deadline,
-and each of not-a-number,
-zero,
-a negative and infinity,
-and pins the shipped windows above the largest healthy observations and below the deadline.
-`run-call-config-builder.unit.test.ts` hands `runCallConfigOf` the shipped pair.
-`provider-named-exchange.unit.test.ts` reads the provider off the exchange of each of the five clients.
-Each failed before the fix,
-at import or on an assertion,
-and passes after it.
-
-Cache versions:
-none moves.
-The windows and the call configuration are in no cache key,
-as `perCallTimeoutMs` is not:
-they change how long a voice has to answer,
-not what it is asked.
-
-Not done:
-the time to first text is not logged,
-so the first-content window is set against the first byte.
-Adding `firstContentMs` to the stream progress line would let the next reading set it on the quantity it bounds.
-The straggler grace stays as a second bound after quorum.
-
-Limits:
-the first-content window is thin against a lower bound.
-A model that thinks for longer than 120 s before its first delta,
-with its thinking hidden from the stream,
-would now be cut where it was not.
-The logs read hold no such stream among the completed ones,
-but they do not record whether a model hid its thinking,
-so this is unmeasured.
-
-Open to the owner's veto:
-120000 ms for the first-content window.
-Changing it is `STREAM_FIRST_CONTENT_MS`.
-
-Recurrence:
-`mistake-prevention-guards-searches-and-claims.md`,
-"A bound is read against the deadline it sits under":
-a bound is checked,
-at the place both numbers are read,
-against the deadline that would pre-empt it,
-and progress means the output the bound is for.

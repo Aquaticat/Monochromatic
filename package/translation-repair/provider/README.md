@@ -124,7 +124,7 @@ The groups that follow name the main ones.
   not by its base64 length (ledger B720),
   and a NeuralWatt card side may name a `pictureReasoningEffort` and a `textReasoningEffort`
   that the client sends as `reasoning_effort` on a call that carries a picture and on one that does not
-  (ledger B719 and B803).
+  (ledger B719 and B807).
   Declared in `neuralwatt-ledger.ts`,
   `neuralwatt-ledger-config.ts`,
   `neuralwatt-estimate.ts`,

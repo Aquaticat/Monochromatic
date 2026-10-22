@@ -250,7 +250,7 @@ await describe({
         expect(body.stream_options,).toEqual({ include_usage: true, },);
         expect(body.max_tokens,).toBe(COMPLETION_CAP[SEAT_HYPER_OPENROUTER_VISION_EDITOR],);
         expect(body.response_format,).toMatchObject({ type: 'json_schema', },);
-        // The one parameter this provider may be sent, since the owner's lift of 2026-10-21 (ledger B803).
+        // The one parameter this provider may be sent, since the owner's lift of 2026-10-21 (ledger B807).
         expect(body.reasoning_effort,).toBe('low',);
         for (const absent of ['temperature', 'reasoning', 'thinking', 'store', 'provider',])
           expect(Object.hasOwn(body, absent,),).toBe(false,);

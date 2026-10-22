@@ -119,7 +119,7 @@ which lists every file of these commitments.
   The owner's instruction of 2026-08-25 (no thinking,
   budget or effort key in any body) holds for every other provider.
   The lift was first built for picture calls only (ledger B719),
-  and widened to the text calls of the same seat on 2026-10-21 (ledger B803),
+  and widened to the text calls of the same seat on 2026-10-21 (ledger B807),
   because the words name the provider and not the kind of call.
   A NeuralWatt card side may name a `pictureReasoningEffort` and a `textReasoningEffort` among the efforts the provider documents for the model
   (`low`,
