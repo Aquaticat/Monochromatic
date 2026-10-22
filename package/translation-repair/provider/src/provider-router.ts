@@ -63,6 +63,7 @@ import {
   routedTextElsewhere,
 } from './provider-router-reask.ts';
 import type { RoutedReply, } from './provider-router-reply.ts';
+import { DEEPSEEK_PER_MODEL_CONCURRENCY, } from './deepseek-client.ts';
 import { NEURALWATT_PER_MODEL_CONCURRENCY, } from './neuralwatt-client.ts';
 import type { ProviderCallers, } from './provider-callers.ts';
 import { SYNTHETIC_PER_MODEL_CONCURRENCY, } from './synthetic-client.ts';
@@ -131,6 +132,11 @@ const DEFAULT_SLOT_LIMITS: SlotLimits = {
   synthetic: SYNTHETIC_PER_MODEL_CONCURRENCY,
   hyper: Number.POSITIVE_INFINITY,
   bedrock: Number.POSITIVE_INFINITY,
+  // DeepSeek states 2,500 concurrent requests for its one model (2026-10-22,
+  // `deepseek-client.ts`), the only real ceiling in this table; Xiaomi states
+  // a request rate instead, which its pacer meets (`paces`).
+  deepseek: DEEPSEEK_PER_MODEL_CONCURRENCY,
+  xiaomi: Number.POSITIVE_INFINITY,
   openrouter: Number.POSITIVE_INFINITY,
 };
 

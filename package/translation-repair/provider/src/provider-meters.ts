@@ -5,16 +5,22 @@ import type { BedrockClient, } from './bedrock-client.ts';
 import {
   bedrockIsDry,
   bedrockMeterLevel,
+  deepSeekIsDry,
+  deepSeekMeterLevel,
   hyperIsDry,
   hyperMeterLevel,
   openRouterIsDry,
   openRouterMeterLevel,
   syntheticIsDry,
   syntheticMeterLevel,
+  xiaomiIsDry,
+  xiaomiMeterLevel,
 } from './budget-routing.ts';
 import type { ModelClient, } from './chat-contract.ts';
+import type { DeepSeekClient, } from './deepseek-client.ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type { HyperClient, } from './hyper-client.ts';
+import type { XiaomiClient, } from './xiaomi-client.ts';
 import type { NeuralWattClient, } from './neuralwatt-client.ts';
 import {
   neuralWattIsDry,
@@ -228,6 +234,10 @@ export const UNCONFIGURED_METER: MeterRecord = {
 
  @param bedrock - fourth-added provider's ledger reader, absent when unconfigured
 
+ @param deepseek - DeepSeek's balance reader, absent when unconfigured
+
+ @param xiaomi - Xiaomi's spend reader, absent when unconfigured
+
  @param openrouter - fourth provider's credits reader, absent when unconfigured
 
  @param signal - abort signal of whichever call started this reading
@@ -236,7 +246,7 @@ export const UNCONFIGURED_METER: MeterRecord = {
 
  @example
  ```ts
- const meters = await readEveryMeter({ neuralwatt, synthetic, hyper, bedrock, openrouter, signal, },);
+ const meters = await readEveryMeter({ neuralwatt, synthetic, hyper, bedrock, deepseek, xiaomi, openrouter, signal, },);
  ```
  */
 export async function readEveryMeter(
@@ -245,6 +255,8 @@ export async function readEveryMeter(
     synthetic,
     hyper,
     bedrock,
+    deepseek,
+    xiaomi,
     openrouter,
     signal,
   }: {
@@ -252,6 +264,8 @@ export async function readEveryMeter(
     readonly synthetic?: Pick<ModelClient, 'quotas'>;
     readonly hyper?: Pick<HyperClient, 'credits'>;
     readonly bedrock?: Pick<BedrockClient, 'credits'>;
+    readonly deepseek?: Pick<DeepSeekClient, 'credits'>;
+    readonly xiaomi?: Pick<XiaomiClient, 'spend'>;
     readonly openrouter?: Pick<OpenRouterClient, 'credits'>;
     readonly signal: AbortSignal;
   },
@@ -260,7 +274,15 @@ export async function readEveryMeter(
    Every meter, read together so one slow endpoint does not serialise
    behind another.
    */
-  const [neuralwattMeter, syntheticMeter, hyperMeter, bedrockMeter, openrouterMeter,] = await Promise.all([
+  const [
+    neuralwattMeter,
+    syntheticMeter,
+    hyperMeter,
+    bedrockMeter,
+    deepseekMeter,
+    xiaomiMeter,
+    openrouterMeter,
+  ] = await Promise.all([
     (neuralwatt === undefined)
       ? Promise.resolve(UNCONFIGURED_METER,)
       : meterRecordOf({
@@ -329,6 +351,40 @@ export async function readEveryMeter(
           };
         },
       },),
+    (deepseek === undefined)
+      ? Promise.resolve(UNCONFIGURED_METER,)
+      : meterRecordOf({
+        name: 'deepseek',
+        signal,
+        readLevel: async function readDeepSeekBalance(): Promise<MeterLevel> {
+          /**
+           Balance the verdict and the number are both drawn from.
+           */
+          const balance = await deepseek.credits({ signal, },);
+
+          return {
+            dry: deepSeekIsDry({ balance, },),
+            fields: deepSeekMeterLevel({ balance, },),
+          };
+        },
+      },),
+    (xiaomi === undefined)
+      ? Promise.resolve(UNCONFIGURED_METER,)
+      : meterRecordOf({
+        name: 'xiaomi',
+        signal,
+        readLevel: async function readXiaomiSpend(): Promise<MeterLevel> {
+          /**
+           Spend the (always wet) verdict and the number are both drawn from.
+           */
+          const spend = await xiaomi.spend({ signal, },);
+
+          return {
+            dry: xiaomiIsDry({ spend, },),
+            fields: xiaomiMeterLevel({ spend, },),
+          };
+        },
+      },),
     (openrouter === undefined)
       ? Promise.resolve(UNCONFIGURED_METER,)
       : meterRecordOf({
@@ -353,6 +409,8 @@ export async function readEveryMeter(
     synthetic: syntheticMeter,
     hyper: hyperMeter,
     bedrock: bedrockMeter,
+    deepseek: deepseekMeter,
+    xiaomi: xiaomiMeter,
     openrouter: openrouterMeter,
   };
 }

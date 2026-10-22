@@ -1,4 +1,5 @@
 import type { BedrockCredits, } from './bedrock-ledger.ts';
+import type { DeepSeekBalance, } from './deepseek-balance.ts';
 import type { OpenRouterCredits, } from './openrouter-credits.ts';
 import {
   type HyperCredits,
@@ -7,6 +8,7 @@ import {
   type ProviderRecord,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { QuotaSnapshot, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import type { XiaomiSpend, } from './xiaomi-spend.ts';
 
 //region Budget routing
 // WHICH PROVIDER SERVES ONE CALL, decided from budget and saturation rather
@@ -84,9 +86,10 @@ export class EveryProviderDryError extends Error {
       'Every provider is out of budget at once: NeuralWatt has no free daily energy left, '
         + 'Synthetic has no weekly credit left (or no five-hour request left, on a reply that still carries '
         + 'that window), Charm Hyper has no balance left, Amazon Bedrock has no credit left short of the owner\'s '
-        + 'card, and OpenRouter has no credit left. Nothing further can be bought, so this run ends. NeuralWatt\'s '
-        + 'free energy returns at 00:00 UTC; Synthetic regenerates on its own schedule; Hyper and OpenRouter refill '
-        + 'on purchase; Bedrock\'s credit is never topped up. '
+        + 'card, DeepSeek has no balance left (or says its account is unavailable), Xiaomi has refused a call '
+        + 'for payment, and OpenRouter has no credit left. Nothing further can be bought, so this run ends. '
+        + 'NeuralWatt\'s free energy returns at 00:00 UTC; Synthetic regenerates on its own schedule; Hyper, '
+        + 'DeepSeek, Xiaomi and OpenRouter refill on purchase; Bedrock\'s credit is never topped up. '
         + `Measured at the decision: ${measured}.`,
     );
     this.name = 'EveryProviderDryError';
@@ -269,6 +272,70 @@ export function bedrockIsDry(
   { credits, }: { readonly credits: BedrockCredits; },
 ): boolean {
   return credits.remainingUsd <= BEDROCK_DRY_MARGIN_USD;
+}
+
+/**
+ Balance at or under which DeepSeek reads dry, in USD.
+
+ NO MARGIN ABOVE ZERO, THE REASONING OF HYPER'S AND OPENROUTER'S FLOORS. What
+ one call costs on this route has not been measured in a keyed run, so any
+ cushion would be a number nobody established. A call costs at most a few
+ cents at the peak rates the card prices (the measured cap of the card is
+ 13,082 completion tokens, 0.016 USD at 1.2 USD per million), against a balance
+ given to use "as you wish", and a balance too small for the next call
+ surfaces as `402 Insufficient Balance` at the wire
+ (`https://api-docs.deepseek.com/quick_start/error_codes`, read 2026-10-22),
+ which the caller ORs into the dryness it passes back in. Bedrock alone
+ carries a margin, because its overshoot reaches the owner's card; DeepSeek's
+ money is prepaid.
+ */
+export const DEEPSEEK_DRY_FLOOR_USD = 0;
+
+/**
+ Whether DeepSeek's balance says nothing more can be bought there.
+
+ DRY WHEN DEEPSEEK SAYS IT CANNOT SERVE (`is_available` false) OR THE BALANCE
+ IS AT THE FLOOR, whichever reads first: the flag is DeepSeek's own verdict on
+ the account and the figure is the money behind it.
+
+ @param balance - most recent balance reading
+
+ @returns Whether that reading leaves nothing buyable
+
+ @example
+ ```ts
+ const dry = deepSeekIsDry({ balance, },);
+ ```
+ */
+export function deepSeekIsDry(
+  { balance, }: { readonly balance: DeepSeekBalance; },
+): boolean {
+  return (!balance.isAvailable) || (balance.totalUsd <= DEEPSEEK_DRY_FLOOR_USD);
+}
+
+/**
+ Whether Xiaomi's meter says nothing more can be bought there: never.
+
+ XIAOMI DOCUMENTS NO BALANCE ENDPOINT, so its meter has nothing to be dry on
+ and answers wet always (`xiaomi-spend.ts`). Exhaustion is learned from a
+ payment refusal at the wire, which `markRefused` holds dry.
+
+ @param spend - most recent spend reading, which does not decide
+
+ @returns False
+
+ @example
+ ```ts
+ const dry = xiaomiIsDry({ spend, },);
+ ```
+ */
+export function xiaomiIsDry(
+  { spend, }: { readonly spend: XiaomiSpend; },
+): boolean {
+  // The reading is carried so the verdict and the field come off one read,
+  // like every other meter; it decides nothing.
+  void spend;
+  return false;
 }
 
 /**
@@ -534,6 +601,53 @@ export function bedrockMeterLevel(
     `bedrockUsd=${remainingUsd.toFixed(2,)}`,
     `bedrockReckonedUsd=${reckonedUsd.toFixed(2,)}`,
   ];
+}
+
+/**
+ Renders what the DeepSeek meter actually said, as record fields.
+
+ WHAT IS LEFT, IN USD, TO TWO PLACES, as for OpenRouter: the unit the owner
+ tops up in. The availability flag is not a field of its own; a false flag
+ reads dry and the balance beside it shows what the account held.
+
+ @param balance - balance the dryness verdict was read from
+
+ @returns `key=value` tokens, no value carrying a space
+
+ @example
+ ```ts
+ deepSeekMeterLevel({ balance, },);
+ // => ['deepseekUsd=9.96',]
+ ```
+ */
+export function deepSeekMeterLevel(
+  { balance, }: { readonly balance: DeepSeekBalance; },
+): readonly string[] {
+  return [`deepseekUsd=${balance.totalUsd.toFixed(2,)}`,];
+}
+
+/**
+ Renders what the Xiaomi meter actually said, as record fields.
+
+ THE RUN'S OWN PRICED SPEND, TO FOUR PLACES: a call on this model costs
+ hundredths of a cent, so two places would read zero for a long time. It is
+ what this process spent, not what the account holds, which is worth
+ remembering when reading one.
+
+ @param spend - spend the verdict was read from
+
+ @returns `key=value` tokens, no value carrying a space
+
+ @example
+ ```ts
+ xiaomiMeterLevel({ spend, },);
+ // => ['xiaomiUsdSpent=0.0042',]
+ ```
+ */
+export function xiaomiMeterLevel(
+  { spend, }: { readonly spend: XiaomiSpend; },
+): readonly string[] {
+  return [`xiaomiUsdSpent=${spend.spentUsd.toFixed(4,)}`,];
 }
 
 //endregion Budget routing

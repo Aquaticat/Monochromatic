@@ -3,9 +3,11 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/ts';
 import { monotonicMs, } from '@monochromatic-dev/translation-repair-markup/ts';
 import type { BedrockClient, } from './bedrock-client.ts';
+import type { DeepSeekClient, } from './deepseek-client.ts';
 import type { HyperClient, } from './hyper-client.ts';
 import type { NeuralWattClient, } from './neuralwatt-client.ts';
 import type { OpenRouterClient, } from './openrouter-client.ts';
+import type { XiaomiClient, } from './xiaomi-client.ts';
 import {
   otherProviders,
   PROVIDER_ORDER,
@@ -306,6 +308,12 @@ function notHeldOut(): boolean {
 
  @param hyper - third provider's balance meter, which is all this reads
 
+ @param bedrock - Bedrock's ledger meter, which is all this reads
+
+ @param deepseek - DeepSeek's balance meter, which is all this reads
+
+ @param xiaomi - Xiaomi's spend meter, which is all this reads
+
  @param openrouter - fourth provider's credits meter, which is all this reads
 
  @param freshForMs - how long one reading is trusted
@@ -336,6 +344,8 @@ export function createProviderBudgets(
     synthetic,
     hyper,
     bedrock,
+    deepseek,
+    xiaomi,
     openrouter,
     freshForMs = BUDGET_FRESH_MS,
     cooldownMs = REFUSAL_COOLDOWN_MS,
@@ -347,6 +357,8 @@ export function createProviderBudgets(
     readonly synthetic?: Pick<ModelClient, 'quotas'>;
     readonly hyper?: Pick<HyperClient, 'credits'>;
     readonly bedrock?: Pick<BedrockClient, 'credits'>;
+    readonly deepseek?: Pick<DeepSeekClient, 'credits'>;
+    readonly xiaomi?: Pick<XiaomiClient, 'spend'>;
     readonly openrouter?: Pick<OpenRouterClient, 'credits'>;
     readonly freshForMs?: number;
     readonly cooldownMs?: number;
@@ -451,6 +463,8 @@ export function createProviderBudgets(
     synthetic: 0,
     hyper: 0,
     bedrock: 0,
+    deepseek: 0,
+    xiaomi: 0,
     openrouter: 0,
   };
 
@@ -535,6 +549,8 @@ export function createProviderBudgets(
       ...((synthetic === undefined) ? {} : { synthetic, }),
       ...((hyper === undefined) ? {} : { hyper, }),
       ...((bedrock === undefined) ? {} : { bedrock, }),
+      ...((deepseek === undefined) ? {} : { deepseek, }),
+      ...((xiaomi === undefined) ? {} : { xiaomi, }),
       ...((openrouter === undefined) ? {} : { openrouter, }),
       signal,
     },);
