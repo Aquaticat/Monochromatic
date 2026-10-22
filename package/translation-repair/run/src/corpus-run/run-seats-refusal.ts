@@ -1,7 +1,9 @@
 import {
   beyondBoundClausesOf,
   type BudgetView,
+  everyWritingProviderDry,
   EveryProviderDryError,
+  idleWetProviders,
   type NeuralWattReturn,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import { markFailureWritten, } from '@monochromatic-dev/translation-repair-stage/ts';
@@ -10,6 +12,7 @@ import {
   type ProviderRecord,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { RunClient, } from './run-client-contract.ts';
+import { RUN_WRITING_PROVIDERS, } from './run-config.ts';
 import { WritingBenchUnreachableError, } from './run-seats-floor.ts';
 import type { JudgeSeatPhase, } from './run-seats-wait.ts';
 
@@ -20,7 +23,7 @@ import type { JudgeSeatPhase, } from './run-seats-wait.ts';
 /**
  What the refusal reads off the run client: how long each provider is held, and what the run knows of NeuralWatt's day.
  */
-export type RefusalClient = Pick<RunClient, 'neuralwattReturn' | 'providerHolds'>;
+export type RefusalClient = Pick<RunClient, 'neuralwattReturn' | 'providerHolds' | 'writingProviders'>;
 
 /**
  What the run knows of NeuralWatt's day, for the words of a wait or a refusal.
@@ -36,6 +39,24 @@ export type RefusalClient = Pick<RunClient, 'neuralwattReturn' | 'providerHolds'
  */
 export function neuralwattOf({ client, }: { readonly client: Pick<RunClient, 'neuralwattReturn'>; },): NeuralWattReturn {
   return client.neuralwattReturn?.() ?? { kind: 'unanchored', };
+}
+
+/**
+ The providers whose wet reading keeps the run going, as the client reports them.
+
+ @param client - run client, whose record is read when it carries one
+
+ @returns The client's record, or the roster's own where the client carries none
+
+ @example
+ ```ts
+ const writing = writingProvidersOfClient({ client, },);
+ ```
+ */
+export function writingProvidersOfClient(
+  { client, }: { readonly client: Pick<RunClient, 'writingProviders'>; },
+): ProviderRecord<boolean> {
+  return client.writingProviders ?? RUN_WRITING_PROVIDERS;
 }
 
 /**
@@ -63,15 +84,16 @@ export function withNeuralWattReturn(
   }: {
     readonly clauses: readonly string[];
     readonly dry: BudgetView;
-    readonly client: Pick<RunClient, 'neuralwattReturn'>;
+    readonly client: Pick<RunClient, 'neuralwattReturn' | 'writingProviders'>;
   },
 ): readonly string[] {
   /**
    The sentence about NeuralWatt's return, empty where NeuralWatt is not dry, its day start is not decided, or every
-   provider is dry, which the run-ending refusal states itself.
+   provider that keeps the run going is dry, which the run-ending refusal states itself.
    */
-  const beyond = (dry.neuralwatt && (!PROVIDER_ORDER.every(function isDry(provider,): boolean {
-    return dry[provider];
+  const beyond = (dry.neuralwatt && (!everyWritingProviderDry({
+    view: dry,
+    writing: writingProvidersOfClient({ client, },),
   },)))
     ? beyondBoundClausesOf({ neuralwatt: neuralwattOf({ client, },), },)
     : [];
@@ -90,11 +112,15 @@ export function withNeuralWattReturn(
 
  @param neuralwatt - what the run knows of NeuralWatt's day, left out where the client reports none
 
+ @param dry - the dryness view the reading stopped on, whose wet providers the refusal names with their reason
+
+ @param writing - the providers whose wet reading keeps the run going
+
  @returns The refusal, stating the reading it was made on
 
  @example
  ```ts
- throw everyProviderDryRefusal({ phase: 'lanes', holds: client.providerHolds(), },);
+ throw everyProviderDryRefusal({ phase: 'lanes', holds: client.providerHolds(), dry, writing, },);
  ```
  */
 function everyProviderDryRefusal(
@@ -102,10 +128,14 @@ function everyProviderDryRefusal(
     phase,
     holds,
     neuralwatt,
+    dry,
+    writing,
   }: {
     readonly phase: JudgeSeatPhase;
     readonly holds: ProviderRecord<number>;
     readonly neuralwatt?: NeuralWattReturn;
+    readonly dry: BudgetView;
+    readonly writing: ProviderRecord<boolean>;
   },
 ): EveryProviderDryError {
   /**
@@ -113,7 +143,7 @@ function everyProviderDryRefusal(
    */
   const measured = `the seat reading for ${phase} read ${
     PROVIDER_ORDER.map(function dryClause(provider,): string {
-      return `${provider} dry`;
+      return `${provider} ${dry[provider] ? 'dry' : 'wet (serves no seat that writes)'}`;
     },)
       .join(', ',)
   }; holds ${
@@ -124,6 +154,10 @@ function everyProviderDryRefusal(
   }`;
   return new EveryProviderDryError({
     measured,
+    idle: idleWetProviders({
+      view: dry,
+      writing,
+    },),
     // Conditional spread keeps the day absent on a client that reports none.
     ...((neuralwatt === undefined) ? {} : { neuralwatt, }),
   },);
@@ -133,7 +167,8 @@ function everyProviderDryRefusal(
  Refusal for a writing bench that stops the entry, marked as already written,
  since the reading writes its own `JUDGE SEATS` line before throwing it.
 
- WHEN EVERY PROVIDER READS DRY THE CAUSE IS THAT, NOT THE BENCH: the reading is the first to meet the dry state when
+ WHEN EVERY PROVIDER THAT KEEPS THE RUN GOING READS DRY THE CAUSE IS THAT, NOT THE BENCH (a wet provider that serves no
+ seat that writes does not count, `run-writing-providers.ts`): the reading is the first to meet the dry state when
  an entry reaches its lanes with its preparation cached and so makes no chat call, and a bench error there ended the
  entry as a resumable failure that the pass visited and charged an attempt for, entry after entry, with no stop line.
  The owner ruled that the router's every-provider-dry refusal ends the run, so the reading raises that refusal, which
@@ -175,14 +210,21 @@ export function writtenRefusal(
   },
 ): EveryProviderDryError | WritingBenchUnreachableError {
   /**
+   The providers whose wet reading keeps the run going.
+   */
+  const writing = writingProvidersOfClient({ client, },);
+  /**
    The refusal the entry stops with.
    */
-  const refusal = PROVIDER_ORDER.every(function isDry(provider,): boolean {
-    return dry[provider];
+  const refusal = everyWritingProviderDry({
+    view: dry,
+    writing,
   },)
     ? everyProviderDryRefusal({
       phase,
       holds: client.providerHolds(),
+      dry,
+      writing,
       ...((client.neuralwattReturn === undefined) ? {} : { neuralwatt: client.neuralwattReturn(), }),
     },)
     : new WritingBenchUnreachableError({

@@ -14,6 +14,12 @@ export {
   reachPastCredentialHolds,
 } from './credential-hold.ts';
 export {
+  EVERY_PROVIDER_COUNTS,
+  everyWritingProviderDry,
+  idleWetProviders,
+  type WritingReach,
+} from './budget-routing.ts';
+export {
   beyondBoundClausesOf,
   holdReasonOf,
 } from './hold-reason.ts';

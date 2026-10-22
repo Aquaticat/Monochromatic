@@ -68,6 +68,14 @@ export type RunClient = ModelClient & {
    budgets that report none, which the refusal then words as an undecided day.
    */
   readonly neuralwattReturn?: () => NeuralWattReturn;
+
+  /**
+   The providers whose wet reading keeps the run going, because they serve a model seated in a writing bench. The
+   router counts a wet provider against "every provider dry" by this record, and the seat reader reads it to word the
+   refusal and to decide between the run-ending refusal and the bench error. Absent on a client that carries none,
+   which the seat reader reads as the roster's own (`RUN_WRITING_PROVIDERS`).
+   */
+  readonly writingProviders?: ProviderRecord<boolean>;
 };
 
 //endregion Run client contract

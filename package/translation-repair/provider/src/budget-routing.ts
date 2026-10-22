@@ -45,9 +45,11 @@ import { neuralWattTimeOfDayShort, } from './neuralwatt-day.ts';
 // roster is served by fewer than all providers, and one of those providers
 // being dry costs that panelist its voice, which the pipeline already records
 // and proceeds without. Only every budget being empty ends a run, because at
-// that point nothing can be bought at all. A provider that reads wet but does not serve the model asked, Xiaomi
-// included, still leaves the run something to buy for its other seats, so it keeps its own reading
-// (owner's ruling of 2026-10-22, open to the owner's veto).
+// that point nothing can be bought at all. A provider that reads wet but does not serve the model asked still leaves
+// the run something to buy for its other seats, so it keeps its own reading (owner's ruling of 2026-10-22, open to the
+// owner's veto). A WET PROVIDER COUNTS AGAINST "EVERY PROVIDER DRY" ONLY IF IT SERVES A MODEL SEATED IN A WRITING BENCH
+// (`WritingReach`): Xiaomi's wet meter, whose one seat is a checker, no longer hid a fleet that could write nothing
+// (the lead's ruling of 2026-10-22 on the review's M3, open to the owner's veto).
 
 /**
  What the run knows of when NeuralWatt's free energy returns, for the refusal that ends the run to state.
@@ -135,6 +137,189 @@ function returnClauseOf({ day, }: { readonly day: NeuralWattReturn; },): string 
 }
 
 /**
+ Which providers keep the run going while they read wet: those that serve a model seated in a writing bench, so a
+ writing bench could still reach its floor from them.
+
+ DERIVED FROM THE ROSTER BY THE RUN, NOT LISTED HERE: this package knows no roster. A provider that serves only seats
+ that judge or read (Xiaomi, whose one seat is a checker, in the roster of 2026-10-22) cannot keep a run going that
+ writes nothing, so its wet meter does not count against "every provider dry" (owner's ruling of 2026-10-22 on the
+ review's M3, open to the owner's veto). Per-call routing does not read this: a call whose model has a wet provider
+ still goes there.
+
+ @example
+ ```ts
+ const writing: WritingReach = { neuralwatt: true, synthetic: true, hyper: true, bedrock: true, deepseek: true, xiaomi: false, openrouter: true, };
+ ```
+ */
+export type WritingReach = ProviderRecord<boolean>;
+
+/**
+ The record of a caller that knows no roster: every provider counts, so only every meter reading dry ends the run.
+ */
+export const EVERY_PROVIDER_COUNTS: WritingReach = {
+  neuralwatt: true,
+  synthetic: true,
+  hyper: true,
+  bedrock: true,
+  deepseek: true,
+  xiaomi: true,
+  openrouter: true,
+};
+
+/**
+ Whether every provider that keeps the run going reads dry.
+
+ @param view - dryness per provider, holds and refusals folded in
+
+ @param writing - the providers whose wet reading keeps the run going
+
+ @returns Whether nothing that writes a page can be bought anywhere
+
+ @example
+ ```ts
+ const over = everyWritingProviderDry({ view, writing, },);
+ ```
+ */
+export function everyWritingProviderDry(
+  {
+    view,
+    writing,
+  }: {
+    readonly view: ProviderRecord<boolean>;
+    readonly writing: WritingReach;
+  },
+): boolean {
+  return PROVIDER_ORDER.every(function dryOrIdle(provider,): boolean {
+    return view[provider] || (!writing[provider]);
+  },);
+}
+
+/**
+ The providers that read wet but serve no seat that writes, which a refusal that ends the run names.
+
+ @param view - dryness per provider
+
+ @param writing - the providers whose wet reading keeps the run going
+
+ @returns The idle providers in spending order
+
+ @example
+ ```ts
+ const idle = idleWetProviders({ view, writing, },);
+ ```
+ */
+export function idleWetProviders(
+  {
+    view,
+    writing,
+  }: {
+    readonly view: ProviderRecord<boolean>;
+    readonly writing: WritingReach;
+  },
+): readonly ProviderName[] {
+  return PROVIDER_ORDER.filter(function isIdle(provider,): boolean {
+    return (!view[provider]) && (!writing[provider]);
+  },);
+}
+
+/**
+ How the refusal that ends the run reads one meter, `dry` or a wet provider with the reason it does not count.
+
+ @param view - dryness per provider
+
+ @param provider - the provider read
+
+ @returns The word for the measured clause
+
+ @example
+ ```ts
+ meterWord({ view, provider: 'xiaomi', },); // => 'wet (serves no seat that writes)'
+ ```
+ */
+export function meterWord(
+  {
+    view,
+    provider,
+  }: {
+    readonly view: ProviderRecord<boolean>;
+    readonly provider: ProviderName;
+  },
+): string {
+  return view[provider] ? 'dry' : 'wet (serves no seat that writes)';
+}
+
+/**
+ What each provider's dry clause says in the refusal, in the order the refusal lists them.
+ */
+const DRY_CLAUSES: readonly (readonly [
+  Exclude<ProviderName, 'neuralwatt'>,
+  string,
+  string
+])[] = [
+  [
+    'synthetic',
+    'Synthetic',
+    'Synthetic has no weekly credit left (or no five-hour request left, on a reply that still carries that window)',
+  ],
+  [
+    'hyper',
+    'Charm Hyper',
+    'Charm Hyper has no balance left',
+  ],
+  [
+    'bedrock',
+    'Amazon Bedrock',
+    'Amazon Bedrock has no credit left short of the owner\'s card',
+  ],
+  [
+    'deepseek',
+    'DeepSeek',
+    'DeepSeek has no balance left (or says its account is unavailable)',
+  ],
+  [
+    'xiaomi',
+    'Xiaomi',
+    'Xiaomi has refused a call for payment',
+  ],
+  [
+    'openrouter',
+    'OpenRouter',
+    'OpenRouter has no credit left',
+  ],
+];
+
+/**
+ The sentence naming what each provider is out of, with a provider that reads wet but serves no seat that writes named
+ for that instead.
+
+ @param idle - providers that read wet but serve no seat that writes
+
+ @returns The clauses joined as a list ending in "and", without the closing period
+
+ @example
+ ```ts
+ providerClausesOf({ idle: ['xiaomi',], },);
+ ```
+ */
+function providerClausesOf({ idle, }: { readonly idle: readonly ProviderName[]; },): string {
+  /**
+   One clause per provider.
+   */
+  const clauses = DRY_CLAUSES.map(function clauseOf([provider, name, dry,],): string {
+    return idle.includes(provider,) ? `${name} reads wet but serves no seat that writes` : dry;
+  },);
+  /**
+   The last clause, which the list joins with "and".
+   */
+  const last = clauses.at(-1,);
+  return `${clauses.slice(
+    0,
+    -1,
+  )
+    .join(', ',)}, and ${last ?? ''}`;
+}
+
+/**
  Refusal raised when no provider has budget left.
 
  ENDS THE RUN, at the owner's instruction. Every other budget state leaves
@@ -166,6 +351,9 @@ export class EveryProviderDryError extends Error {
    @param neuralwatt - what the run knows of NeuralWatt's day, so the sentence about its return states the account's
    own time of day and never midnight; "not decided" where the caller has none
 
+   @param idle - providers that read wet but serve no seat that writes, which the refusal names in place of an
+   exhaustion they do not have; none where every provider reads dry
+
    @example
    ```ts
    new EveryProviderDryError({ measured: 'meters read synthetic dry, hyper dry, openrouter dry; holds synthetic 0ms, hyper 0ms, openrouter 0ms', },);
@@ -175,18 +363,18 @@ export class EveryProviderDryError extends Error {
     {
       measured = 'no reading cited',
       neuralwatt = { kind: 'unanchored', },
+      idle = [],
     }: {
       readonly measured?: string;
       readonly neuralwatt?: NeuralWattReturn;
+      readonly idle?: readonly ProviderName[];
     } = {},
   ) {
     super(
       `Every provider is out of budget at once: ${openingClauseOf({ day: neuralwatt, },)}`
-        + 'Synthetic has no weekly credit left (or no five-hour request left, on a reply that still carries '
-        + 'that window), Charm Hyper has no balance left, Amazon Bedrock has no credit left short of the owner\'s '
-        + 'card, DeepSeek has no balance left (or says its account is unavailable), '
-        + 'Xiaomi has refused a call for payment, and OpenRouter has no credit left. '
-        + 'Nothing further can be bought, so this run ends. '
+        + `${providerClausesOf({ idle, },)}. `
+        + `${(idle.length === 0) ? 'Nothing further can be bought' : 'Nothing further that writes a page can be bought'}, `
+        + 'so this run ends. '
         + `${returnClauseOf({ day: neuralwatt, },)}Synthetic regenerates on its own schedule; Hyper, `
         + 'DeepSeek and OpenRouter refill on purchase; Xiaomi, once refused for payment, is read again only after one '
         + 'of its calls settles, so a top-up is seen on the next launch; '
@@ -494,10 +682,13 @@ export function providerServing(
  @param neuralwatt - what the run knows of NeuralWatt's day, which the refusal that ends the run states the return
  time from; absent where the caller has none
 
+ @param writing - the providers whose wet reading keeps the run going (`WritingReach`); every provider where the caller
+ knows no roster
+
  @returns Provider to call, or why none can be
 
- @throws {@link EveryProviderDryError} when no provider has budget left,
- which ends the run
+ @throws {@link EveryProviderDryError} when no provider that serves a seat that writes has budget left, which ends the
+ run
 
  @example
  ```ts
@@ -510,27 +701,37 @@ export function routeProviderFor(
     dry,
     saturated,
     neuralwatt,
+    writing = EVERY_PROVIDER_COUNTS,
   }: {
     readonly reach: ModelReach;
     readonly dry: ProviderRecord<boolean>;
     readonly saturated: ProviderRecord<boolean>;
     readonly neuralwatt?: NeuralWattReturn;
+    readonly writing?: WritingReach;
   },
 ): ProviderChoice {
-  if (PROVIDER_ORDER.every(function isDry(provider,): boolean {
-    return dry[provider];
+  if (everyWritingProviderDry({
+    view: dry,
+    writing,
   },)) {
     // THE READING IT DECIDED ON, cited (ledger P12): this refusal said "no
     // reading cited" where the router had the whole dryness record in hand.
-    // EVERY PROVIDER READS DRY HERE: this branch runs only when `isDry` held for every provider in `PROVIDER_ORDER`,
-    // whether or not it serves the model, so each clause says "dry".
+    // EVERY PROVIDER THAT KEEPS THE RUN GOING READS DRY HERE, whether or not it serves the model, so each clause says
+    // "dry"; a wet provider that serves no seat that writes says why it does not count.
     throw new EveryProviderDryError({
       measured: `meters read ${
         PROVIDER_ORDER.map(function stateOf(provider,): string {
-          return `${provider} dry`;
+          return `${provider} ${meterWord({
+            view: dry,
+            provider,
+          },)}`;
         },)
           .join(', ',)
       }; no holds read at this decision`,
+      idle: idleWetProviders({
+        view: dry,
+        writing,
+      },),
       // Conditional spread keeps the day absent where the caller has none.
       ...((neuralwatt === undefined) ? {} : { neuralwatt, }),
     },);

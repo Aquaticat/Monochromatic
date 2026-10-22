@@ -3,8 +3,13 @@ import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
+  EVERY_PROVIDER_COUNTS,
+  everyWritingProviderDry,
   EveryProviderDryError,
+  idleWetProviders,
+  meterWord,
   type NeuralWattReturn,
+  type WritingReach,
 } from './budget-routing.ts';
 import { holdReasonOf, } from './hold-reason.ts';
 import type {
@@ -133,26 +138,6 @@ export async function waitOutHold(
 }
 
 /**
- Whether every provider reads dry in one view.
-
- @param view - dryness per provider
-
- @returns Whether nothing is buyable anywhere
-
- @example
- ```ts
- const over = everyProviderDry({ view, },);
- ```
- */
-function everyProviderDry(
-  { view, }: { readonly view: BudgetView; },
-): boolean {
-  return PROVIDER_ORDER.every(function isDry(provider,): boolean {
-    return view[provider];
-  },);
-}
-
-/**
  States what the budgets read and what held them, for the error that ends
  the run.
 
@@ -163,11 +148,6 @@ function everyProviderDry(
  @param holds - hold left per provider
 
  @returns One clause a reader can tell exhaustion from holds by
-
- @throws Error when a provider reads wet, which no call reaches:
- `readBudgetsPastHolds` calls this only with every provider reading dry in
- the view, since a refuser whose meter reads wet is sent back to it, or
- waited for, before any call reaches here
 
  @example
  ```ts
@@ -187,24 +167,14 @@ function measuredAt(
   },
 ): string {
   /**
-   Each meter's reading, the refusal that routed here folded into its
-   provider's clause.
+   Each meter's reading, the refusal that routed here folded into its provider's clause. A provider that reads wet here
+   serves no seat that writes, since `readBudgetsPastHolds` calls this only once every provider that does reads dry.
    */
   const meters = PROVIDER_ORDER.map(function clauseOf(provider,): string {
-    /**
-     Whether this provider's meter reads dry, which every provider's does
-     here: a refuser the meter reads wet leaves `readBudgetsPastHolds` for
-     the return to it when no hold is left, and for the wait when one is, so
-     no wet reading is read here.
-     */
-    const dry = view[provider];
-    if (!dry) {
-      throw new Error(
-        `unreachable: ${provider} read wet inside measuredAt, which runs only once every provider has `
-          + 'read dry',
-      );
-    }
-    return `${provider} dry${(refused === provider) ? ' (just refused this call)' : ''}`;
+    return `${provider} ${meterWord({
+      view,
+      provider,
+    },)}${(refused === provider) ? ' (just refused this call)' : ''}`;
   },);
   /**
    Each provider's hold.
@@ -233,7 +203,9 @@ function measuredAt(
 
  @param holds - the holds as the caller read them, with at least one running
 
- @returns The first reading in which some provider no longer reads dry
+ @param writing - the providers whose wet reading keeps the run going
+
+ @returns The first reading in which some provider that keeps the run going no longer reads dry
 
  @throws {@link EveryProviderDryError} when every provider still reads dry and no hold is left to wait out
 
@@ -249,12 +221,14 @@ async function readAfterHolds(
     signal,
     pollMs,
     holds,
+    writing,
   }: {
     readonly budgets: ProviderBudgets;
     readonly modelId: RosterModelId;
     readonly signal: AbortSignal;
     readonly pollMs: number;
     readonly holds: ProviderRecord<number>;
+    readonly writing: WritingReach;
   },
 ): Promise<BudgetView> {
   /**
@@ -312,7 +286,10 @@ async function readAfterHolds(
      */
     const again = await budgets.read({ signal, },);
     /* oxlint-enable no-await-in-loop */
-    if (!everyProviderDry({ view: again, },))
+    if (!everyWritingProviderDry({
+      view: again,
+      writing,
+    },))
       return again;
 
     next.holds = budgets.holds();
@@ -332,6 +309,10 @@ async function readAfterHolds(
             holds: next.holds,
           },)
         }`,
+        idle: idleWetProviders({
+          view: again,
+          writing,
+        },),
         // Conditional spread keeps the day absent on budgets that report none.
         ...(neuralwatt === undefined ? {} : { neuralwatt, }),
       },);
@@ -356,6 +337,9 @@ async function readAfterHolds(
 
  @param pollMs - how often the wait checks for abort
 
+ @param writing - the providers whose wet reading keeps the run going, because they serve a model seated in a writing
+ bench (`WritingReach`); every provider where the caller knows no roster
+
  @returns Every provider's dryness, holds waited out
 
  @throws {@link EveryProviderDryError} when every provider reads dry with no
@@ -373,12 +357,14 @@ export async function readBudgetsPastHolds(
     signal,
     refused,
     pollMs,
+    writing = EVERY_PROVIDER_COUNTS,
   }: {
     readonly budgets: ProviderBudgets;
     readonly modelId: RosterModelId;
     readonly signal: AbortSignal;
     readonly refused: ProviderName | typeof NOBODY_REFUSED;
     readonly pollMs: number;
+    readonly writing?: WritingReach;
   },
 ): Promise<BudgetView> {
   /**
@@ -401,7 +387,10 @@ export async function readBudgetsPastHolds(
       return first[provider] || (refused === provider);
     },
   },);
-  if (!everyProviderDry({ view: folded, },))
+  if (!everyWritingProviderDry({
+    view: folded,
+    writing,
+  },))
     return folded;
 
   /**
@@ -422,6 +411,7 @@ export async function readBudgetsPastHolds(
    for no time.
    */
   const refuserBack = (refused !== NOBODY_REFUSED)
+    && writing[refused]
     && (!first[refused])
     && (holds[refused] === 0);
   if (refuserBack) {
@@ -448,6 +438,10 @@ export async function readBudgetsPastHolds(
         refused,
         holds,
       },),
+      idle: idleWetProviders({
+        view: first,
+        writing,
+      },),
       // Conditional spread keeps the day absent on budgets that report none.
       ...(neuralwatt === undefined ? {} : { neuralwatt, }),
     },);
@@ -459,6 +453,7 @@ export async function readBudgetsPastHolds(
     signal,
     pollMs,
     holds,
+    writing,
   },);
 }
 

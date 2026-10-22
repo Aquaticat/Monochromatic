@@ -33,6 +33,7 @@ import {
 import {
   DECISION_ONLY_ROSTER_IDS,
   holdSet,
+  type ProviderRecord,
   ROSTER_MODEL_IDS,
   type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
@@ -53,6 +54,7 @@ import {
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import type { ProviderOff, } from './providers-off.ts';
 import { configureProviders, } from './run-providers.ts';
+import { writingProvidersOf, } from './run-writing-providers.ts';
 import { refusingCulledSeats, } from '../culled-seat-guard.ts';
 import { resolveGit, } from '@monochromatic-dev/translation-repair-glossary/ts';
 import { defaultRunsDirIn, } from './runs-layout.ts';
@@ -1134,6 +1136,21 @@ async function unconfiguredSyntheticQuota(): Promise<QuotaSnapshot> {
 /* oxlint-enable require-await, typescript/require-await */
 
 /**
+ The providers that keep a run going while they read wet: those that serve a model seated in a writing bench, the
+ editors, the refiners or the translators. Every provider but Xiaomi in the roster of 2026-10-22, whose one seat is a
+ checker. A wet provider outside this record does not count against "every provider dry", so a fleet that can write
+ nothing ends the run instead of idling (`run-writing-providers.ts`; the lead's ruling of 2026-10-22, open to the owner's
+ veto).
+ */
+export const RUN_WRITING_PROVIDERS: ProviderRecord<boolean> = writingProvidersOf({
+  modelIds: [
+    ...RUN_MODELS.editorModelIds,
+    ...RUN_MODELS.refinerModelIds,
+    ...RUN_TRANSLATORS,
+  ],
+},);
+
+/**
  Builds client every run calls from every configured provider,
  counting every call.
 
@@ -1251,6 +1268,8 @@ export function runClientFrom(
       callers: clients,
       budgets,
       credentialHolds,
+      // The providers whose wet reading keeps the run going; a wet provider outside it is no budget to buy writing with.
+      writing: RUN_WRITING_PROVIDERS,
       // Hyper paces its calls to the account's hourly limit; while that
       // window is full, a model another provider serves goes there instead
       // of queueing (class one hundred forty-nine).
@@ -1313,6 +1332,7 @@ export function runClientFrom(
     providerMeterStates: budgets.readStates,
     providerHolds: budgets.holds,
     neuralwattReturn: budgets.neuralwattReturn,
+    writingProviders: RUN_WRITING_PROVIDERS,
   };
 }
 

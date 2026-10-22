@@ -45,7 +45,7 @@ import {
  */
 export type SeatReadingClient = Pick<
   RunClient,
-  'neuralwattReturn' | 'providerDryness' | 'providerHolds' | 'providerMeterStates'
+  'neuralwattReturn' | 'providerDryness' | 'providerHolds' | 'providerMeterStates' | 'writingProviders'
   >;
 
 /**
