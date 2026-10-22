@@ -1,3 +1,10 @@
+import { redirectLogScratch, } from './log-scratch.ts';
+
+// First statement of the entry: the logger resolves its file sink destination
+// only on the first record, so redirecting here still lands every record in
+// per-run scratch even though the imports above evaluated first.
+redirectLogScratch();
+
 export { caught, } from './caught.ts';
 export {
   extractAssertionExpression,
