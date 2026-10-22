@@ -32,7 +32,10 @@ up to 8 copies with 4 test threads each,
 The build container used 8 CPUs (`IDE_CONTAINER_CPUS=8`) for the tool's build.
 
 A filtered `test:native` (the gate form `'all()'` included) runs one test at a time:
-the sum of the 283 test durations of the gate run is 198.5 s and its wall time 198.6 s (mean concurrency 1.0).
+the sum of the 283 test durations of the gate run is 198.5 s and its wall time 198.6 s (mean concurrency 1.0);
+nextest's own help says so:
+"--no-capture:
+Run tests serially and do not capture output".
 Only an unfiltered run uses the thread count of the bound.
 
 ### Fixed in this session
@@ -258,7 +261,7 @@ this entry is "fixed by inference".
 Measured,
 no change made.
 Method:
-a sampler (a 60-line read-only Node script of the session,
+a sampler (a short read-only Node script of the session,
 not kept,
 a loop over `/proc` with the fdinfo and sysfs reads named here,
 2 s interval,
