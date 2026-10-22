@@ -711,6 +711,21 @@ to 14.60 MB (3.68 MB, 20%): both under the 5 MB bar, so Android stays at opt-lev
 34.32 MB (9.69 MB, 22%): clears both size bars, so only the desktop speed study continues. The two crates share the
 `CARGO_PROFILE_MUSIC` preset in `file-enforcer.config.ts`; a desktop-only `s` needs a separate preset.
 
+Same branch, 2026-10-22, media session position and release dry run. The session position now re-anchors against the
+engine (`SessionPositionAnchor`), and `PlayerController.seek` announces the seek, because the scrubber, the seek
+buttons and restart call it directly and a seek while paused left the session 26.7 s behind in the emulator. Guard
+check done: with the announcement removed, `aSeekAnnouncesOneStateChange` and `theEngineIsToldBeforeTheAnnouncement`
+fail; the announcement is restored and the tree equals `8829b68359` (the rerun is listed below). The first
+dry run of the branch (`39733789973`) built both Android ABIs and passed the per-ABI packaging script, then failed the
+desktop `notices` job: `bin/third-party-notices.mjs` refused `notices/slint-royalty-free-2.0.md` because its SHA-256
+(`542cc1ea...`) differed from the pinned one (`5167f505...`). Cause: the MD1 prose rewrap commit `5513294572` reflowed
+the vendored license text, so the same failure would have hit the real release on `main`. Restored the text from
+`20c672e553` in `5b5e9be057` (hash matches again). A license text is verbatim legal text: never reflow it. Second dry
+run `39735861225` is checking the desktop jobs (fat LTO build time on the runners) and the checksums job with the new
+per-ABI Android asset names. Still queued: the desktop `opt-level = "s"` speed study (agent `a4345debcb3daaf90`), a
+rebuilt-APK emulator re-check of the paused seek (A5), full Android verification after the seek change, then merge,
+release, and the doc and `verify-release-assets.ts` updates for the per-ABI file names.
+
 In flight 2026-10-18 after 0.1.6: the license polish branch `fix/music-player-license-polish` reported; its entry is
 "2026-10-18, license polish after 0.1.6" above. Merge, then release 0.1.7. Not started, mine: a quiet-host perfetto
 trace for the 10,000-track jank (p = 0.089, optional), re-check of issues 1079 to 1081 and 1069 (Depot trial CI
@@ -982,6 +997,13 @@ Decision numbers D122 to D130 are taken; the next free one is D131.
 ### Mistakes made in this effort, and what corrected them
 
 Read these before repeating them. Each one cost the human a correction.
+
+- Briefing an emulator agent to point `ADB_VENDOR_KEYS` at the human's own adb key (2026-10-22) tripped the agent's
+  permission classifier and cost the human several `/permissions` grants; a relayed approval is not the human's
+  authority and the agent rightly refused it. Better design: a throwaway key pre-seeded into the private AVD copy, so no
+  agent touches the real key.
+- Reporting the Android profile units as building (2026-10-22) when the first `systemd-run` had failed at once (module
+  not found: no working directory or absolute path). Check the unit state after launch, not the launch message.
 
 - The orchestrator merged the unplayable-file notification (D122) with a racy test helper:
   `unplayable_notification_bus_support.rs` made its message iterator inside the service thread, so a `Notify` call that

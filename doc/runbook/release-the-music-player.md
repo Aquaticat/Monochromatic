@@ -17,7 +17,8 @@ One release holds one file per platform and a checksum file:
 - `music-player-<version>-macos-arm64.dmg` (there is no Intel Mac build)
 - `music-player-<version>-linux-x64.tar.gz` and `music-player-<version>-linux-arm64.tar.gz` (glibc)
 - `music-player-<version>-linux-musl-x64.tar.gz` and `music-player-<version>-linux-musl-arm64.tar.gz` (Alpine, musl)
-- `music-player-<version>-android.apk`
+- `music-player-<version>-android-arm64-v8a.apk` and `music-player-<version>-android-x86_64.apk`
+  (one APK per ABI, no universal APK; phones, tablets and foldables take the `arm64-v8a` one)
 - `music-player-<version>-desktop-third-party-licenses.txt` and
   `music-player-<version>-android-third-party-licenses.txt`
   (license notices;
