@@ -117,10 +117,22 @@ run while other work reads `dist`,
 is run without it
 (`mise run --skip-deps <task>`),
 and the brief names that form (ledger M185).
+The katex shim landed as a new workspace package with no file-enforcer run,
+and the private registry's config,
+which file-enforcer derives from the workspace,
+left it out until a later run for another change wrote it in (ledger M286).
+A change that adds,
+removes or renames a workspace package runs `mise run file-enforcer` in its worktree before it lands
+and commits what that run writes to the files derived from the workspace;
+the rewrite of `_.path` in the root `mise.toml` follows the worktree's installs,
+so it is read against them first,
+and a scratch worktree's partial install is never committed as that list.
 
 What enforces it:
 the coverage census,
 which refuses a suite whose log carries a failing marker,
 and one that printed no pass marker (ledger B384);
 habit for the names,
-the directories and the sources a brief names.
+the directories,
+the sources a brief names
+and the file-enforcer run before a package lands.

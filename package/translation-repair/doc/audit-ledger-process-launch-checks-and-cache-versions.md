@@ -476,3 +476,44 @@ Prevention:
 step 10 now names the branch worktree,
 the install after its fast-forward,
 and the digest of its build against the gated build's before the launch.
+
+## M286: a new workspace package landed without a file-enforcer run, and the registry config left it out
+
+Status:
+found on 2026-10-22 (UTC),
+in the main session,
+when `mise run file-enforcer` ran in the scratch worktree `tr-w275` for the WUC rule in `AGENTS.md`;
+fixed in `1c10d0b176`,
+landed in `65e8325303`.
+No run read the file,
+so no pass was touched.
+
+The katex shim (`package/shim/katex`,
+added in `47b4634eeb` and landed in `c0d0325899`)
+is a new workspace package,
+and file-enforcer derives the private registry's config,
+`package/config/pnpr/config.yaml`,
+from the workspace's packages.
+Nothing ran file-enforcer before that landing,
+and the gate runs no step that would,
+so the config kept its published count at 163 and left `@monochromatic-dev/shim-katex` out of its package list.
+The run for WUC rewrote it to 164 with the shim listed.
+The same run also rewrote the `_.path` list in the root `mise.toml`,
+dropping the `node_modules/.bin` folders of packages the scratch worktree had not installed;
+that rewrite follows the worktree's installs,
+not the workspace,
+so it was saved as a patch in the agent scratch directory and discarded,
+not committed.
+
+Recurrence:
+none recorded in this package;
+the repository's rule names file-enforcer's outputs,
+and nothing in the landing steps ran it.
+
+Prevention:
+`mistake-prevention-tasks-builds-and-bulk-output.md`,
+"Tasks, builds and bulk output":
+a change that adds,
+removes or renames a workspace package runs `mise run file-enforcer` in its worktree before it lands
+and commits what that run writes to files derived from the workspace,
+reading the `mise.toml` `_.path` rewrite against the worktree's installs first.
