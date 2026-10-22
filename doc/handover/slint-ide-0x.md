@@ -1640,7 +1640,24 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     Gates once on the merged snapshot: `lint` passes, unfiltered `test:native` 290 passed and 5 skipped (the first
     run at the new bound), `test:bin` 71 of 71, `test` 803 passed and 1 skipped, `inspect:no-software-renderer`
     passes. No product code, so no reinstall. The uncommitted `.mjs` restores in the old scratch tree `land-share`
-    were not pushed; that tree is superseded and is to be removed.
+    were not pushed; that tree is superseded and has been removed.
+    LANDED, 2026-10-22, the three stale guard anchors repaired (merge tip `3ad1271c94` on `origin/main`, ancestry
+    confirmed; guards file only, no product code). `failed-job-freed` now anchors on the failure path of
+    `src/native/tile.rs` (`current.tile_job = None;` before the debug-only `worker_failures` push) and names the test
+    that was renamed to `a_failed_worker_reply_frees_its_job_and_names_the_failure`; `overscan-early-return` now
+    turns the `if changed { render } else { note }` branch of `src/native/viewport.rs` into `if true`, because the
+    early `return;` it guarded is gone; `minimap-scroll-notes-bands` only needed the indentation of its anchor.
+    The static anchor check reports 0 absent anchors of 168. All three were proved in a disposable copy: baseline
+    passes, guard removed fails, restored passes (3 of 168 guards; the other 165 were not run in this pass). The first
+    run stopped at `failed-job-freed` because the test name was stale, which is how the rename was found. Gates once
+    on the merged snapshot: `lint` passes, `test:bin` 71 of 71, `test` 803 passed and 1 skipped,
+    `inspect:no-software-renderer` passes (no Rust changed, so no `test:native`).
+    State after this series: no IDE agent is running; `origin/main` holds the conversion, the stacked tile, the
+    minimap lead, the 90 percent share and the repaired anchors; the installed IDE is the minimap build. Open items:
+    the annotation stability tests (not reproduced), the caret test (fixed by inference only), the stacking branch
+    measured only on the one-texture path (no run at a window tall enough to need more than one texture), the late
+    tiles B 2 of 140 against A 0 of 140 (cause unknown), dense-selection cost, the blind spot for a chunk shifted by a
+    whole line, and the 15 other `.mjs` files in `bin/` (a conversion of all of them is a decision for the owner).
     Stall pass agent `ae05d7039f46336dc` (started 2026-10-22, own worktree off `origin/main`, branch push only; brief
     quotes `NLG`, `NLD`, `RXI`, `NQH`): at least 60 alternating stall pairs (tree A = before the wake-up, tree B =
     `origin/main`) plus 30 A against A pairs for the spread; keeps the debug timeline of every stalled run and decides
