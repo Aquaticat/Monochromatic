@@ -656,7 +656,9 @@ Status:
 fixed on 2026-10-21 (UTC),
 red `65b3695fc7b0816f4e3af187ae4c3a27560474cd`,
 fix `2866c62ebd7a361d94854fe1c43a1f70288eef7e`,
-first-content window revised from 120000 ms to 180000 ms before landing (see "The choice"),
+first-content window revised from 120000 ms to 180000 ms before landing,
+with `firstContentMs` logged,
+in `e2c0cbbf90534ec838712d76e1f8e77dfa7d12ed` (see "The choice"),
 cache versions none.
 Found in the read of the corpus pass for `zheermao22` (class K2) and fixed in `w263`.
 
