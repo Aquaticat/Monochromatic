@@ -973,6 +973,58 @@ await describe({
             );
           },
         },),
+        it({
+          name: 'reports missing trailing commas on type-annotated patterns',
+          fn: async () => {
+            const diagnostics = await lint(
+              'invalid/comma-dangle-pattern-annotation.ts',
+            );
+            const commaDiagnostics = diagnostics.filter(
+              function isCommaDangle(diagnostic,): boolean {
+                return diagnostic.code === 'stylistic(comma-dangle)';
+              },
+            );
+            expect(commaDiagnostics,).toHaveLength(3,);
+            expect(commaDiagnostics[0]?.message,).toBe('Missing trailing comma.',);
+          },
+        },),
+        it({
+          name: 'valid type-annotated pattern cases produce no violations',
+          fn: async () => {
+            const diagnostics = await lint(
+              'valid/comma-dangle-pattern-annotation.ts',
+            );
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
+        it({
+          name: '--fix adds pattern commas and leaves type annotations alone',
+          fn: async () => {
+            /** Source fixture copied so --fix never mutates original fixture. */
+            const annotationSrc = resolve(
+              FIXTURES,
+              'invalid',
+              'comma-dangle-pattern-annotation.ts',
+            );
+            /** Temp fixture copy isolated from parallel autofix tests. */
+            await using annotationCopy = await createTempFixtureFile({
+              fileName: 'comma-dangle-pattern-annotation.ts',
+              sourcePath: annotationSrc,
+              tempPrefix: 'oxlint-stylistic-autofix-',
+            },);
+
+            await fixUntilStable(annotationCopy.filePath,);
+
+            const fixedContent = readFileSync(annotationCopy.filePath, 'utf8',);
+            expect(fixedContent,).toContain('function destructured({ salt, }: { readonly salt: number; },): void',);
+            expect(fixedContent,).toContain('function destructuredPresent({ salt, }: { readonly salt: number; },): void',);
+            expect(fixedContent,).toContain('function destructuredTuple([only,]: [number,],): void',);
+            expect(fixedContent,).not.toContain(';,');
+
+            const diagnostics = await lint(annotationCopy.filePath,);
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
       ],
     },),
 
