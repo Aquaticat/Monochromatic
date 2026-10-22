@@ -145,7 +145,8 @@ The steps are:
    `--pids-limit` and `--ulimit` were not proven,
    and this step makes them fail early and not an hour into the build.
 4. Run `mise run //package/desktop-app/ide:bundle`.
-   `MISE_JOBS=1` runs one task at a time,
+   `MISE_JOBS=1` runs one task at a time
+   (`mise run --help` of mise 2026.10.0 lists `--jobs` with `[env: MISE_JOBS]`),
    because the container bound applies per container and not per task graph.
    `IDE_CONTAINER_CPUS=4` and `IDE_CONTAINER_MEMORY=12g` replace the default 90 percent share
    (`package/desktop-app/ide/bin/container-bounds.ts`),
@@ -317,6 +318,11 @@ the IDE image (2.25 GB),
 the release target directory (3.5 GB locally),
 a debug build of the `ide-runtime` helper,
 the cargo volume and the grammar sources.
+That debug build is also a time cost:
+the `runtime` task compiles every dependency in the dev profile
+(optimized by `[profile.dev.package."*"]`)
+before the release build compiles them again,
+so the first dry run's total will exceed a plain release build such as the music player's 25 min 10 s.
 The runner's free disk was not measured from here.
 A step removes the preinstalled Android SDK,
 .NET,
