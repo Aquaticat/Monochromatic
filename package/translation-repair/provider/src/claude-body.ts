@@ -87,7 +87,9 @@ export function buildClaudeBody(
    Turns the conversation holds outside the system prompt.
    */
   const turns = speakingTurns({ messages, },);
-  if (turns.at(-1,)?.role === 'assistant')
+  if (turns.at(-1,)
+    ?.role
+    === 'assistant')
     throw new ClaudePrefillError();
   /**
    Every system message, joined into the one field this protocol takes.
@@ -137,7 +139,8 @@ export function buildClaudeBody(
             : {
               format: {
                 type: 'json_schema',
-                schema: responseFormat.json_schema.schema,
+                schema: responseFormat.json_schema
+                  .schema,
               },
             }),
         },

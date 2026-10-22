@@ -452,7 +452,7 @@ function statedWaitOf({ reply, }: { readonly reply: TransportReply; },): number 
   return Math.max(
     retryAfterMsOf({ bodyText: reply.bodyText, },),
     // Conditional spread keeps the member absent instead of undefined.
-    retryAfterHeaderMsOf({ ...((reply.headers === undefined) ? {} : { headers: reply.headers, }), },),
+    retryAfterHeaderMsOf(((reply.headers === undefined) ? {} : { headers: reply.headers, }),),
   );
 }
 

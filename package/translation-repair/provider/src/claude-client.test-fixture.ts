@@ -56,8 +56,11 @@ export const PLAIN_USAGE: ClaudeStreamUsage = {
  Body of a whole Messages stream: a thinking block, a text block, and the terminator.
 
  @param text - the answer the text block carries, empty for none
+ 
  @param stopReason - why the model stopped
+ 
  @param stopDetails - the `stop_details` object the closing frame carries, absent for none
+ 
  @param usage - counts the stream reports
 
  @returns Stream text
@@ -100,15 +103,37 @@ export function claudeStreamOf(
         },
       },
     },),
-    anthropicBlockStart({ index: 0, type: 'thinking', },),
-    anthropicBlockDelta({ index: 0, deltaType: 'thinking_delta', field: 'thinking', text: 'The cat naps.', },),
-    anthropicFrameOf({ body: { type: 'content_block_stop', index: 0, }, },),
+    anthropicBlockStart({
+      index: 0,
+      type: 'thinking',
+    },),
+    anthropicBlockDelta({
+      index: 0,
+      deltaType: 'thinking_delta',
+      field: 'thinking',
+      text: 'The cat naps.',
+    },),
+    anthropicFrameOf({ body: {
+      type: 'content_block_stop',
+      index: 0,
+    }, },),
     (text === '')
       ? ''
       : [
-        anthropicBlockStart({ index: 1, type: 'text', },),
-        anthropicBlockDelta({ index: 1, deltaType: 'text_delta', field: 'text', text, },),
-        anthropicFrameOf({ body: { type: 'content_block_stop', index: 1, }, },),
+        anthropicBlockStart({
+          index: 1,
+          type: 'text',
+        },),
+        anthropicBlockDelta({
+          index: 1,
+          deltaType: 'text_delta',
+          field: 'text',
+          text,
+        },),
+        anthropicFrameOf({ body: {
+          type: 'content_block_stop',
+          index: 1,
+        }, },),
       ].join('',),
     anthropicFrameOf({
       body: {
@@ -135,6 +160,7 @@ export const CLAUDE_CAT_KEY = 'sk-ant-cat-key-whisker-9f3c7a-Qx4d';
  the extra member passes through it unchanged.
 
  @param bodyText - the whole stream
+ 
  @param headers - response headers by lower-case name
 
  @returns The reply

@@ -44,7 +44,10 @@ import {
   createRequestPace,
   type RequestPace,
 } from './request-pace.ts';
-import { claudeSpendNow, type ClaudeSpend, } from './claude-spend.ts';
+import {
+  claudeSpendNow,
+  type ClaudeSpend,
+} from './claude-spend.ts';
 import { isPaymentRefusal, } from './provider-budget-refusal.ts';
 import { RETRY_AFTER_HEADER, } from './retry-after-header.ts';
 import { failureForReply, } from './request-size-refusal.ts';
@@ -147,6 +150,54 @@ export type ClaudeClient = ModelCaller & {
 };
 
 /**
+ A flag that can be raised and never lowered, so a fact met once in a run (a billing error, the first limits line)
+ cannot be forgotten by a later call.
+
+ @returns The flag's reader and its raiser
+
+ @example
+ ```ts
+ const refused = oneWayFlag();
+ refused.raise();
+ ```
+ */
+function oneWayFlag(): {
+  readonly isRaised: () => boolean;
+  readonly raise: () => void;
+} {
+  /**
+   One entry once raised; an array rather than a rebound binding.
+   */
+  const raised: true[] = [];
+  return {
+    isRaised: function isRaised(): boolean {
+      return raised.length > 0;
+    },
+    raise: function raise(): void {
+      raised.push(true,);
+    },
+  };
+}
+
+/**
+ Refuses a success reply whose event stream stopped before its terminator or reported an error.
+
+ @param attemptReply - one attempt's reply, read before the ladder returns it
+
+ @example
+ ```ts
+ const reply = await exchangeWithRetry({ provider: 'anthropic', transport, exchange, policy, verify: wholeMessage, },);
+ ```
+ */
+function wholeMessage(attemptReply: TransportReply,): void {
+  if (isSuccessStatus({ status: attemptReply.status, },))
+    requireWholeAnthropicMessage({
+      provider: 'anthropic',
+      bodyText: attemptReply.bodyText,
+    },);
+}
+
+/**
  Finds the Claude card one roster model is, which is THE LOCK.
 
  @param modelId - roster model the caller addressed
@@ -221,9 +272,9 @@ export function createClaudeClient(
   },);
 
   /**
-   Whether a call of this client has met a billing error, which holds the key dry for the rest of the run.
+   Raised when a call of this client meets a billing error, which holds the key dry for the rest of the run.
    */
-  let billingRefused = false;
+  const billingRefused = oneWayFlag();
 
   /**
    Reads the spend meter.
@@ -240,13 +291,13 @@ export function createClaudeClient(
   async function readSpend({ signal, }: { readonly signal: AbortSignal; },): Promise<ClaudeSpend> {
     signal.throwIfAborted();
     await Promise.resolve();
-    return claudeSpendNow({ billingRefused, },);
+    return claudeSpendNow({ billingRefused: billingRefused.isRaised(), },);
   }
 
   /**
-   Whether the rate-limit headers have been logged yet: once per client, which is once per run.
+   Raised once the rate-limit headers have been logged: once per client, which is once per run.
    */
-  let limitsLogged = false;
+  const limitsLogged = oneWayFlag();
 
   /**
    Logs the rate-limit headers a reply carries, the first time any reply does.
@@ -259,24 +310,27 @@ export function createClaudeClient(
    ```
    */
   function logLimitsOnce(attemptReply: TransportReply,): void {
-    if (limitsLogged)
+    if (limitsLogged.isRaised())
       return;
 
     /**
      The rate-limit headers this reply carries, as `name=value` pairs.
      */
-    const limits = Object.entries(attemptReply.headers ?? {},).filter(function isLimit([name,],): boolean {
-      return name.startsWith(RATE_LIMIT_HEADER_PREFIX,);
-    },).map(function pairOf([name, value,],): string {
-      return `${name}=${value}`;
-    },);
+    const limits = Object.keys(attemptReply.headers ?? {},)
+      .filter(function isLimit(name,): boolean {
+        return name.startsWith(RATE_LIMIT_HEADER_PREFIX,);
+      },)
+      .map(function pairOf(name,): string {
+        return `${name}=${attemptReply.headers?.[name] ?? ''}`;
+      },);
     if (limits.length === 0)
       return;
-    limitsLogged = true;
+    limitsLogged.raise();
     tagged({
       tag: createClaudeClient.name,
       l,
-    },).info(`rate limits on the first reply: ${limits.join(', ',)}`,);
+    },)
+      .info(`rate limits on the first reply: ${limits.join(', ',)}`,);
   }
 
   /**
@@ -325,24 +379,6 @@ export function createClaudeClient(
   };
 
   /**
-   Refuses a success reply whose event stream stopped before its terminator or reported an error.
-
-   @param attemptReply - one attempt's reply, read before the ladder returns it
-
-   @example
-   ```ts
-   const reply = await exchangeWithRetry({ provider: 'anthropic', transport, exchange, policy, verify: wholeMessage, },);
-   ```
-   */
-  function wholeMessage(attemptReply: TransportReply,): void {
-    if (isSuccessStatus({ status: attemptReply.status, },))
-      requireWholeAnthropicMessage({
-        provider: 'anthropic',
-        bodyText: attemptReply.bodyText,
-      },);
-  }
-
-  /**
    Free-text chat exchange.
 
    @param request - exchange to perform
@@ -383,9 +419,11 @@ export function createClaudeClient(
     const label = card.id;
 
     return await limiterFor(request.modelId,)(async function performExchange() {
-      rl.debug(`-> ${label}: ${String(request.messages.length,)} ${
+      rl.debug(`-> ${label}: ${String(request.messages
+        .length,)} ${
         wordForCount({
-          count: request.messages.length,
+          count: request.messages
+            .length,
           one: 'message',
           many: 'messages',
         },)
@@ -431,7 +469,10 @@ export function createClaudeClient(
           bodyJson,
           signal: (deadline === undefined) ? request.signal : deadline.callSignal,
           wireFormat: 'anthropic',
-          captureHeaders: [RETRY_AFTER_HEADER, `${RATE_LIMIT_HEADER_PREFIX}*`,],
+          captureHeaders: [
+            RETRY_AFTER_HEADER,
+            `${RATE_LIMIT_HEADER_PREFIX}*`,
+          ],
           // Conditional spread keeps the knob absent instead of undefined.
           ...(request.maxAnswerChars === undefined ? {} : { maxAnswerChars: request.maxAnswerChars, }),
         },
@@ -454,7 +495,7 @@ export function createClaudeClient(
         // A BILLING ERROR (402, or the older 400 saying the credit balance is too low) EMPTIES THE KEY FOR THE RUN: the
         // flag is this client's own, so a call already in flight that settles cannot lift it.
         if (isPaymentRefusal({ error: failure, },)) {
-          billingRefused = true;
+          billingRefused.raise();
           rl.warn(`<- ${label}: billing error; the Claude key is held dry for the rest of the run`,);
         }
         throw failure;
@@ -483,16 +524,20 @@ export function createClaudeClient(
             prices: card.prices,
             usage: facts.usage,
           },),
-          cachedTokens: facts.usage.cacheRead,
+          cachedTokens: facts.usage
+            .cacheRead,
         };
 
       if (facts.refusal !== undefined) {
         /**
          Category the refusal named, in words for the log and the record.
          */
-        const named = (facts.refusal.category === undefined)
+        const named = (facts.refusal
+          .category
+          === undefined)
           ? 'no category named'
-          : `category ${facts.refusal.category}`;
+          : `category ${facts.refusal
+            .category}`;
         // A REFUSAL IS A 200 AND NOT AN OUTAGE: the model's classifier declined this one call, so the seat has no
         // answer for it and the provider stays where its meter puts it. Whatever text streamed before a mid-stream
         // decline is incomplete and is dropped. The tokens it spent are billed and reported as any call's are.
@@ -514,7 +559,8 @@ export function createClaudeClient(
       /**
        Answer length for the completion log line.
        */
-      const textLength = extracted.text.length;
+      const textLength = extracted.text
+        .length;
       rl.debug(`<- ${label}: ${String(textLength,)} ${
         wordForCount({
           count: textLength,

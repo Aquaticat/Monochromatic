@@ -77,9 +77,9 @@ await describe({
         expect(exchange?.method,).toBe('POST',);
         expect(exchange?.headers['x-api-key'],).toBe(CLAUDE_CAT_KEY,);
         expect(exchange?.headers['anthropic-version'],).toBe('2023-06-01',);
-        expect(exchange?.headers['Authorization'],).toBeUndefined();
+        expect(exchange?.headers.Authorization,).toBeUndefined();
         expect(exchange?.wireFormat,).toBe('anthropic',);
-        expect(firstBodyOf({ exchanges, },)['stream'],).toBe(true,);
+        expect(firstBodyOf({ exchanges, },).stream,).toBe(true,);
       },
     },),
 
@@ -114,13 +114,13 @@ await describe({
       name: 'REFUSES EVERY MODEL BUT THE EIGHT CLAUDE CARDS before any request is built, by a named error: the key lists '
         + 'Opus, Fable and older models, so a roster model of another provider and an Opus id both stop at the client',
       fn: async () => {
-        for (const modelId of [
+        await Promise.all([
           'hf:moonshotai/Kimi-K3',
           'deepseek-v4.1-flash',
           'claude-opus-5-5',
           'claude-sonnet-5',
           'claude-haiku-4-5',
-        ] as readonly string[]) {
+        ].map(async function refuseOtherModel(modelId,) {
           const { transport, exchanges, } = scripted({
             replies: [{
               status: 200,
@@ -140,7 +140,7 @@ await describe({
           expect((failure as Error).message,).toContain(modelId,);
           expect((failure as Error).message,).not.toContain(CLAUDE_CAT_KEY,);
           expect(exchanges.length,).toBe(0,);
-        }
+        },),);
       },
     },),
     it({
@@ -244,7 +244,7 @@ await describe({
         const [line = '',] = spendLines;
         expect(line,).toContain('SPEND provider=anthropic model=claude-haiku-5-5-effort-low prompt=1000 completion=10 cost=',);
         expect(line,).toContain(' cached=850',);
-        expect(Number(/ cost=(\S+)/u.exec(line,)?.[1],),).toBeCloseTo(0.00002975, 10,);
+        expect(Number((line.split(' cost=',)[1] ?? '').split(' ',)[0],),).toBeCloseTo(0.00002975, 10,);
         expect(runSpendUsd({ provider: 'anthropic', },),).toBeCloseTo(0.00002975, 10,);
       },
     },),
@@ -362,7 +362,7 @@ await describe({
         /**
          Signal every meter read carries.
          */
-        const signal = new AbortController().signal;
+        const {signal} = new AbortController();
         /**
          Bodies that mean the balance is empty, each with its status.
          */
@@ -374,7 +374,7 @@ await describe({
               + 'low to access the Anthropic API."}}',
           },
         ];
-        for (const billing of billingReplies) {
+        await Promise.all(billingReplies.map(async function meetBilling(billing,) {
           const { transport, } = scripted({
             replies: [billing, {
               status: 200,
@@ -388,7 +388,7 @@ await describe({
           expect((await client.spend({ signal, },)).billingRefused,).toBe(true,);
           await askCat({ client, modelId: 'claude-haiku-5-5', },);
           expect((await client.spend({ signal, },)).billingRefused,).toBe(true,);
-        }
+        },),);
       },
     },),
   ],

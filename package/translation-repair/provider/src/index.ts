@@ -2,15 +2,10 @@
 // The names `@monochromatic-dev/translation-repair-provider` gives its siblings and its own tests, each from the module that declares it.
 // Production siblings import it through `/ts`; tests and fixtures through the built entry, so a process loads one copy.
 
-export * from './index-claude.ts';
 export * from './index-direct.ts';
 export * from './index-hold.ts';
 export * from './index-neuralwatt.ts';
 export { extractAnthropicCompletion, } from './anthropic-completion.ts';
-export {
-  RETRY_AFTER_HEADER,
-  retryAfterHeaderMsOf,
-} from './retry-after-header.ts';
 export {
   type AnthropicContentBlock,
   type AnthropicImageSource,

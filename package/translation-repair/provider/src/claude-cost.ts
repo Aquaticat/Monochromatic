@@ -45,18 +45,21 @@ export function claudeCostOf(
   /**
    Prompt tokens the model read, which pick the tier.
    */
-  const prompt = usage.input + usage.cacheWrite + usage.cacheRead;
+  const prompt = usage.input + usage.cacheWrite
+    + usage.cacheRead;
   /**
    Rates the call is priced at.
    */
-  const tier = ((prices.longPrompt !== undefined) && (prompt > prices.longPrompt.aboveTokens))
+  const tier = ((prices.longPrompt !== undefined) && (prompt
+    > prices.longPrompt
+      .aboveTokens))
     ? prices.longPrompt
     : prices;
   return (
     (usage.input * tier.inputUsdPerMillion)
-    + (usage.cacheWrite * tier.cacheWriteUsdPerMillion)
-    + (usage.cacheRead * tier.cacheHitUsdPerMillion)
-    + (usage.output * tier.outputUsdPerMillion)
+      + (usage.cacheWrite * tier.cacheWriteUsdPerMillion)
+      + (usage.cacheRead * tier.cacheHitUsdPerMillion)
+      + (usage.output * tier.outputUsdPerMillion)
   ) / PRICE_UNIT_TOKENS;
 }
 

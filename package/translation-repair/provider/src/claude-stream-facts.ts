@@ -97,10 +97,22 @@ type Counts = {
  Usage fields read, each beside the series it lands in.
  */
 const USAGE_FIELDS = [
-  ['input_tokens', 'input',],
-  ['cache_creation_input_tokens', 'cacheWrite',],
-  ['cache_read_input_tokens', 'cacheRead',],
-  ['output_tokens', 'output',],
+  [
+    'input_tokens',
+    'input',
+  ],
+  [
+    'cache_creation_input_tokens',
+    'cacheWrite',
+  ],
+  [
+    'cache_read_input_tokens',
+    'cacheRead',
+  ],
+  [
+    'output_tokens',
+    'output',
+  ],
 ] as const;
 
 /**
@@ -136,7 +148,8 @@ function foldUsageInto(
      */
     const reported = usage[field];
     if ((typeof reported) === 'number')
-      counts[series].push(reported,);
+      counts[series]
+        .push(reported,);
   }
 }
 
@@ -145,7 +158,7 @@ function foldUsageInto(
 
  @param frame - parsed frame
 
- @returns The details object, absent where the frame carries none
+ @returns The details object in a list of one, or an empty list where the frame carries none
 
  @example
  ```ts
@@ -154,12 +167,16 @@ function foldUsageInto(
  */
 function stopDetailsOf(
   { frame, }: { readonly frame: Readonly<Record<string, unknown>>; },
-): Readonly<Record<string, unknown>> | undefined {
-  for (const holder of [frame['delta'], frame, frame['message'],]) {
-    if (isJsonRecord(holder,) && isJsonRecord(holder['stop_details'],))
-      return holder['stop_details'];
+): readonly Readonly<Record<string, unknown>>[] {
+  for (const holder of [
+    frame.delta,
+    frame,
+    frame.message,
+  ]) {
+    if (isJsonRecord(holder,) && isJsonRecord(holder.stop_details,))
+      return [holder.stop_details,];
   }
-  return undefined;
+  return [];
 }
 
 /**
@@ -185,13 +202,13 @@ export function claudeStreamFactsOf({ bodyText, }: { readonly bodyText: string; 
     output: [],
   };
   /**
-   Last stop reason seen.
+   Stop reasons seen, in arrival order; the last one is the stream's.
    */
-  let stopReason = '';
+  const stopReasons: string[] = [];
   /**
-   Last stop details seen.
+   Stop details seen, in arrival order; the last one is the stream's.
    */
-  let details: Readonly<Record<string, unknown>> | undefined;
+  const detailsSeen: Readonly<Record<string, unknown>>[] = [];
 
   for (const line of bodyText.split('\n',)) {
     /**
@@ -227,7 +244,7 @@ export function claudeStreamFactsOf({ bodyText, }: { readonly bodyText: string; 
           holder: message,
           counts,
         },);
-      details = stopDetailsOf({ frame, },) ?? details;
+      detailsSeen.push(...stopDetailsOf({ frame, },),);
     }
     if (kind === 'message_delta') {
       foldUsageInto({
@@ -247,11 +264,21 @@ export function claudeStreamFactsOf({ bodyText, }: { readonly bodyText: string; 
           name: 'stop_reason',
         },);
         if (reason !== '')
-          stopReason = reason;
+          stopReasons.push(reason,);
       }
-      details = stopDetailsOf({ frame, },) ?? details;
+      detailsSeen.push(...stopDetailsOf({ frame, },),);
     }
   }
+
+  /**
+   Reason the stream stopped on, empty when none was reported.
+   */
+  const stopReason = stopReasons.at(-1,) ?? '';
+
+  /**
+   Details the stream ended with, when it sent any.
+   */
+  const details = detailsSeen.at(-1,);
 
   /**
    Category the details named, when they named one.
@@ -266,7 +293,11 @@ export function claudeStreamFactsOf({ bodyText, }: { readonly bodyText: string; 
   /**
    Whether the stream reported both its prompt and its completion count.
    */
-  const counted = (counts.input.length > 0) && (counts.output.length > 0);
+  const counted = (counts.input
+    .length
+    > 0) && (counts.output
+      .length
+      > 0);
 
   return {
     ...((stopReason === '') ? {} : { stopReason, }),
@@ -276,10 +307,18 @@ export function claudeStreamFactsOf({ bodyText, }: { readonly bodyText: string; 
     ...(counted
       ? {
         usage: {
-          input: counts.input.at(-1,) ?? 0,
-          cacheWrite: counts.cacheWrite.at(-1,) ?? 0,
-          cacheRead: counts.cacheRead.at(-1,) ?? 0,
-          output: counts.output.at(-1,) ?? 0,
+          input: counts.input
+            .at(-1,)
+            ?? 0,
+          cacheWrite: counts.cacheWrite
+            .at(-1,)
+            ?? 0,
+          cacheRead: counts.cacheRead
+            .at(-1,)
+            ?? 0,
+          output: counts.output
+            .at(-1,)
+            ?? 0,
         },
       }
       : {}),

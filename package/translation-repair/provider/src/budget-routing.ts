@@ -147,7 +147,10 @@ export type ModelReach = ProviderRecord<boolean>;
  always (`xiaomi-spend.ts`) and only a payment refusal at the wire marks it dry; the Claude key has none either, and
  reads dry only after its client has met a billing error (`claude-spend.ts`).
  */
-const ALWAYS_WET_METERS: ReadonlySet<ProviderName> = new Set<ProviderName>(['xiaomi', 'anthropic',],);
+const ALWAYS_WET_METERS: ReadonlySet<ProviderName> = new Set<ProviderName>([
+  'xiaomi',
+  'anthropic',
+],);
 
 /**
  The providers `dryForTheModelAsked` flips: an always-wet meter that reads wet and serves nothing for the model asked.

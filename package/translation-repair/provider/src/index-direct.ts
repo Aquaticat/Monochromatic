@@ -38,6 +38,12 @@ export {
   NOT_REPORTED,
   systemFingerprintOf,
 } from './direct-usage.ts';
+export * from './index-claude.ts';
+export { DEFAULT_SLOT_LIMITS, } from './provider-slot-limits.ts';
+export {
+  RETRY_AFTER_HEADER,
+  retryAfterHeaderMsOf,
+} from './retry-after-header.ts';
 export { requireWholeStream, } from './require-whole-stream.ts';
 export {
   DEEPSEEK_DRY_FLOOR_USD,

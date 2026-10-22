@@ -63,10 +63,8 @@ import {
   routedTextElsewhere,
 } from './provider-router-reask.ts';
 import type { RoutedReply, } from './provider-router-reply.ts';
-import { DEEPSEEK_PER_MODEL_CONCURRENCY, } from './deepseek-client.ts';
-import { NEURALWATT_PER_MODEL_CONCURRENCY, } from './neuralwatt-client.ts';
 import type { ProviderCallers, } from './provider-callers.ts';
-import { SYNTHETIC_PER_MODEL_CONCURRENCY, } from './synthetic-client.ts';
+import { DEFAULT_SLOT_LIMITS, } from './provider-slot-limits.ts';
 import { isStreamBoundCut, } from './stream-bound.ts';
 import { createStreamBoundHolds, } from './stream-bound-hold.ts';
 import {
@@ -118,29 +116,6 @@ const routerRoot = contextRoot({ tag: 'translation-repair', },);
 
 // The refusal lives in its own module so the re-ask can raise it without an
 // import cycle; it is re-exported here, where every importer found it.
-
-/**
- Per-model slots the providers grant by default: no ceiling on any of them.
- Synthetic had a measured five until 2026-10-19, when its rate-limit page stopped
- naming a concurrency limit; the entry still reads the client's own default, so
- the router's count and the client's limiter cannot drift apart.
- */
-const DEFAULT_SLOT_LIMITS: SlotLimits = {
-  // NeuralWatt publishes no per-model ceiling that was found (2026-10-20); the
-  // energy ledger's in-flight hold is what bounds what is risked at once.
-  neuralwatt: NEURALWATT_PER_MODEL_CONCURRENCY,
-  synthetic: SYNTHETIC_PER_MODEL_CONCURRENCY,
-  hyper: Number.POSITIVE_INFINITY,
-  bedrock: Number.POSITIVE_INFINITY,
-  // DeepSeek states 2,500 concurrent requests for its one model (2026-10-22,
-  // `deepseek-client.ts`), the only real ceiling in this table; Xiaomi states
-  // a request rate instead, which its pacer meets (`paces`).
-  deepseek: DEEPSEEK_PER_MODEL_CONCURRENCY,
-  xiaomi: Number.POSITIVE_INFINITY,
-  // The Claude key states request and token rates, not a concurrency, so its pacer meets them (`paces`).
-  anthropic: Number.POSITIVE_INFINITY,
-  openrouter: Number.POSITIVE_INFINITY,
-};
 
 /**
  Builds the client that routes each call to whichever provider can serve it.

@@ -96,14 +96,14 @@ await describe({
         + '5.5 refuses a forced tool with HTTP 400 and Haiku 5.5 under one answered 6 of 6 hard questions wrong with no '
         + 'thinking',
       fn: async () => {
-        for (const modelId of ANTHROPIC_SERVED_IDS) {
+        await Promise.all(ANTHROPIC_SERVED_IDS.map(async function checkCard(modelId,) {
           const body = await bodySentFor({ modelId, withSchema: true, },);
-          expect(body['tools'],).toBeUndefined();
-          expect(body['tool_choice'],).toBeUndefined();
-          expect(body['output_config'],).toMatchObject({
+          expect(body.tools,).toBeUndefined();
+          expect(body.tool_choice,).toBeUndefined();
+          expect(body.output_config,).toMatchObject({
             format: { type: 'json_schema', schema: NAP_SCHEMA.json_schema.schema, },
           },);
-        }
+        },),);
       },
     },),
 
@@ -112,8 +112,8 @@ await describe({
       fn: async () => {
         const body = await bodySentFor({ modelId: 'claude-haiku-5-5', },);
         expect(JSON.stringify(body,),).not.toContain('json_schema',);
-        expect(body['tools'],).toBeUndefined();
-        expect(body['tool_choice'],).toBeUndefined();
+        expect(body.tools,).toBeUndefined();
+        expect(body.tool_choice,).toBeUndefined();
       },
     },),
     it({
@@ -121,15 +121,15 @@ await describe({
         + 'between_tools, no budget_tokens (the API answers 400 to a budget on both models), because the owner ruled '
         + '"we should never disable thinking on anything"',
       fn: async () => {
-        for (const modelId of ANTHROPIC_SERVED_IDS) {
-          for (const withSchema of [false, true,]) {
+        await Promise.all(ANTHROPIC_SERVED_IDS.map(async function checkCard(modelId,) {
+          await Promise.all([false, true,].map(async function checkSchemaChoice(withSchema,) {
             const body = await bodySentFor({ modelId, withSchema, },);
-            expect(body['thinking'],).toEqual({ type: 'adaptive', },);
+            expect(body.thinking,).toEqual({ type: 'adaptive', },);
             expect(JSON.stringify(body,),).not.toContain('disabled',);
             expect(JSON.stringify(body,),).not.toContain('between_tools',);
             expect(JSON.stringify(body,),).not.toContain('budget_tokens',);
-          }
-        }
+          },),);
+        },),);
       },
     },),
 
@@ -137,7 +137,7 @@ await describe({
       name: 'SENDS THE EFFORT THE CARD NAMES as output_config.effort, one level per effort card, and none at all on '
         + 'the card that names none, which leaves the model its own default (Sonnet high, Haiku medium)',
       fn: async () => {
-        for (const [modelId, effort,] of [
+        await Promise.all(([
           ['claude-sonnet-5-5', undefined,],
           ['claude-sonnet-5-5-effort-low', 'low',],
           ['claude-sonnet-5-5-effort-medium', 'medium',],
@@ -146,15 +146,19 @@ await describe({
           ['claude-haiku-5-5-effort-low', 'low',],
           ['claude-haiku-5-5-effort-medium', 'medium',],
           ['claude-haiku-5-5-effort-high', 'high',],
-        ] as const) {
-          for (const withSchema of [false, true,]) {
+        ] as const).map(async function checkEffortCard([modelId, effort,],) {
+          await Promise.all([false, true,].map(async function checkSchemaChoice(withSchema,) {
             const body = await bodySentFor({ modelId, withSchema, },);
-            expect(
-              (body['output_config'] as Readonly<Record<string, unknown>> | undefined)?.['effort'],
-            ).toBe(effort,);
-            expect(body['model'],).toBe(modelId.startsWith('claude-sonnet',) ? 'claude-sonnet-5-5' : 'claude-haiku-5-5',);
-          }
-        }
+            /**
+             The output config the body carries, empty where it carries none.
+             */
+            const config: Readonly<Record<string, unknown>> = Object.hasOwn(body, 'output_config',)
+              ? (body.output_config as Readonly<Record<string, unknown>>)
+              : {};
+            expect(config.effort,).toBe(effort,);
+            expect(body.model,).toBe(modelId.startsWith('claude-sonnet',) ? 'claude-sonnet-5-5' : 'claude-haiku-5-5',);
+          },),);
+        },),);
       },
     },),
     it({
@@ -210,13 +214,13 @@ await describe({
       name: 'MARKS THE STABLE SYSTEM PREFIX FOR THE FIVE-MINUTE CACHE with one ephemeral breakpoint on the last block of '
         + 'the system field, which every call of a stage shares, and none on the turns that differ per call',
       fn: async () => {
-        for (const modelId of ['claude-sonnet-5-5', 'claude-haiku-5-5-effort-low',] as const) {
+        await Promise.all((['claude-sonnet-5-5', 'claude-haiku-5-5-effort-low',] as const).map(async function checkCachedCard(modelId,) {
           const body = await bodySentFor({ modelId, },);
-          expect(body['system'],).toEqual([
+          expect(body.system,).toEqual([
             { type: 'text', text: 'You find the cat.', cache_control: { type: 'ephemeral', }, },
           ],);
-          expect(JSON.stringify(body['messages'],),).not.toContain('cache_control',);
-        }
+          expect(JSON.stringify(body.messages,),).not.toContain('cache_control',);
+        },),);
       },
     },),
 
@@ -228,7 +232,7 @@ await describe({
           modelId: 'claude-haiku-5-5',
           messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
         },);
-        expect(body['system'],).toBeUndefined();
+        expect(body.system,).toBeUndefined();
         expect(JSON.stringify(body,),).not.toContain('cache_control',);
       },
     },),
@@ -238,10 +242,10 @@ await describe({
         + 'of tokens',
       fn: async () => {
         const capped = await bodySentFor({ modelId: 'claude-haiku-5-5', },);
-        expect(Number.isSafeInteger(capped['max_tokens'],),).toBe(true,);
-        expect(capped['max_tokens'] as number,).toBeGreaterThan(1_000,);
+        expect(Number.isSafeInteger(capped.max_tokens,),).toBe(true,);
+        expect(capped.max_tokens as number,).toBeGreaterThan(1_000,);
         const lowered = await bodySentFor({ modelId: 'claude-haiku-5-5', extra: { maxTokens: 777, }, },);
-        expect(lowered['max_tokens'],).toBe(777,);
+        expect(lowered.max_tokens,).toBe(777,);
       },
     },),
   ],

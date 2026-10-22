@@ -41,7 +41,7 @@ export function retryAfterHeaderMsOf(
   /**
    The header read as a number of seconds.
    */
-  const seconds = Number.parseFloat(raw,);
+  const seconds = Number(raw,);
   if (!(Number.isFinite(seconds,) && (seconds > 0)))
     return 0;
   return Math.round(seconds * MS_PER_SECOND,);

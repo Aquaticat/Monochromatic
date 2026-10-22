@@ -84,20 +84,30 @@ export function isUpstreamModelRefusal(
 /**
  Whether a failure is the older shape of Anthropic's empty-balance reply: status 400 with the low-credit sentence.
 
- @param error - provider reply that failed
+ @param status - HTTP status of the reply
+
+ @param bodyExcerpt - opening of the reply body
 
  @returns Whether the balance, not the request, was refused
 
  @example
  ```ts
- if (isLowCreditReply({ error, },)) markBillingRefused();
+ if (isLowCreditReply({ status, bodyExcerpt, },)) markBillingRefused();
  ```
  */
 export function isLowCreditReply(
-  { error, }: { readonly error: ProviderHttpError; },
+  {
+    status,
+    bodyExcerpt,
+  }: {
+    readonly status: number;
+    readonly bodyExcerpt: string;
+  },
 ): boolean {
-  return (error.status === HTTP_BAD_REQUEST) && error.bodyExcerpt.toLowerCase()
-    .includes(LOW_CREDIT_WORDS,);
+  return (status === HTTP_BAD_REQUEST)
+    && bodyExcerpt
+      .toLowerCase()
+      .includes(LOW_CREDIT_WORDS,);
 }
 
 /**
@@ -131,7 +141,7 @@ export function isBudgetRefusal(
     return false;
   if (isUpstreamModelRefusal({ error, },))
     return false;
-  return BUDGET_REFUSAL_STATUSES.has(error.status,) || isLowCreditReply({ error, },);
+  return BUDGET_REFUSAL_STATUSES.has(error.status,) || isLowCreditReply(error,);
 }
 
 /**
@@ -208,7 +218,7 @@ export function isPaymentRefusal(
 ): boolean {
   if (!(error instanceof ProviderHttpError))
     return false;
-  return (error.status === HTTP_PAYMENT_REQUIRED) || isLowCreditReply({ error, },);
+  return (error.status === HTTP_PAYMENT_REQUIRED) || isLowCreditReply(error,);
 }
 
 /**
