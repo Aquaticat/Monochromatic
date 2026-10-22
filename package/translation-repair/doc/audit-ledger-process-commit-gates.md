@@ -482,3 +482,61 @@ because the scans read tests for duplicate bodies,
 words of position and times without a zone.
 `mistake-prevention-shell-edits-commits-and-agents.md`,
 "Lint and edits".
+
+## M287: a bench change landed with the run package's tests only, and the corpus-pass tests that read the bench failed at load
+
+Status:
+happened on 2026-10-22 (UTC) in `w279`,
+at the change of B815.
+`9639e19d85` took `hf:Qwen/Qwen3.8-27B` off the late-judge bench
+and ran the run package's tests only;
+it did not run the corpus-pass package's tests.
+`pass-seams-reseat.unit.test.ts` there reads `judgeSeatsFor` and has a fixture guard
+that throws when the fixture views seat the same late judges
+("so no case here can tell a wired hook apart"),
+and with Qwen gone a Synthetic dry-out takes no late judge,
+so the guard threw at load and the file ran no case.
+`89067fb49a` fixed it,
+and its message says it was committed before its rerun finished.
+That rerun's log (outside the repository,
+`~/temp/agent/tr-fan/w274-audit/reseat/corpus-pass.log`) holds `JUDGE SEATS` lines from the file's cases,
+so the file loaded and ran,
+and its six `[FAIL]` lines name two other cases.
+Measured on 2026-10-22: of the 31 views with at least one provider dry,
+4 take a late judge (`hf:moonshotai/Kimi-K3`),
+Synthetic and Hyper dry with OpenRouter wet and any of NeuralWatt and Bedrock,
+and the contest and consolidation reseat cases now read a Synthetic-and-Hyper-dry view.
+
+A second miss in the same rerun:
+`eb4db609ff` moved `CONSISTENCY_CACHE_VERSION` to 7 and `PAGE_TITLE_CACHE_VERSION` to 6 (B816),
+and the two cases that name them in the corpus-pass package,
+`pass-consistency-cache.unit.test.ts` (version 6 and its pinned key) and `pass-page-titles.unit.test.ts` (version 5),
+are the two failures of that log.
+Both still pin the old numbers on `9ed9b5d14a`,
+so the commit that moves them is owed.
+This is the shape of M284 again:
+the check after a version change ran the declaring packages,
+and corpus-pass declares neither constant.
+
+Recurrence:
+M284,
+which records the same check for cache versions;
+the prevention of M284 names constants that key a cache,
+and nothing in it named a bench.
+
+Prevention:
+`mistake-prevention-sheets-quorums-and-outcome-rules.md`,
+"Which seats a quorum counts":
+a change to a bench or a roster
+(a hold on a model card,
+a roster list,
+a seat set that `judgeSeatsFor` builds)
+runs the unit tests of every package that reads `judgeSeatsFor` or the bench constants,
+and not only the package it edits.
+The search is `rg --files-with-matches '<NAME>' package/translation-repair --glob '*.ts'`
+for `judgeSeatsFor` and each constant that moved;
+on `9ed9b5d14a` it finds corpus-pass,
+probe,
+repair,
+run,
+stage and translate-stage.

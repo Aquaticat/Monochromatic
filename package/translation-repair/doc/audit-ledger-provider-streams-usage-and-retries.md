@@ -840,6 +840,15 @@ whether a short bench that needs every live seat should wait on its last seat at
 (the rule of 2026-09-09;
 no change made).
 
+Update of 2026-10-22 (UTC):
+the owner answered the policy question with "Let the grace open".
+A short bench whose reachable seats equal its quorum, above two voices, now closes one voice below every live seat,
+so the grace can cut the last of them,
+and the bench of 7 with 3 seats unreachable of this entry needs 3 of its 4 live seats.
+The text of this entry stands as the record of 2026-10-22 before the answer.
+The change, the shape it does not reach (a bench of 3 with 1 unreachable) and the cache versions it moved are in B816
+(`audit-ledger-short-benches-and-the-last-live-seat.md`).
+
 ## B810: a seat abandoned again and again is asked every round; the evidence rejects a hold
 
 Status:
@@ -919,6 +928,12 @@ Quality comes before speed,
 and the protection of B421 is doing what it was built for,
 so no abandonment-counting hold was built.
 
+Update of 2026-10-22 (UTC):
+the sentence "the quorum becomes every live seat, so the grace cannot open" described the rule of 2026-09-09.
+The owner's answer "Let the grace open" (B816) ended it for a bench whose reachable seats equal its quorum above two voices:
+that bench now closes one voice below every live seat and the grace can open on the last one.
+The sentence stands for a bench of 3 with 1 unreachable, which keeps the floor of two voices.
+
 Not built:
 a dead-seat hold,
 N=6 consecutive silent cuts and then ten minutes,
@@ -934,3 +949,14 @@ while Synthetic serves it at 2 percent,
 the question `HYPER_SLOW_JUDGES` and `HYPER_SLOW_SELECT_JUDGES` (`run-seats.ts`)
 answered for Hyper with the owner's authorization.
 The figures of this entry are the evidence to put beside it.
+
+Update of 2026-10-22 (UTC):
+the owner answered the question left open here with "Remove from both benches".
+`hf:Qwen/Qwen3.8-27B` left the lane-contest bench and the consolidation bench
+(the slate judges and the gate),
+which are seated from the late judges,
+and keeps its wide seats where it is still seated per provider.
+The reading of "both benches" is open to the owner's veto.
+The change,
+its red and fix commits and the follow-on in the reseat tests are in B815
+(`audit-ledger-providers-and-seats-a-run-holds-out.md`).
