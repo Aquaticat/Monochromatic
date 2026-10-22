@@ -1451,14 +1451,26 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     equal to the release binary of the verified tree; the previous binary (`8706732d98cdd82c`) is
     `monochromatic-ide.previous`. The agent's worktree, branch (local and remote) and my two scratch trees are removed;
     no units, containers or stray processes were left (scanned after the report).
-    Latency and rare-stall agent `a0d7b8bed3990e6c8` (started 2026-10-21, own worktree off `origin/main`, branch push
-    only; brief quotes `NLG`, `NLD`, `RXI`): measures the idle latency of the 20 ms wait (merged binary against a binary
-    with the wait disabled, at least 20 runs each) and runs at least 16 more merged and 16 fix-disabled scroll runs to
-    decide by intervention whether stalls away from slot 50 are the host or the fix. On its report: verify, scan `ps`,
-    `podman ps`, `systemctl --user list-units`, read any product diff, gates once per snapshot, own check, push,
-    reinstall if the binary changed, remove its worktree and branch.
-    Open, in order: (1) rare stalls elsewhere in the scripted scroll (slot 33 and 72 in one run each of 16 merged runs),
-    and the idle latency of the 20 ms wait, to be measured on a quiet host; the frame-shift probe is the measure;
+    Latency and rare-stall agent `a0d7b8bed3990e6c8` LANDED 2026-10-22 (doc only, merge tip `7d3d76f503`; the agent's
+    switch commit and its revert are in the history, the net product diff is empty, so no gate and no install):
+    section "Idle latency of the 20 ms wait and rare stalls elsewhere" in `doc/handover/ide-gpu-stages-5-6.md`.
+    Latency, 2-step flick of 1500 px (47 runs per arm): wait off median 29.7 ms (quartiles 28.8 and 30.3, so under about
+    3 ms is noise), merged median 30.2 ms, but two modes: 28 runs at 28.3 to 32.9 ms and 19 at 38.8 to 51.0 ms; in 18 of
+    the 19 the poll left a tile and the next poll came a whole period (20 ms) later. Positive control (wait 150 ms) moved
+    the measure by 136 ms. Rare stalls: fix off 32 stalls in 16 runs (slot 50 in 16 of 16); merged 0 stalls in 56 runs;
+    the slot 33 and 72 stalls did not recur, so "host or fix" is undecided (upper bound of the rate near 5% per run).
+    Verified by me: branch tip `7e051535a2`, net diff one doc file, no stray units or containers (the busy processes
+    in `ps` were another session's translation workers); the agent's worktree and branch (local and remote) and my
+    scratch tree are removed.
+    Tail agent `a52afe09d606ed6ed` (started 2026-10-22, own worktree off `origin/main`, branch push only; brief quotes
+    `NLG`, `NLD`, `RXI`): builds the single-shot re-poll for the rest of `STEP_WAIT` in `src/native/tile.rs`, and
+    pushes it only if 40 alternating runs per tree show the slow mode gone with the median not rising, and 16 runs
+    of the 120-step scroll keep the slot 50 stall at 0; adds a test and a guard shown to fail; gates once on its final
+    snapshot. On its report: verify, scan `ps`, `podman ps`, `systemctl --user list-units`, read the product diff,
+    merge in a scratch worktree, gates once, own latency A/B, push, reinstall if the binary changed, remove its worktree
+    and branch.
+    Open, in order: (1) the stalls away from slot 50 (slot 33 and 72, one run each; undecided, on a quiet host) and the
+    +20 ms tail (the tail agent above);
     (2) the flake work, in `doc/handover/ide-native-flakes.md`:
     fixed with counts (refused-tile test 10 of 360 to 0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160
     to 0 of 160, find-box menu test by its guard, see the LANDED block above); open: the annotation stability tests
