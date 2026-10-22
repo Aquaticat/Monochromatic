@@ -281,6 +281,10 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
  run, since the pass that writes them runs in another worktree this change does not read), so whether a record stands at
  14 is not known and the change cannot ride inside it: the number moves. No record has been written at 15, which this
  change sets first.
+
+ Rides inside 15 too: `hf:Qwen/Qwen3.8-27B` leaves the lane contest's judges (owner, 2026-10-22, "Remove from both
+ benches"; ledger B815). The key hashes the judges' ids (`modelIds`), so a contest judged with Qwen seated is keyed apart
+ from one judged without it, and no stored record is served to a bench it was not judged by.
  */
 export const LANE_CONTEST_CACHE_VERSION = 15;
 

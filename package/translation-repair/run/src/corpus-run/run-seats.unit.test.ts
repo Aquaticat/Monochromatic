@@ -273,12 +273,13 @@ await describe({
     },),
 
     it({
-      name: 'SEATS the Hyper-slow judge again when Hyper is dry too and OpenRouter would serve it, since '
-        + 'the withholding is about Hyper\'s serving speed and not about the model',
+      name: 'SEATS the Hyper-slow judge again in the wide and select seats when Hyper is dry too and OpenRouter would '
+        + 'serve it, since the withholding is about Hyper\'s serving speed and not about the model, and KEEPS it off '
+        + 'the late-judge bench, which its card holds it from',
       fn: async () => {
         const seats = judgeSeatsFor({ dry: OPENROUTER_ONLY, },);
         expect(seats.wideSeats.includes(QWEN,),).toBe(true,);
-        expect(seats.lateJudges.includes(QWEN,),).toBe(true,);
+        expect(seats.lateJudges.includes(QWEN,),).toBe(false,);
         expect(seats.selectJudges.includes(QWEN,),).toBe(true,);
       },
     },),

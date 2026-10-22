@@ -115,7 +115,17 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
     completionCap: 20_894,
     // Off the OpenRouter catalog since 2026-09-09: 24 percent of its calls
     // there were abandoned and billed to the end.
-    holds: ['openrouter-dropped',],
+    //
+    // Off the late-judge bench (lane contest, consolidation slate, consolidation
+    // gate) by the owner's answer of 2026-10-22 (UTC), "Remove from both
+    // benches": in XingZ6017, once Synthetic served it again, 40 of its 95
+    // streams were cut after the grace with no answer and the mean
+    // consolidation slice rose from 149 s to 315 s and 346 s (ledger B810, B815).
+    // The wide seats keep it while Synthetic serves it (`run-seats.ts`).
+    holds: [
+      'openrouter-dropped',
+      'late-judge-dropped',
+    ],
   },
   'hf:moonshotai/Kimi-K3': {
     synthetic: {

@@ -464,6 +464,10 @@ import type { LaneText, } from '@monochromatic-dev/translation-repair-translate-
  refused 31 as in no commit. No pass ran on a build holding either 30: the last runs, zheermao22 and XingZ6017, log
  `START tip=2a336603bf`, which holds neither commit (`git merge-base --is-ancestor`). No record has been written at
  31, which this change sets first.
+
+ Rides inside 31 too: `hf:Qwen/Qwen3.8-27B` leaves the slate judges and the gate of the consolidation (owner, 2026-10-22,
+ "Remove from both benches"; ledger B815). The key hashes the judges' ids (`judgeModelIds`), so a settlement judged with
+ Qwen seated is keyed apart from one judged without it, and no stored record is served to a bench it was not judged by.
  */
 export const CONSOLIDATE_CACHE_VERSION = 31;
 
