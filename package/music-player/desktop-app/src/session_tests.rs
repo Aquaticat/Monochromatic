@@ -267,10 +267,13 @@ fn a_truncated_session_file_loads_as_defaults_and_is_logged_with_its_path() {
 fn an_unreadable_session_path_loads_as_defaults_and_is_logged_with_the_read_error() {
     let path = scratch_file("unreadable");
     std::fs::create_dir(&path).expect("a directory stands where the file would be");
+    // Linux reports reading a directory as `IsADirectory`; Windows reports `PermissionDenied` ("Access is denied.").
+    // The expected text is the platform's own error for the same read, so the check holds on both.
+    let read_error = std::fs::read_to_string(&path).expect_err("a directory cannot be read as a file");
     let (loaded, log) = logged_by(|| return Session::load_at(&path));
     assert_eq!(loaded, Session::default());
     assert!(log.contains("WARN"), "a warning is logged: {log}");
-    assert!(log.contains("IsADirectory") || log.contains("directory"), "the read error is in the log: {log}");
+    assert!(log.contains(&format!("{read_error:?}")), "the read error {read_error:?} is in the log: {log}");
 }
 
 /// A missing file is a first run, which is expected and stays quiet.
