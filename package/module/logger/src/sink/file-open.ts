@@ -1,52 +1,69 @@
 /**
- Exclusively own and round-trip one JSONL file before exposing it to the append queue. @module
+ Probe a destination directory and create one sink-owned JSONL file on demand. @module
  */
 import { randomUUID, } from 'node:crypto';
 import {
   appendFile,
   mkdir,
+  open,
   readFile,
+  rm,
 } from 'node:fs/promises';
 import { join, } from 'node:path';
+import { DAY_KEY_LENGTH, } from './file-retention-name.ts';
 
-//region File ownership starts only after a complete probe succeeds.
+/**
+ Owner-only file mode for sink-owned files and probes.
+ */
+const LOG_FILE_CREATE_MODE = 0o600;
+
+/**
+ Owner-only directory mode for destination and day directories.
+ */
+const LOG_DIRECTORY_CREATE_MODE = 0o700;
+
+//region Directory probes separate writability proof from record ownership.
 /**
  A filesystem round trip did not retain the sink's probe record.
  */
 class FileProbeMismatchError extends Error {
   /**
-   @param filePath - affected file whose read did not match the probe
+   @param probePath - affected probe file whose read did not match
    */
-  constructor(filePath: string,) {
-    super(`File sink probe did not round-trip in ${JSON.stringify(filePath,)}`,);
+  constructor(probePath: string,) {
+    super(`File sink probe did not round-trip in ${JSON.stringify(probePath,)}`,);
     this.name = 'FileProbeMismatchError';
   }
 }
 
 /**
- Create and verify an independently owned file before any records are admitted.
+ Prove the destination directory round-trips data, using a probe file removed before return.
+
+ Verification must prove writability without creating the sink's log file,
+ so zero-record processes leave zero files behind.
+ The probe file carries a `.probe.tmp` suffix,
+ the retention sweep expires that name family too,
+ and a crashed probe never looks like a log record.
 
  @param directory - selected destination, kept literal for explicit callers
- 
- @returns Path owned exclusively by this sink.
- 
+
  @throws FileProbeMismatchError when the written probe does not round-trip.
 
  @example
  ```ts
- const filePath = await openLogFile('/fixture-logs');
+ await probeLogDirectory('/fixture-logs');
  ```
  */
-export async function openLogFile(directory: string,): Promise<string> {
+export async function probeLogDirectory(directory: string,): Promise<void> {
   await mkdir(
     directory,
     {
       recursive: true,
-      mode: 0o700,
+      mode: LOG_DIRECTORY_CREATE_MODE,
     },
   );
   /**
-   Portable timestamp component for the exclusively created file.
+   Portable timestamp component shared with sink file names.
    */
   const timestamp = new Date().toISOString()
     .replaceAll(
@@ -54,33 +71,114 @@ export async function openLogFile(directory: string,): Promise<string> {
       '-',
     );
   /**
-   Unique sink-owned path, never shared with another instance.
+   Probe path outside the log name family,
+   so a crash between create and remove leaves sweepable residue, never a fake record.
    */
-  const filePath = join(
+  const probePath = join(
     directory,
-    `${timestamp}.${randomUUID()}.log.jsonl`,
+    `${timestamp}.${randomUUID()}.probe.tmp`,
   );
   /**
-   Exact probe record required to round-trip before append ownership is published.
+   Exact probe record required to round-trip before the directory is published.
    */
   const testData = `{"test":true,"timestamp":${Date.now()}}\n`;
   await appendFile(
-    filePath,
+    probePath,
     testData,
     {
       flag: 'ax',
-      mode: 0o600,
+      mode: LOG_FILE_CREATE_MODE,
     },
   );
+  /**
+   Probe file removed on every exit path, including a mismatch throw.
+   */
+  await using _probeTemp = {
+    [Symbol.asyncDispose]: async function removeProbeTemp(): Promise<void> {
+      await rm(
+        probePath,
+        {
+          force: true,
+        },
+      );
+    },
+  };
   /**
    Read-back must preserve the complete probe rather than a matching substring.
    */
   const content = await readFile(
-    filePath,
+    probePath,
     'utf8',
   );
   if (content !== testData)
-    throw new FileProbeMismatchError(filePath,);
+    throw new FileProbeMismatchError(probePath,);
+}
+
+/**
+ Create the sink's JSONL file under the day directory of its first record.
+
+ One process keeps one file,
+ the incident-evidence shape `doc/troubleshooting/` cites.
+ The file is created empty and exclusively (`ax`),
+ so ownership comes from creation itself and no bogus probe record is written.
+ The day directory (`YYYY-MM-DD`,
+ UTC date of the file timestamp) keeps retention sweeps and
+ human navigation on bounded directory sizes.
+
+ @param directory - verified destination directory, kept literal for explicit callers
+
+ @returns Path owned exclusively by this sink.
+
+ @example
+ ```ts
+ const filePath = await openLogFile('/fixture-logs');
+ ```
+ */
+export async function openLogFile(directory: string,): Promise<string> {
+  /**
+   Portable timestamp component for the exclusively created file,
+   whose date prefix also names the day directory.
+   */
+  const timestamp = new Date().toISOString()
+    .replaceAll(
+      ':',
+      '-',
+    );
+  /**
+   Day directory of this file's first record,
+   named by the UTC date prefix of its timestamp.
+   */
+  const dayDirectory = join(
+    directory,
+    timestamp.slice(
+      0,
+      DAY_KEY_LENGTH,
+    ),
+  );
+  await mkdir(
+    dayDirectory,
+    {
+      recursive: true,
+      mode: LOG_DIRECTORY_CREATE_MODE,
+    },
+  );
+  /**
+   Unique sink-owned path, never shared with another instance.
+   */
+  const filePath = join(
+    dayDirectory,
+    `${timestamp}.${randomUUID()}.log.jsonl`,
+  );
+  /**
+   Exclusive empty creation publishes ownership without a probe record,
+   since the destination directory already round-tripped in {@link probeLogDirectory}.
+   */
+  const handle = await open(
+    filePath,
+    'ax',
+    LOG_FILE_CREATE_MODE,
+  );
+  await handle.close();
   return filePath;
 }
-//endregion
+//endregion Directory probes separate writability proof from record ownership.
