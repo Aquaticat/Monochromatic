@@ -1,9 +1,6 @@
 import type { ChatMessage, } from '@monochromatic-dev/module-llm-type/ts';
 
-import {
-  answerToolDefinition,
-  type ReadableResponseFormat,
-} from './anthropic-tool.ts';
+import type { ReadableResponseFormat, } from './anthropic-tool.ts';
 import {
   speakingTurns,
   systemTextOf,
@@ -51,17 +48,28 @@ export function buildClaudeBody(
     readonly request: Readonly<Record<string, unknown>>;
   },
 ): Readonly<Record<string, unknown>> {
-  /**
-   Answer tool, for a call that stated a schema.
-   */
-  const tool = (responseFormat === undefined) ? undefined : answerToolDefinition({ responseFormat, },);
   return {
     model: card.wireModel,
     max_tokens: maxTokens,
     stream: true,
     system: systemTextOf({ messages, },),
     messages: speakingTurns({ messages, },),
-    ...((tool === undefined) ? {} : { tools: [tool,], tool_choice: { type: 'tool', name: tool.name, }, }),
+    // STRUCTURED OUTPUT BY `output_config.format`, NEVER BY A FORCED TOOL. The parent session's probe of 2026-10-22
+    // (`sonnet-route-probe.out`): Sonnet 5.5 answered `output_config.format` with adaptive thinking (192 thinking
+    // tokens, a right answer) and refused a forced `tool` with HTTP 400 ("tool_choice: type \"tool\" and \"any\" are
+    // not supported for this model."). Haiku 5.5 under a forced `tool` or `any` returned no thinking tokens on 12 of 12
+    // calls and the wrong answer on 6 of 6 hard ones, against 0 of 12 wrong with `format` or auto
+    // (`haiku-forced-tool-probe*.out`). The schema goes through unchanged, as the answer object the call states.
+    ...((responseFormat === undefined)
+      ? {}
+      : {
+        output_config: {
+          format: {
+            type: 'json_schema',
+            schema: responseFormat.json_schema.schema,
+          },
+        },
+      }),
     ...((request['temperature'] === undefined) ? {} : { temperature: request['temperature'], }),
     ...((request['top_p'] === undefined) ? {} : { top_p: request['top_p'], }),
     ...((request['top_k'] === undefined) ? {} : { top_k: request['top_k'], }),
