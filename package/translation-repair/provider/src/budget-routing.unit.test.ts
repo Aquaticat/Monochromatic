@@ -93,6 +93,44 @@ const allWet = {
  */
 const noneSaturated = allWet;
 
+/**
+ Every provider dry by its meter or a refusal.
+ */
+const allDry = {
+  neuralwatt: true,
+  synthetic: true,
+  hyper: true,
+  bedrock: true,
+  deepseek: true,
+  xiaomi: true,
+  openrouter: true,
+} as const;
+
+/**
+ Message the router's run-ending refusal carries for one reading.
+
+ @param dry - which providers read dry, budget and wire taken together
+
+ @returns The refusal's message
+
+ @throws Error when the reading leaves a provider buyable, so no refusal is raised
+
+ @example
+ ```ts
+ const message = allDryMessageOf({ dry: allDry, },);
+ ```
+ */
+function allDryMessageOf({ dry, }: { readonly dry: Readonly<Record<keyof typeof allDry, boolean>>; },): string {
+  try {
+    routeProviderFor({ reach: everyReach, dry, saturated: noneSaturated, },);
+  } catch (error) {
+    if (error instanceof EveryProviderDryError)
+      return error.message;
+    throw error;
+  }
+  throw new Error('the reading was meant to end the run',);
+}
+
 await describe({
   name: '',
   concurrency: 1,
@@ -738,6 +776,34 @@ await describe({
               cited: true,
               reading: true,
             },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: 'the all-dry refusal says why Xiaomi reads dry',
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'SAYS A PAYMENT REFUSAL when Xiaomi was refused for payment, and reads it dry in the measured clause',
+          fn: async () => {
+            const message = allDryMessageOf({ dry: allDry, },);
+            expect(message,).toContain('Xiaomi has refused a call for payment',);
+            expect(message,).toContain('xiaomi dry',);
+            expect(message,).not.toContain('not serving this model',);
+          },
+        },),
+
+        it({
+          name: 'SAYS XIAOMI SERVES ANOTHER MODEL, and not a payment refusal, when its meter reads wet and it does not '
+            + 'serve the model asked, since the reader sees xiaomi=wet on the METERS line beside the refusal',
+          fn: async () => {
+            const message = allDryMessageOf({ dry: { ...allDry, xiaomi: false, }, },);
+            expect(message,).not.toContain('Xiaomi has refused a call for payment',);
+            expect(message,).toContain('Xiaomi\'s meter reads wet but it serves only MiMo V2.6 Flash, not the model asked',);
+            expect(message,).toContain('xiaomi wet but not serving this model',);
+            expect(message,).not.toContain('xiaomi dry',);
           },
         },),
       ],

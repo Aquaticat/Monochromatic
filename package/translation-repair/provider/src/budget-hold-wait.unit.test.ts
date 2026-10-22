@@ -28,6 +28,7 @@ import {
   shortestHold,
   waitOutHold,
 } from '../dist/final/node/index.mjs';
+import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import { SEAT_SYNTHETIC_VISION_WITHHELD, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 
 /**
@@ -281,6 +282,67 @@ await describe({
             },),).toEqual(view,);
           },
         },),
+        it({
+          name: 'SAYS XIAOMI SERVES ANOTHER MODEL in the run-ending refusal, not a payment refusal, when its wet meter is '
+            + 'the only reading that kept the fleet from reading dry',
+          fn: async () => {
+            const { budgets, } = scriptedBudgets({ views: [{ ...ALL_DRY, xiaomi: false, },], holds: NO_HOLDS, },);
+            const thrown = await rejectionOf(() => readBudgetsPastHolds({
+              budgets,
+              modelId: MODEL_ID,
+              reach: { ...ALL_SERVE, xiaomi: false, },
+              signal: SIGNAL,
+              refused: NOBODY_REFUSED,
+              pollMs: 1,
+            },),);
+            expect(thrown,).toBeInstanceOf(EveryProviderDryError,);
+            const { message, } = thrown as EveryProviderDryError;
+            expect(message,).not.toContain('Xiaomi has refused a call for payment',);
+            expect(message,).toContain('xiaomi wet but not serving this model',);
+          },
+        },),
+
+        it({
+          name: 'SAYS A PAYMENT REFUSAL when Xiaomi reads dry itself, even though it serves nothing here',
+          fn: async () => {
+            const { budgets, } = scriptedBudgets({ views: [ALL_DRY,], holds: NO_HOLDS, },);
+            const thrown = await rejectionOf(() => readBudgetsPastHolds({
+              budgets,
+              modelId: MODEL_ID,
+              reach: { ...ALL_SERVE, xiaomi: false, },
+              signal: SIGNAL,
+              refused: NOBODY_REFUSED,
+              pollMs: 1,
+            },),);
+            const { message, } = thrown as EveryProviderDryError;
+            expect(message,).toContain('Xiaomi has refused a call for payment',);
+            expect(message,).toContain('xiaomi dry',);
+          },
+        },),
+
+        it({
+          name: 'ENDS THE RUN AFTER THE WAIT when a hold on another provider is waited out and Xiaomi, wet but serving '
+            + 'nothing here, is the only reading that is not dry: the second reading folds it in as the first does',
+          fn: async () => {
+            const view: BudgetView = { ...ALL_DRY, xiaomi: false, };
+            const { budgets, reads, } = scriptedBudgets({
+              views: [view,],
+              holds: { ...NO_HOLDS, synthetic: 5, },
+            },);
+            const thrown = await rejectionOf(() => readBudgetsPastHolds({
+              budgets,
+              modelId: MODEL_ID,
+              reach: { ...ALL_SERVE, xiaomi: false, },
+              signal: SIGNAL,
+              refused: NOBODY_REFUSED,
+              pollMs: 1,
+            },),);
+            expect(thrown,).toBeInstanceOf(EveryProviderDryError,);
+            expect((thrown as EveryProviderDryError).message,).toContain('after waiting 5ms',);
+            expect(reads.count,).toBe(2,);
+          },
+        },),
+
         it({
           name: 'RETURNS THE READING with the routing refusal folded in when at least one provider is '
             + 'spendable, asking for no holds',
