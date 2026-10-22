@@ -1564,6 +1564,12 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
       bound, about 24 CPUs at the peak). The owner's statement above allows parallel real jobs, each capped; it is
       recorded as an overrun of the brief, not hidden. Cleanup was verified by me: no `flk` units, no stress
       container, no process in its worktree; its worktree and branch are removed, local and remote.
+    Running (started 2026-10-22): runtime task agent `a70cd9e6f7ed2044f` (own worktree off `origin/main`, branch push
+    only; brief quotes `NLG`, `NLD`, `RXI`, `NQH`): reproduces the `runtime` task race with at least 20 paired starts
+    and a positive control, fixes it by atomic staging or a freshness check, keeps single-caller output byte-identical
+    (tree hash), one unfiltered `test:native`. My own unfiltered `test:native` of snapshot `052cc29638` runs in the unit
+    `full-native` (scratch tree `~/temp/agent/full-native`, `CPUQuota=1200%`, `MemoryMax=32G`); its count goes into the
+    next handover update, then the unit and tree are removed.
     Open, in order: (1) the stalls away from slot 50 (slot 33 and 72, one run each; undecided; a larger alternating
     pass with a same-binary control, under whatever load there is; the stall pass agent) and whether a tile taken in an
     input gap over 20 ms costs a frame; (1b) the code tile stack and the minimap fling lag (the two agents above);
