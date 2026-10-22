@@ -432,7 +432,9 @@ named for that subject and listed here.
 - [Audit ledger: the polish gate's claims and the order of reason and vote](audit-ledger-polish-gate-claims-and-reason-order.md):
   Sheets that withheld a claim the judges needed:
   the repair panel's accepted claims that never reached the polish gate (B731),
-  and the ballots whose reply shape asked for the choice before the reason (B732).
+  the ballots whose reply shape asked for the choice before the reason (B732),
+  and the same claims,
+  which the polish writers were never shown (B805).
 - [Audit ledger: what each sheet shows](audit-ledger-what-each-sheet-shows.md):
   Sheets that lacked a block their role needs to judge or write,
   the reader-protection rule that reached past the account of how a death or an attempt happened (B697),

@@ -206,3 +206,100 @@ The archive block review has no version of its own.
 Consequence found in the same change:
 five cases of `archive-composite-revision.unit.test.ts` failed on the new sheet text,
 and are recorded as B734.
+
+## B805: the polish writers were never shown the claims the polish gate judged them against
+
+Status:
+fixed on 2026-10-22 (UTC),
+red `e4a796cae6660ae4c2ffc952351b83b66e90cd18`,
+fix `27db2c256c512c9d2b25c7da15b0e1e8c1868760`,
+cache version `CONSOLIDATE_CACHE_VERSION` 29 to 30.
+Found in the read of the corpus pass for `zheermao22` (class K3) and fixed in `w263`.
+It widens B731,
+which gave the claims to the polish gate alone.
+
+What the code did:
+B731 threaded `acceptedRepairClaimsNote` from the repair lane's chunks to `runConsolidationPolishRound`,
+where it was handed to the polish gate and to nothing else.
+The same round called `runRefineStage` with no note,
+so the writers of the polish rewrote the base without the claims,
+and the gate then judged their rewording against claims they had never seen.
+A claim accepted at minor severity,
+which `disputesArchive` does not pass on as a dispute,
+thus reached the judges and not the hands that could act on it.
+The repo rule is that what a writer is shown,
+the judges of its text are shown;
+B731 applied it in one direction.
+
+The fix:
+`buildRefineMessages` and `runRefineStage` take `acceptedRepairClaimsNote`,
+and the polish round passes the one it already holds to the gate.
+The note is the one `acceptedRepairClaimsNote` of the archive package writes (B731);
+no second builder was written.
+The sheet shows it fenced under `REPAIR PANEL CLAIMS ACCEPTED`,
+as the gate's sheet does,
+with a fence chosen against it as well,
+and says that the accepted claims are claims and not facts,
+to be checked against the ORIGINAL and corrected only where it supports one.
+The baseline policy of a round that carries claims no longer says that nobody has claimed anything wrong,
+and names a paragraph a supported claim shows to be wrong as a clear improvement.
+The repair lane's own refinement passes no note,
+and its sheet is byte for byte what it was
+(`refine-prompt.unit.test.ts`,
+"LEAVES THE SHEET UNCHANGED WHEN NO CLAIMS WERE ACCEPTED").
+The dispute rule is untouched:
+a claim still disputes the archive only at the severity `disputesArchive` admits
+(the owner's "Major+ accuracy",
+2026-09-27).
+
+Red and green:
+`refine-prompt.unit.test.ts` reads the sheet for a note carrying a line of the old fixed fence and an instruction,
+and for a round with objections and claims together.
+`consolidation-polish-apply.unit.test.ts` reads every `refine_report` sheet of a polish,
+with a control slice that has none.
+`consolidate-driver.unit.test.ts` reads the writers' sheets through the real driver.
+`rendered-sheets-context.unit.test.ts` gained the third block,
+`REPAIR PANEL CLAIMS ACCEPTED`,
+and names the sheets that must carry it (`polish gate`,
+`polish refiner`),
+so a sheet that loses the block cannot take its only mention of the heading with it;
+the fixtures render a `polish refiner` sheet and give the gate sheet the note.
+`sheet-translators-notes.unit.test.ts` lists the new sheet among the writers.
+Five cases failed before the fix and pass after it;
+the controls (a slice with none,
+an empty and an absent note) passed throughout.
+
+Cache account:
+`CONSOLIDATE_CACHE_VERSION` moves from 29 to 30.
+The consolidation key already appends the note when a slice has one,
+so the key does not change when the writers' question does,
+and a settlement stored at 29 for a slice with claims holds a polish written without them.
+Runs `zheermao22` and `XingZ6017` log `START tip=2a336603bf`,
+which holds the commit that set 29 (`4b9fc9e645`),
+so records may stand at 29.
+No slice-cache directory was searched.
+The pinned `consolidateSliceKey` literal in `consolidate-key.unit.test.ts` follows the new version;
+no test names the constant.
+`REFINE_CACHE_VERSION` stays at 12:
+the repair lane's refine sheet is unchanged.
+The lane-contest,
+translate slice and repair slice versions stay,
+since none of their sheets is a polish writer's.
+
+Open to the owner:
+- The dispute note (`archiveDisputeNote`) reaches the polish gate and not the polish writers either.
+  The brief for this change named the accepted claims,
+  and a dispute is a claim at major severity or worse that the archive rendering is wrong,
+  so the same reading applies.
+  Not changed here.
+- The judges of the writers' wording,
+  the rewrite judges of the refine selection (`refine-selection-context.ts`),
+  are not shown the accepted claims either.
+  A writer that corrects a supported claim has its rewording judged on a sheet that does not name the claim.
+  The rule that the judges of a text are shown what its writer is shown would give them the block.
+  Not changed here.
+
+Recurrence:
+`mistake-prevention-sheets-quorums-and-outcome-rules.md`,
+"What each sheet is shown":
+a block added to a judge's sheet is threaded to the writer of the text it judges in the same change.
