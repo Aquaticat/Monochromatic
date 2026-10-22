@@ -14,7 +14,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { runEditorLane, } from '../../dist/final/node/index.mjs';
+import {
+  editorLaneChairOf,
+  runEditorLane,
+} from '../../dist/final/node/index.mjs';
 import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_HYPER_ONLY,
@@ -32,6 +35,55 @@ await describe({
   name: '',
   concurrency: 1,
   children: [
+    describe({
+      name: editorLaneChairOf.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'REFUSES A CHAIR THAT SEATS ONE WIRE MODEL TWICE (R11), naming the bench and both cards: the run\'s '
+            + 'list names Sonnet 5.5 and a Sonnet effort card, which the lane would otherwise seat together, one model '
+            + 'heard twice counting as two voices toward a quorum',
+          fn: async () => {
+            expect(() =>
+              editorLaneChairOf({
+                bench: 'editor calibration editors',
+                named: ['claude-sonnet-5-5', 'claude-sonnet-5-5-effort-high',],
+              },)).toThrow(
+                'The editor calibration editors bench seats claude-sonnet-5-5 more than once '
+                  + '(claude-sonnet-5-5, claude-sonnet-5-5-effort-high)',
+              );
+          },
+        },),
+
+        it({
+          name: 'REFUSES THE SAME NAMED CARD TWICE, which is one voice counted twice',
+          fn: async () => {
+            expect(() =>
+              editorLaneChairOf({
+                bench: 'editor calibration refiners',
+                named: ['claude-sonnet-5-5', 'claude-sonnet-5-5',],
+              },)).toThrow('The editor calibration refiners bench seats claude-sonnet-5-5 more than once',);
+          },
+        },),
+
+        it({
+          name: 'SEATS THE WRITERS FIRST AND THEN THE NAMED CARDS (the control arm of R11): Sonnet beside the roster\'s '
+            + 'writers is one wire model each and passes, and Haiku, which holds writer-unmeasured, takes no chair',
+          fn: async () => {
+            /**
+             The chair as the lane builds it for the editors.
+             */
+            const chair = editorLaneChairOf({
+              bench: 'editor calibration editors',
+              named: ['claude-sonnet-5-5',],
+            },);
+            expect(chair.at(-1,),).toBe('claude-sonnet-5-5',);
+            expect(chair,).not.toContain('claude-haiku-5-5',);
+          },
+        },),
+      ],
+    },),
+
     describe({
       name: runEditorLane.name,
       concurrency: DEFAULT_CONCURRENCY,
