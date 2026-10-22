@@ -7,6 +7,13 @@ and the straggler grace's cut population counted to the end of the pass.
 Part of [Ending runaway calls on our side of the wire](translation-repair-runaway-call-termination.md),
 which lists every file of this record.
 
+Superseded on 2026-10-21 (UTC):
+the constants this record keeps at 600000 are now `STREAM_FIRST_CONTENT_MS` and `STREAM_IDLE_MS`,
+120000 ms each,
+and they count generated text only.
+See the section "The windows armed on 2026-10-21" at the end of this file.
+The rest of this record is kept as it was written.
+
 ## The idle windows' premise, re-derived from first production traffic
 
 STATE THE SPREAD BEFORE THE NUMBER,
@@ -161,3 +168,35 @@ re-derived from first production traffic" leaves open,
 whether 600000 should ever be lowered given that section's
 tail evidence,
 is the same document's Question 10.
+
+## The windows armed on 2026-10-21
+
+Set in `w263` on the owner's brief to fix the classes the read of `zheermao22` found and to choose the bounds by measurement,
+and recorded as ledger B804 in `package/translation-repair/doc/audit-ledger-provider-streams-usage-and-retries.md`.
+
+The reason the windows stayed at 600000 was that no number below it cleared every regime measured.
+The windows were also longer than the per-call deadline of 360000 ms,
+so keeping them there meant they could not fire at all,
+and the artifact of `zheermao22` stamped the pair without anything reading it.
+Eleven `inception/mercury-2.5` streams that sent only `: OPENROUTER PROCESSING` comment lines were ended only by the
+120 s straggler grace.
+
+What replaced it:
+
+- Both windows are 120000 ms.
+  The basis is the largest healthy observation in 19542 completed streams that delivered text:
+  a first byte of 115725 ms and a silence of 93736 ms.
+  The first-content margin is 3.7 percent and the idle margin 28 percent.
+- Progress is a content or a reasoning delta.
+  A comment line,
+  a blank keep-alive line or an event with an empty delta does not reset a window.
+- The configuration is refused when a bound is not a positive finite number shorter than the per-call deadline.
+- The older tail evidence this record kept the windows for
+  (a first byte of 183755 ms,
+  a completion at 347099 ms and a gap of 124992 ms)
+  would now be cut.
+  It came from rosters that are gone.
+
+Question 10 of `doc/planning/translation-repair-open-decisions.md` is answered by this arming,
+on the evidence of the current roster,
+and stays open for the owner to loosen the first-content window if the next runs show healthy streams cut.

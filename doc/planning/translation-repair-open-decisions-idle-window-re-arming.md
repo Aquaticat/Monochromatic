@@ -7,6 +7,14 @@ and the three options with the ranking.
 Part of [Decisions waiting on you, 2026-08-15 morning, still open on 2026-08-19](translation-repair-open-decisions.md),
 which lists every file of this record.
 
+Note of 2026-10-21 (UTC):
+the windows were armed at 120000 ms and count generated text only.
+The constants this question names as `STREAM_FIRST_BYTE_MS` and `STREAM_IDLE_MS` at 600000 are
+`STREAM_FIRST_CONTENT_MS` and `STREAM_IDLE_MS` at 120000;
+see "The windows armed on 2026-10-21" in
+`doc/decision/translation-repair-runaway-call-termination-stall-window-premise-and-straggler-cuts-remeasured.md`.
+The rest of this record is kept as it was written.
+
 ## Question 10: whether to re-arm the idle windows below the deadline
 
 `STREAM_FIRST_BYTE_MS` and `STREAM_IDLE_MS` stay at 600000 after `#121`'s re-derivation

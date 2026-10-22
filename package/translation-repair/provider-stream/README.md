@@ -54,12 +54,24 @@ The groups that follow name the main ones.
   `StreamDegenerateError`,
   `StreamOverrunError`,
   `StreamCutShortError`.
+  The idle guard counts generated text only:
+  a comment line,
+  a blank keep-alive line or an event with an empty delta does not reset its windows
+  (`STREAM_FIRST_CONTENT_MS` and `STREAM_IDLE_MS`,
+  120000 ms each).
   Declared in `stream-idle-guard.ts`,
   `stream-degeneration.ts`,
   `stream-recurrence-watch.ts`,
   `stream-runaway-watch.ts`,
   `stream-overrun.ts`,
   and `stream-cut.ts`.
+- Stream bound configuration:
+  refuses a stream bound that is not shorter than the per-call deadline,
+  since such a bound ends nothing the deadline would not.
+  Names:
+  `requireStreamBoundsInsideCallTimeout`,
+  `StreamBoundsOutsideCallTimeoutError`.
+  Declared in `stream-bound-config.ts`.
 - Transport:
   the transport seam with its fetch-based default,
   its reply shape and the errors a failed exchange raises.
