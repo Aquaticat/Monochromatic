@@ -388,14 +388,15 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     count: 1,
     bound: 'reached',
     reason: 'the readers\' window of 0 the selection case reaches: its straggler answers only after the reply delay of '
-      + 'the scripted client, which every other seat answers before, so the window closes on it on any machine; '
+      + 'the scripted client, a second, by which the stage has tallied the other seats, so the window closes on it; '
       + 'the writers\' window beside it is the hang stop',
   },
   'archive/scripted-review-client.test-fixture.ts#chatJson: wait of module-async-time HELD_REPLY_MS': {
     count: 1,
     bound: 'reached',
-    reason: 'makes the held seat late: its peers answer in microtasks, so it lands after quorum on any machine, '
-      + 'inside a window that is the hang stop and outside one of 0',
+    reason: 'makes the held seat late: a second gives the stage time to tally its peers, which answer at once, so it '
+      + 'lands after quorum, inside a window that is the hang stop and outside one of 0 (at 25 ms it landed before '
+      + 'quorum under the rotation sweep\'s load)',
   },
   'archive/absolute-naturalness-review-stage.unit.test.ts#<module>: wait of module-async-time 0': {
     count: 1,

@@ -23,11 +23,16 @@ type ReplyFor = (input: {
 
 /**
  How long a held seat's reply waits after its request, in milliseconds. It is
- long enough that a seat answering at once, as every other scripted seat does,
- is heard before the held one on any machine, and short enough that a case
- whose window waits for it ends within the case.
+ long enough that the stage hears every seat answering at once, as every other
+ scripted seat does, tallies quorum and arms its straggler window before the
+ held one lands, and short enough that a case whose window waits for it (the
+ hang stop) ends well within the case. The scripted peers answer at once, but
+ the stage's own work between their answers and the tally (logging, the
+ tally's turns of the event loop) is real time: at 25 ms the rotation sweep's
+ load once let the held seat land before quorum, so the readers' window had no
+ straggler to cut.
  */
-const HELD_REPLY_MS = 25;
+const HELD_REPLY_MS = 1000;
 
 /**
  Reads no seat as cut before its content.
