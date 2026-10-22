@@ -14,15 +14,20 @@ Evidence recorded there:
   and shallower-than-block arguments in `src/stream-idle-guard.unit.test.ts` (fixed in `f7b766fa4`);
 - a heuristic scan of that package's 1,666 `.ts` files flagged 35 lines; the rest were template-literal ends.
 
-Measured over the whole repository corpus in this investigation (see "Verification"):
+Measured over the whole repository corpus with the model in "The model" (probe in "Verification"):
 
-- 10,380 code lines (0.99% of 1,052,277 code lines) disagree with the four-route indent model defined in
-  "The model"; the model matches 99.01% of code lines overall;
+- 10,057 code lines (0.96% of 1,052,606 code lines) disagree with the model; the model matches 99.04% of code
+  lines overall;
 - 578 flagged lines are off by an odd width (1 or 3 spaces), which no 2-space convention can intend;
 - concrete failures: `package/agent-harness-shared/advisor/rolldown.node.config.ts:16` holds array elements two
   spaces deeper than both the dprint convention and the `item-per-line-fix` render, and
   `package/agent-harness-shared/advisor/src/operation-usage.ts:46` starts a function-expression body two spaces
   shallower than its owner line.
+
+The rule that closes this gap now ships as `stylistic/indentation` in `package/oxlint-plugin/stylistic`, with
+check and autofix (see "Implementation").
+`package/config/oxlint/src/rule/style.ts` does not enable it yet, so repository lint still passes mis-indented
+TypeScript until that enablement and one normalization sweep land.
 
 Related replacement gap recorded in the same issue: `comma-dangle` ships in the plugin but
 `package/config/oxlint/src/rule/style.ts` does not enable it, while the retired dprint config set
@@ -54,9 +59,9 @@ The plugin accepted the handoff in its own package doc
  non-TypeScript files.
 ```
 
-No rule in the plugin computes expected indentation.
-The convention survives only as fixer emission points in three utilities, all in the same shape:
-indent children of the line where the construct starts, plus two spaces.
+No rule in the plugin computed expected indentation before `stylistic/indentation`.
+The convention survives only as fixer emission points, all in the same shape: indent children of the line
+where the construct starts, plus two spaces.
 `package/oxlint-plugin/stylistic/src/utility/item-per-line-fix.ts:188`:
 
 ```ts
@@ -78,20 +83,6 @@ and `package/oxlint-plugin/stylistic/src/utility/item-per-line-fix.ts:257` retur
     `${bracketPair.open}\n${formattedItems}\n${baseIndent}${bracketPair.close}`;
 ```
 
-`package/oxlint-plugin/stylistic/src/rule/chain-per-line.ts:180` names the same rule:
-
-```ts
-      /**
-       Continuation indent: the head line's indentation plus two spaces.
-       */
-      const childIndent = `${
-        baseIndentAt({
-          sourceText,
-          offset: regionStart,
-        },)
-      }  `;
-```
-
 `package/oxlint-plugin/stylistic/src/utility/invocation-depth-fix.ts:292` repeats it:
 
 ```ts
@@ -108,10 +99,19 @@ and `package/oxlint-plugin/stylistic/src/utility/item-per-line-fix.ts:257` retur
   const childIndent = `${baseIndent}  `;
 ```
 
-Consequence: any checker or fixer that computes a different width fights these three and the file
-oscillates, the failure mode recorded in `doc/troubleshooting/oxlint-multi-fix-convergence.md`.
-A checker built on "anchor line indent plus two spaces, closers at the bracket base" converges with them
-by construction, which is why "The model" uses exactly that formula.
+`package/oxlint-plugin/stylistic/src/rule/chain-per-line.ts` first emitted one flat `childIndent` for every
+continuation line of a chain region, which contradicted the indent model for a member break whose operand-chain
+head renders off the region head line (fixture b8 in `package/test-fixture/oxlint-stylistic/src/invalid/chain-per-line.ts`:
+model 4 columns for `.f()`, flat render 2).
+Two rules with different canonical indents for one line oscillate under `--fix`, the failure mode recorded in
+`doc/troubleshooting/oxlint-multi-fix-convergence.md`.
+The fix unified chain rendering with the model: every break carries its owning node's offset and its
+continuation line indents two columns past the line where that anchor renders
+(`package/oxlint-plugin/stylistic/src/utility/chain-render.ts`), matching the model's per-axis nesting.
+
+Consequence: any checker or fixer that computes a different width fights the others and the file oscillates.
+A checker built on "anchor line indent plus two spaces, closers at the bracket base" converges with the
+item and invocation fixers by construction, and the chain fixer now shares the same anchors.
 
 Readings this investigation retracted, each with the evidence that disproved it:
 
@@ -126,7 +126,17 @@ Readings this investigation retracted, each with the evidence that disproved it:
 - A body brace whose owner ends where its parent ends can adopt the parent's start line.
   Wrong: the `owner.end === parent.end` probe variant mis-remapped `ParenthesizedExpression` nodes inside
   `BinaryExpression` (example `package/agent-harness-shared/advisor/src/advisor-client.ts:234`, predicted 6,
-  produced 4); restricting the remap to `{` tokens of `Block`, `ModuleBlock`, and `CaseBlock` fixed it.
+  produced 4); restricting the remap to body kinds owned by a non-body construct fixed it.
+- The probe's third-generation counts were final (10,380 mismatches on 1,052,277 code lines).
+  Wrong: two model corrections moved the count to 10,057 on 1,052,606 code lines (the `owner.end === parent.end`
+  retraction above plus source-rooted lines expecting zero); `full3.json` and `full4.json` in the scratch probe
+  directory hold both.
+- The existing fixers all emit anchor-line plus two.
+  Wrong as stated: `chain-per-line` emitted one flat region indent instead, which is why its renderer needed the
+  unification described in "Root cause" (commit `310a3fa94c`).
+- TSDoc continuation lines explain the gap between probe mismatches and fixer churn.
+  Wrong: only 11 changed lines in the sweep start with `*`; the churn gap is cascade re-indentation, measured in
+  "Verification".
 - The repository's `typescript` dependency can parse TypeScript for tooling.
   Wrong: `require('typescript')` resolves to `typescript@7.1.0-beta`'s `lib/version.cjs`, where `SyntaxKind`
   is undefined; the probe parses with the classic `typescript.js` from the TypeScript v5.9.3 release.
@@ -143,29 +153,31 @@ The plugin API surface needed for check and autofix is present in `node_modules/
   replaceTextRange(range: Range, text: string): Fix;
 ```
 
-Harness: a disposable AST probe (413 LoC) at `~/temp/agent/indent-probe-2026-10-22/probe.mjs`, run as
-`node probe.mjs corpus.txt > full3.json`, over every `.ts` file under `package/` excluding test fixtures,
-build output, and `node_modules`: 7,091 files and 1,052,277 code lines after blank, comment, and
+Harness: a disposable AST probe at `~/temp/agent/indent-probe-2026-10-22/probe4.mjs`, run as
+`node probe4.mjs corpus.txt > full4.json`, over every `.ts` file under `package/` excluding test fixtures,
+build output, and `node_modules`: 7,091 files and 1,052,606 code lines after blank, comment, and
 template-literal-content lines are exempted.
 The probe is scratch, and "The model" below is sufficient to rebuild it.
 
 Clean patterns (the model predicts the corpus):
 
-- item start lines at anchor plus two: 706,672 of 709,875 match (99.55%);
-- closers (`}`, `]`, `)`) at the bracket base: 244,008 of 245,523 match (99.38%);
 - suffix keywords (`else`, `catch`, `finally`, do-while `while`) at the owner statement line:
-  2,000 of 2,000 match (100%).
+  1,998 of 1,998 match (100%), and decl-line closer bases (class, interface, enum, switch): 436 of 436 (100%);
+- closers at the bracket base: 230,373 of 231,629 opener-line bases match (99.46%) and 13,346 of 13,532
+  owner-line bases match (98.63%);
+- item start lines at anchor plus two: 707,161 of 710,114 match (99.58%).
 
-Failing patterns (the model and the corpus disagree; the autofix would rewrite these):
+Failing patterns (the model and the corpus disagree; the autofix rewrites these):
 
-- continuation lines overall match 89,162 of 94,824 (94.03%), and the disagreements concentrate in coherent
+- continuation lines overall match 89,180 of 94,842 (94.03%), and the disagreements concentrate in coherent
   alternative styles: flat binary and string-concatenation operands (`PlusToken`, 1,898 lines),
   flat union and intersection bars (`BarToken`, 1,265 lines), and hanging function-expression bodies written
-  flat (`ReturnKeyword`, 738 lines, plus their closers);
-- deviation widths: 7,947 lines two spaces shallower than the model, 1,705 two spaces deeper,
+  flat (`ReturnKeyword`, 736 lines, plus their closers);
+- deviation widths: 7,947 lines two spaces shallower than the model, 1,382 two spaces deeper,
   578 off by an odd width, 150 off by four;
-- corpus-level consequence: the rule's autofix would normalize 10,380 lines in one sweep (0.99% of code
-  lines), which the user accepted ("I don't care about huge sweeping changes").
+- mismatch routes: 8,615 ancestor-route lines, 1,256 opener-line closers, 186 owner-line closers;
+- corpus-level consequence: the rule's autofix normalizes 20,722 leading-whitespace runs in one sweep, which the
+  user accepted ("I don't care about huge sweeping changes").
 
 Cross-check with the dprint oracle (scratch `~/temp/agent/indent-dprint-oracle-2026-10-22/`):
 200 corpus files formatted by dprint with the repository's conventions change in 195 files, with 6,785
@@ -174,9 +186,40 @@ normalizations, and 4,585 (67.58%) are non-indent rewraps.
 On the overlapping package samples (the oracle's first 200 corpus files, the probe's 50-file advisor-heavy
 smoke slice) the two instruments agree on where indent drift lives: 228 per 200 files against 56 per 50 files.
 
+### Implementation verification
+
+The shipped rule and fixer were verified at three levels (suite commands in "Implementation"):
+
+- fixtures: `package/test-fixture/oxlint-stylistic/src/invalid/indentation.ts` reports exactly its six expected
+  lines, `package/test-fixture/oxlint-stylistic/src/valid/indentation.ts` reports none, and
+  `package/test-fixture/oxlint-stylistic/src/invalid/indentation-mixed.ts` shares one deviating region with the
+  argument, chain, and body fixers;
+- unit and autofix tests: every engine route and exemption has a case, `--fix` tests run the fixer to a fixed
+  point twice, and the convergence tests assert zero remaining stylistic diagnostics after `fixUntilStable`;
+- corpus sweep (scratch `sweep.mjs`, disposable mirror of the corpus under `~/temp/agent/indent-probe-2026-10-22/fixwork/`):
+  one `oxlint --fix` pass with `stylistic/indentation` alone reaches the fixed point, the next pass changes
+  nothing, 20,722 leading-whitespace runs change across 1,792 of 7,091 files, zero lines change beyond their
+  leading whitespace, zero files change line count, and zero diagnostics remain.
+
+Churn decomposition (probe variant `probe4b.mjs` dumps as-written mismatch ids, compared against the sweep's
+changed-line ids): 9,921 changed lines are direct model disagreements, 10,801 are cascade followers whose
+anchor line moved (example region `package/agent-harness-shared/advisor/src/operation-test-fixture.ts:308` to
+`:312`, object properties following their `return` line), and 138 probe mismatches stayed put because their
+resolved width equals their written width.
+Two ids drifted between runs because concurrent sessions edit the corpus during measurement.
+
+Guard-proof runs (the tests only mean something once shown to fail): re-adding the old two-column fallback for
+source-rooted lines broke the engine and integration suites, and flattening the chain renderer to one region
+indent broke both `renderCanonical` nesting guards and both chain autofix convergence tests.
+Both mutations are kept as `gfp-mutation-1.patch` and `gfp-mutation-2.patch` in the scratch probe directory.
+
 ## Verified workarounds
 
-- Probe-guided manual correction: run `node probe.mjs <file-list>` and fix the reported lines by hand.
+- `stylistic/indentation` in `package/oxlint-plugin/stylistic`, enabled per config as in
+  `package/test-fixture/oxlint-stylistic/.oxlintrc.fixture.json`, checks and autofixes the model.
+  Tradeoff: the first sweep rewrites 20,722 leading-whitespace runs across 1,792 files, and repository-wide
+  enablement in `package/config/oxlint/src/rule/style.ts` is still queued.
+- Probe-guided manual correction: run `node probe4.mjs <file-list>` and fix the reported lines by hand.
   Tradeoff: no autofix and no lint integration, so drift returns; the alternative corpus styles listed
   under failing patterns show up as flags even where they are internally consistent.
 - Classic `typescript.js` for AST work: fetch `typescript.js` from the TypeScript v5.9.3 release when scratch
@@ -197,67 +240,66 @@ smoke slice) the two instruments agree on where indent drift lives: 228 per 200 
   `.out-of-scope/low-impact-typescript-formatting.md` rejects in favor of newline-first structure work.
 - The plain ancestor-plus-two model with no closer, suffix, or template handling: systematic errors on
   `catch`, `else`, chains, and template tail lines (see the retracted readings in "Root cause").
-- A checker whose fixer uses another width than the existing fixers emit: oscillation, recorded in
-  `doc/troubleshooting/oxlint-multi-fix-convergence.md`.
+- A checker whose fixer uses another width than the existing fixers emit: oscillation. The chain renderer's
+  flat region indent produced exactly that against the indent model (fixture b8 looped under `--fix` until the
+  unification in commit `310a3fa94c`).
 - `require('typescript')` from the repository for parsing: `typescript@7.1.0-beta` exposes only
   `lib/version.cjs`.
 - Reproducing eslint's `lib/rules/indent.js` offset tables (2,332 lines, fixable whitespace): that rule
   encodes per-construct offsets for eslint's ecosystem, while this repository needs one uniform convention,
-  and the measured prototype computes it in far less code.
+  and the shipped rule computes it in far less code.
 
-## Estimated implementation cost
+## Implementation
 
-The rule `indentation` in `package/oxlint-plugin/stylistic`, check plus autofix, on the simplest model the
-measurements support (the user's direction: "Make the model as simple as possible. I don't care about huge
+The rule `stylistic/indentation` in `package/oxlint-plugin/stylistic`, check plus autofix, on the simplest model
+the measurements support (the user's direction: "Make the model as simple as possible. I don't care about huge
 sweeping changes.").
+It landed in four commits: `bee2e27eb7` (engine, rule, registration), `2b4b5cefd1` (fixtures, exports),
+`1e6f2c0db3` (source-rooted zero and engine tests), `310a3fa94c` (chain-nesting unification, tests, mixed
+fixture).
+Measured against the pre-rule tree the work adds 3,395 lines and removes 165 across 16 files, inside the
+2,000 to 3,400 LoC estimate and about 3 times under the user's 10,000 LoC close-as-not-planned threshold.
 
 ### The model
 
 Every code line is judged by one of four routes.
+Blank lines, comment interiors, template-literal content lines, and lines whose first content is not a code
+token carry no expectation and are exempt.
 
 #### Template exemption
 
-Template-literal content (`TemplateExpression`, `NoSubstitutionTemplateLiteral` spans) is exempt.
+Template-literal content (`TemplateLiteral` spans) is exempt.
 
 #### Ancestor plus two
 
-A line's first token expects the indent of the line where its nearest AST ancestor starting on an earlier
-line begins, plus two spaces; `SourceFile` depth is zero.
+A line's first token expects the indent of the line where its nearest ancestor node starting on an earlier
+line begins, plus two spaces.
+A `BlockStatement` or `TSModuleBlock` ancestor remaps to its owning construct's line when that construct opens
+on an earlier line and is not itself a body, so hanging signatures and conditions anchor at their statement;
+nested bare blocks keep their own base.
+A line with no earlier-line ancestor (`Program`) expects zero.
 
 #### Closer at the bracket base
 
-A closer (`}`, `]`, `)`) expects the indent of the line where its opening bracket begins, except a `}`
-closing a `Block`, `ModuleBlock`, or `CaseBlock` whose owner starts on an earlier line expects the owner's
-line indent.
+A closer (`}`, `]`, `)`) expects the indent of the line where its opening bracket begins, except two brace
+remaps: a `{` opening a body remaps like the ancestor route, and a `{` whose owning construct starts earlier
+and ends with the brace (class, interface, enum, switch bodies) bases at the construct's line.
+An unmatched closer self-matches and is exempt.
 
 #### Suffix keyword at the owner line
 
 Suffix keywords (`else`, `catch`, `finally`, do-while `while`) expect their owner statement's line indent.
 
-The autofix rewrites the leading whitespace of deviating lines only.
-Because the existing fixers all emit anchor-line plus two (`item-per-line-fix.ts:195`,
-`chain-per-line.ts:180`, `invocation-depth-fix.ts:293`), the fixer converges with them by construction.
+### Autofix and convergence
 
-### Components
-
-Sizes in the repository's measured style:
-
-- expected-indent engine (four routes, template spans, line and anchor walk): 500 to 900 LoC;
-- rule wrapper, reporter, and per-line whitespace fixer: 350 to 600 LoC;
-- convergence tests running the new fixer to a fixed point against the per-line, chain, invocation-depth,
-  and block-body fixers: 250 to 400 LoC;
-- valid and invalid fixtures plus unit tests covering every model branch: 800 to 1,300 LoC;
-- docs and rule registration: 100 to 200 LoC.
-
-Total: 2,000 to 3,400 LoC, central estimate about 2,700 LoC, check and autofix included.
-
-Calibration behind the ranges: eslint's fixable `lib/rules/indent.js` is 2,332 lines with per-construct
-offset tables, and the prototype for the four-route model is 413 lines including statistics and reporting.
-This plugin family measures 7,599 production LoC plus 1,823 test LoC and 2,208 fixture LoC (0.53 times the
-production size).
-
-Decision rule from the user: over 10,000 LoC closes issue #577 as not planned.
-This estimate clears that threshold by about 3.7 times, so the issue stays open.
+The fixer rewrites the leading whitespace of deviating lines only.
+Expected widths are absolute: each expectation is computed from its anchor line's expected width in one forward
+pass, so one `--fix` pass normalizes whole cascades and reaches the fixed point (measured in
+"Implementation verification").
+The item and invocation fixers emit anchor-line plus two (`item-per-line-fix.ts:195`,
+`invocation-depth-fix.ts:293`), and the chain fixer now indents each break two columns past its anchor line
+(`chain-render.ts`), so all four agree at the fixed point.
+`doc/handover/issue-577-indent-rule-investigation.md` carries the queue beyond the rule itself.
 
 ## Upstream filing artifact
 
@@ -308,8 +350,7 @@ jsplugin interplay report `oxc-project/oxc#24385`.
 
 #### Have we prototyped a minimal fix compatible with their architecture?
 
-Yes, at prototype scale.
-The 413-line probe implements the four-route model against the real `typescript.js` parser and the
-`@oxlint/plugins` visitor shape, and the convergence constraint against `item-per-line-fix`,
-`chain-per-line`, and `invocation-depth-fix` is read from their sources and quoted in "Root cause".
-The full rule is the remaining work sized in "Estimated implementation cost".
+Yes; it is the shipped rule.
+The probe implements the four-route model against the real `typescript.js` parser and the `@oxlint/plugins`
+visitor shape ("Verification"), and `package/oxlint-plugin/stylistic` now carries the full check, autofix,
+fixtures, and convergence tests described in "Implementation".
