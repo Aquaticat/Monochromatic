@@ -260,10 +260,11 @@ export function selectDeletions({
       break;
     /**
      Freshly modified files keep their records intact even over budget,
-     because the writing process still owns them.
+     because the writing process still owns them,
+     while aged entries behind them still fund the bounds.
      */
     if ((now - entry.modified) < FRESH_FILE_GRACE_MS)
-      break;
+      continue;
     deletions.push(entry,);
     kept.bytes -= entry.size;
     kept.files -= 1;

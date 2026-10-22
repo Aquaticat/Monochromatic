@@ -31,19 +31,28 @@ type FileAppendQueue = {
 
  @param filePath - verified destination owned by one sink
 
+ @param ensureFile - one-time file creation ahead of first append
+
  @returns Queue preserving captured record order until append completion
 
  @example
  ```ts
- const queue = createFileAppendQueue({ filePath });
+ const queue = createFileAppendQueue({ filePath, ensureFile });
  await queue.append(`${JSON.stringify(record)}\n`);
  ```
  */
-export function createFileAppendQueue({ filePath, }: { readonly filePath: string; },): FileAppendQueue {
+export function createFileAppendQueue({
+  filePath,
+  ensureFile,
+}: {
+  readonly filePath: string;
+  readonly ensureFile: () => Promise<void>;
+},): FileAppendQueue {
   /**
    Writing removes a batch from the queue before awaiting, so new records cannot enter an issued append.
    */
   const state: {
+    opening?: Promise<void>;
     running: boolean;
     queue?: {
       head: AppendBatch;
@@ -60,6 +69,11 @@ export function createFileAppendQueue({ filePath, }: { readonly filePath: string
    */
   async function appendBatch(batch: AppendBatch,): Promise<AppendBatch> {
     try {
+      /**
+       One-time file creation, shared by every batch of this queue.
+       */
+      state.opening ??= ensureFile();
+      await state.opening;
       await appendFile(
         filePath,
         batch.lines

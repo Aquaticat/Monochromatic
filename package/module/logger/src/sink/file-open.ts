@@ -9,7 +9,10 @@ import {
   readFile,
   rm,
 } from 'node:fs/promises';
-import { join, } from 'node:path';
+import {
+  dirname,
+  join,
+} from 'node:path';
 import { DAY_KEY_LENGTH, } from './file-retention-name.ts';
 
 /**
@@ -115,26 +118,27 @@ export async function probeLogDirectory(directory: string,): Promise<void> {
 }
 
 /**
- Create the sink's JSONL file under the day directory of its first record.
+ Choose the sink's JSONL file path under the day directory of its first record.
 
  One process keeps one file,
  the incident-evidence shape `doc/troubleshooting/` cites.
- The file is created empty and exclusively (`ax`),
- so ownership comes from creation itself and no bogus probe record is written.
  The day directory (`YYYY-MM-DD`,
  UTC date of the file timestamp) keeps retention sweeps and
  human navigation on bounded directory sizes.
+ Each call names a fresh file,
+ so one sink resolves its path before queueing records and
+ creates it only once its first append runs.
 
  @param directory - verified destination directory, kept literal for explicit callers
 
- @returns Path owned exclusively by this sink.
+ @returns Fresh path one sink owns exclusively.
 
  @example
  ```ts
- const filePath = await openLogFile('/fixture-logs');
+ const filePath = newLogFilePath('/fixture-logs');
  ```
  */
-export async function openLogFile(directory: string,): Promise<string> {
+export function newLogFilePath(directory: string,): string {
   /**
    Portable timestamp component for the exclusively created file,
    whose date prefix also names the day directory.
@@ -155,6 +159,35 @@ export async function openLogFile(directory: string,): Promise<string> {
       DAY_KEY_LENGTH,
     ),
   );
+  return join(
+    dayDirectory,
+    `${timestamp}.${randomUUID()}.log.jsonl`,
+  );
+}
+
+/**
+ Create the sink's JSONL file exclusively at a previously chosen path.
+
+ The file is created empty and exclusively (`ax`),
+ so ownership comes from creation itself and no bogus probe record is written,
+ since the destination directory already round-tripped in {@link probeLogDirectory}.
+ Creation runs once,
+ before the first append,
+ so a zero-record process leaves zero files.
+
+ @param filePath - path from {@link newLogFilePath}, owned exclusively by one sink
+
+ @example
+ ```ts
+ await createLogFile('/fixture-logs/2026-10-22/2026-10-22T08-00-00.000Z.….log.jsonl');
+ ```
+ */
+export async function createLogFile(filePath: string,): Promise<void> {
+  /**
+   Day directory of the file,
+   created before its first record lands.
+   */
+  const dayDirectory = dirname(filePath,);
   await mkdir(
     dayDirectory,
     {
@@ -163,15 +196,7 @@ export async function openLogFile(directory: string,): Promise<string> {
     },
   );
   /**
-   Unique sink-owned path, never shared with another instance.
-   */
-  const filePath = join(
-    dayDirectory,
-    `${timestamp}.${randomUUID()}.log.jsonl`,
-  );
-  /**
-   Exclusive empty creation publishes ownership without a probe record,
-   since the destination directory already round-tripped in {@link probeLogDirectory}.
+   Exclusive empty creation publishes ownership without a probe record.
    */
   const handle = await open(
     filePath,
@@ -179,6 +204,29 @@ export async function openLogFile(directory: string,): Promise<string> {
     LOG_FILE_CREATE_MODE,
   );
   await handle.close();
+}
+
+/**
+ Create the sink's JSONL file under the day directory of its first record.
+
+ {@link newLogFilePath} chooses the path and {@link createLogFile} owns it;
+ this pairing keeps the one-call seam for callers that need both together.
+
+ @param directory - verified destination directory, kept literal for explicit callers
+
+ @returns Path owned exclusively by this sink.
+
+ @example
+ ```ts
+ const filePath = await openLogFile('/fixture-logs');
+ ```
+ */
+export async function openLogFile(directory: string,): Promise<string> {
+  /**
+   Fresh path this call creates and returns.
+   */
+  const filePath = newLogFilePath(directory,);
+  await createLogFile(filePath,);
   return filePath;
 }
 //endregion Directory probes separate writability proof from record ownership.

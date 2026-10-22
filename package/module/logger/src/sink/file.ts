@@ -1,6 +1,7 @@
 import { resolveDefaultLogDirectory, } from './file-destination.ts';
 import {
-  openLogFile,
+  createLogFile,
+  newLogFilePath,
   probeLogDirectory,
 } from './file-open.ts';
 import {
@@ -35,19 +36,31 @@ class FileRecordSerializationError extends Error {
 // asserts a Node runtime and no `process.versions.node` probe is needed.
 
 /**
- Create the sink-owned file and its append queue,
- deferred until the first record so unused processes leave no files.
+ Completion shared by every unverified or rejected write,
+ since a sink without a verified destination admits no records.
+ */
+const completedWrite: Promise<void> = Promise.resolve();
+
+/**
+ Create the sink-owned file's append queue,
+ with the file itself created before its first append so unused processes
+ leave no files.
 
  @param destination - verified destination directory
 
  @returns Append queue owning this sink's single log file.
  */
-async function openAppends(destination: string,): Promise<ReturnType<typeof createFileAppendQueue>> {
+function openAppends(destination: string,): ReturnType<typeof createFileAppendQueue> {
   /**
-   Sink-owned log file created by this first record.
+   Sink-owned log file this queue creates before its first append.
    */
-  const filePath = await openLogFile(destination,);
-  return createFileAppendQueue({ filePath, },);
+  const filePath = newLogFilePath(destination,);
+  return createFileAppendQueue({
+    filePath,
+    ensureFile: async function createFileOnFirstAppend(): Promise<void> {
+      await createLogFile(filePath,);
+    },
+  });
 }
 
 /**
@@ -130,19 +143,19 @@ export function createFileSink({
 
    @returns Append queue, created on first use.
    */
-  async function appendsQueue(destination: string,): Promise<ReturnType<typeof openAppends>> {
+  function appendsQueue(destination: string,): ReturnType<typeof openAppends> {
     /**
-     Already-started open, awaited by every write in call order.
+     Queue already created for this sink, shared by every write.
      */
     const { opened, } = state;
     if (opened !== undefined)
-      return await opened;
+      return opened;
     /**
-     Fresh open, memoized before its first await so writes queue behind it.
+     Fresh queue, stored immediately so every write joins one append order.
      */
     const created = openAppends(destination,);
     state.opened = created;
-    return await created;
+    return created;
   }
 
   /**
@@ -224,15 +237,17 @@ export function createFileSink({
 
    @param record - Log record to write.
 
+   @returns This batch's complete append; shared completion for unverified writes.
+
    @mutates record - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
    */
-  async function write(record: object,): Promise<void> {
+  function write(record: object,): Promise<void> {
     /**
      Destination resolved during verification; unverified writes retain their existing no-op behavior.
      */
     const { directory, } = state;
     if (directory === undefined)
-      return;
+      return completedWrite;
 
     try {
       /**
@@ -241,17 +256,15 @@ export function createFileSink({
       const serialized = JSON.stringify(record,);
       if (serialized === undefined)
         throw new FileRecordSerializationError();
-      /**
-       Append queue created by this call or awaited from the first record.
-       */
-      const appends = await appendsQueue(directory,);
-      await appends.append(`${serialized}\n`,);
+      return appendsQueue(directory,)
+        .append(`${serialized}\n`,);
     }
     catch (error: unknown) {
       reportLoggerInternalError({
         context: 'file sink record append failed',
         error,
       },);
+      return completedWrite;
     }
   }
 

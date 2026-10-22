@@ -77,10 +77,12 @@ function retentionBound({
   readonly fallback: number;
 },): number {
   /**
-   Configured override text, absent when the variable is unset.
+   Configured override text, absent when the variable is unset or blank.
    */
   const configured = environment[key];
   if (configured === undefined)
+    return fallback;
+  if (configured.trim() === '')
     return fallback;
   /**
    Numeric reading of the override, rejecting text that is not a finite number.
