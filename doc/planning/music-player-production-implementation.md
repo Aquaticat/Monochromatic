@@ -804,7 +804,11 @@ scale 1.0, no density override): titles and group headings 16.0 dp (22 sp), fold
 `16px` (no `Theme` size tokens at those sites), which equals the sizes before the 2 px cut; 1546 desktop tests passed.
 The human then said the desktop still felt wrong, cause unknown, and told me to cut each of the five 2 px anyway: the
 sizes are now plain `20px` (titles, heading letter) and `14px` (folder names, track titles), which are 2 px under
-Android on purpose and are the human's decision, not a measured match.
+Android on purpose and are the human's decision, not a measured match. The human then said it "looks good now" (their
+words: "that might have been a desktop thing"). Release 0.1.11 (bump commit `8dcea156ad`, run `39766260300`, the first
+real run of the merged workflow with the `test-alpine` and `test-windows` gates) is in flight, bounded watcher 90
+minutes. Next: check every job and the 13 assets, the hashes against `SHA256SUMS`, one attestation (exit code 0), and
+install the arm64 APK on the Pixel 6 (`1C171FDF600KWW`); if a test job fails, rerun with `gh run rerun --failed`.
 Not measured: the desktop rendered beside the emulator. Known difference: the desktop uses "Inter Variable"
 (`app_window.slint:65`), Android the system font. Open: whether the human still sees a problem; other desktop screens
 still use the `Theme` size tokens (settings, search, deck), left alone because the human named five texts.
