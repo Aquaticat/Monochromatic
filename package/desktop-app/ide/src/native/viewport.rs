@@ -417,7 +417,7 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
             // The tile stays, but the minimap's picture slides with the scroll and may need other bands.
             super::minimap::note(&window, &state);
         }
-        if stepped && tile::step_takes_tile() {
+        if stepped {
             // What: A tile that finished since the last step is swapped in here, after the step's own work.
             // Why: The poll of the tile worker leaves it for this step, so the setters that swap it in run in
             //      the frame this step draws, not in a frame of their own. State and window agree here, as

@@ -181,27 +181,10 @@ const STEP_WAIT: Duration = Duration::from_millis(20);
 /// Whether the view stepped so recently that the next step,
 /// and the frame it draws,
 /// is due before the poll comes again.
-/// Temporary measurement switch: the wait in milliseconds, from `IDE_X_STEP_WAIT_MS`, read once.
-fn step_wait_ms() -> u64 {
-    static WAIT: std::sync::OnceLock<u64> = std::sync::OnceLock::new();
-    return *WAIT.get_or_init(|| {
-        std::env::var("IDE_X_STEP_WAIT_MS")
-            .ok()
-            .and_then(|text| text.parse().ok())
-            .unwrap_or(STEP_WAIT.as_millis() as u64)
-    });
-}
-
-/// Temporary measurement switch: whether the step takes the tile (off with a wait of zero).
-pub(super) fn step_takes_tile() -> bool {
-    return step_wait_ms() != 0;
-}
-
 fn step_due(current: &State) -> bool {
-    let wait = Duration::from_millis(step_wait_ms());
     // False when the view never stepped; otherwise whether the last step is within the wait.
     return match current.stepped_at {
-        Some(at) => at.elapsed() < wait,
+        Some(at) => at.elapsed() < STEP_WAIT,
         None => false,
     };
 }

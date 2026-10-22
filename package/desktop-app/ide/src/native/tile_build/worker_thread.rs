@@ -211,9 +211,7 @@ pub(super) fn run(
             if let Some(run) = pass.as_mut() {
                 run.refocus(job.bounds.first);
             }
-            tracing::debug!("source tile worker took a job");
             let result = tiler.build(*job);
-            tracing::debug!("source tile worker finished a build");
             // A closed receiver means the window is gone; the thread stops instead of retrying.
             if let Err(error) = replies.send(WorkerReply::Built(Box::new(result))) {
                 tracing::debug!(%error, "source tile reply receiver closed");
