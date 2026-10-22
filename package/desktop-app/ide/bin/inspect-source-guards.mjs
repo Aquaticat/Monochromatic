@@ -276,7 +276,7 @@ const cases = [
     before: '                current.tile_job = None;\n                #[cfg(debug_assertions)]\n                current.worker_failures.push(message.clone());',
     after: '                #[cfg(debug_assertions)]\n                current.worker_failures.push(message.clone());',
     native: true,
-    test: 'a_failed_worker_tile_frees_its_job_and_the_next_placement_gets_its_tile',
+    test: 'a_failed_worker_reply_frees_its_job_and_names_the_failure',
     failure: 'the failed job is still held'
   },
   {
