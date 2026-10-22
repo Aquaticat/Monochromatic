@@ -1492,6 +1492,18 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     do scale 2 or a scheme switch. On its report: verify, scan `ps`, `podman ps`, `systemctl --user list-units`,
     look at its images myself, read any product diff, gates once on the merged snapshot, push, reinstall if the binary
     changed (and release the compositor if it changed), remove its worktree and branch.
+    Owner statement of 2026-10-22: "The host CAN handle multiple jobs at once, that's the exact reason I bought this
+    CPU." Real jobs may therefore run in parallel, each capped (`CPUQuota`, `MemoryMax`); `NLG` still bans synthetic
+    load, and measurements still alternate arms with a same-binary control (`NQH`) because parallel jobs add load.
+    Stall pass agent `ae05d7039f46336dc` (started 2026-10-22, own worktree off `origin/main`, branch push only; brief
+    quotes `NLG`, `NLD`, `RXI`, `NQH`): at least 60 alternating stall pairs (tree A = before the wake-up, tree B =
+    `origin/main`) plus 30 A against A pairs for the spread; keeps the debug timeline of every stalled run and decides
+    per slot whether a tile was applied outside a step, an input gap, or neither (host); fixes the wake-up only if it
+    is shown to cost frames, keeping the 0 of 40 late tiles. On its report: same verification as the others.
+    Flake agent `a4671ba160cf3feec` (started 2026-10-22, own worktree off `origin/main`, branch push only; same
+    rules quoted): diagnoses the annotation stability tests under real load, completes the two incomplete ledger
+    entries with counts, and decides by measurement the video-memory question (7.98 of 7.98 GiB); retries only for a
+    proven test, zero overrides expected. On its report: same verification as the others, plus a read of the ledger.
     Open, in order: (1) the stalls away from slot 50 (slot 33 and 72, one run each; undecided; a larger alternating
     pass with a same-binary control, under whatever load there is) and whether a tile taken in an input gap over 20 ms
     costs a frame;
