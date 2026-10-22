@@ -24,11 +24,12 @@ import { tuplePerLine, } from './rule/tuple-per-line.ts';
 import { typePropertyPerLine, } from './rule/type-property-per-line.ts';
 
 export type { ChainNode, } from './utility/chain.ts';
-export { chainBreakOffsets, } from './utility/chain-flatten.ts';
+export { chainBreaks, } from './utility/chain-flatten.ts';
 export {
+  type ChainBreak,
   type ChainSegment,
   renderCanonical,
-  selectBreakOffsets,
+  selectBreaks,
 } from './utility/chain-render.ts';
 export {
   computeIndentExpectations,
@@ -36,6 +37,9 @@ export {
   type IndentExpectationRoute,
   type LineIndentExpectation,
 } from './utility/indent-expectation.ts';
+export {
+  closeValueOfOpenBracket,
+} from './utility/indent-routes.ts';
 export {
   baseIndentAt,
   leadingWhitespace,

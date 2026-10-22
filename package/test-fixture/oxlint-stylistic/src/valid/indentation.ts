@@ -32,7 +32,7 @@ function nested(): void {
   }
 }
 
-function choose(mode: Mode): number {
+function choose(mode: Mode,): number {
   switch (mode) {
     case Mode.On: {
       return 1;
@@ -43,7 +43,7 @@ function choose(mode: Mode): number {
   }
 }
 
-function suffixes(flag: boolean): number {
+function suffixes(flag: boolean,): number {
   if (flag) {
     return 1;
   }
