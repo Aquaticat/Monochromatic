@@ -34,9 +34,40 @@ and one normalization sweep (`68415aeb53`) rewrote 21,441 leading-whitespace lin
 in 1,845 git-clean files,
 whitespace only.
 The sweep's rules-only config pitfall is recorded in
-`doc/troubleshooting/oxlint-config-default-categories.md`,
-and one new queue item remains
-(the format catch-up under "Queue").
+`doc/troubleshooting/oxlint-config-default-categories.md`.
+
+The format catch-up then landed as `3da31bdc3a`
+(190 files,
+36,532 insertions and 8,412 deletions,
+9 fix passes),
+and together with `68415aeb53` it was reported as issue
+[#1794](https://github.com/Aquaticats/Monochromatic/issues/1794).
+Of the 52 reported files,
+32 were `lint:parse` gate artifacts
+and 20 were real `.mjs` corruptions by the `no-restricted-syntax/no-arrow-function` autofix
+(`3da31bdc3a` broke all 20;
+`68415aeb53` broke 0).
+The fixer fix landed with a guard test (`5544041a52`),
+the parse gate as a mise task (`9e3f228e65`),
+the 20 restorations as `20a3a73271` and `0c2f35836d`,
+the glued-async regression as `b7b416ae2f`,
+the `.d.*` transpile panic dodge as `97e7252959`,
+and `Closes #1794` on `60d4795f95`.
+The record is
+`doc/troubleshooting/oxlint-no-arrow-function-unparseable-autofix.md`.
+
+The leftover semantic-bridge teardown crash
+(uncaught `Error: EBADF` at shutdown after the native channel died)
+is fixed in `72773af2f5`.
+`openSemanticFile` now classifies terminal channel failures at the adapter boundary,
+retires the bridge once,
+and teardown closes failure-safe with tagged warnings only (CXL).
+The lifecycle state moved to
+`package/oxlint-plugin/prefer-readonly-parameter-type/src/prefer-readonly-parameter-types/semantic-bridge-lifecycle.ts`.
+A subagent's visitor-catch wiring collided with that module split and stood down;
+adapter-wrapper retirement (PP4) superseded it.
+The record is
+`doc/troubleshooting/oxlint-typescript-semantic-bridge-epipe-teardown.md`.
 
 ## Findings
 
@@ -131,6 +162,14 @@ stayed out of the commit
   or chained marker lookups re-find the previous marker and stub trees collapse (this cost one
   false engine failure;
   see `package/oxlint-plugin/stylistic/src/utility/indent-expectation.unit.test.ts`).
+- Assume the tree is never quiet:
+  sweep only git-clean paths from a pre-run `git status --short` snapshot,
+  never gate a sweep on a quiet tree.
+- TypeScript 7.1 correction (user right,
+  agent wrong):
+  the classic API including `transpileModule` is present at `typescript/sync`
+  and `typescript/async`;
+  the claim that 7.1 has "no transpileModule" is retracted and must not repeat.
 
 ## Queue
 
@@ -148,18 +187,29 @@ stayed out of the commit
     21,441 leading-whitespace lines in 1,845 of 7,333 git-clean candidates,
     whitespace only,
     one fix pass.
-1.  Format catch-up under the full repository config.
-    A mirror run of `oxlint --fix` with the root config additionally rewrites
-    at least 292 content lines in 48 same-line-count files
-    and rewraps line counts in 145 more files:
-    pre-existing drift under already-enabled rules,
-    for example TSDoc `* ` prefixes in `oxlint.config.ts` and `.pnpmfile.mjs`,
-    `String.raw` and numeric-separator fixes in `package/desktop-app/ide/bin/`,
-    and per-line splits in `doc/audit/regex-necessity/*.mjs`.
-    Run `mise run format:oxlint` when the tree is quiet
-    (or one filtered sweep on git-clean paths),
-    review the non-whitespace diffs,
-    and commit the catch-up separately from anything else.
+1.  Done:
+    the format catch-up landed as `3da31bdc3a`
+    (190 files,
+    36,532 insertions and 8,412 deletions,
+    9 fix passes under the full root config,
+    reviewed and committed separately).
+    Sweep practice it established:
+    assume the tree is never quiet;
+    snapshot `git status --short` before the run,
+    sweep only git-clean paths from that snapshot,
+    and never gate the sweep on a quiet tree.
+    Its parse fallout is recorded in
+    `doc/troubleshooting/oxlint-no-arrow-function-unparseable-autofix.md`.
+1.  Root `lint:parse` alias:
+    add a root-mise alias for `//package/dev-script/task-util:lint:parse`
+    once the concurrent root `mise.toml` work lands
+    (that file is concurrently dirty and stays untouched here).
+1.  `doc/*.mjs` files have no format owner:
+    `mise run format:oxlint` does not reach them
+    and no doc-family formatter claims them;
+    decide an owner
+    (a `format:docs` task or a recorded exception)
+    before the next doc sweep.
 
 ## Commits
 
@@ -190,3 +240,21 @@ stayed out of the commit
   1,845 git-clean files,
   leading whitespace only,
   one fix pass)
+- `fix(oxlint-plugin-no-restricted-syntax): make the no-arrow-function autofix emit parseable declarations`
+  (`5544041a52`,
+  guard test in the fix suite)
+- `feat(dev-script-task-util): add lint:parse, the formatting-commit parse gate` (`9e3f228e65`)
+- `fix(*): restore three .mjs files that 3da31bdc3a left unparseable` (`20a3a73271`)
+- `fix(desktop-app-ide): restore the 17 .mjs files 3da31bdc3a left unparseable` (`0c2f35836d`)
+- `test(oxlint-plugin-no-restricted-syntax): cover the glued async arrow form in the fix suite` (`b7b416ae2f`)
+- `fix(dev-script-task-util): keep lint:parse alive on 7.1 transpile panics and parse .d.* safely` (`97e7252959`)
+- `style(*): re-apply parse-checked catch-up formatting to the 20 restored .mjs files`
+  (`60d4795f95`,
+  closes #1794)
+- `fix(oxlint-plugin-prefer-readonly-parameter-type): retire the semantic bridge instead of writing to a dead channel`
+  (`72773af2f5`,
+  lifecycle split,
+  CXL-clean teardown,
+  GFP-proven)
+- `docs(troubleshooting): record the no-arrow-function unparseable autofix incident and workaround` (`312d80e321`)
+- `docs(troubleshooting): record the semantic bridge EPIPE teardown failure mode` (`2c5478a8a2`)
