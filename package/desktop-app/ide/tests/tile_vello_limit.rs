@@ -1,4 +1,6 @@
-//! The limit of one texture of a tile, the floor of Vello's per-tile command list, and Vello's bin count.
+//! The limit of one texture of a tile,
+//! the floor of Vello's per-tile command list,
+//! and Vello's bin count.
 //!
 //! Vello 0.11 gives every 16 by 16 pixel tile of the picture 64 `u32` of its command list (`ptcl`) before it stores
 //!  any command (`vello_shaders-0.11.0/shader/shared/ptcl.wgsl:6`),
@@ -31,12 +33,16 @@ const PTCL_FLOOR_PER_TILE: u64 = 64;
 const TILE_SIDE: u64 = 16;
 /// Bytes of one texel of the tile texture (`Rgba8Unorm`).
 const TEXEL_BYTES: u64 = 4;
-/// Pixels on a side of one bin of Vello's coarse stage: 16 tiles of 16 pixels.
+/// Pixels on a side of one bin of Vello's coarse stage:
+/// 16 tiles of 16 pixels.
 const BIN_SIDE: u64 = 256;
 
 /// The number of bins Vello 0.11 counts for a picture `columns` by `rows` pixels
-/// (`vello-0.11.0/src/render.rs`: the product of the coarse stage's workgroup counts, which are
-/// `ceil(width_in_tiles / 16)` and `ceil(height_in_tiles / 16)`, warns above 256).
+/// (`vello-0.11.0/src/render.rs`:
+/// the product of the coarse stage's workgroup counts,
+/// which are
+/// `ceil(width_in_tiles / 16)` and `ceil(height_in_tiles / 16)`,
+/// warns above 256).
 fn bins(columns: u64, rows: u64) -> u64 {
     let tiles_across = columns.div_ceil(TILE_SIDE);
     let tiles_down = rows.div_ceil(TILE_SIDE);
@@ -150,10 +156,12 @@ fn no_accepted_texture_covers_more_bins_than_vello_counts_before_it_warns() {
     }
 }
 
-/// The tile of the scale 2 measurement: 1358 columns.
+/// The tile of the scale 2 measurement:
+/// 1358 columns.
 /// The byte rule alone allowed 12,288 rows (66,748,416 bytes),
 /// which is 6 by 48 = 288 bins and made Vello log its warning at every render;
-/// on the bin grid the most is 42 bins, 10,752 rows.
+/// on the bin grid the most is 42 bins,
+/// 10,752 rows.
 #[test]
 fn the_texture_of_the_scale_two_measurement_is_on_the_bin_grid() {
     set_texture_dimension(16_384);

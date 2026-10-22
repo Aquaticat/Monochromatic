@@ -122,7 +122,8 @@ pub fn raster_fits(columns: u64, rows: u64) -> bool {
 ///  Pixels on a side of one bin of Vello's coarse stage:
 ///  16 pixels in a tile and 16 tiles in a bin.
 /// Why:
-///  Vello 0.11 counts the bins a render covers (`vello-0.11.0/src/render.rs`, the warning "Trying to paint too large
+///  Vello 0.11 counts the bins a render covers (`vello-0.11.0/src/render.rs`,
+/// the warning "Trying to paint too large
 ///  image") and a texture is cut into bins from its top left corner,
 ///  so a texture off this grid counts the partial bin at its right and bottom edges whole.
 ///
@@ -324,13 +325,17 @@ pub fn stack_cap(columns: u64, scale: f32) -> f32 {
 /// What:
 ///  The tallest tile in logical pixels that the window lets a raster `columns` physical pixels wide at display
 ///  `scale` be when it wants a tile `wanted` logical pixels tall:
-///  what one texture holds, or `wanted` and [`CAP_SLACK`] when that is more,
+///  what one texture holds,
+/// or `wanted` and [`CAP_SLACK`] when that is more,
 ///  and never more than [`stack_cap`].
 /// Why:
-///  A tile is a stack of textures of the text area's width, so a window larger than one texture allows gets
-///  several, but a tile that the view and its overscan do not need is not made:
+///  A tile is a stack of textures of the text area's width,
+/// so a window larger than one texture allows gets
+///  several,
+/// but a tile that the view and its overscan do not need is not made:
 ///  a line wrapped to thousands of rows is cut to the rows near the view exactly as it was
-///  when a tile was one texture, and only a window whose three views are taller than one texture
+///  when a tile was one texture,
+/// and only a window whose three views are taller than one texture
 ///  stacks more.
 ///
 /// In TS you'd write (pseudocode):

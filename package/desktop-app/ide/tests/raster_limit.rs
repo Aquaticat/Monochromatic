@@ -1,5 +1,7 @@
 //! The limit of a tile that is drawn across stacked textures,
-//! in the device's texture size, Vello's bin count, and the textures a stack may have:
+//! in the device's texture size,
+//! Vello's bin count,
+//! and the textures a stack may have:
 //!  the rules that size a clip,
 //!  and the guard that cuts a frame to the limit when the lines are taller than the map the caller chose its clip from.
 //! No window is opened.
@@ -53,7 +55,9 @@ fn colors() -> CodeColors {
 /// The cap is never under one code row,
 /// never over the stack's bound,
 /// and a clip made for it fits the stack,
-/// for every width, scale, and asked height,
+/// for every width,
+/// scale,
+/// and asked height,
 /// including the widths where one code row is all the cap allows.
 #[test]
 fn a_clip_made_for_the_cap_fits_the_stack_at_every_width_and_scale() {
@@ -319,7 +323,8 @@ fn the_texture_size_of_the_device_bounds_each_texture_of_the_stack() {
 }
 
 /// The stack never holds fewer rows than the tallest window the device can show and the room for its re-center,
-/// whatever the width: at 16,384 columns the bin count allows 1024 rows to a texture and four textures are not enough.
+/// whatever the width:
+/// at 16,384 columns the bin count allows 1024 rows to a texture and four textures are not enough.
 #[test]
 fn a_stack_is_never_under_the_tallest_window_and_its_room() {
     set_texture_dimension(16_384);

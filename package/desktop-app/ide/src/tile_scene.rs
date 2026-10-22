@@ -11,6 +11,9 @@
 /// Items to scene:
 ///  the one place a Vello scene is written.
 mod encode;
+/// The underline runs of an annotation frame,
+/// in the texture they reach.
+mod frame;
 /// The data of the paint commands.
 mod item;
 /// A tile's items as what each draw command shows,
@@ -21,12 +24,8 @@ mod split;
 /// The line style of each severity as strokes.
 mod underline;
 
-/// Hint and diagnostic inks and the underline runs they are laid out in.
-use crate::annotation_layout::AnnotationFrame;
 /// The palette that turns a syntax role into an ink.
 use crate::code_colors::{CodeColors, ink};
-/// The row map says where a line's code row starts.
-use crate::row_map::CODE_ROW;
 /// Shaped rows and the frame they belong to,
 ///  the textures a tile is stacked from,
 ///  and the largest tile.
@@ -44,6 +43,8 @@ use vello::Glyph;
 
 /// Items to scene.
 pub use encode::encode;
+/// The underline runs of a texture.
+use frame::underline_frame;
 /// The paint commands of a tile.
 pub use item::{GlyphItem, Item, StrokeItem, TileScene, TileStack};
 /// A selection edge on whole pixels,
@@ -54,8 +55,6 @@ pub use split::snapped;
 use split::{Place, split};
 /// The rows of a tile one texture holds.
 use std::ops::Range;
-/// The geometry of one underline run.
-use underline::underline_items;
 
 /// What:
 ///  Physical pixels a glyph or visual row may lie outside the tile and still be kept.
@@ -283,88 +282,6 @@ fn selected_intervals(
 }
 
 /// What:
-///  The paint items of `frame`'s underline runs that can reach the `rows` of the tile,
-///  placed from the first of those rows.
-/// Why:
-///  The runs are already ordered mildest first,
-///  so the worst style ends on top of an overlap.
-///  A run whose band lies wholly outside the texture paints nothing in it,
-///  so a texture of a stack holds only the runs that reach it.
-///
-/// In TS you'd write (pseudocode):
-/// ```ts
-/// function underlineFrame(items: Item[], view: ShapedView, frame: AnnotationFrame, colors: CodeColors, horizontal: number, rows: [number, number]): void;
-/// ```
-fn underline_frame(
-    items: &mut Vec<Item>,
-    view: &ShapedView,
-    frame: &AnnotationFrame,
-    colors: CodeColors,
-    horizontal: f32,
-    rows: &Range<u32>,
-) {
-    let Some(top_row) = view.rows.first() else {
-        return;
-    };
-    let scale = view.viewport.scale;
-    let width = view.width as f32;
-    let shift = rows.start as f32;
-    let height = (rows.end - rows.start) as f32;
-    for run in &frame.underlines {
-        // The run lies on a materialized code row; the same mapping placed that row's selection rectangles.
-        let code_top = view.map.code_top(run.row) + run.offset;
-        let mut intervals: Vec<(f32, f32)> = Vec::new();
-        for rectangle in &view.selections {
-            // A rectangle lies on the run's visual row when its top is that row's top, within rounding.
-            if (rectangle.y - code_top).abs() < CODE_ROW * 0.5 {
-                intervals.push(snapped(
-                    (rectangle.x - horizontal) * scale,
-                    (rectangle.x + rectangle.width - horizontal) * scale,
-                ));
-            }
-        }
-        let geometry = underline::Geometry {
-            span: (
-                (run.x - horizontal) * scale,
-                (run.x + run.width - horizontal) * scale,
-            ),
-            // Every row shares one baseline, so the first row's is the baseline of all of them.
-            line: (code_top - view.origin) * scale
-                + top_row.baseline
-                + crate::annotation_paint::DROP * scale
-                - shift,
-            scale,
-            severity: run.severity,
-        };
-        let band = row_band(
-            geometry.line - CODE_ROW * scale / 2.0,
-            geometry.line + CODE_ROW * scale / 2.0,
-        );
-        // A band wholly above or below the texture paints nothing in it.
-        if band.1 < -CULL_MARGIN || band.0 > height + CULL_MARGIN {
-            continue;
-        }
-        let severity_ink = frame.colors.severity(run.severity);
-        split(
-            items,
-            &intervals,
-            (severity_ink, colors.selected),
-            Place {
-                extent: (-CULL_MARGIN, width + CULL_MARGIN),
-                band,
-                // The wave's slopes and the dashes' ends reach a little past the span; ink outside the texture is never seen.
-                reach: (
-                    (geometry.span.0 - crate::annotation_paint::PERIOD * scale).max(0.0),
-                    (geometry.span.1 + crate::annotation_paint::PERIOD * scale).min(width),
-                ),
-            },
-            &geometry,
-            underline_items,
-        );
-    }
-}
-
-/// What:
 ///  The paint items of one shaped view:
 ///  every row's glyphs with the selected part in the selection ink,
 ///  then the hint and message texts,
@@ -397,7 +314,9 @@ pub fn tile_items(view: &ShapedView, colors: CodeColors, horizontal: f32) -> Res
 ///  The shift is a whole number of pixels,
 ///  so a glyph that two textures share is drawn in each at the same fractional position,
 ///  and the two halves meet as one drawing would.
-///  Rows, hints, and underlines wholly outside the texture are left out,
+///  Rows,
+/// hints,
+/// and underlines wholly outside the texture are left out,
 ///  so the renderer's buffers hold one texture's share and not the tile's.
 ///
 /// # Errors

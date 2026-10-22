@@ -357,7 +357,9 @@ fn a_tall_window_over_wrapped_text_finishes_the_measurement_pass() {
 /// the tile is stacked from textures that are each within the limit on both sides,
 /// together hold the view with overscan,
 /// and are drawn with text.
-/// A tile of three views is 6,048 px at scale 1 and 12,096 px at scale 2: one texture at the first, two at the second.
+/// A tile of three views is 6,048 px at scale 1 and 12,096 px at scale 2:
+/// one texture at the first,
+/// two at the second.
 #[test]
 fn a_2000_px_window_gets_a_tile_of_textures_within_the_devices_limit_at_both_scales() {
     for scale in [1.0_f32, 2.0] {

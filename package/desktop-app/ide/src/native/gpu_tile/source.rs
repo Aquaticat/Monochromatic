@@ -3,7 +3,8 @@
 //!  each into a texture of its own,
 //!  and the textures stack one below the other.
 //!
-//! A tile taller than one texture may be (the device's side, or the rows where Vello counts 256 bins) is several
+//! A tile taller than one texture may be (the device's side,
+//! or the rows where Vello counts 256 bins) is several
 //!  textures,
 //!  each with its own scene and its own image;
 //!  the window shows them with no gap,

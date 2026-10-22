@@ -95,7 +95,7 @@ pub(in crate::native) static SLICE_LISTS_SET: std::sync::atomic::AtomicU64 =
 ///  and only the rows whose texture,
 ///  first row,
 ///  or height differ;
-///  `set` gives the window a new list when it holds none of ours yet.
+///  a new list is returned for the window to take when it holds none of ours yet.
 /// Why:
 ///  The markup draws one image for each row of the list,
 ///  and a new list makes it drop and make every image again,
@@ -104,28 +104,27 @@ pub(in crate::native) static SLICE_LISTS_SET: std::sync::atomic::AtomicU64 =
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function showSlices<Slice>(shown: Slice[], slices: Slice[], set: (list: Slice[]) => void): void;
+/// function showSlices<Slice>(shown: Slice[], slices: Slice[]): Slice[] | undefined;
 /// ```
 fn show_slices<Slice: Clone + PartialEq + 'static>(
     shown: ModelRc<Slice>,
     slices: Vec<Slice>,
-    set: impl FnOnce(ModelRc<Slice>),
-) {
+) -> Option<ModelRc<Slice>> {
     let Some(list) = shown.as_any().downcast_ref::<VecModel<Slice>>() else {
         #[cfg(test)]
         SLICE_LISTS_SET.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-        set(ModelRc::from(Rc::new(VecModel::from(slices))));
-        return;
+        return Some(ModelRc::from(Rc::new(VecModel::from(slices))));
     };
     if list.row_count() != slices.len() {
         list.set_vec(slices);
-        return;
+        return None;
     }
     for (row, slice) in slices.into_iter().enumerate() {
         if list.row_data(row).as_ref() != Some(&slice) {
             list.set_row_data(row, slice);
         }
     }
+    return None;
 }
 
 /// What:
@@ -168,19 +167,19 @@ impl Outcome {
         if let Some(image) = self.sign {
             window.set_wrap_sign(image);
         }
-        if let Some(slices) = self.tile {
-            show_slices(window.get_source_slices(), slices, |list| {
-                return window.set_source_slices(list);
-            });
+        if let Some(slices) = self.tile
+            && let Some(list) = show_slices(window.get_source_slices(), slices)
+        {
+            window.set_source_slices(list);
         }
         if let Some(place) = self.minimap {
             let mut height = 0.0;
             for slice in &place.slices {
                 height += slice.height;
             }
-            show_slices(window.get_minimap_slices(), place.slices, |list| {
-                return window.set_minimap_slices(list);
-            });
+            if let Some(list) = show_slices(window.get_minimap_slices(), place.slices) {
+                window.set_minimap_slices(list);
+            }
             window.set_minimap_picture_width(place.width as f32);
             window.set_minimap_picture_height(height);
             window.set_minimap_picture_top(place.top as f32);

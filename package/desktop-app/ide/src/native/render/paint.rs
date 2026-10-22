@@ -82,7 +82,9 @@ impl Paint {
 /// What:
 ///  The tallest tile in logical pixels at wrap width `width` and display `scale` that the window lets a raster be
 ///  for a view `view` logical pixels tall:
-///  what one texture holds, or the tile of `TILE_VIEWS` views when that is more, within the stack's bound.
+///  what one texture holds,
+/// or the tile of `TILE_VIEWS` views when that is more,
+/// within the stack's bound.
 /// Why:
 ///  A tile is a stack of textures of the text area's width,
 ///  so the limit on its memory is a limit on its height;

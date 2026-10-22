@@ -1,12 +1,22 @@
 //! The code tile drawn across stacked textures shows what one texture shows:
-//!  the textures of a stack, read back and put one below the other, equal the picture of the same rows in one texture,
-//!  at every cut, with glyphs, selected glyphs, hints, and underlines that a cut passes through.
-//! Most tests draw the scenes on the test thread's device, with no window;
+//!  the textures of a stack,
+//! read back and put one below the other,
+//! equal the picture of the same rows in one texture,
+//!  at every cut,
+//! with glyphs,
+//! selected glyphs,
+//! hints,
+//! and underlines that a cut passes through.
+//! Most tests draw the scenes on the test thread's device,
+//! with no window;
 //!  the tests that name a window read the frame the toolkit composites from the images of the stack.
 
-/// Where the text area starts in a window, and the window's own type.
+/// Where the text area starts in a window,
+/// and the window's own type.
 use super::{AppWindow, sidebar_tests::TEXT_LEFT};
-/// The tile the GPU draws, read back without a window, and how far two renders may differ.
+/// The tile the GPU draws,
+/// read back without a window,
+/// and how far two renders may differ.
 use super::{
     annotation_scene_tests::block,
     gpu_snapshot::{install_gpu_platform, snapshot},
@@ -15,7 +25,10 @@ use super::{
     tile_reads::same_pixels,
     wrap_tests::{long_text, open, settled},
 };
-/// The document with a selection, the rows of a tile, the shaper that lays them out, and the stack.
+/// The document with a selection,
+/// the rows of a tile,
+/// the shaper that lays them out,
+/// and the stack.
 use ide_app::{
     annotation::{Mark, Visible},
     annotation_layout::{AnnotationColors, lay_out},
@@ -26,16 +39,21 @@ use ide_app::{
     shaped_text::{ShapedView, TextShaper, Viewport, set_texture_dimension, stack_rows},
     tile_scene::{paint_stack, paint_tile},
 };
-/// The pixels the GPU drew, and the window's events.
+/// The pixels the GPU drew,
+/// and the window's events.
 use slint::{
     ComponentHandle, Rgba8Pixel, SharedPixelBuffer, platform::update_timers_and_animations,
 };
 /// Counters are atomic.
 use std::sync::atomic::Ordering;
 
-/// Black text, red selected text: the two inks differ, so every selected glyph run is clipped.
+/// Black text,
+/// red selected text:
+/// the two inks differ,
+/// so every selected glyph run is clipped.
 /// The rows at the top of the window that show the path of the opened file,
-/// which a test project names at random, so the code view starts below them.
+/// which a test project names at random,
+/// so the code view starts below them.
 const TITLE_ROWS: usize = 32;
 
 const RED_SELECTED: CodeColors = CodeColors {
@@ -44,7 +62,8 @@ const RED_SELECTED: CodeColors = CodeColors {
     dark: false,
 };
 
-/// Inks of the annotations; each differs from the source ink.
+/// Inks of the annotations;
+/// each differs from the source ink.
 const INKS: AnnotationColors = AnnotationColors {
     hint: [150, 160, 170, 255],
     error: [255, 110, 120, 255],
@@ -53,7 +72,9 @@ const INKS: AnnotationColors = AnnotationColors {
     suggestion: [170, 170, 170, 255],
 };
 
-/// `lines` lines of dense code, none wrapping, joined without a final terminator.
+/// `lines` lines of dense code,
+/// none wrapping,
+/// joined without a final terminator.
 fn code(lines: usize) -> String {
     let mut text = String::new();
     for number in 0..lines {
@@ -121,12 +142,16 @@ fn inked_in(pixels: &SharedPixelBuffer<Rgba8Pixel>, from: usize, to: usize) -> u
         .count();
 }
 
-/// Whether `stacked` is `whole` shifted down by one row of `width` texels, which no picture of text equals.
+/// Whether `stacked` is `whole` shifted down by one row of `width` texels,
+/// which no picture of text equals.
 fn shifted_equals(whole: &[Rgba8Pixel], stacked: &[Rgba8Pixel], width: usize) -> bool {
     return same_pixels(&whole[width..], &stacked[..stacked.len() - width]);
 }
 
-/// Where two reads differ, for a failure message: the rows that hold a differing texel, counted,
+/// Where two reads differ,
+/// for a failure message:
+/// the rows that hold a differing texel,
+/// counted,
 /// the first few of them with the first differing column and the two texels there,
 /// and the largest difference of one channel.
 fn describe_difference(left: &[Rgba8Pixel], right: &[Rgba8Pixel], width: usize) -> String {
@@ -166,7 +191,8 @@ const FRINGE_ALPHA: u8 = 8;
 const FRINGE_TEXELS: usize = 64;
 
 /// How many texels differ between two reads by more than the fringe of a stroke allows,
-/// and how many differ only in a fringe, both texels being fainter than [`FRINGE_ALPHA`].
+/// and how many differ only in a fringe,
+/// both texels being fainter than [`FRINGE_ALPHA`].
 fn differences(left: &[Rgba8Pixel], right: &[Rgba8Pixel]) -> (usize, usize) {
     let mut beyond = 0;
     let mut fringe = 0;
@@ -183,8 +209,10 @@ fn differences(left: &[Rgba8Pixel], right: &[Rgba8Pixel]) -> (usize, usize) {
     return (beyond, fringe);
 }
 
-/// A tile of selected and plain rows, drawn as one texture and as a stack of three to five at lowered texture limits,
-/// is the same picture at every texel, and the rows on both sides of each cut are inked.
+/// A tile of selected and plain rows,
+/// drawn as one texture and as a stack of three to five at lowered texture limits,
+/// is the same picture at every texel,
+/// and the rows on both sides of each cut are inked.
 /// A stack that sat one row lower would not be equal.
 #[test]
 fn a_tile_drawn_across_textures_equals_the_tile_in_one_texture() {
@@ -236,7 +264,8 @@ fn a_tile_drawn_across_textures_equals_the_tile_in_one_texture() {
 }
 
 /// A texture of the stack draws only the rows that can reach it:
-/// the scene of a texture is not the scene of the whole tile, so a render of the whole tile in every texture
+/// the scene of a texture is not the scene of the whole tile,
+/// so a render of the whole tile in every texture
 /// (the cut without the shift) is a different picture.
 #[test]
 fn a_texture_of_the_stack_is_placed_by_its_own_top() {
@@ -261,7 +290,10 @@ fn a_texture_of_the_stack_is_placed_by_its_own_top() {
     set_texture_dimension(8192);
 }
 
-/// The tile of two lines with hints, messages, and underlines of all severities, below `padding` empty lines,
+/// The tile of two lines with hints,
+/// messages,
+/// and underlines of all severities,
+/// below `padding` empty lines,
 /// as shaped rows with their annotation frame laid out.
 fn annotated(padding: usize) -> ShapedView {
     let body = "let first_value = compute(alpha, beta);\nlet second_value = compute(gamma, delta);\nlet third = 3;\n";
@@ -351,9 +383,13 @@ fn annotation_ink_in(pixels: &SharedPixelBuffer<Rgba8Pixel>, from: usize, to: us
     return found;
 }
 
-/// The cuts of a tile with hints, messages, and underlines of all severities pass through the virtual rows and
-/// the underlines, and the stack still equals the one texture:
-/// the texture limit is as small as the tile is wide, so the cuts stand every 160 rows,
+/// The cuts of a tile with hints,
+/// messages,
+/// and underlines of all severities pass through the virtual rows and
+/// the underlines,
+/// and the stack still equals the one texture:
+/// the texture limit is as small as the tile is wide,
+/// so the cuts stand every 160 rows,
 /// and the annotated lines are moved down one code row at a time under them.
 /// At least three cuts stand within three rows of annotation ink,
 /// so the equality is not only of rows without any.
@@ -410,8 +446,12 @@ fn hints_messages_and_underlines_cut_by_a_seam_are_drawn_whole() {
     );
 }
 
-/// The pixels of the code view in the window's frame, row by row from the top, and the width of a row of them:
-/// the textures of the tile as the window composites them, with the selection and the caret, without the minimap.
+/// The pixels of the code view in the window's frame,
+/// row by row from the top,
+/// and the width of a row of them:
+/// the textures of the tile as the window composites them,
+/// with the selection and the caret,
+/// without the minimap.
 fn code_view(window: &AppWindow) -> (Vec<Rgba8Pixel>, usize) {
     let frame = snapshot(window.window());
     let scale = window.window().scale_factor();
@@ -426,7 +466,9 @@ fn code_view(window: &AppWindow) -> (Vec<Rgba8Pixel>, usize) {
 }
 
 /// What a window at texture limit `limit` shows after its view left the tile it first had:
-/// the code view's pixels, their row width, the sizes of the tile's textures,
+/// the code view's pixels,
+/// their row width,
+/// the sizes of the tile's textures,
 /// and the distance from the view's top to the tile's top.
 fn shown_after_a_jump(limit: u32) -> (Vec<Rgba8Pixel>, usize, Vec<(u32, u32)>, f32) {
     let (_project, opened) = open(&long_text(400));
@@ -452,7 +494,9 @@ fn shown_after_a_jump(limit: u32) -> (Vec<Rgba8Pixel>, usize, Vec<(u32, u32)>, f
 }
 
 /// The window shows a tile of stacked textures as it shows the same tile in one texture:
-/// the code view of the frame is the same at every texel, with the textures of the stack abutting, and a normal
+/// the code view of the frame is the same at every texel,
+/// with the textures of the stack abutting,
+/// and a normal
 /// window gets one texture.
 /// A view that sat one row lower would not be equal.
 #[test]
@@ -547,9 +591,13 @@ fn a_tile_of_the_same_shape_reuses_its_textures_and_the_list_of_images() {
     set_texture_dimension(8192);
 }
 
-/// The window is told the texture side of the device it is drawn on, and its markup holds both sides of the window to
-/// it in physical pixels, at any display scale: a surface past it makes the toolkit's surface configuration panic.
-/// The markup is read as text because no harness window enforces a largest size; the nested compositor does.
+/// The window is told the texture side of the device it is drawn on,
+/// and its markup holds both sides of the window to
+/// it in physical pixels,
+/// at any display scale:
+/// a surface past it makes the toolkit's surface configuration panic.
+/// The markup is read as text because no harness window enforces a largest size;
+/// the nested compositor does.
 #[test]
 fn the_window_is_never_larger_than_the_devices_texture_side() {
     install_gpu_platform();
