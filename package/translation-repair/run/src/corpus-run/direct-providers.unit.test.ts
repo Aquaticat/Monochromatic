@@ -191,16 +191,18 @@ await describe({
           fn: async () => {
             const stamp = '[info] [2026-10-22T17:00:00.000Z] [translation-repair] [takeReading] METERS';
             expect(readMeterLine({
-              line: `${stamp} neuralwatt=dry synthetic=dry bedrock=dry deepseek=wet xiaomi=wet hyper=dry openrouter=dry `
-                + 'deepseekUsd=9.96 xiaomiUsdSpent=0.0042',
+              line: `${stamp} neuralwatt=dry synthetic=dry bedrock=dry deepseek=wet xiaomi=wet anthropic=wet hyper=dry openrouter=dry `
+                + 'deepseekUsd=9.96 xiaomiUsdSpent=0.0042 anthropicUsdSpent=0.0100',
             },),).toMatchObject({
               deepseek: 'wet',
               xiaomi: 'wet',
-              levels: ['deepseekUsd=9.96', 'xiaomiUsdSpent=0.0042',],
+              anthropic: 'wet',
+              levels: ['deepseekUsd=9.96', 'xiaomiUsdSpent=0.0042', 'anthropicUsdSpent=0.0100',],
             },);
             expect(readMeterLine({ line: `${stamp} synthetic=wet hyper=dry`, },),).toMatchObject({
               deepseek: 'absent',
               xiaomi: 'absent',
+              anthropic: 'absent',
             },);
           },
         },),

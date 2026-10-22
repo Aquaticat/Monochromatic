@@ -597,6 +597,7 @@ await describe({
               bedrock: false,
               deepseek: true,
               xiaomi: true,
+              anthropic: true,
               openrouter: false,
             },);
             expect(await drynessAt('0',),).toEqual({
@@ -606,6 +607,7 @@ await describe({
               bedrock: true,
               deepseek: true,
               xiaomi: true,
+              anthropic: true,
               openrouter: false,
             },);
           },

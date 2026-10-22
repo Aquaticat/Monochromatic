@@ -70,6 +70,7 @@ const ALL_WET: BudgetView = {
   bedrock: false,
   deepseek: false,
   xiaomi: false,
+  anthropic: false,
   hyper: false,
   openrouter: false,
 };
@@ -83,6 +84,7 @@ const ALL_DRY: BudgetView = {
   bedrock: true,
   deepseek: true,
   xiaomi: true,
+  anthropic: true,
   hyper: true,
   openrouter: true,
 };
@@ -96,6 +98,7 @@ const SYNTHETIC_DRY: BudgetView = {
   bedrock: false,
   deepseek: false,
   xiaomi: false,
+  anthropic: false,
   hyper: false,
   openrouter: false,
 };
@@ -112,6 +115,7 @@ const SYNTHETIC_AND_HYPER_DRY: BudgetView = {
   bedrock: false,
   deepseek: false,
   xiaomi: false,
+  anthropic: false,
   hyper: true,
   openrouter: false,
 };
@@ -125,6 +129,7 @@ const NO_HOLDS = {
   bedrock: 0,
   deepseek: 0,
   xiaomi: 0,
+  anthropic: 0,
   hyper: 0,
   openrouter: 0,
 };
@@ -139,6 +144,7 @@ const BEDROCK_ALONE: BudgetView = {
   bedrock: false,
   deepseek: true,
   xiaomi: true,
+  anthropic: true,
   hyper: true,
   openrouter: true,
 };
@@ -157,6 +163,7 @@ const ALL_METERS_WET: Readonly<Record<keyof BudgetView, MeterState>> = {
   bedrock: 'wet',
   deepseek: 'wet',
   xiaomi: 'wet',
+  anthropic: 'wet',
   hyper: 'wet',
   openrouter: 'wet',
 };
@@ -283,9 +290,9 @@ await describe({
               l: levelCapturingLogger({ lines, },),
             },);
             expect(lines,).toEqual([
-              'info JUDGE SEATS phase=lanes neuralwatt=wet synthetic=wet bedrock=wet deepseek=wet xiaomi=wet '
-                + 'hyper=wet openrouter=wet wide=7 select=8 '
-                + 'late=7 slate=7 checkers=3 translators=8 readers=6 seeing=6 writers=9 roster=9 withheld=none unserved=none '
+              'info JUDGE SEATS phase=lanes neuralwatt=wet synthetic=wet bedrock=wet deepseek=wet xiaomi=wet anthropic=wet '
+                + 'hyper=wet openrouter=wet wide=8 select=9 '
+                + 'late=7 slate=7 checkers=3 translators=8 readers=6 seeing=6 writers=9 roster=10 withheld=none unserved=none '
                 + 'threw-withheld=hf:Qwen/Qwen3.8-27B (threw 4 of 4 asks) waited=0ms',
             ],);
 
@@ -302,9 +309,9 @@ await describe({
               l: levelCapturingLogger({ lines: mixedLines, },),
             },);
             expect(mixedLines,).toEqual([
-              'info JUDGE SEATS phase=lanes neuralwatt=wet synthetic=wet bedrock=wet deepseek=wet xiaomi=wet '
-                + 'hyper=wet openrouter=wet wide=7 select=8 '
-                + 'late=7 slate=7 checkers=3 translators=8 readers=6 seeing=6 writers=9 roster=9 withheld=none unserved=none '
+              'info JUDGE SEATS phase=lanes neuralwatt=wet synthetic=wet bedrock=wet deepseek=wet xiaomi=wet anthropic=wet '
+                + 'hyper=wet openrouter=wet wide=8 select=9 '
+                + 'late=7 slate=7 checkers=3 translators=8 readers=6 seeing=6 writers=9 roster=10 withheld=none unserved=none '
                 + 'threw-withheld=none waited=0ms',
             ],);
           },
@@ -324,6 +331,7 @@ await describe({
                   bedrock: true,
                   deepseek: false,
                   xiaomi: false,
+                  anthropic: false,
                   hyper: false,
                   openrouter: false,
                 }),
@@ -333,6 +341,7 @@ await describe({
                   bedrock: 'unreadable',
                   deepseek: 'wet',
                   xiaomi: 'wet',
+                  anthropic: 'wet',
                   hyper: 'wet',
                   openrouter: 'wet',
                 }),
@@ -344,7 +353,7 @@ await describe({
             expect(lines.length,).toBe(1,);
             expect(lines[0],).toContain(
               'info JUDGE SEATS phase=lanes neuralwatt=dry synthetic=unreadable-treated-as-spendable bedrock=dry '
-                + 'deepseek=wet xiaomi=wet hyper=wet openrouter=wet ',
+                + 'deepseek=wet xiaomi=wet anthropic=wet hyper=wet openrouter=wet ',
             );
           },
         },),
@@ -373,7 +382,7 @@ await describe({
               'info JUDGE SEATS phase=lanes neuralwatt=unreadable-treated-as-spendable '
                 + 'synthetic=unreadable-treated-as-spendable '
                 + 'bedrock=unreadable-treated-as-spendable deepseek=unreadable-treated-as-spendable '
-                + 'xiaomi=unreadable-treated-as-spendable hyper=unreadable-treated-as-spendable '
+                + 'xiaomi=unreadable-treated-as-spendable anthropic=unreadable-treated-as-spendable hyper=unreadable-treated-as-spendable '
                 + 'openrouter=unreadable-treated-as-spendable ',
             );
           },
@@ -707,7 +716,7 @@ await describe({
             /**
              Each slice's own line, the same for both since both read one view.
              */
-            const stopLine = 'JUDGE SEATS phase=lanes writing bench unreachable: editors 0 of 3 reachable, floor 2; '
+            const stopLine = 'JUDGE SEATS phase=lanes writing bench unreachable: editors 0 of 4 reachable, floor 2; '
               + 'refiners 0 of 3 reachable, floor 2; stopping the entry';
             for (const signal of [
               stopping.signal,
@@ -766,7 +775,7 @@ await describe({
               ],
               stops: [],
               warned: [
-                'warn JUDGE SEATS phase=page consistency short of quorum: wide 0 of 7 reachable, quorum 4; '
+                'warn JUDGE SEATS phase=page consistency short of quorum: wide 0 of 8 reachable, quorum 4; '
                   + 'no provider has named its return, so the phase runs on what is reachable',
               ],
             },);
@@ -868,7 +877,7 @@ await describe({
             expect(lines.filter(function isError(line,): boolean {
               return line.startsWith('error ',);
             },),).toEqual([
-              'error JUDGE SEATS phase=lanes writing bench unreachable: editors 0 of 3 reachable, floor 2; '
+              'error JUDGE SEATS phase=lanes writing bench unreachable: editors 0 of 4 reachable, floor 2; '
                 + 'refiners 0 of 3 reachable, floor 2; translators 0 of 8 reachable, floor 2; stopping the entry',
             ],);
           },

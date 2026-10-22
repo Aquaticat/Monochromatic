@@ -195,6 +195,7 @@ await describe({
           // THE TWO DIRECT PROVIDERS HAVE NO KEY HERE, so they read dry like the other absent ones.
           deepseek: true,
           xiaomi: true,
+          anthropic: true,
           hyper: true,
           openrouter: true,
         },);
