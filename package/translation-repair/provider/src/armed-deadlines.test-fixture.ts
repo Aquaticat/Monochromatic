@@ -12,6 +12,63 @@
 const DEADLINE_FLOOR_MS = 100_000;
 
 /**
+ The two-argument form of the timer function that a per-call deadline arms with.
+ */
+type TimerFunction = (
+  callback: Parameters<typeof globalThis.setTimeout>[0],
+  delay?: number,
+) => ReturnType<typeof globalThis.setTimeout>;
+
+/**
+ Puts a function in the place of the global `setTimeout` until the returned handle is disposed.
+
+ @param replacement - function that takes the timer function's place
+
+ @returns Handle whose disposal puts the original back, however the scope ends
+
+ @example
+ ```ts
+ using restore = replacingSetTimeout({ replacement: recordingSetTimeout, },);
+ ```
+ */
+function replacingSetTimeout(
+  { replacement, }: { readonly replacement: TimerFunction; },
+): Disposable {
+  /**
+   The timer function the process had before the replacement.
+   */
+  const original = globalThis.setTimeout;
+
+  /**
+   Puts a timer function in the global slot.
+
+   @param timerFunction - function to install
+
+   @example
+   ```ts
+   install(original,);
+   ```
+   */
+  function install(timerFunction: TimerFunction,): void {
+    Object.defineProperty(
+      globalThis,
+      'setTimeout',
+      {
+        value: timerFunction,
+        configurable: true,
+        writable: true,
+      },
+    );
+  }
+  install(replacement,);
+  return {
+    [Symbol.dispose](): void {
+      install(original,);
+    },
+  };
+}
+
+/**
  Runs work and reports every timer of a deadline's length that the work armed, in the order armed.
 
  THE GLOBAL `setTimeout` IS WRAPPED FOR THE LENGTH OF THE WORK AND PUT BACK AFTER IT, however it ends; the wrapper
@@ -42,24 +99,26 @@ export async function armedDeadlinesDuring<Result,>(
    The timer function the process had before the wrapper.
    */
   const original = globalThis.setTimeout;
-  globalThis.setTimeout = function recordingSetTimeout(
-    ...args: Parameters<typeof globalThis.setTimeout>
-  ): ReturnType<typeof globalThis.setTimeout> {
-    /**
-     Delay the caller asked for, absent for none.
-     */
-    const delay: unknown = args[1];
-    if (((typeof delay) === 'number') && (delay >= DEADLINE_FLOOR_MS))
-      armed.push(delay,);
-    return original(...args,);
-  } as typeof globalThis.setTimeout;
-  try {
-    return {
-      result: await run(),
-      armed,
-    };
-  }
-  finally {
-    globalThis.setTimeout = original;
-  }
+
+  /**
+   Holds the original timer function out of the global slot until the scope ends. The replacement records the delay
+   of a timer long enough to be a deadline, then arms it as usual.
+   */
+  using _restore = replacingSetTimeout({
+    replacement: function recordingSetTimeout(
+      callback,
+      delay,
+    ) {
+      if ((delay !== undefined) && (delay >= DEADLINE_FLOOR_MS))
+        armed.push(delay,);
+      return original(
+        callback,
+        delay,
+      );
+    },
+  },);
+  return {
+    result: await run(),
+    armed,
+  };
 }

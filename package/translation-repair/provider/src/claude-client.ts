@@ -8,6 +8,7 @@ import {
 import {
   ANTHROPIC_EFFORTS,
   ANTHROPIC_WIRE_MODELS,
+  claudeCallDeadlineMs,
   completionCapFor,
   perModelLimiter,
   type RosterModelId,
@@ -526,6 +527,15 @@ export function createClaudeClient(
       }`,);
 
       /**
+       Ceiling the call sends as `max_tokens`: the card's cap, or the caller's lower ask.
+       */
+      const maxTokens = completionCapFor({
+        modelId: request.modelId,
+        // Conditional spread keeps the knob absent instead of undefined.
+        ...(request.maxTokens === undefined ? {} : { requested: request.maxTokens, }),
+      },);
+
+      /**
        Exactly what goes on the wire, hoisted so its size can be measured.
        */
       const bodyJson = JSON.stringify(buildClaudeBody({
@@ -533,13 +543,14 @@ export function createClaudeClient(
         messages: request.messages,
         // Conditional spread keeps the member absent instead of undefined.
         ...(request.responseFormat === undefined ? {} : { responseFormat: request.responseFormat, }),
-        maxTokens: completionCapFor({
-          modelId: request.modelId,
-          // Conditional spread keeps the knob absent instead of undefined.
-          ...(request.maxTokens === undefined ? {} : { requested: request.maxTokens, }),
-        },),
+        maxTokens,
       },),);
 
+      // THE CALLER'S DEADLINE IS A FLOOR UNDER A CLAUDE CALL'S OWN (R1 of the second review of the Claude route). The
+      // run hands every call 360,000 ms (`RUN_PER_CALL_TIMEOUT_MS`), and a completion of the 32,000-token cap needs
+      // 460,000 ms at the floor rate of 80 tokens a second (`claudeCallDeadlineMs`), so below 89 tokens a second a call
+      // that thinks up to the cap would be cut, billed for what it generated and answer nothing. The larger of the two
+      // is armed: a caller's longer deadline stands, and a caller that set none still gets none, as in every client.
       /**
        Per-exchange deadline armed inside the slot, absent when the caller set none.
        */
@@ -547,7 +558,10 @@ export function createClaudeClient(
         ? undefined
         : armCallDeadline({
           signal: request.signal,
-          timeoutMs: request.exchangeTimeoutMs,
+          timeoutMs: Math.max(
+            request.exchangeTimeoutMs,
+            claudeCallDeadlineMs({ maxTokens, },),
+          ),
           label,
         },);
 

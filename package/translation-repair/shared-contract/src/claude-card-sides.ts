@@ -102,8 +102,58 @@ const MAX_OUTPUT_TOKENS = 128_000;
  32,000, which costs at most 0.32 USD for a call that runs to it on Sonnet (10 USD a million output tokens) and 0.016 on
  Haiku. A STARTING VALUE UNTIL THE FIRST CALLS ARE MEASURED: the cap census (`run/src/corpus-run/cap-census.ts`) reads
  the `SPEND` lines of the Claude calls like any other model's and flags the card when its own 99th percentile disagrees.
+
+ THE DEADLINE THIS CAP NEEDS IS `claudeCallDeadlineMs`, 460,000 ms: the run's 360,000 ms reaches the cap only at 89
+ tokens a second or better.
  */
-const CLAUDE_COMPLETION_CAP = 32_000;
+export const CLAUDE_COMPLETION_CAP = 32_000;
+
+/**
+ Slowest whole-call output rate a Claude call is sized for, in tokens a second, thinking counted.
+
+ MEASURED, 2026-10-22 22:02 to 22:03 UTC, by the lead's live probe (its logs `live2.jsonl` and `live2.err` sit in
+ the review's folder, not in this repository): Haiku 5.5 170.2 and 152.6 tokens a second, Sonnet 5.5 113.8 and
+ 101.3, two short-prompt samples each with no spread measured. 80 sits about a fifth under the slowest measured call, Sonnet's 101.3. A FLOOR TO SIZE
+ A DEADLINE BY, NOT A PREDICTION: the first corpus pass's `SPEND` lines and elapsed times say whether a longer prompt
+ or a loaded hour runs slower.
+ */
+export const CLAUDE_FLOOR_TOKENS_PER_SECOND = 80;
+
+/**
+ Time a Claude call is allowed before its first output token, in milliseconds: the prompt is read and the first byte
+ arrives inside it. A SIZED ALLOWANCE, NOT A MEASUREMENT: the six probe calls of 2026-10-22 were short prompts, and
+ the stage sheets are long ones.
+ */
+export const CLAUDE_FIRST_BYTE_ALLOWANCE_MS = 60_000;
+
+/**
+ Milliseconds in a second.
+ */
+const MS_PER_SECOND = 1_000;
+
+/**
+ Deadline for one Claude call, in milliseconds: the completion ceiling at the floor rate, plus the allowance for the
+ prompt and the first byte. The cap of 32,000 tokens is 400 s at 80 tokens a second, plus 60 s, so 460,000 ms.
+
+ WHY THE RUN'S 360,000 MS (`RUN_PER_CALL_TIMEOUT_MS`) DID NOT SUFFICE: 32,000 tokens inside 360 s is 88.9 tokens a
+ second, so a call that thinks and answers up to the cap below that speed would be cut by its deadline, billed for
+ what it generated and return no answer. The client takes the larger of the run's deadline and this one
+ (`claude-client.ts`), so a Claude call is never given less than its ceiling needs and a caller's longer bound stands.
+
+ @param maxTokens - ceiling the call sends as `max_tokens`
+
+ @returns Milliseconds the call may run
+
+ @example
+ ```ts
+ claudeCallDeadlineMs({ maxTokens: CLAUDE_COMPLETION_CAP, },);
+ // => 460_000
+ ```
+ */
+export function claudeCallDeadlineMs({ maxTokens, }: { readonly maxTokens: number; },): number {
+  return Math.ceil((maxTokens / CLAUDE_FLOOR_TOKENS_PER_SECOND) * MS_PER_SECOND,)
+    + CLAUDE_FIRST_BYTE_ALLOWANCE_MS;
+}
 
 /**
  Builds one card side.

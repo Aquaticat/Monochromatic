@@ -114,6 +114,10 @@ export {
 } from './model-card-derive.ts';
 export {
   CLAUDE_CARDS,
+  CLAUDE_COMPLETION_CAP,
+  CLAUDE_FIRST_BYTE_ALLOWANCE_MS,
+  CLAUDE_FLOOR_TOKENS_PER_SECOND,
+  claudeCallDeadlineMs,
   HAIKU_5_5_PRICES,
   SONNET_5_5_PRICES,
 } from './claude-card-sides.ts';

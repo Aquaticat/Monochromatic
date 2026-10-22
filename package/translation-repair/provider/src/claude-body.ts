@@ -116,6 +116,13 @@ export function buildClaudeBody(
     // content window and was sent again, billing the thinking tokens each time. `display` changes what is returned and
     // not what is generated or billed ("thinking happens and is billed the same under every setting", same file), and
     // the reader drops the summary text (`anthropic-completion.ts`), so the answer is unchanged.
+    //
+    // THE 120 S IDLE WINDOW WAS CHECKED AGAINST SIX LIVE CALLS (R2 of the second review of the Claude route), the
+    // lead's probe of 2026-10-22, 22:02 to 22:03 UTC: the longest pause between stream events (`maxGap` in
+    // `reportStreamProgress`) was 40, 112, 1,990, 3,429, 3,278 and 3,934 ms, the thinking calls 1,990 to 3,934 ms,
+    // and the longest call ran 38 s. Summaries arrive in batches, and the longest pause seen is 3.9 s against the
+    // guard's 120,000 ms, so the window stands. SIX SHORT-PROMPT CALLS ARE NOT A BOUND: the Claude `maxGap` lines of
+    // the first corpus pass are to be read against 120 s, and the window changed only if one comes close.
     thinking: {
       type: 'adaptive',
       display: 'summarized',
