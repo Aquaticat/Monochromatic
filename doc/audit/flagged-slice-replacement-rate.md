@@ -11,7 +11,8 @@ and the two readings disagree about which way the small difference points.
 
 ## The pre-registered reading
 
-Union of every flag kind the probe emits, over the delivery ledger,
+Union of every flag kind the probe emits,
+over the delivery ledger,
 fixed before any number existed:
 
 ```text
@@ -21,7 +22,8 @@ translate    14 of 16  0.8750   20 of 26  0.7692
 pooled       26 of 32  0.8125   38 of 52  0.7308
 ```
 
-Flagged slices replace more often, by about eight points pooled.
+Flagged slices replace more often,
+by about eight points pooled.
 
 ## The amended reading, which points the other way
 
@@ -37,9 +39,11 @@ Read on slices that actually held a vote:
 translate    14 of 16  0.8750   20 of 21  0.9524
 ```
 
-Flagged slices replace LESS often, by about seven points.
+Flagged slices replace LESS often,
+by about seven points.
 
-Stated as archive survival, which is the quantity `#107` cares about:
+Stated as archive survival,
+which is the quantity `#107` cares about:
 
 ```text
 flagged slices, this pool         2 of 16   0.125
@@ -103,4 +107,6 @@ for a relocation it cannot see.
 This measures FREQUENCY and finds nothing.
 It says nothing about whether the replacements at those slices are GOOD,
 which needs a human and is what `relocation-sheet.md` asks:
-30 items, 15 flagged against 15 unflagged controls, blinded and stratified.
+30 items,
+15 flagged against 15 unflagged controls,
+blinded and stratified.

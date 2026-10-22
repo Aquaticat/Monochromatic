@@ -3,7 +3,8 @@
 Measured 2026-08-18 over `~/translation-repair-runs-flagged-20260818/artifacts`,
 every `replacement-shipped` row in either lane whose `incumbentKind` is `present`,
 64 rows.
-Script: `~/temp/agent/wrap-census.mjs`.
+Script:
+`~/temp/agent/wrap-census.mjs`.
 
 ## The measurement
 
@@ -92,7 +93,8 @@ and they are the ones worth a human's time.
 The first sheet showed both texts verbatim,
 so a rewrap dominated every item it touched.
 The grader said so directly at items 6 and 7:
-"Semantic wrapping is paramount even when original Chinese text didn't, for maintainability.
+"Semantic wrapping is paramount even when original Chinese text didn't,
+for maintainability.
 And I don't see an issue with the original translated text."
 Two of the pool's 64 rows are a rewrap and NOTHING ELSE,
 `dogesir_/translate#5` and `dogesir_/translate#8`,
@@ -142,7 +144,8 @@ The concern was that a slice might be a piece of a block
 and parse as something else on its own.
 Every slice in the pool was passed through alone
 and none lost a character,
-so whatever the parser made of them, it removed nothing.
+so whatever the parser made of them,
+it removed nothing.
 
 ## The archive is not innocent either
 
@@ -184,18 +187,25 @@ SOFT WRAPPING (single newlines)
   multi-line incumbent flattened to one line: 0
 ```
 
-WHAT CHANGED, read against the earlier pool of 64:
+WHAT CHANGED,
+read against the earlier pool of 64:
 shipped text used to violate in 58 of 64 rows carrying 326 findings,
 and 17 incumbents were flattened to a single line.
-Both are now zero, and the "after the fix" column is zero for the same reason as the column
+Both are now zero,
+and the "after the fix" column is zero for the same reason as the column
 before it rather than for a different one:
-the text ships already wrapped, so there is nothing left for a fix to do.
+the text ships already wrapped,
+so there is nothing left for a fix to do.
 
-THE INCUMBENTS ARE UNTOUCHED, deliberately: 5 of these 9 violate MD1 in the archive and still do.
-A retention keeps the archive's bytes, and wrapping one would report a change nobody decided on.
+THE INCUMBENTS ARE UNTOUCHED,
+deliberately:
+5 of these 9 violate MD1 in the archive and still do.
+A retention keeps the archive's bytes,
+and wrapping one would report a change nobody decided on.
 That remains a one-time `monochromatic-lint --fix` over the corpus rather than a job for a translation pass.
 
-READ THE SIZE OF THIS HONESTLY. Nine rows from one entry is a small pool,
+READ THE SIZE OF THIS HONESTLY.
+Nine rows from one entry is a small pool,
 and it confirms a direction rather than establishing a rate.
 What makes it worth recording is that the earlier pool's failure mode was not marginal:
 58 of 64 with 326 findings does not become 0 of 9 by luck.
@@ -283,7 +293,8 @@ demote,
 and ship the flat text.
 The exact repair the rule demands would be discarded silently.
 
-MEASURED 2026-08-22, against the code as it stood before the skip,
+MEASURED 2026-08-22,
+against the code as it stood before the skip,
 with `~/temp/agent/167-demote-control.mjs`.
 It was a reading of the code when written and is no longer one.
 
@@ -325,7 +336,8 @@ and wrapping damages line-per-unit text however well the pairing was drawn.
 
 ### What landed, and the one prescription measurement narrowed
 
-Landed 2026-08-22, in four commits on `translation-repair-rebased`.
+Landed 2026-08-22,
+in four commits on `translation-repair-rebased`.
 The freeze this was queued behind lifted the same day.
 
 - The wrap is skipped at all three sites on a governed slice.
@@ -377,7 +389,10 @@ so no archive text is ever handed to the guard.
 `wrap-erased-difference` HAS NEVER FIRED.
 Across every settled artifact,
 21 consolidation slices carry a terminal,
-and the census is `consolidated` 11, `slate-kept-standing` 5, `gate-kept-standing` 4, `no-standing-text` 1.
+and the census is `consolidated` 11,
+`slate-kept-standing` 5,
+`gate-kept-standing` 4,
+`no-standing-text` 1.
 A governed proposal that equals the standing text still demotes into that terminal,
 where the name is now imprecise,
 since no wrap ran to erase anything.

@@ -22,7 +22,8 @@ so the content is retainable and only one lane destroys it.
 
 ## The guard that should have caught it did not
 
-`assessSliceAlignment` refuses a replacement above `MAX_INCUMBENT_TO_SOURCE_RATIO`, which is 16.
+`assessSliceAlignment` refuses a replacement above `MAX_INCUMBENT_TO_SOURCE_RATIO`,
+which is 16.
 
 ```text
 dogesir_ slice 3        114 source code points, 1766 incumbent, ratio 15.49
@@ -38,7 +39,8 @@ the archive carrying something with no original is.
 
 The first attempt anchored on the source's own last block repeated in the archive,
 and treated what followed as target-only.
-Checked against every transcript now known in the corpus, nine across six entries,
+Checked against every transcript now known in the corpus,
+nine across six entries,
 it reaches two.
 
 ```text
@@ -63,7 +65,9 @@ so a cheap structural rule is either the aligner or it is wrong.
 
 ## Deletion, on the other hand, is decidable from the two texts alone
 
-Counting blockquote BLOCKS, not lines, so a lane may reflow a quotation freely:
+Counting blockquote BLOCKS,
+not lines,
+so a lane may reflow a quotation freely:
 
 ```text
 flagged pool   4 of 64 shipped replacements drop a whole quote block
@@ -72,7 +76,8 @@ flagged pool   4 of 64 shipped replacements drop a whole quote block
 natural pool   0 of 69
 ```
 
-Four hits, every one a passage a reader would want back,
+Four hits,
+every one a passage a reader would want back,
 and nothing else across sixty-nine natural rows.
 Reproduced through the built artifact rather than a copy of the logic.
 

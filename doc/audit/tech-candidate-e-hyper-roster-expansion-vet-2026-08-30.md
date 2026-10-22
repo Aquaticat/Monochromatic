@@ -1,19 +1,31 @@
 # Candidate E Hyper roster expansion vet report
 
-- Status: complete,
+- Status:
+  complete,
   no recommendation
-- Lifecycle phase: rejected
-- Subject: Candidate E Hyper roster expansion
-- Scope: select out-of-roster Charm Hyper model for distinct complete author and quote-bound auditor seat
-- Started: 2026-08-30
-- Last updated: 2026-08-30
-- Governing skill revision: `c8475388d533e4f1c4065682ed2437a29cad3dc1`
-- Governing skill SHA-256: `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`
-- Compatibility fingerprint: `be2f7a0a6efb8f1924f0ee1829593914c3faf15f1c20664753ab7df701d439b7`
-- Active audit owner: primary agent session
-- Prior compatible report: none;
+- Lifecycle phase:
+  rejected
+- Subject:
+  Candidate E Hyper roster expansion
+- Scope:
+  select out-of-roster Charm Hyper model for distinct complete author and quote-bound auditor seat
+- Started:
+  2026-08-30
+- Last updated:
+  2026-08-30
+- Governing skill revision:
+  `c8475388d533e4f1c4065682ed2437a29cad3dc1`
+- Governing skill SHA-256:
+  `393eb68c5b2b2f7b16c8f7f90c100fb8be43eefa4501511360cd0572e4ae8087`
+- Compatibility fingerprint:
+  `be2f7a0a6efb8f1924f0ee1829593914c3faf15f1c20664753ab7df701d439b7`
+- Active audit owner:
+  primary agent session
+- Prior compatible report:
+  none;
   current-roster report `tech-candidate-e-hyper-reserve-model-vet-2026-08-30.md` has incompatible scope
-- Unresolved preferences: none;
+- Unresolved preferences:
+  none;
   standing quality constraint controls ranking and same provider preserves trust boundary
 
 ## Context
@@ -172,34 +184,48 @@ after 2 Kimi integration exits and owner-excluded Qwen Max.
 
 ### `kimi-k2.6`
 
-- Discovery: official Hyper live catalog.
-- Base category: managed service model under incumbent provider.
-- Overlays: sensitive data and roster extension.
-- Live static evidence: vision true,
+- Discovery:
+  official Hyper live catalog.
+- Base category:
+  managed service model under incumbent provider.
+- Overlays:
+  sensitive data and roster extension.
+- Live static evidence:
+  vision true,
   262,000 context,
   26,214 output,
   reasoning effort low through high with medium default.
-- Risk: output ceiling is below MiniMax's measured 32,000-token author truncation;
+- Risk:
+  output ceiling is below MiniMax's measured 32,000-token author truncation;
   candidate-specific completion remains unmeasured and cannot be inferred from another model.
-- Official hard-gate conflict: thinking defaults enabled,
+- Official hard-gate conflict:
+  thinking defaults enabled,
   and Kimi documentation allows `tool_choice` only `auto` or `none` in thinking mode.
 - Project request builder intentionally sets no thinking parameter and forces named answer tool for strict schema.
 - Same Hyper path previously let Kimi-K3 consume full 16,000-token ceiling without answer,
   consistent with default-thinking budget risk but not proof about K2.6.
-- Residual uncertainty: Hyper could translate model-specific tool semantics differently from direct Kimi API;
+- Residual uncertainty:
+  Hyper could translate model-specific tool semantics differently from direct Kimi API;
   no such behavior is documented.
-- Screening: exits because supported current integration cannot issue required strict forced-tool contract
+- Screening:
+  exits because supported current integration cannot issue required strict forced-tool contract
   without violating owner no-thinking-knob policy.
 
 ### `kimi-k2.7-code`
 
-- Discovery: official Hyper live catalog.
-- Base category: managed service model under incumbent provider.
-- Overlays: sensitive data and roster extension.
-- Live static evidence: vision true and 16,000 output.
-- Risk: same provider's Kimi-K3 exhausted same numerical ceiling on canonical author prompt,
+- Discovery:
+  official Hyper live catalog.
+- Base category:
+  managed service model under incumbent provider.
+- Overlays:
+  sensitive data and roster extension.
+- Live static evidence:
+  vision true and 16,000 output.
+- Risk:
+  same provider's Kimi-K3 exhausted same numerical ceiling on canonical author prompt,
   but different model behavior is not hard-gate evidence for this candidate.
-- Official hard-gate conflict: model cannot disable thinking,
+- Official hard-gate conflict:
+  model cannot disable thinking,
   while Kimi documentation allows `tool_choice` only `auto` or `none`.
 - Project strict schema requires named forced answer tool.
 - Same Hyper path previously let Kimi-K3 exhaust identical 16,000-token numerical ceiling without answer,
@@ -207,47 +233,66 @@ after 2 Kimi integration exits and owner-excluded Qwen Max.
 - Hyper live row reports no reasoning metadata,
   but direct model documentation says thinking is mandatory;
   no gateway override is documented.
-- Screening: exits as documented integration-incompatible before spend.
+- Screening:
+  exits as documented integration-incompatible before spend.
 
 ### `qwen3.6-flash`
 
-- Discovery: official Hyper live catalog.
-- Base category: managed service model under incumbent provider.
-- Overlays: sensitive data and roster extension.
-- Live static evidence: vision true and 64,000 output.
+- Discovery:
+  official Hyper live catalog.
+- Base category:
+  managed service model under incumbent provider.
+- Overlays:
+  sensitive data and roster extension.
+- Live static evidence:
+  vision true and 64,000 output.
 - Official Qwen page confirms image input,
   function calling,
   structured output,
   1M context,
   and 65K direct-service output.
-- Runtime: author and auditor both schema-valid.
-- Page review: rejects malformed opening,
+- Runtime:
+  author and auditor both schema-valid.
+- Page review:
+  rejects malformed opening,
   missing temporal subject,
   and footnote grammar.
-- Lifecycle: rejected.
+- Lifecycle:
+  rejected.
 
 ### `qwen3.6-plus`
 
-- Discovery: official Hyper live catalog.
-- Base category: managed service model under incumbent provider.
-- Overlays: sensitive data and roster extension.
-- Live static evidence: vision true and 64,000 output.
+- Discovery:
+  official Hyper live catalog.
+- Base category:
+  managed service model under incumbent provider.
+- Overlays:
+  sensitive data and roster extension.
+- Live static evidence:
+  vision true and 64,000 output.
 - Official Qwen page confirms image input,
   function calling,
   structured output,
   1M context,
   and 65K direct-service output.
-- Runtime: author and auditor both schema-valid.
-- Page review: rejects semantic truncation across multiple populated slots;
+- Runtime:
+  author and auditor both schema-valid.
+- Page review:
+  rejects semantic truncation across multiple populated slots;
   fixed-key presence concealed missing prose.
-- Lifecycle: rejected.
+- Lifecycle:
+  rejected.
 
 ### `qwen3.7-flash`
 
-- Discovery: official Hyper live catalog.
-- Base category: managed service model under incumbent provider.
-- Overlays: sensitive data and roster extension.
-- Live static evidence: vision true,
+- Discovery:
+  official Hyper live catalog.
+- Base category:
+  managed service model under incumbent provider.
+- Overlays:
+  sensitive data and roster extension.
+- Live static evidence:
+  vision true,
   1,000,000 context,
   and 64,000 output.
 - Official Qwen page confirms image input,
@@ -255,18 +300,25 @@ after 2 Kimi integration exits and owner-excluded Qwen Max.
   structured output,
   1M context,
   and 131K direct-service output.
-- Runtime: author and auditor both schema-valid.
-- Page review: rejects archive-regurgitated grammar,
+- Runtime:
+  author and auditor both schema-valid.
+- Page review:
+  rejects archive-regurgitated grammar,
   actor ambiguity,
   and footnote provenance omission.
-- Lifecycle: rejected.
+- Lifecycle:
+  rejected.
 
 ### `qwen3.7-plus`
 
-- Discovery: official Hyper live catalog.
-- Base category: managed service model under incumbent provider.
-- Overlays: sensitive data and roster extension.
-- Live static evidence: vision true,
+- Discovery:
+  official Hyper live catalog.
+- Base category:
+  managed service model under incumbent provider.
+- Overlays:
+  sensitive data and roster extension.
+- Live static evidence:
+  vision true,
   1,000,000 context,
   and 64,000 output.
 - Official Qwen page confirms image input,
@@ -274,19 +326,26 @@ after 2 Kimi integration exits and owner-excluded Qwen Max.
   structured output,
   1M context,
   and 131K direct-service output.
-- Runtime: author and auditor both schema-valid.
-- Page review: rejects grammar,
+- Runtime:
+  author and auditor both schema-valid.
+- Page review:
+  rejects grammar,
   actor ambiguity,
   source-language carryover,
   and malformed footnote prose.
-- Lifecycle: rejected.
+- Lifecycle:
+  rejected.
 
 ### `qwen3.8-flash`
 
-- Discovery: official Hyper live catalog.
-- Base category: managed service model under incumbent provider.
-- Overlays: sensitive data and roster extension.
-- Live static evidence: vision true,
+- Discovery:
+  official Hyper live catalog.
+- Base category:
+  managed service model under incumbent provider.
+- Overlays:
+  sensitive data and roster extension.
+- Live static evidence:
+  vision true,
   1,000,000 context,
   and 128,000 output.
 - Official Qwen page confirms image input,
@@ -294,20 +353,26 @@ after 2 Kimi integration exits and owner-excluded Qwen Max.
   1M context,
   131K direct-service output,
   and both OpenAI and Anthropic API compatibility.
-- Runtime: author and auditor both schema-valid.
-- Page review: strongest complete author,
+- Runtime:
+  author and auditor both schema-valid.
+- Page review:
+  strongest complete author,
   but rejects unsupported actor gender,
   source-language calques,
   and wrong-meaning wording in sensitive record acquisition.
 - Auditor had strongest relative D1 coverage,
   but usable audit cannot compensate for failed author hard gate.
-- Lifecycle: rejected.
+- Lifecycle:
+  rejected.
 
 ### `qwen3.8-max`
 
-- Discovery: official Hyper live catalog.
-- Screening: exits before targeted validation.
-- Hard-gate failure: owner explicitly excluded model after disproportionate metered cost and unreachable-run evidence.
+- Discovery:
+  official Hyper live catalog.
+- Screening:
+  exits before targeted validation.
+- Hard-gate failure:
+  owner explicitly excluded model after disproportionate metered cost and unreachable-run evidence.
 - No new payload is permitted.
 
 ## Managed-service gates
@@ -345,12 +410,18 @@ Provider API output is still caller-validated and quarantined before publication
 Cost receives no criterion because standing quality rule makes cost non-constraint.
 Hard gates remain outside arithmetic.
 
-- Publication fidelity and English quality: weight 5.
-- Strict schema reliability: weight 5.
-- Complete-document output capacity: weight 4.
-- Concrete audit-defect recall: weight 3.
-- Model-family independence from incumbent selected candidate: weight 2.
-- End-to-end latency: weight 1.
+- Publication fidelity and English quality:
+  weight 5.
+- Strict schema reliability:
+  weight 5.
+- Complete-document output capacity:
+  weight 4.
+- Concrete audit-defect recall:
+  weight 3.
+- Model-family independence from incumbent selected candidate:
+  weight 2.
+- End-to-end latency:
+  weight 1.
 
 Ratings use 0 through 4 after every finalist receives identical author,
 auditor,
@@ -416,70 +487,89 @@ Interpretation is frozen before dispatch:
 
 ### Hyper live inventory
 
-- Candidates: every report row.
-- Gate: current service,
+- Candidates:
+  every report row.
+- Gate:
+  current service,
   vision,
   context,
   output,
   and reasoning metadata.
-- Status: pass for enumerated row presence.
+- Status:
+  pass for enumerated row presence.
 - Primary source:
   `https://hyper.charm.land/v1/models`,
   accessed 2026-08-30.
 - Saved response:
   `~/temp/agent/hyper-models-E1-reserve-20260830.json`.
-- Outcome: 29 total rows,
+- Outcome:
+  29 total rows,
   11 image-capable rows,
   finite out-of-roster candidate set saturated.
 
 ### Kimi forced-tool compatibility
 
-- Candidates: `kimi-k2.6` and `kimi-k2.7-code`.
-- Gate: strict fixed-key schema through current request builder.
-- Status: fail.
+- Candidates:
+  `kimi-k2.6` and `kimi-k2.7-code`.
+- Gate:
+  strict fixed-key schema through current request builder.
+- Status:
+  fail.
 - Primary sources:
   `https://platform.kimi.ai/docs/guide/kimi-k2-6-quickstart` and
   `https://platform.kimi.ai/docs/guide/kimi-k2-7-code-quickstart`,
   accessed 2026-08-30.
-- Evidence: K2.6 thinking defaults enabled;
+- Evidence:
+  K2.6 thinking defaults enabled;
   K2.7 cannot disable thinking;
   both permit only automatic or no tool choice while thinking.
 - Consumer boundary:
   `package/module/translation-repair/src/anthropic-request.ts` (moved on 2026-10-18 to
   `package/translation-repair/provider/src/anthropic-request.ts`) forces named answer tool
   and records owner instruction never to set thinking parameters.
-- Outcome: both exit without provider spend.
+- Outcome:
+  both exit without provider spend.
 
 ### Qwen hosted capability
 
-- Candidates: Qwen3.6 Flash and Plus,
+- Candidates:
+  Qwen3.6 Flash and Plus,
   Qwen3.7 Flash and Plus,
   Qwen3.8 Flash.
-- Gate: vision,
+- Gate:
+  vision,
   function or structured output,
   and sufficient provider envelope.
-- Status: pass documentation screening and Hyper runtime envelope.
+- Status:
+  pass documentation screening and Hyper runtime envelope.
 - Primary sources:
   exact QwenCloud model pages for Qwen3.6 and Qwen3.7,
   plus `https://www.qianwenai.com/models/qwen3.8-flash`,
   accessed 2026-08-30.
-- Evidence: all 5 accept image input and text output;
+- Evidence:
+  all 5 accept image input and text output;
   model pages expose function calling and structured output.
-- Counterevidence: first-party direct-service ceilings differ from Hyper rows;
+- Counterevidence:
+  first-party direct-service ceilings differ from Hyper rows;
   Hyper live machine-readable row controls actual request cap.
-- Outcome: all 5 advanced to equal-depth consumer-boundary validation.
+- Outcome:
+  all 5 advanced to equal-depth consumer-boundary validation.
 
 ### Equal-depth runtime
 
-- Candidates: 5 Qwen alternatives.
-- Gate: exact Hyper model routing,
+- Candidates:
+  5 Qwen alternatives.
+- Gate:
+  exact Hyper model routing,
   forced-tool schema,
   image carriage,
   output capacity,
   zero retries,
   and bounded completion.
-- Status: pass.
-- Evidence: private manifest,
+- Status:
+  pass.
+- Evidence:
+  private manifest,
   prompt payloads,
   node records,
   responses,
@@ -510,11 +600,13 @@ Interpretation is frozen before dispatch:
 - Entire dependency wave completed in 262,253 milliseconds.
 - Hyper balance moved from 7,052 to 7,046;
   measured debit was 6 balance units.
-- Outcome: transport and strict structural envelope did not distinguish a winner.
+- Outcome:
+  transport and strict structural envelope did not distinguish a winner.
 
 ### Complete-page author review
 
-- Gate: publication-ready fidelity,
+- Gate:
+  publication-ready fidelity,
   identity preservation,
   completeness,
   English,
@@ -522,8 +614,10 @@ Interpretation is frozen before dispatch:
   structure,
   media,
   and contributor authority.
-- Status: fail for every candidate.
-- Method: one analyst read full source,
+- Status:
+  fail for every candidate.
+- Method:
+  one analyst read full source,
   full archive,
   page-referenced image,
   and every compiled candidate.
@@ -552,12 +646,15 @@ Interpretation is frozen before dispatch:
   links,
   ordering,
   and publication syntax remained intact across candidates.
-- Outcome: no candidate passed author hard gate.
+- Outcome:
+  no candidate passed author hard gate.
 
 ### Quote-bound auditor review
 
-- Gate: concrete located defect coverage with admissible source and candidate anchors.
-- Status: no recommendation because paired author gate failed.
+- Gate:
+  concrete located defect coverage with admissible source and candidate anchors.
+- Status:
+  no recommendation because paired author gate failed.
 - Auditors produced 102 admitted findings and 46 structural rejections.
 - Structural rejects were duplicate candidate-slot-class keys or unbound candidate anchors;
   they are not counted as semantic false positives.
@@ -572,7 +669,8 @@ Interpretation is frozen before dispatch:
 - Auditors reviewed retained D1 candidates,
   not expansion-author pages;
   evidence does not establish Qwen-family self-audit independence.
-- Outcome: Qwen3.8 Flash showed auditor-seat promise only,
+- Outcome:
+  Qwen3.8 Flash showed auditor-seat promise only,
   which cannot satisfy paired author and auditor reserve requirement.
 
 ### Preservation and security

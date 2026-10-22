@@ -1,7 +1,9 @@
 # An archive rebuilt from the ledger is not the archive
 
-Date: 2026-08-19.
-Zero quota: every number here comes from settled artifacts and the pinned corpus.
+Date:
+2026-08-19.
+Zero quota:
+every number here comes from settled artifacts and the pinned corpus.
 
 ## What went wrong
 
@@ -11,7 +13,8 @@ The archive is therefore the denominator of every verdict it gives.
 
 Two settled runs predate `#128`,
 so their artifacts carry no `archiveText`.
-To read them, a scratch instrument rebuilt the archive by joining `incumbentText`
+To read them,
+a scratch instrument rebuilt the archive by joining `incumbentText`
 across the per-slice delivery ledger.
 That reconstruction is not the archive.
 It covers only the SLICED regions.
@@ -64,7 +67,8 @@ so the gate drops it.
 `assembleRepair` passes `archiveText: targetText`,
 and `targetText` is the whole incumbent document:
 the same value the function uses as `incumbentText` and splices slices over.
-The artifact agrees, since `preparation.targetChars` equals the whole file length.
+The artifact agrees,
+since `preparation.targetChars` equals the whole file length.
 
 So the shipped check has always counted against the whole archive.
 Only the offline reader was wrong.
@@ -87,7 +91,8 @@ The baseline repair document contains it once.
 The run under the relocation window contains it twice.
 That run also carried the anchoring hole,
 so the same attribution caveat applies:
-the difference is measured, the cause is not yet isolated.
+the difference is measured,
+the cause is not yet isolated.
 
 ## Gate A was answering a different question
 
@@ -99,7 +104,8 @@ That signature does not identify introduced duplication.
 It equally identifies a phrase the TRANSLATE lane dropped a copy of,
 which is the failure the gate's own header calls the worse one.
 
-Measured against the archive, every phrase gate A derived is faithful in the new run:
+Measured against the archive,
+every phrase gate A derived is faithful in the new run:
 
 ```text
 phrase             archive  base-repair  new-repair   gate A said        truth
@@ -112,7 +118,8 @@ So the gate's single FAULT is a false alarm,
 and its two passes understate what happened:
 two genuine duplications are gone rather than the document merely being left alone.
 
-ATTRIBUTION, STATED CAREFULLY.
+ATTRIBUTION,
+STATED CAREFULLY.
 The run these numbers come from carried the relocation window AND the `NEARBY_RULE` hole
 fixed in `afc7854b4`,
 and that hole changed WHICH SLICES were edited at all by collapsing quote anchoring.
@@ -138,12 +145,14 @@ Here `targetChars` was in the artifact the whole time and would have caught it a
 
 ## The shipped check cannot see the damage it was built for
 
-Found the same day, while checking the correction above.
+Found the same day,
+while checking the correction above.
 
 `#107` describes a positional defect:
 one slice shipping wording the NEXT slice also ships,
 which the archive said once.
-Deriving that signature directly, rather than by the baseline heuristic gate A used,
+Deriving that signature directly,
+rather than by the baseline heuristic gate A used,
 finds it immediately:
 
 ```text
@@ -155,7 +164,8 @@ new      saurikissa translate  slices 7+8   5w/22ch:ab9538c8   archive 0   both 
 The damage is still there at the same slice pair in the run under the window,
 and `saurikissa`'s translate lane has one the archive never carried at all.
 
-THE PROBLEM: `findIntroducedRepetitions` reports NONE of the first or third.
+THE PROBLEM:
+`findIntroducedRepetitions` reports NONE of the first or third.
 The content-word gate requires two words of at least five letters,
 and those phrases do not have them:
 
@@ -207,7 +217,8 @@ the archive length against `preparation.targetChars`.
 A mismatch is an INSTRUMENT FAULT rather than a finding,
 because the corpus moved under the artifact and every count below it is then suspect.
 
-On the two entries settled under the window, before the quote fix:
+On the two entries settled under the window,
+before the quote fix:
 
 ```text
 lintong     repair     adjacent 1 -> 1    document 0 -> 1    WORSE
@@ -217,7 +228,8 @@ saurikissa  translate  adjacent 0 -> 1    document 1 -> 0    WORSE
 ```
 
 So the window did NOT fix the duplication it was built for.
-`lintong`'s slices 2 and 3 still repeat, with the archive stating the wording once,
+`lintong`'s slices 2 and 3 still repeat,
+with the archive stating the wording once,
 and `saurikissa`'s translate lane gained a repeat across slices 7 and 8
 that the archive never carried at all.
 
@@ -238,7 +250,8 @@ Its pronoun list contained `I`.
 
 English capitalises `I` in every position,
 so it carries no sentence-start signal whatsoever,
-and the rule fired on `and I`, `but I` and `that I`.
+and the rule fired on `and I`,
+`but I` and `that I`.
 Those are ordinary prose.
 
 Reading the hits rather than the count separates them at once:
@@ -249,7 +262,8 @@ lintong    repair, slice 3   `But` followed by `I`               false positive
 GLaDOSister both lanes       `that` and `and` followed by `I`    false positives
 ```
 
-Corrected, with the known-severed case held as a positive control so the fix is not just
+Corrected,
+with the known-severed case held as a positive control so the fix is not just
 a quieter instrument:
 
 ```text
@@ -262,10 +276,12 @@ windowed run         0 of  7       0 of 10
 One severed join in one hundred and thirty-three shipped rows,
 rather than the twelve the broken detector reported.
 
-WHAT THIS CORRECTS: an earlier reading of the windowed run recorded a severed join at
+WHAT THIS CORRECTS:
+an earlier reading of the windowed run recorded a severed join at
 `lintong` slice 3 and treated it as a regression the window introduced.
 There is no such join.
-The only real one is in the BASELINE, at `saurikissa` slice 7,
+The only real one is in the BASELINE,
+at `saurikissa` slice 7,
 and the windowed run does not edit that slice at all,
 so its zero there remains the lane declining to touch the passage
 rather than evidence that editing it became safe.
@@ -287,7 +303,8 @@ So if the Chinese repeats across two adjacent sections,
 a translation repeating it is faithful,
 and a check comparing only against the archive would call that damage.
 
-Tested on all three findings, by character n-grams because Chinese does not split on
+Tested on all three findings,
+by character n-grams because Chinese does not split on
 whitespace:
 
 ```text
@@ -296,7 +313,8 @@ window    lintong     repair     slices 2+3   source 8-gram overlap 0   stands
 window    saurikissa  translate  slices 7+8   source 8-gram overlap 0   stands
 ```
 
-POSITIVE CONTROL FIRST, because a zero from a probe that cannot report non-zero says
+POSITIVE CONTROL FIRST,
+because a zero from a probe that cannot report non-zero says
 nothing:
 
 ```text
@@ -321,7 +339,8 @@ So this is recorded rather than built against,
 on the same reasoning that leaves the document-scale content gate alone:
 a guard with no driving defect is speculation.
 
-IF IT EVER FIRES, the fix is known.
+IF IT EVER FIRES,
+the fix is known.
 Pass the two slices' source text alongside their shipped text
 and drop any repeat whose source sides overlap,
 which is exactly the measurement above.
@@ -330,7 +349,9 @@ which is exactly the measurement above.
 
 `guardFootnoteAssembly` withdraws a replacement that would damage the footnote graph,
 so the obvious next step is a guard that withdraws a slice introducing a repetition.
-Measured on every finding available, before building it, that guard is the wrong shape.
+Measured on every finding available,
+before building it,
+that guard is the wrong shape.
 
 WHICH SIDE TO WITHDRAW IS NOT FIXED:
 
@@ -343,7 +364,8 @@ saurikissa  translate  slices 7+8   withdraw earlier   1 -> 1
 
 A rule that always withdrew the later slice would fail on `lintong`,
 and one that always withdrew the earlier would fail on `saurikissa`.
-That much is solvable: try each side and keep whichever removes the repeat.
+That much is solvable:
+try each side and keep whichever removes the repeat.
 
 THE COST IS NOT SOLVABLE:
 
@@ -355,22 +377,28 @@ saurikissa  removing a 22-character repetition costs a 638-character translation
 Withdrawing means shipping the incumbent instead,
 and at `saurikissa` slice 8 the incumbent is 638 characters shorter than what the lane wrote.
 Discarding a whole slice's translation to delete a five-word duplication
-produces a worse document, not a better one.
+produces a worse document,
+not a better one.
 
 SO THE CHECKS STAY TELEMETRY.
-The right place to remove an introduced repetition is the editor, in place,
+The right place to remove an introduced repetition is the editor,
+in place,
 not the assembler by reverting a slice wholesale.
 Recorded here so the guard is not proposed again without new evidence:
 what would change the answer is a finding whose repetition is a large fraction
-of the slice that introduced it, which none of the three are.
+of the slice that introduced it,
+which none of the three are.
 
 ## Could a neighbour have explained any rejection? By exact wording, no
 
 The panel rejects a claim on relocation grounds when it judges that a neighbouring passage
 holds the content the claim says is unsupported here.
-That is checkable, in one direction, without any model.
+That is checkable,
+in one direction,
+without any model.
 
-For every REJECTED issue, take the claim's target-side quoted wording
+For every REJECTED issue,
+take the claim's target-side quoted wording
 and ask whether it appears in either adjacent ARCHIVE slice,
 matching on three-word runs:
 
@@ -384,7 +412,8 @@ fixed    saurikissa          32                             0
 fixed    lintong               5                            0
 ```
 
-CONTROLS FIRST, because a probe that answers the same way every time is usually broken:
+CONTROLS FIRST,
+because a probe that answers the same way every time is usually broken:
 
 ```text
 a slice shares three-word runs with ITSELF   10 of 11
@@ -398,22 +427,36 @@ The probe can report a match and the quotes are long enough to match with.
 
 ### What this does and does not establish
 
-DOES: in the windowed runs, no rejected claim's wording is present in either neighbouring
-archive passage. So any rejection that rested on relocation rested on a passage that is
-not there. That is the same conclusion the four-critic inserted-clause case reached by
-hand, now over every rejection rather than one.
+DOES:
+in the windowed runs,
+no rejected claim's wording is present in either neighbouring
+archive passage.
+So any rejection that rested on relocation rested on a passage that is
+not there.
+That is the same conclusion the four-critic inserted-clause case reached by
+hand,
+now over every rejection rather than one.
 
-DOES NOT: prove every rejection was wrong. Two limits, both real.
+DOES NOT:
+prove every rejection was wrong.
+Two limits,
+both real.
 
-FIRST, the artifact records vote tallies and not per-panelist reasons,
+FIRST,
+the artifact records vote tallies and not per-panelist reasons,
 so which rejections invoked relocation at all is unknown.
 Rejections on other grounds are counted here and should not be.
 
-SECOND, and more importantly, this tests EXACT WORDING.
+SECOND,
+and more importantly,
+this tests EXACT WORDING.
 A neighbouring passage holding the same content in different words is exactly what a
-translation produces, and a three-word-run test cannot see it.
-So the zero is a lower bound on what relocation could explain, not a proof of none.
+translation produces,
+and a three-word-run test cannot see it.
+So the zero is a lower bound on what relocation could explain,
+not a proof of none.
 
-The baseline rows are the reminder of that: its panel could not see the neighbours at all,
+The baseline rows are the reminder of that:
+its panel could not see the neighbours at all,
 so its rejections were never relocation-grounded,
 and the probe reports zero there for a reason that has nothing to do with the window.

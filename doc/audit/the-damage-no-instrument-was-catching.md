@@ -1,33 +1,47 @@
 # The damage no instrument was catching
 
-Date: 2026-08-20.
-Zero quota: settled artifacts and the pinned corpus.
-No corpus text: counts only.
+Date:
+2026-08-20.
+Zero quota:
+settled artifacts and the pinned corpus.
+No corpus text:
+counts only.
 
 ## What happened
 
 On `saurikissa` slice 4 the baseline repair lane replaced a hundred and thirty-six words
 with twenty-one.
 What it deleted was the concrete detail of a life:
-what she wore, what she collected, how she kept it.
+what she wore,
+what she collected,
+how she kept it.
 This is a memorial page.
 
 EVERY INSTRUMENT IN THIS PACKAGE MISSED IT.
 The document lost seventy characters out of four thousand four hundred and seventy-nine,
 because the editor wrote generic prose where the detail had been.
-So the length looks fine, the structure is intact,
-nothing repeats, nothing is severed, no footnote breaks,
+So the length looks fine,
+the structure is intact,
+nothing repeats,
+nothing is severed,
+no footnote breaks,
 and the page has simply stopped being about a particular person.
 
 ## Measuring it properly
 
-Hand-picking eight words to search for proves nothing, so:
+Hand-picking eight words to search for proves nothing,
+so:
 
-DISTINCTIVE WORD = at least six letters, used at most twice in the archive.
-Rare long words carry specifics: objects, places, names.
+DISTINCTIVE WORD = at least six letters,
+used at most twice in the archive.
+Rare long words carry specifics:
+objects,
+places,
+names.
 Common words survive any rewrite and say nothing about whether meaning did.
 
-`saurikissa`, 216 distinctive words in the archive:
+`saurikissa`,
+216 distinctive words in the archive:
 
 ```text
 REPAIR lane          kept   share    lost
@@ -40,7 +54,9 @@ REPAIR lane          kept   share    lost
 The baseline repair lane loses ninety-seven of them.
 The relocation window cuts that to nineteen.
 
-`lintong`, 35 distinctive words, same direction and much smaller:
+`lintong`,
+35 distinctive words,
+same direction and much smaller:
 
 ```text
   baseline             25   71.4%      10
@@ -51,12 +67,15 @@ The relocation window cuts that to nineteen.
 
 ## What this settles
 
-`#107` IS VINDICATED, and not marginally.
+`#107` IS VINDICATED,
+and not marginally.
 The window exists to stop the pipeline deleting content on the theory that it is an
-unsupported addition, and on the metric that measures exactly that it moves the repair
+unsupported addition,
+and on the metric that measures exactly that it moves the repair
 lane from 55% to 91% retention.
 
-The earlier reading, that the window merely "halves repairs at no visible benefit",
+The earlier reading,
+that the window merely "halves repairs at no visible benefit",
 was made with instruments that cannot see this damage class.
 Half those repairs were deletions of things worth keeping.
 
@@ -71,13 +90,16 @@ window            91.2%
 ```
 
 The panel-evidence rule also lowered panel support further
-(`lintong` 72% to 65%, `saurikissa` 52% to 51%)
+(`lintong` 72% to 65%,
+`saurikissa` 52% to 51%)
 having been added to raise it.
 It fails on both metrics it could be judged by,
 so it is reverted rather than kept on the argument that made it seem reasonable.
 
-ONE RUN PER ARM. The direction agrees on two metrics and two entries,
-which is why this is acted on; the exact percentages are not to be quoted as stable.
+ONE RUN PER ARM.
+The direction agrees on two metrics and two entries,
+which is why this is acted on;
+the exact percentages are not to be quoted as stable.
 
 ## A caveat that matters for the lane question
 
@@ -87,7 +109,8 @@ The translate lane writes a fresh rendering from the Chinese,
 so it may express the same detail in different English words,
 and a rare-word test cannot tell re-wording from deletion.
 
-The repair lane edits the incumbent, so a lost distinctive word there
+The repair lane edits the incumbent,
+so a lost distinctive word there
 IS a detail removed or blurred.
 The instrument is sound for the repair lane and only suggestive for the translate lane.
 `doc/planning/which-lane-ships.md` must not use these numbers to rank the lanes.
@@ -95,7 +118,8 @@ The instrument is sound for the repair lane and only suggestive for the translat
 ## How widespread it is
 
 The instrument found the damage on one entry.
-Run over every settled artifact from the PRE-WINDOW runs, repair lane:
+Run over every settled artifact from the PRE-WINDOW runs,
+repair lane:
 
 ```text
   saurikissa         119 /  216   55.1%   lost 97
@@ -124,7 +148,8 @@ and that is the strongest production-readiness argument for `#107` there is.
 
 ### What the number is not
 
-AN UPPER BOUND ON DAMAGE, not a count of it.
+AN UPPER BOUND ON DAMAGE,
+not a count of it.
 
 A distinctive word can leave the document innocently:
 a repair may reword a phrase correctly and drop a rare word while keeping the meaning,
@@ -141,26 +166,36 @@ never as a verdict on its own.
 
 ## CORRECTION: this measures against the archive, which is not the standard
 
-Written the same day, after the owner rejected a lane question built on the same mistake.
+Written the same day,
+after the owner rejected a lane question built on the same mistake.
 
-`doc/decision/translation-repair-output-goal.md`, taken 2026-08-12, decides:
+`doc/decision/translation-repair-output-goal.md`,
+taken 2026-08-12,
+decides:
 
-> the output is judged against the ORIGINAL, not against how far it improved on the
-> input translation. An input translation is EVIDENCE about what the original says and
-> a starting point worth preserving where it is right, never the standard the result is
+> the output is judged against the ORIGINAL,
+> not against how far it improved on the
+> input translation.
+> An input translation is EVIDENCE about what the original says and
+> a starting point worth preserving where it is right,
+> never the standard the result is
 > measured by.
 
 EVERYTHING ABOVE COUNTS ARCHIVE WORDS.
 "Distinctive archive words kept" makes the incumbent English the yardstick,
 which is the framing that record supersedes.
 So the numbers are a PROXY and the language around them was wrong:
-retention is not quality, and a lane retaining more is not thereby better.
+retention is not quality,
+and a lane retaining more is not thereby better.
 
 ### Checking the headline case against the actual standard
 
-`saurikissa` slice 4, where the baseline replaced 136 words with 21.
-The Chinese for that slice is one short line, and the English the baseline shipped
-renders it closely. On the slice alone the deletion looks CORRECT.
+`saurikissa` slice 4,
+where the baseline replaced 136 words with 21.
+The Chinese for that slice is one short line,
+and the English the baseline shipped
+renders it closely.
+On the slice alone the deletion looks CORRECT.
 
 Reading the whole Chinese document changes it again:
 
@@ -177,25 +212,40 @@ So the archive's slice-4 text was two things at once:
 content the Chinese carries ELSEWHERE in the document,
 and detail the translator added with no source behind it.
 
-The baseline deleted both, and only one of eight probe terms survives anywhere in its
-finished document. Content the ORIGINAL supports left the page. That is damage on the
-decided standard, not merely on the archive proxy, and it is precisely the relocation
+The baseline deleted both,
+and only one of eight probe terms survives anywhere in its
+finished document.
+Content the ORIGINAL supports left the page.
+That is damage on the
+decided standard,
+not merely on the archive proxy,
+and it is precisely the relocation
 defect `#107`'s window exists to prevent.
 
 The translator's additions are covered by the second decision of 2026-08-12:
-accurate detail a translator added is KEPT, not stripped to match the original.
+accurate detail a translator added is KEPT,
+not stripped to match the original.
 
 ### What stands and what does not
 
-STANDS: the baseline repair lane lost source-supported content, the window arm kept it,
+STANDS:
+the baseline repair lane lost source-supported content,
+the window arm kept it,
 and `#107` is right for that reason.
 
-DOES NOT STAND: "distinctive archive words kept" as a measure of quality, and every
-sentence here that treated a higher figure as a better document. A lane could score
-well by preserving translator additions the source never had, and badly by correctly
+DOES NOT STAND:
+"distinctive archive words kept" as a measure of quality,
+and every
+sentence here that treated a higher figure as a better document.
+A lane could score
+well by preserving translator additions the source never had,
+and badly by correctly
 removing them.
 
 WHAT THE INSTRUMENT SHOULD MEASURE is whether content the ORIGINAL carries has some
-English representation in the output. That is a cross-language question, and the
+English representation in the output.
+That is a cross-language question,
+and the
 archive-word check is a cheap proxy for it that will mislead wherever the archive and
-the original disagree, which is the interesting case every time.
+the original disagree,
+which is the interesting case every time.
