@@ -105,7 +105,12 @@ android {
 
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = false
+            // R8 shrinks the 30 MB of unshrunk dex (Compose, Material 3, media3, WorkManager) to what the app
+            // reaches, and resource shrinking drops the matching resources. The only keep rule the app needs is the
+            // JNI one in proguard-rules.pro; the libraries ship their own consumer rules.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             // With the release key configured, sign with it. Without it, sign with the debug key so a local build
             // installs on the owner's device without a separate keystore. release is not debuggable, so ART
             // optimizes the numeric DSP loops it runs (the true-peak scan), which a debuggable build does not;
@@ -116,6 +121,18 @@ android {
 
     buildFeatures {
         compose = true
+    }
+
+    packaging {
+        jniLibs {
+            // cargo-ndk copies every shared object the Rust build leaves in its target directory. Turso's two C-API
+            // crates (turso_sdk_kit, turso_sync_sdk_kit) declare a cdylib target, so cargo builds them as
+            // by-products of the dependency, and each is a second and third full copy of the engine that
+            // libmusicplayer_native.so already links statically. Nothing loads them (only
+            // System.loadLibrary("musicplayer_native") exists, and readelf lists no NEEDED entry for them), and
+            // together they were 94 MB of the 160 MB release APK.
+            excludes += "**/libturso_*.so"
+        }
     }
 
     // Robolectric needs the merged manifest and resources on the unit-test classpath, and ui-test-manifest (below)

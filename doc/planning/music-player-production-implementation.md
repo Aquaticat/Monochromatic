@@ -696,6 +696,14 @@ below 1.0), and the four `Cargo.lock` files were regenerated with `cargo metadat
 "Versioning" section of `package/music-player/truepeak-core/README.md`. A later publish would need a manual bootstrap
 per `doc/runbook/publish-crate-first-time.md` and a `cargo-publish.yml` job; that is not queued.
 
+Size work, 2026-10-22, branch `fix/music-player-android-apk-size` (in flight): the 0.1.7 APK is 160,027,082 bytes, of
+which 148 MB is native code: two unused Turso cdylibs (`libturso_sdk_kit.so`, `libturso_sync_sdk_kit.so`, about 94 MB
+over two ABIs, no `NEEDED` entry, never loaded), unstripped `libmusicplayer_native.so` (symbol tables about 7 MB each),
+and no R8 (30.7 MB of dex). The desktop Linux binary is 55.8 MB, already stripped. The human corrected the reason the
+desktop profile uses thin LTO: the 2026-10-11 choice (about 60 s against 300 s for fat LTO) was made on a weak CPU with
+a broken motherboard and poor cooling, so build time no longer argues against fat LTO; the desktop profile is measured
+again with fat LTO and `codegen-units = 1`.
+
 In flight 2026-10-18 after 0.1.6: the license polish branch `fix/music-player-license-polish` reported; its entry is
 "2026-10-18, license polish after 0.1.6" above. Merge, then release 0.1.7. Not started, mine: a quiet-host perfetto
 trace for the 10,000-track jank (p = 0.089, optional), re-check of issues 1079 to 1081 and 1069 (Depot trial CI
