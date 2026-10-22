@@ -891,6 +891,66 @@ What was done:
   a break inside a code span and
   a break after an ordered-list marker each read as different).
 
+The rewrap then took `doc/planning/wire-the-heading-aligner.md` to 2,256 lines
+(found when gate g151 ran this branch's head):
+`doc-line-limit.unit.test.ts` held the doc to 1,509 lines,
+the size it had,
+under an allowance,
+and the rewrap's added line breaks put it 747 lines past that
+and past the 2,000-line ceiling of any allowance.
+The doc was filed by subject,
+as the owner's rule on over-long docs requires (M163 and M165),
+never by a count.
+The index keeps the path,
+the pin,
+the verdict
+and a contents list that links each file with a summary.
+Eight files hold the remaining sections whole and in their order,
+each named `wire-the-heading-aligner-<subject>.md` and opening with a line that names the index:
+the finding,
+the options and the ranking (289 lines);
+unwired modules and the size of the change (275);
+prototype attempts one to five (362);
+the derivability probe and the block-count gap (160);
+the unpaired headings defect (259);
+attempt six,
+lexicographic scoring,
+with its corrections and its prototype (398);
+the ambiguous sections and attempt seven (302);
+and the wiring attempt and the landing (164).
+The index has 129 lines.
+The allowance was removed,
+since no file needs one,
+and `ALLOWANCES` is empty.
+The stem `wire-the-heading-aligner` in `OTHER_STEMS` takes all eight files,
+so `doc-line-limit.unit.test.ts` counts them
+and `markdown-lint-clean.unit.test.ts` lints them with no list change.
+The text moved verbatim:
+the index and the eight files,
+less their added title lines,
+the two lines that name the index and the contents list,
+join with blank lines into the old file line for line,
+and their 10,945 whitespace-normalised words equal the old file's
+(`~/temp/agent/tr-fan/w267-scratch/split-words-check.ts`,
+which compares against the file at `0994fbf492`).
+The allowance's reason is the cost of this cut:
+pointers by position that were inside one file now cross files,
+and are left as written because the words did not change.
+They are "The ranking above" in the prototype attempts,
+which means the options file;
+"withdrawn earlier in this document" in the attempt six file,
+which means the unpaired headings file;
+"attempt TWO from earlier in this document",
+"the correction above" and "recorded earlier in this document"
+in the attempt seven file,
+which mean the prototype attempts,
+the attempt six file and the options file;
+"the earlier 60 of 172" in the landing file,
+which means the derivability file;
+and "the verdict at the top of this document" in the unpaired headings file,
+which means the index.
+Each of them names an attempt or a section that the contents list places in a file.
+
 Still open,
 and not decided here:
 Markdown the same stems do not reach that fails the linter today.
