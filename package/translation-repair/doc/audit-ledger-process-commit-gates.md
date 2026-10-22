@@ -650,3 +650,26 @@ whenever the time jumps,
 reads the block durations in the log,
 and takes any block whose duration matches a constant of the code under test as a sleep to be found.
 The real-clock scan reads the holds a test registers for a provider (B817).
+
+## M293: a count was expected from the corpus-pass test runner, and it prints none
+
+Status:
+found on 2026-10-22 (UTC) by the implementer of the review fixes of B818,
+who recorded it in the notes of that round.
+
+The test runner of the corpus-pass package prints no count of cases or files,
+so a gate that looks for "N passed" finds nothing,
+and a gate that takes the absence for a pass has read nothing.
+The same output also prints a `[PASS]` line for a suite with failing cases (M125),
+so that line alone proves no more than the count did.
+
+Prevention:
+`mistake-prevention-tasks-builds-and-bulk-output.md`,
+"Tasks,
+builds and bulk output":
+that package's gate reads the exit code,
+the `[FAIL]` lines (zero),
+and the `[PASS]` lines of the suites the change added or touched,
+by name (M288,
+and `AGENTS.md` rule TRV:
+a green run counts only when its output holds the expected suite and test names).

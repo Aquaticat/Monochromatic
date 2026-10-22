@@ -74,6 +74,7 @@ named for that subject and listed here.
   - [Dates and clock times](mistake-prevention-docs-and-references.md#dates-and-clock-times)
   - [Docs that only grow](mistake-prevention-docs-and-references.md#docs-that-only-grow)
   - [The Markdown linter](mistake-prevention-docs-and-references.md#the-markdown-linter)
+  - [Names that were replaced](mistake-prevention-docs-and-references.md#names-that-were-replaced)
 - [Preventing mistakes: the real world, clocks and arrival order](mistake-prevention-tests-clocks-and-arrival-order.md):
   Rules for tests and code that meet the world outside them:
   real files,
@@ -127,6 +128,7 @@ named for that subject and listed here.
   - [Checks that vouch for a whole block](mistake-prevention-sheets-quorums-and-outcome-rules.md#checks-that-vouch-for-a-whole-block)
   - [Records of more than one round](mistake-prevention-sheets-quorums-and-outcome-rules.md#records-of-more-than-one-round)
   - [Work no floor can check](mistake-prevention-sheets-quorums-and-outcome-rules.md#work-no-floor-can-check)
+  - [A refusal that ends the run](mistake-prevention-sheets-quorums-and-outcome-rules.md#a-refusal-that-ends-the-run)
 - [Preventing mistakes: inputs, defaults and values read from text](mistake-prevention-inputs-defaults-and-values-read-from-text.md):
   Rules for what the code takes in:
   defaults,
@@ -163,6 +165,7 @@ named for that subject and listed here.
   - [Counts that include calls never made](mistake-prevention-messages-labels-and-counts.md#counts-that-include-calls-never-made)
   - [Provider names in failures](mistake-prevention-messages-labels-and-counts.md#provider-names-in-failures)
   - [Two readers of one fact](mistake-prevention-messages-labels-and-counts.md#two-readers-of-one-fact)
+  - [A message built from a state read once](mistake-prevention-messages-labels-and-counts.md#a-message-built-from-a-state-read-once)
 - [Preventing mistakes: moves, splits and rewrite scripts](mistake-prevention-moves-splits-and-rewrite-scripts.md):
   Rules for moving or rewriting many files at once:
   the dry run,
@@ -174,6 +177,8 @@ named for that subject and listed here.
   - [Slices of one move](mistake-prevention-moves-splits-and-rewrite-scripts.md#slices-of-one-move)
   - [Scans and controls across a move](mistake-prevention-moves-splits-and-rewrite-scripts.md#scans-and-controls-across-a-move)
   - [Estimating and measuring a cost](mistake-prevention-moves-splits-and-rewrite-scripts.md#estimating-and-measuring-a-cost)
+  - [Scripted merges of test blocks](mistake-prevention-moves-splits-and-rewrite-scripts.md#scripted-merges-of-test-blocks)
+  - [Files near the line limit](mistake-prevention-moves-splits-and-rewrite-scripts.md#files-near-the-line-limit)
 - [Preventing mistakes: shared code, loops and keyed tables](mistake-prevention-shared-code-loops-and-keyed-tables.md):
   Rules for the shape of the code:
   one copy of shared code,
@@ -192,6 +197,7 @@ named for that subject and listed here.
   - [Cached decisions](mistake-prevention-stored-files-and-cached-decisions.md#cached-decisions)
   - [Files a later run reads back](mistake-prevention-stored-files-and-cached-decisions.md#files-a-later-run-reads-back)
   - [File names derived from an input](mistake-prevention-stored-files-and-cached-decisions.md#file-names-derived-from-an-input)
+  - [Facts a cache gate reads](mistake-prevention-stored-files-and-cached-decisions.md#facts-a-cache-gate-reads)
 
 ## Before a run launches
 

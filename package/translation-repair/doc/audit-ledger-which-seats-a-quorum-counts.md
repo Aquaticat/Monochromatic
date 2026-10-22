@@ -195,6 +195,11 @@ the floor `assertCheckerQuorumReachable` holds a run to,
 one checker heard of three passed the recheck by itself.
 The stage's `stage-quorum-unmet (checker 0/3)` was dropped with the rest of its findings,
 so the settlement passed `everyStageHeard` and was written to the refine cache.
+(`everyStageHeard` is kept as written here and in the two accounts that name it.
+It was replaced on 2026-10-22 by `refinementIsResumable` and `silentStagesOfSettlement` in `stage/src/stage-silence.ts`,
+one predicate for the refine cache's write gate and its read gate,
+and removed in `b423e15be8` (B820,
+D36).)
 A confirmed issue in such a round did roll back,
 under `refine-rolled-back`,
 which names it as an issue the rewrite broke,
@@ -225,6 +230,8 @@ with the unfixed gate,
 none heard and one heard each gave `refine-recheck-passed (1 issue)`,
 shipped the rewrite and passed `everyStageHeard`;
 with the fix both roll back under `refine-recheck-unheard` and fail `everyStageHeard`.
+(Replaced on 2026-10-22 by `refinementIsResumable`,
+as noted in B141.)
 
 Left as it was,
 each shown by a probe:
@@ -270,6 +277,8 @@ with `stage-quorum-unmet (introduced-defect-probe 0/3)` or `(introduced-defect-p
 and no rollback finding.
 The settlement failed `everyStageHeard`,
 so it was never cached.
+(Replaced on 2026-10-22 by `refinementIsResumable`,
+as noted in B141.)
 
 The fix:
 `refineProbeVerdict` (`refine-probe-verdict.ts`) decides what the probe's report does to the rewrite.

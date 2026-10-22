@@ -521,3 +521,32 @@ What enforces it:
 the timed one shown dry and then wet again once it lapses,
 and `run-providers-held.unit.test.ts` runs the run's own credential holds through the line.
 A hold added beside these and read by the router only is outside what they see.
+
+## A message built from a state read once
+
+What happened:
+the every-provider-dry refusal said NeuralWatt's energy returns at 00:00 UTC,
+which is the vendor's documentation and not the account's day (ledger B819).
+After the fix it still opened "NeuralWatt has no free daily energy left" whatever the day state,
+so a run with NeuralWatt off read "has no free daily energy" and "is off" together,
+and a run that never learned a day start said a thing it did not know.
+The refusal that follows a hold wait reused the day read before the wait,
+and the wait is where the keeper learns the day start (ledger B819).
+
+The rule:
+a message states a fact of the run from the run's own state and never from a document about the vendor.
+Every clause that states a fact about a state is conditional on the same state,
+so each state (decided,
+off,
+not decided) reads consistently from the first clause to the last,
+and a case for each state asserts what the message must not say as well as what it must.
+A message built after a wait reads its state after the wait.
+A default that stands for "not decided" is not the default of a state that means something else;
+`EveryProviderDryError` still defaults its day to not decided,
+which is correct for the production budgets that always supply it and wrong for a caller that omits it (left open by the review).
+
+What enforces it:
+`budget-routing.unit.test.ts` (one case for each day state,
+asserting the absence of the opening sentence in the off and unanchored cases),
+`budget-hold-wait.unit.test.ts` (the day changes between the two reads),
+and the message inventory of `message-names-only.unit.test.ts`.

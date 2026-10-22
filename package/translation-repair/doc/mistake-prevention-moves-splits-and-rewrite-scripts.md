@@ -106,3 +106,42 @@ and the live bundle is proved after every package and not only at the start of a
 
 What enforces it:
 habit.
+
+## Scripted merges of test blocks
+
+What happened:
+two top-level describe blocks in each of three test files were merged by a script that rewrote text,
+and the three files broke (ledger M290).
+The merge also left trailing whitespace on blank lines inside object literals,
+which `oxlint --fix` does not strip and the source scan for trailing whitespace lists.
+
+The rule:
+two describe blocks are merged by hand or with a tool that reads the syntax tree,
+never by text substitution.
+After any scripted merge of files the `test:unit` of the source-scan package runs,
+because it reads what the formatter leaves.
+
+What enforces it:
+`trailing-whitespace.unit.test.ts` finds the whitespace;
+the merge itself is a habit.
+
+## Files near the line limit
+
+What happened:
+the review fixes of the every-provider-dry stop added blocks to files near the `max-lines` limit
+(300 lines,
+comments and blank lines skipped),
+and three extractions followed the code:
+`stage-voice-lost.ts`,
+`image-reading-contain.ts` and `run-seats-refusal.ts` (ledger M291).
+
+The rule:
+before a block goes into a file near the limit,
+the file's lines are counted the way the rule counts them,
+and the extraction is planned and made first,
+as its own commit,
+named for what moves.
+
+What enforces it:
+the `max-lines` rule finds the overflow after the code is written;
+the planning is a habit.
