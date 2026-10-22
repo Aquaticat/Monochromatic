@@ -960,10 +960,31 @@ State after K4 landed:
   (K1,
   K2,
   K3 and the run-off wording)
-  is still being worked;
-  gate and land it after `tr-w265` or before,
-  whichever is ready first,
-  one gate at a time.
+  is done in twelve commits:
+  NeuralWatt GLM text calls send `reasoning_effort` `low`,
+  the stream guards count only generated text and refuse bounds past the call deadline,
+  the polish writers see the accepted repair claims
+  (`CONSOLIDATE_CACHE_VERSION` 29 to 30),
+  and the run-off line tells a tie from a plurality.
+  Its K1 ledger entry took B803,
+  which main already holds for K4,
+  so it is renumbered.
+  Decided,
+  open to the owner's veto:
+  the first-content window goes from 120 s to 180 s,
+  since the logs record only time to first byte,
+  a lower bound,
+  and the largest healthy first byte was 115.7 s;
+  the idle window stays 120 s.
+  Also decided:
+  the polish round's rewrite judges are shown the same accepted claims,
+  by the rule that judges of a text see what its writer saw,
+  and the dispute note reaches the polish writers if the polish gate is shown it.
+  An agent makes these changes after merging main;
+  then gate and land it,
+  one gate at a time with `tr-w265`.
+  Commit `e13dc11c610e` has scope `translate-stage` where the package name is `translation-repair-translate-stage`;
+  it gets a corrective commit comment once it lands.
 - `google.gemma-4-e2b` is served only by Bedrock,
   so with Bedrock off it stays an unserved seat under the 2026-09-09 short-bench rule;
   open to the owner's veto.
