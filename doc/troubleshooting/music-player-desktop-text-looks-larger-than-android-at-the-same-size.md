@@ -333,6 +333,15 @@ Answers (scale: much smaller -2, smaller -1, about the same 0, larger 1, much la
   24 px gave 2 and "too large".
 - Same size number 16 in four typefaces: Inter Variable 1, Liberation Sans 1, Noto Sans 1, the control 1.
 
+The browser was Firefox ESR, not Chromium: the human said `xdg-open` opens their Firefox ESR, which the lead agent
+learned after the tests and after verifying every page only in Chromium.
+So the reference paragraph and the control sample were drawn in the face Firefox takes for generic `sans-serif`
+(Noto Sans by the fontconfig rule in Firefox's `gfxFcPlatformFontList.cpp`, unless the human's preferences differ),
+not Liberation Sans, and the replica comparison below was Firefox's rendering against the real app, while the
+replica was measured in Chromium.
+An agent is checking the human's relevant Firefox preferences and how Firefox renders the replica and Inter's optical
+size axis; its result is not in this doc yet.
+
 What it shows, and its limits:
 - The 2 px cut is reproduced on the human's display in a controlled, unlabeled test:
   rows at 14 px look the same size as 16 px article text, 16 px rows look larger and too large,
