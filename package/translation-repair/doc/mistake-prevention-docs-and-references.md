@@ -350,7 +350,7 @@ a family doc outside `doc/troubleshooting` that quotes Rust source in a fence ca
 because the linter applies `rust/require-rustdoc` to fenced Rust there,
 declares that rule unsuppressible
 and has no directive that exempts a quoted fence;
-only a configuration block like the one above exempts a path.
+only a configuration block like `troubleshooting-quoted-fences` exempts a path.
 The quote cannot be altered to add documentation comments,
 so such a doc is written so that its fences are the family's own code with documentation comments,
 or it holds the quote as a plain text block.
