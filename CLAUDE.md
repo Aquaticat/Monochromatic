@@ -821,6 +821,12 @@ SCR:
  Never write bash/powershell scripts or `mise.<action>.ts` files;
  put task logic inline via `shell = "node --input-type=module-typescript -e"` or in a package bin.
 
+NMJ:
+ Write scripts as `.ts`, never `.mjs`:
+ node runs TypeScript directly by stripping types,
+ so `.mjs` has no advantage,
+ and autofix runs have corrupted it.
+
 PIN:
  Pin tool versions only with a comment explaining why;
  never pin tools this repository publishes,
