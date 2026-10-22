@@ -37,10 +37,22 @@ function usdProvidersNamed({ seats, }: { readonly seats: readonly SeatSpend[]; }
    Display name of each USD provider, in the order a report names them.
    */
   const usdProviders = [
-    ['openrouter', 'OpenRouter',],
-    ['bedrock', 'Bedrock',],
-    ['deepseek', 'DeepSeek',],
-    ['xiaomi', 'Xiaomi',],
+    [
+      'openrouter',
+      'OpenRouter',
+    ],
+    [
+      'bedrock',
+      'Bedrock',
+    ],
+    [
+      'deepseek',
+      'DeepSeek',
+    ],
+    [
+      'xiaomi',
+      'Xiaomi',
+    ],
   ] as const;
 
   /**
@@ -61,7 +73,12 @@ function usdProvidersNamed({ seats, }: { readonly seats: readonly SeatSpend[]; }
   if (names.length === 1)
     return names.join('',);
 
-  return `${names.slice(0, -1,).join(', ',)} and ${names.slice(-1,).join('',)}`;
+  return `${names.slice(
+    0,
+    -1,
+  )
+    .join(', ',)} and ${names.slice(-1,)
+      .join('',)}`;
 }
 
 /**

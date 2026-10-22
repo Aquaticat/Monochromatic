@@ -16,7 +16,13 @@ export type RequiredProvider = Exclude<ProviderName, 'deepseek' | 'xiaomi'>;
  their key is set and passes over otherwise (`doc/decision/translation-repair-direct-providers.md`),
  so no arm can depend on one being ready.
  */
-export const REQUIRABLE_PROVIDERS: readonly RequiredProvider[] = ['neuralwatt', 'synthetic', 'bedrock', 'hyper', 'openrouter',];
+export const REQUIRABLE_PROVIDERS: readonly RequiredProvider[] = [
+  'neuralwatt',
+  'synthetic',
+  'bedrock',
+  'hyper',
+  'openrouter',
+];
 
 /**
  Whether a name is a provider an arm may require wet.

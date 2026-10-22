@@ -212,7 +212,8 @@ export function priceTally(
   const openRouter = tally
     .seats
     .filter(function isBilledInUsd(seat,): boolean {
-      return (seat.provider === 'openrouter') || (seat.provider === 'bedrock') || (seat.provider === 'deepseek')
+      return (seat.provider === 'openrouter') || (seat.provider === 'bedrock')
+        || (seat.provider === 'deepseek')
         || (seat.provider === 'xiaomi');
     },)
     .toSorted(function costliestFirst(

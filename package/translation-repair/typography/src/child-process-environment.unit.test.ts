@@ -47,6 +47,23 @@ await describe({
       },
     },),
     it({
+      name: 'STATES the two direct providers\' keys as absent: DEEPSEEK_API_KEY, which has no package prefix, and the Xiaomi key',
+      fn: async () => {
+        const child = childEnvironment({
+          parent: {
+            DEEPSEEK_API_KEY: 'a lynx naps',
+            PATH: '/cat/bin',
+            TRANSLATION_REPAIR_XIAOMI_MIMO_API_KEY: 'a bobcat naps',
+          },
+        },);
+        expect(Object.entries(child,),).toEqual([
+          ['DEEPSEEK_API_KEY', undefined,],
+          ['PATH', '/cat/bin',],
+          ['TRANSLATION_REPAIR_XIAOMI_MIMO_API_KEY', undefined,],
+        ],);
+      },
+    },),
+    it({
       name: 'KEEPS a name that only contains the text, ends otherwise, or spells it in another case',
       fn: async () => {
         /**

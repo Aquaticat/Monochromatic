@@ -1,6 +1,13 @@
+import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import type { ModelTransport, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
-import type { ModelCaller, } from './chat-contract.ts';
+import type {
+  ExtractedCompletion,
+  ModelTransport,
+} from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import type {
+  JsonSchemaResponseFormat,
+  ModelCaller,
+} from './chat-contract.ts';
 import {
   XIAOMI_BASE_URL,
   XIAOMI_MODELS,
@@ -15,7 +22,10 @@ import {
   xiaomiCostOf,
 } from './direct-cost.ts';
 import { xiaomiIdFor, } from './direct-reach.ts';
-import { openRouterCachedTokensOf, } from './openrouter-cached-tokens.ts';
+import {
+  CACHED_UNREPORTED,
+  openRouterCachedTokensOf,
+} from './openrouter-cached-tokens.ts';
 import {
   createRequestPace,
   type RequestPace,
@@ -36,7 +46,7 @@ import {
 // THE OWNER, 2026-10-22: "I've added TRANSLATION_REPAIR_XIAOMI_MIMO_API_KEY in
 // main worktree's json file. ... You may only use v2.6-flash with this key."
 // The key is not model-scoped (its `GET /v1/models` lists `mimo-v2.6-pro` and
-// the speech models), so `servedIdFor` below is the lock: a roster model other
+// the speech models), so `servedIdFor` in this file is the lock: a roster model other
 // than MiMo V2.6 Flash throws `XiaomiModelNotServedError` before any request is
 // built. The key is a pay-as-you-go key, not a Token Plan `tp-` key, which
 // Xiaomi's error list says it rejects with a 401.
@@ -65,7 +75,7 @@ import {
 //
 // NO ZERO DATA RETENTION is promised by this route (unlike the OpenRouter route
 // of the same model, which sends `zdr: true`). The owner's ruling of 2026-10-05
-// (the corpus is public, PII is allowed) and the grant above are what permit it.
+// (the corpus is public, PII is allowed) and the grant quoted here are what permit it.
 
 /**
  Length of Xiaomi's request window: a minute, in milliseconds.
@@ -163,6 +173,71 @@ function servedIdFor({ modelId, }: { readonly modelId: RosterModelId; },): strin
 }
 
 /**
+ The `response_format` member Xiaomi accepts: the schema, unchanged.
+
+ THE SCHEMA THROUGH UNCHANGED: json_schema with strict was accepted live.
+
+ @param responseFormat - the call's schema, borrowed from the caller
+
+ @returns The same member, for the wire
+
+ @example
+ ```ts
+ const member = schemaUnchanged({ responseFormat, },);
+ ```
+ */
+function schemaUnchanged(
+  { responseFormat, }: { readonly responseFormat: ForeignBorrowed<JsonSchemaResponseFormat>; },
+): Readonly<Record<string, unknown>> {
+  return responseFormat;
+}
+
+/**
+ Prices one finished Xiaomi call with the cached count its stream reported.
+
+ @param extracted - completion whose usage block Xiaomi filled in, or did not
+
+ @param bodyText - whole drained stream, whose usage block names the cached count
+
+ @returns The cost and cache fields the spend line carries, each absent where the stream reported nothing
+
+ @example
+ ```ts
+ const fields = xiaomiSpendFields({ extracted, bodyText, },);
+ ```
+ */
+function xiaomiSpendFields(
+  {
+    extracted,
+    bodyText,
+  }: {
+    readonly extracted: ExtractedCompletion;
+    readonly bodyText: string;
+  },
+): ReturnType<DirectRoute['spendFieldsOf']> {
+  /**
+   Prompt tokens served from the cache, where the stream said.
+   */
+  const cached = openRouterCachedTokensOf({ bodyText, },);
+  /**
+   Cache count the price reads: none where the stream said nothing.
+   */
+  const cachedTokens = (cached === CACHED_UNREPORTED) ? 0 : cached;
+  /**
+   The call priced, or that nothing was reported.
+   */
+  const cost = xiaomiCostOf({
+    card: XIAOMI_MODELS['mimo-v2.6-flash'],
+    extracted,
+    cachedTokens,
+  },);
+  return {
+    ...((cost === DIRECT_COST_UNREPORTED) ? {} : { costUsd: cost, }),
+    ...((cached === CACHED_UNREPORTED) ? {} : { cachedTokens, }),
+  };
+}
+
+/**
  Builds the route of Xiaomi's API.
 
  @param baseUrl - API base address, overridable for tests
@@ -179,33 +254,29 @@ function xiaomiRoute({ baseUrl, }: { readonly baseUrl: string; },): DirectRoute 
     provider: 'xiaomi',
     chatUrl: xiaomiChatUrlFor({ baseUrl, },),
     servedIdFor,
-    // THE SCHEMA THROUGH UNCHANGED: json_schema with strict was accepted live.
-    responseFormatOnWire: function schemaUnchanged({ responseFormat, },) {
-      return responseFormat;
-    },
-    spendFieldsOf: function priceCall({ extracted, bodyText, },) {
-      /**
-       Prompt tokens served from the cache, where the stream said.
-       */
-      const cached = openRouterCachedTokensOf({ bodyText, },);
-      /**
-       Cache count the price reads: none where the stream said nothing.
-       */
-      const cachedTokens = (typeof cached === 'number') ? cached : 0;
-      /**
-       The call priced, or that nothing was reported.
-       */
-      const cost = xiaomiCostOf({
-        card: XIAOMI_MODELS['mimo-v2.6-flash'],
-        extracted,
-        cachedTokens,
-      },);
-      return {
-        ...((cost === DIRECT_COST_UNREPORTED) ? {} : { costUsd: cost, }),
-        ...((typeof cached === 'number') ? { cachedTokens: cached, } : {}),
-      };
-    },
+    responseFormatOnWire: schemaUnchanged,
+    spendFieldsOf: xiaomiSpendFields,
   };
+}
+
+/**
+ Reads what this process has spent on Xiaomi, which is this provider's meter.
+
+ @param signal - abort signal honored for the read
+
+ @returns The priced spend
+
+ @throws The signal's reason when it has already aborted
+
+ @example
+ ```ts
+ const { spentUsd, } = await readSpend({ signal, },);
+ ```
+ */
+async function readSpend({ signal, }: { readonly signal: AbortSignal; },): Promise<XiaomiSpend> {
+  signal.throwIfAborted();
+  await Promise.resolve();
+  return xiaomiSpendNow();
 }
 
 /**
@@ -295,11 +366,7 @@ export function createXiaomiClient(
 
   return {
     ...chat,
-    spend: async function spend({ signal, },): Promise<XiaomiSpend> {
-      signal.throwIfAborted();
-      await Promise.resolve();
-      return xiaomiSpendNow();
-    },
+    spend: readSpend,
     pace: { waitMs: pace.waitMs, },
   };
 }

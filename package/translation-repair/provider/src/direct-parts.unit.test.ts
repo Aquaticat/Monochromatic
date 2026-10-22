@@ -26,6 +26,7 @@ import {
   deepSeekMeterLevel,
   deepSeekShowsPictures,
   DIRECT_COST_UNREPORTED,
+  NOT_REPORTED,
   parseDeepSeekBalance,
   readEveryMeter,
   reachOf,
@@ -69,7 +70,7 @@ function balanceBody({ total, available = true, }: { readonly total: string; rea
 const NONE_DRY = Object.fromEntries(PROVIDER_ORDER.map((provider,) => [provider, false,]),) as Record<
   (typeof PROVIDER_ORDER)[number],
   boolean
->;
+  >;
 
 /**
  Abort signal every read here carries.
@@ -179,7 +180,7 @@ await describe({
               `data: ${JSON.stringify({ system_fingerprint: 'fp_b', choices: [], },)}\n\n`,
             ].join('',);
             expect(systemFingerprintOf({ bodyText: stream, },),).toBe('fp_b',);
-            expect(systemFingerprintOf({ bodyText: 'data: [DONE]\n\n', },),).toBeUndefined();
+            expect(systemFingerprintOf({ bodyText: 'data: [DONE]\n\n', },),).toBe(NOT_REPORTED,);
           },
         },),
       ],

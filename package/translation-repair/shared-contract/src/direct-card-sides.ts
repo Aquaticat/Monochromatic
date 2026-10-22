@@ -24,7 +24,7 @@ import type {
 // (`direct-client.ts`).
 //
 // NO ZERO DATA RETENTION on either route, and none promised. The owner's ruling
-// of 2026-10-05 (the corpus is public, PII is allowed) and the two grants above
+// of 2026-10-05 (the corpus is public, PII is allowed) and the two grants quoted here
 // are what permit it. Record: `doc/decision/translation-repair-direct-providers.md`.
 //
 // NO HOLD CHANGES WITH THESE SIDES. Both cards keep every hold they carried
@@ -48,7 +48,7 @@ import type {
 
  PRICED AT PEAK, ALWAYS. The page lists 0.006 (cache hit), 0.3 (cache miss) and
  1.2 (output) USD per million tokens at peak and half of each off peak. Peak is
- 01:00 to 04:00 and 06:00 to 10:00 UTC, Monday to Friday, excluding Chinese
+ 01:00 to 04:00 UTC and 06:00 to 10:00 UTC, Monday to Friday, excluding Chinese
  public holidays. The run cannot know the holidays, so every call is priced at
  peak: the upper bound, never an under-read of what the owner's balance spent.
 

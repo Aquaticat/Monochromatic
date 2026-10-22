@@ -292,6 +292,11 @@ export function bedrockIsDry(
 export const DEEPSEEK_DRY_FLOOR_USD = 0;
 
 /**
+ Decimal places the Xiaomi spend field is printed to.
+ */
+const XIAOMI_SPEND_PLACES = 4;
+
+/**
  Whether DeepSeek's balance says nothing more can be bought there.
 
  DRY WHEN DEEPSEEK SAYS IT CANNOT SERVE (`is_available` false) OR THE BALANCE
@@ -623,7 +628,8 @@ export function bedrockMeterLevel(
 export function deepSeekMeterLevel(
   { balance, }: { readonly balance: DeepSeekBalance; },
 ): readonly string[] {
-  return [`deepseekUsd=${balance.totalUsd.toFixed(2,)}`,];
+  return [`deepseekUsd=${balance.totalUsd
+    .toFixed(2,)}`,];
 }
 
 /**
@@ -647,7 +653,8 @@ export function deepSeekMeterLevel(
 export function xiaomiMeterLevel(
   { spend, }: { readonly spend: XiaomiSpend; },
 ): readonly string[] {
-  return [`xiaomiUsdSpent=${spend.spentUsd.toFixed(4,)}`,];
+  return [`xiaomiUsdSpent=${spend.spentUsd
+    .toFixed(XIAOMI_SPEND_PLACES,)}`,];
 }
 
 //endregion Budget routing

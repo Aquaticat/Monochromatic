@@ -181,7 +181,7 @@ export function parseDeepSeekBalance({ bodyText, }: { readonly bodyText: string;
   /**
    The one USD entry.
    */
-  const [entry,] = usd;
+  const entry: unknown = usd[0];
   if (!isJsonRecord(entry,))
     throw new DeepSeekBalanceShapeError({ detail: 'the USD entry is not a JSON object', },);
 

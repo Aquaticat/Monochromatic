@@ -20,10 +20,7 @@ import {
   exchangeFailureLogText,
   type ModelTransport,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
-import {
-  isProviderName,
-  type ProviderName,
-} from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import { isProviderName, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
 import {
   isProviderOff,

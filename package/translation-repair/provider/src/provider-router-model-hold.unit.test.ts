@@ -27,7 +27,10 @@ import {
   type BudgetView,
   createRoutingClient,
 } from '../dist/final/node/index.mjs';
-import { readOlderProvidersWet, } from './provider-router-wet-budgets.test-fixture.ts';
+import {
+  holdNothing,
+  readOlderProvidersWet,
+} from './provider-router-wet-budgets.test-fixture.ts';
 import { textCallOutcome, } from './provider-router-text-call.test-fixture.ts';
 import {
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
@@ -165,17 +168,7 @@ function stubBudgets(): {
       markRefused: async function markRefused({ provider, }: { readonly provider: ProviderName; },): Promise<void> {
         refused.push(provider,);
       },
-      holds: function holds(): ProviderRecord<number> {
-        return {
-          neuralwatt: 0,
-          synthetic: 0,
-          hyper: 0,
-          bedrock: 0,
-          deepseek: 0,
-          xiaomi: 0,
-          openrouter: 0,
-        };
-      },
+      holds: holdNothing,
     },
   };
 }

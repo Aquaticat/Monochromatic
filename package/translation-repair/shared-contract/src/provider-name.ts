@@ -58,7 +58,7 @@
 // not renew. DeepSeek sits ahead of Xiaomi because its money is prepaid and
 // Xiaomi's is bought as it is used. Neither route promises zero data
 // retention; the owner's ruling of 2026-10-05 that the corpus is public and
-// PII is allowed, and the grants above, are what permit it. Record:
+// PII is allowed, and the grants quoted here, are what permit it. Record:
 // `doc/decision/translation-repair-direct-providers.md`.
 
 /**

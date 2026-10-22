@@ -13,7 +13,7 @@ import type { DeepSeekCacheSplit, } from './direct-usage.ts';
 // run's own meter adds up.
 //
 // DEEPSEEK IS PRICED AT PEAK, ALWAYS: the upper bound. Its page halves every
-// rate off peak (01:00 to 04:00 and 06:00 to 10:00 UTC on weekdays other than
+// rate off peak (01:00 to 04:00 UTC and 06:00 to 10:00 UTC on weekdays other than
 // Chinese public holidays are peak, all other hours off peak), and a run
 // cannot know the holidays, so an under-read of the owner's balance is the
 // one error this avoids.
@@ -84,8 +84,8 @@ export function deepSeekCostOf(
 
   return (
     (hitTokens * card.promptCacheHitUsdPerMillion)
-    + (missTokens * card.promptCacheMissUsdPerMillion)
-    + (usage.completion_tokens * card.completionUsdPerMillion)
+      + (missTokens * card.promptCacheMissUsdPerMillion)
+      + (usage.completion_tokens * card.completionUsdPerMillion)
   ) / PRICE_UNIT_TOKENS;
 }
 
@@ -134,8 +134,8 @@ export function xiaomiCostOf(
 
   return (
     (cachedTokens * card.promptCacheHitUsdPerMillion)
-    + (missTokens * card.promptCacheMissUsdPerMillion)
-    + (usage.completion_tokens * card.completionUsdPerMillion)
+      + (missTokens * card.promptCacheMissUsdPerMillion)
+      + (usage.completion_tokens * card.completionUsdPerMillion)
   ) / PRICE_UNIT_TOKENS;
 }
 

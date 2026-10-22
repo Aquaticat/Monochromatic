@@ -12,10 +12,10 @@ import {
   type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { isSuccessStatus, } from '@monochromatic-dev/translation-repair-markup/ts';
+import { requireWholeStream, } from './require-whole-stream.ts';
 import {
   formatUsageNote,
   type ModelTransport,
-  type TransportReply,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { armCallDeadline, } from './call-deadline.ts';
 import {
@@ -46,10 +46,7 @@ import { settleNeuralWattCall, } from './neuralwatt-settlement.ts';
 import { failureForReply, } from './request-size-refusal.ts';
 import { neuralWattIdFor, } from './neuralwatt-reach.ts';
 import { withSchemaInSystemPrompt, } from './schema-prompt.ts';
-import {
-  extractStreamedCompletion,
-  requireStreamTerminator,
-} from './stream-completion.ts';
+import { extractStreamedCompletion, } from './stream-completion.ts';
 import {
   DEFAULT_RETRY_POLICY,
   exchangeWithRetry,
@@ -189,25 +186,6 @@ export type NeuralWattClient = ModelCaller & {
  */
 function systemClock(): Date {
   return new Date();
-}
-
-/**
- Refuses a success reply whose stream never reached its terminator, so the
- retry ladder retries the attempt as the transport failure it is.
-
- @param reply - one attempt's reply, read before the ladder returns it
-
- @throws {@link MalformedCompletionError}
- when the stream stops before `[DONE]`
-
- @example
- ```ts
- requireWholeStream(reply,);
- ```
- */
-function requireWholeStream(reply: TransportReply,): void {
-  if (isSuccessStatus({ status: reply.status, },))
-    requireStreamTerminator({ bodyText: reply.bodyText, },);
 }
 
 /**

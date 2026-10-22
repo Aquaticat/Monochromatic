@@ -11,29 +11,32 @@ import {
   type ProviderName,
   type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
-import { isSuccessStatus, } from '@monochromatic-dev/translation-repair-markup/ts';
+import {
+  isSuccessStatus,
+  wholeOpening,
+} from '@monochromatic-dev/translation-repair-markup/ts';
 import {
   type ExtractedCompletion,
   formatUsageNote,
   type ModelTransport,
-  type TransportReply,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { armCallDeadline, } from './call-deadline.ts';
-import {
-  type ChatTextReply,
-  type ChatTextRequest,
-  type JsonSchemaResponseFormat,
-  type ModelCaller,
+import type {
+  ChatTextReply,
+  ChatTextRequest,
+  JsonSchemaResponseFormat,
+  ModelCaller,
 } from './chat-contract.ts';
 import { chatJsonThrough, } from './chat-json-through.ts';
-import { systemFingerprintOf, } from './direct-usage.ts';
+import {
+  NOT_REPORTED,
+  systemFingerprintOf,
+} from './direct-usage.ts';
+import { requireWholeStream, } from './require-whole-stream.ts';
 import { failureForReply, } from './request-size-refusal.ts';
 import { withSchemaInSystemPrompt, } from './schema-prompt.ts';
 import { reportSpend, } from './spend-line.ts';
-import {
-  extractStreamedCompletion,
-  requireStreamTerminator,
-} from './stream-completion.ts';
+import { extractStreamedCompletion, } from './stream-completion.ts';
 import {
   DEFAULT_RETRY_POLICY,
   exchangeWithRetry,
@@ -101,7 +104,7 @@ export type DirectRoute = {
    The `response_format` member this provider accepts for a call's schema.
    */
   readonly responseFormatOnWire: (
-    args: { readonly responseFormat: JsonSchemaResponseFormat; },
+    args: { readonly responseFormat: ForeignBorrowed<JsonSchemaResponseFormat>; },
   ) => Readonly<Record<string, unknown>>;
 
   /**
@@ -115,25 +118,6 @@ export type DirectRoute = {
     },
   ) => Pick<Parameters<typeof reportSpend>[0], 'costUsd' | 'cachedTokens'>;
 };
-
-/**
- Refuses a success reply whose stream never reached its terminator, so the
- retry ladder retries the attempt as the transport failure it is.
-
- @param reply - one attempt's reply, read before the ladder returns it
-
- @throws {@link MalformedCompletionError}
- when the stream stops before `[DONE]`
-
- @example
- ```ts
- requireWholeStream(reply,);
- ```
- */
-function requireWholeStream(reply: TransportReply,): void {
-  if (isSuccessStatus({ status: reply.status, },))
-    requireStreamTerminator({ bodyText: reply.bodyText, },);
-}
 
 /**
  Most UTF-16 units of a fingerprint a log line carries.
@@ -159,9 +143,12 @@ function fingerprintNoteOf({ bodyText, }: { readonly bodyText: string; },): stri
   const fingerprint = systemFingerprintOf({ bodyText, },);
   // ENCODED AND BOUNDED, because the string is the provider's choice and
   // rides on a line whose grammar splits on spaces.
-  return (fingerprint === undefined)
+  return (fingerprint === NOT_REPORTED)
     ? ''
-    : ` system_fingerprint=${encodeURIComponent(fingerprint.slice(0, FINGERPRINT_LOG_UNITS,),)}`;
+    : ` system_fingerprint=${encodeURIComponent(wholeOpening({
+      text: fingerprint,
+      units: FINGERPRINT_LOG_UNITS,
+    },),)}`;
 }
 
 /**

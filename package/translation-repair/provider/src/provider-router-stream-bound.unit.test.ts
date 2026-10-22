@@ -35,6 +35,7 @@ import { textCallOutcome, } from './provider-router-text-call.test-fixture.ts';
 import {
   readOlderProvidersWet,
   stubWetBudgets,
+  holdNothing,
 } from './provider-router-wet-budgets.test-fixture.ts';
 import {
   SEAT_BEDROCK_ONLY_TEXT,
@@ -84,17 +85,7 @@ function stubFullyWetBudgets(): ReturnType<typeof stubWetBudgets> {
     markRefused: async function markNobodyRefused(): Promise<void> {
       return undefined;
     },
-    holds: function holdNothingBack(): ProviderRecord<number> {
-      return {
-        neuralwatt: 0,
-        synthetic: 0,
-        hyper: 0,
-        bedrock: 0,
-        deepseek: 0,
-        xiaomi: 0,
-        openrouter: 0,
-      };
-    },
+    holds: holdNothing,
   };
 }
 

@@ -65,18 +65,22 @@ await describe({
       name: 'BUILDS ONE ROW PER PROVIDER FROM THE CARDS: a served record over each provider has exactly the '
         + 'granted spelling as its only key',
       fn: async () => {
-        expect(Object.keys(servedRecord({
-          provider: 'deepseek',
-          toRow: function row(card,): string {
-            return card.id;
-          },
-        },),),).toEqual(['deepseek-flash',],);
-        expect(Object.keys(servedRecord({
-          provider: 'xiaomi',
-          toRow: function row(card,): string {
-            return card.id;
-          },
-        },),),).toEqual(['mimo-v2.6-flash',],);
+        expect(
+          Object.keys(servedRecord({
+            provider: 'deepseek',
+            toRow: function row(card,): string {
+              return card.id;
+            },
+          },),),
+        ).toEqual(['deepseek-flash',],);
+        expect(
+          Object.keys(servedRecord({
+            provider: 'xiaomi',
+            toRow: function row(card,): string {
+              return card.id;
+            },
+          },),),
+        ).toEqual(['mimo-v2.6-flash',],);
       },
     },),
 

@@ -85,9 +85,6 @@ export {
   BEDROCK_DRY_MARGIN_USD,
   bedrockIsDry,
   bedrockMeterLevel,
-  DEEPSEEK_DRY_FLOOR_USD,
-  deepSeekIsDry,
-  deepSeekMeterLevel,
   EveryProviderDryError,
   hyperIsDry,
   hyperMeterLevel,
@@ -100,8 +97,6 @@ export {
   routeProviderFor,
   syntheticIsDry,
   syntheticMeterLevel,
-  xiaomiIsDry,
-  xiaomiMeterLevel,
 } from './budget-routing.ts';
 export {
   armCallDeadline,

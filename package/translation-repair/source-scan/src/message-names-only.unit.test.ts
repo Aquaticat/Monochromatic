@@ -103,6 +103,8 @@ const MARKED_CLASSES: readonly string[] = [
   'DeclinedEntriesUnreadableError',
   'DeliveryCoherenceError',
   'DeliveryInvariantError',
+  'DeepSeekBalanceShapeError',
+  'DeepSeekModelNotServedError',
   'DrawReconcileError',
   'DroppedDestinationError',
   'EmptyConversationError',
@@ -221,6 +223,7 @@ const MARKED_CLASSES: readonly string[] = [
   'WordingCoherenceError',
   'WorkTitleLookupError',
   'WritingBenchUnreachableError',
+  'XiaomiModelNotServedError',
 ];
 
 /**

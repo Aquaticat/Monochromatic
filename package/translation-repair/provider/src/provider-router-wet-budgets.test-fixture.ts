@@ -81,7 +81,7 @@ function markNothingRefused(): Promise<void> {
  const held = holdNothing();
  ```
  */
-function holdNothing(): ProviderRecord<number> {
+export function holdNothing(): ProviderRecord<number> {
   return {
     neuralwatt: 0,
     synthetic: 0,

@@ -35,8 +35,17 @@ export {
 export {
   type DeepSeekCacheSplit,
   deepSeekCacheSplitOf,
+  NOT_REPORTED,
   systemFingerprintOf,
 } from './direct-usage.ts';
+export { requireWholeStream, } from './require-whole-stream.ts';
+export {
+  DEEPSEEK_DRY_FLOOR_USD,
+  deepSeekIsDry,
+  deepSeekMeterLevel,
+  xiaomiIsDry,
+  xiaomiMeterLevel,
+} from './budget-routing.ts';
 export {
   type DeepSeekBalance,
   DeepSeekBalanceShapeError,

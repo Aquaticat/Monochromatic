@@ -20,6 +20,11 @@ import { openRouterChunksOf, } from './openrouter-chunk-scan.ts';
 // already reads off any stream of that shape.
 
 /**
+ What a reader answers where the stream did not carry the field it was asked for.
+ */
+export const NOT_REPORTED: unique symbol = Symbol('field the stream does not carry',);
+
+/**
  Prompt tokens DeepSeek's usage block split by cache.
 
  @example
@@ -46,7 +51,7 @@ export type DeepSeekCacheSplit = {
 
  @param name - field wanted
 
- @returns The count, or nothing where the field is absent or mistyped
+ @returns The count, or {@link NOT_REPORTED} where the field is absent or mistyped
 
  @example
  ```ts
@@ -61,15 +66,15 @@ function wholeCountAt(
     readonly usage: Readonly<Record<string, unknown>>;
     readonly name: string;
   },
-): number | undefined {
+): number | typeof NOT_REPORTED {
   /**
    Count as reported, of unknown type until checked.
    */
   const count = usage[name];
   if ((typeof count) !== 'number')
-    return undefined;
-  if (!Number.isSafeInteger(count,) || (count < 0))
-    return undefined;
+    return NOT_REPORTED;
+  if ((!Number.isSafeInteger(count,)) || (count < 0))
+    return NOT_REPORTED;
   return count;
 }
 
@@ -117,8 +122,8 @@ export function deepSeekCacheSplitOf({ bodyText, }: { readonly bodyText: string;
       return [
         {
           // Conditional spreads keep an unnamed count absent instead of undefined.
-          ...((hitTokens === undefined) ? {} : { hitTokens, }),
-          ...((missTokens === undefined) ? {} : { missTokens, }),
+          ...((hitTokens === NOT_REPORTED) ? {} : { hitTokens, }),
+          ...((missTokens === NOT_REPORTED) ? {} : { missTokens, }),
         },
       ];
     },);
@@ -136,14 +141,14 @@ export function deepSeekCacheSplitOf({ bodyText, }: { readonly bodyText: string;
 
  @param bodyText - whole drained `text/event-stream` body
 
- @returns The last non-empty fingerprint a chunk carried, or nothing
+ @returns The last non-empty fingerprint a chunk carried, or {@link NOT_REPORTED}
 
  @example
  ```ts
  const fingerprint = systemFingerprintOf({ bodyText: reply.bodyText, },);
  ```
  */
-export function systemFingerprintOf({ bodyText, }: { readonly bodyText: string; },): string | undefined {
+export function systemFingerprintOf({ bodyText, }: { readonly bodyText: string; },): string | typeof NOT_REPORTED {
   /**
    Fingerprints each chunk carried, in arrival order.
    */
@@ -152,12 +157,12 @@ export function systemFingerprintOf({ bodyText, }: { readonly bodyText: string; 
       /**
        Fingerprint as reported, of unknown type until checked.
        */
-      const fingerprint = chunk['system_fingerprint'];
+      const fingerprint = chunk.system_fingerprint;
       if (((typeof fingerprint) === 'string') && (fingerprint !== ''))
         return [fingerprint,];
       return [];
     },);
-  return fingerprints.at(-1,);
+  return fingerprints.at(-1,) ?? NOT_REPORTED;
 }
 
 //endregion Direct usage

@@ -5,6 +5,7 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
 import { isSuccessStatus, } from '@monochromatic-dev/translation-repair-markup/ts';
 import {
   ProviderHttpError,
+  type ExtractedCompletion,
   type ModelTransport,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type { ModelCaller, } from './chat-contract.ts';
@@ -40,7 +41,7 @@ import {
 //
 // THE OWNER, 2026-10-22: "You can also use the DEEPSEEK_API_KEY as you wish,
 // but you may only use deepseek v4.1 flash 1017 with that key." The key is not
-// model-scoped, so `servedIdFor` below is the lock: a roster model other than
+// model-scoped, so `servedIdFor` in this file is the lock: a roster model other than
 // DeepSeek V4.1 Flash throws `DeepSeekModelNotServedError` before any request
 // is built. The wire id is `deepseek-flash`, which DeepSeek's documentation
 // says is served by DeepSeek-V4.1-Flash-1017 (no dated id exists).
@@ -72,7 +73,7 @@ import {
 // the provider out for the run (`credential-hold.ts`).
 //
 // NO ZERO DATA RETENTION is promised by this route. The owner's ruling of
-// 2026-10-05 (the corpus is public, PII is allowed) and the grant above are
+// 2026-10-05 (the corpus is public, PII is allowed) and the grant quoted here are
 // what permit it.
 
 /**
@@ -170,6 +171,65 @@ function servedIdFor({ modelId, }: { readonly modelId: RosterModelId; },): strin
 }
 
 /**
+ The `response_format` member DeepSeek accepts for any schema.
+
+ JSON MODE, NOT A SCHEMA: the json_schema type is refused by this API (HTTP 400),
+ and the schema is already stated in the system prompt by the shared client. The
+ word "json" the documentation requires is in that text.
+
+ @returns The JSON-mode member
+
+ @example
+ ```ts
+ const format = jsonObjectFormat();
+ ```
+ */
+function jsonObjectFormat(): Readonly<Record<string, unknown>> {
+  return { type: 'json_object', };
+}
+
+/**
+ Prices one finished DeepSeek call at peak rates.
+
+ @param extracted - completion whose usage block DeepSeek filled in, or did not
+
+ @param bodyText - whole drained stream, whose last usage block names the cache split
+
+ @returns The cost and cache fields the spend line carries, each absent where the stream reported nothing
+
+ @example
+ ```ts
+ const fields = deepSeekSpendFields({ extracted, bodyText, },);
+ ```
+ */
+function deepSeekSpendFields(
+  {
+    extracted,
+    bodyText,
+  }: {
+    readonly extracted: ExtractedCompletion;
+    readonly bodyText: string;
+  },
+): ReturnType<DirectRoute['spendFieldsOf']> {
+  /**
+   Cache split the usage block reported.
+   */
+  const split = deepSeekCacheSplitOf({ bodyText, },);
+  /**
+   The call priced at peak rates, or that nothing was reported.
+   */
+  const cost = deepSeekCostOf({
+    card: DEEPSEEK_MODELS['deepseek-flash'],
+    extracted,
+    split,
+  },);
+  return {
+    ...((cost === DIRECT_COST_UNREPORTED) ? {} : { costUsd: cost, }),
+    ...((split.hitTokens === undefined) ? {} : { cachedTokens: split.hitTokens, }),
+  };
+}
+
+/**
  Builds the route of DeepSeek's API.
 
  @param baseUrl - API base address, overridable for tests
@@ -186,30 +246,8 @@ function deepSeekRoute({ baseUrl, }: { readonly baseUrl: string; },): DirectRout
     provider: 'deepseek',
     chatUrl: deepSeekChatUrlFor({ baseUrl, },),
     servedIdFor,
-    // JSON MODE, NOT A SCHEMA: the json_schema type is refused by this API,
-    // and the schema is already stated in the system prompt by the shared
-    // client. The word "json" the documentation requires is in that text.
-    responseFormatOnWire: function jsonObject() {
-      return { type: 'json_object', };
-    },
-    spendFieldsOf: function priceCall({ extracted, bodyText, },) {
-      /**
-       Cache split the usage block reported.
-       */
-      const split = deepSeekCacheSplitOf({ bodyText, },);
-      /**
-       The call priced at peak rates, or that nothing was reported.
-       */
-      const cost = deepSeekCostOf({
-        card: DEEPSEEK_MODELS['deepseek-flash'],
-        extracted,
-        split,
-      },);
-      return {
-        ...((cost === DIRECT_COST_UNREPORTED) ? {} : { costUsd: cost, }),
-        ...((split.hitTokens === undefined) ? {} : { cachedTokens: split.hitTokens, }),
-      };
-    },
+    responseFormatOnWire: jsonObjectFormat,
+    spendFieldsOf: deepSeekSpendFields,
   };
 }
 
@@ -322,7 +360,8 @@ export function createDeepSeekClient(
      */
     const parsed = parseDeepSeekBalance({ bodyText: reply.bodyText, },);
 
-    rl.debug(`balance ${parsed.totalUsd.toFixed(2,)} USD, available ${String(parsed.isAvailable,)}`,);
+    rl.debug(`balance ${parsed.totalUsd
+      .toFixed(2,)} USD, available ${String(parsed.isAvailable,)}`,);
     return parsed;
   }
 
