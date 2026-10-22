@@ -834,6 +834,16 @@ In flight 2026-10-18 after 0.1.6: the license polish branch `fix/music-player-li
 trace for the 10,000-track jank (p = 0.089, optional), re-check of issues 1079 to 1081 and 1069 (Depot trial CI
 failures, another thread owns them).
 
+In flight 2026-10-22, desktop text size setting (agent `a985cccccf228921d`, worktree
+`/home/user/temp/agent/text-size-setting/wt`, branch `feat/music-player-text-size-setting`): the human asked for a
+setting in the real app after the replica comparison; their answers: per-element sizes you type, controlled by a 1 px
+stepper. Adopted by me, veto-open: four elements (pane titles, group heading letter, folder names, track titles) with
+defaults 20, 20, 14, 14 (today's values), clamp 10 to 32 px, a reset action, session persistence, desktop only (Android
+follows the system font size). When it reports: review the diff, run the package tests and lints once, merge main into
+the branch, fast-forward main, then release (say the version) and update the troubleshooting doc and this handover.
+Also pending from the replica agent: why matching the original build B needed a track title of 17 px in the replica (the
+source says 16).
+
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
 
 - Text-size research follow-ups (written 2026-10-22, from a reviewer's note the human pasted), not started: (1) identical

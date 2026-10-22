@@ -394,12 +394,31 @@ Eye distances to the monitors were not measured. The millimetre mode of the test
 (`text-size-test-mm.html`, scratch only): it sizes the samples by x-height and capital height in millimetres, draws
 a 100 mm ruler for a check against a physical ruler, and records the angle of each x-height at the stated distance.
 
+### The replica beside the real app, on the human's display
+
+The human's own comparison, and the instrument behind it:
+- A static HTML and CSS replica of the app's wide two-pane window (`replica.html`, scratch only) uses the app's own
+  numbers, colors, icon paths and `font-optical-sizing: none`, with the four tuned text sizes as inputs.
+  An agent measured it against the real release binary in the nested compositor at scale 1 and 2, in dark and light,
+  with the real fontconfig kept (Noto Sans CJK mapped, no Droid Sans Fallback): every ink box of 17 elements is within
+  1 px in x, y and width (within 0.5 px at scale 2) and heights differ by at most 1 px.
+  The remaining differences: folder names after the first in a row sit about 1 px left, the selected mode segment's fill
+  bleeds about 0.4 px outside its outline in the app only, and one deck title is 1 px off in x and y.
+- The human put the replica beside the real app on one monitor and said the two look identical at identical sizes.
+  That closes "Slint draws bigger or differently than Chromium" with the human's own eyes, in addition to the
+  width and height measurements.
+- Build A (titles 20, names 14, track titles 14) looked right to the human.
+  Build B (titles 22, heading letter 22, names 16, track titles 16 in the source) needed the replica set to 22, 22, 16
+  and 17 (track title) to look the same; the 1 px difference on the track title is unexplained and is being measured.
+- The human then asked for a text size setting in the real app, with a stepper of 1 px for each element.
+
 ## Hypotheses
 
 Each is scored against the target (0.91 for the titles, 0.875 for the names and track titles).
 Measured and null are results of an instrument; speculation is not.
 
-- Slint draws bigger than Chromium: null. Width ratio 1.000 at every size from 12 to 24 px; "A" height within 3 percent.
+- Slint draws bigger than Chromium: null. Width ratio 1.000 at every size from 12 to 24 px; "A" height within 3 percent;
+  and the human saw the replica and the real app as identical side by side.
 - Renderer weight or hinting: null for femtovg (0.94 to 1.005 of Chromium's mass); not exercised for the software
   renderer, which is not the shipped default.
 - Font file or axes (`opsz`, `wght`): null. Both sides draw the default instance; Chromium ignores `opsz` for this
