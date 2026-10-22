@@ -65,7 +65,8 @@ use std::{fs, sync::Arc, time::Duration};
 /// a test moves its held clock by this.
 const QUIET_PASSED: Duration = Duration::from_millis(250);
 
-/// Longer than the 200 ms quiet time, in real time.
+/// Longer than the 200 ms quiet time,
+/// in real time.
 const STALL: Duration = Duration::from_millis(300);
 
 /// Characters per line of the numbered fixture:
@@ -442,7 +443,8 @@ fn facts_of(reader: &Reader) -> String {
 }
 
 /// What:
-///  `shot_once` plus a second frame of the same state, compared with the first.
+///  `shot_once` plus a second frame of the same state,
+///  compared with the first.
 /// Why:
 ///  The rigid scroll takes hundreds of frames and keeps `shot_once`;
 ///  the comparisons with a few frames use this one.
@@ -894,7 +896,9 @@ fn rows_above_the_view_wait_until_scrolling_has_stopped() {
 ///  because the scrolling rule reads the clock the test holds and not the real one.
 /// Why:
 ///  This is the deterministic stand-in for the load that made `rows_above_the_view_wait_until_scrolling_has_stopped`
-///  fail before the rule's clock could be held: with the real clock, the rows are shown at once and the offset
+///  fail before the rule's clock could be held:
+///  with the real clock,
+///  the rows are shown at once and the offset
 ///  moves (the ledger in `doc/handover/ide-native-flakes.md` records the control that fails this way).
 ///
 /// In TS you'd write (pseudocode):
