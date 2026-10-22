@@ -1288,9 +1288,14 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     `.claude/exp-flake2`, my scratch worktrees. Another session's `cargo mutants` container (`event_hints.rs`, started
     03:36 on 2026-10-21) was running during this work; it is not ours and was left alone.
     Owner decisions of 2026-10-21 on the stage 5+6 questions (`doc/handover/ide-gpu-stages-5-6.md`): (a) a window
-    taller than the device texture limit stacks textures, so the minimap covers the whole window (to build); (b) the
+    taller than the device texture limit stacks textures, so the minimap covers the whole window (built; a stack of
+    16,384 and 512 rows abutting without a gap was measured on 2026-10-22); (b) the
     reflection bounds (worst 36 / mean 0.8 at scale 1, 58 / 0.9 at scale 2) are the contract, kept as the guard;
     (c) the `minimap_build` to `minimap_worker` rename stands (already in the code, `src/native/minimap_worker.rs`).
+    Same principle for the code tile, owner answer of 2026-10-22 ("Stack the code tile"; asked again by mistake: the
+    2026-10-21 answer already settled the principle, and a settled decision is adopted and recorded, not asked):
+    a window
+    too large for one code tile stacks code textures; no blank bands, no soft text, no notice.
     Still open from that note: the stale `TEXTURE_DIMENSION` doc; dense-selection cost until full-height clipping in
     `split.rs` and `encode.rs` is fixed.
     LANDED 2026-10-21, stacked minimap textures (owner decision (a)): `main` is `cf58581533` (merge of the agent branch
@@ -1485,13 +1490,38 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     and guard directories are removed; no units or containers were left. Not run: drag scenario, scales other than 1,
     a real compositor, input slower than 50 Hz, step lengths other than 16 ms, the other 150 guards, the doc text of
     the agent has about 200 semantic-line-break findings (older text 480) that are not reflowed.
-    Scale, scheme and seam agent `a1612e9c563c279ed` (started 2026-10-22, own worktree off `origin/main`, branch push
-    only; brief quotes `NLG`, `NLD`, `RXI`, `NQH`): checks display scale 2, the light color scheme, and the minimap
-    chunk seams and the tile seam at scales 1 and 2 in both schemes, by pixel measures with a positive control for the
-    seams; fixes defects at the cause with a test or guard shown to fail; improves the nested compositor if it cannot
-    do scale 2 or a scheme switch. On its report: verify, scan `ps`, `podman ps`, `systemctl --user list-units`,
-    look at its images myself, read any product diff, gates once on the merged snapshot, push, reinstall if the binary
-    changed (and release the compositor if it changed), remove its worktree and branch.
+    Scale, scheme and seam agent `a1612e9c563c279ed` LANDED 2026-10-22 (doc only, merge tip `3a2fb45dd4`; branch tip
+    `c7f48424c0`, net diff one doc file; section "Scale 2, the light scheme and the seams, measured in the
+    compositor" in
+    `doc/handover/ide-gpu-stages-5-6.md`). No defect in the three checks, no product change, no gates. Measured on the
+    installed binary `27b877741a056ecf` in the headless compositor (`--headless --gpu /dev/dri/renderD128`, which
+    already has `--scale`, `--color-scheme`, `--accessibility` and `record`; no compositor change needed; the nested
+    window is clamped to the host screen). Scale 2: sharp text (Laplacian ratio 1.18 against 0.25 for an upscale),
+    layout and caret identical in logical pixels, minimap bounds exactly 2x, hit tests 10 of 10 (one run of 7 had its
+    first 5 clicks do nothing, unexplained, while the agent's own build ran), a wheel notch about 60 logical px at both
+    scales. Light: no dark-only constant in the Vello code; every text ink at or above 4.5 on `#FAFAFA`. Seams: chunk
+    seams clean in 128 seams over 12 shots (positive control: a one row copy fault flagged in 8 of 8 shots), tile phase
+    constant to 0.05 px over 18 shots (control: a 1 px roll read +1.00). I looked at five of its images myself: scale 2
+    dark, light find box, the seam control, the 8K window. Blind spot named by the agent: a chunk shifted by a whole
+    line is invisible to the capture measure (only `minimap_seam_tests.rs` covers it).
+    Findings outside the checks, all being worked (agents below): (1) in a 7680x4320 window at scale 1 the code tile is
+    cut to 7259x2280 and 52% of the code view is blank (I confirmed it in `~/temp/agent/sss-shots/w8k/plain.png`); (2)
+    a window over 16,384 physical pixels in one dimension panics in the toolkit's surface configure; (3) Vello logs
+    "Trying to paint too large image" at warn level in every 3,700 px scale 2 run (64 MiB is exactly 256 bins, a tile
+    off the 256 grid counts more); (4) during a fling the minimap picture lags the viewport box (91 to 94 blank track
+    rows 3.5 s after a 3,777 px scroll in one run). Peak load of the agent was 12 CPUs; images in
+    `~/temp/agent/sss-shots/`.
+    Code tile stacking agent `a074735d16c6106a5` (started 2026-10-22, own worktree off `origin/main`, branch push only;
+    brief quotes `NLG`, `NLD`, `RXI`, `NQH` and the stacking decision above): stacks the code tile over several
+    textures (findings 1 to 3), measured by captures at 7680x4320 scale 1, 3840x2160 scale 2 and 1100x8100 scale 2 in
+    both
+    schemes, the seam measure with a positive control, no Vello warning, and the cadence (20 alternating pairs plus 15
+    A against A pairs; the 40 pair latency scenario keeps late tiles at 0 of 40). Minimap lag agent
+    `afaeefdb803099e40` (same rules; stays out of the `gpu_tile` and tile modules): reproduces finding 4 with a measure
+    and a same-binary control, finds the cause by intervention, fixes it at the cause if it is ours. On each report:
+    verify, scan `ps`, `podman ps`, `systemctl --user list-units`, look at the images, read the product diff, gates once
+    on the merged snapshot, land one agent at a time, push, reinstall if the binary changed, remove worktrees and
+    branches.
     Owner statement of 2026-10-22: "The host CAN handle multiple jobs at once, that's the exact reason I bought this
     CPU." Real jobs may therefore run in parallel, each capped (`CPUQuota`, `MemoryMax`); `NLG` still bans synthetic
     load, and measurements still alternate arms with a same-binary control (`NQH`) because parallel jobs add load.
@@ -1505,8 +1535,8 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     entries with counts, and decides by measurement the video-memory question (7.98 of 7.98 GiB); retries only for a
     proven test, zero overrides expected. On its report: same verification as the others, plus a read of the ledger.
     Open, in order: (1) the stalls away from slot 50 (slot 33 and 72, one run each; undecided; a larger alternating
-    pass with a same-binary control, under whatever load there is) and whether a tile taken in an input gap over 20 ms
-    costs a frame;
+    pass with a same-binary control, under whatever load there is; the stall pass agent) and whether a tile taken in an
+    input gap over 20 ms costs a frame; (1b) the code tile stack and the minimap fling lag (the two agents above);
     (2) the flake work, in `doc/handover/ide-native-flakes.md`:
     fixed with counts (refused-tile test 10 of 360 to 0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160
     to 0 of 160, find-box menu test by its guard, see the LANDED block above); open: the annotation stability tests
