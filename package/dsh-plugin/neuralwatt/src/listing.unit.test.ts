@@ -6,16 +6,22 @@ import {
 
 import {
   isRecord,
-  mapNeuralWattModel,
   mapNeuralWattProviders,
-  mapReasoningEfforts,
   neuralWattListingSnapshot,
-  thinkingLevelKeyForEffort,
   NEURALWATT_API,
   NEURALWATT_API_KEY_ENV,
   NEURALWATT_BASE_URL,
   NEURALWATT_ROUTE,
+  type NeuralWattListingEntry,
 } from '../dist/final/node/index.mjs';
+
+/**
+ Single model profile one entry mapped to, or nothing when the mapping
+ dropped the entry as unserviceable.
+ */
+function mappedModelOf(entry: NeuralWattListingEntry) {
+  return mapNeuralWattProviders({ listing: [entry] })[NEURALWATT_ROUTE]?.models?.[0];
+}
 
 await describe({
   name: '',
@@ -28,361 +34,337 @@ await describe({
         it({
           name: 'accepts a plain object',
           fn: async () => {
-            expect(isRecord({ a: 1, },),).toBe(true,);
+            expect(isRecord({ a: 1 })).toBe(true);
           },
-        },),
+        }),
         it({
           name: 'rejects arrays, null, and primitives',
           fn: async () => {
-            expect(isRecord([1],),).toBe(false,);
-            expect(isRecord(null,),).toBe(false,);
-            expect(isRecord('x',),).toBe(false,);
-            expect(isRecord(5,),).toBe(false,);
+            expect(isRecord([1])).toBe(false);
+            expect(isRecord(null)).toBe(false);
+            expect(isRecord('x')).toBe(false);
+            expect(isRecord(5)).toBe(false);
           },
-        },),
+        }),
       ],
-    },),
+    }),
 
     //endregion External JSON narrowing
 
-    //region Effort spellings to thinking levels
+    //region Listing entry mapping
 
     describe({
-      name: thinkingLevelKeyForEffort.name,
-      children: [
-        ...([
-          ['none', 'off',],
-          ['minimal', 'minimal',],
-          ['low', 'low',],
-          ['medium', 'medium',],
-          ['high', 'high',],
-          ['xhigh', 'xhigh',],
-          ['max', 'max',],
-        ] as const,).map(([effort, key],) =>
-          it({
-            name: `maps ${effort} to ${key}`,
-            fn: async () => {
-              expect(thinkingLevelKeyForEffort({ effort, },),).toBe(key,);
-            },
-          },),
-        ),
-        it({
-          name: 'yields nothing for a spelling it cannot express',
-          fn: async () => {
-            expect(thinkingLevelKeyForEffort({ effort: 'ultra', },),).toBeUndefined();
-          },
-        },),
-      ],
-    },),
-
-    //endregion Effort spellings to thinking levels
-
-    //region Reasoning effort declarations
-
-    describe({
-      name: mapReasoningEfforts.name,
+      name: 'listing entry mapping',
       children: [
         it({
-          name: 'declares non-reasoning when capabilities mark the model non-reasoning',
+          name: 'maps a vision reasoning model with its disclosed limits only',
           fn: async () => {
-            expect(mapReasoningEfforts({
+            expect(mappedModelOf({
+              id: 'qwen-3.8-27b',
+              max_model_len: 262_128,
+              deprecated: false,
               metadata: {
-                capabilities: { reasoning: false, },
-                reasoning: { supported_efforts: ['high', 'none',], },
-              },
-            },),).toBe(false,);
-          },
-        },),
-        it({
-          name: 'offers supported efforts each sending its own spelling',
-          fn: async () => {
-            expect(mapReasoningEfforts({
-              metadata: {
-                reasoning: { supported_efforts: ['xhigh', 'medium', 'low', 'none',], },
-              },
-            },),).toEqual({
-              off: 'none',
-              xhigh: 'xhigh',
-              medium: 'medium',
-              low: 'low',
-            },);
-          },
-        },),
-        it({
-          name: 'omits the off level when the listing does not accept none',
-          fn: async () => {
-            const efforts = mapReasoningEfforts({
-              metadata: {
-                reasoning: { supported_efforts: ['max', 'high', 'low',], },
-              },
-            },);
-            if (efforts === undefined || efforts === false)
-              throw new Error('expected an effort dict',);
-            expect(Object.hasOwn(efforts, 'off',),).toBe(false,);
-            expect(efforts,).toEqual({ max: 'max', high: 'high', low: 'low', },);
-          },
-        },),
-        it({
-          name: 'skips spellings it cannot express instead of guessing',
-          fn: async () => {
-            expect(mapReasoningEfforts({
-              metadata: {
-                reasoning: { supported_efforts: ['ultra', 'high', 'none',], },
-              },
-            },),).toEqual({ high: 'high', off: 'none', },);
-          },
-        },),
-        it({
-          name: 'declares non-reasoning when no level beyond off is selectable',
-          fn: async () => {
-            expect(mapReasoningEfforts({
-              metadata: { reasoning: { supported_efforts: ['none',], }, },
-            },),).toBe(false,);
-          },
-        },),
-        it({
-          name: 'falls back to accepted efforts minus alias spellings',
-          fn: async () => {
-            expect(mapReasoningEfforts({
-              metadata: {
+                display_name: 'Qwen 3.8 27B',
+                capabilities: { reasoning: true, vision: true },
                 reasoning: {
-                  accepted_efforts: ['max', 'xhigh', 'high', 'low', 'minimal', 'none',],
-                  effort_aliases: { max: 'xhigh', minimal: 'low', },
+                  supported_efforts: ['xhigh', 'medium', 'low', 'none'],
                 },
+                limits: { max_context_length: 262_128, max_output_tokens: 131_072 },
               },
-            },),).toEqual({
-              off: 'none',
-              xhigh: 'xhigh',
-              high: 'high',
-              low: 'low',
-            },);
-          },
-        },),
-        it({
-          name: 'declares non-reasoning when the alias fallback leaves only off',
-          fn: async () => {
-            expect(mapReasoningEfforts({
-              metadata: {
-                reasoning: {
-                  accepted_efforts: ['max', 'none',],
-                  effort_aliases: { max: 'xhigh', },
-                },
-              },
-            },),).toBe(false,);
-          },
-        },),
-        it({
-          name: 'yields nothing when neither effort list is present',
-          fn: async () => {
-            expect(mapReasoningEfforts({
-              metadata: { capabilities: { reasoning: true, }, },
-            },),).toBeUndefined();
-          },
-        },),
-        it({
-          name: 'yields nothing when an effort list mixes in a non-string member',
-          fn: async () => {
-            expect(mapReasoningEfforts({
-              metadata: { reasoning: { supported_efforts: ['high', 3,], }, },
-            },),).toBeUndefined();
-          },
-        },),
-        it({
-          name: 'yields nothing when an effort list is not an array',
-          fn: async () => {
-            expect(mapReasoningEfforts({
-              metadata: { reasoning: { supported_efforts: 'high', }, },
-            },),).toBeUndefined();
-          },
-        },),
-      ],
-    },),
-
-    //endregion Reasoning effort declarations
-
-    //region Listing entry to model profile
-
-    describe({
-      name: mapNeuralWattModel.name,
-      children: [
-        it({
-          name: 'maps a vision reasoning model with its disclosed limits',
-          fn: async () => {
-            expect(mapNeuralWattModel({
-              entry: {
-                id: 'qwen-3.8-27b',
-                max_model_len: 262128,
-                deprecated: false,
-                metadata: {
-                  display_name: 'Qwen 3.8 27B',
-                  capabilities: { reasoning: true, vision: true, },
-                  reasoning: { supported_efforts: ['xhigh', 'medium', 'low', 'none',], },
-                  limits: { max_context_length: 262128, max_output_tokens: 131072, },
-                },
-              },
-            },),).toEqual({
+            })).toEqual({
               id: 'qwen-3.8-27b',
               name: 'Qwen 3.8 27B',
-              contextWindow: 262128,
-              maxTokens: 131072,
-              input: ['text', 'image',],
+              contextWindow: 262_128,
+              maxTokens: 131_072,
+              input: ['text', 'image'],
               reasoningEfforts: {
                 off: 'none',
                 xhigh: 'xhigh',
                 medium: 'medium',
                 low: 'low',
               },
-            },);
+            });
           },
-        },),
+        }),
         it({
-          name: 'skips an entry the listing marks deprecated',
+          name: 'drops an entry the listing marks deprecated',
           fn: async () => {
-            expect(mapNeuralWattModel({
-              entry: { id: 'gone', deprecated: true, },
-            },),).toBeUndefined();
+            expect(mappedModelOf({ id: 'gone', deprecated: true })).toBeUndefined();
           },
-        },),
+        }),
         it({
-          name: 'skips an entry without an id',
+          name: 'drops an entry without an id',
           fn: async () => {
-            expect(mapNeuralWattModel({
-              entry: { metadata: { display_name: 'nameless', }, },
-            },),).toBeUndefined();
+            expect(mappedModelOf({ metadata: { display_name: 'nameless' } })).toBeUndefined();
           },
-        },),
+        }),
         it({
-          name: 'skips an entry whose id is empty',
+          name: 'drops an entry whose id is empty',
           fn: async () => {
-            expect(mapNeuralWattModel({ entry: { id: '', }, },),).toBeUndefined();
+            expect(mappedModelOf({ id: '' })).toBeUndefined();
           },
-        },),
+        }),
         it({
           name: 'falls back to the entry id for the name',
           fn: async () => {
-            const model = mapNeuralWattModel({ entry: { id: 'nw-small', }, },);
-            if (model === undefined)
-              throw new Error('expected a model profile',);
-            expect(model.name,).toBe('nw-small',);
+            const model = mappedModelOf({ id: 'nw-small' });
+            if (model === undefined) {
+              throw new Error('expected a model profile');
+            }
+            expect(model.name).toBe('nw-small');
           },
-        },),
+        }),
         it({
           name: 'reports text input for a model the listing marks without vision',
           fn: async () => {
-            const model = mapNeuralWattModel({
-              entry: { id: 'm', metadata: { capabilities: { vision: false, }, }, },
-            },);
-            if (model === undefined)
-              throw new Error('expected a model profile',);
-            expect(model.input,).toEqual(['text',],);
+            const model = mappedModelOf({
+              id: 'm',
+              metadata: { capabilities: { vision: false } },
+            });
+            if (model === undefined) {
+              throw new Error('expected a model profile');
+            }
+            expect(model.input).toEqual(['text']);
           },
-        },),
+        }),
         it({
           name: 'falls back to max_model_len for the context window and leaves maxTokens unset',
           fn: async () => {
-            const model = mapNeuralWattModel({
-              entry: { id: 'm', max_model_len: 262128, },
-            },);
-            if (model === undefined)
-              throw new Error('expected a model profile',);
-            expect(model.contextWindow,).toBe(262128,);
-            expect(Object.hasOwn(model, 'maxTokens',),).toBe(false,);
+            const model = mappedModelOf({ id: 'm', max_model_len: 262_128 });
+            if (model === undefined) {
+              throw new Error('expected a model profile');
+            }
+            expect(model.contextWindow).toBe(262_128);
+            expect(Object.hasOwn(model, 'maxTokens')).toBe(false);
           },
-        },),
+        }),
         it({
           name: 'leaves the context window unset when the listing sizes nothing',
           fn: async () => {
-            const model = mapNeuralWattModel({ entry: { id: 'm', }, },);
-            if (model === undefined)
-              throw new Error('expected a model profile',);
-            expect(Object.hasOwn(model, 'contextWindow',),).toBe(false,);
+            const model = mappedModelOf({ id: 'm' });
+            if (model === undefined) {
+              throw new Error('expected a model profile');
+            }
+            expect(Object.hasOwn(model, 'contextWindow')).toBe(false);
           },
-        },),
+        }),
         it({
           name: 'leaves maxTokens unset when the listing discloses no output limit',
           fn: async () => {
-            const model = mapNeuralWattModel({
-              entry: {
-                id: 'm',
-                metadata: {
-                  limits: { max_context_length: 1048560, max_output_tokens: null, },
-                },
+            const model = mappedModelOf({
+              id: 'm',
+              metadata: {
+                limits: { max_context_length: 1_048_560, max_output_tokens: null },
               },
-            },);
-            if (model === undefined)
-              throw new Error('expected a model profile',);
-            expect(model.contextWindow,).toBe(1048560,);
-            expect(Object.hasOwn(model, 'maxTokens',),).toBe(false,);
+            });
+            if (model === undefined) {
+              throw new Error('expected a model profile');
+            }
+            expect(model.contextWindow).toBe(1_048_560);
+            expect(Object.hasOwn(model, 'maxTokens')).toBe(false);
           },
-        },),
+        }),
         it({
           name: 'ignores non-positive and fractional context lengths',
           fn: async () => {
-            const zeroed = mapNeuralWattModel({
-              entry: {
-                id: 'm',
-                max_model_len: 262128,
-                metadata: { limits: { max_context_length: 0, }, },
-              },
-            },);
-            const fractional = mapNeuralWattModel({
-              entry: {
-                id: 'm',
-                max_model_len: 262128,
-                metadata: { limits: { max_context_length: 1024.5, }, },
-              },
-            },);
-            if (zeroed === undefined || fractional === undefined)
-              throw new Error('expected model profiles',);
-            expect(zeroed.contextWindow,).toBe(262128,);
-            expect(fractional.contextWindow,).toBe(262128,);
+            const zeroed = mappedModelOf({
+              id: 'm',
+              max_model_len: 262_128,
+              metadata: { limits: { max_context_length: 0 } },
+            });
+            const fractional = mappedModelOf({
+              id: 'm',
+              max_model_len: 262_128,
+              metadata: { limits: { max_context_length: 1_024.5 } },
+            });
+            if ((zeroed === undefined) || (fractional === undefined)) {
+              throw new Error('expected model profiles');
+            }
+            expect(zeroed.contextWindow).toBe(262_128);
+            expect(fractional.contextWindow).toBe(262_128);
           },
-        },),
+        }),
         it({
           name: 'declares non-reasoning for a model capabilities mark non-reasoning',
           fn: async () => {
-            const model = mapNeuralWattModel({
-              entry: {
-                id: 'kimi-k3-fast',
-                metadata: { capabilities: { reasoning: false, }, },
-              },
-            },);
-            if (model === undefined)
-              throw new Error('expected a model profile',);
-            expect(model.reasoningEfforts,).toBe(false,);
+            const model = mappedModelOf({
+              id: 'kimi-k3-fast',
+              metadata: { capabilities: { reasoning: false } },
+            });
+            if (model === undefined) {
+              throw new Error('expected a model profile');
+            }
+            expect(model.reasoningEfforts).toBe(false);
           },
-        },),
+        }),
         it({
           name: 'omits reasoning efforts a reasoning-capable entry does not list',
           fn: async () => {
-            const model = mapNeuralWattModel({
-              entry: {
-                id: 'm',
-                metadata: { capabilities: { reasoning: true, }, },
-              },
-            },);
-            if (model === undefined)
-              throw new Error('expected a model profile',);
-            expect(Object.hasOwn(model, 'reasoningEfforts',),).toBe(false,);
+            const model = mappedModelOf({
+              id: 'm',
+              metadata: { capabilities: { reasoning: true } },
+            });
+            if (model === undefined) {
+              throw new Error('expected a model profile');
+            }
+            expect(Object.hasOwn(model, 'reasoningEfforts')).toBe(false);
           },
-        },),
+        }),
         it({
           name: 'treats a non-record metadata as absent',
           fn: async () => {
-            expect(mapNeuralWattModel({
-              entry: { id: 'm', max_model_len: 99, metadata: 5, },
-            },),).toEqual({
+            expect(mappedModelOf({ id: 'm', max_model_len: 99, metadata: 5 })).toEqual({
               id: 'm',
               name: 'm',
               contextWindow: 99,
-              input: ['text',],
-            },);
+              input: ['text'],
+            });
           },
-        },),
+        }),
+        it({
+          name: 'offers supported efforts each sending its own spelling',
+          fn: async () => {
+            const model = mappedModelOf({
+              id: 'm',
+              metadata: {
+                reasoning: { supported_efforts: ['xhigh', 'medium', 'low', 'none'] },
+              },
+            });
+            if (model === undefined) {
+              throw new Error('expected a model profile');
+            }
+            expect(model.reasoningEfforts).toEqual({
+              off: 'none',
+              xhigh: 'xhigh',
+              medium: 'medium',
+              low: 'low',
+            });
+          },
+        }),
+        it({
+          name: 'omits the off level when the listing does not accept none',
+          fn: async () => {
+            const model = mappedModelOf({
+              id: 'm',
+              metadata: {
+                reasoning: { supported_efforts: ['max', 'high', 'low'] },
+              },
+            });
+            if (model === undefined) {
+              throw new Error('expected a model profile');
+            }
+            const efforts = model.reasoningEfforts;
+            if (((typeof efforts) !== 'object') || (efforts === null)) {
+              throw new Error('expected an effort dict');
+            }
+            expect(Object.hasOwn(efforts, 'off')).toBe(false);
+            expect(efforts).toEqual({ max: 'max', high: 'high', low: 'low' });
+          },
+        }),
+        it({
+          name: 'skips spellings it cannot express instead of guessing',
+          fn: async () => {
+            const model = mappedModelOf({
+              id: 'm',
+              metadata: {
+                reasoning: { supported_efforts: ['ultra', 'high', 'none'] },
+              },
+            });
+            if (model === undefined) {
+              throw new Error('expected a model profile');
+            }
+            expect(model.reasoningEfforts).toEqual({ high: 'high', off: 'none' });
+          },
+        }),
+        it({
+          name: 'declares non-reasoning when no level beyond off is selectable',
+          fn: async () => {
+            const model = mappedModelOf({
+              id: 'm',
+              metadata: { reasoning: { supported_efforts: ['none'] } },
+            });
+            if (model === undefined) {
+              throw new Error('expected a model profile');
+            }
+            expect(model.reasoningEfforts).toBe(false);
+          },
+        }),
+        it({
+          name: 'falls back to accepted efforts minus alias spellings',
+          fn: async () => {
+            const model = mappedModelOf({
+              id: 'm',
+              metadata: {
+                reasoning: {
+                  accepted_efforts: ['max', 'xhigh', 'high', 'low', 'minimal', 'none'],
+                  effort_aliases: { max: 'xhigh', minimal: 'low' },
+                },
+              },
+            });
+            if (model === undefined) {
+              throw new Error('expected a model profile');
+            }
+            expect(model.reasoningEfforts).toEqual({
+              off: 'none',
+              xhigh: 'xhigh',
+              high: 'high',
+              low: 'low',
+            });
+          },
+        }),
+        it({
+          name: 'declares non-reasoning when the alias fallback leaves only off',
+          fn: async () => {
+            const model = mappedModelOf({
+              id: 'm',
+              metadata: {
+                reasoning: {
+                  accepted_efforts: ['max', 'none'],
+                  effort_aliases: { max: 'xhigh' },
+                },
+              },
+            });
+            if (model === undefined) {
+              throw new Error('expected a model profile');
+            }
+            expect(model.reasoningEfforts).toBe(false);
+          },
+        }),
+        it({
+          name: 'falls back to accepted efforts when the supported list holds a non-string member',
+          fn: async () => {
+            const model = mappedModelOf({
+              id: 'm',
+              metadata: {
+                reasoning: {
+                  supported_efforts: ['high', 3],
+                  accepted_efforts: ['low', 'none'],
+                },
+              },
+            });
+            if (model === undefined) {
+              throw new Error('expected a model profile');
+            }
+            expect(model.reasoningEfforts).toEqual({ low: 'low', off: 'none' });
+          },
+        }),
+        it({
+          name: 'omits the field when neither effort list is usable',
+          fn: async () => {
+            const model = mappedModelOf({
+              id: 'm',
+              metadata: { reasoning: { supported_efforts: 'high' } },
+            });
+            if (model === undefined) {
+              throw new Error('expected a model profile');
+            }
+            expect(Object.hasOwn(model, 'reasoningEfforts')).toBe(false);
+          },
+        }),
       ],
-    },),
+    }),
 
-    //endregion Listing entry to model profile
+    //endregion Listing entry mapping
 
     //region Listing to provider dict
 
@@ -394,103 +376,108 @@ await describe({
           fn: async () => {
             const providers = mapNeuralWattProviders({
               listing: [
-                { id: 'kept', },
-                { id: 'dropped', deprecated: true, },
-                { metadata: { display_name: 'no id', }, },
+                { id: 'kept' },
+                { id: 'dropped', deprecated: true },
+                { metadata: { display_name: 'no id' } },
               ],
-            },);
-            expect(Object.keys(providers,),).toEqual([NEURALWATT_ROUTE,],);
-            expect(providers[NEURALWATT_ROUTE]?.models,).toHaveLength(1,);
-            expect(providers[NEURALWATT_ROUTE]?.models?.[0]?.id,).toBe('kept',);
+            });
+            expect(Object.keys(providers)).toEqual([NEURALWATT_ROUTE]);
+            expect(providers[NEURALWATT_ROUTE]?.models).toHaveLength(1);
+            expect(providers[NEURALWATT_ROUTE]?.models?.[0]?.id).toBe('kept');
           },
-        },),
+        }),
         it({
           name: 'pins the credential, protocol, endpoint, and effort dispatch',
           fn: async () => {
-            const route = mapNeuralWattProviders({ listing: [], },)[NEURALWATT_ROUTE];
-            if (route === undefined)
-              throw new Error('expected a route profile',);
-            expect(route.apiKeyEnv,).toBe(NEURALWATT_API_KEY_ENV,);
-            expect(route.api,).toBe(NEURALWATT_API,);
-            expect(route.baseURL,).toBe(NEURALWATT_BASE_URL,);
-            expect(route.compat?.supportsReasoningEffort,).toBe(true,);
+            const route = mapNeuralWattProviders({ listing: [] })[NEURALWATT_ROUTE];
+            if (route === undefined) {
+              throw new Error('expected a route profile');
+            }
+            expect(route.apiKeyEnv).toBe(NEURALWATT_API_KEY_ENV);
+            expect(route.api).toBe(NEURALWATT_API);
+            expect(route.baseURL).toBe(NEURALWATT_BASE_URL);
+            expect(route.compat?.supportsReasoningEffort).toBe(true);
+            expect(route.models).toEqual([]);
           },
-        },),
+        }),
         it({
           name: 'preserves listing order across serviceable models',
           fn: async () => {
             const providers = mapNeuralWattProviders({
-              listing: [{ id: 'first', }, { id: 'second', }, { id: 'third', },],
-            },);
-            expect(providers[NEURALWATT_ROUTE]?.models?.map((model) => model.id,),)
-              .toEqual(['first', 'second', 'third',],);
+              listing: [{ id: 'first' }, { id: 'second' }, { id: 'third' }],
+            });
+            expect(providers[NEURALWATT_ROUTE]?.models?.map((model) => model.id))
+              .toEqual(['first', 'second', 'third']);
           },
-        },),
+        }),
       ],
-    },),
+    }),
 
     //endregion Listing to provider dict
 
     //region Checked-in snapshot
 
     describe({
-      name: 'neuralWattListingSnapshot',
+      name: 'checked-in listing snapshot',
       children: [
         it({
           name: 'maps to the full snapshot catalog',
           fn: async () => {
             const providers = mapNeuralWattProviders({
               listing: neuralWattListingSnapshot,
-            },);
-            expect(providers[NEURALWATT_ROUTE]?.models,).toHaveLength(27,);
+            });
+            expect(providers[NEURALWATT_ROUTE]?.models).toHaveLength(27);
           },
-        },),
+        }),
         it({
           name: 'sizes mimo-v2.6-pro at its disclosed context window and off-level',
           fn: async () => {
             const providers = mapNeuralWattProviders({
               listing: neuralWattListingSnapshot,
-            },);
+            });
             const mimo = providers[NEURALWATT_ROUTE]?.models
-              ?.find((model) => model.id === 'mimo-v2.6-pro',);
-            if (mimo === undefined)
-              throw new Error('expected mimo-v2.6-pro in the snapshot',);
-            expect(mimo.contextWindow,).toBe(1048560,);
-            expect(mimo.maxTokens,).toBe(393216,);
-            expect(mimo.input,).toEqual(['text', 'image',],);
-            expect(mimo.reasoningEfforts,).toEqual({ off: 'none', high: 'high', },);
+              ?.find((model) => model.id === 'mimo-v2.6-pro');
+            if (mimo === undefined) {
+              throw new Error('expected mimo-v2.6-pro in the snapshot');
+            }
+            expect(mimo.contextWindow).toBe(1_048_560);
+            expect(mimo.maxTokens).toBe(393_216);
+            expect(mimo.input).toEqual(['text', 'image']);
+            expect(mimo.reasoningEfforts).toEqual({ off: 'none', high: 'high' });
           },
-        },),
+        }),
         it({
           name: 'keeps glm-5.3 mandatory reasoning without an off level',
           fn: async () => {
             const providers = mapNeuralWattProviders({
               listing: neuralWattListingSnapshot,
-            },);
+            });
             const glm = providers[NEURALWATT_ROUTE]?.models
-              ?.find((model) => model.id === 'glm-5.3',);
-            if (glm === undefined)
-              throw new Error('expected glm-5.3 in the snapshot',);
-            expect(glm.reasoningEfforts,).toEqual({ max: 'max', high: 'high', low: 'low', },);
-            expect(glm.maxTokens,).toBeUndefined();
+              ?.find((model) => model.id === 'glm-5.3');
+            if (glm === undefined) {
+              throw new Error('expected glm-5.3 in the snapshot');
+            }
+            expect(glm.reasoningEfforts).toEqual({ max: 'max', high: 'high', low: 'low' });
+            expect(glm.maxTokens).toBeUndefined();
           },
-        },),
+        }),
         it({
           name: 'declares kimi-k3-fast non-reasoning',
           fn: async () => {
             const providers = mapNeuralWattProviders({
               listing: neuralWattListingSnapshot,
-            },);
+            });
             const fast = providers[NEURALWATT_ROUTE]?.models
-              ?.find((model) => model.id === 'kimi-k3-fast',);
-            if (fast === undefined)
-              throw new Error('expected kimi-k3-fast in the snapshot',);
-            expect(fast.reasoningEfforts,).toBe(false,);
+              ?.find((model) => model.id === 'kimi-k3-fast');
+            if (fast === undefined) {
+              throw new Error('expected kimi-k3-fast in the snapshot');
+            }
+            expect(fast.reasoningEfforts).toBe(false);
           },
-        },),
+        }),
       ],
-    },),
+    }),
 
     //endregion Checked-in snapshot
   ],
-},);
+});

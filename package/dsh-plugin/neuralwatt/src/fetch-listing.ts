@@ -7,7 +7,10 @@ import {
   NEURALWATT_LISTING_TIMEOUT_MS,
   NEURALWATT_LISTING_URL,
 } from './constants.ts';
-import { isRecord, type NeuralWattListingEntry, } from './listing.ts';
+import {
+  isRecord,
+  type NeuralWattListingEntry,
+} from './listing.ts';
 
 //region Types
 
@@ -18,7 +21,7 @@ import { isRecord, type NeuralWattListingEntry, } from './listing.ts';
 export type NeuralWattListingResponse = {
   readonly ok: boolean;
   readonly status: number;
-  json(): Promise<unknown>;
+  json: () => Promise<unknown>;
 };
 
 /**
@@ -30,97 +33,121 @@ export type NeuralWattListingFetcher = (options: {
 }) => Promise<NeuralWattListingResponse>;
 
 /**
- Failure to read the NeuralWatt model listing: the endpoint answered with a
- non-success status, a body that is not a model listing, or not at all within
- the fetch bound. The message names the endpoint and the failing step, and the
- caught transport failure rides along as `cause`.
+ Listing failure naming the endpoint and the failing step, with the caught
+ transport failure preserved as `cause`.
  */
 export class NeuralWattListingError extends Error {
-  constructor(message: string, options?: { readonly cause?: unknown; }) {
-    super(message, options);
+  /**
+   Build one listing failure.
+
+   @param message - failure text naming endpoint and failing step
+
+   @param options - caught transport failure preserved as `cause`
+   */
+  constructor(
+    message: string,
+    options?: { readonly cause?: unknown }
+  ) {
+    super(
+      message,
+      options
+    );
     this.name = 'NeuralWattListingError';
   }
 }
 
 //endregion Types
 
+//region Transport
+
+/**
+ Default transport: the runtime fetch against the listing endpoint, which
+ serves the catalog publicly and needs no credential.
+
+ @param options - endpoint and abort signal for the one GET
+
+ @returns the runtime's own response promise
+ */
+function defaultListingFetch(options: {
+  readonly url: string;
+  readonly signal: AbortSignal;
+}): Promise<NeuralWattListingResponse> {
+  return globalThis.fetch(
+    options.url,
+    { signal: options.signal }
+  );
+}
+
+//endregion Transport
+
 //region Public API
 
 /**
- Read the public NeuralWatt model listing once, within a fixed time bound.
+ Fetch the model listing the service publishes: the live catalog read at
+ mount. The abort bound keeps a stalled endpoint from holding up provider
+ startup, and every failure wraps into `NeuralWattListingError` so callers
+ keep one failure shape.
 
- @param options - transport and bound overrides for tests and deployments
+ @param fetcher - transport step, defaulted to the runtime fetch
 
- @returns listing entries exactly as the endpoint sent them, minus members
- that are not records, which can never describe a model
+ @param timeoutMs - abort bound protecting provider startup
 
- @throws {@link NeuralWattListingError} when the endpoint fails, answers with
- a body that is not a model listing, or the bound expires
+ @returns listing entries in endpoint order, non-record members dropped
+
+ @throws NeuralWattListingError when the endpoint is unreachable, non-OK, or listless
 
  @example
  ```ts
  const listing = await fetchNeuralWattListing();
  ```
  */
-export async function fetchNeuralWattListing(
-  {
-    fetcher = ({ url, signal, }) => globalThis.fetch(url, { signal, },),
-    timeoutMs = NEURALWATT_LISTING_TIMEOUT_MS,
-  }: {
-    readonly fetcher?: NeuralWattListingFetcher;
-    readonly timeoutMs?: number;
-  } = {},
-): Promise<readonly NeuralWattListingEntry[]> {
-  /**
-   Abort source the bound fires against.
-   */
-  const controller = new AbortController();
-  /**
-   Bound timer cleared when the fetch settles.
-   */
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  /**
-   Parsed response body.
-   */
-  let body: unknown;
+export async function fetchNeuralWattListing({
+  fetcher = defaultListingFetch,
+  timeoutMs = NEURALWATT_LISTING_TIMEOUT_MS,
+}: {
+  readonly fetcher?: NeuralWattListingFetcher;
+  readonly timeoutMs?: number;
+} = {}): Promise<readonly NeuralWattListingEntry[]> {
   try {
     /**
-     Listing response the endpoint returned.
+     Endpoint response the status gate inspects before any body read.
      */
     const response = await fetcher({
       url: NEURALWATT_LISTING_URL,
-      signal: controller.signal,
-    },);
+      signal: AbortSignal.timeout(timeoutMs),
+    });
     if (!response.ok) {
       throw new NeuralWattListingError(
-        `NeuralWatt listing GET ${NEURALWATT_LISTING_URL} failed: HTTP ${String(response.status,)}`,
+        `NeuralWatt listing GET ${NEURALWATT_LISTING_URL} failed: HTTP ${String(response.status)}`,
       );
     }
-    body = await response.json();
+    /**
+     Decoded body narrowed before any member read.
+     */
+    const body: unknown = await response.json();
+    if ((!isRecord(body)) || (!Array.isArray(body.data))) {
+      throw new NeuralWattListingError(
+        `NeuralWatt listing GET ${NEURALWATT_LISTING_URL} failed: response carries no model list`,
+      );
+    }
+    /**
+     Listing entries collected in endpoint order.
+     */
+    const listing: NeuralWattListingEntry[] = [];
+    for (const item of body.data) {
+      if (isRecord(item)) {
+        listing.push(item);
+      }
+    }
+    return listing;
   } catch (error) {
     throw error instanceof NeuralWattListingError
       ? error
       : new NeuralWattListingError(
         `NeuralWatt listing GET ${NEURALWATT_LISTING_URL} failed at the transport step`,
-        { cause: error, },
+        { cause: error },
       );
-  } finally {
-    clearTimeout(timer);
   }
-  if (!isRecord(body) || !Array.isArray(body.data)) {
-    throw new NeuralWattListingError(
-      `NeuralWatt listing GET ${NEURALWATT_LISTING_URL} failed: response carries no model list`,
-    );
-  }
-  /**
-   Listing entries collected in endpoint order.
-   */
-  const listing: NeuralWattListingEntry[] = [];
-  for (const item of body.data) {
-    if (isRecord(item))
-      listing.push(item,);
-  }
-  return listing;
 }
 
 //endregion Public API

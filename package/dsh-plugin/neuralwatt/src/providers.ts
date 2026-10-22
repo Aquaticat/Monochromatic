@@ -5,17 +5,16 @@
  */
 
 import {
-  tagged,
-} from '@monochromatic-dev/module-logger/ts';
-import {
   caughtValueText,
 } from '@monochromatic-dev/module-caught-value/ts';
 import type {
   PiAiProviderProfile,
 } from '@deepseek-ai/dsh-llm-pi-ai';
 import {
+  NEURALWATT_ROUTE,
+} from './constants.ts';
+import {
   fetchNeuralWattListing,
-  type NeuralWattListingFetcher,
 } from './fetch-listing.ts';
 import {
   mapNeuralWattProviders,
@@ -24,31 +23,27 @@ import {
 import {
   neuralWattLogger,
 } from './logging.ts';
-import {
-  NEURALWATT_ROUTE,
-} from './constants.ts';
 
 //region Types
 
 /**
- Stable reference to the provider dict the shipped pi-ai adapter reads per
- operation, matching the `Volatile` shape its `apply` takes: callers keep the
- reference and read the current mapping through `get`.
+ Provider dict accessor the shipped pi-ai adapter reads at request time: one
+ structurally typed seam over the swappable served value, so the shipped
+ apply function needs nothing from this package.
  */
 export type NeuralWattProvidersReference = {
-  get(): Record<string, PiAiProviderProfile>;
+  get: () => Record<string, PiAiProviderProfile>;
 };
 
 /**
- Served provider dict with its swap boundary: the reference handed to the
- shipped adapter, and the one replacement step that makes the next adapter
- read see a new mapping.
+ Served provider dict with its swap operation: the mount refresh replaces
+ the value every reference read returns.
  */
 export type NeuralWattProviders = {
   readonly reference: NeuralWattProvidersReference;
-  replace(options: {
+  replace: (options: {
     readonly providers: Record<string, PiAiProviderProfile>;
-  }): void;
+  }) => void;
 };
 
 //endregion Types
@@ -56,93 +51,99 @@ export type NeuralWattProviders = {
 //region Public API
 
 /**
- Build the served provider dict over one listing, usually the checked-in
- snapshot: the route serves immediately, before any fetch runs.
+ Build the served provider dict over one listing: the reference hands out
+ the current mapping, and `replace` swaps it.
 
- @param listing - listing entries to serve first
+ @param listing - listing entries the served mapping starts from
 
- @returns served dict with its reference and swap boundary
+ @returns reference and swap operation over the served dict
 
  @example
  ```ts
- const providers = createNeuralWattProviders({ listing: snapshot, },);
+ const providers = createNeuralWattProviders({
+   listing: neuralWattListingSnapshot,
+ });
  ```
  */
-export function createNeuralWattProviders(
-  { listing, }: { readonly listing: readonly NeuralWattListingEntry[]; },
-): NeuralWattProviders {
-  /**
-   Current served mapping, replaced in place by {@link NeuralWattProviders.replace}.
-   */
-  let current = mapNeuralWattProviders({ listing, },);
-  return {
-    reference: {
-      get: () => current,
-    },
-    replace: ({ providers, }) => {
-      current = providers;
-    },
-  };
+export function createNeuralWattProviders({
+  listing,
+}: {
+  readonly listing: readonly NeuralWattListingEntry[];
+}): NeuralWattProviders {
+  // The swappable mapping lives inside this named function so its mutable
+  // binding never leaks across the factory body.
+  return (function servedProviders(): NeuralWattProviders {
+    /**
+     Served mapping the reference hands out, swapped by `replace`.
+     */
+    let current = mapNeuralWattProviders({ listing });
+    return {
+      reference: {
+        get: function readServedProviders(): Record<string, PiAiProviderProfile> {
+          return current;
+        },
+      },
+      replace: function replaceServedProviders(replaceOptions: {
+        readonly providers: Record<string, PiAiProviderProfile>;
+      }): void {
+        current = replaceOptions.providers;
+      },
+    };
+  })();
 }
 
 /**
- Land the live NeuralWatt listing on the served provider dict.
+ Land the live listing on the served mapping at mount: a fetch failure or a
+ listing without serviceable models keeps the served snapshot and logs why,
+ so provider startup never fails on the network.
 
- A fetch failure, or a listing mapping to no serviceable model, keeps the
- already-served mapping and logs why: an unreachable or empty endpoint must
- never take a route that the default model rides on down with it. This is the
- plugin's degradation boundary, so the call never throws.
+ @param providers - served mapping the refresh lands on
 
- @param options - served dict to update, and the transport to read
+ @param fetchListing - listing fetch, defaulted to the real transport
 
  @example
  ```ts
- await refreshNeuralWattProviders({ providers, },);
+ await refreshNeuralWattProviders({ providers });
  ```
  */
-export async function refreshNeuralWattProviders(
-  {
-    providers,
-    fetchListing = fetchNeuralWattListing,
-  }: {
-    readonly providers: NeuralWattProviders;
-    readonly fetchListing?: typeof fetchNeuralWattListing;
-  },
-): Promise<void> {
-  /**
-   Logger tagged with the function name.
-   */
-  const logger = tagged({
-    tag: refreshNeuralWattProviders.name,
-    l: neuralWattLogger,
-  },);
+export async function refreshNeuralWattProviders({
+  providers,
+  fetchListing = fetchNeuralWattListing,
+}: {
+  readonly providers: NeuralWattProviders;
+  readonly fetchListing?: typeof fetchNeuralWattListing;
+}): Promise<void> {
   try {
     /**
-     Live listing entries the endpoint returned.
+     Listing entries the live endpoint served at mount.
      */
     const listing = await fetchListing();
     /**
-     Live mapping the fetch lands on the served dict.
+     Served mapping the live listing earns, built before the gate that
+     protects the served snapshot from an empty catalog.
      */
-    const mapped = mapNeuralWattProviders({ listing, },);
+    const mapped = mapNeuralWattProviders({ listing });
     /**
-     Model count the live mapping serves on the route.
+     Route profile read back so its model count can gate the swap.
      */
-    const modelCount = mapped[NEURALWATT_ROUTE]?.models?.length ?? 0;
+    const route = mapped[NEURALWATT_ROUTE];
+    /**
+     Serviceable model count the mapping produced; zero keeps the snapshot.
+     */
+    const modelCount = route?.models
+      ?.length
+      ?? 0;
     if (modelCount === 0) {
-      logger.warn(
-        `neuralwatt listing GET mapped to no serviceable model; keeping the served mapping`,
-      );
+      neuralWattLogger
+        .warn('neuralwatt listing GET mapped to no serviceable model; keeping the served mapping');
       return;
     }
-    providers.replace({ providers: mapped, },);
-    logger.debug(
-      `neuralwatt listing landed: ${String(modelCount,)} models on route ${NEURALWATT_ROUTE}`,
-    );
+    providers
+      .replace({ providers: mapped });
+    neuralWattLogger.debug('neuralwatt listing GET refreshed the served mapping');
   } catch (error) {
-    logger.warn(
-      `neuralwatt listing fetch failed (${caughtValueText(error,)}); keeping the served mapping`,
-    );
+    neuralWattLogger
+      .warn(`neuralwatt listing GET failed (${caughtValueText(error)}); keeping the served mapping`);
   }
 }
 

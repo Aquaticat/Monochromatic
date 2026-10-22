@@ -24,7 +24,7 @@ await describe({
             return {
               ok: true,
               status: 200,
-              json: async () => ({ data: [{ id: 'a', }, 5, null, 'x',], },),
+              json: async () => ({ data: [{ id: 'a', }, 5, null, 'x',], }),
             };
           },
         },);
@@ -39,11 +39,10 @@ await describe({
         const fake = ctx.sinon.stub(globalThis, 'fetch',).callsFake(
           async () => new Response('{"data": []}', { status: 200, },),
         );
-        const listing = await fetchNeuralWattListing({ timeoutMs: 2000, },);
-        expect(fake,).toHaveBeenCalledExactlyOnceWith(
-          NEURALWATT_LISTING_URL,
-          expect.objectContaining({ signal: expect.anything(), },),
-        );
+        const listing = await fetchNeuralWattListing({ timeoutMs: 2_000, },);
+        expect(fake,).toHaveBeenCalledTimes(1,);
+        expect(fake.firstCall?.args[0],).toBe(NEURALWATT_LISTING_URL,);
+        expect(fake.firstCall?.args[1]?.signal,).toBeInstanceOf(AbortSignal,);
         expect(listing,).toEqual([],);
       },
     },),
@@ -58,7 +57,11 @@ await describe({
         let caught: unknown;
         try {
           await fetchNeuralWattListing({
-            fetcher: async () => ({ ok: false, status: 503, json: async () => ({}), }),
+            fetcher: async () => ({
+              ok: false,
+              status: 503,
+              json: async () => ({}),
+            }),
           },);
         }
         catch (error) {
@@ -76,7 +79,11 @@ await describe({
         let caught: unknown;
         try {
           await fetchNeuralWattListing({
-            fetcher: async () => ({ ok: true, status: 200, json: async () => 5, }),
+            fetcher: async () => ({
+              ok: true,
+              status: 200,
+              json: async () => 5,
+            }),
           },);
         }
         catch (error) {
@@ -97,8 +104,8 @@ await describe({
             fetcher: async () => ({
               ok: true,
               status: 200,
-              json: async () => ({ data: 'not a list', },),
-            },),
+              json: async () => ({ data: 'not a list', }),
+            }),
           },);
         }
         catch (error) {
@@ -145,7 +152,7 @@ await describe({
               json: async () => {
                 throw parseFailure;
               },
-            },),
+            }),
           },);
         }
         catch (error) {
@@ -169,7 +176,7 @@ await describe({
                 aborted = true;
                 reject(new Error('aborted by timeout',),);
               },);
-            },),
+            }),
           },);
         }
         catch (error) {

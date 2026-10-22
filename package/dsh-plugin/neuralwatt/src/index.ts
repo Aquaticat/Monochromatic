@@ -65,11 +65,16 @@ export function apply(ctx: Context): void {
   const providers = createNeuralWattProviders({
     listing: neuralWattListingSnapshot,
   },);
-  applyPiAiAdapter(ctx, { providers: providers.reference, },);
+  applyPiAiAdapter(
+    ctx,
+    { providers: providers.reference, },
+  );
   logger.debug('neuralwatt provider applied over the shipped pi-ai adapter');
-  ctx.effect(async function refreshNeuralWattListing() {
-    await refreshNeuralWattProviders({ providers, },);
-  });
+  /**
+   Fire-and-forget mount refresh: bounded, and its failure branch logs and
+   keeps the served snapshot instead of throwing.
+   */
+  void refreshNeuralWattProviders({ providers, },);
 }
 
 //endregion Plugin contract

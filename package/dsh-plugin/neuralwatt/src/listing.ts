@@ -1,6 +1,7 @@
 /**
- NeuralWatt listing mapping: listing entries to the pi-ai provider profiles
- the shipped adapter serves. @module
+ Model catalog mapping for the NeuralWatt provider: listing entries the
+ service publishes to provider profiles the shipped pi-ai adapter serves.
+ @module
  */
 
 import type {
@@ -15,14 +16,14 @@ import {
   NEURALWATT_ROUTE,
 } from './constants.ts';
 
-//region Types
+//region External JSON narrowing
 
 /**
- One model entry of the NeuralWatt listing, reduced to the fields the mapping
- reads. Every field stays `unknown` because the listing is external JSON: each
- read narrows what it accepts instead of trusting a declared shape. The
- listing's `metadata.pricing` block exists but is deliberately absent here:
- this provider serves models, it does not estimate cost.
+ One listing entry as the endpoint sends it: every field unknown until this
+ mapping narrows it, so a field shape change lands as a dropped entry, never
+ a served lie. The listing's `metadata.pricing` block exists but is
+ deliberately absent here: this provider serves models, it does not estimate
+ cost.
  */
 export type NeuralWattListingEntry = {
   readonly id?: unknown;
@@ -30,10 +31,6 @@ export type NeuralWattListingEntry = {
   readonly deprecated?: unknown;
   readonly metadata?: unknown;
 };
-
-//endregion Types
-
-//region External JSON narrowing
 
 /**
  Narrow one external value to a plain record, the shape every metadata read
@@ -49,277 +46,312 @@ export type NeuralWattListingEntry = {
  ```
  */
 export function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
+  return ((typeof value) === 'object') && (value !== null)
+    && (!Array.isArray(value));
 }
 
 /**
- Narrow one external value to a non-empty string.
+ Narrow one external value to a non-empty string, the only spelling worth
+ serving as a name.
+
+ @param value - value read out of external JSON
+
+ @returns `true` when `value` is usable as a name
  */
-function nonEmptyString(value: unknown): string | undefined {
-  return typeof value === 'string' && value.length > 0 ? value : undefined;
+function nonEmptyString(value: unknown): value is string {
+  return ((typeof value) === 'string') && (value.length > 0);
 }
 
 /**
- Narrow one external value to a positive integer token count; zero and
- fractional counts describe nothing a request may size against.
+ Narrow one external value to a usable token count: a positive integer is a
+ capacity, every other value is the endpoint declining to size the field.
+
+ @param value - value read out of external JSON
+
+ @returns `true` when `value` sizes a capacity
  */
-function positiveInt(value: unknown): number | undefined {
-  return typeof value === 'number' && Number.isInteger(value) && value > 0
-    ? value
-    : undefined;
+function positiveTokenCount(value: unknown): value is number {
+  return ((typeof value) === 'number') && Number.isInteger(value)
+    && (value > 0);
 }
 
 /**
- Narrow one external value to an array of strings, or nothing when any member
- is not a string; a mixed list describes no set of effort spellings.
+ Usable members of one effort list: the strings it carries, or nothing at
+ all when the field is absent, not a list, or holds a member that is not a
+ non-empty string. An unusable list collapses into the fallback chain
+ instead of half-serving it.
+
+ @param value - value read out of external JSON
+
+ @returns effort spellings the field discloses
  */
-function stringArray(value: unknown): readonly string[] | undefined {
-  if (!Array.isArray(value))
-    return undefined;
+function stringListOrEmpty(value: unknown): readonly string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
   /**
-   Narrowed members collected in list order.
+   List members collected as the strings the field discloses.
    */
   const members: string[] = [];
   for (const member of value) {
-    /**
-     One member narrowed to its string form.
-     */
-    const text = nonEmptyString(member);
-    if (text === undefined)
-      return undefined;
-    members.push(text,);
+    if (!nonEmptyString(member)) {
+      return [];
+    }
+    members.push(member);
   }
   return members;
 }
 
 //endregion External JSON narrowing
 
-//region Public API
+//region Effort spellings to thinking levels
 
 /**
- Map one listing effort spelling to the pi-ai thinking level key that offers
- it.
-
- Unrecognized spellings yield nothing: the mapping never guesses a level for
- an effort it cannot express, so a listing the mapping does not know yet
- degrades to fewer offered levels instead of wrong ones.
-
- @param effort - effort spelling from `supported_efforts` or `accepted_efforts`
-
- @returns thinking level key, or nothing when the spelling is not expressible
-
- @example
- ```ts
- const key = thinkingLevelKeyForEffort({ effort: 'xhigh', },);
- ```
+ Effort spellings to thinking levels, the exact vocabulary this mapping
+ expresses: each level dispatches the same spelling the listing gave, so the
+ wire format never invents one. A read yields a level only for spellings the
+ table names, so a spelling this vocabulary cannot express skips instead of
+ inventing a level.
  */
-export function thinkingLevelKeyForEffort(
-  { effort, }: { readonly effort: string; },
-): keyof PiAiReasoningEfforts | undefined {
-  switch (effort) {
-    case 'none':
-      return 'off';
-    case 'minimal':
-    case 'low':
-    case 'medium':
-    case 'high':
-    case 'xhigh':
-    case 'max':
-      return effort;
-    default:
-      return undefined;
-  }
+const EFFORT_LEVEL_BY_SPELLING:
+Readonly<Record<string, keyof PiAiReasoningEfforts>> = {
+  none: 'off',
+  minimal: 'minimal',
+  low: 'low',
+  medium: 'medium',
+  high: 'high',
+  xhigh: 'xhigh',
+  max: 'max',
+};
+
+/**
+ Keep the effort keys that select thinking, so a dict whose only key is the
+ off level never declares a reasoning model.
+
+ @param key - thinking level key one spelling mapped to
+
+ @returns `true` when the key selects thinking
+ */
+function selectsThinkingLevel(key: string): boolean {
+  return key !== 'off';
 }
 
 /**
- Map one listing entry's reasoning block to the selectable pi-ai thinking
- levels.
+ Thinking-level declaration one entry's reasoning block earns, carried as
+ the profile fields it contributes: `false` when the listing marks the model
+ non-reasoning or offers no level beyond off, the level dict otherwise, and
+ no field at all when the entry lists no efforts.
 
- Offered keys are the distinct efforts `supported_efforts` names (`none`
- becoming `off`), each level sending its own spelling, which is the set the
- listing documents the wire accepting. `accepted_efforts` serves only as the
- fallback when `supported_efforts` is missing, minus the spellings
- `effort_aliases` marks as aliases of another effort. A model the capabilities
- mark non-reasoning declares `false`; a resolvable effort set with no level
- beyond `off` declares `false` as well, since no thinking is selectable.
+ @param metadata - narrowed entry metadata this mapping reads
 
- @param metadata - one listing entry's `metadata` record
-
- @returns thinking-level dict, `false` for a non-reasoning model, or nothing
- when the entry offers efforts but does not list them
-
- @example
- ```ts
- const efforts = mapReasoningEfforts({ metadata: entry.metadata, },);
- ```
+ @returns reasoning fields to spread onto the model profile
  */
-export function mapReasoningEfforts(
-  { metadata, }: { readonly metadata: Record<string, unknown>; },
-): false | PiAiReasoningEfforts | undefined {
+function reasoningEffortsFields({
+  metadata,
+}: {
+  readonly metadata: Readonly<Record<string, unknown>>;
+}): Pick<PiAiModelProfile, 'reasoningEfforts'> {
   /**
-   Capability flags the reasoning declaration reads.
+   Capability block read before the record guard narrows it.
    */
-  const capabilities = isRecord(metadata.capabilities)
-    ? metadata.capabilities
-    : {};
+  const capabilitiesField = metadata.capabilities;
   /**
-   Reasoning block carrying the effort spellings.
+   Narrowed capabilities, empty stand-in when the entry discloses no
+   capability block.
    */
-  const reasoning = isRecord(metadata.reasoning) ? metadata.reasoning : {};
-  if (capabilities.reasoning === false)
-    return false;
+  const capabilities = isRecord(capabilitiesField) ? capabilitiesField : {};
   /**
-   Distinct efforts the model supports; the primary spelling source.
+   Reasoning block read before the record guard narrows it.
    */
-  const supported = stringArray(reasoning.supported_efforts);
+  const reasoningField = metadata.reasoning;
   /**
-   Every spelling the wire accepts, alias spellings included.
+   Narrowed reasoning block, empty stand-in when the entry discloses none.
    */
-  const accepted = stringArray(reasoning.accepted_efforts);
+  const reasoning = isRecord(reasoningField) ? reasoningField : {};
+  if (capabilities.reasoning === false) {
+    return { reasoningEfforts: false };
+  }
   /**
-   Alias spellings keyed by the spelling that names them.
+   Alias table read before the record guard narrows it.
    */
-  const aliases = isRecord(reasoning.effort_aliases)
-    ? reasoning.effort_aliases
-    : {};
+  const aliasesField = reasoning.effort_aliases;
   /**
-   Spellings whose levels to offer: supported efforts, else accepted efforts
-   that are not aliases of another effort.
+   Narrowed alias table; alias spellings never serve as dispatch values.
    */
-  const spellings = supported
-    ?? (accepted === undefined
-      ? undefined
-      : accepted.filter((effort) => !Object.hasOwn(aliases, effort,),));
-  if (spellings === undefined)
-    return undefined;
+  const aliases = isRecord(aliasesField) ? aliasesField : {};
   /**
-   Offered levels keyed by thinking level, each sending its own spelling.
+   Supported spellings the listing names, empty when the list is unusable.
+   */
+  const supported = stringListOrEmpty(reasoning.supported_efforts);
+  /**
+   Accepted spellings the listing names, empty when the list is unusable.
+   */
+  const accepted = stringListOrEmpty(reasoning.accepted_efforts);
+  /**
+   Effort spellings to offer: the supported list when it speaks, else the
+   accepted efforts that name no alias.
+   */
+  const spellings = supported.length > 0
+    ? supported
+    : accepted.filter(function namesNoAlias(effort): boolean {
+      return !Object.hasOwn(
+        aliases,
+        effort
+      );
+    });
+  if (spellings.length === 0) {
+    return {};
+  }
+  /**
+   Thinking levels keyed the way this service dispatches, one entry per
+   spelling the level vocabulary expresses.
    */
   const efforts: PiAiReasoningEfforts = {};
   for (const spelling of spellings) {
     /**
-     Thinking level key this spelling offers.
+     Thinking level this spelling maps to, or undefined when the level
+     vocabulary cannot express the spelling.
      */
-    const key = thinkingLevelKeyForEffort({ effort: spelling, },);
-    if (key === undefined)
-      continue;
-    efforts[key] = spelling;
+    const level = EFFORT_LEVEL_BY_SPELLING[spelling];
+    if (level !== undefined) {
+      efforts[level] = spelling;
+    }
   }
-  for (const key of Object.keys(efforts)) {
-    if (key !== 'off')
-      return efforts;
-  }
-  return false;
+  return Object.keys(efforts)
+    .some(selectsThinkingLevel)
+    ? { reasoningEfforts: efforts }
+    : { reasoningEfforts: false };
 }
 
-/**
- Map one listing entry to the pi-ai model profile the adapter serves.
+//endregion Effort spellings to thinking levels
 
- An entry the mapping cannot describe (no id, or one the listing marks
- deprecated) yields nothing and stays off the route instead of serving a model
- whose facts are wrong. Context window comes from `limits.max_context_length`
- then `max_model_len`; output tokens come from `limits.max_output_tokens` and
- are left unset when the listing discloses none.
-
- @param entry - one NeuralWatt listing entry
-
- @returns model profile, or nothing when the entry is not serviceable
-
- @example
- ```ts
- const model = mapNeuralWattModel({ entry: listing[0], },);
- ```
- */
-export function mapNeuralWattModel(
-  { entry, }: { readonly entry: NeuralWattListingEntry; },
-): PiAiModelProfile | undefined {
-  /**
-   Model id the endpoint accepts.
-   */
-  const id = nonEmptyString(entry.id);
-  if (id === undefined)
-    return undefined;
-  if (entry.deprecated === true)
-    return undefined;
-  /**
-   Metadata record carrying the human and sizing facts.
-   */
-  const metadata = isRecord(entry.metadata) ? entry.metadata : {};
-  /**
-   Disclosed token limits.
-   */
-  const limits = isRecord(metadata.limits) ? metadata.limits : {};
-  /**
-   Capability flags the modality and reasoning declarations read.
-   */
-  const capabilities = isRecord(metadata.capabilities)
-    ? metadata.capabilities
-    : {};
-  /**
-   Context capacity in tokens, disclosed by limits or the endpoint's model
-   length.
-   */
-  const contextWindow = positiveInt(limits.max_context_length)
-    ?? positiveInt(entry.max_model_len);
-  /**
-   Output capability in tokens, only when the listing discloses one.
-   */
-  const maxTokens = positiveInt(limits.max_output_tokens);
-  /**
-   Selectable thinking levels, or `false` for a non-reasoning model.
-   */
-  const reasoningEfforts = mapReasoningEfforts({ metadata, },);
-  return {
-    id,
-    name: nonEmptyString(metadata.display_name) ?? id,
-    ...(contextWindow === undefined ? {} : { contextWindow, }),
-    ...(maxTokens === undefined ? {} : { maxTokens, }),
-    input: capabilities.vision === true ? ['text', 'image'] : ['text'],
-    ...(reasoningEfforts === undefined ? {} : { reasoningEfforts, }),
-  };
-}
+//region Listing entries to model profiles
 
 /**
- Map one listing to the provider dict the shipped adapter registers: one
- `neuralwatt` route carrying every serviceable model.
+ Serviceable model profiles in listing order: entries the listing marks
+ deprecated or gives no id drop out, and every remaining entry maps only the
+ facts it discloses. Named and self-contained so the collecting mutation
+ never leaks a binding across the mapping.
 
- The route keeps the credential reference, wire protocol, and endpoint the
- profile's hand-declared block used, and pins
- `compat.supportsReasoningEffort` so a selected thinking level dispatches as
- the documented `reasoning_effort` parameter instead of being dropped by
- pi-ai's URL-based detection.
+ @param listing - listing entries read from the service endpoint
 
- @param listing - NeuralWatt listing entries
-
- @returns provider dict keyed by route
-
- @example
- ```ts
- const providers = mapNeuralWattProviders({ listing, },);
- ```
+ @returns model profiles ready for the provider dict
  */
-export function mapNeuralWattProviders(
-  { listing, }: { readonly listing: readonly NeuralWattListingEntry[]; },
-): Record<string, PiAiProviderProfile> {
+function mappedServiceableModels({
+  listing,
+}: {
+  readonly listing: readonly NeuralWattListingEntry[];
+}): PiAiModelProfile[] {
   /**
-   Serviceable model profiles in listing order.
+   Model profiles collected in listing order.
    */
   const models: PiAiModelProfile[] = [];
   for (const entry of listing) {
     /**
-     One entry mapped, or nothing when the entry is not serviceable.
+     Entry id read before the serviceability guard.
      */
-    const model = mapNeuralWattModel({ entry, },);
-    if (model !== undefined)
-      models.push(model,);
+    const {id} = entry;
+    if ((!nonEmptyString(id)) || (entry.deprecated === true)) {
+      continue;
+    }
+    /**
+     Entry metadata read before the record guard narrows it.
+     */
+    const metadataField = entry.metadata;
+    /**
+     Narrowed metadata, empty stand-in when the entry discloses none.
+     */
+    const metadata = isRecord(metadataField) ? metadataField : {};
+    /**
+     Display name read before the id fallback decides the served name.
+     */
+    const nameField = metadata.display_name;
+    /**
+     Limits block read before the record guard narrows it.
+     */
+    const limitsField = metadata.limits;
+    /**
+     Narrowed limits, empty stand-in when the entry discloses none.
+     */
+    const limits = isRecord(limitsField) ? limitsField : {};
+    /**
+     Capability block read before narrowing; vision drives the input list.
+     */
+    const capabilitiesField = metadata.capabilities;
+    /**
+     Narrowed capabilities, empty stand-in when the entry discloses none.
+     */
+    const capabilities = isRecord(capabilitiesField) ? capabilitiesField : {};
+    /**
+     Context capacity: the limits disclosure wins over the endpoint's model
+     length, and both absent leaves the field unset instead of guessing.
+     */
+    const contextCandidate = positiveTokenCount(limits.max_context_length)
+      ? limits.max_context_length
+      : entry.max_model_len;
+    /**
+     Context window the profile earns, or undefined when nothing sizes one.
+     */
+    const contextWindow = positiveTokenCount(contextCandidate)
+      ? contextCandidate
+      : undefined;
+    /**
+     Output limit the profile earns, or undefined when the listing sizes none.
+     */
+    const maxTokens = positiveTokenCount(limits.max_output_tokens)
+      ? limits.max_output_tokens
+      : undefined;
+    models.push({
+      id,
+      name: nonEmptyString(nameField) ? nameField : id,
+      ...(contextWindow === undefined ? {} : { contextWindow }),
+      ...(maxTokens === undefined ? {} : { maxTokens }),
+      input: capabilities.vision === true
+        ? [
+          'text',
+          'image',
+        ]
+        : [
+          'text',
+        ],
+      ...reasoningEffortsFields({ metadata }),
+    });
   }
+  return models;
+}
+
+//endregion Listing entries to model profiles
+
+//region Public API
+
+/**
+ Provider dict serving every serviceable listing entry on one route: the
+ neuralwatt route, pinning credential, protocol, endpoint, and effort
+ dispatch so nothing else has to.
+
+ @param listing - listing entries read from the service endpoint
+
+ @returns provider dict keyed by the route constant
+
+ @example
+ ```ts
+ const providers = mapNeuralWattProviders({
+   listing: neuralWattListingSnapshot,
+ });
+ ```
+ */
+export function mapNeuralWattProviders({
+  listing,
+}: {
+  readonly listing: readonly NeuralWattListingEntry[];
+}): Record<string, PiAiProviderProfile> {
   return {
     [NEURALWATT_ROUTE]: {
       apiKeyEnv: NEURALWATT_API_KEY_ENV,
       api: NEURALWATT_API,
       baseURL: NEURALWATT_BASE_URL,
-      compat: { supportsReasoningEffort: true, },
-      models,
+      compat: { supportsReasoningEffort: true },
+      models: mappedServiceableModels({ listing }),
     },
   };
 }
