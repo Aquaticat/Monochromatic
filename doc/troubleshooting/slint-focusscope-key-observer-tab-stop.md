@@ -176,7 +176,8 @@ all from `package/desktop-app/ide/Cargo.lock`).
 
 Harness:
 `package/desktop-app/ide/bin/inspect-source-guards.mjs`
-(now `package/desktop-app/ide/bin/inspect-source-guards.ts`, renamed 2026-10-22),
+(now `package/desktop-app/ide/bin/inspect-source-guards.ts`,
+renamed 2026-10-22),
 run through the `inspect:source-guards` task of `package/desktop-app/ide/mise.toml`.
 It copies the package into a disposable directory,
 removes one guard line,

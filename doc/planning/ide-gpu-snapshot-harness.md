@@ -2622,7 +2622,8 @@ No second renderer exists, and the only memory the minimap adds beyond its textu
 ### Guard evidence
 
 - All 45 `minimap-*` guards of `bin/inspect-source-guards.mjs`
-  (now `bin/inspect-source-guards.ts`, renamed 2026-10-22)
+  (now `bin/inspect-source-guards.ts`,
+  renamed 2026-10-22)
   were run in a disposable copy:
   each fails its named test when removed and passes restored.
   New ones: glyph runs (`minimap-renders-glyphs`,

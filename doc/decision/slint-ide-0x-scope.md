@@ -517,7 +517,8 @@ and the frames under `package/desktop-app/ide/design/screenshots/2026-10-06-ui-b
 - The user allowed installing the single executable and its launcher entry into the real home
   to check the installed copy (answered 2026-10-10, "Yes, install and check").
   `~/.local/bin/monochromatic-ide` and `~/.local/share/applications/monochromatic.ide.desktop` were installed
-  with `bin/install.mjs` (now `bin/install.ts`, renamed 2026-10-22);
+  with `bin/install.mjs` (now `bin/install.ts`,
+  renamed 2026-10-22);
   the installed file passed `inspect:bundle` 10 of 10.
 - The package's `lint` task runs a new `lint:rustfmt` task (`cargo fmt --check`)
   (answered 2026-10-10, "Add the check").

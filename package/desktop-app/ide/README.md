@@ -4846,7 +4846,12 @@ see [the troubleshooting note](../../../doc/troubleshooting/container-nproc-igno
 ### The IDE bin scripts are TypeScript
 
 Every script of `bin/` and `design/` is a TypeScript file
-(the compositor module, the inspection, guard, and capture scripts, `install.ts`, `check-nextest-config.ts`,
+(the compositor module,
+the inspection,
+guard,
+and capture scripts,
+`install.ts`,
+`check-nextest-config.ts`,
 and the test file `nested-compositor.test.ts`),
 and the tasks run them with `node` directly (`node bin/inspect-cadence.ts`).
 Node strips the types of a `.ts` file before it runs,
@@ -4910,7 +4915,9 @@ and the guard inspections
 `bin/inspect-source-guards.ts`,
 `bin/inspect-theme-guards.ts`,
 and `bin/inspect-watch-guards.ts`.
-Only types, the one-object call shape, and the few narrowings that the strict options demand were added to them;
+Only types,
+the one-object call shape,
+and the few narrowings that the strict options demand were added to them;
 their layout and behavior are otherwise as before.
 No `tsconfig.json` and no `lint:types` or `lint:oxlint` task covers this directory,
 because the package is a Rust crate and not a workspace package,

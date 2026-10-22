@@ -139,7 +139,8 @@ from `package/desktop-app/ide/Cargo.lock`).
 
 Harness:
 `package/desktop-app/ide/bin/inspect-source-guards.mjs`
-(now `package/desktop-app/ide/bin/inspect-source-guards.ts`, renamed 2026-10-22),
+(now `package/desktop-app/ide/bin/inspect-source-guards.ts`,
+renamed 2026-10-22),
 guard `mouse-drag-selects`,
 which deletes the `mouse-drag-pan-enabled: false;` line from `ui/app.slint` in a disposable copy
 and runs the named test with real window pointer events through the headless backend.
