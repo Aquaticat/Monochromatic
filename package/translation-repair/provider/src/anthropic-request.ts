@@ -402,16 +402,25 @@ function toolFieldsFor(
  ```
 
  @remarks
- NO THINKING PARAMETER AND NO TOKEN BUDGET, EVER. The owner's standing
- instruction, 2026-08-25: "Please don't set any thinking parameter or budget
- tokens... These providers and models have known issues with non-default
- thinking or budget tokens and we'd rather not step on the mines."
+ NO THINKING PARAMETER AND NO TOKEN BUDGET: THE WIRE IS ANTHROPIC'S BUT THE
+ PROVIDER IS CHARM HYPER. The owner's rulings of 2026-10-22: "No, I'm only
+ against thinking params on 3rd tier providers." "Anthropic counts as first
+ rate, neuralwatt counts as second rate." "Xiaomi and deepseek count as first
+ rate." "But we should never disable thinking on anything." They narrowed the
+ standing instruction of 2026-08-25 ("Please don't set any thinking parameter
+ or budget tokens... These providers and models have known issues with
+ non-default thinking or budget tokens and we'd rather not step on the mines"),
+ which now holds for third tier alone. Anthropic itself is first rate, but
+ this builder serves Hyper's route, the rulings name no tier for Hyper, and so
+ it is treated as third tier and not cleared. A value that disables thinking
+ is never sent, here or anywhere.
 
  That covers `reasoning_effort` on the OpenAI-shaped side, which is the same
- lever under the name that provider documents it by. Recorded at the build
- site rather than only in a document, because this is where someone would add
- one. `doc/audit/where-a-round-spends-its-wall-clock.md` carries the
- measurements that led here and the levers that stay open.
+ lever under the name that provider documents it by.
+
+ Recorded at the build site rather than only in a document, because this is
+ where someone would add one. `doc/audit/where-a-round-spends-its-wall-clock.md`
+ carries the measurements that led here and the levers that stay open.
  */
 export function buildAnthropicBody(
   {

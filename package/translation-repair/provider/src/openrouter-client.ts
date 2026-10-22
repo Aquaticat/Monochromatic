@@ -413,9 +413,12 @@ export function createOpenRouterClient(
       /**
        Exactly what goes on the wire, hoisted so its size can be measured.
 
-       NO THINKING PARAMETER AND NO REASONING BUDGET, EVER, the owner's
-       standing instruction of 2026-08-25, recorded in full at the Synthetic
-       body. `max_tokens` IS ALWAYS SENT since 2026-09-09, at the measured
+       NO THINKING PARAMETER AND NO REASONING BUDGET: the owner's rulings of
+       2026-10-22, recorded in full at the Synthetic body, clear thinking
+       parameters for first and second rate providers and keep them off third
+       tier, and name no tier for OpenRouter, so it is treated as third tier
+       and not cleared. A value that disables thinking is never sent, here or
+       anywhere. `max_tokens` IS ALWAYS SENT since 2026-09-09, at the measured
        ceiling in `completion-cap.ts` or a caller's lower one:
        this is the per-token provider, and a stream a round abandoned kept
        billing to its own end on the endpoints that do not honour a cancel.

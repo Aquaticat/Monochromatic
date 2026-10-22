@@ -19,8 +19,9 @@ import type { ChatJsonOutcome, } from '@monochromatic-dev/translation-repair-pro
 // answered with the reply that already failed.
 //
 // PROSE, NOT A PARAMETER. Asking a model cut short to keep its working brief
-// is text in the prompt; no reasoning control goes on the wire, by the owner's
-// standing instruction of 2026-08-25.
+// is text in the prompt, which works on a seat of any tier. It is not a
+// reasoning control, so it needs none of the clearance the owner's rulings of
+// 2026-10-22 give first and second rate providers and withhold from third.
 
 /**
  Every reason nothing could read an answer that arrived, in the order the

@@ -326,18 +326,24 @@ export type NeuralWattCard = ServedCard<NeuralWattServedId> & {
   /**
    Reasoning effort sent with a call that carries a picture, on this
    provider only. THE ONLY REQUEST PARAMETER ANY CARD CAN NAME, and it lives
-   on this side alone, so no other provider's client has a field to read.
-   The owner, 2026-10-21: "NeuralWatt is a special case of all the
+   on this side alone, so no other provider's client has a field to read:
+   the other providers cleared for thinking parameters (Anthropic, DeepSeek
+   and Xiaomi, first rate) have none measured yet, and the rest are third
+   tier. The owner, 2026-10-21: "NeuralWatt is a special case of all the
    providers: It implements what it documents correctly, almost always -
-   I'm lifting the ban on passing params, but only for NeuralWatt." Absent
-   where no picture reading on this model has been measured to need one.
+   I'm lifting the ban on passing params, but only for NeuralWatt." On
+   2026-10-22: "Anthropic counts as first rate, neuralwatt counts as second
+   rate", "NeuralWatt does implement what they document correctly, so
+   they're clear on thinking params", and "we should never disable thinking
+   on anything", so no value here turns thinking off. Absent where no
+   picture reading on this model has been measured to need one.
    */
   readonly pictureReasoningEffort?: NeuralWattReasoningEffort;
 
   /**
    Reasoning effort sent with a call that carries no picture, on this
-   provider only, under the same lift of the owner's ban (2026-10-21, "only
-   for NeuralWatt"). Absent where the repo records no `supported_efforts` list
+   provider only, under the same clearance (2026-10-21, "only for NeuralWatt";
+   2026-10-22, second rate). Absent where the repo records no `supported_efforts` list
    for the model, so a call to it sends nothing. Never a field of another
    provider's card.
    */

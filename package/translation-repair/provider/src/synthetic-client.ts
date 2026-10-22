@@ -307,13 +307,22 @@ export function createSyntheticClient(
        over the cap as a parse failure naming our JSON, so the only way to tell
        that refusal from a real malformation is to know how big this was.
 
-       NO THINKING PARAMETER AND NO TOKEN BUDGET, EVER. The owner's standing
-       instruction, 2026-08-25: "Please don't set any thinking parameter or
-       budget tokens... These providers and models have known issues with
+       NO THINKING PARAMETER AND NO TOKEN BUDGET, BECAUSE SYNTHETIC IS THIRD
+       TIER. The owner's rulings of 2026-10-22: "No, I'm only against
+       thinking params on 3rd tier providers." "Anthropic counts as first
+       rate, neuralwatt counts as second rate." "Xiaomi and deepseek count as
+       first rate." "NeuralWatt does implement what they document correctly,
+       so they're clear on thinking params." "But we should never disable
+       thinking on anything." They narrowed the standing instruction of
+       2026-08-25 ("Please don't set any thinking parameter or budget
+       tokens... These providers and models have known issues with
        non-default thinking or budget tokens and we'd rather not step on the
-       mines." That covers `reasoning_effort` too, which is the same lever
-       under the name this provider documents it by. Measurements that led
-       here, and the levers left open, are in
+       mines"), which now holds for third tier alone. Synthetic stays third
+       tier, not cleared for thinking parameters, until a bench says
+       otherwise. That covers `reasoning_effort` too, which is the same lever
+       under the name this provider documents it by. A value that disables
+       thinking is never sent, here or anywhere. Measurements that led here,
+       and the levers left open, are in
        `doc/audit/where-a-round-spends-its-wall-clock.md`.
        */
       const bodyJson = JSON.stringify({
