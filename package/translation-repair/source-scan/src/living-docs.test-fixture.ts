@@ -9,6 +9,7 @@ import {
 } from 'node:path';
 
 import { familyPackages, } from './family-source.test-fixture.ts';
+import { linkTargets, } from './markdown-link-targets.test-fixture.ts';
 
 //region Living repository-level docs
 // The repository-level translation-repair docs that state current fact and are
@@ -173,48 +174,6 @@ type LivingRepositoryDocs = {
    */
   readonly operations: readonly string[];
 };
-
-/**
- Every Markdown link target in a text: what follows each `](` up to its `)`,
- without a fragment.
-
- @param text - Markdown text
-
- @returns Targets in text order
-
- @example
- ```ts
- linkTargets({ text: 'see [the nap log](naps.md#noon)', },); // ['naps.md']
- ```
- */
-function linkTargets({ text, }: { readonly text: string; },): readonly string[] {
-  return text
-    .split('](',)
-    .slice(1,)
-    .flatMap(function target(after,): readonly string[] {
-      /**
-       Where the target closes.
-       */
-      const end = after.indexOf(')',);
-      if (end === (-1))
-        return [];
-      /**
-       Target with any fragment.
-       */
-      const whole = after.slice(
-        0,
-        end,
-      );
-      /**
-       Where a fragment opens, or the end.
-       */
-      const fragment = whole.indexOf('#',);
-      return [fragment === (-1) ? whole : whole.slice(
-        0,
-        fragment,
-      ),];
-    },);
-}
 
 /**
  The Markdown a package keeps: every `.md` directly under its `doc`, sorted, then its README.

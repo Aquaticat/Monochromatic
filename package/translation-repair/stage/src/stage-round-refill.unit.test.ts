@@ -83,7 +83,7 @@ type SeatRole = 'refused' | 'slow' | 'stuck' | 'fast' | 'failing';
  against the grace, short against the test's wall clock, so a round that
  waited for it ends in a failed assertion within seconds rather than a hang.
  */
-const STUCK_MS = 1000;
+const STUCK_MS = 1_000;
 
 /**
  Client scripted per seat: refused by the router, answering only when the

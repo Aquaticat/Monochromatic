@@ -68,7 +68,10 @@ const CLAIMS: readonly {
       'hyper',
     ],
     reads: true,
-    holds: ['openrouter-dropped',],
+    holds: [
+      'openrouter-dropped',
+      'late-judge-dropped',
+    ],
   },
   {
     seat: SEAT_SYNTHETIC_VISION_WITHHELD,

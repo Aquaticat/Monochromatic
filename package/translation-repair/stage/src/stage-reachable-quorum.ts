@@ -109,7 +109,11 @@ export function reachableQuorum(
    Voices the seated bench needs for a quorum.
    */
   const benchQuorum = rosterQuorumSize({ rosterSize: benchSize, },);
-  if (lastSeatGrace && (reachable === benchQuorum) && (benchQuorum > MIN_STAGE_VOICES)) {
+  if (
+    lastSeatGrace
+    && (reachable === benchQuorum)
+      && (benchQuorum > MIN_STAGE_VOICES)
+  ) {
     return {
       needed: benchQuorum - 1,
       reachable,
