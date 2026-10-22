@@ -420,7 +420,13 @@ The human's own comparison, and the instrument behind it:
   the track titles, while 22, 22 and 16 matched as numbers.
   The replica's text carries about 5 to 8 percent more ink than the real app's in builds A and B (the real app is
   lighter by a constant factor), which does not single out the track titles.
-  Why the human needed 17 is not explained.
+  Why the human needed 17 is not explained by the geometry.
+  Asked what they saw, the human said the real app's track titles looked bigger than the replica's at 16 px, with
+  identical measured boxes (and the real app's ink mass lower, not higher), while at 14 px the two looked identical.
+  So a real difference in how the glyphs are rasterized or placed is the open candidate: swash hinting
+  (`HintingMode::Smooth` with `hint(true)` in femtovg 0.27), whole-pixel quad placement and the 0.1 px glyph cache
+  binning, against Skia's rendering in Chromium. An agent is measuring stem and edge profiles, x-height snapping,
+  brightness histograms and stem spacing for both; the result is not in this doc yet.
 - The human then asked for a text size setting in the real app, with a stepper of 1 px for each element.
 
 ## Hypotheses
