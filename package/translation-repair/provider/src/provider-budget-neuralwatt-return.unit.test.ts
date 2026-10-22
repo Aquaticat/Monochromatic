@@ -1,0 +1,244 @@
+/**
+ Tests that a NeuralWatt reading that is dry because the day's energy is spent names its return as a hold, so the
+ waits that already wait out holds (the router's and the seat reader's) wait for it when it is near.
+
+ THE CASE IS XINGZ6019 (2026-10-22): NeuralWatt dry at 19:14:20 UTC because the day's 550 Wh was spent, its day
+ restarting at 19:15:08 UTC, 48 s later. The bench stood short of its floor and the entry stopped 48 s before the
+ energy came back. Every meter and clock here is a stub and no HTTP is made.
+
+ Fixtures are cat-themed invention.
+
+ @module
+ */
+
+import {
+  describe,
+  expect,
+  it,
+} from '@monochromatic-dev/module-test/ts';
+import {
+  createProviderBudgets,
+  NOBODY_REFUSED,
+  readBudgetsPastHolds,
+} from '../dist/final/node/index.mjs';
+
+/**
+ Abort signal every read here carries.
+ */
+const SIGNAL = new AbortController().signal;
+
+/**
+ Milliseconds after 00:00 UTC the account's day starts at: 19:15:08.
+ */
+const DAY_START_MS_OF_DAY = 69_308_000;
+
+/**
+ Milliseconds a reading is trusted, longer than any wait here, so only the return time can make a reading stale.
+ */
+const FRESH_MS = 600_000;
+
+/**
+ A reading of a day whose energy is spent.
+ */
+const SPENT_DAY = {
+  dayStart: '2026-10-22T19:15:08.000Z',
+  dailyWh: 550,
+  spentWh: 550,
+  reckonedWh: 0,
+  reservedWh: 0,
+  remainingWh: 0,
+  calls: 40,
+} as const;
+
+/**
+ A reading of the day that began at the return.
+ */
+const FRESH_DAY = {
+  dayStart: '2026-10-23T19:15:08.000Z',
+  dailyWh: 550,
+  spentWh: 0,
+  reckonedWh: 0,
+  reservedWh: 0,
+  remainingWh: 550,
+  calls: 0,
+} as const;
+
+/**
+ Budgets over a NeuralWatt meter that reads the spent day first and the fresh one afterwards.
+
+ @param msBeforeReturn - how long before its day starts again the wall clock reads
+
+ @param clock - the monotonic clock the case advances, absent for the real one
+
+ @param reads - counts the energy reads
+
+ @param spent - the first reading, the spent day unless the case says otherwise
+
+ @param returnWaitBoundMs - bound on a return the budgets name as a hold
+
+ @returns Budgets that trust a reading for {@link FRESH_MS} and add no margin to a return
+
+ @example
+ ```ts
+ const budgets = budgetsBefore({ msBeforeReturn: 48_000, clock: { now: 1_000, }, reads: { count: 0, }, },);
+ ```
+ */
+function budgetsBefore(
+  {
+    msBeforeReturn,
+    clock,
+    reads,
+    spent = SPENT_DAY,
+    returnWaitBoundMs = 300_000,
+  }: {
+    readonly msBeforeReturn: number;
+    readonly clock?: { now: number; };
+    readonly reads: { count: number; };
+    readonly spent?: typeof SPENT_DAY & { readonly keyBlockedUntil?: string; };
+    readonly returnWaitBoundMs?: number;
+  },
+): ReturnType<typeof createProviderBudgets> {
+  return createProviderBudgets({
+    neuralwatt: {
+      energy: async () => {
+        reads.count += 1;
+        return (reads.count === 1) ? spent : FRESH_DAY;
+      },
+      dayAnchor: () => ({ known: true, msOfDay: DAY_START_MS_OF_DAY, }),
+    },
+    freshForMs: FRESH_MS,
+    // Conditional spread keeps the real clock where the case advances none.
+    ...((clock === undefined) ? {} : { now: () => clock.now, }),
+    wallNow: () => new Date(Date.UTC(
+      2026,
+      9,
+      23,
+      0,
+      0,
+      0,
+      DAY_START_MS_OF_DAY - msBeforeReturn,
+    ),),
+    returnMarginMs: 0,
+    returnWaitBoundMs,
+  },);
+}
+
+/**
+ The hold NeuralWatt carries after one reading of its spent day, under a bound of a minute.
+
+ @param msBeforeReturn - how long before its day starts again the wall clock reads
+
+ @returns Milliseconds NeuralWatt is held out for
+
+ @example
+ ```ts
+ const held = await heldFor({ msBeforeReturn: 60_000, },);
+ ```
+ */
+async function heldFor({ msBeforeReturn, }: { readonly msBeforeReturn: number; },): Promise<number> {
+  const budgets = budgetsBefore({
+    msBeforeReturn,
+    clock: { now: 1_000, },
+    reads: { count: 0, },
+    returnWaitBoundMs: 60_000,
+  },);
+  await budgets.read({ signal: SIGNAL, },);
+  return budgets.holds().neuralwatt;
+}
+
+await describe({
+  name: 'NeuralWatt dryness names its return',
+  concurrency: 1,
+  children: [
+    it({
+      name: 'HOLDS NEURALWATT OUT FOR THE 48 SECONDS UNTIL ITS DAY STARTS AGAIN when the day\'s energy is spent, so '
+        + 'the holds every wait reads carry the return, and the reading still says dry',
+      fn: async () => {
+        const reads = { count: 0, };
+        const budgets = budgetsBefore({ msBeforeReturn: 48_000, clock: { now: 1_000, }, reads, },);
+        expect((await budgets.read({ signal: SIGNAL, },)).neuralwatt,).toBe(true,);
+        expect(budgets.holds().neuralwatt,).toBe(48_000,);
+        expect(budgets.holds().synthetic,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'NAMES NO HOLD FOR A RETURN PAST THE BOUND, so the waits do not hold an entry for hours: the refusal states '
+        + 'the day start instead',
+      fn: async () => {
+        const reads = { count: 0, };
+        const budgets = budgetsBefore({
+          msBeforeReturn: 82_800_000,
+          clock: { now: 1_000, },
+          reads,
+          returnWaitBoundMs: 300_000,
+        },);
+        expect((await budgets.read({ signal: SIGNAL, },)).neuralwatt,).toBe(true,);
+        expect(budgets.holds().neuralwatt,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'NAMES A HOLD AT THE BOUND AND NONE ONE MILLISECOND PAST IT',
+      fn: async () => {
+        expect([
+          await heldFor({ msBeforeReturn: 60_000, },),
+          await heldFor({ msBeforeReturn: 60_001, },),
+        ],).toEqual([60_000, 0,],);
+      },
+    },),
+
+    it({
+      name: 'READS THE METER AGAIN AT THE RETURN, although the reading is still fresh, and finds the new day wet',
+      fn: async () => {
+        const reads = { count: 0, };
+        const clock = { now: 1_000, };
+        const budgets = budgetsBefore({ msBeforeReturn: 48_000, clock, reads, },);
+        expect((await budgets.read({ signal: SIGNAL, },)).neuralwatt,).toBe(true,);
+        clock.now += 47_999;
+        expect((await budgets.read({ signal: SIGNAL, },)).neuralwatt,).toBe(true,);
+        expect(reads.count,).toBe(1,);
+        clock.now += 1;
+        expect((await budgets.read({ signal: SIGNAL, },)).neuralwatt,).toBe(false,);
+        expect(reads.count,).toBe(2,);
+        expect(budgets.holds().neuralwatt,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'NAMES NO RETURN FOR A BLOCKED KEY, whose allowance comes back at its own time and not at the day start',
+      fn: async () => {
+        const budgets = budgetsBefore({
+          msBeforeReturn: 48_000,
+          clock: { now: 1_000, },
+          reads: { count: 0, },
+          spent: { ...SPENT_DAY, remainingWh: 400, keyBlockedUntil: '2026-10-23T05:00:00.000Z', },
+        },);
+        expect((await budgets.read({ signal: SIGNAL, },)).neuralwatt,).toBe(true,);
+        expect(budgets.holds().neuralwatt,).toBe(0,);
+      },
+    },),
+
+    it({
+      name: 'LETS THE ROUTER\'S WAIT SEE THE RETURN: every provider dry but NeuralWatt coming back in 50 ms waits it '
+        + 'out and reads NeuralWatt wet, instead of ending the run',
+      fn: async () => {
+        const reads = { count: 0, };
+        // THE REAL MONOTONIC CLOCK, since real time passes during the wait and the return is read against it.
+        const budgets = budgetsBefore({ msBeforeReturn: 50, reads, },);
+        /**
+         What the router's read comes to once the wait has ended.
+         */
+        const view = await readBudgetsPastHolds({
+          budgets,
+          modelId: 'glm-5.3',
+          signal: SIGNAL,
+          refused: NOBODY_REFUSED,
+          pollMs: 10,
+        },);
+        expect(view.neuralwatt,).toBe(false,);
+        expect(reads.count,).toBe(2,);
+      },
+    },),
+  ],
+},);
