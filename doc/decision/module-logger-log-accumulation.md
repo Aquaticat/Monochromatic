@@ -22,6 +22,15 @@ by the recorded nesting `{YYYY-MM-DD}/{timestamp}.{uuid}.log.jsonl`,
 because age sweeps delete whole day directories
 instead of walking every file.
 
+Version 0.4.5 shipped 2026-10-22 with this decision (commit `4b0caa5191`).
+It published through `.github/workflows/npm-publish.yml` run 39749801676
+(04:44 America/New_York) with a signed provenance statement
+(transparency log index 3382101501).
+The auto-publish lane (`npm-release.yml`) failed three times on the
+`pnpm` frozen-install drift pair recorded in
+`doc/troubleshooting/pnpm-frozen-install-validation-drift.md`
+before the release could move.
+
 ## Context
 
 The file sink wrote one `{timestamp}.{uuid}.log.jsonl` per process

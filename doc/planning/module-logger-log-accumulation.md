@@ -428,6 +428,12 @@ Landing order:
 - The main checkout after both passes holds
   47,005 in-window files (511 MiB) spanning 2026-10-17 to 2026-10-22,
   plus the sweep stamp.
+- 0.4.5 shipped the same day (release commit `4b0caa5191`).
+  The auto-publish lane failed on the `pnpm` frozen-install drift pair
+  (`doc/troubleshooting/pnpm-frozen-install-validation-drift.md`),
+  and the targeted `npm-publish.yml` run 39749801676
+  published it at 04:44 America/New_York with signed provenance
+  (transparency log index 3382101501).
 
 ## Risks and limits
 
