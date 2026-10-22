@@ -206,5 +206,43 @@ await describe({
         expect(exchanges.length,).toBe(0,);
       },
     },),
+    it({
+      name: 'MARKS THE STABLE SYSTEM PREFIX FOR THE FIVE-MINUTE CACHE with one ephemeral breakpoint on the last block of '
+        + 'the system field, which every call of a stage shares, and none on the turns that differ per call',
+      fn: async () => {
+        for (const modelId of ['claude-sonnet-5-5', 'claude-haiku-5-5-effort-low',] as const) {
+          const body = await bodySentFor({ modelId, },);
+          expect(body['system'],).toEqual([
+            { type: 'text', text: 'You find the cat.', cache_control: { type: 'ephemeral', }, },
+          ],);
+          expect(JSON.stringify(body['messages'],),).not.toContain('cache_control',);
+        }
+      },
+    },),
+
+    it({
+      name: 'SENDS NO SYSTEM FIELD AND NO BREAKPOINT when the call has no system message, rather than caching an '
+        + 'empty prefix',
+      fn: async () => {
+        const body = await bodySentFor({
+          modelId: 'claude-haiku-5-5',
+          messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
+        },);
+        expect(body['system'],).toBeUndefined();
+        expect(JSON.stringify(body,),).not.toContain('cache_control',);
+      },
+    },),
+
+    it({
+      name: 'SENDS THE CALLER\'S CEILING WHEN LOWER THAN THE MEASURED CAP, and the cap otherwise, as a whole number '
+        + 'of tokens',
+      fn: async () => {
+        const capped = await bodySentFor({ modelId: 'claude-haiku-5-5', },);
+        expect(Number.isSafeInteger(capped['max_tokens'],),).toBe(true,);
+        expect(capped['max_tokens'] as number,).toBeGreaterThan(1_000,);
+        const lowered = await bodySentFor({ modelId: 'claude-haiku-5-5', extra: { maxTokens: 777, }, },);
+        expect(lowered['max_tokens'],).toBe(777,);
+      },
+    },),
   ],
 },);
