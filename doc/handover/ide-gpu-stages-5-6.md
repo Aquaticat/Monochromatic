@@ -284,6 +284,8 @@ A run logged at debug level (`ide-cadence-vQjf3g`, the final binary) shows the s
 `src/native/render/present.rs` (the `request_redraw()` after `submit_tile` and after `submit_sign`)
 asks for a frame at the tile hand-over the way `picture.rs` did.
 That the stall at slot 50 is this one is read from the log, not shown by an intervention; it was not changed.
+(The later session in "The extra frame at a tile hand-over" ran the interventions: the redraw request named here is
+not the cause, the swap of the tile is.)
 
 ### Limits
 
@@ -308,3 +310,108 @@ Run once each on the tip that follows the last code commit (`style(ide): rustfmt
 `slint/renderer-software` and `slint/mcp` do reach it);
 `inspect:source-guards` for the two new guards (2 of 150): baseline passes, removed fails, restored passes, for both.
 The other 148 guards were not run.
+
+## The extra frame at a tile hand-over
+
+Session of 2026-10-21 on branch `worktree-agent-a0b5a3cdf2d733095`, base `b4e9063c3a`.
+It answers the open item of the section "The extra frame at a picture hand-over":
+the stall at slot 50 of the scripted scroll, which the previous session read from a log and attributed to the
+`request_redraw()` calls after `submit_tile` and `submit_sign` in `src/native/render/present.rs`.
+
+### Method
+
+One release binary carried temporary environment switches (commit `ddca86e067`, removed in `d8ab9f62f2`):
+`IDE_X_PICTURE=now` restored the immediate picture request (the old behavior, tree A), `IDE_X_TILE=none` removed the
+`request_redraw()` after `submit_tile`, and `IDE_X_HOLD=1` was the fix below.
+The measure is the frame-shift probe (ticks of the input window in which the text area moved 0 rows), one app run at a
+time, alternating order, release, `big.rs`, 1100x660, scroll scenario, frames deleted after each run.
+The probe sees the stall that the whole-frame hash misses; its positive control is the restored picture request,
+which stalls at slot 35 in 6 of 6 runs.
+
+### Interventions
+
+- A against A, the floor (6 pairs, both with the switch unset): slot 50 in 6 of 6 and 6 of 6 runs;
+  stalls in total 10 and 12 (other slots 74, 98, 120, 141, 142).
+  The stall at slot 50 does not move between runs of one binary.
+- Picture request restored (tree A, 6 runs): slot 35 in 6 of 6, slot 50 in 0 of 6, 13 stalls in total.
+  The stall does not move to the next extra frame; the extra frame at slot 35 changes the timing of the whole run.
+  In the debug timeline of such a run (`~/temp/agent/tile-dbg-p.timeline`, from the artifact of that run) the tile is applied 1 ms after a wheel event, inside the
+  frame the wheel started, so it adds no frame.
+  Why the picture's frame moves the tile to such a moment is a reading from that one run (the 20 ms poll of the tile
+  worker against the 16.7 ms steps drifts), not a measurement.
+- The request after `submit_tile` removed (`IDE_X_TILE=none`, 6 runs): slot 50 in 6 of 6, 10 stalls in total.
+  The explicit request is not the cause.
+  The timeline of such a run (`~/temp/agent/tile-dbg-t0b.timeline`) still shows "winit asked for a redraw" 4 ms after the wheel event,
+  at the moment of "window thread applied a finished tile", and a 5 ms frame that draws the tile; the next wheel event
+  follows 17 ms after the previous one.
+  The setters that `show` runs for the tile (the image's size and place, the selection rows as a new model, the caret)
+  make the toolkit ask for a frame; which setter does it was not isolated.
+
+### Cause
+
+The poll timer of the tile worker (`src/native/tile.rs`, 20 ms) swaps a finished tile in at a moment unrelated to the
+scroll steps (16.7 ms apart).
+The setters that run for the swap make the toolkit ask for a frame of its own, so between two steps there is a second
+frame, which is the same mechanism as the picture hand-over's.
+The text area then does not move for one tick.
+
+### Fix
+
+A finished tile is left for the next scroll step (`step_due` in `src/native/tile.rs`).
+The timer does not poll while the last step is less than `STEP_WAIT` (20 ms) old; the step itself polls, at the end of
+`on_viewport_changed` (`src/native/viewport.rs`), so the setters run in the frame that step draws.
+With no step coming, the timer takes the tile 20 ms later, so an idle window does not keep the old tile.
+The explicit `request_redraw()` calls stay: they draw a tile that changed no property the window watches.
+
+The first version polled at the start of `on_viewport_changed`, before the step had placed the view.
+It made the native test `an_external_edit_of_fifty_thousand_lines_shapes_only_the_line_it_touches` fail 20 of 20 in the
+container (the baseline passed 20 of 20): the picture of the file before the edit had 190 lines where the baseline's
+has 194, because the finished tile and the pass it carries were taken against a state that the step was about to
+change.
+Polling after the step's own work restores the order the timer has, and the test passes.
+
+- Guards: `a_tile_that_finishes_between_two_steps_is_left_for_the_next_step` and
+  `a_tile_that_finishes_with_no_step_due_is_taken_by_the_poll` (`src/native/tile_step_tests.rs`).
+  Source guards `tile-left-for-next-step`, `tile-taken-by-the-step` and `tile-taken-by-the-poll-when-idle`.
+
+### Counts
+
+- The fix with the poll before the step (`IDE_X_HOLD=1`, 8 pairs against the unset binary): slot 50 in 8 of 8 against
+  0 of 8; stalls in total 11 against 0.
+- The fix with the poll before the step as the final binary against the baseline `b4e9063c3a` (8 pairs): 0 against 13
+  stalls in total, slot 50 in 0 of 8 against 8 of 8.
+  This binary failed the native test above and is not the shipped one.
+- The final tip (`2fba9c567c`, poll after the step) against the baseline (8 pairs): 1 against 13 stalls in total;
+  slot 50 in 0 of 8 against 8 of 8.
+  The one stall is at slot 33 in a run of the fix (the baseline shows none there in 36 runs of this session);
+  one run of the fix and one of the baseline also show a row shift of 50 px in a tick, a late frame followed by a
+  catch-up.
+  Whether the stall at 33 is the host or the fix was not decided: no more pairs were run.
+
+### What remains
+
+- Stalls at slots 74, 98, 120 and 142 of the baseline are gone in the fix runs (one stall, at slot 33, in 24 runs
+  of the three passes).
+  They were not examined one by one; in the timeline of one baseline run the stall at 74 follows a tile applied 1 ms
+  after a wheel event, so not every stall of the baseline is an extra frame.
+  The fix removes them together with slot 50 in these runs, which is a count, not a cause.
+- An input slower than 50 Hz (a step later than `STEP_WAIT`) takes the old behavior: the poll swaps the tile in
+  between two steps.
+- A tile that finishes within `STEP_WAIT` after the last step of a scroll waits up to one more poll period (20 ms);
+  this latency was not measured, and the second test covers only that the poll takes the tile.
+- The drag scenario, display scales other than 1, a real compositor and the wrap indicator's own redraw
+  (`submit_sign`, once per display scale, before the input) were not tried.
+- The pair budget of ten per question was exceeded for the fix (three passes, 8 pairs each: the first pass with the
+  switch, the final binary before and after the order change), because the order change was a code change.
+
+### Gates
+
+Run once each on tip `2fba9c567c` (documentation commits follow it):
+`lint` 0 findings (a first run found rustfmt diffs in the module order and four semantic line break findings, fixed);
+`test:native` 279 passed, 5 skipped (the earlier run on the previous tip failed the edit test above);
+`test` 797 passed, 1 skipped; `test:bin` 60 passed; `build` finished;
+`inspect:no-software-renderer` passes (not linked; the two features reach it);
+`inspect:source-guards` for the three new guards (3 of 153): baseline passes, removed fails, restored passes, for all
+(`tile-taken-by-the-step` shares the baseline of `tile-left-for-next-step`).
+The other 150 guards were not run.
+The counts above come from `~/temp/agent/tile-ab-1.jsonl`, `tile-ab-2.jsonl`, `tile-ab-3.jsonl` and `tile-ab-4.jsonl`.
