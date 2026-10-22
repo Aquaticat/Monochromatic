@@ -764,6 +764,15 @@ Unit suite and detekt pass. The half circle at the bottom left of the
 human's screenshots is a system overlay (it shows on the launcher too), not the app. The blank band above the seek
 row when nothing plays is the deck heading's reserved lines (same `minLines` mechanism, `TransportDeck.kt`); left as is.
 
+RELEASED `music-player-v0.1.10` (pre-release, run `39754580630`, 13 assets) on 2026-10-22 with these fixes. 0.1.9 was
+never released (its run was cancelled as superseded; no tag or release exists). The arm64 and x86_64 APK hashes match
+`SHA256SUMS`, `gh attestation verify --repo Aquaticats/Monochromatic` exits 0 for the arm64 APK, the manifest
+`versionName` is `0.1.10`, and the arm64 APK installed over the human's 0.1.8 on the Pixel 6 (same signing key, data
+kept). A screenshot of the release build shows the one-row top bar, the deck gutters and the larger control gap. Both
+APK byte sizes equal the 0.1.8 sizes (17,948,369 and 20,389,299). The cause is unknown and not investigated; the
+installed build shows the new layout, so the build contains the fixes. Not checked on a device: a long folder name with
+the middle ellipsis, the fold.
+
 In flight 2026-10-18 after 0.1.6: the license polish branch `fix/music-player-license-polish` reported; its entry is
 "2026-10-18, license polish after 0.1.6" above. Merge, then release 0.1.7. Not started, mine: a quiet-host perfetto
 trace for the 10,000-track jank (p = 0.089, optional), re-check of issues 1079 to 1081 and 1069 (Depot trial CI
