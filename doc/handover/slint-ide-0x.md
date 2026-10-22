@@ -1485,6 +1485,13 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     and guard directories are removed; no units or containers were left. Not run: drag scenario, scales other than 1,
     a real compositor, input slower than 50 Hz, step lengths other than 16 ms, the other 150 guards, the doc text of
     the agent has about 200 semantic-line-break findings (older text 480) that are not reflowed.
+    Scale, scheme and seam agent `a1612e9c563c279ed` (started 2026-10-22, own worktree off `origin/main`, branch push
+    only; brief quotes `NLG`, `NLD`, `RXI`, `NQH`): checks display scale 2, the light color scheme, and the minimap
+    chunk seams and the tile seam at scales 1 and 2 in both schemes, by pixel measures with a positive control for the
+    seams; fixes defects at the cause with a test or guard shown to fail; improves the nested compositor if it cannot
+    do scale 2 or a scheme switch. On its report: verify, scan `ps`, `podman ps`, `systemctl --user list-units`,
+    look at its images myself, read any product diff, gates once on the merged snapshot, push, reinstall if the binary
+    changed (and release the compositor if it changed), remove its worktree and branch.
     Open, in order: (1) the stalls away from slot 50 (slot 33 and 72, one run each; undecided; a larger alternating
     pass with a same-binary control, under whatever load there is) and whether a tile taken in an input gap over 20 ms
     costs a frame;
