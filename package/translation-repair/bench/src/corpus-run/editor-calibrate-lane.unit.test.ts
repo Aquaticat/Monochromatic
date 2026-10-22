@@ -49,8 +49,8 @@ await describe({
                 bench: 'editor calibration editors',
                 named: ['claude-sonnet-5-5', 'claude-sonnet-5-5-effort-high',],
               },)).toThrow(
-                'The editor calibration editors bench seats claude-sonnet-5-5 more than once '
-                  + '(claude-sonnet-5-5, claude-sonnet-5-5-effort-high)',
+              'The editor calibration editors bench seats claude-sonnet-5-5 more than once '
+                + '(claude-sonnet-5-5, claude-sonnet-5-5-effort-high)',
               );
           },
         },),

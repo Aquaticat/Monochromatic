@@ -832,10 +832,11 @@ export const RUN_READER_MODELS: readonly RosterModelId[] = ROSTER_MODEL_IDS
 
  ONE WIRE MODEL PER BENCH, ENFORCED AT LOAD (C6 of the review of the Claude route): the eight Claude cards share two
  wire models, and a model seated on one bench under two cards is one model heard twice, counted as two voices toward a
- quorum. The loop that follows this declaration runs over it as the module loads, so a seating that breaks the rule stops the run
- before it pays for a call, and `run-config-seating.unit.test.ts` holds that every list of {@link RUN_MODELS} and
- {@link RUN_CHECKER_ORDER} is in it. A BENCH THE RUN DERIVES (`judgeSeatsFor`) is a filtered subset of one of these,
- so it inherits the rule.
+ quorum. The `assertOneWireModelPerBench` loop over `RUN_BENCHES` runs as the module loads, so a seating that breaks
+ the rule stops the run before it pays for a call, and `run-config-seating.unit.test.ts` holds that every list of
+ {@link RUN_MODELS} and {@link RUN_CHECKER_ORDER} is in it. A BENCH THE RUN DERIVES BY FILTER (`judgeSeatsFor`) is a
+ subset of one of these, so it inherits the rule; the editor calibration lane builds its chairs by union in another
+ package, and asks the rule itself (`editorLaneChairOf` in the bench package).
 
  @example
  ```ts

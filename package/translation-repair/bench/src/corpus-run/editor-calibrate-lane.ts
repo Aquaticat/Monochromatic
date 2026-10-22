@@ -21,7 +21,10 @@ import {
   RUN_ROSTER,
   RUN_WRITERS,
 } from '@monochromatic-dev/translation-repair-run/ts';
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
+import {
+  assertOneWireModelPerBench,
+  type RosterModelId,
+} from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage/ts';
 
 //region Editor calibrate lane
@@ -40,33 +43,61 @@ import type { StageSettings, } from '@monochromatic-dev/translation-repair-stage
  owner's word and holds `judge-unmeasured`, which keeps it off every roster-derived bench, so without its name here the
  lane could never measure it (C4 of the review of the Claude route).
 
+ @param bench - name of the chair, for the failure when a wire model is seated twice
+
  @param named - the run's own list for the chair
 
  @returns The chair's models, the writers first and in roster order, then the named ones not among them
 
+ @throws {@link WireModelRepeatedError} when the chair seats one wire model more than once: the lane is built outside
+ the run's own bench list (`RUN_BENCHES`), so the one-wire-model rule does not reach it unless it is asked here (R11 of the
+ second review of the Claude route)
+
  @example
  ```ts
- const editors = chairOf({ named: RUN_MODELS.editorModelIds, },);
+ const editors = editorLaneChairOf({ bench: 'editor calibration editors', named: RUN_MODELS.editorModelIds, },);
  ```
  */
-function chairOf({ named, }: { readonly named: readonly RosterModelId[]; },): readonly RosterModelId[] {
-  return [
+export function editorLaneChairOf(
+  {
+    bench,
+    named,
+  }: {
+    readonly bench: string;
+    readonly named: readonly RosterModelId[];
+  },
+): readonly RosterModelId[] {
+  /**
+   The chair as built, checked before the lane can seat it.
+   */
+  const chair = [
     ...RUN_WRITERS,
     ...named.filter(function notAlreadySeated(modelId,): boolean {
       return !RUN_WRITERS.includes(modelId,);
     },),
   ];
+  assertOneWireModelPerBench({
+    bench,
+    modelIds: chair,
+  },);
+  return chair;
 }
 
 /**
  Editors the calibration lane seats: the roster's writers, then the run's editors that are not among them.
  */
-export const EDITOR_LANE_EDITORS: readonly RosterModelId[] = chairOf({ named: RUN_MODELS.editorModelIds, },);
+export const EDITOR_LANE_EDITORS: readonly RosterModelId[] = editorLaneChairOf({
+  bench: 'editor calibration editors',
+  named: RUN_MODELS.editorModelIds,
+},);
 
 /**
  Refiners the calibration lane seats: the roster's writers, then the run's refiners that are not among them.
  */
-export const EDITOR_LANE_REFINERS: readonly RosterModelId[] = chairOf({ named: RUN_MODELS.refinerModelIds, },);
+export const EDITOR_LANE_REFINERS: readonly RosterModelId[] = editorLaneChairOf({
+  bench: 'editor calibration refiners',
+  named: RUN_MODELS.refinerModelIds,
+},);
 
 /**
  Runs one slice through the whole repair lane, every model editing and

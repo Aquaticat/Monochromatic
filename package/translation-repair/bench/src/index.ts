@@ -64,6 +64,7 @@ export {
 } from './corpus-run/editor-calibrate-closing.ts';
 export { driveEditorCalibrate, } from './corpus-run/editor-calibrate-drive.ts';
 export {
+  editorLaneChairOf,
   EDITOR_LANE_EDITORS,
   EDITOR_LANE_REFINERS,
   runEditorLane,
