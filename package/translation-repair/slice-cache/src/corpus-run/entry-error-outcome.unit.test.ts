@@ -10,6 +10,7 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { EveryProviderDryError, } from '@monochromatic-dev/translation-repair-provider';
 import { TranslationRepairInterruptedError, } from '@monochromatic-dev/translation-repair-translate-stage';
 import { PromptPayloadStoreError, } from '@monochromatic-dev/translation-repair-stage';
 import {
@@ -75,6 +76,8 @@ await describe({
       },),
       new UnansweredContestSliceError({ sliceIndex: 3, },),
       new SliceSpliceError({ message: 'two replacements name one slice', },),
+      // Every provider dry ends the run at the owner's instruction: a whole-entry retry meets the same dry router.
+      new EveryProviderDryError({ measured: 'meters read every provider dry', },),
     ] as const).map(function stoppedError(error,) {
       return it({
         name: `MAPS ${error.name} to INCOMPLETE stopped work`,

@@ -42,6 +42,7 @@ import type {
   ChatJsonRequest,
   ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
+import { EveryProviderDryError, } from '@monochromatic-dev/translation-repair-provider';
 import { runGatherRound, } from '../dist/final/node/index.mjs';
 import { capturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixture/ts/hang-stop.test-fixture.ts';
@@ -896,6 +897,53 @@ await describe({
               return await round;
             },),).toBe(reason,);
             expect(said,).toEqual([],);
+          },
+        },),
+
+        it({
+          name: 'REJECTS WITH THE EVERY-PROVIDER-DRY REFUSAL, unchanged, although nobody aborted, instead of recording '
+            + 'the seat as an abandoned straggler and returning a thin roster',
+          fn: async () => {
+            /**
+             The refusal the router raised for one seat.
+             */
+            const dry = new EveryProviderDryError({ measured: 'meters read every provider dry', },);
+            /**
+             Client answering every seat at once.
+             */
+            const answering = scheduledClient({},);
+            /**
+             Every message the round logged.
+             */
+            const said: string[] = [];
+
+            expect(await rejectionOf(async function dryRound(): Promise<unknown> {
+              return await runGatherRound({
+                client: {
+                  ...answering,
+                  chatJson: async function dryOne<ValueT,>(
+                    request: Parameters<typeof answering.chatJson>[0],
+                  ): Promise<Awaited<ReturnType<typeof answering.chatJson<ValueT>>>> {
+                    if (request.modelId === SEAT_SYNTHETIC_VISION_WITHHELD)
+                      throw dry;
+                    return await answering.chatJson(request as Parameters<typeof answering.chatJson<ValueT>>[0],);
+                  },
+                },
+                modelIds: ROSTER,
+                messages: [{ role: 'user', content: 'meow', },],
+                signal: new AbortController().signal,
+                exchangeTimeoutMs: HANG_STOP_MS,
+                responseFormat: MEOW_FORMAT,
+                validate: isMeowReply,
+                stage: 'cat-stage',
+                l: capturingLogger({ messages: said, },),
+                heardNeeded: ROSTER.length,
+                graceMs: HANG_STOP_MS,
+              },);
+            },),).toBe(dry,);
+            expect(said.filter(function lost(message,): boolean {
+              return message.includes('voice lost',);
+            },),).toEqual([],);
           },
         },),
 
