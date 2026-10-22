@@ -1,4 +1,4 @@
-# `systemd-run --property=StandardOutput=file:<log>` does not truncate: a second run's shorter output leaves the first run's tail in the log (systemd 259.9)
+# `systemd-run` with `StandardOutput=file:` keeps the old tail of a log when a rerun writes less (systemd 259.9)
 
 ## Symptom
 
