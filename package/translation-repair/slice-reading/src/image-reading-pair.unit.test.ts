@@ -34,9 +34,10 @@ import {
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import type {
-  ChatTextRequest,
-  ModelClient,
+import {
+  type ChatTextRequest,
+  EveryProviderDryError,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
@@ -662,6 +663,51 @@ await describe({
             // the evening and must not be remembered.
             expect(paired.transient,).toBe(true,);
             expect(isResumableReading({ reading: paired, },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES WITH THE DRY ERROR when every provider is out of budget, rather than recording each reader '
+            + 'as failed and going on with no reader available, even for a client built without the pass guard '
+            + 'and a signal nobody aborted',
+          fn: async () => {
+            /**
+             What the router raises when it finds every provider out of budget.
+             */
+            const dry = new EveryProviderDryError({ measured: 'the cats ate every meter', },);
+            /**
+             Lines the pair logged.
+             */
+            const lines: string[] = [];
+            /**
+             What the pair did on a dry router.
+             */
+            const refusal = await rejectionOf({
+              promise: readImagePair({
+                client: {
+                  chatText: async () => {
+                    throw dry;
+                  },
+                  chatJson: async () => {
+                    throw new Error('chatJson unused by the reading stage',);
+                  },
+                  quotas: async () => {
+                    throw new Error('quotas unused by the reading stage',);
+                  },
+                },
+                readOcr: found,
+                readerModelIds: READERS,
+                bytes: bytesOf({ length: 64, },),
+                assetName: 'noticeboard.webp',
+                signal: AbortSignal.timeout(HANG_STOP_MS,),
+                perCallTimeoutMs: HANG_STOP_MS,
+                l: levelCapturingLogger({ lines, },),
+              },),
+            },);
+            expect(refusal,).toBe(dry,);
+            expect(lines.filter(function failedOutright(line,): boolean {
+              return line.includes('failed outright',);
+            },),).toStrictEqual([],);
           },
         },),
 

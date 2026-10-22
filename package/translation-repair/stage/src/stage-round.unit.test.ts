@@ -948,6 +948,52 @@ await describe({
         },),
 
         it({
+          name: 'REJECTS WITH THE EVERY-PROVIDER-DRY REFUSAL that lands inside the grace window after quorum stood, '
+            + 'although nobody aborted, instead of recording the seat as a silent position and returning a thin roster',
+          fn: async () => {
+            /**
+             The refusal the router raised for one seat, after the others had made quorum.
+             */
+            const dry = new EveryProviderDryError({ measured: 'meters read every provider dry', },);
+            /**
+             Client where one seat answers at once, one hangs until cut, and the third meets the dry router late.
+             */
+            const hanging = scheduledClient({ hangingModelId: SEAT_SYNTHETIC_VISION_WITHHELD, },);
+            /**
+             Every message the round logged.
+             */
+            const said: string[] = [];
+
+            expect(await rejectionOf(async function dryInTheWindow(): Promise<unknown> {
+              return await runGatherRound({
+                client: {
+                  ...hanging,
+                  chatJson: async function dryLate<ValueT,>(
+                    request: Parameters<typeof hanging.chatJson>[0],
+                  ): Promise<Awaited<ReturnType<typeof hanging.chatJson<ValueT>>>> {
+                    if (request.modelId === SEAT_SYNTHETIC_VISION_NO_OPENROUTER) {
+                      await wait(SLOW_MS,);
+                      throw dry;
+                    }
+                    return await hanging.chatJson(request as Parameters<typeof hanging.chatJson<ValueT>>[0],);
+                  },
+                },
+                modelIds: ROSTER,
+                messages: [{ role: 'user', content: 'meow', },],
+                signal: new AbortController().signal,
+                exchangeTimeoutMs: HANG_STOP_MS,
+                responseFormat: MEOW_FORMAT,
+                validate: isMeowReply,
+                stage: 'cat-stage',
+                l: capturingLogger({ messages: said, },),
+                heardNeeded: 1,
+                graceMs: GRACE_MS,
+              },);
+            },),).toBe(dry,);
+          },
+        },),
+
+        it({
           name: 'REJECTS WITH A LOGGER\'S OWN FAILURE, unchanged, when no abort is in play and a lost voice cannot be '
             + 'logged',
           fn: async () => {

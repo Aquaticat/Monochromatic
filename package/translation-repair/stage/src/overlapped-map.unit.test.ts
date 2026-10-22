@@ -23,6 +23,7 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+import { EveryProviderDryError, } from '@monochromatic-dev/translation-repair-provider';
 import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   mapOverlapped,
@@ -412,6 +413,45 @@ await describe({
         expect(run.started,).toEqual([
           0,
           1,
+        ],);
+      },
+    },),
+
+    it({
+      name: 'THROWS THE EVERY-PROVIDER-DRY REFUSAL although an earlier position failed for another reason, since the '
+        + 'dry refusal ends the run and the other failure is one item\'s, and writes the earlier failure it does not throw',
+      fn: async () => {
+        const run = gatedRun({ count: 3, },);
+        /**
+         Every line the helper wrote, behind its level.
+         */
+        const lines: string[] = [];
+        /**
+         What the router raised for the later item, first in time.
+         */
+        const dry = new EveryProviderDryError({ measured: 'meters read every provider dry', },);
+        const failure = collected({
+          run: mapOverlapped({
+            items: ITEMS.slice(
+              0,
+              3,
+            ),
+            overlap: 3,
+            oneItem: run.oneItem,
+            signal: NEVER_STOPPED,
+            l: levelCapturingLogger({ lines, },),
+            nameOf: catName,
+          },),
+        },);
+        await settle();
+        nonNullishOrThrow(run.gates[2],).reject(dry,);
+        await settle();
+        nonNullishOrThrow(run.gates[0],).reject(new Error('the first item broke after it',),);
+        nonNullishOrThrow(run.gates[1],).resolve('fine',);
+        expect(await failure,).toBe(dry,);
+        expect(lines,).toEqual([
+          'warn [mapOverlapped] cat a failed (refused by Error), and the failure thrown is cat c\'s, '
+            + 'which ends the run',
         ],);
       },
     },),
