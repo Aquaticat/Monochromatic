@@ -806,9 +806,17 @@ The human then said the desktop still felt wrong, cause unknown, and told me to 
 sizes are now plain `20px` (titles, heading letter) and `14px` (folder names, track titles), which are 2 px under
 Android on purpose and are the human's decision, not a measured match. The human then said it "looks good now" (their
 words: "that might have been a desktop thing"). Release 0.1.11 (bump commit `8dcea156ad`, run `39766260300`, the first
-real run of the merged workflow with the `test-alpine` and `test-windows` gates) is in flight, bounded watcher 90
-minutes. Next: check every job and the 13 assets, the hashes against `SHA256SUMS`, one attestation (exit code 0), and
-install the arm64 APK on the Pixel 6 (`1C171FDF600KWW`); if a test job fails, rerun with `gh run rerun --failed`.
+real run of the merged workflow with the `test-alpine` and `test-windows` gates) finished green and is published
+(pre-release, tag `music-player-v0.1.11`): the 12 product files match `SHA256SUMS`, the arm64 APK attestation verifies
+(exit code 0), and the arm64 APK is installed on the Pixel 6 (`1C171FDF600KWW`). Defect found: the release carries 21
+assets, not 13, because the release job downloaded artifacts with pattern `*` and swept in the eight smoke logs and
+screenshots the merged test jobs upload (`alsa`, `no-audio`, `pipewire`, `wireplumber`); the release is immutable, so
+0.1.11 keeps them. Fix committed (the release job downloads `asset-*` and the `checksums` artifact only), unverified
+until the next release or a dry run. The research into why the desktop text felt too large is in
+`doc/troubleshooting/music-player-desktop-text-looks-larger-than-android-at-the-same-size.md` (committed); still to land
+there: the CJK font each app picks (agent `aab39f469b16ca605`, report `/home/user/temp/agent/slint-cjk/report.md`) and
+the primary-source note (agent `a96478631545325e9`, output `/home/user/temp/agent/text-size-research/findings.md`, to move
+to `doc/research/text-size-perception-sources.md`).
 Not measured: the desktop rendered beside the emulator. Known difference: the desktop uses "Inter Variable"
 (`app_window.slint:65`), Android the system font. Open: whether the human still sees a problem; other desktop screens
 still use the `Theme` size tokens (settings, search, deck), left alone because the human named five texts.
