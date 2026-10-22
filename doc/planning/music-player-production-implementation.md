@@ -773,6 +773,18 @@ APK byte sizes equal the 0.1.8 sizes (17,948,369 and 20,389,299). The cause is u
 installed build shows the new layout, so the build contains the fixes. Not checked on a device: a long folder name with
 the middle ellipsis, the fold.
 
+Merge of the Alpine and Windows workflows into `music-player-release.yml`, branch `chore/music-player-ci-merge` (the
+human's rule: the tests run on a release or a manual run only, and the two standalone workflows go away). The jobs
+`test-alpine` and `test-windows` gate `checksums`; a flaky test can therefore block a release, and a failed job is
+rerun with `gh run rerun --failed` (veto-open). Compilation is not shared between the test jobs and the release builds.
+The first dry run (`39756720608`, commit `4a0994eb2b`) passed both Alpine jobs and failed all three Windows jobs on one
+test, `session::tests::an_unreadable_session_path_loads_as_defaults_and_is_logged_with_the_read_error` (1515 passed,
+1 failed): Windows reports reading a directory as `PermissionDenied` ("Access is denied."), the assertion accepted only
+the Linux text. The code was right and the test was Linux-only; why the standalone Windows workflow had not caught it
+earlier was not investigated. Fix `57fc69a67e` compares with the platform's own error for the same read. Second
+dry run `39761698854` is in flight (bounded watcher, 90 minutes). Next: if every job passes, merge `origin/main` into the
+branch, fast-forward main, push, remove the worktree `/home/user/temp/agent/ci-merge`.
+
 In flight 2026-10-18 after 0.1.6: the license polish branch `fix/music-player-license-polish` reported; its entry is
 "2026-10-18, license polish after 0.1.6" above. Merge, then release 0.1.7. Not started, mine: a quiet-host perfetto
 trace for the 10,000-track jank (p = 0.089, optional), re-check of issues 1079 to 1081 and 1069 (Depot trial CI
