@@ -4763,14 +4763,15 @@ scripts start,
 and of the `image` build.
 With nothing set,
 the bound is a computed share of the machine that runs the task:
-75 percent of the CPUs the process may use (`os.availableParallelism()`) and 75 percent of the physical memory
+90 percent of the CPUs the process may use (`os.availableParallelism()`) and 90 percent of the physical memory
 (`os.totalmem()`),
 each rounded down,
 with at least one CPU and 2 GiB.
 The process limit is 256 per CPU with a floor of 512,
 and the descriptor limit is 4096.
 No CPU count or memory size is written in the repository.
-The owner decided on 2026-10-18 that the containers use 75 percent of the host and keep that;
+The owner decided on 2026-10-18 that the containers use 75 percent of the host,
+and on 2026-10-22 raised it to 90 percent ("Use my system (almost) fully");
 the share is the constant `hostShare` in the module.
 
 A caller on a loaded host,
