@@ -956,9 +956,10 @@ await describe({
              */
             const dry = new EveryProviderDryError({ measured: 'meters read every provider dry', },);
             /**
-             Client where one seat answers at once, one hangs until cut, and the third meets the dry router late.
+             Client answering every seat at once; the seat that meets the dry router does so a turn of the event loop
+             later, after the seats that answered in microtasks have made quorum.
              */
-            const hanging = scheduledClient({ hangingModelId: SEAT_SYNTHETIC_VISION_WITHHELD, },);
+            const answering = scheduledClient({},);
             /**
              Every message the round logged.
              */
@@ -967,15 +968,15 @@ await describe({
             expect(await rejectionOf(async function dryInTheWindow(): Promise<unknown> {
               return await runGatherRound({
                 client: {
-                  ...hanging,
+                  ...answering,
                   chatJson: async function dryLate<ValueT,>(
-                    request: Parameters<typeof hanging.chatJson>[0],
-                  ): Promise<Awaited<ReturnType<typeof hanging.chatJson<ValueT>>>> {
+                    request: Parameters<typeof answering.chatJson>[0],
+                  ): Promise<Awaited<ReturnType<typeof answering.chatJson<ValueT>>>> {
                     if (request.modelId === SEAT_SYNTHETIC_VISION_NO_OPENROUTER) {
-                      await wait(SLOW_MS,);
+                      await turnOfTheLoop();
                       throw dry;
                     }
-                    return await hanging.chatJson(request as Parameters<typeof hanging.chatJson<ValueT>>[0],);
+                    return await answering.chatJson(request as Parameters<typeof answering.chatJson<ValueT>>[0],);
                   },
                 },
                 modelIds: ROSTER,
@@ -987,7 +988,7 @@ await describe({
                 stage: 'cat-stage',
                 l: capturingLogger({ messages: said, },),
                 heardNeeded: 1,
-                graceMs: GRACE_MS,
+                graceMs: HANG_STOP_MS,
               },);
             },),).toBe(dry,);
           },
