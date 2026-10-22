@@ -344,8 +344,18 @@ so a reason declared first reaches the decoder first on three providers and last
 A key-order ruling is checked against a provider that reorders keys before it is called done,
 and a schema is declared in the order its keys sort unless the ruling says otherwise.
 `schema-property-order.unit.test.ts` in `source-scan` scans every `properties` literal in source for a declared order
-that is not alphabetical;
-it is red until the sixteen schemas it lists are renamed.
+that is not alphabetical,
+and is green with no allow-list.
+The reason of a ballot is named `assessment`,
+so that it sorts before the choice;
+a reason that a ruling puts last is named `<vote>Reason`.
+A schema the scan cannot read,
+one built by spread or `Object.fromEntries`,
+gets a pin test of its own
+(`contest-ballot-wire.unit.test.ts` and `rendering-audit-wire.unit.test.ts`).
+Only the reply carries the sorted names;
+the stored shape keeps its spelling,
+and a function maps one to the other.
 
 ## Ties a gate settles
 
