@@ -39,9 +39,9 @@ import type {
 //     consolidation), which the owner did not name; `writer-unmeasured` and `reader-unmeasured` for the reason given for
 //     Sonnet.
 //
-// THE PRICES ARE THE ANTHROPIC PRICING PAGE AS THE OWNER'S BRIEF CARRIES IT (read 2026-10-22). The bundled API skill
-// of the same day lists Sonnet 5.5 cache reads at 0.20 USD a million; the brief's 0.10 is used here, since the brief
-// carries the pricing page and the skill is a cached copy. The difference is on cache reads only.
+// THE PRICES ARE THE ANTHROPIC PRICING PAGE (`https://platform.claude.com/docs/en/about-claude/pricing`, fetched
+// 2026-10-22). Its footnote 2 prices Sonnet 5.5 cache hits at 0.05 times base input, 0.10 USD a million. The bundled
+// API skill's migration guide of the same day still says 0.20 for Sonnet 5.5 cache reads; the live page wins.
 //
 // NO ZERO DATA RETENTION is promised by this route. The owner's ruling of 2026-10-05 (the corpus is public, PII is
 // allowed) and the owner's grant quoted in this note are what permit it.
