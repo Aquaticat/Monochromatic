@@ -309,3 +309,74 @@ so the round time it saves is not measured.
 Open to the owner's veto:
 the reading of "both benches",
 and with it whether the wide seats keep Qwen.
+
+## B826: the writing-bench floor stopped an entry for want of a named return, though NeuralWatt's return was 48 s away
+
+Status:
+open,
+found by the lead's read of `XingZ6019` on 2026-10-22 (UTC) (the brief's E2).
+A fix is in progress in the briefs the lead labelled D4 and E2 and has not landed;
+this entry records no design for it.
+The D4 of those briefs is the model-level dryness work of B822,
+not the D4 candidate of the `XingZ6018` read.
+
+What the run showed:
+`XingZ6019` was launched at 18:54 UTC on the frozen build `sha256-tree-v1:44ce3051...` (commit `1d46232457`),
+entry `XingZ60`,
+and ended `DONE processed=0`,
+`artifacts=0/1` at 19:14:20 UTC after 19.2 min.
+The `JUDGE SEATS` lines counted editors 1 of 3 and refiners 1 of 3 reachable against a floor of 2,
+`TALLY` printed `status=ERROR` twice,
+and the entry was `STALLED` with 16 cache records.
+NeuralWatt was dry for the whole run,
+because its 550 Wh day had been spent by the earlier runs.
+That is not a defect:
+the owner ruled on 2026-10-22 that launches need not be aligned to NeuralWatt's day.
+The editors were `hf:zai-org/GLM-5.3-Flash` (served by NeuralWatt only),
+`glm-5.3` (Hyper,
+whose balance was empty)
+and `deepseek-v4.1-flash` (called directly,
+wet),
+so one editor was reachable.
+`xiaomi/mimo-v2.6-flash` is a checker only (measured) and was never reached.
+
+The defect:
+NeuralWatt's dryness has a known return.
+The run decides the account's day anchor at its start,
+and the next day began at 19:15:08 UTC,
+48 s after the stop.
+The seat reader logged `no provider has named its return`,
+and the floor stopped the entry instead of waiting those 48 s.
+The owner's ruling of 2026-09-08 stops an entry only when a writing bench has no reachable seat
+"and no provider has named its return" (`doc/decision/translation-repair-writing-bench-floor.md`),
+so a return the run itself holds belongs on the waiting side of the ruling.
+
+The cause,
+read from the source at the branch tip and not run:
+`readDrynessPastShortBench` (`run/src/corpus-run/run-seats-read.ts`) waits only for the shortest of
+`client.providerHolds()`,
+the holds a provider's refusal set,
+and when that is zero with a writing bench below `WRITING_BENCH_FLOOR` in a phase that stops,
+it logs `writing bench unreachable ... stopping the entry`
+and raises the refusal (`writtenRefusal`).
+A provider dry by its meter alone,
+NeuralWatt among them,
+has no entry in the holds,
+although the budgets can state NeuralWatt's return (`neuralwattReturn`,
+which B819 added for the refusal's text).
+The build of `XingZ6019` predates B818 to B820,
+which are not among its ancestors,
+and the source was read at the branch tip `b18a4f7a40`,
+which holds them.
+
+What is left:
+the fix,
+its red case (a writing bench below the floor with NeuralWatt dry and its return known waits for the return),
+and the prevention rule,
+which are owed when the fix lands.
+Cache versions:
+not known until the fix lands.
+
+Recurrence:
+the thirteenth and fifteenth classes of the defect-class history (the hold wait and the writing-bench floor),
+and B819 (a NeuralWatt time the router knew and a text did not state).

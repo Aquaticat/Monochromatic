@@ -673,3 +673,44 @@ and the `[PASS]` lines of the suites the change added or touched,
 by name (M288,
 and `AGENTS.md` rule TRV:
 a green run counts only when its output holds the expected suite and test names).
+
+## M294: the gate scanned the tree before a merge of main, and the merge brought in three doc lines that fail the source scan
+
+Status:
+fixed on 2026-10-22 (UTC).
+The three lines were fixed in `b18a4f7a40`,
+and the land script now holds the check that would have refused them.
+Found when main failed `source-scan` after the land merge `ecbbae7fa3`;
+gate g171 read the repaired tree green at 2803 tests and none failing.
+
+What happened:
+the gate that cleared the landing scanned the tree as it stood before main was merged into the translation-repair branch.
+The merge `ecbbae7fa3` (main at `1d46232457` into the branch) brought in three doc lines
+that the source scans refuse:
+a position reference with no named target in the evidence file of the `CuspariaKLSY23` read,
+another in its stages file,
+and zone-less clock times in the stages file of the `zheermao23` read.
+Each side had passed its own scans.
+The scans that read docs (clock times,
+position references,
+the Markdown linter) read the whole tree,
+so a merge of docs can fail them though neither parent does,
+and main stayed red until `b18a4f7a40` named the targets and zoned the times.
+
+Why nothing flagged it:
+the scan was run on the parents and not on the result,
+and a merge commit is the one tree no author and no gate had seen.
+
+Prevention:
+the land script runs `//package/translation-repair/source-scan:test:unit` on the merged tree whenever it merges main,
+and refuses to push when it fails.
+`mistake-prevention-docs-and-references.md`,
+"The Markdown linter",
+holds the rule and its limit:
+the scan imports the gate's `dist` builds,
+so a merge that changes markup,
+typography or document structure needs a fresh gate and not the scan alone.
+
+Recurrence:
+M250 and D35,
+where docs-only commits landed without the one task that reads the line limit and main went red.

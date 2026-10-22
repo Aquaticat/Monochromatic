@@ -553,8 +553,9 @@ named for that subject and listed here.
   A provider an owner ruling keeps off that every run still asked (B760),
   a seat never withheld although its streams carried nothing (B761),
   a meter line that read a held provider differently from the router (B763),
-  and a model the owner's answer took off the lane-contest and consolidation benches
-  after the grace cut 40 of its 95 streams (B815).
+  a model the owner's answer took off the lane-contest and consolidation benches
+  after the grace cut 40 of its 95 streams (B815),
+  and a writing-bench floor that stopped an entry for want of a named return though NeuralWatt's return was 48 s away (B826).
 - [Audit ledger: blocks and quotes read off the parse](audit-ledger-blocks-and-quotes-read-off-the-parse.md):
   Blocks,
   quotes and code spans counted by a blank-line split or a scan of their own,
@@ -699,7 +700,9 @@ named for that subject and listed here.
   a test round reported before the scans had read its tests (M266),
   a bench change landed with the run package's tests only (M287),
   about 30 gates that took five minutes longer than the gates before them with no comparison of the time (M288),
-  and a count expected from a runner that prints none (M293).
+  a count expected from a runner that prints none (M293),
+  and a gate that scanned the tree before a merge of main,
+  which then brought in three doc lines that fail the scan (M294).
 - [Audit ledger: process mistakes, stopping and waiting](audit-ledger-process-stopping-and-waiting.md):
   Turns that ended with work still listed,
   and waits spent polling.

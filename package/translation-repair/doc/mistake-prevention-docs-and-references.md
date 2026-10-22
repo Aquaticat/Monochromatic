@@ -309,6 +309,21 @@ run,
 typography and adjudication);
 on 2026-10-22 (UTC) a run without them failed every scan file at load with `ERR_MODULE_NOT_FOUND`
 for the markup package's `dist`.
+A merge of main into the branch runs that task on the merged tree before the push.
+The scans that read docs (clock times,
+position references and the Markdown lint scan) read the whole tree,
+so a merge can bring in lines that neither parent's scan saw,
+and a gate that scanned the tree before the merge cleared three such lines into main
+(ledger M294:
+the merge `ecbbae7fa3`,
+repaired in `b18a4f7a40`).
+The land script runs `//package/translation-repair/source-scan:test:unit` whenever it merges main
+and refuses to push on a failure.
+The limit of the check:
+the scan imports the gate's `dist` builds,
+so after a merge it reads the builds made before the merge,
+and a merge that changes markup,
+typography or document structure needs a fresh gate and not the scan alone.
 
 What enforces it:
 `markdown-lint-clean.unit.test.ts` in `source-scan` runs the linter over the package docs,
