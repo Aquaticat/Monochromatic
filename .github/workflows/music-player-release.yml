@@ -1298,8 +1298,8 @@ jobs:
       run: |
         set -euo pipefail
         expected=$(printf '%s\n' \
-          "music-player-${VERSION}-android-third-party-licenses.txt" \
           "music-player-${VERSION}-android-arm64-v8a.apk" \
+          "music-player-${VERSION}-android-third-party-licenses.txt" \
           "music-player-${VERSION}-android-x86_64.apk" \
           "music-player-${VERSION}-desktop-third-party-licenses.txt" \
           "music-player-${VERSION}-linux-arm64.tar.gz" \
