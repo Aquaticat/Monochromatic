@@ -21,6 +21,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { RUN_ROSTER, } from '@monochromatic-dev/translation-repair-run';
+import { EDITOR_LANE_EDITORS, } from '../../dist/final/node/index.mjs';
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
 import { BENCH_ENTRY, } from './built-entry.test-fixture.ts';
 import { scratchDir, } from '@monochromatic-dev/translation-repair-test-fixture/ts/scratch-dir.test-fixture.ts';
@@ -41,9 +42,10 @@ const NO_KEY_LINE = 'editor-calibrate: TRANSLATION_REPAIR_NEURALWATT_API_KEY, TR
   + 'run under mise so sops injects it\n';
 
 /**
- Models the roster seats, which the header counts.
+ Models the lane seats as editors and as judges, which the header counts.
  */
-const MODELS = String(RUN_ROSTER.length,);
+const EDITORS = String(EDITOR_LANE_EDITORS.length,);
+const JUDGES = String(RUN_ROSTER.length,);
 
 await describe({
   name: '',
@@ -77,7 +79,7 @@ await describe({
 
             expect(run.code,).toBe(REFUSED_AS_STATED,);
             expect(run.stdout,).toBe(
-              `editor-calibrate: 1 slice, ${MODELS} models editing and judging each, 4 slices in flight\n`
+              `editor-calibrate: 1 slice, ${EDITORS} models editing and ${JUDGES} judging each, 4 slices in flight\n`
                 + 'straggler window 300000ms (calibration default)\n',
             );
             expect(run.stderr,).toBe(NO_KEY_LINE,);
@@ -110,7 +112,7 @@ await describe({
 
             expect(run.code,).toBe(REFUSED_AS_STATED,);
             expect(run.stdout,).toBe(
-              `editor-calibrate: 1 slice, ${MODELS} models editing and judging each, 1 slice in flight\n`
+              `editor-calibrate: 1 slice, ${EDITORS} models editing and ${JUDGES} judging each, 1 slice in flight\n`
                 + 'straggler window 1234ms (TRANSLATION_REPAIR_STRAGGLER_GRACE_MS override)\n'
                 + 'WRITER GRACE OVERRIDDEN by TRANSLATION_REPAIR_WRITER_GRACE_MS: writer rounds (editor, refiner, '
                 + 'translate, produceConsolidations, archive-block-review) abandon stragglers 5678ms after quorum rather than the 1234ms '

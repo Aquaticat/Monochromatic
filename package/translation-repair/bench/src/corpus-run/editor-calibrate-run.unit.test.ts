@@ -32,6 +32,7 @@ import {
 } from '@monochromatic-dev/translation-repair-glossary';
 import {
   type BenchSlice,
+  EDITOR_LANE_EDITORS,
   runEditorCalibrate,
 } from '../../dist/final/node/index.mjs';
 import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixture/ts/hang-stop.test-fixture.ts';
@@ -53,9 +54,10 @@ import { scriptedClient, } from '@monochromatic-dev/translation-repair-provider/
 //region Fixtures
 
 /**
- Models the roster seats, which the header counts.
+ Models the lane seats as editors and as judges, which the header counts.
  */
-const MODELS = String(RUN_ROSTER.length,);
+const EDITORS = String(EDITOR_LANE_EDITORS.length,);
+const JUDGES = String(RUN_ROSTER.length,);
 
 /**
  The one slice every sample holds.
@@ -256,7 +258,7 @@ await describe({
             },);
 
             expect(printed.lines,).toEqual([
-              `editor-calibrate: 1 slice, ${MODELS} models editing and judging each, 4 slices in flight`,
+              `editor-calibrate: 1 slice, ${EDITORS} models editing and ${JUDGES} judging each, 4 slices in flight`,
               'straggler window 300000ms (calibration default)',
               '  slice 1 of 1 (mittens chunk 0): 0 editor rounds, 0 refiner rounds (nothing eligible to rewrite), '
                 + '0 editors shipping',
@@ -309,7 +311,7 @@ await describe({
 
             expect(reaches.counts,).toEqual([3,],);
             expect(printed.lines.slice(0, 3,),).toEqual([
-              `editor-calibrate: 1 slice, ${MODELS} models editing and judging each, 1 slice in flight`,
+              `editor-calibrate: 1 slice, ${EDITORS} models editing and ${JUDGES} judging each, 1 slice in flight`,
               'straggler window 1234ms (TRANSLATION_REPAIR_STRAGGLER_GRACE_MS override)',
               'WRITER GRACE OVERRIDDEN by TRANSLATION_REPAIR_WRITER_GRACE_MS: writer rounds (editor, refiner, '
                 + 'translate, produceConsolidations, archive-block-review) abandon stragglers 60000ms after quorum rather than the 60000ms '
@@ -350,15 +352,16 @@ await describe({
             ],);
             // THE SIX SEATS CREDITED ARE PINNED AGAIN (n166, Z3). The lane seats six editors from a bench the prompt rotates, so
             // which six of the seats that can hold an editor chair are credited moved whenever a sheet's wording did (n161:
-            // the house tense rule). The rotation's start is injected, so no sheet text moves the seats. EIGHT CHAIRS SINCE
-            // 2026-10-22 (Haiku 5.5 joined the run roster), so the same start credits Haiku in place of Qwen3.8-27B.
+            // the house tense rule). The rotation's start is injected, so no sheet text moves the seats. SONNET 5.5 TAKES THE
+            // LAST SEAT SINCE 2026-10-22 (the lane seats the roster's writers and the run's named editors, and Haiku 5.5, seated
+            // wide and not as an editor, holds no chair).
             expect(printedLines.slice(3,),).toEqual([
               SEAT_HYPER_OPENROUTER_VISION_EDITOR,
               SEAT_HYPER_ONLY,
               SEAT_HYPER_OPENROUTER_UNMEASURED,
               SEAT_BEDROCK_ONLY_TEXT,
               SEAT_OPENROUTER_ONLY,
-              'claude-haiku-5-5',
+              'claude-sonnet-5-5',
             ].map(function credited(modelId,): string {
               return `  ${modelId}: wrote shipping text on 1 of 1 slice`;
             },),);
@@ -497,7 +500,7 @@ await describe({
             expect(String(refusal,),).toBe('StatedRefusalError: the straggler window is unreadable',);
             expect(reaches.events,).toEqual(['overlap', 'draw', 'grace',],);
             expect(printed.lines,).toEqual([
-              `editor-calibrate: 1 slice, ${MODELS} models editing and judging each, 2 slices in flight`,
+              `editor-calibrate: 1 slice, ${EDITORS} models editing and ${JUDGES} judging each, 2 slices in flight`,
             ],);
           },
         },),
@@ -530,7 +533,7 @@ await describe({
             expect(String(refusal,),).toBe('StatedRefusalError: no provider key is set',);
             expect(reaches.events,).toEqual(['overlap', 'draw', 'grace', 'writer-grace', 'client',],);
             expect(printed.lines,).toEqual([
-              `editor-calibrate: 1 slice, ${MODELS} models editing and judging each, 4 slices in flight`,
+              `editor-calibrate: 1 slice, ${EDITORS} models editing and ${JUDGES} judging each, 4 slices in flight`,
               'straggler window 300000ms (calibration default)',
             ],);
           },

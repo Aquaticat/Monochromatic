@@ -75,9 +75,9 @@ await describe({
             // THE SIX SEATS THAT SHIP ARE PINNED AGAIN (n166, Z3). The lane seats six editors from a bench the prompt rotates, so
             // which six of the seats that can hold an editor chair are seated moved whenever a sheet's wording did (n161: the
             // house tense rule), and the test had stopped naming them. The rotation's start is injected through the stage settings
-            // instead, so no sheet text moves the seats and a lane that seated a worse subset of the bench fails. THE BENCH HAS
-            // EIGHT CHAIRS SINCE 2026-10-22, when Haiku 5.5 joined the run roster on the owner's Claude key, so the same pinned
-            // start seats a different six (Haiku in, Qwen3.8-27B out).
+            // instead, so no sheet text moves the seats and a lane that seated a worse subset of the bench fails. THE BENCH IS THE
+            // ROSTER'S WRITERS AND THEN THE RUN'S NAMED EDITORS SINCE 2026-10-22 (`EDITOR_LANE_EDITORS`): Sonnet 5.5 joined on the
+            // owner's Claude key and takes the last of the six, and Haiku 5.5, seated wide and not as an editor, holds none.
             /**
              Seats whose text shipped, in the order the lane seats them.
              */
@@ -87,7 +87,7 @@ await describe({
               SEAT_HYPER_OPENROUTER_UNMEASURED,
               SEAT_BEDROCK_ONLY_TEXT,
               SEAT_OPENROUTER_ONLY,
-              'claude-haiku-5-5',
+              'claude-sonnet-5-5',
             ];
 
             expect(rounds,).toEqual({
