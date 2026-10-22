@@ -23,7 +23,7 @@ import {
 
 import {
   type ChainNode,
-  chainBreakOffsets,
+  chainBreaks,
 } from '../dist/final/node/index.mjs';
 
 /** Minimal token stub the chain walk reads: a value to classify and a start offset. */
@@ -451,6 +451,13 @@ await describe({
             expect(diagnostics,).toEqual([],);
           },
         },),
+        it({
+          name: 'indentation valid cases produce no violations',
+          fn: async () => {
+            const diagnostics = await lint('valid/indentation.ts',);
+            expect(diagnostics,).toEqual([],);
+          },
+        },),
       ],
     },),
 
@@ -787,13 +794,13 @@ await describe({
             const steps = 50_000;
             /** Shared mock context; the synthetic nodes carry their own offsets. */
             const context = mockChainContext();
-            /** Break offsets of a `steps`-deep member spine. */
-            const memberBreaks = chainBreakOffsets({
+            /** Breaks of a `steps`-deep member spine. */
+            const memberBreaks = chainBreaks({
               context,
               node: buildMemberChain(steps,),
             },);
-            /** Break offsets of a `steps`-operator left-associative spine. */
-            const operatorBreaks = chainBreakOffsets({
+            /** Breaks of a `steps`-operator left-associative spine. */
+            const operatorBreaks = chainBreaks({
               context,
               node: buildOperatorChain(steps,),
             },);
@@ -969,6 +976,27 @@ await describe({
       ],
     },),
 
+    describe({
+      name: 'indentation',
+      children: [
+        it({
+          name: 'reports one violation per deviating checked line',
+          fn: async () => {
+            const diagnostics = await lint('invalid/indentation.ts',);
+            const indentationDiagnostics = diagnostics.filter(
+              function isIndentationDiagnostic(diagnostic,): boolean {
+                return diagnostic.code === 'stylistic(indentation)';
+              },
+            );
+            expect(indentationDiagnostics,).toHaveLength(6,);
+            expect(indentationDiagnostics[0]?.message,).toBe(
+              'Expected indentation of 2 spaces but found 6.',
+            );
+          },
+        },),
+      ],
+    },),
+
     //endregion Invalid fixtures
 
     //region Autofix tests
@@ -976,6 +1004,63 @@ await describe({
     describe({
       name: 'autofix',
       children: [
+        it({
+          name: '--fix normalizes indentation idempotently',
+          fn: async () => {
+            const sourcePath = resolve(
+              FIXTURES,
+              'invalid',
+              'indentation.ts',
+            );
+            await using fixtureCopy = await createTempFixtureFile({
+              fileName: 'indentation.ts',
+              sourcePath,
+              tempPrefix: 'oxlint-stylistic-indentation-',
+            },);
+
+            await fixUntilStable(fixtureCopy.filePath,);
+            const fixedOnce = readFileSync(fixtureCopy.filePath, 'utf8',);
+            expect(fixedOnce,).toContain(
+              'function hang(\n  parameter: number,\n): number {\n  return parameter;',
+            );
+            expect(fixedOnce,).toContain('  value = 1;',);
+            expect(fixedOnce,).toContain(
+              '  method(): number {\n    return this.value;',
+            );
+            expect(fixedOnce,).toContain('  else {\n    return 2;',);
+
+            await fixUntilStable(fixtureCopy.filePath,);
+            expect(readFileSync(fixtureCopy.filePath, 'utf8',),).toBe(fixedOnce,);
+            expect(await lint(fixtureCopy.filePath,),).toEqual([],);
+          },
+        },),
+        it({
+          name: '--fix converges indentation with argument, chain, and body fixers',
+          fn: async () => {
+            const sourcePath = resolve(
+              FIXTURES,
+              'invalid',
+              'indentation-mixed.ts',
+            );
+            await using fixtureCopy = await createTempFixtureFile({
+              fileName: 'indentation-mixed.ts',
+              sourcePath,
+              tempPrefix: 'oxlint-stylistic-indentation-mixed-',
+            },);
+
+            await fixUntilStable(fixtureCopy.filePath,);
+            const fixedOnce = readFileSync(fixtureCopy.filePath, 'utf8',);
+            expect(fixedOnce,).toContain('  calls(\n    1,\n    2,\n  );',);
+            expect(fixedOnce,).toContain(
+              '  const chained = value.then(1, )\n    .finally(2, );',
+            );
+            expect(fixedOnce,).toContain('  if (true) {\n    mixed();\n  }',);
+
+            await fixUntilStable(fixtureCopy.filePath,);
+            expect(readFileSync(fixtureCopy.filePath, 'utf8',),).toBe(fixedOnce,);
+            expect(await lint(fixtureCopy.filePath,),).toEqual([],);
+          },
+        },),
         it({
           name: '--fix removes every canonical TSDoc prefix in never mode idempotently',
           fn: async () => {
@@ -1259,7 +1344,7 @@ await describe({
               'const b5 = items.map(a,)\n  .filter(b,)\n  .filter(c,);',
               'const b6 = a + b\n  + c\n  + d;',
               'const b7 = x && y\n  && z;',
-              'const b8 = aa.b()\n  .c()\n  + dd.e()\n  .f();',
+              'const b8 = aa.b()\n  .c()\n  + dd.e()\n    .f();',
               'const b9 = obj.b\n  .c\n  .d\n  .toString()\n  .trim();',
               'const b10 = obj.a\n  .b\n  > c;',
             ];

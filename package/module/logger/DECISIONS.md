@@ -673,3 +673,70 @@ Consequences:
    It would have kept the eight wrong call sites working,
    which is the opposite of the point,
    and would have changed the export's type from `Promise` to a thenable.
+
+## File sink retention, lazy log files, and a kill switch (2026-10-22)
+
+Issue #576 measured 19 GB in about 1,761,868 log files under `node_modules/.monochromatic`,
+ written by the file sink with no retention,
+ rotation,
+ or off switch.
+cli-git's linked-worktree copy carries that ignored tree into every new worktree
+ (issue #571),
+ so every fix lands in the logger,
+ never in a copier-side exclusion
+ (`doc/planning/cli-git-rust-behavior-ledger.md`,
+ section `Linked-worktree ignored-state copy`).
+The accepted package is L2+F1+R1+I1+B1,
+recorded in `doc/decision/module-logger-log-accumulation.md`,
+ which is the canonical decision record;
+ the option set and measurements stay in `doc/planning/module-logger-log-accumulation.md`.
+
+**Logs stay project-local (L2)** because incident evidence belongs beside the checkout it describes
+ and npm consumers keep their documented destination.
+The day-directory nesting under that destination is a deliberate layout change,
+ not a location change.
+Moving the defaults to user state (L1) stays open as the recorded escape
+ if the retained window re-triggers the issue 571 copy stall.
+
+**One file per process,
+created on the first record (F1)** so unused processes leave no files.
+Verification probes writability with a `{timestamp}.{uuid}.probe.tmp` round-trip it always removes,
+ and the real `{YYYY-MM-DD}/{timestamp}.{uuid}.log.jsonl`
+ appears under its UTC day directory with the first record.
+A shared rolling file (F3) is rejected:
+ records carry no process identity,
+ so merging streams loses attribution.
+
+**Retention (R1) bounds one destination at 14 days,
+512 MiB,
+and 50,000 files**,
+ swept at verification,
+ off the logging path,
+ throttled by a `.logger-retention-sweep` stamp to one walk per five minutes per directory.
+`MONOCHROMATIC_LOG_MAX_AGE_DAYS`,
+ `MONOCHROMATIC_LOG_MAX_BYTES`,
+ and `MONOCHROMATIC_LOG_MAX_FILES` override the bounds;
+ invalid or negative values fall back to the defaults.
+Age expiry keys off the UTC day name prefix
+ and a kept day directory owns its contents wholesale;
+ the budget pass deletes the oldest non-fresh files first
+ and never touches a file modified within an hour.
+Sweeps delete only logger-owned names,
+ so deliberate neighbors such as `translation-repair-runs*` stay.
+
+**Inflow control (I1)** adds `MONOCHROMATIC_LOG_FILE=off`,
+ which disables the file sink entirely,
+ even with an explicit destination.
+It answers audit ledger entry T9
+ (in `package/translation-repair/doc/audit-ledger-test-suite-defects-in-the-tests-themselves.md`),
+ and test harnesses additionally point `MONOCHROMATIC_LOG_DIRECTORY`
+ at a per-run scratch directory.
+The `retention` argument,
+ `NO_LOG_RETENTION_SWEEP`,
+ and the default bound names are exported from the `./node` entry.
+
+**Backlog purge (B1)** applies the 14-day window once,
+ by hand,
+ to the pre-0.4.5 flat `*.log.jsonl` backlog in every worktree of this repository
+ while the deliberate run directories stay;
+ it lands with `0.4.5`.

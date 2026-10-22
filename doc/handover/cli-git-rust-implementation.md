@@ -1856,8 +1856,9 @@ that is verification, not a decision for the user.
   file (`checkout -- f`, `restore f`), and `stash` or a branch `switch`/`checkout` in a dirty linked worktree.
   Workarounds that exist: commit with explicit paths, use a clean linked worktree, or the hatch directly after the
   subcommand (named in every rejection text). Documentation gaps to close before release: `README.md` lines 20-21 and
-  160-161 name only stash, clean and reset; `AGENTS.md` GFP ("restore") and `doc/runbook/publish-npm-package-first-
-  time.md:57` (`git switch main`) should say how to do it under the policy; `doc/agent/` has no entry. Needed
+  160-161 name only stash, clean and reset; `AGENTS.md` GFP ("restore") and
+  `doc/runbook/publish-npm-package-first-time.md:57` (`git switch main`) should say how to do it under the policy;
+  `doc/agent/` has no entry. Needed
   tests: a binary-level hatch test per new form, and a test per documented workaround.
   Decisions 2026-10-20 (user): (1) every normal workflow that could be blocked must have a documented sanctioned
   alternative, and every rejection must guess the intent and say it (done: 18 guarded forms in

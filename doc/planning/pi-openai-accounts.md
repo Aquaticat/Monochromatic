@@ -47,7 +47,7 @@ Holding and switching between one operator's own accounts is documented behavior
 Automatic failover when an account's allowance is spent is **undocumented** rather than prohibited.
 For the exhaustion code, the documented recovery is "Pause new requests that use the user's ChatGPT plan
 and link to ChatGPT Settings → Usage"
-([Errors and recovery](https://developers.openai.com/siwc/token-sharing-open-source/errors-and-recovery)).
+([Errors and recovery][errors-and-recovery]).
 The user owns this decision and made it with that text in front of them.
 The design keeps the switch as the primitive and failover as a policy layered on it, so removing the policy
 later leaves a documented multi-account selector behind.
@@ -155,7 +155,7 @@ From `pi-ai/dist/auth/oauth/openai-chatgpt.js`:
 - Refreshes must be serialized per session "so two processes do not race a rotating token".
   Terminal refresh codes are `invalid_grant`, `invalid_refresh_token`, `token_expired`,
   `refresh_token_expired`, `refresh_token_invalidated`, and `refresh_token_reused`
-  ([Errors and recovery](https://developers.openai.com/siwc/token-sharing-open-source/errors-and-recovery)).
+  ([Errors and recovery][errors-and-recovery]).
 - Reauthorization for a saved account reuses that account's issued `client_id` with fresh `state`, `nonce`,
   and PKCE values, omits `agent_name_hint`, includes the stable `ext_agent_host_id`, and may send a retained
   `id_token` as `id_token_hint`. The ID token is validated against JWKS for issuer, audience, expiry, and
@@ -454,3 +454,5 @@ Each step is committed before the next begins, with its own scope.
    announcements, `/accounts`.
 6. `fix(pi-plugin-openai-fast)`: enumerate account providers instead of the two constants.
 7. Verification: stub suite, live suite, probes, guard proofs, then the README completeness pass.
+
+[errors-and-recovery]: https://developers.openai.com/siwc/token-sharing-open-source/errors-and-recovery

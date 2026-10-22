@@ -20,62 +20,62 @@ const BOUNDARY_CASES: readonly {
   {
     name: 'OSC title-set sequence',
     input: 'title:\u001B]0;PWNED\u0007 ok',
-    expected: 'title:\\u001B]0;PWNED\\u0007 ok',
+    expected: String.raw`title:\u001B]0;PWNED\u0007 ok`,
   },
   {
     name: 'CSI clear-screen sequence',
     input: 'clear:\u001B[2J',
-    expected: 'clear:\\u001B[2J',
+    expected: String.raw`clear:\u001B[2J`,
   },
   {
     name: 'SGR color sequence (no allowlist)',
     input: '\u001B[31mred\u001B[0m',
-    expected: '\\u001B[31mred\\u001B[0m',
+    expected: String.raw`\u001B[31mred\u001B[0m`,
   },
   {
     name: 'trailing lone ESC',
     input: 'tail\u001B',
-    expected: 'tail\\u001B',
+    expected: String.raw`tail\u001B`,
   },
   {
     name: 'ESC [ with no final byte',
     input: 'open\u001B[',
-    expected: 'open\\u001B[',
+    expected: String.raw`open\u001B[`,
   },
   {
     name: 'unterminated OSC',
     input: '\u001B]2;never closed',
-    expected: '\\u001B]2;never closed',
+    expected: String.raw`\u001B]2;never closed`,
   },
   {
     name: 'nested ESC inside a sequence',
     input: '\u001B[\u001B[2J',
-    expected: '\\u001B[\\u001B[2J',
+    expected: String.raw`\u001B[\u001B[2J`,
   },
   {
     name: '8-bit C1 CSI',
     input: 'c1:\u009B2J',
-    expected: 'c1:\\u009B2J',
+    expected: String.raw`c1:\u009B2J`,
   },
   {
     name: 'DEL',
     input: 'del:\u007F',
-    expected: 'del:\\u007F',
+    expected: String.raw`del:\u007F`,
   },
   {
     name: 'NUL',
     input: 'nul:\u0000end',
-    expected: 'nul:\\u0000end',
+    expected: String.raw`nul:\u0000end`,
   },
   {
     name: 'carriage return (line overwrite)',
     input: 'real\rfake',
-    expected: 'real\\u000Dfake',
+    expected: String.raw`real\u000Dfake`,
   },
   {
     name: 'backspace',
     input: 'ab\bc',
-    expected: 'ab\\u0008c',
+    expected: String.raw`ab\u0008c`,
   },
 ];
 

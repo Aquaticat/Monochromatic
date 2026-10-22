@@ -849,6 +849,15 @@ Re-evaluate this decision when:
   - `package/oxlint-plugin/stylistic/src/rule/chain-per-line.ts:251-268`
   - `package/test-fixture/oxlint-stylistic/src/invalid/chain-and-mixed-operators.ts`
   - `package/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts:566-617`
+- Width-conflict oscillation,
+  a failure class beside the span-overlap one recorded here:
+  when
+  `chain-per-line`'s renderer emitted one flat region indent while `stylistic/indentation` expected
+  per-anchor nesting,
+  fixture b8 looped under `--fix` until commit `310a3fa94c` unified chain rendering
+  with the indent model.
+  Record:
+  `doc/troubleshooting/oxlint-typescript-indent-rule.md`.
 - Issue this implementation closed:
    [Aquaticat/Monochromatic#209][issue-209].
 

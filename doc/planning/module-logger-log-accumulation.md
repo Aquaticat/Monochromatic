@@ -7,9 +7,9 @@ one file per invocation)
 plus two follow-ups the measurements force
 (test inflow and the existing backlog).
 Status:
-proposal;
-the five decisions in [Open questions](#open-questions) are unanswered.
-Nothing here is implemented.
+accepted as the L2+F1+R1+I1+B1 package and implemented in `module-logger` `0.4.5`;
+[the decision record](../decision/module-logger-log-accumulation.md) is canonical.
+The option set in [Open questions](#open-questions) and the measurements stay here as the evidence trail.
 
 ## Measurements (2026-10-22)
 
@@ -410,6 +410,30 @@ Landing order:
 5.  Decision record in `doc/decision/`,
    issue comment on 576,
    and the audit ledger T9 status update.
+
+## Rollout (2026-10-22)
+
+- The retention sweep's first real run bounded the main checkout
+  before the purge:
+  a `file-enforcer` verify at 08:15 UTC
+  (stamp `node_modules/.monochromatic/.logger-retention-sweep`)
+  trimmed the measured 19 GB and 1,761,904 entries
+  to the R1 caps in one pass.
+- The authorized purge then removed every pre-2026-10-08 logger file
+  from all 153 linked worktrees:
+  44,570 files and 722 MiB deleted,
+  53,313 files and 535.6 MiB kept in the window,
+  537 files and 49.1 MiB preserved in `translation-repair-runs*`.
+  A confirming walk after deletion reports 0 expired entries.
+- The main checkout after both passes holds
+  47,005 in-window files (511 MiB) spanning 2026-10-17 to 2026-10-22,
+  plus the sweep stamp.
+- 0.4.5 shipped the same day (release commit `4b0caa5191`).
+  The auto-publish lane failed on the `pnpm` frozen-install drift pair
+  (`doc/troubleshooting/pnpm-frozen-install-validation-drift.md`),
+  and the targeted `npm-publish.yml` run 39749801676
+  published it at 04:44 America/New_York with signed provenance
+  (transparency log index 3382101501).
 
 ## Risks and limits
 

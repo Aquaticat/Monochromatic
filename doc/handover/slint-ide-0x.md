@@ -1469,14 +1469,27 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     snapshot. On its report: verify, scan `ps`, `podman ps`, `systemctl --user list-units`, read the product diff,
     merge in a scratch worktree, gates once, own latency A/B, push, reinstall if the binary changed, remove its worktree
     and branch.
-    Open, in order: (1) the stalls away from slot 50 (slot 33 and 72, one run each; undecided, on a quiet host) and the
+    Tail agent reported 2026-10-22 (branch `worktree-agent-a52afe09d606ed6ed`, product tip `9f21309e6d`, last doc commit
+    `6d17994673`, not merged): single-shot `tile_wake` timer in `src/native/tile/wait.rs` for the rest of the wait; slow
+    mode (tile applied late) A 70 of 140, B 0 of 100; median not raised; agent gates pass (`test:native` 282, `test` 797,
+    six source guards shown to fail). Its open cost: stalls in the 120-step scroll B 16 in 60 runs (14 runs) against A
+    10 in 62 (10 runs), slot 50 B 1 of 60 (first, spinning build) against A 1 of 62; too few runs to decide, and a tile
+    taken in an input gap over 20 ms is a possible new extra frame. My check in progress (unit `wake-all`, trees
+    `~/temp/agent/ab-wake-a` = `origin/main`, `~/temp/agent/land-wake` = merged; driver `~/temp/agent/wake-all.mjs`,
+    rows `wake-lat-ab.jsonl`, `wake-lat-aa.jsonl`, log `wake-all.log`): latency 40 pairs, A against A 20 pairs, stall
+    A/B 20 pairs, at whatever load there is (3.8 when started; the A against A pairs measure the spread that load
+    adds). Land only if the stall counts of B are not worse than A beyond the spread of A
+    against A; else report to the owner with the numbers. Then gates once on the merged snapshot, push, reinstall,
+    remove worktrees and the branch.
+    Open, in order: (1) the stalls away from slot 50 (slot 33 and 72, one run each; undecided; a larger alternating pass with a same-binary control, under whatever load there is) and the
     +20 ms tail (the tail agent above);
     (2) the flake work, in `doc/handover/ide-native-flakes.md`:
     fixed with counts (refused-tile test 10 of 360 to 0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160
     to 0 of 160, find-box menu test by its guard, see the LANDED block above); open: the annotation stability tests
     (cause unknown, frames kept under `target/flake-frames/` for the next failure), the two incomplete ledger entries,
     and the video-memory question (7.98 of 7.98 GiB in every full run; no failure attributed). Full `test:native`
-    passes are snapshots, not flake counts. (3) Scale 2, light scheme and seam checks in the app, on a quiet host.
+    passes are snapshots, not flake counts. (3) Scale 2, light scheme and seam checks in the app, under the load there is
+    (alternating arms and a control, never a wait for quiet).
     The prevention proposal `doc/planning/agents-cannot-load-the-host.md` waits for the owner: a fresh Claude session and
     at least two more reviewers must read it first. Stopgap rules `NLG` and `NLD` are in `AGENTS.md`. The entry in
     `doc/limitation/claude.md` ("Delegated GPU migration of the Slint IDE") lists this session's and the agents' mistakes.

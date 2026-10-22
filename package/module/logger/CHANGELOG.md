@@ -1,5 +1,38 @@
 # @monochromatic-dev/module-logger
 
+## 0.4.5
+
+### Patch changes
+
+- Bound file sink growth with retention sweeps at verification:
+  14 days,
+  512 MiB,
+  and 50,000 files per destination directory,
+  overridable with `MONOCHROMATIC_LOG_MAX_AGE_DAYS`,
+  `MONOCHROMATIC_LOG_MAX_BYTES`,
+  and `MONOCHROMATIC_LOG_MAX_FILES`.
+  A `.logger-retention-sweep` stamp throttles sweeps to one walk per five minutes per directory,
+  and sweeps delete only logger-owned names,
+  never files modified within an hour.
+- Nest log files under a UTC day directory,
+  `{YYYY-MM-DD}/{timestamp}.{uuid}.log.jsonl`,
+  and create each process's file on its first record.
+  The nesting is a deliberate layout change under the existing project-local destination.
+  Verification probes writability with a `{timestamp}.{uuid}.probe.tmp` round-trip it always removes,
+  so zero-record processes leave zero log files.
+  Legacy flat `*.log.jsonl` strays age out by name prefix.
+- Add `MONOCHROMATIC_LOG_FILE=off`,
+  which disables the file sink entirely,
+  including explicit destinations,
+  and export the retention surface (`LogRetentionPolicy`,
+  `NO_LOG_RETENTION_SWEEP`,
+  `DEFAULT_LOG_MAX_AGE_DAYS`,
+  `DEFAULT_LOG_MAX_BYTES`,
+  `DEFAULT_LOG_MAX_FILES`) from the node entry.
+- Purge the pre-0.4.5 `*.log.jsonl` backlog older than 14 days from every worktree of this repository
+  as part of landing this release,
+  keeping the deliberate run directories.
+
 ## 0.4.4
 
 ### Patch changes

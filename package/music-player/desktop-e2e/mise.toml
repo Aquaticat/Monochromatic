@@ -5,18 +5,18 @@ run = "node src/cli.ts --app-dir ../desktop-app"
 [tasks.lint]
 extends = "lint"
 
-[tasks.'lint:types']
+[tasks."lint:types"]
 extends = "lint:types"
 
-[tasks.'lint:oxlint']
+[tasks."lint:oxlint"]
 extends = "lint:oxlint"
 
 [tasks."format:oxlint"]
 extends = "format:oxlint"
 
-[tasks.'format:dprint']
+[tasks."format:dprint"]
 description = "Format this package's files with dprint"
 run = "dprint fmt src"
 
-[tasks.'test:unit']
+[tasks."test:unit"]
 extends = "test:unit"

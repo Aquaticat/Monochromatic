@@ -8,7 +8,7 @@ import {
 } from 'node:path';
 import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { reportLoggerFallback, } from '../error-format.ts';
-import { openLogFile, } from './file-open.ts';
+import { probeLogDirectory, } from './file-open.ts';
 import {
   findNodeModulesUp,
   NO_NODE_MODULES_FOUND,
@@ -17,39 +17,43 @@ import { userLogDirectory, } from './file-state.ts';
 
 //region Fallback is visible and cannot redirect a caller-selected destination.
 /**
- Verify user state before announcing that records will be written there.
+ Probe user state before announcing that records will be written there.
+
+ The directory is verified,
+ not a log file,
+ because the sink creates its file only on first record.
 
  @param reason - evidence explaining why project-local logging is unavailable
- 
- @returns Exclusively owned and verified file path.
+
+ @returns Verified fallback directory.
  */
-async function openFallback(reason: string,): Promise<string> {
+async function probeFallback(reason: string,): Promise<string> {
   /**
    Fallback destination is resolved only after default project selection fails.
    */
   const directory = userLogDirectory();
-  /**
-   Only this verified file can receive queued records.
-   */
-  const filePath = await openLogFile(directory,);
+  await probeLogDirectory(directory,);
   reportLoggerFallback({
     directory,
     reason,
   },);
-  return filePath;
+  return directory;
 }
 
 /**
- Select a default project file or visibly fall back to verified user state.
- 
- @returns Verified file owned by this sink.
+ Select a default project directory or visibly fall back to verified user state.
+
+ The returned directory receives the sink's day directories;
+ the log file itself appears only with the first record.
+
+ @returns Verified directory owned by this sink's process tree.
 
  @example
  ```ts
- const file = await openDefaultLogFile();
+ const directory = await resolveDefaultLogDirectory();
  ```
  */
-export async function openDefaultLogFile(): Promise<string> {
+export async function resolveDefaultLogDirectory(): Promise<string> {
   /**
    Nearest project dependency directory or the explicit missing-project sentinel.
    */
@@ -60,7 +64,7 @@ export async function openDefaultLogFile(): Promise<string> {
     join,
   },);
   if (nodeModules === NO_NODE_MODULES_FOUND)
-    return await openFallback('No ancestor node_modules directory was found',);
+    return await probeFallback('No ancestor node_modules directory was found',);
   /**
    Existing default project location remains first choice.
    */
@@ -69,10 +73,11 @@ export async function openDefaultLogFile(): Promise<string> {
     '.monochromatic',
   );
   try {
-    return await openLogFile(projectDirectory,);
+    await probeLogDirectory(projectDirectory,);
+    return projectDirectory;
   }
   catch (error: unknown) {
-    return await openFallback(`Project directory ${JSON.stringify(projectDirectory,)}: ${caughtValueText(error,)}`,);
+    return await probeFallback(`Project directory ${JSON.stringify(projectDirectory,)}: ${caughtValueText(error,)}`,);
   }
 }
 //endregion

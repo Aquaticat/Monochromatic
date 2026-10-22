@@ -5,32 +5,32 @@ run = "node src/index.ts"
 [tasks.build]
 extends = "build"
 
-[tasks.'build:js']
+[tasks."build:js"]
 extends = "build:js"
 
-[tasks.'build:js:node']
+[tasks."build:js:node"]
 extends = "build:js:node"
 
-[tasks.'watch:build']
+[tasks."watch:build"]
 extends = "watch:build"
 
-[tasks.'watch:build:js']
+[tasks."watch:build:js"]
 extends = "watch:build:js"
 
-[tasks.'watch:build:js:node']
+[tasks."watch:build:js:node"]
 extends = "watch:build:js:node"
 
 [tasks.lint]
 extends = "lint"
 
-[tasks.'lint:types']
+[tasks."lint:types"]
 extends = "lint:types"
 
-[tasks.'lint:oxlint']
+[tasks."lint:oxlint"]
 extends = "lint:oxlint"
 
 [tasks."format:oxlint"]
 extends = "format:oxlint"
 
-[tasks.'test:unit']
+[tasks."test:unit"]
 extends = "test:unit"

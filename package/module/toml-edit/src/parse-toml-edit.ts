@@ -4,17 +4,11 @@
  @module
  */
 
-import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
-import type { ForeignBorrowed, } from '@monochromatic-dev/ownership-marker-foreign-borrowed/ts';
-import {
-  type AST,
-  ParseError,
-  parseTOML,
-} from 'toml-eslint-parser';
 
 import { buildBlocks, } from './build-document.ts';
 import { TomlEditError, } from './errors.ts';
+import { safeParse, } from './safe-parse.ts';
 import {
   DEFAULT_CANONICAL_OPTIONS,
   type TomlEditOptions,
@@ -94,45 +88,6 @@ function normalizeNewlines({ source, }: { readonly source: string; },): string {
     `${carriageReturn}${lineFeed}`,
     lineFeed,
   );
-}
-
-/**
- Parse `source` and wrap `ParseError` in a {@link TomlEditError}.
- 
- @returns Root parser result retaining foreign AST ownership provenance.
- */
-function safeParse(
-  {
-    source,
-    tomlVersion,
-  }: {
-    readonly source: string;
-    readonly tomlVersion: TomlEditOptions['tomlVersion'];
-  },
-): ForeignBorrowed<AST.TOMLProgram> {
-  try {
-    return parseTOML(
-      source,
-      tomlVersion === undefined ? undefined : { tomlVersion, },
-    );
-  }
-  catch (e: unknown) {
-    if (e instanceof ParseError) {
-      throw new TomlEditError(
-        `Failed to parse TOML: ${e.message}`,
-        { cause: e, },
-      );
-    }
-    // `parseTOML` is a pure parse function, so any non-`ParseError` throw is
-    // still input-induced and must surface as `TomlEditError` to honor the
-    // documented parse contract. The known case is a `RangeError` from stack
-    // overflow on pathologically deep `[`/`{` nesting; wrapping it (rather than
-    // leaking the raw exception) keeps `parseTomlEdit` total over arbitrary text.
-    throw new TomlEditError(
-      `Failed to parse TOML: ${caughtValueText(e,)}`,
-      { cause: e, },
-    );
-  }
 }
 
 /**

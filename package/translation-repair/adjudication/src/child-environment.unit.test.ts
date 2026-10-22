@@ -13,6 +13,7 @@
  */
 
 import { randomUUID, } from 'node:crypto';
+import type { Dirent, } from 'node:fs';
 import {
   readdir,
   readFile,
@@ -116,6 +117,69 @@ function loggingProgram({ marker, }: { readonly marker: string; },): string {
  */
 function reportOf({ text, }: { readonly text: string; },): unknown {
   return JSON.parse(text,);
+}
+
+/**
+ Whether a directory entry is a log file the file sink writes.
+
+ @param entry - one entry of a log directory listing
+
+ @returns Whether the entry names a log file
+
+ @example
+ ```ts
+ const mine = entries.filter(isLogFileEntry,);
+ ```
+ */
+function isLogFileEntry(entry: Dirent,): boolean {
+  return entry.isFile() && entry.name.endsWith('.log.jsonl',);
+}
+
+/**
+ Reads every log file under a workspace log directory, where the logger nests
+ per-process files under UTC day directories beside its retention stamp.
+
+ @param directory - workspace log directory a child wrote into
+
+ @returns Contents of each log file found, one entry per file
+
+ @example
+ ```ts
+ const texts = await readLogTexts({ directory: CHILD_LOG_DIRECTORY, });
+ ```
+ */
+async function readLogTexts(
+  { directory, }: { readonly directory: string; },
+): Promise<string[]> {
+  /**
+   One listing level of the workspace log directory.
+   */
+  const entries = await readdir(directory, { withFileTypes: true, },);
+  /**
+   Contents gathered per root entry, flattened into one list.
+   */
+  const groups = await Promise.all(entries.map(async function readEntryTexts(entry,) {
+    if (entry.isFile() && entry.name.endsWith('.log.jsonl',))
+      return [await readFile(join(directory, entry.name,), 'utf8',),];
+    if (entry.isDirectory()) {
+      /**
+       Entries of one UTC day directory holding per-process log files.
+       */
+      const dayEntries = await readdir(
+        join(directory, entry.name,),
+        { withFileTypes: true, },
+      );
+      return await Promise.all(
+        dayEntries
+          .filter(isLogFileEntry,)
+          .map(async function readDayLog(dayEntry,) {
+            return await readFile(join(directory, entry.name, dayEntry.name,), 'utf8',);
+          },),
+      );
+    }
+    return [];
+  },),);
+  return groups.flat();
 }
 
 await describe({
@@ -261,11 +325,7 @@ await describe({
         /**
          Contents of every log file in the workspace log directory.
          */
-        const logs = await Promise.all(
-          (await readdir(CHILD_LOG_DIRECTORY,))
-            .filter((name,) => name.endsWith('.log.jsonl',))
-            .map(async (name,) => await readFile(join(CHILD_LOG_DIRECTORY, name,), 'utf8',)),
-        );
+        const logs = await readLogTexts({ directory: CHILD_LOG_DIRECTORY, },);
         expect(logs.filter((text,) => text.includes(marker,)).length,).toBe(1,);
       },
     },),

@@ -167,7 +167,30 @@ async function readOnlyLogContent({ projectPath, }: { readonly projectPath: stri
     'node_modules',
     '.monochromatic',
   );
-  const logFiles = await readdir(logDir,);
+  /** The root holds one day directory plus the retention stamp; logs sit one level down. */
+  const entries = await readdir(
+    logDir,
+    { withFileTypes: true, },
+  );
+  const nested = await Promise.all(entries.map(async function collect(entry,) {
+    if (!entry.isDirectory())
+      return entry.name.endsWith('.log.jsonl',) ? [entry.name,] : [];
+    const inner = await readdir(join(
+      logDir,
+      entry.name,
+    ),);
+    return inner.filter(function isLog(name: string,) {
+      return name.endsWith('.log.jsonl',);
+    },)
+      .map(function withDay(name: string,) {
+        return join(
+          entry.name,
+          name,
+        );
+      },);
+  },),);
+  /** Sink log files collected one level below the destination root. */
+  const logFiles = nested.flat();
   expect(logFiles.length,)
     .toBe(1,);
 
