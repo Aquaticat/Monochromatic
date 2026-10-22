@@ -1112,26 +1112,17 @@ fn fifty_thousand_lines_give_a_bounded_picture_without_blocking_the_window() {
         stats.lines,
         stats.units
     );
-    // What: The pictures applied so far, together, shaped at least the lines the last one draws, and the last one
-    //       took each of its lines from the cache or shaped it.
+    // What: Every line of the last picture was shaped by its build or taken from the row cache.
     // Why: The window thread applies every picture the worker has finished in one poll, so a loaded host hands this
     //      test the third picture of the open (a new highlighting reply or a settled extent asks for another
-    //      build) as the first one it sees; that build finds its lines in the cache and shapes none. The cold build
-    //      is an earlier one, which this test cannot read on its own, but the running total of shaped lines
-    //      proves it happened.
-    let (applied, shaped_by_all) = {
-        let current = opened.source.borrow();
-        (current.minimap.images_set, current.minimap.shaped)
-    };
+    //      build), whose lines an earlier build, applied or dropped, left in the cache. Whether a cold build
+    //      shapes every line is not visible here; `tests/minimap_scene.rs` asserts it on a build with an empty
+    //      cache.
     assert_eq!(
         stats.shaped + stats.reused,
         stats.lines,
-        "every line of the picture is shaped or reused; pictures applied {applied}, last build {stats:?}"
-    );
-    assert!(
-        shaped_by_all >= stats.lines as u64,
-        "the lines of the picture were shaped by a cold build; pictures applied {applied}, lines shaped by all of them \
-         {shaped_by_all}, last build {stats:?}"
+        "every line of the picture is shaped or reused; pictures applied {}, last build {stats:?}",
+        opened.source.borrow().minimap.images_set
     );
     assert_eq!(stats.skipped, 0, "no line was left out");
     assert_eq!(OFF_WORKER_BUILDS.load(Ordering::SeqCst), 0);
