@@ -18,14 +18,18 @@ parseSettledArtifactV2, readSettledArchive, settledTallyLine
 ```
 
 `readSettledArchive` is there.
-`readSettledArtifact`, added in the same commit, in the same `export` clause,
-from the same module, is not.
+`readSettledArtifact`,
+added in the same commit,
+in the same `export` clause,
+from the same module,
+is not.
 
 That listing is quoted as it was printed and is not updated.
 `#205` renamed the two-lane family off its version number on 2026-08-25,
 so `buildSettledArtifactV2` and `parseSettledArtifactV2` no longer exist:
 they are now `buildSettledTwoLaneArtifact` and `parseSettledTwoLaneArtifact`.
-`parseSettledArtifact` still names the version-1 reader, unchanged.
+`parseSettledArtifact` still names the version-1 reader,
+unchanged.
 
 ## Cause
 
@@ -37,7 +41,9 @@ reaching the package through `src/sheet-barrel.ts`.
 The ECMAScript module semantics for this are explicit and quiet:
 when two `export *` declarations would supply the SAME name from DIFFERENT modules,
 the name is excluded from the resulting namespace.
-Not an error, not a warning, not a last-one-wins.
+Not an error,
+not a warning,
+not a last-one-wins.
 It is simply absent.
 
 ## TS2308 fires for values too, corrected 2026-08-17
@@ -97,7 +103,9 @@ shared() threw: TypeError m.shared is not a function
 Two modules star-exported into one,
 each exporting `shared` plus one unique name.
 The unique names both survive.
-`shared` is not shadowed, not last-one-wins, not an error at import:
+`shared` is not shadowed,
+not last-one-wins,
+not an error at import:
 it is simply absent from the namespace,
 and the failure lands at the CALL SITE of whoever expected it.
 
@@ -131,9 +139,11 @@ The new functions became `readArtifactSubjects` and `readArchiveSubjects`,
 which also say what they return.
 
 Do NOT add the old name to a forbidden-strings appendix.
-`readSettledArtifact` is a legitimate, still-live function in `artifact-read.ts`;
+`readSettledArtifact` is a legitimate,
+still-live function in `artifact-read.ts`;
 a deny-list entry would flag every honest use of it.
-The rejected thing was the DUPLICATE, not the name.
+The rejected thing was the DUPLICATE,
+not the name.
 
 ## How to check, since a type-check will not
 

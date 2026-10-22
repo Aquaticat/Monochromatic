@@ -54,7 +54,8 @@ These are separate provider concepts.
 
 ## Verification
 
-Observed service date: 2026-08-29.
+Observed service date:
+2026-08-29.
 Synthetic publishes no release version for this page,
 so date and live response are version boundary available.
 
@@ -66,7 +67,8 @@ mise run //package/translation-repair/bench:model-catalog
 
 Working catalog facts:
 
-- configured roster rows missing from provider: `0`
+- configured roster rows missing from provider:
+  `0`
 - `syn:large:text` resolves to GLM-5.3-Flash
 - `syn:small:text` and exact GLM-4.7-Flash remain unlisted provider rows
 - Nemotron remains provider-served but unlisted by package
@@ -89,11 +91,13 @@ Changing constant back to `0.000001` fails assertion.
 
 Keep denominator explicit and update it with rendered rate-limit documentation.
 This preserves current planning behavior and leaves live `/quotas` meter authoritative.
-Tradeoff: static value can drift again when provider changes default without versioned API field.
+Tradeoff:
+static value can drift again when provider changes default without versioned API field.
 
 Do not admit aliases to active roster.
 Exact model ids keep model identity and voting seats stable when aliases move.
-Tradeoff: provider retirement becomes visible failure requiring repository update rather than transparent migration.
+Tradeoff:
+provider retirement becomes visible failure requiring repository update rather than transparent migration.
 
 ## What does not work
 
@@ -114,19 +118,25 @@ No `.out-of-scope/` entry matches Synthetic.
 Public search found provider documentation and third-party integrations,
 but no Synthetic service source repository or matching provider issue tracker.
 
-1. **Is it upstream's fault?** No.
+1. **Is it upstream's fault?**
+   No.
    Provider intentionally changed documented default and aliases.
    Stale constant was consumer responsibility.
-2. **Can upstream fix it?** Not applicable as defect.
+2. **Can upstream fix it?**
+   Not applicable as defect.
    Provider could expose baseline in API,
    but absence is not documented contract violation.
-3. **Are they supporting this use case?** Partly.
+3. **Are they supporting this use case?**
+   Partly.
    Rate-limit page documents weight rule,
    but not machine-readable discovery.
-4. **Would repository welcome contribution?** Unknown.
+4. **Would repository welcome contribution?**
+   Unknown.
    No provider source or contribution policy was found.
-5. **Will they likely fix it?** Unknown and no defect was established.
-6. **Have we prototyped compatible fix?** Yes at consumer boundary:
+5. **Will they likely fix it?**
+   Unknown and no defect was established.
+6. **Have we prototyped compatible fix?**
+   Yes at consumer boundary:
    update denominator and pin it with package test.
 
 Nothing should be filed upstream.

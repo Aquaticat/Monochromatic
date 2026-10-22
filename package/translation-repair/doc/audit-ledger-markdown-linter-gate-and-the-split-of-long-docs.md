@@ -255,19 +255,55 @@ The cut left no pointer by position that crosses files.
 Fifteen links in seven planning records pointed at the old "Next" section,
 and each now names the file that holds the text it cites.
 
-Still open,
-and not decided here:
-Markdown the same stems do not reach that fails the linter today.
-Twenty more `doc/audit` docs were created under family commit scopes
-(1,432 findings;
-for example `reading-a-picture-at-the-user-boundary.md` with 294,
-`where-a-round-spends-its-wall-clock.md` with 187
-and `the-critics-are-shown-the-wrong-paragraph.md` with 153).
-Three repository-policy docs the family wrote (`doc/planning/unused-import-lint-policy.md`,
-`doc/decision/corpus-deny-list-for-forbidden-strings.md` and
-`doc/decision/forbidden-strings-cannot-gate-corpus-text-by-shape.md`) carry 136 findings,
-and 14 troubleshooting docs written under family scopes carry 171,
-of which six hold only the Rust documentation rule on fenced Rust code,
-which a rewrap cannot clear.
-Whether any of them is the family's is the owner's decision;
-each joins the guard by one stem in `OTHER_STEMS` once it is a family doc and its findings are fixed.
+The audit and troubleshooting docs
+(closed 2026-10-22 (UTC),
+the owner's veto open):
+the stems of this entry reached no `doc/audit` or `doc/troubleshooting` doc whose name does not start with `translation-repair`,
+and 1,432 findings stood in 20 audit docs and 171 in 14 troubleshooting docs.
+The lead session decided that the family's own docs there join the guards,
+and the owner can veto the decision.
+
+- Guarded now,
+  by one full-name stem each in `OTHER_STEMS` (`a8eb6c05b4`):
+  the 20 `doc/audit` docs created under the commit scopes `module-translation-repair`,
+  `module/translation-repair` and `translation-repair`
+  (1,432 findings before,
+  none after;
+  the largest held 294,
+  187 and 153),
+  and six troubleshooting docs about the family's provider and audit runs
+  (151 findings before,
+  none after;
+  the Synthetic docs,
+  the pgrep wait loop,
+  the barrel star export and the NUL bytes).
+  No file in the six doc families starts with any of the 26 stems except its own doc.
+  The guard failed first with 1,583 distinct findings and the line limit on the 1,130-line picture-reading audit.
+- The rewrap went through `--fix` (`3d73cb074d` and `12c735b08d`).
+  None of the 26 docs holds a character outside the Basic Multilingual Plane.
+  Each has the same whitespace-normalised words
+  (the `>` of a rewrapped quote left out)
+  and the same parsed tree as before,
+  by the D35 comparison against `HEAD`,
+  whose controls read a split heading,
+  a code span break,
+  a loosened list and a marker break as different.
+  One doc differs by what `markdown/link-image-style` asks for:
+  the shortcut reference `[Synthetic]` of `synthetic-aggregate-concurrency-stall.md` became the collapsed `[Synthetic][]`,
+  which renders alike and matches once the reference type and the empty brackets are left out.
+- The picture-reading audit held 1,424 lines after the rewrap,
+  so it was filed by subject (`4d6c99727e`):
+  the index keeps the path and links five files of 189 to 440 lines named for what they hold.
+  The index and the files,
+  less their added title lines and contents list,
+  join into the old text line for line,
+  with nine pointers by position that now cross files turned into relative links.
+- Left out.
+  The three repository-policy docs (136 findings) govern the whole repository.
+  Two troubleshooting docs belong to the oxlint plugin (4 findings),
+  where the family is only the workload measured.
+  Six hold only `rust/require-rustdoc` on fenced Rust (16 findings),
+  each fence quoting mise,
+  Oxc or repository source word for word,
+  and the linter offers no exemption for a quoted fence,
+  as the section "The Markdown linter" of `mistake-prevention-docs-and-references.md` records.

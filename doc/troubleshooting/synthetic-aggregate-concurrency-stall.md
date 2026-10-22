@@ -1,6 +1,6 @@
 # Synthetic aggregate-concurrency stall
 
-Fact base for a support report to [Synthetic].
+Fact base for a support report to [Synthetic][].
 All observations were collected on 2026-07-16 and 2026-07-17 (UTC)
 against `https://api.synthetic.new/openai/v1/chat/completions`.
 We are grateful for the service and for the flat-rate plan;
@@ -56,7 +56,8 @@ how the documented per-pack concurrency is intended to be used.
 
 ## Account and plan context
 
-- Subscription: 5.5 pack-equivalents throughout the observation window
+- Subscription:
+  5.5 pack-equivalents throughout the observation window
   (2026-07-16 through 2026-07-17 04:15 UTC):
   one founder's pack (worth 1.5 normal packs)
   plus 4 normal packs purchased on 2026-07-16.
@@ -77,15 +78,20 @@ how the documented per-pack concurrency is intended to be used.
 
 ## Client environment
 
-- Node.js 26.5.0 on Linux (single host, single process per test run).
+- Node.js 26.5.0 on Linux (single host,
+  single process per test run).
 - Requests issued through the global `fetch`;
   the negotiated transport to this origin is HTTP/2
   (evidenced by `ERR_HTTP2_STREAM_ERROR` from `node:internal/http2`
-  during one mass teardown, noted under client-side factors).
+  during one mass teardown,
+  noted under client-side factors).
 - All chat calls stream (`stream: true`) and are drained to completion;
-  transient statuses (408, 429, 5xx) are retried with jittered
+  transient statuses (408,
+  429,
+  5xx) are retried with jittered
   exponential backoff.
-- No proxy or VPN on our side; one source IP.
+- No proxy or VPN on our side;
+  one source IP.
 
 ## Request shape
 
@@ -119,22 +125,29 @@ English translation,
 
 ## Healthy baselines (same account, same client)
 
-- 2026-07-16, three concurrent tiny calls to one model
+- 2026-07-16,
+  three concurrent tiny calls to one model
   (`hf:zai-org/GLM-4.7-Flash`):
   all three fully overlapped and completed in 2.0 s to 2.4 s each,
   so same-model concurrency was genuinely served at small scale.
-- 2026-07-16, fourteen concurrent streams
-  (two per model across all seven models, real review workload):
+- 2026-07-16,
+  fourteen concurrent streams
+  (two per model across all seven models,
+  real review workload):
   completed normally over several minutes with zero 5xx.
-- 2026-07-17 around 03:20 UTC, seven concurrent streams
-  (one per model, one 9.3 KB document pair):
+- 2026-07-17 around 03:20 UTC,
+  seven concurrent streams
+  (one per model,
+  one 9.3 KB document pair):
   all seven completed in 308 s wall,
   the fastest such pass we had recorded.
 
 ## Observation 1: burst of 35 dispatches draws instant 502s
 
-2026-07-17, about 03:52 UTC.
-35 tiny prompts (5 per model, answer expected to be one character)
+2026-07-17,
+about 03:52 UTC.
+35 tiny prompts (5 per model,
+answer expected to be one character)
 dispatched simultaneously:
 
 - 27 of 35 first attempts returned HTTP 502 within roughly 3 seconds
@@ -144,42 +157,70 @@ dispatched simultaneously:
   78 s to 119 s.
 - 14 of 35 calls produced nothing within a 120 s cap.
 
-The instant, clustered 502s look like an edge/burst gate;
+The instant,
+clustered 502s look like an edge/burst gate;
 they are absorbed fine by retries and are not our main question.
 
 ## Observation 2: controlled sweep, silent stalls above one-per-model
 
-2026-07-17, roughly 03:56 to 04:12 UTC.
+2026-07-17,
+roughly 03:56 to 04:12 UTC.
 Identical review calls over the same five small document pairs,
-swept across per-model concurrency levels 1, 2, 3, 5,
+swept across per-model concurrency levels 1,
+2,
+3,
+5,
 run sequentially with a fresh client per level.
-Per-exchange client cap: 300 s.
+Per-exchange client cap:
+300 s.
 Crucially,
 the sweep produced zero 5xx and zero transport errors at every level:
 stalled calls were accepted and simply never completed.
 
-Level 1 (7 calls, one per model): 7 of 7 completed, 71 s wall.
+Level 1 (7 calls,
+one per model):
+7 of 7 completed,
+71 s wall.
 
-- `MiniMax-M3` 3 s, `gpt-oss-120b` 6 s, `Qwen3.6-27B` 35 s,
-  `Kimi-K2.7-Code` 39 s, `GLM-4.7-Flash` 50 s, `GLM-5.2` 71 s,
+- `MiniMax-M3` 3 s,
+  `gpt-oss-120b` 6 s,
+  `Qwen3.6-27B` 35 s,
+  `Kimi-K2.7-Code` 39 s,
+  `GLM-4.7-Flash` 50 s,
+  `GLM-5.2` 71 s,
   `Nemotron` 71 s.
 
-Level 2 (14 calls, two per model): 4 of 14 completed.
+Level 2 (14 calls,
+two per model):
+4 of 14 completed.
 
-- Completed: `GLM-5.2` 102 s and 160 s, `GLM-4.7-Flash` 216 s and 278 s.
+- Completed:
+  `GLM-5.2` 102 s and 160 s,
+  `GLM-4.7-Flash` 216 s and 278 s.
 - All ten calls to the other five vendors hit the 300 s cap,
   including `MiniMax-M3` on the exact document it had answered in 3 s
   five minutes earlier.
 
-Level 3 (21 calls, three per model): 5 of 21 completed.
+Level 3 (21 calls,
+three per model):
+5 of 21 completed.
 
-- Completed: `GLM-5.2` 131 s, 161 s, 189 s;
-  `GLM-4.7-Flash` 245 s, 293 s.
+- Completed:
+  `GLM-5.2` 131 s,
+  161 s,
+  189 s;
+  `GLM-4.7-Flash` 245 s,
+  293 s.
 - The other sixteen calls hit the 300 s cap.
 
-Level 5 (35 calls, five per model): 3 of 35 completed.
+Level 5 (35 calls,
+five per model):
+3 of 35 completed.
 
-- Completed: `GLM-5.2` 83 s, 120 s, 202 s.
+- Completed:
+  `GLM-5.2` 83 s,
+  120 s,
+  202 s.
 - Even `GLM-4.7-Flash` no longer completed;
   the other thirty-two calls hit the 300 s cap.
 
@@ -193,7 +234,9 @@ Effective throughput by level:
 
 - Above one concurrent request per model,
   most vendors' backends stop responding entirely for this account:
-  no error status, no stream data, no completion in 300 s.
+  no error status,
+  no stream data,
+  no completion in 300 s.
 - The degradation is vendor-asymmetric:
   `zai-org` models keep completing at every level (progressively slower),
   `GLM-4.7-Flash` drops out at level 5,
@@ -243,7 +286,8 @@ Listed so the report does not overclaim.
    for example different queuing policies per upstream GPU provider?
 3. Are the instant clustered 502s on large simultaneous dispatch an
    intentional burst gate,
-   and if so, what dispatch pacing do you recommend?
+   and if so,
+   what dispatch pacing do you recommend?
 4. Do client-aborted streaming requests keep consuming account
    concurrency server-side after the abort,
    and for how long?

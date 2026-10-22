@@ -46,14 +46,18 @@ slice   incumbent   repair shipped   delta    translate shipped   delta
 ```
 
 Slice 3 lost about 240 characters and slice 4 gained about 240,
-in both lanes, within a dozen characters of each other,
+in both lanes,
+within a dozen characters of each other,
 and they are separate judgements rather than one echoed twice:
 across the whole entry they disagree about slices 0 and 5.
 
-NO TEXT ACTUALLY MOVED, and the first reading of this document said it did.
+NO TEXT ACTUALLY MOVED,
+and the first reading of this document said it did.
 Checked by asking how many 40-character windows of the newly shipped text at slices 2 and 4
 also occur in slice 3's incumbent wording:
-the answer is ZERO, in both entries, in both lanes.
+the answer is ZERO,
+in both entries,
+in both lanes.
 The content at the deficit slices is NEWLY WRITTEN,
 not the surplus slice's wording carried across.
 Length arithmetic looked like movement and was not evidence of it.
@@ -88,15 +92,22 @@ slice  source  incumbent  ratio   repair shipped  ratio   translate shipped  rat
 ```
 
 THE DEFICIT SLICES WERE FILLED IN BOTH ENTRIES AND BOTH LANES,
-from ratios of 0.58 and 0.95 back to about 3, against a document baseline near 2.8.
+from ratios of 0.58 and 0.95 back to about 3,
+against a document baseline near 2.8.
 
 THE SURPLUS SLICE WAS TREATED DIFFERENTLY BY THE TWO LANES HERE.
-Translate rewrote it from 439 characters to 189, keeping ZERO of its 150 windows from the incumbent.
-Repair left it at 449, ten characters longer, keeping 167 of 410 windows.
-So after the repair lane, `lintong` still carries its surplus at slice 3
+Translate rewrote it from 439 characters to 189,
+keeping ZERO of its 150 windows from the incumbent.
+Repair left it at 449,
+ten characters longer,
+keeping 167 of 410 windows.
+So after the repair lane,
+`lintong` still carries its surplus at slice 3
 AND newly written content at slices 2 and 4.
-On `GLaDOSister` both lanes drained the surplus, keeping 2 and 1 windows of about 85.
-Two entries are not a pattern; the difference is recorded so a third can confirm or refute it.
+On `GLaDOSister` both lanes drained the surplus,
+keeping 2 and 1 windows of about 85.
+Two entries are not a pattern;
+the difference is recorded so a third can confirm or refute it.
 
 ## What this does and does not settle
 
@@ -110,9 +121,11 @@ with the surplus slice's wording largely or entirely rewritten rather than carri
 IT DOES NOT SETTLE WHETHER THE MOVE IS REPAIR OR DAMAGE,
 and that is the whole of `#107`.
 The pipeline pulled a passage back to the slice whose source carries it.
-If the archive's translator moved that clause deliberately, for flow across a paragraph break,
+If the archive's translator moved that clause deliberately,
+for flow across a paragraph break,
 then this undid a legitimate choice and no per-slice instrument could have known.
-If it drifted by accident, this fixed it.
+If it drifted by accident,
+this fixed it.
 Telemetry cannot tell those apart,
 because both look identical from inside one slice.
 
@@ -135,12 +148,16 @@ flagged           6            559       71        11.8            12.7
 unflagged         9            778      118        13.1            15.2
 ```
 
-FLAGGED SLICES ATTRACT FEWER CLAIMS, not more,
+FLAGGED SLICES ATTRACT FEWER CLAIMS,
+not more,
 on both denominators,
 while shipping a replacement 100 percent of the time against about 72 percent elsewhere.
-The busiest slice in either document is `GLaDOSister` slice 1, unflagged, with 30 claims.
+The busiest slice in either document is `GLaDOSister` slice 1,
+unflagged,
+with 30 claims.
 
-SO THE TWO THINGS COME APART, and that is the finding.
+SO THE TWO THINGS COME APART,
+and that is the finding.
 Whatever makes a flagged slice always ship,
 it is not that the critic stage complains about it more.
 
@@ -153,12 +170,15 @@ That is a DIFFERENT MECHANISM from the one `#107`'s title names,
 and it predicts exactly what was observed:
 replacement without extra criticism.
 
-WHAT WOULD TEST IT: read the per-slice selection records rather than the critic claims,
+WHAT WOULD TEST IT:
+read the per-slice selection records rather than the critic claims,
 and ask whether the incumbent's margin of defeat is larger at flagged slices.
 That reading needs no new run.
 
 SIX FLAGGED SLICES IS NOT A RESULT.
-Both entries carry the same flag shape, at 2, 3 and 4,
+Both entries carry the same flag shape,
+at 2,
+3 and 4,
 so this is close to two observations rather than fifteen.
 It is recorded now because it points the remaining analysis somewhere different,
 and because a story that only ever gains confirmation is not being tested.
@@ -179,7 +199,8 @@ because they say WHAT changed rather than only that something did.
 Measured 2026-08-18 over the 92 entries in `~/temp/agent/displacement.log`,
 1260 slices,
 by mapping every flag back onto its slice index and looking at where the marks fall.
-Script: `~/temp/agent/slide-shape.mjs`.
+Script:
+`~/temp/agent/slide-shape.mjs`.
 
 ```text
 entries probed                                   92
@@ -213,7 +234,8 @@ zhangyubaka       3/31  [..........................rRr..]
 ```
 
 EVERY RELOCATION PAIR IN THE POOL IS ADJACENT.
-`Rr`, `rR` and `rRr` are the only shapes that occur.
+`Rr`,
+`rR` and `rRr` are the only shapes that occur.
 Not once does a surplus slice pair with a deficit slice further than one position away.
 
 ## Why the shape matters more than the count
@@ -229,7 +251,8 @@ That has three consequences.
 A WIDER JUDGING WINDOW WOULD SEE THE MOVED TEXT.
 A per-slice judge shown slice `n` alone cannot tell a relocation from a fabrication,
 which is what `#107` is about.
-A judge shown `n-1`, `n` and `n+1` would have the relocated passage in front of it in every case measured here,
+A judge shown `n-1`,
+`n` and `n+1` would have the relocated passage in front of it in every case measured here,
 because the longest run is three and every pair is adjacent.
 This is a bounded change with a measured bound,
 not an open-ended widening.
@@ -320,10 +343,12 @@ repair lane:
 a clause is cut off after its preposition
 and the next word begins an unrelated independent clause,
 so the two are spliced into one ungrammatical sentence.
-The text itself is in the artifact and on the sheet, not here.
+The text itself is in the artifact and on the sheet,
+not here.
 
 The detector fired five other times,
-all ordinary prose where a pronoun follows `and`, `that` or a question mark,
+all ordinary prose where a pronoun follows `and`,
+`that` or a question mark,
 so this is one instance rather than a pattern:
 1 of 30 shipped repair rows and 0 of 34 translate rows.
 

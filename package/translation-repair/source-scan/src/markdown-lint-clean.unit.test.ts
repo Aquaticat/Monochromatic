@@ -309,6 +309,12 @@ await describe({
         expect(paths.some(function isOlderDoc(path,): boolean {
           return path.endsWith('wire-the-heading-aligner.md',);
         },),).toBe(true,);
+        expect(paths.some(function isAuditDoc(path,): boolean {
+          return path.endsWith(join('doc', 'audit', 'where-a-round-spends-its-wall-clock.md',),);
+        },),).toBe(true,);
+        expect(paths.some(function isTroubleshootingDoc(path,): boolean {
+          return path.endsWith(join('doc', 'troubleshooting', 'synthetic-hf-prefix-misroute.md',),);
+        },),).toBe(true,);
         expectNoFindings({ findings: staleStemFindings({ stems: OTHER_STEMS, paths, },), },);
         expect(paths.some(function isPassLog(path,): boolean {
           return path.includes('translation-repair-openrouter-2026-09-03-',);

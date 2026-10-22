@@ -27,17 +27,20 @@ Only two slices in the pool show the archive beating a fresh translation on the 
 
 ## Why this matters more than the replacement rate does
 
-The delivery ledger reports 37 of 50 slices replaced, 0.740,
+The delivery ledger reports 37 of 50 slices replaced,
+0.740,
 and that figure has been quoted repeatedly.
 It mixes two different events:
 slices where the archive lost a vote,
 and slices where no vote happened.
 
-READ ON CONTESTED SLICES ONLY the rate is 37 of 39, 0.949.
+READ ON CONTESTED SLICES ONLY the rate is 37 of 39,
+0.949.
 
 THAT IS THE NUMBER LATER COMPARISONS NEED.
 Any question of the form "does the pipeline replace more often HERE than elsewhere"
-is asked against a baseline of about 0.95, not 0.74,
+is asked against a baseline of about 0.95,
+not 0.74,
 and a handful of slices all replacing is unremarkable against 0.95.
 Six consecutive replacements happen 0.73 of the time at that rate.
 
@@ -71,7 +74,8 @@ IT IS NOT EVIDENCE THAT THE JUDGES ARE WRONG.
 A fresh translation by a six-model ensemble beating a single archived rendering
 is a plausible outcome,
 and `#84` exists to measure judge quality on exactly this decision.
-What this measures is the OUTCOME DISTRIBUTION, not its correctness.
+What this measures is the OUTCOME DISTRIBUTION,
+not its correctness.
 
 IT DOES SAY THE CONTEST IS NEARLY ONE-SIDED,
 which bears on how the pipeline should be described.
@@ -83,7 +87,9 @@ and `#83` entered the incumbent into selection on the premise that it would some
 ## What to check next, needing no new run
 
 -   Whether the two genuine incumbent wins share anything:
-    slice length, entry, which models backed them.
+    slice length,
+    entry,
+    which models backed them.
 -   Whether the same ratio holds in the flagged pool once it settles,
     which is a different population and must be read separately.
 -   What the two genuine wins look like beside the 37 losses,
