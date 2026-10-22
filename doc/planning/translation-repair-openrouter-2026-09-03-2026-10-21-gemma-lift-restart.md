@@ -280,8 +280,8 @@ From the `XingZ6017` read
 - NeuralWatt's measured energy was 2.84 times its estimate
   (493.17 Wh measured,
   173.50 Wh estimated;
-  the previous reads were 1.23,
-  1.39 and 1.94),
+  the ratio follows the entry,
+  reading 1.23 and 1.39 on `zheermao101` and 2.00 and 1.94 on `CuspariaKLSY`),
   and the 550 Wh day was passed by 5.188 Wh.
   That no stop line fired when the meter went dry is the designed behaviour:
   dry is a routing verdict and calls in flight settle.
@@ -302,7 +302,8 @@ From the `XingZ6017` read
   and `gemma-4-26b-a4b-it` read it through OpenRouter.
 - The insertion admission asked 30 per-slice coverage rounds over an untranslated tail
   that was then admitted on a length bound (N5;
-  being fixed as ledger B811).
+  examined as ledger B811 and kept,
+  since the rounds are the first of the two signatures the absence verdict requires).
   The archive block review did not run (K4).
 - The page is better than the archive in most slices,
   and no hallucinated archive content remains in slices 48 and 67 to 70.
@@ -389,14 +390,20 @@ From [the handover](../handover/translation-repair-handover-2026-09-06-neuralwat
 - From the `XingZ6017` read,
   the fixes under way are
   the NeuralWatt energy estimate (ledger B808),
-  rounds held open by a hung stream (ledger B809),
-  seats re-asked after their calls were abandoned (ledger B810) and
-  the coverage rounds over an untranslated tail (ledger B811).
+  rounds held open by a hung stream (ledger B809) and
+  seats re-asked after their calls were abandoned (ledger B810).
   They are being fixed,
   and this record claims no outcome for them.
+  The coverage rounds over an untranslated tail (ledger B811) were examined and kept unchanged.
 - Meanwhile the rotation continues on `2a336603bf` for evidence:
   the reads of `CuspariaKLSY22` and `XingZ6017` are filed,
   and then the rotation continues with `yingying`,
   `hulicaijia`,
   `mikaela_khara`,
   `shi_Yumiaoya` and `TianqiChen666`.
+- That plan changed once `XingZ6017` settled (2026-10-22):
+  its end left NeuralWatt 5.188 Wh past its day,
+  Hyper at a balance of 0 and OpenRouter at 4.15 USD,
+  so the next pass waits for the NeuralWatt day that starts at 19:15 UTC on 2026-10-22.
+  It runs on a rebuilt branch worktree carrying the fixes that land before then,
+  and the rotation restarts at `zheermao23`.

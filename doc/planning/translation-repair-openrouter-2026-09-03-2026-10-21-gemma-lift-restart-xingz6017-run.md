@@ -75,11 +75,13 @@ and calls already in flight settle.
 It is not a defect.
 The defect is that the energy estimate under-read the measured energy by 2.84 times,
 which is being fixed separately as ledger B808.
-Three more of the findings are being fixed as ledger entries,
+Two more of the findings are being fixed as ledger entries,
 without a claim here about their outcome:
 rounds held open by a hung stream (B809),
-seats re-asked after their calls were abandoned (B810),
-and the coverage rounds over an untranslated tail (B811).
+and seats re-asked after their calls were abandoned (B810).
+The coverage rounds over an untranslated tail (B811) were examined and kept:
+they are the first of the two signatures the absence verdict requires,
+so the length bound alone cannot stand in for them.
 
 ### Run facts
 
@@ -540,10 +542,13 @@ N3,
 the NeuralWatt estimate (prompt-based) under-reads by 2.84 times over the pass,
 because the cost sits in reasoning output it does not see,
 and the free day ran out mid-run at 01:39:35 UTC.
-The ratio has risen on every read (1.23,
+The ratio follows the entry rather than climbing with the date:
+over the six runs on this build it read 1.23,
+2.00,
+0.87,
 1.39,
-1.94,
-2.84).
+1.94 and 2.84 in the order they ran,
+and `XingZ60` alone sent most of its calls with 16,384 prompt tokens or more.
 Being fixed as ledger B808.
 That no stop line fired at the dry reading is the designed behaviour and not part of this class.
 
@@ -563,7 +568,12 @@ insertion admission asked 30 per-slice `coverage` rounds over a tail that was th
 about 12 min of preparation,
 9 rounds at 100 s or more of grace,
 including two Qwen reasoning streams of 197 s and 130 s and a mercury stream of 294 s ended by a 502 at 23:30:25 UTC.
-Being fixed as ledger B811.
+Examined as ledger B811 and kept unchanged:
+the rounds are the first of the two signatures `doc/decision/translation-repair-absence-verdict.md` requires,
+and a majority `carried` or `partly-carried` tail verdict keeps a row out whatever the bound says.
+Ending a round once its outcome is fixed could save at most about 7 of the 12 min,
+which the straggler-grace decision (`doc/decision/translation-repair-straggler-grace.md`) does not yet allow,
+and the arrival order of voices that would measure the saving is not logged.
 
 N6,
 the consistency pass reaches too little:

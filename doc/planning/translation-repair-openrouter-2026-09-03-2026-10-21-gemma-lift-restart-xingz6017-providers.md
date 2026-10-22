@@ -297,8 +297,19 @@ answered with the three reads' figures beside it.
   `deepseek-v4.1-flash` 764 calls,
   211.4453 against 82.2097,
   2.57).
-  The previous reads were 1.23,
-  1.39 and 1.94.
+  Over the six runs on this build,
+  in the order they ran,
+  the ratio read 1.23,
+  2.00,
+  0.87,
+  1.39,
+  1.94 and 2.84 (`XingZ6016` held only 31 calls).
+  It follows the entry and not the date:
+  the same entry read 1.23 and then 1.39 (`zheermao101`),
+  and 2.00 and then 1.94 (`CuspariaKLSY`).
+  `XingZ60` sent 415 calls of 16,384 prompt tokens or more where the other five runs sent 8 in all,
+  and used more energy per thousand completion tokens;
+  why that entry costs more is not traced.
 - By the hour of the call,
   measured against estimated:
   23:00 UTC hour 231 calls,

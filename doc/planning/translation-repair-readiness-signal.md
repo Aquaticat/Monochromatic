@@ -386,9 +386,9 @@ this section is the readiness reading of it.
   NeuralWatt's measured energy was 2.84 times its estimate;
   that no stop line fired at the dry reading is the designed behaviour,
   and the under-reading estimate is being fixed as ledger B808.
-  Hung rounds (B809),
-  seats re-asked after abandoned calls (B810) and
-  coverage rounds over an untranslated tail (B811) are also being fixed.
+  Hung rounds (B809) and
+  seats re-asked after abandoned calls (B810) are also being fixed;
+  the coverage rounds over an untranslated tail (B811) were examined and kept unchanged.
   The run's build lacked commits `e336d8efc7` (B804 to B807) and `f829fc31b6` (B803),
   so its K2 split (52 mercury abandonments) and its K3 lost claims (6 verified)
   are a baseline from before those fixes,
