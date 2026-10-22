@@ -36,6 +36,7 @@ import {
   claudeMessagesUrlFor,
 } from './claude-catalog.ts';
 import { claudeIdFor, } from './claude-reach.ts';
+import { claudeStreamFactsOf, } from './claude-stream-facts.ts';
 import { RETRY_AFTER_HEADER, } from './retry-after-header.ts';
 import { failureForReply, } from './request-size-refusal.ts';
 import { reportSpend, } from './spend-line.ts';
@@ -321,6 +322,35 @@ export function createClaudeClient(
         provider: 'anthropic',
         bodyText: reply.bodyText,
       },);
+
+      /**
+       How the stream ended, beyond its text.
+       */
+      const facts = claudeStreamFactsOf({ bodyText: reply.bodyText, },);
+
+      if (facts.refusal !== undefined) {
+        /**
+         Category the refusal named, in words for the log and the record.
+         */
+        const named = (facts.refusal.category === undefined)
+          ? 'no category named'
+          : `category ${facts.refusal.category}`;
+        // A REFUSAL IS A 200 AND NOT AN OUTAGE: the model's classifier declined this one call, so the seat has no
+        // answer for it and the provider stays where its meter puts it. Whatever text streamed before a mid-stream
+        // decline is incomplete and is dropped. The tokens it spent are billed and reported as any call's are.
+        rl.warn(`<- ${servedId}: refusal (${named}); the seat has no answer for this call`,);
+        reportSpend({
+          provider: 'anthropic',
+          label: servedId,
+          extracted,
+        },);
+        return {
+          text: '',
+          refusal: `${servedId} refused the call (${named})`,
+          finishReason: 'refusal',
+          ...((extracted.usage === undefined) ? {} : { usage: extracted.usage, }),
+        };
+      }
 
       /**
        Answer length for the completion log line.

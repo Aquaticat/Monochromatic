@@ -21,6 +21,11 @@ export {
   type ClaudeClient,
 } from './claude-client.ts';
 export {
+  claudeStreamFactsOf,
+  type ClaudeStreamFacts,
+  type ClaudeUsageSplit,
+} from './claude-stream-facts.ts';
+export {
   claudeIdFor,
   claudeShowsPictures,
   type ClaudeSpelling,
