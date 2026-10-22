@@ -165,6 +165,16 @@ Xiaomi is 0.0028 (cached),
 0.14 and 0.28 USD per million tokens,
 with the cached count read from the usage block.
 
+## The Xiaomi token cap
+
+Xiaomi's chat reference lists `max_completion_tokens` and not `max_tokens`,
+and the shared wire body sends `max_tokens`.
+It is kept,
+because it was measured on 2026-10-22 (`w287-xingz18/xiaomi-max-tokens-probe.out`):
+on `mimo-v2.6-flash` with a cap of 64,
+both `max_tokens` and `max_completion_tokens` returned `finish_reason` "length"
+with `completion_tokens` 64 (`reasoning_tokens` 22 included).
+
 ## No zero data retention
 
 Neither route promises zero data retention.

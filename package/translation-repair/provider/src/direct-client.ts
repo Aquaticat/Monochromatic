@@ -288,6 +288,11 @@ export function createDirectClient(
         stream_options: { include_usage: true, },
         // THE MEASURED CEILING ON EVERY CALL since 2026-09-09
         // (`completion-cap.ts`): a runaway reply spends the owner's balance.
+        // XIAOMI HONOURS `max_tokens`, though its chat reference lists only
+        // `max_completion_tokens`: measured on 2026-10-22 on mimo-v2.6-flash
+        // with a cap of 64, both members returned finish_reason "length" with
+        // completion_tokens 64, reasoning_tokens 22 included
+        // (`w287-xingz18/xiaomi-max-tokens-probe.out`).
         max_tokens: completionCapFor({
           modelId: request.modelId,
           // Conditional spread keeps the knob absent instead of undefined.
