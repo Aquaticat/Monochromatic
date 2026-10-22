@@ -4832,7 +4832,8 @@ or an event listener).
 
 Until 2026-10-22 these files were plain `.mjs` files,
 a habit with no rule behind it.
-Two repository-wide style commits (`68415aeb53` and `3da31bdc3a`, issue 1794) left those `.mjs` files unparseable,
+Two repository-wide style commits (`68415aeb53` and `3da31bdc3a`,
+issue 1794) left those `.mjs` files unparseable,
 while none of the TypeScript files they touched was broken,
 so the files were converted instead of restored:
 
