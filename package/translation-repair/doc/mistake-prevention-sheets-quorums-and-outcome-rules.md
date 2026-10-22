@@ -238,11 +238,16 @@ in the same change,
 to the writer of the text that judge reads,
 through the same builder,
 and the rendered-sheets fixture renders the writer's sheet with it.
-`rendered-sheets-context.unit.test.ts` names the sheets that must carry the accepted claims (the polish gate and the polish refiner),
+`rendered-sheets-context.unit.test.ts` names the sheets that must carry the accepted claims and the dispute note
+(the polish gate,
+the polish refiner and the two sheets of the judges of the writers' rewrites),
 because a scan that reads only sheets naming a heading cannot see a sheet that lost the block.
-Two gaps remain and are recorded as open in B805:
-the dispute note does not reach the polish writers,
-and the accepted claims do not reach the judges of the writers' rewording.
+The first version of this rule left two gaps,
+which B805 closed before landing:
+the dispute note did not reach the polish writers,
+and neither note reached the judges of the writers' rewording.
+A judge whose criteria say that a candidate must say exactly what the text says is also given the sentence that lets it accept a correction the note asks for,
+or the note is shown to a judge who must vote against what it permits.
 
 ## A rule a sheet states about tense and what it does not cover
 

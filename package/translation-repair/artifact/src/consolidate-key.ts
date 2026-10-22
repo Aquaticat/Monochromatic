@@ -769,8 +769,9 @@ export function consolidateSliceKey(
         ]),
       // THE ACCEPTED REPAIR CLAIMS, appended only when present, on the same
       // terms as the dispute note: the polish gate of a slice the repair panel
-      // accepted claims on reads them (CuspariaKLSY21 slice 0, 2026-10-21), so
-      // it asks a different question from the same texts without them, and a
+      // accepted claims on reads them (CuspariaKLSY21 slice 0, 2026-10-21), as
+      // do its writers and the judges of their rewrites (ledger B805), so it
+      // asks a different question from the same texts without them, and a
       // slice the panel accepted nothing on keys as before.
       ...(((acceptedRepairClaimsNote === undefined) || (acceptedRepairClaimsNote === ''))
         ? []

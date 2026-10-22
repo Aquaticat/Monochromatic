@@ -217,6 +217,10 @@ cache version `CONSOLIDATE_CACHE_VERSION` 29 to 30.
 Found in the read of the corpus pass for `zheermao22` (class K3) and fixed in `w263`.
 It widens B731,
 which gave the claims to the polish gate alone.
+Widened again before landing,
+with red `7e7f5c16bb959c963cad51dfae64974f57f4a3c1`
+and fix `c18194a50c933cb8e019381d6c3d5c354d20da46`,
+to the dispute note and to the judges of the writers' rewrites (see "The widening before landing").
 
 What the code did:
 B731 threaded `acceptedRepairClaimsNote` from the repair lane's chunks to `runConsolidationPolishRound`,
@@ -286,20 +290,106 @@ The lane-contest,
 translate slice and repair slice versions stay,
 since none of their sheets is a polish writer's.
 
-Open to the owner:
-- The dispute note (`archiveDisputeNote`) reaches the polish gate and not the polish writers either.
-  The brief for this change named the accepted claims,
-  and a dispute is a claim at major severity or worse that the archive rendering is wrong,
-  so the same reading applies.
-  Not changed here.
+The widening before landing:
+the first version of this entry left two items open,
+and the parent session closed both before the branch landed,
+open to the owner's veto.
+- The dispute note (`archiveDisputeNote`) reached the polish gate and not the polish writers.
+  The gate is shown it (`consolidation-polish-gate-wire.ts`,
+  the block `ARCHIVE RENDERING DISPUTED`),
+  so the writers must see what they are judged against:
+  `runRefineStage` takes `archiveDisputeNote`,
+  `buildRefineMessages` shows it fenced under that heading with the instruction to treat it as quoted review data,
+  and the polish round passes the one it already holds to the gate.
+  Where a slice has a dispute note and no other claim,
+  the baseline policy names the block headed `ARCHIVE RENDERING DISPUTED`;
+  where it has both notes,
+  it names both blocks.
+  A note that is absent or empty builds the sheet that was built before.
+  This matters beyond a claim at minor severity:
+  `acceptedRepairClaimNotesOf` leaves out a claim the dispute note already names,
+  so on a slice whose accepted claims the dispute note all names,
+  the writers saw no note at all.
 - The judges of the writers' wording,
-  the rewrite judges of the refine selection (`refine-selection-context.ts`),
-  are not shown the accepted claims either.
-  A writer that corrects a supported claim has its rewording judged on a sheet that does not name the claim.
-  The rule that the judges of a text are shown what its writer is shown would give them the block.
-  Not changed here.
+  the rewrite judges of the refine selection,
+  were not shown the accepted claims either.
+  `buildRefineSelectionContext` takes both notes and carries them as evidence under the gate's headings,
+  the dispute first and the claims after,
+  after the declared names and the cited pages.
+  The select wire prints each evidence block as its label,
+  a fence chosen against everything the sheet encloses,
+  the text and the fence again,
+  which is the shape every other select sheet gives `ARCHIVE RENDERING DISPUTED`
+  (`translate-slate-evidence.ts`).
+  `runRefineStage` hands both notes to the context and to the writers' sheet from one place,
+  so the writers and the judges cannot disagree about whether a slice has them.
+- The judges' criteria could not have used the notes unqualified.
+  The comparative question asked that a candidate "say exactly what the CURRENT text says",
+  and a rewrite made to a supported claim does not.
+  The polish gate's policy is not qualified in that way,
+  and its notes carry their own sentence that a candidate correcting a supported claim is not departing from the original.
+  The select criteria are stricter,
+  so where either note is shown the first criterion allows a correction that an accepted claim the ORIGINAL supports asks for,
+  the third allows a candidate that makes such a correction,
+  the task says so,
+  and the objection mode's criterion about what a candidate may change names a supported claim beside a supported objection.
+  Without either note the wording is what it was,
+  and the control cases pass throughout.
+- The repair lane's own refinement passes neither note,
+  so its writer sheet,
+  its judges' sheets and `REFINE_CACHE_VERSION` are unchanged.
+  The floor-input scan lists that omission with this reason (`floor-inputs-stated.unit.test.ts`).
+
+Red and green of the widening:
+`refine-prompt.unit.test.ts` reads the writer's sheet for a dispute note carrying a line of the old fixed fence and an instruction,
+for both notes together,
+and for an absent and an empty note.
+`refine-selection-notes.unit.test.ts` reads the evidence of both modes,
+its order,
+the criteria,
+and the rendered judge sheet with a fence longer than the run in the note.
+`refine-stage.unit.test.ts` reads the rewriter's sheet and each of the four judges' sheets in both modes,
+with a control that is asked the same and carries neither heading.
+`consolidation-polish-apply.unit.test.ts` and `consolidate-driver.unit.test.ts` read the writers' and the rewrite judges' sheets through the real polish and the real driver,
+with a disputed slice and an undisputed one.
+`rendered-sheets-polish.test-fixture.ts` renders the `polish refine slate` and the `polish refine objection slate`
+and gives the polish gate and the polish refiner the dispute note beside the claims;
+`rendered-sheets-context.unit.test.ts` names the four sheets that must carry both blocks
+and scans every sheet naming `ARCHIVE RENDERING DISPUTED`.
+Six of the new cases failed in the repair package,
+one in the consolidate package,
+two through the real driver and two in the rendered-sheets scan before the fix and pass after it.
+A test written in the red commit read the fence of the second block from the wrong line,
+and the fix commit corrects it.
+
+Cache account of the widening:
+no further bump.
+Main holds `CONSOLIDATE_CACHE_VERSION` 29 (read off `origin/main` on the day of the merge) and this branch moved it to 30,
+so one bump serves the landing.
+The judges' question and the writers' dispute note are one more change to what a slice with a note is asked,
+and the key already carries both notes
+(`repair-claims` and `dispute` in `consolidateSliceKey`),
+so a settlement stored at 29 holds a polish chosen without them and 30 recomputes it.
+`REFINE_CACHE_VERSION` stays at 12:
+the repair lane passes neither note,
+and a context built without them is equal to the one built before
+(`refine-selection-notes.unit.test.ts`,
+"BUILDS THE SHEET IT BUILT BEFORE WHERE NO NOTE IS GIVEN").
+
+Not measured:
+whether a rewrite made to a claim now wins more often with the judges who can read the claim.
+The sheets are tested,
+not the votes,
+and a vote needs a keyed rerun measured against run-to-run spread.
+
+Open to the owner's veto:
+the dispute note to the writers and the judges,
+the judges' qualified criteria,
+and the single cache bump.
+Reverting the first two is the two optional parameters of `buildRefineSelectionContext` and `buildRefineMessages`.
 
 Recurrence:
 `mistake-prevention-sheets-quorums-and-outcome-rules.md`,
 "What each sheet is shown":
-a block added to a judge's sheet is threaded to the writer of the text it judges in the same change.
+a block added to a judge's sheet is threaded to the writer of the text it judges in the same change,
+and to every other judge of that writer's text.

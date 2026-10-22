@@ -436,7 +436,9 @@ named for that subject and listed here.
   the repair panel's accepted claims that never reached the polish gate (B731),
   the ballots whose reply shape asked for the choice before the reason (B732),
   and the same claims,
-  which the polish writers were never shown (B805).
+  which the polish writers were never shown,
+  nor the dispute note,
+  nor the judges of the writers' rewrites (B805).
 - [Audit ledger: what each sheet shows](audit-ledger-what-each-sheet-shows.md):
   Sheets that lacked a block their role needs to judge or write,
   the reader-protection rule that reached past the account of how a death or an attempt happened (B697),
