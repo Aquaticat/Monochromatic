@@ -95,7 +95,7 @@ and `#71` recorded that a
 
 Prototyped 2026-08-13 after the asymmetric-preamble finding.
 This SUPERSEDES
- the blast-radius figures in the correction above,
+ the blast-radius figures in the correction of [attempt six](wire-the-heading-aligner-attempt-six-lexicographic-scoring.md),
 which were measured with a
  naive offset adapter.
 
@@ -120,7 +120,7 @@ and it returns a
 which was checked
  rather than assumed.
 
-This is attempt TWO from earlier in this document,
+This is attempt TWO of [attempts one to five](wire-the-heading-aligner-prototype-attempts-one-to-five.md),
 which failed under scoring
  that could not withhold a pairing.
 Attempt six can,
@@ -180,7 +180,7 @@ so nothing is forced and all 17 units come
  back ambiguous.
 Production pairs its 8 sections and,
 per the inspection
- recorded earlier in this document,
+ recorded in [the finding, options and ranking](wire-the-heading-aligner-the-finding-options-and-ranking.md),
 pairs them CORRECTLY.
 
 So the aligner refuses 8 pairings a human can verify are right.

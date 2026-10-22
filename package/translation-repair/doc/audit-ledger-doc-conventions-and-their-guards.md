@@ -930,26 +930,18 @@ the index and the eight files,
 less their added title lines,
 the two lines that name the index and the contents list,
 join with blank lines into the old file line for line,
-and their 10,945 whitespace-normalised words equal the old file's
-(`~/temp/agent/tr-fan/w267-scratch/split-words-check.ts`,
-which compares against the file at `0994fbf492`).
-The allowance's reason is the cost of this cut:
-pointers by position that were inside one file now cross files,
-and are left as written because the words did not change.
-They are "The ranking above" in the prototype attempts,
-which means the options file;
-"withdrawn earlier in this document" in the attempt six file,
-which means the unpaired headings file;
+and their 10,945 whitespace-normalised words equal the old file's at `0994fbf492`.
+The cut turned seven pointers by position into pointers across files,
+so each now names the file it means by a relative link:
+"The ranking above" in the prototype attempts links the options file;
+"withdrawn earlier in this document" in the attempt six file links the unpaired headings file;
 "attempt TWO from earlier in this document",
 "the correction above" and "recorded earlier in this document"
-in the attempt seven file,
-which mean the prototype attempts,
+in the attempt seven file
+link the prototype attempts,
 the attempt six file and the options file;
-"the earlier 60 of 172" in the landing file,
-which means the derivability file;
-and "the verdict at the top of this document" in the unpaired headings file,
-which means the index.
-Each of them names an attempt or a section that the contents list places in a file.
+"the earlier 60 of 172" in the landing file links the derivability file;
+and "the verdict at the top of this document" in the unpaired headings file links the index.
 
 Still open,
 and not decided here:

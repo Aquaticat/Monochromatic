@@ -130,7 +130,7 @@ over all 92 entries carrying both
   pairs whose source and target block counts differ    85 of 275   30.9%
 ```
 
-NOT DIRECTLY COMPARABLE with the earlier 60 of 172,
+NOT DIRECTLY COMPARABLE with the 60 of 172 in [the derivability probe and block-count gap](wire-the-heading-aligner-derivability-probe-and-block-count-gap.md),
 and saying so matters more
  than the number.
 Those denominators describe different populations:

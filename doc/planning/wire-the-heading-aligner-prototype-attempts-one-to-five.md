@@ -5,7 +5,9 @@ which lists every file of this record.
 
 ## Prototyped, and four of the five attempts were wrong
 
-The ranking above left one thing open:
+The ranking
+(in [the finding, options and ranking](wire-the-heading-aligner-the-finding-options-and-ranking.md))
+left one thing open:
 whether the heading-to-chunk adapter is
  a few lines or enough code to change the answer.
 It was built against the

@@ -141,7 +141,7 @@ or simply be reported is the decision that gates landing this,
 The attempt-six section reported "89 of 92 identical to the current aligner".
 That compared `lexAlign` against `alignHeadings`,
 which production never calls.
-It is the same conflation withdrawn earlier in this document,
+It is the same conflation withdrawn in [the unpaired headings defect](wire-the-heading-aligner-the-unpaired-headings-defect.md),
 made again one
  section later,
 and it is withdrawn too.

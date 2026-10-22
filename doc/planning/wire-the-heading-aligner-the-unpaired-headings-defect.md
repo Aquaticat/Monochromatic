@@ -8,7 +8,7 @@ which lists every file of this record.
 Found 2026-08-13 by a source-level review,
 and confirmed against both the code
  and the corpus.
-This CORRECTS the verdict at the top of this document,
+This CORRECTS the verdict in [the index of this record](wire-the-heading-aligner.md),
 which
  called `alignHeadings` a working aligner that nothing calls.
 It is not working.
