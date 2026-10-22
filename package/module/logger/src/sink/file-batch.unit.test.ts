@@ -137,7 +137,7 @@ await describe({
         await withFileSink(async function checkSeparateOwners({ sink, directory, },): Promise<void> {
           const other = createFileSink({ directory, },);
           expect(await other.verify(),).toBe(true,);
-          await other.flush();
+          await other.flush?.();
           const first = { level: 'info' as const, timestamp: 1, message: `first${'"\\\n世界'.repeat(150_000,)}`, };
           const second = { level: 'info' as const, timestamp: 2, message: `second${'"\\\n世界'.repeat(150_000,)}`, };
           await Promise.all([sink.write(first,), other.write(second,),],);
