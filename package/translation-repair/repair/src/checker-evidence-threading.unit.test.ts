@@ -233,42 +233,42 @@ function recordingClient({ checkerSheets, }: { readonly checkerSheets: string[];
           ],
         }
         : (stage === 'panel_ballot')
-        ? {
-          verdicts: blockNumbers({ text: content, marker: 'CLAIM ', },).map(function toVerdict(claim,) {
-            return { claim, reason: 'scripted', vote: 'supported', };
-          },),
-        }
-        : (stage === 'editor_report')
-        ? {
-          edits: blockNumbers({ text: content, marker: 'REGION ', },).map(function toEdit(region,) {
-            return { region, newText: SUN_REPAIR, };
-          },),
-        }
-        : (stage === 'resolution_report')
-        ? {
-          checks: blockNumbers({ text: content, marker: 'ISSUE ', },).map(function toCheck(issue,) {
-            return { issue, verdict: 'fixed', };
-          },),
-        }
-        : (stage === 'introduced_defect_report')
-        ? {
-          checks: blockNumbers({ text: content, marker: 'REGION ', },).map(function toCheck(region,) {
-            return {
-              region,
-              verdict: 'no-introduced-defect-found',
-              category: '',
-              severity: '',
-              evidence: '',
-              omittedText: '',
-              verdictReason: '',
-            };
-          },),
-        }
-        : (stage === 'refine_report')
-        ? { rewrites: [{ paragraph: 1, newText: SMOOTH_TEXT, },], }
-        : (stage === 'candidate_ballot')
-        ? { best: 1, assessment: 'scripted', }
-        : undefined;
+          ? {
+            verdicts: blockNumbers({ text: content, marker: 'CLAIM ', },).map(function toVerdict(claim,) {
+              return { claim, reason: 'scripted', vote: 'supported', };
+            },),
+          }
+          : (stage === 'editor_report')
+            ? {
+              edits: blockNumbers({ text: content, marker: 'REGION ', },).map(function toEdit(region,) {
+                return { region, newText: SUN_REPAIR, };
+              },),
+            }
+            : (stage === 'resolution_report')
+              ? {
+                checks: blockNumbers({ text: content, marker: 'ISSUE ', },).map(function toCheck(issue,) {
+                  return { issue, verdict: 'fixed', };
+                },),
+              }
+              : (stage === 'introduced_defect_report')
+                ? {
+                  checks: blockNumbers({ text: content, marker: 'REGION ', },).map(function toCheck(region,) {
+                    return {
+                      region,
+                      verdict: 'no-introduced-defect-found',
+                      category: '',
+                      severity: '',
+                      evidence: '',
+                      omittedText: '',
+                      verdictReason: '',
+                    };
+                  },),
+                }
+                : (stage === 'refine_report')
+                  ? { rewrites: [{ paragraph: 1, newText: SMOOTH_TEXT, },], }
+                  : (stage === 'candidate_ballot')
+                    ? { best: 1, assessment: 'scripted', }
+                    : undefined;
       if (scripted === undefined)
         throw new Error(`stub has no script for stage ${stage}`,);
       if (!request.validate(scripted,))

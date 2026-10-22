@@ -140,16 +140,16 @@ export function paneById(
 export function columnCount({ strip, }: { readonly strip: Strip; },): number {
   return strip.panes
     .reduce(
-      function widest(
+    function widest(
+      count,
+      pane,
+    ): number {
+      return Math.max(
         count,
-        pane,
-      ): number {
-        return Math.max(
-          count,
-          pane.column + 1,
-        );
-      },
-      0,
+        pane.column + 1,
+      );
+    },
+    0,
     );
 }
 

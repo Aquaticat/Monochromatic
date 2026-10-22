@@ -137,9 +137,9 @@ await describe({
         expect(halves.unresolvedRows,).toEqual([],);
         expect(halves.findings,).toEqual([
           `${CONTAINER_HALF_ADMITTED_FINDING} (slice 0 beside slice 1: one container's halves ship together, `
-          + 'and slice 1 is admitted)',
+            + 'and slice 1 is admitted)',
           `${CONTAINER_HALF_ADMITTED_FINDING} (slice 3 beside slice 1: one container's halves ship together, `
-          + 'and slice 1 is admitted)',
+            + 'and slice 1 is admitted)',
         ],);
       },
     },),

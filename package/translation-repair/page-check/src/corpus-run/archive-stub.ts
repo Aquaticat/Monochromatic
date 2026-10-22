@@ -186,8 +186,8 @@ function withoutCodeSpan({ text, }: { readonly text: string; },): string {
   return wears
     ? text
       .slice(
-        CODE_SPAN.length,
-        -CODE_SPAN.length,
+      CODE_SPAN.length,
+      -CODE_SPAN.length,
       )
       .trim()
     : text;
@@ -421,8 +421,8 @@ function withoutEmphasis({ text, }: { readonly text: string; },): string {
     return '';
   return characters
     .slice(
-      first,
-      characters.findLastIndex(isNoEmphasisMark,) + 1,
+    first,
+    characters.findLastIndex(isNoEmphasisMark,) + 1,
     )
     .join('',);
 }

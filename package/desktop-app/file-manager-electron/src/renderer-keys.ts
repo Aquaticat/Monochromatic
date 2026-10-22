@@ -85,8 +85,8 @@ function moveSelection(
   session.stores
     .selections
     .set(
-      active,
-      next,
+    active,
+    next,
     );
   renderAndReport({ session, },);
   session.stores

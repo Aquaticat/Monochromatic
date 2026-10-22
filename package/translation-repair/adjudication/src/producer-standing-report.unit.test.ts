@@ -113,7 +113,7 @@ await describe({
         it({
           name:
             'renders the share to one decimal AND carries the three counts behind it, since a share with '
-            + 'no denominator beside it cannot be told apart from a share one ballot wide',
+              + 'no denominator beside it cannot be told apart from a share one ballot wide',
           fn: async () => {
             expect(standingLine({ standing: LEADER, },),).toBe(
               'hf:zai-org/GLM-5.3-Flash: 75.0% (6 of 8 disinterested ballots, over 4 candidates)',
@@ -124,7 +124,7 @@ await describe({
         it({
           name:
             'says UNJUDGED rather than 0.0% for a model no disinterested judge voted on, which is the '
-            + 'distinction the whole report exists to keep: no evidence is not evidence of a poor showing',
+              + 'distinction the whole report exists to keep: no evidence is not evidence of a poor showing',
           fn: async () => {
             expect(standingLine({ standing: UNJUDGED, },),).toBe(
               'hf:moonshotai/Kimi-K3: UNJUDGED (0 of 0 disinterested ballots, over 2 candidates)',
@@ -135,7 +135,7 @@ await describe({
         it({
           name:
             'renders a MEASURED zero as 0.0%, so the two zeroes a reader might confuse read differently on '
-            + 'the page rather than only in the data behind it',
+              + 'the page rather than only in the data behind it',
           fn: async () => {
             expect(standingLine({ standing: MEASURED_ZERO, },),).toBe(
               'hf:Qwen/Qwen3.8-27B: 0.0% (0 of 5 disinterested ballots, over 3 candidates)',
@@ -155,7 +155,7 @@ await describe({
         it({
           name:
             'POSITIVE CONTROL: the input order is not already the answer, so a ranking that returned its '
-            + 'argument untouched would fail the other cases in this file rather than pass them',
+              + 'argument untouched would fail the other cases in this file rather than pass them',
           fn: async () => {
             expect([
               UNJUDGED,
@@ -178,8 +178,8 @@ await describe({
         it({
           name:
             'orders by share, best first, and puts the UNJUDGED model behind the one measured at zero: a '
-            + 'model with no ballots sorts to the END, not to the bottom, because it wrote candidates '
-            + 'nobody disinterested ever voted on',
+              + 'model with no ballots sorts to the END, not to the bottom, because it wrote candidates '
+              + 'nobody disinterested ever voted on',
           fn: async () => {
             expect(rankStandings({
               standings: [
@@ -200,7 +200,7 @@ await describe({
         it({
           name:
             'puts an UNJUDGED model that arrived after a measured one behind it and behind the model measured '
-            + 'at zero that arrived last',
+              + 'at zero that arrived last',
           fn: async () => {
             expect(rankStandings({
               standings: [
@@ -221,7 +221,7 @@ await describe({
         it({
           name:
             'leaves two UNJUDGED models in the order they arrived, rather than inventing a lead between '
-            + 'them: neither has any evidence, so neither can be ahead',
+              + 'them: neither has any evidence, so neither can be ahead',
           fn: async () => {
             /**
              Second model with no disinterested ballots at all.
@@ -250,7 +250,7 @@ await describe({
         it({
           name:
             'returns a NEW list and leaves the caller`s alone, so a report that ranks the tally it is '
-            + 'still accumulating into does not reorder that tally underneath it',
+              + 'still accumulating into does not reorder that tally underneath it',
           fn: async () => {
             /**
              Caller's list, in an order the ranking must change.

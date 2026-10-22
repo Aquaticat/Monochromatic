@@ -211,7 +211,7 @@ await describe({
         expect(exitCode,).toBe(1,);
         expect(lines,).toEqual([
           'warn [reportModelHealth] hf:openai/gpt-oss-120b: UNREACHABLE: refused by ProviderHttpError from synthetic with HTTP 402 '
-          + '(the provider said: "no treats left")',
+            + '(the provider said: "no treats left")',
           'info [reportModelHealth] ROSTER 0 of 1 model answered; unreachable: hf:openai/gpt-oss-120b',
         ],);
       },

@@ -80,7 +80,7 @@ await describe({
 
             expect(printed.lines,).toEqual([
               `CHECKER genuinely-fixed expected=fixed heard=${SEATS} fixed=${SEATS} notFixed=0 worse=0 `
-              + 'resolved=true regressed=false',
+                + 'resolved=true regressed=false',
             ],);
           },
         },),
@@ -107,9 +107,9 @@ await describe({
 
             expect(printed.lines,).toEqual([
               `CHECKER untouched expected=not-fixed heard=${SEATS} fixed=0 notFixed=${SEATS} worse=0 `
-              + 'resolved=false regressed=false',
+                + 'resolved=false regressed=false',
               `CHECKER fixed-but-damaged expected=fixed-or-worse heard=${SEATS} fixed=0 notFixed=0 worse=${SEATS} `
-              + 'resolved=false regressed=true',
+                + 'resolved=false regressed=true',
             ],);
           },
         },),
@@ -139,9 +139,9 @@ await describe({
             expect(printed.lines,).toEqual([
               `CHECKER mixed-sheet/adjudicated/tense expected=fixed fixed=${SEATS} notFixed=0 worse=0 resolved=true`,
               `CHECKER mixed-sheet/adjudicated/meaning expected=not-fixed fixed=0 notFixed=${SEATS} worse=0 `
-              + 'resolved=false',
+                + 'resolved=false',
               `CHECKER mixed-sheet/adjudicated/absent expected=not-fixed-defect-was-never-there fixed=0 notFixed=0 `
-              + `worse=${SEATS} resolved=false`,
+                + `worse=${SEATS} resolved=false`,
             ],);
           },
         },),
@@ -216,16 +216,16 @@ await describe({
             expect(built(),).toBe(5,);
             expect(printed.lines,).toEqual([
               `CHECKER genuinely-fixed expected=fixed heard=${SEATS} fixed=${SEATS} notFixed=0 worse=0 `
-              + 'resolved=true regressed=false',
+                + 'resolved=true regressed=false',
               `CHECKER untouched expected=not-fixed heard=${SEATS} fixed=0 notFixed=${SEATS} worse=0 `
-              + 'resolved=false regressed=false',
+                + 'resolved=false regressed=false',
               `CHECKER fixed-but-damaged expected=fixed-or-worse heard=${SEATS} fixed=0 notFixed=0 worse=${SEATS} `
-              + 'resolved=false regressed=true',
+                + 'resolved=false regressed=true',
               `CHECKER mixed-sheet/adjudicated/tense expected=fixed fixed=${SEATS} notFixed=0 worse=0 resolved=true`,
               `CHECKER mixed-sheet/adjudicated/meaning expected=not-fixed fixed=0 notFixed=${SEATS} worse=0 `
-              + 'resolved=false',
+                + 'resolved=false',
               `CHECKER mixed-sheet/adjudicated/absent expected=not-fixed-defect-was-never-there fixed=0 `
-              + `notFixed=${SEATS} worse=0 resolved=false`,
+                + `notFixed=${SEATS} worse=0 resolved=false`,
               `CHECKER all-fixed/adjudicated/tense expected=fixed fixed=${SEATS} notFixed=0 worse=0 resolved=true`,
               `CHECKER all-fixed/adjudicated/meaning expected=fixed fixed=${SEATS} notFixed=0 worse=0 resolved=true`,
               `CHECKER all-fixed/adjudicated/absent expected=fixed fixed=${SEATS} notFixed=0 worse=0 resolved=true`,

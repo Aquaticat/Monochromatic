@@ -211,7 +211,7 @@ await describe({
     it({
       name:
         'names the four ways two documents can differ on a slice: neither moved, one moved, '
-        + 'both moved to the same wording, and both moved apart, which is the only one a human has to read',
+          + 'both moved to the same wording, and both moved apart, which is the only one a human has to read',
       fn: async () => {
         /**
          Both lanes left the archive wording standing.
@@ -264,9 +264,9 @@ await describe({
     it({
       name:
         'carries the slicing into the result, so no writer can persist rows without the thing that '
-        + 'numbers them: rows joined on a slice index mean nothing without the preparation, and one '
-        + 'persisted alone reads against a later preparation of the same entry with every row still '
-        + 'looking well formed',
+          + 'numbers them: rows joined on a slice index mean nothing without the preparation, and one '
+          + 'persisted alone reads against a later preparation of the same entry with every row still '
+          + 'looking well formed',
       fn: async () => {
         /**
          Comparison over one unchanged slice.
@@ -281,8 +281,8 @@ await describe({
     it({
       name:
         'reads what the DOCUMENT carries rather than what the lane chose: a slice whose replacement '
-        + 'the assembly guard withdrew compares as the archive wording, even though its record names a rewrite, '
-        + 'because reporting the rewrite would credit a lane with English no reader ever saw',
+          + 'the assembly guard withdrew compares as the archive wording, even though its record names a rewrite, '
+          + 'because reporting the rewrite would credit a lane with English no reader ever saw',
       fn: async () => {
         /**
          Repair chose a rewrite the guard took back; translate shipped one.
@@ -311,7 +311,7 @@ await describe({
     it({
       name:
         'REFUSES two ledgers whose slice counts differ, since a shorter one means the lanes ran over '
-        + 'different preparations and every row after the first gap compares two different passages',
+          + 'different preparations and every row after the first gap compares two different passages',
       fn: async () => {
         /**
          Failure the comparison raised.
@@ -333,7 +333,7 @@ await describe({
     it({
       name:
         'REFUSES two ledgers that disagree about a slice`s archive wording, which is the same defect '
-        + 'arriving with matching counts and is otherwise undetectable downstream',
+          + 'arriving with matching counts and is otherwise undetectable downstream',
       fn: async () => {
         /**
          Failure the comparison raised.
@@ -367,9 +367,9 @@ await describe({
     it({
       name:
         'REFUSES two lanes that disagree about whether the archive translates a slice at all, EVEN WHEN '
-        + 'their incumbent text matches, which is the only case that matters: a blank content slice and a '
-        + 'place the archive never translated both carry the empty string, and every row took its kind '
-        + 'from the repair lane',
+          + 'their incumbent text matches, which is the only case that matters: a blank content slice and a '
+          + 'place the archive never translated both carry the empty string, and every row took its kind '
+          + 'from the repair lane',
       fn: async () => {
         /**
          Failure the comparison raised.
@@ -405,8 +405,8 @@ await describe({
     it({
       name:
         'asserts each lane`s row against itself before joining them, since the two structural boundaries '
-        + 'that take rows from a caller are this and the delivery ledger, and a row that contradicts '
-        + 'itself would otherwise be compared as though it did not',
+          + 'that take rows from a caller are this and the delivery ledger, and a row that contradicts '
+          + 'itself would otherwise be compared as though it did not',
       fn: async () => {
         /**
          Failure raised by a lane falling back on wording the archive lacks.
@@ -436,8 +436,8 @@ await describe({
     it({
       name:
         'separates a lane that LOOKED and kept the archive wording from one that never reached the slice, '
-        + 'which the repair lane`s whole-document block produces: both documents carry the archive text '
-        + 'either way, and only one of them means anybody examined it',
+          + 'which the repair lane`s whole-document block produces: both documents carry the archive text '
+          + 'either way, and only one of them means anybody examined it',
       fn: async () => {
         /**
          Repair stopped before this slice; translate looked and kept it.
@@ -464,8 +464,8 @@ await describe({
     it({
       name:
         'reports a passage NEITHER lane filled as a gap that still remains rather than as the archive '
-        + 'standing, since the archive has never translated it: the older verdict told a grader a '
-        + 'translation was being kept where none has ever existed',
+          + 'standing, since the archive has never translated it: the older verdict told a grader a '
+          + 'translation was being kept where none has ever existed',
       fn: async () => {
         /**
          Both lanes reached the anchor and neither filled it.
@@ -492,9 +492,9 @@ await describe({
     it({
       name:
         'does not call it disagreement when one lane had no work to do. The repair lane mends existing '
-        + 'English, so at a passage the archive never translated it never had an opinion; reporting its '
-        + 'silence as a decision made every anchor the translate lane filled read as the two lanes '
-        + 'choosing different wordings',
+          + 'English, so at a passage the archive never translated it never had an opinion; reporting its '
+          + 'silence as a decision made every anchor the translate lane filled read as the two lanes '
+          + 'choosing different wordings',
       fn: async () => {
         /**
          Anchor the translate lane filled and the repair lane cannot touch.
@@ -532,8 +532,8 @@ await describe({
     it({
       name:
         'compares what the two lanes DECIDED beside what the two documents carry, because both lanes '
-        + 'choosing the same wording where only one shipped it is agreement between the lanes and a '
-        + 'difference between the documents, and one verdict cannot state both',
+          + 'choosing the same wording where only one shipped it is agreement between the lanes and a '
+          + 'difference between the documents, and one verdict cannot state both',
       fn: async () => {
         /**
          Both lanes chose the same replacement; the guard withdrew translate`s.
@@ -566,8 +566,8 @@ await describe({
     it({
       name:
         'REFUSES a ledger that reports one slice twice, since equal lengths are not equal coverage: two '
-        + 'rows for slice 1 against rows for 1 and 2 both count two, and the join would emit slice 1 '
-        + 'twice while dropping slice 2 without a symptom',
+          + 'rows for slice 1 against rows for 1 and 2 both count two, and the join would emit slice 1 '
+          + 'twice while dropping slice 2 without a symptom',
       fn: async () => {
         /**
          Failure the comparison raised. The fixture is the one the name
@@ -603,7 +603,7 @@ await describe({
     it({
       name:
         'REFUSES a translate ledger that reports one slice twice, the same check from the other end, since the '
-        + 'join looks translate rows up by slice and a repeat there drops one of them just as silently',
+          + 'join looks translate rows up by slice and a repeat there drops one of them just as silently',
       fn: async () => {
         /**
          Failure the comparison raised.
@@ -635,7 +635,7 @@ await describe({
     it({
       name:
         'REFUSES a repair slice the translate ledger does not name, which two ledgers of equal length and '
-        + 'no repeats can still hold when they cover different slices',
+          + 'no repeats can still hold when they cover different slices',
       fn: async () => {
         /**
          Failure the comparison raised.
@@ -667,7 +667,7 @@ await describe({
     it({
       name:
         'REFUSES two ledgers naming the same slices in a different order, since a ledger built over one '
-        + 'preparation states them in document order, and two orders mean two preparations',
+          + 'preparation states them in document order, and two orders mean two preparations',
       fn: async () => {
         /**
          Failure the comparison raised.
@@ -702,8 +702,8 @@ await describe({
     it({
       name:
         'REFUSES two ledgers that name different slicings, which is the pair no other check can catch: '
-        + 'ledgers loaded from two artifacts of one entry line up perfectly, and their slice indices '
-        + 'number different passages',
+          + 'ledgers loaded from two artifacts of one entry line up perfectly, and their slice indices '
+          + 'number different passages',
       fn: async () => {
         /**
          A slicing that is not this file`s.
@@ -735,7 +735,7 @@ await describe({
     it({
       name:
         'REFUSES two ledgers that disagree about a slice`s ORIGINAL, since two preparations can pair the '
-        + 'same archive wording against different source passages and every other field would still match',
+          + 'same archive wording against different source passages and every other field would still match',
       fn: async () => {
         /**
          Failure the comparison raised.
@@ -771,8 +771,8 @@ await describe({
     it({
       name:
         'REFUSES a row whose delivery contradicts the wording beside it, because a record reaching here '
-        + 'is a structural type rather than proof that the ledger builder made it: a row shipping wording '
-        + 'it never decided is well formed in every field on its own',
+          + 'is a structural type rather than proof that the ledger builder made it: a row shipping wording '
+          + 'it never decided is well formed in every field on its own',
       fn: async () => {
         /**
          Failure raised by a row shipping a decision it does not have.

@@ -70,8 +70,8 @@ export function midSentence(
    */
   const last = text
     .slice(
-      0,
-      at,
+    0,
+    at,
     )
     .trimEnd()
     .at(-1,)
@@ -100,39 +100,39 @@ export function titleRuns(
    */
   const groups: readonly (readonly LatinWord[])[] = latinWordSpans({ text, },)
     .reduce<LatinWord[][]>(
-      function group(
-        built,
-        word,
-      ): LatinWord[][] {
-        if (!isTitleCase({ word: word.word, },)) {
-          built.push([],);
-          return built;
-        }
+    function group(
+      built,
+      word,
+    ): LatinWord[][] {
+      if (!isTitleCase({ word: word.word, },)) {
+        built.push([],);
+        return built;
+      }
         /**
          Run the word may extend.
          */
-        const open = built.at(-1,);
+      const open = built.at(-1,);
         /**
          Last word of that run.
          */
-        const previous = open?.at(-1,);
+      const previous = open?.at(-1,);
         /**
          Whether one space alone stands between the two words.
          */
-        const joined = (previous !== undefined)
-          && (text.slice(
-            previous.start
-              + previous.word
+      const joined = (previous !== undefined)
+        && (text.slice(
+          previous.start
+            + previous.word
               .length,
-            word.start,
-          ) === ' ');
-        if (joined)
-          open?.push(word,);
-        else
-          built.push([word,],);
-        return built;
-      },
-      [],
+          word.start,
+        ) === ' ');
+      if (joined)
+        open?.push(word,);
+      else
+        built.push([word,],);
+      return built;
+    },
+    [],
     );
   return groups
     .filter(function longEnough(words,): boolean {
@@ -152,7 +152,7 @@ export function titleRuns(
           first.start,
           last.start
             + last.word
-            .length,
+              .length,
         ),
         start: first.start,
       };
@@ -248,10 +248,10 @@ export function phraseOccurrences(
       at,
     },)
       || (!inProse({
-      ranges,
-      start: at,
-      end: at + needle.length,
-    },)))
+        ranges,
+        start: at,
+        end: at + needle.length,
+      },)))
       continue;
     found.push(at,);
   }

@@ -242,7 +242,7 @@ function base64UnitsBeside(
   const counted = { units: 0, };
   while (
     (counted.units < most)
-    && ((from + (direction * counted.units)) >= 0)
+      && ((from + (direction * counted.units)) >= 0)
       && ((from + (direction * counted.units)) < text.length)
       && BASE64_UNITS.includes(text.charAt(from + (direction * counted.units),),)
   )

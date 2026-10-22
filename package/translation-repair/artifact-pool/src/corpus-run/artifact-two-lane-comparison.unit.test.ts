@@ -169,7 +169,7 @@ await describe({
         it({
           name:
             'names the four ways two documents can differ on a slice, which is the reading a later analysis '
-            + 'joins on: neither moved, one moved, both moved to the same words, both moved to different ones',
+              + 'joins on: neither moved, one moved, both moved to the same words, both moved to different ones',
           fn: async () => {
             /**
              Wording the repair lane shipped.
@@ -212,8 +212,8 @@ await describe({
         it({
           name:
             'separates a passage the archive NEVER translated from its wording standing, which equal text '
-            + 'cannot: a blank slice and an untranslated one both carry the empty string, and reporting the '
-            + 'second as the archive standing tells a reader a translation is being kept where none exists',
+              + 'cannot: a blank slice and an untranslated one both carry the empty string, and reporting the '
+              + 'second as the archive standing tells a reader a translation is being kept where none exists',
           fn: async () => {
             /**
              One anchor neither lane filled, and one blank slice the archive does
@@ -274,7 +274,7 @@ await describe({
         it({
           name:
             'reports the two lanes` DECISIONS apart from what their documents carry, so a slice one lane '
-            + 'never decided reads as not comparable rather than as the two having chosen differently',
+              + 'never decided reads as not comparable rather than as the two having chosen differently',
           fn: async () => {
             /**
              One slice the repair lane heard nobody about.
@@ -305,8 +305,8 @@ await describe({
         it({
           name:
             'REFUSES two ledgers of different lengths, and two that name different slices at one position: '
-            + 'a comparison joined by index alone would accept rows in the wrong order, which is one of the '
-            + 'things reading by position exists to catch',
+              + 'a comparison joined by index alone would accept rows in the wrong order, which is one of the '
+              + 'things reading by position exists to catch',
           fn: async () => {
             /**
              What lengthsDiffer raised, read for its class as well as its wording.
@@ -350,8 +350,8 @@ await describe({
         it({
           name:
             'REFUSES two ledgers that disagree about the ORIGINAL at one position, which is how a pair built '
-            + 'over different slicings shows up: the slice numbers can still line up while the two lanes were '
-            + 'reading different sentences',
+              + 'over different slicings shows up: the slice numbers can still line up while the two lanes were '
+              + 'reading different sentences',
           fn: async () => {
             /**
              What sourcesDisagree raised, read for its class as well as its wording.
@@ -377,7 +377,7 @@ await describe({
         it({
           name:
             'REFUSES two ledgers that disagree about the ARCHIVE`S WORDING at one slice while agreeing on its '
-            + 'original, which is two preparations of one slicing against different archive states',
+              + 'original, which is two preparations of one slicing against different archive states',
           fn: async () => {
             /**
              What wordingsDisagree raised, read for its class as well as its wording.
@@ -403,7 +403,7 @@ await describe({
         it({
           name:
             'REFUSES two ledgers that disagree about whether the archive translates a slice, even where both '
-            + 'carry the same text, since that disagreement is exactly the pair equal text hides',
+              + 'carry the same text, since that disagreement is exactly the pair equal text hides',
           fn: async () => {
             /**
              What kindsDisagree raised, read for its class as well as its wording.
@@ -452,7 +452,7 @@ await describe({
         it({
           name:
             'ACCEPTS two derivations that match row for row, which is what makes either one answerable for '
-            + 'the other while the pipeline`s rules and version 2`s rules still say the same thing',
+              + 'the other while the pipeline`s rules and version 2`s rules still say the same thing',
           fn: async () => {
             /**
              One comparison, derived once.
@@ -470,8 +470,8 @@ await describe({
         it({
           name:
             'REFUSES a disagreement, because an artifact written while the two derivations differ would mean '
-            + 'something the version number does not say: a stopped pass is the cheap outcome, since whoever '
-            + 'changed the rules then decides whether version 2 changed with them',
+              + 'something the version number does not say: a stopped pass is the cheap outcome, since whoever '
+              + 'changed the rules then decides whether version 2 changed with them',
           fn: async () => {
             /**
              What version 2's rules say about one kept slice.
@@ -511,8 +511,8 @@ await describe({
         it({
           name:
             'ACCEPTS two derivations whose rows carry the same values in a different KEY ORDER, which is what '
-            + 'the reader will hold: a row parsed out of a file is ordered however the file wrote it, and '
-            + 'calling that a changed rule would stop a pass over a difference no reader can see',
+              + 'the reader will hold: a row parsed out of a file is ordered however the file wrote it, and '
+              + 'calling that a changed rule would stop a pass over a difference no reader can see',
           fn: async () => {
             /**
              One comparison, derived once.
@@ -547,7 +547,7 @@ await describe({
         it({
           name:
             'REFUSES derivations of different lengths, so a comparator that dropped or added a row is caught '
-            + 'before the row-by-row reading starts and reports the counts rather than a field',
+              + 'before the row-by-row reading starts and reports the counts rather than a field',
           fn: async () => {
             /**
              One row, against nothing.
@@ -582,7 +582,7 @@ await describe({
         it({
           name:
             'reads the UNION members apart from their names: two outcomes both decided on different wording '
-            + 'are different, while two carrying the same name and nothing else are the same',
+              + 'are different, while two carrying the same name and nothing else are the same',
           fn: async () => {
             expect(outcomesEqual({
               left: {
@@ -607,7 +607,7 @@ await describe({
         it({
           name:
             'reads a withdrawal`s REASON, so a replacement pulled for assembly integrity is not the same '
-            + 'delivery as one pulled because the document was blocked as untranslated',
+              + 'delivery as one pulled because the document was blocked as untranslated',
           fn: async () => {
             expect(deliveriesEqual({
               left: {
@@ -628,7 +628,7 @@ await describe({
         it({
           name:
             'reads `undecidedLanes` IN ORDER and by length, because the field is stated as lane order: a '
-            + 'reversed pair names a different lane first, and a longer list names a lane the other does not',
+              + 'reversed pair names a different lane first, and a longer list names a lane the other does not',
           fn: async () => {
             expect(decisionsEqual({
               left: {
@@ -674,8 +674,8 @@ await describe({
         it({
           name:
             'ACCEPTS two readings saying the same thing, of either kind, and REFUSES a comparable reading beside '
-            + 'one that is not, from either side, since whether the two lanes could be compared is part of what '
-            + 'the row says',
+              + 'one that is not, from either side, since whether the two lanes could be compared is part of what '
+              + 'the row says',
           fn: async () => {
             expect(decisionsEqual({
               left: {
@@ -722,7 +722,7 @@ await describe({
         it({
           name:
             'answers over EVERY field version 2 owns, so a row differing in exactly one of them names that one '
-            + 'whichever one it is: a check reading only some fields would pass artifacts it should stop',
+              + 'whichever one it is: a check reading only some fields would pass artifacts it should stop',
           fn: async () => {
             /**
              One row every entry of `variants` changes exactly one field of.

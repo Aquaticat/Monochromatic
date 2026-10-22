@@ -24,7 +24,7 @@ import type { ConsistencyKeptReason, } from '@monochromatic-dev/translation-repa
 export type EdgeRefusal = Extract<
   ConsistencyKeptReason,
   'edge-reading-changes' | 'edge-reference-mark' | 'edge-second-mark'
->;
+  >;
 
 /**
  What the pass found at the edge of a span: one of the reasons, or that it refused nothing there.

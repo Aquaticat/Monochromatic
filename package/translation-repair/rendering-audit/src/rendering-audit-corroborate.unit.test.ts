@@ -264,7 +264,7 @@ await describe({
         it({
           name:
             'CORROBORATES two voices who located one defect at different widths, which is the false split '
-            + 'that keying on quoted text produced: what they have in common is a position, not a phrasing',
+              + 'that keying on quoted text produced: what they have in common is a position, not a phrasing',
           fn: async () => {
             const defects = corroborate({
               claims: [
@@ -282,8 +282,8 @@ await describe({
         it({
           name:
             'does NOT merge two DIFFERENT defects in one sentence, which is the false merge the character '
-            + 'floors caused: both claims quote the same sentence and neither voice agreed with the other '
-            + 'about anything, so reporting one twice-confirmed defect would invent the agreement',
+              + 'floors caused: both claims quote the same sentence and neither voice agreed with the other '
+              + 'about anything, so reporting one twice-confirmed defect would invent the agreement',
           fn: async () => {
             const defects = corroborate({
               claims: [
@@ -297,8 +297,8 @@ await describe({
         it({
           name:
             'does not call those two a near miss either, because their FOCUS spans do not touch: a near miss '
-            + 'says two claims might be one defect, and two claims about different words of one sentence '
-            + 'demonstrably are not. Sharing a locator is not sharing a defect',
+              + 'says two claims might be one defect, and two claims about different words of one sentence '
+              + 'demonstrably are not. Sharing a locator is not sharing a defect',
           fn: async () => {
             expect(
               nearMisses({
@@ -313,8 +313,8 @@ await describe({
         it({
           name:
             'DOES report a near miss when the focus spans genuinely overlap without matching, which is the '
-            + 'case a human has to settle: one voice quoting a word and another quoting the phrase it sits in '
-            + 'may be one defect or two, and this instrument does not decide it',
+              + 'case a human has to settle: one voice quoting a word and another quoting the phrase it sits in '
+              + 'may be one defect or two, and this instrument does not decide it',
           fn: async () => {
             /**
              Claim whose focus contains the other's, on both sides.
@@ -352,7 +352,7 @@ await describe({
         it({
           name:
             'does NOT let one voice corroborate itself by filing the same defect twice, which is what a '
-            + 'count over claims rather than over voices would report as agreement nobody reached',
+              + 'count over claims rather than over voices would report as agreement nobody reached',
           fn: async () => {
             const defects = corroborate({
               claims: [
@@ -372,8 +372,8 @@ await describe({
         it({
           name:
             'treats the SAME span under two category names as a near miss rather than as corroboration, '
-            + 'since a dropped negator is nameable two ways and merging them would decide a question about '
-            + 'the taxonomy that neither voice was asked',
+              + 'since a dropped negator is nameable two ways and merging them would decide a question about '
+              + 'the taxonomy that neither voice was asked',
           fn: async () => {
             /**
              Two voices pointing at the identical span and disagreeing on the word
@@ -408,7 +408,7 @@ await describe({
         it({
           name:
             'does NOT cluster transitively: one wide claim touching two narrow ones does not put those two '
-            + 'in a defect together, when they share no text at all',
+              + 'in a defect together, when they share no text at all',
           fn: async () => {
             /**
              Claim spanning the whole count sentence, which touches both counts.
@@ -458,7 +458,7 @@ await describe({
         it({
           name:
             'KEEPS every member claim on a corroborated defect, so a later calibration can re-read what each '
-            + 'voice actually said rather than re-running the roster to find out',
+              + 'voice actually said rather than re-running the roster to find out',
           fn: async () => {
             const defects = corroborate({
               claims: [
@@ -593,8 +593,8 @@ await describe({
         it({
           name:
             'GATHERS voices who named one defect at different widths, which the strict count cannot: this '
-            + 'was measured on the live control, where three auditors independently found one dropped '
-            + 'negator, all three called it altered-polarity, and quoted three different spans of it',
+              + 'was measured on the live control, where three auditors independently found one dropped '
+              + 'negator, all three called it altered-polarity, and quoted three different spans of it',
           fn: async () => {
             /**
              Third voice quoting a span that contains the other two.
@@ -631,7 +631,7 @@ await describe({
         it({
           name:
             'does NOT gather two DIFFERENT defects in one sentence, which is the whole risk of a looser rule: '
-            + 'the two changed counts share a sentence and share no focus, so nothing here may join them',
+              + 'the two changed counts share a sentence and share no focus, so nothing here may join them',
           fn: async () => {
             expect(
               corroborateByOverlap({
@@ -646,7 +646,7 @@ await describe({
         it({
           name:
             'does NOT join two narrow claims THROUGH a wide one that touches both, since a group whose '
-            + 'members are not all about the same thing is not agreement, however each pair looks',
+              + 'members are not all about the same thing is not agreement, however each pair looks',
           fn: async () => {
             /**
              Claim spanning both counts.
@@ -692,7 +692,7 @@ await describe({
         it({
           name:
             'does NOT gather two voices who disagree about the CATEGORY, since naming the same span two ways '
-            + 'is a question about the taxonomy rather than agreement about a defect',
+              + 'is a question about the taxonomy rather than agreement about a defect',
           fn: async () => {
             const claims = [
               claimOf({

@@ -224,7 +224,7 @@ await describe({
     it({
       name:
         'ACCEPTS an artifact against the preparation it was written over: every measurement it records '
-        + 'of the two documents is what that preparation measures',
+          + 'of the two documents is what that preparation measures',
       fn: async () => {
         /**
          A real preparation of the cat pair.
@@ -242,8 +242,8 @@ await describe({
     it({
       name:
         'REFUSES the same artifact against a preparation of DIFFERENT documents, naming the first '
-        + 'measurement that differs: a standalone reader accepts any syntactically valid identity, and '
-        + 'this is the check that tells one preparation from another',
+          + 'measurement that differs: a standalone reader accepts any syntactically valid identity, and '
+          + 'this is the check that tells one preparation from another',
       fn: async () => {
         /**
          Preparation the artifact describes.
@@ -285,8 +285,8 @@ await describe({
     it({
       name:
         'REFUSES the same DOCUMENTS sliced under a different budget into a different number of slices: '
-        + 'the two preparations describe one pair of texts and pair different originals with different '
-        + 'archive wordings, so an artifact read against the wrong one would report rows nobody produced',
+          + 'the two preparations describe one pair of texts and pair different originals with different '
+          + 'archive wordings, so an artifact read against the wrong one would report rows nobody produced',
       fn: async () => {
         /**
          Preparation the artifact describes.

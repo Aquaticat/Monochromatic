@@ -184,7 +184,7 @@ export async function settleRepairSlice(
    */
   const documentSourceText = prepared.sourceText
     === slice.source
-    .text ? '' : prepared.sourceText;
+      .text ? '' : prepared.sourceText;
 
   /**
    What this slice cost, reported however this function is left.

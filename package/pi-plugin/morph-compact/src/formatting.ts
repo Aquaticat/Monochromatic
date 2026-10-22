@@ -43,7 +43,7 @@ function isTextContentItem(
   const textVal = item.text;
   return (
     (typeVal === 'text')
-    && ((typeof textVal) === 'string')
+      && ((typeof textVal) === 'string')
   );
 }
 
@@ -166,8 +166,8 @@ export function extractLatestQuery({
     if (
       (message.role
         === 'bashExecution')
-      && (message.command
-        !== undefined)
+        && (message.command
+          !== undefined)
         && (message.command
           !== '')
     ) {

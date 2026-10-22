@@ -91,9 +91,9 @@ await describe({
             // A SECOND READING OF THE RELABELLED ARCHIVE CHANGES NOTHING.
             expect(
               footnoteRelabelOf(prepareDocumentPair({
-              sourceText: SOURCE_TEXT,
-              targetText: relabelled,
-            },),),
+                sourceText: SOURCE_TEXT,
+                targetText: relabelled,
+              },),),
             ).toStrictEqual({
               kind: 'unchanged',
               correspondences: [{ from: '2', to: '2', }, { from: '1', to: '1', },],
@@ -107,9 +107,9 @@ await describe({
           fn: async () => {
             expect(
               footnoteRelabelOf(prepareDocumentPair({
-              sourceText: '她[^1]。\n\n[^1]: 注。\n',
-              targetText: 'She[^1].\n\n[^1]: Note.\n',
-            },),),
+                sourceText: '她[^1]。\n\n[^1]: 注。\n',
+                targetText: 'She[^1].\n\n[^1]: Note.\n',
+              },),),
             ).toStrictEqual({
               kind: 'unchanged',
               correspondences: [{ from: '1', to: '1', },],
@@ -117,9 +117,9 @@ await describe({
             },);
             expect(
               footnoteRelabelOf(prepareDocumentPair({
-              sourceText: '她。\n',
-              targetText: 'She.\n',
-            },),),
+                sourceText: '她。\n',
+                targetText: 'She.\n',
+              },),),
             ).toStrictEqual({
               kind: 'unchanged',
               correspondences: [],

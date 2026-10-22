@@ -512,12 +512,12 @@ export async function runScenario({
         .attempts,),
       attempts: observation.attempts
         .map(function summarize(attempt,) {
-        return {
-          label: attempt.label,
-          exitCode: attempt.exitCode,
-          killed: attempt.killed,
-        };
-      },),
+          return {
+            label: attempt.label,
+            exitCode: attempt.exitCode,
+            killed: attempt.killed,
+          };
+        },),
     };
   }
   catch (error: unknown) {
@@ -533,13 +533,13 @@ export async function runScenario({
       attempts: ledger.snapshot()
         .attempts
         .map(function summarize(attempt,) {
-        return {
-          label: attempt.label,
-          exitCode: attempt.outcome
-            .exitCode,
-          killed: attempt.killed,
-        };
-      },),
+          return {
+            label: attempt.label,
+            exitCode: attempt.outcome
+              .exitCode,
+            killed: attempt.killed,
+          };
+        },),
     };
   }
 }

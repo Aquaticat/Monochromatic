@@ -313,7 +313,7 @@ export function inspectEffectCall({
    How much of a default-library collection call the derivation answered.
    */
   const collectionCoverage = (resolvedDeclaration !== undefined)
-      && (collectionReceiver !== NO_MEMBER_RECEIVER)
+    && (collectionReceiver !== NO_MEMBER_RECEIVER)
     ? recordCollectionMemberEffect({
       project,
       checker,

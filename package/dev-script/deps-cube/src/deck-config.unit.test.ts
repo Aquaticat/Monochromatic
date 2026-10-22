@@ -308,9 +308,9 @@ await describe({
       name: 'snapshots layer count against displayToggles permutations',
       skip:
         'blocked by @loaders.gl/schema-utils ^4.4.1 statically importing @math.gl/types '
-        + 'without declaring it as a dep; deck-config.ts cannot be module-loaded in Node '
-        + 'until the upstream packaging is fixed. rolldown resolves it via tree-shaking, '
-        + 'so the runtime HTML still works.',
+          + 'without declaring it as a dep; deck-config.ts cannot be module-loaded in Node '
+          + 'until the upstream packaging is fixed. rolldown resolves it via tree-shaking, '
+          + 'so the runtime HTML still works.',
       fn: async () => {
         // Intentionally empty; kept as a documented placeholder so the
         // limitation appears in test output rather than only in HANDOVER.

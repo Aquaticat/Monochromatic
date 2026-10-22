@@ -50,12 +50,12 @@ export function buildPublicationPlan({
     sourceReference: sourceLink === undefined ? 'plain' : 'commit-pinned',
     issues: input.findings
       .map(function renderFinding(finding,) {
-      return renderIssue({
-        finding,
-        needsTriageLabel,
-        ...(sourceLink === undefined ? {} : { sourceLink, }),
-      },);
-    },),
+        return renderIssue({
+          finding,
+          needsTriageLabel,
+          ...(sourceLink === undefined ? {} : { sourceLink, }),
+        },);
+      },),
   };
 }
 

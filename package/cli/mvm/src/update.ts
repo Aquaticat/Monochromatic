@@ -60,37 +60,37 @@ export async function update(): Promise<void> {
   const removePromises = (await Promise.all(
     Object.entries(IMAGES,)
       .map(
-        async function buildRemoveOps([name, spec,],): Promise<readonly Promise<void>[]> {
+      async function buildRemoveOps([name, spec,],): Promise<readonly Promise<void>[]> {
           /**
            Pending remove operations for this image; collected so `flat()` returns a flat array.
            */
-          const ops: Promise<void>[] = [];
+        const ops: Promise<void>[] = [];
           /**
            On-disk path of the cached base image for this registry entry.
            */
-          const imagePath = join(
-            IMAGES_DIR,
-            spec.fileName,
-          );
+        const imagePath = join(
+          IMAGES_DIR,
+          spec.fileName,
+        );
           /**
            On-disk path of the cached template qcow2 for this registry entry.
            */
-          const templatePath = join(
-            IMAGES_DIR,
-            spec.templateFileName,
-          );
+        const templatePath = join(
+          IMAGES_DIR,
+          spec.templateFileName,
+        );
 
-          if (await pathExists(imagePath,)) {
-            rl.info(`removing cached base image for ${name}: ${spec.fileName}`,);
-            ops.push(rm(imagePath,),);
-          }
+        if (await pathExists(imagePath,)) {
+          rl.info(`removing cached base image for ${name}: ${spec.fileName}`,);
+          ops.push(rm(imagePath,),);
+        }
 
-          if (await pathExists(templatePath,)) {
-            rl.info(`removing cached template for ${name}: ${spec.templateFileName}`,);
-            ops.push(rm(templatePath,),);
-          }
-          return ops;
-        },
+        if (await pathExists(templatePath,)) {
+          rl.info(`removing cached template for ${name}: ${spec.templateFileName}`,);
+          ops.push(rm(templatePath,),);
+        }
+        return ops;
+      },
       ),
   )).flat();
   await Promise.all(removePromises,);

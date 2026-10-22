@@ -256,18 +256,18 @@ export type CarryWriters =
      */
     readonly modelIds: readonly RosterModelId[];
   }
-  | {
+    | {
     /**
      The writers are not asked: the carry goes on with the current English and
      the code splice.
      */
-    readonly kind: 'not-asked';
+      readonly kind: 'not-asked';
 
     /**
      Why, naming the bench and what the seat reading found of it.
      */
-    readonly why: string;
-  };
+      readonly why: string;
+    };
 
 /**
  What a carry reads beside the two places.

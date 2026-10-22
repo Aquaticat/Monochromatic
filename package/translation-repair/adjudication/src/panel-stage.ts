@@ -390,15 +390,15 @@ export async function runPanelStage(
             string,
             PanelBallot
           ] {
-          return [
-            voice.modelId,
-            resolvePanelBallot({
-            wire: voice.value,
-            claimIds: plan.claimIds,
-            clusterIds: plan.clusterIds,
+            return [
+              voice.modelId,
+              resolvePanelBallot({
+                wire: voice.value,
+                claimIds: plan.claimIds,
+                clusterIds: plan.clusterIds,
+              },),
+            ];
           },),
-          ];
-        },),
       );
       logBallotIrregularities({
         ballots,
@@ -425,15 +425,15 @@ export async function runPanelStage(
         issues,
         heardIds: gather.voices
           .map(function identity(voice,): RosterModelId {
-          return voice.modelId;
-        },),
+            return voice.modelId;
+          },),
         findings: [
           ...tallyFindings,
           ...gather.findings,
           ...Object.values(ballots,)
             .flatMap(function irregularities(ballot,): readonly string[] {
-            return ballot.findings;
-          },),
+              return ballot.findings;
+            },),
         ].map(function locate(finding,): string {
           return `panel-packet (${cluster.clusterId}): ${finding}`;
         },),

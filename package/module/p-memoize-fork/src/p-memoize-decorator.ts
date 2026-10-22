@@ -62,15 +62,15 @@ export function pMemoizeDecorator<
   TArgs extends unknown[] = unknown[],
   TResult = unknown,
   CacheKeyType = TArgs[0],
->(
+  >(
   options: MemoizeOptions<TArgs, TResult, CacheKeyType> = {},
-): <This>(
-  value: (
-    this: This,
-    ...callArgs: TArgs
-  ) => TResult | PromiseLike<TResult>,
-  context: ClassMethodDecoratorContext<This>,
-) => void {
+  ): <This>(
+    value: (
+      this: This,
+      ...callArgs: TArgs
+    ) => TResult | PromiseLike<TResult>,
+    context: ClassMethodDecoratorContext<This>,
+  ) => void {
   /**
    Decorator body; its two parameters come from the decorator protocol. The
    context keeps its default method signature because the decorated method

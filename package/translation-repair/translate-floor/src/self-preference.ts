@@ -120,21 +120,21 @@ export type SelfPreference =
      */
     readonly excess: number;
   } & SelfPreferenceCounts)
-  | ({
+    | ({
     /**
      No model both held a stake in a candidate and cast a ballot on its slate,
      so no self-vote was ever possible.
      */
-    readonly kind: 'no-stakeholder-ballots';
-  } & SelfPreferenceCounts)
-  | ({
+      readonly kind: 'no-stakeholder-ballots';
+    } & SelfPreferenceCounts)
+    | ({
     /**
      Every judge over these candidates held a stake in them, so nothing
      disinterested is left to compare against. A roster where producers judge
      their own work and nobody else does cannot be measured this way.
      */
-    readonly kind: 'no-disinterested-ballots';
-  } & SelfPreferenceCounts);
+      readonly kind: 'no-disinterested-ballots';
+    } & SelfPreferenceCounts);
 
 /**
  Ballots a candidate drew, split by whether the judge had a stake in it.
@@ -288,8 +288,8 @@ export function selfPreference(
       total,
       drawn,
     ): number {
-    return total + drawn.opportunities;
-  },
+      return total + drawn.opportunities;
+    },
     0,
   );
 
@@ -301,8 +301,8 @@ export function selfPreference(
       total,
       drawn,
     ): number {
-    return total + drawn.ownVotes;
-  },
+      return total + drawn.ownVotes;
+    },
     0,
   );
 
@@ -314,8 +314,8 @@ export function selfPreference(
       total,
       drawn,
     ): number {
-    return total + drawn.otherBallots;
-  },
+      return total + drawn.otherBallots;
+    },
     0,
   );
 
@@ -327,8 +327,8 @@ export function selfPreference(
       total,
       drawn,
     ): number {
-    return total + drawn.otherVotes;
-  },
+      return total + drawn.otherVotes;
+    },
     0,
   );
 

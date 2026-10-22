@@ -183,7 +183,7 @@ export function setupUndoHandlers(deps: UndoHandlerDeps,): {
        */
       const hasModifier = event.ctrlKey
         || event
-        .metaKey;
+          .metaKey;
       if (!hasModifier)
         return;
 

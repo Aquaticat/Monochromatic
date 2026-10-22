@@ -134,7 +134,7 @@ export function methodSlotIntact(slot: MethodSlot,): boolean {
     && (descriptor?.configurable === true)
     && (descriptor?.enumerable
       === slot.original
-      .enumerable);
+        .enumerable);
 }
 
 /**

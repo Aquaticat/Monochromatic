@@ -60,13 +60,13 @@ export type DisallowedAtRules = 'charset' | 'font-palette-values';
  */
 type IdentifierProperties =
   | 'anchor-name'
-  | 'animation-name'
-  | 'content'
-  | 'counter-increment'
-  | 'counter-reset'
-  | 'counter-set'
-  | 'hyphenate-character'
-  | 'position-anchor';
+    | 'animation-name'
+    | 'content'
+    | 'counter-increment'
+    | 'counter-reset'
+    | 'counter-set'
+    | 'hyphenate-character'
+    | 'position-anchor';
 
 //endregion
 

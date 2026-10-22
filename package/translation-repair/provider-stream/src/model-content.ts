@@ -45,8 +45,8 @@ export function stripCodeFence({ text, }: { readonly text: string; },): string {
 
   return trimmed
     .slice(
-      openingEnd + 1,
-      closingStart,
+    openingEnd + 1,
+    closingStart,
     )
     .trim();
 }
@@ -129,11 +129,11 @@ export function parseModelJson({ text, }: { readonly text: string; },):
     readonly parsed: true;
     readonly value: unknown;
   }
-  | {
-    readonly parsed: false;
-    readonly detail: string;
-  }
-{
+    | {
+      readonly parsed: false;
+      readonly detail: string;
+    }
+  {
   try {
     return {
       parsed: true,

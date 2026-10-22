@@ -450,35 +450,35 @@ export async function runEditorStage(
       // their code-point order is the kinds' order (ledger B122).
       ...textsInCodePointOrder({ texts: [...patch.rejected
         .reduce(
-          function tally(
-            counts: Map<string, number>,
-            rejection,
-          ) {
+        function tally(
+          counts: Map<string, number>,
+          rejection,
+        ) {
         /**
          Where the reason's parenthetical detail begins, when it has one.
          */
-        const detailAt = rejection.reason
-          .indexOf(' (',);
+          const detailAt = rejection.reason
+            .indexOf(' (',);
         /**
          Reason with its parenthetical detail stripped, so counts group.
          */
-        const kind = (detailAt === (-1))
-          ? rejection.reason
-          : rejection.reason
-            .slice(
+          const kind = (detailAt === (-1))
+            ? rejection.reason
+            : rejection.reason
+              .slice(
               0,
               detailAt,
-            );
-        return counts.set(
-          kind,
-          (counts.get(kind,) ?? 0) + 1,
-        );
-      },
-          new Map<string, number>(),
+              );
+          return counts.set(
+            kind,
+            (counts.get(kind,) ?? 0) + 1,
+          );
+        },
+        new Map<string, number>(),
         ),]
         .map(function toFinding([kind, count,]: ReadonlyEntry<string, number>,): string {
-        return `editor-rejected ${kind} (${String(count,)})`;
-      },), },),
+          return `editor-rejected ${kind} (${String(count,)})`;
+        },), },),
     ],
   };
 }

@@ -144,15 +144,15 @@ export type RebuildReproduction =
   | {
     readonly kind: 'reproduced';
   }
-  | {
-    readonly kind: 'moved';
+    | {
+      readonly kind: 'moved';
 
     /**
      First departure from the recorded rows, or the refusal of a recorded
      block pairing that does not fit the text carved.
      */
-    readonly detail: string;
-  };
+      readonly detail: string;
+    };
 
 /**
  Turns a recorded section decider back into the list preparation consumed.

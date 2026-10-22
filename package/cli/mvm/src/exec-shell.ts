@@ -22,8 +22,8 @@ import { randomBytes, } from 'node:crypto';
 export function decodeBase64(encoded: string,): string {
   return Buffer
     .from(
-      encoded,
-      'base64',
+    encoded,
+    'base64',
     )
     .toString('utf8',);
 }

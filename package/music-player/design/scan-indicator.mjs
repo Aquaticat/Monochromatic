@@ -196,7 +196,7 @@ function measuredClearance(capture) {
   const height = bottom - top;
   const rgb = execFileSync('magick', ['-limit', 'thread', '2', '-limit', 'memory', '256MiB', join(evidence, capture.file),
     '-crop', `${width}x${height}+${left - capture.cropPixels.x}+${top - capture.cropPixels.y}`, '+repage', '-depth', '8', 'rgb:-'],
-  { maxBuffer: 8 * 1024 * 1024 });
+    { maxBuffer: 8 * 1024 * 1024 });
   if (rgb.length !== width * height * 3) return { left: null, right: null, merged: true };
   const sample = (8 * width + Math.floor(width / 2)) * 3;
   let clearLeft = Number.POSITIVE_INFINITY;

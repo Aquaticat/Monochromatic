@@ -221,8 +221,8 @@ function formatFileLine(
   const delta = baselineCovered === undefined
     ? ' (new)'
     : ((coverage.covered === baselineCovered)
-        ? ''
-        : ` (${coverage.covered > baselineCovered ? '+' : ''}${String(coverage.covered - baselineCovered,)})`);
+      ? ''
+      : ` (${coverage.covered > baselineCovered ? '+' : ''}${String(coverage.covered - baselineCovered,)})`);
   return `  ${String(percent,)
     .padStart(PERCENT_WIDTH,)}%  ${String(coverage.covered,)
       .padStart(COUNT_WIDTH,)}/${String(coverage.total,)
@@ -281,7 +281,7 @@ function formatSummary(
       covered: 0,
       total: 0,
     },
-  );
+    );
   /**
    Overall integer percentage across target files.
    */

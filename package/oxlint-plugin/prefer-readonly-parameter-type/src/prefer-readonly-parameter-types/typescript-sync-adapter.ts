@@ -234,11 +234,11 @@ export function openSemanticFile({
   bridgeState
     .overlays
     .set(
-      normalizedFileName,
-      sourceWithBOM({
-        sourceText,
-        hasBOM,
-      },),
+    normalizedFileName,
+    sourceWithBOM({
+      sourceText,
+      hasBOM,
+    },),
     );
 
   /**
@@ -434,8 +434,8 @@ export function openSemanticFile({
   bridgeState
     .projectByRoot
     .set(
-      semanticProjectRootKey(configFileName,),
-      configFileName,
+    semanticProjectRootKey(configFileName,),
+    configFileName,
     );
 
   /* This update follows the discovery one, so it describes a service that has already processed

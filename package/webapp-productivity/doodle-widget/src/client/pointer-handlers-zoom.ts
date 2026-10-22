@@ -30,10 +30,10 @@ const LONG_PRESS_MS = 500;
  */
 type LongPressTimer =
   | { readonly kind: 'idle'; }
-  | {
-    readonly kind: 'pending';
-    readonly id: ReturnType<typeof setTimeout>;
-  };
+    | {
+      readonly kind: 'pending';
+      readonly id: ReturnType<typeof setTimeout>;
+    };
 
 /**
  Captured pointer-down for the active gesture.
@@ -43,10 +43,10 @@ type LongPressTimer =
  */
 type DownEvent =
   | { readonly kind: 'none'; }
-  | {
-    readonly kind: 'down';
-    readonly event: PointerEvent;
-  };
+    | {
+      readonly kind: 'down';
+      readonly event: PointerEvent;
+    };
 
 /**
  Attaches zoom-specific pointer and keyboard handlers to the canvas.
@@ -162,11 +162,11 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
             screenX: down.event
               .clientX
               - containerRect
-              .left,
+                .left,
             screenY: down.event
               .clientY
               - containerRect
-              .top,
+                .top,
             direction: 'out',
             containerWidth: cw,
             containerHeight: ch,
@@ -237,10 +237,10 @@ export function setupZoomPointerHandlers(deps: PointerHandlerDeps,): void {
         zoomAt({
           screenX: event.clientX
             - containerRect
-            .left,
+              .left,
           screenY: event.clientY
             - containerRect
-            .top,
+              .top,
           direction: event.shiftKey ? 'out' : 'in',
           containerWidth: cw,
           containerHeight: ch,

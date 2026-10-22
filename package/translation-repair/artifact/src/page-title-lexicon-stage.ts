@@ -169,8 +169,8 @@ function unwrapped({ rendering, }: { readonly rendering: string; },): string {
     bounds.end -= 1;
   return trimmed
     .slice(
-      bounds.start,
-      bounds.end,
+    bounds.start,
+    bounds.end,
     )
     .trim();
 }
@@ -227,48 +227,48 @@ function mostGiven(
       return !rendersAsNothing({ text: answer, },);
     },)
     .reduce(
-      function count(
-        seen,
-        answer,
-      ) {
+    function count(
+      seen,
+      answer,
+    ) {
         /**
          Key the answer counts under.
          */
-        const key = comparisonKey({ rendering: answer, },);
+      const key = comparisonKey({ rendering: answer, },);
         /**
          Count so far under that key.
          */
-        const held = seen.get(key,);
-        seen.set(
-          key,
-          {
-            rendering: held?.rendering ?? answer,
-            voices: (held?.voices ?? 0) + 1,
-          },
-        );
-        return seen;
-      },
-      new Map<string, {
-        readonly rendering: string;
-        readonly voices: number
-      }>(),
+      const held = seen.get(key,);
+      seen.set(
+        key,
+        {
+          rendering: held?.rendering ?? answer,
+          voices: (held?.voices ?? 0) + 1,
+        },
+      );
+      return seen;
+    },
+    new Map<string, {
+      readonly rendering: string;
+      readonly voices: number
+    }>(),
     );
   return [...tally.values(),]
     .reduce(
-      function best(
-        chosen: readonly {
-          readonly rendering: string;
-          readonly voices: number
-        }[],
-        candidate,
-      ) {
+    function best(
+      chosen: readonly {
+        readonly rendering: string;
+        readonly voices: number
+      }[],
+      candidate,
+    ) {
         /**
          Leader so far, none before the first.
          */
-        const [leader,] = chosen;
-        return ((leader === undefined) || (candidate.voices > leader.voices)) ? [candidate,] : chosen;
-      },
-      [],
+      const [leader,] = chosen;
+      return ((leader === undefined) || (candidate.voices > leader.voices)) ? [candidate,] : chosen;
+    },
+    [],
     );
 }
 

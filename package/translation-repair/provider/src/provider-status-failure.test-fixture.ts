@@ -142,8 +142,8 @@ export function answerEveryFetchWithRefusal(
 ): void {
   sinon
     .stub(
-      globalThis,
-      'fetch',
+    globalThis,
+    'fetch',
     )
     .callsFake(function refuse(): Promise<Response> {
       return Promise.resolve(new Response(

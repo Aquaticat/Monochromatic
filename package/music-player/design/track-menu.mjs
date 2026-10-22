@@ -28,24 +28,24 @@ for (const capture of manifest.witnesses) {
   const physicalHeight = panel === 'inner' ? 2152 : 2424;
   const bounds = capture.applicationRoot;
   if (!Array.isArray(bounds) || bounds.length !== 4 || !bounds.every(Number.isInteger) ||
-      bounds[0] !== 0 || bounds[2] !== width || bounds[1] < 1 || bounds[1] >= physicalHeight / 2 ||
-      bounds[3] <= bounds[1] || bounds[3] > physicalHeight ||
-      JSON.stringify(capture.physicalPixels) !== JSON.stringify([width, physicalHeight]) ||
-      capture.cropPixels.x !== 0 || capture.cropPixels.y !== bounds[1]) {
+    bounds[0] !== 0 || bounds[2] !== width || bounds[1] < 1 || bounds[1] >= physicalHeight / 2 ||
+    bounds[3] <= bounds[1] || bounds[3] > physicalHeight ||
+    JSON.stringify(capture.physicalPixels) !== JSON.stringify([width, physicalHeight]) ||
+    capture.cropPixels.x !== 0 || capture.cropPixels.y !== bounds[1]) {
     throw new Error('Track-menu crop must follow its measured application bounds.');
   }
   const height = physicalHeight - bounds[1];
   const png = readFileSync(join(evidence, file));
   const hash = createHash('sha256').update(png).digest('hex');
   if (png.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
-      png.readUInt32BE(16) !== width || png.readUInt32BE(20) !== height || png[24] !== 8 || png[25] !== 2 ||
-      capture.cropPixels.width !== width || capture.cropPixels.height !== height || capture.densityDpi !== 390 ||
-      capture.inspected !== true || capture.freshHierarchyValidated !== true || capture.keyboardClosed !== true ||
-      capture.nativeLongPress !== true || capture.allActionsInitiallyVisible !== true ||
-      capture.actionLayoutFloorVerified !== true || capture.heading.lines !== 1 ||
-      capture.heading.overflow !== (scene === 'long-name') || capture.targetIndex !== (scene === 'lower' ? 8 : 1) ||
-      capture.systemImageFingerprint !== 'google/sdk_gphone16k_x86_64/emu64xa16k:17/CE2A.260420.050/16231978:user/dev-keys' ||
-      capture.renderer !== 'Android Emulator OpenGL ES Translator (llvmpipe (LLVM 20.1.2, 256 bits))') {
+    png.readUInt32BE(16) !== width || png.readUInt32BE(20) !== height || png[24] !== 8 || png[25] !== 2 ||
+    capture.cropPixels.width !== width || capture.cropPixels.height !== height || capture.densityDpi !== 390 ||
+    capture.inspected !== true || capture.freshHierarchyValidated !== true || capture.keyboardClosed !== true ||
+    capture.nativeLongPress !== true || capture.allActionsInitiallyVisible !== true ||
+    capture.actionLayoutFloorVerified !== true || capture.heading.lines !== 1 ||
+    capture.heading.overflow !== (scene === 'long-name') || capture.targetIndex !== (scene === 'lower' ? 8 : 1) ||
+    capture.systemImageFingerprint !== 'google/sdk_gphone16k_x86_64/emu64xa16k:17/CE2A.260420.050/16231978:user/dev-keys' ||
+    capture.renderer !== 'Android Emulator OpenGL ES Translator (llvmpipe (LLVM 20.1.2, 256 bits))') {
     throw new Error('Track-menu image, native input, heading or acquisition assertion differs.');
   }
   for (let offset = 8; offset < png.length;) {
@@ -79,8 +79,8 @@ if (process.argv[2] === 'build') {
     if (!html.includes(marker)) throw new Error('Track-menu review is missing ' + marker);
   }
   if ((html.match(/<form\b/g) ?? []).length !== 1 ||
-      /__TRACK_MENU_IMAGES__|<script\b[^>]*\bsrc=|<link\b[^>]*\bhref=|<img\b[^>]*\bsrc="https?:/i.test(html) ||
-      /<input\b[^>]*\btype="radio"|<textarea\b(?:[^"'<>]|"[^"]*"|'[^']*')*?\srequired(?:\s|=|>)/i.test(html)) {
+    /__TRACK_MENU_IMAGES__|<script\b[^>]*\bsrc=|<link\b[^>]*\bhref=|<img\b[^>]*\bsrc="https?:/i.test(html) ||
+    /<input\b[^>]*\btype="radio"|<textarea\b(?:[^"'<>]|"[^"]*"|'[^']*')*?\srequired(?:\s|=|>)/i.test(html)) {
     throw new Error('Track-menu review must remain offline evidence, not a policy ballot.');
   }
   console.log('Validated exact offline native track-menu evidence and operation limits.');

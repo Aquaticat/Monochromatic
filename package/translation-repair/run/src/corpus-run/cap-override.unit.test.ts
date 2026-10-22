@@ -271,7 +271,7 @@ await describe({
         it({
           name:
             'REFUSES a ceiling equal to one exchange, because the attempt ends at the same instant the '
-            + 'exchange is allowed to and nothing has returned yet',
+              + 'exchange is allowed to and nothing has returned yet',
           fn: async () => {
             expect(capOutlastsOneCall({
               capMs: 360_000,
@@ -282,7 +282,7 @@ await describe({
         it({
           name:
             'REFUSES the ceiling a live run actually used, five minutes against a six minute exchange, '
-            + 'which cached nothing across two attempts and reported STALLED',
+              + 'which cached nothing across two attempts and reported STALLED',
           fn: async () => {
             expect(capOutlastsOneCall({
               capMs: 300_000,
@@ -315,7 +315,7 @@ await describe({
         it({
           name:
             'SAYS WHAT FOLLOWS rather than only that something is wrong: no slice caches, so the queue '
-            + 'reads no progress and drops the entry',
+              + 'reads no progress and drops the entry',
           fn: async () => {
             /**
              Same note, read for its consequence clause.

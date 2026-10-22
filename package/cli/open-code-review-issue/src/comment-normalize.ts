@@ -190,8 +190,8 @@ function commentPath({
 function hasNonWhitespaceLine(text: string,): boolean {
   return text.split('\n',)
     .some(function lineHasText(line,): boolean {
-    return line.trim() !== '';
-  },);
+      return line.trim() !== '';
+    },);
 }
 
 /**

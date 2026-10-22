@@ -122,8 +122,8 @@ function setUsageStatus({
   ctx
     .ui
     .setStatus(
-      STATUS_KEY,
-      nextStatus,
+    STATUS_KEY,
+    nextStatus,
     );
 }
 

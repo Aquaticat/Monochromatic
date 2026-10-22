@@ -83,10 +83,10 @@ await describe({
     it({
       name:
         'produces a KNOWN hash for known inputs, which is the only thing standing between a change '
-        + 'to this derivation and every settled slice in the corpus silently missing the cache. '
-        + 'A DERIVATION change moves this hash and needs SLICE_CACHE_VERSION moved with it; a '
-        + 'change to the FIXTURE INPUTS of this case moves it too, and must not, because those inputs are '
-        + 'already part of the key and invalidate their own entries',
+          + 'to this derivation and every settled slice in the corpus silently missing the cache. '
+          + 'A DERIVATION change moves this hash and needs SLICE_CACHE_VERSION moved with it; a '
+          + 'change to the FIXTURE INPUTS of this case moves it too, and must not, because those inputs are '
+          + 'already part of the key and invalidate their own entries',
       fn: async () => {
         expect(SLICE_CACHE_VERSION,).toBe(43,);
 
@@ -197,7 +197,7 @@ await describe({
     it({
       name:
         'moves the key for every input a resumed slice would be wrong about: the roster, the '
-        + 'declared names, either text, and the line-structure verdict the enclosing chunk carries',
+          + 'declared names, either text, and the line-structure verdict the enclosing chunk carries',
       fn: async () => {
         /**
          Key under the unchanged fixture.
@@ -258,9 +258,9 @@ await describe({
     it({
       name:
         'is the same key for the same text WHEREVER the slice sits, which is the point of version 26. '
-        + 'The index used to be in here, so inserting one slice at the top of a document discarded '
-        + 'every slice below it however untouched its text, and one-sided slicing inserts a slice for '
-        + 'every untranslated section',
+          + 'The index used to be in here, so inserting one slice at the top of a document discarded '
+          + 'every slice below it however untouched its text, and one-sided slicing inserts a slice for '
+          + 'every untranslated section',
       fn: async () => {
         /**
          Document whose two sections are byte-identical on both sides, which is
@@ -300,9 +300,9 @@ await describe({
             return slice.target
               .sliceIndex;
           },),).toEqual([
-          0,
-          1,
-        ],);
+            0,
+            1,
+          ],);
         expect(keys[0],).toBe(keys[1],);
       },
     },),

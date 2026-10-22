@@ -199,7 +199,7 @@ function resolveHref(
      */
     const hasTarget = (availableInLangs === undefined)
       || availableInLangs
-      .includes(targetLang,);
+        .includes(targetLang,);
     if (hasTarget)
       return `/${targetLang}/${currentName}`;
   }

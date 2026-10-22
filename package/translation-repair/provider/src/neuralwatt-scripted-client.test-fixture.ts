@@ -454,7 +454,7 @@ export function scriptedClient(
         exchanges.push(exchange,);
         if ((exchange.method === 'GET')
           && exchange.url
-          .includes('/usage/by-model',)) {
+            .includes('/usage/by-model',)) {
           counts.usage += 1;
 
           /**
@@ -472,7 +472,7 @@ export function scriptedClient(
         }
         if ((exchange.method === 'GET')
           && exchange.url
-          .endsWith('/models',)) {
+            .endsWith('/models',)) {
           counts.models += 1;
 
           /**
@@ -550,7 +550,7 @@ export function quotaExchangesOf(
   return exchanges.filter(function isQuotaGet(exchange,): boolean {
     return (exchange.method === 'GET')
       && exchange.url
-      .endsWith('/quota',);
+        .endsWith('/quota',);
   },);
 }
 
@@ -572,7 +572,7 @@ export function modelsExchangesOf(
   return exchanges.filter(function isModelsGet(exchange,): boolean {
     return (exchange.method === 'GET')
       && exchange.url
-      .endsWith('/models',);
+        .endsWith('/models',);
   },);
 }
 
@@ -594,7 +594,7 @@ export function usageExchangesOf(
   return exchanges.filter(function isUsageGet(exchange,): boolean {
     return (exchange.method === 'GET')
       && exchange.url
-      .includes('/usage/by-model',);
+        .includes('/usage/by-model',);
   },);
 }
 

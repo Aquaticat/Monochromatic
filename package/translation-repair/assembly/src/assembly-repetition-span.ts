@@ -136,8 +136,8 @@ export function indexWindows(
      */
     const phrase = words
       .slice(
-        at,
-        at + length,
+      at,
+      at + length,
       )
       .join(' ',);
     byOffset.push(phrase,);
@@ -380,8 +380,8 @@ export function grownSpans(
      */
     const phrase = words
       .slice(
-        at,
-        end + length,
+      at,
+      end + length,
       )
       .join(' ',);
 

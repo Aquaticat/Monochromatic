@@ -351,16 +351,16 @@ await describe({
             },),).toEqual(LIVE_CONSISTENCY_FIFTEEN,);
             expect(
               String(caught(function readAsSixteen(): unknown {
-              return parseConsistency({
-                value: structuredClone(LIVE_CONSISTENCY_FIFTEEN,),
-                path: 'live.consistency',
-                generation: 16,
-                sliceIndexes: slices,
-              },);
-            },),),
+                return parseConsistency({
+                  value: structuredClone(LIVE_CONSISTENCY_FIFTEEN,),
+                  path: 'live.consistency',
+                  generation: 16,
+                  sliceIndexes: slices,
+                },);
+              },),),
             ).toBe(
               'ArtifactParseError: artifact parse failed at live.consistency.groups[0].occurrences[0].rendering.reason: '
-              + 'expected a reason generation sixteen gives, which locates a place on its quote and not its slot.',
+                + 'expected a reason generation sixteen gives, which locates a place on its quote and not its slot.',
             );
           },
         },),
@@ -887,7 +887,7 @@ await describe({
                   archive[0] as string,
                   archive[1] as string,
                   '## Three\n\nIn the evening, the sunlight lulled the kitten to sleep, and the kitten to sleep again. '
-                  + 'So this cat has to be a sweet little darling.',
+                    + 'So this cat has to be a sweet little darling.',
                   archive[3] as string,
                 ],
               },),
@@ -961,7 +961,7 @@ await describe({
             },),).toEqual(older,);
             expect(refusalOf({ value: older, },),).toBe(
               'artifact parse failed at cat.consistency.groups[1].occurrences[2].gaveWayTo: expected the place an overlapped '
-              + 'place gave way to, which generation seventeen records.',
+                + 'place gave way to, which generation seventeen records.',
             );
             /**
              What reading the section generation seventeen writes as generation sixteen refuses with.
@@ -976,7 +976,7 @@ await describe({
             },);
             expect(String(refusedAsSixteen,),).toBe(
               'ArtifactParseError: artifact parse failed at cat.consistency.groups[1].occurrences[2].gaveWayTo: expected no key '
-              + 'here beyond label, sliceIndex, startOffset, endOffset, line, slotStartOffset, slotEndOffset, rendering, outcome.',
+                + 'here beyond label, sliceIndex, startOffset, endOffset, line, slotStartOffset, slotEndOffset, rendering, outcome.',
             );
           },
         },),

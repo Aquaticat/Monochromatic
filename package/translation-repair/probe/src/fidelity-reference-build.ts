@@ -184,11 +184,11 @@ export function buildReviewedFidelityReference({
   if ((checked.donor
     .startOffset
     < checked.archive
-    .endOffset)
+      .endOffset)
     && (checked.archive
       .startOffset
       < checked.donor
-      .endOffset)) {
+        .endOffset)) {
     throw new FidelityReferenceError({
       referenceId: checked.id,
       operation: 'donor',
@@ -199,11 +199,11 @@ export function buildReviewedFidelityReference({
    */
   const kinds = new Set(checked.damages
     .map(function kindOf(damage,): FidelityDamageKind {
-    return damage.kind;
-  },),);
+      return damage.kind;
+    },),);
   if ((kinds.size === 0) || (kinds.size
     !== checked.damages
-    .length))
+      .length))
     throw new FidelityReferenceError({
       referenceId: checked.id,
       operation: 'damage',
@@ -216,23 +216,23 @@ export function buildReviewedFidelityReference({
     /**
      Mechanically generated twin, not automatically trusted as a valid comparison.
      */
-    const damage = reviewedDamage({
-      kind: expected.kind,
-      sourceText,
-      referenceText,
-      donorText,
-      referenceId: checked.id,
-    },);
-    if ((damage.kind !== 'damaged') || (damage.damageKind !== expected.kind)
-      || (damage.changedChars !== expected.changedChars)
-      || (hashContent({ content: damage.damagedText, },) !== expected.hash)) {
-      throw new FidelityReferenceError({
+      const damage = reviewedDamage({
+        kind: expected.kind,
+        sourceText,
+        referenceText,
+        donorText,
         referenceId: checked.id,
-        operation: 'damage',
       },);
-    }
-    return damage;
-  },);
+      if ((damage.kind !== 'damaged') || (damage.damageKind !== expected.kind)
+        || (damage.changedChars !== expected.changedChars)
+        || (hashContent({ content: damage.damagedText, },) !== expected.hash)) {
+        throw new FidelityReferenceError({
+          referenceId: checked.id,
+          operation: 'damage',
+        },);
+      }
+      return damage;
+    },);
   rl.debug(`verified ${checked.id} with ${String(damages.length,)} reviewed variants`,);
   return {
     spec: checked,

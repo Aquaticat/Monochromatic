@@ -160,9 +160,9 @@ function snapshotOf(cache: SnapshotSource): CacheSnapshot {
     oldCache: [...cache.__oldCache].map(function projectItem(entry: readonly [
       string,
       {
-      readonly value: string;
-      readonly expiry?: number;
-    }
+        readonly value: string;
+        readonly expiry?: number;
+      }
     ],): string {
       /**
        Key and raw item of the old-map entry under projection.
@@ -364,8 +364,8 @@ export function createUpstreamAdapter(options: {
           item.key,
           item.value,
           {
-          maxAge: item.maxAge,
-        },
+            maxAge: item.maxAge,
+          },
         );
     },
     get: function getUpstream(key: string,): string {

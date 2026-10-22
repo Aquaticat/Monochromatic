@@ -31,26 +31,26 @@ export function collectionFakes({
     /**
      Reading descriptors does not execute application accessors.
      */
-    const descriptor = Object.getOwnPropertyDescriptor(
-      value,
-      property,
-    );
-    return ([
-      'value',
-      'get',
-      'set',
-    ] as const).flatMap(function collectDescriptorFake(field: keyof PropertyDescriptor,): object[] {
+      const descriptor = Object.getOwnPropertyDescriptor(
+        value,
+        property,
+      );
+      return ([
+        'value',
+        'get',
+        'set',
+      ] as const).flatMap(function collectDescriptorFake(field: keyof PropertyDescriptor,): object[] {
       /**
        New members may be data methods or accessor spies.
        */
-      const member: unknown = descriptor?.[field];
-      if (((typeof member) !== 'function') || (member === previous[property]?.[field])
-        || (Reflect.get(
-          member,
-          'isSinonProxy',
-        ) !== true))
-        return [];
-      return [member,];
+        const member: unknown = descriptor?.[field];
+        if (((typeof member) !== 'function') || (member === previous[property]?.[field])
+          || (Reflect.get(
+            member,
+            'isSinonProxy',
+          ) !== true))
+          return [];
+        return [member,];
+      },);
     },);
-  },);
 }

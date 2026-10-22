@@ -35,11 +35,11 @@ export function uniqueStampsByPath<TStamp extends FileStamp,>(
   entries.forEach(function collectEntryStamps(entry,): void {
     selectStamps(entry,)
       .forEach(function collectStamp(stamp,): void {
-      stampsByPath.set(
-        stamp.path,
-        stamp,
-      );
-    },);
+        stampsByPath.set(
+          stamp.path,
+          stamp,
+        );
+      },);
   },);
   return [...stampsByPath.values(),]
     .toSorted(function compareStampPaths(
@@ -73,11 +73,11 @@ export function uniqueGlobStamps(entries: readonly StalenessEntry[],): readonly 
     entry
       .sourceGlobs
       .forEach(function collectGlob(glob,): void {
-      globsByPattern.set(
-        glob.pattern,
-        glob,
-      );
-    },);
+        globsByPattern.set(
+          glob.pattern,
+          glob,
+        );
+      },);
   },);
   return [...globsByPattern.values(),]
     .toSorted(function compareGlobPatterns(

@@ -36,12 +36,12 @@ const RIGHT_SINGLE_QUOTE = '’';
 function normaliseApostrophes(text: string,): string {
   return text
     .replaceAll(
-      LEFT_SINGLE_QUOTE,
-      "'",
+    LEFT_SINGLE_QUOTE,
+    "'",
     )
     .replaceAll(
-      RIGHT_SINGLE_QUOTE,
-      "'",
+    RIGHT_SINGLE_QUOTE,
+    "'",
     );
 }
 

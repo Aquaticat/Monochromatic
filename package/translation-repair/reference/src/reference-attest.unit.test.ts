@@ -632,9 +632,9 @@ await describe({
           .map(function quoteOf(claim,): string {
             return claim.spans[0]?.quotedText ?? '';
           },),).toEqual([
-          'She wears a bell.',
-          'younger brother',
-        ],);
+            'She wears a bell.',
+            'younger brother',
+          ],);
         expect(screened.issues,).toHaveLength(1,);
         expect(screened.issues[0]?.status,).toBe('rejected',);
         expect(screened.issues[0]?.issueId.startsWith('adjudicated/',),).toBe(true,);

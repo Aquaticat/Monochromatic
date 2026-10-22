@@ -286,8 +286,8 @@ await describe({
                   expect(withoutSpace({ text: words.join('',), },),).toBe(withoutSpace({
                     text: shown.text
                       .slice(
-                        start,
-                        end,
+                      start,
+                      end,
                       ),
                   },),);
                   expect(words.join('',).includes('注',),).toBe(false,);

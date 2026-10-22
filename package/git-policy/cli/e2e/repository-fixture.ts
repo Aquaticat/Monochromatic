@@ -113,11 +113,11 @@ export async function createScenarioRepository({
   };
   await Promise.all(Object.values(directories,)
     .map(async function create(directory,) {
-    await mkdir(
-      directory,
-      { recursive: true, },
-    );
-  },),);
+      await mkdir(
+        directory,
+        { recursive: true, },
+      );
+    },),);
   /**
    Environment shared by wrapper and real-Git runs.
    */

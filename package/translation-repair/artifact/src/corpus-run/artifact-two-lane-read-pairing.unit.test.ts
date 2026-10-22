@@ -34,7 +34,7 @@ await describe({
     it({
       name:
         'NAMES ABSENCE rather than returning an empty list, because a file written before the field and '
-        + 'a roster asked about every section that agreed nothing are different facts about a run',
+          + 'a roster asked about every section that agreed nothing are different facts about a run',
       fn: async () => {
         expect(parseBlockPairing({
           value: undefined,
@@ -46,7 +46,7 @@ await describe({
     it({
       name:
         'ACCEPTS a recorded pairing that names no sections, which is the answer when the roster was asked '
-        + 'and committed to nothing anywhere, and is NOT the same reading as an absent field',
+          + 'and committed to nothing anywhere, and is NOT the same reading as an absent field',
       fn: async () => {
         expect(parseBlockPairing({
           value: [],
@@ -61,7 +61,7 @@ await describe({
     it({
       name:
         'ACCEPTS a split and a merge, which are the shapes this corpus actually carries: one original '
-        + 'rendered as two blocks repeats the source, and two originals rendered as one repeat the target',
+          + 'rendered as two blocks repeats the source, and two originals rendered as one repeat the target',
       fn: async () => {
         expect(parseBlockPairing({
           value: [
@@ -100,7 +100,7 @@ await describe({
     it({
       name:
         'REFUSES a section index the preparation beside it never aligned, the way each lane index set is '
-        + 'bounded by the slice count: a pairing filed under a section nobody aligned describes another document',
+          + 'bounded by the slice count: a pairing filed under a section nobody aligned describes another document',
       fn: async () => {
         /**
          What pastTheEnd raised, read for its class as well as its wording.
@@ -125,7 +125,7 @@ await describe({
     it({
       name:
         'REFUSES a section named twice, since the writer builds the list from a map keyed by section and '
-        + 'cannot emit one, so a repeat means two runs merged into a file neither wrote',
+          + 'cannot emit one, so a repeat means two runs merged into a file neither wrote',
       fn: async () => {
         /**
          What twice raised, read for its class as well as its wording.
@@ -154,7 +154,7 @@ await describe({
     it({
       name:
         'REFUSES sections out of recorded order rather than sorting them, because the writer sorts and '
-        + 'quietly reordering would accept the file while hiding which run produced it',
+          + 'quietly reordering would accept the file while hiding which run produced it',
       fn: async () => {
         /**
          What backwards raised, read for its class as well as its wording.
@@ -183,7 +183,7 @@ await describe({
     it({
       name:
         'REFUSES a pairing that walks backwards on either side, which the roster reply reader already '
-        + 'refuses: both documents say things in the same order',
+          + 'refuses: both documents say things in the same order',
       fn: async () => {
         /**
          What backOnTheOriginal raised, read for its class as well as its wording.
@@ -244,7 +244,7 @@ await describe({
     it({
       name:
         'REFUSES a correspondence made twice in one section, which repeats an answer rather than giving '
-        + 'a new one, and which the roster reply reader refuses for the same reason',
+          + 'a new one, and which the roster reply reader refuses for the same reason',
       fn: async () => {
         /**
          What repeated raised, read for its class as well as its wording.
@@ -278,7 +278,7 @@ await describe({
     it({
       name:
         'REFUSES a key this version does not name, on the section and on the pair alike, so a field from '
-        + 'a later generation cannot be read as one this reader understands',
+          + 'a later generation cannot be read as one this reader understands',
       fn: async () => {
         /**
          What extraOnSection raised, read for its class as well as its wording.
@@ -328,7 +328,7 @@ await describe({
     it({
       name:
         'REFUSES a fractional or negative index on either side, since every index here counts blocks and '
-        + 'a fraction means the writer and this reader disagree about what the field holds',
+          + 'a fraction means the writer and this reader disagree about what the field holds',
       fn: async () => {
         /**
          What fractional raised, read for its class as well as its wording.
@@ -376,7 +376,7 @@ await describe({
     it({
       name:
         'REFUSES anything that is not a list of records, so a pairing written as an object keyed by '
-        + 'section reaches no reader as an empty one',
+          + 'section reaches no reader as an empty one',
       fn: async () => {
         /**
          What notAList raised, read for its class as well as its wording.

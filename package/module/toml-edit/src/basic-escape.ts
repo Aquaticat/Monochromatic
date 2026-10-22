@@ -178,8 +178,8 @@ export function escapeBasicMultiline({ value, }: { readonly value: string; },): 
   )
     .join('',)
     .replaceAll(
-      '"""',
-      String.raw`\"\"\"`,
+    '"""',
+    String.raw`\"\"\"`,
     );
 }
 

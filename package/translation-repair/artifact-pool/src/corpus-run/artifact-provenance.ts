@@ -146,25 +146,25 @@ export type GenerationSelection =
      */
     commit: string;
   }>
-  | Readonly<{
+    | Readonly<{
     /**
      Entries recording exactly one built pipeline, the only selection that
      licenses describing a rate as belonging to that pipeline.
      */
-    kind: 'single-generation';
+      kind: 'single-generation';
 
     /**
      Digest of the built output every pooled entry ran.
      */
-    digest: string;
-  }>
-  | Readonly<{
+      digest: string;
+    }>
+    | Readonly<{
     /**
      Every generation present, pooled deliberately. Legitimate for a census,
      never for a rate.
      */
-    kind: 'all-generations';
-  }>;
+      kind: 'all-generations';
+    }>;
 
 /**
  Raised when loaded bytes disagree with what the pool said about them.

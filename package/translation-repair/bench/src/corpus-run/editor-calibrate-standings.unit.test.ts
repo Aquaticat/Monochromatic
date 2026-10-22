@@ -147,22 +147,22 @@ await describe({
               '\nEDITOR standing over 1 judged round, from 1 of 2 slices',
               WRITER_ROW,
               `  WROTE AND WAS NEVER VOTED ON: ${JUDGE}. Their text reached a slate and no disinterested ballot was `
-              + 'cast over it, which is what a slice where every producer proposed the same wording does: it ships '
-              + 'unjudged. The table says nothing about them either way, and more slices are what would.',
+                + 'cast over it, which is what a slice where every producer proposed the same wording does: it ships '
+                + 'unjudged. The table says nothing about them either way, and more slices are what would.',
               `  NO CANDIDATE OF THEIRS REACHED ANY SLATE: ${IDLE}, so the table covers 1 of 3 seats. This seat does `
-              + `not record who answered, so a model that answered and was dropped before judging and a provider `
-              + `that failed every call look alike from here; ${SEAT_LINES_POINTER}`,
+                + `not record who answered, so a model that answered and was dropped before judging and a provider `
+                + `that failed every call look alike from here; ${SEAT_LINES_POINTER}`,
               `  slice 1: 1 judged round; ${WRITER} 1/1 over 1`,
               '\nREFINER standing over 1 judged round, from 1 of 2 slices',
               WRITER_ROW,
               `  ANSWERED AND WAS NEVER SLATED: ${JUDGE}. At least one usable answer of theirs was heard and none `
-              + 'became a candidate a judge saw: a rewriter that leaves a paragraph as it stands, or whose rewrite '
-              + 'is dropped before judging, looks like this. The table says nothing about them, their SEAT lines '
-              + 'carry the answers, and re-running them buys the same again; slices with something to rewrite are '
-              + 'what would seat them.',
+                + 'became a candidate a judge saw: a rewriter that leaves a paragraph as it stands, or whose rewrite '
+                + 'is dropped before judging, looks like this. The table says nothing about them, their SEAT lines '
+                + 'carry the answers, and re-running them buys the same again; slices with something to rewrite are '
+                + 'what would seat them.',
               `  ANSWERED NOTHING USABLE: ${IDLE}. No answer of theirs was heard at this seat, so the table covers `
-              + `1 of 3 seats. A provider out of budget, a refused sheet and a call that timed out all look like this `
-              + `from here; ${SEAT_LINES_POINTER}`,
+                + `1 of 3 seats. A provider out of budget, a refused sheet and a call that timed out all look like this `
+                + `from here; ${SEAT_LINES_POINTER}`,
               `  slice 2: 1 judged round; ${WRITER} 1/1 over 1`,
             ],);
           },

@@ -190,8 +190,8 @@ export function uncalledFunctions(scripts: readonly V8Script[],): readonly strin
   const named = scripts.flatMap(function namesIn(script,) {
     return script.functions
       .map(function nameOf(entry,) {
-      return entry.functionName;
-    },);
+        return entry.functionName;
+      },);
   },);
   return [
     ...new Set(named.filter(function neverCalled(name,) {

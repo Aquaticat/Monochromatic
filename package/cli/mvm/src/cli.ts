@@ -303,10 +303,10 @@ catch (error) {
   // which buries the message; the message is the diagnostic. --verbose keeps the stack and the chain of causes.
   console.error(
     rawArgs
-        .slice(
-          0,
-          boundary,
-        )
+      .slice(
+      0,
+      boundary,
+      )
       .includes('--verbose',)
       ? inspect(
         error,

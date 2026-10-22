@@ -108,28 +108,28 @@ export type AlignmentAttachment =
      */
     readonly kind: 'whole-document';
   }
-  | {
+    | {
     /**
      Section of the ORIGINAL side, counted in that side's own numbering.
      */
-    readonly kind: 'source-section';
+      readonly kind: 'source-section';
 
     /**
      Position on that side, which no pair index need match.
      */
-    readonly index: number;
-  }
-  | {
+      readonly index: number;
+    }
+    | {
     /**
      Section of the TRANSLATED side, counted in that side's own numbering.
      */
-    readonly kind: 'target-section';
+      readonly kind: 'target-section';
 
     /**
      Position on that side, which no pair index need match.
      */
-    readonly index: number;
-  };
+      readonly index: number;
+    };
 
 /**
  Renders where an observation attaches, in wording naming its numbering.
@@ -281,7 +281,7 @@ export function chunkByHeadings(
         .slice(
         first.startOffset,
         last.endOffset,
-      ),
+        ),
     };
   },);
 }
@@ -460,8 +460,8 @@ export function alignDocumentSections(
       return chunk.nodes[0]
         ?.kind
         === targetChunks[index]
-        ?.nodes[0]
-        ?.kind;
+          ?.nodes[0]
+          ?.kind;
     },);
 
   // A ROSTER PAIRING SUPPRESSES THE FAST PATH. Equal shape pairs by index

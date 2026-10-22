@@ -49,10 +49,10 @@ export type PropNode = {
  */
 export type IndexNode =
   | { readonly keyKind: 'none'; }
-  | {
-    readonly keyKind: 'number' | 'string' | 'symbol' | 'template';
-    readonly value: TypeNode
-  };
+    | {
+      readonly keyKind: 'number' | 'string' | 'symbol' | 'template';
+      readonly value: TypeNode
+    };
 
 /**
  Object type with an optional utility wrapper.
@@ -69,47 +69,47 @@ export type ObjectNode = {
  */
 export type TypeNode =
   | LeafNode
-  | LiteralNode
-  | ObjectNode
-  | {
-    readonly kind: 'array';
-    readonly element: TypeNode;
-    readonly readonly: boolean
-  }
-  | {
-    readonly kind: 'box';
-    readonly inner: TypeNode
-  }
-  | {
-    readonly kind: 'intersection';
-    readonly left: ObjectNode;
-    readonly right: ObjectNode
-  }
-  | {
-    readonly kind: 'map';
-    readonly keyKind: 'number' | 'string';
-    readonly value: TypeNode;
-    readonly readonly: boolean
-  }
-  | {
-    readonly kind: 'record';
-    readonly keys: readonly string[];
-    readonly value: TypeNode
-  }
-  | {
-    readonly kind: 'set';
-    readonly element: TypeNode;
-    readonly readonly: boolean
-  }
-  | {
-    readonly kind: 'tuple';
-    readonly elements: readonly TypeNode[];
-    readonly readonly: boolean
-  }
-  | {
-    readonly kind: 'union';
-    readonly members: readonly TypeNode[]
-  };
+    | LiteralNode
+    | ObjectNode
+    | {
+      readonly kind: 'array';
+      readonly element: TypeNode;
+      readonly readonly: boolean
+    }
+    | {
+      readonly kind: 'box';
+      readonly inner: TypeNode
+    }
+    | {
+      readonly kind: 'intersection';
+      readonly left: ObjectNode;
+      readonly right: ObjectNode
+    }
+    | {
+      readonly kind: 'map';
+      readonly keyKind: 'number' | 'string';
+      readonly value: TypeNode;
+      readonly readonly: boolean
+    }
+    | {
+      readonly kind: 'record';
+      readonly keys: readonly string[];
+      readonly value: TypeNode
+    }
+    | {
+      readonly kind: 'set';
+      readonly element: TypeNode;
+      readonly readonly: boolean
+    }
+    | {
+      readonly kind: 'tuple';
+      readonly elements: readonly TypeNode[];
+      readonly readonly: boolean
+    }
+    | {
+      readonly kind: 'union';
+      readonly members: readonly TypeNode[]
+    };
 
 /**
  Symbol constants the generated file declares as `unique symbol`s.
@@ -189,20 +189,20 @@ function emitIndex(node: ObjectNode,): string {
    */
   const covered = node.props
     .filter(function constrainedBy(prop: PropNode,) {
-    if (index.keyKind === 'symbol')
-      return prop.symbolKey;
-    if (index.keyKind === 'string')
-      return !prop.symbolKey;
-    return false;
-  },);
+      if (index.keyKind === 'symbol')
+        return prop.symbolKey;
+      if (index.keyKind === 'string')
+        return !prop.symbolKey;
+      return false;
+    },);
   /**
    Value type union of the declared value and every constrained property.
    */
   const value = [
     index.value,
     ...covered.map(function propType(prop: PropNode,) {
-    return prop.type;
-  },),
+      return prop.type;
+    },),
   ].map(emitType,)
     .join(' | ',);
   return `[${INDEX_KEY_PARAMETERS[index.keyKind]}]: ${value}`;
@@ -227,11 +227,11 @@ function emitObject(node: ObjectNode,): string {
   const members = [
     ...node.props
       .map(function member(prop: PropNode,) {
-    return emitProp({
-      prop,
-      wrapper: node.wrapper,
-    },);
-  },),
+        return emitProp({
+          prop,
+          wrapper: node.wrapper,
+        },);
+      },),
     emitIndex(node,),
   ].filter(function present(member: string,) {
     return member !== '';
@@ -289,8 +289,8 @@ export function emitType(node: TypeNode,): string {
   if (node.kind === 'union') {
     return node.members
       .map(function member(child: TypeNode,) {
-      return `(${emitType(child,)})`;
-    },)
+        return `(${emitType(child,)})`;
+      },)
       .join(' | ',);
   }
   if (node.kind === 'intersection')

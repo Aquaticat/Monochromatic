@@ -149,10 +149,10 @@ await describe({
                   ended[`${streamEnd} ${String(code,)}`] = (error instanceof InStreamRefusalError)
                     ? 'refusal'
                     : (error instanceof InStreamProviderError)
-                    ? 'provider failure'
-                    : (error instanceof MalformedCompletionError)
-                    ? 'cut off'
-                    : String(error,);
+                      ? 'provider failure'
+                      : (error instanceof MalformedCompletionError)
+                        ? 'cut off'
+                        : String(error,);
                 }
               }
             }

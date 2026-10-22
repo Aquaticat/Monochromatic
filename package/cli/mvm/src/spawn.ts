@@ -345,7 +345,7 @@ export async function spawn(
   if ((deadlineMs !== undefined)
     && (ending.signal === DEADLINE_SIGNAL)
     && ((Date.now() - startedAt) >= deadlineMs))
-  {
+    {
     throw new CommandTimedOutError({
       commandLine,
       deadlineMs,

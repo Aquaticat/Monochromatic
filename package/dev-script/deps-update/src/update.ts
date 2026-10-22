@@ -26,20 +26,20 @@ export type UpdateOutcome =
      */
     readonly ok: true;
   }
-  | {
+    | {
     /**
      pnpm exited nonzero or was killed.
      */
-    readonly ok: false;
+      readonly ok: false;
     /**
      pnpm's standard error, line-joined.
      */
-    readonly stderr: string;
+      readonly stderr: string;
     /**
      Exit code; omitted when a signal ended pnpm or it never started.
      */
-    readonly exitCode?: number;
-  };
+      readonly exitCode?: number;
+    };
 
 //endregion Types
 
@@ -111,10 +111,10 @@ export async function runUpdate({
       ...UPDATE_ARGS,
     ],
     {
-    cwd,
-    stdin: 'inherit',
-    stdout: 'inherit',
-  },
+      cwd,
+      stdin: 'inherit',
+      stdout: 'inherit',
+    },
   );
   // Streaming lines arrive one at a time; an accumulator is the only way to
   // keep them while forwarding each immediately.

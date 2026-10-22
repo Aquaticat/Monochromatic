@@ -325,54 +325,54 @@ function chunkClient(
       const reply: unknown = (stage === 'critic_report')
         ? { issues: claims ?? claimsOn({ sheet: sheetOf({ request, },), },), }
         : (stage === 'panel_ballot')
-        ? {
-          verdicts: sheetNumbers({ request, marker: '\nCLAIM ', },)
-            .map(function toVerdict(claim,) {
-              return {
-                claim,
-                reason: 'The quotes show it.',
-                vote: 'supported',
-              };
-            },),
-        }
-        : (stage === 'editor_report')
-        ? {
-          edits: [{
-            region: 1,
-            newText: sliceEdits.find(function asked(sliceEdit,): boolean {
-              return sheetOf({ request, },).includes(sliceEdit.onSheetsWith,);
-            },)
-              ?.newText
-              ?? edits[request.modelId]
-              ?? ordinary,
-          },],
-        }
-        : (stage === 'refine_report')
-        ? {
-          rewrites: (rewrites[request.modelId] === undefined)
-            ? []
-            : [{ paragraph: 1, newText: rewrites[request.modelId], },],
-        }
-        : (stage === 'candidate_ballot')
-        ? { best: 1, assessment: 'scripted', }
-        : (stage === 'resolution_report')
-        ? {
-          checks: sheetNumbers({ request, marker: '\nISSUE ', },)
-            .map(function toCheck(issue,) {
-              return { issue, verdict: 'fixed', };
-            },),
-        }
-        : (stage === 'introduced_defect_report')
-        ? {
-          checks: sheetNumbers({ request, marker: ' REGION ', },)
-            .map(function toCheck(region,) {
-              return {
-                ...CLEAN_DEFECT_CHECK,
-                region,
-              };
-            },),
-        }
-        : undefined;
+          ? {
+            verdicts: sheetNumbers({ request, marker: '\nCLAIM ', },)
+              .map(function toVerdict(claim,) {
+                return {
+                  claim,
+                  reason: 'The quotes show it.',
+                  vote: 'supported',
+                };
+              },),
+          }
+          : (stage === 'editor_report')
+            ? {
+              edits: [{
+                region: 1,
+                newText: sliceEdits.find(function asked(sliceEdit,): boolean {
+                  return sheetOf({ request, },).includes(sliceEdit.onSheetsWith,);
+                },)
+                  ?.newText
+                  ?? edits[request.modelId]
+                  ?? ordinary,
+              },],
+            }
+            : (stage === 'refine_report')
+              ? {
+                rewrites: (rewrites[request.modelId] === undefined)
+                  ? []
+                  : [{ paragraph: 1, newText: rewrites[request.modelId], },],
+              }
+              : (stage === 'candidate_ballot')
+                ? { best: 1, assessment: 'scripted', }
+                : (stage === 'resolution_report')
+                  ? {
+                    checks: sheetNumbers({ request, marker: '\nISSUE ', },)
+                      .map(function toCheck(issue,) {
+                        return { issue, verdict: 'fixed', };
+                      },),
+                  }
+                  : (stage === 'introduced_defect_report')
+                    ? {
+                      checks: sheetNumbers({ request, marker: ' REGION ', },)
+                        .map(function toCheck(region,) {
+                          return {
+                            ...CLEAN_DEFECT_CHECK,
+                            region,
+                          };
+                        },),
+                    }
+                    : undefined;
       if (reply === undefined)
         throw new Error(`this chunk has no script for stage ${String(stage,)}`,);
       if (!request.validate(reply,))
@@ -514,8 +514,8 @@ await describe({
               .filter(function isRefusal(finding,): boolean {
                 return finding.includes('unreadable-replacement',);
               },),).toEqual([
-              `${DEEP_EDITOR}: unreadable-replacement (nested too deeply to read: its container markers pass the bound of 256 at line 3, column 513)`,
-            ],);
+                `${DEEP_EDITOR}: unreadable-replacement (nested too deeply to read: its container markers pass the bound of 256 at line 3, column 513)`,
+              ],);
           },
         },),
         it({
@@ -554,8 +554,8 @@ await describe({
               .filter(function isRefusal(finding,): boolean {
                 return finding.includes('unreadable-replacement',);
               },),).toEqual([
-              `${DEEP_EDITOR}: unreadable-replacement (nested too deeply to read: its container markers pass the bound of 256 at line 3, column 513)`,
-            ],);
+                `${DEEP_EDITOR}: unreadable-replacement (nested too deeply to read: its container markers pass the bound of 256 at line 3, column 513)`,
+              ],);
           },
         },),
         it({
@@ -589,10 +589,10 @@ await describe({
               .filter(function isWithdrawal(finding,): boolean {
                 return finding.startsWith('assembly-',);
               },),).toEqual([
-              'assembly-structure-single-withdrawal slice 0: reverting this replacement leaves no introduced '
-                + 'structural or footnote defect',
-              'assembly-structure-observed unreadable-page (round 1)',
-            ],);
+                'assembly-structure-single-withdrawal slice 0: reverting this replacement leaves no introduced '
+                  + 'structural or footnote defect',
+                'assembly-structure-observed unreadable-page (round 1)',
+              ],);
           },
         },),
         it({
@@ -613,8 +613,8 @@ await describe({
               .filter(function isRefusal(finding,): boolean {
                 return finding.includes('refine-atom-gate-refused',);
               },),).toEqual([
-              `${REWRITER}: refine-atom-gate-refused (paragraph 1, candidate rejected)`,
-            ],);
+                `${REWRITER}: refine-atom-gate-refused (paragraph 1, candidate rejected)`,
+              ],);
           },
         },),
       ],

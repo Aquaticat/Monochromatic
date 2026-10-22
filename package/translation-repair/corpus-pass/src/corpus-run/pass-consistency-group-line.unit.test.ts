@@ -30,14 +30,14 @@ import { groupLine, } from '../../dist/final/node/index.mjs';
  */
 type Outcome =
   | 'chosen'
-  | 'replaced'
-  | 'consistent'
-  | 'kept-context'
-  | 'kept-floor'
-  | 'kept-current'
-  | 'overlapped'
-  | 'unlocated'
-  | 'untouched';
+    | 'replaced'
+    | 'consistent'
+    | 'kept-context'
+    | 'kept-floor'
+    | 'kept-current'
+    | 'overlapped'
+    | 'unlocated'
+    | 'untouched';
 
 /**
  One recorded place of a hand-built group.
@@ -500,7 +500,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
             expect(String(refusal,),).toBe(
               'ConsistencyInvariantError: unreachable: group 2 OCCURRENCE 2 ended kept-current and its carry chose CANDIDATE 9, '
-              + 'which is not among the candidates the carry recorded (2 recorded)',
+                + 'which is not among the candidates the carry recorded (2 recorded)',
             );
           },
         },),
@@ -521,7 +521,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
             expect(String(refusal,),).toBe(
               'ConsistencyInvariantError: unreachable: group 2 OCCURRENCE 2 ended kept-current and its carry chose CANDIDATE 3, a '
-              + 'writer text, and a writer text that is chosen replaces every receiving place of its block',
+                + 'writer text, and a writer text that is chosen replaces every receiving place of its block',
             );
           },
         },),
@@ -541,7 +541,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
             expect(String(refusal,),).toBe(
               'ConsistencyInvariantError: unreachable: group 2 holds a verdict that named no winner (no-quorum) and OCCURRENCE 2 ended '
-              + 'replaced, and a group whose bench named no winner replaces no place',
+                + 'replaced, and a group whose bench named no winner replaces no place',
             );
           },
         },),

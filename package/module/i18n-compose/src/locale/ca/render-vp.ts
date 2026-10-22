@@ -97,7 +97,7 @@ export function makeCatalanVerbPhraseRenderer<
   S extends string,
   V extends string,
   N extends string,
->(
+  >(
   {
     verbs,
     renderNounPhrase,
@@ -109,7 +109,7 @@ export function makeCatalanVerbPhraseRenderer<
       advs?: readonly Adverbial<S, N>[],
     ) => string;
   },
-): (phrase: VerbPhrase<S, V, N>,) => string {
+  ): (phrase: VerbPhrase<S, V, N>,) => string {
   /**
    Renders a verb-phrase AST in Catalan using the infinitive form.
    

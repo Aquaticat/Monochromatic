@@ -78,7 +78,7 @@ await describe({
       fn: async () => {
         expectTypeOf<VerbFragmentForm>().toEqualTypeOf<
           'imperative' | 'infinitive' | 'gerund'
-        >();
+          >();
       },
     },),
   ],

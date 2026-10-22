@@ -80,8 +80,8 @@ await describe({
         it({
           name:
             'SAYS NOTHING ABOUT AN UNGOVERNED SLICE, even one whose rendering merged every line. Prose '
-            + 'has no line-per-unit rule to break, and the semantic wrap still runs there, so a finding '
-            + 'here would refuse renderings the pipeline goes on to wrap correctly',
+              + 'has no line-per-unit rule to break, and the semantic wrap still runs there, so a finding '
+              + 'here would refuse renderings the pipeline goes on to wrap correctly',
           fn: async () => {
             expect(compareLineCounts({
               lineStructured: false,
@@ -94,9 +94,9 @@ await describe({
         it({
           name:
             'NAMES A GOVERNED RENDERING THAT MERGED LINES, which is the whole fault. The wrap used to '
-            + 'paper over this and could not: it splits at semantic boundaries and never joins, so over '
-            + 'the 116 governed slices with multi-line blocks, wrapping a flattened passage returned only '
-            + '3 exactly and 290 of 740 original lines',
+              + 'paper over this and could not: it splits at semantic boundaries and never joins, so over '
+              + 'the 116 governed slices with multi-line blocks, wrapping a flattened passage returned only '
+              + '3 exactly and 290 of 740 original lines',
           fn: async () => {
             const found = compareLineCounts({
               lineStructured: true,
@@ -111,8 +111,8 @@ await describe({
         it({
           name:
             'COUNTS BOTH SIDES IN THE FINDING and restates the rule, because a send-back is the model\'s '
-            + 'only instruction on its second turn: it is told what it owes, what it wrote, and that the '
-            + 'wording it chose is not what is being refused',
+              + 'only instruction on its second turn: it is told what it owes, what it wrote, and that the '
+              + 'wording it chose is not what is being refused',
           fn: async () => {
             const [finding,] = compareLineCounts({
               lineStructured: true,
@@ -129,9 +129,9 @@ await describe({
         it({
           name:
             'ACCEPTS A RENDERING CARRYING MORE LINES THAN ITS ORIGINAL, and this case is why the check '
-            + 'is not an equality. 80 of the 211 governed slices in the pinned corpus have English '
-            + 'carrying more lines than the Chinese; an equality check would send back nearly half of '
-            + 'every governed rendering, on text nobody faulted',
+              + 'is not an equality. 80 of the 211 governed slices in the pinned corpus have English '
+              + 'carrying more lines than the Chinese; an equality check would send back nearly half of '
+              + 'every governed rendering, on text nobody faulted',
           fn: async () => {
             expect(compareLineCounts({
               lineStructured: true,
@@ -173,9 +173,9 @@ await describe({
         it({
           name:
             'REFUSES A RENDERING THAT REPEATS A LINE the original carries once, and accepts a refrain the '
-            + 'original itself repeats (class seventy-four, 2026-09-21): a bilingual attribution '
-            + 'rendered once from its Chinese and once from its own English is the same line twice; the finding '
-            + 'says "once" for an original that repeats no line, not "1 times" (ledger B98)',
+              + 'original itself repeats (class seventy-four, 2026-09-21): a bilingual attribution '
+              + 'rendered once from its Chinese and once from its own English is the same line twice; the finding '
+              + 'says "once" for an original that repeats no line, not "1 times" (ledger B98)',
           fn: async () => {
             /** Original quoting a film line in Chinese with its English beside it, attribution likewise. */
             const bilingual = '> 愿每只猫都能找到属于它的阳光。\n>\n> May every cat find a sunbeam that’s all its own.\n>\n'
@@ -216,8 +216,8 @@ await describe({
             },);
             expect(againstNoLine,).toEqual([
               'This slice is LINE-STRUCTURED and your rendering repeats the line `The cat naps.` 2 times where '
-              + 'the ORIGINAL has no line to repeat. A Chinese line and its own English beside it are one line to '
-              + 'render, not two. Drop the repeat, keeping the wording you chose.',
+                + 'the ORIGINAL has no line to repeat. A Chinese line and its own English beside it are one line to '
+                + 'render, not two. Drop the repeat, keeping the wording you chose.',
             ],);
             /** Findings on the same rendering against an original whose one line stands once. */
             const againstOneLine = compareLineCounts({
@@ -227,8 +227,8 @@ await describe({
             },);
             expect(againstOneLine,).toEqual([
               'This slice is LINE-STRUCTURED and your rendering repeats the line `The cat naps.` 2 times where '
-              + 'the ORIGINAL repeats no line more than once. A Chinese line and its own English beside it are one '
-              + 'line to render, not two. Drop the repeat, keeping the wording you chose.',
+                + 'the ORIGINAL repeats no line more than once. A Chinese line and its own English beside it are one '
+                + 'line to render, not two. Drop the repeat, keeping the wording you chose.',
             ],);
           },
         },),
@@ -308,8 +308,8 @@ await describe({
         it({
           name:
             'IGNORES BLANK LINES ON BOTH SIDES, since they separate blocks rather than carry text. A '
-            + 'rendering that writes a different number of them has merged nothing, and faulting it would '
-            + 'name a difference the line rule never spoke about',
+              + 'rendering that writes a different number of them has merged nothing, and faulting it would '
+              + 'name a difference the line rule never spoke about',
           fn: async () => {
             expect(compareLineCounts({
               lineStructured: true,
@@ -322,8 +322,8 @@ await describe({
         it({
           name:
             'IGNORES A LINE THAT CARRIES ONLY A QUOTE MARKER, since a bare \'>\' separates quoted blocks '
-            + 'rather than carrying text; an original writing three of them and a rendering writing one '
-            + 'have merged nothing (class forty-seven)',
+              + 'rather than carrying text; an original writing three of them and a rendering writing one '
+              + 'have merged nothing (class forty-seven)',
           fn: async () => {
             expect(compareLineCounts({
               lineStructured: true,
@@ -336,8 +336,8 @@ await describe({
         it({
           name:
             'OWES NO SEPARATE LINE FOR A HAN LINE WHOSE ENGLISH STANDS BESIDE IT in the original, since '
-            + 'that line is already rendered by its neighbour and carrying both would quote it twice; '
-            + 'the prose lines around the pair are still owed one each (class forty-seven)',
+              + 'that line is already rendered by its neighbour and carrying both would quote it twice; '
+              + 'the prose lines around the pair are still owed one each (class forty-seven)',
           fn: async () => {
             /**
              Bilingual farewell: each Chinese line stands beside its English original.
@@ -385,10 +385,10 @@ await describe({
         it({
           name:
             'ACCEPTS A RENDERING THAT MERGED IN ONE BLOCK AND SPLIT IN ANOTHER, which is this check\'s '
-            + 'one blind spot, pinned here rather than left in a comment. The count is over the whole '
-            + 'slice, so the two cancel. Closing it needs per-block alignment, a larger instrument than '
-            + 'the flattening this was built to catch, and an instrument that does close it should fail '
-            + 'this case and say so',
+              + 'one blind spot, pinned here rather than left in a comment. The count is over the whole '
+              + 'slice, so the two cancel. Closing it needs per-block alignment, a larger instrument than '
+              + 'the flattening this was built to catch, and an instrument that does close it should fail '
+              + 'this case and say so',
           fn: async () => {
             expect(compareLineCounts({
               lineStructured: true,
@@ -416,9 +416,9 @@ await describe({
         it({
           name:
             'REFUSES A FLATTENED RENDERING THROUGH THE STRUCTURAL GUARD, which is the wiring the skip '
-            + 'depends on. Skipping the wrap without this would reopen the hole the audit measured: verse '
-            + 'lines separated by a single newline sit inside ONE block, so a producer that merged them '
-            + 'passed a guard comparing blocks and atoms, and the wrap silently papered over it after',
+              + 'depends on. Skipping the wrap without this would reopen the hole the audit measured: verse '
+              + 'lines separated by a single newline sit inside ONE block, so a producer that merged them '
+              + 'passed a guard comparing blocks and atoms, and the wrap silently papered over it after',
           fn: async () => {
             const validation = validateTranslatedSlice({
               sourceText: ORIGINAL,
@@ -430,8 +430,8 @@ await describe({
             expect(
               (validation.kind === 'invalid')
                 && validation.findings.some(function namesTheRule(finding,): boolean {
-                return finding.includes('LINE-STRUCTURED',);
-              },),
+                  return finding.includes('LINE-STRUCTURED',);
+                },),
             ).toBe(true,);
           },
         },),
@@ -439,9 +439,9 @@ await describe({
         it({
           name:
             'LEAVES THE CHECK OFF WHERE A CALLER SAID NOTHING, since the decision is a union over the '
-            + 'slice AND its enclosing chunk and the slice half alone covers 55 slices where the union '
-            + 'covers 211. A guard defaulting the other way would guess at that from the slice, which is '
-            + 'the reading measured to be wrong',
+              + 'slice AND its enclosing chunk and the slice half alone covers 55 slices where the union '
+              + 'covers 211. A guard defaulting the other way would guess at that from the slice, which is '
+              + 'the reading measured to be wrong',
           fn: async () => {
             expect(validateTranslatedSlice({
               sourceText: ORIGINAL,

@@ -351,9 +351,9 @@ await describe({
         expect(printed.lines,).toEqual([
           'REATTEMPT tabby queued: 1 more cache record than it had, so the next attempt starts further along',
           'STALLED mittens: its 0 cache records are what it started with, so a further attempt in this '
-          + 'invocation would repeat it',
+            + 'invocation would repeat it',
           'STALLED tabby: its 1 cache record is what it started with, so a further attempt in this '
-          + 'invocation would repeat it',
+            + 'invocation would repeat it',
         ],);
       },
     },),
@@ -426,7 +426,7 @@ await describe({
         expect(printed.lines,).toEqual([
           'REATTEMPT tabby queued: 2 more cache records than it had, so the next attempt starts further along',
           'STALLED tabby: its 2 cache records are what it started with, so a further attempt in this '
-          + 'invocation would repeat it',
+            + 'invocation would repeat it',
         ],);
       },
     },),

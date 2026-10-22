@@ -94,8 +94,8 @@ async function ensureImage(): Promise<void> {
   const token = process.env
     .MISE_GITHUB_TOKEN
     ?? process
-    .env
-    .GITHUB_TOKEN
+      .env
+      .GITHUB_TOKEN
     ?? '';
   /**
    `--secret` args for podman; empty when no token, so unauthenticated clones run instead.
@@ -145,30 +145,30 @@ async function ensureVolumes(): Promise<void> {
       PG_VOLUME,
     ]
       .map(
-        async function ensureOneVolume(vol: string,): Promise<void> {
-          try {
-            await spawn(
-              'podman',
-              [
-                'volume',
-                'inspect',
-                vol,
-              ],
-            );
-          }
-          catch (inspectError: unknown) {
-            void inspectError;
-            console.log(`[generate-index] creating volume: ${vol}`,);
-            await spawn(
-              'podman',
-              [
-                'volume',
-                'create',
-                vol,
-              ],
-            );
-          }
-        },
+      async function ensureOneVolume(vol: string,): Promise<void> {
+        try {
+          await spawn(
+            'podman',
+            [
+              'volume',
+              'inspect',
+              vol,
+            ],
+          );
+        }
+        catch (inspectError: unknown) {
+          void inspectError;
+          console.log(`[generate-index] creating volume: ${vol}`,);
+          await spawn(
+            'podman',
+            [
+              'volume',
+              'create',
+              vol,
+            ],
+          );
+        }
+      },
       ),
   );
 }
@@ -386,7 +386,7 @@ function buildPCall(project: RepologyProject,): string {
    */
   if (allSameName && (managers.length
     === SUPPORTED_MANAGERS
-    .size))
+      .size))
     return `p('${escapeString(project.effname,)}',)`;
 
   /**
@@ -416,12 +416,12 @@ function buildPCall(project: RepologyProject,): string {
 function escapeString(value: string,): string {
   return value
     .replaceAll(
-      '\\',
-      String.raw`\\`,
+    '\\',
+    String.raw`\\`,
     )
     .replaceAll(
-      "'",
-      String.raw`\'`,
+    "'",
+    String.raw`\'`,
     );
 }
 
@@ -493,7 +493,7 @@ const filtered = projects.filter(
  */
 const removedCount = projects.length
   - filtered
-  .length;
+    .length;
 console.log(
   `[generate-index] ${removedCount} packages filtered (mise registry + mise backends)`,
 );

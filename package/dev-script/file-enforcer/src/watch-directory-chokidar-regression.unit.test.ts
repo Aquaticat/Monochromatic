@@ -87,26 +87,26 @@ type WatchDirectoryFinish = typeof WATCH_DIRECTORY_CLOSED | WatchDirectoryFailur
  */
 type WatchDirectoryReadyResult =
   | WatchDirectoryFailure
-  | typeof WATCH_DIRECTORY_READY
-  | typeof WATCH_EVENT_TIMEOUT
-  | typeof WATCH_DIRECTORY_CLOSED;
+    | typeof WATCH_DIRECTORY_READY
+    | typeof WATCH_EVENT_TIMEOUT
+    | typeof WATCH_DIRECTORY_CLOSED;
 
 /**
  Result candidates while waiting for one live watch event.
  */
 type WatchDirectoryRaceResult =
   | WatchDirectoryObservedEvent
-  | WatchDirectoryFailure
-  | typeof WATCH_EVENT_TIMEOUT
-  | typeof WATCH_DIRECTORY_CLOSED;
+    | WatchDirectoryFailure
+    | typeof WATCH_EVENT_TIMEOUT
+    | typeof WATCH_DIRECTORY_CLOSED;
 
 /**
  Result candidates while waiting for watchDirectory teardown.
  */
 type WatchDirectoryStopResult =
   | WatchDirectoryFailure
-  | typeof WATCH_DIRECTORY_CLOSED
-  | typeof WATCH_DIRECTORY_STOP_TIMEOUT;
+    | typeof WATCH_DIRECTORY_CLOSED
+    | typeof WATCH_DIRECTORY_STOP_TIMEOUT;
 
 /**
  Mutable controls and promises for one watchDirectory capture.

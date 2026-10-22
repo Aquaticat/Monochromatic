@@ -144,7 +144,7 @@ async function verifySourceLink({
     || (response.body
       .sha
       !== resolvedHead))
-  {
+    {
     return {};
   }
   return {

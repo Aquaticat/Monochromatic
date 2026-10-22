@@ -69,19 +69,19 @@ type EmptyArrayEvidence<ArrayValue extends readonly unknown[]> =
 type DependentIndexEvidence<
   ArrayValue extends readonly unknown[],
   Index extends number,
-> = Index extends number
-  ? [Index] extends [SafeInteger]
-    ? never
-    : number extends Index
+  > = Index extends number
+    ? [Index] extends [SafeInteger]
       ? never
-      : IsUsableIndexText<NumberMagnitude<Index>> extends false
+      : number extends Index
         ? never
-        : number extends ArrayValue['length']
+        : IsUsableIndexText<NumberMagnitude<Index>> extends false
           ? never
-          : ArrayValue['length'] extends 0
+          : number extends ArrayValue['length']
             ? never
-            : LiteralIndexDiagnostic<ArrayValue, Index>
-  : never;
+            : ArrayValue['length'] extends 0
+              ? never
+              : LiteralIndexDiagnostic<ArrayValue, Index>
+    : never;
 
 /**
  Union of unordered diagnostics detectable for one array member.
@@ -94,10 +94,10 @@ type DependentIndexEvidence<
 type ArrayMemberDiagnosticUnion<
   ArrayValue extends readonly unknown[],
   Index extends number,
-> =
+  > =
   | IndexEvidence<Index>
-  | EmptyArrayEvidence<ArrayValue>
-  | DependentIndexEvidence<ArrayValue, Index>;
+    | EmptyArrayEvidence<ArrayValue>
+    | DependentIndexEvidence<ArrayValue, Index>;
 
 /**
  Converts diagnostic union into readonly unordered collection type.
@@ -129,9 +129,9 @@ type DiagnosticCollection<Diagnostic extends ArrayAtDiagnostic> =
 export type ArrayAtDiagnostics<
   ArrayValue extends readonly unknown[],
   Index extends number,
-> = ArrayValue extends readonly unknown[]
-  ? DiagnosticCollection<ArrayMemberDiagnosticUnion<ArrayValue, Index>>
-  : never;
+  > = ArrayValue extends readonly unknown[]
+    ? DiagnosticCollection<ArrayMemberDiagnosticUnion<ArrayValue, Index>>
+    : never;
 
 //endregion Diagnostic computation
 
@@ -223,17 +223,17 @@ export type ValidateArrayAtArgument<Argument extends ArrayAtArgument> = [
 type ArrayElementAt<
   ArrayValue extends readonly unknown[],
   Index extends number,
-> = Index extends number
-  ? [Index] extends [SafeInteger]
-    ? ArrayValue[number]
-    : number extends Index
+  > = Index extends number
+    ? [Index] extends [SafeInteger]
       ? ArrayValue[number]
-      : number extends ArrayValue['length']
+      : number extends Index
         ? ArrayValue[number]
-        : ResolveLiteralIndex<ArrayValue, Index> extends infer Resolved extends number
-          ? ArrayValue[Resolved]
-          : ArrayValue[number]
-  : never;
+        : number extends ArrayValue['length']
+          ? ArrayValue[number]
+          : ResolveLiteralIndex<ArrayValue, Index> extends infer Resolved extends number
+            ? ArrayValue[Resolved]
+            : ArrayValue[number]
+    : never;
 
 /**
  Computes result type while preserving correlated union argument members.

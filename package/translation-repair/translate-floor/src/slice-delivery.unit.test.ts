@@ -581,8 +581,8 @@ await describe({
             slices: preparedSlices(),
             wordings: laneWordings({ decided: everySliceUnchanged(), },)
               .slice(
-                0,
-                2,
+              0,
+              2,
               ),
             changedSliceIndices: [],
             withdrawnSliceIndices: [],

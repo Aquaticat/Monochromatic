@@ -248,16 +248,16 @@ await describe({
             },);
             expect(parseDocument({ text: 'A cat[^1] ，www.cat.example naps.\n\n[^1]: The cat.\n', },)
               .footnoteGraph,).toEqual({
-              references: [{ convention: 'gfm', identifier: '1', nodeId: 'block/0', offset: 5, },],
-              definitions: [{ convention: 'gfm', identifier: '1', nodeId: 'block/1', },],
-              findings: [],
-            },);
+                references: [{ convention: 'gfm', identifier: '1', nodeId: 'block/0', offset: 5, },],
+                definitions: [{ convention: 'gfm', identifier: '1', nodeId: 'block/1', },],
+                findings: [],
+              },);
             expect(parseDocument({ text: 'A cat〔1〕 ，www.cat.example naps.\n\n〔1〕The cat.\n', },)
               .footnoteGraph,).toEqual({
-              references: [{ convention: 'fullwidth-bracket', identifier: '1', nodeId: 'block/0', offset: 5, },],
-              definitions: [{ convention: 'fullwidth-bracket', identifier: '1', nodeId: 'block/1', },],
-              findings: [],
-            },);
+                references: [{ convention: 'fullwidth-bracket', identifier: '1', nodeId: 'block/0', offset: 5, },],
+                definitions: [{ convention: 'fullwidth-bracket', identifier: '1', nodeId: 'block/1', },],
+                findings: [],
+              },);
           },
         },),
         it({

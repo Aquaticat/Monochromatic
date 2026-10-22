@@ -121,14 +121,14 @@ await describe({
 
         expect(
           JSON.parse(await readFile(
-          join(
-            fixture.packageRoot,
-            'dist',
-            'app',
-            'package.json',
-          ),
-          'utf8',
-        ),),
+            join(
+              fixture.packageRoot,
+              'dist',
+              'app',
+              'package.json',
+            ),
+            'utf8',
+          ),),
         ).toEqual({
           name: 'fixture-electron-app',
           productName: 'Fixture Electron App',

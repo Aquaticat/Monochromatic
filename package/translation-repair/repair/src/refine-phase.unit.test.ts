@@ -419,50 +419,50 @@ function scriptedPhase(
           ],
         }
         : stage === 'candidate_ballot'
-        ? {
-          best: 1,
-          assessment: 'scripted',
-        }
+          ? {
+            best: 1,
+            assessment: 'scripted',
+          }
         // The naturalness probe answers a DIFFERENT schema from the checker,
         // and the checker-shaped fallback fails its guard. That failure
         // is swallowed as a lost voice, so without this branch the probe would
         // report nothing heard and a case asserting it ran would pass for the
         // wrong reason.
-        : stage === 'introduced_defect_report'
-        ? {
-          checks: [
-            (probeClaim === undefined)
-              ? {
-                region: 1,
-                verdict: 'no-introduced-defect-found',
-                category: '',
-                severity: '',
-                evidence: '',
-                omittedText: '',
-                verdictReason: '',
-              }
-              : {
-                region: 1,
-                verdict: 'introduced-defect',
-                category: 'accuracy/mistranslation',
-                severity: 'major',
-                evidence: probeClaim.evidence,
-                omittedText: probeClaim.omittedText,
-                verdictReason: 'scripted',
-              },
-          ],
-        }
-        : {
-          checks: [...Array.from(
-            { length: content.split('\nISSUE ',).length - 1, },
-          ).keys(),]
-            .map(function toCheck(index,) {
-              return {
-                issue: index + 1,
-                verdict: (request.modelId === dissent?.modelId) ? dissent.verdict : checkerVerdict,
-              };
-            },),
-        };
+          : stage === 'introduced_defect_report'
+            ? {
+              checks: [
+                (probeClaim === undefined)
+                  ? {
+                    region: 1,
+                    verdict: 'no-introduced-defect-found',
+                    category: '',
+                    severity: '',
+                    evidence: '',
+                    omittedText: '',
+                    verdictReason: '',
+                  }
+                  : {
+                    region: 1,
+                    verdict: 'introduced-defect',
+                    category: 'accuracy/mistranslation',
+                    severity: 'major',
+                    evidence: probeClaim.evidence,
+                    omittedText: probeClaim.omittedText,
+                    verdictReason: 'scripted',
+                  },
+              ],
+            }
+            : {
+              checks: [...Array.from(
+                { length: content.split('\nISSUE ',).length - 1, },
+              ).keys(),]
+                .map(function toCheck(index,) {
+                  return {
+                    issue: index + 1,
+                    verdict: (request.modelId === dissent?.modelId) ? dissent.verdict : checkerVerdict,
+                  };
+                },),
+            };
       if (!request.validate(scripted,))
         throw new Error(`stub script failed the ${stage} guard`,);
       return {

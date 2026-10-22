@@ -270,8 +270,8 @@ export async function prepareBlockPairing(
         ...cached.findings,
         ...media.findings
           .map(function prefix(finding,): string {
-        return `block-pairing ${finding}`;
-      },),
+            return `block-pairing ${finding}`;
+          },),
       ],
       pair,
       pairIndex,

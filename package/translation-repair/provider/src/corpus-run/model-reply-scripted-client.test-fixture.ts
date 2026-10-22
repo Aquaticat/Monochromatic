@@ -31,44 +31,44 @@ export type ScriptedModelReply =
      */
     readonly text: string;
   }
-  | {
+    | {
     /**
      The model answers with text the request's guard or parser refused.
      */
-    readonly kind: 'schema-mismatch';
+      readonly kind: 'schema-mismatch';
 
     /**
      Text the model answered with.
      */
-    readonly rawText: string;
+      readonly rawText: string;
 
     /**
      What failed, in the client's own words.
      */
-    readonly detail: string;
-  }
-  | {
+      readonly detail: string;
+    }
+    | {
     /**
      The model answers with a refusal.
      */
-    readonly kind: 'refusal-shaped';
+      readonly kind: 'refusal-shaped';
 
     /**
      Text the model answered with.
      */
-    readonly rawText: string;
-  }
-  | {
+      readonly rawText: string;
+    }
+    | {
     /**
      The call itself fails with this value.
      */
-    readonly kind: 'throws';
+      readonly kind: 'throws';
 
     /**
      Value the call rejects with.
      */
-    readonly error: unknown;
-  };
+      readonly error: unknown;
+    };
 
 /**
  Refuses a text call, which a JSON probe never makes.

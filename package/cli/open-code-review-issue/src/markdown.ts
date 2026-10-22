@@ -19,36 +19,36 @@
 export function escapeMarkdownInline(text: string,): string {
   return text
     .replaceAll(
-      '\\',
-      String.raw`\\`,
+    '\\',
+    String.raw`\\`,
     )
     .replaceAll(
-      '`',
-      '\\`',
+    '`',
+    '\\`',
     )
     .replaceAll(
-      '*',
-      String.raw`\*`,
+    '*',
+    String.raw`\*`,
     )
     .replaceAll(
-      '_',
-      String.raw`\_`,
+    '_',
+    String.raw`\_`,
     )
     .replaceAll(
-      '[',
-      String.raw`\[`,
+    '[',
+    String.raw`\[`,
     )
     .replaceAll(
-      ']',
-      String.raw`\]`,
+    ']',
+    String.raw`\]`,
     )
     .replaceAll(
-      '<',
-      String.raw`\<`,
+    '<',
+    String.raw`\<`,
     )
     .replaceAll(
-      '>',
-      String.raw`\>`,
+    '>',
+    String.raw`\>`,
     );
 }
 

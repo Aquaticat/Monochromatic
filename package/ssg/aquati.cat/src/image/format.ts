@@ -76,23 +76,23 @@ const tasks = scanResults.flatMap(function buildTasks(
     /**
      Base filename without extension, used to derive the AVIF output path.
      */
-    const nameWithoutExt = basename(
-      filePath,
-      extname(filePath,),
-    );
+      const nameWithoutExt = basename(
+        filePath,
+        extname(filePath,),
+      );
     /**
      Target AVIF path sitting alongside the source raster image.
      */
-    const avifPath = join(
-      dirname(filePath,),
-      `${nameWithoutExt}.avif`,
-    );
-    return maybeConvert({
-      filePath,
-      avifPath,
-      l,
+      const avifPath = join(
+        dirname(filePath,),
+        `${nameWithoutExt}.avif`,
+      );
+      return maybeConvert({
+        filePath,
+        avifPath,
+        l,
+      },);
     },);
-  },);
 },);
 
 /**

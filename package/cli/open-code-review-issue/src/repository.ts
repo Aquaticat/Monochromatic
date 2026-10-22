@@ -152,7 +152,7 @@ export function parseRepositoryUrl(value: string,): GitHubRepository {
     || owner.startsWith('-',)
     || owner.endsWith('-',)
     || name.endsWith('.git',))
-  {
+    {
     throw new RepositorySelectionError(
       'repository must use canonical https://github.com/OWNER/NAME characters',
     );

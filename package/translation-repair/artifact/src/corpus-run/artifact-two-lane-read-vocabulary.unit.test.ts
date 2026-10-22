@@ -88,8 +88,8 @@ await describe({
         it({
           name:
             'REFUSES a discriminator this version cannot project, under BOTH key policies: a member named '
-            + 'here that version 2 never described has no reading at all, and taking the row anyway would '
-            + 'record a slice under a name this reader invented',
+              + 'here that version 2 never described has no reading at all, and taking the row anyway would '
+              + 'record a slice under a name this reader invented',
           fn: async () => {
             /**
              What unknownKind raised, read for its class as well as its wording.
@@ -122,8 +122,8 @@ await describe({
         it({
           name:
             'TOLERATES a field version 2 never described where the live pipeline owns the shape, and REFUSES '
-            + 'the same field where version 2 owns it: one is a later lane recording evidence, the other is a '
-            + 'file this version cannot read',
+              + 'the same field where version 2 owns it: one is a later lane recording evidence, the other is a '
+              + 'file this version cannot read',
           fn: async () => {
             expect(parseSliceOutcome({
               value: {
@@ -159,8 +159,8 @@ await describe({
         it({
           name:
             'REFUSES a RESERVED field on a member that has no meaning for it, even while tolerating unknown '
-            + 'ones: an outcome that decided nothing cannot carry the wording it decided, and reading past '
-            + 'that would hand a caller a wording no lane chose',
+              + 'ones: an outcome that decided nothing cannot carry the wording it decided, and reading past '
+              + 'that would hand a caller a wording no lane chose',
           fn: async () => {
             /**
              What misplacedText raised, read for its class as well as its wording.
@@ -244,7 +244,7 @@ await describe({
         it({
           name:
             'REFUSES a withdrawal whose mechanism this version does not name, and a reason on a member that '
-            + 'took nothing back: both would let a reader report a withdrawal that never happened',
+              + 'took nothing back: both would let a reader report a withdrawal that never happened',
           fn: async () => {
             /**
              What unknownReason raised, read for its class as well as its wording.
@@ -319,7 +319,7 @@ await describe({
         it({
           name:
             'REFUSES a lane name this pipeline has no lane for, at the position that named it, since a third '
-            + 'lane is a generation this reader cannot describe rather than a typo to skip past',
+              + 'lane is a generation this reader cannot describe rather than a typo to skip past',
           fn: async () => {
             /**
              What unknownLane raised, read for its class as well as its wording.
@@ -344,8 +344,8 @@ await describe({
         it({
           name:
             'ACCEPTS an EMPTY undecided list, which is a fact about the writer rather than about this reader: '
-            + 'the relations check whether the list agrees with the two outcomes, and a parser that refused '
-            + 'it here would report a shape error for a disagreement',
+              + 'the relations check whether the list agrees with the two outcomes, and a parser that refused '
+              + 'it here would report a shape error for a disagreement',
           fn: async () => {
             expect(parseDecisionComparison({
               value: {
@@ -401,8 +401,8 @@ await describe({
         it({
           name:
             'REFUSES a key version 2 does not name on the row, and a slice index that is not a slice index: '
-            + 'a fraction, a negative, or a value past what JSON carries exactly names no slice any '
-            + 'preparation produced',
+              + 'a fraction, a negative, or a value past what JSON carries exactly names no slice any '
+              + 'preparation produced',
           fn: async () => {
             /**
              One valid row, which each refusal this case reads breaks in exactly one way.
@@ -509,10 +509,10 @@ await describe({
         it({
           name:
             'READS A ROW WRITTEN UNDER THE RETIRED SPELLING, because artifacts outlive the pipelines '
-            + 'that wrote them. The field was `verdict` until 2026-08-22, sharing a bare key name with '
-            + '`laneSelection.slices[].verdict` at a sibling path, where it answers who WON rather than '
-            + 'which lanes changed. Refusing the old spelling would have made 25 settled artifacts '
-            + 'unreadable to buy a name',
+              + 'that wrote them. The field was `verdict` until 2026-08-22, sharing a bare key name with '
+              + '`laneSelection.slices[].verdict` at a sibling path, where it answers who WON rather than '
+              + 'which lanes changed. Refusing the old spelling would have made 25 settled artifacts '
+              + 'unreadable to buy a name',
           fn: async () => {
             /**
              One row as a pipeline before the rename wrote it.
@@ -551,8 +551,8 @@ await describe({
         it({
           name:
             'REFUSES A ROW CARRYING BOTH SPELLINGS rather than picking one, since two names for one '
-            + 'field means two pipelines wrote the row, and quietly preferring either would hide that '
-            + 'from every reader downstream',
+              + 'field means two pipelines wrote the row, and quietly preferring either would hide that '
+              + 'from every reader downstream',
           fn: async () => {
             /**
              What bothSpellings raised, read for its class as well as its wording.
@@ -591,7 +591,7 @@ await describe({
         it({
           name:
             'REFUSES a lane relation this version does not name, so a generation that added one cannot '
-            + 'be read as though its rows meant what these do',
+              + 'be read as though its rows meant what these do',
           fn: async () => {
             /**
              What unknownVerdict raised, read for its class as well as its wording.
@@ -636,7 +636,7 @@ await describe({
         it({
           name:
             'takes the four fields version 2 checks out of a raw slice row and LEAVES THE REST, so a lane '
-            + 'that records more evidence next month does not make today`s artifacts unreadable',
+              + 'that records more evidence next month does not make today`s artifacts unreadable',
           fn: async () => {
             expect(parseEvidenceRow({
               value: {
@@ -666,7 +666,7 @@ await describe({
         it({
           name:
             'still REQUIRES the four, since they are what the ledger is checked against: a raw row missing '
-            + 'one of them leaves the check with nothing to compare and would pass by having less',
+              + 'one of them leaves the check with nothing to compare and would pass by having less',
           fn: async () => {
             /**
              What noIncumbentKind raised, read for its class as well as its wording.

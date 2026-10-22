@@ -101,10 +101,10 @@ export function recordGlobInActiveCapture(
   sourceCaptureStorage.getStore()
     ?.globs
     .set(
-      pattern,
-      [...new Set(paths.map(function toAbsolutePath(path,): string {
-        return resolve(path,);
-      },),),].toSorted(),
+    pattern,
+    [...new Set(paths.map(function toAbsolutePath(path,): string {
+      return resolve(path,);
+    },),),].toSorted(),
     );
 }
 

@@ -318,19 +318,19 @@ function foldDelta(
     fold
       .textParts
       .push(answerFragmentOf({
-      delta,
-      kind,
-      field: 'text',
-    },),);
+        delta,
+        kind,
+        field: 'text',
+      },),);
   }
   if (kind === 'input_json_delta') {
     fold
       .toolParts
       .push(answerFragmentOf({
-      delta,
-      kind,
-      field: 'partial_json',
-    },),);
+        delta,
+        kind,
+        field: 'partial_json',
+      },),);
   }
 }
 

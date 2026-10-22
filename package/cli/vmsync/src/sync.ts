@@ -110,7 +110,7 @@ export async function syncFromKvm(name: string,): Promise<void> {
     function isOverlayData(r,) {
       return (r.depth
         === 0) && r
-        .data;
+          .data;
     },
   );
 
@@ -151,9 +151,9 @@ export async function syncFromKvm(name: string,): Promise<void> {
     .synced = true;
   config.state
     .checksums = {
-    qcow2: qcow2Hash,
-    vhdx: vhdxHash,
-  };
+      qcow2: qcow2Hash,
+      vhdx: vhdxHash,
+    };
   await writeConfig({
     name,
     config,
@@ -291,9 +291,9 @@ export async function syncFromHyperv(name: string,): Promise<void> {
 
   if (newVhdxHash
     === config
-    .state
-    .checksums
-    .vhdx) {
+      .state
+      .checksums
+      .vhdx) {
     rl.info('vhdx unchanged, skipping sync',);
     config.state
       .synced = true;
@@ -328,9 +328,9 @@ export async function syncFromHyperv(name: string,): Promise<void> {
     .synced = true;
   config.state
     .checksums = {
-    qcow2: newQcow2Hash,
-    vhdx: newVhdxHash,
-  };
+      qcow2: newQcow2Hash,
+      vhdx: newVhdxHash,
+    };
   await writeConfig({
     name,
     config,

@@ -199,8 +199,8 @@ await describe({
               .filter(function isRefusal(finding,): boolean {
                 return finding.startsWith(DEEP_VOICE,);
               },),).toEqual([
-              `${DEEP_VOICE}: refine-atom-gate-refused (paragraph 1, candidate rejected)`,
-            ],);
+                `${DEEP_VOICE}: refine-atom-gate-refused (paragraph 1, candidate rejected)`,
+              ],);
             expect(messages
               .filter(function namesTheDeepVoice(line,): boolean {
                 return line.includes(`${DEEP_VOICE}: candidate rejected`,);
@@ -306,25 +306,25 @@ await describe({
               .map(function kindOf(entry,): string {
                 return `${entry.modelId}: ${entry.validation.kind}`;
               },),).toEqual(
-                sortedByModelId({
-                  items: [
-                    { modelId: DEEP_VOICE, kind: 'invalid', },
-                    { modelId: ORDINARY_VOICE, kind: 'valid', },
-                  ],
-                },)
-                  .map(function expectedOf(entry,): string {
-                    return `${entry.modelId}: ${entry.kind}`;
-                  },),
+              sortedByModelId({
+                items: [
+                  { modelId: DEEP_VOICE, kind: 'invalid', },
+                  { modelId: ORDINARY_VOICE, kind: 'valid', },
+                ],
+              },)
+                .map(function expectedOf(entry,): string {
+                  return `${entry.modelId}: ${entry.kind}`;
+                },),
               );
             expect(produced.findings
               .filter(function isRefusal(finding,): boolean {
                 return finding.startsWith('translate-invalid',);
               },),).toEqual([
-              `translate-invalid (${DEEP_VOICE}): Your translation could not be parsed as Markdown: MdxParseError: `
-                + 'MDX body refused to parse because it is nested too deeply to read: its container markers pass '
-                + 'the bound of 256 at line 1, column 513; corpus documents compile as MDX upstream, so failure '
-                + 'signals corruption or an unsupported construct.',
-            ],);
+                `translate-invalid (${DEEP_VOICE}): Your translation could not be parsed as Markdown: MdxParseError: `
+                  + 'MDX body refused to parse because it is nested too deeply to read: its container markers pass '
+                  + 'the bound of 256 at line 1, column 513; corpus documents compile as MDX upstream, so failure '
+                  + 'signals corruption or an unsupported construct.',
+              ],);
           },
         },),
       ],
@@ -383,11 +383,11 @@ await describe({
               .filter(function isRefusal(finding,): boolean {
                 return finding.startsWith('archive-revision-refused',);
               },),).toEqual([
-              `archive-revision-refused (${DEEP_VOICE}): the revision does not parse (MdxParseError: MDX body `
-                + 'refused to parse because it is nested too deeply to read: its container markers pass the bound '
-                + 'of 256 at line 1, column 513; corpus documents compile as MDX upstream, so failure signals '
-                + 'corruption or an unsupported construct.); the block is 1 block (paragraph)',
-            ],);
+                `archive-revision-refused (${DEEP_VOICE}): the revision does not parse (MdxParseError: MDX body `
+                  + 'refused to parse because it is nested too deeply to read: its container markers pass the bound '
+                  + 'of 256 at line 1, column 513; corpus documents compile as MDX upstream, so failure signals '
+                  + 'corruption or an unsupported construct.); the block is 1 block (paragraph)',
+              ],);
           },
         },),
       ],

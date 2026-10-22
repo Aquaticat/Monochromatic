@@ -58,7 +58,7 @@ export function parseRootPackageMetadata(
 ): RootPackageMetadata {
   if (
     ((typeof value) !== 'object')
-    || (value === null)
+      || (value === null)
       || (!('name' in value))
       || (!('productName' in value))
       || (!('version' in value))
@@ -78,7 +78,7 @@ export function parseRootPackageMetadata(
 
   if (
     ((typeof manifest.name) !== 'string')
-    || ((typeof manifest.productName) !== 'string')
+      || ((typeof manifest.productName) !== 'string')
       || ((typeof manifest.version) !== 'string')
   )
     throw new Error('Package manifest name, productName, and version must be strings.',);

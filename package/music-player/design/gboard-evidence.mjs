@@ -57,7 +57,7 @@ function curatedNodes(xml) {
 function requiredNode({ nodes, label, leftAtLeast = 0, rightAtMost = Number.POSITIVE_INFINITY }) {
   const node = nodes.find((candidate) =>
     (candidate.text === label || candidate.description === label)
-    && candidate.bounds[0] >= leftAtLeast && candidate.bounds[2] <= rightAtMost);
+      && candidate.bounds[0] >= leftAtLeast && candidate.bounds[2] <= rightAtMost);
   if (!node) throw new Error(`Missing ${label} in expected pane.`);
   return node;
 }
@@ -125,8 +125,8 @@ function verifyImage({ capture, file }) {
   if (result !== `${expected} True`) throw new Error(`${capture.id}: unexpected image shape: ${result}`);
   const corner = execFileSync('magick', [file, '-format',
     '%[fx:p{0,0}.r] %[fx:p{0,0}.g] %[fx:p{0,0}.b]', 'info:'], {
-    encoding: 'utf8',
-  }).trim();
+      encoding: 'utf8',
+    }).trim();
   if (corner !== (capture.theme === 'dark' ? '0 0 0' : '1 1 1')) {
     throw new Error(`${capture.id}: status area was not anonymized: ${corner}`);
   }

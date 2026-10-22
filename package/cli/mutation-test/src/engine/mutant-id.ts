@@ -48,7 +48,7 @@ export function mutantId(options: {
     ],),)
     .digest('hex',)
     .slice(
-      0,
-      ID_HEX_LENGTH,
+    0,
+    ID_HEX_LENGTH,
     );
 }

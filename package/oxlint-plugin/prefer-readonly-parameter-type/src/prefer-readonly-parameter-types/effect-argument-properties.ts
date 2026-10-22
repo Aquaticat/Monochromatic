@@ -247,10 +247,10 @@ function propertyContribution({
      Caller origins the shorthand value carries.
      */
     const shorthandOrigins = ((valueSymbol === undefined)
-        || (!expressionCanCarryMutableState({
-          checker,
-          node: property.name,
-        },)))
+      || (!expressionCanCarryMutableState({
+        checker,
+        node: property.name,
+      },)))
       ? NO_SLOT_ORIGIN
       : bindingOriginBySymbolId.get(valueSymbol.id,) ?? NO_SLOT_ORIGIN;
     return {

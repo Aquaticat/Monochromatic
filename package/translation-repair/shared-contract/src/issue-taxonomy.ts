@@ -150,9 +150,9 @@ export type CategoryRemap =
      */
     readonly category: IssueCategory;
   }
-  | {
-    readonly remapped: false;
-  };
+    | {
+      readonly remapped: false;
+    };
 
 /**
  Remaps a category whose leaf landed under the wrong family.

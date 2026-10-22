@@ -37,17 +37,17 @@ export type ChainBreak = {
  */
 export type ChainSegment =
   | { readonly isBreak: false; }
-  | {
-    readonly isBreak: true;
+    | {
+      readonly isBreak: true;
     /**
      Byte offset of the segment's leading token; start of its continuation line.
      */
-    readonly breakOffset: number;
+      readonly breakOffset: number;
     /**
      Byte offset of the node owning the leading token; anchors the line's indent.
      */
-    readonly anchorOffset: number;
-  };
+      readonly anchorOffset: number;
+    };
 
 /**
  Selects the breaks that actually begin a continuation line.
@@ -223,8 +223,8 @@ function anchorIndentOf({
    */
   const onFirstLine = !sourceText
     .slice(
-      sliceStart,
-      anchorOffset,
+    sliceStart,
+    anchorOffset,
     )
     .includes('\n',);
   if (!onFirstLine) {
@@ -333,8 +333,8 @@ export function renderCanonical({
    */
   const head = sourceText
     .slice(
-      regionStart,
-      firstBreak,
+    regionStart,
+    firstBreak,
     )
     .trimEnd();
   /**

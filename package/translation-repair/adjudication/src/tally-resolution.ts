@@ -234,13 +234,13 @@ function weightBehind(
       return one.verdict === answer;
     },)
     .reduce(
-      function add(
-        total,
-        one,
-      ) {
-        return total + one.weight;
-      },
-      0,
+    function add(
+      total,
+      one,
+    ) {
+      return total + one.weight;
+    },
+    0,
     );
 }
 

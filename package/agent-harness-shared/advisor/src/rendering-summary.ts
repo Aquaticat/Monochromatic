@@ -142,7 +142,7 @@ export function isAdvisorDetails(
     && ((typeof value.scopeSource) === 'string')
     && ('scopedSlugs' in value)
     && Array
-    .isArray(value.scopedSlugs,)
+      .isArray(value.scopedSlugs,)
     && ('durationMs' in value)
     && ((typeof value.durationMs) === 'number')
     && ('contextBudgetChars' in value)

@@ -174,11 +174,11 @@ function requireRosterModelIds(
       entry,
       index,
     ): RosterModelId {
-    return requireRosterModelId({
-      value: entry,
-      path: `${path}[${String(index,)}]`,
+      return requireRosterModelId({
+        value: entry,
+        path: `${path}[${String(index,)}]`,
+      },);
     },);
-  },);
 }
 
 /**

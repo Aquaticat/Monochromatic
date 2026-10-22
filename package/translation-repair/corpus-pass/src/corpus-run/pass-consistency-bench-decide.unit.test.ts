@@ -188,7 +188,7 @@ await describe({
             },);
             expect(String(refusal,),).toBe(
               'ConsistencyInvariantError: unreachable: the offsets of a place point at other words in the text shown than in '
-              + 'the whole original (slice 0), and both are cut from the same offsets',
+                + 'the whole original (slice 0), and both are cut from the same offsets',
             );
           },
         },),

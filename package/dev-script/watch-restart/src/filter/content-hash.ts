@@ -75,9 +75,9 @@ export function contentHashFilter(): WatchFilter {
         return false;
       ctx.hashCache
         .set({
-        path: event.path,
-        hash: fresh,
-      },);
+          path: event.path,
+          hash: fresh,
+        },);
       return true;
     }
     catch (error) {
@@ -88,7 +88,7 @@ export function contentHashFilter(): WatchFilter {
       ctx.logger
         .warn(
         `content-hash filter failed for ${event.path}: ${message}; firing`,
-      );
+        );
       return true;
     }
   };

@@ -60,8 +60,8 @@ export function toHexPadded(
 ): string {
   return (value >>> 0).toString(16,)
     .padStart(
-      width,
-      '0',
+    width,
+    '0',
     );
 }
 

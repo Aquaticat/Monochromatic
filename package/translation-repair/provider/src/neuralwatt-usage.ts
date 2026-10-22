@@ -90,11 +90,11 @@ export class NeuralWattUsageShapeError extends Error {
 function coveredNames(): ReadonlySet<string> {
   return new Set(Object.keys(NEURALWATT_MODELS,)
     .flatMap(function withFlex(id,): readonly string[] {
-    return [
-      id,
-      `${id}${FLEX_SUFFIX}`,
-    ];
-  },),);
+      return [
+        id,
+        `${id}${FLEX_SUFFIX}`,
+      ];
+    },),);
 }
 
 /**
@@ -254,10 +254,10 @@ export function coveredWhOf(
   if ((echoed.start
     .toISOString()
     !== asked.start
-    .toISOString()) || (echoed.end
-      .toISOString()
-      !== asked.end
-      .toISOString()))
+      .toISOString()) || (echoed.end
+        .toISOString()
+        !== asked.end
+          .toISOString()))
     throw new NeuralWattUsageShapeError({
       detail: `period does not match the window asked (asked ${asked.start
         .toISOString()} to ${asked.end
@@ -275,29 +275,29 @@ export function coveredWhOf(
   const covered = coveredNames();
   return (products as readonly unknown[]).reduce<number>(
     function addRow(
-    running,
-    row,
-  ): number {
-    if (!isJsonRecord(row,))
-      throw new NeuralWattUsageShapeError({ detail: 'a products row is not an object', },);
-    if (!rowIsCovered({
+      running,
       row,
-      covered,
-      aliases,
-    },))
-      return running;
+    ): number {
+      if (!isJsonRecord(row,))
+        throw new NeuralWattUsageShapeError({ detail: 'a products row is not an object', },);
+      if (!rowIsCovered({
+        row,
+        covered,
+        aliases,
+      },))
+        return running;
 
     /**
      Energy the row consumed, in kWh.
      */
-    const kwh = row.energy_kwh;
-    if (((typeof kwh) !== 'number') || (!Number.isFinite(kwh,))
-      || ((kwh as number) < 0))
-      throw new NeuralWattUsageShapeError({
-        detail: `energy_kwh of the ${String(row.requested_model,)} row is not a non-negative number`,
-      },);
-    return running + ((kwh as number) * WH_PER_KWH);
-  },
+      const kwh = row.energy_kwh;
+      if (((typeof kwh) !== 'number') || (!Number.isFinite(kwh,))
+        || ((kwh as number) < 0))
+        throw new NeuralWattUsageShapeError({
+          detail: `energy_kwh of the ${String(row.requested_model,)} row is not a non-negative number`,
+        },);
+      return running + ((kwh as number) * WH_PER_KWH);
+    },
     0,
   );
 }

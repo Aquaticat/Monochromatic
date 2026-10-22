@@ -70,14 +70,14 @@ function forceBoolean(options: {
 },): readonly Replacement[] {
   return options.texts
     .map(function toReplacement(text,): Replacement {
-    return {
-      start: options.start,
-      end: options.end,
-      text,
-      operator: 'conditional',
-      description: `forced condition to ${text}`,
-    };
-  },);
+      return {
+        start: options.start,
+        end: options.end,
+        text,
+        operator: 'conditional',
+        description: `forced condition to ${text}`,
+      };
+    },);
 }
 
 /**

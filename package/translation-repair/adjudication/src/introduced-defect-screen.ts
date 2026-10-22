@@ -36,10 +36,10 @@ import { flattenSpace, } from '@monochromatic-dev/translation-repair-house-rule/
  */
 export type ClaimAdmissibility =
   | 'corroborated'
-  | 'removal-corroborated'
-  | 'contradicted'
-  | 'unanchored'
-  | 'pre-existing';
+    | 'removal-corroborated'
+    | 'contradicted'
+    | 'unanchored'
+    | 'pre-existing';
 
 /**
  Admissibility values that uphold a claim that the edit caused damage: a
@@ -790,11 +790,11 @@ export function screenIntroducedDefects(
           reason: entry.check
             .verdictReason,
           admissibility: countsAsDamage({ anchored, },)
-              && restatesPriorIssue({
-                quoted,
-                priorQuotes,
-                removal,
-              },)
+            && restatesPriorIssue({
+              quoted,
+              priorQuotes,
+              removal,
+            },)
             ? 'pre-existing'
             : anchored,
         };

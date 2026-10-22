@@ -80,7 +80,7 @@ function deepenFromSignals(
   const commitCount = signals.commit
     ?.count
     ?? signals.tree0
-    ?.count
+      ?.count
     ?? deepen.observedCommits;
   /**
    Whether the count is only a lower bound (host lower bound or capped walk

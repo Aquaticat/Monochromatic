@@ -100,17 +100,17 @@ export type AskedDecision =
      */
     readonly decided: DecidedGroup;
   }
-  | {
+    | {
     /**
      The bench could not be asked or counted, and the places stay as they stand.
      */
-    readonly kind: 'failed';
+      readonly kind: 'failed';
 
     /**
      The group left as it stands, with its failure said.
      */
-    readonly settled: SettledGroup;
-  };
+      readonly settled: SettledGroup;
+    };
 
 /**
  Asks the bench about one group and decides it, containing whatever goes wrong.

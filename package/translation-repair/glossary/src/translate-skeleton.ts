@@ -159,14 +159,14 @@ export type SkeletonRead =
      */
     readonly skeleton: SliceSkeleton;
   }
-  | {
-    readonly kind: 'unparseable';
+    | {
+      readonly kind: 'unparseable';
 
     /**
      Parser's own account, for a finding a model can act on.
      */
-    readonly detail: string;
-  };
+      readonly detail: string;
+    };
 
 /**
  Recursively readonly mdast root, as this module BORROWS the parse result.

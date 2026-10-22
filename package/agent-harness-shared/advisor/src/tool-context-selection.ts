@@ -342,11 +342,11 @@ export function selectAdvisorRunContext(
     advisorContext: selectedCandidate.advisorContext,
     candidates: composedSelection.ranking
       .map(function rankedCandidate(score): AdvisorContextCandidate {
-      return selectedContextCandidate({
-        candidates,
-        selectedSlug: score.slug,
-      },);
-    },),
+        return selectedContextCandidate({
+          candidates,
+          selectedSlug: score.slug,
+        },);
+      },),
   };
 }
 

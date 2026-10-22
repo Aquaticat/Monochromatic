@@ -195,7 +195,7 @@ async function voyageEmbedBatch({
   ) {
     return a.index
       - b
-      .index;
+        .index;
   },);
 
   return {

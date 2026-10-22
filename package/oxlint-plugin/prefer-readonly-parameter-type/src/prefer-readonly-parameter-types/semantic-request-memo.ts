@@ -356,13 +356,13 @@ export function memoizeSnapshotRequests({
         ...totals,
         entries: [...responsesBySnapshot.values(),]
           .reduce(
-            function addSize(
-              sum,
-              responses,
-            ): number {
+          function addSize(
+            sum,
+            responses,
+          ): number {
             return sum + responses.size;
           },
-            0,
+          0,
           ),
       };
     },

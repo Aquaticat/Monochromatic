@@ -205,8 +205,8 @@ function resolveSpecifier(
   const resolved = fromPath
     .split('/',)
     .slice(
-      0,
-      -1,
+    0,
+    -1,
     );
   for (const segment of specifier.split('/',)) {
     if (segment === '..')
@@ -558,8 +558,8 @@ export function runnerEntriesOf({ files, }: { readonly files: readonly SourceTex
            */
           const [name = '', source = '', ...rest] = childNodes({ node, },)
             .map(function textOf(element,): string {
-            return literalText({ node: element, },);
-          },);
+              return literalText({ node: element, },);
+            },);
           if ((rest.length > 0) || (name === '')
             || (name === INDEX_ENTRY)
             || (!source.startsWith(ENTRY_SOURCE_OPENING,))

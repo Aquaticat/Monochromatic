@@ -198,7 +198,7 @@ await describe({
         expect(lines,).toEqual([
           [
             '// bedrock side for cat.mittens-9, read from https://bedrock-mantle.us-east-1.api.aws/v1/models '
-            + 'on 2026-10-06',
+              + 'on 2026-10-06',
             '    bedrock: {',
             "      id: 'cat.mittens-9',",
             '      readsImages: /* not in the listing: send it a picture and measure */,',
@@ -303,7 +303,7 @@ await describe({
           ],
           [
             '// bedrock side for cat/mittens-9, read from https://bedrock-mantle.us-east-1.api.aws/v1/models '
-            + 'on 2026-10-06',
+              + 'on 2026-10-06',
             "// 1. Add 'cat/mittens-9' to BEDROCK_SERVED_IDS in roster-id.ts.",
           ],
           [

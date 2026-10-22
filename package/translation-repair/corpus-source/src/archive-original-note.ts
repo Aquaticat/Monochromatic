@@ -262,8 +262,8 @@ function documentNotes(
        */
       const comment = document.text
         .slice(
-          finding.startOffset,
-          finding.endOffset,
+        finding.startOffset,
+        finding.endOffset,
         );
       return {
         note: foldedLine({ text: commentBody({ comment, },), },),

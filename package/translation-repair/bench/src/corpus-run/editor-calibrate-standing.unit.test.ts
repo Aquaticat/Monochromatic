@@ -188,8 +188,8 @@ await describe({
             },),).toEqual([
               '\nEDITOR standing over 0 judged rounds, from 0 of 1 slice; 1 round drew no ballot',
               '  NO JUDGED ROUNDS. The seat has no standing, since no ballot was cast on any round it produced: a '
-              + 'slate of one candidate, which is what every producer proposing the same wording leaves, needs no '
-              + 'vote, and a panel whose every judge abstained or failed casts none. Draw more slices.',
+                + 'slate of one candidate, which is what every producer proposing the same wording leaves, needs no '
+                + 'vote, and a panel whose every judge abstained or failed casts none. Draw more slices.',
             ],);
           },
         },),
@@ -218,8 +218,8 @@ await describe({
               '\nEDITOR standing over 1 judged round, from 1 of 2 slices; 1 round drew no ballot',
               `  ${WRITER}: 100.0% (1 of 1 disinterested ballot, over 1 candidate)`,
               `  WROTE AND WAS NEVER VOTED ON: ${JUDGE}. Their text reached a slate and no disinterested ballot `
-              + 'was cast over it, which is what a slice where every producer proposed the same wording does: it '
-              + 'ships unjudged. The table says nothing about them either way, and more slices are what would.',
+                + 'was cast over it, which is what a slice where every producer proposed the same wording does: it '
+                + 'ships unjudged. The table says nothing about them either way, and more slices are what would.',
               `  slice 1: 1 judged round; ${WRITER} 1/1 over 1`,
             ],);
           },

@@ -195,12 +195,12 @@ export type AdvisorOpaqueSessionEntry = {
    */
   readonly type:
     | 'thinking_level_change'
-    | 'model_change'
-    | 'usage'
-    | 'custom'
-    | 'context_edit'
-    | 'label'
-    | 'session_info';
+      | 'model_change'
+      | 'usage'
+      | 'custom'
+      | 'context_edit'
+      | 'label'
+      | 'session_info';
 };
 
 /**
@@ -215,10 +215,10 @@ export type AdvisorOpaqueSessionEntry = {
  */
 export type AdvisorSessionEntry =
   | AdvisorMessageSessionEntry
-  | AdvisorCompactionSessionEntry
-  | AdvisorBranchSummarySessionEntry
-  | AdvisorCustomMessageSessionEntry
-  | AdvisorOpaqueSessionEntry;
+    | AdvisorCompactionSessionEntry
+    | AdvisorBranchSummarySessionEntry
+    | AdvisorCustomMessageSessionEntry
+    | AdvisorOpaqueSessionEntry;
 
 /**
  Extension-injected custom message the filter forwards to the LLM seam.
@@ -350,10 +350,10 @@ export type AdvisorOpaqueAgentMessage = {
  */
 export type AdvisorAgentMessage =
   | Message
-  | AdvisorCustomAgentMessage
-  | AdvisorBranchSummaryAgentMessage
-  | AdvisorCompactionSummaryAgentMessage
-  | AdvisorOpaqueAgentMessage;
+    | AdvisorCustomAgentMessage
+    | AdvisorBranchSummaryAgentMessage
+    | AdvisorCompactionSummaryAgentMessage
+    | AdvisorOpaqueAgentMessage;
 
 /**
  Transcript serialization seam: host LLM conversion, serialization, and
@@ -424,12 +424,12 @@ export type AdvisorTranscript = AdvisorTranscriptSerialization & {
  */
 export type AdvisorThemeColor =
   | 'accent'
-  | 'dim'
-  | 'error'
-  | 'success'
-  | 'toolOutput'
-  | 'toolTitle'
-  | 'warning';
+    | 'dim'
+    | 'error'
+    | 'success'
+    | 'toolOutput'
+    | 'toolTitle'
+    | 'warning';
 
 /**
  Theme port: the styling surface plain-text renderers call.

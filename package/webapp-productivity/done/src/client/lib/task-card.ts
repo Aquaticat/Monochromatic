@@ -165,7 +165,7 @@ class TaskCard extends HTMLElement {
         class: 'chips',
         children: chipElements,
       },),
-    );
+      );
   }
 }
 
@@ -234,7 +234,7 @@ export function formatRunningTrackedTime(task: Task,): string {
     0,
     Math.floor((Date.now()
       - Date
-      .parse(task.timerStartedAt,)) / MS_PER_SECOND,),
+        .parse(task.timerStartedAt,)) / MS_PER_SECOND,),
   );
   return formatTrackedTime(task.trackedTime
     + elapsedSeconds,);

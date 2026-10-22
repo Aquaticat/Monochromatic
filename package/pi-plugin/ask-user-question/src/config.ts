@@ -131,7 +131,7 @@ export async function loadAskUserQuestionConfig(
    */
   const home = options.home
     ?? process.env
-    .HOME
+      .HOME
     ?? homedir();
   /**
    User config path.

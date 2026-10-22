@@ -84,10 +84,10 @@ function parseLine(line: string,): readonly [
  */
 export const ICON_CODEPOINTS: Readonly<Record<string, string>> = Object
   .fromEntries(
-    raw
-      .trim()
-      .split('\n',)
-      .map(function parseEachLine(line,) {
-        return parseLine(line,);
-      },),
+  raw
+    .trim()
+    .split('\n',)
+    .map(function parseEachLine(line,) {
+      return parseLine(line,);
+    },),
   );

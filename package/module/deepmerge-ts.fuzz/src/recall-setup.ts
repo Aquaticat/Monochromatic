@@ -97,7 +97,7 @@ async function capture(
     function collect(chunk: Buffer,) {
       chunks.push(chunk,);
     },
-  );
+    );
   /**
    Exit code and signal once the command closed.
    */

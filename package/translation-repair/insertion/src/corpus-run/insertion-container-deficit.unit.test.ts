@@ -291,7 +291,7 @@ await describe({
             expect([...deficit.positions,],).toEqual([2,],);
             expect(deficit.findings,).toEqual([
               'insertion-container-deficit-admitted (slice 2 inside details of slices 0 to 3: the original writes '
-              + '4 blocks there, the archive 3)',
+                + '4 blocks there, the archive 3)',
             ],);
           },
         },),
@@ -442,7 +442,7 @@ await describe({
             expect([...deficit.positions,],).toEqual([2,],);
             expect(deficit.findings,).toEqual([
               'insertion-container-deficit-admitted (slice 2 inside details of slices 0 to 3: the original writes '
-              + '4 blocks there, the archive 3)',
+                + '4 blocks there, the archive 3)',
             ],);
           },
         },),

@@ -76,17 +76,17 @@ export type PromisifiedCall<Args extends readonly unknown[]> = {
 export type Promisify<
   Args extends readonly unknown[],
   GenericOptions extends PromisifyOptions<readonly unknown[], readonly unknown[], boolean, boolean>,
-> = (
-  call: PromisifiedCall<DropLastArrayElement<Args>>,
-) => LastArrayElement<Args> extends (...callbackResults: infer CallbackResults) => unknown
-  ? CallbackResults extends [infer SingleCallbackArg]
-    ? GenericOptions extends { errorFirst: true } ? Promise<unknown> : Promise<SingleCallbackArg>
-    : Promise<
-      GenericOptions extends { multiArgs: false }
-        ? LastArrayElement<CallbackResults>
-        : CallbackResults
-    >
-  : Promise<unknown>;
+  > = (
+    call: PromisifiedCall<DropLastArrayElement<Args>>,
+  ) => LastArrayElement<Args> extends (...callbackResults: infer CallbackResults) => unknown
+    ? CallbackResults extends [infer SingleCallbackArg]
+      ? GenericOptions extends { errorFirst: true } ? Promise<unknown> : Promise<SingleCallbackArg>
+      : Promise<
+        GenericOptions extends { multiArgs: false }
+          ? LastArrayElement<CallbackResults>
+          : CallbackResults
+        >
+    : Promise<unknown>;
 
 /**
  Runtime shape of one promisified wrapper: the precise result typing lives in

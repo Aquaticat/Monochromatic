@@ -331,8 +331,8 @@ await describe({
             ] as const;
             expect(
               Object.fromEntries(phases.map(function benchesOf(phase,) {
-              return [phase, phaseBenches({ phase, },),];
-            },),),
+                return [phase, phaseBenches({ phase, },),];
+              },),),
             ).toEqual({
               preparation: ['wide',],
               pictures: ['readers',],

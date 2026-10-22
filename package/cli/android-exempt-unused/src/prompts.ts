@@ -149,7 +149,7 @@ export async function confirmApply({ changes, }: { readonly changes: Changes; },
   const total = changes.toExempt
     .length
     + changes.toRevert
-    .length;
+      .length;
   /**
    User's choice, or clack's cancel sentinel.
    */

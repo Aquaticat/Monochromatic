@@ -39,7 +39,7 @@ export type NodeKind = 'array' | 'map' | 'record' | 'set';
  */
 export type EntryTarget =
   | { readonly leaf: unknown; }
-  | { readonly node: number; };
+    | { readonly node: number; };
 
 /**
  One node entry; `key` is ignored by arrays and Sets.
@@ -122,8 +122,8 @@ function leafOf(exoticLeaves: boolean,): Arbitrary<unknown> {
           max: 2,
         },)
           .map(function toDate(offset,) {
-          return new Date(offset,);
-        },),
+            return new Date(offset,);
+          },),
       ]
       : []),
   );
@@ -150,78 +150,78 @@ export function graphSpecArbitrary(options: GraphOptions,): Arbitrary<GraphSpec>
     /**
      Entry target: a leaf, or any node of this graph.
      */
-    const target: Arbitrary<EntryTarget> = oneof(
-      leafOf(options.exoticLeaves,)
-        .map(function asLeaf(leaf,) {
-        return { leaf, };
-      },),
-      integer({
-        min: 0,
-        max: size - 1,
-      },)
-        .map(function asNode(node,) {
-        return { node, };
-      },),
-    );
-    /**
-     Node generator; the first node is forced to a record when roots must be.
-     */
-    const node = record({
-      kind: constantFrom<NodeKind>(
-        'record',
-        'record',
-        'array',
-        'set',
-        'map',
-      ),
-      entries: array(
-        record({
-          key: constantFrom(
-            'a',
-            'b',
-            'c',
-          ),
-          target,
-        },),
-        { maxLength: MAX_ENTRIES, },
-      ),
-    },);
-    return tuple(
-      array(
-        node,
-        {
-          minLength: size,
-          maxLength: size,
-        },
-      ),
-      array(
+      const target: Arbitrary<EntryTarget> = oneof(
+        leafOf(options.exoticLeaves,)
+          .map(function asLeaf(leaf,) {
+            return { leaf, };
+          },),
         integer({
           min: 0,
           max: size - 1,
-        },),
-        {
-          minLength: 1,
-          maxLength: MAX_ROOTS,
-        },
-      ),
-    )
-      .map(function toSpec([nodes, roots,],) {
-      return {
-        nodes: options.recordRoots
-          ? nodes.map(function recordsOnly(entry: {
-            readonly kind: NodeKind;
-            readonly entries: readonly NodeEntry[]
-          },) {
-            return {
-              ...entry,
-              kind: 'record' as const,
-            };
-          },)
-          : nodes,
-        roots,
-      };
+        },)
+          .map(function asNode(node,) {
+            return { node, };
+          },),
+      );
+    /**
+     Node generator; the first node is forced to a record when roots must be.
+     */
+      const node = record({
+        kind: constantFrom<NodeKind>(
+          'record',
+          'record',
+          'array',
+          'set',
+          'map',
+        ),
+        entries: array(
+          record({
+            key: constantFrom(
+              'a',
+              'b',
+              'c',
+            ),
+            target,
+          },),
+          { maxLength: MAX_ENTRIES, },
+        ),
+      },);
+      return tuple(
+        array(
+          node,
+          {
+            minLength: size,
+            maxLength: size,
+          },
+        ),
+        array(
+          integer({
+            min: 0,
+            max: size - 1,
+          },),
+          {
+            minLength: 1,
+            maxLength: MAX_ROOTS,
+          },
+        ),
+      )
+        .map(function toSpec([nodes, roots,],) {
+          return {
+            nodes: options.recordRoots
+              ? nodes.map(function recordsOnly(entry: {
+                readonly kind: NodeKind;
+                readonly entries: readonly NodeEntry[]
+              },) {
+                return {
+                  ...entry,
+                  kind: 'record' as const,
+                };
+              },)
+              : nodes,
+            roots,
+          };
+        },);
     },);
-  },);
 }
 
 /**
@@ -243,14 +243,14 @@ export function materialize(spec: GraphSpec,): readonly unknown[] {
    */
   const containers: readonly object[] = spec.nodes
     .map(function emptyOf(node,) {
-    if (node.kind === 'array')
-      return [];
-    if (node.kind === 'set')
-      return new Set();
-    if (node.kind === 'map')
-      return new Map();
-    return {};
-  },);
+      if (node.kind === 'array')
+        return [];
+      if (node.kind === 'set')
+        return new Set();
+      if (node.kind === 'map')
+        return new Map();
+      return {};
+    },);
   for (const [index, node,] of spec.nodes
     .entries()) {
     /**
@@ -288,6 +288,6 @@ export function materialize(spec: GraphSpec,): readonly unknown[] {
   }
   return spec.roots
     .map(function rootOf(root,) {
-    return containers[root];
-  },);
+      return containers[root];
+    },);
 }

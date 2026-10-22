@@ -12,7 +12,7 @@ const captures = Object.fromEntries(['inner', 'cover'].map(panel => [panel,
     const png = readFileSync(join(render, name));
     const size = panel === 'inner' ? [2076, 2152] : [1080, 2424];
     if (png.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
-        png.readUInt32BE(16) !== size[0] || png.readUInt32BE(20) !== size[1]) {
+      png.readUInt32BE(16) !== size[0] || png.readUInt32BE(20) !== size[1]) {
       throw new Error(`${name}: wrong physical Fold panel or non-PNG evidence`);
     }
     return [variant, `data:image/png;base64,${png.toString('base64')}`];
@@ -30,7 +30,7 @@ if (command === 'build') {
   const begin = html.indexOf('const captures = ');
   const end = html.indexOf(';\nconst controls = ', begin);
   if (begin < 0 || end < 0 ||
-      JSON.stringify(JSON.parse(html.slice(begin + 'const captures = '.length, end))) !== JSON.stringify(captures)) {
+    JSON.stringify(JSON.parse(html.slice(begin + 'const captures = '.length, end))) !== JSON.stringify(captures)) {
     throw new Error('Embedded word-boundary frames differ from native sanitized evidence.');
   }
   for (const marker of ['D59', 'D60', 'D61', 'D62', 'Scamper', 'Dreamcam',
@@ -39,7 +39,7 @@ if (command === 'build') {
     if (!html.includes(marker)) throw new Error(`Word-boundary review missing ${marker}`);
   }
   if (html.includes('__WORD_BOUNDARY_CAPTURES__') || html.includes('<script src=') ||
-      html.includes('<link rel="stylesheet"')) {
+    html.includes('<link rel="stylesheet"')) {
     throw new Error('Word-boundary review must be self-contained.');
   }
   console.log('Validated archived native word-boundary exploration without an active choice.');

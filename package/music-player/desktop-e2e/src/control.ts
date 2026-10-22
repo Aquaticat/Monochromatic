@@ -144,11 +144,11 @@ export function chordCommands(
     },),
     ...mods.toReversed()
       .map(function releaseMod(mod,): string {
-      return keyCommand({
-        key: mod,
-        action: 'release',
-      },);
-    },),
+        return keyCommand({
+          key: mod,
+          action: 'release',
+        },);
+      },),
   ];
 }
 

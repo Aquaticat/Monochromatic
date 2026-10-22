@@ -99,16 +99,16 @@ export function scoreModelSpeed(
   return signals
     .tokens
     .reduce(
-      function maxSignalScore(
+    function maxSignalScore(
+      currentScore,
+      signal,
+    ) {
+      return Math.max(
         currentScore,
-        signal,
-      ) {
-        return Math.max(
-          currentScore,
-          speedSignalScore(signal,),
-        );
-      },
-      NO_SPEED_SCORE,
+        speedSignalScore(signal,),
+      );
+    },
+    NO_SPEED_SCORE,
     );
 }
 

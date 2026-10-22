@@ -36,9 +36,9 @@ export function makeEnglishSentenceRenderer<
   S extends string,
   V extends string,
   N extends string,
->(
+  >(
   deps: SentenceDeps<S, V, N>,
-): (sentence: Sentence<S, V, N>,) => string {
+  ): (sentence: Sentence<S, V, N>,) => string {
   /**
    Dispatches a wh-question by slot.
    

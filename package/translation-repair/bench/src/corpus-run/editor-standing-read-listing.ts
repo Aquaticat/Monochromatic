@@ -127,7 +127,7 @@ export async function standingArtifactPaths(
     paths: [],
     said: [
       `editor-standing-read: no artifacts under ${path} (${under.reason} on `
-      + `${ARTIFACTS_DIR}/, ${flat.reason} on the directory itself)`,
+        + `${ARTIFACTS_DIR}/, ${flat.reason} on the directory itself)`,
     ],
   };
 }

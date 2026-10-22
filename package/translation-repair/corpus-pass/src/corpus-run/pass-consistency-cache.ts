@@ -165,7 +165,7 @@ function carriesGather({ value, }: { readonly value: Readonly<Record<string, unk
       >= value.quorum)
     && isJsonArray(value.findings,)
     && value.findings
-    .every(function isFinding(finding,): boolean {
+      .every(function isFinding(finding,): boolean {
         return (typeof finding) === 'string';
       },);
 }
@@ -296,21 +296,21 @@ export function consistencyKey(
 ): string {
   return createHash('sha256',)
     .update(
-      JSON.stringify({
-        version: CONSISTENCY_CACHE_VERSION,
-        stage,
-        sheet: hashContent({ content: JSON.stringify(messages,), },),
-        roster: modelIds,
-        ...((lifeEnded === true)
-          ? {
-            tense: [
-              'life-ended',
-              subjectNames ?? [],
-            ],
-          }
-          : {}),
-      },),
-      'utf8',
+    JSON.stringify({
+      version: CONSISTENCY_CACHE_VERSION,
+      stage,
+      sheet: hashContent({ content: JSON.stringify(messages,), },),
+      roster: modelIds,
+      ...((lifeEnded === true)
+        ? {
+          tense: [
+            'life-ended',
+            subjectNames ?? [],
+          ],
+        }
+        : {}),
+    },),
+    'utf8',
     )
     .digest('hex',);
 }

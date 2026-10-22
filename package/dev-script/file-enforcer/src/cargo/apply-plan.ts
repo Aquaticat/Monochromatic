@@ -153,16 +153,16 @@ export function applyCargoPlan(
    */
   const edited = plan.enforcements
     .reduce(
-      function fold(
-        edit,
-        enforcement,
-      ): TomlEditState {
+    function fold(
+      edit,
+      enforcement,
+    ): TomlEditState {
       return applyEnforcement({
         edit,
         enforcement,
       },);
     },
-      original,
+    original,
     );
   /**
    Serialized body before any block append.

@@ -178,8 +178,8 @@ export function analyzerDigest(): string {
       join(
         analyzerPackageRoot(
           fileURLToPath(import.meta.resolve(
-          '@monochromatic-dev/oxlint-plugin-shared/ts',
-        ),),
+            '@monochromatic-dev/oxlint-plugin-shared/ts',
+          ),),
         ),
         'src',
       ),

@@ -295,7 +295,7 @@ export async function runShard(): Promise<void> {
 const isDirectEntrypoint = (process.argv[1] !== undefined)
   && (import.meta.url
     === pathToFileURL(process.argv[1],)
-    .href);
+      .href);
 
 if (isDirectEntrypoint)
   await runShard();

@@ -125,11 +125,11 @@ await describe({
           .map(function toRendering(candidate,): string {
             return candidate.rendered;
           },),).toEqual([
-          'The cat naps.',
-          REPAIR_TEXT,
-          TRANSLATE_TEXT,
-          'The cat sleeps by the window.',
-        ],);
+            'The cat naps.',
+            REPAIR_TEXT,
+            TRANSLATE_TEXT,
+            'The cat sleeps by the window.',
+          ],);
         expect(set.candidates[1]?.producer,).toEqual({
           kind: 'lane',
           lane: 'repair',

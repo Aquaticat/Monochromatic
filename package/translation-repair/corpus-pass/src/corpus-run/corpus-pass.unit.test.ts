@@ -169,8 +169,8 @@ await describe({
             expect(run.code,).toBe(REFUSED_AS_STATED,);
             expect(run.stdout,).toBe([
               'ONLY mittens,tabby (chosen by hand in place of every pending pair at the pin; those still pending '
-              + 'run in the pass\'s own order; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
-              + 'entry never enters a pool later draws treat as natural accumulation)',
+                + 'run in the pass\'s own order; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
+                + 'entry never enters a pool later draws treat as natural accumulation)',
               [
                 `INCOMPLETE mittens: target page absent at the pin (corpus read failed for ${clone.commitSha}:`,
                 'people/mittens/page.en.md (missing-object); the commit has no such path: ',
@@ -181,20 +181,20 @@ await describe({
                 hardMs: 90_000,
               },),
               'CAP OVERRIDDEN by TRANSLATION_REPAIR_HARD_CAP_MINUTES: entries run under 1.5 minutes rather '
-              + 'than the built-in 420',
+                + 'than the built-in 420',
               'SPEND CEILING OVERRIDDEN by TRANSLATION_REPAIR_RUN_SPEND_CEILING_USD: new entries stop once '
-              + 'this run has spent 5 USD on openrouter rather than the built-in 20',
+                + 'this run has spent 5 USD on openrouter rather than the built-in 20',
               'STRAGGLER GRACE OVERRIDDEN by TRANSLATION_REPAIR_STRAGGLER_GRACE_MS: rounds abandon stragglers '
-              + '90000ms after quorum rather than the built-in 120000ms',
+                + '90000ms after quorum rather than the built-in 120000ms',
               'WRITER GRACE OVERRIDDEN by TRANSLATION_REPAIR_WRITER_GRACE_MS: writer rounds (editor, refiner, '
-              + 'translate, produceConsolidations, archive-block-review) abandon stragglers 60000ms after quorum rather than the '
-              + '90000ms every other round waits',
+                + 'translate, produceConsolidations, archive-block-review) abandon stragglers 60000ms after quorum rather than the '
+                + '90000ms every other round waits',
               pinLine({ clone, },),
               'CAP TOO TIGHT: an attempt runs 90000ms, which is not longer than the 360000ms one model '
-              + 'exchange is allowed. Attempts are cut before an exchange can return, so no slice caches, every '
-              + 'attempt reports no progress, and the queue drops the entry as stalled after its second try. '
-              + 'Raise the ceiling above one exchange to buy anything, or keep it here to exercise the stall '
-              + 'path deliberately.',
+                + 'exchange is allowed. Attempts are cut before an exchange can return, so no slice caches, every '
+                + 'attempt reports no progress, and the queue drops the entry as stalled after its second try. '
+                + 'Raise the ceiling above one exchange to buy anything, or keep it here to exercise the stall '
+                + 'path deliberately.',
               ...PROVIDERS_OFF_LINES,
               '',
             ].join('\n',),);
@@ -224,7 +224,7 @@ await describe({
             expect(run.stdout,).toBe('',);
             expect(run.stderr,).toBe(
               'corpus-pass: --bogus is not a flag this command reads. Usage: corpus-pass [--only <entry ids>] '
-              + '[--require-providers <providers of neuralwatt, synthetic, bedrock, hyper, openrouter>] [--plan]\n',
+                + '[--require-providers <providers of neuralwatt, synthetic, bedrock, hyper, openrouter>] [--plan]\n',
             );
           },
         },),
@@ -253,8 +253,8 @@ await describe({
             expect(run.code,).toBe(REFUSED_AS_STATED,);
             expect(run.stdout,).toBe(
               'ONLY nobody (chosen by hand in place of every pending pair at the pin; if still pending it runs in '
-              + 'the pass\'s own order; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
-              + 'entry never enters a pool later draws treat as natural accumulation)\n',
+                + 'the pass\'s own order; run this into a throwaway TRANSLATION_REPAIR_RUNS_DIR so a hand-picked '
+                + 'entry never enters a pool later draws treat as natural accumulation)\n',
             );
             expect(run.stderr,).toBe(
               'corpus-pass: --only asks for "nobody", which the corpus at the pin does not hold\n',
@@ -298,18 +298,18 @@ await describe({
             expect(run.stdout,).toBe('',);
             expect(run.stderr,).toBe(
               `corpus-pass: Another pass is running in ${runs.path}.\n`
-              + `  process ${String(holder.pid,)}, since ${holder.startedAt}\n`
-              + '\n'
-              + 'Two passes sharing one runs directory do not conflict loudly. They\n'
-              + 'overwrite each other\'s attempt counts, delete each other\'s cached\n'
-              + 'slices whenever their pipelines differ, and the later write of any\n'
-              + 'entry simply replaces the earlier one. Every one of those looks like\n'
-              + 'ordinary output.\n'
-              + '\n'
-              + 'Point this run at another directory with TRANSLATION_REPAIR_RUNS_DIR,\n'
-              + 'or stop the other pass. A lock whose process is gone is taken over\n'
-              + 'automatically. It names a process running now that started when the lock was taken, so the '
-              + 'holder is alive.\n',
+                + `  process ${String(holder.pid,)}, since ${holder.startedAt}\n`
+                + '\n'
+                + 'Two passes sharing one runs directory do not conflict loudly. They\n'
+                + 'overwrite each other\'s attempt counts, delete each other\'s cached\n'
+                + 'slices whenever their pipelines differ, and the later write of any\n'
+                + 'entry simply replaces the earlier one. Every one of those looks like\n'
+                + 'ordinary output.\n'
+                + '\n'
+                + 'Point this run at another directory with TRANSLATION_REPAIR_RUNS_DIR,\n'
+                + 'or stop the other pass. A lock whose process is gone is taken over\n'
+                + 'automatically. It names a process running now that started when the lock was taken, so the '
+                + 'holder is alive.\n',
             );
           },
         },),
@@ -382,7 +382,7 @@ await describe({
             ].join('\n',),);
             expect(run.stderr,).toBe(
               'corpus-pass: --require-providers accepts only neuralwatt, synthetic, bedrock, hyper, openrouter, and "foo" '
-              + 'is none of them\n',
+                + 'is none of them\n',
             );
           },
         },),
@@ -409,7 +409,7 @@ await describe({
             expect(run.stdout,).toBe('',);
             expect(run.stderr,).toBe(
               'corpus-pass: TRANSLATION_REPAIR_STRAGGLER_GRACE_MS must be a whole number of milliseconds from 1 '
-              + 'to 2147483647, and "abc" is not; leave it unset to run under the built-in window\n',
+                + 'to 2147483647, and "abc" is not; leave it unset to run under the built-in window\n',
             );
             /**
              Where the lock would stand had the pass claimed the directory.

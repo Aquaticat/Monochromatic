@@ -37,14 +37,14 @@ export type RoundLineQuorum =
      */
     readonly inGraceMs: number;
   }
-  | {
-    readonly kind: 'never';
+    | {
+      readonly kind: 'never';
 
     /**
      Voices the round needed and never heard enough of.
      */
-    readonly needed: number;
-  };
+      readonly needed: number;
+    };
 
 /**
  Builds the line a round logs about itself once it closes: the ratio heard,

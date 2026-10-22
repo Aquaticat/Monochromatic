@@ -243,9 +243,9 @@ await describe({
              What the report printed, the code it returned and the code it left.
              */
             const captured = await reportedByMeters({
-          sinon: ctx.sinon,
-          typed: [bare,],
-        },);
+              sinon: ctx.sinon,
+              typed: [bare,],
+            },);
 
             expect(captured,).toEqual({
               lines: [
@@ -279,9 +279,9 @@ await describe({
              What the report printed, the code it returned and the code it left.
              */
             const captured = await reportedByMeters({
-          sinon: ctx.sinon,
-          typed: [cut,],
-        },);
+              sinon: ctx.sinon,
+              typed: [cut,],
+            },);
 
             expect(captured,).toEqual({
               lines: [
@@ -315,9 +315,9 @@ await describe({
              What the report printed, the code it returned and the code it left.
              */
             const captured = await reportedByMeters({
-          sinon: ctx.sinon,
-          typed: [log,],
-        },);
+              sinon: ctx.sinon,
+              typed: [log,],
+            },);
 
             expect({
               returned: captured.returned,
@@ -390,9 +390,9 @@ await describe({
              What the report printed, the code it returned and the code it left.
              */
             const captured = await reportedByMeters({
-          sinon: ctx.sinon,
-          typed: [wet, dry,],
-        },);
+              sinon: ctx.sinon,
+              typed: [wet, dry,],
+            },);
 
             expect(captured.lines.at(0,),).toBe('meter-report: logs=2 readings=2 unread=0',);
             expect(captured.lines.includes('\nbedrock: wet=1 dry=1 unreadable=0',),).toBe(true,);
@@ -419,9 +419,9 @@ await describe({
              What the report printed, the code it returned and the code it left.
              */
             const captured = await reportedByMeters({
-          sinon: ctx.sinon,
-          typed: [log, log,],
-        },);
+              sinon: ctx.sinon,
+              typed: [log, log,],
+            },);
 
             expect(captured.lines.at(0,),).toBe('meter-report: logs=2 readings=1 unread=0',);
           },
@@ -459,7 +459,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(StatedRefusalError,);
             expect(String(refusal,),).toBe(
               `StatedRefusalError: the log ${missing} could not be read (ENOENT), so nothing was counted. `
-              + 'Name a log a pass, probe or calibration wrote, by a path that exists.',
+                + 'Name a log a pass, probe or calibration wrote, by a path that exists.',
             );
           },
         },),

@@ -19,13 +19,13 @@
  */
 export type TaggedType =
   | 'string'
-  | 'integer'
-  | 'float'
-  | 'bool'
-  | 'datetime'
-  | 'datetime-local'
-  | 'date-local'
-  | 'time-local';
+    | 'integer'
+    | 'float'
+    | 'bool'
+    | 'datetime'
+    | 'datetime-local'
+    | 'date-local'
+    | 'time-local';
 
 /**
  Tagged scalar: a leaf value carrying its TOML type and a string payload.
@@ -47,8 +47,8 @@ export type TaggedValue = {
  */
 export type TaggedTree =
   | TaggedValue
-  | readonly TaggedTree[]
-  | { readonly [key: string]: TaggedTree; };
+    | readonly TaggedTree[]
+    | { readonly [key: string]: TaggedTree; };
 
 /**
  `toml-eslint-parser` scalar `kind` names, narrowed to the value kinds.
@@ -58,13 +58,13 @@ export type TaggedTree =
  */
 export type TomlValueKind =
   | 'string'
-  | 'integer'
-  | 'float'
-  | 'boolean'
-  | 'offset-date-time'
-  | 'local-date-time'
-  | 'local-date'
-  | 'local-time';
+    | 'integer'
+    | 'float'
+    | 'boolean'
+    | 'offset-date-time'
+    | 'local-date-time'
+    | 'local-date'
+    | 'local-time';
 
 /**
  Parser `kind` to toml-test `type`.

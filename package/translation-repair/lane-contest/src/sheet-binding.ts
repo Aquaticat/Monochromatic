@@ -22,10 +22,10 @@ import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-gloss
  */
 type SheetMismatchKind =
   | 'corpus-pin'
-  | 'digest'
-  | 'manifest-only-digest'
-  | 'seed'
-  | 'sheet-only-digest';
+    | 'digest'
+    | 'manifest-only-digest'
+    | 'seed'
+    | 'sheet-only-digest';
 
 /**
  Which sheet a refusal speaks of, a literal each scorer writes.
@@ -106,11 +106,11 @@ export class SheetBindingError extends StatedRefusalError {
         readonly sheetPath: string;
         readonly manifestPath: string;
       }
-      | {
-        readonly kind: 'no-seed';
-        readonly sheetLabel: SheetLabel;
-        readonly sheetPath: string;
-      },
+        | {
+          readonly kind: 'no-seed';
+          readonly sheetLabel: SheetLabel;
+          readonly sheetPath: string;
+        },
   ) {
     super({
       says: (fault.kind === 'no-seed')
@@ -133,7 +133,7 @@ export class SheetBindingError extends StatedRefusalError {
  */
 export type SheetBindingStrength =
   | 'digest'
-  | 'header-only';
+    | 'header-only';
 
 /**
  Refuses a sheet and manifest that do not describe one draw.
@@ -299,7 +299,7 @@ export function requireSheetSeed(
  */
 export const HEADER_ONLY_BINDING_NOTE: string =
   'NOTE sheet and manifest agree on seed and corpus pin, but one of them '
-  + 'carries no draw digest, so this join rests on the file names and the '
+    + 'carries no draw digest, so this join rests on the file names and the '
     + 'header rather than on the items. Draws taken before the digest existed '
     + 'read this way, and are scoreable; a NEW draw reading this way means the '
     + 'digest was dropped somewhere and the pairing is unproven.';

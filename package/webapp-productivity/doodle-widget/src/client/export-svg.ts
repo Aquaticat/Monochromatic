@@ -142,16 +142,16 @@ export function exportAsSvg(
     const d = stroke
       .points
       .map(
-        function formatPoint(
-          [nx, ny,]: NormalizedPoint,
-          index: number,
-        ): string {
+      function formatPoint(
+        [nx, ny,]: NormalizedPoint,
+        index: number,
+      ): string {
           /**
            First point opens the path with a move, later points draw lines.
            */
-          const cmd = index === 0 ? 'M' : 'L';
-          return `${cmd}${String(nx * cw,)},${String(ny * ch,)}`;
-        },
+        const cmd = index === 0 ? 'M' : 'L';
+        return `${cmd}${String(nx * cw,)},${String(ny * ch,)}`;
+      },
       )
       .join(' ',);
     path.setAttribute(
@@ -196,30 +196,30 @@ export function exportAsSvg(
       'x',
       String(overlayInfo.offsetX
         * exportScale,),
-    );
+      );
     overlayInfo.clone
       .setAttribute(
       'y',
       String(overlayInfo.offsetY
         * exportScale,),
-    );
+      );
     overlayInfo.clone
       .setAttribute(
       'width',
       String(overlayInfo.width
         * exportScale,),
-    );
+      );
     overlayInfo.clone
       .setAttribute(
       'height',
       String(overlayInfo.height
         * exportScale,),
-    );
+      );
     overlayInfo.clone
       .setAttribute(
       'style',
       'mix-blend-mode:multiply',
-    );
+      );
     svg.append(overlayInfo.clone,);
   }
   //endregion Background SVG

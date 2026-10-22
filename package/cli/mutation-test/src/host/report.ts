@@ -86,31 +86,31 @@ export function buildRunReport(options: {
   const totals = options.outcome
     .results
     .reduce(
-      function addResult(
-        accumulated,
-        result,
-      ): RunTotals {
-        return {
-          killed: accumulated.killed + (result.status === 'killed' ? 1 : 0),
-          survived: accumulated.survived + (result.status === 'survived' ? 1 : 0),
-          timeout: accumulated.timeout + (result.status === 'timeout' ? 1 : 0),
-          compileError: accumulated.compileError
-            + (result.status === 'compileError' ? 1 : 0),
-          runtimeError: accumulated.runtimeError
-            + (result.status === 'runtimeError' ? 1 : 0),
-          ignored: accumulated.ignored,
-        };
-      },
-      {
-        killed: 0,
-        survived: 0,
-        timeout: 0,
-        compileError: 0,
-        runtimeError: 0,
-        ignored: options.outcome
-          .ignored
-          .length,
-      },
+    function addResult(
+      accumulated,
+      result,
+    ): RunTotals {
+      return {
+        killed: accumulated.killed + (result.status === 'killed' ? 1 : 0),
+        survived: accumulated.survived + (result.status === 'survived' ? 1 : 0),
+        timeout: accumulated.timeout + (result.status === 'timeout' ? 1 : 0),
+        compileError: accumulated.compileError
+          + (result.status === 'compileError' ? 1 : 0),
+        runtimeError: accumulated.runtimeError
+          + (result.status === 'runtimeError' ? 1 : 0),
+        ignored: accumulated.ignored,
+      };
+    },
+    {
+      killed: 0,
+      survived: 0,
+      timeout: 0,
+      compileError: 0,
+      runtimeError: 0,
+      ignored: options.outcome
+        .ignored
+        .length,
+    },
     );
 
   return {

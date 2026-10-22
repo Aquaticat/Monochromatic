@@ -100,14 +100,14 @@ async function runSidecarFile(
     function collectStdout(chunk: Buffer,) {
       chunks.push(chunk,);
     },
-  );
+    );
   child.stderr
     .on(
     'data',
     function collectStderr(chunk: Buffer,) {
       chunks.push(chunk,);
     },
-  );
+    );
   /**
    Kill timer for a file the mutant made hang.
    */
@@ -178,16 +178,16 @@ export async function runSidecar(
     /**
      Outcomes this worker produced.
      */
-    const outcomes: FileOutcome[] = [];
-    for (let file = queue.shift(); file !== undefined; file = queue.shift()) {
+      const outcomes: FileOutcome[] = [];
+      for (let file = queue.shift(); file !== undefined; file = queue.shift()) {
       // oxlint-disable-next-line eslint/no-await-in-loop -- each worker runs its files one at a time; WORKERS bounds concurrency.
-      outcomes.push(await runSidecarFile({
-        file,
-        target,
-      },),);
-    }
-    return outcomes;
-  },
+        outcomes.push(await runSidecarFile({
+          file,
+          target,
+        },),);
+      }
+      return outcomes;
+    },
   ),);
   return perWorker.flat()
     .toSorted(function byFile(

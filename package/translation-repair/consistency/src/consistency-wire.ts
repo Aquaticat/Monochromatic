@@ -211,7 +211,7 @@ export function isConsistencyBallotWire(value: unknown,): value is ConsistencyBa
   return value.candidateQuotes
     .every(isConsistencyQuoteWire,)
     && value.keep
-    .every(function isLabel(entry,): boolean {
+      .every(function isLabel(entry,): boolean {
         return (typeof entry) === 'string';
       },);
 }
@@ -238,7 +238,7 @@ export function isConsistencyBallot(value: unknown,): value is ConsistencyBallot
   return value.quotes
     .every(isConsistencyQuoteWire,)
     && value.keep
-    .every(function isLabel(entry,): boolean {
+      .every(function isLabel(entry,): boolean {
         return (typeof entry) === 'string';
       },);
 }
@@ -526,9 +526,9 @@ export type ConsistencyEnglish =
      */
     readonly text: string;
   }
-  | {
+    | {
     /**
      The place's slice carries no English.
      */
-    readonly kind: 'absent';
-  };
+      readonly kind: 'absent';
+    };

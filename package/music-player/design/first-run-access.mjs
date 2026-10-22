@@ -14,7 +14,7 @@ const scenes = { declined: true, 'system-no-audio': false, 'folder-no-audio': fa
 const declinedActions = ['Allow access', 'Open a folder', 'Settings'];
 const withdrawn = 'choose whether to analyse';
 if (manifest.schema !== 2 || typeof manifest.analysisText !== 'string' || manifest.analysisText.length === 0 ||
-    manifest.analysisText.includes(withdrawn) || !Array.isArray(manifest.witnesses)) {
+  manifest.analysisText.includes(withdrawn) || !Array.isArray(manifest.witnesses)) {
   throw new Error('First-run review manifest is not the rebuilt study or still offers the withdrawn analysis choice.');
 }
 const images = {};
@@ -34,10 +34,10 @@ for (const capture of manifest.witnesses) {
   const crop = capture.cropPixels;
   // The status strip is removed and the navigation area kept, so the crop starts under the strip and ends at the panel's end.
   if (png.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
-      capture.physicalPixels[0] !== physicalWidth || capture.physicalPixels[1] !== physicalHeight ||
-      crop.x !== 0 || crop.width !== physicalWidth || !Number.isInteger(crop.y) || crop.y < 1 ||
-      crop.y + crop.height !== physicalHeight || png.readUInt32BE(16) !== crop.width || png.readUInt32BE(20) !== crop.height ||
-      capture.densityDpi !== 390 || capture.keyboardClosed !== true || capture.freshHierarchyValidated !== true) {
+    capture.physicalPixels[0] !== physicalWidth || capture.physicalPixels[1] !== physicalHeight ||
+    crop.x !== 0 || crop.width !== physicalWidth || !Number.isInteger(crop.y) || crop.y < 1 ||
+    crop.y + crop.height !== physicalHeight || png.readUInt32BE(16) !== crop.width || png.readUInt32BE(20) !== crop.height ||
+    capture.densityDpi !== 390 || capture.keyboardClosed !== true || capture.freshHierarchyValidated !== true) {
     throw new Error(`${file}: first-run image geometry or acquisition assertion differs.`);
   }
   for (let offset = 8; offset < png.length;) {
@@ -75,7 +75,7 @@ for (const panel of Object.keys(panels)) for (const scheme of ['light', 'dark'])
     throw new Error('First-run drag outcome and the hierarchy disagree about scrolling: ' + base);
   }
   if (end && (end.scrollProof?.appRgbChanged !== true || !Number.isFinite(end.scrollProof.verticalDisplacement) ||
-      end.scrollProof.verticalDisplacement === 0)) {
+    end.scrollProof.verticalDisplacement === 0)) {
     throw new Error('First-run end view lacks changed pixels and a displaced body: ' + base);
   }
   // The explanation may begin under the first view at large text; it must be drawn in one of the kept views.
@@ -115,8 +115,8 @@ if (process.argv[2] === 'build') {
   for (const scene of figured) if (!(scene in scenes)) throw new Error(`First-run review shows a figure for ${scene}, which is not an authored state.`);
   for (const scene of Object.keys(scenes)) if (!template.includes(`<figure data-scene="${scene}">`)) throw new Error(`First-run review shows no figure for ${scene}.`);
   if ((html.match(/<form\b/g) ?? []).length !== 1 ||
-      /__FIRST_RUN_REVIEW_IMAGES__|<script\b[^>]*\bsrc=|<link\b[^>]*\bhref=|<img\b[^>]*\bsrc="https?:/i.test(html) ||
-      /<input\b[^>]*\btype="radio"|name="placement"|name="visibility"|<textarea\b(?:[^"'<>]|"[^"]*"|'[^']*')*?\srequired(?:\s|=|>)/i.test(html)) {
+    /__FIRST_RUN_REVIEW_IMAGES__|<script\b[^>]*\bsrc=|<link\b[^>]*\bhref=|<img\b[^>]*\bsrc="https?:/i.test(html) ||
+    /<input\b[^>]*\btype="radio"|name="placement"|name="visibility"|<textarea\b(?:[^"'<>]|"[^"]*"|'[^']*')*?\srequired(?:\s|=|>)/i.test(html)) {
     throw new Error('First-run review must be self-contained evidence, not a policy ballot.');
   }
   console.log('Validated offline first-run review, optional observations and the absence of the withdrawn analysis choice.');

@@ -343,7 +343,7 @@ function kittenLanes(): DocumentLanesResult {
  */
 async function censusOverOneEntry(): Promise<
   Awaited<ReturnType<typeof collectTwoLaneShippedRegions>>
-> {
+  > {
   /**
    Throwaway pool holding exactly one artifact.
    */

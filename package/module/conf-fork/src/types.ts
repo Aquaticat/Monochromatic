@@ -240,21 +240,21 @@ export type DotNotationKeyOf<T extends Record<string, unknown>> = {
  ```
  */
 export type DotNotationValueOf<T extends Record<string, unknown>, K extends DotNotationKeyOf<T>> =
-	K extends `${infer Head}.${infer Tail}`
-		? Head extends keyof T
-			? T[Head] extends Record<string, unknown>
-				? Tail extends DotNotationKeyOf<T[Head]>
-					? DotNotationValueOf<T[Head], Tail>
-					: never
-				: Required<T>[Head] extends Record<string, unknown>
-					? Tail extends DotNotationKeyOf<Required<T>[Head]>
-						? DotNotationValueOf<Required<T>[Head], Tail> | undefined
-						: never
-					: never
-			: never
-		: K extends keyof T
-			? T[K]
-			: never;
+  K extends `${infer Head}.${infer Tail}`
+    ? Head extends keyof T
+      ? T[Head] extends Record<string, unknown>
+        ? Tail extends DotNotationKeyOf<T[Head]>
+          ? DotNotationValueOf<T[Head], Tail>
+          : never
+        : Required<T>[Head] extends Record<string, unknown>
+          ? Tail extends DotNotationKeyOf<Required<T>[Head]>
+            ? DotNotationValueOf<Required<T>[Head], Tail> | undefined
+            : never
+          : never
+      : never
+    : K extends keyof T
+      ? T[K]
+      : never;
 
 /* oxlint-enable no-restricted-syntax/no-nullish-union */
 
@@ -289,19 +289,19 @@ export type ImmutablePrimitives = Date | RegExp | URL | Error;
  ```
  */
 export type PartialObjectDeep<T> =
-	T extends ImmutablePrimitives
-		? T
-		: T extends Map<infer K, infer V>
-			? Map<PartialObjectDeep<K>, PartialObjectDeep<V>>
-			: T extends Set<infer U>
-				? Set<PartialObjectDeep<U>>
-				: T extends (infer U)[]
-					? PartialObjectDeep<U>[]
-					: T extends (...args: never[]) => unknown
-						? T
-						: T extends Record<string, unknown>
-							? {[K in keyof T]?: PartialObjectDeep<T[K]>}
-							: T;
+  T extends ImmutablePrimitives
+    ? T
+    : T extends Map<infer K, infer V>
+      ? Map<PartialObjectDeep<K>, PartialObjectDeep<V>>
+      : T extends Set<infer U>
+        ? Set<PartialObjectDeep<U>>
+        : T extends (infer U)[]
+          ? PartialObjectDeep<U>[]
+          : T extends (...args: never[]) => unknown
+            ? T
+            : T extends Record<string, unknown>
+              ? {[K in keyof T]?: PartialObjectDeep<T[K]>}
+              : T;
 
 /* oxlint-enable no-restricted-syntax/no-optional-escape */
 

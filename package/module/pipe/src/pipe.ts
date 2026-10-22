@@ -106,7 +106,7 @@ export function pipe<
   TStep7,
   TStep8,
   TStep9,
->(
+  >(
   args: {
     readonly fn1: SyncStep<TInput, TStep1>;
     readonly fn2: SyncStep<TStep1, TStep2>;
@@ -119,7 +119,7 @@ export function pipe<
     readonly fn9: SyncStep<TStep8, TStep9>;
     readonly l?: Logger;
   } & NoStepsAfter9,
-): (value: TInput,) => TStep9;
+  ): (value: TInput,) => TStep9;
 /**
  Creates a reusable synchronous left-to-right pipeline function, delegating
  each call to {@link runPipe}.

@@ -246,7 +246,7 @@ await describe({
                 constructionOutcome(function constructFork(): unknown {
                   return createQuickLru<string, string>(input as never,);
                 },),
-                )
+              )
                 .toBe(constructionOutcome(function constructUpstream(): unknown {
                   return new QuickLRUUpstream<string, string>(input as never,);
                 },),);

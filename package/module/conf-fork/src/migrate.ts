@@ -192,7 +192,7 @@ export function runMigrationSteps<T extends Record<string, unknown>>({
         versionToMigrate: projectVersion,
       },);
     },
-  );
+    );
   for (const version of newerVersions) {
     try {
       beforeEachMigration?.({

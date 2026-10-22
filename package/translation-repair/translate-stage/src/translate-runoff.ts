@@ -63,21 +63,21 @@ export type Runoff<ValueT,> =
      */
     readonly basis: RunoffBasis;
   }
-  | {
+    | {
     /**
      The challenge round offers the whole slate again.
      */
-    readonly kind: 'whole-slate';
+      readonly kind: 'whole-slate';
 
     /**
      Why nothing was narrowed: the judges rejected rather than tied, fewer
      than two candidates drew a ballot, or every candidate is a leader.
      */
-    readonly because:
-      | 'rejection'
-      | 'fewer-than-two-backed'
-      | 'every-candidate-backed';
-  };
+      readonly because:
+        | 'rejection'
+          | 'fewer-than-two-backed'
+          | 'every-candidate-backed';
+    };
 
 /**
  Leaders of an undecided round, when that leaves some of the slate behind:

@@ -411,8 +411,8 @@ await describe({
           targetText: '[Mimi](https://example.invalid/mimi) slept, and [Mimi](https://example.invalid/mimi) woke.',
         },)
           .slice(1,),).toEqual([
-          '- 咪咪 (link text, https://example.invalid/mimi): "Mimi"',
-        ],);
+            '- 咪咪 (link text, https://example.invalid/mimi): "Mimi"',
+          ],);
       },
     },),
     it({
@@ -435,8 +435,8 @@ await describe({
           targetText,
         },)
           .slice(1,),).toEqual([
-          '- 左右 (heading): "Conflict"',
-        ],);
+            '- 左右 (heading): "Conflict"',
+          ],);
         expect([...pairedPageNames({
           sourceText,
           targetText,

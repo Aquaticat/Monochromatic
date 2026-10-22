@@ -93,8 +93,8 @@ export function armOrderFor(
       ],),
     },)
       .slice(
-        0,
-        DIGEST_CHARS,
+      0,
+      DIGEST_CHARS,
       ),
     HEX,
   ) % TRIAL_ARM_SET.length;

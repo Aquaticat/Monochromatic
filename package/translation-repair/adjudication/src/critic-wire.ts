@@ -189,17 +189,17 @@ export type CriticIssueResolution =
      */
     readonly claim: IssueClaim;
   }
-  | {
+    | {
     /**
      Some step refused; the reason feeds the scorecard.
      */
-    readonly resolved: false;
+      readonly resolved: false;
 
     /**
      Which step failed and why, in scorecard-stable wording.
      */
-    readonly reason: string;
-  };
+      readonly reason: string;
+    };
 
 /**
  Resolves one wire issue into an anchored, validated claim.

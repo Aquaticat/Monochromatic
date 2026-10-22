@@ -176,11 +176,11 @@ export function topLevelPieces({
       end,
       at,
     ): string {
-    return text.slice(
-      (bounds[at] ?? NOT_FOUND) + 1,
-      end,
-    );
-  },);
+      return text.slice(
+        (bounds[at] ?? NOT_FOUND) + 1,
+        end,
+      );
+    },);
   return pieces
     .map(function trimmed(piece,): string {
       return piece.trim();

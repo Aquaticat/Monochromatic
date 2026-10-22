@@ -52,8 +52,8 @@ export function buildValue(
          @mutates el - Recursive build can invoke caller-owned AST hooks through `getStaticTOMLValue`.
          */
         function each(el: AST.TOMLContentNode,) {
-        return buildValue({ node: el, },);
-      },),
+          return buildValue({ node: el, },);
+        },),
       origin: {
         kind: 'clean',
         range: node.range,
@@ -67,8 +67,8 @@ export function buildValue(
       kind: 'inline-table',
       entries: node.body
         .map(function each(kv: AST.TOMLKeyValue,) {
-        return buildInlineKeyValue({ kv, },);
-      },),
+          return buildInlineKeyValue({ kv, },);
+        },),
       origin: {
         kind: 'clean',
         range: node.range,

@@ -74,15 +74,15 @@ const ISSUES = [
  */
 const TELEMETRY_LINES = [
   'PROBE entries=1 repairShippedRecords=3 repairUnprobedRecords=0 regions=3 majorityIntroduced=2 '
-  + 'minorityIntroduced=0 noneIntroduced=1',
+    + 'minorityIntroduced=0 noneIntroduced=1',
   'CLAIMS added=4 dropped=0 contradicted=0 unanchored=0 degradedRosterRegions=0',
   'REFINEMENT rewrittenSlices=0 majorityIntroduced=0 minorityIntroduced=0 noneIntroduced=0 added=0 '
-  + 'dropped=0 contradicted=0 unanchored=0',
+    + 'dropped=0 contradicted=0 unanchored=0',
   'ROSTER editorOffered=0 editorDegraded=0 editorSilent=0 refineOffered=0 refineDegraded=0 refineSilent=0 '
-  + 'entriesWithRewrites=1/1',
+    + 'entriesWithRewrites=1/1',
   'NOTE rewrittenSlices=0 means no artifact here carries a refinement audit. That is what artifacts written '
-  + 'before the lane was audited look like, and it is NOT evidence the lane rewrote nothing: read the ROSTER '
-  + 'line to tell the two apart.',
+    + 'before the lane was audited look like, and it is NOT evidence the lane rewrote nothing: read the ROSTER '
+    + 'line to tell the two apart.',
 ];
 
 /**
@@ -221,7 +221,7 @@ await describe({
           'POOL 1 entry across 1 pipeline generation',
           ...TELEMETRY_LINES,
           'NOTE majorityIntroduced counts regions a gate WOULD have blocked, not regions that were damaged. '
-          + 'Pass --repair-sheet PATH --manifest PATH to score it against the human grades.',
+            + 'Pass --repair-sheet PATH --manifest PATH to score it against the human grades.',
         ],);
       },
     },),
@@ -257,15 +257,15 @@ await describe({
         expect(printed.lines.slice(3,),).toStrictEqual([
           ...TELEMETRY_LINES,
           'NOTE sheet and manifest agree on seed and corpus pin, but one of them carries no draw digest, so this '
-          + 'join rests on the file names and the header rather than on the items. Draws taken before the digest '
-          + 'existed read this way, and are scoreable; a NEW draw reading this way means the digest was dropped '
-          + 'somewhere and the pairing is unproven.',
+            + 'join rests on the file names and the header rather than on the items. Draws taken before the digest '
+            + 'existed read this way, and are scoreable; a NEW draw reading this way means the digest was dropped '
+            + 'somewhere and the pairing is unproven.',
           'AGREEMENT joined=3 probeFlagged=2 refutedByHuman=1 sharedWithHuman=1 flaggedUnscored=0 '
-          + 'unflaggedFailures=1 refinedJoined=1',
+            + 'unflaggedFailures=1 refinedJoined=1',
           'NOTE refinedJoined counts positions where the naturalness lane rewrote the slice AFTER the probe ran. '
-          + 'There the probe judged the accuracy stage\'s wording while the repair sheet asked the human to grade '
-          + 'the RETURNED wording, so those rows compare two different texts and belong in neither column as '
-          + 'evidence about the probe. Read the other counts over the remaining 2.',
+            + 'There the probe judged the accuracy stage\'s wording while the repair sheet asked the human to grade '
+            + 'the RETURNED wording, so those rows compare two different texts and belong in neither column as '
+            + 'evidence about the probe. Read the other counts over the remaining 2.',
           CLEAN_NOTE,
         ],);
       },
@@ -316,7 +316,7 @@ await describe({
 
         expect(printed.lines.slice(-2,),).toStrictEqual([
           'AGREEMENT joined=1 probeFlagged=1 refutedByHuman=1 sharedWithHuman=0 flaggedUnscored=0 '
-          + 'unflaggedFailures=0 refinedJoined=0',
+            + 'unflaggedFailures=0 refinedJoined=0',
           CLEAN_NOTE,
         ],);
         expect(printed.lines.length,).toBe(10,);

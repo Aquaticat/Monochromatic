@@ -109,7 +109,7 @@ await describe({
     it({
       name:
         'POSITIVE CONTROL: a translation missing a whole section produces a candidate, so a lister that '
-        + 'always returned nothing would fail here rather than pass every case that expects nothing',
+          + 'always returned nothing would fail here rather than pass every case that expects nothing',
       fn: async () => {
         expect(candidatesFor({
           sourceText: SOURCE_TEXT,
@@ -121,8 +121,8 @@ await describe({
     it({
       name:
         'reports NOTHING when both sides carry the same sections and the same blocks, which is the path '
-        + 'most of the corpus takes: a pairing that covers everything leaves the coverage stage nothing '
-        + 'to ask about',
+          + 'most of the corpus takes: a pairing that covers everything leaves the coverage stage nothing '
+          + 'to ask about',
       fn: async () => {
         expect(candidatesFor({
           sourceText: SOURCE_TEXT,
@@ -134,7 +134,7 @@ await describe({
     it({
       name:
         'names the unpaired SECTION by its index and carries its whole text, heading included, since '
-        + 'what the coverage stage asks about is the passage rather than its position',
+          + 'what the coverage stage asks about is the passage rather than its position',
       fn: async () => {
         /**
          Section-scale candidates only, which is what this case is about.
@@ -155,8 +155,8 @@ await describe({
     it({
       name:
         'names an unpaired BLOCK inside a section that DID pair, with the pair it sits in, which is the '
-        + 'scale a section-only lister cannot see: both sides carry the section, and one paragraph of it '
-        + 'is missing',
+          + 'scale a section-only lister cannot see: both sides carry the section, and one paragraph of it '
+          + 'is missing',
       fn: async () => {
         /**
          Block-scale candidates only.
@@ -176,8 +176,8 @@ await describe({
     it({
       name:
         'reports NOTHING for a translation with no sections at all, rather than every section of the '
-        + 'original: an empty side is a document the pairing cannot speak about, and answering with the '
-        + 'whole original would report a coverage question about every passage at once',
+          + 'original: an empty side is a document the pairing cannot speak about, and answering with the '
+          + 'whole original would report a coverage question about every passage at once',
       fn: async () => {
         expect(candidatesFor({
           sourceText: SOURCE_TEXT,

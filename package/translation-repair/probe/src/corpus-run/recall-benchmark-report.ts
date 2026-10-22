@@ -51,17 +51,17 @@ export function recallStartLine(
    */
   const plannedSeeds = chosen
     .reduce(
-      function addSeeds(
-        sum: number,
-        entry: BenchmarkEntry,
-      ): number {
+    function addSeeds(
+      sum: number,
+      entry: BenchmarkEntry,
+    ): number {
         /**
          Seeds this entry plants.
          */
-        const { seeds, } = entry;
-        return sum + seeds.length;
-      },
-      0,
+      const { seeds, } = entry;
+      return sum + seeds.length;
+    },
+    0,
     );
 
   return `START tip=${tip} entries=${String(chosen.length,)} seeds=${String(plannedSeeds,)} `
@@ -213,7 +213,7 @@ export function recallScorecardLines(
   // identical, which is the failure this whole run keeps rediscovering.
   lines.push(
     `DERIVABILITY nonDerivable=${String(scorecard.nonDerivableSeeds,)} `
-    + `detectionExcludingUnfair=${
+      + `detectionExcludingUnfair=${
       scorecard.seedDetectionRateExcludingUnfair
         .toFixed(RATE_DECIMALS,)
     }`,

@@ -28,10 +28,10 @@ type PokeDelivery =
   | {
     readonly delivered: true;
   }
-  | {
-    readonly delivered: false;
-    readonly error: unknown;
-  };
+    | {
+      readonly delivered: false;
+      readonly error: unknown;
+    };
 
 //endregion Types
 

@@ -70,12 +70,12 @@ export type AskUserQuestionDetails =
      */
     readonly fullAnswerPath?: string;
   }
-  | {
+    | {
     /**
      User declined or answer helper disappeared.
      */
-    readonly status: 'cancelled';
-  };
+      readonly status: 'cancelled';
+    };
 
 //endregion Types
 

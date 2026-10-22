@@ -57,8 +57,8 @@ export function chunk<const T,>(options: {
     ): readonly T[] {
       return options.items
         .slice(
-          index * options.size,
-          (index + 1) * options.size,
+        index * options.size,
+        (index + 1) * options.size,
         );
     },
   );

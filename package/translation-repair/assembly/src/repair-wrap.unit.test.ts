@@ -306,8 +306,8 @@ await describe({
     it({
       name:
         'LEAVES A LINE-STRUCTURED SLICE EXACTLY AS PRODUCED, though the wrap would otherwise '
-        + 'change it. The line rule was handed to this producer and it obeyed; the wrap only ever '
-        + 'adds breaks, so running it here would break work every decider had already approved',
+          + 'change it. The line rule was handed to this producer and it obeyed; the wrap only ever '
+          + 'adds breaks, so running it here would break work every decider had already approved',
       fn: async () => {
         const wrapped = wrapRepairOutcomes({
           slices: [preparedPairAt({

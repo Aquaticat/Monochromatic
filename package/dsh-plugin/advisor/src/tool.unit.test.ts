@@ -34,7 +34,7 @@ function toolCallFixture(
   return {
     getConfig: () => Promise.resolve({} as Awaited<
       ReturnType<ExecuteDshAdvisorToolCallOptions['getConfig']>
-    >),
+      >),
     getSessionEnabled: () => !options.disabled,
     recordTranscriptDegradation: () => undefined,
     llm: {},

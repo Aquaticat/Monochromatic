@@ -40,7 +40,7 @@ function verifySessionStorage(): Promise<boolean> {
       .setItem(
       testKey,
       testValue,
-    );
+      );
     /**
      Probe value read back from storage; equality with `testValue` proves writes actually persist.
      */

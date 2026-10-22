@@ -197,8 +197,8 @@ export function switchToPage({
     return;
   if ((index < 0) || (index
     >= pagesState
-    .pages
-    .length))
+      .pages
+      .length))
     return;
   endStroke();
   saveCurrentPage({

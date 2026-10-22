@@ -115,8 +115,8 @@ export function selectApplyPlan({
    */
   const ordinaryIssues = plan.issues
     .filter(function isOrdinary(issue,): boolean {
-    return !issue.security;
-  },);
+      return !issue.security;
+    },);
   if (authority === 'non-security-only') {
     return {
       issues: ordinaryIssues,

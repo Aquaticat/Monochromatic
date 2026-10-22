@@ -50,7 +50,7 @@ export function serializePageData(data: unknown,): string {
     .replaceAll(
     '<',
     String.raw`\u003C`,
-  );
+    );
 }
 
 /**

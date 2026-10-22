@@ -404,8 +404,8 @@ function ownAssetUrl(element: DeepReadonly<Element>,): string | typeof NO_ASSET_
   if (
     (element.tagName
       === 'script')
-    || (element.tagName
-      === 'iframe')
+      || (element.tagName
+        === 'iframe')
       || (element.tagName
         === 'embed')
       || (element.tagName

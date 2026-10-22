@@ -120,7 +120,7 @@ await describe({
         it({
           name:
             'RECORDS the lane enough voices backed, naming it rather than leaving a reader to count the '
-            + 'ballots back up',
+              + 'ballots back up',
           fn: async () => {
             expect(describeContestSlice({
               sliceIndex: 3,
@@ -150,8 +150,8 @@ await describe({
         it({
           name:
             'SEPARATES a roster that heard enough voices and backed neither lane from one that went '
-            + 'unheard, since the stage answers `neither` for both and a reader counting refusals would '
-            + 'otherwise be counting silence',
+              + 'unheard, since the stage answers `neither` for both and a reader counting refusals would '
+              + 'otherwise be counting silence',
           fn: async () => {
             /**
              Enough voices, none of them carrying a lane.
@@ -184,7 +184,7 @@ await describe({
         it({
           name:
             'KEEPS THE BALLOTS on a verdict that ships nothing, which is exactly where a reader asking '
-            + 'why is looking',
+              + 'why is looking',
           fn: async () => {
             expect(describeContestSlice({
               sliceIndex: 0,
@@ -211,7 +211,7 @@ await describe({
         it({
           name:
             'NAMES ONLY the slices whose two lane wordings differ, since a contest between two identical '
-            + 'candidates has nothing to ask and no answer worth buying',
+              + 'candidates has nothing to ask and no answer worth buying',
           fn: async () => {
             expect(contestEligibleIndexes({
               comparison: [

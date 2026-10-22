@@ -913,7 +913,7 @@ await describe({
               },);
             expect(spent,).toEqual([
               `SPEND provider=openrouter model=${SEAT_HYPER_OPENROUTER_UNMEASURED_OPENROUTER_ID} prompt=342 completion=400 cost=0.5 `
-              + 'endpoint=Inceptron cached=128',
+                + 'endpoint=Inceptron cached=128',
             ],);
           },
         },),

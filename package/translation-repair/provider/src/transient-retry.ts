@@ -254,18 +254,18 @@ type ExchangeAttemptOutcome =
      */
     readonly reply: Awaited<ReturnType<ModelTransport>>;
   }
-  | {
+    | {
     /**
      The transport threw mid-exchange, e.g. a connection reset while
      draining the stream.
      */
-    readonly replied: false;
+      readonly replied: false;
 
     /**
      Failure normalized to an Error for rethrow and logging.
      */
-    readonly thrown: Error;
-  };
+      readonly thrown: Error;
+    };
 
 /**
  What the ladder hands a caller for one attempt that delivered something and

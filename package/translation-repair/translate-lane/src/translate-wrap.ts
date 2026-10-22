@@ -129,11 +129,11 @@ export function wrapTranslateRecords(
     // bytes.
     if (
       (incumbentText !== undefined)
-      && sameWording({
-        proposal: outputText,
-        standing: incumbentText,
-        lineStructured,
-      },)
+        && sameWording({
+          proposal: outputText,
+          standing: incumbentText,
+          lineStructured,
+        },)
     ) {
       counted.demoted += 1;
       return {

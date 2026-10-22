@@ -44,19 +44,19 @@ export type InsertionRefusal =
    Nothing pairs it, but the optimal alignments disagree about where it sits,
    so writing it in risks filing real content under the wrong section.
    */
-  | 'several-boundaries'
+    | 'several-boundaries'
   /**
    The page carries at least as much English as its source predicts, so it has
    no room to be missing anything and the aligner is likelier to have found a
    merge than an omission.
    */
-  | 'page-not-short'
+    | 'page-not-short'
   /**
    The page is short, but earlier sections already account for the whole
    shortfall, so writing this in as well would add more English than the page
    is missing.
    */
-  | 'beyond-shortfall';
+    | 'beyond-shortfall';
 
 /**
  What was decided about one untranslated source section.
@@ -78,22 +78,22 @@ export type InsertionPlacement =
      */
     readonly offset: number;
   }
-  | {
+    | {
     /**
      One of the signatures refused.
      */
-    readonly kind: 'unplaced';
+      readonly kind: 'unplaced';
 
     /**
      Section this describes.
      */
-    readonly sourceIndex: number;
+      readonly sourceIndex: number;
 
     /**
      Which signature refused, and how.
      */
-    readonly refusal: InsertionRefusal;
-  };
+      readonly refusal: InsertionRefusal;
+    };
 
 /**
  Turns a proven section boundary into a document offset.

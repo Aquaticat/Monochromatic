@@ -168,8 +168,8 @@ export function isPanelBallotWire(value: unknown,): value is PanelBallotWire {
     return false;
   if (!value.verdicts
     .every(function eachVerdict(verdict,) {
-    return isPanelVerdictWire(verdict,);
-  },))
+      return isPanelVerdictWire(verdict,);
+    },))
     return false;
   if (value.groups === undefined)
     return true;
@@ -177,8 +177,8 @@ export function isPanelBallotWire(value: unknown,): value is PanelBallotWire {
     return false;
   return value.groups
     .every(function eachGroup(group,) {
-    return isPanelGroupWire(group,);
-  },);
+      return isPanelGroupWire(group,);
+    },);
 }
 
 /**

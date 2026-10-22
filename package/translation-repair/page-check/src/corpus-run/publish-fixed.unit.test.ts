@@ -520,9 +520,9 @@ await describe({
         it({
           name:
             'WRITES THE DECIDED WORDING INTO THE SLICE IT NAMES AND NOWHERE ELSE, leaving the paragraphs '
-            + 'either side byte for byte as the archive had them. A publisher that rebuilt the document '
-            + 'from the pieces it knew about would pass an assertion about the replaced slice alone while '
-            + 'quietly dropping everything no decider mentioned',
+              + 'either side byte for byte as the archive had them. A publisher that rebuilt the document '
+              + 'from the pieces it knew about would pass an assertion about the replaced slice alone while '
+              + 'quietly dropping everything no decider mentioned',
           fn: async () => {
             await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
 
@@ -564,9 +564,9 @@ await describe({
         it({
           name:
             'REPUBLISHES AN ENTRY NO DECIDER CHANGED BYTE FOR BYTE, trailing newline included. The fixed '
-            + 'version of an unchanged page IS the page, which is what makes the tree a drop-in set rather '
-            + 'than a patch; it is also the only assertion that catches an assembler that rewrote line '
-            + 'endings or trimmed an ending nobody asked it to touch',
+              + 'version of an unchanged page IS the page, which is what makes the tree a drop-in set rather '
+              + 'than a patch; it is also the only assertion that catches an assembler that rewrote line '
+              + 'endings or trimmed an ending nobody asked it to touch',
           fn: async () => {
             await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
 
@@ -584,9 +584,9 @@ await describe({
         it({
           name:
             'CREATES EVERY DIRECTORY ON THE WAY DOWN, since the tree root is made once per pass and the '
-            + 'two levels under it are per entry. Without this the first entry of every run fails on a '
-            + 'missing parent, which is a failure that looks like a broken document rather than a missing '
-            + 'directory',
+              + 'two levels under it are per entry. Without this the first entry of every run fails on a '
+              + 'missing parent, which is a failure that looks like a broken document rather than a missing '
+              + 'directory',
           fn: async () => {
             await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
 
@@ -607,8 +607,8 @@ await describe({
         it({
           name:
             'OVERWRITES A PAGE ALREADY SITTING THERE, which is what a resumed pass does to every entry it '
-            + 'settles again. Refusing would make the second run of any interrupted pass fail on its own '
-            + 'output, and skipping would leave a page from an older pipeline claiming to be this run\'s',
+              + 'settles again. Refusing would make the second run of any interrupted pass fail on its own '
+              + 'output, and skipping would leave a page from an older pipeline claiming to be this run\'s',
           fn: async () => {
             await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
 
@@ -639,9 +639,9 @@ await describe({
         it({
           name:
             'FILLS A PASSAGE THE ARCHIVE NEVER TRANSLATED, writing into the zero-width place the '
-            + 'preparation left for it. This is the case that cannot be assembled from the artifact alone: '
-            + 'an absent incumbent is the empty string, which matches at every offset, so only the stored '
-            + 'span can say where the rendering goes',
+              + 'preparation left for it. This is the case that cannot be assembled from the artifact alone: '
+              + 'an absent incumbent is the empty string, which matches at every offset, so only the stored '
+              + 'span can say where the rendering goes',
           fn: async () => {
             await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
 
@@ -684,11 +684,11 @@ await describe({
         it({
           name:
             'PUBLISHES AN ENTRY WHOSE DECIDERS LEFT AN ANCHOR UNFILLED, leaving the gap exactly as the '
-            + 'archive had it. It used to refuse, on the argument that a half-document is worse than a '
-            + 'failed entry because only the failure gets retried. `XIEPT2` settled that: the refusal '
-            + 'landed after four hours and forty-eight minutes of calls, kept neither page nor artifact, '
-            + 'and a retry meets the same passage and the same judges. The archive already carries this '
-            + 'gap, so the page loses nothing that was ever there and keeps every slice the run did buy',
+              + 'archive had it. It used to refuse, on the argument that a half-document is worse than a '
+              + 'failed entry because only the failure gets retried. `XIEPT2` settled that: the refusal '
+              + 'landed after four hours and forty-eight minutes of calls, kept neither page nor artifact, '
+              + 'and a retry meets the same passage and the same judges. The archive already carries this '
+              + 'gap, so the page loses nothing that was ever there and keeps every slice the run did buy',
           fn: async () => {
             await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
 
@@ -708,9 +708,9 @@ await describe({
         it({
           name:
             'SHIPS THE ARCHIVE AT A SLICE WHERE NO WORDING PASSED THE RULE, over the lane the contest '
-            + 'chose, and reports it (owner, 2026-09-27, "Keep archive, ship"). Over present wording the '
-            + 'page reads as the archive there; over an anchor the archive left silent, nothing is written, '
-            + 'since an empty string at an anchor the original speaks is a passage lost to the splice',
+              + 'chose, and reports it (owner, 2026-09-27, "Keep archive, ship"). Over present wording the '
+              + 'page reads as the archive there; over an anchor the archive left silent, nothing is written, '
+              + 'since an empty string at an anchor the original speaks is a passage lost to the splice',
           fn: async () => {
             /**
              Both archive states, each published into its own tree.
@@ -773,9 +773,9 @@ await describe({
         it({
           name:
             'STILL LEAVES THE SPLICE FREE TO REFUSE A BLANK RENDERING AT AN ANCHOR, which is the guard '
-            + 'that caught this and is not being weakened. What changed is upstream of it: a slice '
-            + 'deliberately left unfilled no longer presents itself as a rendering of blank text, so the '
-            + 'guard now only ever sees a caller that really did claim one',
+              + 'that caught this and is not being weakened. What changed is upstream of it: a slice '
+              + 'deliberately left unfilled no longer presents itself as a rendering of blank text, so the '
+              + 'guard now only ever sees a caller that really did claim one',
           fn: async () => {
             /**
              What the splice refused when handed the row this publisher no longer
@@ -885,9 +885,9 @@ await describe({
         it({
           name:
             'REFUSES A READING NAMING A SLICE THE PREPARATION NEVER PRODUCED, instead of writing the page '
-            + 'without it. The two sides are stamped by different stages, and it is known what '
-            + 'index disagreement costs: silently dropping the reading would publish archive wording at a '
-            + 'slice the deciders replaced',
+              + 'without it. The two sides are stamped by different stages, and it is known what '
+              + 'index disagreement costs: silently dropping the reading would publish archive wording at a '
+              + 'slice the deciders replaced',
           fn: async () => {
             await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
 
@@ -916,9 +916,9 @@ await describe({
         it({
           name:
             'WRITES THE PAGE AND NAMES THE DISAGREEMENT when the artifact and the archive disagree about '
-            + 'what a slice covers (owner, 2026-09-27, "Ship with defect reported"). It used to refuse the '
-            + 'entry, so the archive\'s page shipped in its place; the check is one-sided, so a failure is a '
-            + 'defect in assembly, and it now ships on the `DEFECTS` line like the content checks',
+              + 'what a slice covers (owner, 2026-09-27, "Ship with defect reported"). It used to refuse the '
+              + 'entry, so the archive\'s page shipped in its place; the check is one-sided, so a failure is a '
+              + 'defect in assembly, and it now ships on the `DEFECTS` line like the content checks',
           fn: async () => {
             await using tree = await scratchDir({ prefix: 'publish-fixed-', },);
 

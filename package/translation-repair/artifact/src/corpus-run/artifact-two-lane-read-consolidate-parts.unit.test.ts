@@ -170,8 +170,8 @@ await describe({
             expect(refusalOfStrayText,).toBeInstanceOf(ArtifactParseError,);
             expect((refusalOfStrayText as Error).message,)
               .toBe(
-                `artifact parse failed at ${SLICE_PATH}: expected no text to ship, since a slice whose terminal is `
-                  + 'slate-endorsed-standing settled on no change.',
+              `artifact parse failed at ${SLICE_PATH}: expected no text to ship, since a slice whose terminal is `
+                + 'slate-endorsed-standing settled on no change.',
               );
           },
         },),

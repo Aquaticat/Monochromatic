@@ -186,9 +186,9 @@ await describe({
         expect([...bySlice.keys(),],).toEqual([1,],);
         expect(bySlice.get(1,),).toEqual([
           '- hf:moonshotai/Kimi-K3 [tense] on the accuracy repair quotes "is a transgender woman": '
-          + 'the page holds past tense',
+            + 'the page holds past tense',
           '- hf:moonshotai/Kimi-K3 [unspecified] on the accuracy repair quotes "where she shares": '
-          + 'the page holds past tense',
+            + 'the page holds past tense',
         ],);
         expect(damageClaimLinesBySlice({ lane: { chunks: [], }, },).size,).toBe(0,);
       },
@@ -236,7 +236,7 @@ await describe({
         expect(bySlice.get(1,),).toEqual([
           '- hf:moonshotai/Kimi-K3 [tense] on the accuracy repair quotes "she runs": the page holds past tense',
           '- hf:moonshotai/Kimi-K3 [tense] on the naturalness rewrite quotes "is a transgender woman": '
-          + 'the page holds past tense',
+            + 'the page holds past tense',
         ],);
         expect(bySlice.get(2,),).toEqual([
           '- hf:moonshotai/Kimi-K3 [tense] on the naturalness rewrite quotes "she shares": the page holds past tense',

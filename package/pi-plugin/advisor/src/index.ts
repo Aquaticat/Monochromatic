@@ -268,8 +268,8 @@ async function buildMainModelGuidance(
     .map(function mapEntry(
       entry: ReadonlyDeep<(typeof eligibleScope.entries)[number]>,
     ) {
-    return entry.canonicalSlug;
-  },);
+      return entry.canonicalSlug;
+    },);
 
   return [
     MAIN_MODEL_GUIDANCE_PREFIX,

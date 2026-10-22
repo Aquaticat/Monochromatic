@@ -339,8 +339,8 @@ export async function buyConsolidationSlice(
     return settlement;
   input.l
     .warn(
-      `slice ${String(input.sliceIndex,)}: standing lacks contest endorsement and the single `
-        + `consolidation attempt kept it (${settlement.terminal}); shipping with the finding recorded`,
+    `slice ${String(input.sliceIndex,)}: standing lacks contest endorsement and the single `
+      + `consolidation attempt kept it (${settlement.terminal}); shipping with the finding recorded`,
     );
   return {
     ...settlement,

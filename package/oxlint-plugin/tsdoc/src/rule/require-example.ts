@@ -280,7 +280,7 @@ export const requireExample: CreateOnceRule = {
         !== 'FunctionExpression')
         && (init.type
           !== 'ArrowFunctionExpression'))
-      {
+        {
         return;
       }
 

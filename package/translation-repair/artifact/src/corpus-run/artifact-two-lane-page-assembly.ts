@@ -267,18 +267,18 @@ export type PageAssemblyOverride =
      */
     readonly text: string;
   }
-  | {
+    | {
     /**
      The page carries the archive's own wording here, or nothing at an anchor.
      */
-    readonly kind: 'withdrawn';
-  }
-  | {
+      readonly kind: 'withdrawn';
+    }
+    | {
     /**
      The guard left this slice as the stages composed it.
      */
-    readonly kind: 'untouched';
-  };
+      readonly kind: 'untouched';
+    };
 
 /**
  Reads what the page assembly did to one slice.

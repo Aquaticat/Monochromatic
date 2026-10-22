@@ -34,7 +34,7 @@ const DEATH_OR_ATTEMPT =
  */
 const ATTEMPT_METHOD =
   'A survived attempt is no exception: the page says that she attempted suicide or tried to end her life, never by what means '
-  + '("swallowed a large amount of medication" names the means).';
+    + '("swallowed a large amount of medication" names the means).';
 
 await describe({
   name: 'a survived attempt keeps its method vague (class one hundred twenty-four)',

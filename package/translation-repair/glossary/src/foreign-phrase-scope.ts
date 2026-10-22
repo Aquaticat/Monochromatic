@@ -17,6 +17,6 @@
  */
 export const FOREIGN_PHRASE_NAME_TITLE_SCOPE: string =
   'A name or the title of a work is no such phrase: it follows the house name and title rules, where its English '
-  + 'form stands and the original wording may follow it in parentheses.';
+    + 'form stands and the original wording may follow it in parentheses.';
 
 //endregion Foreign phrase scope

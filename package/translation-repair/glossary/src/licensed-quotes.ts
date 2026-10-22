@@ -83,15 +83,15 @@ function quotesByEnvelope(
           return admits(member.claim,);
         },)
         .flatMap(function toQuotes(member,): readonly string[] {
-        return member.claim
-          .spans
-          .filter(function isTargetSide(span,): boolean {
-          return span.side === 'target';
-        },)
-          .map(function toText(span,): string {
-          return span.quotedText;
-        },);
-      },),
+          return member.claim
+            .spans
+            .filter(function isTargetSide(span,): boolean {
+              return span.side === 'target';
+            },)
+            .map(function toText(span,): string {
+              return span.quotedText;
+            },);
+        },),
     ] as const;
   },),);
 
@@ -100,10 +100,10 @@ function quotesByEnvelope(
       envelope.envelopeId,
       [...new Set(envelope.issueIds
         .flatMap(function toQuotes(issueId,): readonly string[] {
-        return quotesByIssue.get(issueId,) ?? [];
-      },),),].filter(function isUsable(quote,): boolean {
-        return quote !== '';
-      },),
+          return quotesByIssue.get(issueId,) ?? [];
+        },),),].filter(function isUsable(quote,): boolean {
+          return quote !== '';
+        },),
     ] as const;
   },),);
 }

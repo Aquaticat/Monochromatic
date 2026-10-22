@@ -526,7 +526,7 @@ await describe({
         );
         expect(finished.stderr,).toBe(
           `editor-standing-read: ${join(fixture.archive, 'artifacts', 'Mittens.json',)} refused, `
-          + 'artifact parse failed at artifact.artifactSchemaVersion: expected a number.\n',
+            + 'artifact parse failed at artifact.artifactSchemaVersion: expected a number.\n',
         );
       },
     },),

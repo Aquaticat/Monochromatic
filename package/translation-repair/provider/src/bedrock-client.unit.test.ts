@@ -661,12 +661,12 @@ await describe({
                 exchangeTimeoutMs: 50,
               },)
               .then(
-                function unexpected(): unknown {
-                  return undefined;
-                },
-                function caught(error: unknown,): unknown {
-                  return error;
-                },
+              function unexpected(): unknown {
+                return undefined;
+              },
+              function caught(error: unknown,): unknown {
+                return error;
+              },
               );
             expect((thrown as Error).message,).toBe('Timeout: google.gemma-4-26b-a4b exceeded its 50ms deadline',);
           },

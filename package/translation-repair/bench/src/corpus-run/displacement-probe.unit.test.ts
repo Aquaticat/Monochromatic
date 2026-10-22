@@ -151,8 +151,8 @@ async function runOverOneArtifact(
       entryId: 'Mittens',
     },)
       .replaceAll(
-        CLAIMED_COMMIT,
-        (claims === 'own') ? corpus.commitSha : CLAIMED_COMMIT,
+      CLAIMED_COMMIT,
+      (claims === 'own') ? corpus.commitSha : CLAIMED_COMMIT,
       ),
     'utf8',
   );

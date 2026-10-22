@@ -436,15 +436,15 @@ await describe({
                 return readsImages({ modelId, },);
               },)
               .toSorted(),).toEqual([
-              SEAT_HYPER_OPENROUTER_UNMEASURED,
-              SEAT_HYPER_TEXT_BEDROCK,
-              SEAT_BEDROCK_ONLY_VISION_UNSEATED,
-              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
-              SEAT_SYNTHETIC_VISION_WITHHELD,
-              SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-              SEAT_HYPER_VISION,
-              SEAT_OPENROUTER_ONLY_CHECKER,
-            ],);
+                SEAT_HYPER_OPENROUTER_UNMEASURED,
+                SEAT_HYPER_TEXT_BEDROCK,
+                SEAT_BEDROCK_ONLY_VISION_UNSEATED,
+                SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
+                SEAT_SYNTHETIC_VISION_WITHHELD,
+                SEAT_HYPER_OPENROUTER_VISION_EDITOR,
+                SEAT_HYPER_VISION,
+                SEAT_OPENROUTER_ONLY_CHECKER,
+              ],);
           },
         },),
 

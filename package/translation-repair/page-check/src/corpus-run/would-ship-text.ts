@@ -43,12 +43,12 @@ import { restoreTypography, } from '@monochromatic-dev/translation-repair-page-p
  */
 export type WouldShipDecider =
   | 'page-assembly'
-  | 'consistency'
-  | 'polish'
-  | 'consolidation'
-  | 'contest'
-  | 'lanes-agreed'
-  | 'archive';
+    | 'consistency'
+    | 'polish'
+    | 'consolidation'
+    | 'contest'
+    | 'lanes-agreed'
+    | 'archive';
 
 /**
  Why a slice would contribute no wording at all.
@@ -67,10 +67,10 @@ export type WouldShipDecider =
  */
 export type WouldShipSilence =
   | 'page-assembly-withdrew-and-archive-silent'
-  | 'no-valid-wording-and-archive-silent'
-  | 'contest-declined-and-archive-silent'
-  | 'contest-unasked-and-archive-silent'
-  | 'lanes-agreed-on-no-wording';
+    | 'no-valid-wording-and-archive-silent'
+    | 'contest-declined-and-archive-silent'
+    | 'contest-unasked-and-archive-silent'
+    | 'lanes-agreed-on-no-wording';
 
 /**
  What one slice would contribute to a document assembled today.
@@ -97,16 +97,16 @@ export type WouldShipReading =
      */
     readonly decidedBy: WouldShipDecider;
   }
-  | {
+    | {
     /**
      This slice carries nothing, and `reason` names which stage left it so.
      */
-    readonly kind: 'nothing-ships';
+      readonly kind: 'nothing-ships';
 
     /**
      Why nothing stands here.
      */
-    readonly reason: WouldShipSilence;
+      readonly reason: WouldShipSilence;
 
     /**
      Whether the archive held any wording at this slice.
@@ -125,8 +125,8 @@ export type WouldShipReading =
      chunk, and testing the text would conflate an anchor with a content span
      whose archive wording genuinely is blank.
      */
-    readonly incumbentKind: 'present' | 'absent';
-  };
+      readonly incumbentKind: 'present' | 'absent';
+    };
 
 /**
  Fields of a parsed artifact a reading is derived from.
@@ -146,7 +146,7 @@ export type WouldShipReading =
 export type WouldShipSource = Pick<
   ParsedTwoLaneArtifact,
   'comparison' | 'consolidation' | 'laneSelection'
-> & ArchiveTextCarrier & PageAssemblyCarrier & ConsistencyCarrier;
+  > & ArchiveTextCarrier & PageAssemblyCarrier & ConsistencyCarrier;
 
 /**
  What the page-level guard did, as either artifact shape carries it: the
@@ -390,20 +390,20 @@ type ConsolidationContribution =
      */
     readonly text: string;
   }
-  | {
+    | {
     /**
      No wording passed the deterministic rule here, so the archive keeps the
      slice over whatever the lane contest chose (owner, 2026-09-27, "Keep
      archive, ship").
      */
-    readonly kind: 'archive-kept';
-  }
-  | {
+      readonly kind: 'archive-kept';
+    }
+    | {
     /**
      This stage replaced nothing here, so whatever stood still stands.
      */
-    readonly kind: 'replaced-nothing';
-  };
+      readonly kind: 'replaced-nothing';
+    };
 
 /**
  Reads final body polish wording where generation six stage replaced base.

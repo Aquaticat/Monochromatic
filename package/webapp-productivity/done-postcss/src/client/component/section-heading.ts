@@ -74,7 +74,7 @@ class SectionHeading extends HTMLElement {
       'click',
       this.#toggle
         .bind(this,),
-    );
+      );
   }
 
   /**
@@ -165,7 +165,7 @@ class SectionHeading extends HTMLElement {
         class: 'content',
         children: [h({ tag: 'slot', },),],
       },),
-    );
+      );
   }
 }
 

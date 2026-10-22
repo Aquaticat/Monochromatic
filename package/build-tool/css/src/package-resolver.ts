@@ -69,8 +69,8 @@ export function findPackageDir({
   readonly packageName: string;
 },):
   | string
-  | typeof PACKAGE_NOT_FOUND
-{
+    | typeof PACKAGE_NOT_FOUND
+  {
   /**
    Candidate node_modules/<pkg> directory
    */

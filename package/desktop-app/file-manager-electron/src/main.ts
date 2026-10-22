@@ -120,12 +120,12 @@ function configureLinuxWayland(): void {
     .appendSwitch(
     'ozone-platform',
     'wayland',
-  );
+    );
   app.commandLine
     .appendSwitch(
     'enable-features',
     'WaylandWindowDecorations',
-  );
+    );
   process.env
     .XDG_SESSION_TYPE = 'wayland';
   mainLogger.info('Forced Chromium Ozone platform to Wayland for Linux.',);

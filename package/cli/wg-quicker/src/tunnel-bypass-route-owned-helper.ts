@@ -403,8 +403,8 @@ export async function assertRecordedDefaults(
    */
   const recorded = new Set(state.routes
     .map(function routeIdentity(route,): string {
-    return exactRouteKey({ route, },);
-  },),);
+      return exactRouteKey({ route, },);
+    },),);
   /**
    Stable route shapes authorize kernel-added fields during interrupted transition.
    */
@@ -413,12 +413,12 @@ export async function assertRecordedDefaults(
     /**
      Fresh token copy before joining through default-library boundary.
      */
-    const tokens = [...route.tokens,];
-    return routeKey({
-      proto: route.proto,
-      text: tokens.join(' ',),
-    },);
-  },),);
+      const tokens = [...route.tokens,];
+      return routeKey({
+        proto: route.proto,
+        text: tokens.join(' ',),
+      },);
+    },),);
   /**
    Current defaults across every protocol.
    */

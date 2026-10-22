@@ -182,15 +182,15 @@ await describe({
         },);
         expect(refusals,).toEqual([
           'Synthetic /quotas body violated expectations: rollingFiveHourLimit is not an object; received '
-          + 'rollingFiveHourLimit:null, weeklyTokenLimit:object',
+            + 'rollingFiveHourLimit:null, weeklyTokenLimit:object',
           'Synthetic /quotas body violated expectations: rollingFiveHourLimit is not an object; received '
-          + 'rollingFiveHourLimit:array, weeklyTokenLimit:object',
+            + 'rollingFiveHourLimit:array, weeklyTokenLimit:object',
           'Synthetic /quotas body violated expectations: rollingFiveHourLimit is not an object; received '
-          + 'rollingFiveHourLimit:string, weeklyTokenLimit:object',
+            + 'rollingFiveHourLimit:string, weeklyTokenLimit:object',
           'Synthetic /quotas body violated expectations: rollingFiveHourLimit is not an object; received '
-          + 'rollingFiveHourLimit:number, weeklyTokenLimit:object',
+            + 'rollingFiveHourLimit:number, weeklyTokenLimit:object',
           'Synthetic /quotas body violated expectations: rollingFiveHourLimit is not an object; received '
-          + 'rollingFiveHourLimit:boolean, weeklyTokenLimit:object',
+            + 'rollingFiveHourLimit:boolean, weeklyTokenLimit:object',
         ],);
       },
     },),
@@ -376,10 +376,10 @@ await describe({
         ],).toEqual([
           'Synthetic /quotas body violated expectations: weeklyTokenLimit is not an object; received {}',
           'Synthetic /quotas body violated expectations: rollingFiveHourLimit is not an object; received '
-          + 'rollingFiveHourLimit:string, weeklyTokenLimit:number, search:null, x:array, y:boolean',
+            + 'rollingFiveHourLimit:string, weeklyTokenLimit:number, search:null, x:array, y:boolean',
           'Synthetic /quotas body violated expectations: body is not a JSON object; received array',
           'Synthetic /quotas body violated expectations: weeklyTokenLimit.nextRegenAt is not a string; received '
-          + 'weeklyTokenLimit:object; weeklyTokenLimit holds percentRemaining:number',
+            + 'weeklyTokenLimit:object; weeklyTokenLimit holds percentRemaining:number',
           'Synthetic /quotas body violated expectations: body is not valid JSON',
         ],);
       },
@@ -408,8 +408,8 @@ await describe({
         const message = refusalOf({ bodyText: reshaped, },);
         expect(message,).toBe(
           'Synthetic /quotas body violated expectations: weeklyTokenLimit.percentRemaining is not a number; received '
-          + 'subscription:object, weeklyTokenLimit:object; weeklyTokenLimit holds '
-          + 'percentLeft:number, resetsAt:string, note:string, tiers:array, extra:null',
+            + 'subscription:object, weeklyTokenLimit:object; weeklyTokenLimit holds '
+            + 'percentLeft:number, resetsAt:string, note:string, tiers:array, extra:null',
         );
         expect(['whiskers-private-note', '64.5', '2026-10-19',].filter(function appears(value,): boolean {
           return message.includes(value,);
@@ -424,7 +424,7 @@ await describe({
           bodyText: `{"rollingFiveHourLimit":{"remaining":"x","max":1},"weeklyTokenLimit":${WEEKLY_TEXT}}`,
         },),).toBe(
           'Synthetic /quotas body violated expectations: rollingFiveHourLimit.remaining is not a number; received '
-          + 'rollingFiveHourLimit:object, weeklyTokenLimit:object; rollingFiveHourLimit holds remaining:string, max:number',
+            + 'rollingFiveHourLimit:object, weeklyTokenLimit:object; rollingFiveHourLimit holds remaining:string, max:number',
         );
       },
     },),
@@ -444,8 +444,8 @@ await describe({
           wide[`k${String(at,)}`] = at;
         expect(refusalOf({ bodyText: JSON.stringify(wide,), },),).toBe(
           `Synthetic /quotas body violated expectations: weeklyTokenLimit is not an object; received ${'a'.repeat(40,)}:number, `
-          + '??:string, k0:number, k1:number, k2:number, k3:number, k4:number, k5:number, k6:number, k7:number, k8:number, k9:number, '
-          + 'k10:number, k11:number, k12:number, k13:number, k14:number, k15:number, k16:number, k17:number, and 2 more',
+            + '??:string, k0:number, k1:number, k2:number, k3:number, k4:number, k5:number, k6:number, k7:number, k8:number, k9:number, '
+            + 'k10:number, k11:number, k12:number, k13:number, k14:number, k15:number, k16:number, k17:number, and 2 more',
         );
       },
     },),
@@ -466,10 +466,10 @@ await describe({
           crowded[`k${String(at,)}`] = at;
         expect(refusalOf({ bodyText: JSON.stringify({ weeklyTokenLimit: crowded, },), },),).toBe(
           'Synthetic /quotas body violated expectations: weeklyTokenLimit.percentRemaining is not a number; received '
-          + 'weeklyTokenLimit:object; weeklyTokenLimit holds percentRemaining:string, '
-          + `${'a'.repeat(40,)}:number, ??:string, k0:number, k1:number, k2:number, k3:number, k4:number, k5:number, k6:number, `
-          + 'k7:number, k8:number, k9:number, k10:number, k11:number, k12:number, k13:number, k14:number, k15:number, k16:number, '
-          + 'and 3 more',
+            + 'weeklyTokenLimit:object; weeklyTokenLimit holds percentRemaining:string, '
+            + `${'a'.repeat(40,)}:number, ??:string, k0:number, k1:number, k2:number, k3:number, k4:number, k5:number, k6:number, `
+            + 'k7:number, k8:number, k9:number, k10:number, k11:number, k12:number, k13:number, k14:number, k15:number, k16:number, '
+            + 'and 3 more',
         );
       },
     },),

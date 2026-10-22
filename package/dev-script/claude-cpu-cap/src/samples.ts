@@ -249,8 +249,8 @@ export async function buildSampleFields(input: SampleInput,): Promise<readonly s
     ...Array.from(
       { length: LEGACY_CORSAIR_COLUMN_COUNT, },
       function emptyCorsairField(): string {
-      return ABSENT;
-    },
+        return ABSENT;
+      },
     ),
     fixedField({
       value: power.chiplet1Watts,

@@ -490,9 +490,9 @@ export function withProvenApostrophes(
   },)
     .length
     === 0) && (singleMarkAt({
-    text: haystack,
-    at: end,
-  },)
+      text: haystack,
+      at: end,
+    },)
       .length
       === 0))
     return {

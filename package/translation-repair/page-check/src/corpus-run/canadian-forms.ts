@@ -163,8 +163,8 @@ export function canadianizeText(
     text: rebuilt.text,
     changed: rebuilt.applied
       .map(function describe(rewrite,): string {
-      return `"${rewrite.from}" to "${rewrite.to}"`;
-    },),
+        return `"${rewrite.from}" to "${rewrite.to}"`;
+      },),
   };
 }
 

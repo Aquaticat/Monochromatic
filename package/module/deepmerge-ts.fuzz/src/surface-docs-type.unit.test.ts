@@ -100,7 +100,7 @@ await describe({
             DeepMergeSetsURI: DeepMergeFunctionsDefaultURIs['DeepMergeSetsURI'];
           },
           DeepMergeBuiltInMetaData
-        >>().toBeNever();
+          >>().toBeNever();
       },
     },),
   ],

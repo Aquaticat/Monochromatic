@@ -540,8 +540,8 @@ async function guestExec({
   const arg = Array.isArray(request.arg,)
     ? request.arg
       .filter(function isText(value: unknown,): value is string {
-      return (typeof value) === 'string';
-    },)
+        return (typeof value) === 'string';
+      },)
     : [];
   /**
    Outcome the agent will report once the status is read.
@@ -612,8 +612,8 @@ async function guestExecStatus({
    */
   const index = state.processes
     .findIndex(function hasPid(entry,) {
-    return entry.pid === pid;
-  },);
+      return entry.pid === pid;
+    },);
   /**
    Oldest entry with this process ID, when one exists.
    */
@@ -637,7 +637,7 @@ async function guestExecStatus({
           ...entry,
           runningPolls: entry.runningPolls - 1,
         },
-      ),
+        ),
     },);
     reply({ exited: false, },);
     return;
@@ -648,7 +648,7 @@ async function guestExecStatus({
       .toSpliced(
       index,
       1,
-    ),
+      ),
   },);
   reply({
     exited: true,
@@ -947,7 +947,7 @@ const [subcommand, ...tokens] = process.argv
   process.argv
     .indexOf('--connect',)
     + 2,
-);
+  );
 
 await appendFile(
   join(

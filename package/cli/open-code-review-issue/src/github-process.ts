@@ -20,7 +20,7 @@ const GITHUB_CHILD_DEADLINE_MS = 60_000;
 export type BoundedProcessResult = Pick<
   Result,
   'stdout' | 'stderr' | 'durationMs'
->;
+  >;
 
 /**
  Reports forceful fixed-deadline termination.
@@ -208,17 +208,17 @@ export async function runBoundedProcess({
       file,
       commandArguments,
       {
-      cwd,
-      stdin: 'ignore',
-      stdout: 'pipe',
-      stderr: 'pipe',
-      env: {
-        GH_PROMPT_DISABLED: '1',
+        cwd,
+        stdin: 'ignore',
+        stdout: 'pipe',
+        stderr: 'pipe',
+        env: {
+          GH_PROMPT_DISABLED: '1',
+        },
+        signal: AbortSignal.timeout(GITHUB_CHILD_DEADLINE_MS,),
+        killSignal: 'SIGKILL',
+        windowsHide: true,
       },
-      signal: AbortSignal.timeout(GITHUB_CHILD_DEADLINE_MS,),
-      killSignal: 'SIGKILL',
-      windowsHide: true,
-    },
     );
   }
   catch (error: unknown) {

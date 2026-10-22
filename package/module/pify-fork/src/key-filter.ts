@@ -172,12 +172,12 @@ export function createKeyFilter(
     const included = includeProvided
       ? options.include
         .some(function byIncludePattern(pattern: KeyPattern): boolean {
-        return matches(pattern,);
-      },)
+          return matches(pattern,);
+        },)
       : !options.exclude
         .some(function byExcludePattern(pattern: KeyPattern): boolean {
-        return matches(pattern,);
-      },);
+          return matches(pattern,);
+        },);
     /**
      Whether the member behind this key is promisified.
      */

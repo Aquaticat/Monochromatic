@@ -125,7 +125,7 @@ await describe({
               arm: 'clean',
             },),).toEqual([
               `  VOICE clean ${nonNullishOrThrow(report.rows[0],).modelId} verdict=no-defect-found claims=0 `
-              + 'oracleHits=0 dropped=0',
+                + 'oracleHits=0 dropped=0',
             ],);
           },
         },),
@@ -207,7 +207,7 @@ await describe({
               roster: RUN_MODELS.checkerModelIds,
             },),).toEqual([
               'SENSITIVITY arm=flipped expected=agreement heard=3/3 corroborated=1 agreed=1 agreedVoices=3 near=2 '
-              + 'oracleVoices=3 findings=0',
+                + 'oracleVoices=3 findings=0',
               `  VOICE flipped ${ASKED_FIRST} verdict=defects-found claims=1 oracleHits=1 dropped=0`,
               '    ORACLE altered-polarity: 不吃罐头 || eat canned food',
               `  VOICE flipped ${ASKED_SECOND} verdict=defects-found claims=1 oracleHits=1 dropped=0`,
@@ -243,7 +243,7 @@ await describe({
               roster: RUN_MODELS.checkerModelIds,
             },),).toEqual([
               'SENSITIVITY arm=clean expected=agreement at neither tier heard=3/3 corroborated=0 agreed=0 '
-              + 'agreedVoices=0 near=0 oracleVoices=0 findings=0',
+                + 'agreedVoices=0 near=0 oracleVoices=0 findings=0',
               ...report.rows.map(function quietVoice(row,): string {
                 return `  VOICE clean ${row.modelId} verdict=no-defect-found claims=0 oracleHits=0 dropped=0`;
               },),
@@ -273,7 +273,7 @@ await describe({
               roster: RUN_MODELS.checkerModelIds,
             },),).toEqual([
               'SENSITIVITY arm=clean expected=agreement at neither tier heard=2/3 corroborated=0 agreed=0 '
-              + 'agreedVoices=0 near=0 oracleVoices=0 findings=2',
+                + 'agreedVoices=0 near=0 oracleVoices=0 findings=2',
               ...ASKED_CLEAN
                 .filter(function isHeard(modelId,): boolean {
                   return modelId !== THIRD;

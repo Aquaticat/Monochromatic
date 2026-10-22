@@ -221,7 +221,7 @@ await describe({
                   },
                 ],
               },)
-            ,).not.toThrow();
+              ,).not.toThrow();
           },
         },),
         it({
@@ -248,7 +248,7 @@ await describe({
                 },),],
                 uncalled: [inPurr,],
               },)
-            ,).toThrow(StatedRefusalError,);
+              ,).toThrow(StatedRefusalError,);
             expect(() =>
               requirePlacedFunctions({
                 stretches: [{
@@ -261,7 +261,7 @@ await describe({
                 },],
                 uncalled: [inPurr,],
               },)
-            ,).toThrow(StatedRefusalError,);
+              ,).toThrow(StatedRefusalError,);
           },
         },),
       ],
@@ -479,7 +479,7 @@ await describe({
         it({
           name:
             'LEAVES OUT EVERY STRETCH OF A SOURCE EDITED SINCE THE BASELINE, whose lines there now name other code: '
-            + 'counting it as ran because nothing cold overlaps its old lines is how a moved stretch read as run',
+              + 'counting it as ran because nothing cold overlaps its old lines is how a moved stretch read as run',
           fn: async () => {
             expect(baselineStatusesOf({
               baseline: [
@@ -639,7 +639,7 @@ await describe({
         it({
           name:
             'LEAVES OUT A CLAIMED SOURCE EDITED SINCE THE BASELINE, which the edited claims name instead: "ran whole '
-            + 'there" says nothing of code written after it',
+              + 'there" says nothing of code written after it',
           fn: async () => {
             expect(emptyClaimsOf({
               baseline: {
@@ -664,7 +664,7 @@ await describe({
         it({
           name:
             'NAMES EACH CLAIMED SOURCE EDITED SINCE THE BASELINE, sorted, with whether this run loaded it and the cold '
-            + 'stretches it left there, whether or not the baseline holds a stretch in it, and leaves an unedited one',
+              + 'stretches it left there, whether or not the baseline holds a stretch in it, and leaves an unedited one',
           fn: async () => {
             expect(editedClaimsOf({
               baseline: {
@@ -710,7 +710,7 @@ await describe({
         it({
           name:
             'NAMES ONLY SOURCES A CENSUS HOLDS A STRETCH IN when the batch claims none, so a reading of every source '
-            + 'does not list each document and test edited since',
+              + 'does not list each document and test edited since',
           fn: async () => {
             expect(editedClaimsOf({
               baseline: {
@@ -745,8 +745,8 @@ await describe({
         it({
           name:
             'NAMES A SOURCE ADDED SINCE THE BASELINE THAT THIS RUN LEFT COLD when the batch claims none, though the '
-            + 'baseline holds no stretch there: read from the baseline\'s sources alone, its cold code was counted nowhere '
-            + '(ledger B61)',
+              + 'baseline holds no stretch there: read from the baseline\'s sources alone, its cold code was counted nowhere '
+              + '(ledger B61)',
           fn: async () => {
             expect(editedClaimsOf({
               baseline: {

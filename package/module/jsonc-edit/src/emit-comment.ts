@@ -113,7 +113,7 @@ export function leadingComment({
     .includes(BLOCK_CLOSE,);
   if (blockSafe && ((comment.type === 'block')
     || comment.text
-    .includes('\r',)))
+      .includes('\r',)))
     return `${pad}/*${comment.text}*/\n`;
   /**
    Body lines after splitting on every terminator, so no emitted `//` line can carry one.
@@ -123,11 +123,11 @@ export function leadingComment({
       accumulator: readonly string[],
       terminator: string,
     ): readonly string[] {
-    return accumulator.flatMap(function splitPart(part: string,): readonly string[] {
-      return part
-        .split(terminator,);
-    },);
-  },
+      return accumulator.flatMap(function splitPart(part: string,): readonly string[] {
+        return part
+          .split(terminator,);
+      },);
+    },
     [comment.text,],
   );
   return `${lines

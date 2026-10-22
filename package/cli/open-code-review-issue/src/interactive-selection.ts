@@ -62,15 +62,15 @@ export async function selectInteractiveIssues({
    */
   const ordinaryCandidates = plan.issues
     .filter(function ordinary(issue,): boolean {
-    return !issue.security;
-  },);
+      return !issue.security;
+    },);
   /**
    Security candidates shown unselected in separate red picker.
    */
   const securityCandidates = plan.issues
     .filter(function security(issue,): boolean {
-    return issue.security;
-  },);
+      return issue.security;
+    },);
   /**
    Ordinary picker result.
    */

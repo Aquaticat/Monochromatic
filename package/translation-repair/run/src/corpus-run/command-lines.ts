@@ -58,7 +58,7 @@ export type CommandLines = {
     'only' | 'cap' | 'damage' | 'candidates',
     never,
     'context' | 'candidates-alone'
-  >;
+    >;
   readonly 'ledger-report': CommandLineSpec<'model', never, never>;
   readonly 'meter-report': CommandLineSpec<never, never, never>;
   readonly 'model-catalog': CommandLineSpec<never, never, never>;

@@ -208,44 +208,44 @@ export function damageClaimLinesBySlice(
 ): ReadonlyMap<number, readonly string[]> {
   return lane.chunks
     .reduce(
-      function collect(
-        bySlice: Map<number, readonly string[]>,
-        chunk: ProbedChunk,
-      ): Map<number, readonly string[]> {
+    function collect(
+      bySlice: Map<number, readonly string[]>,
+      chunk: ProbedChunk,
+    ): Map<number, readonly string[]> {
         /**
          Regions the accuracy repair's probe reported on, none where the
          chunk changed nothing and nothing was probed.
          */
-        const accuracyRegions = chunk.introducedDefects
-          ?.regions
-          ?? [];
+      const accuracyRegions = chunk.introducedDefects
+        ?.regions
+        ?? [];
         /**
          Lines this chunk's corroborated claims make, both edits' probes.
          */
-        const lines = [
-          ...corroboratedLinesOf({
-            regions: chunk.accuracyPatchSelected ? accuracyRegions : [],
-            stage: 'accuracy repair',
-          },),
-          ...corroboratedLinesOf({
-            regions: chunk.refinementDefects
-              ?.regions
-              ?? [],
-            stage: 'naturalness rewrite',
-          },),
-        ];
-        if (lines.length === 0)
-          return bySlice;
-        bySlice.set(
-          chunk.sliceIndex,
-          [
-            ...(bySlice.get(chunk.sliceIndex,) ?? []),
-            ...lines,
-          ],
-        );
+      const lines = [
+        ...corroboratedLinesOf({
+          regions: chunk.accuracyPatchSelected ? accuracyRegions : [],
+          stage: 'accuracy repair',
+        },),
+        ...corroboratedLinesOf({
+          regions: chunk.refinementDefects
+            ?.regions
+            ?? [],
+          stage: 'naturalness rewrite',
+        },),
+      ];
+      if (lines.length === 0)
         return bySlice;
-      },
-      new Map<number, readonly string[]>(),
+      bySlice.set(
+        chunk.sliceIndex,
+        [
+          ...(bySlice.get(chunk.sliceIndex,) ?? []),
+          ...lines,
+        ],
+      );
+      return bySlice;
+    },
+    new Map<number, readonly string[]>(),
     );
 }
 

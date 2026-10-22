@@ -200,7 +200,7 @@ export function createNewTaskDialog(): NewTaskDialog {
       const titleInput = detail.shadowRoot
         ?.querySelector<HTMLInputElement>(
         '.title-input',
-      );
+        );
       titleInput?.focus();
     },);
   }

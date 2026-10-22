@@ -109,23 +109,23 @@ export function archiveBlockSourceContexts(
     /**
      Source section paired with archive block location.
      */
-    const sourceContext = block.location
-      .kind
-      === 'aligned-pair'
-      ? alignedSourceText({
-        alignment,
-        blockId: block.blockId,
-        pairIndex: block.location
-          .pairIndex,
-      },)
-      : '';
+      const sourceContext = block.location
+        .kind
+        === 'aligned-pair'
+        ? alignedSourceText({
+          alignment,
+          blockId: block.blockId,
+          pairIndex: block.location
+            .pairIndex,
+        },)
+        : '';
     /**
      Names this source section alone authorizes, each once.
      */
-    const names = new Set(photoReferences({ text: sourceContext, },)
-      .map(function asset(reference,): string {
-        return reference.assetName;
-      },),);
+      const names = new Set(photoReferences({ text: sourceContext, },)
+        .map(function asset(reference,): string {
+          return reference.assetName;
+        },),);
     /**
      One transcript per corroborated picture, the one the other readers carry
      most, and never unrelated or unavailable evidence.
@@ -138,24 +138,24 @@ export function archiveBlockSourceContexts(
      transcript per picture over a doubled re-ask cap
      (`doc/decision/translation-repair-archive-review-one-transcript-2026-09-16.md`).
      */
-    const support = [...names,].flatMap(function pictureSupport(assetName,): readonly string[] {
+      const support = [...names,].flatMap(function pictureSupport(assetName,): readonly string[] {
       /**
        Completed reading for this section's reference.
        */
-      const reading = pictureReadings.get(assetName,);
-      if (reading?.kind !== 'corroborated')
-        return [];
+        const reading = pictureReadings.get(assetName,);
+        if (reading?.kind !== 'corroborated')
+          return [];
       /**
        Transcript the other readers carry most.
        */
-      const chosen = mostCarriedReading({ readings: reading.readings, },);
+        const chosen = mostCarriedReading({ readings: reading.readings, },);
       /**
        Readers that agreed on the picture.
        */
-      const readerCount = reading.readings
-        .length;
-      return [
-        `CORROBORATED PICTURE SOURCE SUPPORT ${assetName} (${
+        const readerCount = reading.readings
+          .length;
+        return [
+          `CORROBORATED PICTURE SOURCE SUPPORT ${assetName} (${
           String(readerCount,)
         } ${
           wordForCount({
@@ -164,19 +164,19 @@ export function archiveBlockSourceContexts(
             many: 'readers',
           },)
         } agree; the transcript the others carry most)\n${chosen.text}`,
-      ];
-    },);
-    return [
-      archiveBlockIdentity({
-        block,
-        targetText: prepared.targetText,
-      },),
-      [
-        sourceContext,
-        ...support,
-      ].join('\n\n',),
-    ] as const;
-  },),);
+        ];
+      },);
+      return [
+        archiveBlockIdentity({
+          block,
+          targetText: prepared.targetText,
+        },),
+        [
+          sourceContext,
+          ...support,
+        ].join('\n\n',),
+      ] as const;
+    },),);
 }
 
 //endregion Archive block source context

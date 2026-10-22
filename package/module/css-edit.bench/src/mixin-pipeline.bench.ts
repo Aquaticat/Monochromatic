@@ -38,19 +38,19 @@ const APPLY_COUNT = 200;
  */
 const MIXIN_CSS = Array
   .from(
-    { length: MIXIN_COUNT, },
-    function mixinAt(
-      _unused,
-      index,
-    ) {
+  { length: MIXIN_COUNT, },
+  function mixinAt(
+    _unused,
+    index,
+  ) {
       /**
        Reference to the previous definition, chaining expansion depth.
        */
-      const nested = index === 0
-        ? ''
-        : `@apply --m-${String(index - 1,)}; `;
-      return `@mixin --m-${String(index,)} { ${nested}padding-${String(index,)}: ${String(index,)}px; }`;
-    },
+    const nested = index === 0
+      ? ''
+      : `@apply --m-${String(index - 1,)}; `;
+    return `@mixin --m-${String(index,)} { ${nested}padding-${String(index,)}: ${String(index,)}px; }`;
+  },
   )
   .join('\n',);
 
@@ -59,13 +59,13 @@ const MIXIN_CSS = Array
  */
 const CONSUMER_CSS = Array
   .from(
-    { length: APPLY_COUNT, },
-    function ruleAt(
-      _unused,
-      index,
-    ) {
-      return `.c-${String(index,)} { @apply --m-${String(index % MIXIN_COUNT,)}; color: red; }`;
-    },
+  { length: APPLY_COUNT, },
+  function ruleAt(
+    _unused,
+    index,
+  ) {
+    return `.c-${String(index,)} { @apply --m-${String(index % MIXIN_COUNT,)}; color: red; }`;
+  },
   )
   .join('\n',);
 

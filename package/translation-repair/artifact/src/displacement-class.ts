@@ -60,7 +60,7 @@ export type SliceClass =
    relocation share one shape and are told apart on the document rather than
    on the slice.
    */
-  | 'translated';
+    | 'translated';
 
 /**
  Longest original a slice can carry and still be called untranslated.

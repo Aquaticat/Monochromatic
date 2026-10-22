@@ -169,8 +169,8 @@ export async function cycle(): Promise<void> {
 
     if (state.decisions
       .every(function checkUnproductive(d,) {
-      return isUnproductive(d,);
-    },)) {
+        return isUnproductive(d,);
+      },)) {
       await sendNotification(result,);
       state.decisions = [
         'PRODUCTIVE',

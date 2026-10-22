@@ -45,12 +45,12 @@ export type ImagePixelSize =
      */
     readonly height: number;
   }
-  | {
+    | {
     /**
      Discriminator marking a picture whose size could not be read.
      */
-    readonly kind: 'unsized';
-  };
+      readonly kind: 'unsized';
+    };
 
 /**
  Result for a file no reader here understands or a header that is cut short.

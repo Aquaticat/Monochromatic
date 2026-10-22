@@ -391,8 +391,8 @@ async function startJob(
       .setEncoding('utf8', );
     child.stdout
       .on(
-        'data',
-        recordChunk,
+      'data',
+      recordChunk,
       );
   }
   if (child.stderr === null) {
@@ -403,8 +403,8 @@ async function startJob(
       .setEncoding('utf8', );
     child.stderr
       .on(
-        'data',
-        recordChunk,
+      'data',
+      recordChunk,
       );
   }
 
@@ -463,8 +463,8 @@ async function startJob(
     }
     timers.forceKill = setTimeout(
       function forceKill(): void {
-      signalGroup(FORCE_SIGNAL, );
-    },
+        signalGroup(FORCE_SIGNAL, );
+      },
       killGraceMs,
     );
     // The grace timer must never be the reason a process stays alive.

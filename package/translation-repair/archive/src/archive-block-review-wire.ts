@@ -197,8 +197,8 @@ export function buildArchiveBlockReviewMessages(
     : `\nA prior pass did not settle this block. Challenge its exact findings and propose a materially different correction when revision remains necessary.\n${fence} PRIOR FINDINGS ${fence}\n${JSON.stringify(priorFindings,)}`;
   return [
     {
-    role: 'system',
-    content: `Review English archive wording that block pairing did not connect to any Chinese source block. The source fence contains the aligned section and any CORROBORATED PICTURE SOURCE SUPPORT transcribed from pictures that section references. Both are source support. An archive block translating that picture text is not an unsupported insertion merely because the source prose does not repeat it. When a CITED REFERENCES block follows the block under review, what one cited page states is support too, as the rule closing that block says.
+      role: 'system',
+      content: `Review English archive wording that block pairing did not connect to any Chinese source block. The source fence contains the aligned section and any CORROBORATED PICTURE SOURCE SUPPORT transcribed from pictures that section references. Both are source support. An archive block translating that picture text is not an unsupported insertion merely because the source prose does not repeat it. When a CITED REFERENCES block follows the block under review, what one cited page states is support too, as the rule closing that block says.
 
 ${PAGE_CARRIES_EVERY_BLOCK}
 
@@ -212,11 +212,11 @@ Do not retain a factual claim merely because it sounds plausible. Preserve Markd
 ${HOUSE_POLICY_BLOCK}
 
 Reply with JSON only: {"assessment":"one concise sentence, the reason for the disposition","disposition":"source-supported"|"editorial-context"|"revise","replacementText":"complete replacement or empty","sourceQuote":"exact source support or empty"}`,
-  },
+    },
     {
-    role: 'user',
-    content: `${identityBlock}${fence} EXPECTED ORIGINAL SECTION ${fence}\n${sourceText}\n${fence} ENGLISH ARCHIVE ${fence}\n${shownTarget}\n${fence} BLOCK UNDER REVIEW ${fence}\n${shownBlock}${referenceBlock}${continuation}\n${fence} END ${fence}`,
-  },
+      role: 'user',
+      content: `${identityBlock}${fence} EXPECTED ORIGINAL SECTION ${fence}\n${sourceText}\n${fence} ENGLISH ARCHIVE ${fence}\n${shownTarget}\n${fence} BLOCK UNDER REVIEW ${fence}\n${shownBlock}${referenceBlock}${continuation}\n${fence} END ${fence}`,
+    },
   ];
 }
 

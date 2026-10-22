@@ -80,7 +80,7 @@ const ARCHIVE_SECTIONS: readonly string[] = [
   '## One\n\nThe sunny window put the kitten to sleep. So this cat must be a chubby little treasure.\n',
   '## Two\n\nThe smell of fish in the kitchen woke the kitten. So this cat is surely a lazy little treasure.\n',
   '## Three\n\nIn the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too. '
-  + 'So this cat has to be a sweet little darling.\n',
+    + 'So this cat has to be a sweet little darling.\n',
   '## Four\n\nThe rain in the yard sent the kitten running home. So this cat is certainly a warm little dumpling.\n',
 ];
 
@@ -168,46 +168,46 @@ export function projectedCatPage(
    */
   const comparison = prepared.slices
     .map(function rowOf(
-    slice,
-    position,
-  ): ArtifactComparisonRow {
+      slice,
+      position,
+    ): ArtifactComparisonRow {
     /**
      Wording the slice ships.
      */
-    const shipped = english[position]
-      ?? slice.target
-      .text;
+      const shipped = english[position]
+        ?? slice.target
+          .text;
     /**
      Whether the archive stands.
      */
-    const stands = shipped
-      === slice.target
-      .text;
-    return {
-      sliceIndex: slice.target
-        .sliceIndex,
-      incumbentKind: 'present',
-      incumbentText: slice.target
-        .text,
-      repairText: shipped,
-      translateText: shipped,
-      laneRelation: stands ? 'archive-stands' : 'both-agree',
-      repairOutcome: {
-        kind: 'decided',
-        acceptedText: shipped,
-      },
-      translateOutcome: {
-        kind: 'decided',
-        acceptedText: shipped,
-      },
-      decisionComparison: {
-        kind: 'comparable',
-        verdict: 'same',
-      },
-      repairDelivery: stands ? { kind: 'incumbent-retained', } : { kind: 'replacement-shipped', },
-      translateDelivery: stands ? { kind: 'incumbent-retained', } : { kind: 'replacement-shipped', },
-    };
-  },);
+      const stands = shipped
+        === slice.target
+          .text;
+      return {
+        sliceIndex: slice.target
+          .sliceIndex,
+        incumbentKind: 'present',
+        incumbentText: slice.target
+          .text,
+        repairText: shipped,
+        translateText: shipped,
+        laneRelation: stands ? 'archive-stands' : 'both-agree',
+        repairOutcome: {
+          kind: 'decided',
+          acceptedText: shipped,
+        },
+        translateOutcome: {
+          kind: 'decided',
+          acceptedText: shipped,
+        },
+        decisionComparison: {
+          kind: 'comparable',
+          verdict: 'same',
+        },
+        repairDelivery: stands ? { kind: 'incumbent-retained', } : { kind: 'replacement-shipped', },
+        translateDelivery: stands ? { kind: 'incumbent-retained', } : { kind: 'replacement-shipped', },
+      };
+    },);
   /**
    Delivery row each lane reports, the same for both.
    */
@@ -257,12 +257,12 @@ export type SeatBehaviour =
      */
     readonly text: string;
   }
-  | {
+    | {
     /**
      The seat's call throws.
      */
-    readonly kind: 'throws';
-  };
+      readonly kind: 'throws';
+    };
 
 /**
  What a scripted client does for each call: the seat asked, how many calls the

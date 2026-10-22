@@ -36,7 +36,7 @@ type AnyLocaleSpec = LocaleSpec<string, string, string, string>;
 type LocaleKeys<Locales extends readonly string[], Specs,> = Extract<
   Locales[number],
   keyof Specs
->;
+  >;
 
 /**
  Locales whose label vocabulary does not include `Key`.
@@ -69,7 +69,7 @@ type SharedLabelOf<Specs, Locale extends keyof Specs,> =
   LabelOf<Specs[Locale]> extends infer Key extends string
     ? Key extends string
       ? [LocalesMissingLabel<Specs, Locale, Key>] extends [never] ? Key : never
-    : never
+      : never
     : never;
 
 /**
@@ -79,7 +79,7 @@ type SharedSubjectOf<Specs, Locale extends keyof Specs,> =
   SubjectOf<Specs[Locale]> extends infer Key extends string
     ? Key extends string
       ? [LocalesMissingSubject<Specs, Locale, Key>] extends [never] ? Key : never
-    : never
+      : never
     : never;
 
 /**
@@ -89,7 +89,7 @@ type SharedVerbOf<Specs, Locale extends keyof Specs,> =
   VerbOf<Specs[Locale]> extends infer Key extends string
     ? Key extends string
       ? [LocalesMissingVerb<Specs, Locale, Key>] extends [never] ? Key : never
-    : never
+      : never
     : never;
 
 /**
@@ -99,7 +99,7 @@ type SharedNounOf<Specs, Locale extends keyof Specs,> =
   NounOf<Specs[Locale]> extends infer Key extends string
     ? Key extends string
       ? [LocalesMissingNoun<Specs, Locale, Key>] extends [never] ? Key : never
-    : never
+      : never
     : never;
 
 /**
@@ -107,9 +107,9 @@ type SharedNounOf<Specs, Locale extends keyof Specs,> =
  */
 type VocabularyMismatch<Specs, Locale extends keyof Specs,> =
   | Exclude<LabelOf<Specs[Locale]>, SharedLabelOf<Specs, Locale>>
-  | Exclude<SubjectOf<Specs[Locale]>, SharedSubjectOf<Specs, Locale>>
-  | Exclude<VerbOf<Specs[Locale]>, SharedVerbOf<Specs, Locale>>
-  | Exclude<NounOf<Specs[Locale]>, SharedNounOf<Specs, Locale>>;
+    | Exclude<SubjectOf<Specs[Locale]>, SharedSubjectOf<Specs, Locale>>
+    | Exclude<VerbOf<Specs[Locale]>, SharedVerbOf<Specs, Locale>>
+    | Exclude<NounOf<Specs[Locale]>, SharedNounOf<Specs, Locale>>;
 
 /**
  Requires all configured locale specs to expose the same vocabulary keys.
@@ -132,20 +132,20 @@ type EnforceSharedVocabulary<Specs, Locale extends keyof Specs,> =
 export type CreateI18nConfig<
   Locales extends readonly string[],
   Specs extends Readonly<Record<Locales[number], AnyLocaleSpec>>,
-> = {
+  > = {
   /**
    Const list of supported locale codes; the literal union flows through every method.
    */
-  readonly locales: Locales;
+    readonly locales: Locales;
   /**
    Locale used as the fallback for runtime locale validation helpers.
    */
-  readonly defaultLocale: Locales[number];
+    readonly defaultLocale: Locales[number];
   /**
    Per-locale specs keyed by locale code; every locale in `locales` must have a spec.
    */
-  readonly specs: Specs;
-};
+    readonly specs: Specs;
+  };
 
 /**
  Public surface returned by {@link createI18n}.
@@ -160,66 +160,66 @@ export type I18n<
   Subject extends string,
   Verb extends string,
   Noun extends string,
-> = {
+  > = {
   /**
    Const list of supported locales, returned for downstream `.map`/`.includes`.
    */
-  readonly locales: readonly Locale[];
+    readonly locales: readonly Locale[];
   /**
    Locale used by {@link assertLocale} when an invalid value is rejected.
    */
-  readonly defaultLocale: Locale;
+    readonly defaultLocale: Locale;
   /**
    Type guard: narrows an arbitrary string to a supported locale.
    */
-  readonly isLocale: (value: string,) => value is Locale;
+    readonly isLocale: (value: string,) => value is Locale;
   /**
    Asserts a string is a supported locale, returning it narrowed or throwing.
    */
-  readonly assertLocale: (value: string,) => Locale;
+    readonly assertLocale: (value: string,) => Locale;
   /**
    Resolves a static label key in the given locale.
    */
-  readonly label: (
-    locale: Locale,
-    key: Label,
-  ) => string;
+    readonly label: (
+      locale: Locale,
+      key: Label,
+    ) => string;
   /**
    Resolves a bare noun key in the given locale, without article or count.
    */
-  readonly noun: (
-    locale: Locale,
-    noun: Noun,
-  ) => string;
+    readonly noun: (
+      locale: Locale,
+      noun: Noun,
+    ) => string;
   /**
    Renders a noun phrase AST in the given locale.
    */
-  readonly np: (
-    locale: Locale,
-    phrase: NounPhrase<Subject, Noun>,
-  ) => string;
+    readonly np: (
+      locale: Locale,
+      phrase: NounPhrase<Subject, Noun>,
+    ) => string;
   /**
    Renders a verb phrase AST in the given locale.
    */
-  readonly vp: (
-    locale: Locale,
-    phrase: VerbPhrase<Subject, Verb, Noun>,
-  ) => string;
+    readonly vp: (
+      locale: Locale,
+      phrase: VerbPhrase<Subject, Verb, Noun>,
+    ) => string;
   /**
    Renders a sentence AST in the given locale.
    */
-  readonly sentence: (
-    locale: Locale,
-    sentence: Sentence<Subject, Verb, Noun>,
-  ) => string;
+    readonly sentence: (
+      locale: Locale,
+      sentence: Sentence<Subject, Verb, Noun>,
+    ) => string;
   /**
    Renders a fragment AST in the given locale.
    */
-  readonly fragment: (
-    locale: Locale,
-    fragment: Fragment<Label, Subject, Verb, Noun>,
-  ) => string;
-};
+    readonly fragment: (
+      locale: Locale,
+      fragment: Fragment<Label, Subject, Verb, Noun>,
+    ) => string;
+  };
 
 /**
  Builds a typed I18n instance from a const locale list and a per-locale
@@ -252,16 +252,16 @@ export type I18n<
 export function createI18n<
   const Locales extends readonly string[],
   const Specs extends Readonly<Record<Locales[number], AnyLocaleSpec>>,
->(
+  >(
   config: CreateI18nConfig<Locales, Specs>
     & EnforceSharedVocabulary<Specs, LocaleKeys<Locales, Specs>>,
-): I18n<
-  Locales[number],
-  SharedLabelOf<Specs, LocaleKeys<Locales, Specs>>,
-  SharedSubjectOf<Specs, LocaleKeys<Locales, Specs>>,
-  SharedVerbOf<Specs, LocaleKeys<Locales, Specs>>,
-  SharedNounOf<Specs, LocaleKeys<Locales, Specs>>
-> {
+  ): I18n<
+    Locales[number],
+    SharedLabelOf<Specs, LocaleKeys<Locales, Specs>>,
+    SharedSubjectOf<Specs, LocaleKeys<Locales, Specs>>,
+    SharedVerbOf<Specs, LocaleKeys<Locales, Specs>>,
+    SharedNounOf<Specs, LocaleKeys<Locales, Specs>>
+    > {
   /**
    Locale union narrowed once and reused across every helper closure.
    */

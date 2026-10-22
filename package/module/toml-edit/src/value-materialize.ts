@@ -156,7 +156,7 @@ export function updateDeep(
     .slice(
     0,
     -1,
-  )
+    )
     .reduce<{
       readonly cursor: Record<string, unknown>;
       readonly frames: readonly DescentFrame[];
@@ -224,7 +224,7 @@ export function updateDeep(
       cursor: container,
       frames: [],
     },
-  );
+    );
   /**
    Final key so the leaf value is read and rewritten own-only.
    */
@@ -261,11 +261,11 @@ export function updateDeep(
               .length
               - 1,
             child,
-          ),
+            ),
       },);
     },
     rebuiltDeepest,
-  );
+    );
 }
 
 /**
@@ -327,8 +327,8 @@ export function materializeValue({ value, }: { readonly value: ValueNode; },): u
     === 'array') {
     return value.elements
       .map(function each(el,) {
-      return materializeValue({ value: el, },);
-    },);
+        return materializeValue({ value: el, },);
+      },);
   }
   return value.entries
     .reduce<Record<string, unknown>>(
@@ -343,5 +343,5 @@ export function materializeValue({ value, }: { readonly value: ValueNode; },): u
       },);
     },
     {},
-  );
+    );
 }

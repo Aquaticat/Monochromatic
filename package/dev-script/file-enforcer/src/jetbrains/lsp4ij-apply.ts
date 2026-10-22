@@ -87,9 +87,9 @@ export function findBaseServerEntry(
       return ((match.templateId !== undefined) && (templateId === match.templateId))
         || ((match.serverNameEquals !== undefined) && (serverName === match.serverNameEquals))
         || (
-          (match.commandLineIncludes !== undefined)
+        (match.commandLineIncludes !== undefined)
           && (commandLine !== ABSENT_XML_VALUE)
-            && (commandLine.includes(match.commandLineIncludes,))
+          && (commandLine.includes(match.commandLineIncludes,))
         );
     },);
   return found ?? ABSENT_XML_ENTRY;
@@ -230,16 +230,16 @@ export function scopedConfigObject(
    */
   const omitted = (scoped.configOmitKeys ?? [])
     .reduce<JsonObject>(
-      function dropKey(
-        accumulator: Readonly<JsonObject>,
-        key,
-      ): JsonObject {
+    function dropKey(
+      accumulator: Readonly<JsonObject>,
+      key,
+    ): JsonObject {
       return omitJsonKey({
         object: accumulator,
         key,
       },);
     },
-      { ...baseConfig, },
+    { ...baseConfig, },
     );
   return mergeFlatJson({
     base: omitted,
@@ -332,24 +332,24 @@ export function updatedLanguageSettingsXml(
   },);
   return settings.scopedServers
     .reduce<string>(
-      function addScoped(
-        xml,
-        scoped,
-      ): string {
-    return replaceOrInsertXmlEntry({
+    function addScoped(
       xml,
-      key: scoped.id,
-      block: buildLanguageSettingsEntry({
-        serverId: scoped.id,
-        configContent: formatJsonObject({ value: scopedConfigObject({
-          baseConfig,
-          scoped,
-        },), },),
-        schemaContent,
-      },),
-    },);
-  },
-      withBase,
+      scoped,
+    ): string {
+      return replaceOrInsertXmlEntry({
+        xml,
+        key: scoped.id,
+        block: buildLanguageSettingsEntry({
+          serverId: scoped.id,
+          configContent: formatJsonObject({ value: scopedConfigObject({
+            baseConfig,
+            scoped,
+          },), },),
+          schemaContent,
+        },),
+      },);
+    },
+    withBase,
     );
 }
 
@@ -386,19 +386,19 @@ export function updatedUserDefinedXml(
       xml,
       scoped,
     ): string {
-    return replaceOrInsertXmlEntry({
-      xml,
-      key: scoped.id,
-      block: buildUserDefinedEntry({
-        copyOptions: scoped.copyOptions,
-        fileNames: scoped.fileNames,
-        languageId: scoped.languageId,
-        serverId: scoped.id,
-        serverName: scoped.name,
-        sourceBlock: baseEntry.block,
-      },),
-    },);
-  },
+      return replaceOrInsertXmlEntry({
+        xml,
+        key: scoped.id,
+        block: buildUserDefinedEntry({
+          copyOptions: scoped.copyOptions,
+          fileNames: scoped.fileNames,
+          languageId: scoped.languageId,
+          serverId: scoped.id,
+          serverName: scoped.name,
+          sourceBlock: baseEntry.block,
+        },),
+      },);
+    },
     userDefinedXml,
   );
 }

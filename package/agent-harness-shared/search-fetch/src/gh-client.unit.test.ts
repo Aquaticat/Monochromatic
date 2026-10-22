@@ -495,27 +495,27 @@ await describe({
              */
             const caught = await caughtRejection(
               client.fetch(fetchOptions({
-              attempts: [
-                attempt({
-                  label: 'first split',
-                  invocations: [
-                    requiredInvocation([
-                      'api',
-                      '/repos/cli/cli/contents/allow-items/go.mod?ref=8761',
-                    ],),
-                  ],
-                },),
-                attempt({
-                  label: 'second split',
-                  invocations: [
-                    requiredInvocation([
-                      'api',
-                      '/repos/cli/cli/contents/go.mod?ref=8761/allow-items',
-                    ],),
-                  ],
-                },),
-              ],
-            },),),
+                attempts: [
+                  attempt({
+                    label: 'first split',
+                    invocations: [
+                      requiredInvocation([
+                        'api',
+                        '/repos/cli/cli/contents/allow-items/go.mod?ref=8761',
+                      ],),
+                    ],
+                  },),
+                  attempt({
+                    label: 'second split',
+                    invocations: [
+                      requiredInvocation([
+                        'api',
+                        '/repos/cli/cli/contents/go.mod?ref=8761/allow-items',
+                      ],),
+                    ],
+                  },),
+                ],
+              },),),
             );
 
             expect(caught,).toBeInstanceOf(GhFetchError,);
@@ -828,19 +828,19 @@ await describe({
              */
             const caught = await caughtRejection(
               client.fetch(fetchOptions({
-              attempts: [
-                attempt({
-                  label: 'repository cli/cli overview and README',
-                  invocations: [
-                    requiredInvocation([
-                      'repo',
-                      'view',
-                      'cli/cli',
-                    ],),
-                  ],
-                },),
-              ],
-            },),),
+                attempts: [
+                  attempt({
+                    label: 'repository cli/cli overview and README',
+                    invocations: [
+                      requiredInvocation([
+                        'repo',
+                        'view',
+                        'cli/cli',
+                      ],),
+                    ],
+                  },),
+                ],
+              },),),
             );
             /**
              Local value for reason.
@@ -871,19 +871,19 @@ await describe({
              */
             const caught = await caughtRejection(
               client.fetch(fetchOptions({
-              attempts: [
-                attempt({
-                  label: 'repository cli/cli overview and README',
-                  invocations: [
-                    requiredInvocation([
-                      'repo',
-                      'view',
-                      'cli/cli',
-                    ],),
-                  ],
-                },),
-              ],
-            },),),
+                attempts: [
+                  attempt({
+                    label: 'repository cli/cli overview and README',
+                    invocations: [
+                      requiredInvocation([
+                        'repo',
+                        'view',
+                        'cli/cli',
+                      ],),
+                    ],
+                  },),
+                ],
+              },),),
             );
 
             expect((caught as GhFetchError).attemptReasons[0],).toContain('cancelled the request',);
@@ -908,19 +908,19 @@ await describe({
              */
             const caught = await caughtRejection(
               client.fetch(fetchOptions({
-              attempts: [
-                attempt({
-                  label: 'repository cli/cli overview and README',
-                  invocations: [
-                    requiredInvocation([
-                      'repo',
-                      'view',
-                      'cli/cli',
-                    ],),
-                  ],
-                },),
-              ],
-            },),),
+                attempts: [
+                  attempt({
+                    label: 'repository cli/cli overview and README',
+                    invocations: [
+                      requiredInvocation([
+                        'repo',
+                        'view',
+                        'cli/cli',
+                      ],),
+                    ],
+                  },),
+                ],
+              },),),
             );
 
             expect((caught as GhFetchError).attemptReasons[0],).toBe(
@@ -950,19 +950,19 @@ await describe({
              */
             const caught = await caughtRejection(
               client.fetch(fetchOptions({
-              attempts: [
-                attempt({
-                  label: 'repository cli/cli overview and README',
-                  invocations: [
-                    requiredInvocation([
-                      'repo',
-                      'view',
-                      'cli/cli',
-                    ],),
-                  ],
-                },),
-              ],
-            },),),
+                attempts: [
+                  attempt({
+                    label: 'repository cli/cli overview and README',
+                    invocations: [
+                      requiredInvocation([
+                        'repo',
+                        'view',
+                        'cli/cli',
+                      ],),
+                    ],
+                  },),
+                ],
+              },),),
             );
             /**
              Local value for reason.
@@ -1000,10 +1000,10 @@ await describe({
              */
             const caught = await caughtRejection(
               client.fetch(fetchOptions({
-              attempts: [
-                threadAttempt(),
-              ],
-            },),),
+                attempts: [
+                  threadAttempt(),
+                ],
+              },),),
             );
 
             expect(caught,).toBe(cancellation,);

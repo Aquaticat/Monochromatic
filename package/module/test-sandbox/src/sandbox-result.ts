@@ -64,25 +64,25 @@ export function guardMockController({
       new Proxy(
         restore,
         {
-      apply(
-        method: typeof restore,
-        receiver: unknown,
-        args: unknown[],
-      ): unknown {
-        if (generation.restored || ((owner.phase === 'completed') && (!restoring())))
-          return undefined;
+          apply(
+            method: typeof restore,
+            receiver: unknown,
+            args: unknown[],
+          ): unknown {
+            if (generation.restored || ((owner.phase === 'completed') && (!restoring())))
+              return undefined;
         /**
          A failed restoration remains eligible for subsequent cleanup.
          */
-        const result: unknown = Reflect.apply(
-          method,
-          receiver,
-          args,
-        );
-        generation.restored = true;
-        return result;
-      },
-    },
+            const result: unknown = Reflect.apply(
+              method,
+              receiver,
+              args,
+            );
+            generation.restored = true;
+            return result;
+          },
+        },
       ),
     );
   }
@@ -147,32 +147,32 @@ export function injectOwnedFactories({
   const destination = new Proxy(
     target,
     {
-    set(
-      object: object,
-      property: PropertyKey,
-      value: unknown,
-    ): boolean {
+      set(
+        object: object,
+        property: PropertyKey,
+        value: unknown,
+      ): boolean {
       /**
        Clock objects already carry timer guards; only installed functions need factory wrapping.
        */
-      const guarded = (typeof value) === 'function'
-        ? guardSandboxCapability({
-          target: value,
-          owner,
-          operation: `ctx.sinon.${String(property,)}`,
-          invoke,
-        },)
-        : value;
-      if (!Reflect.set(
-        object,
-        property,
-        guarded,
-        object,
-      ))
-        throw new SandboxOwnershipError(`ctx.sinon.inject cannot assign factory property "${String(property,)}" on its destination. Use a writable destination or call the context sandbox directly.`,);
-      return true;
+        const guarded = (typeof value) === 'function'
+          ? guardSandboxCapability({
+            target: value,
+            owner,
+            operation: `ctx.sinon.${String(property,)}`,
+            invoke,
+          },)
+          : value;
+        if (!Reflect.set(
+          object,
+          property,
+          guarded,
+          object,
+        ))
+          throw new SandboxOwnershipError(`ctx.sinon.inject cannot assign factory property "${String(property,)}" on its destination. Use a writable destination or call the context sandbox directly.`,);
+        return true;
+      },
     },
-  },
   );
   invokeSandboxMethod({
     ...invocation,

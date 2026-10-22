@@ -49,9 +49,9 @@ function sealed(
   return archiveOriginalSpans.some(function overlaps(span,): boolean {
     return (span.startOffset
       < slice.target
-      .endOffset) && (span.endOffset
-        > slice.target
-        .startOffset);
+        .endOffset) && (span.endOffset
+          > slice.target
+            .startOffset);
   },);
 }
 
@@ -134,7 +134,7 @@ export function rewriteEverySlice(
       const text = replaced.get(slice.target
         .sliceIndex,)
         ?? slice.target
-        .text;
+          .text;
       /**
        That text rewritten.
        */

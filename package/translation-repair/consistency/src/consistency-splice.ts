@@ -179,7 +179,7 @@ export type ConsistencyPlan =
      */
     readonly kind: 'same';
   }
-  | {
+    | {
     /**
      The words cannot be moved by code without writing a pairing of words and
      marks neither place wrote: a frame's chosen place or receiving place has
@@ -193,29 +193,29 @@ export type ConsistencyPlan =
      A writer can carry them where one is asked for the block that holds the
      place; a block no writer is asked about keeps the place as it is.
      */
-    readonly kind: 'unavailable';
-  }
-  | {
+      readonly kind: 'unavailable';
+    }
+    | {
     /**
      The receiving place's words are replaced.
      */
-    readonly kind: 'replace';
+      readonly kind: 'replace';
 
     /**
      Offset where the replaced words start.
      */
-    readonly start: number;
+      readonly start: number;
 
     /**
      Exclusive offset where they end.
      */
-    readonly end: number;
+      readonly end: number;
 
     /**
      The words that go in.
      */
-    readonly text: string;
-  };
+      readonly text: string;
+    };
 
 /**
  Marks that may open a quote before its first letter: quotation marks,
@@ -302,7 +302,7 @@ function firstLetterLike(
   if (first.character
     .toLowerCase()
     !== model.character
-    .toLowerCase())
+      .toLowerCase())
     return text;
   return `${text.slice(
     0,
@@ -656,7 +656,7 @@ export function planConsistencyEdit(
    */
   const end = target.start
     + target.core
-    .length;
+      .length;
   /**
    The English the readings are made on: the one the caller holds, when the marks are held to the rule.
    */

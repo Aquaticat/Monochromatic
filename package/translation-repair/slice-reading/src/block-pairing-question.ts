@@ -75,11 +75,11 @@ export function blockPairingQuestion(
       node,
       index,
     ): NumberedBlock {
-    return {
-      index,
-      text: node.text,
-    };
-  },);
+      return {
+        index,
+        text: node.text,
+      };
+    },);
   /**
    Incumbent blocks under the same numbering rule.
    */
@@ -89,11 +89,11 @@ export function blockPairingQuestion(
       node,
       index,
     ): NumberedBlock {
-    return {
-      index,
-      text: node.text,
-    };
-  },);
+      return {
+        index,
+        text: node.text,
+      };
+    },);
   /**
    Key naming this question, one per question (ledger X15).
    */

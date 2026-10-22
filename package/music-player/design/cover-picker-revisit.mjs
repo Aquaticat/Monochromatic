@@ -25,10 +25,10 @@ for (const capture of manifest.witnesses) {
   const crop = capture.cropPixels;
   // The status strip is removed and the navigation area kept, so the crop starts under the strip and ends at the panel's end.
   if (png.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
-      capture.physicalPixels[0] !== panel[0] || capture.physicalPixels[1] !== panel[1] ||
-      crop.x !== 0 || crop.width !== panel[0] || !Number.isInteger(crop.y) || crop.y < 1 ||
-      crop.y + crop.height !== panel[1] || png.readUInt32BE(16) !== crop.width || png.readUInt32BE(20) !== crop.height ||
-      capture.densityDpi !== 390 || capture.keyboardClosed !== true || capture.stableAppFrames !== true) {
+    capture.physicalPixels[0] !== panel[0] || capture.physicalPixels[1] !== panel[1] ||
+    crop.x !== 0 || crop.width !== panel[0] || !Number.isInteger(crop.y) || crop.y < 1 ||
+    crop.y + crop.height !== panel[1] || png.readUInt32BE(16) !== crop.width || png.readUInt32BE(20) !== crop.height ||
+    capture.densityDpi !== 390 || capture.keyboardClosed !== true || capture.stableAppFrames !== true) {
     throw new Error(`${file}: cover picker image geometry or acquisition assertion differs.`);
   }
   for (let offset = 8; offset < png.length;) {
@@ -84,8 +84,8 @@ if (process.argv[2] === 'build') {
   for (const variant of figured) if (!variants.includes(variant)) throw new Error(`Cover picker review shows a figure for ${variant}, which is not a candidate.`);
   for (const variant of variants) if (figured.filter(name => name === variant).length !== 1) throw new Error(`Cover picker review shows no single figure for ${variant}.`);
   if ((html.match(/<form\b/g) ?? []).length !== 1 ||
-      /__COVER_PICKER_REVIEW_IMAGES__|<script\b[^>]*\bsrc=|<link\b[^>]*\bhref=|<img\b[^>]*\bsrc="https?:/i.test(html) ||
-      /<input\b[^>]*\btype="radio"|<textarea\b(?:[^"'<>]|"[^"]*"|'[^']*')*?\srequired(?:\s|=|>)/i.test(html)) {
+    /__COVER_PICKER_REVIEW_IMAGES__|<script\b[^>]*\bsrc=|<link\b[^>]*\bhref=|<img\b[^>]*\bsrc="https?:/i.test(html) ||
+    /<input\b[^>]*\btype="radio"|<textarea\b(?:[^"'<>]|"[^"]*"|'[^']*')*?\srequired(?:\s|=|>)/i.test(html)) {
     throw new Error('Cover picker review must be self-contained evidence, not a ballot.');
   }
   console.log('Validated offline cover picker review, optional observations and the absence of a ballot.');

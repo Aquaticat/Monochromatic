@@ -82,7 +82,7 @@ await describe({
               },
             },),).toBe(
               'ArtifactParseError: artifact parse failed at cat.ballots[2].seat: '
-              + 'expected a seat heard once, since a gather hears each seat once.',
+                + 'expected a seat heard once, since a gather hears each seat once.',
             );
           },
         },),

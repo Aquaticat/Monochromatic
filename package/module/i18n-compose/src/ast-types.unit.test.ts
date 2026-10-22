@@ -62,7 +62,7 @@ await describe({
         /** The variant lacks an `object` field entirely; accessing it must be `never`/unknown. */
         expectTypeOf<keyof WhObject>().toEqualTypeOf<
           'kind' | 'wh' | 'subject' | 'verb' | 'adverbials' | 'tense' | 'terminator'
-        >();
+          >();
       },
     },),
 
@@ -115,12 +115,12 @@ await describe({
         type Kinds = Sentence<S, V, N>['kind'];
         expectTypeOf<Kinds>().toEqualTypeOf<
           | 'sentence.declarative'
-          | 'sentence.question.yesNo'
-          | 'sentence.imperative'
-          | 'sentence.question.wh.subject'
-          | 'sentence.question.wh.object'
-          | 'sentence.question.wh.adverbial'
-        >();
+            | 'sentence.question.yesNo'
+            | 'sentence.imperative'
+            | 'sentence.question.wh.subject'
+            | 'sentence.question.wh.object'
+            | 'sentence.question.wh.adverbial'
+          >();
       },
     },),
     //endregion Sentence union covers all four kinds

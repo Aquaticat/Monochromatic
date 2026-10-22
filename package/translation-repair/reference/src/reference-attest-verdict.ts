@@ -42,42 +42,42 @@ export type AttestationVerdict =
      */
     readonly attestation: VerifiedAttestation;
   }
-  | {
+    | {
     /**
      Both quotes found, the reference quote only under another reference.
      */
-    readonly kind: 'relabelled';
+      readonly kind: 'relabelled';
     /**
      Item under the first reference stating it, with its voice.
      */
-    readonly attestation: VerifiedAttestation;
+      readonly attestation: VerifiedAttestation;
     /**
      Reference the item named.
      */
-    readonly answered: number;
-  }
-  | {
+      readonly answered: number;
+    }
+    | {
     /**
      A quote not found.
      */
-    readonly kind: 'dropped';
+      readonly kind: 'dropped';
     /**
      Voice that answered.
      */
-    readonly modelId: RosterModelId;
+      readonly modelId: RosterModelId;
     /**
      Item as answered.
      */
-    readonly item: AttestationItemWire;
+      readonly item: AttestationItemWire;
     /**
      Whether the archive quote was found in the archive.
      */
-    readonly archiveFound: boolean;
+      readonly archiveFound: boolean;
     /**
      Whether the reference quote was found under any reference.
      */
-    readonly referenceFound: boolean;
-  };
+      readonly referenceFound: boolean;
+    };
 
 /**
  Verdict on one item.

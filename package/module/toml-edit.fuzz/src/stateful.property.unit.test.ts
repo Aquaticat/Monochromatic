@@ -116,7 +116,7 @@ const pathArbitrary: Arbitrary<readonly string[]> = array(
  */
 type EditOp =
   | { readonly kind: 'set'; readonly path: readonly string[]; readonly value: unknown; }
-  | { readonly kind: 'delete'; readonly path: readonly string[]; };
+    | { readonly kind: 'delete'; readonly path: readonly string[]; };
 
 /**
  Operation arbitrary.

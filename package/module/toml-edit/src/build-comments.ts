@@ -80,15 +80,15 @@ export function isAttachedGap(gap: string,): boolean {
     .replaceAll(
     ' ',
     '',
-  )
+    )
     .replaceAll(
     '\t',
     '',
-  )
+    )
     .replaceAll(
     '\n',
     '',
-  );
+    );
   return (withoutWhitespace === '')
     && (newlineCount === 1);
 }

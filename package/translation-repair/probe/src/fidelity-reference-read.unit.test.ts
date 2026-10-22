@@ -543,11 +543,11 @@ await describe({
             expect(refusal,).toBe(reason,);
             expect(warned,).toEqual([
               `[translation-repair] [readReference] invented-reference: the source page could not be read, and the `
-              + `caller stopped the read: corpus read failed for ${corpus.pin.commitSha}:${SOURCE_PAGE} `
-              + '(missing-object); the commit has no such path: check the path, or pin a commit that has it.',
+                + `caller stopped the read: corpus read failed for ${corpus.pin.commitSha}:${SOURCE_PAGE} `
+                + '(missing-object); the commit has no such path: check the path, or pin a commit that has it.',
               `[translation-repair] [readReference] invented-reference: the archive page could not be read, and the `
-              + `caller stopped the read: corpus read failed for ${corpus.pin.commitSha}:people/starlit-cat/page.en.md `
-              + '(missing-object); the commit has no such path: check the path, or pin a commit that has it.',
+                + `caller stopped the read: corpus read failed for ${corpus.pin.commitSha}:people/starlit-cat/page.en.md `
+                + '(missing-object); the commit has no such path: check the path, or pin a commit that has it.',
             ],);
           },
         },),

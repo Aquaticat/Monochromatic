@@ -88,7 +88,7 @@ await describe({
 
             expect(printed.lines,).toStrictEqual([
               'PRECISION items=5 gradeable=3 scored=3 realDefects=2 strict=0.667 excluded=0.667 lenient=1.000 '
-              + 'duplicates=3,5 unscored=4',
+                + 'duplicates=3,5 unscored=4',
             ],);
           },
         },),
@@ -111,7 +111,7 @@ await describe({
 
             expect(printed.lines,).toStrictEqual([
               'PRECISION items=0 gradeable=0 scored=0 realDefects=0 strict=n/a excluded=n/a lenient=n/a '
-              + 'duplicates=none unscored=none',
+                + 'duplicates=none unscored=none',
             ],);
           },
         },),

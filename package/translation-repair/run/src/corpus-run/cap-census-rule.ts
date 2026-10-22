@@ -390,8 +390,8 @@ export function capFlagsOf({ row, }: { readonly row: CapCensusRow; },): readonly
     .some(function overShare(reading,): boolean {
     // ENOUGH CALLS TO READ A SHARE FROM, by the rule's own threshold: one cut
     // in twenty calls is not a cap cutting five percent.
-    return (reading.sinceCaps >= MIN_PROVIDER_CALLS) && ((reading.atCap / reading.sinceCaps) > CUT_SHARE_FLAG);
-  },);
+      return (reading.sinceCaps >= MIN_PROVIDER_CALLS) && ((reading.atCap / reading.sinceCaps) > CUT_SHARE_FLAG);
+    },);
   return [
     ...((row.placeholder && (row.ruleCap !== 'too-few-calls')) ? ['placeholder-with-calls' as const,] : []),
     ...(((row.ruleCap !== 'too-few-calls') && (row.ruleCap !== row.cardCap)) ? ['rule-off-card' as const,] : []),

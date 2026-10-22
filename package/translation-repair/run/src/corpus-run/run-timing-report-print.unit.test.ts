@@ -144,8 +144,8 @@ await describe({
             printRounds({ reading: readingOf({ rounds: [], },), },);
             expect(printed.lines,).toEqual([
               'NO ROUND LINE. This log predates round lines and call durations, so how long each fan-out took and '
-              + 'how much of that was spent waiting after quorum are both unrecorded. That is not the same as a '
-              + 'run that never waited.',
+                + 'how much of that was spent waiting after quorum are both unrecorded. That is not the same as a '
+                + 'run that never waited.',
             ],);
           },
         },),

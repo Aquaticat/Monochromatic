@@ -75,8 +75,8 @@ export function invokedParts({ node, }: { readonly node: Node; },):
     readonly callee: Node;
     readonly actuals: readonly Node[];
   }
-  | typeof INVOKES_NOTHING
-{
+    | typeof INVOKES_NOTHING
+  {
   if (isCallExpression(node,))
     return {
       callee: node.expression,

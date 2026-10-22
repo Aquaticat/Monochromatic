@@ -173,7 +173,7 @@ function tokensOf(sourceText: string,): readonly ExpectationToken[] {
       let end = cursor;
       while (
         (end < sourceText.length)
-        && /[\p{Letter}\p{Number}]/u.test(sourceText.charAt(end,),)
+          && /[\p{Letter}\p{Number}]/u.test(sourceText.charAt(end,),)
       ) {
         end += 1;
       }

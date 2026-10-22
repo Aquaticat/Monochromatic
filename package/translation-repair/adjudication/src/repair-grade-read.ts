@@ -144,8 +144,8 @@ const FENCE_MIN = 3;
  */
 export type RepairVerdict =
   | 'fixes'
-  | 'does-not-fix'
-  | 'unscored';
+    | 'does-not-fix'
+    | 'unscored';
 
 /**
  One item as the repair sheet carries it after grading.
@@ -355,11 +355,11 @@ export function parseGradedRepairSheet(
     state.items[state.items
       .length
       - 1] = {
-      index: state.items
-        .length,
-      verdict: read.verdict,
-      note: read.note,
-    };
+        index: state.items
+          .length,
+        verdict: read.verdict,
+        note: read.note,
+      };
   }
   return state.items;
 }

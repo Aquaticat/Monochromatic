@@ -189,7 +189,7 @@ await describe({
           'ARMS accepted=0 control=0 undecided=0',
           UNDECIDED_NOTE,
           'NOTE no entry carries attribution yet, so no claim can have its author barred and there is nothing to '
-          + 'crosscheck. Entries settled before attribution existed record no proposer.',
+            + 'crosscheck. Entries settled before attribution existed record no proposer.',
         ],);
       },
     },),
@@ -235,8 +235,8 @@ await describe({
           ...headLines({ runsDir: scratch.path, entries: '1 entry', },),
           'POPULATION entries=1 withoutAttribution=0 judgeable=1 unjudgeable=0 legacyClaims=0 joinFailures=1',
           'WARNING 1 claim sits on entries that DO carry attribution yet have no proposer recorded. That is the two '
-          + 'records disagreeing about claim identity, not a quiet critic, and it is reported apart from the legacy '
-          + 'count so it cannot hide inside an expected number.',
+            + 'records disagreeing about claim identity, not a quiet critic, and it is reported apart from the legacy '
+            + 'count so it cannot hide inside an expected number.',
           'ARMS accepted=1 control=0 undecided=0',
           UNDECIDED_NOTE,
           'NON-ACCEPTED BY STATUS none',
@@ -286,7 +286,7 @@ await describe({
           'ARMS accepted=0 control=0 undecided=0',
           UNDECIDED_NOTE,
           'NOTE every attributed claim was proposed by the whole roster, so no claim has a judge to seat and there '
-          + 'is nothing to crosscheck.',
+            + 'is nothing to crosscheck.',
           UNJUDGEABLE_WARNING,
         ],);
       },
@@ -325,7 +325,7 @@ await describe({
           'ARMS accepted=0 control=0 undecided=0',
           UNDECIDED_NOTE,
           'NOTE the entries carry attribution, but none of their issues names an attributed claim, so there is '
-          + 'nothing to crosscheck.',
+            + 'nothing to crosscheck.',
         ],);
       },
     },),
@@ -357,7 +357,7 @@ await describe({
           'POOL 1 entry across 1 pipeline generation',
           'POOL   1 artifact unreadable, passed through to be reported as malformed: Broken',
           'WARNING 1 artifact could not be read and is in NEITHER population this report counts, so every count '
-          + 'is over the rest:',
+            + 'is over the rest:',
           '  Broken.json: could not read Broken.json as JSON (SyntaxError at byte 11)',
           'POPULATION entries=1 withoutAttribution=0 judgeable=2 unjudgeable=1 legacyClaims=0 joinFailures=0',
         ],);

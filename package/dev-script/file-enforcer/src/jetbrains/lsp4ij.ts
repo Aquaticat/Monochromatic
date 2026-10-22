@@ -134,8 +134,8 @@ export async function manageLsp4ijServerSettings(settings: Lsp4ijServerSettings,
       ?? []),
     ...settings.scopedServers
       .map(function scopedId(scoped,): string {
-      return scoped.id;
-    },),
+        return scoped.id;
+      },),
   ],);
   /**
    Base user-defined server entry, or absent sentinel.

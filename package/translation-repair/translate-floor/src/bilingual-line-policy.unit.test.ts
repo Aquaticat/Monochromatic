@@ -34,9 +34,9 @@ import {
  */
 const BILINGUAL_PAIR =
   'A line the ORIGINAL gives twice, once in Chinese and once in English directly beside it '
-  + '(a quotation in both languages, and its attribution the same way), is ONE line whose English is already its rendering: '
-  + 'carry that English line once, as the ORIGINAL has it; a rendering carrying the English line alone for such a pair has dropped nothing, '
-  + 'and one carrying the Chinese line, or a second English wording of it, beside the English has invented a line.';
+    + '(a quotation in both languages, and its attribution the same way), is ONE line whose English is already its rendering: '
+    + 'carry that English line once, as the ORIGINAL has it; a rendering carrying the English line alone for such a pair has dropped nothing, '
+    + 'and one carrying the Chinese line, or a second English wording of it, beside the English has invented a line.';
 
 await describe({
   name: 'a Chinese line with its own English beside it is one line on every sheet (class eighty, shi_Yumiaoya)',

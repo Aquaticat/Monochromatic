@@ -282,7 +282,7 @@ await describe({
             },);
             expect(lines,).toEqual([
               `warn ENTRY INFO entry=mittens: ${refusal} No death is recorded for the entry, and it goes on as one whose `
-              + 'info.yml records none',
+                + 'info.yml records none',
             ],);
           },
         },),
@@ -384,7 +384,7 @@ await describe({
               expect(record.kind,).toBe('read',);
               expect(lines,).toEqual([
                 `warn ENTRY INFO entry=mittens: info.died is ${kind}, which is neither text nor a finite number, `
-                + 'so no death is recorded for it',
+                  + 'so no death is recorded for it',
               ],);
             },),);
           },
@@ -463,7 +463,7 @@ await describe({
               },
             },),).toEqual([
               'entry info: The info.yml of entry mittens at the pin refused to parse at line 2 column 1 (BAD_INDENT); '
-              + 'corpus metadata parses upstream, so this signals corruption. No death is recorded for the entry.',
+                + 'corpus metadata parses upstream, so this signals corruption. No death is recorded for the entry.',
             ],);
           },
         },),

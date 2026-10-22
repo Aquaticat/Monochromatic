@@ -53,10 +53,10 @@ export function entryIsInDay(
   // (`neuralwatt-ledger-entry.ts`), which orders as the instants do.
   return (entry.at
     >= day.start
-    .toISOString())
+      .toISOString())
     && (entry.at
       < neuralWattDayAfter({ start: day.start, },)
-      .toISOString());
+        .toISOString());
 }
 
 /**
@@ -108,8 +108,8 @@ export function energyOfDay(
       running,
       entry,
     ): number {
-    return running + entry.wh;
-  },
+      return running + entry.wh;
+    },
     0,
   );
 
@@ -121,8 +121,8 @@ export function energyOfDay(
       running,
       entry,
     ): number {
-    return (entry.estimated === undefined) ? running : (running + entry.wh);
-  },
+      return (entry.estimated === undefined) ? running : (running + entry.wh);
+    },
     0,
   );
   return {

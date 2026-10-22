@@ -397,9 +397,9 @@ function yearDayMonth(
     },),
   },)
     || wordFollows({
-    text,
-    end: month.end,
-  },);
+      text,
+      end: month.end,
+    },);
   if (runsOn)
     return NO_PART;
   return {

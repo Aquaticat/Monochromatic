@@ -153,64 +153,64 @@ function consumeAtRule({
     /**
      Token at the scan cursor.
      */
-    const token = tokens[index];
-    if ((token === undefined) || isTokenEOF(token,)
-      || ((depth === 0) && isTokenCloseCurly(token,)))
-      break;
+      const token = tokens[index];
+      if ((token === undefined) || isTokenEOF(token,)
+        || ((depth === 0) && isTokenCloseCurly(token,)))
+        break;
 
-    if (depth === 0) {
-      if (isTokenSemicolon(token,)) {
-        return {
-          node: {
-            kind: 'atRule',
-            atToken,
-            name: atData.value,
-            preludeTokens: tokens.slice(
-              start + 1,
-              index,
-            ),
-            semicolonToken: token,
-          },
-          nextIndex: index + 1,
-        };
-      }
-      if (isTokenOpenCurly(token,)) {
+      if (depth === 0) {
+        if (isTokenSemicolon(token,)) {
+          return {
+            node: {
+              kind: 'atRule',
+              atToken,
+              name: atData.value,
+              preludeTokens: tokens.slice(
+                start + 1,
+                index,
+              ),
+              semicolonToken: token,
+            },
+            nextIndex: index + 1,
+          };
+        }
+        if (isTokenOpenCurly(token,)) {
         /**
          Braced body of the at-rule.
          */
-        const consumed = consumeBlock({
-          tokens,
-          openIndex: index,
-        },);
-        return {
-          node: {
-            kind: 'atRule',
-            atToken,
-            name: atData.value,
-            preludeTokens: tokens.slice(
-              start + 1,
-              index,
-            ),
-            block: consumed.block,
-          },
-          nextIndex: consumed.nextIndex,
-        };
+          const consumed = consumeBlock({
+            tokens,
+            openIndex: index,
+          },);
+          return {
+            node: {
+              kind: 'atRule',
+              atToken,
+              name: atData.value,
+              preludeTokens: tokens.slice(
+                start + 1,
+                index,
+              ),
+              block: consumed.block,
+            },
+            nextIndex: consumed.nextIndex,
+          };
+        }
       }
-    }
 
     // Depth bookkeeping mirrors classifyRun: function/paren/square tokens
     // nest; their closers un-nest. Curly handling above only fires at depth 0.
-    if (isOpeningToken(token,))
-      depth += 1;
-    else if (isClosingToken(token,)) {
-      depth -= 1;
-      if (depth < 0)
-        throw new CssParseError({
-          message: 'unbalanced closing token in at-rule prelude',
-          offset: token[2],
-        },);
-    }
-    index += 1;
+      if (isOpeningToken(token,))
+        depth += 1;
+      else if (isClosingToken(token,)) {
+        depth -= 1;
+        if (depth < 0)
+          throw new CssParseError({
+            message: 'unbalanced closing token in at-rule prelude',
+            offset: token[2],
+          },);
+      }
+      index += 1;
     }
     return {
       node: {
@@ -266,125 +266,125 @@ export function consumeContents({
   /**
    Accumulated child nodes in source order.
    */
-  const children: CssNode[] = [];
+    const children: CssNode[] = [];
   /**
    Scan cursor over the token array.
    */
-  let index = start;
+    let index = start;
 
-  while (index < tokens.length) {
+    while (index < tokens.length) {
     /**
      Token at the scan cursor.
      */
-    const token = tokens[index];
+      const token = tokens[index];
 
-    if ((token === undefined) || isTokenEOF(token,))
-      break;
+      if ((token === undefined) || isTokenEOF(token,))
+        break;
 
-    if (isTokenCloseCurly(token,)) {
-      if (!insideBlock)
-        throw new CssParseError({
-          message: 'stray closing brace at top level',
-          offset: token[2],
-        },);
-      return {
-        children,
-        nextIndex: index + 1,
-        closeToken: token,
-      };
-    }
+      if (isTokenCloseCurly(token,)) {
+        if (!insideBlock)
+          throw new CssParseError({
+            message: 'stray closing brace at top level',
+            offset: token[2],
+          },);
+        return {
+          children,
+          nextIndex: index + 1,
+          closeToken: token,
+        };
+      }
 
-    if (isTriviaToken(token,)) {
+      if (isTriviaToken(token,)) {
       /**
        Exclusive end of the trivia run.
        */
-      let runEnd = index + 1;
+        let runEnd = index + 1;
       /**
        Token at the trivia scan cursor, refreshed as the run advances.
        */
-      let runToken = tokens[runEnd];
-      while ((runToken !== undefined) && isTriviaToken(runToken,)) {
-        runEnd += 1;
-        runToken = tokens[runEnd];
+        let runToken = tokens[runEnd];
+        while ((runToken !== undefined) && isTriviaToken(runToken,)) {
+          runEnd += 1;
+          runToken = tokens[runEnd];
+        }
+        children.push({
+          kind: 'trivia',
+          tokens: tokens.slice(
+            index,
+            runEnd,
+          ),
+        },);
+        index = runEnd;
+        continue;
       }
-      children.push({
-        kind: 'trivia',
-        tokens: tokens.slice(
-          index,
-          runEnd,
-        ),
-      },);
-      index = runEnd;
-      continue;
-    }
 
-    if (isTokenAtKeyword(token,)) {
+      if (isTokenAtKeyword(token,)) {
       /**
        Consumed at-rule step.
        */
-      const consumed = consumeAtRule({
-        tokens,
-        start: index,
-      },);
-      children.push(consumed.node,);
-      index = consumed.nextIndex;
-      continue;
-    }
+        const consumed = consumeAtRule({
+          tokens,
+          start: index,
+        },);
+        children.push(consumed.node,);
+        index = consumed.nextIndex;
+        continue;
+      }
 
     /**
      Declaration-versus-rule decision for this run.
      */
-    const classified = classifyRun({
-      tokens,
-      start: index,
-    },);
-
-    if (classified.outcome === 'declaration') {
-      children.push({
-        kind: 'declaration',
-        tokens: tokens.slice(
-          index,
-          classified.endExclusive,
-        ),
+      const classified = classifyRun({
+        tokens,
+        start: index,
       },);
-      index = classified.endExclusive;
-      continue;
-    }
+
+      if (classified.outcome === 'declaration') {
+        children.push({
+          kind: 'declaration',
+          tokens: tokens.slice(
+            index,
+            classified.endExclusive,
+          ),
+        },);
+        index = classified.endExclusive;
+        continue;
+      }
 
     /**
      Consumed block of the qualified rule.
      */
-    const consumed = consumeBlock({
-      tokens,
-      openIndex: classified.blockOpenIndex,
-    },);
+      const consumed = consumeBlock({
+        tokens,
+        openIndex: classified.blockOpenIndex,
+      },);
     /**
      Qualified rule assembled from prelude slice and block.
      */
-    const rule: CssRule = {
-      kind: 'rule',
-      preludeTokens: tokens.slice(
-        index,
-        classified.blockOpenIndex,
-      ),
-      block: consumed.block,
-    };
-    children.push(rule,);
-    index = consumed.nextIndex;
-  }
+      const rule: CssRule = {
+        kind: 'rule',
+        preludeTokens: tokens.slice(
+          index,
+          classified.blockOpenIndex,
+        ),
+        block: consumed.block,
+      };
+      children.push(rule,);
+      index = consumed.nextIndex;
+    }
   /**
    EOF token at the terminal cursor, when tokenizer supplied one.
    */
-  const terminalToken = tokens[index];
-  if (insideBlock)
-    throw new CssParseError({
-      message: 'block reached end of input without its closing brace',
-      offset: terminalToken === undefined ? 0 : terminalToken[2],
-    },);
-  return {
-    children,
-    nextIndex: index,
-  };
+    const terminalToken = tokens[index];
+    if (insideBlock)
+      throw new CssParseError({
+        message: 'block reached end of input without its closing brace',
+        offset: terminalToken === undefined ? 0 : terminalToken[2],
+      },);
+    return {
+      children,
+      nextIndex: index,
+    };
   })();
 }
 

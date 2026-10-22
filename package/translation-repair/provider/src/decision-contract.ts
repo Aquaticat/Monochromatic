@@ -96,8 +96,8 @@ export type DecisionScoreQuestion = {
  */
 export type DecisionQuestion =
   | DecisionChoiceQuestion
-  | DecisionNoulQuestion
-  | DecisionScoreQuestion;
+    | DecisionNoulQuestion
+    | DecisionScoreQuestion;
 
 /**
  What the questions are asked about: a plain string, or a JSON object or
@@ -105,8 +105,8 @@ export type DecisionQuestion =
  */
 export type DecisionState =
   | string
-  | Readonly<Record<string, unknown>>
-  | readonly unknown[];
+    | Readonly<Record<string, unknown>>
+    | readonly unknown[];
 
 /**
  Answer to a choice question.
@@ -198,8 +198,8 @@ export type DecisionScoreAnswer = {
  */
 export type DecisionAnswer =
   | DecisionChoiceAnswer
-  | DecisionNoulAnswer
-  | DecisionScoreAnswer;
+    | DecisionNoulAnswer
+    | DecisionScoreAnswer;
 
 /**
  One typed-decision exchange request.

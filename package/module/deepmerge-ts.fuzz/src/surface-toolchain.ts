@@ -112,11 +112,11 @@ export async function writeScratchManifest(scratch: string,): Promise<void> {
     ...OTHER_DEPENDENCIES,
     ...Object.fromEntries(Object.entries(TYPESCRIPT_RELEASES,)
       .map(function asAlias([alias, version,],) {
-      return [
-        alias,
-        `npm:typescript@${version}`,
-      ] as const;
-    },),),
+        return [
+          alias,
+          `npm:typescript@${version}`,
+        ] as const;
+      },),),
   };
   await writeFile(
     join(
@@ -249,17 +249,17 @@ export async function runChild(
   const chunks: string[] = [];
   child.stdout
     .on(
-      'data',
-      function collect(chunk: Buffer,) {
-    chunks.push(chunk.toString(),);
-  },
+    'data',
+    function collect(chunk: Buffer,) {
+      chunks.push(chunk.toString(),);
+    },
     );
   child.stderr
     .on(
-      'data',
-      function collect(chunk: Buffer,) {
-    chunks.push(chunk.toString(),);
-  },
+    'data',
+    function collect(chunk: Buffer,) {
+      chunks.push(chunk.toString(),);
+    },
     );
   /**
    Timer that ends a hung child.

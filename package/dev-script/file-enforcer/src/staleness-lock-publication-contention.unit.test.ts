@@ -35,9 +35,9 @@ type ContenderObservation =
     readonly kind: 'acquired';
     readonly lock: AsyncDisposable;
   }>
-  | Readonly<{
-    readonly kind: 'pending';
-  }>;
+    | Readonly<{
+      readonly kind: 'pending';
+    }>;
 
 /**
  Acquires manifest lock and identifies successful acquisition.

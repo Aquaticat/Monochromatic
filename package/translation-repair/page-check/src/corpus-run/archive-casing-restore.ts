@@ -119,29 +119,29 @@ function capitalForms(
       },);
     },)
     .reduce(
-      function tally(
-        byWord,
-        { word, },
-      ): Map<string, Map<string, number>> {
+    function tally(
+      byWord,
+      { word, },
+    ): Map<string, Map<string, number>> {
         /**
          The word in capitals.
          */
-        const upper = word.toUpperCase();
+      const upper = word.toUpperCase();
         /**
          Spellings seen for it so far.
          */
-        const seen = byWord.get(upper,) ?? new Map<string, number>();
-        seen.set(
-          word,
-          (seen.get(word,) ?? 0) + 1,
-        );
-        byWord.set(
-          upper,
-          seen,
-        );
-        return byWord;
-      },
-      new Map<string, Map<string, number>>(),
+      const seen = byWord.get(upper,) ?? new Map<string, number>();
+      seen.set(
+        word,
+        (seen.get(word,) ?? 0) + 1,
+      );
+      byWord.set(
+        upper,
+        seen,
+      );
+      return byWord;
+    },
+    new Map<string, Map<string, number>>(),
     );
   return new Set([...spellings,]
     .filter(function onlyCapitals([
@@ -254,8 +254,8 @@ function recase(
     text: rebuilt.text,
     changed: rebuilt.applied
       .map(function spelling({ word, },): string {
-      return word;
-    },),
+        return word;
+      },),
   };
 }
 

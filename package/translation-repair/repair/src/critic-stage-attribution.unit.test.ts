@@ -242,8 +242,8 @@ await describe({
          */
         const raisers = new Set(critic.claimAttributions
           .flatMap(function toIds(attribution,) {
-          return proposerIdsOf(attribution,);
-        },),);
+            return proposerIdsOf(attribution,);
+          },),);
 
         // The silent critic is in the roster and absent from attribution, which
         // is the whole point: that difference is a measurable rate.

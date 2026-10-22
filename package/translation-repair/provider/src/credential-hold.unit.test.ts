@@ -178,8 +178,8 @@ await describe({
               },
             },),).toContain(
               `No provider that serves ${SEAT_HYPER_TEXT_BEDROCK} can take a call now `
-              + '(hyper is dry, openrouter is held for this model), so the seat is not withheld on this refusal: '
-              + 'the router goes on by its rules for a dry or held provider. ',
+                + '(hyper is dry, openrouter is held for this model), so the seat is not withheld on this refusal: '
+                + 'the router goes on by its rules for a dry or held provider. ',
             );
           },
         },),

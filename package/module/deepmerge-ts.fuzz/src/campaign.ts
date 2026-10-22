@@ -134,14 +134,14 @@ async function runFile(
     function collectStdout(chunk: Buffer,) {
       chunks.push(chunk,);
     },
-  );
+    );
   child.stderr
     .on(
     'data',
     function collectStderr(chunk: Buffer,) {
       chunks.push(chunk,);
     },
-  );
+    );
   /**
    Exit code and signal once both streams closed.
    */

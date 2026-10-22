@@ -191,13 +191,13 @@ export function censusReportLines({ census, }: { readonly census: CensusSummary;
    */
   const unloadedLines = census.unloadedSources
     .reduce(
-      function sum(
-        total,
-        unloaded,
-      ): number {
-    return total + unloaded.lines;
-  },
-      0,
+    function sum(
+      total,
+      unloaded,
+    ): number {
+      return total + unloaded.lines;
+    },
+    0,
     );
   return [
     `coverage-census at ${census.head}${census.clean ? '' : ' with uncommitted changes'}: ${scope}, ${String(census.passes,)} ${
@@ -209,7 +209,7 @@ export function censusReportLines({ census, }: { readonly census: CensusSummary;
     }`,
     ...census.totals
       .map(function totalLine(total,): string {
-      return `${total.kind}: ${String(total.files,)} ${
+        return `${total.kind}: ${String(total.files,)} ${
         wordForCount({
           count: total.files,
           one: 'file',
@@ -228,14 +228,14 @@ export function censusReportLines({ census, }: { readonly census: CensusSummary;
           many: 'lines',
         },)
       }, `
-        + `${String(total.uncalled,)} ${
+          + `${String(total.uncalled,)} ${
           wordForCount({
             count: total.uncalled,
             one: 'function',
             many: 'functions',
           },)
         } never called`;
-    },),
+      },),
     invariantThrowCountLine({ rows: census.invariantThrows, },),
     `bundles no test loaded: ${String(census.unloadedBundles
       .length,)}, carrying ${String(census.unloadedSources
@@ -247,7 +247,7 @@ export function censusReportLines({ census, }: { readonly census: CensusSummary;
         many: 'sources',
       },)
     } `
-    + `and ${String(unloadedLines,)} physical ${
+      + `and ${String(unloadedLines,)} physical ${
       wordForCount({
         count: unloadedLines,
         one: 'line',

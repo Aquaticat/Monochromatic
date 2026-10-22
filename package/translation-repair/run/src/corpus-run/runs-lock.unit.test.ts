@@ -1273,7 +1273,7 @@ console.log('LOCK_INTERLEAVE ' + JSON.stringify({ interleaved: state.interleaved
               ],
               warned: [
                 `[runs-lock] ${staged} could not be removed after a claim (ENAMETOOLONG); it stands beside the lock `
-                + 'if the claim wrote it',
+                  + 'if the claim wrote it',
               ],
             },);
           },
@@ -1337,13 +1337,13 @@ console.log('LOCK_INTERLEAVE ' + JSON.stringify({ interleaved: state.interleaved
                 pid: recorded.pid,
               }
               : recorded,).toEqual({
-              fields: [
-                'pid',
-                'startedAt',
-                'token',
-              ],
-              pid: process.pid,
-            },);
+                fields: [
+                  'pid',
+                  'startedAt',
+                  'token',
+                ],
+                pid: process.pid,
+              },);
           },
         },),
       ],

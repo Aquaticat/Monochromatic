@@ -113,41 +113,41 @@ export async function acceptAuthenticatedSocket(
    */
   using notice = setTimeout(
     function reportPendingStartup(): void {
-    l.warn('The answer terminal has not connected yet. The question remains active; unlock or reveal the desktop, inspect the terminal, or cancel the tool in Pi.',);
-  },
+      l.warn('The answer terminal has not connected yet. The question remains active; unlock or reveal the desktop, inspect the terminal, or cancel the tool in Pi.',);
+    },
     HELPER_START_NOTICE_MS,
   );
   /**
    Only caller cancellation ends a pending desktop launch.
    */
   const startupSignal = signal ?? new AbortController().signal;
-    for await (const connection of on(
-      server,
-      'connection',
-      { signal: startupSignal, },
-    )) {
+  for await (const connection of on(
+    server,
+    'connection',
+    { signal: startupSignal, },
+  )) {
       /**
        Runtime value narrowed to Node socket.
        */
-      const socketValue: unknown = connection[0];
-      if (!(socketValue instanceof Socket))
-        throw new HelperProtocolError('Answer channel emitted a non-socket connection.',);
+    const socketValue: unknown = connection[0];
+    if (!(socketValue instanceof Socket))
+      throw new HelperProtocolError('Answer channel emitted a non-socket connection.',);
       /**
        Authentication outcome for candidate socket.
        */
-      const authenticated = await authenticateSocket({
-        socket: socketValue,
-        token,
-        signal: startupSignal,
-      },);
-      if ((typeof authenticated) !== 'symbol')
-        return authenticated;
-      if (authenticated !== AUTHENTICATION_REJECTED)
-        throw new HelperProtocolError('Answer channel received an unknown authentication state.',);
-      socketValue.destroy();
-      l.warn('rejected unauthenticated answer helper connection',);
-    }
-    throw new HelperProtocolError('Answer channel stopped before helper authenticated.',);
+    const authenticated = await authenticateSocket({
+      socket: socketValue,
+      token,
+      signal: startupSignal,
+    },);
+    if ((typeof authenticated) !== 'symbol')
+      return authenticated;
+    if (authenticated !== AUTHENTICATION_REJECTED)
+      throw new HelperProtocolError('Answer channel received an unknown authentication state.',);
+    socketValue.destroy();
+    l.warn('rejected unauthenticated answer helper connection',);
+  }
+  throw new HelperProtocolError('Answer channel stopped before helper authenticated.',);
 }
 
 /**
@@ -189,8 +189,8 @@ async function authenticateSocket(
   using abortSubscription = addAbortListener(
     candidateSignal,
     function abortAuthentication(): void {
-    socket.destroy();
-  },
+      socket.destroy();
+    },
   );
   try {
     return await readAuthentication({
@@ -272,8 +272,8 @@ async function readAuthentication({
      */
     const candidate = state.text
       .slice(
-        0,
-        newlineIndex,
+      0,
+      newlineIndex,
       );
     if (candidate !== token)
       return AUTHENTICATION_REJECTED;

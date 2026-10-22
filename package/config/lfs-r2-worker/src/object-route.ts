@@ -243,13 +243,13 @@ export async function serveObject({
     return new Response(
       null,
       {
-      status: NOT_MODIFIED,
-      headers: objectHeaders({
-        oid,
-        size: head.size,
-        mediaType,
-      },),
-    },
+        status: NOT_MODIFIED,
+        headers: objectHeaders({
+          oid,
+          size: head.size,
+          mediaType,
+        },),
+      },
     );
   }
   if (!includeBody) {
@@ -269,13 +269,13 @@ export async function serveObject({
     return new Response(
       null,
       {
-      status: 200,
-      headers: objectHeaders({
-        oid,
-        size: head.size,
-        mediaType,
-      },),
-    },
+        status: 200,
+        headers: objectHeaders({
+          oid,
+          size: head.size,
+          mediaType,
+        },),
+      },
     );
   }
   /**
@@ -294,13 +294,13 @@ export async function serveObject({
   return new Response(
     object.body,
     {
-    status: 200,
-    headers: objectHeaders({
-      oid,
-      size: object.size,
-      mediaType,
-    },),
-  },
+      status: 200,
+      headers: objectHeaders({
+        oid,
+        size: object.size,
+        mediaType,
+      },),
+    },
   );
 }
 
@@ -382,8 +382,8 @@ export async function storeObject({
   }
   await env.BUCKET
     .put(
-      oid,
-      body,
+    oid,
+    body,
     );
   sl.info(`stored ${oid}`,);
   return new Response(

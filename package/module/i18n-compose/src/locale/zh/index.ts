@@ -34,9 +34,9 @@ export function defineChineseLocale<
   Subject extends string,
   Verb extends string,
   Noun extends string,
->(
+  >(
   input: DefineChineseLocaleInput<Label, Subject, Verb, Noun>,
-): LocaleSpec<Label, Subject, Verb, Noun> {
+  ): LocaleSpec<Label, Subject, Verb, Noun> {
   /**
    Noun-phrase renderer closed over the noun + subject tables.
    */

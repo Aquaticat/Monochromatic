@@ -52,13 +52,13 @@ export type AnchorTarget = {
  */
 export type AnchorRejectionKind =
   | 'anchorless-issue'
-  | 'malformed-offset'
-  | 'inverted-span'
-  | 'unknown-node'
-  | 'repeated-node-id'
-  | 'stale-node-hash'
-  | 'span-outside-node'
-  | 'quote-mismatch';
+    | 'malformed-offset'
+    | 'inverted-span'
+    | 'unknown-node'
+    | 'repeated-node-id'
+    | 'stale-node-hash'
+    | 'span-outside-node'
+    | 'quote-mismatch';
 
 /**
  One reason a claim failed deterministic validation.
@@ -217,8 +217,8 @@ function validateSpanAnchor(
   const actual = document
     .text
     .slice(
-      span.startOffset,
-      span.endOffset,
+    span.startOffset,
+    span.endOffset,
     );
 
   if (actual !== span.quotedText) {

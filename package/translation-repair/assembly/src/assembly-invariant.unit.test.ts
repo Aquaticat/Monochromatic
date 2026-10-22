@@ -174,7 +174,7 @@ await describe({
         it({
           name:
             'REFUSES a replacement that repeats its incumbent verbatim, which a truncated or stale cache file '
-            + 'produces and which would otherwise be counted as a slice this lane changed while changing no byte',
+              + 'produces and which would otherwise be counted as a slice this lane changed while changing no byte',
           fn: async () => {
             /**
              Failure the check raised.
@@ -222,8 +222,8 @@ await describe({
         it({
           name:
             'DERIVES the shipped set from the surviving replacements rather than accepting one, which is '
-            + 'what makes the two impossible to disagree: a document changed in one slice while a caller '
-            + 'named another used to pass, since only emptiness was checked',
+              + 'what makes the two impossible to disagree: a document changed in one slice while a caller '
+              + 'named another used to pass, since only emptiness was checked',
           fn: async () => {
             expect(deriveShippedIndices({
               incumbentText: ARCHIVE_NAP,
@@ -245,8 +245,8 @@ await describe({
         it({
           name:
             'REFUSES a document its own surviving replacements do not reconstruct, which is the check '
-            + 'nothing performed before: the returned text and the reported set came from one list by '
-            + 'convention rather than by construction',
+              + 'nothing performed before: the returned text and the reported set came from one list by '
+              + 'convention rather than by construction',
           fn: async () => {
             /**
              Failure the check raised.
@@ -273,9 +273,9 @@ await describe({
         it({
           name:
             'REFUSES a document that moved while nothing survived, which is the same contradiction from '
-            + 'the other side and would hide a rewrite from every per-slice reader, BY THE RE-SPLICE: no '
-            + 'replacements reassemble to the archive itself, so the moved document is not what its zero '
-            + 'survivors make',
+              + 'the other side and would hide a rewrite from every per-slice reader, BY THE RE-SPLICE: no '
+              + 'replacements reassemble to the archive itself, so the moved document is not what its zero '
+              + 'survivors make',
           fn: async () => {
             /**
              Failure the check raised.
@@ -303,9 +303,9 @@ await describe({
         it({
           name:
             'REFUSES a surviving replacement repeating its own incumbent, so the check is sound when '
-            + 'called on its own rather than relying on every caller having run the per-slice check '
-            + 'before the guard: such a replacement survives assembly untouched and would be named as '
-            + 'shipped',
+              + 'called on its own rather than relying on every caller having run the per-slice check '
+              + 'before the guard: such a replacement survives assembly untouched and would be named as '
+              + 'shipped',
           fn: async () => {
             /**
              Failure the check raised.
@@ -332,10 +332,10 @@ await describe({
         it({
           name:
             'NAMES THE CALL ORDER when it refuses a net-zero set, because that refusal is the one a '
-            + 'blameless run can reach: these two replacements each differ from their own slice and '
-            + 'reassemble to the archive anyway, which is a legitimate outcome the guard canonicalizes '
-            + 'to no survivors. Reaching this message means the guard has not run yet, and the message '
-            + 'has to say that rather than describe the document',
+              + 'blameless run can reach: these two replacements each differ from their own slice and '
+              + 'reassemble to the archive anyway, which is a legitimate outcome the guard canonicalizes '
+              + 'to no survivors. Reaching this message means the guard has not run yet, and the message '
+              + 'has to say that rather than describe the document',
           fn: async () => {
             /**
              Failure the check raised.
@@ -375,8 +375,8 @@ await describe({
         it({
           name:
             'puts BOTH sets in document order, which the withdrawn one never was: the guard returns it in the order '
-            + 'it took slices back, so two lanes compared slice by slice were being read from lists ordered by '
-            + 'different rules',
+              + 'it took slices back, so two lanes compared slice by slice were being read from lists ordered by '
+              + 'different rules',
           fn: async () => {
             /**
              Sets given in the order a guard would produce them.
@@ -433,9 +433,9 @@ await describe({
         it({
           name:
             'reports the REPEAT before the range when a set breaks both, and names an out-of-range index in '
-            + 'document order rather than in the order it was listed. Nothing depends on which failure comes '
-            + 'first, which is exactly why it is pinned: the checks that need no slice count run first, and '
-            + 'the range check reads the sets once they are ascending',
+              + 'document order rather than in the order it was listed. Nothing depends on which failure comes '
+              + 'first, which is exactly why it is pinned: the checks that need no slice count run first, and '
+              + 'the range check reads the sets once they are ascending',
           fn: async () => {
             /**
              Failure a set breaking both the repeat rule and the range rule raised.
@@ -461,7 +461,7 @@ await describe({
         it({
           name:
             'REFUSES a slice named as both shipped and withdrawn, which both lane contracts call impossible '
-            + 'by construction and neither checked',
+              + 'by construction and neither checked',
           fn: async () => {
             /**
              Failure the overlap raised.

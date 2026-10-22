@@ -34,10 +34,10 @@ type EditStep =
     readonly path: TomlPath;
     readonly value: unknown
   }
-  | {
-    readonly kind: 'delete';
-    readonly path: TomlPath
-  };
+    | {
+      readonly kind: 'delete';
+      readonly path: TomlPath
+    };
 
 /**
  Deterministic edit sequence reaching path-create, dotted-parent merge,

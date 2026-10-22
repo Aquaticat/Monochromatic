@@ -129,9 +129,9 @@ await describe({
             expect(run.stderr,).toBe('',);
             expect(run.stdout,).toBe([
               'NOTE sheet and manifest agree on seed and corpus pin, but one of them carries no draw digest, so '
-              + 'this join rests on the file names and the header rather than on the items. Draws taken before '
-              + 'the digest existed read this way, and are scoreable; a NEW draw reading this way means the '
-              + 'digest was dropped somewhere and the pairing is unproven.',
+                + 'this join rests on the file names and the header rather than on the items. Draws taken before '
+                + 'the digest existed read this way, and are scoreable; a NEW draw reading this way means the '
+                + 'digest was dropped somewhere and the pairing is unproven.',
               PRECISION_LINE,
               'AGREEMENT compared=3 agreed=2 rate=0.667 disagreed=2',
               '',
@@ -174,7 +174,7 @@ await describe({
             expect(run.stderr,).toBe('',);
             expect(run.stdout,).toBe([
               'NOTE no manifest found beside this sheet, so nothing proves the pre-grades this report reads '
-              + 'describe the same draw. Both files are joined by POSITION and neither prints an issue id.',
+                + 'describe the same draw. Both files are joined by POSITION and neither prints an issue id.',
               PRECISION_LINE,
               'AGREEMENT none: no pre-grades recorded for this draw',
               '',
@@ -200,7 +200,7 @@ await describe({
             expect(run.code,).toBe(6,);
             expect(run.stdout,).toBe('',);
             expect(run.stderr,).toBe('score-agreement: --sheet needs a value written after it. Usage: score-agreement [--sheet <graded sheet>] '
-                + '[--manifest <sample manifest>] [--pre-grades <pre-grades file>]\n',);
+              + '[--manifest <sample manifest>] [--pre-grades <pre-grades file>]\n',);
           },
         },),
 

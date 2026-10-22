@@ -168,8 +168,8 @@ export function tenseCandidateLines(
           .map(function candidateLine(candidate,): string {
           // Each text is written as a JSON string, so a quotation mark, a
           // backslash or a line break inside the sentence cannot end the line.
-          return `- ${JSON.stringify(candidate.sentence,)} (matched ${JSON.stringify(candidate.matched,)}, rule ${candidate.rule})`;
-        },),
+            return `- ${JSON.stringify(candidate.sentence,)} (matched ${JSON.stringify(candidate.matched,)}, rule ${candidate.rule})`;
+          },),
       ];
     },),
   ];

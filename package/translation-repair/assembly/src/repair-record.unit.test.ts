@@ -106,8 +106,8 @@ function catOutcome(
     repairedText: refined
       ? REFINED_TEXT
       : accuracyPatchSelected
-      ? PATCHED_TEXT
-      : 'The cat is doing the sleeping. She wakes at dusk.',
+        ? PATCHED_TEXT
+        : 'The cat is doing the sleeping. She wakes at dusk.',
     changed: accuracyPatchSelected || refined,
     issues,
     resolvedIssueIds,

@@ -482,8 +482,8 @@ await describe({
         expect(warnings.slice(0, seats.length,).toSorted(),).toEqual(askedLines.toSorted(),);
         expect(warnings.slice(seats.length,),).toEqual([
           `[produceTranslateSlate] [repairOneCandidate] translate-repair ${firstSeat}: `
-          + 'refused by ProviderHttpError from synthetic with HTTP 503 (the provider said: "the cat is napping in the sun"), as the '
-          + 'caller stopped the repair',
+            + 'refused by ProviderHttpError from synthetic with HTTP 503 (the provider said: "the cat is napping in the sun"), as the '
+            + 'caller stopped the repair',
           `slice ${String(slice.target.sliceIndex,)}: abandoned by the caller's abort`,
         ],);
       },

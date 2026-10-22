@@ -354,9 +354,9 @@ await describe({
               runsDir: runs.path,
             },),).rejects
               .toThrow(
-                'corpus read failed for deadbeef:people/Kitten/page.md (unreadable-clone); git could not open the '
-                  + 'clone: check that the directory exists, is the top of a git repository, and is one git may '
-                  + 'read.',
+              'corpus read failed for deadbeef:people/Kitten/page.md (unreadable-clone); git could not open the '
+                + 'clone: check that the directory exists, is the top of a git repository, and is one git may '
+                + 'read.',
               );
           },
         },),

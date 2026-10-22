@@ -199,8 +199,8 @@ function referenceLinkLabels({ text, }: { readonly text: string; },): ReadonlyMa
         markup,
         text
           .slice(
-            start + 1,
-            textEnd,
+          start + 1,
+          textEnd,
           )
           .trim(),
       );
@@ -279,8 +279,8 @@ function contributorForm(
   // The label as a reader sees it: spaces inside the brackets show nothing.
   return unmarked
     .slice(
-      1,
-      labelEnd,
+    1,
+    labelEnd,
     )
     .trim();
 }

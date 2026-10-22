@@ -122,9 +122,9 @@ await describe({
               return line.startsWith('SENSITIVITY ',);
             },),).toEqual([
               'SENSITIVITY arm=flipped expected=agreement at either tier on the oracle span heard=3/3 '
-              + 'corroborated=1 agreed=1 agreedVoices=3 near=0 oracleVoices=3 findings=0',
+                + 'corroborated=1 agreed=1 agreedVoices=3 near=0 oracleVoices=3 findings=0',
               'SENSITIVITY arm=clean expected=agreement at neither tier heard=3/3 corroborated=0 agreed=0 '
-              + 'agreedVoices=0 near=0 oracleVoices=0 findings=0',
+                + 'agreedVoices=0 near=0 oracleVoices=0 findings=0',
               `SENSITIVITY kept 2 arms at ${keptAt}`,
             ],);
 

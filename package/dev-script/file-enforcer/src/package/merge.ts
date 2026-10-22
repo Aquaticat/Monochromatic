@@ -58,7 +58,7 @@ export function mergeOverrides(
       ...entry,
       bin: override.bin
         !== override
-        .effname ? override.bin : entry.bin,
+          .effname ? override.bin : entry.bin,
       check: override.check
         !== DEFAULT_CHECK ? override.check : entry.check,
     };

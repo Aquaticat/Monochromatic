@@ -33,8 +33,8 @@ import { runAttemptQueue, } from '../../dist/final/node/index.mjs';
  */
 type AttemptOutcome =
   | { readonly kind: 'settled'; }
-  | { readonly kind: 'resumable-failure'; }
-  | { readonly kind: 'stopped'; };
+    | { readonly kind: 'resumable-failure'; }
+    | { readonly kind: 'stopped'; };
 
 /**
  What one stub entry does on each successive attempt.

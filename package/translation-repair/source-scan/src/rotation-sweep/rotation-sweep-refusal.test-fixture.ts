@@ -92,7 +92,7 @@ export function refusalLines({ outcome, }: { readonly outcome: SweepOutcome; },)
     return [];
   return [
     'rotation sweep: refused, because the sweep ran to the end and found cases to fix; this is a finding, not a fault of '
-    + 'the command',
+      + 'the command',
     ...shifted.flatMap(function shiftedLines({
       failed,
       firstSalt,

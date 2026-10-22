@@ -366,8 +366,8 @@ export function pickFallbackCandidate(
         .applied
         .length
         > leader.patch
-        .applied
-        .length
+          .applied
+          .length
         ? candidate
         : leader;
     },

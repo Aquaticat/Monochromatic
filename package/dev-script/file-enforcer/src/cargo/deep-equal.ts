@@ -86,7 +86,7 @@ export function deepEqual(
     const leftKeys = Object.keys(left,);
     if (leftKeys.length
       !== Object.keys(right,)
-      .length)
+        .length)
       return false;
     return leftKeys.every(function keyEqual(key,): boolean {
       return Object.hasOwn(

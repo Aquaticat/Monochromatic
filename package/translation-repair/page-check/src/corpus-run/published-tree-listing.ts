@@ -61,14 +61,14 @@ export type VerifiableRun =
      */
     readonly published: readonly string[];
   }
-  | {
-    readonly kind: 'nothing-verified';
+    | {
+      readonly kind: 'nothing-verified';
 
     /**
      Why nothing could be checked, phrased as a clause a report can carry.
      */
-    readonly why: string;
-  };
+      readonly why: string;
+    };
 
 /**
  Lists the entries a run settled, by the artifacts it wrote.

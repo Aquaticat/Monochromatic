@@ -289,7 +289,7 @@ export async function pushFile(
    Absolute path the guest will use to read the pushed file, branched on OS.
    */
   const guestFilePath = meta.osFamily
-      === 'windows'
+    === 'windows'
     ? `${WINDOWS_GUEST_MOUNT_POINT}${filename}`
     : `${GUEST_MOUNT_POINT}/${filename}`;
 

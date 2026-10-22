@@ -221,13 +221,13 @@ export async function packageExternals({
     ...manifest.peerDependencies,
   })
     .filter(function isExternalName(name: string): boolean {
-    return !alwaysBundle.some(function matchesName(pattern: BundlePattern): boolean {
-      return matchesBundlePattern({
-        name,
-        pattern
+      return !alwaysBundle.some(function matchesName(pattern: BundlePattern): boolean {
+        return matchesBundlePattern({
+          name,
+          pattern
+        });
       });
     });
-  });
 
   return [
     // oxlint-disable-next-line no-restricted-syntax/no-regex -- Anchored protocol prefix test for node builtins; input is one bare import specifier; no repetition, no backtracking.

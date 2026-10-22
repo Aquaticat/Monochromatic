@@ -95,10 +95,10 @@ type EnvInteger =
   | {
     readonly set: false;
   }
-  | {
-    readonly set: true;
-    readonly value: number;
-  };
+    | {
+      readonly set: true;
+      readonly value: number;
+    };
 
 /**
  Reading of a variable that is unset or empty.

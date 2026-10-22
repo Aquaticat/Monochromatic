@@ -65,7 +65,7 @@ export function unaryUpdateReplacements(options: {
         key: 'argument',
       },)
         .end,
-    );
+      );
     /**
      Unary operator token declared by the expression.
      */
@@ -139,7 +139,7 @@ export function unaryUpdateReplacements(options: {
         key: 'argument',
       },)
         .end,
-    );
+      );
 
     return [{
       start: options.node

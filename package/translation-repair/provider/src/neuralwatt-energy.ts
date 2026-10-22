@@ -57,9 +57,9 @@ export type NeuralWattDay =
      */
     readonly keyBlockedUntil?: Date;
   }
-  | {
-    readonly kind: 'unanchored';
-  };
+    | {
+      readonly kind: 'unanchored';
+    };
 
 /**
  One reading of the day's NeuralWatt energy.

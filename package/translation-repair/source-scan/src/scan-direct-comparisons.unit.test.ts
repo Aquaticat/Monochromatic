@@ -185,8 +185,8 @@ function scanPathsOf({ mise, }: { readonly mise: string; },): readonly string[] 
     throw new Error(`mise.toml's ${SCANS_TASK} table holds no run line, so no scan can be read`,);
   return run
     .slice(
-      'run = "'.length,
-      -1,
+    'run = "'.length,
+    -1,
     )
     .split(' ',)
     .filter(function isScan(token,): boolean {
@@ -460,8 +460,8 @@ function readingFunctions({ syntaxes, }: { readonly syntaxes: readonly FileSynta
 function startLine({ text, node, }: { readonly text: string; readonly node: TreeNode; },): number {
   return text
     .slice(
-      0,
-      node.start,
+    0,
+    node.start,
     )
     .split('\n',)
     .length;

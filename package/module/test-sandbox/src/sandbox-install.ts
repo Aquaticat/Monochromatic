@@ -80,19 +80,19 @@ export function invokeCollectionFactory({
       /**
        Capture before another member's restoration changes the destination descriptor.
        */
-      const restore: unknown = Reflect.get(
-        fake,
-        'restore',
-      );
-      return function restorePartialFake(): void {
-        if ((typeof restore) === 'function')
-          Reflect.apply(
-            restore,
-            fake,
-            [],
-          );
-      };
-    },);
+        const restore: unknown = Reflect.get(
+          fake,
+          'restore',
+        );
+        return function restorePartialFake(): void {
+          if ((typeof restore) === 'function')
+            Reflect.apply(
+              restore,
+              fake,
+              [],
+            );
+        };
+      },);
     try {
       restoreSandboxSteps(steps,);
     }

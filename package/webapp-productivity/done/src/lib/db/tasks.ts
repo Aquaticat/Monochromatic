@@ -83,7 +83,7 @@ export async function createTask(input: TaskCreateInput,): Promise<Task> {
     null,
     timestamp,
     timestamp,
-  );
+    );
 
   /**
    Read-back so callers receive the canonical row including server-applied defaults.
@@ -134,7 +134,7 @@ export async function updateTask({
     title: input.title
       ?.trim()
       ?? currentTask
-      .title,
+        .title,
     updatedAt: nowIso(),
   };
 
@@ -156,7 +156,7 @@ export async function updateTask({
     updatedTask.status,
     updatedTask.updatedAt,
     id,
-  );
+    );
 
   return getTaskById(id,);
 }

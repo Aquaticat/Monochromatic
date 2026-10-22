@@ -43,13 +43,13 @@ export type ArtifactConsolidateGate =
      */
     readonly usable: number;
   }
-  | {
+    | {
     /**
      No consolidation reached the gate, so there was nothing to ask about.
      The terminal state says which of the earlier exits was taken.
      */
-    readonly kind: 'not-asked';
-  };
+      readonly kind: 'not-asked';
+    };
 
 /**
  Wording this slice contributes to the assembled document.
@@ -81,7 +81,7 @@ export type ArtifactConsolidateShipped =
      */
     readonly text: string;
   }
-  | {
+    | {
     /**
      The lane's standing failed the deterministic gate, the incumbent
      passed it and stood in as the standing (owner, 2026-09-09), and the
@@ -91,14 +91,14 @@ export type ArtifactConsolidateShipped =
      and a page assembled from the lane's wording would carry the text the
      gate refused.
      */
-    readonly kind: 'incumbent';
+      readonly kind: 'incumbent';
 
     /**
      Incumbent wording, wrapped, exactly as it should reach the document.
      */
-    readonly text: string;
-  }
-  | {
+      readonly text: string;
+    }
+    | {
     /**
      No wording for this slice passed the deterministic rule, so the archive
      keeps it (owner, 2026-09-27, "Keep archive, ship"), whatever the lane
@@ -109,17 +109,17 @@ export type ArtifactConsolidateShipped =
      empty string written into the page, and no second copy can disagree
      with the row.
      */
-    readonly kind: 'archive';
-  }
-  | {
+      readonly kind: 'archive';
+    }
+    | {
     /**
      Nothing here replaces what the lane contest left, whether because the
      floor refused the slate, the judges kept the standing text, the gate
      did, the wrap erased the difference, or the contest named neither lane.
      The terminal state says which.
      */
-    readonly kind: 'unchanged';
-  };
+      readonly kind: 'unchanged';
+    };
 
 /**
  Terminal as an ARTIFACT may name it, which is wider than what a run writes.
@@ -145,7 +145,7 @@ export type ArtifactConsolidateShipped =
  */
 export type ArtifactConsolidationTerminal =
   | ConsolidationTerminal
-  | 'slate-kept-standing';
+    | 'slate-kept-standing';
 
 /**
  Paragraph-located absolute naturalness defect.
@@ -335,62 +335,62 @@ export type ArtifactConsolidationPolish =
      */
     readonly reason: 'front-matter' | 'not-configured' | 'unsafe-baseline';
   }
-  | {
+    | {
     /**
      Naturalness stage examined approved base.
      */
-    readonly kind: 'settled';
+      readonly kind: 'settled';
 
     /**
      Approved text before polish.
      */
-    readonly baseText: string;
+      readonly baseText: string;
 
     /**
      Selected rewrite before final gate.
      */
-    readonly proposedText: string;
+      readonly proposedText: string;
 
     /**
      Final text after gate.
      */
-    readonly text: string;
+      readonly text: string;
 
     /**
      Whether final text replaces base.
      */
-    readonly changed: boolean;
+      readonly changed: boolean;
 
     /**
      Rewriters heard.
      */
-    readonly refinersHeard: readonly string[];
+      readonly refinersHeard: readonly string[];
 
     /**
      Models contributing selected proposal.
      */
-    readonly contributors: readonly string[];
+      readonly contributors: readonly string[];
 
     /**
      Number of naturalness selection rounds retained in run ledger.
      */
-    readonly roundCount: number;
+      readonly roundCount: number;
 
     /**
      Final fidelity-first naturalness gate.
      */
-    readonly gate?: ConsolidationPolishGateOutcome;
+      readonly gate?: ConsolidationPolishGateOutcome;
 
     /**
      Absolute whole-passage review, required from artifact generation eight.
      */
-    readonly review?: ArtifactNaturalnessReview;
+      readonly review?: ArtifactNaturalnessReview;
 
     /**
      Stable naturalness findings.
      */
-    readonly findings: readonly string[];
-  };
+      readonly findings: readonly string[];
+    };
 
 /**
  One consolidated slice as stage left it.
@@ -630,16 +630,16 @@ export type ArtifactConsolidation =
      */
     readonly kind: 'not-run';
   }
-  | {
+    | {
     /**
      The stage ran at every slice the lane contest settled.
      */
-    readonly kind: 'settled';
+      readonly kind: 'settled';
 
     /**
      One record per consolidated slice, in comparison-row order.
      */
-    readonly slices: readonly ArtifactConsolidateSlice[];
-  };
+      readonly slices: readonly ArtifactConsolidateSlice[];
+    };
 
 //endregion Artifact version 2 consolidation

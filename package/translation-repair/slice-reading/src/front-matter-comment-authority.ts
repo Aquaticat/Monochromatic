@@ -26,12 +26,12 @@ type CommentReading =
      */
     readonly text: string;
   }
-  | {
+    | {
     /**
      Requested path or attribution marker does not exist.
      */
-    readonly kind: 'not-found';
-  };
+      readonly kind: 'not-found';
+    };
 
 /**
  Marker separating location prose from contributor attribution.

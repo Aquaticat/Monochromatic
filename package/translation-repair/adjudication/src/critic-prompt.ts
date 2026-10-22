@@ -282,8 +282,8 @@ export function buildCriticMessages(
    English actually went. A relocation is only visible in the second.
    */
   const nearbyBlock = ((neighbouringSourceText === undefined)
-      || (neighbouringSourceText === ''))
-      && (incumbentShown === '')
+    || (neighbouringSourceText === ''))
+    && (incumbentShown === '')
     ? ''
     : `${fence} NEARBY ORIGINAL, CONTEXT ONLY ${fence}
 ${neighbouringSourceText ?? ''}

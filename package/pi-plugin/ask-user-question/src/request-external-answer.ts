@@ -68,7 +68,7 @@ export type ExternalAnswerOutcome =
     readonly status: 'answered';
     readonly answer: string
   }
-  | { readonly status: 'cancelled'; };
+    | { readonly status: 'cancelled'; };
 
 /**
  Terminal launcher shape injected by tests.

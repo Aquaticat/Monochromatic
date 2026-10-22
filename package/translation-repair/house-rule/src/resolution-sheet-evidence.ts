@@ -84,16 +84,16 @@ export const CHECKER_REFERENCE_RULE: string = 'Cited references, when that block
 export function jsonLine({ text, }: { readonly text: string; },): string {
   return JSON.stringify(text,)
     .replaceAll(
-      '\u0085',
-      String.raw`\u0085`,
+    '\u0085',
+    String.raw`\u0085`,
     )
     .replaceAll(
-      '\u2028',
-      String.raw`\u2028`,
+    '\u2028',
+    String.raw`\u2028`,
     )
     .replaceAll(
-      '\u2029',
-      String.raw`\u2029`,
+    '\u2029',
+    String.raw`\u2029`,
     );
 }
 

@@ -94,12 +94,12 @@ export type WidthInputOutcome =
     readonly kind: 'ready';
     readonly input: WidthProbeInput;
   }
-  | {
-    readonly kind: 'skipped';
-    readonly refusal: WidthInputRefusal;
-    readonly entryId: string;
-    readonly sliceIndex: number;
-  };
+    | {
+      readonly kind: 'skipped';
+      readonly refusal: WidthInputRefusal;
+      readonly entryId: string;
+      readonly sliceIndex: number;
+    };
 
 /**
  Runs the critics and the panel over one slice, as production does.

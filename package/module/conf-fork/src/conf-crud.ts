@@ -54,13 +54,13 @@ export type SetInput =
      */
     readonly value?: unknown;
   }
-  | {
+    | {
     /**
      Items to place at once,
      deep-partial over the store shape.
      */
-    readonly values: Record<string, unknown>;
-  };
+      readonly values: Record<string, unknown>;
+    };
 
 /**
  The store's CRUD surface as implemented here,
@@ -257,9 +257,9 @@ export function createCrud<T extends Record<string, unknown>>(context: CrudConte
         function placeEntry(
           currentStore: Record<string, unknown>,
           entry: [
-          string,
-          unknown
-        ],
+            string,
+            unknown
+          ],
         ): Record<string, unknown> {
           return setOne({
             store: currentStore,
@@ -268,7 +268,7 @@ export function createCrud<T extends Record<string, unknown>>(context: CrudConte
           },);
         },
         store,
-      ),);
+        ),);
       return;
     }
     /**
@@ -446,9 +446,9 @@ export function createCrud<T extends Record<string, unknown>>(context: CrudConte
       function placeDefault(
         currentStore: Record<string, unknown>,
         entry: [
-        string,
-        unknown
-      ],
+          string,
+          unknown
+        ],
       ): Record<string, unknown> {
         /**
          Default entry being placed into the accumulating store copy.
@@ -468,7 +468,7 @@ export function createCrud<T extends Record<string, unknown>>(context: CrudConte
         },);
       },
       createPlainObject(),
-    );
+      );
     context.assignStore(newStore,);
   }
 

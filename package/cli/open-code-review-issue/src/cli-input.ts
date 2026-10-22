@@ -17,10 +17,10 @@ export type CliInputArgument =
     readonly kind: 'file';
     readonly path: string;
   }
-  | {
-    readonly kind: 'inline-json';
-    readonly text: string;
-  };
+    | {
+      readonly kind: 'inline-json';
+      readonly text: string;
+    };
 
 /**
  Validates exactly one positional input argument.

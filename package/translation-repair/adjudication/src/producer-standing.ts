@@ -222,12 +222,12 @@ export type PreferenceRate =
      */
     readonly share: number;
   }
-  | {
+    | {
     /**
      Discriminator marking a standing no disinterested judge voted on.
      */
-    readonly measured: false;
-  };
+      readonly measured: false;
+    };
 
 /**
  Share of disinterested ballots that named one model's writing.

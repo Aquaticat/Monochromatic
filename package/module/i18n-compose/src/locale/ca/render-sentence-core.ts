@@ -253,7 +253,7 @@ export function renderImperative<S extends string, V extends string, N extends s
     .imperative
     ?? verbs[sentence.predicate
       .verb]
-    .infinitive;
+      .infinitive;
   /**
    Rendered object slot.
    */

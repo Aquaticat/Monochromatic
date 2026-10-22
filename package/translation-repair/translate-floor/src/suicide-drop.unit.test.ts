@@ -63,9 +63,9 @@ function dropRefusal({ named, }: { readonly named: string; },): SliceValidation 
     kind: 'invalid',
     findings: [
       `Your translation drops the suicide the ORIGINAL names: the ORIGINAL passage writes ${named}, and your `
-      + 'translation carries no wording for suicide at all. A death by suicide is said to be a suicide, and a '
-      + 'survived attempt is still an attempt: say that the person attempted suicide or tried to end their life, '
-      + 'with the pronoun the page uses for them, keeping the means as vague as the house rule asks.',
+        + 'translation carries no wording for suicide at all. A death by suicide is said to be a suicide, and a '
+        + 'survived attempt is still an attempt: say that the person attempted suicide or tried to end their life, '
+        + 'with the pronoun the page uses for them, keeping the means as vague as the house rule asks.',
     ],
   };
 }

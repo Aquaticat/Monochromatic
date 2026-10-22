@@ -48,32 +48,32 @@ export type LocaleSpec<
   Subject extends string,
   Verb extends string,
   Noun extends string,
-> = {
+  > = {
   /**
    Resolves a static UI label key to its rendered surface.
    */
-  readonly renderLabel: BivariantRenderer<Label, string>;
+    readonly renderLabel: BivariantRenderer<Label, string>;
   /**
    Resolves a bare noun key to its rendered surface, without any article or count.
    */
-  readonly renderNoun: BivariantRenderer<Noun, string>;
+    readonly renderNoun: BivariantRenderer<Noun, string>;
   /**
    Renders a complete noun phrase AST.
    */
-  readonly renderNounPhrase: BivariantRenderer<NounPhrase<Subject, Noun>, string>;
+    readonly renderNounPhrase: BivariantRenderer<NounPhrase<Subject, Noun>, string>;
   /**
    Renders a complete verb phrase AST, using the locale's tense and agreement strategy.
    */
-  readonly renderVerbPhrase: BivariantRenderer<VerbPhrase<Subject, Verb, Noun>, string>;
+    readonly renderVerbPhrase: BivariantRenderer<VerbPhrase<Subject, Verb, Noun>, string>;
   /**
    Renders a sentence AST (declarative, yes/no, wh, or imperative).
    */
-  readonly renderSentence: BivariantRenderer<Sentence<Subject, Verb, Noun>, string>;
+    readonly renderSentence: BivariantRenderer<Sentence<Subject, Verb, Noun>, string>;
   /**
    Renders a fragment AST (sub-sentence text such as headings or button labels).
    */
-  readonly renderFragment: BivariantRenderer<Fragment<Label, Subject, Verb, Noun>, string>;
-};
+    readonly renderFragment: BivariantRenderer<Fragment<Label, Subject, Verb, Noun>, string>;
+  };
 
 /**
  Extracts the `Label` type parameter from a {@link LocaleSpec}.

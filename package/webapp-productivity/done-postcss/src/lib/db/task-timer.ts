@@ -74,7 +74,7 @@ export async function startTaskTimer(id: string,): Promise<Task | typeof TASK_NO
     timestamp,
     timestamp,
     id,
-  );
+    );
   return getTaskById(id,);
 }
 
@@ -109,7 +109,7 @@ export async function stopTaskTimer(id: string,): Promise<Task | typeof TASK_NOT
       Math.floor(
         (Date.now()
           - Date
-          .parse(currentTask.timerStartedAt,)) / MS_PER_SECOND,
+            .parse(currentTask.timerStartedAt,)) / MS_PER_SECOND,
       ),
     );
   /**
@@ -122,7 +122,7 @@ export async function stopTaskTimer(id: string,): Promise<Task | typeof TASK_NOT
       + elapsedSeconds,
     timestamp,
     id,
-  );
+    );
   return getTaskById(id,);
 }
 
@@ -158,9 +158,9 @@ export async function completeTask(id: string,): Promise<CompleteTaskResult> {
    */
   const blockingRows = (await (await db.prepare(SQL_SELECT_BLOCKERS,))
     .all(id,)) as {
-    readonly blocker_id: string;
-    readonly blocker_title: string;
-  }[];
+      readonly blocker_id: string;
+      readonly blocker_title: string;
+    }[];
   /* oxlint-enable typescript/no-unsafe-type-assertion */
   /**
    Application-shaped blocker summaries returned to the caller when completion is refused.

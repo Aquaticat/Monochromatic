@@ -85,7 +85,7 @@ class FabButton extends HTMLElement {
           text: '+',
         },),],
       },),
-    );
+      );
   }
 }
 

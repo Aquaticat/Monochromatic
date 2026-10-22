@@ -76,7 +76,7 @@ for (const fraction of [0.5, 0.9, 0.95, 0.99, 1.0]) {
 const withinLimit = diffs.filter((diff) => diff <= MISMATCH_LIMIT_SECS).length;
 console.log(
   `  within ${MISMATCH_LIMIT_SECS}s: ${withinLimit}/${diffs.length}`
-  + ` (${((withinLimit / diffs.length) * 100).toFixed(2)}%), over: ${offenders.length}`,
+    + ` (${((withinLimit / diffs.length) * 100).toFixed(2)}%), over: ${offenders.length}`,
 );
 offenders.sort((a, b) => b.diff - a.diff);
 for (const offender of offenders.slice(0, 10)) {
@@ -112,6 +112,6 @@ for (const path of spotPaths) {
   const rDb = pearson({ xs: profile.bytes, ys: dbBins });
   console.log(
     `  rLinear=${r.toFixed(3)} rDb=${rDb.toFixed(3)}`
-    + ` slots=${profile.bytes.length}/${track.bins.length} ${path}`,
+      + ` slots=${profile.bytes.length}/${track.bins.length} ${path}`,
   );
 }

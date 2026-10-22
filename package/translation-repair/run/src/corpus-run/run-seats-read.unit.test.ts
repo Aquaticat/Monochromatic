@@ -270,8 +270,8 @@ await describe({
             },);
             expect(lines,).toEqual([
               'info JUDGE SEATS phase=lanes neuralwatt=wet synthetic=wet bedrock=wet hyper=wet openrouter=wet wide=7 select=8 '
-              + 'late=7 slate=7 checkers=3 translators=8 readers=6 seeing=6 writers=9 roster=9 withheld=none unserved=none '
-              + 'threw-withheld=hf:Qwen/Qwen3.8-27B (threw 4 of 4 asks) waited=0ms',
+                + 'late=7 slate=7 checkers=3 translators=8 readers=6 seeing=6 writers=9 roster=9 withheld=none unserved=none '
+                + 'threw-withheld=hf:Qwen/Qwen3.8-27B (threw 4 of 4 asks) waited=0ms',
             ],);
 
             /** Lines of a second reading, for a seat that answered on some asks. */
@@ -288,8 +288,8 @@ await describe({
             },);
             expect(mixedLines,).toEqual([
               'info JUDGE SEATS phase=lanes neuralwatt=wet synthetic=wet bedrock=wet hyper=wet openrouter=wet wide=7 select=8 '
-              + 'late=7 slate=7 checkers=3 translators=8 readers=6 seeing=6 writers=9 roster=9 withheld=none unserved=none '
-              + 'threw-withheld=none waited=0ms',
+                + 'late=7 slate=7 checkers=3 translators=8 readers=6 seeing=6 writers=9 roster=9 withheld=none unserved=none '
+                + 'threw-withheld=none waited=0ms',
             ],);
           },
         },),
@@ -350,9 +350,9 @@ await describe({
             expect(lines.length,).toBe(2,);
             expect(lines[1],).toContain(
               'info JUDGE SEATS phase=lanes neuralwatt=unreadable-treated-as-spendable '
-              + 'synthetic=unreadable-treated-as-spendable '
-              + 'bedrock=unreadable-treated-as-spendable hyper=unreadable-treated-as-spendable '
-              + 'openrouter=unreadable-treated-as-spendable ',
+                + 'synthetic=unreadable-treated-as-spendable '
+                + 'bedrock=unreadable-treated-as-spendable hyper=unreadable-treated-as-spendable '
+                + 'openrouter=unreadable-treated-as-spendable ',
             );
           },
         },),
@@ -392,7 +392,7 @@ await describe({
             },);
             expect(warnings,).toEqual([
               'judge seats: the budget view could not be read (refused by ProviderHttpError from synthetic with HTTP 502 '
-              + '(the provider said: "the cat meter is asleep")); seating the full bench',
+                + '(the provider said: "the cat meter is asleep")); seating the full bench',
             ],);
           },
         },),
@@ -740,12 +740,12 @@ await describe({
               translators: RUN_TRANSLATORS,
               errors: [
                 'error JUDGE SEATS phase=page consistency writing bench unreachable: translators 0 of 8 reachable, floor 2; '
-                + 'no provider has named its return, so the phase goes on without its writers',
+                  + 'no provider has named its return, so the phase goes on without its writers',
               ],
               stops: [],
               warned: [
                 'warn JUDGE SEATS phase=page consistency short of quorum: wide 0 of 7 reachable, quorum 4; '
-                + 'no provider has named its return, so the phase runs on what is reachable',
+                  + 'no provider has named its return, so the phase runs on what is reachable',
               ],
             },);
           },
@@ -800,7 +800,7 @@ await describe({
               unreachableWriters: ['translators 0 of 8 reachable, floor 2',],
               errors: [
                 'error JUDGE SEATS phase=page consistency writing bench unreachable after waiting 40ms: '
-                + 'translators 0 of 8 reachable, floor 2; the phase goes on without its writers',
+                  + 'translators 0 of 8 reachable, floor 2; the phase goes on without its writers',
               ],
               waits: 1,
             },);
@@ -847,7 +847,7 @@ await describe({
               return line.startsWith('error ',);
             },),).toEqual([
               'error JUDGE SEATS phase=lanes writing bench unreachable: editors 0 of 3 reachable, floor 2; '
-              + 'refiners 0 of 3 reachable, floor 2; translators 0 of 8 reachable, floor 2; stopping the entry',
+                + 'refiners 0 of 3 reachable, floor 2; translators 0 of 8 reachable, floor 2; stopping the entry',
             ],);
           },
         },),

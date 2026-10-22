@@ -341,8 +341,8 @@ await describe({
         expect(probed.refusal,).toBe('',);
         expect(probed.lines.slice(4,),).toEqual([
           `  SLICE FAILED: StageRosterRepeatError: the translate-probe roster seats these models more than once: [${SEAT_SYNTHETIC_VISION_NO_OPENROUTER}]; `
-          + 'a repeated id is one model counted as several voices, which meets quorum on fewer independent voices than '
-          + 'the roster size promises, and the ballots keyed by model id would keep only one of its replies',
+            + 'a repeated id is one model counted as several voices, which meets quorum on fewer independent voices than '
+            + 'the roster size promises, and the ballots keyed by model id would keep only one of its replies',
         ],);
       },
     },),

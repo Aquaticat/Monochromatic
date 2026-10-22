@@ -18,10 +18,10 @@ import type { HashCache, } from './hash-cache.ts';
  */
 export type WatchEventKind =
   | 'add'
-  | 'change'
-  | 'unlink'
-  | 'addDir'
-  | 'unlinkDir';
+    | 'change'
+    | 'unlink'
+    | 'addDir'
+    | 'unlinkDir';
 
 /**
  Filesystem entity that an event affects.

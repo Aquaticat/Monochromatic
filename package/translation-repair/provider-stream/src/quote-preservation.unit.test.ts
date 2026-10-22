@@ -117,7 +117,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(MdxParseError,);
             expect((refusal as Error).message,).toBe(
               'MDX body refused to parse at 3:13 (micromark-extension-mdx-jsx/unexpected-character); corpus '
-              + 'documents compile as MDX upstream, so failure signals corruption or an unsupported construct.',
+                + 'documents compile as MDX upstream, so failure signals corruption or an unsupported construct.',
             );
           },
         },),

@@ -54,8 +54,8 @@ export const COLLECTION_UNRECOGNIZED: unique symbol = Symbol(
  */
 export type CollectionStructureClaim =
   | typeof COLLECTION_STRUCTURE_PRESERVED
-  | typeof COLLECTION_STRUCTURE_MUTATED
-  | typeof COLLECTION_UNRECOGNIZED;
+    | typeof COLLECTION_STRUCTURE_MUTATED
+    | typeof COLLECTION_UNRECOGNIZED;
 
 /**
  Classify a resolved declaration's effect on its receiver's structure.

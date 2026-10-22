@@ -151,7 +151,7 @@ export class HashCache {
       .digest(
       'SHA-256',
       bytes,
-    );
+      );
     return Buffer.from(digest,)
       .toString('hex',);
   }
@@ -228,7 +228,7 @@ export class HashCache {
       .set(
       path,
       hash,
-    );
+      );
   }
 
   /**

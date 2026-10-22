@@ -95,10 +95,10 @@ document
     globalThis.location
       .href = query.length
         === 0
-      ? '/search'
-      : `/search?q=${encodeURIComponent(query,)}`;
+        ? '/search'
+        : `/search?q=${encodeURIComponent(query,)}`;
   } as EventListener,
-);
+  );
 
 if (pageData.query
   .length

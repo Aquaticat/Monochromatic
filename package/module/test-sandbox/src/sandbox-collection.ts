@@ -123,48 +123,48 @@ export function guardTimerController({
     const guarded = wrappers.get(method,) ?? new Proxy(
       method,
       {
-      apply(
-        original: typeof method,
-        receiver: unknown,
-        args: unknown[],
-      ): unknown {
-        if (property === 'setTickMode') {
+        apply(
+          original: typeof method,
+          receiver: unknown,
+          args: unknown[],
+        ): unknown {
+          if (property === 'setTickMode') {
           /**
            Sinon uninstall stops automated ticking through this public method during cleanup.
            */
-          const [mode,] = args;
+            const [mode,] = args;
           /**
            Cleanup may stop ticking, but must not start another host automation loop.
            */
-          const stopping = restoring() && isSandboxTarget(mode,)
-            && (Reflect.get(
-              mode,
-              'mode',
-            ) === 'manual');
-          if (!stopping) {
-            requireRunningOwner({
-              owner,
-              operation: 'Sinon clock.setTickMode',
-            },);
-            if (generation.restored)
-              throw new SandboxOwnershipError('Sinon clock.setTickMode belongs to an uninstalled clock. Install a new clock instead.',);
+            const stopping = restoring() && isSandboxTarget(mode,)
+              && (Reflect.get(
+                mode,
+                'mode',
+              ) === 'manual');
+            if (!stopping) {
+              requireRunningOwner({
+                owner,
+                operation: 'Sinon clock.setTickMode',
+              },);
+              if (generation.restored)
+                throw new SandboxOwnershipError('Sinon clock.setTickMode belongs to an uninstalled clock. Install a new clock instead.',);
+            }
           }
-        }
-        else if (generation.restored || ((owner.phase === 'completed') && (!restoring())))
-          return undefined;
+          else if (generation.restored || ((owner.phase === 'completed') && (!restoring())))
+            return undefined;
         /**
          Preserve retry eligibility when underlying restoration throws.
          */
-        const result: unknown = Reflect.apply(
-          original,
-          receiver,
-          args,
-        );
-        if (property !== 'setTickMode')
-          generation.restored = true;
-        return result;
-      },
-    }
+          const result: unknown = Reflect.apply(
+            original,
+            receiver,
+            args,
+          );
+          if (property !== 'setTickMode')
+            generation.restored = true;
+          return result;
+        },
+      }
     );
     wrappers.set(
       method,

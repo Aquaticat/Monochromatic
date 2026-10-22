@@ -140,7 +140,7 @@ export function compareVersions<TModel extends Pick<ModelPricing, 'id'>,>(
   }
   return leftVersions.length
     - rightVersions
-    .length;
+      .length;
 }
 
 /**
@@ -232,8 +232,8 @@ export function findCheapestInMajorVersions<TModel extends ModelPricing,>(
     const costDiff = left.cost
       .input
       - right
-      .cost
-      .input;
+        .cost
+        .input;
     if (costDiff !== 0)
       return costDiff;
     return compareVersions({

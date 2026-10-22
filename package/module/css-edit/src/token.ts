@@ -152,13 +152,13 @@ export function rawTextOfTokens({
        
        @returns Byte-exact source text of that token.
        */
-      function tokenRaw(token: CSSToken,): string {
+    function tokenRaw(token: CSSToken,): string {
         /**
          Source representation slot of the token tuple.
          */
-        const [, raw,] = token;
-        return raw;
-      },
+      const [, raw,] = token;
+      return raw;
+    },
     )
     .join('',);
 }

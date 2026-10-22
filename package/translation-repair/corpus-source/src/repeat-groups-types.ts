@@ -378,17 +378,17 @@ export type Placement =
      */
     readonly sliceIndex: number;
   }
-  | {
+    | {
     /**
      No slice holds the occurrence whole.
      */
-    readonly kind: 'unplaced';
+      readonly kind: 'unplaced';
 
     /**
      Why none does.
      */
-    readonly reason: UnplacedReason;
-  };
+      readonly reason: UnplacedReason;
+    };
 
 /**
  A found place with where the slices put it and the line it starts on.

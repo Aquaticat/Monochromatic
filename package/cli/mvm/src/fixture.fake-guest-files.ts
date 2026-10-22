@@ -48,7 +48,7 @@ import {
  */
 export type FileCommandOutcome =
   | { readonly failure: string; }
-  | { readonly reply: unknown; };
+    | { readonly reply: unknown; };
 
 /**
  One open handle of the simulated agent.
@@ -127,8 +127,8 @@ function hostPathOf({
    */
   const segments = guestPath
     .replaceAll(
-      '\\',
-      '/',
+    '\\',
+    '/',
     )
     .split('/',)
     .filter(function isNamed(segment,) {
@@ -487,7 +487,7 @@ async function fileOpen({
     && handles.some(function writesSameFile([, state,],) {
       return state.writable && (state.hostPath === hostPath);
     },))
-  {
+    {
     return refused({
       commandName: 'guest-file-open',
       reason:
@@ -601,7 +601,7 @@ async function fileWrite({
       directory,
       name: 'write-unanswered',
     },)))
-  {
+    {
     await startSilence({
       directory,
       scenario,
@@ -688,7 +688,7 @@ async function fileRead({
       directory,
       name: 'read-unanswered',
     },)))
-  {
+    {
     await startSilence({
       directory,
       scenario,
@@ -704,8 +704,8 @@ async function fileRead({
         : {
           'buf-b64': buffer
             .subarray(
-              0,
-              bytesRead,
+            0,
+            bytesRead,
             )
             .toString('base64',),
         }),

@@ -131,8 +131,8 @@ function resultIsHeldState({
   /* An empty result set would satisfy a subset test vacuously, so require that the
    * result contributes at least one held constituent rather than only absence. */
   return results.some(function isHeldState(candidate,): boolean {
-      return held.has(candidate,);
-    },)
+    return held.has(candidate,);
+  },)
     && results.every(function isHeldStateOrAbsent(candidate,): boolean {
       return held.has(candidate,)
         || ((candidate.flags & TypeFlags.Undefined) !== 0);
@@ -283,9 +283,9 @@ export function callResultReceiver({
   if ((heldType === undefined) || (resultType === undefined))
     return RESULT_NOT_RECEIVER_STATE;
   return resultIsHeldState({
-      resultType,
-      heldType,
-    },)
+    resultType,
+    heldType,
+  },)
     ? receiver
     : RESULT_NOT_RECEIVER_STATE;
 }
@@ -366,10 +366,10 @@ export function callResultComesFromObserver({
   if ((foldReceiver !== NO_MEMBER_RECEIVER)
     && isCallExpression(foldReceiver,)
     && (callResultElementReceiver({
-        project,
-        checker,
-        call: foldReceiver,
-      },)
+      project,
+      checker,
+      call: foldReceiver,
+    },)
       === RESULT_NOT_RECEIVER_STATE))
     return false;
   /* A fold's result is observer-derived only when the call seeds it. Unseeded, the receiver's

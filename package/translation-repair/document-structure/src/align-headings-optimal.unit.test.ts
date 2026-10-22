@@ -46,9 +46,9 @@ await describe({
     it({
       name:
         'POSITIVE CONTROL: pairing is not always by index, so a scan that answered with the identity '
-        + 'mapping would pass the "pairs by index when both sides carry the same sections" case and fail '
-        + 'here. With the MIDDLE target gone, '
-        + 'source 2 pairs with target 1',
+          + 'mapping would pass the "pairs by index when both sides carry the same sections" case and fail '
+          + 'here. With the MIDDLE target gone, '
+          + 'source 2 pairs with target 1',
       fn: async () => {
         expect(listed({
           sets: scanOptimalPaths({
@@ -69,7 +69,7 @@ await describe({
     it({
       name:
         'pairs by index when both sides carry the same sections, with no gaps on either side, which is '
-        + 'the shape most of the corpus has and the one every other case is a departure from',
+          + 'the shape most of the corpus has and the one every other case is a departure from',
       fn: async () => {
         /**
          What the table says about two identical sides.
@@ -100,8 +100,8 @@ await describe({
     it({
       name:
         'leaves the earlier pairs alone when the LAST section is missing, and records the gap at the '
-        + 'END column. This is the section-alignment defect exactly: a gap at the end used to slide every pairing before it, '
-        + 'so a document lost its alignment from the first section rather than the last',
+          + 'END column. This is the section-alignment defect exactly: a gap at the end used to slide every pairing before it, '
+          + 'so a document lost its alignment from the first section rather than the last',
       fn: async () => {
         /**
          What the table says when the translation stops early.
@@ -130,8 +130,8 @@ await describe({
     it({
       name:
         'records the gap at the MIDDLE column when the middle section is missing, so an insertion for '
-        + 'it lands between its neighbours rather than at the end: knowing a section is unpaired and '
-        + 'not knowing where it belongs is half an answer, and insertion cannot proceed on half',
+          + 'it lands between its neighbours rather than at the end: knowing a section is unpaired and '
+          + 'not knowing where it belongs is half an answer, and insertion cannot proceed on half',
       fn: async () => {
         expect(listed({
           sets: scanOptimalPaths({
@@ -152,7 +152,7 @@ await describe({
     it({
       name:
         'reports a section the TRANSLATION has and the original does not as a target that may gap, '
-        + 'rather than pairing it with a source section that means something else',
+          + 'rather than pairing it with a source section that means something else',
       fn: async () => {
         /**
          What the table says when the translation carries an extra section.
@@ -180,8 +180,8 @@ await describe({
     it({
       name:
         'reports AMBIGUITY AS WIDTH rather than picking one of the tied paths: two identical source '
-        + 'sections against one target give that target both of them as partners, which is what lets a '
-        + 'caller tell a hesitation between neighbours from a hesitation across a page',
+          + 'sections against one target give that target both of them as partners, which is what lets a '
+          + 'caller tell a hesitation between neighbours from a hesitation across a page',
       fn: async () => {
         /**
          What the table says when two sections are indistinguishable.
@@ -213,7 +213,7 @@ await describe({
     it({
       name:
         'answers for an empty side without raising, reporting the other side`s units as unpaired: a '
-        + 'document with no headings at all is a shape the corpus has, and it is not a malformed input',
+          + 'document with no headings at all is a shape the corpus has, and it is not a malformed input',
       fn: async () => {
         /**
          Original with nothing to pair.
@@ -242,8 +242,8 @@ await describe({
     it({
       name:
         'PAIRS TWO HEADINGS THAT SHARE NOTHING, which is the boundary this file sits on: the table '
-        + 'answers what some optimal alignment does, and whether such a pairing may be claimed is the '
-        + 'caller`s policy. A reader taking this for the policy would expect a refusal that never comes',
+          + 'answers what some optimal alignment does, and whether such a pairing may be claimed is the '
+          + 'caller`s policy. A reader taking this for the policy would expect a refusal that never comes',
       fn: async () => {
         expect(listed({
           sets: scanOptimalPaths({

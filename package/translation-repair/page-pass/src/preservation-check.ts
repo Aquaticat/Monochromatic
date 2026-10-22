@@ -119,17 +119,17 @@ function unlicensedText(
       left,
       right,
     ): number {
-    return right.length - left.length;
-  },)
+      return right.length - left.length;
+    },)
     .reduce(
-      function blank(
-        text,
-        quote,
-      ): string {
-    return (quote === '') ? text : text.split(quote,)
-      .join(' ',);
-  },
-      before,
+    function blank(
+      text,
+      quote,
+    ): string {
+      return (quote === '') ? text : text.split(quote,)
+        .join(' ',);
+    },
+    before,
     );
 }
 

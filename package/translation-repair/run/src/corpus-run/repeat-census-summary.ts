@@ -165,8 +165,8 @@ function detailOf(
     lines: entry.group
       .occurrences
       .map(function lineOfOccurrence(occurrence,): number {
-      return occurrence.line;
-    },),
+        return occurrence.line;
+      },),
     flags: entry.group
       .flags,
   };
@@ -198,19 +198,19 @@ export function lineControlOf({ entries, }: { readonly entries: readonly EntryCe
     refrain: control.census
       .refrain
       .some(function coversLines(group,): boolean {
-      return coversAllLines({
-        held: occupiedLinesOf({ occurrences: group.occurrences, },),
-        lines: CONTROL_REFRAIN_LINES,
-      },);
-    },),
+        return coversAllLines({
+          held: occupiedLinesOf({ occurrences: group.occurrences, },),
+          lines: CONTROL_REFRAIN_LINES,
+        },);
+      },),
     maximal: control.census
       .maximal
       .some(function coversLines(group,): boolean {
-      return coversAllLines({
-        held: occupiedLinesOf({ occurrences: group.occurrences, },),
-        lines: CONTROL_MAXIMAL_LINES,
-      },);
-    },),
+        return coversAllLines({
+          held: occupiedLinesOf({ occurrences: group.occurrences, },),
+          lines: CONTROL_MAXIMAL_LINES,
+        },);
+      },),
   },);
 }
 
@@ -234,11 +234,11 @@ export function summarise({ entries, }: { readonly entries: readonly EntryCensus
     return entry.census
       .maximal
       .map(function withEntry(group,): PlacedGroup {
-      return {
-        id: entry.id,
-        group,
-      };
-    },);
+        return {
+          id: entry.id,
+          group,
+        };
+      },);
   },);
 
   /**
@@ -248,11 +248,11 @@ export function summarise({ entries, }: { readonly entries: readonly EntryCensus
     return entry.census
       .refrain
       .map(function withEntry(group,): PlacedGroup {
-      return {
-        id: entry.id,
-        group,
-      };
-    },);
+        return {
+          id: entry.id,
+          group,
+        };
+      },);
   },);
 
   /**
@@ -270,8 +270,8 @@ export function summarise({ entries, }: { readonly entries: readonly EntryCensus
     return entry.group
       .flags
       .every(function notNonBody(flag,): boolean {
-      return !NON_BODY_FLAGS.has(flag,);
-    },);
+        return !NON_BODY_FLAGS.has(flag,);
+      },);
   },);
   return {
     entries: entries.length,
@@ -293,11 +293,11 @@ export function summarise({ entries, }: { readonly entries: readonly EntryCensus
           total,
           entry,
         ) {
-        return total
-          + entry.census
-          .refrainCounts
-          .main;
-      },
+          return total
+            + entry.census
+              .refrainCounts
+              .main;
+        },
         0,
       ),
       loose: entries.reduce(
@@ -305,11 +305,11 @@ export function summarise({ entries, }: { readonly entries: readonly EntryCensus
           total,
           entry,
         ) {
-        return total
-          + entry.census
-          .refrainCounts
-          .loose;
-      },
+          return total
+            + entry.census
+              .refrainCounts
+              .loose;
+        },
         0,
       ),
       tight: entries.reduce(
@@ -317,11 +317,11 @@ export function summarise({ entries, }: { readonly entries: readonly EntryCensus
           total,
           entry,
         ) {
-        return total
-          + entry.census
-          .refrainCounts
-          .tight;
-      },
+          return total
+            + entry.census
+              .refrainCounts
+              .tight;
+        },
         0,
       ),
     },
@@ -342,8 +342,8 @@ export function summarise({ entries, }: { readonly entries: readonly EntryCensus
         .includes('same-line',);
     },)
       .map(function detailOfEntry(entry,) {
-      return detailOf({ entry, },);
-    },),
+        return detailOf({ entry, },);
+      },),
     sameLineGroups: all.filter(function sameLine(entry,) {
       return entry.group
         .flags

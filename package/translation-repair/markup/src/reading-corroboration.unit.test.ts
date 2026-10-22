@@ -59,7 +59,7 @@ const LONG_NAP_READING = 'Tabby napped on the sunny windowsill for three hours';
  */
 const WINDOWSILL_READING =
   'Whiskers the tabby cat is curled up asleep on the windowsill, warmed by the afternoon sun, '
-  + 'her tail draped over the edge.';
+    + 'her tail draped over the edge.';
 
 /**
  A second model's reading of that same picture: it agrees with
@@ -68,7 +68,7 @@ const WINDOWSILL_READING =
  */
 const AGREEING_READING =
   'Asleep on the windowsill in the afternoon sun, a tabby cat named Whiskers lies curled up '
-  + 'with her tail hanging over the edge.';
+    + 'with her tail hanging over the edge.';
 
 /**
  A reading of some other picture entirely, sharing almost no vocabulary
@@ -77,7 +77,7 @@ const AGREEING_READING =
  */
 const DISAGREEING_READING =
   'Biscuit the black kitten chases a red laser dot across the kitchen floor, knocking a spoon '
-  + 'off the counter at midnight.';
+    + 'off the counter at midnight.';
 
 /**
  Builds two readings whose measured trigram overlap sits at a chosen share

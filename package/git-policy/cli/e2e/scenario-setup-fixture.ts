@@ -91,8 +91,8 @@ export async function seedTracePaths({
       'add',
       '--',
       ...seeds.map(function seedPath(entry,) {
-      return entry.path;
-    },),
+        return entry.path;
+      },),
     ],
   },);
   await realGit({

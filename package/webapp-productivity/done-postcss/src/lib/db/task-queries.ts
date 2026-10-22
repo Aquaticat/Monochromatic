@@ -219,7 +219,7 @@ export async function searchTasks(searchQuery: string,): Promise<SearchTask[]> {
     const rows = (await (await db.prepare(SQL_SEARCH_FTS,))
       .all(
       normalizedSearchQuery,
-    )) as (TaskRow & { readonly is_blocked: number; })[];
+      )) as (TaskRow & { readonly is_blocked: number; })[];
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     return rows.map(function toSearchTask(row,) {
       return {
@@ -242,8 +242,8 @@ export async function searchTasks(searchQuery: string,): Promise<SearchTask[]> {
     const rows = (await (await db
       .prepare(SQL_SEARCH_LIKE,))
       .all(
-        `%${normalizedSearchQuery}%`,
-        `%${normalizedSearchQuery}%`,
+      `%${normalizedSearchQuery}%`,
+      `%${normalizedSearchQuery}%`,
       )) as (TaskRow & { readonly is_blocked: number; })[];
     /* oxlint-enable typescript/no-unsafe-type-assertion */
     return rows.map(function toSearchTask(row,) {

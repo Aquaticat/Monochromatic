@@ -105,15 +105,15 @@ export type FrameReading =
      */
     readonly frame: Readonly<Record<string, unknown>>;
   }
-  | {
-    readonly kind: 'not-json';
+    | {
+      readonly kind: 'not-json';
 
     /**
      Parse failure, kept as the cause of any refusal.
      */
-    readonly cause: unknown;
-  }
-  | { readonly kind: 'not-object'; };
+      readonly cause: unknown;
+    }
+    | { readonly kind: 'not-object'; };
 
 /**
  Reads one event payload as a frame.
@@ -171,8 +171,8 @@ function isProtocolWord({ text, }: { readonly text: string; },): boolean {
     return false;
   return Array.from(text,)
     .every(function isWordCharacter(character,): boolean {
-    return (character === '_') || isAsciiLowerLetter({ character, },);
-  },);
+      return (character === '_') || isAsciiLowerLetter({ character, },);
+    },);
 }
 
 /**

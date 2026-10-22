@@ -33,10 +33,10 @@ export type TableSectionHit =
     readonly kind: 'table';
     readonly table: TableNode
   }
-  | {
-    readonly kind: 'aot';
-    readonly tables: readonly TableNode[]
-  };
+    | {
+      readonly kind: 'aot';
+      readonly tables: readonly TableNode[]
+    };
 
 /**
  Instruction to resume resolution inside a parent section's body.
@@ -57,7 +57,7 @@ export type Located =
     readonly kind: 'value';
     readonly value: ValueNode
   }
-  | TableSectionHit;
+    | TableSectionHit;
 
 /**
  Sentinel for "no structural location at this path".

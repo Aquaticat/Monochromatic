@@ -63,20 +63,20 @@ const PINNED_CLOSE_CLASS = 'pinned-tooltip-close';
 function escapeHtml(raw: string,): string {
   return raw
     .replaceAll(
-      '&',
-      '&amp;',
+    '&',
+    '&amp;',
     )
     .replaceAll(
-      '<',
-      '&lt;',
+    '<',
+    '&lt;',
     )
     .replaceAll(
-      '>',
-      '&gt;',
+    '>',
+    '&gt;',
     )
     .replaceAll(
-      '"',
-      '&quot;',
+    '"',
+    '&quot;',
     );
 }
 

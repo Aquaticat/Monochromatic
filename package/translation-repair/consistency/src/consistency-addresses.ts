@@ -239,8 +239,8 @@ function addressOfRun(
    */
   const lead = text
     .slice(
-      run.start,
-      run.start + WEB_PREFIX.length,
+    run.start,
+    run.start + WEB_PREFIX.length,
     )
     .toLowerCase();
   if (lead === WEB_PREFIX) {

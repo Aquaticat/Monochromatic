@@ -362,7 +362,7 @@ await describe({
             expect(run.stdout,).toEqual([],);
             expect(run.stderr,).toEqual([
               'judge-fidelity-probe: --cap needs a whole number written in digits, at most 9007199254740991, '
-              + 'and "kitten" is not one',
+                + 'and "kitten" is not one',
             ],);
           },
         },),
@@ -387,8 +387,8 @@ await describe({
             expect(run.stdout,).toEqual([`[info] [judge-fidelity-probe] judges: ${SEAT_HYPER_OPENROUTER_UNMEASURED}`,],);
             expect(run.stderr,).toEqual([
               `judge-fidelity-probe: corpus read failed for ${first.corpusSha}:people/${first.entryId}/page.md `
-              + '(unreadable-clone); git could not open the clone: check that the directory exists, is the top of '
-              + 'a git repository, and is one git may read.',
+                + '(unreadable-clone); git could not open the clone: check that the directory exists, is the top of '
+                + 'a git repository, and is one git may read.',
             ],);
           },
         },),

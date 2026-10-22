@@ -40,17 +40,17 @@ export type FileReading =
      */
     readonly found: false;
   }
-  | {
+    | {
     /**
      File was read.
      */
-    readonly found: true;
+      readonly found: true;
 
     /**
      Its contents.
      */
-    readonly text: string;
-  };
+      readonly text: string;
+    };
 
 /**
  Reads a file, naming its absence rather than returning nothing.

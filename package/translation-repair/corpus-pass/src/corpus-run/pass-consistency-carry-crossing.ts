@@ -77,11 +77,11 @@ export function crossingWordsOf(
             edge: 'start',
             words: block.text
               .slice(
-                0,
-                Math.min(
-                  end,
-                  block.end,
-                ) - block.start,
+              0,
+              Math.min(
+                end,
+                block.end,
+              ) - block.start,
               ),
           } as const,
         ]

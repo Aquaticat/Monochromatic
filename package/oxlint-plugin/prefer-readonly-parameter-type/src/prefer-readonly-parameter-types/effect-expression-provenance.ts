@@ -476,9 +476,9 @@ export function expressionValueOrigins({
        write through the explicit form reported the mutation.
        */
       const symbol = isShorthandPropertyAssignment(root.parent,)
-          && (root.parent
-            .name
-            === root)
+        && (root.parent
+          .name
+          === root)
         ? project.checker
           .getShorthandAssignmentValueSymbol(root.parent,)
         : project.checker

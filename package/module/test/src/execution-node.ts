@@ -202,14 +202,14 @@ function rejectionRuntime(): RejectionRuntime {
     // The task consumes its own rejection; reporting descendants use a separate context.
     void runtime.storage
       .run(
-        runtime.reporting,
-        function reportInOwnContext(): Promise<void> {
-          return finishReport({
-            runtime,
-            reason,
-            ...context === undefined ? {} : { execution: context, },
-          },);
-        },
+      runtime.reporting,
+      function reportInOwnContext(): Promise<void> {
+        return finishReport({
+          runtime,
+          reason,
+          ...context === undefined ? {} : { execution: context, },
+        },);
+      },
       );
   }
 
@@ -288,18 +288,18 @@ export function runNodeExecution<Result,>(options: ExecutionOptions<Result>,): P
   };
   return runtime.storage
     .run(
-      execution,
-      async function runBody(): Promise<Result> {
+    execution,
+    async function runBody(): Promise<Result> {
         /**
          Detached descendants keep this context after its returned promise settles.
          */
-        using lifetime = {
-          [Symbol.dispose](): void {
-            execution.phase = 'completed';
-          },
-        };
-        return await options.run();
-      },
+      using lifetime = {
+        [Symbol.dispose](): void {
+          execution.phase = 'completed';
+        },
+      };
+      return await options.run();
+    },
     );
 }
 
@@ -354,18 +354,18 @@ export function nodeSandboxRuntime(): SandboxRuntime {
       };
       await runtime.storage
         .run(
-          execution,
-          async function runAttempt(): Promise<void> {
+        execution,
+        async function runAttempt(): Promise<void> {
             /**
              Keep late rejection attribution tied to this completed attempt.
              */
-            using completion = {
-              [Symbol.dispose](): void {
-                execution.phase = 'completed';
-              },
-            };
-            await body();
-          },
+          using completion = {
+            [Symbol.dispose](): void {
+              execution.phase = 'completed';
+            },
+          };
+          await body();
+        },
         );
     },
   };

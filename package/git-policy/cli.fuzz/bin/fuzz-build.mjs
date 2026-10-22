@@ -56,11 +56,11 @@ async function vendoredConfig(context) {
   });
   const config = vendor.stdout
     .replaceAll(
-      JSON.stringify(join(
-        context,
-        'vendor',
-      )),
-      '"/work/vendor"',
+    JSON.stringify(join(
+      context,
+      'vendor',
+    )),
+    '"/work/vendor"',
     );
   if (!config.includes('directory = "/work/vendor"'))
     throw new NativeVerificationError('Cargo vendor did not emit the expected source directory mapping.');

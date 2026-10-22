@@ -130,7 +130,7 @@ type ResolvedClone =
     readonly kind: 'real';
     readonly path: string;
   }
-  | { readonly kind: 'unresolved'; };
+    | { readonly kind: 'unresolved'; };
 
 /**
  Resolves a clone directory to its real path.

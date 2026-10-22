@@ -37,7 +37,7 @@ const l = tagged({ tag: 'refine-stage-replies-definitions-test', },);
  */
 const REPAIRED_TEXT = [
   'The cat’s bowl sits by the window in the sun, and she likes the [dogs\' bowl] on the porch every afternoon, '
-  + 'and when the light moves across the floor she follows it without any hurry at all.',
+    + 'and when the light moves across the floor she follows it without any hurry at all.',
   '',
   '[dogs\' bowl]: https://example.org/bowl',
 ].join('\n',);

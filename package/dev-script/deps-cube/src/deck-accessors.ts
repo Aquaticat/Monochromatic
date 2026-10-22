@@ -534,19 +534,19 @@ export function probeRadiusWorld(
    */
   const dx = bounds.x[1]
     - bounds
-    .x[0];
+      .x[0];
   /**
    Depth of the scene bounding box along Y, one component of the diagonal.
    */
   const dy = bounds.y[1]
     - bounds
-    .y[0];
+      .y[0];
   /**
    Height of the scene bounding box along Z, one component of the diagonal.
    */
   const dz = bounds.z[1]
     - bounds
-    .z[0];
+      .z[0];
   /**
    Bounding-box diagonal length; world-space radii are expressed as fractions of this so they scale with scene size.
    */

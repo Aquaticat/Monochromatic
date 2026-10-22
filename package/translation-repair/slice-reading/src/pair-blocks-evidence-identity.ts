@@ -22,16 +22,16 @@ export type PairingEvidenceFailure =
      */
     readonly kind: 'empty-electorate' | 'duplicate-electorate';
   }
-  | {
+    | {
     /**
      Recorded identity is missing, repeated or out of configured order.
      */
-    readonly kind: 'outcome-order';
+      readonly kind: 'outcome-order';
     /**
      Position in the recorded outcome sequence, not the configured roster.
      */
-    readonly index: number;
-  };
+      readonly index: number;
+    };
 
 /**
  Configuration or recorded-seat identity cannot represent independent pairing evidence.
@@ -66,8 +66,8 @@ export class PairingEvidenceError extends Error {
     super(failure.kind === 'outcome-order'
       ? `pairing evidence: askedModelIds[${String(failure.index,)}] is not a unique ordered member of configured modelIds; retain only actual final seat outcomes in configured order`
       : failure.kind === 'empty-electorate'
-      ? 'pairing evidence: configured modelIds is empty; retain the electorate used by the pairing stage'
-      : 'pairing evidence: configured modelIds repeats an identity; each model must hold exactly one configured seat',);
+        ? 'pairing evidence: configured modelIds is empty; retain the electorate used by the pairing stage'
+        : 'pairing evidence: configured modelIds repeats an identity; each model must hold exactly one configured seat',);
   }
 }
 

@@ -162,12 +162,12 @@ export type CensusScope =
      */
     readonly family: CensusFamily;
   }
-  | {
+    | {
     /**
      The package alone, which has no coverage build config.
      */
-    readonly kind: 'alone';
-  };
+      readonly kind: 'alone';
+    };
 
 /**
  Finds what the census measures from the directory it runs in.
@@ -288,36 +288,36 @@ export async function requireFamilyCoverageBuild(
 
        @returns The path
        */
-      function namedFromFamily(bundle: string,): string {
-        return posix.join(
-          member,
-          'dist',
-          'final',
-          'node',
-          bundle,
-        );
-      }
+        function namedFromFamily(bundle: string,): string {
+          return posix.join(
+            member,
+            'dist',
+            'final',
+            'node',
+            bundle,
+          );
+        }
       /**
        The member's bundles, named inside its build directory.
        */
-      const inside = await requireCoverageBuild({
-        distDirectory: join(
-          family.directory,
-          member,
-          'dist',
-          'final',
-          'node',
-        ),
-        l,
-        readText,
-      },);
-      return {
-        mapped: inside.mapped
-          .map(namedFromFamily,),
-        unmapped: inside.unmapped
-          .map(namedFromFamily,),
-      };
-    },),
+        const inside = await requireCoverageBuild({
+          distDirectory: join(
+            family.directory,
+            member,
+            'dist',
+            'final',
+            'node',
+          ),
+          l,
+          readText,
+        },);
+        return {
+          mapped: inside.mapped
+            .map(namedFromFamily,),
+          unmapped: inside.unmapped
+            .map(namedFromFamily,),
+        };
+      },),
   },);
   return {
     mapped: textsInCodePointOrder({ texts: memberMaps.flatMap(function mappedOf({ mapped, },): readonly string[] {
@@ -360,15 +360,15 @@ export function familySuiteRunsOf(
   if (testFiles.length === 0) {
     return family.suites
       .map(function wholeSuite(member,): FamilySuiteRun {
-      return {
-        member,
-        cwd: join(
-          family.directory,
+        return {
           member,
-        ),
-        files: [],
-      };
-    },);
+          cwd: join(
+            family.directory,
+            member,
+          ),
+          files: [],
+        };
+      },);
   }
   /**
    Each file named, absolute, beside the member it stands in.
@@ -409,24 +409,24 @@ export function familySuiteRunsOf(
     /**
      Files named for this member, in the order named.
      */
-    const files = placed
-      .filter(function standsIn(file,): boolean {
-        return file.member === member;
-      },)
-      .map(function absoluteOf({ absolute, },): string {
-        return absolute;
-      },);
-    return (files.length === 0)
-      ? []
-      : [{
-        member,
-        cwd: join(
-          family.directory,
+      const files = placed
+        .filter(function standsIn(file,): boolean {
+          return file.member === member;
+        },)
+        .map(function absoluteOf({ absolute, },): string {
+          return absolute;
+        },);
+      return (files.length === 0)
+        ? []
+        : [{
           member,
-        ),
-        files,
-      },];
-  },);
+          cwd: join(
+            family.directory,
+            member,
+          ),
+          files,
+        },];
+    },);
 }
 
 //endregion Coverage census family

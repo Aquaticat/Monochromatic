@@ -170,11 +170,11 @@ await describe({
           fn: async ({ sinon, },) => {
             const compactStub = sinon
               .stub(
-                globalThis,
-                'fetch',
+              globalThis,
+              'fetch',
               )
               .resolves(
-                Response.json(mockCompactResult(MOCK_COMPACT_OUTPUT,),),
+              Response.json(mockCompactResult(MOCK_COMPACT_OUTPUT,),),
               );
 
             const entries: SessionEntry[] = [
@@ -210,11 +210,11 @@ await describe({
           fn: async ({ sinon, },) => {
             const compactStub = sinon
               .stub(
-                globalThis,
-                'fetch',
+              globalThis,
+              'fetch',
               )
               .resolves(
-                Response.json(mockCompactResult(MOCK_COMPACT_OUTPUT,),),
+              Response.json(mockCompactResult(MOCK_COMPACT_OUTPUT,),),
               );
 
             const previousSummary = 'Old context about Spain';
@@ -246,11 +246,11 @@ await describe({
           fn: async ({ sinon, },) => {
             const compactStub = sinon
               .stub(
-                globalThis,
-                'fetch',
+              globalThis,
+              'fetch',
               )
               .resolves(
-                Response.json(mockCompactResult(MOCK_COMPACT_OUTPUT,),),
+              Response.json(mockCompactResult(MOCK_COMPACT_OUTPUT,),),
               );
 
             const entries: SessionEntry[] = [
@@ -285,11 +285,11 @@ await describe({
           fn: async ({ sinon, },) => {
             sinon
               .stub(
-                globalThis,
-                'fetch',
+              globalThis,
+              'fetch',
               )
               .resolves(
-                Response.json(mockCompactResult('',),),
+              Response.json(mockCompactResult('',),),
               );
 
             const entries: SessionEntry[] = [
@@ -314,11 +314,11 @@ await describe({
           fn: async ({ sinon, },) => {
             const compactStub = sinon
               .stub(
-                globalThis,
-                'fetch',
+              globalThis,
+              'fetch',
               )
               .resolves(
-                Response.json(mockCompactResult(MOCK_COMPACT_OUTPUT,),),
+              Response.json(mockCompactResult(MOCK_COMPACT_OUTPUT,),),
               );
 
             const previousSummary = 'Earlier conversation about Germany';
@@ -355,11 +355,11 @@ await describe({
           fn: async ({ sinon, },) => {
             const compactStub = sinon
               .stub(
-                globalThis,
-                'fetch',
+              globalThis,
+              'fetch',
               )
               .resolves(
-                Response.json(mockCompactResult(MOCK_COMPACT_OUTPUT,),),
+              Response.json(mockCompactResult(MOCK_COMPACT_OUTPUT,),),
               );
 
             const entries: SessionEntry[] = [

@@ -57,8 +57,8 @@ await describe({
     it({
       name:
         'RENDERS EACH SECTION FROM ITS OWN LIST, which is the whole risk here: three sections carry '
-        + 'the same shape of member, so a report built from the wrong array renders perfectly and '
-        + 'tells an operator to seat an alias as though it were an independent voice',
+          + 'the same shape of member, so a report built from the wrong array renders perfectly and '
+          + 'tells an operator to seat an alias as though it were an independent voice',
       fn: async () => {
         expect(formatCatalogReport({
           comparison: {
@@ -85,7 +85,7 @@ await describe({
     it({
       name:
         'KEEPS ALL THREE HEADINGS when every list is empty, since a clean catalog is a RESULT and a '
-        + 'report that printed nothing would read as a run that never checked',
+          + 'report that printed nothing would read as a run that never checked',
       fn: async () => {
         expect(formatCatalogReport({
           comparison: {

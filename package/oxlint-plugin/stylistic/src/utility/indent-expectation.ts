@@ -333,10 +333,10 @@ export function computeIndentExpectations({
     let lineTokenEnd = lineTokenStart;
     while (
       (lineTokenEnd < tokens.length)
-      && (at({
-        arr: tokens,
-        index: lineTokenEnd,
-      },).start < lineEnd)
+        && (at({
+          arr: tokens,
+          index: lineTokenEnd,
+        },).start < lineEnd)
     ) {
       lineTokenEnd += 1;
     }
@@ -362,11 +362,11 @@ export function computeIndentExpectations({
         arr: blank,
         index: lineIndex,
       },)
-      || !lineStartsToken
-      || at({
-        arr: templateLines,
-        index: lineIndex,
-      },)
+        || !lineStartsToken
+        || at({
+          arr: templateLines,
+          index: lineIndex,
+        },)
     ) {
       resolvedWidths.push(width,);
     } else {

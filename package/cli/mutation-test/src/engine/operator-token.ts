@@ -37,60 +37,60 @@ export function findOperatorToken(options: {
   /**
    Scan cursor advancing through trivia between operands.
    */
-  let cursor = options.from;
+    let cursor = options.from;
 
-  while (cursor < options.to) {
+    while (cursor < options.to) {
     /**
      Two-character lookahead classifying comment openers.
      */
-    const pair = options.source
-      .slice(
-      cursor,
-      cursor + 2,
-    );
+      const pair = options.source
+        .slice(
+        cursor,
+        cursor + 2,
+        );
 
-    if (pair === '//') {
+      if (pair === '//') {
       /**
        End of line comment, bounded by scan range.
        */
-      const lineEnd = options.source
-        .indexOf(
-        '\n',
-        cursor,
-      );
-      cursor = lineEnd === (-1) ? options.to : lineEnd + 1;
-      continue;
-    }
+        const lineEnd = options.source
+          .indexOf(
+          '\n',
+          cursor,
+          );
+        cursor = lineEnd === (-1) ? options.to : lineEnd + 1;
+        continue;
+      }
 
-    if (pair === '/*') {
+      if (pair === '/*') {
       /**
        End of block comment, bounded by scan range.
        */
-      const blockEnd = options.source
-        .indexOf(
-        '*/',
-        cursor + 2,
-      );
+        const blockEnd = options.source
+          .indexOf(
+          '*/',
+          cursor + 2,
+          );
 
-      if (blockEnd === (-1))
-        throw new Error(`unterminated block comment at offset ${String(cursor,)}`,);
+        if (blockEnd === (-1))
+          throw new Error(`unterminated block comment at offset ${String(cursor,)}`,);
 
-      cursor = blockEnd + 2;
-      continue;
+        cursor = blockEnd + 2;
+        continue;
+      }
+
+      if (options.source
+        .startsWith(
+        options.token,
+        cursor,
+        ))
+        return cursor;
+
+      cursor += 1;
     }
 
-    if (options.source
-      .startsWith(
-      options.token,
-      cursor,
-    ))
-      return cursor;
-
-    cursor += 1;
-  }
-
-  throw new Error(
-    `operator token ${options.token} not found between offsets ${String(options.from,)} and ${String(options.to,)}`,
-  );
+    throw new Error(
+      `operator token ${options.token} not found between offsets ${String(options.from,)} and ${String(options.to,)}`,
+    );
   })();
 }

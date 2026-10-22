@@ -328,8 +328,8 @@ await describe({
     it({
       name:
         'reports SETTLEMENT as the top-level status rather than either lane`s, since a line reading '
-        + 'status=repaired would name the repair lane as the run`s outcome in every log anyone greps, '
-        + 'which is the question nobody has answered yet',
+          + 'status=repaired would name the repair lane as the run`s outcome in every log anyone greps, '
+          + 'which is the question nobody has answered yet',
       fn: async () => {
         /**
          Rendered fields of a two-lane entry.
@@ -346,8 +346,8 @@ await describe({
     it({
       name:
         'names the lane on every lane measurement, so a count that belongs to one lane can never be '
-        + 'read as the entry`s: the translate lane files no issues at all, and an unprefixed issues= '
-        + 'would be read as the entry having had three',
+          + 'read as the entry`s: the translate lane files no issues at all, and an unprefixed issues= '
+          + 'would be read as the entry having had three',
       fn: async () => {
         /**
          Rendered fields of the same entry.
@@ -375,8 +375,8 @@ await describe({
     it({
       name:
         'counts what each document CARRIES per lane, and how many slices the two documents ended up '
-        + 'disagreeing about, which is the number that says how much of an entry the open question '
-        + 'actually covers',
+          + 'disagreeing about, which is the number that says how much of an entry the open question '
+          + 'actually covers',
       fn: async () => {
         /**
          Rendered fields of an entry the lanes split on.
@@ -394,7 +394,7 @@ await describe({
     it({
       name:
         'reports the preparation`s alignment findings ONCE rather than per lane, because both lanes ran '
-        + 'over one alignment and a per-lane count would report one defect in the archive twice',
+          + 'over one alignment and a per-lane count would report one defect in the archive twice',
       fn: async () => {
         /**
          Rendered fields, whose repair lane repeats the finding in its own
@@ -411,7 +411,7 @@ await describe({
     it({
       name:
         'reads the entry id, the slice count and the duration off the ARTIFACT rather than taking them '
-        + 'beside it, so a line cannot describe an entry the file does not',
+          + 'beside it, so a line cannot describe an entry the file does not',
       fn: async () => {
         /**
          Whole rendered line.
@@ -430,10 +430,10 @@ await describe({
     it({
       name:
         'COUNTS WHAT A DOCUMENT WOULD CARRY BESIDE what each lane proposed, and reports ZERO here '
-        + 'ON PURPOSE. This entry is undecided with no consolidation, so the archive stands at every '
-        + 'slice that has one: two lanes proposed changes and, as things stand, a document would '
-        + 'carry none of them. Read beside selection=pending-human-decision on the same line, that '
-        + 'is the pending decision stated in the log rather than left to inference',
+          + 'ON PURPOSE. This entry is undecided with no consolidation, so the archive stands at every '
+          + 'slice that has one: two lanes proposed changes and, as things stand, a document would '
+          + 'carry none of them. Read beside selection=pending-human-decision on the same line, that '
+          + 'is the pending decision stated in the log rather than left to inference',
       fn: async () => {
         /**
          Its fields.

@@ -28,10 +28,10 @@ for (const capture of manifest.witnesses) {
   const crop = capture.cropPixels;
   // The status strip is removed and everything under it kept, the keyboard included.
   if (png.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
-      capture.physicalPixels[0] !== physicalWidth || capture.physicalPixels[1] !== physicalHeight ||
-      crop.x !== 0 || crop.width !== physicalWidth || !Number.isInteger(crop.y) || crop.y < 1 ||
-      crop.y + crop.height !== physicalHeight || png.readUInt32BE(16) !== crop.width || png.readUInt32BE(20) !== crop.height ||
-      capture.densityDpi !== 390 || capture.freshHierarchyValidated !== true || capture.productionServicesObserved !== false) {
+    capture.physicalPixels[0] !== physicalWidth || capture.physicalPixels[1] !== physicalHeight ||
+    crop.x !== 0 || crop.width !== physicalWidth || !Number.isInteger(crop.y) || crop.y < 1 ||
+    crop.y + crop.height !== physicalHeight || png.readUInt32BE(16) !== crop.width || png.readUInt32BE(20) !== crop.height ||
+    capture.densityDpi !== 390 || capture.freshHierarchyValidated !== true || capture.productionServicesObserved !== false) {
     throw new Error(`${file}: template editor image geometry or acquisition assertion differs.`);
   }
   for (let offset = 8; offset < png.length;) {
@@ -46,7 +46,7 @@ for (const capture of manifest.witnesses) {
   }
   // A state that holds focus is captured with the keyboard open, and no other state is.
   if (capture.keyboardShown !== want.focused || (want.focused && !(Number.isInteger(capture.keyboardTop) &&
-      capture.keyboardTop > crop.y && capture.keyboardTop < panels[capture.panel].navigationTop))) {
+    capture.keyboardTop > crop.y && capture.keyboardTop < panels[capture.panel].navigationTop))) {
     throw new Error(`${file}: keyboard state differs from the authored state.`);
   }
   if (want.focused) keyboardTops[capture.panel].add(capture.keyboardTop);
@@ -61,7 +61,7 @@ for (const capture of manifest.witnesses) {
   if ((capture.scrollRule?.rule) !== rule) throw new Error(`${file}: the scroll rule applied differs from the scene.`);
   const called = drawnTexts(state);
   if (!Array.isArray(capture.drawn) || JSON.stringify(capture.drawn.map(item => [item.role, item.text])) !==
-      JSON.stringify(called.map(item => [item.role, item.text]))) {
+    JSON.stringify(called.map(item => [item.role, item.text]))) {
     throw new Error(`${file}: recorded copy differs from what the template reference yields for this state.`);
   }
   if (!Array.isArray(capture.uncalledPageTexts) || capture.uncalledPageTexts.length > 0) {
@@ -103,7 +103,7 @@ for (const key of Object.keys(facts)) {
   const [panel, scene, scheme, scale] = key.split('/');
   const other = facts[`${panel}/${scene}/dark/${scale}`];
   if (scheme === 'light' && (JSON.stringify(facts[key].outOfView) !== JSON.stringify(other.outOfView) ||
-      JSON.stringify(facts[key].atEdge) !== JSON.stringify(other.atEdge))) {
+    JSON.stringify(facts[key].atEdge) !== JSON.stringify(other.atEdge))) {
     throw new Error('Light and dark views of one scene disagree about what is in view: ' + key);
   }
 }
@@ -146,7 +146,7 @@ if (process.argv[2] === 'build') {
   // A template the page quotes must not use the conditional D92 removed.
   if (/\$[^$]*\bif\(/.test(html.replace(/<script\b[\s\S]*?<\/script>/g, ''))) throw new Error('Template editor review quotes a conditional.');
   if ((html.match(/<form\b/g) ?? []).length !== 1 ||
-      /__TEMPLATE_EDITOR_[A-Z]+__|<script\b[^>]*\bsrc=|<link\b[^>]*\bhref=|<img\b[^>]*\bsrc="https?:/i.test(html)) {
+    /__TEMPLATE_EDITOR_[A-Z]+__|<script\b[^>]*\bsrc=|<link\b[^>]*\bhref=|<img\b[^>]*\bsrc="https?:/i.test(html)) {
     throw new Error('Template editor review must be one self-contained form.');
   }
   console.log('Validated the offline template editor review against its evidence and the template reference.');

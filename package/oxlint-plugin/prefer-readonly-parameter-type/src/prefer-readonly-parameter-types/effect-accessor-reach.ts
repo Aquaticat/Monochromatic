@@ -86,9 +86,9 @@ export function accessedCallables({
           },)
             .flatMap(function membersOfSource(source,): readonly Node[] {
               return aggregateCallables({
-            project,
-            source,
-          },);
+                project,
+                source,
+              },);
             },);
         },);
     },)

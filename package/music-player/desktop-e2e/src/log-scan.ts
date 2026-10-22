@@ -87,9 +87,9 @@ export function isDisplayName(name: string,): boolean {
   const digits = name.slice(DISPLAY_PREFIX.length,);
   return (digits !== '')
     && Array.from(digits,)
-    .every(function isDigit(character,): boolean {
-    return (character >= '0') && (character <= '9');
-  },);
+      .every(function isDigit(character,): boolean {
+        return (character >= '0') && (character <= '9');
+      },);
 }
 
 /**

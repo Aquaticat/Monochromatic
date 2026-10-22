@@ -37,7 +37,7 @@ export const NO_CANDIDATE: unique symbol = Symbol('model selection fast candidat
 type BudgetStrategyOptions<TModel extends ModelPricing,> = Omit<
   BudgetModelSelectionOptions<TModel>,
   'strategy'
->;
+  >;
 
 //endregion Internal types
 

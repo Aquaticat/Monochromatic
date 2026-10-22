@@ -86,8 +86,8 @@ async function readTranscriptTailLines({
    */
   const tail = await blob
     .slice(
-      start,
-      blob.size,
+    start,
+    blob.size,
     )
     .text();
   /**

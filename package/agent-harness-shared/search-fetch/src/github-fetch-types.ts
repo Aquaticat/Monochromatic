@@ -9,17 +9,17 @@
  */
 type GitHubFetchRequestKind =
   | 'api-endpoint'
-  | 'commit-diff'
-  | 'comparison-diff'
-  | 'directory-listing'
-  | 'file-content'
-  | 'gist'
-  | 'issue-thread'
-  | 'pull-request-diff'
-  | 'pull-request-thread'
-  | 'release-index'
-  | 'release-notes'
-  | 'repository-home';
+    | 'commit-diff'
+    | 'comparison-diff'
+    | 'directory-listing'
+    | 'file-content'
+    | 'gist'
+    | 'issue-thread'
+    | 'pull-request-diff'
+    | 'pull-request-thread'
+    | 'release-index'
+    | 'release-notes'
+    | 'repository-home';
 
 /**
  One gh invocation belonging to a single fetch attempt.

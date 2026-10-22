@@ -153,8 +153,8 @@ await describe({
     it({
       name:
         'NAMES AN EMPTY DENOMINATOR rather than letting seven zeros read as a clean result. With no '
-        + 'repair-lane record to probe, every PROBE and CLAIMS figure is zero by construction, and '
-        + 'majorityIntroduced=0 then says the probe found nothing wrong when it found nothing at all',
+          + 'repair-lane record to probe, every PROBE and CLAIMS figure is zero by construction, and '
+          + 'majorityIntroduced=0 then says the probe found nothing wrong when it found nothing at all',
       fn: async (ctx) => {
         /**
          Report over a run holding no repair-lane records.
@@ -176,7 +176,7 @@ await describe({
     it({
       name:
         'STAYS SILENT ONCE THERE IS SOMETHING TO PROBE, so the note marks the empty case rather '
-        + 'than riding along on every report and teaching readers to skip it',
+          + 'than riding along on every report and teaching readers to skip it',
       fn: async (ctx) => {
         /**
          Report over a run holding one repair-lane record.
@@ -198,8 +198,8 @@ await describe({
     it({
       name:
         'POINTS AT editorOffered, which is the only figure separating a lane that was asked and '
-        + 'shipped nothing from one the critics never gave work to. Without that pointer the note '
-        + 'would say a number means less than it looks and stop there',
+          + 'shipped nothing from one the critics never gave work to. Without that pointer the note '
+          + 'would say a number means less than it looks and stop there',
       fn: async (ctx) => {
         /**
          Report over a run holding no repair-lane records.

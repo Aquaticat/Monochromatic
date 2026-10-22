@@ -139,7 +139,7 @@ async function readObservedState(
   catch (error: unknown) {
     if (
       Error.isError(error,)
-      && ('code' in error)
+        && ('code' in error)
         && (error.code === 'ENOENT')
     )
       return OBSERVED_STATE_ABSENT;

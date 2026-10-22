@@ -330,7 +330,7 @@ await describe({
                 'export const kitten = \'Tabby\'[\'localeCompare\'](\'mooncat\',);',
                 'export const loud = \'purr\'.toLocaleUpperCase() + \'MEOW\'.toLocaleLowerCase();',
                 'export const shown = (7).toLocaleString() + new Date().toLocaleDateString()'
-                + ' + new Date().toLocaleTimeString();',
+                  + ' + new Date().toLocaleTimeString();',
                 'export const collator = new Intl.Collator(\'en\',);',
                 'export const plain = \'Purr\'.toLowerCase() + \'purr\'.toUpperCase() + (7).toString();',
                 'export const other = { Collator: 1, }.Collator;',

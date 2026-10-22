@@ -49,12 +49,12 @@ export function emitContentNode(
      */
     const parts = node.elements
       .map(function each(el,) {
-      return emitContentNode({
-        node: el,
-        options,
-        depth: depth + 1,
+        return emitContentNode({
+          node: el,
+          options,
+          depth: depth + 1,
+        },);
       },);
-    },);
     return assembleArrayParts({
       parts,
       options,
@@ -116,10 +116,10 @@ export function assembleArrayParts(
   if (
     (parts.length
       <= options
-      .arrayInlineThreshold)
-    && (inlineCandidate.length
-      <= options
-      .arrayInlineMaxColumns)
+        .arrayInlineThreshold)
+      && (inlineCandidate.length
+        <= options
+          .arrayInlineMaxColumns)
   ) {
     return inlineCandidate;
   }

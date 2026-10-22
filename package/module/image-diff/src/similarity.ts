@@ -25,7 +25,7 @@ export function dotProduct({
 },): number {
   if (a.length
     !== b
-    .length) {
+      .length) {
     throw new Error(
       `Vector length mismatch: ${String(a.length,)} vs ${String(b.length,)}`,
     );
@@ -82,7 +82,7 @@ export function cosineSimilarity({
 },): number {
   if (a.length
     !== b
-    .length) {
+      .length) {
     throw new Error(
       `Vector length mismatch: ${String(a.length,)} vs ${String(b.length,)}`,
     );
@@ -103,10 +103,10 @@ export function cosineSimilarity({
     b: a,
   },),)
     * Math
-    .sqrt(dotProduct({
-    a: b,
-    b,
-  },),);
+      .sqrt(dotProduct({
+        a: b,
+        b,
+      },),);
   if (magnitude === 0) {
     throw new Error(
       'Cannot compute cosine similarity: one or both vectors have zero magnitude',

@@ -473,8 +473,8 @@ await describe({
               + 'chars; DECOY of the same size at -1: no-room, absence votes 0';
           },),
           'COVERAGE control CANNOT HOLD: a decoy cut was taken on none of 3 damaged cases, no page having '
-          + 'room for one clear of the spans the roster anchored on, so nothing shows whether an unrelated '
-          + 'cut of the same size moves the vote too',
+            + 'room for one clear of the spans the roster anchored on, so nothing shows whether an unrelated '
+            + 'cut of the same size moves the vote too',
         ],);
       },
     },),

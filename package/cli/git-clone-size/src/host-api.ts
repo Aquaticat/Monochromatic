@@ -100,8 +100,8 @@ export async function lsRemote(
   const lines = refs.stdout
     .split('\n',)
     .filter(function nonEmpty(line,) {
-    return line.includes('refs/',);
-  },);
+      return line.includes('refs/',);
+    },);
   /**
    Head refs (branches).
    */
@@ -135,8 +135,8 @@ export async function lsRemote(
   const symrefLine = head.stdout
     .split('\n',)
     .find(function isSymref(line,) {
-    return line.startsWith('ref:',);
-  },);
+      return line.startsWith('ref:',);
+    },);
   /**
    Default branch name parsed from the symref line.
    */
@@ -259,8 +259,8 @@ function parseLastPage(linkHeader: string,): number | typeof NO_LAST_PAGE {
    */
   const lastSegment = linkHeader.split(',',)
     .find(function isLast(segment,) {
-    return segment.includes('rel="last"',);
-  },);
+      return segment.includes('rel="last"',);
+    },);
   if (lastSegment === undefined)
     return NO_LAST_PAGE;
   /**
@@ -340,9 +340,9 @@ export async function hostCommitCount(
   const linkLine = result.stdout
     .split('\n',)
     .find(function isLink(line,) {
-    return line.toLowerCase()
-      .startsWith('link:',);
-  },);
+      return line.toLowerCase()
+        .startsWith('link:',);
+    },);
   if (linkLine === undefined) {
     rl.debug('no Link header; commit count is a lower bound',);
     return {

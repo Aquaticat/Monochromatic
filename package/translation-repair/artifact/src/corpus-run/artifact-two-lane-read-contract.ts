@@ -52,8 +52,8 @@ import type { PipelineDigest, } from '@monochromatic-dev/translation-repair-glos
  */
 export type ArtifactRepairStatus =
   | 'repaired'
-  | 'unchanged'
-  | 'blocked-non-translation';
+    | 'unchanged'
+    | 'blocked-non-translation';
 
 /**
  Whether a translate run produced a whole translation, as version 2 froze it.
@@ -65,7 +65,7 @@ export type ArtifactRepairStatus =
  */
 export type ArtifactTranslateStatus =
   | 'complete'
-  | 'unfilled';
+    | 'unfilled';
 
 /**
  One slice as a lane's RAW result describes it.

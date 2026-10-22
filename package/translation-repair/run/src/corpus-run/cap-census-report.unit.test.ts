@@ -162,10 +162,10 @@ await describe({
 
             expect(printed.lines,).toEqual([
               'cap-census: 3 logs, 2 pass-run logs, 4 completed calls, 0 on ids no card names, 0 paths unreadable; '
-              + 'lines left out for a stamp the logger did not write: 0',
+                + 'lines left out for a stamp the logger did not write: 0',
               `${SEAT}: card cap ${String(COMPLETION_CAP[SEAT],)}, rule reads nothing (too few calls)`,
               `  hyper: 4 calls, p99 ${String(COMPLETION_CAP[SEAT],)}; since the caps 4 calls, 1 at the cap (25.00%): `
-              + '1 with content, 0 with none, 0 unpaired',
+                + '1 with content, 0 with none, 0 unpaired',
               CAP_CENSUS_CLOSING_NOTE,
             ],);
           },
@@ -245,7 +245,7 @@ await describe({
 
             expect(printed.lines[0],).toBe(
               'cap-census: 1 log, 1 pass-run log, 1 completed call, 0 on ids no card names, 0 paths unreadable; '
-              + 'lines left out for a stamp the logger did not write: 1',
+                + 'lines left out for a stamp the logger did not write: 1',
             );
           },
         },),
@@ -264,7 +264,7 @@ await describe({
 
             expect(printed.lines,).toEqual([
               'cap-census: 1 log, 0 pass-run logs, 0 completed calls, 0 on ids no card names, 0 paths unreadable; '
-              + 'lines left out for a stamp the logger did not write: 0',
+                + 'lines left out for a stamp the logger did not write: 0',
               CAP_CENSUS_CLOSING_NOTE,
             ],);
           },
@@ -346,10 +346,10 @@ await describe({
             );
             expect(run.stdout,).toBe([
               'cap-census: 2 logs, 1 pass-run log, 2 completed calls, 0 on ids no card names, 1 path unreadable; '
-              + 'lines left out for a stamp the logger did not write: 0',
+                + 'lines left out for a stamp the logger did not write: 0',
               `${SEAT}: card cap ${String(COMPLETION_CAP[SEAT],)}, rule reads nothing (too few calls)`,
               `  hyper: 2 calls, p99 ${String(COMPLETION_CAP[SEAT],)}; since the caps 2 calls, 1 at the cap (50.00%): `
-              + '1 with content, 0 with none, 0 unpaired',
+                + '1 with content, 0 with none, 0 unpaired',
               CAP_CENSUS_CLOSING_NOTE,
               '',
             ].join('\n',),);
@@ -374,7 +374,7 @@ await describe({
             expect(run.stdout,).toBe('',);
             expect(run.stderr,).toBe(
               'cap-census: this command needs <log file or directory>. '
-              + 'Usage: cap-census <log file or directory> [<log file or directory> ...]\n',
+                + 'Usage: cap-census <log file or directory> [<log file or directory> ...]\n',
             );
           },
         },),
@@ -397,7 +397,7 @@ await describe({
             expect(run.stdout,).toBe('',);
             expect(run.stderr,).toBe(
               'cap-census: --tabby is not a flag this command reads; this command needs <log file or directory>. '
-              + 'Usage: cap-census <log file or directory> [<log file or directory> ...]\n',
+                + 'Usage: cap-census <log file or directory> [<log file or directory> ...]\n',
             );
           },
         },),

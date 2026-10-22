@@ -58,7 +58,7 @@ const l = tagged({ tag: 'readonly-source-evidence', },);
 const evidenceBySourceFile = new WeakMap<
   ReturnType<typeof openSemanticFile>['sourceFile'],
   ReadonlySourceEvidence
->();
+  >();
 
 /**
  Mutable cache counters exposed as immutable snapshots.

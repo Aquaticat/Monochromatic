@@ -118,7 +118,7 @@ export type StreamErrorReading =
      */
     readonly endpoint: string;
   }
-  | { readonly found: false; };
+    | { readonly found: false; };
 
 /**
  Reading given when no chunk carried an error object.

@@ -99,7 +99,7 @@ type StepOutcome<Value,> =
     readonly kind: 'done';
     readonly value: Value;
   }
-  | SkippedStep;
+    | SkippedStep;
 
 /**
  One page of an entry, read and parsed.

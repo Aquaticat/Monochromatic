@@ -340,8 +340,8 @@ export function orderForPublishing(
       candidate.name,
       new Set(candidate.dependencyNames
         .filter(function inBatch(name,) {
-        return batch.has(name,) && (name !== candidate.name);
-      },),),
+          return batch.has(name,) && (name !== candidate.name);
+        },),),
     ];
   },),);
   /**
@@ -357,40 +357,40 @@ export function orderForPublishing(
      */
     // Kahn's algorithm needs a moving frontier; each pass rebinds it to a new sorted array.
     let ready = [...pending.entries(),]
-    .filter(function isReady([, dependencies,],) {
-      return dependencies.size === 0;
-    },)
-      .map(function toName([name,],) {
-      return name;
-    },)
-      .toSorted();
-  while (ready.length > 0) {
-    /**
-     Next name to place.
-     */
-    const [
-      next,
-      ...rest
-    ] = ready;
-    if (next === undefined)
-      break;
-    placed.push(next,);
-    pending.delete(next,);
-    /**
-     Names unblocked by placing `next`.
-     */
-    const unblocked = [...pending.entries(),]
-      .filter(function dependsOnNext([, dependencies,],) {
-        return dependencies.delete(next,) && (dependencies.size === 0);
+      .filter(function isReady([, dependencies,],) {
+        return dependencies.size === 0;
       },)
       .map(function toName([name,],) {
         return name;
-      },);
-    ready = [
-      ...rest,
-      ...unblocked,
-    ].toSorted();
-  }
+      },)
+      .toSorted();
+    while (ready.length > 0) {
+    /**
+     Next name to place.
+     */
+      const [
+        next,
+        ...rest
+      ] = ready;
+      if (next === undefined)
+        break;
+      placed.push(next,);
+      pending.delete(next,);
+    /**
+     Names unblocked by placing `next`.
+     */
+      const unblocked = [...pending.entries(),]
+        .filter(function dependsOnNext([, dependencies,],) {
+          return dependencies.delete(next,) && (dependencies.size === 0);
+        },)
+        .map(function toName([name,],) {
+          return name;
+        },);
+      ready = [
+        ...rest,
+        ...unblocked,
+      ].toSorted();
+    }
     return placed;
   })();
   /**

@@ -204,7 +204,7 @@ await describe({
               'library source by cold lines:',
               '  src/nap.ts: 2 stretches, 5 lines, 3 never called',
               'invariant throws by source and line (each stretch nothing but throws of an Error whose message '
-              + 'begins "unreachable:" or of a class whose name ends in InvariantError), with what each throws:',
+                + 'begins "unreachable:" or of a class whose name ends in InvariantError), with what each throws:',
               '  ../../module/whisker/src/index.ts:7-7 (other package): WhiskerInvariantError',
               '  src/nap.ts:20-21 (library source): Error',
               '  src/nap.ts:30-30 (library source): Error, NapInvariantError',
@@ -271,7 +271,7 @@ await describe({
               editedClaims: [],
             },),).toEqual([
               'against /tmp/census.json at c0ffee123: ran 1, still cold 1, cold since then 0, not loaded 1, claimed '
-              + 'sources with no stretch there 0, sources edited since then 0',
+                + 'sources with no stretch there 0, sources edited since then 0',
               '  still cold: src/nap.ts:8-8',
               '  not loaded: src/purr.ts:3-5',
             ],);
@@ -307,7 +307,7 @@ await describe({
               editedClaims: [],
             },),).toEqual([
               'against /tmp/census.json at c0ffee123: ran 0, still cold 0, cold since then 2, not loaded 0, claimed '
-              + 'sources with no stretch there 0, sources edited since then 0',
+                + 'sources with no stretch there 0, sources edited since then 0',
               '  cold since then (ran there): src/nap.ts:8-9',
               '  cold since then (not loaded there): src/knead.ts:2-2',
             ],);
@@ -316,7 +316,7 @@ await describe({
         it({
           name:
             'COUNTS AND NAMES EACH SOURCE EDITED SINCE THE BASELINE, whose baseline lines name other code now, with '
-            + 'whether this run loaded it and how many cold stretches it left, which is all that speaks for it',
+              + 'whether this run loaded it and how many cold stretches it left, which is all that speaks for it',
           fn: async () => {
             expect(baselineReportLines({
               path: '/tmp/census.json',
@@ -338,9 +338,9 @@ await describe({
               ],
             },),).toEqual([
               'against /tmp/census.json at c0ffee123: ran 0, still cold 0, cold since then 0, not loaded 0, claimed '
-              + 'sources with no stretch there 0, sources edited since then 2',
+                + 'sources with no stretch there 0, sources edited since then 2',
               '  edited since c0ffee123, so its baseline lines name other code; this run loaded it and left 2 cold '
-              + 'stretches: src/nap.ts',
+                + 'stretches: src/nap.ts',
               '  edited since c0ffee123, so its baseline lines name other code; this run did not load it: src/purr.ts',
             ],);
           },
@@ -377,12 +377,12 @@ await describe({
               ],
             },),).toEqual([
               'against /tmp/census.json at c0ffee123: ran 0, still cold 0, cold since then 0, not loaded 0, claimed '
-              + 'sources with no stretch there 3, sources edited since then 0',
+                + 'sources with no stretch there 3, sources edited since then 0',
               '  no baseline stretch (not loaded there, so the baseline proves nothing of it); '
-              + 'this run loaded it and left 0 cold stretches: src/knead.ts',
+                + 'this run loaded it and left 0 cold stretches: src/knead.ts',
               '  no baseline stretch (ran whole there); this run loaded it and left 2 cold stretches: src/purr.ts',
               '  no baseline stretch (not loaded there, so the baseline proves nothing of it); '
-              + 'this run did not load it: src/yawn.ts',
+                + 'this run did not load it: src/yawn.ts',
             ],);
           },
         },),

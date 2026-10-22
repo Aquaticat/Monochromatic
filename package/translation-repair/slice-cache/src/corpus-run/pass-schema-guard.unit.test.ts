@@ -260,7 +260,7 @@ await describe({
         it({
           name:
             'ACCEPTS a fresh directory and one holding real artifacts of the generation this pass writes, '
-            + 'which are the two ordinary cases and the only ones that must stay silent',
+              + 'which are the two ordinary cases and the only ones that must stay silent',
           fn: async () => {
             await using emptyScratch = await scratchDir({ prefix: 'pass-schema-guard-', },);
             await writeArtifacts({ dir: emptyScratch.path, entries: {}, },);
@@ -288,9 +288,9 @@ await describe({
         it({
           name:
             'REFUSES a body that DECLARES this generation and is not one, which the first version of this '
-            + 'guard accepted: it read the label and never the body, so a version 1 artifact relabelled as '
-            + 'the generation this pass writes was counted as settled, never re-run, and left for whichever '
-            + 'reader asked it a two-lane question first',
+              + 'guard accepted: it read the label and never the body, so a version 1 artifact relabelled as '
+              + 'the generation this pass writes was counted as settled, never re-run, and left for whichever '
+              + 'reader asked it a two-lane question first',
           fn: async () => {
             await using scratch = await scratchDir({ prefix: 'pass-schema-guard-', },);
             /**
@@ -319,9 +319,9 @@ await describe({
         it({
           name:
             'REFUSES a version 1 artifact that the drift opt-in just waved past, which is the whole reason '
-            + 'this guard is separate: the pipeline guard accepts that directory once an operator opts in, '
-            + 'and the promise it made them, that naming a required commit keeps the pool readable, is a '
-            + 'promise about builds rather than about shapes',
+              + 'this guard is separate: the pipeline guard accepts that directory once an operator opts in, '
+              + 'and the promise it made them, that naming a required commit keeps the pool readable, is a '
+              + 'promise about builds rather than about shapes',
           fn: async () => {
             /**
              A directory holding one artifact of each generation, both stamped with
@@ -359,7 +359,7 @@ await describe({
         it({
           name:
             'ACCEPTS a directory of several BUILDS all writing this generation, so the guard is not a second '
-            + 'digest check: an operator who opted into build drift keeps exactly what they opted into',
+              + 'digest check: an operator who opted into build drift keeps exactly what they opted into',
           fn: async () => {
             await using scratch = await scratchDir({ prefix: 'pass-schema-guard-', },);
             await writeArtifacts({
@@ -383,8 +383,8 @@ await describe({
         it({
           name:
             'REFUSES an artifact carrying NO version field, which is the generation the pipeline guard is '
-            + 'least likely to catch: those files record a digest, so they are neither unplaceable nor '
-            + 'legacy, and one written by this very build would pass every check but this one',
+              + 'least likely to catch: those files record a digest, so they are neither unplaceable nor '
+              + 'legacy, and one written by this very build would pass every check but this one',
           fn: async () => {
             await using scratch = await scratchDir({ prefix: 'pass-schema-guard-', },);
             await writeArtifacts({
@@ -403,7 +403,7 @@ await describe({
         it({
           name:
             'REFUSES a generation written AFTER this build, rather than reading it as one it knows: a reader '
-            + 'meeting a later shape knows only that it does not know the shape',
+              + 'meeting a later shape knows only that it does not know the shape',
           fn: async () => {
             await using scratch = await scratchDir({ prefix: 'pass-schema-guard-', },);
             await writeArtifacts({
@@ -423,8 +423,8 @@ await describe({
         it({
           name:
             'names every way forward including moving the incompatible artifacts aside, and names deleting '
-            + 'them as the one thing to avoid rather than as no remedy at all: a moved file is re-run and a '
-            + 'deleted one is re-run too, and only one of the two keeps the result it already was',
+              + 'them as the one thing to avoid rather than as no remedy at all: a moved file is re-run and a '
+              + 'deleted one is re-run too, and only one of the two keeps the result it already was',
           fn: async () => {
             /**
              Whatever the refusal said.
@@ -450,8 +450,8 @@ await describe({
         it({
           name:
             'REFUSES a file that is not an artifact at all APART, with removing it as the remedy, rather than '
-            + 'naming it among the foreign generations with the advice to archive it as the generation it is '
-            + '(ledger B53)',
+              + 'naming it among the foreign generations with the advice to archive it as the generation it is '
+              + '(ledger B53)',
           fn: async () => {
             /**
              A directory holding a sound artifact of another generation beside
@@ -500,7 +500,7 @@ await describe({
         it({
           name:
             'NAMES the first five entries of a generation and COUNTS the rest, so a corpus-sized directory '
-            + 'still produces a readable refusal',
+              + 'still produces a readable refusal',
           fn: async () => {
             /**
              Six entries of one foreign generation.
@@ -537,8 +537,8 @@ await describe({
         it({
           name:
             'classifies every settled entry rather than grouping them by the sentence a refusal would '
-            + 'print, so a file that is not an artifact at all stays distinguishable from a sound artifact '
-            + 'of a generation this build cannot read, and each can be offered the remedy that fits',
+              + 'print, so a file that is not an artifact at all stays distinguishable from a sound artifact '
+              + 'of a generation this build cannot read, and each can be offered the remedy that fits',
           fn: async () => {
             /**
              A directory holding four different answers at once.

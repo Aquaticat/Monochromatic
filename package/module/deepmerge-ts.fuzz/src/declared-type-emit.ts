@@ -42,8 +42,8 @@ function symbolName(symbol: symbol,): string {
       string,
       symbol
     ],) {
-    return candidate === symbol;
-  },);
+      return candidate === symbol;
+    },);
   if (found === undefined)
     throw new Error(`unknown symbol key ${String(symbol,)}`,);
   return found[0];
@@ -237,8 +237,8 @@ export function emitCase({
       type,
       position: number,
     ) {
-    return `widen<${emitType(type,)}>(${drawn.sources[position] ?? 'undefined'})`;
-  },);
+      return `widen<${emitType(type,)}>(${drawn.sources[position] ?? 'undefined'})`;
+    },);
   if (drawn.kind === 'into') {
     return [
       `  // case ${String(id,)} into`,

@@ -83,8 +83,8 @@ const alphabetInputArb: Arbitrary<string> = array(
   },
 )
   .map(function joinUnits(units: readonly string[],): string {
-  return units.join('',);
-},);
+    return units.join('',);
+  },);
 
 /**
  Generated pattern body over the pattern alphabet.
@@ -100,8 +100,8 @@ const patternBodyArb: Arbitrary<string> = array(
   },
 )
   .map(function joinUnits(units: readonly string[],): string {
-  return units.join('',);
-},);
+    return units.join('',);
+  },);
 
 /**
  Generated pattern: an optional leading negation plus a body. Bodies are

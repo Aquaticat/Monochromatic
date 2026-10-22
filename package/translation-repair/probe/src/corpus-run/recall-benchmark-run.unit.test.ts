@@ -167,7 +167,7 @@ await describe({
         expect(printed.lines,).toEqual([
           `START tip=${TIP} entries=1 seeds=2 perBand={"small":1,"medium":0,"large":0} budget=43200000ms`,
           'SCORECARD dispatched=1 coverage=1.000 planted=2 detected=0 detectionRate=0.000 policyDeclined=0 '
-          + 'detectionRateExcludingPolicy=0.000',
+            + 'detectionRateExcludingPolicy=0.000',
           `SCORECARD kept at ${kept}`,
           'DERIVABILITY nonDerivable=0 detectionExcludingUnfair=0.000',
           'REPAIR judged=0 restored=0 partial=0 strict=0.000 lenient=0.000',
@@ -351,8 +351,8 @@ await describe({
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect(String(refusal,),).toBe(
           'StatedRefusalError: no entry at the pin can be seeded, so the benchmark would plant no seed and measure '
-          + 'nothing; check that the corpus clone and commit it reads hold entries with both pages and a sentence '
-          + 'worth deleting',
+            + 'nothing; check that the corpus clone and commit it reads hold entries with both pages and a sentence '
+            + 'worth deleting',
         );
         expect(printed.lines,).toEqual([
           `START tip=${TIP} entries=0 seeds=0 perBand={"small":0,"medium":0,"large":0} budget=43200000ms`,
@@ -396,8 +396,8 @@ await describe({
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect(String(refusal,),).toBe(
           'StatedRefusalError: no entry at the pin can be seeded, so the benchmark would plant no seed and measure '
-          + 'nothing; check that the corpus clone and commit it reads hold entries with both pages and a sentence '
-          + 'worth deleting',
+            + 'nothing; check that the corpus clone and commit it reads hold entries with both pages and a sentence '
+            + 'worth deleting',
         );
         expect(printed.lines,).toEqual([
           `START tip=${TIP} entries=0 seeds=0 perBand={"small":0,"medium":0,"large":0} budget=43200000ms`,

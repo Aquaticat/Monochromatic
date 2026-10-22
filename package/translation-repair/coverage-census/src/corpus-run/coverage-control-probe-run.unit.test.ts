@@ -236,12 +236,12 @@ await describe({
           lines: [
             'COVERAGE control offering 3 cases to a roster of 1',
             'COVERAGE control HELD over 1 damaged case: absence votes appeared on 1 targeted cut '
-            + 'and on 0 of 1 equally large cut taken elsewhere',
+              + 'and on 0 of 1 equally large cut taken elsewhere',
             'COVERAGE control 0 cases could not be damaged: 0 because the roster never called them covered, '
-            + '0 because what the roster anchored on was the whole page',
+              + '0 because what the roster anchored on was the whole page',
             'The roster voted absence once the rendering it pointed at was gone, so an absence '
-            + 'vote is reachable and a run that produced none is reporting the corpus rather '
-            + 'than the instrument.',
+              + 'vote is reachable and a run that produced none is reporting the corpus rather '
+              + 'than the instrument.',
           ],
           refusal: '',
         },);

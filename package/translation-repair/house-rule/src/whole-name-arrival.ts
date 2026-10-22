@@ -464,8 +464,8 @@ function spellingOf({ text, }: { readonly text: string; },): string {
   const kept: string[] = [];
   for (const character of text.normalize('NFC',)
     .replaceAll(
-      ESCAPE,
-      '',
+    ESCAPE,
+    '',
     )
     .toLowerCase()) {
     if (!isTagWhitespace({ character, },)) {
@@ -665,14 +665,14 @@ export function arrivesAsWholeName(
       };
       return beside.before
         .every(function excusedBefore(word,): boolean {
-        return excused.before
-          .has(word,);
-      },)
-        && beside.after
-        .every(function excusedAfter(word,): boolean {
-          return excused.after
+          return excused.before
             .has(word,);
-        },);
+        },)
+        && beside.after
+          .every(function excusedAfter(word,): boolean {
+            return excused.after
+              .has(word,);
+          },);
     },);
 }
 

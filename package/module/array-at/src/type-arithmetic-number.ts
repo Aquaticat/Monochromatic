@@ -58,12 +58,12 @@ export type DecimalNumber<Text extends string> =
 export type SubtractNumbers<
   Minuend extends number,
   Subtrahend extends number,
-> = SubtractDigitSequences<
-  DecimalCharacters<`${Minuend}`>,
-  DecimalCharacters<`${Subtrahend}`>
-> extends infer Difference extends string
-  ? DecimalNumber<StripLeadingZeros<Difference>>
-  : never;
+  > = SubtractDigitSequences<
+    DecimalCharacters<`${Minuend}`>,
+    DecimalCharacters<`${Subtrahend}`>
+    > extends infer Difference extends string
+    ? DecimalNumber<StripLeadingZeros<Difference>>
+    : never;
 
 /**
  Decrements positive integer literal.
@@ -145,7 +145,7 @@ export type FitsSafeInteger<Text extends string> = [
   SubtractDigitSequences<
     DecimalCharacters<MaximumSafeIntegerText>,
     DecimalCharacters<Text>
-  >,
+    >,
 ] extends [never]
   ? false
   : true;

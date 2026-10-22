@@ -133,17 +133,17 @@ test.describe('root discovery over the origin private file system', () => {
         );
         await writeText(
           {
-          directory: repo,
-          name: 'mise.toml',
-          text: '[tools]\nnode = "24"\n\n[monorepo]\nroot = true\n',
-        },
+            directory: repo,
+            name: 'mise.toml',
+            text: '[tools]\nnode = "24"\n\n[monorepo]\nroot = true\n',
+          },
         );
         await writeText(
           {
-          directory: repo,
-          name: 'pnpm-workspace.yaml',
-          text: 'packages:\n  - pkg\n',
-        },
+            directory: repo,
+            name: 'pnpm-workspace.yaml',
+            text: 'packages:\n  - pkg\n',
+          },
         );
         /**
          Git administrative directory with the signatures the finder validates.
@@ -154,10 +154,10 @@ test.describe('root discovery over the origin private file system', () => {
         );
         await writeText(
           {
-          directory: gitDirectory,
-          name: 'HEAD',
-          text: 'ref: refs/heads/main\n',
-        },
+            directory: gitDirectory,
+            name: 'HEAD',
+            text: 'ref: refs/heads/main\n',
+          },
         );
         await gitDirectory.getDirectoryHandle(
           'objects',

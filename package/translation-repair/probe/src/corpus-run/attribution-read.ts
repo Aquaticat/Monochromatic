@@ -396,9 +396,9 @@ export function attributionEntryOf(
     // every version 2 artifact into the pre-feature population, which is the
     // one answer here that looks like an ordinary reading of an older corpus.
     ...(Object.hasOwn(
-        records,
-        keys.sliceCritics,
-      )
+      records,
+      keys.sliceCritics,
+    )
       ? {
         sliceCritics: decodeSliceCritics({
           value: records[keys.sliceCritics],
@@ -524,7 +524,7 @@ export async function gatherAttributionEntries(
    */
   const outcomes = await Promise.all(names.map(async function readOne(name,): Promise<
     { readonly entry: AttributionEntry; } | { readonly failure: MalformedArtifact; }
-  > {
+    > {
     try {
       return {
         entry: attributionEntryOf({

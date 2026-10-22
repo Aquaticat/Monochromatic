@@ -182,21 +182,21 @@ export async function buildDshAdvisorStatus(
     !== undefined)
     && scope
       .entries
-    .some(function matchesReviewer(
+      .some(function matchesReviewer(
         entry: ForeignBorrowed<ScopedAdvisorModel>,
       ) {
-      return (entry.canonicalSlug
-        === options.config
-        .defaultReviewerModel)
-        || (entry.model
-          .id
+        return (entry.canonicalSlug
           === options.config
-          .defaultReviewerModel)
-        || (entry.model
-          .name
-          === options.config
-          .defaultReviewerModel);
-    },);
+            .defaultReviewerModel)
+          || (entry.model
+            .id
+            === options.config
+              .defaultReviewerModel)
+          || (entry.model
+            .name
+            === options.config
+              .defaultReviewerModel);
+      },);
   /**
    Eligible slugs whose output capacity is unknown and therefore eligible by
    the shared fallback rule.
@@ -204,16 +204,16 @@ export async function buildDshAdvisorStatus(
   const capacityUnknownSlugs = eligibleScope
     .entries
     .filter(function hasUnknownCapacity(entry,) {
-    return options
-      .catalog
-      .factsBySlug
-      .get(entry.canonicalSlug,)
-      ?.outputCapacityUnknown
-      === true;
-  },)
+      return options
+        .catalog
+        .factsBySlug
+        .get(entry.canonicalSlug,)
+        ?.outputCapacityUnknown
+        === true;
+    },)
     .map(function readSlug(entry,) {
-    return entry.canonicalSlug;
-  },);
+      return entry.canonicalSlug;
+    },);
 
   return [
     `Advisor: ${options.enabled

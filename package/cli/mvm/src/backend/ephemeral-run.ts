@@ -44,7 +44,7 @@ const NAME_RANDOM_BYTES = 4;
 export type EphemeralOps = Pick<
   Backend,
   'clone' | 'create' | 'destroy' | 'exec'
->;
+  >;
 
 /**
  Generates a unique ephemeral VM name using a random hex suffix.

@@ -205,7 +205,7 @@ await describe({
               repeatRefusal({ value: { ...FRAME, suffix: 4, }, },),
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.repeat.wording: '
-              + 'expected no key here beyond kind, prefix, suffix.',
+                + 'expected no key here beyond kind, prefix, suffix.',
               'ArtifactParseError: artifact parse failed at cat.repeat.prefix: expected a string.',
               'ArtifactParseError: artifact parse failed at cat.repeat.suffix: expected a string.',
               'ArtifactParseError: artifact parse failed at cat.repeat.suffix: expected a string.',
@@ -241,7 +241,7 @@ await describe({
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.unplaced[0]: expected an object.',
               'ArtifactParseError: artifact parse failed at cat.unplaced[0].label: '
-              + 'expected no key here beyond startOffset, endOffset, line, reason.',
+                + 'expected no key here beyond startOffset, endOffset, line, reason.',
             ],);
           },
         },),
@@ -291,7 +291,7 @@ await describe({
               strayRefusal({ value: { ...STRAY, reason: 4, }, },),
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.unplaced[0].reason: '
-              + 'expected one of in-no-slice, crosses-slice-end.',
+                + 'expected one of in-no-slice, crosses-slice-end.',
               'ArtifactParseError: artifact parse failed at cat.unplaced[0].reason: expected a string.',
             ],);
           },
@@ -336,7 +336,7 @@ await describe({
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.ballots[0]: expected an object.',
               'ArtifactParseError: artifact parse failed at cat.ballots[0].weight: '
-              + 'expected no key here beyond seat, reason, quotes, choice, keep.',
+                + 'expected no key here beyond seat, reason, quotes, choice, keep.',
             ],);
           },
         },),
@@ -370,7 +370,7 @@ await describe({
               'ArtifactParseError: artifact parse failed at cat.ballots[0].quotes: expected an array.',
               'ArtifactParseError: artifact parse failed at cat.ballots[0].quotes[0]: expected an object.',
               'ArtifactParseError: artifact parse failed at cat.ballots[0].quotes[0].place: '
-              + 'expected no key here beyond label, quote, slot.',
+                + 'expected no key here beyond label, quote, slot.',
             ],);
           },
         },),

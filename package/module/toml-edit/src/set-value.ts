@@ -117,7 +117,7 @@ function replaceInBlock(
     path,
   },)) || (path.length
     < (bodyPathStart
-    + 1)))
+      + 1)))
     return NOT_SET;
   /**
    Body result after descending with the remaining path segments.

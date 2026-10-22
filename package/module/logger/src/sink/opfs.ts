@@ -62,7 +62,7 @@ export function createOpfsSink(): Sink {
         .replaceAll(
         ':',
         '-',
-      );
+        );
       /**
        OPFS handle for the per-run log file, created on first verification and reused for subsequent writes.
        */

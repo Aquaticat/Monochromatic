@@ -127,10 +127,10 @@ await describe({
           .map(function toWhere(row,): string {
             return row.where;
           },),).toStrictEqual([
-          'slice-0',
-          'slice-1',
-          'slice-2',
-        ],);
+            'slice-0',
+            'slice-1',
+            'slice-2',
+          ],);
 
         // Every case here is damageable, so nothing was set aside as a refusal
         // and the rows ARE the cap rather than whatever survived a filter.

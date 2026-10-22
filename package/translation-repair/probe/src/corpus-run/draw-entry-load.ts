@@ -206,7 +206,7 @@ export async function loadEntry(
     },);
   if (declaredAccepted
     !== parsed.acceptedIssues
-    .length)
+      .length)
     throw new DrawReconcileError({
       entryId: parsed.id,
       fault: {

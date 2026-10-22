@@ -136,8 +136,8 @@ export async function geminiEmbedBatch({
   return {
     embeddings: result.embeddings
       .map(function extractValues(e,) {
-      return e.values;
-    },),
+        return e.values;
+      },),
     usage: {
       textTokens: 0,
       imagePixels: 0,

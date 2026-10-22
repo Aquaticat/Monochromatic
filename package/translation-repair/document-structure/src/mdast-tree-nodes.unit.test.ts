@@ -76,10 +76,10 @@ await describe({
         const root = Array
           .from({ length: DEEP_LEVELS, },)
           .reduce<PhrasingNode>(
-            function wrap(inner,): PhrasingNode {
-              return { type: 'emphasis', children: [inner,], };
-            },
-            { type: 'text', value: 'nap', },
+          function wrap(inner,): PhrasingNode {
+            return { type: 'emphasis', children: [inner,], };
+          },
+          { type: 'text', value: 'nap', },
           );
         expect(treeNodes({ root, },),).toHaveLength(DEEP_LEVELS + 1,);
       },

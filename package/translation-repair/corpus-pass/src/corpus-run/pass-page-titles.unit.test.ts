@@ -511,14 +511,14 @@ await describe({
             expect(pageTitleKey({ sourceText: REPEATING, spans, identityContext: '', modelIds: ROSTER, },),).toBe(
               createHash('sha256',)
                 .update(
-                  JSON.stringify({
-                    version: PAGE_TITLE_CACHE_VERSION,
-                    source: hashContent({ content: REPEATING, },),
-                    titles: spans,
-                    identity: hashContent({ content: '', },),
-                    roster: ROSTER,
-                  },),
-                  'utf8',
+                JSON.stringify({
+                  version: PAGE_TITLE_CACHE_VERSION,
+                  source: hashContent({ content: REPEATING, },),
+                  titles: spans,
+                  identity: hashContent({ content: '', },),
+                  roster: ROSTER,
+                },),
+                'utf8',
                 )
                 .digest('hex',),
             );

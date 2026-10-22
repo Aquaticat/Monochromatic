@@ -224,7 +224,7 @@ async function runDescribe(
    */
   async function runSequential(): Promise<
     PromiseSettledResult<DescribeResult | ItResult>[]
-  > {
+    > {
     /**
      Accumulator matched to `Promise.allSettled` shape so the call site can branch identically across modes.
      */
@@ -297,7 +297,7 @@ async function runDescribe(
           },),)
           : (function runLimited(): Promise<
             PromiseSettledResult<DescribeResult | ItResult>[]
-          > {
+            > {
             /**
              p-limit instance owns the in-flight count for this suite so concurrent dispatch stays within the cap.
              */
@@ -341,7 +341,7 @@ async function runDescribe(
      */
     async function awaitSettleWithTimeoutLogging(): Promise<
       PromiseSettledResult<DescribeResult | ItResult>[]
-    > {
+      > {
       try {
         return await withTimeoutApplied;
       }

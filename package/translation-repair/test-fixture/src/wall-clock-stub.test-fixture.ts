@@ -71,8 +71,8 @@ export function stubWallClock(
   const reading = { ms: atMs, };
   sinon
     .stub(
-      Date,
-      'now',
+    Date,
+    'now',
     )
     .callsFake(function steppedNow(): number {
       return reading.ms;

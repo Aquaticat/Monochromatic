@@ -374,7 +374,7 @@ await describe({
                 `The labels you may write are exactly: ${
                   consistencyLabels({ count: TENSE_SUBJECT.occurrences.length, },).join(', ',)
                 }. Write each one as shown, with its word and its number, in the choice, the kept places and the label of `
-                + 'each quote; a number alone is not a label.',
+                  + 'each quote; a number alone is not a label.',
                 REPLY_SHAPE,
               ],
             },);

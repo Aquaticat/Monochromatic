@@ -37,22 +37,22 @@ export function explicitBreakCounts({ root, }: { readonly root: DeepReadonlyData
     /**
      Owned work list grows as descendant nodes are visited.
      */
-    const pending: ReadonlyNode[] = [block,];
+      const pending: ReadonlyNode[] = [block,];
     /**
      Explicit breaks in this block, not in unrelated neighboring blocks.
      */
-    let count = 0;
-    for (const node of pending) {
-      if (
-        (node.type === 'break')
-        || (((node.type === 'mdxJsxTextElement') || (node.type === 'mdxJsxFlowElement')) && (node.name === 'br'))
-      )
-        count += 1;
-      if ('children' in node)
-        pending.push(...node.children,);
-    }
-    return count;
-  },);
+      let count = 0;
+      for (const node of pending) {
+        if (
+          (node.type === 'break')
+            || (((node.type === 'mdxJsxTextElement') || (node.type === 'mdxJsxFlowElement')) && (node.name === 'br'))
+        )
+          count += 1;
+        if ('children' in node)
+          pending.push(...node.children,);
+      }
+      return count;
+    },);
 }
 
 /**

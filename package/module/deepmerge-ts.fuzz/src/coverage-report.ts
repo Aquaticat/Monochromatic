@@ -194,8 +194,8 @@ export async function targetScripts(
     return isCoverageFile(file,)
       ? file.result
         .filter(function isTarget(script,) {
-        return script.url === targetUrl;
-      },)
+          return script.url === targetUrl;
+        },)
       : [];
   },);
 }

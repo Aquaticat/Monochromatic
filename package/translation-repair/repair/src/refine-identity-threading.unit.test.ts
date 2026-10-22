@@ -273,25 +273,25 @@ async function stepSheets(
           ],
         }
         : stage === 'candidate_ballot'
-        ? {
-          best: 1,
-          assessment: 'scripted',
-        }
-        : stage === 'introduced_defect_report'
-        ? {
-          checks: [
-            {
-              region: 1,
-              verdict: 'no-introduced-defect-found',
-              category: '',
-              severity: '',
-              evidence: '',
-              omittedText: '',
-              verdictReason: '',
-            },
-          ],
-        }
-        : { checks: [], };
+          ? {
+            best: 1,
+            assessment: 'scripted',
+          }
+          : stage === 'introduced_defect_report'
+            ? {
+              checks: [
+                {
+                  region: 1,
+                  verdict: 'no-introduced-defect-found',
+                  category: '',
+                  severity: '',
+                  evidence: '',
+                  omittedText: '',
+                  verdictReason: '',
+                },
+              ],
+            }
+            : { checks: [], };
       if (!request.validate(scripted,))
         throw new Error(`stub script failed the ${stage} guard`,);
       return {

@@ -32,8 +32,8 @@ import { systemOf, } from '@monochromatic-dev/translation-repair-provider/ts/cha
  */
 const SURVIVED_ATTEMPT =
   '自杀 names the act, not its outcome: where the ORIGINAL goes on to a rescue, a waking or a life that continues (抢救, 醒来, 幸存), '
-  + 'the person survived the attempt and the page says that she tried to end her life or attempted suicide; '
-  + '"ended her life" and "took her own life" assert a death, and on an attempt survived they are a factual error, not vagueness.';
+    + 'the person survived the attempt and the page says that she tried to end her life or attempted suicide; '
+    + '"ended her life" and "took her own life" assert a death, and on an attempt survived they are a factual error, not vagueness.';
 
 /**
  Cat-themed source, since neither sheet varies with what it is given.

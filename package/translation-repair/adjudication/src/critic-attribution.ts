@@ -143,35 +143,35 @@ export function collectClaimAttributions(
       },);
     },)
     .map(function toAttribution(
-    [
-      claimId,
-      byModel,
-    ],
-  ): ClaimAttribution {
-    return {
-      claimId,
-      proposers: [...byModel.entries(),]
-        .map(function toProposer([modelId, emissionCount,]: ReadonlyEntry<RosterModelId, number>,): ClaimProposer {
-        return {
-          modelId,
-          emissionCount,
-        };
-      },)
+      [
+        claimId,
+        byModel,
+      ],
+    ): ClaimAttribution {
+      return {
+        claimId,
+        proposers: [...byModel.entries(),]
+          .map(function toProposer([modelId, emissionCount,]: ReadonlyEntry<RosterModelId, number>,): ClaimProposer {
+            return {
+              modelId,
+              emissionCount,
+            };
+          },)
         // Code-point order rather than localeCompare: this value is serialized
         // into a cached outcome and compared across runs, so a comparison that
         // depends on the machine's default locale could order the same
         // proposers differently on two hosts.
-        .toSorted(function byModelId(
-          left,
-          right,
-        ): number {
-        return compareCodePoints({
-          left: left.modelId,
-          right: right.modelId,
-        },);
-      },),
-    };
-  },);
+          .toSorted(function byModelId(
+            left,
+            right,
+          ): number {
+            return compareCodePoints({
+              left: left.modelId,
+              right: right.modelId,
+            },);
+          },),
+      };
+    },);
 }
 
 /**
@@ -265,8 +265,8 @@ export function buildSliceCriticRecords(
 ): readonly SliceCriticRecord[] {
   return outcomes
     .map(function toRecord(outcome,): SliceCriticRecord {
-    return {
-      sliceIndex: outcome.sliceIndex,
+      return {
+        sliceIndex: outcome.sliceIndex,
       // CANONICALIZED here rather than trusted from the caller. Every producer
       // upstream already sorts, so this changes nothing today; what it adds is
       // that the ARTIFACT BOUNDARY guarantees the order rather than inheriting
@@ -276,49 +276,49 @@ export function buildSliceCriticRecords(
       // Code-point order throughout (`compareCodePoints`), never
       // `localeCompare`, which is locale-dependent and would order the same
       // critics differently on two machines.
-      heardCriticIds: outcome.heardCriticIds
-        .toSorted(function byCriticId(
-          left,
-          right,
-        ): number {
-        return compareCodePoints({
-          left,
-          right,
-        },);
-      },),
-      claimAttributions: outcome.claimAttributions
-        .map(function canonical(attribution,): ClaimAttribution {
-        return {
-          claimId: attribution.claimId,
-          proposers: attribution.proposers
-            .toSorted(function byModelId(
+        heardCriticIds: outcome.heardCriticIds
+          .toSorted(function byCriticId(
+            left,
+            right,
+          ): number {
+            return compareCodePoints({
               left,
               right,
-            ): number {
-            return compareCodePoints({
-              left: left.modelId,
-              right: right.modelId,
             },);
           },),
-        };
-      },)
-        .toSorted(function byClaimId(
-          left,
-          right,
-        ): number {
-        return compareCodePoints({
-          left: left.claimId,
-          right: right.claimId,
-        },);
-      },),
-    };
-  },)
+        claimAttributions: outcome.claimAttributions
+          .map(function canonical(attribution,): ClaimAttribution {
+            return {
+              claimId: attribution.claimId,
+              proposers: attribution.proposers
+                .toSorted(function byModelId(
+                  left,
+                  right,
+                ): number {
+                  return compareCodePoints({
+                    left: left.modelId,
+                    right: right.modelId,
+                  },);
+                },),
+            };
+          },)
+          .toSorted(function byClaimId(
+            left,
+            right,
+          ): number {
+            return compareCodePoints({
+              left: left.claimId,
+              right: right.claimId,
+            },);
+          },),
+      };
+    },)
     .toSorted(function bySliceIndex(
       left,
       right,
     ): number {
-    return left.sliceIndex - right.sliceIndex;
-  },);
+      return left.sliceIndex - right.sliceIndex;
+    },);
 }
 
 //endregion Critic attribution

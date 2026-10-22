@@ -96,9 +96,9 @@ export function packagedCallableOrigins({
        `accessorShorthandEffect` in the call-edge fixture measured that.
        */
       const symbol = isShorthandPropertyAssignment(node.parent,)
-          && (node.parent
-            .name
-            === node)
+        && (node.parent
+          .name
+          === node)
         ? checker.getShorthandAssignmentValueSymbol(node.parent,)
         : checker.getSymbolAtLocation(node,);
       if (symbol === undefined)

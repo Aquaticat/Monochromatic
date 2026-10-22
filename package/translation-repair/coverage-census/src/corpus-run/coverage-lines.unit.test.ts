@@ -174,15 +174,15 @@ await describe({
                 path: 'nap.mjs.map',
                 text: mapText({ source: '../../../src/nap.ts', },)
                   .slice(
-                    0,
-                    30,
+                  0,
+                  30,
                   ),
               },);
             },);
             expect(refusal,).toBeInstanceOf(SourceMapFileError,);
             expect(String(refusal,),).toBe(
               'SourceMapFileError: source map nap.mjs.map does not read as a version 3 map: it is not JSON; build '
-              + 'with the coverage config, which writes one beside every chunk',
+                + 'with the coverage config, which writes one beside every chunk',
             );
           },
         },),

@@ -51,8 +51,8 @@ function unitAcross(
     return (from < offset) && (offset < to);
   },)
     .slice(
-      0,
-      1,
+    0,
+    1,
     );
 }
 
@@ -250,8 +250,8 @@ export function wholeSpanOf(
   const [wordsStart,] = folded
     .starts
     .slice(
-      unitsBeforeFirst,
-      unitsBeforeFirst + 1,
+    unitsBeforeFirst,
+    unitsBeforeFirst + 1,
     );
   /**
    Where the words of the span end in the English, none when the fold has no offset for it.
@@ -259,8 +259,8 @@ export function wholeSpanOf(
   const [wordsEnd,] = folded
     .ends
     .slice(
-      unitsUpToLast - 1,
-      unitsUpToLast,
+    unitsUpToLast - 1,
+    unitsUpToLast,
     );
   return {
     start: whole.start + (wordsStart ?? 0),

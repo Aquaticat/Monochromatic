@@ -253,7 +253,7 @@ export async function removeOpenSnitchEndpointAllowance(
   catch (error) {
     l.error(
       `Cannot remove ${interfaceName} OpenSnitch endpoint rules; `
-      + `remove wg-quicker-managed rules manually: ${String(error,)}`,
+        + `remove wg-quicker-managed rules manually: ${String(error,)}`,
     );
   }
 }

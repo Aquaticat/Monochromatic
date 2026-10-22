@@ -237,12 +237,12 @@ function buildTable(
    */
   const bodyBuilt = table.body
     .map(function each(kv: AST.TOMLKeyValue,) {
-    return buildKeyValue({
-      source,
-      comments,
-      kv,
+      return buildKeyValue({
+        source,
+        comments,
+        kv,
+      },);
     },);
-  },);
   /**
    Table span end: after the last body entry, or the header line when empty.
    */

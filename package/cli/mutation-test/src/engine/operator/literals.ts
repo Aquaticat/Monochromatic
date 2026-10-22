@@ -120,7 +120,7 @@ export function literalReplacements(options: {
           key: 'argument',
         },)
           .end,
-      ),
+        ),
       operator: 'boolean',
       description: 'removed ! negation',
     },];
@@ -176,7 +176,7 @@ export function literalReplacements(options: {
     const isEmpty = (options.node
       .end
       - options.node
-      .start) === 2;
+        .start) === 2;
 
     return [{
       start: options.node

@@ -371,9 +371,9 @@ function tryMatchModel<TModel extends ModelIdentity,>(
       .toLowerCase()
       .includes(normalizedPattern,)
       || model
-      .name
-      .toLowerCase()
-      .includes(normalizedPattern,);
+        .name
+        .toLowerCase()
+        .includes(normalizedPattern,);
   },);
   if (matches.length
     === 0)

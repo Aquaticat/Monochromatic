@@ -264,10 +264,10 @@ async function gitLogDates(
   ],);
   return stdout.split('\n',)
     .filter(function keepNonEmpty(line,) {
-    return line.trim()
-      .length
-      > 0;
-  },);
+      return line.trim()
+        .length
+        > 0;
+    },);
 }
 
 //endregion Local git lookups

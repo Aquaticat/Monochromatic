@@ -339,7 +339,7 @@ function parseRules({ toml, }: { readonly toml: string; },): readonly RawRule[] 
           while (
             (i < lines
               .length)
-            && (!(lines[i]!).startsWith("[",))
+              && (!(lines[i]!).startsWith("[",))
           ) {
             i += 1;
           }
@@ -367,7 +367,7 @@ function parseRules({ toml, }: { readonly toml: string; },): readonly RawRule[] 
             .replaceAll(
             String.raw`\"`,
             '"',
-          );
+            );
           i += 1;
           continue;
         }
@@ -418,7 +418,7 @@ function parseRules({ toml, }: { readonly toml: string; },): readonly RawRule[] 
       }
       if (
         (id !== undefined)
-        && (description !== undefined)
+          && (description !== undefined)
           && (regex !== undefined)
       ) {
         out.push({

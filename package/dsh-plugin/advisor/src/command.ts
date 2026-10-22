@@ -285,11 +285,11 @@ export async function runDshAdvisorCommand(
     options
       .state
       .adoptToolRestriction(
-        options
-          .tools
-          .restrict({
-            deny: [ADVISOR_TOOL_NAME,],
-          },),
+      options
+        .tools
+        .restrict({
+          deny: [ADVISOR_TOOL_NAME,],
+        },),
       );
     return {
       kind: 'success',

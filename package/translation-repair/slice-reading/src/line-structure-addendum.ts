@@ -78,8 +78,8 @@ export function buildEditorAddendum(
     lineStructured ? LINE_STRUCTURE_RULE : '',
   ]
     .filter(function isPresent(part,): boolean {
-    return part !== '';
-  },)
+      return part !== '';
+    },)
     .join('\n',);
 }
 

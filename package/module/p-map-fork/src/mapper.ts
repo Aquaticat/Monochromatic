@@ -31,7 +31,7 @@ import type { pMapSkip, } from './p-map-skip.ts';
  */
 export type MapInput<Element> =
   | AsyncIterable<Element | Promise<Element>>
-  | Iterable<Element | Promise<Element>>;
+    | Iterable<Element | Promise<Element>>;
 
 /**
  Structural view of {@link MapInput} used to probe iterator availability in

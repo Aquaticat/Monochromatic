@@ -256,11 +256,11 @@ await describe({
                 'export function purr(): number { try { return 1; } catch (error) { void error; return 0; } }',
                 'export function groom(): number { try { return 1; } catch (error) { return 0; } }',
                 'export function knead(l: { warn(text: string): void }): number { try { return 1; } '
-                + 'catch (error) { l.warn(\'no knead\'); return 0; } }',
+                  + 'catch (error) { l.warn(\'no knead\'); return 0; } }',
                 'export function pounce(): number { try { return 1; } catch (error) { throw new Error(\'missed\'); } }',
                 'export function stretch(): string { try { return \'\'; } catch (error) { return String(error); } }',
                 'export function sulk(state: { error: number }): number { try { return 1; } '
-                + 'catch (error) { return { error: 0 }.error + state.error; } }',
+                  + 'catch (error) { return { error: 0 }.error + state.error; } }',
                 'export function yawn(): string { try { return \'\'; } catch (error) { const later = () => error; return \'\'; } }',
               ].join('\n',),
               isTest: false,

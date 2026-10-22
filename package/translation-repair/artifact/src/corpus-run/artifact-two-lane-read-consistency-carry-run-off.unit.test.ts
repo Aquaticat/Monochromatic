@@ -265,11 +265,11 @@ await describe({
             // Each is refused at the very check that names its fault, not at a later one that would refuse it for another.
             expect([wrongFinalists, besideMajority, besideNoQuorum,],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.carries[0].runOff.finalists: '
-              + 'expected the finalists of the first ballots, in sheet order, and at least two.',
+                + 'expected the finalists of the first ballots, in sheet order, and at least two.',
               'ArtifactParseError: artifact parse failed at cat.carries[0].runOff: '
-              + 'expected a run-off only beside first ballots that reached their quorum and gave no candidate a strict majority.',
+                + 'expected a run-off only beside first ballots that reached their quorum and gave no candidate a strict majority.',
               'ArtifactParseError: artifact parse failed at cat.carries[0].runOff: '
-              + 'expected a run-off only beside first ballots that reached their quorum and gave no candidate a strict majority.',
+                + 'expected a run-off only beside first ballots that reached their quorum and gave no candidate a strict majority.',
             ],);
           },
         },),

@@ -60,7 +60,7 @@ export const MAX_COMPRESSED_ARG_BYTES = 100_000;
 type CompactContextInjectionApi = Pick<
   ExtensionAPI,
   'getFlag' | 'sendMessage' | 'sendUserMessage'
->;
+  >;
 
 //endregion
 

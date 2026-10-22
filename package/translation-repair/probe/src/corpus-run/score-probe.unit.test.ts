@@ -315,12 +315,12 @@ await describe({
               `POOL read by pipeline ${POOL_STAMP}`,
               'POOL 1 entry across 1 pipeline generation',
               'PROBE entries=1 repairShippedRecords=1 repairUnprobedRecords=0 regions=1 majorityIntroduced=1 '
-              + 'minorityIntroduced=0 noneIntroduced=0',
+                + 'minorityIntroduced=0 noneIntroduced=0',
               'CLAIMS added=2 dropped=0 contradicted=0 unanchored=0 degradedRosterRegions=0',
               'REFINEMENT rewrittenSlices=0 majorityIntroduced=0 minorityIntroduced=0 noneIntroduced=0 added=0 '
-              + 'dropped=0 contradicted=0 unanchored=0',
+                + 'dropped=0 contradicted=0 unanchored=0',
               'ROSTER editorOffered=0 editorDegraded=0 editorSilent=0 refineOffered=0 refineDegraded=0 '
-              + 'refineSilent=0 entriesWithRewrites=0/1',
+                + 'refineSilent=0 entriesWithRewrites=0/1',
               REFINEMENT_NOTE,
               UNSCORED_NOTE,
               '',
@@ -384,7 +384,7 @@ await describe({
             expect(run.stdout,).toBe('',);
             expect(run.stderr,).toBe(
               'score-probe: --repair-sheet and --manifest score the probe against the human grades together; '
-              + 'name both, or neither for the telemetry alone\n',
+                + 'name both, or neither for the telemetry alone\n',
             );
           },
         },),
@@ -408,7 +408,7 @@ await describe({
             expect(run.stdout,).toBe('',);
             expect(run.stderr,).toBe(
               'score-probe: --manifest needs a value written after it. Usage: score-probe [--repair-sheet '
-              + '<graded repair sheet>] [--manifest <repair manifest>]\n',
+                + '<graded repair sheet>] [--manifest <repair manifest>]\n',
             );
           },
         },),

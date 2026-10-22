@@ -296,13 +296,13 @@ export function priceTally(
   const unreportedCalls = tally
     .seats
     .reduce(
-      function addQuiet(
-        running,
-        seat,
-      ): number {
-        return running + seat.unreportedCalls;
-      },
-      0,
+    function addQuiet(
+      running,
+      seat,
+    ): number {
+      return running + seat.unreportedCalls;
+    },
+    0,
     );
 
   return {

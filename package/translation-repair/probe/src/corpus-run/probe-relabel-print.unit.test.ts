@@ -230,14 +230,14 @@ await describe({
 
             expect(withheld,).toEqual([
               'NOTE production sends issues-withheld. Compare it against issues-rendered on each region: '
-              + 'a region that reports damage under one prompt only is one the other prompt talks the probe '
-              + 'out of. Compare it against issues-absent: a region that reports damage only with no list '
-              + 'known is one whose claims the screen dismisses as restating a prior issue. A region dark '
-              + 'under all three exonerates the label and indicts the difficulty of the judgement.',
+                + 'a region that reports damage under one prompt only is one the other prompt talks the probe '
+                + 'out of. Compare it against issues-absent: a region that reports damage only with no list '
+                + 'known is one whose claims the screen dismisses as restating a prior issue. A region dark '
+                + 'under all three exonerates the label and indicts the difficulty of the judgement.',
               'NOTE a control line prints positions= empty. Read the issues-absent arm across controls '
-              + 'against the issues-absent arm across damaged regions: similar rates mean the unlabelled '
-              + 'prober is re-reporting pre-existing defects and the damaged result proves nothing, and a '
-              + 'much lower control rate means the issue list is suppressing real detections.',
+                + 'against the issues-absent arm across damaged regions: similar rates mean the unlabelled '
+                + 'prober is re-reporting pre-existing defects and the damaged result proves nothing, and a '
+                + 'much lower control rate means the issue list is suppressing real detections.',
             ],);
             expect(rendered[0]?.startsWith(
               'NOTE production sends issues-rendered. Compare it against issues-withheld on each region: ',

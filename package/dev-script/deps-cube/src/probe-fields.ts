@@ -163,7 +163,7 @@ export async function probePackageManifest(
     .replaceAll(
     '%40',
     '@',
-  );
+    );
   /**
    Fresh manifest from npm registry; written to cache below before return.
    */
@@ -222,7 +222,7 @@ export async function probeDownloads(
       .replaceAll(
       '%40',
       '@',
-    );
+      );
     /**
      Fresh downloads payload from npm; outer try swallows transient failures.
      */
@@ -408,9 +408,9 @@ export async function probeLastCommit(
      */
     const commits = await ghApi<
       readonly { commit?: { author?: { date?: string; }; }; }[]
-    >(
+      >(
       `repos/${owner}/${repo}/commits?path=${encodeURIComponent(directory,)}&per_page=1`,
-    );
+      );
     /**
      Author date of most-recent path-scoped commit; `undefined` means unexpected shape.
      */

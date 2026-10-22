@@ -76,7 +76,7 @@ console.log(`targets: ${targets.length}, missing on disk: ${stats.missing}`);
 console.log(`parsed:  ogg=${stats.parsed.ogg} mp4=${stats.parsed.mp4} mp3=${stats.parsed.mp3}`);
 console.log(
   `failed:  ogg=${stats.failed.ogg} mp4=${stats.failed.mp4}`
-  + ` mp3=${stats.failed.mp3} unknown=${stats.failed.unknown}`,
+    + ` mp3=${stats.failed.mp3} unknown=${stats.failed.unknown}`,
 );
 for (const failure of failures.slice(0, 20)) {
   console.log(`  FAIL ${failure.path}: ${failure.message}`);

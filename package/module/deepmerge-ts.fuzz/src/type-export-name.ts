@@ -136,9 +136,9 @@ export function declaredTypeNames(text: string,): readonly string[] {
     ? []
     : lines.slice(blockStart + 1,)
       .slice(
-        0,
-        lines.slice(blockStart + 1,)
-          .indexOf('};',),
+      0,
+      lines.slice(blockStart + 1,)
+        .indexOf('};',),
       );
   /**
    Names renamed in the block: `Local as Name,`.
@@ -150,8 +150,8 @@ export function declaredTypeNames(text: string,): readonly string[] {
     const separator = line.indexOf(' as ',);
     return (separator === (-1)) ? [] : [line.slice(separator + ' as '.length,)
       .replace(
-        ',',
-        '',
+      ',',
+      '',
       ),];
   },);
   return [...new Set([

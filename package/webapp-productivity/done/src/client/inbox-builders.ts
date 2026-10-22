@@ -17,7 +17,7 @@ import { createTaskCard, } from './lib/task-card.ts';
  */
 export type BlockedTasksByBlocker = Readonly<
   Record<string, readonly BlockedTaskLink[]>
->;
+  >;
 
 /**
  Shape of the JSON blob embedded in the inbox page by the server.

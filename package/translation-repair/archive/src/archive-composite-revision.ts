@@ -337,7 +337,7 @@ export function compositeOfDisjointRevisions(
     return {
       withheld: [
         `${REVISION_SHAPE_REFUSED} (${label}): the combined revision shows a reader nothing, though each revision `
-        + 'shows something',
+          + 'shows something',
       ],
       contributions: [],
     };

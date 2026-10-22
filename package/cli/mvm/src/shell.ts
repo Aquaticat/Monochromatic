@@ -99,7 +99,7 @@ export async function shell({ name, }: { readonly name: string; },): Promise<voi
       && (error !== undefined)
       && ((typeof error) === 'object')
       && ('exitCode' in error))
-    {
+      {
       /**
        Forwarded so the shell exit code reflects the virsh console outcome.
        */

@@ -334,8 +334,8 @@ async function opfsSkipReason(): Promise<string> {
      */
     const handle = await (await storage.getDirectory())
       .getFileHandle(
-        'monochromatic-fuzz-probe.jsonl',
-        { create: true, },
+      'monochromatic-fuzz-probe.jsonl',
+      { create: true, },
       );
     return ('createWritable' in handle) ? '' : 'FileSystemFileHandle.createWritable is unavailable';
   }

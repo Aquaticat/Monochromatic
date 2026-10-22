@@ -137,7 +137,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
             expect(String(refusal,),).toBe(
               'ConsistencyInvariantError: unreachable: the located rendering at cat.rendering records no offset, and the '
-              + 'reader of the sixteenth shape requires one',
+                + 'reader of the sixteenth shape requires one',
             );
           },
         },),
@@ -158,9 +158,9 @@ await describe({
             }
             expect([refusalOf({ slot: 'bored', },), refusalOf({ slot: 'the cat', },),],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.rendering: '
-              + 'expected a slot that stands exactly once in the words of its quote.',
+                + 'expected a slot that stands exactly once in the words of its quote.',
               'ArtifactParseError: artifact parse failed at cat.rendering: '
-              + 'expected a slot that stands exactly once in the words of its quote.',
+                + 'expected a slot that stands exactly once in the words of its quote.',
             ],);
             expect(caught(function reads(): unknown {
               return asLocatedBySpan({

@@ -21,11 +21,11 @@ import { parsePolishGate, } from './artifact-two-lane-read-polish-gate.ts';
  */
 const NOT_RUN_REASONS: Readonly<
   Record<Extract<ArtifactConsolidationPolish, { readonly kind: 'not-run'; }>['reason'], true>
-> = {
-  'front-matter': true,
-  'not-configured': true,
-  'unsafe-baseline': true,
-};
+  > = {
+    'front-matter': true,
+    'not-configured': true,
+    'unsafe-baseline': true,
+  };
 
 /**
  Whether a recorded value names a reason a polish may not have run.

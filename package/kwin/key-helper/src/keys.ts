@@ -114,8 +114,8 @@ export function keysToEvdev(combo: string): readonly string[] {
    */
   const releases = codes.toReversed()
     .map(function toRelease(code: number): string {
-    return `${code}:0`;
-  });
+      return `${code}:0`;
+    });
   return [
     ...presses,
     ...releases

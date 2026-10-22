@@ -42,7 +42,7 @@ await describe({
           ],
         },),).toEqual([
           'Your translation is the archive rendering the adjudicators disputed, which cannot ship on this slice; '
-          + 'render the ORIGINAL afresh.',
+            + 'render the ORIGINAL afresh.',
         ],);
       },
     },),

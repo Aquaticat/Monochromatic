@@ -97,6 +97,6 @@ export type DropLastArrayElement<Tuple extends readonly unknown[]> = Tuple exten
 export type StringEndsWith<
   Candidate,
   Suffixes extends string,
-> = Candidate extends `${infer _Prefix}${Suffixes}` ? true : false;
+  > = Candidate extends `${infer _Prefix}${Suffixes}` ? true : false;
 
 //endregion String helpers

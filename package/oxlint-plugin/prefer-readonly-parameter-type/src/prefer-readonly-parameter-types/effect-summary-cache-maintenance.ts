@@ -185,8 +185,8 @@ function evictCacheFiles({
         total,
         file,
       ): number {
-      return total + file.bytes;
-    },
+        return total + file.bytes;
+      },
       0,
     ),
   };

@@ -267,9 +267,9 @@ await describe({
               .map(function contentOf(sample,) {
                 return sample.content;
               },),).toEqual([
-              22,
-              11,
-            ],);
+                22,
+                11,
+              ],);
           },
         },),
         it({

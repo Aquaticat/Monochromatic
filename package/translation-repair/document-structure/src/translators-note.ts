@@ -409,11 +409,11 @@ function noteStretchesOf(
     const previous = stretches.pop();
     if (
       (previous !== undefined)
-      && isGapOnOneLine({
-        text,
-        from: previous.to,
-        to: note.startOffset,
-      },)
+        && isGapOnOneLine({
+          text,
+          from: previous.to,
+          to: note.startOffset,
+        },)
     )
       stretches.push({
         from: previous.from,

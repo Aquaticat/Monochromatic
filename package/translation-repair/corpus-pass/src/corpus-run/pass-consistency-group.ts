@@ -66,18 +66,18 @@ export type GroupDisposition =
      */
     readonly kind: 'ask';
   }
-  | {
+    | {
     /**
      The bench is not asked.
      */
-    readonly kind: 'skip';
+      readonly kind: 'skip';
 
     /**
      Why: fewer than two places a slice holds whole, fewer than two with any
      English, or every place already reading alike.
      */
-    readonly reason: 'too-few-placed' | 'no-english' | 'consistent';
-  };
+      readonly reason: 'too-few-placed' | 'no-english' | 'consistent';
+    };
 
 /**
  Ties each place of a group to the facts of its slice.
@@ -242,8 +242,8 @@ export function dispositionOf(
   },),).size < places.length;
   if ((!sharesSlice) && (english.length === places.length)
     && english.every(function same(text,): boolean {
-    return text === english[0];
-  },)) {
+      return text === english[0];
+    },)) {
     return {
       kind: 'skip',
       reason: 'consistent',
@@ -322,8 +322,8 @@ function paragraphOf(
   const markEnd = place.endOffset - shown.origin;
   if (shown.paragraph
     .slice(
-      markStart,
-      markEnd,
+    markStart,
+    markEnd,
     )
     !== words) {
     throw new ConsistencyInvariantError({ invariant:

@@ -207,11 +207,11 @@ export type ArtifactDecisionComparison = {
  */
 export type ArtifactLaneRelation =
   | 'archive-stands'
-  | 'repair-only'
-  | 'translate-only'
-  | 'both-agree'
-  | 'both-differ'
-  | 'gap-remains';
+    | 'repair-only'
+    | 'translate-only'
+    | 'both-agree'
+    | 'both-differ'
+    | 'gap-remains';
 
 /**
  One slice as both lanes left it, as version 2 records it.

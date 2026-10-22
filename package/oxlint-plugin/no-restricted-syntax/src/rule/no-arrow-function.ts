@@ -76,9 +76,9 @@ export const noArrowFunction: CreateOnceRule = {
         if (
           (parent.type
             !== 'VariableDeclarator')
-          || (parent.id
-            .type
-            !== 'Identifier')
+            || (parent.id
+              .type
+              !== 'Identifier')
             || (parent.parent
               .type
               !== 'VariableDeclaration')

@@ -34,10 +34,10 @@ import type {
 export type DshAdvisorLlmSurface = Pick<
   LlmRuntime,
   'listProviders'
-  | 'listModels'
-  | 'resolveModelInfo'
-  | 'stream'
->;
+    | 'listModels'
+    | 'resolveModelInfo'
+    | 'stream'
+  >;
 
 /**
  One catalog route projected into a pi-ai-shaped model record for the shared

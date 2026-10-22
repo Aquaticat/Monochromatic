@@ -121,8 +121,8 @@ function findFirstOverlap(
     const entry = nonNullishOrThrow(textEntries[mid],);
     if ((entry.start
       + entry
-      .node
-      .length) <= from)
+        .node
+        .length) <= from)
       lo = mid + 1;
     else
       hi = mid;
@@ -322,7 +322,7 @@ function highlightAllCodeBlocks(): void {
         .set(
         name,
         new Highlight(...ranges,),
-      );
+        );
     }
   }
 }

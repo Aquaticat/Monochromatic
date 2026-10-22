@@ -244,7 +244,7 @@ await describe({
       fn: async () => {
         expect([
           '\n\t/**\n\tWhy no cat reaches here: a "quote" and a ) bracket.\n\t*/\n'
-          + '\tthrow new Error("unreachable: the cat is asleep", /* the cause */ { cause: error }); // never\n',
+            + '\tthrow new Error("unreachable: the cat is asleep", /* the cause */ { cause: error }); // never\n',
           '/* throw new Error("unreachable: the cat is asleep"); */',
           '// throw new Error("unreachable: the cat is asleep");',
           '// never\u2028wake();\n\tthrow new Error("unreachable: the cat is asleep");',

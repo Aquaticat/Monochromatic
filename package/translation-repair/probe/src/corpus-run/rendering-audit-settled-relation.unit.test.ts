@@ -150,9 +150,9 @@ await describe({
         it({
           name:
             'ANSWERS UNDECIDED BEFORE COMPARING ANY TEXT, so an entry no stage has decided never reads '
-            + 'as a settled displacement. On such an artifact every reading names the archive, which '
-            + 'differs from the lane wording under audit, so a classifier that compared first would '
-            + 'report an overrule that no stage performed',
+              + 'as a settled displacement. On such an artifact every reading names the archive, which '
+              + 'differs from the lane wording under audit, so a classifier that compared first would '
+              + 'report an overrule that no stage performed',
           fn: async () => {
             expect(pageRelationOf({
               laneSelection: UNDECIDED,
@@ -165,9 +165,9 @@ await describe({
         it({
           name:
             'ANSWERS UNDECIDED EVEN WHERE THE TEXT MATCHES, which is the half of the order a '
-            + 'differing-text case cannot reach. An undecided slice whose archive wording happens to '
-            + 'equal the lane wording would otherwise read as SURVIVES, asserting that a document '
-            + 'would carry it when no stage has decided the entry at all',
+              + 'differing-text case cannot reach. An undecided slice whose archive wording happens to '
+              + 'equal the lane wording would otherwise read as SURVIVES, asserting that a document '
+              + 'would carry it when no stage has decided the entry at all',
           fn: async () => {
             expect(pageRelationOf({
               laneSelection: UNDECIDED,
@@ -183,7 +183,7 @@ await describe({
         it({
           name:
             'NAMES THE CONSOLIDATION when the third rendering replaced the lane wording, which is the '
-            + 'largest displacing stage in the settled population',
+              + 'largest displacing stage in the settled population',
           fn: async () => {
             expect(pageRelationOf({
               laneSelection: CONTESTED,
@@ -199,7 +199,7 @@ await describe({
         it({
           name:
             'NAMES THE CONTEST when the lane lost the contest itself, keeping it apart from a '
-            + 'consolidation override: the two are different facts about which stage to look at',
+              + 'consolidation override: the two are different facts about which stage to look at',
           fn: async () => {
             expect(pageRelationOf({
               laneSelection: CONTESTED,
@@ -215,8 +215,8 @@ await describe({
         it({
           name:
             'NAMES THE ARCHIVE on a DECIDED artifact whose contest declined, where the incumbent stands '
-            + 'and the lane wording is displaced by no lane at all. This is a decision, unlike the '
-            + 'identical-looking reading on an artifact nobody has decided',
+              + 'and the lane wording is displaced by no lane at all. This is a decision, unlike the '
+              + 'identical-looking reading on an artifact nobody has decided',
           fn: async () => {
             expect(pageRelationOf({
               laneSelection: CONTESTED,
@@ -232,7 +232,7 @@ await describe({
         it({
           name:
             'READS WORDING THAT MATCHES AS SURVIVING, whichever stage settled it: a lane whose text a '
-            + 'later stage re-endorsed unchanged has not been overruled',
+              + 'later stage re-endorsed unchanged has not been overruled',
           fn: async () => {
             expect(pageRelationOf({
               laneSelection: CONTESTED,
@@ -248,8 +248,8 @@ await describe({
         it({
           name:
             'CARRIES THE SILENCE REASON rather than naming a displacing stage, since a slice where '
-            + 'nothing would stand has no replacement to attribute and calling it displaced would '
-            + 'invite a reader to go looking for one',
+              + 'nothing would stand has no replacement to attribute and calling it displaced would '
+              + 'invite a reader to go looking for one',
           fn: async () => {
             expect(pageRelationOf({
               laneSelection: CONTESTED,
@@ -293,8 +293,8 @@ await describe({
         it({
           name:
             'READS A ROW WRITTEN BEFORE THE FIELD EXISTED as unrecorded, because such a run is a valid '
-            + 'run whose other readings all still answer, and refusing to read the file would cost '
-            + 'every one of them to serve this',
+              + 'run whose other readings all still answer, and refusing to read the file would cost '
+              + 'every one of them to serve this',
           fn: async () => {
             expect(pageRelationFor({ row: rowCarrying({},), },),)
               .toEqual({ kind: 'unrecorded', },);
@@ -304,8 +304,8 @@ await describe({
         it({
           name:
             'REFUSES A KIND THIS BUILD DOES NOT NAME, reading it as unrecorded rather than passing it '
-            + 'through: a relation a later generation added means nothing to a reader written before '
-            + 'it, and printing the unknown token would read as a measurement',
+              + 'through: a relation a later generation added means nothing to a reader written before '
+              + 'it, and printing the unknown token would read as a measurement',
           fn: async () => {
             expect(pageRelationFor({
               row: rowCarrying({ pageRelation: { kind: 'displaced-by-something-else', }, },),
@@ -316,8 +316,8 @@ await describe({
         it({
           name:
             'READS A NULL FIELD as unrecorded, which the type check must be written to catch: `typeof '
-            + 'null` is `object`, so a guard that stopped at the type would go on to read a '
-            + 'discriminant off nothing',
+              + 'null` is `object`, so a guard that stopped at the type would go on to read a '
+              + 'discriminant off nothing',
           fn: async () => {
             expect(pageRelationFor({ row: rowCarrying({ pageRelation: null, },), },),)
               .toEqual({ kind: 'unrecorded', },);
@@ -333,7 +333,7 @@ await describe({
         it({
           name:
             'NAMES THE DECIDER on a displacement and the REASON on a silence, so one column says which '
-            + 'stage to look at without a reader opening the artifact',
+              + 'stage to look at without a reader opening the artifact',
           fn: async () => {
             expect(pageRelationLabel({
               relation: {
@@ -354,7 +354,7 @@ await describe({
         it({
           name:
             'SEPARATES A GAP FROM AN EMPTYING on the same reason, which is the whole point of carrying '
-            + 'the kind. Every reason names a stage and none of them says whether there was anything here: `lanesAgreedOn` covers a gap neither lane wrote into and text both lanes removed under one string, and a reader scanning this column has to tell a change from nothing happening',
+              + 'the kind. Every reason names a stage and none of them says whether there was anything here: `lanesAgreedOn` covers a gap neither lane wrote into and text both lanes removed under one string, and a reader scanning this column has to tell a change from nothing happening',
           fn: async () => {
             /**
              Silence over a span the archive rendered, which the deciders emptied.
@@ -387,7 +387,7 @@ await describe({
         it({
           name:
             'KEEPS THE OLD WORD for a row written before the kind was recorded, rather than guessing '
-            + 'the commoner half. A run that never observed whether the archive had a span here has not said the deciders removed anything, and printing `emptied` would put a removal nobody observed into a report',
+              + 'the commoner half. A run that never observed whether the archive had a span here has not said the deciders removed anything, and printing `emptied` would put a removal nobody observed into a report',
           fn: async () => {
             expect(pageRelationLabel({
               relation: {
@@ -419,8 +419,8 @@ await describe({
         it({
           name:
             'COUNTS CLAIMS BESIDE SUBJECTS, since those answer different questions: a displaced subject '
-            + 'nobody claimed anything about cost a call, and a displaced subject carrying claims means '
-            + 'the instrument reported defects in wording no reader would meet',
+              + 'nobody claimed anything about cost a call, and a displaced subject carrying claims means '
+              + 'the instrument reported defects in wording no reader would meet',
           fn: async () => {
             /**
              Two displaced subjects carrying claims, one surviving carrying none.
@@ -463,7 +463,7 @@ await describe({
         it({
           name:
             'TALLIES AN UNRECORDED ROW AS UNRECORDED rather than dropping it, so a run mixing rows from '
-            + 'two builds reports a denominator matching its own row count instead of quietly shrinking',
+              + 'two builds reports a denominator matching its own row count instead of quietly shrinking',
           fn: async () => {
             /**
              One row from before the field existed, beside one from after.

@@ -105,21 +105,21 @@ function voteWeight(
   return Object
     .entries(ballots,)
     .reduce(
-      function addBallot(
-        mass: number,
-        [panelistId, ballot,]: ReadonlyEntry<string, PanelBallot>,
-      ): number {
-        if (castVote({
-          claimId,
-          ballot,
-        },) !== state)
-          return mass;
-        return mass + panelistWeight({
-          panelistId,
-          config,
-        },);
-      },
-      0,
+    function addBallot(
+      mass: number,
+      [panelistId, ballot,]: ReadonlyEntry<string, PanelBallot>,
+    ): number {
+      if (castVote({
+        claimId,
+        ballot,
+      },) !== state)
+        return mass;
+      return mass + panelistWeight({
+        panelistId,
+        config,
+      },);
+    },
+    0,
     );
 }
 

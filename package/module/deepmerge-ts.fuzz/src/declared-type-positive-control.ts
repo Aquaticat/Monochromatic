@@ -112,26 +112,26 @@ function tamperFirstLeaf(value: unknown,): Tampered {
         state,
         item,
       ) {
-      if (state.done)
-        return {
-          done: true,
-          items: [
-            ...state.items,
-            item,
-          ],
-        };
+        if (state.done)
+          return {
+            done: true,
+            items: [
+              ...state.items,
+              item,
+            ],
+          };
       /**
        Element after a swap attempt.
        */
-      const next = tamperFirstLeaf(item,);
-      return {
-        done: next.done,
-        items: [
-          ...state.items,
-          next.value,
-        ],
-      };
-    },
+        const next = tamperFirstLeaf(item,);
+        return {
+          done: next.done,
+          items: [
+            ...state.items,
+            next.value,
+          ],
+        };
+      },
       {
         done: false,
         items: [],
@@ -157,32 +157,32 @@ function tamperFirstLeaf(value: unknown,): Tampered {
         state,
         [key, entryValue,],
       ) {
-      if (state.done)
+        if (state.done)
+          return {
+            done: true,
+            items: [
+              ...state.items,
+              [
+                key,
+                entryValue,
+              ],
+            ],
+          };
+      /**
+       Entry value after a swap attempt.
+       */
+        const next = tamperFirstLeaf(entryValue,);
         return {
-          done: true,
+          done: next.done,
           items: [
             ...state.items,
             [
               key,
-              entryValue,
+              next.value,
             ],
           ],
         };
-      /**
-       Entry value after a swap attempt.
-       */
-      const next = tamperFirstLeaf(entryValue,);
-      return {
-        done: next.done,
-        items: [
-          ...state.items,
-          [
-            key,
-            next.value,
-          ],
-        ],
-      };
-    },
+      },
       {
         done: false,
         items: [],
@@ -210,47 +210,47 @@ function tamperFirstLeaf(value: unknown,): Tampered {
         ])[];
         readonly done: boolean
       }>(
-        function step(
-          state,
-          key,
-        ) {
+      function step(
+        state,
+        key,
+      ) {
       /**
        Property value.
        */
-      const propertyValue: unknown = Reflect.get(
-        value,
-        key,
-      );
-      if (state.done)
+        const propertyValue: unknown = Reflect.get(
+          value,
+          key,
+        );
+        if (state.done)
+          return {
+            done: true,
+            items: [
+              ...state.items,
+              [
+                key,
+                propertyValue,
+              ],
+            ],
+          };
+      /**
+       Property value after a swap attempt.
+       */
+        const next = tamperFirstLeaf(propertyValue,);
         return {
-          done: true,
+          done: next.done,
           items: [
             ...state.items,
             [
               key,
-              propertyValue,
+              next.value,
             ],
           ],
         };
-      /**
-       Property value after a swap attempt.
-       */
-      const next = tamperFirstLeaf(propertyValue,);
-      return {
-        done: next.done,
-        items: [
-          ...state.items,
-          [
-            key,
-            next.value,
-          ],
-        ],
-      };
-    },
-        {
-          done: false,
-          items: [],
-        },
+      },
+      {
+        done: false,
+        items: [],
+      },
       );
     return {
       done: entries.done,
@@ -303,8 +303,8 @@ export async function runPositiveControl(): Promise<void> {
    */
   const failing = new Set(precheck.failures
     .map(function idOf(failure,) {
-    return failure.id;
-  },),);
+      return failure.id;
+    },),);
   /**
    Cases that pass untampered.
    */
@@ -345,18 +345,18 @@ export async function runPositiveControl(): Promise<void> {
    */
   const cleanFailures = combined.failures
     .filter(function isClean(failure,) {
-    return failure.id < clean.length;
-  },);
+      return failure.id < clean.length;
+    },);
   /**
    Tampered ids that the check flagged.
    */
   const caught = new Set(combined.failures
     .filter(function isTampered(failure,) {
-    return failure.id >= clean.length;
-  },)
+      return failure.id >= clean.length;
+    },)
     .map(function idOf(failure,) {
-    return failure.id;
-  },),);
+      return failure.id;
+    },),);
   /**
    Tampered cases the check did not flag, for reading.
    */

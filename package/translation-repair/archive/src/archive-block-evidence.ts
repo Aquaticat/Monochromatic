@@ -276,8 +276,8 @@ export function isVerifiableEditorialArchiveBlock(
    */
   const shown = [...masked.split('\n',)
     .entries(),].filter(function seen([, line,]: ReadonlyEntry<number, string>,): boolean {
-    return !rendersAsNothing({ text: line, },);
-  },);
+      return !rendersAsNothing({ text: line, },);
+    },);
   if (shown.length === 0)
     return regions.length > 0;
   return shown.every(function isApparatus([at, line,]: ReadonlyEntry<number, string>,): boolean {

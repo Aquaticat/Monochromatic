@@ -137,10 +137,10 @@ export async function runAdvisorOperation(options: ForeignHostCapability<Advisor
    */
   const signal = options.signal === undefined ? cancellation.controller
     .signal : AbortSignal.any([
-    options.signal,
-    cancellation.controller
-      .signal,
-  ],);
+      options.signal,
+      cancellation.controller
+        .signal,
+    ],);
   /**
    Operation-tagged logger.
    */

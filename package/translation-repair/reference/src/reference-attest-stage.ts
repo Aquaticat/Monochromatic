@@ -419,13 +419,13 @@ export async function attestCitedReferences(
         .length;
     },)
     .reduce(
-      function sum(
-        total,
-        count,
-      ): number {
-        return total + count;
-      },
-      0,
+    function sum(
+      total,
+      count,
+    ): number {
+      return total + count;
+    },
+    0,
     );
   /**
    Distinct voices a detail needs.

@@ -150,7 +150,7 @@ export function partlyCarriedFindingOf(
     return [];
   return [
     `consistency-partly-carried (${unitLabelsOf({ unit, },)}): the splice won, so code moved the chosen words into `
-    + `${carried.join(' and ',)} and left ${kept.join(' and ',)} as it was, since code cannot move them there`,
+      + `${carried.join(' and ',)} and left ${kept.join(' and ',)} as it was, since code cannot move them there`,
   ];
 }
 

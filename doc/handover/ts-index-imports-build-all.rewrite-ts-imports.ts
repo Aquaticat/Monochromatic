@@ -111,9 +111,9 @@ for (const rel of new Glob('package/**/*.{ts,tsx,mts}').scanSync(root)) {
       gap: string,
       q: string
     ) => {
-    hits += 1;
-    return `${kw}${gap}${q}${canonical}${q}`;
-  }
+      hits += 1;
+      return `${kw}${gap}${q}${canonical}${q}`;
+    }
   );
   if (next !== text) {
     totalHits += hits;

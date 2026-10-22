@@ -377,15 +377,15 @@ await describe({
               run: async function readings(): Promise<void> {
                 energies.push(
                   ...await Promise.all(echoes.map(async function readWith(echo,) {
-                  await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-day-', },);
-                  const { client, } = scriptedClient({
-                    dir: scratch.path,
-                    clockStart: AFTER_ANCHOR,
-                    quota: [quotaReply({ kwhUsed: 1, periodStart: PERIOD_START, }),],
-                    usage: [usageReply({ rows: [usageRowOf({ requestedModel: 'glm-5.3-flash', kwh: 0.5, },),], echo, },),],
-                  },);
-                  return await energyOf({ client, },);
-                },),),
+                    await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-day-', },);
+                    const { client, } = scriptedClient({
+                      dir: scratch.path,
+                      clockStart: AFTER_ANCHOR,
+                      quota: [quotaReply({ kwhUsed: 1, periodStart: PERIOD_START, }),],
+                      usage: [usageReply({ rows: [usageRowOf({ requestedModel: 'glm-5.3-flash', kwh: 0.5, },),], echo, },),],
+                    },);
+                    return await energyOf({ client, },);
+                  },),),
                 );
               },
               sinon: ctx.sinon,
@@ -753,14 +753,14 @@ await describe({
               run: async function readings(): Promise<void> {
                 energies.push(
                   ...await Promise.all(malformed.map(async function readWith(keyAllowance,) {
-                  await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-day-', },);
-                  const { client, } = scriptedClient({
-                    dir: scratch.path,
-                    clockStart: AFTER_ANCHOR,
-                    quota: [quotaReply({ kwhUsed: 1, periodStart: PERIOD_START, keyAllowance, }),],
-                  },);
-                  return await energyOf({ client, },);
-                },),),
+                    await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-day-', },);
+                    const { client, } = scriptedClient({
+                      dir: scratch.path,
+                      clockStart: AFTER_ANCHOR,
+                      quota: [quotaReply({ kwhUsed: 1, periodStart: PERIOD_START, keyAllowance, }),],
+                    },);
+                    return await energyOf({ client, },);
+                  },),),
                 );
               },
               sinon: ctx.sinon,

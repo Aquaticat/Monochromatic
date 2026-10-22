@@ -545,21 +545,21 @@ await describe({
         const read = readTrialLedger({ path: leading, },);
         await expect(read,).rejects
           .toHaveProperty(
-            'name',
-            'TrialLedgerLineError',
+          'name',
+          'TrialLedgerLineError',
           );
         await expect(read,).rejects
           .toHaveProperty(
-            'message',
-            unreadableLineMessage({
-              path: leading,
-              line: 1,
-            },),
+          'message',
+          unreadableLineMessage({
+            path: leading,
+            line: 1,
+          },),
           );
         await expect(read,).rejects
           .toHaveProperty(
-            'messageNamesOnly',
-            true,
+          'messageNamesOnly',
+          true,
           );
 
         /**
@@ -584,11 +584,11 @@ await describe({
         },);
         await expect(readTrialLedger({ path: trailing, },),).rejects
           .toHaveProperty(
-            'message',
-            unreadableLineMessage({
-              path: trailing,
-              line: 2,
-            },),
+          'message',
+          unreadableLineMessage({
+            path: trailing,
+            line: 2,
+          },),
           );
       },
     },),

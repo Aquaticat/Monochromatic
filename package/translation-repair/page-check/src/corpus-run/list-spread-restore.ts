@@ -365,18 +365,18 @@ function respaceList(
     text,
     edits: list.gaps
       .map(function respace(gap,): SpliceEdit {
-      return {
-        start: gap.start,
-        end: gap.end,
-        text: respaceGap({
-          gapText: text.slice(
-            gap.start,
-            gap.end,
-          ),
-          wanted,
-        },),
-      };
-    },),
+        return {
+          start: gap.start,
+          end: gap.end,
+          text: respaceGap({
+            gapText: text.slice(
+              gap.start,
+              gap.end,
+            ),
+            wanted,
+          },),
+        };
+      },),
   },);
 }
 
@@ -586,17 +586,17 @@ export function restoreListSpread(
       sliceIndex,
       respaces.toReversed()
         .reduce(
-          function respace(
-            current,
-            one,
-          ): string {
-            return respaceList({
-              text: current,
-              list: one.list,
-              wanted: one.to,
-            },);
-          },
-          text,
+        function respace(
+          current,
+          one,
+        ): string {
+          return respaceList({
+            text: current,
+            list: one.list,
+            wanted: one.to,
+          },);
+        },
+        text,
         ),
     );
     for (const one of respaces) {

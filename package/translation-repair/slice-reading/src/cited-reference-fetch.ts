@@ -101,25 +101,25 @@ export type FetchedReference =
      */
     readonly text: string;
   }
-  | {
+    | {
     /**
      The endpoint could not read the page.
      */
-    readonly status: 'error';
+      readonly status: 'error';
     /**
      Page title, empty when the endpoint gave none.
      */
-    readonly title: string;
+      readonly title: string;
     /**
      Page text, empty on failure.
      */
-    readonly text: string;
+      readonly text: string;
     /**
      Endpoint's error tag, `error` when it named none, `no result` when it
      answered nothing at all.
      */
-    readonly failure: string;
-  };
+      readonly failure: string;
+    };
 
 /**
  String field of a record, empty when absent or not text.

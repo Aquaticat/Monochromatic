@@ -105,21 +105,21 @@ function withKeys({
    */
   const props = node.props
     .filter(function stringKeyed(prop: PropNode,) {
-    return !prop.symbolKey;
-  },)
+      return !prop.symbolKey;
+    },)
     .slice(
-      0,
-      keys.length,
+    0,
+    keys.length,
     )
     .map(function rename(
       prop: PropNode,
       position: number,
     ): PropNode {
-    return {
-      ...prop,
-      key: keys[position] ?? prop.key,
-    };
-  },);
+      return {
+        ...prop,
+        key: keys[position] ?? prop.key,
+      };
+    },);
   return {
     ...node,
     index: { keyKind: 'none', },
@@ -149,11 +149,11 @@ function collectionArbitraries(element: Arbitrary<TypeNode>,): readonly Arbitrar
         readonly element: TypeNode;
         readonly readonly: boolean
       },): TypeNode {
-      return {
-        kind: 'array',
-        ...fields,
-      };
-    },),
+        return {
+          kind: 'array',
+          ...fields,
+        };
+      },),
     record({
       elements: array(
         element,
@@ -165,11 +165,11 @@ function collectionArbitraries(element: Arbitrary<TypeNode>,): readonly Arbitrar
         readonly elements: readonly TypeNode[];
         readonly readonly: boolean
       },): TypeNode {
-      return {
-        kind: 'tuple',
-        ...fields,
-      };
-    },),
+        return {
+          kind: 'tuple',
+          ...fields,
+        };
+      },),
     record({
       element,
       readonly: boolean(),
@@ -178,11 +178,11 @@ function collectionArbitraries(element: Arbitrary<TypeNode>,): readonly Arbitrar
         readonly element: TypeNode;
         readonly readonly: boolean
       },): TypeNode {
-      return {
-        kind: 'set',
-        ...fields,
-      };
-    },),
+        return {
+          kind: 'set',
+          ...fields,
+        };
+      },),
     record({
       keyKind: constantFrom<'number' | 'string'>(
         'number',
@@ -196,11 +196,11 @@ function collectionArbitraries(element: Arbitrary<TypeNode>,): readonly Arbitrar
         readonly readonly: boolean;
         readonly value: TypeNode
       },): TypeNode {
-      return {
-        kind: 'map',
-        ...fields,
-      };
-    },),
+        return {
+          kind: 'map',
+          ...fields,
+        };
+      },),
   ];
 }
 
@@ -236,11 +236,11 @@ function wrapperArbitraries(element: Arbitrary<TypeNode>,): readonly Arbitrary<T
         readonly keys: readonly string[];
         readonly value: TypeNode
       },): TypeNode {
-      return {
-        kind: 'record',
-        ...fields,
-      };
-    },),
+        return {
+          kind: 'record',
+          ...fields,
+        };
+      },),
     element.map(function toBox(inner: TypeNode,): TypeNode {
       return {
         inner,
@@ -314,19 +314,19 @@ function objectArbitrary(type: Arbitrary<TypeNode>,): Arbitrary<ObjectNode> {
       readonly props: readonly DrawnProp[];
       readonly wrapper: ObjectNode['wrapper']
     },): ObjectNode {
-    return {
-      ...fields,
-      kind: 'object',
-      props: fields.props
-        .map(function toProp(prop: DrawnProp,): PropNode {
-        return {
-          ...prop,
-          symbolKey: prop.key
-            .startsWith('SYM_',),
-        };
-      },),
-    };
-  },);
+      return {
+        ...fields,
+        kind: 'object',
+        props: fields.props
+          .map(function toProp(prop: DrawnProp,): PropNode {
+            return {
+              ...prop,
+              symbolKey: prop.key
+                .startsWith('SYM_',),
+            };
+          },),
+      };
+    },);
 }
 
 /**
@@ -374,11 +374,11 @@ function typeScopeFor({ unions, }: { readonly unions: boolean; },): DeclaredType
             },
           )
             .map(function toUnion(members: readonly TypeNode[],): TypeNode {
-            return {
-              kind: 'union',
-              members,
-            };
-          },)
+              return {
+                kind: 'union',
+                members,
+              };
+            },)
           : LEAF_TYPE_ARBITRARY,
         ...wrapperArbitraries(type,),
         record({
@@ -389,24 +389,24 @@ function typeScopeFor({ unions, }: { readonly unions: boolean; },): DeclaredType
             readonly left: ObjectNode;
             readonly right: ObjectNode
           },): TypeNode {
-          return {
-            kind: 'intersection',
-            left: withKeys({
-              keys: [
-                'a',
-                'b',
-              ],
-              node: halves.left,
-            },),
-            right: withKeys({
-              keys: [
-                'c',
-                'd',
-              ],
-              node: halves.right,
-            },),
-          };
-        },),
+            return {
+              kind: 'intersection',
+              left: withKeys({
+                keys: [
+                  'a',
+                  'b',
+                ],
+                node: halves.left,
+              },),
+              right: withKeys({
+                keys: [
+                  'c',
+                  'd',
+                ],
+                node: halves.right,
+              },),
+            };
+          },),
       ),
     };
   },);

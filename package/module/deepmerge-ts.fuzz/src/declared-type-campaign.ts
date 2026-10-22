@@ -94,10 +94,10 @@ function summarize(
      */
     const codes = new Set(failure.diagnostics
       .map(function codeOf(diagnostic,) {
-      return diagnostic.slice(diagnostic.indexOf('error TS',) + 'error '.length,)
-        .split(':',)[0]
-        ?? 'unknown';
-    },),);
+        return diagnostic.slice(diagnostic.indexOf('error TS',) + 'error '.length,)
+          .split(':',)[0]
+          ?? 'unknown';
+      },),);
     for (const key of [
       ...codes,
       `${drawn?.kind ?? '?'}:${drawn?.option ?? '?'}`,
@@ -243,8 +243,8 @@ export async function buildCorpus(): Promise<void> {
    */
   const dropped = new Set(first.failures
     .map(function idOf(failure,) {
-    return failure.id;
-  },),);
+      return failure.id;
+    },),);
   /**
    Cases that type-check.
    */

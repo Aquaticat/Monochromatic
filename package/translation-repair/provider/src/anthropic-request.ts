@@ -97,12 +97,12 @@ export type AnthropicToolChoice =
      */
     readonly name: string;
   }
-  | {
+    | {
     /**
      Discriminator leaving the choice to the model.
      */
-    readonly type: 'auto';
-  };
+      readonly type: 'auto';
+    };
 
 /**
  One turn as the Messages API takes it.
@@ -293,16 +293,16 @@ export function speakingTurns(
       ];
     },)
     .reduce<readonly AnthropicMessage[]>(
-      function fold(
-        merged: readonly AnthropicMessage[],
-        turn: AnthropicMessage,
-      ): readonly AnthropicMessage[] {
-        return foldTurn({
-          merged,
-          turn,
-        },);
-      },
-      [],
+    function fold(
+      merged: readonly AnthropicMessage[],
+      turn: AnthropicMessage,
+    ): readonly AnthropicMessage[] {
+      return foldTurn({
+        merged,
+        turn,
+      },);
+    },
+    [],
     );
 
   /**

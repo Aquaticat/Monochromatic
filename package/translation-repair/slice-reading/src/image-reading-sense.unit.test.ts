@@ -151,7 +151,7 @@ await describe({
         for (const reading of [
           'No text.',
           'There is no visible text in this image. It is a painting of ships at sea, and I cannot discern any '
-          + 'words, names, signatures, dates, or inscriptions.',
+            + 'words, names, signatures, dates, or inscriptions.',
         ]) {
           /**
            Verdict on an absence report.

@@ -38,7 +38,7 @@ await describe({
     it({
       name:
         'accepts every combination a real slice can be in: a decision, an unexamined slice, silence where '
-        + 'the archive has wording to stand on, and a missing passage where it has none',
+          + 'the archive has wording to stand on, and a missing passage where it has none',
       fn: async () => {
         /**
          Wordings a lane can legitimately report.
@@ -96,8 +96,8 @@ await describe({
     it({
       name:
         'REFUSES a fallback onto wording the archive does not hold, since `incumbent-fallback` says the '
-        + 'archive`s own English stands here and there is none: the row would report a passage as covered '
-        + 'by a translation that has never existed',
+          + 'archive`s own English stands here and there is none: the row would report a passage as covered '
+          + 'by a translation that has never existed',
       fn: async () => {
         /**
          What fellBackOnNothing raised, read for its class as well as its wording.
@@ -121,7 +121,7 @@ await describe({
     it({
       name:
         'REFUSES a missing passage the archive translates, the mirror of the same rule, because every count '
-        + 'of untranslated passages would inherit a slice the archive covers',
+          + 'of untranslated passages would inherit a slice the archive covers',
       fn: async () => {
         /**
          What missingWhatExists raised, read for its class as well as its wording.
@@ -145,8 +145,8 @@ await describe({
     it({
       name:
         'REFUSES a lane reporting nothing to work on where the archive holds wording, since the only slice '
-        + 'a lane can have no input at is one the archive never translated: declining one it did translate '
-        + 'is a choice, and reporting it as a structural fact hides the choice',
+          + 'a lane can have no input at is one the archive never translated: declining one it did translate '
+          + 'is a choice, and reporting it as a structural fact hides the choice',
       fn: async () => {
         /**
          What declinedWhatExists raised, read for its class as well as its wording.
@@ -170,8 +170,8 @@ await describe({
     it({
       name:
         'REFUSES wording beside an archive reported as holding none, whatever the outcome, since a place '
-        + 'the archive never translated carries no text by construction and wording there came from another '
-        + 'preparation',
+          + 'the archive never translated carries no text by construction and wording there came from another '
+          + 'preparation',
       fn: async () => {
         /**
          What wordingBesideNothing raised, read for its class as well as its wording.
@@ -197,8 +197,8 @@ await describe({
     it({
       name:
         'REFUSES a decision of empty wording at a place the archive never translated, which fills nothing '
-        + 'and leaves the passage exactly as it was, so recording it as a decision credits the lane with '
-        + 'work indistinguishable from the gap it started with',
+          + 'and leaves the passage exactly as it was, so recording it as a decision credits the lane with '
+          + 'work indistinguishable from the gap it started with',
       fn: async () => {
         /**
          What decidedNothing raised, read for its class as well as its wording.
@@ -227,8 +227,8 @@ await describe({
     it({
       name:
         'REFUSES a decision whose wording shows a reader nothing at a place the archive never translated, as '
-        + 'it refuses an empty one: spaces, a zero-width space, a Hangul filler, or both among spaces fill no '
-        + 'passage either',
+          + 'it refuses an empty one: spaces, a zero-width space, a Hangul filler, or both among spaces fill no '
+          + 'passage either',
       fn: async () => {
         /**
          Refusal of a decision of the given wording at an untranslated place.
@@ -278,7 +278,7 @@ await describe({
     it({
       name:
         'still accepts a decision of empty wording where the archive HAS wording, since deleting a passage '
-        + 'is a decision somebody took and the delivery ledger has to be able to say so',
+          + 'is a decision somebody took and the delivery ledger has to be able to say so',
       fn: async () => {
         assertWordingCoherent({
           wording: {

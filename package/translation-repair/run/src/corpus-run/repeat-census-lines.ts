@@ -194,24 +194,24 @@ function cjkCount({ text, }: { readonly text: string; },): number {
 export function sanitize({ line, }: { readonly line: string; },): string {
   return line
     .replace(
-      LINK_DESTINATION,
-      ']',
+    LINK_DESTINATION,
+    ']',
     )
     .replace(
-      BARE_URL,
-      ' ',
+    BARE_URL,
+    ' ',
     )
     .replace(
-      INLINE_TAG,
-      ' ',
+    INLINE_TAG,
+    ' ',
     )
     .replace(
-      TEMPLATE_EXPRESSION,
-      ' ',
+    TEMPLATE_EXPRESSION,
+    ' ',
     )
     .replace(
-      BRACE_EXPRESSION,
-      ' ',
+    BRACE_EXPRESSION,
+    ' ',
     );
 }
 
@@ -334,8 +334,8 @@ export function insideQuote({
    */
   const prefix = norm
     .slice(
-      0,
-      column,
+    0,
+    column,
     )
     .split('',);
 

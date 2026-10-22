@@ -251,7 +251,7 @@ await describe({
             },),);
             expect(placeRefusal({ value: { ...LOCATED, outcome: 'kept-current', }, },),).toBe(
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].outcome: expected an outcome generation fifteen '
-              + 'gives, which has no carry to end in kept-current.',
+                + 'gives, which has no carry to end in kept-current.',
             );
           },
         },),
@@ -270,7 +270,7 @@ await describe({
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.start: expected a number.',
               `ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.start: expected ${NOT_A_COUNT}.`,
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.start: '
-              + 'expected no key here beyond kind, quote, slot.',
+                + 'expected no key here beyond kind, quote, slot.',
             ],);
           },
         },),
@@ -382,9 +382,9 @@ await describe({
               },),
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.markBefore: '
-              + 'expected no key here beyond kind, quote, slot.',
+                + 'expected no key here beyond kind, quote, slot.',
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.markAfter: '
-              + 'expected no key here beyond kind, quote, start, slot.',
+                + 'expected no key here beyond kind, quote, start, slot.',
             ],);
           },
         },),
@@ -401,16 +401,16 @@ await describe({
               placeRefusal({ value: { ...LOCATED_BY_SPAN, slot: 'lazy', }, generation: 17, },),
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].gaveWayTo: expected the place an overlapped place '
-              + 'gave way to, which generation seventeen records.',
+                + 'gave way to, which generation seventeen records.',
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].gaveWayTo: expected an overlapped place, the only '
-              + 'kind that gave way to another place.',
+                + 'kind that gave way to another place.',
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].gaveWayTo: expected no key here beyond label, '
-              + 'sliceIndex, startOffset, endOffset, line, slotStartOffset, slotEndOffset, rendering, outcome.',
+                + 'sliceIndex, startOffset, endOffset, line, slotStartOffset, slotEndOffset, rendering, outcome.',
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].gaveWayTo: expected no key here beyond label, '
-              + 'sliceIndex, startOffset, endOffset, line, slotStartOffset, slotEndOffset, rendering, outcome.',
+                + 'sliceIndex, startOffset, endOffset, line, slotStartOffset, slotEndOffset, rendering, outcome.',
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].slot: expected no key here beyond label, '
-              + 'sliceIndex, startOffset, endOffset, line, slotStartOffset, slotEndOffset, rendering, outcome, gaveWayTo, '
-              + 'keptBecause.',
+                + 'sliceIndex, startOffset, endOffset, line, slotStartOffset, slotEndOffset, rendering, outcome, gaveWayTo, '
+                + 'keptBecause.',
             ],);
           },
         },),
@@ -462,16 +462,16 @@ await describe({
               placeRefusal({ value: { ...LOCATED_BY_SPAN, outcome: 'kept-current', keptBecause: 'gain-pairs', }, generation: 16, },),
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].keptBecause: expected a reason OCCURRENCE 1 was left '
-              + 'as it was for, one of gain-pairs, gain-unproves, gain-floors, gain-overlaps, gain-refused, edge-second-mark, '
-              + 'edge-reading-changes, edge-reference-mark; the record has "invented".',
+                + 'as it was for, one of gain-pairs, gain-unproves, gain-floors, gain-overlaps, gain-refused, edge-second-mark, '
+                + 'edge-reading-changes, edge-reference-mark; the record has "invented".',
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].keptBecause: expected a reason OCCURRENCE 1 was left '
-              + 'as it was for, one of gain-pairs, gain-unproves, gain-floors, gain-overlaps, gain-refused, edge-second-mark, '
-              + 'edge-reading-changes, edge-reference-mark; the record has "edge-reading-change".',
+                + 'as it was for, one of gain-pairs, gain-unproves, gain-floors, gain-overlaps, gain-refused, edge-second-mark, '
+                + 'edge-reading-changes, edge-reference-mark; the record has "edge-reading-change".',
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].keptBecause: expected a string.',
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].keptBecause: expected a kept-current place, the only '
-              + 'kind the pass leaves as it was for a reason.',
+                + 'kind the pass leaves as it was for a reason.',
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].keptBecause: expected no key here beyond label, '
-              + 'sliceIndex, startOffset, endOffset, line, slotStartOffset, slotEndOffset, rendering, outcome.',
+                + 'sliceIndex, startOffset, endOffset, line, slotStartOffset, slotEndOffset, rendering, outcome.',
             ],);
           },
         },),
@@ -511,7 +511,7 @@ await describe({
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.occurrences[0]: expected an object.',
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].slot: expected no key here beyond label, '
-              + 'sliceIndex, startOffset, endOffset, line, slotStartOffset, slotEndOffset, rendering, outcome.',
+                + 'sliceIndex, startOffset, endOffset, line, slotStartOffset, slotEndOffset, rendering, outcome.',
             ],);
           },
         },),
@@ -585,7 +585,7 @@ await describe({
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering: expected an object.',
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.kind: '
-              + 'expected one of located, unlocated.',
+                + 'expected one of located, unlocated.',
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.kind: expected a string.',
             ],);
           },
@@ -599,9 +599,9 @@ await describe({
               placeRefusal({ value: { ...UNLOCATED, rendering: { kind: 'unlocated', }, }, },),
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.quote: '
-              + 'expected no key here beyond kind, reason.',
+                + 'expected no key here beyond kind, reason.',
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.reason: expected one of '
-              + `${UNLOCATED_REASONS.join(', ',)}.`,
+                + `${UNLOCATED_REASONS.join(', ',)}.`,
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.reason: expected a string.',
             ],);
           },
@@ -620,7 +620,7 @@ await describe({
               },),
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.reason: '
-              + 'expected no key here beyond kind, quote, slot.',
+                + 'expected no key here beyond kind, quote, slot.',
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.quote: expected a string.',
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.quote: expected a string.',
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].rendering.slot: expected a string.',
@@ -635,7 +635,7 @@ await describe({
               placeRefusal({ value: { ...LOCATED, outcome: 4, }, },),
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].outcome: expected one of '
-              + `${OUTCOMES.join(', ',)}.`,
+                + `${OUTCOMES.join(', ',)}.`,
               'ArtifactParseError: artifact parse failed at cat.occurrences[0].outcome: expected a string.',
             ],);
           },

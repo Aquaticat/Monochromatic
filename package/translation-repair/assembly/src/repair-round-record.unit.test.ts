@@ -105,8 +105,8 @@ await describe({
         it({
           name:
             'numbers positions one-based and hashes the RENDERED text, which is what the sheet displayed '
-            + 'rather than any internal value: an envelope candidate is a patch operation, and a ballot '
-            + 'naming position 2 can only be joined back to words through what was actually shown',
+              + 'rather than any internal value: an envelope candidate is a patch operation, and a ballot '
+              + 'naming position 2 can only be joined back to words through what was actually shown',
           fn: async () => {
             expect(describeRepairSlate({ candidates: CANDIDATES, },),).toEqual([
               {
@@ -134,7 +134,7 @@ await describe({
         it({
           name:
             'keeps every ballot of a round that CHOSE something, beside the position it chose and the '
-            + 'weight that position drew, so a reader can tell a narrow win from a unanimous one',
+              + 'weight that position drew, so a reader can tell a narrow win from a unanimous one',
           fn: async () => {
             expect(describeJudgedRound({
               stage: 'envelope',
@@ -167,8 +167,8 @@ await describe({
         it({
           name:
             'keeps every ballot of a round that chose NOTHING, beside why and which kind of refusal it '
-            + 'was. This is the half a winner-only recorder would lose, and the probe behind the '
-            + 'declared-name guard produced exactly this shape on its third round',
+              + 'was. This is the half a winner-only recorder would lose, and the probe behind the '
+              + 'declared-name guard produced exactly this shape on its third round',
           fn: async () => {
             /**
              Round where the one judge named the shorter wording and the panel
@@ -210,8 +210,8 @@ await describe({
         it({
           name:
             'names the whole chunk rather than an envelope when the round decided the whole chunk, using '
-            + 'one sentinel both chunk-scope stages share, so a reader never has to tell an unstamped '
-            + 'envelope from a round that had none',
+              + 'one sentinel both chunk-scope stages share, so a reader never has to tell an unstamped '
+              + 'envelope from a round that had none',
           fn: async () => {
             expect(describeJudgedRound({
               stage: 'chunk-patch',

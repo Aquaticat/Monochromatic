@@ -35,8 +35,8 @@ const NETWORK_NAMESPACE_KEY = createHash('sha256',)
   .update(await readlink('/proc/self/ns/net',),)
   .digest('hex',)
   .slice(
-    0,
-    32,
+  0,
+  32,
   );
 
 /**

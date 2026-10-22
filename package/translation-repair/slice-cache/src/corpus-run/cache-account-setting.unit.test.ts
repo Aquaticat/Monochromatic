@@ -241,7 +241,7 @@ await describe({
         expect(refusal,).toBeInstanceOf(StatedRefusalError,);
         expect(String(refusal,),).toBe(
           'StatedRefusalError: STAGE_CACHE_VERSION = 7 in src/stage-cache-version.ts is not in any commit; '
-          + 'commit it, then run the audit again.',
+            + 'commit it, then run the audit again.',
         );
       },
     },),

@@ -319,9 +319,9 @@ await describe({
               .map(function toText(reading,): string {
                 return reading.text;
               },),).toEqual([
-              READING,
-              AGREEING_READING,
-            ],);
+                READING,
+                AGREEING_READING,
+              ],);
             expect(paired.overlap > 0,).toBe(true,);
           },
         },),
@@ -645,7 +645,7 @@ await describe({
               return line.includes('failed outright',);
             },),).toStrictEqual([
               `warn [readImagePair] noticeboard.webp: ${SEAT_SYNTHETIC_VISION_NO_OPENROUTER} failed outright, `
-              + 'so it contributes no reading (refused by Error)',
+                + 'so it contributes no reading (refused by Error)',
             ],);
             expect(paired.kind,).toBe('unavailable',);
             if (paired.kind !== 'unavailable')
@@ -777,7 +777,7 @@ await describe({
               return line.startsWith('warn [readImagePair]',);
             },),).toStrictEqual([
               'warn [readImagePair] noticeboard.webp: the deterministic reader failed outright, so the models '
-              + 'are asked without its gate (refused by Error)',
+                + 'are asked without its gate (refused by Error)',
             ],);
           },
         },),
@@ -1015,11 +1015,11 @@ await describe({
             expect(begun,).toEqual(readers,);
             expect(lines,).toEqual([
               `warn [readImagePair] noticeboard.webp: ${SEAT_SYNTHETIC_VISION_WITHHELD} failed outright (refused by `
-              + 'ProviderHttpError from synthetic with HTTP 429 (the provider said: "the first cat is out of treats")), and the '
-              + 'caller stopped the reading',
+                + 'ProviderHttpError from synthetic with HTTP 429 (the provider said: "the first cat is out of treats")), and the '
+                + 'caller stopped the reading',
               `warn [readImagePair] noticeboard.webp: ${SEAT_SYNTHETIC_VISION_NO_OPENROUTER} failed outright (refused `
-              + 'by ProviderHttpError from synthetic with HTTP 503 (the provider said: "the later cat is napping in the sun")), and '
-              + 'the caller stopped the reading',
+                + 'by ProviderHttpError from synthetic with HTTP 503 (the provider said: "the later cat is napping in the sun")), and '
+                + 'the caller stopped the reading',
             ],);
           },
         },),
@@ -1091,8 +1091,8 @@ await describe({
             expect(refusal,).toBe(reason,);
             expect(lines,).toEqual([
               `warn [readImagePair] noticeboard.webp: ${SEAT_SYNTHETIC_VISION_WITHHELD} failed outright (refused by `
-              + 'ProviderHttpError from synthetic with HTTP 401 (the provider said: "this cat has no collar tag")), and the caller '
-              + 'stopped the reading',
+                + 'ProviderHttpError from synthetic with HTTP 401 (the provider said: "this cat has no collar tag")), and the caller '
+                + 'stopped the reading',
             ],);
           },
         },),

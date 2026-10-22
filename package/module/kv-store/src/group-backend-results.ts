@@ -32,20 +32,20 @@ type BackendResultGroupField = 'priority' | 'value';
 export function groupBackendResults<
   const Field extends BackendResultGroupField,
   TBackend,
->({
-  results,
-  field,
-}: {
-  readonly results: readonly BackendResult<TBackend>[];
-  readonly field: Field;
-},): Map<BackendResult<TBackend>[Field], BackendResult<TBackend>[]> {
+  >({
+    results,
+    field,
+  }: {
+    readonly results: readonly BackendResult<TBackend>[];
+    readonly field: Field;
+  },): Map<BackendResult<TBackend>[Field], BackendResult<TBackend>[]> {
   /**
    Mutable local groups built without exposing mutation to callers.
    */
   const grouped = new Map<
     BackendResult<TBackend>[Field],
     BackendResult<TBackend>[]
-  >();
+    >();
   for (const result of results) {
     /**
      Scalar group key read from immutable result record.

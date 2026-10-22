@@ -45,9 +45,9 @@ const LIVE_RUN = new AbortController();
 const TWO_LANE_LOG = [
   '[info] [2026-08-17T01:17:12.580Z] [Mittens] [repairPreparedDocument] critic stage: 6/6 heard',
   '[info] [2026-08-17T01:17:13.000Z] [Mittens] [repairPreparedDocument] SLICE-COST lane=repair '
-  + 'chunk=0 sourceChars=812 ms=45210 exit=computed',
+    + 'chunk=0 sourceChars=812 ms=45210 exit=computed',
   '[info] [2026-08-17T01:17:14.000Z] [Mittens] [translateDocument] SLICE-COST lane=translate '
-  + 'chunk=1 sourceChars=1204 ms=88130 exit=resumed',
+    + 'chunk=1 sourceChars=1204 ms=88130 exit=resumed',
   '[info] [2026-08-17T01:17:15.000Z] [Mittens] [drainBody] stream finished, 671606 chars',
 ].join('\n',);
 
@@ -60,7 +60,7 @@ await describe({
         it({
           name:
             'ACCEPTS repair and translate cost lines and ignores every line that carries no marker, so a pass '
-            + 'log can be read without being filtered first',
+              + 'log can be read without being filtered first',
           fn: async () => {
             const { rows, dropped, } = readSliceCosts({ log: TWO_LANE_LOG, },);
             expect(dropped,).toHaveLength(0,);
@@ -83,7 +83,7 @@ await describe({
         it({
           name:
             'REFUSES a half-written line and names every field it lacks, because a log is written while a '
-            + 'pass runs and its last line can be cut mid-word',
+              + 'pass runs and its last line can be cut mid-word',
           fn: async () => {
             const { rows, dropped, } = readSliceCosts({
               log: 'SLICE-COST lane=repair chunk=4 sourceCh',
@@ -106,7 +106,7 @@ await describe({
         it({
           name:
             'REFUSES an exit it does not know, so a path added to a lane without being added here cannot '
-            + 'be silently counted as ordinary work',
+              + 'be silently counted as ordinary work',
           fn: async () => {
             const { rows, dropped, } = readSliceCosts({
               log: 'SLICE-COST lane=repair chunk=4 sourceChars=10 ms=20 exit=abandoned',
@@ -118,7 +118,7 @@ await describe({
         it({
           name:
             'REFUSES a line carrying no exit at all, which is the shape written before exits were '
-            + 'recorded and prices a cache hit the same as a full roster',
+              + 'recorded and prices a cache hit the same as a full roster',
           fn: async () => {
             const { rows, dropped, } = readSliceCosts({
               log: 'SLICE-COST lane=repair chunk=4 sourceChars=10 ms=20',
@@ -130,7 +130,7 @@ await describe({
         it({
           name:
             'REFUSES a measurement that is not a whole number, which is what a truncated or garbled '
-            + 'duration looks like',
+              + 'duration looks like',
           fn: async () => {
             const { rows, dropped, } = readSliceCosts({
               log: 'SLICE-COST lane=repair chunk=4 sourceChars=10 ms=45e exit=computed',
@@ -142,8 +142,8 @@ await describe({
         it({
           name:
             'REFUSES an empty, hexadecimal, exponent or signed measurement, and names each, since the writer '
-            + 'writes plain decimal digits and reading any other spelling as a number invents one: an empty '
-            + 'field read as 0 and `0x1F` as 31 (ledger B71)',
+              + 'writes plain decimal digits and reading any other spelling as a number invents one: an empty '
+              + 'field read as 0 and `0x1F` as 31 (ledger B71)',
           fn: async () => {
             const { rows, dropped, } = readSliceCosts({
               log: 'SLICE-COST lane=repair chunk= sourceChars=0x1F ms=1e3 exit=computed\n'
@@ -159,7 +159,7 @@ await describe({
         it({
           name:
             'REFUSES a digit run past the largest integer a double holds exactly, since `9007199254740993` '
-            + 'reads back as 9007199254740992 and the row would carry a count nobody wrote',
+              + 'reads back as 9007199254740992 and the row would carry a count nobody wrote',
           fn: async () => {
             const { rows, dropped, } = readSliceCosts({
               log: 'SLICE-COST lane=repair chunk=9007199254740993 sourceChars=10 ms=5 exit=computed',
@@ -171,8 +171,8 @@ await describe({
         it({
           name:
             'REFUSES a line that writes one field more than once and names each such field, since the writer '
-            + 'writes each once and reading the later value would report a cost no slice had, as two lines run '
-            + 'together would',
+              + 'writes each once and reading the later value would report a cost no slice had, as two lines run '
+              + 'together would',
           fn: async () => {
             expect(readSliceCosts({
               log: 'SLICE-COST lane=repair chunk=4 sourceChars=10 ms=20 ms=45210 exit=computed\n'
@@ -183,7 +183,7 @@ await describe({
               dropped: [
                 'ms written more than once',
                 'lane written more than once, chunk written more than once, sourceChars written more than once, '
-                + 'ms written more than once, exit written more than once',
+                  + 'ms written more than once, exit written more than once',
               ],
             },);
           },
@@ -205,7 +205,7 @@ await describe({
         it({
           name:
             'REPORTS a slice that was left EARLY, which is the case a closing call would miss: slice stages '
-            + 'leave their loop body by more than one path',
+              + 'leave their loop body by more than one path',
           fn: async () => {
             const said: string[] = [];
 
@@ -235,7 +235,7 @@ await describe({
         it({
           name:
             'writes a line THIS READER can read, which is the only thing keeping the two files agreed '
-            + 'about a shape neither one owns',
+              + 'about a shape neither one owns',
           fn: async () => {
             const said: string[] = [];
             {
@@ -263,8 +263,8 @@ await describe({
         it({
           name:
             'TIMES THE SLICE ON A CLOCK THE SYSTEM TIME CANNOT MOVE (ledger B78): with the system clock set back an '
-            + 'hour mid-slice, the line still carries the slice\'s own milliseconds, where it carried a negative '
-            + 'count this reader drops',
+              + 'hour mid-slice, the line still carries the slice\'s own milliseconds, where it carried a negative '
+              + 'count this reader drops',
           fn: async ctx => {
             const said: string[] = [];
             {
@@ -314,7 +314,7 @@ await describe({
         it({
           name:
             'reports the ordinary exit for a slice that names none, so the common path needs no call and '
-            + 'cannot be forgotten',
+              + 'cannot be forgotten',
           fn: async () => {
             const said: string[] = [];
             {
@@ -335,7 +335,7 @@ await describe({
         it({
           name:
             'REPORTS the exit a lane named rather than the ordinary one, which is what separates a cache '
-            + 'hit costing nothing from a slice that bought a full roster',
+              + 'hit costing nothing from a slice that bought a full roster',
           fn: async () => {
             const said: string[] = [];
             {
@@ -358,7 +358,7 @@ await describe({
         it({
           name:
             'REPORTS a slice cut mid-flight as aborted rather than as ordinary work, which is the case '
-            + 'that would otherwise put one near-cap row per aborted entry inside the computed population',
+              + 'that would otherwise put one near-cap row per aborted entry inside the computed population',
           fn: async () => {
             const said: string[] = [];
 
@@ -442,7 +442,7 @@ await describe({
         it({
           name:
             'keeps a NAMED exit even once the run is stopped, because a slice that bought nothing bought '
-            + 'nothing whether the run was later torn down or not',
+              + 'nothing whether the run was later torn down or not',
           fn: async () => {
             const said: string[] = [];
 

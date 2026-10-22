@@ -134,23 +134,23 @@ function typesAndValues({
     /**
      All input types in call order.
      */
-    const types = [
-      first,
-      ...rest,
-    ];
-    return tuple(...types.map(sampleValue,),)
-      .map(function pair(samples: readonly Sampled[],): DrawnInputs {
-      return {
-        sources: samples.map(function sourceOf(drawnSample: Sampled,) {
-          return drawnSample.source;
-        },),
-        types,
-        values: samples.map(function valueOf(drawnSample: Sampled,) {
-          return drawnSample.value;
-        },),
-      };
+      const types = [
+        first,
+        ...rest,
+      ];
+      return tuple(...types.map(sampleValue,),)
+        .map(function pair(samples: readonly Sampled[],): DrawnInputs {
+          return {
+            sources: samples.map(function sourceOf(drawnSample: Sampled,) {
+              return drawnSample.source;
+            },),
+            types,
+            values: samples.map(function valueOf(drawnSample: Sampled,) {
+              return drawnSample.value;
+            },),
+          };
+        },);
     },);
-  },);
 }
 
 /**
@@ -205,12 +205,12 @@ export function caseArbitraryFor({ unions, }: { readonly unions: boolean; },): A
         others: scope.object,
       },)
         .map(function into(drawn: DrawnInputs,): DrawnCase {
-        return {
-          ...drawn,
-          kind: 'into',
-          option: 'empty',
-        };
-      },),
+          return {
+            ...drawn,
+            kind: 'into',
+            option: 'empty',
+          };
+        },),
       weight: CASE_WEIGHTS.into,
     },
     {
@@ -222,12 +222,12 @@ export function caseArbitraryFor({ unions, }: { readonly unions: boolean; },): A
           readonly drawn: DrawnInputs;
           readonly option: string
         },): DrawnCase {
-        return {
-          ...fields.drawn,
-          kind: 'custom',
-          option: fields.option,
-        };
-      },),
+          return {
+            ...fields.drawn,
+            kind: 'custom',
+            option: fields.option,
+          };
+        },),
       weight: CASE_WEIGHTS.custom,
     },
   );
@@ -309,15 +309,15 @@ export function drawCases(
     },
   )
     .flatMap(function run(drawn: DrawnCase,) {
-    try {
-      return [{
-        drawn,
-        result: runCase(drawn,),
-      },];
-    } catch (error) {
+      try {
+        return [{
+          drawn,
+          result: runCase(drawn,),
+        },];
+      } catch (error) {
       // A throwing merge is a runtime finding for other suites, not a type case.
-      console.warn(`declared-type-generate: dropped a ${drawn.kind} case whose run threw: ${String(error,)}`,);
-      return [];
-    }
-  },);
+        console.warn(`declared-type-generate: dropped a ${drawn.kind} case whose run threw: ${String(error,)}`,);
+        return [];
+      }
+    },);
 }

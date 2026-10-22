@@ -297,7 +297,7 @@ await describe({
             expect([coherent({ group: recorded, },), coherenceRefusal({ group: heard, },),],).toEqual([
               undefined,
               `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[0].rendering: `
-              + 'expected the quote and slot a strict majority of the usable ballots gave.',
+                + 'expected the quote and slot a strict majority of the usable ballots gave.',
             ],);
           },
         },),
@@ -313,11 +313,11 @@ await describe({
             },);
             expect(coherenceRefusal({ group: withVerdict({ group, over: { usable: 2, }, },), },),).toBe(
               `ArtifactParseError: artifact parse failed at ${GROUP}.verdict.usable: `
-              + 'expected the number of ballots that can be counted against the places.',
+                + 'expected the number of ballots that can be counted against the places.',
             );
             expect(coherenceRefusal({ group: withBallots({ group, ballots: heard, usable: 3, },), },),).toBe(
               `ArtifactParseError: artifact parse failed at ${GROUP}.verdict.usable: `
-              + 'expected the number of ballots that can be counted against the places.',
+                + 'expected the number of ballots that can be counted against the places.',
             );
             expect(coherent({ group: withBallots({ group, ballots: heard, usable: 2, },), },),).toBeUndefined();
           },
@@ -348,9 +348,9 @@ await describe({
               },),
             ],).toEqual([
               `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[1].rendering: `
-              + 'expected the quote and slot a strict majority of the usable ballots gave.',
+                + 'expected the quote and slot a strict majority of the usable ballots gave.',
               `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[1].rendering: `
-              + 'expected the quote and slot a strict majority of the usable ballots gave.',
+                + 'expected the quote and slot a strict majority of the usable ballots gave.',
             ],);
           },
         },),
@@ -378,7 +378,7 @@ await describe({
             },);
             expect(coherenceRefusal({ group: withBallots({ group, ballots: split, usable: 3, },), },),).toBe(
               `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[1].rendering: `
-              + 'expected the quote and slot a strict majority of the usable ballots gave.',
+                + 'expected the quote and slot a strict majority of the usable ballots gave.',
             );
           },
         },),
@@ -393,7 +393,7 @@ await describe({
               }),
             },),).toBe(
               `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[1].rendering.reason: `
-              + 'expected a reason the usable ballots do not contradict.',
+                + 'expected a reason the usable ballots do not contradict.',
             );
           },
         },),
@@ -446,7 +446,7 @@ await describe({
             expect(coherent({ group: untouched, },),).toBeUndefined();
             expect(coherenceRefusal({ group: withPlace({ group: underQuorum, position: 1, over: { outcome: 'replaced', }, },), },),)
               .toBe(
-                `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[0].outcome: `
+              `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[0].outcome: `
                 + 'expected untouched, since no place won.',
               );
           },
@@ -489,9 +489,9 @@ await describe({
               coherenceRefusal({ group: unlocated, },),
             ],).toEqual([
               `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[0].outcome: `
-              + 'expected chosen, for the winning place.',
+                + 'expected chosen, for the winning place.',
               `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[1].outcome: `
-              + 'expected unlocated, for a place whose rendering is not located.',
+                + 'expected unlocated, for a place whose rendering is not located.',
             ],);
           },
         },),
@@ -514,7 +514,7 @@ await describe({
             },),).toBeUndefined();
             expect(coherenceRefusal({ group: keeping, },),).toBe(
               `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[1].outcome: `
-              + 'expected kept-context, for a place a strict majority keeps.',
+                + 'expected kept-context, for a place a strict majority keeps.',
             );
           },
         },),
@@ -623,7 +623,7 @@ await describe({
             },);
             expect(coherenceRefusal({ group: bored, },),).toBe(
               `ArtifactParseError: artifact parse failed at ${GROUP}.occurrences[1].rendering: `
-              + 'expected a slot that stands exactly once in the words of its quote.',
+                + 'expected a slot that stands exactly once in the words of its quote.',
             );
           },
         },),
@@ -683,7 +683,7 @@ await describe({
               ],
             },),).toBe(
               'ArtifactParseError: artifact parse failed at cat.slices: '
-              + 'expected one row per slice; slice 1 appears more than once.',
+                + 'expected one row per slice; slice 1 appears more than once.',
             );
           },
         },),
@@ -695,7 +695,7 @@ await describe({
               slices: [{ sliceIndex: 0, text: 'The cat naps.', },],
             },),).toBe(
               'ArtifactParseError: artifact parse failed at cat.slices: '
-              + 'expected a replaced place in slice 0, which a changed slice needs.',
+                + 'expected a replaced place in slice 0, which a changed slice needs.',
             );
           },
         },),
@@ -704,7 +704,7 @@ await describe({
           fn: async () => {
             expect(slicesRefusal({ groups: [napsGroup(),], slices: [], },),).toBe(
               'ArtifactParseError: artifact parse failed at cat.slices: '
-              + 'expected a changed slice row for slice 1, which holds a replaced place.',
+                + 'expected a changed slice row for slice 1, which holds a replaced place.',
             );
           },
         },),

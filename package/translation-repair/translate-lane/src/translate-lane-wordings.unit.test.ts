@@ -153,9 +153,9 @@ await describe({
     it({
       name:
         'reports a slice whose stage heard NO TRANSLATOR as the archive standing by default rather than '
-        + 'as a decision, because the record carries the incumbent as its output text and passing that '
-        + 'through says the lane examined the passage and kept it, which is what a lost voice looks like '
-        + 'when nothing separates the two',
+          + 'as a decision, because the record carries the incumbent as its output text and passing that '
+          + 'through says the lane examined the passage and kept it, which is what a lost voice looks like '
+          + 'when nothing separates the two',
       fn: async () => {
         /**
          Wordings where the first slice was translated and the second was met
@@ -192,8 +192,8 @@ await describe({
     it({
       name:
         'still reports the archive wording for the unheard slice, on the incumbent side where it belongs, '
-        + 'since that is what the assembled document carries there and a comparison needs it to say what '
-        + 'stood',
+          + 'since that is what the assembled document carries there and a comparison needs it to say what '
+          + 'stood',
       fn: async () => {
         /**
          Wordings where nobody was heard for either slice.
@@ -231,7 +231,7 @@ await describe({
     it({
       name:
         'keeps an unfilled passage separate from an unheard one, because only one of them has anything to '
-        + 'fall back on: the archive translates the unheard slice and has never translated the unfilled one',
+          + 'fall back on: the archive translates the unheard slice and has never translated the unfilled one',
       fn: async () => {
         /**
          One translated slice and one place the archive leaves empty.
@@ -286,7 +286,7 @@ await describe({
     it({
       name:
         'REFUSES a prepared slice no record and no unfilled index accounts for, since this lane visits every '
-        + 'slice by contract and a gap it never named is a lost slice rather than an early stop',
+          + 'slice by contract and a gap it never named is a lost slice rather than an early stop',
       fn: async () => {
         /**
          Failure the builder raised.

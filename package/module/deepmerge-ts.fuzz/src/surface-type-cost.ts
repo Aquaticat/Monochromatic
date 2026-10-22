@@ -68,8 +68,8 @@ function metric({
    */
   const line = output.split('\n',)
     .find(function labelled(candidate,) {
-    return candidate.startsWith(`${name}:`,);
-  },);
+      return candidate.startsWith(`${name}:`,);
+    },);
   return (line === undefined) ? '-' : line.slice(name.length + 1,)
     .trim();
 }
@@ -126,8 +126,8 @@ async function runCost(
     body,
   },] of Object.entries(FAMILIES,)
     .filter(function wanted([name,],) {
-    return name.startsWith(prefix,);
-  },)) {
+      return name.startsWith(prefix,);
+    },)) {
     for (const size of seriesOf(series,)) {
       /**
        Scenario file, relative to the scratch directory.
@@ -171,20 +171,20 @@ async function runCost(
         const codes = [...new Set(outcome.output
           .split('\n',)
           .filter(function isError(line,) {
-          return line.includes('error TS',);
-        },)
+            return line.includes('error TS',);
+          },)
           .map(function codeOf(line,) {
-          return line.slice(
-            line.indexOf(
-              'TS',
-              line.indexOf('error',),
-            ),
-            line.indexOf(
-              ':',
-              line.indexOf('error',),
-            ),
-          );
-        },),),];
+            return line.slice(
+              line.indexOf(
+                'TS',
+                line.indexOf('error',),
+              ),
+              line.indexOf(
+                ':',
+                line.indexOf('error',),
+              ),
+            );
+          },),),];
         console.log([
           `${family}-${String(size,)}`,
           `inst=${metric({

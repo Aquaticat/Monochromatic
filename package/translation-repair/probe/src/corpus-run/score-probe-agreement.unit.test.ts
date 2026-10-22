@@ -186,11 +186,11 @@ await describe({
 
             expect(printed.lines,).toStrictEqual([
               'AGREEMENT joined=3 probeFlagged=2 refutedByHuman=1 sharedWithHuman=1 flaggedUnscored=0 '
-              + 'unflaggedFailures=1 refinedJoined=0',
+                + 'unflaggedFailures=1 refinedJoined=0',
               'NOTE refutedByHuman is the clean number: the human read the same wording and said it breaks '
-              + 'nothing nearby, so each one is a correct repair a gate would have discarded. sharedWithHuman is NOT '
-              + 'confirmation, since the sheet\'s N fires both for a repair that did not fix its target and for one '
-              + 'that broke something.',
+                + 'nothing nearby, so each one is a correct repair a gate would have discarded. sharedWithHuman is NOT '
+                + 'confirmation, since the sheet\'s N fires both for a repair that did not fix its target and for one '
+                + 'that broke something.',
             ],);
           },
         },),
@@ -215,13 +215,13 @@ await describe({
             expect(printed.lines.length,).toBe(3,);
             expect(printed.lines[0],).toBe(
               'AGREEMENT joined=3 probeFlagged=2 refutedByHuman=1 sharedWithHuman=1 flaggedUnscored=0 '
-              + 'unflaggedFailures=1 refinedJoined=1',
+                + 'unflaggedFailures=1 refinedJoined=1',
             );
             expect(printed.lines[1],).toBe(
               'NOTE refinedJoined counts positions where the naturalness lane rewrote the slice AFTER the probe ran. '
-              + 'There the probe judged the accuracy stage\'s wording while the repair sheet asked the human to grade '
-              + 'the RETURNED wording, so those rows compare two different texts and belong in neither column as '
-              + 'evidence about the probe. Read the other counts over the remaining 2.',
+                + 'There the probe judged the accuracy stage\'s wording while the repair sheet asked the human to grade '
+                + 'the RETURNED wording, so those rows compare two different texts and belong in neither column as '
+                + 'evidence about the probe. Read the other counts over the remaining 2.',
             );
           },
         },),

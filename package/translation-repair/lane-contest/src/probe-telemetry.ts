@@ -59,8 +59,8 @@ export class ProbeTelemetryError extends Error {
  */
 export type RegionProbeVerdict =
   | 'majority-introduced'
-  | 'minority-introduced'
-  | 'none-introduced';
+    | 'minority-introduced'
+    | 'none-introduced';
 
 /**
  One run's probe telemetry, over distinct shipped regions.
@@ -348,8 +348,8 @@ export function summarizeProbeTelemetry(
    */
   const distinct = new Map<string, RegionEvidence>();
   for (const entry of entries)
-  for (const reading of entry.readings) {
-    for (const tally of reading.regions) {
+    for (const reading of entry.readings) {
+      for (const tally of reading.regions) {
       /**
        Key naming this envelope inside its own entry.
 
@@ -357,48 +357,48 @@ export function summarizeProbeTelemetry(
        separator, since an entry id is arbitrary text and one containing the
        separator could otherwise impersonate a different pair.
        */
-      const key = JSON.stringify([
-        entry.entryId,
-        tally.envelopeId,
-      ],);
+        const key = JSON.stringify([
+          entry.entryId,
+          tally.envelopeId,
+        ],);
 
       /**
        Copy already kept for this envelope, absent on first sighting.
        */
-      const kept = distinct.get(key,);
-      if (kept !== undefined) {
+        const kept = distinct.get(key,);
+        if (kept !== undefined) {
         // Every record serving a merged envelope carries the SAME tally, and
         // an envelope lives inside one chunk so its records were probed by one
         // roster. Copies that disagree therefore cannot both be right, and
         // keeping the first would make the whole summary depend on artifact
         // read order while reporting a number that looks settled.
-        if (!sameRegionEvidence({
-          kept,
-          found: {
+          if (!sameRegionEvidence({
+            kept,
+            found: {
+              tally,
+              configuredProbers: reading.configuredProbers,
+              heardProbers: reading.heardProbers,
+            },
+          },))
+            throw new ProbeTelemetryError({
+              message: `envelope ${tally.envelopeId} of entry ${entry.entryId} carries `
+                + 'disagreeing probe copies across the records it served. Every '
+                + 'record of a merged envelope carries the same tally and one '
+                + 'roster probed them all, so keeping either copy would make '
+                + 'this summary depend on the order records were read.',
+            },);
+          continue;
+        }
+        distinct.set(
+          key,
+          {
             tally,
             configuredProbers: reading.configuredProbers,
             heardProbers: reading.heardProbers,
           },
-        },))
-          throw new ProbeTelemetryError({
-            message: `envelope ${tally.envelopeId} of entry ${entry.entryId} carries `
-              + 'disagreeing probe copies across the records it served. Every '
-              + 'record of a merged envelope carries the same tally and one '
-              + 'roster probed them all, so keeping either copy would make '
-              + 'this summary depend on the order records were read.',
-          },);
-        continue;
+        );
       }
-      distinct.set(
-        key,
-        {
-          tally,
-          configuredProbers: reading.configuredProbers,
-          heardProbers: reading.heardProbers,
-        },
-      );
     }
-  }
 
   /**
    Distinct regions with their verdicts, in insertion order.
@@ -441,46 +441,46 @@ export function summarizeProbeTelemetry(
     noneIntroduced: countVerdict({ wanted: 'none-introduced', },),
     corroborated: judged.reduce(
       function addAdded(
-      sum,
-      entry,
-    ) {
-      return sum
-        + entry.tally
-        .corroborated;
-    },
+        sum,
+        entry,
+      ) {
+        return sum
+          + entry.tally
+            .corroborated;
+      },
       0,
     ),
     removalCorroborated: judged.reduce(
       function addDropped(
-      sum,
-      entry,
-    ) {
-      return sum
-        + entry.tally
-        .removalCorroborated;
-    },
+        sum,
+        entry,
+      ) {
+        return sum
+          + entry.tally
+            .removalCorroborated;
+      },
       0,
     ),
     contradicted: judged.reduce(
       function addRefuted(
-      sum,
-      entry,
-    ) {
-      return sum
-        + entry.tally
-        .contradicted;
-    },
+        sum,
+        entry,
+      ) {
+        return sum
+          + entry.tally
+            .contradicted;
+      },
       0,
     ),
     unanchored: judged.reduce(
       function addLoose(
-      sum,
-      entry,
-    ) {
-      return sum
-        + entry.tally
-        .unanchored;
-    },
+        sum,
+        entry,
+      ) {
+        return sum
+          + entry.tally
+            .unanchored;
+      },
       0,
     ),
     degradedRosterRegions: judged.filter(function wasShort(entry,) {

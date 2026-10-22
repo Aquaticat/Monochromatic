@@ -65,8 +65,8 @@ function bracketRefusal({ title, }: { readonly title: string; },): SliceValidati
     kind: 'invalid',
     findings: [
       `Your translation sets the English title 《${title}》 in the Chinese title marks 《》, which mean nothing in `
-      + 'English prose: an English page sets a work\'s title in quotation marks, so write '
-      + `“${title}” (keeping any link on the title).`,
+        + 'English prose: an English page sets a work\'s title in quotation marks, so write '
+        + `“${title}” (keeping any link on the title).`,
     ],
   };
 }

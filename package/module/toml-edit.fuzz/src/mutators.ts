@@ -272,5 +272,5 @@ export const corruptedDocumentArbitrary: Arbitrary<string> = record({
     readonly fraction: number;
     readonly token: string;
   },) {
-  return applyCorruption(plan,);
-},);
+    return applyCorruption(plan,);
+  },);

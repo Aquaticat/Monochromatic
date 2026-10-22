@@ -202,8 +202,8 @@ export function packageCallIdentity({
           .propertyName
           ?.text
           ?? imported.binding
-          .name
-          .text,
+            .name
+            .text,
         memberPath: [],
       };
     }
@@ -253,8 +253,8 @@ export function packageCallIdentity({
         .propertyName
         ?.text
         ?? imported.binding
-        .name
-        .text,
+          .name
+          .text,
       memberPath: [call.expression
         .name
         .text,],

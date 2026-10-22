@@ -494,20 +494,20 @@ export function withoutGlossedTitles(
     form: 'carrying-han',
   },)
     .reduce(
-      function cutGlossed(
+    function cutGlossed(
+      text,
+      title,
+    ): string {
+      return cutAt({
         text,
         title,
-      ): string {
-        return cutAt({
+        starts: acceptedStarts({
           text,
           title,
-          starts: acceptedStarts({
-            text,
-            title,
-          },),
-        },);
-      },
-      candidateText,
+        },),
+      },);
+    },
+    candidateText,
     );
 }
 

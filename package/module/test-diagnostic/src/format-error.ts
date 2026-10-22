@@ -278,7 +278,7 @@ function readStackFrames({
   const startIndex = (rawLines[0]
     !== undefined)
     && rawLines[0]
-    .includes(message,)
+      .includes(message,)
     ? 1
     : 0;
   return rawLines
@@ -451,17 +451,17 @@ function formatNode({
        @mutates member - `Reflect.get` and `String` may invoke getters, proxy traps, `Symbol.toPrimitive`, `toString`, or `valueOf`.
        */
       function formatAggregateMember(
-      member,
-      index,
-    ) {
-      return formatNode({
-        headerPrefix: `[${String(index + 1,)}/${String(errorsField.length,)}] `,
-        value: member,
-        visited,
-        workspacePrefix,
-        sites,
-      },);
-    },)
+        member,
+        index,
+      ) {
+        return formatNode({
+          headerPrefix: `[${String(index + 1,)}/${String(errorsField.length,)}] `,
+          value: member,
+          visited,
+          workspacePrefix,
+          sites,
+        },);
+      },)
     : [];
 
   return [

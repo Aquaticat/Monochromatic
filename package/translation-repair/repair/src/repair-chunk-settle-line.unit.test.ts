@@ -118,10 +118,10 @@ function settlementLines(
     targetText: ARCHIVE,
     shipped: { patch: { patchedText, applied: [], }, } as unknown as Parameters<
       typeof settleShippedPatch
-    >[0]['shipped'],
+      >[0]['shipped'],
     appliedEnvelopes: { creditableIssues: [ISSUE,], } as unknown as Parameters<
       typeof settleShippedPatch
-    >[0]['appliedEnvelopes'],
+      >[0]['appliedEnvelopes'],
     tallies: {
       [ISSUE.issueId]: resolved
         ? { fixed: 2, notFixed: 0, worse: 0, resolved: true, regressed: false, }

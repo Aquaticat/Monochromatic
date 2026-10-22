@@ -101,28 +101,28 @@ type PullOutcome<NewElement> =
      */
     readonly kind: 'done';
   }
-  | {
+    | {
     /**
      One mapped element, possibly {@link pMapSkip} for a dropped result.
      */
-    readonly kind: 'value';
+      readonly kind: 'value';
     /**
      Mapper result or {@link pMapSkip}.
      */
-    readonly value: NewElement | typeof pMapSkip;
-  }
-  | {
+      readonly value: NewElement | typeof pMapSkip;
+    }
+    | {
     /**
      The pull or its mapper call failed; carried as a value so an abandoned
      consumer never sees an unhandled rejection.
      */
-    readonly kind: 'error';
+      readonly kind: 'error';
     /**
      Failure to throw from the async iterator once this pull reaches the
      head of the spawn queue.
      */
-    readonly error: unknown;
-  };
+      readonly error: unknown;
+    };
 
 //endregion Types
 

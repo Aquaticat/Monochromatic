@@ -348,9 +348,9 @@ await describe({
         },);
         expect(lines,).toEqual([
           `warn [callOn] SEAT CREDENTIAL REFUSED ${SEAT_BEDROCK_ONLY_TEXT} on bedrock: ${refusalSaid({ provider: 'bedrock', },)}. `
-          + 'bedrock is held out for every model for the rest of the run, because one credential serves them all. '
-          + `No provider that serves ${SEAT_BEDROCK_ONLY_TEXT} is left, so the seat is withheld for the rest of the run. `
-          + 'Renew bedrock\'s credential before the next run, or leave it.',
+            + 'bedrock is held out for every model for the rest of the run, because one credential serves them all. '
+            + `No provider that serves ${SEAT_BEDROCK_ONLY_TEXT} is left, so the seat is withheld for the rest of the run. `
+            + 'Renew bedrock\'s credential before the next run, or leave it.',
         ],);
       },
     },),
@@ -374,13 +374,13 @@ await describe({
 
         expect(lines,).toEqual([
           `warn [callOn] SEAT CREDENTIAL REFUSED ${SEAT_HYPER_TEXT_BEDROCK} on bedrock: ${refusalSaid({ provider: 'bedrock', },)}. `
-          + 'bedrock is held out for every model for the rest of the run, because one credential serves them all. '
-          + `${SEAT_HYPER_TEXT_BEDROCK} moves to hyper, then openrouter (every provider that serves it and can take a call now). `
-          + 'Renew bedrock\'s credential before the next run, or leave it.',
+            + 'bedrock is held out for every model for the rest of the run, because one credential serves them all. '
+            + `${SEAT_HYPER_TEXT_BEDROCK} moves to hyper, then openrouter (every provider that serves it and can take a call now). `
+            + 'Renew bedrock\'s credential before the next run, or leave it.',
           `warn [callOn] SEAT CREDENTIAL REFUSED ${SEAT_HYPER_TEXT_BEDROCK} on hyper: ${refusalSaid({ provider: 'hyper', },)}. `
-          + 'hyper is held out for every model for the rest of the run, because one credential serves them all. '
-          + `${SEAT_HYPER_TEXT_BEDROCK} moves to openrouter (every provider that serves it and can take a call now). `
-          + 'Renew hyper\'s credential before the next run, or leave it.',
+            + 'hyper is held out for every model for the rest of the run, because one credential serves them all. '
+            + `${SEAT_HYPER_TEXT_BEDROCK} moves to openrouter (every provider that serves it and can take a call now). `
+            + 'Renew hyper\'s credential before the next run, or leave it.',
         ],);
       },
     },),
@@ -479,7 +479,7 @@ await describe({
 
         expect(lines[0],).toContain(
           `No provider that serves ${SEAT_HYPER_TEXT_BEDROCK} can take a call now (hyper is dry, openrouter is dry), `
-          + 'so the seat is not withheld on this refusal: the router goes on by its rules for a dry or held provider. ',
+            + 'so the seat is not withheld on this refusal: the router goes on by its rules for a dry or held provider. ',
         );
         expect(lines[0],).not.toContain('is withheld for the rest of the run',);
       },

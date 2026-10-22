@@ -110,8 +110,8 @@ async function packageEntries(): Promise<readonly PackageEntry[]> {
     return entry.isDirectory();
   },)
     .map(function directoryName(entry,): string {
-    return entry.name;
-  },)
+      return entry.name;
+    },)
     .toSorted();
   /**
    Entries, a directory without a manifest left out.
@@ -212,11 +212,11 @@ export async function packagesReachingStage(): Promise<readonly string[]> {
     return (dependenciesOf.get(name,)
       ?.dependencies
       ?? []).some(function dependencyReaches(dependency,): boolean {
-      return dependenciesOf.has(dependency,) && reaches({
-        name: dependency,
-        seen: passed,
+        return dependenciesOf.has(dependency,) && reaches({
+          name: dependency,
+          seen: passed,
+        },);
       },);
-    },);
   }
   return [...dependenciesOf.values(),]
     .filter(function isSwept(entry,): boolean {

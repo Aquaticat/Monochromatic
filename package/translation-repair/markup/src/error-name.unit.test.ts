@@ -68,7 +68,7 @@ await describe({
         it({
           name:
             'REFUSES to invent one for null, the case a `error.name` read would crash on rather than '
-            + 'merely mis-report',
+              + 'merely mis-report',
           fn: async () => {
             expect(errorName({ error: null, },),).toBe('a thrown value that is not an Error',);
           },

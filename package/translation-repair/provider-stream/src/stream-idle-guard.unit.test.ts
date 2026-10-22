@@ -372,7 +372,7 @@ await describe({
                 encoder.encode('data: two\n',),
               ],),
               guard,
-            label: 'hf:whiskers',
+              label: 'hf:whiskers',
               callerSignal: new AbortController().signal,
             },);
             expect(bodyText,).toBe('data: one\ndata: two\n',);
@@ -397,7 +397,7 @@ await describe({
                 new Uint8Array([0xAB,],),
               ],),
               guard,
-            label: 'hf:whiskers',
+              label: 'hf:whiskers',
               callerSignal: new AbortController().signal,
             },);
             expect(bodyText,).toBe('猫',);
@@ -416,7 +416,7 @@ await describe({
               credentials: [],
               response: new Response(null,),
               guard,
-            label: 'hf:whiskers',
+              label: 'hf:whiskers',
               callerSignal: new AbortController().signal,
             },);
             expect(bodyText,).toBe('',);
@@ -440,11 +440,11 @@ await describe({
                 start(controller,) {
                   guard.signal
                     .addEventListener(
-                      'abort',
-                      function tearDown() {
-                        controller.error(guard.signal.reason,);
-                      },
-                      { once: true, },
+                    'abort',
+                    function tearDown() {
+                      controller.error(guard.signal.reason,);
+                    },
+                    { once: true, },
                     );
                 },
               },),
@@ -497,11 +497,11 @@ await describe({
                 start(controller,) {
                   caller.signal
                     .addEventListener(
-                      'abort',
-                      function tearDown() {
-                        controller.error(steering,);
-                      },
-                      { once: true, },
+                    'abort',
+                    function tearDown() {
+                      controller.error(steering,);
+                    },
+                    { once: true, },
                     );
                 },
               },),

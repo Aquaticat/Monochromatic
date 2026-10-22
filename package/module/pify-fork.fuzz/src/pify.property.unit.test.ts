@@ -201,9 +201,9 @@ await describe({
               if (functionSpec.behavior.kind === 'callback') {
                 expect(JSON.stringify(settlement,),).toBe(
                   JSON.stringify(expectedSettlement({
-                  behavior: functionSpec.behavior,
-                  optionsSpec,
-                },),),
+                    behavior: functionSpec.behavior,
+                    optionsSpec,
+                  },),),
                 );
               }
               else {

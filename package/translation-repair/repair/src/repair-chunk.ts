@@ -322,8 +322,8 @@ export async function repairChunk(
    */
   const acceptedIssues = deduped.issues
     .filter(function isAccepted(issue,) {
-    return issue.status === 'accepted';
-  },);
+      return issue.status === 'accepted';
+    },);
 
   /**
    Editor rules for this slice, with the line-structure fact appended when the

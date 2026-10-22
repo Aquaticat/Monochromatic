@@ -47,9 +47,9 @@ function duplicateKey(
    */
   const categories = textsInCodePointOrder({ texts: [...new Set(issue.claims
     .map(function toCategory(member,): string {
-    return member.claim
-      .category;
-  },),),], },);
+      return member.claim
+        .category;
+    },),),], },);
 
   /**
    Every span claimed, rendered field by field rather than by JSON, since
@@ -57,12 +57,12 @@ function duplicateKey(
    */
   const spans = textsInCodePointOrder({ texts: [...new Set(issue.claims
     .flatMap(function toSpans(member,): readonly string[] {
-    return member.claim
-      .spans
-      .map(function render(span,): string {
-      return `${span.side}|${span.nodeId}|${String(span.startOffset,)}`;
-    },);
-  },),),], },);
+      return member.claim
+        .spans
+        .map(function render(span,): string {
+          return `${span.side}|${span.nodeId}|${String(span.startOffset,)}`;
+        },);
+    },),),], },);
 
   return `${categories.join(',',)}::${spans.join(',',)}`;
 }
@@ -164,8 +164,8 @@ export function dedupeAcceptedIssues(
      */
     const held = new Set(survivor.claims
       .map(function toId(member,): string {
-      return member.claimId;
-    },),);
+        return member.claimId;
+      },),);
 
     kept[at] = mergeDuplicateEvidence({
       survivor,
@@ -174,8 +174,8 @@ export function dedupeAcceptedIssues(
         ...survivor.claims,
         ...issue.claims
           .filter(function isNew(member,): boolean {
-          return !held.has(member.claimId,);
-        },),
+            return !held.has(member.claimId,);
+          },),
       ],
     },);
     findings.push(`duplicate-issue-merged (${issue.issueId} into ${survivor.issueId})`,);

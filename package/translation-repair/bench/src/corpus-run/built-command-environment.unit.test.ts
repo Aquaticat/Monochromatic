@@ -55,11 +55,11 @@ await describe({
         expect(run.code,).toBe(1,);
         expect(run.stderr,).toBe(
           `editor-standing-read: ${join(runs.path, 'artifacts', 'Mittens.json',)} refused, `
-          + 'artifact parse failed at artifact.artifactSchemaVersion: expected a number.\n',
+            + 'artifact parse failed at artifact.artifactSchemaVersion: expected a number.\n',
         );
         expect(run.stdout.split('\n',).at(0,),).toBe(
           'editor-standing-read: archives=0 artifacts=1 read=0 earlierRoster=0 earlierSchema=0 digestsJudged=0 '
-          + 'digestsUnjudged=0 unjudgedDigestRounds=0',
+            + 'digestsUnjudged=0 unjudgedDigestRounds=0',
         );
       },
     },),

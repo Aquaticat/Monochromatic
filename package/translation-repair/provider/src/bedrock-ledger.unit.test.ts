@@ -248,17 +248,17 @@ await describe({
               const thrown = await ledger
                 .read()
                 .then(
-                  function unexpected(): unknown {
-                    return undefined;
-                  },
-                  function caught(error: unknown,): unknown {
-                    return error;
-                  },
+                function unexpected(): unknown {
+                  return undefined;
+                },
+                function caught(error: unknown,): unknown {
+                  return error;
+                },
                 );
               expect(thrown,).toBeInstanceOf(BedrockLedgerShapeError,);
               expect(String(thrown,),).toBe(
                 `BedrockLedgerShapeError: Bedrock spend ledger ${path} line 2 violated expectations: not valid JSON `
-                + '(SyntaxError)',
+                  + '(SyntaxError)',
               );
             },);
           },
@@ -290,12 +290,12 @@ await describe({
               },)
                 .read()
                 .then(
-                  function unexpected(): unknown {
-                    return undefined;
-                  },
-                  function caught(error: unknown,): unknown {
-                    return error;
-                  },
+                function unexpected(): unknown {
+                  return undefined;
+                },
+                function caught(error: unknown,): unknown {
+                  return error;
+                },
                 );
               expect(thrown,).toBeInstanceOf(BedrockLedgerShapeError,);
               expect((thrown as Error).message,).toContain('not a JSON object',);
@@ -330,12 +330,12 @@ await describe({
               },)
                 .read()
                 .then(
-                  function unexpected(): unknown {
-                    return undefined;
-                  },
-                  function caught(error: unknown,): unknown {
-                    return error;
-                  },
+                function unexpected(): unknown {
+                  return undefined;
+                },
+                function caught(error: unknown,): unknown {
+                  return error;
+                },
                 );
               expect(thrown,).toBeInstanceOf(BedrockLedgerShapeError,);
               expect((thrown as Error).message,).toContain('usd is not a non-negative number',);
@@ -412,12 +412,12 @@ await describe({
                 },)
                   .read()
                   .then(
-                    function unexpected(): unknown {
-                      return undefined;
-                    },
-                    function caught(error: unknown,): unknown {
-                      return error;
-                    },
+                  function unexpected(): unknown {
+                    return undefined;
+                  },
+                  function caught(error: unknown,): unknown {
+                    return error;
+                  },
                   );
                 return (thrown instanceof BedrockLedgerShapeError) ? thrown.message : 'not a ledger shape refusal';
               },),);
@@ -445,12 +445,12 @@ await describe({
                 creditUsd: 200,
               },)
                 .read(),).toEqual({
-                creditUsd: 200,
-                spentUsd: 0.1,
-                reckonedUsd: 0,
-                remainingUsd: 199.9,
-                calls: 1,
-              },);
+                  creditUsd: 200,
+                  spentUsd: 0.1,
+                  reckonedUsd: 0,
+                  remainingUsd: 199.9,
+                  calls: 1,
+                },);
             },);
           },
         },),

@@ -140,32 +140,32 @@ const valueGrammar = letrec<TextGrammar>(
    @mutates tie - Invoking fast-check resolver can change caller-owned generation state.
    */
   function grammar(tie: LetrecTypedTie<TextGrammar>,) {
-  return {
-    value: oneof(
-      { maxDepth: MAX_VALUE_DEPTH, },
-      tie('leaf',),
-      tie('array',),
-      tie('inlineTable',),
-    ),
-    leaf: scalarSampleArbitrary.map(function toText(sample,) { return sample.text; },),
-    array: array(
-      tie('value',),
-      { maxLength: MAX_COMPOUND_WIDTH, },
-    )
-      .map(function assemble(parts: readonly string[],) { return renderArray({ parts, },); },),
-    inlineTable: uniqueArray(
-      record({
-        key: keySegmentArbitrary,
-        valueText: tie('value',),
-      },),
-      {
-        maxLength: MAX_COMPOUND_WIDTH,
-        selector: inlineEntryName,
-      },
-    )
-      .map(function assemble(entries: readonly InlineEntry[],) { return renderInlineTable({ entries, },); },),
-  };
-},);
+    return {
+      value: oneof(
+        { maxDepth: MAX_VALUE_DEPTH, },
+        tie('leaf',),
+        tie('array',),
+        tie('inlineTable',),
+      ),
+      leaf: scalarSampleArbitrary.map(function toText(sample,) { return sample.text; },),
+      array: array(
+        tie('value',),
+        { maxLength: MAX_COMPOUND_WIDTH, },
+      )
+        .map(function assemble(parts: readonly string[],) { return renderArray({ parts, },); },),
+      inlineTable: uniqueArray(
+        record({
+          key: keySegmentArbitrary,
+          valueText: tie('value',),
+        },),
+        {
+          maxLength: MAX_COMPOUND_WIDTH,
+          selector: inlineEntryName,
+        },
+      )
+        .map(function assemble(entries: readonly InlineEntry[],) { return renderInlineTable({ entries, },); },),
+    };
+  },);
 
 /**
  Value-text arbitrary spanning scalars and bounded compound structures.

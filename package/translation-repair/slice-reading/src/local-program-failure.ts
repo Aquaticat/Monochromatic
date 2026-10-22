@@ -167,10 +167,10 @@ export class LocalProgramFailedError extends Error {
       (failure.kind === 'missing')
         ? `${program} is not installed`
         : (failure.kind === 'code')
-        ? `${program} failed with filesystem code ${failure.code}`
-        : (failure.kind === 'exit')
-        ? `${program} exited with code ${String(failure.exitCode,)}`
-        : `${program} failed, and its failure names neither a filesystem code nor an exit code`,
+          ? `${program} failed with filesystem code ${failure.code}`
+          : (failure.kind === 'exit')
+            ? `${program} exited with code ${String(failure.exitCode,)}`
+            : `${program} failed, and its failure names neither a filesystem code nor an exit code`,
       { cause, },
     );
     this.name = 'LocalProgramFailedError';

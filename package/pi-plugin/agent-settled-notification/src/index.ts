@@ -99,10 +99,10 @@ type NotificationInvoker = (
  */
 type NotificationDeliveryResult =
   | { readonly delivered: true; }
-  | {
-    readonly delivered: false;
-    readonly error: unknown;
-  };
+    | {
+      readonly delivered: false;
+      readonly error: unknown;
+    };
 
 /**
  Runs a local desktop-notification process without shell interpretation.
@@ -302,8 +302,8 @@ function registerAgentSettledNotification(
        Result of attempting the static desktop notification.
        */
       const delivery = await notifyAgentSettled((invoke === undefined
-          ? {}
-          : { invoke, }),);
+        ? {}
+        : { invoke, }),);
       if (delivery.delivered) {
         innerLogger.debug('sent settled-agent desktop notification',);
         return;

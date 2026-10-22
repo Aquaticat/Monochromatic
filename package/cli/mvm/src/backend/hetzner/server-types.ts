@@ -89,7 +89,7 @@ function minHourlyPrice(
       return (here < best) ? here : best;
     },
     NOT_OFFERED,
-  );
+    );
 }
 
 //endregion Helpers

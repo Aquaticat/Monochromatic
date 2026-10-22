@@ -141,8 +141,8 @@ export function parseGitHubCliVersion({
    */
   const tokens = firstLine.split(' ',)
     .filter(function nonEmpty(token,): boolean {
-    return token !== '';
-  },);
+      return token !== '';
+    },);
   /**
    Semantic version token after `gh version`.
    */

@@ -340,13 +340,13 @@ export function discoverResultBindings({
         statement.initializer
           .declarations
           .forEach(function registerIterationDeclaration(declaration,): void {
-          state.changed = registerResultSites({
-            project,
-            name: declaration.name,
-            sites,
-            resultSitesBySymbolId,
-          },) || state.changed;
-        },);
+            state.changed = registerResultSites({
+              project,
+              name: declaration.name,
+              sites,
+              resultSitesBySymbolId,
+            },) || state.changed;
+          },);
         return;
       }
       state.changed = registerResultSites({

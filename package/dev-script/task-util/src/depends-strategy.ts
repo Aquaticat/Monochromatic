@@ -141,23 +141,23 @@ function computeMedian(values: readonly number[],): number {
  */
 export const builtinStrategies: Readonly<
   Record<BuiltinTimeStrategy, (values: readonly number[],) => number>
-> = {
-  newest: function newest(values,) {
-    return values.length
-      === 0 ? -Infinity : Math.max(...values,);
-  },
-  oldest: function oldest(values,) {
-    return values.length
-      === 0 ? -Infinity : Math.min(...values,);
-  },
-  mean: function mean(values,) {
-    return values.length
-      === 0 ? -Infinity : computeMean(values,);
-  },
-  median: function median(values,) {
-    return values.length
-      === 0 ? -Infinity : computeMedian(values,);
-  },
-};
+  > = {
+    newest: function newest(values,) {
+      return values.length
+        === 0 ? -Infinity : Math.max(...values,);
+    },
+    oldest: function oldest(values,) {
+      return values.length
+        === 0 ? -Infinity : Math.min(...values,);
+    },
+    mean: function mean(values,) {
+      return values.length
+        === 0 ? -Infinity : computeMean(values,);
+    },
+    median: function median(values,) {
+      return values.length
+        === 0 ? -Infinity : computeMedian(values,);
+    },
+  };
 
 //endregion Strategy functions

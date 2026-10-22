@@ -191,7 +191,7 @@ function emitKeyValueBase(
         .range[0],
       kv.origin
         .range[1],
-    );
+      );
   }
   /**
    Original value span so the key prefix and trailing bytes stay byte-exact.
@@ -205,7 +205,7 @@ function emitKeyValueBase(
     kv.origin
       .range[0],
     valueRange[0],
-  );
+    );
   /**
    Trailing bytes: any spaces, a same-line comment, and the newline.
    */
@@ -214,7 +214,7 @@ function emitKeyValueBase(
     valueRange[1],
     kv.origin
       .range[1],
-  );
+    );
   return `${prefix}${
     renderValueNode({
       value: kv.value,

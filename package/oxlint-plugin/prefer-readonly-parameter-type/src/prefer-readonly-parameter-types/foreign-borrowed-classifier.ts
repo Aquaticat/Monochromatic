@@ -208,8 +208,8 @@ function expressionForeignCoverage({
             ? undefined
             : project.checker
               .getTypeOfSymbolAtLocation(
-                valueSymbol,
-                property.name,
+              valueSymbol,
+              property.name,
               );
           return valueType === undefined
             ? 'owned'

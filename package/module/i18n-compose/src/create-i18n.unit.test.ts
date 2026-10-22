@@ -74,7 +74,7 @@ function passthroughSpec<
   Subject extends string,
   Verb extends string,
   Noun extends string,
->(): LocaleSpec<Label, Subject, Verb, Noun> {
+  >(): LocaleSpec<Label, Subject, Verb, Noun> {
   return defineCustomLocale<Label, Subject, Verb, Noun>({
     renderLabel(key,): string {
       return key;
@@ -207,13 +207,13 @@ await describe({
               'sharedSubject' | 'leftOnlySubject',
               'sharedVerb' | 'leftOnlyVerb',
               'sharedNoun' | 'leftOnlyNoun'
-            >(),
+              >(),
             right: passthroughSpec<
               'sharedLabel',
               'sharedSubject',
               'sharedVerb',
               'sharedNoun'
-            >(),
+              >(),
           },
         } as const;
         // @ts-expect-error -- createI18n rejects locale specs whose vocabulary keys differ.

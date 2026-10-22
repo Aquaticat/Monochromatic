@@ -73,8 +73,8 @@ export async function runHelperCommand({
   using abortSubscription = addAbortListener(
     deadline,
     function stopTimedOutFixture(): void {
-    child.kill();
-  },
+      child.kill();
+    },
   );
   /**
    Retained streams distinguish clean cancellation from a swallowed child error.
@@ -89,18 +89,18 @@ export async function runHelperCommand({
     .setEncoding('utf8',);
   child.stdout
     .on(
-      'data',
-      function captureOutput(chunk: string,): void {
-    output.stdout += chunk;
-    onOutput?.(output.stdout,);
-  },
+    'data',
+    function captureOutput(chunk: string,): void {
+      output.stdout += chunk;
+      onOutput?.(output.stdout,);
+    },
     );
   child.stderr
     .on(
-      'data',
-      function captureError(chunk: string,): void {
-    output.stderr += chunk;
-  },
+    'data',
+    function captureError(chunk: string,): void {
+      output.stderr += chunk;
+    },
     );
   /**
    Close drains both streams before evaluating exit status.

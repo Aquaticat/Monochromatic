@@ -327,293 +327,293 @@ await describe({
       name: runPassConsistency.name,
       concurrency: DEFAULT_CONCURRENCY,
       children: [
-    it({
-      name: 'KEEPS THE CLOSING QUOTATION MARK OF A QUOTATION THAT OPENED IN A SEALED SPAN BETWEEN THE SLICES: the opener stands '
-        + 'in text no slice holds, the page that will be published holds it, so the place is `kept-current` and the page '
-        + 'changes nowhere; the same page without the opener reads the mark as an apostrophe of the replaced words',
-      fn: async () => {
-        const opened = await sealedRun({ sealed: 'She said ‘fill the bowls with water.', },);
-        const plain = await sealedRun({ sealed: 'She said fill the bowls with water.', },);
-        expect([opened, plain,].map(function seen({ consistency, },): unknown {
-          return seenIn({ consistency, },);
-        },),).toEqual([
-          { outcomes: ['chosen', 'kept-current',], changed: [], leftOut: [], },
-          { outcomes: ['chosen', 'replaced',], changed: [[2, '## Part 3\n\nThen feed the dogs now.',],], leftOut: [], },
-        ],);
-      },
-    },),
-    it({
-      name: 'CARRIES A PROVEN APOSTROPHE INTO A PLACE THAT HELD NONE WHERE THE PAGE KEEPS IT AN APOSTROPHE: the places that held '
-        + '`folks’` and `the family` read the chosen `the parents’`, in either section, and the section reads back',
-      fn: async () => {
-        const { consistency, } = await apostropheRun({
-          first: 'Fill the parents’ bowl. The kitchen was warm. Fill the folks’ bowl.',
-          second: 'Then the family naps.',
-          quotes: ['the parents', 'the folks', 'the family',],
-          choice: 1,
-        },);
-        expect(seenIn({ consistency, },),).toEqual({
-          outcomes: ['chosen', 'replaced', 'replaced',],
-          changed: [
-            [0, '## One\n\nFill the parents’ bowl. The kitchen was warm. Fill the parents’ bowl.',],
-            [1, '## Two\n\nThen the parents’ naps.',],
-          ],
-          leftOut: [],
-        },);
-        expect(readBack({ consistency, },),).toEqual(consistency,);
-      },
-    },),
-    it({
-      name: 'LEAVES A PLACE AS IT WAS WHEN THE APOSTROPHE IT WOULD GAIN READS AS A QUOTATION MARK ON ITS PAGE: an opener stands '
-        + 'before it, so the place is `kept-current`, a finding says so in plain words, the other places are carried, and '
-        + 'the section reads back',
-      fn: async () => {
-        const { consistency, } = await apostropheRun({
-          first: 'Fill the parents’ bowl. The kitchen was warm. Fill the folks’ bowl.',
-          second: '‘Then the family naps.',
-          quotes: ['the parents', 'the folks', 'the family',],
-          choice: 1,
-        },);
-        expect(seenIn({ consistency, },),).toEqual({
-          outcomes: ['chosen', 'replaced', 'kept-current',],
-          changed: [[0, '## One\n\nFill the parents’ bowl. The kitchen was warm. Fill the parents’ bowl.',],],
-          leftOut: [
-            'slice 1: the consistency replacement of group 1 OCCURRENCE 3 was left out because the apostrophe it carries in '
-            + 'would read as a quotation mark there, since another quotation mark of the page could pair with it; the place '
-            + 'keeps its words',
-          ],
-        },);
-        expect(readBack({ consistency, },),).toEqual(consistency,);
-      },
-    },),
-    it({
-      name: 'CARRIES THE APOSTROPHE INTO LATER PLACES WHEN THE ONLY OTHER MARK IS A PLURAL POSSESSIVE AFTER CLOSING EMPHASIS: the '
-        + 'mark after `*kittens*` reads as a trailing edge mark nothing pairs with, so it blocks no later gain, while the place '
-        + 'inside the emphasis keeps its words, since the apostrophe would stand twice',
-      fn: async () => {
-        const { consistency, } = await apostropheRun({
-          first: 'Fill the dogs’ bowl. The *kittens*’ bowl is empty. A cat naps.',
-          second: 'Then the family naps.',
-          quotes: ['dogs', 'kittens', 'cat', 'family',],
-          choice: 1,
-        },);
-        expect(seenIn({ consistency, },),).toEqual({
-          outcomes: ['chosen', 'kept-current', 'replaced', 'replaced',],
-          changed: [
-            [0, '## One\n\nFill the dogs’ bowl. The *kittens*’ bowl is empty. A dogs’ naps.',],
-            [1, '## Two\n\nThen the dogs’ naps.',],
-          ],
-          leftOut: [],
-        },);
-        expect(readBack({ consistency, },),).toEqual(consistency,);
-      },
-    },),
-    it({
-      name: 'LEAVES A PLACE AS IT WAS WHEN THE QUOTATION MARK THAT COULD PAIR WITH THE APOSTROPHE IT WOULD GAIN STANDS IN AN '
-        + 'EARLIER SLICE: the opener stands in the first section after the places that give the mark, the gain is in the '
-        + 'second, the place is `kept-current` with the finding, and the same page without the opener carries the mark',
-      fn: async () => {
-        const quotes = ['the parents', 'the folks', 'the family',];
-        const opened = await apostropheRun({
-          first: 'Fill the parents’ bowl. The kitchen was warm. Fill the folks’ bowl. She said ‘hello.',
-          second: 'Then the family naps.',
-          quotes,
-          choice: 1,
-        },);
-        const plain = await apostropheRun({
-          first: 'Fill the parents’ bowl. The kitchen was warm. Fill the folks’ bowl. She said hello.',
-          second: 'Then the family naps.',
-          quotes,
-          choice: 1,
-        },);
-        expect([seenIn({ consistency: opened.consistency, },), seenIn({ consistency: plain.consistency, },),],).toEqual([
-          {
-            outcomes: ['chosen', 'replaced', 'kept-current',],
-            changed: [
-              [
-                0,
-                '## One\n\nFill the parents’ bowl. The kitchen was warm. Fill the parents’ bowl. She said ‘hello.',
+        it({
+          name: 'KEEPS THE CLOSING QUOTATION MARK OF A QUOTATION THAT OPENED IN A SEALED SPAN BETWEEN THE SLICES: the opener stands '
+            + 'in text no slice holds, the page that will be published holds it, so the place is `kept-current` and the page '
+            + 'changes nowhere; the same page without the opener reads the mark as an apostrophe of the replaced words',
+          fn: async () => {
+            const opened = await sealedRun({ sealed: 'She said ‘fill the bowls with water.', },);
+            const plain = await sealedRun({ sealed: 'She said fill the bowls with water.', },);
+            expect([opened, plain,].map(function seen({ consistency, },): unknown {
+              return seenIn({ consistency, },);
+            },),).toEqual([
+              { outcomes: ['chosen', 'kept-current',], changed: [], leftOut: [], },
+              { outcomes: ['chosen', 'replaced',], changed: [[2, '## Part 3\n\nThen feed the dogs now.',],], leftOut: [], },
+            ],);
+          },
+        },),
+        it({
+          name: 'CARRIES A PROVEN APOSTROPHE INTO A PLACE THAT HELD NONE WHERE THE PAGE KEEPS IT AN APOSTROPHE: the places that held '
+            + '`folks’` and `the family` read the chosen `the parents’`, in either section, and the section reads back',
+          fn: async () => {
+            const { consistency, } = await apostropheRun({
+              first: 'Fill the parents’ bowl. The kitchen was warm. Fill the folks’ bowl.',
+              second: 'Then the family naps.',
+              quotes: ['the parents', 'the folks', 'the family',],
+              choice: 1,
+            },);
+            expect(seenIn({ consistency, },),).toEqual({
+              outcomes: ['chosen', 'replaced', 'replaced',],
+              changed: [
+                [0, '## One\n\nFill the parents’ bowl. The kitchen was warm. Fill the parents’ bowl.',],
+                [1, '## Two\n\nThen the parents’ naps.',],
               ],
-            ],
-            leftOut: [
-              'slice 1: the consistency replacement of group 1 OCCURRENCE 3 was left out because the apostrophe it carries in '
-              + 'would read as a quotation mark there, since another quotation mark of the page could pair with it; the place '
-              + 'keeps its words',
-            ],
+              leftOut: [],
+            },);
+            expect(readBack({ consistency, },),).toEqual(consistency,);
           },
-          {
-            outcomes: ['chosen', 'replaced', 'replaced',],
-            changed: [
-              [0, '## One\n\nFill the parents’ bowl. The kitchen was warm. Fill the parents’ bowl. She said hello.',],
-              [1, '## Two\n\nThen the parents’ naps.',],
-            ],
-            leftOut: [],
+        },),
+        it({
+          name: 'LEAVES A PLACE AS IT WAS WHEN THE APOSTROPHE IT WOULD GAIN READS AS A QUOTATION MARK ON ITS PAGE: an opener stands '
+            + 'before it, so the place is `kept-current`, a finding says so in plain words, the other places are carried, and '
+            + 'the section reads back',
+          fn: async () => {
+            const { consistency, } = await apostropheRun({
+              first: 'Fill the parents’ bowl. The kitchen was warm. Fill the folks’ bowl.',
+              second: '‘Then the family naps.',
+              quotes: ['the parents', 'the folks', 'the family',],
+              choice: 1,
+            },);
+            expect(seenIn({ consistency, },),).toEqual({
+              outcomes: ['chosen', 'replaced', 'kept-current',],
+              changed: [[0, '## One\n\nFill the parents’ bowl. The kitchen was warm. Fill the parents’ bowl.',],],
+              leftOut: [
+                'slice 1: the consistency replacement of group 1 OCCURRENCE 3 was left out because the apostrophe it carries in '
+                  + 'would read as a quotation mark there, since another quotation mark of the page could pair with it; the place '
+                  + 'keeps its words',
+              ],
+            },);
+            expect(readBack({ consistency, },),).toEqual(consistency,);
           },
-        ],);
-        expect(readBack({ consistency: opened.consistency, },),).toEqual(opened.consistency,);
-        expect(readBack({ consistency: plain.consistency, },),).toEqual(plain.consistency,);
-      },
-    },),
-    it({
-      name: 'KEEPS THE CLOSING QUOTATION MARK OF A QUOTATION THAT OPENED IN AN EARLIER SLICE, across a heading: the place is '
-        + 'not taken for a plural possessive, its mark stays, and nothing of the page changes; the same page with no opener '
-        + 'reads the mark as an apostrophe of the replaced words',
-      fn: async () => {
-        const quotes = ['the dogs', 'the kittens',];
-        const opened = await apostropheRun({
-          first: '‘Fill the dogs bowl.',
-          second: 'Then feed the kittens’.',
-          quotes,
-          choice: 1,
-        },);
-        const plain = await apostropheRun({
-          first: 'Fill the dogs bowl.',
-          second: 'Then feed the kittens’.',
-          quotes,
-          choice: 1,
-        },);
-        expect([seenIn({ consistency: opened.consistency, },), seenIn({ consistency: plain.consistency, },),],).toEqual([
-          { outcomes: ['chosen', 'kept-current',], changed: [], leftOut: [], },
-          { outcomes: ['chosen', 'replaced',], changed: [[1, '## Two\n\nThen feed the dogs.',],], leftOut: [], },
-        ],);
-        expect(readBack({ consistency: opened.consistency, },),).toEqual(opened.consistency,);
-        expect(readBack({ consistency: plain.consistency, },),).toEqual(plain.consistency,);
-      },
-    },),
-    it({
-      name: 'KEEPS THE CLOSING QUOTATION MARK OF A QUOTATION THAT OPENED IN AN EARLIER PARAGRAPH, the reviewer\'s B1: the '
-        + 'place is not taken for a plural possessive, its mark stays, and nothing of the slice changes',
-      fn: async () => {
-        const { consistency, } = await apostropheRun({
-          first: '‘Fill the bowls.\n\nThen feed the kittens’.',
-          second: 'Then feed the dogs.',
-          quotes: ['Then feed the kittens', 'Then feed the dogs',],
-          choice: 2,
-        },);
-        expect(seenIn({ consistency, },),).toEqual({ outcomes: ['kept-current', 'chosen',], changed: [], leftOut: [], },);
-        expect(readBack({ consistency, },),).toEqual(consistency,);
-      },
-    },),
-    it({
-      name: 'WRITES AN APOSTROPHE THAT ARRIVES IN THE FORM OF THE PLACE IT ARRIVES IN: a straight one onto a curly place '
-        + 'stays curly, onto a place with no apostrophe it takes the form of the page\'s other apostrophes when they share '
-        + 'one, and when they do not share one it still arrives curly, because the page that ships has its straight '
-        + 'apostrophes curled by the archive typography',
-      fn: async () => {
-        const curly = await apostropheRun({
-          first: 'Fill the kittens’ bowl. The kitchen was warm. Fill the pups’ bowl.',
-          second: 'Then the dogs\' nap.',
-          quotes: ['the kittens', 'the pups', 'the dogs',],
-          choice: 3,
-        },);
-        const sharing = await apostropheRun({
-          first: 'Fill the family bowl. The kitchen was warm. Fill the cat’s dish.',
-          second: 'Then the dogs\' nap.',
-          quotes: ['the family', 'the dogs',],
-          choice: 2,
-        },);
-        const mixed = await apostropheRun({
-          first: 'Fill the family bowl. The kitchen was warm. Fill the cat’s dish and the pup\'s bed.',
-          second: 'Then the dogs\' nap.',
-          quotes: ['the family', 'the dogs',],
-          choice: 2,
-        },);
-        expect([curly, sharing, mixed,].map(function seen({ consistency, },): unknown {
-          return seenIn({ consistency, },).changed;
-        },),).toEqual([
-          [[0, '## One\n\nFill the dogs’ bowl. The kitchen was warm. Fill the dogs’ bowl.',],],
-          [[0, '## One\n\nFill the dogs’ bowl. The kitchen was warm. Fill the cat’s dish.',],],
-          [[0, '## One\n\nFill the dogs’ bowl. The kitchen was warm. Fill the cat’s dish and the pup\'s bed.',],],
-        ],);
-        [curly, sharing, mixed,].forEach(function readsBack({ consistency, },): void {
-          expect(readBack({ consistency, },),).toEqual(consistency,);
-        },);
-      },
-    },),
-    it({
-      name: 'WRITES AN APOSTROPHE THAT ARRIVES IN THE FORM OF THE WHOLE PAGE, not of the receiving slice alone: the slice holds '
-        + 'no apostrophe outside the words, the other slice writes its own curly, so a straight chosen one arrives curly, and '
-        + 'it arrives curly also when the other slice writes both forms, because the page that ships has its straight '
-        + 'apostrophes curled by the archive typography',
-      fn: async () => {
-        const curly = await apostropheRun({
-          first: 'Fill the family bowl.',
-          second: 'The cat’s dish waits. Then the dogs\' nap.',
-          quotes: ['the family', 'the dogs',],
-          choice: 2,
-        },);
-        const mixed = await apostropheRun({
-          first: 'Fill the family bowl.',
-          second: 'The cat’s dish and the pup\'s bed wait. Then the dogs\' nap.',
-          quotes: ['the family', 'the dogs',],
-          choice: 2,
-        },);
-        expect([curly, mixed,].map(function seen({ consistency, },): unknown {
-          return seenIn({ consistency, },).changed;
-        },),).toEqual([
-          [[0, '## One\n\nFill the dogs’ bowl.',],],
-          [[0, '## One\n\nFill the dogs’ bowl.',],],
-        ],);
-        [curly, mixed,].forEach(function readsBack({ consistency, },): void {
-          expect(readBack({ consistency, },),).toEqual(consistency,);
-        },);
-      },
-    },),
-    it({
-      name: 'KEEPS THE STRAIGHT FORM THE CHOSEN PLACE WROTE ON A PAGE WHOSE ARCHIVE KEEPS ITS STRAIGHT MARKS: the archive text '
-        + 'holds no curly mark, so the typography of the shipped page curls nothing, and an apostrophe that arrives where the '
-        + 'receiving words and the rest of the page hold none of their own is written as the chosen place wrote it; where the '
-        + 'rest of the page holds only straight ones it arrives straight too',
-      fn: async () => {
-        const noOther = await apostropheRun({
-          first: 'Fill the family bowl.',
-          second: 'Then the dogs\' nap.',
-          quotes: ['the family', 'the dogs',],
-          choice: 2,
-        },);
-        const straightPage = await apostropheRun({
-          first: 'Fill the family bowl. The kitchen was warm. Fill the cat\'s dish and the pup\'s bed.',
-          second: 'Then the dogs\' nap.',
-          quotes: ['the family', 'the dogs',],
-          choice: 2,
-        },);
-        expect([noOther, straightPage,].map(function seen({ consistency, },): unknown {
-          return seenIn({ consistency, },).changed;
-        },),).toEqual([
-          [[0, '## One\n\nFill the dogs\' bowl.',],],
-          [[0, '## One\n\nFill the dogs\' bowl. The kitchen was warm. Fill the cat\'s dish and the pup\'s bed.',],],
-        ],);
-        [noOther, straightPage,].forEach(function readsBack({ consistency, },): void {
-          expect(readBack({ consistency, },),).toEqual(consistency,);
-        },);
-      },
-    },),
-    it({
-      name: 'LEAVES THE PARAGRAPH BESIDE A PLACE WHOSE SPLICE THE FLOORS ALWAYS REFUSE TO THE WRITERS, the reviewer\'s G3 '
-        + 'residue: the chosen words hold no blank line and the receiving words hold one, with a plain space or a straight '
-        + 'apostrophe after them, so the place has no splice and the next paragraph is offered to the writers',
-      fn: async () => {
-        const seen = await Promise.all([residueSeen({ after: ' said she', },), residueSeen({ after: '\' said she', },),],);
-        expect(seen,).toEqual([
-          {
-            outcomes: ['kept-current', 'replaced', 'replaced', 'chosen',],
-            kinds: [['current',], ['current', 'splice', 'writer',], ['current', 'splice', 'writer',],],
-            notAsked: [
-              'group 1: consistency-writers-not-asked (OCCURRENCE 1): the words that render the repeated wording lie in no '
-              + 'single block of the English, so no paragraph can be rewritten',
-            ],
+        },),
+        it({
+          name: 'CARRIES THE APOSTROPHE INTO LATER PLACES WHEN THE ONLY OTHER MARK IS A PLURAL POSSESSIVE AFTER CLOSING EMPHASIS: the '
+            + 'mark after `*kittens*` reads as a trailing edge mark nothing pairs with, so it blocks no later gain, while the place '
+            + 'inside the emphasis keeps its words, since the apostrophe would stand twice',
+          fn: async () => {
+            const { consistency, } = await apostropheRun({
+              first: 'Fill the dogs’ bowl. The *kittens*’ bowl is empty. A cat naps.',
+              second: 'Then the family naps.',
+              quotes: ['dogs', 'kittens', 'cat', 'family',],
+              choice: 1,
+            },);
+            expect(seenIn({ consistency, },),).toEqual({
+              outcomes: ['chosen', 'kept-current', 'replaced', 'replaced',],
+              changed: [
+                [0, '## One\n\nFill the dogs’ bowl. The *kittens*’ bowl is empty. A dogs’ naps.',],
+                [1, '## Two\n\nThen the dogs’ naps.',],
+              ],
+              leftOut: [],
+            },);
+            expect(readBack({ consistency, },),).toEqual(consistency,);
           },
-          {
-            outcomes: ['kept-current', 'replaced', 'replaced', 'chosen',],
-            kinds: [['current',], ['current', 'splice', 'writer',], ['current', 'splice', 'writer',],],
-            notAsked: [
-              'group 1: consistency-writers-not-asked (OCCURRENCE 1): the words that render the repeated wording lie in no '
-              + 'single block of the English, so no paragraph can be rewritten',
-            ],
+        },),
+        it({
+          name: 'LEAVES A PLACE AS IT WAS WHEN THE QUOTATION MARK THAT COULD PAIR WITH THE APOSTROPHE IT WOULD GAIN STANDS IN AN '
+            + 'EARLIER SLICE: the opener stands in the first section after the places that give the mark, the gain is in the '
+            + 'second, the place is `kept-current` with the finding, and the same page without the opener carries the mark',
+          fn: async () => {
+            const quotes = ['the parents', 'the folks', 'the family',];
+            const opened = await apostropheRun({
+              first: 'Fill the parents’ bowl. The kitchen was warm. Fill the folks’ bowl. She said ‘hello.',
+              second: 'Then the family naps.',
+              quotes,
+              choice: 1,
+            },);
+            const plain = await apostropheRun({
+              first: 'Fill the parents’ bowl. The kitchen was warm. Fill the folks’ bowl. She said hello.',
+              second: 'Then the family naps.',
+              quotes,
+              choice: 1,
+            },);
+            expect([seenIn({ consistency: opened.consistency, },), seenIn({ consistency: plain.consistency, },),],).toEqual([
+              {
+                outcomes: ['chosen', 'replaced', 'kept-current',],
+                changed: [
+                  [
+                    0,
+                    '## One\n\nFill the parents’ bowl. The kitchen was warm. Fill the parents’ bowl. She said ‘hello.',
+                  ],
+                ],
+                leftOut: [
+                  'slice 1: the consistency replacement of group 1 OCCURRENCE 3 was left out because the apostrophe it carries in '
+                    + 'would read as a quotation mark there, since another quotation mark of the page could pair with it; the place '
+                    + 'keeps its words',
+                ],
+              },
+              {
+                outcomes: ['chosen', 'replaced', 'replaced',],
+                changed: [
+                  [0, '## One\n\nFill the parents’ bowl. The kitchen was warm. Fill the parents’ bowl. She said hello.',],
+                  [1, '## Two\n\nThen the parents’ naps.',],
+                ],
+                leftOut: [],
+              },
+            ],);
+            expect(readBack({ consistency: opened.consistency, },),).toEqual(opened.consistency,);
+            expect(readBack({ consistency: plain.consistency, },),).toEqual(plain.consistency,);
           },
-        ],);
-      },
-    },),
+        },),
+        it({
+          name: 'KEEPS THE CLOSING QUOTATION MARK OF A QUOTATION THAT OPENED IN AN EARLIER SLICE, across a heading: the place is '
+            + 'not taken for a plural possessive, its mark stays, and nothing of the page changes; the same page with no opener '
+            + 'reads the mark as an apostrophe of the replaced words',
+          fn: async () => {
+            const quotes = ['the dogs', 'the kittens',];
+            const opened = await apostropheRun({
+              first: '‘Fill the dogs bowl.',
+              second: 'Then feed the kittens’.',
+              quotes,
+              choice: 1,
+            },);
+            const plain = await apostropheRun({
+              first: 'Fill the dogs bowl.',
+              second: 'Then feed the kittens’.',
+              quotes,
+              choice: 1,
+            },);
+            expect([seenIn({ consistency: opened.consistency, },), seenIn({ consistency: plain.consistency, },),],).toEqual([
+              { outcomes: ['chosen', 'kept-current',], changed: [], leftOut: [], },
+              { outcomes: ['chosen', 'replaced',], changed: [[1, '## Two\n\nThen feed the dogs.',],], leftOut: [], },
+            ],);
+            expect(readBack({ consistency: opened.consistency, },),).toEqual(opened.consistency,);
+            expect(readBack({ consistency: plain.consistency, },),).toEqual(plain.consistency,);
+          },
+        },),
+        it({
+          name: 'KEEPS THE CLOSING QUOTATION MARK OF A QUOTATION THAT OPENED IN AN EARLIER PARAGRAPH, the reviewer\'s B1: the '
+            + 'place is not taken for a plural possessive, its mark stays, and nothing of the slice changes',
+          fn: async () => {
+            const { consistency, } = await apostropheRun({
+              first: '‘Fill the bowls.\n\nThen feed the kittens’.',
+              second: 'Then feed the dogs.',
+              quotes: ['Then feed the kittens', 'Then feed the dogs',],
+              choice: 2,
+            },);
+            expect(seenIn({ consistency, },),).toEqual({ outcomes: ['kept-current', 'chosen',], changed: [], leftOut: [], },);
+            expect(readBack({ consistency, },),).toEqual(consistency,);
+          },
+        },),
+        it({
+          name: 'WRITES AN APOSTROPHE THAT ARRIVES IN THE FORM OF THE PLACE IT ARRIVES IN: a straight one onto a curly place '
+            + 'stays curly, onto a place with no apostrophe it takes the form of the page\'s other apostrophes when they share '
+            + 'one, and when they do not share one it still arrives curly, because the page that ships has its straight '
+            + 'apostrophes curled by the archive typography',
+          fn: async () => {
+            const curly = await apostropheRun({
+              first: 'Fill the kittens’ bowl. The kitchen was warm. Fill the pups’ bowl.',
+              second: 'Then the dogs\' nap.',
+              quotes: ['the kittens', 'the pups', 'the dogs',],
+              choice: 3,
+            },);
+            const sharing = await apostropheRun({
+              first: 'Fill the family bowl. The kitchen was warm. Fill the cat’s dish.',
+              second: 'Then the dogs\' nap.',
+              quotes: ['the family', 'the dogs',],
+              choice: 2,
+            },);
+            const mixed = await apostropheRun({
+              first: 'Fill the family bowl. The kitchen was warm. Fill the cat’s dish and the pup\'s bed.',
+              second: 'Then the dogs\' nap.',
+              quotes: ['the family', 'the dogs',],
+              choice: 2,
+            },);
+            expect([curly, sharing, mixed,].map(function seen({ consistency, },): unknown {
+              return seenIn({ consistency, },).changed;
+            },),).toEqual([
+              [[0, '## One\n\nFill the dogs’ bowl. The kitchen was warm. Fill the dogs’ bowl.',],],
+              [[0, '## One\n\nFill the dogs’ bowl. The kitchen was warm. Fill the cat’s dish.',],],
+              [[0, '## One\n\nFill the dogs’ bowl. The kitchen was warm. Fill the cat’s dish and the pup\'s bed.',],],
+            ],);
+            [curly, sharing, mixed,].forEach(function readsBack({ consistency, },): void {
+              expect(readBack({ consistency, },),).toEqual(consistency,);
+            },);
+          },
+        },),
+        it({
+          name: 'WRITES AN APOSTROPHE THAT ARRIVES IN THE FORM OF THE WHOLE PAGE, not of the receiving slice alone: the slice holds '
+            + 'no apostrophe outside the words, the other slice writes its own curly, so a straight chosen one arrives curly, and '
+            + 'it arrives curly also when the other slice writes both forms, because the page that ships has its straight '
+            + 'apostrophes curled by the archive typography',
+          fn: async () => {
+            const curly = await apostropheRun({
+              first: 'Fill the family bowl.',
+              second: 'The cat’s dish waits. Then the dogs\' nap.',
+              quotes: ['the family', 'the dogs',],
+              choice: 2,
+            },);
+            const mixed = await apostropheRun({
+              first: 'Fill the family bowl.',
+              second: 'The cat’s dish and the pup\'s bed wait. Then the dogs\' nap.',
+              quotes: ['the family', 'the dogs',],
+              choice: 2,
+            },);
+            expect([curly, mixed,].map(function seen({ consistency, },): unknown {
+              return seenIn({ consistency, },).changed;
+            },),).toEqual([
+              [[0, '## One\n\nFill the dogs’ bowl.',],],
+              [[0, '## One\n\nFill the dogs’ bowl.',],],
+            ],);
+            [curly, mixed,].forEach(function readsBack({ consistency, },): void {
+              expect(readBack({ consistency, },),).toEqual(consistency,);
+            },);
+          },
+        },),
+        it({
+          name: 'KEEPS THE STRAIGHT FORM THE CHOSEN PLACE WROTE ON A PAGE WHOSE ARCHIVE KEEPS ITS STRAIGHT MARKS: the archive text '
+            + 'holds no curly mark, so the typography of the shipped page curls nothing, and an apostrophe that arrives where the '
+            + 'receiving words and the rest of the page hold none of their own is written as the chosen place wrote it; where the '
+            + 'rest of the page holds only straight ones it arrives straight too',
+          fn: async () => {
+            const noOther = await apostropheRun({
+              first: 'Fill the family bowl.',
+              second: 'Then the dogs\' nap.',
+              quotes: ['the family', 'the dogs',],
+              choice: 2,
+            },);
+            const straightPage = await apostropheRun({
+              first: 'Fill the family bowl. The kitchen was warm. Fill the cat\'s dish and the pup\'s bed.',
+              second: 'Then the dogs\' nap.',
+              quotes: ['the family', 'the dogs',],
+              choice: 2,
+            },);
+            expect([noOther, straightPage,].map(function seen({ consistency, },): unknown {
+              return seenIn({ consistency, },).changed;
+            },),).toEqual([
+              [[0, '## One\n\nFill the dogs\' bowl.',],],
+              [[0, '## One\n\nFill the dogs\' bowl. The kitchen was warm. Fill the cat\'s dish and the pup\'s bed.',],],
+            ],);
+            [noOther, straightPage,].forEach(function readsBack({ consistency, },): void {
+              expect(readBack({ consistency, },),).toEqual(consistency,);
+            },);
+          },
+        },),
+        it({
+          name: 'LEAVES THE PARAGRAPH BESIDE A PLACE WHOSE SPLICE THE FLOORS ALWAYS REFUSE TO THE WRITERS, the reviewer\'s G3 '
+            + 'residue: the chosen words hold no blank line and the receiving words hold one, with a plain space or a straight '
+            + 'apostrophe after them, so the place has no splice and the next paragraph is offered to the writers',
+          fn: async () => {
+            const seen = await Promise.all([residueSeen({ after: ' said she', },), residueSeen({ after: '\' said she', },),],);
+            expect(seen,).toEqual([
+              {
+                outcomes: ['kept-current', 'replaced', 'replaced', 'chosen',],
+                kinds: [['current',], ['current', 'splice', 'writer',], ['current', 'splice', 'writer',],],
+                notAsked: [
+                  'group 1: consistency-writers-not-asked (OCCURRENCE 1): the words that render the repeated wording lie in no '
+                    + 'single block of the English, so no paragraph can be rewritten',
+                ],
+              },
+              {
+                outcomes: ['kept-current', 'replaced', 'replaced', 'chosen',],
+                kinds: [['current',], ['current', 'splice', 'writer',], ['current', 'splice', 'writer',],],
+                notAsked: [
+                  'group 1: consistency-writers-not-asked (OCCURRENCE 1): the words that render the repeated wording lie in no '
+                    + 'single block of the English, so no paragraph can be rewritten',
+                ],
+              },
+            ],);
+          },
+        },),
       ],
     },),
   ],

@@ -296,7 +296,7 @@ await describe({
         );
         expect(refusals[2],).toBe(
           `translate-refused-declared-name (slice 2: archive text carries "${DECLARED_NAME}" and the `
-          + 'replacement does not; keeping the archive text)',
+            + 'replacement does not; keeping the archive text)',
         );
       },
     },),

@@ -32,8 +32,8 @@ export function assignmentValue(assignment: ForeignBorrowed<Assignment>,): strin
     return value.value;
   return value.elements
     .map(function wordValue(word: ForeignBorrowed<Word>,): string {
-    return word.value;
-  },)
+      return word.value;
+    },)
     .join(' ',);
 }
 

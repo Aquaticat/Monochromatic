@@ -36,7 +36,7 @@ const LIBRARY_FILE_SUFFIX = '.d.ts';
 const viewMembersByProgram = new WeakMap<
   Program,
   ReadonlyMap<string, ReadonlySet<string>>
->();
+  >();
 
 /**
  Collects member names declared on each default-library read-only view.

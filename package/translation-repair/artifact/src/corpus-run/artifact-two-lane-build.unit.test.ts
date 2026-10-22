@@ -276,9 +276,9 @@ await describe({
     it({
       name:
         'nests both lanes and puts NEITHER at the top level, which is the whole point of the generation: '
-        + 'leaving the repair fields where they were and appending a translate block would answer the '
-        + 'open question invisibly, since every existing reader would go on taking the top-level fields '
-        + 'as the output and never learn a second lane existed',
+          + 'leaving the repair fields where they were and appending a translate block would answer the '
+          + 'open question invisibly, since every existing reader would go on taking the top-level fields '
+          + 'as the output and never learn a second lane existed',
       fn: async () => {
         /**
          Artifact over both lanes.
@@ -286,9 +286,9 @@ await describe({
         const artifact = catArtifact();
         expect(Object.keys(artifact.lanes,)
           .toSorted(),).toEqual([
-          'repair',
-          'translate',
-        ],);
+            'repair',
+            'translate',
+          ],);
 
         // None of version 1's top-level lane fields survive.
         for (const absent of [
@@ -309,8 +309,8 @@ await describe({
     it({
       name:
         'says out loud that nobody has picked a lane, rather than leaving the field out: an absent winner '
-        + 'would make "not decided yet" and "written before anyone asked" the same absence, which is the '
-        + 'defect class this generation exists to end',
+          + 'would make "not decided yet" and "written before anyone asked" the same absence, which is the '
+          + 'defect class this generation exists to end',
       fn: async () => {
         expect(catArtifact().laneSelection,).toEqual({ kind: 'pending-human-decision', },);
       },
@@ -318,7 +318,7 @@ await describe({
     it({
       name:
         'DERIVES the preparation identity from the preparation rather than taking it, so the identity an '
-        + 'artifact records is the identity of the thing the artifact describes',
+          + 'artifact records is the identity of the thing the artifact describes',
       fn: async () => {
         /**
          Artifact over the cat preparation.
@@ -331,14 +331,14 @@ await describe({
         // resumed pass comparable with the one it resumed.
         expect(catArtifact().preparation
           .identity,).toBe(artifact.preparation
-          .identity,);
+            .identity,);
       },
     },),
     it({
       name:
         'DERIVES the comparison from the two ledgers rather than accepting one, since a comparison '
-        + 'supplied beside the ledgers it describes could disagree with them and a reader would have no '
-        + 'way to tell which of the two to believe',
+          + 'supplied beside the ledgers it describes could disagree with them and a reader would have no '
+          + 'way to tell which of the two to believe',
       fn: async () => {
         /**
          Artifact over one mended slice and one filled gap.
@@ -349,9 +349,9 @@ await describe({
           .map(function toVerdict(row,): string {
             return row.laneRelation;
           },),).toEqual([
-          'repair-only',
-          'translate-only',
-        ],);
+            'repair-only',
+            'translate-only',
+          ],);
 
         // And the anchor reads as the repair lane having had no work rather
         // than as the two lanes disagreeing about a wording.
@@ -364,8 +364,8 @@ await describe({
     it({
       name:
         'records the preparation ONCE, with the slice count both lanes are out of and both measures of '
-        + 'the original: the character count for reading a log and the byte count band classification '
-        + 'actually takes, which are routinely mistaken for each other',
+          + 'the original: the character count for reading a log and the byte count band classification '
+          + 'actually takes, which are routinely mistaken for each other',
       fn: async () => {
         /**
          Artifact over a two-slice preparation.
@@ -379,13 +379,13 @@ await describe({
         // the larger of the two and no reader can confuse them by value.
         expect(artifact.preparation
           .sourceBytes,).toBeGreaterThan(artifact.preparation
-          .sourceChars,);
+            .sourceChars,);
       },
     },),
     it({
       name:
         'REFUSES to build an artifact for a run whose two ledgers cannot be compared, because an entry '
-        + 'whose lanes disagree about their own preparation has nothing worth writing',
+          + 'whose lanes disagree about their own preparation has nothing worth writing',
       fn: async () => {
         /**
          Repair ledger whose anchor row agrees with the preparation on every
@@ -430,8 +430,8 @@ await describe({
     it({
       name:
         'REFUSES two ledgers that agree with each other and cover FEWER slices than the preparation, '
-        + 'which the comparison passes: it checks the two against each other, and a pair of equally '
-        + 'short ledgers line up perfectly while describing a document with slices missing',
+          + 'which the comparison passes: it checks the two against each other, and a pair of equally '
+          + 'short ledgers line up perfectly while describing a document with slices missing',
       fn: async () => {
         /**
          Both lanes truncated to the same single row, so nothing about them
@@ -478,8 +478,8 @@ await describe({
     it({
       name:
         'REFUSES a preparation the ledgers were not built over, which nothing else can catch: the '
-        + 'comparison proves the two ledgers agree with EACH OTHER, and two ledgers from some other '
-        + 'preparation agree with each other perfectly',
+          + 'comparison proves the two ledgers agree with EACH OTHER, and two ledgers from some other '
+          + 'preparation agree with each other perfectly',
       fn: async () => {
         /**
          Preparation whose first slice renders a different original, which is
@@ -528,7 +528,7 @@ await describe({
     it({
       name:
         'REFUSES a ledger whose rows contradict the preparation even when its NAME agrees, since an '
-        + 'equal identity is a hash claim and the per-slice facts are what every row is filed under',
+          + 'equal identity is a hash claim and the per-slice facts are what every row is filed under',
       fn: async () => {
         /**
          Renumbers a ledger's anchor row, so BOTH lanes name a slice the
@@ -591,8 +591,8 @@ await describe({
     it({
       name:
         'REFUSES a lane result counting slices the preparation does not have, which the ledger checks '
-        + 'cannot see: a driver result carrying one lane`s rows beside another lane`s result is '
-        + 'structurally valid and describes two different runs',
+          + 'cannot see: a driver result carrying one lane`s rows beside another lane`s result is '
+          + 'structurally valid and describes two different runs',
       fn: async () => {
         /**
          What resultCountsAnotherRun raised, read for its class as well as its wording.
@@ -627,8 +627,8 @@ await describe({
     it({
       name:
         'writes only the fields version 2 names, dropping anything a live record has grown since: '
-        + 'assignment into the frozen types accepts extra properties, JSON.stringify then serializes '
-        + 'them, and the version 2 parser rejects keys the schema does not describe',
+          + 'assignment into the frozen types accepts extra properties, JSON.stringify then serializes '
+          + 'them, and the version 2 parser rejects keys the schema does not describe',
       fn: async () => {
         /**
          Lanes whose rows, outcomes and deliveries each carry a field no
@@ -691,7 +691,7 @@ await describe({
     it({
       name:
         'OMITS the pairing where the preparation carries none, rather than writing an empty list: no '
-        + 'roster asked and a roster that agreed nothing are different facts, and an empty list is the second',
+          + 'roster asked and a roster that agreed nothing are different facts, and an empty list is the second',
       fn: async () => {
         expect(Object.hasOwn(
           catArtifact().preparation,
@@ -702,7 +702,7 @@ await describe({
     it({
       name:
         'WRITES the pairing the preparation was built on, section indices and all, so the decision no '
-        + 'later stage can repair survives the slice cache being discarded at settlement',
+          + 'later stage can repair survives the slice cache being discarded at settlement',
       fn: async () => {
         /**
          Preparation carrying a pairing, as the roster shell returns one.
@@ -738,25 +738,25 @@ await describe({
           consolidation: { kind: 'not-run', },
         },).preparation
           .blockPairing,).toEqual([{
-          sectionIndex: 1,
-          pairs: [
-            {
-              source: 0,
-              target: 0,
-            },
-            {
-              source: 1,
-              target: 0,
-            },
-          ],
-        },],);
+            sectionIndex: 1,
+            pairs: [
+              {
+                source: 0,
+                target: 0,
+              },
+              {
+                source: 1,
+                target: 0,
+              },
+            ],
+          },],);
       },
     },),
     it({
       name:
         'ALWAYS WRITES which decider chose the sections, as deterministic when the preparation consumed '
-        + 'no section pairing: unlike the block pairing, the deterministic path is the ordinary case, so '
-        + 'an omitted field could not tell "the aligner decided" from "written before the field"',
+          + 'no section pairing: unlike the block pairing, the deterministic path is the ordinary case, so '
+          + 'an omitted field could not tell "the aligner decided" from "written before the field"',
       fn: async () => {
         expect(catArtifact().preparation
           .sectionPairing,).toEqual({ kind: 'deterministic', },);
@@ -765,7 +765,7 @@ await describe({
     it({
       name:
         'WRITES the supplied section pairing the preparation was built on, pairs and all, since the block '
-        + 'pairing is keyed by aligned section and those keys only mean something under this alignment',
+          + 'pairing is keyed by aligned section and those keys only mean something under this alignment',
       fn: async () => {
         /**
          Preparation carrying a section pairing, as the roster shell returns
@@ -799,18 +799,18 @@ await describe({
           consolidation: { kind: 'not-run', },
         },).preparation
           .sectionPairing,).toEqual({
-          kind: 'supplied',
-          pairs: [
-            {
-              source: 0,
-              target: 0,
-            },
-            {
-              source: 2,
-              target: 1,
-            },
-          ],
-        },);
+            kind: 'supplied',
+            pairs: [
+              {
+                source: 0,
+                target: 0,
+              },
+              {
+                source: 2,
+                target: 1,
+              },
+            ],
+          },);
       },
     },),
   ],

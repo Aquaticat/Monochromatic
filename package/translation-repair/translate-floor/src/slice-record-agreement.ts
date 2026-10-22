@@ -39,7 +39,7 @@ export type SliceRecordLane =
   /**
    Translate lane, whose records are `TranslateSliceRecord`.
    */
-  | 'translate';
+    | 'translate';
 
 /**
  Contradiction between a settled record's `changed` flag and its text.

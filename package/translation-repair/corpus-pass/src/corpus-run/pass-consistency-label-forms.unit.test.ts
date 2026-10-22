@@ -303,8 +303,8 @@ await describe({
             },);
             expect(
               new Map(result.voices.map(function entryOf(voice,): [string, string] {
-              return [voice.seat, voice.choice,];
-            },),),
+                return [voice.seat, voice.choice,];
+              },),),
             ).toEqual(CANONICAL,);
             expect(persisted.map(function keyOf(entry,): string {
               return entry.key;

@@ -60,50 +60,50 @@ export type OperationOutcome =
      */
     readonly kind: 'ok';
   }
-  | {
+    | {
     /**
      `get` result:
      `value` is `undefined` exactly when `found` is `false`.
      */
-    readonly kind: 'value';
+      readonly kind: 'value';
     /**
      Whether the key resolved to a stored value.
      */
-    readonly found: boolean;
+      readonly found: boolean;
     /**
      Value read,
      normalized to plain `JSON`.
      */
-    readonly value: JsonValue | undefined;
-  }
-  | {
+      readonly value: JsonValue | undefined;
+    }
+    | {
     /**
      `has` result.
      */
-    readonly kind: 'boolean';
+      readonly kind: 'boolean';
     /**
      Probe answer.
      */
-    readonly value: boolean;
-  }
-  | {
+      readonly value: boolean;
+    }
+    | {
     /**
      Operation threw.
      */
-    readonly kind: 'threw';
+      readonly kind: 'threw';
     /**
      Thrown error's `name`.
      */
-    readonly errorName: string;
+      readonly errorName: string;
     /**
      Thrown error's base class.
      */
-    readonly errorBase: ErrorBase;
+      readonly errorBase: ErrorBase;
     /**
      Thrown error's `message`.
      */
-    readonly errorMessage: string;
-  };
+      readonly errorMessage: string;
+    };
 
 /**
  Observable record of one operation-sequence run.
@@ -500,11 +500,11 @@ function runSequence(
    */
   const outcomes = sequence.operations
     .map(function observeOne(operation: StoreOperation,): OperationOutcome {
-    return observeOperation({
-      surface,
-      operation,
+      return observeOperation({
+        surface,
+        operation,
+      },);
     },);
-  },);
   /**
    Parsed config-file contents after the sequence,
    or the absent marker.

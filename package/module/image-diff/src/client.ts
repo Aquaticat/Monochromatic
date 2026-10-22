@@ -83,9 +83,9 @@ export async function embed({
     ?? 'voyage';
   return getProvider(provider,)
     .embed({
-    input,
-    config,
-  },);
+      input,
+      config,
+    },);
 }
 
 /**
@@ -122,9 +122,9 @@ export async function embedBatch({
     ?? 'voyage';
   return getProvider(provider,)
     .embedBatch({
-    inputs,
-    config,
-  },);
+      inputs,
+      config,
+    },);
 }
 
 /**
@@ -178,12 +178,12 @@ export async function compareEmbeddings({
    */
   const { embeddings, } = await getProvider(provider,)
     .embedBatch({
-    inputs: [
-      imageA,
-      imageB,
-    ],
-    config,
-  },);
+      inputs: [
+        imageA,
+        imageB,
+      ],
+      config,
+    },);
   /**
    Pair of embeddings destructured for the dot-product call; guarded against a malformed batch result.
    */

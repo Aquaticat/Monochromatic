@@ -16,30 +16,30 @@ import type { MatcherSet, } from './expect-matchers.ts';
 export type CoreMatcherSet = Pick<
   MatcherSet,
   | 'toBe'
-  | 'toEqual'
-  | 'toContain'
-  | 'toContainEqual'
-  | 'toThrow'
-  | 'toBeCloseTo'
-  | 'toBeGreaterThan'
-  | 'toBeGreaterThanOrEqual'
-  | 'toBeLessThan'
-  | 'toBeLessThanOrEqual'
-  | 'toBeDefined'
-  | 'toBeUndefined'
-  | 'toBeNaN'
-  | 'toBeNull'
-  | 'toBeTruthy'
-  | 'toBeFalsy'
-  | 'toBeTypeOf'
-  | 'toHaveLength'
-  | 'toHaveProperty'
-  | 'toMatch'
-  | 'toMatchObject'
-  | 'toBeInstanceOf'
-  | 'toSatisfy'
-  | 'toStrictEqual'
->;
+    | 'toEqual'
+    | 'toContain'
+    | 'toContainEqual'
+    | 'toThrow'
+    | 'toBeCloseTo'
+    | 'toBeGreaterThan'
+    | 'toBeGreaterThanOrEqual'
+    | 'toBeLessThan'
+    | 'toBeLessThanOrEqual'
+    | 'toBeDefined'
+    | 'toBeUndefined'
+    | 'toBeNaN'
+    | 'toBeNull'
+    | 'toBeTruthy'
+    | 'toBeFalsy'
+    | 'toBeTypeOf'
+    | 'toHaveLength'
+    | 'toHaveProperty'
+    | 'toMatch'
+    | 'toMatchObject'
+    | 'toBeInstanceOf'
+    | 'toSatisfy'
+    | 'toStrictEqual'
+  >;
 
 /**
  Builds the core value-comparison matcher subset from a chai Assertion
@@ -75,9 +75,9 @@ export function buildCoreMatchers(
        @mutates expected - `a.to.equal` may inspect caller getters or proxy traps.
        */
       function toBe(expected: unknown,): void {
-      a.to
-        .equal(expected,);
-    },
+        a.to
+          .equal(expected,);
+      },
 
     toEqual:
       /**
@@ -88,10 +88,10 @@ export function buildCoreMatchers(
        @mutates expected - `a.to.deep.equal` may inspect caller getters or proxy traps.
        */
       function toEqual(expected: unknown,): void {
-      a.to
-        .deep
-        .equal(expected,);
-    },
+        a.to
+          .deep
+          .equal(expected,);
+      },
 
     toContain:
       /**
@@ -102,9 +102,9 @@ export function buildCoreMatchers(
        @mutates expected - `a.to.include` may inspect caller getters or proxy traps.
        */
       function toContain(expected: unknown,): void {
-      a.to
-        .include(expected,);
-    },
+        a.to
+          .include(expected,);
+      },
 
     toContainEqual:
       /**
@@ -115,10 +115,10 @@ export function buildCoreMatchers(
        @mutates expected - `a.to.deep.include` may inspect caller getters or proxy traps.
        */
       function toContainEqual(expected: unknown,): void {
-      a.to
-        .deep
-        .include(expected,);
-    },
+        a.to
+          .deep
+          .include(expected,);
+      },
 
     toThrow:
       /**
@@ -129,21 +129,21 @@ export function buildCoreMatchers(
        @mutates expected - `a.to.throw` may inspect regular-expression or constructor hooks.
        */
       function toThrow(
-      expected?: string | RegExp | (abstract new(...args: never) => unknown),
-    ): void {
-      if (expected === undefined) {
-        a.to
-          .throw();
-      }
-      else if (((typeof expected) === 'string') || (expected instanceof RegExp)) {
-        a.to
-          .throw(expected,);
-      }
-      else {
-        a.to
-          .throw(expected,);
-      }
-    },
+        expected?: string | RegExp | (abstract new(...args: never) => unknown),
+      ): void {
+        if (expected === undefined) {
+          a.to
+            .throw();
+        }
+        else if (((typeof expected) === 'string') || (expected instanceof RegExp)) {
+          a.to
+            .throw(expected,);
+        }
+        else {
+          a.to
+            .throw(expected,);
+        }
+      },
 
     toBeCloseTo: function toBeCloseTo(
       expected: number,
@@ -169,7 +169,7 @@ export function buildCoreMatchers(
         .closeTo(
         expected,
         delta,
-      );
+        );
     },
 
     toBeGreaterThan: function toBeGreaterThan(expected: number,): void {
@@ -268,25 +268,25 @@ export function buildCoreMatchers(
        @mutates value - `a.to.have.nested.property` may inspect caller getters or proxy traps.
        */
       function toHaveProperty(
-      path: string,
-      value?: unknown,
-    ): void {
-      if (value !== undefined) {
-        a.to
-          .have
-          .nested
-          .property(
-          path,
-          value,
-        );
-      }
-      else {
-        a.to
-          .have
-          .nested
-          .property(path,);
-      }
-    },
+        path: string,
+        value?: unknown,
+      ): void {
+        if (value !== undefined) {
+          a.to
+            .have
+            .nested
+            .property(
+            path,
+            value,
+            );
+        }
+        else {
+          a.to
+            .have
+            .nested
+            .property(path,);
+        }
+      },
 
     toMatch: function toMatch(expected: string | RegExp,): void {
       a.to
@@ -303,10 +303,10 @@ export function buildCoreMatchers(
        @mutates expected - `a.to.deep.include` may inspect caller getters or proxy traps.
        */
       function toMatchObject(expected: Readonly<Record<string, unknown>>,): void {
-      a.to
-        .deep
-        .include(expected,);
-    },
+        a.to
+          .deep
+          .include(expected,);
+      },
 
     toBeInstanceOf:
       /**
@@ -317,12 +317,12 @@ export function buildCoreMatchers(
        @mutates expected - `a.to.be.instanceOf` may inspect caller constructor hooks.
        */
       function toBeInstanceOf(
-      expected: abstract new(...args: never) => unknown,
-    ): void {
-      a.to
-        .be
-        .instanceOf(expected,);
-    },
+        expected: abstract new(...args: never) => unknown,
+      ): void {
+        a.to
+          .be
+          .instanceOf(expected,);
+      },
 
     toSatisfy:
       /**
@@ -333,9 +333,9 @@ export function buildCoreMatchers(
        @mutates predicate - `a.to.satisfy` invokes caller-provided capability.
        */
       function toSatisfy(predicate: (value: unknown,) => boolean,): void {
-      a.to
-        .satisfy(predicate,);
-    },
+        a.to
+          .satisfy(predicate,);
+      },
 
     toStrictEqual:
       /**
@@ -346,9 +346,9 @@ export function buildCoreMatchers(
        @mutates expected - `a.to.deep.equal` may inspect caller getters or proxy traps.
        */
       function toStrictEqual(expected: unknown,): void {
-      a.to
-        .deep
-        .equal(expected,);
-    },
+        a.to
+          .deep
+          .equal(expected,);
+      },
   };
 }

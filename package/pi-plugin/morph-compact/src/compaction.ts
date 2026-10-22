@@ -102,7 +102,7 @@ export function chooseCompressionRatio(
    */
   const fraction = contextUsage.tokens
     / contextUsage
-    .contextWindow;
+      .contextWindow;
   if (fraction > THRESHOLD_CRITICAL)
     return RATIO_CRITICAL;
   if (fraction > THRESHOLD_HIGH)
@@ -216,8 +216,8 @@ export async function attemptMorphCompaction(
     ...((customInstructions !== undefined) ? { customInstructions, } : {}),
   },)
     .slice(
-      0,
-      MAX_QUERY_LENGTH,
+    0,
+    MAX_QUERY_LENGTH,
     );
   /**
    Adaptive compression ratio derived from current context pressure.

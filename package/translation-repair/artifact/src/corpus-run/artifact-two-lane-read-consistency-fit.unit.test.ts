@@ -185,8 +185,8 @@ function unaskedGroup(
     ...asked,
     occurrences: asked.occurrences
       .slice(
-        0,
-        places,
+      0,
+      places,
       )
       .map(function saysNotAsked(place,): ArtifactConsistencyOccurrence {
         return {
@@ -222,7 +222,7 @@ await describe({
               group: withPlace({ group: napsGroup(), position: 1, over: { label: 'OCCURRENCE 3', }, },),
             },),).toBe(
               'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1].label: '
-              + 'expected the label OCCURRENCE 2, since the places are labelled in order.',
+                + 'expected the label OCCURRENCE 2, since the places are labelled in order.',
             );
           },
         },),
@@ -231,7 +231,7 @@ await describe({
           fn: async () => {
             expect(fitRefusal({ group: napsGroup(), sliceIndexes: new Set([0, 1,],), },),).toBe(
               'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[2].sliceIndex: '
-              + 'expected a slice the comparison names.',
+                + 'expected a slice the comparison names.',
             );
           },
         },),
@@ -337,9 +337,9 @@ await describe({
               },),
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1].rendering: '
-              + 'expected a slot in the rendering of a place of a frame, and in no other.',
+                + 'expected a slot in the rendering of a place of a frame, and in no other.',
               'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1].rendering: '
-              + 'expected a slot in the rendering of a place of a frame, and in no other.',
+                + 'expected a slot in the rendering of a place of a frame, and in no other.',
             ],);
           },
         },),
@@ -366,9 +366,9 @@ await describe({
             ],).toEqual([
               undefined,
               'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1].rendering: '
-              + 'expected a slot in the rendering of a place of a frame, and in no other.',
+                + 'expected a slot in the rendering of a place of a frame, and in no other.',
               'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1].rendering: '
-              + 'expected a slot in the rendering of a place of a frame only.',
+                + 'expected a slot in the rendering of a place of a frame only.',
             ],);
           },
         },),
@@ -465,7 +465,7 @@ await describe({
               }),
             },),).toBe(
               'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1].sliceIndex: '
-              + 'expected a slice of its own, since the pass asks the bench when two places stand in one slice.',
+                + 'expected a slice of its own, since the pass asks the bench when two places stand in one slice.',
             );
             expect(fitRead({
               group: withPlace({
@@ -512,13 +512,13 @@ await describe({
               },),
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[1]: expected a place with outcome '
-              + 'consistent and no rendering looked for, since the bench was not asked.',
+                + 'consistent and no rendering looked for, since the bench was not asked.',
               'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[2]: expected a place with outcome '
-              + 'untouched and no rendering looked for, since the bench was not asked.',
+                + 'untouched and no rendering looked for, since the bench was not asked.',
               'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[0]: expected a place with outcome '
-              + 'untouched and no rendering looked for, since the bench was not asked.',
+                + 'untouched and no rendering looked for, since the bench was not asked.',
               'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[0]: expected a place with outcome '
-              + 'untouched and no rendering looked for, since the bench was not asked.',
+                + 'untouched and no rendering looked for, since the bench was not asked.',
             ],);
           },
         },),
@@ -532,7 +532,7 @@ await describe({
               },
             },),).toBe(
               'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences[0]: expected a place with outcome '
-              + 'untouched and no rendering looked for, since the bench was not asked.',
+                + 'untouched and no rendering looked for, since the bench was not asked.',
             );
           },
         },),
@@ -544,7 +544,7 @@ await describe({
               group: unaskedGroup({ reason: 'too-few-placed', outcome: 'untouched', places: 2, }),
             },),).toBe(
               'ArtifactParseError: artifact parse failed at cat.groups[0].occurrences: '
-              + 'expected fewer than two places, since the group was skipped for too few.',
+                + 'expected fewer than two places, since the group was skipped for too few.',
             );
             expect(fitRead({
               group: unaskedGroup({ reason: 'no-english', outcome: 'untouched', places: 2, }),

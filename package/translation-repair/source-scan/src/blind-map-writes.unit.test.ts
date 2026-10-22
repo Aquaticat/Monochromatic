@@ -505,22 +505,22 @@ const ALLOWED_BLIND_SETS: ReadonlyMap<string, string> = new Map<string, string>(
   [
     'consistency/consistency-folded-links.ts#foldedLinksOf: emptyStarts.set(last,...)',
     'the key is the folded unit of the last character of a link the parse positions, and no two links end at the same character '
-    + 'of the English, since a link ends where its own closing bracket stands',
+      + 'of the English, since a link ends where its own closing bracket stands',
   ],
   [
     'consistency/consistency-folded-links.ts#foldedLinksOf: emptyEnds.set(first,...)',
     'the key is the folded unit of the first character of a link the parse positions, and no two links start at the same character '
-    + 'of the English, since a link starts where its own opening bracket stands',
+      + 'of the English, since a link starts where its own opening bracket stands',
   ],
   [
     'consistency/consistency-folded-links.ts#foldedLinksOf: closingSpans.set(first,...)',
     'the key is the folded unit of the first character of a link the parse positions, and no two links start at the same character '
-    + 'of the English, since a link starts where its own opening bracket stands',
+      + 'of the English, since a link starts where its own opening bracket stands',
   ],
   [
     'consistency/consistency-link-twin.ts#settlePending: removedBefore.set(units.length,...)',
     'the key is the number of units the twin holds when the links taken out are settled, which grows with the next unit written, so '
-    + 'no two settlements share a key',
+      + 'no two settlements share a key',
   ],
   [
     'consistency/consistency-page-english.ts#pageOfSlices: offsets.set(slice.sliceIndex,...)',
@@ -529,7 +529,7 @@ const ALLOWED_BLIND_SETS: ReadonlyMap<string, string> = new Map<string, string>(
   [
     'consistency/consistency-page-english.ts#laidOutPage: byIndex.set(entry.sliceIndex,...)',
     'one write per place the assembly reports, and it reports each replacement once, since a slice holds at most one '
-    + 'replacement and `assertSliceIndexing` holds the indexes of the list distinct',
+      + 'replacement and `assertSliceIndexing` holds the indexes of the list distinct',
   ],
   [
     'consistency/consistency-page-english.ts#laidOutPage: offsets.set(sliceIndex,...)',
@@ -538,7 +538,7 @@ const ALLOWED_BLIND_SETS: ReadonlyMap<string, string> = new Map<string, string>(
   [
     'consistency/consistency-page-english.ts#laidOutPage: shipped.set(sliceIndex,...)',
     'one write per replacement of the list the assembly was just given, and the assembly refuses two replacements naming one '
-    + 'slice before this write runs',
+      + 'slice before this write runs',
   ],
   [
     'consistency/consistency-page-english.ts#pageOfSlices: shipped.set(slice.sliceIndex,...)',
@@ -615,24 +615,24 @@ const ALLOWED_BLIND_SETS: ReadonlyMap<string, string> = new Map<string, string>(
   [
     'corpus-pass/corpus-run/pass-consistency-apply-gains.ts#gainedBy: sides.set(edit.id,...)',
     'the id names a group and a place, a place belongs to exactly one replacement, and a slice lists each replacement '
-    + 'once, so each id is written once',
+      + 'once, so each id is written once',
   ],
   [
     'corpus-pass/corpus-run/pass-consistency-apply.ts#recordGaveWay: gaveWayTo.set(key,...)',
     'the key names a group and a place, a place belongs to exactly one replacement, a replacement lies in one slice and '
-    + 'the loop visits each slice once, and a replacement is either left out for changing another group\'s words or '
-    + 'overlapped by an earlier one and never both, so each key is written once',
+      + 'the loop visits each slice once, and a replacement is either left out for changing another group\'s words or '
+      + 'overlapped by an earlier one and never both, so each key is written once',
   ],
   [
     'corpus-pass/corpus-run/pass-consistency-apply.ts#recordKept: keptBecause.set(key,...)',
     'the key names a group and a place, a place belongs to exactly one replacement, a replacement lies in one slice and '
-    + 'the loop visits each slice once, and a replacement is left out once and given one reason, so each key is written once',
+      + 'the loop visits each slice once, and a replacement is left out once and given one reason, so each key is written once',
   ],
   [
     'corpus-pass/corpus-run/pass-consistency-apply.ts#recordOutcome: outcomes.set(key,...)',
     'the key names a group and a place, a place belongs to exactly one replacement, a replacement lies in one slice and '
-    + 'the loop visits each slice once, and a replacement is either left out or applied and never both, so each key is '
-    + 'written once',
+      + 'the loop visits each slice once, and a replacement is either left out or applied and never both, so each key is '
+      + 'written once',
   ],
   [
     'corpus-pass/corpus-run/pass-seated-pictures.ts#readPictures: priorReadings.set(name,...)',
@@ -641,7 +641,7 @@ const ALLOWED_BLIND_SETS: ReadonlyMap<string, string> = new Map<string, string>(
   [
     'run/corpus-run/run-end-report.ts#registerRunEndReport: registered.set(key,...)',
     'a report registered again under its key replaces the earlier one on purpose, so a run that builds its client twice '
-    + 'reports once, from the client that is current',
+      + 'reports once, from the client that is current',
   ],
   [
     'glossary/corpus-run/prose-ranges.ts#inlineCodeSpans: spans.set(bodyOffset+nonNullishOrThrow(node.position?.star,...)',

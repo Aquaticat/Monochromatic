@@ -6,13 +6,13 @@
  */
 export type PackageManager =
   | 'apk'
-  | 'apt'
-  | 'brew'
-  | 'choco'
-  | 'dnf'
-  | 'pacman'
-  | 'scoop'
-  | 'zypper';
+    | 'apt'
+    | 'brew'
+    | 'choco'
+    | 'dnf'
+    | 'pacman'
+    | 'scoop'
+    | 'zypper';
 
 //endregion Package manager identifiers
 

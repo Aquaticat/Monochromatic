@@ -229,14 +229,14 @@ export function stripChannelMarker(
    */
   const consumed = Array.from({ length: MARKER_RUN_LIMIT, },)
     .reduce(
-      function extend(width: number,): number {
+    function extend(width: number,): number {
         /**
          Width of the next marker, zero once the run has ended.
          */
-        const next = markerWidth({ text: trimmed.slice(width,), },);
-        return (next === 0) ? width : (width + next);
-      },
-      0,
+      const next = markerWidth({ text: trimmed.slice(width,), },);
+      return (next === 0) ? width : (width + next);
+    },
+    0,
     );
 
   if (consumed === 0)

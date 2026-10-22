@@ -133,8 +133,8 @@ await describe({
     it({
       name:
         'records both halves of a free-text exchange and keeps the server`s own total rather than recomputing it, '
-        + 'so a server stating a total its two halves do not add up to is priced as it billed '
-        + 'rather than as the bench would have derived',
+          + 'so a server stating a total its two halves do not add up to is priced as it billed '
+          + 'rather than as the bench would have derived',
       fn: async () => {
         /**
          Wrapper over a server reporting a total larger than both halves.
@@ -164,7 +164,7 @@ await describe({
     it({
       name:
         'falls back to the sum of both halves when the server states no total, '
-        + 'and records zeros rather than a guess when it reports no usage at all',
+          + 'and records zeros rather than a guess when it reports no usage at all',
       fn: async () => {
         /**
          Wrapper over a server that omits the total.
@@ -198,7 +198,7 @@ await describe({
     it({
       name:
         'names a schema exchange by the schema it asked for, and carries the outcome kind through, '
-        + 'so a refusal costs its tokens on the row that says it refused',
+          + 'so a refusal costs its tokens on the row that says it refused',
       fn: async () => {
         /**
          Wrapper over a server refusing the ballot.
@@ -224,7 +224,7 @@ await describe({
     it({
       name:
         'records a throw as a row of its own and rethrows it, because a transport failure after retries '
-        + 'is the commonest cost under provider load and a wrapper that swallowed it would report a cheaper run than happened',
+          + 'is the commonest cost under provider load and a wrapper that swallowed it would report a cheaper run than happened',
       fn: async () => {
         /**
          Wrapper over a server that drops the connection.

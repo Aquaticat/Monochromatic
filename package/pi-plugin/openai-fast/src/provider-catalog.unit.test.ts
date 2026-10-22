@@ -88,7 +88,7 @@ await describe({ name: '', children: [
       const adapter = createPriorityProvider({ provider: bootstrap.provider,
         isConfigured: function isConfigured() { return Promise.resolve(true,); },
         getProvider: function getProvider() { catalogState.reads += 1;
-        return live.provider; },
+          return live.provider; },
         lookup: function lookup(id) { return live.state.models.find(function matchesModel(model: ForeignBorrowed<Model<Api>>) {
           return model.id === id;
         },); },

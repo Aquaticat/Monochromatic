@@ -73,10 +73,10 @@ function transformAtPath({
      */
     const matchIndex = node.entries
       .findLastIndex(function matchesKey(entry,): boolean {
-      return entry.key
-        .value
-        === segment;
-    },);
+        return entry.key
+          .value
+          === segment;
+      },);
     if (matchIndex === (-1))
       throw new JsoncPathNotFoundError({ path, },);
     /**
@@ -87,16 +87,16 @@ function transformAtPath({
       ...node,
       entries: node.entries
         .with(
-          matchIndex,
-          {
-            key: entry.key,
-            value: transformAtPath({
-              node: entry.value,
-              path,
-              pathIndex: pathIndex + 1,
-              transform,
-            },),
-          },
+        matchIndex,
+        {
+          key: entry.key,
+          value: transformAtPath({
+            node: entry.value,
+            path,
+            pathIndex: pathIndex + 1,
+            transform,
+          },),
+        },
         ),
     };
   }
@@ -105,7 +105,7 @@ function transformAtPath({
       throw new JsoncPathNotFoundError({ path, },);
     if ((segment < 0) || (segment
       >= node.elements
-      .length))
+        .length))
       throw new JsoncPathNotFoundError({ path, },);
     /**
      Matched element rebuilt while siblings retain identity.
@@ -115,13 +115,13 @@ function transformAtPath({
       ...node,
       elements: node.elements
         .with(
-          segment,
-          transformAtPath({
-            node: element,
-            path,
-            pathIndex: pathIndex + 1,
-            transform,
-          },),
+        segment,
+        transformAtPath({
+          node: element,
+          path,
+          pathIndex: pathIndex + 1,
+          transform,
+        },),
         ),
     };
   }
@@ -262,10 +262,10 @@ export function jsoncGetKeyComment({
    */
   const entry = parent.entries
     .findLast(function matchesKey(candidate,): boolean {
-    return candidate.key
-      .value
-      === key;
-  },);
+      return candidate.key
+        .value
+        === key;
+    },);
   if (entry === undefined)
     throw new JsoncPathNotFoundError({ path, },);
   return entry.key
@@ -322,10 +322,10 @@ export function jsoncSetKeyComment({
          */
         const matchIndex = parent.entries
           .findLastIndex(function matchesKey(entry,): boolean {
-          return entry.key
-            .value
-            === key;
-        },);
+            return entry.key
+              .value
+              === key;
+          },);
         if (matchIndex === (-1))
           throw new JsoncPathNotFoundError({ path, },);
         /**
@@ -336,14 +336,14 @@ export function jsoncSetKeyComment({
           ...parent,
           entries: parent.entries
             .with(
-              matchIndex,
-              {
-                key: {
-                  ...entry.key,
-                  comment,
-                },
-                value: entry.value,
+            matchIndex,
+            {
+              key: {
+                ...entry.key,
+                comment,
               },
+              value: entry.value,
+            },
             ),
         };
       },

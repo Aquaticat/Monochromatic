@@ -74,7 +74,7 @@ export type CachedReference =
     readonly kind: 'hit';
     readonly record: ReferenceRecord;
   }
-  | { readonly kind: 'miss'; };
+    | { readonly kind: 'miss'; };
 
 /**
  Cache directory: the lookup cache's reference subdirectory, so the lookup
@@ -126,8 +126,8 @@ export function referenceCachePath(
    */
   const digest = createHash('sha256',)
     .update(
-      url,
-      'utf8',
+    url,
+    'utf8',
     )
     .digest('hex',);
   return join(

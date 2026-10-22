@@ -15,20 +15,20 @@ const MODEL_DEFAULTS: Record<
     readonly latestVersion: string;
     readonly defaultContext: string;
   }
-> = {
-  Opus: {
-    latestVersion: '4.8',
-    defaultContext: '1M',
-  },
-  Sonnet: {
-    latestVersion: '4.6',
-    defaultContext: '200K',
-  },
-  Haiku: {
-    latestVersion: '4.5',
-    defaultContext: '200K',
-  },
-};
+  > = {
+    Opus: {
+      latestVersion: '4.8',
+      defaultContext: '1M',
+    },
+    Sonnet: {
+      latestVersion: '4.6',
+      defaultContext: '200K',
+    },
+    Haiku: {
+      latestVersion: '4.5',
+      defaultContext: '200K',
+    },
+  };
 
 //endregion Defaults
 

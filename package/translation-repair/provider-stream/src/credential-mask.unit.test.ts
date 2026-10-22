@@ -108,8 +108,8 @@ function percentAll(
       const hex = (unit.codePointAt(0,) ?? 0)
         .toString(16,)
         .padStart(
-          2,
-          '0',
+        2,
+        '0',
         );
       return `%${lower ? hex : hex.toUpperCase()}`;
     },)
@@ -147,8 +147,8 @@ function unicodeAll(
       const hex = (unit.codePointAt(0,) ?? 0)
         .toString(16,)
         .padStart(
-          4,
-          '0',
+        4,
+        '0',
         );
       return String.raw`\u${lower ? hex : hex.toUpperCase()}`;
     },)
@@ -575,9 +575,9 @@ await describe({
         expect(encoded.includes('/',),).toBe(true,);
         expect(
           JSON.parse(maskCredentials({
-          text,
-          credentials: [slashKey, WHISKER_KEY,],
-        },),),
+            text,
+            credentials: [slashKey, WHISKER_KEY,],
+          },),),
         ).toEqual({
           url: `https://example.test/?key=${CREDENTIAL_MARKER}`,
           run: `${encoded.slice(0, 1,)}${CREDENTIAL_MARKER}`,

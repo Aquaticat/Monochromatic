@@ -157,11 +157,11 @@ if (found.files
 const weights: PageWeight[] = await Promise.all(
   found.files
     .map(function weigh(htmlPath: string,): Promise<PageWeight> {
-    return weighPage({
-      htmlPath,
-      root,
-    },);
-  },),
+      return weighPage({
+        htmlPath,
+        root,
+      },);
+    },),
 );
 
 /**
@@ -173,7 +173,7 @@ const sorted = weights.toSorted(function byTotalDescending(
 ): number {
   return b.totalBytes
     - a
-    .totalBytes;
+      .totalBytes;
 },);
 
 /**

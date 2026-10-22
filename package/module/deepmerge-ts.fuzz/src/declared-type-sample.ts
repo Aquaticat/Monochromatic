@@ -186,17 +186,17 @@ function objectOf(entries: readonly Entry[],): Sampled {
     value: Object.defineProperties(
       {},
       Object.fromEntries(entries.map(function toDescriptor(entry: Entry,) {
-      return [
-        entry.key,
-        {
-          configurable: true,
-          enumerable: true,
-          value: entry.sampled
-            .value,
-          writable: true,
-        },
-      ];
-    },),),
+        return [
+          entry.key,
+          {
+            configurable: true,
+            enumerable: true,
+            value: entry.sampled
+              .value,
+            writable: true,
+          },
+        ];
+      },),),
     ),
   };
 }
@@ -252,23 +252,23 @@ function sampleEntries(node: ObjectNode,): Arbitrary<readonly Entry[]> {
     /**
      Whether this property may be omitted under the wrapper.
      */
-    const omittable = (node.wrapper === 'partial') || (prop.optional && (node.wrapper !== 'required'));
+      const omittable = (node.wrapper === 'partial') || (prop.optional && (node.wrapper !== 'required'));
     /**
      Present entry arbitrary.
      */
-    const present = sampleValue(prop.type,)
-      .map(function toEntry(sampled: Sampled,): readonly Entry[] {
-      return [entryOf({
-        key: prop.key,
-        sampled,
-        symbolKey: prop.symbolKey,
-      },),];
+      const present = sampleValue(prop.type,)
+        .map(function toEntry(sampled: Sampled,): readonly Entry[] {
+          return [entryOf({
+            key: prop.key,
+            sampled,
+            symbolKey: prop.symbolKey,
+          },),];
+        },);
+      return omittable ? oneof(
+        constant<readonly Entry[]>([],),
+        present,
+      ) : present;
     },);
-    return omittable ? oneof(
-      constant<readonly Entry[]>([],),
-      present,
-    ) : present;
-  },);
   /**
    Extra index-signature entries.
    */
@@ -289,14 +289,14 @@ function sampleEntries(node: ObjectNode,): Arbitrary<readonly Entry[]> {
       },
     )
       .map(function toEntries(pairs: readonly KeyedSample<string>[],) {
-      return pairs.map(function toEntry([key, sampled,]: KeyedSample<string>,) {
-        return entryOf({
-          key,
-          sampled,
-          symbolKey: key === 'SYM_INDEX',
+        return pairs.map(function toEntry([key, sampled,]: KeyedSample<string>,) {
+          return entryOf({
+            key,
+            sampled,
+            symbolKey: key === 'SYM_INDEX',
+          },);
         },);
       },);
-    },);
   return tuple(
     tuple(...props,),
     extras,
@@ -305,11 +305,11 @@ function sampleEntries(node: ObjectNode,): Arbitrary<readonly Entry[]> {
       readonly (readonly Entry[])[],
       readonly Entry[]
     ],) {
-    return [
-      ...declared.flat(),
-      ...extra,
-    ];
-  },);
+      return [
+        ...declared.flat(),
+        ...extra,
+      ];
+    },);
 }
 
 /**
@@ -395,19 +395,19 @@ function sampleMap(node: Extract<TypeNode, { readonly kind: 'map'; }>,): Arbitra
     },
   )
     .map(function toMap(entries: readonly KeyedSample<number | string>[],): Sampled {
-    return {
-      source: `new Map<${node.keyKind}, ${emitType(node.value,)}>([${entries.map(function entrySource([key, sampled,]: KeyedSample<number | string>,) {
+      return {
+        source: `new Map<${node.keyKind}, ${emitType(node.value,)}>([${entries.map(function entrySource([key, sampled,]: KeyedSample<number | string>,) {
         return `[${JSON.stringify(key,)}, ${sampled.source}]`;
       },)
         .join(', ',)}])`,
-      value: new Map(entries.map(function entryValue([key, sampled,]: KeyedSample<number | string>,) {
-        return [
-          key,
-          sampled.value,
-        ];
-      },),),
-    };
-  },);
+        value: new Map(entries.map(function entryValue([key, sampled,]: KeyedSample<number | string>,) {
+          return [
+            key,
+            sampled.value,
+          ];
+        },),),
+      };
+    },);
 }
 
 /**
@@ -455,15 +455,15 @@ export function sampleValue(node: TypeNode,): Arbitrary<Sampled> {
       'y',
     )
       .map(function toRegExp(pattern: string,): Sampled {
-      return {
-        source: `new RegExp(${JSON.stringify(pattern,)}, "gu")`,
+        return {
+          source: `new RegExp(${JSON.stringify(pattern,)}, "gu")`,
         // oxlint-disable-next-line no-restricted-syntax/no-regex -- a RegExp object is the leaf value under test; its one-letter pattern is never matched against input.
-        value: new RegExp(
-          pattern,
-          'gu',
-        ),
-      };
-    },);
+          value: new RegExp(
+            pattern,
+            'gu',
+          ),
+        };
+      },);
   }
   if ((node.kind === 'array') || (node.kind === 'tuple')
     || (node.kind === 'set'))
@@ -476,33 +476,33 @@ export function sampleValue(node: TypeNode,): Arbitrary<Sampled> {
   if (node.kind === 'record') {
     return tuple(...node.keys
       .map(function entry(key: string,) {
-      return sampleValue(node.value,)
-        .map(function toEntry(sampled: Sampled,) {
-        return entryOf({
-          key,
-          sampled,
-          symbolKey: false,
-        },);
-      },);
-    },),)
+        return sampleValue(node.value,)
+          .map(function toEntry(sampled: Sampled,) {
+            return entryOf({
+              key,
+              sampled,
+              symbolKey: false,
+            },);
+          },);
+      },),)
       .map(objectOf,);
   }
   if (node.kind === 'box') {
     return sampleValue(node.inner,)
       .map(function toBox(inner: Sampled,) {
-      return objectOf([
-        entryOf({
-          key: 'v',
-          sampled: inner,
-          symbolKey: false,
-        },),
-        entryOf({
-          key: 'tag',
-          sampled: scalar('s',),
-          symbolKey: false,
-        },),
-      ],);
-    },);
+        return objectOf([
+          entryOf({
+            key: 'v',
+            sampled: inner,
+            symbolKey: false,
+          },),
+          entryOf({
+            key: 'tag',
+            sampled: scalar('s',),
+            symbolKey: false,
+          },),
+        ],);
+      },);
   }
   if (node.kind === 'intersection') {
     return tuple(
@@ -513,11 +513,11 @@ export function sampleValue(node: TypeNode,): Arbitrary<Sampled> {
         readonly Entry[],
         readonly Entry[]
       ],) {
-      return objectOf([
-        ...left,
-        ...right,
-      ],);
-    },);
+        return objectOf([
+          ...left,
+          ...right,
+        ],);
+      },);
   }
   // LeafNode's kind is itself a union, so the chain cannot narrow node to never; check the last kind explicitly.
   if (node.kind !== 'object')

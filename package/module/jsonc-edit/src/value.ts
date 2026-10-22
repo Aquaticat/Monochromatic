@@ -164,9 +164,9 @@ export type JsoncPlainJson = {
  */
 export type JsoncValue =
   | JsoncString
-  | JsoncNumber
-  | JsoncBoolean
-  | JsoncNull
-  | JsoncArray
-  | JsoncRecord
-  | JsoncPlainJson;
+    | JsoncNumber
+    | JsoncBoolean
+    | JsoncNull
+    | JsoncArray
+    | JsoncRecord
+    | JsoncPlainJson;

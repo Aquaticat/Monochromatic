@@ -293,10 +293,10 @@ await describe({
     it({
       name:
         'SHIPS THE PRODUCER\'S OWN LINES ON A LINE-STRUCTURED SLICE, which is the fixture the '
-        + 'audit owed and could only read off the code. The standing text here is FLAT, so wrapping '
-        + 'it for comparison reproduces exactly the lines a producer obeying the rule emits; the '
-        + 'wrapped path then demotes on that collision and ships the flat text, discarding the exact '
-        + 'repair the rule demands. Measured against the code before the skip, not inferred from it',
+          + 'audit owed and could only read off the code. The standing text here is FLAT, so wrapping '
+          + 'it for comparison reproduces exactly the lines a producer obeying the rule emits; the '
+          + 'wrapped path then demotes on that collision and ships the flat text, discarding the exact '
+          + 'repair the rule demands. Measured against the code before the skip, not inferred from it',
       fn: async () => {
         const shipped = wrapConsolidation({
           outcome: gateSettling({ ships: 'consolidated', },),
@@ -316,9 +316,9 @@ await describe({
     it({
       name:
         'STILL DEMOTES A GOVERNED PROPOSAL THAT IS THE STANDING TEXT, comparing the two raw. '
-        + 'Skipping the wrap removes every way a re-wrapping could collide, but not the plain case '
-        + 'of a proposal that changes nothing: a replacement identical to its incumbent survives the '
-        + 'footnote guard and lands in the shipped set beside a document nobody changed',
+          + 'Skipping the wrap removes every way a re-wrapping could collide, but not the plain case '
+          + 'of a proposal that changes nothing: a replacement identical to its incumbent survives the '
+          + 'footnote guard and lands in the shipped set beside a document nobody changed',
       fn: async () => {
         const shipped = wrapConsolidation({
           outcome: gateSettling({ ships: 'consolidated', },),

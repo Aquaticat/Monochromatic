@@ -37,10 +37,10 @@ import { opensMdxTag, } from './mdx-tag-start.ts';
  */
 export type MarkupAtomKind =
   | 'footnote-reference'
-  | 'link-destination'
-  | 'mdx-expression'
-  | 'inline-code'
-  | 'tag';
+    | 'link-destination'
+    | 'mdx-expression'
+    | 'inline-code'
+    | 'tag';
 
 /**
  How the editor sheet names each kind, in the order it lists them.
@@ -122,17 +122,17 @@ type Found =
      */
     readonly end: number;
   }
-  | {
+    | {
     /**
      Nothing closed; the scan moves on.
      */
-    readonly found: false;
+      readonly found: false;
 
     /**
      Offset the scan resumes at.
      */
-    readonly resume: number;
-  };
+      readonly resume: number;
+    };
 
 /**
  Length of the run of one character starting at an offset.

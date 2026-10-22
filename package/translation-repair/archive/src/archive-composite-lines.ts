@@ -26,8 +26,8 @@ export function linesOf({ text, }: { readonly text: string; },): readonly string
    */
   const closed = pieces
     .slice(
-      0,
-      -1,
+    0,
+    -1,
     )
     .map(function withEnding(piece,): string {
       return `${piece}\n`;

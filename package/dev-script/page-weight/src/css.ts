@@ -38,7 +38,7 @@ const TOKEN_DATA_INDEX = 4;
  */
 type ValueToken =
   & readonly unknown[]
-  & Readonly<Record<typeof TOKEN_DATA_INDEX, { readonly value: string; }>>;
+    & Readonly<Record<typeof TOKEN_DATA_INDEX, { readonly value: string; }>>;
 
 /**
  Reads the structured `value` payload from a URL / String / Function /

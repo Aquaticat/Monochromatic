@@ -102,16 +102,16 @@ function wordedCounts({ text, }: { readonly text: string; },): ReadonlyMap<strin
       return isWorded({ link, },);
     },)
     .reduce(
-      function counted(
-        counts,
-        link,
-      ): Map<string, number> {
-        return counts.set(
-          link.href,
-          (counts.get(link.href,) ?? 0) + 1,
-        );
-      },
-      new Map<string, number>(),
+    function counted(
+      counts,
+      link,
+    ): Map<string, number> {
+      return counts.set(
+        link.href,
+        (counts.get(link.href,) ?? 0) + 1,
+      );
+    },
+    new Map<string, number>(),
     );
 }
 

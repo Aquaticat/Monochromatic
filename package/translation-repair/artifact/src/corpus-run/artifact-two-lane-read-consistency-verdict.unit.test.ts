@@ -187,12 +187,12 @@ await describe({
               verdictRefusal({ value: { ...ASKED, runOff: { ...RUN_OFF, extra: 1, }, }, generation: 16, },),
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.verdict.runOff: '
-              + 'expected no key here beyond kind, ballots, usable, quorum, winner.',
+                + 'expected no key here beyond kind, ballots, usable, quorum, winner.',
               'ArtifactParseError: artifact parse failed at cat.verdict.winner.reason: '
-              + 'expected a reason generation fifteen gives, which runs off no tie.',
+                + 'expected a reason generation fifteen gives, which runs off no tie.',
               'ArtifactParseError: artifact parse failed at cat.verdict.runOff.finalists: expected an array.',
               'ArtifactParseError: artifact parse failed at cat.verdict.runOff.extra: '
-              + 'expected no key here beyond finalists, ballots, usable, quorum.',
+                + 'expected no key here beyond finalists, ballots, usable, quorum.',
             ],);
           },
         },),
@@ -220,7 +220,7 @@ await describe({
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.verdict.detail: expected no key here beyond kind, reason.',
               'ArtifactParseError: artifact parse failed at cat.verdict.reason: '
-              + 'expected one of too-few-placed, no-english, consistent.',
+                + 'expected one of too-few-placed, no-english, consistent.',
               'ArtifactParseError: artifact parse failed at cat.verdict.reason: expected a string.',
             ],);
           },
@@ -254,11 +254,11 @@ await describe({
               },),
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.verdict.detail: '
-              + 'expected no key here beyond kind, ballots, usable, quorum, winner.',
+                + 'expected no key here beyond kind, ballots, usable, quorum, winner.',
               'ArtifactParseError: artifact parse failed at cat.verdict.ballots: expected an array.',
               'ArtifactParseError: artifact parse failed at cat.verdict.ballots[0]: expected an object.',
               'ArtifactParseError: artifact parse failed at cat.verdict.ballots[0].weight: '
-              + 'expected no key here beyond seat, reason, quotes, choice, keep.',
+                + 'expected no key here beyond seat, reason, quotes, choice, keep.',
             ],);
           },
         },),
@@ -307,12 +307,12 @@ await describe({
               verdictRefusal({ value: { ...ASKED, winner: { kind: 'none', reason: 'shy', }, }, },),
             ],).toEqual([
               'ArtifactParseError: artifact parse failed at cat.verdict.winner.reason: '
-              + 'expected no key here beyond kind, label.',
+                + 'expected no key here beyond kind, label.',
               'ArtifactParseError: artifact parse failed at cat.verdict.winner.label: expected a string.',
               'ArtifactParseError: artifact parse failed at cat.verdict.winner.label: '
-              + 'expected no key here beyond kind, reason.',
+                + 'expected no key here beyond kind, reason.',
               'ArtifactParseError: artifact parse failed at cat.verdict.winner.reason: '
-              + 'expected one of no-quorum, no-majority, chosen-unlocated, run-off-no-quorum, run-off-tied.',
+                + 'expected one of no-quorum, no-majority, chosen-unlocated, run-off-no-quorum, run-off-tied.',
             ],);
           },
         },),

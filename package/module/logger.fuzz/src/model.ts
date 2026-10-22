@@ -33,16 +33,16 @@ import {
  */
 export type ModelEvent =
   | { readonly kind: 'flush'; }
-  | { readonly kind: 'init-complete'; }
-  | {
-    readonly kind: 'log';
-    readonly record: LogRecord
-  }
-  | {
-    readonly kind: 'verify-settled';
-    readonly outcome: VerifyOutcome;
-    readonly sink: number
-  };
+    | { readonly kind: 'init-complete'; }
+    | {
+      readonly kind: 'log';
+      readonly record: LogRecord
+    }
+    | {
+      readonly kind: 'verify-settled';
+      readonly outcome: VerifyOutcome;
+      readonly sink: number
+    };
 
 //endregion Events
 
@@ -133,13 +133,13 @@ export function emptyModel({ sinkCount, }: { readonly sinkCount: number; },): Mo
     sinks: Array.from(
       { length: sinkCount, },
       function toSinkModel(): SinkModel {
-      return {
-        attempts: [],
-        available: false,
-        flushCalls: 0,
-        verified: false,
-      };
-    },
+        return {
+          attempts: [],
+          available: false,
+          flushCalls: 0,
+          verified: false,
+        };
+      },
     ),
     startup: [],
   };
@@ -198,9 +198,9 @@ function attempt(
   if (outcome === 'never') {
     state.pendingNever
       .push({
-      sink,
-      attempt: callIndex,
-    },);
+        sink,
+        attempt: callIndex,
+      },);
   }
 }
 
@@ -274,13 +274,13 @@ export function foldEvent(
     model.available = true;
     state.startup
       .forEach(function replay(record,) {
-      attempt({
-        state,
-        scripts,
-        sink: event.sink,
-        record,
+        attempt({
+          state,
+          scripts,
+          sink: event.sink,
+          record,
+        },);
       },);
-    },);
     return;
   }
   if (event.kind === 'init-complete') {

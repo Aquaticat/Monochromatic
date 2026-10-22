@@ -33,9 +33,10 @@ Measured over the whole repository corpus with the model in "The model" (probe i
 The rule that closes this gap now ships as `stylistic/indentation` in `package/oxlint-plugin/stylistic`,
 with
 check and autofix (see "Implementation").
-`package/config/oxlint/src/rule/style.ts` does not enable it yet,
-so repository lint still passes mis-indented
-TypeScript until that enablement and one normalization sweep land.
+`package/config/oxlint/src/rule/style.ts` enables it at `warn` (`a0de3e051f`),
+and one normalization sweep has landed (`68415aeb53`),
+so repository lint now flags and fixes mis-indented
+TypeScript.
 
 Related replacement gap recorded in the same issue:
 `comma-dangle` ships in the plugin but
@@ -364,12 +365,17 @@ see `doc/troubleshooting/oxlint-stylistic-comma-dangle-type-literal-fix.md`.
 
 - `stylistic/indentation` in `package/oxlint-plugin/stylistic`,
   enabled per config as in
-  `package/test-fixture/oxlint-stylistic/.oxlintrc.fixture.json`,
+  `package/test-fixture/oxlint-stylistic/.oxlintrc.fixture.json`
+  and in `package/config/oxlint/src/rule/style.ts` at `warn`,
   checks and autofixes the model.
   Tradeoff:
-  the sweep rewrites 20,722 to 20,725 leading-whitespace runs across 1,792 to 1,793 files,
-  and repository-wide
-  enablement in `package/config/oxlint/src/rule/style.ts` is still queued.
+  the one normalization sweep rewrote 21,441 leading-whitespace runs
+  in 1,845 of 7,333 candidate files
+  (an earlier probe projected 20,722 to 20,725 runs
+  in 1,792 to 1,793 of 7,091 candidate files),
+  and a whole-set `--fix` run mixes in other rules' fixes
+  unless the config also sets `categories: { "correctness": "off" }`,
+  see `doc/troubleshooting/oxlint-config-default-categories.md`.
 - Probe-guided manual correction:
   run `node probe4.mjs <file-list>` and fix the reported lines by hand.
   Tradeoff:

@@ -164,7 +164,7 @@ await describe({
 
             expect(warned,).toEqual([
               '[translation-repair] [meterRecordOf] hyper: budget unreadable, treating as spendable (refused by '
-              + 'ProviderHttpError from hyper with HTTP 401 (the provider said: "this cat has no collar tag"))',
+                + 'ProviderHttpError from hyper with HTTP 401 (the provider said: "this cat has no collar tag"))',
             ],);
             expect(meter,).toEqual({
               state: 'unreadable',
@@ -226,16 +226,16 @@ await describe({
             expect(lines,).toEqual([
               [
                 '[translation-repair] [meterRecordOf] synthetic: budget unreadable, treating as spendable (Synthetic /quotas body '
-                + 'violated expectations: weeklyTokenLimit is not an object; received {})',
+                  + 'violated expectations: weeklyTokenLimit is not an object; received {})',
               ],
               [
                 '[translation-repair] [meterRecordOf] synthetic: budget unreadable, treating as spendable (Synthetic /quotas body '
-                + 'violated expectations: weeklyTokenLimit is not an object; received subscription:object, freeToolCalls:object)',
+                  + 'violated expectations: weeklyTokenLimit is not an object; received subscription:object, freeToolCalls:object)',
               ],
               [
                 '[translation-repair] [meterRecordOf] synthetic: budget unreadable, treating as spendable (Synthetic /quotas body '
-                + 'violated expectations: weeklyTokenLimit.percentRemaining is not a number; received subscription:object, '
-                + 'weeklyTokenLimit:object; weeklyTokenLimit holds percentLeft:number, plan:string)',
+                  + 'violated expectations: weeklyTokenLimit.percentRemaining is not a number; received subscription:object, '
+                  + 'weeklyTokenLimit:object; weeklyTokenLimit holds percentLeft:number, plan:string)',
               ],
             ],);
             /**
@@ -276,7 +276,7 @@ await describe({
 
             expect(warned,).toEqual([
               '[translation-repair] [meterRecordOf] synthetic: budget not read, since the caller stopped the '
-              + 'reading; treating as spendable',
+                + 'reading; treating as spendable',
             ],);
             expect(meter,).toEqual({
               state: 'unreadable',

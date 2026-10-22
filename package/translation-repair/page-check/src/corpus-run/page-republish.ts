@@ -115,27 +115,27 @@ export type RepublishOutcome =
      */
     kind: 'agreed';
   }>
-  | Readonly<{
+    | Readonly<{
     /**
      The page was rewritten from its artifact.
      */
-    kind: 'republished';
+      kind: 'republished';
 
     /**
      Why it needed writing.
      */
-    why: 'disagreed' | 'missing';
-  }>
-  | Readonly<{
+      why: 'disagreed' | 'missing';
+    }>
+    | Readonly<{
     /**
      The page needed writing and was left as it was.
      */
-    kind: 'left';
+      kind: 'left';
 
     /**
      Why it needed writing, or that the artifact could not be read at all.
      */
-    why: 'disagreed' | 'missing' | 'unreadable';
+      why: 'disagreed' | 'missing' | 'unreadable';
 
     /**
      What refused, through `refusalText`: a marked refusal in its own words
@@ -144,8 +144,8 @@ export type RepublishOutcome =
      alone, or where the carve moved. Until 2026-10-06 every refusal was its
      class name, and every kind of corpus read read `CorpusReadError`.
      */
-    because: string;
-  }>;
+      because: string;
+    }>;
 
 /**
  One entry's outcome, named.
@@ -187,12 +187,12 @@ type PageOnDisk =
      */
     text: string;
   }>
-  | Readonly<{
+    | Readonly<{
     /**
      No page was written, or it was removed.
      */
-    kind: 'missing';
-  }>;
+      kind: 'missing';
+    }>;
 
 /**
  Reads one entry's page, or that there is none.

@@ -505,7 +505,7 @@ function catPurr(
   return [
     `export function ${name}(bowl: readonly number[]): string {`,
     `  return bowl.filter((kibble) => kibble > 0).map((kibble) => String(kibble) + ${quote}${purr}${quote})`
-    + `.join(${quote}${purr}${quote});`,
+      + `.join(${quote}${purr}${quote});`,
     '}',
   ].join('\n',);
 }

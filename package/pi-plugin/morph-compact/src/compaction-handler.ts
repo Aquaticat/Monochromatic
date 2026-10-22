@@ -84,7 +84,7 @@ export async function handleBeforeCompact({
         .notify(
         'MORPH_API_KEY not set (env or ~/.pi/agent/mcp.json): Morph Compact disabled, using pi default compaction',
         'warning',
-      );
+        );
     }
     return { kind: 'fallthrough', };
   }
@@ -118,7 +118,7 @@ export async function handleBeforeCompact({
       .notify(
       'Morph Compact: nothing to compact (session too small)',
       'warning',
-    );
+      );
     return { kind: 'cancel', };
   }
 
@@ -127,14 +127,14 @@ export async function handleBeforeCompact({
    */
   const msgCount = messagesToSummarize.length
     + turnPrefixMessages
-    .length;
+      .length;
   ctx.ui
     .notify(
     `Morph Compact: compressing ${msgCount} messages (${event.preparation
       .tokensBefore
       .toLocaleString()} tokens)...`,
     'info',
-  );
+    );
 
   /**
    Current context pressure snapshot; absent when pi cannot report usage.
@@ -172,8 +172,8 @@ export async function handleBeforeCompact({
        */
       const reductionPct = ((morphUsage?.compressionRatio
         !== undefined)
-          && (morphUsage.compressionRatio
-            !== 0))
+        && (morphUsage.compressionRatio
+          !== 0))
         ? Math.round(
           (1 - morphUsage
             .compressionRatio) * 100,
@@ -201,7 +201,7 @@ export async function handleBeforeCompact({
         .notify(
         `Morph Compact: ${reductionPct}% reduction (${inTokens} → ${outTokens} tokens) in ${ms}ms`,
         'info',
-      );
+        );
     }
 
     return {
@@ -222,7 +222,7 @@ export async function handleBeforeCompact({
       .notify(
       `Morph Compact failed: ${message}; falling back to pi default`,
       'error',
-    );
+      );
     return { kind: 'fallthrough', };
   }
 }

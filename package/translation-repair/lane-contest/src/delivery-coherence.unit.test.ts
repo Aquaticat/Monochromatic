@@ -118,8 +118,8 @@ await describe({
     it({
       name:
         'accepts each of the four deliveries in the only shape it can take: a shipped replacement '
-        + 'carrying what was decided, a withdrawn one carrying the archive, a retained incumbent, and a '
-        + 'gap where the archive never had wording',
+          + 'carrying what was decided, a withdrawn one carrying the archive, a retained incumbent, and a '
+          + 'gap where the archive never had wording',
       fn: async () => {
         /**
          One coherent row per delivery.
@@ -163,7 +163,7 @@ await describe({
     it({
       name:
         'REFUSES a shipped replacement with no decision behind it, since the delivery names a wording the '
-        + 'lane is not reporting and the document would carry English nobody chose',
+          + 'lane is not reporting and the document would carry English nobody chose',
       fn: async () => {
         /**
          What shippedNothing raised, read for its class as well as its wording.
@@ -188,8 +188,8 @@ await describe({
     it({
       name:
         'REFUSES a replacement whose wording is the archive`s own, because nothing was replaced: the '
-        + 'document reads exactly as it did and a count of shipped changes would include a slice nobody '
-        + 'changed',
+          + 'document reads exactly as it did and a count of shipped changes would include a slice nobody '
+          + 'changed',
       fn: async () => {
         /**
          What replacedNothing raised, read for its class as well as its wording.
@@ -215,7 +215,7 @@ await describe({
     it({
       name:
         'REFUSES a shipped row carrying text that is neither the decision nor the archive, which is the '
-        + 'state where no field says what the reader is actually looking at',
+          + 'state where no field says what the reader is actually looking at',
       fn: async () => {
         /**
          What carriedSomethingElse raised, read for its class as well as its wording.
@@ -241,7 +241,7 @@ await describe({
     it({
       name:
         'REFUSES a withdrawn row that carries the withdrawn wording anyway, since a withdrawal is exactly '
-        + 'the claim that the document does NOT have it',
+          + 'the claim that the document does NOT have it',
       fn: async () => {
         /**
          What withdrewAndShipped raised, read for its class as well as its wording.
@@ -270,8 +270,8 @@ await describe({
     it({
       name:
         'REFUSES a retained incumbent hiding a decision to change it, because that is a replacement with '
-        + 'nothing saying what took it back: a reader counting withdrawals would miss it and a reader '
-        + 'counting keeps would count it',
+          + 'nothing saying what took it back: a reader counting withdrawals would miss it and a reader '
+          + 'counting keeps would count it',
       fn: async () => {
         /**
          What hidAChange raised, read for its class as well as its wording.
@@ -299,8 +299,8 @@ await describe({
     it({
       name:
         'REFUSES a retained incumbent carrying text other than the archive`s, since "retained" is the '
-        + 'claim that the document reads as the archive does here, and a reader would take the other text '
-        + 'for the archive`s own',
+          + 'claim that the document reads as the archive does here, and a reader would take the other text '
+          + 'for the archive`s own',
       fn: async () => {
         /**
          What retainedSomethingElse raised, read for its class as well as its wording.
@@ -323,7 +323,7 @@ await describe({
     it({
       name:
         'REFUSES a retained incumbent where the archive holds none, and a gap where it holds wording, '
-        + 'which are the two ways a row can disagree with the archive about which of them it describes',
+          + 'which are the two ways a row can disagree with the archive about which of them it describes',
       fn: async () => {
         /**
          What retainedNothing raised, read for its class as well as its wording.
@@ -362,7 +362,7 @@ await describe({
     it({
       name:
         'REFUSES a gap that carries wording anyway, since the passage is either missing or it is not, and '
-        + 'a gap row with text in it is the state a reader counting untranslated passages would trust',
+          + 'a gap row with text in it is the state a reader counting untranslated passages would trust',
       fn: async () => {
         /**
          What gapWithText raised, read for its class as well as its wording.

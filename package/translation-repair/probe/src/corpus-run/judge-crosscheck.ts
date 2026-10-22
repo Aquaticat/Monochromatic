@@ -247,48 +247,48 @@ export function buildCrosscheckCensus(
 
     return entry.issues
       .flatMap(function toClaims(issue,): readonly CrosscheckItem[] {
-      return issue.claimIds
-        .filter(function isAttributed(claimId,): boolean {
-          return proposersOf.has(claimId,);
-        },)
-        .map(function toItem(claimId,): CrosscheckItem {
+        return issue.claimIds
+          .filter(function isAttributed(claimId,): boolean {
+            return proposersOf.has(claimId,);
+          },)
+          .map(function toItem(claimId,): CrosscheckItem {
           /**
            Set of authors of this claim, known present by `isAttributed`.
            */
-          const authors = proposersOf.get(claimId,);
-          if (authors === undefined)
-            throw new Error(
-              'unreachable: a claim `isAttributed` kept has no authors in the map it asked, which '
-                + 'holds a claim id for every attribution it read',
-            );
+            const authors = proposersOf.get(claimId,);
+            if (authors === undefined)
+              throw new Error(
+                'unreachable: a claim `isAttributed` kept has no authors in the map it asked, which '
+                  + 'holds a claim id for every attribution it read',
+              );
 
           /**
            Authors of this claim, in the order first met.
            */
-          const proposers = [...authors,];
+            const proposers = [...authors,];
 
           /**
            Who may re-examine this claim and who authored it.
            */
-          const {
-            judges,
-            barred,
-          } = seatJudges({
-            proposers,
-            roster,
-          },);
+            const {
+              judges,
+              barred,
+            } = seatJudges({
+              proposers,
+              roster,
+            },);
 
-          return {
-            entryId: entry.id,
-            claimId,
-            arm: armOf({ status: issue.status, },),
-            status: issue.status,
-            proposers,
-            judges,
-            barred,
-          };
-        },);
-    },);
+            return {
+              entryId: entry.id,
+              claimId,
+              arm: armOf({ status: issue.status, },),
+              status: issue.status,
+              proposers,
+              judges,
+              barred,
+            };
+          },);
+      },);
   },);
 
   /**
@@ -320,22 +320,22 @@ export function buildCrosscheckCensus(
        */
       const missing = entry.issues
         .reduce(
-          function countEntryMissing(
-            running: number,
-            { claimIds, },
-          ): number {
+        function countEntryMissing(
+          running: number,
+          { claimIds, },
+        ): number {
             /**
              Claims of this issue with no proposer recorded.
              */
-            const unrecorded = claimIds
-              .filter(function isMissing(claimId,): boolean {
-                return !attributed.has(claimId,);
-              },)
-              .length;
+          const unrecorded = claimIds
+            .filter(function isMissing(claimId,): boolean {
+              return !attributed.has(claimId,);
+            },)
+            .length;
 
-            return running + unrecorded;
-          },
-          0,
+          return running + unrecorded;
+        },
+        0,
         );
 
       // An entry attributing nothing is legacy; one attributing something and

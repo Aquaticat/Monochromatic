@@ -54,9 +54,9 @@ export type SeatAnswers =
      */
     readonly modelIds: readonly RosterModelId[];
   }
-  | {
-    readonly kind: 'unrecorded';
-  };
+    | {
+      readonly kind: 'unrecorded';
+    };
 
 /**
  Roster models a standing table does and does not describe.
@@ -344,20 +344,20 @@ export function coverageGapLines(
   const seats = described
     + coverage
       .wroteUnjudged
-    .length
+      .length
     + coverage
       .answeredUnslated
-    .length
+      .length
     + coverage
       .neverWrote
-    .length;
+      .length;
 
   return [
     ...((unvoted === '')
       ? []
       : [
         `WROTE AND WAS NEVER VOTED ON: ${unvoted}. Their text reached a slate and no `
-        + 'disinterested ballot was cast over it, which is what a slice where every producer '
+          + 'disinterested ballot was cast over it, which is what a slice where every producer '
           + 'proposed the same wording does: it ships unjudged. The table says nothing about them '
           + 'either way, and more slices are what would.',
       ]),
@@ -365,7 +365,7 @@ export function coverageGapLines(
       ? []
       : [
         `ANSWERED AND WAS NEVER SLATED: ${unslated}. At least one usable answer of theirs was `
-        + 'heard and none became a candidate a judge saw: a rewriter that leaves a paragraph as '
+          + 'heard and none became a candidate a judge saw: a rewriter that leaves a paragraph as '
           + 'it stands, or whose rewrite is dropped before judging, looks like this. The table '
           + 'says nothing about them, their SEAT lines carry the answers, and re-running them buys '
           + 'the same again; slices with something to rewrite are what would seat them.',

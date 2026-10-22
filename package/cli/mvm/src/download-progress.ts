@@ -83,7 +83,7 @@ async function pollProgress({
         process.stderr
           .write(
           `\r  downloading: ${downloadedStr} / ${totalStr} (${String(pct,)}%)`,
-        );
+          );
       }
       else {
         process.stderr
@@ -179,6 +179,6 @@ export async function writeWithProgress({
   process.stderr
     .write(
     `\r  downloaded: ${formatBytes(size,)} total${' '.repeat(PROGRESS_LINE_PAD,)}\n`,
-  );
+    );
   rl.info(`saved to ${destPath}`,);
 }

@@ -86,37 +86,37 @@ export function parseDevices({ stdout, }: { readonly stdout: string; },): readon
     /**
      Trimmed line, with the device serial and state when present.
      */
-    const line = rawLine.trim();
-    if (
-      (line.length === 0)
-      || line.startsWith('List of devices attached',)
-        || line.startsWith('*',)
-    ) {
-      return [];
-    }
+      const line = rawLine.trim();
+      if (
+        (line.length === 0)
+          || line.startsWith('List of devices attached',)
+          || line.startsWith('*',)
+      ) {
+        return [];
+      }
     /**
      Whitespace-split fields: `[serial, state, ...]` (tab or space separated).
      */
-    const fields = line
-      .split('\t',)
-      .flatMap(function bySpace(part,): readonly string[] {
-        return part.split(' ',);
-      },)
-      .filter(function isNonEmpty(field,): boolean {
-        return field.length > 0;
-      },);
+      const fields = line
+        .split('\t',)
+        .flatMap(function bySpace(part,): readonly string[] {
+          return part.split(' ',);
+        },)
+        .filter(function isNonEmpty(field,): boolean {
+          return field.length > 0;
+        },);
     /**
      First field is the serial, second is the state.
      */
-    const [serial, state,] = fields;
-    if ((serial === undefined) || (state === undefined)) {
-      return [];
-    }
-    return [{
-      serial,
-      state,
-    },];
-  },);
+      const [serial, state,] = fields;
+      if ((serial === undefined) || (state === undefined)) {
+        return [];
+      }
+      return [{
+        serial,
+        state,
+      },];
+    },);
 }
 
 //endregion

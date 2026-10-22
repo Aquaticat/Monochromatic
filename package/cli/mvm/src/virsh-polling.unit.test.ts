@@ -23,8 +23,8 @@ import {
 
 type FakeVirshMode =
   | 'guest-ready-second'
-  | 'guest-timeout'
-  | 'shutdown-second';
+    | 'guest-timeout'
+    | 'shutdown-second';
 
 type FakeVirshFixture = AsyncDisposable & {
   readonly counterPath: string;

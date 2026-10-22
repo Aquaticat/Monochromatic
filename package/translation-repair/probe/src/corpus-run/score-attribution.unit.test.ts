@@ -134,8 +134,8 @@ await describe({
               'POOL 2 entries across 1 pipeline generation',
               'POOL   1 artifact unreadable, passed through to be reported as malformed: Biscuit',
               'WARNING 1 artifact could not be read and is in NEITHER population this report counts, so '
-              + 'every count is over the rest. Named rather than summarized, because a truncated artifact '
-              + 'is a different problem from a malformed one:',
+                + 'every count is over the rest. Named rather than summarized, because a truncated artifact '
+                + 'is a different problem from a malformed one:',
               '  Biscuit.json: could not read Biscuit.json as JSON (SyntaxError at byte 12)',
               'POPULATION eligible=1 ineligible=1 chunks=1',
               '',

@@ -327,7 +327,7 @@ await describe({
         it({
           name:
             'ECHOES THE AGREED PAIRING back on the preparation, so the record a settled entry keeps is the '
-            + 'object slicing consumed rather than a second copy assembled beside it',
+              + 'object slicing consumed rather than a second copy assembled beside it',
           fn: async () => {
             const { prepared, } = await prepareDocumentPairWithRoster({
               client: cannedClient({
@@ -537,7 +537,7 @@ await describe({
         it({
           name:
             'RECORDS HOW MANY VOICES AGREED, naming the section, and files it on the channel that reaches the '
-            + 'artifact rather than only on the log nobody keeps',
+              + 'artifact rather than only on the log nobody keeps',
           fn: async () => {
             const {
               prepared,
@@ -574,7 +574,7 @@ await describe({
         it({
           name:
             'RECORDS AN EMPTY PAIRING when the roster was asked and agreed nothing, which is a different fact '
-            + 'from no roster having been asked and must not read as the same absence',
+              + 'from no roster having been asked and must not read as the same absence',
           fn: async () => {
             const {
               prepared,
@@ -604,10 +604,10 @@ await describe({
         it({
           name:
             'REPUBLISHES EVERY FINDING OFF A CACHED SECTION, having asked nobody. The cache stored a bare '
-            + 'list of pairs until 2026-08-22, so a resumed entry reported a silent round: no per-section '
-            + 'counts, no fallback notice, no voice-level finding. The two runs are compared whole rather '
-            + 'than by sampled string, because a replay that keeps some findings and drops others is the '
-            + 'shape this defect actually had',
+              + 'list of pairs until 2026-08-22, so a resumed entry reported a silent round: no per-section '
+              + 'counts, no fallback notice, no voice-level finding. The two runs are compared whole rather '
+              + 'than by sampled string, because a replay that keeps some findings and drops others is the '
+              + 'shape this defect actually had',
           fn: async () => {
             /**
              Records surviving between the two runs, as a resumed pass finds them.

@@ -210,7 +210,7 @@ export type SettingReading =
      */
     readonly commit: SourceCommit;
   }
-  | { readonly kind: 'uncommitted'; };
+    | { readonly kind: 'uncommitted'; };
 
 /**
  The commit that set a version's current value: the newest candidate that

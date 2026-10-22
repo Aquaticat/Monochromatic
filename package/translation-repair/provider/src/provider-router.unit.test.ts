@@ -474,7 +474,7 @@ await describe({
           status: { synthetic: 429, },
           bodyText: {
             synthetic: '{"type":"error","error":{"type":"rate_limit_error","message":'
-            + '"You\'ve hit your daily rate limit. Please try again in 14m40s."}}',
+              + '"You\'ve hit your daily rate limit. Please try again in 14m40s."}}',
           },
         },);
         const { budgets, refused, statedWaits, } = stubBudgets({},);

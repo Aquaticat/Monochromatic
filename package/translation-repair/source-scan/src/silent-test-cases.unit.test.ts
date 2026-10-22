@@ -74,12 +74,12 @@ type WrittenName =
      */
     readonly text: string;
   }
-  | {
+    | {
     /**
      The name is any other expression, which the scan takes as non-empty.
      */
-    readonly kind: 'computed';
-  };
+      readonly kind: 'computed';
+    };
 
 /**
  Text a suite name property writes, when it writes a plain string.

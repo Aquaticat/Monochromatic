@@ -79,16 +79,16 @@ function identityOf({
   if ((typeof value) === 'symbol')
     table.symbols
       .set(
-        value as symbol,
-        table.counter
-          .next,
+      value as symbol,
+      table.counter
+        .next,
       );
   else
     table.ids
       .set(
-        value as object,
-        table.counter
-          .next,
+      value as object,
+      table.counter
+        .next,
       );
   return table.counter
     .next;

@@ -211,8 +211,8 @@ function matchedRegion(
   const last = nonNullishOrThrow(anchors.at(-1,),);
   return document.text
     .slice(
-      first.startOffset,
-      last.endOffset,
+    first.startOffset,
+    last.endOffset,
     );
 }
 

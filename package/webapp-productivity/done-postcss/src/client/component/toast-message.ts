@@ -106,7 +106,7 @@ class ToastMessage extends HTMLElement {
         class: 'content',
         text: message,
       },),
-    );
+      );
   }
 }
 

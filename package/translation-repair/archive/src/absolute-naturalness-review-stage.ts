@@ -63,8 +63,8 @@ export type AbsoluteNaturalnessReviewSeat = {
  */
 export type AbsoluteNaturalnessReviewVerdict =
   | 'acceptable'
-  | 'unacceptable'
-  | 'quorum-not-met';
+    | 'unacceptable'
+    | 'quorum-not-met';
 
 /**
  Auditable absolute review of exact would-ship text.
@@ -347,7 +347,7 @@ export async function reviewAbsoluteNaturalness(
    Fail-closed verdict: thin review cannot approve, and any rejection blocks.
    */
   const verdict: AbsoluteNaturalnessReviewVerdict = (usableSeats.length
-      < quorum.needed)
+    < quorum.needed)
     ? 'quorum-not-met'
     : usableSeats.some(function rejected(seat,): boolean {
       return seat.status === 'unacceptable';

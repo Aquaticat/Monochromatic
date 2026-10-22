@@ -185,8 +185,8 @@ export function rotateCandidates<ValueT,>(
   const offset = Number.parseInt(
     hashContent({ content: sourceText, },)
       .slice(
-        0,
-        ROTATION_HEX_DIGITS,
+      0,
+      ROTATION_HEX_DIGITS,
       ),
     HEX_RADIX,
   ) % candidates.length;

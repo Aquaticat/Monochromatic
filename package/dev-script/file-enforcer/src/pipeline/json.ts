@@ -8,11 +8,11 @@
  */
 export type JsonValue =
   | string
-  | number
-  | boolean
-  | null
-  | readonly JsonValue[]
-  | { readonly [key: string]: JsonValue; };
+    | number
+    | boolean
+    | null
+    | readonly JsonValue[]
+    | { readonly [key: string]: JsonValue; };
 /* oxlint-enable no-restricted-syntax/no-nullish-union */
 
 /**

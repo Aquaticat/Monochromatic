@@ -149,9 +149,9 @@ await describe({
             ],);
             expect(index.byPhrase
               .get('tabby naps',),).toStrictEqual([
-              0,
-              2,
-            ],);
+                0,
+                2,
+              ],);
           },
         },),
 

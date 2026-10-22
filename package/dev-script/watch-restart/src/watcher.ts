@@ -273,7 +273,7 @@ export class Watcher {
           self.#logger
             .error(
             `unlinkDir dispatch failed: ${describeError(error,)}`,
-          );
+            );
         }
       })();
     }
@@ -294,37 +294,37 @@ export class Watcher {
       .on(
       'ready',
       onReady,
-    );
+      );
     this.#fsw
       .on(
       'add',
       onAdd,
-    );
+      );
     this.#fsw
       .on(
       'change',
       onChange,
-    );
+      );
     this.#fsw
       .on(
       'unlink',
       onUnlink,
-    );
+      );
     this.#fsw
       .on(
       'addDir',
       onAddDir,
-    );
+      );
     this.#fsw
       .on(
       'unlinkDir',
       onUnlinkDir,
-    );
+      );
     this.#fsw
       .on(
       'error',
       onError,
-    );
+      );
   }
 
   /**
@@ -477,16 +477,16 @@ export class Watcher {
       if (hash !== OVERSIZED) {
         this.#hashCache
           .set({
-          path,
-          hash,
-        },);
+            path,
+            hash,
+          },);
       }
     }
     catch (error) {
       this.#logger
         .warn(
         `pre-populate hash failed for ${path}: ${describeError(error,)}`,
-      );
+        );
     }
   }
 

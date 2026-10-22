@@ -56,8 +56,8 @@ export function sliceCensusTargetOnlyLines(
     }`,
     ...targetOnly
       .slice(
-        0,
-        REPORTED_PERCENTILES.length,
+      0,
+      REPORTED_PERCENTILES.length,
       )
       .map(function targetOnlyLine(row,): string {
         return `CENSUS   ${row.entryId}: blocks ${String(row.targetOnlyBlocks,)}, chars ${String(row.targetOnlyChars,)}`;

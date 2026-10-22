@@ -170,21 +170,21 @@ export function oklchToSrgb(color: Oklch,): Rgb8 {
   const lPrime = L + 0.3963377774
     * a
     + 0.2158037573
-    * b;
+      * b;
   /**
    Ottosson stage 1: medium-cone response in pre-cube-root form.
    */
   const mPrime = L - 0.1055613458
     * a
     - 0.0638541728
-    * b;
+      * b;
   /**
    Ottosson stage 1: short-cone response in pre-cube-root form.
    */
   const sPrime = L - 0.0894841775
     * a
     - 1.291485548
-    * b;
+      * b;
 
   /**
    Ottosson stage 2: long-cone response cubed; undoes the OKLab cube-root step.
@@ -207,25 +207,25 @@ export function oklchToSrgb(color: Oklch,): Rgb8 {
    */
   const rLin = 4.0767416621 * lCubed
     - 3.3077115913
-    * mCubed
+      * mCubed
     + 0.2309699292
-    * sCubed;
+      * sCubed;
   /**
    Ottosson stage 3: linear-sRGB green channel.
    */
   const gLin = -1.2684380046 * lCubed
     + 2.6097574011
-    * mCubed
+      * mCubed
     - 0.3413193965
-    * sCubed;
+      * sCubed;
   /**
    Ottosson stage 3: linear-sRGB blue channel.
    */
   const bLin = -0.0041960863 * lCubed
     - 0.7034186147
-    * mCubed
+      * mCubed
     + 1.707614701
-    * sCubed;
+      * sCubed;
   /* oxlint-enable eslint/no-magic-numbers, stylistic/no-mixed-operators */
 
   return [
@@ -276,15 +276,15 @@ export function oklchLerpToSrgb(
     L: start.L
       + (t * (end.L
         - start
-        .L)),
+          .L)),
     C: start.C
       + (t * (end.C
         - start
-        .C)),
+          .C)),
     H: start.H
       + (t * (end.H
         - start
-        .H)),
+          .H)),
   },);
 }
 

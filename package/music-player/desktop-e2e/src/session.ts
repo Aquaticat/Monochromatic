@@ -329,8 +329,8 @@ export async function startSession(
     for (const pid of stdout.trim()
       .split('\n',)
       .filter(function isPid(entry,): boolean {
-      return entry !== '';
-    },))
+        return entry !== '';
+      },))
       try {
         if (cgroupBelongsToUnit({
           cgroup: await readFile(

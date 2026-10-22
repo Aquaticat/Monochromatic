@@ -75,9 +75,9 @@ import {
 export function memoize<
   const TArgs extends readonly unknown[],
   const TReturn,
->(
+  >(
   options: MemoizeNamedOptions<TArgs, TReturn>,
-): MemoizedFunction<TArgs, TReturn> {
+  ): MemoizedFunction<TArgs, TReturn> {
   /**
    Function and key derivation destructured for repeated use inside the wrapper.
    */

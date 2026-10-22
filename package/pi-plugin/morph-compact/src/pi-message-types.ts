@@ -152,7 +152,7 @@ export type CompactionSummaryAgentMessage = {
  */
 export type AgentMessage =
   | Message
-  | BashExecutionAgentMessage
-  | CustomAgentMessage
-  | BranchSummaryAgentMessage
-  | CompactionSummaryAgentMessage;
+    | BashExecutionAgentMessage
+    | CustomAgentMessage
+    | BranchSummaryAgentMessage
+    | CompactionSummaryAgentMessage;

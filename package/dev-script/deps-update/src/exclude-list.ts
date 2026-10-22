@@ -251,8 +251,8 @@ export function addedVersions({
     return expandExcludeEntry(entry,);
   },)
     .filter(function isNew(spec,): boolean {
-    return !existing.has(specKey(spec,),);
-  },);
+      return !existing.has(specKey(spec,),);
+    },);
 }
 
 //endregion Diff

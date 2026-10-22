@@ -82,8 +82,8 @@ await describe({
         it({
           name:
             'ACCEPTS a row whose outcome and delivery can both be true, which is the control this file`s '
-            + 'other cases are read against: a check that refused everything would look identical to one that '
-            + 'refuses the right things',
+              + 'other cases are read against: a check that refused everything would look identical to one that '
+              + 'refuses the right things',
           fn: async () => {
             expect(() => {
               assertRowsCoherent({
@@ -97,7 +97,7 @@ await describe({
         it({
           name:
             'REFUSES a row that reports a missing passage where the archive holds wording, naming the row`s '
-            + 'position so a reader of a long ledger can find it',
+              + 'position so a reader of a long ledger can find it',
           fn: async () => {
             /**
              What assertRowsCoherent raised, read for its class as well as its wording.
@@ -124,8 +124,8 @@ await describe({
         it({
           name:
             'RETHROWS an error that is not a coherence refusal instead of reporting it as a malformed row: a '
-            + 'defect in this reader dressed as an artifact refusal sends an operator to archive a run that '
-            + 'was fine, and buries the real fault under a message about the file',
+              + 'defect in this reader dressed as an artifact refusal sends an operator to archive a run that '
+              + 'was fine, and buries the real fault under a message about the file',
           fn: async () => {
             /**
              Row that fails while being read rather than while being judged, which
@@ -196,8 +196,8 @@ await describe({
         it({
           name:
             'says WHAT DIFFERS rather than repeating one kind twice when both sides name the same member and '
-            + 'carry different wording, since `decided rather than decided` states a disagreement and then '
-            + 'refuses to say what it is',
+              + 'carry different wording, since `decided rather than decided` states a disagreement and then '
+              + 'refuses to say what it is',
           fn: async () => {
             /**
              Raw result and ledger that agree on the member and not on the wording.
@@ -276,7 +276,7 @@ await describe({
                   sliceIndex: 1,
                 },],
                 '.delivery[0].sliceIndex: expected slice 1, which the raw result names at this position, rather than '
-                + 'slice 0.',
+                  + 'slice 0.',
               ],
               [
                 [{

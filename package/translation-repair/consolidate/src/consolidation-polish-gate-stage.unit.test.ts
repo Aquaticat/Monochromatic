@@ -237,7 +237,7 @@ await describe({
           usable,
           findings: [
             `consolidation-polish-gate heard ${String(usable,)} usable ballot, below `
-            + `${String(CONSOLIDATION_POLISH_GATE_QUORUM,)} needed to settle`,
+              + `${String(CONSOLIDATION_POLISH_GATE_QUORUM,)} needed to settle`,
           ],
         },);
       },
@@ -280,7 +280,7 @@ await describe({
           usable: 2,
           findings: [
             'consolidation-polish-gate tied 1 to 1 between polished and base, so polished wins the tie '
-            + '(owner, 2026-10-21)',
+              + '(owner, 2026-10-21)',
           ],
         },);
         expect(said.some(function namesTheRule(line,): boolean {

@@ -392,7 +392,7 @@ function uniqueScopedModels<TModel extends ModelIdentity,>(
     if (result.some(function alreadyAdded(entry,) {
       return entry.canonicalSlug
         === model
-        .canonicalSlug;
+          .canonicalSlug;
     },))
       continue;
     result.push(model,);

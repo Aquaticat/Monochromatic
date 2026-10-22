@@ -233,19 +233,19 @@ export async function runKeyless(
     .setEncoding('utf8',);
   child.stdout
     .on(
-      'data',
-      function keepOut(chunk: string,): void {
-        out.push(chunk,);
-      },
+    'data',
+    function keepOut(chunk: string,): void {
+      out.push(chunk,);
+    },
     );
   child.stderr
     .setEncoding('utf8',);
   child.stderr
     .on(
-      'data',
-      function keepErr(chunk: string,): void {
-        err.push(chunk,);
-      },
+    'data',
+    function keepErr(chunk: string,): void {
+      err.push(chunk,);
+    },
     );
   // Wait for the streams to close, then read the exit off the child itself;
   // a process that never started rejects here.
@@ -268,13 +268,13 @@ export async function runKeyless(
  */
 export type StartedBy =
   | 'its own task'
-  | 'nothing'
-  | {
+    | 'nothing'
+    | {
     /**
      Name of the other command the marker names.
      */
-    readonly otherCommand: string;
-  };
+      readonly otherCommand: string;
+    };
 
 /**
  The marker variable a child gets, as variables to add to its environment.

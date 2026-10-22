@@ -19,8 +19,8 @@ import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-pa
  */
 export type RepairStatus =
   | 'repaired'
-  | 'unchanged'
-  | 'blocked-non-translation';
+    | 'unchanged'
+    | 'blocked-non-translation';
 
 /**
  Output contract of the batch driver.

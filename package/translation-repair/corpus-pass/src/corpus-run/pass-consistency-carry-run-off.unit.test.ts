@@ -630,7 +630,7 @@ await describe({
               lines: [
                 'info [choose] [gatherThroughCache] page-consistency-choice: resumed 3 voices',
                 'info [choose] the choice among the candidates had no strict majority (3 usable); asking the bench once more among the '
-                + `finalists ${LABELS.join(' and ',)}`,
+                  + `finalists ${LABELS.join(' and ',)}`,
                 'info [choose] [gatherThroughCache] page-consistency-choice-run-off: resumed 3 voices',
                 `info [choose] the run-off among the candidates counted 3 usable of 3 heard (quorum 2): ${WRITER_LABEL} won`,
               ],
@@ -674,7 +674,7 @@ await describe({
               lines: [
                 'info [choose] [gatherThroughCache] page-consistency-choice: resumed 3 voices',
                 'info [choose] the choice among the candidates had no strict majority (3 usable); asking the bench once more among the '
-                + `finalists ${LABELS.join(' and ',)}`,
+                  + `finalists ${LABELS.join(' and ',)}`,
                 'info [choose] [gatherThroughCache] page-consistency-choice-run-off: resumed 2 voices',
                 'info [choose] the run-off among the candidates counted 2 usable of 2 heard (quorum 3): no winner (no-quorum)',
               ],

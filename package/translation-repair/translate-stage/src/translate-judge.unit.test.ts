@@ -498,9 +498,9 @@ await describe({
         it({
           name:
             'REFUSES AN ANCHOR AS `no-voice-heard` WHEN NOBODY ANSWERED, because an empty slate with no '
-            + 'translator heard says nothing about the passage and everything about the hour. Recorded as '
-            + '`no-candidate` until the reason split, which is how a provider having a bad hour left holes in '
-            + 'published pages that nothing could tell from passages the models genuinely could not render',
+              + 'translator heard says nothing about the passage and everything about the hour. Recorded as '
+              + '`no-candidate` until the reason split, which is how a provider having a bad hour left holes in '
+              + 'published pages that nothing could tell from passages the models genuinely could not render',
           fn: async () => {
             const refusal = await refusalOverAnchor({ heardTranslators: 0, },);
 
@@ -518,9 +518,9 @@ await describe({
         it({
           name:
             'REFUSES AN ANCHOR AS `no-candidate` WHEN TRANSLATORS WERE HEARD AND PROPOSED NOTHING USABLE, '
-            + 'which is the half that really is about the passage. Both cases are needed: one reason '
-            + 'covering both would satisfy either case alone, so only the PAIR shows the distinction is '
-            + 'drawn rather than a constant returned',
+              + 'which is the half that really is about the passage. Both cases are needed: one reason '
+              + 'covering both would satisfy either case alone, so only the PAIR shows the distinction is '
+              + 'drawn rather than a constant returned',
           fn: async () => {
             const refusal = await refusalOverAnchor({ heardTranslators: 3, },);
 
@@ -1065,7 +1065,7 @@ await describe({
             const distinct = [...new Set(tenseBlocksOf({ content: sheet, },),),];
             expect(distinct,).toEqual([
               `TENSE CANDIDATES, to check against the house tense rule\n`
-              + `=====\n${[TENSE_EXPLANATION, ...groups,].join('\n',)}\n=====`,
+                + `=====\n${[TENSE_EXPLANATION, ...groups,].join('\n',)}\n=====`,
             ],);
           },
         },),

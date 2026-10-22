@@ -303,10 +303,10 @@ function respelling(
   const canadian = CANADIAN_SPELLINGS.get(lower,);
   if ((shape === 'other') || kept.has(lower,)
     || besideNonProse({
-    text,
-    start,
-    end,
-  },))
+      text,
+      start,
+      end,
+    },))
     return word;
   if (mother !== undefined) {
     return motherWord({

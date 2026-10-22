@@ -192,26 +192,26 @@ function rejectingClient(
       const value: unknown = (schema === 'translation_report')
         ? { translation: rendering, }
         : (schema === 'candidate_ballot')
-        ? {
-          best: 0,
-          assessment: rejection,
-        }
-        : (schema === 'consolidate_gate')
-        ? {
-          verdict: 'consolidated',
-          unsupported: [],
-          dropped: [],
-          assessment: 'faithful',
-        }
-        : (schema === 'refine_report')
-        ? { rewrites: [], }
-        : (schema === 'absolute_naturalness_review')
-        ? {
-          isAcceptable: true,
-          findings: [],
-          assessment: 'publication-ready',
-        }
-        : undefined;
+          ? {
+            best: 0,
+            assessment: rejection,
+          }
+          : (schema === 'consolidate_gate')
+            ? {
+              verdict: 'consolidated',
+              unsupported: [],
+              dropped: [],
+              assessment: 'faithful',
+            }
+            : (schema === 'refine_report')
+              ? { rewrites: [], }
+              : (schema === 'absolute_naturalness_review')
+                ? {
+                  isAcceptable: true,
+                  findings: [],
+                  assessment: 'publication-ready',
+                }
+                : undefined;
       if (value === undefined)
         throw new Error(`no fixture reply for ${schema}`,);
       if (!request.validate(value,))

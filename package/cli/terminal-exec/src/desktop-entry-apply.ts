@@ -53,8 +53,8 @@ export function applyKey({
       ...entry,
       isTerminal: value.split(';',)
         .some(function matchTerminal(cat,) {
-        return cat === 'TerminalEmulator';
-      },),
+          return cat === 'TerminalEmulator';
+        },),
     };
   }
   if (key === 'Hidden')
@@ -73,9 +73,9 @@ export function applyKey({
       ...entry,
       onlyShowIn: value.split(';',)
         .filter(function nonEmpty(s,) {
-        return s.length
-          > 0;
-      },),
+          return s.length
+            > 0;
+        },),
     };
   }
   if (key === 'NotShowIn') {
@@ -83,9 +83,9 @@ export function applyKey({
       ...entry,
       notShowIn: value.split(';',)
         .filter(function nonEmpty(s,) {
-        return s.length
-          > 0;
-      },),
+          return s.length
+            > 0;
+        },),
     };
   }
   if ((key === 'X-TerminalArgExec') || (key === 'TerminalArgExec'))

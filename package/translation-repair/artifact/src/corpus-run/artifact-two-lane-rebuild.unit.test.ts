@@ -246,8 +246,8 @@ await describe({
     it({
       name:
         'REPRODUCES the run\'s own slicing from a recorded section pairing, proved by the identity hash: '
-        + 'the deterministic aligner pairs these sections by index, the run crossed them, and the '
-        + 'rebuild lands on the crossing rather than the index order',
+          + 'the deterministic aligner pairs these sections by index, the run crossed them, and the '
+          + 'rebuild lands on the crossing rather than the index order',
       fn: async () => {
         /**
          How the run carved it: sections crossed, block rounds asked and
@@ -296,8 +296,8 @@ await describe({
     it({
       name:
         'SAYS it did not reproduce the run\'s carve where the recipe is complete and the carve still moved '
-        + '(ledger A12: mikaela15 recorded 34 slices, rebuilt to 32 after the class one hundred twelve '
-        + 'slicer change, and nothing said so)',
+          + '(ledger A12: mikaela15 recorded 34 slices, rebuilt to 32 after the class one hundred twelve '
+          + 'slicer change, and nothing said so)',
       fn: async () => {
         /**
          How the run carved it.
@@ -336,7 +336,7 @@ await describe({
     it({
       name:
         'REPRODUCES a recorded block pairing, keyed back by aligned section: a pairing that declines the '
-        + 'middle block takes it out of the slice, and the rebuild carries the same slice text',
+          + 'middle block takes it out of the slice, and the rebuild carries the same slice text',
       fn: async () => {
         /**
          How the run carved it: the middle block declined by the roster.
@@ -391,7 +391,7 @@ await describe({
     it({
       name:
         'ANSWERS MOVED IN THE REFUSAL\'S WORDS where the recorded block pairing names a translation block the '
-        + 'carved text lacks, and carves every section\'s blocks by the deterministic aligner instead',
+          + 'carved text lacks, and carves every section\'s blocks by the deterministic aligner instead',
       fn: async () => {
         /**
          How the run carved it: each of the section's four blocks paired with
@@ -463,7 +463,7 @@ await describe({
     it({
       name:
         'KEEPS THE DEATH THE ENTRY RECORDS in the carve it makes again after setting a recorded block pairing '
-        + 'aside, for an artifact of generation fifteen',
+          + 'aside, for an artifact of generation fifteen',
       fn: async () => {
         /**
          How the run carved it, the last pair naming translation block 3.
@@ -516,7 +516,7 @@ await describe({
     it({
       name:
         'NAMES every recipe half a file does not record and rebuilds with the deterministic default, '
-        + 'which is what every artifact settled before the fields existed looks like',
+          + 'which is what every artifact settled before the fields existed looks like',
       fn: async () => {
         /**
          Run carved deterministically, then recorded as an old file would be.
@@ -552,7 +552,7 @@ await describe({
     it({
       name:
         'NAMES only the missing half when the other is recorded, so a reader can say which default was '
-        + 'guessed rather than reporting a whole recipe as absent',
+          + 'guessed rather than reporting a whole recipe as absent',
       fn: async () => {
         /**
          Run that asked the block rounds and recorded them, read through a

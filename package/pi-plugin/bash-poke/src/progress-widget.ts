@@ -210,8 +210,8 @@ function createProgressView(
       return;
     state.ticker = setInterval(
       function onTick(): void {
-      draw();
-    },
+        draw();
+      },
       tickMs,
     );
     // A ticking clock must never be the reason a process stays alive.
@@ -264,9 +264,9 @@ function createProgressView(
       return;
     state.timer = setTimeout(
       function onCoalescedDraw(): void {
-      delete state.timer;
-      draw();
-    },
+        delete state.timer;
+        draw();
+      },
       delayMs,
     );
     // A pending redraw must never be the reason a process stays alive.

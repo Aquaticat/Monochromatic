@@ -126,11 +126,11 @@ export function laneTextsForSlate(
     // lane name puts a withheld standing on the slate.
     if (
       rendersAsNothing({ text: laneText.text, },)
-      || sameWording({
-        proposal: laneText.text,
-        standing: standingText,
-        lineStructured,
-      },)
+        || sameWording({
+          proposal: laneText.text,
+          standing: standingText,
+          lineStructured,
+        },)
     )
       return false;
     /**

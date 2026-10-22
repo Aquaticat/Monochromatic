@@ -290,12 +290,12 @@ function exerciseMember({
       return true;
     (held as (this: object, ...args: readonly unknown[]) => unknown)
       .apply(
-        receiver,
-        [...memberArguments({
-          ownerName,
-          memberName,
-          witness,
-        },),],
+      receiver,
+      [...memberArguments({
+        ownerName,
+        memberName,
+        witness,
+      },),],
       );
     return true;
   }

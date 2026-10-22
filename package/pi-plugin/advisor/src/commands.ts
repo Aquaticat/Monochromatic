@@ -136,7 +136,7 @@ export function registerAdvisorCommands(
         },);
       },
     },
-  );
+    );
 }
 
 /**
@@ -243,11 +243,11 @@ async function handleAdvisorCommand(
       .ctx
       .ui
       .notify(await buildAdvisorStatus({
-      ctx: options.ctx,
-      config: options.getConfig(),
-      enabled: options.state
-        .getEnabled(),
-    },),);
+        ctx: options.ctx,
+        config: options.getConfig(),
+        enabled: options.state
+          .getEnabled(),
+      },),);
     return;
   }
 
@@ -287,7 +287,7 @@ async function handleAdvisorCommand(
       .notify(
       'Advisor is disabled for this session. Run /advisor on to re-enable.',
       'error',
-    );
+      );
     return;
   }
 
@@ -360,14 +360,14 @@ async function runImmediateAdvisor(
         .notify(
         'Advisor review cancelled.',
         'warning',
-      );
+        );
       return;
     }
     ctx.ui
       .notify(
       `Advisor review failed: ${caughtValueText(error,)}`,
       'error',
-    );
+      );
   }
 }
 

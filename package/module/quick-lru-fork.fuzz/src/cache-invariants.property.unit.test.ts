@@ -117,7 +117,7 @@ await describe({
                   (error instanceof InvalidMaxSizeError)
                     || (error instanceof InvalidMaxAgeError)
                     || ((Error.isError(error,)) && (error.name === 'TypeError')),
-                  ).toBe(true,);
+                ).toBe(true,);
               }
             },
           ),

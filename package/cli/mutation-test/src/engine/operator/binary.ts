@@ -107,7 +107,7 @@ function tokenSwap(options: {
     start: tokenStart,
     end: tokenStart
       + options.currentToken
-      .length,
+        .length,
     text: options.newToken,
     operator: options.operator,
     description: `swapped ${options.currentToken} with ${options.newToken}`,

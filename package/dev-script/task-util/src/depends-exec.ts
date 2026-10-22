@@ -180,7 +180,7 @@ function dumpAndHandleError({
       !== undefined)
       && (subprocessError.signalName
         !== ''))
-    {
+      {
       console.error(
         `[task-depends] command terminated by signal: ${subprocessError.signalName}`,
       );

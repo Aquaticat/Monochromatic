@@ -200,19 +200,19 @@ export function readUntranslatedTail(
   const paired = slices
     .filter(isPaired,)
     .reduce(
-      function sumPaired(
-        sums: PairedSums,
-        slice,
-      ): PairedSums {
-        return {
-          source: sums.source + sourceSize(slice,),
-          target: sums.target + targetSize(slice,),
-        };
-      },
-      {
-        source: 0,
-        target: 0,
-      },
+    function sumPaired(
+      sums: PairedSums,
+      slice,
+    ): PairedSums {
+      return {
+        source: sums.source + sourceSize(slice,),
+        target: sums.target + targetSize(slice,),
+      };
+    },
+    {
+      source: 0,
+      target: 0,
+    },
     );
   /**
    The page's own expansion, or the corpus median when nothing was paired.
@@ -226,13 +226,13 @@ export function readUntranslatedTail(
   const sourceCodePoints = tailSlices
     .map(sourceSize,)
     .reduce(
-      function sum(
-        total,
-        size,
-      ): number {
-        return total + size;
-      },
-      0,
+    function sum(
+      total,
+      size,
+    ): number {
+      return total + size;
+    },
+    0,
     );
   /**
    Last agreed pair, absent when nothing was paired.

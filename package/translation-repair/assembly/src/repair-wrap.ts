@@ -133,11 +133,11 @@ export function wrapRepairOutcomes(
     // bytes.
     if (
       (incumbentText !== undefined)
-      && sameWording({
-        proposal: repairedText,
-        standing: incumbentText,
-        lineStructured,
-      },)
+        && sameWording({
+          proposal: repairedText,
+          standing: incumbentText,
+          lineStructured,
+        },)
     ) {
       counted.demoted += 1;
       return {

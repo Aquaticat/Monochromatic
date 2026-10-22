@@ -160,10 +160,10 @@ export type NeuralWattPlanSpend =
      */
     readonly laterStartAt?: string;
   }
-  | {
-    readonly kind: 'not-comparable';
-    readonly reason: string;
-  };
+    | {
+      readonly kind: 'not-comparable';
+      readonly reason: string;
+    };
 
 /**
  Reads an optional field of a subscription as the value it holds.
@@ -386,7 +386,7 @@ export function planSpendBetween(
   if (before.subscription
     .periodStart
     !== after.subscription
-    .periodStart)
+      .periodStart)
     return {
       kind: 'not-comparable',
       reason: 'the billing period rolled over between the two readings, so the charged energy restarted',

@@ -131,7 +131,7 @@ export class ZipWriter {
         crc: crc32(data,),
         modified: this.#defaultModified,
       },
-    );
+      );
   }
 
   /**

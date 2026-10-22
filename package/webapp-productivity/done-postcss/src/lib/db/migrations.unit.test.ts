@@ -73,12 +73,12 @@ async function insertTask({ database, seed, }: { database: Database; seed: TaskS
     'INSERT INTO tasks (id, title, description, tags, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
   ))
     .run(
-      seed.id,
-      seed.title,
-      seed.description,
-      seed.tags,
-      seed.updatedAt,
-      seed.updatedAt,
+    seed.id,
+    seed.title,
+    seed.description,
+    seed.tags,
+    seed.updatedAt,
+    seed.updatedAt,
     );
 }
 

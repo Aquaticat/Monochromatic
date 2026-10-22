@@ -30,11 +30,11 @@ import { buildTranslateMessages, } from '../dist/final/node/index.mjs';
  */
 const PICTURE_SCOPE =
   'WHAT THE PICTURES HERE SAY transcribes the pictures in and beside this passage so that words about them read right; '
-  + 'it is not part of the ORIGINAL passage. Render a picture\'s words only where the ORIGINAL passage itself writes them out '
-  + 'or the EXISTING TRANSLATION of this passage already carries them. Render a picture component (a tag naming picture files) '
-  + 'exactly as the ORIGINAL has it, with no transcript added beside it: a transcript neither the passage nor its existing '
-  + 'translation carries is an addition, and where the page translates that picture in a block of its own it would stand '
-  + 'on the page twice.';
+    + 'it is not part of the ORIGINAL passage. Render a picture\'s words only where the ORIGINAL passage itself writes them out '
+    + 'or the EXISTING TRANSLATION of this passage already carries them. Render a picture component (a tag naming picture files) '
+    + 'exactly as the ORIGINAL has it, with no transcript added beside it: a transcript neither the passage nor its existing '
+    + 'translation carries is an addition, and where the page translates that picture in a block of its own it would stand '
+    + 'on the page twice.';
 
 /**
  Original passage: a picture component and nothing else.

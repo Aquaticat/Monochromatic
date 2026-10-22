@@ -35,15 +35,15 @@ await describe({
       fn: async () => {
         expect(
           declaredTypeNames([
-          '/** Use it as a guide. */',
-          'export type A<T> = T;',
-          'export interface B {',
-          'export declare const enum C {',
-          'export declare function d(): void;',
-          'export {',
-          '\tE$1 as E,',
-          '};',
-        ].join('\n',),),
+            '/** Use it as a guide. */',
+            'export type A<T> = T;',
+            'export interface B {',
+            'export declare const enum C {',
+            'export declare function d(): void;',
+            'export {',
+            '\tE$1 as E,',
+            '};',
+          ].join('\n',),),
         )
           .toEqual([
             'A',
@@ -61,8 +61,8 @@ await describe({
          */
         const declarationPath = fileURLToPath(import.meta.resolve('deepmerge-ts',),)
           .replace(
-            'index.mjs',
-            'index.d.mts',
+          'index.mjs',
+          'index.d.mts',
           );
         /**
          Names the release exports, minus those covered elsewhere.

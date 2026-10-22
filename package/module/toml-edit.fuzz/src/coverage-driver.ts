@@ -332,7 +332,7 @@ const snapshot = tallySnapshot();
 
 console.log(
   `coverage driver: seed=${String(seed,)} numRuns=${String(numRuns,)} ok=${String(snapshot.ok,)} `
-  + `rejected=${String(snapshot.rejected,)} docs=${String(documents.length,)} corrupted=${String(corrupted.length,)} `
+    + `rejected=${String(snapshot.rejected,)} docs=${String(documents.length,)} corrupted=${String(corrupted.length,)} `
     + `validCorpus=${String(validCorpus.length,)} invalidCorpus=${String(invalidCorpus.length,)}`,
 );
 

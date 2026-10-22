@@ -196,14 +196,14 @@ export type RoundQuorum =
      */
     readonly inGraceMs: number;
   }
-  | {
-    readonly kind: 'never';
+    | {
+      readonly kind: 'never';
 
     /**
      Voices the round needed and never heard enough of.
      */
-    readonly needed: number;
-  };
+      readonly needed: number;
+    };
 
 /**
  One fan-out round, as its own line reported it.
@@ -257,13 +257,13 @@ export type RoundReading =
      */
     readonly round: RoundTiming;
   }
-  | {
+    | {
     /**
      Line says nothing about a round, including a round line truncated by a
      log still being written.
      */
-    readonly kind: 'other-line';
-  };
+      readonly kind: 'other-line';
+    };
 
 /**
  One model call, as its completion line reported it.
@@ -313,28 +313,28 @@ export type CallReading =
      */
     readonly call: CallTiming;
   }
-  | {
+    | {
     /**
      Completion line carrying no duration, which every log written before
      the timing work is made of. Counted rather than skipped, so a report can say how
      much of an archive it could not read.
      */
-    readonly kind: 'untimed';
-  }
-  | {
+      readonly kind: 'untimed';
+    }
+    | {
     /**
      Completion line carrying a duration but no stamp as the logger writes
      one, so no instant places the call (ledger B73). Counted rather than
      skipped, like an untimed line.
      */
-    readonly kind: 'unstamped';
-  }
-  | {
+      readonly kind: 'unstamped';
+    }
+    | {
     /**
      Line is not a completion at all.
      */
-    readonly kind: 'other-line';
-  };
+      readonly kind: 'other-line';
+    };
 
 /**
  Reads one field as a whole number, refusing anything else.
@@ -490,8 +490,8 @@ function neededIn(
   const counts = framed
     ? field
       .slice(
-        NO_QUORUM_OPEN.length,
-        -NO_QUORUM_CLOSE.length,
+      NO_QUORUM_OPEN.length,
+      -NO_QUORUM_CLOSE.length,
       )
       .split(NO_QUORUM_JOIN,)
     : [];
@@ -568,8 +568,8 @@ export function readRoundTiming(
    */
   const stage = nonNullishOrThrow(line
     .slice(
-      0,
-      at,
+    0,
+    at,
     )
     .split(' ',)
     .at(-1,),);
@@ -670,8 +670,8 @@ export function readCallTiming(
    */
   const stamp = line
     .slice(
-      0,
-      at,
+    0,
+    at,
     )
     .split('] [',)
     .at(1,);

@@ -221,12 +221,12 @@ function redirected(
       ): string {
         return current
           .replaceAll(
-            `](${from})`,
-            `](${to})`,
+          `](${from})`,
+          `](${to})`,
           )
           .replaceAll(
-            `](${from} `,
-            `](${to} `,
+          `](${from} `,
+          `](${to} `,
           );
       },
       text,

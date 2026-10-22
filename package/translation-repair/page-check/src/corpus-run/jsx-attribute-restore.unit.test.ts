@@ -153,7 +153,7 @@ await describe({
           ],
           findings: [
             'jsx-attribute-restored (slice 0: <Paw n="五" side="LEFT"/> to <Paw n="V" n="5" side="left"/>; '
-            + 'a tag attribute is apparatus the archive fixed)',
+              + 'a tag attribute is apparatus the archive fixed)',
           ],
         },);
       },

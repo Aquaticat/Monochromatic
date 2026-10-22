@@ -130,9 +130,9 @@ export function removeDirectory({ directory, }: { readonly directory: string; },
     rmSync(
       directory,
       {
-      recursive: true,
-      force: true,
-    },
+        recursive: true,
+        force: true,
+      },
     );
   }
   catch (error) {
@@ -161,8 +161,8 @@ export function createTempDirectory(): string {
   mkdirSync(
     parent,
     {
-    recursive: true,
-  },
+      recursive: true,
+    },
   );
   /**
    Empty fixture directory created for one test.
@@ -340,9 +340,9 @@ export function createDisposableHome(): DisposableHome {
     .HOME = home;
   process.env
     .XDG_CONFIG_HOME = path.join(
-    home,
-    '.config',
-  );
+      home,
+      '.config',
+    );
   return {
     home,
     previousValues,
@@ -556,7 +556,7 @@ export function runRegisteredCleanups(): void {
 process.on(
   'exit',
   function sweepFixtureRegistry(): void {
-  for (const cleanup of fixtureRegistry)
-    cleanup();
-},
+    for (const cleanup of fixtureRegistry)
+      cleanup();
+  },
 );

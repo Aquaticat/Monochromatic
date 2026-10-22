@@ -32,8 +32,8 @@
  ```
  */
 export type DeepReadonlyData<Value,> = Value extends object ? {
-    readonly [Key in keyof Value]: DeepReadonlyData<Value[Key]>;
-  }
+  readonly [Key in keyof Value]: DeepReadonlyData<Value[Key]>;
+}
   : Value;
 
 //endregion Readonly data views

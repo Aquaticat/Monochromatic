@@ -265,10 +265,10 @@ function regionBlock(
         return [];
       return issue.claims
         .map(function toSummary(member,) {
-        return `- issue (${member.claim
+          return `- issue (${member.claim
           .category}, ${issue.severity}): ${flattenSpace({ text: member.claim
             .summary, },)}`;
-      },);
+        },);
     },);
 
   /**
@@ -419,9 +419,9 @@ export function buildEditorMessages(
    The passages either side, or nothing when this slice stands alone.
    */
   const nearbyBlock = ((neighbouringSourceText === undefined)
-      || (neighbouringSourceText === ''))
-      && ((neighbouringIncumbentText === undefined)
-        || (neighbouringIncumbentText === ''))
+    || (neighbouringSourceText === ''))
+    && ((neighbouringIncumbentText === undefined)
+      || (neighbouringIncumbentText === ''))
     ? ''
     : `${fence} NEARBY ORIGINAL, CONTEXT ONLY ${fence}
 ${neighbouringSourceText ?? ''}

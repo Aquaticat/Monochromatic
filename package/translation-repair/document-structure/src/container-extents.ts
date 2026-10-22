@@ -120,7 +120,7 @@ function interiorBound(
       index,
     ): readonly number[] {
       return ((extent.startOffset >= container.openerEndOffset)
-          && (extent.endOffset <= container.closerStartOffset))
+        && (extent.endOffset <= container.closerStartOffset))
         ? [index,]
         : [];
     },);

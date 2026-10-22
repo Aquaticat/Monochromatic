@@ -24,18 +24,18 @@ export type ConsistencyVoice = ConsistencyBallot & {
  */
 export type UnlocatedReason =
   | 'not-asked'
-  | 'no-english'
-  | 'no-agreement'
-  | 'empty'
-  | 'not-found'
-  | 'ambiguous'
-  | 'markup'
-  | 'overlaps-another'
-  | 'slot-no-agreement'
-  | 'slot-empty'
-  | 'slot-not-found'
-  | 'slot-ambiguous'
-  | 'slot-whole';
+    | 'no-english'
+    | 'no-agreement'
+    | 'empty'
+    | 'not-found'
+    | 'ambiguous'
+    | 'markup'
+    | 'overlaps-another'
+    | 'slot-no-agreement'
+    | 'slot-empty'
+    | 'slot-not-found'
+    | 'slot-ambiguous'
+    | 'slot-whole';
 
 /**
  Where a place's rendering stands in its English, or why it cannot be found.
@@ -121,17 +121,17 @@ export type ConsistencyRendering =
      */
     readonly definitions?: string;
   }
-  | {
+    | {
     /**
      The rendering cannot be found, so the place stays as it stands.
      */
-    readonly kind: 'unlocated';
+      readonly kind: 'unlocated';
 
     /**
      Why.
      */
-    readonly reason: UnlocatedReason;
-  };
+      readonly reason: UnlocatedReason;
+    };
 
 /**
  Why the group has no winner. The two run-off reasons are given only after the
@@ -140,10 +140,10 @@ export type ConsistencyRendering =
  */
 export type NoWinnerReason =
   | 'no-quorum'
-  | 'no-majority'
-  | 'chosen-unlocated'
-  | 'run-off-no-quorum'
-  | 'run-off-tied';
+    | 'no-majority'
+    | 'chosen-unlocated'
+    | 'run-off-no-quorum'
+    | 'run-off-tied';
 
 /**
  Which place every place should follow, or why none.
@@ -165,17 +165,17 @@ export type ConsistencyWinner =
      */
     readonly label: string;
   }
-  | {
+    | {
     /**
      No place won, so the group stays as it stands.
      */
-    readonly kind: 'none';
+      readonly kind: 'none';
 
     /**
      Why.
      */
-    readonly reason: NoWinnerReason;
-  };
+      readonly reason: NoWinnerReason;
+    };
 
 /**
  What the ballots of one group come to.

@@ -35,11 +35,11 @@ export const STACK_OVERFLOW_ACCOUNT = 'nested too deeply to read: the parser exh
  */
 export type NestingMeasure =
   | 'container markers'
-  | 'indentation'
-  | 'brackets'
-  | 'open tags'
-  | 'open braces'
-  | 'emphasis delimiters';
+    | 'indentation'
+    | 'brackets'
+    | 'open tags'
+    | 'open braces'
+    | 'emphasis delimiters';
 
 /**
  Where a body first passes the bound.
@@ -72,7 +72,7 @@ export type NestingExcess = {
  */
 export type NestingReading =
   | { readonly kind: 'within'; }
-  | ({ readonly kind: 'beyond'; } & NestingExcess);
+    | ({ readonly kind: 'beyond'; } & NestingExcess);
 
 /**
  Which grammar will read the body, since a plain markdown parse nests over

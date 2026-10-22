@@ -436,12 +436,12 @@ export function readTagName(
       )
     }`;
     return namedTagGoesOn({
+      text,
+      at: pastTagWhitespace({
         text,
-        at: pastTagWhitespace({
-          text,
-          from: reading.end,
-        },),
-      },)
+        from: reading.end,
+      },),
+    },)
       ? [{
         closes,
         name: reading.name,
@@ -487,9 +487,9 @@ export function readTagName(
     },);
   }
   return namedTagGoesOn({
-      text,
-      at: cursor.at,
-    },)
+    text,
+    at: cursor.at,
+  },)
     ? [{
       closes,
       name: reading.name,
@@ -581,9 +581,9 @@ export function readAttributeName(
   },);
   if (text.charAt(afterPrimary,) !== ':') {
     return ((text.charAt(afterPrimary,) === '=') || namedTagGoesOn({
-        text,
-        at: afterPrimary,
-      },))
+      text,
+      at: afterPrimary,
+    },))
       ? [{
         name: text.slice(
           at,
@@ -625,9 +625,9 @@ export function readAttributeName(
     from: localEnd,
   },);
   return ((text.charAt(afterLocal,) === '=') || namedTagGoesOn({
-      text,
-      at: afterLocal,
-    },))
+    text,
+    at: afterLocal,
+  },))
     ? [{
       name: `${
         text.slice(

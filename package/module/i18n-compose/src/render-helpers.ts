@@ -239,7 +239,7 @@ export function applyCapitalization(
   const firstChar = text.charAt(0,);
   return firstChar.toUpperCase()
     + text
-    .slice(1,);
+      .slice(1,);
 }
 
 /**

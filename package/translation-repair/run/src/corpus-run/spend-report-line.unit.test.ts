@@ -100,7 +100,7 @@ await describe({
               totalCredits: 2,
             },),).toBe(
               '  qwen3.8-max: 2.00 credits (100.0%) over 1 call, in 1000=1.00 out 500=1.00, '
-              + '1 of them reckoned rather than reported',
+                + '1 of them reckoned rather than reported',
             );
           },
         },),
@@ -171,7 +171,7 @@ await describe({
               totalUsd: 0.0625,
             },),).toBe(
               '  minimax/minimax-m3: 0.0625 USD (100.0%) over 2 calls, in 15 out 25, '
-              + 'a floor: 1 call carried no cost, 1 of them reckoned rather than reported',
+                + 'a floor: 1 call carried no cost, 1 of them reckoned rather than reported',
             );
           },
         },),

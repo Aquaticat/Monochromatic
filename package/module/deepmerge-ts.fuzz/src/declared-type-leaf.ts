@@ -39,11 +39,11 @@ export const LEAF_TYPE_ARBITRARY: Arbitrary<TypeNode> = oneof(
     false,
   )
     .map(function toLiteral(value: boolean | number | string,): TypeNode {
-    return {
-      kind: 'literal',
-      value,
-    };
-  },),
+      return {
+        kind: 'literal',
+        value,
+      };
+    },),
 );
 
 /**

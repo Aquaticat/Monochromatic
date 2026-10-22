@@ -24,11 +24,11 @@ export type NpmPackage = {
 export type NpmVersion = {
   readonly repository?:
     | string
-    | {
-      readonly type?: string;
-      readonly url?: string;
-      readonly directory?: string;
-    };
+      | {
+        readonly type?: string;
+        readonly url?: string;
+        readonly directory?: string;
+      };
   readonly dependencies?: Readonly<Record<string, string>>;
   readonly dist?: { readonly unpackedSize?: number; };
   readonly license?: string | { readonly type?: string; };

@@ -223,7 +223,7 @@ export function questionVerbParts(
     return {
       auxiliary: tense === 'past' ? entry.past
         ?? entry
-        .base : entry.base,
+          .base : entry.base,
       lexicalVerb: '',
       complementForm: 'bare',
     };
@@ -273,7 +273,7 @@ export function subjectQuestionVerbSurface(
   if ((strategy === 'modal') || (strategy === 'none'))
     return tense === 'past' ? entry.past
       ?? entry
-      .base : entry.base;
+        .base : entry.base;
   if (tense === 'future')
     return `will ${entry.base}`;
   return declarativeVerbSurface({
@@ -335,7 +335,7 @@ export function makeEnglishVerbPhraseRenderer<
   S extends string,
   V extends string,
   N extends string,
->(
+  >(
   {
     verbs,
     renderNounPhrase,
@@ -347,7 +347,7 @@ export function makeEnglishVerbPhraseRenderer<
       advs?: readonly Adverbial<S, N>[],
     ) => string;
   },
-): (phrase: VerbPhrase<S, V, N>,) => string {
+  ): (phrase: VerbPhrase<S, V, N>,) => string {
   /**
    Renders a verb-phrase AST in English using the base verb form.
    

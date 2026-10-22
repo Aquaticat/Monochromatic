@@ -240,11 +240,11 @@ function consumePeerAllowedIpsKey(
   const paths = parseAllowedFromFiles({ value, },);
   acc.allowedFromFiles
     .push({
-    ...paths,
-    peerIndex: acc.peerIndex,
-    wgLineIndex: acc.wgLines
-      .length,
-  },);
+      ...paths,
+      peerIndex: acc.peerIndex,
+      wgLineIndex: acc.wgLines
+        .length,
+    },);
   acc.peerHasAllowedFromFiles = true;
   return true;
 }

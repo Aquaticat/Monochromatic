@@ -70,7 +70,7 @@ await describe({
             expect(Object.values(COMMAND_OWNERS,)
               .filter((owner,) =>
                 (owner === '') || (owner !== owner.toLowerCase()) || owner.includes('/',) || owner.includes(':',)
-                || owner.includes(' ',)),).toEqual([],);
+                  || owner.includes(' ',)),).toEqual([],);
           },
         },),
       ],

@@ -50,27 +50,27 @@ type SliceSet =
      */
     readonly holds: false;
   }
-  | {
+    | {
     /**
      The splices overlap no replacement that stands or one another and the floors pass the slice with them made.
      */
-    readonly holds: true;
+      readonly holds: true;
 
     /**
      The replacements the slice makes with them, in priority order.
      */
-    readonly edits: readonly ConsistencyEdit[];
+      readonly edits: readonly ConsistencyEdit[];
 
     /**
      The slice with them made.
      */
-    readonly made: MadeSlice;
+      readonly made: MadeSlice;
 
     /**
      What the floors said of the slice with them made.
      */
-    readonly verdict: ConsistencyFloorVerdict;
-  };
+      readonly verdict: ConsistencyFloorVerdict;
+    };
 
 /**
  What {@link largestValidSetOf} answers when no set larger than the size it was given is valid.

@@ -41,7 +41,7 @@ await describe({
               ratio: 5 / 76,
             },),).toBe(
               'TRANSLATE XingZ60: source 76 blocks / 4641 chars, target 5 blocks / 300 chars, '
-              + 'coverage 0.066 (barely translated)',
+                + 'coverage 0.066 (barely translated)',
             );
           },
         },),

@@ -63,15 +63,15 @@ export type RegionAnchoring =
      */
     readonly holders: readonly AnchorHolder[];
   }
-  | {
-    readonly anchored: false;
+    | {
+      readonly anchored: false;
 
     /**
      Why the region cannot be placed: the locator's reason, or a block no
      paired slice holds.
      */
-    readonly reason: string;
-  };
+      readonly reason: string;
+    };
 
 /**
  Positions of paired slices whose target span holds the whole block.
@@ -171,8 +171,8 @@ export function anchorRegion(
        */
       const blockText = target.text
         .slice(
-          anchor.startOffset,
-          anchor.endOffset,
+        anchor.startOffset,
+        anchor.endOffset,
         );
       /**
        Code points of that share.

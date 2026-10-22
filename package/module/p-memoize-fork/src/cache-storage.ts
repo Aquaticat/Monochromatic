@@ -129,13 +129,13 @@ export type ShouldCache<
   KeyType,
   ValueType,
   ArgumentsList extends readonly unknown[] = readonly unknown[],
-> = (
-  value: ValueType,
-  context: {
-    key: KeyType;
-    argumentsList: ArgumentsList;
-  },
-) => boolean | Promise<boolean>;
+  > = (
+    value: ValueType,
+    context: {
+      key: KeyType;
+      argumentsList: ArgumentsList;
+    },
+  ) => boolean | Promise<boolean>;
 
 //endregion Write predicate
 

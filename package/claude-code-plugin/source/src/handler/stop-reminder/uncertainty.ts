@@ -204,7 +204,7 @@ function startsWithWordBounded(
     return false;
   if (s.length
     === prefix
-    .length)
+      .length)
     return true;
   /**
    Character immediately after the prefix; must not be alphanumeric to mark a boundary.

@@ -222,9 +222,9 @@ await describe({
               'not refused',
               'not refused',
               'artifact parse failed at cat.consistency.slices: expected a replacement, or a located place of another group, '
-              + 'in slice 2 for the overlapped place to overlap.',
+                + 'in slice 2 for the overlapped place to overlap.',
               'artifact parse failed at cat.consistency.slices: expected a replacement, or a located place of another group, '
-              + 'in slice 2 for the overlapped place to overlap.',
+                + 'in slice 2 for the overlapped place to overlap.',
             ],);
           },
         },),
@@ -368,7 +368,7 @@ await describe({
             ],).toEqual([
               'not refused',
               `${refusalStart({ place: 'group 1 OCCURRENCE 1 (overlapped, slice 2)', },)} to name a replaced or refused place, `
-              + 'or a place with a located rendering, and group 2 OCCURRENCE 1 is neither.',
+                + 'or a place with a located rendering, and group 2 OCCURRENCE 1 is neither.',
             ],);
           },
         },),
@@ -419,17 +419,17 @@ await describe({
               },),
             ],).toEqual([
               `${refusalStart({ place: 'group 1 OCCURRENCE 1 (overlapped, slice 2)', },)} to name a group the section holds, `
-              + 'and group 6 is not one.',
+                + 'and group 6 is not one.',
               `${refusalStart({ place: 'group 1 OCCURRENCE 1 (overlapped, slice 2)', },)} to name a place group 2 holds, `
-              + 'and OCCURRENCE 4 is not one.',
+                + 'and OCCURRENCE 4 is not one.',
               `${refusalStart({ place: 'group 1 OCCURRENCE 1 (overlapped, slice 2)', },)} to name a place of another group, `
-              + 'and group 1 is its own.',
+                + 'and group 1 is its own.',
               `${refusalStart({ place: 'group 1 OCCURRENCE 2 (overlapped, slice 2)', },)} to name a place of another group, `
-              + 'and group 1 is its own.',
+                + 'and group 1 is its own.',
               `${refusalStart({ place: 'group 1 OCCURRENCE 1 (overlapped, slice 2)', },)} to name a place in its own slice, `
-              + 'and group 2 OCCURRENCE 1 stands in slice 3.',
+                + 'and group 2 OCCURRENCE 1 stands in slice 3.',
               `${refusalStart({ place: 'group 1 OCCURRENCE 1 (overlapped, slice 2)', },)} to name a replaced or refused place, `
-              + 'or a place with a located rendering, and group 2 OCCURRENCE 1 is neither.',
+                + 'or a place with a located rendering, and group 2 OCCURRENCE 1 is neither.',
             ],);
           },
         },),

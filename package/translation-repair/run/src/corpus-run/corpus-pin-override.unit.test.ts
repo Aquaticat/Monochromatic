@@ -182,7 +182,7 @@ await describe({
               return [
                 true,
                 'StatedRefusalError: TRANSLATION_REPAIR_CORPUS_COMMIT must be one full lowercase hexadecimal '
-                + `commit name, and ${commit} is not one`,
+                  + `commit name, and ${commit} is not one`,
               ];
             },),);
           },

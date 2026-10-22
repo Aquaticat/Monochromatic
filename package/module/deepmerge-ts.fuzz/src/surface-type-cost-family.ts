@@ -24,8 +24,8 @@ export function range(count: number,): readonly number[] {
       _unused,
       position,
     ) {
-    return position;
-  },
+      return position;
+    },
   );
 }
 
@@ -52,13 +52,13 @@ function nested({
 },): string {
   return range(depth,)
     .reduce(
-      function wrap(
-        inner,
-        level,
-      ) {
-    return `{ n: ${inner}, l${String(level,)}${leaf}: ${String(level,)} }`;
-  },
-      `{ end${leaf}: true }`,
+    function wrap(
+      inner,
+      level,
+    ) {
+      return `{ n: ${inner}, l${String(level,)}${leaf}: ${String(level,)} }`;
+    },
+    `{ end${leaf}: true }`,
     );
 }
 

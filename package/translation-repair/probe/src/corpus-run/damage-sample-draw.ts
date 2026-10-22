@@ -94,12 +94,12 @@ export function drawRegions(
         region,
         key: createHash('sha256',)
           .update(
-            [
-              DAMAGE_DRAW_DOMAIN,
-              seed,
-              region.entryId,
-              region.regionId,
-            ].join(FIELD_SEPARATOR,),
+          [
+            DAMAGE_DRAW_DOMAIN,
+            seed,
+            region.entryId,
+            region.regionId,
+          ].join(FIELD_SEPARATOR,),
           )
           .digest('hex',),
       };
@@ -114,8 +114,8 @@ export function drawRegions(
       },);
     },)
     .slice(
-      0,
-      DAMAGE_SAMPLE_SIZE,
+    0,
+    DAMAGE_SAMPLE_SIZE,
     )
     .map(function toRegion(entry,) {
       return entry.region;

@@ -357,9 +357,9 @@ export type ResolvedImage =
     customTemplatePath: string;
     kind: 'custom';
   }
-  | {
-    kind: 'registry';
-    spec: ImageSpec;
-  };
+    | {
+      kind: 'registry';
+      spec: ImageSpec;
+    };
 
 //endregion Resolution

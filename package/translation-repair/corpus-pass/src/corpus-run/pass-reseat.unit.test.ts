@@ -222,8 +222,8 @@ await describe({
               return line.includes('chunk re-seated under a hold',);
             },),).toEqual([
               'JUDGE SEATS phase=lanes chunk re-seated under a hold: '
-              + 'checkers=google.gemma-4-31b,hf:Qwen/Qwen3.8-27B,xiaomi/mimo-v2.6-flash '
-              + 'unserved-checkers=hf:Qwen/Qwen3.8-27B,xiaomi/mimo-v2.6-flash',
+                + 'checkers=google.gemma-4-31b,hf:Qwen/Qwen3.8-27B,xiaomi/mimo-v2.6-flash '
+                + 'unserved-checkers=hf:Qwen/Qwen3.8-27B,xiaomi/mimo-v2.6-flash',
             ],);
             expect(servedLines.filter(function isChunkLine(line,): boolean {
               return line.includes('chunk re-seated under a hold',);

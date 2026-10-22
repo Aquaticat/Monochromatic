@@ -190,7 +190,7 @@ await describe({
 
         expect(printed.lines,).toEqual([
           'POOL resuming across 1 foreign pipeline because TRANSLATION_REPAIR_ALLOW_GENERATION_DRIFT=yes; a rate '
-          + 'over this directory must name a required commit',
+            + 'over this directory must name a required commit',
         ],);
       },
     },),

@@ -105,8 +105,8 @@ await describe({
     it({
       name:
         'hands back the repair READING rather than an absent field, so a caller can tell an artifact '
-        + 'written before repair recording from a run that recorded one. This used to collapse into an '
-        + 'optional property, which handed the caller back the question the reading had just answered',
+          + 'written before repair recording from a run that recorded one. This used to collapse into an '
+          + 'optional property, which handed the caller back the question the reading had just answered',
       fn: async () => {
         /**
          An artifact from before repair recording existed, whose records carry

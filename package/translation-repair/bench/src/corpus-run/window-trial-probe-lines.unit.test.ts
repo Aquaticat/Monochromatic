@@ -108,7 +108,7 @@ await describe({
               tornTail: false,
             },),).toBe(
               'ledger read for this report: 1 row under every protocol; 1 whole line left out as no trial row of this '
-              + 'build; last line whole',
+                + 'build; last line whole',
             );
           },
         },),
@@ -121,7 +121,7 @@ await describe({
               tornTail: true,
             },),).toBe(
               'ledger read for this report: 6 rows under every protocol; 0 whole lines left out as no trial row of this '
-              + 'build; last line cut short by a kill and not counted',
+                + 'build; last line cut short by a kill and not counted',
             );
           },
         },),

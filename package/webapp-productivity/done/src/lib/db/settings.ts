@@ -67,11 +67,11 @@ export async function setSetting({
 },): Promise<void> {
   await (await db
     .prepare(
-      'INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
+    'INSERT INTO settings (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value',
     ))
     .run(
-      key,
-      value,
+    key,
+    value,
     );
 }
 

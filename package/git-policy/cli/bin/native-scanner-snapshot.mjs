@@ -134,8 +134,8 @@ export async function vendorLockedDependencies({
   // Cargo prints the mapping for the host path; the image holds the same directory elsewhere.
   const mapping = vendored.stdout
     .replaceAll(
-      JSON.stringify(vendor),
-      JSON.stringify(imageVendorDirectory),
+    JSON.stringify(vendor),
+    JSON.stringify(imageVendorDirectory),
     );
   if (!mapping.includes(`directory = ${JSON.stringify(imageVendorDirectory)}`))
     throw new NativeVerificationError('Cargo vendor did not provide the expected offline source mapping.');

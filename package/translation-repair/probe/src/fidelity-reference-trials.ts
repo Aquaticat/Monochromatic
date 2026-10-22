@@ -104,28 +104,28 @@ export function reviewedFidelityTrials({
   const rows = references.flatMap(function referenceRows(reference,): readonly ReviewedFidelityTrial[] {
     return reference.damages
       .filter(function requested(damage,): boolean {
-      return damageKinds.includes(damage.damageKind,);
-    },)
+        return damageKinds.includes(damage.damageKind,);
+      },)
       .flatMap(function arrangements(damage,): readonly ReviewedFidelityTrial[] {
-      return ARRANGEMENTS.map(function arranged(arrangement,): ReviewedFidelityTrial {
-        return {
-          spec: reference.spec,
-          changedChars: damage.changedChars,
-          damageDetail: damage.damageDetail,
-          trial: {
-            trialId: `${reference.spec
+        return ARRANGEMENTS.map(function arranged(arrangement,): ReviewedFidelityTrial {
+          return {
+            spec: reference.spec,
+            changedChars: damage.changedChars,
+            damageDetail: damage.damageDetail,
+            trial: {
+              trialId: `${reference.spec
               .id}/${damage.damageKind}`,
-            direction: arrangement.direction,
-            damageKind: damage.damageKind,
-            sourceText: reference.sourceText,
-            contextText: '',
-            cleanText: reference.referenceText,
-            damagedText: damage.damagedText,
-            cleanFirst: arrangement.cleanFirst,
-          },
-        };
+              direction: arrangement.direction,
+              damageKind: damage.damageKind,
+              sourceText: reference.sourceText,
+              contextText: '',
+              cleanText: reference.referenceText,
+              damagedText: damage.damagedText,
+              cleanFirst: arrangement.cleanFirst,
+            },
+          };
+        },);
       },);
-    },);
   },);
   /**
    A nonempty prefix is not evidence that every requested defect family was materialized.

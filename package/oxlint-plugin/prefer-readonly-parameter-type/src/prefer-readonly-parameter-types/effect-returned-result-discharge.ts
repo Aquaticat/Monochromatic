@@ -77,10 +77,10 @@ function callResultIsReceiverState({
   readonly call: CallExpression;
 },): boolean {
   return (callResultElementReceiver({
-      project,
-      checker,
-      call,
-    },) !== RESULT_NOT_RECEIVER_STATE)
+    project,
+    checker,
+    call,
+  },) !== RESULT_NOT_RECEIVER_STATE)
     || (callResultReceiver({
       project,
       checker,

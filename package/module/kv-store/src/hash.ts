@@ -33,7 +33,7 @@ export async function hashString(value: string,): Promise<string> {
     .digest(
     'SHA-256',
     data,
-  );
+    );
   /**
    Convert ArrayBuffer to array of bytes for processing
    */
@@ -51,7 +51,7 @@ export async function hashString(value: string,): Promise<string> {
         .padStart(
         2,
         '0',
-      );
+        );
     },)
     .join('',);
   return hashHex;

@@ -206,15 +206,15 @@ export async function runCheckerStage(
         string,
         ResolutionBallot,
       ] {
-      return [
-        voice.modelId,
-        resolveResolutionChecks({
-          wire: voice.value,
-          issueIds: plan.issueIds,
-          checkerModelId: voice.modelId,
-        },),
-      ];
-    },),
+        return [
+          voice.modelId,
+          resolveResolutionChecks({
+            wire: voice.value,
+            issueIds: plan.issueIds,
+            checkerModelId: voice.modelId,
+          },),
+        ];
+      },),
   );
 
   logBallotIrregularities({

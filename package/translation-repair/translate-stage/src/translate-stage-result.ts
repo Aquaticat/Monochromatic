@@ -42,13 +42,13 @@ import type { TieBasis, } from './translate-runoff-tie.ts';
  */
 export type TranslateDecision =
   | 'judged'
-  | 'sole-candidate'
-  | 'declined-indecision'
-  | 'declined-rejection'
-  | 'no-candidate-backed'
-  | 'no-candidate'
-  | 'no-voice-heard'
-  | 'unfloored';
+    | 'sole-candidate'
+    | 'declined-indecision'
+    | 'declined-rejection'
+    | 'no-candidate-backed'
+    | 'no-candidate'
+    | 'no-voice-heard'
+    | 'unfloored';
 
 /**
  Everything the translate stage decided for one slice.

@@ -67,7 +67,7 @@ export function shebangExecutablePlugin(): Plugin {
         async function markExecutable([fileName, output,],): Promise<void> {
           if ((output.type === 'chunk')
             && output.code
-            .startsWith('#!',)) {
+              .startsWith('#!',)) {
             await chmod(
               join(
                 options.dir ?? '.',
@@ -77,7 +77,7 @@ export function shebangExecutablePlugin(): Plugin {
             );
           }
         },
-      ),);
+        ),);
     },
   };
 }

@@ -108,7 +108,7 @@ await describe({
               configPath: '/repo/config.ts',
             },),)
               .toBe(
-                'source',
+              'source',
               );
           },
         },),
@@ -123,7 +123,7 @@ await describe({
               configPath: '/repo/config.ts',
             },),)
               .toBe(
-                'source',
+              'source',
               );
           },
         },),
@@ -151,7 +151,7 @@ await describe({
               configPath: '/repo/config.ts',
             },),)
               .toBe(
-                'ignore',
+              'ignore',
               );
           },
         },),
@@ -184,7 +184,7 @@ await describe({
               configPath: '/repo/config.ts',
             },),)
               .toBe(
-                'protected',
+              'protected',
               );
           },
         },),
@@ -212,7 +212,7 @@ await describe({
               configPath: '/repo/config.ts',
             },),)
               .toBe(
-                'protected',
+              'protected',
               );
           },
         },),
@@ -238,7 +238,7 @@ await describe({
               configPath: '/repo/config.ts',
             },),)
               .toBe(
-                'protected',
+              'protected',
               );
           },
         },),
@@ -254,7 +254,7 @@ await describe({
               configPath: '/repo/config.ts',
             },),)
               .toBe(
-                'ignore',
+              'ignore',
               );
           },
         },),
@@ -283,7 +283,7 @@ await describe({
               configPath: '/repo/config.ts',
             },),)
               .toBe(
-                'ignore',
+              'ignore',
               );
           },
         },),
@@ -309,7 +309,7 @@ await describe({
               configPath: '/repo/config.ts',
             },),)
               .toBe(
-                true,
+              true,
               );
           },
         },),
@@ -339,7 +339,7 @@ await describe({
               configPath: '/repo/config.ts',
             },),)
               .toBe(
-                true,
+              true,
               );
           },
         },),
@@ -354,7 +354,7 @@ await describe({
               configPath: '/repo/config.ts',
             },),)
               .toBe(
-                false,
+              false,
               );
           },
         },),
@@ -381,7 +381,7 @@ await describe({
               configPath: '/repo/config.ts',
             },),)
               .toBe(
-                false,
+              false,
               );
           },
         },),

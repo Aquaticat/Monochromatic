@@ -330,7 +330,7 @@ await describe({
               ],
               refusals: [
                 'group 1: consistency-candidate-refused (seat): the paragraph no longer holds the words of another place '
-                + 'that must stay as they are',
+                  + 'that must stay as they are',
               ],
             },);
             expect(parseConsistency({
@@ -367,7 +367,7 @@ await describe({
               ],
               refusals: [
                 'group 2: consistency-candidate-refused (seat): the paragraph no longer holds the words of another place '
-                + 'that must stay as they are',
+                  + 'that must stay as they are',
               ],
             },);
           },
@@ -399,7 +399,7 @@ await describe({
               gaveWay: [['none', { group: 1, label: 'OCCURRENCE 3', },], ['none', 'none', 'none', 'none',],],
               findings: [
                 'slice 2: the consistency replacement of group 1 OCCURRENCE 2 was left out because it changes the words that '
-                + 'group 2 OCCURRENCE 3 located',
+                  + 'group 2 OCCURRENCE 3 located',
               ],
             },);
             expect(parseConsistency({

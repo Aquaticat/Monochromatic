@@ -101,9 +101,9 @@ export function walkMap({
   for (const key of expected.keys()) {
     expectedByKey.set(
       entryKey({
-      value: key,
-      registry,
-    },),
+        value: key,
+        registry,
+      },),
       key,
     );
   }
@@ -232,9 +232,9 @@ export function walkRecord({
   for (const key of enumerableKeys(expected,)) {
     expectedByKey.set(
       entryKey({
-      value: key,
-      registry,
-    },),
+        value: key,
+        registry,
+      },),
       key,
     );
   }

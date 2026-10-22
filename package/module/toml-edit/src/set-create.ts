@@ -132,7 +132,7 @@ export function doCreate(
           },),
         ],
       },
-    ),
+      ),
   };
 }
 
@@ -168,9 +168,9 @@ function createAtTopLevel(
    */
   const firstTable = edit.blocks
     .findIndex(function isTable(b,) {
-    return b.kind
-      === 'table';
-  },);
+      return b.kind
+        === 'table';
+    },);
   /**
    Leading newline filler when the source does not already end on a line break.
    */
@@ -205,7 +205,7 @@ function createAtTopLevel(
         .slice(
         0,
         firstTable,
-      ),
+        ),
       kv,
       ...edit.blocks
         .slice(firstTable,),
@@ -344,11 +344,11 @@ function dottedTail(
 ): readonly string[] {
   return path.slice(consumed,)
     .map(function asString(seg,) {
-    if ((typeof seg) !== 'string') {
-      throw new TomlImmutableNodeError(
-        `Cannot path-create at numeric segment ${String(seg,)} in ${formatPath({ path, },)}`,
-      );
-    }
-    return seg;
-  },);
+      if ((typeof seg) !== 'string') {
+        throw new TomlImmutableNodeError(
+          `Cannot path-create at numeric segment ${String(seg,)} in ${formatPath({ path, },)}`,
+        );
+      }
+      return seg;
+    },);
 }

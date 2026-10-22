@@ -95,16 +95,16 @@ class TaskDetail extends HTMLElement {
     this.#metadata = {
       tags: update.tags
         ?? this.#metadata
-        .tags,
+          .tags,
       locations: update.locations
         ?? this.#metadata
-        .locations,
+          .locations,
       priority: update.priority
         ?? this.#metadata
-        .priority,
+          .priority,
       complexity: update.complexity
         ?? this.#metadata
-        .complexity,
+          .complexity,
     };
   }
 
@@ -235,7 +235,7 @@ class TaskDetail extends HTMLElement {
         autofill.request(refs.titleInput
           .value,);
       },
-    );
+      );
 
     this.#shadow
       .addEventListener(
@@ -273,7 +273,7 @@ class TaskDetail extends HTMLElement {
           ),
         );
       },
-    );
+      );
   }
 }
 

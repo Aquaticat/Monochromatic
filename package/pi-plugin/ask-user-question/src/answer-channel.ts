@@ -99,20 +99,20 @@ export async function createAnswerChannel(): Promise<AnswerChannel> {
   server.on(
     'connection',
     function retainConnection(socket: Socket,): void {
-    sockets.add(socket,);
-    socket.on(
-      'error',
-      function logSocketError(error: Error,): void {
-      l.debug(`answer connection failed: ${String(error,)}`,);
+      sockets.add(socket,);
+      socket.on(
+        'error',
+        function logSocketError(error: Error,): void {
+          l.debug(`answer connection failed: ${String(error,)}`,);
+        },
+      );
+      socket.once(
+        'close',
+        function releaseConnection(): void {
+          sockets.delete(socket,);
+        },
+      );
     },
-    );
-    socket.once(
-      'close',
-      function releaseConnection(): void {
-      sockets.delete(socket,);
-    },
-    );
-  },
   );
   server.listen({
     host: LOOPBACK_HOST,

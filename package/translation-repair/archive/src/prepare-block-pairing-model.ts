@@ -50,18 +50,18 @@ export type PreparedBlockPairing = PreparedBlockDetails & (
      */
     readonly pairs: readonly BlockPair[];
   }
-  | {
+    | {
     /**
      The section was asked about, or found in the cache, and settled on no relation.
      */
-    readonly kind: 'fallback';
-  }
-  | {
+      readonly kind: 'fallback';
+    }
+    | {
     /**
      A structural singleton or empty side needed no model question or cache lookup.
      */
-    readonly kind: 'implicit' | 'empty';
-  }
+      readonly kind: 'implicit' | 'empty';
+    }
 );
 
 //endregion One section's pairing result

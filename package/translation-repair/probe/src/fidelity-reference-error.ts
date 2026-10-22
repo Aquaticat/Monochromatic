@@ -11,13 +11,13 @@
  */
 export type FidelityReferenceOperation =
   | 'pin'
-  | 'source'
-  | 'archive'
-  | 'edit'
-  | 'reference'
-  | 'donor'
-  | 'damage'
-  | 'request';
+    | 'source'
+    | 'archive'
+    | 'edit'
+    | 'reference'
+    | 'donor'
+    | 'damage'
+    | 'request';
 
 /**
  Refuses a calibration input that no longer matches its reviewed evidence.

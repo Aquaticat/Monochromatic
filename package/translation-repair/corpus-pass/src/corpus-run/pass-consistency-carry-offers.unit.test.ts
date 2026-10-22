@@ -439,7 +439,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
             expect(String(refusal,),).toBe(
               'ConsistencyInvariantError: unreachable: the receiving places OCCURRENCE 2 and OCCURRENCE 3 of one block have '
-              + 'words that overlap, and places whose words overlap are left unlocated before a carry',
+                + 'words that overlap, and places whose words overlap are left unlocated before a carry',
             );
           },
         },),
@@ -570,7 +570,7 @@ await describe({
               seats: writerSeatsOf({ context: scene.context, }).slice(1,),
               findings: [
                 `consistency-candidate-refused (${firstWriterOf({ context: scene.context, })}): the paragraph no longer holds `
-                + 'the words of another place that must stay as they are',
+                  + 'the words of another place that must stay as they are',
               ],
             },);
           },
@@ -592,7 +592,7 @@ await describe({
               written: [],
               findings: [
                 'consistency-writers-not-asked (OCCURRENCE 2): the translators bench was not asked: '
-                + 'the translators bench seats no model',
+                  + 'the translators bench seats no model',
               ],
             },);
             expect(scene.asked,).toEqual([],);
@@ -612,7 +612,7 @@ await describe({
               written: [],
               findings: [
                 'consistency-writers-not-asked (OCCURRENCE 2): the words that render the repeated wording lie in no single '
-                + 'block of the English, so no paragraph can be rewritten',
+                  + 'block of the English, so no paragraph can be rewritten',
               ],
             },);
             expect(scene.asked,).toEqual([],);
@@ -639,8 +639,8 @@ await describe({
               written: [],
               findings: [
                 'consistency-writers-not-asked (OCCURRENCE 2): the paragraph that holds the words that render the repeated '
-                + 'wording overlaps the words of another receiving place of the group that lie outside it, so no paragraph '
-                + 'can be rewritten',
+                  + 'wording overlaps the words of another receiving place of the group that lie outside it, so no paragraph '
+                  + 'can be rewritten',
               ],
             },);
             expect(scene.asked,).toEqual([],);
@@ -670,13 +670,13 @@ await describe({
             },);
             expect(overlapped.findings,).toEqual([
               'consistency-writers-not-asked (OCCURRENCE 2): the paragraph that holds the words that render the repeated '
-              + 'wording overlaps the words of another receiving place of the group that lie outside it, so no paragraph '
-              + 'can be rewritten',
+                + 'wording overlaps the words of another receiving place of the group that lie outside it, so no paragraph '
+                + 'can be rewritten',
             ],);
             expect(unrecorded,).toBeInstanceOf(ConsistencyInvariantError,);
             expect(String(unrecorded,),).toBe(
               'ConsistencyInvariantError: unreachable: OCCURRENCE 2 stands in a unit that is not writable and in no kind of '
-              + 'block, and such a unit records why it is not writable',
+                + 'block, and such a unit records why it is not writable',
             );
           },
         },),
@@ -707,19 +707,19 @@ await describe({
             ],).toEqual([
               [
                 'consistency-writers-not-asked (OCCURRENCE 2): the words that render the repeated wording stand in a table, '
-                + 'so no paragraph can be rewritten',
+                  + 'so no paragraph can be rewritten',
               ],
               [
                 'consistency-writers-not-asked (OCCURRENCE 2): the words that render the repeated wording stand in a code '
-                + 'block, so no paragraph can be rewritten',
+                  + 'block, so no paragraph can be rewritten',
               ],
               [
                 'consistency-writers-not-asked (OCCURRENCE 2): the words that render the repeated wording stand in a setext '
-                + 'heading, so no paragraph can be rewritten',
+                  + 'heading, so no paragraph can be rewritten',
               ],
               [
                 'consistency-writers-not-asked (OCCURRENCE 2): the words that render the repeated wording stand in a '
-                + 'preformatted block, so no paragraph can be rewritten',
+                  + 'preformatted block, so no paragraph can be rewritten',
               ],
             ],);
             expect(scene.asked,).toEqual([],);

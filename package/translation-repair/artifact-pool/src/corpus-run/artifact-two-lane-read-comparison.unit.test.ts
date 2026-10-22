@@ -59,7 +59,7 @@ await describe({
     it({
       name:
         'ACCEPTS a recorded comparison its ledgers derive, and returns the derived rows, which is the '
-        + 'control the refusals are read against',
+          + 'control the refusals are read against',
       fn: async () => {
         /**
          What version 2's rules derive from the two ledgers.
@@ -79,7 +79,7 @@ await describe({
     it({
       name:
         'REFUSES two ledgers the comparison refuses, carrying its sentence, which names the slice and '
-        + 'what disagreed there and quotes nothing either ledger holds',
+          + 'what disagreed there and quotes nothing either ledger holds',
       fn: async () => {
         /**
          What differentOriginals raised, read for its class as well as its wording.
@@ -109,8 +109,8 @@ await describe({
     it({
       name:
         'RETHROWS an error that is not the comparison`s own refusal instead of reporting it as a malformed '
-        + 'file: a defect in this reader dressed as an artifact refusal sends an operator to archive a run '
-        + 'that was fine',
+          + 'file: a defect in this reader dressed as an artifact refusal sends an operator to archive a run '
+          + 'that was fine',
       fn: async () => {
         /**
          Row that fails while being read rather than while being compared,
@@ -144,7 +144,7 @@ await describe({
     it({
       name:
         'REFUSES a recorded comparison with a row count other than the slices its ledgers cover, naming '
-        + 'both counts',
+          + 'both counts',
       fn: async () => {
         /**
          What countDiffers raised, read for its class as well as its wording.
@@ -168,7 +168,7 @@ await describe({
     it({
       name:
         'REFUSES a recorded row its ledgers do not derive, naming the fields that differ and never their '
-        + 'values, since the rows carry the archive`s wording and both lanes` output',
+          + 'values, since the rows carry the archive`s wording and both lanes` output',
       fn: async () => {
         /**
          What version 2's rules derive from the two ledgers.

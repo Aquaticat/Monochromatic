@@ -328,7 +328,7 @@ await describe({
             return sheet.includes(WINDOW_SENTINEL,);
           },)
           .length,).toBe(arm.judge
-          .length,);
+            .length,);
       },
     },),
     it({

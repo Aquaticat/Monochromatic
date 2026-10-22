@@ -163,9 +163,9 @@ await describe({
           'POOL band=medium entries=0 contributing=0 accepted=0 perEntry=',
           'POOL band=large entries=0 contributing=0 accepted=0 perEntry=',
           `SAMPLE final=false seed=${GATE_SEED}-preliminary pool=2 drawn=2 unrecordedRepairs=2 unrecordedInPool=2 `
-          + `out=${join(scratch.path, `grading-sheet-${GATE_SEED}-preliminary.md`,)} `
-          + `repairOut=${join(scratch.path, `repair-sheet-${GATE_SEED}-preliminary.md`,)} `
-          + `manifest=${join(scratch.path, `sample-manifest-${GATE_SEED}-preliminary.json`,)}`,
+            + `out=${join(scratch.path, `grading-sheet-${GATE_SEED}-preliminary.md`,)} `
+            + `repairOut=${join(scratch.path, `repair-sheet-${GATE_SEED}-preliminary.md`,)} `
+            + `manifest=${join(scratch.path, `sample-manifest-${GATE_SEED}-preliminary.json`,)}`,
         ],);
         expect((await readdir(scratch.path,)).toSorted(),).toEqual([
           'artifacts',
@@ -241,9 +241,9 @@ await describe({
 
         expect(capture.lines.at(-1,),).toBe(
           `SAMPLE final=true seed=${GATE_SEED} pool=1 drawn=1 unrecordedRepairs=0 unrecordedInPool=0 `
-          + `out=${join(scratch.path, `grading-sheet-${GATE_SEED}.md`,)} `
-          + `repairOut=${join(scratch.path, `repair-sheet-${GATE_SEED}.md`,)} `
-          + `manifest=${join(scratch.path, `sample-manifest-${GATE_SEED}.json`,)}`,
+            + `out=${join(scratch.path, `grading-sheet-${GATE_SEED}.md`,)} `
+            + `repairOut=${join(scratch.path, `repair-sheet-${GATE_SEED}.md`,)} `
+            + `manifest=${join(scratch.path, `sample-manifest-${GATE_SEED}.json`,)}`,
         );
         expect((await readdir(scratch.path,)).toSorted(),).toEqual([
           'artifacts',

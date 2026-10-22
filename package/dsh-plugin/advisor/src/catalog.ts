@@ -208,9 +208,9 @@ export async function buildDshAdvisorCatalog(
           return await options
             .llm
             .resolveModelInfo(
-              info.provider,
-              info.id,
-              options.signal,
+            info.provider,
+            info.id,
+            options.signal,
             );
         },),
       );

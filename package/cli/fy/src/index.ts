@@ -148,8 +148,8 @@ if ((typeof exportValue) === 'function') {
    */
   const coercedArgs = args.callArgs
     .map(function coerceCallArg(arg,) {
-    return coerceArg({ arg, },);
-  },);
+      return coerceArg({ arg, },);
+    },);
   rl.info(`calling ${args.exportName}(${coercedArgs.map(String,)
     .join(', ',)})`,);
 

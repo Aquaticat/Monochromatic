@@ -46,11 +46,11 @@ function finishFailureText(
    */
   const exhaustedCredit = DSH_CREDIT_EXHAUSTION_CODES.some(
     function matchesCreditCode(code,) {
-    return reason.failure
-      .code
-      .toUpperCase()
-      === code;
-  },);
+      return reason.failure
+        .code
+        .toUpperCase()
+        === code;
+    },);
   return exhaustedCredit
     ? `${reason.failure
       .message}; ${DSH_CREDIT_EXHAUSTION_MARKER}`

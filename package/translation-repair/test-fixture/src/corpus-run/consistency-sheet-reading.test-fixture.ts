@@ -57,9 +57,9 @@ function openingLabelOf({ line, }: { readonly line: string; },): readonly string
   const [fence,] = words;
   if ((fence === undefined) || (fence.length === 0)
     || (fence.replaceAll(
-    '=',
-    '',
-  )
+      '=',
+      '',
+    )
       .length
       > 0))
     return [];
@@ -122,8 +122,8 @@ function blocksOf({ sheet, }: { readonly sheet: string; },): readonly SheetBlock
         label,
         text: lines
           .slice(
-            at + 1,
-            (next === (-1)) ? lines.length : next,
+          at + 1,
+          (next === (-1)) ? lines.length : next,
           )
           .join('\n',),
       },
@@ -214,8 +214,8 @@ export function candidateTextsOf(
       return {
         label: label.split(' ',)
           .slice(
-            0,
-            2,
+          0,
+          2,
           )
           .join(' ',),
         current: label.endsWith('(THE PARAGRAPH AS THE PAGE HAS IT NOW)',),
@@ -292,7 +292,7 @@ export function sheetKindOf({ sheet, }: { readonly sheet: string; },): 'ballot' 
   // the sentence listing the candidates' labels, which every choice sheet ends with.
   if (
     sheet.includes(' (THE PARAGRAPH AS THE PAGE HAS IT NOW) ',)
-    || sheet.includes('The labels you may write are exactly: CANDIDATE ',)
+      || sheet.includes('The labels you may write are exactly: CANDIDATE ',)
   )
     return 'choice';
   if (sheet.includes('THE WORDS TO REPLACE',))

@@ -41,15 +41,15 @@ export async function readPressure({
    */
   const line = text.split('\n',)
     .find(function startsWithKind(candidate,) {
-    return candidate.startsWith(`${kind} `,);
-  },);
+      return candidate.startsWith(`${kind} `,);
+    },);
   /**
    The avg10 field of that line.
    */
   const field = line?.split(' ',)
     .find(function isAvg10(part,) {
-    return part.startsWith(AVG10_PREFIX,);
-  },);
+      return part.startsWith(AVG10_PREFIX,);
+    },);
   /**
    The avg10 percentage, NaN when the field is not a number.
    */

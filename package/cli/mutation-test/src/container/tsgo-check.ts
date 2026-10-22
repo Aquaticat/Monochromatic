@@ -68,8 +68,8 @@ export function diagnosticsFromError(error: unknown,): string {
     },)
     .join('\n',)
     .slice(
-      0,
-      DIAGNOSTIC_TEXT_LIMIT,
+    0,
+    DIAGNOSTIC_TEXT_LIMIT,
     );
 }
 

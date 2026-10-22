@@ -48,7 +48,7 @@ function parseElectronPackageMetadata(
 ): ElectronPackageMetadata {
   if (
     ((typeof value) !== 'object')
-    || (value === null)
+      || (value === null)
       || (!('version' in value))
   )
     throw new Error('electron/package.json did not expose a version.',);

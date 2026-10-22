@@ -80,13 +80,13 @@ function buildBlock({
  */
 const INPUT = Array
   .from(
-    { length: BLOCK_COUNT, },
-    function blockAt(
-      _unused,
-      index,
-    ) {
-      return buildBlock({ index, },);
-    },
+  { length: BLOCK_COUNT, },
+  function blockAt(
+    _unused,
+    index,
+  ) {
+    return buildBlock({ index, },);
+  },
   )
   .join('\n',);
 

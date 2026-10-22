@@ -30,7 +30,7 @@ export async function healBackends({
       ) => unknown;
       readonly delete: (key: string,) => unknown;
     }
-  >[];
+    >[];
   canonicalSerialized: string | typeof ABSENT;
   key: string;
 }>,): Promise<void> {
@@ -84,7 +84,7 @@ export function healBackendsSync({
       ) => unknown;
       readonly delete: (key: string,) => unknown;
     }
-  >[];
+    >[];
   canonicalSerialized: string | typeof ABSENT;
   key: string;
 }>,): void {

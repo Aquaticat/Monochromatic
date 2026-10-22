@@ -103,8 +103,8 @@ function isOriginalEntry({ entry, }: { readonly entry: SelectEvidence; },): bool
   const nameEnd = label.indexOf(LABEL_NAME_END,);
   return label
     .slice(
-      0,
-      (nameEnd === (-1)) ? label.length : nameEnd,
+    0,
+    (nameEnd === (-1)) ? label.length : nameEnd,
     )
     .includes(ORIGINAL_LABEL_MARK,);
 }
@@ -498,7 +498,7 @@ export function buildCandidateSelectMessages(
       role: 'system',
       content:
         `You are an impartial judge choosing between candidate rewrites. ${task}\n\n`
-        + `Decide by these criteria, earlier ones outranking later ones:\n${rules}\n\n`
+          + `Decide by these criteria, earlier ones outranking later ones:\n${rules}\n\n`
           + `${JUDGE_POLICY_BLOCK}\n\n`
           + `You do not know which system produced which candidate, and must not guess. `
           + `Judge only the text in front of you.\n\n`

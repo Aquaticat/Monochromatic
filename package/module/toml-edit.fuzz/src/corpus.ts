@@ -98,17 +98,17 @@ async function loadInputDir({ directory, }: { readonly directory: string; },): P
   return Promise.all(
     names.toSorted()
       .map(async function read(name,) {
-      return {
-        name,
-        source: await readFile(
-          join(
-            directory,
-            name,
+        return {
+          name,
+          source: await readFile(
+            join(
+              directory,
+              name,
+            ),
+            'utf8',
           ),
-          'utf8',
-        ),
-      };
-    },),
+        };
+      },),
   );
 }
 

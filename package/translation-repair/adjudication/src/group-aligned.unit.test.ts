@@ -1345,7 +1345,7 @@ await describe({
               ],
               alignmentFindings: [
                 'alignment archive-original (pair 0: 1 translation block and 1 original block sealed by the archive\'s '
-                + 'note, shipped as the archive has them: block/1)',
+                  + 'note, shipped as the archive has them: block/1)',
                 'alignment target-unplaced (pair 0: 1 translation block no run could take, 21 characters: block/0)',
               ],
             },);
@@ -1419,7 +1419,7 @@ await describe({
               ],
               alignmentFindings: [
                 'alignment archive-original (pair 0: 1 translation block and 1 original block sealed by the archive\'s '
-                + 'note, shipped as the archive has them: block/1)',
+                  + 'note, shipped as the archive has them: block/1)',
                 'alignment target-unplaced (pair 0: 1 translation block no run could take, 8 characters: block/0)',
               ],
             },);

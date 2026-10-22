@@ -41,7 +41,7 @@ export function poolBandLines(
       ) {
         return sum
           + entry.candidates
-          .length;
+            .length;
       },
       0,
     );

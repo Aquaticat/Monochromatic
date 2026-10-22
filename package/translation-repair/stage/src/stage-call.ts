@@ -51,18 +51,18 @@ export type StageVoice<ValueT,> =
      */
     readonly value: ValueT;
   }
-  | {
+    | {
     /**
      Voice lost to a transport failure, a grace abandonment, an unfilled
      roster position or a refused seat: no answer arrived.
      */
-    readonly heard: false;
+      readonly heard: false;
 
     /**
      No answer arrived, so the recovery round does not re-ask it; see the
      answered variant for why the two losses are kept apart.
      */
-    readonly answered: false;
+      readonly answered: false;
 
     /**
      Whether no wet provider served the seat at all.
@@ -77,13 +77,13 @@ export type StageVoice<ValueT,> =
      is a lost voice on a bench that stands, the first a bench that is
      smaller than it looks.
      */
-    readonly unreachable: boolean;
-  }
-  | {
+      readonly unreachable: boolean;
+    }
+    | {
     /**
      Voice lost to an answer that arrived and nothing could read.
      */
-    readonly heard: false;
+      readonly heard: false;
 
     /**
      An answer arrived.
@@ -98,20 +98,20 @@ export type StageVoice<ValueT,> =
      worth one fresh call, nudged by what happened to it, and a model still
      thinking is worth a second timeout on the critical path to nobody.
      */
-    readonly answered: true;
+      readonly answered: true;
 
     /**
      A seat that answered was reached.
      */
-    readonly unreachable: false;
+      readonly unreachable: false;
 
     /**
      Why nothing could read it, which picks the recovery round's wording
      (ledger P10): a reply the length limit cut is told it ran out of room,
      not that its shape was wrong.
      */
-    readonly unreadable: UnreadableCause;
-  };
+      readonly unreadable: UnreadableCause;
+    };
 
 /**
  Longest model text a lost-voice warning carries, counted in grapheme
@@ -146,16 +146,16 @@ function openingOf({ rawText, }: { readonly rawText: string; },): string {
    */
   const flattened = rawText
     .replaceAll(
-      '\r\n',
-      ' ',
+    '\r\n',
+    ' ',
     )
     .replaceAll(
-      '\n',
-      ' ',
+    '\n',
+    ' ',
     )
     .replaceAll(
-      '\r',
-      ' ',
+    '\r',
+    ' ',
     );
 
   /**
@@ -184,8 +184,8 @@ function openingOf({ rawText, }: { readonly rawText: string; },): string {
    */
   const opening = clusters
     .slice(
-      0,
-      RAW_PREVIEW_CHARS,
+    0,
+    RAW_PREVIEW_CHARS,
     )
     .map(function toText(cluster,): string {
       return cluster.segment;

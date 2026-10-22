@@ -309,9 +309,9 @@ function fakeHost(state: HarnessState,): ExtensionAPI {
       if ((typeof nameOrProvider) === 'string') {
         state.registrations
           .push({
-          name: nameOrProvider,
-          ...(config === undefined ? {} : { config, }),
-        },);
+            name: nameOrProvider,
+            ...(config === undefined ? {} : { config, }),
+          },);
         return;
       }
       state.registrations

@@ -43,9 +43,9 @@ export function encodeWrapped(
     const s = String(n,);
     return s.includes('.',)
       || s
-      .includes('e',)
+        .includes('e',)
       || s
-      .includes('E',) ? s : `${s}.0`;
+        .includes('E',) ? s : `${s}.0`;
   }
   return String(wrapped.value,);
 }
@@ -96,7 +96,7 @@ export function encodeStringWithStyle(
 export function isWrappedInput(value: unknown,): value is TomlWrappedInput {
   return (
     ((typeof value) === 'object')
-    && (value !== null)
+      && (value !== null)
       && ('tomlKind' in value)
       && ((typeof (value as { tomlKind: unknown; }).tomlKind) === 'string')
   );

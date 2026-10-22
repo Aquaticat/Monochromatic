@@ -42,8 +42,8 @@ export async function currentNetworkNamespace(): Promise<NetworkNamespace> {
       .update(identity,)
       .digest('hex',)
       .slice(
-        0,
-        NETWORK_NAMESPACE_KEY_LENGTH,
+      0,
+      NETWORK_NAMESPACE_KEY_LENGTH,
       ),
   };
 }

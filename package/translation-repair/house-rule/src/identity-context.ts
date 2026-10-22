@@ -715,7 +715,7 @@ export function sourcePronounLines(
 
   return [
     `${dominantLine}, and also writes ${others.join(' and ',)}; ${AS_WRITTEN_CLAUSE} "${dominant.pronoun}" `
-    + 'supplies the pronoun only where the ORIGINAL leaves the subject unstated',
+      + 'supplies the pronoun only where the ORIGINAL leaves the subject unstated',
   ];
 }
 

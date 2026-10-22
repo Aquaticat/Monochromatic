@@ -67,24 +67,24 @@
 function escapeXml(raw: string,): string {
   return raw
     .replaceAll(
-      '&',
-      '&amp;',
+    '&',
+    '&amp;',
     )
     .replaceAll(
-      '<',
-      '&lt;',
+    '<',
+    '&lt;',
     )
     .replaceAll(
-      '>',
-      '&gt;',
+    '>',
+    '&gt;',
     )
     .replaceAll(
-      '"',
-      '&quot;',
+    '"',
+    '&quot;',
     )
     .replaceAll(
-      "'",
-      '&apos;',
+    "'",
+    '&apos;',
     );
 }
 

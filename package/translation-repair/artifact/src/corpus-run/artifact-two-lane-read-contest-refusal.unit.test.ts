@@ -174,7 +174,7 @@ await describe({
     it({
       name:
         'REFUSES a verdict naming a lane its own ballots did not back, since a stored winner nobody '
-        + 're-derives is a field that can quietly become a lie',
+          + 're-derives is a field that can quietly become a lie',
       fn: async () => {
         /**
          What readOneSlice refused with, read for class as well as wording.
@@ -204,7 +204,7 @@ await describe({
     it({
       name:
         'REFUSES a refusal its ballots contradict, so a slice recorded as shipping neither lane '
-        + 'cannot carry a roster that chose one',
+          + 'cannot carry a roster that chose one',
       fn: async () => {
         /**
          What readOneSlice refused with, read for class as well as wording.
@@ -231,7 +231,7 @@ await describe({
     it({
       name:
         'REFUSES a usable count the ballots do not support, since the quorum is measured against '
-        + 'that number and a raised one turns an unheard roster into a verdict',
+          + 'that number and a raised one turns an unheard roster into a verdict',
       fn: async () => {
         /**
          What readOneSlice refused with, read for class as well as wording.
@@ -255,7 +255,7 @@ await describe({
     it({
       name:
         'REFUSES a contest answering a slice where the two lanes left the same wording, which has no '
-        + 'question to ask and therefore no answer to record',
+          + 'question to ask and therefore no answer to record',
       fn: async () => {
         /**
          What parseLaneSelection refused with, read for class as well as wording.
@@ -286,7 +286,7 @@ await describe({
     it({
       name:
         'REFUSES a contest leaving an eligible slice unanswered, since a silent gap reads as a slice '
-        + 'nobody had to decide rather than as one the record dropped',
+          + 'nobody had to decide rather than as one the record dropped',
       fn: async () => {
         /**
          What parseLaneSelection refused with, read for class as well as wording.
@@ -362,7 +362,7 @@ await describe({
     it({
       name:
         'REFUSES A SOLE-LANE VERDICT in a generation that predates it, since that file asked the roster '
-        + 'at every insertion and a sole-lane record in it has no roster verdict behind it',
+          + 'at every insertion and a sole-lane record in it has no roster verdict behind it',
       fn: async () => {
         const refusal = caught(function act(): void {
           readOneSliceInGeneration({
@@ -390,7 +390,7 @@ await describe({
     it({
       name:
         'REFUSES A SOLE-LANE VERDICT on a slice both lanes worded, since a slice with two applicable lanes '
-        + 'is a question for the roster and no lane alone applies to it',
+          + 'is a question for the roster and no lane alone applies to it',
       fn: async () => {
         const refusal = caught(function act(): void {
           readOneSliceInGeneration({
@@ -415,7 +415,7 @@ await describe({
     it({
       name:
         'REFUSES A ROSTER VERDICT at an archive-absent insertion in a generation that records sole-lane, '
-        + 'since the one lane that applies needs no vote and the roster was never to be asked',
+          + 'since the one lane that applies needs no vote and the roster was never to be asked',
       fn: async () => {
         const refusal = caught(function act(): void {
           readOneSliceInGeneration({
@@ -443,7 +443,7 @@ await describe({
     it({
       name:
         'REFUSES BALLOTS CARRIED BY A SOLE-LANE VERDICT, since a slice no roster judged holds none, '
-        + 'and a stored ballot would be a vote nobody cast on that slice',
+          + 'and a stored ballot would be a vote nobody cast on that slice',
       fn: async () => {
         const refusal = caught(function act(): void {
           readOneSliceInGeneration({

@@ -107,8 +107,8 @@ function workspaceDependencyNames(
     return isJsonRecord(dependencies,)
       ? Object.keys(dependencies,)
         .filter(function inWorkspace(name,) {
-        return workspace.has(name,);
-      },)
+          return workspace.has(name,);
+        },)
       : [];
   },);
 }
@@ -140,11 +140,11 @@ function selectedNames({ packageNames, }: { readonly packageNames: readonly stri
    */
   const requested = only.split(',',)
     .map(function trimName(name,) {
-    return name.trim();
-  },)
+      return name.trim();
+    },)
     .filter(function isNonEmpty(name,) {
-    return name !== '';
-  },);
+      return name !== '';
+    },);
   /**
    Requested names missing from the trusted list.
    */
@@ -200,34 +200,34 @@ async function publishMissingVersions(): Promise<void> {
     /**
      Workspace entry for a configured name.
      */
-    const entry = workspace.get(name,);
-    if (entry === undefined)
-      throw new Error(`config.yaml lists ${name}, which is not a workspace package; run mise run sync:files`,);
+      const entry = workspace.get(name,);
+      if (entry === undefined)
+        throw new Error(`config.yaml lists ${name}, which is not a workspace package; run mise run sync:files`,);
     /**
      Versions already published.
      */
-    const published = await fetchPublishedVersions({
-      origin,
-      name,
-    },);
+      const published = await fetchPublishedVersions({
+        origin,
+        name,
+      },);
     /**
      Manifest version to publish.
      */
-    const version = String(entry.manifest
-      .version,);
-    if (published.versions
-      .has(version,))
-      return [];
-    return [{
-      entry,
-      version,
-      ...(published.latest === undefined ? {} : { latest: published.latest, }),
-      dependencyNames: workspaceDependencyNames({
+      const version = String(entry.manifest
+        .version,);
+      if (published.versions
+        .has(version,))
+        return [];
+      return [{
         entry,
-        workspace,
-      },),
-    },];
-  },),)).flat();
+        version,
+        ...(published.latest === undefined ? {} : { latest: published.latest, }),
+        dependencyNames: workspaceDependencyNames({
+          entry,
+          workspace,
+        },),
+      },];
+    },),)).flat();
   moduleLogger.info(`${planned.length} of ${target.packageNames
     .length} package versions are missing from ${origin}`,);
 
@@ -273,8 +273,8 @@ async function publishMissingVersions(): Promise<void> {
      */
     const blockers = item.dependencyNames
       .filter(function hasFailed(dependency,) {
-      return failures.has(dependency,);
-    },);
+        return failures.has(dependency,);
+      },);
     if (blockers.length > 0) {
       failures.set(
         name,

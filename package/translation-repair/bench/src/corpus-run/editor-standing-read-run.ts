@@ -89,8 +89,8 @@ export async function reportStandings(
     (roots.length === 0
       ? [await resolveRuns(),]
       : roots).map(async function one(path,): Promise<StandingListing> {
-      return await standingArtifactPaths({ path, },);
-    },),
+        return await standingArtifactPaths({ path, },);
+      },),
   );
 
   /**

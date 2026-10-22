@@ -339,7 +339,7 @@ await describe({
         it({
           name:
             'NAMES THE JUDGE on every ballot (hulicaijia26, 2026-09-26: four of five contest ballots '
-            + 'called the archive\'s wordplay note an addition and no record said which models cast them)',
+              + 'called the archive\'s wordplay note an addition and no record said which models cast them)',
           fn: async () => {
             const outcome = await contest({
               replyByModel: [

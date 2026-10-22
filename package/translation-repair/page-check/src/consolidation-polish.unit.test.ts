@@ -129,24 +129,24 @@ const client: ModelClient = {
         ],
       }
       : (schema === 'candidate_ballot')
-      ? {
-        best: 1,
-        assessment: 'clear idiomatic improvement with same meaning',
-      }
-      : (schema === 'consolidation_polish_gate')
-      ? {
-        verdict: 'polished',
-        unsupported: [],
-        dropped: [],
-        assessment: 'equally faithful and more idiomatic',
-      }
-      : (schema === 'absolute_naturalness_review')
-      ? {
-        isAcceptable: true,
-        findings: [],
-        assessment: 'whole passage is publication-ready',
-      }
-      : {};
+        ? {
+          best: 1,
+          assessment: 'clear idiomatic improvement with same meaning',
+        }
+        : (schema === 'consolidation_polish_gate')
+          ? {
+            verdict: 'polished',
+            unsupported: [],
+            dropped: [],
+            assessment: 'equally faithful and more idiomatic',
+          }
+          : (schema === 'absolute_naturalness_review')
+            ? {
+              isAcceptable: true,
+              findings: [],
+              assessment: 'whole passage is publication-ready',
+            }
+            : {};
     if (!request.validate(value,))
       throw new Error(`synthetic ${String(schema,)} reply failed validation`,);
     return {
@@ -312,10 +312,10 @@ function recordingClient(
         const value: unknown = (schema === 'refine_report')
           ? { rewrites: [{ paragraph: 1, newText: POLISHED, },], }
           : (schema === 'candidate_ballot')
-          ? { best: 1, assessment: 'clear idiomatic improvement with same meaning', }
-          : (schema === 'consolidation_polish_gate')
-          ? { verdict: gateChoice, unsupported: [], dropped: [], assessment: 'scripted fidelity comparison', }
-          : { isAcceptable: true, findings: [], assessment: 'whole passage is publication-ready', };
+            ? { best: 1, assessment: 'clear idiomatic improvement with same meaning', }
+            : (schema === 'consolidation_polish_gate')
+              ? { verdict: gateChoice, unsupported: [], dropped: [], assessment: 'scripted fidelity comparison', }
+              : { isAcceptable: true, findings: [], assessment: 'whole passage is publication-ready', };
         if (!request.validate(value,))
           throw new Error(`synthetic ${schema} reply failed validation`,);
         return {

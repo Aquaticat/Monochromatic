@@ -179,8 +179,8 @@ export async function runBrowserSandboxProbe({ processShim, }: {
           contexts.add(context,);
           context.sinon
             .stub(
-              target,
-              'method',
+            target,
+            'method',
             );
           late.push(function lateFake(): unknown {
             return context.sinon

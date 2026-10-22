@@ -30,36 +30,36 @@ export type GainReason =
      */
     readonly kind: 'pairs';
   }
-  | {
+    | {
     /**
      The splice's own apostrophe would be proven on the final page, but making it would unprove the apostrophe a splice that
      is made carries in.
      */
-    readonly kind: 'unproves';
-  }
-  | {
+      readonly kind: 'unproves';
+    }
+    | {
     /**
      The floors refuse the slice with the splice made.
      */
-    readonly kind: 'floors';
+      readonly kind: 'floors';
 
     /**
      What the floors found.
      */
-    readonly findings: readonly string[];
-  }
-  | {
+      readonly findings: readonly string[];
+    }
+    | {
     /**
      The splice's words overlap the words of a replacement that is made.
      */
-    readonly kind: 'overlaps';
-  }
-  | {
+      readonly kind: 'overlaps';
+    }
+    | {
     /**
      The floors refused the other replacements of the slice, which keeps its wording whole.
      */
-    readonly kind: 'refused';
-  };
+      readonly kind: 'refused';
+    };
 
 /**
  What the apply stage does with one slice that carries English and has replacements.

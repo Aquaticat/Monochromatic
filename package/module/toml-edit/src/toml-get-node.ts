@@ -82,16 +82,16 @@ export function tomlGetNode(
   }
   return located.tables
     .map(function each(t,) {
-    if (t.headerOrigin
-      .kind
-      !== 'clean')
-      throw notFound({ path, },);
-    return asTable({
-      node: t.headerOrigin
-        .astNode,
-      path,
+      if (t.headerOrigin
+        .kind
+        !== 'clean')
+        throw notFound({ path, },);
+      return asTable({
+        node: t.headerOrigin
+          .astNode,
+        path,
+      },);
     },);
-  },);
 }
 
 /**

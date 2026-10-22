@@ -52,21 +52,21 @@ function offsetOf(
   const lineStart = text
     .split('\n',)
     .slice(
-      0,
-      line - 1,
+    0,
+    line - 1,
     )
     .reduce(
-      function pastLine(
-        sum: number,
-        earlier: string,
-      ): number {
+    function pastLine(
+      sum: number,
+      earlier: string,
+    ): number {
         /**
          Characters of the earlier line, with its line break.
          */
-        const withBreak = earlier.length + 1;
-        return sum + withBreak;
-      },
-      0,
+      const withBreak = earlier.length + 1;
+      return sum + withBreak;
+    },
+    0,
     );
   /**
    Characters into that line.
@@ -98,17 +98,17 @@ export type StrictParseReading =
      */
     readonly refused: false;
   }
-  | {
+    | {
     /**
      The grammar stopped.
      */
-    readonly refused: true;
+      readonly refused: true;
 
     /**
      Offset into the whole text where it stopped.
      */
-    readonly offset: number;
-  };
+      readonly offset: number;
+    };
 
 /**
  Where the strict MDX grammar first refuses a document, if anywhere.

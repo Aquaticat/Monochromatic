@@ -69,7 +69,7 @@ export function globResults(
 function hasGlobChars(path: string,): boolean {
   return path.includes('*',)
     || path
-    .includes('?',);
+      .includes('?',);
 }
 
 /**
@@ -164,9 +164,9 @@ export async function cat(
   const contents = await Promise.all(
     expandedGroups.flat()
       .map(function readOneFile(filePath: string,): Promise<string> {
-      trackRead(filePath,);
-      return readCached(filePath,);
-    },),
+        trackRead(filePath,);
+        return readCached(filePath,);
+      },),
   );
   return contents.join('\n',);
 }

@@ -115,7 +115,7 @@ export function renderTaskCardContent(
         text,
       },);
     },
-  );
+    );
   if (options.showBlockedBadge
     === true) {
     chipElements.push(h({

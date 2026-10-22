@@ -39,9 +39,9 @@ type FormulaReading =
      */
     readonly count: number;
   }
-  | {
-    readonly kind: 'refused';
-  };
+    | {
+      readonly kind: 'refused';
+    };
 
 /**
  Whether a node is one the site renders as a formula.

@@ -334,32 +334,32 @@ export function settleMarkupMoves(
    */
   const standing = Array.from({ length: deltas.length + 1, },)
     .reduce<readonly boolean[]>(
-      function refineOnce(current,) {
+    function refineOnce(current,) {
         /**
          Keys the standing edits cannot account for.
          */
-        const short = shortKeys({
-          deltas,
-          standing: current,
-        },);
-        return current.map(function stillStands(
-          isStanding,
-          index,
-        ): boolean {
+      const short = shortKeys({
+        deltas,
+        standing: current,
+      },);
+      return current.map(function stillStands(
+        isStanding,
+        index,
+      ): boolean {
           /**
            Losses this edit has not been excused, present by the equal
            lengths of the deltas and the standings.
            */
-          const { unexcused, } = nonNullishOrThrow(deltas[index],);
-          return isStanding
-            && (!unexcused.some(function isShort(atom,): boolean {
-              return short.has(keyOf(atom,),);
-            },));
-        },);
-      },
-      deltas.map(function startsStanding(): boolean {
-        return true;
-      },),
+        const { unexcused, } = nonNullishOrThrow(deltas[index],);
+        return isStanding
+          && (!unexcused.some(function isShort(atom,): boolean {
+            return short.has(keyOf(atom,),);
+          },));
+      },);
+    },
+    deltas.map(function startsStanding(): boolean {
+      return true;
+    },),
     );
   return deltas.map(function toRefusal(
     delta,

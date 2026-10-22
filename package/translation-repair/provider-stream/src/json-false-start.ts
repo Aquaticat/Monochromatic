@@ -56,8 +56,8 @@ export function readJsonPastFalseStart({ text, }: { readonly text: string; },):
     readonly value: unknown;
     readonly abandoned: number;
   }
-  | { readonly parsed: false; }
-{
+    | { readonly parsed: false; }
+  {
   /**
    Logger pre-tagged with this function's name.
    */
@@ -144,11 +144,11 @@ export function parseAnswerJson({ text, }: { readonly text: string; },):
     readonly abandoned: number;
     readonly trailing: number;
   }
-  | {
-    readonly parsed: false;
-    readonly detail: string;
-  }
-{
+    | {
+      readonly parsed: false;
+      readonly detail: string;
+    }
+  {
   /**
    Parse of the whole answer, the ordinary case.
    */

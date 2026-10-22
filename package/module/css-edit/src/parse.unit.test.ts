@@ -106,9 +106,9 @@ function atRuleNamed(
   return nonNullishOrThrow(
     state.root.children
       .filter(
-        function keepAtRules(node,): node is CssAtRule {
-          return isCssAtRule(node,);
-        },
+      function keepAtRules(node,): node is CssAtRule {
+        return isCssAtRule(node,);
+      },
       )
       .find(function named(node,) {
         return node.name === name;
@@ -244,9 +244,9 @@ await describe({
             const state = parse('.a { @apply --x }\n@apply --y',);
             const inner = structural(firstRule(state,).block.children,)
               .filter(
-                function keepAtRules(node,): node is CssAtRule {
-                  return isCssAtRule(node,);
-                },
+              function keepAtRules(node,): node is CssAtRule {
+                return isCssAtRule(node,);
+              },
               );
             expect(inner[0]?.name,).toBe('apply',);
             expect(inner[0]?.semicolonToken,).toBeUndefined();

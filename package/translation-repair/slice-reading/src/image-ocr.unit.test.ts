@@ -711,7 +711,7 @@ await describe({
 
             expect(shown.lines,).toEqual([
               `debug [readImageWithOcr] ${LETTER}: dwebp did not decode it (dwebp failed with filesystem code `
-              + 'ENOSPC)',
+                + 'ENOSPC)',
               LETTER_READ_LINE,
             ],);
           },

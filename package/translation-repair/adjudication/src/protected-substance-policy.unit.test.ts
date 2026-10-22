@@ -33,17 +33,17 @@ import { systemOf, } from '@monochromatic-dev/translation-repair-provider/ts/cha
  */
 const SUBSTANCE_CLASS =
   'A class of drug (a sedative, a sleeping pill, an antidepressant, a painkiller) is a substance and a count '
-  + '(three bottles, a whole box, forty pills) is a dose, named or not: "three bottles of a sedative" names both. '
-  + 'This holds for any medication or drug the page ties to a death or an attempt, not only the one it names as the means; '
-  + 'the page says at most that she had taken medication.';
+    + '(three bottles, a whole box, forty pills) is a dose, named or not: "three bottles of a sedative" names both. '
+    + 'This holds for any medication or drug the page ties to a death or an attempt, not only the one it names as the means; '
+    + 'the page says at most that she had taken medication.';
 
 /**
  Clause naming a place that is itself the means as a method.
  */
 const PLACE_AS_MEANS =
   'A place that is itself the means (a rooftop, a high floor, a bridge, a railway line, deep water) is a method too: '
-  + 'the page keeps where it happened when that tells a reader nothing to copy (a city, a hotel, a hospital), '
-  + 'and otherwise says that she ended her life, or attempted to, without saying where she went to do it.';
+    + 'the page keeps where it happened when that tells a reader nothing to copy (a city, a hotel, a hospital), '
+    + 'and otherwise says that she ended her life, or attempted to, without saying where she went to do it.';
 
 /**
  Cat-themed source, since neither sheet varies with what it is given.

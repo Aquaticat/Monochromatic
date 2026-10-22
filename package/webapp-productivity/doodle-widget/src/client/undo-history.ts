@@ -129,7 +129,7 @@ export function pushSnapshot({
     0,
     history.index
       + 1,
-  );
+    );
   history.states
     .push(snapshot,);
   history.index = history.states

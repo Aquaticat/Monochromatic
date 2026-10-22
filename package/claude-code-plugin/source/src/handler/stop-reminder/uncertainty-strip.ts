@@ -144,9 +144,9 @@ function foldContractionApostrophes(text: string,): string {
       index,
     ) {
       return isContractionApostrophe({
-          text,
-          index,
-        },)
+        text,
+        index,
+      },)
         ? RIGHT_SINGLE_QUOTE
         : text.charAt(index,);
     },

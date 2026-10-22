@@ -87,18 +87,18 @@ export function computeDrawDigest(
 ): string {
   return createHash('sha256',)
     .update(
-      JSON.stringify({
-        domain: DRAW_IDENTITY_DOMAIN,
-        seed,
-        corpusSha,
-        items: items.map(function toTuple(item,) {
-          return [
-            item.position,
-            item.entryId,
-            item.issueId,
-          ];
-        },),
+    JSON.stringify({
+      domain: DRAW_IDENTITY_DOMAIN,
+      seed,
+      corpusSha,
+      items: items.map(function toTuple(item,) {
+        return [
+          item.position,
+          item.entryId,
+          item.issueId,
+        ];
       },),
+    },),
     )
     .digest('hex',);
 }

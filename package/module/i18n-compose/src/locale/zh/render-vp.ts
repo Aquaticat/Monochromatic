@@ -65,7 +65,7 @@ export function makeChineseVerbPhraseRenderer<
   S extends string,
   V extends string,
   N extends string,
->(
+  >(
   {
     verbs,
     renderNounPhrase,
@@ -77,7 +77,7 @@ export function makeChineseVerbPhraseRenderer<
       advs?: readonly Adverbial<S, N>[],
     ) => string;
   },
-): (phrase: VerbPhrase<S, V, N>,) => string {
+  ): (phrase: VerbPhrase<S, V, N>,) => string {
   /**
    Renders a verb-phrase AST in Chinese using the bare surface.
    

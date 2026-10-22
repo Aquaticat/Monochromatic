@@ -29,7 +29,7 @@ import { scratchDirWith, } from '@monochromatic-dev/translation-repair-test-fixt
  */
 export const NO_ENTRY_NO_SLICE_REFUSAL: string =
   'the corpus at the pin yields no slice to sample: 0 entries are listed there and none could be sliced, so a '
-  + 'bench drawn over it would compare on no work; check the clone and the commit this run reads';
+    + 'bench drawn over it would compare on no work; check the clone and the commit this run reads';
 
 /**
  One invented entry's two pages.

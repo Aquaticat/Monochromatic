@@ -301,11 +301,11 @@ export async function runRepairBenchmark(
        */
       const references = entry.seeds
         .map(function toReference(seed,) {
-        return {
-          seedId: seed.id,
-          deletedText: seed.needle,
-        };
-      },);
+          return {
+            seedId: seed.id,
+            deletedText: seed.needle,
+          };
+        },);
 
       /**
        Zh-anchored judge verdicts over this entry's restored seeds.
@@ -350,15 +350,15 @@ export async function runRepairBenchmark(
         seedDerivability,
         seedGrades: Object.fromEntries(entry.seeds
           .map(function gradeSeed(seed,) {
-          return [
-            seed.id,
-            measureSeedRestoration({
-              needle: seed.needle,
-              seededText,
-              repairedText: result.repairedText,
-            },),
-          ];
-        },),),
+            return [
+              seed.id,
+              measureSeedRestoration({
+                needle: seed.needle,
+                seededText,
+                repairedText: result.repairedText,
+              },),
+            ];
+          },),),
         seedDetection: gradeSeedDetection({
           sourceText: entry.sourceText,
           seededText,
@@ -369,8 +369,8 @@ export async function runRepairBenchmark(
           .length,
         resolvedIssueCount: result.issues
           .filter(function isResolved(record,) {
-          return record.resolved;
-        },)
+            return record.resolved;
+          },)
           .length,
         detail: '',
         repairedText: result.repairedText,

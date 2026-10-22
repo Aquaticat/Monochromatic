@@ -128,7 +128,7 @@ export function typeChecks(): void {
   // deferred async result is a reusable pipeline accepting T | Promise<T>, resolving to the last awaited type
   expectTypeOf(pipeAsync({ fn1: increment, fn2: doubleAsync, },),).toEqualTypeOf<
     (value: number | Promise<number>,) => Promise<number>
-  >();
+    >();
   expectTypeOf(pipeAsync({ fn1: doubleAsync, fn2: toLabel, },)(2,),).toEqualTypeOf<Promise<string>>();
 
   //endregion

@@ -67,12 +67,12 @@ export type HyperSpelling =
      */
     readonly id: HyperServedId;
   }
-  | {
+    | {
     /**
      Discriminator marking a model this provider does not serve.
      */
-    readonly served: false;
-  };
+      readonly served: false;
+    };
 
 /**
  Where one roster model can be reached on OpenRouter.
@@ -94,12 +94,12 @@ export type OpenRouterSpelling =
      */
     readonly id: OpenRouterServedId;
   }
-  | {
+    | {
     /**
      Discriminator marking a model this provider does not serve.
      */
-    readonly served: false;
-  };
+      readonly served: false;
+    };
 
 /**
  Where one roster model can be reached on Amazon Bedrock.
@@ -121,12 +121,12 @@ export type BedrockSpelling =
      */
     readonly id: BedrockServedId;
   }
-  | {
+    | {
     /**
      Discriminator marking a model this provider does not serve.
      */
-    readonly served: false;
-  };
+      readonly served: false;
+    };
 
 /**
  How Charm Hyper spells one roster model, where it serves it at all.
@@ -249,12 +249,12 @@ export type SyntheticEntry =
      */
     readonly info: SyntheticModelInfo;
   }
-  | {
+    | {
     /**
      Discriminator marking a model this provider does not serve.
      */
-    readonly served: false;
-  };
+      readonly served: false;
+    };
 
 /**
  What Synthetic's catalog says about one roster model.

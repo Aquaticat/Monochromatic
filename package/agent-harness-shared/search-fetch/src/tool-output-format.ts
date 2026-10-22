@@ -344,9 +344,9 @@ function resultsPropertyJsonlText(value: Readonly<Record<string, unknown>>,): Re
        
        @mutates result - `JSON.stringify` may invoke `toJSON`, getters, or proxy traps.
        */
-      function stringifyResult(result,) {
-        return stringifyJsonLineForModel(result,);
-      },
+    function stringifyResult(result,) {
+      return stringifyJsonLineForModel(result,);
+    },
     )
     .join('\n',);
 }

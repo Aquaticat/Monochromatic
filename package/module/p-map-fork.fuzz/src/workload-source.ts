@@ -21,51 +21,51 @@ import type { SourceTelemetry, } from './workload.ts';
  */
 function openIterator(
   {
-  values,
-  telemetry,
+    values,
+    telemetry,
   }: {
   /**
    Values yielded in order; elements may carry promises.
    */
-  readonly values: readonly (string | Promise<string>)[];
+    readonly values: readonly (string | Promise<string>)[];
   /**
    Telemetry every `next` and `return` writes to.
    */
-  readonly telemetry: SourceTelemetry;
+    readonly telemetry: SourceTelemetry;
   },
 ): Iterator<string | Promise<string>> {
   /**
  Pull cursor shared by this iterator's `next` calls.
  */
   const cursor = {
-  position: 0,
+    position: 0,
   };
   return {
-  next: function instrumentedNext(): IteratorResult<string | Promise<string>> {
-    telemetry.pulls += 1;
-    if (cursor.position >= values.length)
-      return {
-        done: true,
-        value: undefined,
-      };
+    next: function instrumentedNext(): IteratorResult<string | Promise<string>> {
+      telemetry.pulls += 1;
+      if (cursor.position >= values.length)
+        return {
+          done: true,
+          value: undefined,
+        };
     /**
      Value at this cursor position; the bound check above proves it
      present.
      */
-    const value = values[cursor.position] ?? '';
-    cursor.position += 1;
-    return {
-      done: false,
-      value,
-    };
-  },
-  return: function instrumentedReturn(): IteratorResult<string | Promise<string>> {
-    telemetry.closes += 1;
-    return {
-      done: true,
-      value: undefined,
-    };
-  },
+      const value = values[cursor.position] ?? '';
+      cursor.position += 1;
+      return {
+        done: false,
+        value,
+      };
+    },
+    return: function instrumentedReturn(): IteratorResult<string | Promise<string>> {
+      telemetry.closes += 1;
+      return {
+        done: true,
+        value: undefined,
+      };
+    },
   };
 }
 

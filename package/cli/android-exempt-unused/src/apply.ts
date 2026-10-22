@@ -87,18 +87,18 @@ export async function applyChanges({
   const operations: readonly Operation[] = [
     ...changes.toExempt
       .map(function toExemptOp(packageName,): Operation {
-      return {
-        packageName,
-        mode: MODE_IGNORE,
-      };
-    },),
+        return {
+          packageName,
+          mode: MODE_IGNORE,
+        };
+      },),
     ...changes.toRevert
       .map(function toRevertOp(packageName,): Operation {
-      return {
-        packageName,
-        mode: MODE_DEFAULT,
-      };
-    },),
+        return {
+          packageName,
+          mode: MODE_DEFAULT,
+        };
+      },),
   ];
   /**
    Apps whose write failed; returned to the caller for reporting.

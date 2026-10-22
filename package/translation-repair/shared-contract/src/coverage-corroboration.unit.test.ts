@@ -70,8 +70,8 @@ await describe({
         // units agree and the expectation can be written against `length`.
         expect(expectedTranslationPoints({ sourceText: SOURCE, },),)
           .toBeCloseTo(
-            WHOLE,
-            6,
+          WHOLE,
+          6,
           );
       },
     },),
@@ -84,8 +84,8 @@ await describe({
         // point.
         expect(expectedTranslationPoints({ sourceText: '🐱', },),)
           .toBeCloseTo(
-            CORPUS_EXPANSION,
-            6,
+          CORPUS_EXPANSION,
+          6,
           );
       },
     },),
@@ -95,8 +95,8 @@ await describe({
       fn: async () => {
         expect(expectedTranslationPoints({ sourceText: `\n\n  ${SOURCE}  \n`, },),)
           .toBeCloseTo(
-            expectedTranslationPoints({ sourceText: SOURCE, },),
-            6,
+          expectedTranslationPoints({ sourceText: SOURCE, },),
+          6,
           );
       },
     },),

@@ -246,7 +246,7 @@ await describe({
                   expect(refusal,).toBeInstanceOf(RangeError,);
                   expect(String(refusal,),).toBe(
                     `RangeError: A UTF-8 byte length is a non-negative safe integer; received ${String(count,)}. `
-                    + 'A fractional or negative value means the caller measured something other than bytes.',
+                      + 'A fractional or negative value means the caller measured something other than bytes.',
                   );
                 }
               },

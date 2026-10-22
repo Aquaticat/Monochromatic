@@ -83,8 +83,8 @@ await describe({
     it({
       name:
         'DERIVES THE PINNED KEY for a fixed set of inputs, which is the only thing that fails when the '
-        + 'derivation moves and the version does not: a moved key costs quota and nothing else, so '
-        + 'nothing else would notice',
+          + 'derivation moves and the version does not: a moved key costs quota and nothing else, so '
+          + 'nothing else would notice',
       fn: async () => {
         /**
          Key these fixed inputs derive today.
@@ -136,7 +136,7 @@ await describe({
     it({
       name:
         'SEPARATES two contests over identical candidates and different ARCHIVE wording, since the judge '
-        + 'is shown the archive rendering as evidence and is therefore not being asked the same question',
+          + 'is shown the archive rendering as evidence and is therefore not being asked the same question',
       fn: async () => {
         expect(laneContestSliceKey({
           ...catInputs(),
@@ -147,7 +147,7 @@ await describe({
     it({
       name:
         'SEPARATES a slice the archive never rendered from one it rendered as nothing, which carry the '
-        + 'same empty wording and are opposite facts about the passage',
+          + 'same empty wording and are opposite facts about the passage',
       fn: async () => {
         expect(laneContestSliceKey({
           ...catInputs(),
@@ -171,7 +171,7 @@ await describe({
     it({
       name:
         'SEPARATES a run that declared names from one that declared none, since a judge shown an attested '
-        + 'name reads a candidate carrying it differently',
+          + 'name reads a candidate carrying it differently',
       fn: async () => {
         expect(laneContestSliceKey({
           ...catInputs(),

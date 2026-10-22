@@ -121,7 +121,7 @@ export async function captureScreenshot(): Promise<Buffer> {
     function collectChunk(chunk: Buffer,) {
       chunks.push(chunk,);
     },
-  );
+    );
   await once(
     proc,
     'close',
@@ -189,7 +189,7 @@ export async function captureWebcam(): Promise<Buffer> {
     function collectChunk(chunk: Buffer,) {
       chunks.push(chunk,);
     },
-  );
+    );
   await once(
     proc,
     'close',

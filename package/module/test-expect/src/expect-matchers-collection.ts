@@ -130,51 +130,51 @@ export function collectionMatchersPlugin(chai: Chai.ChaiStatic,): void {
 
   chai.Assertion
     .addMethod(
-      'allStrictEqual',
-      function allStrictEqual(this: Chai.AssertionStatic,): void {
+    'allStrictEqual',
+    function allStrictEqual(this: Chai.AssertionStatic,): void {
         /**
          Array actual with misuse already rejected.
          */
-        const values = readAllEqualActual(this,);
+      const values = readAllEqualActual(this,);
         /**
          Anchor element; every other element is compared against it.
          */
-        const [first, ...rest] = values;
+      const [first, ...rest] = values;
         /**
          Whether every element strictly equals the anchor.
          */
-        const allEqual = rest.every(function isStrictEqual(value,) {
-          return value === first;
-        },);
-        this.assert(
-          allEqual,
-          'expected every value to strictly equal #{exp}',
-          'expected values not to all strictly equal #{exp}',
-          first,
-          values.find(function isStrictDifferent(value,) {
-            return value !== first;
-          },),
-          true,
-        );
-      },
+      const allEqual = rest.every(function isStrictEqual(value,) {
+        return value === first;
+      },);
+      this.assert(
+        allEqual,
+        'expected every value to strictly equal #{exp}',
+        'expected values not to all strictly equal #{exp}',
+        first,
+        values.find(function isStrictDifferent(value,) {
+          return value !== first;
+        },),
+        true,
+      );
+    },
     );
 
   chai.Assertion
     .addMethod(
-      'allDeepEqual',
-      function allDeepEqual(this: Chai.AssertionStatic,): void {
+    'allDeepEqual',
+    function allDeepEqual(this: Chai.AssertionStatic,): void {
         /**
          Array actual with misuse already rejected.
          */
-        const values = readAllEqualActual(this,);
+      const values = readAllEqualActual(this,);
         /**
          Anchor element; every other element is deep-compared against it.
          */
-        const [first, ...rest] = values;
+      const [first, ...rest] = values;
         /**
          Whether every element deep-equals the anchor.
          */
-        const allEqual = rest.every(
+      const allEqual = rest.every(
           /**
            Compares one retained assertion value with anchor.
            
@@ -184,18 +184,18 @@ export function collectionMatchersPlugin(chai: Chai.ChaiStatic,): void {
            
            @mutates value - `chaiUtil.eql` may inspect caller getters or proxy traps.
            */
-          function isDeepEqual(value,) {
+        function isDeepEqual(value,) {
           return chaiUtil.eql(
             value,
             first,
           );
         },);
-        this.assert(
-          allEqual,
-          'expected every value to deep-equal #{exp}',
-          'expected values not to all deep-equal #{exp}',
-          first,
-          values.find(
+      this.assert(
+        allEqual,
+        'expected every value to deep-equal #{exp}',
+        'expected values not to all deep-equal #{exp}',
+        first,
+        values.find(
             /**
              Finds first retained assertion value differing from anchor.
              
@@ -205,51 +205,51 @@ export function collectionMatchersPlugin(chai: Chai.ChaiStatic,): void {
              
              @mutates value - `chaiUtil.eql` may inspect caller getters or proxy traps.
              */
-            function isDeepDifferent(value,) {
+          function isDeepDifferent(value,) {
             return !chaiUtil.eql(
               value,
               first,
             );
           },),
-          true,
-        );
-      },
+        true,
+      );
+    },
     );
 
   chai.Assertion
     .addMethod(
-      'satisfyAll',
-      function satisfyAll(
-        this: Chai.AssertionStatic,
-        predicate: (value: unknown,) => boolean,
-      ): void {
-        if ((typeof predicate) !== 'function') {
-          throw new TypeError('toSatisfyAll expects a predicate function',);
-        }
+    'satisfyAll',
+    function satisfyAll(
+      this: Chai.AssertionStatic,
+      predicate: (value: unknown,) => boolean,
+    ): void {
+      if ((typeof predicate) !== 'function') {
+        throw new TypeError('toSatisfyAll expects a predicate function',);
+      }
         /**
          Raw assertion subject pulled from `object` flag before array narrowing.
          */
-        const actual: unknown = chaiUtil.flag(
-          this,
-          'object',
-        );
-        if (!Array.isArray(actual,)) {
-          throw new TypeError('toSatisfyAll expects an array actual',);
-        }
+      const actual: unknown = chaiUtil.flag(
+        this,
+        'object',
+      );
+      if (!Array.isArray(actual,)) {
+        throw new TypeError('toSatisfyAll expects an array actual',);
+      }
         /**
          Whether the predicate holds for every element; empty arrays pass.
          */
-        const pass = actual.every(function satisfies(value: unknown,) {
-          return predicate(value,);
-        },);
-        this.assert(
-          pass,
-          'expected every value to satisfy the predicate',
-          'expected at least one value not to satisfy the predicate',
-          true,
-          pass,
-        );
-      },
+      const pass = actual.every(function satisfies(value: unknown,) {
+        return predicate(value,);
+      },);
+      this.assert(
+        pass,
+        'expected every value to satisfy the predicate',
+        'expected at least one value not to satisfy the predicate',
+        true,
+        pass,
+      );
+    },
     );
 }
 
@@ -264,7 +264,7 @@ export function collectionMatchersPlugin(chai: Chai.ChaiStatic,): void {
 export type CollectionMatcherSet = Pick<
   MatcherSet,
   'toAllBe' | 'toAllEqual' | 'toSatisfyAll'
->;
+  >;
 
 /**
  Builds the collection matcher subset from a chai Assertion instance. The

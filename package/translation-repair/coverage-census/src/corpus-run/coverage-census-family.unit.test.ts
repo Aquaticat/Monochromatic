@@ -303,12 +303,12 @@ await describe({
             expect(refusal,).toBeInstanceOf(StatedRefusalError,);
             expect(
               String(refusal,).includes(join(
-              scratch.path,
-              'delta',
-              'dist',
-              'final',
-              'node',
-            ),),
+                scratch.path,
+                'delta',
+                'dist',
+                'final',
+                'node',
+              ),),
             ).toBe(true,);
           },
         },),
@@ -413,12 +413,12 @@ await describe({
             expect(outside,).toBeInstanceOf(StatedRefusalError,);
             expect(String(outside,),).toBe(
               'StatedRefusalError: /dogs/src/bark.unit.test.ts is not a test file of a package beside this one; name it '
-              + 'from the family directory (/cats), as <package>/src/<file>.unit.test.ts, or by its absolute path',
+                + 'from the family directory (/cats), as <package>/src/<file>.unit.test.ts, or by its absolute path',
             );
             expect(stranger,).toBeInstanceOf(StatedRefusalError,);
             expect(String(stranger,),).toBe(
               'StatedRefusalError: /cats/delta/src/purr.unit.test.ts is not a test file of a package beside this one; '
-              + 'name it from the family directory (/cats), as <package>/src/<file>.unit.test.ts, or by its absolute path',
+                + 'name it from the family directory (/cats), as <package>/src/<file>.unit.test.ts, or by its absolute path',
             );
           },
         },),

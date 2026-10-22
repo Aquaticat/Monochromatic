@@ -336,21 +336,21 @@ function withShippedSlices(
    The repair ledger saying the lane replaced the archive's wording at the first slices.
    */
   const repair = repairRows.map(function shippedAt(
-      row,
-      index,
-    ) {
-      if (index >= count)
-        return row;
-      return {
-        ...row,
-        outcome: {
-          kind: 'decided' as const,
-          acceptedText: `${row.incumbentText}${SHIPPED_ADDITION}`,
-        },
-        shippedText: `${row.incumbentText}${SHIPPED_ADDITION}`,
-        delivery: { kind: 'replacement-shipped' as const, },
-      };
-    },);
+    row,
+    index,
+  ) {
+    if (index >= count)
+      return row;
+    return {
+      ...row,
+      outcome: {
+        kind: 'decided' as const,
+        acceptedText: `${row.incumbentText}${SHIPPED_ADDITION}`,
+      },
+      shippedText: `${row.incumbentText}${SHIPPED_ADDITION}`,
+      delivery: { kind: 'replacement-shipped' as const, },
+    };
+  },);
 
   /**
    Slice indexes of the rows that shipped a replacement.

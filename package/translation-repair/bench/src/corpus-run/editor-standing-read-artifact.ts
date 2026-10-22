@@ -93,20 +93,20 @@ export type StandingArtifactOutcome =
      */
     readonly said: readonly string[];
   }
-  | {
+    | {
     /**
      Named absences: settled under an earlier roster, settled before the lane
      recorded rounds, or refused by the parse.
      */
-    readonly kind: 'off-roster' | 'earlier-schema' | 'refused';
+      readonly kind: 'off-roster' | 'earlier-schema' | 'refused';
 
     /**
      Lines for stderr: the model the roster dropped, or why the parse refused,
      and none for an artifact settled before the rounds were recorded, which
      the summary counts instead.
      */
-    readonly said: readonly string[];
-  };
+      readonly said: readonly string[];
+    };
 
 /**
  Reads one artifact into the rounds each of its seats produced.

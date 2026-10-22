@@ -378,17 +378,17 @@ export async function checkJob(
   const chunks: Buffer[] = [];
   child.stdout
     .on(
-      'data',
-      function collect(chunk: Buffer,) {
-        chunks.push(chunk,);
-      },
+    'data',
+    function collect(chunk: Buffer,) {
+      chunks.push(chunk,);
+    },
     );
   child.stderr
     .on(
-      'data',
-      function collect(chunk: Buffer,) {
-        chunks.push(chunk,);
-      },
+    'data',
+    function collect(chunk: Buffer,) {
+      chunks.push(chunk,);
+    },
     );
   /**
    Whether the limit killed the compiler.

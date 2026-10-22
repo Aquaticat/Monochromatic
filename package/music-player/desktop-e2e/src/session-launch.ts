@@ -226,8 +226,8 @@ export function systemdRunArguments(
     `--property=StandardError=append:${logPath}`,
     ...Object.entries(environment,)
       .map(function setenv([key, value,],): string {
-      return `--setenv=${key}=${value}`;
-    },),
+        return `--setenv=${key}=${value}`;
+      },),
     compositorPath,
     '--socket',
     socket,

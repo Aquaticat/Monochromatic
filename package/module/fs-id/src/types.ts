@@ -24,10 +24,10 @@ export type FsId = string & { readonly __brand: 'FsId'; };
  */
 export type FsIdSource =
   | 'fs-uuid'
-  | 'volume-uuid'
-  | 'volume-serial'
-  | 'f-fsid'
-  | 'device-number';
+    | 'volume-uuid'
+    | 'volume-serial'
+    | 'f-fsid'
+    | 'device-number';
 
 /**
  Successful filesystem identity resolution with stability metadata.

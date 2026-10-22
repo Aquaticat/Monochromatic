@@ -167,7 +167,7 @@ await describe({
             ],).toEqual([
               '===== CHOSEN RENDERING =====\nThe cat naps\n===== CHOSEN PLACE: ENGLISH PARAGRAPH =====\nThe cat naps. It is warm.\n',
               '===== CHOSEN RENDERING =====\nThe cat naps\n===== CHOSEN PLACE: ENGLISH PARAGRAPH =====\nThe cat naps. It is warm.\n'
-              + '===== CHOSEN PLACE: ENGLISH SLOT =====\nwarm\n',
+                + '===== CHOSEN PLACE: ENGLISH SLOT =====\nwarm\n',
             ],);
           },
         },),
@@ -202,11 +202,11 @@ await describe({
               keepingBlockOf({ keeping: [], crossing: [{ edge: 'end', words: 'put the kitten', },], fence: FENCE, },),
             ],).toEqual([
               '===== WORDS OF OTHER PLACES TO KEEP EXACTLY =====\nThe cat naps\nto sleep\n(these are the FIRST words of the '
-              + 'paragraph: the place they belong to runs on from the previous paragraph, so they stay the first words of '
-              + 'your paragraph, exactly as they are)\n',
+                + 'paragraph: the place they belong to runs on from the previous paragraph, so they stay the first words of '
+                + 'your paragraph, exactly as they are)\n',
               '===== WORDS OF OTHER PLACES TO KEEP EXACTLY =====\nput the kitten\n(these are the LAST words of the '
-              + 'paragraph: the place they belong to runs on into the next paragraph, so they stay the last words of '
-              + 'your paragraph, exactly as they are)\n',
+                + 'paragraph: the place they belong to runs on into the next paragraph, so they stay the last words of '
+                + 'your paragraph, exactly as they are)\n',
             ],);
           },
         },),

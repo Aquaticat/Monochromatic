@@ -111,8 +111,8 @@ function foldWord({ word, }: { readonly word: string; },): string {
   return word
     .toLowerCase()
     .replaceAll(
-      '’',
-      '\'',
+    '’',
+    '\'',
     );
 }
 

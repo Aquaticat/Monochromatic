@@ -180,7 +180,7 @@ export async function synchronizeBypassRoutes(
   }
   if (installed.length
     > transition.routes
-    .length) {
+      .length) {
     throw new BypassRouteError(
       `Bypass table ${String(current.table,)} gained unrecorded protocol ${String(BYPASS_ROUTE_PROTOCOL,)} route.`,
     );

@@ -150,7 +150,7 @@ await describe({
         ],);
         expect(unified.findings,).toEqual([
           `title-reference-ambiguous (slice 1: ${WHOSE}, but every word of the glossed run starts with a small letter, `
-          + 'so where its title starts cannot be read)',
+            + 'so where its title starts cannot be read)',
         ],);
       },
     },),

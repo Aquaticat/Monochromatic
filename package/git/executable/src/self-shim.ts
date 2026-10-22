@@ -256,8 +256,8 @@ export async function isGitPolicySelfShim(candidatePath: string,): Promise<boole
    */
   const content = contentBytes
     .subarray(
-      0,
-      contentBytesRead,
+    0,
+    contentBytesRead,
     )
     .toString('utf8');
   return [...SELF_SHIM_MARKERS,].some(function hasSelfShimMarker(marker,) {

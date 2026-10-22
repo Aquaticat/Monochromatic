@@ -146,11 +146,11 @@ await describe({
               return recountRefusalOf({ carry, },);
             },),).toEqual([
               'ArtifactParseError: artifact parse failed at cat.carries[0].candidates[1].label: '
-              + 'expected the label CANDIDATE 2, since the candidates are labelled in order.',
+                + 'expected the label CANDIDATE 2, since the candidates are labelled in order.',
               'ArtifactParseError: artifact parse failed at cat.carries[0].candidates[2].writers: '
-              + 'expected a seat at least, since a writer candidate is a writer\'s paragraph.',
+                + 'expected a seat at least, since a writer candidate is a writer\'s paragraph.',
               'ArtifactParseError: artifact parse failed at cat.carries[0].candidates[2].writers: '
-              + 'expected a seat in one candidate only, since a seat gives one reply.',
+                + 'expected a seat in one candidate only, since a seat gives one reply.',
             ],);
           },
         },),
@@ -166,11 +166,11 @@ await describe({
               return recountRefusalOf({ carry, },);
             },),).toEqual([
               'ArtifactParseError: artifact parse failed at cat.carries[0].candidates: '
-              + 'expected the current English once and the splice at most once.',
+                + 'expected the current English once and the splice at most once.',
               'ArtifactParseError: artifact parse failed at cat.carries[0].candidates: '
-              + 'expected the current English once and the splice at most once.',
+                + 'expected the current English once and the splice at most once.',
               'ArtifactParseError: artifact parse failed at cat.carries[0].candidates: '
-              + 'expected the current English once and the splice at most once.',
+                + 'expected the current English once and the splice at most once.',
             ],);
           },
         },),
@@ -188,13 +188,13 @@ await describe({
               return recountRefusalOf({ carry, },);
             },),).toEqual([
               'ArtifactParseError: artifact parse failed at cat.carries[0]: '
-              + 'expected no ballots, no usable count and no quorum, since the bench was not asked among the candidates.',
+                + 'expected no ballots, no usable count and no quorum, since the bench was not asked among the candidates.',
               'ArtifactParseError: artifact parse failed at cat.carries[0]: '
-              + 'expected no ballots, no usable count and no quorum, since the bench was not asked among the candidates.',
+                + 'expected no ballots, no usable count and no quorum, since the bench was not asked among the candidates.',
               'ArtifactParseError: artifact parse failed at cat.carries[0]: '
-              + 'expected no ballots, no usable count and no quorum, since the bench was not asked among the candidates.',
+                + 'expected no ballots, no usable count and no quorum, since the bench was not asked among the candidates.',
               'ArtifactParseError: artifact parse failed at cat.carries[0].candidates: '
-              + 'expected the current English alone, since no alternative was on offer.',
+                + 'expected the current English alone, since no alternative was on offer.',
             ],);
           },
         },),
@@ -212,7 +212,7 @@ await describe({
               return recountRefusalOf({ carry, },);
             },),).toEqual([
               'ArtifactParseError: artifact parse failed at cat.carries[0].runOff: '
-              + 'expected no run-off, since the bench was not asked among the candidates.',
+                + 'expected no run-off, since the bench was not asked among the candidates.',
             ],);
           },
         },),
@@ -233,19 +233,19 @@ await describe({
               return recountRefusalOf({ carry, },);
             },),).toEqual([
               'ArtifactParseError: artifact parse failed at cat.carries[0]: '
-              + 'expected two candidates at least and a quorum of one at least, since the bench was asked among the candidates.',
+                + 'expected two candidates at least and a quorum of one at least, since the bench was asked among the candidates.',
               'ArtifactParseError: artifact parse failed at cat.carries[0]: '
-              + 'expected two candidates at least and a quorum of one at least, since the bench was asked among the candidates.',
+                + 'expected two candidates at least and a quorum of one at least, since the bench was asked among the candidates.',
               'ArtifactParseError: artifact parse failed at cat.carries[0].ballots[1].seat: '
-              + 'expected a seat heard once, since a gather hears each seat once.',
+                + 'expected a seat heard once, since a gather hears each seat once.',
               'ArtifactParseError: artifact parse failed at cat.carries[0].usable: '
-              + 'expected the number of ballots that can be counted against the candidates.',
+                + 'expected the number of ballots that can be counted against the candidates.',
               'ArtifactParseError: artifact parse failed at cat.carries[0].decision: '
-              + 'expected the decision a strict majority of the usable ballots, reaching the quorum, give.',
+                + 'expected the decision a strict majority of the usable ballots, reaching the quorum, give.',
               'ArtifactParseError: artifact parse failed at cat.carries[0].decision: '
-              + 'expected the decision a strict majority of the usable ballots, reaching the quorum, give.',
+                + 'expected the decision a strict majority of the usable ballots, reaching the quorum, give.',
               'ArtifactParseError: artifact parse failed at cat.carries[0].decision: '
-              + 'expected the decision a strict majority of the usable ballots, reaching the quorum, give.',
+                + 'expected the decision a strict majority of the usable ballots, reaching the quorum, give.',
             ],);
           },
         },),
@@ -263,7 +263,7 @@ await describe({
             },);
             expect(refusal,).toBe(
               'ArtifactParseError: artifact parse failed at cat.groups[0].carries[1].usable: '
-              + 'expected the number of ballots that can be counted against the candidates.',
+                + 'expected the number of ballots that can be counted against the candidates.',
             );
           },
         },),

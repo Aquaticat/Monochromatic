@@ -105,14 +105,14 @@ function pairingClient(
             : supported ? 'The picture carries this greeting.' : 'No source supports this greeting.',
         }
         : schema === 'candidate_ballot'
-        ? { best: 1, assessment: 'Remove wording unsupported by the supplied source.', }
-        : schema === 'absolute_naturalness_review'
-        ? {
-          isAcceptable: true,
-          findings: [],
-          assessment: 'The attribution is natural and publication-ready.',
-        }
-        : { pairs: [{ source: 0, target: 0, },], };
+          ? { best: 1, assessment: 'Remove wording unsupported by the supplied source.', }
+          : schema === 'absolute_naturalness_review'
+            ? {
+              isAcceptable: true,
+              findings: [],
+              assessment: 'The attribution is natural and publication-ready.',
+            }
+            : { pairs: [{ source: 0, target: 0, },], };
       if (!request.validate(value,))
         throw new Error(`scripted ${schema} reply failed validator`,);
       return {

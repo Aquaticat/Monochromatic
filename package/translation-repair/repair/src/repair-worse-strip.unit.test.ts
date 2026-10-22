@@ -201,56 +201,56 @@ function scriptedClient(
       const scripted: unknown = (stage === 'critic_report')
         ? { issues: ISSUES, }
         : (stage === 'panel_ballot')
-        ? {
-          verdicts: numberedBlocks({ text: content, marker: 'CLAIM ', },).map(function toVerdict({ number, },) {
-            return { claim: number, reason: 'scripted', vote: 'supported', };
-          },),
-        }
-        : (stage === 'editor_report')
-        ? {
-          edits: numberedBlocks({ text: content, marker: 'REGION ', },).map(function toEdit({ number, lines, },) {
-            return {
-              region: number,
-              newText: lines.some(function isFly(line,) {
-                  return line.startsWith('CURRENT TEXT: ',) && line.includes('butterflies',);
-                },)
-                ? FLY_REPAIR
-                : SUN_REPAIR,
-            };
-          },),
-        }
-        : (stage === 'resolution_report')
-        ? {
-          checks: numberedBlocks({ text: content, marker: 'ISSUE ', },).map(function toCheck({ number, lines, },) {
+          ? {
+            verdicts: numberedBlocks({ text: content, marker: 'CLAIM ', },).map(function toVerdict({ number, },) {
+              return { claim: number, reason: 'scripted', vote: 'supported', };
+            },),
+          }
+          : (stage === 'editor_report')
+            ? {
+              edits: numberedBlocks({ text: content, marker: 'REGION ', },).map(function toEdit({ number, lines, },) {
+                return {
+                  region: number,
+                  newText: lines.some(function isFly(line,) {
+                    return line.startsWith('CURRENT TEXT: ',) && line.includes('butterflies',);
+                  },)
+                    ? FLY_REPAIR
+                    : SUN_REPAIR,
+                };
+              },),
+            }
+            : (stage === 'resolution_report')
+              ? {
+                checks: numberedBlocks({ text: content, marker: 'ISSUE ', },).map(function toCheck({ number, lines, },) {
             /**
              Whether this block is the butterfly issue.
              */
-            const isFly = lines.some(function mentions(line,) {
-              return line.includes('butterflies',);
-            },);
-            return {
-              issue: number,
-              verdict: isFly ? (flyVerdicts[checkerIndex] ?? 'fixed') : 'fixed',
-            };
-          },),
-        }
-        : (stage === 'introduced_defect_report')
-        ? {
-          checks: numberedBlocks({ text: content, marker: 'REGION ', },).map(function toCheck({ number, },) {
-            return {
-              region: number,
-              verdict: 'no-introduced-defect-found',
-              category: '',
-              severity: '',
-              evidence: '',
-              omittedText: '',
-              verdictReason: '',
-            };
-          },),
-        }
-        : (stage === 'refine_report')
-        ? { rewrites: [], }
-        : undefined;
+                  const isFly = lines.some(function mentions(line,) {
+                    return line.includes('butterflies',);
+                  },);
+                  return {
+                    issue: number,
+                    verdict: isFly ? (flyVerdicts[checkerIndex] ?? 'fixed') : 'fixed',
+                  };
+                },),
+              }
+              : (stage === 'introduced_defect_report')
+                ? {
+                  checks: numberedBlocks({ text: content, marker: 'REGION ', },).map(function toCheck({ number, },) {
+                    return {
+                      region: number,
+                      verdict: 'no-introduced-defect-found',
+                      category: '',
+                      severity: '',
+                      evidence: '',
+                      omittedText: '',
+                      verdictReason: '',
+                    };
+                  },),
+                }
+                : (stage === 'refine_report')
+                  ? { rewrites: [], }
+                  : undefined;
       if (scripted === undefined)
         throw new Error(`stub has no script for stage ${stage}`,);
       if (!request.validate(scripted,))

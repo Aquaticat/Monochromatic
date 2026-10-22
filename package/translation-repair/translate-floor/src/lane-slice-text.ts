@@ -159,7 +159,7 @@ export type UndecidedSlicePolicy =
    Record it as unexamined, which is right only where the lane stopped early
    BY DESIGN and says so in its status.
    */
-  | 'not-evaluated';
+    | 'not-evaluated';
 
 /**
  Names one slice's outcome from what the lane reported about it.

@@ -44,7 +44,7 @@ export async function startTaskTimer(id: string,): Promise<Task | typeof TASK_NO
     timestamp,
     timestamp,
     id,
-  );
+    );
   return getTaskById(id,);
 }
 
@@ -81,7 +81,7 @@ export async function stopTaskTimer(id: string,): Promise<Task | typeof TASK_NOT
       Math.floor(
         (Date.now()
           - Date
-          .parse(currentTask.timerStartedAt,)) / MS_PER_SECOND,
+            .parse(currentTask.timerStartedAt,)) / MS_PER_SECOND,
       ),
     );
   /**
@@ -99,7 +99,7 @@ export async function stopTaskTimer(id: string,): Promise<Task | typeof TASK_NOT
     updatedTrackedTime,
     timestamp,
     id,
-  );
+    );
 
   return getTaskById(id,);
 }

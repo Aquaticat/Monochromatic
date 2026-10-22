@@ -358,7 +358,7 @@ export function buildAxisSubtitlesLayer(
       position: [
         (g.xMin
           + g
-          .xMax) * HALF,
+            .xMax) * HALF,
         g.yMin
           - offY,
         g.zMin,
@@ -371,7 +371,7 @@ export function buildAxisSubtitlesLayer(
           - offX,
         (g.yMin
           + g
-          .yMax) * HALF,
+            .yMax) * HALF,
         g.zMin,
       ],
       text: DIM_DISPLAY_NAMES[dimMapping.y],
@@ -383,7 +383,7 @@ export function buildAxisSubtitlesLayer(
           - offY,
         (g.zMin
           + g
-          .zMax) * HALF,
+            .zMax) * HALF,
       ],
       text: DIM_DISPLAY_NAMES[dimMapping.z],
     },

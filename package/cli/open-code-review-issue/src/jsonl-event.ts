@@ -78,7 +78,7 @@ export function jsonlResolvedHeadMetadata({
   if ((!isRecord(record.run_manifest,))
     || (!isRecord(record.run_manifest
       .input,)))
-  {
+    {
     throw new InputValidationError(`line ${String(line,)} run_manifest.input must be an object`,);
   }
   /**

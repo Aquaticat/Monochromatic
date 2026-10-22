@@ -212,7 +212,7 @@ await describe({
         ],);
         expect(unified.findings,).toEqual([
           'title-reference-ambiguous (slice 1: 「窗边猫」 rendered by the heading of slice 0 as "Cat by the Window", '
-          + 'but the slice offers more than one span to read)',
+            + 'but the slice offers more than one span to read)',
         ],);
       },
     },),
@@ -311,7 +311,7 @@ await describe({
         ],);
         expect(unified.findings,).toEqual([
           'title-reference-ambiguous (slice 1: 「窗边猫」 rendered by the heading of slice 0 as "Cat by the Window", '
-          + 'but the slice offers more than one span to read)',
+            + 'but the slice offers more than one span to read)',
         ],);
       },
     },),

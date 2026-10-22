@@ -816,7 +816,9 @@ until the next release or a dry run. The research into why the desktop text felt
 `doc/troubleshooting/music-player-desktop-text-looks-larger-than-android-at-the-same-size.md` (committed); still to land
 there: the CJK font each app picks (agent `aab39f469b16ca605`, report `/home/user/temp/agent/slint-cjk/report.md`) and
 the primary-source note (agent `a96478631545325e9`, output `/home/user/temp/agent/text-size-research/findings.md`, to move
-to `doc/research/text-size-perception-sources.md`).
+to `doc/research/text-size-perception-sources.md`). Waiting on the human: a perception test page, opened in their
+browser (`/home/user/temp/agent/type-shots/perception/text-size-test.html`, local only, verified with `agent-browser`
+in light and dark, not yet taken); its pasted results go into the troubleshooting doc's hypotheses.
 Not measured: the desktop rendered beside the emulator. Known difference: the desktop uses "Inter Variable"
 (`app_window.slint:65`), Android the system font. Open: whether the human still sees a problem; other desktop screens
 still use the `Theme` size tokens (settings, search, deck), left alone because the human named five texts.
@@ -827,6 +829,12 @@ trace for the 10,000-track jank (p = 0.089, optional), re-check of issues 1079 t
 failures, another thread owns them).
 
 Queued, not started (an agent slot frees when one of the above reports; the cap is five agents):
+
+- Desktop CJK font (written 2026-10-22, found by the text-size research): under `LANG=en_US.UTF-8` the Slint app draws
+  Han and kana from Droid Sans Fallback (`DroidSansFallbackFull.ttf`), while the browsers and Android use Noto Sans
+  CJK; under ja or zh locales it uses Noto Sans CJK. Evidence and open questions are in the troubleshooting doc's
+  section "CJK fonts". A decision is the human's (embed a CJK font and its size cost, versus leaving the system
+  fallback): not asked yet, to be put to them with pros, cons and a ranking.
 
 - Android large library (written 2026-10-18, branch `fix/music-player-android-large-library`, not merged): the media
   store was asked for the document column `last_modified` once per fingerprint (sweep, page measure pass, track

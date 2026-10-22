@@ -2254,8 +2254,8 @@ async function generatePnprConfig(): Promise<void> {
    */
   const staleExclusions = Object.keys(PNPR_EXCLUDED_PACKAGES,)
     .filter(function isStale(name,) {
-    return !workspaceNames.has(name,);
-  },);
+      return !workspaceNames.has(name,);
+    },);
   if (staleExclusions.length > 0)
     throw new Error(`pnpr config: exclusions name no workspace package: ${staleExclusions.join(', ',)}`,);
 
@@ -2289,13 +2289,13 @@ async function generatePnprConfig(): Promise<void> {
    */
   const exclusionComments = Object.entries(PNPR_EXCLUDED_PACKAGES,)
     .map(function toComment([
-    name,
-    reason,
-  ],) {
-    if (reason.includes('\n',) || reason.includes('\r',))
-      throw new Error(`pnpr config: exclusion reason for ${name} must be one line`,);
-    return `#   ${name}: ${reason}`;
-  },);
+      name,
+      reason,
+    ],) {
+      if (reason.includes('\n',) || reason.includes('\r',))
+        throw new Error(`pnpr config: exclusion reason for ${name} must be one line`,);
+      return `#   ${name}: ${reason}`;
+    },);
   logger.info(`publishing ${publishedNames.length} of ${workspacePackages.length} workspace packages`,);
 
   await overwrite({

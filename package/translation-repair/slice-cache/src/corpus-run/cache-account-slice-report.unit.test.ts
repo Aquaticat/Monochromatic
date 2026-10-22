@@ -93,7 +93,7 @@ await describe({
 
         expect(printed.lines,).toEqual([
           `slice-cache records under 1 runs directory found in ${join(root.path, 'node_modules', '.monochromatic',)}, `
-          + `${runs.path}: 1`,
+            + `${runs.path}: 1`,
           'directories the search could not list, whose runs the count leaves out: 0',
           `newest slice-cache record: 2026-09-02T10:00Z ${record}`,
           'cache versions set after it: 1 of 2',
@@ -116,7 +116,7 @@ await describe({
 
         expect(printed.lines,).toEqual([
           `slice-cache records under 1 runs directory found in ${join(root.path, 'node_modules', '.monochromatic',)}, `
-          + `${runs.path}: 0`,
+            + `${runs.path}: 0`,
           'directories the search could not list, whose runs the count leaves out: 0',
           'newest slice-cache record: none',
         ],);
@@ -158,7 +158,7 @@ await describe({
 
         expect(printed.lines,).toEqual([
           `slice-cache records under 3 runs directories found in ${join(root.path, 'node_modules', '.monochromatic',)}, `
-          + `${runs.path}, ${under.path}: 3`,
+            + `${runs.path}, ${under.path}: 3`,
           'directories the search could not list, whose runs the count leaves out: 0',
           `newest slice-cache record: 2026-09-02T10:00Z ${record}`,
           'cache versions set after it: 0 of 1',
@@ -206,7 +206,7 @@ await describe({
           3,
         ),).toEqual([
           `slice-cache records under 1 runs directory found in ${join(root.path, 'node_modules', '.monochromatic',)}, `
-          + `${runs.path}, ${under.path}: 0`,
+            + `${runs.path}, ${under.path}: 0`,
           'directories the search could not list, whose runs the count leaves out: 1',
           `  ${sealed} (EACCES)`,
         ],);

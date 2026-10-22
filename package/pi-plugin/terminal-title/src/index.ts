@@ -158,7 +158,7 @@ function setTerminalTitle(
 ): void {
   ctx.ui
     .setTitle(
-      safeTerminalTitlePayload({ value: title, },),
+    safeTerminalTitlePayload({ value: title, },),
     );
 }
 

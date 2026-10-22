@@ -124,8 +124,8 @@ function parseStatus(statusLine: string,): number {
    */
   const parts = statusLine.split(' ',)
     .filter(function nonEmpty(part,): boolean {
-    return part !== '';
-  },);
+      return part !== '';
+    },);
   /**
    Numeric status token when present.
    */
@@ -140,7 +140,7 @@ function parseStatus(statusLine: string,): number {
   if ((!Number.isInteger(status,))
     || (status < HTTP_STATUS_MINIMUM)
     || (status > HTTP_STATUS_MAXIMUM))
-  {
+    {
     throw new IncludedResponseError(`gh api --include output has invalid HTTP status ${statusText}`,);
   }
   return status;

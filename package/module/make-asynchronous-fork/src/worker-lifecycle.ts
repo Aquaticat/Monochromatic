@@ -561,7 +561,7 @@ export async function createWorker(
 
     if ((pending.request !== undefined) && (data?.id
       === pending.request
-      .id)) {
+        .id)) {
       pending.request
         .resolve(data,);
       delete pending.request;
@@ -665,9 +665,9 @@ export async function createWorker(
     try {
       holder.worker
         ?.postMessage({
-        arguments_: requestArguments,
-        id,
-      },);
+          arguments_: requestArguments,
+          id,
+        },);
     }
     catch (error) {
       // Posting throws for arguments that cannot be cloned, which would

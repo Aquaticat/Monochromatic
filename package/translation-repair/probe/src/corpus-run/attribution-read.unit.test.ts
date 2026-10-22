@@ -115,23 +115,23 @@ async function writeArtifacts(
          inside the reader: an artifact recording no pipeline is exactly what
          must not be quietly accepted.
          */
-        const written = (((typeof body) === 'object') && (body !== null))
-          ? {
-            tip: SHARED_TIP,
-            pipelineDigest: SHARED_GENERATION,
-            ...body,
-          }
-          : body;
+          const written = (((typeof body) === 'object') && (body !== null))
+            ? {
+              tip: SHARED_TIP,
+              pipelineDigest: SHARED_GENERATION,
+              ...body,
+            }
+            : body;
 
-        await writeFile(
-          join(
-            dir,
-            name,
-          ),
-          ((typeof written) === 'string') ? written : JSON.stringify(written,),
-          'utf8',
-        );
-      },),);
+          await writeFile(
+            join(
+              dir,
+              name,
+            ),
+            ((typeof written) === 'string') ? written : JSON.stringify(written,),
+            'utf8',
+          );
+        },),);
 
       return { dir, };
     },
@@ -655,9 +655,9 @@ await describe({
               },
             },);
             expect(
-                (await gatherAttributionEntries({ artifactsDir: heard.dir, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },)).malformed[0]
-                  ?.reason,
-              ).toContain('distinct',);
+              (await gatherAttributionEntries({ artifactsDir: heard.dir, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },)).malformed[0]
+                ?.reason,
+            ).toContain('distinct',);
 
             /**
              Two records claiming to describe the same chunk.
@@ -673,9 +673,9 @@ await describe({
               },
             },);
             expect(
-                (await gatherAttributionEntries({ artifactsDir: chunks.dir, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },)).malformed[0]
-                  ?.reason,
-              ).toContain('one record per chunk',);
+              (await gatherAttributionEntries({ artifactsDir: chunks.dir, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },)).malformed[0]
+                ?.reason,
+            ).toContain('one record per chunk',);
 
             /**
              One claim crediting the same critic twice.
@@ -698,9 +698,9 @@ await describe({
               },
             },);
             expect(
-                (await gatherAttributionEntries({ artifactsDir: proposers.dir, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },)).malformed[0]
-                  ?.reason,
-              ).toContain('one entry per critic',);
+              (await gatherAttributionEntries({ artifactsDir: proposers.dir, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },)).malformed[0]
+                ?.reason,
+            ).toContain('one entry per critic',);
           },
         },),
 
@@ -728,9 +728,9 @@ await describe({
               },
             },);
             expect(
-                (await gatherAttributionEntries({ artifactsDir: claims.dir, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },)).malformed[0]
-                  ?.reason,
-              ).toContain('one entry per claim',);
+              (await gatherAttributionEntries({ artifactsDir: claims.dir, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },)).malformed[0]
+                ?.reason,
+            ).toContain('one entry per claim',);
           },
         },),
 
@@ -907,9 +907,9 @@ await describe({
             },);
 
             expect(
-                (await gatherAttributionEntries({ artifactsDir: scratch.dir, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },)).malformed[0]
-                  ?.reason,
-              ).toContain('emissionCount',);
+              (await gatherAttributionEntries({ artifactsDir: scratch.dir, policy: NO_POOL_POLICY, repository: UNASKED_REPOSITORY, },)).malformed[0]
+                ?.reason,
+            ).toContain('emissionCount',);
           },
         },),
         it({

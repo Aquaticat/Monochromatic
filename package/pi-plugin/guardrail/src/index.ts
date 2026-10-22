@@ -146,8 +146,8 @@ async function registerGuardrail(
       if (ctx.hasUI) {
         ctx.ui
           .notify(
-            decision.reason,
-            'warning',
+          decision.reason,
+          'warning',
           );
       }
       return decision;

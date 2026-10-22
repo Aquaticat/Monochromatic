@@ -88,8 +88,8 @@ await describe({
              */
             const folded = sheet.text.toLowerCase()
               .replaceAll(
-                'reader-protection',
-                'reader protection',
+              'reader-protection',
+              'reader protection',
               );
             return folded.includes('reader protection',);
           },);

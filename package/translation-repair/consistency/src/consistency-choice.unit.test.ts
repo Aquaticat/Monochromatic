@@ -96,7 +96,7 @@ await describe({
             // The order the keys are written in is the order the reply is asked in.
             expect(JSON.stringify(format.json_schema.schema,),).toBe(
               '{"type":"object","required":["assessment","choice"],"additionalProperties":false,'
-              + '"properties":{"assessment":{"type":"string"},"choice":{"type":"string","enum":["CANDIDATE 1","CANDIDATE 2"]}}}',
+                + '"properties":{"assessment":{"type":"string"},"choice":{"type":"string","enum":["CANDIDATE 1","CANDIDATE 2"]}}}',
             );
           },
         },),

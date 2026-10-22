@@ -203,8 +203,8 @@ function declarationAt(
    */
   const at = text.length
     - text.slice(from,)
-    .trimStart()
-    .length;
+      .trimStart()
+      .length;
 
   /**
    The declaration with its modifiers taken off the front.
@@ -217,8 +217,8 @@ function declarationAt(
       rest,
       modifier,
     ): string {
-    return rest.startsWith(modifier,) ? rest.slice(modifier.length,) : rest;
-  },
+      return rest.startsWith(modifier,) ? rest.slice(modifier.length,) : rest;
+    },
     text.slice(at,),
   );
   if (!head.startsWith('function',))
@@ -247,16 +247,16 @@ function declarationAt(
       return index !== NOT_FOUND;
     },)
     .reduce(
-      function earliest(
-        left,
-        right,
-      ): number {
+    function earliest(
+      left,
+      right,
+    ): number {
       return Math.min(
         left,
         right,
       );
     },
-      afterKeyword.length,
+    afterKeyword.length,
     );
 
   /**
@@ -359,29 +359,29 @@ function requiredKeysOf({ params, }: { readonly params: string; },): readonly st
     /**
      The member without its modifier.
      */
-    const bare = member.startsWith('readonly ',) ? member.slice('readonly '.length,) : member;
+      const bare = member.startsWith('readonly ',) ? member.slice('readonly '.length,) : member;
 
     /**
      Where its name ends.
      */
-    const colon = bare.indexOf(':',);
+      const colon = bare.indexOf(':',);
 
     /**
      Its name, with any question mark.
      */
-    const key = bare.slice(
-      0,
-      (colon === NOT_FOUND) ? bare.length : colon,
-    )
-      .trim();
-    return {
-      name: key.endsWith('?',) ? key.slice(
+      const key = bare.slice(
         0,
-        -1,
-      ) : key,
-      optional: key.endsWith('?',),
-    };
-  },);
+        (colon === NOT_FOUND) ? bare.length : colon,
+      )
+        .trim();
+      return {
+        name: key.endsWith('?',) ? key.slice(
+          0,
+          -1,
+        ) : key,
+        optional: key.endsWith('?',),
+      };
+    },);
 
   /**
    Keys bound with a default, which the caller may leave out.

@@ -38,11 +38,11 @@ import {
  */
 export type JsonValue =
   | null
-  | boolean
-  | number
-  | string
-  | readonly JsonValue[]
-  | JsonRecord;
+    | boolean
+    | number
+    | string
+    | readonly JsonValue[]
+    | JsonRecord;
 
 /**
  JSON-safe object with string keys.
@@ -73,97 +73,97 @@ export type StoreOperation =
      */
     readonly value: JsonValue;
   }
-  | {
+    | {
     /**
      Multi-item `set` over a values record.
      */
-    readonly kind: 'setMany';
+      readonly kind: 'setMany';
     /**
      Key-value entries to place at once.
      */
-    readonly entries: readonly (readonly [
-      string,
-      JsonValue
-    ])[];
-  }
-  | {
+      readonly entries: readonly (readonly [
+        string,
+        JsonValue
+      ])[];
+    }
+    | {
     /**
      `get`, optionally with a caller-supplied default.
      */
-    readonly kind: 'get';
+      readonly kind: 'get';
     /**
      Key or dotted path to read.
      */
-    readonly key: string;
+      readonly key: string;
     /**
      Whether the call supplies a default value.
      */
-    readonly useDefault: boolean;
+      readonly useDefault: boolean;
     /**
      Default value supplied when `useDefault` is set.
      */
-    readonly defaultValue: JsonValue;
-  }
-  | {
+      readonly defaultValue: JsonValue;
+    }
+    | {
     /**
      `has`.
      */
-    readonly kind: 'has';
+      readonly kind: 'has';
     /**
      Key or dotted path to probe.
      */
-    readonly key: string;
-  }
-  | {
+      readonly key: string;
+    }
+    | {
     /**
      `delete`.
      */
-    readonly kind: 'delete';
+      readonly kind: 'delete';
     /**
      Key or dotted path to remove.
      */
-    readonly key: string;
-  }
-  | {
+      readonly key: string;
+    }
+    | {
     /**
      `appendToArray`.
      */
-    readonly kind: 'appendToArray';
+      readonly kind: 'appendToArray';
     /**
      Key or dotted path of the array to grow.
      */
-    readonly key: string;
+      readonly key: string;
     /**
      Item to append.
      */
-    readonly value: JsonValue;
-  }
-  | {
+      readonly value: JsonValue;
+    }
+    | {
     /**
      `reset` over a key list.
      */
-    readonly kind: 'reset';
+      readonly kind: 'reset';
     /**
      Keys or dotted paths to restore to their defaults.
      */
-    readonly keys: readonly string[];
-  }
-  | {
+      readonly keys: readonly string[];
+    }
+    | {
     /**
      `clear`.
      */
-    readonly kind: 'clear';
-  }
-  | {
+      readonly kind: 'clear';
+    }
+    | {
     /**
      Whole-store replacement through the `store` setter.
      */
-    readonly kind: 'replaceStore';
+      readonly kind: 'replaceStore';
     /**
      Replacement store contents.
      */
-    readonly value: JsonRecord;
-  };
+      readonly value: JsonRecord;
+    };
 
 /**
  Fully generated workload:

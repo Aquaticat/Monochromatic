@@ -43,22 +43,22 @@ export type WorkloadAction =
      */
     readonly kind: 'none';
   }
-  | {
+    | {
     /**
      Clear the limiter's queue at this step.
      */
-    readonly kind: 'clearQueue';
-  }
-  | {
+      readonly kind: 'clearQueue';
+    }
+    | {
     /**
      Change the limiter's bound at this step.
      */
-    readonly kind: 'setConcurrency';
+      readonly kind: 'setConcurrency';
     /**
      New bound to apply.
      */
-    readonly concurrency: number;
-  };
+      readonly concurrency: number;
+    };
 
 /**
  Fully generated workload: calls, release order, and interleaved actions.

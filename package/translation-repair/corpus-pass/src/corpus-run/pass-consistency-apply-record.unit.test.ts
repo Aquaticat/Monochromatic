@@ -278,7 +278,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
             expect(String(refusal,),).toBe(
               'ConsistencyInvariantError: unreachable: the replacements group 1 OCCURRENCE 1 and group 1 OCCURRENCE 2 of slice 2 '
-              + 'overlap, and no two replacements of one group address the same words',
+                + 'overlap, and no two replacements of one group address the same words',
             );
             expect([
               sliceEditsOf({
@@ -350,7 +350,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
             expect(String(refusal,),).toBe(
               'ConsistencyInvariantError: unreachable: edit group 1 OCCURRENCE 2 was made and no pending replacement has its '
-              + 'name, and every edit made is a pending replacement',
+                + 'name, and every edit made is a pending replacement',
             );
           },
         },),
@@ -371,7 +371,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
             expect(String(refusal,),).toBe(
               'ConsistencyInvariantError: unreachable: a replacement of group 2 carries no receiving place, and every '
-              + 'replacement carries at least one',
+                + 'replacement carries at least one',
             );
           },
         },),
@@ -396,7 +396,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
             expect(String(refusal,),).toBe(
               'ConsistencyInvariantError: unreachable: edit group 2 OCCURRENCE 3 was left out for overlapping an earlier edit, '
-              + 'and no edit that was made overlaps it',
+                + 'and no edit that was made overlaps it',
             );
           },
         },),
@@ -548,11 +548,11 @@ await describe({
             },),).toBe(true,);
             expect(refusals.map(String,),).toEqual([
               'ConsistencyInvariantError: unreachable: OCCURRENCE 2 of group 1 has no rendering or outcome, and both are made '
-              + 'for every place',
+                + 'for every place',
               'ConsistencyInvariantError: unreachable: OCCURRENCE 2 of group 1 was to be replaced and no replacement was applied, '
-              + 'left out or refused, and every pending replacement is one of the three',
+                + 'left out or refused, and every pending replacement is one of the three',
               'ConsistencyInvariantError: unreachable: OCCURRENCE 2 of group 1 ended overlapped and no place was recorded for it '
-              + 'to have given way to, and every overlap is of a replacement or a located place',
+                + 'to have given way to, and every overlap is of a replacement or a located place',
             ],);
           },
         },),

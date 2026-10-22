@@ -116,12 +116,12 @@ function isPageTitleLexiconRecord(value: unknown,): value is PageTitleLexiconRec
   return isJsonRecord(value,)
     && isJsonArray(value.titles,)
     && value.titles
-    .every(isSettledPageTitle,)
+      .every(isSettledPageTitle,)
     && isJsonArray(value.findings,)
     && value.findings
-    .every(function isFinding(finding,): boolean {
-      return (typeof finding) === 'string';
-    },);
+      .every(function isFinding(finding,): boolean {
+        return (typeof finding) === 'string';
+      },);
 }
 
 /**
@@ -191,14 +191,14 @@ export function pageTitleKey(
 ): string {
   return createHash('sha256',)
     .update(
-      JSON.stringify({
-        version: PAGE_TITLE_CACHE_VERSION,
-        source: hashContent({ content: sourceText, },),
-        titles: spans,
-        identity: hashContent({ content: identityContext, },),
-        roster: modelIds,
-      },),
-      'utf8',
+    JSON.stringify({
+      version: PAGE_TITLE_CACHE_VERSION,
+      source: hashContent({ content: sourceText, },),
+      titles: spans,
+      identity: hashContent({ content: identityContext, },),
+      roster: modelIds,
+    },),
+    'utf8',
     )
     .digest('hex',);
 }

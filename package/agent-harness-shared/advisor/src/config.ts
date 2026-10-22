@@ -144,8 +144,8 @@ export function getConfigPaths(
    */
   const home = options.home
     ?? process
-    .env
-    .HOME
+      .env
+      .HOME
     ?? '~';
   return {
     globalPath: join(
@@ -198,7 +198,7 @@ function mergeConfigFiles(
      */
     const maxContextChars = config.maxContextChars
       ?? merged
-      .maxContextChars;
+        .maxContextChars;
     /**
      Delay inherits across config scopes; explicit disablement remains independent.
      */
@@ -212,23 +212,23 @@ function mergeConfigFiles(
      */
     const defaultReviewerModel = config.defaultReviewerModel
       ?? merged
-      .defaultReviewerModel;
+        .defaultReviewerModel;
     merged = {
       hedgingEnabled: config.hedgingEnabled ?? merged.hedgingEnabled,
       collectionGraceMs: config.collectionGraceMs ?? merged.collectionGraceMs,
       ...(hedgeDelayMs === undefined ? {} : { hedgeDelayMs, }),
       enabled: config.enabled
         ?? merged
-        .enabled,
+          .enabled,
       timeoutMs: config.timeoutMs
         ?? merged
-        .timeoutMs,
+          .timeoutMs,
       maxAdvisorOutputTokens: config.maxAdvisorOutputTokens
         ?? merged
-        .maxAdvisorOutputTokens,
+          .maxAdvisorOutputTokens,
       includePriorAdvisorResults: config.includePriorAdvisorResults
         ?? merged
-        .includePriorAdvisorResults,
+          .includePriorAdvisorResults,
       ...(maxContextChars === undefined ? {} : { maxContextChars, }),
       ...(systemPrompt === undefined ? {} : { systemPrompt, }),
       ...(defaultReviewerModel === undefined ? {} : { defaultReviewerModel, }),

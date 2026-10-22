@@ -49,7 +49,7 @@ export function indexPage(
       return str.charAt(0,)
         .toUpperCase()
         + str
-        .slice(1,);
+          .slice(1,);
     },)
     .join(' ',);
 

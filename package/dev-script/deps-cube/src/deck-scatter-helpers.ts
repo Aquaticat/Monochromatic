@@ -202,8 +202,8 @@ export function computeNameBakeSet(
           ?? 0);
     },)
     .slice(
-      0,
-      TOP_N_NAMES,
+    0,
+    TOP_N_NAMES,
     );
   return new Set(ranked.map(function pickIndex({ originalIndex, },) {
     return originalIndex;

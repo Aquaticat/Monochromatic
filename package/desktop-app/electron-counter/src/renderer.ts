@@ -211,7 +211,7 @@ function updateRenderedCount(
     .setAttribute(
     'aria-label',
     `Increment counter from ${count}`,
-  );
+    );
   document.title = formatDocumentTitle({ count, },);
 }
 
@@ -248,7 +248,7 @@ function renderCounterApp(): void {
         count: state.increment(),
       },);
     },
-  );
+    );
 }
 
 renderCounterApp();

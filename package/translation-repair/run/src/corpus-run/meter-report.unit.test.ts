@@ -227,7 +227,7 @@ await describe({
           code: REFUSED_AS_STATED,
           stdout: '',
           stderr: 'meter-report: this command needs <log file>. '
-          + 'Usage: meter-report <log file> [<log file> ...]\n',
+            + 'Usage: meter-report <log file> [<log file> ...]\n',
         },);
       },
     },),

@@ -231,7 +231,7 @@ export async function requestAdvisor(
   if ((options.operationStartedAtMs !== undefined) && (Date.now()
     >= (options.operationStartedAtMs
       + options.config
-      .timeoutMs)))
+        .timeoutMs)))
     throw new AdvisorCompletionError('advisor: operation deadline elapsed before authentication',);
   /* oxlint-disable typescript/no-unsafe-type-assertion -- pi-ai accepts mutable Model while this boundary retains the selected model without changing it. */
   /**

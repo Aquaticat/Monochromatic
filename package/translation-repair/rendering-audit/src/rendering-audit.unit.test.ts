@@ -202,8 +202,8 @@ await describe({
     it({
       name:
         'CORROBORATES one defect two auditors located, THROUGH DIFFERENT LOCATORS: the whole rebuild '
-        + 'rests on two voices not having to quote the same width of text to be talking about the same '
-        + 'thing, and this is the case that proves the seam between anchoring and the matcher holds',
+          + 'rests on two voices not having to quote the same width of text to be talking about the same '
+          + 'thing, and this is the case that proves the seam between anchoring and the matcher holds',
       fn: async () => {
         const report = await auditWith({
           script: {
@@ -243,8 +243,8 @@ await describe({
     it({
       name:
         'REPORTS NO CORROBORATED DEFECT when only one auditor found it, while keeping that auditor`s '
-        + 'row: a lone claim is evidence about the auditor as much as about the rendering, and '
-        + 'discarding it would destroy what a later calibration has to read',
+          + 'row: a lone claim is evidence about the auditor as much as about the rendering, and '
+          + 'discarding it would destroy what a later calibration has to read',
       fn: async () => {
         const report = await auditWith({
           script: {
@@ -276,7 +276,7 @@ await describe({
     it({
       name:
         'does NOT let one auditor corroborate itself by filing the same defect twice, which is what a '
-        + 'count over claims rather than over voices would report as agreement nobody reached',
+          + 'count over claims rather than over voices would report as agreement nobody reached',
       fn: async () => {
         const report = await auditWith({
           script: {
@@ -305,8 +305,8 @@ await describe({
     it({
       name:
         'drops an unanchored claim before counting, so two auditors agreeing on wording NEITHER text '
-        + 'carries corroborate nothing: agreement between voices is not evidence when what they agree on '
-        + 'is not in the documents',
+          + 'carries corroborate nothing: agreement between voices is not evidence when what they agree on '
+          + 'is not in the documents',
       fn: async () => {
         /**
          Two voices quoting a rendering nobody was shown.
@@ -348,8 +348,8 @@ await describe({
     it({
       name:
         'reports two voices who NAMED THE SAME SPAN DIFFERENTLY as a near miss rather than as a defect '
-        + 'or as nothing, since which of them is right is a question about the taxonomy that neither was '
-        + 'asked and this instrument must not answer by merging',
+          + 'or as nothing, since which of them is right is a question about the taxonomy that neither was '
+          + 'asked and this instrument must not answer by merging',
       fn: async () => {
         const report = await auditWith({
           script: {
@@ -388,7 +388,7 @@ await describe({
     it({
       name:
         'accounts for an auditor it could not hear rather than reading silence as agreement, since a '
-        + 'lost voice shrinks the roster that could have corroborated anything',
+          + 'lost voice shrinks the roster that could have corroborated anything',
       fn: async () => {
         const report = await auditWith({
           script: {

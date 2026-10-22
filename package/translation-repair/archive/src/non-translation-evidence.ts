@@ -399,13 +399,13 @@ export function assessNonTranslationDominance(
       return slice.votesStand;
     },)
     .reduce(
-      function addChars(
-        sum,
-        slice,
-      ) {
-        return sum + slice.targetChars;
-      },
-      0,
+    function addChars(
+      sum,
+      slice,
+    ) {
+      return sum + slice.targetChars;
+    },
+    0,
     );
 
   /**

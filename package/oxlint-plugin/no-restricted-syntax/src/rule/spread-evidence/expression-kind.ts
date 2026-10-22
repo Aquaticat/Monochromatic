@@ -141,8 +141,8 @@ function locateSemanticNode(
     readonly session: SemanticFileSession;
     readonly semanticNode: Node | typeof NO_EXACT_NODE
   }
-  | SemanticBridgeError
-{
+    | SemanticBridgeError
+  {
   try {
     /**
      Semantic session over the current source text.

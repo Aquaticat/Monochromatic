@@ -394,7 +394,7 @@ export function buildIssueRecords(
           issue,
           resolved: replacementShipped
             && outcome.resolvedIssueIds
-            .includes(issue.issueId,),
+              .includes(issue.issueId,),
           ...(reading === undefined
             ? {}
             : { checkerReading: reading, }),

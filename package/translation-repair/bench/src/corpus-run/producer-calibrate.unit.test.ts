@@ -143,7 +143,7 @@ await describe({
             expect(run.code,).toBe(REFUSED_AS_STATED,);
             expect(run.stdout,).toBe(
               `CALIBRATE 1 slice, all ${String(RUN_ROSTER.length,)} writing and all ${String(RUN_ROSTER.length,)} judging `
-              + `(${RUN_ROSTER.join(', ',)}), at ${await readHeadSha()}\n`,
+                + `(${RUN_ROSTER.join(', ',)}), at ${await readHeadSha()}\n`,
             );
             expect(run.stderr,).toBe(noKeyRefusal({ command: 'producer-calibrate', },),);
           },

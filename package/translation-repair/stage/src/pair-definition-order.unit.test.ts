@@ -78,11 +78,11 @@ await describe({
               .map(function toLabels(node,): readonly string[] {
                 return definitionLabelsOf({ node, },);
               },),).toStrictEqual([
-              [],
-              [],
-              [ '1', ],
-              [ '2', ],
-            ],);
+                [],
+                [],
+                [ '1', ],
+                [ '2', ],
+              ],);
           },
         },),
       ],

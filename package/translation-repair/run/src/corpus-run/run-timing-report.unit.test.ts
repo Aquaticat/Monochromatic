@@ -115,9 +115,9 @@ await describe({
             '  waiting after quorum 30.00s, 14.2% of round time',
             '  voices never heard   7',
             '1 completion line carries no elapsed field, predating call durations and leaving no interval to '
-            + 'report. Any concurrency this report prints describes only the calls that could be timed.',
+              + 'report. Any concurrency this report prints describes only the calls that could be timed.',
             'Completion lines whose stamp the logger did not write: 1. No instant places their calls, so any '
-            + 'concurrency this report prints leaves them out.',
+              + 'concurrency this report prints leaves them out.',
             'calls in flight        mean 1.33, peak 2',
             '  busy against span    20.00s of calls across 15.00s of run',
             '',
@@ -159,7 +159,7 @@ await describe({
             'run-timing-report: 1 log, 1 line',
             NO_ROUND_LINE,
             'NOTHING IN FLIGHT: no call in this log carried a duration, so nothing can be counted in flight, '
-            + 'which is not the same as a run that made one call at a time.',
+              + 'which is not the same as a run that made one call at a time.',
             '',
           ].join('\n',),
           stderr: '',
@@ -167,7 +167,7 @@ await describe({
       },
     },),
 
-it({
+    it({
       name: 'COUNTS the lines a log holds, not the empty piece after its closing newline, and exits 0',
       fn: async () => {
         await using scratch = await scratchDir({ prefix: 'run-timing-report-built-', },);
@@ -300,7 +300,7 @@ it({
           code: REFUSED_AS_STATED,
           stdout: '',
           stderr: 'run-timing-report: this command needs <log file>. '
-          + 'Usage: run-timing-report <log file> [<log file> ...]\n',
+            + 'Usage: run-timing-report <log file> [<log file> ...]\n',
         },);
       },
     },),

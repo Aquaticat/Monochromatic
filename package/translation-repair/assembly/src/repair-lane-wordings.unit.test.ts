@@ -164,9 +164,9 @@ await describe({
     it({
       name:
         'reports a passage the archive never translated as NOT APPLICABLE rather than as a decision, '
-        + 'because this lane repairs existing English and there is none there: its outcome carries the '
-        + 'empty string for want of anything else, and calling that a decision credits the lane with '
-        + 'choosing a wording where it had no opinion at all',
+          + 'because this lane repairs existing English and there is none there: its outcome carries the '
+          + 'empty string for want of anything else, and calling that a decision credits the lane with '
+          + 'choosing a wording where it had no opinion at all',
       fn: async () => {
         /**
          Wordings for a run that visited every slice.
@@ -206,9 +206,9 @@ await describe({
     it({
       name:
         'names only the anchors the run actually REACHED. The blocked exit settles a prefix and stops, so '
-        + 'an anchor before the crossing is one this lane looked at and had no work for, and an anchor '
-        + 'after it is one nobody got to: naming every anchor in the preparation would report slices as '
-        + 'visited that never were',
+          + 'an anchor before the crossing is one this lane looked at and had no work for, and an anchor '
+          + 'after it is one nobody got to: naming every anchor in the preparation would report slices as '
+          + 'visited that never were',
       fn: async () => {
         /**
          Wordings for a run blocked after the third slice.
@@ -236,9 +236,9 @@ await describe({
     it({
       name:
         'reports a slice NOBODY was heard about as the archive standing by default, not as a decision: '
-        + 'with every critic lost and the naturalness lane silent, the lane settled the archive`s own '
-        + 'wording because nothing else was available, and calling that a decision credits it with '
-        + 'having examined a passage it never saw an answer about',
+          + 'with every critic lost and the naturalness lane silent, the lane settled the archive`s own '
+          + 'wording because nothing else was available, and calling that a decision credits it with '
+          + 'having examined a passage it never saw an answer about',
       fn: async () => {
         /**
          Wordings for a run whose second content slice heard nobody.
@@ -267,8 +267,8 @@ await describe({
     it({
       name:
         'keeps a slice a critic answered on as a DECISION even where the answer changed nothing, since '
-        + 'a lane that examined a passage and left it alone has chosen it: folding that together with a '
-        + 'lost stage would make the two indistinguishable in exactly the direction that flatters the run',
+          + 'a lane that examined a passage and left it alone has chosen it: folding that together with a '
+          + 'lost stage would make the two indistinguishable in exactly the direction that flatters the run',
       fn: async () => {
         /**
          Wordings where every content slice was examined and kept.
@@ -292,8 +292,8 @@ await describe({
     it({
       name:
         'REFUSES a slice nobody was heard about that carries a wording other than the archive`s, because '
-        + 'something produced text no stage was recorded as having produced, and a row like that reaches '
-        + 'a ledger, a comparison and a rate before anyone notices',
+          + 'something produced text no stage was recorded as having produced, and a row like that reaches '
+          + 'a ledger, a comparison and a rate before anyone notices',
       fn: async () => {
         /**
          What silentSliceCarriesText raised, read for its class as well as its wording.
@@ -318,8 +318,8 @@ await describe({
     it({
       name:
         'reports a slice the NATURALNESS lane rewrote as a decision even where no critic answered, '
-        + 'because that stage produces wordings too: reading only the critics would report a rewritten '
-        + 'passage as the archive standing untouched',
+          + 'because that stage produces wordings too: reading only the critics would report a rewritten '
+          + 'passage as the archive standing untouched',
       fn: async () => {
         /**
          Wordings where the refiner acted on a slice no critic raised.
@@ -345,8 +345,8 @@ await describe({
     it({
       name:
         'REFUSES a slice nobody was heard about that keeps the archive`s own wording and still CLAIMS a '
-        + 'change, which the case beside this one cannot reach: there the wording gave the contradiction '
-        + 'away, and here the text matches, so the claim is the only thing wrong with the row',
+          + 'change, which the case beside this one cannot reach: there the wording gave the contradiction '
+          + 'away, and here the text matches, so the claim is the only thing wrong with the row',
       fn: async () => {
         /**
          What silentSliceClaimsChange raised, read for its class as well as its wording.
@@ -376,7 +376,7 @@ await describe({
     it({
       name:
         'REFUSES an outcome at a slice preparation never made as a coverage fault, not as a silent '
-        + 'slice that changed the archive, since there is no archive there for it to have kept',
+          + 'slice that changed the archive, since there is no archive there for it to have kept',
       fn: async () => {
         /**
          What an outcome at an unmade slice raised.

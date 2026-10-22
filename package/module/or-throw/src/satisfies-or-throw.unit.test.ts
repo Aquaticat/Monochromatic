@@ -56,7 +56,7 @@ await describe({
               value: 'ready',
               predicate: ({ candidate, value, }) =>
                 ((typeof candidate) === 'string')
-                && (candidate.toLowerCase() === value),
+                  && (candidate.toLowerCase() === value),
             },);
 
             expect(checker('READY',),).toBe('READY',);
@@ -82,7 +82,7 @@ await describe({
               value: 'ready',
               predicate: (() => 'yes') as unknown as SatisfiesOrThrowPredicate<
                 string
-              >,
+                >,
             },);
 
             expect(() => checker('ready',),).toThrow('boolean',);
@@ -96,7 +96,7 @@ await describe({
               value: 'ready',
               predicate: (async () => true) as unknown as SatisfiesOrThrowPredicate<
                 string
-              >,
+                >,
             },);
 
             expect(() => checker('ready',),).toThrow(satisfiesOrThrowAsync.name,);
@@ -184,7 +184,7 @@ await describe({
               value: 'ready',
               predicate: ({ candidate, value, }) =>
                 ((typeof candidate) === 'string')
-                && (candidate.toLowerCase() === value),
+                  && (candidate.toLowerCase() === value),
             },)(unionInput,);
 
             expectTypeOf(output,).toEqualTypeOf<string | number>();
@@ -242,7 +242,7 @@ await describe({
               value: 'ready',
               predicate: async ({ candidate, value, }) =>
                 ((typeof candidate) === 'string')
-                && (candidate.toLowerCase() === value),
+                  && (candidate.toLowerCase() === value),
             },);
 
             const result = await checker('READY',);
@@ -278,7 +278,7 @@ await describe({
               value: 'ready',
               predicate: (async () => 'yes') as unknown as SatisfiesOrThrowAsyncPredicate<
                 string
-              >,
+                >,
             },);
 
             let caught: unknown;
@@ -357,7 +357,7 @@ await describe({
               value: 'ready',
               predicate: async ({ candidate, value, }) =>
                 ((typeof candidate) === 'string')
-                && (candidate.toLowerCase() === value),
+                  && (candidate.toLowerCase() === value),
             },)(unionInput,);
 
             expectTypeOf(output,).toEqualTypeOf<string | number>();

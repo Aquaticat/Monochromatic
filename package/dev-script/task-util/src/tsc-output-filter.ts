@@ -126,7 +126,7 @@ export function isDiagnosticLine(line: string,): boolean {
       .length))
       || (line.charAt(codeEnd,)
         !== ':'))
-    {
+      {
       from = codeIdx + 1;
       continue;
     }
@@ -176,7 +176,7 @@ export function isDiagnosticLine(line: string,): boolean {
 export function isNodeModulesDiagnostic(line: string,): boolean {
   return line.includes('node_modules/',)
     || line
-    .includes('node_modules\\',);
+      .includes('node_modules\\',);
 }
 
 /**
@@ -202,11 +202,11 @@ export function isI18nGeneratedDiagnostic(line: string,): boolean {
   // oxlint-disable eslint-plugin-unicorn/prefer-string-raw -- String.raw template literals cannot end with `\` (the trailing backtick is consumed as an escape target); plain '\\' string escapes are the only option for these path separators.
   return line.includes('/i18n/',)
     || line
-    .includes('/i18n\\',)
+      .includes('/i18n\\',)
     || line
-    .includes('\\i18n/',)
+      .includes('\\i18n/',)
     || line
-    .includes('\\i18n\\',);
+      .includes('\\i18n\\',);
   // oxlint-enable eslint-plugin-unicorn/prefer-string-raw
 }
 
@@ -261,7 +261,7 @@ export function isContinuationLine(line: string,): boolean {
   return (line.length
     > 0) && (line.startsWith(' ',)
       || line
-      .startsWith('\t',));
+        .startsWith('\t',));
 }
 
 //endregion Diagnostic line detection

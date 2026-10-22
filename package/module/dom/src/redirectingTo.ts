@@ -42,7 +42,7 @@ export function onLoadRedirectingTo(delayTime: number = 5_000,): void {
         globalThis.location
           .replace(
           potentialRedirectingToElement.href,
-        );
+          );
       },
       delayTime,
     );

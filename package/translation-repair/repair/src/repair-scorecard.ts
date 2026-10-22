@@ -215,8 +215,8 @@ export function computeRepairScorecard(
     return Object.values(record.seedDerivability,);
   },)
     .filter(function isUnrecoverable(seed,) {
-    return seed.judged && (seed.verdict === 'not-derivable');
-  },);
+      return seed.judged && (seed.verdict === 'not-derivable');
+    },);
 
   /**
    Seeds it is fair to score detection on: repairable AND derivable.

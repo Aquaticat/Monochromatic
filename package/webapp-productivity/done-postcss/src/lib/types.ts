@@ -112,7 +112,7 @@ export type BlockedTaskLink = {
  */
 export type BlockedTasksByBlocker = Readonly<
   Record<string, readonly BlockedTaskLink[]>
->;
+  >;
 
 /**
  Search result task with an additional `isBlocked` flag for UI badge display.

@@ -94,7 +94,7 @@ export async function run({
     function collectStdout(chunk) {
       out.push(chunk);
     },
-  );
+    );
   child.stderr
     .on(
     'data',
@@ -102,7 +102,7 @@ export async function run({
     function collectStderr(chunk) {
       err.push(chunk);
     },
-  );
+    );
   // A command that never reads its input (or replaced its process) closes the pipe early;
   // the resulting EPIPE says nothing about the command and must not end the driver.
   child.stdin
@@ -111,7 +111,7 @@ export async function run({
     function ignoreClosedInput() {
       // Nothing to do: the command already ended or replaced itself, and its exit state is read below.
     },
-  );
+    );
   child.stdin
     .end(input ?? '');
   await once(

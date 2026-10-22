@@ -229,14 +229,14 @@ await describe({
               'BENCH mittens#1 w3p1: judged, replaced, weight 2.5, 6 calls, 250ms',
               'BENCH mittens#1 w3p2: judged, replaced, weight 2.5, 6 calls, 250ms',
               'BENCH width 2 pass 1: 2 slices (2 with an incumbent), declined 0, kept 0, self-votes 2, '
-              + 'self-preference 0.00 (own 0.50 of 4, others 0.50 of 8, same candidates), calls 10, '
-              + 'tokens 0 (in 0, out 0), 250ms per slice',
+                + 'self-preference 0.00 (own 0.50 of 4, others 0.50 of 8, same candidates), calls 10, '
+                + 'tokens 0 (in 0, out 0), 250ms per slice',
               'BENCH width 3 pass 1: 2 slices (2 with an incumbent), declined 0, kept 0, self-votes 2, '
-              + 'self-preference 0.00 (own 0.33 of 6, others 0.33 of 12, same candidates), calls 12, '
-              + 'tokens 0 (in 0, out 0), 250ms per slice',
+                + 'self-preference 0.00 (own 0.33 of 6, others 0.33 of 12, same candidates), calls 12, '
+                + 'tokens 0 (in 0, out 0), 250ms per slice',
               'BENCH width 3 pass 2: 2 slices (2 with an incumbent), declined 0, kept 0, self-votes 2, '
-              + 'self-preference 0.00 (own 0.33 of 6, others 0.33 of 12, same candidates), calls 12, '
-              + 'tokens 0 (in 0, out 0), 250ms per slice',
+                + 'self-preference 0.00 (own 0.33 of 6, others 0.33 of 12, same candidates), calls 12, '
+                + 'tokens 0 (in 0, out 0), 250ms per slice',
             ],);
           },
         },),
@@ -269,14 +269,14 @@ await describe({
               'BENCH mittens#0 w3p1: judged, kept, weight 2.5, 6 calls, 250ms',
               'BENCH mittens#0 w3p2: judged, kept, weight 2.5, 6 calls, 250ms',
               'BENCH width 2 pass 1: 1 slice (1 with an incumbent), declined 0, kept 1, self-votes 0, '
-              + 'self-preference 0.00 (own 0.00 of 2, others 0.00 of 4, same candidates), calls 5, '
-              + 'tokens 0 (in 0, out 0), 250ms per slice',
+                + 'self-preference 0.00 (own 0.00 of 2, others 0.00 of 4, same candidates), calls 5, '
+                + 'tokens 0 (in 0, out 0), 250ms per slice',
               'BENCH width 3 pass 1: 1 slice (1 with an incumbent), declined 0, kept 1, self-votes 1, '
-              + 'self-preference 0.00 (own 0.33 of 3, others 0.33 of 6, same candidates), calls 6, '
-              + 'tokens 0 (in 0, out 0), 250ms per slice',
+                + 'self-preference 0.00 (own 0.33 of 3, others 0.33 of 6, same candidates), calls 6, '
+                + 'tokens 0 (in 0, out 0), 250ms per slice',
               'BENCH width 3 pass 2: 1 slice (1 with an incumbent), declined 0, kept 1, self-votes 1, '
-              + 'self-preference 0.00 (own 0.33 of 3, others 0.33 of 6, same candidates), calls 6, '
-              + 'tokens 0 (in 0, out 0), 250ms per slice',
+                + 'self-preference 0.00 (own 0.33 of 3, others 0.33 of 6, same candidates), calls 6, '
+                + 'tokens 0 (in 0, out 0), 250ms per slice',
             ],);
           },
         },),

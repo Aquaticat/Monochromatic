@@ -107,8 +107,8 @@ export function maximalRepeats(
     return USABLE_KINDS.has(nonNullishOrThrow(kinds[index],),)
       ? sanitize({ line, },)
         .replace(
-          WHITESPACE_RUN,
-          '',
+        WHITESPACE_RUN,
+        '',
         )
       : '';
   },);
@@ -220,8 +220,8 @@ export function maximalRepeats(
         a,
         b,
       ): number {
-      return a - b;
-    },)) {
+        return a - b;
+      },)) {
       if (start < end)
         continue;
       kept.push(start,);

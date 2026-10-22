@@ -149,8 +149,8 @@ function trieOf({ needles, }: { readonly needles: readonly string[]; },): State[
       },)
         .next
         .set(
-          unit,
-          created,
+        unit,
+        created,
         );
       cursor.state = created;
     }

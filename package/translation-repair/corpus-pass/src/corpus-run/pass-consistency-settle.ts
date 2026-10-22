@@ -367,7 +367,7 @@ export function settleCarried(
   },);
   if (records.length
     !== decided.receivers
-    .length) {
+      .length) {
     throw new ConsistencyInvariantError({ invariant:
       `the pass carries to each receiving place once, and the number of carries differs from the number of receiving places (carried: ${String(records.length,)}, receiving: ${String(decided.receivers
         .length,)})`, },);

@@ -188,7 +188,7 @@ export function revisionShapeFindings(
     left: blockShapes,
     right: revisionShapes,
   },))
-  {
+    {
     return [
       `${REVISION_SHAPE_REFUSED} (${modelId}): the block is ${
         countedBlocks({ blocks: blockShapes, },)

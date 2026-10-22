@@ -978,8 +978,8 @@ await describe({
     it({
       name:
         'REFUSES a ballot weight that OVERFLOWED to infinity, which the check beside this one reads as '
-        + 'a number: `1e400` is valid JSON, so a file can carry it, and a share dividing by an infinite '
-        + 'weight is zero at every candidate rather than a refusal anyone would see',
+          + 'a number: `1e400` is valid JSON, so a file can carry it, and a share dividing by an infinite '
+          + 'weight is zero at every candidate rather than a refusal anyone would see',
       fn: async () => {
         /**
          Weight exactly as a file carries it. `1e400` is syntactically valid

@@ -221,7 +221,7 @@ await describe({
     it({
       name:
         'KEEPS an omission quoting the ORIGINAL only, since content the candidate never rendered has '
-        + 'nothing in the candidate to point at, and marks the other side unused rather than empty',
+          + 'nothing in the candidate to point at, and marks the other side unused rather than empty',
       fn: async () => {
         const screened = screenOne({
           overrides: {
@@ -241,7 +241,7 @@ await describe({
     it({
       name:
         'DROPS an omission carrying candidate text, a claim contradicting itself: it says the candidate '
-        + 'rendered nothing here and then quotes what the candidate rendered here',
+          + 'rendered nothing here and then quotes what the candidate rendered here',
       fn: async () => {
         const screened = screenOne({
           overrides: {
@@ -259,8 +259,8 @@ await describe({
     it({
       name:
         'KEEPS a one-sided claim whose unused side carries only spaces, a zero-width space or a Hangul filler, '
-        + 'screening it exactly as the same claim with that side empty: such a side quotes nothing, so it is '
-        + 'no quote on a side the category forbids',
+          + 'screening it exactly as the same claim with that side empty: such a side quotes nothing, so it is '
+          + 'no quote on a side the category forbids',
       fn: async () => {
         /**
          Unused-side fillings that show a reader nothing.
@@ -335,7 +335,7 @@ await describe({
     it({
       name:
         'DROPS an unsupported-addition carrying original text, the mirror case, so a voice cannot file a '
-        + 'paired claim under a one-sided category and skip the evidence a paired category asks for',
+          + 'paired claim under a one-sided category and skip the evidence a paired category asks for',
       fn: async () => {
         const screened = screenOne({
           overrides: {
@@ -366,7 +366,7 @@ await describe({
     it({
       name:
         'DROPS a claim whose original quote is another translation`s English rather than the original`s '
-        + 'Chinese, which is what keeps a rendering nobody was shown out of this instrument',
+          + 'Chinese, which is what keeps a rendering nobody was shown out of this instrument',
       fn: async () => {
         const screened = screenOne({
           overrides: {
@@ -419,8 +419,8 @@ await describe({
     it({
       name:
         'RECORDS an unknown verdict rather than quietly reading it as uncertain: a voice casting a word '
-        + 'this version never offered is a protocol failure, while uncertain is a state a voice may '
-        + 'legitimately be in, and reading one as the other hides an instrument defect',
+          + 'this version never offered is a protocol failure, while uncertain is a state a voice may '
+          + 'legitimately be in, and reading one as the other hides an instrument defect',
       fn: async () => {
         const screened = screenOne({
           overrides: {},

@@ -52,20 +52,20 @@ export type StatusRead =
     readonly result: DiscardedGuestResult;
     readonly truncated: boolean;
   }
-  | {
-    readonly kind: 'forgotten';
-    readonly error: GuestAgentReplyError;
-  }
-  | {
-    readonly kind: 'gone';
-    readonly error: GuestAgentUnreachableError;
-    readonly state: string;
-  }
-  | { readonly kind: 'running'; }
-  | {
-    readonly kind: 'unanswered';
-    readonly error: GuestAgentUnreachableError;
-  };
+    | {
+      readonly kind: 'forgotten';
+      readonly error: GuestAgentReplyError;
+    }
+    | {
+      readonly kind: 'gone';
+      readonly error: GuestAgentUnreachableError;
+      readonly state: string;
+    }
+    | { readonly kind: 'running'; }
+    | {
+      readonly kind: 'unanswered';
+      readonly error: GuestAgentUnreachableError;
+    };
 
 /**
  Pause control shared by the status loop and the request it paces.

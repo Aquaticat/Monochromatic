@@ -44,12 +44,12 @@ function pointInInputRect(
     .offsetLeft)
     && (px <= (input.offsetLeft
       + input
-      .offsetWidth))
+        .offsetWidth))
     && (py >= input
       .offsetTop)
     && (py <= (input.offsetTop
       + input
-      .offsetHeight));
+        .offsetHeight));
 }
 
 /**
@@ -158,10 +158,10 @@ export function eraseTextAt({
         top: input.offsetTop,
         right: input.offsetLeft
           + input
-          .offsetWidth,
+            .offsetWidth,
         bottom: input.offsetTop
           + input
-          .offsetHeight,
+            .offsetHeight,
       },);
 
     if (hitCurrent || hitPrevious

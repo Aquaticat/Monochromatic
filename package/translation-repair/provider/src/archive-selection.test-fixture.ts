@@ -99,8 +99,8 @@ export function candidateNumber({
   const match = text.split('CANDIDATE ',)
     .slice(1,)
     .find(function containsValue(part,) {
-    return part.includes(`\n${wanted}\n`,);
-  },);
+      return part.includes(`\n${wanted}\n`,);
+    },);
   if (match === undefined)
     throw new Error('Expected candidate was not offered to the selector',);
   return Number(match.slice(
@@ -251,76 +251,76 @@ export function archiveSelectionFixture(
       /**
        Role is identified by the actual production schema, not call order.
        */
-      const schema = request.responseFormat
-        ?.json_schema
-        .name;
-      if (schema === 'archive_block_review') {
+    const schema = request.responseFormat
+      ?.json_schema
+      .name;
+    if (schema === 'archive_block_review') {
         /**
          First-window position, independent of the prompt-rotated model identity.
          */
-        const index = reviewRequests.length;
-        reviewRequests.push(request.modelId,);
+      const index = reviewRequests.length;
+      reviewRequests.push(request.modelId,);
         // A seat that is unavailable delivers nothing. Until 2026-09-16 this
         // was scripted as `schema-mismatch`, which is an answer nobody could
         // read, and class thirty-one reads that as the bench answering: Mio13
         // was interrupted `provider-unavailable` at 4 of 12 heard with every
         // provider wet because seven cap-cut replies were counted as silence.
-        if ((review === 'unavailable') && (index > 0))
-          throw new Error('Review quorum unavailable in fixture',);
+      if ((review === 'unavailable') && (index > 0))
+        throw new Error('Review quorum unavailable in fixture',);
         /**
          Echoes remain actual revision replies but do not change the block.
          */
-        const value: unknown = review === 'unavailable' ? corrected : review === 'echo'
-          ? {
-            ...corrected,
-            replacementText: ARCHIVE_TEST_BLOCK,
-          }
-          : replies[index];
-        if (!request.validate(value,))
-          throw new Error('Unexpected review call or invalid fixture reply',);
-        return {
-          kind: 'ok',
-          value,
-          rawText: JSON.stringify(value,),
-        };
-      }
-      if (schema !== 'candidate_ballot')
-        throw new Error(`Unexpected schema ${String(schema,)}`,);
-      /**
-       Actual candidate/evidence data used to identify the intended choice.
-       */
-      const text = request.messages
-        .filter(function user(message,) {
-        return message.role === 'user';
-      },)
-        .map(function content(message,) {
-        return messageText({ message, },);
-      },)
-        .join('\n',);
-      selections.push(text,);
-      if (selection === 'unavailable')
-        return {
-          kind: 'schema-mismatch',
-          rawText: '{}',
-          detail: 'Selector quorum unavailable in fixture',
-        };
-      /**
-       Decision binds to the candidate's content rather than assumed order.
-       */
-      const value: unknown = {
-        best: candidateNumber({
-          text,
-          wanted: selection === 'original' ? ARCHIVE_TEST_BLOCK : ARCHIVE_TEST_CORRECTION,
-        },),
-        assessment: 'Fixture selects the exact intended block.',
-      };
+      const value: unknown = review === 'unavailable' ? corrected : review === 'echo'
+        ? {
+          ...corrected,
+          replacementText: ARCHIVE_TEST_BLOCK,
+        }
+        : replies[index];
       if (!request.validate(value,))
-        throw new Error('Invalid fixture selector reply',);
+        throw new Error('Unexpected review call or invalid fixture reply',);
       return {
         kind: 'ok',
         value,
         rawText: JSON.stringify(value,),
       };
+    }
+    if (schema !== 'candidate_ballot')
+      throw new Error(`Unexpected schema ${String(schema,)}`,);
+      /**
+       Actual candidate/evidence data used to identify the intended choice.
+       */
+    const text = request.messages
+      .filter(function user(message,) {
+        return message.role === 'user';
+      },)
+      .map(function content(message,) {
+        return messageText({ message, },);
+      },)
+      .join('\n',);
+    selections.push(text,);
+    if (selection === 'unavailable')
+      return {
+        kind: 'schema-mismatch',
+        rawText: '{}',
+        detail: 'Selector quorum unavailable in fixture',
+      };
+      /**
+       Decision binds to the candidate's content rather than assumed order.
+       */
+    const value: unknown = {
+      best: candidateNumber({
+        text,
+        wanted: selection === 'original' ? ARCHIVE_TEST_BLOCK : ARCHIVE_TEST_CORRECTION,
+      },),
+      assessment: 'Fixture selects the exact intended block.',
+    };
+    if (!request.validate(value,))
+      throw new Error('Invalid fixture selector reply',);
+    return {
+      kind: 'ok',
+      value,
+      rawText: JSON.stringify(value,),
+    };
   }
   /**
    No external provider is reachable through this fixture.

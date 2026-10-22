@@ -82,12 +82,12 @@ export type HostRead =
      */
     here: HostIdentity;
   }>
-  | Readonly<{
+    | Readonly<{
     /**
      `/proc` did not answer, so locks here are judged by process id alone.
      */
-    kind: 'unread';
-  }>;
+      kind: 'unread';
+    }>;
 
 /**
  What reading one process's start time came to.
@@ -109,14 +109,14 @@ export type StartTicksRead =
      */
     startTicks: string;
   }>
-  | Readonly<{
+    | Readonly<{
     /**
      Nothing was read: no such entry, no `/proc`, or an entry the reader may
      not see (a `hidepid` mount hides other users' processes). The id alone
      then has to answer.
      */
-    kind: 'unread';
-  }>;
+      kind: 'unread';
+    }>;
 
 /**
  Reads this machine's name, boot and process-id namespace.

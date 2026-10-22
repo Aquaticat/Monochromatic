@@ -15,9 +15,9 @@ import {
  */
 const config: NodeFlavorConfig = nodeConfig({
   input: [
-      './src/launch.ts',
-      './src/index.ts',
-    ],
+    './src/launch.ts',
+    './src/index.ts',
+  ],
 },);
 
 export default config;

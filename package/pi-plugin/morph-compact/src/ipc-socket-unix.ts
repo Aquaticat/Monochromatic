@@ -189,7 +189,7 @@ export function createOneShotSocketServer(
     function handleError(): void {
       close();
     },
-  );
+    );
 
   // Auto-cleanup after idle timeout
   handles.idleTimer = setTimeout(

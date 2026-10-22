@@ -106,14 +106,14 @@ export async function measurePackBytes(
   producerOut.on(
     'error',
     function onProducerStreamError(): void {
-    rl.debug('producer stdout closed early (consumer likely exited)',);
-  },
+      rl.debug('producer stdout closed early (consumer likely exited)',);
+    },
   );
   consumerIn.on(
     'error',
     function onConsumerStdinError(): void {
-    rl.debug('consumer stdin closed early',);
-  },
+      rl.debug('consumer stdin closed early',);
+    },
   );
   producerOut.pipe(consumerIn,);
 
@@ -124,8 +124,8 @@ export async function measurePackBytes(
   consumerOut.on(
     'data',
     function countChunk(chunk: Buffer,): void {
-    acc.bytes += chunk.length;
-  },
+      acc.bytes += chunk.length;
+    },
   );
 
   await Promise.all([

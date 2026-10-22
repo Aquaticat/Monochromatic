@@ -49,8 +49,8 @@ function runScratchName(): string {
   const stamp = new Date()
     .toISOString()
     .replaceAll(
-      ':',
-      '-',
+    ':',
+    '-',
     );
   return `${stamp}-${process.pid}`;
 }

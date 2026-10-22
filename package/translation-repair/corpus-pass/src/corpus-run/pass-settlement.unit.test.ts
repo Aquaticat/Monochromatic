@@ -68,7 +68,7 @@ const WRITTEN: readonly string[] = [
   '## One\n\nThe sunny window put the kitten to sleep. So this cat must be a chubby little treasure.',
   REWORDED,
   '## Three\n\nIn the evening, the sunlight on the sill lulled the kitten to sleep, and the fish snacks smiled too. '
-  + 'So this cat has to be a sweet little darling.',
+    + 'So this cat has to be a sweet little darling.',
   '## Four\n\nThe rain in the yard sent the kitten running home. So this cat is certainly a warm little dumpling.',
 ];
 

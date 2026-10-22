@@ -48,15 +48,15 @@ export type MetaState = 'none' | 'root' | 'tagged';
  */
 export type ModelEvent =
   | 'filterDroppedAll'
-  | 'implicitArray'
-  | 'implicitMap'
-  | 'implicitSet'
-  | 'intoDropAllKept'
-  | 'intoSlotWrite'
-  | 'nestedSkip'
-  | 'rootMetaProbe'
-  | 'slotDefault'
-  | 'taggedMetaProbe';
+    | 'implicitArray'
+    | 'implicitMap'
+    | 'implicitSet'
+    | 'intoDropAllKept'
+    | 'intoSlotWrite'
+    | 'nestedSkip'
+    | 'rootMetaProbe'
+    | 'slotDefault'
+    | 'taggedMetaProbe';
 
 /**
  Apply the plan's filter.

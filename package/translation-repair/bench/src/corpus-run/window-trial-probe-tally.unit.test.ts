@@ -60,7 +60,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(StatedRefusalError,);
             expect(String(refusal,),).toBe(
               'StatedRefusalError: 5 slices refused in a row, which is a fault in the run rather than in the slices; '
-              + 'stopping before the rest of the draw is spent producing slates nobody judges',
+                + 'stopping before the rest of the draw is spent producing slates nobody judges',
             );
           },
         },),

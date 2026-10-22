@@ -45,12 +45,12 @@ import { rosterQuorumSize, } from '@monochromatic-dev/translation-repair-stage/t
  */
 export type BenchName =
   | 'wide'
-  | 'select'
-  | 'slate'
-  | 'editors'
-  | 'refiners'
-  | 'translators'
-  | 'readers';
+    | 'select'
+    | 'slate'
+    | 'editors'
+    | 'refiners'
+    | 'translators'
+    | 'readers';
 
 /**
  Phase a seat reading is taken for.
@@ -66,13 +66,13 @@ export type BenchName =
  */
 export type JudgeSeatPhase =
   | 'preparation'
-  | 'pictures'
-  | 'insertion admission'
-  | 'lanes'
-  | 'translate lane'
-  | 'lane contest'
-  | 'consolidation'
-  | 'page consistency';
+    | 'pictures'
+    | 'insertion admission'
+    | 'lanes'
+    | 'translate lane'
+    | 'lane contest'
+    | 'consolidation'
+    | 'page consistency';
 
 /**
  Which benches each phase cannot run without.

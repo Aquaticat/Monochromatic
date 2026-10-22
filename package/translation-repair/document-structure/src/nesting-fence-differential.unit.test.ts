@@ -255,12 +255,12 @@ function memberText(
   const closingLine = (closing === 'closed by a shorter fence')
     ? opener.closer.slice(1,)
     : (closing === 'closed by a fence of the other character')
-    ? opener.other
-    : (closing === 'closed by a fence with text after it')
-    ? `${opener.closer} cat`
-    : (closing === 'closed by a line indented four columns')
-    ? `    ${opener.closer}`
-    : opener.closer;
+      ? opener.other
+      : (closing === 'closed by a fence with text after it')
+        ? `${opener.closer} cat`
+        : (closing === 'closed by a line indented four columns')
+          ? `    ${opener.closer}`
+          : opener.closer;
   /**
    Lines that close the fence, none for a fence never closed.
    */

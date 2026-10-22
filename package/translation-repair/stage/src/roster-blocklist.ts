@@ -190,12 +190,12 @@ export type BlocklistVerdict =
      */
     readonly reason: string;
   }
-  | {
+    | {
     /**
      Discriminator marking an eligible spelling.
      */
-    readonly blocked: false;
-  };
+      readonly blocked: false;
+    };
 
 /**
  Owner's verdict on one spelling.

@@ -32,20 +32,20 @@ await describe({
       name: 'reports missing runtime with original cause and restart remediation',
       fn: async () => {
         await using directory = await mkdtempDisposable(join(tmpdir(), 'ask-runtime-',),);
-          const execPath = join(directory.path, 'missing-node',);
-          let caught: unknown;
-          try {
-            await resolveAnswerRuntime({ platform: 'darwin', execPath, },);
-          }
-          catch (error: unknown) {
-            caught = error;
-          }
-          expect(caught,).toBeInstanceOf(AnswerLaunchError,);
-          if (!(caught instanceof AnswerLaunchError))
-            throw new Error('Expected runtime launch diagnostic.',);
-          expect(caught.message,).toContain(execPath,);
-          expect(caught.message,).toContain('Restart Pi',);
-          expect(caught.cause,).toHaveProperty('code', 'ENOENT',);
+        const execPath = join(directory.path, 'missing-node',);
+        let caught: unknown;
+        try {
+          await resolveAnswerRuntime({ platform: 'darwin', execPath, },);
+        }
+        catch (error: unknown) {
+          caught = error;
+        }
+        expect(caught,).toBeInstanceOf(AnswerLaunchError,);
+        if (!(caught instanceof AnswerLaunchError))
+          throw new Error('Expected runtime launch diagnostic.',);
+        expect(caught.message,).toContain(execPath,);
+        expect(caught.message,).toContain('Restart Pi',);
+        expect(caught.cause,).toHaveProperty('code', 'ENOENT',);
       },
     },),
   ],

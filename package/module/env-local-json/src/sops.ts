@@ -55,17 +55,17 @@ export type SopsEditOutcome =
      */
     readonly code: number;
   }
-  | {
+    | {
     /**
      Termination by a signal.
      */
-    readonly kind: 'signaled';
+      readonly kind: 'signaled';
 
     /**
      Signal name reported by the child process.
      */
-    readonly signal: string;
-  };
+      readonly signal: string;
+    };
 
 /**
  Failure class and optional numeric exit code.
@@ -352,7 +352,7 @@ export async function runSopsDecrypt({
           child.kill();
         }
       },
-    );
+      );
     /**
      Raw exit event of the sops child process.
      */
@@ -485,7 +485,7 @@ export async function runSopsSet({
         // A child that exits before reading stdin reports EPIPE; the exit
         // status below is the authoritative failure signal.
       },
-    );
+      );
     child.stdin
       .end(JSON.stringify(value,),);
     /**

@@ -514,19 +514,19 @@ export type DefinitionReading =
      */
     readonly settled: false;
   }
-  | {
+    | {
     /**
      The parse of the fragment settled where definitions open.
      */
-    readonly settled: true;
+      readonly settled: true;
 
     /**
      Offsets of the `[` of each footnote definition the page's own grammar
      reads as a top-level block: the strict grammar's where it accepts the
      fragment, plain markdown's where it does not.
      */
-    readonly starts: ReadonlySet<number>;
-  };
+      readonly starts: ReadonlySet<number>;
+    };
 
 /**
  What the parse of a fragment settles: where it finds no footnote reference,

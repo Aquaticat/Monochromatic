@@ -161,12 +161,12 @@ export type KiwiSchema = {
  */
 export type KiwiDecodedValue =
   | boolean
-  | number
-  | string
-  | Uint8Array
-  | readonly KiwiDecodedValue[]
-  | Record<string, unknown>
-  | typeof KIWI_VALUE_ABSENT;
+    | number
+    | string
+    | Uint8Array
+    | readonly KiwiDecodedValue[]
+    | Record<string, unknown>
+    | typeof KIWI_VALUE_ABSENT;
 
 /**
  Figma file type determined by canvas magic bytes.

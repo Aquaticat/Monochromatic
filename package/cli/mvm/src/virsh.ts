@@ -132,7 +132,7 @@ export async function virsh({
     }
     if ((error instanceof CommandFailedError)
       && error.stderr
-      .includes(CANNOT_CONNECT,)) {
+        .includes(CANNOT_CONNECT,)) {
       rl.debug('virsh could not connect to the session daemon',);
       throw new LibvirtSessionUnavailableError({
         cause: error,

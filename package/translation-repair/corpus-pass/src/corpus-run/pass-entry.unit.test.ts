@@ -912,14 +912,14 @@ function entryClient(
       const stageActivity = schema === 'critic_report'
         ? activity?.repair
         : schema === 'refine_report'
-        ? activity?.refine
-        : schema === 'lane_contest'
-        ? activity?.contest
-        : isConsolidation
-        ? activity?.consolidate
-        : schema === 'translation_report'
-        ? activity?.translate
-        : undefined;
+          ? activity?.refine
+          : schema === 'lane_contest'
+            ? activity?.contest
+            : isConsolidation
+              ? activity?.consolidate
+              : schema === 'translation_report'
+                ? activity?.translate
+                : undefined;
       if (stageActivity !== undefined) {
         stageActivity.now += 1;
         stageActivity.peak = Math.max(
@@ -978,7 +978,7 @@ async function throwawayDirs(): Promise<
     readonly declinedDir: string;
     readonly sliceCacheDir: string;
   } & AsyncDisposable
-> {
+  > {
   // Root nothing outside this case writes into.
   return await scratchDirWith({
     prefix: 'pass-entry-',
@@ -1537,7 +1537,7 @@ await describe({
     it({
       name:
         'settles an entry into ONE artifact at schema version 20 carrying BOTH lanes and absolute-reviewed '
-        + 'final polish over one preparation',
+          + 'final polish over one preparation',
       fn: async () => {
         await using dirs = await throwawayDirs();
 
@@ -1581,9 +1581,9 @@ await describe({
         expect((artifact as { artifactSchemaVersion: number; }).artifactSchemaVersion,).toBe(20,);
         expect(Object.keys((artifact as { lanes: object; }).lanes,)
           .toSorted(),).toEqual([
-          'repair',
-          'translate',
-        ],);
+            'repair',
+            'translate',
+          ],);
         /**
          Consolidation records carrying auditable polish decision.
          */
@@ -1687,7 +1687,7 @@ await describe({
           .sliceCount,).toBeGreaterThan(0,);
         expect((artifact as { comparison: readonly unknown[]; }).comparison
           .length,).toBe((artifact as { preparation: { sliceCount: number; }; }).preparation
-          .sliceCount,);
+            .sliceCount,);
 
         // Both lanes were bought: the repair lane's critics and the translate
         // lane's translators each ran.
@@ -1765,7 +1765,7 @@ await describe({
         expect(settled.findings,).toEqual([
           ...settled.referenceFindings,
           'entry info: The info.yml of entry CatEntry1 at the pin refused to parse at line 2 column 1 (BAD_INDENT); '
-          + 'corpus metadata parses upstream, so this signals corruption. No death is recorded for the entry.',
+            + 'corpus metadata parses upstream, so this signals corruption. No death is recorded for the entry.',
         ],);
       },
     },),
@@ -1782,7 +1782,7 @@ await describe({
         expect(settled.findings,).toEqual([
           ...settled.referenceFindings,
           'entry info: info.died is a truth value, which is neither text nor a finite number. '
-          + 'No death is recorded for the entry.',
+            + 'No death is recorded for the entry.',
         ],);
       },
     },),
@@ -1930,8 +1930,8 @@ await describe({
           },): boolean {
             return SEALED_ENTRY.targetText
               .slice(
-                startOffset,
-                endOffset,
+              startOffset,
+              endOffset,
               )
               .includes(SEALED_PARAGRAPH,);
           },),
@@ -2590,8 +2590,8 @@ await describe({
     it({
       name:
         'REFUSES to write anything for an entry that raised, and keeps every slice it had already '
-        + 'bought: the cache is what makes the next attempt cheaper, and a pass that discarded it on '
-        + 'failure would re-buy the whole document',
+          + 'bought: the cache is what makes the next attempt cheaper, and a pass that discarded it on '
+          + 'failure would re-buy the whole document',
       fn: async () => {
         await using dirs = await throwawayDirs();
 
@@ -2638,10 +2638,10 @@ await describe({
     it({
       name:
         'PUBLISHES THE PAGE BEFORE THE ARTIFACT, so an entry the pass will never look at again always '
-        + 'has one. A pass builds its skip set from the artifacts already on disk, which makes the '
-        + 'artifact the sentinel for "done": written first, a crash before publishing would strand '
-        + 'that entry done forever with no page. The write that fails here is the artifact write, and '
-        + 'the page is on disk regardless',
+          + 'has one. A pass builds its skip set from the artifacts already on disk, which makes the '
+          + 'artifact the sentinel for "done": written first, a crash before publishing would strand '
+          + 'that entry done forever with no page. The write that fails here is the artifact write, and '
+          + 'the page is on disk regardless',
       fn: async () => {
         await using dirs = await throwawayDirs();
 
@@ -2861,8 +2861,8 @@ await describe({
     it({
       name:
         'RETURNS rather than raising for an entry that failed, because a pass over a corpus stops for '
-        + 'a broken scheduler and not for a broken document: anything thrown here would end the run at '
-        + 'whichever entry happened to hold the problem',
+          + 'a broken scheduler and not for a broken document: anything thrown here would end the run at '
+          + 'whichever entry happened to hold the problem',
       fn: async () => {
         await using dirs = await throwawayDirs();
 
@@ -2900,8 +2900,8 @@ await describe({
     it({
       name:
         'SETTLES an entry whose critic stage lost every voice, and says so in the OUTCOMES rather than '
-        + 'only in the findings: a slice nobody was heard about falls back to the archive, so a reader '
-        + 'joining on outcomes sees the silence instead of a lane that looks like it decided',
+          + 'only in the findings: a slice nobody was heard about falls back to the archive, so a reader '
+          + 'joining on outcomes sees the silence instead of a lane that looks like it decided',
       fn: async () => {
         await using dirs = await throwawayDirs();
 
@@ -2975,9 +2975,9 @@ await describe({
     it({
       name:
         'REFUSES to write an artifact when the ceiling fired while BOTH LANES FINISHED FROM CACHE, '
-        + 'which is the one window the check after the driver exists for: a resumed entry buys nothing, '
-        + 'so no exchange is left to notice the abort and the run ends holding two complete documents '
-        + 'it is no longer entitled to record',
+          + 'which is the one window the check after the driver exists for: a resumed entry buys nothing, '
+          + 'so no exchange is left to notice the abort and the run ends holding two complete documents '
+          + 'it is no longer entitled to record',
       fn: async () => {
         await using dirs = await throwawayDirs();
 
@@ -3052,8 +3052,8 @@ await describe({
     it({
       name:
         'logs a CLEANUP line and NOT a second TALLY when the artifact landed but the cache could not be '
-        + 'retired: the entry IS settled, so a second status line would make every reader counting '
-        + 'statuses see one entry as both settled and errored',
+          + 'retired: the entry IS settled, so a second status line would make every reader counting '
+          + 'statuses see one entry as both settled and errored',
       fn: async () => {
         await using dirs = await throwawayDirs();
 

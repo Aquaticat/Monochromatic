@@ -66,24 +66,24 @@ export type DefineEnglishLocaleInput<
   Subject extends string,
   Verb extends string,
   Noun extends string,
-> = {
+  > = {
   /**
    Static UI label table keyed by the consumer's `Label` union.
    */
-  readonly labels: Readonly<Record<Label, string>>;
+    readonly labels: Readonly<Record<Label, string>>;
   /**
    Subject vocabulary keyed by the consumer's `Subject` union.
    */
-  readonly subjects: Readonly<Record<Subject, SubjectEntry>>;
+    readonly subjects: Readonly<Record<Subject, SubjectEntry>>;
   /**
    Noun vocabulary keyed by the consumer's `Noun` union.
    */
-  readonly nouns: Readonly<Record<Noun, NounEntry>>;
+    readonly nouns: Readonly<Record<Noun, NounEntry>>;
   /**
    Verb vocabulary keyed by the consumer's `Verb` union.
    */
-  readonly verbs: Readonly<Record<Verb, EnglishVerbEntry>>;
-};
+    readonly verbs: Readonly<Record<Verb, EnglishVerbEntry>>;
+  };
 
 /**
  Tokens never recased by sentence-case fixup; English `I` is the canonical case.

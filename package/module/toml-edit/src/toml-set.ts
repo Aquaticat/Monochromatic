@@ -125,12 +125,12 @@ export function tomlSet(
    */
   const stdIndex = edit.blocks
     .findIndex(function isStd(b,) {
-    return headerEquals({
-      block: b,
-      path,
-      tableKind: 'standard',
+      return headerEquals({
+        block: b,
+        path,
+        tableKind: 'standard',
+      },);
     },);
-  },);
   if (stdIndex !== (-1)) {
     /**
      The standard table whose body is replaced.
@@ -159,11 +159,11 @@ export function tomlSet(
    */
   const constituents = edit.blocks
     .filter(function isConst(b,) {
-    return isImplicitConstituent({
-      block: b,
-      path,
+      return isImplicitConstituent({
+        block: b,
+        path,
+      },);
     },);
-  },);
   if (constituents.length
     > 0) {
     if (constituents.some(function isTable(b,) {

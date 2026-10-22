@@ -176,7 +176,7 @@ async function launch({
     && (answer !== null)
     && ('pid' in answer)
     && ((typeof answer.pid) === 'number'))
-  {
+    {
     return answer.pid;
   }
   throw new GuestAgentProtocolError({

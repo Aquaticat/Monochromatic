@@ -365,7 +365,7 @@ export async function executeRun({
   catch (error: unknown) {
     if ((command.mode !== 'non-interactive')
       || (command.applyAuthority === undefined))
-    {
+      {
       throw error;
     }
     /**

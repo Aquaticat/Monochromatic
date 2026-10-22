@@ -200,8 +200,8 @@ await describe({
         expect(drawn.picks.length,).toBe(2,);
         expect(lines,).toEqual([
           `ENTRY INFO entry=Mittens: no info.yml at the pin (corpus read failed for people/Mittens/info.yml at ${CAT_PIN.commitSha} `
-          + '(missing-object); the commit has no such path: check the path, or pin a commit that has it.), '
-          + 'so no death is recorded for it',
+            + '(missing-object); the commit has no such path: check the path, or pin a commit that has it.), '
+            + 'so no death is recorded for it',
         ],);
       },
     },),
@@ -241,8 +241,8 @@ await describe({
         expect(drawn.picks.length,).toBe(2,);
         expect(lines,).toEqual([
           'ENTRY INFO entry=Mittens: The info.yml of entry Mittens at the pin refused to parse at line 2 column 1 '
-          + '(BAD_INDENT); corpus metadata parses upstream, so this signals corruption. No death is recorded for the entry, '
-          + 'and it goes on as one whose info.yml records none',
+            + '(BAD_INDENT); corpus metadata parses upstream, so this signals corruption. No death is recorded for the entry, '
+            + 'and it goes on as one whose info.yml records none',
         ],);
       },
     },),
@@ -312,8 +312,8 @@ await describe({
         },);
         expect(lines,).toEqual([
           'Mittens: skipped, CorpusReadError: corpus read failed for people/Mittens/page.en.md at '
-          + `${CAT_PIN.commitSha} (missing-object); the commit has no such path: check the path, or pin a `
-          + 'commit that has it.',
+            + `${CAT_PIN.commitSha} (missing-object); the commit has no such path: check the path, or pin a `
+            + 'commit that has it.',
         ],);
       },
     },),
@@ -343,7 +343,7 @@ await describe({
         expect(refusal,).toBeInstanceOf(CorpusReadError,);
         expect(String(refusal,),).toBe(
           'CorpusReadError: corpus read failed for people/Mittens/page.md (other); '
-          + 'the read failed another way: run the same git read in the clone by hand to see why.',
+            + 'the read failed another way: run the same git read in the clone by hand to see why.',
         );
         expect(lines,).toEqual([],);
       },

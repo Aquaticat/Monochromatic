@@ -103,8 +103,8 @@ await describe({
     it({
       name:
         'DEFINES every category the wire accepts, so a category added to the vocabulary without a '
-        + 'definition here cannot ship: voices given a bare list of names split their labels, and split '
-        + 'labels read as two lone opinions rather than one corroborated defect',
+          + 'definition here cannot ship: voices given a bare list of names split their labels, and split '
+          + 'labels read as two lone opinions rather than one corroborated defect',
       fn: async () => {
         const instructions = turn({
           role: 'system',
@@ -120,7 +120,7 @@ await describe({
     it({
       name:
         'STATES THE PRECEDENCE that decides between omission and an altered category, which is the one '
-        + 'ambiguity guaranteed to arise: a dropped negator is nameable both ways',
+          + 'ambiguity guaranteed to arise: a dropped negator is nameable both ways',
       fn: async () => {
         const instructions = turn({
           role: 'system',
@@ -160,7 +160,7 @@ await describe({
     it({
       name:
         'SAYS BREVITY IS NOT A DEFECT, because inferring an omission from a shorter rendering is the '
-        + 'mistake an auditor makes by trying hard rather than by being careless',
+          + 'mistake an auditor makes by trying hard rather than by being careless',
       fn: async () => {
         expect(
           turn({
@@ -174,7 +174,7 @@ await describe({
     it({
       name:
         'OMITS the identity block entirely when the run licensed nothing, rather than showing an empty '
-        + 'one: a heading with nothing under it invites an auditor to read the absence as a rule',
+          + 'one: a heading with nothing under it invites an auditor to read the absence as a rule',
       fn: async () => {
         expect(
           turn({
@@ -217,7 +217,7 @@ await describe({
     it({
       name:
         'ESCAPES a passage carrying its own fence run, so a candidate that opens a code block cannot '
-        + 'close the block it was pasted into and have its tail read as instructions',
+          + 'close the block it was pasted into and have its tail read as instructions',
       fn: async () => {
         /**
          Candidate carrying a longer fence run than the default, followed by an

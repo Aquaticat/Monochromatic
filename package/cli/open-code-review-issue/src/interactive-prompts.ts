@@ -143,18 +143,18 @@ export async function promptForExplicitDecision({
    */
   const answer = await inputPrompt(
     {
-    message,
-    validate(value,) {
+      message,
+      validate(value,) {
       /**
        Case-folded trimmed decision candidate.
        */
-      const normalized = value.trim()
-        .toLowerCase();
-      return (normalized === 'yes') || (normalized === 'no')
-        ? true
-        : 'Type yes or no';
+        const normalized = value.trim()
+          .toLowerCase();
+        return (normalized === 'yes') || (normalized === 'no')
+          ? true
+          : 'Type yes or no';
+      },
     },
-  },
     streams,
   );
   return answer.trim()
@@ -223,36 +223,36 @@ export async function promptForIssues({
    */
   const selected = await checkbox<number>(
     {
-    message: security
-      ? 'SECURITY findings: select only findings safe to disclose publicly'
-      : 'Select findings to create as GitHub Issues',
-    choices: issues.map(function issueChoice(
-      issue,
-      index,
-    ) {
-      return {
-        name: issueChoiceName({
-          issue,
-          security,
-        }),
-        value: index,
-        checked: !security,
-      };
-    },),
-    required,
-    ...(security
-      ? {
-        shortcuts: {
-          all: null,
-          invert: null,
-        },
-      }
-      : {}),
-    theme: createSquareCheckboxTheme({
-      security,
-      output: streams.output,
-    }),
-  },
+      message: security
+        ? 'SECURITY findings: select only findings safe to disclose publicly'
+        : 'Select findings to create as GitHub Issues',
+      choices: issues.map(function issueChoice(
+        issue,
+        index,
+      ) {
+        return {
+          name: issueChoiceName({
+            issue,
+            security,
+          }),
+          value: index,
+          checked: !security,
+        };
+      },),
+      required,
+      ...(security
+        ? {
+          shortcuts: {
+            all: null,
+            invert: null,
+          },
+        }
+        : {}),
+      theme: createSquareCheckboxTheme({
+        security,
+        output: streams.output,
+      }),
+    },
     streams,
   );
   return selected.map(function selectedIssue(index,) {

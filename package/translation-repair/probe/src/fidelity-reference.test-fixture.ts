@@ -108,12 +108,12 @@ export function reviewedFixture(): {
     'blue',
   )
     .replace(
-      '2023',
-      '2022',
+    '2023',
+    '2022',
     )
     .replace(
-      'well-lit',
-      'well\u2011lit',
+    'well-lit',
+    'well\u2011lit',
     );
   /**
    Local edit coordinates refer to this original folded slice.

@@ -153,10 +153,10 @@ await describe({
           lines: [
             'CatEntry1: wordings=2 silent=0 chars=74/expected 81 missing=1 consistency-groups=0 read-at-generation=20',
             '  WRONG LENGTH: page is -7 characters off what the archive plus every slice change comes to. '
-            + 'Text no slice decided on was lost or added',
+              + 'Text no slice decided on was lost or added',
             '  MISSING slice 1, 35 characters the page does not carry in order',
             `  READ BY ANOTHER BUILD: settled by ${ SETTLED_BY }, read by ${ OTHER_BUILD }; `
-            + 'a pass started here on this build rewrites the page to this reading',
+              + 'a pass started here on this build rewrites the page to this reading',
           ],
         },);
       },
@@ -184,7 +184,7 @@ await describe({
           lines: [
             'CatEntry1: wordings=2 silent=0 chars=74/expected 81 missing=1 consistency-groups=0 read-at-generation=20',
             '  WRONG LENGTH: page is -7 characters off what the archive plus every slice change comes to. '
-            + 'Text no slice decided on was lost or added',
+              + 'Text no slice decided on was lost or added',
             '  MISSING slice 1, 35 characters the page does not carry in order',
           ],
         },);
@@ -240,7 +240,7 @@ await describe({
           lines: [
             'CatEntry1: wordings=2 silent=0 chars=82/expected 81 missing=0 consistency-groups=0 read-at-generation=20',
             '  WRONG LENGTH: page is 1 character off what the archive plus every slice change comes to. '
-            + 'Text no slice decided on was lost or added',
+              + 'Text no slice decided on was lost or added',
           ],
         },);
       },
@@ -268,7 +268,7 @@ await describe({
           lines: [
             'CatEntry1: wordings=2 silent=0 chars=80/expected 81 missing=1 consistency-groups=0 read-at-generation=20',
             '  WRONG LENGTH: page is -1 character off what the archive plus every slice change comes to. '
-            + 'Text no slice decided on was lost or added',
+              + 'Text no slice decided on was lost or added',
             '  MISSING slice 1, 35 characters the page does not carry in order',
           ],
         },);

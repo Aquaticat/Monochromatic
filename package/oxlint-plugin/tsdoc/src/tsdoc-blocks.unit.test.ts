@@ -88,9 +88,9 @@ await describe({
               .map(function name(block,): string {
                 return block.parameterName;
               },),).toEqual([
-              'a',
-              'b',
-            ],);
+                'a',
+                'b',
+              ],);
           },
         },),
 

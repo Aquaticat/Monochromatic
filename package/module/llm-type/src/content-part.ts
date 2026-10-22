@@ -46,18 +46,18 @@ export type ContentPart =
      */
     readonly text: string;
   }
-  | {
+    | {
     /**
      Discriminant marking an image content part.
      */
-    readonly type: 'image_url';
+      readonly type: 'image_url';
     /**
      Image reference; `url` is a remote URL or inline data URI.
      */
-    readonly image_url: {
+      readonly image_url: {
       /**
        Remote URL or base64 data URI of the image.
        */
-      readonly url: string;
+        readonly url: string;
+      };
     };
-  };

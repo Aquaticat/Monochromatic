@@ -39,8 +39,8 @@ import { tableCell, } from '@monochromatic-dev/translation-repair-markup/ts';
  */
 export type UnpairedReason =
   | 'forced-gap'
-  | 'ambiguous'
-  | 'roster-unpaired';
+    | 'ambiguous'
+    | 'roster-unpaired';
 
 /**
  Where an untranslated section's rendering may be written, or why it may not.
@@ -67,25 +67,25 @@ export type InsertionAnchor =
      */
     readonly beforeTargetIndex: number;
   }
-  | {
+    | {
     /**
      Some optimal alignment pairs this section with existing translation, so
      whatever it says may already be on the page.
      */
-    readonly kind: 'may-pair';
-  }
-  | {
+      readonly kind: 'may-pair';
+    }
+    | {
     /**
      Nothing pairs it, but optimal alignments disagree about where it sits.
      */
-    readonly kind: 'several-boundaries';
+      readonly kind: 'several-boundaries';
 
     /**
      Places it could go, in ascending order, so a report can say how wide the
      disagreement is rather than only that there was one.
      */
-    readonly boundaries: readonly number[];
-  };
+      readonly boundaries: readonly number[];
+    };
 
 /**
  One decision about one heading.
@@ -117,46 +117,46 @@ export type ForcedAlignStep =
      */
     readonly affinity: number;
   }
-  | {
+    | {
     /**
      Original carries a section the translation does not, or the aligner
      refuses to say which one it is.
      */
-    readonly kind: 'source-only';
+      readonly kind: 'source-only';
 
     /**
      Source unit index.
      */
-    readonly sourceIndex: number;
+      readonly sourceIndex: number;
 
     /**
      Whether nothing could pair, or too much could.
      */
-    readonly reason: UnpairedReason;
+      readonly reason: UnpairedReason;
 
     /**
      Where a translation of this section could be inserted, when that place is
      proven.
      */
-    readonly anchor: InsertionAnchor;
-  }
-  | {
+      readonly anchor: InsertionAnchor;
+    }
+    | {
     /**
      Translation carries a section the original does not, or the aligner
      refuses to say which one it is.
      */
-    readonly kind: 'target-only';
+      readonly kind: 'target-only';
 
     /**
      Target unit index.
      */
-    readonly targetIndex: number;
+      readonly targetIndex: number;
 
     /**
      Whether nothing could pair, or too much could.
      */
-    readonly reason: UnpairedReason;
-  };
+      readonly reason: UnpairedReason;
+    };
 
 /**
  Decides where an unpaired source section's rendering could be written.

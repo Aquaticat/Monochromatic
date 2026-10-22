@@ -135,8 +135,8 @@ function chargeDrained({
        */
       const named = drained.getText()
         .slice(
-          0,
-          DRAIN_PROVENANCE_LIMIT,
+        0,
+        DRAIN_PROVENANCE_LIMIT,
         );
       addOpaqueEffect({
         summary,

@@ -295,9 +295,9 @@ function floorKeyedFunctions({ program, }: { readonly program: TreeNode; },): re
     const declared = ((node.type === 'FunctionDeclaration') && isTreeNode(node.id,))
       ? { name: nameOf({ node: node.id, },), fn: node, }
       : ((node.type === 'VariableDeclarator') && isTreeNode(node.id,) && isTreeNode(node.init,)
-          && ((node.init.type === 'ArrowFunctionExpression') || (node.init.type === 'FunctionExpression')))
-      ? { name: nameOf({ node: node.id, },), fn: node.init, }
-      : undefined;
+        && ((node.init.type === 'ArrowFunctionExpression') || (node.init.type === 'FunctionExpression')))
+        ? { name: nameOf({ node: node.id, },), fn: node.init, }
+        : undefined;
     if (declared === undefined)
       continue;
     /**
@@ -754,8 +754,8 @@ await describe({
               path: 'bowl.ts',
               text: [
                 'export function fill({ kibble, declared = [], lineStructured, pictureContext, }: '
-                + '{ readonly kibble: string; readonly declared?: readonly string[]; readonly lineStructured: boolean; '
-                + 'readonly pictureContext?: string; readonly treats?: number; },): string { return kibble; }',
+                  + '{ readonly kibble: string; readonly declared?: readonly string[]; readonly lineStructured: boolean; '
+                  + 'readonly pictureContext?: string; readonly treats?: number; },): string { return kibble; }',
               ].join('\n',),
               isTest: false,
             },
@@ -767,7 +767,7 @@ await describe({
                 'export function lunch({ pictureContext, }: { readonly pictureContext?: string; },): string {',
                 '  const fragment = { declared: [], };',
                 '  return fill({ kibble: \'chicken\', lineStructured: false, ...fragment, '
-                + '...((pictureContext === undefined) ? {} : { pictureContext, }), },);',
+                  + '...((pictureContext === undefined) ? {} : { pictureContext, }), },);',
                 '}',
                 'export function dinner(meal: Parameters<typeof fill>[0],): string { return fill(meal,); }',
                 'export function supper(): string { return fill(makeMeal(),); }',

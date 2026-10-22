@@ -426,18 +426,18 @@ export async function handleBatch({
     const results = await Promise.all(
       batch.objects
         .map(function resolve(object: BatchObject,): Promise<Record<string, unknown>> {
-        return resolveObject({
-          object,
-          operation: batch.operation,
-          env,
-          origin: url.origin,
-          ...batch.operation === 'upload'
-            ? { authorization: nonNullishOrThrow(request.headers
-              .get('Authorization',),), }
-            : {},
-          l: hl,
-        },);
-      },),
+          return resolveObject({
+            object,
+            operation: batch.operation,
+            env,
+            origin: url.origin,
+            ...batch.operation === 'upload'
+              ? { authorization: nonNullishOrThrow(request.headers
+                .get('Authorization',),), }
+              : {},
+            l: hl,
+          },);
+        },),
     );
     return lfsJson({
       body: {

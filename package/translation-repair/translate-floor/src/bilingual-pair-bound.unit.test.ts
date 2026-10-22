@@ -331,8 +331,8 @@ await describe({
           pageText: 'Good night, cat.\n\nA cat sits at the window.',
         },),).toEqual([
           'This slice is LINE-STRUCTURED and your rendering repeats the line `Good night, cat.` 2 times where the '
-          + 'ORIGINAL repeats no line more than once. A Chinese line and its own English beside it are one line to '
-          + 'render, not two. Drop the repeat, keeping the wording you chose.',
+            + 'ORIGINAL repeats no line more than once. A Chinese line and its own English beside it are one line to '
+            + 'render, not two. Drop the repeat, keeping the wording you chose.',
         ],);
       },
     },),

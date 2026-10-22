@@ -1408,7 +1408,7 @@ await describe({
             expect(refusal,).toBeInstanceOf(ConsistencyInvariantError,);
             expect(String(refusal,),).toBe(
               'ConsistencyInvariantError: unreachable: the label OCCURRENCE 9 a majority chose is no label of the sheet, '
-              + 'and a usable ballot chooses a label the sheet showed',
+                + 'and a usable ballot chooses a label the sheet showed',
             );
           },
         },),

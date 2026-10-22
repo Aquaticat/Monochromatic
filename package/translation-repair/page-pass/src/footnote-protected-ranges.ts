@@ -68,18 +68,18 @@ export function footnoteProtectedRanges({ text, }: { readonly text: string; },):
     /**
      Position, not repeated wording, selects the owning declaration.
      */
-    const comment = document.parseFindings
-      .find(function owns(finding,): boolean {
-      return isCommentFinding({ finding, },)
-        && (finding.endOffset === span.startOffset);
+      const comment = document.parseFindings
+        .find(function owns(finding,): boolean {
+          return isCommentFinding({ finding, },)
+            && (finding.endOffset === span.startOffset);
+        },);
+      if (comment === undefined)
+        throw new FootnoteRewriteError({ kind: 'position', },);
+      return {
+        startOffset: comment.startOffset,
+        endOffset: span.endOffset,
+      };
     },);
-    if (comment === undefined)
-      throw new FootnoteRewriteError({ kind: 'position', },);
-    return {
-      startOffset: comment.startOffset,
-      endOffset: span.endOffset,
-    };
-  },);
 }
 
 /**
@@ -152,11 +152,11 @@ export function footnoteRenameTouchesOriginal(
     .map(function key(move,): string { return normalizeFootnoteIdentifier({ identifier: move.from, },); },),);
   return activeFootnoteMarkers({ text, },)
     .some(function touches(marker,): boolean {
-    return changed.has(marker.identifier,) && overlapsFootnoteProtection({
-      ...marker,
-      protectedRanges,
+      return changed.has(marker.identifier,) && overlapsFootnoteProtection({
+        ...marker,
+        protectedRanges,
+      },);
     },);
-  },);
 }
 
 //endregion Declared English-original protection

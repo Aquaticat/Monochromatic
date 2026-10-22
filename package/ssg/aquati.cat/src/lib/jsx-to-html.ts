@@ -147,7 +147,7 @@ function renderAttrs(props: Readonly<Record<string, unknown>>,): string {
     else if (((typeof value) === 'number')
       || ((typeof value) === 'bigint')
       || ((typeof value) === 'symbol'))
-    {
+      {
       result += ` ${name}="${escapeHtml(value.toString(),)}"`;
     }
   }

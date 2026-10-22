@@ -84,8 +84,8 @@ function markedParagraph(
     + 'cat '
       .repeat(Math.ceil((size - tag.length) / 'cat '.length,),)
       .slice(
-        0,
-        size - tag.length,
+      0,
+      size - tag.length,
       );
 }
 
@@ -234,10 +234,10 @@ await describe({
             expect(slices,).toHaveLength(1,);
             expect(slices[0]?.target
               .startOffset,).toBe(pair.target
-              .startOffset,);
+                .startOffset,);
             expect(slices[0]?.target
               .endOffset,).toBe(pair.target
-              .endOffset,);
+                .endOffset,);
           },
         },),
 
@@ -260,26 +260,26 @@ await describe({
             // Coverage opens and closes on the section's own offsets.
             expect(slices[0]?.target
               .startOffset,).toBe(pair.target
-              .startOffset,);
+                .startOffset,);
             expect(slices.at(-1,)?.target
               .endOffset,).toBe(pair.target
-              .endOffset,);
+                .endOffset,);
             for (const [index, slice,] of slices.entries()) {
               // Slice text is the exact document byte range it claims.
               expect(slice.target
                 .text,).toBe(TARGET_TEXT.slice(
-                slice.target
-                  .startOffset,
-                slice.target
-                  .endOffset,
-              ),);
+                  slice.target
+                    .startOffset,
+                  slice.target
+                    .endOffset,
+                ),);
               expect(slice.source
                 .text,).toBe(SOURCE_TEXT.slice(
-                slice.source
-                  .startOffset,
-                slice.source
-                  .endOffset,
-              ),);
+                  slice.source
+                    .startOffset,
+                  slice.source
+                    .endOffset,
+                ),);
 
               /**
                Preceding slice for monotone ordering.
@@ -288,7 +288,7 @@ await describe({
               if (previous !== undefined) {
                 expect(slice.target
                   .startOffset,).toBeGreaterThanOrEqual(previous.target
-                  .endOffset,);
+                    .endOffset,);
               }
             }
           },
@@ -312,16 +312,16 @@ await describe({
             // Both sides stay fully covered despite the mismatch.
             expect(slices[0]?.source
               .startOffset,).toBe(pair.source
-              .startOffset,);
+                .startOffset,);
             expect(slices.at(-1,)?.source
               .endOffset,).toBe(pair.source
-              .endOffset,);
+                .endOffset,);
             expect(slices[0]?.target
               .startOffset,).toBe(pair.target
-              .startOffset,);
+                .startOffset,);
             expect(slices.at(-1,)?.target
               .endOffset,).toBe(pair.target
-              .endOffset,);
+                .endOffset,);
           },
         },),
 
@@ -347,8 +347,8 @@ await describe({
             expect(pair.source
               .nodes
               .length,).toBe(pair.target
-              .nodes
-              .length,);
+                .nodes
+                .length,);
 
             const slices = subdivideChunkPair({
               pair,
@@ -366,7 +366,7 @@ await describe({
               // Corresponding paragraphs stay in the same slice: no drift.
               expect(sliceMarkers({ text: slice.source
                 .text, },),).toBe(sliceMarkers({ text: slice.target
-                .text, },),);
+                  .text, },),);
               covered.push(sliceMarkers({ text: slice.source
                 .text, },),);
             }

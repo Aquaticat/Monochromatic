@@ -117,7 +117,7 @@ const restoringJudge: typeof runRestorationJudge = async ({ references, },) =>
       },
     ];
   },),)
-;
+  ;
 
 await describe({
   name: '',
@@ -993,8 +993,8 @@ await describe({
               return line.includes('repair threw',);
             },),).toEqual([
               '[translation-repair-repair-benchmark] [runRepairBenchmark] whiskers: repair threw refused by '
-              + 'ProviderHttpError from synthetic with HTTP 429 (the provider said: "the cat is over its weekly '
-              + 'credit")',
+                + 'ProviderHttpError from synthetic with HTTP 429 (the provider said: "the cat is over its weekly '
+                + 'credit")',
             ],);
             expect(result.records[0]?.detail,).toBe('refused by ProviderHttpError from synthetic with HTTP 429',);
           },

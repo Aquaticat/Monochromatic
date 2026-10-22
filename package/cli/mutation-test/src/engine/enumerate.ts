@@ -107,7 +107,7 @@ function toMutant(options: {
         .start,
       options.replacement
         .end,
-    ),
+      ),
     replacement: options.replacement
       .text,
     description: options.replacement

@@ -38,110 +38,110 @@ export type CacheOp =
      */
     readonly value: string;
   }
-  | {
+    | {
     /**
      Store a value under a per-item lifetime.
      */
-    readonly kind: 'setWithMaxAge';
+      readonly kind: 'setWithMaxAge';
     /**
      Key to store under.
      */
-    readonly key: string;
+      readonly key: string;
     /**
      Value to store.
      */
-    readonly value: string;
+      readonly value: string;
     /**
      Per-item lifetime in milliseconds, quirks included.
      */
-    readonly maxAge: number;
-  }
-  | {
+      readonly maxAge: number;
+    }
+    | {
     /**
      Read a value, marking it most recently used.
      */
-    readonly kind: 'get';
+      readonly kind: 'get';
     /**
      Key to read.
      */
-    readonly key: string;
-  }
-  | {
+      readonly key: string;
+    }
+    | {
     /**
      Read a value without touching recency.
      */
-    readonly kind: 'peek';
+      readonly kind: 'peek';
     /**
      Key to read.
      */
-    readonly key: string;
-  }
-  | {
+      readonly key: string;
+    }
+    | {
     /**
      Check presence without touching recency.
      */
-    readonly kind: 'has';
+      readonly kind: 'has';
     /**
      Key to check.
      */
-    readonly key: string;
-  }
-  | {
+      readonly key: string;
+    }
+    | {
     /**
      Remove one item without notifications.
      */
-    readonly kind: 'delete';
+      readonly kind: 'delete';
     /**
      Key to remove.
      */
-    readonly key: string;
-  }
-  | {
+      readonly key: string;
+    }
+    | {
     /**
      Read one item's remaining lifetime without removing it.
      */
-    readonly kind: 'expiresIn';
+      readonly kind: 'expiresIn';
     /**
      Key to inspect.
      */
-    readonly key: string;
-  }
-  | {
+      readonly key: string;
+    }
+    | {
     /**
      Remove every item without notifications.
      */
-    readonly kind: 'clear';
-  }
-  | {
+      readonly kind: 'clear';
+    }
+    | {
     /**
      Update the target maximum in place.
      */
-    readonly kind: 'resize';
+      readonly kind: 'resize';
     /**
      New target maximum, quirks included.
      */
-    readonly maxSize: number;
-  }
-  | {
+      readonly maxSize: number;
+    }
+    | {
     /**
      Evict the least recently used items.
      */
-    readonly kind: 'evict';
+      readonly kind: 'evict';
     /**
      Eviction count, quirks included.
      */
-    readonly count: number;
-  }
-  | {
+      readonly count: number;
+    }
+    | {
     /**
      Move the controlled clock forward.
      */
-    readonly kind: 'advanceClock';
+      readonly kind: 'advanceClock';
     /**
      Milliseconds to advance by.
      */
-    readonly milliseconds: number;
-  };
+      readonly milliseconds: number;
+    };
 
 /**
  Fully generated workload: constructor bounds and operations.
@@ -572,7 +572,7 @@ export function runWorkload(options: {
   options.clock
     .advance(options.startMilliseconds
       - options.clock
-      .now,);
+        .now,);
   /**
    Per-operation traces collected below.
    */

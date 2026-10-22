@@ -496,8 +496,8 @@ await describe({
               return error.message
                 .split('\n',)
                 .slice(
-                  0,
-                  named + 1,
+                0,
+                named + 1,
                 );
             }
 

@@ -64,8 +64,8 @@ await describe({
     it({
       name:
         'ACCEPTS words this version does not know, because a reply that parsed and named an unknown '
-        + 'category is a voice that answered: refusing it here would count it as a lost voice and hide a '
-        + 'vocabulary problem inside the degradation rate',
+          + 'category is a voice that answered: refusing it here would count it as a lost voice and hide a '
+          + 'vocabulary problem inside the degradation rate',
       fn: async () => {
         expect(
           isRenderingAuditReportWire({
@@ -104,7 +104,7 @@ await describe({
     it({
       name:
         'REFUSES a reply whose findings are missing or not a list, including the single object a model '
-        + 'sends when it found exactly one thing',
+          + 'sends when it found exactly one thing',
       fn: async () => {
         expect(isRenderingAuditReportWire({ verdict: 'no-defect-found', },),).toBe(false,);
         expect(
@@ -118,7 +118,7 @@ await describe({
     it({
       name:
         'REFUSES a finding missing ANY of its six fields, so a claim never reaches the screen with a '
-        + 'quote field the screen would read as a deliberately empty one',
+          + 'quote field the screen would read as a deliberately empty one',
       fn: async () => {
         for (const field of FINDING_FIELDS) {
           /**
@@ -165,8 +165,8 @@ await describe({
     it({
       name:
         'NAMES every field it checks for in the response format too, since a schema and a guard that '
-        + 'drift apart produce replies the provider considers valid and this reader then discards as '
-        + 'malformed, which reads as model failure rather than as our own',
+          + 'drift apart produce replies the provider considers valid and this reader then discards as '
+          + 'malformed, which reads as model failure rather than as our own',
       fn: async () => {
         // OVER THE SERIALIZED FORM, because the response format is typed as an
         // opaque JSON schema and reaching into it would need an assertion this
@@ -180,7 +180,7 @@ await describe({
     it({
       name:
         'DECLARES and REQUIRES the keys of the reply and of each finding in alphabetical order, since Charm Hyper '
-        + 'returns a tool call\'s keys alphabetically and the scan of `source-scan` cannot read a schema built from a list',
+          + 'returns a tool call\'s keys alphabetically and the scan of `source-scan` cannot read a schema built from a list',
       fn: async () => {
         // OVER THE SERIALIZED FORM, which keeps the order the keys were declared in.
         const asked = JSON.stringify(RENDERING_AUDIT_RESPONSE_FORMAT,);

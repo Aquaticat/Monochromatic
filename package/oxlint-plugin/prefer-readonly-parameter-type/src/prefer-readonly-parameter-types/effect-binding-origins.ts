@@ -252,18 +252,18 @@ function registerBindingOrigins({
    * shared empty constant, so the copy is no longer what makes this safe. */
   return [...parameterOrigins,]
     .reduce(
-      function registerOne(
-        changed,
+    function registerOne(
+      changed,
+      slot,
+    ): boolean {
+      return registerBindingOrigin({
+        project,
+        name,
         slot,
-      ): boolean {
-        return registerBindingOrigin({
-          project,
-          name,
-          slot,
-          bindingOriginBySymbolId,
-        },) || changed;
-      },
-      false,
+        bindingOriginBySymbolId,
+      },) || changed;
+    },
+    false,
     );
 }
 
@@ -428,12 +428,12 @@ export function discoverAliasOrigins({
          */
         const { declarations, } = statement.initializer;
         declarations.forEach(function registerIterationDeclaration(declaration,): void {
-            state.changed = registerBindingOrigins({
-              project,
-              name: declaration.name,
-              parameterOrigins,
-              bindingOriginBySymbolId,
-            },) || state.changed;
+          state.changed = registerBindingOrigins({
+            project,
+            name: declaration.name,
+            parameterOrigins,
+            bindingOriginBySymbolId,
+          },) || state.changed;
         },);
         return;
       }
