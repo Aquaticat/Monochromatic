@@ -409,7 +409,18 @@ The human's own comparison, and the instrument behind it:
   width and height measurements.
 - Build A (titles 20, names 14, track titles 14) looked right to the human.
   Build B (titles 22, heading letter 22, names 16, track titles 16 in the source) needed the replica set to 22, 22, 16
-  and 17 (track title) to look the same; the 1 px difference on the track title is unexplained and is being measured.
+  and 17 (track title) to look the same.
+  Measured afterwards, in the nested compositor at scale 1 (dark and light), 2, 1.25 and 1.5: real build B draws all
+  seven track titles at 16 px, the replica at track 16 matches them with 0 px difference in x, y, width, height and
+  baseline (including the bold playing row and the mixed Latin and Han row), and the replica at 17 is 6.4 px wider on
+  average and about 1.6 px taller.
+  The advance of "Lantern Row" in Chromium is 94.58 px at 16 and 100.50 px at 17 against a real ink width of 93, and
+  `tracks.slint:379` is a fixed size with no scale or transform.
+  So the 17 is not a geometric difference: the same pixels needed a larger setting to look alike to the human, only for
+  the track titles, while 22, 22 and 16 matched as numbers.
+  The replica's text carries about 5 to 8 percent more ink than the real app's in builds A and B (the real app is
+  lighter by a constant factor), which does not single out the track titles.
+  Why the human needed 17 is not explained.
 - The human then asked for a text size setting in the real app, with a stepper of 1 px for each element.
 
 ## Hypotheses
