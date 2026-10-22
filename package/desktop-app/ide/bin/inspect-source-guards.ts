@@ -67,7 +67,7 @@ cpSync(
       origin,
       path
     )
-      .split(sep)[0])
+      .split(sep)[0] ?? '')
   }
 );
 mkdirSync(
@@ -79,12 +79,66 @@ mkdirSync(
 );
 console.log(`SOURCE_GUARD_ARTIFACT=${  artifact}`);
 
-function replaceOne(
+/**
+ One text replacement that a guard makes in a file of the disposable copy.
+ */
+interface Edit {
+  file: string;
+  before: string;
+  after: string;
+  occurrence?: number | undefined;
+}
+
+/**
+ A guard: the edits that remove it and the native, library, or integration test that must then fail.
+ */
+interface Guard extends Edit {
+  name: string;
+  also?: Edit[];
+  native?: boolean;
+  lib?: boolean;
+  integration?: string;
+  test: string;
+  failure: string;
+}
+
+/**
+ A container run recorded in `results.json` and echoed as one JSON line.
+ */
+interface RunResult {
+  name: string;
+  phase: string;
+  test: string;
+  status: number | null;
+  accepted: boolean;
+}
+
+/**
+ `text` with one occurrence of `before` replaced by `after`.
+
+ @param text - source of the file to mutate
+
+ @param before - anchor that the guard exists to protect; absence means the guard moved with its code
+
+ @param after - replacement that removes the guard
+
+ @param occurrence - zero-based match to replace, for anchors that repeat
+
+ @returns the edited text
+
+ @throws {Error} when `before` occurs fewer than `occurrence` + 1 times
+ */
+function replaceOne({
   text,
   before,
   after,
   occurrence = 0
-) {
+}: {
+  text: string;
+  before: string;
+  after: string;
+  occurrence?: number | undefined;
+}): string {
   let offset = 0;
   let start = -1;
   for (let index = 0; index <= occurrence; index++) {
@@ -102,7 +156,7 @@ function replaceOne(
     + text.slice(start + before.length);
 }
 const equality = 'assertion `left == right` failed';
-const cases = [
+const cases: Guard[] = [
   // A line past the raster limit is painted in a clip that follows the view, in a raster within the limit.
   {
     name: 'clip-chosen',
@@ -1676,12 +1730,26 @@ const selected = only ? cases.filter(item => only.has(item.name)) : cases;
 if (only && (selected.length !== only.size)) throw new Error(`Unknown guard name in: ${
    process.env
      .usage_only}`);
-const results = [];
-const baselined = new Set();
-function run(
+const results: RunResult[] = [];
+const baselined = new Set<string>();
+
+/**
+ Runs one guard test in the disposable copy, records the result, and stops the script when it is not the expected one.
+
+ @param item - guard whose test runs
+
+ @param phase - baseline (unmodified), removed (guard removed, must fail), or restored (must pass again)
+
+ @throws {Error} when the guard names no test kind or the run is not the expected result
+ */
+function run({
   item,
   phase
-) {
+}: {
+  item: Guard;
+  phase: string;
+}): void {
+  if (!item.native && !item.lib && item.integration === undefined) throw new Error(`Guard ${item.name} names no native, library, or integration test`);
   // A case names a native test, a unit test of the library (`lib`), or an integration test file.
   let command = [
     'cargo',
@@ -1689,7 +1757,7 @@ function run(
     '--offline',
     '--no-default-features',
     '--test',
-    item.integration,
+    item.integration ?? '',
     item.test,
     '--',
     '--nocapture'
@@ -1789,10 +1857,10 @@ function run(
 for (const item of selected) {
   // A restored run of an earlier case is already this test's unmodified baseline.
   if (!baselined.has(item.test)) {
-    run(
+    run({
       item,
-      'baseline'
-    );
+      phase: 'baseline'
+    });
     baselined.add(item.test);
   }
   // A guard whose rule is enforced at two places names the second place in `also`, and both are removed together.
@@ -1822,22 +1890,22 @@ for (const item of selected) {
         path,
         'utf8'
       );
-      const changed = replaceOne(
-        current,
-        edit.before,
-        edit.after,
-        edit.occurrence
-      );
+      const changed = replaceOne({
+        text: current,
+        before: edit.before,
+        after: edit.after,
+        occurrence: edit.occurrence
+      });
       if (changed === current) throw new Error(`Mutation did not change ${  edit.file}`);
       writeFileSync(
         path,
         changed
       );
     }
-    run(
+    run({
       item,
-      'removed'
-    );
+      phase: 'removed'
+    });
   } finally { for (const {
     path,
     original
@@ -1845,9 +1913,9 @@ for (const item of selected) {
     path,
     original
   ); }
-  run(
+  run({
     item,
-    'restored'
-  );
+    phase: 'restored'
+  });
 }
 console.log(`Source guard controls passed: ${  artifact  } (${  selected.length  } of ${  cases.length  } guards)`);
