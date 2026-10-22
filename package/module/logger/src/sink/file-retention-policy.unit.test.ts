@@ -71,14 +71,14 @@ await describe({
 
         it({
           name: 'returns 14 days, 536870912 bytes, and 50000 files when no override is set',
-          fn: () => {
+          fn: async () => {
             expect(logRetentionPolicyFromEnv({ environment: {}, },),).toEqual(DEFAULT_POLICY,);
           },
         },),
 
         it({
           name: 'exposes those defaults as exported constants',
-          fn: () => {
+          fn: async () => {
             expect(DEFAULT_LOG_MAX_AGE_DAYS,).toBe(14,);
             expect(DEFAULT_LOG_MAX_BYTES,).toBe(536_870_912,);
             expect(DEFAULT_LOG_MAX_FILES,).toBe(50_000,);
@@ -91,7 +91,7 @@ await describe({
 
         it({
           name: 'applies every override together',
-          fn: () => {
+          fn: async () => {
             expect(logRetentionPolicyFromEnv({
               environment: {
                 MONOCHROMATIC_LOG_MAX_AGE_DAYS: '3',
@@ -100,7 +100,7 @@ await describe({
               },
             },),).toEqual({
               maxAgeDays: 3,
-              maxBytes: 4096,
+              maxBytes: 4_096,
               maxFiles: 7,
             },);
           },
@@ -109,7 +109,7 @@ await describe({
         ...OVERRIDE_CASES.map(function overrideCase([key, field,]) {
           return it({
             name: `overrides only ${field} through ${key}`,
-            fn: () => {
+            fn: async () => {
               /** Policy produced from one configured override. */
               const policy = logRetentionPolicyFromEnv({ environment: { [key]: '2', }, },);
               expect(policy[field],).toBe(2,);
@@ -123,7 +123,7 @@ await describe({
 
         it({
           name: 'accepts a zero bound when it is set explicitly',
-          fn: () => {
+          fn: async () => {
             // Zero is finite and nonnegative, so a caller who wants no
             // retained history gets it rather than a silent default.
             expect(logRetentionPolicyFromEnv({ environment: { MONOCHROMATIC_LOG_MAX_AGE_DAYS: '0', }, },),)
@@ -143,7 +143,7 @@ await describe({
           return REJECTED_VALUES.map(function rejectedValue(value,) {
             return it({
               name: `${key}=${JSON.stringify(value,)} falls back to the ${field} default`,
-              fn: () => {
+              fn: async () => {
                 expect(logRetentionPolicyFromEnv({ environment: { [key]: value, }, },),)
                   .toEqual(DEFAULT_POLICY,);
               },
@@ -153,7 +153,7 @@ await describe({
 
         it({
           name: 'keeps valid overrides when a sibling override is invalid',
-          fn: () => {
+          fn: async () => {
             expect(logRetentionPolicyFromEnv({
               environment: {
                 MONOCHROMATIC_LOG_MAX_AGE_DAYS: '3',
@@ -170,7 +170,7 @@ await describe({
 
         it({
           name: 'falls back to the default when an override is blank or whitespace-only',
-          fn: () => {
+          fn: async () => {
             for (const value of BLANK_VALUES) {
               for (const [key,] of OVERRIDE_CASES) {
                 expect(logRetentionPolicyFromEnv({ environment: { [key]: value, }, },),)
@@ -185,11 +185,11 @@ await describe({
     },),
 
     describe({
-      name: 'LogRetentionPolicy',
+      name: 'LogRetentionPolicy type shape',
       children: [
         it({
           name: 'is the readonly three-bound policy shape',
-          fn: () => {
+          fn: async () => {
             expectTypeOf<LogRetentionPolicy>()
               .toEqualTypeOf<{
                 readonly maxAgeDays: number;

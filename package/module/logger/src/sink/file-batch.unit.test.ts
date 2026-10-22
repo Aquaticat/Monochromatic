@@ -45,7 +45,7 @@ async function withFileSink(run: (input: {
   const sink = createFileSink({ directory, },);
   expect(await sink.verify(),).toBe(true,);
   /** Drain the retention sweep so later assertions see one settled artifact. */
-  await sink.flush();
+  await sink.flush?.();
   /** Read-back checks the complete JSONL artifact after the tested completion settles. */
   async function readRecords(): Promise<unknown[]> {
     /** One process creates exactly one log under its day directory. */

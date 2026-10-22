@@ -27,7 +27,7 @@ await describe({
         const sink = createFileSink({ directory: join(directory, 'node_modules/.monochromatic',), });
         expect(await sink.verify(),).toBe(true,);
         /** Drain the retention sweep so the reader sees one settled artifact. */
-        await sink.flush();
+        await sink.flush?.();
         await sink.write({ level: 'info', timestamp: -1, message: 'ordinary record', },);
         /** Each payload crosses the filesystem helper's chunk boundary and includes JSON escapes. */
         const messages = ['a', 'b',].map(function largeMessage(marker,) {

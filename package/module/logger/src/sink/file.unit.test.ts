@@ -180,6 +180,7 @@ await describe({
         const sink = createFileSink({ retention: NO_LOG_RETENTION_SWEEP, },);
         expect(typeof sink.verify,).toBe('function',);
         expect(typeof sink.write,).toBe('function',);
+        expect(typeof sink.flush,).toBe('function',);
       },
     },),
 
@@ -300,8 +301,8 @@ await describe({
           directory: destination.path,
           retention: NO_LOG_RETENTION_SWEEP,
         },);
-        expect(await sink.write(record({ message: 'before verify', },),),)
-          .toBeUndefined();
+        const beforeVerify = record({ message: 'before verify', },);
+        expect(await sink.write(beforeVerify,),).toBeUndefined();
         expect(await entryNames(destination.path,),).toEqual([],);
       },
     },),
@@ -388,7 +389,7 @@ await describe({
           },
         },);
         expect(await sink.verify(),).toBe(true,);
-        await sink.flush();
+        await sink.flush?.();
         expect(await entryNames(destination.path,),).toEqual(['.logger-retention-sweep',],);
       },
     },),
@@ -402,7 +403,7 @@ await describe({
           retention: NO_LOG_RETENTION_SWEEP,
         },);
         expect(await sink.verify(),).toBe(true,);
-        await sink.flush();
+        await sink.flush?.();
         expect(await entryNames(destination.path,),).toEqual([],);
       },
     },),
@@ -420,7 +421,7 @@ await describe({
           directory,
         },);
         /** A record that cannot serialize proves writes stop before JSON. */
-        const cyclic: Record<string, unknown> = {
+        const cyclic: LogRecord & { self?: unknown; } = {
           level: 'info',
           timestamp: 0,
           message: 'dropped',

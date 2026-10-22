@@ -97,7 +97,7 @@ await describe({
         ...OWNED_CASES.map(function ownedCase([name, day,]) {
           return it({
             name: `classifies ${JSON.stringify(name,)} as owned with day key ${day}`,
-            fn: () => {
+            fn: async () => {
               expect(loggerOwnedDay(name,),).toBe(day,);
             },
           },);
@@ -110,7 +110,7 @@ await describe({
         ...FOREIGN_CASES.map(function foreignCase(name,) {
           return it({
             name: `classifies ${JSON.stringify(name,)} as not logger owned`,
-            fn: () => {
+            fn: async () => {
               expect(loggerOwnedDay(name,),).toBe(NOT_LOGGER_OWNED,);
             },
           },);
@@ -122,7 +122,7 @@ await describe({
 
         it({
           name: 'classifies by name shape only, ignoring calendar validity and the timestamp body',
-          fn: () => {
+          fn: async () => {
             // The day key needs only ASCII digits in YYYY-MM-DD widths, and
             // the body between the T separator and the family suffix is never
             // read. Destination directories are owner-only (0o700), so this
@@ -135,7 +135,7 @@ await describe({
 
         it({
           name: 'returns the unique foreign sentinel rather than a nullish value',
-          fn: () => {
+          fn: async () => {
             expect(typeof NOT_LOGGER_OWNED,).toBe('symbol',);
             expect(loggerOwnedDay('notes.txt',),).toBe(NOT_LOGGER_OWNED,);
           },

@@ -33,7 +33,7 @@ import {
  Sweep instant shared by the fixtures: 2026-10-22T12:00:00Z.
  */
 const NOW = Date.UTC(
-  2026,
+  2_026,
   9,
   22,
   12,
@@ -224,7 +224,7 @@ await describe({
       children: [
         it({
           name: 'returns the UTC day key of the age boundary',
-          fn: () => {
+          fn: async () => {
             expect(cutoffDay({
               now: NOW,
               maxAgeDays: 14,
@@ -233,7 +233,7 @@ await describe({
         },),
         it({
           name: 'keys the boundary by whole days, including across month and year edges',
-          fn: () => {
+          fn: async () => {
             expect(cutoffDay({
               now: NOW,
               maxAgeDays: 0,
@@ -244,7 +244,7 @@ await describe({
             },),).toBe('2026-10-21',);
             expect(cutoffDay({
               now: Date.UTC(
-                2026,
+                2_026,
                 0,
                 2,
               ),
