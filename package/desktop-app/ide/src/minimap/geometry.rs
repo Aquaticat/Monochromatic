@@ -306,12 +306,13 @@ impl Geometry {
     }
 
     /// What:
-    ///  The bands of the picture to keep with the view scrolled to `offset`,
+    ///  The bands of the picture to keep with the view scrolled to `offset` and at rest,
     /// as a range of band numbers:
     ///  the bands `step` logical pixels tall,
     /// counted from the top of the text,
     /// that the track shows,
     ///  and one more on each side.
+    ///  A view that is heading somewhere keeps more on that side (`Self::bands_toward`).
     /// Why:
     ///  Only the bands near the visible part of the picture are drawn;
     ///  the extra band on each side lets a scroll of up to a band move the picture without a new one.
