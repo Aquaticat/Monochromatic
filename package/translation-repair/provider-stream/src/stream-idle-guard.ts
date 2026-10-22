@@ -75,6 +75,15 @@ import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared
  against is the one this bound must remain shorter than. See
  `doc/decision/translation-repair-runaway-call-termination.md` for the
  re-arming question this answers.
+
+ A MODEL'S CARD MAY NAME A SHORTER WINDOW OF ITS OWN (ledger B809): an
+ OpenRouter card's `firstContentMs` reaches the guard through
+ `TransportExchange.firstContentMs`, and only `inception/mercury-2.5` names one
+ (90_000 ms). In `XingZ6017` twenty-eight rounds waited on one of its streams
+ that sent only comment lines; a round whose quorum is every live seat cannot
+ start its straggler grace, so this guard is the only bound that ends such a
+ call, and the 4,636 streams of that model that delivered text took at most
+ 56,772 ms. Every other model keeps this window.
  */
 export const STREAM_FIRST_CONTENT_MS = 180_000;
 
