@@ -335,24 +335,26 @@ which stalls at slot 35 in 6 of 6 runs.
   The stall at slot 50 does not move between runs of one binary.
 - Picture request restored (tree A, 6 runs): slot 35 in 6 of 6, slot 50 in 0 of 6, 13 stalls in total.
   The stall does not move to the next extra frame; the extra frame at slot 35 changes the timing of the whole run.
-  In the debug timeline of such a run (`~/temp/agent/tile-dbg-p.timeline`, from the artifact of that run) the tile is applied 1 ms after a wheel event, inside the
-  frame the wheel started, so it adds no frame.
+  In the debug timeline of such a run (`~/temp/agent/tile-dbg-p.timeline`)
+  the tile is applied 1 ms after a wheel event, inside the frame the wheel started, so it adds no frame.
   Why the picture's frame moves the tile to such a moment is a reading from that one run (the 20 ms poll of the tile
   worker against the 16.7 ms steps drifts), not a measurement.
 - The request after `submit_tile` removed (`IDE_X_TILE=none`, 6 runs): slot 50 in 6 of 6, 10 stalls in total.
   The explicit request is not the cause.
-  The timeline of such a run (`~/temp/agent/tile-dbg-t0b.timeline`) still shows "winit asked for a redraw" 4 ms after the wheel event,
+  The timeline of such a run (`~/temp/agent/tile-dbg-t0b.timeline`) still shows "winit asked for a redraw"
+  4 ms after the wheel event,
   at the moment of "window thread applied a finished tile", and a 5 ms frame that draws the tile; the next wheel event
   follows 17 ms after the previous one.
-  The setters that `show` runs for the tile (the image's size and place, the selection rows as a new model, the caret)
-  make the toolkit ask for a frame; which setter does it was not isolated.
+  Something in the swap asks for that frame; the setters that `show` runs for the tile (the image's size and place,
+  the selection rows as a new model, the caret) are the candidates, and which one does it was not isolated.
+  What the intervention shows is that leaving the whole swap for the next step removes the frame and the stall.
 
 ### Cause
 
 The poll timer of the tile worker (`src/native/tile.rs`, 20 ms) swaps a finished tile in at a moment unrelated to the
 scroll steps (16.7 ms apart).
-The setters that run for the swap make the toolkit ask for a frame of its own, so between two steps there is a second
-frame, which is the same mechanism as the picture hand-over's.
+The swap makes the toolkit ask for a frame of its own, so between two steps there is a second frame,
+which is the same effect as the picture hand-over's.
 The text area then does not move for one tick.
 
 ### Fix
