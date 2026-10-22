@@ -912,7 +912,7 @@ import type { Config, } from './types.ts';
    flag `@throws` on non-throwing functions as NIT
 - `notNullishOrThrow` instead of non-null assertion (`!`)
 - Every `catch (error)` uses its binding:
-   log the caught value through a tagged logger or rethrow
+   log the caught value (even expected) through a tagged logger or rethrow
 
 #### `using` over `try...finally`
 
@@ -1017,7 +1017,7 @@ catch (error) { }
 
 // Good -- fatal error
 catch (error) {
-   throw new Error('Failed to get index stats', { cause: error });
+  throw new Error('Failed to get index stats', { cause: error, },);
 }
 
 // Good - expected error that shouldn't interrupt program operation.
