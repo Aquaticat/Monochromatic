@@ -563,13 +563,16 @@ const parseUsageArgs = (raw) => {
 """
 # Runs test files from their nearest package task root as `node [nodeArgs] <file>`
 # subprocesses, bounded to availableParallelism(), and lists non-zero exits.
+# Every subprocess gets MONOCHROMATIC_LOG_DIRECTORY pointed at one per-run
+# scratch directory under ${HOME}/temp/agent unless the caller already chose
+# one, so test runs leave zero log files in any checkout (issue 576).
 # Interpolated into the test tasks; each sets `shell = "node --input-type=module-typescript -e"`.
 run_test_files = """
 const { spawn } = await import('node:child_process')
 const { once } = await import('node:events')
-const { availableParallelism } = await import('node:os')
+const { availableParallelism, homedir } = await import('node:os')
 const { dirname, join: joinTestPath, resolve: resolveTestPath } = await import('node:path')
-const { existsSync: testPathExists } = await import('node:fs')
+const { chmodSync, existsSync: testPathExists, mkdirSync } = await import('node:fs')
 const testFileCwd = (file) => {
   let current = dirname(resolveTestPath(file))
   while (true) {
@@ -579,8 +582,21 @@ const testFileCwd = (file) => {
     current = parent
   }
 }
+const testRunEnv = () => {
+  const env = { ...process.env }
+  if (env.MONOCHROMATIC_LOG_DIRECTORY !== undefined) { return env }
+  const agentScratch = joinTestPath(homedir(), 'temp', 'agent')
+  mkdirSync(agentScratch, { recursive: true, mode: 0o700 })
+  chmodSync(agentScratch, 0o700)
+  const stamp = new Date().toISOString().replaceAll(':', '-')
+  const runLogDirectory = joinTestPath(agentScratch, 'module-test-logs', `${stamp}-${process.pid}`)
+  mkdirSync(runLogDirectory, { recursive: true, mode: 0o700 })
+  env.MONOCHROMATIC_LOG_DIRECTORY = runLogDirectory
+  return env
+}
 const runTestFiles = async (files, nodeArgs) => {
   if (files.length === 0) { return }
+  const env = testRunEnv()
   const limit = Math.max(1, Math.min(availableParallelism(), files.length))
   const failures = []
   let next = 0
@@ -588,7 +604,7 @@ const runTestFiles = async (files, nodeArgs) => {
     while (next < files.length) {
       const file = resolveTestPath(files[next])
       next += 1
-      const proc = spawn('node', [...nodeArgs, file], { cwd: testFileCwd(file), stdio: 'inherit' })
+      const proc = spawn('node', [...nodeArgs, file], { cwd: testFileCwd(file), stdio: 'inherit', env })
       const [code] = await once(proc, 'exit')
       if (code !== 0) { failures.push(file) }
     }
