@@ -985,20 +985,6 @@ await describe({
             const message = allDryMessageOf({ dry: allDry, },);
             expect(message,).toContain('Xiaomi has refused a call for payment',);
             expect(message,).toContain('xiaomi dry',);
-            expect(message,).not.toContain('not serving this model',);
-          },
-        },),
-
-        it({
-          name: 'SAYS XIAOMI SERVES ANOTHER MODEL, and not a payment refusal, when its meter reads wet and it does not '
-            + 'serve the model asked, since the reader sees xiaomi=wet on the METERS line beside the refusal',
-          fn: async () => {
-            const message = allDryMessageOf({ dry: { ...allDry, xiaomi: false, }, },);
-            expect(message,).not.toContain('Xiaomi has refused a call for payment',);
-            expect(message,)
-              .toContain('Xiaomi\'s meter reads wet but it serves only MiMo V2.6 Flash, not the model asked',);
-            expect(message,).toContain('xiaomi wet but not serving this model',);
-            expect(message,).not.toContain('xiaomi dry',);
           },
         },),
       ],

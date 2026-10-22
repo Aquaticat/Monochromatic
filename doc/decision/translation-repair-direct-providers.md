@@ -124,20 +124,24 @@ so the `METERS` line shows `xiaomi=wet xiaomiUsdSpent=...`.
 Exhaustion is learned from the 402.
 
 Because that meter never reads dry by itself,
-the run-ending stop (`EveryProviderDryError`) would never fire while Xiaomi is configured.
-The router therefore reads Xiaomi as dry for the stop when the model asked is one Xiaomi does not serve
-(`dryForTheModelAsked` in `budget-routing.ts`),
-so a fleet that is dry except for Xiaomi still ends the run for every other model.
-Only an always-wet meter gets this reading:
-a provider with a real meter that is wet but does not serve the model keeps its own reading,
-so a model whose serving providers are all dry is still a lost seat and not the end of the run.
-The `EveryProviderDryError` text states which cause applies:
-"Xiaomi has refused a call for payment" when Xiaomi itself read dry,
-and "Xiaomi's meter reads wet but it serves only MiMo V2.6 Flash,
-not the model asked" when it was counted dry for serving nothing here,
-with the measured clause reading `xiaomi wet but not serving this model` beside the `xiaomi=wet` of the `METERS` line.
+the run-ending stop (`EveryProviderDryError`) fires only once Xiaomi has refused a call for payment as well.
+Until then Xiaomi reads wet, and a run that holds a funded Xiaomi never reaches the stop.
+That is intended, by the owner's ruling of 2026-10-22 (open to the owner's veto):
+only dryness of every provider the run holds ends the run,
+and a model whose own providers are all dry while another provider is wet is a lost seat.
+Xiaomi, wet, is such a provider: it still buys MiMo V2.6 Flash for its own seat.
+A fleet that is dry except for Xiaomi therefore loses the seat of every other model (`NoProviderForModelError`)
+and the run goes on.
+An earlier version of this passage read Xiaomi as dry for a model it does not serve
+(`dryForTheModelAsked` in `budget-routing.ts`, added and removed on 2026-10-22),
+so that the stop could fire while Xiaomi was configured;
+the ruling removed it, and restoring it is one revert.
+The `EveryProviderDryError` text says "Xiaomi has refused a call for payment" in every case now.
+The `NoProviderForModelError` for a lost seat names the model and how each provider read
+(`modelDarkReason` in `model-dark-reason.ts`),
+and the router logs it as `<model> went dark: ...`.
 A funded real-meter provider that serves only some models (DeepSeek,
-for one) has the other effect:
+for one) behaves the same way:
 it keeps its own wet reading,
 so a model it does not serve is a lost seat per call and the run does not stop.
 

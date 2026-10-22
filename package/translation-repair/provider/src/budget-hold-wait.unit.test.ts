@@ -38,19 +38,6 @@ import { SEAT_SYNTHETIC_VISION_WITHHELD, } from '@monochromatic-dev/translation-
 const SIGNAL = new AbortController().signal;
 
 /**
- Every provider serves the model: the reach the cases that are not about reach read under.
- */
-const ALL_SERVE: ProviderRecord<boolean> = {
-  neuralwatt: true,
-  synthetic: true,
-  hyper: true,
-  bedrock: true,
-  deepseek: true,
-  xiaomi: true,
-  openrouter: true,
-};
-
-/**
  Model named in the log line.
  */
 const MODEL_ID = SEAT_SYNTHETIC_VISION_WITHHELD;
@@ -173,7 +160,7 @@ const NO_HOLDS: ProviderRecord<number> = {
 };
 
 /**
- What the run-ending read throws for a model Xiaomi does not serve.
+ What the run-ending read throws.
 
  @param budgets - scripted budgets the read goes over
 
@@ -181,16 +168,15 @@ const NO_HOLDS: ProviderRecord<number> = {
 
  @example
  ```ts
- const thrown = await refusalWithoutXiaomiServing({ budgets, },);
+ const thrown = await refusalOfReading({ budgets, },);
  ```
  */
-async function refusalWithoutXiaomiServing(
+async function refusalOfReading(
   { budgets, }: { readonly budgets: ProviderBudgets; },
 ): Promise<unknown> {
   return await rejectionOf(() => readBudgetsPastHolds({
     budgets,
     modelId: MODEL_ID,
-    reach: { ...ALL_SERVE, xiaomi: false, },
     signal: SIGNAL,
     refused: NOBODY_REFUSED,
     pollMs: 1,
@@ -301,7 +287,6 @@ await describe({
             expect(await readBudgetsPastHolds({
               budgets,
               modelId: MODEL_ID,
-              reach: { ...ALL_SERVE, xiaomi: false, },
               signal: SIGNAL,
               refused: NOBODY_REFUSED,
               pollMs: 1,
@@ -309,7 +294,6 @@ await describe({
             expect(await readBudgetsPastHolds({
               budgets,
               modelId: MODEL_ID,
-              reach: ALL_SERVE,
               signal: SIGNAL,
               refused: NOBODY_REFUSED,
               pollMs: 1,
@@ -330,7 +314,7 @@ await describe({
             /**
              The refusal raised at once, with no hold to wait out.
              */
-            const atOnce = await refusalWithoutXiaomiServing({
+            const atOnce = await refusalOfReading({
               budgets: scriptedBudgets({ views: [ALL_DRY,], holds: NO_HOLDS, neuralwatt, },).budgets,
             },);
             expect((atOnce as EveryProviderDryError).message,).toContain('at 19:15:08 UTC',);
@@ -338,7 +322,7 @@ await describe({
             /**
              The refusal raised after the shortest hold ended and every provider still read dry.
              */
-            const afterWait = await refusalWithoutXiaomiServing({
+            const afterWait = await refusalOfReading({
               budgets: scriptedBudgets({ views: [ALL_DRY,], holds: { ...NO_HOLDS, synthetic: 5, }, neuralwatt, },).budgets,
             },);
             expect((afterWait as EveryProviderDryError).message,).toContain('after waiting 5ms',);
@@ -353,7 +337,7 @@ await describe({
             /**
              The refusal raised after the shortest hold ended, with the day start learned on the second budget read.
              */
-            const afterWait = await refusalWithoutXiaomiServing({
+            const afterWait = await refusalOfReading({
               budgets: scriptedBudgets({
                 views: [ALL_DRY,],
                 holds: { ...NO_HOLDS, synthetic: 5, },
@@ -369,24 +353,10 @@ await describe({
         },),
 
         it({
-          name: 'SAYS XIAOMI SERVES ANOTHER MODEL in the run-ending refusal, not a payment refusal, when its wet '
-            + 'meter is '
-            + 'the only reading that kept the fleet from reading dry',
-          fn: async () => {
-            const { budgets, } = scriptedBudgets({ views: [{ ...ALL_DRY, xiaomi: false, },], holds: NO_HOLDS, },);
-            const thrown = await refusalWithoutXiaomiServing({ budgets, },);
-            expect(thrown,).toBeInstanceOf(EveryProviderDryError,);
-            const { message, } = thrown as EveryProviderDryError;
-            expect(message,).not.toContain('Xiaomi has refused a call for payment',);
-            expect(message,).toContain('xiaomi wet but not serving this model',);
-          },
-        },),
-
-        it({
           name: 'SAYS A PAYMENT REFUSAL when Xiaomi reads dry itself, even though it serves nothing here',
           fn: async () => {
             const { budgets, } = scriptedBudgets({ views: [ALL_DRY,], holds: NO_HOLDS, },);
-            const thrown = await refusalWithoutXiaomiServing({ budgets, },);
+            const thrown = await refusalOfReading({ budgets, },);
             const { message, } = thrown as EveryProviderDryError;
             expect(message,).toContain('Xiaomi has refused a call for payment',);
             expect(message,).toContain('xiaomi dry',);
@@ -405,7 +375,6 @@ await describe({
             expect(await readBudgetsPastHolds({
               budgets,
               modelId: MODEL_ID,
-              reach: { ...ALL_SERVE, xiaomi: false, },
               signal: SIGNAL,
               refused: NOBODY_REFUSED,
               pollMs: 1,
@@ -434,7 +403,6 @@ await describe({
             expect(await readBudgetsPastHolds({
               budgets,
               modelId: MODEL_ID,
-              reach: ALL_SERVE,
               signal: SIGNAL,
               refused: 'synthetic',
               pollMs: 1,
@@ -471,7 +439,6 @@ await describe({
             expect(await readBudgetsPastHolds({
               budgets,
               modelId: MODEL_ID,
-              reach: ALL_SERVE,
               signal: SIGNAL,
               refused: NOBODY_REFUSED,
               pollMs: 1,
@@ -513,7 +480,6 @@ await describe({
             expect(await readBudgetsPastHolds({
               budgets,
               modelId: MODEL_ID,
-              reach: ALL_SERVE,
               signal: SIGNAL,
               refused: 'synthetic',
               pollMs: 1,
@@ -555,7 +521,6 @@ await describe({
             expect(await readBudgetsPastHolds({
               budgets,
               modelId: MODEL_ID,
-              reach: ALL_SERVE,
               signal: SIGNAL,
               refused: 'synthetic',
               pollMs: 1,
@@ -597,7 +562,6 @@ await describe({
                 await readBudgetsPastHolds({
                   budgets,
                   modelId: MODEL_ID,
-                  reach: ALL_SERVE,
                   signal: SIGNAL,
                   refused: NOBODY_REFUSED,
                   pollMs: 1,
