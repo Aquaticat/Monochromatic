@@ -42,7 +42,6 @@ import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_OPENROUTER_ONLY,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { lineOf, } from '@monochromatic-dev/translation-repair-run/ts/corpus-run/command-line.test-fixture.ts';
 import { divertingConsoleLog, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/console-log-capture.test-fixture.ts';
@@ -350,15 +349,16 @@ await describe({
               '\nEDITORS SHIPPED on 1 of 1 slice, 1 of them with no editor round judged at all',
             ],);
             // THE SIX SEATS CREDITED ARE PINNED AGAIN (n166, Z3). The lane seats six editors from a bench the prompt rotates, so
-            // which six of the seven seats that can hold an editor chair are credited moved whenever a sheet's wording did (n161:
-            // the house tense rule). The rotation's start is injected, so no sheet text moves the seats.
+            // which six of the seats that can hold an editor chair are credited moved whenever a sheet's wording did (n161:
+            // the house tense rule). The rotation's start is injected, so no sheet text moves the seats. EIGHT CHAIRS SINCE
+            // 2026-10-22 (Haiku 5.5 joined the run roster), so the same start credits Haiku in place of Qwen3.8-27B.
             expect(printedLines.slice(3,),).toEqual([
               SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
               SEAT_HYPER_ONLY,
               SEAT_HYPER_OPENROUTER_UNMEASURED,
               SEAT_BEDROCK_ONLY_TEXT,
               SEAT_OPENROUTER_ONLY,
+              'claude-haiku-5-5',
             ].map(function credited(modelId,): string {
               return `  ${modelId}: wrote shipping text on 1 of 1 slice`;
             },),);

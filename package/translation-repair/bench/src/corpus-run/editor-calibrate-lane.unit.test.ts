@@ -21,7 +21,6 @@ import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_HYPER_OPENROUTER_VISION_EDITOR,
   SEAT_OPENROUTER_ONLY,
-  SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { benchSliceOf, } from './editor-calibrate-rounds.test-fixture.ts';
 import { PINNED_EDITOR_BENCH_START, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/editor-bench-start.test-fixture.ts';
@@ -74,19 +73,21 @@ await describe({
             },);
 
             // THE SIX SEATS THAT SHIP ARE PINNED AGAIN (n166, Z3). The lane seats six editors from a bench the prompt rotates, so
-            // which six of the seven seats that can hold an editor chair are seated moved whenever a sheet's wording did (n161: the
+            // which six of the seats that can hold an editor chair are seated moved whenever a sheet's wording did (n161: the
             // house tense rule), and the test had stopped naming them. The rotation's start is injected through the stage settings
-            // instead, so no sheet text moves the seats and a lane that seated a worse subset of the seven fails.
+            // instead, so no sheet text moves the seats and a lane that seated a worse subset of the bench fails. THE BENCH HAS
+            // EIGHT CHAIRS SINCE 2026-10-22, when Haiku 5.5 joined the run roster on the owner's Claude key, so the same pinned
+            // start seats a different six (Haiku in, Qwen3.8-27B out).
             /**
              Seats whose text shipped, in the order the lane seats them.
              */
             const shippers = [
               SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-              SEAT_SYNTHETIC_VISION_NO_OPENROUTER,
               SEAT_HYPER_ONLY,
               SEAT_HYPER_OPENROUTER_UNMEASURED,
               SEAT_BEDROCK_ONLY_TEXT,
               SEAT_OPENROUTER_ONLY,
+              'claude-haiku-5-5',
             ];
 
             expect(rounds,).toEqual({
