@@ -1,6 +1,3 @@
-import { homedir, } from 'node:os';
-import { join, } from 'node:path';
-
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import spawn from 'nano-spawn';
 
@@ -8,14 +5,6 @@ import {
   childEnvironment,
   contextRoot,
 } from '@monochromatic-dev/translation-repair-typography/ts';
-import {
-  CORPUS_COMMIT_SHA,
-  type CorpusPin,
-} from '@monochromatic-dev/translation-repair-corpus-source/ts';
-import {
-  type CorpusPinSetting,
-  readCorpusPinSetting,
-} from './corpus-pin-override.ts';
 import {
   assertCheckerIndependence,
   assertCheckerQuorumReachable,
@@ -839,38 +828,86 @@ export const RUN_READER_MODELS: readonly RosterModelId[] = ROSTER_MODEL_IDS
   },);
 
 /**
- Every list of seats the run fixes before it starts, by the name a refusal gives its bench.
+ Every list of seats the run fixes before it starts, each beside the name a refusal gives its bench.
 
  ONE WIRE MODEL PER BENCH, ENFORCED AT LOAD (C6 of the review of the Claude route): the eight Claude cards share two
  wire models, and a model seated on one bench under two cards is one model heard twice, counted as two voices toward a
- quorum. The check below runs over this record as the module loads, so a seating that breaks the rule stops the run
+ quorum. The loop that follows this declaration runs over it as the module loads, so a seating that breaks the rule stops the run
  before it pays for a call, and `run-config-seating.unit.test.ts` holds that every list of {@link RUN_MODELS} and
  {@link RUN_CHECKER_ORDER} is in it. A BENCH THE RUN DERIVES (`judgeSeatsFor`) is a filtered subset of one of these,
  so it inherits the rule.
 
  @example
  ```ts
- for (const [bench, modelIds] of Object.entries(RUN_BENCHES)) assertOneWireModelPerBench({ bench, modelIds, });
+ for (const { bench, modelIds, } of RUN_BENCHES) assertOneWireModelPerBench({ bench, modelIds, });
  ```
  */
-export const RUN_BENCHES: Readonly<Record<string, readonly RosterModelId[]>> = {
-  roster: RUN_ROSTER,
-  writers: RUN_WRITERS,
-  translators: RUN_TRANSLATORS,
-  readers: RUN_READER_MODELS,
-  wideSeats: RUN_WIDE_SEATS,
-  lateJudges: RUN_LATE_JUDGES,
-  selectJudges: RUN_SELECT_JUDGES,
-  checkerOrder: RUN_CHECKER_ORDER,
-  critics: RUN_MODELS.criticModelIds,
-  panel: RUN_MODELS.panelModelIds,
-  editors: RUN_MODELS.editorModelIds,
-  judges: RUN_MODELS.judgeModelIds,
-  refiners: RUN_MODELS.refinerModelIds,
-  checkers: RUN_MODELS.checkerModelIds,
-};
+export const RUN_BENCHES: readonly {
+  readonly bench: string;
+  readonly modelIds: readonly RosterModelId[];
+}[] = [
+  {
+    bench: 'roster',
+    modelIds: RUN_ROSTER,
+  },
+  {
+    bench: 'writers',
+    modelIds: RUN_WRITERS,
+  },
+  {
+    bench: 'translators',
+    modelIds: RUN_TRANSLATORS,
+  },
+  {
+    bench: 'readers',
+    modelIds: RUN_READER_MODELS,
+  },
+  {
+    bench: 'wideSeats',
+    modelIds: RUN_WIDE_SEATS,
+  },
+  {
+    bench: 'lateJudges',
+    modelIds: RUN_LATE_JUDGES,
+  },
+  {
+    bench: 'selectJudges',
+    modelIds: RUN_SELECT_JUDGES,
+  },
+  {
+    bench: 'checkerOrder',
+    modelIds: RUN_CHECKER_ORDER,
+  },
+  {
+    bench: 'critics',
+    modelIds: RUN_MODELS.criticModelIds,
+  },
+  {
+    bench: 'panel',
+    modelIds: RUN_MODELS.panelModelIds,
+  },
+  {
+    bench: 'editors',
+    modelIds: RUN_MODELS.editorModelIds,
+  },
+  {
+    bench: 'judges',
+    modelIds: RUN_MODELS.judgeModelIds,
+  },
+  {
+    bench: 'refiners',
+    modelIds: RUN_MODELS.refinerModelIds,
+  },
+  {
+    bench: 'checkers',
+    modelIds: RUN_MODELS.checkerModelIds,
+  },
+];
 
-for (const [bench, modelIds,] of Object.entries(RUN_BENCHES,)) {
+for (const {
+  bench,
+  modelIds,
+} of RUN_BENCHES) {
   assertOneWireModelPerBench({
     bench,
     modelIds,
@@ -1027,53 +1064,6 @@ export const RUN_CALL_CONFIG: RunCallConfig = runCallConfigOf({
   streamFirstContentMs: STREAM_FIRST_CONTENT_MS,
   streamIdleMs: STREAM_IDLE_MS,
 },);
-
-/**
- Built-in corpus read location: the user's local clone at the benchmark
- commit. Content is read at runtime and never committed here (the clone is
- UNLICENSED).
- */
-const RUN_CORPUS_PIN_FALLBACK: CorpusPin = {
-  cloneDir: join(
-    homedir(),
-    'one-among-us',
-    'data',
-  ),
-  commitSha: CORPUS_COMMIT_SHA,
-};
-
-/**
- Reads the run's corpus pin: the built-in clone and commit unless the
- environment overrides either half (`TRANSLATION_REPAIR_CORPUS_CLONE_DIR`,
- `TRANSLATION_REPAIR_CORPUS_COMMIT`), which fixture runs against an unmerged
- corpus pull request need, beside where each half came from, for the launch
- line `corpusPinOverrideNote` makes of it.
-
- CALLED BY AN ENTRY INSIDE ITS REFUSAL BOUNDARY, and handed down as a value.
- Until 2026-10-10 this was a module constant, resolved while this file
- loaded, so an unreadable override exited every command that loads this
- file at 1 under a dump of bundled source, before `reportingRefusals` ran,
- whether or not the command reads the corpus (ledger B302, B381).
-
- @param env - environment of the process the entry runs in
-
- @returns The pin beside a per-half source
-
- @throws StatedRefusalError when an override is written and unreadable
-
- @example
- ```ts
- const { pin, } = readRunCorpusPinSetting({ env: process.env, },);
- ```
- */
-export function readRunCorpusPinSetting(
-  { env, }: { readonly env: Readonly<NodeJS.ProcessEnv>; },
-): CorpusPinSetting {
-  return readCorpusPinSetting({
-    env,
-    fallback: RUN_CORPUS_PIN_FALLBACK,
-  },);
-}
 
 /**
  Worktree root of this checkout, resolved through git from this file's dir.

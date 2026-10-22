@@ -328,7 +328,7 @@ await describe({
   children: [
     it({
       name: 'LISTS EVERY FILE OF THE FAMILY THAT DECLARES AN ANSWER SCHEMA, so a stage schema added later cannot skip '
-        + 'the cases below: the family\'s source is searched for a json_schema format, and each file found is a '
+        + 'the schema cases of this file: the family\'s source is searched for a json_schema format, and each file found is a '
         + 'producer here or a named exception',
       fn: async () => {
         /**

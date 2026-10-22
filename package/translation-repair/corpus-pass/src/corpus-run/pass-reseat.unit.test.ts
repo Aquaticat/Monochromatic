@@ -45,7 +45,7 @@ import { metersAllWet, } from '@monochromatic-dev/translation-repair-provider/ts
 
 /**
  The zheermao7 view at 23:15:27 UTC: Synthetic's window spent, Hyper dry,
- Bedrock and OpenRouter wet. THE CLAUDE KEY READS DRY here and in the two views below, as a run without the key reads it,
+ Bedrock and OpenRouter wet. THE CLAUDE KEY READS DRY here and in the other views of this file, as a run without the key reads it,
  so the checker benches these cases name stay as they were before Haiku 5.5 was seated; the case that seats Haiku with the
  key wet uses {@link MIMO_UNSERVED_CLAUDE_WET}.
  */

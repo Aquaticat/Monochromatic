@@ -337,6 +337,12 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     bound: 'read back',
     reason: RECORD_FIELD,
   },
+  'provider/claude-client.unit.test.ts#<module>: freshForMs: 1_000': { count: 1, bound: 'other', reason: SCRIPTED_CLOCK, },
+  'provider/claude-client.unit.test.ts#<module>: statedWaitMs: statedWaitMsOf({ error: failure, },)': {
+    count: 1,
+    bound: 'read back',
+    reason: 'the wait a refusal states, read back in what the budgets hold',
+  },
   'provider/deepseek-client.unit.test.ts#<module>: freshForMs: FRESH_MS': { count: 1, bound: 'other', reason: SCRIPTED_CLOCK, },
   'provider/provider-budget-xiaomi-hold.unit.test.ts#xiaomiBudgets: freshForMs: FRESH_MS': {
     count: 1,

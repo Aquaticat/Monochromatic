@@ -48,7 +48,6 @@ export {
   createRunClient,
   OWNER_CULLED,
   readHeadSha,
-  readRunCorpusPinSetting,
   RECALL_JUDGE_MODEL_IDS,
   resolveRunsDir,
   RUN_BENCHES,
@@ -70,6 +69,7 @@ export {
   TRANSLATOR_DROPPED,
   WRITER_UNMEASURED,
 } from './corpus-run/run-config.ts';
+export { readRunCorpusPinSetting, } from './corpus-run/run-corpus-pin.ts';
 export {
   belowFloorWritingBenches,
   benchesOf,

@@ -302,7 +302,9 @@ Code:
   and in `RUN_CHECKER_ORDER` behind the three the 2026-09-27 benchmark ranks,
   so it fills the checker bench only when a provider serving one of those three is dry.
   The editor calibration (`editor-calibrate`) seats Sonnet 5.5 by name beside the roster's writers
-  and gives Haiku 5.5, which holds `writer-unmeasured`, no editor or refiner chair.
+  and gives Haiku 5.5,
+  which holds `writer-unmeasured`,
+  no editor or refiner chair.
   That second part is the narrower reading of "Haiku wide" and is open to the owner's veto.
 - Sonnet 5.5 cache reads are priced at 0.10 USD a million,
   from the owner's brief of the pricing page.
@@ -331,7 +333,8 @@ Code:
   One owner-run probe per distinct schema shape would close it.
 - Thinking streams only if `display: "summarized"` does what the skill says.
   The default `omitted` leaves the stream silent while the model thinks,
-  which the idle guard (`STREAM_FIRST_CONTENT_MS`, 180 s)
+  which the idle guard (`STREAM_FIRST_CONTENT_MS`,
+  180 s)
   would read as a stall and cut,
   and every attempt that delivered something is billed.
   The request now asks for the summary,

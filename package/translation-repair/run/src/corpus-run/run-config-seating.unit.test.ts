@@ -106,7 +106,9 @@ await describe({
             return Array.isArray(member,);
           },),
           RUN_CHECKER_ORDER,
-          ...Object.values(RUN_BENCHES,),
+          ...RUN_BENCHES.map(function listOf({ modelIds, },): readonly string[] {
+            return modelIds;
+          },),
         ] as readonly (readonly string[])[];
         expect(lists.flat().filter(function isEffortCard(modelId,): boolean {
           return modelId.includes('-effort-',);
@@ -118,12 +120,14 @@ await describe({
       name: 'HOLDS ONE WIRE MODEL PER BENCH on every list the run seats, and names every list of RUN_MODELS among them, '
         + 'so a list added later is checked at load',
       fn: async () => {
-        for (const [bench, modelIds,] of Object.entries(RUN_BENCHES,))
+        for (const { bench, modelIds, } of RUN_BENCHES)
           assertOneWireModelPerBench({ bench, modelIds, },);
         /**
          The benches the load-time check reads, as lists.
          */
-        const checked = Object.values(RUN_BENCHES,);
+        const checked = RUN_BENCHES.map(function listOf({ modelIds, },): readonly string[] {
+          return modelIds;
+        },);
         for (const [name, modelIds,] of Object.entries(RUN_MODELS,)) {
           if (Array.isArray(modelIds,)) {
             expect(checked.some(function isSame(list,): boolean {
