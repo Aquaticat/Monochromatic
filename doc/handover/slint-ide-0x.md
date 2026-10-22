@@ -1666,6 +1666,20 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     myself, merge in a scratch tree (the guards file may conflict again: keep main's semantic changes), gates once
     (`lint`, `test:bin` 71, `test`), prove two or three guards in a disposable copy because the guards script changes,
     push, clean up, add a LANDED block here and a note on issue 1794.
+    Owner request of 2026-10-22: "Please setup gh releases CI." Existing state I found: the music player has
+    `.github/workflows/music-player-release.yml` (decision `doc/decision/music-player-releases.md`), `forbidden-strings`
+    has binary releases inside `cargo-publish.yml` (`build-binary`, `create-release`), the nested compositor is only
+    published to crates.io (`nws-detect`, `nws-publish-crate`; `mise` builds it from source through the
+    `cargo:monochromatic-nested-wayland-session` backend), and the IDE (`publish = false`, 0.1.0) has no release path.
+    Question asked (which products): the owner chose both the IDE and the compositor binaries. Settled, adopted from the
+    music player decision without asking: version bump on `main` triggers, dispatch dry run defaults to true, every file
+    attested, immutable tags, one `gh release create` with all assets, pre-releases, first real release only with the
+    owner's go-ahead. Running: two Sonnet agents in their own worktrees, branch push only (an IDE workflow
+    `ide-release.yml` with its decision and runbook, Linux x86_64; compositor jobs added to `cargo-publish.yml` with
+    Linux x86_64 and arm64 archives and `[package.metadata.binstall]`, no version bump). A new workflow can only be
+    dispatched from `main`, so after each branch is verified and landed I dispatch a dry run
+    (`gh workflow run ... -f dry-run=true`), read the run, and send fixes back; no real release is cut without the
+    owner. Follow-up not done: switching the `mise` backend for the compositor to the prebuilt release.
     Stall pass agent `ae05d7039f46336dc` (started 2026-10-22, own worktree off `origin/main`, branch push only; brief
     quotes `NLG`, `NLD`, `RXI`, `NQH`): at least 60 alternating stall pairs (tree A = before the wake-up, tree B =
     `origin/main`) plus 30 A against A pairs for the spread; keeps the debug timeline of every stalled run and decides
