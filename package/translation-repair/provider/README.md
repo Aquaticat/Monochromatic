@@ -10,7 +10,9 @@ Bedrock,
 DeepSeek and Xiaomi clients,
 the NeuralWatt,
 Synthetic,
-OpenRouter and Bedrock catalogues,
+OpenRouter,
+Bedrock,
+DeepSeek and Xiaomi catalogues,
 the Anthropic Messages wire format that Hyper speaks,
 retries,
 deadlines and spend reporting.
@@ -84,6 +86,9 @@ The groups that follow name the main ones.
   `openrouter-catalog.ts`,
   `bedrock-catalog.ts`,
   `neuralwatt-catalog.ts`,
+  `direct-catalog.ts` (the DeepSeek and Xiaomi catalogues,
+  one model each),
+  `direct-reach.ts`,
   and `roster-reach.ts`.
 - NeuralWatt free daily energy:
   meter the 550 Wh a day the owner's NeuralWatt account covers on DeepSeek V4.1 Flash and GLM-5.3-Flash,
