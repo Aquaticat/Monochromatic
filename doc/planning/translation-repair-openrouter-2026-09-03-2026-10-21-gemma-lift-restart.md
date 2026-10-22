@@ -1,9 +1,8 @@
 # OpenRouter and the corpus passes: the rotation restarted on build 2a336603bf after the Gemma readers were lifted (2026-10-21)
 
-What was read on 2026-10-21 of the first passes of the rotation after it restarted a second time,
+What was read on 2026-10-21 and 2026-10-22 of the first passes of the rotation after it restarted a second time,
 on the build that lifted the Gemma picture readers.
-Two entries settled and their reads are filed,
-and one is running.
+All three entries settled and their reads are filed.
 Entries:
 zheermao22,
 CuspariaKLSY22,
@@ -57,8 +56,22 @@ so that no file passes the repository's limit of 1,000 lines:
   what became of the page findings of that read,
   the departures classified).
 - `XingZ6017`:
-  running;
-  it has no file here yet.
+  [the run](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-xingz6017-run.md)
+  (log,
+  the wall clock by phase,
+  the class verdict,
+  the lost claims checked by hand,
+  the classes N1 to N10,
+  the open items),
+  [the providers](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-xingz6017-providers.md)
+  (the order in which the providers ran dry,
+  the seats,
+  the streams that held rounds open or were cut,
+  the NeuralWatt meter and energy,
+  the picture and its four readings)
+  and [the page](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-xingz6017-page.md)
+  (the verdict per slice against the unfinished archive,
+  the departures D01 to D20 classified).
 - The causes of the findings of the first restart are in
   [the causes](translation-repair-openrouter-2026-09-03-2026-10-21-rotation-restart-causes.md);
   the `zheermao22` read checks its Findings 3,
@@ -121,9 +134,19 @@ so that no file passes the repository's limit of 1,000 lines:
   and the full-grace wait on a seat whose stream is dead)
   and one open item for the owner (the plan energy).
 - `XingZ6017` (entry `XingZ60`):
-  running.
+  SETTLED (`slices=118`,
+  `repairChanged=80`,
+  `translateChanged=114`,
+  `alignmentFindings=22`) after 16121634 ms (268.7 min).
   It is the first `XingZ60` run since the Gemma readers were lifted;
   `XingZ6016` stopped INCOMPLETE on its one picture on the first restart.
+  The page is better than the unfinished archive in 64 of the 88 slices that have an archive counterpart,
+  equal or mixed in 22 and equal in wording but worse in one respect in 2;
+  the 30 slices after the archive's end are judged against the source alone.
+  Bedrock was held out at its first ask,
+  Synthetic,
+  Hyper and NeuralWatt then ran dry in turn,
+  and the read names ten classes (N1 to N10).
 
 ## What the settled run shows about the build
 
@@ -217,6 +240,82 @@ From the `CuspariaKLSY22` read
   the archive block review,
   and the NeuralWatt retry spacing.
 
+## What the third settled run shows about the build
+
+From the `XingZ6017` read
+(04:07 UTC on 2026-10-22;
+[the run](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-xingz6017-run.md),
+[the providers](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-xingz6017-providers.md) and
+[the page](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart-xingz6017-page.md)):
+
+- The run took 268.7 min over 118 slices and SETTLED.
+  The phases were preparation 25.1 min,
+  repair 96.8 min,
+  translate 40.6 min,
+  contest 6.6 min and
+  consolidation 99.2 min (37 percent of the pass).
+  About half of the consolidation was spent waiting on streams that never answered,
+  by a proportional estimate that was not measured exactly.
+- The build predates two fixes.
+  Commit `e336d8efc7` (the first-content window of 180 s,
+  and the notes passed to the polish judges and writers;
+  ledger B804 to B807)
+  and commit `f829fc31b6` (the composite of archive revisions by line difference;
+  ledger B803)
+  landed after the run started at 23:05 UTC on 2026-10-21,
+  and neither is an ancestor of `2a336603bf`.
+  The run's K2 split (52 mercury abandonments,
+  43 Qwen,
+  2 deepseek and 1 minimax)
+  and its K3 lost claims (6 verified in 5 slices)
+  are a baseline from before those fixes,
+  not recurrences after them.
+- Bedrock was held out at its first ask (HTTP 401),
+  and three more providers ran dry in turn:
+  Synthetic at 23:27:48 UTC,
+  Hyper at 00:03:36 UTC and
+  NeuralWatt at 01:39:35 UTC.
+  OpenRouter alone carried the run for about 114 min and spent 9.218 USD,
+  against 0.13 and 0.07 USD on the two prior reads.
+- NeuralWatt's measured energy was 2.84 times its estimate
+  (493.17 Wh measured,
+  173.50 Wh estimated;
+  the ratio follows the entry,
+  reading 1.23 and 1.39 on `zheermao101` and 2.00 and 1.94 on `CuspariaKLSY`),
+  and the 550 Wh day was passed by 5.188 Wh.
+  That no stop line fired when the meter went dry is the designed behaviour:
+  dry is a routing verdict and calls in flight settle.
+  The defect is the under-reading estimate,
+  which is being fixed separately as ledger B808.
+- Streams that never answered held rounds open in two ways.
+  A dead stream held the quorum in 24 rounds that waited 250 s or more (N1;
+  being fixed as ledger B809),
+  and Qwen,
+  re-seated when Synthetic came back at a 2 percent balance,
+  had 40 calls cut with no answer and slowed consolidation from 149 s to 315 s and 346 s a slice
+  (N2;
+  the re-asking of abandoned seats is being fixed as ledger B810).
+- Text calls on NeuralWatt still ended at the completion cap with no content 13 times (K1,
+  29.91 Wh).
+  The picture call did not:
+  `glm-5.3-flash` read the screenshot at 1619 tokens,
+  and `gemma-4-26b-a4b-it` read it through OpenRouter.
+- The insertion admission asked 30 per-slice coverage rounds over an untranslated tail
+  that was then admitted on a length bound (N5;
+  examined as ledger B811 and kept,
+  since the rounds are the first of the two signatures the absence verdict requires).
+  The archive block review did not run (K4).
+- The page is better than the archive in most slices,
+  and no hallucinated archive content remains in slices 48 and 67 to 70.
+  It keeps one factual error about when she died (D01,
+  equal to the archive's),
+  one game called by two names,
+  one contributor called by two names,
+  and 29 em-dash runs in 19 slices that the source does not carry.
+  The consistency pass ran one group and changed no slice (N6).
+- Hyper returned its keys in alphabetical order again (237 of 304 multi-key objects),
+  and the run asked Bedrock once and got HTTP 401.
+
 ## Where the read agrees and differs with the handover
 
 [The handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20-the-landings-the-zheermao22-restart-and-the-state-after-k4.md) states the outcome and the classes of `zheermao22` in short.
@@ -249,7 +348,13 @@ Differences found:
 
 ## What is not yet known
 
-- The read of `XingZ6017` is not filed.
+- The 49 Wh of the NeuralWatt plan figure (54.3 Wh) that the 5.188 Wh overshoot does not explain.
+- Whether the polish writers saw the lost claims on the lane-won path (K3):
+  not traced in code.
+- Whether leaving Qwen unseated would have saved the consolidation time:
+  not tested.
+- The time cost of the `minimax-m3` content overruns (N4):
+  not measured.
 - U1:
   why Hyper returns tool input with its keys in alphabetical order,
   so that the reason-before-vote ruling cannot be confirmed on Hyper without a keyed probe.
@@ -282,10 +387,23 @@ From [the handover](../handover/translation-repair-handover-2026-09-06-neuralwat
   a seat whose streams keep ending with no content is to be counted against that seat,
   and Hyper's key order is to be handled.
   The round is to be gated and landed after K1 to K4.
+- From the `XingZ6017` read,
+  the fixes under way are
+  the NeuralWatt energy estimate (ledger B808),
+  rounds held open by a hung stream (ledger B809) and
+  seats re-asked after their calls were abandoned (ledger B810).
+  They are being fixed,
+  and this record claims no outcome for them.
+  The coverage rounds over an untranslated tail (ledger B811) were examined and kept unchanged.
 - Meanwhile the rotation continues on `2a336603bf` for evidence:
-  the read of `CuspariaKLSY22` is filed,
-  `XingZ6017` is read when it ends,
+  the reads of `CuspariaKLSY22` and `XingZ6017` are filed,
   and then the rotation continues with `yingying`,
   `hulicaijia`,
   `mikaela_khara`,
   `shi_Yumiaoya` and `TianqiChen666`.
+- That plan changed once `XingZ6017` settled (2026-10-22):
+  its end left NeuralWatt 5.188 Wh past its day,
+  Hyper at a balance of 0 and OpenRouter at 4.15 USD,
+  so the next pass waits for the NeuralWatt day that starts at 19:15 UTC on 2026-10-22.
+  It runs on a rebuilt branch worktree carrying the fixes that land before then,
+  and the rotation restarts at `zheermao23`.

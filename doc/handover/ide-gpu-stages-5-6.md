@@ -417,3 +417,108 @@ Run once each on tip `2fba9c567c` (documentation commits follow it):
 (`tile-taken-by-the-step` shares the baseline of `tile-left-for-next-step`).
 The other 150 guards were not run.
 The counts above come from `~/temp/agent/tile-ab-1.jsonl`, `tile-ab-2.jsonl`, `tile-ab-3.jsonl` and `tile-ab-4.jsonl`.
+
+### Idle latency of the 20 ms wait and rare stalls elsewhere
+
+Session of 2026-10-22 on branch `worktree-agent-a0d7b8bed3990e6c8`, base `b6727b7b86` (the merged fix).
+It takes the two items of "What remains" that were open: the added latency of the wait, and the stalls away from
+slot 50.
+No product code changed (the temporary switches of commit `0eb036e425` were reverted in `52d043318a`), so no gate ran.
+
+#### Method of the session
+
+One release binary carried the temporary switch `IDE_X_STEP_WAIT_MS`: unset is the merged 20 ms wait,
+`0` turns the wait off and also the poll at the end of `on_viewport_changed`
+(the code before the fix; it stalls at slot 50 in 16 of 16 runs below, which is its positive control),
+`150` is a wait that must move the result by about 130 ms.
+The binary also logged "source tile worker took a job" and "finished a build" at debug level.
+Every number comes from one app run at a time in the nested compositor (1100x660, release, `big.rs`), each run a
+capped unit (`CPUQuota=600%`, `MemoryMax=40G`), arms alternating per pair, artifact directories deleted after each run.
+Logs were at debug level for the frame, tile, tile build and wheel targets only, in every arm.
+The host load average stayed between 7 and 10 from other sessions; the counts below are over runs, not single runs.
+The driver and the analysis are `~/temp/agent/lat-run.mjs`, `lat-stats.mjs`, `lat-extra.mjs` and `lat-stall-stats.mjs`;
+the rows are in `~/temp/agent/lat-q1-s16.jsonl`, `lat-q1-sweep.jsonl`, `lat-explore2.jsonl`, `lat-q2a.jsonl` and
+`lat-q2b.jsonl`.
+
+#### Idle latency of the wait
+
+The scenario is a scroll of 2 wheel steps with 1500 px each (`inspect:cadence scroll ... 2` with
+`IDE_CADENCE_SCROLL=3000`), then nothing.
+The view leaves the tile at once, so the picture shows no text until the new tile is drawn; the time asked for is the
+last wheel event (compositor log) to the end of the first frame the toolkit finishes after the tile is applied
+(app log).
+A gentle scroll that stays inside the old tile's band changes no visible pixel at a hand-over, so this latency is only
+visible when the view has outrun the tile.
+A scroll of a single wheel step cannot be made with the compositor's command: 20 of 20 pairs with `steps=1` built no
+tile at all, so that case is not measured.
+Slower scrolls that end at a band exit produced chains of tiles (a discarded tile, then a re-center 33 ms later, then
+the settle of the row measurement about 350 ms after the last step; 8 pairs in `~/temp/agent/lat-explore.jsonl`),
+and the 20 ms question did not separate from them;
+the 2-step scenario has one tile (`appliedAll` 1) in every run.
+
+- The positive control, wait 150 ms (4 runs, all in `lat-explore2.jsonl`): last wheel to frame 165.1, 165.8, 165.9 and
+  166.8 ms, against about 30 ms with the wait off; the measure sees a 136 ms move.
+- The spread of unchanged input, wait off (47 runs, step 16 ms in 20 and 8 to 24 ms in 27): last wheel to frame median
+  29.7 ms, quartiles 28.8 and 30.3, range 25.8 to 33.4.
+  A difference of more than about 3 ms is not noise.
+- The merged binary (47 runs, same inputs): median 30.2 ms, quartiles 29.5 and 49.3, range 28.3 to 51.0.
+  The distribution has two modes: 28 runs at 28.3 to 32.9 ms, and 19 runs at 38.8 to 51.0 ms.
+  In 18 of the 19 the poll logged "leaving a finished tile for the next scroll step" after the last wheel event;
+  in none of the 47 runs with the wait off.
+  Paired by order, the merged binary minus the wait off has a median of +2.2 ms with step 16 ms (20 pairs, quartiles
+  -0.2 and +19.5) and +1.4 ms in the sweep of step lengths (27 pairs, quartiles -0.1 and +19.2); the slow runs add
+  about 20 ms (22.3 at most).
+- The recorder agrees in the 20 runs with step 16 ms: the first frame that differs from the one before it, counted
+  from the last input slot, is slot 1 in 11 merged runs and slot 3 in 9; with the wait off it is slot 1 in 18 and
+  slot 2 in 2 (whole-frame hash, which the minimap's picture also changes, and a slot is 16.7 ms).
+
+The median is not above one display frame (17 ms): the added latency is about 1 ms at the median, so it is not a cost
+by that measure and no fix was made.
+It is a cost in a minority: in about 4 of 10 hand-overs of this kind the tile waits one more poll period (+20 ms, a
+little more than one frame).
+The mechanism is a reading from the timeline of one run, not an intervention: the two last wheel events arrive in the
+same instant, the first requests the tile and starts the poll timer, the second is handled a few milliseconds later,
+so the poll 20 ms after the timer start finds the last step less than 20 ms old and leaves the tile, and the next
+poll is a full period later.
+A poll that leaves a tile could ask for one more look when the wait ends (a single-shot timer for the rest of
+`STEP_WAIT`), which would cut the tail to about 20 ms after the last step in every case; this was not built, because
+the median criterion of this question was not met, and a one-shot timer would be a second timer path next to the
+poll.
+
+#### Stalls away from slot 50
+
+Scroll scenario, 120 steps, frame-shift probe (`mm-stall.mjs`), alternating order, debug log kept per run.
+
+- Fix switched off (16 runs): 32 stalls in total, per run 2,2,2,2,1,2,2,3,2,2,2,2,2,2,2,2;
+  slot 50 in 16 of 16 runs (positive control), slot 74 in 11, slot 98 in 3, slots 120 and 142 in one each;
+  one run shows a row shift of 50 px in a tick (slot 131).
+- Merged binary (16 runs in the alternating pairs, then 40 more merged runs, 56 in all): no stall in any run, and no
+  row shift other than one step.
+- A detector at the application level, from the debug logs: redraw requests that no wheel event started, inside the
+  window of the input.
+  With the fix off, all 16 runs have one (the tile taken by the timer, about 320 ms after the first wheel event,
+  which is slot 50); three runs have more, one of them 10 in all, six in a row spaced
+  16.7 ms apart (1069 to 1152 ms after the first wheel event) that follow no tile hand-over;
+  bursts like that look like late delivery of input, which was not examined further.
+  With the merged binary, 0 in 56 runs, and all 560 tiles applied in the window were applied inside a scroll step
+  (within 2 ms after a wheel event); the poll left a tile 280 times and the next step took it.
+  The positive control of this detector is the same 16 fix-off runs.
+- The earlier stalls at slots 33 and 72 (one run each of 16 merged runs, as reported to this session, and slot 33 in
+  one of 24 runs in the subsection "Counts") did not occur in these 56 runs,
+  so no timeline of a stalled run of the merged binary exists, and the question
+  "the host or the fix" is not decided by an intervention.
+  What the 56 runs show is that the mechanism of the fix, a tile taken between two steps, did not occur once, which
+  does not support the fix as the cause; with no stall to read, the host is not shown either.
+  This session's 0 in 56 puts the upper bound of the per-run rate near 5% (rule of three), below the 2 of 16 seen
+  in the other session, so the rate itself is not steady between sessions, which fits the host but does not show it.
+  Synthetic host load, which could raise the rate of a host stall on purpose, is forbidden in this repository, so it
+  was not tried.
+
+#### Not run
+
+- Neither the drag scenario, a display scale other than 1, a real compositor, nor a slower input than 50 Hz.
+- No stalled run of the merged binary was read, so no fix for a stall away from slot 50 was made or tested.
+- The code before the fix was reproduced by the switch (wait and step poll off), not by a build of `b4e9063c3a`;
+  the stall at slot 50 in 16 of 16 runs is the check that the two agree.
+- Gates (`lint`, `test:native`, `test`, `test:bin`, `build`, `inspect:no-software-renderer`) were not run: no product
+  code and no guard changed.
