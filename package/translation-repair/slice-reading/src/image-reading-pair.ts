@@ -4,6 +4,7 @@ import {
 } from '@monochromatic-dev/module-logger/ts';
 
 import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider/ts';
+import { endsTheRun, } from '@monochromatic-dev/translation-repair-stage/ts';
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import {
@@ -419,6 +420,15 @@ export async function readImagePair(
       },),
     };
   },),);
+
+  // EVERY PROVIDER DRY ENDS THE RUN, so it is not a reader that failed outright: a reading is evidence and costs only
+  // its own reader when one fails, but a router with nothing left to buy serves no other reader and no other picture
+  // either. Raised here, after every reader has settled, so a client built without the pass guard still ends the run
+  // instead of recording each reader as failed and going on with no reader available.
+  for (const result of settled) {
+    if ((result.status === 'rejected') && endsTheRun({ error: result.reason, },))
+      throw result.reason;
+  }
 
   /**
    What every reader made of the picture, with a reader that failed outright

@@ -2,8 +2,11 @@ import { EveryProviderDryError, } from '@monochromatic-dev/translation-repair-pr
 
 //region Stage run end
 // THE ONE QUESTION "DOES THIS FAILURE END THE RUN?", asked by every layer that would otherwise turn a failed call into
-// a lost voice (`attemptStageCall`, `attemptDecisionCall`, `askOnce` in `runGatherRound`) and by the entry scheduler
-// that files a caught failure (`entryErrorOutcome`). The owner ruled that `EveryProviderDryError` "ENDS THE RUN":
+// a lost voice (`attemptStageCall`, `attemptDecisionCall`, `askOnce` and the grace-window wait in `runGatherRound`,
+// the settle in `readImagePair`, the failure choice in `mapOverlapped`) and by the entry scheduler that files a caught
+// failure (`entryErrorOutcome`). The pass guard (`PassDryStop.guard`) is what covers every other layer: it aborts the
+// shared signal before the error reaches any catch, and every layer that checks `signal.aborted` rethrows. A caller
+// that builds a client without the guard is protected only by the layers named here. The owner ruled that `EveryProviderDryError` "ENDS THE RUN":
 // every other budget state leaves something buyable, and this one leaves nothing, so no seat's voice can be heard
 // either. XingZ6018 (2026-10-22) lost it as one seat's voice in every round for 77 s, until the bench floor stopped
 // the run mid-entry. The scheduler reaches this through the stage package because it holds no runtime dependency on

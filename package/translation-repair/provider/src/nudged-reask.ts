@@ -169,6 +169,11 @@ export async function reaskElsewhereNudged<ValueT,>(
     if (request.signal
       .aborted)
       throw error;
+    // EVERY PROVIDER DRY CANNOT REACH THIS CATCH, which is why it is not checked here. The re-ask is hinted away from
+    // the provider that served the first answer (`otherThan`), so the router serves it through `routedTextElsewhere`,
+    // which reads the budgets once (`secondOpinionsFrom`) and raises no dry error of its own, only `NoProviderForModelError`; the one path that
+    // raises `EveryProviderDryError` is `routedText`, which a hinted ask never takes. Under the pass guard the shared
+    // signal is aborted before any error reaches here, which the check above rethrows.
     // THE FIRST ANSWER STANDS, since it is an answer and the re-ask was only a
     // second chance: no other provider could take it, one refused it on
     // budget, or its exchange failed. Its prompt was released by the caller's

@@ -5,6 +5,7 @@ import {
 import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import { endsTheRun, } from './stage-run-end.ts';
 
 //region Overlapped map
 // Runs one job per item with a bounded number in flight, and hands the results
@@ -24,7 +25,8 @@ import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-p
 // twin memoized by an earlier slice is registered before its twin looks for
 // it. A failure stops further items from starting; the items already in
 // flight finish, or throw under the same abort; and the error thrown is the
-// lowest position's, which is the one the sequential loop would have thrown.
+// lowest position's, which is the one the sequential loop would have thrown,
+// unless a failure ends the run (`endsTheRun`), which is thrown instead.
 // Results come back in item order whatever order the items finished in, so
 // records and findings aggregate the same way at any overlap.
 //
@@ -290,9 +292,21 @@ export async function mapOverlapped<Item, Result,>(
      */
     const earliest = Math.min(...failures.keys(),);
     /**
+     The first failure to arrive that ends the run, when any does.
+     */
+    const endingEntry = [...failures.entries(),]
+      .find(function endsRun([, error,],): boolean {
+        return endsTheRun({ error, },);
+      },);
+    /**
+     Position whose failure is thrown: one that ends the run wins over an earlier failure of one item, since no item
+     could be served once every provider is dry and the earlier item's own failure is not what ended the work.
+     */
+    const thrownAt = (endingEntry === undefined) ? earliest : endingEntry[0];
+    /**
      The failure thrown, which reaches the caller's own catch.
      */
-    const thrown = failures.get(earliest,);
+    const thrown = failures.get(thrownAt,);
     /**
      Logger naming this helper beneath the caller's tags.
      */
@@ -306,7 +320,9 @@ export async function mapOverlapped<Item, Result,>(
      */
     const ending = signal.aborted
       ? 'and the caller stopped the work'
-      : `and the failure thrown is ${nameOf(nonNullishOrThrow(rows[earliest],),)}'s, which comes before it`;
+      : `and the failure thrown is ${nameOf(nonNullishOrThrow(rows[thrownAt],),)}'s, which ${
+        (thrownAt === earliest) ? 'comes before it' : 'ends the run'
+      }`;
     // Read once every lane has ended, so every failure is written in position
     // order whichever ended first, including one that ended before a stop.
     for (const row of rows) {

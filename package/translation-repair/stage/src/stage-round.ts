@@ -512,6 +512,12 @@ export async function runGatherRound<ValueT,>(
   const taken: RosterModelId[] = [];
 
   /**
+   Refusals that end the run, as the asks that met them raised them, kept so the grace window's wait, which swallows a
+   rejected ask, can raise the first.
+   */
+  const dryRefusals: unknown[] = [];
+
+  /**
    Router refusals this round has seen, which the wait for quorum reads.
    */
   const refusals: RefusalTally = {
@@ -620,8 +626,10 @@ export async function runGatherRound<ValueT,>(
       // where the transport built it.
       // EVERY PROVIDER DRY ENDS THE RUN, so the round fails with it rather than turning it into an abandoned
       // straggler: no other seat can be served either.
-      if (endsTheRun({ error, },))
+      if (endsTheRun({ error, },)) {
+        dryRefusals.push(error,);
         throw error;
+      }
       if (signal.aborted) {
         if (error !== signal.reason) {
           l.warn(
@@ -746,6 +754,12 @@ export async function runGatherRound<ValueT,>(
     promise: Promise.allSettled(asks,),
     ms: graceMs,
   },);
+  // A DRY REFUSAL THAT LANDED IN THE WINDOW ENDS THE RUN TOO. `allSettled` swallows the ask that raised it, and the
+  // position would come out below as a silent seat in an ordinary thin roster, so the refusal `askOnce` recorded as it
+  // ended is raised here. Before quorum it already surfaced through `awaitHeard`.
+  const [dryRefusal,] = dryRefusals;
+  if (dryRefusal !== undefined)
+    throw dryRefusal;
   // ABORTED WITH A REASON THE SEAT TALLY READS: a call this cuts is the straggler window closing, which counts against
   // its seat when the call had delivered nothing (`seat-tally.ts`), where a caller leaving never does.
   abandon.abort(new StragglerCutError(),);
