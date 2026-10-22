@@ -1692,7 +1692,16 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     release waits for the crates.io publish, runner `ubuntu-24.04` instead of `ubuntu-latest`, `--locked`. I read the
     whole diff of the workflow and it matches its report. I dispatched a dry run on that branch
     (`gh workflow run cargo-publish.yml --ref worktree-agent-aedec3def05fc4366 -f crate=monochromatic-nested-wayland-session -f dry-run=true`;
-    dry run: no crates.io upload, no attestation, no release); its result is read next, then the branch lands.
+    dry run: no crates.io upload, no attestation, no release). Result, run `39829260282`: success; `nws-detect`,
+    `nws-publish-crate` (the `cargo publish --dry-run` step), `nws-release-state` and both `nws-build-binary` jobs
+    (x86_64 on `ubuntu-24.04`, aarch64 on `ubuntu-24.04-arm`, so the arm64 build and smoke run are proved on a real
+    runner) succeeded, `nws-create-release` and every other crate's jobs were skipped. I downloaded the two archives:
+    each holds the binary, `README.md` and `LICENSES/GPL-3.0-or-later.txt` and `LGPL-3.0-or-later.txt`, and the
+    extracted x86_64 binary prints `monochromatic-nested-wayland-session 0.6.1`. LANDED, 2026-10-22: merge tip
+    `c6f9787ba1` on `origin/main`, ancestry confirmed; `actionlint` exits 0 on the merged workflow; the push started no
+    workflow run (the push path filter lists only `Cargo.toml` files). Not proved: the real release path (attestation,
+    the checksums file in `gh release create`, `nws-create-release` after `nws-publish-crate`), which only the next
+    real release exercises, and that release needs the owner's go-ahead. Agent worktree and branches removed.
     Stall pass agent `ae05d7039f46336dc` (started 2026-10-22, own worktree off `origin/main`, branch push only; brief
     quotes `NLG`, `NLD`, `RXI`, `NQH`): at least 60 alternating stall pairs (tree A = before the wake-up, tree B =
     `origin/main`) plus 30 A against A pairs for the spread; keeps the debug timeline of every stalled run and decides
