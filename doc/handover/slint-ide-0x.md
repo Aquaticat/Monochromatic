@@ -1657,7 +1657,15 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     the annotation stability tests (not reproduced), the caret test (fixed by inference only), the stacking branch
     measured only on the one-texture path (no run at a window tall enough to need more than one texture), the late
     tiles B 2 of 140 against A 0 of 140 (cause unknown), dense-selection cost, the blind spot for a chunk shifted by a
-    whole line, and the 15 other `.mjs` files in `bin/` (a conversion of all of them is a decision for the owner).
+    whole line, and the 15 other `.mjs` files in `bin/`.
+    Owner decision of 2026-10-22 (question "convert the 15 other `.mjs` files?", answer "Convert all 15
+    (Recommended)"): convert them to TypeScript like the first 17. Running: the second conversion agent (Sonnet, own
+    worktree off `origin/main`, branch push only; brief quotes `NLG`, `NLD`, `RXI`, `NQH`, `FHU`; converts
+    `inspect-source-guards` in its own commit and merges `origin/main` before it reports, because other sessions edit
+    that file; reports real line counts). On its report: verify the diff, the compared outputs and the line counts
+    myself, merge in a scratch tree (the guards file may conflict again: keep main's semantic changes), gates once
+    (`lint`, `test:bin` 71, `test`), prove two or three guards in a disposable copy because the guards script changes,
+    push, clean up, add a LANDED block here and a note on issue 1794.
     Stall pass agent `ae05d7039f46336dc` (started 2026-10-22, own worktree off `origin/main`, branch push only; brief
     quotes `NLG`, `NLD`, `RXI`, `NQH`): at least 60 alternating stall pairs (tree A = before the wake-up, tree B =
     `origin/main`) plus 30 A against A pairs for the spread; keeps the debug timeline of every stalled run and decides
