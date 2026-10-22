@@ -279,7 +279,7 @@ export async function refreshNeuralWattRoute({
     });
   } catch (error) {
     logger
-      .warn(`neuralwatt snapshot route write failed (${caughtValueText(error)}); the live listing write still runs, and a failing entry usually means the profile does not activate the ${NEURALWATT_SETTINGS_NAMESPACE} entry or a home patch or command-line overlay overrides its config`);
+      .warn(`neuralwatt snapshot route write could not complete (${caughtValueText(error)}); the live listing write still runs. The step reads the stored profile back and then merges, so either one failing lands here: a profile that does not activate the ${NEURALWATT_SETTINGS_NAMESPACE} entry, a home patch or command-line overlay that overrides its config, or a host shutdown during mount.`);
   }
   try {
     /**
@@ -310,7 +310,7 @@ export async function refreshNeuralWattRoute({
       });
     } catch (error) {
       logger
-        .warn(`neuralwatt live route write failed (${caughtValueText(error)}); keeping the served snapshot. Check that the profile activates the ${NEURALWATT_SETTINGS_NAMESPACE} entry and that no home patch or command-line overlay overrides its config`);
+        .warn(`neuralwatt live route write could not complete (${caughtValueText(error)}); keeping the served snapshot. The step reads the stored profile back and then merges, so either one failing lands here: a profile that does not activate the ${NEURALWATT_SETTINGS_NAMESPACE} entry, a home patch or command-line overlay that overrides its config, or a host shutdown before the mount fetch resolved.`);
     }
   } catch (error) {
     logger
