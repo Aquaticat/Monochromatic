@@ -301,3 +301,24 @@ the reading is at `info` and an unreadable meter warns at `warn`.
 Repeat it on a timer to fill the quiet stretches,
 for example `watch --interval 300`,
 and point `meter-report` at the collected logs.
+
+## DeepSeek and Xiaomi are called directly since 2026-10-22
+
+Two more providers join the order,
+between Bedrock and Hyper:
+DeepSeek (`deepseek`) and Xiaomi (`xiaomi`),
+each on the owner's own key and each for exactly one model
+(`deepseek-v4.1-flash` and `xiaomi/mimo-v2.6-flash`).
+The order is open to the owner's veto.
+The record is `doc/decision/translation-repair-direct-providers.md`.
+
+DeepSeek has a meter:
+`GET /user/balance`,
+dry when `is_available` is false or the USD total is at or under zero,
+printed as `deepseekUsd=` on the `METERS` line.
+Xiaomi documents no balance,
+so its meter answers wet and prints the run's own priced spend as `xiaomiUsdSpent=`,
+and its exhaustion is learned from HTTP 402,
+which the router passes to `markRefused` as `paymentRequired` for both providers.
+A run without either key logs that provider as `dry`,
+and `meter-report` reads logs written before today as having no reading for them.

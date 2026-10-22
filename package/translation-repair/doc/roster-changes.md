@@ -281,3 +281,15 @@ its set and its gate stay in the code for the next candidate;
 no card carries it.
 No cache version moved (ledger B721,
 update of 2026-10-21 (UTC)).
+
+## DeepSeek and Xiaomi reach two seats directly since 2026-10-22
+
+No model is seated or removed.
+`deepseek-v4.1-flash` is also served by DeepSeek's own API (wire id `deepseek-flash`),
+and `xiaomi/mimo-v2.6-flash` by Xiaomi's (wire id `mimo-v2.6-flash`),
+each on a key the owner granted for that one model.
+Each card gained a `deepseek` or `xiaomi` side in `shared-contract/src/direct-card-sides.ts`,
+the served-id types are single literals,
+and every other seat is refused by the client before any request.
+Pictures stay off both routes wherever a seat's picture reading is unmeasured.
+The record is `doc/decision/translation-repair-direct-providers.md`.

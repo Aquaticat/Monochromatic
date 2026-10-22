@@ -301,3 +301,20 @@ imported as `@monochromatic-dev/translation-repair-test-fixture/ts/<file>`.
 - [Package split plan](../../../doc/planning/translation-repair-package-split.md):
   the split plan,
   with the package map and the rules the move keeps.
+
+## DeepSeek and Xiaomi, called directly
+
+`direct-client.ts` is one OpenAI-compatible client over a route (endpoint,
+model lock,
+response format,
+price),
+and `deepseek-client.ts` and `xiaomi-client.ts` are the two thin wrappers.
+`createDeepSeekClient` also reads the account balance (`credits`,
+parsed by `deepseek-balance.ts`),
+and `createXiaomiClient` paces its calls to 100 a minute and reports the run's priced spend (`spend`).
+Each client serves one model and throws `DeepSeekModelNotServedError` or `XiaomiModelNotServedError`
+for any other before a request is built.
+No request carries a reasoning member.
+Prices are in `direct-cost.ts` (DeepSeek always at peak),
+the cache split and `system_fingerprint` readers are in `direct-usage.ts`,
+and the record is `doc/decision/translation-repair-direct-providers.md`.
