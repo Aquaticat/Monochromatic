@@ -43,8 +43,8 @@ import { PROMPT_BYTES_PER_TOKEN, } from './openrouter-abandoned-spend.ts';
 // 4,096 to 16,384 tokens) and 2.3 and 6.1 times (16,384 to 65,536 tokens).
 // Matrix means come from production traffic whose prompts were largely served
 // from the prefix cache, and this pipeline's sheets are fresh. The other
-// buckets keep the matrix's figures: the rotation held 1 to 15 calls in each
-// of them, too few for a mean (the matrix's own minimum is 30), and their
+// buckets keep the matrix's figures: the rotation held at most 15 calls in any
+// of them, and none in two, too few for a mean (the matrix's own minimum is 30), and their
 // measured means (DeepSeek 0.0126 Wh over 7 calls from 1,024 to 4,096 tokens,
 // GLM 0.0210 Wh over 15) sit under the matrix's, which holds a little more
 // than the use. The 16,384 to 65,536 GLM mean rests on 30 calls from one entry
