@@ -26,6 +26,7 @@ export {
   mirrorGlobPath,
 } from './io/glob.ts';
 export { freshStalenessManifest, } from './io/staleness-run.ts';
+export { manageMiseManifests, } from './mise/manage-mise-manifests.ts';
 export {
   findNodeModulesRoot,
   NODE_MODULES_DIRECTORY_NAME,
