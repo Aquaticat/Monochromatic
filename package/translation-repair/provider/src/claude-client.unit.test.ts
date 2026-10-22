@@ -15,6 +15,7 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import {
+  COMPLETION_CAP,
   resetRunSpend,
   type RosterModelId,
   runSpendUsd,
@@ -433,6 +434,43 @@ await describe({
     },),
 
     it({
+      name: 'NEVER ARMS A TIMER WITH A HEADER-STATED WAIT PAST THE TIMER\'S RANGE (R7): a retry-after of 99,999,999,999 '
+        + 'seconds ends the ladder on its first reply instead of sleeping or firing at once (a delay over '
+        + '2,147,483,647 ms is clamped to 1 ms by Node), and the hold the budgets keep is the whole stated wait, read '
+        + 'by timestamp',
+      fn: async () => {
+        /**
+         Rate-limit reply naming a wait no timer can hold, and nothing in its body.
+         */
+        const refusal: TransportReply = {
+          status: 429,
+          bodyText: '{"type":"error","error":{"type":"rate_limit_error","message":"slow down"}}',
+          headers: { 'retry-after': '99999999999', },
+        };
+        const { transport, exchanges, } = scripted({ replies: [refusal,], },);
+        const client = createClaudeClient({ apiKey: CLAUDE_CAT_KEY, transport, retryPolicy: ONE_QUICK_RETRY, },);
+
+        const failure: unknown = await rejectionOf(() => askCat({ client, modelId: 'claude-haiku-5-5', },),);
+
+        expect(failure,).toBeInstanceOf(ProviderHttpError,);
+        // One exchange: a clamped timer would have fired at once and retried against the scripted refusal.
+        expect(exchanges.length,).toBe(1,);
+        expect(statedWaitMsOf({ error: failure, },),).toBe(99_999_999_999_000,);
+        /**
+         Clock the budgets read.
+         */
+        const clock = { now: 10_000, };
+        const budgets = createProviderBudgets({ anthropic: client, freshForMs: 1_000, now: () => clock.now, },);
+        await budgets.markRefused({
+          provider: 'anthropic',
+          signal: new AbortController().signal,
+          statedWaitMs: statedWaitMsOf({ error: failure, },),
+        },);
+        expect(budgets.holds().anthropic,).toBe(99_999_999_999_000,);
+      },
+    },),
+
+    it({
       name: 'RAISES THE DRY FLAG FOR A billing_error EVENT UNDER A SUCCESS STATUS (C8), which the retry ladder returns '
         + 'unretried as a thrown 402: the meter reads dry after it as after a plain HTTP 402',
       fn: async () => {
@@ -528,7 +566,7 @@ await describe({
             bodyText: claudeStreamOf({
               text: '',
               stopReason: 'max_tokens',
-              usage: { input: 100, cacheWrite: 0, cacheRead: 0, output: 13_082, },
+              usage: { input: 100, cacheWrite: 0, cacheRead: 0, output: COMPLETION_CAP['claude-sonnet-5-5'], },
             }),
           },],
         },);
@@ -550,7 +588,7 @@ await describe({
         expect((outcome as { readonly reason?: string; }).reason,).toBe('truncated-completion',);
         expect(exchanges.length,).toBe(1,);
         expect(logged.filter(function isSpend(line,): boolean {
-          return line.includes('SPEND ',) && line.includes('completion=13082',);
+          return line.includes('SPEND ',) && line.includes(`completion=${String(COMPLETION_CAP['claude-sonnet-5-5'],)}`,);
         },).length,).toBe(1,);
       },
     },),
