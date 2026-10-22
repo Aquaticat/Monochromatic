@@ -243,7 +243,9 @@ export function assignLineExpectation({
     };
   }
   return {
-    expectedWidth: anchorWidth + 2,
+    expectedWidth: (anchorLine === -1)
+      ? 0
+      : anchorWidth + 2,
     route: 'ancestor',
   };
 }
