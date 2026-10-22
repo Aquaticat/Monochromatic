@@ -1,0 +1,382 @@
+/**
+ Two invented subjects for the guard that holds every stage's system prompt to the same text on every call (R4 of the
+ second review of the Claude route). The Claude body marks each system prompt for the five-minute cache, so a system
+ text that embeds a subject's own words is written to the cache at the higher price and never read back.
+
+ The subjects share a shape and differ in every word: a cat on a windowsill and a dog on a porch, with their own declared
+ names, cited references, notes and findings. A stage whose system text is the same for both embeds nothing of either.
+
+ Fixtures are cat-themed and dog-themed invention; no corpus content appears here.
+
+ @module
+ */
+
+import type { RepairRegion, } from '@monochromatic-dev/translation-repair-adjudication';
+import { hashContent, } from '@monochromatic-dev/translation-repair-document-structure';
+import type { systemTextOf, } from '@monochromatic-dev/translation-repair-provider';
+import type {
+  AdjudicatedIssue,
+  EditableEnvelope,
+} from '@monochromatic-dev/translation-repair-shared-contract';
+import type { JudgeReference, } from '../dist/final/node/index.mjs';
+import { TRANSLATORS_NOTE, } from './rendered-sheets-texts.test-fixture.ts';
+
+//region System prompt subjects
+
+/**
+ Messages one sheet builder hands a provider, in the shape the Claude body reads them in.
+ */
+export type PromptMessages = Parameters<typeof systemTextOf>[0]['messages'];
+
+/**
+ One stage's sheet builder, called with a subject.
+ */
+export type PromptStage = {
+  /**
+   Stage the sheet is written for, with the variant the case renders when the stage has several.
+   */
+  readonly name: string;
+
+  /**
+   Builds the stage's messages for a subject.
+   */
+  readonly render: (args: { readonly subject: PromptSubject; },) => PromptMessages;
+};
+
+/**
+ What a subject is built from: the words that differ between the two subjects.
+ */
+type SubjectWords = {
+  /**
+   The animal in the original.
+   */
+  readonly originalAnimal: string;
+
+  /**
+   The place in the original.
+   */
+  readonly originalPlace: string;
+
+  /**
+   The animal in English.
+   */
+  readonly animal: string;
+
+  /**
+   The place in English.
+   */
+  readonly place: string;
+
+  /**
+   The animal's name in the original.
+   */
+  readonly originalName: string;
+
+  /**
+   The animal's name in English.
+   */
+  readonly name: string;
+
+  /**
+   The last part of the cited reference's address.
+   */
+  readonly address: string;
+};
+
+/**
+ One invented subject: the texts and the structured records a sheet builder is handed.
+ */
+export type PromptSubject = {
+  /**
+   Name of the subject, for a failing case.
+   */
+  readonly label: string;
+
+  /**
+   The original passage.
+   */
+  readonly source: string;
+
+  /**
+   The archive rendering, told in the present.
+   */
+  readonly archive: string;
+
+  /**
+   The repair, told in the past.
+   */
+  readonly repair: string;
+
+  /**
+   The original of the passage next door.
+   */
+  readonly neighbourSource: string;
+
+  /**
+   The archive rendering of the passage next door.
+   */
+  readonly neighbourArchive: string;
+
+  /**
+   Declared names.
+   */
+  readonly identity: string;
+
+  /**
+   Cited references.
+   */
+  readonly references: string;
+
+  /**
+   The animal's name, which a recorded death names.
+   */
+  readonly name: string;
+
+  /**
+   The words two places of the original share, as a repeated sentence.
+   */
+  readonly wording: string;
+
+  /**
+   The frame two places of the original share, as a refrain.
+   */
+  readonly prefix: string;
+
+  /**
+   A title of a work the original writes.
+   */
+  readonly title: string;
+
+  /**
+   An original with an explicit line break and no archive rendering.
+   */
+  readonly verseSource: string;
+
+  /**
+   The archive block the original does not claim.
+   */
+  readonly aside: string;
+
+  /**
+   A reviewer's revision of that block.
+   */
+  readonly asideRevised: string;
+
+  /**
+   The opening sentence of the archive rendering, which the claim quotes.
+   */
+  readonly archiveQuote: string;
+
+  /**
+   The opening sentence of the repair.
+   */
+  readonly repairQuote: string;
+
+  /**
+   A finding a retry is told.
+   */
+  readonly finding: string;
+
+  /**
+   A line a picture says.
+   */
+  readonly pictureContext: string;
+
+  /**
+   An objection a gate raised.
+   */
+  readonly objection: string;
+
+  /**
+   A claim the repair panel accepted.
+   */
+  readonly claim: string;
+
+  /**
+   The claims of that issue.
+   */
+  readonly claims: AdjudicatedIssue['claims'];
+
+  /**
+   The accepted issue quoting both documents.
+   */
+  readonly issue: AdjudicatedIssue;
+
+  /**
+   The envelope over the quoted sentence.
+   */
+  readonly envelope: EditableEnvelope;
+
+  /**
+   The envelope over the whole archive rendering.
+   */
+  readonly paragraphEnvelope: EditableEnvelope;
+
+  /**
+   The region a repair replaced.
+   */
+  readonly region: RepairRegion;
+
+  /**
+   The sentence a restoration judge is asked to find again.
+   */
+  readonly judgeReference: JudgeReference;
+};
+
+/**
+ Builds a subject from its words.
+
+ @param words - what differs between the subjects
+
+ @returns The subject
+
+ @example
+ ```ts
+ const subject = subjectOf({ words: { animal: 'kitten', ...rest, }, },);
+ ```
+ */
+function subjectOf(
+  { words, }: { readonly words: SubjectWords; },
+): PromptSubject {
+  /**
+   Opening sentence of the original.
+   */
+  const sourceQuote = `那晚${words.originalAnimal}在${words.originalPlace}上睡着了。`;
+  /**
+   Opening sentence of the archive rendering.
+   */
+  const archiveQuote = `That night the ${words.animal} falls asleep on the ${words.place}.`;
+  /**
+   Opening sentence of the repair.
+   */
+  const repairQuote = `That night the ${words.animal} fell asleep on the ${words.place}.`;
+  /**
+   The original passage.
+   */
+  const source = `${sourceQuote}她说：「我明天还来。」`;
+  /**
+   The archive rendering.
+   */
+  const archive = `${archiveQuote} She says, "I will come again tomorrow." ${TRANSLATORS_NOTE}`;
+  /**
+   The claims of the accepted issue, each quoting both documents.
+   */
+  const claims: AdjudicatedIssue['claims'] = [
+    {
+      claimId: 'claim/tense',
+      claim: {
+        category: 'fluency/grammar',
+        severity: 'minor',
+        summary: `The ${words.animal}'s narration is told in the present.`,
+        spans: [
+          {
+            side: 'source',
+            nodeId: 'block/1',
+            nodeHash: hashContent({ content: source, },),
+            startOffset: 0,
+            endOffset: sourceQuote.length,
+            quotedText: sourceQuote,
+          },
+          {
+            side: 'target',
+            nodeId: 'block/1',
+            nodeHash: hashContent({ content: archive, },),
+            startOffset: 0,
+            endOffset: archiveQuote.length,
+            quotedText: archiveQuote,
+          },
+        ],
+      },
+    },
+  ];
+  return {
+    label: words.name,
+    source,
+    archive,
+    repair: `${repairQuote} She said, "I will come again tomorrow." ${TRANSLATORS_NOTE}`,
+    neighbourSource: `隔壁的${words.originalAnimal}也睡着了。`,
+    neighbourArchive: `The ${words.animal} next door fell asleep too. ${TRANSLATORS_NOTE}`,
+    identity: `name: ${words.originalName} = ${words.name}`,
+    references: `- reference 1 https://example.org/${words.address} ("${words.name}"): ${words.name} `
+      + 'had an older sister who was also a tabby.',
+    name: words.name,
+    wording: `那晚${words.originalAnimal}在${words.originalPlace}上睡着了`,
+    prefix: `所以${words.originalAnimal}`,
+    title: `${words.originalAnimal}之歌`,
+    verseSource: `${words.originalAnimal}睡着了。<br/>它梦见了鱼。`,
+    aside: `The ${words.animal} was the favourite of the whole street. ${TRANSLATORS_NOTE}`,
+    asideRevised: `The ${words.animal} was a favourite of the neighbours. ${TRANSLATORS_NOTE}`,
+    archiveQuote,
+    repairQuote,
+    finding: `The translation drops what the ${words.animal} promised.`,
+    pictureContext: `- picture 1 (chat.webp): [left] ${words.originalName}：我明天还来。`,
+    objection: `The tense shifts mid-paragraph for the ${words.animal}.`,
+    claim: `fluency/grammar minor: the ${words.animal}'s narration is told in the present`,
+    claims,
+    issue: {
+      issueId: 'issue/tense',
+      status: 'accepted',
+      severity: 'minor',
+      claims,
+      tallies: {},
+    },
+    envelope: {
+      envelopeId: 'envelope/tense',
+      startOffset: 0,
+      endOffset: archiveQuote.length,
+      baseText: archiveQuote,
+      baseHash: hashContent({ content: archiveQuote, },),
+      issueIds: ['issue/tense',],
+    },
+    paragraphEnvelope: {
+      envelopeId: 'envelope/paragraph',
+      startOffset: 0,
+      endOffset: archive.length,
+      baseText: archive,
+      baseHash: hashContent({ content: archive, },),
+      issueIds: [],
+    },
+    region: {
+      envelopeId: 'envelope/tense',
+      issueIds: ['issue/tense',],
+      before: archiveQuote,
+      editorAfter: repairQuote,
+    },
+    judgeReference: {
+      seedId: 'seed/promise',
+      deletedText: `${words.name} said, "I will come again tomorrow."`,
+    },
+  };
+}
+
+/**
+ The cat on the windowsill.
+ */
+export const CAT_SUBJECT: PromptSubject = subjectOf({
+  words: {
+    originalAnimal: '小猫咪',
+    originalPlace: '窗台',
+    animal: 'kitten',
+    place: 'windowsill',
+    originalName: '咪咪',
+    name: 'Mittens',
+    address: 'mittens',
+  },
+},);
+
+/**
+ The dog on the porch.
+ */
+export const DOG_SUBJECT: PromptSubject = subjectOf({
+  words: {
+    originalAnimal: '小狗狗',
+    originalPlace: '门廊',
+    animal: 'puppy',
+    place: 'porch',
+    originalName: '旺旺',
+    name: 'Biscuit',
+    address: 'biscuit',
+  },
+},);
+
+//endregion System prompt subjects

@@ -82,25 +82,35 @@ function buildersIn({ text, }: { readonly text: string; },): readonly string[] {
 }
 
 /**
- Text of every rendered-sheets fixture.
+ Text of every fixture whose file name opens with a prefix.
 
  @param files - every file of the family
+
+ @param prefix - how the fixtures' file names open
 
  @returns The fixtures, joined
 
  @example
  ```ts
- const fixtures = fixtureText({ files, },);
+ const fixtures = fixtureText({ files, prefix: 'rendered-sheets', },);
  ```
  */
-function fixtureText({ files, }: { readonly files: readonly SourceText[]; },): string {
+function fixtureText(
+  {
+    files,
+    prefix,
+  }: {
+    readonly files: readonly SourceText[];
+    readonly prefix: string;
+  },
+): string {
   return files
     .filter(function isSheetFixture({ path, },): boolean {
       /**
        Path under the package's source directory.
        */
       const name = pathUnderSrc({ path, },);
-      return name.startsWith('rendered-sheets',) && name.endsWith('.test-fixture.ts',);
+      return name.startsWith(prefix,) && name.endsWith('.test-fixture.ts',);
     },)
     .map(function read({ text, },): string {
       return text;
@@ -131,7 +141,7 @@ await describe({
         /**
          The fixtures' text.
          */
-        const fixtures = fixtureText({ files, },);
+        const fixtures = fixtureText({ files, prefix: 'rendered-sheets', },);
         expectRecordAsListed({
           found: {
             // The census reads the builders at all: two it must find.
@@ -145,6 +155,38 @@ await describe({
             readsBuilders: true,
             unrendered: [],
           },
+        },);
+      },
+    },),
+    it({
+      name: 'RENDERS EVERY SHEET BUILDER FOR TWO SUBJECTS in the system prompt guard (R4), so a stage whose system text '
+        + 'embeds the words of one call cannot be added without the guard reading it',
+      fn: async () => {
+        /**
+         Every file of every family package.
+         */
+        const files = await readPackageSource();
+        /**
+         Every builder, by name.
+         */
+        const builders = files
+          .filter(function isSource({ isTest, },): boolean {
+            return !isTest;
+          },)
+          .flatMap(function buildersOf({ text, },): readonly string[] {
+            return buildersIn({ text, },);
+          },);
+        /**
+         The system prompt guard's stage fixtures' text.
+         */
+        const fixtures = fixtureText({ files, prefix: 'system-prompt-stages', },);
+        expectRecordAsListed({
+          found: {
+            unguarded: builders.filter(function unguarded(name,): boolean {
+              return !fixtures.includes(`${name}(`,);
+            },),
+          },
+          listed: { unguarded: [], },
         },);
       },
     },),
