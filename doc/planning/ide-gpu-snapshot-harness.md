@@ -461,11 +461,15 @@ and nothing is painted by such a test.
 
 The container arguments for the render nodes moved to `bin/gpu-arguments.ts`,
 read by `mise.toml` and by the eleven guard inspection scripts
-(`bin/inspect-*-guards.mjs`,
+(`bin/inspect-*-guards.mjs`
+(now `bin/inspect-*-guards.ts`,
+renamed 2026-10-22),
 `inspect-watch-scope.mjs`
 (now `inspect-watch-scope.ts`,
 renamed 2026-10-22),
-`inspect-refresh-latency.mjs`)
+`inspect-refresh-latency.mjs`
+(now `inspect-refresh-latency.ts`,
+renamed 2026-10-22))
 that start their own containers around native tests.
 Those scripts lost `SLINT_BACKEND=headless`,
 `SLINT_MCP_PORT=0` and `--features slint/mcp`,
@@ -2617,7 +2621,9 @@ No second renderer exists, and the only memory the minimap adds beyond its textu
 
 ### Guard evidence
 
-- All 45 `minimap-*` guards of `bin/inspect-source-guards.mjs` were run in a disposable copy:
+- All 45 `minimap-*` guards of `bin/inspect-source-guards.mjs`
+  (now `bin/inspect-source-guards.ts`, renamed 2026-10-22)
+  were run in a disposable copy:
   each fails its named test when removed and passes restored.
   New ones: glyph runs (`minimap-renders-glyphs`,
   `minimap-glyph-inks`),

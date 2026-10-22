@@ -167,7 +167,7 @@ const cases: Guard[] = [
     test: 'native::language::guard_tests::reply_about_text_no_longer_displayed_is_not_applied',
     failure: 'a reply for the previous revision was applied after a reload'
   },
-  // Storing and handing out snapshots only for the displayed text is guarded in inspect-annotation-guards.mjs,
+  // Storing and handing out snapshots only for the displayed text is guarded in inspect-annotation-guards.ts,
   // which owns the shared store. Here: the poll repaints what it stored, the popup clears the virtual rows of
   // its line, and a virtual row is over no source character.
   {

@@ -4845,7 +4845,9 @@ see [the troubleshooting note](../../../doc/troubleshooting/container-nproc-igno
 
 ### The IDE bin scripts are TypeScript
 
-The compositor module and the inspection and capture scripts that start the IDE or its tools are TypeScript files,
+Every script of `bin/` and `design/` is a TypeScript file
+(the compositor module, the inspection, guard, and capture scripts, `install.ts`, `check-nextest-config.ts`,
+and the test file `nested-compositor.test.ts`),
 and the tasks run them with `node` directly (`node bin/inspect-cadence.ts`).
 Node strips the types of a `.ts` file before it runs,
 so nothing is built,
@@ -4864,13 +4866,13 @@ or an event listener).
 Until 2026-10-22 these files were plain `.mjs` files,
 a habit with no rule behind it.
 Two repository-wide style commits (`68415aeb53` and `3da31bdc3a`,
-issue 1794) left those `.mjs` files unparseable,
+issue 1794) left 17 of those `.mjs` files unparseable,
 while none of the TypeScript files they touched was broken,
-so the files were converted instead of restored:
+so those 17 were converted instead of restored:
 
 - `bin/nested-compositor.ts`:
   the compositor name and the check of its version,
-  tested by `bin/nested-compositor.test.mjs`.
+  tested by `bin/nested-compositor.test.ts`.
 - The inspections that measure or exercise a real IDE or server:
   `bin/inspect-bundle.ts`,
   `bin/inspect-cadence.ts`,
@@ -4890,10 +4892,26 @@ so the files were converted instead of restored:
 - The two capture scripts of the design notes:
   `design/soft-wrap-shots.ts` and `design/wrap-annotation-shots.ts`.
 
-The other `.mjs` scripts of `bin/` (the other guard inspections,
-`install.mjs`,
-`check-nextest-config.mjs`,
-and the test file `nested-compositor.test.mjs`) are unchanged.
+The 15 `.mjs` scripts that were still parseable were converted the same way on 2026-10-22,
+by the owner's decision to convert all of them:
+`bin/check-nextest-config.ts`,
+`bin/install.ts`,
+`bin/nested-compositor.test.ts`,
+`bin/inspect-refresh-latency.ts`,
+and the guard inspections
+`bin/inspect-annotation-guards.ts`,
+`bin/inspect-find-guards.ts`,
+`bin/inspect-ignored-guards.ts`,
+`bin/inspect-language-guards.ts`,
+`bin/inspect-language-lifecycle-guards.ts`,
+`bin/inspect-language-navigation-guards.ts`,
+`bin/inspect-search-guards.ts`,
+`bin/inspect-sidebar-guards.ts`,
+`bin/inspect-source-guards.ts`,
+`bin/inspect-theme-guards.ts`,
+and `bin/inspect-watch-guards.ts`.
+Only types, the one-object call shape, and the few narrowings that the strict options demand were added to them;
+their layout and behavior are otherwise as before.
 No `tsconfig.json` and no `lint:types` or `lint:oxlint` task covers this directory,
 because the package is a Rust crate and not a workspace package,
 so a type error shows only when a script runs.
@@ -5924,7 +5942,7 @@ warnings and errors by default and more with `RUST_LOG` (see "Log").
 ### Install and launcher entry
 
 `mise run //package/desktop-app/ide:install` runs `bundle`,
-then `bin/install.mjs`,
+then `bin/install.ts`,
 which copies `dist/monochromatic-ide` to `~/.local/bin/monochromatic-ide` (mode 0755)
 and `share/applications/monochromatic.ide.desktop` to `${XDG_DATA_HOME:-~/.local/share}/applications`,
 each through a private file renamed into place,

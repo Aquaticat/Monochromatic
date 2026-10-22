@@ -138,7 +138,8 @@ Slint `1.18.1` (`i-slint-core` checksum `ed2ea15059d70bc31b1a8b1eb4c34f2c5df04cb
 from `package/desktop-app/ide/Cargo.lock`).
 
 Harness:
-`package/desktop-app/ide/bin/inspect-source-guards.mjs`,
+`package/desktop-app/ide/bin/inspect-source-guards.mjs`
+(now `package/desktop-app/ide/bin/inspect-source-guards.ts`, renamed 2026-10-22),
 guard `mouse-drag-selects`,
 which deletes the `mouse-drag-pan-enabled: false;` line from `ui/app.slint` in a disposable copy
 and runs the named test with real window pointer events through the headless backend.

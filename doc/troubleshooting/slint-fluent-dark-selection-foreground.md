@@ -378,7 +378,8 @@ its markup uses the same pair as `LineEdit`.
 ### IDE guard control
 
 The IDE's ink rule has its own guard:
-`package/desktop-app/ide/bin/inspect-source-guards.mjs`,
+`package/desktop-app/ide/bin/inspect-source-guards.mjs`
+(now `package/desktop-app/ide/bin/inspect-source-guards.ts`, renamed 2026-10-22),
 guard `ink-white-first`,
 replaces the rule with "pick the higher WCAG 2 ratio" in a disposable copy.
 On the tree committed as `374ea9a36`

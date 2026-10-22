@@ -1211,7 +1211,7 @@ It embeds its language runtime and license texts
 (the package README section "What the executable carries" lists them).
 Every session ran a copy of that file alone in a scratch folder below `~/temp/agent`,
 outside the repository,
-or the copy that `bin/install.mjs` placed in a disposable home folder.
+or the copy that `bin/install.ts` placed in a disposable home folder.
 The build still places inlay hints in boxes after the end of their line;
 the decided placement on rows above the code line is another branch's work,
 so newer builds look different there.
@@ -1231,7 +1231,7 @@ so newer builds look different there.
   `cache/monochromatic-ide/runtime/c47e913b79bf6a42/grammars/`,
   which the executable filled itself.
 - Home-folder sessions in a disposable home of 283,450 files,
-  with the executable and the launcher entry installed there by `bin/install.mjs`
+  with the executable and the launcher entry installed there by `bin/install.ts`
   and the session's `HOME`,
   `PATH`,
   and XDG defaults pointing into it:
