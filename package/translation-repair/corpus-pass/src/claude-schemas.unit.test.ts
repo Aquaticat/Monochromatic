@@ -2,7 +2,8 @@
  Reads every answer schema a stage can send and holds it to what Anthropic's structured outputs accept (C1 of the
  review of the Claude route). The bundled API skill (`shared/tool-use-concepts.md`, "JSON Schema Limitations") says
  `additionalProperties: false` is required on every object and that the numeric, string and array bounds are not
- supported. A schema Anthropic refuses answers HTTP 400 on every call, which the ladder returns unretried and the
+ supported. EVERY KEYWORD A SENT SCHEMA CARRIES MUST BE ON AN ALLOWLIST of what the feature supports (R10 of the second
+ review), so a keyword nobody thought of fails here and not with HTTP 400 at the first live call. A schema Anthropic refuses answers HTTP 400 on every call, which the ladder returns unretried and the
  router counts as a lost voice, so a seat would be silently absent from a stage.
 
  THREE QUESTIONS, ASKED OF EACH SCHEMA PRODUCER: is every object of the schema as the stage writes it closed, does the
@@ -157,20 +158,32 @@ const NOT_STAGE_SCHEMAS: ReadonlySet<string> = new Set([
 // What the feature accepts, written out here on its own so the case does not lean on the sanitiser it checks.
 
 /**
- Bounds the feature does not support, the ones the SDKs strip.
+ The keywords the structured-output feature supports, from the bundled API skill (`shared/tool-use-concepts.md`, "JSON
+ Schema Limitations", lines 541 to 558): the basic types, `enum`, `const`, `anyOf`, `allOf`, `$ref` and `$def`, the
+ string formats and `additionalProperties`, with the structure that list assumes (`properties`, `required`, `items`,
+ `definitions`, `$defs`), `default` (the live Structured outputs page lists it) and the annotations `description` and
+ `title`. A keyword outside this list is refused by the API or stripped by the SDKs, and the Claude route sends neither.
+ EVERY KEYWORD A SENT SCHEMA CARRIES MUST BE ON IT: an allowlist, so a keyword nobody thought of fails here and not with
+ HTTP 400 at the first live call (R10 of the second review of the Claude route).
  */
-const UNSUPPORTED_KEYWORDS: readonly string[] = [
-  'minimum',
-  'maximum',
-  'exclusiveMinimum',
-  'exclusiveMaximum',
-  'multipleOf',
-  'minLength',
-  'maxLength',
-  'minItems',
-  'maxItems',
-  'uniqueItems',
-];
+const ALLOWED_KEYWORDS: ReadonlySet<string> = new Set([
+  'type',
+  'properties',
+  'required',
+  'items',
+  'enum',
+  'const',
+  'anyOf',
+  'allOf',
+  '$ref',
+  '$defs',
+  'definitions',
+  'default',
+  'format',
+  'additionalProperties',
+  'description',
+  'title',
+],);
 
 /**
  Keywords whose value maps a name to a schema.
@@ -276,23 +289,25 @@ function openObjectsOf({ schema, }: { readonly schema: Readonly<Record<string, u
 }
 
 /**
- The unsupported bounds a schema carries, each as the path it sits at and its keyword.
+ The keywords a schema carries that are not on the allowlist, each as the path it sits at and its keyword.
 
  @param schema - schema read
 
- @returns One entry per bound, `path: keyword`
+ @returns One entry per keyword, `path: keyword`
 
  @example
  ```ts
- const bounds = unsupportedBoundsOf({ schema, },);
+ const outside = keywordsOutsideAllowlistOf({ schema, },);
  ```
  */
-function unsupportedBoundsOf({ schema, }: { readonly schema: Readonly<Record<string, unknown>>; },): readonly string[] {
+function keywordsOutsideAllowlistOf(
+  { schema, }: { readonly schema: Readonly<Record<string, unknown>>; },
+): readonly string[] {
   return schemaNodesOf({ schema, path: 'root', },)
-    .flatMap(function boundsOf({ path, node, },): readonly string[] {
-      return UNSUPPORTED_KEYWORDS
-        .filter(function isCarried(keyword,): boolean {
-          return Object.hasOwn(node, keyword,);
+    .flatMap(function outsideOf({ path, node, },): readonly string[] {
+      return Object.keys(node,)
+        .filter(function isOutside(keyword,): boolean {
+          return !ALLOWED_KEYWORDS.has(keyword,);
         },)
         .map(function named(keyword,): string {
           return `${path}: ${keyword}`;
@@ -373,7 +388,8 @@ await describe({
 
     it({
       name: 'SENDS A SCHEMA THAT MEETS EVERY RULE, for every schema, through the Claude body on both models: every '
-        + 'object closed, none of the unsupported bounds, and the name and members of the schema intact',
+        + 'object closed, every keyword on the allowlist of what the feature supports, and the name and members of the '
+        + 'schema intact',
       fn: async () => {
         for (const modelId of ['claude-sonnet-5-5', 'claude-haiku-5-5',] as const) {
           /**
@@ -397,9 +413,9 @@ await describe({
                   .map(function openNamed(path,): string {
                     return `${label} sends an open object at ${path}`;
                   },),
-                ...unsupportedBoundsOf({ schema: sent, },)
-                  .map(function boundNamed(bound,): string {
-                    return `${label} sends ${bound}`;
+                ...keywordsOutsideAllowlistOf({ schema: sent, },)
+                  .map(function outsideNamed(outside,): string {
+                    return `${label} sends ${outside}`;
                   },),
                 ...(JSON.stringify(Object.keys((sent.properties ?? {}) as object,),)
                   === JSON.stringify(Object.keys((format.json_schema.schema.properties ?? {}) as object,),)
@@ -414,12 +430,23 @@ await describe({
 
     it({
       name: 'DROPS ONE BOUND IN THE WHOLE FAMILY, minimum 1 on the paragraph of a naturalness finding, which '
-        + '`isAbsoluteNaturalnessReviewWire` still enforces (its case "REFUSES A FINDING WITH paragraph BELOW ONE"); a '
-        + 'bound added to any other schema lists here and needs its reader\'s check named',
+        + '`isAbsoluteNaturalnessReviewWire` still enforces (its case "REFUSES A FINDING WITH paragraph BELOW ONE"), and '
+        + 'tells the model it in the field\'s description (R6); a keyword outside the allowlist added to any other '
+        + 'schema lists here, which is also the positive control that the allowlist finds what it is there to find',
       fn: async () => {
+        /**
+         The schema the body sends for the naturalness review, whose one bound is stripped and told.
+         */
+        const sentReview = buildClaudeBody({
+          card: CLAUDE_MODELS['claude-sonnet-5-5'],
+          messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
+          responseFormat: ABSOLUTE_NATURALNESS_REVIEW_RESPONSE_FORMAT,
+          maxTokens: 100,
+        },);
+        expect(JSON.stringify(sentReview.output_config,),).toContain('"description":"{minimum: 1}"',);
         expect(schemasOf()
           .flatMap(function boundsIn({ label, format, },): readonly string[] {
-            return unsupportedBoundsOf({ schema: format.json_schema.schema, },)
+            return keywordsOutsideAllowlistOf({ schema: format.json_schema.schema, },)
               .map(function named(bound,): string {
                 return `${label} ${bound}`;
               },);
