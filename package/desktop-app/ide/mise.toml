@@ -262,7 +262,7 @@ arg "[file]" default="dist/monochromatic-ide" help="Single executable to check"
 arg "[runtime]" default="target/release/runtime" help="Runtime directory the executable was built from"
 arg "[only]" help="Comma-separated check names to run; default is every check"
 '''
-run = "node bin/inspect-bundle.mjs"
+run = "node bin/inspect-bundle.ts"
 
 [tasks."inspect:bundle-guards"]
 depends = ["linked-crates"]
@@ -272,7 +272,7 @@ arg "[file]" default="dist/monochromatic-ide" help="Single executable to copy an
 arg "[runtime]" default="target/release/runtime" help="Runtime directory the executable was built from"
 arg "[only]" help="Comma-separated case names to run; default is every case"
 '''
-run = "node bin/inspect-bundle-guards.mjs"
+run = "node bin/inspect-bundle-guards.ts"
 
 [tasks."run:bundle"]
 description = "Run the single application executable; without a folder argument it opens the home folder"
@@ -521,7 +521,7 @@ runCargo(['nextest', 'run', '--no-default-features', '--test', 'find_reference',
 
 [tasks."inspect:find-reference"]
 description = "Probe browser-provided literal find against disposable Unicode and whitespace fixtures"
-run = "node bin/inspect-find-reference.mjs"
+run = "node bin/inspect-find-reference.ts"
 
 [tasks."inspect:search-guards"]
 description = "Remove search guards only in a disposable copy and observe named regression failures"
@@ -617,7 +617,7 @@ arg "[folders]" default="1,12,100" help="Comma-separated counts of expanded fold
 arg "[seconds]" default="60" help="Length of each measured interval; at least three safety sweeps of the slower build"
 arg "[runs]" default="3" help="Runs per build and folder count, for run-to-run spread"
 '''
-run = "node bin/inspect-idle-cost.mjs"
+run = "node bin/inspect-idle-cost.ts"
 
 [tasks."inspect:watch-limit"]
 description = "Run the IDE in a disposable user namespace with a lowered inotify watch limit and check one warning, few failing watch calls, refresh through timers, and one line when watches return"
@@ -628,7 +628,7 @@ arg "[folders]" default="12" help="Expanded sibling folders"
 arg "[limit]" default="4" help="Watch limit of the namespace; below the number of shown directories"
 arg "[seconds]" default="60" help="Length of the observed interval under the limit"
 '''
-run = "node bin/inspect-watch-limit.mjs"
+run = "node bin/inspect-watch-limit.ts"
 
 [tasks."inspect:watch-scope"]
 description = "Compare watching every expanded folder with watching only the tree viewport: kernel watches with 60 expanded folders and staleness when a changed folder is scrolled into view"
@@ -638,7 +638,7 @@ arg "<viewport_cache>" help="A second disposable Cargo target directory, for the
 arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
 arg "[runs]" default="3" help="Alternating runs per scope, for run-to-run spread"
 '''
-run = "node bin/inspect-watch-scope.mjs"
+run = "node bin/inspect-watch-scope.ts"
 
 [tasks."inspect:server-watches"]
 description = "Count the inotify watches of confined language servers on large disposable Rust and TypeScript projects"
@@ -646,7 +646,7 @@ shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 runCargo(['build', '--no-default-features', '--bin', 'ide-language-inspect'])
-execFileSync('node', ['bin/inspect-server-watches.mjs'], { stdio: 'inherit' })
+execFileSync('node', ['bin/inspect-server-watches.ts'], { stdio: 'inherit' })
 """
 
 [tasks."inspect:search-accessibility"]
@@ -730,7 +730,7 @@ shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 runCargo(['build', '--no-default-features', '--bin', 'ide-language-inspect'])
-execFileSync('node', ['bin/inspect-language.mjs'], { stdio: 'inherit' })
+execFileSync('node', ['bin/inspect-language.ts'], { stdio: 'inherit' })
 """
 
 [tasks."inspect:language-lifecycle"]
@@ -739,7 +739,7 @@ shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 runCargo(['build', '--no-default-features', '--bin', 'ide-language-inspect'])
-execFileSync('node', ['bin/inspect-language-lifecycle.mjs'], { stdio: 'inherit' })
+execFileSync('node', ['bin/inspect-language-lifecycle.ts'], { stdio: 'inherit' })
 """
 
 [tasks."inspect:language-confinement"]
@@ -748,7 +748,7 @@ shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 runCargo(['build', '--no-default-features', '--bin', 'ide-language-inspect', '--bin', 'ide-scripted-lsp'])
-execFileSync('node', ['bin/inspect-language-confinement.mjs'], { stdio: 'inherit' })
+execFileSync('node', ['bin/inspect-language-confinement.ts'], { stdio: 'inherit' })
 """
 
 [tasks."inspect:language-mise"]
@@ -757,7 +757,7 @@ shell = "node --input-type=module-typescript -e"
 run = """
 {{vars.cargo}}
 runCargo(['build', '--no-default-features', '--bin', 'ide-language-inspect'])
-execFileSync('node', ['bin/inspect-language-mise.mjs'], { stdio: 'inherit' })
+execFileSync('node', ['bin/inspect-language-mise.ts'], { stdio: 'inherit' })
 """
 
 [tasks."inspect:language-guards"]
@@ -785,7 +785,7 @@ arg "<cache>" help="Existing disposable Cargo target directory below the private
 arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
 arg "[seconds]" help="Length of each measurement while keys move the caret; default 30"
 '''
-run = "node bin/inspect-log-stall.mjs"
+run = "node bin/inspect-log-stall.ts"
 
 [tasks."inspect:language-reap-rate"]
 description = "Count, in a disposable copy and a bounded container, how often a lifetime test finds a server process left as a zombie or still running, with the worker's reaping and with the fixed pause it replaced"
@@ -796,7 +796,7 @@ arg "[runs]" help="Test processes per measurement; default 600"
 arg "[parallel]" help="Test processes at a time, sharing two processors; default 16"
 arg "[rounds]" help="Alternations of the two variants; default 2"
 '''
-run = "node bin/inspect-language-reap-rate.mjs"
+run = "node bin/inspect-language-reap-rate.ts"
 
 [tasks."inspect:language-navigation-guards"]
 description = "Remove native language-navigation guards only in a disposable copy and observe named regression failures"
@@ -959,7 +959,7 @@ writeFileSync(sourceFile, lines.join(String.fromCharCode(10)))
 }
 console.error('IDE_NATIVE_SOCKET=' + socket)
 console.error('IDE_NATIVE_FIXTURE=' + sourceFile)
-const { compositor, demandCurrentCompositor } = await import(resolve('bin/nested-compositor.mjs'))
+const { compositor, demandCurrentCompositor } = await import(resolve('bin/nested-compositor.ts'))
 demandCurrentCompositor()
 // IDE_NATIVE_SIZE starts the nested screen at another size; a locked host session ignores the control socket's resize.
 const size = process.env.IDE_NATIVE_SIZE ?? '1100x660'
@@ -995,7 +995,7 @@ if (profile === 'release') {
 } else {
   runCargo(['build', '--bin', 'monochromatic-ide'])
 }
-execFileSync('node', ['bin/inspect-cadence.mjs'], { stdio: 'inherit' })
+execFileSync('node', ['bin/inspect-cadence.ts'], { stdio: 'inherit' })
 """
 
 [tasks.run]
