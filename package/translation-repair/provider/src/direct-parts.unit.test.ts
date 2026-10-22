@@ -1,7 +1,7 @@
 /**
- Tests for the parts DeepSeek's and Xiaomi's routes are built from: the balance
- parser, the prices, the usage readers, the meters, the model locks and the
- place of both providers in the routing order.
+ Tests for the parts DeepSeek's and Xiaomi's routes are built from that no module of their own owns: the meters and the
+ place of both providers in the routing order. The balance parser, prices, usage readers, catalogs, reach and clients
+ have a test file each beside their module.
 
  @module
  */
@@ -17,53 +17,20 @@ import { PROVIDER_ORDER, } from '@monochromatic-dev/translation-repair-shared-co
 import {
   createProviderBudgets,
   DEEPSEEK_DRY_FLOOR_USD,
-  DEEPSEEK_MODELS,
-  DeepSeekBalanceShapeError,
-  deepSeekCacheSplitOf,
-  deepSeekCostOf,
-  deepSeekIdFor,
   deepSeekIsDry,
   deepSeekMeterLevel,
-  deepSeekShowsPictures,
-  DIRECT_COST_UNREPORTED,
   EveryProviderDryError,
-  NOT_REPORTED,
-  parseDeepSeekBalance,
   readEveryMeter,
   reachOf,
   routeProviderFor,
-  systemFingerprintOf,
-  XIAOMI_MODELS,
-  xiaomiCostOf,
-  xiaomiIdFor,
   xiaomiIsDry,
   xiaomiMeterLevel,
-  xiaomiShowsPictures,
 } from '../dist/final/node/index.mjs';
 import {
   SEAT_HYPER_OPENROUTER_UNMEASURED,
   SEAT_OPENROUTER_ONLY_CHECKER,
   SEAT_SYNTHETIC_TEXT_EVERYWHERE,
 } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
-
-/**
- A balance body as DeepSeek writes it.
-
- @param fields - members of the USD entry
-
- @returns Body text
-
- @example
- ```ts
- const body = balanceBody({ total_balance: '9.96', },);
- ```
- */
-function balanceBody({ total, available = true, }: { readonly total: string; readonly available?: boolean; },): string {
-  return JSON.stringify({
-    is_available: available,
-    balance_infos: [{ currency: 'USD', total_balance: total, granted_balance: '0.00', topped_up_balance: total, },],
-  },);
-}
 
 /**
  Every provider false, for a record the cases then set.
@@ -82,111 +49,6 @@ await describe({
   name: '',
   concurrency: 1,
   children: [
-    describe({
-      name: parseDeepSeekBalance.name,
-      concurrency: DEFAULT_CONCURRENCY,
-      children: [
-        it({
-          name: 'READS the USD total and availability',
-          fn: async () => {
-            expect(parseDeepSeekBalance({ bodyText: balanceBody({ total: '9.96', }), },),)
-              .toEqual({ isAvailable: true, totalUsd: 9.96, },);
-            expect(parseDeepSeekBalance({ bodyText: balanceBody({ total: '0.00', available: false, }), },),)
-              .toEqual({ isAvailable: false, totalUsd: 0, },);
-          },
-        },),
-        it({
-          name: 'REFUSES every body that is not the documented shape, naming what failed',
-          fn: async () => {
-            const bad: readonly string[] = [
-              'not json',
-              '[]',
-              '{"is_available":"yes","balance_infos":[]}',
-              '{"is_available":true,"balance_infos":"none"}',
-              '{"is_available":true,"balance_infos":[]}',
-              JSON.stringify({
-                is_available: true,
-                balance_infos: [
-                  { currency: 'USD', total_balance: '1.00', },
-                  { currency: 'USD', total_balance: '2.00', },
-                ],
-              },),
-              JSON.stringify({ is_available: true, balance_infos: [{ currency: 'USD', total_balance: 9.96, },], },),
-              balanceBody({ total: '-1.00', },),
-              balanceBody({ total: 'a lot', },),
-              balanceBody({ total: '', },),
-            ];
-            for (const bodyText of bad)
-              expect(function parse(): unknown {
-                return parseDeepSeekBalance({ bodyText, },);
-              },).toThrow(DeepSeekBalanceShapeError,);
-          },
-        },),
-      ],
-    },),
-
-    describe({
-      name: 'direct prices and usage readers',
-      concurrency: DEFAULT_CONCURRENCY,
-      children: [
-        it({
-          name: 'PRICES DeepSeek at peak with the cache split, all misses when the block split nothing, and reports '
-            + 'nothing when no usage arrived',
-          fn: async () => {
-            const card = DEEPSEEK_MODELS['deepseek-flash'];
-            const extracted = { text: '', usage: { prompt_tokens: 100, completion_tokens: 10, total_tokens: 110, }, };
-            expect(deepSeekCostOf({ card, extracted, split: { hitTokens: 40, missTokens: 60, }, },),)
-              .toBeCloseTo(((40 * 0.006) + (60 * 0.3) + (10 * 1.2)) / 1_000_000, 12,);
-            expect(deepSeekCostOf({ card, extracted, split: {}, },),)
-              .toBeCloseTo(((100 * 0.3) + (10 * 1.2)) / 1_000_000, 12,);
-            expect(deepSeekCostOf({ card, extracted, split: { hitTokens: 40, }, },),)
-              .toBeCloseTo(((40 * 0.006) + (60 * 0.3) + (10 * 1.2)) / 1_000_000, 12,);
-            expect(deepSeekCostOf({ card, extracted: { text: '', }, split: {}, },),).toBe(DIRECT_COST_UNREPORTED,);
-          },
-        },),
-        it({
-          name: 'PRICES Xiaomi with the cached count, never a negative miss count, and reports nothing without usage',
-          fn: async () => {
-            const card = XIAOMI_MODELS['mimo-v2.6-flash'];
-            const extracted = { text: '', usage: { prompt_tokens: 100, completion_tokens: 10, total_tokens: 110, }, };
-            expect(xiaomiCostOf({ card, extracted, cachedTokens: 50, },),)
-              .toBeCloseTo(((50 * 0.0028) + (50 * 0.14) + (10 * 0.28)) / 1_000_000, 12,);
-            expect(xiaomiCostOf({ card, extracted, cachedTokens: 500, },),)
-              .toBeCloseTo(((500 * 0.0028) + (10 * 0.28)) / 1_000_000, 12,);
-            expect(xiaomiCostOf({ card, extracted: { text: '', }, cachedTokens: 0, },),).toBe(DIRECT_COST_UNREPORTED,);
-          },
-        },),
-        it({
-          name: 'READS the last usage block\'s cache split and ignores counts that are not whole numbers',
-          fn: async () => {
-            const stream = [
-              `data: ${JSON.stringify({ choices: [], usage: { prompt_cache_hit_tokens: 1, prompt_cache_miss_tokens: 2, }, },)}\n\n`,
-              `data: ${JSON.stringify({ choices: [], usage: { prompt_cache_hit_tokens: 40, prompt_cache_miss_tokens: 60, }, },)}\n\n`,
-            ].join('',);
-            expect(deepSeekCacheSplitOf({ bodyText: stream, },),).toEqual({ hitTokens: 40, missTokens: 60, },);
-            const odd = `data: ${JSON.stringify({
-              choices: [],
-              usage: { prompt_cache_hit_tokens: -3, prompt_cache_miss_tokens: 1.5, },
-            },)}\n\n`;
-            expect(deepSeekCacheSplitOf({ bodyText: odd, },),).toEqual({},);
-            expect(deepSeekCacheSplitOf({ bodyText: 'data: [DONE]\n\n', },),).toEqual({},);
-          },
-        },),
-        it({
-          name: 'READS the last non-empty system_fingerprint, and nothing where no chunk carried one',
-          fn: async () => {
-            const stream = [
-              `data: ${JSON.stringify({ system_fingerprint: 'fp_a', choices: [], },)}\n\n`,
-              `data: ${JSON.stringify({ system_fingerprint: '', choices: [], },)}\n\n`,
-              `data: ${JSON.stringify({ system_fingerprint: 'fp_b', choices: [], },)}\n\n`,
-            ].join('',);
-            expect(systemFingerprintOf({ bodyText: stream, },),).toBe('fp_b',);
-            expect(systemFingerprintOf({ bodyText: 'data: [DONE]\n\n', },),).toBe(NOT_REPORTED,);
-          },
-        },),
-      ],
-    },),
-
     describe({
       name: 'direct meters',
       concurrency: DEFAULT_CONCURRENCY,
@@ -257,21 +119,6 @@ await describe({
       name: 'direct locks and routing order',
       concurrency: DEFAULT_CONCURRENCY,
       children: [
-        it({
-          name: 'SPELLS only the one model each provider is granted for, and shows pictures for neither of the others',
-          fn: async () => {
-            expect(deepSeekIdFor({ modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, },),).toEqual({ served: true, id: 'deepseek-flash', },);
-            expect(deepSeekIdFor({ modelId: SEAT_OPENROUTER_ONLY_CHECKER, },),).toEqual({ served: false, },);
-            expect(xiaomiIdFor({ modelId: SEAT_OPENROUTER_ONLY_CHECKER, },),).toEqual({ served: true, id: 'mimo-v2.6-flash', },);
-            expect(xiaomiIdFor({ modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, },),).toEqual({ served: false, },);
-            expect(deepSeekShowsPictures({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, },),).toBe(false,);
-            expect(xiaomiShowsPictures({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, },),).toBe(false,);
-            expect(deepSeekShowsPictures({ modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, },),)
-              .toBe(DEEPSEEK_MODELS['deepseek-flash'].readsImages,);
-            expect(xiaomiShowsPictures({ modelId: SEAT_OPENROUTER_ONLY_CHECKER, },),)
-              .toBe(XIAOMI_MODELS['mimo-v2.6-flash'].readsImages,);
-          },
-        },),
         it({
           name: 'WALKS the order for deepseek-v4.1-flash: NeuralWatt, then DeepSeek, then Hyper, then OpenRouter',
           fn: async () => {

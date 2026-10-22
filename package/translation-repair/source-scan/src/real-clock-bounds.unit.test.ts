@@ -337,6 +337,12 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     bound: 'read back',
     reason: RECORD_FIELD,
   },
+  'provider/deepseek-client.unit.test.ts#<module>: freshForMs: FRESH_MS': { count: 1, bound: 'other', reason: SCRIPTED_CLOCK, },
+  'provider/provider-budget-xiaomi-hold.unit.test.ts#xiaomiBudgets: freshForMs: FRESH_MS': {
+    count: 1,
+    bound: 'other',
+    reason: SCRIPTED_CLOCK,
+  },
   'provider/provider-budget-held-meters.unit.test.ts#budgetsOnClock: freshForMs: FRESH_MS': {
     count: 1,
     bound: 'other',
@@ -593,7 +599,7 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     reason: CALL_CONFIG,
   },
   'slice-cache/corpus-run/pass-stop-before-next.unit.test.ts#<module>: softBudgetMs: ROOMY_BUDGET_MS': {
-    count: 5,
+    count: 9,
     bound: 'read back',
     reason: 'a budget handed to a pure decision beside the elapsed time the case gives it; no clock is read',
   },

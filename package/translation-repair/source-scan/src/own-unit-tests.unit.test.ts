@@ -560,19 +560,6 @@ function ownTestRatchetFindings(
  removed; adding one is a reviewed decision.
  */
 const ALLOWLIST: readonly string[] = [
-  // THE DIRECT PROVIDERS' MODULES (2026-10-22): each is reached by `provider/direct-client.unit.test.ts` (the clients
-  // over recorded transports) or `provider/direct-parts.unit.test.ts` (balance parser, prices, usage readers, meters,
-  // locks and routing order), or, for the requirable list, by `run/direct-providers.unit.test.ts`. Own tests per
-  // module are the debt this entry records.
-  'provider/deepseek-balance.ts',
-  'provider/deepseek-client.ts',
-  'provider/direct-catalog.ts',
-  'provider/direct-cost.ts',
-  'provider/direct-reach.ts',
-  'provider/direct-usage.ts',
-  'provider/xiaomi-client.ts',
-  'provider/xiaomi-spend.ts',
-  'run/corpus-run/requirable-providers.ts',
   'shared-contract/active-footnote-markers.ts',
   'document-structure/align-blocks-walk.ts',
   'page-pass/apply-patch-markup.ts',
