@@ -40,6 +40,10 @@ import {
 } from './claude-cost.ts';
 import { claudeIdFor, } from './claude-reach.ts';
 import { claudeStreamFactsOf, } from './claude-stream-facts.ts';
+import {
+  createRequestPace,
+  type RequestPace,
+} from './request-pace.ts';
 import { RETRY_AFTER_HEADER, } from './retry-after-header.ts';
 import { failureForReply, } from './request-size-refusal.ts';
 import { reportSpend, } from './spend-line.ts';
@@ -65,6 +69,23 @@ import { withoutRefusedKeyBody, } from './direct-client.ts';
  Logger root for this package's model-facing shell.
  */
 const l = contextRoot({ tag: 'translation-repair', },);
+
+/**
+ Length of the request window: a minute, in milliseconds.
+ */
+export const CLAUDE_PACE_WINDOW_MS = 60_000;
+
+/**
+ Requests in any minute the owner's key is stated to allow: 1000, beside 2,000,000 input and 400,000 output tokens a
+ minute (the parent session's read of the key's limits, 2026-10-22). The client logs the limits the first reply
+ actually carries, so a changed tier shows in the run's own log.
+ */
+export const CLAUDE_REQUESTS_PER_MINUTE = 1_000;
+
+/**
+ Response-header family Anthropic states its rate limits in.
+ */
+const RATE_LIMIT_HEADER_PREFIX = 'anthropic-ratelimit-';
 
 /**
  Refusal raised when a roster model is not one of the eight Claude cards.
@@ -104,14 +125,19 @@ export class ClaudeModelNotServedError extends Error {
 }
 
 /**
- Client surface of the Claude route: the shared one every route has.
+ Client surface of the Claude route: the shared one every route has, and the request pace.
 
  @example
  ```ts
  const client: ClaudeClient = createClaudeClient({ apiKey, transport, },);
  ```
  */
-export type ClaudeClient = ModelCaller;
+export type ClaudeClient = ModelCaller & {
+  /**
+   Request-rate view the router reads to see a full window as saturation.
+   */
+  readonly pace: Pick<RequestPace, 'waitMs'>;
+};
 
 /**
  Finds the Claude card one roster model is, which is THE LOCK.
@@ -152,7 +178,10 @@ function cardFor({ modelId, }: { readonly modelId: RosterModelId; },): ClaudeMod
 
  @param retryPolicy - transient-retry pacing; tests pass tiny backoffs
 
- @returns Client surface with chatText and chatJson
+ @param requestsPerMinute - request starts allowed in any minute, retries included; the stated 1000, a whole number of
+ one or more, which `createRequestPace` refuses otherwise
+
+ @returns Client surface with chatText, chatJson and pace
 
  @example
  ```ts
@@ -166,18 +195,90 @@ export function createClaudeClient(
     baseUrl = CLAUDE_BASE_URL,
     perModelConcurrency = Number.POSITIVE_INFINITY,
     retryPolicy = DEFAULT_RETRY_POLICY,
+    requestsPerMinute = CLAUDE_REQUESTS_PER_MINUTE,
   }: {
     readonly apiKey: string;
     readonly transport: ModelTransport;
     readonly baseUrl?: string;
     readonly perModelConcurrency?: number;
     readonly retryPolicy?: RetryPolicy;
+    readonly requestsPerMinute?: number;
   },
 ): ClaudeClient {
   /**
+   Request-rate pacer every attempt on this client takes a turn from.
+   */
+  const pace = createRequestPace({
+    perWindow: requestsPerMinute,
+    windowMs: CLAUDE_PACE_WINDOW_MS,
+  },);
+
+  /**
+   Whether the rate-limit headers have been logged yet: once per client, which is once per run.
+   */
+  let limitsLogged = false;
+
+  /**
+   Logs the rate-limit headers a reply carries, the first time any reply does.
+
+   @param attemptReply - one attempt's reply as the transport returned it
+
+   @example
+   ```ts
+   logLimitsOnce(reply,);
+   ```
+   */
+  function logLimitsOnce(attemptReply: TransportReply,): void {
+    if (limitsLogged)
+      return;
+
+    /**
+     The rate-limit headers this reply carries, as `name=value` pairs.
+     */
+    const limits = Object.entries(attemptReply.headers ?? {},).filter(function isLimit([name,],): boolean {
+      return name.startsWith(RATE_LIMIT_HEADER_PREFIX,);
+    },).map(function pairOf([name, value,],): string {
+      return `${name}=${value}`;
+    },);
+    if (limits.length === 0)
+      return;
+    limitsLogged = true;
+    tagged({
+      tag: createClaudeClient.name,
+      l,
+    },).info(`rate limits on the first reply: ${limits.join(', ',)}`,);
+  }
+
+  /**
+   The transport behind the pacer: every attempt, retries included, waits for a place in the window before it goes
+   out, and the first reply that states limits has them logged.
+
+   @param exchange - request the retry ladder is sending
+
+   @returns The transport's reply
+
+   @example
+   ```ts
+   const reply = await pacedTransport(exchange,);
+   ```
+   */
+  async function pacedTransport(
+    exchange: Parameters<ModelTransport>[0],
+  ): Promise<TransportReply> {
+    await pace.take({ signal: exchange.signal, },);
+
+    /**
+     The transport's reply, headers included when they were asked for.
+     */
+    const attemptReply = await transport(exchange,);
+    logLimitsOnce(attemptReply,);
+    return attemptReply;
+  }
+
+  /**
    Transport that gives a refused key's 401 back without the provider's words.
    */
-  const guardedTransport = withoutRefusedKeyBody({ transport, },);
+  const guardedTransport = withoutRefusedKeyBody({ transport: pacedTransport, },);
 
   /**
    Per-model limiter, created lazily for each model.
@@ -300,7 +401,7 @@ export function createClaudeClient(
           bodyJson,
           signal: (deadline === undefined) ? request.signal : deadline.callSignal,
           wireFormat: 'anthropic',
-          captureHeaders: [RETRY_AFTER_HEADER,],
+          captureHeaders: [RETRY_AFTER_HEADER, `${RATE_LIMIT_HEADER_PREFIX}*`,],
           // Conditional spread keeps the knob absent instead of undefined.
           ...(request.maxAnswerChars === undefined ? {} : { maxAnswerChars: request.maxAnswerChars, }),
         },
@@ -394,6 +495,7 @@ export function createClaudeClient(
   return {
     chatText,
     chatJson: chatJsonThrough({ chatText, },),
+    pace: { waitMs: pace.waitMs, },
   };
 }
 

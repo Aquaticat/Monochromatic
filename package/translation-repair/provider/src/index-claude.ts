@@ -16,6 +16,8 @@ export {
   ClaudePrefillError,
 } from './claude-body.ts';
 export {
+  CLAUDE_PACE_WINDOW_MS,
+  CLAUDE_REQUESTS_PER_MINUTE,
   ClaudeModelNotServedError,
   createClaudeClient,
   type ClaudeClient,
