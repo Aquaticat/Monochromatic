@@ -176,6 +176,7 @@ export {
   STAGE_QUORUM_UNMET_PREFIX,
   stageQuorumUnmetFinding,
 } from './stage-silence.ts';
+export { endsTheRun, } from './stage-run-end.ts';
 export { runWindowedRounds, } from './stage-windowed-rounds.ts';
 export {
   reuseTwinOrBuy,

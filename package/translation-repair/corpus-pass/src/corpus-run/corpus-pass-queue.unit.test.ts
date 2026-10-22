@@ -24,7 +24,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { EveryProviderDryError, } from '@monochromatic-dev/translation-repair-provider';
+import {
+  EveryProviderDryError,
+  type ModelClient,
+} from '@monochromatic-dev/translation-repair-provider';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { resetRunSpend, } from '@monochromatic-dev/translation-repair-shared-contract';
@@ -455,19 +458,21 @@ await describe({
         /**
          Client whose every call meets the dry router.
          */
-        const dryClient = dryStop.guard({
-          client: {
-            chatText: async () => {
-              throw new EveryProviderDryError({ measured: 'meters read synthetic dry, openrouter dry', },);
-            },
-            chatJson: async () => {
-              throw new EveryProviderDryError({ measured: 'meters read synthetic dry, openrouter dry', },);
-            },
-            quotas: async () => {
-              throw new Error('quotas unused',);
-            },
+        const rawClient: ModelClient = {
+          chatText: async () => {
+            throw new EveryProviderDryError({ measured: 'meters read synthetic dry, openrouter dry', },);
           },
-        },);
+          chatJson: async () => {
+            throw new EveryProviderDryError({ measured: 'meters read synthetic dry, openrouter dry', },);
+          },
+          quotas: async () => {
+            throw new Error('quotas unused',);
+          },
+        };
+        /**
+         Same client behind the gate.
+         */
+        const dryClient = dryStop.guard({ client: rawClient, },);
         /**
          Entries attempted.
          */

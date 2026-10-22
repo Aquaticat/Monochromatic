@@ -14,6 +14,8 @@ import {
   stopBeforeNextEntry,
 } from '@monochromatic-dev/translation-repair-slice-cache/ts';
 
+import type { PassDryStop, } from './pass-dry-stop.ts';
+
 //region Corpus pass queue
 // Runs the pending entries one attempt at a time under the pass's budgets.
 
@@ -32,6 +34,9 @@ import {
 
  @param pipelineDigest - generation every log line of an attempt carries
 
+ @param dryStop - gate the pass's client trips when every provider reads dry; once tripped no further entry starts,
+ and the reason is printed once
+
  @param softBudgetMs - time after which no new entry starts
 
  @param spendCeilingUsd - USD the run may spend before it stops starting entries
@@ -46,7 +51,7 @@ import {
 
  @example
  ```ts
- await runPassQueue({ pending, attempts, attemptsPath, sliceCacheDir, pipelineDigest, softBudgetMs, spendCeilingUsd, start, now, settle, },);
+ await runPassQueue({ pending, attempts, attemptsPath, sliceCacheDir, pipelineDigest, dryStop, softBudgetMs, spendCeilingUsd, start, now, settle, },);
  ```
  */
 export async function runPassQueue(
@@ -56,6 +61,7 @@ export async function runPassQueue(
     attemptsPath,
     sliceCacheDir,
     pipelineDigest,
+    dryStop,
     softBudgetMs,
     spendCeilingUsd,
     start,
@@ -67,6 +73,7 @@ export async function runPassQueue(
     readonly attemptsPath: string;
     readonly sliceCacheDir: string;
     readonly pipelineDigest: string;
+    readonly dryStop: PassDryStop;
     readonly softBudgetMs: number;
     readonly spendCeilingUsd: number;
     readonly start: number;
@@ -87,6 +94,10 @@ export async function runPassQueue(
     },
 
     stopBeforeNext: function stopBeforeNext(): boolean {
+      if (dryStop.tripped()) {
+        console.log(dryStop.stopNote(),);
+        return true;
+      }
       return stopBeforeNextEntry({
         elapsedMs: now() - start,
         softBudgetMs,

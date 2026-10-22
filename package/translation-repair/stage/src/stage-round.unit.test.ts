@@ -37,12 +37,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import type {
-  ChatJsonOutcome,
-  ChatJsonRequest,
-  ModelClient,
+import {
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  EveryProviderDryError,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
-import { EveryProviderDryError, } from '@monochromatic-dev/translation-repair-provider';
 import { runGatherRound, } from '../dist/final/node/index.mjs';
 import { capturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixture/ts/hang-stop.test-fixture.ts';

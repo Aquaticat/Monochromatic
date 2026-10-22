@@ -14,8 +14,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { EveryProviderDryError, } from '@monochromatic-dev/translation-repair-provider';
-import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider';
+import {
+  EveryProviderDryError,
+  type ModelClient,
+} from '@monochromatic-dev/translation-repair-provider';
 import { createPassDryStop, } from '../../dist/final/node/index.mjs';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
@@ -78,7 +80,7 @@ await describe({
         const dryStop = createPassDryStop();
 
         expect(dryStop.signal.aborted,).toBe(false,);
-        expect(dryStop.stopNote(),).toBeUndefined();
+        expect(dryStop.tripped(),).toBe(false,);
       },
     },),
 
@@ -110,7 +112,7 @@ await describe({
               type: 'json_schema',
               json_schema: { name: 'cat', schema: { type: 'object', }, },
             },
-            validate: (value: unknown): value is object => typeof value === 'object',
+            validate: (value: unknown): value is object => (typeof value) === 'object',
           },);
         },);
         expect(viaJson.signal.reason,).toBe(dryJson,);
@@ -148,8 +150,9 @@ await describe({
         },);
 
         expect(dryStop.signal.reason,).toBe(first,);
+        expect(dryStop.tripped(),).toBe(true,);
         const note = dryStop.stopNote();
-        expect(note?.startsWith('STOP ',),).toBe(true,);
+        expect(note.startsWith('STOP ',),).toBe(true,);
         expect(note,).toContain('every provider',);
         expect(note,).toContain('first reading',);
         expect(note,).not.toContain('second reading',);
@@ -168,7 +171,7 @@ await describe({
           return await client.chatText(requestWith({ signal: dryStop.signal, },),);
         },),).toBe(other,);
         expect(dryStop.signal.aborted,).toBe(false,);
-        expect(dryStop.stopNote(),).toBeUndefined();
+        expect(dryStop.tripped(),).toBe(false,);
       },
     },),
 

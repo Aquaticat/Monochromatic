@@ -20,6 +20,7 @@ import {
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { monotonicMs, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { roundLine, } from './stage-round-line.ts';
+import { endsTheRun, } from './stage-run-end.ts';
 import { StragglerCutError, } from './straggler-cut.ts';
 
 //region Stage round
@@ -116,7 +117,8 @@ export type RoundOutcome<ValueT,> = {
  rejection as the caller's own abort.
 
  AN ASK REJECTS ONLY ONCE THE CALLER'S SIGNAL HAS ABORTED: `askOnce` turns
- every other failure into a lost voice. What it rejects with is whatever ITS
+ every other failure into a lost voice, bar the router's every-provider-dry
+ refusal, which it rethrows as it is. What it rejects with is whatever ITS
  call caught, which is the caller's forwarded reason unless the call's own
  deadline or transport failure landed as the caller aborted. So two asks
  could reject with different values, and the race handed the round whichever
@@ -563,6 +565,10 @@ export async function runGatherRound<ValueT,>(
 
    @throws Whatever the seat's call raised, once the caller aborted, having
    written it on the seat's line unless it is the caller's reason itself
+
+   @throws `EveryProviderDryError`, unchanged, when the router found no
+   provider with budget left, which ends the round and the run instead of
+   costing one seat its voice
    */
   async function askOnce(
     {
@@ -612,6 +618,10 @@ export async function runGatherRound<ValueT,>(
       // first. Rendered as the seat's lost voice is (`attemptStageCall`), so
       // a refusal keeps its status and the provider's words, the key masked
       // where the transport built it.
+      // EVERY PROVIDER DRY ENDS THE RUN, so the round fails with it rather than turning it into an abandoned
+      // straggler: no other seat can be served either.
+      if (endsTheRun({ error, },))
+        throw error;
       if (signal.aborted) {
         if (error !== signal.reason) {
           l.warn(

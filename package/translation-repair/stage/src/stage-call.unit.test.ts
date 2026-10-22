@@ -24,12 +24,12 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
-import type {
-  ChatJsonOutcome,
-  ChatJsonRequest,
-  ModelClient,
+import {
+  type ChatJsonOutcome,
+  type ChatJsonRequest,
+  EveryProviderDryError,
+  type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
-import { EveryProviderDryError, } from '@monochromatic-dev/translation-repair-provider';
 import { attemptStageCall, } from '../dist/final/node/index.mjs';
 import { warningRecordingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import { quotingFailure, } from '@monochromatic-dev/translation-repair-test-fixture/ts/quoting-failure.test-fixture.ts';

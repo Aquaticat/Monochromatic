@@ -14,6 +14,7 @@ import {
   type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup/ts';
+import { endsTheRun, } from './stage-run-end.ts';
 import {
   type UnreadableCause,
   unreadableCauseOf,
@@ -27,8 +28,10 @@ import {
 // One guarded model exchange for pipeline stages: non-ok outcomes and
 // transport failures become an absent voice (the ensemble tolerates missing
 // panelists and critics), while caller aborts always propagate so user
-// steering wins. The client's transport-level retries have already run by
-// the time this helper sees a failure.
+// steering wins, and so does the router's every-provider-dry refusal, which
+// the owner ruled ends the run (`EveryProviderDryError`). The client's
+// transport-level retries have already run by the time this helper sees a
+// failure.
 
 /**
  One stage voice as data:
@@ -270,6 +273,14 @@ function lostVoiceCause(
  seat's voice rather than asking it for prose
 
  @returns Voice as data; a lost voice never throws unless the caller aborted
+ or every provider read dry
+
+ @throws The caller's abort reason, or whatever the exchange raised under it,
+ once the caller aborted
+
+ @throws `EveryProviderDryError` when the router refused the call because
+ no provider has budget left, which ends the run at the owner's instruction and
+ so is never recorded as one seat's lost voice
 
  @example
  ```ts
@@ -360,6 +371,11 @@ export async function attemptStageCall<ValueT,>(
   catch (error) {
     // Aborts must always win so user steering can stop a fan-out.
     if (signal.aborted)
+      throw error;
+
+    // EVERY PROVIDER DRY ENDS THE RUN, at the owner's instruction, so it is not one seat's lost voice. XingZ6018
+    // (2026-10-22) recorded it as one for 77 s of rounds until the bench floor stopped the run with status=ERROR.
+    if (endsTheRun({ error, },))
       throw error;
     /**
      Whether the router refused the call because no wet provider serves the

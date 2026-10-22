@@ -16,9 +16,11 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
-import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider';
+import {
+  EveryProviderDryError,
+  type ModelClient,
+} from '@monochromatic-dev/translation-repair-provider';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
-import { EveryProviderDryError, } from '@monochromatic-dev/translation-repair-provider';
 import {
   attemptStageCall,
   type StageDecision,

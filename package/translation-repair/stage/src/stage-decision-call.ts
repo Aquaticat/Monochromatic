@@ -15,6 +15,7 @@ import {
   type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup/ts';
+import { endsTheRun, } from './stage-run-end.ts';
 // TYPE-ONLY AND DELIBERATELY CIRCULAR: `stage-call.ts` calls into this file
 // for a decision seat and this file names its voice type. Erased before
 // anything runs; the alternative is a third file holding one type alias.
@@ -74,6 +75,12 @@ export type StageDecision = {
  @param l - logger of the calling stage
 
  @returns Voice as data; a lost voice never throws unless the caller aborted
+ or every provider read dry
+
+ @throws The call's error, once the caller aborted
+
+ @throws `EveryProviderDryError` when the router refused the call because
+ no provider has budget left, which ends the run at the owner's instruction
 
  @example
  ```ts
@@ -163,6 +170,10 @@ export async function attemptDecisionCall<ValueT,>(
   catch (error) {
     // Aborts must always win so user steering can stop a fan-out.
     if (signal.aborted)
+      throw error;
+
+    // Ends the run at the owner's instruction, so it is not this seat's lost voice (`attemptStageCall` says why).
+    if (endsTheRun({ error, },))
       throw error;
 
     if (isDecisionStateOverContext({ error, },)) {

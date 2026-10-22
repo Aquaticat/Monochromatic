@@ -15,7 +15,10 @@ import {
   ContributorCompletenessError,
   SliceSpliceError,
 } from '@monochromatic-dev/translation-repair-page-pass/ts';
-import { PromptPayloadStoreError, } from '@monochromatic-dev/translation-repair-stage/ts';
+import {
+  endsTheRun,
+  PromptPayloadStoreError,
+} from '@monochromatic-dev/translation-repair-stage/ts';
 import { TranslationRepairInterruptedError, } from '@monochromatic-dev/translation-repair-translate-stage/ts';
 import { VisualEvidenceInterruptedError, } from './visual-evidence-completeness.ts';
 import type { EntryOutcome, } from './pass-entry-contract.ts';
@@ -64,6 +67,8 @@ export function entryErrorOutcome(
   const stopped = (error instanceof ArchiveOriginalCompletenessError)
     || (error instanceof ContributorCompletenessError)
     || (error instanceof DroppedDestinationError)
+    // The owner's rule: every provider dry ends the run. A whole-entry retry meets the same dry router.
+    || endsTheRun({ error, },)
     || (error instanceof FrontMatterCompletenessError)
     || (error instanceof NaturalnessRepairInterruptedError)
     || (error instanceof NaturalnessCompletenessError)
