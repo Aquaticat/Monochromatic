@@ -941,3 +941,54 @@ Cache account:
 none moves.
 The line is log text,
 and the settlement a refusal leaves uncached is the same one that was always left uncached.
+
+## B806: the run-off line called a plurality a tie
+
+Status:
+fixed on 2026-10-22 (UTC),
+red `e13dc11c610e9f5c9c8de1dc72fc5847ae6f03dd`,
+fix `53040005b4ad4472c2658c4460954cce7d6a87ac`,
+no cache version moved.
+Found in the read of `zheermao22` (wording defect of slice 12) and fixed in `w263`.
+
+What the log said:
+slice 12 of `zheermao101` at 22:19:09 UTC:
+"translate stage:
+declined-indecision;
+the standing drew no ballot,
+so the same panel is asked again over the 2 tied
+finalists".
+The round before it named candidate 4 at 1.5 (weights 1 and 0.5),
+candidates 5 and 3 at 1 each,
+and said "winner drew only weight 1.5 ... against a minimum of 2.00".
+Nothing was tied at the top.
+`runoffFinalists` had chosen the leader and its runner-up,
+and `runoffTiedFinalists` received the two candidates and no more.
+
+The fix:
+the `narrowed` run-off carries `basis`,
+`tied-at-top` or `leader-and-runner-up`,
+and `TranslateStageResult` carries it as `runoffBasis` beside `runoffFinalists`,
+`TranslateAbsenceError` as `basis` beside `finalists`.
+`runoffTiedFinalists` takes it as a required parameter,
+and `runoffFinalistsPhrase` words it:
+"the 2 tied finalists" for a tie,
+"the leader and its runner-up (the leader fell short of the minimum weight)" for a plurality.
+The consolidation's single-round door throws `unreachable:` if finalists arrive without the basis.
+The two lines of the retry's loop that said "run-off tied again" now say "run-off left no winner",
+because a round that leaves no winner is a tie or a plurality.
+`translate-runoff-line.unit.test.ts` builds both shapes through the real judging and reads the line of each,
+with controls that read the weights drawn;
+it failed with `expected undefined to equal 'tied-at-top'` and `'leader-and-runner-up'`.
+The count-noun and message scans of `source-scan` pass unchanged.
+
+Not changed:
+`runoffFinding` ("translate-runoff (finalists N of M)"),
+which is scorecard-stable wording.
+Candidates 5 and 3 drew the same weight and ballots in slice 12,
+and the run-off kept 3 for its earlier slate position;
+that rule is the existing one (`runoffFinalists`).
+
+Recurrence:
+`mistake-prevention-messages-labels-and-counts.md`,
+"Labels a message names".

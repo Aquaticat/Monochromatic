@@ -189,7 +189,8 @@ named for that subject and listed here.
   counts before a fixed plural,
   one field carrying two kinds of text,
   a log line that reported nothing done and gave no reason,
-  and a log line that said a changed slice shipped unchanged (B733).
+  a log line that said a changed slice shipped unchanged (B733),
+  and a run-off line that called a plurality a tie (B806).
 - [Audit ledger: values read back from text](audit-ledger-values-read-back-from-text.md):
   Numbers,
   fields and keys the code wrote into text and then read back more leniently,

@@ -405,6 +405,7 @@ which lists every file of this record.
 - [B801 to B802, tests touching the real world](audit-ledger-tests-touching-the-real-world.md)
 - [B803 to B804, provider streams, usage counts and retries](audit-ledger-provider-streams-usage-and-retries.md)
 - [B805, the polish gate's claims and the order of reason and vote](audit-ledger-polish-gate-claims-and-reason-order.md)
+- [B806, labels and counts in messages](audit-ledger-labels-and-counts-in-messages.md)
 - [D1 to D11, docs and comments that disagreed with the code](audit-ledger-docs-against-code.md)
 - [D12, doc conventions and their guards](audit-ledger-doc-conventions-and-their-guards.md)
 - [D13 to D21, docs and comments that disagreed with the code](audit-ledger-docs-against-code.md)
