@@ -285,8 +285,11 @@ fn the_arrow_keys_reach_the_switch_row_and_space_and_enter_toggle_it() {
     assert_eq!(switch_touch(&app).accessible_checked(), Some(false), "Enter toggles");
     assert_eq!(saved_values(), [true, false]);
     assert_eq!(read_state(|state| return state.route), Route::Settings, "Enter on the switch opens no editor");
-    // Down moves on to the Licenses row, the last stop: Space there opens its page and toggles nothing.
-    tap(&app, "Down");
+    // Down moves through the four Text size steppers and the Reset text sizes row to the Licenses row, the last stop:
+    // Space there opens its page and toggles nothing.
+    for _ in 0..6 {
+        tap(&app, "Down");
+    }
     tap(&app, " ");
     assert_eq!(saved_values(), [true, false], "Space on the Licenses row toggles nothing");
     assert_eq!(read_state(|state| return state.route), Route::Licenses, "Space on the Licenses row opens its page");
@@ -304,9 +307,12 @@ fn space_on_the_switch_row_sends_no_engine_command() {
     open_settings(&app);
     settle();
     host.clear();
-    // End reaches the Licenses row, the last stop; Up moves to the switch row above it.
+    // End reaches the Licenses row, the last stop; six Ups pass the Reset text sizes row and the four Text size steppers
+    // and reach the switch row above them.
     tap(&app, "End");
-    tap(&app, "Up");
+    for _ in 0..6 {
+        tap(&app, "Up");
+    }
     tap(&app, " ");
     assert_eq!(switch_touch(&app).accessible_checked(), Some(true));
     assert!(host.sent_texts().is_empty(), "no engine command: {:?}", host.sent_texts());

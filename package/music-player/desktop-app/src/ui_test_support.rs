@@ -136,6 +136,7 @@ pub(crate) fn fresh_window_at(width: f32, height: f32) -> (AppWindow, Rc<Recordi
     });
     crate::ui_settings::replace_saver(|_track_rows, _playing| return Ok(()));
     crate::ui_settings::replace_auto_play_saver(|_enabled| return Ok(()));
+    crate::ui_text_size::replace_saver(|_sizes| return Ok(()));
     let app = AppWindow::new().expect("the window should build on the testing backend");
     app.window().set_size(slint::LogicalSize::new(width, height));
     app.global::<crate::Theme>().set_scheme_override(1);

@@ -273,6 +273,13 @@ export component AppWindow inherits Window {
     callback settings-back();
     // The Auto-play on select switch row was toggled by a click, Space or Enter; the Rust side flips and saves the setting.
     callback settings-toggle-auto-play();
+    // A Text size stepper moved by one pixel: the stepper index (0 pane titles, 1 group heading letter, 2 folder names,
+    // 3 track titles) and the step, -1 or 1. The Rust side changes the size within its limits and saves it.
+    callback settings-step-text-size(int, int);
+    // The Reset text sizes row was activated; the Rust side puts all four sizes back to their defaults and saves them.
+    callback settings-reset-text-sizes();
+    // True while all four text sizes are at their defaults, which the Reset text sizes row shows; the Rust side keeps it current.
+    in property <bool> text-sizes-default: true;
     // The Licenses row was activated by a click, Space or Enter; the Rust side opens the Licenses page.
     callback settings-open-licenses();
     // Back on the Licenses page, by its arrow or Escape; the Rust side returns to Settings.
@@ -607,6 +614,9 @@ export component AppWindow inherits Window {
         auto-play-text: root.auto-play-on-select-text;
         start-on-licenses <=> root.settings-start-on-licenses;
         toggle-auto-play => { root.settings-toggle-auto-play(); }
+        text-sizes-default: root.text-sizes-default;
+        step-text-size(index, step) => { root.settings-step-text-size(index, step); }
+        reset-text-sizes => { root.settings-reset-text-sizes(); }
         open-licenses => { root.settings-open-licenses(); }
         open-template(i) => { root.settings-open-template(i); }
         select-template(i) => { root.settings-select-template(i); }

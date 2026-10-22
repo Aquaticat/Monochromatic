@@ -118,6 +118,8 @@ pub struct ScreenState {
     pub playing_template: Option<String>,
     /// Auto-play on select (D129): whether a click, Enter or Search result on another track also starts it.
     pub auto_play_on_select: bool,
+    /// Text size setting: the pixel size of each of four texts, which the window draws them at.
+    pub text_sizes: music_player::text_size::TextSizes,
     /// Template editor value while Settings or the editor is open.
     pub editor: Option<TemplateEditorState>,
     /// Length and peak of each library path, as the engine has reported them.

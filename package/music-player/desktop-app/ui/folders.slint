@@ -307,7 +307,7 @@ export component FolderPickerPane inherits Rectangle {
                     }
                     // Heading label: 20 px by default (2 px under Android's 22 px) in primary, 8 px below the section gap,
                     // aligned with the names. The size is the group heading letter of the Text size setting.
-                    if row.section-start: Text {
+                    if row.section-start: heading-label := Text {
                         x: 4px;
                         y: parent.section-gap + 8px;
                         text: row.heading;

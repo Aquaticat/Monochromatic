@@ -27,7 +27,9 @@ const HEADING_HEIGHT: f32 = 44.0;
 
 /// What: `open_settings_at` builds a window of the given width and opens Settings on it.
 fn open_settings_at(width: f32) -> AppWindow {
-    let (app, _host) = fresh_window_at(width, 900.0);
+    // Tall enough for the whole list: the Text size group put the Licenses row below 900 px, and a row outside the window
+    // is not listed by the element search.
+    let (app, _host) = fresh_window_at(width, 1800.0);
     open_settings(&app);
     settle();
     return app;
