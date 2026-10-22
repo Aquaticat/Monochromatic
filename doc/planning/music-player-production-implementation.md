@@ -754,8 +754,13 @@ length); its side effect on the caret was not caught because nothing rendered th
 `PhoneBarsWiringTest` renders a 485 dp phone at font scale 1.5 and measured 0.0 dp (clock from the edge), 8.0 dp (gap)
 and 70.0 dp (trigger height) before the fix. Fix `c1353556da`: the deck gets a 16 dp gutter (`paneStartInset(16.dp)`, so
 a larger crease clearance still wins), the stacked transport and mode gap is 16 dp (a deviation from the accepted
-8 dp group gap, chosen on the human's report; veto-open), and the top bar title keeps its natural height (so its
-height now follows the folder name's line count). Unit suite and detekt pass. The half circle at the bottom left of the
+8 dp group gap, chosen on the human's report; veto-open), and the top bar is one row at every font scale with the
+folder title cut in the middle (`TextOverflow.MiddleEllipsis`) when it is too long, the human's rule after the first
+attempt (a measured one-row-or-two arrangement, commit `c1353556da` kept the two rows for long names) was rejected:
+the title never gets a second line. Checked on the human's Pixel 6 with a debug-signed build installed beside the
+release (a temporary `applicationIdSuffix`, not committed, so the release app and its data stayed): the deck gutters,
+the larger control gap and the one-row bar show in screenshots. Not checked on a device: a long folder name, the fold.
+Unit suite and detekt pass. The half circle at the bottom left of the
 human's screenshots is a system overlay (it shows on the launcher too), not the app. The blank band above the seek
 row when nothing plays is the deck heading's reserved lines (same `minLines` mechanism, `TransportDeck.kt`); left as is.
 
@@ -1036,6 +1041,9 @@ Read these before repeating them. Each one cost the human a correction.
   control gap and a reserved title line went unseen for ten days. Layout rules that change with font scale need a
   rendered test at a phone width and font scale 1.5 (`PhoneBarsWiringTest`), and a screenshot on a narrow device
   before a release.
+- The first fix of that report (2026-10-22) repaired the caret and left the top bar as two stacked rows, and the human
+  had to say it was still broken. Read a reported screen as a whole, compare the fixed screenshot with the report
+  line by line, and ask what the bar should look like when the symptom is only part of the picture.
 
 - Briefing an emulator agent to point `ADB_VENDOR_KEYS` at the human's own adb key (2026-10-22) tripped the agent's
   permission classifier and cost the human several `/permissions` grants; a relayed approval is not the human's
