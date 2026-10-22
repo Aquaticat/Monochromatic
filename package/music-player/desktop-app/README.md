@@ -784,8 +784,8 @@ size to the session file.
 At an end of the range the button that would go past it is outlined instead of filled, draws its glyph 1 px thick
 instead of 2 px, and does nothing, so the end shows by fill, weight and color together.
 Each button is a 48 by 48 px target.
-In the keyboard model every stepper row is a stop of the Settings list: Left and Right on the row under the ring step its
-size, and Enter and Space on it do nothing.
+In the keyboard model every stepper row is a stop of the Settings list: Left and Right on the row under the ring step
+its size, and Enter and Space on it do nothing.
 The Reset text sizes row puts all four sizes back to their defaults with one save; at the defaults it is faded, says so
 in its line, and does nothing.
 In a row narrower than 372 px, which is a window under about 404 px or the list pane of a window between 600 and
