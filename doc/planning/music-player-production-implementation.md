@@ -855,7 +855,9 @@ and 0.1.12 was bumped in both manifests and both lock files (`ab27df9ad7`), whic
 exactly the 13 expected assets (the `asset-*` download fix from `3148e097d4` is verified), all 12 files match
 `SHA256SUMS`, and the attestation check on `linux-x64.tar.gz` exits 0. Not done: the arm64 APK was not installed on the
 Pixel 6 because it was not connected (`adb devices` empty); the Android code is unchanged except the version number.
-The human has not been told yet that the setting shipped; do that with the next message.
+The human was told the setting shipped and chose, for the folded (stacked) layout, to leave the header as it is: the
+Pane titles size acts only in the wide layout (decision 2026-10-22; the folded header's folder title keeps its own
+text style). Still open on the human's side: trying the setting on the 15.6 inch panel.
 
 Earlier entry, desktop text size setting in flight (agent `a985cccccf228921d`, worktree
 `/home/user/temp/agent/text-size-setting/wt`, branch `feat/music-player-text-size-setting`): the human asked for a
