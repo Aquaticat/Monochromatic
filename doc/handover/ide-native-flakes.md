@@ -559,6 +559,8 @@ deleting `target/debug/runtime` and `target/release/runtime` before each pair
 Its concurrent-publishers test fails with the same `ENOENT ... .so.new` when the staging name is made fixed again
 (shown on the commit that added it, then restored), and a second test checks that a lock whose holder is killed is
 released.
+Gates on the final code, once each, at 8 CPUs and 16 GiB (not the 21-CPU default): `lint` passed,
+`test:bin` 71 passed, and the unfiltered `test:native` 283 passed and 5 skipped (45.3 s).
 A caller that waits for the lock prints
 `Waiting for another runtime preparation to release target/runtime.lock` after one second.
 
