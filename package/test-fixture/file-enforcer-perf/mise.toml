@@ -1,20 +1,20 @@
-[tasks.'perf:setup']
+[tasks."perf:setup"]
 description = "Create performance benchmark fixture files in /tmp"
 run = "node src/setup-fixture.ts"
 
-[tasks.'perf:micro']
+[tasks."perf:micro"]
 description = "Run micro-benchmarks of individual file-enforcer operations (hardware counters appear once CAP_PERFMON is granted via perf:enable-counters)"
 run = "node src/perf.bench.test.ts"
 
-[tasks.'perf:e2e']
+[tasks."perf:e2e"]
 description = "Run end-to-end benchmarks with hyperfine on host"
 run = "node src/run-e2e.ts"
 
-[tasks.'perf:constrained']
+[tasks."perf:constrained"]
 description = "Run benchmarks under CPU contention (5 containers on 1 core, 1GB RAM)"
 run = "node src/run-constrained.ts"
 
-[tasks.'perf:teardown']
+[tasks."perf:teardown"]
 description = "Remove performance benchmark fixture files"
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -24,7 +24,7 @@ rmSync(join(process.env.TMPDIR ?? '/tmp', 'file-enforcer-perf'), { recursive: tr
 """
 
 # CAP_PERFMON / setcap are Linux-only, so this task is intentionally non-portable.
-[tasks.'perf:enable-counters']
+[tasks."perf:enable-counters"]
 description = "Grant CAP_PERFMON to the node binary so mitata surfaces hardware counters in perf:micro (system-wide; re-run after a node upgrade)"
 shell = "node --input-type=module-typescript -e"
 run = """
@@ -35,7 +35,7 @@ execFileSync('sudo', ['setcap', 'cap_perfmon+ep', nodeBin], { stdio: 'inherit' }
 execFileSync('getcap', [nodeBin], { stdio: 'inherit' })
 """
 
-[tasks.'perf:disable-counters']
+[tasks."perf:disable-counters"]
 description = "Remove the CAP_PERFMON file capability that perf:enable-counters granted to node"
 shell = "node --input-type=module-typescript -e"
 run = """

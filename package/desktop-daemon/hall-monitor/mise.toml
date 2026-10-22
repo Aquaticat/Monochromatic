@@ -6,17 +6,17 @@ run = "bun build src/index.ts --compile --minify --bytecode --sourcemap --outfil
 description = "Run hall-monitor directly"
 run = "node src/index.ts"
 
-[tasks.'run:dev']
+[tasks."run:dev"]
 description = "Run hall-monitor with file-watch auto-restart"
 run = "mise watch -w src -r -- node src/index.ts"
 
 [tasks.lint]
 extends = "lint"
 
-[tasks.'lint:types']
+[tasks."lint:types"]
 extends = "lint:types"
 
-[tasks.'lint:oxlint']
+[tasks."lint:oxlint"]
 extends = "lint:oxlint"
 [tasks."format:oxlint"]
 extends = "format:oxlint"
