@@ -28,6 +28,7 @@ import {
   EveryProviderDryError,
   type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
+import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixture/ts/hang-stop.test-fixture.ts';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import { resetRunSpend, } from '@monochromatic-dev/translation-repair-shared-contract';
@@ -97,6 +98,22 @@ function clockReading({ instants, }: { readonly instants: readonly number[]; },)
   return function now(): number {
     return remaining.shift() ?? last;
   };
+}
+
+/**
+ Chat call whose router finds every provider dry.
+
+ @returns Never
+
+ @throws {@link EveryProviderDryError} always
+
+ @example
+ ```ts
+ await refuseDry();
+ ```
+ */
+async function refuseDry(): Promise<never> {
+  throw new EveryProviderDryError({ measured: 'meters read synthetic dry, openrouter dry', },);
 }
 
 await describe({
@@ -459,12 +476,8 @@ await describe({
          Client whose every call meets the dry router.
          */
         const rawClient: ModelClient = {
-          chatText: async () => {
-            throw new EveryProviderDryError({ measured: 'meters read synthetic dry, openrouter dry', },);
-          },
-          chatJson: async () => {
-            throw new EveryProviderDryError({ measured: 'meters read synthetic dry, openrouter dry', },);
-          },
+          chatText: refuseDry,
+          chatJson: refuseDry,
           quotas: async () => {
             throw new Error('quotas unused',);
           },
@@ -494,7 +507,7 @@ await describe({
           ),
           pipelineDigest: GENERATION,
           dryStop,
-          softBudgetMs: 1_000,
+          softBudgetMs: HANG_STOP_MS,
           spendCeilingUsd: 20,
           start: 0,
           now: clockReading({ instants: [0,], },),
