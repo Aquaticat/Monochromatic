@@ -11,7 +11,10 @@ export {
   claudeMessagesUrlFor,
   type ClaudeModelInfo,
 } from './claude-catalog.ts';
-export { buildClaudeBody, } from './claude-body.ts';
+export {
+  buildClaudeBody,
+  ClaudePrefillError,
+} from './claude-body.ts';
 export {
   ClaudeModelNotServedError,
   createClaudeClient,

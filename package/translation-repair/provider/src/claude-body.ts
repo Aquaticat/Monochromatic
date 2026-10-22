@@ -9,9 +9,44 @@ import type { VisionMessage, } from './chat-contract.ts';
 import type { ClaudeModelInfo, } from './claude-catalog.ts';
 
 //region Claude body
-// THE BODY ONE CLAUDE CALL SENDS. FIRST DRAFT: it answers a schema with
-// a forced tool, sends no thinking or effort, forwards sampling knobs a request happens to carry, and marks no
-// cache breakpoint. The guards follow one commit each, red first.
+// THE BODY ONE CLAUDE CALL SENDS, member by member from the owner's brief of 2026-10-22 and the probes it cites.
+// What it leaves out is as much of the contract as what it sends: no `temperature`, `top_p` or `top_k` (any
+// non-default value is refused with HTTP 400 on both models, and a request has no field to carry one), no assistant
+// prefill (400 as well), no forced `tool_choice`, no `budget_tokens` and no way to turn thinking off.
+
+/**
+ Refusal raised when a conversation ends on an assistant turn, which the API reads as a prefill and answers with 400
+ on both models.
+
+ A THROW RATHER THAN A DATA OUTCOME, because it is a prompt built wrong in our own code and not a thing a model did.
+
+ @example
+ ```ts
+ throw new ClaudePrefillError();
+ ```
+ */
+export class ClaudePrefillError extends Error {
+  /**
+   Declares this message safe to forward: it names a structural rule and quotes no message.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   Builds the failure.
+
+   @example
+   ```ts
+   new ClaudePrefillError();
+   ```
+   */
+  public constructor() {
+    super(
+      'The conversation ends on an assistant turn, which Sonnet 5.5 and Haiku 5.5 refuse as a prefill (HTTP 400); '
+        + 'end it on a user turn',
+    );
+    this.name = 'ClaudePrefillError';
+  }
+}
 
 /**
  Builds the whole body of one Messages call.
@@ -24,13 +59,15 @@ import type { ClaudeModelInfo, } from './claude-catalog.ts';
 
  @param maxTokens - ceiling for the call
 
- @param request - the request as the caller built it, whose loose members the draft forwards
-
  @returns Body to serialise
+
+ @throws {@link ClaudePrefillError} when the conversation ends on an assistant turn
+
+ @throws {@link EmptyConversationError} where the messages cannot form a conversation
 
  @example
  ```ts
- const body = buildClaudeBody({ card, messages, maxTokens: 1_000, request, },);
+ const body = buildClaudeBody({ card, messages, maxTokens: 1_000, },);
  ```
  */
 export function buildClaudeBody(
@@ -39,15 +76,19 @@ export function buildClaudeBody(
     messages,
     responseFormat,
     maxTokens,
-    request,
   }: {
     readonly card: ClaudeModelInfo;
     readonly messages: readonly (ChatMessage | VisionMessage)[];
     readonly responseFormat?: ReadableResponseFormat;
     readonly maxTokens: number;
-    readonly request: Readonly<Record<string, unknown>>;
   },
 ): Readonly<Record<string, unknown>> {
+  /**
+   Turns the conversation holds outside the system prompt.
+   */
+  const turns = speakingTurns({ messages, },);
+  if (turns.at(-1,)?.role === 'assistant')
+    throw new ClaudePrefillError();
   return {
     model: card.wireModel,
     max_tokens: maxTokens,
@@ -60,7 +101,7 @@ export function buildClaudeBody(
     // models answer with HTTP 400.
     thinking: { type: 'adaptive', },
     system: systemTextOf({ messages, },),
-    messages: speakingTurns({ messages, },),
+    messages: turns,
     // STRUCTURED OUTPUT BY `output_config.format`, NEVER BY A FORCED TOOL. The parent session's probe of 2026-10-22
     // (`sonnet-route-probe.out`): Sonnet 5.5 answered `output_config.format` with adaptive thinking (192 thinking
     // tokens, a right answer) and refused a forced `tool` with HTTP 400 ("tool_choice: type \"tool\" and \"any\" are
@@ -84,9 +125,6 @@ export function buildClaudeBody(
             }),
         },
       }),
-    ...((request['temperature'] === undefined) ? {} : { temperature: request['temperature'], }),
-    ...((request['top_p'] === undefined) ? {} : { top_p: request['top_p'], }),
-    ...((request['top_k'] === undefined) ? {} : { top_k: request['top_k'], }),
   };
 }
 

@@ -268,7 +268,6 @@ export function createClaudeClient(
           // Conditional spread keeps the knob absent instead of undefined.
           ...(request.maxTokens === undefined ? {} : { requested: request.maxTokens, }),
         },),
-        request,
       },),);
 
       /**
