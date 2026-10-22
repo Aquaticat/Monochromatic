@@ -91,6 +91,21 @@ export const HAIKU_5_5_PRICES: AnthropicPrices = {
 const MAX_OUTPUT_TOKENS = 128_000;
 
 /**
+ Completion ceiling of every Claude card, in tokens, thinking included.
+
+ NOT THE POOLED P99 OF 13,082 (`completion-cap.ts`), which was measured on providers whose reasoning does not count the
+ way Claude's does: on both models adaptive thinking counts toward `max_tokens` even though its text is not the answer,
+ and a call that spends the cap thinking stops with `stop_reason: "max_tokens"` after a `thinking` block and before any
+ text, is billed in full and is asked again (the bundled API skill, `shared/model-migration.md`: "Thinking counts toward
+ `max_tokens`", and for Haiku 5.5 "Raise the cap to leave room for thinking, or choose a lower effort level"). The skill
+ starts long agentic turns at 64,000; these calls answer a structured sheet and not a long turn, so the start here is
+ 32,000, which costs at most 0.32 USD for a call that runs to it on Sonnet (10 USD a million output tokens) and 0.016 on
+ Haiku. A STARTING VALUE UNTIL THE FIRST CALLS ARE MEASURED: the cap census (`run/src/corpus-run/cap-census.ts`) reads
+ the `SPEND` lines of the Claude calls like any other model's and flags the card when its own 99th percentile disagrees.
+ */
+const CLAUDE_COMPLETION_CAP = 32_000;
+
+/**
  Builds one card side.
 
  @param id - roster spelling of the card
@@ -156,7 +171,7 @@ export const CLAUDE_CARDS: Readonly<Record<AnthropicServedId, ModelCard>> = {
       wireModel: 'claude-sonnet-5-5',
       prices: SONNET_5_5_PRICES,
     },),
-    completionCap: 'pooled-p99',
+    completionCap: CLAUDE_COMPLETION_CAP,
     holds: [...NO_DERIVED_BENCH,],
   },
   'claude-sonnet-5-5-effort-low': {
@@ -166,7 +181,7 @@ export const CLAUDE_CARDS: Readonly<Record<AnthropicServedId, ModelCard>> = {
       prices: SONNET_5_5_PRICES,
       effort: 'low',
     },),
-    completionCap: 'pooled-p99',
+    completionCap: CLAUDE_COMPLETION_CAP,
     holds: [...NO_DERIVED_BENCH,],
   },
   'claude-sonnet-5-5-effort-medium': {
@@ -176,7 +191,7 @@ export const CLAUDE_CARDS: Readonly<Record<AnthropicServedId, ModelCard>> = {
       prices: SONNET_5_5_PRICES,
       effort: 'medium',
     },),
-    completionCap: 'pooled-p99',
+    completionCap: CLAUDE_COMPLETION_CAP,
     holds: [...NO_DERIVED_BENCH,],
   },
   'claude-sonnet-5-5-effort-high': {
@@ -186,7 +201,7 @@ export const CLAUDE_CARDS: Readonly<Record<AnthropicServedId, ModelCard>> = {
       prices: SONNET_5_5_PRICES,
       effort: 'high',
     },),
-    completionCap: 'pooled-p99',
+    completionCap: CLAUDE_COMPLETION_CAP,
     holds: [...NO_DERIVED_BENCH,],
   },
   'claude-haiku-5-5': {
@@ -195,7 +210,7 @@ export const CLAUDE_CARDS: Readonly<Record<AnthropicServedId, ModelCard>> = {
       wireModel: 'claude-haiku-5-5',
       prices: HAIKU_5_5_PRICES,
     },),
-    completionCap: 'pooled-p99',
+    completionCap: CLAUDE_COMPLETION_CAP,
     holds: [
       'writer-unmeasured',
       'reader-unmeasured',
@@ -209,7 +224,7 @@ export const CLAUDE_CARDS: Readonly<Record<AnthropicServedId, ModelCard>> = {
       prices: HAIKU_5_5_PRICES,
       effort: 'low',
     },),
-    completionCap: 'pooled-p99',
+    completionCap: CLAUDE_COMPLETION_CAP,
     holds: [...NO_DERIVED_BENCH,],
   },
   'claude-haiku-5-5-effort-medium': {
@@ -219,7 +234,7 @@ export const CLAUDE_CARDS: Readonly<Record<AnthropicServedId, ModelCard>> = {
       prices: HAIKU_5_5_PRICES,
       effort: 'medium',
     },),
-    completionCap: 'pooled-p99',
+    completionCap: CLAUDE_COMPLETION_CAP,
     holds: [...NO_DERIVED_BENCH,],
   },
   'claude-haiku-5-5-effort-high': {
@@ -229,7 +244,7 @@ export const CLAUDE_CARDS: Readonly<Record<AnthropicServedId, ModelCard>> = {
       prices: HAIKU_5_5_PRICES,
       effort: 'high',
     },),
-    completionCap: 'pooled-p99',
+    completionCap: CLAUDE_COMPLETION_CAP,
     holds: [...NO_DERIVED_BENCH,],
   },
 };
