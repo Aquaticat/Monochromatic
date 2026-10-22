@@ -48,8 +48,8 @@ import { PROMPT_BYTES_PER_TOKEN, } from './openrouter-abandoned-spend.ts';
 // measured means (DeepSeek 0.0126 Wh over 7 calls from 1,024 to 4,096 tokens,
 // GLM 0.0210 Wh over 15) sit under the matrix's, which holds a little more
 // than the use. The 16,384 to 65,536 GLM mean rests on 30 calls from one entry
-// (standard error 0.29 Wh against its 1.22 Wh mean), at the floor of the rule
-// above; even two standard errors under it, 0.64 Wh, is three times the
+// (standard error 0.29 Wh against its 1.22 Wh mean), at the matrix's own
+// minimum of 30; even two standard errors under it, 0.64 Wh, is three times the
 // matrix's 0.2009.
 // Every settled call prints its measured figure beside its estimate
 // (`neuralwatt-settlement.ts`), so a later run can replace them the same way.

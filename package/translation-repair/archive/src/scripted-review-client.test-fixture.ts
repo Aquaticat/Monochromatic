@@ -32,7 +32,7 @@ type ReplyFor = (input: {
  load once let the held seat land before quorum, so the readers' window had no
  straggler to cut.
  */
-const HELD_REPLY_MS = 1000;
+const HELD_REPLY_MS = 1_000;
 
 /**
  Reads no seat as cut before its content.
