@@ -740,7 +740,8 @@ The same classes are computed for all 119 ticks of every run, so the rate of a s
 Scripts: `~/temp/agent/g56-run.mjs`, `g56-lib.mjs`, `g56-analyze.mjs`, `g56-more.mjs`, `g56-early.mjs`,
 `g56-early2.mjs`, `g56-show.mjs`, `g56-dump.mjs`; rows `g56-rows.jsonl` and `g56-rows2.jsonl`, per-tick table `g56-ticks.json`, the
 timeline of every stalled tick (46) `g56-stall-timelines.txt`.
-The debug logs of the runs were deleted after the analysis (about 3 GB).
+The run directories were deleted after the analysis (3.2 GB), except `run.log`, `slots.json`, `cadence.json` and
+`hashes.json` of the 39 runs that have a stall, kept in `~/temp/agent/g56-stall-runs` (8 MB).
 
 #### Counts
 
