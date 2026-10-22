@@ -70,6 +70,83 @@ git grep --count --extended-regexp '^[[:blank:]]+$'
 So the enforceable debt is TypeScript,
 and every non-TypeScript hit is content a trimmer must not touch.
 
+## What the wrapper already enforces
+
+The near-miss answer to "does the git wrapper already enforce trailing whitespace?"
+is that it enforces final-newline hygiene,
+which is about a file's last byte,
+not about line-end whitespace.
+
+- `final-newline` requires a non-empty UTF-8 text file without NUL bytes
+  to end with exactly one LF byte,
+  message "Non-empty text file must end with exactly one LF byte."
+  (`package/git-policy/cli/src/native/policy_final_newline.rs`).
+- Its normalizer rewrites only the run of trailing LF bytes at end of file,
+  adds a missing one,
+  and leaves interior bytes untouched
+  (`normalized_final_newline` in `package/git-policy/cli/src/native/policy_final_newline.rs`).
+  A file whose lines end in spaces before their LF passes this policy unchanged.
+- Its preserved families are the two fuzz seed directories,
+  `package/test-fixture/toml-edit/src/`,
+  and files below `dist/final/node/` or `bundle/node/`
+  (`is_final_newline_excluded` in the same module).
+- The four optional content policies
+  (`markdown/autofix`,
+  `mono/forbidden-root-context`,
+  `mono/dependent-version-bump`,
+  `security/forbidden-strings`)
+  never read line-end whitespace.
+  `cli-git.config.jsonc` enables `markdown/autofix` for the `lfs-image-url` rule only.
+- The wrapper's JavaScript import scanner drops trailing whitespace in memory
+  while locating specifiers
+  (`package/git-policy/cli/src/native/dependent_version_imports.rs`),
+  which is parsing,
+  not file enforcement.
+- The active `.git/hooks` are Git LFS hooks only.
+- `package/claude-code-plugin/bash-output-filter` removes trailing whitespace from
+  terminal output lines,
+  which is display hygiene,
+  not file content.
+
+So no layer trims or blocks line-end whitespace today,
+and the policy whose name sounds closest
+(`final-newline`)
+is verified to leave it alone.
+
+## Research coverage
+
+Surfaces inspected for this recommendation on 2026-10-22:
+
+- The issue [#585][] text and its comment thread.
+- `.editorconfig`,
+  `package/config/dprint/index.json`,
+  and `monochromatic-lint.config.jsonc`.
+- Every rule in `package/oxlint-plugin/stylistic/src/rule/`,
+  the fixer API in `@oxlint/plugins`,
+  and a probe of the oxlint 1.89.0 rules table
+  (no trailing-whitespace rule exists upstream).
+- The translation-repair scan and its fixtures
+  (`package/translation-repair/source-scan/src/trailing-whitespace.unit.test.ts`).
+- The wrapper's policy registry,
+  dispatch,
+  correction channel,
+  management commands,
+  config schema,
+  `cli-git.config.jsonc`,
+  `.git/hooks`,
+  and the `normalized_final_newline` source.
+- The CI workflow task inventory
+  (`.github/workflows/`,
+  `.depot/workflows/`),
+  which runs no `lint:oxlint`.
+- The monochromatic-lint rule inventory and its semantic-line-break source,
+  used as the probe target for this doc's own rendered check.
+
+Deeper digs available on request:
+the removed incumbent TypeScript wrapper's history,
+the exact fixable set of `monochromatic-lint --fix`,
+and per-formatter trailing-whitespace behaviour of the active dprint plugins.
+
 ## Enforcement surfaces today
 
 - `.editorconfig` sets `trim_trailing_whitespace = true` under `[*]`
