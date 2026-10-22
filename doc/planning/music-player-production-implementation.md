@@ -816,7 +816,9 @@ until the next release or a dry run. The research into why the desktop text felt
 `doc/troubleshooting/music-player-desktop-text-looks-larger-than-android-at-the-same-size.md` (committed); still to land
 there: the CJK font each app picks (agent `aab39f469b16ca605`, report `/home/user/temp/agent/slint-cjk/report.md`) and
 the primary-source note (agent `a96478631545325e9`, output `/home/user/temp/agent/text-size-research/findings.md`, to move
-to `doc/research/text-size-perception-sources.md`).
+to `doc/research/text-size-perception-sources.md`). Waiting on the human: a perception test page, opened in their
+browser (`/home/user/temp/agent/type-shots/perception/text-size-test.html`, local only, verified with `agent-browser`
+in light and dark, not yet taken); its pasted results go into the troubleshooting doc's hypotheses.
 Not measured: the desktop rendered beside the emulator. Known difference: the desktop uses "Inter Variable"
 (`app_window.slint:65`), Android the system font. Open: whether the human still sees a problem; other desktop screens
 still use the `Theme` size tokens (settings, search, deck), left alone because the human named five texts.
