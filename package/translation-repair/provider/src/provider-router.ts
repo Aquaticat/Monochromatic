@@ -25,6 +25,7 @@ import {
   createCredentialHolds,
   reachPastCredentialHolds,
 } from './credential-hold.ts';
+import { refuseDarkModel, } from './model-dark-reason.ts';
 import { routedDecide, } from './provider-router-decide.ts';
 import {
   reachOfRequest,
@@ -328,7 +329,6 @@ export function createRoutingClient(
     const dry = await readBudgetsPastHolds({
       budgets,
       modelId: request.modelId,
-      reach,
       signal: request.signal,
       refused,
       pollMs: holdPollMs,
@@ -369,11 +369,15 @@ export function createRoutingClient(
       chosen: choice.kind,
     },);
 
-    if (choice.kind === 'unreachable')
-      throw new NoProviderForModelError({
+    // A LOST SEAT, NOT THE RUN'S END: this model alone has no provider, and the log line names the model and how each
+    // provider read so a read of the run can tell the two apart.
+    if (choice.kind === 'unreachable') {
+      refuseDarkModel({
         modelId: request.modelId,
         reason: choice.reason,
+        l,
       },);
+    }
 
     // THE SLOT IS TAKEN HERE, NOT AT DISPATCH, and there must be no `await`
     // between reading `ledger.saturated` and this line. Two calls choosing at

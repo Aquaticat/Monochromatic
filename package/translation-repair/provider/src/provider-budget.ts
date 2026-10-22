@@ -17,6 +17,14 @@ import {
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { ModelClient, } from './chat-contract.ts';
 import type { NeuralWattReturn, } from './budget-routing.ts';
+import type { NeuralWattEnergy, } from './neuralwatt-energy.ts';
+import {
+  NEURALWATT_RETURN_MARGIN_MS,
+  NEURALWATT_RETURN_WAIT_BOUND_MS,
+  neuralWattReturnWaitMs,
+  type NeuralWattReturnWait,
+} from './neuralwatt-return-hold.ts';
+import { createNeuralWattReturnMark, } from './neuralwatt-return-mark.ts';
 import {
   type MeterState,
   readEveryMeter,
@@ -314,6 +322,20 @@ function notHeldOut(): boolean {
 }
 
 /**
+ The system clock, the wall clock outside a test.
+
+ @returns The current instant
+
+ @example
+ ```ts
+ const at = systemClock();
+ ```
+ */
+function systemClock(): Date {
+  return new Date();
+}
+
+/**
  Builds the cached budget view every provider is routed by.
 
  @param neuralwatt - first provider's energy meter, which is all this reads
@@ -345,6 +367,14 @@ function notHeldOut(): boolean {
  default, since a hold read on the system clock lasted an hour longer when
  it was set back (ledger B78)
 
+ @param wallNow - the wall clock, read only for the time of day a spent NeuralWatt day starts again, since that day
+ starts at a time of day in UTC and not after a duration; the system clock by default
+
+ @param returnWaitBoundMs - the longest NeuralWatt return named as a hold (`NEURALWATT_RETURN_WAIT_BOUND_MS`)
+
+ @param returnMarginMs - milliseconds added to a NeuralWatt return so the meter is read after the day has started
+ (`NEURALWATT_RETURN_MARGIN_MS`)
+
  @returns Budget view plus the correction a refused call feeds back, and the states the meters gave
 
  @example
@@ -366,6 +396,9 @@ export function createProviderBudgets(
     rateLimitBackoffMs = RATE_LIMIT_BACKOFF_MS,
     heldOut = notHeldOut,
     now = monotonicMs,
+    wallNow = systemClock,
+    returnWaitBoundMs = NEURALWATT_RETURN_WAIT_BOUND_MS,
+    returnMarginMs = NEURALWATT_RETURN_MARGIN_MS,
   }: {
     readonly neuralwatt?: Pick<NeuralWattClient, 'energy'> & { readonly dayAnchor?: NeuralWattClient['dayAnchor']; };
     readonly synthetic?: Pick<ModelClient, 'quotas'>;
@@ -379,6 +412,9 @@ export function createProviderBudgets(
     readonly rateLimitBackoffMs?: number;
     readonly heldOut?: (provider: ProviderName,) => boolean;
     readonly now?: () => number;
+    readonly wallNow?: () => Date;
+    readonly returnWaitBoundMs?: number;
+    readonly returnMarginMs?: number;
   },
 ): ProviderBudgetsWithStates {
   /**
@@ -483,6 +519,14 @@ export function createProviderBudgets(
   };
 
   /**
+   When NeuralWatt's spent day starts again, as the last meter reading named it.
+   */
+  const returns = createNeuralWattReturnMark({
+    now,
+    boundMs: returnWaitBoundMs,
+  },);
+
+  /**
    How much longer a provider's refusal holds it out, zero when it does not.
 
    @param provider - provider to check
@@ -527,6 +571,47 @@ export function createProviderBudgets(
   }
 
   /**
+   How long a spent NeuralWatt day waits for its return, on the wall clock's time of day.
+
+   @param energy - the reading the dryness was drawn from
+
+   @returns The wait, or that there is none
+
+   @example
+   ```ts
+   const wait = returnWaitMsOf({ energy, },);
+   ```
+   */
+  function returnWaitMsOf({ energy, }: { readonly energy: NeuralWattEnergy; },): NeuralWattReturnWait {
+    return neuralWattReturnWaitMs({
+      energy,
+      now: wallNow(),
+      boundMs: returnWaitBoundMs,
+      marginMs: returnMarginMs,
+    },);
+  }
+
+  /**
+   How much longer a provider is held out: the refusal hold, and for NeuralWatt also the time until its spent day starts
+   again, which the cached reading does not know.
+
+   @param provider - provider to check
+
+   @returns Milliseconds of hold left
+
+   @example
+   ```ts
+   const holds = providerRecord({ of: holdOrReturn, },);
+   ```
+   */
+  function holdOrReturn(provider: ProviderName,): number {
+    return Math.max(
+      holdLeft({ provider, },),
+      (provider === 'neuralwatt') ? returns.leftMs() : 0,
+    );
+  }
+
+  /**
    Reads every meter once, for everyone waiting on this reading.
 
    THE FIRST CALLER'S SIGNAL GOVERNS, which is a real consequence worth
@@ -566,8 +651,14 @@ export function createProviderBudgets(
       ...((deepseek === undefined) ? {} : { deepseek, }),
       ...((xiaomi === undefined) ? {} : { xiaomi, }),
       ...((openrouter === undefined) ? {} : { openrouter, }),
+      returnWaitMsOf,
       signal,
     },);
+
+    // NEURALWATT'S SPENT DAY NAMES ITS RETURN (XingZ6019, 2026-10-22: dry 48 s before its day started, the entry stopped
+    // short of its bench floor). The return is a hold the waits already wait out (`holds`), and the cached reading is
+    // read again at it (`currentReading`), whatever its age, because it says dry and the day is no longer the one it read.
+    returns.replace(meters.neuralwatt,);
 
     // INFO RATHER THAN DEBUG, because this line is the only record that a
     // provider was AVAILABLE at a given moment, and a run does not record debug.
@@ -715,6 +806,22 @@ export function createProviderBudgets(
   }
 
   /**
+   Whether NeuralWatt's day has started again since the reading that named its return, which the cached reading does not
+   know.
+
+   @returns Whether the return has passed
+
+   @example
+   ```ts
+   if (neuralwattHasReturned())
+     await readNow({ signal, },);
+   ```
+   */
+  function neuralwattHasReturned(): boolean {
+    return returns.passed();
+  }
+
+  /**
    The meter reading the cache holds, taken afresh when it has aged out.
 
    @param signal - abort signal of the call asking
@@ -733,7 +840,7 @@ export function createProviderBudgets(
     // says when this reading BEGAN, so a call arriving while it is still in
     // flight sees a fresh stamp and waits on the same promise instead of
     // starting a second read of every meter.
-    if ((now() - cache.startedAt) >= freshForMs)
+    if (((now() - cache.startedAt) >= freshForMs) || neuralwattHasReturned())
       await readNow({ signal, },);
 
     return await cache.reading;
@@ -892,7 +999,7 @@ export function createProviderBudgets(
     },
 
     holds: function holds(): ProviderRecord<number> {
-      return providerRecord({ of: holdLeftOn, },);
+      return providerRecord({ of: holdOrReturn, },);
     },
   };
 }

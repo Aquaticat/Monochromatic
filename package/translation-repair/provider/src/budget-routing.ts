@@ -6,11 +6,11 @@ import {
   PROVIDER_ORDER,
   type ProviderName,
   type ProviderRecord,
-  providerRecord,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { QuotaSnapshot, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type { XiaomiSpend, } from './xiaomi-spend.ts';
-import { neuralWattTimeOfDayUtc, } from './neuralwatt-day.ts';
+import { modelDarkReason, } from './model-dark-reason.ts';
+import { neuralWattTimeOfDayShort, } from './neuralwatt-day.ts';
 
 //region Budget routing
 // WHICH PROVIDER SERVES ONE CALL, decided from budget and saturation rather
@@ -45,7 +45,9 @@ import { neuralWattTimeOfDayUtc, } from './neuralwatt-day.ts';
 // roster is served by fewer than all providers, and one of those providers
 // being dry costs that panelist its voice, which the pipeline already records
 // and proceeds without. Only every budget being empty ends a run, because at
-// that point nothing can be bought at all.
+// that point nothing can be bought at all. A provider that reads wet but does not serve the model asked, Xiaomi
+// included, still leaves the run something to buy for its other seats, so it keeps its own reading
+// (owner's ruling of 2026-10-22, open to the owner's veto).
 
 /**
  What the run knows of when NeuralWatt's free energy returns, for the refusal that ends the run to state.
@@ -83,11 +85,6 @@ export type NeuralWattReturn =
      */
       readonly kind: 'off';
     };
-
-/**
- The milliseconds of a time of day that starts on a whole second.
- */
-const WHOLE_SECOND_MILLIS = '.000';
 
 /**
  The opening clause about NeuralWatt, which says only what the run knows of it: spent when a day start is decided, refused
@@ -130,18 +127,9 @@ function returnClauseOf({ day, }: { readonly day: NeuralWattReturn; },): string 
     return 'NeuralWatt\'s day start was not decided for this run, so no time of day can be stated for its return; ';
 
   /**
-   The time of day with its milliseconds.
-   */
-  const withMillis = neuralWattTimeOfDayUtc({ msOfDay: day.msOfDay, },);
-  /**
    The time of day, whole seconds where the day starts on one.
    */
-  const timeOfDay = withMillis.endsWith(WHOLE_SECOND_MILLIS,)
-    ? withMillis.slice(
-      0,
-      -WHOLE_SECOND_MILLIS.length,
-    )
-    : withMillis;
+  const timeOfDay = neuralWattTimeOfDayShort({ msOfDay: day.msOfDay, },);
   return `NeuralWatt's free energy returns when its day starts again, at ${timeOfDay} UTC, the day start this run `
     + 'decided or learned; ';
 }
@@ -175,11 +163,6 @@ export class EveryProviderDryError extends Error {
    composed by the caller from the dryness record and the holds, and "no
    reading cited" where the caller has none
 
-   @param unserving - providers whose meter read wet but which were counted
-   dry because they serve nothing for the model asked (`unservingMeters`),
-   so the sentence about Xiaomi names the cause that applies: a payment
-   refusal, or a wet meter that cannot serve this call
-
    @param neuralwatt - what the run knows of NeuralWatt's day, so the sentence about its return states the account's
    own time of day and never midnight; "not decided" where the caller has none
 
@@ -191,40 +174,22 @@ export class EveryProviderDryError extends Error {
   public constructor(
     {
       measured = 'no reading cited',
-      unserving = [],
       neuralwatt = { kind: 'unanchored', },
     }: {
       readonly measured?: string;
-      readonly unserving?: readonly ProviderName[];
       readonly neuralwatt?: NeuralWattReturn;
     } = {},
   ) {
-    /**
-     Whether Xiaomi is in the count only because it serves other models: its meter reads wet, so no payment refusal
-     is behind it.
-     */
-    const xiaomiWetButUnserving = unserving.includes('xiaomi',);
-    /**
-     The clause naming why Xiaomi is out, one of two fixed sentences.
-     */
-    const xiaomiCause = xiaomiWetButUnserving
-      ? 'Xiaomi\'s meter reads wet but it serves only MiMo V2.6 Flash, not the model asked, '
-      : 'Xiaomi has refused a call for payment, ';
-    /**
-     The clause saying when Xiaomi comes back, a fixed sentence or nothing.
-     */
-    const xiaomiRefill = xiaomiWetButUnserving
-      ? ''
-      : 'Xiaomi, once refused for payment, is read again only after one of its calls settles, so a top-up is '
-        + 'seen on the next launch; ';
     super(
       `Every provider is out of budget at once: ${openingClauseOf({ day: neuralwatt, },)}`
         + 'Synthetic has no weekly credit left (or no five-hour request left, on a reply that still carries '
         + 'that window), Charm Hyper has no balance left, Amazon Bedrock has no credit left short of the owner\'s '
-        + `card, DeepSeek has no balance left (or says its account is unavailable), ${xiaomiCause}`
-        + 'and OpenRouter has no credit left. Nothing further can be bought, so this run ends. '
+        + 'card, DeepSeek has no balance left (or says its account is unavailable), '
+        + 'Xiaomi has refused a call for payment, and OpenRouter has no credit left. '
+        + 'Nothing further can be bought, so this run ends. '
         + `${returnClauseOf({ day: neuralwatt, },)}Synthetic regenerates on its own schedule; Hyper, `
-        + `DeepSeek and OpenRouter refill on purchase; ${xiaomiRefill}`
+        + 'DeepSeek and OpenRouter refill on purchase; Xiaomi, once refused for payment, is read again only after one '
+        + 'of its calls settles, so a top-up is seen on the next launch; '
         + 'Bedrock\'s credit is never topped up. '
         + `Measured at the decision: ${measured}.`,
     );
@@ -244,78 +209,6 @@ export class EveryProviderDryError extends Error {
  ```
  */
 export type ModelReach = ProviderRecord<boolean>;
-
-/**
- Providers whose meter can never read dry by itself: Xiaomi documents no balance, so its meter answers wet always
- (`xiaomi-spend.ts`) and only a payment refusal at the wire marks it dry.
- */
-const ALWAYS_WET_METERS: ReadonlySet<ProviderName> = new Set<ProviderName>(['xiaomi',],);
-
-/**
- The providers `dryForTheModelAsked` flips: an always-wet meter that reads wet and serves nothing for the model asked.
-
- A provider that read dry itself, a payment refusal among the causes, is not listed, so the refusal text can tell the
- two causes apart.
-
- @param reach - providers that serve the model asked
-
- @param dry - dryness per provider, budget reading and anything learned at the wire taken together
-
- @returns The providers read dry only because they serve nothing here, in spending order
-
- @example
- ```ts
- const flipped = unservingMeters({ reach, dry, },);
- ```
- */
-export function unservingMeters(
-  {
-    reach,
-    dry,
-  }: {
-    readonly reach: ModelReach;
-    readonly dry: ProviderRecord<boolean>;
-  },
-): readonly ProviderName[] {
-  return PROVIDER_ORDER.filter(function flipped(provider,): boolean {
-    return ALWAYS_WET_METERS.has(provider,) && (!dry[provider])
-      && (!reach[provider]);
-  },);
-}
-
-/**
- The dryness the run-ending stop reads for one model: a provider whose meter cannot read dry, and which does not serve
- the model asked, counts dry, since its wet reading buys nothing for this call.
-
- Every other provider keeps its own reading, wet or dry, whether or not it serves the model. A model whose serving
- providers are all dry while some other provider reads wet is still a lost seat for that model, not the end of the run.
-
- @param reach - providers that serve the model asked
-
- @param dry - dryness per provider, budget reading and anything learned at the wire taken together
-
- @returns Dryness per provider with the always-wet providers that serve nothing here read dry
-
- @example
- ```ts
- const effective = dryForTheModelAsked({ reach, dry, },);
- ```
- */
-export function dryForTheModelAsked(
-  {
-    reach,
-    dry,
-  }: {
-    readonly reach: ModelReach;
-    readonly dry: ProviderRecord<boolean>;
-  },
-): ProviderRecord<boolean> {
-  return providerRecord({
-    of: function dryOf(provider,): boolean {
-      return dry[provider] || (ALWAYS_WET_METERS.has(provider,) && (!reach[provider]));
-    },
-  },);
-}
 
 /**
  Reading given when no provider in order both serves a model and has budget.
@@ -625,31 +518,19 @@ export function routeProviderFor(
   },
 ): ProviderChoice {
   if (PROVIDER_ORDER.every(function isDry(provider,): boolean {
-    return dryForTheModelAsked({
-      reach,
-      dry,
-    },)[provider];
+    return dry[provider];
   },)) {
     // THE READING IT DECIDED ON, cited (ledger P12): this refusal said "no
     // reading cited" where the router had the whole dryness record in hand.
-    // EVERY PROVIDER READS DRY HERE: this branch runs only when `isDry` held
-    // for every provider in `PROVIDER_ORDER`, so each clause says "dry", or, for a wet meter that serves nothing
-    // here, why it counts as dry.
-    /**
-     Providers read dry only for serving nothing here, whose clause says so instead of "dry".
-     */
-    const unserving = unservingMeters({
-      reach,
-      dry,
-    },);
+    // EVERY PROVIDER READS DRY HERE: this branch runs only when `isDry` held for every provider in `PROVIDER_ORDER`,
+    // whether or not it serves the model, so each clause says "dry".
     throw new EveryProviderDryError({
       measured: `meters read ${
         PROVIDER_ORDER.map(function stateOf(provider,): string {
-          return unserving.includes(provider,) ? `${provider} wet but not serving this model` : `${provider} dry`;
+          return `${provider} dry`;
         },)
           .join(', ',)
       }; no holds read at this decision`,
-      unserving,
       // Conditional spread keeps the day absent where the caller has none.
       ...((neuralwatt === undefined) ? {} : { neuralwatt, }),
     },);
@@ -670,11 +551,10 @@ export function routeProviderFor(
   if (preferred === undefined)
     return {
       kind: 'unreachable',
-      reason: PROVIDER_ORDER.some(function serves(provider,): boolean {
-        return reach[provider];
-      },)
-        ? 'every provider serving this model is out of budget'
-        : 'no provider serves this model',
+      reason: modelDarkReason({
+        reach,
+        dry,
+      },),
     };
 
   /**

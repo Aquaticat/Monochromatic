@@ -359,6 +359,27 @@ const CHUNK_PACING = 'the pause between two chunks of a scripted body, so a stre
   + 'load only lengthens it';
 
 /**
+ Why a hold of the reason cases keeps its value: the pure reason reader is handed a record of holds and names the
+ shortest, and it sleeps nothing.
+ */
+const HOLD_REASON_INPUT = 'a hold handed to the pure reader of the reason a wait is taken for, which names the shortest and '
+  + 'sleeps nothing';
+
+/**
+ Why the bound the NeuralWatt return cases pass keeps its value: the pure reader of the wait is handed the bound and
+ the clock time it measures against, and returns a wait or none without arming a timer.
+ */
+const RETURN_BOUND_INPUT = 'the bound handed to the pure reader of how long to wait for the NeuralWatt day start, which '
+  + 'returns a number or none and arms no timer; the cases read the answer at, over and under it';
+
+/**
+ Why the cache window of the NeuralWatt return budget cases keeps its value: the window is on the case\'s own scripted
+ clock, which the case moves by hand.
+ */
+const RETURN_CACHE_WINDOW = 'the cache window of budgets read on the case\'s own scripted wall clock and monotonic clock, '
+  + 'which the case moves by hand';
+
+/**
  Bounds that keep a value of their own, keyed `path#site: form value`.
  */
 const LISTED: Readonly<Record<string, ListedBound>> = {
@@ -373,6 +394,15 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     bound: 'read back',
     reason: 'a record `shortestHold` is asked the shortest of, which only reads the numbers and sleeps nothing',
   },
+  'provider/hold-reason.unit.test.ts#<module>: hold hyper: 5_000': { count: 1, bound: 'read back', reason: HOLD_REASON_INPUT, },
+  'provider/hold-reason.unit.test.ts#<module>: hold hyper: 900_000': { count: 1, bound: 'read back', reason: HOLD_REASON_INPUT, },
+  'provider/hold-reason.unit.test.ts#<module>: hold neuralwatt: 48_000': { count: 1, bound: 'read back', reason: HOLD_REASON_INPUT, },
+  'provider/hold-reason.unit.test.ts#<module>: hold openrouter: 9_000': { count: 1, bound: 'read back', reason: HOLD_REASON_INPUT, },
+  'provider/hold-reason.unit.test.ts#<module>: hold synthetic: 5_000': { count: 1, bound: 'read back', reason: HOLD_REASON_INPUT, },
+  'provider/neuralwatt-return-hold.unit.test.ts#<module>: boundMs: NEURALWATT_RETURN_WAIT_BOUND_MS': { count: 5, bound: 'read back', reason: RETURN_BOUND_INPUT, },
+  'provider/neuralwatt-return-hold.unit.test.ts#waitAt: boundMs: NEURALWATT_RETURN_WAIT_BOUND_MS': { count: 1, bound: 'read back', reason: RETURN_BOUND_INPUT, },
+  'provider/neuralwatt-return-mark.unit.test.ts#<module>: boundMs: 300_000': { count: 2, bound: 'read back', reason: RETURN_BOUND_INPUT, },
+  'provider/provider-budget-neuralwatt-return.unit.test.ts#budgetsBefore: freshForMs: FRESH_MS': { count: 1, bound: 'other', reason: RETURN_CACHE_WINDOW, },
   'run/corpus-run/run-seats-read.unit.test.ts#<module>: hold openrouter: 60_000': {
     count: 1,
     bound: 'other',

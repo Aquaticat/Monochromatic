@@ -601,8 +601,75 @@ await describe({
               saturated: noneSaturated,
             },),).toEqual({
               kind: 'unreachable',
-              reason: 'every provider serving this model is out of budget',
+              reason: 'every provider serving this model is out of budget (synthetic dry); the providers that do not '
+                + 'serve it read neuralwatt wet, bedrock wet, deepseek wet, xiaomi wet, hyper wet, openrouter wet',
             },);
+          },
+        },),
+
+        it({
+          name: 'DOES NOT END THE RUN for a model Xiaomi does not serve when every other provider reads dry and '
+            + 'Xiaomi reads wet, because only every provider dry ends it and this model alone has lost its '
+            + 'providers',
+          fn: async () => {
+            expect(routeProviderFor({
+              reach: everyReach,
+              dry: {
+                ...allDry,
+                xiaomi: false,
+              },
+              saturated: noneSaturated,
+            },).kind,).toBe('unreachable',);
+          },
+        },),
+
+        it({
+          name: 'NAMES THE PROVIDERS THAT SERVE THE DARK MODEL AND HOW EACH READS, and how the ones that do not serve '
+            + 'it read, so a read of the run tells a lost seat from the run-ending stop',
+          fn: async () => {
+            expect(routeProviderFor({
+              reach: {
+                ...everyReach,
+                synthetic: false,
+                bedrock: false,
+                hyper: true,
+                deepseek: true,
+              },
+              dry: {
+                ...allWet,
+                hyper: true,
+                deepseek: true,
+                openrouter: true,
+              },
+              saturated: noneSaturated,
+            },),).toEqual({
+              kind: 'unreachable',
+              reason: 'every provider serving this model is out of budget (deepseek dry, hyper dry, openrouter dry); '
+                + 'the providers that do not serve it read neuralwatt wet, synthetic wet, bedrock wet, xiaomi wet',
+            },);
+          },
+        },),
+
+        it({
+          name: 'REPORTS a Hyper-only model as unreachable while Hyper is dry and NeuralWatt and DeepSeek read wet, '
+            + 'since the providers that serve the other seats are not this seat\'s',
+          fn: async () => {
+            expect(routeProviderFor({
+              reach: {
+                neuralwatt: false,
+                synthetic: false,
+                hyper: true,
+                bedrock: false,
+                deepseek: false,
+                xiaomi: false,
+                openrouter: false,
+              },
+              dry: {
+                ...allWet,
+                hyper: true,
+              },
+              saturated: noneSaturated,
+            },).kind,).toBe('unreachable',);
           },
         },),
       ],
@@ -918,20 +985,6 @@ await describe({
             const message = allDryMessageOf({ dry: allDry, },);
             expect(message,).toContain('Xiaomi has refused a call for payment',);
             expect(message,).toContain('xiaomi dry',);
-            expect(message,).not.toContain('not serving this model',);
-          },
-        },),
-
-        it({
-          name: 'SAYS XIAOMI SERVES ANOTHER MODEL, and not a payment refusal, when its meter reads wet and it does not '
-            + 'serve the model asked, since the reader sees xiaomi=wet on the METERS line beside the refusal',
-          fn: async () => {
-            const message = allDryMessageOf({ dry: { ...allDry, xiaomi: false, }, },);
-            expect(message,).not.toContain('Xiaomi has refused a call for payment',);
-            expect(message,)
-              .toContain('Xiaomi\'s meter reads wet but it serves only MiMo V2.6 Flash, not the model asked',);
-            expect(message,).toContain('xiaomi wet but not serving this model',);
-            expect(message,).not.toContain('xiaomi dry',);
           },
         },),
       ],

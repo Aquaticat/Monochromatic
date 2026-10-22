@@ -4,6 +4,7 @@ import {
   type BudgetView,
   EveryProviderDryError,
   HOLD_POLL_MS,
+  holdReasonOf,
   type MeterState,
   shortestHold,
   waitOutHold,
@@ -31,7 +32,11 @@ import {
   PHASES_WITHOUT_WRITER_STOP,
   unreachableWritingBenches,
 } from './run-seats-floor.ts';
-import { writtenRefusal, } from './run-seats-refusal.ts';
+import {
+  neuralwattOf,
+  withNeuralWattReturn,
+  writtenRefusal,
+} from './run-seats-refusal.ts';
 import {
   type BenchName,
   type JudgeSeatPhase,
@@ -285,24 +290,34 @@ async function readDrynessPastShortBench(
     };
   }
   if (shortest === 0) {
-    if ((unreachable.length > 0) && (!goesOn)) {
-      // THE FIFTEENTH CLASS: a writing bench below its floor with nothing to
-      // wait for stops the entry rather than writing a one-writer page.
-      l.error(`JUDGE SEATS phase=${phase} writing bench unreachable: ${unreachable.join('; ',)}; stopping the entry`,);
-      throw writtenRefusal({
-        phase,
-        clauses: unreachable,
-        dry: first,
-        client,
-      },);
-    }
+    /**
+     The unreachable benches with the return of a NeuralWatt that reads dry beyond the wait bound, so a refusal states
+     when the energy comes back and why it was not waited for.
+     */
+    const stated = withNeuralWattReturn({
+      clauses: unreachable,
+      dry: first,
+      client,
+    },);
     if (unreachable.length > 0) {
-      // A PHASE THAT GOES ON WITHOUT ITS WRITERS says so once, naming the
-      // bench, and never says the entry stops, since it does not.
+      // THE FIFTEENTH CLASS: a writing bench below its floor with nothing to wait for stops the entry rather than
+      // writing a one-writer page. A PHASE THAT GOES ON WITHOUT ITS WRITERS says so once, naming the bench, and never
+      // says the entry stops, since it does not.
       l.error(
-        `JUDGE SEATS phase=${phase} writing bench unreachable: ${unreachable.join('; ',)}; `
-          + 'no provider has named its return, so the phase goes on without its writers',
+        `JUDGE SEATS phase=${phase} writing bench unreachable: ${stated.join('; ',)}; ${
+          goesOn
+            ? 'no provider has named its return, so the phase goes on without its writers'
+            : 'stopping the entry'
+        }`,
       );
+      if (!goesOn) {
+        throw writtenRefusal({
+          phase,
+          clauses: stated,
+          dry: first,
+          client,
+        },);
+      }
     }
     /**
      Writing benches below the floor, which the error line of a phase that goes on has named.
@@ -345,24 +360,29 @@ async function readDrynessPastShortBench(
     };
   }
   /**
-   How long this reading waits: the shortest running hold.
-   */
-  const waitMs = shortest;
-  /**
    Each provider's hold, for the line.
    */
   const held = PROVIDER_ORDER.map(function holdOf(provider,): string {
     return `${provider} ${String(holds[provider],)}ms`;
   },);
+  /**
+   Whose hold is the shortest, and for NeuralWatt when its day starts again, for the lines.
+   */
+  const reason = holdReasonOf({
+    holds,
+    shortest,
+    neuralwatt: neuralwattOf({ client, },),
+  },);
   l.warn(
     `JUDGE SEATS phase=${phase} short of quorum: ${short.join('; ',)}; holds ${held.join(', ',)}; `
-      + `waiting ${String(waitMs,)}ms for the shortest hold to end rather than seating a bench short of its quorum`,
+      + `waiting ${String(shortest,)}ms for the shortest hold to end, ${reason}, rather than seating a bench short of its quorum`,
   );
   await waitOutHold({
-    ms: waitMs,
+    ms: shortest,
     signal,
     pollMs,
   },);
+  l.info(`JUDGE SEATS phase=${phase} waited ${String(shortest,)}ms for ${reason}; the benches are read again`,);
   /**
    Dryness after the wait.
    */
@@ -375,27 +395,31 @@ async function readDrynessPastShortBench(
     names,
     dry: again,
   },);
-  if ((stillUnreachable.length > 0) && (!goesOn)) {
-    l.error(
-      `JUDGE SEATS phase=${phase} writing bench unreachable after waiting ${String(waitMs,)}ms: `
-        + `${stillUnreachable.join('; ',)}; stopping the entry`,
-    );
-    throw writtenRefusal({
-      phase,
-      clauses: stillUnreachable,
-      dry: again,
-      client,
-    },);
-  }
+  /**
+   The same benches with the return of a NeuralWatt that still reads dry beyond the wait bound.
+   */
+  const statedAfter = withNeuralWattReturn({
+    clauses: stillUnreachable,
+    dry: again,
+    client,
+  },);
   if (stillUnreachable.length > 0) {
     l.error(
-      `JUDGE SEATS phase=${phase} writing bench unreachable after waiting ${String(waitMs,)}ms: `
-        + `${stillUnreachable.join('; ',)}; the phase goes on without its writers`,
+      `JUDGE SEATS phase=${phase} writing bench unreachable after waiting ${String(shortest,)}ms: `
+        + `${statedAfter.join('; ',)}; ${goesOn ? 'the phase goes on without its writers' : 'stopping the entry'}`,
     );
+    if (!goesOn) {
+      throw writtenRefusal({
+        phase,
+        clauses: statedAfter,
+        dry: again,
+        client,
+      },);
+    }
   }
   return {
     dry: again,
-    waitMs,
+    waitMs: shortest,
     unreachableWriters: stillUnreachable,
   };
 }
