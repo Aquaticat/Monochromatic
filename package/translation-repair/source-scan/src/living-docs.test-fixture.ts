@@ -358,7 +358,11 @@ export function staleStemFindings(
   return stems
     .filter(function matchesNone(stem,): boolean {
       return !paths.some(function opens(path,): boolean {
-        return basename(path,).startsWith(stem,);
+        /**
+         Doc's file name, without its folder.
+         */
+        const name = basename(path,);
+        return name.startsWith(stem,);
       },);
     },)
     .map(function finding(stem,): string {

@@ -285,7 +285,7 @@ await describe({
     },),
     it({
       name: 'FINDS a stem no doc\'s name starts with, and passes a stem a doc and a split file of it both open',
-      fn: () => {
+      fn: async () => {
         expect(staleStemFindings({
           stems: ['cat-nap-', 'dog-walk', 'cat-bowl',],
           paths: [
