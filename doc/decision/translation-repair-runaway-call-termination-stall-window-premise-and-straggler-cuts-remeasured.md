@@ -8,8 +8,7 @@ Part of [Ending runaway calls on our side of the wire](translation-repair-runawa
 which lists every file of this record.
 
 Superseded on 2026-10-21 (UTC):
-the constants this record keeps at 600000 are now `STREAM_FIRST_CONTENT_MS` and `STREAM_IDLE_MS`,
-120000 ms each,
+the constants this record keeps at 600000 are now `STREAM_FIRST_CONTENT_MS` (180000 ms) and `STREAM_IDLE_MS` (120000 ms),
 and they count generated text only.
 See the section "The windows armed on 2026-10-21" at the end of this file.
 The rest of this record is kept as it was written.
@@ -183,10 +182,19 @@ Eleven `inception/mercury-2.5` streams that sent only `: OPENROUTER PROCESSING` 
 
 What replaced it:
 
-- Both windows are 120000 ms.
+- The first-content window is 180000 ms and the idle window 120000 ms.
   The basis is the largest healthy observation in 19542 completed streams that delivered text:
   a first byte of 115725 ms and a silence of 93736 ms.
-  The first-content margin is 3.7 percent and the idle margin 28 percent.
+  The idle margin is 28 percent.
+  The first-content margin is 56 percent over the first byte.
+  The window began at 120000 ms,
+  a margin of 3.7 percent,
+  and was widened before landing because the logs record the time to first byte and not the time to first text.
+  The first byte is a lower bound on the wait the window bounds,
+  so the margin over it could have been negative,
+  and a healthy slow stream cut.
+  The stream progress line now writes `firstContent <N>ms` beside `firstByte <N>ms`,
+  which is how the real figure is measured on the next read of the logs.
 - Progress is a content or a reasoning delta.
   A comment line,
   a blank keep-alive line or an event with an empty delta does not reset a window.
@@ -194,9 +202,13 @@ What replaced it:
 - The older tail evidence this record kept the windows for
   (a first byte of 183755 ms,
   a completion at 347099 ms and a gap of 124992 ms)
-  would now be cut.
+  would still be cut,
+  each by the window it exceeds
+  (the first byte of 183755 ms is 3755 ms over 180000 ms).
   It came from rosters that are gone.
 
 Question 10 of `doc/planning/translation-repair-open-decisions.md` is answered by this arming,
 on the evidence of the current roster,
-and stays open for the owner to loosen the first-content window if the next runs show healthy streams cut.
+and stays open for the owner to loosen the first-content window if the next runs show healthy streams cut,
+or to tighten it once `firstContent` figures show how long healthy first text takes.
+The first-content figure of 180000 ms was chosen by the parent session and is open to the owner's veto.

@@ -8,9 +8,9 @@ Part of [Decisions waiting on you, 2026-08-15 morning, still open on 2026-08-19]
 which lists every file of this record.
 
 Note of 2026-10-21 (UTC):
-the windows were armed at 120000 ms and count generated text only.
+the windows were armed at 180000 ms (first content) and 120000 ms (idle) and count generated text only.
 The constants this question names as `STREAM_FIRST_BYTE_MS` and `STREAM_IDLE_MS` at 600000 are
-`STREAM_FIRST_CONTENT_MS` and `STREAM_IDLE_MS` at 120000;
+`STREAM_FIRST_CONTENT_MS` at 180000 and `STREAM_IDLE_MS` at 120000;
 see "The windows armed on 2026-10-21" in
 `doc/decision/translation-repair-runaway-call-termination-stall-window-premise-and-straggler-cuts-remeasured.md`.
 The rest of this record is kept as it was written.

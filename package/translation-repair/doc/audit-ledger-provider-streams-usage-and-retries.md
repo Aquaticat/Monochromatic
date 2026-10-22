@@ -656,6 +656,7 @@ Status:
 fixed on 2026-10-21 (UTC),
 red `65b3695fc7b0816f4e3af187ae4c3a27560474cd`,
 fix `2866c62ebd7a361d94854fe1c43a1f70288eef7e`,
+first-content window revised from 120000 ms to 180000 ms before landing (see "The choice"),
 cache versions none.
 Found in the read of the corpus pass for `zheermao22` (class K2) and fixed in `w263`.
 
@@ -711,22 +712,27 @@ the live log `XingZ6017` left out):
   and the censored part does not hide a slower healthy start.
 - The logs record the time to first byte and not the time to first text.
   The first byte is a lower bound on the second,
-  and the first-content window is set against it.
+  so the largest first byte (115725 ms) is not a ceiling on the wait for text.
+  A stream whose first byte came early and whose first text came late waited longer than the log shows,
+  and no log read for this entry can say by how much.
 
 The choice:
-120000 ms for both windows,
+180000 ms for the first-content window and 120000 ms for the idle window,
 and the basis is the largest observation and not a percentile.
 A bound at p99.9 would cut about 20 healthy streams of the 19542,
 and each cut costs a paid call and a retry,
-so the bound sits above everything seen:
-the first-content window is 3.7 percent above the largest first byte (115725 ms),
-the idle window 28 percent above the largest gap (93736 ms).
-The first-content margin is thin.
-Streams of 2026-10-21 UTC and later are the evidence for loosening it,
-and the cut line now says what a cut stream had delivered.
+so each bound sits above everything seen.
+The idle window is 28 percent above the largest gap (93736 ms),
+a quantity the logs measure directly.
+The first-content window began at 120000 ms,
+3.7 percent above the largest first byte (115725 ms).
+That margin is over a lower bound on the quantity the window bounds,
+so the true margin could have been negative and a healthy slow stream cut.
+It is 180000 ms now,
+which is 56 percent above the largest first byte.
 Both windows are below the 360 s deadline,
-so a stalled call ends in a third of its deadline at most,
-and Mercury's silent streams end at 120 s after their last text or at 120 s after arming,
+so a stalled call ends in half its deadline at most,
+and Mercury's silent streams end at 120 s after their last text or at 180 s after arming,
 without waiting for a quorum.
 
 Older tail evidence now cut:
@@ -735,6 +741,9 @@ a pass-7 completion at 347099 ms and a mid-stream gap of 124992 ms
 (`doc/audit/stream-guards-first-production-traffic.md`,
 `doc/handover/translation-repair-history.md`)
 are longer than the new windows.
+The first of them is only 3755 ms over the first-content window,
+so the widening does not clear it,
+and it is not meant to.
 They came from rosters that are gone,
 and the 347099 ms completion sits within 4 percent of the old deadline of 360000 ms,
 which the bound must remain shorter than.
@@ -773,7 +782,13 @@ a bound equal to the deadline,
 and each of not-a-number,
 zero,
 a negative and infinity,
-and pins the shipped windows above the largest healthy observations and below the deadline.
+and pins the shipped windows above the largest healthy observations,
+the first-content window half again over the largest first byte,
+and both below the deadline.
+`stream-idle-guard.unit.test.ts` pins 180000 ms and that the 183755 ms first byte is still cut,
+and times the first text beside the first byte;
+`stream-cut.unit.test.ts` reads `firstContent` off the progress line,
+and `stream-content-progress.unit.test.ts` reads a negative `firstContentMs` off a stream of comment lines that did send bytes.
 `run-call-config-builder.unit.test.ts` hands `runCallConfigOf` the shipped pair.
 `provider-named-exchange.unit.test.ts` reads the provider off the exchange of each of the five clients.
 Each failed before the fix,
@@ -787,23 +802,33 @@ as `perCallTimeoutMs` is not:
 they change how long a voice has to answer,
 not what it is asked.
 
-Not done:
-the time to first text is not logged,
-so the first-content window is set against the first byte.
-Adding `firstContentMs` to the stream progress line would let the next reading set it on the quantity it bounds.
+The time to first text:
+the progress line of every stream,
+completed or cut,
+now carries `firstContent <N>ms` beside `firstByte <N>ms`
+(`StreamProgress.firstContentMs`,
+negative when no content or reasoning delta ever arrived).
+The first-content window was set against the first byte because the logs held nothing else;
+the next reading of the pass logs sets it on the quantity it bounds.
+Logs written before this change carry the first byte alone.
+The change is diagnostic only:
+no window,
+cache key or decision reads the new field.
 The straggler grace stays as a second bound after quorum.
 
 Limits:
-the first-content window is thin against a lower bound.
-A model that thinks for longer than 120 s before its first delta,
+the first-content window is 56 percent over a lower bound.
+A model that thinks for longer than 180 s before its first delta,
 with its thinking hidden from the stream,
-would now be cut where it was not.
+would be cut where it was not,
+and the first text of such a stream is the figure the new field records.
 The logs read hold no such stream among the completed ones,
 but they do not record whether a model hid its thinking,
 so this is unmeasured.
 
 Open to the owner's veto:
-120000 ms for the first-content window.
+180000 ms for the first-content window,
+which the parent chose over 120000 ms because the margin over a lower bound could be negative.
 Changing it is `STREAM_FIRST_CONTENT_MS`.
 
 Recurrence:
