@@ -234,7 +234,8 @@ on the owner's answer "Remove from both benches",
 red `99eca0e2af`,
 fix `9639e19d85`,
 reseat test follow-on `89067fb49a` (M287).
-Cache versions: the consolidate (31) and lane-contest (15) keys hash the judges' ids,
+Cache versions:
+the consolidate (31) and lane-contest (15) keys hash the judges' ids,
 so the bench change rides inside both numbers,
 which then moved to 32 and 16 with B816.
 The reading of "both benches" is open to the owner's veto.

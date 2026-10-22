@@ -842,11 +842,15 @@ no change made).
 
 Update of 2026-10-22 (UTC):
 the owner answered the policy question with "Let the grace open".
-A short bench whose reachable seats equal its quorum, above two voices, now closes one voice below every live seat,
+A short bench whose reachable seats equal its quorum,
+above two voices,
+now closes one voice below every live seat,
 so the grace can cut the last of them,
 and the bench of 7 with 3 seats unreachable of this entry needs 3 of its 4 live seats.
 The text of this entry stands as the record of 2026-10-22 before the answer.
-The change, the shape it does not reach (a bench of 3 with 1 unreachable) and the cache versions it moved are in B816
+The change,
+the shape it does not reach (a bench of 3 with 1 unreachable)
+and the cache versions it moved are in B816
 (`audit-ledger-short-benches-and-the-last-live-seat.md`).
 
 ## B810: a seat abandoned again and again is asked every round; the evidence rejects a hold
@@ -929,10 +933,12 @@ and the protection of B421 is doing what it was built for,
 so no abandonment-counting hold was built.
 
 Update of 2026-10-22 (UTC):
-the sentence "the quorum becomes every live seat, so the grace cannot open" described the rule of 2026-09-09.
+the sentence "the quorum becomes every live seat,
+so the grace cannot open" described the rule of 2026-09-09.
 The owner's answer "Let the grace open" (B816) ended it for a bench whose reachable seats equal its quorum above two voices:
 that bench now closes one voice below every live seat and the grace can open on the last one.
-The sentence stands for a bench of 3 with 1 unreachable, which keeps the floor of two voices.
+The sentence stands for a bench of 3 with 1 unreachable,
+which keeps the floor of two voices.
 
 Not built:
 a dead-seat hold,

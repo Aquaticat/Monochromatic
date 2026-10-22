@@ -502,7 +502,8 @@ That rerun's log (outside the repository,
 `~/temp/agent/tr-fan/w274-audit/reseat/corpus-pass.log`) holds `JUDGE SEATS` lines from the file's cases,
 so the file loaded and ran,
 and its six `[FAIL]` lines name two other cases.
-Measured on 2026-10-22: of the 31 views with at least one provider dry,
+Measured on 2026-10-22:
+of the 31 views with at least one provider dry,
 4 take a late judge (`hf:moonshotai/Kimi-K3`),
 Synthetic and Hyper dry with OpenRouter wet and any of NeuralWatt and Bedrock,
 and the contest and consolidation reseat cases now read a Synthetic-and-Hyper-dry view.
