@@ -696,6 +696,163 @@ build script, not a guard result); it was repeated after copying that file.
   files are what remains.
 - The wait of 150 ms (the positive control of the previous subsection) and the unfixed code were not rebuilt.
 
+### Stalls away from slot 50 and the cost of the wake-up, by label rotation and tick class
+
+Session of 2026-10-22 on branch `worktree-agent-ae05d7039f46336dc`, base `cd1e9ec340` (origin/main with the wake-up).
+It takes the two questions that the subsections "Idle latency of the 20 ms wait and rare stalls elsewhere" and
+"A wake-up for the end of the 20 ms wait" left open:
+are the stalls away from slot 50 the host or the fix, and does the wake-up cost a frame.
+No product code and no guard changed, so no gate ran.
+
+#### Method
+
+Tree A is `3f978311f0`, the first parent of the wake-up merge `401170b566`; `src/native/tile/wait.rs` does not exist in
+it, and `git diff --stat 3f978311f0 cd1e9ec340 -- package/desktop-app/ide` lists six files, all of the wake-up (the new
+`tile/wait.rs`, `tile.rs`, `native.rs`, `state.rs`, the tests and the source guards).
+Tree B is `cd1e9ec340`.
+Both were built with `mise run //package/desktop-app/ide:build` in their own worktree under `~/temp/agent`.
+That directory is on another filesystem than the checkout, so the copy of the release part of `target` was a real copy
+(3.6 GB each), not a reflink; each build took about 5 minutes under `CPUQuota=600%`.
+The runs are the scroll scenario of `inspect:cadence` (120 steps of 25 px, 16 ms apart, release, `big.rs`, 1100x660),
+the frame-shift probe `mm-stall.mjs`, one app run at a time, each run a capped unit
+(`CPUWeight=10000`, `MemoryMax=40G`, `CPUQuota=600%`), the driver itself a unit with `CPUQuota=100%`.
+Logs were at debug level for the frame, tile, tile build, gpu tile and wheel targets in every label.
+
+The labels are A, B and A2, where A2 is the binary of A under a second name.
+Each round runs the three labels once, in a rotating order (A B A2, then B A2 A, then A2 A B), so one round holds a
+pair of A against B, a pair of A against A2, and a pair of B against A2 that share the host conditions of that minute.
+This replaces the brief's separate 60 pairs of A against B and 30 pairs of A against A.
+Two passes ran: 60 rounds, then 25 more
+because 28 runs of the first pass could not be read (see "Counts" in this subsection).
+255 runs in all, 85 per label; 226 give a probe result (A 74, A2 79, B 73), which makes 70 rounds with A and B both
+read and 72 with A and A2 both read, more than the 60 and 30 asked for.
+A throwaway round of three runs, not counted, came first.
+
+The driver (`~/temp/agent/g56-run.mjs`) keeps the debug log of every run, the hash of every recorded frame, and the
+modification time of every frame file, which puts each recorded slot on the clock of the logs.
+The recorder is a steady 60 Hz timer and the file clock steps by 4 ms, so the slot clock is a least squares line through
+the 190 to 250 modification times of a run; its worst residual is 5 to 8 ms in the runs looked at, so a tick is placed
+within about one half of a tick.
+A draw that finishes in the application is seen in the recorded frame some milliseconds later.
+Over the whole-frame hash, which changes whenever a draw happens, one delay explains every tick of the input window in
+161 of the 226 readable runs, and the delays that do form a plateau about 11 to 13 ms wide at the median in each label;
+a delay of 6 ms was used throughout.
+
+A stalled tick (the text moved by 0 rows between slot N-1 and N) is put in one class, in this order:
+the tile applied outside a scroll step (more than 3 ms after the last wheel event) in the 17 ms before the tick ends,
+split into with and without an input gap (two wheel events more than 20 ms apart touching that range);
+a late wheel (a gap over 20 ms in that range, or no wheel event in the tick);
+a tile applied inside a step; a redraw that no wheel event or tile started; none of these.
+The same classes are computed for all 119 ticks of every run, so the rate of a stall in each class is known.
+Scripts: `~/temp/agent/g56-run.mjs`, `g56-lib.mjs`, `g56-analyze.mjs`, `g56-more.mjs`, `g56-early.mjs`,
+`g56-early2.mjs`, `g56-show.mjs`, `g56-dump.mjs`; rows `g56-rows.jsonl` and `g56-rows2.jsonl`,
+per-tick table `g56-ticks.json`, the timeline of every stalled tick (46) `g56-stall-timelines.txt`.
+The run directories were deleted after the analysis (3.2 GB), except `run.log`, `slots.json`, `cadence.json` and
+`hashes.json` of the 39 runs that have a stall, kept in `~/temp/agent/g56-stall-runs` (8 MB).
+
+#### Counts
+
+- Runs unreadable: 28 of 255 (A 10, A2 6, B 12), plus one run of A that made no artifact (`status 1 dirs 0`).
+  In each of the 28 the recorder captured fewer frames than the input needed (14 to 46 frames per second against a
+  median of 60 and a minimum of 48 in the readable runs), the input took 2.2 to 5.6 seconds against 2.0, and the probe
+  could not read the missing frames.
+  Rounds 22 to 26 of the first pass hold 14 of them: the compositor was starved there, which is host load.
+  These runs are not in any other count of this subsection.
+- Stalls (A, A2, B): 13, 19 and 14 in 74, 79 and 73 runs; runs with a stall 11, 15 and 13 (15%, 19%, 18%);
+  runs with two or more stalls 2, 4 and 1.
+- Slot 50: 0 of 74, 0 of 79 and 0 of 73 runs.
+  The stall of the unfixed code did not come back in any label, with the wake-up or without.
+- Histogram of the stall slots (slot, count).
+  A: 31 2, 32 1, 34 1, 35 3, 68 1, 91 1, 96 1, 124 1, 129 1, 130 1.
+  A2: 31 2, 35 1, 41 1, 48 1, 66 2, 69 1, 76 1, 80 1, 81 1, 82 1, 83 1, 91 1, 96 1, 116 1, 142 3.
+  B: 31 2, 32 1, 33 2, 34 2, 35 2, 57 1, 61 1, 72 1, 88 1, 125 1.
+- The spread, A against A2 (one binary), paired inside the 72 rounds that have both, bootstrap over rounds, mean and 95%
+  interval of the difference in stalls per run: A2 minus A +0.042 [-0.083, +0.181];
+  runs with a stall +0.028 [-0.083, +0.139]; stalls after slot 36 +0.097 [-0.014, +0.208].
+- B against A, 70 rounds: stalls per run +0.043 [-0.071, +0.157]; runs with a stall +0.043 [-0.043, +0.143];
+  stalls after slot 36 0.000 [-0.071, +0.086].
+  B against A2, 73 rounds: -0.027 [-0.178, +0.123]; 0.000 [-0.123, +0.123]; -0.110 [-0.247, +0.014].
+  Each interval of B against A has about the width of, and nearly the same place as, that of A2 against A, so B is not
+  worse than A beyond the spread.
+  The upper end, +0.157 stalls per run, is nearly the rate of A itself (0.176 per run): a cost up to that size is not
+  excluded by 70 rounds, and halving the interval takes about four times the runs.
+- The host indicators agree between the labels: input gaps over 20 ms per run 2.66, 2.91 and 2.42 (A, A2, B);
+  tiles applied outside a step in the input window 98 in 17 runs, 108 in 19 runs and 85 in 16 runs.
+  The paired difference of the tiles outside a step, B minus A, is -0.086 per run [-0.443, +0.257]: the wake-up does not
+  add tiles taken in a gap, which it could only do if the repeated poll missed gaps that it catches.
+
+#### Classes of the stalled ticks
+
+- Ticks and stalled ticks per class, A then A2 then B.
+  Tile outside a step in an input gap: 42 and 1, 43 and 0, 31 and 1.
+  Tile outside a step, no gap: 121 and 0, 143 and 0, 112 and 0.
+  Late wheel: 799 and 10, 1008 and 13, 728 and 7.
+  Tile applied in a step: 901 and 1, 927 and 2, 887 and 0.
+  Other redraw: 833 and 0, 1027 and 0, 781 and 0.
+  None of these: 6181 and 1, 6343 and 4, 6084 and 6.
+- The class that the wake-up could add to, a tile outside a step in an input gap, holds 2 of the 46 stalled ticks:
+  slot 96 of A (round 2, no wake-up code in that binary: the repeated poll took the tile 0.6 ms before the wheel event
+  that ended an input gap of 21 ms) and slot 72 of B (round 2: tile applied 4.5 ms after a wheel event, two frames
+  of 9 and 4 ms, the next wheel event 21 ms after the last).
+  Its stall rate is 2 of 116 ticks, against 30 of 2535 in the late-wheel class and 11 of 18608 in the last class.
+  Whether the tile of the B stall was taken by the wake-up or by a poll tick is not in the log; the log has the same
+  line for both.
+- Runs by the number of input gaps over 20 ms in the run (a count from the compositor's log, that involves no tile):
+  none: 133 runs with 3 stalls (A 0 in 45, A2 1 in 45, B 2 in 43);
+  one to two: 31 runs, 13 stalls; three to five: 9 runs, 4 stalls; six or more: 53 runs, 26 stalls.
+  So 43 of the 46 stalls fall in the 93 runs that have at least one gap (A 13 of 13, A2 18 of 19, B 12 of 14).
+  This is partly built in, since a missing step is a gap, but the count is taken from the compositor's events and not
+  from the picture.
+
+#### Decisions per stall slot
+
+- Slots 31 to 35, the first six ticks of the input (A 7 stalls, A2 3, B 9; 18 runs, 19 stalled ticks):
+  11 late wheel, 8 none of the classes; none of the 18 runs has a tile event, a tile left or a tile worker job
+  between the first wheel event and slot 36 (in the 226 readable runs two have one, both with no stall).
+  The first draw after the first wheel event falls between slot 29 and slot 30 in 175 of 225 runs, so these are the
+  first ticks of the input, with the compositor's injection and the first frames starting up.
+  Decision: not a tile hand-over, so not the wake-up; host or the start of the input.
+  B has 9 against A 7 and A2 3, which is inside the spread of one binary (A against A2 differs by 4).
+- Slots 41, 66 (second one), 88: none of the classes (A2, A2, B). Decision: neither, so the host.
+- Slots 57, 61, 66, 68, 69, 76, 80 to 83, 91 (A2), 96 (A2), 116, 124, 125, 129, 130, 142 (twice): late wheel,
+  in A, A2 and B alike (the gaps are 20.1 to 365 ms, median 26.5; the late wheel stalls of the first six ticks have
+  the same gaps). Decision: a late wheel, so the input, host side.
+- Slots 48 (A2), 91 (A), 142 (A2): a tile applied inside a step, with the explicit redraw after it that the fix leaves
+  in place (the throwaway round showed the same shape in A at slot 96). Decision: a tile in a step, which the fix
+  leaves; 3 of 226 runs.
+- Slots 72 (B) and 96 (A): a tile outside a step in an input gap. Decision: the case the wake-up could cost;
+  one in B and one in A, so not beyond the spread, and the A one cannot come from the wake-up.
+
+#### Answers
+
+- Q1, are the stalls away from slot 50 the host or the fix: 41 of the 46 stalls are a late wheel or none of the classes,
+  and neither depends on the tile hand-over; 3 are a tile in a step and 2 a tile outside a step in a gap.
+  The rate of a stall is the same in the binary without the wake-up (0.18 per run) as in the one with it (0.19) and in
+  the second name of the first (0.24).
+  The stalls are the host's input delivery in the sense that the stall follows a late wheel event, not in the sense that
+  the load was shown to cause them: no synthetic load was made (forbidden), and the cause of the late wheel events
+  (the compositor's injection timer under host load, or the application's own threads sharing the 600% cap) was not
+  separated.
+  The stall at slot 50 did not occur in 226 runs.
+- Q2, does the wake-up cost a frame: not shown. B against A is +0.043 stalls per run [-0.071, +0.157], the same as
+  A against A2 (+0.042 [-0.083, +0.181]), and the tile-outside-a-step class does not grow.
+  Runs with a stall in the subsection "A wake-up for the end of the 20 ms wait" (B 14 of 60, A 10 of 62) and here
+  (B 13 of 73, A 11 of 74) are of one size; the owner session's 5 of 20 for A against 2 of 20 for B is in B's favour
+  and is not repeated here. No fix was made and no gate ran.
+
+#### Limits
+
+- The slot clock is a fit through coarse modification times; a stalled tick is placed within about half a tick, and the
+  17 ms reach of the classes overlaps neighbouring ticks. The classes are windows, not exact causes.
+- Positive control: the unfixed code was not rebuilt, so the link between a tile outside a step and a stall is not
+  re-shown here; it rests on the subsection "Idle latency of the 20 ms wait and rare stalls elsewhere"
+  (16 of 16 runs at slot 50), and on 2 stalls of this one.
+- The lat2 run `lat2-spin-l2-5-B.run.log` has no frame clock, so the classes could not be validated on it.
+- The 28 unreadable runs are host-starved runs; their share per label (A 10, A2 6, B 12 of 85) is not evidence of a
+  difference, and the stall counts are of the readable ones.
+- Not run: the drag scenario, display scales other than 1, a real compositor, an input slower than 50 Hz, steps other
+  than 16 ms, the latency scenario (no product code changed, so it was not re-measured), and any gate.
+
 ## Scale 2, the light scheme and the seams, measured in the compositor
 
 Session of 2026-10-22 on branch `worktree-agent-a1612e9c563c279ed`, base `cd1e9ec340`.
