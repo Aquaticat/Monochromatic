@@ -6,8 +6,10 @@
 //! the view's height,
 //! and the scroll offset.
 
-/// How many bands cover the text.
-use super::plan::band_count;
+/// How many bands cover the text,
+/// and which way the view is heading,
+/// which names the bands beyond the track.
+use super::plan::{Heading, band_count};
 /// The vertical mapping the minimap's rows come from and go back to.
 use crate::row_map::{CODE_ROW, RowMap};
 /// The bands to keep are a range of numbers.
@@ -305,12 +307,13 @@ impl Geometry {
     }
 
     /// What:
-    ///  The bands of the picture to keep with the view scrolled to `offset`,
+    ///  The bands of the picture to keep with the view scrolled to `offset` and at rest,
     /// as a range of band numbers:
     ///  the bands `step` logical pixels tall,
     /// counted from the top of the text,
     /// that the track shows,
     ///  and one more on each side.
+    ///  A view that is heading somewhere keeps more on that side (`Self::bands_toward`).
     /// Why:
     ///  Only the bands near the visible part of the picture are drawn;
     ///  the extra band on each side lets a scroll of up to a band move the picture without a new one.
@@ -324,15 +327,58 @@ impl Geometry {
     /// bandsFor(offset: number, step: number, most: number): [number, number];
     /// ```
     pub fn bands_for(&self, offset: f32, step: f32, most: usize) -> Range<usize> {
+        return self.bands_toward(offset, step, most, Heading::Still { at: 0.0 });
+    }
+
+    /// What:
+    ///  The text position of the top of the part of the picture the track shows,
+    /// in logical pixels of the text,
+    /// with the view scrolled to `offset`.
+    /// Why:
+    ///  The bands and the heading are counted along the text,
+    /// and the track's top is where a scroll moves them.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// trackTop(offset: number): number;
+    /// ```
+    pub fn track_top(&self, offset: f32) -> f32 {
+        return self.slide(offset) / self.scale();
+    }
+
+    /// What:
+    ///  The bands of the picture to keep with the view scrolled to `offset` and heading as `heading` says,
+    /// as a range of band numbers:
+    ///  the bands the track shows,
+    ///  and as many more beyond each end as the heading names (`Heading::margins`):
+    ///  one on each side at rest,
+    ///  `LEAD` on the side a fling is heading toward.
+    /// Why:
+    ///  A picture the view reaches the end of before the next one arrives leaves the rows beyond it blank.
+    ///  Bands in the direction of the scroll are the ones the next picture would be asked for.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// bandsToward(offset: number, step: number, most: number, heading: Heading): [number, number];
+    /// ```
+    pub fn bands_toward(
+        &self,
+        offset: f32,
+        step: f32,
+        most: usize,
+        heading: Heading,
+    ) -> Range<usize> {
         if self.content <= 0.0 || step <= 0.0 {
             return 0..0;
         }
+        let (behind, ahead) = heading.margins();
         let total = band_count(self.content, step);
         let from = self.slide(offset) / self.scale();
         let to = (self.slide(offset) + self.track()) / self.scale();
         let cap = most.max(1);
-        let mut first = (((from - step) / step).floor().max(0.0) as usize).min(total - 1);
-        let end = (((to + step) / step).ceil() as usize).clamp(first + 1, total);
+        let mut first =
+            (((from - behind as f32 * step) / step).floor().max(0.0) as usize).min(total - 1);
+        let end = (((to + ahead as f32 * step) / step).ceil() as usize).clamp(first + 1, total);
         if end - first > cap {
             // The texture cannot hold the margin bands as well: start at the band the track starts in.
             first = ((from / step).floor().max(0.0) as usize).clamp(first, end - 1);

@@ -3166,7 +3166,11 @@ and `render/MainMinimap.kt`.
   `Geometry::target`).
   The picture holds only the bands near the visible part of it:
   the bands the track shows and one more on each side (`Geometry::bands_for`),
-  so the work and the memory follow the view and not the length of the file.
+  and `LEAD` more on the side a fling is heading toward (`Heading`,
+  `Geometry::bands_toward`),
+  so the work and the memory follow the view and not the length of the file,
+  and a fling that moves the track by several bands in the time a picture takes
+  does not run past the picture's end.
   Every line in the bands is drawn;
   nothing is sampled.
 - The inks are the syntax classes and the palette of the source text in the dark and the light scheme

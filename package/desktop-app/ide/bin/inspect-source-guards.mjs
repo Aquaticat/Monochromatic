@@ -1206,8 +1206,8 @@ const cases = [
   {
     name: 'minimap-bands-uncapped',
     file: 'src/native/minimap/request.rs',
-    before: '    let bands = geometry.bands_for(-window.get_scroll_y(), BAND, usize::MAX);',
-    after: '    let bands = geometry.bands_for(-window.get_scroll_y(), BAND, 1);',
+    before: '        BAND,\n        usize::MAX,\n        current.minimap.heading,',
+    after: '        BAND,\n        1,\n        current.minimap.heading,',
     native: true,
     test: 'a_picture_taller_than_the_device_limit_covers_the_whole_track',
     failure: 'the picture is'
@@ -1532,11 +1532,57 @@ const cases = [
   {
     name: 'minimap-window-margin',
     file: 'src/minimap/geometry.rs',
-    before: '        let mut first = (((from - step) / step).floor().max(0.0) as usize).min(total - 1);',
-    after: '        let mut first = ((from / step).floor().max(0.0) as usize).min(total - 1);',
+    before: '            (((from - behind as f32 * step) / step).floor().max(0.0) as usize).min(total - 1);',
+    after: '            ((from / step).floor().max(0.0) as usize).min(total - 1);',
     integration: 'minimap',
     test: 'the_bands_to_keep_surround_the_part_of_the_picture_in_view',
     failure: 'after the part in view'
+  },
+  // A fling outruns a picture that holds one band beyond the track: the window holds more bands on the side the view heads toward.
+  {
+    name: 'minimap-lead-down',
+    file: 'src/minimap/plan.rs',
+    before: '            Self::Down { .. } => (1, LEAD),',
+    after: '            Self::Down { .. } => (1, 1),',
+    integration: 'minimap',
+    test: 'the_window_of_a_fling_reaches_ahead_on_the_side_it_heads_toward',
+    failure: 'heading down holds the lead after the track'
+  },
+  {
+    name: 'minimap-lead-up',
+    file: 'src/minimap/plan.rs',
+    before: '            Self::Up { .. } => (LEAD, 1),',
+    after: '            Self::Up { .. } => (1, 1),',
+    integration: 'minimap',
+    test: 'the_window_of_a_fling_reaches_ahead_on_the_side_it_heads_toward',
+    failure: 'heading up holds the lead before the track'
+  },
+  {
+    name: 'minimap-heading-needs-a-band',
+    file: 'src/minimap/plan.rs',
+    before: '        if moved.abs() < step {\n            return self;\n        }',
+    after: '        if false {\n            return self;\n        }',
+    integration: 'minimap',
+    test: 'a_heading_follows_the_track_by_whole_bands',
+    failure: 'less than a band changes nothing'
+  },
+  {
+    name: 'minimap-heading-followed',
+    file: 'src/native/minimap/request.rs',
+    before: '    follow(window, &mut current);\n',
+    after: '',
+    native: true,
+    test: 'a_fling_is_given_a_picture_that_reaches_the_bands_it_is_heading_toward',
+    failure: 'a fling down is not heading down'
+  },
+  {
+    name: 'minimap-window-has-heading',
+    file: 'src/native/minimap/request.rs',
+    before: '        usize::MAX,\n        current.minimap.heading,',
+    after: '        usize::MAX,\n        Heading::Still { at: 0.0 },',
+    native: true,
+    test: 'a_fling_is_given_a_picture_that_reaches_the_bands_it_is_heading_toward',
+    failure: 'the picture of the scrolled bands did not arrive'
   },
   {
     name: 'minimap-stale-text',

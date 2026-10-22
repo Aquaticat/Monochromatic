@@ -70,8 +70,8 @@ pub use line_cache::{LineCache, LineKey, line_key};
 /// The bands,
 /// and the chunks a slice is rendered in.
 pub use plan::{
-    BAND, CHUNK_ROWS, MIN_SCALE, band_count, chunk_rows, most_bands, picture_rows, slice_rows,
-    texture_rows, texture_runs,
+    BAND, CHUNK_ROWS, Heading, LEAD, MIN_SCALE, band_count, chunk_rows, most_bands, picture_rows,
+    slice_rows, texture_rows, texture_runs,
 };
 /// The picture's build,
 ///  its inputs,
