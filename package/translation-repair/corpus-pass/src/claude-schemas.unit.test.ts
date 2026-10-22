@@ -97,7 +97,7 @@ const SCHEMA_PRODUCERS: readonly SchemaProducer[] = [
   { file: 'adjudication/src/adjudicate-wire.ts', formats: [ADJUDICATION_RESPONSE_FORMAT,], },
   { file: 'adjudication/src/candidate-select-wire.ts', formats: [CANDIDATE_SELECT_RESPONSE_FORMAT,], },
   { file: 'adjudication/src/critic-wire.ts', formats: [CRITIC_RESPONSE_FORMAT,], },
-  { file: 'adjudication/src/introduced-defect-wire.ts', formats: [INTRODUCED_DEFECT_RESPONSE_FORMAT,], },
+  { file: 'adjudication/src/introduced-defect-format.ts', formats: [INTRODUCED_DEFECT_RESPONSE_FORMAT,], },
   { file: 'adjudication/src/resolution-wire.ts', formats: [RESOLUTION_RESPONSE_FORMAT,], },
   { file: 'archive/src/absolute-naturalness-review-wire.ts', formats: [ABSOLUTE_NATURALNESS_REVIEW_RESPONSE_FORMAT,], },
   { file: 'archive/src/archive-block-review-wire.ts', formats: [ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT,], },
