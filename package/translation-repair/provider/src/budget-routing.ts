@@ -99,22 +99,28 @@ export class EveryProviderDryError extends Error {
      is behind it.
      */
     const xiaomiWetButUnserving = unserving.includes('xiaomi',);
+    /**
+     The clause naming why Xiaomi is out, one of two fixed sentences.
+     */
+    const xiaomiCause = xiaomiWetButUnserving
+      ? 'Xiaomi\'s meter reads wet but it serves only MiMo V2.6 Flash, not the model asked, '
+      : 'Xiaomi has refused a call for payment, ';
+    /**
+     The clause saying when Xiaomi comes back, a fixed sentence or nothing.
+     */
+    const xiaomiRefill = xiaomiWetButUnserving
+      ? ''
+      : 'Xiaomi, once refused for payment, is read again only after one of its calls settles, so a top-up is '
+        + 'seen on the next launch; ';
     super(
-      `Every provider is out of budget at once: NeuralWatt has no free daily energy left, `
-        + `Synthetic has no weekly credit left (or no five-hour request left, on a reply that still carries `
-        + `that window), Charm Hyper has no balance left, Amazon Bedrock has no credit left short of the owner's `
-        + `card, DeepSeek has no balance left (or says its account is unavailable), ${
-         xiaomiWetButUnserving
-          ? 'Xiaomi\'s meter reads wet but it serves only MiMo V2.6 Flash, not the model asked, '
-          : 'Xiaomi has refused a call for payment, '
-         }and OpenRouter has no credit left. Nothing further can be bought, so this run ends. `
-        + `NeuralWatt's free energy returns at 00:00 UTC; Synthetic regenerates on its own schedule; Hyper, `
-        + `DeepSeek and OpenRouter refill on purchase; ${
-         xiaomiWetButUnserving
-          ? ''
-          : 'Xiaomi, once refused for payment, is read again only after one of its calls settles, so a top-up is '
-            + 'seen on the next launch; '
-         }Bedrock's credit is never topped up. `
+      'Every provider is out of budget at once: NeuralWatt has no free daily energy left, '
+        + 'Synthetic has no weekly credit left (or no five-hour request left, on a reply that still carries '
+        + 'that window), Charm Hyper has no balance left, Amazon Bedrock has no credit left short of the owner\'s '
+        + `card, DeepSeek has no balance left (or says its account is unavailable), ${xiaomiCause}`
+        + 'and OpenRouter has no credit left. Nothing further can be bought, so this run ends. '
+        + 'NeuralWatt\'s free energy returns at 00:00 UTC; Synthetic regenerates on its own schedule; Hyper, '
+        + `DeepSeek and OpenRouter refill on purchase; ${xiaomiRefill}`
+        + 'Bedrock\'s credit is never topped up. '
         + `Measured at the decision: ${measured}.`,
     );
     this.name = 'EveryProviderDryError';
@@ -382,7 +388,8 @@ export function bedrockIsDry(
  given to use "as you wish", and a balance too small for the next call
  surfaces as `402 Insufficient Balance` at the wire
  (`https://api-docs.deepseek.com/quick_start/error_codes`, read 2026-10-22),
- which the router passes to `markRefused` as a payment refusal, and the budget layer then holds the provider dry until the
+ which the router passes to `markRefused` as a payment refusal, and the budget layer then holds the provider dry until
+ the
  meter's level moves (`provider-budget.ts`). Bedrock alone
  carries a margin, because its overshoot reaches the owner's card; DeepSeek's
  money is prepaid.

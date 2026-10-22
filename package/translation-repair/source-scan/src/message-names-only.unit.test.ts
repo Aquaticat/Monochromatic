@@ -348,6 +348,8 @@ const NAMED_PARTS: Record<string, string> = {
     + 'readSliceSkeleton reports it, positions and rule names only (MdxParseError, ledger B100)',
   'CONTRACT_NAMES[wireFormat]': 'contract name, one of two fixed phrases keyed by the closed wire-format union (ledger B90)',
   'measured': 'meter states and hold durations, composed by the caller from two booleans and two numbers',
+  'xiaomiCause': 'one of two fixed sentences, chosen by whether Xiaomi was counted dry for serving nothing here',
+  'xiaomiRefill': 'a fixed sentence about Xiaomi\'s recovery, or nothing',
   'dir': 'directory path',
   'endpoint': 'upstream display name as the gateway spelled it, the same field the SPEND line prints, or the word unnamed',
   'errorType': 'gateway failure kind read off its metadata, or the word unnamed; in StreamErrorEventError, a documented '

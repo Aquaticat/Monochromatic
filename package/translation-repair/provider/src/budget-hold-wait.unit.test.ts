@@ -157,6 +157,31 @@ const NO_HOLDS: ProviderRecord<number> = {
   openrouter: 0,
 };
 
+/**
+ What the run-ending read throws for a model Xiaomi does not serve.
+
+ @param budgets - scripted budgets the read goes over
+
+ @returns The thrown value, or undefined when the read returned
+
+ @example
+ ```ts
+ const thrown = await refusalWithoutXiaomiServing({ budgets, },);
+ ```
+ */
+async function refusalWithoutXiaomiServing(
+  { budgets, }: { readonly budgets: ProviderBudgets; },
+): Promise<unknown> {
+  return await rejectionOf(() => readBudgetsPastHolds({
+    budgets,
+    modelId: MODEL_ID,
+    reach: { ...ALL_SERVE, xiaomi: false, },
+    signal: SIGNAL,
+    refused: NOBODY_REFUSED,
+    pollMs: 1,
+  },),);
+}
+
 await describe({
   name: '',
   concurrency: 1,
@@ -283,18 +308,12 @@ await describe({
           },
         },),
         it({
-          name: 'SAYS XIAOMI SERVES ANOTHER MODEL in the run-ending refusal, not a payment refusal, when its wet meter is '
+          name: 'SAYS XIAOMI SERVES ANOTHER MODEL in the run-ending refusal, not a payment refusal, when its wet '
+            + 'meter is '
             + 'the only reading that kept the fleet from reading dry',
           fn: async () => {
             const { budgets, } = scriptedBudgets({ views: [{ ...ALL_DRY, xiaomi: false, },], holds: NO_HOLDS, },);
-            const thrown = await rejectionOf(() => readBudgetsPastHolds({
-              budgets,
-              modelId: MODEL_ID,
-              reach: { ...ALL_SERVE, xiaomi: false, },
-              signal: SIGNAL,
-              refused: NOBODY_REFUSED,
-              pollMs: 1,
-            },),);
+            const thrown = await refusalWithoutXiaomiServing({ budgets, },);
             expect(thrown,).toBeInstanceOf(EveryProviderDryError,);
             const { message, } = thrown as EveryProviderDryError;
             expect(message,).not.toContain('Xiaomi has refused a call for payment',);
@@ -306,14 +325,7 @@ await describe({
           name: 'SAYS A PAYMENT REFUSAL when Xiaomi reads dry itself, even though it serves nothing here',
           fn: async () => {
             const { budgets, } = scriptedBudgets({ views: [ALL_DRY,], holds: NO_HOLDS, },);
-            const thrown = await rejectionOf(() => readBudgetsPastHolds({
-              budgets,
-              modelId: MODEL_ID,
-              reach: { ...ALL_SERVE, xiaomi: false, },
-              signal: SIGNAL,
-              refused: NOBODY_REFUSED,
-              pollMs: 1,
-            },),);
+            const thrown = await refusalWithoutXiaomiServing({ budgets, },);
             const { message, } = thrown as EveryProviderDryError;
             expect(message,).toContain('Xiaomi has refused a call for payment',);
             expect(message,).toContain('xiaomi dry',);
@@ -329,14 +341,7 @@ await describe({
               views: [view,],
               holds: { ...NO_HOLDS, synthetic: 5, },
             },);
-            const thrown = await rejectionOf(() => readBudgetsPastHolds({
-              budgets,
-              modelId: MODEL_ID,
-              reach: { ...ALL_SERVE, xiaomi: false, },
-              signal: SIGNAL,
-              refused: NOBODY_REFUSED,
-              pollMs: 1,
-            },),);
+            const thrown = await refusalWithoutXiaomiServing({ budgets, },);
             expect(thrown,).toBeInstanceOf(EveryProviderDryError,);
             expect((thrown as EveryProviderDryError).message,).toContain('after waiting 5ms',);
             expect(reads.count,).toBe(2,);
@@ -549,7 +554,10 @@ await describe({
               // The message states what was measured, so a reader can tell
               // exhaustion from refusal holds.
               expect((outcome.thrown as Error).message,)
-                .toContain('meters read neuralwatt dry, synthetic dry, bedrock dry, deepseek dry, xiaomi dry, hyper dry, openrouter dry; holds neuralwatt',);
+                .toContain(
+                'meters read neuralwatt dry, synthetic dry, bedrock dry, deepseek dry, xiaomi dry, hyper dry, '
+                  + 'openrouter dry; holds neuralwatt',
+                );
             }
             /**
              The waited case names the wait it made.
