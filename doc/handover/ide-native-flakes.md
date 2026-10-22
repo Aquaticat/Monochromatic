@@ -258,8 +258,8 @@ this entry is "fixed by inference".
 Measured,
 no change made.
 Method:
-a sampler (`~/temp/agent/flk/vram-sample.mjs`,
-read-only,
+a sampler (a 60-line read-only Node script of the session, not kept,
+a loop over `/proc` with the fdinfo and sysfs reads named here,
 2 s interval,
 2,765 s,
 1,374 samples)
