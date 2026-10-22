@@ -324,7 +324,7 @@ function replyFor(
         content,
         needle: FRESH,
       },),
-      reason: 'scripted',
+      assessment: 'scripted',
     };
   }
   throw new Error(`no script for ${schema}`,);

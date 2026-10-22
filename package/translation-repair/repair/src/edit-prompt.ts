@@ -183,7 +183,7 @@ ${HOUSE_POLICY_BLOCK}`;
 /**
  Reply-shape block closing the editor system prompt.
  */
-const EDITOR_REPLY_BLOCK = `Reply with ONLY a JSON object of shape {"edits": [{"region": 1, "newText": "..."}]}. No prose, no code fences.`;
+const EDITOR_REPLY_BLOCK = `Reply with ONLY a JSON object of shape {"edits": [{"newText": "...", "region": 1}]}. No prose, no code fences.`;
 
 /**
  System instructions shared by every baseline editor call.

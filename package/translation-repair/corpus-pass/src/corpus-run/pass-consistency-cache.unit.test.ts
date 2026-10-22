@@ -389,7 +389,7 @@ await describe({
             expect(await reopenedAll({
               stored: [
                 { ...choice, kind: 'ballots', },
-                { ...choice, voices: [{ reason: 'It reads best.', choice: 'CANDIDATE 2', },], },
+                { ...choice, voices: [{ assessment: 'It reads best.', choice: 'CANDIDATE 2', },], },
                 { ...choice, voices: [{ seat: 'hyper-cat', reason: 'It reads best.', choice: 2, },], },
                 { ...writers, voices: [{ seat: 'hyper-cat', translation: 4, },], },
                 { ...writers, voices: [{ translation: 'The kitten naps in the sun.', },], },

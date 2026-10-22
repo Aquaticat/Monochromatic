@@ -112,7 +112,7 @@ export function countBallots(
      */
     const {
       best,
-      reason,
+      assessment: reason,
     } = readCandidateBallotWire({ sent: voice.value, },);
 
     /**

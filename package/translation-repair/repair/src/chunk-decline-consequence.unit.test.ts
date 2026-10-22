@@ -116,7 +116,7 @@ function judgesClient(
        */
       const scripted: unknown = {
         best: named.includes(request.modelId,) ? 1 : 0,
-        reason: 'scripted',
+        assessment: 'scripted',
       };
       if (!request.validate(scripted,))
         throw new Error('stub ballot failed the selection guard',);

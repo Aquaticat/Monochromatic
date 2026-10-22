@@ -100,17 +100,17 @@ function pairingClient(
             : supported ? 'source-supported' : 'revise',
           sourceQuote: supported ? pictureSupport : '',
           replacementText: '',
-          finding: pictureSupport === undefined
+          assessment: pictureSupport === undefined
             ? 'This is an archive note.'
             : supported ? 'The picture carries this greeting.' : 'No source supports this greeting.',
         }
         : schema === 'candidate_ballot'
-        ? { best: 1, reason: 'Remove wording unsupported by the supplied source.', }
+        ? { best: 1, assessment: 'Remove wording unsupported by the supplied source.', }
         : schema === 'absolute_naturalness_review'
         ? {
-          acceptable: true,
+          isAcceptable: true,
           findings: [],
-          reason: 'The attribution is natural and publication-ready.',
+          assessment: 'The attribution is natural and publication-ready.',
         }
         : { pairs: [{ source: 0, target: 0, },], };
       if (!request.validate(value,))

@@ -97,7 +97,7 @@ const CLEAN_DEFECT_CHECK = {
   severity: '',
   evidence: '',
   omittedText: '',
-  reason: '',
+  verdictReason: '',
 } as const;
 
 /**
@@ -354,7 +354,7 @@ function chunkClient(
             : [{ paragraph: 1, newText: rewrites[request.modelId], },],
         }
         : (stage === 'candidate_ballot')
-        ? { best: 1, reason: 'scripted', }
+        ? { best: 1, assessment: 'scripted', }
         : (stage === 'resolution_report')
         ? {
           checks: sheetNumbers({ request, marker: '\nISSUE ', },)

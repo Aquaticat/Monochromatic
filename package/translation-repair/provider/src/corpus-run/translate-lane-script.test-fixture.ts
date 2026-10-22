@@ -109,7 +109,7 @@ export function translateLaneClient(
             content: sheet,
             needle,
           },),
-          reason: 'scripted',
+          assessment: 'scripted',
         },
         request,
       },),);

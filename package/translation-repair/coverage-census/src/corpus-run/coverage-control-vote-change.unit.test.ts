@@ -171,8 +171,8 @@ function sheetReadingClient(
       const carried = carries(sheet,);
       const scripted: unknown = {
         coverage: carried ? 'full' : 'none',
-        quote: carried ? QUOTED : '',
-        reason: 'fixture',
+        copiedSpan: carried ? QUOTED : '',
+        assessment: 'fixture',
       };
       if (!request.validate(scripted,))
         return {
@@ -301,8 +301,8 @@ await describe({
              */
             const scripted: unknown = {
               coverage: 'none',
-              quote: '',
-              reason: 'fixture',
+              copiedSpan: '',
+              assessment: 'fixture',
             };
             if (!request.validate(scripted,))
               return {

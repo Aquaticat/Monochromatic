@@ -143,22 +143,28 @@ export type GateBallot = {
  */
 export type GateWire = {
   /**
-   Rendering this judge would publish, a name the guard has already checked,
-   so the reader takes it as it stands.
+   Why the judge answered as it did, written first. NAMED `assessment` so that it sorts first (ledger B762); the
+   ballot built from it keeps the name `reason`.
    */
-  readonly choice: GateChoice;
+  readonly assessment: string;
 
   /**
-   Findings against the consolidation, a list of strings when the model
+   Findings of dropped content, a list of strings when the model
    followed the schema and whatever it wrote otherwise; the reader narrows.
+   */
+  readonly dropped: unknown;
+
+  /**
+   Findings against the consolidation, read the same way.
    */
   readonly unsupported: unknown;
 
   /**
-   Findings of dropped content, read the same way.
+   Rendering this judge would publish, a name the guard has already checked,
+   so the reader takes it as it stands. NAMED `verdict` so that it sorts after the findings (ledger B762); the ballot
+   built from it keeps the name `choice`.
    */
-  readonly dropped: unknown;
-  readonly reason: string;
+  readonly verdict: GateChoice;
 };
 
 /**
@@ -185,8 +191,8 @@ export function isConsolidateGateWire(value: unknown,): value is GateWire {
   // model that ignored the schema, used to cost the whole ballot, choice
   // included, and until 2026-09-30 a findings key left out still did (ledger
   // B46). The reader takes each through `findingsOrNone` and keeps the choice.
-  return isGateChoice(value.choice,)
-    && ((typeof value.reason) === 'string');
+  return isGateChoice(value.verdict,)
+    && ((typeof value.assessment) === 'string');
 }
 
 /**
@@ -215,7 +221,7 @@ export function readConsolidateGateBallot(
   const dropped = findingsOrNone(wire.dropped,);
 
   return {
-    choice: wire.choice,
+    choice: wire.verdict,
     unsupported: readCandidateNames({
       findings: unsupported,
       names: GATE_NAMES,
@@ -226,7 +232,7 @@ export function readConsolidateGateBallot(
       names: GATE_NAMES,
     },),
     droppedRaw: dropped,
-    reason: wire.reason,
+    reason: wire.assessment,
   };
 }
 
@@ -567,9 +573,9 @@ export function buildConsolidateGateMessages(
         ...tenseBlock,
         ...communityBlock,
         ...sizeBlock,
-        'Return JSON: reason one sentence, given before the choice;',
-        'unsupported and dropped each a list naming any of "consolidated", "standing";',
-        `choice one of "consolidated", "standing", "${CONTEST_REFUSAL}".`,
+        'Return JSON: assessment one sentence, given before the verdict;',
+        'dropped and unsupported each a list naming any of "consolidated", "standing";',
+        `verdict one of "consolidated", "standing", "${CONTEST_REFUSAL}".`,
       ].join('\n',),
     },
   ];

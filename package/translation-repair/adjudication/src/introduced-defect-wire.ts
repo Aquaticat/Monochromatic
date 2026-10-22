@@ -182,9 +182,9 @@ For introduced-defect, anchor the claim with EXACTLY ONE of these, never both:
 - "evidence": the exact damaged wording quoted FROM THE AFTER TEXT, when the edit ADDED or altered something. Leave "omittedText" empty.
 - "omittedText": the exact wording quoted FROM THE BEFORE TEXT that the edit DROPPED, when the defect is missing content. Leave "evidence" empty.
 Quote verbatim. A paraphrase cannot be checked and the claim will be discarded.
-Say in "reason" what the ORIGINAL says and how the AFTER text departs from it. A reason that only cites the BEFORE text has not judged accuracy at all.
-Leave "evidence", "omittedText", "category", "severity" and "reason" as empty strings for other verdicts.
-Reply with ONLY a JSON object of shape {"checks": [{"region": 1, "verdict": "no-introduced-defect-found", "category": "", "severity": "", "evidence": "", "omittedText": "", "reason": ""}]}. No prose, no code fences.
+Say in "verdictReason" what the ORIGINAL says and how the AFTER text departs from it. A reason that only cites the BEFORE text has not judged accuracy at all.
+Leave "evidence", "omittedText", "category", "severity" and "verdictReason" as empty strings for other verdicts.
+Reply with ONLY a JSON object of shape {"checks": [{"category": "", "evidence": "", "omittedText": "", "region": 1, "severity": "", "verdict": "no-introduced-defect-found", "verdictReason": ""}]}. No prose, no code fences.
 Every region number must appear exactly once in checks.`;
 
 /**
@@ -628,8 +628,11 @@ export type IntroducedDefectCheckWire = {
 
   /**
    Why the BEFORE text did not carry this defect.
+
+   NAMED `verdictReason` so that it sorts after `verdict`, the one place the owner's ruling of 2026-10-21 ("Reason first
+   everywhere") leaves the reason last (ledger B732, B762).
    */
-  readonly reason: string;
+  readonly verdictReason: string;
 };
 
 /**
@@ -677,7 +680,7 @@ function isIntroducedDefectCheckWire(value: unknown,): value is IntroducedDefect
     'severity',
     'evidence',
     'omittedText',
-    'reason',
+    'verdictReason',
   ].every(function isString(field,) {
     return (typeof value[field]) === 'string';
   },);
@@ -729,23 +732,25 @@ export const INTRODUCED_DEFECT_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
           items: {
             type: 'object',
             required: [
-              'region',
-              'verdict',
               'category',
-              'severity',
               'evidence',
               'omittedText',
-              'reason',
+              'region',
+              'severity',
+              'verdict',
+              'verdictReason',
             ],
             additionalProperties: false,
+            // DECLARED IN THE ORDER THE KEYS SORT (ledger B762), with the reason last by the owner's ruling of
+            // 2026-10-21 (ledger B732): `verdictReason` sorts after `verdict`.
             properties: {
-              region: { type: 'integer', },
-              verdict: { type: 'string', },
               category: { type: 'string', },
-              severity: { type: 'string', },
               evidence: { type: 'string', },
               omittedText: { type: 'string', },
-              reason: { type: 'string', },
+              region: { type: 'integer', },
+              severity: { type: 'string', },
+              verdict: { type: 'string', },
+              verdictReason: { type: 'string', },
             },
           },
         },

@@ -376,10 +376,10 @@ await describe({
           fn: async () => {
             const [system, user,] = buildCarryChoiceMessages({ subject: SUBJECT, },);
             expect({
-              rule: system?.content.includes('Write the reason first and choose after it',),
-              keys: system?.content.includes('keys come in this order: reason, choice',),
+              rule: system?.content.includes('Write the assessment first and choose after it',),
+              keys: system?.content.includes('keys come in this order: assessment, choice',),
               shape: user?.content.endsWith(
-                'Reply with JSON only: {"reason":"...","choice":"<the label of the candidate you choose>"}',
+                'Reply with JSON only: {"assessment":"...","choice":"<the label of the candidate you choose>"}',
               ),
               also: system?.content.includes(
                 'A word that renders Chinese outside the repeated wording in the chosen place (such as an "also" the chosen place carries for a word before its repeated wording) is an addition here',

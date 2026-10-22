@@ -74,8 +74,8 @@ ${ACCURACY_CATEGORY_SCOPE}
 Report each defect as one atomic issue:
 - category: one of ${ISSUE_CATEGORIES.join(', ',)}
 - severity: one of ${ISSUE_SEVERITIES.join(', ',)}, as the SEVERITY SCALE below defines
-- summary: one sentence stating the single defect
 - sourceQuote: exact substring copied character-for-character from the ORIGINAL that evidences the defect (omit if none applies)
+- summary: one sentence stating the single defect
 - targetQuote: exact substring copied character-for-character from the TRANSLATION where the defect manifests (omit only if the defect has no target-side anchor)
 
 Quote rules, strictly enforced by a machine:

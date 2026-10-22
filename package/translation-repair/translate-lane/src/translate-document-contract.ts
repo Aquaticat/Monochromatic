@@ -392,8 +392,21 @@ import type { SliceReplacement, } from '@monochromatic-dev/translation-repair-pa
  which holds the commit that set 22 (`git merge-base --is-ancestor`), so records may stand at 22 and the change
  cannot ride inside it; no search of any slice-cache directory was made, and the number moves. The consolidate, lane-contest, repair slice and refine versions move for
  the same ballots (29, 14, 41, 12). No record has been written at 23, which this change sets first.
+
+ Version 24 covers the answer schemas of the translate lane declaring their properties in alphabetical order, and the keys
+ that moved to make it so (owner decision of 2026-10-21 under the ruling "Reason first everywhere"; ledger B762): the
+ rewrite wire of the translate floor (`translatorNote` in place of `explanation`, still after the translation it explains),
+ the candidate selection (`assessment`, `best`) and the coverage judge that insertion admission reads (`assessment`,
+ `copiedSpan`, `coverage`). The consolidate, lane-contest, repair slice and refine versions move for the same sheets (30, 15,
+ 42, 13).
+ The key hashes the version, the shape of the run and the texts, not the sheet and not the rule that reads the
+ ballots, so a record written before would be served after. The previous number was set in `4b9fc9e645`, and this worktree's
+ runs directory holds no slice-cache record (the audit `cache-account-audit` found 0, and no control that finds records was
+ run, since the pass that writes them runs in another worktree this change does not read), so whether a record stands at
+ 23 is not known and the change cannot ride inside it: the number moves. No record has been written at 24, which this
+ change sets first.
  */
-export const TRANSLATE_SLICE_CACHE_VERSION = 23;
+export const TRANSLATE_SLICE_CACHE_VERSION = 24;
 
 /**
  Models the translate lane seats.

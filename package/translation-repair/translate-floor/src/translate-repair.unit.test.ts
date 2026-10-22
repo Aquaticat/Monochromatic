@@ -263,7 +263,7 @@ await describe({
           answer: {
             resolution: 'revised',
             translation: 'unused',
-            explanation: 'unused',
+            translatorNote: 'unused',
           },
         },);
         expect(log.calls,).toBe(0,);
@@ -590,7 +590,7 @@ await describe({
           answer: {
             resolution: 'revised',
             translation: archive,
-            explanation: 'restored target contributor form',
+            translatorNote: 'restored target contributor form',
           },
         },);
         expect(log.calls,).toBe(1,);
@@ -610,7 +610,7 @@ await describe({
           answer: {
             resolution: 'as-intended',
             translation: '',
-            explanation: 'literal spelling is deliberate',
+            translatorNote: 'literal spelling is deliberate',
           },
         },);
         expect(repaired.voices,).toHaveLength(0,);
@@ -649,7 +649,7 @@ await describe({
             answer: {
               resolution: 'as-intended',
               translation: '',
-              explanation: 'literal spelling is deliberate',
+              translatorNote: 'literal spelling is deliberate',
             },
             log,
           },),
@@ -691,7 +691,7 @@ await describe({
           answer: {
             resolution: 'revised',
             translation: 'Contributors for this entry: Snow Cat',
-            explanation: 'changed wording but not target form',
+            translatorNote: 'changed wording but not target form',
           },
         },);
         expect(repaired.voices,).toHaveLength(0,);
@@ -716,7 +716,7 @@ await describe({
           answer: {
             resolution: 'revised',
             translation: GOOD_TEXT,
-            explanation: 'restored the heading',
+            translatorNote: 'restored the heading',
           },
         },);
         expect(log.calls,).toBe(0,);
@@ -736,7 +736,7 @@ await describe({
           answer: {
             resolution: 'revised',
             translation: GOOD_TEXT,
-            explanation: 'restored the heading',
+            translatorNote: 'restored the heading',
           },
         },);
         expect(log.calls,).toBe(0,);
@@ -759,7 +759,7 @@ await describe({
           answer: {
             resolution: 'unable',
             translation: '',
-            explanation: 'the heading is not a sentence in English',
+            translatorNote: 'the heading is not a sentence in English',
           },
         },);
         expect(log.calls,).toBe(1,);
@@ -777,7 +777,7 @@ await describe({
           answer: {
             resolution: 'unable',
             translation: '',
-            explanation: 'the heading is not a sentence in English',
+            translatorNote: 'the heading is not a sentence in English',
           },
         },);
         expect(log.calls,).toBe(1,);
@@ -816,7 +816,7 @@ await describe({
           answer: {
             resolution: 'revised',
             translation: '## Contributors\n\nContributors for this entry: Snowflake',
-            explanation: 'restored heading but changed attribution',
+            translatorNote: 'restored heading but changed attribution',
           },
         },);
         expect(repaired.voices[0]?.value.translation,).toBe(original,);
@@ -833,7 +833,7 @@ await describe({
           answer: {
             resolution: 'revised',
             translation: GOOD_TEXT,
-            explanation: 'restored the heading',
+            translatorNote: 'restored the heading',
           },
         },);
         expect(repaired.voices[0]?.value.translation,).toBe(GOOD_TEXT,);
@@ -852,7 +852,7 @@ await describe({
           answer: {
             resolution: 'revised',
             translation: 'Still one paragraph, still no heading.',
-            explanation: 'tried',
+            translatorNote: 'tried',
           },
         },);
         expect(repaired.voices[0]?.value.translation,).toBe(MERGED_TEXT,);
@@ -879,7 +879,7 @@ await describe({
           answer: {
             resolution: 'revised',
             translation: '---\nname: Maomao\nextra: The cat.\n---\n',
-            explanation: 'moved the line into the block',
+            translatorNote: 'moved the line into the block',
           },
         },);
         expect(repaired,).toEqual({
@@ -905,7 +905,7 @@ await describe({
           answer: {
             resolution: 'revised',
             translation: 'unused',
-            explanation: 'unused',
+            translatorNote: 'unused',
           },
         },);
         expect({
@@ -950,7 +950,7 @@ await describe({
               answer: {
                 resolution: 'revised',
                 translation: 'unused',
-                explanation: 'unused',
+                translatorNote: 'unused',
               },
               log,
             },),
@@ -1005,7 +1005,7 @@ await describe({
           answer: {
             resolution: 'as-intended',
             translation: '',
-            explanation: 'the original heading is a caption, not a section title',
+            translatorNote: 'the original heading is a caption, not a section title',
           },
         },);
         expect(repaired.voices[0]?.value.translation,).toBe(MERGED_TEXT,);
@@ -1048,7 +1048,7 @@ await describe({
           answer: {
             resolution: 'unable',
             translation: '',
-            explanation: 'the heading is not a sentence in English',
+            translatorNote: 'the heading is not a sentence in English',
           },
         },);
         expect(log.calls,).toBe(1,);
@@ -1066,15 +1066,15 @@ await describe({
          */
         const branches = [
           {
-            answer: { resolution: 'unable', translation: '', explanation: 'the cat has no heading', },
+            answer: { resolution: 'unable', translation: '', translatorNote: 'the cat has no heading', },
             line: `${TRANSLATOR} answered unable`,
           },
           {
-            answer: { resolution: 'as-intended', translation: '', explanation: 'the cat merged it', },
+            answer: { resolution: 'as-intended', translation: '', translatorNote: 'the cat merged it', },
             line: `${TRANSLATOR} answered as-intended`,
           },
           {
-            answer: { resolution: 'revised', translation: MERGED_TEXT, explanation: 'the cat tried', },
+            answer: { resolution: 'revised', translation: MERGED_TEXT, translatorNote: 'the cat tried', },
             line: `${TRANSLATOR}: revision still fails the publication rule`,
           },
           {

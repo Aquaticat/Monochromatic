@@ -115,7 +115,7 @@ await describe({
         // refused.
         // Version 14 (2026-10-21) re-keys every ballot cast before the contest
         // ballot gave its reason before its choice.
-        expect(key,).toBe('114d9497614f135d75fd309245a307ced241074db2264f9520e14f61943e90a5',);
+        expect(key,).toBe('0b7d94bdcf02ddec71b8665ab116609c303f7f707e1db0d5af073233076b5ae2',);
       },
     },),
     it({

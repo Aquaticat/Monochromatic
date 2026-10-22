@@ -591,10 +591,10 @@ async function drive(
                 index: 0,
                 delta: {
                   content: JSON.stringify({
-                    choice: answerChoice,
+                    verdict: answerChoice,
                     unsupported: [],
                     dropped: [],
-                    reason: 'the original supports it',
+                    assessment: 'the original supports it',
                   },),
                 },
               },
@@ -739,10 +739,10 @@ function judgeRecordingClient(
        Ballot every judge casts.
        */
       const rawText = JSON.stringify({
-        choice: 'repair',
+        verdict: 'repair',
         unsupported: [],
         dropped: [],
-        reason: 'the original supports it',
+        assessment: 'the original supports it',
       },);
       /**
        That ballot as the sheet parses it.

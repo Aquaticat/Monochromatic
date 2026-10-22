@@ -108,7 +108,7 @@ function sheetText({ subject, }: { readonly subject: ConsistencySubject; },): st
  The reply example the sheet ends on: it names a placeholder for each label and no real label, since the rules forbid
  choosing by position and a real label in the example would be one to copy.
  */
-const REPLY_SHAPE = 'Reply with JSON only: {"reason":"...","quotes":[{"label":"<the label of the OCCURRENCE>","quote":"..."}],'
+const REPLY_SHAPE = 'Reply with JSON only: {"assessment":"...","candidateQuotes":[{"label":"<the label of the OCCURRENCE>","quote":"..."}],'
   + '"choice":"<the label of the OCCURRENCE you choose>","keep":[]}';
 
 await describe({
@@ -145,9 +145,9 @@ await describe({
             const userText = user?.content ?? '';
             const text = sheetText({ subject: SENTENCE, },);
             expect({
-              rule: text.includes('Write the reason first and choose after it',),
-              keysInRules: text.includes('keys come in this order: reason, quotes, choice, keep',),
-              shape: userText.indexOf('{"reason"',) < userText.indexOf('"choice"',),
+              rule: text.includes('Write the assessment first and choose after it',),
+              keysInRules: text.includes('keys come in this order: assessment, candidateQuotes, choice, keep',),
+              shape: userText.indexOf('{"assessment"',) < userText.indexOf('"choice"',),
               shapeShown: user?.content.endsWith(REPLY_SHAPE,),
               systemFirst: system?.role,
               schema: Object.keys(
@@ -161,8 +161,8 @@ await describe({
               shape: true,
               shapeShown: true,
               systemFirst: 'system',
-              schema: ['reason', 'quotes', 'choice', 'keep',],
-              required: ['reason', 'quotes', 'choice', 'keep',],
+              schema: ['assessment', 'candidateQuotes', 'choice', 'keep',],
+              required: ['assessment', 'candidateQuotes', 'choice', 'keep',],
             },);
           },
         },),
@@ -421,7 +421,7 @@ await describe({
             },);
             const [, run,] = buildConsistencyMessages({ subject: SENTENCE, },);
             expect([
-              frame?.content.includes('"quotes":[{"label":"<the label of the OCCURRENCE>","quote":"...","slot":"..."}]',),
+              frame?.content.includes('"candidateQuotes":[{"label":"<the label of the OCCURRENCE>","quote":"...","slot":"..."}]',),
               run?.content.includes('"slot"',),
             ],).toEqual([true, false,],);
           },

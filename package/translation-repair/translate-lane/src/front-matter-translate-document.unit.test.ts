@@ -85,7 +85,7 @@ function frontMatterClient({ prompts, }: { readonly prompts: string[]; }): Model
         ? { translation: CORRECTED_TEXT, }
         : {
           best: candidateCarrying({ content, needle: 'name: Maomao', },),
-          reason: 'source metadata names the person',
+          assessment: 'source metadata names the person',
         };
       if (!request.validate(value,))
         throw new Error(`scripted ${schema} reply failed validator`,);

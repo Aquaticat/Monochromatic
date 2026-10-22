@@ -209,7 +209,7 @@ function firstPositionClient({ asked, }: { readonly asked: string[]; },): ModelC
       return Promise.resolve(replyWith({
         report: {
           best: 1,
-          reason: 'purrs',
+          assessment: 'purrs',
         },
         request,
       },),);

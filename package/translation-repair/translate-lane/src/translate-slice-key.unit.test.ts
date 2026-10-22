@@ -87,7 +87,7 @@ const INCUMBENT_TEXT = 'The cat sleeps on the windowsill.\n';
  The roster feeding {@link RUN_SHAPE} is invented, so a production roster change
  leaves this alone.
  */
-const LEGACY_WINDOWLESS_KEY = '063f7be75addf5c7570d15907ccdb97266af4e1eeaa8b704f0120384839dc9b3';
+const LEGACY_WINDOWLESS_KEY = '79e5c916f277f8036837271bd6eb8d716685c83ed24e6c62d6d7a716e34f9c03';
 
 /**
  One slice's key, with whatever this case wants to vary.

@@ -15,9 +15,12 @@
  file and line, the order declared and the order alphabetical. A member spread into the literal is passed over, since its
  keys are another literal's, and that literal is read where it is written.
 
- THE SCAN IS RED BY DESIGN until the schemas it lists are renamed so that their declared order is alphabetical: the rename
- touches the writers, readers, sheet texts, fixtures and tests of each schema and moves every cache version whose key
- includes the schema, which one round could not carry (ledger B762 lists the schemas and proposes the names).
+ WHAT IT CANNOT READ: a schema built by `Object.fromEntries` or by a spread, whose keys are not written in a literal. The
+ finding schema of the rendering audit (built from `FINDING_FIELDS`) is pinned by `rendering-audit-wire.unit.test.ts`, and the
+ archive answer a contest adds by spread (`verdictOnArchive`) by `contest-ballot-wire.unit.test.ts`.
+
+ THE SCAN IS GREEN since the sixteen schemas it first listed were renamed or reordered so that their declared order is
+ alphabetical (ledger B762 lists the schemas and the names chosen). A new schema declared out of order is a finding.
 
  THE FIXTURE CASE COMES FIRST, so the package-wide case is read against a scan shown able to find each form (ledger M21).
  Fixtures are cat-themed; the package case reads this package's own source.

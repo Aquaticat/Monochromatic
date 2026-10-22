@@ -419,7 +419,7 @@ await describe({
         // has every ballot give its reason before its choice, which moved this
         // literal to the value this expectation names.
         expect(consolidateSliceKey(SLICE,),).toBe(
-          '4546d17edd10323b0ccf5b4153c06d4fe90116bde9e520446c675b221a56c505',
+          '3ed486e0f84ed1ed0101eb4c2cb832d310a885b8a81cb1ac0bce56ff2560e7e2',
         );
       },
     },),

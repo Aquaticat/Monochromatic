@@ -261,7 +261,7 @@ function scriptedClient(
                 severity: proberEvidence === '' ? '' : 'major',
                 evidence: proberEvidence,
                 omittedText: proberOmittedText,
-                reason: proberEvidence === '' ? '' : 'absent before the edit',
+                verdictReason: proberEvidence === '' ? '' : 'absent before the edit',
               };
             },),
         }

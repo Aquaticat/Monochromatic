@@ -55,7 +55,7 @@ await describe({
               return sheet.includes(`"Candidate ${String(index,)}" explicit breaks by top-level block: [1]`,);
             },) ?? 0;
             /** Let the production schema perform the narrowing. */
-            const value: unknown = { best, reason: 'The visible source line boundary remains.', };
+            const value: unknown = { best, assessment: 'The visible source line boundary remains.', };
             if (!request.validate(value,))
               throw new Error('Scripted ballot failed schema',);
             return { kind: 'ok', value, rawText: JSON.stringify(value,), };

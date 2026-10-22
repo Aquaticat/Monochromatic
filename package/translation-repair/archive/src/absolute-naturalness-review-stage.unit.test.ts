@@ -151,17 +151,17 @@ function reviewClient(
        */
       const value: unknown = (request.modelId === rejecting)
         ? {
-          acceptable: false,
+          isAcceptable: false,
           findings: [{
             paragraph: 1,
             problem: 'Replace stiff source-language word order.',
           },],
-          reason: 'candidate retains translationese',
+          assessment: 'candidate retains translationese',
         }
         : {
-          acceptable: true,
+          isAcceptable: true,
           findings: [],
-          reason: 'whole candidate is publication-ready',
+          assessment: 'whole candidate is publication-ready',
         };
       if (!request.validate(value,))
         throw new Error('scripted absolute review failed validation',);

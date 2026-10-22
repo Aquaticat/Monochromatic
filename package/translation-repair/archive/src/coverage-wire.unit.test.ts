@@ -181,20 +181,20 @@ await describe({
             // these two: under a degree it does not know, the degree check
             // refuses them whatever the string checks do.
             expect(isCoverageReportWire({
-              reason: 'fixture',
+              assessment: 'fixture',
               coverage: 'full',
             },),).toBe(false,);
             expect(isCoverageReportWire({
-              quote: 'the windowsill',
+              copiedSpan: 'the windowsill',
               coverage: 'full',
             },),).toBe(false,);
             expect(isCoverageReportWire({
-              quote: 'the windowsill',
-              reason: 'fixture',
+              copiedSpan: 'the windowsill',
+              assessment: 'fixture',
             },),).toBe(false,);
             expect(isCoverageReportWire({
-              quote: 'the windowsill',
-              reason: 'fixture',
+              copiedSpan: 'the windowsill',
+              assessment: 'fixture',
               coverage: 'full',
             },),).toBe(true,);
           },

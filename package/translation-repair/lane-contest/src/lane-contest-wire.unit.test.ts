@@ -73,10 +73,10 @@ await describe({
             // THE REGRESSION. This exact shape arrived from a real judge, carrying
             // `choice: "repair"`, and was thrown away whole.
             expect(isLaneContestWire({
-              choice: 'repair',
+              verdict: 'repair',
               unsupported: [ 'napping in the sun', 'a second bowl', ],
               dropped: [ 'Although', ],
-              reason: 'the translate candidate invents an afternoon',
+              assessment: 'the translate candidate invents an afternoon',
             },),).toBe(true,);
           },
         },),
@@ -84,10 +84,10 @@ await describe({
           name: 'ACCEPTS a candidate name carrying its own annotation',
           fn: async () => {
             expect(isLaneContestWire({
-              choice: 'neither',
+              verdict: 'neither',
               unsupported: [ 'repair (changes the bowl to a saucer)', ],
               dropped: [],
-              reason: 'both stray',
+              assessment: 'both stray',
             },),).toBe(true,);
           },
         },),
@@ -100,16 +100,16 @@ await describe({
             // it could not read; the reader now reads such a field as no findings,
             // as the consolidation gate's has since 2026-08-26.
             expect(isLaneContestWire({
-              choice: 'repair',
+              verdict: 'repair',
               unsupported: [ 7, ],
               dropped: [],
-              reason: 'x',
+              assessment: 'x',
             },),).toBe(true,);
             expect(isLaneContestWire({
-              choice: 'repair',
+              verdict: 'repair',
               unsupported: 'napping',
               dropped: [],
-              reason: 'x',
+              assessment: 'x',
             },),).toBe(true,);
           },
         },),
@@ -117,10 +117,10 @@ await describe({
           name: 'REFUSES a reply naming a candidate that does not exist',
           fn: async () => {
             expect(isLaneContestWire({
-              choice: 'incumbent',
+              verdict: 'incumbent',
               unsupported: [],
               dropped: [],
-              reason: 'x',
+              assessment: 'x',
             },),).toBe(false,);
           },
         },),
@@ -131,14 +131,14 @@ await describe({
           fn: async () => {
             /** The whole reply first, then that reply with one part taken away or broken. */
             const replies: readonly unknown[] = [
-              { choice: 'repair', unsupported: [], dropped: [], reason: 'the original says the cat slept', },
+              { verdict: 'repair', unsupported: [], dropped: [], assessment: 'the original says the cat slept', },
               'repair',
               null,
-              { unsupported: [], dropped: [], reason: 'the original says the cat slept', },
-              { choice: 'repair', dropped: [], reason: 'the original says the cat slept', },
-              { choice: 'repair', unsupported: [], reason: 'the original says the cat slept', },
-              { choice: 'repair', unsupported: [], dropped: [], },
-              { choice: 'repair', unsupported: [], dropped: [], reason: 7, },
+              { unsupported: [], dropped: [], assessment: 'the original says the cat slept', },
+              { verdict: 'repair', dropped: [], assessment: 'the original says the cat slept', },
+              { verdict: 'repair', unsupported: [], assessment: 'the original says the cat slept', },
+              { verdict: 'repair', unsupported: [], dropped: [], },
+              { verdict: 'repair', unsupported: [], dropped: [], assessment: 7, },
             ];
             expect(replies.map(function usable(reply,): boolean {
               return isLaneContestWire(reply,);
@@ -157,10 +157,10 @@ await describe({
           fn: async () => {
             const ballot = readLaneContestBallot({
               wire: {
-                choice: 'translate',
+                verdict: 'translate',
                 unsupported: [ 'repair (invents an afternoon in the sun)', ],
                 dropped: [],
-                reason: 'the original says only that the cat slept',
+                assessment: 'the original says only that the cat slept',
               },
             },);
             expect(ballot.unsupported,).toEqual([ 'repair', ],);
@@ -173,10 +173,10 @@ await describe({
             // candidate. A bare prefix test would blame the wrong lane here.
             const ballot = readLaneContestBallot({
               wire: {
-                choice: 'neither',
+                verdict: 'neither',
                 unsupported: [ 'repairing the fence', 'translated loosely', ],
                 dropped: [],
-                reason: 'neither is worse',
+                assessment: 'neither is worse',
               },
             },);
             expect(ballot.unsupported,).toEqual([],);
@@ -187,10 +187,10 @@ await describe({
           fn: async () => {
             const ballot = readLaneContestBallot({
               wire: {
-                choice: 'repair',
+                verdict: 'repair',
                 unsupported: [ 'napping in the sun', ],
                 dropped: [ 'the second bowl', ],
-                reason: 'the translate candidate adds an afternoon',
+                assessment: 'the translate candidate adds an afternoon',
               },
             },);
             expect(ballot.choice,).toBe('repair',);
@@ -206,10 +206,10 @@ await describe({
           fn: async () => {
             /** A reply whose findings are a stray number and a bare phrase. */
             const reply: unknown = {
-              choice: 'repair',
+              verdict: 'repair',
               unsupported: [ 7, ],
               dropped: 'the second bowl',
-              reason: 'the translate candidate adds an afternoon',
+              assessment: 'the translate candidate adds an afternoon',
             };
             if (!isLaneContestWire(reply,))
               throw new Error('the guard refused a reply whose choice and reason it can read',);
@@ -229,10 +229,10 @@ await describe({
           fn: async () => {
             const ballot = readLaneContestBallot({
               wire: {
-                choice: 'translate',
+                verdict: 'translate',
                 unsupported: [ 'repair (adds an afternoon)', 'repair (adds a sunbeam)', ],
                 dropped: [],
-                reason: 'two inventions from the same candidate',
+                assessment: 'two inventions from the same candidate',
               },
             },);
             expect(ballot.unsupported,).toEqual([ 'repair', ],);
@@ -243,10 +243,10 @@ await describe({
           fn: async () => {
             const ballot = readLaneContestBallot({
               wire: {
-                choice: 'neither',
+                verdict: 'neither',
                 unsupported: [ 'translate: drops the bowl', 'repair: adds an afternoon', ],
                 dropped: [],
-                reason: 'both stray',
+                assessment: 'both stray',
               },
             },);
             expect(ballot.unsupported,).toEqual([ 'repair', 'translate', ],);

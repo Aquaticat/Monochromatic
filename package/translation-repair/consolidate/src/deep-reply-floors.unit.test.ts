@@ -170,7 +170,7 @@ await describe({
                       },],
                     };
                   }
-                  return { best: 1, reason: 'scripted', };
+                  return { best: 1, assessment: 'scripted', };
                 },
               },),
               refinerModelIds: [DEEP_VOICE, ORDINARY_VOICE,],
@@ -225,8 +225,8 @@ await describe({
                   if (stage === 'refine_report')
                     return { rewrites: [{ paragraph: 1, newText: `${DEEP_MARKERS}${SMOOTH_TEXT}`, },], };
                   if (stage === 'absolute_naturalness_review')
-                    return { acceptable: true, findings: [], reason: 'whole passage is publication-ready', };
-                  return { best: 1, reason: 'scripted', };
+                    return { isAcceptable: true, findings: [], assessment: 'whole passage is publication-ready', };
+                  return { best: 1, assessment: 'scripted', };
                 },
               },),
               sourceText: SOURCE_TEXT,
@@ -352,10 +352,10 @@ await describe({
                       replacementText: (modelId === DEEP_VOICE)
                         ? `${DEEP_MARKERS}The cat sleeps by the window.`
                         : 'The cat sleeps by the window.',
-                      finding: 'Remove unsupported award claim.',
+                      assessment: 'Remove unsupported award claim.',
                     };
                   }
-                  return { best: 1, reason: 'Only supported details remain.', };
+                  return { best: 1, assessment: 'Only supported details remain.', };
                 },
               },),
               modelIds: [

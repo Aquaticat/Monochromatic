@@ -307,14 +307,14 @@ function answeringClient(): {
         const answers: Record<string, string> = {
           produce: JSON.stringify({ translation: 'A cat asleep in the sun.', },),
           gate: JSON.stringify({
-            choice: 'standing',
+            verdict: 'standing',
             unsupported: [],
             dropped: [],
-            reason: 'the original supports it',
+            assessment: 'the original supports it',
           },),
           judge: JSON.stringify({
             best: 1,
-            reason: 'it says what the original says',
+            assessment: 'it says what the original says',
           },),
         };
 
@@ -460,14 +460,14 @@ function scriptedClient(
                   ? endorsedText
                   : initialText,
               },),
-              reason: 'best supported rendering',
+              assessment: 'best supported rendering',
             },);
           }
           return JSON.stringify({
-            choice: sent.includes(endorsedText,) ? 'consolidated' : 'standing',
+            verdict: sent.includes(endorsedText,) ? 'consolidated' : 'standing',
             unsupported: [],
             dropped: [],
-            reason: 'the consolidation improves fidelity',
+            assessment: 'the consolidation improves fidelity',
           },);
         })();
         return {
@@ -1079,8 +1079,8 @@ function roleAnsweringClient(
       const rawText = sent.includes('translation_report',)
         ? JSON.stringify({ translation: 'A cat asleep in the sun.', },)
         : (sent.includes(GATE_MARKER,)
-          ? JSON.stringify({ choice: 'standing', unsupported: [], dropped: [], reason: 'the original supports it', },)
-          : JSON.stringify({ best: 1, reason: 'it says what the original says', },));
+          ? JSON.stringify({ verdict: 'standing', unsupported: [], dropped: [], assessment: 'the original supports it', },)
+          : JSON.stringify({ best: 1, assessment: 'it says what the original says', },));
       /**
        That reply as the sheet parses it.
        */
@@ -1130,12 +1130,12 @@ function polishingClient({ sheets, }: { readonly sheets: string[]; },): ModelCli
         : (schema === 'refine_report')
         ? { rewrites: [{ paragraph: 1, newText: 'a repair wording for slice 0', },], }
         : (schema === 'consolidation_polish_gate')
-        ? { choice: 'polished', unsupported: [], dropped: [], reason: 'equally faithful', }
+        ? { verdict: 'polished', unsupported: [], dropped: [], assessment: 'equally faithful', }
         : (schema === 'absolute_naturalness_review')
-        ? { acceptable: true, findings: [], reason: 'publication-ready', }
+        ? { isAcceptable: true, findings: [], assessment: 'publication-ready', }
         : (schema === 'candidate_ballot')
-        ? { best: 1, reason: 'it says what the original says', }
-        : { choice: 'standing', unsupported: [], dropped: [], reason: 'the original supports it', };
+        ? { best: 1, assessment: 'it says what the original says', }
+        : { verdict: 'standing', unsupported: [], dropped: [], assessment: 'the original supports it', };
       return request.validate(value,)
         ? { kind: 'ok', value, rawText: JSON.stringify(value,), }
         : { kind: 'schema-mismatch', rawText: JSON.stringify(value,), detail: `fixture does not answer ${schema}`, };

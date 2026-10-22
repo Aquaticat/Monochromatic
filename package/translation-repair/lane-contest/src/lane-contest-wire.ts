@@ -181,29 +181,36 @@ export type LaneContestBallot = {
  */
 export type LaneContestWire = {
   /**
-   Lane this judge would publish, a name the guard has already checked, so
-   the reader takes it as it stands.
+   Why the judge answered as it did, written first. NAMED `assessment` so that it sorts first (ledger B762); the
+   ballot built from it keeps the name `reason`.
    */
-  readonly choice: LaneChoice;
+  readonly assessment: string;
 
   /**
-   Findings against a candidate, a list of strings when the model followed
+   Findings of dropped content, a list of strings when the model followed
    the schema and whatever it wrote otherwise; the reader narrows (ledger
    B46).
+   */
+  readonly dropped: unknown;
+
+  /**
+   Findings against a candidate, read the same way.
    */
   readonly unsupported: unknown;
 
   /**
-   Findings of dropped content, read the same way.
+   Lane this judge would publish, a name the guard has already checked, so
+   the reader takes it as it stands. NAMED `verdict` so that it sorts after the findings (ledger B762); the ballot
+   built from it keeps the name `choice`.
    */
-  readonly dropped: unknown;
-  readonly reason: string;
+  readonly verdict: LaneChoice;
 
   /**
    Archive answer as the model wrote it, which the guard does not check and
-   the reader narrows to a verdict.
+   the reader narrows to a verdict. NAMED `verdictOnArchive` so that it sorts after `verdict` (ledger B762); the ballot
+   built from it keeps the name `archive`.
    */
-  readonly archive?: unknown;
+  readonly verdictOnArchive?: unknown;
 };
 
 /**
@@ -265,7 +272,7 @@ function isArchiveVerdict(value: unknown,): value is ArchiveVerdict {
 export function isLaneContestWire(value: unknown,): value is LaneContestWire {
   if (!isJsonRecord(value,))
     return false;
-  return isLaneChoice(value.choice,) && ((typeof value.reason) === 'string');
+  return isLaneChoice(value.verdict,) && ((typeof value.assessment) === 'string');
 }
 
 /**
@@ -290,8 +297,8 @@ export function readLaneContestBallot(
    under `exactOptionalPropertyTypes` and an explicit `undefined` would not
    typecheck against it.
    */
-  const archive = isArchiveVerdict(wire.archive,)
-    ? { archive: wire.archive, }
+  const archive = isArchiveVerdict(wire.verdictOnArchive,)
+    ? { archive: wire.verdictOnArchive, }
     : {};
 
   /**
@@ -306,7 +313,7 @@ export function readLaneContestBallot(
 
   return {
     ...archive,
-    choice: wire.choice,
+    choice: wire.verdict,
     unsupported: readCandidateNames({
       findings: unsupported,
       names: CANDIDATE_NAMES,
@@ -317,7 +324,7 @@ export function readLaneContestBallot(
       names: CANDIDATE_NAMES,
     },),
     droppedRaw: dropped,
-    reason: wire.reason,
+    reason: wire.assessment,
   };
 }
 
@@ -721,12 +728,12 @@ export function buildLaneContestMessages(
         'asked of the candidates: does it say anything the original does not',
         'support, and does it omit anything the original says? Answer',
         '"publishable" only if it passes both, and "flawed" otherwise. This',
-        'answer does not name a candidate and does not affect your choice.',
+        'answer does not name a candidate and does not affect your verdict.',
         '',
-        'Return JSON: reason one sentence, given before the choice;',
-        'unsupported and dropped each a list naming any of "repair", "translate";',
-        'choice one of "repair", "translate", "neither";',
-        'archive one of "publishable", "flawed".',
+        'Return JSON: assessment one sentence, given before the verdict;',
+        'dropped and unsupported each a list naming any of "repair", "translate";',
+        'verdict one of "repair", "translate", "neither";',
+        'verdictOnArchive one of "publishable", "flawed".',
       ].join('\n',),
     },
   ];

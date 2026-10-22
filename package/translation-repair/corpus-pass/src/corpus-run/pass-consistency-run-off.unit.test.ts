@@ -98,7 +98,7 @@ const KEY = consistencyKey({
  ```
  */
 function everySeatChooses({ seat, }: { readonly seat: RosterModelId; },): SeatBehaviour {
-  return { kind: 'answers', text: JSON.stringify({ reason: `${seat} prefers the kitten.`, choice: 'OCCURRENCE 2', },), };
+  return { kind: 'answers', text: JSON.stringify({ assessment: `${seat} prefers the kitten.`, choice: 'OCCURRENCE 2', },), };
 }
 
 /**
@@ -199,7 +199,7 @@ await describe({
             const result = await runOff({
               behave: function oneStray({ seat, },): SeatBehaviour {
                 return (seat === SEAT_HYPER_ONLY)
-                  ? { kind: 'answers', text: JSON.stringify({ reason: 'The third place.', choice: 'OCCURRENCE 3', },), }
+                  ? { kind: 'answers', text: JSON.stringify({ assessment: 'The third place.', choice: 'OCCURRENCE 3', },), }
                   : everySeatChooses({ seat, },);
               },
               cache: recordingCache({ resumed: new Map(), persisted: [], },),
@@ -263,8 +263,8 @@ await describe({
             expect(choiceRecordOf({
               quorum: 2,
               voices: [
-                { modelId: SEAT_HYPER_ONLY, value: { reason: 'The kitten.', choice: 'OCCURRENCE 2', }, },
-                { modelId: SEAT_BEDROCK_ONLY_TEXT, value: { reason: 'The cat.', choice: 'OCCURRENCE 1', }, },
+                { modelId: SEAT_HYPER_ONLY, value: { assessment: 'The kitten.', choice: 'OCCURRENCE 2', }, },
+                { modelId: SEAT_BEDROCK_ONLY_TEXT, value: { assessment: 'The cat.', choice: 'OCCURRENCE 1', }, },
               ],
               findings: ['stage-voice-lost (page-consistency-run-off hyper-vision)',],
             },),).toEqual({

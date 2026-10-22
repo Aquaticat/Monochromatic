@@ -217,7 +217,7 @@ function copyingClient(): ModelClient {
         ? { translation, }
         : {
           best: (purring === (-1)) ? 1 : (purring + 1),
-          reason: 'keeps the purr',
+          assessment: 'keeps the purr',
         };
       if (!request.validate(value,))
         throw new Error(`fixture ${schema} reply failed validation`,);

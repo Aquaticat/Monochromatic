@@ -189,13 +189,13 @@ await describe({
             },);
             expect({
               roles: [system?.role, user?.role,],
-              reasonFirst: system?.content.includes('keys come in this order: reason, choice',),
+              reasonFirst: system?.content.includes('keys come in this order: assessment, choice',),
               outside: system?.content.includes('name any word of the rendering you choose that renders ORIGINAL outside the marked wording',),
               houseRules: system?.content.includes('House rules this corpus is written under',),
               shape: user?.content.endsWith(
-                'Reply with JSON only: {"reason":"...","choice":"<the label of the place you choose>"}',
+                'Reply with JSON only: {"assessment":"...","choice":"<the label of the place you choose>"}',
               ),
-              quotesAsked: (system?.content ?? '').includes('"quotes"',),
+              quotesAsked: (system?.content ?? '').includes('"candidateQuotes"',),
             },).toEqual({
               roles: ['system', 'user',],
               reasonFirst: true,

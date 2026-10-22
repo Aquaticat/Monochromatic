@@ -451,8 +451,8 @@ export function ballotText(
   },
 ): string {
   return JSON.stringify({
-    reason: 'The first rendering is the most faithful to the original, and the others differ in wording only.',
-    quotes,
+    assessment: 'The first rendering is the most faithful to the original, and the others differ in wording only.',
+    candidateQuotes: quotes,
     choice,
     keep,
   },);
@@ -474,7 +474,7 @@ export function choosing({ choice, }: { readonly choice: string; },): SeatBehavi
   return {
     kind: 'answers',
     text: JSON.stringify({
-      reason: 'It renders the original best under the house rules.',
+      assessment: 'It renders the original best under the house rules.',
       choice,
     },),
   };

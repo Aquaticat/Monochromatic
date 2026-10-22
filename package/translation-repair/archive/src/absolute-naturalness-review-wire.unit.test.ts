@@ -24,9 +24,9 @@ import {
  Otherwise-valid reply each structural-malformation case corrupts in one field.
  */
 const VALID_REVIEW: AbsoluteNaturalnessReviewWire = {
-  acceptable: false,
+  isAcceptable: false,
   findings: [{ paragraph: 2, problem: 'Avoid literal word-for-word order.', },],
-  reason: 'retains source phrasing',
+  assessment: 'retains source phrasing',
 };
 
 /**
@@ -95,24 +95,24 @@ await describe({
           name: 'REQUIRES FINDINGS exactly for unacceptable verdict',
           fn: async () => {
             expect(isAbsoluteNaturalnessReviewWire({
-              acceptable: true,
+              isAcceptable: true,
               findings: [],
-              reason: 'ready',
+              assessment: 'ready',
             },),).toBe(true,);
             expect(isAbsoluteNaturalnessReviewWire({
-              acceptable: false,
+              isAcceptable: false,
               findings: [{ paragraph: 1, problem: 'Replace stiff syntax.', },],
-              reason: 'translationese remains',
+              assessment: 'translationese remains',
             },),).toBe(true,);
             expect(isAbsoluteNaturalnessReviewWire({
-              acceptable: true,
+              isAcceptable: true,
               findings: [{ paragraph: 1, problem: 'Optional preference.', },],
-              reason: 'contradictory',
+              assessment: 'contradictory',
             },),).toBe(false,);
             expect(isAbsoluteNaturalnessReviewWire({
-              acceptable: false,
+              isAcceptable: false,
               findings: [],
-              reason: 'contradictory',
+              assessment: 'contradictory',
             },),).toBe(false,);
           },
         },),
@@ -126,9 +126,9 @@ await describe({
         },),
 
         it({
-          name: 'REFUSES A NON-BOOLEAN acceptable field',
+          name: 'REFUSES A NON-BOOLEAN isAcceptable field',
           fn: async () => {
-            expect(isAbsoluteNaturalnessReviewWire({ ...VALID_REVIEW, acceptable: 'false', },),)
+            expect(isAbsoluteNaturalnessReviewWire({ ...VALID_REVIEW, isAcceptable: 'false', },),)
               .toBe(false,);
           },
         },),
@@ -137,8 +137,8 @@ await describe({
           name: 'REFUSES A REPLY MISSING findings',
           fn: async () => {
             expect(isAbsoluteNaturalnessReviewWire({
-              acceptable: false,
-              reason: 'retains source phrasing',
+              isAcceptable: false,
+              assessment: 'retains source phrasing',
             },),).toBe(false,);
           },
         },),
@@ -239,19 +239,19 @@ await describe({
         },),
 
         it({
-          name: 'REFUSES A REPLY MISSING reason',
+          name: 'REFUSES A REPLY MISSING assessment',
           fn: async () => {
             expect(isAbsoluteNaturalnessReviewWire({
-              acceptable: false,
+              isAcceptable: false,
               findings: [{ paragraph: 2, problem: 'Avoid literal word-for-word order.', },],
             },),).toBe(false,);
           },
         },),
 
         it({
-          name: 'REFUSES A NON-STRING reason field',
+          name: 'REFUSES A NON-STRING assessment field',
           fn: async () => {
-            expect(isAbsoluteNaturalnessReviewWire({ ...VALID_REVIEW, reason: 7, },),)
+            expect(isAbsoluteNaturalnessReviewWire({ ...VALID_REVIEW, assessment: 7, },),)
               .toBe(false,);
           },
         },),

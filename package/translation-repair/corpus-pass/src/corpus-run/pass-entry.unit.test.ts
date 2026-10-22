@@ -686,7 +686,7 @@ function replyFor(
       disposition: 'revise',
       sourceQuote: '',
       replacementText: '',
-      finding: 'Remove unsupported archive-only factual wording.',
+      assessment: 'Remove unsupported archive-only factual wording.',
     };
   }
   if (schema === 'coverage_report') {
@@ -695,13 +695,13 @@ function replyFor(
     return coverageScript === 'full'
       ? {
         coverage: 'full',
-        quote: GAP_FRESH,
-        reason: 'scripted source passage carried',
+        copiedSpan: GAP_FRESH,
+        assessment: 'scripted source passage carried',
       }
       : {
         coverage: 'none',
-        quote: '',
-        reason: 'scripted source passage absent',
+        copiedSpan: '',
+        assessment: 'scripted source passage absent',
       };
   }
   if (schema === 'critic_report')
@@ -726,7 +726,7 @@ function replyFor(
   if (schema === 'candidate_ballot') {
     return {
       best: content.includes('CURRENT ARCHIVE BLOCK',) ? 1 : pickCandidate({ content, }),
-      reason: 'scripted',
+      assessment: 'scripted',
     };
   }
 
@@ -737,33 +737,33 @@ function replyFor(
   // of the stage reaching an answer.
   if (schema === 'lane_contest') {
     return {
-      choice: contestChoice,
+      verdict: contestChoice,
       unsupported: [],
       dropped: [],
-      reason: 'scripted',
+      assessment: 'scripted',
     };
   }
   if (schema === 'consolidate_gate') {
     return {
-      choice: 'consolidated',
+      verdict: 'consolidated',
       unsupported: [],
       dropped: [],
-      reason: 'scripted consolidation gate',
+      assessment: 'scripted consolidation gate',
     };
   }
   if (schema === 'consolidation_polish_gate') {
     return {
-      choice: 'polished',
+      verdict: 'polished',
       unsupported: [],
       dropped: [],
-      reason: 'scripted fidelity-first naturalness gate',
+      assessment: 'scripted fidelity-first naturalness gate',
     };
   }
   if (schema === 'absolute_naturalness_review') {
     return {
-      acceptable: true,
+      isAcceptable: true,
       findings: [],
-      reason: 'whole candidate is publication-ready',
+      assessment: 'whole candidate is publication-ready',
     };
   }
 
@@ -893,7 +893,7 @@ function entryClient(
           disposition: content.includes(archivePictureSupport,) ? 'source-supported' : 'revise',
           sourceQuote: content.includes(archivePictureSupport,) ? archivePictureSupport : '',
           replacementText: '',
-          finding: 'Read the picture translation against the supplied source evidence.',
+          assessment: 'Read the picture translation against the supplied source evidence.',
         };
         if (!request.validate(value,))
           throw new Error('scripted picture support failed archive review validator',);

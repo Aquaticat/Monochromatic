@@ -38,9 +38,9 @@ await describe({
           ): Promise<ChatJsonOutcome<ValueT>> => {
             prompts.push(JSON.stringify(request.messages,),);
             const value: unknown = {
-              acceptable: true,
+              isAcceptable: true,
               findings: [],
-              reason: 'fixture accepts exact candidate',
+              assessment: 'fixture accepts exact candidate',
             };
             if (!request.validate(value,))
               throw new Error('confirmation fixture response failed validation',);

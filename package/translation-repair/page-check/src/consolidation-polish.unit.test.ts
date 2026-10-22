@@ -131,20 +131,20 @@ const client: ModelClient = {
       : (schema === 'candidate_ballot')
       ? {
         best: 1,
-        reason: 'clear idiomatic improvement with same meaning',
+        assessment: 'clear idiomatic improvement with same meaning',
       }
       : (schema === 'consolidation_polish_gate')
       ? {
-        choice: 'polished',
+        verdict: 'polished',
         unsupported: [],
         dropped: [],
-        reason: 'equally faithful and more idiomatic',
+        assessment: 'equally faithful and more idiomatic',
       }
       : (schema === 'absolute_naturalness_review')
       ? {
-        acceptable: true,
+        isAcceptable: true,
         findings: [],
-        reason: 'whole passage is publication-ready',
+        assessment: 'whole passage is publication-ready',
       }
       : {};
     if (!request.validate(value,))
@@ -217,15 +217,15 @@ function singleRoundClient(
         if (schema === 'candidate_ballot') {
           return {
             best: 1,
-            reason: 'clear idiomatic improvement with same meaning',
+            assessment: 'clear idiomatic improvement with same meaning',
           };
         }
         if (schema === 'consolidation_polish_gate') {
           return {
-            choice: 'polished',
+            verdict: 'polished',
             unsupported: [],
             dropped: [],
-            reason: 'scripted fidelity comparison',
+            assessment: 'scripted fidelity comparison',
           };
         }
         if (schema === 'absolute_naturalness_review') {
@@ -242,18 +242,18 @@ function singleRoundClient(
             throw new Error('scripted lost review seat',);
           if (!acceptable) {
             return {
-              acceptable: false,
+              isAcceptable: false,
               findings: [{
                 paragraph: 1,
                 problem: 'Replace stiff source-language word order.',
               },],
-              reason: 'candidate retains translationese',
+              assessment: 'candidate retains translationese',
             };
           }
           return {
-            acceptable: true,
+            isAcceptable: true,
             findings: [],
-            reason: 'whole passage is publication-ready',
+            assessment: 'whole passage is publication-ready',
           };
         }
         return {};
@@ -312,10 +312,10 @@ function recordingClient(
         const value: unknown = (schema === 'refine_report')
           ? { rewrites: [{ paragraph: 1, newText: POLISHED, },], }
           : (schema === 'candidate_ballot')
-          ? { best: 1, reason: 'clear idiomatic improvement with same meaning', }
+          ? { best: 1, assessment: 'clear idiomatic improvement with same meaning', }
           : (schema === 'consolidation_polish_gate')
-          ? { choice: gateChoice, unsupported: [], dropped: [], reason: 'scripted fidelity comparison', }
-          : { acceptable: true, findings: [], reason: 'whole passage is publication-ready', };
+          ? { verdict: gateChoice, unsupported: [], dropped: [], assessment: 'scripted fidelity comparison', }
+          : { isAcceptable: true, findings: [], assessment: 'whole passage is publication-ready', };
         if (!request.validate(value,))
           throw new Error(`synthetic ${schema} reply failed validation`,);
         return {

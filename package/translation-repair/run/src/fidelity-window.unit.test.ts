@@ -146,7 +146,7 @@ function recordingClient(): SentSheets {
          */
         const value: unknown = {
           best: 1,
-          reason: 'fixture',
+          assessment: 'fixture',
         };
         if (!request.validate(value,)) {
           return {

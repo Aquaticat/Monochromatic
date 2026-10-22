@@ -13,18 +13,43 @@ import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typogra
 // first round asks for quotes too; these two ask for a reason and a choice, in
 // that order (REASON BEFORE CHOICE, the owner's ruling of 2026-10-11), the
 // reason declared first in the reply schema and written first on the sheet.
+//
+// THE REPLY AND THE STORED CHOICE SPELL THE REASON DIFFERENTLY (ledger B762). The reply calls it `assessment`, a name that
+// sorts before `choice`, so a provider that returns a tool call's keys alphabetically still gives the reason first. The
+// choice a gather stores (and the cache and the run's artifacts read back) keeps the name `reason` it was stored under, so
+// no stored record changes spelling: `readConsistencyChoiceWire` is the one place the reply becomes a stored choice.
 
 /**
  One judge's reply that only chooses.
 
  @example
  ```ts
- const ballot: ConsistencyChoiceWire = { reason: 'It reads as the refrain reads.', choice: 'CANDIDATE 2', };
+ const wire: ConsistencyChoiceWire = { assessment: 'It reads as the refrain reads.', choice: 'CANDIDATE 2', };
  ```
  */
 export type ConsistencyChoiceWire = {
   /**
    Why the judge chose as it did, written before the choice.
+   */
+  readonly assessment: string;
+
+  /**
+   Label of the place or candidate chosen.
+   */
+  readonly choice: string;
+};
+
+/**
+ One judge's choice as the gather stores it and the counting reads it.
+
+ @example
+ ```ts
+ const ballot: ConsistencyChoiceBallot = { reason: 'It reads as the refrain reads.', choice: 'CANDIDATE 2', };
+ ```
+ */
+export type ConsistencyChoiceBallot = {
+  /**
+   Why the judge chose as it did.
    */
   readonly reason: string;
 
@@ -42,7 +67,7 @@ export type ConsistencyChoiceWire = {
  const voice: ConsistencyChoiceVoice = { seat: 'glm-5.3', reason: 'Reads best.', choice: 'OCCURRENCE 3', };
  ```
  */
-export type ConsistencyChoiceVoice = ConsistencyChoiceWire & {
+export type ConsistencyChoiceVoice = ConsistencyChoiceBallot & {
   /**
    Seat that answered.
    */
@@ -50,7 +75,7 @@ export type ConsistencyChoiceVoice = ConsistencyChoiceWire & {
 };
 
 /**
- Structured-output constraint for replies that only choose, built for one ask: `reason` is declared first, and `choice` lists
+ Structured-output constraint for replies that only choose, built for one ask: `assessment` is declared first, and `choice` lists
  the labels the sheet showed as an `enum`, so a provider that enforces the schema can answer with no other.
 
  @param labels - labels the sheet showed, the only labels a reply may use
@@ -72,13 +97,13 @@ export function consistencyChoiceResponseFormat(
       schema: {
         type: 'object',
         required: [
-          'reason',
+          'assessment',
           'choice',
         ],
         additionalProperties: false,
-        // REASON DECLARED BEFORE CHOICE, as the sheets' reply shape shows it.
+        // REASON DECLARED BEFORE CHOICE, as the sheets' reply shape shows it, in the order the keys sort (ledger B762).
         properties: {
-          reason: { type: 'string', },
+          assessment: { type: 'string', },
           choice: {
             type: 'string',
             enum: [...labels,],
@@ -94,7 +119,7 @@ export function consistencyChoiceResponseFormat(
 
  @param value - parsed provider value
 
- @returns Whether it carries a reason and a choice
+ @returns Whether it carries an assessment and a choice
 
  @example
  ```ts
@@ -102,8 +127,46 @@ export function consistencyChoiceResponseFormat(
  ```
  */
 export function isConsistencyChoiceWire(value: unknown,): value is ConsistencyChoiceWire {
+  return isJsonRecord(value,) && ((typeof value.assessment) === 'string')
+    && ((typeof value.choice) === 'string');
+}
+
+/**
+ Whether a parsed stored value has the shape of a stored choice, whatever it names.
+
+ @param value - parsed stored value, such as a voice read back from the cache
+
+ @returns Whether it carries a reason and a choice
+
+ @example
+ ```ts
+ isConsistencyChoiceBallot(JSON.parse(text,),);
+ ```
+ */
+export function isConsistencyChoiceBallot(value: unknown,): value is ConsistencyChoiceBallot {
   return isJsonRecord(value,) && ((typeof value.reason) === 'string')
     && ((typeof value.choice) === 'string');
+}
+
+/**
+ The reply as the choice a gather stores.
+
+ @param wire - reply of the right shape
+
+ @returns The choice, its assessment stored as the reason
+
+ @example
+ ```ts
+ const ballot = readConsistencyChoiceWire({ wire: { assessment: 'It reads best.', choice: '3', }, },);
+ ```
+ */
+export function readConsistencyChoiceWire(
+  { wire, }: { readonly wire: ConsistencyChoiceWire; },
+): ConsistencyChoiceBallot {
+  return {
+    reason: wire.assessment,
+    choice: wire.choice,
+  };
 }
 
 /**
@@ -121,7 +184,7 @@ export function isConsistencyChoiceWire(value: unknown,): value is ConsistencyCh
  const [canonical,] = canonicalChoiceOf({ ballot: { reason: 'r', choice: '3', }, labels: ['OCCURRENCE 3',], },);
  ```
  */
-export function canonicalChoiceOf<BallotT extends ConsistencyChoiceWire,>(
+export function canonicalChoiceOf<BallotT extends ConsistencyChoiceBallot,>(
   {
     ballot,
     labels,
@@ -168,7 +231,7 @@ export function isUsableChoice(
     ballot,
     labels,
   }: {
-    readonly ballot: ConsistencyChoiceWire;
+    readonly ballot: ConsistencyChoiceBallot;
     readonly labels: readonly string[];
   },
 ): boolean {
@@ -198,7 +261,7 @@ export function usableChoiceFor(
 ): (value: unknown,) => value is ConsistencyChoiceWire {
   return function isUsableReply(value: unknown,): value is ConsistencyChoiceWire {
     return isConsistencyChoiceWire(value,) && isUsableChoice({
-      ballot: value,
+      ballot: readConsistencyChoiceWire({ wire: value, },),
       labels,
     },);
   };

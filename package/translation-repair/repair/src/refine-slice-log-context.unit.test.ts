@@ -171,7 +171,7 @@ const CLIENT: ModelClient = {
     const scripted: unknown = (stage === 'refine_report')
       ? { rewrites: [{ paragraph: 1, newText: SMOOTH_TEXT, },], }
       : (stage === 'candidate_ballot')
-      ? { best: 1, reason: 'scripted', }
+      ? { best: 1, assessment: 'scripted', }
       : (stage === 'introduced_defect_report')
       ? {
         checks: [
@@ -182,7 +182,7 @@ const CLIENT: ModelClient = {
             severity: '',
             evidence: '',
             omittedText: '',
-            reason: '',
+            verdictReason: '',
           },
         ],
       }

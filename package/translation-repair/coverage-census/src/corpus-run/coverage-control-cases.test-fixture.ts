@@ -144,8 +144,8 @@ export function coverageControlClient(
        */
       const scripted: unknown = {
         coverage: 'full',
-        quote,
-        reason: 'fixture',
+        copiedSpan: quote,
+        assessment: 'fixture',
       };
       if (!request.validate(scripted,))
         return Promise.reject(new Error('scripted reply failed the coverage guard',),);

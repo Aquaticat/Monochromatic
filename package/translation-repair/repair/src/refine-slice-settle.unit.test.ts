@@ -211,7 +211,7 @@ const PROBER_REPORTS: ReadonlyMap<ProberAnswer, unknown> = new Map<ProberAnswer,
         severity: 'minor',
         evidence: ADDED_WORDING,
         omittedText: '',
-        reason: 'the cat never said it was rewritten',
+        verdictReason: 'the cat never said it was rewritten',
       },],
     },
   ],
@@ -363,7 +363,7 @@ function scriptedSettleClient(
           JUDGE_STAGE,
           {
             best: 1,
-            reason: 'scripted',
+            assessment: 'scripted',
           },
         ],
         [

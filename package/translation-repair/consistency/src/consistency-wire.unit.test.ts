@@ -18,10 +18,37 @@ import {
 import {
   consistencyLabel,
   consistencyLabels,
+  isConsistencyBallot,
   isConsistencyBallotWire,
   isUsableConsistencyBallot,
+  readConsistencyBallotWire,
   usableConsistencyBallotFor,
 } from '../dist/final/node/index.mjs';
+
+/**
+ Builds one ballot as a gather stores it, with the stored keys.
+
+ @param over - fields this case replaces
+
+ @returns Ballot as stored
+
+ @example
+ ```ts
+ const ballot = ballotWith({ choice: 'OCCURRENCE 2', },);
+ ```
+ */
+function ballotWith(over: Record<string, unknown> = {},): Record<string, unknown> {
+  return {
+    reason: 'The first rendering is the more faithful.',
+    quotes: [
+      { label: 'OCCURRENCE 1', quote: 'The sunny window put the kitten to sleep', },
+      { label: 'OCCURRENCE 2', quote: 'the sunlight on the sill lulled the kitten to sleep', },
+    ],
+    choice: 'OCCURRENCE 1',
+    keep: [],
+    ...over,
+  };
+}
 
 /**
  A well-formed reply naming the first of two places.
@@ -37,8 +64,8 @@ import {
  */
 function replyWith(over: Record<string, unknown> = {},): Record<string, unknown> {
   return {
-    reason: 'The first rendering is the more faithful.',
-    quotes: [
+    assessment: 'The first rendering is the more faithful.',
+    candidateQuotes: [
       { label: 'OCCURRENCE 1', quote: 'The sunny window put the kitten to sleep', },
       { label: 'OCCURRENCE 2', quote: 'the sunlight on the sill lulled the kitten to sleep', },
     ],
@@ -85,9 +112,9 @@ await describe({
             expect({
               plain: isConsistencyBallotWire(replyWith(),),
               slotted: isConsistencyBallotWire(replyWith({
-                quotes: [{ label: 'OCCURRENCE 1', quote: 'a chubby little treasure', slot: 'chubby', },],
+                candidateQuotes: [{ label: 'OCCURRENCE 1', quote: 'a chubby little treasure', slot: 'chubby', },],
               },),),
-              noQuotes: isConsistencyBallotWire(replyWith({ quotes: [], },),),
+              noQuotes: isConsistencyBallotWire(replyWith({ candidateQuotes: [], },),),
             },).toEqual({
               plain: true,
               slotted: true,
@@ -100,15 +127,15 @@ await describe({
           fn: async () => {
             expect({
               notRecord: isConsistencyBallotWire(['OCCURRENCE 1',],),
-              noReason: isConsistencyBallotWire(replyWith({ reason: undefined, },),),
-              reasonNumber: isConsistencyBallotWire(replyWith({ reason: 3, },),),
+              noReason: isConsistencyBallotWire(replyWith({ assessment: undefined, },),),
+              reasonNumber: isConsistencyBallotWire(replyWith({ assessment: 3, },),),
               noChoice: isConsistencyBallotWire(replyWith({ choice: undefined, },),),
-              quotesNotList: isConsistencyBallotWire(replyWith({ quotes: 'OCCURRENCE 1', },),),
-              quoteNotRecord: isConsistencyBallotWire(replyWith({ quotes: ['x',], },),),
-              quoteNoLabel: isConsistencyBallotWire(replyWith({ quotes: [{ quote: 'x', },], },),),
-              quoteNoText: isConsistencyBallotWire(replyWith({ quotes: [{ label: 'OCCURRENCE 1', },], },),),
+              quotesNotList: isConsistencyBallotWire(replyWith({ candidateQuotes: 'OCCURRENCE 1', },),),
+              quoteNotRecord: isConsistencyBallotWire(replyWith({ candidateQuotes: ['x',], },),),
+              quoteNoLabel: isConsistencyBallotWire(replyWith({ candidateQuotes: [{ quote: 'x', },], },),),
+              quoteNoText: isConsistencyBallotWire(replyWith({ candidateQuotes: [{ label: 'OCCURRENCE 1', },], },),),
               slotNumber: isConsistencyBallotWire(replyWith({
-                quotes: [{ label: 'OCCURRENCE 1', quote: 'x', slot: 1, },],
+                candidateQuotes: [{ label: 'OCCURRENCE 1', quote: 'x', slot: 1, },],
               },),),
               keepNotList: isConsistencyBallotWire(replyWith({ keep: 'OCCURRENCE 2', },),),
               keepItemNumber: isConsistencyBallotWire(replyWith({ keep: [2,], },),),
@@ -127,6 +154,70 @@ await describe({
             },);
           },
         },),
+        it({
+          name: 'REFUSES A REPLY THAT STILL SPELLS THE REASON `reason` AND THE QUOTES `quotes`, since the reply keys are '
+            + '`assessment` and `candidateQuotes` (ledger B762)',
+          fn: async () => {
+            const stored = ballotWith();
+            expect(isConsistencyBallotWire(stored,),).toBe(false,);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: isConsistencyBallot.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'READS A BALLOT UNDER THE SPELLING IT WAS STORED UNDER, `reason` AND `quotes`, so a cache or an artifact '
+            + 'written before the reply keys were renamed still counts (ledger B762), and refuses the reply spelling',
+          fn: async () => {
+            expect({
+              stored: isConsistencyBallot(ballotWith(),),
+              storedWithSeat: isConsistencyBallot(ballotWith({ seat: 'hyper-cat', },),),
+              reply: isConsistencyBallot(replyWith(),),
+              noReason: isConsistencyBallot(ballotWith({ reason: undefined, },),),
+              quotesNotList: isConsistencyBallot(ballotWith({ quotes: 'OCCURRENCE 1', },),),
+              keepItemNumber: isConsistencyBallot(ballotWith({ keep: [2,], },),),
+              notRecord: isConsistencyBallot(['OCCURRENCE 1',],),
+            },).toEqual({
+              stored: true,
+              storedWithSeat: true,
+              reply: false,
+              noReason: false,
+              quotesNotList: false,
+              keepItemNumber: false,
+              notRecord: false,
+            },);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: readConsistencyBallotWire.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'STORES THE ASSESSMENT AS THE REASON AND THE CANDIDATE QUOTES AS THE QUOTES, keeping the choice and the '
+            + 'kept places, so what a gather stores is spelled as before the rename',
+          fn: async () => {
+            expect(readConsistencyBallotWire({
+              wire: {
+                assessment: 'The first rendering is the more faithful.',
+                candidateQuotes: [{ label: 'OCCURRENCE 1', quote: 'The sunny window', slot: 'sunny', },],
+                choice: 'OCCURRENCE 1',
+                keep: ['OCCURRENCE 2',],
+              },
+            },),).toEqual({
+              reason: 'The first rendering is the more faithful.',
+              quotes: [{ label: 'OCCURRENCE 1', quote: 'The sunny window', slot: 'sunny', },],
+              choice: 'OCCURRENCE 1',
+              keep: ['OCCURRENCE 2',],
+            },);
+          },
+        },),
       ],
     },),
 
@@ -139,7 +230,7 @@ await describe({
           fn: async () => {
             const labels = consistencyLabels({ count: 2, },);
             expect(isUsableConsistencyBallot({
-              ballot: replyWith({ keep: ['OCCURRENCE 2',], },) as never,
+              ballot: ballotWith({ keep: ['OCCURRENCE 2',], },) as never,
               labels,
             },),).toBe(true,);
           },
@@ -149,9 +240,9 @@ await describe({
           fn: async () => {
             const labels = consistencyLabels({ count: 2, },);
             expect({
-              empty: isUsableConsistencyBallot({ ballot: replyWith({ reason: '', },) as never, labels, },),
-              spaces: isUsableConsistencyBallot({ ballot: replyWith({ reason: '  ', },) as never, labels, },),
-              invisible: isUsableConsistencyBallot({ ballot: replyWith({ reason: '\u{200B}', },) as never, labels, },),
+              empty: isUsableConsistencyBallot({ ballot: ballotWith({ reason: '', },) as never, labels, },),
+              spaces: isUsableConsistencyBallot({ ballot: ballotWith({ reason: '  ', },) as never, labels, },),
+              invisible: isUsableConsistencyBallot({ ballot: ballotWith({ reason: '\u{200B}', },) as never, labels, },),
             },).toEqual({
               empty: false,
               spaces: false,
@@ -164,10 +255,10 @@ await describe({
           fn: async () => {
             const labels = consistencyLabels({ count: 2, },);
             expect({
-              choice: isUsableConsistencyBallot({ ballot: replyWith({ choice: 'OCCURRENCE 3', },) as never, labels, },),
-              keep: isUsableConsistencyBallot({ ballot: replyWith({ keep: ['OCCURRENCE 3',], },) as never, labels, },),
+              choice: isUsableConsistencyBallot({ ballot: ballotWith({ choice: 'OCCURRENCE 3', },) as never, labels, },),
+              keep: isUsableConsistencyBallot({ ballot: ballotWith({ keep: ['OCCURRENCE 3',], },) as never, labels, },),
               quote: isUsableConsistencyBallot({
-                ballot: replyWith({ quotes: [{ label: 'OCCURRENCE 3', quote: 'x', },], },) as never,
+                ballot: ballotWith({ quotes: [{ label: 'OCCURRENCE 3', quote: 'x', },], },) as never,
                 labels,
               },),
             },).toEqual({
@@ -183,11 +274,11 @@ await describe({
             const labels = consistencyLabels({ count: 2, },);
             expect({
               keepTwice: isUsableConsistencyBallot({
-                ballot: replyWith({ keep: ['OCCURRENCE 2', 'OCCURRENCE 2',], },) as never,
+                ballot: ballotWith({ keep: ['OCCURRENCE 2', 'OCCURRENCE 2',], },) as never,
                 labels,
               },),
               quoteTwice: isUsableConsistencyBallot({
-                ballot: replyWith({
+                ballot: ballotWith({
                   quotes: [
                     { label: 'OCCURRENCE 1', quote: 'x', },
                     { label: 'OCCURRENCE 1', quote: 'y', },

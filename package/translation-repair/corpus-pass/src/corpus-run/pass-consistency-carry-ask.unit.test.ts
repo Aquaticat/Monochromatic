@@ -167,7 +167,7 @@ function everyWriterAnswers({ seat, }: { readonly seat: RosterModelId; },): Seat
  ```
  */
 function everyJudgeChooses({ seat, }: { readonly seat: RosterModelId; },): SeatBehaviour {
-  return { kind: 'answers', text: JSON.stringify({ reason: `${seat} prefers the cat.`, choice: 'CANDIDATE 2', },), };
+  return { kind: 'answers', text: JSON.stringify({ assessment: `${seat} prefers the cat.`, choice: 'CANDIDATE 2', },), };
 }
 
 /**
@@ -469,7 +469,7 @@ await describe({
             const result = await askChoice({
               behave: function oneStray({ seat, },): SeatBehaviour {
                 return (seat === SEAT_HYPER_ONLY)
-                  ? { kind: 'answers', text: JSON.stringify({ reason: 'A candidate that is not on the sheet.', choice: 'CANDIDATE 9', },), }
+                  ? { kind: 'answers', text: JSON.stringify({ assessment: 'A candidate that is not on the sheet.', choice: 'CANDIDATE 9', },), }
                   : everyJudgeChooses({ seat, },);
               },
               cache: recordingCache({ resumed: new Map(), persisted: [], },),

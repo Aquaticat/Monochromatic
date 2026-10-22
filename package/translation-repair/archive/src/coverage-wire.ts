@@ -87,7 +87,7 @@ ${HOUSE_POLICY_BLOCK}`;
  Reply-format instruction, kept LAST in the assembled sheet.
  */
 const COVERAGE_REPLY_RULE =
-  `Reply with JSON only: {"reason": "<one sentence naming what the span states>", "quote": "<one span copied exactly from the English translation, or empty for none>", "coverage": "full" | "partial" | "none"}`;
+  `Reply with JSON only: {"assessment": "<one sentence naming what the span states>", "copiedSpan": "<one span copied exactly from the English translation, or empty for none>", "coverage": "full" | "partial" | "none"}`;
 
 /**
  What coverage does with a name the DECLARED NAMES block makes correct, after
@@ -314,7 +314,7 @@ export type CoverageDegree = typeof COVERAGE_DEGREES[number];
 
  @example
  ```ts
- const wire: CoverageReportWire = { coverage: 'none', quote: '', reason: 'nothing renders it', };
+ const wire: CoverageReportWire = { assessment: 'nothing renders it', copiedSpan: '', coverage: 'none', };
  ```
  */
 export type CoverageReportWire = {
@@ -325,13 +325,18 @@ export type CoverageReportWire = {
 
   /**
    English carrying it, verbatim, and empty exactly when coverage is none.
+
+   NAMED `copiedSpan` so that it sorts between `assessment` and `coverage` (ledger B762).
    */
-  readonly quote: string;
+  readonly copiedSpan: string;
 
   /**
    One sentence of justification, kept for reading rather than for deciding.
+
+   NAMED `assessment` so that it sorts first, which keeps the reason ahead of the coverage on a provider that returns a
+   tool call's keys alphabetically (owner, 2026-10-21, "Reason first everywhere"; ledger B762).
    */
-  readonly reason: string;
+  readonly assessment: string;
 };
 
 /**
@@ -358,9 +363,9 @@ export type CoverageReportWire = {
 export function isCoverageReportWire(value: unknown,): value is CoverageReportWire {
   if (!isJsonRecord(value,))
     return false;
-  if ((typeof value.quote) !== 'string')
+  if ((typeof value.copiedSpan) !== 'string')
     return false;
-  if ((typeof value.reason) !== 'string')
+  if ((typeof value.assessment) !== 'string')
     return false;
   /**
    Degree the reply names, before it is known to be one of the allowed ones.
@@ -383,7 +388,7 @@ export function isCoverageReportWire(value: unknown,): value is CoverageReportWi
    points at nothing, invisible characters `trim()` keeps among it (ledger
    B40).
    */
-  const offersQuote = !rendersAsNothing({ text: value.quote, },);
+  const offersQuote = !rendersAsNothing({ text: value.copiedSpan, },);
 
   return claimsCoverage === offersQuote;
 }
@@ -398,14 +403,15 @@ export const COVERAGE_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
     schema: {
       type: 'object',
       required: [
-        'reason',
-        'quote',
+        'assessment',
+        'copiedSpan',
         'coverage',
       ],
       additionalProperties: false,
+      // DECLARED IN THE ORDER THE KEYS SORT (ledger B762), the reason first by the owner's ruling of 2026-10-21.
       properties: {
-        reason: { type: 'string', },
-        quote: { type: 'string', },
+        assessment: { type: 'string', },
+        copiedSpan: { type: 'string', },
         coverage: {
           type: 'string',
           enum: [...COVERAGE_DEGREES,],

@@ -50,28 +50,32 @@ export type ArchiveBlockDisposition = typeof DISPOSITIONS[number];
  @example
  ```ts
  const report: ArchiveBlockReviewWire = {
-   disposition: 'revise', sourceQuote: '', replacementText: '', finding: 'Unsupported claim.',
+   assessment: 'Unsupported claim.', disposition: 'revise', replacementText: '', sourceQuote: '',
  };
  ```
  */
 export type ArchiveBlockReviewWire = {
   /**
+   Concise reason for audit and follow-up.
+
+   NAMED `assessment`, like the reason of every ballot, so that it sorts first and a provider that returns a tool
+   call's keys alphabetically still gives the reason before the disposition (owner, 2026-10-21, "Reason first
+   everywhere"; ledger B762). The assessments the selection sheet carries keep the name `finding`.
+   */
+  readonly assessment: string;
+  /**
    Review decision.
    */
   readonly disposition: ArchiveBlockDisposition;
-  /**
-   Exact source support, required for retention. A revision may also quote
-   the supported part it preserves without claiming the whole block stands.
-   */
-  readonly sourceQuote: string;
   /**
    Complete replacement, used only for revise decision and possibly empty.
    */
   readonly replacementText: string;
   /**
-   Concise reason for audit and follow-up.
+   Exact source support, required for retention. A revision may also quote
+   the supported part it preserves without claiming the whole block stands.
    */
-  readonly finding: string;
+  readonly sourceQuote: string;
 };
 
 /**
@@ -207,7 +211,7 @@ Do not retain a factual claim merely because it sounds plausible. Preserve Markd
 
 ${HOUSE_POLICY_BLOCK}
 
-Reply with JSON only: {"finding":"one concise sentence, the reason for the disposition","disposition":"source-supported"|"editorial-context"|"revise","sourceQuote":"exact source support or empty","replacementText":"complete replacement or empty"}`,
+Reply with JSON only: {"assessment":"one concise sentence, the reason for the disposition","disposition":"source-supported"|"editorial-context"|"revise","replacementText":"complete replacement or empty","sourceQuote":"exact source support or empty"}`,
   },
     {
     role: 'user',
@@ -243,7 +247,7 @@ export function isArchiveBlockReviewWire(value: unknown,): value is ArchiveBlock
     return false;
   if (((typeof value.sourceQuote) !== 'string') || ((typeof value.replacementText) !== 'string'))
     return false;
-  if ((typeof value.finding) !== 'string')
+  if ((typeof value.assessment) !== 'string')
     return false;
   // Only source-supported retention needs an anchor. A revision may cite the
   // part it preserves and still faces independent selection; an
@@ -305,20 +309,21 @@ export const ARCHIVE_BLOCK_REVIEW_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
     schema: {
       type: 'object',
       required: [
-        'finding',
+        'assessment',
         'disposition',
-        'sourceQuote',
         'replacementText',
+        'sourceQuote',
       ],
       additionalProperties: false,
+      // DECLARED IN THE ORDER THE KEYS SORT (ledger B762), the reason first by the owner's ruling of 2026-10-21.
       properties: {
-        finding: { type: 'string', },
+        assessment: { type: 'string', },
         disposition: {
           type: 'string',
           enum: [...DISPOSITIONS,],
         },
-        sourceQuote: { type: 'string', },
         replacementText: { type: 'string', },
+        sourceQuote: { type: 'string', },
       },
     },
   },

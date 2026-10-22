@@ -189,7 +189,7 @@ async function produceOnce(): Promise<readonly SeenRequest[]> {
         {
           resolution: 'revised',
           translation: GOOD_TEXT,
-          explanation: 'The heading was restored as its own block.',
+          translatorNote: 'The heading was restored as its own block.',
         },
       ],
     },),

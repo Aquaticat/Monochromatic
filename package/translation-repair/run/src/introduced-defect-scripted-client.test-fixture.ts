@@ -51,9 +51,9 @@ export type ProbeCheck = {
   readonly omittedText: string;
 
   /**
-   Why the prober says the replaced text lacked the defect.
+   Why the prober says the replaced text lacked the defect, under the wire's own key (ledger B762).
    */
-  readonly reason: string;
+  readonly verdictReason: string;
 };
 
 /**
@@ -65,7 +65,7 @@ export const NO_DEFECT_CHECK: ProbeCheck = {
   severity: '',
   evidence: '',
   omittedText: '',
-  reason: '',
+  verdictReason: '',
 };
 
 /**
@@ -79,7 +79,7 @@ export const OMISSION_CHECK: ProbeCheck = {
   severity: 'major',
   evidence: '',
   omittedText: 'she wakes at dusk',
-  reason: 'the clause is gone',
+  verdictReason: 'the clause is gone',
 };
 
 /**
@@ -92,7 +92,7 @@ export const ADDITION_CHECK: ProbeCheck = {
   severity: 'minor',
   evidence: 'The cat sleeps.',
   omittedText: '',
-  reason: 'the wording is new',
+  verdictReason: 'the wording is new',
 };
 
 /**
@@ -114,7 +114,7 @@ export function omissionClaimBy({ modelId, }: { readonly modelId: string; },): S
     severity: OMISSION_CHECK.severity,
     evidence: '',
     omittedText: OMISSION_CHECK.omittedText,
-    reason: OMISSION_CHECK.reason,
+    reason: OMISSION_CHECK.verdictReason,
     admissibility: 'removal-corroborated',
   };
 }
@@ -150,7 +150,7 @@ export const CONTRADICTED_CHECK: ProbeCheck = {
   severity: 'minor',
   evidence: 'The cat',
   omittedText: '',
-  reason: 'the wording is new',
+  verdictReason: 'the wording is new',
 };
 
 /**
@@ -162,7 +162,7 @@ export const UNANCHORED_CHECK: ProbeCheck = {
   severity: 'minor',
   evidence: '',
   omittedText: '',
-  reason: 'it reads badly',
+  verdictReason: 'it reads badly',
 };
 
 /**

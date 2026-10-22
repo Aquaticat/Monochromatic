@@ -211,13 +211,19 @@ export type ConsolidationPolishGateSubject = {
  */
 export type ConsolidationPolishGateWire = {
   /**
-   Text this judge would ship, a name the guard has already checked, so the
-   reader takes it as it stands.
+   Why the judge answered as it did, written first. NAMED `assessment` so that it sorts first (ledger B762); the
+   ballot built from it keeps the name `reason`.
    */
-  readonly choice: PolishChoice;
-  readonly unsupported: unknown;
+  readonly assessment: string;
   readonly dropped: unknown;
-  readonly reason: string;
+  readonly unsupported: unknown;
+
+  /**
+   Text this judge would ship, a name the guard has already checked, so the
+   reader takes it as it stands. NAMED `verdict` so that it sorts after the findings (ledger B762); the ballot built
+   from it keeps the name `choice`.
+   */
+  readonly verdict: PolishChoice;
 };
 
 /**
@@ -271,7 +277,7 @@ export function isConsolidationPolishGateWire(
   // THE FINDINGS ARE NOT CHECKED HERE, as the consolidate gate's are not: a
   // finding's shape never costs a voice (ledger B46), and the reader takes
   // each through `findingsOrNone`.
-  return isPolishChoice(value.choice,) && ((typeof value.reason) === 'string');
+  return isPolishChoice(value.verdict,) && ((typeof value.assessment) === 'string');
 }
 
 /**
@@ -298,7 +304,7 @@ export function readConsolidationPolishBallot(
    */
   const dropped = findingsOrNone(wire.dropped,);
   return {
-    choice: wire.choice,
+    choice: wire.verdict,
     unsupported: readCandidateNames({
       findings: unsupported,
       names: POLISH_NAMES,
@@ -309,7 +315,7 @@ export function readConsolidationPolishBallot(
       names: POLISH_NAMES,
     },),
     droppedRaw: dropped,
-    reason: wire.reason,
+    reason: wire.assessment,
   };
 }
 
@@ -525,9 +531,9 @@ export function buildConsolidationPolishGateMessages(
         ...repairClaimsBlock,
         ...communityBlock,
         ...objectionEvidence,
-        'Return JSON: reason one sentence, given before the choice;',
-        'unsupported and dropped each a list naming any of "polished", "base";',
-        `choice one of "polished", "base", "${CONTEST_REFUSAL}".`,
+        'Return JSON: assessment one sentence, given before the verdict;',
+        'dropped and unsupported each a list naming any of "polished", "base";',
+        `verdict one of "polished", "base", "${CONTEST_REFUSAL}".`,
       ].join('\n',),
     },
   ];

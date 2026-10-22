@@ -428,8 +428,23 @@ import type { LaneText, } from '@monochromatic-dev/translation-repair-translate-
  slice, repair slice and refine versions move for the same ballots (14, 23, 41, 12); the archive block review has no version
  of its own; the consistency, page title and pairing versions stay, since their sheets and schemas are what they were. No
  record has been written at 29, which this change sets first.
+
+ 30 covers the answer schemas of the settlement declaring their properties in alphabetical order, and the keys that moved
+ to make it so (owner decision of 2026-10-21 under the ruling "Reason first everywhere"; ledger B762): the contest ballot of
+ the consolidation gate and the polish gate (`assessment`, `dropped`, `unsupported`, `verdict`), the absolute naturalness
+ review (`assessment`, `findings`, `isAcceptable`), the coverage judge (`assessment`, `copiedSpan`, `coverage`), the
+ candidate selection (`assessment`, `best`) and the introduced-defect check over a polish (`verdictReason`) changed their
+ reply keys, instructions or both. The archive block review (`assessment`, `disposition`, `replacementText`, `sourceQuote`)
+ has no version of its own. The lane-contest, translate slice, repair slice and refine versions move for the same sheets
+ (15, 24, 42, 13).
+ The key hashes the version, the shape of the run and the texts, not the sheet and not the rule that reads the
+ ballots, so a record written before would be served after. The previous number was set in `4b9fc9e645`, and this worktree's
+ runs directory holds no slice-cache record (the audit `cache-account-audit` found 0, and no control that finds records was
+ run, since the pass that writes them runs in another worktree this change does not read), so whether a record stands at
+ 29 is not known and the change cannot ride inside it: the number moves. No record has been written at 30, which this
+ change sets first.
  */
-export const CONSOLIDATE_CACHE_VERSION = 29;
+export const CONSOLIDATE_CACHE_VERSION = 30;
 
 /**
  What a line-structured slice appends to its key material.

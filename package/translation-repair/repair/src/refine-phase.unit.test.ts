@@ -421,7 +421,7 @@ function scriptedPhase(
         : stage === 'candidate_ballot'
         ? {
           best: 1,
-          reason: 'scripted',
+          assessment: 'scripted',
         }
         // The naturalness probe answers a DIFFERENT schema from the checker,
         // and the checker-shaped fallback fails its guard. That failure
@@ -439,7 +439,7 @@ function scriptedPhase(
                 severity: '',
                 evidence: '',
                 omittedText: '',
-                reason: '',
+                verdictReason: '',
               }
               : {
                 region: 1,
@@ -448,7 +448,7 @@ function scriptedPhase(
                 severity: 'major',
                 evidence: probeClaim.evidence,
                 omittedText: probeClaim.omittedText,
-                reason: 'scripted',
+                verdictReason: 'scripted',
               },
           ],
         }
