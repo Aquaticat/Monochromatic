@@ -660,7 +660,9 @@ export async function runGatherRound<ValueT,>(
    no grace, 2,852 s of the 4,575 s its rounds took. The refused seat stays
    on the bench, as the owner's rule of 2026-09-09 has it
    (`doc/decision/translation-repair-short-bench-share.md`); only its place
-   in this round passes on.
+   in this round passes on. Since 2026-10-22 each refusal also wakes the
+   wait, which sizes the need again (`heardNeededAfterRefusals`), so a bench
+   a refusal leaves with exactly its quorum closes one voice below it.
    */
   const asks = modelIds.map(async function askSlot(
     modelId,

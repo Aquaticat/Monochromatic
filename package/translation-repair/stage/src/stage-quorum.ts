@@ -120,7 +120,9 @@ export type StageGather<ValueT,> = {
   /**
    Whether at least half the roster, rounded up, was heard; on a bench
    short of that for want of wet providers, at least half the reachable
-   seats and never fewer than two (`reachableQuorum`, 2026-09-09).
+   seats and never fewer than two (`reachableQuorum`, 2026-09-09); on a
+   bench whose live seats are exactly its quorum, one voice fewer once the
+   grace ends (owner, 2026-10-22, "Let the grace open").
    */
   readonly quorumMet: boolean;
 
@@ -348,7 +350,10 @@ export async function gatherStageVoices<ValueT,>(
    SIZED ON THE REACHABLE BENCH SINCE 2026-09-09 (`reachableQuorum`): a
    seat the router refuses for want of a wet provider is not a voice the
    gather can wait for, and counting it cost `hulicaijia` its entry that
-   evening.
+   evening. Since 2026-10-22 a bench left with exactly its quorum of live
+   seats closes one voice below it (owner, "Let the grace open"), and a
+   refusal inside a round sizes the need again through
+   `heardNeededAfterRefusals`.
 
    @param unreachable - seats the router has refused so far
 
