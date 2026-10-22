@@ -14,8 +14,9 @@
 /// the window on it,
 /// and the scroll helpers.
 use super::overscan_tile_tests::{START, document, open, reset, scroll_to, settle_tile};
-/// The window and its state.
-use super::{AppWindow, State};
+/// The window and its state,
+/// and the delay of a wake-up.
+use super::{AppWindow, State, tile::wake_delay};
 /// Toolkit events.
 use slint::{ComponentHandle, platform::update_timers_and_animations};
 /// Shared state and its cell,
@@ -151,6 +152,27 @@ fn a_tile_left_for_a_step_that_never_comes_is_taken_when_the_wait_ends() {
     // A closed window leaves no timer behind that reaches it.
     window.hide().expect("close tile step window");
     let_the_timers_run(POLL_AND_MORE);
+}
+
+/// A wake-up is never set for less than a whole millisecond,
+/// which the toolkit's timer clock would take as no time at all,
+/// and the wake-up would set itself again in a spin until the clock moved on.
+#[test]
+fn a_wake_up_is_set_for_a_whole_number_of_milliseconds_that_covers_the_wait() {
+    let cases = [
+        (Duration::from_micros(1), Duration::from_millis(1)),
+        (Duration::from_micros(864), Duration::from_millis(1)),
+        (Duration::from_micros(1000), Duration::from_millis(1)),
+        (Duration::from_micros(1001), Duration::from_millis(2)),
+        (Duration::from_millis(20), Duration::from_millis(20)),
+    ];
+    for (left, expected) in cases {
+        assert_eq!(
+            wake_delay(left),
+            expected,
+            "the wake-up for {left:?} is not the whole milliseconds that cover it"
+        );
+    }
 }
 
 /// A step that takes a finished tile cancels the wake-up for the end of the wait:

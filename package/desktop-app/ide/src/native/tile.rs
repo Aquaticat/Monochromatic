@@ -193,12 +193,25 @@ fn wake_when_wait_ends(window: &AppWindow, state: &Rc<RefCell<State>>, left: Dur
     state
         .borrow()
         .tile_wake
-        .start(TimerMode::SingleShot, left, move || {
+        .start(TimerMode::SingleShot, wake_delay(left), move || {
             let (Some(active), Some(shared)) = (weak_window.upgrade(), weak_state.upgrade()) else {
                 return;
             };
             poll_unless_step_due(&active, &shared);
         });
+}
+
+/// What:
+///  The wait that remains,
+///  rounded up to a whole millisecond.
+/// Why:
+///  The toolkit's timer clock counts milliseconds,
+///  so a wake-up for less than one fires at once,
+///  finds a little of the wait left,
+///  and sets itself again,
+///  in a spin on the window thread until the clock moves on.
+pub(super) fn wake_delay(left: Duration) -> Duration {
+    return Duration::from_millis(left.as_micros().div_ceil(1000) as u64);
 }
 
 /// What:
