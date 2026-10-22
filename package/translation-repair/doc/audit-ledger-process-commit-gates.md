@@ -538,6 +538,32 @@ which the position-references scan refuses.
 The real-clock scan did not list the grace windows and the stuck-seat timer the B816 cases added.
 `8de619e404` fixed all three.
 
+A fourth miss,
+found by gate g164 on `b1a6ea4e10`:
+the commits that applied the owner's answers of 2026-10-22 ran neither the provider package's tests nor the linter.
+The Qwen hold `late-judge-dropped` sat on its card,
+and `roster-seats.unit.test.ts` in the provider package,
+which holds every seat's holds against its card,
+still listed only `openrouter-dropped`,
+so two of its cases failed.
+The linter found three files past `max-lines`
+(`model-cards.ts` at 303 counted lines,
+`stage-quorum.ts` at 302,
+`living-docs.test-fixture.ts` at 306),
+each pushed over by lines the answers added,
+and two warnings in the stage package:
+`STUCK_MS = 1000` without a digit separator,
+and the last-seat grace condition on one line.
+`a6eb72b182` fixed all five:
+the claim lists the new hold,
+and each long file moved one concern into a sibling
+(`openrouter-card-sides.ts`,
+`stage-gather.ts`,
+`markdown-link-targets.test-fixture.ts`).
+This is M46 again:
+lint and the named tests run after the final edit of every commit,
+and an owner's answer applied as a data edit is such a commit.
+
 Recurrence:
 M284,
 which records the same check for cache versions;
@@ -558,6 +584,11 @@ For the third miss,
 the runs that follow a version move start after the bump commit,
 and a move of the artifact generation also searches the old number as text,
 since a printed generation sits in tests that name no constant.
+For the fourth miss,
+`mistake-prevention-shell-edits-commits-and-agents.md`,
+"Lint and edits":
+a hold or list entry added for an owner's answer runs `lint:oxlint` on the package it edits,
+and a hold runs the provider package's tests as well.
 The search is `rg --files-with-matches '<NAME>' package/translation-repair --glob '*.ts'`
 for `judgeSeatsFor` and each constant that moved;
 on `9ed9b5d14a` it finds corpus-pass,

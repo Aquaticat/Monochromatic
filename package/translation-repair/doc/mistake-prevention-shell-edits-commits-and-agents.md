@@ -324,6 +324,18 @@ Review of the runner observations change found the same lines,
 a `@returns` naming ids for a count,
 and TSDoc describing a message language `LC_ALL=C` no longer lets through (ledger B377):
 added TSDoc is read against the code it sits on after every merge.
+The commits applying the owner's answers of 2026-10-22 added a hold to a model card,
+a grace rule and a lint exemption,
+and ran neither the linter nor the provider package's tests;
+the gate found three files past `max-lines`,
+two stage warnings and two failed seat-claim cases (ledger M287,
+the fourth miss).
+An owner's answer applied as a data edit
+(a hold,
+a list entry,
+a constant)
+is a code commit like any other,
+and a file within a few lines of the cap goes over on the lines such an answer adds.
 
 The rule:
 read a region with the Read tool before editing it.
@@ -393,7 +405,8 @@ two blocks for one declaration are one,
 and a lint suppression on a documented declaration opens before the TSDoc and closes after the declaration (ledger B96).
 The line cap is met by splitting by concern,
 never by reformatting or disabling the rule.
-A Markdown change runs `mise run lint:markdown <files>` from the repository root,
+A Markdown change runs `mise run lint:monochromatic-lint <files>` from the repository root
+(the task named `lint:markdown` until `0b49ae109e` replaced it),
 and its `--fix` output is rendered against the committed version before it is staged,
 block for block (`render-blocks.mjs` in the audit's scratch folder),
 not by counting markers.

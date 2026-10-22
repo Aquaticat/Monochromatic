@@ -157,6 +157,11 @@ probe,
 repair,
 run,
 stage and translate-stage.
+A hold on a card also runs the provider package's tests,
+whose `roster-seats.unit.test.ts` holds every seat's holds against its card,
+and which names neither of those
+(ledger M287,
+the fourth miss).
 A case that guards its own fixture reads the views it needs from a measurement of the new bench,
 not from the view the old bench made distinct:
 the 31 views with a provider dry were counted,

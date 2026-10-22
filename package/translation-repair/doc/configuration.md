@@ -194,8 +194,11 @@ each uses an empty export as given.
     so only zero-data-retention endpoints that support `response_format` may serve a passage,
     and among those the cheapest serves (`sort: 'price'` since 2026-09-09,
     the owner's instruction to stop bleeding).
-    The card's `ignoredEndpoints` (`package/translation-repair/shared-contract/src/model-cards.ts`) keeps a
-    measured-broken or measured-slow upstream off the wire:
+    The card's `ignoredEndpoints` keeps a measured-broken or measured-slow upstream off the wire;
+    every card that names an endpoint keeps its OpenRouter side,
+    with the measurements behind it,
+    in `package/translation-repair/shared-contract/src/openrouter-card-sides.ts`
+    (moved there from `model-cards.ts` on 2026-10-22):
     Parasail and ModelRun for `minimax-m3`
     (Parasail since 2026-09-03,
     when it answered into the reasoning channel and left content empty;
