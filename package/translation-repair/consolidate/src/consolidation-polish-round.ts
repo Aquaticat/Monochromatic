@@ -174,7 +174,8 @@ export function reviewParagraphsOf(
  on a disputed slice, which the gate reads (ledger S12)
 
  @param acceptedRepairClaimsNote - every claim the repair panel accepted for
- the slice, which the gate reads beside the dispute note
+ the slice, which the writers and the gate read beside the dispute note
+ (ledger B805)
 
  @param disputedWordings - wordings the slice refuses, which the rule refuses
  as the polished text as it does every other text on the slice (ledger B29)
@@ -311,6 +312,10 @@ export async function runConsolidationPolishRound(
     definitions,
     ...((identityContext === undefined) ? {} : { identityContext, }),
     ...((referenceContext === undefined) ? {} : { referenceContext, }),
+    // THE CLAIMS THE REPAIR PANEL ACCEPTED reach the writers as they reach the
+    // gate (ledger B805): the gate judged a polish against evidence the writers
+    // never saw.
+    ...((acceptedRepairClaimsNote === undefined) ? {} : { acceptedRepairClaimsNote, }),
     declaredNames: config.declaredNames,
     ...((config.declaredSubjectForms === undefined) ? {} : { declaredSubjectForms: config.declaredSubjectForms, }),
     mode,

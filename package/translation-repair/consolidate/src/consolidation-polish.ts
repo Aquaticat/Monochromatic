@@ -101,7 +101,7 @@ function objectionPolishFindings(
  on a disputed slice, for the gate (ledger S12)
 
  @param acceptedRepairClaimsNote - every claim the repair panel accepted for
- the slice, disputing or not, for the gate
+ the slice, disputing or not, for the writers and the gate (ledger B805)
 
  @param disputedWordings - wordings the slice refuses, which the polish may
  not land on any more than a proposal may (ledger B29)

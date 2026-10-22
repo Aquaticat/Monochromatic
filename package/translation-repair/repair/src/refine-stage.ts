@@ -135,6 +135,11 @@ export type RefineStageResult = {
  @param referenceContext - what the pages the original cites say, with
  their rule, when the original cites any (class forty-one)
 
+ @param acceptedRepairClaimsNote - the claims the repair panel accepted for
+ the slice, which the final polish passes so its writers meet the evidence its
+ gate judges them against (ledger B805); absent for the repair lane's own
+ refinement
+
  @param declaredNames - same declarations as strings to compare, since a
  rewrite for naturalness is exactly the edit that drops one
 
@@ -175,6 +180,7 @@ export async function runRefineStage(
     definitions,
     identityContext,
     referenceContext,
+    acceptedRepairClaimsNote,
     declaredNames,
     declaredSubjectForms,
     mode,
@@ -193,6 +199,7 @@ export async function runRefineStage(
     readonly definitions: string;
     readonly identityContext?: string;
     readonly referenceContext?: string;
+    readonly acceptedRepairClaimsNote?: string;
     readonly declaredNames: readonly string[];
     readonly declaredSubjectForms?: readonly string[];
     readonly mode: RefineStageMode;
@@ -239,6 +246,7 @@ export async function runRefineStage(
     envelopes,
     ...(identityContext === undefined ? {} : { identityContext, }),
     ...(referenceContext === undefined ? {} : { referenceContext, }),
+    ...((acceptedRepairClaimsNote === undefined) ? {} : { acceptedRepairClaimsNote, }),
     ...((mode.kind === 'objection-correction') ? { objectionGroups: mode.groups, } : {}),
   },);
 

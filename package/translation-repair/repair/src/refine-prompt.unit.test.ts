@@ -372,8 +372,21 @@ await describe({
         // The block is headed and fenced with a fence longer than the run the note carried.
         expect(
           sheet.split('\n',).some(function isHeading(line,) {
-            return (/^=+ REPAIR PANEL CLAIMS ACCEPTED =+$/).test(line,)
-              && (line.split(' ',)[0] ?? '').length > '====='.length;
+            /**
+             Where the heading's words start, between the two runs of the fence.
+             */
+            const at = line.indexOf(' REPAIR PANEL CLAIMS ACCEPTED ',);
+            if (at === (-1))
+              return false;
+            /**
+             Run of the fence before the words.
+             */
+            const opening = line.slice(0, at,);
+            /**
+             Run of the fence after the words.
+             */
+            const closing = line.slice(at + ' REPAIR PANEL CLAIMS ACCEPTED '.length,);
+            return (opening === closing) && (opening.replaceAll('=', '',) === '') && (opening.length > '====='.length);
           },),
         ).toBe(true,);
         expect(wholeConversation,).toContain('The accepted claims are claims, not facts: check each against the ORIGINAL',);
