@@ -6,8 +6,8 @@ motivated writing the comment-preserving JSONC parser in
 configuration.
  Each footgun gets its own canonical section.
 
-The shape matches the rest of TROUBLESHOOTING.
-* even though "the
+The shape matches the rest of TROUBLESHOOTING,
+ even though "the
 bug" is a spec-level set of constraints rather than a single
 implementation defect:
  the conclusion is the same kind of audit

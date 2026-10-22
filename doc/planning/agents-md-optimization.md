@@ -2015,7 +2015,7 @@ SK3:
    `to-spec`,
    `wayfinder`) expect the tracker info in context;
    the synced `code-review` skill checks `docs/agents/issue-tracker.md`,
-   which does not exist here (`doc/agent/`),
+   which does not exist here (moved on 2026-07-15 to `doc/agent/issue-tracker.md`),
    so SK1's path pointer is what redirects agents.
 
 ### Batch 20

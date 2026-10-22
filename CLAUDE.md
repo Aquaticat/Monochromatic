@@ -225,6 +225,15 @@ MWK:
  emit only lines you'd act on,
  never routine progress.
 
+WUC:
+ When a wakeup,
+ cron,
+ or loop's work finishes,
+ cancel it that turn (`ScheduleWakeup` stop,
+ `CronDelete`);
+ a stale fire is a harness slip to stop,
+ not a task to redo.
+
 PXQ:
  "Completion" means the queue:
  tracked work left -> start the next item unasked.

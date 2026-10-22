@@ -2310,7 +2310,7 @@ each owned by one subagent:
   Open:
   an intermittent `calloop` "Received an event for non-existent source" warning,
   not attributed;
-  a README link in that package points at `doc/decisions/` instead of `doc/decision/`.
+  a README link in that package points at `doc/decisions/` instead of `doc/decision/` (repointed in that README on 2026-10-22).
 - Coordinator working-directory hazard:
   the compositor agent reported its session working directory moving into `.claude/worktrees/ide-integrate`
   while the coordinating session ran commands there.

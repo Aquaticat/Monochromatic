@@ -301,6 +301,14 @@ since the `source-scans` task lists the Markdown lint guard and not the line-lim
 so a handover or ledger edit can pass the linter and still cross 1,000 lines
 (ledger D35:
 gate g153 found two files past the bound that docs-only commits had left).
+That task names no build,
+so in a fresh worktree it runs after the install and the builds the `source-scans` task depends on
+(document-structure,
+markup,
+run,
+typography and adjudication);
+on 2026-10-22 (UTC) a run without them failed every scan file at load with `ERR_MODULE_NOT_FOUND`
+for the markup package's `dist`.
 
 What enforces it:
 `markdown-lint-clean.unit.test.ts` in `source-scan` runs the linter over the package docs,

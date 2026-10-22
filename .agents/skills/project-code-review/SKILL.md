@@ -98,7 +98,7 @@ try {
   await saveRecord(record,);
 }
 catch (error) {
-  console.error('Failed to save record:', error,);
+  l.error(`failed to save record: ${String(error,)}`,);
   throw new Error('Failed to save record', { cause: error, },);
 }
 ```
@@ -819,7 +819,7 @@ function loadConfig(): Promise<Config> {
   return readFile('config.json', 'utf8',)
     .then(raw => JSON.parse(raw,) as Config)
     .catch(error => {
-      console.error('Failed:', error,);
+      l.error(`failed to load config: ${String(error,)}`,);
       throw error;
     },);
 }
@@ -911,7 +911,8 @@ import type { Config, } from './types.ts';
 - `@throws` in TSDoc only for functions that actually throw;
    flag `@throws` on non-throwing functions as NIT
 - `notNullishOrThrow` instead of non-null assertion (`!`)
-- Every catch block must log the error with `console.error()`
+- Every `catch (error)` uses its binding:
+   log the caught value (even expected) through a tagged logger or rethrow
 
 #### `using` over `try...finally`
 
@@ -1008,7 +1009,7 @@ const value = notNullishOrThrow(possiblyUndefined,);
 
 #### Silent error handling
 
-Flag empty catch blocks without logging:
+Flag catch blocks that neither log the caught value nor rethrow:
 
 ```ts
 // Bad -- flag as WARNING
@@ -1016,12 +1017,12 @@ catch (error) { }
 
 // Good -- fatal error
 catch (error) {
-   throw new Error('Failed to get index stats', { cause: error });
+  throw new Error('Failed to get index stats', { cause: error, },);
 }
 
 // Good - expected error that shouldn't interrupt program operation.
 catch (error) {
-   console.error('Failed to get index stats:', error);
+  l.error(`failed to get index stats: ${String(error,)}`,);
 }
 ```
 
