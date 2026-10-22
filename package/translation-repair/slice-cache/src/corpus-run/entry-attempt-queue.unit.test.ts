@@ -69,6 +69,10 @@ type Script = {
  @param stopAfter - attempts to allow before the budget ends the run; zero
  allows every attempt
 
+ @param runStopsAfter - attempts after which the run reads as stopped during
+ an attempt, so the entry earns no second attempt; absent leaves the run never
+ stopped
+
  @returns Order attempts were made in, once the queue has drained
 
  @example
@@ -80,9 +84,11 @@ async function attemptOrder(
   {
     scripts,
     stopAfter = 0,
+    runStopsAfter,
   }: {
     readonly scripts: readonly Script[];
     readonly stopAfter?: number;
+    readonly runStopsAfter?: number;
   },
 ): Promise<readonly string[]> {
   /**
@@ -134,6 +140,15 @@ async function attemptOrder(
         return false;
       return order.length >= stopAfter;
     },
+
+    // Conditional spread keeps the hook absent for the cases that never stop the run during an attempt.
+    ...((runStopsAfter === undefined)
+      ? {}
+      : {
+        runHasStopped: function runHasStopped(): boolean {
+          return order.length >= runStopsAfter;
+        },
+      }),
 
     attempt: async function attempt({ entry, },): Promise<AttemptOutcome> {
       order.push(entry.id,);
@@ -289,6 +304,27 @@ await describe({
           'first',
           'second',
         ],);
+      },
+    },),
+    it({
+      name: 'QUEUES NO SECOND ATTEMPT FOR AN ENTRY THE RUN STOPPED DURING, even one that cached more than it had, '
+        + 'since the caller names the stop and a further attempt would meet the same refusal',
+      fn: async () => {
+        expect(
+          await attemptOrder({
+            scripts: [
+              {
+                id: 'mainecoon',
+                cachedAfter: [
+                  5,
+                  5,
+                ],
+                settlesOn: 0,
+              },
+            ],
+            runStopsAfter: 1,
+          },),
+        ).toEqual(['mainecoon',],);
       },
     },),
   ],
