@@ -39,6 +39,7 @@ import {
 import {
   askCat,
   DEEPSEEK_USAGE_CHUNK,
+  errorChainText,
   firstBodyOf,
   NAP_SCHEMA,
   ONE_QUICK_RETRY,
@@ -259,6 +260,7 @@ await describe({
         },);
         expect(refused,).toBeInstanceOf(ProviderHttpError,);
         expect(exchangeFailureLogText({ error: refused, },),).not.toContain('Qx4d',);
+        expect(errorChainText({ error: refused, },),).not.toContain('Qx4d',);
       },
     },),
 

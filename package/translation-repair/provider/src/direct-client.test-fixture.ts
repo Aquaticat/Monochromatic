@@ -214,6 +214,37 @@ export function askCat(
 }
 
 /**
+ Most links of a cause chain the reader follows, so a cyclic chain ends.
+ */
+const CAUSE_CHAIN_LIMIT = 16;
+
+/**
+ Every text a thrown error carries: its message and the message of each error on its `cause` chain.
+
+ @param error - caught value, of unknown type by construction
+
+ @returns The texts joined, so one assertion covers the whole chain
+
+ @example
+ ```ts
+ expect(errorChainText({ error: failure, },),).not.toContain('Qx4d',);
+ ```
+ */
+export function errorChainText({ error, }: { readonly error: unknown; },): string {
+  /**
+   The texts met so far, outermost first.
+   */
+  const texts: string[] = [];
+  for (
+    let link: unknown = error;
+    (texts.length < CAUSE_CHAIN_LIMIT) && (Error.isError(link,) || ((typeof link) === 'string'));
+    link = Error.isError(link,) ? link.cause : undefined
+  )
+    texts.push(Error.isError(link,) ? link.message : (link as string),);
+  return texts.join('\n',);
+}
+
+/**
  Body of the first exchange, parsed.
 
  @param exchanges - what the transport saw

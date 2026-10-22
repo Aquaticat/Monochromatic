@@ -32,6 +32,7 @@ import {
 import {
   askCat,
   DEEPSEEK_USAGE_CHUNK,
+  errorChainText,
   firstBodyOf,
   ONE_QUICK_RETRY,
   scripted,
@@ -143,6 +144,7 @@ await describe({
             expect(failure,).toBeInstanceOf(ProviderHttpError,);
             expect((failure as ProviderHttpError).status,).toBe(401,);
             expect(exchangeFailureLogText({ error: failure, },),).not.toContain('Qx4d',);
+            expect(errorChainText({ error: failure, },),).not.toContain('Qx4d',);
             expect(exchanges.length,).toBe(1,);
           },
         },),
