@@ -534,6 +534,8 @@ more (+20 ms) after a poll that left it.
 
 - The poll of the tile worker (`src/native/tile.rs`) now runs one function, `poll_unless_step_due`, from both of its
   timers.
+  The function, `STEP_WAIT`, `step_wait_left` (the former `step_due`) and the wake-up code are in the new sibling
+  module `src/native/tile/wait.rs`, because `tile.rs` passed the limit of 300 code lines with them (306).
   When the last scroll step is under `STEP_WAIT` old, the function logs "leaving a finished tile for the next scroll
   step" as before and also sets `tile_wake`, a single-shot `slint::Timer` in `State`, for the rest of the wait
   (`wake_when_wait_ends`).
@@ -552,6 +554,8 @@ more (+20 ms) after a poll that left it.
   `wake_delay` rounds the delay up to a whole millisecond.
   The first Q1 pass (`lat2-q1-main.jsonl`) and the first stall pass (`lat2-q2.jsonl`) are of the spinning build, and
   are marked so below; the final Q1 pass and the final stall pass are of the build with `wake_delay`.
+  A third pair of passes (`lat2-q1-tip.jsonl`, `lat2-q2c.jsonl`) is of the tip after the move into `tile/wait.rs`
+  (a move of the code, and the one change of the tip over the final passes, besides an import order).
 - Tests (`src/native/tile_step_tests.rs`):
   `a_tile_left_for_a_step_that_never_comes_is_taken_when_the_wait_ends` (the poll that leaves a tile sets a wake-up,
   and with the repeated poll stopped the wake-up alone takes the tile once the wait is over),
@@ -564,7 +568,8 @@ more (+20 ms) after a poll that left it.
   wake-up, so under load the guard would have passed with its line removed.
 - Source guards (`bin/inspect-source-guards.mjs`): `tile-wakes-when-the-wait-ends`, `tile-wake-cancelled-by-the-poll`
   and `tile-wake-covers-whole-milliseconds` are new; `tile-left-for-next-step` and
-  `tile-taken-by-the-poll-when-idle` moved their anchors to `step_wait_left`, which replaced `step_due`.
+  `tile-taken-by-the-poll-when-idle` moved their anchors to `step_wait_left` in `src/native/tile/wait.rs`, which
+  replaced `step_due`.
 
 #### Method of this session
 
@@ -578,8 +583,11 @@ The log level, the last wheel event to the first finished frame after the tile i
 are those of the previous subsection.
 The load average of the host moved between 3 and 21 from other sessions and from the builds of this one.
 The scripts are `~/temp/agent/lat2-run.mjs`, `lat2-stats.mjs`, `lat2-modes.mjs`, `lat2-tail.mjs`, `lat2-apply.mjs`,
-`lat2-extra.mjs` and `lat2-timeline.mjs` (copies and extensions of the `lat-*` ones), and the rows are
-`lat2-q1-main.jsonl`, `lat2-q1-spread.jsonl`, `lat2-q1-final.jsonl`, `lat2-q2.jsonl` and `lat2-q2b.jsonl`.
+`lat2-extra.mjs`, `lat2-overlap.mjs` and `lat2-timeline.mjs` (copies and extensions of the `lat-*` ones).
+The rows are `lat2-q1-main.jsonl` (spinning build), `lat2-q1-spread.jsonl`, `lat2-q1-final.jsonl`,
+`lat2-q1-tip.jsonl`, `lat2-q2.jsonl` (spinning build), `lat2-q2b.jsonl` and `lat2-q2c.jsonl`.
+The three Q1 passes of B and the three stall passes are of three builds: the spinning build, the build with
+`wake_delay`, and the tip after the move into `tile/wait.rs`.
 
 #### Idle latency, counts
 
@@ -587,11 +595,11 @@ The scenario is the Q1 of the previous subsection: 2 wheel steps of 1500 px, the
 The tile is "late" when it is applied more than 30 ms after the last wheel event; the two modes of the earlier
 sessions sit at about 20 ms and about 40 ms, and no run lies between them.
 
-- A, all runs of the session (main pass 40, spread pass 40 as 20 and 20, final pass 40): 62 of 120 runs have the
-  tile applied late, which is 52%.
+- A, all runs of the session (main pass 40, spread pass 20 and 20, final pass 40, tip pass 20): 70 of 140 runs have
+  the tile applied late, which is 50%.
   The earlier session saw about 4 of 10 (19 of 47).
-- B, the spinning build (40 runs): 0 late; applied 20.2 to 21.0 ms (median 20.4); first frame after it 26.9 to 35.7 ms,
-  median 29.6 (quartiles 29.0 and 30.3); A in the same pass: 22 late, median frame 48.1.
+- B, the spinning build (40 runs): 0 late; applied 20.2 to 21.0 ms (median 20.4); first frame after it 26.9 to
+  35.7 ms, median 29.6 (quartiles 29.0 and 30.3); A in the same pass: 22 late, median frame 48.1.
 - B, the build with `wake_delay` (40 runs, 40 of A alternating with it): 0 late; applied 20.4 to 21.3 ms (median
   20.9); first frame after it median 30.6 ms (quartiles 29.7 and 32.3, range 28.7 to 40).
   A in the same pass: 20 late of 40 (applied 20.2 to 40.8 ms); median frame 42.9 (quartiles 30.4 and 49.5).
@@ -599,9 +607,12 @@ sessions sit at about 20 ms and about 40 ms, and no run lies between them.
   Two B runs have a frame at 36.8 and 40 ms although their tile was applied at 21 ms or less: the frame ended late,
   which is not the wait.
   The paired difference B minus A has a median of -10.5 ms (quartiles -19.0 and +0.6, range -23.7 to +10.5).
-- The slow mode is gone: 0 of 80 B runs against 62 of 120 of A.
-  The median does not rise: 30.6 ms against the fast mode of A at 30.3 ms and the wait-off value of the earlier
-  session at 29.7 ms.
+- B, the tip (20 runs, 20 of A): 0 late; applied 20.5 to 21.1 ms (median 20.9); first frame after it median 30.1 ms
+  (quartiles 29.6 and 30.9, range 28.7 to 37.6; two frames over 36 ms).
+  A in the same pass: 8 late of 20; median frame 31.1 (quartiles 30.0 and 48.8).
+- The slow mode is gone: 0 of 100 B runs against 70 of 140 of A.
+  The median does not rise: 30.6 ms and 30.1 ms against the fast mode of A at 30.3 ms and the wait-off value of the
+  earlier session at 29.7 ms.
   A tile that the repeated poll leaves is now taken about 21 ms after the last step, whichever way the poll fell.
 - The spread of unchanged input, A against A with the same binary in two arm labels (20 pairs):
   late tiles in 11 of 20 and 9 of 20, medians 48.6 and 35.8 ms.
@@ -620,39 +631,56 @@ sessions sit at about 20 ms and about 40 ms, and no run lies between them.
 
 Scroll scenario, 120 steps, frame-shift probe, A and B alternating.
 The probe fails on some noisy runs ("probe status 1": the frames could not be matched; 1 of 32 and 1 of 60 runs, both
-of B, both with many wheel gaps over 20 ms); those runs are not counted below.
+of B, both with many wheel gaps over 20 ms; none in the 32 of the tip pass); those runs are not counted below.
 
 - First pass, B the spinning build (16 pairs): A 16 runs, 2 stalls (slots 35 and 40), none at slot 50;
   B 15 runs, 1 stall, at slot 50.
-- Final pass, B with `wake_delay` (30 pairs): A 30 runs, 7 stalls in 7 runs (slots 50, 56, 94, 125, 128 twice, 140),
-  slot 50 in 1; B 29 runs, 12 stalls in 10 runs (slots 35, 53, 72, 76, 97, 98, 119 twice, 128, 139 twice, 141),
+- Second pass, B with `wake_delay` (30 pairs): A 30 runs, 7 stalls in 7 runs (slots 50, 56, 94, 125, 128 twice,
+  140), slot 50 in 1; B 29 runs, 12 stalls in 10 runs (slots 35, 53, 72, 76, 97, 98, 119 twice, 128, 139 twice, 141),
   slot 50 in 0.
-- Slot 50, both passes: B 1 of 44, A 1 of 46 runs.
+- Third pass, B the tip (16 pairs): A 16 runs, 1 stall (slot 96); B 16 runs, 3 stalls (slots 66, 72, 140);
+  slot 50 in 0 and 0.
+- Slot 50, three passes: B 1 of 60 runs, A 1 of 62; B after the spinning build 0 of 45.
   The stall of the previous session's merged binary was 0 of 56 runs, and the unfixed code 16 of 16; neither was
-  rerun here, and today's host is noisier (wheel gaps over 20 ms between two injected events in 25 of 46 A runs and 24
-  of 46 B runs).
-  A stall count of zero at slot 50 is shown by neither arm today; the final B has 0 of 29, the concurrent A has 1 of 30.
+  rerun here, and the host is noisier than then (wheel gaps over 20 ms between two injected events in 34 of 62 A runs
+  and 33 of 62 B runs).
+  A stall count of zero at slot 50 is not shown by A on this host (1 of 62); B has 1 of 60 with the spinning build and
+  0 of 45 with the two later builds.
 - The stall at slot 50 of the spinning build (`l2-5-B-ide-cadence-5nC7Ed`) has a readable timeline and fits a cost
   of the wake-up: the wheel event at 316.7 ms (counted from the first one) was followed by the next one 22.6 ms
   later, 2.6 ms after the end of the wait; the wake-up applied the tile at 336.9 ms, and the frame the next wheel event
   drew followed at 341.6 ms.
   Any input gap longer than `STEP_WAIT` with a tile waiting ends this way with the wake-up, where the repeated poll
   only does when one of its ticks falls into the gap.
-  Counting the tiles applied outside a step (more than 2 ms after a wheel event, inside the input): A 21 tiles in 5
-  runs of 46, B 21 tiles in 9 runs of 46, so the number of such tiles is the same and they are found in more runs for
+- Counting the tiles applied outside a step (more than 2 ms after a wheel event, inside the input): A 22 tiles in 6
+  runs of 62, B 23 tiles in 11 runs of 62, so the number of such tiles is the same and they are found in more runs for
   B.
-  Runs with a stall: A 9 of 46, B 11 of 44, which is not a difference these counts can show.
-  Of the runs with a stall, 5 of 11 of B and 1 of 9 of A also have a tile applied outside a step; the other stalls are
-  not tied to a tile hand-over in their run, and are taken to be the host's, which was not shown.
+  Runs with a stall: A 10 of 62, B 14 of 60, which is not a difference these counts can show.
+  Of the runs with a stall, 7 of 14 of B and 2 of 10 of A also have a tile applied outside a step; the other stalls
+  are not tied to a tile hand-over in their run, and are taken to be the host's, which was not shown.
+  If the cost is real, it is a small rate that these 62 runs per arm cannot resolve; a longer run of the stall pass
+  would decide it.
+
+#### Gates
+
+Run once each on the tip `9f21309e6d` (documentation commits follow it):
+`lint` 0 findings (a first run found the code line limit of `tile.rs` and two semantic line break findings in a
+test's comment, a second a rustfmt import order; each fix was a new snapshot, and the third run passes);
+`test:native` 282 passed, 5 skipped (the five tests of `tile_step_tests.rs` among them);
+`test` 797 passed, 1 skipped; `test:bin` 60 passed; `build` finished;
+`inspect:no-software-renderer` passes (not linked; the two features reach it);
+`inspect:source-guards` for the six guards of the tile hand-over (6 of 156): baseline passes, removed fails, restored
+passes, for all (`tile-taken-by-the-step` shares the baseline of `tile-left-for-next-step`).
+The other 150 guards were not run.
+A first guard run stopped at its baseline because the copied cache lacked `crate-licenses.json` (an input of the
+build script, not a guard result); it was repeated after copying that file.
 
 #### Limits
 
-- The Q1 counts were taken with the spinning build and with the final build; both give 0 late tiles, so the spin
-  does not decide the latency result.
-  The stall passes are the only place the two differ, and the final pass has the final build.
 - The cost found above (an input gap over 20 ms with a tile waiting) is a property of the wait's length: a longer
   `STEP_WAIT` covers longer gaps and adds the same amount to the idle latency.
   It was not varied.
 - Not run: the drag scenario, display scales other than 1, a real compositor, an input slower than 50 Hz, and any
   step length other than 16 ms (the sweep of the earlier subsection).
 - The `probe status 1` runs are excluded from the stall counts and were not examined.
+- The wait of 150 ms (the positive control of the previous subsection) and the unfixed code were not rebuilt.
