@@ -253,6 +253,8 @@ The discovery check must compare matching test files with the selected configura
   Linux compilation with Depot prepared environments or container builds;
   keep platform-native execution for Windows and macOS.
   The production [Alpine workflow](../../.github/workflows/music-player-alpine.yml)
+  (moved into the `test-alpine` job of `.github/workflows/music-player-release.yml` on 2026-10-22,
+  where it runs on a release or a manual run and no longer on pull requests)
   already tests x86_64 and aarch64 on relevant pull requests,
   main pushes,
   and manual requests.

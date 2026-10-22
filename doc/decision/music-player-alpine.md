@@ -40,7 +40,7 @@ for x86_64 and aarch64.
 
 The Linux musl target is a dynamically linked build made with Alpine's own Rust toolchain,
 with the `alsa-fallback` cargo feature on,
-and it is guarded in CI on x86_64 and aarch64 by `.github/workflows/music-player-alpine.yml`.
+and it is guarded in CI on x86_64 and aarch64 by the `test-alpine` job of `.github/workflows/music-player-release.yml`.
 
 ### Static versus dynamic
 
@@ -264,11 +264,11 @@ No version bump is needed.
 
 ### Continuous integration
 
-`.github/workflows/music-player-alpine.yml` runs on pull requests and on pushes to main that touch the player,
-its
-true-peak core,
-the compositor or the workflow,
-and on manual dispatch.
+The `test-alpine` job of `.github/workflows/music-player-release.yml` runs as part of the release workflow,
+on a push to main that bumps the version and on manual dispatch;
+the release waits on it through the `checksums` job, so a failing test blocks the release.
+It no longer runs on pull requests or on every push that touches the player
+(until 2026-10-22 it was the standalone workflow `.github/workflows/music-player-alpine.yml`, which did).
 Each architecture runs natively (`ubuntu-latest` and `ubuntu-24.04-arm`) and:
 
 1. builds `Containerfile.alpine` (targets `build` and `smoke`),

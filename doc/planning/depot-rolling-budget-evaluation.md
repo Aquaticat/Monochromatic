@@ -308,7 +308,8 @@ Periodic execution is therefore not an equivalent implementation of the accepted
 ## Comparable existing mechanisms
 
 The repository already uses concurrency in other workflows,
-including [Alpine checks](../../.github/workflows/music-player-alpine.yml).
+including [Alpine checks](../../.github/workflows/music-player-alpine.yml)
+(moved into the `test-alpine` job of `.github/workflows/music-player-release.yml` on 2026-10-22).
 Its [debounce utility](../../package/module/conf-fork/src/debounce.ts) waits for a quiet period;
 its [p-limit fork](../../package/module/p-limit-fork/src/index.ts) bounds simultaneous calls.
 Neither source defines shared rolling execution accounting.

@@ -182,7 +182,9 @@ Fix:
 ## Evidence for the two follow-ups
 
 All runs are `workflow_dispatch` runs of `.github/workflows/music-player-windows.yml` on this branch, jobs `msvc-x64`,
-`msvc-arm64` and `gnu-x64-ucrt64`. The step "Check console colors and the startup failure message" creates a console of
+`msvc-arm64` and `gnu-x64-ucrt64`
+(that workflow moved into the `test-windows` job of `.github/workflows/music-player-release.yml` on 2026-10-22).
+The step "Check console colors and the startup failure message" creates a console of
 its own (cleared of VT processing for the color cases), starts the debug build with `CreateProcessW`, reads the console
 screen buffer back, and for the double-click cases frees its console, starts the program without handle inheritance,
 finds the dialog (class `#32770`) by process id, reads its title and text through `WM_GETTEXT`, presses OK and checks
@@ -221,7 +223,9 @@ the exit status.
 ## Evidence
 
 All runs are on GitHub-hosted runners with `.github/workflows/music-player-windows.yml` on this branch,
-jobs `msvc-x64`, `msvc-arm64` and `gnu-x64-ucrt64`.
+jobs `msvc-x64`, `msvc-arm64` and `gnu-x64-ucrt64`
+(see the note on the move to `.github/workflows/music-player-release.yml` in the section "Evidence for the two
+follow-ups").
 
 - Positive control, run 38751509147 at `a9b4a681d2` (the new checks, no attribute): all three jobs failed.
   The PE step printed `Subsystem in the PE header: 3 (IMAGE_SUBSYSTEM_WINDOWS_CUI)` and the link-line check failed.

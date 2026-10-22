@@ -46,7 +46,9 @@ No upstream source was modified or executed.
 
 The initial harness is the isolated research commit
 `02d1d845baf27a3613fc44f5382866d930ffe1f3`,
-at `.github/workflows/music-player-windows.yml`.
+at `.github/workflows/music-player-windows.yml`
+(a file that exists only on the research branch since the production workflow of that name moved into the
+`test-windows` job of `.github/workflows/music-player-release.yml` on 2026-10-22).
 Its comparison run
 [39099180101](https://github.com/Aquaticats/Monochromatic/actions/runs/39099180101)
 passes with two artifacts.
@@ -69,7 +71,9 @@ Its complete expected-outcome catalog passed:
 
 The harness is retained on `research/depot-pool-routing-20261018`.
 To reproduce its corrected positive comparison at the retained branch,
-dispatch the existing workflow with explicit inputs:
+dispatch the existing workflow with explicit inputs
+(this works only on the retained research branch; on `main` there is no `music-player-windows.yml` to dispatch,
+and the production tests run through `music-player-release.yml`):
 
 ```sh
 # .github/workflows/music-player-windows.yml on the research branch only

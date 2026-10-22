@@ -530,7 +530,8 @@ before saying it matches, QAB):
   bytes) and kept the newest of each family. Feature-branch entries of the Windows agent
   (`mp-win-v1`, about 2.6 GB) count against the cap until that branch merges and its entries are deleted.
 - Task 95, Alpine: MERGED to `main` at `2077b5b81e` on 2026-10-15 (decision `doc/decision/music-player-alpine.md`,
-  workflow `.github/workflows/music-player-alpine.yml` on x86_64 and arm64). The app builds and runs on Alpine 3.24.2
+  workflow `.github/workflows/music-player-alpine.yml` on x86_64 and arm64, moved into the `test-alpine` job of
+  `.github/workflows/music-player-release.yml` on 2026-10-22). The app builds and runs on Alpine 3.24.2
   with Alpine's own rust 1.96.1, dynamic musl (static musl cannot open a window: `dlopen` is unsupported there, and
   Alpine ships no static fontconfig, freetype or pipewire). Code changes: raw `sched_setscheduler` syscall because musl
   returns ENOSYS, a cargo feature `alsa-fallback` (PipeWire first, then the default ALSA device),
@@ -565,7 +566,9 @@ before saying it matches, QAB):
   printed `music-player 0.1.2` inside `alpine:3.24` with the apk list installed.
 - Task 96, Windows linkers: MERGED to `main` on 2026-10-15 (merge `aa9f48eaf6`; decision
   `doc/decision/music-player-windows-linkers.md`, workflow `.github/workflows/music-player-windows.yml` with jobs
-  `msvc-x64`, `msvc-arm64`, `gnu-x64-ucrt64`). Windows MSVC now uses `link.exe` (no `linker` key; `+crt-static` kept);
+  `msvc-x64`, `msvc-arm64`, `gnu-x64-ucrt64`, moved into the `test-windows` job of
+  `.github/workflows/music-player-release.yml` on 2026-10-22). Windows MSVC now uses `link.exe`
+  (no `linker` key; `+crt-static` kept);
   the new `x86_64-pc-windows-gnu` target links with mingw-w64 GNU ld (`-fuse-ld=bfd`; UCRT64 kept, MINGW64 deprecated
   by MSYS2); Linux stays on rust-lld and macOS keeps its linker. mold is not adopted: it has no PE/COFF output
   (v3.0.0 and unreleased main, README and `doc/audit/tech-mold-linker-vet-2026-10-05.md`; unreleased mold main has a
@@ -1028,7 +1031,8 @@ Decision numbers D122 to D130 are taken; the next free one is D131.
 - Windows linkers (2026-10-14): the desktop app no longer links with `lld-link` (mold is ELF-only and cannot replace
 - it);
   the MSVC targets use Visual Studio's `link.exe`, and an `x86_64-pc-windows-gnu` build links with GNU ld. The suite now
-  runs on GitHub Windows runners (`.github/workflows/music-player-windows.yml`), where its first run found eleven
+  runs on GitHub Windows runners (`.github/workflows/music-player-windows.yml`, moved into the `test-windows` job of
+  `.github/workflows/music-player-release.yml` on 2026-10-22), where its first run found eleven
   Windows-only failures, fixed. Record: `doc/decision/music-player-windows-linkers.md`. Windows is now verified on those
   runners and under Wine, not on a real machine with speakers.
 

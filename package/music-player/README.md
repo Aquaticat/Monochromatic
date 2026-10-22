@@ -279,8 +279,8 @@ Windows targets `x86_64` and `aarch64` with Visual Studio's `link.exe`,
 plus a GNU `x86_64` build that needs no Microsoft toolchain,
 and uses WASAPI through cpal;
 `desktop-app/README.md` (section "Windows") has the toolchains and tasks.
-The Windows workflow `.github/workflows/music-player-windows.yml` builds all three and runs the test suite on
-GitHub's Windows runners.
+The `test-windows` job of `.github/workflows/music-player-release.yml` builds all three and runs the test suite on
+GitHub's Windows runners, on a release or a manual run of that workflow.
 Apart from that, only the Linux `x86_64` build has been run by the project;
 the other desktop targets are built by CI and have not been tested by hand on their platform.
 
@@ -588,8 +588,9 @@ Every other file is built by CI, not yet tested on this platform:
 CI starts each desktop program once with `--version` and does nothing more.
 No build has run on a real Android device, on macOS or on Windows.
 The Alpine files have more checking than the other CI-built files, though not on real hardware:
-the Alpine workflow runs the unit tests and a headless window and sound check in Alpine containers on both
-architectures, on debug builds, and the release run starts each Alpine program with `--version` in an Alpine image.
+the `test-alpine` job of the release workflow runs the unit tests and a headless window and sound check
+in Alpine containers on both architectures, on debug builds,
+and the release run starts each Alpine program with `--version` in an Alpine image.
 Treat those downloads as unverified and report what you find as issues.
 
 ### Windows

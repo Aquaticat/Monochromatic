@@ -25,8 +25,8 @@ and the Visual Studio C++ build tools are the only linker requirement.
 The build and check results below were recorded with `lld-link.exe`;
 re-run `mise run //package/music-player/desktop-app:build`
 on the Windows machine to confirm the `link.exe` build there
-(the GitHub Windows runners already build and test it:
-`.github/workflows/music-player-windows.yml`).
+(the GitHub Windows runners already build and test it, in the `test-windows` job of
+`.github/workflows/music-player-release.yml`).
 A GNU-toolchain build (`x86_64-pc-windows-gnu`, MSYS2 MinGW-w64, GNU ld, no Visual Studio) is available through
 `mise run //package/music-player/desktop-app:build:windows-gnu`; the perceptual check below applies to either binary
 (`target\x86_64-pc-windows-gnu\release\music-player.exe` for the GNU one).

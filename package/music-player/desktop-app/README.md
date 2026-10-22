@@ -250,7 +250,8 @@ scenarios (no sound,
 ALSA,
 PipeWire),
 with explicit memory and CPU bounds.
-`.github/workflows/music-player-alpine.yml` runs the same commands on x86_64 and aarch64.
+The `test-alpine` job of `.github/workflows/music-player-release.yml` runs the same commands on x86_64 and aarch64,
+on a release or a manual run of that workflow.
 
 ## Codecs
 
@@ -630,8 +631,9 @@ on a bare Xvfb screen Slint's frame throttle divides by a refresh rate of 0 and 
 
 ### Continuous integration
 
-`.github/workflows/music-player-windows.yml` builds, tests and starts the program
+The `test-windows` job of `.github/workflows/music-player-release.yml` builds, tests and starts the program
 on `windows-2025` (x64) and `windows-11-arm` for the MSVC targets and on `windows-2025` for the GNU target.
+It runs on a release or a manual run of that workflow, and a failure blocks the release.
 It prints the linker rustc ran, so a `lld` link would fail the job, and the PE import table of the program.
 It reads the console screen buffer and log files back to check that no ANSI escape sequence lands as text,
 and reads the startup failure message box back through Win32 calls
@@ -994,7 +996,7 @@ Verification runs use it to type into Search while the scan is still running.
 `MUSIC_PLAYER_FORCE_STARTUP_FAILURE` makes a Windows debug build fail one startup step on purpose:
 `window-system`, `window`, `event-loop` or `panic`.
 Release builds and non-Windows builds do not contain the code that reads it, and any other value fails nothing.
-The Windows workflow uses it to drive the startup failure report (`src/startup_failure.rs`):
+The `test-windows` job of the release workflow uses it to drive the startup failure report (`src/startup_failure.rs`):
 with no console and no stderr handle (a double-click start) the program shows a message box,
 otherwise it prints the same text on stderr (the `panic` step prints the standard panic message).
 

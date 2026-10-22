@@ -364,7 +364,7 @@ containerCargo(['nextest', 'run', '--release'])
 """
 
 [tasks."test:alpine"]
-description = "Alpine (musl) guard in podman, the same commands as .github/workflows/music-player-alpine.yml: build Containerfile.alpine, cargo nextest, build the app and the nested compositor, then the three smoke scenarios (no sound, ALSA, PipeWire)"
+description = "Alpine (musl) guard in podman, the same commands as the test-alpine job of .github/workflows/music-player-release.yml: build Containerfile.alpine, cargo nextest, build the app and the nested compositor, then the three smoke scenarios (no sound, ALSA, PipeWire)"
 # Everything runs inside Alpine containers with explicit bounds; the cargo registry and both target directories live under
 # target/alpine-cache (gitignored) so a second run reuses them, as the workflow's actions/cache does. The workflow is the
 # reference: change a command in both places.

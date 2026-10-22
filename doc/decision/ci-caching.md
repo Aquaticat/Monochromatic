@@ -139,7 +139,7 @@ but the caches that existed did little.
    and
   it finished before the slowest job of the run.
    It restores and saves only the MSYS2 package downloads (70 MB) under
-  the key `music-player-windows.yml` uses.
+  the key that the `test-windows` job of the same workflow also uses.
    Details:
    `doc/decision/music-player-releases.md`.
 - `music-player-release.yml`,
@@ -236,11 +236,13 @@ The steady state below keeps the newest entry of each family on `main`.
 - `music-player-release.yml`:
   about 4.0 GB,
   as reported by its author (seven entries of 387 MB to 651 MB).
-- The Windows music player workflow:
+- The `test-windows` job of `music-player-release.yml`
+  (a standalone Windows workflow until it moved into the release workflow on 2026-10-22):
   four entries of about 610 MB plus msys2 entries of about 69 MB,
   about 3 GB if each
   family keeps one entry.
-- `music-player-alpine.yml`:
+- The `test-alpine` job of `music-player-release.yml`
+  (a standalone Alpine workflow until it moved into the release workflow on 2026-10-22):
   two entries (x86_64 and aarch64) of 949 MB and 928 MB,
   about 1.9 GB.
   They exceed the 650 MB guide because the debug build of the `turso` crates alone holds about 400 MB of libraries;
@@ -267,8 +269,7 @@ instead.
 ## Rules for the music player workflows
 
 These apply to `music-player-release.yml`,
-`music-player-alpine.yml`,
-and `music-player-windows.yml`,
+including its `test-alpine` and `test-windows` jobs,
 and to any later
 workflow that stores more than 100 MB.
 

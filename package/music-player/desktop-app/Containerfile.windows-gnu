@@ -1,7 +1,8 @@
 # Cross-compile the music-player for x86_64-pc-windows-gnu on Linux and run the result under Wine.
 # Used by the `image:windows-gnu`, `build:windows-gnu` and `test:windows-gnu` mise tasks. This is a
 # proof of the GNU target on a machine without Windows; it is NOT the shipped build (the release
-# binary is built natively on a Windows runner, see .github/workflows/music-player-windows.yml).
+# binary is built natively on a Windows runner, see the build-desktop job of
+# .github/workflows/music-player-release.yml).
 #
 # Pinned by digest (fedora:44 on registry.fedoraproject.org, pulled 2026-10-14) so a moving tag
 # cannot change the mingw-w64 or Wine versions under a recorded result. Bump the digest on purpose.

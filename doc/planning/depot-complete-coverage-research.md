@@ -196,7 +196,9 @@ The first wave is
 Its workflow identity is `7a3b8dd2ca31110565ab1f05b913b4943d9f9dd3`;
 the application checkout remains the frozen source.
 The registered `music-player-windows.yml` filename is reused only on the research branch
-for a manual-dispatch Linux experiment.
+for a manual-dispatch Linux experiment
+(on `main` the production workflow moved into the `test-windows` job of
+`.github/workflows/music-player-release.yml` on 2026-10-22).
 It changes no production workflow.
 
 Both workers use `depot-ubuntu-24.04-8`.

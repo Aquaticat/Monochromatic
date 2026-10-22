@@ -21,7 +21,9 @@ Node `26.12.0` and pnpm `12.14.0` match the frozen source's `mise.lock`.
 ## Experimental boundary
 
 The isolated branch is `research/depot-pnpm-cache-20261018`.
-It replaces the dispatchable `music-player-windows.yml` only on that branch.
+It replaces the dispatchable `music-player-windows.yml` only on that branch
+(on `main` that workflow moved into the `test-windows` job of `.github/workflows/music-player-release.yml`
+on 2026-10-22).
 The workflow has no push or pull-request trigger.
 It does not change production routing or publication.
 

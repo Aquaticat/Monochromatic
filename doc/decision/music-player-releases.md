@@ -132,7 +132,7 @@ One release holds, with `<version>` filled in:
   environment that the runner image carries in `C:\msys64`
   (`msys2/setup-msys2` is not an allowed action in this repository),
    so GNU ld links the program.
-  The steps follow the `gnu-x64-ucrt64` job of `.github/workflows/music-player-windows.yml`.
+  The steps follow the `gnu-x64-ucrt64` entry of the `test-windows` job of `.github/workflows/music-player-release.yml`.
   The job reads the import tables and fails if the executable imports `libgcc_s*`,
    `libwinpthread*` or `libstdc++*`,
   because the program would then need those DLLs next to it;
@@ -284,7 +284,7 @@ One release holds, with `<version>` filled in:
    which is the same range.
   The compressed size of a GNU release entry was not measured;
    the debug entry of the same target in
-  `music-player-windows.yml` is about 652 MB,
+  the `test-windows` job (a standalone workflow when this was measured) is about 652 MB,
    which is at the 650 MB guide.
   If a later decision adds a cache,
    its key can keep the shape of the other desktop jobs
@@ -296,8 +296,9 @@ One release holds, with `<version>` filled in:
    so the target is part of the family).
   The job does cache the MSYS2 package downloads (70 MB;
    an exact hit in the dry run) under the key
-  `music-player-windows.yml` uses,
-   so the two workflows share one entry per month.
+  the `test-windows` job of the same workflow uses,
+   so the two jobs share one entry per month
+  (the release workflow alone saves it since 2026-10-22; two workflows shared it before).
 - Both `jdx/mise-action` steps (macOS node,
    Android) pin `version: 2026.10.9` and do not set `minimum_release_age`,
   decided on 2026-10-15.
@@ -488,8 +489,8 @@ nothing was saved;
   Releases and the README say "built by CI, not yet tested on this platform" for the rest,
   and CI starts each desktop binary with `--version` and nothing more.
   The Alpine builds have more evidence, though not from hardware:
-  `.github/workflows/music-player-alpine.yml` runs the unit tests and a headless window and sound check in Alpine
-  containers on both architectures, on debug builds and not on the released files.
+  the `test-alpine` job of `.github/workflows/music-player-release.yml` runs the unit tests and a headless window and
+  sound check in Alpine containers on both architectures, on debug builds and not on the released files.
   The dry run 38684256021 started the x86_64 release binary in an `alpine:3.24` container after `apk add` of the
   listed packages and printed `music-player 0.1.1`; the same binary in a bare `alpine:3.24` failed with
   `Error loading shared library libfontconfig.so.1`, so the check can fail.

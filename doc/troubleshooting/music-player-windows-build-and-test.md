@@ -183,7 +183,9 @@ The test uses 123,456,700 ns (a multiple of 100) for both times, with a comment 
 
 ## A workflow check compared the binary version with a fixed string
 
-The `--version` step of `.github/workflows/music-player-windows.yml` compared the output with `music-player 0.1.0`.
+The `--version` step of `.github/workflows/music-player-windows.yml`
+(moved into the `test-windows` job of `.github/workflows/music-player-release.yml` on 2026-10-22)
+compared the output with `music-player 0.1.0`.
 The merge of `main` that carried release 0.1.1 failed that step on every job (run 38684829641, after the cache
  saves), and release 0.1.2 would have again. The step now reads the version from `Cargo.toml`.
 

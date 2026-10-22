@@ -63,6 +63,7 @@ The release workflow branch recorded a concrete defect of that pin in commit 24b
 
 All of this ran on GitHub-hosted runners with `.github/workflows/music-player-windows.yml`
  (jobs `msvc-x64` on `windows-2025`, `msvc-arm64` on `windows-11-arm`, `gnu-x64-ucrt64` on `windows-2025`).
+That workflow moved into the `test-windows` job of `.github/workflows/music-player-release.yml` on 2026-10-22.
 
 - The linker that ran, printed with `cargo rustc ... --print link-args` (run 38670823208):
   MSVC x64 and arm64 used `...\VC\Tools\MSVC\14.51.36231\bin\HostX64\x64\link.exe` and `HostARM64\arm64\link.exe`
@@ -103,7 +104,9 @@ So the Wine proof and the CI build use different C runtimes for the same target;
 
 - Link time of `link.exe` against `lld-link.exe` was not measured, so no speed difference is claimed.
 - A new workflow, `.github/workflows/music-player-windows.yml`, builds and tests all three Windows targets on
-  pull requests and pushes that touch the desktop app or `truepeak-core`.
+  pull requests and pushes that touch the desktop app or `truepeak-core`
+  (moved into the `test-windows` job of `.github/workflows/music-player-release.yml` on 2026-10-22,
+  where it runs on a release or a manual run and no longer on pull requests).
 - `msys2/setup-msys2` could not be used: the repository allows only GitHub-owned actions, verified creators and the
   patterns `pnpm/* cargo-bins/* google/* returntocorp/* ossf/* jdx/* changesets/*`, with `sha_pinning_required: true`
   (the first push ended in `startup_failure`). The workflow runs the MSYS2 that the `windows-2025` image already has at
@@ -173,7 +176,8 @@ Done on 2026-10-15 on branch `feat/music-player-release-gnu` (the export is remo
   and the asset `music-player-<version>-windows-x64-gnu.exe`.
   Its toolchain step installs `<mise.lock version>-x86_64-pc-windows-gnu` (a GNU host toolchain, so that host equals
   target); its MSYS2 steps are copied from `.github/workflows/music-player-windows.yml`
-  (the month step, the package cache, `pacman --sync --refresh --noconfirm --needed "${MINGW_PACKAGE_PREFIX}-gcc"` with
+  (moved into the `test-windows` job of `.github/workflows/music-player-release.yml` on 2026-10-22;
+  the month step, the package cache, `pacman --sync --refresh --noconfirm --needed "${MINGW_PACKAGE_PREFIX}-gcc"` with
   `MSYSTEM=UCRT64`, prepend `C:\msys64\ucrt64\bin` to the path, and verify `gcc -dumpmachine`);
   then `cargo build --release --locked --target x86_64-pc-windows-gnu`.
 - The existing import check names `vcruntime` and `msvcp` and does not cover GNU. Add a check that rejects imports of

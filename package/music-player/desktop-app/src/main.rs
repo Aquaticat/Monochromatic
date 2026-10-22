@@ -913,7 +913,8 @@ fn start_unplayable_notifier() -> UnplayableNotifier {
 ///  In a Windows debug build, fails `step` on purpose when `MUSIC_PLAYER_FORCE_STARTUP_FAILURE` names it.
 /// Why:
 ///       The Windows runner proves the failure report by forcing each step and reading the message box back
-///           (`.github/workflows/music-player-windows.yml`). The error goes through the same path as a real one.
+///           (`.github/workflows/music-player-release.yml`, job `test-windows`). The error goes through the same
+///           path as a real one.
 #[cfg(all(windows, debug_assertions))]
 fn forced_failure(step: StartupStep) -> Result<(), slint::PlatformError> {
     use music_player::startup_failure::{FORCE_STARTUP_FAILURE_ENV, forced_failure_detail, forced_startup_failure};

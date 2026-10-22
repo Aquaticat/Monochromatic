@@ -256,7 +256,7 @@ the Windows GNU time is in `doc/decision/music-player-releases.md`),
 and the repository's cap is not spent on them.
 The Windows GNU job caches only the MSYS2 package downloads (about 70 MB,
  key `msys2-pkg-v1-...`),
-under the key that `.github/workflows/music-player-windows.yml` also uses.
+under the key that the `test-windows` job of the same workflow also uses.
 The `notices` job caches only the cargo registry downloads (key `music-player-notices-v1-...`),
 because cargo-about and `cargo tree` compile nothing.
 
@@ -395,8 +395,9 @@ The project has run only the Linux x86_64 build and the Android app on emulators
 The Windows and macOS programs and the Linux arm64 build are built by CI and started with `--version` there,
 and nothing more.
 The Alpine builds are started with `--version` in an Alpine container in the release run;
-a separate workflow (`.github/workflows/music-player-alpine.yml`) runs the unit tests and a headless window and sound
-check in Alpine containers on both architectures, on debug builds and not on the released files.
+the `test-alpine` job of the same workflow (`.github/workflows/music-player-release.yml`) runs the unit tests and a
+headless window and sound check in Alpine containers on both architectures, on debug builds and not on the released
+files, and the release waits on it.
 No real Alpine machine has run them.
 No build has run on a real Android device.
 A bug report from one of these platforms is the first evidence about it.
