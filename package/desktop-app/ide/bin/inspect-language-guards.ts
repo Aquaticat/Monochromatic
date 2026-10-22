@@ -70,7 +70,7 @@ cpSync(
       origin,
       path
     )
-      .split(sep)[0])
+      .split(sep)[0] ?? '')
   }
 );
 mkdirSync(
@@ -82,11 +82,52 @@ mkdirSync(
 );
 console.log(`LANGUAGE_GUARD_ARTIFACT=${  artifact}`);
 
-function replaceOne(
+/**
+ A guard: the edit that removes it and the test that must then fail.
+ */
+interface Guard {
+  name: string;
+  file: string;
+  before: string;
+  after: string;
+  integration?: string;
+  test: string;
+  failure: string;
+}
+
+/**
+ A container run recorded in `results.json` and echoed as one JSON line.
+ */
+interface RunResult {
+  name: string;
+  phase: string;
+  test: string;
+  status: number | null;
+  accepted: boolean;
+}
+
+/**
+ `text` with the one occurrence of `before` replaced by `after`.
+
+ @param text - source of the file to mutate
+
+ @param before - anchor that the guard exists to protect; absence means the guard moved with its code
+
+ @param after - replacement that removes the guard
+
+ @returns the edited text
+
+ @throws {Error} when `before` is absent or occurs more than once, since either way the guard may be aimed at the wrong code
+ */
+function replaceOne({
   text,
   before,
   after
-) {
+}: {
+  text: string;
+  before: string;
+  after: string;
+}): string {
   const start = text.indexOf(before);
   if (start === (-1)) throw new Error(`Mutation source anchor is absent: ${  before}`);
   if (text.indexOf(
@@ -99,7 +140,7 @@ function replaceOne(
   ) + after
     + text.slice(start + before.length);
 }
-const cases = [
+const cases: Guard[] = [
   // Fencing, rule by rule, without a server.
   {
     name: 'fence-file',
@@ -391,12 +432,25 @@ const selected = only ? cases.filter(item => only.has(item.name)) : cases;
 if (only && (selected.length !== only.size)) throw new Error(`Unknown guard name in: ${
    process.env
      .usage_only}`);
-const results = [];
+const results: RunResult[] = [];
 const baselined = new Set();
-function run(
+
+/**
+ Runs one guard test in the disposable copy, records the result, and stops the script when it is not the expected one.
+
+ @param item - guard whose test runs
+
+ @param phase - baseline (unmodified), removed (guard removed, must fail), or restored (must pass again)
+
+ @throws {Error} when the run is not the expected result
+ */
+function run({
   item,
   phase
-) {
+}: {
+  item: Guard;
+  phase: string;
+}): void {
   const command = [
     'cargo',
     'test',
@@ -483,10 +537,10 @@ for (const item of selected) {
   // A restored run of an earlier case is already this test's unmodified baseline.
   const key = `${item.integration ?? 'lib'  }:${  item.test}`;
   if (!baselined.has(key)) {
-    run(
+    run({
       item,
-      'baseline'
-    );
+      phase: 'baseline'
+    });
     baselined.add(key);
   }
   const path = join(
@@ -500,23 +554,23 @@ for (const item of selected) {
   try {
     writeFileSync(
       path,
-      replaceOne(
-        original,
-        item.before,
-        item.after
-      )
+      replaceOne({
+        text: original,
+        before: item.before,
+        after: item.after
+      })
     );
-    run(
+    run({
       item,
-      'removed'
-    );
+      phase: 'removed'
+    });
   } finally { writeFileSync(
     path,
     original
   ); }
-  run(
+  run({
     item,
-    'restored'
-  );
+    phase: 'restored'
+  });
 }
 console.log(`Language guard controls passed: ${  artifact  } (${  selected.length  } of ${  cases.length  } guards)`);

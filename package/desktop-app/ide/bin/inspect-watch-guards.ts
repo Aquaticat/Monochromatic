@@ -74,7 +74,7 @@ cpSync(
       origin,
       path
     )
-      .split(sep)[0])
+      .split(sep)[0] ?? '')
   }
 );
 mkdirSync(
@@ -86,11 +86,83 @@ mkdirSync(
 );
 console.log(`WATCH_GUARD_ARTIFACT=${  artifact}`);
 
-function replaceOne(
+/**
+ The fields every guard has: the edit that removes it and the test that must then fail.
+ */
+interface GuardBase {
+  name: string;
+  file: string;
+  before: string;
+  after: string;
+  test: string;
+  failure: string;
+}
+
+/**
+ A guard whose test is a unit test of the window binary, run by nextest.
+ */
+interface NativeGuard extends GuardBase {
+  native: true;
+  lib?: undefined;
+  integration?: undefined;
+}
+
+/**
+ A guard whose test is a unit test of the library.
+ */
+interface LibraryGuard extends GuardBase {
+  native?: undefined;
+  lib: true;
+  integration?: undefined;
+}
+
+/**
+ A guard whose test is in one integration test file.
+ */
+interface IntegrationGuard extends GuardBase {
+  native?: undefined;
+  lib?: undefined;
+  integration: string;
+}
+
+/**
+ A guard: the edit that removes it and the one test that must then fail.
+ */
+type Guard = NativeGuard | LibraryGuard | IntegrationGuard;
+
+/**
+ A container run recorded in `results.json` and echoed as one JSON line.
+ */
+interface RunResult {
+  name: string;
+  phase: string;
+  test: string;
+  status: number | null;
+  accepted: boolean;
+}
+
+/**
+ `text` with the one occurrence of `before` replaced by `after`.
+
+ @param text - source of the file to mutate
+
+ @param before - anchor that the guard exists to protect; absence means the guard moved with its code
+
+ @param after - replacement that removes the guard
+
+ @returns the edited text
+
+ @throws {Error} when `before` is absent or occurs more than once, since either way the guard may be aimed at the wrong code
+ */
+function replaceOne({
   text,
   before,
   after
-) {
+}: {
+  text: string;
+  before: string;
+  after: string;
+}): string {
   const start = text.indexOf(before);
   if (start === (-1)) throw new Error(`Mutation source anchor is absent: ${  before}`);
   if (text.indexOf(
@@ -109,7 +181,7 @@ const policy = 'refresh_policy';
 const intervals = 'refresh_intervals';
 const quiet = 'quiet_read';
 const language = 'language';
-const cases = [
+const cases: Guard[] = [
   // Event classification on notify's thread.
   {
     name: 'read-events-ignored',
@@ -822,23 +894,36 @@ if (only && (selected.length !== only.size)) throw new Error(`Unknown guard name
    process.env
      .usage_only}`);
 // Every anchor is checked before the first build, so one that no longer matches the source fails at once.
-for (const item of cases) replaceOne(
-  readFileSync(
+for (const item of cases) replaceOne({
+  text: readFileSync(
     join(
       source,
       item.file
     ),
     'utf8'
   ),
-  item.before,
-  item.after
-);
-const results = [];
+  before: item.before,
+  after: item.after
+});
+const results: RunResult[] = [];
 const baselined = new Set();
-function run(
+
+/**
+ Runs one guard test in the disposable copy, records the result, and stops the script when it is not the expected one.
+
+ @param item - guard whose test runs
+
+ @param phase - baseline (unmodified), removed (guard removed, must fail), or restored (must pass again)
+
+ @throws {Error} when the run is not the expected result
+ */
+function run({
   item,
   phase
-) {
+}: {
+  item: Guard;
+  phase: string;
+}): void {
   // What each kind of case runs: a native window test, a library unit test, or an integration test.
   const command = item.native
     ? [
@@ -961,10 +1046,10 @@ function run(
 for (const item of selected) {
   // A restored run of an earlier case is already this test's unmodified baseline.
   if (!baselined.has(item.test)) {
-    run(
+    run({
       item,
-      'baseline'
-    );
+      phase: 'baseline'
+    });
     baselined.add(item.test);
   }
   const path = join(
@@ -976,27 +1061,27 @@ for (const item of selected) {
     'utf8'
   );
   try {
-    const changed = replaceOne(
-      original,
-      item.before,
-      item.after
-    );
+    const changed = replaceOne({
+      text: original,
+      before: item.before,
+      after: item.after
+    });
     if (changed === original) throw new Error(`Mutation did not change ${  item.file}`);
     writeFileSync(
       path,
       changed
     );
-    run(
+    run({
       item,
-      'removed'
-    );
+      phase: 'removed'
+    });
   } finally { writeFileSync(
     path,
     original
   ); }
-  run(
+  run({
     item,
-    'restored'
-  );
+    phase: 'restored'
+  });
 }
 console.log(`Watch guard controls passed: ${  artifact  } (${  selected.length  } of ${  cases.length  } guards)`);

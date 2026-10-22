@@ -67,7 +67,7 @@ cpSync(
       origin,
       path
     )
-      .split(sep)[0])
+      .split(sep)[0] ?? '')
   }
 );
 mkdirSync(
@@ -79,12 +79,88 @@ mkdirSync(
 );
 console.log(`SEARCH_GUARD_ARTIFACT=${  artifact}`);
 
-function replaceOne(
+/**
+ The fields every search guard has.
+ */
+interface GuardBase {
+  name: string;
+  native?: boolean;
+  integration?: string;
+  test: string;
+}
+
+/**
+ A guard that removes one anchored piece of source.
+ */
+interface ReplaceGuard extends GuardBase {
+  file: string;
+  before: string;
+  after: string;
+  occurrence?: number | undefined;
+  alter?: undefined;
+  control?: undefined;
+  failure: string;
+}
+
+/**
+ A guard whose removal is a function of the file text, for source that no single anchor describes.
+ */
+interface AlterGuard extends GuardBase {
+  file: string;
+  alter: (text: string) => string;
+  control?: undefined;
+  failure: string;
+}
+
+/**
+ A lifecycle control: the unmodified test runs and nothing is removed.
+ */
+interface ControlGuard extends GuardBase {
+  control: true;
+  failure?: undefined;
+}
+
+/**
+ A search guard: a replacement, a computed alteration, or a control.
+ */
+type Guard = ReplaceGuard | AlterGuard | ControlGuard;
+
+/**
+ A container run recorded in `results.json` and echoed as one JSON line.
+ */
+interface RunResult {
+  name: string;
+  phase: string;
+  status: number | null;
+  accepted: boolean;
+}
+
+/**
+ `text` with one occurrence of `before` replaced by `after`.
+
+ @param text - source of the file to mutate
+
+ @param before - anchor that the guard exists to protect; absence means the guard moved with its code
+
+ @param after - replacement that removes the guard
+
+ @param occurrence - zero-based match to replace, for anchors that repeat
+
+ @returns the edited text
+
+ @throws {Error} when `before` occurs fewer than `occurrence` + 1 times
+ */
+function replaceOne({
   text,
   before,
   after,
   occurrence = 0
-) {
+}: {
+  text: string;
+  before: string;
+  after: string;
+  occurrence?: number | undefined;
+}): string {
   let offset = 0;
   let start = -1;
   for (let index = 0; index <= occurrence; index++) {
@@ -101,7 +177,7 @@ function replaceOne(
   ) + after
     + text.slice(start + before.length);
 }
-const cases = [
+const cases: Guard[] = [
   {
     name: 'reply-generation',
     file: 'src/search_worker.rs',
@@ -276,11 +352,24 @@ const only = process.env
 const selected = only ? cases.filter(item => only.has(item.name)) : cases;
 if (only && (selected.length !== only.size)) throw new Error(`Unknown guard name in: ${  process.env
   .usage_only}`);
-const results = [];
-function run(
+const results: RunResult[] = [];
+
+/**
+ Runs one guard test in the disposable copy, records the result, and stops the script when it is not the expected one.
+
+ @param item - guard whose test runs
+
+ @param phase - baseline (unmodified), removed (guard removed, must fail), or restored (must pass again)
+
+ @throws {Error} when the run is not the expected result
+ */
+function run({
   item,
   phase
-) {
+}: {
+  item: Guard;
+  phase: string;
+}): void {
   const command = item.native
     ? [
       'cargo',
@@ -347,7 +436,7 @@ function run(
   );
   if (result.error) throw result.error;
   const failedAsExpected = (result.status !== 0) && output.includes(item.test)
-    && output.includes(item.failure);
+    && output.includes(item.failure ?? '');
   const passedAsExpected = (result.status === 0) && output.includes(item.test)
     && /1 (?:test|passed)/.test(output);
   const accepted = phase === 'removed' ? failedAsExpected : passedAsExpected;
@@ -374,10 +463,10 @@ function run(
   );
 }
 for (const item of selected) {
-  run(
+  run({
     item,
-    'baseline'
-  );
+    phase: 'baseline'
+  });
   if (item.control) continue;
   const path = join(
     source,
@@ -388,28 +477,28 @@ for (const item of selected) {
     'utf8'
   );
   try {
-    const changed = item.alter ? item.alter(original) : replaceOne(
-      original,
-      item.before,
-      item.after,
-      item.occurrence
-    );
+    const changed = item.alter ? item.alter(original) : replaceOne({
+      text: original,
+      before: item.before,
+      after: item.after,
+      occurrence: item.occurrence
+    });
     if (changed === original) throw new Error(`Mutation did not change ${  item.file}`);
     writeFileSync(
       path,
       changed
     );
-    run(
+    run({
       item,
-      'removed'
-    );
+      phase: 'removed'
+    });
   } finally { writeFileSync(
     path,
     original
   ); }
-  run(
+  run({
     item,
-    'restored'
-  );
+    phase: 'restored'
+  });
 }
 console.log(`Search guard controls passed: ${  artifact  } (${  selected.length  } of ${  cases.length  } guards)`);

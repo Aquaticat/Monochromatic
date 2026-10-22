@@ -88,7 +88,7 @@ if (other) {
         other,
         path
       )
-        .split(sep)[0])
+        .split(sep)[0] ?? '')
     }
   );
   cpSync(
@@ -134,7 +134,7 @@ if (other) {
         origin,
         path
       )
-        .split(sep)[0])
+        .split(sep)[0] ?? '')
     }
   );
 }

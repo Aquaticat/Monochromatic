@@ -36,11 +36,25 @@ const privateRoot = join(
 if ((statSync(privateRoot)
   .mode
   & 0o077) !== 0) throw new Error(`Guard scratch root must exclude group and other permissions: ${  privateRoot}`);
-// A disposable directory below the private scratch root, or a failure that names the argument.
-function disposable(
+
+/**
+ A disposable directory below the private scratch root, or a failure that names the argument.
+
+ @param value - path the caller passed
+
+ @param what - name of the argument, for the message
+
+ @returns the real path of `value`
+
+ @throws {Error} when `value` is not a directory below the private scratch root
+ */
+function disposable({
   value,
   what
-) {
+}: {
+  value: string;
+  what: string;
+}): string {
   const resolved = realpathSync(value);
   if ((!resolved.startsWith(realpathSync(privateRoot) + sep)) || (!statSync(resolved)
     .isDirectory())) throw new Error(`${what  } must be a disposable directory below ${  privateRoot}`);
@@ -48,18 +62,18 @@ function disposable(
 }
 if (!process.env
   .usage_cache) throw new Error('Provide the disposable Cargo target-cache directory');
-const cache = disposable(
-  process.env
+const cache = disposable({
+  value: process.env
     .usage_cache,
-  'Target cache'
-);
+  what: 'Target cache'
+});
 // A private Cargo home copy keeps disposable builds off the shared volume's package-cache lock.
 const cargoHome = process.env
-  .usage_cargo ? disposable(
-    process.env
+  .usage_cargo ? disposable({
+    value: process.env
       .usage_cargo,
-    'Cargo home copy'
-  ) : 'ide-cargo';
+    what: 'Cargo home copy'
+  }) : 'ide-cargo';
 // An optional comma-separated list reruns only the named cases (their baselines always run).
 const only = process.env
   .usage_only ? new Set(process.env
@@ -87,7 +101,7 @@ cpSync(
       origin,
       path
     )
-      .split(sep)[0])
+      .split(sep)[0] ?? '')
   }
 );
 mkdirSync(
@@ -99,11 +113,28 @@ mkdirSync(
 );
 console.log(`LANGUAGE_LIFECYCLE_GUARD_ARTIFACT=${  artifact}`);
 
-function replaceOne(
+/**
+ `text` with the one occurrence of `before` replaced by `after`.
+
+ @param text - source of the file to mutate
+
+ @param before - anchor that the guard exists to protect; absence means the guard moved with its code
+
+ @param after - replacement that removes the guard
+
+ @returns the edited text
+
+ @throws {Error} when `before` is absent or occurs more than once, since either way the guard may be aimed at the wrong code
+ */
+function replaceOne({
   text,
   before,
   after
-) {
+}: {
+  text: string;
+  before: string;
+  after: string;
+}): string {
   const start = text.indexOf(before);
   if (start === (-1)) throw new Error(`Mutation source anchor is absent: ${  before}`);
   if (text.indexOf(
@@ -122,14 +153,53 @@ const killed = 'lifecycle::server_that_ignores_exit_is_killed_and_reaped_before_
 const stalled = 'logging::background::tests::a_blocked_output_never_delays_the_logging_thread';
 const crashed = 'quiet::a_crashed_server_is_logged_with_its_last_stderr_lines';
 const settled = 'language::attach::report::tests::an_end_waits_for_lines_that_arrive_after_it';
-const results = [];
-// Run one test in the bounded container and compare the outcome with `expect`: 'pass', or the texts a failure must contain.
-// Tests of the library's own modules run with `--lib`; the others are in the `language` integration test.
-function run(
+
+/**
+ One test run recorded in `results.json` and echoed as one JSON line.
+ */
+interface RunResult {
+  name: string;
+  test: string;
+  expect: 'pass' | string[];
+  status: number | null;
+  accepted: boolean;
+}
+
+/**
+ A guard: the edit that removes it and the test that must then fail with every one of the listed texts.
+ */
+interface Guard {
+  name: string;
+  test: string;
+  file: string;
+  before: string;
+  after: string;
+  failure: string[];
+}
+
+const results: RunResult[] = [];
+
+/**
+ Runs one test in the bounded container and compares the outcome with `expect`.
+ Tests of the library's own modules run with `--lib`; the others are in the `language` integration test.
+
+ @param name - label of the run, used for its log file
+
+ @param test - full test path
+
+ @param expect - 'pass', or the texts a failure must contain
+
+ @throws {Error} when the outcome is not the expected one
+ */
+function run({
   name,
   test,
   expect
-) {
+}: {
+  name: string;
+  test: string;
+  expect: 'pass' | string[];
+}): void {
   const target = test.startsWith('logging::') || test.startsWith('language::') ? ['--lib'] : [
     '--test',
     'language'
@@ -214,13 +284,31 @@ function run(
     JSON.stringify(results.at(-1)),
   );
 }
-// Apply one text replacement to a file for the duration of `body`.
-function mutated(
+
+/**
+ Applies one text replacement to a file for the duration of `body`.
+
+ @param path - file to edit
+
+ @param before - anchor to replace
+
+ @param after - replacement
+
+ @param body - work to run while the edit is in place
+
+ @throws {Error} when the anchor is absent or ambiguous
+ */
+function mutated({
   path,
   before,
   after,
   body
-) {
+}: {
+  path: string;
+  before: string;
+  after: string;
+  body: () => void;
+}): void {
   const original = readFileSync(
     path,
     'utf8'
@@ -228,11 +316,11 @@ function mutated(
   try {
     writeFileSync(
       path,
-      replaceOne(
-        original,
+      replaceOne({
+        text: original,
         before,
         after
-      )
+      })
     );
     body();
   } finally { writeFileSync(
@@ -242,7 +330,7 @@ function mutated(
 }
 
 const relabel = 'src/logging/relabel.rs';
-const cases = [
+const cases: Guard[] = [
   // A server's standard-error line, as TypeScript 7's server writes `context canceled`, reaches ERROR again.
   {
     name: 'relabel-server-stderr-line',
@@ -368,30 +456,30 @@ const cases = [
 for (const name of only ?? []) if (!cases.some(item => item.name === name)) throw new Error(`Unknown case: ${  name}`);
 const selected = cases.filter(item => (!only) || only.has(item.name));
 // Unmodified sources: every test a selected case relies on passes.
-for (const test of new Set(selected.map(item => item.test))) run(
-  `baseline-${  test.split('::')
+for (const test of new Set(selected.map(item => item.test))) run({
+  name: `baseline-${  test.split('::')
     .at(-1)}`,
   test,
-  'pass'
-);
+  expect: 'pass'
+});
 for (const item of selected) {
-  mutated(
-    join(
+  mutated({
+    path: join(
       source,
       item.file
     ),
-    item.before,
-    item.after,
-    () =>{  run(
-      `${item.name  }-removed`,
-      item.test,
-      item.failure
-    ); }
-  );
-  run(
-    `${item.name  }-restored`,
-    item.test,
-    'pass'
-  );
+    before: item.before,
+    after: item.after,
+    body: () =>{  run({
+      name: `${item.name  }-removed`,
+      test: item.test,
+      expect: item.failure
+    }); }
+  });
+  run({
+    name: `${item.name  }-restored`,
+    test: item.test,
+    expect: 'pass'
+  });
 }
 console.log(`Language lifecycle and logging guard controls passed: ${  artifact  } (${  results.length  } runs)`);

@@ -67,7 +67,7 @@ cpSync(
       origin,
       path
     )
-      .split(sep)[0])
+      .split(sep)[0] ?? '')
   }
 );
 mkdirSync(
@@ -83,7 +83,40 @@ const scheme = 'live_color_scheme_repaints_source_overlays_tree_find_bar_and_div
 const accent = 'accent_color_change_keeps_the_source_image_current';
 const rows = 'selected_rows_use_the_ink_chosen_from_the_fill_with_measured_contrast';
 const stale = 'the live source image differs from a cold render';
-const cases = [
+
+/**
+ A guard: the edit that removes it and the test that must then fail.
+ */
+interface Guard {
+  name: string;
+  file: string;
+  before: string;
+  after: string;
+  test: string;
+  failure: string;
+}
+
+/**
+ What a run needs of a guard; the baseline and restored runs of a test have no edit and no expected failure.
+ */
+interface RunItem {
+  name: string;
+  test: string;
+  failure?: string;
+}
+
+/**
+ A container run recorded in `results.json` and echoed as one JSON line.
+ */
+interface RunResult {
+  name: string;
+  phase: string;
+  test: string;
+  status: number | null;
+  accepted: boolean;
+}
+
+const cases: Guard[] = [
   // The markup notices a scheme flip; without it nothing asks native code to repaint the source image.
   {
     name: 'scheme-change-handler',
@@ -156,11 +189,24 @@ const only = process.env
 const selected = only ? cases.filter(item => only.has(item.name)) : cases;
 if (only && (selected.length !== only.size)) throw new Error(`Unknown guard name in: ${  process.env
   .usage_only}`);
-const results = [];
-function run(
+const results: RunResult[] = [];
+
+/**
+ Runs one guard test in the disposable copy, records the result, and stops the script when it is not the expected one.
+
+ @param item - guard whose test runs
+
+ @param phase - baseline (unmodified), removed (guard removed, must fail), or restored (must pass again)
+
+ @throws {Error} when the run is not the expected result
+ */
+function run({
   item,
   phase
-) {
+}: {
+  item: RunItem;
+  phase: string;
+}): void {
   const {test} = item;
   const result = spawnSync(
     'podman',
@@ -211,7 +257,7 @@ function run(
   );
   if (result.error) throw result.error;
   const failedAsExpected = (result.status !== 0) && output.includes(test)
-    && output.includes(item.failure);
+    && output.includes(item.failure ?? '');
   const passedAsExpected = (result.status === 0) && output.includes(test)
     && /1 (?:test|passed)/.test(output);
   const accepted = phase === 'removed' ? failedAsExpected : passedAsExpected;
@@ -243,13 +289,13 @@ function run(
   );
 }
 // One unmodified run per test is the baseline for every guard of that test.
-for (const test of new Set(selected.map(item => item.test))) run(
-  {
+for (const test of new Set(selected.map(item => item.test))) run({
+  item: {
     name: `unmodified-${  test}`,
     test
   },
-  'baseline'
-);
+  phase: 'baseline'
+});
 for (const item of selected) {
   const path = join(
     source,
@@ -278,21 +324,21 @@ for (const item of selected) {
           + item.before
             .length)
     );
-    run(
+    run({
       item,
-      'removed'
-    );
+      phase: 'removed'
+    });
   } finally { writeFileSync(
     path,
     original
   ); }
 }
 // One restored run per test after the last guard shows the copy builds and passes again with every guard back.
-for (const test of new Set(selected.map(item => item.test))) run(
-  {
+for (const test of new Set(selected.map(item => item.test))) run({
+  item: {
     name: `restored-${  test}`,
     test
   },
-  'restored'
-);
+  phase: 'restored'
+});
 console.log(`Theme guard controls passed: ${  artifact  } (${  selected.length  } of ${  cases.length  } guards)`);

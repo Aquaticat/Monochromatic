@@ -47,10 +47,23 @@ const scratch = mkdtempSync(join(
   privateRoot,
   'ide-nextest-config-'
 ));
-function run(
+
+/**
+ Runs one command in the bounded build container and times it.
+
+ @param volumes - `--volume` values to mount
+
+ @param command - program and arguments that run in the container's `/work` directory
+
+ @returns the exit status, the combined output, and the seconds the run took
+ */
+function run({
   volumes,
   command
-) {
+}: {
+  volumes: string[];
+  command: string[];
+}): { status: number | null; output: string; seconds: number } {
   const started = Date.now();
   const result = spawnSync(
     'podman',
@@ -105,10 +118,10 @@ try {
     '--filter-expr',
     'test(no_such_test_name_exists)'
   ];
-  const withFile = run(
-    [`${packageDirectory  }:/work`],
-    selectNothing
-  );
+  const withFile = run({
+    volumes: [`${packageDirectory  }:/work`],
+    command: selectNothing
+  });
   console.log(JSON.stringify({
     case: 'package with the file',
     status: withFile.status
@@ -119,13 +132,13 @@ try {
     'empty-config'
   );
   mkdirSync(hidden);
-  const withoutFile = run(
-    [
+  const withoutFile = run({
+    volumes: [
       `${packageDirectory  }:/work`,
       `${hidden  }:/work/.config:ro`
     ],
-    selectNothing
-  );
+    command: selectNothing
+  });
   console.log(JSON.stringify({
     case: 'package with .config hidden',
     status: withoutFile.status
@@ -173,9 +186,9 @@ try {
       'nextest.toml'
     )
   );
-  const killed = run(
-    [`${crate  }:/work`],
-    [
+  const killed = run({
+    volumes: [`${crate  }:/work`],
+    command: [
       'cargo',
       'nextest',
       'run',
@@ -185,7 +198,7 @@ try {
       '--color',
       'never'
     ]
-  );
+  });
   console.log(JSON.stringify({
     case: 'hung test under the probe profile',
     status: killed.status,

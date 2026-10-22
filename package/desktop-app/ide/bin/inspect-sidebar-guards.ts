@@ -67,7 +67,7 @@ cpSync(
       origin,
       path
     )
-      .split(sep)[0])
+      .split(sep)[0] ?? '')
   }
 );
 mkdirSync(
@@ -84,7 +84,31 @@ const resize = 'window_resize_shrinks_the_sidebar_and_restores_the_request';
 const zone = 'divider_zone_takes_drags_on_five_columns_only';
 const states = 'divider_states_change_line_weight_and_ink';
 const stored = 'root.sidebar-requested-width = clamp(width, root.sidebar-minimum-width, root.sidebar-maximum-width);';
-const cases = [
+
+/**
+ A guard: the edit that removes it and the test that must then fail.
+ */
+interface Guard {
+  name: string;
+  file: string;
+  before: string;
+  after: string;
+  test: string;
+  failure: string;
+}
+
+/**
+ A container run recorded in `results.json` and echoed as one JSON line.
+ */
+interface RunResult {
+  name: string;
+  phase: string;
+  test: string;
+  status: number | null;
+  accepted: boolean;
+}
+
+const cases: Guard[] = [
   // The stored request: drag and keys cannot keep a width that cannot be shown now.
   {
     name: 'drag-upper-bound',
@@ -249,12 +273,25 @@ const only = process.env
 const selected = only ? cases.filter(item => only.has(item.name)) : cases;
 if (only && (selected.length !== only.size)) throw new Error(`Unknown guard name in: ${  process.env
   .usage_only}`);
-const results = [];
+const results: RunResult[] = [];
 const baselined = new Set();
-function run(
+
+/**
+ Runs one guard test in the disposable copy, records the result, and stops the script when it is not the expected one.
+
+ @param item - guard whose test runs
+
+ @param phase - baseline (unmodified), removed (guard removed, must fail), or restored (must pass again)
+
+ @throws {Error} when the run is not the expected result
+ */
+function run({
   item,
   phase
-) {
+}: {
+  item: Guard;
+  phase: string;
+}): void {
   const result = spawnSync(
     'podman',
     [
@@ -337,10 +374,10 @@ function run(
 for (const item of selected) {
   // A restored run of an earlier case is already this test's unmodified baseline.
   if (!baselined.has(item.test)) {
-    run(
+    run({
       item,
-      'baseline'
-    );
+      phase: 'baseline'
+    });
     baselined.add(item.test);
   }
   const path = join(
@@ -370,17 +407,17 @@ for (const item of selected) {
           + item.before
             .length)
     );
-    run(
+    run({
       item,
-      'removed'
-    );
+      phase: 'removed'
+    });
   } finally { writeFileSync(
     path,
     original
   ); }
-  run(
+  run({
     item,
-    'restored'
-  );
+    phase: 'restored'
+  });
 }
 console.log(`Sidebar guard controls passed: ${  artifact  } (${  selected.length  } of ${  cases.length  } guards)`);

@@ -70,7 +70,7 @@ cpSync(
       origin,
       path
     )
-      .split(sep)[0])
+      .split(sep)[0] ?? '')
   }
 );
 mkdirSync(
@@ -82,12 +82,56 @@ mkdirSync(
 );
 console.log(`LANGUAGE_NAVIGATION_GUARD_ARTIFACT=${  artifact}`);
 
-function replaceOne(
+/**
+ A guard: the edit that removes it and the test that must then fail.
+ */
+interface Guard {
+  name: string;
+  file: string;
+  before: string;
+  after: string;
+  occurrence?: number | undefined;
+  test: string;
+  failure: string;
+}
+
+/**
+ A container run recorded in `results.json` and echoed as one JSON line.
+ */
+interface RunResult {
+  name: string;
+  phase: string;
+  test: string;
+  status: number | null;
+  accepted: boolean;
+}
+
+/**
+ `text` with one occurrence of `before` replaced by `after`.
+
+ @param text - source of the file to mutate
+
+ @param before - anchor that the guard exists to protect; absence means the guard moved with its code
+
+ @param after - replacement that removes the guard
+
+ @param occurrence - zero-based match to replace, for anchors that repeat
+
+ @returns the edited text
+
+ @throws {Error} when `before` occurs fewer than `occurrence` + 1 times
+ */
+function replaceOne({
   text,
   before,
   after,
   occurrence = 0
-) {
+}: {
+  text: string;
+  before: string;
+  after: string;
+  occurrence?: number | undefined;
+}): string {
   let offset = 0;
   let start = -1;
   for (let index = 0; index <= occurrence; index++) {
@@ -105,7 +149,7 @@ function replaceOne(
     + text.slice(start + before.length);
 }
 const equality = 'assertion `left == right` failed';
-const cases = [
+const cases: Guard[] = [
   // The window's own reply checks, on fabricated replies.
   {
     name: 'reply-request',
@@ -253,9 +297,17 @@ const selected = only ? cases.filter(item => only.has(item.name)) : cases;
 if (only && (selected.length !== only.size)) throw new Error(`Unknown guard name in: ${
    process.env
      .usage_only}`);
-const results = [];
+const results: RunResult[] = [];
 const baselined = new Set();
-function podman(command) { return spawnSync(
+
+/**
+ Runs one command in the bounded build container over the disposable copy.
+
+ @param command - program and arguments that run in the container's `/work` directory
+
+ @returns the finished child process with its captured output
+ */
+function podman(command: string[]) { return spawnSync(
   'podman',
   [
     'run',
@@ -304,10 +356,23 @@ writeFileSync(
 );
 if (server.error) throw server.error;
 if (server.status !== 0) throw new Error(`Cannot build the scripted server; inspect ${  artifact}`);
-function run(
+
+/**
+ Runs one guard test in the disposable copy, records the result, and stops the script when it is not the expected one.
+
+ @param item - guard whose test runs
+
+ @param phase - baseline (unmodified), removed (guard removed, must fail), or restored (must pass again)
+
+ @throws {Error} when the run is not the expected result
+ */
+function run({
   item,
   phase
-) {
+}: {
+  item: Guard;
+  phase: string;
+}): void {
   const result = podman([
     'cargo',
     'nextest',
@@ -360,10 +425,10 @@ function run(
 for (const item of selected) {
   // A restored run of an earlier case is already this test's unmodified baseline.
   if (!baselined.has(item.test)) {
-    run(
+    run({
       item,
-      'baseline'
-    );
+      phase: 'baseline'
+    });
     baselined.add(item.test);
   }
   const path = join(
@@ -375,28 +440,28 @@ for (const item of selected) {
     'utf8'
   );
   try {
-    const changed = replaceOne(
-      original,
-      item.before,
-      item.after,
-      item.occurrence
-    );
+    const changed = replaceOne({
+      text: original,
+      before: item.before,
+      after: item.after,
+      occurrence: item.occurrence
+    });
     if (changed === original) throw new Error(`Mutation did not change ${  item.file}`);
     writeFileSync(
       path,
       changed
     );
-    run(
+    run({
       item,
-      'removed'
-    );
+      phase: 'removed'
+    });
   } finally { writeFileSync(
     path,
     original
   ); }
-  run(
+  run({
     item,
-    'restored'
-  );
+    phase: 'restored'
+  });
 }
 console.log(`Language navigation guard controls passed: ${  artifact  } (${  selected.length  } of ${  cases.length  } guards)`);
