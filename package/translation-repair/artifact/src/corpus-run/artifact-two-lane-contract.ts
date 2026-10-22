@@ -225,7 +225,7 @@ export const ARTIFACT_SCHEMA_VERSION_V17 = 17;
 
 /**
  Generation twenty, the one the pass writes (`artifact-two-lane-build.ts`, `pass-schema-guard.ts`): a naturalness review round whose
- reachable seats are exactly its bench quorum closes one voice below them (owner, 2026-10-22, "Let the grace open";
+ reachable seats are exactly its bench quorum closes on one voice fewer than those seats (owner, 2026-10-22, "Let the grace open";
  `reachableQuorum` in `stage-reachable-quorum.ts`), which the readers of generation nineteen and earlier do not apply to files written
  before.
 
@@ -796,7 +796,7 @@ export function artifactGenerationReadsLineEndingsAsCodePadding(
 
 /**
  Reports whether generation derives a naturalness verdict with the last-seat grace: a round whose reachable seats are exactly its
- bench quorum closes one voice below them, never under two (owner, 2026-10-22). An older round was decided when such a bench needed
+ bench quorum closes on one voice fewer than those seats, never under two (owner, 2026-10-22). An older round was decided when such a bench needed
  every live seat, and its reader keeps that rule, so the verdict it recorded is not refused for a rule it was not written under.
 
  @param generation - known two-lane artifact generation

@@ -612,8 +612,8 @@ import type { RepairModels, } from '@monochromatic-dev/translation-repair-assemb
  shape of the run and the texts, not the rule that closes a round. A build whose pipeline digest differs discards the
  namespace before it reads it (`openNamespacedCache`), and the digest holds the stage code, so that retires such a
  record; the number moves too, as the belt beside that brace, so no stored record stands under a number whose rule
- differs. Run zheermao23 is armed for 2026-10-22 19:16 UTC on `65e8325303`, which holds 42 (`git
- merge-base --is-ancestor`), so records may stand at 42, and the change cannot ride inside it. The artifact generation
+ differs. Run zheermao23 is armed for 2026-10-22 19:16 UTC on `65e8325303`, which holds 42
+ (`git merge-base --is-ancestor`), so records may stand at 42, and the change cannot ride inside it. The artifact generation
  moves to 20 for the same rule, and the consolidate (32), lane-contest (16), translate slice (25), refine (14),
  consistency (7), page title (6) versions move with this one; the pairing version stays, by its own account of
  2026-10-18 (`slice-reading/src/pairing-cache-version.ts`). No record has been written at 43, which this change sets

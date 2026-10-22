@@ -829,9 +829,16 @@ const LISTED: Readonly<Record<string, ListedBound>> = {
     reason: 'the delay of a late voice, 20 ms, which lands inside a window that is the hang stop',
   },
   'stage/stage-round-refill.unit.test.ts#<module>: graceMs: GRACE_MS': {
-    count: 3,
+    count: 6,
     bound: 'reached',
-    reason: 'the window that cuts the slow seat, which answers only once it is aborted',
+    reason: 'the window that cuts the slow seat or, in the cases where the grace opens on one voice fewer (ledger B816), '
+      + 'the stuck seat, either of which answers only once it is aborted',
+  },
+  'stage/stage-round-refill.unit.test.ts#scriptedClient: setTimeout STUCK_MS': {
+    count: 1,
+    bound: 'other',
+    reason: 'the stuck seat giving up in transport, cleared when the grace cuts it first; reached only by a round that '
+      + 'waits for every live seat, where it ends the case in a failed assertion rather than a hang',
   },
   'stage/stage-round.unit.test.ts#<module>: graceMs: GRACE_MS': {
     count: 1,
