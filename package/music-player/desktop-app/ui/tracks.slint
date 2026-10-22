@@ -375,7 +375,8 @@ export component TrackListPane inherits Rectangle {
                     title-text := Text {
                         text: entry.title;
                         height: 24px;
-                        font-size: Theme.body-large - 2px;
+                        // 16 px, Android's track title size.
+                        font-size: 16px;
                         font-weight: entry.current ? 700 : 400;
                         color: Theme.on-surface;
                         vertical-alignment: center;

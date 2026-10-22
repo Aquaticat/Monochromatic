@@ -302,12 +302,13 @@ export component FolderPickerPane inherits Rectangle {
                             }
                         }
                     }
-                    // Heading label: title-large less 2 px in primary, 8 px below the section gap, aligned with the names.
+                    // Heading label: 22 px (Android's group heading size) in primary, 8 px below the section gap, aligned
+                    // with the names.
                     if row.section-start: Text {
                         x: 4px;
                         y: parent.section-gap + 8px;
                         text: row.heading;
-                        font-size: Theme.title-large - 2px;
+                        font-size: 22px;
                         color: Theme.primary;
                     }
                     // Width probe: the name at the heavier selected weight, never shown. Every name is sized by this one,
@@ -316,7 +317,7 @@ export component FolderPickerPane inherits Rectangle {
                         visible: false;
                         wrap: no-wrap;
                         text: row.section-start ? "" : row.name;
-                        font-size: Theme.body-large - 2px;
+                        font-size: 16px;
                         font-weight: 500;
                     }
                     // Name label: plain text in the 48 px target, empty for heading rows.
@@ -328,7 +329,8 @@ export component FolderPickerPane inherits Rectangle {
                         wrap: no-wrap;
                         overflow: elide;
                         text: row.section-start ? "" : row.name;
-                        font-size: Theme.body-large - 2px;
+                        // 16 px, Android's folder name size; the width probe above uses the same size.
+                        font-size: 16px;
                         font-weight: parent.selected ? 500 : 400;
                         vertical-alignment: center;
                         color: parent.selected ? Theme.primary : Theme.on-surface;
