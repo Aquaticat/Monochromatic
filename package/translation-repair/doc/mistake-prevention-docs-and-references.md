@@ -312,3 +312,25 @@ The test finds the linter on the path that `mise` gives its tasks,
 so it runs under `mise run` and fails with the error of a missing program elsewhere.
 The linter is a `cargo:monochromatic-lint` tool the root `mise.toml` does not pin,
 so a newer version may find more than the one that last passed.
+The list now holds the family's `doc/audit` and `doc/troubleshooting` docs whose names do not start with
+`translation-repair` (ledger D35),
+each by its whole name.
+
+What the guard cannot read:
+a doc that quotes Rust source in a fence cannot pass,
+because the linter applies `rust/require-rustdoc` to fenced Rust,
+declares that rule unsuppressible
+and has no setting that exempts a quoted fence;
+the root configuration exempts standalone Rust under `doc/troubleshooting`
+but excludes the fences of Markdown files on purpose.
+The quote cannot be altered to add documentation comments,
+so these troubleshooting docs stay out of the list until the owner approves a configuration change:
+`cli-git-temporary-worktree-policy-inputs.md`,
+`mise-detached-worktree-trust.md`,
+`mise-inline-node-arguments.md`,
+`node-lookup-in-agent-command-context.md`,
+`oxlint-type-aware-cgroup-memory.md`
+and `forbidden-strings-builtin-rule-fixture-tokens.md`.
+A family doc that quotes Rust is therefore written so that its fences are the family's own code with documentation
+comments,
+or it holds the quote as a plain text block.
