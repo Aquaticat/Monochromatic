@@ -251,6 +251,68 @@ await describe({
       },
     },),
     it({
+      name: 'CARRIES the claims the repair panel accepted to the polish WRITERS as well as the gate (ledger B805: '
+        + 'the writers rewrote the base without the evidence the gate then judged them against), and a slice with '
+        + 'none shows its writers no such block',
+      fn: async () => {
+        /**
+         Polishes one slice and returns the writers' sheets.
+
+         @param note - claims the panel accepted, none left out
+         @returns Every sheet the refiner was sent
+         */
+        async function refinerSheetsWith(
+          { note, }: { readonly note?: string; },
+        ): Promise<readonly string[]> {
+          /** Every sheet the polish sent, by reply schema. */
+          const sheetsBySchema = new Map<string, readonly string[]>();
+          await applyFinalPolish({
+            client: recordingClient({ gateSheets: [], sheetsBySchema, },),
+            settlement: {
+              terminal: 'consolidated',
+              text: 'The tabby spent the whole afternoon napping in the warm window.',
+              floor: { kind: 'proposals', validModelIds: [], },
+              verdicts: [],
+              rewrapped: false,
+              demoted: false,
+              findings: [],
+            },
+            subject: {
+              sourceText: '虎斑猫整个下午都在温暖的窗边打盹。',
+              incumbentText: 'The tabby dozed by the warm window all afternoon long.',
+              ...((note === undefined) ? {} : { acceptedRepairClaimsNote: note, }),
+            },
+            lineStructured: false,
+            sliceIndex: 2,
+            polishConfig: {
+              refinerModelIds: [ROSTER[0],],
+              judgeModelIds: ROSTER,
+              gateModelIds: ROSTER,
+              declaredNames: [],
+              definitions: '',
+            },
+            eligible: true,
+            signal: AbortSignal.timeout(HANG_STOP_MS,),
+            perCallTimeoutMs: HANG_STOP_MS,
+            l: tagged({ tag: 'polish-writer-claims-test', },),
+            stageSettings: SCRIPTED_STAGE_SETTINGS,
+          },);
+          return sheetsBySchema.get('refine_report',) ?? [];
+        }
+        const withClaims = await refinerSheetsWith({ note: REPAIR_CLAIMS_NOTE, },);
+        const without = await refinerSheetsWith({},);
+        expect(withClaims.length,).toBeGreaterThan(0,);
+        expect(withClaims.every(function carriesNote(sheet,): boolean {
+          return sheet.includes(REPAIR_CLAIMS_NOTE,);
+        },),).toBe(true,);
+        // THE CONTROL REACHES THE WRITER TOO, or "no such block" would hold of no sheet at all.
+        expect(without.length,).toBeGreaterThan(0,);
+        expect(without.some(function mentions(sheet,): boolean {
+          return sheet.includes('REPAIR PANEL CLAIMS ACCEPTED',);
+        },),).toBe(false,);
+      },
+    },),
+    it({
       name: 'REFUSES a polish that lands on a disputed wording (ledger B29): the consolidation refuses the '
         + 'archive\'s disputed reading as standing, lane offer and proposal, and the polish ran after it '
         + 'without the list',

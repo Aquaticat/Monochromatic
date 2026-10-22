@@ -22,6 +22,7 @@ import {
   buildResolutionMessages,
 } from '@monochromatic-dev/translation-repair-adjudication';
 import {
+  acceptedRepairClaimsNote,
   buildAbsoluteNaturalnessReviewMessages,
   buildCoverageMessages,
 } from '@monochromatic-dev/translation-repair-archive';
@@ -47,6 +48,15 @@ import { judgeSheets, } from './rendered-sheets-judges.test-fixture.ts';
 import { slateSheets, } from '@monochromatic-dev/translation-repair-repair/ts/rendered-sheets-slates.test-fixture.ts';
 
 export type { RenderedSheet, } from '@monochromatic-dev/translation-repair-repair/ts/rendered-sheets-texts.test-fixture.ts';
+
+/**
+ The claims the repair panel accepted for the invented slice, written by the
+ builder production uses (ledger B731), which the polish gate and the polish
+ writers are both shown (ledger B805).
+ */
+export const REPAIR_CLAIMS: string = acceptedRepairClaimsNote({
+  claims: ['fluency/grammar minor: the narration is told in the present',],
+},);
 
 //region Rendered sheets
 // EVERY MODEL-FACING SHEET, rendered once with invented cat fixtures, so a
@@ -103,6 +113,17 @@ export function renderedSheets(): readonly RenderedSheet[] {
     referenceContext: REFERENCES,
   },);
   /**
+   Polish writer exchange, which production gives the claims the repair panel
+   accepted for the slice (ledger B805), whose messages the sheet joins.
+   */
+  const polishRefinePlan = buildRefineMessages({
+    sourceText: SOURCE,
+    envelopes: [ARCHIVE_PARAGRAPH_ENVELOPE,],
+    identityContext: IDENTITY,
+    referenceContext: REFERENCES,
+    acceptedRepairClaimsNote: REPAIR_CLAIMS,
+  },);
+  /**
    Translate writer exchange, whose messages the sheet joins.
    */
   const translatePlan = buildTranslateMessages({
@@ -157,6 +178,12 @@ export function renderedSheets(): readonly RenderedSheet[] {
       name: 'refiner',
       text: joined({
         messages: refinePlan.messages,
+      },),
+    },
+    {
+      name: 'polish refiner',
+      text: joined({
+        messages: polishRefinePlan.messages,
       },),
     },
     {
@@ -227,6 +254,7 @@ export function renderedSheets(): readonly RenderedSheet[] {
             lineStructured: false,
             identityContext: IDENTITY,
             referenceContext: REFERENCES,
+            acceptedRepairClaimsNote: REPAIR_CLAIMS,
           },
         },),
       },),

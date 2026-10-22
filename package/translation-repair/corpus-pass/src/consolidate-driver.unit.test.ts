@@ -2758,8 +2758,9 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'KEYS A SLICE THE PANEL ACCEPTED CLAIMS ON under those claims, and every polish gate sheet of it '
-            + 'carries them, where a slice with none keys as before and its gate sheets never mention them',
+          name: 'KEYS A SLICE THE PANEL ACCEPTED CLAIMS ON under those claims, and every polish gate sheet and '
+            + 'every polish writer sheet of it carries them, where a slice with none keys as before and neither '
+            + 'mentions them (ledger B805)',
           fn: async () => {
             /** Note the panel's accepted claim is written as. */
             const note = 'REPAIR PANEL CLAIMS ACCEPTED: (1) accuracy/mistranslation minor: the nap is softened.';
@@ -2771,7 +2772,11 @@ await describe({
              */
             async function drive(
               { notes, }: { readonly notes?: ReadonlyMap<number, string>; },
-            ): Promise<{ readonly keys: readonly string[]; readonly gateSheets: readonly string[]; }> {
+            ): Promise<{
+              readonly keys: readonly string[];
+              readonly gateSheets: readonly string[];
+              readonly writerSheets: readonly string[];
+            }> {
               /** Every key the driver asked the cache for. */
               const keys: string[] = [];
               /** Everything each call sent. */
@@ -2793,6 +2798,9 @@ await describe({
                 gateSheets: sheets.filter(function isGate(sheet,): boolean {
                   return sheet.includes('consolidation_polish_gate',);
                 },),
+                writerSheets: sheets.filter(function isWriter(sheet,): boolean {
+                  return sheet.includes('refine_report',);
+                },),
               };
             }
             const withClaims = await drive({ notes: new Map([[0, note,],],), },);
@@ -2803,6 +2811,15 @@ await describe({
             expect(withClaims.gateSheets.every(function carries(sheet,): boolean {
               return sheet.includes(note,);
             },),).toBe(true,);
+            expect(withClaims.writerSheets.length,).toBeGreaterThan(0,);
+            expect(withClaims.writerSheets.every(function carries(sheet,): boolean {
+              return sheet.includes(note,);
+            },),).toBe(true,);
+            // THE CONTROL REACHES THE WRITER TOO, or "never mentions" would hold of no sheet at all.
+            expect(without.writerSheets.length,).toBeGreaterThan(0,);
+            expect(without.writerSheets.some(function carries(sheet,): boolean {
+              return sheet.includes('REPAIR PANEL CLAIMS ACCEPTED',);
+            },),).toBe(false,);
             // THE CONTROL REACHES THE GATE TOO, or "never mentions" would hold of no sheet at all.
             expect(without.gateSheets.length,).toBeGreaterThan(0,);
             expect(without.gateSheets.some(function carries(sheet,): boolean {

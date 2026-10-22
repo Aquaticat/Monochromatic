@@ -2,7 +2,9 @@
  Guards ledger B28: a sheet whose text names the DECLARED NAMES block carries
  the page's declared names, and one naming CITED REFERENCES carries the cited
  pages, as the rendered-sheets fixtures render every sheet with the context
- production gives it.
+ production gives it. Ledger B805 adds the REPAIR PANEL CLAIMS ACCEPTED block:
+ the polish gate and the polish writers are both shown the claims the repair
+ panel accepted, and a sheet that names the block carries them.
 
  WHY THIS EXISTS. The house rules every writer and judge carries tell it to
  read a pronoun line and footnote vocabulary in a DECLARED NAMES block. The
@@ -23,7 +25,10 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { renderedSheets, } from './rendered-sheets.test-fixture.ts';
+import {
+  renderedSheets,
+  REPAIR_CLAIMS,
+} from './rendered-sheets.test-fixture.ts';
 import {
   IDENTITY,
   REFERENCES,
@@ -40,6 +45,11 @@ const DECLARED_NAMES = 'DECLARED NAMES';
 const CITED_REFERENCES = 'CITED REFERENCES';
 
 /**
+ Heading the block of accepted repair claims carries.
+ */
+const REPAIR_PANEL_CLAIMS = 'REPAIR PANEL CLAIMS ACCEPTED';
+
+/**
  Sheets that name the DECLARED NAMES block and rightly carry none, each with
  why.
  */
@@ -54,6 +64,18 @@ const WITHOUT_DECLARED_NAMES: Readonly<Record<string, string>> = {
  Sheets that name CITED REFERENCES and rightly carry none, each with why.
  */
 const WITHOUT_CITED_REFERENCES: Readonly<Record<string, string>> = {};
+
+/**
+ Sheets that name the REPAIR PANEL CLAIMS ACCEPTED block and rightly carry none, each with why.
+ */
+const WITHOUT_REPAIR_CLAIMS: Readonly<Record<string, string>> = {};
+
+/**
+ Sheets that must carry the accepted repair claims, because production gives them to the stage they are written for
+ (ledger B731 for the gate, B805 for the writers). Named here so the scan cannot pass over a sheet that lost the block
+ and with it the only mention of the heading.
+ */
+const MUST_CARRY_REPAIR_CLAIMS: readonly string[] = ['polish gate', 'polish refiner',];
 
 /**
  Whether a sheet carries a block's content as the model reads it: written out,
@@ -145,6 +167,30 @@ await describe({
       },
     },),
     it({
+      name: 'CARRIES THE ACCEPTED REPAIR CLAIMS on every sheet whose text names them, the exempt ones aside, and on the '
+        + 'polish gate and the polish writer whatever their text names (ledger B805)',
+      fn: async () => {
+        /**
+         Sheets that name the block at all, so an empty result means something.
+         */
+        const naming = renderedSheets().filter(function names(sheet,): boolean {
+          return sheet.text.includes(REPAIR_PANEL_CLAIMS,);
+        },);
+        expect(naming.length,).toBeGreaterThan(Object.keys(WITHOUT_REPAIR_CLAIMS,).length,);
+        expect(namingWithout({ heading: REPAIR_PANEL_CLAIMS, content: REPAIR_CLAIMS, exempt: WITHOUT_REPAIR_CLAIMS, },),)
+          .toEqual([],);
+        /**
+         Sheets production gives the claims that do not show them.
+         */
+        const lacking = MUST_CARRY_REPAIR_CLAIMS.filter(function lacksClaims(name,): boolean {
+          return !renderedSheets().some(function showsThem(sheet,): boolean {
+            return (sheet.name === name) && carries({ text: sheet.text, content: REPAIR_CLAIMS, },);
+          },);
+        },);
+        expect(lacking,).toEqual([],);
+      },
+    },),
+    it({
       name: 'EXEMPTS ONLY SHEETS THAT EXIST AND NAME THE BLOCK, so a renamed or reworded sheet does not keep an '
         + 'exemption it no longer needs',
       fn: async () => {
@@ -163,6 +209,9 @@ await describe({
           },),
           ...Object.keys(WITHOUT_CITED_REFERENCES,).filter(function staleReferences(name,): boolean {
             return !(byName.get(name,) ?? '').includes(CITED_REFERENCES,);
+          },),
+          ...Object.keys(WITHOUT_REPAIR_CLAIMS,).filter(function staleClaims(name,): boolean {
+            return !(byName.get(name,) ?? '').includes(REPAIR_PANEL_CLAIMS,);
           },),
         ];
         expect(stale,).toEqual([],);
