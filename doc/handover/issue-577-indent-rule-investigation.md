@@ -69,6 +69,14 @@ adapter-wrapper retirement (PP4) superseded it.
 The record is
 `doc/troubleshooting/oxlint-typescript-semantic-bridge-epipe-teardown.md`.
 
+The 2026-10-22 GAP proposals from these sessions were all adopted
+through the question tool and landed in `AGENTS.md` (`70cc839d92`),
+with the two oversized adopted clauses split into fresh `TPF` and `TRV` rules (RLM).
+The measured landing record is `doc/planning/agents-md-gap-proposals.md`,
+corrected in `1a59666c68`
+after its first RLM claims proved word-half-only,
+with the commit-message numbers corrected as commit comment `206152288`.
+
 ## Findings
 
 Implementation size landed at 3,395 insertions and 165 deletions across 16 files (commits in "Commits"),
@@ -258,3 +266,7 @@ stayed out of the commit
   GFP-proven)
 - `docs(troubleshooting): record the no-arrow-function unparseable autofix incident and workaround` (`312d80e321`)
 - `docs(troubleshooting): record the semantic bridge EPIPE teardown failure mode` (`2c5478a8a2`)
+- `docs(planning): record the AGENTS.md gap proposals from the 2026-10-22 sessions` (`c6c9a3dcff`)
+- `docs(AGENTS.md): adopt the facade-probe, suite-reach, and bridge-exception tightenings` (`70cc839d92`,
+  `CLAUDE.md` regenerated via `mise run sync:files`)
+- `docs(planning): correct the gap-proposal RLM claims and record the landed split` (`1a59666c68`)
