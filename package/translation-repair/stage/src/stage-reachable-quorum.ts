@@ -22,6 +22,14 @@ import { rosterQuorumSize, } from './roster-quorum-size.ts';
 // that is not short closes on its own quorum, which is one voice for a seated
 // bench of one or two seats (after the run withholds seats, ledger B420);
 // the floor does not raise that.
+//
+// A BENCH LEFT WITH EXACTLY ITS QUORUM CLOSES ONE VOICE BELOW IT. Under the
+// rule of 2026-09-09 such a bench needed every live seat, so the straggler
+// grace never opened and one stream that held without content held the whole
+// round (ledger B809: seven seats, three dark, four needed of four). The
+// owner answered "Let the grace open" on 2026-10-22: the bench is marked
+// short and closes on one fewer, still never below the two-voice floor, so
+// three seats with one dark still need both live seats.
 
 /**
  Fewest heard voices a short bench may close on.
@@ -53,8 +61,9 @@ export type ReachableQuorum = {
   readonly benchQuorum: number;
 
   /**
-   Whether the reachable bench is short of that quorum, which is the only
-   case in which `needed` differs from `benchQuorum`.
+   Whether the reachable bench is short of that quorum, or holds exactly it
+   and so closes one voice below it; the only case in which `needed` differs
+   from `benchQuorum`.
    */
   readonly short: boolean;
 };
@@ -93,6 +102,14 @@ export function reachableQuorum(
    Voices the seated bench needs for a quorum.
    */
   const benchQuorum = rosterQuorumSize({ rosterSize: benchSize, },);
+  if (reachable === benchQuorum && benchQuorum > MIN_STAGE_VOICES) {
+    return {
+      needed: benchQuorum - 1,
+      reachable,
+      benchQuorum,
+      short: true,
+    };
+  }
   if (reachable >= benchQuorum) {
     return {
       needed: benchQuorum,

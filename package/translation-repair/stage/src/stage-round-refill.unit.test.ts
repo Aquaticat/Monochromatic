@@ -398,11 +398,17 @@ await describe({
       fn: async () => {
         /** Call count per seat. */
         const calls: Record<string, number> = {};
-        /** Four seats: one refused, one failing, two answering. */
+        /**
+         Four seats: one refused, two failing, one answering. TWO FAILING
+         SINCE 2026-10-22: the refusal leaves three of the six-seat bench in
+         reach, exactly its quorum, so the bench closes on two voices ("Let
+         the grace open"), and two answering seats would close it in the
+         first round with no seat lost in transport left to re-ask.
+         */
         const roles = new Map<RosterModelId, SeatRole>([
           [SEAT_HYPER_OPENROUTER_VISION_EDITOR, 'refused',],
           [SEAT_SYNTHETIC_VISION_NO_OPENROUTER, 'failing',],
-          [SEAT_SYNTHETIC_VISION_WITHHELD, 'fast',],
+          [SEAT_SYNTHETIC_VISION_WITHHELD, 'failing',],
           [SEAT_SYNTHETIC_TEXT_EVERYWHERE, 'fast',],
         ],);
         await runWindowedRounds({

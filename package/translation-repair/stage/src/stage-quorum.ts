@@ -477,6 +477,13 @@ export async function gatherStageVoices<ValueT,>(
         // `pending.slice(outcomes.length)`.
         reserve: pending.slice(asking.length,),
         heardNeeded: quorumNeeded - collected.length,
+        // SIZED AGAIN AT EVERY REFUSAL INSIDE THE ROUND, not only between
+        // rounds: round 0 is sized before the router has named a seat, and a
+        // bench its refusals leave with exactly its quorum closes one voice
+        // below it (owner, 2026-10-22, "Let the grace open").
+        heardNeededAfterRefusals: function neededAfter(refused,): number {
+          return quorumNeededWith(unreachableSeats.size + refused,) - collected.length;
+        },
       },);
       /* oxlint-enable no-await-in-loop */
       for (const { modelId, } of outcomes)
