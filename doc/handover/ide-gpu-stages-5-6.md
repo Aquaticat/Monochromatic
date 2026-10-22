@@ -1086,4 +1086,21 @@ last wheel event.
 
 ### Gates
 
-Product snapshot `9250c1981a` (later commits change documents only), one run each; results below.
+Product snapshot `628fb36f39` (later commits change documents only), one run each of `build`,
+`inspect:no-software-renderer`, `test` (801 passed, 1 skipped), `test:bin` and `test:native -- 'all()'`
+(288 passed, 5 skipped); `lint` ran on the same tree before the commit (0 findings).
+The first snapshot, `9250c1981a`, failed two native tests, so the gates ran again on a new snapshot (no rerun):
+
+- `source_typography_repaints_without_changing_selection` failed every time it ran alone:
+  the frame it kept first was taken before the window showed the first tile (a tile of a new shape is shown by the
+  frame after the one that drew it), so its comparison with a later frame of the same weight failed;
+  the test now takes a frame first.
+- `a_2000_px_window_gets_a_tile_of_textures_within_the_devices_limit_at_both_scales` got 4 textures where 2 were
+  expected, once in the full run and not in 3 runs alone: the measurement pass was late under the load of 21 parallel
+  tests.
+  Holding the pass reproduced a tile past three views (see "Limits that the change brings"), the test now waits for
+  the pass.
+- Lint found 89 breaks of the documentation line rule in new comments, a file of 332 code lines (limit 300; the
+  underline frame moved to `src/tile_scene/frame.rs`), and a closure that `show_slices` took (it now returns the new
+  list); all fixed on the new snapshot.
+- The source guards were run on the earlier snapshot; the refactor moved no anchor they use.
