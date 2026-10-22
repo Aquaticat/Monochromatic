@@ -82,16 +82,10 @@ type LineAllowance = {
 };
 
 /**
- Docs allowed past the limit, each at the size it has.
+ Docs allowed past the limit, each at the size it has. None now: the heading aligner plan, the last doc allowed, was
+ filed by subject into files that each stay within the limit.
  */
-const ALLOWANCES: readonly LineAllowance[] = [
-  {
-    path: join('doc', 'planning', 'wire-the-heading-aligner.md',),
-    lines: 1_509,
-    reason: 'one investigation of seven attempts whose later sections point at earlier ones by position; cut at any '
-      + 'attempt, four of those pointers would lead into another file',
-  },
-];
+const ALLOWANCES: readonly LineAllowance[] = [];
 
 /**
  Name stems whose files keep a counter in their names, with the reason. None now: the history archive, the last
