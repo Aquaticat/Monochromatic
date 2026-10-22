@@ -96,7 +96,7 @@ femtovg 0.27.0.
 - Slint sets no locale on text (`FallbackKey` without a locale, `fontique-0.11.1/src/fallback.rs:200`),
   and fontique asks fontconfig with a character-set pattern and no language
   (`fontique-0.11.1/src/backend/fontconfig.rs:735` to `762`), so nothing in the process says Japanese or Chinese.
-  Which CJK file results is a fontconfig answer; it is recorded in the section "CJK fonts" once measured.
+  Which CJK file results is a fontconfig answer; it is recorded in the section "CJK fonts".
 - Not traced: the Skia renderer, `transform-scale` text, and the C-side behavior of fontconfig.
 
 ### The variable-font axes are not the cause
@@ -227,6 +227,40 @@ All measured on this machine.
   Those captures are at scale 1 on a 600 by 800 canvas, not the human's scale 3 panel, so they show the proportions
   and not the physical size.
 
+### CJK fonts
+
+Measured by a subagent in the repository's nested compositor (`--headless --scale 3`, the built release binary,
+an invented library of three silent one-second files named with 直骨令刃海角, クリーチャー and a Latin name, a transient
+unit capped at 4 GiB and 200 percent CPU), by `/proc/<pid>/maps`, `strace --follow-forks --trace=openat` and an
+image match (ImageMagick RMSE on thresholded ink, lower is closer) against Chromium renderings at 14 px, scale 3:
+- With `LANG=en_US.UTF-8`, which is what this machine's user manager has (`systemctl --user show-environment`),
+  the app draws both the Han string and the kana from
+  `/usr/share/fonts/google-droid-sans-fonts/DroidSansFallbackFull.ttf` (Droid Sans Fallback, a plain `.ttf`).
+  No `.ttc` and no Noto Sans CJK file is opened in the trace, and the maps hold no `NotoSansCJK` line.
+  RMSE for the Han string: Droid Sans Fallback 0.0326; Noto Sans CJK SC 0.1586, HK 0.1625, KR 0.1629, TC 0.1638,
+  JP 0.1678. For the kana: Droid 0.0269; every Noto Sans CJK face 0.0984.
+- With `LANG=ja_JP.UTF-8` the app maps `NotoSansCJK-Regular.ttc` and `-Medium.ttc` and no Droid file, and the Han glyphs
+  match the JP face best (0.0698; KR 0.0867). With `LANG=zh_CN.UTF-8` it maps the same two files and the Han glyphs
+  match the SC face best, with a weaker margin (0.1048 at weight 450 or 500; ambiguous at weight 400).
+- Chromium and Firefox draw untagged Han and kana with Noto Sans CJK SC; Android orders zh-Hans first in its
+  `fonts.xml` and draws Noto Sans CJK from `NotoSansCJK-Regular.ttc`.
+  So under the human's locale the desktop app's CJK glyphs come from a different font than every reference.
+- The Latin text is drawn from the Inter Variable embedded in the binary (`import "fonts/InterVariable.ttf"` in
+  `ui/app_window.slint`; the bytes occur at offset 3253407 of the release binary, and the file's SHA-256 equals the
+  installed `~/.local/share/fonts/InterVariable.ttf`), not from a system file.
+  This is why Chromium's local Inter and the app's embedded Inter agree.
+- The fontconfig CLI is not what the app calls: a C reproduction of fontique's call (character-set pattern, no language,
+  `FcConfigSubstitute` then `FcFontMatch`) returns Noto Sans CJK SC under `LANG=en_US`, yet the app draws Droid.
+  Why Droid wins is not determined.
+  Speculation: the app takes the first family in the generic sans-serif list that covers the character
+  (`fontique-0.11.1/src/collection/query.rs:121`), which is a sort result under the process locale,
+  and Droid Sans Fallback appears there ahead of the script fallback; the locale-dependent change of font matches this
+  reading and does not prove it.
+- Not measured: the glyph size of Droid Sans Fallback against Noto Sans CJK at the same em; the human's real session
+  locale beyond the user manager's `LANG` (the app started from the desktop may differ).
+  Whether the CJK difference contributes to the feel is not tested: the human named Latin text in their screenshot
+  ("Music", "A", "ABM", "32ki", "Creature").
+
 ## Hypotheses
 
 Each is scored against the target (0.91 for the titles, 0.875 for the names and track titles).
@@ -248,7 +282,8 @@ Measured and null are results of an instrument; speculation is not.
 - Light text on a dark ground looks larger or bolder (irradiation): speculation, no instrument here; the research note
   looks for a primary source.
 - The within-app hierarchy: speculation, see the section "The within-app scale".
-- Mixed-script lines: speculation until the CJK section below is filled.
+- Mixed-script lines: the desktop's CJK glyphs come from Droid Sans Fallback under `LANG=en_US.UTF-8` while every
+  reference uses Noto Sans CJK; the effect on the feel is speculation, and the five texts the human named are Latin.
 
 The only instrument that can measure perceived size is the human; a controlled test on them is proposed in
 "Not exercised".
