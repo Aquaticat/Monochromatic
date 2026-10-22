@@ -452,7 +452,8 @@ and it is the only one that fails under the break.
 
 ### Numbers, pre-registered before the field existed and reproduced through the built artifact
 
-Audit subjects, all 271:
+Audit subjects,
+all 271:
 undecided 227,
 displaced by the consolidation 20,
 survives 10,
@@ -462,7 +463,8 @@ On the 14 decided artifacts that is 34 displaced of 44 subjects,
 which supersedes the earlier "5 of 6" sizing taken from a hand count of
 `Acheron` and `Weideriche_`.
 
-Damage regions, all 378,
+Damage regions,
+all 378,
 read through `collectShippedRegionsV2` rather than a reimplementation of it:
 undecided 306,
 displaced by the consolidation 38,
@@ -535,7 +537,8 @@ which all four pool consumers call:
 `attribution-read.ts`.
 Its message already states the rationale item 4 was going to add:
 a rate over zero entries is
-"a denominator quietly shrunk, here all the way to nothing,
+"a denominator quietly shrunk,
+here all the way to nothing,
 while the number above it still renders".
 
 Proved at the user boundary rather than inferred.
@@ -557,7 +560,8 @@ and a disposition the pipeline never writes each raise
 rather than shrinking the count.
 The reader's own docblock records why:
 both lists "used to be read off the artifact root,
-where version 2 writes neither, and both answered their absence with an empty list".
+where version 2 writes neither,
+and both answered their absence with an empty list".
 
 What that leaves is a run whose repair lane genuinely accepted nothing.
 The population holds one artifact with repair status `unchanged`,
