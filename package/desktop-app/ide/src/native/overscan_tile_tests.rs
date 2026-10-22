@@ -30,7 +30,7 @@ use std::{
 const LINES: usize = 5000;
 /// Offset the reader starts from,
 /// well away from both ends of the document.
-const START: f32 = 40_000.0;
+pub(super) const START: f32 = 40_000.0;
 /// Logical pixels of one small wheel step.
 const STEP: f32 = 3.0;
 /// Longest wait for the tile worker to answer one re-center;
@@ -39,7 +39,7 @@ const PATIENCE: Duration = Duration::from_secs(10);
 
 /// Five thousand numbered lines,
 /// each ending with a line feed.
-fn document() -> String {
+pub(super) fn document() -> String {
     let mut text = String::new();
     for line in 0..LINES {
         text.push_str(&format!("line {line}\n"));
@@ -49,7 +49,7 @@ fn document() -> String {
 
 /// Open a shown window on `text`,
 /// with production callbacks and one completed render.
-fn open(text: &str) -> (AppWindow, Rc<RefCell<State>>) {
+pub(super) fn open(text: &str) -> (AppWindow, Rc<RefCell<State>>) {
     install_gpu_platform();
     let window = AppWindow::new().expect("headless native source window");
     let state = Rc::new(RefCell::new(State::new(text, None)));

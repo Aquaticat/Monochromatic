@@ -29,8 +29,9 @@ pub(super) use ide_app::shaped_text::band_clip;
 use ide_app::wrap::has_wrap_width;
 /// ComponentHandle supplies weak references for callback lifetimes.
 use slint::ComponentHandle;
-/// Checked shared ownership remains confined to the UI thread.
-use std::{cell::RefCell, rc::Rc};
+/// Checked shared ownership remains confined to the UI thread,
+/// and the system clock times the scroll steps.
+use std::{cell::RefCell, rc::Rc, time::Instant};
 
 /// What:
 ///  The materialized tile spans this many view heights:
@@ -392,19 +393,14 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
             current.scale = factor;
         }
         // An offset nobody announced is the reader scrolling: by wheel, by touch, or by a drag past an edge.
-        if offset != current.offset {
+        let stepped = offset != current.offset;
+        if stepped {
             // `Some(...)` records this moment as the latest scroll.
             current.scrolled_at = Some(rows::quiet_now());
+            current.stepped_at = Some(Instant::now());
         }
         let changed = place_scrolled(&mut current, offset, viewport_width, height);
         drop(current);
-        if !changed {
-            // The tile stays, but the minimap's picture slides with the scroll and may need other bands.
-            if let Some(window) = weak.upgrade() {
-                super::minimap::note(&window, &state);
-            }
-            return;
-        }
         // What: `upgrade` returns `Some(window)` only while the window still exists.
         // Why: Closing the app must not keep a hidden window alive through callbacks.
         //
@@ -412,8 +408,21 @@ pub(super) fn bind_viewport(owner: &AppWindow, shared: &Rc<RefCell<State>>) {
         // ```ts
         // const window = weak.deref(); if (window) render(window, state);
         // ```
-        if let Some(window) = weak.upgrade() {
+        let Some(window) = weak.upgrade() else {
+            return;
+        };
+        if changed {
             render(&window, &state);
+        } else {
+            // The tile stays, but the minimap's picture slides with the scroll and may need other bands.
+            super::minimap::note(&window, &state);
+        }
+        if stepped {
+            // What: A tile that finished since the last step is swapped in here, after the step's own work.
+            // Why: The poll of the tile worker leaves it for this step, so the setters that swap it in run in
+            //      the frame this step draws, not in a frame of their own. State and window agree here, as
+            //      they do when the poll's timer fires.
+            tile::poll(&window, &state);
         }
     });
 }
