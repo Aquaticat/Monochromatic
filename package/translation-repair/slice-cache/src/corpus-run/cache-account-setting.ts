@@ -23,13 +23,37 @@ import { preSplitSourcesOf, } from './cache-account-sources.ts';
 //region Cache account setting
 // WHICH COMMIT SET A CACHE VERSION'S CURRENT VALUE (ledger M28): the newest
 // commit that added its declaration on balance, found by git's pickaxe and
-// then read against each candidate's diff.
+// then read against each candidate's diff. The pickaxe reads merges too
+// (ledger B814): a merge that meets two changes taking one number writes the
+// next in its resolution, and no ordinary commit holds that value.
 
 /**
  Logger for the audit's progress lines, apart from the report on stdout.
  */
 const auditLog = contextRoot({ tag: 'cache-account-audit', },);
 
+/**
+ Keeps each commit once, where it first stands: `git log -m` names a merge once
+ for each parent its diff against differs.
+
+ @param commits - commits as git printed them
+
+ @returns Them in the same order, each hash once
+
+ @example
+ ```ts
+ commitsOnceEach({ commits: [merge, merge, side,], },); // [merge, side]
+ ```
+ */
+function commitsOnceEach({ commits, }: { readonly commits: readonly SourceCommit[]; },): readonly SourceCommit[] {
+  /**
+   Each hash with its commit; a map keeps where a key was first set, and a later naming carries the same commit.
+   */
+  const byHash = new Map(commits.map(function keyed(commit,): readonly [string, SourceCommit] {
+    return [commit.hash, commit,];
+  },),);
+  return Array.from(byHash.values(),);
+}
 
 /**
  Finds the commit that set one version's current value.
@@ -63,22 +87,27 @@ export async function cacheVersionSetting(
   },
 ): Promise<SourceCommit> {
   /**
-   Commits whose diffs change how often the declaration appears, newest first;
-   a longer name or value holding it as a substring is sorted out by `declarationLineCounts` and `settingCommit`.
+   Commits whose diffs change how often the declaration appears, newest first, merges among them; git names a
+   merge once for each parent its diff against differs, so only its first naming is kept.
+   A longer name or value holding it as a substring is sorted out by `declarationLineCounts` and `settingCommit`,
+   as is a merge that only brought in what a side commit set, since its combined diff writes nothing of its own.
    */
-  const commits = cacheAccountCommitsOf({
-    output: await cacheAccountGitOutput({
+  const commits = commitsOnceEach({
+    commits: cacheAccountCommitsOf({
+      output: await cacheAccountGitOutput({
       args: [
         '-C',
         root,
         'log',
+        '-m',
         CACHE_ACCOUNT_COMMIT_FORMAT,
         '-S',
         version.declaration,
-        '--',
-        sources,
-        ...preSplitSourcesOf({ sources, },),
-      ],
+          '--',
+          sources,
+          ...preSplitSourcesOf({ sources, },),
+        ],
+      },),
     },),
   },);
   /**
