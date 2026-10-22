@@ -743,6 +743,22 @@ no verifier script in the repo; the asset check is `gh release view` plus `gh re
 commands. Not verified: installing the released APKs on a device or emulator (the signed release APKs; the emulator
 runs used debug-signed local builds of the same sources), and the desktop `--licenses` output of the 0.1.8 binaries.
 
+Phone report, 2026-10-22, branch `fix/music-player-android-deck-padding`: on the human's Pixel 6 (0.1.8, font scale
+1.5, display density 356) the deck had no side inset (clocks, slider and the 2 by 2 mode control touched the screen
+edges), the transport buttons sat 8 dp above the mode control, and the top bar showed "Music" with its caret under the
+word and a blank line above the actions. Causes: the deck's only horizontal padding was the crease clearance (0 dp on a
+phone), the stacked arrangement reused the 8 dp group gap, and `folderTitleTrigger` used `minLines = maxLines`, which
+since `fa7ab1b0cc` (2026-10-12, the second review) reserves two lines at large text and centers the caret against that
+box. The reservation was deliberate (the same commit says the deck and mode control no longer jump with folder-name
+length); its side effect on the caret was not caught because nothing rendered the bars at large text on a phone width.
+`PhoneBarsWiringTest` renders a 485 dp phone at font scale 1.5 and measured 0.0 dp (clock from the edge), 8.0 dp (gap)
+and 70.0 dp (trigger height) before the fix. Fix `c1353556da`: the deck gets a 16 dp gutter (`paneStartInset(16.dp)`, so
+a larger crease clearance still wins), the stacked transport and mode gap is 16 dp (a deviation from the accepted
+8 dp group gap, chosen on the human's report; veto-open), and the top bar title keeps its natural height (so its
+height now follows the folder name's line count). Unit suite and detekt pass. The half circle at the bottom left of the
+human's screenshots is a system overlay (it shows on the launcher too), not the app. The blank band above the seek
+row when nothing plays is the deck heading's reserved lines (same `minLines` mechanism, `TransportDeck.kt`); left as is.
+
 In flight 2026-10-18 after 0.1.6: the license polish branch `fix/music-player-license-polish` reported; its entry is
 "2026-10-18, license polish after 0.1.6" above. Merge, then release 0.1.7. Not started, mine: a quiet-host perfetto
 trace for the 10,000-track jank (p = 0.089, optional), re-check of issues 1079 to 1081 and 1069 (Depot trial CI
@@ -1014,6 +1030,12 @@ Decision numbers D122 to D130 are taken; the next free one is D131.
 ### Mistakes made in this effort, and what corrected them
 
 Read these before repeating them. Each one cost the human a correction.
+
+- Large-text layouts shipped without a render at a phone width (reported 2026-10-22 on 0.1.8): the model-level tests
+  and the fold emulator never reached the stacked deck or the two-line top bar, so a missing deck gutter, an 8 dp
+  control gap and a reserved title line went unseen for ten days. Layout rules that change with font scale need a
+  rendered test at a phone width and font scale 1.5 (`PhoneBarsWiringTest`), and a screenshot on a narrow device
+  before a release.
 
 - Briefing an emulator agent to point `ADB_VENDOR_KEYS` at the human's own adb key (2026-10-22) tripped the agent's
   permission classifier and cost the human several `/permissions` grants; a relayed approval is not the human's
