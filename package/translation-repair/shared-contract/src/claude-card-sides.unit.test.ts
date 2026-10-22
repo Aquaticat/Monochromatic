@@ -15,6 +15,10 @@ import {
 import {
   ANTHROPIC_SERVED_IDS,
   CLAUDE_CARDS,
+  CLAUDE_COMPLETION_CAP,
+  CLAUDE_FIRST_BYTE_ALLOWANCE_MS,
+  CLAUDE_FLOOR_TOKENS_PER_SECOND,
+  claudeCallDeadlineMs,
   COMPLETION_CAP,
   HAIKU_5_5_PRICES,
   SONNET_5_5_PRICES,
@@ -50,6 +54,20 @@ await describe({
           expect(CLAUDE_CARDS[id].completionCap,).toBe(32_000,);
           expect(COMPLETION_CAP[id],).toBe(32_000,);
         }
+      },
+    },),
+
+    it({
+      name: 'SIZES THE CLAUDE CALL DEADLINE FROM THE COMPLETION CAP (R1): the cap at the floor rate of 80 tokens a '
+        + 'second, 400 s for 32,000 tokens, plus a 60 s allowance for the prompt and the first byte, 460,000 ms; a '
+        + 'smaller ceiling asks for less, and the cap, the rate and the allowance are the exported constants',
+      fn: async () => {
+        expect(CLAUDE_COMPLETION_CAP,).toBe(32_000,);
+        expect(CLAUDE_FLOOR_TOKENS_PER_SECOND,).toBe(80,);
+        expect(CLAUDE_FIRST_BYTE_ALLOWANCE_MS,).toBe(60_000,);
+        expect(claudeCallDeadlineMs({ maxTokens: CLAUDE_COMPLETION_CAP, },),).toBe(460_000,);
+        expect(claudeCallDeadlineMs({ maxTokens: 800, },),).toBe(70_000,);
+        expect(claudeCallDeadlineMs({ maxTokens: 1, },),).toBe(60_013,);
       },
     },),
 
