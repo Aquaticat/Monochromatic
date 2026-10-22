@@ -23,6 +23,7 @@ import {
 import {
   createDirectClient,
   type DirectRoute,
+  withoutRefusedKeyBody,
 } from './direct-client.ts';
 import {
   DIRECT_COST_UNREPORTED,
@@ -333,7 +334,7 @@ export function createDeepSeekClient(
      */
     const reply = await exchangeWithRetry({
       provider: 'deepseek',
-      transport,
+      transport: withoutRefusedKeyBody({ transport, },),
       exchange: {
         url: deepSeekBalanceUrlFor({ baseUrl, },),
         label: 'balance',

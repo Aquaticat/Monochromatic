@@ -19,6 +19,8 @@ import {
   type ExtractedCompletion,
   formatUsageNote,
   type ModelTransport,
+  type TransportExchange,
+  type TransportReply,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { armCallDeadline, } from './call-deadline.ts';
 import type {
@@ -156,6 +158,43 @@ function fingerprintNoteOf({ bodyText, }: { readonly bodyText: string; },): stri
 }
 
 /**
+ Status a provider answers when it rejects the credential its request carried.
+ */
+const HTTP_UNAUTHORIZED = 401;
+
+/**
+ Wraps a transport so a 401 reaches the caller without the provider's words.
+
+ A PROVIDER'S REFUSAL OF A KEY MAY ECHO A FRAGMENT OF IT (DeepSeek's documented 401 shows the key's last four
+ characters), and the transport's mask finds whole credentials, not tails: masking every four-unit piece of a key would
+ rewrite ordinary words in the answers that carry no refusal. The status alone says everything the router and an
+ operator act on (the provider is held out and the credential renewed), so the body is dropped.
+
+ @param transport - transport the exchange would otherwise go over
+
+ @returns Transport answering the same, with an empty body on a 401
+
+ @example
+ ```ts
+ const guarded = withoutRefusedKeyBody({ transport: fetchTransport, },);
+ ```
+ */
+export function withoutRefusedKeyBody({ transport, }: { readonly transport: ModelTransport; },): ModelTransport {
+  return async function wordlessOnRefusedKey(exchange: TransportExchange,): Promise<TransportReply> {
+    /**
+     Reply as the wire answered it.
+     */
+    const reply = await transport(exchange,);
+    if (reply.status !== HTTP_UNAUTHORIZED)
+      return reply;
+    return {
+      ...reply,
+      bodyText: '',
+    };
+  };
+}
+
+/**
  Client surface of a direct provider: the shared one every route has.
 
  @example
@@ -204,6 +243,11 @@ export function createDirectClient(
     readonly retryPolicy?: RetryPolicy;
   },
 ): DirectClient {
+  /**
+   Transport that gives a refused key's 401 back without the provider's words.
+   */
+  const guardedTransport = withoutRefusedKeyBody({ transport, },);
+
   /**
    Per-model limiter, created lazily for each model (`per-model-limiter.ts`).
    */
@@ -322,7 +366,7 @@ export function createDirectClient(
        */
       const reply = await exchangeWithRetry({
         provider: route.provider,
-        transport,
+        transport: guardedTransport,
         exchange: {
           url: route.chatUrl,
           label: servedId,

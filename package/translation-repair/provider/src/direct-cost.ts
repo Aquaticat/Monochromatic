@@ -68,9 +68,14 @@ export function deepSeekCostOf(
     return DIRECT_COST_UNREPORTED;
 
   /**
-   Prompt tokens served from the cache, none where the block named none.
+   Prompt tokens served from the cache, none where the block named none, and
+   never more than the prompt held: a count past it is the wire's inconsistency,
+   and the prompt count is the one both prices are quoted against.
    */
-  const hitTokens = split.hitTokens ?? 0;
+  const hitTokens = Math.min(
+    split.hitTokens ?? 0,
+    usage.prompt_tokens,
+  );
 
   /**
    Prompt tokens not served from the cache: as named, else what the cache
@@ -125,15 +130,20 @@ export function xiaomiCostOf(
     return DIRECT_COST_UNREPORTED;
 
   /**
-   Prompt tokens not served from the cache.
+   Prompt tokens served from the cache, never more than the prompt held.
    */
-  const missTokens = Math.max(
-    0,
-    usage.prompt_tokens - cachedTokens,
+  const hitTokens = Math.min(
+    cachedTokens,
+    usage.prompt_tokens,
   );
 
+  /**
+   Prompt tokens not served from the cache.
+   */
+  const missTokens = usage.prompt_tokens - hitTokens;
+
   return (
-    (cachedTokens * card.promptCacheHitUsdPerMillion)
+    (hitTokens * card.promptCacheHitUsdPerMillion)
       + (missTokens * card.promptCacheMissUsdPerMillion)
       + (usage.completion_tokens * card.completionUsdPerMillion)
   ) / PRICE_UNIT_TOKENS;
