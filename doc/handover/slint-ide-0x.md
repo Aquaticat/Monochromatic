@@ -1657,7 +1657,51 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     the annotation stability tests (not reproduced), the caret test (fixed by inference only), the stacking branch
     measured only on the one-texture path (no run at a window tall enough to need more than one texture), the late
     tiles B 2 of 140 against A 0 of 140 (cause unknown), dense-selection cost, the blind spot for a chunk shifted by a
-    whole line, and the 15 other `.mjs` files in `bin/` (a conversion of all of them is a decision for the owner).
+    whole line, and the 15 other `.mjs` files in `bin/`.
+    Owner decision of 2026-10-22 (question "convert the 15 other `.mjs` files?", answer "Convert all 15
+    (Recommended)"): convert them to TypeScript like the first 17. Running: the second conversion agent (Sonnet, own
+    worktree off `origin/main`, branch push only; brief quotes `NLG`, `NLD`, `RXI`, `NQH`, `FHU`; converts
+    `inspect-source-guards` in its own commit and merges `origin/main` before it reports, because other sessions edit
+    that file; reports real line counts). On its report: verify the diff, the compared outputs and the line counts
+    myself, merge in a scratch tree (the guards file may conflict again: keep main's semantic changes), gates once
+    (`lint`, `test:bin` 71, `test`), prove two or three guards in a disposable copy because the guards script changes,
+    push, clean up, add a LANDED block here and a note on issue 1794.
+    Owner request of 2026-10-22: "Please setup gh releases CI." Existing state I found: the music player has
+    `.github/workflows/music-player-release.yml` (decision `doc/decision/music-player-releases.md`), `forbidden-strings`
+    has binary releases inside `cargo-publish.yml` (`build-binary`, `create-release`), and the IDE (`publish = false`,
+    0.1.0) has no release path. CORRECTION, my error: I first wrote here and told the owner in the question that the
+    nested compositor was only published to crates.io and that `mise` built it from source. That was wrong. The
+    compositor has had GitHub releases since 0.1.2 (`gh release list` shows seven, v0.1.2 to v0.6.1, all immutable and
+    not pre-releases, each with x86_64 and aarch64 gnu `.tar.gz` archives), `nws-build-binary` and `nws-create-release`
+    exist since `6c0c5de42c`, `[package.metadata.binstall]` is in its `Cargo.toml`, and a cargo-binstall probe finds
+    the archive. I had read only grep lines of `cargo-publish.yml` and never the nws jobs. The owner's choice of "the
+    nested compositor binaries" rested on that wrong premise, and I told the owner so.
+    Question asked (which products): the owner chose both the IDE and the compositor binaries. Settled, adopted from the
+    music player decision without asking: version bump on `main` triggers, dispatch dry run defaults to true, every file
+    attested, immutable tags, one `gh release create` with all assets, pre-releases, first real release only with the
+    owner's go-ahead. Running: two Sonnet agents in their own worktrees, branch push only (an IDE workflow
+    `ide-release.yml` with its decision and runbook, Linux x86_64; compositor jobs added to `cargo-publish.yml` with
+    Linux x86_64 and arm64 archives and `[package.metadata.binstall]`, no version bump). A new workflow can only be
+    dispatched from `main`, so after each branch is verified and landed I dispatch a dry run
+    (`gh workflow run ... -f dry-run=true`), read the run, and send fixes back; no real release is cut without the
+    owner. Follow-up not done: switching the `mise` backend for the compositor to the prebuilt release.
+    Compositor agent handed back (branch `worktree-agent-aedec3def05fc4366`, tip `420b7ceb2e`, not on `main`): it found
+    the release jobs and binstall metadata already present (see the correction above) and only hardened them: a dry
+    run now builds every target, a smoke run and an archive verification step, licenses inside the archives, a
+    checksums file in the same `gh release create`, the release tag looked up first (job `nws-release-state`), the
+    release waits for the crates.io publish, runner `ubuntu-24.04` instead of `ubuntu-latest`, `--locked`. I read the
+    whole diff of the workflow and it matches its report. I dispatched a dry run on that branch
+    (`gh workflow run cargo-publish.yml --ref worktree-agent-aedec3def05fc4366 -f crate=monochromatic-nested-wayland-session -f dry-run=true`;
+    dry run: no crates.io upload, no attestation, no release). Result, run `39829260282`: success; `nws-detect`,
+    `nws-publish-crate` (the `cargo publish --dry-run` step), `nws-release-state` and both `nws-build-binary` jobs
+    (x86_64 on `ubuntu-24.04`, aarch64 on `ubuntu-24.04-arm`, so the arm64 build and smoke run are proved on a real
+    runner) succeeded, `nws-create-release` and every other crate's jobs were skipped. I downloaded the two archives:
+    each holds the binary, `README.md` and `LICENSES/GPL-3.0-or-later.txt` and `LGPL-3.0-or-later.txt`, and the
+    extracted x86_64 binary prints `monochromatic-nested-wayland-session 0.6.1`. LANDED, 2026-10-22: merge tip
+    `c6f9787ba1` on `origin/main`, ancestry confirmed; `actionlint` exits 0 on the merged workflow; the push started no
+    workflow run (the push path filter lists only `Cargo.toml` files). Not proved: the real release path (attestation,
+    the checksums file in `gh release create`, `nws-create-release` after `nws-publish-crate`), which only the next
+    real release exercises, and that release needs the owner's go-ahead. Agent worktree and branches removed.
     Stall pass agent `ae05d7039f46336dc` (started 2026-10-22, own worktree off `origin/main`, branch push only; brief
     quotes `NLG`, `NLD`, `RXI`, `NQH`): at least 60 alternating stall pairs (tree A = before the wake-up, tree B =
     `origin/main`) plus 30 A against A pairs for the spread; keeps the debug timeline of every stalled run and decides
