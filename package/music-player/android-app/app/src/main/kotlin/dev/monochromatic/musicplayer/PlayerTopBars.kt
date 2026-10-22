@@ -166,12 +166,13 @@ private fun folderTitleTrigger(
             },
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        // The title takes the lines it needs up to maxLines. Reserving maxLines with minLines centered the caret under
+        // a short name and left a blank line above the actions on a phone at large text (PhoneBarsWiringTest).
         Text(
             text = folderTitle,
             modifier = Modifier.weight(1f, fill = false),
             style = MaterialTheme.typography.titleMedium,
             maxLines = maxLines,
-            minLines = maxLines,
             overflow = TextOverflow.Ellipsis,
         )
         Icon(

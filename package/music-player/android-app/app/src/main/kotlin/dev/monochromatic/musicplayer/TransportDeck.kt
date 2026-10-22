@@ -139,6 +139,27 @@ private val DECK_VERTICAL_PADDING: Dp = 16.dp
 /** Vertical gap between the heading, seek row, transport row, and mode control. */
 private val DECK_GROUP_SPACING: Dp = 8.dp
 
+// What:     `private val DECK_HORIZONTAL_PADDING: Dp = 16.dp` names the deck's outer horizontal inset.
+// Why:      On a phone, with no crease, the deck had no side inset at all, so the clocks, the slider and the mode
+//           control touched the screen edges while the list rows and the top bar keep 16dp.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const DECK_HORIZONTAL_PADDING = 16;
+// ```
+/** Outer horizontal inset of the deck's content, equal to the list rows'; a larger crease clearance wins. */
+private val DECK_HORIZONTAL_PADDING: Dp = 16.dp
+
+// What:     `private val STACKED_CONTROL_SPACING: Dp = 16.dp` names the gap between stacked transport and mode groups.
+// Why:      At large text the transport buttons sit above the mode control, and at 8dp their outlines read as touching.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// const STACKED_CONTROL_SPACING = 16;
+// ```
+/** Vertical gap between the transport row and the mode control when they are stacked. */
+private val STACKED_CONTROL_SPACING: Dp = 16.dp
+
 // What:     `private val CONTROL_SPACING: Dp = 8.dp` names the horizontal gap in seek and transport rows.
 // Why:      The accepted deck spaces time labels, slider, and transport buttons at 8dp.
 //
@@ -1542,7 +1563,7 @@ private fun deckControlsGroup(
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(DECK_GROUP_SPACING),
+                        verticalArrangement = Arrangement.spacedBy(STACKED_CONTROL_SPACING),
                     ) {
                         transportControls(
                             playing = playing,
@@ -1600,9 +1621,14 @@ fun transportDeck(
             .windowInsetsPadding(WindowInsets.navigationBars)
             .verticalScroll(rememberScrollState())
             .padding(vertical = DECK_VERTICAL_PADDING)
-            // Content keeps clear of the crease on both sides, so it stays centered on the pane's axis (D18) while
-            // the background above still spans the whole pane.
-            .padding(horizontal = maxOf(paneStartInset(0.dp), paneEndInset(0.dp))),
+            // Content keeps its own gutter and clears the crease on both sides, so it stays centered on the pane's
+            // axis (D18) while the background above still spans the whole pane.
+            .padding(
+                horizontal = maxOf(
+                    paneStartInset(DECK_HORIZONTAL_PADDING),
+                    paneEndInset(DECK_HORIZONTAL_PADDING),
+                ),
+            ),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(DECK_GROUP_SPACING),
     ) {
