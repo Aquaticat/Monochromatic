@@ -340,7 +340,12 @@ await describe({
              The refusal raised after the shortest hold ended and every provider still read dry.
              */
             const afterWait = await refusalOfReading({
-              budgets: scriptedBudgets({ views: [ALL_DRY,], holds: { ...NO_HOLDS, synthetic: 5, }, neuralwatt, },).budgets,
+              budgets: scriptedBudgets({
+                views: [ALL_DRY,],
+                holds: NO_HOLDS,
+                holdsByAsk: [{ ...NO_HOLDS, synthetic: 5, }, NO_HOLDS,],
+                neuralwatt,
+              },).budgets,
             },);
             expect((afterWait as EveryProviderDryError).message,).toContain('after waiting 5ms',);
             expect((afterWait as EveryProviderDryError).message,).toContain('at 19:15:08 UTC',);
@@ -357,7 +362,8 @@ await describe({
             const afterWait = await refusalOfReading({
               budgets: scriptedBudgets({
                 views: [ALL_DRY,],
-                holds: { ...NO_HOLDS, synthetic: 5, },
+                holds: NO_HOLDS,
+                holdsByAsk: [{ ...NO_HOLDS, synthetic: 5, }, NO_HOLDS,],
                 neuralwatt: { kind: 'unanchored', },
                 neuralwattAfter: { reads: 2, day: { kind: 'at', msOfDay: 69_308_000, }, },
               },).budgets,

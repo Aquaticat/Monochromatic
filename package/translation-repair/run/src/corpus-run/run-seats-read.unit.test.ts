@@ -205,6 +205,31 @@ function viewClient(
 }
 
 /**
+ Holds that end once they have been waited out: the scripted holds on the first ask, none on any later one.
+
+ @param first - holds the first ask reads
+
+ @returns Accessor shaped as the run client's holds
+
+ @example
+ ```ts
+ const providerHolds = holdsThatEnd({ first: { ...NO_HOLDS, hyper: 40, }, },);
+ ```
+ */
+function holdsThatEnd(
+  { first, }: { readonly first: typeof NO_HOLDS; },
+): () => typeof NO_HOLDS {
+  /**
+   Asks made so far.
+   */
+  const asks = { count: 0, };
+  return function holdsNow(): typeof NO_HOLDS {
+    asks.count += 1;
+    return (asks.count === 1) ? first : NO_HOLDS;
+  };
+}
+
+/**
  Dryness views handed out in order, the last one repeated, counting reads.
 
  @param views - views in the order they are read
@@ -622,10 +647,12 @@ await describe({
             await expect(readJudgeSeats({
               client: viewClient({
                 providerDryness: stays.read,
-                providerHolds: () => ({
-                  ...NO_HOLDS,
-                  hyper: 40,
-                }),
+                providerHolds: holdsThatEnd({
+                  first: {
+                    ...NO_HOLDS,
+                    hyper: 40,
+                  },
+                },),
               },),
               phase: 'lanes',
               signal: new AbortController().signal,
@@ -810,7 +837,7 @@ await describe({
             const { unreachableWriters, } = await readPhaseSeats({
               client: viewClient({
                 providerDryness: stays.read,
-                providerHolds: () => ({ ...NO_HOLDS, hyper: 40, }),
+                providerHolds: holdsThatEnd({ first: { ...NO_HOLDS, hyper: 40, }, },),
               },),
               phase: 'page consistency',
               signal: new AbortController().signal,
@@ -1018,7 +1045,7 @@ await describe({
               promise: readPhaseSeats({
                 client: viewClient({
                   providerDryness: scriptedViews({ views: [ALL_DRY, ALL_DRY,], },).read,
-                  providerHolds: () => ({ ...NO_HOLDS, hyper: 40, }),
+                  providerHolds: holdsThatEnd({ first: { ...NO_HOLDS, hyper: 40, }, },),
                 },),
                 phase: 'lanes',
                 signal: new AbortController().signal,
