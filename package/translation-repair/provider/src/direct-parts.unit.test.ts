@@ -26,6 +26,7 @@ import {
   deepSeekMeterLevel,
   deepSeekShowsPictures,
   DIRECT_COST_UNREPORTED,
+  EveryProviderDryError,
   NOT_REPORTED,
   parseDeepSeekBalance,
   readEveryMeter,
@@ -293,6 +294,26 @@ await describe({
             expect(pick(['neuralwatt',],),).toMatchObject({ kind: 'deepseek', },);
             expect(pick(['neuralwatt', 'deepseek',],),).toMatchObject({ kind: 'hyper', },);
             expect(pick(['neuralwatt', 'deepseek', 'hyper',],),).toMatchObject({ kind: 'openrouter', },);
+          },
+        },),
+        it({
+          name: 'ENDS THE RUN from the policy itself when only Xiaomi reads wet and the model is not Xiaomi\'s, and '
+            + 'still sends Xiaomi\'s own model to Xiaomi',
+          fn: async () => {
+            const dryButXiaomi = { ...NONE_DRY, neuralwatt: true, synthetic: true, bedrock: true, deepseek: true,
+              hyper: true, openrouter: true, };
+            expect(function otherModel(): unknown {
+              return routeProviderFor({
+                reach: reachOf({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, }),
+                dry: dryButXiaomi,
+                saturated: NONE_DRY,
+              },);
+            },).toThrow(EveryProviderDryError,);
+            expect(routeProviderFor({
+              reach: reachOf({ modelId: SEAT_OPENROUTER_ONLY_CHECKER, }),
+              dry: dryButXiaomi,
+              saturated: NONE_DRY,
+            },),).toMatchObject({ kind: 'xiaomi', },);
           },
         },),
         it({

@@ -780,6 +780,39 @@ await describe({
     },),
 
     it({
+      name: 'ENDS THE RUN when every provider reads dry but Xiaomi, whose always-wet meter serves one model, and the '
+        + 'model asked is one Xiaomi does not serve: its wet reading buys nothing for this call',
+      fn: async () => {
+        const { callers, called, } = stubProviders({},);
+        const { budgets, } = stubBudgets({
+          dry: {
+            neuralwatt: true,
+            synthetic: true,
+            hyper: true,
+            bedrock: true,
+            deepseek: true,
+            xiaomi: false,
+            openrouter: true,
+          },
+        },);
+        const client = createRoutingClient({
+          callers,
+          budgets,
+          holdPollMs: 1,
+        },);
+
+        const outcome = await ask({
+          client,
+          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+        },);
+        if (!('thrown' in outcome))
+          throw new Error('a fleet dry for this model must end the call with a refusal',);
+        expect(outcome.thrown,).toBeInstanceOf(EveryProviderDryError,);
+        expect(called,).toEqual([],);
+      },
+    },),
+
+    it({
       name: 'REFUSES to re-route a failure that is not about budget',
       fn: async () => {
         const { callers, called, } = stubProviders({
