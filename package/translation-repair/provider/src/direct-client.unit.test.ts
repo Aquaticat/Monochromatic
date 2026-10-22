@@ -23,13 +23,17 @@ import {
   type TransportExchange,
   type TransportReply,
 } from '@monochromatic-dev/translation-repair-provider-stream';
-import { runSpendUsd, } from '@monochromatic-dev/translation-repair-shared-contract';
+import {
+  type RosterModelId,
+  runSpendUsd,
+} from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   createDeepSeekClient,
   createXiaomiClient,
   DeepSeekBalanceShapeError,
   DeepSeekModelNotServedError,
   isPaymentRefusal,
+  type ModelCaller,
   XiaomiModelNotServedError,
 } from '../dist/final/node/index.mjs';
 import {
@@ -176,6 +180,30 @@ function scripted(
 }
 
 /**
+ Asks the one invented question of the cat over a client.
+
+ @param client - client under test
+
+ @param modelId - roster model addressed
+
+ @returns The pending reply
+
+ @example
+ ```ts
+ const reply = await askCat({ client, modelId: SEAT_OPENROUTER_ONLY_CHECKER, },);
+ ```
+ */
+function askCat(
+  { client, modelId, }: { readonly client: Pick<ModelCaller, 'chatText'>; readonly modelId: RosterModelId; },
+): ReturnType<ModelCaller['chatText']> {
+  return client.chatText({
+    modelId,
+    messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
+    signal: SIGNAL,
+  },);
+}
+
+/**
  Body of the first exchange, parsed.
 
  @param exchanges - what the transport saw
@@ -282,13 +310,7 @@ await describe({
             },);
             const client = createDeepSeekClient({ apiKey: 'cat-key-deepseek', transport, retryPolicy: ONE_QUICK_RETRY, },);
 
-            const failure: unknown = await rejectionOf(async function askForTheFailure(): Promise<unknown> {
-              return await client.chatText({
-                modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
-                messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
-                signal: SIGNAL,
-              },);
-            },);
+            const failure: unknown = await rejectionOf(() => askCat({ client, modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, },),);
 
             expect(failure,).toBeInstanceOf(ProviderHttpError,);
             expect(isPaymentRefusal({ error: failure, },),).toBe(true,);
@@ -302,13 +324,7 @@ await describe({
             const { transport, exchanges, } = scripted({ replies: [{ status: 200, bodyText: '', },], },);
             const client = createDeepSeekClient({ apiKey: 'cat-key-deepseek', transport, },);
 
-            const failure: unknown = await rejectionOf(async function askForTheFailure(): Promise<unknown> {
-              return await client.chatText({
-                modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
-                messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
-                signal: SIGNAL,
-              },);
-            },);
+            const failure: unknown = await rejectionOf(() => askCat({ client, modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, },),);
 
             expect(failure,).toBeInstanceOf(DeepSeekModelNotServedError,);
             expect(exchanges.length,).toBe(0,);
@@ -408,24 +424,12 @@ await describe({
           fn: async () => {
             const spent = scripted({ replies: [{ status: 402, bodyText: '{"error":"Insufficient account balance"}', },], },);
             const client = createXiaomiClient({ apiKey: 'cat-key-xiaomi', transport: spent.transport, retryPolicy: ONE_QUICK_RETRY, },);
-            const refusal: unknown = await rejectionOf(async function askForTheFailure(): Promise<unknown> {
-              return await client.chatText({
-                modelId: SEAT_OPENROUTER_ONLY_CHECKER,
-                messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
-                signal: SIGNAL,
-              },);
-            },);
+            const refusal: unknown = await rejectionOf(() => askCat({ client, modelId: SEAT_OPENROUTER_ONLY_CHECKER, },),);
             expect(isPaymentRefusal({ error: refusal, },),).toBe(true,);
 
             const locked = scripted({ replies: [{ status: 200, bodyText: '', },], },);
             const other = createXiaomiClient({ apiKey: 'cat-key-xiaomi', transport: locked.transport, },);
-            const failure: unknown = await rejectionOf(async function askForTheFailure(): Promise<unknown> {
-              return await other.chatText({
-                modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
-                messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
-                signal: SIGNAL,
-              },);
-            },);
+            const failure: unknown = await rejectionOf(() => askCat({ client: other, modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, },),);
             expect(failure,).toBeInstanceOf(XiaomiModelNotServedError,);
             expect(locked.exchanges.length,).toBe(0,);
           },
@@ -439,13 +443,7 @@ await describe({
             },);
             const client = createXiaomiClient({ apiKey: 'cat-key-xiaomi', transport, requestsPerMinute: 2, },);
             expect(client.pace.waitMs(),).toBe(0,);
-            await Promise.all([1, 2,].map(async function askOnce(): Promise<unknown> {
-              return await client.chatText({
-                modelId: SEAT_OPENROUTER_ONLY_CHECKER,
-                messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
-                signal: SIGNAL,
-              },);
-            },),);
+            await Promise.all([askCat({ client, modelId: SEAT_OPENROUTER_ONLY_CHECKER, },), askCat({ client, modelId: SEAT_OPENROUTER_ONLY_CHECKER, },),],);
             expect(client.pace.waitMs(),).toBeGreaterThan(0,);
           },
         },),

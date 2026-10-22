@@ -57,11 +57,15 @@ import {
 // MODELLED ON `neuralwatt-client.ts`, minus the energy ledger: neither provider
 // meters by energy, and neither is reserved against before a call.
 //
-// NO REASONING OR THINKING PARAMETER, on either route: the owner's standing
-// instruction of 2026-08-25, whose one lift (2026-10-21, `reasoning_effort`) is
-// "only for NeuralWatt". Both models reason by default and put the reasoning in
-// `delta.reasoning_content`, which the stream reader drops (content is the
-// answer channel), so reasoning tokens are billed and never shown.
+// NO REASONING OR THINKING PARAMETER YET, on either route. The owner's
+// standing instruction of 2026-08-25 was lifted for NeuralWatt on 2026-10-21
+// (`reasoning_effort`), and on 2026-10-22 for DeepSeek direct, Xiaomi direct and
+// Anthropic as well: both of these routes are cleared for their documented
+// thinking parameters. None is sent until an effort bench has measured one, and
+// a value that disables thinking is never sent, here or anywhere. Both models
+// reason by default and put the reasoning in `delta.reasoning_content`, which
+// the stream reader drops (content is the answer channel), so reasoning tokens
+// are billed and never shown.
 //
 // NO PER-MODEL CEILING BY DEFAULT in this factory; the wrappers set what each
 // provider's documentation states (DeepSeek: 2,500 concurrent requests for
@@ -272,9 +276,10 @@ export function createDirectClient(
       /**
        Exactly what goes on the wire.
 
-       NO THINKING PARAMETER, NO REASONING EFFORT AND NO TOKEN BUDGET: the
-       owner's standing instruction of 2026-08-25, recorded in full at the
-       Synthetic body, and its one lift (2026-10-21) is for NeuralWatt alone.
+       NO THINKING PARAMETER, NO REASONING EFFORT AND NO TOKEN BUDGET YET: the
+       owner's instruction of 2026-08-25, recorded in full at the Synthetic
+       body, was lifted for this route on 2026-10-22, so a measured effort may
+       be sent later; a value that disables thinking is never sent.
        */
       const bodyJson = JSON.stringify({
         model: servedId,

@@ -48,8 +48,15 @@ All read or probed on 2026-10-22 unless stated.
   which the stream reader drops,
   and both send `:` comment lines,
   which it ignores.
-  Neither request carries a reasoning or thinking member:
-  the owner's standing instruction of 2026-08-25 lifts only for NeuralWatt.
+  Neither request carries a reasoning or thinking member for now:
+  the owner's standing instruction of 2026-08-25 was lifted for NeuralWatt on 2026-10-21
+  and,
+  on 2026-10-22,
+  for DeepSeek direct,
+  Xiaomi direct and Anthropic,
+  so both routes are cleared for their documented thinking parameters.
+  None is sent until an effort bench has measured one,
+  and a value that disables thinking is never sent.
 - DeepSeek reports `system_fingerprint` on every reply.
   The client writes it on the completion log line (encoded,
   bounded) as the one per-call evidence of the build.
