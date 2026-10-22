@@ -168,6 +168,8 @@ export function contestResponseFormat(
           'verdict',
           ...archiveRequired,
         ],
+        // CLOSED, as Anthropic's structured outputs require of every object and the other routes accept.
+        additionalProperties: false,
       },
     },
   };
