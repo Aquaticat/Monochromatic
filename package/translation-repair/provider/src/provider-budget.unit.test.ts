@@ -902,5 +902,46 @@ await describe({
         expect(reads,).toEqual({ quota: 1, credits: 1, openrouter: 1, },);
       },
     },),
+    it({
+      name: 'REPORTS THE NEURALWATT DAY TO A REFUSAL THAT ENDS THE RUN: off with no NeuralWatt client, unanchored '
+        + 'while its client has decided no day start, and the decided start once it has',
+      fn: async () => {
+        /** Stub providers with budget everywhere. */
+        const { synthetic, hyper, openrouter, } = stubProviders({},);
+        /** Energy reading the stub NeuralWatt client answers with. */
+        const energy = {
+          remainingWh: 500,
+          reckonedWh: 0,
+          dayStart: '2026-10-21T19:15:08.000Z',
+        };
+        /** The anchor the stub client has decided, none at first. */
+        const decided: { anchor: { readonly known: false; } | { readonly known: true; readonly msOfDay: number; }; } = {
+          anchor: { known: false, },
+        };
+        /** Budget view over no NeuralWatt client. */
+        const without = createProviderBudgets({ synthetic, hyper, openrouter, },);
+        /** Budget view over a stub NeuralWatt client. */
+        const withClient = createProviderBudgets({
+          neuralwatt: {
+            energy: async () => energy,
+            dayAnchor: () => decided.anchor,
+          },
+          synthetic,
+          hyper,
+          openrouter,
+        },);
+
+        expect(without.neuralwattReturn(),).toEqual({ kind: 'off', },);
+        expect(withClient.neuralwattReturn(),).toEqual({ kind: 'unanchored', },);
+        decided.anchor = {
+          known: true,
+          msOfDay: 69_308_000,
+        };
+        expect(withClient.neuralwattReturn(),).toEqual({
+          kind: 'at',
+          msOfDay: 69_308_000,
+        },);
+      },
+    },),
   ],
 },);

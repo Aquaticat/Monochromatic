@@ -237,5 +237,40 @@ await describe({
         },).length,).toBe(1,);
       },
     },),
+    it({
+      name: 'REPORTS THE DECIDED ANCHOR WITHOUT DECIDING ONE: unknown before any reading and while the quota is down, '
+        + 'then the day start\'s time of day once a reading has learned it, and no quota read is made by asking',
+      fn: async ctx => {
+        await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-retry-', },);
+        const { client, clock, exchanges, } = scriptedClient({
+          dir: scratch.path,
+          clockStart: START,
+          quota: [DOWN, GOOD,],
+        },);
+        /**
+         What the client reported it had decided, before any reading, after a failed one and after a good one.
+         */
+        const reported: ReturnType<typeof client.dayAnchor>[] = [client.dayAnchor(),];
+        await consoleLinesDuring({
+          run: async function readings(): Promise<void> {
+            await client.energy({ signal: SIGNAL, },);
+            reported.push(client.dayAnchor(),);
+            clock.setTo('2026-10-20T23:16:01.000Z',);
+            await client.energy({ signal: SIGNAL, },);
+            reported.push(client.dayAnchor(),);
+          },
+          sinon: ctx.sinon,
+        },);
+        expect(reported,).toEqual([
+          { known: false, },
+          { known: false, },
+          {
+            known: true,
+            msOfDay: 69_308_000,
+          },
+        ],);
+        expect(quotaExchangesOf({ exchanges, },).length,).toBe(2,);
+      },
+    },),
   ],
 },);

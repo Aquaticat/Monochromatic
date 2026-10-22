@@ -23,6 +23,7 @@ import {
   EveryProviderDryError,
   HOLD_POLL_MS,
   NOBODY_REFUSED,
+  type NeuralWattReturn,
   type ProviderBudgets,
   readBudgetsPastHolds,
   shortestHold,
@@ -62,6 +63,8 @@ const MODEL_ID = SEAT_SYNTHETIC_VISION_WITHHELD;
 
  @param holds - what the holds report
 
+ @param neuralwatt - the NeuralWatt day the budgets report to a refusal that ends the run
+
  @returns Budget view plus counts of reads and hold asks
 
  @example
@@ -73,9 +76,11 @@ function scriptedBudgets(
   {
     views,
     holds,
+    neuralwatt = { kind: 'unanchored', },
   }: {
     readonly views: readonly BudgetView[];
     readonly holds: ProviderRecord<number>;
+    readonly neuralwatt?: NeuralWattReturn;
   },
 ): {
   readonly budgets: ProviderBudgets;
@@ -113,6 +118,9 @@ function scriptedBudgets(
       holds: function holdsNow(): ProviderRecord<number> {
         holdAsks.count += 1;
         return { ...holds, };
+      },
+      neuralwattReturn: function neuralwattReturn(): NeuralWattReturn {
+        return neuralwatt;
       },
     },
   };
@@ -307,6 +315,36 @@ await describe({
             },),).toEqual(view,);
           },
         },),
+        it({
+          name: 'STATES THE ACCOUNT\'S NEURALWATT DAY START in the run-ending refusal, from the budgets\' own reading '
+            + 'of the decided anchor, whether the refusal comes at once or after a hold is waited out',
+          fn: async () => {
+            /**
+             The XingZ6018 account: its day starts at 19:15:08 UTC.
+             */
+            const neuralwatt: NeuralWattReturn = {
+              kind: 'at',
+              msOfDay: 69_308_000,
+            };
+            /**
+             The refusal raised at once, with no hold to wait out.
+             */
+            const atOnce = await refusalWithoutXiaomiServing({
+              budgets: scriptedBudgets({ views: [ALL_DRY,], holds: NO_HOLDS, neuralwatt, },).budgets,
+            },);
+            expect((atOnce as EveryProviderDryError).message,).toContain('at 19:15:08 UTC',);
+            expect((atOnce as EveryProviderDryError).message,).not.toContain('00:00 UTC',);
+            /**
+             The refusal raised after the shortest hold ended and every provider still read dry.
+             */
+            const afterWait = await refusalWithoutXiaomiServing({
+              budgets: scriptedBudgets({ views: [ALL_DRY,], holds: { ...NO_HOLDS, synthetic: 5, }, neuralwatt, },).budgets,
+            },);
+            expect((afterWait as EveryProviderDryError).message,).toContain('after waiting 5ms',);
+            expect((afterWait as EveryProviderDryError).message,).toContain('at 19:15:08 UTC',);
+          },
+        },),
+
         it({
           name: 'SAYS XIAOMI SERVES ANOTHER MODEL in the run-ending refusal, not a payment refusal, when its wet '
             + 'meter is '
