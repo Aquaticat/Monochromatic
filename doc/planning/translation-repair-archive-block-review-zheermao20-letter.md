@@ -6,7 +6,7 @@ found the email letter of entry `zheermao101` worse than in `zheermao19`.
 A read-only investigation of the two runs' logs and the source then traced how the archive block review produced it.
 This file records what it found;
 the fixes it led to are queued in
-[the NeuralWatt handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20.md#next).
+[the NeuralWatt handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20-zheermao20-to-zheermao21-reads-and-the-w253-to-w257-fix-rounds.md#next).
 
 ## What the first account got wrong
 

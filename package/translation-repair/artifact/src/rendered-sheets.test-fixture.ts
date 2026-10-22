@@ -44,9 +44,18 @@ import { evidenceSheets, } from '@monochromatic-dev/translation-repair-repair/ts
 import { carrySheets, } from './rendered-sheets-carry.test-fixture.ts';
 import { deathRecordedSheets, } from './rendered-sheets-death.test-fixture.ts';
 import { judgeSheets, } from './rendered-sheets-judges.test-fixture.ts';
+import {
+  ARCHIVE_DISPUTE,
+  polishSlateSheets,
+  REPAIR_CLAIMS,
+} from './rendered-sheets-polish.test-fixture.ts';
 import { slateSheets, } from '@monochromatic-dev/translation-repair-repair/ts/rendered-sheets-slates.test-fixture.ts';
 
 export type { RenderedSheet, } from '@monochromatic-dev/translation-repair-repair/ts/rendered-sheets-texts.test-fixture.ts';
+export {
+  ARCHIVE_DISPUTE,
+  REPAIR_CLAIMS,
+} from './rendered-sheets-polish.test-fixture.ts';
 
 //region Rendered sheets
 // EVERY MODEL-FACING SHEET, rendered once with invented cat fixtures, so a
@@ -103,6 +112,19 @@ export function renderedSheets(): readonly RenderedSheet[] {
     referenceContext: REFERENCES,
   },);
   /**
+   Polish writer exchange, which production gives the claims the repair panel
+   accepted for the slice and the note on a disputed archive rendering
+   (ledger B805), whose messages the sheet joins.
+   */
+  const polishRefinePlan = buildRefineMessages({
+    sourceText: SOURCE,
+    envelopes: [ARCHIVE_PARAGRAPH_ENVELOPE,],
+    identityContext: IDENTITY,
+    referenceContext: REFERENCES,
+    acceptedRepairClaimsNote: REPAIR_CLAIMS,
+    archiveDisputeNote: ARCHIVE_DISPUTE,
+  },);
+  /**
    Translate writer exchange, whose messages the sheet joins.
    */
   const translatePlan = buildTranslateMessages({
@@ -157,6 +179,12 @@ export function renderedSheets(): readonly RenderedSheet[] {
       name: 'refiner',
       text: joined({
         messages: refinePlan.messages,
+      },),
+    },
+    {
+      name: 'polish refiner',
+      text: joined({
+        messages: polishRefinePlan.messages,
       },),
     },
     {
@@ -227,10 +255,14 @@ export function renderedSheets(): readonly RenderedSheet[] {
             lineStructured: false,
             identityContext: IDENTITY,
             referenceContext: REFERENCES,
+            archiveDisputeNote: ARCHIVE_DISPUTE,
+            acceptedRepairClaimsNote: REPAIR_CLAIMS,
           },
         },),
       },),
     },
+    // The judges of the polish writers' rewrites, who read what the writers and the gate read (ledger B805).
+    ...polishSlateSheets(),
     {
       name: 'translate slate',
       text: joined({

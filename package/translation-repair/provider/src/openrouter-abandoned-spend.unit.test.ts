@@ -71,6 +71,7 @@ const CUT = new StreamCutShortError({
   partialText: 'x'.repeat(TEN_TOKENS_RAW,),
   progress: {
     firstByteMs: 500,
+    firstContentMs: 500,
     maxGapMs: 100,
     elapsedMs: 4_000,
     chars: TEN_TOKENS_RAW,

@@ -10,6 +10,7 @@ import {
 import { isDecisionSeat, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { rendersAsNothing, } from '@monochromatic-dev/translation-repair-typography/ts';
 import {
+  type RunoffBasis,
   TranslateAbsenceError,
   type TranslateAbsenceReason,
   type TranslateCandidateValue,
@@ -423,6 +424,8 @@ function shipPreferredPastDecline(
 
  @param finalists - candidates a partial tie backed, for the next run-off
 
+ @param basis - why those are the finalists, given with them
+
  @param shipPastDecline - whether a challenge round declined with nothing
  left to narrow ships its preferred candidate: the passage has wording that
  cannot ship, as opposed to none at all, and the caller has no further round
@@ -449,6 +452,7 @@ export function settleAbsentDecline(
     declineFindings,
     declined,
     finalists,
+    basis,
     shipPastDecline,
     l,
   }: {
@@ -459,6 +463,7 @@ export function settleAbsentDecline(
     readonly declineFindings: readonly string[];
     readonly declined: TranslateAbsenceReason;
     readonly finalists?: readonly Candidate<TranslateCandidateValue>[];
+    readonly basis?: RunoffBasis;
     readonly shipPastDecline: boolean;
     readonly l: Logger;
   },
@@ -500,6 +505,7 @@ export function settleAbsentDecline(
       findings: declineFindings,
       // Conditional spread keeps the field absent where the whole slate stands.
       ...((finalists === undefined) ? {} : { finalists, }),
+      ...((basis === undefined) ? {} : { basis, }),
     },);
   }
 

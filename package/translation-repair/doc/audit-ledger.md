@@ -128,6 +128,10 @@ named for that subject and listed here.
   the Markdown linter,
   links that lead nowhere,
   and references by position.
+- [Audit ledger: the Markdown linter's gate and the split of long docs](audit-ledger-markdown-linter-gate-and-the-split-of-long-docs.md):
+  The gate that runs the Markdown linter over the family's docs (D35),
+  the older docs it reads through name stems,
+  and the docs filed by subject or by a span of dates to stay within the line limit.
 - [Audit ledger: found while fixing, stages, seats and pairing keys](audit-ledger-found-while-fixing-stages-seats-and-pairing-keys.md):
   Defects met while fixing another finding,
   in how the stages stop,
@@ -189,7 +193,8 @@ named for that subject and listed here.
   counts before a fixed plural,
   one field carrying two kinds of text,
   a log line that reported nothing done and gave no reason,
-  and a log line that said a changed slice shipped unchanged (B733).
+  a log line that said a changed slice shipped unchanged (B733),
+  and a run-off line that called a plurality a tie (B806).
 - [Audit ledger: values read back from text](audit-ledger-values-read-back-from-text.md):
   Numbers,
   fields and keys the code wrote into text and then read back more leniently,
@@ -433,7 +438,11 @@ named for that subject and listed here.
 - [Audit ledger: the polish gate's claims and the order of reason and vote](audit-ledger-polish-gate-claims-and-reason-order.md):
   Sheets that withheld a claim the judges needed:
   the repair panel's accepted claims that never reached the polish gate (B731),
-  and the ballots whose reply shape asked for the choice before the reason (B732).
+  the ballots whose reply shape asked for the choice before the reason (B732),
+  and the same claims,
+  which the polish writers were never shown,
+  nor the dispute note,
+  nor the judges of the writers' rewrites (B805).
 - [Audit ledger: what each sheet shows](audit-ledger-what-each-sheet-shows.md):
   Sheets that lacked a block their role needs to judge or write,
   the reader-protection rule that reached past the account of how a death or an attempt happened (B697),
@@ -469,9 +478,13 @@ named for that subject and listed here.
   stream events,
   usage counts,
   and the refusals a retry decision reads,
-  with the picture reader's reply the length limit cut (B718),
-  a NeuralWatt picture call sent at the provider's default effort (B719),
-  and the NeuralWatt energy estimate that counted a picture as base64 text (B720).
+  with the stream guards whose windows could not fire and whose progress was any body bytes (B804).
+- [Audit ledger: NeuralWatt replies cut at the default effort and the picture energy estimate](audit-ledger-neuralwatt-replies-cut-at-the-default-effort-and-the-energy-estimate.md):
+  Calls to NeuralWatt that ran at the provider's default reasoning effort and were cut at the length cap:
+  the picture reader's reply the length limit cut (B718),
+  a picture call sent at the provider's default effort (B719),
+  the energy estimate that counted a picture as base64 text (B720),
+  and a text call sent at the provider's default effort (B807).
 - [Audit ledger: branches no input reaches, kept as quiet answers](audit-ledger-unreachable-branches-kept-as-quiet-answers.md):
   Branches no input reaches that answered quietly where a loud refusal belongs,
   most met when a coverage census asked for them to be removed,
@@ -768,6 +781,7 @@ Filed in:
 
 - [Audit ledger: docs and comments that disagreed with the code](audit-ledger-docs-against-code.md)
 - [Audit ledger: doc conventions and their guards](audit-ledger-doc-conventions-and-their-guards.md)
+- [Audit ledger: the Markdown linter's gate and the split of long docs](audit-ledger-markdown-linter-gate-and-the-split-of-long-docs.md)
 
 ## Found while fixing
 
@@ -829,6 +843,7 @@ Filed in:
 - [Audit ledger: tests touching the real world](audit-ledger-tests-touching-the-real-world.md)
 - [Audit ledger: positions compared across texts](audit-ledger-positions-compared-across-texts.md)
 - [Audit ledger: provider streams, usage counts and retries](audit-ledger-provider-streams-usage-and-retries.md)
+- [Audit ledger: NeuralWatt replies cut at the default effort and the picture energy estimate](audit-ledger-neuralwatt-replies-cut-at-the-default-effort-and-the-energy-estimate.md)
 - [Audit ledger: copies of shared code in tests and scans](audit-ledger-copies-in-tests-and-scans.md)
 - [Audit ledger: files a later run reads back](audit-ledger-files-a-later-run-reads-back.md)
 - [Audit ledger: footnote markers and link destinations](audit-ledger-footnote-markers-and-link-destinations.md)

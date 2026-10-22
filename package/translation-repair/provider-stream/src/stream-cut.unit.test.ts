@@ -26,6 +26,7 @@ import { reportStreamProgress, } from '../dist/final/node/index.mjs';
  */
 const SOME_PROGRESS = {
   firstByteMs: 40,
+  firstContentMs: 55,
   maxGapMs: 4,
   chars: 512,
   elapsedMs: 830,
@@ -214,6 +215,52 @@ await describe({
         // The value, not merely the word: 830 appears in no other fixture
         // field, so this cannot pass by reading a neighbouring count.
         expect(line.includes(`elapsed ${String(SOME_PROGRESS.elapsedMs,)}ms`,),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'SAYS HOW LONG THE FIRST TEXT TOOK beside the first byte (ledger B804): the first byte is only a lower '
+        + 'bound on the wait the first-content window bounds, so the window cannot be set against a log that states '
+        + 'the byte alone',
+      fn: async () => {
+        /**
+         A completion line whose first text came later than its first byte.
+         */
+        const line = reportStreamProgress({
+          label: 'hf:whiskers',
+          progress: SOME_PROGRESS,
+          unreadableFrames: 0,
+          outcome: 'completed',
+          openingText: '',
+          generatedChars: SOME_GENERATED_CHARS,
+        },);
+
+        // 40 and 55 are distinct, so each reading is told from the other.
+        expect(line.includes('firstByte 40ms, firstContent 55ms, maxGap 4ms',),).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'STATES A FIRST TEXT THAT NEVER CAME as a negative reading, as the first byte does when no byte came',
+      fn: async () => {
+        /**
+         A cut line of a stream that sent bytes and no text.
+         */
+        const line = reportStreamProgress({
+          label: 'hf:whiskers',
+          progress: {
+            ...SOME_PROGRESS,
+            firstContentMs: -1,
+          },
+          unreadableFrames: 0,
+          outcome: 'cut',
+          openingText: '',
+          generatedChars: {
+            content: 0,
+            reasoning: 0,
+          },
+        },);
+        expect(line.includes('firstByte 40ms, firstContent -1ms,',),).toBe(true,);
       },
     },),
 

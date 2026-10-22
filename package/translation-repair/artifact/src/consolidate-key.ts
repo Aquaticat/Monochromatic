@@ -428,8 +428,25 @@ import type { LaneText, } from '@monochromatic-dev/translation-repair-translate-
  slice, repair slice and refine versions move for the same ballots (14, 23, 41, 12); the archive block review has no version
  of its own; the consistency, page title and pairing versions stay, since their sheets and schemas are what they were. No
  record has been written at 29, which this change sets first.
+
+ 30 covers the writers of the final polish and the judges of their rewrites: the writers are shown the claims the repair
+ panel accepted for the slice and the note on a disputed archive rendering, in the blocks the polish gate reads
+ (`refine-prompt.ts`, `consolidation-polish-round.ts`; ledger B805), where before only the gate was, and the judges of
+ the writers' rewrites (`refine-selection-context.ts`) are shown the same two notes, with a criterion that lets a
+ candidate correct what a supported claim names. A slice with either note asks its writers and its judges a new question,
+ and its stored settlement holds the polish they wrote and chose without the notes. The key already carries both notes
+ when a slice has them (`repair-claims`, the dispute note), so the key does not change when the question does, and a
+ record written at 29 would be served under 30. The judges' change rides in 30 with the writers', since both are one
+ landing and no record has been written at 30. Runs zheermao22 and XingZ6017 log
+ `START tip=2a336603bf`, which holds the commit that set 29 (`4b9fc9e645`, `git merge-base --is-ancestor`), so records
+ may stand at 29 and the change cannot ride inside it; no search of any slice-cache directory was made, and the number
+ moves. A slice with no accepted claims asks its writers what it asked, but its settlement is keyed under the same
+ number, so it is recomputed too. The refine version stays: the repair lane's own refinement passes no note and its
+ sheet is what it was (`refine-prompt.unit.test.ts`, "LEAVES THE SHEET UNCHANGED WHEN NO CLAIMS WERE ACCEPTED"). The
+ lane-contest, translate slice and repair slice versions stay, since none of their sheets is a polish writer's. No record
+ has been written at 30, which this change sets first.
  */
-export const CONSOLIDATE_CACHE_VERSION = 29;
+export const CONSOLIDATE_CACHE_VERSION = 30;
 
 /**
  What a line-structured slice appends to its key material.
@@ -624,7 +641,8 @@ export function consolidateRunShape(
  under, absent on an undisputed one
 
  @param acceptedRepairClaimsNote - the claims the repair panel accepted for
- the slice, which the final polish gate reads, absent where it accepted none
+ the slice, which the final polish gate, its writers and the judges of their
+ rewrites read, absent where it accepted none
 
  @returns Hash keying this slice's settlement
 
@@ -751,8 +769,9 @@ export function consolidateSliceKey(
         ]),
       // THE ACCEPTED REPAIR CLAIMS, appended only when present, on the same
       // terms as the dispute note: the polish gate of a slice the repair panel
-      // accepted claims on reads them (CuspariaKLSY21 slice 0, 2026-10-21), so
-      // it asks a different question from the same texts without them, and a
+      // accepted claims on reads them (CuspariaKLSY21 slice 0, 2026-10-21), as
+      // do its writers and the judges of their rewrites (ledger B805), so it
+      // asks a different question from the same texts without them, and a
       // slice the panel accepted nothing on keys as before.
       ...(((acceptedRepairClaimsNote === undefined) || (acceptedRepairClaimsNote === ''))
         ? []

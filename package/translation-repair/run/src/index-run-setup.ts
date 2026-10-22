@@ -53,6 +53,7 @@ export {
   RUN_TRANSLATORS,
   RUN_WIDE_SEATS,
   RUN_WRITERS,
+  runCallConfigOf,
   runClientFrom,
   type RunRepairModels,
   TRANSLATOR_DROPPED,

@@ -328,6 +328,7 @@ await describe({
                   partialText: 'The cat ',
                   progress: {
                     firstByteMs: 40,
+                    firstContentMs: 40,
                     maxGapMs: 900,
                     chars: 8,
                     elapsedMs: 1_400,

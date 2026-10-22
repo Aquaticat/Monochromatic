@@ -14,11 +14,11 @@
  (`max`, `high`, `low`; `https://docs.neuralwatt.com/api/chat-completions.md`,
  fetched 2026-10-21).
 
- WHAT THESE PIN: a picture call to the GLM seat sends `low`; a text call to
- the same seat sends nothing (the ban holds for text, as it did); a picture
- call to the DeepSeek seat sends nothing (its transcription was never
- measured); and only the NeuralWatt side of a card may name a picture effort,
- so no other provider's client can be handed one.
+ WHAT THESE PIN: a picture call to the GLM seat sends `low`; a picture call to
+ the DeepSeek seat sends nothing (its transcription was never measured); and
+ only the NeuralWatt side of a card may name a picture effort, so no other
+ provider's client can be handed one. The text calls of the same seat have
+ their own file, `neuralwatt-text-effort.unit.test.ts` (ledger B807).
 
  Fixtures are cat-themed invention. No call reaches NeuralWatt.
 
@@ -81,22 +81,6 @@ await describe({
         expect(body.reasoning_effort,).toBe('low',);
         for (const absent of ['reasoning', 'thinking', 'thinking_token_budget', 'temperature', 'store',])
           expect(Object.hasOwn(body, absent,),).toBe(false,);
-      },
-    },),
-
-    it({
-      name: 'SENDS NO reasoning_effort ON A TEXT CALL TO THE SAME SEAT, since the lift covers picture '
-        + 'readings and the text traffic the energy matrix was measured on ran the defaults',
-      fn: async () => {
-        await using scratch = await scratchDir({ prefix: 'whiskers-neuralwatt-effort-', },);
-        const { client, exchanges, } = scriptedClient({ dir: scratch.path, },);
-        await client.chatText({
-          modelId: SEAT_HYPER_OPENROUTER_VISION_EDITOR,
-          messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
-          signal: SIGNAL,
-        },);
-        const [post,] = chatExchangesOf({ exchanges, },);
-        expect(Object.hasOwn(jsonRecordOf({ text: post?.bodyJson ?? '{}', },), 'reasoning_effort',),).toBe(false,);
       },
     },),
 

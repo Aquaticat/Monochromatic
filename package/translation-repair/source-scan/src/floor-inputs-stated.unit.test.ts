@@ -708,6 +708,12 @@ const NAMED_OMISSIONS: readonly NamedOmission[] = [
     why: 'the rebuild re-carves the slices an artifact recorded, which neither input moves, and artifacts record neither',
   },
   {
+    omission: 'repair/refine-slice-settle.ts#settleRefinedSlice -> runRefineStage: omits [archiveDisputeNote]',
+    why: 'the repair lane\'s own refinement passes neither the dispute note nor the accepted claims, which only the '
+      + 'final polish is given, as its gate is (ledger B805); its sheet is what it was '
+      + '(refine-prompt.unit.test.ts, "LEAVES THE SHEET UNCHANGED WHEN THE SLICE IS NOT DISPUTED")',
+  },
+  {
     omission: 'translate-lane/translate-slice.ts#settleTranslateSlice -> runTranslateStage: unreadable <opaque:stageInput> [archiveDisputeNote, '
       + 'attestedLines, declared, disputedWordings, identityContext, pictureContext, referenceContext]',
     why: 'stageInput is translateSliceInput\'s stage input, whose literal states each of them (translate-slice-input.ts); '

@@ -193,7 +193,8 @@ export type ConsolidationSubject = {
    Every claim the repair panel accepted for the slice, whether it disputes
    the archive or not, left out of the dispute note when that note already
    carries it; absent where the panel accepted nothing. Read by the final
-   polish gate alone (CuspariaKLSY21 slice 0, 2026-10-21).
+   polish only: its gate (CuspariaKLSY21 slice 0, 2026-10-21), its writers and
+   the judges of their rewrites (ledger B805).
    */
   readonly acceptedRepairClaimsNote?: string;
 

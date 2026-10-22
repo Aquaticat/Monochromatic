@@ -51,6 +51,7 @@ export function streamLine(
     label,
     progress: {
       firstByteMs: 3_644,
+      firstContentMs: 3_644,
       maxGapMs: 421,
       chars: 2_977,
       elapsedMs: 7_304,

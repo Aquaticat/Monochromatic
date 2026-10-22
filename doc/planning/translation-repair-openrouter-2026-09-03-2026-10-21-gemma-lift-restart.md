@@ -73,7 +73,7 @@ so that no file passes the repository's limit of 1,000 lines:
   The `START` line of `zheermao22` carries both as given,
   and so do the `tip` and `pipelineDigest` of its artifact.
 - It is the merge that gate g148 landed on 2026-10-21 (UTC),
-  as [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20.md#next) records.
+  as [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20-the-landings-the-zheermao22-restart-and-the-state-after-k4.md) records.
   The launcher holds that digest as the rotation's frozen build.
 - The corpus input is the pin `a41fc607ea` (`corpusSha` `a41fc607ea5a70d8a7625cc67d5ed8c444f53379`).
 - What changed against `3637592bd4`,
@@ -219,7 +219,7 @@ From the `CuspariaKLSY22` read
 
 ## Where the read agrees and differs with the handover
 
-[The handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20.md#next) states the outcome and the classes of `zheermao22` in short.
+[The handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20-the-landings-the-zheermao22-restart-and-the-state-after-k4.md) states the outcome and the classes of `zheermao22` in short.
 The read agrees with it on the launch time,
 the 79.0 min,
 the 7 to 30 rise in long-grace rounds,
@@ -264,7 +264,7 @@ Differences found:
 
 ## What follows
 
-From [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20.md#next):
+From [the handover](../handover/translation-repair-handover-2026-09-06-neuralwatt-provider-2026-10-20-the-landings-the-zheermao22-restart-and-the-state-after-k4.md):
 
 - K1,
   K2,

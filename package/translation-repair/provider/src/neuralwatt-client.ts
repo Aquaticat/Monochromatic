@@ -66,12 +66,13 @@ import {
 // IT SPEAKS THE OPENAI-COMPATIBLE PROTOCOL the Bedrock and OpenRouter clients
 // speak: chat completions with `stream` and `stream_options.include_usage`, a
 // json_schema `response_format` and the schema stated in the system prompt,
-// `max_tokens` at the measured ceiling, and no reasoning parameter on a text
-// call (the owner's standing instruction of 2026-08-25). THE ONE EXCEPTION IS A
-// PICTURE CALL to a model whose card names a `pictureReasoningEffort`, which
-// sends the documented `reasoning_effort` (the owner, 2026-10-21: "I'm lifting
-// the ban on passing params, but only for NeuralWatt"); no other client has
-// that field to send.
+// `max_tokens` at the measured ceiling, and no other reasoning parameter (the
+// owner's standing instruction of 2026-08-25). THE ONE EXCEPTION IS THE
+// DOCUMENTED `reasoning_effort`, sent on a call to a model whose card names one:
+// the `pictureReasoningEffort` on a call that carries a picture and the
+// `textReasoningEffort` on one that does not (the owner, 2026-10-21: "I'm
+// lifting the ban on passing params, but only for NeuralWatt"). A model whose
+// card names none gets none; no other client has that field to send.
 //
 // WHAT THIS CLIENT ADDS IS THE METER'S SIDE OF EVERY CALL, because overage
 // "eats into my normal plan which I use for other stuff":
@@ -381,30 +382,35 @@ export function createNeuralWattClient(
       },);
 
       /**
-       The picture effort this model's card names, if any.
+       The efforts this model's card names, if any.
        */
-      const { pictureReasoningEffort, } = NEURALWATT_MODELS[servedId];
+      const {
+        pictureReasoningEffort,
+        textReasoningEffort,
+      } = NEURALWATT_MODELS[servedId];
 
       /**
        Reasoning effort this call sends: the card's picture effort when the
-       conversation carries a picture, else none.
+       conversation carries a picture, else its text effort, and none where
+       the card names none for the kind of call.
        */
-      const pictureEffort = carriesPicture({ messages: request.messages, },) ? pictureReasoningEffort : undefined;
+      const effort = carriesPicture({ messages: request.messages, },) ? pictureReasoningEffort : textReasoningEffort;
 
       /**
        Exactly what goes on the wire, hoisted so its size can be measured.
 
-       NO THINKING PARAMETER, NO TOKEN BUDGET AND NO REASONING EFFORT ON A
-       TEXT CALL, the owner's standing instruction of 2026-08-25, recorded in
-       full at the Synthetic body. Both models reason by default, and the energy
-       that costs is in the matrix the estimate is drawn from.
+       NO THINKING PARAMETER AND NO TOKEN BUDGET, the owner's standing
+       instruction of 2026-08-25, recorded in full at the Synthetic body.
+       `thinking_token_budget` stays out because its support table
+       (2026-08-26) does not name `glm-5.3-flash`.
 
-       A PICTURE CALL MAY CARRY `reasoning_effort` since 2026-10-21, when the
-       card's NeuralWatt side names one: the owner lifted the ban for this
-       provider alone, and `glm-5.3-flash` spent its whole completion cap
-       reasoning at the default `max` on a dense screenshot (XingZ6016). Never
-       `thinking_token_budget`: its support table (2026-08-26) does not name
-       this model.
+       THE ONE PARAMETER IS `reasoning_effort`, since 2026-10-21, when the owner
+       lifted the ban for this provider alone, and only where the card's
+       NeuralWatt side names one for the kind of call. `glm-5.3-flash` spent its
+       whole completion cap reasoning at the default `max` on a dense
+       screenshot (XingZ6016, ledger B719) and, on text, on 11 of 288 calls
+       over the pass logs from zheermao19 to zheermao22 (ledger B807).
+       `deepseek-v4.1-flash` gets none: the repo records no efforts for it.
        */
       const bodyJson = JSON.stringify({
         model: servedId,
@@ -420,8 +426,8 @@ export function createNeuralWattClient(
         },),
         // Conditional spread keeps the optional knob absent instead of undefined.
         ...(request.responseFormat === undefined ? {} : { response_format: request.responseFormat, }),
-        // Conditional spread keeps the knob absent from every text call.
-        ...(pictureEffort === undefined ? {} : { reasoning_effort: pictureEffort, }),
+        // Conditional spread keeps the knob absent where the card names no effort.
+        ...(effort === undefined ? {} : { reasoning_effort: effort, }),
       },);
 
       /**

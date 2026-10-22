@@ -230,6 +230,25 @@ which needs a rerun measured against run-to-run spread.
 A new judge that chooses between texts takes the claims in the same way,
 and a note that filters claims by severity is read for the claims it hides.
 
+The rule runs both ways.
+B731 gave the claims to the polish gate and not to the polish writers,
+so a writer rewrote the base without the evidence the gate then judged the rewording against (ledger B805).
+A block added to a judge's sheet is threaded,
+in the same change,
+to the writer of the text that judge reads,
+through the same builder,
+and the rendered-sheets fixture renders the writer's sheet with it.
+`rendered-sheets-context.unit.test.ts` names the sheets that must carry the accepted claims and the dispute note
+(the polish gate,
+the polish refiner and the two sheets of the judges of the writers' rewrites),
+because a scan that reads only sheets naming a heading cannot see a sheet that lost the block.
+The first version of this rule left two gaps,
+which B805 closed before landing:
+the dispute note did not reach the polish writers,
+and neither note reached the judges of the writers' rewording.
+A judge whose criteria say that a candidate must say exactly what the text says is also given the sentence that lets it accept a correction the note asks for,
+or the note is shown to a judge who must vote against what it permits.
+
 ## A rule a sheet states about tense and what it does not cover
 
 What happened:

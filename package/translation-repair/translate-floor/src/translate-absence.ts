@@ -191,6 +191,24 @@ export class BlankSelectionError extends Error {
 }
 
 /**
+ Why a run-off is over the candidates it is over, which the line announcing it
+ has to say (ledger B806).
+
+ -   `tied-at-top`: two or more candidates drew the same highest weight.
+ -   `leader-and-runner-up`: one candidate drew the highest weight and still
+     fell short of the minimum, so the run-off is over it and the candidate
+     behind it; nothing was tied.
+
+ @example
+ ```ts
+ const basis: RunoffBasis = 'leader-and-runner-up';
+ ```
+ */
+export type RunoffBasis =
+  | 'tied-at-top'
+  | 'leader-and-runner-up';
+
+/**
  Raised internally when one absent-passage slate produced no translation.
 
  CARRIES ITS FINDINGS, because the work that led here is real evidence: which
@@ -227,6 +245,12 @@ export class TranslateAbsenceError extends Error {
   public readonly finalists?: readonly Candidate<TranslateCandidateValue>[];
 
   /**
+   Why those candidates are the finalists: present exactly when `finalists` is
+   (ledger B806).
+   */
+  public readonly basis?: RunoffBasis;
+
+  /**
    Builds the refusal with the evidence the stage had collected.
 
    @param reason - why nothing could be written
@@ -234,6 +258,8 @@ export class TranslateAbsenceError extends Error {
    @param findings - stage findings up to this point, kept for the record
 
    @param finalists - candidates a tied round backed, when fewer than the slate
+
+   @param basis - why those are the finalists, given with them
 
    @example
    ```ts
@@ -245,10 +271,12 @@ export class TranslateAbsenceError extends Error {
       reason,
       findings,
       finalists,
+      basis,
     }: {
       readonly reason: TranslateAbsenceReason;
       readonly findings: readonly string[];
       readonly finalists?: readonly Candidate<TranslateCandidateValue>[];
+      readonly basis?: RunoffBasis;
     },
   ) {
     super(
@@ -260,6 +288,8 @@ export class TranslateAbsenceError extends Error {
     this.findings = findings;
     if (finalists !== undefined)
       this.finalists = finalists;
+    if (basis !== undefined)
+      this.basis = basis;
   }
 }
 

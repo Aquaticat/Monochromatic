@@ -103,6 +103,7 @@ export {
   BlankSelectionError,
   type IncumbentKind,
   requireTranslateAbsence,
+  type RunoffBasis,
   TranslateAbsenceError,
   type TranslateAbsenceReason,
   type UnfilledReason,

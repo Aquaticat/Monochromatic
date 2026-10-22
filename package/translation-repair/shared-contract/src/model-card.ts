@@ -316,6 +316,15 @@ export type NeuralWattCard = ServedCard<NeuralWattServedId> & {
    where no picture reading on this model has been measured to need one.
    */
   readonly pictureReasoningEffort?: NeuralWattReasoningEffort;
+
+  /**
+   Reasoning effort sent with a call that carries no picture, on this
+   provider only, under the same lift of the owner's ban (2026-10-21, "only
+   for NeuralWatt"). Absent where the repo records no `supported_efforts` list
+   for the model, so a call to it sends nothing. Never a field of another
+   provider's card.
+   */
+  readonly textReasoningEffort?: NeuralWattReasoningEffort;
 };
 
 /**
