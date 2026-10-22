@@ -328,6 +328,9 @@ await describe({
         const capped = await bodySentFor({ modelId: 'claude-haiku-5-5', },);
         expect(Number.isSafeInteger(capped.max_tokens,),).toBe(true,);
         expect(capped.max_tokens as number,).toBeGreaterThan(1_000,);
+        // Room for the thinking, which counts against it: the pooled p99 of 13,082 measured on other providers is not
+        // enough (C5).
+        expect(capped.max_tokens,).toBe(32_000,);
         const lowered = await bodySentFor({ modelId: 'claude-haiku-5-5', extra: { maxTokens: 777, }, },);
         expect(lowered.max_tokens,).toBe(777,);
       },

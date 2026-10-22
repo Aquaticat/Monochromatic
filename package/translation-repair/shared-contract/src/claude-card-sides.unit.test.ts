@@ -15,6 +15,7 @@ import {
 import {
   ANTHROPIC_SERVED_IDS,
   CLAUDE_CARDS,
+  COMPLETION_CAP,
   HAIKU_5_5_PRICES,
   SONNET_5_5_PRICES,
 } from '../dist/final/node/index.mjs';
@@ -30,14 +31,24 @@ await describe({
     },),
 
     it({
-      name: 'GIVES EVERY ROW the shared fields: it reads images, states the 128,000-token output ceiling, and caps its '
-        + 'completion at the pooled p99',
+      name: 'GIVES EVERY ROW the shared fields: it reads images and states the 128,000-token output ceiling',
       fn: async () => {
         for (const id of ANTHROPIC_SERVED_IDS) {
           const card = CLAUDE_CARDS[id];
           expect(card.anthropic?.readsImages,).toBe(true,);
           expect(card.anthropic?.maxOutputLength,).toBe(128_000,);
-          expect(card.completionCap,).toBe('pooled-p99',);
+        }
+      },
+    },),
+
+    it({
+      name: 'CAPS EVERY ROW\'S COMPLETION AT 32,000 TOKENS, not at the pooled p99 of 13,082 (C5): thinking counts toward '
+        + 'max_tokens on both models, so a cap measured on providers that hide no thinking would be spent thinking and '
+        + 'return nothing (stop_reason max_tokens after a thinking block), billed in full and asked again',
+      fn: async () => {
+        for (const id of ANTHROPIC_SERVED_IDS) {
+          expect(CLAUDE_CARDS[id].completionCap,).toBe(32_000,);
+          expect(COMPLETION_CAP[id],).toBe(32_000,);
         }
       },
     },),
