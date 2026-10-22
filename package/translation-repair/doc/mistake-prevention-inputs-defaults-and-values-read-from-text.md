@@ -448,6 +448,9 @@ and traced the spread to completion tokens,
 which a prompt bucket cannot see.
 A provider's published mean that sizes a hold is a placeholder until the pipeline's own settled calls replace it,
 and the replacement reads what drives the spread before choosing any multiplier.
+The replacement is drawn from the rotation of entries the pipeline runs and not from one run:
+the means of one run of one entry (`zheermao19`) read 2.6 times low in the main bucket
+once three entries were pooled (ledger B808).
 `neuralwatt-estimate.unit.test.ts` pins each figure with the run it came from.
 
 An owner's lift of a ban is applied at the scope the owner's words state (ledger B807).

@@ -2,7 +2,8 @@
 
 Calls to NeuralWatt that ran at the provider's default reasoning effort and were cut at the length cap,
 the owner's lift of 2026-10-21 that sets the effort for the pictures and then the text of the GLM seat,
-and the energy estimate that counted a picture as base64 text.
+the energy estimate that counted a picture as base64 text,
+and the energy hold recalibrated from the settled calls of a rotation of entries (B808).
 
 Part of [Audit ledger](audit-ledger.md),
 which lists every file of this record.
@@ -370,3 +371,220 @@ Recurrence:
 `mistake-prevention-inputs-defaults-and-values-read-from-text.md`,
 "Provider fields read by their documentation":
 an owner's lift is built at the scope its words name.
+
+## B808: the NeuralWatt hold read the pipeline's own use at a third of what a rotation of entries measured
+
+Status:
+fixed on 2026-10-22 (UTC),
+red `648737d056`,
+fix `a55cb37c91`,
+note correction `5403f87382`,
+cache versions none.
+Found in the read of the settled calls of the corpus pass `XingZ6017` and fixed in `w270`.
+The note correction is a wording fix:
+the module note said the rotation held "1 to 15 calls" in each bucket that keeps the matrix's figure,
+and two of those buckets held none,
+so it now says at most 15 and none in two.
+
+What the run showed:
+the in-flight hold of each NeuralWatt call is the prompt-size bucket's mean in
+`package/translation-repair/provider/src/neuralwatt-estimate.ts` times a margin of 1.
+The bucket for 4,096 to 16,384 prompt tokens held the means of `zheermao19`
+(0.0758 Wh for DeepSeek V4.1 Flash and 0.3725 Wh for GLM-5.3-Flash,
+from 140 and 48 calls),
+and the bucket for 16,384 to 65,536 tokens held the energy matrix's figures (0.1395 and 0.2009 Wh).
+`XingZ6017` (log `~/temp/agent/corpus-pass-XingZ6017.log`,
+41,183 lines by `wc`,
+23:05 UTC on 2026-10-21 to 03:34 UTC on 2026-10-22)
+settled 1033 calls that measured 493.166 Wh against 173.505 Wh held,
+a ratio of 2.84:
+`glm-5.3-flash` 3.09 over 269 calls and `deepseek-v4.1-flash` 2.57 over 764.
+
+What was measured,
+keyless,
+from the per-call settlement line
+(`NeuralWatt energy <model>: <measured> Wh measured against <estimate> Wh estimated for <n> prompt tokens`,
+`neuralwatt-settlement.ts`)
+by `~/temp/agent/tr-fan/tr-w270-notes/settle-table.ts`,
+outside the repository,
+whose output is `settle-table.out` in the same directory.
+Completion tokens come from the `SPEND provider=neuralwatt` line printed on the line before each settlement.
+No call lacked a measured energy in any of the six logs read.
+
+- The last `METERS` line of `XingZ6017` (line 41082,
+  03:33:16.860 UTC on 2026-10-22)
+  reads `neuralwattWh=-5.188 neuralwattAccountWh=555.188`.
+  The rotation `zheermao22` (190 calls),
+  `CuspariaKLSY22` (74) and `XingZ6017` (1033) measured 40.910,
+  21.111 and 493.166 Wh,
+  which sum to 555.188 Wh,
+  exactly that account figure.
+  The three runs were all of the day's NeuralWatt use,
+  and the 5.188 Wh overrun (0.94 percent of 550 Wh) is the day's total.
+- Per bucket over the rotation
+  (calls,
+  measured mean,
+  held mean,
+  ratio of measured to held):
+  4,096 to 16,384 tokens,
+  DeepSeek 558 calls,
+  0.1958 Wh against 0.0758 held,
+  2.58;
+  4,096 to 16,384 tokens,
+  GLM 298 calls,
+  0.9577 Wh against 0.3725,
+  2.57;
+  16,384 to 65,536 tokens,
+  DeepSeek 385 calls,
+  0.3205 Wh against 0.1395,
+  2.30,
+  all in `XingZ6017`;
+  16,384 to 65,536 tokens,
+  GLM 30 calls,
+  1.2239 Wh against 0.2009,
+  6.09,
+  all in `XingZ6017`,
+  with a standard deviation of 1.60 Wh and a standard error of 0.29 Wh.
+- Too few calls for a mean:
+  1,024 to 4,096 tokens,
+  DeepSeek 7 calls at 0.0126 Wh against 0.0233 held,
+  GLM 15 calls at 0.0210 Wh against 0.0389 held (ratio 0.54 for both);
+  256 to 1,024 tokens,
+  1 DeepSeek call and 3 GLM calls.
+  No rotation call fell under 256 tokens or from 65,536 tokens up.
+  One call of `XingZ6016` fell in the bucket from 65,536 to 262,144 tokens
+  (GLM 0.2311 Wh against 0.9089 held,
+  a picture counted as base64,
+  which `neuralwatt-picture-tokens.ts` now handles,
+  B720).
+- Per entry in the 4,096 to 16,384 token bucket,
+  DeepSeek then GLM
+  (calls in brackets):
+  `zheermao22` 0.0936 (129) and 0.5528 (52);
+  `CuspariaKLSY22` 0.1699 (54) and 0.6626 (18);
+  `XingZ6017` 0.2347 (375) and 1.0734 (228).
+  In that bucket the DeepSeek median is 0.0856 Wh,
+  the 90th percentile 0.4529 and the largest 3.1088;
+  the GLM median is 0.6595,
+  the 90th percentile 2.2332 and the largest 5.9387.
+  In the 16,384 to 65,536 token bucket the DeepSeek median is 0.1540,
+  the 90th percentile 0.8005 and the largest 3.5719;
+  the GLM median is 0.5400,
+  the 90th percentile 2.8101 and the largest 7.7040.
+- The spread is in the output.
+  Over the rotation's 951 DeepSeek and 346 GLM calls
+  the correlation of a call's energy with its completion tokens was 0.76 and 0.85
+  (about 0.12 and 0.18 Wh per thousand completion tokens),
+  and with the prompt tokens the provider reported 0.19 and 0.26.
+  The prompt-size bucket cannot see what drives a call's cost,
+  as the note on `zheermao19` already said.
+- The drift series,
+  the measured-to-held ratio over the settled calls of each of the six logs in the order they ran:
+  `zheermao21` 1.23 (247 calls),
+  `CuspariaKLSY21` 2.00 (85),
+  `XingZ6016` 0.87 (31),
+  `zheermao22` 1.39 (190),
+  `CuspariaKLSY22` 1.94 (74),
+  `XingZ6017` 2.84 (1033).
+  The series reported before this entry,
+  1.23 then 1.39 then 1.94 then 2.84,
+  left out two runs and read as a climb;
+  it is one value per entry,
+  and the same entry read 1.23 then 1.39 and 2.00 then 1.94.
+- `XingZ6017` differs measurably.
+  It sent 385 DeepSeek and 30 GLM calls in the 16,384 to 65,536 token bucket
+  (the other five logs sent 8 in all) held at the matrix's figures.
+  Its prompts in the 4,096 to 16,384 bucket were longer (mean 14.5k estimated tokens against 7.4k to 10.3k).
+  Its replies sat between the other two entries'
+  (mean completion tokens:
+  GLM 6,047 against 3,860 and 6,490;
+  DeepSeek 2,042 against 1,364 and 2,492).
+  Its energy per thousand completion tokens was higher
+  (GLM 0.178 against 0.143 and 0.102;
+  DeepSeek 0.115 against 0.069 and 0.068).
+  Why that entry costs more per completion token is a cause not traced;
+  its longer prompts are one candidate.
+
+The cause:
+the table was the pipeline's measurement of one run of one entry (`zheermao19`)
+plus the matrix for everything else.
+The entries run since cost between 0.9 and 2.8 times what the table held,
+and one of them sent a prompt-size range the table had never been measured on.
+The first-order mistake is the one P19 recorded:
+a hold taken from a single run's means stands for a workload,
+and the workload is a rotation of entries that differ in cost.
+
+The fix:
+the two buckets with enough calls now hold the rotation's pooled means:
+4,096 to 16,384 tokens,
+DeepSeek 0.0758 Wh now 0.1958 and GLM 0.3725 now 0.9577;
+16,384 to 65,536 tokens,
+DeepSeek 0.1395 now 0.3205 and GLM 0.2009 now 1.2239.
+Every other bucket keeps the matrix's figure,
+including the 1,024 to 4,096 token bucket,
+whose measured means (7 and 15 calls) sit under the matrix's
+and would,
+if the samples had reached 30,
+lower the hold slightly.
+`NEURALWATT_ENERGY_MARGIN` stays 1:
+the owner's rule is a hold as small as can be justified so free energy is not left unspent,
+and the hold is replaced by the measured figure at settlement,
+so a hold at the pooled mean is right on average for the workload that produced it.
+The module note records the runs,
+dates,
+counts,
+old and new figures,
+the per-entry means,
+the drift series and a bound on the overrun.
+`neuralwatt-estimate.unit.test.ts` pins the new means for every bucket of both models,
+and `neuralwatt-picture-estimate.unit.test.ts` pins the 4,096 to 16,384 token GLM hold.
+The pooled figures are call-weighted,
+so `XingZ6017` supplies 375 of 558 and 228 of 298 calls in the main bucket
+and all of the 16,384 to 65,536 token calls.
+Replayed per run,
+the new table holds `zheermao22` at 1.8 times its use,
+`CuspariaKLSY22` at 1.3 times and `XingZ6017` at 0.92 times,
+and holds the rotation at its use.
+The in-flight hold only matters at the day's end,
+when a call is refused if the remainder is under its hold (`neuralwatt-ledger.ts`,
+line 432):
+a larger hold refuses the last few calls of a light-entry day a little earlier,
+which is the cost accepted for a hold that is right on average.
+The table drives nothing else:
+`NEURALWATT_SMALLEST_ESTIMATE_WH`,
+the dryness floor,
+reads the first bucket,
+which did not change.
+
+The docs that cited the old figures:
+`doc/decision/translation-repair-neuralwatt-provider.md` (section "The margin") and the entry P19
+in `audit-ledger-providers-routing-and-seating.md` still named 0.0758 and 0.3725 Wh as the table's figures.
+Both carry a dated note of 2026-10-22 (UTC) that B808 replaced them,
+and the record of what the table held on 2026-10-20 is left as written.
+
+Cache versions:
+none moves.
+The estimate feeds the in-flight hold and the ledger line only,
+and no text a model is shown changed.
+
+Open:
+
+- A hold shaped by the completion a call will produce would fit far better than the prompt bucket
+  (correlation 0.76 to 0.85 against 0.19 to 0.26),
+  but the completion length is unknown before the send.
+  A better shape needs a design,
+  for example a hold per effort setting and entry,
+  or the completion cap,
+  and none was made here.
+- The 16,384 to 65,536 token GLM mean rests on 30 calls from one entry.
+  The next run that sends calls in that bucket should replace it as `zheermao19` replaced the matrix.
+- The cause of `XingZ6017` costing more per completion token than the other entries is not traced.
+- The pool is three entries of the corpus.
+  A rotation with other entries may move the means again;
+  the per-call settlement line is the instrument.
+
+Recurrence:
+`mistake-prevention-inputs-defaults-and-values-read-from-text.md`,
+"Provider fields read by their documentation":
+a published per-request figure is a placeholder until the pipeline's own settled calls replace it (P19),
+and a single run's means are a placeholder for a workload that is a rotation of entries.

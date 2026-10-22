@@ -1,7 +1,8 @@
 # Audit ledger: runner reports and probes
 
 Report and probe commands that printed a claim their own figures deny,
-or bought work nothing could use.
+or bought work nothing could use,
+and the examination of coverage rounds that were claimed to buy nothing (B811).
 
 Part of [Audit ledger](audit-ledger.md),
 which lists every file of this record.
@@ -647,3 +648,161 @@ and the rule of 2026-09-08 sets none.
 Recurrence:
 `mistake-prevention-messages-labels-and-counts.md`,
 "Log lines that report nothing done".
+
+## B811: the coverage rounds over the untranslated tail were examined and kept, and no skip or reordering is safe
+
+Status:
+examined on 2026-10-22 (UTC) in `w272`;
+nothing changed in code,
+and no model-facing text,
+cache key or cached-step input changed.
+One owner decision is open:
+ending a round early once its outcome is fixed (see "Open for the owner").
+
+The claim examined:
+the corpus pass `XingZ6017` (build `2a336603bf`) spent 712 s (11 min 52 s),
+from 23:18:40 UTC to 23:30:32 UTC on 2026-10-21,
+in `decidePassInsertionAdmission` (`package/translation-repair/corpus-pass/src/corpus-run/pass-insertion-admission.ts`).
+It ran 30 per-slice `coverage` rounds over slices 88 to 117
+and then logged (line 1201 of `~/temp/agent/corpus-pass-XingZ6017.log`):
+`untranslated tail: 30 slice(s) after the last agreed pair, 5131 source code points at expansion 2.94, expected 15074, last pair renders 147: admitted on that bound`.
+The claim is that the rounds bought nothing because that bound decided anyway.
+
+What the code does,
+read at the head `24c736ea80`.
+`git log --oneline 2a336603bf..HEAD --` over `pass-insertion-admission.ts`,
+`insertion-coverage-model.ts`,
+`coverage-tail.ts`,
+`coverage-stage.ts`,
+`coverage-verdict.ts`,
+`stage-quorum.ts` and `stage-round.ts` printed nothing:
+none of the seven files changed since the run's build.
+
+- The tail and its bound do not depend on any round.
+  `readUntranslatedTail` (`archive/src/coverage-tail.ts`,
+  line 169) reads only `prepared.slices`,
+  and the log line is printed after the rounds
+  (`pass-insertion-admission.ts`,
+  lines 322 to 344).
+  So running the rounds after the bound check changes nothing about the work;
+  the bound could be computed first,
+  and the rounds are still the input to the next step.
+- The rounds are the first of the two signatures `doc/decision/translation-repair-absence-verdict.md` requires:
+  a roster that read both whole texts leaves the passage unplaced,
+  and a model-free signal corroborates.
+  The tail bound is the second signature and replaced the whole-page shortfall.
+  The addendum of 2026-09-19 says so:
+  "The second signature stays model-free."
+  Dropping the rounds would admit on one signature,
+  which the decision forbids.
+- Inside `classifyInsertionCoverage` (`insertion/src/corpus-run/insertion-coverage-model.ts`,
+  lines 200 to 217)
+  the bound admits a tail row only when `row.verdictKind` is `absent` or `split`.
+  A row the majority found `carried` goes to `carried`
+  (not inserted;
+  folded into a neighbour by `pass-carried-fold.ts`,
+  or guarded at publish),
+  and a row found `partly-carried` or `inconclusive` stays unresolved and ships as a recorded gap.
+  In those cases the verdict changes the outcome even though the bound admits.
+  `insertion/src/corpus-run/insertion-tail-split.unit.test.ts`
+  ("STILL LEAVES a tail slice a majority found partly carried out of the admission") pins that.
+  The bound says the tail cannot have been merged into the last agreed pair;
+  it does not say the passage is not rendered somewhere else on the page.
+  The rounds search the whole target independent of pairing,
+  which is their point.
+- An unheard roster for any row (`row.heard === 0`) throws `TranslationRepairInterruptedError`
+  (`pass-insertion-admission.ts`,
+  lines 310 to 317).
+  That outage check would go with the rounds.
+
+What the logs show:
+all 60 corpus-pass and `XingZ6*.log` files in `~/temp/agent` were scanned
+(`~/temp/agent/tr-fan/tr-w272-notes/tally.ts`).
+36 files hold coverage rounds,
+1249 rounds in all,
+every one on the `XingZ60` page:
+955 `absent`,
+294 `split`,
+and none `carried`,
+`partly-carried` or `inconclusive`.
+`zheermao22` and `CuspariaKLSY22` ran no coverage round (no source-only slice),
+so they say nothing about the tail.
+`XingZ6015` and `XingZ6017`,
+the two runs with the current rule,
+ran 31 and 30 rounds,
+`absent` and `split` 27 and 4 in the first and 24 and 6 in the second,
+all admitted on the bound.
+
+So on this page the verdict has never changed the tail outcome,
+which supports the claim for this page and this archive.
+It does not support it as a rule.
+The `XingZ6017` artifact (`corpus-pass-XingZ6017/artifacts/XingZ60.json`)
+shows one voice anchoring a `full` claim on slices 88,
+97,
+111 and 116,
+and a majority needs 4 of 6.
+A lone dissenting voice does occur (4 of 30 rows),
+and was three votes short of a carried verdict on those rows,
+a thin margin that this page happens to have and the rule cannot assume.
+`XingZ60` is the only page among the 36 scanned logs that ran a coverage round,
+so there is no sample of a page where a tail slice is rendered elsewhere.
+
+Time:
+the per-round totals sum to 2518 s in `XingZ6017`,
+of which 970 s is time to quorum and 1548 s is the straggler grace after quorum.
+2518 s over 712 s is a concurrency of about 3.5,
+consistent with the overlap of 4 the JSDoc example shows;
+the live overlap value is not logged,
+so that is inferred.
+`XingZ6015` ran 1596 s in all,
+443 s to quorum and 1153 s of grace.
+Seven rows in `XingZ6017` ended with one asked voice never heard (5 of 6 on slices 89,
+91,
+96,
+99,
+100,
+105 and 110),
+which most likely spent the grace to its end;
+the log does not name the missing voice.
+
+The decision:
+no skip,
+no reordering.
+The rounds protect the carried-elsewhere case
+(duplicated content or a lost carried-evidence guard),
+the partly-carried and inconclusive cases
+(a recorded gap rather than an insertion on one signature),
+and the unheard-roster outage stop.
+
+Open for the owner:
+ending a round when its outcome is fixed.
+Most of the 712 s is straggler grace
+(`STRAGGLER_GRACE_MS` and `grace.roundMs`,
+`doc/decision/translation-repair-straggler-grace.md`)
+spent after the tail outcome was already certain.
+For a tail row the bound admits,
+the outcome is `admitted` unless `anchoredAny >= floor(asked/2)+1` (carried or partly-carried) or the quorum fails.
+With 6 asked (a majority of 4) the outcome is fixed as soon as `anchoredAny + unheard < 4`:
+three non-covering voices at quorum are enough.
+Stopping there would keep the position set and the carried list identical,
+and would change only the recorded tallies (`heard 3 of 6`),
+the `absent` or `split` label and the findings text.
+The upper bound on the saving is the grace share of the rounds,
+about 61 percent of seat time in `XingZ6017`,
+about 7 minutes of 11.9.
+It was not built,
+for three reasons.
+
+- It overrides a standing owner decision on grace:
+  "No grace change is authorized before active runs finish and matched evidence exists"
+  (`doc/decision/translation-repair-straggler-grace.md`).
+- It needs an early-stop predicate in the shared `stage-round.ts`,
+  and `judgeCoverage` anchors each voice's quote against the target only after `gatherStageVoices` returns,
+  so the anchoring would have to move into the round per voice.
+  That is why this is not a small change.
+- It cannot be measured from the logs,
+  because the order voices arrived in is not logged.
+  A measurement would add the per-voice arrival order to the round line first.
+
+Commits:
+none.

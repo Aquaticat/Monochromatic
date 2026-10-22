@@ -182,6 +182,29 @@ it was 2 until the first keyed runs were read.
   The matrix was near for DeepSeek and read GLM at about a quarter of its use;
   its means come from traffic whose prompts were mostly served from the prefix cache,
   and this pipeline's sheets are fresh.
+  Those figures,
+  0.0758 and 0.3725 Wh,
+  were the table's from 2026-10-20 until 2026-10-22 (UTC).
+  On 2026-10-22 (UTC) they were replaced,
+  in ledger B808
+  (`package/translation-repair/doc/audit-ledger-neuralwatt-replies-cut-at-the-default-effort-and-the-energy-estimate.md`),
+  by the means of the settled calls of the rotation `zheermao22`,
+  `CuspariaKLSY22` and `XingZ6017`
+  (1,297 calls,
+  555.188 Wh,
+  the whole of that NeuralWatt day),
+  because the rotation measured 2.6 times the old figures in the main bucket,
+and `XingZ6017` alone measured 2.84 times its hold.
+  The 4,096 to 16,384 token bucket now holds 0.1958 Wh for DeepSeek V4.1 Flash (558 calls)
+  and 0.9577 Wh for GLM-5.3-Flash (298 calls).
+  The 16,384 to 65,536 token bucket,
+  which held the matrix's 0.1395 and 0.2009 Wh,
+  now holds 0.3205 Wh (385 calls) and 1.2239 Wh (30 calls,
+  all from one entry).
+  The module note in `package/translation-repair/provider/src/neuralwatt-estimate.ts`
+  holds the counts and the per-entry means.
+  The other buckets keep the matrix's figures;
+  the rotation held at most 15 calls in any of them and none in two.
 - **The spread is in the output.**
   The largest single calls were 0.840 Wh for DeepSeek,
   eleven times its mean,
@@ -207,6 +230,12 @@ it was 2 until the first keyed runs were read.
   and 30 GLM calls each 1.25 Wh past the mean would overrun the day by about 37 Wh
   (6.8 percent of 550 Wh),
   a bound no measured minute came near.
+  The recalibration of 2026-10-22 (UTC) recomputed the bound at the rotation's figures:
+  30 GLM calls each at the 90th percentile (2.23 Wh against 0.96 Wh held) overrun the day by about 38 Wh
+  (7.0 percent of 550 Wh),
+  and the rotation's day,
+  held at about a third of its use,
+  ended 5.188 Wh (0.94 percent) past zero.
   A margin of 2 held DeepSeek at 1.8 times its use at that run's figures,
   and a larger margin sends the last calls of every day to a paid provider while the free energy still covers them;
   the owner asked for the margin "as small as can be justified,
@@ -217,10 +246,16 @@ it was 2 until the first keyed runs were read.
   at a margin of 1,
   from 0.0011 Wh
   (DeepSeek under 256 tokens)
-  to 0.9089 Wh
-  (GLM from 262,144 tokens up,
-  0.17 percent of 550 Wh),
-  and 0.0758 and 0.3725 Wh in the measured bucket.
+  to 1.2239 Wh
+  (GLM from 16,384 to 65,536 tokens,
+  0.22 percent of 550 Wh;
+  the matrix's largest,
+  GLM from 262,144 tokens up,
+  is 0.9089 Wh,
+  0.17 percent),
+  with 0.1958 and 0.9577 Wh for DeepSeek and GLM in the 4,096 to 16,384 token bucket.
+  Until 2026-10-22 (UTC) the largest hold was the matrix's 0.9089 Wh,
+  and the 4,096 to 16,384 token bucket held 0.0758 and 0.3725 Wh.
 - **What the margin cannot do.**
   It cannot stop plan spend by itself.
   The calls in flight together can pass the day's end by their combined excess before the first one settles;

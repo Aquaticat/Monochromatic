@@ -392,6 +392,16 @@ each new shape passes under the stall,
 and fails when quorum waits for the slow voice,
 or when the round waits out a window.
 
+A scripted review client held a straggler for 25 ms counted from its own request,
+so that it landed after quorum,
+and two bounds entries said it lands there "on any machine" (ledger B813).
+The stage's own work between the peers' answers and the quorum tally is real time too,
+and in one run of the rotation sweep it outlasted the 25 ms:
+the held seat landed before quorum and the readers' window had no straggler to cut.
+The hold is 1000 ms now.
+A client-side barrier that holds the straggler until every other seat has answered holds nothing,
+since the other seats answer synchronously and the slow part is the stage after the client returns.
+
 The rule:
 a real-clock case asserts only bounds that load can widen and not break;
 a case that needs a caller asleep uses a window no stall outlasts;
@@ -419,6 +429,13 @@ never a few seconds over milliseconds of work,
 which a loaded machine outruns.
 A case that needs a run stopped brings its own controller,
 so the stop for a hang never doubles as the stop a case asserts.
+A real-clock hold in a fixture,
+which keeps a seat back so that it lands after a mark,
+is sized against the stage's own work between the other answers and that mark under load,
+and is far over it;
+a few tens of milliseconds counted from the held seat's own request is not.
+A bounds entry never says a seat lands after a mark "on any machine"
+unless a gate or an abort the case controls makes it so (ledger B813).
 
 What enforces it:
 `real-clock-bounds.unit.test.ts`,
@@ -851,6 +868,19 @@ and not by a membership check (ledger B631).
 A case that needs one named seat asked passes `fanOut: 'whole-bench'` to the stage,
 or pins `benchStart`,
 and never relies on the rotated window to reach it (ledger B701).
+The same holds for a case that reads a named seat's own output or ballot:
+the rendering of the one interested translator,
+or a judge's scripted ballot.
+It asks the whole bench in every stage it drives,
+the slate and the judging both,
+because a seat the first round leaves out comes back empty and the case then reads an absence
+(ledger B701,
+B812).
+The run-off line cases of the translate stage asked four translators at the default window,
+so the first round asked three of them by the hash of the prompt.
+Under salts 2 and 6 of the sweep the interested translator was left out,
+its own word came back empty,
+and the judges agreed where the cases expect a decline.
 The composite cases of the archive block review (ledger B712) asked the whole bench and did not pin the start,
 so the numbers of the candidates followed the sheet text,
 and a change to the reply instruction failed five of them (ledger B734):

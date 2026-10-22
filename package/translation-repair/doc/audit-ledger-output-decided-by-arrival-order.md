@@ -6,7 +6,10 @@ when the package `package/module/translation-repair` was split into the packages
 
 Findings,
 refusals and log lines whose content or order depended on which concurrent work ended first,
-and the scan that looks for it.
+the scan that looks for it,
+and the scripted cases that read a seat the rotated window did not ask (B701,
+B734,
+B812).
 
 Part of [Audit ledger](audit-ledger.md),
 which lists every file of this record.
@@ -900,3 +903,52 @@ which says nothing about the other nine rotations.
 Open:
 the rotation sweep before the change lands,
 as `mistake-prevention-tests-clocks-and-arrival-order.md` says for a change to the text of a sheet.
+
+## B812: the run-off line cases asked a rotated window of the bench and read a seat the window left out
+
+Status:
+fixed on 2026-10-22 (UTC),
+fix `b8b91e2d7c`,
+cache versions none.
+A member of the family of B701,
+found by the rotation sweep.
+
+What the sweep showed:
+`package/translation-repair/translate-stage/src/translate-runoff-line.unit.test.ts`
+failed under rotation salts 2 and 6 of
+`mise run //package/translation-repair/source-scan:test:rotation-sweep`,
+with `expected 'judged' to equal 'declined-indecision'` at lines 328 and 349.
+It passed under the other salts of the sweep.
+
+The cause:
+the two cases read the interested translator's own rendering and script each judge's ballot.
+`produceTranslateSlate` was called with four translators and the default fan-out window,
+so the first round asked quorum plus one seats (three of the four),
+rotated by an FNV hash of the prompt (`stage/src/stage-fanout-window.ts`).
+Under salts 2 and 6 the interested translator `CAT_A` was left out of the window,
+its own word came back empty,
+and the judges agreed where the cases expect a decline.
+The scripted ballots named a seat the rotated window no longer asked,
+which is the shape of B701.
+
+The fix:
+the slate and the judging of both cases pass `fanOut: 'whole-bench'`,
+so every translator and every judge is asked and the hash decides nothing the case reads.
+After the fix the translate-stage sweep was clean over salts 0 to 9.
+
+Why the cases ran green until the sweep:
+a plain unit run uses one start of the rotation,
+and the cases pass under it.
+Only the sweep,
+which runs the family under ten shifts of the rotation,
+reaches salts 2 and 6.
+When the cases were added relative to the census of B701 was not traced.
+
+Cache versions:
+none moves.
+The change is in a test file and adds no text a model is shown.
+
+Recurrence:
+`mistake-prevention-tests-clocks-and-arrival-order.md`,
+"Orders and seats that a prompt hash decides":
+a scripted case that reads a named seat's own output or ballot asks the whole bench.
