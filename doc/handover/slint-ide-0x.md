@@ -1477,17 +1477,19 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     taken in an input gap over 20 ms is a possible new extra frame. My check in progress (unit `wake-all`, trees
     `~/temp/agent/ab-wake-a` = `origin/main`, `~/temp/agent/land-wake` = merged; driver `~/temp/agent/wake-all.mjs`,
     rows `wake-lat-ab.jsonl`, `wake-lat-aa.jsonl`, log `wake-all.log`): latency 40 pairs, A against A 20 pairs, stall
-    A/B 20 pairs on a host at load 3.8. Land only if the stall counts of B are not worse than A beyond the spread of A
+    A/B 20 pairs, at whatever load there is (3.8 when started; the A against A pairs measure the spread that load
+    adds). Land only if the stall counts of B are not worse than A beyond the spread of A
     against A; else report to the owner with the numbers. Then gates once on the merged snapshot, push, reinstall,
     remove worktrees and the branch.
-    Open, in order: (1) the stalls away from slot 50 (slot 33 and 72, one run each; undecided, on a quiet host) and the
+    Open, in order: (1) the stalls away from slot 50 (slot 33 and 72, one run each; undecided; a larger alternating pass with a same-binary control, under whatever load there is) and the
     +20 ms tail (the tail agent above);
     (2) the flake work, in `doc/handover/ide-native-flakes.md`:
     fixed with counts (refused-tile test 10 of 360 to 0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160
     to 0 of 160, find-box menu test by its guard, see the LANDED block above); open: the annotation stability tests
     (cause unknown, frames kept under `target/flake-frames/` for the next failure), the two incomplete ledger entries,
     and the video-memory question (7.98 of 7.98 GiB in every full run; no failure attributed). Full `test:native`
-    passes are snapshots, not flake counts. (3) Scale 2, light scheme and seam checks in the app, on a quiet host.
+    passes are snapshots, not flake counts. (3) Scale 2, light scheme and seam checks in the app, under the load there is
+    (alternating arms and a control, never a wait for quiet).
     The prevention proposal `doc/planning/agents-cannot-load-the-host.md` waits for the owner: a fresh Claude session and
     at least two more reviewers must read it first. Stopgap rules `NLG` and `NLD` are in `AGENTS.md`. The entry in
     `doc/limitation/claude.md` ("Delegated GPU migration of the Slint IDE") lists this session's and the agents' mistakes.

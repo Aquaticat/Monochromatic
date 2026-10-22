@@ -691,6 +691,13 @@ NLD:
  stop every process and `systemd-run` unit the subagent left (check `ps`,
  `systemctl --user list-units`).
 
+NQH:
+ Never wait for a quiet host or call one quiet:
+ other sessions keep the load average up.
+Measure under the load there is,
+ alternating arms with a same-binary control for the spread,
+ and report counts.
+
 BOX:
  Third-party benchmarks run mount-free,
  inputs baked into the image.
