@@ -88,6 +88,11 @@ For deeper background,
 - [Session source-root decision](../decision/music-player-session-source-root.md)
 - [Package context](../../package/music-player/android-app/CONTEXT.md)
 
+The three decision links spelled `../decisions/` when this plan was written on 2026-06-13.
+The `docs/decisions/` family became `doc/decision/` on 2026-07-15 (`bd19d57e20`),
+so the targets moved to `../decision/`
+and the `../decisions/` spelling no longer resolves.
+
 ## The two problems
 
 ### Problem one: the cold-start load blocks the whole library
