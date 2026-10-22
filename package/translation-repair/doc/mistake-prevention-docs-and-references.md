@@ -175,8 +175,11 @@ in local EDT with no zone,
 157 of them in 17 files,
 and the scan that found them skipped 14 more written with seconds (D25).
 It happened again on 2026-10-18:
-the files' local times, 16:58 to 17:00 EDT, were written as UTC in a TSDoc and a ledger entry,
-four hours early, and the zone scan passed them (ledger B672).
+the files' local times,
+16:58 to 17:00 EDT,
+were written as UTC in a TSDoc and a ledger entry,
+four hours early,
+and the zone scan passed them (ledger B672).
 
 The rule:
 a date or time is read from its source's own timestamp and written in UTC with its zone.
@@ -190,7 +193,8 @@ after its second end;
 a time whose zone cannot be recovered says so in words.
 A time read from a local-zone tool and labelled UTC passes the zone scan,
 so the offset is read from the tool's own output (`stat --format=%y` prints `-0400`)
-or the tool runs under `TZ=UTC`, `date --utc --reference=<file>` for a file.
+or the tool runs under `TZ=UTC`,
+`date --utc --reference=<file>` for a file.
 
 What enforces it:
 `package/translation-repair/source-scan/src/clock-time-zones.unit.test.ts` for clock times,
@@ -202,7 +206,8 @@ with the D12 census as the way to check them.
 No scan can catch a local time labelled UTC:
 the text holds the digits and the label and nothing says which tool printed them,
 so a check of the words would pass or refuse every time alike.
-The check that works is on the source, the offset the tool printed.
+The check that works is on the source,
+the offset the tool printed.
 
 ## Docs that only grow
 
