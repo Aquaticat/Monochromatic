@@ -1111,6 +1111,47 @@ Limits:
    The timestamps say it was written 0.8 s before the hook ran; the bundle check replayed the file afterward.
 - A flagged stop whose notification never arrives is released once; the next stop is judged normally.
 
+### Uncertainty check missed admitted gaps, 2026-10-22
+
+A report about two music-player workflows listed what the agent had not checked ("I didn't check whether the release
+job runs the tests", "I didn't read its rules", "I didn't check whether the release can save that cache itself") and
+the stop was released with no uncertainty reminder.
+Running the saved message through the pre-change code reproduced it: `findUncertainty` returned `NO_MATCH`.
+
+Two separate causes:
+
+- The phrase list held hedge words (`probably`, `likely`, `could be`) and no phrase for an admitted gap.
+- `stripQuotedStrings` treats a single quote as a delimiter, so on a line with two contractions it deleted the text
+   between them.
+   In the report, `workflow's ... didn't` removed 121 characters of the "Release cache" line, hedge included.
+   The same bug hides an ordinary hedge: `It doesn't build, probably because the cache isn't warm.` lost `probably`.
+
+Changes: an "admitted gaps" group of phrases in `uncertainty-phrases.ts`, and a fold of in-word apostrophes to
+`U+2019` before quote stripping, with `findUncertainty` folding curly apostrophes back so one ASCII entry matches both.
+A quote mark after a space or at the edge of the text still opens a quoted string.
+
+Measured on 1,682 stops (assistant text followed by a user record with no tool call between) in the transcripts under
+200 MB, four larger files skipped:
+the old code flagged 116 (6.9%) and the new code flags 208 (12.4%).
+Of the 92 newly flagged, 80 come from the added phrases and 12 from the stripper fix, which revealed `likely`,
+`could be`, `may be`, `probably`, `should be`, `i suspect` and `not sure` that contractions had hidden.
+No stop that the old code flagged is lost.
+The built hook blocks the saved report with `uncertain language ("i didn't check")`, passes a plain
+"I haven't deleted anything", and still passes inside a blocked chain.
+
+A first list also held the bare adjectives `untested` and `unverified`.
+They accounted for 25 of the 116 new flags, and by my reading of the snippets about half described a thing
+("untested merge", "the unverified version job") instead of the agent's own gap, so they were removed.
+That reading is not a labelled sample.
+A few kept hits are also not gaps ("I did not run anything or change anything else"), and several are gaps the agent
+cannot close (a check that needs the user's consent); the reminder lets the agent say so and continue.
+
+Owner decision on the same day: Luna may also be used to detect uncertainty, since a phrase list cannot catch every
+wording; the phrase list is the fix for this case.
+Not built.
+A Luna uncertainty label would need its own corpus calibration (see #1772) and a decision on whether it replaces or
+adds to the phrase list.
+
 ### Not yet known
 
 - Agreement between Luna's label and a human label.

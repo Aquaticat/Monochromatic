@@ -79,7 +79,7 @@ function findUncertainty(prose: string,): UncertaintyMatch | typeof NO_MATCH {
    `PHRASE_NOT_FOUND` when no phrase fires.
    */
   const phraseHit = containsAnyOfWordBounded({
-    haystack: prose,
+    haystack: normaliseApostrophes(prose,),
     phrases: UNCERTAINTY_PHRASES,
   },);
   if (phraseHit !== PHRASE_NOT_FOUND)
