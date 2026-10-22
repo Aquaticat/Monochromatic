@@ -112,7 +112,8 @@ Built on branch `worktree-agent-a4d54af4e63faea6b` (off `a7f8523f0c`).
   on the window thread, as the cut picture rendered about 16 before.
   Its frame time was not measured.
 - The densest text (`minimap_dense_tests.rs`) was not stacked.
-- No look at the minimap of a tall window in a real or nested compositor window.
+- No look at the minimap of a tall window in a real or nested compositor window
+  (closed on 2026-10-22: 1100x3700 at scales 1 and 2 and 1100x8100 at scale 2, headless).
 - The recorded limit is read when a picture is requested and when it is drawn;
   a device change at run time (a new device with another limit) is posted again through the key,
   but a window that moves to another GPU was not tried.
@@ -813,6 +814,11 @@ Everything is compared in logical pixels, scale 1 against scale 2, 1100x660, dar
   (scale 2) levels in 4 to 7 rows just above it;
   the other seams do not break because every later chunk is moved by the same row.
   Against 0 flagged rows in all clean shots.
+  What this measure cannot see: the pitch (4 or 8 rows) divides 512, so no seam cuts through a glyph, and a chunk
+  shifted by a whole line leaves the picture identical.
+  Those two cases are covered only by `src/native/minimap_seam_tests.rs` (scale 1.5, equal to an unsplit render),
+  not by these captures.
+  The positive control of the tile measure is the synthetic 1 px roll, not a code fault.
   The fault is visible in a 6x crop as a row of squashed glyphs
   (`seam-compare-scale2-clean-left-fault-right.png`).
 - Tile seam: the code tile is one texture, so it has no seam inside it.
@@ -834,7 +840,8 @@ Everything is compared in logical pixels, scale 1 against scale 2, 1100x660, dar
 
 ### Findings that are not defects of these three checks
 
-- The code tile does not cover a view larger than the 64 MiB rule allows.
+- Symptom first: in a 7680x4320 window at scale 1 the top of the file is not drawn.
+  The code tile does not cover a view larger than the 64 MiB rule allows.
   The tile is cut to the rule around its middle, so a view of more than about 16.7 million pixels (the area of text
   columns by rows) has rows that carry no text.
   Measured: 7680x4320 at scale 1: the tile is 7259x2280 and rows 21 to 1016 and 3062 to 4320 of the 4,320 are blank
@@ -861,6 +868,10 @@ Everything is compared in logical pixels, scale 1 against scale 2, 1100x660, dar
   It fires for the 64 MiB tile at 288 workgroups (by my count of 256 by 256 pixel bins),
   below the corruption limit that file measures, and no wrong pixel
   was found in the view in these runs; the rows of the tile outside the view were not read back.
+  The 64 MiB rule is 16,777,216 pixels, exactly 256 bins of 256 by 256, so a tile at the cap with edges off the
+  256 pixel grid counts more than 256 bins: it fires at scale 2, where the tile is at the cap, not at scale 1.
+  The only evidence that such a tile renders correctly outside the view: in the recorded scroll through the overscan
+  at scale 2 (`sr2d`, frames 7 to 10) the view moved through those rows with 0 periodicity violations.
 - During a fling the minimap picture lags the box: in one run the track had 91 to 94 blank rows at its bottom 3.5 s
   after a 3,777 px touchpad scroll (the fling went on for more than 10 s), and 0 blank rows once the scroll had
   stopped.
