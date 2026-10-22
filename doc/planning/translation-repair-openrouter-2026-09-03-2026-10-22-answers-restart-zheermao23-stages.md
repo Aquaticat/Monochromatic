@@ -366,8 +366,8 @@ stand.
   contributor `hf:zai-org/GLM-5.3-Flash`);
   the writers' sheets were not read.
 - B803 (composite by line difference):
-  attempted three times (`archive composite not built` at 12:39:48,
-  12:44:45 and 12:49:20 UTC),
+  attempted three times (`archive composite not built` at 12:39:48 UTC,
+  12:44:45 UTC and 12:49:20 UTC),
   refused three times,
   each time for overlapping revisions,
   and the refusal names the overlapping lines
