@@ -1702,6 +1702,29 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     workflow run (the push path filter lists only `Cargo.toml` files). Not proved: the real release path (attestation,
     the checksums file in `gh release create`, `nws-create-release` after `nws-publish-crate`), which only the next
     real release exercises, and that release needs the owner's go-ahead. Agent worktree and branches removed.
+    LANDED, 2026-10-22, conversion of the 15 other `.mjs` files (agent `afeb812862ba874cb`, branch tip `213bcc5ab4`;
+    merge tip `0f93cc19df` on `origin/main`, ancestry confirmed). Gates on the merged snapshot in a capped unit
+    (`conv2-gates`): merge clean, `lint` 0, `test:bin` 71 of 71, `test` 803 run 803 passed 1 skipped,
+    `inspect:no-software-renderer` 0 (`test:native` not run: no native file changed). The guards script's diff
+    (`inspect-source-guards`) was read in full: types and `replaceOne({...})`/`run({...})` object parameters only,
+    one added `throw` for a guard that names no test kind, cases untouched. Open: the agent saw the `clip-chosen`
+    guard's removed run panic at `src/native/tile_reads.rs:187:45` instead of the expected failure; being checked in a
+    disposable copy (unit `conv2-guards`, guards `clip-chosen`, `failed-job-freed`, `minimap-scroll-notes-bands`).
+    IDE release workflow agent `a286368be67434dfd` handed back (branch tip `b79ed220b1`): `ide-release.yml` (641
+    lines), `doc/decision/ide-releases.md`, `doc/runbook/release-the-ide.md`, README `### Releases`. I read the whole
+    workflow: detect job (version bump trigger, dispatch dry run defaults true, real release only on `main`, existing
+    tag skips), build in the repository's podman image tasks on `ubuntu-24.04`, gates (`--version`, shared libraries
+    and glibc floor 2.39, `inspect:no-software-renderer`, `inspect:bundle` window-free checks, tracked files
+    unchanged), tarball plus notices file plus `SHA256SUMS`, attestation only when not a dry run, one
+    `gh release create --prerelease`. `actionlint` 1.7.12 exits 0 on the merged workflow. LANDED: merge tip
+    `e976345c28` on `origin/main`, ancestry confirmed; the push started no run (path filter lists only the IDE
+    `Cargo.toml`). Dry run dispatched from `main`: `gh workflow run ide-release.yml --ref main -f dry-run=true`, run
+    `39832705367`, watched by a bounded background `gh run watch`; on its end: download the artifacts, check archive,
+    notices and `SHA256SUMS`, run the extracted binary `--version`, record the cold build time in the decision, send
+    failures back to the agent. Two owner decisions still to ask before the first real release: (1) licensing of the
+    shipped bytes (Slint used under `GPL-3.0-only` by the `about.toml` default that the owner never decided, inside a
+    package whose manifest says `LGPL-3.0-or-later`); (2) toolchain and reproducibility (the stable compiler comes
+    from the unpinned Fedora image, not `mise.lock`; no caches; whether to pin the image, Zig and nextest later).
     Stall pass agent `ae05d7039f46336dc` (started 2026-10-22, own worktree off `origin/main`, branch push only; brief
     quotes `NLG`, `NLD`, `RXI`, `NQH`): at least 60 alternating stall pairs (tree A = before the wake-up, tree B =
     `origin/main`) plus 30 A against A pairs for the spread; keeps the debug timeline of every stalled run and decides
