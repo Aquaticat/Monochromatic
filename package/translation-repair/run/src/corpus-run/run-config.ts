@@ -51,6 +51,7 @@ import {
   SEAT_WITHHOLD_ASKS,
   seatTallyClient,
 } from '@monochromatic-dev/translation-repair-stage/ts';
+import type { ProviderOff, } from './providers-off.ts';
 import { configureProviders, } from './run-providers.ts';
 import { refusingCulledSeats, } from '../culled-seat-guard.ts';
 import { resolveGit, } from '@monochromatic-dev/translation-repair-glossary/ts';
@@ -1128,6 +1129,9 @@ async function unconfiguredSyntheticQuota(): Promise<QuotaSnapshot> {
 
  @param promptPayloadDir - optional durable payload checkpoint beneath run root
 
+ @param off - providers left off, whose keys are read as unset; the owner's rulings by
+ default (`PROVIDERS_LEFT_OFF`), an empty list in a case that exercises an off provider's client
+
  @returns Ready client, routed across configured providers and counted per seat
 
  @throws {@link RunConfigError} when every provider key variable is unset or empty
@@ -1142,10 +1146,12 @@ export function runClientFrom(
     env,
     transport,
     promptPayloadDir,
+    off,
   }: {
     readonly env: Readonly<NodeJS.ProcessEnv>;
     readonly transport: ModelTransport;
     readonly promptPayloadDir?: string;
+    readonly off?: readonly ProviderOff[];
   },
 ): RunClient {
   /**
@@ -1166,6 +1172,7 @@ export function runClientFrom(
   } = configureProviders({
     env,
     transport,
+    ...((off === undefined) ? {} : { off, }),
   },);
   /**
    Each configured provider's client, absent where its key is unset.

@@ -535,6 +535,8 @@ await describe({
                   },
                   transport: unreachedTransport,
                   signal: AbortSignal.timeout(HANG_STOP_MS,),
+                  // BEDROCK IS LEFT OFF BY DEFAULT; this case reads its ledger as when it is on.
+                  off: [],
                 },);
               },);
             }

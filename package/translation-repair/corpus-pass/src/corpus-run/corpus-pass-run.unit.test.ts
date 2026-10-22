@@ -33,6 +33,7 @@ import { prepareDocumentPair, } from '@monochromatic-dev/translation-repair-adju
 import {
   lockRunsDir,
   prepareRunsLayout,
+  PROVIDERS_LEFT_OFF,
   runClientFrom,
   RunsDirectoryBusyError,
 } from '@monochromatic-dev/translation-repair-run';
@@ -44,6 +45,7 @@ import {
 } from '@monochromatic-dev/translation-repair-glossary';
 import {
   type CorpusPassInput,
+  passProvidersOffLines,
   runCorpusPassOver,
 } from '../../dist/final/node/index.mjs';
 import {
@@ -303,6 +305,11 @@ function nothingWatched(): Watched {
   };
 }
 
+/**
+ Lines a launch prints to say which providers it leaves off, after the required-provider lines and before the first entry.
+ */
+const OFF_LINES: readonly string[] = passProvidersOffLines({ off: PROVIDERS_LEFT_OFF, },);
+
 await describe({
   name: runCorpusPassOver.name,
   concurrency: 1,
@@ -336,6 +343,7 @@ await describe({
         expect(printed.lines,).toEqual([
           `START tip=${TIP} pipeline=${built.digest} files=${String(built.fileCount,)} pending=1 done=0 `
           + 'soft=259200000ms hard=25200000ms',
+          ...OFF_LINES,
           'DONE processed=1 of pending=1; artifacts=1/1 declined=0 unpairedArtifacts=0 elapsed=42ms',
         ],);
         expect(watched.settled,).toEqual(['tabby',],);
@@ -407,6 +415,7 @@ await describe({
           + 'commit that has it.)',
           `START tip=${TIP} pipeline=${built.digest} files=${String(built.fileCount,)} pending=2 done=1 `
           + 'soft=259200000ms hard=25200000ms',
+          ...OFF_LINES,
           'DONE processed=2 of pending=2; artifacts=2/2 declined=1 unpairedArtifacts=0 elapsed=42ms',
         ],);
       },
@@ -566,6 +575,7 @@ await describe({
           + 'entry never enters a pool later draws treat as natural accumulation)',
           `START tip=${TIP} pipeline=${built.digest} files=${String(built.fileCount,)} pending=1 done=0 `
           + 'soft=259200000ms hard=25200000ms',
+          ...OFF_LINES,
           'DONE processed=1 of pending=1; artifacts=1/1 declined=0 (pairs counted over the entries --only named, '
           + 'not every pair at the pin) elapsed=42ms',
         ],);
@@ -607,6 +617,7 @@ await describe({
           'a straggler note',
           'a writer note',
           'REQUIRED-PROVIDERS hyper status=wet',
+          ...OFF_LINES,
           'DONE processed=0 of pending=0; artifacts=0/0 declined=0 unpairedArtifacts=0 elapsed=0ms',
         ],);
       },
@@ -639,6 +650,7 @@ await describe({
         expect(printed.lines,).toEqual([
           `START tip=${TIP} pipeline=${built.digest} files=${String(built.fileCount,)} pending=1 done=0 `
           + 'soft=259200000ms hard=25200000ms',
+          ...OFF_LINES,
           `PLAN ok tip=${TIP} pipeline=${built.digest} client=constructed pending=1 first=tabby`,
         ],);
         expect(watched.settled,).toEqual([],);

@@ -18,6 +18,7 @@ export {
   passLaunchLines,
   passOnlyLines,
   passPlanLine,
+  passProvidersOffLines,
   passRequiredLines,
   passStartLine,
 } from './corpus-run/corpus-pass-lines.ts';

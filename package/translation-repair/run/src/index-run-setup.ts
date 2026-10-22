@@ -27,6 +27,11 @@ export {
   refuseRepeatedLogs,
 } from './corpus-run/report-log-read.ts';
 export {
+  isProviderOff,
+  type ProviderOff,
+  PROVIDERS_LEFT_OFF,
+} from './corpus-run/providers-off.ts';
+export {
   assertRequiredProvidersReady,
   readRequiredProviders,
   type RequiredProvider,

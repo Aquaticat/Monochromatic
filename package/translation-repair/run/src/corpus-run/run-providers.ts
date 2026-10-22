@@ -19,7 +19,13 @@ import {
   type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { ModelTransport, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { createDecisionsClient, } from '../decisions-client.ts';
+import {
+  isProviderOff,
+  type ProviderOff,
+  PROVIDERS_LEFT_OFF,
+} from './providers-off.ts';
 import { RunConfigError, } from './run-config-error.ts';
 import { registerRunEndReport, } from './run-end-report.ts';
 
@@ -95,6 +101,10 @@ export type ConfiguredProviders = {
  environment would build clients on the keys the suite inherits and a
  Bedrock client over the real spend ledger
 
+ @param off - providers left off, whose keys are read as unset: no client, a meter that reads
+ dry, and no call. The owner's rulings by default (`PROVIDERS_LEFT_OFF`); a test that exercises
+ an off provider's client hands an empty list
+
  @returns Clients present per key, plus the budgets
 
  @throws {@link RunConfigError} when every provider key variable is unset or empty
@@ -108,32 +118,81 @@ export function configureProviders(
   {
     env,
     transport,
+    off = PROVIDERS_LEFT_OFF,
   }: {
     readonly env: Readonly<NodeJS.ProcessEnv>;
     readonly transport: ModelTransport;
+    readonly off?: readonly ProviderOff[];
   },
 ): ConfiguredProviders {
   /**
+   Reads one provider's key, as unset where the provider is left off.
+
+   @param provider - provider the key belongs to
+
+   @param key - the environment's value, empty when unset
+
+   @returns The key, or empty for a provider that is off or has none
+
+   @example
+   ```ts
+   const bedrockKey = keyUnlessOff({ provider: 'bedrock', key: env.TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY ?? '', },);
+   ```
+   */
+  function keyUnlessOff(
+    {
+      provider,
+      key,
+    }: {
+      readonly provider: ProviderName;
+      readonly key: string;
+    },
+  ): string {
+    if (isProviderOff({
+      off,
+      provider,
+    },))
+      return '';
+    return key;
+  }
+
+  /**
    NeuralWatt API key, the fifth provider and the first in routing order.
    */
-  const neuralWattKey = env.TRANSLATION_REPAIR_NEURALWATT_API_KEY ?? '';
+  const neuralWattKey = keyUnlessOff({
+    provider: 'neuralwatt',
+    key: env.TRANSLATION_REPAIR_NEURALWATT_API_KEY ?? '',
+  },);
   /**
    Synthetic API key, resolved by name from the environment handed over.
    */
-  const apiKey = env.TRANSLATION_REPAIR_SYNTHETIC_API_KEY ?? '';
+  const apiKey = keyUnlessOff({
+    provider: 'synthetic',
+    key: env.TRANSLATION_REPAIR_SYNTHETIC_API_KEY ?? '',
+  },);
   /**
    Second provider key,
    independently optional because either provider may run alone.
    */
-  const hyperKey = env.TRANSLATION_REPAIR_CHARM_HYPER_API_KEY ?? '';
+  const hyperKey = keyUnlessOff({
+    provider: 'hyper',
+    key: env.TRANSLATION_REPAIR_CHARM_HYPER_API_KEY ?? '',
+  },);
   /**
    Third provider key, the paid fallback, optional for the same reason.
    */
-  const openRouterKey = env.TRANSLATION_REPAIR_OPENROUTER_API_KEY ?? '';
+  const openRouterKey = keyUnlessOff({
+    provider: 'openrouter',
+    key: env.TRANSLATION_REPAIR_OPENROUTER_API_KEY ?? '',
+  },);
   /**
    Fourth provider key, the prepaid per-token provider, optional likewise.
+   READ AS UNSET WHILE BEDROCK IS OFF (`providers-off.ts`), however the environment holds it.
    */
-  const bedrockKey = env.TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY ?? '';
+  const bedrockKey = keyUnlessOff({
+    provider: 'bedrock',
+    key: env.TRANSLATION_REPAIR_AMAZON_BEDROCK_API_KEY ?? '',
+  },);
   /**
    Whether no provider at all is configured, which nothing can run on.
    */
