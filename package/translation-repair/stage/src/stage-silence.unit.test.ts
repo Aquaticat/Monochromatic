@@ -17,9 +17,11 @@ import {
 
 import {
   everyStageHeard,
+  refinementIsResumable,
   silentStageLabel,
   silentStagesOf,
   silentStagesOfRecord,
+  silentStagesOfSettlement,
   STAGE_QUORUM_UNMET_PREFIX,
   stageQuorumUnmetFinding,
 } from '../dist/final/node/index.mjs';
@@ -140,6 +142,54 @@ await describe({
               },
             },),).toStrictEqual(['panel 0/6 (cluster/a)', 'stage-quorum-unmet (checker 1/3)',],);
             expect(silentStagesOfRecord({ record: { findings: [], silentStages: [], }, },),).toStrictEqual([],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: silentStagesOfSettlement.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'NAMES the silence the embedded outcome carries and the silence the refinement\'s own findings carry, '
+            + 'in that order',
+          fn: async () => {
+            expect(silentStagesOfSettlement({
+              settlement: {
+                outcome: { findings: [], silentStages: ['panel 0/6 (cluster/a)',], },
+                findings: [stageQuorumUnmetFinding({ shortfall: 'rewriter 0/3', },),],
+              },
+            },),).toStrictEqual(['panel 0/6 (cluster/a)', 'stage-quorum-unmet (rewriter 0/3)',],);
+          },
+        },),
+      ],
+    },),
+
+    describe({
+      name: refinementIsResumable.name,
+      concurrency: DEFAULT_CONCURRENCY,
+      children: [
+        it({
+          name: 'ANSWERS true only when neither the outcome nor the refinement names a silent stage',
+          fn: async () => {
+            /**
+             An outcome that heard every stage.
+             */
+            const heard = { findings: [], silentStages: [], };
+            expect(refinementIsResumable({ settlement: { outcome: heard, findings: [], }, },),).toBe(true,);
+            expect(refinementIsResumable({
+              settlement: { outcome: { ...heard, silentStages: ['panel 0/6 (cluster/a)',], }, findings: [], },
+            },),).toBe(false,);
+            expect(refinementIsResumable({
+              settlement: {
+                outcome: { ...heard, findings: [stageQuorumUnmetFinding({ shortfall: 'critic 0/6', },),], },
+                findings: [],
+              },
+            },),).toBe(false,);
+            expect(refinementIsResumable({
+              settlement: { outcome: heard, findings: [stageQuorumUnmetFinding({ shortfall: 'rewriter 0/3', },),], },
+            },),).toBe(false,);
           },
         },),
       ],

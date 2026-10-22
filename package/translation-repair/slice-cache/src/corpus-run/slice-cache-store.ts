@@ -3,9 +3,9 @@ import { join, } from 'node:path';
 
 import {
   type BlockPair,
-  everyStageHeard,
   isIndexPairList,
   type PairedDocumentRecord,
+  refinementIsResumable,
   silentStagesOfRecord,
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import { isStringList, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
@@ -477,7 +477,9 @@ function isResumableRepairOutcome(value: unknown,): value is ChunkRepairOutcome 
 
 /**
  Whether a stored refinement may be resumed, on the same rule as the repair
- outcome: right shape, every stage heard.
+ outcome: right shape, every stage heard. The question is the one the refine
+ phase asks before it writes (`refinementIsResumable`), so a record this reader
+ would discard is never written.
 
  @param value - parsed cache file
 
@@ -491,11 +493,7 @@ function isResumableRepairOutcome(value: unknown,): value is ChunkRepairOutcome 
 function isResumableRefinement(value: unknown,): value is RefinedSliceSettlement {
   if (!isRefinedSliceSettlement(value,))
     return false;
-  /**
-   The stages the embedded outcome names as silent, as data or as a finding.
-   */
-  const silent = silentStagesOfRecord({ record: value.outcome, },);
-  return everyStageHeard({ findings: value.findings, },) && (silent.length === 0);
+  return refinementIsResumable({ settlement: value, },);
 }
 
 /**

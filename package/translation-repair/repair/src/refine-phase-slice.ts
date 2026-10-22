@@ -22,8 +22,8 @@ import {
 } from './refine-slice-settle.ts';
 import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
 import {
-  everyStageHeard,
-  silentStagesOf,
+  refinementIsResumable,
+  silentStagesOfSettlement,
   type StageSettings,
   UnpreparedSliceError,
 } from '@monochromatic-dev/translation-repair-stage/ts';
@@ -102,7 +102,7 @@ export async function persistRefinePhaseSlice(
 ): Promise<void> {
   signal.throwIfAborted();
 
-  if (everyStageHeard({ findings: settled.findings, },)) {
+  if (refinementIsResumable({ settlement: settled, },)) {
     await refineCache?.persist({
       key,
       serialized: JSON.stringify({
@@ -116,7 +116,7 @@ export async function persistRefinePhaseSlice(
   /**
    Stages whose silence makes this settlement ineligible for reuse.
    */
-  const silent = silentStagesOf({ findings: settled.findings, },)
+  const silent = silentStagesOfSettlement({ settlement: settled, },)
     .join('; ',);
   l.warn(
     `slice ${String(sliceIndex,)}: a stage heard fewer than quorum, so the refinement is NOT cached: ${
