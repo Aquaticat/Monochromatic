@@ -19,6 +19,7 @@ import {
   type ModelClient,
 } from '@monochromatic-dev/translation-repair-provider';
 import { createPassDryStop, } from '../../dist/final/node/index.mjs';
+import { levelCapturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import { SEAT_HYPER_OPENROUTER_VISION_EDITOR, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 
@@ -151,12 +152,69 @@ await describe({
 
         expect(dryStop.signal.reason,).toBe(first,);
         expect(dryStop.tripped(),).toBe(true,);
-        const note = dryStop.stopNote();
+        const note = dryStop.takeStopNote() ?? '';
         expect(note.startsWith('STOP ',),).toBe(true,);
         expect(note,).toContain('every provider',);
         expect(note,).toContain('first reading',);
         expect(note,).not.toContain('second reading',);
         expect(note,).toContain('no further entry starts',);
+      },
+    },),
+
+    it({
+      name: 'LOGS ONE LINE WHEN IT TRIPS, naming the cause, and none for a second refusal or for a failure that does not '
+        + 'end the run, so the first operator-visible output is the stop and not the in-flight entry\'s TALLY line',
+      fn: async () => {
+        const lines: string[] = [];
+        const dryStop = createPassDryStop({ l: levelCapturingLogger({ lines, },), },);
+        await rejectionOf(async function call(): Promise<unknown> {
+          return await dryStop.guard({ client: throwingClient({ thrown: new Error('connection reset',), }), },).chatText(
+            requestWith({ signal: dryStop.signal, },),
+          );
+        },);
+        expect(lines,).toEqual([],);
+        await rejectionOf(async function call(): Promise<unknown> {
+          return await dryStop.guard({
+            client: throwingClient({
+              thrown: new EveryProviderDryError({ measured: 'first reading', },),
+            }),
+          },).chatText(requestWith({ signal: dryStop.signal, },),);
+        },);
+        await rejectionOf(async function call(): Promise<unknown> {
+          return await dryStop.guard({
+            client: throwingClient({
+              thrown: new EveryProviderDryError({ measured: 'second reading', },),
+            }),
+          },).chatText(requestWith({ signal: dryStop.signal, },),);
+        },);
+        expect(lines.length,).toBe(1,);
+        expect(lines[0],).toContain('first reading',);
+        expect(lines[0],).toContain('every provider',);
+      },
+    },),
+
+    it({
+      name: 'TRIPS ON A REFUSAL HANDED TO IT DIRECTLY, as the entry scheduler hands the one that ended an entry however '
+        + 'it reached the entry, and ignores any other failure',
+      fn: async () => {
+        const dryStop = createPassDryStop();
+        dryStop.trip({ error: new Error('connection reset',), },);
+        expect(dryStop.tripped(),).toBe(false,);
+        const dry = new EveryProviderDryError({ measured: 'seat reading', },);
+        dryStop.trip({ error: dry, },);
+        expect(dryStop.tripped(),).toBe(true,);
+        expect(dryStop.signal.reason,).toBe(dry,);
+      },
+    },),
+
+    it({
+      name: 'HANDS OUT THE STOP NOTE ONCE: nothing before the trip, the note the first time after it, nothing after',
+      fn: async () => {
+        const dryStop = createPassDryStop();
+        expect(dryStop.takeStopNote(),).toBeUndefined();
+        dryStop.trip({ error: new EveryProviderDryError({ measured: 'seat reading', },), },);
+        expect(dryStop.takeStopNote(),).toContain('seat reading',);
+        expect(dryStop.takeStopNote(),).toBeUndefined();
       },
     },),
 

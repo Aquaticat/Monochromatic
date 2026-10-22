@@ -535,5 +535,115 @@ await describe({
         expect(printed.lines.at(-1,),).toContain('meters read synthetic dry, openrouter dry',);
       },
     },),
+    it({
+      name: 'PRINTS THE STOP LINE EVEN WHEN THE ENTRY THAT MET THE DRY ROUTER WAS THE LAST ONE, once, so the cause is '
+        + 'on the log however the queue ended',
+      fn: async (ctx) => {
+        resetRunSpend();
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using scratch = await scratchDir({ prefix: 'corpus-pass-queue-', },);
+        /**
+         Gate between the run and its provider, as the pass builds it.
+         */
+        const dryStop = createPassDryStop();
+        await runPassQueue({
+          pending: [pairOf({ id: 'tabby', },),],
+          attempts: new Map(),
+          attemptsPath: join(
+            scratch.path,
+            'attempts.json',
+          ),
+          sliceCacheDir: join(
+            scratch.path,
+            'slice-cache',
+          ),
+          pipelineDigest: GENERATION,
+          dryStop,
+          softBudgetMs: HANG_STOP_MS,
+          spendCeilingUsd: 20,
+          start: 0,
+          now: clockReading({ instants: [0,], },),
+          settle: async function settle() {
+            dryStop.trip({ error: new EveryProviderDryError({ measured: 'meters read synthetic dry', },), },);
+            return { kind: 'stopped', };
+          },
+        },);
+
+        expect(printed.lines.filter(function isStop(line,): boolean {
+          return line.startsWith('STOP ',);
+        },),).toHaveLength(1,);
+        expect(printed.lines.at(-1,),).toContain('meters read synthetic dry',);
+      },
+    },),
+    it({
+      name: 'PRINTS NO REATTEMPT OR STALLED LINE FOR AN ENTRY THE DRY ROUTER STOPPED even when a layer filed its failure '
+        + 'as a resumable error and it cached a record, and queues no second attempt: the stop line follows alone',
+      fn: async (ctx) => {
+        resetRunSpend();
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using scratch = await scratchDir({ prefix: 'corpus-pass-queue-', },);
+        /**
+         Slice cache the attempts write into.
+         */
+        const sliceCacheDir = join(
+          scratch.path,
+          'slice-cache',
+        );
+        /**
+         Gate between the run and its provider, as the pass builds it.
+         */
+        const dryStop = createPassDryStop();
+        /**
+         Entries attempted.
+         */
+        const made: string[] = [];
+        await runPassQueue({
+          pending: [
+            pairOf({ id: 'tabby', },),
+            pairOf({ id: 'mittens', },),
+          ],
+          attempts: new Map(),
+          attemptsPath: join(
+            scratch.path,
+            'attempts.json',
+          ),
+          sliceCacheDir,
+          pipelineDigest: GENERATION,
+          dryStop,
+          softBudgetMs: HANG_STOP_MS,
+          spendCeilingUsd: 20,
+          start: 0,
+          now: clockReading({ instants: [0,], },),
+          settle: async function settle({ entry, },) {
+            made.push(entry.id,);
+            await mkdir(
+              join(
+                sliceCacheDir,
+                entry.id,
+              ),
+              { recursive: true, },
+            );
+            await writeFile(
+              join(
+                sliceCacheDir,
+                entry.id,
+                '0.json',
+              ),
+              '{}',
+            );
+            dryStop.trip({ error: new EveryProviderDryError({ measured: 'meters read synthetic dry', },), },);
+            return { kind: 'resumable-failure', };
+          },
+        },);
+
+        expect(made,).toEqual(['tabby',],);
+        expect(printed.lines.filter(function isReattemptOrStalled(line,): boolean {
+          return line.startsWith('REATTEMPT',) || line.startsWith('STALLED',);
+        },),).toEqual([],);
+        expect(printed.lines.filter(function isStop(line,): boolean {
+          return line.startsWith('STOP ',);
+        },),).toHaveLength(1,);
+      },
+    },),
   ],
 },);

@@ -39,6 +39,7 @@ import { parseSettledTwoLaneArtifact, } from '@monochromatic-dev/translation-rep
 import {
   type ChatJsonOutcome,
   type ChatJsonRequest,
+  EveryProviderDryError,
   messageText,
 } from '@monochromatic-dev/translation-repair-provider';
 import { fixedPagePath, } from '@monochromatic-dev/translation-repair-page-check';
@@ -794,6 +795,8 @@ function replyFor(
  @param failOnSchema - schema every call of which throws, standing in for a
  provider that is down for one stage; absent means the script never fails
 
+ @param failWith - what those calls throw; a plain error when absent
+
  @param activity - optional admission instrument for every per-slice driver
 
  @param coverageScript - whether coverage roster answers or loses every voice
@@ -819,6 +822,7 @@ function entryClient(
   {
     served,
     failOnSchema,
+    failWith = new Error('scripted provider failure',),
     activity,
     coverageScript = 'lost',
     polishScript = false,
@@ -830,6 +834,7 @@ function entryClient(
   }: {
     readonly served: string[];
     readonly failOnSchema?: string;
+    readonly failWith?: Error;
     readonly activity?: PassConcurrency;
     readonly coverageScript?: CoverageScript;
     readonly polishScript?: boolean;
@@ -866,7 +871,7 @@ function entryClient(
         ?? 'unnamed';
       served.push(schema,);
       if (schema === failOnSchema)
-        throw new Error('scripted provider failure',);
+        throw failWith;
 
       /**
        Everything the caller sent, which carries the slice original.
@@ -3248,6 +3253,110 @@ await describe({
         expect(stepped.done,).toBe(true,);
         expect((artifact as { durationMs: number; }).durationMs,).toBeGreaterThanOrEqual(0,);
         expect((artifact as { durationMs: number; }).durationMs,).toBeLessThan(HOUR_MS,);
+      },
+    },),
+    ...['critic_report', 'translation_report',].map(function everyProviderDryAt(schema,) {
+      return it({
+        name: `FILES THE EVERY-PROVIDER-DRY REFUSAL a ${schema} call meets as INCOMPLETE stopped work through the real `
+          + 'settle chain, with no pass guard and no abort in play, so the scheduler queues no second attempt and '
+          + 'no artifact or page is written',
+        fn: async () => {
+          await using dirs = await throwawayDirs();
+          /**
+           Schemas served before the refusal ended the entry.
+           */
+          const served: string[] = [];
+          /**
+           Entry outcome captured inside logger scope.
+           */
+          const result: { outcome?: Awaited<ReturnType<typeof settleEntry>>; } = {};
+          const lines = await capturedLines({
+            body: async () => {
+              result.outcome = await settleEntry({
+                client: entryClient({
+                  served,
+                  failOnSchema: schema,
+                  failWith: new EveryProviderDryError({ measured: 'meters read every provider dry', },),
+                },),
+                entry: ENTRY,
+                artifactsDir: dirs.artifactsDir,
+                publishDir: dirs.publishDir,
+                declinedDir: dirs.declinedDir,
+                sliceCacheDir: dirs.sliceCacheDir,
+                tip: 'a'.repeat(40,),
+                pipelineDigest: DIGEST,
+                pin: ENTRY_PIN,
+                outsideReads: NO_OUTSIDE_READS,
+                pictureSources: NO_PICTURE_SOURCES,
+                hardCapMs: HANG_STOP_MS,
+                baseSignal: new AbortController().signal,
+                overlap: PASS_FALLBACK_OVERLAP,
+                stageSettings: SCRIPTED_STAGE_SETTINGS,
+              },);
+            },
+            method: 'log',
+          },);
+          expect(served,).toContain(schema,);
+          expect(result.outcome,).toEqual({ kind: 'stopped', },);
+          expect(await artifactNames({ artifactsDir: dirs.artifactsDir, },),).toEqual([],);
+          expect(await artifactNames({ artifactsDir: dirs.publishDir, },),).toEqual([],);
+          expect(lines.some(function incomplete(line,): boolean {
+            return line.startsWith('TALLY CatEntry1 status=INCOMPLETE',);
+          },),).toBe(true,);
+        },
+      },);
+    },),
+
+    it({
+      name: 'HANDS THE REFUSAL THAT ENDED AN ENTRY TO THE RUN, once, so the pass stops starting entries however the '
+        + 'refusal reached the entry, and hands it nothing for a failure that does not end the run',
+      fn: async () => {
+        /**
+         The refusal the entry's critic call meets.
+         */
+        const dry = new EveryProviderDryError({ measured: 'meters read every provider dry', },);
+        /**
+         What the run was told ended it, per entry.
+         */
+        const told: { dry: unknown[]; other: unknown[]; } = {
+          dry: [],
+          other: [],
+        };
+        for (const [failWith, into,] of [
+          [dry, told.dry,],
+          [new Error('scripted provider failure',), told.other,],
+        ] as const) {
+          // oxlint-disable-next-line no-await-in-loop -- each arm gets its own throwaway directories
+          await using dirs = await throwawayDirs();
+          // oxlint-disable-next-line no-await-in-loop -- each arm settles its entry in turn
+          await capturedLines({
+            body: async () => {
+              await settleEntry({
+                client: entryClient({ served: [], failOnSchema: 'critic_report', failWith, },),
+                entry: ENTRY,
+                artifactsDir: dirs.artifactsDir,
+                publishDir: dirs.publishDir,
+                declinedDir: dirs.declinedDir,
+                sliceCacheDir: dirs.sliceCacheDir,
+                tip: 'a'.repeat(40,),
+                pipelineDigest: DIGEST,
+                pin: ENTRY_PIN,
+                outsideReads: NO_OUTSIDE_READS,
+                pictureSources: NO_PICTURE_SOURCES,
+                hardCapMs: HANG_STOP_MS,
+                baseSignal: new AbortController().signal,
+                overlap: PASS_FALLBACK_OVERLAP,
+                stageSettings: SCRIPTED_STAGE_SETTINGS,
+                endRun: function endRun({ error, },): void {
+                  into.push(error,);
+                },
+              },);
+            },
+            method: 'log',
+          },);
+        }
+        expect(told.dry,).toEqual([dry,],);
+        expect(told.other,).toEqual([],);
       },
     },),
   ],
