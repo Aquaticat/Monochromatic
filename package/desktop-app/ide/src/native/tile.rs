@@ -150,11 +150,54 @@ fn start_poll(window: &AppWindow, state: &Rc<RefCell<State>>, current: &mut Stat
             let (Some(active), Some(shared)) = (weak_window.upgrade(), weak_state.upgrade()) else {
                 return;
             };
-            if step_due(&shared.borrow()) {
-                tracing::debug!("leaving a finished tile for the next scroll step");
+            poll_unless_step_due(&active, &shared);
+        });
+}
+
+/// What:
+///  Take the finished tile unless a scroll step is due,
+///  and when one is due,
+///  look again as soon as the wait for it ends.
+/// Why:
+///  The repeated poll comes a whole period after the one that left the tile,
+///  so a tile left a little before the wait ends would otherwise wait most of a period more
+///  (more than one frame at 60 Hz);
+///  the single wake-up cuts that to the end of the wait.
+///  Both timers run this function and `poll` stays the only place a tile is taken,
+///  so a wake-up that a step made stale only finds the step due again and waits once more.
+fn poll_unless_step_due(window: &AppWindow, state: &Rc<RefCell<State>>) {
+    let wait_left = step_wait_left(&state.borrow());
+    let Some(left) = wait_left else {
+        poll(window, state);
+        return;
+    };
+    tracing::debug!(
+        left_us = left.as_micros() as u64,
+        "leaving a finished tile for the next scroll step"
+    );
+    wake_when_wait_ends(window, state, left);
+}
+
+/// Look at the tile worker again after `left`,
+/// once,
+/// replacing any wake-up still waiting.
+/// What:
+/// `start` on the running timer replaces its pending wake-up,
+/// so at most one is ever waiting.
+/// Why:
+/// The handles are weak,
+/// so the wake-up never keeps the window or its state alive.
+fn wake_when_wait_ends(window: &AppWindow, state: &Rc<RefCell<State>>, left: Duration) {
+    let weak_window = window.as_weak();
+    let weak_state = Rc::downgrade(state);
+    state
+        .borrow()
+        .tile_wake
+        .start(TimerMode::SingleShot, left, move || {
+            let (Some(active), Some(shared)) = (weak_window.upgrade(), weak_state.upgrade()) else {
                 return;
-            }
-            poll(&active, &shared);
+            };
+            poll_unless_step_due(&active, &shared);
         });
 }
 
@@ -169,7 +212,7 @@ fn start_poll(window: &AppWindow, state: &Rc<RefCell<State>>, current: &mut Stat
 ///  A step of an input at 50 Hz or more comes sooner than this wait,
 /// and takes the tile in its own frame;
 /// the poll,
-/// 20 ms later,
+/// or the wake-up it sets for the end of this wait,
 /// takes a tile no step came for.
 ///
 /// In TS you'd write (pseudocode):
@@ -178,14 +221,15 @@ fn start_poll(window: &AppWindow, state: &Rc<RefCell<State>>, current: &mut Stat
 /// ```
 const STEP_WAIT: Duration = Duration::from_millis(20);
 
-/// Whether the view stepped so recently that the next step,
+/// How much of the wait remains when the view stepped so recently that the next step,
 /// and the frame it draws,
-/// is due before the poll comes again.
-fn step_due(current: &State) -> bool {
-    // False when the view never stepped; otherwise whether the last step is within the wait.
+/// is due before the poll comes again;
+/// nothing once the wait has passed or when the view never stepped.
+fn step_wait_left(current: &State) -> Option<Duration> {
+    // `checked_sub` is `None` when the last step is older than the wait.
     return match current.stepped_at {
-        Some(at) => at.elapsed() < STEP_WAIT,
-        None => false,
+        Some(at) => STEP_WAIT.checked_sub(at.elapsed()),
+        None => None,
     };
 }
 
@@ -223,6 +267,8 @@ fn measured_rows_match(current: &State, built: &TileBuilt) -> bool {
 pub(super) fn poll(window: &AppWindow, state: &Rc<RefCell<State>>) {
     let (polled, pass) = {
         let mut current = state.borrow_mut();
+        // This poll takes whatever has finished, so a wake-up still waiting for the end of the wait has no work left.
+        current.tile_wake.stop();
         let Some(mut worker) = current.tile_worker.take() else {
             current.tile_poll.stop();
             return;
