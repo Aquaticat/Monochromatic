@@ -122,12 +122,20 @@ a provider with a real meter that is wet but does not serve the model keeps its 
 so a model whose serving providers are all dry is still a lost seat and not the end of the run.
 The `EveryProviderDryError` text then says `xiaomi` dry for a provider whose meter is wet but useless for that call.
 
-Limit of the Xiaomi meter,
-recorded rather than fixed:
+How the hold behaves,
+in both directions (pinned in `provider-budget-xiaomi-hold.unit.test.ts`):
 the budget layer clears a payment mark when the meter's level text changes,
-and the level here is the run's own spend,
-so a call that settles after the refusal moves it and lets one more call through to meet the refusal again.
-The cost is one extra refused request per refusal.
+and the level here is the run's own spend.
+
+- With no call settling after the refusal the spend does not move,
+  so a 402 holds Xiaomi dry for the rest of the process.
+  This is intended:
+  a 402 means the account is out of money,
+  and the process cannot know that it was topped up,
+  so a top-up within a run takes effect on the next launch.
+- A call that was already in flight settles after the refusal and moves the spend,
+  which clears the mark early and lets one more call through to meet the refusal again.
+  The cost is one extra refused request per such settle.
 
 A run without a key logs `deepseek=dry` or `xiaomi=dry` on the `METERS` line,
 as every unconfigured provider does,
