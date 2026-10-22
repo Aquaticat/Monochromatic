@@ -791,9 +791,14 @@ purple heading letter, folder names, the right pane title and track titles two s
 lint and 1546 desktop tests passed). The human then said the Slint tokens are unreliable and the sizes should match
 Android. Android sets no sizes of its own (stock Material 3: titleLarge 22 sp, bodyLarge 16 sp), the same numbers the
 desktop had, so the human chose "match Android's rendered look" on the Pixel 9 Pro Fold emulator at default display
-and font size, folded and opened. Agent `ab20e5cb0d50462c7` captures and measures that; next: measure the desktop at the
-same logical size, set the desktop sizes from the measured dp values as plain numbers (no `Theme` size tokens for these
-five), keep the sizes the same in the narrow layouts, run lint and tests, merge, release.
+and font size, folded and opened. Agent `ab20e5cb0d50462c7` measured cap heights from emulator captures (390 dpi, font
+scale 1.0, no density override): titles and group headings 16.0 dp (22 sp), folder names and track titles 11.5 dp
+(16 sp); the folded top bar title is 11.5 dp (`titleMedium`). Captures: `/home/user/temp/agent/fold-type-sizes/`
+(invented library, on this machine only). Result: commit `1b078497b9` sets the five desktop texts to plain `22px` and
+`16px` (no `Theme` size tokens at those sites), which equals the sizes before the 2 px cut; 1546 desktop tests passed.
+Not measured: the desktop rendered beside the emulator. Known difference: the desktop uses "Inter Variable"
+(`app_window.slint:65`), Android the system font. Open: whether the human still sees a problem; other desktop screens
+still use the `Theme` size tokens (settings, search, deck), left alone because the human named five texts.
 
 In flight 2026-10-18 after 0.1.6: the license polish branch `fix/music-player-license-polish` reported; its entry is
 "2026-10-18, license polish after 0.1.6" above. Merge, then release 0.1.7. Not started, mine: a quiet-host perfetto
