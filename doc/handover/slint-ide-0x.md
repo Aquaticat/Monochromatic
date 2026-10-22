@@ -1621,6 +1621,20 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     0.45 to 0.01 (A/A control 0.43), by a `LEAD` of 8 bands on the heading side; seven guards shown to fail; its own
     gates passed. Its report is the input to the verification, which waits for the hold above and for the code tile
     stacking agent `a074735d16c6106a5` (still running), whose branch touches other files in the same package.
+    LANDED, 2026-10-22, minimap lag agent `afaeefdb803099e40` (merge tip `f0c616addd` on `origin/main`, ancestry
+    confirmed; branch tip `fbe4f73b2b`). I read the whole source diff (`Heading`, `LEAD`, `bands_toward`, `follow`,
+    the reset on another file) and found no defect; I did not repeat its 3,777 px fling measurement. Conflicts: the
+    handover `doc/handover/ide-gpu-stages-5-6.md` (both appended, kept both, rewrapped two lines over 120 characters)
+    and `bin/inspect-source-guards.mjs` (main's formatted file kept; the two changed cases and five new cases
+    re-applied from the branch's own lines, `diff` against main shows only those). Gates once on the merged
+    snapshot: `lint` passes, unfiltered `test:native` 290 passed and 5 skipped, `test:bin` 71 of 71, `test` 803 passed
+    and 1 skipped, `inspect:no-software-renderer` passes. The seven touched guards each pass at baseline, fail with the
+    guard removed and pass restored in a disposable copy (7 of 168 guards; the other 161 were not run). The push
+    merged in one newer doc-only commit of mine (the stacking record), which was not gated. Installed again:
+    `monochromatic-ide` is `1ab8ee28af3c...` (equal to `dist/monochromatic-ide`); `.previous` is now the stacking
+    build `9c046da1e4f2...`. User boundary check: the installed binary run in the nested compositor
+    (`design/soft-wrap-shots.ts`, light and dark, six frames, exit 0) draws the wrapped source, the tree and the minimap
+    picture; frames are in `~/temp/agent/smoke-installed`. Agent worktree and branch removed locally and on the remote.
     Stall pass agent `ae05d7039f46336dc` (started 2026-10-22, own worktree off `origin/main`, branch push only; brief
     quotes `NLG`, `NLD`, `RXI`, `NQH`): at least 60 alternating stall pairs (tree A = before the wake-up, tree B =
     `origin/main`) plus 30 A against A pairs for the spread; keeps the debug timeline of every stalled run and decides
