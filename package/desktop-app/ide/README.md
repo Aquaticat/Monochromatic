@@ -4812,6 +4812,68 @@ so on a quota of two CPUs it already ran two tests at once (measured with 48 sle
 The variable makes the count explicit and lets `IDE_CONTAINER_TEST_THREADS` override it;
 see [the troubleshooting note](../../../doc/troubleshooting/container-nproc-ignores-cpu-quota.md).
 
+### The IDE bin scripts are TypeScript
+
+The compositor module and the inspection and capture scripts that start the IDE or its tools are TypeScript files,
+and the tasks run them with `node` directly (`node bin/inspect-cadence.ts`).
+Node strips the types of a `.ts` file before it runs,
+so nothing is built,
+and the files use only syntax that stripping can erase:
+no enums,
+parameter properties,
+or namespaces,
+and an import of another TypeScript file names the `.ts` extension.
+Functions of two or more parameters take one destructured object,
+except where the caller dictates the signature (a callback of `map`,
+`filter`,
+`reduce`,
+or `sort`,
+or an event listener).
+
+Until 2026-10-22 these files were plain `.mjs` files,
+a habit with no rule behind it.
+Two repository-wide style commits (`68415aeb53` and `3da31bdc3a`,
+issue 1794) left those `.mjs` files unparseable,
+while none of the TypeScript files they touched was broken,
+so the files were converted instead of restored:
+
+- `bin/nested-compositor.ts`:
+  the compositor name and the check of its version,
+  tested by `bin/nested-compositor.test.mjs`.
+- The inspections that measure or exercise a real IDE or server:
+  `bin/inspect-bundle.ts`,
+  `bin/inspect-cadence.ts`,
+  `bin/inspect-find-reference.ts`,
+  `bin/inspect-idle-cost.ts`,
+  `bin/inspect-language.ts`,
+  `bin/inspect-language-confinement.ts`,
+  `bin/inspect-language-lifecycle.ts`,
+  `bin/inspect-language-mise.ts`,
+  `bin/inspect-language-reap-rate.ts`,
+  `bin/inspect-log-stall.ts`,
+  `bin/inspect-server-watches.ts`,
+  `bin/inspect-watch-limit.ts`,
+  and `bin/inspect-watch-scope.ts`.
+- The control for the bundle checks:
+  `bin/inspect-bundle-guards.ts`.
+- The two capture scripts of the design notes:
+  `design/soft-wrap-shots.ts` and `design/wrap-annotation-shots.ts`.
+
+The other `.mjs` scripts of `bin/` (the other guard inspections,
+`install.mjs`,
+`check-nextest-config.mjs`,
+and the test file `nested-compositor.test.mjs`) are unchanged.
+No `tsconfig.json` and no `lint:types` or `lint:oxlint` task covers this directory,
+because the package is a Rust crate and not a workspace package,
+so a type error shows only when a script runs.
+The converted files were checked with the strict options of `package/config/typescript/tsconfig.options.json`
+(`strict`,
+`noUncheckedIndexedAccess`,
+`exactOptionalPropertyTypes`,
+`erasableSyntaxOnly`)
+from a scratch `tsconfig.json`,
+and `module.stripTypeScriptTypes` accepts each of them.
+
 ### Running the tests
 
 `mise run //package/desktop-app/ide:test` runs every library and integration test.
@@ -4872,7 +4934,7 @@ which made a debug build show frozen frames that the optimized build does not ha
 
 Measured on 2026-10-19 and 2026-10-20 in the bounded container (21 CPUs,
 46 GiB) on a 28-CPU host,
-with `bin/inspect-cadence.mjs` for the cadence (see [Frame cadence check](#frame-cadence-check)).
+with `bin/inspect-cadence.ts` for the cadence (see [Frame cadence check](#frame-cadence-check)).
 Other sessions shared the host,
 so the load average at the start of each run is given.
 
@@ -4969,7 +5031,7 @@ The pure part,
 the frame hash and the window and run counting,
 is in `bin/cadence.ts`
 and tested by `bin/cadence.test.ts` through `mise run //package/desktop-app/ide:test:bin`.
-The script `bin/inspect-cadence.mjs` only drives the compositor.
+The script `bin/inspect-cadence.ts` only drives the compositor.
 
 Tuning variables:
 `IDE_CADENCE_SETTLE` (milliseconds to wait after startup,

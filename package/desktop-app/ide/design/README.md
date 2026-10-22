@@ -842,7 +842,7 @@ so newer builds look different there.
 One session per language and scheme:
 a TypeScript 7 project and a Rust project,
 each in dark and in light,
-built the way `bin/inspect-language.mjs` builds its fixtures and placed beside the copy.
+built the way `bin/inspect-language.ts` builds its fixtures and placed beside the copy.
 Each session hosted the copy in the release build of `package/cli/nested-wayland-session`
 at 1100 by 660 and scale factor 1,
 with `--color-scheme dark` or `--color-scheme light`,
@@ -1706,7 +1706,7 @@ Every frame is 1100 by 660 pixels at scale 1.
 
 ### How the 2026-10-12 frames were produced
 
-`soft-wrap-shots.mjs` in this directory writes a sample Rust file into a disposable project,
+`soft-wrap-shots.ts` in this directory writes a sample Rust file into a disposable project,
 hosts the built `monochromatic-ide` in the nested compositor
 (`package/cli/nested-wayland-session`,
 `--size 1100x660`,
@@ -1715,8 +1715,8 @@ and takes each screenshot once two captures in a row are identical and the windo
 The script needs `WAYLAND_DISPLAY` and `XDG_RUNTIME_DIR` of a running Wayland session:
 
 ```sh
-# design/soft-wrap-shots.mjs usage
-node design/soft-wrap-shots.mjs target/release/monochromatic-ide "${HOME}/temp/agent/soft-wrap-frames"
+# design/soft-wrap-shots.ts usage
+node design/soft-wrap-shots.ts target/release/monochromatic-ide "${HOME}/temp/agent/soft-wrap-frames"
 ```
 
 The compositor's `button down`,
@@ -1780,7 +1780,7 @@ offset.
 
 ### How the hints and messages frames were produced
 
-`wrap-annotation-shots.mjs` in this directory writes a sample Rust file into a disposable project,
+`wrap-annotation-shots.ts` in this directory writes a sample Rust file into a disposable project,
 writes the hints and diagnostics of the scene as the inspection file,
 and hosts a debug build of `monochromatic-ide` in the nested compositor
 (`package/cli/nested-wayland-session`,
@@ -1794,8 +1794,8 @@ so the application must be a debug build (`mise run //package/desktop-app/ide:bu
 The script needs `WAYLAND_DISPLAY` and `XDG_RUNTIME_DIR` of a running Wayland session:
 
 ```sh
-# design/wrap-annotation-shots.mjs usage
-node design/wrap-annotation-shots.mjs target/debug/monochromatic-ide "${HOME}/temp/agent/wrap-annotation-frames" target/debug/runtime
+# design/wrap-annotation-shots.ts usage
+node design/wrap-annotation-shots.ts target/debug/monochromatic-ide "${HOME}/temp/agent/wrap-annotation-frames" target/debug/runtime
 ```
 
 ### What the hints and messages frames show

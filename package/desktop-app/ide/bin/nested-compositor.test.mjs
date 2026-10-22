@@ -5,7 +5,7 @@
 // Why: the `--version` line decides whether a check may open a window on the desktop, so a misread version must not pass.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { readVersion } from './nested-compositor.mjs';
+import { readVersion } from './nested-compositor.ts';
 
 test(
   'reads the version line the compositor prints',
