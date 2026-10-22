@@ -1635,6 +1635,12 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     build `9c046da1e4f2...`. User boundary check: the installed binary run in the nested compositor
     (`design/soft-wrap-shots.ts`, light and dark, six frames, exit 0) draws the wrapped source, the tree and the minimap
     picture; frames are in `~/temp/agent/smoke-installed`. Agent worktree and branch removed locally and on the remote.
+    LANDED, 2026-10-22, the 90 percent container share (merge tip `0436ea512e` on `origin/main`, ancestry confirmed;
+    my commit `001d74da17`: `hostShare = 0.9` in `bin/container-bounds.ts`, its test, the README). It merged cleanly.
+    Gates once on the merged snapshot: `lint` passes, unfiltered `test:native` 290 passed and 5 skipped (the first
+    run at the new bound), `test:bin` 71 of 71, `test` 803 passed and 1 skipped, `inspect:no-software-renderer`
+    passes. No product code, so no reinstall. The uncommitted `.mjs` restores in the old scratch tree `land-share`
+    were not pushed; that tree is superseded and is to be removed.
     Stall pass agent `ae05d7039f46336dc` (started 2026-10-22, own worktree off `origin/main`, branch push only; brief
     quotes `NLG`, `NLD`, `RXI`, `NQH`): at least 60 alternating stall pairs (tree A = before the wake-up, tree B =
     `origin/main`) plus 30 A against A pairs for the spread; keeps the debug timeline of every stalled run and decides
