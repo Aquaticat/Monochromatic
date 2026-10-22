@@ -252,7 +252,7 @@ console.log('Copied ' + destination + ' (' + statSync(destination).size + ' byte
 [tasks.install]
 depends = ["bundle"]
 description = "Install dist/monochromatic-ide as ~/.local/bin/monochromatic-ide and its launcher entry in ~/.local/share/applications"
-run = "node bin/install.mjs"
+run = "node bin/install.ts"
 
 [tasks."inspect:bundle"]
 depends = ["linked-crates"]
@@ -378,11 +378,11 @@ runCargo(['nextest', 'run', '--test', 'cli_args', '--test', 'cli_process'])
 
 [tasks."test:nextest-config"]
 description = "Check in the build container that cargo-nextest reads .config/nextest.toml of this package and that its timeout kills a hung test"
-run = "node bin/check-nextest-config.mjs"
+run = "node bin/check-nextest-config.ts"
 
 [tasks."test:bin"]
 description = "Check the compositor version reader, the container bound, the frame-pattern analysis, and the runtime publishing helpers of the bin scripts with node:test"
-run = "node --test bin/nested-compositor.test.mjs bin/container-bounds.test.ts bin/cadence.test.ts bin/stress-native-report.test.ts bin/runtime-publish.test.ts"
+run = "node --test bin/nested-compositor.test.ts bin/container-bounds.test.ts bin/cadence.test.ts bin/stress-native-report.test.ts bin/runtime-publish.test.ts"
 
 [tasks."test:ignored"]
 description = "Run the gitignore matching unit tests, the tree and reader tests that carry its answers, and the rule file notification test"
@@ -530,7 +530,7 @@ arg "<cache>" help="Existing disposable Cargo target directory below the private
 arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
 arg "[only]" help="Comma-separated guard names to run; default is every guard"
 '''
-run = "node bin/inspect-search-guards.mjs"
+run = "node bin/inspect-search-guards.ts"
 
 [tasks."inspect:find-guards"]
 description = "Remove in-file find guards only in a disposable copy and observe named regression failures"
@@ -539,7 +539,7 @@ arg "<cache>" help="Existing disposable Cargo target directory below the private
 arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
 arg "[only]" help="Comma-separated guard names to run; default is every guard"
 '''
-run = "node bin/inspect-find-guards.mjs"
+run = "node bin/inspect-find-guards.ts"
 
 [tasks."inspect:source-guards"]
 description = "Remove source-view reading guards only in a disposable copy and observe named regression failures"
@@ -548,7 +548,7 @@ arg "<cache>" help="Existing disposable Cargo target directory below the private
 arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
 arg "[only]" help="Comma-separated guard names to run; default is every guard"
 '''
-run = "node bin/inspect-source-guards.mjs"
+run = "node bin/inspect-source-guards.ts"
 
 [tasks."inspect:sidebar-guards"]
 description = "Remove sidebar-resize guards only in a disposable copy and observe named regression failures"
@@ -557,7 +557,7 @@ arg "<cache>" help="Existing disposable Cargo target directory below the private
 arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
 arg "[only]" help="Comma-separated guard names to run; default is every guard"
 '''
-run = "node bin/inspect-sidebar-guards.mjs"
+run = "node bin/inspect-sidebar-guards.ts"
 
 [tasks."inspect:theme-guards"]
 description = "Remove live color-scheme repaint guards only in a disposable copy and observe the named regression failures"
@@ -566,7 +566,7 @@ arg "<cache>" help="Existing disposable Cargo target directory below the private
 arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
 arg "[only]" help="Comma-separated guard names to run; default is every guard"
 '''
-run = "node bin/inspect-theme-guards.mjs"
+run = "node bin/inspect-theme-guards.ts"
 
 [tasks."inspect:annotation-guards"]
 description = "Remove inlay-hint and diagnostic guards only in a disposable copy and observe named regression failures"
@@ -575,7 +575,7 @@ arg "<cache>" help="Existing disposable Cargo target directory below the private
 arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
 arg "[only]" help="Comma-separated guard names to run; default is every guard"
 '''
-run = "node bin/inspect-annotation-guards.mjs"
+run = "node bin/inspect-annotation-guards.ts"
 
 [tasks."inspect:ignored-guards"]
 description = "Remove ignored-entry guards only in a disposable copy and observe named regression failures"
@@ -584,7 +584,7 @@ arg "<cache>" help="Existing disposable Cargo target directory below the private
 arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
 arg "[only]" help="Comma-separated guard names to run; default is every guard"
 '''
-run = "node bin/inspect-ignored-guards.mjs"
+run = "node bin/inspect-ignored-guards.ts"
 
 [tasks."inspect:watch-guards"]
 description = "Remove change-watch and reread-schedule guards only in a disposable copy and observe named regression failures"
@@ -593,7 +593,7 @@ arg "<cache>" help="Existing disposable Cargo target directory below the private
 arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
 arg "[only]" help="Comma-separated guard names to run; default is every guard"
 '''
-run = "node bin/inspect-watch-guards.mjs"
+run = "node bin/inspect-watch-guards.ts"
 
 [tasks."inspect:refresh-latency"]
 description = "Time external writes until the tree rows and displayed source change, in a disposable package copy"
@@ -604,7 +604,7 @@ arg "[runs]" default="3" help="Repeated runs of the same build, for run-to-run s
 arg "[package]" help="Measure this crate directory below the private agent scratch root instead of the working tree, with the current latency test injected"
 arg "[filter]" default="refresh_latency" help="Name part of the ignored native measurement tests to run, for example write_wait_pause"
 '''
-run = "node bin/inspect-refresh-latency.mjs"
+run = "node bin/inspect-refresh-latency.ts"
 
 [tasks."inspect:idle-cost"]
 description = "Measure the idle IDE's CPU time, read system calls, and listings with expanded folders, at the shipped safety sweep and a comparison interval"
@@ -767,7 +767,7 @@ arg "<cache>" help="Existing disposable Cargo target directory below the private
 arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
 arg "[only]" help="Comma-separated guard names to run; default is every guard"
 '''
-run = "node bin/inspect-language-guards.mjs"
+run = "node bin/inspect-language-guards.ts"
 
 [tasks."inspect:language-lifecycle-guards"]
 description = "Observe the quiet-lifetime and logging regressions failing in a disposable copy: each helix-lsp re-labelling removed or widened, a full log queue that waits, and the worker's shutdown request, wait, or reaping removed"
@@ -776,7 +776,7 @@ arg "<cache>" help="Existing disposable Cargo target directory below the private
 arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
 arg "[only]" help="Comma-separated case names to run; default is every case"
 '''
-run = "node bin/inspect-language-lifecycle-guards.mjs"
+run = "node bin/inspect-language-lifecycle-guards.ts"
 
 [tasks."inspect:log-stall"]
 description = "Check in the nested compositor that a reader that stops reading the IDE's log does not freeze the window, and that the synchronous writer it replaced does (guard control)"
@@ -805,7 +805,7 @@ arg "<cache>" help="Existing disposable Cargo target directory below the private
 arg "[cargo]" help="Private copy of the Cargo home below the private agent scratch root; default is the shared ide-cargo volume"
 arg "[only]" help="Comma-separated guard names to run; default is every guard"
 '''
-run = "node bin/inspect-language-navigation-guards.mjs"
+run = "node bin/inspect-language-navigation-guards.ts"
 
 [tasks."inspect:native"]
 depends = ["runtime", "notices"]
