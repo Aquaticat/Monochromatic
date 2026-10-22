@@ -27,11 +27,14 @@ import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture
 import {
   exchangeFailureLogText,
   ProviderHttpError,
+  type TransportReply,
 } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   CLAUDE_PACE_WINDOW_MS,
   CLAUDE_REQUESTS_PER_MINUTE,
   createClaudeClient,
+  createProviderBudgets,
+  statedWaitMsOf,
 } from '../dist/final/node/index.mjs';
 import {
   askCat,
@@ -40,6 +43,7 @@ import {
   ONE_QUICK_RETRY,
   scripted,
 } from './direct-client.test-fixture.ts';
+import { anthropicFrameOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/anthropic-frames.test-fixture.ts';
 import {
   CLAUDE_CAT_KEY,
   claudeStreamOf,
@@ -389,6 +393,163 @@ await describe({
           await askCat({ client, modelId: 'claude-haiku-5-5', },);
           expect((await client.spend({ signal, },)).billingRefused,).toBe(true,);
         },),);
+      },
+    },),
+    it({
+      name: 'CARRIES A retry-after PAST THE LADDER\'S REACH ONTO THE FAILURE (C3), so the budget layer holds Anthropic '
+        + 'out for the 3,600 s the header names and not for the 60 s default: the wait the router reads is the larger '
+        + 'of the body\'s and the header\'s',
+      fn: async () => {
+        /**
+         Rate-limit reply naming an hour in its header, and nothing in its body.
+         */
+        const refusal: TransportReply = {
+          status: 429,
+          bodyText: '{"type":"error","error":{"type":"rate_limit_error","message":"slow down"}}',
+          headers: { 'retry-after': '3600', },
+        };
+        const { transport, exchanges, } = scripted({ replies: [refusal,], },);
+        const client = createClaudeClient({ apiKey: CLAUDE_CAT_KEY, transport, retryPolicy: ONE_QUICK_RETRY, },);
+
+        const failure: unknown = await rejectionOf(() => askCat({ client, modelId: 'claude-haiku-5-5', },),);
+
+        expect(failure,).toBeInstanceOf(ProviderHttpError,);
+        expect(exchanges.length,).toBe(1,);
+        expect(statedWaitMsOf({ error: failure, },),).toBe(3_600_000,);
+        /**
+         Clock the budgets read.
+         */
+        const clock = { now: 10_000, };
+        const budgets = createProviderBudgets({ anthropic: client, freshForMs: 1_000, now: () => clock.now, },);
+        await budgets.markRefused({
+          provider: 'anthropic',
+          signal: new AbortController().signal,
+          statedWaitMs: statedWaitMsOf({ error: failure, },),
+        },);
+        expect(budgets.holds().anthropic,).toBe(3_600_000,);
+      },
+    },),
+
+    it({
+      name: 'RAISES THE DRY FLAG FOR A billing_error EVENT UNDER A SUCCESS STATUS (C8), which the retry ladder returns '
+        + 'unretried as a thrown 402: the meter reads dry after it as after a plain HTTP 402',
+      fn: async () => {
+        /**
+         Signal every meter read carries.
+         */
+        const { signal, } = new AbortController();
+        const { transport, } = scripted({
+          replies: [{
+            status: 200,
+            bodyText: anthropicFrameOf({
+              body: { type: 'error', error: { type: 'billing_error', message: 'billing problem', }, },
+            },),
+          },],
+        },);
+        const client = createClaudeClient({ apiKey: CLAUDE_CAT_KEY, transport, retryPolicy: ONE_QUICK_RETRY, },);
+        expect((await client.spend({ signal, },)).billingRefused,).toBe(false,);
+
+        const failure: unknown = await rejectionOf(() => askCat({ client, modelId: 'claude-haiku-5-5', },),);
+
+        expect(failure,).toBeInstanceOf(ProviderHttpError,);
+        expect((failure as ProviderHttpError).status,).toBe(402,);
+        expect((await client.spend({ signal, },)).billingRefused,).toBe(true,);
+      },
+    },),
+
+    it({
+      name: 'HONOURS A 429 THE HEADER ASKS ONE SECOND FOR end to end through the client (C11): the retry waits the '
+        + 'second and the call answers',
+      fn: async () => {
+        /**
+         The first reply with the header the transport hands back when the exchange asks for it.
+         */
+        const waiting: TransportReply = {
+          status: 429,
+          bodyText: '{"type":"error","error":{"type":"rate_limit_error"}}',
+          headers: { 'retry-after': '1', },
+        };
+        const { transport, exchanges, } = scripted({
+          replies: [
+            waiting,
+            { status: 200, bodyText: claudeStreamOf({ text: '{"spot":"sunbeam"}', stopReason: 'end_turn', usage: PLAIN_USAGE, }), },
+          ],
+        },);
+        /**
+         When the call started.
+         */
+        const startedAt = performance.now();
+
+        const reply = await askCat({
+          client: createClaudeClient({
+            apiKey: CLAUDE_CAT_KEY,
+            transport,
+            retryPolicy: { limit: 2, baseMs: 300, },
+          },),
+          modelId: 'claude-haiku-5-5',
+        },);
+
+        expect(reply.text,).toBe('{"spot":"sunbeam"}',);
+        expect(exchanges.length,).toBe(2,);
+        expect(performance.now() - startedAt,).toBeGreaterThanOrEqual(990,);
+      },
+    },),
+
+    it({
+      name: 'RETRIES A 529 OVERLOADED REPLY through the client (C11) and answers from the second attempt',
+      fn: async () => {
+        const { transport, exchanges, } = scripted({
+          replies: [
+            { status: 529, bodyText: '{"type":"error","error":{"type":"overloaded_error","message":"busy"}}', },
+            { status: 200, bodyText: claudeStreamOf({ text: '{"spot":"sunbeam"}', stopReason: 'end_turn', usage: PLAIN_USAGE, }), },
+          ],
+        },);
+
+        const reply = await askCat({
+          client: createClaudeClient({ apiKey: CLAUDE_CAT_KEY, transport, retryPolicy: ONE_QUICK_RETRY, },),
+          modelId: 'claude-sonnet-5-5',
+        },);
+
+        expect(reply.text,).toBe('{"spot":"sunbeam"}',);
+        expect(exchanges.length,).toBe(2,);
+      },
+    },),
+
+    it({
+      name: 'READS A max_tokens STOP AFTER A THINKING BLOCK AS A TRUNCATED VOICE (C5, C11): empty text, finish reason '
+        + 'max_tokens, the spent tokens on a SPEND line, and the truncated outcome for the caller, with no retry',
+      fn: async () => {
+        resetRunSpend();
+        const { transport, exchanges, } = scripted({
+          replies: [{
+            status: 200,
+            bodyText: claudeStreamOf({
+              text: '',
+              stopReason: 'max_tokens',
+              usage: { input: 100, cacheWrite: 0, cacheRead: 0, output: 13_082, },
+            }),
+          },],
+        },);
+        const client = createClaudeClient({ apiKey: CLAUDE_CAT_KEY, transport, retryPolicy: ONE_QUICK_RETRY, },);
+
+        const { result: outcome, logged, } = await infoLinesDuring({
+          run: async () =>
+            await client.chatJson({
+              modelId: 'claude-sonnet-5-5',
+              messages: [{ role: 'user', content: 'Where does the cat sleep?', },],
+              signal: new AbortController().signal,
+              validate: function isSpot(value: unknown,): value is { readonly spot: string; } {
+                return (typeof value) === 'object';
+              },
+            },),
+        },);
+
+        expect(outcome.kind,).toBe('schema-mismatch',);
+        expect((outcome as { readonly reason?: string; }).reason,).toBe('truncated-completion',);
+        expect(exchanges.length,).toBe(1,);
+        expect(logged.filter(function isSpend(line,): boolean {
+          return line.includes('SPEND ',) && line.includes('completion=13082',);
+        },).length,).toBe(1,);
       },
     },),
   ],
