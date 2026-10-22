@@ -1349,6 +1349,17 @@ class PlayerController(private val engine: AudioEngine) {
         // this.engine.seekTo(positionSec);
         // ```
         engine.seekTo(positionSec)
+        // What:     `onStateChanged?.invoke()` tells the `MediaSession` projection that the playhead moved.
+        // Why:      The scrubber, the seek buttons and restart call this method directly, so nothing else announced a
+        //           seek: while paused, the session kept the position from before the seek (26 s behind the app in an
+        //           emulator run) because no pull happened to correct it. This is the media session call only; the
+        //           full `refresh` would also rebuild the UI state and save the session on every scrub.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.onStateChanged?.();
+        // ```
+        onStateChanged?.invoke()
     }
 
     // What:     `fun setVolume(volume: Float) { ... }` declares a public method taking a
