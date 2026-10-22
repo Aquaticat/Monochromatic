@@ -1563,6 +1563,23 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     report: verify the diff and the compared outputs, run the gates once on the merge, push, then land the 90 percent
     share (rebase `~/temp/agent/land-share`) and the minimap agent. The 15 other `.mjs` files in `bin/` (30 minus the 15 that broke)
     stay as they are until the owner says otherwise (a conversion of all of them is a separate decision).
+    The code tile stacking agent `a074735d16c6106a5` has handed back (branch `worktree-agent-a074735d16c6106a5`, product
+    snapshot `628fb36f39`, tip `0a541c6008`, 13 commits, pushed, not on `main`; I read the markup, the stack builder and
+    the viewport diffs and found no defect; no stray unit or process). Its numbers: captures at 7680x4320 scale 1
+    went from 1,405 to 1,553 inked rows of 4,320 to 2,879 to 2,897 (about 66 percent), 3840x2160 scale 2 from about
+    1,600 to about 2,800 inked rows, 1100x8100 scale 2 from about 8,000 to about 10,470, last row inked in every B
+    capture; seam measure 0 differing rows in 16, with a positive control of 32 to 35 differing rows; the Vello
+    warning 5 times in each of 3 runs before and 0 in 6 runs after; cadence 22 pairs B 4 stalls in 3 of 23 runs against
+    A 1 in 1 of 22, and a same-binary control 7 stalls in 7 of 28 runs (inside the spread); `texture-limit` clamps the
+    window (the panic over 16,384 px was the compositor's, which also panics at 1100x8400 scale 2, so that part is not
+    reproduced end to end); nine guards shown to fail; its gates passed on `628fb36f39` (`test:native -- 'all()'` 288
+    passed, serial). Open in its report: late tiles B 2 of 80 against A 0 of 80 (pass 1 had 2 of 40 at 52.6 and 238.6
+    ms, pass 2 0 of 40) with the evidence removed, so I am measuring it: unit `stack-all`, trees
+    `~/temp/agent/ab-stack-a` (`origin/main`) and `~/temp/agent/land-stack` (`origin/main` plus the branch, docs
+    resolved with `-X theirs` for this measurement only), 60 alternating latency pairs and 20 A against A pairs, late
+    meaning applied more than 30 ms after the last wheel event, files `stack-lat-ab.jsonl` and `stack-lat-aa.jsonl`.
+    Three older guards (`failed-job-freed`, `overscan-early-return`, `minimap-scroll-notes-bands`) have anchors that
+    were already absent on `main`; the agent did not repair them, and one of mine to repair after the landings.
     The minimap lag agent `afaeefdb803099e40` has handed back (branch `worktree-agent-afaeefdb803099e40`, tip
     `fbe4f73b2b`, pushed, not on `main`, not yet verified by me): blank-track frames in a 3,777 px fling fell from
     0.45 to 0.01 (A/A control 0.43), by a `LEAD` of 8 bands on the heading side; seven guards shown to fail; its own
