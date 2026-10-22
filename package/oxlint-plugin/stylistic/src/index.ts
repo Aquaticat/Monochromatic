@@ -31,9 +31,19 @@ export {
   selectBreakOffsets,
 } from './utility/chain-render.ts';
 export {
+  computeIndentExpectations,
+  type ComputeIndentExpectationsParams,
+  type IndentExpectationRoute,
+  type LineIndentExpectation,
+} from './utility/indent-expectation.ts';
+export {
   baseIndentAt,
   leadingWhitespace,
 } from './utility/indent.ts';
+export type {
+  ExpectationNode,
+  ExpectationToken,
+} from './utility/indent-tree.ts';
 
 /**
  Oxlint JS plugin for TypeScript stylistic rules: indentation from each
