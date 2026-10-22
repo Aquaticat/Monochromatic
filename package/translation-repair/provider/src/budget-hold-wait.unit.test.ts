@@ -285,8 +285,8 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'READS XIAOMI AS DRY for a model it does not serve, so a fleet dry but for its always-wet meter ends '
-            + 'the run, and reads it as wet for the model it does serve',
+          name: 'RETURNS THE READING for a model Xiaomi does not serve when Xiaomi, wet, is the one provider not dry, '
+            + 'since a model that lost its providers is a lost seat and only every provider dry ends the run',
           fn: async () => {
             const view: BudgetView = {
               neuralwatt: true,
@@ -298,20 +298,14 @@ await describe({
               openrouter: true,
             };
             const { budgets, } = scriptedBudgets({ views: [view,], holds: NO_HOLDS, },);
-            let thrown: unknown;
-            try {
-              await readBudgetsPastHolds({
-                budgets,
-                modelId: MODEL_ID,
-                reach: { ...ALL_SERVE, xiaomi: false, },
-                signal: SIGNAL,
-                refused: NOBODY_REFUSED,
-                pollMs: 1,
-              },);
-            } catch (error) {
-              thrown = error;
-            }
-            expect(thrown,).toBeInstanceOf(EveryProviderDryError,);
+            expect(await readBudgetsPastHolds({
+              budgets,
+              modelId: MODEL_ID,
+              reach: { ...ALL_SERVE, xiaomi: false, },
+              signal: SIGNAL,
+              refused: NOBODY_REFUSED,
+              pollMs: 1,
+            },),).toEqual(view,);
             expect(await readBudgetsPastHolds({
               budgets,
               modelId: MODEL_ID,
@@ -400,18 +394,24 @@ await describe({
         },),
 
         it({
-          name: 'ENDS THE RUN AFTER THE WAIT when a hold on another provider is waited out and Xiaomi, wet but serving '
-            + 'nothing here, is the only reading that is not dry: the second reading folds it in as the first does',
+          name: 'WAITS ON NO HOLD when Xiaomi, wet but serving nothing here, is the only reading that is not dry: a '
+            + 'wet provider is something to buy from, so nothing is read twice and no hold is asked for',
           fn: async () => {
             const view: BudgetView = { ...ALL_DRY, xiaomi: false, };
-            const { budgets, reads, } = scriptedBudgets({
+            const { budgets, reads, holdAsks, } = scriptedBudgets({
               views: [view,],
               holds: { ...NO_HOLDS, synthetic: 5, },
             },);
-            const thrown = await refusalWithoutXiaomiServing({ budgets, },);
-            expect(thrown,).toBeInstanceOf(EveryProviderDryError,);
-            expect((thrown as EveryProviderDryError).message,).toContain('after waiting 5ms',);
-            expect(reads.count,).toBe(2,);
+            expect(await readBudgetsPastHolds({
+              budgets,
+              modelId: MODEL_ID,
+              reach: { ...ALL_SERVE, xiaomi: false, },
+              signal: SIGNAL,
+              refused: NOBODY_REFUSED,
+              pollMs: 1,
+            },),).toEqual(view,);
+            expect(reads.count,).toBe(1,);
+            expect(holdAsks.count,).toBe(0,);
           },
         },),
 
