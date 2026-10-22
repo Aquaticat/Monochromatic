@@ -635,6 +635,15 @@ struct State {
     tile_worker: Option<TileWorker>,
     /// Polls the tile worker's replies on the window thread while a re-center is queued.
     tile_poll: Timer,
+    /// What:
+    ///  A single wake-up for the end of the wait after a scroll step,
+    ///  set by a poll that left a finished tile for the next step.
+    /// Why:
+    ///  The next repeated poll is a whole period later,
+    ///  and the tile would wait most of it.
+    ///  The wake-up runs the same function as the poll,
+    ///  and every poll stops it.
+    tile_wake: Timer,
     /// The minimap beside the source text:
     /// its size,
     /// worker,

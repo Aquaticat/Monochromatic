@@ -14,8 +14,9 @@
 /// the window on it,
 /// and the scroll helpers.
 use super::overscan_tile_tests::{START, document, open, reset, scroll_to, settle_tile};
-/// The window and its state.
-use super::{AppWindow, State};
+/// The window and its state,
+/// and the delay of a wake-up.
+use super::{AppWindow, State, tile::wait::wake_delay};
 /// Toolkit events.
 use slint::{ComponentHandle, platform::update_timers_and_animations};
 /// Shared state and its cell,
@@ -37,6 +38,10 @@ const FOR_GOOD: Duration = Duration::from_secs(3600);
 /// A little longer than the poll period of the tile worker,
 /// so every wait of the first test lets the poll fire.
 const POLL_AND_MORE: Duration = Duration::from_millis(30);
+
+/// Time for the worker to build a tile on a host under load,
+/// with no timer running to take it.
+const WORKER_TIME: Duration = Duration::from_millis(150);
 
 /// Tiles swapped in since the last reset.
 fn tiles_applied(state: &Rc<RefCell<State>>) -> u64 {
@@ -98,6 +103,112 @@ fn a_tile_that_finishes_between_two_steps_is_left_for_the_next_step() {
         tiles_applied(&state),
         1,
         "the step must take exactly the one tile"
+    );
+    window.hide().expect("close tile step window");
+}
+
+/// A tile that finishes just after a step,
+/// with no further step,
+/// is taken as soon as the wait for a step ends,
+/// by the wake-up the poll that left it set,
+/// and not a whole poll period later by the next poll.
+/// The repeated poll is stopped once the wake-up is set,
+/// so only the wake-up can take the tile.
+#[test]
+fn a_tile_left_for_a_step_that_never_comes_is_taken_when_the_wait_ends() {
+    let (window, state) = open(&document());
+    let _offset = leave_the_tile(&window, &state);
+    // No timer runs meanwhile, so the finished tile waits unread in the worker's reply slot.
+    std::thread::sleep(WORKER_TIME);
+    // The last step is recent, so the first poll leaves the tile and must set a wake-up for the end of the wait.
+    state.borrow_mut().stepped_at = Some(Instant::now() + FOR_GOOD);
+    let start = Instant::now();
+    while !state.borrow().tile_wake.running() {
+        update_timers_and_animations();
+        assert!(
+            start.elapsed() < PATIENCE,
+            "the poll that left the tile set no wake-up for the end of the wait within {PATIENCE:?}"
+        );
+        std::thread::sleep(Duration::from_millis(1));
+    }
+    assert_eq!(
+        tiles_applied(&state),
+        0,
+        "the poll took a tile although the next scroll step was due"
+    );
+    {
+        let mut current = state.borrow_mut();
+        // The wait is over and no step came; the next poll of the period is out of reach.
+        current.stepped_at = None;
+        current.tile_poll.stop();
+    }
+    let waiting = Instant::now();
+    while tiles_applied(&state) == 0 {
+        update_timers_and_animations();
+        assert!(
+            waiting.elapsed() < PATIENCE,
+            "the wake-up did not take the finished tile after the wait ended within {PATIENCE:?}"
+        );
+        std::thread::sleep(Duration::from_millis(1));
+    }
+    // A closed window leaves no timer behind that reaches it.
+    window.hide().expect("close tile step window");
+    let_the_timers_run(POLL_AND_MORE);
+}
+
+/// A wake-up is never set for less than a whole millisecond,
+/// which the toolkit's timer clock would take as no time at all,
+/// and the wake-up would set itself again in a spin until the clock moved on.
+#[test]
+fn a_wake_up_is_set_for_a_whole_number_of_milliseconds_that_covers_the_wait() {
+    let cases = [
+        (Duration::from_micros(1), Duration::from_millis(1)),
+        (Duration::from_micros(864), Duration::from_millis(1)),
+        (Duration::from_micros(1000), Duration::from_millis(1)),
+        (Duration::from_micros(1001), Duration::from_millis(2)),
+        (Duration::from_millis(20), Duration::from_millis(20)),
+    ];
+    for (left, expected) in cases {
+        assert_eq!(
+            wake_delay(left),
+            expected,
+            "the wake-up for {left:?} is not the whole milliseconds that cover it"
+        );
+    }
+}
+
+/// A step that takes a finished tile cancels the wake-up for the end of the wait:
+/// the wake-up is not left to find a later tile out of its turn.
+#[test]
+fn a_scroll_step_that_takes_a_tile_cancels_the_wake_up_for_the_end_of_the_wait() {
+    let (window, state) = open(&document());
+    let offset = leave_the_tile(&window, &state);
+    std::thread::sleep(WORKER_TIME);
+    // The last step is recent for the whole test, so the first poll leaves the tile and sets the wake-up.
+    state.borrow_mut().stepped_at = Some(Instant::now() + FOR_GOOD);
+    let start = Instant::now();
+    while !state.borrow().tile_wake.running() {
+        update_timers_and_animations();
+        assert!(
+            start.elapsed() < PATIENCE,
+            "the poll set no wake-up for the end of the wait within {PATIENCE:?}"
+        );
+        std::thread::sleep(Duration::from_millis(1));
+    }
+    assert_eq!(
+        tiles_applied(&state),
+        0,
+        "the poll took a tile although the next scroll step was due"
+    );
+    scroll_to(&window, offset + 0.25);
+    assert_eq!(
+        tiles_applied(&state),
+        1,
+        "the step must take the one finished tile"
+    );
+    assert!(
+        !state.borrow().tile_wake.running(),
+        "the wake-up stays set after a step took the tile"
     );
     window.hide().expect("close tile step window");
 }

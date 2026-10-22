@@ -19,6 +19,7 @@ import {
   l,
   manageCargoManifests,
   manageLsp4ijServerSettings,
+  manageMiseManifests,
   overwrite,
   overwriteEach,
   overwriteIfNotExists,
@@ -649,6 +650,26 @@ function selectBrowserslistQueries(
     ?? config['defaults']
     ?? [];
 }
+
+/**
+ Hand-authored mise manifests whose task headers file-enforcer normalizes.
+
+ Each entry is a bounded glob: a manifest sits directly in its package
+ directory, and a recursive `**` walk would descend every installed
+ `node_modules` tree. The fixture entry is a case directory one level deeper
+ than a package.
+
+ @example
+ ```ts
+ console.log(MISE_MANIFEST_GLOBS.length);
+ ```
+ */
+const MISE_MANIFEST_GLOBS = [
+  './package/*/*/mise.toml',
+  './package-paused/*/*/mise.toml',
+  './package-deprecated/*/*/mise.toml',
+  './package/test-fixture/oxlint-test-import/case/*/mise.toml',
+] as const;
 
 /**
  Generates mise.toml from mise.no-env.toml with a dynamic [env] section
@@ -1629,15 +1650,15 @@ const CARGO_PROFILE_BENCH: CargoProfileSpec = {
 };
 
 /**
- Music-player profile: symbol strip plus fat LTO, tuned in that crate's manifest.
- 
+ Music-player profile: symbol strip plus fat LTO in one codegen unit, for the smallest binary at the shipped opt-level.
+
  @example
  ```ts
  console.log(CARGO_PROFILE_MUSIC.release);
  ```
  */
 const CARGO_PROFILE_MUSIC: CargoProfileSpec = {
-  release: { strip: 'symbols', lto: 'thin', },
+  release: { strip: 'symbols', lto: 'fat', 'codegen-units': 1, },
 };
 
 /**
@@ -1670,6 +1691,7 @@ const CARGO_PROFILE_BY_DIR: Record<string, CargoProfileSpec> = {
   'package/rust-module/forbidden-regex.bench': CARGO_PROFILE_BENCH,
   'package/music-player/truepeak-core.bench': CARGO_PROFILE_BENCH,
   'package/music-player/desktop-app': CARGO_PROFILE_MUSIC,
+  'package/music-player/android-app/rust': CARGO_PROFILE_MUSIC,
   'package/rust-module/forbidden-regex.fuzz': CARGO_PROFILE_FUZZ,
   'package/cli/forbidden-strings.fuzz': CARGO_PROFILE_FUZZ,
 };
@@ -2335,6 +2357,14 @@ log:
 //endregion pnpr registry config
 
 await assertForbiddenRootContextAbsent();
+
+// Normalize hand-authored task headers before the root mise.toml is regenerated from its source.
+await manageMiseManifests({
+  manifestGlobs: [
+    './mise.no-env.toml',
+    ...MISE_MANIFEST_GLOBS,
+  ],
+},);
 
 await Promise.all([
   // GitHub detects the project license from a root file; synchronize it with the canonical REUSE text.

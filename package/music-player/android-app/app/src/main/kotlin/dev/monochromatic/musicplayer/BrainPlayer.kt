@@ -76,6 +76,17 @@ import android.util.Log
 // ```
 import android.os.Looper
 
+// What:     `import android.os.SystemClock` pulls in the monotonic clock. `SystemClock.elapsedRealtime()` counts
+//           milliseconds since boot and never jumps with the wall clock.
+// Why:      media3 extrapolates a pulled position with this same clock, so `SessionPositionAnchor` must use it to
+//           predict what the session reports.
+//
+// In TS you'd write (pseudocode):
+// ```ts
+// // performance.now() is the nearest monotonic clock.
+// ```
+import android.os.SystemClock
+
 // What:     `import androidx.annotation.OptIn`. This is the ANNOTATION class
 //           used to say "yes, I knowingly use an API that the library marked
 //           as unstable/experimental." (See the `@OptIn(...)` on the class.)
@@ -308,6 +319,36 @@ class BrainPlayer(
         action = { invalidateState() },
     )
 
+    // What:     `anchor` remembers the position the last `getState()` handed to media3; `positionCheck` compares it
+    //           with the engine a moment after each pull and while playing, and pulls again when they disagree.
+    // Why:      The engine applies a seek on its worker thread after `getState()` has read the old position, so the
+    //           session extrapolated from a stale position (the notification scrubber showed a different time from
+    //           the app) until an unrelated change pulled again. See `SessionPositionAnchor`.
+    //
+    // In TS you'd write (pseudocode):
+    // ```ts
+    // private readonly anchor = new SessionPositionAnchor(() => performance.now());
+    // private readonly positionCheck = () => { ... };
+    // ```
+    /** Position the last pulled state reported, checked against the engine by [positionCheck]. */
+    private val anchor: SessionPositionAnchor = SessionPositionAnchor(now = { SystemClock.elapsedRealtime() })
+
+    /** Pulls the state again when the engine has moved away from the position the session extrapolates. */
+    private val positionCheck: Runnable = Runnable {
+        /** The engine's position now, in milliseconds. */
+        val actualMs: Long = (controller.positionSec() * MILLIS_PER_SEC).toLong()
+        /** Whether the engine still agrees with the anchor, and when to look again. */
+        val result: SessionPositionAnchor.Check = anchor.check(actualMs)
+        when (result) {
+            SessionPositionAnchor.Check.Resync -> {
+                Log.d(LOG_TAG, "position anchor ${anchor.expectedMs()} ms differs from engine $actualMs ms; resync")
+                invalidateState()
+            }
+            is SessionPositionAnchor.Check.CheckAgainIn -> handler.postDelayed(positionCheck, result.delayMs)
+            SessionPositionAnchor.Check.Settled -> Unit
+        }
+    }
+
     // What:     `init { ... }` is Kotlin's INITIALIZER BLOCK: code that runs as
     //           part of constructing every instance, after the primary
     //           constructor's field assignments. There is no method name; the
@@ -533,6 +574,21 @@ class BrainPlayer(
             // ```
             builder.setCurrentMediaItemIndex(current)
         }
+        // What:     `anchor.record(...)` notes the position this pull reports and whether media3 will run it forward on
+        //           its own (it does while a loaded track plays); the two lines after it replace any waiting check
+        //           with a first one `FIRST_CHECK_DELAY_MS` from now.
+        // Why:      The engine may not have applied a seek or a track change yet, so this pull can carry a stale
+        //           position; the check pulls again if the engine disagrees (see `SessionPositionAnchor`).
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // this.anchor.record(snapshot.positionMs, snapshot.playWhenReady && playlist.length > 0);
+        // clearTimeout(this.positionCheckTimer);
+        // this.positionCheckTimer = setTimeout(this.positionCheck, FIRST_CHECK_DELAY_MS);
+        // ```
+        anchor.record(positionMs = snapshot.positionMs, advancing = snapshot.playWhenReady && playlist.isNotEmpty())
+        handler.removeCallbacks(positionCheck)
+        handler.postDelayed(positionCheck, SessionPositionAnchor.FIRST_CHECK_DELAY_MS)
         // What:     `return builder.build()` finalises the accumulated builder
         //           into the immutable `State` and RETURNS it from `getState()`.
         //           `.build()` is the builder-to-value conversion.
@@ -894,6 +950,15 @@ class BrainPlayer(
         // this.controller.onStateChanged = null;
         // ```
         controller.onStateChanged = null
+        // What:     `handler.removeCallbacks(positionCheck)` drops a queued position check.
+        // Why:      A check that ran after the release would read a released engine and pull state from a player
+        //           that is going away.
+        //
+        // In TS you'd write (pseudocode):
+        // ```ts
+        // clearTimeout(this.positionCheckTimer);
+        // ```
+        handler.removeCallbacks(positionCheck)
         // What:     `controller.release()` tells the brain to release its
         //           resources (the native engine), freeing audio focus, buffers,
         //           worker threads, and file handles.

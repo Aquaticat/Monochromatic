@@ -25,7 +25,8 @@ Measurements and design are in `doc/planning/ide-gpu-snapshot-harness.md`, secti
 ## Not done
 
 - The final-tip gates above.
-- Chunk seam check in a screenshot and a window taller than the compositor's 3,704 px.
+- Chunk seam check in a screenshot and a window taller than the compositor's 3,704 px
+  (closed on 2026-10-22: see the section "Scale 2, the light scheme and the seams, measured in the compositor").
 - A quiet-host cadence run of `big.rs` after the redraw fix.
 - The external edit test is a timing test that failed in about 4 of 32 full runs before its last fix
   (lines that never wrap); that fix passed alone 4 of 4 and is not proven in full runs.
@@ -104,12 +105,15 @@ Built on branch `worktree-agent-a4d54af4e63faea6b` (off `a7f8523f0c`).
   and three or more textures were made by lowering the recorded limit (`set_texture_dimension`) after the first frame,
   not by a window of 17,000 px or more.
 - A composited frame at a fractional display scale or at scale 2 with a stack of textures:
-  the placement is whole physical pixels by construction, but only scale 1 was read back.
+  the placement is whole physical pixels by construction, but only scale 1 was read back
+  (closed on 2026-10-22 at scale 2, with two textures in a composited frame of the real device:
+  see the section "Scale 2, the light scheme and the seams, measured in the compositor"; fractional scales not tried).
 - The cost of a very tall window: a 12,000 px window renders about 24 chunks in the frame the picture arrives in,
   on the window thread, as the cut picture rendered about 16 before.
   Its frame time was not measured.
 - The densest text (`minimap_dense_tests.rs`) was not stacked.
-- No look at the minimap of a tall window in a real or nested compositor window.
+- No look at the minimap of a tall window in a real or nested compositor window
+  (closed on 2026-10-22: 1100x3700 at scales 1 and 2 and 1100x8100 at scale 2, headless).
 - The recorded limit is read when a picture is requested and when it is drawn;
   a device change at run time (a new device with another limit) is posted again through the key,
   but a window that moves to another GPU was not tried.
@@ -402,7 +406,9 @@ Polling after the step's own work restores the order the timer has, and the test
 - A tile that finishes within `STEP_WAIT` after the last step of a scroll waits up to one more poll period (20 ms);
   this latency was not measured, and the second test covers only that the poll takes the tile.
 - The drag scenario, display scales other than 1, a real compositor and the wrap indicator's own redraw
-  (`submit_sign`, once per display scale, before the input) were not tried.
+  (`submit_sign`, once per display scale, before the input) were not tried
+  (scale 2 closed on 2026-10-22 for the picture, the input and the scroll step, not for the stall probe:
+  see the section "Scale 2, the light scheme and the seams, measured in the compositor").
 - The pair budget of ten per question was exceeded for the fix (three passes, 8 pairs each: the first pass with the
   switch, the final binary before and after the order change), because the order change was a code change.
 
@@ -522,3 +528,366 @@ Scroll scenario, 120 steps, frame-shift probe (`mm-stall.mjs`), alternating orde
   the stall at slot 50 in 16 of 16 runs is the check that the two agree.
 - Gates (`lint`, `test:native`, `test`, `test:bin`, `build`, `inspect:no-software-renderer`) were not run: no product
   code and no guard changed.
+
+### A wake-up for the end of the 20 ms wait
+
+Session of 2026-10-22 on branch `worktree-agent-a52afe09d606ed6ed`, base `f5de574fdd` (the merged fix and the
+measurements of the subsection "Idle latency of the 20 ms wait and rare stalls elsewhere").
+It builds the fix that subsection proposed and decides it by measurement: the tile that waited a whole poll period
+more (+20 ms) after a poll that left it.
+
+#### Change
+
+- The poll of the tile worker (`src/native/tile.rs`) now runs one function, `poll_unless_step_due`, from both of its
+  timers.
+  The function, `STEP_WAIT`, `step_wait_left` (the former `step_due`) and the wake-up code are in the new sibling
+  module `src/native/tile/wait.rs`, because `tile.rs` passed the limit of 300 code lines with them (306).
+  When the last scroll step is under `STEP_WAIT` old, the function logs "leaving a finished tile for the next scroll
+  step" as before and also sets `tile_wake`, a single-shot `slint::Timer` in `State`, for the rest of the wait
+  (`wake_when_wait_ends`).
+  When the wake-up fires it runs the same function, so `poll` stays the only place a tile is taken, and a step that
+  came meanwhile only makes the wake-up find the wait running again and set itself once more.
+- Every `poll` stops `tile_wake` first, so the step that takes a tile (the call at the end of `on_viewport_changed`)
+  cancels the wake-up that is waiting.
+  There is one wake-up timer, and `start` on it replaces a pending one.
+  Both timers hold weak handles of the window and its state, as the repeated poll does, so a closed window is not kept
+  alive and a wake-up that fires after the close finds nothing to do.
+- The first build set the wake-up for the exact rest of the wait, and a run of it logged 207 sets in a row, from
+  864 microseconds left down to none, within one millisecond (`left_us` in the log
+  `~/temp/agent/lat2-spin-l2-5-B.run.log`): the toolkit's timer clock counts milliseconds, so a wake-up for under one
+  millisecond fires at once, finds a little of the wait left and sets itself again, a spin on the window thread of
+  about a millisecond.
+  `wake_delay` rounds the delay up to a whole millisecond.
+  The first Q1 pass (`lat2-q1-main.jsonl`) and the first stall pass (`lat2-q2.jsonl`) are of the spinning build, and
+  are marked so below; the final Q1 pass and the final stall pass are of the build with `wake_delay`.
+  A third pair of passes (`lat2-q1-tip.jsonl`, `lat2-q2c.jsonl`) is of the tip after the move into `tile/wait.rs`
+  (a move of the code, and the one change of the tip over the final passes, besides an import order).
+- Tests (`src/native/tile_step_tests.rs`):
+  `a_tile_left_for_a_step_that_never_comes_is_taken_when_the_wait_ends` (the poll that leaves a tile sets a wake-up,
+  and with the repeated poll stopped the wake-up alone takes the tile once the wait is over),
+  `a_scroll_step_that_takes_a_tile_cancels_the_wake_up_for_the_end_of_the_wait` and
+  `a_wake_up_is_set_for_a_whole_number_of_milliseconds_that_covers_the_wait`.
+  The first one uses the clock of the existing tests (`stepped_at` set to a time in the future keeps the step due),
+  with no timing threshold, so it does not depend on the load of the host.
+  A first version of it measured the time from a step to the swap against a threshold between 21 and 40 ms; it was
+  replaced because a poll that comes one millisecond late finds the wait over and takes the tile with or without the
+  wake-up, so under load the guard would have passed with its line removed.
+- Source guards (`bin/inspect-source-guards.mjs`): `tile-wakes-when-the-wait-ends`, `tile-wake-cancelled-by-the-poll`
+  and `tile-wake-covers-whole-milliseconds` are new; `tile-left-for-next-step` and
+  `tile-taken-by-the-poll-when-idle` moved their anchors to `step_wait_left` in `src/native/tile/wait.rs`, which
+  replaced `step_due`.
+
+#### Method of this session
+
+Two release binaries from two worktrees: tree A is `f5de574fdd` (origin/main), tree B is this branch.
+Each worktree has a reflink copy of the package `target` directory, and the release build is the one the
+`inspect:cadence` task makes.
+Every number is from one app run at a time in the nested compositor (1100x660, release, `big.rs`, the `scroll`
+scenario of `inspect:cadence`), each run a capped unit (`CPUQuota=600%`, `MemoryMax=40G`), arms alternating per pair,
+the artifact directory deleted after each run (stall runs keep their log for a while).
+The log level, the last wheel event to the first finished frame after the tile is applied, and the frame-shift probe
+are those of the previous subsection.
+The load average of the host moved between 3 and 21 from other sessions and from the builds of this one.
+The scripts are `~/temp/agent/lat2-run.mjs`, `lat2-stats.mjs`, `lat2-modes.mjs`, `lat2-tail.mjs`, `lat2-apply.mjs`,
+`lat2-extra.mjs`, `lat2-overlap.mjs` and `lat2-timeline.mjs` (copies and extensions of the `lat-*` ones).
+The rows are `lat2-q1-main.jsonl` (spinning build), `lat2-q1-spread.jsonl`, `lat2-q1-final.jsonl`,
+`lat2-q1-tip.jsonl`, `lat2-q2.jsonl` (spinning build), `lat2-q2b.jsonl` and `lat2-q2c.jsonl`.
+The three Q1 passes of B and the three stall passes are of three builds: the spinning build, the build with
+`wake_delay`, and the tip after the move into `tile/wait.rs`.
+
+#### Idle latency, counts
+
+The scenario is the Q1 of the previous subsection: 2 wheel steps of 1500 px, then nothing.
+The tile is "late" when it is applied more than 30 ms after the last wheel event; the two modes of the earlier
+sessions sit at about 20 ms and about 40 ms, and no run lies between them.
+
+- A, all runs of the session (main pass 40, spread pass 20 and 20, final pass 40, tip pass 20): 70 of 140 runs have
+  the tile applied late, which is 50%.
+  The earlier session saw about 4 of 10 (19 of 47).
+- B, the spinning build (40 runs): 0 late; applied 20.2 to 21.0 ms (median 20.4); first frame after it 26.9 to
+  35.7 ms, median 29.6 (quartiles 29.0 and 30.3); A in the same pass: 22 late, median frame 48.1.
+- B, the build with `wake_delay` (40 runs, 40 of A alternating with it): 0 late; applied 20.4 to 21.3 ms (median
+  20.9); first frame after it median 30.6 ms (quartiles 29.7 and 32.3, range 28.7 to 40).
+  A in the same pass: 20 late of 40 (applied 20.2 to 40.8 ms); median frame 42.9 (quartiles 30.4 and 49.5).
+  A's fast mode alone (19 runs) has a median of 30.3 ms (range 29 to 32.8), so B is +0.3 ms above it at the median.
+  Two B runs have a frame at 36.8 and 40 ms although their tile was applied at 21 ms or less: the frame ended late,
+  which is not the wait.
+  The paired difference B minus A has a median of -10.5 ms (quartiles -19.0 and +0.6, range -23.7 to +10.5).
+- B, the tip (20 runs, 20 of A): 0 late; applied 20.5 to 21.1 ms (median 20.9); first frame after it median 30.1 ms
+  (quartiles 29.6 and 30.9, range 28.7 to 37.6; two frames over 36 ms).
+  A in the same pass: 8 late of 20; median frame 31.1 (quartiles 30.0 and 48.8).
+- The slow mode is gone: 0 of 100 B runs against 70 of 140 of A.
+  The median does not rise: 30.6 ms and 30.1 ms against the fast mode of A at 30.3 ms and the wait-off value of the
+  earlier session at 29.7 ms.
+  A tile that the repeated poll leaves is now taken about 21 ms after the last step, whichever way the poll fell.
+- The spread of unchanged input, A against A with the same binary in two arm labels (20 pairs):
+  late tiles in 11 of 20 and 9 of 20, medians 48.6 and 35.8 ms.
+  Inside each mode the spread is small (the fast mode of A over the 80 runs of the first two passes lies at 28.6 to
+  34.4 ms, about 6 ms), and the effect is the removal of the second mode, 19 ms away from the first (30.3 and
+  49.4 ms medians in the final pass).
+  Pair differences between two runs of one binary are not small (A2 minus A: median -2.5 ms, quartiles -15.4 and
+  +4.2, range -26.3 to +24.0), because a pair can fall in different modes; the claim rests on the share of runs in the
+  slow mode, which is 55% and 45% for the two labels of one binary and 0% for B.
+- Positive control: the wait of 150 ms of the previous subsection (a 136 ms move) was not rebuilt, since the branch
+  has no switch for it.
+  The measure's reach in this session is shown by A itself: its two modes differ by about 19 ms, and every run
+  falls in one of them.
+
+#### Stalls
+
+Scroll scenario, 120 steps, frame-shift probe, A and B alternating.
+The probe fails on some noisy runs ("probe status 1": the frames could not be matched; 1 of 32 and 1 of 60 runs, both
+of B, both with many wheel gaps over 20 ms; none in the 32 of the tip pass); those runs are not counted below.
+
+- First pass, B the spinning build (16 pairs): A 16 runs, 2 stalls (slots 35 and 40), none at slot 50;
+  B 15 runs, 1 stall, at slot 50.
+- Second pass, B with `wake_delay` (30 pairs): A 30 runs, 7 stalls in 7 runs (slots 50, 56, 94, 125, 128 twice,
+  140), slot 50 in 1; B 29 runs, 12 stalls in 10 runs (slots 35, 53, 72, 76, 97, 98, 119 twice, 128, 139 twice, 141),
+  slot 50 in 0.
+- Third pass, B the tip (16 pairs): A 16 runs, 1 stall (slot 96); B 16 runs, 3 stalls (slots 66, 72, 140);
+  slot 50 in 0 and 0.
+- Slot 50, three passes: B 1 of 60 runs, A 1 of 62; B after the spinning build 0 of 45.
+  The stall of the previous session's merged binary was 0 of 56 runs, and the unfixed code 16 of 16; neither was
+  rerun here, and the host is noisier than then (wheel gaps over 20 ms between two injected events in 34 of 62 A runs
+  and 33 of 62 B runs).
+  A stall count of zero at slot 50 is not shown by A on this host (1 of 62); B has 1 of 60 with the spinning build and
+  0 of 45 with the two later builds.
+- The stall at slot 50 of the spinning build (pair 5 of the first pass, log `~/temp/agent/lat2-spin-l2-5-B.run.log`)
+  has a readable timeline and fits a cost
+  of the wake-up: the wheel event at 316.7 ms (counted from the first one) was followed by the next one 22.6 ms
+  later, 2.6 ms after the end of the wait; the wake-up applied the tile at 336.9 ms, and the frame the next wheel event
+  drew followed at 341.6 ms.
+  Any input gap longer than `STEP_WAIT` with a tile waiting ends this way with the wake-up, where the repeated poll
+  only does when one of its ticks falls into the gap.
+- Counting the tiles applied outside a step (more than 2 ms after a wheel event, inside the input): A 22 tiles in 6
+  runs of 62, B 23 tiles in 11 runs of 62, so the number of such tiles is the same and they are found in more runs for
+  B.
+  Runs with a stall: A 10 of 62, B 14 of 60, which is not a difference these counts can show.
+  Of the runs with a stall, 7 of 14 of B and 2 of 10 of A also have a tile applied outside a step; the other stalls
+  are not tied to a tile hand-over in their run, and are taken to be the host's, which was not shown.
+  If the cost is real, it is a small rate that these 62 runs per arm cannot resolve; a longer run of the stall pass
+  would decide it.
+
+#### Gates
+
+Run once each on the tip `9f21309e6d` (documentation commits follow it):
+`lint` 0 findings (a first run found the code line limit of `tile.rs` and two semantic line break findings in a
+test's comment, a second a rustfmt import order; each fix was a new snapshot, and the third run passes);
+`test:native` 282 passed, 5 skipped (the five tests of `tile_step_tests.rs` among them);
+`test` 797 passed, 1 skipped; `test:bin` 60 passed; `build` finished;
+`inspect:no-software-renderer` passes (not linked; the two features reach it);
+`inspect:source-guards` for the six guards of the tile hand-over (6 of 156): baseline passes, removed fails, restored
+passes, for all (`tile-taken-by-the-step` shares the baseline of `tile-left-for-next-step`).
+The other 150 guards were not run.
+A first guard run stopped at its baseline because the copied cache lacked `crate-licenses.json` (an input of the
+build script, not a guard result); it was repeated after copying that file.
+
+#### Limits
+
+- The cost found above (an input gap over 20 ms with a tile waiting) is a property of the wait's length: a longer
+  `STEP_WAIT` covers longer gaps and adds the same amount to the idle latency.
+  It was not varied.
+- Not run: the drag scenario, display scales other than 1, a real compositor, an input slower than 50 Hz, and any
+  step length other than 16 ms (the sweep of the earlier subsection).
+- The `probe status 1` runs are excluded from the stall counts and were not examined.
+- The text of this subsection has the same kind of `markdown/semantic-line-breaks` findings as the older text of the
+  file (about 200 in the new text, 480 in the older; the six named gates do not lint this file), and was not reflowed.
+- The stall passes keep only the spin log; the other kept run logs were deleted, and the rows in the `lat2-*.jsonl`
+  files are what remains.
+- The wait of 150 ms (the positive control of the previous subsection) and the unfixed code were not rebuilt.
+
+## Scale 2, the light scheme and the seams, measured in the compositor
+
+Session of 2026-10-22 on branch `worktree-agent-a1612e9c563c279ed`, base `cd1e9ec340`.
+It closes three checks that were never done: display scale 2, the light color scheme, and the seams of the minimap
+chunks and of the code tile at scales 1 and 2 in both schemes.
+No product code changed (a temporary fault in `src/native/gpu_tile/slice.rs` served as a positive control and was
+reverted, `git status` is clean), so no gate ran.
+
+### Method
+
+- The binary is the installed release `~/.local/bin/monochromatic-ide` (sha256 prefix `27b877741a056ecf`, the build of
+  `origin/main`), in `monochromatic-nested-wayland-session` 0.6.1.
+  The compositor already had everything the checks need: `--scale`, `--color-scheme` (private portal, no host
+  setting touched), `--accessibility` (bounds in physical pixels), `--headless`, `record`, `wheel`, `scroll`, `key`.
+  Nothing was missing, so the compositor was not changed.
+- The runs are headless (`--headless --gpu /dev/dri/renderD128`, the RX 7600 that the application's Vulkan loader
+  order picks, texture limit 16,384).
+  The nested window is clamped to the host screen: a request for 1100x3700 at scale 2 gave a 2160x3704 capture,
+  where headless gives 2200x7400.
+  Control: at 1100x660 and scale 1 the nested and the headless capture differ in about 50 pixels of the code and minimap
+  columns and in the sidebar columns (pointer hover state of the nested window); the code view is the same.
+- Fixtures below a disposable `/tmp` directory: a file of 600 lines of the harness's `code.rs` under three lines that
+  make characters countable (60 `=` signs, then 62 distinct characters), and a file of 30,000 identical lines
+  (`let value = compute(alpha, beta); // note`), whose minimap picture and code view repeat every line pitch exactly.
+  A repeat that breaks is a gap, an overlap or a color jump, wherever it is.
+- One app run at a time, each in a systemd user unit with `CPUQuota=600%` and `MemoryMax=40G`.
+  Measured under the load there was (load average 2 to 14 from other sessions; no wait for quiet).
+  Frames were read with Pillow and numpy; the scripts are `~/temp/agent/sss/` (`session.mjs`, `run.mjs`,
+  `scenarios.mjs`, `a1.py` to `a10.py`), the images `~/temp/agent/sss-shots/`.
+  The artifact directories, the worktree `target` directory and the fixtures were removed afterwards.
+
+### Check 1: display scale 2
+
+Everything is compared in logical pixels, scale 1 against scale 2, 1100x660, dark.
+
+- Sharpness of the code view (Laplacian energy over ink energy; share of 2x2 blocks that are constant):
+  native scale 2 reads 1.18 and 3 percent; a nearest-neighbour upscale of the scale 1 capture, the control, reads 1.57
+  and 100 percent; a bilinear upscale reads 0.25 and 0.5 percent.
+  The glyphs are drawn at physical resolution (4.7 times the bilinear value, and no 2x2 stair).
+  The light scheme reads the same (1.18 and 3 percent).
+- Layout: the line pitch is 24 logical px and the character advance 9.0 at both scales (autocorrelation of the `=`
+  row); line numbers sit at the same logical y; the language banner wraps at the same words.
+- Minimap: the accessibility bounds of the track and the picture are exactly twice those at scale 1
+  (track 990,32,110,628 against 1980,64,220,1256; picture 110x768 against 220x1536).
+- Caret: 2.0 logical px wide (2 and 4 physical), 21 logical px tall, at x 333 to 335 and y 188 to 211 on both.
+- Selection: a double click on `compute` selects the rectangle 423,186 to 486,210 (logical) at both scales, and the
+  clipboard holds `compute` at both; select all covers 315,150 to 975,660 at both.
+  Selected glyphs are white on `#0078D4` (4.53 to 1) at both scales and both schemes.
+- Hit testing: 10 clicks per run (a quarter and three quarters into the cell of characters 0, 3, 17, 40 and 58 of the
+  line of distinct characters), then shift+End and ctrl+c, and the pasted text read through `wl-paste` on the
+  compositor's display.
+  A quarter in gives the character, three quarters in gives the next one.
+  Scale 1: 10 of 10 in all 5 runs.
+  Scale 2: 10 of 10 in 6 of 7 runs whose pastes were all checked, and another run of 8 repeated clicks on one cell
+  was correct 8 of 8 (a further batch of 4 runs was seen only in its first 5 pastes, all correct).
+  The one run that failed (the first run of this session, while a release build of this session ran in the
+  background) had no effect for its first 5 clicks and then all correct: the sequence is what an application that
+  is not yet taking input would show (the compositor answers `ping` before the window is ready).
+  It did not recur in the 6 later checked scale 2 runs, no frame or log of it exists, and it is not attributed.
+- Scroll step: one wheel notch moves the text about 60 logical px at both scales (the best whole-pixel match is 60 and
+  120 physical, with the same residual of 7.6 levels at both, so the step is not a whole number of pixels), a touchpad
+  scroll of 100 logical px moves 100 (100 and 200 physical, residual 0).
+- Texture rules at physical size, from the accessibility bounds in a 1100x3700 window (scale 2: 2200x7400 physical):
+  the code tile is 1358x12288 (66,748,416 bytes, under the 64 MiB rule, under 16,384 rows) and covers the view of
+  7,336 rows with 2,476 rows to spare above and below; the minimap picture is 220x7936 (15.5 chunks, one texture).
+  At scale 1 the tile is 679x11064 and the picture 110x3968.
+  Because a window cannot be taller than the device's texture limit (see below), a picture of more than 16,384 rows
+  needs a window of about 16,000 physical rows.
+  A 1100x8100 window at scale 2 (2200x16200 physical) gave the stack of the real device: the first texture 220x16384
+  and a second one of 512 rows, abutting, with no gap.
+
+### Check 2: the light scheme
+
+- The scheme comes from the compositor's private portal (`--color-scheme light`, and `color-scheme` on the control
+  socket to switch); the application follows it with no setting of its own.
+- Search for dark-only constants in the Vello drawing code: the only literal colors in `src/` outside tests are the
+  twelve syntax hues of `src/code_colors.rs` (each with a dark and a light value), the white and black that
+  `src/selection_ink.rs` picks by contrast, and the tint of `src/native/render.rs` that follows the selected ink.
+  The base color of every Vello render is transparent.
+  Every other ink is a window property from the markup (`Palette`, `AnnotationInk`, `Surface`).
+- Measured contrast of ink against its background in light (background `#FAFAFA`), at scale 1 and scale 2:
+  code comment ink `#555C65` 6.48; syntax `#14567F` 7.54; gutter numbers `#737373` 4.54 (0.6 opacity by design);
+  information message `#005FB8` 6.04; error `#C42B1C` 5.42; warning `#9D5D00` 5.03; hint `#616161` 5.93;
+  the marks in the gutter (`E`, `W`) the same inks; the find box text `#005FB8` on white 6.31;
+  the other find matches, text `#555C65` on a `#D7D7D7` fill 4.70;
+  selected row and selected text, white on `#0078D4`, 4.53.
+  Dark for comparison: comment `#A0A8B0` 8.72, error `#FF99A4` 10.34, warning `#FCE100` 15.91, information 11.67.
+  Every ink that is text is at least 4.5 in both schemes.
+- The minimap's strongest glyph pixel reads 3.89 in light and 5.24 in dark; the picture is a graphic, not text, and
+  its colors come from the same function as the code's (`ink(role, colors)`).
+- Looked at (images below): light code view, find box with 166 matches, select all with the underlines of diagnostics
+  under the selection, the viewport box, the sidebar and the tooltip of a diagnostic are all readable;
+  nothing is dark on dark or light on light.
+- Diagnostics marks were checked with the debug build and its `IDE_INSPECT_ANNOTATIONS` file (error, warning,
+  information and hint messages, wavy, dashed and dotted underlines, the `E` and `W` marks, parameter and type hints),
+  at both scales in both schemes (`a1d`, `a1l`, `a2d`, `a2l`).
+  Hint labels at scale 1 never reach their full ink (thin unhinted strokes, 4.4 to 4.9 against 7.6 to 8.2 at scale 2).
+
+### Check 3: seams
+
+- Chunk seams of the minimap, 1100x3700, picture rows repeat every 4 rows at scale 1 and 8 at scale 2.
+  The measure: for every row of the track, the largest difference over the picture columns between that row and the
+  row one pitch below, rows of the viewport box's top and bottom border and of tooltips left out.
+  The seams are the picture's top (from the accessibility bounds) plus multiples of 512.
+  After a click on the track (no fling, 4 s settle), three positions per run.
+- Result: the largest difference over all unmasked rows is 1 level of 255 in every shot but two, over 4 configurations
+  (scale 1 and 2, dark and light) with 3 shots each, 128 chunk seams in all (7 per shot at scale 1, 14 or 15 at
+  scale 2), and 3 shots of the 16,200 row window with 32 seams each, one of them the cut between two textures
+  (at row 16,384 of the picture).
+  The two other shots (scale 1 and 2, light, first position) flag 24 and 45 rows that a 4x crop shows to be the
+  hover tooltip of the banner's diagnostic drawn over the minimap, 50 to 300 rows away from any seam.
+  The first rows of the picture at scroll 0 hold the language banner, which is not periodic, and are not seams.
+- Positive control: a release build with the chunk copy one row early for every chunk after the first
+  (`origin: Origin3d { x: 0, y: row - 1, z: 0 }` in `draw_stack`, temporary, reverted).
+  Every shot (4 at scale 1, 4 at scale 2) shows a break at the first seam, with differences of 103 (scale 1) and 156
+  (scale 2) levels in 4 to 7 rows just above it;
+  the other seams do not break because every later chunk is moved by the same row.
+  Against 0 flagged rows in all clean shots.
+  What this measure cannot see: the pitch (4 or 8 rows) divides 512, so no seam cuts through a glyph, and a chunk
+  shifted by a whole line leaves the picture identical.
+  Those two cases are covered only by `src/native/minimap_seam_tests.rs` (scale 1.5, equal to an unsplit render),
+  not by these captures.
+  The positive control of the tile measure is the synthetic 1 px roll, not a code fault.
+  The fault is visible in a 6x crop as a row of squashed glyphs
+  (`seam-compare-scale2-clean-left-fault-right.png`).
+- Tile seam: the code tile is one texture, so it has no seam inside it.
+  What can go wrong at a tile is a swap that places the text one pixel off.
+  The measure is the phase of the text rows modulo the line pitch, against the gutter numbers' phase
+  (which the markup places).
+  Over 18 shots (scales 1 and 2, dark and light, before and after a tile swap by a minimap click or a page jump)
+  the text phase is constant to 0.05 physical px, and text minus number is +0.9 px (0.87 to 0.99) at scale 1 and
+  +1.9 px (1.76 to 1.99) at scale 2, the same 0.9 logical px.
+  Positive control: the same capture rolled by 1 px reads +1.00.
+  No blank run longer than a line in any settled frame.
+  Frames recorded during two page jumps back to back (37 frames at 24 per second at scale 1, 12 at 7 per second at
+  scale 2): no blank run, text phase constant.
+- A frame that does show the tile's edge: a touchpad scroll of 1100 logical px at scale 2 in a 1100x3700 window
+  (recorded at 10 frames per second) had one frame with 647 blank rows at the bottom of the code view, the next
+  frame full again.
+  The view had moved 600 physical rows in one frame, past the 2,476 rows of overscan.
+  It is the tile outrun that the earlier cadence work knows, not a seam.
+
+### Findings that are not defects of these three checks
+
+- Symptom first: in a 7680x4320 window at scale 1 the top of the file is not drawn.
+  The code tile does not cover a view larger than the 64 MiB rule allows.
+  The tile is cut to the rule around its middle, so a view of more than about 16.7 million pixels (the area of text
+  columns by rows) has rows that carry no text.
+  Measured: 7680x4320 at scale 1: the tile is 7259x2280 and rows 21 to 1016 and 3062 to 4320 of the 4,320 are blank
+  in the code view (52 percent of the view; the top of the file is not drawn).
+  2200x16200 physical (1100x8100 at scale 2): the tile is 1358x12288 and the first 1,894 and last 1,970 rows are blank.
+  Not a problem at 3,700 px at scales 1 and 2 (tile 1358x12288 covers 7,336 rows).
+  Computed from the rule, not measured: a 5K window at scale 1 (about 4,600 text columns, cap 3,640 rows against
+  2,880) is covered; a 6K window at scale 1 is not (cap about 2,940 against 3,384).
+  This is the rule recorded in the section "Stacked textures" (the minimap stacks, the code tile does not).
+  Options for the owner: stack the code tile as the minimap does, ranked first (covers every window, needs the scene
+  split and the clipping of the selection rows per texture); lower the scale of a view that does not fit (cheap, soft
+  text); leave it (affects only windows of more than 16.7 million physical pixels of text).
+  Not fixed here: it is a new feature, not a defect of the checked paths.
+- A physical window taller or wider than the device's texture limit panics the application:
+  1100x8400 at scale 2 (2200x16800) ended with `wgpu error: Validation Error ... In Surface::configure ... Requested was
+  (2200, 16800), maximum extent for either dimension is 16384`.
+  The panic is raised in the toolkit's surface configuration.
+  Real displays are far below that, so a stacked minimap is reachable only in a window of about 16,000 physical rows.
+- At every scale 2 window of 3,700 px the application logs `vello::render: Trying to paint too large image.
+  1358x12288` at warn level (243 lines in 9 runs; 2 for 1376x12144).
+  It is the Vello warning for more than 256 coarse workgroups
+  (`doc/troubleshooting/vello-silent-blank-or-corrupt-frames-at-fixed-buffer-limits.md`: "I did not see the warning
+  fire" with no logger).
+  It fires for the 64 MiB tile at 288 workgroups (by my count of 256 by 256 pixel bins),
+  below the corruption limit that file measures, and no wrong pixel
+  was found in the view in these runs; the rows of the tile outside the view were not read back.
+  The 64 MiB rule is 16,777,216 pixels, exactly 256 bins of 256 by 256, so a tile at the cap with edges off the
+  256 pixel grid counts more than 256 bins: it fires at scale 2, where the tile is at the cap, not at scale 1.
+  The only evidence that such a tile renders correctly outside the view: in the recorded scroll through the overscan
+  at scale 2 (`sr2d`, frames 7 to 10) the view moved through those rows with 0 periodicity violations.
+- During a fling the minimap picture lags the box: in one run the track had 91 to 94 blank rows at its bottom 3.5 s
+  after a 3,777 px touchpad scroll (the fling went on for more than 10 s), and 0 blank rows once the scroll had
+  stopped.
+  A transient of fast scrolling, in two runs; not examined further.
+
+### Images (under `~/temp/agent/sss-shots/`)
+
+- `e1/plain.png` and `e2/plain.png`: the harness fixture at scale 1 and 2, dark.
+- `l1-int/find.png`, `l1-int/all.png`, `l2-int/word.png`: light, find box, select all, selected word.
+- `a1l/plain.png`, `a1d/plain.png`, `a2l/sel.png`: diagnostics marks in light and dark, selection over underlines.
+- `seam-compare-scale2-clean-left-fault-right.png`: the positive control of the seam measure.
+- `u2d3/`, `u2l3/`, `st3d/`: the tall windows with the pictures; `w8k/plain.png`: the 8K window with the blank bands.
+
+### Not done
+
+- Fractional scales (the stack is whole physical pixels by construction), a real compositor, the drag scenario.
+- The stall probe of the cadence work at scale 2.
+- A readback of the rows of the 64 MiB tile outside the view.
+- Gates, because no product code changed.

@@ -1,6 +1,6 @@
 [package]
 name = "music-player"
-version = "0.1.7"
+version = "0.1.10"
 edition = "2024"
 license = "LGPL-3.0-or-later"
 publish = false
@@ -255,14 +255,14 @@ winresource = "0.1"
 # no .debug_* sections are emitted in release anyway). "symbols" keeps unwind
 # info intact, so panic backtraces and Drop-on-panic are unchanged. Mandatory.
 strip = "symbols"
-# Thin LTO: cross-crate inlining per codegen unit instead of one whole-program module. Fat LTO spent 287 of the
-# 302 s of rustc time for this crate in the single `LLVM_fatlto` pass (rustc -Ztime-passes), so rebuilding only
-# this crate took ~300 s with fat LTO and ~60 s with thin LTO (two runs each, within 3 s of each other, on a
-# loaded 16-core host). The binary grows from 41.6 MB to 46.4 MB (+11.6%) and runtime speed was not measured.
-# Switched to thin on 2026-10-11 at the maintainer's request; fat LTO is `lto = true`. An earlier measurement
-# here (fat LTO + default codegen-units -> ~17.5 MB at ~2m06s) predates the production UI and its dependencies.
-# The run-quick mise task skips LTO entirely (~17 s rebuilds). panic stays "unwind" (default).
-lto = "thin"
+# Fat LTO in one codegen unit. Measured on 2026-10-22 on a 28-core host with the stripped release binary: thin LTO
+# 53.88 MB in 145 s, fat LTO with one codegen unit 44.01 MB (18% smaller) in 351 s. Thin LTO had replaced fat LTO
+# on 2026-10-11 to cut rebuilds from about 300 s to about 60 s, but the maintainer later said that was measured on
+# a weak CPU with a broken motherboard and poor cooling, so build time no longer argues against fat LTO.
+# Runtime speed against thin LTO was not measured. The run-quick mise task skips LTO entirely (~17 s rebuilds).
+# panic stays "unwind" (default).
+lto = "fat"
+codegen-units = 1
 
 # Standalone crate: its own workspace root, so no ancestor Cargo.toml can absorb it.
 # Enforced by file-enforcer (doc/planning/cargo-toml-file-enforcer.md).

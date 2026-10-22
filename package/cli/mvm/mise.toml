@@ -5,34 +5,34 @@ run = "node src/cli.ts"
 [tasks.build]
 extends = "build"
 
-[tasks.'build:js']
+[tasks."build:js"]
 extends = "build:js"
 
-[tasks.'build:js:node']
+[tasks."build:js:node"]
 extends = "build:js:node"
 
-[tasks.'watch:build']
+[tasks."watch:build"]
 extends = "watch:build"
 
-[tasks.'watch:build:js']
+[tasks."watch:build:js"]
 extends = "watch:build:js"
 
-[tasks.'watch:build:js:node']
+[tasks."watch:build:js:node"]
 extends = "watch:build:js:node"
 
 [tasks.lint]
 extends = "lint"
 
-[tasks.'lint:types']
+[tasks."lint:types"]
 extends = "lint:types"
 
-[tasks.'lint:oxlint']
+[tasks."lint:oxlint"]
 extends = "lint:oxlint"
 
 [tasks."format:oxlint"]
 extends = "format:oxlint"
 
-[tasks.'test:unit']
+[tasks."test:unit"]
 extends = "test:unit"
 
 [tasks.buildAndTest]
@@ -42,6 +42,6 @@ run = ["mise run build", "mise run test:unit"]
 # Live, BILLED Hetzner provisioning test. Excluded from test:unit (the .expensive.
 # marker); run deliberately. Root mise loads HCLOUD_TOKEN from the encrypted
 # .env.local.json before this task starts. Provisions and destroys billed servers.
-[tasks.'test:hetzner']
+[tasks."test:hetzner"]
 description = "Run the live, BILLED Hetzner provisioning test using root SOPS secrets"
 run = "node src/backend/hetzner/provision.expensive.unit.test.ts"

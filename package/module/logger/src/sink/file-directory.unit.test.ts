@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
+import { existsSync } from 'node:fs';
 import { chmod, mkdir, mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
@@ -17,17 +18,19 @@ import { createFileSink } from '../../dist/final/node/node.mjs';
  @param directory - explicit destination or empty ancestor-discovery control
  @param marker - expected persisted record identifying the contrast
  @param source - consumer import and actual logger calls
+ @param environment - extra child variables layered over the logger destination
  */
-async function run({ cwd, home, directory, marker, source }: {
+async function run({ cwd, home, directory, marker, source, environment = {} }: {
   readonly cwd: string;
   readonly home: string;
   readonly directory: string;
   readonly marker: string;
   readonly source: string;
+  readonly environment?: Readonly<Record<string, string>>;
 }): Promise<void> {
   const child = spawn(process.execPath, ['--max-old-space-size=128', '--input-type=module', '--eval', source], {
     cwd,
-    env: { ...process.env, HOME: home, MONOCHROMATIC_LOG_DIRECTORY: directory, LOGGER_DIRECTORY_MARKER: marker },
+    env: { ...process.env, HOME: home, MONOCHROMATIC_LOG_DIRECTORY: directory, LOGGER_DIRECTORY_MARKER: marker, ...environment },
     stdio: ['ignore', 'ignore', 'pipe'],
   });
   const errors: Buffer[] = [];
@@ -51,10 +54,21 @@ async function workspace() {
     await rm(path, { recursive: true });
   } };
 }
+/** List sink log files one level below the destination, skipping stamps and probe residue. */
+async function logNames(directory: string): Promise<string[]> {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const names = await Promise.all(entries.map(async function collect(entry) {
+    if (!entry.isDirectory()) return entry.name.endsWith('.log.jsonl') ? [entry.name] : [];
+    const inner = await readdir(join(directory, entry.name));
+    return inner.filter(name => name.endsWith('.log.jsonl'))
+      .map(name => join(entry.name, name));
+  }));
+  return names.flat().toSorted();
+}
 /** Read the real JSONL records rather than an intercepted write callback. */
 async function records(directory: string): Promise<unknown[]> {
   const result: unknown[] = [];
-  const contents = await Promise.all((await readdir(directory)).map(function readLog(name) {
+  const contents = await Promise.all((await logNames(directory)).map(function readLog(name) {
     return readFile(join(directory, name), 'utf8');
   }));
   for (const content of contents) {
@@ -78,6 +92,8 @@ await describe({ name: createFileSink.name, children: [
     const values = await records(directory);
     assert.equal(hasMessage({ values, message: 'first directory record' }), true);
     assert.equal(hasMessage({ values, message: 'second directory record' }), true);
+    // One process keeps exactly one log file under its day directory.
+    assert.equal((await logNames(directory)).length, 1);
   } }),
   it({ name: 'default logger honors the environment destination and preserves unset ancestor discovery', fn: async function defaultDirectory() {
     await using fixture = await workspace();
@@ -93,6 +109,25 @@ await describe({ name: createFileSink.name, children: [
     assert.equal(hasMessage({ values: await records(ordinary), message: 'ancestor control' }), true);
     assert.equal(hasMessage({ values: await records(ordinary), message: 'configured control' }), false);
     assert.equal(hasMessage({ values: await records(configured), message: 'configured control' }), true);
+  } }),
+  it({ name: 'a process that writes no records leaves no log files', fn: async function lazyCreation() {
+    await using fixture = await workspace();
+    const directory = join(fixture.path, 'quiet');
+    const source = `import {logger} from ${JSON.stringify(new URL('../../dist/final/node/index.mjs', import.meta.url).href)}; await logger.flush();`;
+    await run({ cwd: fixture.path, home: fixture.path, directory, marker: 'unused', source });
+    // Lazy file creation plus the always-removed probe mean a zero-record
+    // process persists zero log files and zero probe residue.
+    const names = existsSync(directory) ? await readdir(directory) : [];
+    assert.equal(names.filter(name => name.endsWith('.log.jsonl')).length, 0);
+    assert.equal(names.filter(name => name.endsWith('.probe.tmp')).length, 0);
+  } }),
+  it({ name: 'MONOCHROMATIC_LOG_FILE=off leaves no files even with an explicit destination', fn: async function killSwitch() {
+    await using fixture = await workspace();
+    const directory = join(fixture.path, 'off');
+    const source = `import {logger} from ${JSON.stringify(new URL('../../dist/final/node/index.mjs', import.meta.url).href)}; logger.info(process.env.LOGGER_DIRECTORY_MARKER); await logger.flush();`;
+    await run({ cwd: fixture.path, home: fixture.path, directory, marker: 'off control', source, environment: { MONOCHROMATIC_LOG_FILE: 'off' } });
+    // The disabled file sink never probes or creates its destination.
+    assert.equal(existsSync(directory), false);
   } }),
 ] });
 //endregion

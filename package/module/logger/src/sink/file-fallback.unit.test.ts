@@ -8,7 +8,13 @@ import { join } from 'node:path';
 import { describe, it } from '@monochromatic-dev/module-test/ts';
 
 //region Disposable consumers isolate home, cwd and inherited destination overrides.
-/** Create a fixture outside the repository so ancestor discovery has a genuine miss control. */
+/**
+ Create a fixture outside the repository for isolated home and state roots.
+
+ Miss scenarios spawn from a root-anchored cwd because ancestor discovery walks
+ to the filesystem root and the shared scratch root may itself contain a
+ `node_modules` planted by other tooling.
+ */
 async function workspace() {
   const scratch = join(homedir(), 'temp', 'agent');
   await mkdir(scratch, { recursive: true, mode: 0o700 });
@@ -18,6 +24,12 @@ async function workspace() {
     await rm(path, { recursive: true });
   } };
 }
+
+/**
+ Root-anchored cwd whose ancestor chain contains no `node_modules`,
+ giving default discovery a genuine miss control.
+ */
+const NO_PROJECT_CWD = '/';
 
 /**
  Run the published sink boundary with isolated environment and capture every shutdown diagnostic.
@@ -59,7 +71,17 @@ await sink.write({level:'info',timestamp:0,message:'fallback persisted control'}
 
 /** Verify actual JSONL records and exactly one sink-owned file after concurrent verification. */
 async function checkRecords(directory: string): Promise<void> {
-  const files = await readdir(directory);
+  // The destination root holds one day directory plus the retention stamp;
+  // the single log file lives inside the day directory.
+  const entries = await readdir(directory, { withFileTypes: true });
+  assert.equal(entries.some(entry => entry.name === '.logger-retention-sweep'), true);
+  const nested = await Promise.all(entries.map(async function collect(entry) {
+    if (!entry.isDirectory()) return entry.name.endsWith('.log.jsonl') ? [entry.name] : [];
+    const inner = await readdir(join(directory, entry.name));
+    return inner.filter(name => name.endsWith('.log.jsonl'))
+      .map(name => join(entry.name, name));
+  }));
+  const files = nested.flat();
   assert.equal(files.length, 1);
   const [name] = files;
   assert.equal(typeof name, 'string');
@@ -97,7 +119,7 @@ await describe({ name: 'file sink default fallback', children: [
   } }),
   it({ name: 'uses the default user state root when no project exists and ignores relative XDG state paths', fn: async function noProject() {
     await using fixture = await workspace();
-    const stderr = await consume({ cwd: fixture.path, home: fixture.path, state: 'relative-state' });
+    const stderr = await consume({ cwd: NO_PROJECT_CWD, home: fixture.path, state: 'relative-state' });
     const destination = join(fixture.path, '.local', 'state', 'monochromatic', 'log');
     assert.ok(stderr.includes(JSON.stringify(destination)), stderr);
     await checkRecords(destination);
@@ -116,7 +138,7 @@ await describe({ name: 'file sink default fallback', children: [
     await using fixture = await workspace();
     const state = join(fixture.path, 'occupied');
     await writeFile(state, 'occupied');
-    const stderr = await consume({ cwd: fixture.path, home: fixture.path, state, available: false });
+    const stderr = await consume({ cwd: NO_PROJECT_CWD, home: fixture.path, state, available: false });
     assert.ok(stderr.includes('file sink verification failed'), stderr);
     assert.equal(stderr.includes('using fallback'), false);
   } }),

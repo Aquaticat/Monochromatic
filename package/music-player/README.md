@@ -573,7 +573,8 @@ A release holds one file per platform and a `SHA256SUMS` file:
    `music-player-<version>-linux-musl-x64.tar.gz` and `music-player-<version>-linux-musl-arm64.tar.gz`.
   These are for Alpine 3.24 or newer (musl libc) on x86_64 or aarch64;
   the Linux archives above do not run on Alpine.
-- Android: `music-player-<version>-android.apk`.
+- Android: `music-player-<version>-android-arm64-v8a.apk` for phones, tablets and foldables (64-bit ARM), and
+  `music-player-<version>-android-x86_64.apk` for x86_64 devices and emulators.
 - License notices:
    `music-player-<version>-desktop-third-party-licenses.txt` and
    `music-player-<version>-android-third-party-licenses.txt`

@@ -1,7 +1,7 @@
 [tasks.lint]
 extends = "lint"
 
-[tasks.'lint:types']
+[tasks."lint:types"]
 extends = "lint:types"
 
 [tasks."lint:oxlint"]
@@ -9,5 +9,5 @@ extends = "lint:oxlint"
 [tasks."format:oxlint"]
 extends = "format:oxlint"
 
-[tasks.'test:unit']
+[tasks."test:unit"]
 extends = "test:unit"

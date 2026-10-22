@@ -239,11 +239,16 @@ the DeepSeek test's 13,082 literal was its only cover.
 ## T9: every test run writes a log into `node_modules/.monochromatic/`
 
 Status:
-open,
-owned by `module-logger` (issue #576,
+resolved for issue #576 in `module-logger` `0.4.5`
+ (decision record `doc/decision/module-logger-log-accumulation.md`):
+ `MONOCHROMATIC_LOG_FILE=off` disables the file sink entirely,
+ and redirecting `MONOCHROMATIC_LOG_DIRECTORY` to a per-run scratch directory
+ keeps test runs hermetic even without the switch.
+The issue 573 verification-timeout line recorded in this entry stays open.
+Owned by `module-logger` (issue #576,
 measurements added 2026-09-27).
-1,220,455 files there;
-the tests are not hermetic.
+1,220,455 files there on the measurement date;
+the tests were not hermetic then.
 Measured on 2026-09-27:
 most of that count is the deliberate `translation-repair-runs*` run directories;
 the logs themselves are 34,919 top-level `*.log.jsonl` files (846 MB with the runs),

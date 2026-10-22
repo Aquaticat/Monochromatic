@@ -91,6 +91,8 @@ export { tomlInsertCommentAfter, } from './toml-insert-comment-after.ts';
 
 export { tomlStringify, } from './toml-stringify.ts';
 
+export { normalizeTableHeaderKeyQuoting, } from './normalize-table-header-key-quoting.ts';
+
 export {
   getStaticTOMLValue,
   parseTOML,

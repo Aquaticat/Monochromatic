@@ -193,6 +193,19 @@ For paths created by `tomlSet` that did not exist at parse time,
  neither function can return a node or bytes;
  `tomlStringify` and reparse first.
 
+## Key quoting normalization
+
+`normalizeTableHeaderKeyQuoting({ source, })` rewrites every literal-quoted
+(single-quoted) key segment in a table header as a basic-quoted (double-quoted)
+string and leaves every other byte as it was.
+Bare keys and keys already written as basic strings are kept as written,
+so the result is idempotent.
+Key-value keys and literal string values keep their quote style;
+only header key segments are spliced,
+which makes the rewrite a semantic no-op that removes quote-style drift.
+It reuses the parse path behind `parseTomlEdit` and throws `TomlEditError` on
+invalid input.
+
 ## Unstable seam exports
 
 The package re-exports a few internal encoders and emitters with an underscore prefix:

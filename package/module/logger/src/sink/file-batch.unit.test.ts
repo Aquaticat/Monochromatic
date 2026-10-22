@@ -1,12 +1,28 @@
 import { chmod, mkdir, mkdtemp, readFile, readdir, rename, rm, } from 'node:fs/promises';
 import { homedir, } from 'node:os';
-import { join, } from 'node:path';
+import {
+  dirname,
+  join,
+} from 'node:path';
 import { describe, expect, it, } from '@monochromatic-dev/module-test/ts';
 import { createFileSink, } from '../../dist/final/node/node.mjs';
 
 import type { LogRecord, Sink, } from '../../dist/final/neutral/index.mjs';
 
 //region Disposable files exercise completion ownership at the persisted artifact
+
+/** Sink log files one level below the destination root, skipping stamps and probe residue. */
+async function logFiles(directory: string,): Promise<string[]> {
+  const entries = await readdir(directory, { withFileTypes: true, },);
+  const nested = await Promise.all(entries.map(async function collect(entry,) {
+    if (!entry.isDirectory())
+      return entry.name.endsWith('.log.jsonl',) ? [join(directory, entry.name,)] : [];
+    const inner = await readdir(join(directory, entry.name,),);
+    return inner.filter((name: string,) => name.endsWith('.log.jsonl',),)
+      .map((name: string,) => join(directory, entry.name, name,),);
+  },),);
+  return nested.flat().toSorted();
+}
 
 /** Persisted records expose serialization or append boundaries without inspecting filesystem calls. */
 async function withFileSink(run: (input: {
@@ -28,17 +44,19 @@ async function withFileSink(run: (input: {
   /** Explicit directory avoids ancestor discovery and other logger instances. */
   const sink = createFileSink({ directory, },);
   expect(await sink.verify(),).toBe(true,);
+  /** Drain the retention sweep so later assertions see one settled artifact. */
+  await sink.flush?.();
   /** Read-back checks the complete JSONL artifact after the tested completion settles. */
   async function readRecords(): Promise<unknown[]> {
-    /** Verified sink creates exactly one log in this disposable directory. */
-    const filenames = await readdir(directory,);
+    /** One process creates exactly one log under its day directory. */
+    const filenames = await logFiles(directory,);
     expect(filenames,).toHaveLength(1,);
     /** Missing output must fail before any read can silently target another file. */
     const [filename,] = filenames;
     if (filename === undefined)
       throw new Error('Verified file sink did not create its log',);
     /** Newlines delimit complete records even when their JSON strings contain escaped newlines. */
-    const output = await readFile(join(directory, filename,), 'utf8',);
+    const output = await readFile(filename, 'utf8',);
     return output.trimEnd().split('\n',).map(function parseRecord(row,): unknown {
       return JSON.parse(row,);
     },);
@@ -63,7 +81,7 @@ await describe({
           }
           const issued = sink.write(first,);
           await Promise.all([issued, admitLater(),],);
-          expect((await readRecords()).slice(1,),).toEqual([first, later,],);
+          expect(await readRecords(),).toEqual([first, later,],);
         },);
       },
     },),
@@ -72,19 +90,21 @@ await describe({
       fn: async ({ sinon, },) => {
         const warnings = sinon.stub(console, 'warn',);
         await withFileSink(async function checkAppendFailure({ sink, directory, readRecords, },): Promise<void> {
-          const [filename,] = await readdir(directory,);
-          if (filename === undefined)
+          /** Lazy creation means the first record also creates the day-directory log file. */
+          const created = { level: 'info' as const, timestamp: 0, message: 'record before failure', };
+          await sink.write(created,);
+          const [file,] = await logFiles(directory,);
+          if (file === undefined)
             throw new Error('Verified sink has no log file',);
-          const file = join(directory, filename,);
           const saved = join(directory, 'saved.jsonl',);
           await rename(file, saved,);
           await mkdir(file,);
-          await sink.write({ level: 'info', timestamp: 0, message: 'failed append', },);
+          await sink.write({ level: 'info', timestamp: 1, message: 'failed append', },);
           await rm(file, { recursive: true, },);
           await rename(saved, file,);
-          const after = { level: 'info' as const, timestamp: 1, message: 'after restored destination', };
+          const after = { level: 'info' as const, timestamp: 2, message: 'after restored destination', };
           await sink.write(after,);
-          expect((await readRecords()).slice(1,),).toEqual([after,],);
+          expect(await readRecords(),).toEqual([created, after,],);
           expect(warnings.callCount,).toBe(1,);
         },);
       },
@@ -105,7 +125,7 @@ await describe({
           await sink.write(missing,);
           const after = { level: 'info' as const, timestamp: 1, message: 'after rejected serialization', };
           await sink.write(after,);
-          expect((await readRecords()).slice(1,),).toEqual([after,],);
+          expect(await readRecords(),).toEqual([after,],);
           expect(warnings.callCount,).toBe(2,);
         },);
       },
@@ -117,12 +137,13 @@ await describe({
         await withFileSink(async function checkSeparateOwners({ sink, directory, },): Promise<void> {
           const other = createFileSink({ directory, },);
           expect(await other.verify(),).toBe(true,);
+          await other.flush?.();
           const first = { level: 'info' as const, timestamp: 1, message: `first${'"\\\n世界'.repeat(150_000,)}`, };
           const second = { level: 'info' as const, timestamp: 2, message: `second${'"\\\n世界'.repeat(150_000,)}`, };
           await Promise.all([sink.write(first,), other.write(second,),],);
-          const filenames = await readdir(directory,);
+          const filenames = await logFiles(directory,);
           const contents = await Promise.all(filenames.map(function readLog(filename,) {
-            return readFile(join(directory, filename,), 'utf8',);
+            return readFile(filename, 'utf8',);
           },),);
           const records = contents.flatMap(function parseLog(content,) {
             return content.trimEnd().split('\n',).map(function parseRecord(row,): unknown {
@@ -132,6 +153,8 @@ await describe({
           expect(records,).toContainEqual(first,);
           expect(records,).toContainEqual(second,);
           expect(filenames,).toHaveLength(2,);
+          // Same-millisecond timestamps share the one day directory.
+          expect(new Set(filenames.map((file: string,) => dirname(file,)),).size,).toBe(1,);
         },);
       },
     },),
@@ -148,7 +171,7 @@ await describe({
           const second = sink.write({ level: 'info', message: 'second', timestamp: 2, },);
           await second;
           expect(first,).toBe(second,);
-          expect((await readRecords()).slice(1,),).toEqual([
+          expect(await readRecords(),).toEqual([
             { level: 'info', message: 'before\n世界', timestamp: 1, },
             { level: 'info', message: 'second', timestamp: 2, },
           ],);
@@ -167,7 +190,7 @@ await describe({
           },),);
           const after = { level: 'info' as const, timestamp: records.length, message: 'after drainage', };
           await sink.write(after,);
-          expect((await readRecords()).slice(1,),).toEqual([...records, after,],);
+          expect(await readRecords(),).toEqual([...records, after,],);
         },);
       },
     },),
@@ -191,7 +214,7 @@ await describe({
           };
           await sink.write(outer,);
           await state.inner;
-          expect((await readRecords()).slice(1,),).toEqual([
+          expect(await readRecords(),).toEqual([
             { level: 'info', message, timestamp: 1, },
             { level: 'info', message, timestamp: 2, },
           ],);

@@ -181,8 +181,9 @@ One release holds, with `<version>` filled in:
   The binary is dynamically linked against musl (a static musl binary cannot open a window or link PipeWire, see the
   Alpine decision) and is built with the `alsa-fallback` feature, so it plays through the default ALSA device when no
   PipeWire daemon runs.
-- Android: `music-player-<version>-android.apk`, signed with the release key,
-  holding the `arm64-v8a` and `x86_64` native libraries.
+- Android: `music-player-<version>-android-arm64-v8a.apk` and `music-player-<version>-android-x86_64.apk`, both signed
+  with the release key, each holding only its own ABI's native library (decided 2026-10-22; releases up to 0.1.7
+  shipped one `music-player-<version>-android.apk` with both libraries, 160,027,082 bytes in 0.1.7).
 - `SHA256SUMS`, produced by a job that runs only after every build succeeded.
 - Since 2026-10-15 the release also ships `music-player-<version>-desktop-third-party-licenses.txt` and
   `music-player-<version>-android-third-party-licenses.txt`,

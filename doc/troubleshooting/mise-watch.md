@@ -56,10 +56,13 @@ Note the flag difference:
 
 ### What does not work
 
-- `mise watch --no-meta` -- flag parsed but not forwarded to watchexec
-- `mise watch -J @file.jaq` -- same:
+- `mise watch --no-meta`:
+   flag parsed but not forwarded to watchexec
+- `mise watch -J @file.jaq`:
+   same,
    parsed but dropped
-- `mise watch --fs-events create,remove,rename,modify` -- untested but likely same issue
+- `mise watch --fs-events create,remove,rename,modify`:
+   untested but likely same issue
 
 ### Verification
 
@@ -559,7 +562,8 @@ rather than by careful argv composition.
 
 ### What does not work
 
-- `watchexec -r -- mise run start:server` -- SIGTERM does not propagate
+- `watchexec -r -- mise run start:server`:
+  SIGTERM does not propagate
   through the `mise → sh → bun` chain,
    leaving orphaned bun processes
 

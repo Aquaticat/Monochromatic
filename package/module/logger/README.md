@@ -155,18 +155,39 @@ That startup buffer holds at most `STARTUP_BUFFER_CAP` records (10000,
   otherwise `MONOCHROMATIC_LOG_DIRECTORY` selects it for default loggers too.
   An empty or unset destination walks up from `process.cwd()` to the nearest
   ancestor `node_modules/`,
-   then appends JSONL records to
-  `<that project>/node_modules/.monochromatic/{timestamp}.{unique id}.log.jsonl` via
-  `node:fs/promises`.
+  then appends JSONL records to
+  `<that project>/node_modules/.monochromatic/{YYYY-MM-DD}/{timestamp}.{uuid}.log.jsonl`
+  via `node:fs/promises`.
+  One file per process under a UTC day directory,
+  created on the first record:
+  verification probes writability with a
+  `{timestamp}.{uuid}.probe.tmp` round-trip it always removes,
+  so a process that writes no records leaves no files.
   Appends run in invocation order within each sink;
   a large record finishes every filesystem write before the next record starts.
   Each returned write completion includes that wait,
   so `logger.flush()` also covers queued records.
+  `MONOCHROMATIC_LOG_FILE=off` disables the file sink entirely,
+  even with an explicit destination.
+  Verification also sweeps the destination down to a retention window of
+  14 days,
+  512 MiB,
+  and 50,000 files
+  (`MONOCHROMATIC_LOG_MAX_AGE_DAYS`,
+  `MONOCHROMATIC_LOG_MAX_BYTES`,
+  and `MONOCHROMATIC_LOG_MAX_FILES` override;
+  invalid or negative values fall back to the defaults),
+  deleting only logger-owned names and at most one walk per five minutes
+  per destination directory.
   Without an explicit or environment destination,
   a missing project or failed project-file probe falls back to persistent user state.
   One notice identifies the verified fallback directory and its reason.
   An explicit destination failure reports the error and disables that file sink without redirecting it.
-  See the [file destination contract](doc/file-destinations.md) for platform locations and verification.
+  See the [file destination contract](doc/file-destinations.md)
+  for layout,
+  retention ownership,
+  platform locations,
+  and verification.
 - **IndexedDB**:
    browser only;
    buffers records through the same shared policy and flush triggers as the

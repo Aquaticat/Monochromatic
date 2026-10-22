@@ -471,6 +471,24 @@ packageExtensions:
     peerDependenciesMeta:
       '@luma.gl/webgpu':
         optional: true
+  # @deepseek-ai/dsh-llm-pi-ai 0.2.1-rc.2 statically imports its harness
+  # service peers at load (@deepseek-ai/dsh-launch-environment among them),
+  # but under this workspace's strict isolation (hoist: false,
+  # nodeLinker: isolated, resolvePeersFromWorkspaceRoot: false) no importer
+  # here can satisfy those peers, so the imports are unresolvable from the
+  # adapter's own location in workspace tests. Declaring the packages it
+  # imports as dependencies here makes pnpm link them under the adapter
+  # instance so the imports resolve; the dsh runtime provides the same
+  # packages itself. The other peers its manifest declares
+  # (@deepseek-ai/dsh-authorization, @deepseek-ai/dsh-fs) sit behind entry
+  # points nothing in this workspace loads.
+  '@deepseek-ai/dsh-llm-pi-ai':
+    dependencies:
+      '@deepseek-ai/dsh-attachment': '0.2.1-rc.2'
+      '@deepseek-ai/dsh-credentials': '0.2.1-rc.2'
+      '@deepseek-ai/dsh-launch-environment': '0.2.1-rc.2'
+      '@deepseek-ai/dsh-llm': '0.2.1-rc.2'
+      '@deepseek-ai/dsh-timeout': '0.2.1-rc.2'
 packageImportMethod: clone-or-copy
 packages:
   - 'package/*/*'

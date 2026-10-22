@@ -1,28 +1,28 @@
 [tasks.build]
 extends = "build"
 
-[tasks.'build:js']
+[tasks."build:js"]
 extends = "build:js"
 
-[tasks.'build:js:node']
+[tasks."build:js:node"]
 extends = "build:js:node"
 
-[tasks.'watch:build']
+[tasks."watch:build"]
 extends = "watch:build"
 
-[tasks.'watch:build:js']
+[tasks."watch:build:js"]
 extends = "watch:build:js"
 
-[tasks.'watch:build:js:node']
+[tasks."watch:build:js:node"]
 extends = "watch:build:js:node"
 
 [tasks.lint]
 extends = "lint"
 
-[tasks.'lint:types']
+[tasks."lint:types"]
 extends = "lint:types"
 
-[tasks.'lint:oxlint']
+[tasks."lint:oxlint"]
 extends = "lint:oxlint"
 usage = 'arg "[args]" var=#true help="Package-relative source paths; omitted means the entire package"'
 run = """
@@ -42,7 +42,7 @@ ensureOxlintConfig()
 runWorkspaceNode('package/dev-script/task-util', 'oxlint-wrapper', ['--fix', ...parseUsageArgs(process.env.usage_args ?? '')])
 """
 
-[tasks.'test:unit']
+[tasks."test:unit"]
 extends = "test:unit"
 
 [tasks."test:tsc-failure"]
