@@ -1530,20 +1530,52 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     `origin/main`) plus 30 A against A pairs for the spread; keeps the debug timeline of every stalled run and decides
     per slot whether a tile was applied outside a step, an input gap, or neither (host); fixes the wake-up only if it
     is shown to cost frames, keeping the 0 of 40 late tiles. On its report: same verification as the others.
-    Flake agent `a4671ba160cf3feec` (started 2026-10-22, own worktree off `origin/main`, branch push only; same
-    rules quoted): diagnoses the annotation stability tests under real load, completes the two incomplete ledger
-    entries with counts, and decides by measurement the video-memory question (7.98 of 7.98 GiB); retries only for a
-    proven test, zero overrides expected. On its report: same verification as the others, plus a read of the ledger.
+    LANDED, flake agent `a4671ba160cf3feec` (third flake session; merge tip `6620fda00a` on `origin/main`; tests, one
+    `mise.toml` line and the ledger `doc/handover/ide-native-flakes.md` only, no product code, no binary change, no
+    reinstall, zero retry overrides). Gates once on the merged snapshot: lint, `test:native 'all()'` 283 passed and 5
+    skipped with no FLAKY or SLOW, `test` 797 passed, `test:bin`, `inspect:no-software-renderer` ("not linked"). The
+    new guard `a_reader_that_stalls_past_the_quiet_time_still_has_rows_wait` fails when the scrolling rule ignores
+    the held clock (I removed the fix in the scratch tree and it failed, then restored). What the agent found:
+    - A new flake, fixed at its cause: the minimap test
+      `fifty_thousand_lines_give_a_bounded_picture_without_blocking_the_window`
+      read the third picture's statistics as the cold build's (before 317 of 400 failed, after 0 of 400). The test
+      now asserts shaped plus reused equals lines; the cold-build claim stays asserted in `tests/minimap_scene.rs`.
+    - Quiet-time test: cause, fix (`3bcdc17603`, a clock a test can hold) and evidence in the ledger; the guard failed
+      20 of 20 with the fix ignored, a real-clock copy failed 10 of 10.
+    - Caret test `the_view_follows_the_caret_through_every_visual_row`: "fixed by inference" only (the unit guard
+      `the_finish_of_a_replaced_pass_leaves_the_newer_pass_open` fails 20 of 20 without the fix, but the tool never
+      produced the interleaving); it now reports wrap widths and facts of both moments if it fails again.
+    - Annotation stability tests: NOT reproduced in about 2,100 runs (0 failures) under load averages of 18 to 56;
+      still open and instrumented (`shot()` takes a second frame of the same state and names the tile counters);
+      the one old failure was a burst in one copy while another hit "No space left on device", so a full host disk
+      is a suspect.
+    - Video memory: measured, no change. One test process holds about 0.28 GiB (0.52 at most), 21 at once 2.37 GiB;
+      the card spilled to system memory with no failure attributable to it. A cap would free under a third of the
+      card, so none is made.
+    - Two findings the agent did not fix, recorded as open work: (a) the `runtime` mise task is not safe for two
+      concurrent callers in one tree (a `build` and a `test` started together failed with ENOENT renaming
+      `target/debug/runtime/grammars/awk.so.new`; fix by atomic staging or a freshness skip); (b) the gate
+      `test:native 'all()'` passes `--no-capture`, which makes nextest run one test at a time (sum of durations
+      198.5 s, wall 198.6 s), so no full run at the thread bound has ever happened on any snapshot. Only a
+      127-test subset at 21 threads and 32-process hunts were parallel.
+    - The agent exceeded the brief's CPU guidance (one unit at `CPUQuota=2400%`, foreground runs at the 21-CPU
+      bound, about 24 CPUs at the peak). The owner's statement above allows parallel real jobs, each capped; it is
+      recorded as an overrun of the brief, not hidden. Cleanup was verified by me: no `flk` units, no stress
+      container, no process in its worktree; its worktree and branch are removed, local and remote.
     Open, in order: (1) the stalls away from slot 50 (slot 33 and 72, one run each; undecided; a larger alternating
     pass with a same-binary control, under whatever load there is; the stall pass agent) and whether a tile taken in an
     input gap over 20 ms costs a frame; (1b) the code tile stack and the minimap fling lag (the two agents above);
     (2) the flake work, in `doc/handover/ide-native-flakes.md`:
     fixed with counts (refused-tile test 10 of 360 to 0 of 360, wrap clip 3 of 240 to 0 of 240, reader fixture 28 of 160
-    to 0 of 160, find-box menu test by its guard, see the LANDED block above); open: the annotation stability tests
-    (cause unknown, frames kept under `target/flake-frames/` for the next failure), the two incomplete ledger entries,
-    and the video-memory question (7.98 of 7.98 GiB in every full run; no failure attributed). Full `test:native`
-    passes are snapshots, not flake counts. (3) Scale 2, light scheme and seam checks in the app, under the load there is
-    (alternating arms and a control, never a wait for quiet).
+    to 0 of 160, find-box menu test by its guard, quiet-time test, minimap picture test 317 of 400 to 0 of 400, see the
+    LANDED blocks above); open: the annotation stability tests (not reproduced in about 2,100 runs; instrumented, frames
+    kept under `target/flake-frames/` for the next failure; a full host disk is a suspect for the one old failure),
+    the caret test (fixed by inference only), (2a) the `runtime` mise task is unsafe for two concurrent callers in one
+    tree, and (2b) the `test:native 'all()'` gate runs one test at a time because of `--no-capture`, so a full run at
+    the thread bound on one snapshot has never been made (queued: an agent to fix 2a, find out why the gate is
+    serial, and measure a parallel full run against it). The video-memory question is closed by measurement (no cap).
+    Full `test:native` passes are snapshots, not flake counts. (3) Scale 2, light scheme and seam checks: done, see the
+    scale agent's LANDED block.
     The prevention proposal `doc/planning/agents-cannot-load-the-host.md` waits for the owner: a fresh Claude session and
     at least two more reviewers must read it first. Stopgap rules `NLG` and `NLD` are in `AGENTS.md`. The entry in
     `doc/limitation/claude.md` ("Delegated GPU migration of the Slint IDE") lists this session's and the agents' mistakes.
