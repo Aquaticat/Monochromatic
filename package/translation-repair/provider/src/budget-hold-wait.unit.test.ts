@@ -28,6 +28,7 @@ import {
   readBudgetsPastHolds,
   shortestHold,
   waitOutHold,
+  type WritingReach,
 } from '../dist/final/node/index.mjs';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import { SEAT_SYNTHETIC_VISION_WITHHELD, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
@@ -162,6 +163,30 @@ const SYNTHETIC_BACK: BudgetView = {
  NeuralWatt back, the others still dry.
  */
 const NEURALWATT_BACK: BudgetView = { ...ALL_DRY, neuralwatt: false, };
+
+/**
+ Every provider but Xiaomi serves a model seated in a writing bench, as the live roster has it: Xiaomi serves one
+ checker seat (`xiaomi/mimo-v2.6-flash`) and nothing that writes.
+ */
+const XIAOMI_CHECKER_ONLY: WritingReach = {
+  neuralwatt: true,
+  synthetic: true,
+  hyper: true,
+  bedrock: true,
+  deepseek: true,
+  xiaomi: false,
+  openrouter: true,
+};
+
+/**
+ Every provider serves a model seated in a writing bench, Xiaomi included.
+ */
+const XIAOMI_WRITES: WritingReach = { ...XIAOMI_CHECKER_ONLY, xiaomi: true, };
+
+/**
+ Every provider dry but Xiaomi, whose meter reads wet always.
+ */
+const ONLY_XIAOMI_WET: BudgetView = { ...ALL_DRY, xiaomi: false, };
 
 /**
  Nobody held.
@@ -317,6 +342,65 @@ await describe({
             },),).toEqual(view,);
           },
         },),
+        it({
+          name: 'ENDS THE RUN WITH A STOP LINE when Xiaomi, wet, serves only a checker seat and every other provider '
+            + 'reads dry: a wet provider counts only if a writing bench could still reach its floor from it',
+          fn: async () => {
+            const { budgets, } = scriptedBudgets({ views: [ONLY_XIAOMI_WET,], holds: NO_HOLDS, },);
+            const thrown = await rejectionOf(() => readBudgetsPastHolds({
+              budgets,
+              modelId: MODEL_ID,
+              signal: SIGNAL,
+              refused: NOBODY_REFUSED,
+              pollMs: 1,
+              writing: XIAOMI_CHECKER_ONLY,
+            },),);
+            expect(thrown,).toBeInstanceOf(EveryProviderDryError,);
+            const { message, } = thrown as EveryProviderDryError;
+            expect(message,).toContain('Xiaomi reads wet but serves no seat that writes',);
+            expect(message,).not.toContain('Xiaomi has refused a call for payment',);
+            expect(message,).toContain('xiaomi wet (serves no seat that writes)',);
+          },
+        },),
+
+        it({
+          name: 'DOES NOT END THE RUN when Xiaomi, wet, serves a writer seat: the same reading returns, and no hold is '
+            + 'asked for',
+          fn: async () => {
+            const { budgets, holdAsks, } = scriptedBudgets({ views: [ONLY_XIAOMI_WET,], holds: NO_HOLDS, },);
+            expect(await readBudgetsPastHolds({
+              budgets,
+              modelId: MODEL_ID,
+              signal: SIGNAL,
+              refused: NOBODY_REFUSED,
+              pollMs: 1,
+              writing: XIAOMI_WRITES,
+            },),).toEqual(ONLY_XIAOMI_WET,);
+            expect(holdAsks.count,).toBe(0,);
+          },
+        },),
+
+        it({
+          name: 'WAITS OUT THE HOLDS with Xiaomi wet and checker-only, as it does with every provider dry: the all-dry '
+            + 'wait engages, and the return it waited for is read',
+          fn: async () => {
+            const { budgets, reads, } = scriptedBudgets({
+              views: [ONLY_XIAOMI_WET, { ...ONLY_XIAOMI_WET, neuralwatt: false, },],
+              holds: NO_HOLDS,
+              holdsByAsk: [{ ...NO_HOLDS, neuralwatt: 6, }, NO_HOLDS,],
+            },);
+            expect(await readBudgetsPastHolds({
+              budgets,
+              modelId: MODEL_ID,
+              signal: SIGNAL,
+              refused: NOBODY_REFUSED,
+              pollMs: 1,
+              writing: XIAOMI_CHECKER_ONLY,
+            },),).toEqual({ ...ONLY_XIAOMI_WET, neuralwatt: false, },);
+            expect(reads.count,).toBe(2,);
+          },
+        },),
+
         it({
           name: 'STATES THE ACCOUNT\'S NEURALWATT DAY START in the run-ending refusal, from the budgets\' own reading '
             + 'of the decided anchor, whether the refusal comes at once or after a hold is waited out',

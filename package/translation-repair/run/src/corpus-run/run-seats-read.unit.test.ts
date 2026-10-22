@@ -175,6 +175,8 @@ const ALL_METERS_WET: Readonly<Record<keyof BudgetView, MeterState>> = {
 
  @param providerHolds - scripted holds, none when absent
 
+ @param writingProviders - the providers that serve a writing-bench seat, the run's roster when absent
+
  @returns Client with only the seat reader's surface
 
  @example
@@ -188,17 +190,21 @@ function viewClient(
     providerMeterStates = async () => ALL_METERS_WET,
     providerHolds = () => NO_HOLDS,
     neuralwattReturn,
+    writingProviders,
   }: {
     readonly providerDryness: () => Promise<BudgetView>;
     readonly providerMeterStates?: () => Promise<Readonly<Record<keyof BudgetView, MeterState>>>;
     readonly providerHolds?: () => typeof NO_HOLDS;
     readonly neuralwattReturn?: () => NeuralWattReturn;
+    readonly writingProviders?: Readonly<Record<keyof BudgetView, boolean>>;
   },
 ) {
   return {
     providerDryness,
     providerMeterStates,
     providerHolds,
+    // Conditional spread keeps the record absent on a client that carries none, which reads the roster's.
+    ...((writingProviders === undefined) ? {} : { writingProviders, }),
     // Conditional spread keeps the accessor absent on a client that carries none.
     ...((neuralwattReturn === undefined) ? {} : { neuralwattReturn, }),
   };
@@ -995,18 +1001,18 @@ await describe({
           },
         },),
         it({
-          name: 'STOPS THE ENTRY WITH THE BENCH ERROR AND NOT THE RUN-ENDING REFUSAL when every provider reads dry but '
-            + 'Xiaomi, whose wet meter serves only the seat pinned here, since a wet provider is something the run can '
-            + 'still buy from and a lost seat is not the end of the run; a roster change that gave Xiaomi more seats '
-            + 'changes the pin and not the refusal',
+          name: 'ENDS THE RUN WITH THE EVERY-PROVIDER-DRY REFUSAL when every provider reads dry but Xiaomi, whose wet '
+            + 'meter serves only the checker seat pinned here and no seat that writes, since a wet provider counts '
+            + 'only if a writing bench could still reach its floor from it; with a writer seat on Xiaomi the cause '
+            + 'stays the bench error and the entry stops',
           fn: async () => {
             /**
              Every provider dry but Xiaomi, whose meter can never read dry by itself.
              */
             const xiaomiWet: BudgetView = { ...ALL_DRY, xiaomi: false, };
-            // THE ROSTER PIN: the seats a Xiaomi-only fleet reaches, among the roster and the checkers. The refusal
-            // this case asserts does not depend on it, since it reads the providers and not the roster, but the case
-            // means "a fleet with one wet provider that serves one seat", and this line says which seat that is today.
+            // THE ROSTER PIN: the seats a Xiaomi-only fleet reaches, among the roster and the checkers. The case
+            // means "a fleet with one wet provider that serves one checker seat", and this line says which seat that
+            // is today; the refusal below follows the roster's writing benches and not this seat.
             const { seats, } = await readPhaseSeats({
               client: viewClient({ providerDryness: scriptedViews({ views: [xiaomiWet,], },).read, },),
               phase: 'page consistency',
@@ -1018,7 +1024,7 @@ await describe({
               return !seats.unserved.includes(modelId,);
             },),).toEqual([SEAT_OPENROUTER_ONLY_CHECKER,],);
             /**
-             What the seat reading stopped with.
+             What the seat reading stopped with on the roster's own writing providers.
              */
             const refusal = await rejectionOf({
               promise: readPhaseSeats({
@@ -1029,8 +1035,25 @@ await describe({
                 pollMs: 5,
               },),
             },);
-            expect(refusal,).toBeInstanceOf(WritingBenchUnreachableError,);
-            expect(refusal,).not.toBeInstanceOf(EveryProviderDryError,);
+            expect(refusal,).toBeInstanceOf(EveryProviderDryError,);
+            expect(caughtValueText(refusal,),).toContain('xiaomi wet (serves no seat that writes)',);
+            /**
+             What it stopped with when a writer seat sits on Xiaomi.
+             */
+            const withWriter = await rejectionOf({
+              promise: readPhaseSeats({
+                client: viewClient({
+                  providerDryness: scriptedViews({ views: [xiaomiWet,], },).read,
+                  writingProviders: { ...ALL_DRY, },
+                },),
+                phase: 'lanes',
+                signal: new AbortController().signal,
+                l: levelCapturingLogger({ lines: [], },),
+                pollMs: 5,
+              },),
+            },);
+            expect(withWriter,).toBeInstanceOf(WritingBenchUnreachableError,);
+            expect(withWriter,).not.toBeInstanceOf(EveryProviderDryError,);
           },
         },),
 

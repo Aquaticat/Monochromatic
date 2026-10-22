@@ -90,6 +90,8 @@ const FRESH_DAY: Reading = {
 
  @param returnWaitBoundMs - bound on a return the budgets name as a hold
 
+ @param withXiaomi - whether the fleet carries a Xiaomi client, whose meter reads wet always, as the live roster's does
+
  @returns Budgets that trust a reading for {@link FRESH_MS} and add no margin to a return
 
  @example
@@ -104,15 +106,19 @@ function budgetsBefore(
     reads,
     spent = SPENT_DAY,
     returnWaitBoundMs = 300_000,
+    withXiaomi = false,
   }: {
     readonly msBeforeReturn: number;
     readonly clock?: { now: number; };
     readonly reads: { count: number; };
     readonly spent?: Reading;
     readonly returnWaitBoundMs?: number;
+    readonly withXiaomi?: boolean;
   },
 ): ReturnType<typeof createProviderBudgets> {
   return createProviderBudgets({
+    // Conditional spread keeps the fleet without a Xiaomi client where the case asks for none.
+    ...(withXiaomi ? { xiaomi: { spend: async () => ({ spentUsd: 0.0042, }), }, } : {}),
     neuralwatt: {
       energy: async () => {
         reads.count += 1;
@@ -239,9 +245,10 @@ await describe({
       fn: async () => {
         const reads = { count: 0, };
         // THE REAL MONOTONIC CLOCK, since real time passes during the wait and the return is read against it.
-        const budgets = budgetsBefore({ msBeforeReturn: 50, reads, },);
+        const budgets = budgetsBefore({ msBeforeReturn: 50, reads, withXiaomi: true, },);
         /**
-         What the router's read comes to once the wait has ended.
+         What the router's read comes to once the wait has ended, over the live roster's shape: a funded Xiaomi that
+         serves a checker seat and nothing that writes, and every other provider unconfigured and so dry.
          */
         const view = await readBudgetsPastHolds({
           budgets,
@@ -249,8 +256,18 @@ await describe({
           signal: SIGNAL,
           refused: NOBODY_REFUSED,
           pollMs: 10,
+          writing: {
+            neuralwatt: true,
+            synthetic: true,
+            hyper: true,
+            bedrock: true,
+            deepseek: true,
+            xiaomi: false,
+            openrouter: true,
+          },
         },);
         expect(view.neuralwatt,).toBe(false,);
+        expect(view.xiaomi,).toBe(false,);
         expect(reads.count,).toBe(2,);
       },
     },),

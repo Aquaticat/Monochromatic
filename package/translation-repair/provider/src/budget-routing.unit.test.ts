@@ -987,6 +987,45 @@ await describe({
             expect(message,).toContain('xiaomi dry',);
           },
         },),
+
+        it({
+          name: 'SAYS XIAOMI READS WET BUT SERVES NO SEAT THAT WRITES when it is the one provider not dry and only '
+            + 'checker seats are Xiaomi\'s, and ends the run even for a call Xiaomi would serve: nothing that writes '
+            + 'a page can be bought, so the run cannot go on; with a writer seat on Xiaomi it routes there instead',
+          fn: async () => {
+            /**
+             Every provider dry but Xiaomi, and a model only Xiaomi serves.
+             */
+            const reach = {
+              ...allWet,
+              xiaomi: true,
+            };
+            /**
+             What the router raises when Xiaomi serves nothing that writes.
+             */
+            const message = ((): string => {
+              try {
+                routeProviderFor({
+                  reach,
+                  dry: { ...allDry, xiaomi: false, },
+                  saturated: noneSaturated,
+                  writing: { ...allDry, xiaomi: false, },
+                },);
+              } catch (error) {
+                return (error as Error).message;
+              }
+              return 'no refusal';
+            })();
+            expect(message,).toContain('Xiaomi reads wet but serves no seat that writes',);
+            expect(message,).toContain('xiaomi wet (serves no seat that writes)',);
+            expect(routeProviderFor({
+              reach,
+              dry: { ...allDry, xiaomi: false, },
+              saturated: noneSaturated,
+              writing: allDry,
+            },),).toEqual({ kind: 'xiaomi', },);
+          },
+        },),
       ],
     },),
   ],

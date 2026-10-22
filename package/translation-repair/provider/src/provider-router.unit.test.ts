@@ -837,6 +837,61 @@ await describe({
     },),
 
     it({
+      name: 'ENDS THE RUN, with the stop line naming Xiaomi, when every provider reads dry but Xiaomi and Xiaomi serves '
+        + 'only checker seats in the run\'s roster, and loses the seat as before when Xiaomi serves a writer seat',
+      fn: async () => {
+        /**
+         Providers that serve a model seated in a writing bench, Xiaomi not among them.
+         */
+        const checkerOnly = {
+          neuralwatt: true,
+          synthetic: true,
+          hyper: true,
+          bedrock: true,
+          deepseek: true,
+          xiaomi: false,
+          openrouter: true,
+        };
+        const dry = {
+          neuralwatt: true,
+          synthetic: true,
+          hyper: true,
+          bedrock: true,
+          deepseek: true,
+          xiaomi: false,
+          openrouter: true,
+        };
+        const { callers, called, } = stubProviders({},);
+        const endsTheRun = await ask({
+          client: createRoutingClient({
+            callers,
+            budgets: stubBudgets({ dry, },).budgets,
+            holdPollMs: 1,
+            writing: checkerOnly,
+          },),
+          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+        },);
+        if (!('thrown' in endsTheRun))
+          throw new Error('a run with nothing that writes must end with a refusal',);
+        expect(endsTheRun.thrown,).toBeInstanceOf(EveryProviderDryError,);
+        expect((endsTheRun.thrown as Error).message,).toContain('Xiaomi reads wet but serves no seat that writes',);
+        const losesTheSeat = await ask({
+          client: createRoutingClient({
+            callers,
+            budgets: stubBudgets({ dry, },).budgets,
+            holdPollMs: 1,
+            writing: { ...checkerOnly, xiaomi: true, },
+          },),
+          modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE,
+        },);
+        if (!('thrown' in losesTheSeat))
+          throw new Error('a model that lost its providers must be refused',);
+        expect(losesTheSeat.thrown,).toBeInstanceOf(NoProviderForModelError,);
+        expect(called,).toEqual([],);
+      },
+    },),
+
+    it({
       name: 'REFUSES to re-route a failure that is not about budget',
       fn: async () => {
         const { callers, called, } = stubProviders({
