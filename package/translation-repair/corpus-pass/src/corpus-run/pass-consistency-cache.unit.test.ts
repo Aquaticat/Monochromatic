@@ -46,9 +46,9 @@ const GENERATION = 'sha256-tree-v1:cat';
 const KEY = 'purr';
 
 /**
- The key a one-message question to one seat gets at version six, which moves when the version or the digest does.
+ The key a one-message question to one seat gets at version seven, which moves when the version or the digest does.
  */
-const KEY_AT_VERSION_SIX = '42475a45c12866abd3e84eacb2bd80a91b967a5aa027506c5e9820caf8625735';
+const KEY_AT_VERSION_SEVEN = '9a4555b14fc1b4b9cb94fbc381f8f6c3655ecf7e045dc035e1961711855328e1';
 
 /**
  A sheet of one message.
@@ -223,10 +223,10 @@ await describe({
           },
         },),
         it({
-          name: 'MOVES THE KEY WITH THE CACHE VERSION: the version is part of what the key digests, and version six names '
+          name: 'MOVES THE KEY WITH THE CACHE VERSION: the version is part of what the key digests, and version seven names '
             + 'a run whose sheets list the labels a reply may use, whose replies may write a label in another form of it, whose '
             + 'choice among candidates is run off when it splits, and whose house rule protects readers only from the account of '
-            + 'how a death or an attempt happened',
+            + 'how a death or an attempt happened, and whose rounds close under the last-seat grace of 2026-10-22 (ledger B816)',
           fn: async () => {
             expect({
               version: CONSISTENCY_CACHE_VERSION,
@@ -236,8 +236,8 @@ await describe({
                 modelIds: ['glm-5.3',],
               },),
             },).toEqual({
-              version: 6,
-              key: KEY_AT_VERSION_SIX,
+              version: 7,
+              key: KEY_AT_VERSION_SEVEN,
             },);
           },
         },),
