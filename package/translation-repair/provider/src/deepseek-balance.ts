@@ -4,7 +4,8 @@ import { isUnsignedNumberText, } from '@monochromatic-dev/translation-repair-mar
 //region DeepSeek balance
 // Typed view over `GET /user/balance`, shape read from the parent session's
 // live call of 2026-10-22, which answered
-// `{"is_available":true,"balance_infos":[{"currency":"USD","total_balance":"9.96","granted_balance":"0.00","topped_up_balance":"9.96"}]}`
+// `{"is_available":true,"balance_infos":[{"currency":"USD","total_balance":"9.96",`
+// `"granted_balance":"0.00","topped_up_balance":"9.96"}]}`
 // (DeepSeek's balance reference, `https://api-docs.deepseek.com/api/get-user-balance`).
 //
 // THE AMOUNTS ARE TEXT, not numbers: `"total_balance":"9.96"`. Each is read

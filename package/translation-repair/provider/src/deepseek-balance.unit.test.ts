@@ -102,13 +102,19 @@ await describe({
       fn: async () => {
         const bodyText = JSON.stringify({
           is_available: true,
-          balance_infos: [{ currency: 'CNY', total_balance: '70.00', granted_balance: '0.00', topped_up_balance: '70.00', },],
+          balance_infos: [{
+            currency: 'CNY',
+            total_balance: '70.00',
+            granted_balance: '0.00',
+            topped_up_balance: '70.00',
+          },],
         },);
         expect(failureOf({ bodyText, },),).toBeInstanceOf(DeepSeekBalanceShapeError,);
       },
     },),
     it({
-      name: 'COUNTS ONLY OBJECTS as balance entries: a bare string among them is not a USD entry, and beside a real one '
+      name: 'COUNTS ONLY OBJECTS as balance entries: a bare string among them is not a USD entry, and beside a real '
+        + 'one '
         + 'it is ignored',
       fn: async () => {
         const alone = JSON.stringify({ is_available: true, balance_infos: ['USD',], },);
@@ -121,9 +127,11 @@ await describe({
       },
     },),
     it({
-      name: 'REFUSES an amount written past the largest double, which would read as an infinite balance and never run dry',
+      name: 'REFUSES an amount written past the largest double, which would read as an infinite balance and never '
+        + 'run dry',
       fn: async () => {
-        expect(failureOf({ bodyText: balanceBody({ total: '9'.repeat(400,), }), },),).toBeInstanceOf(DeepSeekBalanceShapeError,);
+        expect(failureOf({ bodyText: balanceBody({ total: '9'.repeat(400,), }), },),)
+          .toBeInstanceOf(DeepSeekBalanceShapeError,);
         expect(failureOf({ bodyText: balanceBody({ total: '1e999', }), },),).toBeInstanceOf(DeepSeekBalanceShapeError,);
       },
     },),

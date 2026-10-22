@@ -42,9 +42,11 @@ await describe({
         expect(deepSeekChatUrlFor({ baseUrl: TEST_BASE_URL, },),).toBe(`${TEST_BASE_URL}/chat/completions`,);
         expect(deepSeekBalanceUrlFor({ baseUrl: TEST_BASE_URL, },),).toBe(`${TEST_BASE_URL}/user/balance`,);
         expect(xiaomiChatUrlFor({ baseUrl: TEST_BASE_URL, },),).toBe(`${TEST_BASE_URL}/chat/completions`,);
-        expect(deepSeekChatUrlFor({ baseUrl: DEEPSEEK_BASE_URL, },),).toBe('https://api.deepseek.com/chat/completions',);
+        expect(deepSeekChatUrlFor({ baseUrl: DEEPSEEK_BASE_URL, },),)
+          .toBe('https://api.deepseek.com/chat/completions',);
         expect(deepSeekBalanceUrlFor({ baseUrl: DEEPSEEK_BASE_URL, },),).toBe('https://api.deepseek.com/user/balance',);
-        expect(xiaomiChatUrlFor({ baseUrl: XIAOMI_BASE_URL, },),).toBe('https://api.xiaomimimo.com/v1/chat/completions',);
+        expect(xiaomiChatUrlFor({ baseUrl: XIAOMI_BASE_URL, },),)
+          .toBe('https://api.xiaomimimo.com/v1/chat/completions',);
       },
     },),
     it({

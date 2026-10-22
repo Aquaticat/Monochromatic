@@ -19,8 +19,9 @@ import { isDecimalText, } from '@monochromatic-dev/translation-repair-markup/ts'
 // a run that reaches this has bought a day's work; anything past it is worth an
 // operator's glance. Raise it per launch for a deliberately larger run.
 //
-// PER PROVIDER, SINCE 2026-10-22: the same allowance applies to each of the
-// providers in `SPEND_CEILING_PROVIDERS` on its own, and the run stops when any
+// PER PROVIDER, SINCE 2026-10-22, BY THE OWNER'S CHOICE OF "20 USD each" (asked against a
+// separate-Xiaomi and a summed figure; worst case about 60 USD plus entries in flight): the same
+// allowance applies to each of the providers in `SPEND_CEILING_PROVIDERS` on its own, and the run stops when any
 // one reaches it. Xiaomi and DeepSeek joined OpenRouter when the direct routes
 // landed ahead of it in the spending order: Xiaomi documents no balance, so
 // nothing else bounds its spend, and DeepSeek's prepaid balance may be topped

@@ -346,7 +346,8 @@ await describe({
         },);
 
         expect(String(refusal,),).toBe(
-          'StatedRefusalError: roster-card\'s provider is one of synthetic, hyper, openrouter, bedrock, neuralwatt, deepseek, xiaomi, '
+          'StatedRefusalError: roster-card\'s provider is one of synthetic, hyper, openrouter, bedrock, neuralwatt, '
+            + 'deepseek, xiaomi, '
             + 'and "bogus" is none of them',
         );
       },

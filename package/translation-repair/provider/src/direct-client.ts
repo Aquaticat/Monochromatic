@@ -266,7 +266,8 @@ export function createDirectClient(
 
    @param request - exchange to perform
 
-   @mutates request - `JSON.stringify` may invoke toJSON methods or getters while serializing messages and response format
+   @mutates request - `JSON.stringify` may invoke toJSON methods or getters while serializing messages and response
+   format
 
    @returns Content text and usage when reported
 
@@ -332,11 +333,11 @@ export function createDirectClient(
         stream_options: { include_usage: true, },
         // THE MEASURED CEILING ON EVERY CALL since 2026-09-09
         // (`completion-cap.ts`): a runaway reply spends the owner's balance.
-        // XIAOMI HONOURS `max_tokens`, though its chat reference lists only
-        // `max_completion_tokens`: measured on 2026-10-22 on mimo-v2.6-flash
-        // with a cap of 64, both members returned finish_reason "length" with
-        // completion_tokens 64, reasoning_tokens 22 included
-        // (`w287-xingz18/xiaomi-max-tokens-probe.out`).
+        // XIAOMI HONOURS `max_tokens` in the one probe made, though its chat reference lists only
+        // `max_completion_tokens`: the parent session measured on 2026-10-22 on mimo-v2.6-flash
+        // with a cap of 64 (one non-streamed call pair), both members returned finish_reason "length" with
+        // completion_tokens 64, reasoning_tokens 22 included. The result lines are in
+        // `doc/decision/translation-repair-direct-providers.md`, section "The Xiaomi token cap".
         max_tokens: completionCapFor({
           modelId: request.modelId,
           // Conditional spread keeps the knob absent instead of undefined.

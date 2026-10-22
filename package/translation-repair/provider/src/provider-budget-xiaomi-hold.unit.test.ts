@@ -1,5 +1,6 @@
 /**
- Tests that a Xiaomi payment refusal holds the provider dry the way `doc/decision/translation-repair-direct-providers.md`
+ Tests that a Xiaomi payment refusal holds the provider dry the way
+ `doc/decision/translation-repair-direct-providers.md`
  says it does, in both directions.
 
  XIAOMI'S METER IS ITS RUN SPEND, so the budget layer clears a payment mark only when that spend moves. A refusal
@@ -64,8 +65,8 @@ await describe({
   concurrency: 1,
   children: [
     it({
-      name: 'HOLDS Xiaomi dry across every later read while its spend stays where it was at the refusal, however long '
-        + 'the process runs, because a 402 means the account is out of money (the intended reading)',
+      name: 'HOLDS Xiaomi dry across every later read while no call settles after the refusal and its spend stays where '
+        + 'it was, however long the process runs (the current behaviour; the owner has not ruled on recovery)',
       fn: async () => {
         /**
          Clock the budgets read.

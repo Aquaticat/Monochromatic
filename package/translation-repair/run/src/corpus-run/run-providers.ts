@@ -263,9 +263,13 @@ export function configureProviders(
    */
   const rl = tagged({ tag: configureProviders.name, },);
   if (deepSeekKey === '')
-    rl.info(`${DEEPSEEK_KEY_VARIABLE} is not set, so DeepSeek is unconfigured: its meter reads dry and no call goes there`,);
+    rl.info(
+      `${DEEPSEEK_KEY_VARIABLE} is not set, so DeepSeek is unconfigured: its meter reads dry and no call goes there`,
+    );
   if (xiaomiKey === '')
-    rl.info(`${XIAOMI_KEY_VARIABLE} is not set, so Xiaomi is unconfigured: its meter reads dry and no call goes there`,);
+    rl.info(
+      `${XIAOMI_KEY_VARIABLE} is not set, so Xiaomi is unconfigured: its meter reads dry and no call goes there`,
+    );
 
   /**
    Fifth provider client when configured, over the durable energy ledger the

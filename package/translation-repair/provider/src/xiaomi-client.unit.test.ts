@@ -26,7 +26,9 @@ import {
   isPaymentRefusal,
   XiaomiModelNotServedError,
 } from '../dist/final/node/index.mjs';
-import { SEAT_OPENROUTER_ONLY_CHECKER, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
+import {
+  SEAT_OPENROUTER_ONLY_CHECKER,
+} from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import {
   askCat,
   firstBodyOf,
@@ -80,7 +82,8 @@ await describe({
     },),
 
     it({
-      name: 'FAILS a 402 as a payment refusal after a single request, which is how the router learns the account is out '
+      name: 'FAILS a 402 as a payment refusal after a single request, which is how the router learns the account is '
+        + 'out '
         + 'of money',
       fn: async () => {
         const { transport, exchanges, } = scripted({
@@ -107,7 +110,9 @@ await describe({
          */
         const others = ROSTER_MODEL_IDS.filter((modelId,) => modelId !== SEAT_OPENROUTER_ONLY_CHECKER);
 
-        const failures = await Promise.all(others.map((modelId,) => rejectionOf(() => askCat({ client, modelId, },),),),);
+        const failures = await Promise.all(
+          others.map((modelId,) => rejectionOf(() => askCat({ client, modelId, },),),),
+        );
 
         expect(ROSTER_MODEL_IDS.length - others.length,).toBe(1,);
         expect(failures.length,).toBe(others.length,);
@@ -118,7 +123,8 @@ await describe({
     },),
 
     it({
-      name: 'PACES every attempt to its request window: a full window makes the next call wait, and the wait is readable',
+      name: 'PACES every attempt to its request window: a full window makes the next call wait, and the wait is '
+        + 'readable',
       fn: async () => {
         const { transport, } = scripted({
           replies: [{ status: 200, bodyText: streamOf({ usageChunk: XIAOMI_USAGE_CHUNK, done: true, }), },],

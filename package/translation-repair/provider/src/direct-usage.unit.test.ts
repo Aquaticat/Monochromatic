@@ -46,8 +46,12 @@ await describe({
           name: 'READS the last usage block\'s cache split and ignores counts that are not whole numbers',
           fn: async () => {
             const stream = [
-              eventOf({ chunk: { choices: [], usage: { prompt_cache_hit_tokens: 1, prompt_cache_miss_tokens: 2, }, }, },),
-              eventOf({ chunk: { choices: [], usage: { prompt_cache_hit_tokens: 40, prompt_cache_miss_tokens: 60, }, }, },),
+              eventOf({
+                chunk: { choices: [], usage: { prompt_cache_hit_tokens: 1, prompt_cache_miss_tokens: 2, }, },
+              },),
+              eventOf({
+                chunk: { choices: [], usage: { prompt_cache_hit_tokens: 40, prompt_cache_miss_tokens: 60, }, },
+              },),
             ].join('',);
             expect(deepSeekCacheSplitOf({ bodyText: stream, },),).toEqual({ hitTokens: 40, missTokens: 60, },);
             const odd = eventOf({
@@ -58,7 +62,8 @@ await describe({
           },
         },),
         it({
-          name: 'REFUSES a count written as text, since a price taken from "40" would be a guess at what the provider meant',
+          name: 'REFUSES a count written as text, since a price taken from "40" would be a guess at what the '
+            + 'provider meant',
           fn: async () => {
             const typed = eventOf({
               chunk: { choices: [], usage: { prompt_cache_hit_tokens: '40', prompt_cache_miss_tokens: 60, }, },
@@ -70,7 +75,9 @@ await describe({
           name: 'KEEPS the split of an earlier usage block when the last chunk carries none',
           fn: async () => {
             const stream = [
-              eventOf({ chunk: { choices: [], usage: { prompt_cache_hit_tokens: 40, prompt_cache_miss_tokens: 60, }, }, },),
+              eventOf({
+                chunk: { choices: [], usage: { prompt_cache_hit_tokens: 40, prompt_cache_miss_tokens: 60, }, },
+              },),
               eventOf({ chunk: { choices: [{ index: 0, delta: { content: '', }, finish_reason: 'stop', },], }, },),
               'data: [DONE]\n\n',
             ].join('',);

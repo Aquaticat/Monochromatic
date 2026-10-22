@@ -54,7 +54,8 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
-          name: 'READS DeepSeek dry when the account is unavailable or the balance is at or under the floor, wet above it',
+          name: 'READS DeepSeek dry when the account is unavailable or the balance is at or under the floor, wet '
+            + 'above it',
           fn: async () => {
             expect(DEEPSEEK_DRY_FLOOR_USD,).toBe(0,);
             expect(deepSeekIsDry({ balance: { isAvailable: false, totalUsd: 50, }, },),).toBe(true,);
@@ -97,7 +98,8 @@ await describe({
           },
         },),
         it({
-          name: 'HOLDS Xiaomi dry after a payment refusal, which its always-wet meter cannot say, and DeepSeek dry when '
+          name: 'HOLDS Xiaomi dry after a payment refusal, which its always-wet meter cannot say, and DeepSeek dry '
+            + 'when '
             + 'its balance is empty',
           fn: async () => {
             const budgets = createProviderBudgets({
@@ -170,7 +172,8 @@ await describe({
             expect(reach.xiaomi,).toBe(true,);
             expect(reach.deepseek,).toBe(false,);
             expect(reach.openrouter,).toBe(true,);
-            expect(routeProviderFor({ reach, dry: NONE_DRY, saturated: NONE_DRY, },),).toMatchObject({ kind: 'xiaomi', },);
+            expect(routeProviderFor({ reach, dry: NONE_DRY, saturated: NONE_DRY, },),)
+              .toMatchObject({ kind: 'xiaomi', },);
             expect(routeProviderFor({ reach, dry: { ...NONE_DRY, xiaomi: true, }, saturated: NONE_DRY, },),)
               .toMatchObject({ kind: 'openrouter', },);
             expect(routeProviderFor({ reach, dry: NONE_DRY, saturated: { ...NONE_DRY, xiaomi: true, }, },),)

@@ -34,9 +34,11 @@ await describe({
     it({
       name: 'SPELLS only the one model each provider is granted for, and shows pictures for neither of the others',
       fn: async () => {
-        expect(deepSeekIdFor({ modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, },),).toEqual({ served: true, id: 'deepseek-flash', },);
+        expect(deepSeekIdFor({ modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, },),)
+          .toEqual({ served: true, id: 'deepseek-flash', },);
         expect(deepSeekIdFor({ modelId: SEAT_OPENROUTER_ONLY_CHECKER, },),).toEqual({ served: false, },);
-        expect(xiaomiIdFor({ modelId: SEAT_OPENROUTER_ONLY_CHECKER, },),).toEqual({ served: true, id: 'mimo-v2.6-flash', },);
+        expect(xiaomiIdFor({ modelId: SEAT_OPENROUTER_ONLY_CHECKER, },),)
+          .toEqual({ served: true, id: 'mimo-v2.6-flash', },);
         expect(xiaomiIdFor({ modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, },),).toEqual({ served: false, },);
         expect(deepSeekShowsPictures({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, },),).toBe(false,);
         expect(xiaomiShowsPictures({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, },),).toBe(false,);

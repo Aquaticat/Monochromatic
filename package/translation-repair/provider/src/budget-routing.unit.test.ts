@@ -801,7 +801,8 @@ await describe({
           fn: async () => {
             const message = allDryMessageOf({ dry: { ...allDry, xiaomi: false, }, },);
             expect(message,).not.toContain('Xiaomi has refused a call for payment',);
-            expect(message,).toContain('Xiaomi\'s meter reads wet but it serves only MiMo V2.6 Flash, not the model asked',);
+            expect(message,)
+              .toContain('Xiaomi\'s meter reads wet but it serves only MiMo V2.6 Flash, not the model asked',);
             expect(message,).toContain('xiaomi wet but not serving this model',);
             expect(message,).not.toContain('xiaomi dry',);
           },

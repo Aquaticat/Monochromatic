@@ -253,7 +253,9 @@ await describe({
              */
             const note = spendCeilingOverrideNote({ ceilingUsd: SPEND_CEILING_USD + FALLBACK, },);
             expect(note.startsWith(`SPEND CEILING OVERRIDDEN by ${SPEND_CEILING_VAR}`,),).toBe(true,);
-            expect(note,).toContain(`${String(SPEND_CEILING_USD + FALLBACK,)} USD on any one of ${SPEND_CEILING_PROVIDERS.join(', ',)}`,);
+            expect(note,).toContain(
+              `${String(SPEND_CEILING_USD + FALLBACK,)} USD on any one of ${SPEND_CEILING_PROVIDERS.join(', ',)}`,
+            );
             expect(note,).toContain(`rather than the built-in ${String(SPEND_CEILING_USD,)}`,);
           },
         },),

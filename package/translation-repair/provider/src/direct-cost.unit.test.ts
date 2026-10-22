@@ -66,7 +66,8 @@ await describe({
           },
         },),
         it({
-          name: 'CLAMPS a hit count above the prompt count to the prompt count, since no more tokens can be served from '
+          name: 'CLAMPS a hit count above the prompt count to the prompt count, since no more tokens can be served '
+            + 'from '
             + 'the cache than the prompt held',
           fn: async () => {
             expect(deepSeekCostOf({ card: DEEPSEEK_CARD, extracted: HUNDRED_AND_TEN, split: { hitTokens: 150, }, },),)
@@ -74,19 +75,29 @@ await describe({
           },
         },),
         it({
-          name: 'CLAMPS a miss count to what is left of the prompt after the hits, so hit and miss together never price '
+          name: 'CLAMPS a miss count to what is left of the prompt after the hits, so hit and miss together never '
+            + 'price '
             + 'more tokens than the prompt held',
           fn: async () => {
-            expect(deepSeekCostOf({ card: DEEPSEEK_CARD, extracted: HUNDRED_AND_TEN, split: { hitTokens: 150, missTokens: 20, }, },),)
+            expect(deepSeekCostOf({
+              card: DEEPSEEK_CARD,
+              extracted: HUNDRED_AND_TEN,
+              split: { hitTokens: 150, missTokens: 20, },
+            },),)
               .toBeCloseTo(((100 * 0.006) + (10 * 1.2)) / 1_000_000, 12,);
-            expect(deepSeekCostOf({ card: DEEPSEEK_CARD, extracted: HUNDRED_AND_TEN, split: { hitTokens: 40, missTokens: 150, }, },),)
+            expect(deepSeekCostOf({
+              card: DEEPSEEK_CARD,
+              extracted: HUNDRED_AND_TEN,
+              split: { hitTokens: 40, missTokens: 150, },
+            },),)
               .toBeCloseTo(((40 * 0.006) + (60 * 0.3) + (10 * 1.2)) / 1_000_000, 12,);
             expect(deepSeekCostOf({ card: DEEPSEEK_CARD, extracted: HUNDRED_AND_TEN, split: { missTokens: 150, }, },),)
               .toBeCloseTo(((100 * 0.3) + (10 * 1.2)) / 1_000_000, 12,);
           },
         },),
         it({
-          name: 'PRICES a block that names only a miss count as that many misses and no hits, and the output either way',
+          name: 'PRICES a block that names only a miss count as that many misses and no hits, and the output either '
+            + 'way',
           fn: async () => {
             expect(deepSeekCostOf({ card: DEEPSEEK_CARD, extracted: HUNDRED_AND_TEN, split: { missTokens: 60, }, },),)
               .toBeCloseTo(((60 * 0.3) + (10 * 1.2)) / 1_000_000, 12,);
@@ -117,7 +128,8 @@ await describe({
           },
         },),
         it({
-          name: 'CLAMPS a cached count above the prompt count to the prompt count, so the figure never exceeds what the '
+          name: 'CLAMPS a cached count above the prompt count to the prompt count, so the figure never exceeds what '
+            + 'the '
             + 'prompt can support',
           fn: async () => {
             expect(xiaomiCostOf({ card: XIAOMI_CARD, extracted: HUNDRED_AND_TEN, cachedTokens: 500, },),)

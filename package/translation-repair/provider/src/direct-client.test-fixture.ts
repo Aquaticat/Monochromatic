@@ -225,7 +225,9 @@ export function askCat(
  const body = firstBodyOf({ exchanges, },);
  ```
  */
-export function firstBodyOf({ exchanges, }: { readonly exchanges: readonly TransportExchange[]; },): Record<string, unknown> {
+export function firstBodyOf(
+  { exchanges, }: { readonly exchanges: readonly TransportExchange[]; },
+): Record<string, unknown> {
   /**
    The first exchange the transport saw.
    */

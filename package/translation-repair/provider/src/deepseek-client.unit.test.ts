@@ -33,7 +33,9 @@ import {
   DeepSeekModelNotServedError,
   isPaymentRefusal,
 } from '../dist/final/node/index.mjs';
-import { SEAT_HYPER_OPENROUTER_UNMEASURED, } from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
+import {
+  SEAT_HYPER_OPENROUTER_UNMEASURED,
+} from '@monochromatic-dev/translation-repair-test-fixture/ts/roster-seats.test-fixture.ts';
 import {
   askCat,
   DEEPSEEK_USAGE_CHUNK,
@@ -129,14 +131,17 @@ await describe({
     },),
 
     it({
-      name: 'FAILS a 402 as a payment refusal after a single request, which is how the router learns this balance is spent',
+      name: 'FAILS a 402 as a payment refusal after a single request, which is how the router learns this balance is '
+        + 'spent',
       fn: async () => {
         const { transport, exchanges, } = scripted({
           replies: [{ status: 402, bodyText: '{"error":{"message":"Insufficient Balance"}}', },],
         },);
         const client = createDeepSeekClient({ apiKey: 'cat-key-deepseek', transport, retryPolicy: ONE_QUICK_RETRY, },);
 
-        const failure: unknown = await rejectionOf(() => askCat({ client, modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, },),);
+        const failure: unknown = await rejectionOf(
+          () => askCat({ client, modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, },),
+        );
 
         expect(failure,).toBeInstanceOf(ProviderHttpError,);
         expect(isPaymentRefusal({ error: failure, },),).toBe(true,);
@@ -160,7 +165,9 @@ await describe({
         const budgets = createProviderBudgets({ deepseek: client, freshForMs: FRESH_MS, now: () => clock.now, },);
         expect((await budgets.read({ signal: SIGNAL, },)).deepseek,).toBe(false,);
 
-        const failure: unknown = await rejectionOf(() => askCat({ client, modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, },),);
+        const failure: unknown = await rejectionOf(
+          () => askCat({ client, modelId: SEAT_HYPER_OPENROUTER_UNMEASURED, },),
+        );
         expect(isPaymentRefusal({ error: failure, },),).toBe(true,);
         await budgets.markRefused({ provider: 'deepseek', signal: SIGNAL, paymentRequired: true, },);
 
@@ -180,7 +187,9 @@ await describe({
          */
         const others = ROSTER_MODEL_IDS.filter((modelId,) => modelId !== SEAT_HYPER_OPENROUTER_UNMEASURED);
 
-        const failures = await Promise.all(others.map((modelId,) => rejectionOf(() => askCat({ client, modelId, },),),),);
+        const failures = await Promise.all(
+          others.map((modelId,) => rejectionOf(() => askCat({ client, modelId, },),),),
+        );
 
         expect(ROSTER_MODEL_IDS.length - others.length,).toBe(1,);
         expect(failures.length,).toBe(others.length,);
@@ -231,7 +240,8 @@ await describe({
     },),
 
     it({
-      name: 'DROPS the provider\'s words from a 401 on the balance read as well, which may echo a short tail of the key',
+      name: 'DROPS the provider\'s words from a 401 on the balance read as well, which may echo a short tail of the '
+        + 'key',
       fn: async () => {
         const { transport, } = scripted({
           replies: [{
@@ -239,7 +249,11 @@ await describe({
             bodyText: '{"error":{"message":"Authentication Fails, Your api key: ****Qx4d is invalid"}}',
           },],
         },);
-        const client = createDeepSeekClient({ apiKey: 'cat-key-whisker-9f3c7a-Qx4d', transport, retryPolicy: ONE_QUICK_RETRY, },);
+        const client = createDeepSeekClient({
+          apiKey: 'cat-key-whisker-9f3c7a-Qx4d',
+          transport,
+          retryPolicy: ONE_QUICK_RETRY,
+        },);
         const refused: unknown = await rejectionOf(async function askForTheFailure(): Promise<unknown> {
           return await client.credits({ signal: SIGNAL, },);
         },);

@@ -47,7 +47,8 @@ await describe({
       },
     },),
     it({
-      name: 'STATES the two direct providers\' keys as absent: DEEPSEEK_API_KEY, which has no package prefix, and the Xiaomi key',
+      name: 'STATES the two direct providers\' keys as absent: DEEPSEEK_API_KEY, which has no package prefix, and '
+        + 'the Xiaomi key',
       fn: async () => {
         const child = childEnvironment({
           parent: {

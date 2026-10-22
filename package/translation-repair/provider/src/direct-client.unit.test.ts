@@ -104,7 +104,8 @@ await describe({
       concurrency: 1,
       children: [
         it({
-          name: 'RETRIES a stream that stopped before [DONE] as the transport failure it is, and answers from the whole one',
+          name: 'RETRIES a stream that stopped before [DONE] as the transport failure it is, and answers from the '
+            + 'whole one',
           fn: async () => {
             const { transport, exchanges, } = scripted({
               replies: [
@@ -113,7 +114,10 @@ await describe({
               ],
             },);
 
-            const reply = await askCat({ client: route.make({ transport, apiKey: CAT_KEY, },), modelId: route.modelId, },);
+            const reply = await askCat({
+              client: route.make({ transport, apiKey: CAT_KEY, },),
+              modelId: route.modelId,
+            },);
 
             expect(reply.text,).toBe('{"spot":"sunbeam"}',);
             expect(exchanges.length,).toBe(2,);
@@ -121,7 +125,8 @@ await describe({
         },),
 
         it({
-          name: 'DROPS the provider\'s words from a 401, which may echo a short tail of the key that no mask of the whole '
+          name: 'DROPS the provider\'s words from a 401, which may echo a short tail of the key that no mask of the '
+            + 'whole '
             + 'key would find, and still fails as a 401 after one request',
           fn: async () => {
             const { transport, exchanges, } = scripted({

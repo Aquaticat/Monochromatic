@@ -38,7 +38,9 @@ import { lineOf, } from './command-line.test-fixture.ts';
  const reply = await balanceOnly({ url: 'https://api.deepseek.com/user/balance', },);
  ```
  */
-async function balanceOnly(request: { readonly url: string; }): Promise<{ readonly status: number; readonly bodyText: string; }> {
+async function balanceOnly(
+  request: { readonly url: string; },
+): Promise<{ readonly status: number; readonly bodyText: string; }> {
   if (request.url.endsWith('/user/balance',))
     return {
       status: 200,
@@ -64,7 +66,8 @@ await describe({
       concurrency: 1,
       children: [
         it({
-          name: 'BUILDS DeepSeek on DEEPSEEK_API_KEY alone, reads its balance wet, and leaves every other provider and Xiaomi unbuilt',
+          name: 'BUILDS DeepSeek on DEEPSEEK_API_KEY alone, reads its balance wet, and leaves every other provider '
+            + 'and Xiaomi unbuilt',
           fn: async () => {
             const providers = configureProviders({
               env: { DEEPSEEK_API_KEY: 'cat-key-deepseek', },
@@ -80,7 +83,8 @@ await describe({
           },
         },),
         it({
-          name: 'BUILDS Xiaomi on TRANSLATION_REPAIR_XIAOMI_MIMO_API_KEY alone, reads it wet with no request, and exposes its pace',
+          name: 'BUILDS Xiaomi on TRANSLATION_REPAIR_XIAOMI_MIMO_API_KEY alone, reads it wet with no request, and '
+            + 'exposes its pace',
           fn: async () => {
             const providers = configureProviders({
               env: { TRANSLATION_REPAIR_XIAOMI_MIMO_API_KEY: 'cat-key-xiaomi', },
@@ -136,7 +140,9 @@ await describe({
             expect(REQUIRABLE_PROVIDERS.includes('xiaomi' as never,),).toBe(false,);
             for (const name of ['deepseek', 'xiaomi',]) {
               try {
-                readRequiredProviders({ line: lineOf({ command: 'corpus-pass', typed: ['--require-providers', name,], },), },);
+                readRequiredProviders({
+                  line: lineOf({ command: 'corpus-pass', typed: ['--require-providers', name,], },),
+                },);
                 throw new Error(`${name} must be refused`,);
               }
               catch (error) {

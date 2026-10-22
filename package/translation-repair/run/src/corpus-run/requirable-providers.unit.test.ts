@@ -36,7 +36,8 @@ await describe({
       name: 'LISTS the whole provider order minus the two direct providers, in that order, so a provider added to the '
         + 'order is required unless it is left out here on purpose',
       fn: async () => {
-        expect(REQUIRABLE_PROVIDERS,).toEqual(PROVIDER_ORDER.filter((name,) => (name !== 'deepseek') && (name !== 'xiaomi')),);
+        expect(REQUIRABLE_PROVIDERS,)
+          .toEqual(PROVIDER_ORDER.filter((name,) => (name !== 'deepseek') && (name !== 'xiaomi')),);
       },
     },),
   ],

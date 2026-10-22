@@ -69,7 +69,9 @@ function usdProvidersNamed({ seats, }: { readonly seats: readonly SeatSpend[]; }
     },);
 
   if (names.length === 0)
-    throw new Error('unreachable: a seat of the USD group is none of the four USD providers, and priceTally groups only those',);
+    throw new Error(
+      'unreachable: a seat of the USD group is none of the four USD providers, and priceTally groups only those',
+    );
   if (names.length === 1)
     return names.join('',);
 

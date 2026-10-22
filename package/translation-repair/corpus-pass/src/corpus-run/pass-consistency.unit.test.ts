@@ -3704,7 +3704,15 @@ await describe({
             const run = await runCatPass({
               behave: firstPlaceWins,
               entryCacheDir: dir.path,
-              dryness: { neuralwatt: true, synthetic: true, bedrock: true, deepseek: true, xiaomi: true, hyper: true, openrouter: true, },
+              dryness: {
+                neuralwatt: true,
+                synthetic: true,
+                bedrock: true,
+                deepseek: true,
+                xiaomi: true,
+                hyper: true,
+                openrouter: true,
+              },
               lines,
             },);
             const why = 'the translators bench was not asked: translators 0 of 8 reachable, floor 2; '
