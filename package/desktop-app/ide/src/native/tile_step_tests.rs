@@ -16,7 +16,7 @@
 use super::overscan_tile_tests::{START, document, open, reset, scroll_to, settle_tile};
 /// The window and its state,
 /// and the delay of a wake-up.
-use super::{AppWindow, State, tile::wake_delay};
+use super::{AppWindow, State, tile::wait::wake_delay};
 /// Toolkit events.
 use slint::{ComponentHandle, platform::update_timers_and_animations};
 /// Shared state and its cell,
@@ -107,7 +107,9 @@ fn a_tile_that_finishes_between_two_steps_is_left_for_the_next_step() {
     window.hide().expect("close tile step window");
 }
 
-/// A tile that finishes just after a step, with no further step, is taken as soon as the wait for a step ends,
+/// A tile that finishes just after a step,
+/// with no further step,
+/// is taken as soon as the wait for a step ends,
 /// by the wake-up the poll that left it set,
 /// and not a whole poll period later by the next poll.
 /// The repeated poll is stopped once the wake-up is set,
