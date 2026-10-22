@@ -1525,6 +1525,15 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     Owner statement of 2026-10-22: "The host CAN handle multiple jobs at once, that's the exact reason I bought this
     CPU." Real jobs may therefore run in parallel, each capped (`CPUQuota`, `MemoryMax`); `NLG` still bans synthetic
     load, and measurements still alternate arms with a same-binary control (`NQH`) because parallel jobs add load.
+    Owner statement of 2026-10-22, later: "Use my system (almost) fully instead of limiting to only a very limited
+    subset of it." The host measured that day: 28 threads, 61 GiB (about 32 GiB available), load average 7 to 13 from
+    the agents and other sessions. Applied: rule `FHU` in `AGENTS.md` (commit `ea7937c9fd`); my gate and scratch units
+    now use `CPUQuota` near 2400% and `MemoryMax` near 36G (they were 1200% and 32G, and 600% in the agents' briefs);
+    the three running agents were told by message that the cap is lifted for real jobs; later briefs say the same and
+    still quote `NLG`, `NLD`, `RXI`, `NQH`. Not changed without the owner: the IDE container share `hostShare = 0.75`
+    in `package/desktop-app/ide/bin/container-bounds.ts` (21 of 28 CPUs, 46 GiB), because the owner decided it on
+    2026-10-18 ("use 75 percent ... and keep that") and the README numbers were measured at 21 CPUs; a question about
+    raising it went to the owner.
     Stall pass agent `ae05d7039f46336dc` (started 2026-10-22, own worktree off `origin/main`, branch push only; brief
     quotes `NLG`, `NLD`, `RXI`, `NQH`): at least 60 alternating stall pairs (tree A = before the wake-up, tree B =
     `origin/main`) plus 30 A against A pairs for the spread; keeps the debug timeline of every stalled run and decides
