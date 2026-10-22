@@ -91,6 +91,22 @@ export type UiState = {
   readonly seq: number;
   readonly settings_selected: number;
   /**
+   The Text size setting: the size in pixels the folder names are drawn at.
+   */
+  readonly text_size_folder_name_px: number;
+  /**
+   The Text size setting: the size in pixels of the group heading letter.
+   */
+  readonly text_size_group_heading_px: number;
+  /**
+   The Text size setting: the size in pixels of the pane titles.
+   */
+  readonly text_size_pane_title_px: number;
+  /**
+   The Text size setting: the size in pixels of the track titles.
+   */
+  readonly text_size_track_title_px: number;
+  /**
    How far the track list on screen is scrolled down, in whole pixels, 0 at the top.
    */
   readonly track_scroll: number;
@@ -470,6 +486,22 @@ export function decodeUiState(value: unknown,): UiState {
     settings_selected: numberField({
       fields: value,
       key: 'settings_selected',
+    },),
+    text_size_folder_name_px: numberField({
+      fields: value,
+      key: 'text_size_folder_name_px',
+    },),
+    text_size_group_heading_px: numberField({
+      fields: value,
+      key: 'text_size_group_heading_px',
+    },),
+    text_size_pane_title_px: numberField({
+      fields: value,
+      key: 'text_size_pane_title_px',
+    },),
+    text_size_track_title_px: numberField({
+      fields: value,
+      key: 'text_size_track_title_px',
     },),
     track_scroll: numberField({
       fields: value,

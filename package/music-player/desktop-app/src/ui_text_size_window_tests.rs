@@ -114,8 +114,8 @@ fn press(app: &AppWindow, key: Key) {
 }
 
 /// What: `press_text` sends one key press and release that carries `text`, as a character key does.
-fn press_text(app: &AppWindow, text: &str) {
-    let text: SharedString = text.into();
+fn press_text(app: &AppWindow, typed: &str) {
+    let text: SharedString = typed.into();
     app.window().dispatch_event(WindowEvent::KeyPressed { text: text.clone() });
     app.window().dispatch_event(WindowEvent::KeyReleased { text });
     settle();
@@ -247,9 +247,9 @@ fn a_button_at_the_end_of_the_range_is_disabled_and_draws_a_lighter_glyph() {
 #[test]
 fn reset_puts_all_four_back_and_saves_once() {
     let app = settings_at(900.0);
-    let reset = labelled(&app, "Reset text sizes");
-    assert_eq!(reset.accessible_enabled(), Some(false), "nothing to reset at the defaults");
-    reset.invoke_accessible_default_action();
+    let idle_reset = labelled(&app, "Reset text sizes");
+    assert_eq!(idle_reset.accessible_enabled(), Some(false), "nothing to reset at the defaults");
+    idle_reset.invoke_accessible_default_action();
     settle();
     assert!(saves().is_empty(), "a press at the defaults saves nothing");
 

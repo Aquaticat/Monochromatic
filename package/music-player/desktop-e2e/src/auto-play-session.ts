@@ -58,6 +58,11 @@ const STAYS_PAUSED_MS = 1_500;
 const SECOND_ROW_OFFSET_PX = 90;
 
 /**
+ How many Up presses lead from the Licenses row, the last stop of Settings, to the Auto-play on select switch row.
+ */
+const ROWS_FROM_LICENSES_TO_SWITCH = 6;
+
+/**
  How many times the app process is looked for after Ctrl+Q.
  */
 const EXIT_LOOKS = 40;
@@ -337,15 +342,17 @@ async function runFirstLaunch(context: RunContext,): Promise<void> {
         },
         what: 'the keyboard position on the last row, the Licenses row, with nothing toggled',
       },);
-      // The Licenses row is the last stop; the switch row is the one above it.
-      await press({
-        session,
-        act: tapKey('up',),
-        until: function noChangeAfterUp(state: UiState,): boolean {
-          return isSettingsPage(state,) && !state.auto_play_on_select;
-        },
-        what: 'the keyboard position on the switch row with nothing toggled',
-      },);
+      // The Licenses row is the last stop; the switch row is six rows above it, past the Reset text sizes row and the four
+      // Text size stepper rows.
+      for (let rowsUp = 0; rowsUp < ROWS_FROM_LICENSES_TO_SWITCH; rowsUp += 1)
+        await press({
+          session,
+          act: tapKey('up',),
+          until: function noChangeAfterUp(state: UiState,): boolean {
+            return isSettingsPage(state,) && !state.auto_play_on_select;
+          },
+          what: 'the keyboard position one row up with nothing toggled',
+        },);
       /**
        The state after Space on the switch row.
        */

@@ -1,7 +1,7 @@
 //! Tests for the pure Text size rules in `text_size`.
 
 use super::*;
-use serde_json::json;
+use serde_json::{Map, Value};
 
 /// What: `all_at` gives sizes with every element set to `px`.
 fn all_at(px: u16) -> TextSizes {
@@ -108,7 +108,7 @@ fn is_default_follows_the_sizes() {
 #[test]
 fn a_stored_size_inside_the_limits_is_kept() {
     for px in [10_u16, 11, 20, 31, 32] {
-        assert_eq!(size_or_default(TextElement::FolderName, Some(&json!(px))), px);
+        assert_eq!(size_or_default(TextElement::FolderName, Some(&Value::from(px))), px);
     }
 }
 
@@ -122,20 +122,22 @@ fn a_missing_stored_size_is_the_default() {
 /// Anything that is not a whole number from 10 to 32 is the default of that element.
 #[test]
 fn a_corrupt_stored_size_is_the_default_of_its_element() {
+    let mut object = Map::new();
+    object.insert("px".to_string(), Value::from(14));
     let corrupt = [
-        json!(9),
-        json!(33),
-        json!(0),
-        json!(-12),
-        json!(70000),
-        json!(14.5),
-        json!(14.0),
-        json!("14"),
-        json!("abc"),
-        json!(null),
-        json!(true),
-        json!([14]),
-        json!({"px": 14}),
+        Value::from(9),
+        Value::from(33),
+        Value::from(0),
+        Value::from(-12),
+        Value::from(70000),
+        Value::from(14.5),
+        Value::from(14.0),
+        Value::from("14"),
+        Value::from("abc"),
+        Value::Null,
+        Value::from(true),
+        Value::Array(vec![Value::from(14)]),
+        Value::Object(object),
     ];
     for value in &corrupt {
         assert_eq!(size_or_default(TextElement::PaneTitle, Some(value)), 20, "{value}");
@@ -150,6 +152,6 @@ fn the_sizes_serialize_under_their_session_keys() {
     let object = value.as_object().expect("the sizes are a JSON object");
     assert_eq!(object.len(), 4);
     for element in TextElement::ALL {
-        assert_eq!(object.get(element.session_key()), Some(&json!(element.default_px())), "{element:?}");
+        assert_eq!(object.get(element.session_key()), Some(&Value::from(element.default_px())), "{element:?}");
     }
 }
