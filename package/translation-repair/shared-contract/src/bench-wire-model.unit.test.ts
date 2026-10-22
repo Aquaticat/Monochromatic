@@ -58,7 +58,7 @@ await describe({
             bench: 'editors',
             modelIds: ['claude-sonnet-5-5', 'claude-sonnet-5-5-effort-high',],
           },);
-        },).toThrow(/editors.*claude-sonnet-5-5.*claude-sonnet-5-5-effort-high/u,);
+        },).toThrow('The editors bench seats claude-sonnet-5-5 more than once (claude-sonnet-5-5, claude-sonnet-5-5-effort-high)',);
       },
     },),
 

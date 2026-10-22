@@ -20,6 +20,11 @@ export {
   type VoteTally,
 } from './adjudicate-model.ts';
 export {
+  assertOneWireModelPerBench,
+  wireModelOf,
+  WireModelRepeatedError,
+} from './bench-wire-model.ts';
+export {
   aggregateClaims,
   type AggregatedClaim,
   type ClaimAggregation,

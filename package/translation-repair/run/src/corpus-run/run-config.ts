@@ -31,6 +31,7 @@ import {
   STREAM_IDLE_MS,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import {
+  assertOneWireModelPerBench,
   DECISION_ONLY_ROSTER_IDS,
   holdSet,
   ROSTER_MODEL_IDS,
@@ -436,9 +437,9 @@ export type RunRepairModels = RepairModels & {
 };
 
 /**
- Role roster for a corpus run: SEVEN of the nine critique and adjudicate (six while Synthetic is dry), THREE edit
- against each other, THREE refine the result for naturalness, and three check
- the shipped repair.
+ Role roster for a corpus run: SEVEN of the nine critique and adjudicate (six while Synthetic is dry), FOUR edit
+ against each other since 2026-10-22 (THREE until Sonnet 5.5 joined them on the owner's Claude key), THREE refine the
+ result for naturalness, and three check the shipped repair.
 
  THREE refiners rather than the two first proposed, because two does not
  achieve what widening was for. The quorum is `ceil(rosterSize / 2)`, which is
@@ -483,8 +484,10 @@ export type RunRepairModels = RepairModels & {
 
  What still bounds a producing roster is not that arithmetic. It is checker
  disjointness, which is the binding one: checkers exclude every editor and
- refiner, so a fourth editor would leave two checkers at a quorum of one, the
- exact single-voice failure the 2026-08-12 roster change closed. Next to it
+ refiner, so an editor or refiner that was also a measured checker would leave two checkers at a quorum of one, the
+ exact single-voice failure the 2026-08-12 roster change closed. THE FOURTH EDITOR OF 2026-10-22, Sonnet 5.5, breaks no
+ such disjointness: no seat of {@link RUN_CHECKER_ORDER} edits or refines (Haiku 5.5, the one Claude card on that order,
+ is not an editor), and `run-seats.unit.test.ts` holds it. Next to it
  sit `assertJudgeableProducerRoster`'s two-disinterested-judge floor, now a
  policy rather than an arithmetic necessity, and judge quality, which the judge-quality
  bench has not measured. Widening was question 1 of the handover's next steps and
@@ -649,9 +652,11 @@ export const RUN_MODELS: RunRepairModels = {
     'hf:zai-org/GLM-5.3-Flash',
     // SONNET 5.5 SEATS AS AN EDITOR ON THE OWNER'S WORD OF 2026-10-22, "Sonnet edits, Haiku wide", on the owner's own
     // Claude key, with no effort sent: the owner declined to pick one ("Why don't you bench?"), so the card named by
-    // the model alone sends none and Anthropic's own default applies. UNMEASURED AS AN EDITOR: the next
-    // `editor-calibrate` re-reads the seat, and a run without the Claude key leaves it unserved like any provider-less
-    // seat. It sits ahead of `glm-5.3`, which has no provider while Hyper is empty.
+    // the model alone sends none and Anthropic's own default applies. UNMEASURED AS AN EDITOR: the editor calibration
+    // seats it by name, beside the roster's writers (`editor-calibrate-lane.ts`; the roster-derived benches leave it out
+    // because its card holds `judge-unmeasured`), so the next `editor-calibrate` measures it; and a run without the
+    // Claude key leaves it unserved like any provider-less seat. It sits ahead of `glm-5.3`, which has no provider
+    // while Hyper is empty.
     'claude-sonnet-5-5',
     'glm-5.3',
     'deepseek-v4.1-flash',
@@ -832,6 +837,45 @@ export const RUN_READER_MODELS: readonly RosterModelId[] = ROSTER_MODEL_IDS
       && (!READER_UNMEASURED.has(modelId,))
       && (!OWNER_CULLED.has(modelId,));
   },);
+
+/**
+ Every list of seats the run fixes before it starts, by the name a refusal gives its bench.
+
+ ONE WIRE MODEL PER BENCH, ENFORCED AT LOAD (C6 of the review of the Claude route): the eight Claude cards share two
+ wire models, and a model seated on one bench under two cards is one model heard twice, counted as two voices toward a
+ quorum. The check below runs over this record as the module loads, so a seating that breaks the rule stops the run
+ before it pays for a call, and `run-config-seating.unit.test.ts` holds that every list of {@link RUN_MODELS} and
+ {@link RUN_CHECKER_ORDER} is in it. A BENCH THE RUN DERIVES (`judgeSeatsFor`) is a filtered subset of one of these,
+ so it inherits the rule.
+
+ @example
+ ```ts
+ for (const [bench, modelIds] of Object.entries(RUN_BENCHES)) assertOneWireModelPerBench({ bench, modelIds, });
+ ```
+ */
+export const RUN_BENCHES: Readonly<Record<string, readonly RosterModelId[]>> = {
+  roster: RUN_ROSTER,
+  writers: RUN_WRITERS,
+  translators: RUN_TRANSLATORS,
+  readers: RUN_READER_MODELS,
+  wideSeats: RUN_WIDE_SEATS,
+  lateJudges: RUN_LATE_JUDGES,
+  selectJudges: RUN_SELECT_JUDGES,
+  checkerOrder: RUN_CHECKER_ORDER,
+  critics: RUN_MODELS.criticModelIds,
+  panel: RUN_MODELS.panelModelIds,
+  editors: RUN_MODELS.editorModelIds,
+  judges: RUN_MODELS.judgeModelIds,
+  refiners: RUN_MODELS.refinerModelIds,
+  checkers: RUN_MODELS.checkerModelIds,
+};
+
+for (const [bench, modelIds,] of Object.entries(RUN_BENCHES,)) {
+  assertOneWireModelPerBench({
+    bench,
+    modelIds,
+  },);
+}
 
 /**
  Deadline granted to one model exchange during a corpus run.

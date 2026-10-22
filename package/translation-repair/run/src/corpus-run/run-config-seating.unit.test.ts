@@ -102,7 +102,9 @@ await describe({
          Every list the run writes down by hand or derives from the roster.
          */
         const lists = [
-          ...Object.values(RUN_MODELS,).filter(Array.isArray,),
+          ...Object.values(RUN_MODELS,).filter(function isList(member,): boolean {
+            return Array.isArray(member,);
+          },),
           RUN_CHECKER_ORDER,
           ...Object.values(RUN_BENCHES,),
         ] as readonly (readonly string[])[];

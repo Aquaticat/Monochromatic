@@ -51,6 +51,7 @@ export {
   readRunCorpusPinSetting,
   RECALL_JUDGE_MODEL_IDS,
   resolveRunsDir,
+  RUN_BENCHES,
   RUN_CALL_CONFIG,
   RUN_CHECKER_ORDER,
   RUN_DECISION_JUDGES,
