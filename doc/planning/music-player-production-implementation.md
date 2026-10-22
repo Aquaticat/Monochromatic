@@ -1113,8 +1113,9 @@ Read these before repeating them. Each one cost the human a correction.
   `$XDG_CONFIG_HOME/musicplayer/`, so the first verification run rewrote `~/.config/musicplayer/session.json` with the
   invented library as `source_root` and default values for everything else (selected folder, position, volume, playback
   mode, row and playing templates, auto play). No backup, snapshot or other copy exists, and `decisions.db` is keyed by
-  fingerprint only, so the old folder path cannot be rebuilt from it; the human must pick their folder again and reset
-  any custom volume, mode or templates. Fix in the test launcher: a scratch `XDG_CONFIG_HOME` containing only a
+  fingerprint only, so the old folder path cannot be rebuilt from it. The human said to delete the file (it regenerates
+  on the next launch of the real app) and I did; `decisions.db` and `peaks.db` were never touched. Fix in the test
+  launcher: a scratch `XDG_CONFIG_HOME` containing only a
   symlink `fontconfig` to the real `~/.config/fontconfig` (the app then writes only under the scratch directory).
   Lesson: before telling an agent to keep a real directory for read access, find what the program writes there, and
   point the instruction at the narrowest path (the fontconfig directory), never the whole config home.

@@ -355,6 +355,45 @@ What it shows, and its limits:
 - The test showed web renderings, not the Slint app itself. A second page that shows real screenshots of the app at
   true size is being prepared.
 
+### Physical size in millimetres
+
+The human's position: a pixel has no fixed size, only a physical length can be trusted, and the metre is defined from
+the speed of light.
+A CSS px, a Slint logical px, a dp and a point are all conventions on top of a display's real pixel density, so every
+comparison here is also stated in millimetres.
+
+The exact panel sizes come from the first detailed timing descriptor of each monitor's EDID
+(`/sys/class/drm/*/edid`, bytes 12 to 14 of the descriptor at offset 54), which is exact to 1 mm; the basic-block
+sizes used earlier (bytes 21 and 22) are rounded to 1 cm.
+- HDMI-A-2 (scale 3, landscape): 344 by 193 mm, 3840 by 2160 pixels, 11.163 physical pixels per mm.
+  One CSS or logical px is 3 / 11.163 = 0.2688 mm, not the 0.2656 mm computed from 34 cm; every millimetre figure
+  earlier in this doc that used 0.2656 is 1.2 percent low.
+- DP-2 and HDMI-A-1 (scale 2, portrait): 600 by 340 mm, 6.400 pixels per mm; one CSS px is 0.3125 mm.
+- DP-3 (scale 2, portrait): 597 by 336 mm, 6.432 pixels per mm; one CSS px is 0.3110 mm.
+- The phone (Pixel 6, density 356): about 16.1 pixels per mm (409.4 per inch), one dp 0.1376 mm.
+
+Inter's x-height is 1118 of 2048 units (0.5459 em) and its capital height 1490 (0.7275 em) at `opsz` 14.
+What the human's perception test accepted, as physical heights on the monitor it ran on (0.3125 mm per CSS px):
+- Rows, x-height: 13 px is 2.22 mm ("too small"), 14 px 2.39 mm ("about the same" as the reference, "right"),
+  15 px 2.56 mm ("right"), 16 px 2.73 mm ("too large").
+- Titles, capital height: 18 px is 4.09 mm and 20 px 4.55 mm ("right"), 22 px 5.00 mm and 24 px 5.46 mm ("too large").
+
+What the human chose earlier on HDMI-A-2 (0.2688 mm per CSS px):
+- Rows at 14 px are an x-height of 2.05 mm (accepted) and at 16 px 2.35 mm (rejected as too large).
+- Titles at 20 px are a capital height of 3.91 mm (accepted) and at 22 px 4.30 mm (rejected).
+
+So the two monitors disagree in millimetres: 2.05 mm was accepted on the first and 2.22 mm called too small on the
+second, and 2.35 mm was too large on the first while 2.39 to 2.56 mm was right on the second.
+The accepted windows differ by a factor near 1.16, and the CSS px sizes of the two monitors differ by 1.163
+(0.3125 over 0.2688).
+Two readings fit this and the data cannot separate them:
+- Speculation: the judgment follows the CSS px convention (14 to 15 px rows, 18 to 20 px titles), not physical length.
+- Speculation: the judgment follows visual angle, and the 600 mm monitors are viewed from about 1.16 times the distance
+  of the 344 mm panel.
+Eye distances to the monitors were not measured. The millimetre mode of the test page asks for them
+(`text-size-test-mm.html`, scratch only): it sizes the samples by x-height and capital height in millimetres, draws
+a 100 mm ruler for a check against a physical ruler, and records the angle of each x-height at the stated distance.
+
 ## Hypotheses
 
 Each is scored against the target (0.91 for the titles, 0.875 for the names and track titles).
