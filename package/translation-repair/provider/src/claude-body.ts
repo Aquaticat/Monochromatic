@@ -52,6 +52,13 @@ export function buildClaudeBody(
     model: card.wireModel,
     max_tokens: maxTokens,
     stream: true,
+    // THINKING IS ALWAYS ADAPTIVE, AND NOTHING HERE TURNS IT OFF OR BUDGETS IT. The scoped rule, owner 2026-10-22
+    // ("I'm only against thinking params on 3rd tier providers", "Anthropic counts as first rate", "we should never
+    // disable thinking on anything"): thinking parameters are cleared on Anthropic, DeepSeek direct, Xiaomi direct and
+    // NeuralWatt and banned on Hyper, Synthetic, OpenRouter and Bedrock. So this body sends `adaptive` and never
+    // `disabled` or `between_tools` (which turns thinking off on Sonnet 5.5), and never `budget_tokens`, which both
+    // models answer with HTTP 400.
+    thinking: { type: 'adaptive', },
     system: systemTextOf({ messages, },),
     messages: speakingTurns({ messages, },),
     // STRUCTURED OUTPUT BY `output_config.format`, NEVER BY A FORCED TOOL. The parent session's probe of 2026-10-22
@@ -60,14 +67,21 @@ export function buildClaudeBody(
     // not supported for this model."). Haiku 5.5 under a forced `tool` or `any` returned no thinking tokens on 12 of 12
     // calls and the wrong answer on 6 of 6 hard ones, against 0 of 12 wrong with `format` or auto
     // (`haiku-forced-tool-probe*.out`). The schema goes through unchanged, as the answer object the call states.
-    ...((responseFormat === undefined)
+    // `effort` is the card's, one level per effort card; a card that names none sends none, which is the model's own
+    // default (Sonnet high, Haiku medium), the neutral reading of the owner's "Why don't you bench?".
+    ...((responseFormat === undefined) && (card.effort === undefined)
       ? {}
       : {
         output_config: {
-          format: {
-            type: 'json_schema',
-            schema: responseFormat.json_schema.schema,
-          },
+          ...((card.effort === undefined) ? {} : { effort: card.effort, }),
+          ...((responseFormat === undefined)
+            ? {}
+            : {
+              format: {
+                type: 'json_schema',
+                schema: responseFormat.json_schema.schema,
+              },
+            }),
         },
       }),
     ...((request['temperature'] === undefined) ? {} : { temperature: request['temperature'], }),
