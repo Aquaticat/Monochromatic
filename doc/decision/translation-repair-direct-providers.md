@@ -112,6 +112,16 @@ Its meter answers wet always and reports this process's priced spend,
 so the `METERS` line shows `xiaomi=wet xiaomiUsdSpent=...`.
 Exhaustion is learned from the 402.
 
+Because that meter never reads dry by itself,
+the run-ending stop (`EveryProviderDryError`) would never fire while Xiaomi is configured.
+The router therefore reads Xiaomi as dry for the stop when the model asked is one Xiaomi does not serve
+(`dryForTheModelAsked` in `budget-routing.ts`),
+so a fleet that is dry except for Xiaomi still ends the run for every other model.
+Only an always-wet meter gets this reading:
+a provider with a real meter that is wet but does not serve the model keeps its own reading,
+so a model whose serving providers are all dry is still a lost seat and not the end of the run.
+The `EveryProviderDryError` text then says `xiaomi` dry for a provider whose meter is wet but useless for that call.
+
 Limit of the Xiaomi meter,
 recorded rather than fixed:
 the budget layer clears a payment mark when the meter's level text changes,

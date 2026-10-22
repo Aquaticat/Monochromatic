@@ -6,6 +6,7 @@ import {
   PROVIDER_ORDER,
   type ProviderName,
   type ProviderRecord,
+  providerRecord,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { QuotaSnapshot, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type { XiaomiSpend, } from './xiaomi-spend.ts';
@@ -108,6 +109,46 @@ export class EveryProviderDryError extends Error {
  ```
  */
 export type ModelReach = ProviderRecord<boolean>;
+
+/**
+ Providers whose meter can never read dry by itself: Xiaomi documents no balance, so its meter answers wet always
+ (`xiaomi-spend.ts`) and only a payment refusal at the wire marks it dry.
+ */
+const ALWAYS_WET_METERS: ReadonlySet<ProviderName> = new Set<ProviderName>(['xiaomi',],);
+
+/**
+ The dryness the run-ending stop reads for one model: a provider whose meter cannot read dry, and which does not serve
+ the model asked, counts dry, since its wet reading buys nothing for this call.
+
+ Every other provider keeps its own reading, wet or dry, whether or not it serves the model. A model whose serving
+ providers are all dry while some other provider reads wet is still a lost seat for that model, not the end of the run.
+
+ @param reach - providers that serve the model asked
+
+ @param dry - dryness per provider, budget reading and anything learned at the wire taken together
+
+ @returns Dryness per provider with the always-wet providers that serve nothing here read dry
+
+ @example
+ ```ts
+ const effective = dryForTheModelAsked({ reach, dry, },);
+ ```
+ */
+export function dryForTheModelAsked(
+  {
+    reach,
+    dry,
+  }: {
+    readonly reach: ModelReach;
+    readonly dry: ProviderRecord<boolean>;
+  },
+): ProviderRecord<boolean> {
+  return providerRecord({
+    of: function dryOf(provider,): boolean {
+      return dry[provider] || (ALWAYS_WET_METERS.has(provider,) && (!reach[provider]));
+    },
+  },);
+}
 
 /**
  Reading given when no provider in order both serves a model and has budget.
@@ -410,7 +451,10 @@ export function routeProviderFor(
   },
 ): ProviderChoice {
   if (PROVIDER_ORDER.every(function isDry(provider,): boolean {
-    return dry[provider];
+    return dryForTheModelAsked({
+      reach,
+      dry,
+    },)[provider];
   },)) {
     // THE READING IT DECIDED ON, cited (ledger P12): this refusal said "no
     // reading cited" where the router had the whole dryness record in hand.

@@ -36,6 +36,19 @@ import { SEAT_SYNTHETIC_VISION_WITHHELD, } from '@monochromatic-dev/translation-
 const SIGNAL = new AbortController().signal;
 
 /**
+ Every provider serves the model: the reach the cases that are not about reach read under.
+ */
+const ALL_SERVE: ProviderRecord<boolean> = {
+  neuralwatt: true,
+  synthetic: true,
+  hyper: true,
+  bedrock: true,
+  deepseek: true,
+  xiaomi: true,
+  openrouter: true,
+};
+
+/**
  Model named in the log line.
  */
 const MODEL_ID = SEAT_SYNTHETIC_VISION_WITHHELD;
@@ -231,6 +244,44 @@ await describe({
       concurrency: DEFAULT_CONCURRENCY,
       children: [
         it({
+          name: 'READS XIAOMI AS DRY for a model it does not serve, so a fleet dry but for its always-wet meter ends '
+            + 'the run, and reads it as wet for the model it does serve',
+          fn: async () => {
+            const view: BudgetView = {
+              neuralwatt: true,
+              synthetic: true,
+              hyper: true,
+              bedrock: true,
+              deepseek: true,
+              xiaomi: false,
+              openrouter: true,
+            };
+            const { budgets, } = scriptedBudgets({ views: [view,], holds: NO_HOLDS, },);
+            let thrown: unknown;
+            try {
+              await readBudgetsPastHolds({
+                budgets,
+                modelId: MODEL_ID,
+                reach: { ...ALL_SERVE, xiaomi: false, },
+                signal: SIGNAL,
+                refused: NOBODY_REFUSED,
+                pollMs: 1,
+              },);
+            } catch (error) {
+              thrown = error;
+            }
+            expect(thrown,).toBeInstanceOf(EveryProviderDryError,);
+            expect(await readBudgetsPastHolds({
+              budgets,
+              modelId: MODEL_ID,
+              reach: ALL_SERVE,
+              signal: SIGNAL,
+              refused: NOBODY_REFUSED,
+              pollMs: 1,
+            },),).toEqual(view,);
+          },
+        },),
+        it({
           name: 'RETURNS THE READING with the routing refusal folded in when at least one provider is '
             + 'spendable, asking for no holds',
           fn: async () => {
@@ -249,6 +300,7 @@ await describe({
             expect(await readBudgetsPastHolds({
               budgets,
               modelId: MODEL_ID,
+              reach: ALL_SERVE,
               signal: SIGNAL,
               refused: 'synthetic',
               pollMs: 1,
@@ -285,6 +337,7 @@ await describe({
             expect(await readBudgetsPastHolds({
               budgets,
               modelId: MODEL_ID,
+              reach: ALL_SERVE,
               signal: SIGNAL,
               refused: NOBODY_REFUSED,
               pollMs: 1,
@@ -326,6 +379,7 @@ await describe({
             expect(await readBudgetsPastHolds({
               budgets,
               modelId: MODEL_ID,
+              reach: ALL_SERVE,
               signal: SIGNAL,
               refused: 'synthetic',
               pollMs: 1,
@@ -367,6 +421,7 @@ await describe({
             expect(await readBudgetsPastHolds({
               budgets,
               modelId: MODEL_ID,
+              reach: ALL_SERVE,
               signal: SIGNAL,
               refused: 'synthetic',
               pollMs: 1,
@@ -408,6 +463,7 @@ await describe({
                 await readBudgetsPastHolds({
                   budgets,
                   modelId: MODEL_ID,
+                  reach: ALL_SERVE,
                   signal: SIGNAL,
                   refused: NOBODY_REFUSED,
                   pollMs: 1,

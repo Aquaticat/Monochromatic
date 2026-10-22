@@ -2,7 +2,11 @@ import { wait, } from '@monochromatic-dev/module-async-time/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 
 import { contextRoot, } from '@monochromatic-dev/translation-repair-typography/ts';
-import { EveryProviderDryError, } from './budget-routing.ts';
+import {
+  dryForTheModelAsked,
+  EveryProviderDryError,
+  type ModelReach,
+} from './budget-routing.ts';
 import type {
   BudgetView,
   ProviderBudgets,
@@ -216,6 +220,8 @@ function measuredAt(
 
  @param modelId - model being routed, for the log line
 
+ @param reach - providers that serve the model, so an always-wet meter that serves nothing here is not read as budget
+
  @param signal - the call's abort
 
  @param refused - provider that has just refused this call, which counts as
@@ -231,19 +237,21 @@ function measuredAt(
 
  @example
  ```ts
- const view = await readBudgetsPastHolds({ budgets, modelId, signal, refused: NOBODY_REFUSED, pollMs: HOLD_POLL_MS, },);
+ const view = await readBudgetsPastHolds({ budgets, modelId, reach, signal, refused: NOBODY_REFUSED, pollMs: HOLD_POLL_MS, },);
  ```
  */
 export async function readBudgetsPastHolds(
   {
     budgets,
     modelId,
+    reach,
     signal,
     refused,
     pollMs,
   }: {
     readonly budgets: ProviderBudgets;
     readonly modelId: RosterModelId;
+    readonly reach: ModelReach;
     readonly signal: AbortSignal;
     readonly refused: ProviderName | typeof NOBODY_REFUSED;
     readonly pollMs: number;
@@ -260,7 +268,10 @@ export async function readBudgetsPastHolds(
   /**
    What each provider's budget looks like right now.
    */
-  const first = await budgets.read({ signal, },);
+  const first = dryForTheModelAsked({
+    reach,
+    dry: await budgets.read({ signal, },),
+  },);
   /**
    The same view with the refusal that routed here folded in.
    */
@@ -339,7 +350,10 @@ export async function readBudgetsPastHolds(
    refusal in a second time would send the call to an all-dry error after
    waiting for exactly the hold that would have cleared it.
    */
-  const second = await budgets.read({ signal, },);
+  const second = dryForTheModelAsked({
+    reach,
+    dry: await budgets.read({ signal, },),
+  },);
   if (everyProviderDry({ view: second, },)) {
     throw new EveryProviderDryError({
       measured: `after waiting ${String(shortest,)}ms, ${

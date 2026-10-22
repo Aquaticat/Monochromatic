@@ -328,6 +328,7 @@ export function createRoutingClient(
     const dry = await readBudgetsPastHolds({
       budgets,
       modelId: request.modelId,
+      reach,
       signal: request.signal,
       refused,
       pollMs: holdPollMs,
