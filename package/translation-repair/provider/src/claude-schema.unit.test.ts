@@ -4,6 +4,9 @@
  string and array bounds are not supported (the bundled API skill, `shared/tool-use-concepts.md`, "JSON Schema
  Limitations"; the official SDKs strip the bounds and check them client-side, and this client is raw HTTP). The
  sanitiser is the one place the narrowing happens, so every case here reads what it returns and what it leaves alone.
+ A stripped bound is told to the model in the field's description, in the form the live Structured outputs page gives
+ ("How SDK transformation works", step 2: `{minimum: 100}`), and a keyword the feature refuses that no SDK strips
+ stops the build of the body with a named error instead of answering HTTP 400 at the first live call.
  Fixtures are cat-themed invention.
 
  @module
@@ -65,9 +68,16 @@ await describe({
         },),).toEqual({
           type: 'object',
           properties: {
-            age: { type: 'integer', },
-            name: { type: 'string', description: 'what the cat answers to', },
-            toys: { type: 'array', items: { type: 'string', enum: ['yarn', 'mouse',], }, },
+            age: {
+              type: 'integer',
+              description: '{minimum: 1, maximum: 30, exclusiveMinimum: 0, exclusiveMaximum: 31, multipleOf: 1}',
+            },
+            name: { type: 'string', description: 'what the cat answers to\n\n{minLength: 1, maxLength: 20}', },
+            toys: {
+              type: 'array',
+              items: { type: 'string', enum: ['yarn', 'mouse',], },
+              description: '{minItems: 1, maxItems: 5, uniqueItems: true}',
+            },
             kind: { const: 'tabby', },
           },
           required: ['age', 'name',],
@@ -94,12 +104,139 @@ await describe({
           type: 'object',
           properties: {
             minimum: { type: 'string', },
-            maxLength: { type: 'integer', },
+            maxLength: { type: 'integer', description: '{minimum: 0}', },
             pick: { type: 'string', enum: ['minimum', 'uniqueItems',], },
           },
           required: ['minimum',],
           additionalProperties: false,
         },);
+      },
+    },),
+
+    it({
+      name: 'TELLS THE MODEL A STRIPPED BOUND IN THE FIELD\'S DESCRIPTION (R6), as the SDKs do: minimum 1 on an integer '
+        + 'becomes a plain integer described as {minimum: 1}, a bound beside a description is appended to it after a '
+        + 'blank line, and a field with no bound gains no description',
+      fn: async () => {
+        expect(claudeSchemaOf({
+          schema: {
+            type: 'object',
+            properties: {
+              paragraph: { type: 'integer', minimum: 1, },
+              spot: { type: 'string', description: 'where the cat sleeps', maxLength: 40, },
+              mood: { type: 'string', },
+            },
+          },
+        },),).toEqual({
+          type: 'object',
+          properties: {
+            paragraph: { type: 'integer', description: '{minimum: 1}', },
+            spot: { type: 'string', description: 'where the cat sleeps\n\n{maxLength: 40}', },
+            mood: { type: 'string', },
+          },
+          additionalProperties: false,
+        },);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A KEYWORD THE FEATURE DOES NOT SUPPORT AND NO SDK STRIPS (R10), by a named error that names the '
+        + 'keyword and where it sits, so a stage schema that writes oneOf, not, if, then, else, pattern, '
+        + 'patternProperties, propertyNames, contains or prefixItems fails when its body is built and not with HTTP 400 '
+        + 'at the first live call',
+      fn: async () => {
+        /**
+         Each refused keyword with a schema that carries it somewhere below the root, and the path it must be named at.
+         */
+        const cases: readonly {
+          readonly keyword: string;
+          readonly schema: Readonly<Record<string, unknown>>;
+          readonly path: string;
+        }[] = [
+          {
+            keyword: 'oneOf',
+            schema: { type: 'object', properties: { pick: { oneOf: [{ type: 'string', }, { type: 'integer', },], }, }, },
+            path: 'root.pick',
+          },
+          {
+            keyword: 'not',
+            schema: { type: 'object', properties: { naps: { type: 'array', items: { not: { type: 'null', }, }, }, }, },
+            path: 'root.naps.items',
+          },
+          {
+            keyword: 'if',
+            schema: { type: 'object', properties: { bowl: { if: { type: 'string', }, then: { type: 'string', }, }, }, },
+            path: 'root.bowl',
+          },
+          {
+            keyword: 'pattern',
+            schema: { type: 'object', properties: { name: { type: 'string', pattern: '^[a-z]+$', }, }, },
+            path: 'root.name',
+          },
+          {
+            keyword: 'prefixItems',
+            schema: { type: 'object', properties: { pair: { type: 'array', prefixItems: [{ type: 'string', },], }, }, },
+            path: 'root.pair',
+          },
+          {
+            keyword: 'patternProperties',
+            schema: { type: 'object', patternProperties: { '^x': { type: 'string', }, }, },
+            path: 'root',
+          },
+          {
+            keyword: 'contains',
+            schema: { type: 'object', properties: { toys: { type: 'array', contains: { type: 'string', }, }, }, },
+            path: 'root.toys',
+          },
+          {
+            keyword: 'oneOf',
+            schema: { type: 'object', properties: { either: { anyOf: [{ type: 'string', }, { oneOf: [{ type: 'null', },], },], }, }, },
+            path: 'root.either.anyOf[1]',
+          },
+        ];
+        for (const { keyword, schema, path, } of cases) {
+          /**
+           The failure the schema is refused with.
+           */
+          let caught: unknown;
+          try {
+            claudeSchemaOf({ schema, },);
+          }
+          catch (error) {
+            caught = error;
+          }
+          expect(caught,).toBeInstanceOf(Error,);
+          expect((caught as Error).name,).toBe('ClaudeSchemaKeywordError',);
+          expect((caught as Error & { readonly messageNamesOnly?: boolean; }).messageNamesOnly,).toBe(true,);
+          expect((caught as Error).message,).toContain(`"${keyword}"`,);
+          expect((caught as Error).message,).toContain(path,);
+        }
+      },
+    },),
+
+    it({
+      name: 'REFUSES NOTHING THE FEATURE SUPPORTS OR THE SDKS STRIP (R10): every keyword on the allowlist passes, and '
+        + 'a member named oneOf, or an enum value that spells a refused keyword, is data and not a keyword',
+      fn: async () => {
+        expect(() =>
+          claudeSchemaOf({
+            schema: {
+              type: 'object',
+              title: 'a cat',
+              description: 'one cat',
+              properties: {
+                oneOf: { type: 'string', enum: ['not', 'pattern',], default: 'not', },
+                at: { type: 'string', format: 'date-time', },
+                kind: { const: 'tabby', },
+                both: { allOf: [{ type: 'string', },], },
+                nap: { anyOf: [{ type: 'string', }, { type: 'null', },], },
+                bowl: { $ref: '#/$defs/bowl', },
+              },
+              required: ['oneOf',],
+              $defs: { bowl: { type: 'string', }, },
+              definitions: { dish: { type: 'string', }, },
+            },
+          },)).not.toThrow();
       },
     },),
 
