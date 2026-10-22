@@ -36,9 +36,23 @@ so that no file passes the repository's limit of 1,000 lines:
   the figures no log can settle).
   The shipped page was not read line by line.
 - `CuspariaKLSY23` (entry `CuspariaKLSY`):
-  settled on 2026-10-22 at 13:43 UTC after 1,028,162 ms of pass,
-  unit result `success`;
-  its read is owed.
+  [the run](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-cuspariaklsy23-run.md)
+  (log,
+  NeuralWatt meter and plan energy,
+  seats,
+  the Mercury recheck),
+  [the stages](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-cuspariaklsy23-stages.md)
+  (stage outcomes,
+  slice verdicts and disputes,
+  the recurrence of the known classes,
+  side checks,
+  open items)
+  and [the evidence](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-cuspariaklsy23-evidence.md)
+  (the log line behind every figure,
+  the figures no log can settle).
+  It settled in 1,028,162 ms of pass;
+  its log's last time is 13:39:30 UTC on 2026-10-22.
+  The shipped page was not read line by line.
 - `XingZ6018` (entry `XingZ60`):
   launched on 2026-10-22 at 13:44:40 UTC,
   the launcher printing `FROZEN BUILD MATCHES; run continues`;

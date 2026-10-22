@@ -367,7 +367,8 @@ this section is the readiness reading of it.
   33 `inception/mercury-2.5` streams were abandoned with no content,
   and Hyper returned its keys in alphabetical order on 102 of 103 vote replies.
   NeuralWatt's plan meter rose 37.3 Wh against 21.11 Wh of the run's own calls;
-  the rest is unverified without the owner's dashboard.
+  the owner said on 2026-10-22 that the NeuralWatt key of the dsh harness is on the same account,
+  which is where the rest can come from.
   A round of fixes for these is decided and not yet landed
   (Bedrock off by configuration,
   `METERS` and `JUDGE SEATS` made to agree,
@@ -410,8 +411,17 @@ this section is the readiness reading of it.
   so Hyper and OpenRouter carried the rest.
   Mercury's first content came within 12,820 ms on every call that returned content,
   so its 90,000 ms window never fired.
-  `CuspariaKLSY23` finished in 17.1 min (its read is in progress),
-  and `XingZ6018` is running.
+  `CuspariaKLSY23` SETTLED in 17.1 min of pass
+  ([the run](translation-repair-openrouter-2026-09-03-2026-10-22-answers-restart-cuspariaklsy23-run.md)),
+  against 39.3 min for `CuspariaKLSY22`;
+  all 64 Mercury streams completed,
+  and for the fourth `CuspariaKLSY` run in a row the repair lane left tense issues unresolved
+  (4 accepted,
+  2 of them major).
+  Both runs printed plan energy with no NeuralWatt call (326.9 and 255.7 Wh);
+  the owner said on 2026-10-22 that the dsh harness's NeuralWatt key is on the same account,
+  so that figure counts the harness's use too.
+  `XingZ6018` is running.
 - The entries never run on a recent build are the rest of the 92-entry corpus.
   The owner's rule stands:
   "We never ever need a all 92 entries launch";

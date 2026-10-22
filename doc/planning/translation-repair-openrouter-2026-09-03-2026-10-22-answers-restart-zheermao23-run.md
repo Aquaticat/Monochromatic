@@ -507,11 +507,15 @@ and it began after 12:31:32 UTC.
 (read in the `CuspariaKLSY22` provider read,
 which cites it);
 this read did not re-read that file.
-The source of the 326.9 Wh is unverified and cannot be settled from the log.
-It is an open item for the owner
-(the NeuralWatt dashboard for 12:31 to 13:21 UTC,
-by model),
-not a code defect,
+The log cannot name the source of the 326.9 Wh.
+The owner settled it on 2026-10-22,
+after this read:
+the NeuralWatt key of the owner's dsh harness
+(`package/dsh-plugin/neuralwatt`,
+which reads `NEURALWATT_API_KEY`)
+is on the same account,
+so the plan figure counts that harness's use as well as the run's.
+It is not a code defect,
 and it is the third run in a row with a nonzero plan figure.
 
 ### Seats, units and meters
