@@ -340,13 +340,29 @@ fn the_window_of_a_fling_reaches_ahead_on_the_side_it_heads_toward() {
     );
     let down = geometry.bands_toward(offset, step, usize::MAX, Heading::Down { at: 0.0 });
     let up = geometry.bands_toward(offset, step, usize::MAX, Heading::Up { at: 0.0 });
-    assert_eq!(down.start, still.start, "heading down keeps one band behind");
-    assert_eq!(down.end, still.end - 1 + LEAD, "heading down holds the lead after the track");
+    assert_eq!(
+        down.start, still.start,
+        "heading down keeps one band behind"
+    );
+    assert_eq!(
+        down.end,
+        still.end - 1 + LEAD,
+        "heading down holds the lead after the track"
+    );
     assert_eq!(up.end, still.end, "heading up keeps one band behind");
-    assert_eq!(up.start, still.start + 1 - LEAD, "heading up holds the lead before the track");
+    assert_eq!(
+        up.start,
+        still.start + 1 - LEAD,
+        "heading up holds the lead before the track"
+    );
     // The window never leaves the text: at its ends the lead is cut short.
     let total = band_count(content, step);
-    let last = geometry.bands_toward(geometry.max_offset(), step, usize::MAX, Heading::Down { at: 0.0 });
+    let last = geometry.bands_toward(
+        geometry.max_offset(),
+        step,
+        usize::MAX,
+        Heading::Down { at: 0.0 },
+    );
     assert_eq!(last.end, total);
     let first = geometry.bands_toward(0.0, step, usize::MAX, Heading::Up { at: 0.0 });
     assert_eq!(first.start, 0);
@@ -362,7 +378,11 @@ fn the_window_of_a_fling_reaches_ahead_on_the_side_it_heads_toward() {
 fn a_heading_follows_the_track_by_whole_bands() {
     let step = BAND;
     let still = Heading::Still { at: 1_000.0 };
-    assert_eq!(still.follow(1_000.0 + step - 1.0, step), still, "less than a band changes nothing");
+    assert_eq!(
+        still.follow(1_000.0 + step - 1.0, step),
+        still,
+        "less than a band changes nothing"
+    );
     assert_eq!(still.follow(1_000.0 - step + 1.0, step), still);
     let down = still.follow(1_000.0 + step, step);
     assert_eq!(down, Heading::Down { at: 1_000.0 + step });
@@ -370,7 +390,12 @@ fn a_heading_follows_the_track_by_whole_bands() {
     assert_eq!(down.follow(1_000.0 + step - 100.0, step), down);
     assert_eq!(down.follow(1_000.0 + 2.0 * step - 1.0, step), down);
     // The next band confirms it again, one step further.
-    assert_eq!(down.follow(1_000.0 + 2.0 * step, step), Heading::Down { at: 1_000.0 + 2.0 * step });
+    assert_eq!(
+        down.follow(1_000.0 + 2.0 * step, step),
+        Heading::Down {
+            at: 1_000.0 + 2.0 * step
+        }
+    );
     // A whole band back turns it.
     assert_eq!(down.follow(1_000.0, step), Heading::Up { at: 1_000.0 });
     assert_eq!(Heading::Still { at: 0.0 }.margins(), (1, 1));

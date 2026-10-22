@@ -373,7 +373,8 @@ impl Geometry {
         let from = self.slide(offset) / self.scale();
         let to = (self.slide(offset) + self.track()) / self.scale();
         let cap = most.max(1);
-        let mut first = (((from - behind as f32 * step) / step).floor().max(0.0) as usize).min(total - 1);
+        let mut first =
+            (((from - behind as f32 * step) / step).floor().max(0.0) as usize).min(total - 1);
         let end = (((to + ahead as f32 * step) / step).ceil() as usize).clamp(first + 1, total);
         if end - first > cap {
             // The texture cannot hold the margin bands as well: start at the band the track starts in.

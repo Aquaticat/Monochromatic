@@ -798,13 +798,19 @@ fn a_fling_is_given_a_picture_that_reaches_the_bands_it_is_heading_toward() {
     let start = offset_of_top(&shape, 20.0 * BAND);
     scroll_to(window, start);
     for step in 1..=3 {
-        scroll_to(window, offset_of_top(&shape, (20.0 + 1.5 * step as f32) * BAND));
+        scroll_to(
+            window,
+            offset_of_top(&shape, (20.0 + 1.5 * step as f32) * BAND),
+        );
     }
     let down_top = (20.0 + 4.5) * BAND;
     let Heading::Down { at } = opened.source.borrow().minimap.heading else {
         panic!("a fling down is not heading down");
     };
-    assert!((at - down_top).abs() < 1.0, "heading down confirmed at {at}, not {down_top}");
+    assert!(
+        (at - down_top).abs() < 1.0,
+        "heading down confirmed at {at}, not {down_top}"
+    );
     picture_of_bands(&opened, &bands_at(&opened, offset_of_top(&shape, down_top)));
     calm(&opened);
     let (first, end) = held(&opened);
@@ -817,13 +823,19 @@ fn a_fling_is_given_a_picture_that_reaches_the_bands_it_is_heading_toward() {
     );
     // The view turns and flings up: the lead is before the track now.
     for step in 1..=3 {
-        scroll_to(window, offset_of_top(&shape, down_top - 1.5 * step as f32 * BAND));
+        scroll_to(
+            window,
+            offset_of_top(&shape, down_top - 1.5 * step as f32 * BAND),
+        );
     }
     let up_top = down_top - 4.5 * BAND;
     let Heading::Up { at } = opened.source.borrow().minimap.heading else {
         panic!("a fling up is not heading up");
     };
-    assert!((at - up_top).abs() < 1.0, "heading up confirmed at {at}, not {up_top}");
+    assert!(
+        (at - up_top).abs() < 1.0,
+        "heading up confirmed at {at}, not {up_top}"
+    );
     picture_of_bands(&opened, &bands_at(&opened, offset_of_top(&shape, up_top)));
     calm(&opened);
     let (first, end) = held(&opened);
