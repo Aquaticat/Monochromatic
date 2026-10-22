@@ -5,7 +5,12 @@ Vet date:
 Scope:
  the in-process test tooling for the iOS survivors,
  the iOS analog of
-`../kotlin-android-kopia-pcloud-vet-reports/vet-test-frameworks.md`.
+`../kotlin-android-kopia-pcloud-vet-report/vet-test-frameworks.md`.
+
+The analogy path spelled `../kotlin-android-kopia-pcloud-vet-reports/` when this vet was recorded on 2026-06-13.
+The folder became `kotlin-android-kopia-pcloud-vet-report/` on 2026-07-15 (`bd19d57e20`),
+so the `../kotlin-android-kopia-pcloud-vet-reports/` spelling no longer resolves.
+
 Test tooling follows the language,
  not the UI framework,
  so this is organized by ecosystem (Rust core,
