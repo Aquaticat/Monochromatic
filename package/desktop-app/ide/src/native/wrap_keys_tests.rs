@@ -17,7 +17,7 @@ use super::sidebar_tests::{HEADER, TEXT_LEFT, resize};
 /// Fixture builders and the waits that let the worker measure.
 use super::wrap_tests::{long_line, long_text, open, settled};
 /// Bounded waiting that advances native timers until a state the test checks holds.
-use crate::native::waiting_tests::Waiting;
+use crate::native::waiting_tests::{Facts, Waiting};
 /// Geometry-free word motion,
 /// the expected value of Ctrl+Left and Ctrl+Right.
 use ide_app::caret_motion::{Motion, moved};
@@ -446,6 +446,19 @@ fn the_view_follows_the_caret_through_every_visual_row() {
         for line in 0..30 {
             rows += reader.source.borrow().row_map.rows_of(line);
         }
+        // What: The wrap width and the facts at the moment the rows were counted, kept for the failure message.
+        // Why: A count taken at another wrap width than the Down presses ran at (the failure recorded in full runs
+        //      of the minimap branch: 162 rows counted, 121 in the map afterwards) is told from a caret that
+        //      stopped early only by these.
+        let counted_at = (
+            reader.source.borrow().width,
+            window.get_viewport_width(),
+            Facts {
+                window,
+                source: &reader.source,
+            }
+            .to_string(),
+        );
         for step in 0..rows - 1 {
             key(window, Key::DownArrow);
             assert!(
@@ -453,7 +466,26 @@ fn the_view_follows_the_caret_through_every_visual_row() {
                 "width {width}: Down {step} left the caret row out of view"
             );
         }
-        assert_eq!(drawn_row(&reader), rows - 1);
+        let mut rows_after: usize = 0;
+        for line in 0..30 {
+            rows_after += reader.source.borrow().row_map.rows_of(line);
+        }
+        assert_eq!(
+            drawn_row(&reader),
+            rows - 1,
+            "width {width}: after {} Down presses; rows counted {rows} at wrap width {} (viewport {}), rows in the map now \
+             {rows_after} at wrap width {} (viewport {}); facts when counted {}; facts now {}",
+            rows - 1,
+            counted_at.0,
+            counted_at.1,
+            reader.source.borrow().width,
+            window.get_viewport_width(),
+            counted_at.2,
+            Facts {
+                window,
+                source: &reader.source
+            }
+        );
         for step in 0..rows - 1 {
             key(window, Key::UpArrow);
             assert!(

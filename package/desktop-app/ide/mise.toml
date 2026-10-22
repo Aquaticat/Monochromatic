@@ -308,6 +308,7 @@ runBounded(['cargo', 'nextest', 'run', '--bin', 'monochromatic-ide', ...filter],
 """
 
 [tasks."test:native:stress"]
+depends = ["runtime", "notices"]
 description = "Run filtered native tests many times at once in a GPU container limited to 2 CPUs and 2 GiB, and count failures per test (see bin/stress-native.ts)"
 usage = '''
 flag "--filter <expression>" help="Nextest filter expression, for example test(rows_arriving_in_view)"
