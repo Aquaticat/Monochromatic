@@ -6,11 +6,13 @@ import {
 import {
   bedrockLedgerFromEnv,
   createBedrockClient,
+  createDeepSeekClient,
   createHyperClient,
   createNeuralWattClient,
   createOpenRouterClient,
   createProviderBudgets,
   createSyntheticClient,
+  createXiaomiClient,
   neuralWattDayStartFrom,
   neuralWattLedgerFromEnv,
 } from '@monochromatic-dev/translation-repair-provider/ts';
@@ -123,6 +125,24 @@ export async function sampleBudgets(
       ledger: bedrockLedgerFromEnv({ env, },),
       transport,
     },),
+    // THE TWO DIRECT PROVIDERS ARE SAMPLED WHEN KEYED. An unset key leaves one unconfigured, which the
+    // line records as dry, the word every unconfigured provider gets.
+    ...((keys.deepseek === '')
+      ? {}
+      : {
+        deepseek: createDeepSeekClient({
+          apiKey: keys.deepseek,
+          transport,
+        },),
+      }),
+    ...((keys.xiaomi === '')
+      ? {}
+      : {
+        xiaomi: createXiaomiClient({
+          apiKey: keys.xiaomi,
+          transport,
+        },),
+      }),
     openrouter: createOpenRouterClient({
       apiKey: keys.openrouter,
       transport,

@@ -22,7 +22,6 @@ import {
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import {
   isProviderName,
-  PROVIDER_ORDER,
   type ProviderName,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
@@ -32,14 +31,14 @@ import {
   PROVIDERS_LEFT_OFF,
 } from './providers-off.ts';
 import { idListFlag, } from './command-flags.ts';
+import {
+  isRequirable,
+  REQUIRABLE_PROVIDERS,
+  type RequiredProvider,
+} from './requirable-providers.ts';
 import type { ReadsFlag, } from './command-line-types.ts';
 
 //region Required providers for measured arms
-
-/**
- Provider identities a validation arm may require before calls.
- */
-export type RequiredProvider = ProviderName;
 
 /**
  CLI token selecting required provider set.
@@ -49,7 +48,7 @@ const REQUIRED_PROVIDERS_FLAG = '--require-providers';
 /**
  Environment variable carrying each provider's key.
  */
-const KEY_VARIABLES: Readonly<Record<ProviderName, string>> = {
+const KEY_VARIABLES: Readonly<Record<RequiredProvider, string>> = {
   neuralwatt: 'TRANSLATION_REPAIR_NEURALWATT_API_KEY',
   synthetic: 'TRANSLATION_REPAIR_SYNTHETIC_API_KEY',
   hyper: 'TRANSLATION_REPAIR_CHARM_HYPER_API_KEY',
@@ -120,13 +119,19 @@ export function readRequiredProviders(
    */
   const parsedProviders = idListFlag({
     asked: line.flag('require-providers',),
-    naming: `provider of ${PROVIDER_ORDER.join(', ',)}`,
+    naming: `provider of ${REQUIRABLE_PROVIDERS.join(', ',)}`,
   },)
     .map(function parseProvider(provider,): RequiredProvider {
-      if (isProviderName(provider,))
+      if (isRequirable(provider,))
         return provider;
+      if (isProviderName(provider,))
+        throw new StatedRefusalError({
+          says: `${REQUIRED_PROVIDERS_FLAG} accepts only ${REQUIRABLE_PROVIDERS.join(', ',)}, and ${
+            JSON.stringify(provider,)
+          } is an optional provider that no arm requires wet`,
+        },);
       throw new StatedRefusalError({
-        says: `${REQUIRED_PROVIDERS_FLAG} accepts only ${PROVIDER_ORDER.join(', ',)}, and ${
+        says: `${REQUIRED_PROVIDERS_FLAG} accepts only ${REQUIRABLE_PROVIDERS.join(', ',)}, and ${
           JSON.stringify(provider,)
         } is none of them`,
       },);
@@ -165,7 +170,7 @@ async function gateProvider(
     readDry,
     signal,
   }: {
-    readonly provider: ProviderName;
+    readonly provider: RequiredProvider;
     readonly readDry: () => Promise<boolean>;
     readonly signal: AbortSignal;
   },
@@ -271,7 +276,7 @@ export async function assertRequiredProvidersReady(
    Each required provider's key, read without exposing its value.
    */
   const keys = required.map(function keyOf(provider,): {
-    readonly provider: ProviderName;
+    readonly provider: RequiredProvider;
     readonly key: string;
   } {
     return {

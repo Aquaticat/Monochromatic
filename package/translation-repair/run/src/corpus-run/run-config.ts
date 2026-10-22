@@ -1228,6 +1228,8 @@ export function runClientFrom(
     synthetic,
     hyper,
     bedrock,
+    deepseek,
+    xiaomi,
     openrouter,
   } = clients;
 
@@ -1252,7 +1254,12 @@ export function runClientFrom(
       // Hyper paces its calls to the account's hourly limit; while that
       // window is full, a model another provider serves goes there instead
       // of queueing (class one hundred forty-nine).
-      paces: (hyper === undefined) ? {} : { hyper: hyper.pace, },
+      // Xiaomi documents 100 requests a minute for its one model; its window
+      // is full before the account's limit answers 429.
+      paces: {
+        ...((hyper === undefined) ? {} : { hyper: hyper.pace, }),
+        ...((xiaomi === undefined) ? {} : { xiaomi: xiaomi.pace, }),
+      },
       // Conditional spread keeps the decisions transport absent where the
       // OpenRouter key is unset.
       ...((decisions === undefined) ? {} : { decider: decisions, }),
@@ -1263,7 +1270,9 @@ export function runClientFrom(
   rl.debug(
     `provider configuration neuralwatt=${String(neuralwatt !== undefined,)} synthetic=${String(synthetic !== undefined,)} hyper=${
       String(hyper !== undefined,)
-    } bedrock=${String(bedrock !== undefined,)} openrouter=${String(openrouter !== undefined,)}`,
+    } bedrock=${String(bedrock !== undefined,)} deepseek=${String(deepseek !== undefined,)} xiaomi=${
+      String(xiaomi !== undefined,)
+    } openrouter=${String(openrouter !== undefined,)}`,
   );
 
   return {

@@ -97,6 +97,18 @@ export type MeterSample = {
   readonly bedrock: MeterState | 'absent';
 
   /**
+   What the DeepSeek meter said, or that the record predates it: every line
+   written before 2026-10-22 carries five states or fewer.
+   */
+  readonly deepseek: MeterState | 'absent';
+
+  /**
+   What the Xiaomi meter said, or that the record predates it: every line
+   written before 2026-10-22 carries five states or fewer.
+   */
+  readonly xiaomi: MeterState | 'absent';
+
+  /**
    Every field beyond the states, in the order written.
 
    NOT AN ABSENCE SENTINEL WHEN EMPTY. A record written before the levels
@@ -493,12 +505,30 @@ export function readMeterLine(
     name: 'neuralwatt',
   },);
 
+  /**
+   What the DeepSeek meter said, absent on lines older than it.
+   */
+  const deepseek = fieldValue({
+    tail,
+    name: 'deepseek',
+  },);
+
+  /**
+   What the Xiaomi meter said, absent on lines older than it.
+   */
+  const xiaomi = fieldValue({
+    tail,
+    name: 'xiaomi',
+  },);
+
   return {
     at,
     neuralwatt,
     synthetic,
     hyper,
     bedrock,
+    deepseek,
+    xiaomi,
     openrouter,
     levels: levelFields({ tail, },),
   };

@@ -19,11 +19,12 @@ import {
 /**
  Names the providers a set of USD seats were billed by.
 
- @param seats - seats billed in USD per token, each OpenRouter's or Bedrock's
+ @param seats - seats billed in USD per token, each OpenRouter's, Bedrock's, DeepSeek's or Xiaomi's
 
- @returns `OpenRouter`, `Bedrock`, or both joined by "and", in that order
+ @returns The providers present in the order OpenRouter, Bedrock, DeepSeek, Xiaomi, joined by
+ commas and a last "and"
 
- @throws {@link Error} when a seat belongs to neither provider, which the
+ @throws {@link Error} when a seat belongs to none of them, which the
  tally's own grouping of USD seats cannot produce
 
  @example
@@ -33,27 +34,34 @@ import {
  */
 function usdProvidersNamed({ seats, }: { readonly seats: readonly SeatSpend[]; },): string {
   /**
-   Whether any seat was billed by OpenRouter.
+   Display name of each USD provider, in the order a report names them.
    */
-  const hasOpenRouter = seats.some(function isOpenRouter(seat,): boolean {
-    return seat.provider === 'openrouter';
-  },);
+  const usdProviders = [
+    ['openrouter', 'OpenRouter',],
+    ['bedrock', 'Bedrock',],
+    ['deepseek', 'DeepSeek',],
+    ['xiaomi', 'Xiaomi',],
+  ] as const;
 
   /**
-   Whether any seat was billed by Bedrock.
+   Names of the USD providers some seat was billed by.
    */
-  const hasBedrock = seats.some(function isBedrock(seat,): boolean {
-    return seat.provider === 'bedrock';
-  },);
+  const names = usdProviders
+    .filter(function billedSomeSeat([provider,],): boolean {
+      return seats.some(function isBilledBy(seat,): boolean {
+        return seat.provider === provider;
+      },);
+    },)
+    .map(function nameOf([, name,],): string {
+      return name;
+    },);
 
-  if (hasOpenRouter && hasBedrock)
-    return 'OpenRouter and Bedrock';
-  if (hasOpenRouter)
-    return 'OpenRouter';
-  if (hasBedrock)
-    return 'Bedrock';
+  if (names.length === 0)
+    throw new Error('unreachable: a seat of the USD group is none of the four USD providers, and priceTally groups only those',);
+  if (names.length === 1)
+    return names.join('',);
 
-  throw new Error('unreachable: a seat of the USD group is neither OpenRouter\'s nor Bedrock\'s, and priceTally groups only those two',);
+  return `${names.slice(0, -1,).join(', ',)} and ${names.slice(-1,).join('',)}`;
 }
 
 /**

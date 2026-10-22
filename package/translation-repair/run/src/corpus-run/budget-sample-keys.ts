@@ -1,10 +1,15 @@
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
+import {
+  DEEPSEEK_KEY_VARIABLE,
+  XIAOMI_KEY_VARIABLE,
+} from './direct-key-variables.ts';
 
 //region Budget sample keys
-// Reads the five provider keys a budget sample needs, all or none.
+// Reads the five provider keys a budget sample needs, all or none, and the two direct providers' keys, which it
+// takes when set and leaves empty otherwise.
 
 /**
- The five provider keys, each non-empty.
+ The five provider keys, each non-empty, and the two optional ones.
  */
 export type ProviderKeys = {
   /**
@@ -31,6 +36,17 @@ export type ProviderKeys = {
    OpenRouter key.
    */
   readonly openrouter: string;
+
+  /**
+   DeepSeek key, empty when unset: the provider is optional, so its absence
+   refuses nothing and the sample reads it as unconfigured.
+   */
+  readonly deepseek: string;
+
+  /**
+   Xiaomi key, empty when unset, optional likewise.
+   */
+  readonly xiaomi: string;
 };
 
 /**
@@ -38,7 +54,7 @@ export type ProviderKeys = {
 
  @param env - environment the keys are read from: `process.env` in a run
 
- @returns The five keys
+ @returns The five keys, and the two optional ones empty where unset
 
  @throws {@link StatedRefusalError} when any key is absent or empty, naming
  each variable and whether it is present, since a sample of some providers
@@ -115,6 +131,8 @@ export function readProviderKeys(
     hyper: hyperKey,
     bedrock: bedrockKey,
     openrouter: openRouterKey,
+    deepseek: env[DEEPSEEK_KEY_VARIABLE] ?? '',
+    xiaomi: env[XIAOMI_KEY_VARIABLE] ?? '',
   };
 }
 
