@@ -829,20 +829,20 @@ fn a_fling_is_given_a_picture_that_reaches_the_bands_it_is_heading_toward() {
         );
     }
     let up_top = down_top - 4.5 * BAND;
-    let Heading::Up { at } = opened.source.borrow().minimap.heading else {
+    let Heading::Up { at: turned_at } = opened.source.borrow().minimap.heading else {
         panic!("a fling up is not heading up");
     };
     assert!(
-        (at - up_top).abs() < 1.0,
-        "heading up confirmed at {at}, not {up_top}"
+        (turned_at - up_top).abs() < 1.0,
+        "heading up confirmed at {turned_at}, not {up_top}"
     );
     picture_of_bands(&opened, &bands_at(&opened, offset_of_top(&shape, up_top)));
     calm(&opened);
-    let (first, end) = held(&opened);
-    let reached = up_top - (LEAD as f32 - 1.0) * BAND;
+    let (first_up, end_up) = held(&opened);
+    let reached_back = up_top - (LEAD as f32 - 1.0) * BAND;
     assert!(
-        reached >= first && up_top + track_text <= end,
-        "the picture holds the text from {first} to {end}; the track {} bands further back needs {reached} from",
+        reached_back >= first_up && up_top + track_text <= end_up,
+        "the picture holds the text from {first_up} to {end_up}; the track {} bands further back needs {reached_back} from",
         LEAD - 1
     );
     window.hide().expect("close minimap window");

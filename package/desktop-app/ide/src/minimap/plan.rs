@@ -143,10 +143,13 @@ pub const BAND: f32 = 768.0;
 ///  How many bands the picture holds beyond the track on the side the view is heading toward.
 /// Why:
 ///  A fling moves the track by several bands in the time a picture takes to be requested,
-///  built, and drawn (about a tenth of a second);
+///  built,
+/// and drawn (about a tenth of a second);
 ///  a picture that held one band ahead ran out under the track and left the rows beyond it blank
-///  (`doc/handover/ide-gpu-stages-5-6.md`, "The minimap picture in a fling").
-///  The side the view is leaving keeps one band, as a view at rest does.
+///  (`doc/handover/ide-gpu-stages-5-6.md`,
+/// "The minimap picture in a fling").
+///  The side the view is leaving keeps one band,
+/// as a view at rest does.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
@@ -187,6 +190,7 @@ pub enum Heading {
     },
 }
 
+/// Following the track and naming the margins a heading calls for.
 impl Heading {
     /// What:
     ///  The heading after the top of the track is seen at `from`,

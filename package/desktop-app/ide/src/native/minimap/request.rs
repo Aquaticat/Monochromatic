@@ -284,11 +284,11 @@ pub(in crate::native) fn note(window: &AppWindow, state: &Rc<RefCell<State>>) {
         if let Some(top) = track_top(window, &current) {
             current.minimap.heading = Heading::Still { at: top };
         }
-        let Some(key) = key_of(window, &current) else {
+        let Some(at_rest) = key_of(window, &current) else {
             return;
         };
         // The look just kept was made with the other text's heading.
-        current.minimap.noted = Some(key);
+        current.minimap.noted = Some(at_rest);
         current.minimap.shown = None;
         let gpu = current.gpu.clone();
         drop(current);
@@ -296,7 +296,7 @@ pub(in crate::native) fn note(window: &AppWindow, state: &Rc<RefCell<State>>) {
         window.set_minimap_slices(ModelRc::default());
         let mut again = state.borrow_mut();
         again.minimap.debounce.stop();
-        post(window, state, &mut again, key);
+        post(window, state, &mut again, at_rest);
         return;
     }
     let mut since = None;

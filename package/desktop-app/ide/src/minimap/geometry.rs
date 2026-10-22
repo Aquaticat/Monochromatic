@@ -7,7 +7,8 @@
 //! and the scroll offset.
 
 /// How many bands cover the text,
-/// and which way the view is heading, which names the bands beyond the track.
+/// and which way the view is heading,
+/// which names the bands beyond the track.
 use super::plan::{Heading, band_count};
 /// The vertical mapping the minimap's rows come from and go back to.
 use crate::row_map::{CODE_ROW, RowMap};
@@ -330,8 +331,9 @@ impl Geometry {
     }
 
     /// What:
-    ///  The text position, in logical pixels of the text,
-    /// of the top of the part of the picture the track shows with the view scrolled to `offset`.
+    ///  The text position of the top of the part of the picture the track shows,
+    /// in logical pixels of the text,
+    /// with the view scrolled to `offset`.
     /// Why:
     ///  The bands and the heading are counted along the text,
     /// and the track's top is where a scroll moves them.
