@@ -65,11 +65,25 @@
  the consolidate, lane-contest, repair slice, refine and translate versions move for the same ballots. The pairing sheets
  carry no schema of this change, so the pairing version stays. No record has been written at five, which this change sets first.
 
+ Six covers the quorum rule of 2026-10-22 (owner, "Let the grace open"; ledger B816): once the straggler grace ends, a
+ short bench whose live seats are exactly its quorum closes one voice below it (`stage/src/stage-reachable-quorum.ts`),
+ and a refusal inside a round sizes the need again (`stage/src/stage-round.ts`). Every round of the page title lexicon
+ gathers through that rule, so a record settled under the rule of 2026-09-09 may hold an outcome the new rule reaches
+ differently, on one voice fewer. The key hashes the version, the shape of the run and the texts, not the rule that
+ closes a round. A build whose pipeline digest differs discards the namespace before it reads it
+ (`openNamespacedCache`), and the digest holds the stage code, so that retires such a record; the number moves too, as
+ the belt beside that brace, so no stored record stands under a number whose rule differs. Run zheermao23 is armed for
+ 2026-10-22 19:16 UTC on `65e8325303`, which holds 5 (`git merge-base --is-ancestor`), so records may stand at 5, and
+ the change cannot ride inside it. The artifact generation moves to 20 for the same rule, and the consolidate (32),
+ lane-contest (16), translate slice (25), repair slice (43), refine (14), consistency (7) versions move with this one;
+ the pairing version stays, by its own account of 2026-10-18 (`slice-reading/src/pairing-cache-version.ts`). No record
+ has been written at 6, which this change sets first.
+
  @example
  ```ts
  const material = JSON.stringify({ version: PAGE_TITLE_CACHE_VERSION, source, titles, identity, roster, },);
  ```
  */
-export const PAGE_TITLE_CACHE_VERSION = 5;
+export const PAGE_TITLE_CACHE_VERSION = 6;
 
 //endregion Page title cache version

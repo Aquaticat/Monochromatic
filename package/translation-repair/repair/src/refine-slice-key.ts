@@ -324,8 +324,23 @@ import type {
  run, since the pass that writes them runs in another worktree this change does not read), so whether a record stands at
  12 is not known and the change cannot ride inside it: the number moves. No record has been written at 13, which this
  change sets first.
+
+ 14 covers the quorum rule of 2026-10-22 (owner, "Let the grace open"; ledger B816): once the straggler grace ends, a
+ short bench whose live seats are exactly its quorum closes one voice below it (`stage/src/stage-reachable-quorum.ts`),
+ and a refusal inside a round sizes the need again (`stage/src/stage-round.ts`). Every round of the refinement rewrite,
+ the candidate selection and the introduced-defect check gathers through that rule, so a record settled under the rule
+ of 2026-09-09 may hold an outcome the new rule reaches differently, on one voice fewer. The key hashes the version,
+ the shape of the run and the texts, not the rule that closes a round. A build whose pipeline digest differs discards
+ the namespace before it reads it (`openNamespacedCache`), and the digest holds the stage code, so that retires such a
+ record; the number moves too, as the belt beside that brace, so no stored record stands under a number whose rule
+ differs. Run zheermao23 is armed for 2026-10-22 19:16 UTC on `65e8325303`, which holds 13 (`git
+ merge-base --is-ancestor`), so records may stand at 13, and the change cannot ride inside it. The artifact generation
+ moves to 20 for the same rule, and the consolidate (32), lane-contest (16), translate slice (25), repair slice (43),
+ consistency (7), page title (6) versions move with this one; the pairing version stays, by its own account of
+ 2026-10-18 (`slice-reading/src/pairing-cache-version.ts`). No record has been written at 14, which this change sets
+ first.
  */
-export const REFINE_CACHE_VERSION = 13;
+export const REFINE_CACHE_VERSION = 14;
 
 /**
  Everything about this run that changes what the voices are ASKED.
