@@ -5,85 +5,37 @@
 // The server runs unconfined against a disposable project below the system temporary directory,
 // with a disposable home and cache; the repository is read only to copy the TypeScript 7.0.2 packages.
 import { spawn } from 'node:child_process';
-import {
-  cpSync,
-  mkdirSync,
-  mkdtempSync,
-  realpathSync,
-  writeFileSync
-} from 'node:fs';
+import { cpSync, mkdirSync, mkdtempSync, realpathSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import {
-  join,
-  resolve
-} from 'node:path';
+import { join, resolve } from 'node:path';
 import { setTimeout as wait } from 'node:timers/promises';
 
-const store = resolve(
-  import.meta.dirname,
-  '../../node_modules/.pnpm'
-);
-const base = realpathSync(
-  mkdtempSync(join(tmpdir(), 'typescript-7-lsp-exit-')),
-);
-const project = join(
-  base,
-  'project'
-);
-function write(relative, text) {
+const store = resolve(import.meta.dirname, '../../node_modules/.pnpm');
+const base = realpathSync(mkdtempSync(join(tmpdir(), 'typescript-7-lsp-exit-')));
+const project = join(base, 'project');
+const write = (relative, text) => {
   const target = join(project, relative);
   mkdirSync(join(target, '..'), { recursive: true });
   writeFileSync(target, text);
-}
-write(
-  'package.json',
-  JSON.stringify({ name: 'probe', private: true, type: 'module' }) + '\n'
-);
-write(
-  'tsconfig.json',
-  JSON.stringify({ compilerOptions: { strict: true, noEmit: true }, include: ['src'] }) + '\n'
-);
-write(
-  'src/main.ts',
-  'export const value: number = 1;\n'
-);
+};
+write('package.json', JSON.stringify({ name: 'probe', private: true, type: 'module' }) + '\n');
+write('tsconfig.json', JSON.stringify({ compilerOptions: { strict: true, noEmit: true }, include: ['src'] }) + '\n');
+write('src/main.ts', 'export const value: number = 1;\n');
+cpSync(join(store, 'typescript@7.0.2', 'node_modules', 'typescript'), join(project, 'node_modules', 'typescript'), { recursive: true });
 cpSync(
-  join(store, 'typescript@7.0.2', 'node_modules', 'typescript'),
-  join(project, 'node_modules', 'typescript'),
-  { recursive: true }
-);
-cpSync(
-  join(
-    store,
-    '@typescript+typescript-linux-x64@7.0.2',
-    'node_modules',
-    '@typescript',
-    'typescript-linux-x64'
-  ),
-  join(
-    project,
-    'node_modules',
-    '@typescript',
-    'typescript-linux-x64'
-  ),
+  join(store, '@typescript+typescript-linux-x64@7.0.2', 'node_modules', '@typescript', 'typescript-linux-x64'),
+  join(project, 'node_modules', '@typescript', 'typescript-linux-x64'),
   { recursive: true },
 );
-for (const name of [
-  'home',
-  'cache'
-]) mkdirSync(join(
-  base,
-  name
-));
+for (const name of ['home', 'cache']) mkdirSync(join(base, name));
 
-function framemessage => {
-  const body = JSON.stringify(message) {
+const frame = message => {
   const body = JSON.stringify(message);
   return 'Content-Length: ' + Buffer.byteLength(body) + '\r\n\r\n' + body;
-}
+};
 
 // Start the server, initialize it, open a file, wait for one hover answer, then run `finish`.
-async function run(name, finish) {
+const run = async (name, finish) => {
   const child = spawn(process.env.TSGO_BINARY ?? join(project, 'node_modules/typescript/bin/tsc'), ['--lsp', '--stdio'], {
     cwd: project,
     env: { PATH: process.env.PATH, HOME: join(base, 'home'), XDG_CACHE_HOME: join(base, 'cache') },
@@ -115,7 +67,7 @@ async function run(name, finish) {
     return answered;
   };
   const notify = (method, params) => child.stdin.write(frame({ jsonrpc: '2.0', method, params }));
-  const exited = new Promise(done => child.on('exit', (code, signal) =>{  done({ code, signal }); }));
+  const exited = new Promise(done => child.on('exit', (code, signal) => done({ code, signal })));
   const uri = 'file://' + project;
   await request('initialize', { processId: process.pid, rootUri: uri, capabilities: {}, workspaceFolders: [{ uri, name: 'project' }] });
   notify('initialized', {});
@@ -126,45 +78,21 @@ async function run(name, finish) {
   if (outcome.timedOut) child.kill('SIGKILL');
   await wait(100);
   return { name, hoverAnswered: hover.result !== undefined, ...outcome, stderr };
-}
+};
 
 const cases = [
-  [
-    'shutdown answered, then exit',
-    async ({ request, notify }) => { await request('shutdown'); notify('exit'); }
-  ],
-  [
-    'shutdown and exit back to back',
-    async ({ request, notify }) => { request('shutdown'); notify('exit'); }
-  ],
-  [
-    'shutdown answered, then standard input closed, no exit',
-    async ({ child, request }) => { await request('shutdown'); child.stdin.end(); }
-  ],
-  [
-    'standard input closed without shutdown',
-    async ({ child }) => { child.stdin.end(); }
-  ],
-  [
-    'exit without shutdown',
-    async ({ notify }) => { notify('exit'); }
-  ],
-  [
-    'SIGTERM',
-    async ({ child }) => { child.kill('SIGTERM'); }
-  ],
+  ['shutdown answered, then exit', async ({ request, notify }) => { await request('shutdown'); notify('exit'); }],
+  ['shutdown and exit back to back', async ({ request, notify }) => { request('shutdown'); notify('exit'); }],
+  ['shutdown answered, then standard input closed, no exit', async ({ child, request }) => { await request('shutdown'); child.stdin.end(); }],
+  ['standard input closed without shutdown', async ({ child }) => { child.stdin.end(); }],
+  ['exit without shutdown', async ({ notify }) => { notify('exit'); }],
+  ['SIGTERM', async ({ child }) => { child.kill('SIGTERM'); }],
 ];
 const results = [];
 for (const [name, finish] of cases) {
   // Each sequence runs three times, to show that the outcome does not vary between runs.
-  for (let attempt = 0; attempt < 3; attempt++) results.push(await run(
-    name,
-    finish
-  ));
+  for (let attempt = 0; attempt < 3; attempt++) results.push(await run(name, finish));
 }
-writeFileSync(
-  join(base, 'results.json'),
-  JSON.stringify(results, null, 2)
-);
+writeFileSync(join(base, 'results.json'), JSON.stringify(results, null, 2));
 for (const result of results) console.log(JSON.stringify(result));
-console.log(`Results: ${  join(base, 'results.json')}`);
+console.log('Results: ' + join(base, 'results.json'));
