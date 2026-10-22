@@ -15,6 +15,7 @@ fn current_json_round_trip_preserves_fields() {
         track_rows_template: Some("$mi(title)$".to_string()),
         playing_template: None,
         auto_play_on_select: true,
+        text_sizes: TextSizes::default().with(TextElement::TrackTitle, 18).with(TextElement::PaneTitle, 26),
     };
     let json = serde_json::to_string(&original).expect("current session should serialize");
     let restored = Session::from_json(&json).expect("serialized session should parse");
@@ -334,4 +335,161 @@ fn a_save_that_fails_leaves_the_previous_file_whole() {
         .expect_err("the save cannot create its temporary file");
     assert!(!error.to_string().is_empty());
     assert_eq!(Session::load_at(&path), first, "the previous session is still the complete file");
+}
+
+/// What: `sizes_of` gives the Text size values a test file holds, in the order of the Settings rows.
+fn sizes_of(session: &Session) -> [u16; 4] {
+    return TextElement::ALL.map(|element| return session.text_sizes.get(element));
+}
+
+/// A first run and an empty object draw every text at the size the app always used.
+#[test]
+fn text_sizes_are_the_old_sizes_by_default() {
+    assert_eq!(sizes_of(&Session::default()), [20, 20, 14, 14]);
+    assert_eq!(sizes_of(&Session::from_json("{}").expect("empty object parses")), [20, 20, 14, 14]);
+}
+
+/// The four sizes are written as four flat keys, not as a nested object, and read back.
+#[test]
+fn text_sizes_round_trip_through_json_under_four_flat_keys() {
+    let session = Session {
+        text_sizes: TextSizes::default()
+            .with(TextElement::PaneTitle, 32)
+            .with(TextElement::GroupHeading, 10)
+            .with(TextElement::FolderName, 15)
+            .with(TextElement::TrackTitle, 13),
+        ..Session::default()
+    };
+    let json = serde_json::to_string(&session).expect("the session serializes");
+    for expected in [
+        "\"text_size_pane_title_px\":32",
+        "\"text_size_group_heading_px\":10",
+        "\"text_size_folder_name_px\":15",
+        "\"text_size_track_title_px\":13",
+    ] {
+        assert!(json.contains(expected), "{expected} is in {json}");
+    }
+    assert!(!json.contains("text_sizes"), "no nested object: {json}");
+    assert_eq!(Session::from_json(&json).expect("it parses"), session);
+}
+
+/// The sizes are saved through the one write path and load back from the file, and a missing file reads the defaults.
+#[test]
+fn text_sizes_round_trip_through_a_file() {
+    let path = scratch_file("text_sizes_round_trip");
+    assert!(Session::load_at(&path).text_sizes.is_default(), "no file reads the defaults");
+    let sizes = TextSizes::default().with(TextElement::FolderName, 17).with(TextElement::TrackTitle, 22);
+    Session::save_text_sizes_at(&path, sizes).expect("the sizes are saved");
+    assert_eq!(Session::load_at(&path).text_sizes, sizes);
+    Session::save_text_sizes_at(&path, TextSizes::default()).expect("the defaults are saved");
+    assert!(Session::load_at(&path).text_sizes.is_default());
+}
+
+/// Saving the sizes leaves the playback fields, the templates and Auto-play on select of an existing file as they were.
+#[test]
+fn saving_the_text_sizes_keeps_the_rest_of_an_existing_file() {
+    let path = scratch_file("text_sizes_keep_rest");
+    std::fs::write(
+        &path,
+        r#"{"source_root":"/music","selected":"/music/a.flac","position_secs":9.5,"volume":0.25,"playback_mode":"repeat","track_rows_template":"$mi(title)$","playing_template":"$mi(track)$","auto_play_on_select":true}"#,
+    )
+    .expect("the old file is written");
+    let sizes = TextSizes::default().with(TextElement::PaneTitle, 24);
+    Session::save_text_sizes_at(&path, sizes).expect("the sizes are saved");
+    let after = Session::load_at(&path);
+    assert_eq!(after.text_sizes, sizes);
+    assert_eq!(after.source_root, Some(PathBuf::from("/music")));
+    assert_eq!(after.selected, Some(PathBuf::from("/music/a.flac")));
+    assert!((after.position_secs - 9.5).abs() < f64::EPSILON);
+    assert!((after.volume - 0.25).abs() < f32::EPSILON);
+    assert_eq!(after.playback_mode, PlaybackMode::Repeat);
+    assert_eq!(after.track_rows_template.as_deref(), Some("$mi(title)$"));
+    assert_eq!(after.playing_template.as_deref(), Some("$mi(track)$"));
+    assert!(after.auto_play_on_select);
+}
+
+/// Saving another setting keeps the sizes, so the template editor and the Auto-play switch never reset them.
+#[test]
+fn saving_another_setting_keeps_the_text_sizes() {
+    let path = scratch_file("other_setting_keeps_sizes");
+    let sizes = TextSizes::default().with(TextElement::GroupHeading, 28);
+    Session::save_text_sizes_at(&path, sizes).expect("the sizes are saved");
+    Session::save_auto_play_on_select_at(&path, true).expect("the other setting is saved");
+    assert_eq!(Session::load_at(&path).text_sizes, sizes);
+}
+
+/// A file written before the setting existed still loads: every other field is kept and the sizes are the defaults.
+#[test]
+fn an_old_file_without_the_sizes_loads_and_keeps_its_fields() {
+    let old = r#"{"source_root":"/music","volume":0.5,"playback_mode":"shuffle_all","track_rows_template":"$mi(title)$","auto_play_on_select":true}"#;
+    let (loaded, log) = logged_by(|| return Session::from_json(old).expect("an old file parses"));
+    assert!(loaded.text_sizes.is_default());
+    assert_eq!(loaded.source_root, Some(PathBuf::from("/music")));
+    assert!((loaded.volume - 0.5).abs() < f32::EPSILON);
+    assert_eq!(loaded.playback_mode, PlaybackMode::ShuffleAll);
+    assert_eq!(loaded.track_rows_template.as_deref(), Some("$mi(title)$"));
+    assert!(loaded.auto_play_on_select);
+    assert!(!log.contains("WARN"), "an old file is no corruption and logs no warning: {log}");
+}
+
+/// One field present and the other three missing: the present one is kept, the missing ones are their defaults, and
+/// the unrelated fields are untouched.
+#[test]
+fn a_missing_size_field_never_resets_the_other_fields() {
+    let text = r#"{"volume":0.75,"playback_mode":"shuffle_page","text_size_track_title_px":19,"auto_play_on_select":true}"#;
+    let loaded = Session::from_json(text).expect("the file parses");
+    assert_eq!(sizes_of(&loaded), [20, 20, 14, 19]);
+    assert!((loaded.volume - 0.75).abs() < f32::EPSILON);
+    assert_eq!(loaded.playback_mode, PlaybackMode::ShufflePage);
+    assert!(loaded.auto_play_on_select);
+}
+
+/// A corrupt or out-of-range size falls back to the default of that element alone, is logged with its key, and costs
+/// the rest of the file nothing; a good field beside it is kept.
+#[test]
+fn a_corrupt_size_falls_back_alone_and_is_logged() {
+    let text = r#"{"volume":0.5,"playback_mode":"repeat","text_size_pane_title_px":"huge","text_size_group_heading_px":99,"text_size_folder_name_px":-3,"text_size_track_title_px":21}"#;
+    let (loaded, log) = logged_by(|| return Session::from_json(text).expect("a corrupt size never fails the whole file"));
+    assert_eq!(sizes_of(&loaded), [20, 20, 14, 21]);
+    assert!((loaded.volume - 0.5).abs() < f32::EPSILON);
+    assert_eq!(loaded.playback_mode, PlaybackMode::Repeat);
+    for key in ["text_size_pane_title_px", "text_size_group_heading_px", "text_size_folder_name_px"] {
+        assert!(log.contains(key), "{key} is named in the log: {log}");
+    }
+    assert!(!log.contains("text_size_track_title_px"), "the good field is not reported: {log}");
+    assert!(log.contains("WARN"), "a warning is logged: {log}");
+}
+
+/// The edges of the range load as they are, and one pixel past each edge falls back to the default.
+#[test]
+fn the_limits_load_and_one_past_each_limit_falls_back() {
+    let edges = r#"{"text_size_pane_title_px":10,"text_size_group_heading_px":32,"text_size_folder_name_px":9,"text_size_track_title_px":33}"#;
+    assert_eq!(sizes_of(&Session::from_json(edges).expect("the file parses")), [10, 32, 14, 14]);
+}
+
+/// A corrupt size in a file on disk loads through the real read path without resetting the playback fields.
+#[test]
+fn a_corrupt_size_in_a_file_on_disk_keeps_the_playback_fields() {
+    let path = scratch_file("corrupt_size_on_disk");
+    std::fs::write(&path, r#"{"source_root":"/music","position_secs":4.5,"playback_mode":"repeat","text_size_folder_name_px":null}"#)
+        .expect("the file is written");
+    let loaded = Session::load_at(&path);
+    assert_eq!(loaded.source_root, Some(PathBuf::from("/music")));
+    assert!((loaded.position_secs - 4.5).abs() < f64::EPSILON);
+    assert_eq!(loaded.playback_mode, PlaybackMode::Repeat);
+    assert_eq!(sizes_of(&loaded), [20, 20, 14, 14]);
+}
+
+/// The entry points the window uses read and write the sizes of the config home, and keep the other fields.
+#[cfg(target_os = "linux")]
+#[test]
+fn the_real_entry_points_read_and_write_the_sizes_of_the_config_home() {
+    let path = use_disposable_config_home("text_size_entry_points");
+    assert!(Session::load_text_sizes().is_default(), "no file means the defaults");
+    Session { position_secs: 6.0, ..Session::default() }.save().expect("the first save writes the file");
+    assert!(path.exists(), "the file is in the config home");
+    let sizes = TextSizes::default().with(TextElement::TrackTitle, 30);
+    Session::save_text_sizes(sizes).expect("saving the sizes writes the file");
+    assert_eq!(Session::load_text_sizes(), sizes, "the saved sizes load back");
+    assert!((Session::load().position_secs - 6.0).abs() < f64::EPSILON, "saving the sizes keeps the other fields");
 }

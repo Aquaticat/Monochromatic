@@ -16,6 +16,9 @@ use crate::command::PlaybackMode;
 /// Shared application identity used to resolve the config directory.
 use crate::identity;
 
+/// The four text sizes the Settings page changes, and the rule that reads one stored field.
+use crate::text_size::{size_or_default, TextElement, TextSizes};
+
 /// Current session shape written to disk.
 #[derive(Clone, Debug, PartialEq, Serialize)]
 pub struct Session {
@@ -36,6 +39,10 @@ pub struct Session {
     pub playing_template: Option<String>,
     /// Auto-play on select (D129): whether selecting a track also starts it. Off when the file has no such field.
     pub auto_play_on_select: bool,
+    /// Text size setting: one pixel size for each of four texts, written as four flat keys beginning `text_size_`.
+    /// The defaults are the sizes the app drew before the setting existed.
+    #[serde(flatten)]
+    pub text_sizes: TextSizes,
 }
 
 /// Private permissive input shape that recognizes current and former fields.
@@ -64,6 +71,11 @@ struct StoredSession {
     playing_template: Option<String>,
     /// Auto-play on select, when a newer build saved it.
     auto_play_on_select: bool,
+    /// Stored text size of each element in the order of `TextElement::ALL`, `None` where the key is absent. Kept as raw
+    /// JSON and filled by `parse_stored`, not by serde, so one corrupt value falls back to its own default and never
+    /// fails the whole file, and an explicit null is told apart from a missing key.
+    #[serde(skip)]
+    text_sizes: [Option<serde_json::Value>; 4],
 }
 
 /// Supplies defaults for missing fields in the permissive input shape.
@@ -81,6 +93,7 @@ impl Default for StoredSession {
             track_rows_template: None,
             playing_template: None,
             auto_play_on_select: false,
+            text_sizes: [None, None, None, None],
         };
     }
 }
@@ -98,6 +111,7 @@ impl Default for Session {
             track_rows_template: None,
             playing_template: None,
             auto_play_on_select: false,
+            text_sizes: TextSizes::default(),
         };
     }
 }
@@ -138,9 +152,19 @@ impl Session {
                 track_rows_template: stored.track_rows_template,
                 playing_template: stored.playing_template,
                 auto_play_on_select: stored.auto_play_on_select,
+                text_sizes: Session::text_sizes_from(&stored.text_sizes),
             },
             should_rewrite,
         );
+    }
+
+    /// What: `text_sizes_from` reads the four stored size fields, each falling back to its own default.
+    /// Why: a corrupt or out-of-range field costs only that element its size (and is logged), never the other
+    /// sizes and never the rest of the session.
+    fn text_sizes_from(stored: &[Option<serde_json::Value>; 4]) -> TextSizes {
+        return TextElement::ALL.iter().zip(stored).fold(TextSizes::default(), |sizes, (element, field)| {
+            return sizes.with(*element, size_or_default(*element, field.as_ref()));
+        });
     }
 
     /// Parses permissive input while preserving whether the current key was present.
@@ -149,7 +173,11 @@ impl Session {
         let has_current_mode = value
             .as_object()
             .is_some_and(|object| return object.contains_key("playback_mode"));
-        let stored: StoredSession = serde_json::from_value(value)?;
+        let text_sizes = TextElement::ALL.map(|element| {
+            return value.as_object().and_then(|object| return object.get(element.session_key())).cloned();
+        });
+        let mut stored: StoredSession = serde_json::from_value(value)?;
+        stored.text_sizes = text_sizes;
         return Ok((stored, has_current_mode));
     }
 
@@ -238,6 +266,31 @@ impl Session {
     fn save_auto_play_on_select_at(path: &Path, enabled: bool) -> std::io::Result<()> {
         let mut session = Session::load_at(path);
         session.auto_play_on_select = enabled;
+        return session.save_at(path);
+    }
+
+    /// What: `load_text_sizes` reads the Text size setting; every element at its default when the file has none.
+    /// Why: the window starts from the saved sizes, and a session file written before the setting existed must keep
+    /// loading with the sizes the app always drew.
+    #[must_use]
+    pub fn load_text_sizes() -> TextSizes {
+        return Session::load().text_sizes;
+    }
+
+    /// What: `save_text_sizes` writes the Text size setting and keeps every other field as it is.
+    /// Why: the Settings steppers save here, and the playback record is rewritten by the controller separately.
+    pub fn save_text_sizes(sizes: TextSizes) -> std::io::Result<()> {
+        let Some(path) = session_path() else {
+            return Ok(());
+        };
+        return Session::save_text_sizes_at(&path, sizes);
+    }
+
+    /// What: `save_text_sizes_at` is `save_text_sizes` for the session file at `path`.
+    /// Why: the persistence tests write a file in a temporary directory, never the user's own session file.
+    fn save_text_sizes_at(path: &Path, sizes: TextSizes) -> std::io::Result<()> {
+        let mut session = Session::load_at(path);
+        session.text_sizes = sizes;
         return session.save_at(path);
     }
 

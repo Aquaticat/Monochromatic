@@ -5,6 +5,7 @@ import { StateLayer } from "state_layer.slint";
 import { Focus, PlayerStop, FocusRing, KeyBadge, Keys } from "focus.slint";
 import { LastInput } from "scrollbar.slint";
 import { FullNameTip } from "name_tip.slint";
+import { TextSize } from "text_size.slint";
 
 // One rail cell. `key` identifies the cell in callbacks; `label` is the text drawn in the rail.
 export struct FolderRailCell {
@@ -239,7 +240,9 @@ export component FolderPickerPane inherits Rectangle {
                     // A name is as wide as its text needs, but never wider than the line, so a long name ends in an ellipsis on a line
                     // of its own instead of running past the pane edge (OV1, which narrows D31's "nothing truncated" to names that fit).
                     width: row.section-start ? names-flow.width : min(names-flow.width, max(48px, name-measure.preferred-width + 8px));
-                    height: row.section-start ? self.section-gap + 38px : 48px;
+                    // A heading row is 38 px of its own at the default letter size (8 px above the letter and 30 px for it), and
+                    // grows with a larger letter so the letter never runs into the first name of its cell. Name rows stay 48 px.
+                    height: row.section-start ? self.section-gap + 8px + max(30px, TextSize.line-height(TextSize.group-heading)) : 48px;
                     changed ring-moved => {
                         if (self.ringed) {
                             // Scroll just enough to bring the 48 px target, with an 8 px margin, inside the viewport.
@@ -302,13 +305,13 @@ export component FolderPickerPane inherits Rectangle {
                             }
                         }
                     }
-                    // Heading label: 20 px (2 px under Android's 22 px) in primary, 8 px below the section gap, aligned
-                    // with the names.
-                    if row.section-start: Text {
+                    // Heading label: 20 px by default (2 px under Android's 22 px) in primary, 8 px below the section gap,
+                    // aligned with the names. The size is the group heading letter of the Text size setting.
+                    if row.section-start: heading-label := Text {
                         x: 4px;
                         y: parent.section-gap + 8px;
                         text: row.heading;
-                        font-size: 20px;
+                        font-size: TextSize.group-heading;
                         color: Theme.primary;
                     }
                     // Width probe: the name at the heavier selected weight, never shown. Every name is sized by this one,
@@ -317,7 +320,7 @@ export component FolderPickerPane inherits Rectangle {
                         visible: false;
                         wrap: no-wrap;
                         text: row.section-start ? "" : row.name;
-                        font-size: 14px;
+                        font-size: TextSize.folder-name;
                         font-weight: 500;
                     }
                     // Name label: plain text in the 48 px target, empty for heading rows.
@@ -329,8 +332,9 @@ export component FolderPickerPane inherits Rectangle {
                         wrap: no-wrap;
                         overflow: elide;
                         text: row.section-start ? "" : row.name;
-                        // 14 px (2 px under Android's 16 px); the width probe above uses the same size.
-                        font-size: 14px;
+                        // 14 px by default (2 px under Android's 16 px). The width probe above reads the same
+                        // `TextSize.folder-name`, so a selected name never re-wraps whatever the size.
+                        font-size: TextSize.folder-name;
                         font-weight: parent.selected ? 500 : 400;
                         vertical-alignment: center;
                         color: parent.selected ? Theme.primary : Theme.on-surface;

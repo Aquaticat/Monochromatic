@@ -478,9 +478,15 @@ fn the_shutdown_snapshot_keeps_the_ui_fields_of_the_stored_session() {
         track_rows_template: Some("$mi(title)$".to_string()),
         playing_template: Some("$mi(track)$".to_string()),
         auto_play_on_select: true,
+        text_sizes: crate::text_size::TextSizes::default().with(crate::text_size::TextElement::FolderName, 21),
         ..Session::default()
     };
     let snapshot = rig.controller.session_over(stored);
+    assert_eq!(
+        snapshot.text_sizes.get(crate::text_size::TextElement::FolderName),
+        21,
+        "a shutdown save must not reset the text sizes",
+    );
     assert!(snapshot.auto_play_on_select, "a shutdown save must not turn Auto-play on select off");
     assert_eq!(snapshot.track_rows_template.as_deref(), Some("$mi(title)$"));
     assert_eq!(snapshot.playing_template.as_deref(), Some("$mi(track)$"));

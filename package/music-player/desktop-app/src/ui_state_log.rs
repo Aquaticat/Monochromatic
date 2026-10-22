@@ -9,6 +9,7 @@
 use std::cell::Cell;
 
 use music_player::keymap::FocusZone;
+use music_player::text_size::TextElement;
 use slint::ComponentHandle;
 
 use crate::ui_screen::read_state;
@@ -151,6 +152,14 @@ struct StateSnapshot {
     deck_disabled: bool,
     /// Whether Auto-play on select is on (D129).
     auto_play_on_select: bool,
+    /// Size in pixels of the pane titles, which the window draws them at.
+    text_size_pane_title_px: u16,
+    /// Size in pixels of the group heading letter.
+    text_size_group_heading_px: u16,
+    /// Size in pixels of the folder names.
+    text_size_folder_name_px: u16,
+    /// Size in pixels of the track titles.
+    text_size_track_title_px: u16,
 }
 
 /// What: `emit` writes one `ui_state` line with the window's observable state as JSON.
@@ -201,6 +210,10 @@ pub(crate) fn emit(window: &AppWindow, reason: &str) {
             first_run_title: if window.get_first_run_state() == 0 { String::new() } else { window.get_first_run_title().to_string() },
             deck_disabled: window.global::<crate::DeckState>().get_disabled(),
             auto_play_on_select: state.auto_play_on_select,
+            text_size_pane_title_px: state.text_sizes.get(TextElement::PaneTitle),
+            text_size_group_heading_px: state.text_sizes.get(TextElement::GroupHeading),
+            text_size_folder_name_px: state.text_sizes.get(TextElement::FolderName),
+            text_size_track_title_px: state.text_sizes.get(TextElement::TrackTitle),
         };
     });
     let line = match serde_json::to_string(&snapshot) {

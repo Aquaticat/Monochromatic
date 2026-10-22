@@ -55,14 +55,15 @@ pub(crate) fn replace_auto_play_saver(saver: SaveAutoPlay) {
     AUTO_PLAY_SAVER.set(saver);
 }
 
-/// What: `wire` registers the Settings and editor callbacks and loads the saved templates and the Auto-play on select
-/// setting into the state.
+/// What: `wire` registers the Settings and editor callbacks and loads the saved templates, the Auto-play on select
+/// setting and the text sizes into the state.
 /// Why: both must be in the state before the first projection, so the rows show the templates, the switch shows its
 /// state, and the first click on a track already follows the saved setting.
 pub(crate) fn wire(app: &AppWindow) {
     let (track_rows, playing) = Session::load_templates();
     let auto_play_on_select = Session::load_auto_play_on_select();
     tracing::info!(auto_play_on_select, "loaded the Auto-play on select setting");
+    crate::ui_text_size::load_into_state();
     update_state(|state| {
         state.track_rows_template = track_rows;
         state.playing_template = playing;
@@ -111,6 +112,7 @@ pub(crate) fn wire_callbacks(app: &AppWindow) {
         }
     });
     crate::ui_licenses::wire_callbacks(app);
+    crate::ui_text_size::wire_callbacks(app);
     wire_editor(app);
 }
 
@@ -438,6 +440,7 @@ pub(crate) fn project_pages(window: &AppWindow) {
             })
             .collect(),
     ));
+    crate::ui_text_size::project_sizes(window);
     let auto_play_on_select = read_state(|state| return state.auto_play_on_select);
     window.set_auto_play_on_select(auto_play_on_select);
     window.set_auto_play_on_select_text(auto_play_on_select_supporting_text(auto_play_on_select).into());

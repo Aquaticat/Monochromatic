@@ -89,6 +89,8 @@ mod ui_settings;
 
 mod ui_settings_model;
 
+mod ui_text_size;
+
 mod ui_templates;
 
 mod ui_search_model;
@@ -130,6 +132,11 @@ mod ui_keys_window_tests;
 /// Window tests of Auto-play on select (D129): the Settings switch row and what a click, Enter and a Search result do.
 #[cfg(test)]
 mod ui_auto_play_window_tests;
+
+/// Window tests of the Text size setting: the steppers, the reset row, the live window, the saves and the layout at the
+/// ends of the range.
+#[cfg(test)]
+mod ui_text_size_window_tests;
 
 /// Window tests of the Licenses row of Settings and the Licenses page: the row, the AboutSlint widget, the keys and the ring.
 #[cfg(test)]

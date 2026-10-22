@@ -5,6 +5,7 @@ import { StateLayer } from "state_layer.slint";
 import { Focus, PlayerStop, FocusRing, KeyBadge, Keys } from "focus.slint";
 import { Scrollbar, LastInput } from "scrollbar.slint";
 import { FullNameTip } from "name_tip.slint";
+import { TextSize } from "text_size.slint";
 
 // One entry of the flat list. A track row (kind 0) selects on tap (and starts at once with Auto-play on select on, D129), and toggles play and
 // pause when it is already selected (D124); a subfolder header (kind 1) only labels the tracks below it, with its name in `title` and its
@@ -367,16 +368,19 @@ export component TrackListPane inherits Rectangle {
                 if entry.kind == 0 : VerticalLayout {
                     padding-left: root.text-inset;
                     padding-right: root.text-inset;
-                    padding-top: 12px;
+                    // A row with a second line is 72 px and starts its title 12 px down, which holds a title line up to 42 px
+                    // (12 + 42 + 2 + 16 = 72). A row without one is the 48 px target, and the title is centered in it.
+                    padding-top: entry.supporting == "" ? max(0px, (root.row-min-height - TextSize.line-height(TextSize.track-title)) / 2) : 12px;
                     spacing: 2px;
 
                     // One line that ends in an ellipsis when the title is wider than the pane (OV1); the full title is the tooltip
                     // and the row's accessible label. The tooltip exists only while the title is cut.
                     title-text := Text {
                         text: entry.title;
-                        height: 24px;
-                        // 14 px (2 px under Android's 16 px).
-                        font-size: 14px;
+                        // 24 px at the default size, and a line that grows with a larger title size (Text size setting).
+                        height: TextSize.line-height(TextSize.track-title);
+                        // 14 px by default (2 px under Android's 16 px).
+                        font-size: TextSize.track-title;
                         font-weight: entry.current ? 700 : 400;
                         color: Theme.on-surface;
                         vertical-alignment: center;
@@ -388,7 +392,7 @@ export component TrackListPane inherits Rectangle {
                             }
                         }
                     }
-                    if entry.supporting != "" : Text {
+                    if entry.supporting != "" : supporting-text := Text {
                         text: entry.supporting;
                         height: 16px;
                         font-size: Theme.body-small;

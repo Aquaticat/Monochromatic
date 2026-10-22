@@ -303,8 +303,9 @@ The crate is a library plus a thin binary so the pure logic is unit-testable wit
   (the Source Root,
    the selected track path,
    the position,
-   the playback mode, the two template texts and the Auto-play on select flag, `auto_play_on_select`, which is off
-   when the field is missing;
+   the playback mode, the two template texts, the Auto-play on select flag, `auto_play_on_select`, which is off
+   when the field is missing, and the four text sizes, `text_size_pane_title_px`, `text_size_group_heading_px`,
+   `text_size_folder_name_px` and `text_size_track_title_px`, each at its default when its field is missing or wrong;
    it keeps no queue,
    so nothing is pruned or remapped: the launch rescan rebuilds the queue).
 - `src/error.rs`:
@@ -766,6 +767,56 @@ repository root.
 
 [material-icons]: https://github.com/google/material-design-icons
 
+## Text size
+
+Settings has a Text size group, between Playback and About, that sets the pixel size of four texts of the desktop
+window, one size for each:
+
+- the pane titles, the title of the left pane and of the right pane (default 20 px);
+- the group heading letter, which heads a group of folder names in the picker (default 20 px);
+- the folder names, in the picker (default 14 px);
+- the track titles, in the track list (default 14 px).
+
+The defaults are the sizes the player drew before the setting existed, so nothing changes until a stepper is pressed.
+Each text has one row with a minus button, the size with its unit, and a plus button.
+A press changes the size by 1 px, never below 10 px or above 32 px, shows at once in the live window, and saves the
+size to the session file.
+At an end of the range the button that would go past it is outlined instead of filled, draws its glyph 1 px thick
+instead of 2 px, and does nothing, so the end shows by fill, weight and color together.
+Each button is a 48 by 48 px target.
+In the keyboard model every stepper row is a stop of the Settings list: Left and Right on the row under the ring step
+its size, and Enter and Space on it do nothing.
+The Reset text sizes row puts all four sizes back to their defaults with one save; at the defaults it is faded, says so
+in its line, and does nothing.
+In a row narrower than 372 px, which is a window under about 404 px or the list pane of a window between 600 and
+about 1110 px, the stepper sits under the name.
+The list scrolls the row the keyboard reaches into view, with 8 px of margin, because the group makes the list longer
+than a 600 px window.
+
+The four sizes are four flat keys of the session file (`text_size_pane_title_px`, `text_size_group_heading_px`,
+`text_size_folder_name_px` and `text_size_track_title_px`).
+A missing key, which is what a session file written before the setting has, is the default of that text and logs
+nothing.
+A key that is not a whole number from 10 to 32 falls back to the default of that text alone, with a warning that names
+the key and the value, and never costs the other three sizes or the rest of the file.
+Saving a size reads the file, changes the four sizes and writes it whole, so the playback fields, the templates and the
+Auto-play on select flag stay as they were, and the shutdown save keeps the sizes.
+`src/text_size.rs` holds the limits, the defaults and the step rule.
+`ui/text_size.slint` holds the `TextSize` global that the five text sites read: `ui/bars.slint` for the two pane titles,
+`ui/folders.slint` for the heading letter, the folder names and their hidden width probe, and `ui/tracks.slint` for the
+track titles.
+`src/ui_text_size.rs` writes the global from the session and handles the presses.
+The folder name and its width probe read the same size, so selecting a name, which draws it heavier, never re-wraps the
+names.
+
+A larger size makes room instead of overlapping: a track title line grows from 24 px with the size (1.3 times the size
+from 19 px up), the row keeps its 72 px pitch with a second line and its 48 px pitch without one, and the group heading
+row grows from 38 px with the letter.
+A title wider than the pane still ends in an ellipsis.
+Android is not part of this setting: it follows the system font size.
+`ui_text_size_window_tests.rs` checks the steppers, the limits, the saves and the layout at 10 and at 32 px in both
+forms, and the `text-size` session of the `desktop-e2e` package presses the steppers with real keys across a restart.
+
 ## Search and scale
 
 A library of 1,000 artists and 1,000,000 tracks is normal operation, so Search, the scan and the window projection are
@@ -1116,6 +1167,7 @@ It deliberately does not save the queue or a current index:
  so only the root and the chosen track need persisting,
  and an older session file written by a previous version (carrying a queue and index) degrades gracefully,
  its unknown fields ignored and its missing ones defaulted.
+The file also carries the four text sizes of the Text size setting (see that section).
 Because `run` executes on the host,
  this is the real `~/.config/musicplayer`,
  persisting naturally across runs.

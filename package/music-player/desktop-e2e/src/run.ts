@@ -42,6 +42,7 @@ import { runNarrowSession, } from './narrow-session.ts';
 import { createNullSink, } from './pipewire.ts';
 import { runQuitSession, } from './quit-session.ts';
 import { runStatesSession, } from './states-session.ts';
+import { runTextSizeSession, } from './text-size-session.ts';
 import { createRecorder, } from './recorder.ts';
 import {
   type Outcome,
@@ -81,6 +82,7 @@ const SESSION_RUNNERS: Readonly<Record<SessionName, (context: RunContext,) => Pr
   narrow: runNarrowSession,
   dialog: runDialogSession,
   'auto-play': runAutoPlaySession,
+  'text-size': runTextSizeSession,
   quit: runQuitSession,
   states: runStatesSession,
   visual: runVisualSessions,
