@@ -547,8 +547,8 @@ more (+20 ms) after a poll that left it.
   Both timers hold weak handles of the window and its state, as the repeated poll does, so a closed window is not kept
   alive and a wake-up that fires after the close finds nothing to do.
 - The first build set the wake-up for the exact rest of the wait, and a run of it logged 207 sets in a row, from
-  864 microseconds left down to none, within one millisecond (`left_us` in the log of
-  `l2-5-B-ide-cadence-5nC7Ed`): the toolkit's timer clock counts milliseconds, so a wake-up for under one
+  864 microseconds left down to none, within one millisecond (`left_us` in the log
+  `~/temp/agent/lat2-spin-l2-5-B.run.log`): the toolkit's timer clock counts milliseconds, so a wake-up for under one
   millisecond fires at once, finds a little of the wait left and sets itself again, a spin on the window thread of
   about a millisecond.
   `wake_delay` rounds the delay up to a whole millisecond.
@@ -646,7 +646,8 @@ of B, both with many wheel gaps over 20 ms; none in the 32 of the tip pass); tho
   and 33 of 62 B runs).
   A stall count of zero at slot 50 is not shown by A on this host (1 of 62); B has 1 of 60 with the spinning build and
   0 of 45 with the two later builds.
-- The stall at slot 50 of the spinning build (`l2-5-B-ide-cadence-5nC7Ed`) has a readable timeline and fits a cost
+- The stall at slot 50 of the spinning build (pair 5 of the first pass, log `~/temp/agent/lat2-spin-l2-5-B.run.log`)
+  has a readable timeline and fits a cost
   of the wake-up: the wheel event at 316.7 ms (counted from the first one) was followed by the next one 22.6 ms
   later, 2.6 ms after the end of the wait; the wake-up applied the tile at 336.9 ms, and the frame the next wheel event
   drew followed at 341.6 ms.
@@ -683,4 +684,8 @@ build script, not a guard result); it was repeated after copying that file.
 - Not run: the drag scenario, display scales other than 1, a real compositor, an input slower than 50 Hz, and any
   step length other than 16 ms (the sweep of the earlier subsection).
 - The `probe status 1` runs are excluded from the stall counts and were not examined.
+- The text of this subsection has the same kind of `markdown/semantic-line-breaks` findings as the older text of the
+  file (about 200 in the new text, 480 in the older; the six named gates do not lint this file), and was not reflowed.
+- The stall passes keep only the spin log; the other kept run logs were deleted, and the rows in the `lat2-*.jsonl`
+  files are what remains.
 - The wait of 150 ms (the positive control of the previous subsection) and the unfixed code were not rebuilt.
