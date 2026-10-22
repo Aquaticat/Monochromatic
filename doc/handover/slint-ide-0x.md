@@ -1555,8 +1555,10 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     - Two findings the agent did not fix, recorded as open work: (a) the `runtime` mise task is not safe for two
       concurrent callers in one tree (a `build` and a `test` started together failed with ENOENT renaming
       `target/debug/runtime/grammars/awk.so.new`; fix by atomic staging or a freshness skip); (b) the gate
-      `test:native 'all()'` passes `--no-capture`, which makes nextest run one test at a time (sum of durations
-      198.5 s, wall 198.6 s), so no full run at the thread bound has ever happened on any snapshot. Only a
+      I ran, `test:native -- 'all()'`, is a filtered run, and `package/desktop-app/ide/mise.toml` (line 306) adds
+      `--no-capture` to every filtered run, which makes nextest run one test at a time (sum of durations 198.5 s,
+      wall 198.6 s). That is my invocation's fault, not a defect of the task: every full pass recorded with that
+      filter was serial, and only an unfiltered `test:native` runs at the thread bound. Before 2026-10-22 only a
       127-test subset at 21 threads and 32-process hunts were parallel.
     - The agent exceeded the brief's CPU guidance (one unit at `CPUQuota=2400%`, foreground runs at the 21-CPU
       bound, about 24 CPUs at the peak). The owner's statement above allows parallel real jobs, each capped; it is
@@ -1571,9 +1573,10 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     LANDED blocks above); open: the annotation stability tests (not reproduced in about 2,100 runs; instrumented, frames
     kept under `target/flake-frames/` for the next failure; a full host disk is a suspect for the one old failure),
     the caret test (fixed by inference only), (2a) the `runtime` mise task is unsafe for two concurrent callers in one
-    tree, and (2b) the `test:native 'all()'` gate runs one test at a time because of `--no-capture`, so a full run at
-    the thread bound on one snapshot has never been made (queued: an agent to fix 2a, find out why the gate is
-    serial, and measure a parallel full run against it). The video-memory question is closed by measurement (no cap).
+    tree, and (2b) my gate `test:native -- 'all()'` is a filtered run and so runs one test at a time (`--no-capture`),
+    which means no unfiltered full run at the thread bound has been recorded on any snapshot (running: one
+    unfiltered `test:native` on the snapshot `6620fda00a`; from now on gates use the unfiltered task; queued: an agent
+    to fix 2a). The video-memory question is closed by measurement (no cap).
     Full `test:native` passes are snapshots, not flake counts. (3) Scale 2, light scheme and seam checks: done, see the
     scale agent's LANDED block.
     The prevention proposal `doc/planning/agents-cannot-load-the-host.md` waits for the owner: a fresh Claude session and
