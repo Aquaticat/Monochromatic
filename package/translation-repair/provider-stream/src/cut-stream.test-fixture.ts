@@ -49,11 +49,16 @@ export function cutStreamError(
    Raw characters on the wire, none where nothing ever arrived.
    */
   const rawChars = (firstByte === 'never') ? 0 : FRAMING_CHARS;
+  /**
+   Whether any generated text arrived, which is what gives the stream a first-content time.
+   */
+  const generatedAny = (generatedChars !== undefined) && ((generatedChars.content + generatedChars.reasoning) > 0);
   return new StreamCutShortError({
     label: 'inception/mercury-2.5',
     partialText: 'x'.repeat(rawChars,),
     progress: {
       firstByteMs: (firstByte === 'never') ? -1 : FIRST_BYTE_MS,
+      firstContentMs: generatedAny ? FIRST_BYTE_MS : -1,
       maxGapMs: 627,
       chars: rawChars,
       elapsedMs: 125_589,

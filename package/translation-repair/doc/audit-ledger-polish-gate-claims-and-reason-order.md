@@ -481,7 +481,7 @@ the finding schema of the rendering audit and the archive member of the contest 
 `source-scan:source-scans` is green with no allow-list.
 
 Cache account:
-the key of each version below hashes the version,
+the key of each version this account moves hashes the version,
 the shape of the run and the texts,
 not the sheet,
 so a record written under the old reply instruction would be served under the new

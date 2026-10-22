@@ -187,13 +187,13 @@ function scriptedClient(
        */
       const needle = (request.modelId === JUDGES[2]) ? otherWord : ownWord.value;
       const ballot: unknown = {
+        assessment: 'fixture',
         best: rejects
           ? 0
           : candidateCarrying({
             content,
             needle,
           },),
-        reason: 'fixture',
       };
       if (!request.validate(ballot,))
         throw new Error('the fixture ballot failed the wire guard',);
