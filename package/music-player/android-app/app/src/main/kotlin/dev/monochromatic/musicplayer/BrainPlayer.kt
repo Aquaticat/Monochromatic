@@ -335,8 +335,11 @@ class BrainPlayer(
 
     /** Pulls the state again when the engine has moved away from the position the session extrapolates. */
     private val positionCheck: Runnable = Runnable {
+        /** The engine's position now, in milliseconds. */
         val actualMs: Long = (controller.positionSec() * MILLIS_PER_SEC).toLong()
-        when (val result: SessionPositionAnchor.Check = anchor.check(actualMs)) {
+        /** Whether the engine still agrees with the anchor, and when to look again. */
+        val result: SessionPositionAnchor.Check = anchor.check(actualMs)
+        when (result) {
             SessionPositionAnchor.Check.Resync -> {
                 Log.d(LOG_TAG, "position anchor ${anchor.expectedMs()} ms differs from engine $actualMs ms; resync")
                 invalidateState()

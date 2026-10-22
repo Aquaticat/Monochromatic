@@ -81,6 +81,7 @@ class SessionPositionAnchor(
         }
     }
 
+    /** Timings and limits of the checks. */
     companion object {
         /** Delay before the first check after a pull, long enough for the worker thread to apply a seek. */
         const val FIRST_CHECK_DELAY_MS: Long = 250L
