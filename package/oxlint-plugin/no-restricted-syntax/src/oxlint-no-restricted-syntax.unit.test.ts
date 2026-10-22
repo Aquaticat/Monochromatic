@@ -500,6 +500,20 @@ await describe({
           },
         },),
         it({
+          name: 'converts glued async-arrow with parenthesized parameters without renaming the declaration',
+          fn: async () => {
+            const source = [
+              'const load = async(path) => read(path);',
+              '',
+            ].join('\n',);
+            const fixed = await fixGeneratedSource({ source, },);
+            expect(fixed,).toBe([
+              'async function load(path) { return read(path) }',
+              '',
+            ].join('\n',),);
+          },
+        },),
+        it({
           name: 'keeps parenthesized parameters verbatim, including trailing comma',
           fn: async () => {
             const source = [
