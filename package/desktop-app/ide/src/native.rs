@@ -325,6 +325,10 @@ mod tile_pass;
 /// a frame is rendered and the tile's texture is read back.
 #[cfg(test)]
 mod tile_reads;
+/// A finished tile is swapped in by the next scroll step's frame,
+/// and by the poll only when no step is due.
+#[cfg(test)]
+mod tile_step_tests;
 /// Windowed rows must not redirect an in-progress click after scrolling.
 #[cfg(test)]
 mod tree_pointer_tests;
@@ -538,6 +542,20 @@ struct State {
     /// scrolledAt?: number;
     /// ```
     scrolled_at: Option<Instant>,
+    /// What:
+    ///  When the view last moved by a scroll step,
+    ///  on the system clock.
+    /// Why:
+    ///  The poll of the tile worker leaves a finished tile for the next step
+    ///  while a step is due,
+    ///  so the tile is swapped in by the frame of that step.
+    ///  `scrolled_at` runs on a clock the tests hold still.
+    ///
+    /// In TS you'd write (pseudocode):
+    /// ```ts
+    /// steppedAt?: number;
+    /// ```
+    stepped_at: Option<Instant>,
     /// What:
     ///  `Rc<VecModel<f32>>` is a shared,
     ///  growable toolkit list of floats.
