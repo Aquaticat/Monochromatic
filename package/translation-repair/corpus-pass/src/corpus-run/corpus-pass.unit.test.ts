@@ -183,7 +183,7 @@ await describe({
               'CAP OVERRIDDEN by TRANSLATION_REPAIR_HARD_CAP_MINUTES: entries run under 1.5 minutes rather '
                 + 'than the built-in 420',
               'SPEND CEILING OVERRIDDEN by TRANSLATION_REPAIR_RUN_SPEND_CEILING_USD: new entries stop once '
-                + 'this run has spent 5 USD on openrouter rather than the built-in 20',
+                + 'this run has spent 5 USD on any one of openrouter, deepseek, xiaomi rather than the built-in 20',
               'STRAGGLER GRACE OVERRIDDEN by TRANSLATION_REPAIR_STRAGGLER_GRACE_MS: rounds abandon stragglers '
                 + '90000ms after quorum rather than the built-in 120000ms',
               'WRITER GRACE OVERRIDDEN by TRANSLATION_REPAIR_WRITER_GRACE_MS: writer rounds (editor, refiner, '

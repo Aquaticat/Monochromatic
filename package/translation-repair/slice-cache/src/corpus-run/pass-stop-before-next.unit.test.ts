@@ -11,7 +11,6 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import { SPEND_CEILING_PROVIDER, } from '@monochromatic-dev/translation-repair-run';
 import {
   noteRunSpend,
   resetRunSpend,
@@ -31,7 +30,7 @@ await describe({
       fn: async () => {
         resetRunSpend();
         noteRunSpend({
-          provider: SPEND_CEILING_PROVIDER,
+          provider: 'openrouter',
           costUsd: 4.5,
         },);
         expect(stopBeforeNextEntry({
@@ -68,7 +67,7 @@ await describe({
           ceilingUsd: 20,
         },),).toBe(false,);
         noteRunSpend({
-          provider: SPEND_CEILING_PROVIDER,
+          provider: 'openrouter',
           costUsd: 20,
         },);
         expect(stopBeforeNextEntry({

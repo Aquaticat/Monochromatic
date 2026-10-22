@@ -3,7 +3,7 @@ import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-gloss
 import { isDecimalText, } from '@monochromatic-dev/translation-repair-markup/ts';
 
 //region Spend ceiling
-// HOW MUCH ONE RUN MAY SPEND ON THE PROVIDER THAT BILLS IN USD before it stops
+// HOW MUCH ONE RUN MAY SPEND ON EACH PROVIDER THAT BILLS IN USD before it stops
 // starting entries.
 //
 // THE OWNER'S DECISION OF 2026-09-04, asked with two options after the
@@ -19,6 +19,14 @@ import { isDecimalText, } from '@monochromatic-dev/translation-repair-markup/ts'
 // a run that reaches this has bought a day's work; anything past it is worth an
 // operator's glance. Raise it per launch for a deliberately larger run.
 //
+// PER PROVIDER, SINCE 2026-10-22: the same allowance applies to each of the
+// providers in `SPEND_CEILING_PROVIDERS` on its own, and the run stops when any
+// one reaches it. Xiaomi and DeepSeek joined OpenRouter when the direct routes
+// landed ahead of it in the spending order: Xiaomi documents no balance, so
+// nothing else bounds its spend, and DeepSeek's prepaid balance may be topped
+// up. Each provider's total is its own, never a sum, so the number the owner
+// chose for one provider stays the number for each and no new one is invented.
+//
 // UNSET AND EMPTY ARE THE BUILT-IN; ANYTHING ELSE UNREADABLE THROWS, exactly as
 // `cap-override.ts` argues for the entry ceiling: an operator who set a bound
 // believes the run is bounded the way they asked for. ZERO IS ALLOWED, and it
@@ -31,14 +39,19 @@ import { isDecimalText, } from '@monochromatic-dev/translation-repair-markup/ts'
 export const SPEND_CEILING_VAR = 'TRANSLATION_REPAIR_RUN_SPEND_CEILING_USD';
 
 /**
- Built-in per-run ceiling, in USD, on the provider that bills in USD.
+ Built-in per-run ceiling, in USD, on each provider in {@link SPEND_CEILING_PROVIDERS}.
  */
 export const SPEND_CEILING_USD = 20;
 
 /**
- Provider the ceiling meters: the one that bills in USD per token.
+ Providers the ceiling meters, each against the ceiling alone: the ones that bill in USD per token and whose spend
+ no other bound stops (Xiaomi has no balance, and OpenRouter and DeepSeek balances may be topped up).
  */
-export const SPEND_CEILING_PROVIDER: ProviderName = 'openrouter';
+export const SPEND_CEILING_PROVIDERS: readonly ProviderName[] = [
+  'openrouter',
+  'deepseek',
+  'xiaomi',
+];
 
 /**
  Raised when the override is present but is not a usable amount.
@@ -140,8 +153,7 @@ export function resolveSpendCeilingUsd(
 export function spendCeilingOverrideNote({ ceilingUsd, }: { readonly ceilingUsd: number; },): string {
   if (ceilingUsd === SPEND_CEILING_USD)
     return '';
-  return `SPEND CEILING OVERRIDDEN by ${SPEND_CEILING_VAR}: new entries stop once this run has spent `
-    + `${String(ceilingUsd,)} USD on ${SPEND_CEILING_PROVIDER} rather than the built-in ${String(SPEND_CEILING_USD,)}`;
+  return `SPEND CEILING OVERRIDDEN by ${SPEND_CEILING_VAR}: new entries stop once this run has spent ${String(ceilingUsd,)} USD on any one of ${SPEND_CEILING_PROVIDERS.join(', ',)} rather than the built-in ${String(SPEND_CEILING_USD,)}`;
 }
 
 /**
@@ -175,7 +187,9 @@ export function spendCeilingReached(
 /**
  Explains why the run is starting no more entries.
 
- @param spentUsd - what the run has spent on the metered provider
+ @param provider - the metered provider whose spend reached the ceiling
+
+ @param spentUsd - what the run has spent on that provider
 
  @param ceilingUsd - the run's allowance
 
@@ -184,20 +198,22 @@ export function spendCeilingReached(
 
  @example
  ```ts
- console.log(spendCeilingNote({ spentUsd: 20.4, ceilingUsd: 20, },),);
+ console.log(spendCeilingNote({ provider: 'xiaomi', spentUsd: 20.4, ceilingUsd: 20, },),);
  ```
  */
 export function spendCeilingNote(
   {
+    provider,
     spentUsd,
     ceilingUsd,
   }: {
+    readonly provider: ProviderName;
     readonly spentUsd: number;
     readonly ceilingUsd: number;
   },
 ): string {
   return `SPEND CEILING reached: ${String(spentUsd,)} of ${String(ceilingUsd,)} USD spent on `
-    + `${SPEND_CEILING_PROVIDER} this run; not starting new entries. Entries already running finish. `
+    + `${provider} this run; not starting new entries. Entries already running finish. `
     + `Raise ${SPEND_CEILING_VAR} for a larger run.`;
 }
 

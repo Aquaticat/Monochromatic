@@ -424,9 +424,10 @@ naming the checkers that are padding the bench with no wet provider behind them.
     a non-negative number of USD,
     built in at 20 (`doc/decision/translation-repair-run-spend-ceiling.md`,
     the owner's decision of 2026-09-04).
-    Every OpenRouter call's reported `cost=` feeds a process-wide meter as its `SPEND` line is written,
-    and before each entry the scheduler stops starting new ones once the run's OpenRouter spend is at or
-    past the ceiling,
+    Every call's reported or priced cost on those providers feeds a process-wide meter as its `SPEND` line is written,
+    and before each entry the scheduler stops starting new ones once the run's spend on any one of OpenRouter,
+    DeepSeek and Xiaomi is at or past the ceiling (each against the ceiling alone,
+    never summed),
     printing `SPEND CEILING reached`;
     entries already running finish.
     Unset and blank are the built-in;

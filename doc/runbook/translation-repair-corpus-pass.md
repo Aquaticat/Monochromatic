@@ -563,11 +563,12 @@ Each is the exact string the log carries.
 
 -   `SPEND CEILING OVERRIDDEN`,
     only when `TRANSLATION_REPAIR_RUN_SPEND_CEILING_USD` was set.
-    It names the USD this run may spend on OpenRouter before it stops starting entries;
+    It names the USD this run may spend on any one of OpenRouter,
+    DeepSeek and Xiaomi before it stops starting entries;
     the built-in is 20.
 
 -   `SPEND CEILING reached`,
-    when the run has spent that allowance.
+    when the run has spent that allowance on one of those providers (the line names which).
     The pass starts no further entry and the entries already running finish;
     `DONE processed=` then reads short of `pending=` for money rather than for time.
     Raise the ceiling for a deliberately larger run.

@@ -228,7 +228,7 @@ await describe({
               spendCeilingUsd: 5,
             },),).toEqual([
               'SPEND CEILING OVERRIDDEN by TRANSLATION_REPAIR_RUN_SPEND_CEILING_USD: new entries stop once this '
-                + 'run has spent 5 USD on openrouter rather than the built-in 20',
+                + 'run has spent 5 USD on any one of openrouter, deepseek, xiaomi rather than the built-in 20',
             ],);
           },
         },),

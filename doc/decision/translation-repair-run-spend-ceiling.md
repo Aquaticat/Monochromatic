@@ -61,6 +61,28 @@ OpenRouter fallback landed and the only spend guard was the credits meter.
     someone notices,
   and the meter only stops a pass at zero.
 
+## Amendment of 2026-10-22: each USD-billed provider, on its own
+
+The direct DeepSeek and Xiaomi routes sit ahead of OpenRouter in the spending order,
+so a ceiling that read only OpenRouter left the MiMo seat that it used to bound unbounded:
+Xiaomi documents no balance (`doc/decision/translation-repair-direct-providers.md`),
+and DeepSeek's prepaid balance can be topped up.
+
+- The same 20 USD applies to each of OpenRouter,
+  DeepSeek and Xiaomi (`SPEND_CEILING_PROVIDERS`),
+  each against its own total and never a sum.
+  The run stops starting entries when any one reaches it,
+  and the `SPEND CEILING reached` line names that provider.
+  No new number was chosen.
+- The mechanism is unchanged:
+  the same process-wide meter,
+  the same scheduler stop before each entry,
+  the same override variable.
+  This is a stop on starting entries and not a change to what the router reads:
+  Xiaomi's meter still answers wet,
+  and at the ceiling the run ends rather than diverting its seat to OpenRouter.
+- The override note now reads `on any one of openrouter, deepseek, xiaomi`.
+
 ## What this is not
 
 - Not a per-entry bound:
@@ -69,5 +91,7 @@ OpenRouter fallback landed and the only spend guard was the credits meter.
     that had already started.
   The entry ceiling in minutes (`TRANSLATION_REPAIR_HARD_CAP_MINUTES`) bounds
     those.
-- Not a bound on Synthetic or Hyper:
+- Not a bound on NeuralWatt,
+  Synthetic,
+  Bedrock or Hyper:
   neither bills in USD per call.
