@@ -86,6 +86,16 @@ pub mod queue;
 /// ```
 pub mod session;
 
+/// What: `pub mod text_size;` the Text size setting module (`src/text_size.rs`).
+/// Why: the four text elements, their limits and defaults, and the stepping rule are pure logic shared by the session
+/// file and the Settings page, so they live in the library where they are tested without a window.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export * as textSize from "./text_size";
+/// ```
+pub mod text_size;
+
 /// What:
 ///      `pub mod error;` the shared error type module.
 /// Why:
