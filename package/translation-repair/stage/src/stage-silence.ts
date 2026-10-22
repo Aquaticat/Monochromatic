@@ -130,30 +130,57 @@ export function silentStagesOfRecord(
 }
 
 /**
- Whether a settlement was reached with every stage at or above quorum, which
- is what a cache may keep and a resumed run may trust.
+ Silent stages a refinement settlement names: the ones its embedded outcome carries (as data or as a finding), then the
+ ones its own findings carry.
 
- A stage that lost some voices but kept quorum still counts as heard; the
- `stage-voice-lost` findings it leaves are a different number and are not
- read here.
+ THE ONE QUESTION BOTH SIDES OF THE REFINE CACHE ASK. The writer asks it before it persists and the reader asks it
+ before it resumes, so a record the reader would discard is never written, and a write that the reader would discard
+ never counts as the entry gaining a record.
 
- @param findings - findings a settlement carries
+ @param settlement - the refinement's outcome and the findings it contributed
 
- @returns Whether no stage fell short of quorum
+ @returns The silent stages in order, empty when every stage was heard
 
  @example
  ```ts
- if (everyStageHeard({ findings: outcome.findings, },)) await cache.persist(...);
+ const silent = silentStagesOfSettlement({ settlement: { outcome, findings, }, },);
  ```
  */
-export function everyStageHeard(
-  { findings, }: { readonly findings: readonly string[]; },
+export function silentStagesOfSettlement(
+  { settlement, }: {
+    readonly settlement: {
+      readonly outcome: {
+        readonly findings: readonly string[];
+        readonly silentStages: readonly string[];
+      };
+      readonly findings: readonly string[];
+    };
+  },
+): readonly string[] {
+  return [
+    ...silentStagesOfRecord({ record: settlement.outcome, },),
+    ...silentStagesOf({ findings: settlement.findings, },),
+  ];
+}
+
+/**
+ Whether a refinement settlement may be kept and resumed: no stage it names fell short of quorum.
+
+ @param settlement - the refinement's outcome and the findings it contributed
+
+ @returns Whether the refine cache may write it and a resumed run may trust it
+
+ @example
+ ```ts
+ if (refinementIsResumable({ settlement, },)) await cache.persist(...);
+ ```
+ */
+export function refinementIsResumable(
+  { settlement, }: Parameters<typeof silentStagesOfSettlement>[0],
 ): boolean {
-  /**
-   Findings that say a stage fell short.
-   */
-  const silent = silentStagesOf({ findings, },);
-  return silent.length === 0;
+  return silentStagesOfSettlement({ settlement, },)
+    .length
+    === 0;
 }
 
 //endregion Stage silence

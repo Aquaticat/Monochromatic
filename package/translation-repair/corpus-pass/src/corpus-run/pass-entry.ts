@@ -108,6 +108,9 @@ import {
  @param stageSettings - straggler windows and contest ledger the entry file
  read for this launch
 
+ @param endRun - told of the failure that ended the entry when it ends the run (`tallyCaughtEntry` says when), so the
+ pass stops however the failure reached the entry
+
  @returns Whether an artifact was written
 
  @example
@@ -133,6 +136,7 @@ async function runEntryPipeline(
     pictureSources,
     visualEvidenceReader,
     stageSettings,
+    endRun,
   }: {
     readonly client: RunClient;
     readonly entry: CorpusPair;
@@ -150,6 +154,7 @@ async function runEntryPipeline(
     readonly pictureSources: PassPictureSources;
     readonly visualEvidenceReader?: PassVisualEvidenceReader;
     readonly stageSettings: StageSettings;
+    readonly endRun?: (args: { readonly error: unknown; },) => void;
   },
 ): Promise<EntryOutcome> {
   /**
@@ -523,6 +528,7 @@ async function runEntryPipeline(
       durationMs: monotonicMs() - t0,
       aborted: deadline.callSignal
         .aborted,
+      ...((endRun === undefined) ? {} : { endRun, }),
     },);
   }
 }
@@ -560,8 +566,8 @@ async function runEntryPipeline(
 
  @param hardCapMs - time this entry may run before its exchanges abort
 
- @param baseSignal - abort every entry deadline forwards from; the pass never
- aborts it, so only a per-entry timeout ever fires
+ @param baseSignal - abort every entry deadline forwards from; the pass aborts it only when the dry router
+ stops the run (`pass-dry-stop.ts`), so apart from a per-entry timeout that is the one abort that ever fires
 
  @param pin - corpus clone and commit the pass read the entry at: the one the
  entry read inside its refusal boundary in a run, an invented one in a test.
@@ -589,6 +595,8 @@ async function runEntryPipeline(
  @param stageSettings - straggler windows and contest ledger the entry file
  read for this launch (`readStageSettings`)
 
+ @param endRun - told of the failure that ended this entry when it ends the run, so the pass stops starting entries
+
  @returns Settlement, resumable operational failure, or stopped incomplete work
 
  @example
@@ -614,6 +622,7 @@ export async function settleEntry(
     visualEvidenceReader,
     overlap,
     stageSettings,
+    endRun,
   }: {
     readonly client: RunClient;
     readonly entry: CorpusPair;
@@ -631,6 +640,7 @@ export async function settleEntry(
     readonly visualEvidenceReader?: PassVisualEvidenceReader;
     readonly overlap: OverlapSetting;
     readonly stageSettings: StageSettings;
+    readonly endRun?: (args: { readonly error: unknown; },) => void;
   },
 ): Promise<EntryOutcome> {
   /**
@@ -671,6 +681,7 @@ export async function settleEntry(
     pictureSources,
     stageSettings,
     ...((visualEvidenceReader === undefined) ? {} : { visualEvidenceReader, }),
+    ...((endRun === undefined) ? {} : { endRun, }),
   },);
   if (outcome.kind !== 'settled') {
     // The cache is what makes operational resume cheaper. Stopped quality work

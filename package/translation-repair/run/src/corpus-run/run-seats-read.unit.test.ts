@@ -11,6 +11,7 @@
  @module
  */
 
+import { caughtValueText, } from '@monochromatic-dev/module-caught-value/ts';
 import { tagged, } from '@monochromatic-dev/module-logger/ts';
 import {
   DEFAULT_CONCURRENCY,
@@ -19,9 +20,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type {
-  BudgetView,
-  MeterState,
+import {
+  type BudgetView,
+  EveryProviderDryError,
+  type MeterState,
+  type NeuralWattReturn,
 } from '@monochromatic-dev/translation-repair-provider';
 import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
@@ -37,6 +40,7 @@ import {
   RUN_WIDE_SEATS,
   WritingBenchUnreachableError,
 } from '../../dist/final/node/index.mjs';
+import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/corpus-run/rejection-of.test-fixture.ts';
 import {
   capturingLoggerPair,
   levelCapturingLogger,
@@ -182,16 +186,20 @@ function viewClient(
     providerDryness,
     providerMeterStates = async () => ALL_METERS_WET,
     providerHolds = () => NO_HOLDS,
+    neuralwattReturn,
   }: {
     readonly providerDryness: () => Promise<BudgetView>;
     readonly providerMeterStates?: () => Promise<Readonly<Record<keyof BudgetView, MeterState>>>;
     readonly providerHolds?: () => typeof NO_HOLDS;
+    readonly neuralwattReturn?: () => NeuralWattReturn;
   },
 ) {
   return {
     providerDryness,
     providerMeterStates,
     providerHolds,
+    // Conditional spread keeps the accessor absent on a client that carries none.
+    ...((neuralwattReturn === undefined) ? {} : { neuralwattReturn, }),
   };
 }
 
@@ -854,12 +862,12 @@ await describe({
           },
         },),
         it({
-          name: 'STOPS A PHASE THAT DOES NOT GO ON WITHOUT ITS WRITERS exactly as before, so the lanes on the same view '
-            + 'still refuse and still say the entry stops',
+          name: 'STOPS A PHASE THAT DOES NOT GO ON WITHOUT ITS WRITERS exactly as before when the cause is not every '
+            + 'provider dry, so the lanes on Bedrock alone still refuse with the bench error and still say the entry stops',
           fn: async () => {
             const lines: string[] = [];
             await expect(readPhaseSeats({
-              client: viewClient({ providerDryness: scriptedViews({ views: [ALL_DRY,], },).read, },),
+              client: viewClient({ providerDryness: scriptedViews({ views: [BEDROCK_ALONE,], },).read, },),
               phase: 'lanes',
               signal: new AbortController().signal,
               l: levelCapturingLogger({ lines, },),
@@ -867,10 +875,60 @@ await describe({
             },),).rejects.toThrow(WritingBenchUnreachableError,);
             expect(lines.filter(function isError(line,): boolean {
               return line.startsWith('error ',);
+            },).length,).toBe(1,);
+          },
+        },),
+        it({
+          name: 'ENDS THE RUN WITH THE EVERY-PROVIDER-DRY REFUSAL, still saying the entry stops, when every provider reads '
+            + 'dry with no hold to wait out before any chat call has been made, so the pass can stop instead of '
+            + 'filing each pending entry as an error',
+          fn: async () => {
+            const lines: string[] = [];
+            /**
+             What the seat reading stopped with.
+             */
+            const refusal = await rejectionOf({
+              promise: readPhaseSeats({
+                client: viewClient({
+                  providerDryness: scriptedViews({ views: [ALL_DRY,], },).read,
+                  neuralwattReturn: () => ({ kind: 'at', msOfDay: 69_308_000, }),
+                },),
+                phase: 'lanes',
+                signal: new AbortController().signal,
+                l: levelCapturingLogger({ lines, },),
+                pollMs: 5,
+              },),
+            },);
+            expect(refusal,).toBeInstanceOf(EveryProviderDryError,);
+            expect(caughtValueText(refusal,),).toContain('19:15:08 UTC',);
+            expect(lines.filter(function isError(line,): boolean {
+              return line.startsWith('error ',);
             },),).toEqual([
               'error JUDGE SEATS phase=lanes writing bench unreachable: editors 0 of 3 reachable, floor 2; '
                 + 'refiners 0 of 3 reachable, floor 2; translators 0 of 8 reachable, floor 2; stopping the entry',
             ],);
+          },
+        },),
+        it({
+          name: 'ENDS THE RUN WITH THE EVERY-PROVIDER-DRY REFUSAL when every provider still reads dry after the one wait '
+            + 'for the shortest hold, as it does when none was held',
+          fn: async () => {
+            /**
+             What the seat reading stopped with.
+             */
+            const refusal = await rejectionOf({
+              promise: readPhaseSeats({
+                client: viewClient({
+                  providerDryness: scriptedViews({ views: [ALL_DRY, ALL_DRY,], },).read,
+                  providerHolds: () => ({ ...NO_HOLDS, hyper: 40, }),
+                },),
+                phase: 'lanes',
+                signal: new AbortController().signal,
+                l: levelCapturingLogger({ lines: [], },),
+                pollMs: 5,
+              },),
+            },);
+            expect(refusal,).toBeInstanceOf(EveryProviderDryError,);
           },
         },),
       ],

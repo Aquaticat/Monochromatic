@@ -702,8 +702,8 @@ await describe({
               },
             },);
             expect(message,).toContain(
-              'NeuralWatt\'s free energy returns when its day starts again, at 19:15:08 UTC, the day start decided at '
-                + 'the start of this run;',
+              'NeuralWatt\'s free energy returns when its day starts again, at 19:15:08 UTC, the day start this run '
+                + 'decided or learned;',
             );
             expect(message,).not.toContain('00:00 UTC',);
           },
@@ -735,6 +735,9 @@ await describe({
             const { message, } = new EveryProviderDryError({ neuralwatt: { kind: 'off', }, },);
             expect(message,).toContain('NeuralWatt is off for this run, so it returns no energy;',);
             expect(message,).not.toContain('UTC',);
+            // THE OPENING NAMES NO NEURALWATT ENERGY EITHER: an off provider has none to be out of.
+            expect(message,).not.toContain('has no free daily energy',);
+            expect(message.startsWith('Every provider is out of budget at once: Synthetic has no weekly credit left',),).toBe(true,);
           },
         },),
 
@@ -750,6 +753,12 @@ await describe({
               'NeuralWatt\'s day start was not decided for this run, so no time of day can be stated for its return;',
             );
             expect(message,).not.toContain('UTC',);
+            // THE OPENING DOES NOT CLAIM THE ENERGY IS SPENT: the keeper refuses NeuralWatt until a day start is
+            // learned, and the energy may well be there.
+            expect(message,).not.toContain('has no free daily energy',);
+            expect(message,).toContain(
+              'Every provider is out of budget at once: NeuralWatt is refused until its day start is learned, Synthetic',
+            );
           },
         },),
 

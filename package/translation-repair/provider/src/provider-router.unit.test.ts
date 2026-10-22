@@ -781,7 +781,7 @@ await describe({
             + 'short of the owner\'s card, DeepSeek has no balance left (or says its account is unavailable), Xiaomi '
             + 'has refused a call for payment, and OpenRouter has no credit left. Nothing further can be bought, so '
             + 'this run ends. NeuralWatt\'s free energy returns when its day starts again, at 19:15:08 UTC, the day '
-            + 'start decided at the start of this run; Synthetic regenerates on its own '
+            + 'start this run decided or learned; Synthetic regenerates on its own '
             + 'schedule; Hyper, DeepSeek and OpenRouter refill on purchase; Xiaomi, once refused for payment, is '
             + 'read again only after one of its calls settles, so a top-up is seen on the next launch; '
             + 'Bedrock\'s credit is never topped up. '

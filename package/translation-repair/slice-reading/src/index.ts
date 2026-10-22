@@ -84,6 +84,10 @@ export {
   readImageWithOcr,
   runInstalledProgram,
 } from './image-ocr.ts';
+export {
+  containFailedReaders,
+  type LabelledReading,
+} from './image-reading-contain.ts';
 export { imageReadingKey, } from './image-reading-key.ts';
 export {
   isResumableReading,

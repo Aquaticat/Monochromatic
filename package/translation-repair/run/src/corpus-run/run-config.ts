@@ -1312,6 +1312,7 @@ export function runClientFrom(
     },
     providerMeterStates: budgets.readStates,
     providerHolds: budgets.holds,
+    neuralwattReturn: budgets.neuralwattReturn,
   };
 }
 

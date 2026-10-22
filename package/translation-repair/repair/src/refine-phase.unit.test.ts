@@ -1587,6 +1587,41 @@ await describe({
         },),
 
         it({
+          name: 'DOES NOT CACHE a refinement whose settled outcome names a silent panel as data, because the reader '
+            + 'refuses that record and a write it would discard must not count as progress',
+          fn: async () => {
+            /**
+             Cache writes made by this run.
+             */
+            const stored = new Map<string, RefinedSliceSettlement>();
+
+            /**
+             Lines the phase logged.
+             */
+            const messages: string[] = [];
+            await persistRefinePhaseSlice({
+              key: 'refine-persistence-silent-panel-fixture',
+              settled: {
+                outcome: {
+                  ...settledOutcome({
+                    resolvedIssueIds: [],
+                    authorship: NO_MODEL_WROTE_THE_FIXTURE,
+                  },),
+                  silentStages: ['panel 0/6 (cluster/abc)',],
+                },
+                findings: [],
+              },
+              sliceIndex: 85,
+              refineCache: memoryRefineCache({ stored, },),
+              signal: new AbortController().signal,
+              l: capturingLogger({ messages, },),
+            },);
+            expect(stored.size,).toBe(0,);
+            expect(messages.join('\n',),).toContain('panel 0/6 (cluster/abc)',);
+          },
+        },),
+
+        it({
           name: 'DOES NOT CACHE a refinement whose rewriter stage heard nobody, so a '
             + 'provider outage is reconsidered rather than resumed as a decision',
           fn: async () => {

@@ -2,6 +2,7 @@ import type { Logger, } from '@monochromatic-dev/module-logger/ts';
 
 import {
   type BudgetView,
+  EveryProviderDryError,
   HOLD_POLL_MS,
   type MeterState,
   shortestHold,
@@ -10,7 +11,6 @@ import {
 import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import {
-  markFailureWritten,
   RUN_SEATS,
   SEAT_WITHHOLD_ASKS,
 } from '@monochromatic-dev/translation-repair-stage/ts';
@@ -30,8 +30,8 @@ import {
   benchesOf,
   PHASES_WITHOUT_WRITER_STOP,
   unreachableWritingBenches,
-  WritingBenchUnreachableError,
 } from './run-seats-floor.ts';
+import { writtenRefusal, } from './run-seats-refusal.ts';
 import {
   type BenchName,
   type JudgeSeatPhase,
@@ -64,7 +64,10 @@ import {
  const client: SeatReadingClient = createRunClient();
  ```
  */
-export type SeatReadingClient = Pick<RunClient, 'providerDryness' | 'providerHolds' | 'providerMeterStates'>;
+export type SeatReadingClient = Pick<
+  RunClient,
+  'neuralwattReturn' | 'providerDryness' | 'providerHolds' | 'providerMeterStates'
+  >;
 
 /**
  The state of a meter whose states could not be read: nothing was learned.
@@ -167,47 +170,6 @@ async function readMeterStates(
 }
 
 /**
- Refusal for a writing bench that stops the entry, marked as already written,
- since the reading writes its own `JUDGE SEATS` line before throwing it.
-
- MARKED SO NO OUTER LAYER WRITES IT AGAIN (ledger B413). The reading runs in
- the per-slice hook of every slice-by-slice phase, so two slices side by side
- can each stop the entry; the overlapped map throws the lower one and wrote
- the higher one a second line under the caller's stop, and would write one
- without a stop too.
-
- @param phase - phase the reading was taken for
-
- @param clauses - one clause per writing bench below its floor
-
- @returns The refusal to throw
-
- @example
- ```ts
- throw writtenRefusal({ phase: 'lanes', clauses: ['editors 0 of 3 reachable, floor 2',], },);
- ```
- */
-function writtenRefusal(
-  {
-    phase,
-    clauses,
-  }: {
-    readonly phase: JudgeSeatPhase;
-    readonly clauses: readonly string[];
-  },
-): WritingBenchUnreachableError {
-  /**
-   The refusal the entry stops with.
-   */
-  const refusal = new WritingBenchUnreachableError({
-    phase,
-    clauses,
-  },);
-  markFailureWritten({ error: refusal, },);
-  return refusal;
-}
-
-/**
  Reads the dryness view, waiting out the shortest running hold once when a
  bench the phase leans on cannot reach quorum among the seats a wet provider
  serves, and reading again after the wait; when a judge bench is short and
@@ -220,6 +182,9 @@ function writtenRefusal(
  @throws {@link WritingBenchUnreachableError} when a writing bench the phase
  leans on cannot write a slate and no hold promises it back, in a phase that
  stops for it
+
+ @throws {@link EveryProviderDryError} instead when every provider reads dry, which ends the run
+ (`endsTheRun`)
 
  @param client - run client whose dryness view and holds are the router's own
 
@@ -327,6 +292,8 @@ async function readDrynessPastShortBench(
       throw writtenRefusal({
         phase,
         clauses: unreachable,
+        dry: first,
+        client,
       },);
     }
     if (unreachable.length > 0) {
@@ -416,6 +383,8 @@ async function readDrynessPastShortBench(
     throw writtenRefusal({
       phase,
       clauses: stillUnreachable,
+      dry: again,
+      client,
     },);
   }
   if (stillUnreachable.length > 0) {
@@ -452,6 +421,9 @@ async function readDrynessPastShortBench(
 
  @throws {@link WritingBenchUnreachableError} when a writing bench the phase
  leans on cannot write a slate, no hold promises it back, and the phase stops for it
+
+ @throws {@link EveryProviderDryError} instead when every provider reads dry, which ends the run
+ (`endsTheRun`)
 
  @example
  ```ts
@@ -585,6 +557,9 @@ export async function readPhaseSeats(
  @throws {@link WritingBenchUnreachableError} when a writing bench the phase
  leans on cannot write a slate and no hold promises it back, in a phase that
  stops for it
+
+ @throws {@link EveryProviderDryError} instead when every provider reads dry, which ends the run
+ (`endsTheRun`)
 
  @example
  ```ts

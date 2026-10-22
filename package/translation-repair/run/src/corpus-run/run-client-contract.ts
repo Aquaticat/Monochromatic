@@ -2,6 +2,7 @@ import type {
   BudgetView,
   MeterState,
   ModelClient,
+  NeuralWattReturn,
 } from '@monochromatic-dev/translation-repair-provider/ts';
 import type { ProviderRecord, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
@@ -60,6 +61,13 @@ export type RunClient = ModelClient & {
    `pass-reseat-hook.ts` reads it too, to re-seat only while a hold runs.
    */
   readonly providerHolds: () => ProviderRecord<number>;
+
+  /**
+   What the run knows of when NeuralWatt's free energy returns, read by the seat reader when it ends the run on every
+   provider dry, so the refusal states the account's own day start and never midnight. Absent on a client built over
+   budgets that report none, which the refusal then words as an undecided day.
+   */
+  readonly neuralwattReturn?: () => NeuralWattReturn;
 };
 
 //endregion Run client contract

@@ -20,6 +20,21 @@ import type { PassDryStop, } from './pass-dry-stop.ts';
 // Runs the pending entries one attempt at a time under the pass's budgets.
 
 /**
+ Prints the pass's stop line if the dry gate has tripped and the line has not been printed.
+
+ @param dryStop - gate the pass's client trips when every provider reads dry
+
+ @example
+ ```ts
+ announceDryStop({ dryStop, },);
+ ```
+ */
+function announceDryStop({ dryStop, }: { readonly dryStop: PassDryStop; },): void {
+  for (const note of dryStop.takeStopNotes())
+    console.log(note,);
+}
+
+/**
  Runs every pending entry once, then re-runs the ones that earned it, counting
  and persisting each attempt before it starts and stopping at the soft budget
  or the spend ceiling.
@@ -35,7 +50,8 @@ import type { PassDryStop, } from './pass-dry-stop.ts';
  @param pipelineDigest - generation every log line of an attempt carries
 
  @param dryStop - gate the pass's client trips when every provider reads dry; once tripped no further entry starts,
- and the reason is printed once
+ no REATTEMPT or STALLED line is printed for the entry that tripped it, and the reason is printed once, also when the
+ queue ends with the entry that tripped it
 
  @param softBudgetMs - time after which no new entry starts
 
@@ -95,7 +111,7 @@ export async function runPassQueue(
 
     stopBeforeNext: function stopBeforeNext(): boolean {
       if (dryStop.tripped()) {
-        console.log(dryStop.stopNote(),);
+        announceDryStop({ dryStop, },);
         return true;
       }
       return stopBeforeNextEntry({
@@ -103,6 +119,10 @@ export async function runPassQueue(
         softBudgetMs,
         ceilingUsd: spendCeilingUsd,
       },);
+    },
+
+    runHasStopped: function runHasStopped(): boolean {
+      return dryStop.tripped();
     },
 
     attempt: async function attempt({ entry, },): Promise<EntryOutcome> {
@@ -126,6 +146,11 @@ export async function runPassQueue(
       },);
     },
   },);
+
+  // THE STOP IS ANNOUNCED WHEN THE QUEUE ENDS TOO, because `stopBeforeNext` is asked only before an attempt: the entry
+  // that met the dry router may have been the last one, and a queue that empties never asks again. The note is handed
+  // out once, so an announcement already made is not repeated.
+  announceDryStop({ dryStop, },);
 }
 
 //endregion Corpus pass queue

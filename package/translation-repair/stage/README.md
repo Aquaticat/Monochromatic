@@ -75,7 +75,8 @@ The groups that follow name the main ones.
   and the nudges used to recover from a cut-short or off-shape reply.
   Names:
   `silentStagesOf`,
-  `everyStageHeard`,
+  `silentStagesOfRecord`,
+  `refinementIsResumable`,
   `stageQuorumUnmetFinding`,
   `RECOVERY_NUDGES`,
   `unreadableCauseOf`.

@@ -48,8 +48,9 @@ import {
 // document correctly, so they're clear on thinking params." "But we should
 // never disable thinking on anything." The 2026-08-25 instruction ("don't set
 // any thinking parameter or budget tokens", recorded at the Synthetic body)
-// now holds for third tier alone; the other cleared providers are Anthropic,
-// DeepSeek and Xiaomi, first rate.
+// now holds for third tier alone; the other cleared providers are DeepSeek and
+// Xiaomi, first rate, and Anthropic, which the owner ruled first rate before
+// any direct Anthropic client exists (one is being built).
 //
 // WHAT THIS PROVIDER IS SENT, only where the card's NeuralWatt side names one:
 // `reasoning_effort`, `low` on GLM-5.3-Flash for a call that carries a picture

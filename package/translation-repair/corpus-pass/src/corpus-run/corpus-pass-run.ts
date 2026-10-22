@@ -278,6 +278,8 @@ export async function runCorpusPassOver(input: CorpusPassInput,): Promise<void> 
         pictureSources: input.pictureSources,
         overlap: input.overlap,
         stageSettings: input.stageSettings,
+        // The refusal that ended an entry reaches the gate even where no guarded call carried it.
+        endRun: dryStop.trip,
       },);
     },
   },);

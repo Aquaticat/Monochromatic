@@ -23,6 +23,7 @@ import {
 } from 'node:fs/promises';
 import { join, } from 'node:path';
 
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 import {
   describe,
   expect,
@@ -922,6 +923,57 @@ await describe({
             + `pages and the entry in flight is left resumable. Cause: ${(seen.reason as Error).message}`,
         ],);
         expect(printed.lines.at(-1,),).toContain('DONE processed=1 of pending=3; artifacts=1/3',);
+      },
+    },),
+    it({
+      name: 'STOPS THE RUN WHEN AN ENTRY IS ENDED BY THE REFUSAL WITHOUT A GUARDED CALL, as the seat reading ends it before '
+        + 'any chat call: the entry hands the refusal to the run, no further entry starts and one STOP line names the cause',
+      fn: async (ctx) => {
+        using printed = relayingConsoleLog({ sinon: ctx.sinon, },);
+        await using clone = await makeCorpusPassClone({ entries: [
+          {
+            id: 'tabby',
+            sourceText: '猫睡觉。\n',
+            targetText: 'The cat naps.\n',
+          },
+          {
+            id: 'mittens',
+            sourceText: '猫玩耍。\n',
+            targetText: 'The cat plays.\n',
+          },
+        ], },);
+        await using runs = await scratchDir({ prefix: 'corpus-pass-run-', },);
+        await using built = await builtPipeline();
+        /**
+         What the procedure did.
+         */
+        const watched = nothingWatched();
+        await runPass({
+          typed: [],
+          clone,
+          runsDir: runs.path,
+          pipelineDir: built.dir,
+          watched,
+          overrides: {
+            settle: async function settle({ entry, endRun, },): Promise<EntryOutcome> {
+              watched.settled.push(entry.id,);
+              nonNullishOrThrow(endRun,)({
+                error: new EveryProviderDryError({ measured: 'the seat reading found every meter dry', },),
+              },);
+              return { kind: 'stopped', };
+            },
+          },
+        },);
+
+        expect(watched.settled.length,).toBe(1,);
+        /**
+         The stop lines the run printed.
+         */
+        const stops = printed.lines.filter(function isStop(line,): boolean {
+          return line.startsWith('STOP ',);
+        },);
+        expect(stops,).toHaveLength(1,);
+        expect(stops[0],).toContain('the seat reading found every meter dry',);
       },
     },),
   ],
