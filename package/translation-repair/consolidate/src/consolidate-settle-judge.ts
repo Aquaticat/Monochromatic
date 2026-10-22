@@ -213,14 +213,22 @@ async function judgeSingleRoundOverStanding(
    Finalists the tie backed, absent where the round did not tie with the incumbent kept.
    */
   const finalists = single.runoffFinalists;
+  /**
+   Why those are the finalists, set wherever the finalists are.
+   */
+  const basis = single.runoffBasis;
   if ((single.decision !== 'declined-indecision') || (finalists === undefined))
     return single;
+  // The basis is set wherever the finalists are (`judgeTranslateSlate`), so a result with one and not the other is a fault.
+  if (basis === undefined)
+    throw new Error('unreachable: a round that narrowed its run-off carries the finalists without the basis they were chosen on',);
   if (!standingDrewNoBallot({ result: single, },))
     return single;
   return await runoffTiedFinalists({
     judging,
     first: single,
     finalists,
+    basis,
   },);
 }
 

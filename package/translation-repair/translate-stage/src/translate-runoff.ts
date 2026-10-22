@@ -3,6 +3,8 @@ import type {
   CandidateWeight,
   SelectionDisposition,
 } from '@monochromatic-dev/translation-repair-house-rule/ts';
+import type { RunoffBasis, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
+import { wordForCount, } from '@monochromatic-dev/translation-repair-typography/ts';
 
 //region Translate run-off
 // MEASURED ON XINGZ602 (2026-09-17, attempt 1): slice 14's archive text
@@ -53,6 +55,13 @@ export type Runoff<ValueT,> =
      Candidates that drew a ballot, in slate order.
      */
     readonly finalists: readonly Candidate<ValueT>[];
+
+    /**
+     Why these are the finalists: the candidates tied at the top, or the
+     leader and its runner-up where one candidate led and fell short of the
+     minimum (ledger B806).
+     */
+    readonly basis: RunoffBasis;
   }
   | {
     /**
@@ -160,6 +169,7 @@ export function runoffFinalists<ValueT,>(
   },),);
   return {
     kind: 'narrowed',
+    basis: (leaders.length >= 2) ? 'tied-at-top' : 'leader-and-runner-up',
     finalists: candidates.filter(function isFinalist(
       _candidate,
       position,
@@ -167,6 +177,43 @@ export function runoffFinalists<ValueT,>(
       return finalists.has(position + 1,);
     },),
   };
+}
+
+/**
+ The finalists of a run-off as the line announcing it names them.
+
+ A plurality is not a tie: the line used to call both "tied finalists"
+ (ledger B806).
+
+ @param count - how many finalists the run-off is over
+
+ @param basis - why they are the finalists
+
+ @returns Noun phrase to follow "over the" or "over" in an announcement
+
+ @example
+ ```ts
+ const phrase = runoffFinalistsPhrase({ count: 2, basis: 'tied-at-top', },); // "2 tied finalists"
+ ```
+ */
+export function runoffFinalistsPhrase(
+  {
+    count,
+    basis,
+  }: {
+    readonly count: number;
+    readonly basis: RunoffBasis;
+  },
+): string {
+  if (basis === 'leader-and-runner-up')
+    return 'leader and its runner-up (the leader fell short of the minimum weight)';
+  return `${String(count,)} tied ${
+    wordForCount({
+      count,
+      one: 'finalist',
+      many: 'finalists',
+    },)
+  }`;
 }
 
 /**

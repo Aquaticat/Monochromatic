@@ -577,7 +577,10 @@ export async function judgeTranslateSlate(
       declineFindings,
       declined,
       // Conditional spread keeps the field absent where the whole slate stands.
-      ...((narrowed.kind === 'narrowed') ? { finalists: narrowed.finalists, } : {}),
+      ...((narrowed.kind === 'narrowed') ? {
+        finalists: narrowed.finalists,
+        basis: narrowed.basis,
+      } : {}),
       shipPastDecline,
       l: tl,
     },);
@@ -591,7 +594,10 @@ export async function judgeTranslateSlate(
     decision: declined,
     findings: declineFindings,
     // Conditional spread keeps the field absent where the whole slate stands.
-    ...((narrowed.kind === 'narrowed') ? { runoffFinalists: narrowed.finalists, } : {}),
+    ...((narrowed.kind === 'narrowed') ? {
+      runoffFinalists: narrowed.finalists,
+      runoffBasis: narrowed.basis,
+    } : {}),
   };
 }
 

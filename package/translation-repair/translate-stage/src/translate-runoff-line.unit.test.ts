@@ -179,17 +179,19 @@ function scriptedClient(
         return word !== ownWord.value;
       },) ?? '';
       /**
-       What this seat wants: its own text, the other, or nothing.
+       Whether this seat rejects every candidate: the judge who wrote one, where the scenario has it decline.
        */
-      const wanted: string | undefined = (request.modelId === JUDGES[0])
-        ? ((scenario.interested === 'own') ? ownWord.value : undefined)
-        : ((request.modelId === JUDGES[1]) ? ownWord.value : otherWord);
+      const rejects = (request.modelId === JUDGES[0]) && (scenario.interested === 'reject');
+      /**
+       Word of the candidate this seat names: the first two judges name the interested judge's own text, the third the other.
+       */
+      const needle = (request.modelId === JUDGES[2]) ? otherWord : ownWord.value;
       const ballot: unknown = {
-        best: (wanted === undefined)
+        best: rejects
           ? 0
           : candidateCarrying({
             content,
-            needle: wanted,
+            needle,
           },),
         reason: 'fixture',
       };
