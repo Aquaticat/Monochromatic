@@ -5,6 +5,7 @@ import {
   wordForCount,
 } from '@monochromatic-dev/translation-repair-typography/ts';
 import { monotonicMs, } from '@monochromatic-dev/translation-repair-markup/ts';
+import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 
 //region Stream idle guard
 // Distinguishes a dead stream from a long one, which a total-duration deadline
@@ -25,68 +26,70 @@ import { monotonicMs, } from '@monochromatic-dev/translation-repair-markup/ts';
 // caller's signal, `attemptExchange` sees a non-abort failure and
 // `exchangeWithRetry` retries it at transport level on a ~1 s backoff, instead
 // of the stall escalating into another whole stage round.
+//
+// SILENCE IS THE ABSENCE OF GENERATED TEXT, NOT OF BYTES (ledger B804). A
+// content delta or a reasoning delta resets the window; a comment line
+// (OpenRouter writes `: OPENROUTER PROCESSING` while it waits for the upstream
+// provider), a blank keep-alive line and an event with an empty delta do not.
+// In zheermao22 eleven `inception/mercury-2.5` streams sent only such bytes, so
+// the guard that timed bytes never fired and each was cut by the 120 s
+// straggler grace after quorum.
 
 /**
- Silence allowed before the first body byte, set ABOVE
- `RUN_PER_CALL_TIMEOUT_MS` (360_000 in `corpus-run/run-config.ts`) so it
- never fires. The guard measures; the total deadline is what kills.
+ Silence allowed before the first generated text, 120_000 ms, set BELOW
+ `RUN_PER_CALL_TIMEOUT_MS` (360_000 in `corpus-run/run-config.ts`) so it can fire
+ before the deadline does; `requireStreamBoundsInsideCallTimeout` refuses a
+ configuration where it cannot. It was 600_000 under the name
+ `STREAM_FIRST_BYTE_MS`, above the deadline, so it never fired.
 
- THE MEDIAN THIS WAS ORIGINALLY SET FROM IS SUPERSEDED, by about eighty
- times, and it was re-derived from first production traffic rather than
- retiring the finding. A full sentinel probe once found 34 of 34 recorded
- stalls were `first-byte` and NOT ONE was `body`, and across 32 successful
- streams then, time to first byte ran p50 95.6 s, p75 123 s, p90 134 s, max
- 147.5 s (the max itself censored: the window was 150 s live while those
- samples were collected, so anything slower was aborted instead of
- recorded). `doc/audit/stream-guards-first-production-traffic.md` read
- three separate workloads spanning five days; this file's own re-count
- against the same three logs puts the median at 1032, 1207, and 1237 ms,
- a band the 95.6 s figure sits 77 to 93 times above. Working no longer
- looks anything like stalled at the median.
+ MEASURED, 2026-10-21 (ledger B804), over every pass log in the agent
+ directory from CuspariaKLSY16 to zheermao22 except the one then being written:
+ 19542 completed streams that delivered text. The logs record the first BYTE
+ and not the first text, so the first byte is a lower bound on the wait this
+ bound must clear: on the 11748 streams of providers that send no comment
+ lines (Synthetic, Hyper, NeuralWatt, Bedrock) the first byte ran p50 1915 ms,
+ p99 11755 ms, p99.9 88110 ms and at most 115725 ms (a `minimax-m3` call
+ on Hyper), with 8 streams past 90 s, 5 past 100 s and none past 120 s; the
+ 7794 OpenRouter streams ran at most 11219 ms to the first byte, which a
+ comment line can be, so for them the first byte says nothing of the wait for text.
+ The bound sits at the
+ largest observed wait plus 4 percent: the 99.9th percentile (88 s) would have
+ cut 8 healthy streams to be sent again into a queue that had already cost them
+ 90 to 116 s, and the maximum is what the sample supports clearing. The
+ margin is thin, and a cut here costs a transport re-dispatch of that one
+ call, not a voice. The sample is censored from above by the 120 s straggler
+ grace and the 360 s deadline, and the cut streams that delivered text show a
+ first byte of at most 48854 ms, so the censored part does not hide a slower
+ healthy start.
 
- THE TAIL DOES NOT AGREE WITH THE MEDIAN, which is why this constant is
- corrected rather than lowered. The same re-count found a completed (not
- cut) `hf:zai-org/GLM-5.2` stream whose first byte took 183_755 ms, and a
- separate uncensored 2026-07-26 run (`doc/handover/translation-repair-history.md`,
- "PASS 7 RUN 014", a different roster and three weeks earlier) recorded a
- completed call at 347_099 ms, within 3.6 percent of the deadline this
- constant sits above today. Both were healthy completions, not
- abandonments, so any window tight enough to meaningfully beat the
- deadline would have killed at least one of them on the evidence
- available. See
+ THE OLDER TAIL EVIDENCE IS RETIRED, not contradicted. Two completions of
+ retired rosters, a `hf:zai-org/GLM-5.2` stream at 183_755 ms and a pass-7
+ completion at 347_099 ms
+ (`doc/audit/stream-guards-first-production-traffic.md`,
+ `doc/handover/translation-repair-history.md`), would be cut by this bound. The
+ roster that produced them is gone, and the deadline they were set against
+ is the one this bound must remain shorter than. See
  `doc/decision/translation-repair-runaway-call-termination.md` for the
- full arithmetic and the re-arming question this leaves for the owner.
+ re-arming question this answers.
  */
-export const STREAM_FIRST_BYTE_MS = 600_000;
+export const STREAM_FIRST_CONTENT_MS = 120_000;
 
 /**
- Silence allowed between body bytes once flowing, also set above
- `RUN_PER_CALL_TIMEOUT_MS` so it never fires, for two independent reasons,
- both narrowed rather than reversed by that re-derivation.
+ Silence allowed between generated pieces of text once the first has arrived,
+ 120_000 ms, also below `RUN_PER_CALL_TIMEOUT_MS`.
 
- First, it still has almost nothing to catch. The original probe found 34
- of 34 recorded stalls were `first-byte` and none were `body`. Re-counted
- against the three logs
- `doc/audit/stream-guards-first-production-traffic.md` reads, pooled
- across 7079 streams, exactly one legitimate mid-stream gap exceeded 120 s,
- and it was not a stall: a completed
- `hf:zai-org/GLM-5.2` stream (first byte 794 ms, otherwise ordinary)
- carried one internal gap of 124_992 ms before finishing normally. Rare is
- no longer zero, and a window anywhere near that size would have cost a
- working voice.
-
- Second, this constant has already been raised once on exactly this
- mistake, and the pattern repeated a third time on re-measurement. An
- earlier 30 s value here was justified by a six-stream sample whose largest
- gap was 733 ms, called forty times the worst observation; at 32 streams
- that read p50 86 ms, p90 3833 ms, max 24_673 ms; the re-count against
- those three logs puts the observed max at 124_992 ms. Each larger sample found a larger
- gap, 733 ms then 24_673 ms then 124_992 ms, so treating any one of them as
- a bound has been wrong every time it was tried. See
- `doc/decision/translation-repair-runaway-call-termination.md` for the
- full arithmetic and the re-arming question this leaves for the owner.
+ MEASURED over the same 19542 streams: the largest silence between two chunks
+ of a completed stream was 93736 ms (a `minimax-m3` call on Hyper), p99.9
+ 59008 ms, with one stream past 90 s and none past 100 s. The cut streams that
+ delivered text show at most 61642 ms (a `hf:Qwen/Qwen3.8-27B` pause that
+ recurs near 60 s), so the censored part adds no longer healthy silence. The
+ bound is the largest observed silence plus 28 percent. The largest silence
+ the older logs recorded, 124_992 ms in a completed `hf:zai-org/GLM-5.2`
+ stream of a retired roster, would be cut now; each earlier larger sample
+ found a larger gap (733 ms, 24_673 ms, 124_992 ms), and a tail not yet seen
+ costs one re-dispatch of that call.
  */
-export const STREAM_IDLE_MS = 600_000;
+export const STREAM_IDLE_MS = 120_000;
 
 /**
  Logger root for the stream guard.
@@ -94,7 +97,62 @@ export const STREAM_IDLE_MS = 600_000;
 const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
- Raised when a stream produced no bytes for longer than its idle window.
+ Characters of generated text a stream has delivered, per channel.
+
+ @example
+ ```ts
+ const generated: GeneratedChars = { content: 8, reasoning: 0, };
+ ```
+ */
+export type GeneratedChars = {
+  /**
+   Characters of the answer channel.
+   */
+  readonly content: number;
+
+  /**
+   Characters of the reasoning channel.
+   */
+  readonly reasoning: number;
+};
+
+/**
+ A count of characters with the kind it counts, the noun agreeing with the
+ count.
+
+ @param count - characters counted
+
+ @param kind - which characters
+
+ @returns Phrase such as `8 content chars`
+
+ @example
+ ```ts
+ const phrase = describeChars({ count: 1, kind: 'raw', },); // '1 raw char'
+ ```
+ */
+function describeChars(
+  {
+    count,
+    kind,
+  }: {
+    readonly count: number;
+    readonly kind: 'content' | 'raw' | 'reasoning';
+  },
+): string {
+  return `${String(count,)} ${kind} ${
+    wordForCount({
+      count,
+      one: 'char',
+      many: 'chars',
+    },)
+  }`;
+}
+
+/**
+ Raised when a stream produced no generated text, content or reasoning, for
+ longer than its window. Bytes that carry none (a comment line, a blank
+ keep-alive line, an event with an empty delta) do not end the silence.
  Distinct from a caller abort so the retry layer treats it as transient
  weather and re-dispatches, which is the response the measurements support.
 
@@ -116,8 +174,8 @@ export class StreamStalledError extends Error {
 
    @param idleMs - silence window that expired
 
-   @param phase - whether the silence preceded the first byte or interrupted
-   a flowing stream
+   @param phase - whether the silence preceded the first generated text or
+   interrupted a flowing stream
    */
   constructor(
     {
@@ -127,11 +185,11 @@ export class StreamStalledError extends Error {
     }: {
       readonly label: string;
       readonly idleMs: number;
-      readonly phase: 'first-byte' | 'body';
+      readonly phase: 'first-content' | 'body';
     },
   ) {
     super(
-      `Stalled: ${label} emitted nothing for ${String(idleMs,)}ms (${phase})`,
+      `Stalled: ${label} emitted no content or reasoning for ${String(idleMs,)}ms (${phase})`,
     );
     this.name = 'StreamStalledError';
   }
@@ -182,8 +240,9 @@ export type StreamProgress = {
 };
 
 /**
- Live guard over one exchange: a signal to hand the request, an activity
- notification to call per chunk, and the progress it observed.
+ Live guard over one exchange: a signal to hand the request, one notification
+ per chunk of bytes, one per piece of generated text, and the progress it
+ observed.
  */
 export type IdleGuard = Disposable & {
   /**
@@ -193,9 +252,20 @@ export type IdleGuard = Disposable & {
   readonly signal: AbortSignal;
 
   /**
-   Records that bytes arrived, resetting the idle window.
+   Records that bytes arrived: the first byte, the gaps between chunks and the
+   raw characters, which are the wire's bookkeeping. THE WINDOW IS NOT RESET
+   BY THIS, since a comment line, a blank keep-alive line and an event with an
+   empty delta are bytes that carry no text (ledger B804).
    */
   readonly notify: (chars: number,) => void;
+
+  /**
+   Records that generated text arrived, content or reasoning, resetting the
+   window. Called with the running totals of each channel, so the line that
+   names a cut can say how much text there had been; call it only when a total
+   has grown.
+   */
+  readonly notifyGenerated: (generated: GeneratedChars,) => void;
 
   /**
    Snapshot of what the stream has done so far.
@@ -208,11 +278,15 @@ export type IdleGuard = Disposable & {
  provider that never sends response headers at all, which a body-only guard
  would miss entirely.
 
- @param label - names the call in the stall error
+ @param label - names the call in the stall error, which for a chat exchange
+ is the model id
 
- @param firstByteMs - silence allowed before first byte
+ @param provider - names the provider that serves the call in the line that
+ reports a cut, absent where the caller does not know it
 
- @param idleMs - silence allowed between bytes afterwards
+ @param firstContentMs - silence allowed before the first generated text
+
+ @param idleMs - silence allowed between pieces of generated text afterwards
 
  @returns Guard whose disposal clears its timer
 
@@ -224,11 +298,13 @@ export type IdleGuard = Disposable & {
 export function armIdleGuard(
   {
     label,
-    firstByteMs = STREAM_FIRST_BYTE_MS,
+    provider,
+    firstContentMs = STREAM_FIRST_CONTENT_MS,
     idleMs = STREAM_IDLE_MS,
   }: {
     readonly label: string;
-    readonly firstByteMs?: number;
+    readonly provider?: ProviderName;
+    readonly firstContentMs?: number;
     readonly idleMs?: number;
   },
 ): IdleGuard {
@@ -247,6 +323,8 @@ export function armIdleGuard(
     firstByteMs: -1,
     maxGapMs: 0,
     chars: 0,
+    content: 0,
+    reasoning: 0,
   };
 
   /**
@@ -263,7 +341,7 @@ export function armIdleGuard(
       phase,
       expiredMs,
     }: {
-      readonly phase: 'first-byte' | 'body';
+      readonly phase: 'first-content' | 'body';
       readonly expiredMs: number;
     },
   ): void {
@@ -272,14 +350,20 @@ export function armIdleGuard(
       l,
     },)
       .warn(
-        `${label}: no bytes for ${String(expiredMs,)}ms during ${phase}`
-        + ` after ${String(state.chars,)} ${
-          wordForCount({
-            count: state.chars,
-            one: 'char',
-            many: 'chars',
-          },)
-        }; aborting for retry`,
+        `${(provider === undefined) ? '' : `${provider} `}${label}: no content or reasoning for ${
+          String(expiredMs,)
+        }ms during ${phase}; ${describeChars({
+          count: state.chars,
+          kind: 'raw',
+        })} on the wire, ${
+          describeChars({
+            count: state.content,
+            kind: 'content',
+          })
+        } and ${describeChars({
+          count: state.reasoning,
+          kind: 'reasoning',
+        })} so far; aborting for retry`,
       );
     controller.abort(new StreamStalledError({
       label,
@@ -302,7 +386,7 @@ export function armIdleGuard(
       phase,
       windowMs,
     }: {
-      readonly phase: 'first-byte' | 'body';
+      readonly phase: 'first-content' | 'body';
       readonly windowMs: number;
     },
   ): ReturnType<typeof setTimeout> {
@@ -318,12 +402,13 @@ export function armIdleGuard(
   }
 
   /**
-   Timer handle of the currently armed window, replaced on every chunk.
+   Timer handle of the currently armed window, replaced on every piece of
+   generated text.
    */
   const timers = {
     handle: armWindow({
-      phase: 'first-byte',
-      windowMs: firstByteMs,
+      phase: 'first-content',
+      windowMs: firstContentMs,
     },),
   };
 
@@ -343,6 +428,17 @@ export function armIdleGuard(
         );
       state.lastChunkAt = now;
       state.chars += chars;
+    },
+    notifyGenerated({
+      content,
+      reasoning,
+    }: GeneratedChars,): void {
+      state.content = content;
+      state.reasoning = reasoning;
+      // A guard that has tripped stays tripped: a late piece of text must not arm a second window that logs a second cut.
+      if (controller.signal
+        .aborted)
+        return;
       clearTimeout(timers.handle,);
       timers.handle = armWindow({
         phase: 'body',

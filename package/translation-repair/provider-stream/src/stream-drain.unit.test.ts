@@ -456,7 +456,7 @@ async function progressLineOf(
   };
   using guard = armIdleGuard({
     label: CREDENTIAL_LABEL,
-    firstByteMs: HANG_STOP_MS,
+    firstContentMs: HANG_STOP_MS,
     idleMs: HANG_STOP_MS,
   },);
   /**
@@ -597,7 +597,7 @@ await describe({
 
         using overrunGuard = armIdleGuard({
           label: 'hf:whiskers',
-          firstByteMs: HANG_STOP_MS,
+          firstContentMs: HANG_STOP_MS,
           idleMs: HANG_STOP_MS,
         },);
 
@@ -635,7 +635,7 @@ await describe({
 
         using degenerateGuard = armIdleGuard({
           label: 'hf:whiskers',
-          firstByteMs: HANG_STOP_MS,
+          firstContentMs: HANG_STOP_MS,
           idleMs: HANG_STOP_MS,
         },);
 
@@ -680,7 +680,7 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:whiskers',
-          firstByteMs: HANG_STOP_MS,
+          firstContentMs: HANG_STOP_MS,
           idleMs: HANG_STOP_MS,
         },);
 
@@ -730,7 +730,7 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:whiskers',
-          firstByteMs: HANG_STOP_MS,
+          firstContentMs: HANG_STOP_MS,
           idleMs: HANG_STOP_MS,
         },);
 
@@ -780,7 +780,7 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:whiskers',
-          firstByteMs: HANG_STOP_MS,
+          firstContentMs: HANG_STOP_MS,
           idleMs: HANG_STOP_MS,
         },);
 
@@ -831,7 +831,7 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:whiskers',
-          firstByteMs: HANG_STOP_MS,
+          firstContentMs: HANG_STOP_MS,
           idleMs: HANG_STOP_MS,
         },);
 
@@ -885,7 +885,7 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:whiskers',
-          firstByteMs: HANG_STOP_MS,
+          firstContentMs: HANG_STOP_MS,
           idleMs: HANG_STOP_MS,
         },);
 
@@ -965,7 +965,7 @@ await describe({
           'hf:whiskers: stream cut after 12 characters (refused by ProviderHttpError from synthetic with HTTP 503)',
         );
         expect(refusalText({ error: stalled, },),).toBe(
-          'hf:whiskers: stream cut after 12 characters (Stalled: hf:whiskers emitted nothing for 60000ms (body))',
+          'hf:whiskers: stream cut after 12 characters (Stalled: hf:whiskers emitted no content or reasoning for 60000ms (body))',
         );
       },
     },),
@@ -993,7 +993,7 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:mittens',
-          firstByteMs: HANG_STOP_MS,
+          firstContentMs: HANG_STOP_MS,
           idleMs: HANG_STOP_MS,
         },);
 
@@ -1023,7 +1023,7 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:sable',
-          firstByteMs: HANG_STOP_MS,
+          firstContentMs: HANG_STOP_MS,
           idleMs: HANG_STOP_MS,
         },);
 
@@ -1065,7 +1065,7 @@ await describe({
 
         using guard = armIdleGuard({
           label: 'hf:sable',
-          firstByteMs: HANG_STOP_MS,
+          firstContentMs: HANG_STOP_MS,
           idleMs: HANG_STOP_MS,
         },);
 

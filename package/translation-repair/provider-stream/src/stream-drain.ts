@@ -252,8 +252,9 @@ function reportMaskedProgress(
  model rather than per endpoint. Reasoning from abandon counts instead is what
  produced the retracted conclusion that one vendor's models were slow
 
- @mutates guard - each chunk resets the guard's silence window via
- guard.notify, and guard.progress reads the totals it accumulated
+ @mutates guard - each chunk is counted on the wire via guard.notify,
+ each growth of generated text resets the guard's silence window via
+ guard.notifyGenerated, and guard.progress reads the totals it accumulated
 
  @mutates response - body.getReader locks the body stream to this reader and
  every read consumes from it, so the response's body is drained and cannot be
@@ -353,9 +354,13 @@ export async function drainBody(
   },);
 
   /**
-   Loop cursor, a named record so the body-root binding stays immutable.
+   Loop cursor, a named record so the body-root binding stays immutable, with
+   the generated characters the guard was last told of.
    */
-  const cursor = { done: false, };
+  const cursor = {
+    done: false,
+    generated: 0,
+  };
 
   try {
     while (!cursor.done) {
@@ -383,6 +388,20 @@ export async function drainBody(
        Whether this call has stopped producing anything new.
        */
       const runaway = watch.notifyChunk({ chunk: text, },);
+
+      /**
+       Generated text so far, content and reasoning, which the scanner reads
+       out of the frames and a comment line, a blank keep-alive line or an
+       event with an empty delta does not grow.
+       */
+      const generated = watch.generatedChars();
+      // ONLY GENERATED TEXT RESETS THE GUARD'S WINDOW (ledger B804): the chunk's bytes
+      // were counted for the wire's own bookkeeping, and a stream that
+      // sends bytes and no text is as silent as one that sends nothing.
+      if ((generated.content + generated.reasoning) > cursor.generated) {
+        cursor.generated = generated.content + generated.reasoning;
+        guard.notifyGenerated(generated,);
+      }
       if (runaway.kind !== 'continuing') {
         // Released before reporting, so the socket does not stay open feeding a
         // model that will not stop. The provider ends neither, and no token cap

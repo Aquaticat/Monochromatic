@@ -157,8 +157,8 @@ await describe({
             messages: MESSAGES,
             signal: new AbortController().signal,
           },),);
-          expect(seen.slice(before,).map(function providerOf(exchange,): string | undefined {
-            return exchange.provider;
+          expect(seen.slice(before,).map(function providerOf(exchange,): string {
+            return exchange.provider ?? 'unnamed';
           },),).toEqual([row.provider,],);
         }
       },

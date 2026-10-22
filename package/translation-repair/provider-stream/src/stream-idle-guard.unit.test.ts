@@ -8,7 +8,7 @@ import {
 import {
   armIdleGuard,
   drainBody,
-  STREAM_FIRST_BYTE_MS,
+  STREAM_FIRST_CONTENT_MS,
   STREAM_IDLE_MS,
   StreamCutShortError,
   StreamStalledError,
@@ -78,36 +78,25 @@ await describe({
       name: 'idle window constants',
       children: [
         it({
-          name: 'keeps both windows above the per-call deadline so the guard measures without killing',
+          name: 'keeps both windows shorter than the per-call deadline so the guard can end a stalled call before the deadline does (ledger B804)',
           fn: async () => {
             // 360_000 is RUN_PER_CALL_TIMEOUT_MS in
-            // corpus-run/run-config.ts (raised from 240_000 once that value
-            // was measured to clip real work), not imported here because it
-            // is not re-exported through the package barrel this test
-            // builds against. Both windows must stay above it so the total
-            // deadline is what ends a genuinely dead call, never this
-            // guard.
-            expect(STREAM_FIRST_BYTE_MS,).toBeGreaterThan(360_000,);
-            expect(STREAM_IDLE_MS,).toBeGreaterThan(360_000,);
+            // corpus-run/run-config.ts, not imported here because it is not
+            // re-exported through the package barrel this test builds
+            // against. A window at or past it can never fire first.
+            expect(STREAM_FIRST_CONTENT_MS,).toBeLessThan(360_000,);
+            expect(STREAM_IDLE_MS,).toBeLessThan(360_000,);
           },
         },),
 
         it({
-          name: 'keeps both windows above the highest first-byte wait and mid-stream gap observed in production so far',
+          name: 'keeps both windows above the highest first-byte wait and mid-stream gap of a completed stream measured in production so far',
           fn: async () => {
-            // 347_099 is PASS 7 RUN 014's uncensored first-byte maximum
-            // (doc/handover/translation-repair-history.md), a completed call within
-            // 3.6 percent of the current deadline. 124_992 is the largest
-            // mid-stream gap found pooling
-            // doc/audit/stream-guards-first-production-traffic.md's three
-            // logs (7079 streams); also a completed hf:zai-org/GLM-5.2 call
-            // rather than a stall. A future re-arming attempt that lowers
-            // either constant below its own history would silently start
-            // killing healthy calls; see
-            // doc/decision/translation-repair-runaway-call-termination.md
-            // for the full arithmetic.
-            expect(STREAM_FIRST_BYTE_MS,).toBeGreaterThan(347_099,);
-            expect(STREAM_IDLE_MS,).toBeGreaterThan(124_992,);
+            // 115_725 is the largest first byte and 93_736 the largest gap
+            // among 19_542 completed streams that carried text (ledger B804).
+            // A window below its own history would start cutting healthy calls.
+            expect(STREAM_FIRST_CONTENT_MS,).toBeGreaterThan(115_725,);
+            expect(STREAM_IDLE_MS,).toBeGreaterThan(93_736,);
           },
         },),
       ],
@@ -139,18 +128,18 @@ await describe({
         //region Tripping
 
         it({
-          name: 'trips on first-byte silence and carries the stall as the abort reason',
+          name: 'trips on first-content silence and carries the stall as the abort reason',
           fn: async () => {
             using guard = armIdleGuard({
               label: 'hf:whiskers',
-              firstByteMs: TINY_MS,
+              firstContentMs: TINY_MS,
               idleMs: HANG_STOP_MS,
             },);
             await untilAborted(guard.signal,);
             expect(guard.signal.aborted,).toBe(true,);
             expect(guard.signal.reason,).toBeInstanceOf(StreamStalledError,);
             expect((guard.signal.reason as Error).message,).toContain(
-              'first-byte',
+              'first-content',
             );
           },
         },),
@@ -160,10 +149,11 @@ await describe({
           fn: async () => {
             using guard = armIdleGuard({
               label: 'hf:mittens',
-              firstByteMs: HANG_STOP_MS,
+              firstContentMs: HANG_STOP_MS,
               idleMs: TINY_MS,
             },);
             guard.notify(5,);
+            guard.notifyGenerated({ content: 5, reasoning: 0, },);
             await untilAborted(guard.signal,);
             expect((guard.signal.reason as Error).message,).toContain('body',);
           },
@@ -174,7 +164,7 @@ await describe({
           fn: async () => {
             using guard = armIdleGuard({
               label: 'hf:mittens',
-              firstByteMs: HANG_STOP_MS,
+              firstContentMs: HANG_STOP_MS,
               idleMs: HANG_STOP_MS,
             },);
             guard.notify(3,);
@@ -192,7 +182,7 @@ await describe({
           fn: async () => {
             using guard = armIdleGuard({
               label: 'hf:mittens',
-              firstByteMs: HANG_STOP_MS,
+              firstContentMs: HANG_STOP_MS,
               idleMs: HANG_STOP_MS,
             },);
             expect(guard.progress().firstByteMs,).toBeLessThan(0,);
@@ -205,7 +195,7 @@ await describe({
           fn: async () => {
             using guard = armIdleGuard({
               label: 'hf:mittens',
-              firstByteMs: HANG_STOP_MS,
+              firstContentMs: HANG_STOP_MS,
               idleMs: HANG_STOP_MS,
             },);
             guard.notify(7,);
@@ -224,7 +214,7 @@ await describe({
           fn: async () => {
             using guard = armIdleGuard({
               label: 'hf:mittens',
-              firstByteMs: HANG_STOP_MS,
+              firstContentMs: HANG_STOP_MS,
               idleMs: HANG_STOP_MS,
             },);
 
@@ -254,7 +244,7 @@ await describe({
             const wall = stubWallClock({ sinon: ctx.sinon, atMs: WALL_START_MS, },);
             using guard = armIdleGuard({
               label: 'hf:mittens',
-              firstByteMs: HANG_STOP_MS,
+              firstContentMs: HANG_STOP_MS,
               idleMs: HANG_STOP_MS,
             },);
             wall.step({ byMs: -HOUR_MS, },);
@@ -287,7 +277,7 @@ await describe({
           fn: async () => {
             const guard = armIdleGuard({
               label: 'hf:mittens',
-              firstByteMs: TINY_MS,
+              firstContentMs: TINY_MS,
               idleMs: TINY_MS,
             },);
             guard[Symbol.dispose]();
@@ -310,7 +300,7 @@ await describe({
           fn: async () => {
             using guard = armIdleGuard({
               label: 'hf:whiskers',
-              firstByteMs: HANG_STOP_MS,
+              firstContentMs: HANG_STOP_MS,
               idleMs: HANG_STOP_MS,
             },);
             const encoder = new TextEncoder();
@@ -334,7 +324,7 @@ await describe({
           fn: async () => {
             using guard = armIdleGuard({
               label: 'hf:whiskers',
-              firstByteMs: HANG_STOP_MS,
+              firstContentMs: HANG_STOP_MS,
               idleMs: HANG_STOP_MS,
             },);
             // U+732B in UTF-8 is e7 8c ab; splitting it proves the decoder is
@@ -358,7 +348,7 @@ await describe({
           fn: async () => {
             using guard = armIdleGuard({
               label: 'hf:whiskers',
-              firstByteMs: HANG_STOP_MS,
+              firstContentMs: HANG_STOP_MS,
               idleMs: HANG_STOP_MS,
             },);
             const bodyText = await drainBody({
@@ -377,7 +367,7 @@ await describe({
           fn: async () => {
             using guard = armIdleGuard({
               label: 'hf:whiskers',
-              firstByteMs: TINY_MS,
+              firstContentMs: TINY_MS,
               idleMs: TINY_MS,
             },);
 
@@ -427,7 +417,7 @@ await describe({
           fn: async () => {
             using guard = armIdleGuard({
               label: 'hf:whiskers',
-              firstByteMs: HANG_STOP_MS,
+              firstContentMs: HANG_STOP_MS,
               idleMs: HANG_STOP_MS,
             },);
 

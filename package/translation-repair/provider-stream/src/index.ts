@@ -76,9 +76,15 @@ export {
 } from './stream-delta-scan.ts';
 export { drainBody, } from './stream-drain.ts';
 export {
+  requireStreamBoundsInsideCallTimeout,
+  type StreamBoundSetting,
+  StreamBoundsOutsideCallTimeoutError,
+} from './stream-bound-config.ts';
+export {
   armIdleGuard,
+  type GeneratedChars,
   type IdleGuard,
-  STREAM_FIRST_BYTE_MS,
+  STREAM_FIRST_CONTENT_MS,
   STREAM_IDLE_MS,
   type StreamProgress,
   StreamStalledError,

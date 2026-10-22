@@ -42,7 +42,7 @@ import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixtur
  Window short enough to trip inside a case, long enough that a loaded machine
  does not trip it between two chunks that arrive every {@link GAP_MS}.
  */
-const WINDOW_MS = 120;
+const WINDOW_MS = 250;
 
 /**
  Pause between two chunks of a stream that keeps sending, a fraction of the
@@ -54,7 +54,7 @@ const GAP_MS = 8;
  Chunks a keep-alive stream sends, which at {@link GAP_MS} run well past the
  window.
  */
-const KEEP_ALIVES = 60;
+const KEEP_ALIVES = 80;
 
 /**
  The comment line OpenRouter sends while the upstream provider has not answered,
@@ -131,54 +131,105 @@ function timedResponse(
 }
 
 /**
- Drains one timed body under a guard with the given windows and returns what it
- raised, or nothing when the body ended whole.
+ Windows and chunks of one timed body.
+ */
+type TimedBody = {
+  /**
+   First-content window of the guard.
+   */
+  readonly firstContentMs: number;
 
- @param firstContentMs - first-content window of the guard
+  /**
+   Idle window of the guard.
+   */
+  readonly idleMs: number;
 
- @param idleMs - idle window of the guard
+  /**
+   Chunks the body sends.
+   */
+  readonly chunks: readonly string[];
+};
 
- @param chunks - chunks the body sends
+/**
+ Drains one timed body under a guard with the given windows.
 
- @returns The cut, or undefined when the drain returned the body
+ @param body - windows and chunks of the body
+
+ @returns The drained body text
+
+ @throws {@link StreamCutShortError} when the guard cut the stream
 
  @example
  ```ts
- const cut = await cutOf({ firstContentMs: 50, idleMs: 50, chunks, },);
+ const text = await drainTimed({ firstContentMs: 50, idleMs: 50, chunks, },);
  ```
  */
-async function cutOf(
+async function drainTimed(
   {
     firstContentMs,
     idleMs,
     chunks,
-  }: {
-    readonly firstContentMs: number;
-    readonly idleMs: number;
-    readonly chunks: readonly string[];
-  },
-): Promise<StreamCutShortError | undefined> {
+  }: TimedBody,
+): Promise<string> {
   using guard = armIdleGuard({
     label: 'inception/mercury-2.5',
     provider: 'openrouter',
     firstContentMs,
     idleMs,
   },);
+  return await drainBody({
+    credentials: [],
+    response: timedResponse({ guard, chunks, },),
+    guard,
+    label: 'inception/mercury-2.5',
+    callerSignal: new AbortController().signal,
+  },);
+}
+
+/**
+ Drains one timed body that the guard is expected to cut and returns the cut.
+
+ @param body - windows and chunks of the body
+
+ @returns The cut the drain raised
+
+ @throws {@link Error} when the body ended whole, which is the failure under test
+
+ @example
+ ```ts
+ const cut = await cutOf({ firstContentMs: 50, idleMs: 50, chunks, },);
+ ```
+ */
+async function cutOf(body: TimedBody,): Promise<StreamCutShortError> {
   try {
-    await drainBody({
-      credentials: [],
-      response: timedResponse({ guard, chunks, },),
-      guard,
-      label: 'inception/mercury-2.5',
-      callerSignal: new AbortController().signal,
-    },);
+    await drainTimed(body,);
   }
   catch (error) {
     if (error instanceof StreamCutShortError)
       return error;
     throw error;
   }
-  return undefined;
+  throw new Error('the body ended whole, so no cut was raised',);
+}
+
+/**
+ Message of the stall a cut carries as its cause.
+
+ @param cut - cut whose cause is read
+
+ @returns The stall's message
+
+ @throws {@link Error} when the cause is not a stall
+
+ @example
+ ```ts
+ const message = stallMessageOf({ cut, },);
+ ```
+ */
+function stallMessageOf({ cut, }: { readonly cut: StreamCutShortError; },): string {
+  if (!(cut.cause instanceof StreamStalledError))
+    throw new Error('the cut was not caused by a stall',);
+  return cut.cause.message;
 }
 
 await describe({
@@ -194,12 +245,10 @@ await describe({
           idleMs: HANG_STOP_MS,
           chunks: Array.from({ length: KEEP_ALIVES, }, () => PROCESSING),
         },);
-        expect(cut,).toBeInstanceOf(StreamCutShortError,);
-        expect(cut?.cause,).toBeInstanceOf(StreamStalledError,);
-        expect((cut?.cause as Error).message,).toContain('first-content',);
+        expect(stallMessageOf({ cut, },),).toContain('first-content',);
         // The wire did carry bytes, which stay counted as the wire's.
-        expect(cut?.progress.chars,).toBeGreaterThan(0,);
-        expect(cut?.progress.firstByteMs,).toBeGreaterThanOrEqual(0,);
+        expect(cut.progress.chars,).toBeGreaterThan(0,);
+        expect(cut.progress.firstByteMs,).toBeGreaterThanOrEqual(0,);
       },
     },),
 
@@ -211,8 +260,7 @@ await describe({
           idleMs: HANG_STOP_MS,
           chunks: Array.from({ length: KEEP_ALIVES, }, () => '\n'),
         },);
-        expect(cut?.cause,).toBeInstanceOf(StreamStalledError,);
-        expect((cut?.cause as Error).message,).toContain('first-content',);
+        expect(stallMessageOf({ cut, },),).toContain('first-content',);
       },
     },),
 
@@ -223,10 +271,9 @@ await describe({
         const cut = await cutOf({
           firstContentMs: WINDOW_MS,
           idleMs: HANG_STOP_MS,
-          chunks: Array.from({ length: KEEP_ALIVES, }, (_unused, at) => (at % 2 === 0) ? ROLE_ONLY : EMPTY_DELTA),
+          chunks: Array.from({ length: KEEP_ALIVES, }, (_unused, at) => (((at % 2) === 0) ? ROLE_ONLY : EMPTY_DELTA)),
         },);
-        expect(cut?.cause,).toBeInstanceOf(StreamStalledError,);
-        expect((cut?.cause as Error).message,).toContain('first-content',);
+        expect(stallMessageOf({ cut, },),).toContain('first-content',);
       },
     },),
 
@@ -242,9 +289,8 @@ await describe({
             ...Array.from({ length: KEEP_ALIVES, }, () => PROCESSING),
           ],
         },);
-        expect(cut?.cause,).toBeInstanceOf(StreamStalledError,);
-        expect((cut?.cause as Error).message,).toContain('body',);
-        expect(cut?.generatedChars?.content,).toBe('The cat '.length,);
+        expect(stallMessageOf({ cut, },),).toContain('body',);
+        expect(cut.generatedChars?.content,).toBe('The cat '.length,);
       },
     },),
 
@@ -252,24 +298,24 @@ await describe({
       name: 'COUNTS A CONTENT DELTA AS PROGRESS: a stream that sends a word every few milliseconds ends whole under '
         + 'a window shorter than the stream',
       fn: async () => {
-        const cut = await cutOf({
+        const bodyText = await drainTimed({
           firstContentMs: WINDOW_MS,
           idleMs: WINDOW_MS,
           chunks: Array.from({ length: KEEP_ALIVES, }, (_unused, at) => frameOf({ channel: 'content', text: `w${String(at,)} `, },)),
         },);
-        expect(cut,).toBeUndefined();
+        expect(bodyText.length,).toBeGreaterThan(0,);
       },
     },),
 
     it({
       name: 'COUNTS A REASONING DELTA AS PROGRESS, since a thinking model that has not answered is working',
       fn: async () => {
-        const cut = await cutOf({
+        const bodyText = await drainTimed({
           firstContentMs: WINDOW_MS,
           idleMs: WINDOW_MS,
           chunks: Array.from({ length: KEEP_ALIVES, }, (_unused, at) => frameOf({ channel: 'reasoning', text: `t${String(at,)} `, },)),
         },);
-        expect(cut,).toBeUndefined();
+        expect(bodyText.length,).toBeGreaterThan(0,);
       },
     },),
 
@@ -296,7 +342,7 @@ await describe({
         expect(line,).toBeDefined();
         expect(line,).toContain('openrouter inception/mercury-2.5',);
         expect(line,).toContain(`no content or reasoning for ${String(WINDOW_MS,)}ms during body`,);
-        expect(line,).toContain(`${String(cut?.progress.chars ?? -1,)} raw chars`,);
+        expect(line,).toContain(`${String(cut.progress.chars,)} raw chars`,);
         expect(line,).toContain('8 content chars',);
         expect(line,).toContain('0 reasoning chars',);
       },

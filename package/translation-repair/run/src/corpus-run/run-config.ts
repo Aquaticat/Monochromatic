@@ -26,7 +26,8 @@ import {
   fetchTransport,
   type ModelTransport,
   type QuotaSnapshot,
-  STREAM_FIRST_BYTE_MS,
+  requireStreamBoundsInsideCallTimeout,
+  STREAM_FIRST_CONTENT_MS,
   STREAM_IDLE_MS,
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import {
@@ -860,7 +861,7 @@ export const RUN_PER_CALL_TIMEOUT_MS = 360_000;
  ```ts
  const config: RunCallConfig = {
    perCallTimeoutMs: 240_000,
-   streamFirstByteMs: 150_000,
+   streamFirstContentMs: 150_000,
    streamIdleMs: 60_000,
  };
  ```
@@ -872,15 +873,56 @@ export type RunCallConfig = {
   readonly perCallTimeoutMs: number;
 
   /**
-   Silence allowed before a stream's first byte.
+   Silence allowed before a stream's first content or reasoning delta. Named
+   `streamFirstByteMs` on artifacts written before ledger B804, when the
+   window counted bytes of any kind.
    */
-  readonly streamFirstByteMs: number;
+  readonly streamFirstContentMs: number;
 
   /**
-   Silence allowed between a stream's bytes once flowing.
+   Silence allowed between a stream's content or reasoning deltas once flowing.
    */
   readonly streamIdleMs: number;
 };
+
+/**
+ Builds the call-timing knobs, refusing a set whose stream bounds cannot fire
+ before the per-call deadline.
+
+ @param perCallTimeoutMs - deadline one model exchange is granted
+
+ @param streamFirstContentMs - silence allowed before the first generated text
+
+ @param streamIdleMs - silence allowed between pieces of generated text
+
+ @returns The three knobs, unchanged, to stamp on an artifact
+
+ @throws {@link StreamBoundsOutsideCallTimeoutError} when a bound is not a
+ positive finite number shorter than the deadline (ledger B804)
+
+ @example
+ ```ts
+ const config = runCallConfigOf({ perCallTimeoutMs: 360_000, streamFirstContentMs: 120_000, streamIdleMs: 120_000, },);
+ ```
+ */
+export function runCallConfigOf(
+  {
+    perCallTimeoutMs,
+    streamFirstContentMs,
+    streamIdleMs,
+  }: RunCallConfig,
+): RunCallConfig {
+  requireStreamBoundsInsideCallTimeout({
+    perCallTimeoutMs,
+    streamFirstContentMs,
+    streamIdleMs,
+  },);
+  return {
+    perCallTimeoutMs,
+    streamFirstContentMs,
+    streamIdleMs,
+  };
+}
 
 /**
  Call-timing configuration stamped into every artifact this pass writes.
@@ -921,11 +963,11 @@ export type RunCallConfig = {
  Deliberately not surfaced on the grading sheet: a grader who could see which
  cohort an issue came from would be a worse instrument than one who could not.
  */
-export const RUN_CALL_CONFIG: RunCallConfig = {
+export const RUN_CALL_CONFIG: RunCallConfig = runCallConfigOf({
   perCallTimeoutMs: RUN_PER_CALL_TIMEOUT_MS,
-  streamFirstByteMs: STREAM_FIRST_BYTE_MS,
+  streamFirstContentMs: STREAM_FIRST_CONTENT_MS,
   streamIdleMs: STREAM_IDLE_MS,
-};
+},);
 
 /**
  Built-in corpus read location: the user's local clone at the benchmark
