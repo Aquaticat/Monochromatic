@@ -217,3 +217,56 @@ The seats that sit on a bench and that no wet provider serves are now named in t
 (`unserved=` on every `JUDGE SEATS` reading line,
 `unserved-checkers=` on the repair lane's `chunk re-seated under a hold` line),
 so the checker bench padded with unserved ranked seats (addendum of 2026-09-27) is visible where it is seated.
+
+## Addendum 2026-10-22: a bench left with exactly its quorum closes one voice below it
+
+Taken by the owner,
+who answered "Let the grace open" to the question of whether a short bench that needs every live seat should wait on its
+last seat at all
+(audit ledger B809 and B816;
+the decision is recorded in `doc/decision/translation-repair-straggler-grace.md`,
+section "Decision 2026-10-22").
+
+The addendum of 2026-09-09 says `reachableQuorum` keeps the bench quorum while the reachable seats can meet it.
+That held for a reachable bench equal to its quorum too,
+so a consolidation bench of 7 with 3 seats unreachable needed 4 of 4 live seats,
+and one stream that held without content held the round while the straggler grace,
+which opens only once a quorum stands,
+could not open.
+
+The rule now:
+
+- Where the reachable seats equal the bench quorum and that quorum is above `MIN_STAGE_VOICES` (2),
+  `reachableQuorum` needs one voice fewer than the bench quorum and marks the bench short,
+  so the findings carry `stage-short-bench (<stage> reachable r of n, quorum q)` as for any short bench.
+  Seven seats with three dark close on three of four;
+  eleven seats with five dark close on five of six.
+- Every other shape keeps the rule of 2026-09-09.
+  A reachable bench above the bench quorum needs the bench quorum.
+  A reachable bench below it needs half the reachable seats rounded up,
+  never under two.
+- A bench of 3 with 1 unreachable has a bench quorum of 2 and keeps both live seats:
+  the floor of two voices holds,
+  so one judge never decides.
+  Whether the floor should give way on a bench of three was not asked.
+- The last live seat still gets the grace after the reduced quorum stands.
+  A verdict is decided with one voice fewer only when that seat does not answer inside it.
+- A refusal inside a round,
+  a slot handing its place to a reserve seat included,
+  sizes the need again (`heardNeededAfterRefusals` in `runGatherRound`),
+  so round 0,
+  which is sized before the router names any seat,
+  opens its grace on the quorum the refusals leave.
+  The gather and the windowed stages both pass it.
+
+What this does not change:
+the weight a deciding bench needs (`selectionMinimum` in `candidate-select-minimum.ts`) is a separate rule,
+and the commits of this rule did not touch it.
+
+Records stored under the rule of 2026-09-09:
+the naturalness review recomputes its verdict from the seats a stored round recorded,
+so a stored round whose live seats equal its quorum reads acceptable under the new rule and short of quorum under the old.
+Artifact generation 20 gates the rule (`artifactGenerationLetsGraceOpenOnLastSeat`),
+`reachableQuorum` takes `lastSeatGrace: false` to read an older record by its own rule,
+and a build of 20 refuses to resume a run directory stamped 19 or earlier.
+The cache versions of every stage that caches a gather moved with it (audit ledger B816).

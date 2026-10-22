@@ -24,7 +24,7 @@ The full rationale,
  the on-hardware measurements,
  and the source review of every
 alternative considered are recorded in
-[`doc/decision/nested-wayland-session.md`](../../../doc/decisions/nested-wayland-session.md)
+[`doc/decision/nested-wayland-session.md`](../../../doc/decision/nested-wayland-session.md)
 (issue #272).
  A plain-language overview is in
 [`doc/planning/nested-wayland-session.md`](../../../doc/planning/nested-wayland-session.md).

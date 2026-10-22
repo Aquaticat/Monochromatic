@@ -329,22 +329,28 @@ so a newer version may find more than the one that last passed.
 The list now holds the family's `doc/audit` and `doc/troubleshooting` docs whose names do not start with
 `translation-repair` (ledger D35),
 each by its whole name.
+Six of those names are troubleshooting docs that quote mise,
+Oxc or repository Rust word for word:
+`cli-git-temporary-worktree-policy-inputs`,
+`mise-detached-worktree-trust`,
+`mise-inline-node-arguments`,
+`node-lookup-in-agent-command-context`,
+`oxlint-type-aware-cgroup-memory`
+and `forbidden-strings-builtin-rule-fixture-tokens`.
+They joined the list on 2026-10-22 (UTC),
+after the repository owner decided to exempt the Rust fences of
+`doc/troubleshooting/**/*.md` from every `rust/*` rule.
+The root `monochromatic-lint.config.jsonc` block `troubleshooting-quoted-fences` turns the rules off for the virtual
+files of those fences (named like `mise-inline-node-arguments.md/1.rs`),
+and the pattern reaches no other tree,
+so every Markdown rule still judges those docs.
 
 What the guard cannot read:
-a doc that quotes Rust source in a fence cannot pass,
-because the linter applies `rust/require-rustdoc` to fenced Rust,
+a family doc outside `doc/troubleshooting` that quotes Rust source in a fence cannot pass,
+because the linter applies `rust/require-rustdoc` to fenced Rust there,
 declares that rule unsuppressible
-and has no setting that exempts a quoted fence;
-the root configuration exempts standalone Rust under `doc/troubleshooting`
-but excludes the fences of Markdown files on purpose.
+and has no directive that exempts a quoted fence;
+only a configuration block like `troubleshooting-quoted-fences` exempts a path.
 The quote cannot be altered to add documentation comments,
-so these troubleshooting docs stay out of the list until the owner approves a configuration change:
-`cli-git-temporary-worktree-policy-inputs.md`,
-`mise-detached-worktree-trust.md`,
-`mise-inline-node-arguments.md`,
-`node-lookup-in-agent-command-context.md`,
-`oxlint-type-aware-cgroup-memory.md`
-and `forbidden-strings-builtin-rule-fixture-tokens.md`.
-A family doc that quotes Rust is therefore written so that its fences are the family's own code with documentation
-comments,
+so such a doc is written so that its fences are the family's own code with documentation comments,
 or it holds the quote as a plain text block.

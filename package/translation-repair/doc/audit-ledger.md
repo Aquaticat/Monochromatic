@@ -523,10 +523,18 @@ named for that subject and listed here.
   Gemma listed as unable to read a picture on OpenRouter before any transcription was measured (B721),
   the readers bench counted by text reach where a picture needs vision reach (B722),
   and a picture reader measurement that lived in a scratch script (B723).
+- [Audit ledger: short benches and the last live seat](audit-ledger-short-benches-and-the-last-live-seat.md):
+  Quorums sized on the seats that could answer and how long a round waits on the last of them:
+  the short bench that waited on its last live seat,
+  where the owner let the grace open,
+  with the round's need read again at each refusal,
+  artifact generation 20 and the cache versions that moved with the rule (B816).
 - [Audit ledger: providers and seats a run holds out](audit-ledger-providers-and-seats-a-run-holds-out.md):
   A provider an owner ruling keeps off that every run still asked (B760),
   a seat never withheld although its streams carried nothing (B761),
-  and a meter line that read a held provider differently from the router (B763).
+  a meter line that read a held provider differently from the router (B763),
+  and a model the owner's answer took off the lane-contest and consolidation benches
+  after the grace cut 40 of its 95 streams (B815).
 - [Audit ledger: blocks and quotes read off the parse](audit-ledger-blocks-and-quotes-read-off-the-parse.md):
   Blocks,
   quotes and code spans counted by a blank-line split or a scan of their own,
@@ -664,7 +672,8 @@ named for that subject and listed here.
   the lint,
   the scans or the type check that would have refused them,
   a round landed without the round before it,
-  and a test round reported before the scans had read its tests (M266).
+  a test round reported before the scans had read its tests (M266),
+  and a bench change landed with the run package's tests only (M287).
 - [Audit ledger: process mistakes, stopping and waiting](audit-ledger-process-stopping-and-waiting.md):
   Turns that ended with work still listed,
   and waits spent polling.
@@ -837,6 +846,7 @@ Filed in:
 - [Audit ledger: folds and quote forms](audit-ledger-folds-and-quote-forms.md)
 - [Audit ledger: composed operations and checks on a part](audit-ledger-composed-operations-and-partial-checks.md)
 - [Audit ledger: which seats a quorum counts](audit-ledger-which-seats-a-quorum-counts.md)
+- [Audit ledger: short benches and the last live seat](audit-ledger-short-benches-and-the-last-live-seat.md)
 - [Audit ledger: what each sheet shows](audit-ledger-what-each-sheet-shows.md)
 - [Audit ledger: the polish gate's claims and the order of reason and vote](audit-ledger-polish-gate-claims-and-reason-order.md)
 - [Audit ledger: defaults that stand in for an input](audit-ledger-defaults-standing-in-for-an-input.md)

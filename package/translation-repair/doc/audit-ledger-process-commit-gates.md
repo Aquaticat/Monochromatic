@@ -482,3 +482,86 @@ because the scans read tests for duplicate bodies,
 words of position and times without a zone.
 `mistake-prevention-shell-edits-commits-and-agents.md`,
 "Lint and edits".
+
+## M287: a bench change landed with the run package's tests only, and the corpus-pass tests that read the bench failed at load
+
+Status:
+happened on 2026-10-22 (UTC) in `tr-w277`,
+at the change of B815.
+`9639e19d85` took `hf:Qwen/Qwen3.8-27B` off the late-judge bench
+and ran the run package's tests only;
+it did not run the corpus-pass package's tests.
+`pass-seams-reseat.unit.test.ts` there reads `judgeSeatsFor` and has a fixture guard
+that throws when the fixture views seat the same late judges
+("so no case here can tell a wired hook apart"),
+and with Qwen gone a Synthetic dry-out takes no late judge,
+so the guard threw at load and the file ran no case.
+`89067fb49a` fixed it,
+and its message says it was committed before its rerun finished.
+That rerun's log (outside the repository,
+`~/temp/agent/tr-fan/w274-audit/reseat/corpus-pass.log`) holds `JUDGE SEATS` lines from the file's cases,
+so the file loaded and ran,
+and its six `[FAIL]` lines name two other cases.
+Measured on 2026-10-22:
+of the 31 views with at least one provider dry,
+4 take a late judge (`hf:moonshotai/Kimi-K3`),
+Synthetic and Hyper dry with OpenRouter wet and any of NeuralWatt and Bedrock,
+and the contest and consolidation reseat cases now read a Synthetic-and-Hyper-dry view.
+
+A second miss in the same rerun:
+`eb4db609ff` moved `CONSISTENCY_CACHE_VERSION` to 7 and `PAGE_TITLE_CACHE_VERSION` to 6 (B816),
+and the two cases that name them in the corpus-pass package,
+`pass-consistency-cache.unit.test.ts` (version 6 and its pinned key) and `pass-page-titles.unit.test.ts` (version 5),
+are the two failures of that log.
+`205eed4f57` moved both pins.
+This is the shape of M284 again:
+the check after a version change ran the declaring packages,
+and corpus-pass declares neither constant.
+
+A third miss,
+found when the unit tests of 16 packages ran on `205eed4f57`:
+five more packages failed on pins the same commits moved.
+The pinned keys of the repair slice,
+refine,
+lane-contest,
+consolidate and translate slice caches still held their old hashes,
+and 22 expected lines in three `verify-published` test files of the run package still read `read-at-generation=19`,
+though `19dc276377` writes generation 20.
+`aed73b727b` moved them,
+with each new hash read off the failing run,
+and the five packages passed on the rerun.
+The same check found three more slips.
+The cache-bump script behind `eb4db609ff` had split the code span
+`git merge-base --is-ancestor` across two TSDoc lines in three accounts.
+Two generation-20 TSDocs said "one voice below them",
+which the position-references scan refuses.
+The real-clock scan did not list the grace windows and the stuck-seat timer the B816 cases added.
+`8de619e404` fixed all three.
+
+Recurrence:
+M284,
+which records the same check for cache versions;
+the prevention of M284 names constants that key a cache,
+and nothing in it named a bench.
+
+Prevention:
+`mistake-prevention-sheets-quorums-and-outcome-rules.md`,
+"Which seats a quorum counts":
+a change to a bench or a roster
+(a hold on a model card,
+a roster list,
+a seat set that `judgeSeatsFor` builds)
+runs the unit tests of every package that reads `judgeSeatsFor` or the bench constants,
+and not only the package it edits.
+For the third miss,
+`mistake-prevention-stored-files-and-cached-decisions.md`:
+the runs that follow a version move start after the bump commit,
+and a move of the artifact generation also searches the old number as text,
+since a printed generation sits in tests that name no constant.
+The search is `rg --files-with-matches '<NAME>' package/translation-repair --glob '*.ts'`
+for `judgeSeatsFor` and each constant that moved;
+on `9ed9b5d14a` it finds corpus-pass,
+probe,
+repair,
+run,
+stage and translate-stage.

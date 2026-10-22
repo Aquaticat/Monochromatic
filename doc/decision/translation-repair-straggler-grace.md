@@ -1,10 +1,15 @@
 # The straggler grace moves from 60 to 180 seconds, on the latency distribution
 
-## Current status, 2026-10-21
+## Current status, 2026-10-22
 
 The archive block review round also waits the writer window,
 a classification this session made and the owner has not confirmed
 (addendum 2026-10-21).
+
+The grace may now start on a short bench that holds exactly its quorum,
+so it can cut the last live seat,
+by the owner's answer "Let the grace open" (decision 2026-10-22).
+No window changed.
 
 ## Status of 2026-09-06
 
@@ -682,3 +687,84 @@ bounded by the 360000 ms call deadline.
 
 To veto:
 remove `archive-block-review` from `WRITER_STAGE_LABELS` and pass `grace.roundMs` again at the gather.
+
+## Decision 2026-10-22: a short bench closes one voice below every live seat, so the grace can cut the last one
+
+Decided by the owner,
+asked with two options after the read of the corpus pass `XingZ6017`
+(audit ledger B809 and B816).
+
+The evidence put beside the question:
+26 of the 27 rounds that took 250 s or more waited on one `inception/mercury-2.5` stream that sent only comment lines,
+and the grace never applied to them.
+Under the rule of 2026-09-09 a quorum is sized on the reachable bench,
+so a consolidation bench of 7 with 3 seats unreachable needed 4 voices,
+which is every live seat,
+and a repair checker or probe bench of 3 with Kimi-K3 unreachable needed 2 of 2.
+The grace opens only once the quorum stands,
+so it could not open before the one hung voice.
+The first-content window of B809 ends such a stream at 90 s for Mercury,
+and says nothing of a stream that is slow and working.
+
+The options,
+as put:
+
+- "Keep current rule (Recommended)":
+  a short bench still waits on every live seat.
+  Pro:
+  no verdict decided on fewer voices;
+  quality first.
+  Con:
+  a stuck seat costs wall-clock.
+- "Let the grace open":
+  allow a short bench to close on a quorum below every live seat once the grace ends.
+  Pro:
+  faster rounds.
+  Con:
+  some verdicts decided with one voice fewer.
+
+The owner chose "Let the grace open".
+The recommendation was the other option,
+so this is the owner's choice against the ranking offered.
+
+What changed:
+
+- `reachableQuorum` (`package/translation-repair/stage/src/stage-reachable-quorum.ts`) returns the bench quorum less one,
+  marked short,
+  where the reachable seats equal the bench quorum and that quorum is above the two-voice floor.
+  Seven seats with three dark close on three of their four live seats.
+- The round hears that reduced quorum,
+  and then the grace runs for the last live seat.
+  A verdict is decided with one voice fewer only when that seat does not answer inside the grace.
+- No window changed.
+  `STRAGGLER_GRACE_MS` stays 120000 ms and `WRITER_GRACE_MS` stays 180000 ms.
+  What moved is whether the grace may start on a short bench.
+- A refusal the router gives inside a round sizes the need again,
+  so round 0,
+  which is sized before the router names any seat,
+  opens its grace on the quorum the refusals leave
+  (`runGatherRound` in `stage-round.ts`).
+- Artifact generation 20 reads a stored naturalness round under the rule it was gathered by,
+  and a build of 20 refuses to resume a run directory stamped 19 or earlier.
+  The cache versions of every stage that caches a gather moved (audit ledger B816).
+
+What this does not change:
+a bench of 3 with 1 unreachable keeps the floor of two voices and still waits on 2 of 2.
+Whether that floor should give way on a bench of three was not asked.
+
+How it fits the status of 2026-08-29:
+that status says "No grace change is authorized before active runs finish and matched evidence exists".
+This answer is the owner's authorization for this change,
+given before matched evidence of its effect exists.
+How often the reduced quorum decides a verdict,
+and how much wall-clock it saves,
+are not measured,
+since no run has gathered under it.
+The measurement that would price it is the share of rounds whose last live seat was cut after the grace,
+read from the first pass log written under generation 20,
+beside the run-to-run band that the 2026-08-26 addendum shows single runs cannot price.
+
+Record:
+`doc/decision/translation-repair-short-bench-share.md`,
+addendum 2026-10-22,
+and the audit ledger entry B816.

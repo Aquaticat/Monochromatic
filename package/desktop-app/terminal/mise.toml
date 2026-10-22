@@ -11,7 +11,7 @@
 # call containerCargo directly to force the podman path regardless of host
 # libraries; verify:container is the umbrella assertion.
 # Why podman and not mise-managed deps (conda route rejected):
-# see ../../../doc/decisions/desktop-app-podman-build.md
+# see ../../../doc/decision/desktop-app-podman-build.md
 
 [env]
 # Slint's experimental language surface used by the UI must be compiled

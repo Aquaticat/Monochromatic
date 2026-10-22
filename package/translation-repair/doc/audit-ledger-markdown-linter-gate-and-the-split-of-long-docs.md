@@ -307,3 +307,8 @@ and the owner can veto the decision.
   Oxc or repository source word for word,
   and the linter offers no exemption for a quoted fence,
   as the section "The Markdown linter" of `mistake-prevention-docs-and-references.md` records.
+  Those six joined the guard on 2026-10-22 (UTC),
+  after the repository owner decided to exempt the Rust fences of `doc/troubleshooting/**/*.md` from every `rust/*` rule
+  (root `monochromatic-lint.config.jsonc`,
+  block `troubleshooting-quoted-fences`);
+  the two oxlint-plugin docs and the three repository-policy docs stay out.
