@@ -31,7 +31,7 @@ mod source;
 mod types;
 /// A scene rendered without a window.
 #[cfg(test)]
-pub(super) use readback::render_scene;
+pub(super) use readback::{render_scene, render_stack};
 /// How often the window was given a new list of textures.
 #[cfg(test)]
 pub(super) use types::SLICE_LISTS_SET;
@@ -102,6 +102,9 @@ struct Inner {
     /// Scenes of tiles rendered so far,
     /// one for each texture of a tile.
     tile_textures_rendered: u64,
+    /// Textures made for tiles so far:
+    /// a tile of the shape the last one had makes none.
+    tile_textures_made: u64,
     /// Wrap indicator scenes rendered so far.
     signs_rendered: u64,
     /// Minimap pictures rendered so far.

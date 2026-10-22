@@ -4,8 +4,9 @@
 //!  and a scene rendered without a window around it.
 
 /// The tile scene that is drawn into a texture,
+///  the scenes of a stack,
 ///  and the uses a texture of the tile has.
-use super::{Inner, TileScene};
+use super::{Inner, TileScene, TileStack};
 /// Slint's own wgpu types,
 /// the ones the window's device is made of.
 use slint::wgpu_30::wgpu;
@@ -106,6 +107,36 @@ pub(super) fn read_texture(
 pub(in crate::native) fn render_scene(
     scene: &TileScene,
 ) -> slint::SharedPixelBuffer<slint::Rgba8Pixel> {
+    return render_scenes(&[scene]);
+}
+
+/// What:
+///  Render the scenes of `stack` on the test thread's device,
+/// without a window,
+/// each into a texture of its own,
+/// and read the textures back as straight RGBA put one below the other.
+/// Why:
+///  The stack a window shows is looked at without a window around it,
+///  and it is compared with the one texture that holds the same rows.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function renderStack(stack: TileStack): Pixels;
+/// ```
+pub(in crate::native) fn render_stack(
+    stack: &TileStack,
+) -> slint::SharedPixelBuffer<slint::Rgba8Pixel> {
+    let mut scenes = Vec::with_capacity(stack.textures.len());
+    for texture in &stack.textures {
+        scenes.push(texture);
+    }
+    return render_scenes(&scenes);
+}
+
+/// Render each of `scenes` into a texture of its own with one renderer,
+/// and read them back one below the other;
+/// the scenes are one width.
+fn render_scenes(scenes: &[&TileScene]) -> slint::SharedPixelBuffer<slint::Rgba8Pixel> {
     let (device, queue) = crate::native::gpu_snapshot::device_handles();
     let mut renderer = Renderer::new(
         &device,
@@ -117,34 +148,49 @@ pub(in crate::native) fn render_scene(
         },
     )
     .expect("the GPU text renderer starts");
-    let texture = device.create_texture(&wgpu::TextureDescriptor {
-        label: Some("ide scene probe"),
-        size: wgpu::Extent3d {
-            width: scene.width,
-            height: scene.height,
-            depth_or_array_layers: 1,
-        },
-        mip_level_count: 1,
-        sample_count: 1,
-        dimension: wgpu::TextureDimension::D2,
-        format: wgpu::TextureFormat::Rgba8Unorm,
-        usage: Inner::usage(),
-        view_formats: &[],
-    });
-    let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
-    renderer
-        .render_to_texture(
-            &device,
-            &queue,
-            &scene.scene,
-            &view,
-            &RenderParams {
-                base_color: VelloColor::from_rgba8(0, 0, 0, 0),
+    let width = scenes.first().map_or(0, |scene| return scene.width);
+    let mut height = 0;
+    for scene in scenes {
+        assert_eq!(scene.width, width, "the scenes of a stack are one width");
+        height += scene.height;
+    }
+    let mut stacked = slint::SharedPixelBuffer::<slint::Rgba8Pixel>::new(width, height);
+    let mut row = 0;
+    for scene in scenes {
+        let texture = device.create_texture(&wgpu::TextureDescriptor {
+            label: Some("ide scene probe"),
+            size: wgpu::Extent3d {
                 width: scene.width,
                 height: scene.height,
-                antialiasing_method: AaConfig::Area,
+                depth_or_array_layers: 1,
             },
-        )
-        .expect("the GPU renders the scene");
-    return read_texture(&device, &queue, &texture, (scene.width, scene.height));
+            mip_level_count: 1,
+            sample_count: 1,
+            dimension: wgpu::TextureDimension::D2,
+            format: wgpu::TextureFormat::Rgba8Unorm,
+            usage: Inner::usage(),
+            view_formats: &[],
+        });
+        let view = texture.create_view(&wgpu::TextureViewDescriptor::default());
+        renderer
+            .render_to_texture(
+                &device,
+                &queue,
+                &scene.scene,
+                &view,
+                &RenderParams {
+                    base_color: VelloColor::from_rgba8(0, 0, 0, 0),
+                    width: scene.width,
+                    height: scene.height,
+                    antialiasing_method: AaConfig::Area,
+                },
+            )
+            .expect("the GPU renders the scene");
+        let part = read_texture(&device, &queue, &texture, (scene.width, scene.height));
+        let start = row as usize * width as usize;
+        let slots = stacked.make_mut_slice();
+        slots[start..start + part.as_slice().len()].copy_from_slice(part.as_slice());
+        row += scene.height;
+    }
+    return stacked;
 }

@@ -34,6 +34,13 @@ impl GpuTile {
         return self.inner.borrow().tile_textures_rendered;
     }
 
+    /// How many textures the GPU has made for tiles,
+    /// for the structural tests:
+    /// a tile of the shape the last one had is drawn into the textures it has.
+    pub(in crate::native) fn tile_textures_made(&self) -> u64 {
+        return self.inner.borrow().tile_textures_made;
+    }
+
     /// The tile's textures read back from the GPU as straight RGBA and stacked into one buffer,
     /// row by row from the top,
     /// or nothing before a tile is drawn.

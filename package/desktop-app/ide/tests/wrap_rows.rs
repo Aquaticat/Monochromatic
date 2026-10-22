@@ -15,6 +15,8 @@ use ide_app::annotation::{Mark, Visible};
 /// Underline runs,
 /// with their inks.
 use ide_app::annotation_layout::{AnnotationColors, lay_out};
+/// Palette of the paint tests.
+use ide_app::code_colors::CodeColors;
 /// Canonical source of the lines under test and the position that selects a range.
 use ide_app::document::{Document, ReadingAffinity, ReadingPosition};
 /// The severity that picks an underline's line style.
@@ -27,9 +29,7 @@ use ide_app::row_map::{CODE_ROW, Place, RowMap};
 /// viewport,
 /// the clip of a very tall line,
 /// and the device's texture size and the stack's rows.
-use ide_app::shaped_text::{
-    Clip, TextShaper, Viewport, stack_fits, stack_rows, texture_dimension,
-};
+use ide_app::shaped_text::{Clip, TextShaper, Viewport, stack_fits, stack_rows, texture_dimension};
 /// What a tile draws,
 /// read as data.
 use ide_app::tile_scene::{
@@ -39,8 +39,6 @@ use ide_app::tile_scene::{
 };
 /// The wrap indicator chain.
 use ide_app::wrap_sign::{SIGN_PAIRS, Sign, SignCoverage, choose_sign};
-/// Palette of the paint tests.
-use ide_app::code_colors::CodeColors;
 
 /// Which symbols the fonts of a test show.
 enum Coverage {

@@ -83,6 +83,7 @@ impl Inner {
                 usage: Self::usage(),
                 view_formats: &[],
             });
+            self.tile_textures_made += 1;
             match Image::try_from(texture.clone()) {
                 Ok(image) => self.tile.push(StackTexture {
                     target: Target {

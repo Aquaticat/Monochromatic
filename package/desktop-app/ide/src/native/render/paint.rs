@@ -8,6 +8,8 @@
 ///  the source state,
 ///  and the palette read from the window.
 use super::code_colors;
+/// How many view heights a tile spans.
+use crate::native::viewport::TILE_VIEWS;
 /// Virtual-row texts and diagnostic marks are positioned against the frame's shaped rows.
 use crate::native::{
     AppWindow, State, annotate, find::present::present, tile::TileBounds, tile_build::TileJob,
@@ -22,8 +24,6 @@ use ide_app::find::{FindRange, FindRanges};
 use ide_app::find_navigation::paint_ranges;
 /// The rule that gives the tallest tile for a raster width.
 use ide_app::shaped_text::tile_cap as raster_cap;
-/// How many view heights a tile spans.
-use crate::native::viewport::TILE_VIEWS;
 /// Physical viewport description for shared shaping,
 ///  and the width of its raster.
 use ide_app::shaped_text::{Viewport, raster_width};

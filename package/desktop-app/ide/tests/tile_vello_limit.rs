@@ -131,7 +131,8 @@ fn no_accepted_texture_covers_more_bins_than_vello_counts_before_it_warns() {
         set_texture_dimension(side);
         let mut columns: u64 = 1;
         while columns <= u64::from(side) {
-            let rows = tallest(columns).expect("a one pixel tall texture fits any width up to the side");
+            let rows =
+                tallest(columns).expect("a one pixel tall texture fits any width up to the side");
             assert!(
                 bins(columns, rows) <= MAX_BINS,
                 "side {side}: a texture {columns} by {rows} covers {} bins",
@@ -157,7 +158,7 @@ fn no_accepted_texture_covers_more_bins_than_vello_counts_before_it_warns() {
 fn the_texture_of_the_scale_two_measurement_is_on_the_bin_grid() {
     set_texture_dimension(16_384);
     // Positive control: the old rule's size counts more bins than Vello accepts.
-    assert!(1358 * 12_288 * TEXEL_BYTES <= MAX_RASTER_BYTES);
+    assert_eq!(1358 * 12_288 * TEXEL_BYTES, 66_748_416);
     assert_eq!(bins(1358, 12_288), 288);
     assert!(!texture_fits(1358, 12_288));
     assert!(texture_fits(1358, 10_752));

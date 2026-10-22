@@ -19,7 +19,7 @@
 /// The device,
 /// the textures,
 /// and the outcome the window applies.
-use super::{Inner, StackTexture, Outcome, Placement, Target};
+use super::{Inner, Outcome, Placement, StackTexture, Target};
 /// The markup's record of one texture of the picture.
 use crate::native::ui::MinimapSlice;
 /// How the chunks are grouped into textures,

@@ -52,10 +52,10 @@ pub use split::snapped;
 /// The change of ink at the edges of a selection,
 ///  and where a drawing lies.
 use split::{Place, split};
-/// The geometry of one underline run.
-use underline::underline_items;
 /// The rows of a tile one texture holds.
 use std::ops::Range;
+/// The geometry of one underline run.
+use underline::underline_items;
 
 /// What:
 ///  Physical pixels a glyph or visual row may lie outside the tile and still be kept.

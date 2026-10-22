@@ -339,7 +339,7 @@ fn a_tall_window_over_wrapped_text_finishes_the_measurement_pass() {
             let current = opened.source.borrow();
             let view = current.shaped.as_ref().expect("a shown frame");
             assert!(
-                u64::from(view.width) * u64::from(view.height) * 4 <= MAX_RASTER_BYTES,
+                stack_fits(u64::from(view.width), u64::from(view.height)),
                 "height {height}: the raster passes the limit"
             );
         }
@@ -388,7 +388,10 @@ fn a_2000_px_window_gets_a_tile_of_textures_within_the_devices_limit_at_both_sca
             );
             together += down;
         }
-        assert_eq!(together, height, "scale {scale}: the textures do not add up");
+        assert_eq!(
+            together, height,
+            "scale {scale}: the textures do not add up"
+        );
         assert_eq!(
             textures.len(),
             if scale > 1.5 { 2 } else { 1 },

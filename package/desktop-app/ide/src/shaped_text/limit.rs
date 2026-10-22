@@ -338,7 +338,8 @@ pub fn stack_cap(columns: u64, scale: f32) -> f32 {
 /// function tileCap(columns: number, scale: number, wanted: number): number;
 /// ```
 pub fn tile_cap(columns: u64, scale: f32, wanted: f32) -> f32 {
-    let single = ((tile_texture_rows(columns.max(1)) as f32 / scale).floor() - CODE_ROW).max(CODE_ROW);
+    let single =
+        ((tile_texture_rows(columns.max(1)) as f32 / scale).floor() - CODE_ROW).max(CODE_ROW);
     return stack_cap(columns, scale).min(single.max(wanted + CAP_SLACK));
 }
 
