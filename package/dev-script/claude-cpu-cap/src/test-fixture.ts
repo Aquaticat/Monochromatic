@@ -157,7 +157,7 @@ export async function makeHost({
           [
             `energy${core + 2}_label`,
             `Ecore${String(core,)
-            .padStart(
+              .padStart(
               CORE_LABEL_DIGITS,
               '0',
             )}`,

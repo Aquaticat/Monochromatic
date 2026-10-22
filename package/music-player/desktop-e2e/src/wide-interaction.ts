@@ -82,8 +82,11 @@ const ROW_A = WIDE_POINTS.trackRow;
  Row B: the second track row of the folder on screen.
  */
 const ROW_B = {
-  x: WIDE_POINTS.trackRow.x,
-  y: WIDE_POINTS.trackRow.y + SECOND_ROW_OFFSET_PX,
+  x: WIDE_POINTS.trackRow
+    .x,
+  y: WIDE_POINTS.trackRow
+    .y
+    + SECOND_ROW_OFFSET_PX,
 } as const;
 
 /**
@@ -258,7 +261,10 @@ export async function checkClickThrough(
       await press({
         session,
         act: chordKeys({
-          mods: ['ctrl', 'shift',],
+          mods: [
+            'ctrl',
+            'shift',
+          ],
           key: '1',
         },),
         until: modeIs(0,),
@@ -309,7 +315,8 @@ export async function checkClickThrough(
         session,
         act: clickAt(ROW_B,),
         until: function rowBSelectedPaused(state: UiState,): boolean {
-          return (state.current_index !== indexA) && (state.current_index !== NO_INDEX) && !state.playing;
+          return (state.current_index !== indexA) && (state.current_index !== NO_INDEX)
+            && (!state.playing);
         },
         what: 'a click on row B selecting it and stopping row A',
       },);
@@ -321,7 +328,7 @@ export async function checkClickThrough(
       const indexB = selectedB.current_index;
       await wait(SELECT_STAYS_PAUSED_MS,);
       expect({
-        condition: !(await session.last()).playing && ((await session.last()).current_index === indexB),
+        condition: (!(await session.last()).playing) && ((await session.last()).current_index === indexB),
         message: 'row B started playing by itself after it was selected',
       },);
       const playingB = await press({
@@ -337,14 +344,17 @@ export async function checkClickThrough(
         session,
         act: clickAt(ROW_B,),
         until: function rowBPaused(state: UiState,): boolean {
-          return (state.current_index === indexB) && !state.playing;
+          return (state.current_index === indexB) && (!state.playing);
         },
         what: 'a click on the playing row B pausing it',
       },);
       await press({
         session,
         act: chordKeys({
-          mods: ['ctrl', 'shift',],
+          mods: [
+            'ctrl',
+            'shift',
+          ],
           key: '2',
         },),
         until: modeIs(1,),

@@ -399,7 +399,7 @@ function sampleMap(node: Extract<TypeNode, { readonly kind: 'map'; }>,): Arbitra
         source: `new Map<${node.keyKind}, ${emitType(node.value,)}>([${entries.map(function entrySource([key, sampled,]: KeyedSample<number | string>,) {
         return `[${JSON.stringify(key,)}, ${sampled.source}]`;
       },)
-        .join(', ',)}])`,
+          .join(', ',)}])`,
         value: new Map(entries.map(function entryValue([key, sampled,]: KeyedSample<number | string>,) {
           return [
             key,

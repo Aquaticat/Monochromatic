@@ -3,49 +3,113 @@
 // The checked file is only read. It is compared with the runtime directory it was built from, and its startup
 // checks run copies of it, each alone in a folder below the private agent scratch root, hosted in the repository's
 // nested compositor, on a one-file project whose language configures no server.
-import { spawn, spawnSync } from 'node:child_process';
+import {
+  spawn,
+  spawnSync
+} from 'node:child_process';
 import { once } from 'node:events';
-import { chmodSync, copyFileSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, realpathSync, rmSync, statSync, utimesSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  copyFileSync,
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  readlinkSync,
+  realpathSync,
+  rmSync,
+  statSync,
+  utimesSync,
+  writeFileSync
+} from 'node:fs';
 import { createConnection } from 'node:net';
 import { inflateSync } from 'node:zlib';
-import { homedir, tmpdir } from 'node:os';
-import { join, resolve, sep } from 'node:path';
+import {
+  homedir,
+  tmpdir
+} from 'node:os';
+import {
+  join,
+  resolve,
+  sep
+} from 'node:path';
 import { setTimeout as wait } from 'node:timers/promises';
-import { compositor, demandCurrentCompositor } from './nested-compositor.mjs';
+import {
+  compositor,
+  demandCurrentCompositor
+} from './nested-compositor.mjs';
 
-const names = ['inventory', 'license-texts', 'lone-copy-highlights', 'later-start-reuses-cache', 'damaged-cache-rebuilt', 'shadowing-query-ignored', 'concurrent-first-starts', 'damaged-embedded-part-reported', 'old-cache-folders-removed', 'crate-licenses'];
-const only = process.env.usage_only ? new Set(process.env.usage_only.split(',')) : undefined;
-for (const name of only ?? []) if (!names.includes(name)) throw new Error('Unknown check name ' + name + '; the checks are ' + names.join(', '));
-const executable = realpathSync(resolve(process.env.usage_file || 'dist/monochromatic-ide'));
-const runtime = realpathSync(resolve(process.env.usage_runtime || 'target/release/runtime'));
+const names = [
+  'inventory',
+  'license-texts',
+  'lone-copy-highlights',
+  'later-start-reuses-cache',
+  'damaged-cache-rebuilt',
+  'shadowing-query-ignored',
+  'concurrent-first-starts',
+  'damaged-embedded-part-reported',
+  'old-cache-folders-removed',
+  'crate-licenses'
+];
+const only = process.env
+  .usage_only ? new Set(process.env
+  .usage_only
+  .split(',')) : undefined;
+for (const name of only ?? []) if (!names.includes(name)) throw new Error(`Unknown check name ${  name  }; the checks are ${  names.join(', ')}`);
+const executable = realpathSync(resolve(process.env
+  .usage_file
+  || 'dist/monochromatic-ide'));
+const runtime = realpathSync(resolve(process.env
+  .usage_runtime
+  || 'target/release/runtime'));
 const source = realpathSync(process.cwd());
 // The notices task writes the crate license list and the linked-crates task the linked crate list beside the
 // profile folders, so both sit two levels above the runtime directory.
-const targetDirectory = resolve(runtime, '..', '..');
-const crateLicensesFile = join(targetDirectory, 'crate-licenses.json');
-const linkedCratesFile = join(targetDirectory, 'linked-crates.txt');
-const privateRoot = join(homedir(), 'temp', 'agent');
-if ((statSync(privateRoot).mode & 0o077) !== 0) throw new Error('Scratch root must exclude group and other permissions: ' + privateRoot);
-const artifact = realpathSync(mkdtempSync(join(privateRoot, 'ide-bundle-check-')));
-console.log('BUNDLE_CHECK_ARTIFACT=' + artifact);
-console.log('BUNDLE_CHECK_FILE=' + executable);
-console.log('BUNDLE_CHECK_RUNTIME=' + runtime);
+const targetDirectory = resolve(
+  runtime,
+  '..',
+  '..'
+);
+const crateLicensesFile = join(
+  targetDirectory,
+  'crate-licenses.json'
+);
+const linkedCratesFile = join(
+  targetDirectory,
+  'linked-crates.txt'
+);
+const privateRoot = join(
+  homedir(),
+  'temp',
+  'agent'
+);
+if ((statSync(privateRoot)
+  .mode
+  & 0o077) !== 0) throw new Error(`Scratch root must exclude group and other permissions: ${  privateRoot}`);
+const artifact = realpathSync(
+  mkdtempSync(join(privateRoot, 'ide-bundle-check-')),
+);
+console.log(`BUNDLE_CHECK_ARTIFACT=${  artifact}`);
+console.log(`BUNDLE_CHECK_FILE=${  executable}`);
+console.log(`BUNDLE_CHECK_RUNTIME=${  runtime}`);
 
-const demand = (condition, message) => { if (!condition) throw new Error(message); };
-const isFile = path => { try { return lstatSync(path).isFile(); } catch { return false; } };
-const isDirectory = path => { try { return lstatSync(path).isDirectory(); } catch { return false; } };
+function demand(condition, message) { if (!condition) throw new Error(message); }
+function isFilepath => { try { return lstatSync(path) { try { return lstatSync(path).isFile(); } catch { return false; } }
+function isDirectorypath => { try { return lstatSync(path) { try { return lstatSync(path).isDirectory(); } catch { return false; } }
 // Every regular file below a directory, as paths relative to it, sorted.
-const filesBelow = directory => readdirSync(directory, { withFileTypes: true, recursive: true })
-  .filter(entry => entry.isFile()).map(entry => join(entry.parentPath, entry.name).slice(directory.length + 1)).sort();
+function filesBelowdirectory => readdirSync(directory, { withFileTypes: true, recursive: true }) { return readdirSync(directory, { withFileTypes: true, recursive: true })
+  .filter(entry => entry.isFile()).map(entry => join(entry.parentPath, entry.name).slice(directory.length + 1)).sort() }
 // The grammar library names the manifest lists, validated the way the build script reads them.
-const listedGrammars = () => {
+function listedGrammars() {
   const manifest = JSON.parse(readFileSync(join(runtime, 'manifest.json'), 'utf8'));
   demand(Array.isArray(manifest.grammars) && manifest.grammars.length > 0, 'runtime/manifest.json lists no grammar');
   for (const library of manifest.grammars) demand(typeof library === 'string' && /^[A-Za-z0-9_-]+\.so$/.test(library), 'runtime/manifest.json entry is not a grammar library name: ' + library);
   return { revision: manifest.helixRevision, libraries: manifest.grammars };
-};
+}
 // Every file the build script embeds, as [path in the embedded layout, file on disk]: the same list as build.rs.
-const expectedFiles = () => {
+function expectedFiles() {
   const { libraries } = listedGrammars();
   const files = [['runtime/manifest.json', join(runtime, 'manifest.json')], ['runtime/Helix-LICENSE', join(runtime, 'Helix-LICENSE')]];
   for (const relative of filesBelow(join(runtime, 'queries'))) files.push(['runtime/queries/' + relative, join(runtime, 'queries', relative)]);
@@ -58,87 +122,208 @@ const expectedFiles = () => {
   for (const notice of ['Inter-LICENSE.txt', 'JetBrainsMono-OFL.txt']) files.push(['LICENSES/font/' + notice, join(source, 'asset', 'font', notice)]);
   files.push(['LICENSES/crates.json', crateLicensesFile]);
   return files;
-};
+}
 let binaryBytes;
-const binary = () => (binaryBytes ??= readFileSync(executable));
+function binary() { return binaryBytes ??= readFileSync(executable) }
 // The embedded paths whose bytes do not occur in the executable exactly as in the runtime directory.
-const notEmbedded = paths => {
+function notEmbeddedpaths => {
+  const expected = new Map(expectedFiles()) {
   const expected = new Map(expectedFiles());
   return paths.filter(path => {
     const bytes = readFileSync(expected.get(path));
     return bytes.length > 0 && binary().indexOf(bytes) < 0;
   });
-};
+}
 
 const checks = {
   // A regular ELF executable that carries every runtime file and license text byte for byte.
   inventory: async () => {
-    demand(isFile(executable), executable + ' is missing or not a regular file');
-    demand((lstatSync(executable).mode & 0o100) !== 0, executable + ' is not executable');
-    demand(binary().subarray(0, 4).equals(Buffer.from([0x7f, 0x45, 0x4c, 0x46])), executable + ' is not an ELF executable');
-    const { revision, libraries } = listedGrammars();
-    demand(typeof revision === 'string' && /^[0-9a-f]{40}$/.test(revision), 'runtime/manifest.json does not name the Helix revision');
+    demand(
+      isFile(executable),
+      executable + ' is missing or not a regular file'
+    );
+    demand(
+      (lstatSync(executable).mode & 0o100) !== 0,
+      executable + ' is not executable'
+    );
+    demand(
+      binary().subarray(0, 4).equals(Buffer.from([0x7f, 0x45, 0x4c, 0x46])),
+      executable + ' is not an ELF executable'
+    );
+    const {
+      revision,
+      libraries
+    } = listedGrammars();
+    demand(
+      typeof revision === 'string' && /^[0-9a-f]{40}$/.test(revision),
+      'runtime/manifest.json does not name the Helix revision'
+    );
     const files = expectedFiles();
     const missing = notEmbedded(files.map(([path]) => path));
-    demand(missing.length === 0, 'the executable does not embed ' + missing.length + ' of ' + files.length + ' runtime files byte for byte: ' + missing.slice(0, 8).join(', '));
-    const embeddedBytes = files.reduce((sum, [, path]) => sum + statSync(path).size, 0);
-    const highlightRules = files.filter(([path]) => path.endsWith('/highlights.scm')).length;
-    return { size: statSync(executable).size, embeddedFiles: files.length, embeddedBytes, grammars: libraries.length, highlightRules, helixRevision: revision };
+    demand(
+      missing.length === 0,
+      'the executable does not embed ' + missing.length + ' of ' + files.length + ' runtime files byte for byte: ' + missing.slice(0, 8).join(', ')
+    );
+    const embeddedBytes = files.reduce(
+      (sum, [, path]) => sum + statSync(path).size,
+      0
+    );
+    const highlightRules = files.filter(([path]) => path.endsWith('/highlights.scm'))
+      .length;
+    return {
+      size: statSync(executable).size,
+      embeddedFiles: files.length,
+      embeddedBytes,
+      grammars: libraries.length,
+      highlightRules,
+      helixRevision: revision
+    };
   },
   // The application's licenses, the font notices, Helix's license, and one notice per grammar, each embedded.
   'license-texts': async () => {
     const expected = [
-      ['LICENSES/LGPL-3.0-or-later.txt', 'GNU LESSER GENERAL PUBLIC LICENSE'],
-      ['LICENSES/GPL-3.0-or-later.txt', 'GNU GENERAL PUBLIC LICENSE'],
-      ['LICENSES/font/Inter-LICENSE.txt', 'SIL OPEN FONT LICENSE'],
-      ['LICENSES/font/JetBrainsMono-OFL.txt', 'SIL OPEN FONT LICENSE'],
-      ['runtime/Helix-LICENSE', 'Mozilla Public License Version 2.0'],
+      [
+        'LICENSES/LGPL-3.0-or-later.txt',
+        'GNU LESSER GENERAL PUBLIC LICENSE'
+      ],
+      [
+        'LICENSES/GPL-3.0-or-later.txt',
+        'GNU GENERAL PUBLIC LICENSE'
+      ],
+      [
+        'LICENSES/font/Inter-LICENSE.txt',
+        'SIL OPEN FONT LICENSE'
+      ],
+      [
+        'LICENSES/font/JetBrainsMono-OFL.txt',
+        'SIL OPEN FONT LICENSE'
+      ],
+      [
+        'runtime/Helix-LICENSE',
+        'Mozilla Public License Version 2.0'
+      ],
     ];
     const files = new Map(expectedFiles());
     for (const [relative, phrase] of expected) {
-      demand(files.has(relative) && isFile(files.get(relative)), relative + ' is missing from the build inputs');
-      demand(readFileSync(files.get(relative), 'utf8').includes(phrase), relative + ' does not contain "' + phrase + '"');
+      demand(
+        files.has(relative) && isFile(files.get(relative)),
+        relative + ' is missing from the build inputs'
+      );
+      demand(
+        readFileSync(files.get(relative), 'utf8').includes(phrase),
+        relative + ' does not contain "' + phrase + '"'
+      );
     }
-    for (const relative of ['LICENSES/font/Inter-LICENSE.txt', 'LICENSES/font/JetBrainsMono-OFL.txt']) {
-      demand(/^Copyright .*Project Authors/m.test(readFileSync(files.get(relative), 'utf8')), relative + ' lacks its copyright line');
+    for (const relative of [
+      'LICENSES/font/Inter-LICENSE.txt',
+      'LICENSES/font/JetBrainsMono-OFL.txt'
+    ]) {
+      demand(
+        /^Copyright .*Project Authors/m.test(readFileSync(files.get(relative), 'utf8')),
+        relative + ' lacks its copyright line'
+      );
     }
     const { libraries } = listedGrammars();
     const notices = [];
     for (const library of libraries) {
-      const name = library.slice(0, -3);
-      const directory = join(runtime, 'licenses', name);
-      demand(isDirectory(directory), 'runtime/licenses/' + name + ' is missing');
-      const texts = filesBelow(directory).filter(file => statSync(join(directory, file)).size > 0);
-      demand(texts.length > 0, 'runtime/licenses/' + name + ' holds no notice');
-      demand(texts.some(file => /copyright/i.test(readFileSync(join(directory, file), 'utf8'))), 'runtime/licenses/' + name + ' holds no copyright notice');
+      const name = library.slice(
+        0,
+        -3
+      );
+      const directory = join(
+        runtime,
+        'licenses',
+        name
+      );
+      demand(
+        isDirectory(directory),
+        'runtime/licenses/' + name + ' is missing'
+      );
+      const texts = filesBelow(directory)
+        .filter(file => statSync(join(directory, file)).size > 0);
+      demand(
+        texts.length > 0,
+        'runtime/licenses/' + name + ' holds no notice'
+      );
+      demand(
+        texts.some(file => /copyright/i.test(readFileSync(join(directory, file), 'utf8'))),
+        'runtime/licenses/' + name + ' holds no copyright notice'
+      );
       // A REUSE-layout source keeps its copyright line only in source headers, which the runtime task extracts.
-      if (isDirectory(join(directory, 'LICENSES'))) {
-        const headers = join(directory, 'REUSE-headers.txt');
-        demand(isFile(headers) && /Copyright/.test(readFileSync(headers, 'utf8')), 'runtime/licenses/' + name + ' ships license texts without REUSE-headers.txt copyright lines');
+      if (isDirectory(join(
+        directory,
+        'LICENSES'
+      ))) {
+        const headers = join(
+          directory,
+          'REUSE-headers.txt'
+        );
+        demand(
+          isFile(headers) && readFileSync(headers, 'utf8').includes('Copyright'),
+          'runtime/licenses/' + name + ' ships license texts without REUSE-headers.txt copyright lines'
+        );
       }
-      notices.push(...texts.map(file => 'runtime/licenses/' + name + '/' + file));
+      notices.push(...texts.map(file => 'runtime/licenses/' + name
+        + '/'
+        + file));
     }
     // `--licenses` with an empty environment (no display, no home) prints every license and notice text in full:
     // the files below LICENSES/ and runtime/licenses/, and every other embedded file named like a license.
-    const licenseNamed = relative => {
+    function licenseNamedrelative => {
+      const name = relative.split('/') {
       const name = relative.split('/').at(-1).toUpperCase();
       return name.includes('LICENSE') || name.includes('LICENCE') || name.startsWith('COPYING') || name.startsWith('NOTICE');
-    };
+    }
     // The crate license list is printed entry by entry; the crate-licenses check reads those entries.
-    const listed = expectedFiles().filter(([relative]) => relative !== 'LICENSES/crates.json').filter(([relative]) => relative.startsWith('LICENSES/') || relative.startsWith('runtime/licenses/') || licenseNamed(relative));
-    const listing = spawnSync(executable, ['--licenses'], { env: {}, cwd: artifact, maxBuffer: 64 * 1024 * 1024, timeout: 60_000 });
-    demand(!listing.error, 'could not run ' + executable + ' --licenses: ' + listing.error?.message);
-    demand(listing.status === 0, executable + ' --licenses exited with status ' + listing.status + ': ' + listing.stderr.toString('utf8').slice(0, 600));
-    demand(listing.stderr.length === 0, executable + ' --licenses wrote to standard error: ' + listing.stderr.toString('utf8').slice(0, 600));
-    const printed = listing.stdout.toString('utf8');
-    const headings = printed.split('\n').filter(line => line.startsWith('Embedded as ')).length;
-    demand(headings === listed.length, '--licenses printed ' + headings + ' texts, expected ' + listed.length);
+    const listed = expectedFiles()
+      .filter(([relative]) => relative !== 'LICENSES/crates.json')
+      .filter(([relative]) => relative.startsWith('LICENSES/') || relative.startsWith('runtime/licenses/') || licenseNamed(relative));
+    const listing = spawnSync(
+      executable,
+      ['--licenses'],
+      { env: {}, cwd: artifact, maxBuffer: 64 * 1024 * 1024, timeout: 60_000 }
+    );
+    demand(
+      !listing.error,
+      'could not run ' + executable + ' --licenses: ' + listing.error?.message
+    );
+    demand(
+      listing.status === 0,
+      executable + ' --licenses exited with status ' + listing.status + ': ' + listing.stderr.toString('utf8').slice(0, 600)
+    );
+    demand(
+      listing.stderr.length === 0,
+      executable + ' --licenses wrote to standard error: ' + listing.stderr.toString('utf8').slice(0, 600)
+    );
+    const printed = listing.stdout
+      .toString('utf8');
+    const headings = printed.split('\n')
+      .filter(line => line.startsWith('Embedded as '))
+      .length;
+    demand(
+      headings === listed.length,
+      '--licenses printed ' + headings + ' texts, expected ' + listed.length
+    );
     const rule = '='.repeat(78);
-    const unprinted = listed.filter(([relative, file]) => !printed.includes('\nEmbedded as ' + relative + '\n' + rule + '\n\n' + readFileSync(file, 'utf8')));
-    demand(unprinted.length === 0, '--licenses does not print in full: ' + unprinted.map(([relative]) => relative).join(', '));
-    const missing = notEmbedded([...expected.map(([relative]) => relative), ...notices]);
-    demand(missing.length === 0, 'license texts not embedded byte for byte: ' + missing.join(', '));
-    return { texts: expected.length, grammarNotices: notices.length, listedByLicensesFlag: headings, listingBytes: listing.stdout.length };
+    const unprinted = listed.filter(([relative, file]) => !printed.includes(`\nEmbedded as ${  relative  }\n${  rule  }\n\n${  readFileSync(file, 'utf8')}`));
+    demand(
+      unprinted.length === 0,
+      '--licenses does not print in full: ' + unprinted.map(([relative]) => relative).join(', ')
+    );
+    const missing = notEmbedded([
+      ...expected.map(([relative]) => relative),
+      ...notices
+    ]);
+    demand(
+      missing.length === 0,
+      'license texts not embedded byte for byte: ' + missing.join(', ')
+    );
+    return {
+      texts: expected.length,
+      grammarNotices: notices.length,
+      listedByLicensesFlag: headings,
+      listingBytes: listing.stdout.length
+    };
   },
 };
 
@@ -146,9 +331,11 @@ const checks = {
 // Returns the combined compositor and application output once `settled` accepts it, a screenshot, the time from
 // start to the settled output, and what was wrong with the way the session ended, if anything: the caller judges
 // the output first, so a damaged file is reported by its damage and not by a slow exit.
-const plain = text => text.replace(/\u001b\[[0-9;]*m/g, '');
+function plaintext => text.replace(/\u001b\[[0-9;]*m/g, '') { return text.replace(/\u001b\[[0-9;]*m/g, '') }
 // Distinct colors among every 61st pixel of the compositor's RGBA PNG: a window not yet drawn is one flat color.
-const sampledColors = png => {
+function sampledColorspng => {
+  const chunks = [];
+  for (let offset = 8; offset < png.length;) {
   const chunks = [];
   for (let offset = 8; offset < png.length;) {
     const length = png.readUInt32BE(offset);
@@ -163,11 +350,11 @@ const sampledColors = png => {
     for (let column = row % 61; column < width; column += 61) colors.add(rows.readUInt32BE(row * stride + 1 + column * 4));
   }
   return colors.size;
-};
+}
 // Stop and remove what a session may leave behind, and return what was found.
 // A compositor that ends by a signal leaves its hosted application, its private bus daemon, and that daemon's
 // directory, which carries the compositor's process id; a compositor that ends on `quit` leaves none of them.
-const sweep = (compositorProcess, application) => {
+function sweep(compositorProcess, application) {
   const directory = join(tmpdir(), 'monochromatic-nested-wayland-session-' + compositorProcess + '-0');
   const found = [];
   for (const entry of readdirSync('/proc')) {
@@ -185,12 +372,12 @@ const sweep = (compositorProcess, application) => {
   }
   if (existsSync(directory)) { found.push(directory); rmSync(directory, { recursive: true, force: true }); }
   return found;
-};
+}
 const prepared = /source syntax prepared path=\S*fixture\.sql spans=(\d+)/;
 const unavailable = 'highlighting unavailable; retaining readable source';
-const settledOnSyntax = text => prepared.test(text) || text.includes(unavailable);
+function settledOnSyntaxtext => prepared.test(text) { return prepared.test(text) || text.includes(unavailable) }
 // `cache` and `config` may be shared between sessions; each session gets its own project and data folders.
-const session = async ({ name, application, cache, config, settled = settledOnSyntax }) => {
+async function session({ name, application, cache, config, settled = settledOnSyntax }) {
   demand(process.env.WAYLAND_DISPLAY, 'a Wayland session is needed to host the nested compositor');
   demandCurrentCompositor();
   const directory = join(artifact, name);
@@ -219,7 +406,7 @@ const session = async ({ name, application, cache, config, settled = settledOnSy
     let reply = '';
     connection.on('error', reject);
     // A compositor that is going away may close the connection without a reply; that must not hang the check.
-    connection.on('close', () => reject(new Error('the compositor closed the control connection without replying to ' + line)));
+    connection.on('close', () =>{  reject(new Error('the compositor closed the control connection without replying to ' + line)); });
     connection.on('data', chunk => { reply += chunk; if (reply.includes('\n')) { connection.end(); resolveReply(reply.trim()); } });
     connection.write(line + '\n');
   });
@@ -278,9 +465,10 @@ const session = async ({ name, application, cache, config, settled = settledOnSy
     const left = sweep(child.pid, application);
     if (left.length > 0) console.error('Removed what the session left behind: ' + left.join('; '));
   }
-};
+}
 // A copy of the executable alone in its own folder below the scratch root, so nothing can lie beside it.
-const loneCopy = name => {
+function loneCopyname => {
+  const directory = join(artifact, name) {
   const directory = join(artifact, name);
   mkdirSync(directory);
   const copy = join(directory, 'monochromatic-ide');
@@ -289,25 +477,26 @@ const loneCopy = name => {
   demand(!copy.startsWith(source + sep), 'the application copy must lie outside the source tree');
   demand(readdirSync(directory).length === 1, 'the copy is not alone in its folder');
   return copy;
-};
-const spansOf = (output, what) => {
+}
+function spansOf(output, what) {
   demand(!output.includes(unavailable), what + ' could not highlight: ' + output.split('\n').find(line => line.includes(unavailable)));
   const spans = Number(output.match(prepared)[1]);
   demand(spans > 0, what + ' prepared no highlighted span for fixture.sql');
   return spans;
-};
+}
 // The one cache folder of this executable's embedded runtime, below a cache home.
-const keyFolder = cache => {
+function keyFoldercache => {
+  const root = join(cache, 'monochromatic-ide', 'runtime') {
   const root = join(cache, 'monochromatic-ide', 'runtime');
   demand(isDirectory(root), 'no unpacked runtime below ' + root);
   const keys = readdirSync(root);
   demand(keys.length === 1 && /^[0-9a-f]{16}$/.test(keys[0]), 'expected one runtime key folder below ' + root + ', found ' + JSON.stringify(keys));
   return join(root, keys[0]);
-};
-const cachedSql = cache => join(keyFolder(cache), 'grammars', 'sql.so');
-const sqlLibrary = () => readFileSync(join(runtime, 'grammars', 'sql.so'));
-const partials = cache => readdirSync(join(keyFolder(cache), 'grammars')).filter(name => !name.endsWith('.so'));
-const elapsed = (output, phrase) => Number(output.split('\n').find(line => line.includes(phrase))?.match(/elapsed_us=(\d+)/)?.[1] ?? NaN);
+}
+function cachedSqlcache => join(keyFolder(cache), 'grammars', 'sql.so') { return join(keyFolder(cache), 'grammars', 'sql.so') }
+function sqlLibrary() { return readFileSync(join(runtime, 'grammars', 'sql.so')) }
+function partialscache => readdirSync(join(keyFolder(cache), 'grammars')) { return readdirSync(join(keyFolder(cache), 'grammars')).filter(name => !name.endsWith('.so')) }
+function elapsed(output, phrase) { return Number(output.split('\n').find(line => line.includes(phrase))?.match(/elapsed_us=(\d+)/)?.[1] ?? NaN) }
 const unpackedPhrase = 'language parser unpacked into the private cache';
 const reusedPhrase = 'cached language parser matches the embedded one';
 const rewrittenPhrase = 'cached language parser differs from the embedded one; writing it again';
@@ -316,82 +505,292 @@ const rewrittenPhrase = 'cached language parser differs from the embedded one; w
 // the parser it needs into an empty private cache.
 checks['lone-copy-highlights'] = async () => {
   const application = loneCopy('lone');
-  const version = spawnSync(application, ['--version'], { cwd: '/', env: {}, encoding: 'utf8' });
-  demand(version.status === 0 && /^monochromatic-ide \d+\.\d+\.\d+/.test(version.stdout), 'the copy did not report its version: ' + JSON.stringify([version.status, version.stdout, version.stderr]));
-  const cache = join(artifact, 'lone-home', 'cache');
-  const { output, frame, settledAfter, ending } = await session({ name: 'lone-session', application, cache, config: join(artifact, 'lone-home', 'config') });
-  const spans = spansOf(output, 'the lone copy');
-  demand(isFile(cachedSql(cache)) && readFileSync(cachedSql(cache)).equals(sqlLibrary()), 'the unpacked sql.so differs from the runtime it was built from');
-  demand(partials(cache).length === 0, 'partial files remain in the cache: ' + partials(cache).join(', '));
-  demand(output.includes(unpackedPhrase), 'the first start did not report unpacking the parser');
-  demand(ending === undefined, ending);
-  return { version: version.stdout.trim(), spans, key: keyFolder(cache).split(sep).at(-1), unpackedUs: elapsed(output, unpackedPhrase), settledAfterMs: settledAfter, frame };
+  const version = spawnSync(
+    application,
+    ['--version'],
+    { cwd: '/', env: {}, encoding: 'utf8' }
+  );
+  demand(
+    version.status === 0 && /^monochromatic-ide \d+\.\d+\.\d+/.test(version.stdout),
+    'the copy did not report its version: ' + JSON.stringify([version.status, version.stdout, version.stderr])
+  );
+  const cache = join(
+    artifact,
+    'lone-home',
+    'cache'
+  );
+  const {
+    output,
+    frame,
+    settledAfter,
+    ending
+  } = await session({
+    name: 'lone-session',
+    application,
+    cache,
+    config: join(artifact, 'lone-home', 'config')
+  });
+  const spans = spansOf(
+    output,
+    'the lone copy'
+  );
+  demand(
+    isFile(cachedSql(cache)) && readFileSync(cachedSql(cache)).equals(sqlLibrary()),
+    'the unpacked sql.so differs from the runtime it was built from'
+  );
+  demand(
+    partials(cache).length === 0,
+    'partial files remain in the cache: ' + partials(cache).join(', ')
+  );
+  demand(
+    output.includes(unpackedPhrase),
+    'the first start did not report unpacking the parser'
+  );
+  demand(
+    ending === undefined,
+    ending
+  );
+  return {
+    version: version.stdout.trim(),
+    spans,
+    key: keyFolder(cache).split(sep).at(-1),
+    unpackedUs: elapsed(output, unpackedPhrase),
+    settledAfterMs: settledAfter,
+    frame
+  };
 };
 // A second start with the same cache compares the cached parser and reuses it without writing.
 checks['later-start-reuses-cache'] = async () => {
   const application = loneCopy('later');
-  const home = join(artifact, 'later-home');
-  const cache = join(home, 'cache');
-  const first = await session({ name: 'later-first', application, cache, config: join(home, 'config') });
-  spansOf(first.output, 'the first start');
+  const home = join(
+    artifact,
+    'later-home'
+  );
+  const cache = join(
+    home,
+    'cache'
+  );
+  const first = await session({
+    name: 'later-first',
+    application,
+    cache,
+    config: join(home, 'config')
+  });
+  spansOf(
+    first.output,
+    'the first start'
+  );
   const before = statSync(cachedSql(cache));
-  const second = await session({ name: 'later-second', application, cache, config: join(home, 'config') });
-  const spans = spansOf(second.output, 'the later start');
-  demand(second.output.includes(reusedPhrase), 'the later start did not report reusing the cached parser');
-  demand(!second.output.includes(unpackedPhrase), 'the later start unpacked the parser again');
+  const second = await session({
+    name: 'later-second',
+    application,
+    cache,
+    config: join(home, 'config')
+  });
+  const spans = spansOf(
+    second.output,
+    'the later start'
+  );
+  demand(
+    second.output.includes(reusedPhrase),
+    'the later start did not report reusing the cached parser'
+  );
+  demand(
+    !second.output.includes(unpackedPhrase),
+    'the later start unpacked the parser again'
+  );
   const after = statSync(cachedSql(cache));
-  demand(after.mtimeMs === before.mtimeMs && after.ino === before.ino, 'the later start rewrote the cached parser');
-  demand(first.ending === undefined, first.ending);
-  demand(second.ending === undefined, second.ending);
-  return { spans, firstUnpackedUs: elapsed(first.output, unpackedPhrase), laterReusedUs: elapsed(second.output, reusedPhrase), firstSettledAfterMs: first.settledAfter, laterSettledAfterMs: second.settledAfter, frame: second.frame };
+  demand(
+    after.mtimeMs === before.mtimeMs && after.ino === before.ino,
+    'the later start rewrote the cached parser'
+  );
+  demand(
+    first.ending === undefined,
+    first.ending
+  );
+  demand(
+    second.ending === undefined,
+    second.ending
+  );
+  return {
+    spans,
+    firstUnpackedUs: elapsed(first.output, unpackedPhrase),
+    laterReusedUs: elapsed(second.output, reusedPhrase),
+    firstSettledAfterMs: first.settledAfter,
+    laterSettledAfterMs: second.settledAfter,
+    frame: second.frame
+  };
 };
 // A cached parser with one changed byte is detected, written again from the embedded copy, and highlighting works.
 checks['damaged-cache-rebuilt'] = async () => {
   const application = loneCopy('damaged-cache');
-  const home = join(artifact, 'damaged-cache-home');
-  const cache = join(home, 'cache');
-  const first = await session({ name: 'damaged-cache-first', application, cache, config: join(home, 'config') });
-  spansOf(first.output, 'the first start');
+  const home = join(
+    artifact,
+    'damaged-cache-home'
+  );
+  const cache = join(
+    home,
+    'cache'
+  );
+  const first = await session({
+    name: 'damaged-cache-first',
+    application,
+    cache,
+    config: join(home, 'config')
+  });
+  spansOf(
+    first.output,
+    'the first start'
+  );
   const damaged = readFileSync(cachedSql(cache));
   damaged[Math.floor(damaged.length / 2)] ^= 0x01;
-  writeFileSync(cachedSql(cache), damaged);
-  const second = await session({ name: 'damaged-cache-second', application, cache, config: join(home, 'config') });
-  const spans = spansOf(second.output, 'the start after the damage');
-  demand(second.output.includes(rewrittenPhrase), 'the damaged cached parser was not reported and written again');
-  demand(readFileSync(cachedSql(cache)).equals(sqlLibrary()), 'the cached parser was not restored');
-  demand(partials(cache).length === 0, 'partial files remain in the cache: ' + partials(cache).join(', '));
-  demand(second.ending === undefined, second.ending);
-  return { spans, report: second.output.split('\n').find(line => line.includes(rewrittenPhrase)).slice(0, 300), frame: second.frame };
+  writeFileSync(
+    cachedSql(cache),
+    damaged
+  );
+  const second = await session({
+    name: 'damaged-cache-second',
+    application,
+    cache,
+    config: join(home, 'config')
+  });
+  const spans = spansOf(
+    second.output,
+    'the start after the damage'
+  );
+  demand(
+    second.output.includes(rewrittenPhrase),
+    'the damaged cached parser was not reported and written again'
+  );
+  demand(
+    readFileSync(cachedSql(cache)).equals(sqlLibrary()),
+    'the cached parser was not restored'
+  );
+  demand(
+    partials(cache).length === 0,
+    'partial files remain in the cache: ' + partials(cache).join(', ')
+  );
+  demand(
+    second.ending === undefined,
+    second.ending
+  );
+  return {
+    spans,
+    report: second.output.split('\n').find(line => line.includes(rewrittenPhrase)).slice(0, 300),
+    frame: second.frame
+  };
 };
 // An empty highlights.scm below $XDG_CONFIG_HOME/helix/runtime, which Helix's own lookup prefers, changes nothing.
 checks['shadowing-query-ignored'] = async () => {
   const application = loneCopy('shadowing');
-  const home = join(artifact, 'shadowing-home');
-  const plainRun = await session({ name: 'shadowing-without', application, cache: join(home, 'cache'), config: join(home, 'config-empty') });
-  const without = spansOf(plainRun.output, 'the start without a user query');
-  const queries = join(home, 'config-shadowing', 'helix', 'runtime', 'queries', 'sql');
-  mkdirSync(queries, { recursive: true });
-  writeFileSync(join(queries, 'highlights.scm'), '');
-  const shadowed = await session({ name: 'shadowing-with', application, cache: join(home, 'cache'), config: join(home, 'config-shadowing') });
-  const withQuery = spansOf(shadowed.output, 'the start with an empty user query');
-  demand(withQuery === without, 'the user query changed the highlighting: ' + without + ' spans without it, ' + withQuery + ' with it');
-  demand(plainRun.ending === undefined, plainRun.ending);
-  demand(shadowed.ending === undefined, shadowed.ending);
-  return { spansWithout: without, spansWithShadowingQuery: withQuery, frame: shadowed.frame };
+  const home = join(
+    artifact,
+    'shadowing-home'
+  );
+  const plainRun = await session({
+    name: 'shadowing-without',
+    application,
+    cache: join(home, 'cache'),
+    config: join(home, 'config-empty')
+  });
+  const without = spansOf(
+    plainRun.output,
+    'the start without a user query'
+  );
+  const queries = join(
+    home,
+    'config-shadowing',
+    'helix',
+    'runtime',
+    'queries',
+    'sql'
+  );
+  mkdirSync(
+    queries,
+    { recursive: true }
+  );
+  writeFileSync(
+    join(queries, 'highlights.scm'),
+    ''
+  );
+  const shadowed = await session({
+    name: 'shadowing-with',
+    application,
+    cache: join(home, 'cache'),
+    config: join(home, 'config-shadowing')
+  });
+  const withQuery = spansOf(
+    shadowed.output,
+    'the start with an empty user query'
+  );
+  demand(
+    withQuery === without,
+    'the user query changed the highlighting: ' + without + ' spans without it, ' + withQuery + ' with it'
+  );
+  demand(
+    plainRun.ending === undefined,
+    plainRun.ending
+  );
+  demand(
+    shadowed.ending === undefined,
+    shadowed.ending
+  );
+  return {
+    spansWithout: without,
+    spansWithShadowingQuery: withQuery,
+    frame: shadowed.frame
+  };
 };
 // Two first starts at the same moment, sharing one empty cache, both highlight and leave one intact parser.
 // Each runs its own identical copy, so the leftover sweep of one session cannot stop the other's application.
 checks['concurrent-first-starts'] = async () => {
-  const home = join(artifact, 'concurrent-home');
-  const cache = join(home, 'cache');
-  const [left, right] = await Promise.all(['concurrent-left', 'concurrent-right'].map(name => session({ name, application: loneCopy(name + '-copy'), cache, config: join(home, 'config') })));
-  const spans = [spansOf(left.output, 'the first concurrent start'), spansOf(right.output, 'the second concurrent start')];
-  demand(readFileSync(cachedSql(cache)).equals(sqlLibrary()), 'the shared cached parser is not intact');
-  demand(partials(cache).length === 0, 'partial files remain in the cache: ' + partials(cache).join(', '));
-  demand(left.ending === undefined, left.ending);
-  demand(right.ending === undefined, right.ending);
-  const writers = [left, right].filter(run => run.output.includes(unpackedPhrase)).length;
-  return { spans, sessionsThatWrote: writers, frame: left.frame };
+  const home = join(
+    artifact,
+    'concurrent-home'
+  );
+  const cache = join(
+    home,
+    'cache'
+  );
+  const [left, right] = await Promise.all([
+    'concurrent-left',
+    'concurrent-right'
+  ].map(name => session({
+    name,
+    application: loneCopy(name + '-copy'),
+    cache,
+    config: join(home, 'config')
+  })));
+  const spans = [
+    spansOf(left.output, 'the first concurrent start'),
+    spansOf(right.output, 'the second concurrent start')
+  ];
+  demand(
+    readFileSync(cachedSql(cache)).equals(sqlLibrary()),
+    'the shared cached parser is not intact'
+  );
+  demand(
+    partials(cache).length === 0,
+    'partial files remain in the cache: ' + partials(cache).join(', ')
+  );
+  demand(
+    left.ending === undefined,
+    left.ending
+  );
+  demand(
+    right.ending === undefined,
+    right.ending
+  );
+  const writers = [
+    left,
+    right
+  ].filter(run => run.output
+    .includes(unpackedPhrase)).length;
+  return {
+    spans,
+    sessionsThatWrote: writers,
+    frame: left.frame
+  };
 };
 // One changed byte inside the embedded sql.so: the copy keeps the source readable and names the damaged part and
 // the remedy, and unpacks nothing for it.
@@ -400,60 +799,160 @@ checks['damaged-embedded-part-reported'] = async () => {
   const bytes = readFileSync(application);
   const library = sqlLibrary();
   const at = bytes.indexOf(library);
-  demand(at >= 0, 'the executable does not embed sql.so; the inventory check names what is missing');
-  demand(bytes.indexOf(library, at + 1) < 0, 'sql.so occurs twice in the executable, so the damaged copy would be ambiguous');
+  demand(
+    at >= 0,
+    'the executable does not embed sql.so; the inventory check names what is missing'
+  );
+  demand(
+    !bytes.includes(library, at + 1),
+    'sql.so occurs twice in the executable, so the damaged copy would be ambiguous'
+  );
   bytes[at + Math.floor(library.length / 2)] ^= 0x01;
-  writeFileSync(application, bytes);
-  const home = join(artifact, 'damaged-embedded-home');
-  const { output, frame, ending } = await session({ name: 'damaged-embedded-session', application, cache: join(home, 'cache'), config: join(home, 'config') });
-  const report = output.split('\n').find(line => line.includes(unavailable));
-  demand(report !== undefined, 'the damaged copy reported nothing; it would load or silently skip a damaged parser');
-  demand(report.includes('runtime/grammars/sql.so embedded in ' + application + ' is damaged'), 'the report does not name the damaged part and the executable: ' + report);
-  demand(report.includes('Replace the executable'), 'the report does not give the remedy: ' + report);
-  const unpackedRoot = join(home, 'cache', 'monochromatic-ide', 'runtime');
+  writeFileSync(
+    application,
+    bytes
+  );
+  const home = join(
+    artifact,
+    'damaged-embedded-home'
+  );
+  const {
+    output,
+    frame,
+    ending
+  } = await session({
+    name: 'damaged-embedded-session',
+    application,
+    cache: join(home, 'cache'),
+    config: join(home, 'config')
+  });
+  const report = output.split('\n')
+    .find(line => line.includes(unavailable));
+  demand(
+    report !== undefined,
+    'the damaged copy reported nothing; it would load or silently skip a damaged parser'
+  );
+  demand(
+    report.includes('runtime/grammars/sql.so embedded in ' + application + ' is damaged'),
+    'the report does not name the damaged part and the executable: ' + report
+  );
+  demand(
+    report.includes('Replace the executable'),
+    'the report does not give the remedy: ' + report
+  );
+  const unpackedRoot = join(
+    home,
+    'cache',
+    'monochromatic-ide',
+    'runtime'
+  );
   // Every start renews its key folder's `last-used` marker; anything else below the runtime cache was unpacked.
-  const unpacked = isDirectory(unpackedRoot) ? filesBelow(unpackedRoot).filter(file => !/^[0-9a-f]{16}\/last-used$/.test(file)) : [];
-  demand(unpacked.length === 0, 'files were unpacked although the embedded part is damaged: ' + unpacked.join(', '));
-  demand(ending === undefined, ending);
-  return { report: report.slice(report.indexOf(unavailable)).slice(0, 400), frame };
+  const unpacked = isDirectory(unpackedRoot) ? filesBelow(unpackedRoot)
+    .filter(file => !/^[0-9a-f]{16}\/last-used$/.test(file)) : [];
+  demand(
+    unpacked.length === 0,
+    'files were unpacked although the embedded part is damaged: ' + unpacked.join(', ')
+  );
+  demand(
+    ending === undefined,
+    ending
+  );
+  return {
+    report: report.slice(report.indexOf(unavailable)).slice(0, 400),
+    frame
+  };
 };
 
 // A start removes the cache folders of other builds unused for more than 30 days and the rest of a removal cut
 // short, keeps a folder used a day ago, and renews its own folder's marker, all before any window: the display
 // connection of this start fails on purpose, so no compositor is needed.
 checks['old-cache-folders-removed'] = async () => {
-  const base = mkdtempSync(join(artifact, 'old-cache-'));
-  const project = join(base, 'project');
+  const base = mkdtempSync(join(
+    artifact,
+    'old-cache-'
+  ));
+  const project = join(
+    base,
+    'project'
+  );
   mkdirSync(project);
-  writeFileSync(join(project, 'fixture.sql'), 'select 1;\n');
-  const runtimeCache = join(base, 'cache', 'monochromatic-ide', 'runtime');
+  writeFileSync(
+    join(project, 'fixture.sql'),
+    'select 1;\n'
+  );
+  const runtimeCache = join(
+    base,
+    'cache',
+    'monochromatic-ide',
+    'runtime'
+  );
   const now = Date.now();
-  const seed = (name, daysAgo) => {
+  function seed(name, daysAgo) {
     mkdirSync(join(runtimeCache, name, 'grammars'), { recursive: true, mode: 0o700 });
     writeFileSync(join(runtimeCache, name, 'grammars', 'sql.so'), 'an older build');
     writeFileSync(join(runtimeCache, name, 'last-used'), '');
     const time = new Date(now - daysAgo * 86_400_000);
     utimesSync(join(runtimeCache, name, 'last-used'), time, time);
-  };
-  seed('0000000000000031', 31);
-  seed('0000000000000001', 1);
-  mkdirSync(join(runtimeCache, '.00000000000000aa.removing-1-0', 'grammars'), { recursive: true });
-  const started = spawnSync(executable, [project], {
+  }
+  seed(
+    '0000000000000031',
+    31
+  );
+  seed(
+    '0000000000000001',
+    1
+  );
+  mkdirSync(
+    join(runtimeCache, '.00000000000000aa.removing-1-0', 'grammars'),
+    { recursive: true }
+  );
+  const started = spawnSync(
+    executable,
+    [project],
+    {
     cwd: base, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024, timeout: 60_000,
     env: { PATH: '/usr/bin', HOME: join(base, 'home'), XDG_CACHE_HOME: join(base, 'cache'), XDG_CONFIG_HOME: join(base, 'config'), XDG_DATA_HOME: join(base, 'data'), XDG_RUNTIME_DIR: base, WAYLAND_DISPLAY: join(base, 'absent-wayland.socket'), SLINT_BACKEND: 'winit', RUST_LOG: 'ide_app=debug,monochromatic_ide=debug' },
-  });
+  }
+  );
   const output = plain((started.stdout ?? '') + (started.stderr ?? ''));
-  writeFileSync(join(base, 'start.log'), output);
-  demand(!started.error, 'could not start ' + executable + ': ' + started.error?.message);
-  const left = readdirSync(runtimeCache).sort();
-  demand(!left.includes('0000000000000031'), 'the folder unused for 31 days remains: ' + JSON.stringify(left));
-  demand(!left.some(name => name.startsWith('.')), 'the rest of a cut-short removal remains: ' + JSON.stringify(left));
-  demand(isFile(join(runtimeCache, '0000000000000001', 'grammars', 'sql.so')), 'the folder used a day ago was removed: ' + JSON.stringify(left));
+  writeFileSync(
+    join(base, 'start.log'),
+    output
+  );
+  demand(
+    !started.error,
+    'could not start ' + executable + ': ' + started.error?.message
+  );
+  const left = readdirSync(runtimeCache)
+    .sort();
+  demand(
+    !left.includes('0000000000000031'),
+    'the folder unused for 31 days remains: ' + JSON.stringify(left)
+  );
+  demand(
+    !left.some(name => name.startsWith('.')),
+    'the rest of a cut-short removal remains: ' + JSON.stringify(left)
+  );
+  demand(
+    isFile(join(runtimeCache, '0000000000000001', 'grammars', 'sql.so')),
+    'the folder used a day ago was removed: ' + JSON.stringify(left)
+  );
   const own = left.filter(name => name !== '0000000000000001');
-  demand(own.length === 1 && /^[0-9a-f]{16}$/.test(own[0]), 'expected this build\'s key folder besides the kept one: ' + JSON.stringify(left));
-  const renewed = lstatSync(join(runtimeCache, own[0], 'last-used')).mtimeMs;
-  demand(renewed >= now - 1000, 'this build\'s marker was not renewed at start');
-  return { left, status: started.status, tidyElapsedUs: elapsed(output, 'runtime cache tidied') };
+  demand(
+    own.length === 1 && /^[0-9a-f]{16}$/.test(own[0]),
+    'expected this build\'s key folder besides the kept one: ' + JSON.stringify(left)
+  );
+  const renewed = lstatSync(join(runtimeCache, own[0], 'last-used'))
+    .mtimeMs;
+  demand(
+    renewed >= now - 1000,
+    'this build\'s marker was not renewed at start'
+  );
+  return {
+    left,
+    status: started.status,
+    tidyElapsedUs: elapsed(output, 'runtime cache tidied')
+  };
 };
 
 // The Rust crate license list: `--licenses` prints one section per text of target/crate-licenses.json, with its
@@ -461,51 +960,131 @@ checks['old-cache-folders-removed'] = async () => {
 // (the linked-crates task writes target/linked-crates.txt) and every registry crate whose source path the
 // executable itself names is among the crates printed.
 checks['crate-licenses'] = async () => {
-  demand(isFile(crateLicensesFile), crateLicensesFile + ' is missing; run the notices task');
-  demand(isFile(linkedCratesFile), linkedCratesFile + ' is missing; run the linked-crates task');
-  const list = JSON.parse(readFileSync(crateLicensesFile, 'utf8'));
-  demand(Array.isArray(list.licenses) && list.licenses.length > 0, crateLicensesFile + ' lists no license text');
-  const listing = spawnSync(executable, ['--licenses'], { env: {}, cwd: artifact, maxBuffer: 64 * 1024 * 1024, timeout: 60_000 });
-  demand(!listing.error, 'could not run ' + executable + ' --licenses: ' + listing.error?.message);
-  demand(listing.status === 0, executable + ' --licenses exited with status ' + listing.status + ': ' + listing.stderr.toString('utf8').slice(0, 600));
-  const printed = listing.stdout.toString('utf8');
+  demand(
+    isFile(crateLicensesFile),
+    crateLicensesFile + ' is missing; run the notices task'
+  );
+  demand(
+    isFile(linkedCratesFile),
+    linkedCratesFile + ' is missing; run the linked-crates task'
+  );
+  const list = JSON.parse(readFileSync(
+    crateLicensesFile,
+    'utf8'
+  ));
+  demand(
+    Array.isArray(list.licenses) && list.licenses.length > 0,
+    crateLicensesFile + ' lists no license text'
+  );
+  const listing = spawnSync(
+    executable,
+    ['--licenses'],
+    { env: {}, cwd: artifact, maxBuffer: 64 * 1024 * 1024, timeout: 60_000 }
+  );
+  demand(
+    !listing.error,
+    'could not run ' + executable + ' --licenses: ' + listing.error?.message
+  );
+  demand(
+    listing.status === 0,
+    executable + ' --licenses exited with status ' + listing.status + ': ' + listing.stderr.toString('utf8').slice(0, 600)
+  );
+  const printed = listing.stdout
+    .toString('utf8');
   const rule = '='.repeat(78);
-  const section = /^Rust crates under (.+) \(([^()\n]+)\): (\d+) crates?\n((?:Used by: |         ).*\n(?:         .*\n)*)(Text from the crate file .+|Text: the standard text of this license \(no crate file was recognized\))\n={78}\n\n/gm;
+  const section = /^Rust crates under (.+) \(([^()\n]+)\): (\d+) crates?\n((?:Used by: | {9}).*\n(?:         .*\n)*)(Text from the crate file .+|Text: the standard text of this license \(no crate file was recognized\))\n={78}\n\n/gm;
   const sections = [...printed.matchAll(section)];
-  demand(sections.length === list.licenses.length, '--licenses printed ' + sections.length + ' crate license sections, the list holds ' + list.licenses.length);
+  demand(
+    sections.length === list.licenses.length,
+    '--licenses printed ' + sections.length + ' crate license sections, the list holds ' + list.licenses.length
+  );
   const covered = new Set();
-  for (const [index, license] of list.licenses.entries()) {
+  for (const [index, license] of list.licenses
+    .entries()) {
     const [whole, name, id, count, usedBy] = sections[index];
-    demand(name === license.name && id === license.id, 'crate license section ' + index + ' names ' + name + ' (' + id + '), the list ' + license.name + ' (' + license.id + ')');
-    const tokens = usedBy.replace(/^Used by: /, '').replaceAll(',', ' ').split(/\s+/).filter(Boolean);
+    demand(
+      name === license.name && id === license.id,
+      'crate license section ' + index + ' names ' + name + ' (' + id + '), the list ' + license.name + ' (' + license.id + ')'
+    );
+    const tokens = usedBy.replace(/^Used by: /, '')
+      .replaceAll(',', ' ')
+      .split(/\s+/)
+      .filter(Boolean);
     const crates = [];
-    for (let at = 0; at + 1 < tokens.length; at += 2) crates.push(tokens[at] + ' ' + tokens[at + 1]);
-    const expected = license.crates.map(item => item.name + ' ' + item.version);
-    demand(Number(count) === expected.length && crates.join(',') === expected.join(','), 'crate license section ' + index + ' (' + id + ') lists ' + crates.join(', ') + ' instead of ' + expected.join(', '));
-    demand(printed.includes(whole + license.text), 'the ' + id + ' text for ' + expected[0] + ' is not printed in full under its heading');
+    for (let at = 0; (at + 1) < tokens.length; at += 2) crates.push(`${tokens[at]  } ${  tokens[at + 1]}`);
+    const expected = license.crates
+      .map(item => item.name + ' ' + item.version);
+    demand(
+      Number(count) === expected.length && crates.join(',') === expected.join(','),
+      'crate license section ' + index + ' (' + id + ') lists ' + crates.join(', ') + ' instead of ' + expected.join(', ')
+    );
+    demand(
+      printed.includes(whole + license.text),
+      'the ' + id + ' text for ' + expected[0] + ' is not printed in full under its heading'
+    );
     for (const item of crates) covered.add(item);
   }
-  const linked = readFileSync(linkedCratesFile, 'utf8').split('\n').filter(Boolean).filter(line => !line.startsWith('ide '));
+  const linked = readFileSync(linkedCratesFile, 'utf8')
+    .split('\n')
+    .filter(Boolean)
+    .filter(line => !line.startsWith('ide '));
   const uncovered = linked.filter(item => !covered.has(item));
-  demand(uncovered.length === 0, uncovered.length + ' of ' + linked.length + ' linked crates have no license text: ' + uncovered.slice(0, 12).join(', '));
+  demand(
+    uncovered.length === 0,
+    uncovered.length + ' of ' + linked.length + ' linked crates have no license text: ' + uncovered.slice(0, 12).join(', ')
+  );
   const named = new Set();
-  for (const match of binary().toString('latin1').matchAll(/\/registry\/src\/index\.crates\.io-[0-9a-f]+\/([A-Za-z0-9_.+-]+?)-(\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.+-]*)?)\//g)) named.add(match[1] + ' ' + match[2]);
+  for (const match of binary()
+    .toString('latin1')
+    .matchAll(/\/registry\/src\/index\.crates\.io-[0-9a-f]+\/([A-Za-z0-9_.+-]+?)-(\d+\.\d+\.\d+(?:[-+][A-Za-z0-9.+-]*)?)\//g)) named.add(`${match[1]  } ${  match[2]}`);
   const unnamed = [...named].filter(item => !covered.has(item));
-  demand(unnamed.length === 0, 'crates whose sources the executable names have no license text: ' + unnamed.join(', '));
-  return { texts: list.licenses.length, cratesCovered: covered.size, linkedCrates: linked.length, cratesNamedInTheExecutable: named.size };
+  demand(
+    unnamed.length === 0,
+    'crates whose sources the executable names have no license text: ' + unnamed.join(', ')
+  );
+  return {
+    texts: list.licenses.length,
+    cratesCovered: covered.size,
+    linkedCrates: linked.length,
+    cratesNamedInTheExecutable: named.size
+  };
 };
 
 const results = [];
 for (const name of names) {
-  if (only && !only.has(name)) continue;
+  if (only && (!only.has(name))) continue;
   try {
-    results.push({ name, passed: true, detail: await checks[name]() });
+    results.push({
+      name,
+      passed: true,
+      detail: await checks[name]()
+    });
   } catch (error) {
-    results.push({ name, passed: false, detail: String(error?.message ?? error) });
+    results.push({
+      name,
+      passed: false,
+      detail: String(error?.message ?? error)
+    });
   }
-  writeFileSync(join(artifact, 'results.json'), JSON.stringify(results, null, 2));
-  console.log(JSON.stringify(results.at(-1)));
+  writeFileSync(
+    join(artifact, 'results.json'),
+    JSON.stringify(results, null, 2)
+  );
+  console.log(
+    JSON.stringify(results.at(-1)),
+  );
 }
-const failed = results.filter(result => !result.passed).map(result => result.name);
-if (failed.length > 0) throw new Error('Bundle checks failed for ' + executable + ': ' + failed.join(', ') + '; inspect ' + artifact);
-console.log('Bundle checks passed for ' + executable + ' (' + results.length + ' of ' + names.length + ' checks): ' + artifact);
+const failed = results.filter(result => !result.passed)
+  .map(result => result.name);
+if (failed.length > 0) throw new Error('Bundle checks failed for ' + executable
+  + ': '
+  + failed.join(', ')
+  + '; inspect '
+  + artifact);
+console.log('Bundle checks passed for ' + executable
+  + ' ('
+  + results.length
+  + ' of '
+  + names.length
+  + ' checks): '
+  + artifact);

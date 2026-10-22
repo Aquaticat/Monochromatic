@@ -638,6 +638,13 @@ Measure under the load there is,
  alternating arms with a same-binary control for the spread,
  and report counts.
 
+FHU:
+ Real jobs may use almost the whole host:
+ size `CPUQuota` near `nproc` minus a few threads,
+ `MemoryMax` near available memory;
+ run independent jobs in parallel.
+Synthetic load stays banned.
+
 BOX:
  Third-party benchmarks run mount-free,
  inputs baked into the image.

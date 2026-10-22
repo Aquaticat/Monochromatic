@@ -6,7 +6,7 @@ import { summarize } from './stress-native-report.ts';
 const pass = (name: string): string => `        PASS [   0.114s] [1/3] (1/2) ide::bin/monochromatic-ide ${name}`;
 
 test('counts passes per test over all logs', () => {
-  const tally = summarize([pass('native::a::one') + '\n' + pass('native::a::one'), pass('native::a::one')]);
+  const tally = summarize([`${pass('native::a::one')  }\n${  pass('native::a::one')}`, pass('native::a::one')]);
   assert.equal(tally.failures, 0);
   assert.match(tally.report, /native::a::one: 0 failed, 0 passed after a retry \(FLAKY\), 3 passed, of 3 runs/);
 });

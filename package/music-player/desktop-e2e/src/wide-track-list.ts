@@ -180,7 +180,7 @@ export async function checkTrackList(
         session,
         act: tapKey('enter',),
         until: function rowIsSelected(state: UiState,): boolean {
-          return (state.current_index === ring) && !state.playing;
+          return (state.current_index === ring) && (!state.playing);
         },
         what: 'the row selected and paused',
       },);

@@ -83,7 +83,7 @@ await describe({
       name: 'backslash is escaped inside the quoted form',
       fn: async () => {
         // key is the three chars: a, backslash, b
-        expect(encodeKey({ key: 'a\\b', },),).toBe(String.raw`"a\\b"`,);
+        expect(encodeKey({ key: String.raw`a\b`, },),).toBe(String.raw`"a\\b"`,);
       },
     },),
 

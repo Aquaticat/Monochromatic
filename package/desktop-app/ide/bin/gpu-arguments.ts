@@ -4,4 +4,9 @@
 // installs is not even listed. The native tests render on the GPU through the harness in src/native/gpu_snapshot.rs,
 // so every container that runs them takes these arguments; no other task needs them. The podman bound caps no GPU
 // memory. Plan: doc/planning/ide-gpu-snapshot-harness.md.
-export const gpuArguments = ['--device', '/dev/dri', '--env', 'VK_DRIVER_FILES=/usr/share/vulkan/icd.d/radeon_icd.x86_64.json']
+export const gpuArguments = [
+  '--device',
+  '/dev/dri',
+  '--env',
+  'VK_DRIVER_FILES=/usr/share/vulkan/icd.d/radeon_icd.x86_64.json'
+];

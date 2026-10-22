@@ -138,7 +138,8 @@ function sliceIndexOf({
     const probe = at({
       arr: breaks,
       index: middle,
-    },).breakOffset;
+    },)
+      .breakOffset;
     if (probe <= offset) {
       found = middle;
       low = middle + 1;
@@ -212,12 +213,13 @@ function anchorIndentOf({
   /**
    First byte of the anchor's slice; the region start stands for the head slice.
    */
-  const sliceStart = (sliceIndex === -1)
+  const sliceStart = (sliceIndex === (-1))
     ? regionStart
     : at({
       arr: breaks,
       index: sliceIndex,
-    },).breakOffset;
+    },)
+      .breakOffset;
   /**
    Whether the anchor renders on its slice's first line rather than a verbatim interior line.
    */
@@ -233,7 +235,7 @@ function anchorIndentOf({
       offset: anchorOffset,
     },);
   }
-  return (sliceIndex === -1)
+  return (sliceIndex === (-1))
     ? headIndent
     : at({
       arr: lineIndents,
@@ -319,15 +321,18 @@ export function renderCanonical({
    End offset of each continuation slice: the next break, or the region end for the last.
    */
   const ends: readonly number[] = [
-    ...breaks.slice(1,).map(function start(breakItem,): number {
-      return breakItem.breakOffset;
-    },),
+    ...breaks.slice(1,)
+      .map(function start(breakItem,): number {
+        return breakItem.breakOffset;
+      },),
     regionEnd,
   ];
   /**
    First break offset; start of the first continuation line and end of the head slice.
    */
-  const firstBreak = breaks[0]?.breakOffset ?? regionEnd;
+  const firstBreak = breaks[0]
+    ?.breakOffset
+    ?? regionEnd;
   /**
    Head line: from region start to the first break, trailing whitespace removed.
    */

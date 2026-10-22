@@ -158,13 +158,14 @@ function visitTest(
   if (expression.type === 'TestLogical') {
     return {
       ...EMPTY_VISIT_RESULT,
-      workItems: expression.operands.map(function testWorkItem(operand,) {
-        return {
-          kind: 'test' as const,
-          expression: operand,
-          context,
-        };
-      },),
+      workItems: expression.operands
+        .map(function testWorkItem(operand,) {
+          return {
+            kind: 'test' as const,
+            expression: operand,
+            context,
+          };
+        },),
     };
   }
   if (expression.type === 'TestNot') {

@@ -152,7 +152,7 @@ export function css(): string {
         $({
           rule: '&[aria-current="page"]::before',
           decls: {
-            content: '"\\2713\\00a0"',
+            content: String.raw`"\2713\00a0"`,
           },
         },),
       ],

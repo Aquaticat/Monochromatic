@@ -6,32 +6,47 @@
 // The tasks and scripts import this file (node strips the types); the pure functions are tested in
 // container-bounds.test.ts, and no number below is a host measurement.
 
-import { availableParallelism, totalmem } from 'node:os';
+import {
+  availableParallelism,
+  totalmem
+} from 'node:os';
 
 /**
- * Share of the host's maximum that a container may use unless the caller says otherwise.
- *
- * Owner decision of 2026-10-18 (recorded in doc/handover/slint-ide-0x.md): the containers use 75 percent of the host's
- * CPUs and memory, computed from the host at run time; a loaded host lowers it with the variables below.
+ Share of the host's maximum that a container may use unless the caller says otherwise.
+ 
+ Owner decision of 2026-10-18 (recorded in doc/handover/slint-ide-0x.md): the containers use 75 percent of the host's
+ CPUs and memory, computed from the host at run time; a loaded host lowers it with the variables below.
  */
 export const hostShare = 0.75;
 
-/** Smallest memory in GiB that the toolchain image and a cargo build work in. */
+/**
+ Smallest memory in GiB that the toolchain image and a cargo build work in.
+ */
 export const minimumMemoryGiB = 2;
 
-/** Smallest process limit; a larger CPU count raises it by {@link pidsPerCpu}. */
+/**
+ Smallest process limit; a larger CPU count raises it by {@link pidsPerCpu}.
+ */
 export const minimumPids = 512;
 
-/** Processes per CPU when that exceeds {@link minimumPids}: test threads each spawn helpers. */
+/**
+ Processes per CPU when that exceeds {@link minimumPids}: test threads each spawn helpers.
+ */
 export const pidsPerCpu = 256;
 
-/** Open-file limit of every container; it does not scale with the CPU count. */
-export const defaultOpenFiles = 4096;
+/**
+ Open-file limit of every container; it does not scale with the CPU count.
+ */
+export const defaultOpenFiles = 4_096;
 
-/** CFS period in microseconds that `podman build --cpu-quota` is measured against. */
-export const cpuPeriod = 100000;
+/**
+ CFS period in microseconds that `podman build --cpu-quota` is measured against.
+ */
+export const cpuPeriod = 100_000;
 
-/** The variables a caller may set; an unset or empty one leaves the computed value. */
+/**
+ The variables a caller may set; an unset or empty one leaves the computed value.
+ */
 export const variableNames = {
   cpus: 'IDE_CONTAINER_CPUS',
   memory: 'IDE_CONTAINER_MEMORY',
@@ -41,18 +56,32 @@ export const variableNames = {
   testThreads: 'IDE_CONTAINER_TEST_THREADS',
 } as const;
 
-/** What a caller sees when a variable is malformed. */
+/**
+ What a caller sees when a variable is malformed.
+ */
 export class ContainerBoundError extends Error {
   override name = 'ContainerBoundError';
 }
 
-/** Host maximum the default bound is a share of. */
-export type Host = { readonly cpus: number; readonly memoryBytes: number };
+/**
+ Host maximum the default bound is a share of.
+ */
+export type Host = {
+  readonly cpus: number;
+  readonly memoryBytes: number
+};
 
-/** The default CPU count and memory size computed from a host. */
-export type HostBound = { readonly cpus: number; readonly memoryGiB: number };
+/**
+ The default CPU count and memory size computed from a host.
+ */
+export type HostBound = {
+  readonly cpus: number;
+  readonly memoryGiB: number
+};
 
-/** Everything a container run needs, as the strings podman and cargo take. */
+/**
+ Everything a container run needs, as the strings podman and cargo take.
+ */
 export type ContainerBounds = {
   readonly cpus: string;
   readonly memory: string;
@@ -60,74 +89,113 @@ export type ContainerBounds = {
   readonly openFiles: string;
   readonly jobs: string;
   readonly testThreads: string;
-  /** Arguments of `podman run` that bound the container, in the order the tasks always passed them. */
+  /**
+   Arguments of `podman run` that bound the container, in the order the tasks always passed them.
+   */
   readonly limitArguments: readonly string[];
-  /** `--env` pairs for cargo and the test runner, sized to the CPU limit. */
+  /**
+   `--env` pairs for cargo and the test runner, sized to the CPU limit.
+   */
   readonly environmentArguments: readonly string[];
-  /** Arguments of `podman build` that bound the image build to the same CPU and memory. */
+  /**
+   Arguments of `podman build` that bound the image build to the same CPU and memory.
+   */
   readonly imageBuildArguments: readonly string[];
-  /** One line naming the values, for task output. */
+  /**
+   One line naming the values, for task output.
+   */
   readonly summary: string;
 };
 
-/** The host this process runs on. */
-export const currentHost = (): Host => ({ cpus: availableParallelism(), memoryBytes: totalmem() });
+/**
+ The host this process runs on.
+ */
+export function currentHost(): Host { return {
+  cpus: availableParallelism(),
+  memoryBytes: totalmem()
+}; }
 
 /**
- * CPU count and memory size that are {@link hostShare} of a host, rounded down.
- *
- * @param host - Maximum CPU count and memory of the machine.
- * @returns At least one CPU and {@link minimumMemoryGiB} GiB, so a small host still gets a working container.
+ CPU count and memory size that are {@link hostShare} of a host, rounded down.
+ 
+ @param host - Maximum CPU count and memory of the machine.
+ 
+ @returns At least one CPU and {@link minimumMemoryGiB} GiB, so a small host still gets a working container.
  */
-export const hostBound = (host: Host): HostBound => ({
-  cpus: Math.max(1, Math.floor(hostShare * host.cpus)),
-  memoryGiB: Math.max(minimumMemoryGiB, Math.floor((hostShare * host.memoryBytes) / 2 ** 30)),
-});
+export function hostBound(host: Host): HostBound { return {
+  cpus: Math.max(
+    1,
+    Math.floor(hostShare * host.cpus)
+  ),
+  memoryGiB: Math.max(
+    minimumMemoryGiB,
+    Math.floor((hostShare * host.memoryBytes) / (2
+      ** 30))
+  ),
+}; }
 
-/** Process limit for a CPU count: the floor, or {@link pidsPerCpu} per CPU when that is more. */
-export const pidsFor = (cpus: number): number => Math.max(minimumPids, Math.floor(cpus) * pidsPerCpu);
+/**
+ Process limit for a CPU count: the floor, or {@link pidsPerCpu} per CPU when that is more.
+ */
+export function pidsFor(cpus: number): number { return Math.max(
+  minimumPids,
+  Math.floor(cpus) * pidsPerCpu
+); }
 
 const wholeNumber = /^[1-9][0-9]{0,8}$/;
 const cpuForm = /^(?:[1-9][0-9]{0,3}|0)(?:\.[0-9]{1,2})?$/;
 const memoryForm = /^[1-9][0-9]{0,8}[kmgKMG]$/;
 
 /**
- * Value of a variable, or undefined when it is unset or empty.
- *
- * @throws {ContainerBoundError} When the value does not match the accepted form.
+ Value of a variable, or undefined when it is unset or empty.
+ 
+ @throws {ContainerBoundError} When the value does not match the accepted form.
  */
-const readVariable = ({ environment, name, form, accepted }: {
+function readVariable({
+  environment,
+  name,
+  form,
+  accepted
+}: {
   environment: Readonly<Record<string, string | undefined>>;
   name: string;
   form: RegExp;
   accepted: string;
-}): string | undefined => {
+}): string | undefined {
   const value = environment[name];
-  if (value === undefined || value === '') {
+  if ((value === undefined) || (value === '')) {
     return undefined;
   }
   if (!form.test(value)) {
     throw new ContainerBoundError(`${name} is "${value}", which is not accepted. Use ${accepted}, or leave it unset.`);
   }
   return value;
-};
+}
 
 /**
- * Bound of one container run.
- *
- * Unset variables take the computed share of the host. CARGO_BUILD_JOBS and NEXTEST_TEST_THREADS follow the CPU
- * limit (whole CPUs, at least one), because inside the container `nproc` and the runner's default report the host's
- * CPUs, not the quota the cgroup really gives.
- *
- * @param options - `environment` holds the caller's variables, `host` the machine the default is computed from.
- * @returns The strings to pass on, plus a one-line summary.
- * @throws {ContainerBoundError} When a variable is set to something malformed; the message names the variable and the
- * accepted form.
+ Bound of one container run.
+ 
+ Unset variables take the computed share of the host. CARGO_BUILD_JOBS and NEXTEST_TEST_THREADS follow the CPU
+ limit (whole CPUs, at least one), because inside the container `nproc` and the runner's default report the host's
+ CPUs, not the quota the cgroup really gives.
+ 
+ @param options - `environment` holds the caller's variables, `host` the machine the default is computed from.
+ 
+ @returns The strings to pass on, plus a one-line summary.
+ 
+ @throws {ContainerBoundError} When a variable is set to something malformed; the message names the variable and the
+ accepted form.
  */
-export const containerBounds = (
-  options: { environment?: Readonly<Record<string, string | undefined>>; host?: Host } = {},
-): ContainerBounds => {
-  const { environment = process.env, host = currentHost() } = options;
+export function containerBounds(
+  options: {
+    environment?: Readonly<Record<string, string | undefined>>;
+    host?: Host
+  } = {},
+): ContainerBounds {
+  const {
+    environment = process.env,
+    host = currentHost()
+  } = options;
   const share = hostBound(host);
   const cpus = readVariable({
     environment,
@@ -144,17 +212,38 @@ export const containerBounds = (
     form: memoryForm,
     accepted: 'a whole number with the unit k, m, or g, such as 512m or 8g',
   }) ?? `${share.memoryGiB}g`;
-  const wholeCpus = Math.max(1, Math.floor(Number(cpus)));
-  const count = ({ name, fallback }: { name: string; fallback: number }): string => readVariable({
+  const wholeCpus = Math.max(
+    1,
+    Math.floor(Number(cpus))
+  );
+  function count({
+    name,
+    fallback
+  }: {
+    name: string;
+    fallback: number
+  }): string { return readVariable({
     environment,
     name,
     form: wholeNumber,
     accepted: 'a positive whole number',
-  }) ?? String(fallback);
-  const pids = count({ name: variableNames.pids, fallback: pidsFor(wholeCpus) });
-  const openFiles = count({ name: variableNames.openFiles, fallback: defaultOpenFiles });
-  const jobs = count({ name: variableNames.jobs, fallback: wholeCpus });
-  const testThreads = count({ name: variableNames.testThreads, fallback: wholeCpus });
+  }) ?? String(fallback); }
+  const pids = count({
+    name: variableNames.pids,
+    fallback: pidsFor(wholeCpus)
+  });
+  const openFiles = count({
+    name: variableNames.openFiles,
+    fallback: defaultOpenFiles
+  });
+  const jobs = count({
+    name: variableNames.jobs,
+    fallback: wholeCpus
+  });
+  const testThreads = count({
+    name: variableNames.testThreads,
+    fallback: wholeCpus
+  });
   return {
     cpus,
     memory,
@@ -162,9 +251,24 @@ export const containerBounds = (
     openFiles,
     jobs,
     testThreads,
-    limitArguments: [`--memory=${memory}`, `--cpus=${cpus}`, `--pids-limit=${pids}`, '--ulimit', `nofile=${openFiles}:${openFiles}`],
-    environmentArguments: ['--env', `CARGO_BUILD_JOBS=${jobs}`, '--env', `NEXTEST_TEST_THREADS=${testThreads}`],
-    imageBuildArguments: [`--memory=${memory}`, `--cpu-period=${cpuPeriod}`, `--cpu-quota=${Math.round(Number(cpus) * cpuPeriod)}`],
+    limitArguments: [
+      `--memory=${memory}`,
+      `--cpus=${cpus}`,
+      `--pids-limit=${pids}`,
+      '--ulimit',
+      `nofile=${openFiles}:${openFiles}`
+    ],
+    environmentArguments: [
+      '--env',
+      `CARGO_BUILD_JOBS=${jobs}`,
+      '--env',
+      `NEXTEST_TEST_THREADS=${testThreads}`
+    ],
+    imageBuildArguments: [
+      `--memory=${memory}`,
+      `--cpu-period=${cpuPeriod}`,
+      `--cpu-quota=${Math.round(Number(cpus) * cpuPeriod)}`
+    ],
     summary: `Container bound: ${cpus} CPUs, ${memory} memory, ${pids} processes, ${openFiles} open files, ${jobs} cargo jobs, ${testThreads} test threads`,
   };
-};
+}

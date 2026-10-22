@@ -284,9 +284,9 @@ export async function runAdvisor(options: ForeignHostCapability<AdvisorRunOption
         .defaultSelection
         === undefined ? {} : {
           defaultSelectionReason: `Initial selection: ${prepared.initial
-          .selection
-          .defaultSelection
-          .reason}`,
+            .selection
+            .defaultSelection
+            .reason}`,
           costRanking: prepared.initial
             .selection
             .defaultSelection

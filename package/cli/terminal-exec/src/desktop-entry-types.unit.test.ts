@@ -48,59 +48,59 @@ await describe({
         },),
 
         it({
-          name: 'expands the documented hello\\sworld example',
+          name: String.raw`expands the documented hello\sworld example`,
           fn: async () => {
-            expect(expandEscapes({ s: 'hello\\sworld', },),).toBe('hello world',);
+            expect(expandEscapes({ s: String.raw`hello\sworld`, },),).toBe('hello world',);
           },
         },),
 
         it({
-          name: 'maps \\s to a space',
+          name: String.raw`maps \s to a space`,
           fn: async () => {
-            expect(expandEscapes({ s: '\\s', },),).toBe(' ',);
+            expect(expandEscapes({ s: String.raw`\s`, },),).toBe(' ',);
           },
         },),
 
         it({
-          name: 'maps \\n to a newline',
+          name: String.raw`maps \n to a newline`,
           fn: async () => {
-            expect(expandEscapes({ s: '\\n', },),).toBe('\n',);
+            expect(expandEscapes({ s: String.raw`\n`, },),).toBe('\n',);
           },
         },),
 
         it({
-          name: 'maps \\t to a tab',
+          name: String.raw`maps \t to a tab`,
           fn: async () => {
-            expect(expandEscapes({ s: '\\t', },),).toBe('\t',);
+            expect(expandEscapes({ s: String.raw`\t`, },),).toBe('\t',);
           },
         },),
 
         it({
-          name: 'maps \\r to a carriage return',
+          name: String.raw`maps \r to a carriage return`,
           fn: async () => {
-            expect(expandEscapes({ s: '\\r', },),).toBe('\r',);
+            expect(expandEscapes({ s: String.raw`\r`, },),).toBe('\r',);
           },
         },),
 
         it({
           name: 'collapses an escaped backslash to a single backslash',
           fn: async () => {
-            expect(expandEscapes({ s: '\\\\', },),).toBe('\\',);
+            expect(expandEscapes({ s: String.raw`\\`, },),).toBe('\\',);
           },
         },),
 
         it({
           name: 'expands every escape map entry in sequence',
           fn: async () => {
-            expect(expandEscapes({ s: '\\s\\n\\t\\r\\\\', },),).toBe(' \n\t\r\\',);
+            expect(expandEscapes({ s: String.raw`\s\n\t\r\\`, },),).toBe(' \n\t\r\\',);
           },
         },),
 
         it({
           name: 'passes an unknown escape through as the literal next char',
           fn: async () => {
-            expect(expandEscapes({ s: '\\x', },),).toBe('x',);
-            expect(expandEscapes({ s: '\\9', },),).toBe('9',);
+            expect(expandEscapes({ s: String.raw`\x`, },),).toBe('x',);
+            expect(expandEscapes({ s: String.raw`\9`, },),).toBe('9',);
           },
         },),
 
@@ -121,7 +121,7 @@ await describe({
         it({
           name: 'expands multiple interspersed escapes',
           fn: async () => {
-            expect(expandEscapes({ s: 'a\\sb\\sc', },),).toBe('a b c',);
+            expect(expandEscapes({ s: String.raw`a\sb\sc`, },),).toBe('a b c',);
           },
         },),
 

@@ -1,27 +1,178 @@
 const ESCAPE_LITERAL = new Map([
-  ['\\.', '.'], ['\\/', '/'], ['\\\\', '\\'], ['\\-', '-'], ['\\[', '['], ['\\]', ']'],
-  ['\\(', '('], ['\\)', ')'], ['\\{', '{'], ['\\}', '}'], ['\\+', '+'], ['\\*', '*'],
-  ['\\?', '?'], ['\\^', '^'], ['\\$', '$'], ['\\|', '|'], ['\\#', '#'], ['\\.', '.'],
-  ['\\ ', ' '], ['\\_', '_'], ['\\:', ':'], ['\\,', ','], ['\\=', '='], ['\\!', '!'],
-  ['\\@', '@'], ['\\~', '~'], ['\\`', '`'], ["\\'", "'"], ['\\"', '"'],
+  [
+    String.raw`\.`,
+    '.'
+  ],
+  [
+    String.raw`\/`,
+    '/'
+  ],
+  [
+    String.raw`\\`,
+    '\\'
+  ],
+  [
+    String.raw`\-`,
+    '-'
+  ],
+  [
+    String.raw`\[`,
+    '['
+  ],
+  [
+    String.raw`\]`,
+    ']'
+  ],
+  [
+    String.raw`\(`,
+    '('
+  ],
+  [
+    String.raw`\)`,
+    ')'
+  ],
+  [
+    String.raw`\{`,
+    '{'
+  ],
+  [
+    String.raw`\}`,
+    '}'
+  ],
+  [
+    String.raw`\+`,
+    '+'
+  ],
+  [
+    String.raw`\*`,
+    '*'
+  ],
+  [
+    String.raw`\?`,
+    '?'
+  ],
+  [
+    String.raw`\^`,
+    '^'
+  ],
+  [
+    String.raw`\$`,
+    '$'
+  ],
+  [
+    String.raw`\|`,
+    '|'
+  ],
+  [
+    String.raw`\#`,
+    '#'
+  ],
+  [
+    String.raw`\.`,
+    '.'
+  ],
+  [
+    String.raw`\ `,
+    ' '
+  ],
+  [
+    String.raw`\_`,
+    '_'
+  ],
+  [
+    String.raw`\:`,
+    ':'
+  ],
+  [
+    String.raw`\,`,
+    ','
+  ],
+  [
+    String.raw`\=`,
+    '='
+  ],
+  [
+    String.raw`\!`,
+    '!'
+  ],
+  [
+    String.raw`\@`,
+    '@'
+  ],
+  [
+    String.raw`\~`,
+    '~'
+  ],
+  [
+    '\\`',
+    '`'
+  ],
+  [
+    String.raw`\'`,
+    "'"
+  ],
+  [
+    String.raw`\"`,
+    '"'
+  ],
 ]);
 const SHORTHAND = new Map([
-  ['\\d', 'digit'], ['\\D', 'non-digit'], ['\\w', 'word'], ['\\W', 'non-word'],
-  ['\\s', 'whitespace'], ['\\S', 'non-whitespace'],
+  [
+    String.raw`\d`,
+    'digit'
+  ],
+  [
+    String.raw`\D`,
+    'non-digit'
+  ],
+  [
+    String.raw`\w`,
+    'word'
+  ],
+  [
+    String.raw`\W`,
+    'non-word'
+  ],
+  [
+    String.raw`\s`,
+    'whitespace'
+  ],
+  [
+    String.raw`\S`,
+    'non-whitespace'
+  ],
 ]);
 
 /**
  Split a literal RegExp source (or a `new RegExp('...')` argument) into body + flags.
  */
 function splitPattern(pattern) {
-  const text = pattern.replaceAll('\n', ' ');
+  const text = pattern.replaceAll(
+    '\n',
+    ' '
+  );
   if (text.startsWith('new RegExp') || text.startsWith('RegExp(')) {
-    return { body: text, flags: '', dynamic: true, };
+    return {
+      body: text,
+      flags: '',
+      dynamic: true,
+    };
   }
   const first = text.indexOf('/');
   const last = text.lastIndexOf('/');
-  if (first === -1 || last <= first) return { body: text, flags: '', dynamic: true, };
-  return { body: text.slice(first + 1, last), flags: text.slice(last + 1), dynamic: false, };
+  if ((first === (-1)) || (last <= first)) return {
+    body: text,
+    flags: '',
+    dynamic: true,
+  };
+  return {
+    body: text.slice(
+      first + 1,
+      last
+    ),
+    flags: text.slice(last + 1),
+    dynamic: false,
+  };
 }
 
 /**
@@ -33,23 +184,35 @@ function tokenize(body) {
   while (index < body.length) {
     const char = body[index];
     if (char === '\\') {
-      const pair = body.slice(index, index + 2);
+      const pair = body.slice(
+        index,
+        index + 2
+      );
       if (ESCAPE_LITERAL.has(pair)) {
-        atoms.push({ type: 'literal', text: ESCAPE_LITERAL.get(pair), });
+        atoms.push({
+          type: 'literal',
+          text: ESCAPE_LITERAL.get(pair),
+        });
         index += 2;
         continue;
       }
       if (SHORTHAND.has(pair)) {
-        atoms.push({ type: 'class', name: SHORTHAND.get(pair), });
+        atoms.push({
+          type: 'class',
+          name: SHORTHAND.get(pair),
+        });
         index += 2;
         continue;
       }
-      if (pair === '\\b') {
+      if (pair === String.raw`\b`) {
         atoms.push({ type: 'boundary', });
         index += 2;
         continue;
       }
-      atoms.push({ type: 'escape', text: pair, });
+      atoms.push({
+        type: 'escape',
+        text: pair,
+      });
       index += 2;
       continue;
     }
@@ -57,17 +220,24 @@ function tokenize(body) {
       let end = index + 1;
       if (body[end] === '^') end += 1;
       if (body[end] === ']') end += 1;
-      while (end < body.length && body[end] !== ']') {
+      while ((end < body.length) && (body[end] !== ']')) {
         end += body[end] === '\\' ? 2 : 1;
       }
-      atoms.push({ type: 'class', text: body.slice(index, end + 1), negated: body[index + 1] === '^', });
+      atoms.push({
+        type: 'class',
+        text: body.slice(
+          index,
+          end + 1
+        ),
+        negated: body[index + 1] === '^',
+      });
       index = end + 1;
       continue;
     }
     if (char === '(') {
       let depth = 1;
       let end = index + 1;
-      while (end < body.length && depth > 0) {
+      while ((end < body.length) && (depth > 0)) {
         if (body[end] === '\\') {
           end += 2;
           continue;
@@ -76,19 +246,25 @@ function tokenize(body) {
         if (body[end] === ')') depth -= 1;
         end += 1;
       }
-      const inner = body.slice(index + 1, end - 1);
+      const inner = body.slice(
+        index + 1,
+        end - 1
+      );
       const nameMatch = /^\(\?<([A-Za-z0-9_$]+)>/.exec(body.slice(index));
       atoms.push({
         type: 'group',
         inner,
         named: nameMatch === null ? null : nameMatch[1],
         nonCapturing: inner.startsWith('?'),
-        innerAtoms: tokenize(inner.replace(/^\?(?:<[^>]*>|:|=|!|<=|<!)/, '')),
+        innerAtoms: tokenize(inner.replace(
+          /^\?(?:<[^>]*>|:|=|!|<=|<!)/,
+          ''
+        )),
       });
       index = end;
       continue;
     }
-    if (char === '^' || char === '$') {
+    if ((char === '^') || (char === '$')) {
       atoms.push({ type: char === '^' ? 'anchor-start' : 'anchor-end', });
       index += 1;
       continue;
@@ -100,44 +276,74 @@ function tokenize(body) {
     }
     if (char === '*') {
       const lazy = body[index + 1] === '?';
-      applyQuantifier(atoms, lazy ? '*?' : '*');
+      applyQuantifier(
+        atoms,
+        lazy ? '*?' : '*'
+      );
       index += lazy ? 2 : 1;
       continue;
     }
     if (char === '+') {
       const lazy = body[index + 1] === '?';
-      applyQuantifier(atoms, lazy ? '+?' : '+');
+      applyQuantifier(
+        atoms,
+        lazy ? '+?' : '+'
+      );
       index += lazy ? 2 : 1;
       continue;
     }
     if (char === '?') {
-      applyQuantifier(atoms, '?');
+      applyQuantifier(
+        atoms,
+        '?'
+      );
       index += 1;
       continue;
     }
     if (char === '{') {
-      const close = body.indexOf('}', index);
-      if (close !== -1) {
-        applyQuantifier(atoms, body.slice(index, close + 1));
+      const close = body.indexOf(
+        '}',
+        index
+      );
+      if (close !== (-1)) {
+        applyQuantifier(
+          atoms,
+          body.slice(
+            index,
+            close + 1
+          )
+        );
         index = close + 1;
         continue;
       }
     }
     if (char === '.') {
-      atoms.push({ type: 'class', name: 'any-char', });
+      atoms.push({
+        type: 'class',
+        name: 'any-char',
+      });
       index += 1;
       continue;
     }
-    atoms.push({ type: 'literal', text: char, });
+    atoms.push({
+      type: 'literal',
+      text: char,
+    });
     index += 1;
   }
   return atoms;
 }
 
-function applyQuantifier(atoms, quantifier) {
+function applyQuantifier(
+  atoms,
+  quantifier
+) {
   const last = atoms.at(-1);
   if (last === undefined) {
-    atoms.push({ type: 'quantifier', quantifier, });
+    atoms.push({
+      type: 'quantifier',
+      quantifier,
+    });
     return;
   }
   last.quantifier = (last.quantifier ?? '') + quantifier;
@@ -149,7 +355,7 @@ function applyQuantifier(atoms, quantifier) {
 function literalText(atoms) {
   let text = '';
   for (const atom of atoms) {
-    if (atom.type !== 'literal' || (atom.quantifier ?? '') !== '') return null;
+    if ((atom.type !== 'literal') || ((atom.quantifier ?? '') !== '')) return null;
     text += atom.text;
   }
   return text;
@@ -195,8 +401,10 @@ function coalesceLiterals(atoms) {
   const merged = [];
   for (const atom of atoms) {
     const last = merged.at(-1);
-    if (atom.type === 'literal' && (atom.quantifier ?? '') === '' && last !== undefined
-      && last.type === 'literal' && (last.quantifier ?? '') === '') {
+    if ((atom.type === 'literal') && ((atom.quantifier ?? '') === '')
+      && (last !== undefined)
+      && (last.type === 'literal')
+      && ((last.quantifier ?? '') === '')) {
       last.text += atom.text;
       continue;
     }
@@ -224,7 +432,8 @@ function sequenceSketch(middle) {
       steps.push(`match the sub-pattern (${atom.inner}) with its own scan`);
       continue;
     }
-    const classText = atom.name ?? atom.text ?? 'the class';
+    const classText = atom.name ?? atom.text
+      ?? 'the class';
     const quantifier = atom.quantifier ?? '';
     const bound = /^\{(\d+)(?:,(\d*))?\}$/.exec(quantifier);
     if (bound !== null) {
@@ -235,8 +444,8 @@ function sequenceSketch(middle) {
         : `walk ${minimum} to ${maximum} characters satisfying ${classText}`);
       continue;
     }
-    if (quantifier === '+' || quantifier === '+?') steps.push(`walk one or more characters satisfying ${classText}`);
-    else if (quantifier === '*' || quantifier === '*?') steps.push(`walk zero or more characters satisfying ${classText}`);
+    if ((quantifier === '+') || (quantifier === '+?')) steps.push(`walk one or more characters satisfying ${classText}`);
+    else if ((quantifier === '*') || (quantifier === '*?')) steps.push(`walk zero or more characters satisfying ${classText}`);
     else if (quantifier === '?') steps.push(`optionally consume one character satisfying ${classText}`);
     else steps.push(`consume one character satisfying ${classText}`);
   }
@@ -255,7 +464,7 @@ function sequenceTexts(atoms) {
   let combinations = [''];
   for (const atom of atoms) {
     let options = null;
-    if (atom.type === 'literal' && (atom.quantifier ?? '') === '') {
+    if ((atom.type === 'literal') && ((atom.quantifier ?? '') === '')) {
       options = [atom.text, ];
     } else if (atom.type === 'group') {
       options = alternativeTexts(atom.innerAtoms ?? []);
@@ -307,29 +516,50 @@ function alternativeTexts(atoms) {
 function literalAlternation(atoms) {
   if (atoms.some((atom) => atom.type === 'alternation')) return alternativeTexts(atoms);
   const groupIndex = atoms.findIndex((atom) => atom.type === 'group');
-  if (groupIndex === -1) return null;
-  const inner = alternativeTexts(atoms[groupIndex].innerAtoms ?? []);
+  if (groupIndex === (-1)) return null;
+  const inner = alternativeTexts(atoms[groupIndex]
+    .innerAtoms
+    ?? []);
   if (inner === null) return null;
-  const before = literalText(atoms.slice(0, groupIndex));
+  const before = literalText(atoms.slice(
+    0,
+    groupIndex
+  ));
   const after = literalText(atoms.slice(groupIndex + 1));
-  if (before === null || after === null) return null;
+  if ((before === null) || (after === null)) return null;
   return inner.map((candidate) => `${before}${candidate}${after}`);
 }
 
 /**
  Derive a replacement sketch from the atom list.
  */
-function deriveSketch({ atoms, flags, dynamic, }) {
+function deriveSketch({
+  atoms,
+  flags,
+  dynamic,
+}) {
   if (dynamic) {
-    return { shape: 'dynamic-construction', sketch: 'avoid constructing a RegExp: test the same condition with string APIs over the interpolated value', grammar: 'dynamically built pattern', };
+    return {
+      shape: 'dynamic-construction',
+      sketch: 'avoid constructing a RegExp: test the same condition with string APIs over the interpolated value',
+      grammar: 'dynamically built pattern',
+    };
   }
   const coalesced = coalesceLiterals(atoms);
   const hasBoundary = coalesced.some((atom) => atom.type === 'boundary');
   const significant = coalesced.filter((atom) => atom.type !== 'boundary');
-  const anchoredStart = significant[0]?.type === 'anchor-start';
-  const anchoredEnd = significant.at(-1)?.type === 'anchor-end';
-  const middle = significant.slice(anchoredStart ? 1 : 0, anchoredEnd ? -1 : undefined);
-  const grammar = coalesced.map(describeAtom).join(', then ');
+  const anchoredStart = significant[0]
+    ?.type
+    === 'anchor-start';
+  const anchoredEnd = significant.at(-1)
+    ?.type
+    === 'anchor-end';
+  const middle = significant.slice(
+    anchoredStart ? 1 : 0,
+    anchoredEnd ? -1 : undefined
+  );
+  const grammar = coalesced.map(describeAtom)
+    .join(', then ');
 
   // Case 0: a lookbehind encodes a backward condition, which is a backward walk.
   if (bodyIncludesLookbehind(coalesced)) {
@@ -350,13 +580,13 @@ function deriveSketch({ atoms, flags, dynamic, }) {
   const caseNote = flags.includes('i')
     ? ' The pattern is case-insensitive, so every comparison in the replacement must fold case the same way (`toLowerCase()` on both sides for ASCII, and an explicit decision for non-ASCII, since the `i` flag with `u` applies Unicode simple case folding).'
     : '';
-  const unanchoredNote = (anchoredStart === false && anchoredEnd === false)
+  const unanchoredNote = ((!anchoredStart) && (!anchoredEnd))
     ? ' The pattern is unanchored, so the replacement must search anywhere in the value rather than test its start or end.'
     : '';
 
   // Case 1: pure literal middle.
   const literal = literalText(middle);
-  if (literal !== null && literal !== '') {
+  if ((literal !== null) && (literal !== '')) {
     if (hasBoundary) {
       return {
         shape: 'word-boundary-substring',
@@ -364,28 +594,55 @@ function deriveSketch({ atoms, flags, dynamic, }) {
         grammar,
       };
     }
-    if (anchoredStart && anchoredEnd) return { shape: 'exact-equality', sketch: `${linePrefix}value === ${JSON.stringify(literal)}${caseNote}`, grammar, };
-    if (anchoredStart) return { shape: 'prefix', sketch: `${linePrefix}value.startsWith(${JSON.stringify(literal)})${caseNote}`, grammar, };
-    if (anchoredEnd) return { shape: 'suffix', sketch: `${linePrefix}value.endsWith(${JSON.stringify(literal)})${caseNote}`, grammar, };
-    if (flags.includes('g')) return { shape: 'replace-all-literal', sketch: `value.replaceAll(${JSON.stringify(literal)}, replacement) with the string form, or a split/join`, grammar, };
-    return { shape: 'substring', sketch: `value.includes(${JSON.stringify(literal)})`, grammar, };
+    if (anchoredStart && anchoredEnd) return {
+      shape: 'exact-equality',
+      sketch: `${linePrefix}value === ${JSON.stringify(literal)}${caseNote}`,
+      grammar,
+    };
+    if (anchoredStart) return {
+      shape: 'prefix',
+      sketch: `${linePrefix}value.startsWith(${JSON.stringify(literal)})${caseNote}`,
+      grammar,
+    };
+    if (anchoredEnd) return {
+      shape: 'suffix',
+      sketch: `${linePrefix}value.endsWith(${JSON.stringify(literal)})${caseNote}`,
+      grammar,
+    };
+    if (flags.includes('g')) return {
+      shape: 'replace-all-literal',
+      sketch: `value.replaceAll(${JSON.stringify(literal)}, replacement) with the string form, or a split/join`,
+      grammar,
+    };
+    return {
+      shape: 'substring',
+      sketch: `value.includes(${JSON.stringify(literal)})`,
+      grammar,
+    };
   }
 
   // Case 2: a bounded run of one character class, optionally between literals.
   const classRuns = middle.filter((atom) => atom.type === 'class');
-  if (classRuns.length === 1 && middle.every((atom) => atom.type === 'literal' || atom.type === 'class')) {
+  if ((classRuns.length === 1) && middle.every((atom) => (atom.type === 'literal') || (atom.type === 'class'))) {
     const run = classRuns[0];
-    const runText = run.name ?? run.text ?? 'class';
+    const runText = run.name ?? run.text
+      ?? 'class';
     const runIndex = middle.indexOf(run);
-    const prefix = literalText(middle.slice(0, runIndex)) ?? '';
+    const prefix = literalText(middle.slice(
+      0,
+      runIndex
+    )) ?? '';
     const suffix = literalText(middle.slice(runIndex + 1)) ?? '';
     const bounded = /^\{(\d+)(?:,(\d*))?\}$/.exec(run.quantifier ?? '');
-    if (bounded !== null && anchoredStart && anchoredEnd && middle.every((atom) => atom.type === 'literal' || atom === run)) {
+    if ((bounded !== null) && anchoredStart
+      && anchoredEnd
+      && middle.every((atom) => (atom.type === 'literal') || (atom === run))) {
       const exact = bounded[2] === undefined;
       return {
         shape: 'fixed-length-class-run',
         sketch: exact
-          ? `${linePrefix}check the length is ${prefix.length + Number(bounded[1]) + suffix.length}, ${prefix === '' ? '' : `check the literal ${JSON.stringify(prefix)} with startsWith, `}${suffix === '' ? '' : `check the literal ${JSON.stringify(suffix)} with endsWith, `}and check every remaining character satisfies ${runText}`
+          ? `${linePrefix}check the length is ${prefix.length + Number(bounded[1])
+            + suffix.length}, ${prefix === '' ? '' : `check the literal ${JSON.stringify(prefix)} with startsWith, `}${suffix === '' ? '' : `check the literal ${JSON.stringify(suffix)} with endsWith, `}and check every remaining character satisfies ${runText}`
           : `${linePrefix}check the literal parts with startsWith/endsWith and walk ${bounded[1]} or more characters satisfying ${runText}`,
         grammar,
       };
@@ -398,16 +655,24 @@ function deriveSketch({ atoms, flags, dynamic, }) {
   }
 
   // Case 3: literal, class and literal-alternation steps only, in any count.
-  const isPlainStep = (atom) => atom.type === 'literal'
-    || atom.type === 'class'
-    || (atom.type === 'group' && literalAlternation(atom.innerAtoms ?? []) !== null);
-  if (middle.length > 0 && middle.every(isPlainStep)) {
-    return { shape: 'literal-class-sequence', sketch: `${linePrefix}single-pass linear scan: ${sequenceSketch(middle)}${caseNote}`, grammar, };
+  function isPlainStep(atom) { return (atom.type === 'literal')
+    || (atom.type === 'class')
+    || ((atom.type === 'group') && (literalAlternation(atom.innerAtoms ?? []) !== null)); }
+  if ((middle.length > 0) && middle.every(isPlainStep)) {
+    return {
+      shape: 'literal-class-sequence',
+      sketch: `${linePrefix}single-pass linear scan: ${sequenceSketch(middle)}${caseNote}`,
+      grammar,
+    };
   }
 
   // Case 4: alternation of literals.
   if (middle.some((atom) => atom.type === 'alternation')) {
-    return { shape: 'alternation', sketch: `a small array of literal candidates tested with some(startsWith/endsWith/includes), or one linear pass matching the longest candidate${caseNote}${unanchoredNote}`, grammar, };
+    return {
+      shape: 'alternation',
+      sketch: `a small array of literal candidates tested with some(startsWith/endsWith/includes), or one linear pass matching the longest candidate${caseNote}${unanchoredNote}`,
+      grammar,
+    };
   }
 
   // Case 5: a group whose body is only an alternation of literals is a candidate
@@ -423,7 +688,7 @@ function deriveSketch({ atoms, flags, dynamic, }) {
 
   // Case 6: captures between literal delimiters.
   if (middle.some((atom) => atom.type === 'group')) {
-    const capturing = middle.filter((atom) => atom.type === 'group' && atom.nonCapturing === false);
+    const capturing = middle.filter((atom) => (atom.type === 'group') && (atom.nonCapturing === false));
     const capturedNames = capturing
       .map((atom) => atom.named ?? 'positional')
       .join(', ');
@@ -434,8 +699,19 @@ function deriveSketch({ atoms, flags, dynamic, }) {
     };
   }
 
-  return { shape: 'scanner', sketch: `hand-written linear scanner over the same token grammar (indexOf/slice/charCodeAt walk, single pass, no backtracking)${caseNote}${unanchoredNote}`, grammar, };
+  return {
+    shape: 'scanner',
+    sketch: `hand-written linear scanner over the same token grammar (indexOf/slice/charCodeAt walk, single pass, no backtracking)${caseNote}${unanchoredNote}`,
+    grammar,
+  };
 }
 
 
-export { splitPattern, tokenize, deriveSketch, coalesceLiterals, literalText, describeAtom };
+export {
+  splitPattern,
+  tokenize,
+  deriveSketch,
+  coalesceLiterals,
+  literalText,
+  describeAtom
+};

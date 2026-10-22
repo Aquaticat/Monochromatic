@@ -79,7 +79,7 @@ function offsetOf({
       ? 0
       : (after + 1),
   );
-  if (offset === -1) {
+  if (offset === (-1)) {
     throw new Error(`marker not in source: ${marker}`,);
   }
   return offset;
@@ -1132,7 +1132,7 @@ await describe({
             return error;
           }
         })();
-        expect(caught instanceof Error,).toBe(true,);
+        expect(Error.isError(caught,),).toBe(true,);
         expect(String(caught,),).toContain('Not an open bracket',);
       },
     },),

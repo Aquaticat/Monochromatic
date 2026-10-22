@@ -197,7 +197,7 @@ export function assignLineExpectation({
       openFrames,
       closeValue: token.value,
     },);
-    if (baseLine === -1) {
+    if (baseLine === (-1)) {
       return {
         expectedWidth: width,
         route: 'unmatched',
@@ -219,7 +219,9 @@ export function assignLineExpectation({
     ? at({
       arr: records,
       index: ownerRecordIndex,
-    },).node.type
+    },)
+      .node
+      .type
     : '';
   const anchorLine = anchorLineIndexOf({
     records,
@@ -227,7 +229,7 @@ export function assignLineExpectation({
     lineIndex,
     lineStarts,
   },);
-  const anchorWidth = (anchorLine === -1)
+  const anchorWidth = (anchorLine === (-1))
     ? 0
     : at({
       arr: resolvedWidths,
@@ -243,7 +245,7 @@ export function assignLineExpectation({
     };
   }
   return {
-    expectedWidth: (anchorLine === -1)
+    expectedWidth: (anchorLine === (-1))
       ? 0
       : anchorWidth + 2,
     route: 'ancestor',
@@ -321,7 +323,7 @@ export function computeIndentExpectations({
       arr: lineStarts,
       index: lineIndex,
     },);
-    const lineEnd = (lineIndex + 1 < lineStarts.length)
+    const lineEnd = ((lineIndex + 1) < lineStarts.length)
       ? at({
         arr: lineStarts,
         index: lineIndex + 1,
@@ -336,7 +338,9 @@ export function computeIndentExpectations({
         && (at({
           arr: tokens,
           index: lineTokenEnd,
-        },).start < lineEnd)
+        },)
+          .start
+          < lineEnd)
     ) {
       lineTokenEnd += 1;
     }
@@ -356,13 +360,15 @@ export function computeIndentExpectations({
       && (at({
         arr: tokens,
         index: lineTokenStart,
-      },).start === contentStart);
+      },)
+        .start
+        === contentStart);
     if (
       at({
         arr: blank,
         index: lineIndex,
       },)
-        || !lineStartsToken
+        || (!lineStartsToken)
         || at({
           arr: templateLines,
           index: lineIndex,
@@ -434,7 +440,9 @@ export function computeIndentExpectations({
           if (at({
             arr: openFrames,
             index: frameIndex,
-          },).closeValue === token.value) {
+          },)
+            .closeValue
+            === token.value) {
             openFrames.length = frameIndex;
             break;
           }

@@ -17,7 +17,7 @@ import {
 const gibibyte = 2 ** 30;
 const hostOf = ({ cpus, memoryGiB }: { cpus: number; memoryGiB: number }) => ({ cpus, memoryBytes: memoryGiB * gibibyte });
 // The host of the owner's decision: 28 CPUs and 61.83 GiB (66,394,247,168 bytes), a "64 GB" machine.
-const ownerHost = { cpus: 28, memoryBytes: 66394247168 };
+const ownerHost = { cpus: 28, memoryBytes: 66_394_247_168 };
 
 test('three quarters of a 28 CPU, 64 GB host is 21 CPUs and 46 GiB', () => {
   assert.deepEqual(hostBound(ownerHost), { cpus: 21, memoryGiB: 46 });
@@ -39,7 +39,7 @@ test('the process limit keeps a floor of 512 and grows with the CPU count', () =
   assert.equal(pidsFor(1), 512);
   assert.equal(pidsFor(2), 512);
   assert.equal(pidsFor(3), 768);
-  assert.equal(pidsFor(21), 5376);
+  assert.equal(pidsFor(21), 5_376);
 });
 
 test('with nothing set, every value is computed from the host', () => {
@@ -136,7 +136,7 @@ for (const [name, value] of malformed) {
   test(`${name}="${value}" is refused with the variable named`, () => {
     assert.throws(
       () => containerBounds({ environment: { [name]: value }, host: ownerHost }),
-      error => error instanceof ContainerBoundError && error.message.includes(name) && error.message.includes(`"${value}"`) && error.message.includes('Use '),
+      error => (error instanceof ContainerBoundError) && error.message.includes(name) && error.message.includes(`"${value}"`) && error.message.includes('Use '),
     );
   });
 }
@@ -161,9 +161,9 @@ test('the variables are the ones the README names', () => {
 
 test('this host yields a bound with whole, positive numbers', () => {
   const host = currentHost();
-  assert.ok(Number.isInteger(host.cpus) && host.cpus >= 1);
+  assert.ok(Number.isInteger(host.cpus) && (host.cpus >= 1));
   assert.ok(host.memoryBytes > 0);
   const bound = hostBound(host);
-  assert.ok(bound.cpus >= 1 && bound.cpus <= host.cpus);
+  assert.ok((bound.cpus >= 1) && (bound.cpus <= host.cpus));
   assert.ok(bound.memoryGiB >= 2);
 });

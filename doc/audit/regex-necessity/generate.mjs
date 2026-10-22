@@ -1,20 +1,49 @@
 // Generate one issue payload per unnecessary-regex site, plus the gate-coverage issue.
-import { readFileSync, writeFileSync, mkdirSync, existsSync, } from 'node:fs';
-import { join, dirname, } from 'node:path';
-import { rebuttalFor, SAFETY_ONLY_FALLBACK, } from './rebuttals.mjs';
+import {
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+  existsSync,
+} from 'node:fs';
+import {
+  join,
+  dirname,
+} from 'node:path';
+import {
+  rebuttalFor,
+  SAFETY_ONLY_FALLBACK,
+} from './rebuttals.mjs';
 
 const ROOT = '/var/home/user/Monochromatic';
 const AUDIT = '/home/user/temp/agent/regex-audit';
-const OUT = join(AUDIT, 'issues');
+const OUT = join(
+  AUDIT,
+  'issues'
+);
 
-const findings = JSON.parse(readFileSync(join(AUDIT, 'to-file2.json'), 'utf8'));
+const findings = JSON.parse(readFileSync(
+  join(
+    AUDIT,
+    'to-file2.json'
+  ),
+  'utf8'
+));
 
-mkdirSync(OUT, { recursive: true, });
+mkdirSync(
+  OUT,
+  { recursive: true, }
+);
 
 function packageDirOf(repoPath) {
-  let dir = dirname(join(ROOT, repoPath));
+  let dir = dirname(join(
+    ROOT,
+    repoPath
+  ));
   while (dir.startsWith(ROOT)) {
-    if (existsSync(join(dir, 'package.json'))) return dir.slice(ROOT.length + 1);
+    if (existsSync(join(
+      dir,
+      'package.json'
+    ))) return dir.slice(ROOT.length + 1);
     const parent = dirname(dir);
     if (parent === dir) break;
     dir = parent;
@@ -49,7 +78,10 @@ function codeSpan(text) {
   for (const char of text) {
     if (char === '`') {
       current += 1;
-      longest = Math.max(longest, current);
+      longest = Math.max(
+        longest,
+        current
+      );
       continue;
     }
     current = 0;
@@ -64,7 +96,7 @@ function languageOf(finding) {
   if (surface === 'kotlin') return 'kotlin';
   if (surface === 'yaml-inline') return 'yaml';
   if (surface === 'html-script') return 'html';
-  const repoPath = finding.repoPath;
+  const {repoPath} = finding;
   if (repoPath.endsWith('.ts') || repoPath.endsWith('.tsx')) return 'ts';
   return 'js';
 }
@@ -82,11 +114,16 @@ const TITLE_PREFIX = 'refactor(%s): drop the unnecessary regex at ';
  `index.ts` alone is ambiguous in the type-encoded `module/es` tree, so the
  suffix widens toward the repo root until the next segment would not fit.
  */
-function pathSuffixFor(finding, budget) {
-  const segments = finding.repoPath.split('/');
+function pathSuffixFor(
+  finding,
+  budget
+) {
+  const segments = finding.repoPath
+    .split('/');
   let chosen = null;
   for (let count = 1; count <= segments.length; count += 1) {
-    const candidate = `${segments.slice(-count).join('/')}:${finding.line}`;
+    const candidate = `${segments.slice(-count)
+      .join('/')}:${finding.line}`;
     if (candidate.length > budget) break;
     chosen = candidate;
   }
@@ -99,18 +136,42 @@ function pathSuffixFor(finding, budget) {
  start position).
  */
 function patternTag(finding) {
-  const cleaned = finding.pattern.replaceAll('`', "'").replaceAll('\n', ' ').trim();
-  return cleaned.length <= 26 ? cleaned : `${cleaned.slice(0, 26)}...`;
+  const cleaned = finding.pattern
+    .replaceAll(
+    '`',
+    "'"
+    )
+    .replaceAll(
+    '\n',
+    ' '
+    )
+    .trim();
+  return cleaned.length <= 26 ? cleaned : `${cleaned.slice(
+    0,
+    26
+  )}...`;
 }
 
-function titleFor(finding, group) {
-  const prefix = TITLE_PREFIX.replace('%s', finding.scope);
-  const suffix = pathSuffixFor(finding, TITLE_LIMIT - prefix.length);
+function titleFor(
+  finding,
+  group
+) {
+  const prefix = TITLE_PREFIX.replace(
+    '%s',
+    finding.scope
+  );
+  const suffix = pathSuffixFor(
+    finding,
+    TITLE_LIMIT - prefix.length
+  );
   const tag = group === null ? '' : ` [${patternTag(finding)}]`;
   const budget = TITLE_LIMIT - tag.length;
   if (`${prefix}${suffix}`.length <= budget) return `${prefix}${suffix}${tag}`;
   // The path suffix has to shrink to make room for the tag.
-  const base = `${finding.repoPath.slice(finding.repoPath.lastIndexOf('/') + 1)}:${finding.line}`;
+  const base = `${finding.repoPath
+    .slice(finding.repoPath
+      .lastIndexOf('/')
+      + 1)}:${finding.line}`;
   return `${prefix}${base}${tag}`;
 }
 
@@ -138,14 +199,20 @@ function shapeSentence(finding) {
  Sites whose gate status was measured individually rather than inferred.
  */
 const GATE_OVERRIDES = new Map([
-  ['package/git-policy/cli/bin/build-git-test-image.mjs:61',
-    'Unlike the other unjustified sites, this one IS reached by the gate and is currently red: `mise run //package/git-policy/cli:lint:oxlint` reports 75 errors and 65 warnings (measured 2026-10-12), and exactly one of them is this `no-restricted-syntax(no-regex)` error. The task then fails for an unrelated reason (a tsgo panic inside `plugin-prefer-readonly-parameter-type`), so the package lint has not been green. This contradicts the "sweep complete ... green for every non-paused package" status recorded in `doc/handover/no-regex.md`.'],
+  [
+    'package/git-policy/cli/bin/build-git-test-image.mjs:61',
+    'Unlike the other unjustified sites, this one IS reached by the gate and is currently red: `mise run //package/git-policy/cli:lint:oxlint` reports 75 errors and 65 warnings (measured 2026-10-12), and exactly one of them is this `no-restricted-syntax(no-regex)` error. The task then fails for an unrelated reason (a tsgo panic inside `plugin-prefer-readonly-parameter-type`), so the package lint has not been green. This contradicts the "sweep complete ... green for every non-paused package" status recorded in `doc/handover/no-regex.md`.'
+  ],
 ]);
 
 /**
  Why the no-regex gate never reached this site, stated with the deciding evidence.
  */
-function gateNote(finding, taskPrefix, gateIssue) {
+function gateNote(
+  finding,
+  taskPrefix,
+  gateIssue
+) {
   const override = GATE_OVERRIDES.get(`${finding.repoPath}:${finding.line}`);
   if (override !== undefined) return `${override} The gate-coverage half of this finding is tracked in #${gateIssue}.`;
   const surface = finding.surface ?? 'js-ts';
@@ -159,16 +226,26 @@ function gateNote(finding, taskPrefix, gateIssue) {
     return `This site carries no disable justification because inline script strings inside a compose file are outside every lint gate. The gate-coverage half of this finding is tracked in #${gateIssue}.`;
   }
   const tail = ` The gate-coverage half of this finding is tracked in #${gateIssue}.`;
-  if (finding.repoPath.startsWith('doc/')) {
+  if (finding.repoPath
+    .startsWith('doc/')) {
     return `This site carries no disable justification because the oxlint gate never reaches it: no package task covers \`doc/\`, since the lint fanout visits only \`//package/\` tasks (recorded in \`monochromatic-lint.config.jsonc\`, block \`old-gate-scope\`).${tail}`;
   }
-  if (finding.repoPath.endsWith('.js') || finding.repoPath.endsWith('.cjs')) {
+  if (finding.repoPath
+    .endsWith('.js')
+    || finding.repoPath
+      .endsWith('.cjs')) {
     return `This site carries no disable justification because the oxlint gate never reaches it: \`package/config/oxlint/src/config-base.ts:63\` lists \`**/*.js\` and \`**/*.cjs\` in \`ignorePatterns\`, so the file is excluded from every lint run.${tail}`;
   }
   return `This site carries no disable justification because the oxlint gate never reaches it: \`mise tasks ls --all\` lists no \`${taskPrefix ?? '//<none>'}:lint:oxlint\` task for the owning package (positive control: \`//package/pi-plugin/auto-mode:lint:oxlint\` and \`//package/ssg/aquati.cat:lint:oxlint\` both exist, so the probe can show a task when one is defined).${tail}`;
 }
 
-const TASK_LIST = readFileSync(join(AUDIT, 'tasks.txt'), 'utf8');
+const TASK_LIST = readFileSync(
+  join(
+    AUDIT,
+    'tasks.txt'
+  ),
+  'utf8'
+);
 
 const JS_DETECTOR = "the repo's own `no-restricted-syntax/no-regex` rule (`package/oxlint-plugin/no-restricted-syntax/src/rule/no-regex.ts`), run over a mirror tree whose suppression directives were neutralised at equal byte length, so justified sites are enumerated too";
 
@@ -178,123 +255,191 @@ const JS_DETECTOR = "the repo's own `no-restricted-syntax/no-regex` rule (`packa
  The match is anchored on the task-name column, because a substring test reports
  `test` as present for a package that only defines `test:unit`.
  */
-function taskExists(packageDir, task) {
+function taskExists(
+  packageDir,
+  task
+) {
   if (packageDir === null) return false;
   const wanted = `//${packageDir}:${task}`;
-  return TASK_LIST.split('\n').some((line) => {
-    const name = /^[^\s]+/.exec(line);
-    return name !== null && name[0] === wanted;
-  });
+  return TASK_LIST.split('\n')
+    .some((line) => {
+      const name = /^[^\s]+/.exec(line);
+      return (name !== null) && (name[0] === wanted);
+    });
 }
 
-function verificationSteps(finding, gateIssue) {
+function verificationSteps(
+  finding,
+  gateIssue
+) {
   const dir = finding.packageDir ?? null;
   const steps = [];
   if (dir === null) {
     steps.push('- [ ] This file is a repo-level script with no package task: run it against its documented input and compare the output with the pre-change run.');
     return steps;
   }
-  steps.push(taskExists(dir, 'lint:types')
+  steps.push(taskExists(
+    dir,
+    'lint:types'
+  )
     ? `- [ ] \`mise run //${dir}:lint:types\` passes.`
     : `- [ ] \`//${dir}\` defines no \`lint:types\` task (checked against \`mise tasks ls --all\`), so type-check through whatever task the package does define, or record why none applies.`);
   if ((finding.surface ?? 'js-ts') === 'kotlin') {
-    steps.push(taskExists(dir, 'lint:detekt')
-      ? `- [ ] \`mise run //${dir}:lint:detekt\` passes (this is the Kotlin gate that does exist for this package).`
-      : `- [ ] \`//${dir}\` defines no \`lint:detekt\` task either, so record how the change is verified.`);
-    steps.push(`- [ ] The Android module's own test task runs the equivalence fixtures, or the issue records why it cannot.`);
+    steps.push(
+      taskExists(
+        dir,
+        'lint:detekt'
+      )
+        ? `- [ ] \`mise run //${dir}:lint:detekt\` passes (this is the Kotlin gate that does exist for this package).`
+        : `- [ ] \`//${dir}\` defines no \`lint:detekt\` task either, so record how the change is verified.`,
+      `- [ ] The Android module's own test task runs the equivalence fixtures, or the issue records why it cannot.`
+    );
     return steps;
   }
-  const testTask = ['test:unit', 'test', 'test:container'].find((task) => taskExists(dir, task));
-  steps.push(testTask === undefined
-    ? `- [ ] \`//${dir}\` defines no test task (checked against \`mise tasks ls --all\`): put the equivalence fixtures where they can actually run, or record in this issue why the site stays untested.`
-    : `- [ ] \`mise run //${dir}:${testTask}\` passes.`);
-  steps.push(taskExists(dir, 'lint:oxlint')
-    ? `- [ ] \`mise run //${dir}:lint:oxlint\` is clean with the regex gone${finding.covered ? ' and the disable comment removed' : ''}.`
-    : `- [ ] \`//${dir}\` defines no \`lint:oxlint\` task, so no gate will confirm the regex is gone: the coverage fix is #${gateIssue}, and until it lands, verify by re-running the audit enumeration on this file.`);
+  const testTask = [
+    'test:unit',
+    'test',
+    'test:container'
+  ].find((task) => taskExists(
+    dir,
+    task
+  ));
+  steps.push(
+    testTask === undefined
+      ? `- [ ] \`//${dir}\` defines no test task (checked against \`mise tasks ls --all\`): put the equivalence fixtures where they can actually run, or record in this issue why the site stays untested.`
+      : `- [ ] \`mise run //${dir}:${testTask}\` passes.`,
+    taskExists(
+      dir,
+      'lint:oxlint'
+    )
+      ? `- [ ] \`mise run //${dir}:lint:oxlint\` is clean with the regex gone${finding.covered ? ' and the disable comment removed' : ''}.`
+      : `- [ ] \`//${dir}\` defines no \`lint:oxlint\` task, so no gate will confirm the regex is gone: the coverage fix is #${gateIssue}, and until it lands, verify by re-running the audit enumeration on this file.`
+  );
   return steps;
 }
 
-function bodyFor(finding, { indexIssue, gateIssue, }) {
+function bodyFor(
+  finding,
+  {
+    indexIssue,
+    gateIssue,
+  }
+) {
   const packageDir = finding.packageDir ?? null;
   const taskPrefix = packageDir === null ? null : `//${packageDir}`;
   const lines = [];
-  lines.push('> **Generated by AI during the repo-wide regex-necessity audit.** Method, counts, exclusions and measurements: `doc/audit/regex-necessity.md`.');
-  lines.push('');
-  lines.push('## Agent Brief');
-  lines.push('');
-  lines.push('**Category:** enhancement');
-  lines.push('');
-  lines.push(`**Summary:** \`${finding.repoPath}:${finding.line}\` uses ${codeSpan(finding.pattern)} in \`${finding.symbol}\`, and ${shapeSentence(finding)}. Under the audit criterion, a regex is unnecessary when the same feature is implementable without regex at similar or better time complexity, so this site qualifies.`);
-  lines.push('');
-  lines.push('**Site**');
-  lines.push('');
-  lines.push(`- File: \`${finding.repoPath}:${finding.line}\` (column ${finding.column})`);
-  lines.push(`- Enclosing declaration: \`${finding.symbol}\``);
-  lines.push(`- Package scope: \`${finding.scope}\`${packageDir === null ? ' (repo-level script, no package task prefix)' : ` (\`${packageDir}\`)`}`);
+  lines.push(
+    '> **Generated by AI during the repo-wide regex-necessity audit.** Method, counts, exclusions and measurements: `doc/audit/regex-necessity.md`.',
+    '',
+    '## Agent Brief',
+    '',
+    '**Category:** enhancement',
+    '',
+    `**Summary:** \`${finding.repoPath}:${finding.line}\` uses ${codeSpan(finding.pattern)} in \`${finding.symbol}\`, and ${shapeSentence(finding)}. Under the audit criterion, a regex is unnecessary when the same feature is implementable without regex at similar or better time complexity, so this site qualifies.`,
+    '',
+    '**Site**',
+    '',
+    `- File: \`${finding.repoPath}:${finding.line}\` (column ${finding.column})`,
+    `- Enclosing declaration: \`${finding.symbol}\``,
+    `- Package scope: \`${finding.scope}\`${packageDir === null ? ' (repo-level script, no package task prefix)' : ` (\`${packageDir}\`)`}`
+  );
   const surface = finding.surface ?? 'js-ts';
-  lines.push(`- Reported form: ${surface === 'kotlin' ? 'a Kotlin `Regex(...)` construction' : surface === 'yaml-inline' ? 'an inline regex inside a script string' : finding.kind === 'literal' ? 'a regex literal' : finding.kind === 'constructor' ? 'a `RegExp` constructor call' : `a string method taking an inline regex (\`${finding.message.split(' with ')[0]}\`)`}`);
-  lines.push(`- Detector: ${finding.detector ?? JS_DETECTOR}`);
-  lines.push('');
-  lines.push(`\`\`\`${languageOf(finding)}`);
-  lines.push(`// ${finding.repoPath}:${finding.line}`);
-  lines.push(finding.sourceLine === '' ? finding.spanText : finding.sourceLine);
-  lines.push('```');
-  lines.push('');
-  lines.push('**What the pattern matches**');
-  lines.push('');
-  lines.push(finding.grammar === '' ? 'A dynamically constructed pattern; the source is assembled at runtime from values the caller already holds.' : finding.grammar);
-  lines.push('');
+  lines.push(
+    `- Reported form: ${surface === 'kotlin' ? 'a Kotlin `Regex(...)` construction' : surface === 'yaml-inline' ? 'an inline regex inside a script string' : finding.kind === 'literal' ? 'a regex literal' : finding.kind === 'constructor' ? 'a `RegExp` constructor call' : `a string method taking an inline regex (\`${finding.message
+      .split(' with ')[0]}\`)`}`,
+    `- Detector: ${finding.detector ?? JS_DETECTOR}`,
+    '',
+    `\`\`\`${languageOf(finding)}`,
+    `// ${finding.repoPath}:${finding.line}`,
+    finding.sourceLine === '' ? finding.spanText : finding.sourceLine,
+    '```',
+    '',
+    '**What the pattern matches**',
+    '',
+    finding.grammar === '' ? 'A dynamically constructed pattern; the source is assembled at runtime from values the caller already holds.' : finding.grammar,
+    ''
+  );
   if (finding.splitNote !== undefined) {
-    lines.push('**Why this site is separate from its neighbours**');
-    lines.push('');
-    lines.push(finding.splitNote);
-    lines.push('');
+    lines.push(
+      '**Why this site is separate from its neighbours**',
+      '',
+      finding.splitNote,
+      ''
+    );
   }
   if (finding.note !== undefined) {
-    lines.push(`**Role in the file:** ${finding.note}`);
-    lines.push('');
+    lines.push(
+      `**Role in the file:** ${finding.note}`,
+      ''
+    );
   }
-  lines.push('**Why it is unnecessary**');
-  lines.push('');
-  lines.push(`Replacement shape: ${finding.sketch.replace(/\.$/, '')}.`);
-  lines.push('');
-  lines.push(`Complexity: ${COMPLEXITY[finding.shape] ?? COMPLEXITY.scanner}`);
+  lines.push(
+    '**Why it is unnecessary**',
+    '',
+    `Replacement shape: ${finding.sketch
+      .replace(
+        /\.$/,
+        ''
+      )}.`,
+    '',
+    `Complexity: ${COMPLEXITY[finding.shape] ?? COMPLEXITY.scanner}`
+  );
   if (finding.covered === false) {
-    lines.push('');
-    lines.push(gateNote(finding, taskPrefix, gateIssue));
+    lines.push(
+      '',
+      gateNote(
+        finding,
+        taskPrefix,
+        gateIssue
+      )
+    );
   }
   lines.push('');
   if (finding.covered) {
     const rebuttal = rebuttalFor(finding.justification) ?? SAFETY_ONLY_FALLBACK;
-    lines.push('**The recorded justification does not establish necessity**');
-    lines.push('');
-    lines.push(`The site carries a \`${finding.directiveKind}\` disable for \`no-restricted-syntax/no-regex\`:`);
-    lines.push('');
-    lines.push(`> ${(finding.justification ?? '').replaceAll('\n', ' ')}`);
-    lines.push('');
-    lines.push(rebuttal);
-    lines.push('');
+    lines.push(
+      '**The recorded justification does not establish necessity**',
+      '',
+      `The site carries a \`${finding.directiveKind}\` disable for \`no-restricted-syntax/no-regex\`:`,
+      '',
+      `> ${(finding.justification ?? '').replaceAll(
+      '\n',
+      ' '
+    )}`,
+      '',
+      rebuttal,
+      ''
+    );
   }
   if (finding.exclusion === 'paused-package') {
-    lines.push('**Paused package**');
-    lines.push('');
-    lines.push('This file is in `package-paused/`, which `monochromatic-lint.config.jsonc` and `package/config/oxlint/src/config-base.ts` both exclude from the lint scope, and whose README records that development is paused pending the no-regex sweep in `doc/handover/no-regex.md`. Resuming the package is a separate decision from this refactor; the site is filed so the deferral is visible per site rather than only in a README paragraph.');
-    lines.push('');
+    lines.push(
+      '**Paused package**',
+      '',
+      'This file is in `package-paused/`, which `monochromatic-lint.config.jsonc` and `package/config/oxlint/src/config-base.ts` both exclude from the lint scope, and whose README records that development is paused pending the no-regex sweep in `doc/handover/no-regex.md`. Resuming the package is a separate decision from this refactor; the site is filed so the deferral is visible per site rather than only in a README paragraph.',
+      ''
+    );
   }
   if (ROLLDOWN_COORDINATION.some((marker) => (finding.justification ?? '').includes(marker))
-    || finding.repoPath === 'package/config/rolldown/src/package-externals.ts') {
-    lines.push('**This site cannot be fixed alone**');
-    lines.push('');
-    lines.push("Rolldown's `external` accepts a predicate as the whole option value (`ExternalOption = StringOrRegExp | StringOrRegExp[] | ExternalOptionFunction`), not as an entry inside the string-or-RegExp array. Migrating these patterns therefore means replacing the array with one shared predicate, which touches every config listing `/^node:/u` or an electron name pattern, plus `anchoredExternal` and `escapePackageNameForRegExp` in `package/config/rolldown/src/package-externals.ts`. The issues in this group must land as one change: whichever is picked up first should do the whole migration or link the others, rather than editing the same option independently.");
-    lines.push('');
+    || (finding.repoPath === 'package/config/rolldown/src/package-externals.ts')) {
+    lines.push(
+      '**This site cannot be fixed alone**',
+      '',
+      "Rolldown's `external` accepts a predicate as the whole option value (`ExternalOption = StringOrRegExp | StringOrRegExp[] | ExternalOptionFunction`), not as an entry inside the string-or-RegExp array. Migrating these patterns therefore means replacing the array with one shared predicate, which touches every config listing `/^node:/u` or an electron name pattern, plus `anchoredExternal` and `escapePackageNameForRegExp` in `package/config/rolldown/src/package-externals.ts`. The issues in this group must land as one change: whichever is picked up first should do the whole migration or link the others, rather than editing the same option independently.",
+      ''
+    );
   }
-  lines.push('**Acceptance criteria**');
-  lines.push('');
-  lines.push("- [ ] Replace the regex with the string or scanner form named here, behaviour-preserving: the current implementation is the spec. The replacement shape in this issue is a proposal derived from the pattern syntax, not a verified equivalent, so prove it with differential fixtures that run both forms over the same inputs, covering the flags this pattern carries, its capture order, its failure paths, and adversarial input from the site's real input source, before deleting the pattern.");
+  lines.push(
+    '**Acceptance criteria**',
+    '',
+    "- [ ] Replace the regex with the string or scanner form named here, behaviour-preserving: the current implementation is the spec. The replacement shape in this issue is a proposal derived from the pattern syntax, not a verified equivalent, so prove it with differential fixtures that run both forms over the same inputs, covering the flags this pattern carries, its capture order, its failure paths, and adversarial input from the site's real input source, before deleting the pattern."
+  );
   if (finding.covered) {
     lines.push('- [ ] Remove the scoped `no-restricted-syntax/no-regex` disable comment, so the gate covers the site again instead of recording an exception.');
   }
-  for (const step of verificationSteps(finding, gateIssue)) {
+  for (const step of verificationSteps(
+    finding,
+    gateIssue
+  )) {
     lines.push(step);
   }
   if (finding.exclusion === 'paused-package') {
@@ -304,24 +449,39 @@ function bodyFor(finding, { indexIssue, gateIssue, }) {
   return lines.join('\n');
 }
 
-const labelsFor = (finding) => {
+function labelsFor(finding) {
   const labels = ['enhancement'];
-  const easy = new Set(['prefix', 'suffix', 'substring', 'exact-equality', 'replace-all-literal', 'word-boundary-substring', 'class-run-scan', 'fixed-length-class-run', 'lookbehind-scan']);
+  const easy = new Set([
+    'prefix',
+    'suffix',
+    'substring',
+    'exact-equality',
+    'replace-all-literal',
+    'word-boundary-substring',
+    'class-run-scan',
+    'fixed-length-class-run',
+    'lookbehind-scan'
+  ]);
   labels.push(easy.has(finding.shape) ? 'difficulty:easy' : 'difficulty:medium');
   if (finding.exclusion === 'paused-package') {
     labels.push('needs-triage');
     // The recorded deferral label names webapp-forge and paper2vn work explicitly;
     // other paused packages get needs-triage so the owner decides the status.
-    if (finding.repoPath.includes('webapp-forge') || finding.repoPath.includes('paper2vn')
-      || finding.repoPath.includes('messages-demo')) {
+    if (finding.repoPath
+      .includes('webapp-forge')
+      || finding.repoPath
+        .includes('paper2vn')
+      || finding.repoPath
+        .includes('messages-demo')) {
       labels.push('deferred-new-packages');
     }
   } else {
     labels.push('needs-triage');
   }
-  if (finding.repoPath.startsWith('package/music-player/')) labels.push('app:music-player');
+  if (finding.repoPath
+    .startsWith('package/music-player/')) labels.push('app:music-player');
   return labels;
-};
+}
 
 // Placeholder numbers, rewritten once the index and gate issues exist.
 const INDEX_PLACEHOLDER = 'INDEX';
@@ -334,7 +494,10 @@ const GATE_PLACEHOLDER = 'GATE';
 const lineGroupSizes = new Map();
 for (const finding of findings) {
   const key = `${finding.repoPath}:${finding.line}`;
-  lineGroupSizes.set(key, (lineGroupSizes.get(key) ?? 0) + 1);
+  lineGroupSizes.set(
+    key,
+    (lineGroupSizes.get(key) ?? 0) + 1
+  );
 }
 
 const payloads = [];
@@ -343,12 +506,31 @@ for (const finding of findings) {
   const group = (lineGroupSizes.get(groupKey) ?? 0) > 1 ? groupKey : null;
   // Chained calls share a line and column, so the slug carries the span identity
   // enumeration deduped on; otherwise distinct sites overwrite one payload file.
-  const slug = `${finding.repoPath.replaceAll('/', '__')}:${finding.line}:${finding.column}:${finding.offset}-${finding.length}`;
+  const slug = `${finding.repoPath
+    .replaceAll(
+      '/',
+      '__'
+    )}:${finding.line}:${finding.column}:${finding.offset}-${finding.length}`;
   payloads.push({
-    file: join(OUT, `${slug.replaceAll(' ', '_')}.json`),
-    title: titleFor(finding, group),
+    file: join(
+      OUT,
+      `${slug.replaceAll(
+        ' ',
+        '_'
+      )}.json`
+    ),
+    title: titleFor(
+      finding,
+      group
+    ),
     labels: labelsFor(finding),
-    body: bodyFor(finding, { indexIssue: INDEX_PLACEHOLDER, gateIssue: GATE_PLACEHOLDER, }),
+    body: bodyFor(
+      finding,
+      {
+        indexIssue: INDEX_PLACEHOLDER,
+        gateIssue: GATE_PLACEHOLDER,
+      }
+    ),
     repoPath: finding.repoPath,
     line: finding.line,
     column: finding.column,
@@ -365,11 +547,79 @@ for (const finding of findings) {
 }
 
 for (const payload of payloads) {
-  writeFileSync(payload.file, JSON.stringify({ title: payload.title, labels: payload.labels, body: payload.body, }, null, 2), 'utf8');
+  writeFileSync(
+    payload.file,
+    JSON.stringify(
+      {
+        title: payload.title,
+        labels: payload.labels,
+        body: payload.body,
+      },
+      null,
+      2
+    ),
+    'utf8'
+  );
 }
-writeFileSync(join(AUDIT, 'payloads.json'), JSON.stringify(payloads.map(({ file, title, labels, repoPath, line, column, offset, length, siteId, shape, exclusion, covered, }) => ({ file, title, labels, repoPath, line, column, offset, length, siteId, shape, exclusion, covered, })), null, 2), 'utf8');
+writeFileSync(
+  join(
+    AUDIT,
+    'payloads.json'
+  ),
+  JSON.stringify(
+    payloads.map(({
+      file,
+      title,
+      labels,
+      repoPath,
+      line,
+      column,
+      offset,
+      length,
+      siteId,
+      shape,
+      exclusion,
+      covered,
+    }) => ({
+      file,
+      title,
+      labels,
+      repoPath,
+      line,
+      column,
+      offset,
+      length,
+      siteId,
+      shape,
+      exclusion,
+      covered,
+    })),
+    null,
+    2
+  ),
+  'utf8'
+);
 
-console.log('payloads written:', payloads.length);
-console.log('title length max:', Math.max(...payloads.map((payload) => payload.title.length)));
-console.log('body length max:', Math.max(...payloads.map((payload) => payload.body.length)));
-console.log('body length median:', payloads.map((payload) => payload.body.length).sort((left, right) => left - right)[Math.floor(payloads.length / 2)]);
+console.log(
+  'payloads written:',
+  payloads.length
+);
+console.log(
+  'title length max:',
+  Math.max(...payloads.map((payload) => payload.title
+    .length))
+);
+console.log(
+  'body length max:',
+  Math.max(...payloads.map((payload) => payload.body
+    .length))
+);
+console.log(
+  'body length median:',
+  payloads.map((payload) => payload.body
+    .length)
+    .sort((
+      left,
+      right
+    ) => left - right)[Math.floor(payloads.length / 2)]
+);

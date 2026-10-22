@@ -189,8 +189,8 @@ function checkLanding({
           invariant: 'landed-bytes',
           subject: `${subject} ${path.path}`,
           detail: `landed ${describeContent(path.landed,)}, accepted ${path.acceptable
-          .map(describeContent,)
-          .join(' or ',)}`,
+            .map(describeContent,)
+            .join(' or ',)}`,
         },),
       ];
     },),

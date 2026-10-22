@@ -114,7 +114,7 @@ export function reviewedFidelityTrials({
             damageDetail: damage.damageDetail,
             trial: {
               trialId: `${reference.spec
-              .id}/${damage.damageKind}`,
+                .id}/${damage.damageKind}`,
               direction: arrangement.direction,
               damageKind: damage.damageKind,
               sourceText: reference.sourceText,

@@ -322,7 +322,7 @@ await describe({
         /**
          Stable identity.
          */
-        const result = await createFsIdResolver({ adapters: fixture.adapters, })({ path: 'c:\\repo', },);
+        const result = await createFsIdResolver({ adapters: fixture.adapters, })({ path: String.raw`c:\repo`, },);
         expect(result,).toEqual({
           value: 'volume-serial_1a2b-3c4d',
           stable: true,
@@ -354,7 +354,7 @@ await describe({
         /**
          Degraded identity.
          */
-        const result = await createFsIdResolver({ adapters: fixture.adapters, })({ path: 'C:\\repo', },);
+        const result = await createFsIdResolver({ adapters: fixture.adapters, })({ path: String.raw`C:\repo`, },);
         expect(result.value,).toBe('device-number_99',);
         expect(result.stable,).toBe(false,);
         expect(fixture.warnings,).toHaveLength(1,);
@@ -376,7 +376,7 @@ await describe({
          */
         let caught: unknown;
         try {
-          await createFsIdResolver({ adapters: fixture.adapters, })({ path: 'C:\\repo', },);
+          await createFsIdResolver({ adapters: fixture.adapters, })({ path: String.raw`C:\repo`, },);
         }
         catch (error) {
           caught = error;
@@ -401,7 +401,7 @@ await describe({
          */
         let caught: unknown;
         try {
-          await createFsIdResolver({ adapters: fixture.adapters, })({ path: 'C:\\repo', },);
+          await createFsIdResolver({ adapters: fixture.adapters, })({ path: String.raw`C:\repo`, },);
         }
         catch (error) {
           caught = error;

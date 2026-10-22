@@ -169,8 +169,8 @@ export async function runCompilerFailureCase(input: CompilerFailureCase): Promis
         stdout: stdoutFile.fd,
         stderr: stderrFile.fd,
         env: { PATH: `${directory}${delimiter}${process.env
-        .PATH
-        ?? ''}` },
+          .PATH
+          ?? ''}` },
         timeout: 10_000,
       }
     );

@@ -238,14 +238,17 @@ export function anchorLineIndexOf({
       arr: records,
       index: current,
     },);
-    if (record.node.type === 'Program')
+    if (record.node
+      .type
+      === 'Program')
       return -1;
     /**
      Line where the candidate ancestor starts.
      */
     const recordLine = lineIndexOf({
       lineStarts,
-      offset: record.node.start,
+      offset: record.node
+        .start,
     },);
     if (recordLine >= lineIndex) {
       current = effectiveRecordIndexOf({
@@ -254,7 +257,8 @@ export function anchorLineIndexOf({
       },);
       continue;
     }
-    if (!BODY_KINDS.has(record.node.type))
+    if (!BODY_KINDS.has(record.node
+      .type))
       return recordLine;
     /**
      Construct record owning the body; remap target when it opens earlier.
@@ -267,15 +271,18 @@ export function anchorLineIndexOf({
       : undefined;
     if (
       (constructRecord !== undefined)
-        && !BODY_KINDS.has(constructRecord.node.type)
+        && (!BODY_KINDS.has(constructRecord.node
+          .type))
         && (lineIndexOf({
           lineStarts,
-          offset: constructRecord.node.start,
+          offset: constructRecord.node
+            .start,
         },) < recordLine)
     ) {
       return lineIndexOf({
         lineStarts,
-        offset: constructRecord.node.start,
+        offset: constructRecord.node
+          .start,
       },);
     }
     return recordLine;
@@ -350,15 +357,18 @@ export function bracketBaseLineIndexOf({
       : undefined;
     if (
       (constructRecord !== undefined)
-        && !BODY_KINDS.has(constructRecord.node.type)
+        && (!BODY_KINDS.has(constructRecord.node
+          .type))
         && (lineIndexOf({
           lineStarts,
-          offset: constructRecord.node.start,
+          offset: constructRecord.node
+            .start,
         },) < openLine)
     ) {
       return lineIndexOf({
         lineStarts,
-        offset: constructRecord.node.start,
+        offset: constructRecord.node
+          .start,
       },);
     }
     return openLine;

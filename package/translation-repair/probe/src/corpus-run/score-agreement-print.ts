@@ -108,7 +108,7 @@ export function printPrecision(
       agreementRate({
         numerator: precision.realDefects
           + precision.unscored
-          .length,
+            .length,
         denominator: precision.gradeable,
       },)
     } duplicates=${positionsOrNone({ positions: precision.duplicates, },)} unscored=${

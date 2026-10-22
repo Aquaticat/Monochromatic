@@ -1,5 +1,5 @@
 // @ts-nocheck -- Vendored upstream conf snapshot (commit 83e267178f), type-checked under upstream's own tsconfig; see README.md in this directory.
-import {type JSONSchema as TypedJSONSchema} from 'json-schema-typed';
+import type {JSONSchema as TypedJSONSchema} from 'json-schema-typed';
 // eslint-disable unicorn/import-index
 import type {Options as AjvOptions_} from 'ajv';
 import type Conf from './index.js';
@@ -431,7 +431,10 @@ export type BeforeEachMigrationContext = {
   finalVersion: string;
   versions: string[];
 };
-export type BeforeEachMigrationCallback<T extends Record<string, unknown>> = (store: Conf<T>, context: BeforeEachMigrationContext) => void;
+export type BeforeEachMigrationCallback<T extends Record<string, unknown>> = (
+  store: Conf<T>,
+  context: BeforeEachMigrationContext
+) => void;
 
 export type Schema<T> = {[Property in keyof T]: ValueSchema};
 export type ValueSchema = TypedJSONSchema;
@@ -439,8 +442,14 @@ export type ValueSchema = TypedJSONSchema;
 export type Serialize<T> = (value: T) => string;
 export type Deserialize<T> = (text: string) => T;
 
-export type OnDidChangeCallback<T> = (newValue?: T, oldValue?: T) => void;
-export type OnDidAnyChangeCallback<T> = (newValue: Readonly<T>, oldValue?: Readonly<T>) => void;
+export type OnDidChangeCallback<T> = (
+  newValue?: T,
+  oldValue?: T
+) => void;
+export type OnDidAnyChangeCallback<T> = (
+  newValue: Readonly<T>,
+  oldValue?: Readonly<T>
+) => void;
 
 export type Unsubscribe = () => void;
 
@@ -480,8 +489,8 @@ export type PartialObjectDeep<T> =
       ? Map<PartialObjectDeep<K>, PartialObjectDeep<V>>
       : T extends Set<infer U>
         ? Set<PartialObjectDeep<U>>
-        : T extends Array<infer U>
-          ? Array<PartialObjectDeep<U>>
+        : T extends (infer U)[]
+          ? PartialObjectDeep<U>[]
           : T extends (...args: unknown[]) => unknown
             ? T
             : T extends Record<string, unknown>

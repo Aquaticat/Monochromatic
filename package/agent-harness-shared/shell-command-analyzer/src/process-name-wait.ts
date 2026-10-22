@@ -12,12 +12,20 @@ import type { ShellCommandInfo, } from './types.ts';
 /**
  Shell binaries whose `-c` argument is a script string.
  */
-const SHELL_NAMES: ReadonlySet<string> = new Set(['bash', 'sh', 'zsh', 'dash',],);
+const SHELL_NAMES: ReadonlySet<string> = new Set([
+  'bash',
+  'sh',
+  'zsh',
+  'dash',
+],);
 
 /**
  Commands that look processes up by name or command line.
  */
-const PROCESS_NAME_LOOKUP_COMMANDS: ReadonlySet<string> = new Set(['pgrep', 'pidof',],);
+const PROCESS_NAME_LOOKUP_COMMANDS: ReadonlySet<string> = new Set([
+  'pgrep',
+  'pidof',
+],);
 
 /**
  Refusal reason used when a `while` or `until` loop looks processes up by name.
@@ -58,10 +66,16 @@ function shellScriptPayloads(info: ShellCommandInfo,): string[] {
   /**
    Command name followed by its arguments, so a wrapper's inner command is scanned like a direct one.
    */
-  const words = [info.name, ...info.args,];
+  const words = [
+    info.name,
+    ...info.args,
+  ];
 
   return words
-    .flatMap(function payloadAfterShellDashC(word, index,): string[] {
+    .flatMap(function payloadAfterShellDashC(
+      word,
+      index,
+    ): string[] {
       if (!SHELL_NAMES.has(word,))
         return [];
 
@@ -78,7 +92,7 @@ function shellScriptPayloads(info: ShellCommandInfo,): string[] {
        */
       const payload = rest[dashCIndex + 1];
 
-      return ((dashCIndex >= 0) && ((typeof payload) === 'string'))
+      return ((dashCIndex !== (-1)) && ((typeof payload) === 'string'))
         ? [payload,]
         : [];
     },);
@@ -113,7 +127,9 @@ function waitsOnProcessName(command: string,): boolean {
   return analysis.commands
     .some(function commandLooksUpProcessByNameInLoop(info,): boolean {
       if (PROCESS_NAME_LOOKUP_COMMANDS.has(info.name,)
-        && (info.context.conditionLoopDepth > 0))
+        && (info.context
+          .conditionLoopDepth
+          > 0))
         return true;
 
       // `timeout 60 bash -c '<script>'` and similar wrappers hide the loop inside a string argument.

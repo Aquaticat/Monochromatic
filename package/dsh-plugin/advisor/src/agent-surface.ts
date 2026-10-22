@@ -74,7 +74,10 @@ export function toDshAdvisorAgentSurface(
       },);
     },
     assembleContext: function assembleContext(signal?: AbortSignal): AssembleContext {
-      return assembleContextFor(agent, signal);
+      return assembleContextFor(
+        agent,
+        signal
+      );
     },
   };
 }

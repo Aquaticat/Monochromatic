@@ -151,16 +151,16 @@ export const STRING_EXAMPLES: readonly ValueSample[] = [
     value: 'plain',
   },
   {
-    text: '"quote \\" and back \\\\"',
+    text: String.raw`"quote \" and back \\"`,
     value: 'quote " and back \\',
   },
   {
-    text: '"tab\\tnewline\\n"',
+    text: String.raw`"tab\tnewline\n"`,
     value: 'tab\tnewline\n',
   },
   {
-    text: "'C:\\path'",
-    value: 'C:\\path',
+    text: String.raw`'C:\path'`,
+    value: String.raw`C:\path`,
   },
   {
     text: '"""triple"""',

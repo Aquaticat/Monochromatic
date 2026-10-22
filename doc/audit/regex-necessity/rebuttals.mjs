@@ -16,7 +16,7 @@ const RULES = [
   },
   {
     key: 'Anchored protocol prefix test for node builtins',
-    text: '`/^node:/u.test(id)` is exactly `id.startsWith(\'node:\')`: no character class, no quantifier, no anchor semantics beyond the prefix. The justification offers input bounds and backtracking safety, neither of which bears on whether a prefix test needs a pattern engine. ' + ROLLDOWN_EXTERNAL + ' The same literal is duplicated across six config files while `package/config/rolldown/src/package-externals.ts` already owns the externals helpers.',
+    text: `\`/^node:/u.test(id)\` is exactly \`id.startsWith('node:')\`: no character class, no quantifier, no anchor semantics beyond the prefix. The justification offers input bounds and backtracking safety, neither of which bears on whether a prefix test needs a pattern engine. ${  ROLLDOWN_EXTERNAL  } The same literal is duplicated across six config files while \`package/config/rolldown/src/package-externals.ts\` already owns the externals helpers.`,
   },
   {
     key: 'Fragment key parser; inputs are canonical keys',
@@ -36,11 +36,11 @@ const RULES = [
   },
   {
     key: 'Anchored literal name test keeping the electron runtime external',
-    text: '`/^electron(\\/|$)/u.test(id)` is `id === \'electron\' || id.startsWith(\'electron/\')`. ' + ROLLDOWN_EXTERNAL,
+    text: `\`/^electron(\\/|$)/u.test(id)\` is \`id === 'electron' || id.startsWith('electron/')\`. ${  ROLLDOWN_EXTERNAL}`,
   },
   {
     key: 'Anchored literal name test keeping the electron runtime and its packager external',
-    text: '`/^(electron|@electron\\/packager)(\\/|$)/u.test(id)` is a two-element array test: `EXTERNAL_NAMES.some((name) => id === name || id.startsWith(name + \'/\'))`. ' + ROLLDOWN_EXTERNAL,
+    text: `\`/^(electron|@electron\\/packager)(\\/|$)/u.test(id)\` is a two-element array test: \`EXTERNAL_NAMES.some((name) => id === name || id.startsWith(name + '/'))\`. ${  ROLLDOWN_EXTERNAL}`,
   },
   {
     key: 'source-code tokenizer scanning project files for `icon(',
@@ -48,7 +48,7 @@ const RULES = [
   },
   {
     key: 'asserts the buffer table rejects each out-of-range changeset',
-    text: 'The justification itself calls this a "literal phrase match", which is a substring test on the thrown message. ' + THROW_STRING + ' "No backtracking" is a safety claim about a pattern that has no metacharacters at all.',
+    text: `The justification itself calls this a "literal phrase match", which is a substring test on the thrown message. ${  THROW_STRING  } "No backtracking" is a safety claim about a pattern that has no metacharacters at all.`,
   },
   {
     key: 'canonical first-unescaped-quote scan',
@@ -76,11 +76,11 @@ const RULES = [
   },
   {
     key: 'builds a malformed-but-base64url-shaped fixture',
-    text: 'The `/=+$/u` strip is a backward walk from the end while the character is `=`, then a `slice`; the phrase assertion is a substring test on the thrown message. ' + THROW_STRING,
+    text: `The \`/=+$/u\` strip is a backward walk from the end while the character is \`=\`, then a \`slice\`; the phrase assertion is a substring test on the thrown message. ${  THROW_STRING}`,
   },
   {
     key: 'builds a base64url-shaped fixture with a non-numeric',
-    text: 'Same as the sibling fixture site: `/=+$/u` is a backward walk over trailing `=` characters plus a `slice`, and the error-message assertion is a substring test. ' + THROW_STRING,
+    text: `Same as the sibling fixture site: \`/=+$/u\` is a backward walk over trailing \`=\` characters plus a \`slice\`, and the error-message assertion is a substring test. ${  THROW_STRING}`,
   },
   {
     key: 'canonical UUIDv4 format validator',
@@ -124,22 +124,22 @@ const RULES = [
   },
   {
     key: 'Escaping metacharacters in a short bare package name',
-    text: "This escape pass exists only to feed the `new RegExp` two sites below. With a predicate form of rolldown's `external` there is no pattern to escape, so the function becomes dead code rather than needing a faster implementation. " + ROLLDOWN_EXTERNAL,
+    text: `This escape pass exists only to feed the \`new RegExp\` two sites below. With a predicate form of rolldown's \`external\` there is no pattern to escape, so the function becomes dead code rather than needing a faster implementation. ${  ROLLDOWN_EXTERNAL}`,
   },
   {
     key: 'Dynamic source is one metacharacter-escaped bare package name',
-    text: 'The constructed pattern expresses "this bare name, or any subpath under it", which is `id === name || id.startsWith(name + \'/\')`. ' + ROLLDOWN_EXTERNAL + ' The same file already has a string-based `matchesBundlePattern` for the glob form, so the predicate form is the incumbent idiom here, not a new one.',
+    text: `The constructed pattern expresses "this bare name, or any subpath under it", which is \`id === name || id.startsWith(name + '/')\`. ${  ROLLDOWN_EXTERNAL  } The same file already has a string-based \`matchesBundlePattern\` for the glob form, so the predicate form is the incumbent idiom here, not a new one.`,
   },
   {
     key: 'Test assertion matches a short literal substring in a thrown error message; expect API requires a RegExp',
-    text: 'The stated reason is incorrect for this repo, and the site uses `.toThrow`, not `.toMatch`. ' + THROW_STRING + ' The pattern `/closed/u` has no metacharacters, so the string form asserts the same thing and removes the regex from the feature.',
+    text: `The stated reason is incorrect for this repo, and the site uses \`.toThrow\`, not \`.toMatch\`. ${  THROW_STRING  } The pattern \`/closed/u\` has no metacharacters, so the string form asserts the same thing and removes the regex from the feature.`,
   },
   {
-    key: 'Unicode property class \\p{Upper}',
+    key: String.raw`Unicode property class \p{Upper}`,
     text: 'The claim "no string API exposes the Unicode upper-letter set" is true only for exact property semantics. Case mapping is a string API carrying the same Unicode data, and for a single grapheme `char.toLowerCase() !== char && char.toUpperCase() === char` is an O(1) test. Corrected probe over 15 samples (ASCII, Greek sigma forms, dotted I, two modifier letters, a Roman numeral, a digit, punctuation): the uppercase comparison showed no divergence in this sample, and the lowercase comparison diverged on U+1D2C and U+1D43. A 15-sample probe cannot establish that those are the only divergences, so this site is recorded as a judgement call rather than a settled finding: an exact property-table lookup is a regex-free implementation at the same complexity, and the choice between a table and case mapping is an owner decision about which semantics the classifier wants.',
   },
   {
-    key: 'Unicode property class \\p{Lower}',
+    key: String.raw`Unicode property class \p{Lower}`,
     text: 'The claim "no string API exposes the Unicode lower-letter set" is true only for exact property semantics. Case mapping is a string API carrying the same Unicode data, and for a single grapheme `char.toUpperCase() !== char && char.toLowerCase() === char` is an O(1) test. Corrected probe over 15 samples: the lowercase comparison diverged on U+1D2C and U+1D43 (category Lm), where `\\p{Lower}` matches and the case-mapping test does not; the uppercase comparison showed no divergence in the same sample. A 15-sample probe cannot establish that those are the only divergences, so this is a judgement call: an exact property-table lookup is a regex-free implementation at the same complexity, and whether modifier letters must classify as lowercase is an owner decision, not something the current justification states.',
   },
   {
@@ -173,7 +173,8 @@ const RULES = [
  the recorded ones.
  */
 export function rebuttalFor(justification) {
-  if (justification === null || justification === undefined || justification === '') return null;
+  if ((justification === null) || (justification === undefined)
+    || (justification === '')) return null;
   for (const rule of RULES) {
     if (justification.includes(rule.key)) return rule.text;
   }
