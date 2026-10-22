@@ -25,6 +25,9 @@ oscillation;
 that history is in "Queue" and the troubleshooting doc's "Root cause".
 Both corpus sweeps are recorded there,
 and the results-only comment landed on issue #577 as `issuecomment-6339427646`.
+The separate `stylistic/comma-dangle` type-literal corruption found during the sweeps is now fixed
+(`0a49269a48`),
+recorded in `doc/troubleshooting/oxlint-stylistic-comma-dangle-type-literal-fix.md`.
 
 ## Findings
 
@@ -105,18 +108,20 @@ anchor line.
 
 ## Queue
 
-1.  Fix `stylistic/comma-dangle`'s type-literal corruption (separate incident from the indent rule):
-    the trigger,
-    repros,
-    and the quick-fix tradeoff live in
+1.  Done:
+    the `stylistic/comma-dangle` type-literal corruption is fixed (`0a49269a48`),
+    before any enablement or whole-set `--fix` sweep as required.
+    The trigger,
+    root cause,
+    and landed fix live in
     `doc/troubleshooting/oxlint-stylistic-comma-dangle-type-literal-fix.md`.
-    Land it before anyone enables the rule or runs a whole-set `--fix` sweep over real files.
 1.  Enable `stylistic/indentation` in `package/config/oxlint/src/rule/style.ts` (the sibling rules there sit
     at `warn`),
     then run one `--fix` sweep over the repository and commit the normalization separately from
     the enablement.
-    Do this when the tree is quiet:
-    the sweep rewrites ~20k lines in 1,792 files.
+    The sweep rewrites ~20k lines in 1,792 to 1,793 files;
+    run it on git-clean paths only (snapshot `git status --porcelain` first and skip every dirty or
+    untracked file) so concurrent agents' work stays untouched.
 
 ## Commits
 
@@ -139,3 +144,6 @@ anchor line.
 - `docs(handover): apply semantic line breaks to the indent rule handover` (`68822cf102`)
 - `docs(troubleshooting): record the comma-dangle type-literal fix corruption` (`3f1759034f`)
 - `docs(handover): queue the comma-dangle fix and record the stale-bundle lesson` (`b5b6c17431`)
+- `fix(*): stop comma-dangle inserting inside type-annotated pattern annotations` (`0a49269a48`,
+  red-first fixtures,
+  close-delimiter lookup skips the pattern's type annotation)

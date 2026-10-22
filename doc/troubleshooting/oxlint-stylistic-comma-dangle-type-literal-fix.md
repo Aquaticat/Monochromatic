@@ -25,12 +25,27 @@ Trailing-comma insertion points are chosen in
 `package/oxlint-plugin/stylistic/src/utility/comma-dangle.ts`
 (`insertionTokenForList`,
 `containerPenultimateToken` path).
-For an object-pattern parameter the lookup lands on the type literal's closing `}` instead of the
-pattern's `}`,
-so "token before the close delimiter" is the member's `;`,
+An oxc binding-pattern node range includes its type annotation,
+so the pattern's list brace is not the container's last token.
+Before the fix,
+`containerPenultimateToken` (`package/oxlint-plugin/stylistic/src/utility/comma-dangle.ts:506`)
+resolved the close delimiter with:
+
+```ts
+const token = context.sourceCode
+  .getLastToken(
+    container,
+    1,
+  );
+```
+
+For `{ salt, }: { readonly salt: number; }` that "token before the close delimiter" is the member's
+`;`,
 and the fixer appends `,` after it.
 The same mis-placement emits valid text when the last member has no separator,
-which hides the bug behind `;`-terminated members.
+which hides the bug behind `;`-terminated members,
+and it swallows the pattern's own missing trailing comma,
+which the wrong lookup never sees.
 
 Measured trigger family (minimized repros in `~/temp/agent/indent-probe-2026-10-22/comma-repro/`):
 
@@ -59,17 +74,51 @@ Hypotheses checked and rejected:
 
 ## Fix and workaround
 
-No fix is shipped.
-Until one lands:
+A fix shipped in commit `0a49269a48`
+(`fix(*): stop comma-dangle inserting inside type-annotated pattern annotations`).
+`containerPenultimateToken` (`package/oxlint-plugin/stylistic/src/utility/comma-dangle.ts:506`)
+now resolves the container's own close delimiter,
+skipping a trailing type annotation that extends the node range:
 
-- do not enable `stylistic/comma-dangle` in `package/config/oxlint/src/rule/style.ts`;
-- run `--fix` passes that include it on disposable copies only;
-- recover an already corrupted file with `git checkout -- <file>` or by removing the stray `,` by hand.
+```ts
+const closeToken = isNode(typeAnnotation,)
+  ? context.sourceCode.getTokenBefore(typeAnnotation,)
+  : context.sourceCode.getLastToken(container,);
+```
 
-Tradeoff of the quick fix (skip insertion when the penultimate token is `;`):
-it stops the corruption but leaves member separators unnormalized.
-Replacing the `;` with `,` matches dprint's `trailingCommas: always` output but rewrites more text.
-The fix task in `doc/handover/issue-577-indent-rule-investigation.md` picks between them with tests.
+Measured behavior after the fix,
+on the trigger family and on new fixtures:
+
+- object-pattern parameter plus `;`-terminated type literal member:
+  untouched,
+  in both function and arrow forms;
+- missing pattern comma:
+  inserted at the pattern's tail (`{ salt }` becomes `{ salt, }`),
+  where it belongs;
+- array pattern plus tuple annotation:
+  pattern and tuple commas each inserted at their own list tail;
+- params-list comma:
+  inserted after the annotation (`},)`),
+  the correct tail of the parameter;
+- identifier parameter plus the same type literal:
+  still untouched.
+
+Regression tests live in `package/oxlint-plugin/stylistic/src/oxlint-stylistic.unit.test.ts`
+(`reports missing trailing commas on type-annotated patterns`,
+`valid type-annotated pattern cases produce no violations`,
+`--fix adds pattern commas and leaves type annotations alone`)
+with fixtures in `package/test-fixture/oxlint-stylistic/src/{invalid,valid}/comma-dangle-pattern-annotation.ts`.
+They were red first:
+the pre-fix run corrupted the fixture into `Unexpected token`.
+
+Recover an already corrupted file with `git checkout -- <file>` or by removing the stray `,` after the member separator by hand.
+
+Two rejected quick fixes stay on record:
+skipping insertion when the penultimate token is `;`
+stops the corruption but leaves member separators unnormalized,
+and replacing the `;` with `,`
+matches dprint's `trailingCommas: always` output but rewrites more text.
+The landed root fix needs neither tradeoff.
 
 ## Upstream filing
 
@@ -77,4 +126,6 @@ The emitter is this repository's own rule,
 so no external upstream filing applies and the
 `.out-of-scope/` constraint check does not gate anything here.
 A duplicate search of `doc/troubleshooting/` found no earlier record of this failure mode.
-The fix task is queued in `doc/handover/issue-577-indent-rule-investigation.md`.
+The fix landed in `0a49269a48`;
+the investigation handover
+`doc/handover/issue-577-indent-rule-investigation.md` records the full run.
