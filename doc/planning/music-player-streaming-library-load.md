@@ -83,9 +83,9 @@ so files added,
 For deeper background,
  see the existing notes:
 
-- [Android port decision](../decisions/music-player-android-port.md)
-- [Live-update rescan decision](../decisions/music-player-live-update-rescan.md)
-- [Session source-root decision](../decisions/music-player-session-source-root.md)
+- [Android port decision](../decision/music-player-android-port.md)
+- [Live-update rescan decision](../decision/music-player-live-update-rescan.md)
+- [Session source-root decision](../decision/music-player-session-source-root.md)
 - [Package context](../../package/music-player/android-app/CONTEXT.md)
 
 ## The two problems
