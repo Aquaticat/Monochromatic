@@ -108,10 +108,18 @@ export {
   type ServingCard,
 } from './model-card-derive.ts';
 export {
+  CLAUDE_CARDS,
+  HAIKU_5_5_PRICES,
+  SONNET_5_5_PRICES,
+} from './claude-card-sides.ts';
+export {
   DEEPSEEK_V4_1_FLASH_ON_DEEPSEEK,
   MIMO_V2_6_FLASH_ON_XIAOMI,
 } from './direct-card-sides.ts';
 export {
+  type AnthropicCard,
+  type AnthropicPriceTier,
+  type AnthropicPrices,
   type BedrockCard,
   type BedrockRoute,
   type BedrockStreamEnd,
@@ -192,6 +200,12 @@ export {
   type RefinableSlice,
 } from './refine-envelope.ts';
 export {
+  ANTHROPIC_EFFORTS,
+  ANTHROPIC_SERVED_IDS,
+  ANTHROPIC_WIRE_MODELS,
+  type AnthropicEffort,
+  type AnthropicServedId,
+  type AnthropicWireModel,
   BEDROCK_SERVED_IDS,
   type BedrockOnlyRosterId,
   type BedrockServedId,

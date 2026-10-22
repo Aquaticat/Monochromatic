@@ -68,15 +68,15 @@ await describe({
           string,
           string,
           string,
-          string | undefined,
+          string,
         ] {
-          return [card.id, card.anthropic.id, card.anthropic.wireModel, card.anthropic.effort,];
+          return [card.id, card.anthropic.id, card.anthropic.wireModel, card.anthropic.effort ?? 'none',];
         },),).toEqual([
-          ['claude-sonnet-5-5', 'claude-sonnet-5-5', 'claude-sonnet-5-5', undefined,],
+          ['claude-sonnet-5-5', 'claude-sonnet-5-5', 'claude-sonnet-5-5', 'none',],
           ['claude-sonnet-5-5-effort-low', 'claude-sonnet-5-5-effort-low', 'claude-sonnet-5-5', 'low',],
           ['claude-sonnet-5-5-effort-medium', 'claude-sonnet-5-5-effort-medium', 'claude-sonnet-5-5', 'medium',],
           ['claude-sonnet-5-5-effort-high', 'claude-sonnet-5-5-effort-high', 'claude-sonnet-5-5', 'high',],
-          ['claude-haiku-5-5', 'claude-haiku-5-5', 'claude-haiku-5-5', undefined,],
+          ['claude-haiku-5-5', 'claude-haiku-5-5', 'claude-haiku-5-5', 'none',],
           ['claude-haiku-5-5-effort-low', 'claude-haiku-5-5-effort-low', 'claude-haiku-5-5', 'low',],
           ['claude-haiku-5-5-effort-medium', 'claude-haiku-5-5-effort-medium', 'claude-haiku-5-5', 'medium',],
           ['claude-haiku-5-5-effort-high', 'claude-haiku-5-5-effort-high', 'claude-haiku-5-5', 'high',],
