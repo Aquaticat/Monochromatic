@@ -135,6 +135,19 @@ android {
         }
     }
 
+    // One release APK per ABI: arm64-v8a for devices and x86_64 for emulators, each carrying only its own native
+    // library (about half the size of one APK that holds both). Splits apply to release builds only, because the
+    // instrumented-test flow installs app/build/outputs/apk/debug/app-debug.apk by that exact name (mise.toml).
+    // No universal APK is built, so every release asset says which ABI it is for.
+    splits {
+        abi {
+            isEnable = gradle.startParameter.taskNames.any { taskName -> taskName.contains("Release", ignoreCase = true) }
+            reset()
+            include("arm64-v8a", "x86_64")
+            isUniversalApk = false
+        }
+    }
+
     // Robolectric needs the merged manifest and resources on the unit-test classpath, and ui-test-manifest (below)
     // adds the empty ComponentActivity that createComposeRule launches; without this the rule finds no activity.
     testOptions {

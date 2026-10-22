@@ -702,7 +702,14 @@ over two ABIs, no `NEEDED` entry, never loaded), unstripped `libmusicplayer_nati
 and no R8 (30.7 MB of dex). The desktop Linux binary is 55.8 MB, already stripped. The human corrected the reason the
 desktop profile uses thin LTO: the 2026-10-11 choice (about 60 s against 300 s for fat LTO) was made on a weak CPU with
 a broken motherboard and poor cooling, so build time no longer argues against fat LTO; the desktop profile is measured
-again with fat LTO and `codegen-units = 1`.
+again with fat LTO and `codegen-units = 1`. The human also decided that the Android release ships one APK per ABI
+(`arm64-v8a` and `x86_64`, no universal APK; 17,866,205 and 20,307,071 bytes measured), and that `opt-level = "s"` is
+used only if it saves more than 10% and at least 5 MB, and is not measurably slower on the hot paths; the host is
+almost never quiet, so speed is measured interleaved with a same-binary control. Measured sizes with `s` against the
+fat-LTO opt-level 3 build: Android arm64 `libmusicplayer_native.so` 15.84 to 12.77 MB (3.07 MB, 19%) and x86_64 18.28
+to 14.60 MB (3.68 MB, 20%): both under the 5 MB bar, so Android stays at opt-level 3. Desktop Linux binary 44.01 to
+34.32 MB (9.69 MB, 22%): clears both size bars, so only the desktop speed study continues. The two crates share the
+`CARGO_PROFILE_MUSIC` preset in `file-enforcer.config.ts`; a desktop-only `s` needs a separate preset.
 
 In flight 2026-10-18 after 0.1.6: the license polish branch `fix/music-player-license-polish` reported; its entry is
 "2026-10-18, license polish after 0.1.6" above. Merge, then release 0.1.7. Not started, mine: a quiet-host perfetto

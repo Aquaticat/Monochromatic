@@ -1130,32 +1130,11 @@ jobs:
           exit 1
         fi
         tools="${sdk}/build-tools/${build_tools}"
-        built='package/music-player/android-app/app/build/outputs/apk/release/app-release.apk'
+        built_dir='package/music-player/android-app/app/build/outputs/apk/release'
         mkdir -p dist
-        asset="music-player-${VERSION}-android.apk"
-        cp "$built" "dist/${asset}"
 
-        # Version rule: the APK must carry the version the detect job computed.
-        badging=$("${tools}/aapt2" dump badging "dist/${asset}")
-        sed -n '1,3p' <<< "$badging"
-        expected="package: name='${EXPECTED_PACKAGE}' versionCode='${VERSION_CODE}' versionName='${VERSION}'"
-        if ! sed -n '1p' <<< "$badging" | grep --fixed-strings --quiet "$expected"; then
-          echo "::error::APK identity differs from: $expected"
-          exit 1
-        fi
-        if grep --quiet '^application-debuggable' <<< "$badging"; then
-          echo "::error::The release APK is debuggable."
-          exit 1
-        fi
-
-        # The license notices: inside the APK byte for byte as the notices task wrote them, and a release file of
-        # their own beside the APK.
+        # The license notices: one file, written by the notices task, kept as a release file of its own beside the APKs.
         notices='package/music-player/android-app/app/build/third-party-licenses/THIRD-PARTY-LICENSES.txt'
-        unzip -p "dist/${asset}" assets/THIRD-PARTY-LICENSES.txt > "$RUNNER_TEMP/apk-licenses.txt"
-        if ! cmp "$notices" "$RUNNER_TEMP/apk-licenses.txt"; then
-          echo "::error::assets/THIRD-PARTY-LICENSES.txt in the APK differs from the notices the notices task wrote."
-          exit 1
-        fi
         for name in 'androidx.media3:media3-session:' 'androidx.compose.material3:material3:' 'symphonia ' 'twox-hash ' 'opusic-sys '; do
           if ! grep --quiet --fixed-strings "$name" "$notices"; then
             echo "::error::The APK's license notices do not name ${name}"
@@ -1166,29 +1145,70 @@ jobs:
         cp "$notices" "dist/${notices_asset}"
         echo "notices=dist/${notices_asset}" >> "$GITHUB_OUTPUT"
 
-        # Both native libraries must be inside.
-        listing=$(unzip -Z1 "dist/${asset}")
+        # One APK per ABI. Gradle splits the release build by ABI and builds no universal APK, so each file carries only
+        # its own native library: arm64-v8a for devices and x86_64 for emulators.
+        assets=''
         for abi in arm64-v8a x86_64; do
-          if ! grep --fixed-strings --line-regexp --quiet "lib/${abi}/libmusicplayer_native.so" <<< "$listing"; then
-            echo "::error::lib/${abi}/libmusicplayer_native.so is missing from the APK."
-            exit 1
-          fi
-        done
+          asset="music-player-${VERSION}-android-${abi}.apk"
+          cp "${built_dir}/app-${abi}-release.apk" "dist/${asset}"
 
-        # Signature and certificate.
-        certs=$(mise exec java -- "${tools}/apksigner" verify --verbose --print-certs "dist/${asset}")
-        echo "$certs"
-        fingerprint=$(awk -F': ' '/certificate SHA-256 digest/ { print $NF; exit }' <<< "$certs")
-        if [ "$USE_RELEASE_KEY" = 'true' ]; then
-          if [ "$fingerprint" != "$EXPECTED_ANDROID_CERT_SHA256" ]; then
-            echo "::error::APK certificate ${fingerprint} is not the project release certificate."
+          # Version rule: the APK must carry the version the detect job computed.
+          badging=$("${tools}/aapt2" dump badging "dist/${asset}")
+          sed -n '1,3p' <<< "$badging"
+          expected="package: name='${EXPECTED_PACKAGE}' versionCode='${VERSION_CODE}' versionName='${VERSION}'"
+          if ! sed -n '1p' <<< "$badging" | grep --fixed-strings --quiet "$expected"; then
+            echo "::error::${asset} identity differs from: $expected"
             exit 1
           fi
-        elif [ "$fingerprint" = "$EXPECTED_ANDROID_CERT_SHA256" ]; then
-          echo "::error::A throwaway build carries the release certificate."
-          exit 1
-        fi
-        echo "asset=dist/${asset}" >> "$GITHUB_OUTPUT"
+          if grep --quiet '^application-debuggable' <<< "$badging"; then
+            echo "::error::${asset} is debuggable."
+            exit 1
+          fi
+
+          # The notices inside the APK byte for byte as the notices task wrote them.
+          unzip -p "dist/${asset}" assets/THIRD-PARTY-LICENSES.txt > "$RUNNER_TEMP/apk-licenses.txt"
+          if ! cmp "$notices" "$RUNNER_TEMP/apk-licenses.txt"; then
+            echo "::error::assets/THIRD-PARTY-LICENSES.txt in ${asset} differs from the notices the notices task wrote."
+            exit 1
+          fi
+
+          # The native library of this ABI must be inside and no other ABI's. Turso's two C-API crates build as
+          # by-product shared objects that nothing loads and that once added 94 MB; neither may be packaged.
+          listing=$(unzip -Z1 "dist/${asset}")
+          if ! grep --fixed-strings --line-regexp --quiet "lib/${abi}/libmusicplayer_native.so" <<< "$listing"; then
+            echo "::error::lib/${abi}/libmusicplayer_native.so is missing from ${asset}."
+            exit 1
+          fi
+          if [ "$abi" = arm64-v8a ]; then other=x86_64; else other=arm64-v8a; fi
+          if grep --extended-regexp --quiet "^lib/(armeabi-v7a|x86|${other})/" <<< "$listing"; then
+            echo "::error::${asset} carries a native library for another ABI."
+            exit 1
+          fi
+          if grep --quiet 'libturso' <<< "$listing"; then
+            echo "::error::${asset} packages a Turso shared object that nothing loads."
+            exit 1
+          fi
+
+          # Signature and certificate.
+          certs=$(mise exec java -- "${tools}/apksigner" verify --verbose --print-certs "dist/${asset}")
+          echo "$certs"
+          fingerprint=$(awk -F': ' '/certificate SHA-256 digest/ { print $NF; exit }' <<< "$certs")
+          if [ "$USE_RELEASE_KEY" = 'true' ]; then
+            if [ "$fingerprint" != "$EXPECTED_ANDROID_CERT_SHA256" ]; then
+              echo "::error::${asset} certificate ${fingerprint} is not the project release certificate."
+              exit 1
+            fi
+          elif [ "$fingerprint" = "$EXPECTED_ANDROID_CERT_SHA256" ]; then
+            echo "::error::A throwaway build carries the release certificate."
+            exit 1
+          fi
+          assets+="dist/${asset}"$'\n'
+        done
+        {
+          echo 'assets<<ANDROID_ASSETS_EOF'
+          printf '%s' "$assets"
+          echo 'ANDROID_ASSETS_EOF'
+        } >> "$GITHUB_OUTPUT"
 
     # Only dependency artifacts are kept: this package's own Rust artifacts, the copied-out libraries and the
     # incremental directories are rebuilt every run anyway.
@@ -1240,7 +1260,7 @@ jobs:
       uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32
       with:
         subject-path: |
-          ${{ steps.pkg.outputs.asset }}
+          ${{ steps.pkg.outputs.assets }}
           ${{ steps.pkg.outputs.notices }}
 
     - name: Upload asset as workflow artifact
@@ -1248,7 +1268,7 @@ jobs:
       with:
         name: asset-android
         path: |
-          ${{ steps.pkg.outputs.asset }}
+          ${{ steps.pkg.outputs.assets }}
           ${{ steps.pkg.outputs.notices }}
         if-no-files-found: error
         retention-days: ${{ needs.detect.outputs.dry_run == 'true' && 1 || 7 }}
@@ -1279,7 +1299,8 @@ jobs:
         set -euo pipefail
         expected=$(printf '%s\n' \
           "music-player-${VERSION}-android-third-party-licenses.txt" \
-          "music-player-${VERSION}-android.apk" \
+          "music-player-${VERSION}-android-arm64-v8a.apk" \
+          "music-player-${VERSION}-android-x86_64.apk" \
           "music-player-${VERSION}-desktop-third-party-licenses.txt" \
           "music-player-${VERSION}-linux-arm64.tar.gz" \
           "music-player-${VERSION}-linux-musl-arm64.tar.gz" \
@@ -1358,7 +1379,7 @@ jobs:
         - macOS: `music-player-@VERSION@-macos-arm64.dmg`, for Apple silicon Macs only. There is no Intel Mac build; build from source instead.
         - Linux: `music-player-@VERSION@-linux-x64.tar.gz` and `music-player-@VERSION@-linux-arm64.tar.gz`, with the program, a launcher file and an icon.
         - Alpine Linux: `music-player-@VERSION@-linux-musl-x64.tar.gz` (x86_64) and `music-player-@VERSION@-linux-musl-arm64.tar.gz` (aarch64), for Alpine 3.24 or newer (musl libc), with the same contents as the Linux archives. The Linux archives above do not run on Alpine.
-        - Android: `music-player-@VERSION@-android.apk` (Android 8.0 or newer).
+        - Android: `music-player-@VERSION@-android-arm64-v8a.apk` for phones, tablets and foldables (64-bit ARM), and `music-player-@VERSION@-android-x86_64.apk` for x86_64 emulators and Chromebooks (Android 8.0 or newer). Install the one that matches the device; each carries only its own native library.
         - `music-player-@VERSION@-desktop-third-party-licenses.txt` and `music-player-@VERSION@-android-third-party-licenses.txt`: the license notices of the desktop programs and of the Android app (see "Licenses").
         - `SHA256SUMS`: the SHA-256 of every file above.
 
