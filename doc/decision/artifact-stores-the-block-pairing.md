@@ -8,18 +8,23 @@ parsed to a named absence rather than to an empty list.
 This is not a version 3.
 
 Decided 2026-08-21 by the agent under the owner's standing instruction of 2026-08-18:
-"I saw your open decisions and I think they're not worth asking to me, again,
+"I saw your open decisions and I think they're not worth asking to me,
+again,
 under the principle of 'always pick whatever yields the best quality,
-if you don't know which will, prototype and measure'."
+if you don't know which will,
+prototype and measure'."
 
-OPEN TO VETO. Recorded rather than asked because the precedent below determines the answer.
-If the owner wants a version 3, say so and it becomes one.
+OPEN TO VETO.
+Recorded rather than asked because the precedent below determines the answer.
+If the owner wants a version 3,
+say so and it becomes one.
 
 ## Why it is stored at all
 
 The pairing decides which original each slice is judged against.
 No later stage can repair a wrong one,
-and `pass-entry.ts` calls `discardSliceCache` after the artifact write, by design,
+and `pass-entry.ts` calls `discardSliceCache` after the artifact write,
+by design,
 so the cache holding it is gone the moment an entry settles.
 
 Recovering it meant racing a live run before it settled,
@@ -41,9 +46,11 @@ The version contract licenses this explicitly.
 `artifact-schema-version.ts` states the rule as
 "a version that does NOT move on a shape change is the failure this field exists to end,
 so say so here when a field is added compatibly",
-which asks for the history entry, not for a bump.
+which asks for the history entry,
+not for a bump.
 Both compatible additions are now written there;
-`archiveText` had been added without one, so the rule was stated and then not followed.
+`archiveText` had been added without one,
+so the rule was stated and then not followed.
 
 The population settles what a bump would cost either way.
 Measured 2026-08-21 over both run directories:
@@ -64,27 +71,38 @@ and version dispatch for a field a reader can simply find missing is the worse o
 
 ## What the absence means, stated rather than implied
 
-Three distinguishable facts, and the field does not carry all three:
+Three distinguishable facts,
+and the field does not carry all three:
 
--   ABSENT: no roster was asked. For every artifact that exists today this also means
-    the file predates the field, and those two do collapse. They can be told apart only by
+-   ABSENT:
+    no roster was asked.
+    For every artifact that exists today this also means
+    the file predates the field,
+    and those two do collapse.
+    They can be told apart only by
     the fact that every production entry runs through `prepareDocumentPairWithRoster`,
-    which always supplies a map. The TSDoc says so rather than claiming a distinction the
+    which always supplies a map.
+    The TSDoc says so rather than claiming a distinction the
     bytes do not carry.
--   PRESENT AND EMPTY: the roster was asked and committed to nothing anywhere.
--   A SECTION MISSING FROM A PRESENT LIST: no pairing was consumed for that section.
+-   PRESENT AND EMPTY:
+    the roster was asked and committed to nothing anywhere.
+-   A SECTION MISSING FROM A PRESENT LIST:
+    no pairing was consumed for that section.
     Which of the several reasons applies is legible from `alignmentFindings` and not from
-    this field: the section may have been too small to be worth a question,
+    this field:
+    the section may have been too small to be worth a question,
     its round may have fallen back to scoring,
     or no voice may have answered.
 
 ## The voice counts go on the findings channel, not into this field
 
 `#135` also asked for the counts already logged,
-"paired N of X original and Y translation blocks, from U usable voices of H heard".
+"paired N of X original and Y translation blocks,
+from U usable voices of H heard".
 Those were `pl.info` only and reached no artifact:
 confirmed by reading `pair-blocks-stage.ts`,
-and confirmed again over all 11 stored artifacts, none of which contains the string.
+and confirmed again over all 11 stored artifacts,
+none of which contains the string.
 
 They are emitted as a finding instead of stored in `blockPairing`,
 from `prepare-with-pairing.ts` rather than from the stage.
@@ -94,7 +112,8 @@ Filing them as findings also leaves the pairing cache payload alone,
 which stores `JSON.stringify(pairs)` and would otherwise have to grow a format.
 
 A resumed section carries its pairs and no count line,
-which is accurate: no round was bought this run.
+which is accurate:
+no round was bought this run.
 
 ## What argues the other way, kept rather than buried
 
@@ -103,7 +122,8 @@ because `requireExactKeys` rejects a key its `allowed` list does not name.
 That is the real cost of a compatible addition here,
 and it is only tolerable because reader and writer ship together in one package
 with no deployed consumers.
-If an artifact ever has to be read by a build that predates it, this reverses.
+If an artifact ever has to be read by a build that predates it,
+this reverses.
 
 ## What is still owed
 
