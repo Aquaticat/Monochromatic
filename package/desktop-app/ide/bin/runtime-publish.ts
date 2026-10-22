@@ -10,6 +10,7 @@
 
 import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
+import { once } from 'node:events';
 import {
   copyFileSync,
   cpSync,
@@ -104,7 +105,8 @@ export const publishTree = ({ source, destination }: { source: string; destinati
     return;
   }
   if (kind.isSymbolicLink()) {
-    // A link keeps being a link, as the plain recursive copy it replaces made it; creating one is a single step.
+    // A link keeps being a link, as the plain recursive copy it replaces made it. The runtime holds none today, and the
+    // lock keeps other preparations out while the old link is replaced.
     rmSync(destination, { force: true });
     cpSync(source, destination);
     return;
@@ -165,26 +167,25 @@ export const withExclusiveLock = async <Result>(
     ],
     { stdio: ['pipe', 'pipe', 'inherit'] },
   );
-  // Closing the pipe of a holder that already died reports EPIPE; the exit is handled through `ended` and `closed`.
+  // Closing the pipe of a holder that already died reports EPIPE; the exit is handled by the waits below.
   holder.stdin.on('error', () => {});
-  const ended = new Promise<never>((_resolve, reject) => {
-    holder.once('error', reject);
-    holder.once('close', (code) => reject(new Error(`flock ended with status ${code} before it held ${lockFile}`)));
-  });
-  const held = new Promise<void>((resolve) => {
-    let seen = '';
-    holder.stdout.on('data', (chunk: Buffer) => {
-      seen += chunk.toString();
-      if (seen.includes('held')) {
-        resolve();
+  const failedToStart = async (): Promise<never> => {
+    const [error] = await once(holder, 'error');
+    throw error;
+  };
+  const reportsHeld = async (): Promise<void> => {
+    for await (const chunk of holder.stdout) {
+      if (String(chunk).includes('held')) {
+        return;
       }
-    });
-  });
+    }
+    throw new Error(`flock ended before it held ${lockFile}`);
+  };
   const waiting = setTimeout(() => {
     console.error(`Waiting for another runtime preparation to release ${lockFile}`);
   }, 1000);
   try {
-    await Promise.race([held, ended]);
+    await Promise.race([reportsHeld(), failedToStart()]);
   } finally {
     clearTimeout(waiting);
   }
@@ -192,13 +193,8 @@ export const withExclusiveLock = async <Result>(
     return await work();
   } finally {
     // The holder may already be gone (it was killed); waiting for a close that has happened would never end.
-    const closed = new Promise<void>((resolve) => {
-      if (holder.exitCode !== null || holder.signalCode !== null) {
-        resolve();
-      } else {
-        holder.once('close', () => resolve());
-      }
-    });
+    const alreadyGone = holder.exitCode !== null || holder.signalCode !== null;
+    const closed = alreadyGone ? undefined : once(holder, 'close');
     holder.stdin.end();
     await closed;
   }

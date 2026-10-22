@@ -6,6 +6,7 @@
 // renamed it away, and the other failed with ENOENT. The concurrent test below fails when the staging name is fixed.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
+import { once } from 'node:events';
 import {
   lstatSync,
   mkdirSync,
@@ -38,18 +39,22 @@ const scratch = (): string => mkdtempSync(join(tmpdir(), 'runtime-publish-'));
 const namesBelow = (root: string): string[] => readdirSync(root, { recursive: true }).map(String).sort();
 
 // Runs a TypeScript program in a child node process and resolves with its exit status and output.
-const runChild = ({ program, args }: { program: string; args: string[] }) =>
-  new Promise<{ status: number | null; output: string }>((resolve) => {
-    const child = spawn(
-      process.execPath,
-      ['--input-type=module-typescript', '--eval', program, '--', ...args],
-      { stdio: ['ignore', 'pipe', 'pipe'] },
-    );
-    let output = '';
-    child.stdout.on('data', (chunk: Buffer) => (output += chunk));
-    child.stderr.on('data', (chunk: Buffer) => (output += chunk));
-    child.on('close', (status) => resolve({ status, output }));
-  });
+const runChild = async ({ program, args }: { program: string; args: string[] }) => {
+  const child = spawn(
+    process.execPath,
+    ['--input-type=module-typescript', '--eval', program, '--', ...args],
+    { stdio: ['ignore', 'pipe', 'pipe'] },
+  );
+  const collect = async (stream: AsyncIterable<unknown>): Promise<string> => {
+    let text = '';
+    for await (const chunk of stream) {
+      text += String(chunk);
+    }
+    return text;
+  };
+  const [stdout, stderr, [status]] = await Promise.all([collect(child.stdout), collect(child.stderr), once(child, 'close')]);
+  return { status: status as number | null, output: stdout + stderr };
+};
 
 test('staging paths of one output differ between calls and match the sweep pattern', () => {
   const first = stagingPathFor({ output: '/x/awk.so' });
@@ -194,7 +199,7 @@ test('the lock admits one holder at a time and returns the result of its work', 
     const [lockFile, log, label] = process.argv.slice(1)
     await withExclusiveLock({ lockFile, work: async () => {
       appendFileSync(log, 'start ' + label + '\\n')
-      await new Promise(resolve => setTimeout(resolve, 300))
+      await (await import('node:timers/promises')).setTimeout(300)
       appendFileSync(log, 'end ' + label + '\\n')
     } })
   `;
@@ -225,7 +230,7 @@ test('a lock whose holder is killed is released', async () => {
     const [lockFile] = process.argv.slice(1)
     await withExclusiveLock({ lockFile, work: async () => {
       console.log('holding')
-      await new Promise(() => {})
+      await (await import('node:timers/promises')).setTimeout(600000)
     } })
   `;
   const holder = spawn(
@@ -233,7 +238,7 @@ test('a lock whose holder is killed is released', async () => {
     ['--input-type=module-typescript', '--eval', program, '--', lockFile],
     { stdio: ['ignore', 'pipe', 'inherit'] },
   );
-  await new Promise<void>((resolve) => holder.stdout.on('data', () => resolve()));
+  await once(holder.stdout, 'data');
   holder.kill('SIGKILL');
   assert.equal(await withExclusiveLock({ lockFile, work: () => 'taken over' }), 'taken over');
   rmSync(root, { recursive: true });
