@@ -529,6 +529,10 @@ named for that subject and listed here.
   where the owner let the grace open,
   with the round's need read again at each refusal,
   artifact generation 20 and the cache versions that moved with the rule (B816).
+- [Audit ledger: holds a test registers and the seat reading sleeps](audit-ledger-holds-a-test-registers-and-the-seat-reading-sleeps.md):
+  A hold a test registers for a provider that the seat reading sleeps for real:
+  the router's five-minute hold slept by a unit test in every gate from g138 on,
+  and the scan that now reads the holds tests register (B817).
 - [Audit ledger: providers and seats a run holds out](audit-ledger-providers-and-seats-a-run-holds-out.md):
   A provider an owner ruling keeps off that every run still asked (B760),
   a seat never withheld although its streams carried nothing (B761),
@@ -673,7 +677,8 @@ named for that subject and listed here.
   the scans or the type check that would have refused them,
   a round landed without the round before it,
   a test round reported before the scans had read its tests (M266),
-  and a bench change landed with the run package's tests only (M287).
+  a bench change landed with the run package's tests only (M287),
+  and about 30 gates that took five minutes longer than the gates before them with no comparison of the time (M288).
 - [Audit ledger: process mistakes, stopping and waiting](audit-ledger-process-stopping-and-waiting.md):
   Turns that ended with work still listed,
   and waits spent polling.
@@ -847,6 +852,7 @@ Filed in:
 - [Audit ledger: composed operations and checks on a part](audit-ledger-composed-operations-and-partial-checks.md)
 - [Audit ledger: which seats a quorum counts](audit-ledger-which-seats-a-quorum-counts.md)
 - [Audit ledger: short benches and the last live seat](audit-ledger-short-benches-and-the-last-live-seat.md)
+- [Audit ledger: holds a test registers and the seat reading sleeps](audit-ledger-holds-a-test-registers-and-the-seat-reading-sleeps.md)
 - [Audit ledger: what each sheet shows](audit-ledger-what-each-sheet-shows.md)
 - [Audit ledger: the polish gate's claims and the order of reason and vote](audit-ledger-polish-gate-claims-and-reason-order.md)
 - [Audit ledger: defaults that stand in for an input](audit-ledger-defaults-standing-in-for-an-input.md)

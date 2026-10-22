@@ -41,6 +41,14 @@
  as `baseMs` or `pollMs`, are left out on purpose: load only lengthens them,
  and a race against one shows up at the bound or the sleep on its other side.
 
+ THE HOLDS A TEST REGISTERS FOR A PROVIDER, which reach a sleep through a client's reader of holds and not through
+ a timer call (ledger B817): a hold of 1000 ms or more written onto a member named `holds` (`rig.holds.synthetic = N`),
+ and a property of an object literal inside a `providerHolds` or `holds` property or a constant named for a hold, such
+ as `HYPER_HELD`. Its value is a number, a top-level constant bound to one, the greater branch of a conditional, or a
+ sum, difference or product of such; an assignment whose value is none of these is a finding too, keyed `holds.<name> =
+ value`, and a property that is none is left. The scan flags by size and cannot tell a hold the seat reading sleeps from
+ one it does not, since that depends on whether a bench is short; a listed hold carries the reason it sleeps nothing.
+
  THE LISTED BOUNDS name every finding that stands, with how many times its
  key occurs, its class (`reached`: a bound a case means to reach, whose work
  cannot end before it on any machine; `read back`: a value a case asserts or
@@ -63,6 +71,8 @@ import {
   expect,
   it,
 } from '@monochromatic-dev/module-test/ts';
+
+import { nonNullishOrThrow, } from '@monochromatic-dev/module-or-throw/ts';
 
 import {
   declaringModule,
@@ -225,7 +235,7 @@ const DEFERRED: Readonly<Record<string, string>> = {};
  sleeps the shortest hold it is told of (`waitOutHold`, `budget-hold-wait.ts`), and the router registers 300000 on a
  refusal from a meter that reads dry, so a case that hands its client such a hold and drives a reading that
  waits pays it in real time (the padded-checkers case of `pass-reseat.unit.test.ts` ran 300 s in every gate
- from 2026-10-20 (UTC), ledger B817). The poll interval of that wait is the same second (`HOLD_POLL_MS`).
+ from 2026-10-21 (UTC), ledger B817). The poll interval of that wait is the same second (`HOLD_POLL_MS`).
  */
 const HOLD_READ_MS = 1_000;
 
@@ -1354,16 +1364,39 @@ function objectBounds({ node, }: { readonly node: TreeNode; },): readonly BoundR
  ```
  */
 function namesAHold({ name, }: { readonly name: string; },): boolean {
-  return name
-    .split(/[^A-Za-z0-9]+|(?<=[a-z0-9])(?=[A-Z])/v,)
+  /**
+   The name with a separator before each capital that follows a lower-case letter, so camel case reads as words.
+   */
+  const spaced = Array.from(name,)
+    .map(function separated(char, at, chars,): string {
+      /**
+       Character before this one.
+       */
+      const before = chars.at(at - 1,) ?? '';
+      return ((at > 0) && (char !== char.toLowerCase()) && (before === before.toLowerCase()))
+        ? `_${char}`
+        : char;
+    },)
+    .join('',);
+  return spaced
+    .toLowerCase()
+    .replaceAll(
+    '-',
+    '_',
+    )
+    .replaceAll(
+    '$',
+    '_',
+    )
+    .split('_',)
     .some(function isHoldWord(word,): boolean {
-      return HOLD_WORDS.has(word.toLowerCase(),);
+      return HOLD_WORDS.has(word,);
     },);
 }
 
 /**
  Numbers the top-level constants of a file are bound to, so a hold written as a named constant reads as its
- value.
+ value. A constant that spells more than one number, or none, is left out.
 
  @param program - file's program
 
@@ -1388,16 +1421,16 @@ function numericConstantsOf({ program, }: { readonly program: TreeNode; },): Rea
       continue;
     for (const declarator of (declaration.declarations as readonly TreeNode[])) {
       /**
-       Number the initializer spells, absent for any other value.
+       Numbers the initializer spells.
        */
-      const spelled = numberOf({
+      const spelled = numbersOf({
         node: declarator.init,
         numbers,
       },);
-      if (spelled !== undefined) {
+      if (spelled.length === 1) {
         numbers.set(
           identifierName({ node: declarator.id, },),
-          spelled,
+          nonNullishOrThrow(spelled[0],),
         );
       }
     }
@@ -1406,21 +1439,36 @@ function numericConstantsOf({ program, }: { readonly program: TreeNode; },): Rea
 }
 
 /**
- The number an expression spells: a numeric literal, a constant bound to one, the greater branch of a
- conditional, or a sum, difference or product of such numbers.
+ How each binary operator a hold may be written with combines its operands.
+ */
+const OPERATORS: Readonly<Record<string, (left: number, right: number,) => number>> = {
+  '*': function times(left, right,): number {
+    return left * right;
+  },
+  '+': function plus(left, right,): number {
+    return left + right;
+  },
+  '-': function minus(left, right,): number {
+    return left - right;
+  },
+};
+
+/**
+ The numbers an expression can spell: a numeric literal, a constant bound to one, both branches of a conditional,
+ or a sum, difference or product of such numbers.
 
  @param node - expression read
 
  @param numbers - top-level constants and their numbers
 
- @returns The number, absent where the expression spells none
+ @returns Every number the expression can spell, none where it spells none
 
  @example
  ```ts
- const spelled = numberOf({ node: init, numbers, },); // 300000 for LONG_MS
+ const spelled = numbersOf({ node: init, numbers, },); // [300000, 0] for held ? LONG_MS : 0
  ```
  */
-function numberOf(
+function numbersOf(
   {
     node,
     numbers,
@@ -1428,58 +1476,62 @@ function numberOf(
     readonly node: unknown;
     readonly numbers: ReadonlyMap<string, number>;
   },
-): number | undefined {
+): readonly number[] {
   /**
    The expression inside any parentheses and casts.
    */
   const { inner, } = unwrapped({ node, },);
   if (!isTreeNode(inner,))
-    return undefined;
+    return [];
   if (inner.type === 'Literal')
-    return ((typeof inner.value) === 'number') ? inner.value as number : undefined;
-  if (inner.type === 'Identifier')
-    return numbers.get(identifierName({ node: inner, },),);
-  if (inner.type === 'ConditionalExpression') {
+    return ((typeof inner.value) === 'number') ? [inner.value as number,] : [];
+  if (inner.type === 'Identifier') {
     /**
-     The numbers the two branches spell.
+     The number the constant is bound to.
      */
-    const branches = [inner.consequent, inner.alternate,].map(function spelled(branch,): number | undefined {
-      return numberOf({
-        node: branch,
+    const bound = numbers.get(identifierName({ node: inner, },),);
+    return (bound === undefined) ? [] : [bound,];
+  }
+  if (inner.type === 'ConditionalExpression') {
+    return [
+      ...numbersOf({
+        node: inner.consequent,
         numbers,
+      },),
+      ...numbersOf({
+        node: inner.alternate,
+        numbers,
+      },),
+    ];
+  }
+  if ((inner.type !== 'BinaryExpression') || (!Object.hasOwn(
+    OPERATORS,
+    inner.operator as string,
+  )))
+    return [];
+  /**
+   How the operator combines two numbers.
+   */
+  const combine = nonNullishOrThrow(OPERATORS[inner.operator as string],);
+  /**
+   The numbers the right operand can spell.
+   */
+  const rights = numbersOf({
+    node: inner.right,
+    numbers,
+  },);
+  return numbersOf({
+    node: inner.left,
+    numbers,
+  },)
+    .flatMap(function withEachRight(left,): readonly number[] {
+      return rights.map(function combined(right,): number {
+        return combine(
+          left,
+          right,
+        );
       },);
     },);
-    return branches.includes(undefined,)
-      ? undefined
-      : Math.max(...(branches as readonly number[]),);
-  }
-  if (inner.type !== 'BinaryExpression')
-    return undefined;
-  /**
-   The numbers the two operands spell.
-   */
-  const [left, right,] = [inner.left, inner.right,].map(function spelled(operand,): number | undefined {
-    return numberOf({
-      node: operand,
-      numbers,
-    },);
-  },);
-  if ((left === undefined) || (right === undefined))
-    return undefined;
-  switch (inner.operator) {
-    case '*': {
-      return left * right;
-    }
-    case '+': {
-      return left + right;
-    }
-    case '-': {
-      return left - right;
-    }
-    default: {
-      return undefined;
-    }
-  }
 }
 
 /**
@@ -1540,7 +1592,7 @@ function writesOntoHolds({ target, }: { readonly target: unknown; },): boolean {
 
 /**
  The holds of a second or more a node registers for a provider: an assignment onto a rig's holds, whose value
- that is not a number under that second is a finding too since the case cannot show it short, and a property
+ that spells no number under that second is a finding too since the case cannot show it short, and a property
  of a record of holds whose value is a number from that second.
 
  @param node - node visited
@@ -1571,13 +1623,15 @@ function holdBounds(
     if ((node.operator !== '=') || (!writesOntoHolds({ target: node.left, },)))
       return [];
     /**
-     The hold the assignment writes.
+     The holds the assignment can write.
      */
-    const written = numberOf({
+    const written = numbersOf({
       node: node.right,
       numbers,
     },);
-    return ((written !== undefined) && (written < HOLD_READ_MS))
+    return ((written.length > 0) && written.every(function isShort(hold,): boolean {
+      return hold < HOLD_READ_MS;
+    },))
       ? []
       : [{
         form: `${HOLDS_MEMBER}.${memberName({ node: node.left as TreeNode, },)} =`,
@@ -1588,16 +1642,13 @@ function holdBounds(
     return [];
   return (node.properties as readonly TreeNode[])
     .filter(function holdsASecond(property,): boolean {
-      /**
-       The hold the property gives its provider.
-       */
-      const given = (property.type === 'Property')
-        ? numberOf({
-          node: property.value,
-          numbers,
-        },)
-        : undefined;
-      return (given !== undefined) && (given >= HOLD_READ_MS);
+      return (property.type === 'Property') && numbersOf({
+        node: property.value,
+        numbers,
+      },)
+        .some(function isASecond(hold,): boolean {
+          return hold >= HOLD_READ_MS;
+        },);
     },)
     .map(function holdOf(property,): BoundRead {
       return {

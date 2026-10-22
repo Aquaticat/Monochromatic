@@ -596,3 +596,57 @@ probe,
 repair,
 run,
 stage and translate-stage.
+
+## M288: about 30 gates took five minutes longer than the gates before them, and nobody compared the time
+
+Status:
+happened from g138 (`3637592bd4`,
+2026-10-21 (UTC)) and was found on 2026-10-22 (UTC) in `tr-w290`,
+by an implementer who asked why the corpus-pass package's `test:unit` took five minutes.
+The defect is B817.
+
+What happened:
+in every gate up to g137 (at `7c9d5fa35f`) that package's `test:unit` took 43 to 85 s.
+From g138 it took 305 to 313 s in every gate,
+about 30 gates in all,
+and each gate read its `[FAIL]` count (zero) and went on.
+A case of `pass-reseat.unit.test.ts` slept a 300000 ms hold for real and then passed (B817).
+The rotation sweep runs that package's tests on every salt,
+so the case ran on all ten.
+
+Why nothing flagged it:
+every check a gate runs reads a count,
+and the count did not move.
+The wait was constant,
+so it never looked like a flaky case,
+it sat inside one block of parallel cases,
+so no case reported it,
+and no case failed.
+A gate's wall time was read as a cost and not as a measurement:
+305 s in one gate was the same 305 s in the next,
+and a figure that does not change from gate to gate is not noticed.
+Nothing in the gate list compared a package's time with the gates before it.
+
+How it was found:
+the log of the package's `test:unit` prints each block's duration after its name,
+and the block of the lanes hooks read 300.3 s,
+which is the router's hold of 300000 ms to within the start-up of the block.
+A duration that matches a constant of the code under test is a sleep.
+
+Recurrence:
+M2 and M12,
+which record a gate read by its exit code and not by its `[FAIL]` lines,
+and B813,
+a real-clock wait that held in every run and was wrong in one.
+Those mistakes read a result too weakly;
+this one read a result and skipped its duration.
+
+Prevention:
+`mistake-prevention-tests-clocks-and-arrival-order.md`,
+"Tests on the real clock",
+and step 2 of "Before a run launches" in `mistake-prevention.md`:
+a gate compares each package's `test:unit` time with the same package's time in the gates before it
+whenever the time jumps,
+reads the block durations in the log,
+and takes any block whose duration matches a constant of the code under test as a sleep to be found.
+The real-clock scan reads the holds a test registers for a provider (B817).

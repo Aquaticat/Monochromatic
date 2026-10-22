@@ -209,6 +209,12 @@ not a memory of having done it.
     and not the `[PASS]` lines:
     a suite with failing cases still prints its pass line,
     so that count is the same in a red run and a green one (M125).
+    The time is read too (M288):
+    each package's `test:unit` time is set beside the same package's time in the gates before it,
+    and a jump is looked into before the gate is called green
+    (the block durations in the log name the block that grew;
+    a duration that matches a constant of the code under test is a sleep).
+    About 30 gates once took five real minutes more than the gates before them and no one noticed.
 3.  Lint reads the whole `src` tree,
     and its `Found 0 warnings and 0 errors` line is read (M10,
     M23,
