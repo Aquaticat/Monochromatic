@@ -214,10 +214,12 @@ stayed out of the commit
     (that file is concurrently dirty and stays untouched here).
 1.  `doc/*.mjs` files have no format owner:
     `mise run format:oxlint` does not reach them
-    and no doc-family formatter claims them;
-    decide an owner
-    (a `format:docs` task or a recorded exception)
-    before the next doc sweep.
+    and no doc-family formatter claims them.
+    Superseded by the user decision (2026-10-22)
+    that no `.mjs` files should exist under `doc/` at all;
+    the conversion or deletion is tracked as
+    [#1795](https://github.com/Aquaticats/Monochromatic/issues/1795),
+    so the format-owner question dissolves with the files.
 
 ## Commits
 
