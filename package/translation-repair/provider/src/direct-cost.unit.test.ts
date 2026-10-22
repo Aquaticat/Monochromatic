@@ -66,6 +66,14 @@ await describe({
           },
         },),
         it({
+          name: 'CLAMPS a hit count above the prompt count to the prompt count, since no more tokens can be served from '
+            + 'the cache than the prompt held',
+          fn: async () => {
+            expect(deepSeekCostOf({ card: DEEPSEEK_CARD, extracted: HUNDRED_AND_TEN, split: { hitTokens: 150, }, },),)
+              .toBeCloseTo(((100 * 0.006) + (10 * 1.2)) / 1_000_000, 12,);
+          },
+        },),
+        it({
           name: 'PRICES a block that names only a miss count as that many misses and no hits, and the output either way',
           fn: async () => {
             expect(deepSeekCostOf({ card: DEEPSEEK_CARD, extracted: HUNDRED_AND_TEN, split: { missTokens: 60, }, },),)
@@ -94,6 +102,14 @@ await describe({
             expect(xiaomiCostOf({ card, extracted, cachedTokens: 0, },),)
               .toBeCloseTo(((100 * 0.14) + (10 * 0.28)) / 1_000_000, 12,);
             expect(xiaomiCostOf({ card, extracted: { text: '', }, cachedTokens: 0, },),).toBe(DIRECT_COST_UNREPORTED,);
+          },
+        },),
+        it({
+          name: 'CLAMPS a cached count above the prompt count to the prompt count, so the figure never exceeds what the '
+            + 'prompt can support',
+          fn: async () => {
+            expect(xiaomiCostOf({ card: XIAOMI_CARD, extracted: HUNDRED_AND_TEN, cachedTokens: 500, },),)
+              .toBeCloseTo(((100 * 0.0028) + (10 * 0.28)) / 1_000_000, 12,);
           },
         },),
         it({

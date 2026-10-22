@@ -15,6 +15,11 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
+import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
+import {
+  exchangeFailureLogText,
+  ProviderHttpError,
+} from '@monochromatic-dev/translation-repair-provider-stream';
 import {
   createDeepSeekClient,
   createXiaomiClient,
@@ -51,7 +56,9 @@ type RouteUnderTest = {
   /**
    Builds the route's client over a recorded transport.
    */
-  readonly make: (transport: Parameters<typeof createXiaomiClient>[0]['transport']) => Pick<ModelCaller, 'chatText'>;
+  readonly make: (
+    args: Pick<Parameters<typeof createXiaomiClient>[0], 'transport' | 'apiKey'>,
+  ) => Pick<ModelCaller, 'chatText'>;
 
   /**
    The one roster model the route's key is granted for.
@@ -65,18 +72,23 @@ type RouteUnderTest = {
 };
 
 /**
+ Key every case here sends. Its last four units are what a provider's refusal text might echo back.
+ */
+const CAT_KEY = 'cat-key-whisker-9f3c7a-Qx4d';
+
+/**
  Both direct routes, each over a client that retries once a millisecond later.
  */
 const ROUTES: readonly RouteUnderTest[] = [
   {
     name: 'deepseek',
-    make: (transport,) => createDeepSeekClient({ apiKey: 'cat-key-deepseek', transport, retryPolicy: ONE_QUICK_RETRY, },),
+    make: ({ transport, apiKey, },) => createDeepSeekClient({ apiKey, transport, retryPolicy: ONE_QUICK_RETRY, },),
     modelId: SEAT_HYPER_OPENROUTER_UNMEASURED,
     usageChunk: DEEPSEEK_USAGE_CHUNK,
   },
   {
     name: 'xiaomi',
-    make: (transport,) => createXiaomiClient({ apiKey: 'cat-key-xiaomi', transport, retryPolicy: ONE_QUICK_RETRY, },),
+    make: ({ transport, apiKey, },) => createXiaomiClient({ apiKey, transport, retryPolicy: ONE_QUICK_RETRY, },),
     modelId: SEAT_OPENROUTER_ONLY_CHECKER,
     usageChunk: XIAOMI_USAGE_CHUNK,
   },
@@ -101,10 +113,32 @@ await describe({
               ],
             },);
 
-            const reply = await askCat({ client: route.make(transport,), modelId: route.modelId, },);
+            const reply = await askCat({ client: route.make({ transport, apiKey: CAT_KEY, },), modelId: route.modelId, },);
 
             expect(reply.text,).toBe('{"spot":"sunbeam"}',);
             expect(exchanges.length,).toBe(2,);
+          },
+        },),
+
+        it({
+          name: 'DROPS the provider\'s words from a 401, which may echo a short tail of the key that no mask of the whole '
+            + 'key would find, and still fails as a 401 after one request',
+          fn: async () => {
+            const { transport, exchanges, } = scripted({
+              replies: [{
+                status: 401,
+                bodyText: '{"error":{"message":"Authentication Fails, Your api key: ****Qx4d is invalid"}}',
+              },],
+            },);
+
+            const failure: unknown = await rejectionOf(
+              () => askCat({ client: route.make({ transport, apiKey: CAT_KEY, },), modelId: route.modelId, },),
+            );
+
+            expect(failure,).toBeInstanceOf(ProviderHttpError,);
+            expect((failure as ProviderHttpError).status,).toBe(401,);
+            expect(exchangeFailureLogText({ error: failure, },),).not.toContain('Qx4d',);
+            expect(exchanges.length,).toBe(1,);
           },
         },),
 
@@ -115,7 +149,7 @@ await describe({
               replies: [{ status: 200, bodyText: streamOf({ usageChunk: route.usageChunk, done: true, }), },],
             },);
 
-            await askCat({ client: route.make(transport,), modelId: route.modelId, },);
+            await askCat({ client: route.make({ transport, apiKey: CAT_KEY, },), modelId: route.modelId, },);
 
             const { max_tokens: cap, } = firstBodyOf({ exchanges, },);
             expect(Number.isSafeInteger(cap,),).toBe(true,);

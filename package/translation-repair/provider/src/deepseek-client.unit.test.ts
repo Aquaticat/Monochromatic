@@ -16,6 +16,7 @@ import {
 
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import {
+  exchangeFailureLogText,
   ProviderHttpError,
   type TransportExchange,
   type TransportReply,
@@ -226,6 +227,24 @@ await describe({
         },);
         expect(refused,).toBeInstanceOf(ProviderHttpError,);
         expect(exchanges.length,).toBe(1,);
+      },
+    },),
+
+    it({
+      name: 'DROPS the provider\'s words from a 401 on the balance read as well, which may echo a short tail of the key',
+      fn: async () => {
+        const { transport, } = scripted({
+          replies: [{
+            status: 401,
+            bodyText: '{"error":{"message":"Authentication Fails, Your api key: ****Qx4d is invalid"}}',
+          },],
+        },);
+        const client = createDeepSeekClient({ apiKey: 'cat-key-whisker-9f3c7a-Qx4d', transport, retryPolicy: ONE_QUICK_RETRY, },);
+        const refused: unknown = await rejectionOf(async function askForTheFailure(): Promise<unknown> {
+          return await client.credits({ signal: SIGNAL, },);
+        },);
+        expect(refused,).toBeInstanceOf(ProviderHttpError,);
+        expect(exchangeFailureLogText({ error: refused, },),).not.toContain('Qx4d',);
       },
     },),
 
