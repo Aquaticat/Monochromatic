@@ -80,6 +80,7 @@ const ALL_REACH = {
   bedrock: true,
   deepseek: false,
   xiaomi: false,
+  anthropic: false,
   hyper: true,
   openrouter: true,
 } as const;
@@ -93,6 +94,7 @@ const NONE_DRY = {
   bedrock: false,
   deepseek: false,
   xiaomi: false,
+  anthropic: false,
   hyper: false,
   openrouter: false,
 } as const;

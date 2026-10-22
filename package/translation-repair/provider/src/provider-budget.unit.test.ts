@@ -147,6 +147,7 @@ const ALL_WET = {
   bedrock: true,
   deepseek: true,
   xiaomi: true,
+  anthropic: true,
   openrouter: false,
 } as const;
 
@@ -188,6 +189,7 @@ await describe({
           bedrock: true,
           deepseek: true,
           xiaomi: true,
+          anthropic: true,
           openrouter: true,
         },);
         expect(await hyperOnly.read({ signal: SIGNAL, },),).toEqual({
@@ -197,6 +199,7 @@ await describe({
           bedrock: true,
           deepseek: true,
           xiaomi: true,
+          anthropic: true,
           openrouter: true,
         },);
         expect(await openRouterOnly.read({ signal: SIGNAL, },),).toEqual({
@@ -206,6 +209,7 @@ await describe({
           bedrock: true,
           deepseek: true,
           xiaomi: true,
+          anthropic: true,
           openrouter: false,
         },);
       },
@@ -283,6 +287,7 @@ await describe({
           bedrock: true,
           deepseek: true,
           xiaomi: true,
+          anthropic: true,
           openrouter: true,
         },);
       },
@@ -328,6 +333,7 @@ await describe({
           bedrock: 'dry',
           deepseek: 'dry',
           xiaomi: 'dry',
+          anthropic: 'dry',
           openrouter: 'wet',
         },);
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual({
@@ -337,6 +343,7 @@ await describe({
           bedrock: true,
           deepseek: true,
           xiaomi: true,
+          anthropic: true,
           openrouter: false,
         },);
       },
@@ -422,6 +429,7 @@ await describe({
           bedrock: 0,
           deepseek: 0,
           xiaomi: 0,
+          anthropic: 0,
           openrouter: 0,
         },);
 
@@ -439,6 +447,7 @@ await describe({
           bedrock: 0,
           deepseek: 0,
           xiaomi: 0,
+          anthropic: 0,
           openrouter: 0,
         },);
         expect(await budgets.read({ signal: SIGNAL, },),).toEqual(ALL_WET,);
@@ -600,6 +609,7 @@ await describe({
           bedrock: 0,
           deepseek: 0,
           xiaomi: 0,
+          anthropic: 0,
           openrouter: 0,
         },);
         // The refuser is still spendable at once; only the dry providers are out.
@@ -610,6 +620,7 @@ await describe({
           bedrock: true,
           deepseek: true,
           xiaomi: true,
+          anthropic: true,
           openrouter: true,
         },);
       },
@@ -642,6 +653,7 @@ await describe({
           bedrock: 0,
           deepseek: 0,
           xiaomi: 0,
+          anthropic: 0,
           openrouter: 0,
         },);
       },
@@ -850,6 +862,7 @@ await describe({
           bedrock: 0,
           deepseek: 0,
           xiaomi: 0,
+          anthropic: 0,
           openrouter: 0,
         },);
       },

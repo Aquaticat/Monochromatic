@@ -106,6 +106,7 @@ const ONE_SYNTHETIC_SLOT = {
   bedrock: Number.POSITIVE_INFINITY,
   deepseek: Number.POSITIVE_INFINITY,
   xiaomi: Number.POSITIVE_INFINITY,
+  anthropic: Number.POSITIVE_INFINITY,
   openrouter: Number.POSITIVE_INFINITY,
 };
 
@@ -120,6 +121,7 @@ type PerProvider<ValueT,> = {
   readonly bedrock?: ValueT;
   readonly deepseek?: ValueT;
   readonly xiaomi?: ValueT;
+  readonly anthropic?: ValueT;
   readonly openrouter?: ValueT;
 };
 
@@ -170,6 +172,7 @@ function stubProviders(
     bedrock: text.bedrock ?? '{"spot":"cat tree"}',
     deepseek: text.deepseek ?? '{"spot":"laundry basket"}',
     xiaomi: text.xiaomi ?? '{"spot":"laundry basket"}',
+    anthropic: text.anthropic ?? '{"spot":"laundry basket"}',
     openrouter: text.openrouter ?? '{"spot":"laundry basket"}',
   };
 
@@ -183,6 +186,7 @@ function stubProviders(
     bedrock: refusals.bedrock ?? (((status.bedrock ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
     deepseek: refusals.deepseek ?? (((status.deepseek ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
     xiaomi: refusals.xiaomi ?? (((status.xiaomi ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
+    anthropic: refusals.anthropic ?? (((status.anthropic ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
     openrouter: refusals.openrouter ?? (((status.openrouter ?? 0) === 0) ? 0 : Number.POSITIVE_INFINITY),
   };
 
@@ -219,6 +223,7 @@ function stubProviders(
       bedrock: callerFor('bedrock',),
       deepseek: callerFor('deepseek',),
       xiaomi: callerFor('xiaomi',),
+      anthropic: callerFor('anthropic',),
       openrouter: callerFor('openrouter',),
     },
   };
@@ -250,6 +255,7 @@ function stubBudgets(
       bedrock: 0,
       deepseek: 0,
       xiaomi: 0,
+      anthropic: 0,
       openrouter: 0,
     },
     onHoldEnd,
@@ -287,6 +293,8 @@ function stubBudgets(
     // each serve one model, and `direct-routing.unit.test.ts` has their cases.
     deepseek: dry.deepseek ?? true,
     xiaomi: dry.xiaomi ?? true,
+    // DRY UNLESS A CASE SAYS OTHERWISE, like the direct providers: the Claude key serves only its eight cards.
+    anthropic: dry.anthropic ?? true,
     openrouter: dry.openrouter ?? false,
   };
 
@@ -538,6 +546,7 @@ await describe({
             bedrock: 0,
             deepseek: 0,
             xiaomi: 0,
+            anthropic: 0,
             openrouter: 402,
           },
         },);
@@ -599,6 +608,7 @@ await describe({
             bedrock: true,
             deepseek: true,
             xiaomi: true,
+            anthropic: true,
             openrouter: true,
           },
           holdsMs: {
@@ -608,6 +618,7 @@ await describe({
             bedrock: 0,
             deepseek: 0,
             xiaomi: 0,
+            anthropic: 0,
             openrouter: 20,
           },
           onHoldEnd: function syntheticComesBack(): void {
@@ -648,6 +659,7 @@ await describe({
             bedrock: 0,
             deepseek: 0,
             xiaomi: 0,
+            anthropic: 0,
             openrouter: 0,
           },
           onHoldEnd: function syntheticComesBack(): void {
@@ -729,6 +741,7 @@ await describe({
           bedrock: 0,
           deepseek: 0,
           xiaomi: 0,
+          anthropic: 0,
           hyper: 0,
           openrouter: 0,
         },);
@@ -748,6 +761,7 @@ await describe({
             bedrock: true,
             deepseek: true,
             xiaomi: true,
+            anthropic: true,
             openrouter: true,
           },
         },);
@@ -766,14 +780,15 @@ await describe({
             + 'Synthetic has no weekly credit left (or no five-hour request left, on a reply '
             + 'that still carries that window), Charm Hyper has no balance left, Amazon Bedrock has no credit left '
             + 'short of the owner\'s card, DeepSeek has no balance left (or says its account is unavailable), Xiaomi '
-            + 'has refused a call for payment, and OpenRouter has no credit left. Nothing further can be bought, so '
+            + 'has refused a call for payment, the Claude key has met a billing error this run (or serves only '
+            + 'Sonnet 5.5 and Haiku 5.5, not the model asked), and OpenRouter has no credit left. Nothing further can be bought, so '
             + 'this run ends. NeuralWatt\'s free energy returns at 00:00 UTC; Synthetic regenerates on its own '
             + 'schedule; Hyper, DeepSeek and OpenRouter refill on purchase; Xiaomi, once refused for payment, is '
             + 'read again only after one of its calls settles, so a top-up is seen on the next launch; '
             + 'Bedrock\'s credit is never topped up. '
             + 'Measured at the decision: meters read neuralwatt dry, synthetic dry, bedrock dry, deepseek dry, '
-            + 'xiaomi dry, hyper dry, openrouter dry; '
-            + 'holds neuralwatt 0ms, synthetic 0ms, bedrock 0ms, deepseek 0ms, xiaomi 0ms, hyper 0ms, openrouter 0ms.',
+            + 'xiaomi dry, anthropic dry, hyper dry, openrouter dry; '
+            + 'holds neuralwatt 0ms, synthetic 0ms, bedrock 0ms, deepseek 0ms, xiaomi 0ms, anthropic 0ms, hyper 0ms, openrouter 0ms.',
         );
         expect(called,).toEqual([],);
         expect(holdReads.count,).toBe(1,);
@@ -793,6 +808,7 @@ await describe({
             bedrock: true,
             deepseek: true,
             xiaomi: false,
+            anthropic: false,
             openrouter: true,
           },
         },);
