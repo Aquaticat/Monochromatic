@@ -43,6 +43,11 @@ const HTTP_UNAUTHORIZED = 401;
 const HTTP_FORBIDDEN = 403;
 
 /**
+ Status a malformed request is rejected with, which Anthropic once used for an empty balance.
+ */
+const HTTP_BAD_REQUEST = 400;
+
+/**
  Status a credit balance reports no funds as.
  */
 const HTTP_PAYMENT_REQUIRED = 402;
@@ -143,6 +148,36 @@ await describe({
                 provider: 'synthetic',
                 status: HTTP_TOO_MANY_REQUESTS,
                 bodyText: ACCOUNT_LIMIT_BODY,
+              },),
+            },),).toBe(false,);
+          },
+        },),
+        it({
+          name: 'READS ANTHROPIC\'S BILLING ERROR as the balance refusing, in both shapes it has used: status 402 '
+            + 'with a billing_error body, and status 400 with a "credit balance is too low" message',
+          fn: async () => {
+            for (const error of [
+              new ProviderHttpError({
+                provider: 'anthropic',
+                status: HTTP_PAYMENT_REQUIRED,
+                bodyText: '{"type":"error","error":{"type":"billing_error","message":"billing problem"}}',
+              },),
+              new ProviderHttpError({
+                provider: 'anthropic',
+                status: HTTP_BAD_REQUEST,
+                bodyText: '{"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is '
+                  + 'too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase '
+                  + 'credits."}}',
+              },),
+            ]) {
+              expect(isPaymentRefusal({ error, },),).toBe(true,);
+              expect(isBudgetRefusal({ error, },),).toBe(true,);
+            }
+            expect(isPaymentRefusal({
+              error: new ProviderHttpError({
+                provider: 'anthropic',
+                status: HTTP_BAD_REQUEST,
+                bodyText: '{"type":"error","error":{"type":"invalid_request_error","message":"max_tokens is too large"}}',
               },),
             },),).toBe(false,);
           },

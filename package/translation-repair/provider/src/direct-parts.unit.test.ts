@@ -23,6 +23,8 @@ import {
   readEveryMeter,
   reachOf,
   routeProviderFor,
+  claudeIsDry,
+  claudeMeterLevel,
   xiaomiIsDry,
   xiaomiMeterLevel,
 } from '../dist/final/node/index.mjs';
@@ -70,6 +72,35 @@ await describe({
           fn: async () => {
             expect(xiaomiIsDry({ spend: { spentUsd: 1_000, }, },),).toBe(false,);
             expect(xiaomiMeterLevel({ spend: { spentUsd: 0.0042, }, },),).toEqual(['xiaomiUsdSpent=0.0042',],);
+          },
+        },),
+        it({
+          name: 'READS the Claude key wet until a billing refusal, then dry for the run, and reports the run\'s priced '
+            + 'spend to four places',
+          fn: async () => {
+            expect(claudeIsDry({ spend: { spentUsd: 1_000, billingRefused: false, }, },),).toBe(false,);
+            expect(claudeIsDry({ spend: { spentUsd: 0, billingRefused: true, }, },),).toBe(true,);
+            expect(claudeMeterLevel({ spend: { spentUsd: 0.0042, billingRefused: false, }, },),)
+              .toEqual(['anthropicUsdSpent=0.0042',],);
+            expect(claudeMeterLevel({ spend: { spentUsd: 0.5, billingRefused: true, }, },),)
+              .toEqual(['anthropicUsdSpent=0.5000', 'anthropicBilling=refused',],);
+          },
+        },),
+        it({
+          name: 'PUTS the Claude key in the METERS record: wet with its spend, dry once billing refused, and an unset '
+            + 'key dry with nothing to report',
+          fn: async () => {
+            const keyed = await readEveryMeter({
+              anthropic: { spend: async () => ({ spentUsd: 0.0042, billingRefused: false, }), },
+              signal: SIGNAL,
+            },);
+            expect(keyed.anthropic,).toEqual({ state: 'wet', fields: ['anthropicUsdSpent=0.0042',], },);
+            const refused = await readEveryMeter({
+              anthropic: { spend: async () => ({ spentUsd: 0, billingRefused: true, }), },
+              signal: SIGNAL,
+            },);
+            expect(refused.anthropic.state,).toBe('dry',);
+            expect((await readEveryMeter({ signal: SIGNAL, },)).anthropic,).toEqual({ state: 'dry', fields: [], },);
           },
         },),
         it({

@@ -353,5 +353,43 @@ await describe({
         expect(client.pace.waitMs(),).toBeGreaterThan(0,);
       },
     },),
+
+    it({
+      name: 'MARKS THE CLIENT\'S METER DRY FOR THE RUN after a billing error, in both shapes Anthropic has used (402 '
+        + 'billing_error, and 400 with a "credit balance is too low" message), though a later call settles; a client '
+        + 'that met none reads wet',
+      fn: async () => {
+        /**
+         Signal every meter read carries.
+         */
+        const signal = new AbortController().signal;
+        /**
+         Bodies that mean the balance is empty, each with its status.
+         */
+        const billingReplies = [
+          { status: 402, bodyText: '{"type":"error","error":{"type":"billing_error","message":"billing problem"}}', },
+          {
+            status: 400,
+            bodyText: '{"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too '
+              + 'low to access the Anthropic API."}}',
+          },
+        ];
+        for (const billing of billingReplies) {
+          const { transport, } = scripted({
+            replies: [billing, {
+              status: 200,
+              bodyText: claudeStreamOf({ text: '{"spot":"sunbeam"}', stopReason: 'end_turn', usage: PLAIN_USAGE, }),
+            },],
+          },);
+          const client = createClaudeClient({ apiKey: CLAUDE_CAT_KEY, transport, retryPolicy: ONE_QUICK_RETRY, },);
+          expect((await client.spend({ signal, },)).billingRefused,).toBe(false,);
+          const error = await rejectionOf(() => askCat({ client, modelId: 'claude-haiku-5-5', },),);
+          expect(error,).toBeInstanceOf(ProviderHttpError,);
+          expect((await client.spend({ signal, },)).billingRefused,).toBe(true,);
+          await askCat({ client, modelId: 'claude-haiku-5-5', },);
+          expect((await client.spend({ signal, },)).billingRefused,).toBe(true,);
+        }
+      },
+    },),
   ],
 },);
