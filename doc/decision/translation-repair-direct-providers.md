@@ -262,3 +262,60 @@ This change made no call with a key to check it.
 - The rotation sweep and the gate were not run.
 - The cap census maps both providers' served ids to their seats,
   but no call has been counted.
+
+## Addendum: the owner's Claude key (2026-10-22)
+
+The owner,
+2026-10-22:
+"I've added TRANSLATION_REPAIR_CLAUDE_API_KEY .
+You may use latest Haiku and latest Sonnet with this key.
+This key would have $200 every month so be careful what you use."
+Seats:
+"Sonnet edits,
+Haiku wide".
+Effort:
+"Why don't you bench?"
+Code:
+`provider/src/claude-*.ts` and `shared-contract/src/claude-card-sides.ts`.
+
+- The key lists Opus,
+  Fable and older models too,
+  so the lock is held four ways:
+  the wire model of every card is one of two literals (`ANTHROPIC_WIRE_MODELS`),
+  `claude-cards.unit.test.ts` fails on a third,
+  `cardFor` in `claude-client.ts` throws before a request is built,
+  and `roster-card` refuses the Claude key by name.
+- One card per model and effort (`claude-sonnet-5-5`,
+  `claude-sonnet-5-5-effort-low` and so on),
+  eight in all.
+  The cards named by the model alone send no effort,
+  which is the model's own default.
+  The six effort cards carry `judge-unmeasured`,
+  so no derived bench seats them until the effort bench names a level.
+  Two cards of one model share a wire model,
+  so no bench arm may seat two of them together.
+- Seats in `run/src/corpus-run/run-config.ts`:
+  Sonnet 5.5 in `editorModelIds` ahead of `glm-5.3`,
+  Haiku 5.5 in the wide seats through its card holds
+  and in `RUN_CHECKER_ORDER` behind the three the 2026-09-27 benchmark ranks,
+  so it fills the checker bench only when a provider serving one of those three is dry.
+- Sonnet 5.5 cache reads are priced at 0.10 USD a million,
+  from the owner's brief of the pricing page.
+  The API skill bundled with the session lists 0.20 for the same line.
+  The difference is on cache reads only.
+- `PROVIDER_ORDER` places `anthropic` after `xiaomi`.
+  That position is open to the owner's veto and has no routing effect,
+  since every Claude card is served by this provider alone.
+
+### Not done
+
+- No call with the key was made:
+  every test runs over a recorded transport.
+  Where a refusal's `stop_details` sits on a stream is not documented,
+  so `claude-stream-facts.ts` looks in the delta,
+  on the frame and in the message.
+  Whether `output_config.format` accepts every stage's schema is unverified.
+- `max_tokens` is the pooled-p99 cap of `completion-cap.ts`,
+  and thinking counts against it,
+  so a long adaptive-thinking answer may be cut at that cap.
+- The effort bench and the rotation sweep were not run.

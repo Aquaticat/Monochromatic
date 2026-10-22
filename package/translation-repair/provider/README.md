@@ -325,3 +325,37 @@ No request carries a reasoning member.
 Prices are in `direct-cost.ts` (DeepSeek always at peak),
 the cache split and `system_fingerprint` readers are in `direct-usage.ts`,
 and the record is `doc/decision/translation-repair-direct-providers.md`.
+
+## The owner's Claude key, called directly
+
+`claude-client.ts` speaks the Messages protocol to `https://api.anthropic.com/v1/messages` with an `x-api-key` header
+and `anthropic-version: 2023-06-01`,
+for Sonnet 5.5 and Haiku 5.5 only
+(`TRANSLATION_REPAIR_CLAUDE_API_KEY`,
+about $200 a month,
+no hard cap in code).
+`claude-catalog.ts` and `claude-reach.ts` read the eight Claude cards of `shared-contract/src/claude-card-sides.ts`
+(each model with no effort,
+and at `low`,
+`medium` and `high`),
+and `cardFor` throws `ClaudeModelNotServedError` for any other model before a request is built.
+`claude-body.ts` builds the request:
+`thinking: {type: "adaptive"}` always,
+the card's effort in `output_config.effort`,
+structured output by `output_config.format` and never a forced tool,
+no `temperature`,
+`top_p`,
+`top_k` or assistant prefill,
+and one ephemeral cache breakpoint on the system block.
+`claude-stream-facts.ts` reads the stop reason,
+a refusal's category and the four usage counts,
+`claude-cost.ts` prices them in USD (`SPEND` line),
+and a `stop_reason` of `refusal` is its own outcome,
+never an outage.
+The client logs the `anthropic-ratelimit-*` headers once on the first reply that carries them,
+paces itself at 1000 requests a minute,
+and records a billing error (402,
+or the older 400 naming a low credit balance) on itself,
+which `claudeIsDry` reads as dry for the rest of the run (`claude-spend.ts`).
+`retry-after-header.ts` and status 529 extend the retry ladder for Anthropic's 429 and 529 replies.
+The record is the last section of `doc/decision/translation-repair-direct-providers.md`.
