@@ -292,6 +292,10 @@ Scope widened by the owner on 2026-09-14:
    `workflow_dispatch` stays for manual retries.
 - The pnpr hosted registry is named `monochromatic-dev`,
    so consumers route `@monochromatic-dev:registry=https://pnpr.c.aquati.cat/~monochromatic-dev/`.
+  Moved 2026-10-21:
+   the route is `@monochromatic-dev:registry=https://pnpr.c.aquati.cat/npm/~monochromatic-dev/`
+   from the `0.1.0-alpha.16` base
+   (`doc/troubleshooting/pnpr-base-move.md`).
 - Packing reuses the `npm-release.yml` install override `--config.dedupe-direct-deps=false`
    (`doc/troubleshooting/pnpm-pack-dedupe-direct-deps.md`).
    Superseded 2026-09-15:

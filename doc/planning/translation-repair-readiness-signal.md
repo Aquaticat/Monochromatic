@@ -337,6 +337,28 @@ this section is the readiness reading of it.
   The rotation restarts at `zheermao101` on the build that lands the archive review fixes
   (B712 to B715 and their follow-ups)
   with a picture bench that two wet readers can corroborate.
+- It restarted on `2a336603bf`
+  (digest `sha256-tree-v1:5d4265dfab83…`),
+  the build that lifted the Gemma readers and landed a KaTeX shim;
+  the owner ruled that polished text wins ties and that reasons come before votes everywhere
+  ([the restart overview](translation-repair-openrouter-2026-09-03-2026-10-21-gemma-lift-restart.md)).
+  `zheermao22` SETTLED in 79.0 min of pass:
+  the email and the opening quote recovered,
+  and Arts's letter regressed.
+  The read names three code classes
+  (K1:
+  NeuralWatt text calls carry no reasoning effort;
+  K2:
+  stream guards that cannot fire,
+  and comment lines counted as progress;
+  K3:
+  accepted minor claims never reach the polish writers)
+  and one design class
+  (K4:
+  the composite refuses line-count changes).
+  The fixes are in progress,
+  and the rotation restarts at `zheermao23` on the build that lands them.
+  `CuspariaKLSY22` SETTLED (read running) and `XingZ6017` is running.
 - The entries never run on a recent build are the rest of the 92-entry corpus.
   The owner's rule stands:
   "We never ever need a all 92 entries launch";

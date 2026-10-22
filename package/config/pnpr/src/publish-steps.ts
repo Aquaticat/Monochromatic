@@ -294,9 +294,9 @@ export async function publishTarball(
   },
 ): Promise<void> {
   /**
-   Named hosted registry URL.
+   Named hosted registry URL under the ecosystem prefix the 0.1.0-alpha.16 base mounts npm at.
    */
-  const registry = new URL(`${origin}/~${target.registryName}/`,);
+  const registry = new URL(`${origin}/npm/~${target.registryName}/`,);
   /**
    Per-run npm userconfig referencing the token through the environment, so it never reaches disk.
    */
