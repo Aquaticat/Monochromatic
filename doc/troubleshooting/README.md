@@ -269,7 +269,7 @@ Bash shell and CLI tool quirks that cause confusing behavior:
 
 - `2>&1 > file` splits stderr and stdout instead of merging them,
    producing interleaved output that misrepresents execution order
-- rg `--glob` finds files but `-l` with a content pattern does not -- content-vs-filename search confusion
+- rg `--glob` finds files but `-l` with a content pattern does not (content-vs-filename search confusion)
 - [Clack note formatter snapshots need newer nested `styleText()` behavior](clack-note-nested-styletext-node-floor.md)
 - [GitHub CLI implicit repository lookup invokes a PATH-shadowed Git wrapper](gh-implicit-repository-git-wrapper.md)
 - [GitHub CLI JSON readbacks rewrite literal control escapes](github-cli-json-control-escapes.md)

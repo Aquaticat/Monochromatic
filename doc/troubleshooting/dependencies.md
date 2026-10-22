@@ -1376,7 +1376,7 @@ Both modules are re-exported from the package's barrel:
    `export { SettingsManager } from "./core/settings-manager.js";`
 
 A `'proper-lockfile': '-'` override removes the package from the install but
-leaves the static import in `auth-storage.js` and `settings-manager.js` --
+leaves the static import in `auth-storage.js` and `settings-manager.js`:
 loading `@earendil-works/pi-coding-agent` from `package/pi-plugin/auto-mode` crashes
 with `Cannot find package 'proper-lockfile'` before any first-party code runs.
 

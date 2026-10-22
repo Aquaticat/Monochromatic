@@ -325,7 +325,7 @@ Source:
 
 > "`dependencies`,
 >  `peerDependencies`,
->  and `optionalDependencies` are **externalized** --
+>  and `optionalDependencies` are **externalized**:
 > they appear as `import` / `require` statements in the output and are not included in the bundle.
 > "
 
