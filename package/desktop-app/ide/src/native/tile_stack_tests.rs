@@ -423,6 +423,7 @@ fn a_tile_of_the_same_shape_reuses_its_textures_and_the_list_of_images() {
     let made = opened.source.borrow().gpu.tile_textures_made();
     let lists = SLICE_LISTS_SET.load(Ordering::SeqCst);
     let rendered = opened.source.borrow().gpu.tiles_rendered();
+    let scenes = opened.source.borrow().gpu.tile_textures_rendered();
     window.set_scroll_y(-9000.0);
     update_timers_and_animations();
     settled_tile(&opened);
@@ -430,6 +431,11 @@ fn a_tile_of_the_same_shape_reuses_its_textures_and_the_list_of_images() {
     assert!(
         opened.source.borrow().gpu.tiles_rendered() > rendered,
         "the tile was not drawn again"
+    );
+    // Every texture of the stack is drawn once for each tile.
+    assert_eq!(
+        opened.source.borrow().gpu.tile_textures_rendered() - scenes,
+        (opened.source.borrow().gpu.tiles_rendered() - rendered) * sizes.len() as u64
     );
     assert_eq!(opened.source.borrow().gpu.tile_texture_sizes(), sizes);
     assert_eq!(
