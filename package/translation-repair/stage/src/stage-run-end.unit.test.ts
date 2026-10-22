@@ -31,7 +31,7 @@ await describe({
             expect(endsTheRun({ error: new EveryProviderDryError({ measured: 'every meter dry', },), },),).toBe(true,);
           },
         },),
-  
+
         it({
           name: 'ANSWERS NO FOR A SEAT THE ROUTER CANNOT SERVE, which is a lost seat on a bench that stands, and for any '
             + 'other failure or non-error thrown value',

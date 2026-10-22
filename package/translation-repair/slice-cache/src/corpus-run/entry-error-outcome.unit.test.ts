@@ -94,7 +94,7 @@ await describe({
             },
           },);
         },),
-  
+
         it({
           name: 'MAPS ORDINARY OPERATIONAL ERROR to resumable ERROR',
           fn: async () => {
@@ -136,7 +136,7 @@ await describe({
             expect(printed.lines.some(function incomplete(line,): boolean {
               return line.startsWith('TALLY Cat status=INCOMPLETE',);
             },),).toBe(true,);
-  
+
             expect(tallyCaughtEntry({
               entryId: 'Cat',
               error: new Error('transport failed',),
@@ -149,7 +149,7 @@ await describe({
             expect(told,).toEqual([dry,],);
           },
         },),
-  
+
         it({
           name: 'FILES THE REFUSAL ALL THE SAME when the run gave no hook to tell',
           fn: async (ctx) => {

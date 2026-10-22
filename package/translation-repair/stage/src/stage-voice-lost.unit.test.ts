@@ -53,7 +53,7 @@ await describe({
             ],);
           },
         },),
-  
+
         it({
           name: 'NAMES NOBODY when every model asked answered',
           fn: async () => {
@@ -84,7 +84,7 @@ await describe({
             },),).toStrictEqual(['stage-quorum-unmet (critic 1/3)',],);
           },
         },),
-  
+
         it({
           name: 'SAYS THE ROSTER WAS INCOMPLETE when quorum was met with a voice missing, and nothing when every asked '
             + 'model answered',
