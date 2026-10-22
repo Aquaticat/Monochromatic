@@ -345,3 +345,89 @@ a target that fails leaves no release at all.
 `gh release view monochromatic-lint-v0.1.0` lists the archives,
 and `cargo binstall monochromatic-lint` in a disposable container installs the prebuilt binary,
 which lints a small Markdown and Rust fixture.
+
+## monochromatic-nested-wayland-session releases after the first publication
+
+Status:
+TODO,
+owner go-ahead needed for the first real run of the release jobs
+([`doc/decision/nested-wayland-session-releases.md`](../decision/nested-wayland-session-releases.md)).
+
+The crate has been on crates.io since 0.1.0,
+so Trusted Publishing needs no setup.
+This section covers cutting a new version with its Linux archives,
+using the jobs `nws-detect`,
+`nws-publish-crate`,
+`nws-release-state`,
+`nws-build-binary` and `nws-create-release`.
+
+### Prove the release targets build
+
+1. Dispatch a dry run from the branch that holds the change
+   (a dispatch from a branch other than `main` works because the workflow file exists on it):
+
+   ```bash
+   gh workflow run cargo-publish.yml --ref <branch> -f crate=monochromatic-nested-wayland-session -f dry-run=true
+   ```
+
+2. Open the run.
+   Expected outcome:
+   `nws-release-state` logs `Tag monochromatic-nested-wayland-session-v<version> already exists` for a version
+   that is already released,
+   and `Tag ... does not exist yet.` for a new one.
+   `nws-build-binary` runs for both targets either way,
+   and both pass `Smoke-run the binary` (the log prints equal `got:` and `want:` lines)
+   and `Verify the archive`.
+   `Attest binary provenance`,
+   `nws-create-release` and the crates.io authentication stay skipped.
+3. Download the artifacts `nws-bin-x86_64-unknown-linux-gnu` and `nws-bin-aarch64-unknown-linux-gnu`
+   from the run page within one day.
+   Expected outcome:
+   each holds one `monochromatic-nested-wayland-session-<version>-<target>.tar.gz`
+   whose directory holds the binary,
+   `README.md` and `LICENSES/`.
+
+### Cut the release
+
+1. Bump `version` in `package/cli/nested-wayland-session/Cargo.toml` and push to `main`,
+   or dispatch the workflow with **dry-run** unchecked for a version whose tag does not exist.
+   `nws-detect` compares the version before and after the push,
+   so a push that leaves it unchanged runs the detect job and nothing else.
+2. Expected outcome:
+   `nws-publish-crate` uploads the crate (or logs that the version is already on crates.io),
+   the two builds attest their archives,
+   and `nws-create-release` creates `monochromatic-nested-wayland-session-v<version>` once,
+   with two archives and `monochromatic-nested-wayland-session-<version>-sha256sums.txt`.
+3. Check the release:
+
+   ```bash
+   gh release view monochromatic-nested-wayland-session-v<version> --json assets --jq '.assets[].name'
+   ```
+
+   Expected outcome:
+   three names,
+   the two archives and the checksums file.
+   Then download one archive and run `sha256sum --check` against the checksums file
+   and `gh attestation verify <archive> --repo Aquaticats/Monochromatic`.
+4. Check discovery in a disposable directory:
+
+   ```bash
+   cargo binstall --dry-run --no-confirm --disable-strategies compile,quick-install \
+     monochromatic-nested-wayland-session@<version>
+   ```
+
+   Expected outcome:
+   the output ends with `has been downloaded from github.com`.
+
+### If a run fails
+
+The release is immutable,
+so it either exists with every asset or does not exist.
+A real run for a version whose tag exists skips the build and the release without failing:
+that is the expected result of re-running a finished release.
+If a build or smoke step failed before the release was created,
+fix the cause and re-run;
+the tag is free.
+If a release was created with a wrong asset,
+it cannot be repaired and its tag name cannot be reused,
+so publish the next patch version.
