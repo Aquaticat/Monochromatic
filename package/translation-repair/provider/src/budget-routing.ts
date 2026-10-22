@@ -90,6 +90,27 @@ export type NeuralWattReturn =
 const WHOLE_SECOND_MILLIS = '.000';
 
 /**
+ The opening clause about NeuralWatt, which says only what the run knows of it: spent when a day start is decided, refused
+ until one is learned when none is, and absent when NeuralWatt is off and so has no energy to be out of.
+
+ @param day - what the run knows of NeuralWatt's day
+
+ @returns A clause ending in a comma and a space, or nothing for an off provider
+
+ @example
+ ```ts
+ openingClauseOf({ day: { kind: 'off', }, },); // => ''
+ ```
+ */
+function openingClauseOf({ day, }: { readonly day: NeuralWattReturn; },): string {
+  if (day.kind === 'off')
+    return '';
+  if (day.kind === 'unanchored')
+    return 'NeuralWatt is refused until its day start is learned, ';
+  return 'NeuralWatt has no free daily energy left, ';
+}
+
+/**
  The clause saying when NeuralWatt's free energy returns, one of three fixed sentences with at most a time of day.
 
  @param day - what the run knows of NeuralWatt's day
@@ -99,7 +120,7 @@ const WHOLE_SECOND_MILLIS = '.000';
  @example
  ```ts
  returnClauseOf({ day: { kind: 'at', msOfDay: 69_308_000, }, },);
- // => 'NeuralWatt\'s free energy returns when its day starts again, at 19:15:08 UTC, the day start decided at the start of this run; '
+ // => 'NeuralWatt\'s free energy returns when its day starts again, at 19:15:08 UTC, the day start this run decided or learned; '
  ```
  */
 function returnClauseOf({ day, }: { readonly day: NeuralWattReturn; },): string {
@@ -121,8 +142,8 @@ function returnClauseOf({ day, }: { readonly day: NeuralWattReturn; },): string 
       -WHOLE_SECOND_MILLIS.length,
     )
     : withMillis;
-  return `NeuralWatt's free energy returns when its day starts again, at ${timeOfDay} UTC, the day start decided at `
-    + 'the start of this run; ';
+  return `NeuralWatt's free energy returns when its day starts again, at ${timeOfDay} UTC, the day start this run `
+    + 'decided or learned; ';
 }
 
 /**
@@ -142,7 +163,7 @@ function returnClauseOf({ day, }: { readonly day: NeuralWattReturn; },): string 
 export class EveryProviderDryError extends Error {
   /**
    Declares this message safe to forward: fixed sentences plus, at most, the
-   meter states and hold lengths the decision was made on, never content.
+   meter states and hold lengths the decision was made on and NeuralWatt's day-start time of day, never content.
    */
   readonly messageNamesOnly: true = true;
 
@@ -197,7 +218,7 @@ export class EveryProviderDryError extends Error {
       : 'Xiaomi, once refused for payment, is read again only after one of its calls settles, so a top-up is '
         + 'seen on the next launch; ';
     super(
-      'Every provider is out of budget at once: NeuralWatt has no free daily energy left, '
+      `Every provider is out of budget at once: ${openingClauseOf({ day: neuralwatt, },)}`
         + 'Synthetic has no weekly credit left (or no five-hour request left, on a reply that still carries '
         + 'that window), Charm Hyper has no balance left, Amazon Bedrock has no credit left short of the owner\'s '
         + `card, DeepSeek has no balance left (or says its account is unavailable), ${xiaomiCause}`

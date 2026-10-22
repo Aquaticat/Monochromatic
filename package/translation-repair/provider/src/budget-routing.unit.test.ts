@@ -702,8 +702,8 @@ await describe({
               },
             },);
             expect(message,).toContain(
-              'NeuralWatt\'s free energy returns when its day starts again, at 19:15:08 UTC, the day start decided at '
-                + 'the start of this run;',
+              'NeuralWatt\'s free energy returns when its day starts again, at 19:15:08 UTC, the day start this run '
+                + 'decided or learned;',
             );
             expect(message,).not.toContain('00:00 UTC',);
           },

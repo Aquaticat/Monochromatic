@@ -275,10 +275,6 @@ export async function readBudgetsPastHolds(
    */
   const firstRead = await budgets.read({ signal, },);
   /**
-   What the run knows of NeuralWatt's day, for a refusal that ends the run to state the return time from.
-   */
-  const neuralwatt = budgets.neuralwattReturn?.();
-  /**
    What each provider's budget looks like right now.
    */
   const first = dryForTheModelAsked({
@@ -329,6 +325,11 @@ export async function readBudgetsPastHolds(
    */
   const shortest = shortestHold({ holds, },);
   if (shortest === 0) {
+    /**
+     What the run knows of NeuralWatt's day after the reading this refusal is made on, for the refusal that ends the
+     run to state the return time from.
+     */
+    const neuralwatt = budgets.neuralwattReturn?.();
     throw new EveryProviderDryError({
       measured: measuredAt({
         view: first,
@@ -385,6 +386,12 @@ export async function readBudgetsPastHolds(
     dry: secondRead,
   },);
   if (everyProviderDry({ view: second, },)) {
+    /**
+     What the run knows of NeuralWatt's day after the second reading, which is where its keeper learns a day start the
+     first reading could not give: read here and not carried from before the wait, so a start learned meanwhile is
+     stated and the refusal does not say that none can be.
+     */
+    const neuralwatt = budgets.neuralwattReturn?.();
     throw new EveryProviderDryError({
       measured: `after waiting ${String(shortest,)}ms, ${
         measuredAt({
