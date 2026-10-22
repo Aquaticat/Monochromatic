@@ -488,14 +488,14 @@ so it is counted neither lost nor kept.
 ### Recurrence of earlier findings
 
 - The comment-only stream (K2):
-  recurred,
+  present again on the unfixed build,
   52 mercury cuts (baseline before the fixes of `e336d8efc7`).
 - The cap reading with no content on NeuralWatt (K1):
   recurred in text calls,
   13 events;
   the picture call was fixed by `B719`.
 - Lost accepted minor claims (K3):
-  recurred,
+  present again on the unfixed build,
   6 verified (baseline before the fixes of `e336d8efc7`).
 - The archive block review (K4):
   not exercised.
