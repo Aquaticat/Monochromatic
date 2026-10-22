@@ -37,7 +37,8 @@ export component AppWindow inherits Window {
     min-height: 320px;
     // The surface the window is drawn on is a texture of the GPU, and the toolkit's surface configuration panics when
     // a side passes the device's limit, so the window is never larger than that in physical pixels, at any scale.
-    in property <int> texture-limit: 8192;
+    // Until the device's own side is told, the most common one holds.
+    in property <int> texture-limit: 16384;
     max-width: root.texture-limit * 1phx;
     max-height: root.texture-limit * 1phx;
     background: Surface.background;
