@@ -14,8 +14,15 @@ import {
   it,
 } from '@monochromatic-dev/module-test/ts';
 
-import type { RosterModelId, } from '@monochromatic-dev/translation-repair-shared-contract';
-import { warnLinesDuring, } from '@monochromatic-dev/translation-repair-typography/ts/console-warn-lines.test-fixture.ts';
+import {
+  resetRunSpend,
+  type RosterModelId,
+  runSpendUsd,
+} from '@monochromatic-dev/translation-repair-shared-contract';
+import {
+  infoLinesDuring,
+  warnLinesDuring,
+} from '@monochromatic-dev/translation-repair-typography/ts/console-warn-lines.test-fixture.ts';
 import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import {
   exchangeFailureLogText,
@@ -195,6 +202,80 @@ await describe({
 
         expect(outcome.kind,).toBe('refusal-shaped',);
         expect(exchanges.length,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'WRITES ONE SPEND LINE PER CALL IN USD FROM THE FOUR COUNTS, named by the card and not by the wire model: '
+        + '100 plain, 50 written and 850 read prompt tokens and 10 completion tokens on a Haiku effort card are a '
+        + '1,000-token prompt that cost 0.00002975, with 850 cached, and the run meter takes the same figure',
+      fn: async () => {
+        resetRunSpend();
+        const { transport, } = scripted({
+          replies: [{
+            status: 200,
+            bodyText: claudeStreamOf({
+              text: '{"spot":"sunbeam"}',
+              stopReason: 'end_turn',
+              usage: { input: 100, cacheWrite: 50, cacheRead: 850, output: 10, },
+            }),
+          },],
+        },);
+
+        const { logged, } = await infoLinesDuring({
+          run: async () =>
+            await askCat({
+              client: createClaudeClient({ apiKey: CLAUDE_CAT_KEY, transport, retryPolicy: ONE_QUICK_RETRY, },),
+              modelId: 'claude-haiku-5-5-effort-low',
+            },),
+        },);
+
+        /**
+         The one SPEND line the call wrote.
+         */
+        const spendLines = logged.filter(function isSpend(line,): boolean {
+          return line.includes('SPEND ',);
+        },);
+        expect(spendLines.length,).toBe(1,);
+        const [line = '',] = spendLines;
+        expect(line,).toContain('SPEND provider=anthropic model=claude-haiku-5-5-effort-low prompt=1000 completion=10 cost=',);
+        expect(line,).toContain(' cached=850',);
+        expect(Number(/ cost=(\S+)/u.exec(line,)?.[1],),).toBeCloseTo(0.00002975, 10,);
+        expect(runSpendUsd({ provider: 'anthropic', },),).toBeCloseTo(0.00002975, 10,);
+      },
+    },),
+
+    it({
+      name: 'WRITES THE SPEND LINE OF A REFUSAL TOO, since a mid-stream decline bills the tokens it spent',
+      fn: async () => {
+        resetRunSpend();
+        const { transport, } = scripted({
+          replies: [{
+            status: 200,
+            bodyText: claudeStreamOf({
+              text: 'The cat is on the',
+              stopReason: 'refusal',
+              stopDetails: { type: 'refusal', category: 'bio', explanation: 'declined', },
+              usage: { input: 1_000, cacheWrite: 0, cacheRead: 0, output: 100, },
+            }),
+          },],
+        },);
+
+        const { logged, } = await infoLinesDuring({
+          run: async () =>
+            await warnLinesDuring({
+              run: async () =>
+                await askCat({
+                  client: createClaudeClient({ apiKey: CLAUDE_CAT_KEY, transport, retryPolicy: ONE_QUICK_RETRY, },),
+                  modelId: 'claude-sonnet-5-5',
+                },),
+            },),
+        },);
+
+        expect(logged.some(function spendOfRefusal(line,): boolean {
+          return line.includes('SPEND provider=anthropic model=claude-sonnet-5-5 prompt=1000 completion=100 cost=',);
+        },),).toBe(true,);
+        // 1,000 plain tokens at 2 and 100 completion tokens at 10 USD a million.
+        expect(runSpendUsd({ provider: 'anthropic', },),).toBeCloseTo(0.003, 10,);
       },
     },),
   ],
