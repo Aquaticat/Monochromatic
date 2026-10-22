@@ -15,7 +15,10 @@ export {
   buildClaudeBody,
   ClaudePrefillError,
 } from './claude-body.ts';
-export { claudeSchemaOf, } from './claude-schema.ts';
+export {
+  ClaudeSchemaKeywordError,
+  claudeSchemaOf,
+} from './claude-schema.ts';
 export {
   CLAUDE_PACE_WINDOW_MS,
   CLAUDE_REQUESTS_PER_MINUTE,

@@ -292,14 +292,15 @@ await describe({
             schema: {
               type: 'object',
               properties: {
-                spot: { type: 'string', },
-                hours: { type: 'integer', },
+                spot: { type: 'string', description: '{minLength: 1, maxLength: 40}', },
+                hours: { type: 'integer', description: '{minimum: 1, maximum: 24, multipleOf: 1}', },
                 naps: {
                   type: 'array',
+                  description: '{minItems: 1, maxItems: 9, uniqueItems: true}',
                   items: {
                     type: 'object',
                     properties: {
-                      paragraph: { type: 'integer', },
+                      paragraph: { type: 'integer', description: '{minimum: 1, exclusiveMinimum: 0}', },
                       inner: {
                         type: 'object',
                         properties: { whisker: { type: 'string', enum: ['left', 'right',], }, },

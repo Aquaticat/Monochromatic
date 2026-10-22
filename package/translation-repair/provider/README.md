@@ -353,8 +353,17 @@ and one ephemeral cache breakpoint on the system block.
 `claude-schema.ts` narrows each stage schema to what structured outputs accept before it is sent:
 `additionalProperties: false` on every object,
 and the numeric,
-string and array bounds dropped,
+string and array bounds dropped
+and told to the model in the field's description (`{minimum: 1}`),
 which the reply guards of the stages still enforce.
+A keyword outside the supported list that no SDK strips (`oneOf`,
+`not`,
+`if`,
+`pattern` and the like) throws `ClaudeSchemaKeywordError`,
+naming the keyword and its path,
+instead of answering HTTP 400 on every call of the stage.
+A Claude call's deadline is the larger of the caller's and `claudeCallDeadlineMs` of its ceiling
+(460,000 ms at the 32,000-token cap).
 `claude-stream-facts.ts` reads the stop reason,
 a refusal's category and the four usage counts,
 `claude-cost.ts` prices them in USD (`SPEND` line),

@@ -141,8 +141,8 @@ await describe({
 
     it({
       name: 'REFUSES A KEYWORD THE FEATURE DOES NOT SUPPORT AND NO SDK STRIPS (R10), by a named error that names the '
-        + 'keyword and where it sits, so a stage schema that writes oneOf, not, if, then, else, pattern, '
-        + 'patternProperties, propertyNames, contains or prefixItems fails when its body is built and not with HTTP 400 '
+        + 'keyword and where it sits, so a stage schema that writes oneOf, not, if, pattern, '
+        + 'patternProperties, contains or prefixItems fails when its body is built and not with HTTP 400 '
         + 'at the first live call',
       fn: async () => {
         /**
@@ -165,7 +165,7 @@ await describe({
           },
           {
             keyword: 'if',
-            schema: { type: 'object', properties: { bowl: { if: { type: 'string', }, then: { type: 'string', }, }, }, },
+            schema: { type: 'object', properties: { bowl: { if: { type: 'string', }, }, }, },
             path: 'root.bowl',
           },
           {
