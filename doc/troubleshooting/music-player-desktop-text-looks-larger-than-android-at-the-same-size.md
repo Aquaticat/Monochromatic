@@ -183,8 +183,34 @@ Wikipedia is not narrower than the app by this route.
 - Material's stock scale adds tracking: `bodyLarge` 16 sp with 0.5 sp letter spacing, `titleMedium` 0.2 sp,
   `bodyMedium` 0.2 sp, `labelLarge` 0.1 sp, `bodySmall` 0.4 sp, `titleLarge` 0 sp.
   The desktop uses no tracking; Android text of the same size is therefore wider per line than the desktop's.
-- Roboto against Inter metric proportions are in the research note `doc/research/text-size-perception-sources.md`
-  (when the note lands; see "Not exercised").
+- Metrics read from the font files (`doc/research/text-size-perception-sources.md`, default instances, sources and
+  hashes there): x-height over em is 0.5459 for Inter, 0.5283 for Roboto 3 and for Liberation Sans, 0.5360 for Noto
+  Sans; cap height is 0.7275 for Inter and 0.7109 for Roboto; the mean lowercase advance is 0.5363 em for Inter and
+  0.4992 for Roboto (Inter 7.4 percent wider).
+  Inter's x-height is 3.3 percent taller than Roboto's.
+  Which Roboto build the Android app draws at runtime was not determined.
+- The CSS Fonts Level 5 text for `font-size-adjust` says that for a given font size the apparent size varies with the
+  design, and names the lowercase height as a determining factor; Legge and Bigelow (Journal of Vision 2011) report
+  that faces with larger x-height fractions appear bigger at the same body size, "not proven by rigorous laboratory
+  studies".
+  The `font-size-adjust` formula would draw a 16 px Inter run at 15.48 px to match Roboto's x-height, a 3.2 percent
+  cut against the 12.5 percent the human chose.
+
+### Why the references draw those faces
+
+From the sources in the research note (pinned commits there):
+- Chromium's Linux default for the generic `sans-serif` is the family name `Arial`
+  (`chrome/app/resources/locale_settings_linux.grd`, lines 168 to 171), resolved through fontconfig;
+  on this machine `fc-match Arial` returns Liberation Sans and `fc-match sans-serif` returns Noto Sans.
+  That is why Chromium draws Wikipedia's body in Liberation Sans here.
+- Firefox on Linux maps `sans-serif` to whatever fontconfig returns for it
+  (`gfx/thebes/gfxFcPlatformFontList.cpp`, lines 2362 to 2366), which is Noto Sans here.
+- Chromium applies `opsz` automatically for web fonts: `font_custom_platform_data.cc` lines 241 to 245 push an `opsz`
+  coordinate equal to the adjusted font size when `font-optical-sizing` is `auto`.
+  Inter's own FAQ gives x-height 1118 units at `opsz` 14 and 1056 at `opsz` 32 of 2048, 5.5 percent lower.
+  So a page that loads Inter as a web font at 20 px or more is drawn with a lower x-height than the app's `opsz` 14
+  instance; the path for a system-installed variable font was not traced in Chromium source, and the measurement in
+  this doc shows it ignores `opsz` for the local font.
 
 ### The within-app scale
 
@@ -211,6 +237,14 @@ All measured on this machine.
     14 px 887; dark theme.
   - `fourthpost`: 19.2 px for all body text, light text `rgb(238, 238, 238)` on `rgb(24, 24, 24)`.
 - Continuous prose is 16 px or more on every page, and the non-prose text is 13.6 px to 14.4 px.
+- The platforms' own defaults, from their documentation and source (the research note has the quotes):
+  Windows 11 Body 14 epx and Caption 12 epx; GNOME's default font Adwaita Sans 11 pt, 14.67 px, with libadwaita list
+  subtitles at 14.67 divided by 1.2, 12.22 px; KDE's default 10 pt, 13.33 px, with Kirigami list titles at the default
+  font and subtitles at 8 pt, 10.67 px; macOS body 13 pt (17.33 px by the 4/3 convention).
+  Material 3 list headlines are 16 sp and supporting text 14 sp, in dp units of 0.1588 mm.
+  The three desktop environments with a stated default put body and list text at 13.3 to 14.7 px.
+  No platform document found states a viewing distance in numbers except the CSS reference pixel (28 inches) and
+  Microsoft's 10 feet for a TV.
 
 ### What the human's two-pane screenshot and the phone captures show
 
@@ -320,14 +354,17 @@ Measured and null are results of an instrument; speculation is not.
   system font (positive control moved width, `opsz` did not).
 - Display scaling: null. 0.2656 mm per logical pixel against the CSS reference pixel's 0.26 mm.
 - Face difference between the references and the app: partial measured. Liberation Sans is 5.7 percent narrower than
-  Inter in the same pangram; Noto Sans is not. It covers about half of the 2 px for the pages drawn in Liberation Sans
-  and none of it for Firefox.
+  Inter in the same pangram and 3.3 percent lower in x-height; Noto Sans is not. The width covers about half of the
+  2 px for the pages drawn in Liberation Sans, the x-height about a quarter, and neither applies to Firefox.
+  In the human's own test the faces were not told apart at 16 px (see "The human's perception test, round 1").
 - Equal physical size across phone and desktop: not what the human wants. The em of 16 px is 1.34 times the phone's
   16 sp em, and 14 px is already larger than the phone's 16 sp em (3.72 against 3.17 mm).
 - Size class by role (a desktop list or label row at 14 px, prose at 16 px and above): speculation, the best fit
   to the measurements of the pages and of the KDE font, and not tested on the human.
-- Light text on a dark ground looks larger or bolder (irradiation): speculation, no instrument here; the research note
-  looks for a primary source.
+- Light text on a dark ground looks larger or bolder (irradiation): speculation; no primary source found.
+  The only adjacent result is Westheimer 2007 on black-white border position (about 0.4 minutes of arc), which does not
+  mention text, and the legibility studies (Piepenbrock 2014, Dobres 2016 and 2017) report a dark-on-light advantage
+  that grows as characters get smaller, which concerns legibility and not perceived size.
 - The within-app hierarchy: speculation, see the section "The within-app scale".
 - Mixed-script lines: the desktop's CJK glyphs come from Droid Sans Fallback under `LANG=en_US.UTF-8` while every
   reference uses Noto Sans CJK; the effect on the feel is speculation, and the five texts the human named are Latin.
