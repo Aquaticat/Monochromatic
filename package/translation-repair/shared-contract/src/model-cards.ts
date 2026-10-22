@@ -529,8 +529,8 @@ export const MODEL_CARDS: Readonly<Record<RosterModelId, ModelCard>> = {
       // 2026-09-28).
       rawCharsPerToken: 0.9,
       // FIRST TEXT WITHIN 90 SECONDS (ledger B809, read on 2026-10-22 UTC).
-      // In XingZ6017, twenty-eight rounds waited 250 to 360 s on one stream
-      // of this model that sent only `: OPENROUTER PROCESSING` comment lines
+      // In XingZ6017, twenty-six rounds waited 250 to 360 s on a stream of
+      // this model (two rounds on two in a row) that sent only `: OPENROUTER PROCESSING` comment lines
       // (about 727 of them, first byte under a second, a gap never past a
       // second) until the gateway ended it with HTTP 502 at about 301 s; the
       // retry then answered in 5 to 9 s. Over the 24 pass logs on disk

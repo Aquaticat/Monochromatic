@@ -2,8 +2,8 @@
  Tests that an exchange can name its own first-content window and that the
  transport arms the stream guard with it.
 
- WHY: in `XingZ6017` twenty-eight rounds waited 250 to 360 seconds on one
- `inception/mercury-2.5` stream that sent `: OPENROUTER PROCESSING` comment
+ WHY: in `XingZ6017` twenty-six rounds waited 250 to 360 seconds on an
+ `inception/mercury-2.5` stream (two rounds on two in a row) that sent `: OPENROUTER PROCESSING` comment
  lines and no text, until the gateway ended it with HTTP 502 at about 301 s
  (ledger B809). The guard of ledger B804 cuts such a stream at one window for
  every model, 180 s; Mercury's own streams that carried text all did so inside
