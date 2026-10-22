@@ -7,11 +7,13 @@ import type { ModelClient, } from '@monochromatic-dev/translation-repair-provide
 import {
   buildConsistencyMessages,
   canonicalBallotOf,
+  type ConsistencyBallot,
   type ConsistencyBallotWire,
   consistencyLabels,
   consistencyResponseFormat,
   type ConsistencySubject,
   type ConsistencyVoice,
+  readConsistencyBallotWire,
   usableConsistencyBallotFor,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
 import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
@@ -82,21 +84,25 @@ function voiceOf(
   },
 ): ConsistencyVoice {
   /**
+   The reply as the ballot the cache stores, which keeps the spelling it was stored under (ledger B762).
+   */
+  const heard = readConsistencyBallotWire({ wire: ballot, },);
+  /**
    The ballot with the shown labels; the ballot as heard when it names none, which the gather's guard has already refused.
    */
   const [shown,] = canonicalBallotOf({
-    ballot,
+    ballot: heard,
     labels,
   },);
   /**
    The ballot to keep.
    */
-  const kept = shown ?? ballot;
+  const kept = shown ?? heard;
   return {
     seat,
     reason: kept.reason,
     quotes: kept.quotes
-      .map(function quoteOf(entry,): ConsistencyBallotWire['quotes'][number] {
+      .map(function quoteOf(entry,): ConsistencyBallot['quotes'][number] {
         return {
           label: entry.label,
           quote: entry.quote,

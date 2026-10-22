@@ -175,7 +175,7 @@ async function rewritingChatJson<ValueT,>(request: ChatJsonRequest<ValueT>,): Pr
     },
     candidate_ballot: {
       best: 1,
-      reason: 'the rewrite purrs',
+      assessment: 'the rewrite purrs',
     },
   };
   if (!Object.hasOwn(replies, stage,))

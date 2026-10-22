@@ -131,7 +131,7 @@ function revisionReply({ translation, }: { readonly translation: string; },): st
   return JSON.stringify({
     resolution: 'revised',
     translation,
-    explanation: 'the paragraph is whole again',
+    translatorNote: 'the paragraph is whole again',
   },);
 }
 

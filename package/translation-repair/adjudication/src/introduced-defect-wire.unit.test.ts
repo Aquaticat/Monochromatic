@@ -15,6 +15,7 @@ import {
 import type { AdjudicatedIssue, } from '@monochromatic-dev/translation-repair-shared-contract';
 import {
   buildIntroducedDefectMessages,
+  INTRODUCED_DEFECT_RESPONSE_FORMAT,
   INTRODUCED_DEFECT_VERDICTS,
   isIntroducedDefectReportWire,
   isIntroducedDefectVerdict,
@@ -455,7 +456,7 @@ await describe({
                     severity: 'major',
                     evidence: 'The cat sleeps.',
                     omittedText: '',
-                    reason: 'the second clause is gone',
+                    verdictReason: 'the second clause is gone',
                   },
                 ],
               },),
@@ -469,7 +470,7 @@ await describe({
                     category: 'omission',
                     severity: 'major',
                     omittedText: '',
-                    reason: 'the second clause is gone',
+                    verdictReason: 'the second clause is gone',
                   },
                 ],
               },),
@@ -484,7 +485,7 @@ await describe({
                     severity: '',
                     evidence: '',
                     omittedText: '',
-                    reason: '',
+                    verdictReason: '',
                   },
                 ],
               },),
@@ -509,7 +510,7 @@ await describe({
               severity: 'minor',
               evidence: 'the cat hisses',
               omittedText: '',
-              reason: 'fixture',
+              verdictReason: 'fixture',
             };
 
             expect(isIntroducedDefectReportWire({ checks: [wellFormed,], },),).toBe(true,);
@@ -519,6 +520,58 @@ await describe({
             expect(isIntroducedDefectReportWire({
               checks: [{ ...wellFormed, region: '1', },],
             },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'REFUSES A CHECK THAT STILL SPELLS ITS REASON `reason`, since the reply key is `verdictReason` (ledger B762), '
+            + 'and the same check under the new name is accepted',
+          fn: async () => {
+            /**
+             Check whose fields are all well formed under the current spelling.
+             */
+            const current = {
+              region: 1,
+              verdict: 'uncertain',
+              category: '',
+              severity: '',
+              evidence: '',
+              omittedText: '',
+              verdictReason: '',
+            };
+            /**
+             The same check with the reason under the key it had before the rename.
+             */
+            const { verdictReason: reason, ...rest } = current;
+            expect(isIntroducedDefectReportWire({ checks: [current,], },),).toBe(true,);
+            expect(isIntroducedDefectReportWire({ checks: [{ ...rest, reason, },], },),).toBe(false,);
+          },
+        },),
+
+        it({
+          name: 'DECLARES AND REQUIRES THE KEYS OF A CHECK IN THE ORDER THEY SORT with the reason last (owner, 2026-10-21, '
+            + '"Reason first everywhere", whose exception keeps this wire reason last; ledger B732, B762)',
+          fn: async () => {
+            /**
+             The schema as JSON, so a declared order shows up as the order of substrings.
+             */
+            const schema = JSON.stringify(INTRODUCED_DEFECT_RESPONSE_FORMAT.json_schema.schema,);
+            expect(schema,).toContain(
+              '"required":["category","evidence","omittedText","region","severity","verdict","verdictReason"]',
+            );
+            /**
+             Where each declared key stands, in the order the keys sort.
+             */
+            const places = ['category', 'evidence', 'omittedText', 'region', 'severity', 'verdict', 'verdictReason',]
+              .map(function placeOf(key,): number {
+                return schema.indexOf(`"${key}":{`,);
+              },);
+            expect(places.every(function declared(place,): boolean {
+              return place > 0;
+            },),).toBe(true,);
+            expect(places,).toEqual(places.toSorted(function ascending(left, right,): number {
+              return left - right;
+            },),);
           },
         },),
       ],

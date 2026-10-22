@@ -34,7 +34,7 @@ const NO_DEFECT_FOUND = {
   severity: '',
   evidence: '',
   omittedText: '',
-  reason: '',
+  verdictReason: '',
 };
 
 /**

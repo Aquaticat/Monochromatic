@@ -26,6 +26,11 @@ import {
   type ProviderName,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { StatedRefusalError, } from '@monochromatic-dev/translation-repair-glossary/ts';
+import {
+  isProviderOff,
+  type ProviderOff,
+  PROVIDERS_LEFT_OFF,
+} from './providers-off.ts';
 import { idListFlag, } from './command-flags.ts';
 import type { ReadsFlag, } from './command-line-types.ts';
 
@@ -84,7 +89,7 @@ export class RequiredProviderError extends StatedRefusalError {
       reason,
     }: {
       readonly provider: RequiredProvider;
-      readonly reason: 'budget dry' | 'key missing' | 'meter unavailable';
+      readonly reason: 'budget dry' | 'key missing' | 'left off' | 'meter unavailable';
     },
   ) {
     super({ says: `required provider ${provider} is not ready: ${reason}`, },);
@@ -218,6 +223,9 @@ async function gateProvider(
 
  @param signal - meter cancellation
 
+ @param off - providers left off, which no run asks and so none can be required wet; the owner's
+ rulings by default (`PROVIDERS_LEFT_OFF`)
+
  @throws {@link RequiredProviderError} before model call when requirement fails
 
  @throws The caller's reason when `signal` aborts and the first required
@@ -236,15 +244,29 @@ export async function assertRequiredProvidersReady(
     env,
     transport,
     signal,
+    off = PROVIDERS_LEFT_OFF,
   }: {
     readonly required: readonly RequiredProvider[];
     readonly env: Readonly<NodeJS.ProcessEnv>;
     readonly transport: ModelTransport;
     readonly signal: AbortSignal;
+    readonly off?: readonly ProviderOff[];
   },
 ): Promise<void> {
   if (required.length === 0)
     return;
+  // A PROVIDER LEFT OFF IS REFUSED BEFORE ITS KEY OR ITS METER IS LOOKED AT: the run client reads its key as
+  // unset and asks it nothing, so a gate that passed it would print `status=wet` for a provider the run never asks.
+  for (const provider of required) {
+    if (isProviderOff({
+      off,
+      provider,
+    },))
+      throw new RequiredProviderError({
+        provider,
+        reason: 'left off',
+      },);
+  }
   /**
    Each required provider's key, read without exposing its value.
    */

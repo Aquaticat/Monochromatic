@@ -39,6 +39,7 @@ import {
   ENTRIES_WITH_A_GAP,
   NO_KEY_REFUSAL,
   pinLine,
+  PROVIDERS_OFF_LINES,
   REFUSED_AS_STATED,
   runPass,
   startLine,
@@ -130,6 +131,7 @@ await describe({
               },),
               WRITER_GRACE_BUILT_IN,
               pinLine({ clone, },),
+              ...PROVIDERS_OFF_LINES,
               '',
             ].join('\n',),);
             expect(run.stderr,).toBe(NO_KEY_REFUSAL,);
@@ -193,6 +195,7 @@ await describe({
               + 'attempt reports no progress, and the queue drops the entry as stalled after its second try. '
               + 'Raise the ceiling above one exchange to buy anything, or keep it here to exercise the stall '
               + 'path deliberately.',
+              ...PROVIDERS_OFF_LINES,
               '',
             ].join('\n',),);
             expect(run.stderr,).toBe(NO_KEY_REFUSAL,);

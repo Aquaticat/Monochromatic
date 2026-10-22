@@ -24,7 +24,7 @@ await describe({
   name: 'the gates ask for their reason before their vote',
   children: [
     it({
-      name: 'ASKS THE CONSOLIDATION GATE for the reason first, before the choice',
+      name: 'ASKS THE CONSOLIDATION GATE for the reason first, before the verdict',
       fn: async () => {
         /** The user half of one gate sheet. */
         const user = buildConsolidateGateMessages({
@@ -38,13 +38,13 @@ await describe({
         },).at(1,)?.content ?? '';
         expectReasonBeforeVoteInText({
           text: user.slice(user.indexOf('Return JSON',),),
-          reason: 'reason one sentence',
-          vote: 'choice one of',
+          reason: 'assessment one sentence',
+          vote: 'verdict one of',
         },);
       },
     },),
     it({
-      name: 'ASKS THE POLISH GATE for the reason first, before the choice',
+      name: 'ASKS THE POLISH GATE for the reason first, before the verdict',
       fn: async () => {
         /** The user half of one gate sheet. */
         const user = buildConsolidationPolishGateMessages({
@@ -59,8 +59,8 @@ await describe({
         },).at(1,)?.content ?? '';
         expectReasonBeforeVoteInText({
           text: user.slice(user.indexOf('Return JSON',),),
-          reason: 'reason one sentence',
-          vote: 'choice one of',
+          reason: 'assessment one sentence',
+          vote: 'verdict one of',
         },);
       },
     },),

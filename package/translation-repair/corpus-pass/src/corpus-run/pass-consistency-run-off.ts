@@ -6,8 +6,10 @@ import {
   canonicalChoiceOf,
   consistencyChoiceResponseFormat,
   type ConsistencyChoiceVoice,
+  type ConsistencyChoiceWire,
   type ConsistencyRendering,
   type ConsistencySubject,
+  readConsistencyChoiceWire,
   usableChoiceFor,
 } from '@monochromatic-dev/translation-repair-consistency/ts';
 import type { SliceCache, } from '@monochromatic-dev/translation-repair-translate-floor/ts';
@@ -90,10 +92,7 @@ export function choiceRecordOf(
     readonly quorum: number;
     readonly voices: readonly {
       readonly modelId: RosterModelId;
-      readonly value: {
-        readonly reason: string;
-        readonly choice: string;
-      };
+      readonly value: ConsistencyChoiceWire;
     }[];
     readonly findings: readonly string[];
     readonly labels?: readonly string[];
@@ -107,19 +106,23 @@ export function choiceRecordOf(
       value,
     },): ConsistencyChoiceVoice {
       /**
+       The reply as the choice the cache stores, which keeps the spelling it was stored under (ledger B762).
+       */
+      const heard = readConsistencyChoiceWire({ wire: value, },);
+      /**
        The choice with the shown label it names, as a list of zero or one; none where the labels are not given or the choice
        names none, which the gather's guard has already refused.
        */
       const [shown,] = (labels === undefined)
         ? []
         : canonicalChoiceOf({
-          ballot: value,
+          ballot: heard,
           labels,
         },);
       return {
         seat: modelId,
-        reason: value.reason,
-        choice: shown?.choice ?? value.choice,
+        reason: heard.reason,
+        choice: shown?.choice ?? heard.choice,
       };
     },),
     findings,

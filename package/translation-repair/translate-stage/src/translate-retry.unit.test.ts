@@ -257,7 +257,7 @@ function scriptedRig(
               content,
               needle: wanted,
             },),
-          reason: 'fixture',
+          assessment: 'fixture',
         };
         if (!request.validate(ballot,))
           throw new Error('the fixture ballot failed the wire guard',);
@@ -762,7 +762,7 @@ await describe({
              */
             const ballot: unknown = {
               best: 1,
-              reason: 'fixture',
+              assessment: 'fixture',
             };
             if (!request.validate(ballot,))
               throw new Error('the fixture ballot failed the wire guard',);

@@ -119,7 +119,7 @@ function translatorsClient({ heard, }: { readonly heard: boolean; },): ModelClie
           ? {
             resolution: 'as-intended',
             translation: '',
-            explanation: 'the narration is deliberate',
+            translatorNote: 'the narration is deliberate',
           }
           : undefined;
       if ((value === undefined) || (!request.validate(value,)))

@@ -287,7 +287,7 @@ function recordingClient(
          */
         const ballot: unknown = {
           best: 1,
-          reason: 'it keeps a line for a line',
+          assessment: 'it keeps a line for a line',
         };
         if (!request.validate(ballot,))
           throw new Error('scripted ballot failed the wire guard',);

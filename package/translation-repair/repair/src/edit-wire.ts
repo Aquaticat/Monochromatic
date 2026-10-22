@@ -117,13 +117,14 @@ export const EDITOR_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
           items: {
             type: 'object',
             required: [
-              'region',
               'newText',
+              'region',
             ],
             additionalProperties: false,
+            // DECLARED IN THE ORDER THE KEYS SORT (ledger B762), since no ruling fixes the order of the two.
             properties: {
-              region: { type: 'integer', },
               newText: { type: 'string', },
+              region: { type: 'integer', },
             },
           },
         },

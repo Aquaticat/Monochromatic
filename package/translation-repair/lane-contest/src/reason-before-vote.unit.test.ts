@@ -37,10 +37,17 @@ await describe({
         for (const asksArchive of [true, false,]) {
           /** Response format of one contest. */
           const format = contestResponseFormat({ schemaName: 'cat_contest', asksArchive, },);
-          expectReasonFirstInSchema({ format, reason: 'reason', vote: 'choice', },);
+          expectReasonFirstInSchema({ format, reason: 'assessment', vote: 'verdict', },);
           /** Declared names. */
           const names = propertyOrderOf({ format, },);
-          expect(names.at(-1,),).toBe(asksArchive ? 'archive' : 'choice',);
+          expect(names.at(-1,),).toBe(asksArchive ? 'verdictOnArchive' : 'verdict',);
+          // The keys are declared in the order they sort (ledger B762), the archive answer among them, which the scan
+          // of `source-scan` passes over because the contest spreads it into the literal.
+          expect(names,).toEqual(
+            asksArchive
+              ? ['assessment', 'dropped', 'unsupported', 'verdict', 'verdictOnArchive',]
+              : ['assessment', 'dropped', 'unsupported', 'verdict',],
+          );
         }
       },
     },),
@@ -59,8 +66,8 @@ await describe({
         },).at(1,)?.content ?? '';
         expectReasonBeforeVoteInText({
           text: user.slice(user.indexOf('Return JSON',),),
-          reason: 'reason one sentence',
-          vote: 'choice one of',
+          reason: 'assessment one sentence',
+          vote: 'verdict one of',
         },);
       },
     },),

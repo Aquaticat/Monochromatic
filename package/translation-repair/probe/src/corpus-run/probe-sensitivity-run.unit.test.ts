@@ -122,7 +122,7 @@ await describe({
                     severity: 'major',
                     evidence: '',
                     omittedText: 'she wakes at dusk',
-                    reason: 'the clause is gone',
+                    verdictReason: 'the clause is gone',
                   };
                 },
                 asked,

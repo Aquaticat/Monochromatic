@@ -77,7 +77,7 @@ type FixtureModelId = (typeof ROSTER)[number];
  a marker spelled with quote characters matches nothing once the exchange is
  serialised, and every gate call is then answered with a selector ballot.
  */
-const GATE_MARKER = 'Return JSON: reason one sentence';
+const GATE_MARKER = 'Return JSON: assessment one sentence';
 
 /**
  The slice every case decides about.
@@ -382,7 +382,7 @@ async function settleWith(
 function judgeBallot({ best, }: { readonly best: number; },): string {
   return JSON.stringify({
     best,
-    reason: 'it says what the original says',
+    assessment: 'it says what the original says',
   },);
 }
 

@@ -269,8 +269,20 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
  cannot ride inside it; no search of any slice-cache directory was made, and the number moves. The
  consolidate version moves for the same ballot and for the polish gate tie rule and sheet (29); the polish gate tie rule and
  the accepted claims block do not touch this lane. No record has been written at 14, which this change sets first.
+
+ 15 covers the contest ballot's reply keys declared in alphabetical order (owner decision of 2026-10-21 under the ruling
+ "Reason first everywhere"; ledger B762): the lane contest's sheet (`contest-ballot-wire.ts`, `lane-contest-wire.ts`) asks
+ for `assessment`, `dropped`, `unsupported` and `verdict`, where it asked for `reason`, `unsupported`, `dropped` and
+ `choice`. The ballot a reader builds from the reply keeps the stored names, so a stored ballot reads as before. The
+ consolidate version moves for the same ballot (30).
+ The key hashes the version, the shape of the run and the texts, not the sheet and not the rule that reads the
+ ballots, so a record written before would be served after. The previous number was set in `4b9fc9e645`, and this worktree's
+ runs directory holds no slice-cache record (the audit `cache-account-audit` found 0, and no control that finds records was
+ run, since the pass that writes them runs in another worktree this change does not read), so whether a record stands at
+ 14 is not known and the change cannot ride inside it: the number moves. No record has been written at 15, which this
+ change sets first.
  */
-export const LANE_CONTEST_CACHE_VERSION = 14;
+export const LANE_CONTEST_CACHE_VERSION = 15;
 
 /**
  Everything about this run that changes what the judges are ASKED, folded into

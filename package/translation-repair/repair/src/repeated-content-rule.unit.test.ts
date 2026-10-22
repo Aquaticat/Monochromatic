@@ -104,7 +104,7 @@ async function chunkJudgeSheets(): Promise<readonly string[]> {
       /**
        A decline.
        */
-      const scripted: unknown = { best: 0, reason: 'scripted', };
+      const scripted: unknown = { best: 0, assessment: 'scripted', };
       if (!request.validate(scripted,))
         throw new Error('stub ballot failed the selection guard',);
       return {

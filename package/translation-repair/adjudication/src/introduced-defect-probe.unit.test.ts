@@ -122,7 +122,7 @@ function catClient(
         severity: '',
         evidence,
         omittedText: '',
-        reason: '',
+        verdictReason: '',
       };
 
       /**

@@ -231,7 +231,7 @@ export function expectReasonFirstInSchema(
 
  @example
  ```ts
- expectReasonBeforeVoteInText({ text: user, reason: 'reason one sentence', vote: 'choice one of', },);
+ expectReasonBeforeVoteInText({ text: user, reason: 'assessment one sentence', vote: 'verdict one of', },);
  ```
  */
 export function expectReasonBeforeVoteInText(

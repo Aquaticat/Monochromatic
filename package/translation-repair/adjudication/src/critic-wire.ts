@@ -158,8 +158,8 @@ export const CRITIC_RESPONSE_FORMAT: JsonSchemaResponseFormat = {
             properties: {
               category: { type: 'string', },
               severity: { type: 'string', },
-              summary: { type: 'string', },
               sourceQuote: { type: 'string', },
+              summary: { type: 'string', },
               targetQuote: { type: 'string', },
             },
           },

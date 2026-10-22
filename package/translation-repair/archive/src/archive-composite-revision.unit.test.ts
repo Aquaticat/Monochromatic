@@ -155,7 +155,7 @@ async function review(
         if (schema !== 'archive_block_review') {
           return {
             best,
-            reason: 'The candidate carries the fixes the others lack.',
+            assessment: 'The candidate carries the fixes the others lack.',
           };
         }
         /**
@@ -167,14 +167,14 @@ async function review(
             disposition: 'source-supported',
             sourceQuote: '窗边安静地睡觉',
             replacementText: '',
-            finding: 'The original supports this block.',
+            assessment: 'The original supports this block.',
           };
         }
         return {
           disposition: 'revise',
           sourceQuote: '',
           replacementText: answer,
-          finding: `Some wording is unsupported: ${JSON.stringify(answer,)} is the fix.`,
+          assessment: `Some wording is unsupported: ${JSON.stringify(answer,)} is the fix.`,
         };
       },
     },),

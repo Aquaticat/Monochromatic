@@ -443,6 +443,7 @@ named for that subject and listed here.
   Sheets that withheld a claim the judges needed:
   the repair panel's accepted claims that never reached the polish gate (B731),
   the ballots whose reply shape asked for the choice before the reason (B732),
+  sixteen answer schemas whose declared key order is not the order Hyper returns (B762),
   and the same claims,
   which the polish writers were never shown,
   nor the dispute note,
@@ -520,6 +521,10 @@ named for that subject and listed here.
   Gemma listed as unable to read a picture on OpenRouter before any transcription was measured (B721),
   the readers bench counted by text reach where a picture needs vision reach (B722),
   and a picture reader measurement that lived in a scratch script (B723).
+- [Audit ledger: providers and seats a run holds out](audit-ledger-providers-and-seats-a-run-holds-out.md):
+  A provider an owner ruling keeps off that every run still asked (B760),
+  a seat never withheld although its streams carried nothing (B761),
+  and a meter line that read a held provider differently from the router (B763).
 - [Audit ledger: blocks and quotes read off the parse](audit-ledger-blocks-and-quotes-read-off-the-parse.md):
   Blocks,
   quotes and code spans counted by a blank-line split or a scan of their own,

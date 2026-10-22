@@ -220,14 +220,14 @@ await describe({
           fn: async () => {
             /** The whole reply first, then that reply with one part taken away or broken. */
             const replies: readonly unknown[] = [
-              { choice: 'base', unsupported: [], dropped: [], reason: 'the polish drops the second cat', },
+              { verdict: 'base', unsupported: [], dropped: [], assessment: 'the polish drops the second cat', },
               'base',
               null,
-              { unsupported: [], dropped: [], reason: 'the polish drops the second cat', },
-              { choice: 'base', dropped: [], reason: 'the polish drops the second cat', },
-              { choice: 'base', unsupported: [], reason: 'the polish drops the second cat', },
-              { choice: 'base', unsupported: [], dropped: [], },
-              { choice: 'base', unsupported: [], dropped: [], reason: 7, },
+              { unsupported: [], dropped: [], assessment: 'the polish drops the second cat', },
+              { verdict: 'base', dropped: [], assessment: 'the polish drops the second cat', },
+              { verdict: 'base', unsupported: [], assessment: 'the polish drops the second cat', },
+              { verdict: 'base', unsupported: [], dropped: [], },
+              { verdict: 'base', unsupported: [], dropped: [], assessment: 7, },
             ];
             expect(replies.map(function usable(reply,): boolean {
               return isConsolidationPolishGateWire(reply,);
@@ -246,10 +246,10 @@ await describe({
           fn: async () => {
             /** A reply whose findings are a stray null and a bare phrase. */
             const reply: unknown = {
-              choice: 'base',
+              verdict: 'base',
               unsupported: null,
               dropped: 'the second cat',
-              reason: 'the polish drops the second cat',
+              assessment: 'the polish drops the second cat',
             };
             if (!isConsolidationPolishGateWire(reply,))
               throw new Error('the guard refused a reply whose choice and reason it can read',);

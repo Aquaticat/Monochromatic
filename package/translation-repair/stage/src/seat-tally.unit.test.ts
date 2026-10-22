@@ -391,6 +391,7 @@ await describe({
                 usable: 1,
                 unusable: 1,
                 threw: 1,
+                silent: 0,
                 abandoned: 0,
                 unreachable: 0,
               },
@@ -400,6 +401,7 @@ await describe({
                 usable: 1,
                 unusable: 0,
                 threw: 0,
+                silent: 0,
                 abandoned: 0,
                 unreachable: 0,
               },
@@ -486,6 +488,7 @@ await describe({
               usable: 2,
               unusable: 0,
               threw: 0,
+              silent: 0,
               abandoned: 3,
               unreachable: 0,
             },],);
@@ -534,6 +537,7 @@ await describe({
                 usable: 0,
                 unusable: 0,
                 threw: 0,
+                silent: 0,
                 abandoned: 0,
                 unreachable: 4,
               },
@@ -543,6 +547,7 @@ await describe({
                 usable: 1,
                 unusable: 0,
                 threw: 0,
+                silent: 0,
                 abandoned: 0,
                 unreachable: 0,
               },
@@ -598,6 +603,7 @@ await describe({
               usable: 1,
               unusable: 0,
               threw: 0,
+              silent: 0,
               abandoned: 0,
               unreachable: 0,
             },],);
@@ -632,6 +638,7 @@ await describe({
               usable: 1,
               unusable: 0,
               threw: 0,
+              silent: 0,
               abandoned: 0,
               unreachable: 0,
             },],);
@@ -666,6 +673,7 @@ await describe({
               usable: 0,
               unusable: 1,
               threw: 0,
+              silent: 0,
               abandoned: 0,
               unreachable: 0,
             },],);
@@ -719,6 +727,7 @@ await describe({
               usable: 0,
               unusable: 0,
               threw: 2,
+              silent: 0,
               abandoned: 0,
               unreachable: 0,
             },],);
@@ -781,6 +790,7 @@ await describe({
               usable: 0,
               unusable: 0,
               threw: 4,
+              silent: 0,
               abandoned: 0,
               unreachable: 0,
             },],);
@@ -816,6 +826,7 @@ await describe({
               usable: 0,
               unusable: 0,
               threw: 0,
+              silent: 0,
               abandoned: 4,
               unreachable: 0,
             },],);
@@ -863,6 +874,7 @@ await describe({
               usable: 1,
               unusable: 0,
               threw: 0,
+              silent: 0,
               abandoned: 2,
               unreachable: 0,
             },],);
@@ -894,6 +906,7 @@ await describe({
               usable: 0,
               unusable: 0,
               threw: 4,
+              silent: 0,
               abandoned: 0,
               unreachable: 0,
             },],);
@@ -932,6 +945,7 @@ await describe({
               usable: 0,
               unusable: 0,
               threw: 2,
+              silent: 0,
               abandoned: 0,
               unreachable: 0,
             },],);
@@ -992,6 +1006,7 @@ await describe({
               usable: 0,
               unusable: 0,
               threw: 0,
+              silent: 0,
               abandoned: 0,
               unreachable: 7,
             },],);
@@ -1039,6 +1054,7 @@ await describe({
               usable: 0,
               unusable: 0,
               threw: 4,
+              silent: 0,
               abandoned: 0,
               unreachable: 2,
             },],);
@@ -1079,6 +1095,7 @@ await describe({
               usable: 0,
               unusable: 0,
               threw: 0,
+              silent: 0,
               abandoned: 1,
               unreachable: 1,
             },],);
@@ -1145,6 +1162,7 @@ await describe({
               usable: 1,
               unusable: 0,
               threw: 1,
+              silent: 0,
               abandoned: 0,
               unreachable: 0,
             },],);
@@ -1179,8 +1197,8 @@ await describe({
             tally.record({ modelId: SEAT_HYPER_VISION, outcome: 'usable', },);
 
             expect(seatReportLines({ tally, },),).toStrictEqual([
-              'SEAT hf:openai/gpt-oss-120b asked=1 usable=1 unusable=0 threw=0 abandoned=0 unreachable=0',
-              'SEAT minimax-m3 asked=2 usable=1 unusable=1 threw=0 abandoned=0 unreachable=0',
+              'SEAT hf:openai/gpt-oss-120b asked=1 usable=1 unusable=0 threw=0 silent=0 abandoned=0 unreachable=0',
+              'SEAT minimax-m3 asked=2 usable=1 unusable=1 threw=0 silent=0 abandoned=0 unreachable=0',
             ],);
           },
         },),
@@ -1198,7 +1216,7 @@ await describe({
             tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'abandoned', },);
 
             expect(seatReportLines({ tally, },),).toStrictEqual([
-              'SEAT hf:openai/gpt-oss-120b asked=2 usable=2 unusable=0 threw=0 abandoned=3 unreachable=0',
+              'SEAT hf:openai/gpt-oss-120b asked=2 usable=2 unusable=0 threw=0 silent=0 abandoned=3 unreachable=0',
             ],);
           },
         },),
@@ -1216,8 +1234,8 @@ await describe({
             tally.record({ modelId: SEAT_SYNTHETIC_TEXT_EVERYWHERE, outcome: 'usable', },);
 
             expect(seatReportLines({ tally, },),).toStrictEqual([
-              'SEAT glm-5.3 asked=0 usable=0 unusable=0 threw=0 abandoned=0 unreachable=4',
-              'SEAT hf:openai/gpt-oss-120b asked=1 usable=1 unusable=0 threw=0 abandoned=0 unreachable=0',
+              'SEAT glm-5.3 asked=0 usable=0 unusable=0 threw=0 silent=0 abandoned=0 unreachable=4',
+              'SEAT hf:openai/gpt-oss-120b asked=1 usable=1 unusable=0 threw=0 silent=0 abandoned=0 unreachable=0',
             ],);
           },
         },),

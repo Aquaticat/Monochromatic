@@ -140,7 +140,7 @@ function recordingClient(
         : (schema === 'candidate_ballot')
           ? {
             best: 1,
-            reason: 'the plainest rendering',
+            assessment: 'the plainest rendering',
           }
           : undefined;
       if ((value === undefined) || (!request.validate(value,)))

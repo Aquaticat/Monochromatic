@@ -183,6 +183,13 @@ export type OpenRouterModelInfo = {
    load balancing. Checked against the same listing snapshot.
    */
   readonly preferredEndpoints: readonly string[];
+
+  /**
+   Silence allowed before this model's first generated text, from its card,
+   in place of the shared first-content window of the stream guard; absent
+   where the card names none.
+   */
+  readonly firstContentMs?: number;
 };
 
 /**
@@ -215,9 +222,36 @@ export const OPENROUTER_MODELS: Readonly<Record<OpenRouterServedId, OpenRouterMo
       completionUsdPerMillion: openrouter.completionUsdPerMillion,
       ignoredEndpoints: openrouter.ignoredEndpoints,
       preferredEndpoints: openrouter.preferredEndpoints,
+      // Conditional spread keeps the window absent instead of undefined.
+      ...((openrouter.firstContentMs === undefined) ? {} : { firstContentMs: openrouter.firstContentMs, }),
     };
   },
 },);
+
+/**
+ The first-content window one served model's card names, as the field the
+ exchange carries it in, or nothing where the card names none and the shared
+ window of the stream guard stands (ledger B809).
+
+ @param servedId - OpenRouter slug the request will name
+
+ @returns `{ firstContentMs }` for a card that names a window, an empty record otherwise
+
+ @example
+ ```ts
+ const exchange = { ...base, ...openRouterFirstContentWindowFor({ servedId: 'inception/mercury-2.5', },), };
+ ```
+ */
+export function openRouterFirstContentWindowFor(
+  { servedId, }: { readonly servedId: OpenRouterServedId; },
+): { readonly firstContentMs?: number; } {
+  /**
+   Window the card names, absent where it names none.
+   */
+  const { firstContentMs, } = OPENROUTER_MODELS[servedId];
+  // Conditional spread keeps the window absent instead of undefined.
+  return (firstContentMs === undefined) ? {} : { firstContentMs, };
+}
 
 /**
  The `provider` field for one served model.

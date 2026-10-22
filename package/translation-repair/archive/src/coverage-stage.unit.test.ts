@@ -117,8 +117,8 @@ function scriptedClient({ script, asks, }: {
        */
       const value: unknown = {
         coverage: scripted.coverage,
-        quote: scripted.quote,
-        reason: 'fixture',
+        copiedSpan: scripted.quote,
+        assessment: 'fixture',
       };
       if (!request.validate(value,)) {
         return {

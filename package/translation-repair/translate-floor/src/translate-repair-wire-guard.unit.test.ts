@@ -52,7 +52,7 @@ function replyWith(over: Record<string, unknown> = {},): unknown {
   return {
     resolution: 'revised',
     translation: REVISED_NAP,
-    explanation: 'restored the footnote marker',
+    translatorNote: 'restored the footnote marker',
     ...over,
   };
 }
@@ -154,7 +154,7 @@ await describe({
         /**
          Reply that said nothing about why.
          */
-        const unexplained = replyWith({ explanation: undefined, },);
+        const unexplained = replyWith({ translatorNote: undefined, },);
 
         expect(isTranslateRepairWire('revised',),).toBe(false,);
         expect(isTranslateRepairWire(null,),).toBe(false,);

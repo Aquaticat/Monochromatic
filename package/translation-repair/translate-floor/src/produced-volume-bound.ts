@@ -22,7 +22,7 @@
 // TWO CALLERS, COUNTING DIFFERENT MATERIAL. Producing a slice counts the slice.
 // The re-ask that sends an invalid candidate back to its author counts the
 // slice PLUS the findings it must answer, because the repair wire carries an
-// `explanation` field the report wire does not, and no source length bounds
+// `translatorNote` field the report wire does not, and no source length bounds
 // prose about faults. Reusing the producing bound there would refuse correct
 // work: re-asked slices are short, median 111 code points across 96 of 175
 // measured slices, and 23 of them sit below the floor crossover.

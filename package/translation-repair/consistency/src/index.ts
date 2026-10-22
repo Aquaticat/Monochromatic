@@ -49,11 +49,14 @@ export {
 export {
   canonicalChoiceOf,
   choiceTallyOf,
+  type ConsistencyChoiceBallot,
   consistencyChoiceResponseFormat,
   type ConsistencyChoiceVoice,
   type ConsistencyChoiceWire,
+  isConsistencyChoiceBallot,
   isConsistencyChoiceWire,
   isUsableChoice,
+  readConsistencyChoiceWire,
   runOffChoiceFinalistsOf,
   usableChoiceFor,
   usableChoicesOf,
@@ -264,14 +267,17 @@ export {
 } from './consistency-whole-end.ts';
 export {
   canonicalBallotOf,
+  type ConsistencyBallot,
   type ConsistencyBallotWire,
   type ConsistencyEnglish,
   consistencyLabel,
   consistencyLabels,
   type ConsistencyQuoteWire,
   consistencyResponseFormat,
+  isConsistencyBallot,
   isConsistencyBallotWire,
   isUsableConsistencyBallot,
+  readConsistencyBallotWire,
   usableConsistencyBallotFor,
 } from './consistency-wire.ts';
 export { cutsWord, } from './consistency-word-joints.ts';

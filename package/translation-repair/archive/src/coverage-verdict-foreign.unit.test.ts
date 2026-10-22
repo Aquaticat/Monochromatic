@@ -85,8 +85,8 @@ function voiceOf(
     modelId,
     value: {
       coverage,
-      quote,
-      reason: 'fixture',
+      copiedSpan: quote,
+      assessment: 'fixture',
     },
   };
 }

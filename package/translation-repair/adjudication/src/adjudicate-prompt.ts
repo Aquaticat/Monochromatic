@@ -109,7 +109,7 @@ Optionally re-grade a supported claim's severity on that scale: one of ${ISSUE_S
 For every GROUP holding more than one claim, also state whether its claims describe one single defect (sameDefect true) or genuinely distinct defects (sameDefect false).
 
 Reply with ONLY a JSON object of shape
-{"verdicts": [{"claim": 1, "reason": "The quoted TRANSLATION names the wrong city.", "vote": "supported", "severity": "major"}], "groups": [{"group": 1, "sameDefect": true}]}.
+{"groups": [{"group": 1, "sameDefect": true}], "verdicts": [{"claim": 1, "reason": "The quoted TRANSLATION names the wrong city.", "severity": "major", "vote": "supported"}]}.
 The severity field is optional; the reason is not. No prose outside the JSON, no code fences.
 Every claim number must appear exactly once in verdicts.`;
 

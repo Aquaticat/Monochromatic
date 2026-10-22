@@ -36,7 +36,10 @@ import {
   scriptedClient,
   SIGNAL,
 } from './neuralwatt-scripted-client.test-fixture.ts';
-import { settled, } from './recording-transport.test-fixture.ts';
+import {
+  keepingTransport,
+  settled,
+} from './recording-transport.test-fixture.ts';
 import {
   SEAT_BEDROCK_ONLY_TEXT,
   SEAT_HYPER_ONLY,
@@ -77,28 +80,6 @@ const EMPTY_LEDGER: BedrockLedger = {
  Messages of the one call each client is asked for.
  */
 const MESSAGES = [{ role: 'user', content: 'Where does the cat nap?', },] as const;
-
-/**
- Transport that keeps each exchange it is handed and refuses it.
-
- @param seen - where the exchanges go
-
- @returns Transport recording each exchange
-
- @example
- ```ts
- const transport = keepingTransport({ seen, },);
- ```
- */
-function keepingTransport(
-  { seen, }: { readonly seen: TransportExchange[]; },
-): (exchange: TransportExchange,) => Promise<never> {
-  return async function keep(exchange,): Promise<never> {
-    seen.push(exchange,);
-    await Promise.resolve();
-    throw new Error('recorded, not sent',);
-  };
-}
 
 await describe({
   name: 'the provider a client names on its exchange',

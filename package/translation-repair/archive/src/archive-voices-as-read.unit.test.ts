@@ -33,7 +33,7 @@ function voiceWith({ replacementText, }: { readonly replacementText: string; },)
       disposition: 'revise',
       sourceQuote: '',
       replacementText,
-      finding: 'The block carries nothing the original says.',
+      assessment: 'The block carries nothing the original says.',
     },
   };
 }
@@ -67,7 +67,7 @@ await describe({
         const [read,] = voicesAsRead({ voices: [voiceWith({ replacementText: ' ', },),], },);
         expect(read?.modelId,).toBe(SEAT,);
         expect(read?.value.disposition,).toBe('revise',);
-        expect(read?.value.finding,).toBe('The block carries nothing the original says.',);
+        expect(read?.value.assessment,).toBe('The block carries nothing the original says.',);
       },
     },),
   ],

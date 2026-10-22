@@ -100,13 +100,13 @@ function replyFor({ schema, sheet, }: { readonly schema: string; readonly sheet:
     };
   }
   if (schema === 'candidate_ballot')
-    return { best: 2, reason: 'The new rendering reads better.', };
+    return { best: 2, assessment: 'The new rendering reads better.', };
   if (schema === 'consolidate_gate')
-    return { choice: 'consolidated', unsupported: [], dropped: [], reason: 'The new rendering stands.', };
+    return { verdict: 'consolidated', unsupported: [], dropped: [], assessment: 'The new rendering stands.', };
   if (schema === 'refine_report')
     return { rewrites: [], };
   if (schema === 'absolute_naturalness_review')
-    return { acceptable: true, findings: [], reason: 'The whole page reads well.', };
+    return { isAcceptable: true, findings: [], assessment: 'The whole page reads well.', };
   if (schema === 'page_consistency')
     return { reason: 'No place needs to follow another.', quotes: [], choice: 'OCCURRENCE 1', keep: [], };
   throw new Error(`no script for ${schema}`,);

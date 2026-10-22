@@ -237,7 +237,7 @@ function recordingClient(): SentRequests {
          */
         const ballot: unknown = {
           best: 0,
-          reason: 'fixture',
+          assessment: 'fixture',
         };
         if (!request.validate(ballot,)) {
           return {

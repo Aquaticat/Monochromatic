@@ -224,7 +224,7 @@ async function keysKept(
         : stage === 'candidate_ballot'
         ? {
           best: 1,
-          reason: 'scripted',
+          assessment: 'scripted',
         }
         : stage === 'introduced_defect_report'
         ? {
@@ -236,7 +236,7 @@ async function keysKept(
               severity: '',
               evidence: '',
               omittedText: '',
-              reason: '',
+              verdictReason: '',
             },
           ],
         }

@@ -788,7 +788,7 @@ export function screenIntroducedDefects(
           omittedText: entry.check
             .omittedText,
           reason: entry.check
-            .reason,
+            .verdictReason,
           admissibility: countsAsDamage({ anchored, },)
               && restatesPriorIssue({
                 quoted,

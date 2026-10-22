@@ -169,7 +169,7 @@ export function evidenceSheets(): readonly RenderedSheet[] {
                 disposition: 'revise',
                 sourceQuote: '',
                 replacementText: ASIDE_REVISED,
-                finding: 'The original does not say the kitten was a favourite.',
+                assessment: 'The original does not say the kitten was a favourite.',
               },
             },],
             candidates: archiveCandidates,

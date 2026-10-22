@@ -1,8 +1,12 @@
 import { join, } from 'node:path';
 
-import { readHeadSha, } from '@monochromatic-dev/translation-repair-run';
+import {
+  PROVIDERS_LEFT_OFF,
+  readHeadSha,
+} from '@monochromatic-dev/translation-repair-run';
 import { digestPipeline, } from '@monochromatic-dev/translation-repair-glossary';
 import { runBuiltCommand, } from '@monochromatic-dev/translation-repair-adjudication/ts/child-environment.test-fixture.ts';
+import { passProvidersOffLines, } from '../../dist/final/node/index.mjs';
 import type { CorpusCloneEntry, } from './corpus-pass-clone.test-fixture.ts';
 
 //region Corpus pass built command fixture
@@ -38,6 +42,12 @@ export const WRITER_GRACE_BUILT_IN: string = 'WRITER GRACE built in: writer roun
   + 'produceConsolidations, archive-block-review) abandon stragglers 180000ms after quorum rather than the '
   + '120000ms every other round waits, the owner\'s decision of 2026-09-06; '
   + 'TRANSLATION_REPAIR_WRITER_GRACE_MS moves it for one launch';
+
+/**
+ Lines the pass prints to say which providers it leaves off, which every launch past the required-provider gate prints
+ before it builds the run client.
+ */
+export const PROVIDERS_OFF_LINES: readonly string[] = passProvidersOffLines({ off: PROVIDERS_LEFT_OFF, },);
 
 /**
  Refusal the run client raises while no provider key is set.

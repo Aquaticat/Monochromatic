@@ -244,7 +244,7 @@ function scriptedClient(
               severity: '',
               evidence: '',
               omittedText: '',
-              reason: '',
+              verdictReason: '',
             };
           },),
         }

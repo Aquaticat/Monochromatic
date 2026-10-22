@@ -151,7 +151,7 @@ function judgesVoting(
        */
       const value: unknown = {
         best: wantedPosition,
-        reason: 'fixture',
+        assessment: 'fixture',
       };
       if (!request.validate(value,)) {
         return {

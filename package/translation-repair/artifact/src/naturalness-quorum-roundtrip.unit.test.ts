@@ -63,7 +63,7 @@ function clientFor({ loseOnChallenge = false, }: { readonly loseOnChallenge?: bo
         return { kind: 'schema-mismatch', rawText: '{}', detail: 'Fixture unusable seat', };
       }
       /** Every usable seat independently accepts the candidate. */
-      const value: unknown = { acceptable: true, findings: [], reason: 'The cat sentence is natural.', };
+      const value: unknown = { isAcceptable: true, findings: [], assessment: 'The cat sentence is natural.', };
       if (!request.validate(value,))
         throw new Error('Fixture does not satisfy reviewer schema',);
       return { kind: 'ok', value, rawText: JSON.stringify(value,), };

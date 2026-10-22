@@ -1,6 +1,9 @@
 //region Structural ballot
 // ONE JUDGE'S OR GATE VOICE'S SCHEMA-VALID REPLY BODY, naming only the
-// choice: no finding supports or opposes it and nothing is dropped.
+// choice: no finding supports or opposes it and nothing is dropped. The keys are
+// the reply's own (`assessment`, `dropped`, `unsupported`, `verdict`; ledger B762),
+// which the ballot a reader builds from them stores as `reason`, `dropped`,
+// `unsupported` and `choice`.
 //
 // TEST SUPPORT, NOT PACKAGE SOURCE. Several consolidate and lane-contest
 // tests kept their own copy of this builder; all now import it from here.
@@ -19,10 +22,10 @@
  */
 export function ballot({ choice, }: { readonly choice: string; },): string {
   return JSON.stringify({
-    choice,
-    unsupported: [],
+    assessment: 'the original supports it',
     dropped: [],
-    reason: 'the original supports it',
+    unsupported: [],
+    verdict: choice,
   },);
 }
 

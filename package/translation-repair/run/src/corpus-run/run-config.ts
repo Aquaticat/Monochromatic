@@ -38,7 +38,6 @@ import {
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import {
   type BudgetView,
-  createCredentialHolds,
   createRoutingClient,
   foldCredentialHolds,
   readsImages,
@@ -52,6 +51,7 @@ import {
   SEAT_WITHHOLD_ASKS,
   seatTallyClient,
 } from '@monochromatic-dev/translation-repair-stage/ts';
+import type { ProviderOff, } from './providers-off.ts';
 import { configureProviders, } from './run-providers.ts';
 import { refusingCulledSeats, } from '../culled-seat-guard.ts';
 import { resolveGit, } from '@monochromatic-dev/translation-repair-glossary/ts';
@@ -1170,6 +1170,9 @@ async function unconfiguredSyntheticQuota(): Promise<QuotaSnapshot> {
 
  @param promptPayloadDir - optional durable payload checkpoint beneath run root
 
+ @param off - providers left off, whose keys are read as unset; the owner's rulings by
+ default (`PROVIDERS_LEFT_OFF`), an empty list in a case that exercises an off provider's client
+
  @returns Ready client, routed across configured providers and counted per seat
 
  @throws {@link RunConfigError} when every provider key variable is unset or empty
@@ -1184,10 +1187,12 @@ export function runClientFrom(
     env,
     transport,
     promptPayloadDir,
+    off,
   }: {
     readonly env: Readonly<NodeJS.ProcessEnv>;
     readonly transport: ModelTransport;
     readonly promptPayloadDir?: string;
+    readonly off?: readonly ProviderOff[];
   },
 ): RunClient {
   /**
@@ -1204,10 +1209,12 @@ export function runClientFrom(
   const {
     decisions,
     budgets,
+    credentialHolds,
     ...clients
   } = configureProviders({
     env,
     transport,
+    ...((off === undefined) ? {} : { off, }),
   },);
   /**
    Each configured provider's client, absent where its key is unset.
@@ -1220,14 +1227,11 @@ export function runClientFrom(
     openrouter,
   } = clients;
 
-  /**
-   Providers whose credential a call found refused, held out for the rest of
-   the run: the router reads them to route, and `providerDryness` reads
-   them for the benches. ONE CLIENT PER RUN is what a corpus pass builds
-   (`corpus-pass-run.ts`), so a 401 is learned once per run there; the commands
-   that build a client per slice or per arm learn it again for each.
-   */
-  const credentialHolds = createCredentialHolds();
+  // THE HOLDS ON A REFUSED CREDENTIAL come from `configureProviders`, which gives them to the budgets too, so the
+  // `METERS` line reads a held provider as dry as the router and `providerDryness` do. The router reads them to
+  // route, and `providerDryness` reads them for the benches. ONE CLIENT PER RUN is what a corpus pass builds
+  // (`corpus-pass-run.ts`), so a 401 is learned once per run there; the commands that build a client per slice or
+  // per arm learn it again for each.
 
   /**
    Routed client with stable compatibility quota surface.

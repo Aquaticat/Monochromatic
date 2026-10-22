@@ -30,6 +30,7 @@ import {
   OPENROUTER_AUTH_HEADER,
   OPENROUTER_CHAT_URL,
   OPENROUTER_CREDITS_URL,
+  openRouterFirstContentWindowFor,
   openRouterProviderPreferencesFor,
 } from './openrouter-catalog.ts';
 import { reportAbandonedSpend, } from './openrouter-abandoned-spend.ts';
@@ -457,6 +458,8 @@ export function createOpenRouterClient(
           ...(request.maxAnswerChars === undefined
             ? {}
             : { maxAnswerChars: request.maxAnswerChars, }),
+          // The card's own first-content window, where it names one (ledger B809).
+          ...openRouterFirstContentWindowFor({ servedId, }),
         },
         policy: retryPolicy,
         // A TRUNCATED BODY IS A TRANSPORT FAILURE WEARING A SUCCESS STATUS,

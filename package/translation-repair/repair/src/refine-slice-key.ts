@@ -312,8 +312,20 @@ import type {
  which holds the commit that set 11 (`git merge-base --is-ancestor`), so records may stand at 11 and the change
  cannot ride inside it; no search of any slice-cache directory was made, and the number moves. The consolidate, lane-contest, translate and repair
  slice versions move for the same ballots (29, 14, 23, 41). No record has been written at 12, which this change sets first.
+
+ 13 covers the answer schemas of the refinement lane declaring their properties in alphabetical order, and the keys that
+ moved to make it so (owner decision of 2026-10-21 under the ruling "Reason first everywhere"; ledger B762): the refinement
+ rewrite (`newText` before `paragraph`), the candidate selection of the objection correction (`assessment`, `best`) and the
+ introduced-defect check that looks over a rewrite (`verdictReason`) changed their reply keys, instructions or both. The
+ consolidate, lane-contest, translate slice and repair slice versions move for the same sheets (30, 15, 24, 42).
+ The key hashes the version, the shape of the run and the texts, not the sheet and not the rule that reads the
+ ballots, so a record written before would be served after. The previous number was set in `4b9fc9e645`, and this worktree's
+ runs directory holds no slice-cache record (the audit `cache-account-audit` found 0, and no control that finds records was
+ run, since the pass that writes them runs in another worktree this change does not read), so whether a record stands at
+ 12 is not known and the change cannot ride inside it: the number moves. No record has been written at 13, which this
+ change sets first.
  */
-export const REFINE_CACHE_VERSION = 12;
+export const REFINE_CACHE_VERSION = 13;
 
 /**
  Everything about this run that changes what the voices are ASKED.
