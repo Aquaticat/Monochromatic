@@ -4,7 +4,8 @@ Rules for the docs themselves:
 current-state docs,
 references in code and docs,
 dates and clock times,
-and how long a doc may grow.
+how long a doc may grow,
+and the Markdown linter.
 
 Part of [Preventing this package's mistakes](mistake-prevention.md),
 which lists every file of this record.
@@ -262,3 +263,46 @@ and fails on a file that names a record whose index does not link it;
 `withFiles` in `living-docs.test-fixture.ts` gives each living-docs guard a record's index and the files that say they are part of it.
 Whether a boundary makes sense is the writer's reading;
 no test judges it.
+
+## The Markdown linter
+
+What happened:
+ledger D27 passed the family's docs through the repository's Markdown linter once,
+with `--fix`,
+and wrote down that no task read the linter's findings.
+No task was added.
+Three weeks later 90 `semantic-line-breaks` findings stood in nine docs,
+all in text written after the pass:
+ledger entries,
+pass-log sections and paragraphs of this record (ledger D35).
+A one-time pass over a class of findings had gated nothing,
+and the same shape recurred after the long-doc split (M163) and the zone-less times (D12):
+the sweep was done by hand and the class came back with the next text.
+
+The rule:
+a doc written or edited in the family is linted before its commit:
+`mise run //:lint:monochromatic-lint <the doc's path>`,
+which reports nothing on a clean doc.
+A finding is fixed by breaking the line at a clause boundary,
+after a comma,
+a semicolon or a colon,
+and nowhere inside a code span,
+a link or an emphasis span.
+`--fix` makes the same breaks,
+but not on a doc holding a character outside the Basic Multilingual Plane (an emoji,
+or a rare Han character),
+where the linter's offsets go wrong (D27).
+A fix of a class of findings across the docs ships with the guard that reads the class,
+committed first and shown failing on an unfixed doc,
+because a sweep that gates nothing is undone by the next paragraph.
+
+What enforces it:
+`markdown-lint-clean.unit.test.ts` in `source-scan` runs the linter over the package docs,
+the READMEs,
+the living repository-level docs and the package split plan,
+and fails on any finding;
+the archives that D27 keeps byte for byte are not read.
+The test finds the linter on the path that `mise` gives its tasks,
+so it runs under `mise run` and fails with the error of a missing program elsewhere.
+The linter is a `cargo:monochromatic-lint` tool the root `mise.toml` does not pin,
+so a newer version may find more than the one that last passed.
