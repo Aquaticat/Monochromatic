@@ -48,7 +48,7 @@ const sample = lines.join('\n');
 // Character offsets of the injected places, from the sample itself.
 const at = (needle, from = 0) => {
   const index = sample.indexOf(needle, from);
-  if (index < 0) throw new Error('missing ' + needle);
+  if (index === -1) throw new Error(`missing ${  needle}`);
   return [...sample.slice(0, index)].length;
 };
 const longMessage = 'expected `String`, found `&str`: the argument named second_value is a string slice here, so it has to be converted with `to_string` before it can be formatted into the message of the macro';
@@ -70,7 +70,7 @@ const injected = {
 const sizes = [['wide', '1100x660'], ['narrow', '760x660']];
 for (const scheme of ['light', 'dark']) {
   for (const [name, size] of sizes) {
-    const directory = join(output, 'work-' + scheme + '-' + name);
+    const directory = join(output, `work-${  scheme  }-${  name}`);
     const project = join(directory, 'project');
     mkdirSync(project, { recursive: true });
     mkdirSync(join(directory, 'data'), { recursive: true });
@@ -89,33 +89,33 @@ for (const scheme of ['light', 'dark']) {
       const connection = createConnection(socket);
       let reply = '';
       connection.on('error', reject);
-      connection.on('close', () => reject(new Error('closed without a reply to ' + line)));
+      connection.on('close', () =>{  reject(new Error(`closed without a reply to ${  line}`)); });
       connection.on('data', chunk => { reply += chunk; if (reply.includes('\n')) { connection.end(); resolveReply(reply.trim()); } });
-      connection.write(line + '\n');
+      connection.write(`${line  }\n`);
     });
     try {
-      const deadline = Date.now() + 120000;
+      const deadline = Date.now() + 120_000;
       while (!(await control('ping').then(reply => reply.startsWith('ok'), () => false))) {
         if (Date.now() > deadline) throw new Error('compositor did not answer');
         await wait(100);
       }
-      await wait(5000);
-      const path = join(output, 'wrap-annotations-' + scheme + '-' + name + '.png');
+      await wait(5_000);
+      const path = join(output, `wrap-annotations-${  scheme  }-${  name  }.png`);
       let previous;
       let settled = false;
       for (let attempt = 0; attempt < 120 && !settled; attempt++) {
-        await control('screenshot ' + path);
+        await control(`screenshot ${  path}`);
         const bytes = readFileSync(path);
         settled = previous?.equals(bytes) === true && attempt > 4 && !flat(bytes);
         previous = bytes;
         if (!settled) await wait(300);
       }
-      if (!settled) throw new Error('frame never settled: ' + path);
+      if (!settled) throw new Error(`frame never settled: ${  path}`);
       await control('quit');
       await exited;
     } finally {
-      if (child.exitCode === null) { await control('quit').catch(() => undefined); await wait(2000); child.kill('SIGKILL'); }
-      writeFileSync(join(output, 'session-' + scheme + '-' + name + '.log'), Buffer.concat(chunks).toString());
+      if (child.exitCode === null) { await control('quit').catch(() => undefined); await wait(2_000); child.kill('SIGKILL'); }
+      writeFileSync(join(output, `session-${  scheme  }-${  name  }.log`), Buffer.concat(chunks).toString());
     }
   }
 }

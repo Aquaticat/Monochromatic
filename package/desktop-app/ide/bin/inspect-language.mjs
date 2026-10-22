@@ -14,12 +14,12 @@ const binary = resolve('target/debug/ide-language-inspect');
 const store = resolve('../../../node_modules/.pnpm');
 // The private agent scratch root, not /tmp: the sandbox replaces /tmp, so a project there is refused.
 const privateRoot = join(homedir(), 'temp', 'agent');
-if ((statSync(privateRoot).mode & 0o077) !== 0) throw new Error('Scratch root must exclude group and other permissions: ' + privateRoot);
+if ((statSync(privateRoot).mode & 0o077) !== 0) throw new Error(`Scratch root must exclude group and other permissions: ${  privateRoot}`);
 // Language servers report resolved paths, so the fixture root is resolved up front.
 const base = realpathSync(mkdtempSync(join(privateRoot, 'ide-language-inspect-')));
 const results = join(base, 'results');
 mkdirSync(results);
-console.log('LANGUAGE_INSPECT_ARTIFACT=' + base);
+console.log(`LANGUAGE_INSPECT_ARTIFACT=${  base}`);
 
 const write = (root, relative, text) => {
   const target = join(root, relative);
@@ -29,18 +29,18 @@ const write = (root, relative, text) => {
 // Character offset (Unicode scalar values, as the application counts) of `needle` plus `within` characters.
 const offsetOf = (text, needle, within = 0) => {
   const index = text.indexOf(needle);
-  if (index < 0) throw new Error('fixture text lacks ' + needle);
+  if (index === -1) throw new Error(`fixture text lacks ${  needle}`);
   return [...text.slice(0, index)].length + within;
 };
 
 // TypeScript project. An accented letter and an astral character precede the call on its line,
 // so UTF-8, UTF-16, and character columns all differ.
 const ts = join(base, 'ts-project');
-write(ts, 'package.json', JSON.stringify({ name: 'inspect-ts', private: true, type: 'module' }, null, 2) + '\n');
-write(ts, 'tsconfig.json', JSON.stringify({
+write(ts, 'package.json', `${JSON.stringify({ name: 'inspect-ts', private: true, type: 'module' }, null, 2)  }\n`);
+write(ts, 'tsconfig.json', `${JSON.stringify({
   compilerOptions: { target: 'es2022', module: 'esnext', moduleResolution: 'bundler', strict: true, noEmit: true },
   include: ['src'],
-}, null, 2) + '\n');
+}, null, 2)  }\n`);
 write(ts, 'src/greet.ts', ['/** Build a greeting for one name. */', 'export function greet(name: string): string {', '  return `hello ${name}`;', '}', ''].join('\n'));
 const tsMain = [
   'import { greet } from "./greet";',
@@ -83,8 +83,8 @@ write(rust, 'src/main.rs', rustMain);
 
 // One plan per language. `fixed` removes the type error and shifts every later position by one line.
 const plan = ({ project, file, text, call, external, wrong, right, warm, settle }) => {
-  const fixed = '// reloaded\n' + text.replace(wrong, right);
-  const broken = '// reloaded twice\n' + text;
+  const fixed = `// reloaded\n${  text.replace(wrong, right)}`;
+  const broken = `// reloaded twice\n${  text}`;
   return {
     project,
     steps: [
@@ -104,7 +104,7 @@ const plan = ({ project, file, text, call, external, wrong, right, warm, settle 
       // An empty set is published at the reload itself, so the fix is judged only after the servers had time to answer.
       { label: 'settle', do: 'sleep', milliseconds: settle },
       { label: 'diagnostics-fixed', do: 'diagnostics', minimum: 0, maximum: 0, seconds: 1 },
-      { label: 'stale', do: 'stale', at: offsetOf(fixed, call, 1), text: broken, settle: 4000 },
+      { label: 'stale', do: 'stale', at: offsetOf(fixed, call, 1), text: broken, settle: 4_000 },
       { label: 'hover-restored', do: 'request', kind: 'hover', at: offsetOf(broken, call, 1), until: 'hover', seconds: warm },
       { label: 'diagnostics-restored', do: 'diagnostics', minimum: 1, maximum: 100, seconds: warm },
       { label: 'close', do: 'close' },
@@ -114,12 +114,12 @@ const plan = ({ project, file, text, call, external, wrong, right, warm, settle 
 const cases = [
   {
     name: 'typescript',
-    plan: plan({ project: ts, file: 'src/main.ts', text: tsMain, call: 'greet("wörld")', external: 'max(1, 2)', wrong: '"not a number"', right: '7', warm: 60, settle: 5000 }),
+    plan: plan({ project: ts, file: 'src/main.ts', text: tsMain, call: 'greet("wörld")', external: 'max(1, 2)', wrong: '"not a number"', right: '7', warm: 60, settle: 5_000 }),
     definition: 'src/greet.ts', external: 'lib.es5.d.ts', externalOutside: false, hover: 'greet', diagnostic: '2322',
   },
   {
     name: 'rust',
-    plan: plan({ project: rust, file: 'src/main.rs', text: rustMain, call: 'area(2, 3)', external: 'String::new', wrong: '"not a number"', right: '7', warm: 120, settle: 15000 }),
+    plan: plan({ project: rust, file: 'src/main.rs', text: rustMain, call: 'area(2, 3)', external: 'String::new', wrong: '"not a number"', right: '7', warm: 120, settle: 15_000 }),
     definition: 'src/shape.rs', external: 'string.rs', externalOutside: true, hover: 'area', diagnostic: 'E0308', compilerSource: 'rustc',
   },
 ];
@@ -128,7 +128,7 @@ const cases = [
 const leftovers = () => readdirSync('/proc').filter(name => /^\d+$/.test(name)).flatMap(pid => {
   try {
     const cwd = readlinkSync(join('/proc', pid, 'cwd'));
-    return cwd.startsWith(base) ? [pid + ' ' + cwd + ' ' + readFileSync(join('/proc', pid, 'comm'), 'utf8').trim()] : [];
+    return cwd.startsWith(base) ? [`${pid  } ${  cwd  } ${  readFileSync(join('/proc', pid, 'comm'), 'utf8').trim()}`] : [];
   } catch { return []; }
 });
 
@@ -166,19 +166,19 @@ const snapshot = root => {
 };
 let failed = false;
 for (const item of cases) {
-  const planPath = join(results, item.name + '.plan.json');
+  const planPath = join(results, `${item.name  }.plan.json`);
   writeFileSync(planPath, JSON.stringify(item.plan, null, 2));
   // node_modules is a read-only copy for the TypeScript server; its tree is compared too.
   const before = snapshot(item.plan.project);
-  const run = spawnSync(binary, [planPath], { encoding: 'utf8', env, maxBuffer: 64 * 1024 * 1024 });
+  const run = spawnSync(binary, [planPath], { encoding: 'utf8', env, maxBuffer: 64 * 1_024 * 1_024 });
   const after = snapshot(item.plan.project);
   const tree = {
     added: Object.keys(after).filter(key => !(key in before)),
     removed: Object.keys(before).filter(key => !(key in after)),
     changed: Object.keys(after).filter(key => key in before && JSON.stringify(before[key]) !== JSON.stringify(after[key])),
   };
-  writeFileSync(join(results, item.name + '.events.jsonl'), run.stdout ?? '');
-  writeFileSync(join(results, item.name + '.stderr.txt'), run.stderr ?? '');
+  writeFileSync(join(results, `${item.name  }.events.jsonl`), run.stdout ?? '');
+  writeFileSync(join(results, `${item.name  }.stderr.txt`), run.stderr ?? '');
   if (run.error) throw run.error;
   const events = (run.stdout ?? '').split('\n').filter(Boolean).map(line => JSON.parse(line));
   const steps = events.filter(event => event.step !== undefined);
@@ -204,7 +204,7 @@ for (const item of cases) {
     ['hover names the called function', result('hover').matched === true && hoverText('hover').includes(item.hover)],
     ['definition opens the other project file', targets('definition').some(target => target.path?.endsWith(item.definition) && target.outsideProject === false && Array.isArray(target.range))],
     ['references include both files', targets('references').some(target => target.sameDocument) && targets('references').some(target => target.path?.endsWith(item.definition))],
-    ['dependency definition is ' + (item.externalOutside ? 'flagged outside project' : 'inside the project'), targets('external').some(target => target.path?.endsWith(item.external) && target.outsideProject === item.externalOutside)],
+    [`dependency definition is ${  item.externalOutside ? 'flagged outside project' : 'inside the project'}`, targets('external').some(target => target.path?.endsWith(item.external) && target.outsideProject === item.externalOutside)],
     ['hover on a blank line is an empty result', result('blank').matched === true],
     ['inlay hints arrived', result('hints').enough === true && (lastOf('hints', 'hints')?.items.length ?? 0) > 0],
     ['diagnostics name the type error', result('diagnostics').within === true && JSON.stringify(lastOf('diagnostics', 'diagnostics')).includes(item.diagnostic)],
@@ -219,14 +219,13 @@ for (const item of cases) {
   const left = leftovers();
   checks.push(['no process is left in the fixture', left.length === 0]);
   // The plan's reload steps rewrite the displayed file from the application side; nothing else may change.
-  checks.push(['the servers added and removed nothing in the project', tree.added.length === 0 && tree.removed.length === 0]);
-  checks.push(['only the reloaded file changed', tree.changed.every(path => path === item.plan.steps[0].file)]);
+  checks.push(['the servers added and removed nothing in the project', tree.added.length === 0 && tree.removed.length === 0], ['only the reloaded file changed', tree.changed.every(path => path === item.plan.steps[0].file)]);
   // Diagnostic items published with the compiler as their source (Rust: `cargo check` through rust-analyzer).
   // Each record is a full snapshot, so the largest one counts, not the sum over records.
   const compilerItems = events.filter(event => event.diagnostics)
     .map(event => (event.diagnostics.items ?? []).filter(diagnostic => diagnostic.source === item.compilerSource))
     .reduce((largest, found) => (found.length > largest.length ? found : largest), []);
-  if (item.compilerSource) checks.push(['compiler diagnostics arrived from ' + item.compilerSource, compilerItems.length > 0]);
+  if (item.compilerSource) checks.push([`compiler diagnostics arrived from ${  item.compilerSource}`, compilerItems.length > 0]);
   const record = {
     compilerDiagnosticItems: compilerItems.length,
     compilerCodes: [...new Set(compilerItems.map(diagnostic => diagnostic.code))],
@@ -242,9 +241,9 @@ for (const item of cases) {
   summary.cases.push(record);
   for (const [name, passed] of checks) {
     if (!passed) failed = true;
-    console.log((passed ? 'PASS ' : 'FAIL ') + item.name + ': ' + name);
+    console.log(`${(passed ? 'PASS ' : 'FAIL ') + item.name  }: ${  name}`);
   }
 }
 writeFileSync(join(results, 'results.json'), JSON.stringify(summary, null, 2));
-console.log('Language inspection ' + (failed ? 'FAILED' : 'passed') + ': ' + join(results, 'results.json'));
+console.log(`Language inspection ${  failed ? 'FAILED' : 'passed'  }: ${  join(results, 'results.json')}`);
 if (failed) process.exitCode = 1;

@@ -14,12 +14,12 @@ const binary = resolve('target/debug/ide-language-inspect');
 // The private agent scratch root: its ancestors may hold other sessions' mise files, so the project without mise
 // lives below the system temporary directory instead (the sandbox binds a project below /tmp again).
 const privateRoot = join(homedir(), 'temp', 'agent');
-if ((statSync(privateRoot).mode & 0o077) !== 0) throw new Error('Scratch root must exclude group and other permissions: ' + privateRoot);
+if ((statSync(privateRoot).mode & 0o077) !== 0) throw new Error(`Scratch root must exclude group and other permissions: ${  privateRoot}`);
 const base = realpathSync(mkdtempSync(join(privateRoot, 'ide-language-mise-')));
 const outside = realpathSync(mkdtempSync(join(tmpdir(), 'ide-language-mise-')));
 const results = join(base, 'results');
 mkdirSync(results);
-console.log('LANGUAGE_MISE_ARTIFACT=' + base);
+console.log(`LANGUAGE_MISE_ARTIFACT=${  base}`);
 
 const write = (root, relative, text) => {
   const target = join(root, relative);
@@ -28,7 +28,7 @@ const write = (root, relative, text) => {
 };
 const offsetOf = (text, needle, within = 0) => {
   const index = text.indexOf(needle);
-  if (index < 0) throw new Error('fixture text lacks ' + needle);
+  if (index === -1) throw new Error(`fixture text lacks ${  needle}`);
   return [...text.slice(0, index)].length + within;
 };
 
@@ -37,10 +37,10 @@ const installed = JSON.parse(spawnSync('mise', ['ls', '--json'], { encoding: 'ut
 const versionOf = name => {
   const found = (installed[name] ?? []).filter(entry => entry.installed);
   const chosen = found.find(entry => entry.active) ?? found.at(-1);
-  if (!chosen) throw new Error('mise has no installed ' + name + '; this check never installs anything');
+  if (!chosen) throw new Error(`mise has no installed ${  name  }; this check never installs anything`);
   return chosen.version;
 };
-const tools = ['taplo = "' + versionOf('taplo') + '"', 'marksman = "' + versionOf('marksman') + '"', 'node = "' + versionOf('node') + '"', '"npm:bash-language-server" = "' + versionOf('npm:bash-language-server') + '"'];
+const tools = [`taplo = "${  versionOf('taplo')  }"`, `marksman = "${  versionOf('marksman')  }"`, `node = "${  versionOf('node')  }"`, `"npm:bash-language-server" = "${  versionOf('npm:bash-language-server')  }"`];
 
 // What the desktop launcher has: the PATH line of the systemd user session, read for that line only.
 const sessionPath = (() => {
@@ -48,7 +48,7 @@ const sessionPath = (() => {
   const line = (shown.stdout ?? '').split('\n').find(text => text.startsWith('PATH='));
   return line ? line.slice('PATH='.length) : process.env.PATH;
 })();
-console.log('launcher-like PATH entries: ' + sessionPath.split(':').length);
+console.log(`launcher-like PATH entries: ${  sessionPath.split(':').length}`);
 
 const script = [
   '#!/bin/sh',
@@ -65,7 +65,7 @@ const dataToml = ['[package]', 'name = "example"', 'version = "0.1.0"', ''].join
 
 // A project with a mise.toml that lists only tools, which mise trusts without `mise trust`.
 const project = (root, extra = '') => {
-  write(root, 'mise.toml', extra + '[tools]\n' + tools.join('\n') + '\n');
+  write(root, 'mise.toml', `${extra  }[tools]\n${  tools.join('\n')  }\n`);
   write(root, 'run.sh', script);
   write(root, 'data.toml', dataToml);
   write(root, 'notes.md', notes);
@@ -130,7 +130,7 @@ const cases = [
     path: sessionPath,
     plan: plan(untrusted, [
       { label: 'open', do: 'open', file: 'run.sh' },
-      { label: 'sleep', do: 'sleep', milliseconds: 1500 },
+      { label: 'sleep', do: 'sleep', milliseconds: 1_500 },
       { label: 'notice', do: 'diagnostics', minimum: 1, maximum: 100, seconds: 30 },
       { label: 'close', do: 'close' },
     ]),
@@ -141,7 +141,7 @@ const cases = [
     path: sessionPath,
     plan: plan(outside, [
       { label: 'open', do: 'open', file: 'a.lua' },
-      { label: 'sleep', do: 'sleep', milliseconds: 1500 },
+      { label: 'sleep', do: 'sleep', milliseconds: 1_500 },
       { label: 'notice', do: 'diagnostics', minimum: 1, maximum: 100, seconds: 30 },
       { label: 'close', do: 'close' },
     ]),
@@ -149,10 +149,10 @@ const cases = [
   {
     name: 'hung-mise',
     root: hung,
-    path: fakeBin + ':' + sessionPath,
+    path: `${fakeBin  }:${  sessionPath}`,
     plan: plan(hung, [
       { label: 'open', do: 'open', file: 'run.sh' },
-      { label: 'sleep', do: 'sleep', milliseconds: 1500 },
+      { label: 'sleep', do: 'sleep', milliseconds: 1_500 },
       { label: 'notice', do: 'diagnostics', minimum: 1, maximum: 100, seconds: 60 },
       { label: 'close', do: 'close' },
     ]),
@@ -189,7 +189,7 @@ const leftovers = () => readdirSync('/proc').filter(name => /^\d+$/.test(name)).
     const cwd = readlinkSync(join('/proc', pid, 'cwd'));
     const command = readFileSync(join('/proc', pid, 'cmdline'), 'utf8').split('\0').join(' ').trim();
     const inside = cwd.startsWith(base) || cwd.startsWith(outside);
-    return inside || command === 'sleep 600' ? [pid + ' ' + cwd + ' ' + command] : [];
+    return inside || command === 'sleep 600' ? [`${pid  } ${  cwd  } ${  command}`] : [];
   } catch { return []; }
 });
 
@@ -205,15 +205,15 @@ const noticeText = events => events.filter(event => event.diagnostics).flatMap(e
   .filter(item => item.source === 'language support').map(item => item.message).join('\n');
 
 for (const item of cases) {
-  const planPath = join(results, item.name + '.plan.json');
+  const planPath = join(results, `${item.name  }.plan.json`);
   writeFileSync(planPath, JSON.stringify(item.plan, null, 2));
   const before = snapshot(item.root);
   const started = Date.now();
-  const run = spawnSync(binary, [planPath], { encoding: 'utf8', env: environment(item.path), maxBuffer: 64 * 1024 * 1024 });
-  const seconds = (Date.now() - started) / 1000;
+  const run = spawnSync(binary, [planPath], { encoding: 'utf8', env: environment(item.path), maxBuffer: 64 * 1_024 * 1_024 });
+  const seconds = (Date.now() - started) / 1_000;
   const tree = difference(before, snapshot(item.root));
-  writeFileSync(join(results, item.name + '.events.jsonl'), run.stdout ?? '');
-  writeFileSync(join(results, item.name + '.stderr.txt'), run.stderr ?? '');
+  writeFileSync(join(results, `${item.name  }.events.jsonl`), run.stdout ?? '');
+  writeFileSync(join(results, `${item.name  }.stderr.txt`), run.stderr ?? '');
   if (run.error) throw run.error;
   const events = (run.stdout ?? '').split('\n').filter(Boolean).map(line => JSON.parse(line));
   const steps = events.filter(event => event.step !== undefined);
@@ -221,43 +221,32 @@ for (const item of cases) {
   const replies = events.filter(event => event.reply).map(event => event.reply);
   const hover = replies.map(reply => reply.outcome.text ?? '').join('\n');
   const notice = noticeText(events);
-  const stderr = (run.stderr ?? '').replace(/\u001b\[[0-9;]*m/g, '');
+  const stderr = (run.stderr ?? '').replaceAll(/\u001B\[[0-9;]*m/g, '');
   const elapsed = [...stderr.matchAll(/elapsed_ms=(\d+)/g)].map(found => Number(found[1]));
   const checks = [['process exited cleanly', run.status === 0], ['every step was recorded', steps.length === item.plan.steps.length]];
   if (item.name === 'mise-project-node-server') {
-    checks.push(['mise provided tool directories for the project', /mise provides tool directories for the project/.test(stderr)]);
-    checks.push(['the Node server became ready through mise', result('ready').ready === true]);
-    checks.push(['hover names the function', result('hover').matched === true && hover.includes('greet')]);
-    checks.push(['the notice does not mention mise', !/mise/i.test(notice)]);
+    checks.push(['mise provided tool directories for the project', /mise provides tool directories for the project/.test(stderr)], ['the Node server became ready through mise', result('ready').ready === true], ['hover names the function', result('hover').matched === true && hover.includes('greet')], ['the notice does not mention mise', !/mise/i.test(notice)]);
   }
   if (item.name === 'mise-project-markdown-server') {
-    checks.push(['the Markdown server became ready through mise', result('ready').ready === true]);
-    checks.push(['hover on a wiki link shows the linked note', result('hover').matched === true && hover.includes('Other note')]);
+    checks.push(['the Markdown server became ready through mise', result('ready').ready === true], ['hover on a wiki link shows the linked note', result('hover').matched === true && hover.includes('Other note')]);
   }
   if (item.name === 'mise-project-binary-server') {
-    checks.push(['the binary server became ready through mise', result('ready').ready === true]);
-    checks.push(['taplo is not reported missing and mise has nothing to say', !notice.includes('taplo is not available') && !notice.includes('mise said') && !notice.includes('mise reported')]);
+    checks.push(['the binary server became ready through mise', result('ready').ready === true], ['taplo is not reported missing and mise has nothing to say', !notice.includes('taplo is not available') && !notice.includes('mise said') && !notice.includes('mise reported')]);
   }
   if (item.name === 'untrusted-project') {
-    checks.push(['the notice quotes mise on the untrusted file', notice.includes('mise said:') && notice.includes('are not trusted')]);
-    checks.push(['the notice names the configuration file', notice.includes(join(item.root, 'mise.toml'))]);
-    checks.push(['the notice says the user runs mise trust', notice.includes('run `mise trust` on') && notice.includes('(the IDE never does)')]);
-    checks.push(['the server falls back to PATH and its shim is not started', /bash-language-server is not available: the program 'bash-language-server' for bash-language-server was not found on PATH/.test(notice)]);
+    checks.push(['the notice quotes mise on the untrusted file', notice.includes('mise said:') && notice.includes('are not trusted')], ['the notice names the configuration file', notice.includes(join(item.root, 'mise.toml'))], ['the notice says the user runs mise trust', notice.includes('run `mise trust` on') && notice.includes('(the IDE never does)')], ['the server falls back to PATH and its shim is not started', /bash-language-server is not available: the program 'bash-language-server' for bash-language-server was not found on PATH/.test(notice)]);
   }
   if (item.name === 'folder-without-mise') {
-    checks.push(['the notice keeps the PATH message', /lua-language-server is not available: the program 'lua-language-server' for lua-language-server was not found on PATH\./.test(notice)]);
-    checks.push(['mise is not mentioned', !/mise/i.test(notice)]);
-    checks.push(['mise was not asked to provide anything', !/mise provides tool directories/.test(stderr)]);
+    checks.push(['the notice keeps the PATH message', /lua-language-server is not available: the program 'lua-language-server' for lua-language-server was not found on PATH\./.test(notice)], ['mise is not mentioned', !/mise/i.test(notice)], ['mise was not asked to provide anything', !/mise provides tool directories/.test(stderr)]);
   }
   if (item.name === 'hung-mise') {
-    checks.push(['the hung mise was stopped at the time limit', notice.includes('did not finish within 10 s and was stopped')]);
-    checks.push(['the whole run stayed near the limit', seconds < 40]);
+    checks.push(['the hung mise was stopped at the time limit', notice.includes('did not finish within 10 s and was stopped')], ['the whole run stayed near the limit', seconds < 40]);
   }
   checks.push(['the project tree is unchanged', unchanged(tree)]);
   const left = leftovers();
   checks.push(['no process is left in the fixtures', left.length === 0]);
   summary.cases.push({ name: item.name, seconds, miseMilliseconds: elapsed, tree, leftovers: left, notice, hover: hover.slice(0, 300), checks: checks.map(([name, passed]) => ({ name, passed })) });
-  for (const [name, passed] of checks) report(item.name + ': ' + name, passed);
+  for (const [name, passed] of checks) report(`${item.name  }: ${  name}`, passed);
 }
 
 // Positive control: the comparison sees a `mise.lock`, the file mise writes when it updates a lockfile.
@@ -271,5 +260,5 @@ rmSync(control, { recursive: true, force: true });
 report('no mise.lock exists in any project', [withMise, untrusted, hung, outside].every(root => !existsSync(join(root, 'mise.lock'))));
 
 writeFileSync(join(results, 'results.json'), JSON.stringify(summary, null, 2));
-console.log('Language mise inspection ' + (failed ? 'FAILED' : 'passed') + ': ' + join(results, 'results.json'));
+console.log(`Language mise inspection ${  failed ? 'FAILED' : 'passed'  }: ${  join(results, 'results.json')}`);
 if (failed) process.exitCode = 1;

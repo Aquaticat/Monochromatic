@@ -20,11 +20,11 @@ const binary = resolve('target/debug/ide-language-inspect');
 const store = resolve('../../../node_modules/.pnpm');
 // The private agent scratch root, on the same file system as real projects.
 const privateRoot = join(homedir(), 'temp', 'agent');
-if ((statSync(privateRoot).mode & 0o077) !== 0) throw new Error('Scratch root must exclude group and other permissions: ' + privateRoot);
+if ((statSync(privateRoot).mode & 0o077) !== 0) throw new Error(`Scratch root must exclude group and other permissions: ${  privateRoot}`);
 const base = realpathSync(mkdtempSync(join(privateRoot, 'ide-language-lifecycle-')));
 const results = join(base, 'results');
 mkdirSync(results);
-console.log('LANGUAGE_LIFECYCLE_ARTIFACT=' + base);
+console.log(`LANGUAGE_LIFECYCLE_ARTIFACT=${  base}`);
 
 // region fixtures
 const write = (root, relative, text) => {
@@ -35,12 +35,12 @@ const write = (root, relative, text) => {
 // Character offset (Unicode scalar values, as the application counts) of `needle` plus `within` characters.
 const offsetOf = (text, needle, within = 0) => {
   const index = text.indexOf(needle);
-  if (index < 0) throw new Error('fixture text lacks ' + needle);
+  if (index === -1) throw new Error(`fixture text lacks ${  needle}`);
   return [...text.slice(0, index)].length + within;
 };
 const ts = join(base, 'ts-project');
-write(ts, 'package.json', JSON.stringify({ name: 'lifecycle-ts', private: true, type: 'module' }, null, 2) + '\n');
-write(ts, 'tsconfig.json', JSON.stringify({ compilerOptions: { target: 'es2022', module: 'esnext', moduleResolution: 'bundler', strict: true, noEmit: true }, include: ['src'] }, null, 2) + '\n');
+write(ts, 'package.json', `${JSON.stringify({ name: 'lifecycle-ts', private: true, type: 'module' }, null, 2)  }\n`);
+write(ts, 'tsconfig.json', `${JSON.stringify({ compilerOptions: { target: 'es2022', module: 'esnext', moduleResolution: 'bundler', strict: true, noEmit: true }, include: ['src'] }, null, 2)  }\n`);
 write(ts, 'src/greet.ts', ['/** Build a greeting for one name. */', 'export function greet(name: string): string {', '  return `hello ${name}`;', '}', ''].join('\n'));
 const tsMain = ['import { greet } from "./greet";', '', 'const message = greet("world");', 'console.log(message);', ''].join('\n');
 write(ts, 'src/main.ts', tsMain);
@@ -89,12 +89,12 @@ const surviving = recorded => {
 // Processes carrying the session marker in their environment, or working inside the fixture.
 const marked = marker => readdirSync('/proc').filter(name => /^\d+$/.test(name)).flatMap(pid => {
   let found = false;
-  try { found = readFileSync(join('/proc', pid, 'environ'), 'latin1').includes('IDE_LANGUAGE_SESSION=' + marker); } catch { /* another user's process, or it ended */ }
+  try { found = readFileSync(join('/proc', pid, 'environ'), 'latin1').includes(`IDE_LANGUAGE_SESSION=${  marker}`); } catch { /* another user's process, or it ended */ }
   try { found ||= readlinkSync(join('/proc', pid, 'cwd')).startsWith(base); } catch { /* as above */ }
-  try { return found ? [pid + ' ' + readFileSync(join('/proc', pid, 'comm'), 'utf8').trim()] : []; } catch { return []; }
+  try { return found ? [`${pid  } ${  readFileSync(join('/proc', pid, 'comm'), 'utf8').trim()}`] : []; } catch { return []; }
 });
 // One record of the application log per line; ANSI color sequences removed.
-const logRecords = text => text.replaceAll(/\u001b\[[0-9;]*m/g, '').split('\n').filter(Boolean);
+const logRecords = text => text.replaceAll(/\u001B\[[0-9;]*m/g, '').split('\n').filter(Boolean);
 const levelOf = line => /^\S+\s+(TRACE|DEBUG|INFO|WARN|ERROR)\s/.exec(line)?.[1];
 // Text a process prints when it reports its own shutdown as a failure. It is a bare shutdown error
 // when it reaches the log at WARN or ERROR, or outside any record; below WARN it is labelled for what it is.
@@ -106,7 +106,7 @@ const helixShapes = [
   ['end of server standard error', /helix_lsp::transport: \S+ err: <- StreamClosed$/],
   ['moot error answer', /helix_lsp::transport: \S+ <- ServerError\(-3280[01]\): /],
 ];
-const tomlTable = variables => '{ ' + Object.entries(variables).map(([name, value]) => name + ' = ' + JSON.stringify(value)).join(', ') + ' }';
+const tomlTable = variables => `{ ${  Object.entries(variables).map(([name, value]) => `${name  } = ${  JSON.stringify(value)}`).join(', ')  } }`;
 // endregion
 
 // The application's private state, which holds each server's cargo and cache redirects, goes below the fixture.
@@ -116,9 +116,9 @@ delete environment.CARGO_TARGET_DIR;
 delete environment.CARGO_BUILD_BUILD_DIR;
 const cases = [
   { name: 'typescript', server: 'typescript-native', project: ts, file: 'src/main.ts', at: offsetOf(tsMain, 'greet("world")', 1), warm: 60, hover: 'greet',
-    definition: marker => '[language-server.typescript-native]\ncommand = "node_modules/typescript/bin/tsc"\nenvironment = ' + tomlTable({ IDE_LANGUAGE_SESSION: marker }) + '\n' },
+    definition: marker => `[language-server.typescript-native]\ncommand = "node_modules/typescript/bin/tsc"\nenvironment = ${  tomlTable({ IDE_LANGUAGE_SESSION: marker })  }\n` },
   { name: 'rust', server: 'rust-analyzer', project: rust, file: 'src/main.rs', at: offsetOf(rustMain, 'area(2, 3)', 1), warm: 120, hover: 'area',
-    definition: marker => '[language-server.rust-analyzer]\nenvironment = ' + tomlTable({ IDE_LANGUAGE_SESSION: marker }) + '\n' },
+    definition: marker => `[language-server.rust-analyzer]\nenvironment = ${  tomlTable({ IDE_LANGUAGE_SESSION: marker })  }\n` },
 ];
 const summary = { base, cases: [] };
 let failed = false;
@@ -126,25 +126,25 @@ const record = (name, checks, extra = {}) => {
   summary.cases.push({ name, checks: checks.map(([check, passed]) => ({ check, passed })), ...extra });
   for (const [check, passed] of checks) {
     if (!passed) failed = true;
-    console.log((passed ? 'PASS ' : 'FAIL ') + name + ': ' + check);
+    console.log(`${(passed ? 'PASS ' : 'FAIL ') + name  }: ${  check}`);
   }
   writeFileSync(join(results, 'results.json'), JSON.stringify(summary, null, 2));
 };
 
 // region part 1: open, one request, close, and the worker's own shutdown.
 for (const item of cases) {
-  const marker = 'quiet-' + item.name + '-' + process.pid;
+  const marker = `quiet-${  item.name  }-${  process.pid}`;
   const plan = { project: item.project, extra_languages: item.definition(marker), steps: [
     { label: 'open', do: 'open', file: item.file },
     { label: 'ready', do: 'ready', seconds: item.warm },
     { label: 'hover', do: 'request', kind: 'hover', at: item.at, until: 'hover', seconds: item.warm },
     { label: 'close', do: 'close' },
   ] };
-  const planPath = join(results, item.name + '.quiet.plan.json');
+  const planPath = join(results, `${item.name  }.quiet.plan.json`);
   writeFileSync(planPath, JSON.stringify(plan, null, 2));
-  const run = spawnSync(binary, [planPath], { encoding: 'utf8', env: environment, maxBuffer: 64 * 1024 * 1024 });
-  writeFileSync(join(results, item.name + '.quiet.events.jsonl'), run.stdout ?? '');
-  writeFileSync(join(results, item.name + '.quiet.log.txt'), run.stderr ?? '');
+  const run = spawnSync(binary, [planPath], { encoding: 'utf8', env: environment, maxBuffer: 64 * 1_024 * 1_024 });
+  writeFileSync(join(results, `${item.name  }.quiet.events.jsonl`), run.stdout ?? '');
+  writeFileSync(join(results, `${item.name  }.quiet.log.txt`), run.stderr ?? '');
   if (run.error) throw run.error;
   const events = (run.stdout ?? '').split('\n').filter(Boolean).map(line => JSON.parse(line));
   const steps = events.filter(event => event.step !== undefined);
@@ -159,45 +159,45 @@ for (const item of cases) {
   const state = join(base, 'app-cache', 'monochromatic-ide', 'language');
   const confined = existsSync(state) && readdirSync(state, { recursive: true }).some(path => path.endsWith(item.server));
   const left = marked(marker);
-  record(item.name + ' quiet shutdown', [
+  record(`${item.name  } quiet shutdown`, [
     ['the application process exited with status 0', run.status === 0],
     ['every step was recorded', steps.length === plan.steps.length],
     ['hover names the called function', steps[2]?.result.matched === true && hoverText.includes(item.hover)],
     ['the server ran with private sandbox state', confined],
-    ['the log has no ERROR-level record (' + errors.length + ' found)', errors.length === 0],
-    ['the log has no bare shutdown error (' + bare.length + ' found)', bare.length === 0],
-    ['helix-lsp\'s healthy-server records are in the log below WARN (' + relabelled.length + ' found, ' + loud.length + ' at WARN or above)', relabelled.length > 0 && loud.length === 0],
+    [`the log has no ERROR-level record (${  errors.length  } found)`, errors.length === 0],
+    [`the log has no bare shutdown error (${  bare.length  } found)`, bare.length === 0],
+    [`helix-lsp's healthy-server records are in the log below WARN (${  relabelled.length  } found, ${  loud.length  } at WARN or above)`, relabelled.length > 0 && loud.length === 0],
     ['no server or sandbox process is left', left.length === 0],
   ], { errors, bare, warnings: lines.filter(line => levelOf(line) === 'WARN'), left, records: lines.length, shapes, relabelled: relabelled.map(entry => entry.line.slice(0, 300)) });
-  for (const line of new Set([...errors, ...bare, ...loud.map(entry => entry.line)])) console.log('     ' + line.slice(0, 300));
-  console.log('     helix-lsp healthy-server records by shape, with their levels: ' + JSON.stringify(shapes));
+  for (const line of new Set([...errors, ...bare, ...loud.map(entry => entry.line)])) console.log(`     ${  line.slice(0, 300)}`);
+  console.log(`     helix-lsp healthy-server records by shape, with their levels: ${  JSON.stringify(shapes)}`);
 }
 // endregion
 
 // region part 2: SIGKILL of the application process while a server is ready and has answered.
 for (const item of cases) {
-  const marker = 'killed-' + item.name + '-' + process.pid;
+  const marker = `killed-${  item.name  }-${  process.pid}`;
   const plan = { project: item.project, extra_languages: item.definition(marker), steps: [
     { label: 'open', do: 'open', file: item.file },
     { label: 'ready', do: 'ready', seconds: item.warm },
     { label: 'hover', do: 'request', kind: 'hover', at: item.at, until: 'hover', seconds: item.warm },
     // The application process is ended from outside during this step.
-    { label: 'idle', do: 'sleep', milliseconds: 600000 },
+    { label: 'idle', do: 'sleep', milliseconds: 600_000 },
   ] };
-  const planPath = join(results, item.name + '.killed.plan.json');
+  const planPath = join(results, `${item.name  }.killed.plan.json`);
   writeFileSync(planPath, JSON.stringify(plan, null, 2));
   const child = spawn(binary, [planPath], { env: environment, stdio: ['ignore', 'pipe', 'pipe'] });
   let output = '';
   let log = '';
   child.stdout.on('data', chunk => { output += chunk; });
   child.stderr.on('data', chunk => { log += chunk; });
-  const ended = new Promise(done => child.on('exit', (code, signal) => done({ code, signal })));
+  const ended = new Promise(done => child.on('exit', (code, signal) =>{  done({ code, signal }); }));
   const answered = () => output.split('\n').filter(Boolean).some(line => { try { const event = JSON.parse(line); return event.step === 2 && event.result.matched === true; } catch { return false; } });
-  const deadline = Date.now() + (item.warm * 2 + 30) * 1000;
+  const deadline = Date.now() + (item.warm * 2 + 30) * 1_000;
   while (!answered() && child.exitCode === null && Date.now() < deadline) await wait(100);
   const hoverAnswered = answered();
   // Let background work that follows the first answer (cargo check, project loading) get under way.
-  await wait(2000);
+  await wait(2_000);
   const before = descendants(child.pid);
   const markedBefore = marked(marker);
   child.kill('SIGKILL');
@@ -205,24 +205,24 @@ for (const item of cases) {
   const ticks = [];
   const started = Date.now();
   for (const second of [0, 1, 5, 10]) {
-    await wait(Math.max(0, second * 1000 - (Date.now() - started)));
-    ticks.push({ second, descendants: surviving(before).map(entry => entry.pid + ' ' + entry.name), marked: marked(marker) });
+    await wait(Math.max(0, second * 1_000 - (Date.now() - started)));
+    ticks.push({ second, descendants: surviving(before).map(entry => `${entry.pid  } ${  entry.name}`), marked: marked(marker) });
   }
-  writeFileSync(join(results, item.name + '.killed.events.jsonl'), output);
-  writeFileSync(join(results, item.name + '.killed.log.txt'), log);
+  writeFileSync(join(results, `${item.name  }.killed.events.jsonl`), output);
+  writeFileSync(join(results, `${item.name  }.killed.log.txt`), log);
   const last = ticks.at(-1);
   const firstEmpty = ticks.find(tick => tick.descendants.length === 0 && tick.marked.length === 0)?.second;
-  record(item.name + ' SIGKILL of the application', [
+  record(`${item.name  } SIGKILL of the application`, [
     ['the server answered a hover before the application was ended', hoverAnswered],
     ['the application was ended by SIGKILL', outcome.signal === 'SIGKILL'],
     ['a bubblewrap process and a server process were running', before.some(entry => entry.name === 'bwrap') && before.length >= 2 && markedBefore.length > 0],
     ['no descendant of the application is left after 10 s', last.descendants.length === 0],
     ['no process with the session marker or inside the fixture is left after 10 s', last.marked.length === 0],
-  ], { before: before.map(entry => entry.pid + ' ' + entry.name + ' parent ' + entry.parent), markedBefore, ticks, firstEmptySecond: firstEmpty });
-  console.log('     processes before: ' + before.map(entry => entry.name).join(', ') + '; first empty tick: ' + (firstEmpty ?? 'none') + ' s');
+  ], { before: before.map(entry => `${entry.pid  } ${  entry.name  } parent ${  entry.parent}`), markedBefore, ticks, firstEmptySecond: firstEmpty });
+  console.log(`     processes before: ${  before.map(entry => entry.name).join(', ')  }; first empty tick: ${  firstEmpty ?? 'none'  } s`);
 }
 // endregion
 
 writeFileSync(join(results, 'results.json'), JSON.stringify(summary, null, 2));
-console.log('Language lifecycle ' + (failed ? 'FAILED' : 'passed') + ': ' + join(results, 'results.json'));
+console.log(`Language lifecycle ${  failed ? 'FAILED' : 'passed'  }: ${  join(results, 'results.json')}`);
 if (failed) process.exitCode = 1;
