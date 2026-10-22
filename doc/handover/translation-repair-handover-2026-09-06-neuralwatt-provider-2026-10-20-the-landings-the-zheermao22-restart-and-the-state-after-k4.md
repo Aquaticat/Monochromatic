@@ -472,3 +472,36 @@ State before `zheermao23`,
 - Next:
   launch `zheermao23` (entry `zheermao101`) at or after 19:15 UTC on 2026-10-22 through the launcher,
   then `CuspariaKLSY23` and `XingZ6018`.
+
+State after the owner's answers,
+2026-10-22 (UTC):
+
+- The owner answered the four open questions:
+  keep the Mercury first-content window of 90000 ms and recheck it ("Keep,
+  recheck"),
+  take Qwen off both benches ("Remove from both benches"),
+  let the straggler grace open for a short bench's last seat ("Let the grace open"),
+  and exempt code blocks from the Rust rules in `doc/troubleshooting/**/*.md`.
+  The last three landed as `8864316eb2` after gate g165 (2764 pass,
+  0 fail) and a clean rotation sweep (salts 1 to 9,
+  3264 s).
+  The ledgers and `doc/decision/translation-repair-straggler-grace.md` record them.
+- The branch worktree was fast-forwarded to `8864316eb2` and force-built;
+  its digest,
+  `sha256-tree-v1:4e516f924c6f27eafe29e0d139d0cd04de5494428fc174da007db197d93f1f70`,
+  is the launcher's `FROZEN`.
+- The owner,
+  at about 12:30 UTC:
+  "You don't need to align launches to NeuralWatt starts."
+  The wait for 19:15 UTC in this handover's earlier states is retired;
+  `doc/decision/translation-repair-neuralwatt-provider.md` records the ruling under "When a pass launches".
+- `zheermao23` (entry `zheermao101`) launched through the launcher at 12:30:44 UTC.
+  The launcher printed `FROZEN BUILD MATCHES; run continues`,
+  and the run logged `START tip=8864316eb29b9848d95ceeaf4c039671c0c430e8` with the frozen digest.
+  The NeuralWatt day that began at 19:15:08 UTC on 2026-10-21 was spent,
+  so NeuralWatt serves from 19:15:08 UTC if the run is still going then.
+- Next:
+  read `zheermao23` when it settles,
+  with Mercury's first-content figures for the recheck,
+  then launch `CuspariaKLSY23` and `XingZ6018`,
+  each as soon as the one before is read.
