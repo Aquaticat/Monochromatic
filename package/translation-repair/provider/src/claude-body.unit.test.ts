@@ -21,6 +21,7 @@ import {
   ANTHROPIC_SERVED_IDS,
   type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract';
+import { rejectionOf, } from '@monochromatic-dev/translation-repair-test-fixture/ts/rejecting-call.test-fixture.ts';
 import { createClaudeClient, } from '../dist/final/node/index.mjs';
 import {
   firstBodyOf,
@@ -154,6 +155,55 @@ await describe({
             expect(body['model'],).toBe(modelId.startsWith('claude-sonnet',) ? 'claude-sonnet-5-5' : 'claude-haiku-5-5',);
           }
         }
+      },
+    },),
+    it({
+      name: 'SENDS NO SAMPLING KNOB: temperature, top_p and top_k are refused with 400 at any non-default value, so '
+        + 'a request that happens to carry them reaches the wire with only the members this client names',
+      fn: async () => {
+        const body = await bodySentFor({
+          modelId: 'claude-sonnet-5-5',
+          withSchema: true,
+          extra: { temperature: 0.2, top_p: 0.9, top_k: 40, },
+        },);
+        expect(Object.keys(body,).toSorted(),).toEqual([
+          'max_tokens',
+          'messages',
+          'model',
+          'output_config',
+          'stream',
+          'system',
+          'thinking',
+        ],);
+      },
+    },),
+
+    it({
+      name: 'REFUSES A CONVERSATION THAT ENDS ON AN ASSISTANT TURN, by a named error before any request is built, '
+        + 'because an assistant prefill is refused with 400 on both models',
+      fn: async () => {
+        const { transport, exchanges, } = scripted({
+          replies: [{
+            status: 200,
+            bodyText: claudeStreamOf({ text: '{"spot":"sunbeam"}', stopReason: 'end_turn', usage: PLAIN_USAGE, }),
+          },],
+        },);
+
+        const failure: unknown = await rejectionOf(
+          () =>
+            createClaudeClient({ apiKey: CLAUDE_CAT_KEY, transport, retryPolicy: ONE_QUICK_RETRY, },)
+              .chatText({
+                modelId: 'claude-haiku-5-5',
+                messages: [
+                  { role: 'user', content: 'Where does the cat sleep?', },
+                  { role: 'assistant', content: '{"spot":"', },
+                ],
+                signal: SIGNAL,
+              },),
+        );
+
+        expect((failure as Error).name,).toBe('ClaudePrefillError',);
+        expect(exchanges.length,).toBe(0,);
       },
     },),
   ],
