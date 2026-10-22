@@ -6,29 +6,13 @@
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { createConnection } from 'node:net';
-import {
-  mkdirSync,
-  writeFileSync,
-  readFileSync,
-  copyFileSync,
-  existsSync
-} from 'node:fs';
-import {
-  join,
-  resolve
-} from 'node:path';
+import { mkdirSync, writeFileSync, readFileSync, copyFileSync, existsSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 
-const [application, output, compositorArg] = process.argv
-  .slice(2);
-const compositor = compositorArg ?? resolve(
-  import.meta.dirname,
-  '../../../cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session'
-);
+const [application, output, compositorArg] = process.argv.slice(2);
+const compositor = compositorArg ?? resolve(import.meta.dirname, '../../../cli/nested-wayland-session/target/release/monochromatic-nested-wayland-session');
 import { inflateSync } from 'node:zlib';
-
-function flatpng => {
-  const chunks = [];
-  for (let offset = 8; offset < png.length;) {
+const flat = png => {
   const chunks = [];
   for (let offset = 8; offset < png.length;) {
     const length = png.readUInt32BE(offset);
@@ -43,12 +27,9 @@ function flatpng => {
     for (let column = row % 61; column < width; column += 61) colors.add(rows.readUInt32BE(row * stride + 1 + column * 4));
   }
   return colors.size <= 8;
-}
-function waitms => new Promise(done => setTimeout(done, ms)) { return new Promise(done => setTimeout(done, ms)) }
-mkdirSync(
-  output,
-  { recursive: true }
-);
+};
+const wait = ms => new Promise(done => setTimeout(done, ms));
+mkdirSync(output, { recursive: true });
 const sample = [
   '// A long comment line that goes on and on to show how the text wraps at the right edge of the text area, with the number only on its first row.',
   'fn main() {',
@@ -56,88 +37,39 @@ const sample = [
   '        let deeply_indented = compute_total(first_item, second_item, third_item, fourth_item, fifth_item, sixth_item, seventh_item); // a trailing comment',
   '    short();',
   '\tlet tabbed = values.iter().map(|value| value * 2).filter(|value| value % 3 == 0).collect::<Vec<u32>>().len(); // tab indented and long',
-  `    let unbroken = "${  'x'.repeat(190)  }";`,
+  '    let unbroken = "' + 'x'.repeat(190) + '";',
   '}',
   '',
 ].join('\n');
-for (const scheme of [
-  'light',
-  'dark'
-]) {
-  const directory = join(
-    output,
-    'work-' + scheme
-  );
-  const project = join(
-    directory,
-    'project'
-  );
-  mkdirSync(
-    project,
-    { recursive: true }
-  );
-  mkdirSync(
-    join(directory, 'data'),
-    { recursive: true }
-  );
-  writeFileSync(
-    join(project, 'sample.rs'),
-    sample
-  );
-  const env = {
-    ...process.env,
-    XDG_CONFIG_HOME: join(directory, 'config'),
-    XDG_CACHE_HOME: join(directory, 'cache'),
-    XDG_DATA_HOME: join(directory, 'data')
-  };
-  for (const key of [
-    'HELIX_RUNTIME',
-    'CARGO_MANIFEST_DIR',
-    'SLINT_BACKEND',
-    'SLINT_SCALE_FACTOR'
-  ]) delete env[key];
-  const socket = join(
-    directory,
-    'control.sock'
-  );
-  const child = spawn(
-    compositor,
-    ['--socket', socket, '--size', '1100x660', '--color-scheme', scheme, '--', application, project, '--file', 'sample.rs'],
-    { cwd: '/', env, stdio: ['ignore', 'pipe', 'pipe'] }
-  );
+for (const scheme of ['light', 'dark']) {
+  const directory = join(output, 'work-' + scheme);
+  const project = join(directory, 'project');
+  mkdirSync(project, { recursive: true });
+  mkdirSync(join(directory, 'data'), { recursive: true });
+  writeFileSync(join(project, 'sample.rs'), sample);
+  const env = { ...process.env, XDG_CONFIG_HOME: join(directory, 'config'), XDG_CACHE_HOME: join(directory, 'cache'), XDG_DATA_HOME: join(directory, 'data') };
+  for (const key of ['HELIX_RUNTIME', 'CARGO_MANIFEST_DIR', 'SLINT_BACKEND', 'SLINT_SCALE_FACTOR']) delete env[key];
+  const socket = join(directory, 'control.sock');
+  const child = spawn(compositor, ['--socket', socket, '--size', '1100x660', '--color-scheme', scheme, '--', application, project, '--file', 'sample.rs'], { cwd: '/', env, stdio: ['ignore', 'pipe', 'pipe'] });
   const chunks = [];
-  child.stdout
-    .on('data', chunk => chunks.push(chunk));
-  child.stderr
-    .on('data', chunk => chunks.push(chunk));
-  const exited = once(
-    child,
-    'exit'
-  );
-  function controlline => new Promise((resolveReply, reject) => {
+  child.stdout.on('data', chunk => chunks.push(chunk));
+  child.stderr.on('data', chunk => chunks.push(chunk));
+  const exited = once(child, 'exit');
+  const control = line => new Promise((resolveReply, reject) => {
     const connection = createConnection(socket);
     let reply = '';
     connection.on('error', reject);
-    connection.on('close', () =>{  reject(new Error('closed without a reply to ' + line)); });
+    connection.on('close', () => reject(new Error('closed without a reply to ' + line)));
     connection.on('data', chunk => { reply += chunk; if (reply.includes('\n')) { connection.end(); resolveReply(reply.trim()); } });
     connection.write(line + '\n');
-  }) { return new Promise((resolveReply, reject) => {
-    const connection = createConnection(socket);
-    let reply = '';
-    connection.on('error', reject);
-    connection.on('close', () =>{  reject(new Error('closed without a reply to ' + line)); });
-    connection.on('data', chunk => { reply += chunk; if (reply.includes('\n')) { connection.end(); resolveReply(reply.trim()); } });
-    connection.write(line + '\n');
-  }) }
+  });
   try {
-    const deadline = Date.now() + 120_000;
-    while (!(await control('ping')
-      .then(reply => reply.startsWith('ok'), () => false))) {
+    const deadline = Date.now() + 120000;
+    while (!(await control('ping').then(reply => reply.startsWith('ok'), () => false))) {
       if (Date.now() > deadline) throw new Error('compositor did not answer');
       await wait(100);
     }
-    async function shotname => {
-      const path = join(output, name) {
+    const shot = async name => {
       const path = join(output, name);
       let previous;
       for (let attempt = 0; attempt < 120; attempt++) {
@@ -148,32 +80,25 @@ for (const scheme of [
         await wait(300);
       }
       throw new Error('frame never settled: ' + name);
-    }
-    await wait(4_000);
-    await shot(`wrap-${  scheme  }.png`);
+    };
+    await wait(4000);
+    await shot('wrap-' + scheme + '.png');
     // Drag a selection from the middle of the first long row to the middle of the third long line, across wrapped rows.
     console.log(await control('click 400 56'));
     await wait(700);
-    await shot('wrap-' + scheme
-      + '-click.png');
+    await shot('wrap-' + scheme + '-click.png');
     await control('key shift press');
     await wait(200);
     console.log(await control('click 520 230'));
     await wait(300);
     await control('key shift release');
     await wait(500);
-    await shot(`wrap-${  scheme  }-selection.png`);
+    await shot('wrap-' + scheme + '-selection.png');
     await control('quit');
     await exited;
   } finally {
-    if (child.exitCode === null) { await control('quit')
-      .catch(() => undefined);
-    await wait(2_000);
-    child.kill('SIGKILL'); }
-    writeFileSync(
-      join(output, 'session-' + scheme + '.log'),
-      Buffer.concat(chunks).toString()
-    );
+    if (child.exitCode === null) { await control('quit').catch(() => undefined); await wait(2000); child.kill('SIGKILL'); }
+    writeFileSync(join(output, 'session-' + scheme + '.log'), Buffer.concat(chunks).toString());
   }
 }
 console.log('done');

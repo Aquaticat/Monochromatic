@@ -8,101 +8,46 @@
 // Compare rounds with each other before comparing variants: on a machine whose disk stalls, one round
 // differed from the next by more than the variants did.
 import { spawnSync } from 'node:child_process';
-import {
-  cpSync,
-  existsSync,
-  mkdirSync,
-  mkdtempSync,
-  readFileSync,
-  readdirSync,
-  realpathSync,
-  statSync,
-  writeFileSync
-} from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
-import {
-  join,
-  relative,
-  sep
-} from 'node:path';
+import { join, relative, sep } from 'node:path';
 import { containerBounds } from './container-bounds.ts';
 
 // The bound of every container this script starts: the shared computed share of the host, or the caller's IDE_CONTAINER_* values.
 const containerLimits = containerBounds();
 
-const privateRoot = join(
-  homedir(),
-  'temp',
-  'agent'
-);
-if ((statSync(privateRoot)
-  .mode
-  & 0o077) !== 0) throw new Error(`Scratch root must exclude group and other permissions: ${  privateRoot}`);
-function disposable(value, what) {
+const privateRoot = join(homedir(), 'temp', 'agent');
+if ((statSync(privateRoot).mode & 0o077) !== 0) throw new Error('Scratch root must exclude group and other permissions: ' + privateRoot);
+const disposable = (value, what) => {
   const resolved = realpathSync(value);
   if (!resolved.startsWith(realpathSync(privateRoot) + sep) || !statSync(resolved).isDirectory()) throw new Error(what + ' must be a disposable directory below ' + privateRoot);
   return resolved;
-}
-if (!process.env
-  .usage_cache) throw new Error('Provide the disposable Cargo target-cache directory');
-const cache = disposable(
-  process.env.usage_cache,
-  'Target cache'
-);
-const cargoHome = process.env
-  .usage_cargo ? disposable(
-  process.env.usage_cargo,
-  'Cargo home copy'
-) : 'ide-cargo';
-const runs = Number(process.env
-  .usage_runs
-  ?? 600);
-const parallel = Number(process.env
-  .usage_parallel
-  ?? 16);
-const rounds = Number(process.env
-  .usage_rounds
-  ?? 2);
-if (![
-  runs,
-  parallel,
-  rounds
-].every(value => Number.isInteger(value) && (value >= 1))) throw new Error('runs, parallel, and rounds must be positive whole numbers');
-const artifact = mkdtempSync(join(
-  privateRoot,
-  'ide-language-reap-rate-'
-));
-const source = join(
-  artifact,
-  'package'
-);
+};
+if (!process.env.usage_cache) throw new Error('Provide the disposable Cargo target-cache directory');
+const cache = disposable(process.env.usage_cache, 'Target cache');
+const cargoHome = process.env.usage_cargo ? disposable(process.env.usage_cargo, 'Cargo home copy') : 'ide-cargo';
+const runs = Number(process.env.usage_runs ?? 600);
+const parallel = Number(process.env.usage_parallel ?? 16);
+const rounds = Number(process.env.usage_rounds ?? 2);
+if (![runs, parallel, rounds].every(value => Number.isInteger(value) && value >= 1)) throw new Error('runs, parallel, and rounds must be positive whole numbers');
+const artifact = mkdtempSync(join(privateRoot, 'ide-language-reap-rate-'));
+const source = join(artifact, 'package');
 const origin = process.cwd();
-cpSync(
-  origin,
-  source,
-  { recursive: true, filter: path => !['target', '.git', 'node_modules'].includes(relative(origin, path).split(sep)[0]) }
-);
-mkdirSync(
-  join(source, 'target'),
-  { recursive: true }
-);
-console.log(`LANGUAGE_REAP_RATE_ARTIFACT=${  artifact}`);
+cpSync(origin, source, { recursive: true, filter: path => !['target', '.git', 'node_modules'].includes(relative(origin, path).split(sep)[0]) });
+mkdirSync(join(source, 'target'), { recursive: true });
+console.log('LANGUAGE_REAP_RATE_ARTIFACT=' + artifact);
 
-function bounded(volumes, command) { return spawnSync('podman', [
+const bounded = (volumes, command) => spawnSync('podman', [
   'run', '--rm', '--network=none', ...containerLimits.limitArguments,
   '--security-opt', 'label=disable',
   '--volume', source + ':/work', '--volume', cache + ':/work/target', ...volumes,
   '--workdir', '/work', ...containerLimits.environmentArguments, '--env', 'HELIX_RUNTIME=/work/target/debug/runtime',
   'localhost/monochromatic/ide', ...command,
-], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 }) }
+], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
 // The tests whose last step is "no child process is left": two servers that end by themselves, and one that must be killed.
-const tests = [
-  'lifecycle::dropping_the_worker_leaves_no_child_process',
-  'lifecycle::server_that_ignores_exit_is_killed_and_reaped_before_the_drop_returns'
-];
+const tests = ['lifecycle::dropping_the_worker_leaves_no_child_process', 'lifecycle::server_that_ignores_exit_is_killed_and_reaped_before_the_drop_returns'];
 const results = [];
-function measurelabel => {
-  const build = bounded(['--volume', cargoHome + ':/cargo'], ['cargo', 'test', '--offline', '--no-default-features', '--test', 'language', '--no-run']) {
+const measure = label => {
   const build = bounded(['--volume', cargoHome + ':/cargo'], ['cargo', 'test', '--offline', '--no-default-features', '--test', 'language', '--no-run']);
   writeFileSync(join(artifact, label + '-build.log'), (build.stdout ?? '') + (build.stderr ?? ''));
   if (build.status !== 0) throw new Error('The test binary did not build for ' + label + '; inspect ' + artifact);
@@ -132,53 +77,31 @@ function measurelabel => {
     writeFileSync(join(artifact, 'results.json'), JSON.stringify(results, null, 2));
     console.log(JSON.stringify(results.at(-1)));
   }
-}
-function replaceOne(text, before, after) {
+};
+const replaceOne = (text, before, after) => {
   const start = text.indexOf(before);
   if (start < 0) throw new Error('Mutation source anchor is absent: ' + before);
   if (text.indexOf(before, start + before.length) >= 0) throw new Error('Mutation source anchor is ambiguous: ' + before);
   return text.slice(0, start) + after + text.slice(start + before.length);
-}
+};
 // The shutdown as it was: a fixed 50 ms pause inside the worker's runtime, and no reaping after it.
-const worker = join(
-  source,
-  'src/language/worker.rs'
-);
-const current = readFileSync(
-  worker,
-  'utf8'
-);
+const worker = join(source, 'src/language/worker.rs');
+const current = readFileSync(worker, 'utf8');
 const former = replaceOne(
-  replaceOne(
-    current,
-    '            drop(runtime);\n            reap::finish(REAP_GRACE);\n',
-    ''
-  ),
+  replaceOne(current, '            drop(runtime);\n            reap::finish(REAP_GRACE);\n', ''),
   '        drop(self.session);\n        drop(self.registry);\n    }',
   '        drop(self.session);\n        drop(self.registry);\n        tokio::time::sleep(Duration::from_millis(50)).await;\n    }',
 );
 try {
   for (let round = 1; round <= rounds; round += 1) {
-    writeFileSync(
-      worker,
-      current
-    );
-    measure(`reaping-${  round}`);
-    writeFileSync(
-      worker,
-      former
-    );
-    measure(`fixed-pause-${  round}`);
+    writeFileSync(worker, current);
+    measure('reaping-' + round);
+    writeFileSync(worker, former);
+    measure('fixed-pause-' + round);
   }
-} finally { writeFileSync(
-  worker,
-  current
-); }
-function total(prefix, test, kind) { return results.filter(item => item.label.startsWith(prefix) && item.test === test).reduce((sum, item) => sum + item[kind], 0) }
+} finally { writeFileSync(worker, current); }
+const total = (prefix, test, kind) => results.filter(item => item.label.startsWith(prefix) && item.test === test).reduce((sum, item) => sum + item[kind], 0);
 for (const test of tests) {
-  for (const variant of [
-    'fixed-pause',
-    'reaping'
-  ]) console.log(`${test  } with ${  variant  }, of ${  runs * rounds  } runs: ${  ['zombie', 'running', 'other'].map(kind => total(variant, test, kind) + ' ' + kind).join(', ')}`);
+  for (const variant of ['fixed-pause', 'reaping']) console.log(test + ' with ' + variant + ', of ' + runs * rounds + ' runs: ' + ['zombie', 'running', 'other'].map(kind => total(variant, test, kind) + ' ' + kind).join(', '));
 }
-console.log(`Language reap rates: ${  join(artifact, 'results.json')}`);
+console.log('Language reap rates: ' + join(artifact, 'results.json'));
