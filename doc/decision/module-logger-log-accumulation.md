@@ -16,6 +16,12 @@ The recommended alternative (L1,
 per-project user state)
 was rejected in favor of logs staying beside their tree.
 
+The day-directory layout under that destination was confirmed 2026-10-22:
+the zero-path-change phrasing in the accepted L2 wording is superseded
+by the recorded nesting `{YYYY-MM-DD}/{timestamp}.{uuid}.log.jsonl`,
+because age sweeps delete whole day directories
+instead of walking every file.
+
 ## Context
 
 The file sink wrote one `{timestamp}.{uuid}.log.jsonl` per process
