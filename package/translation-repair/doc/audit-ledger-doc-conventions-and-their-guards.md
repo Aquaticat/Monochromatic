@@ -752,3 +752,83 @@ each fixed in the commit that met it:
   (a commit comment corrects it).
 - `translate-assemble-refusals.unit.test.ts`'s "every case before this" stood in the file's first case
   and meant the cases written before it.
+
+## D35: the Markdown linter had no gate in the family, and the findings D27 fixed came back
+
+Status:
+fixed 2026-10-22 (UTC),
+found the same day when `mise run //:lint:monochromatic-lint` over the family's docs reported 90 findings on `main` at `05d6758249`,
+all `markdown/semantic-line-breaks`,
+in nine docs:
+the audit ledger's file of folds and quote forms (10),
+its file of follow-ups on emphasis,
+definitions,
+cache accounts and Synthetic quota (41),
+its file of outcome rules and stage records (18),
+the consistency pass file of the design commitments (5),
+two files of this record's prevention rules (5 and 3),
+the seats and calibration page (1),
+the OpenRouter pass log's file of 2026-10-18 (4)
+and the package split plan (3).
+D27 had fixed every one of these docs with `--fix`.
+The text added since was written in long lines,
+and nothing failed.
+
+Cause:
+D27 recorded that the root `lint:markdown` gated nothing (tree-wide findings numbered in the tens of thousands)
+and fixed the docs by hand without adding a task that reads the linter's output.
+The family's tasks (`mise.toml` of each package under `package/translation-repair`) run oxlint,
+the type check and the unit tests,
+and no source-scan read a Markdown finding,
+so a long line in a ledger entry was invisible to every gate.
+The root task now named `lint:monochromatic-lint` walks the whole tree,
+where 84,918 findings under `doc` alone (81,516 of them `semantic-line-breaks`) drown the family's.
+
+Fix:
+
+- `510de25a89` adds `markdown-lint-clean.unit.test.ts` to `source-scan` and to its `source-scans` task,
+  which builds `adjudication` first for the keyless child fixture the test starts the linter through.
+  It runs `monochromatic-lint` from the repository root over the package docs and READMEs,
+  the living repository-level docs of `readLivingRepositoryDocs`,
+  and `doc/planning/translation-repair-package-split.md`,
+  which every package README links and no split audit pins.
+  It reads the linter's JSON lines and fails on any finding,
+  each named `path:line:column rule`.
+  A run that exits other than 0 or 1 (a missing path,
+  a linter that cannot finish) fails the case and is never read as clean.
+  `5247329ee3` moved the fixture case onto the findings helper,
+  since the guard on scan comparisons rejects `toEqual` on a scan's findings.
+- The fixture case runs the linter under the root configuration over a planted file that runs on past a comma
+  (one finding at line 1,
+  column 14),
+  a planted file that breaks after it (none),
+  and a path matching nothing (exit 2,
+  refused).
+  The docs case failed on the unfixed docs before any fix,
+  with exactly the 90 findings in the nine docs this entry names,
+  which shows it can find the class in the real docs.
+- `881871abf7` and `932b4236b9` fixed eight of the nine docs,
+  one line break to a finding.
+  Each doc has the same words before and after and parses to the same tree of Markdown nodes
+  (`~/temp/agent/tr-fan/w266-scratch/verify.ts`,
+  which compares whitespace-normalised words and the parsed tree against `HEAD`);
+  none holds a character outside the Basic Multilingual Plane,
+  so `--fix` was safe (D27).
+  The guard then reported only the ninth doc,
+  `audit-ledger-outcome-rules-and-stage-records.md`,
+  whose 18 findings another branch fixes.
+
+Not covered:
+the archives D27 keeps byte for byte
+(the dated snapshots,
+the history,
+run-continuity and interface-candidate files)
+are not read,
+and the 2026-08-29 snapshot still carries its one finding.
+Repository-level docs outside the `translation-repair` name stems,
+among them `doc/planning/the-third-rendering*.md`,
+`doc/handover/two-lane-outcome-vocabulary*.md` and `doc/planning/wire-the-heading-aligner.md`,
+which `doc-line-limit.unit.test.ts` counts as the family's through its `OTHER_STEMS`,
+fail the linter too and are not read by this guard:
+D27 names none of them,
+and whether they join the living set is the owner's decision.

@@ -66,12 +66,14 @@ named for that subject and listed here.
   current-state docs,
   references in code and docs,
   dates and clock times,
-  and how long a doc may grow.
+  how long a doc may grow,
+  and the Markdown linter.
   Sections:
   - [Current-state docs](mistake-prevention-docs-and-references.md#current-state-docs)
   - [References in code and docs](mistake-prevention-docs-and-references.md#references-in-code-and-docs)
   - [Dates and clock times](mistake-prevention-docs-and-references.md#dates-and-clock-times)
   - [Docs that only grow](mistake-prevention-docs-and-references.md#docs-that-only-grow)
+  - [The Markdown linter](mistake-prevention-docs-and-references.md#the-markdown-linter)
 - [Preventing mistakes: the real world, clocks and arrival order](mistake-prevention-tests-clocks-and-arrival-order.md):
   Rules for tests and code that meet the world outside them:
   real files,
