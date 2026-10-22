@@ -335,12 +335,32 @@ Answers (scale: much smaller -2, smaller -1, about the same 0, larger 1, much la
 
 The browser was Firefox ESR, not Chromium: the human said `xdg-open` opens their Firefox ESR, which the lead agent
 learned after the tests and after verifying every page only in Chromium.
-So the reference paragraph and the control sample were drawn in the face Firefox takes for generic `sans-serif`
-(Noto Sans by the fontconfig rule in Firefox's `gfxFcPlatformFontList.cpp`, unless the human's preferences differ),
-not Liberation Sans, and the replica comparison below was Firefox's rendering against the real app, while the
-replica was measured in Chromium.
-An agent is checking the human's relevant Firefox preferences and how Firefox renders the replica and Inter's optical
-size axis; its result is not in this doc yet.
+A subagent then read only the font, zoom and scaling preferences of the human's Firefox profile
+(`prefs.js`; there is no `user.js`) and rendered the pages in a private temporary profile:
+- The human's preferences set `font.name.sans-serif.x-western` to "Inter Variable", `font.name.serif.x-western` to
+  "Inter Variable" and `font.name.monospace.x-western` to "JetBrains Mono".
+  Nothing else changes size: `font.minimum-size`, `font.size.*`, `layout.css.devPixelsPerPx`, `ui.textScale` and
+  `browser.display.use_document_fonts` are unset, and the three `file://` per-site zoom rows are 1.0.
+- So in the human's Firefox the generic `sans-serif` is Inter Variable, and the test page's reference paragraph
+  (`font: 400 16px/1.5 sans-serif`) and its control sample were Inter at 16 px, the same face as the samples.
+  Verified by image match in Firefox with those preferences (RMSE 0.0000 against Inter; Noto Sans 0.312, Liberation
+  Sans 0.315); with Firefox defaults it is Noto Sans, and in fresh headless Chromium Liberation Sans.
+  The Chromium-based statements in this doc about Liberation Sans on Wikipedia describe Chromium,
+  not what the human sees.
+  Any page whose stack ends in `sans-serif` and names no installed font, such as Wikipedia's body, is Inter in the
+  human's Firefox (inferred from the stack, Wikipedia itself was not rendered).
+- Consequence for the perception test: the control (Inter 16 px as list rows against Inter 16 px as a paragraph) was
+  the same face and the same size, and the human still answered "much larger" and "larger".
+  The face and the renderer are therefore not what made the rows look bigger: it is the row format.
+- Firefox renders the replica like Chromium: pixel-identical with the human's preferences and with defaults (the
+  replica names its fonts), 34 elements, mean difference 0.2 px at scale 1 and 0.3 px at scale 2 (in the nested
+  compositor), all Latin elements within 1 px; only the two kana folder names differ (3.5 to 7 px narrower in Firefox)
+  because the replica sets `font-kerning: normal` and Firefox then applies the font's `palt` kerning to kana.
+- Neither browser applies Inter's `opsz` axis to the local font, and `font-variation-settings` has no effect for it in
+  either (only `font-weight` moves the width), so optical sizing is not a Firefox versus Chromium difference here.
+- Not tested: Firefox at scale 3 or at fractional scales, a windowed Firefox on the actual monitors with the human's
+  scaling path, and Inter loaded as a web font in Firefox.
+An agent is now also measuring Firefox's glyph edges, x-height snapping and ink mass against the real app.
 
 What it shows, and its limits:
 - The 2 px cut is reproduced on the human's display in a controlled, unlabeled test:
@@ -427,15 +447,42 @@ The human's own comparison, and the instrument behind it:
   `tracks.slint:379` is a fixed size with no scale or transform.
   So the 17 is not a geometric difference: the same pixels needed a larger setting to look alike to the human, only for
   the track titles, while 22, 22 and 16 matched as numbers.
-  The replica's text carries about 5 to 8 percent more ink than the real app's in builds A and B (the real app is
-  lighter by a constant factor), which does not single out the track titles.
-  Why the human needed 17 is not explained by the geometry.
+  Why the human needed 17 is not explained by the widths.
   Asked what they saw, the human said the real app's track titles looked bigger than the replica's at 16 px, with
   identical measured boxes (and the real app's ink mass lower, not higher), while at 14 px the two looked identical.
-  So a real difference in how the glyphs are rasterized or placed is the open candidate: swash hinting
-  (`HintingMode::Smooth` with `hint(true)` in femtovg 0.27), whole-pixel quad placement and the 0.1 px glyph cache
-  binning, against Skia's rendering in Chromium. An agent is measuring stem and edge profiles, x-height snapping,
-  brightness histograms and stem spacing for both; the result is not in this doc yet.
+- A subagent then compared glyph rasterization of the real app and the replica in Chromium at scales 1, 2 and 3
+  (captures bit-identical across reruns, so every difference below is deterministic; grayscale anti-aliasing on both
+  sides; the bundled and the system `InterVariable.ttf` have the same sha256):
+  - The font has no `fpgm`, `prep` or `cvt` tables, so skrifa 0.44 uses its autohinter in `SmoothMode::Lcd`, which
+    hints vertically only. Widths and spacing are therefore unchanged: "Lantern Row" is 278 device px wide at scale 3
+    on both sides, and same-glyph distances stay within 0.2 px of the font's advances on both sides.
+  - The autohinter rescales each run vertically so the x-height lands on a whole pixel, rounding up from a fraction of
+    0.375 (`skrifa-0.44.0/src/outline/autohint/metrics/scale.rs` lines 160 to 185) and scaling the whole run by the
+    fitted over the scaled value when that moves under 2 px.
+    The overshoot value was calibrated from the observations (between 0.5495 and 0.556 em), not read from the font.
+  - At 16 px the real app's x-height and cap height are, against the replica: scale 1, 9.00 and 12.00 against 9.00 and
+    12.00 (equal); scale 2, 18.00 and 24.00 against 17.52 and 23.32; scale 3, 27.00 and 36.00 against 26.30 and 35.00
+    (about 3 percent taller, the baseline one device pixel higher).
+    The replica at 17 px, scale 3, measures x-height 27.73 and cap 37.00 and 296 device px wide, so the real app at 16
+    sits halfway between the replica's 16 and 17 in height and at 16 in width.
+  - At 14 px: scale 1 equal; scale 2 the app is 4.6 percent taller in x-height; scale 3 x-height equal (23.00) and cap
+    0.56 device px shorter.
+    At fractional scales the app is shorter, not taller: x 11 and cap 14 at scale 1.25 against 14.58 for the replica's
+    cap, and x 13 and cap 17 at scale 1.5, which the calibrated rule predicted before measuring.
+  - Stems are 3 to 7 percent lighter in the app at 16 (coverage sum 1.61 against 1.70 at scale 3) with equal edge
+    ramps, so the app's edges are not crisper horizontally; ink mass of the track titles, app over replica, is 0.946 at
+    scale 1, 0.985 at scale 2 and 1.003 at scale 3 (build A: 0.937, 0.997, 0.965).
+    The earlier "5 to 8 percent lighter" therefore holds at scale 1 only.
+  - Whether this explains "bigger at 16, identical at 14" depends on the scale of the monitor the comparison ran on.
+    At scale 3 (the 15.6 inch panel) it fits: plus 3 percent in both heights at 16 px, 0 percent or minus 1.8 percent
+    at 14 px.
+    At scale 2 (the 27 inch panels) it predicts the opposite (14 px is more affected, 4.6 against 3.0 percent), and at
+    scale 1 there is no difference.
+    The effect is about half the step from 16 to 17, leaves width alone, and also acts on the 16 px folder names and
+    the 22 px titles (plus 2 percent in cap height), which the human found matching, so it does not single out the
+    track titles.
+    Which monitor the human's comparison ran on has not been asked; the human's browser (Firefox) was not part of this
+    measurement, and an agent is adding it.
 - The human then asked for a text size setting in the real app, with a stepper of 1 px for each element.
 
 ## Hypotheses
@@ -445,14 +492,19 @@ Measured and null are results of an instrument; speculation is not.
 
 - Slint draws bigger than Chromium: null. Width ratio 1.000 at every size from 12 to 24 px; "A" height within 3 percent;
   and the human saw the replica and the real app as identical side by side.
-- Renderer weight or hinting: null for femtovg (0.94 to 1.005 of Chromium's mass); not exercised for the software
-  renderer, which is not the shipped default.
+- Renderer weight: null for femtovg (0.94 to 1.005 of Chromium's mass, depending on scale).
+  Renderer hinting: measured difference, vertical only. The autohinter makes the x-height and cap height of 16 px
+  text up to 3 percent taller at scales 2 and 3 (equal at scale 1, shorter at fractional scales), with widths equal.
+  Candidate for "bigger at 16 px", not shown to be it, because it depends on the scale of the monitor used and also
+  affects text the human found matching.
+  The software renderer, which is not the shipped default, is not exercised.
 - Font file or axes (`opsz`, `wght`): null. Both sides draw the default instance; Chromium ignores `opsz` for this
   system font (positive control moved width, `opsz` did not).
 - Display scaling: null. 0.2656 mm per logical pixel against the CSS reference pixel's 0.26 mm.
 - Face difference between the references and the app: partial measured. Liberation Sans is 5.7 percent narrower than
   Inter in the same pangram and 3.3 percent lower in x-height; Noto Sans is not. The width covers about half of the
-  2 px for the pages drawn in Liberation Sans, the x-height about a quarter, and neither applies to Firefox.
+  2 px for the pages drawn in Liberation Sans, the x-height about a quarter, and neither applies to the human's
+  Firefox, which draws generic `sans-serif` as Inter Variable (see "The human's perception test, round 1").
   In the human's own test the faces were not told apart at 16 px (see "The human's perception test, round 1").
 - Equal physical size across phone and desktop: not what the human wants. The em of 16 px is 1.34 times the phone's
   16 sp em, and 14 px is already larger than the phone's 16 sp em (3.72 against 3.17 mm).
