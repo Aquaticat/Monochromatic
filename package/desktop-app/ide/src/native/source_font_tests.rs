@@ -97,6 +97,9 @@ fn source_typography_repaints_without_changing_selection() {
     // The source is drawn by the GPU notifier, which `bind_viewport` installs in the application.
     gpu_tile::bind(&window, &state.borrow().gpu);
     window.show().expect("show source typography fixture");
+    // The first frame draws the tile's textures and hands the window its list of images, which the frame after it
+    // shows: a frame of the same weight is taken first and not compared.
+    capture(&window, &state, 400.0, false);
     // Lend the window/state while each independent pixel buffer remains owned by the test.
     let regular = capture(&window, &state, 400.0, false);
     let weighted = capture(&window, &state, 527.5, false);

@@ -821,7 +821,9 @@ Everything is compared in logical pixels, scale 1 against scale 2, 1100x660, dar
   The positive control of the tile measure is the synthetic 1 px roll, not a code fault.
   The fault is visible in a 6x crop as a row of squashed glyphs
   (`seam-compare-scale2-clean-left-fault-right.png`).
-- Tile seam: the code tile is one texture, so it has no seam inside it.
+- Tile seam: the code tile is one texture, so it has no seam inside it
+  (true of an ordinary window; a tile taller than a texture has seams since 2026-10-22, measured in the section
+  "The code tile stacked across textures").
   What can go wrong at a tile is a swap that places the text one pixel off.
   The measure is the phase of the text rows modulo the line pitch, against the gutter numbers' phase
   (which the markup places).
@@ -855,11 +857,15 @@ Everything is compared in logical pixels, scale 1 against scale 2, 1100x660, dar
   split and the clipping of the selection rows per texture); lower the scale of a view that does not fit (cheap, soft
   text); leave it (affects only windows of more than 16.7 million physical pixels of text).
   Not fixed here: it is a new feature, not a defect of the checked paths.
+  Closed on 2026-10-22 by stacking the code tile: see the section "The code tile stacked across textures".
 - A physical window taller or wider than the device's texture limit panics the application:
   1100x8400 at scale 2 (2200x16800) ended with `wgpu error: Validation Error ... In Surface::configure ... Requested was
   (2200, 16800), maximum extent for either dimension is 16384`.
   The panic is raised in the toolkit's surface configuration.
   Real displays are far below that, so a stacked minimap is reachable only in a window of about 16,000 physical rows.
+  Closed on 2026-10-22 at the cause (the window is held to the texture side); the panic could not be reproduced end to
+  end in the nested compositor, whose own output surface panics first at that size:
+  see the section "The code tile stacked across textures".
 - At every scale 2 window of 3,700 px the application logs `vello::render: Trying to paint too large image.
   1358x12288` at warn level (243 lines in 9 runs; 2 for 1376x12144).
   It is the Vello warning for more than 256 coarse workgroups
@@ -872,6 +878,8 @@ Everything is compared in logical pixels, scale 1 against scale 2, 1100x660, dar
   256 pixel grid counts more than 256 bins: it fires at scale 2, where the tile is at the cap, not at scale 1.
   The only evidence that such a tile renders correctly outside the view: in the recorded scroll through the overscan
   at scale 2 (`sr2d`, frames 7 to 10) the view moved through those rows with 0 periodicity violations.
+  Closed on 2026-10-22: each texture of the tile is cut to at most 256 bins, and no run of the new build logged the
+  warning (see the section "The code tile stacked across textures").
 - During a fling the minimap picture lags the box: in one run the track had 91 to 94 blank rows at its bottom 3.5 s
   after a 3,777 px touchpad scroll (the fling went on for more than 10 s), and 0 blank rows once the scroll had
   stopped.
@@ -889,5 +897,192 @@ Everything is compared in logical pixels, scale 1 against scale 2, 1100x660, dar
 
 - Fractional scales (the stack is whole physical pixels by construction), a real compositor, the drag scenario.
 - The stall probe of the cadence work at scale 2.
-- A readback of the rows of the 64 MiB tile outside the view.
+- A readback of the rows of the 64 MiB tile outside the view
+  (closed on 2026-10-22 for the stacked tile: the native tests read every texture back and compare it with one
+  texture; see the section "The code tile stacked across textures").
 - Gates, because no product code changed.
+
+## The code tile stacked across textures
+
+Session of 2026-10-22 on branch `worktree-agent-a074735d16c6106a5`, base `8864316eb2` (origin/main).
+Owner decision (2026-10-22): the code tile stacks textures as the minimap does, and a window whose tile does not fit a
+texture never shows wrong output, soft text or a notice instead.
+It closes the three findings of the section "Scale 2, the light scheme and the seams, measured in the compositor":
+the blank bands in a 7680x4320 window, the surface panic of a window past the texture limit, and the Vello warning
+"Trying to paint too large image".
+
+### What changed
+
+- `src/shaped_text/limit.rs`: a texture holds at most `tile_texture_rows(columns)` rows:
+  the device's side, and `256 * floor(256 / ceil(columns / 256))` rows, where Vello counts at most 256 bins of 256 by
+  256 pixels (this is what its coarse stage counts before the warning, and 256 bins are exactly 64 MiB, so the old byte
+  rule is implied).
+  The tile of 1358 columns is 10,752 rows (42 bins) and not 12,288 (288 bins).
+  `stack_rows` is the most rows of a stack: four textures, or the side plus 1,024 rows when that is more, so the view of
+  the tallest window the device can show is always held.
+  `texture_heights` cuts a tile into whole textures from the top, the rest last.
+  `tile_cap(columns, scale, wanted)` is the larger of what one texture holds and `wanted` plus six code rows, within the
+  stack: an ordinary window still gets one texture, and a line wrapped over thousands of rows is clipped as before.
+- `src/tile_scene.rs`, `tile_scene/item.rs`, `tile_scene/encode.rs`: `paint_stack` builds one scene for each texture
+  (`tile_items_in`).
+  A scene holds the rows, hints, messages and underlines that can reach its rows, placed from its first row by a whole
+  number of pixels, so a glyph that two textures share is drawn at the same fractional position in both;
+  selection and find fills of the tile are clip bands that `encode` cuts to the texture.
+  The caret, the find boxes and the wrap indicator are drawn by the markup and need no split.
+- `src/native/gpu_tile/source.rs` (new), `types.rs`, `probe.rs`, `readback.rs`: the textures of a tile are made once
+  for a shape and reused for a tile of the same shape; the window is given a `[SourceSlice]` list (image, first row,
+  height) that is changed in place (`show_slices`, the lesson of the hitch of the minimap's stack).
+- `ui/app.slint`, `src/native/start.rs`, `gpu_tile.rs`: `source-slices` is drawn by a `for` loop at whole physical rows
+  from the tile's top; `texture-limit` (told at start and again when the device arrives) bounds `max-width` and
+  `max-height` of the window in physical pixels.
+- `src/native/viewport.rs`, `render/paint.rs`, `tile_build/job.rs`, `render/present.rs`: the cap and the re-center edge
+  use the stack and the view; the re-center keeps its rule (a view must stay a quarter of a view clear of the tile's
+  edges) over the whole stack, so a window of one texture behaves as before.
+
+### Evidence
+
+- New or changed native tests in `src/native/tile_stack_tests.rs`, `tall_window_tests.rs`, `wrap_clip_tests.rs` and
+  `wrap_resize_tests.rs`, and in `tests/raster_limit.rs`, `tile_vello_limit.rs` and `wrap_rows.rs`.
+  A stack drawn at lowered texture limits, read back and put one below the other, equals the one texture at every texel
+  (selected and plain rows; hints, messages and underlines of all severities with a cut through them at every code
+  row); the same in the window's composited frame, with a cut inside the view; a stack one row lower is not equal
+  (a positive control in each).
+  At one padding a row of an underline's wave differs by an alpha of 4 of 255 at a cut (32 texels):
+  the test allows a faint fringe of at most 64 texels of alpha 8 or less, and nothing else.
+  The window frame is compared below the rows that show the path of the project, which a test names at random.
+- Bin rule: no accepted texture covers more than 256 bins by Vello's own formula, at sides 8192, 16,384 and 32,768 and
+  every width (`no_accepted_texture_covers_more_bins_than_vello_counts_before_it_warns`).
+- The window's `texture-limit` is the device's side after a frame, not the default of the markup (16,384, made
+  different from the 8,192 of the test device so that a test can tell them apart).
+- Source guards (`bin/inspect-source-guards.mjs`), each shown with a baseline pass, a fail with the guard removed and a
+  pass restored, in a disposable copy: `stack-bin-rule`, `clip-texture-side`, `stack-own-top`, `stack-band-cut`,
+  `stack-slices-abut`, `stack-textures-reused`, `window-texture-limit-told`, `window-max-width`, `window-max-height`,
+  and `minimap-slices-in-place` with its anchor moved to the generic `show_slices`.
+  `clip-cap` is gone (the byte rule is implied by the bin rule, so its mutation changes nothing).
+  Three older guards, `failed-job-freed`, `overscan-early-return` and `minimap-scroll-notes-bands`, already had absent
+  anchors on origin/main (indentation); they were not run and not repaired here.
+
+### Measurements
+
+Release builds of origin/main (A, `~/temp/agent/cs-a`) and of this branch (B, the branch worktree itself), the nested
+compositor headless on the RX 7600 (texture limit 16,384), `uni.rs` (30,000 identical lines) for the periodic measures.
+Measured under the load of the host (load average 8 to 14 from other sessions, no wait for quiet).
+
+#### Windows past the old limit (rows of ink, no blank band)
+
+The scenario settles, clicks the minimap, jumps two pages and waits (shots `s0` to `s3`).
+The code columns only; rows with any ink out of the window's rows; the longest blank run.
+
+- 7680x4320 at scale 1, dark: A has 1,405 to 1,553 inked rows of 4,320, the last inked row is 3,061 or 3,287 and the
+  blank runs are 160 to 1008 (or 21 to 1016) and the rest below the last inked row (1,258 and 1,032 px).
+  B has 2,879 to 2,897 inked rows (about 66 percent, text rows at a 24 px pitch), the last inked row is 4,319 and no
+  blank run is over 30 px (the longest is 24 px at the banner of `s0` and 11 px after).
+  Light, the same counts.
+- 3840x2160 at scale 2 (7680x4320 physical): A has 1,580 to 1,629 inked rows and a blank band of 936 to 959 px at the
+  bottom; B has 2,782 to 2,826 inked rows (64.5 percent) in dark and in light, the last inked row 4,319.
+- 1100x8100 at scale 2 (2200x16200): A has 7,966 to 8,014 inked rows and a blank band of 1,955 to 1,969 px at the
+  bottom (last inked row 14,244); B has 10,454 to 10,492 inked rows (64.5 percent), the last 16,199, dark and light.
+- Looked at with the image viewer (images below): the window downscaled and 4x crops at cuts, scale 1 and 2, dark and
+  light: every line is drawn, the line numbers run on without a gap, the caret and the tooltip are where they were.
+- The tile of the 7680x4320 window is, by the rule and not by a readback, 7 textures of 2,048 rows (7,259 columns are
+  29 bins across and 8 bins down), 12,960 rows in all; cuts fall inside the 4,320 rows of the view.
+
+#### Seams (text phase, no gap, no overlap)
+
+`~/temp/agent/cstack/seam.py`: the text columns of a row equal those of the row one line pitch below (24 px times the
+scale) over the whole window below the banner, and the distance from the top of each line's text to the top of its
+line number, and between consecutive lines, is constant.
+
+- B, 24 shots (6 captures, 4 shots each): 0 rows differ in 16 shots; the line pitch is 24 (scale 1) or 48 (scale 2) on
+  every line and the text to number distance is 2 (scale 1) or 3 (scale 2) on every line.
+  The other 8 hold the language banner (`s0` of every capture, 6 shots) or the tooltip of a diagnostic (`s1` of the
+  two tall captures, 144 rows, read in a crop); they are not seams.
+- Positive control: a release build with the slices placed one row too far apart (`top += held.target.height + 1`,
+  temporary, reverted, `git status` clean): 35 rows differ in 3 runs at 7680x4320 (rows 1858 to 1874, 3903 to 3915 and
+  3923 to 3927), line pitches 5, 20 and 25 appear, and the text to number distance takes 4 values; at 1100x8100 and
+  scale 2, 32 rows differ at row 8119 and a pitch of 49 appears.
+  Against 0 rows in every settled shot of the clean build.
+
+#### Vello warning
+
+- The build before the change logged `vello::render: Trying to paint too large image. 6838x2400.` 5 times in each of 3
+  runs (the 3840x2160 and the 1100x8100 windows at scale 2, and one at 7680x4320).
+  The 6 runs of the new build logged none.
+  The same runs, the same log level: the old build is the positive control.
+
+#### Window past the texture limit
+
+- A window of 1100x8400 at scale 2 (2200x16800) could not be tried end to end: the nested compositor's own output
+  surface panics first, in `Surface::configure` ("Requested was (2200, 16800), maximum extent for either dimension is
+  16384"), before the application starts, with A and with B alike.
+  So the panic named in the earlier finding was probably the compositor's and not the application's.
+  What is verified is the bound the owner asked for: the markup holds the window to the device's side
+  (`the_window_is_never_larger_than_the_devices_texture_side` and the three guards above).
+  A real compositor that grants a larger window was not available.
+
+#### Scroll cadence
+
+120 steps of 25 px every 16 ms (the `scroll` scenario of `inspect:cadence`, release, 1100x660, `big.rs`), the frame
+shift probe of `mm-stall.mjs`, arms alternating per pair.
+A tick in which the text did not move is a stall.
+At this size the stack is one texture, so these runs measure the one texture path.
+
+- A against B, 22 pairs (23 runs of B, as one pair was repeated after another session removed an artifact directory):
+  B had 4 stalls in 3 of 23 runs (slots 45, 49 and 50, 139); A had 1 in 1 of 22 (slot 127).
+- A against A, the same binary, 15 pairs (28 usable runs of 30, the frames of 2 were gone): 7 stalls in 7 runs
+  (25 percent) at slots 61 to 128.
+  The spread of one binary (1 of 22 and 7 of 28 runs) covers B (3 of 23).
+- Other odd ticks (a tick that moved two steps, or the end of the scroll): one run of B had 11 and 27, two runs of A
+  had 2 and 6 in all; none in the same-binary control.
+
+#### Idle latency of the tile hand-over
+
+Two wheel steps of 1500 px, 16 ms apart, nothing after; the tile is late when it is applied more than 30 ms after the
+last wheel event.
+40 pairs, twice.
+
+- First pass: A 0 late of 40 (applied 1.4 to 21.6 ms, median 20.9); B 2 late of 40, in pairs 29 and 30 (applied at
+  52.6 and 238.6 ms, first frame at 86.7 and 311.3 ms); the other 38 runs of B applied at 20.4 to 21.5 ms.
+- Second pass: A 0 late of 40 (applied 20.3 to 21.1, median 20.8); B 0 late of 40 (applied 20.3 to 21.5, median 20.8).
+- So B was late in 2 of 80 runs against 0 of 80 for A: two runs in a row of one pass, none in the other.
+  The artifact directories were removed after each run, so the two late runs were not examined and are not attributed.
+  A burst of load is likely (A, measured in the same minutes, was on time), but a count of 2 in 80 cannot separate that
+  from an effect of the change.
+  The criterion of 0 late in 40 was met by the second pass and not by the first.
+
+### Limits that the change brings
+
+- A tile placed by a map that still counts unmeasured lines as one row can be taller than three views:
+  the frame guard (`fit_clip`) cuts it to the bound of the stack (four textures, 28,608 rows at 2226 columns, 255 MB)
+  and not to the three views of the window, because the guard does not know the view.
+  Measured by holding the measurement pass of a 2000 px window over `mixed(6000)`: 19,368 rows in 3 textures at scale 1
+  where the settled tile is 6,576 rows in one.
+  Before the change the same case was cut to one texture.
+  The tile is correct and bounded, and the next placement after the pass replaces it;
+  a view past it is not shown wrong.
+  The window test of the textures (`a_2000_px_window_gets_a_tile_of_textures_...`) failed once in the full run because
+  the pass was late under 21 parallel tests (4 textures at scale 2); it now waits for the pass.
+- A tile of another shape (a different number or size of textures) is shown by the frame after the one that drew it:
+  the first frame of a window, and a re-center to a tile of another shape.
+  `source_typography_repaints_without_changing_selection` compared its first frame, taken before that, with a later one
+  and failed in every run alone; it now takes a frame first.
+  A tile of the same shape is drawn in place and shows in the frame that draws it (`a_tile_of_the_same_shape_...`).
+
+### Not run
+
+- A window past the limit in a real compositor; fractional scales; the drag scenario; a stack at scale 1.5.
+- The cadence at sizes where the stack is more than one texture (7680x4320): those windows were captured, their scroll
+  was not measured.
+- A readback of the tile's textures in the running application
+  (the tests read them in the harness; the captures read the composited window).
+
+### Images (under `~/temp/agent/cs-shots/` and `~/temp/agent/cstack/`)
+
+- `cs-shots/B-w8-s1-dark`, `B-w8-s1-light`, `B-w4-s2-dark`, `B-w4-s2-light`, `B-t-s2-dark`, `B-t-s2-light`:
+  shots `s0` to `s3` of the stack scenario; `A-*` the same of origin/main; `F-*` the positive control of the seam measure.
+- `cstack/v-b8-s1.png`, `v-b8l-s1.png`, `v-b8-s1-crop.png`, `v-tl-s3.png`, `v-w4l-s2.png`:
+  the views that were looked at.
+
+### Gates
+
+Product snapshot `9250c1981a` (later commits change documents only), one run each; results below.

@@ -370,6 +370,9 @@ fn a_2000_px_window_gets_a_tile_of_textures_within_the_devices_limit_at_both_sca
             });
         resize_without_frame(&opened, 1100.0, 2000.0);
         settled_tile(&opened);
+        // Until the measurement pass has finished the map counts each unmeasured line as one row, and a tile
+        // placed by it is cut to the bound of the stack and not to three views, however many textures that is.
+        super::wrap_tests::settled(&opened);
         window.set_scroll_y(-30_000.0);
         update_timers_and_animations();
         settled_tile(&opened);
