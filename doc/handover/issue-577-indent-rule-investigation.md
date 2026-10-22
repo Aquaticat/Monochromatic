@@ -23,6 +23,8 @@ upstream decision) is
 The chain renderer was unified with the indent model in the same effort to stop a measured `--fix`
 oscillation;
 that history is in "Queue" and the troubleshooting doc's "Root cause".
+Both corpus sweeps are recorded there,
+and the results-only comment landed on issue #577 as `issuecomment-6339427646`.
 
 ## Findings
 
@@ -44,6 +46,9 @@ touches
 nothing but leading whitespace,
 reaches the fixed point in one pass,
 and leaves zero diagnostics.
+A second sweep with every fixture rule enabled reaches a fixed point at pass 12
+(an eight-pass cap reads `stable=false` only because a few files need three cascade layers),
+with zero `stylistic/indentation` or `stylistic(chain-per-line)` diagnostics in parseable files.
 Of the changed lines,
 9,921 are direct model disagreements and 10,801 are cascade followers of a moved
 anchor line.
@@ -70,12 +75,16 @@ anchor line.
   `sweep.mjs`,
   `spot.mjs`,
   `probe-render.mjs`,
+  `pass-probe.mjs`,
   `full4.json`,
   `full4b.json`,
   `residuals.json`,
+  `residuals-2.json`,
   `sweep-report.txt`,
   `sweep-report-2.txt`,
+  `issue-577-comment.md`,
   `comma-repro/`,
+  `pass-probe/`,
   `gfp-mutation-1.patch`,
   `gfp-mutation-2.patch`) are
   disposable;
@@ -108,13 +117,11 @@ anchor line.
     the enablement.
     Do this when the tree is quiet:
     the sweep rewrites ~20k lines in 1,792 files.
-1.  Post the results-only comment on issue #577 naming the shipped commits (the `Closes #577` in `bee2e27eb7`
-    auto-closed it on push).
 
 ## Commits
 
-- `docs(troubleshooting): record the oxlint TypeScript indent rule feasibility investigation`
-- `docs(handover): queue the issue 577 indent rule decision`
+- `docs(troubleshooting): record the oxlint TypeScript indent rule feasibility investigation` (`48308b493b`)
+- `docs(handover): queue the issue 577 indent rule decision` (`59cc14bb65`)
 - `feat(oxlint-plugin-stylistic): add indentation checker and autofix` (`bee2e27eb7`,
   engine,
   rule,
@@ -126,3 +133,9 @@ anchor line.
   chain-per-line unification with
   the indent model,
   mixed-fixture convergence tests)
+- `docs(troubleshooting): update the indent rule record to the shipped implementation` (`5edda3c34d`)
+- `docs(handover): record the shipped indent rule and remaining queue` (`b3cad61ec6`)
+- `docs(troubleshooting): apply semantic line breaks to the indent rule record` (`c9daef5380`)
+- `docs(handover): apply semantic line breaks to the indent rule handover` (`68822cf102`)
+- `docs(troubleshooting): record the comma-dangle type-literal fix corruption` (`3f1759034f`)
+- `docs(handover): queue the comma-dangle fix and record the stale-bundle lesson` (`b5b6c17431`)
