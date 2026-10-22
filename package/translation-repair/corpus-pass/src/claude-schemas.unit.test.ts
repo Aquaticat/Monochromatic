@@ -37,6 +37,7 @@ import {
   COVERAGE_RESPONSE_FORMAT,
 } from '@monochromatic-dev/translation-repair-archive';
 import { PAGE_TITLE_LEXICON_RESPONSE_FORMAT, } from '@monochromatic-dev/translation-repair-artifact';
+import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure';
 import {
   consistencyChoiceResponseFormat,
   consistencyResponseFormat,
@@ -181,22 +182,6 @@ const SCHEMA_VALUED: ReadonlySet<string> = new Set(['items', 'not', 'if', 'then'
 const SCHEMA_LISTS: ReadonlySet<string> = new Set(['anyOf', 'allOf', 'oneOf', 'prefixItems',],);
 
 /**
- Whether a value is a plain record, which is what a schema node is.
-
- @param value - value read
-
- @returns Whether it is a non-null, non-array object
-
- @example
- ```ts
- const node = isRecord({ value: { type: 'string', }, },);
- ```
- */
-function isRecord({ value, }: { readonly value: unknown; },): value is Readonly<Record<string, unknown>> {
-  return ((typeof value) === 'object') && (value !== null) && (!Array.isArray(value,));
-}
-
-/**
  One schema node and where it sits.
  */
 type SchemaNode = {
@@ -237,19 +222,19 @@ function schemaNodesOf(
     { path, node: schema, },
     ...Object.entries(schema,)
       .flatMap(function nodesBelow([keyword, value,],): readonly SchemaNode[] {
-        if (NAME_MAPS.has(keyword,) && isRecord({ value, },)) {
+        if (NAME_MAPS.has(keyword,) && isJsonRecord(value,)) {
           return Object.entries(value,)
             .flatMap(function nodesOfMember([name, member,],): readonly SchemaNode[] {
-              return isRecord({ value: member, },)
+              return isJsonRecord(member,)
                 ? schemaNodesOf({ schema: member, path: `${path}.${name}`, },)
                 : [];
             },);
         }
-        if (SCHEMA_VALUED.has(keyword,) && isRecord({ value, },))
+        if (SCHEMA_VALUED.has(keyword,) && isJsonRecord(value,))
           return schemaNodesOf({ schema: value, path: `${path}.${keyword}`, },);
         if (SCHEMA_LISTS.has(keyword,) && Array.isArray(value,)) {
           return value.flatMap(function nodesOfItem(item: unknown, index,): readonly SchemaNode[] {
-            return isRecord({ value: item, },)
+            return isJsonRecord(item,)
               ? schemaNodesOf({ schema: item, path: `${path}.${keyword}[${String(index,)}]`, },)
               : [];
           },);
@@ -274,7 +259,7 @@ function schemaNodesOf(
 function openObjectsOf({ schema, }: { readonly schema: Readonly<Record<string, unknown>>; },): readonly string[] {
   return schemaNodesOf({ schema, path: 'root', },)
     .filter(function isObject({ node, },): boolean {
-      return (node.type === 'object') || isRecord({ value: node.properties, },);
+      return (node.type === 'object') || isJsonRecord(node.properties,);
     },)
     .filter(function isOpen({ node, },): boolean {
       return node.additionalProperties !== false;
@@ -411,7 +396,7 @@ await describe({
                     return `${label} sends ${bound}`;
                   },),
                 ...(JSON.stringify(Object.keys((sent.properties ?? {}) as object,),)
-                    === JSON.stringify(Object.keys((format.json_schema.schema.properties ?? {}) as object,),)
+                  === JSON.stringify(Object.keys((format.json_schema.schema.properties ?? {}) as object,),)
                   ? []
                   : [`${label} changed its members`,]),
               ];
@@ -433,9 +418,9 @@ await describe({
                 return `${label} ${bound}`;
               },);
           },),).toEqual([
-          'archive/src/absolute-naturalness-review-wire.ts (absolute_naturalness_review) '
-          + 'root.findings.items.paragraph: minimum',
-        ],);
+            'archive/src/absolute-naturalness-review-wire.ts (absolute_naturalness_review) '
+              + 'root.findings.items.paragraph: minimum',
+          ],);
       },
     },),
   ],

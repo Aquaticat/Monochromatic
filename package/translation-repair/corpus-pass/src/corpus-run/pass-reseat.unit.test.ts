@@ -45,7 +45,9 @@ import { metersAllWet, } from '@monochromatic-dev/translation-repair-provider/ts
 
 /**
  The zheermao7 view at 23:15:27 UTC: Synthetic's window spent, Hyper dry,
- Bedrock and OpenRouter wet.
+ Bedrock and OpenRouter wet. THE CLAUDE KEY READS DRY here and in the two views below, as a run without the key reads it,
+ so the checker benches these cases name stay as they were before Haiku 5.5 was seated; the case that seats Haiku with the
+ key wet uses {@link MIMO_UNSERVED_CLAUDE_WET}.
  */
 const BEDROCK_AND_OPENROUTER: BudgetView = {
   neuralwatt: true,
@@ -72,6 +74,22 @@ const NEURALWATT_AND_BEDROCK: BudgetView = {
   xiaomi: true,
   anthropic: true,
   hyper: true,
+  openrouter: true,
+};
+
+/**
+ Synthetic, Hyper and Bedrock wet and the Claude key wet, Xiaomi and OpenRouter dry: the view under which nobody serves
+ the second measured checker (Mimo is served by those two alone), so the bench's third place goes to the next of the
+ order a wet provider serves, which is Haiku 5.5 on the Claude key.
+ */
+const MIMO_UNSERVED_CLAUDE_WET: BudgetView = {
+  neuralwatt: true,
+  synthetic: false,
+  bedrock: false,
+  deepseek: true,
+  xiaomi: true,
+  anthropic: false,
+  hyper: false,
   openrouter: true,
 };
 
@@ -243,6 +261,43 @@ await describe({
               `JUDGE SEATS phase=lanes chunk re-seated under a hold: checkers=${
                 [SEAT_OPENROUTER_ONLY_CHECKER, SEAT_BEDROCK_ONLY_VISION_UNSEATED, SEAT_OPENROUTER_ONLY,].join(',',)
               } unserved-checkers=none`,
+            ],);
+          },
+        },),
+        it({
+          name: 'SEATS HAIKU 5.5 ON THE CHECKER BENCH WHILE THE CLAUDE KEY IS WET AND SEATS THE NEXT MEASURED CHECKER '
+            + 'INSTEAD WHEN IT IS DRY (C7): with the second measured checker unserved, the pass-level hook that '
+            + 're-reads the view takes the first three a wet provider serves, and the Claude provider is the fourth '
+            + 'of the order that fills the place',
+          fn: async () => {
+            /** Rig whose Claude key is wet and whose second measured checker nobody serves, under a running hold. */
+            const wet = viewClient({ view: MIMO_UNSERVED_CLAUDE_WET, },);
+            wet.holds.synthetic = DRY_HOLD_MS;
+            /** The same rig with the Claude key dry. */
+            const dry = viewClient({ view: { ...MIMO_UNSERVED_CLAUDE_WET, anthropic: true, }, },);
+            dry.holds.synthetic = DRY_HOLD_MS;
+            /** Roster the hook hands the driver for the next chunk, Claude key wet. */
+            const wetSeating = await lanesHooksFor({
+              client: wet.client,
+              signal: new AbortController().signal,
+              entryId: 'mittens',
+            },).beforeSlice({ lane: 'repair', },);
+            /** Roster the hook hands the driver for the next chunk, Claude key dry. */
+            const drySeating = await lanesHooksFor({
+              client: dry.client,
+              signal: new AbortController().signal,
+              entryId: 'mittens',
+            },).beforeSlice({ lane: 'repair', },);
+
+            expect(wetSeating.repairModels?.checkerModelIds,).toEqual([
+              'hf:Qwen/Qwen3.8-27B',
+              'hf:moonshotai/Kimi-K3',
+              'claude-haiku-5-5',
+            ],);
+            expect(drySeating.repairModels?.checkerModelIds,).toEqual([
+              'hf:Qwen/Qwen3.8-27B',
+              'hf:moonshotai/Kimi-K3',
+              'google.gemma-4-31b',
             ],);
           },
         },),

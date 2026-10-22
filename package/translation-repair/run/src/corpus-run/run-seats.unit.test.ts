@@ -113,7 +113,8 @@ const OPENROUTER_ONLY: BudgetView = {
   bedrock: true,
   deepseek: false,
   xiaomi: false,
-  // DRY: no Claude key in this reading, so Haiku does not take the second checker place a served Haiku would.
+  // DRY: no Claude key in this reading, so Haiku does not take the second checker place a served Haiku would; a wet
+  // Claude key is held by `run-config-seating.unit.test.ts` (the seat) and `pass-reseat.unit.test.ts` (the pass-level hook).
   anthropic: true,
   openrouter: false,
 };
