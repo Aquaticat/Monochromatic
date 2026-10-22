@@ -537,18 +537,23 @@ deleting `target/debug/runtime` and `target/release/runtime` before each pair
 (2 CPUs and 4 GiB per caller, two `mise run //package/desktop-app/ide:runtime` started at the same moment):
 - Before the fix, 20 paired starts: 10 pairs had one failed caller (10 of 40 runs), every one the `awk.so.new` ENOENT.
   This is the positive control: the harness sees the failure.
-- After the fix, 20 paired starts: 0 failed callers (0 of 40 runs).
+- After the fix, 20 paired starts: 0 failed callers (0 of 40 runs); a further 20 on the final code: 0 of 40.
   One pair took 307 s because a cargo process of another session held the package cache lock of the shared
   `ide-cargo` volume (`Blocking waiting for file lock on package cache`); the others took 4 to 10 s.
 - A SHA-256 over every path, file type and file content of `target/debug/runtime` (1622 entries, no links)
   is `671506250b7c783e868b239ef2e61bd02e30827aad7ee24ac2ec7b7f4ad51e37` before the fix,
   after a single caller with the fix, and after every paired start that ended in a tree
-  (20 before the fix, 44 after; `release/runtime` equals `debug/runtime`).
+  (20 before the fix, 64 after; `release/runtime` equals `debug/runtime`).
+  The last 20 after-fix pairs ran on the final lock code (waits through `events.once` and async iteration);
+  the first 44 ran on an earlier version of it with the same behavior.
 - A reader polling every 2 ms during 8 further pairs, like the build script, found a readable manifest 4045 times
   and an incomplete tree 0 times.
-  An earlier probe reported 136 and then 3 incomplete states; both were the harness deleting the tree under the reader
-  (the probe read the manifest, then the harness removed the files), not the task, and the harness now removes the
-  manifest first.
+  Two earlier probes reported 136 and then 3 incomplete states while the harness deleted the tree between pairs.
+  The third probe separated those cases and saw none of either kind, so the 3 are explained by reading the task,
+  not shown by the probe: once a manifest exists the task removes no listed grammar
+  (`removeStaging` matches only the `.<pid>.<random>.new` names and a rename leaves no gap),
+  so only the harness's own `rmSync` can make a listed file disappear.
+  The harness now removes the manifest first.
 
 `bin/runtime-publish.test.ts` (part of `test:bin`) holds the unit checks.
 Its concurrent-publishers test fails with the same `ENOENT ... .so.new` when the staging name is made fixed again
