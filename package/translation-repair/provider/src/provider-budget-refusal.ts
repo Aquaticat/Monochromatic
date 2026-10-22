@@ -8,6 +8,18 @@ import { retryAfterMsOf, } from './retry-stated-wait.ts';
 const HTTP_TOO_MANY_REQUESTS = 429;
 
 /**
+ How a malformed request is rejected, which Anthropic also used for an empty credit balance before it gave that a
+ status of its own.
+ */
+const HTTP_BAD_REQUEST = 400;
+
+/**
+ Words Anthropic's older empty-balance reply carries, "Your credit balance is too low to access the Anthropic API",
+ in the lower case the body is compared in.
+ */
+const LOW_CREDIT_WORDS = 'credit balance is too low';
+
+/**
  How credit balance reports no funds.
  */
 const HTTP_PAYMENT_REQUIRED = 402;
@@ -70,6 +82,25 @@ export function isUpstreamModelRefusal(
 }
 
 /**
+ Whether a failure is the older shape of Anthropic's empty-balance reply: status 400 with the low-credit sentence.
+
+ @param error - provider reply that failed
+
+ @returns Whether the balance, not the request, was refused
+
+ @example
+ ```ts
+ if (isLowCreditReply({ error, },)) markBillingRefused();
+ ```
+ */
+export function isLowCreditReply(
+  { error, }: { readonly error: ProviderHttpError; },
+): boolean {
+  return (error.status === HTTP_BAD_REQUEST) && error.bodyExcerpt.toLowerCase()
+    .includes(LOW_CREDIT_WORDS,);
+}
+
+/**
  Whether thrown failure says provider is out of budget.
 
  A subscription reports exhaustion as rate limit,
@@ -100,7 +131,7 @@ export function isBudgetRefusal(
     return false;
   if (isUpstreamModelRefusal({ error, },))
     return false;
-  return BUDGET_REFUSAL_STATUSES.has(error.status,);
+  return BUDGET_REFUSAL_STATUSES.has(error.status,) || isLowCreditReply({ error, },);
 }
 
 /**
@@ -177,7 +208,7 @@ export function isPaymentRefusal(
 ): boolean {
   if (!(error instanceof ProviderHttpError))
     return false;
-  return error.status === HTTP_PAYMENT_REQUIRED;
+  return (error.status === HTTP_PAYMENT_REQUIRED) || isLowCreditReply({ error, },);
 }
 
 /**

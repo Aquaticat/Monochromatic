@@ -9,6 +9,7 @@ import {
   providerRecord,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import type { QuotaSnapshot, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import type { ClaudeSpend, } from './claude-spend.ts';
 import type { XiaomiSpend, } from './xiaomi-spend.ts';
 
 //region Budget routing
@@ -117,7 +118,8 @@ export class EveryProviderDryError extends Error {
         + 'Synthetic has no weekly credit left (or no five-hour request left, on a reply that still carries '
         + 'that window), Charm Hyper has no balance left, Amazon Bedrock has no credit left short of the owner\'s '
         + `card, DeepSeek has no balance left (or says its account is unavailable), ${xiaomiCause}`
-        + 'and OpenRouter has no credit left. Nothing further can be bought, so this run ends. '
+        + 'the Claude key has met a billing error this run (or serves only Sonnet 5.5 and Haiku 5.5, not the model '
+        + 'asked), and OpenRouter has no credit left. Nothing further can be bought, so this run ends. '
         + 'NeuralWatt\'s free energy returns at 00:00 UTC; Synthetic regenerates on its own schedule; Hyper, '
         + `DeepSeek and OpenRouter refill on purchase; ${xiaomiRefill}`
         + 'Bedrock\'s credit is never topped up. '
@@ -141,10 +143,11 @@ export class EveryProviderDryError extends Error {
 export type ModelReach = ProviderRecord<boolean>;
 
 /**
- Providers whose meter can never read dry by itself: Xiaomi documents no balance, so its meter answers wet always
- (`xiaomi-spend.ts`) and only a payment refusal at the wire marks it dry.
+ Providers whose meter reads wet until the wire says otherwise: Xiaomi documents no balance, so its meter answers wet
+ always (`xiaomi-spend.ts`) and only a payment refusal at the wire marks it dry; the Claude key has none either, and
+ reads dry only after its client has met a billing error (`claude-spend.ts`).
  */
-const ALWAYS_WET_METERS: ReadonlySet<ProviderName> = new Set<ProviderName>(['xiaomi',],);
+const ALWAYS_WET_METERS: ReadonlySet<ProviderName> = new Set<ProviderName>(['xiaomi', 'anthropic',],);
 
 /**
  The providers `dryForTheModelAsked` flips: an always-wet meter that reads wet and serves nothing for the model asked.
@@ -402,6 +405,11 @@ export const DEEPSEEK_DRY_FLOOR_USD = 0;
 const XIAOMI_SPEND_PLACES = 4;
 
 /**
+ Decimal places the Claude spend field is printed to: the figure the owner reads against a $200 month.
+ */
+const CLAUDE_SPEND_PLACES = 4;
+
+/**
  Whether DeepSeek's balance says nothing more can be bought there.
 
  DRY WHEN DEEPSEEK SAYS IT CANNOT SERVE (`is_available` false) OR THE BALANCE
@@ -446,6 +454,28 @@ export function xiaomiIsDry(
   // like every other meter; it decides nothing.
   void spend;
   return false;
+}
+
+/**
+ Whether the Claude key's meter says nothing more can be bought there: only after a billing error.
+
+ THE KEY HAS NO BALANCE ENDPOINT, so the meter answers wet until the client has met a billing error (402, or the older
+ 400 naming a low credit balance) and dry for the rest of the run after it (`claude-spend.ts`). The dollar figure
+ decides nothing: the owner's $200 a month has no hard cap in this code.
+
+ @param spend - most recent reading
+
+ @returns Whether a billing error has been met
+
+ @example
+ ```ts
+ const dry = claudeIsDry({ spend, },);
+ ```
+ */
+export function claudeIsDry(
+  { spend, }: { readonly spend: ClaudeSpend; },
+): boolean {
+  return spend.billingRefused;
 }
 
 /**
@@ -772,6 +802,32 @@ export function xiaomiMeterLevel(
 ): readonly string[] {
   return [`xiaomiUsdSpent=${spend.spentUsd
     .toFixed(XIAOMI_SPEND_PLACES,)}`,];
+}
+
+/**
+ Renders what the Claude meter actually said, as record fields.
+
+ THE RUN'S OWN PRICED SPEND, TO FOUR PLACES, and `anthropicBilling=refused` once a billing error has been met. It is
+ what this process spent, not what the account holds.
+
+ @param spend - spend the verdict was read from
+
+ @returns `key=value` tokens, no value carrying a space
+
+ @example
+ ```ts
+ claudeMeterLevel({ spend, },);
+ // => ['anthropicUsdSpent=0.0042',]
+ ```
+ */
+export function claudeMeterLevel(
+  { spend, }: { readonly spend: ClaudeSpend; },
+): readonly string[] {
+  return [
+    `anthropicUsdSpent=${spend.spentUsd
+      .toFixed(CLAUDE_SPEND_PLACES,)}`,
+    ...(spend.billingRefused ? ['anthropicBilling=refused',] : []),
+  ];
 }
 
 //endregion Budget routing

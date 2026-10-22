@@ -43,6 +43,8 @@ export {
   DEEPSEEK_DRY_FLOOR_USD,
   deepSeekIsDry,
   deepSeekMeterLevel,
+  claudeIsDry,
+  claudeMeterLevel,
   xiaomiIsDry,
   xiaomiMeterLevel,
 } from './budget-routing.ts';

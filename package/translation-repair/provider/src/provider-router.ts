@@ -137,6 +137,8 @@ const DEFAULT_SLOT_LIMITS: SlotLimits = {
   // a request rate instead, which its pacer meets (`paces`).
   deepseek: DEEPSEEK_PER_MODEL_CONCURRENCY,
   xiaomi: Number.POSITIVE_INFINITY,
+  // The Claude key states request and token rates, not a concurrency, so its pacer meets them (`paces`).
+  anthropic: Number.POSITIVE_INFINITY,
   openrouter: Number.POSITIVE_INFINITY,
 };
 

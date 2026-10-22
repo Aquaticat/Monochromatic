@@ -44,6 +44,8 @@ import {
   createRequestPace,
   type RequestPace,
 } from './request-pace.ts';
+import { claudeSpendNow, type ClaudeSpend, } from './claude-spend.ts';
+import { isPaymentRefusal, } from './provider-budget-refusal.ts';
 import { RETRY_AFTER_HEADER, } from './retry-after-header.ts';
 import { failureForReply, } from './request-size-refusal.ts';
 import { reportSpend, } from './spend-line.ts';
@@ -134,6 +136,11 @@ export class ClaudeModelNotServedError extends Error {
  */
 export type ClaudeClient = ModelCaller & {
   /**
+   Spend meter: the run's priced dollars on this key and whether billing has refused a call, read by the budget layer.
+   */
+  readonly spend: (args: { readonly signal: AbortSignal; },) => Promise<ClaudeSpend>;
+
+  /**
    Request-rate view the router reads to see a full window as saturation.
    */
   readonly pace: Pick<RequestPace, 'waitMs'>;
@@ -181,7 +188,7 @@ function cardFor({ modelId, }: { readonly modelId: RosterModelId; },): ClaudeMod
  @param requestsPerMinute - request starts allowed in any minute, retries included; the stated 1000, a whole number of
  one or more, which `createRequestPace` refuses otherwise
 
- @returns Client surface with chatText, chatJson and pace
+ @returns Client surface with chatText, chatJson, spend and pace
 
  @example
  ```ts
@@ -212,6 +219,29 @@ export function createClaudeClient(
     perWindow: requestsPerMinute,
     windowMs: CLAUDE_PACE_WINDOW_MS,
   },);
+
+  /**
+   Whether a call of this client has met a billing error, which holds the key dry for the rest of the run.
+   */
+  let billingRefused = false;
+
+  /**
+   Reads the spend meter.
+
+   @param signal - abort signal of the reading
+
+   @returns The priced spend and the billing flag
+
+   @example
+   ```ts
+   const { billingRefused: dry, } = await readSpend({ signal, },);
+   ```
+   */
+  async function readSpend({ signal, }: { readonly signal: AbortSignal; },): Promise<ClaudeSpend> {
+    signal.throwIfAborted();
+    await Promise.resolve();
+    return claudeSpendNow({ billingRefused, },);
+  }
 
   /**
    Whether the rate-limit headers have been logged yet: once per client, which is once per run.
@@ -412,12 +442,22 @@ export function createClaudeClient(
         rl.warn(`<- ${label}: HTTP ${String(reply.status,)}`,);
 
         // BYTES RATHER THAN CHARACTERS: this corpus is Chinese.
-        throw failureForReply({
+        /**
+         The failure this reply is, thrown below once the billing flag has read it.
+         */
+        const failure = failureForReply({
           provider: 'anthropic',
           status: reply.status,
           bodyText: reply.bodyText,
           requestBodyBytes: Buffer.byteLength(bodyJson,),
         },);
+        // A BILLING ERROR (402, or the older 400 saying the credit balance is too low) EMPTIES THE KEY FOR THE RUN: the
+        // flag is this client's own, so a call already in flight that settles cannot lift it.
+        if (isPaymentRefusal({ error: failure, },)) {
+          billingRefused = true;
+          rl.warn(`<- ${label}: billing error; the Claude key is held dry for the rest of the run`,);
+        }
+        throw failure;
       }
 
       /**
@@ -495,6 +535,7 @@ export function createClaudeClient(
   return {
     chatText,
     chatJson: chatJsonThrough({ chatText, },),
+    spend: readSpend,
     pace: { waitMs: pace.waitMs, },
   };
 }

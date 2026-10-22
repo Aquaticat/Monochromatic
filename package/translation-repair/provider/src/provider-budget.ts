@@ -7,6 +7,7 @@ import type { DeepSeekClient, } from './deepseek-client.ts';
 import type { HyperClient, } from './hyper-client.ts';
 import type { NeuralWattClient, } from './neuralwatt-client.ts';
 import type { OpenRouterClient, } from './openrouter-client.ts';
+import type { ClaudeClient, } from './claude-client.ts';
 import type { XiaomiClient, } from './xiaomi-client.ts';
 import {
   otherProviders,
@@ -314,6 +315,8 @@ function notHeldOut(): boolean {
 
  @param xiaomi - Xiaomi's spend meter, which is all this reads
 
+ @param anthropic - the Claude key's spend meter, which is all this reads
+
  @param openrouter - fourth provider's credits meter, which is all this reads
 
  @param freshForMs - how long one reading is trusted
@@ -346,6 +349,7 @@ export function createProviderBudgets(
     bedrock,
     deepseek,
     xiaomi,
+    anthropic,
     openrouter,
     freshForMs = BUDGET_FRESH_MS,
     cooldownMs = REFUSAL_COOLDOWN_MS,
@@ -359,6 +363,7 @@ export function createProviderBudgets(
     readonly bedrock?: Pick<BedrockClient, 'credits'>;
     readonly deepseek?: Pick<DeepSeekClient, 'credits'>;
     readonly xiaomi?: Pick<XiaomiClient, 'spend'>;
+    readonly anthropic?: Pick<ClaudeClient, 'spend'>;
     readonly openrouter?: Pick<OpenRouterClient, 'credits'>;
     readonly freshForMs?: number;
     readonly cooldownMs?: number;
@@ -465,6 +470,7 @@ export function createProviderBudgets(
     bedrock: 0,
     deepseek: 0,
     xiaomi: 0,
+    anthropic: 0,
     openrouter: 0,
   };
 
@@ -551,6 +557,7 @@ export function createProviderBudgets(
       ...((bedrock === undefined) ? {} : { bedrock, }),
       ...((deepseek === undefined) ? {} : { deepseek, }),
       ...((xiaomi === undefined) ? {} : { xiaomi, }),
+      ...((anthropic === undefined) ? {} : { anthropic, }),
       ...((openrouter === undefined) ? {} : { openrouter, }),
       signal,
     },);

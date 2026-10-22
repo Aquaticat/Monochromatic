@@ -5,6 +5,8 @@ import type { BedrockClient, } from './bedrock-client.ts';
 import {
   bedrockIsDry,
   bedrockMeterLevel,
+  claudeIsDry,
+  claudeMeterLevel,
   deepSeekIsDry,
   deepSeekMeterLevel,
   hyperIsDry,
@@ -17,6 +19,7 @@ import {
   xiaomiMeterLevel,
 } from './budget-routing.ts';
 import type { ModelClient, } from './chat-contract.ts';
+import type { ClaudeClient, } from './claude-client.ts';
 import type { DeepSeekClient, } from './deepseek-client.ts';
 import { exchangeFailureLogText, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import type { HyperClient, } from './hyper-client.ts';
@@ -238,6 +241,8 @@ export const UNCONFIGURED_METER: MeterRecord = {
 
  @param xiaomi - Xiaomi's spend reader, absent when unconfigured
 
+ @param anthropic - the Claude key's spend reader, absent when unconfigured
+
  @param openrouter - fourth provider's credits reader, absent when unconfigured
 
  @param signal - abort signal of whichever call started this reading
@@ -246,7 +251,7 @@ export const UNCONFIGURED_METER: MeterRecord = {
 
  @example
  ```ts
- const meters = await readEveryMeter({ neuralwatt, synthetic, hyper, bedrock, deepseek, xiaomi, openrouter, signal, },);
+ const meters = await readEveryMeter({ neuralwatt, synthetic, hyper, bedrock, deepseek, xiaomi, anthropic, openrouter, signal, },);
  ```
  */
 export async function readEveryMeter(
@@ -257,6 +262,7 @@ export async function readEveryMeter(
     bedrock,
     deepseek,
     xiaomi,
+    anthropic,
     openrouter,
     signal,
   }: {
@@ -266,6 +272,7 @@ export async function readEveryMeter(
     readonly bedrock?: Pick<BedrockClient, 'credits'>;
     readonly deepseek?: Pick<DeepSeekClient, 'credits'>;
     readonly xiaomi?: Pick<XiaomiClient, 'spend'>;
+    readonly anthropic?: Pick<ClaudeClient, 'spend'>;
     readonly openrouter?: Pick<OpenRouterClient, 'credits'>;
     readonly signal: AbortSignal;
   },
@@ -281,6 +288,7 @@ export async function readEveryMeter(
     bedrockMeter,
     deepseekMeter,
     xiaomiMeter,
+    anthropicMeter,
     openrouterMeter,
   ] = await Promise.all([
     (neuralwatt === undefined)
@@ -385,6 +393,23 @@ export async function readEveryMeter(
           };
         },
       },),
+    (anthropic === undefined)
+      ? Promise.resolve(UNCONFIGURED_METER,)
+      : meterRecordOf({
+        name: 'anthropic',
+        signal,
+        readLevel: async function readClaudeSpend(): Promise<MeterLevel> {
+          /**
+           Spend the (wet until billing refuses) verdict and the number are both drawn from.
+           */
+          const spend = await anthropic.spend({ signal, },);
+
+          return {
+            dry: claudeIsDry({ spend, },),
+            fields: claudeMeterLevel({ spend, },),
+          };
+        },
+      },),
     (openrouter === undefined)
       ? Promise.resolve(UNCONFIGURED_METER,)
       : meterRecordOf({
@@ -411,6 +436,7 @@ export async function readEveryMeter(
     bedrock: bedrockMeter,
     deepseek: deepseekMeter,
     xiaomi: xiaomiMeter,
+    anthropic: anthropicMeter,
     openrouter: openrouterMeter,
   };
 }

@@ -24,6 +24,10 @@ export {
 } from './claude-client.ts';
 export { claudeCostOf, } from './claude-cost.ts';
 export {
+  claudeSpendNow,
+  type ClaudeSpend,
+} from './claude-spend.ts';
+export {
   claudeStreamFactsOf,
   type ClaudeStreamFacts,
   type ClaudeUsageSplit,
