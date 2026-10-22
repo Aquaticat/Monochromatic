@@ -8,6 +8,7 @@ import {
 import {
   completionCapFor,
   perModelLimiter,
+  type RosterModelId,
 } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { isSuccessStatus, } from '@monochromatic-dev/translation-repair-markup/ts';
 import {
@@ -26,12 +27,15 @@ import type {
 import { chatJsonThrough, } from './chat-json-through.ts';
 import { buildClaudeBody, } from './claude-body.ts';
 import {
+  CLAUDE_MODELS,
+  type ClaudeModelInfo,
   CLAUDE_API_VERSION,
   CLAUDE_AUTH_HEADER,
   CLAUDE_BASE_URL,
   CLAUDE_VERSION_HEADER,
   claudeMessagesUrlFor,
 } from './claude-catalog.ts';
+import { claudeIdFor, } from './claude-reach.ts';
 import { RETRY_AFTER_HEADER, } from './retry-after-header.ts';
 import { failureForReply, } from './request-size-refusal.ts';
 import { reportSpend, } from './spend-line.ts';
@@ -59,6 +63,43 @@ import { withoutRefusedKeyBody, } from './direct-client.ts';
 const l = contextRoot({ tag: 'translation-repair', },);
 
 /**
+ Refusal raised when a roster model is not one of the eight Claude cards.
+
+ A THROW RATHER THAN A DATA OUTCOME, because it is a routing mistake in our own code and not a thing a model did, and it
+ is THE OWNER'S LOCK: the call never reaches the wire. The key lists Opus, Fable and older models too, and a request
+ for any of them stops here.
+
+ @example
+ ```ts
+ throw new ClaudeModelNotServedError({ modelId, },);
+ ```
+ */
+export class ClaudeModelNotServedError extends Error {
+  /**
+   Declares this message safe to forward: it names a model.
+   */
+  readonly messageNamesOnly: true = true;
+
+  /**
+   Builds failure naming the model this key is not granted for.
+
+   @param modelId - roster model that was addressed here
+
+   @example
+   ```ts
+   new ClaudeModelNotServedError({ modelId: 'hf:Qwen/Qwen3.8-27B', },);
+   ```
+   */
+  public constructor({ modelId, }: { readonly modelId: string; },) {
+    super(
+      `The Claude key is granted for Sonnet 5.5 and Haiku 5.5 only, so the Claude route does not serve ${modelId}; `
+        + 'route it to another provider or pick another model',
+    );
+    this.name = 'ClaudeModelNotServedError';
+  }
+}
+
+/**
  Client surface of the Claude route: the shared one every route has.
 
  @example
@@ -67,6 +108,30 @@ const l = contextRoot({ tag: 'translation-repair', },);
  ```
  */
 export type ClaudeClient = ModelCaller;
+
+/**
+ Finds the Claude card one roster model is, which is THE LOCK.
+
+ @param modelId - roster model the caller addressed
+
+ @returns The card, whose wire model is one of the two the key is granted for
+
+ @throws {@link ClaudeModelNotServedError} when the model is not one of the eight Claude cards
+
+ @example
+ ```ts
+ const card = cardFor({ modelId, },);
+ ```
+ */
+function cardFor({ modelId, }: { readonly modelId: RosterModelId; },): ClaudeModelInfo {
+  /**
+   Spelling this route uses, or that it serves no such model.
+   */
+  const spelling = claudeIdFor({ modelId, },);
+  if (!spelling.served)
+    throw new ClaudeModelNotServedError({ modelId, },);
+  return CLAUDE_MODELS[spelling.id];
+}
 
 /**
  Builds one client over injected transport, speaking the Messages protocol to Anthropic.
@@ -171,9 +236,15 @@ export function createClaudeClient(
     },);
 
     /**
-     Model id as the caller spelled it.
+     Card the call is for, resolved BEFORE the slot is taken so a misrouted call fails at once, with no request built,
+     instead of queueing behind live ones.
      */
-    const servedId = String(request.modelId,);
+    const card = cardFor({ modelId: request.modelId, },);
+
+    /**
+     Model id the request carries.
+     */
+    const servedId = card.wireModel;
 
     return await limiterFor(request.modelId,)(async function performExchange() {
       rl.debug(`-> ${servedId}: ${String(request.messages.length,)} ${
@@ -188,7 +259,7 @@ export function createClaudeClient(
        Exactly what goes on the wire, hoisted so its size can be measured.
        */
       const bodyJson = JSON.stringify(buildClaudeBody({
-        modelId: servedId,
+        card,
         messages: request.messages,
         // Conditional spread keeps the member absent instead of undefined.
         ...(request.responseFormat === undefined ? {} : { responseFormat: request.responseFormat, }),

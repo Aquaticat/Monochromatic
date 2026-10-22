@@ -13,6 +13,7 @@ export {
 } from './claude-catalog.ts';
 export { buildClaudeBody, } from './claude-body.ts';
 export {
+  ClaudeModelNotServedError,
   createClaudeClient,
   type ClaudeClient,
 } from './claude-client.ts';

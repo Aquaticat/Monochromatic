@@ -9,16 +9,17 @@ import {
   systemTextOf,
 } from './anthropic-request.ts';
 import type { VisionMessage, } from './chat-contract.ts';
+import type { ClaudeModelInfo, } from './claude-catalog.ts';
 
 //region Claude body
-// THE BODY ONE CLAUDE CALL SENDS. FIRST DRAFT: it takes the model id as the caller spelled it, answers a schema with
+// THE BODY ONE CLAUDE CALL SENDS. FIRST DRAFT: it answers a schema with
 // a forced tool, sends no thinking or effort, forwards sampling knobs a request happens to carry, and marks no
 // cache breakpoint. The guards follow one commit each, red first.
 
 /**
  Builds the whole body of one Messages call.
 
- @param modelId - model id as the caller spelled it
+ @param card - the Claude card the call is for, whose wire model the body carries
 
  @param messages - conversation as the caller built it, system message included
 
@@ -32,18 +33,18 @@ import type { VisionMessage, } from './chat-contract.ts';
 
  @example
  ```ts
- const body = buildClaudeBody({ modelId, messages, maxTokens: 1_000, request, },);
+ const body = buildClaudeBody({ card, messages, maxTokens: 1_000, request, },);
  ```
  */
 export function buildClaudeBody(
   {
-    modelId,
+    card,
     messages,
     responseFormat,
     maxTokens,
     request,
   }: {
-    readonly modelId: string;
+    readonly card: ClaudeModelInfo;
     readonly messages: readonly (ChatMessage | VisionMessage)[];
     readonly responseFormat?: ReadableResponseFormat;
     readonly maxTokens: number;
@@ -55,7 +56,7 @@ export function buildClaudeBody(
    */
   const tool = (responseFormat === undefined) ? undefined : answerToolDefinition({ responseFormat, },);
   return {
-    model: modelId,
+    model: card.wireModel,
     max_tokens: maxTokens,
     stream: true,
     system: systemTextOf({ messages, },),
