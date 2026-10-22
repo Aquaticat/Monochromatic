@@ -183,6 +183,25 @@ await describe({
           },
         },),
         it({
+          name: 'READS THE LOW-CREDIT SENTENCE AS ANTHROPIC\'S ALONE (C9): another provider\'s 400 that happens to hold '
+            + 'the words is a bad request and not an empty balance, so it neither marks that provider dry nor counts '
+            + 'as a budget refusal',
+          fn: async () => {
+            for (const provider of ['hyper', 'synthetic', 'openrouter', 'bedrock',] as const) {
+              /**
+               A 400 of another provider whose body quotes the sentence.
+               */
+              const error = new ProviderHttpError({
+                provider,
+                status: HTTP_BAD_REQUEST,
+                bodyText: '{"error":{"message":"Your credit balance is too low to access the Anthropic API."}}',
+              },);
+              expect(isPaymentRefusal({ error, },),).toBe(false,);
+              expect(isBudgetRefusal({ error, },),).toBe(false,);
+            }
+          },
+        },),
+        it({
           name: 'READS NO PAYMENT REFUSAL where the failure is not a provider reply, so a local fault marks '
             + 'nothing refused',
           fn: async () => {

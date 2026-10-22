@@ -117,8 +117,8 @@ await describe({
   name: 'retry-after header',
   children: [
     it({
-      name: 'READS THE HEADER AS SECONDS, whole or with a fraction, and no wait from a missing, empty, negative or '
-        + 'unreadable one',
+      name: 'READS THE HEADER AS SECONDS, whole or with a fraction, and no wait from a missing, empty, negative, hex, '
+        + 'exponent or unreadable one',
       fn: async () => {
         expect([
           retryAfterHeaderMsOf({ headers: { 'retry-after': '3', }, },),
@@ -126,9 +126,11 @@ await describe({
           retryAfterHeaderMsOf({ headers: { 'retry-after': '', }, },),
           retryAfterHeaderMsOf({ headers: { 'retry-after': '-4', }, },),
           retryAfterHeaderMsOf({ headers: { 'retry-after': 'soon', }, },),
+          retryAfterHeaderMsOf({ headers: { 'retry-after': '0x10', }, },),
+          retryAfterHeaderMsOf({ headers: { 'retry-after': '1e3', }, },),
           retryAfterHeaderMsOf({ headers: { 'x-cat': '3', }, },),
           retryAfterHeaderMsOf({},),
-        ],).toEqual([3_000, 500, 0, 0, 0, 0, 0,],);
+        ],).toEqual([3_000, 500, 0, 0, 0, 0, 0, 0, 0,],);
       },
     },),
 
