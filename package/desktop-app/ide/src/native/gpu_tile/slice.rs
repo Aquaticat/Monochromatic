@@ -19,7 +19,7 @@
 /// The device,
 /// the textures,
 /// and the outcome the window applies.
-use super::{Inner, MinimapTexture, Outcome, Placement, Target};
+use super::{Inner, Outcome, Placement, StackTexture, Target};
 /// The markup's record of one texture of the picture.
 use crate::native::ui::MinimapSlice;
 /// How the chunks are grouped into textures,
@@ -143,7 +143,7 @@ impl Inner {
                 view_formats: &[],
             });
             match Image::try_from(texture.clone()) {
-                Ok(image) => self.minimap.push(MinimapTexture {
+                Ok(image) => self.minimap.push(StackTexture {
                     target: Target {
                         texture,
                         width,

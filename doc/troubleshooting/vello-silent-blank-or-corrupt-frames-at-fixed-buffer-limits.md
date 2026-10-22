@@ -90,6 +90,13 @@ which sets failure bit 16 and turns the frame blank (variant 1) instead.
   I read this code;
   the harness installs no logger,
   so I did not see the warning fire.
+- The IDE installs a logger, and the warning fired there (2026-10-22): a tile of 1358 by 12288 pixels counts
+  6 by 48 = 288 bins of 256 by 256 pixels, and one of 6838 by 2400 counts 27 by 10 = 270.
+  A build that cuts each texture of its tile to at most 256 bins
+  (`tile_texture_rows` in `package/desktop-app/ide/src/shaped_text/limit.rs`: `256 * floor(256 / ceil(width / 256))`
+  rows) logged none in six captures where the build before it logged five lines in each of three.
+  The bin count is `ceil(width / 256) * ceil(height / 256)`, so a size on the 256 pixel grid is what the rule
+  needs, and 256 bins of 256 by 256 pixels is exactly the 64 MiB that this document keeps a tile under.
 
 ## Root cause
 
@@ -1146,7 +1153,7 @@ and a scene that needs one more chunk at that size fails loudly with bit 16 (a b
 variant 1).
 Tradeoff:
 it caps the texture;
-the IDE keeps its tile at 64 MiB or less,
+the IDE keeps each texture of its tile at 64 MiB or less,
 which is safe by this rule.
 
 ### Raise `ptcl` to hold the initial regions (patched `vello_encoding`)

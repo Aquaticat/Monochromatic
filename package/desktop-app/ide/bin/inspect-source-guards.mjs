@@ -131,23 +131,88 @@ const cases = [
     test: 'a_line_past_the_raster_limit_is_painted_in_a_clip_that_follows_the_view',
     failure: 'the gutter lists'
   },
+  // The stacked code tile: each texture is within the bin count Vello accepts and the device's side, abuts the next, is
+  // placed by its own top, and is drawn into textures that a tile of the same shape keeps.
   {
-    name: 'clip-cap',
+    name: 'stack-bin-rule',
     file: 'src/shaped_text/limit.rs',
-    before: 'let rows = (MAX_RASTER_BYTES / 4 / columns.max(1)).min(u64::from(texture_dimension()));',
-    after: 'let rows = (MAX_RASTER_BYTES / 1 / columns.max(1)).min(u64::from(texture_dimension()));',
-    native: true,
-    test: 'a_clip_stays_within_the_raster_limit_for_every_window_size',
-    failure: 'passes the limit'
+    before: 'let by_bins = (MAX_BINS / bins_across).max(1) * BIN_SIDE;',
+    after: 'let by_bins = (MAX_BINS * 2 / bins_across).max(1) * BIN_SIDE;',
+    integration: 'tile_vello_limit',
+    test: 'no_accepted_texture_covers_more_bins_than_vello_counts_before_it_warns',
+    failure: 'covers'
   },
   {
     name: 'clip-texture-side',
     file: 'src/shaped_text/limit.rs',
-    before: 'let rows = (MAX_RASTER_BYTES / 4 / columns.max(1)).min(u64::from(texture_dimension()));',
-    after: 'let rows = MAX_RASTER_BYTES / 4 / columns.max(1);',
+    before: 'return side.min(by_bins).min(by_bytes);',
+    after: 'return by_bins.min(by_bytes);',
+    integration: 'raster_limit',
+    test: 'the_texture_size_of_the_device_bounds_each_texture_of_the_stack',
+    failure: equality
+  },
+  {
+    name: 'stack-own-top',
+    file: 'src/tile_scene.rs',
+    before: '    let shift = rows.start as f32;\n    let size =',
+    after: '    let shift = 0.0_f32;\n    let size =',
     native: true,
-    test: 'a_clip_stays_within_the_raster_limit_for_every_window_size',
-    failure: 'texture size'
+    test: 'a_tile_drawn_across_textures_equals_the_tile_in_one_texture',
+    failure: 'differs from the one texture'
+  },
+  {
+    name: 'stack-band-cut',
+    file: 'src/tile_scene/encode.rs',
+    before: 'let band_top = top.clamp(0.0, height);',
+    after: 'let band_top = *top;',
+    native: true,
+    test: 'a_tile_drawn_across_textures_equals_the_tile_in_one_texture',
+    failure: 'min > max'
+  },
+  {
+    name: 'stack-slices-abut',
+    file: 'src/native/gpu_tile/source.rs',
+    before: '                top += held.target.height;',
+    after: '                top += 0;',
+    native: true,
+    test: 'the_window_shows_a_stacked_tile_as_the_one_texture_shows_it',
+    failure: 'differs from the one texture'
+  },
+  {
+    name: 'stack-textures-reused',
+    file: 'src/native/gpu_tile/source.rs',
+    before: '        if self.tile.len() != stack.textures.len() {\n            return false;',
+    after: '        if true {\n            return false;',
+    native: true,
+    test: 'a_tile_of_the_same_shape_reuses_its_textures_and_the_list_of_images',
+    failure: 'made new textures'
+  },
+  {
+    name: 'window-texture-limit-told',
+    file: 'src/native/gpu_tile/types.rs',
+    before: '            window.set_texture_limit(i32::try_from(limit).unwrap_or(i32::MAX));',
+    after: '            let _ = limit;',
+    native: true,
+    test: 'the_window_is_never_larger_than_the_devices_texture_side',
+    failure: equality
+  },
+  {
+    name: 'window-max-width',
+    file: 'ui/app.slint',
+    before: 'max-width: root.texture-limit * 1phx;',
+    after: 'max-width: 100000phx;',
+    native: true,
+    test: 'the_window_is_never_larger_than_the_devices_texture_side',
+    failure: 'max-width'
+  },
+  {
+    name: 'window-max-height',
+    file: 'ui/app.slint',
+    before: 'max-height: root.texture-limit * 1phx;',
+    after: 'max-height: 100000phx;',
+    native: true,
+    test: 'the_window_is_never_larger_than_the_devices_texture_side',
+    failure: 'max-height'
   },
   {
     name: 'clip-origin',
@@ -1177,8 +1242,8 @@ const cases = [
   {
     name: 'minimap-slices-in-place',
     file: 'src/native/gpu_tile/types.rs',
-    before: '    let Some(list) = shown.as_any().downcast_ref::<VecModel<MinimapSlice>>() else {',
-    after: '    let Some(list) = shown.as_any().downcast_ref::<VecModel<MinimapSlice>>().filter(|_| false) else {',
+    before: '    let Some(list) = shown.as_any().downcast_ref::<VecModel<Slice>>() else {',
+    after: '    let Some(list) = shown.as_any().downcast_ref::<VecModel<Slice>>().filter(|_| false) else {',
     native: true,
     test: 'a_picture_of_the_same_shape_changes_the_rows_of_the_list_and_never_replaces_it',
     failure: 'the window was given a new list of textures'

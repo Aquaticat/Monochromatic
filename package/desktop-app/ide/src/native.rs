@@ -325,6 +325,9 @@ mod tile_pass;
 /// a frame is rendered and the tile's texture is read back.
 #[cfg(test)]
 mod tile_reads;
+/// The code tile drawn across stacked textures shows what one texture shows.
+#[cfg(test)]
+mod tile_stack_tests;
 /// A finished tile is swapped in by the next scroll step's frame,
 /// and by the poll only when no step is due.
 #[cfg(test)]

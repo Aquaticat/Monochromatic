@@ -2218,18 +2218,44 @@ and the shaper counts its passes (`TextShaper::tab_passes`).
 
 #### Lines taller than one raster
 
-A tile is one texture,
-and a texture may hold 64 MiB (`MAX_RASTER_BYTES`)
-and at most the device's texture side (8192 px unless the device says more).
+A tile is a stack of textures one below the other (`TileStack`,
+`src/tile_scene.rs`),
+and a window shows them as one picture:
+the markup draws one `Image` for each texture at the tile's top plus the rows above it (`source-slices`),
+so the textures abut on whole physical rows with no gap and no overlap.
+A texture holds at most the device's texture side (8192 px unless the device says more)
+and at most 256 bins of 256 by 256 pixels,
+which is what Vello's coarse stage counts before it logs `Trying to paint too large image`
+and is also exactly 64 MiB (`MAX_RASTER_BYTES`).
 The raster is as wide as the text area plus 24 px,
-so its height is limited:
-at a text width of 782 px that is 866 code rows at scale 1 and 215 at scale 2
-(about 74,000 and 18,500 characters of ordinary text in one line).
-A window whose three view heights pass the limit is limited the same way:
-at a text width of 1918 px and scale 2 the cap is 2,135 px,
-less than three views of 1,080 px.
-`render::tile_cap` (`src/native/render/paint.rs`) is the largest tile height in logical pixels,
-one code row short of the limit for rounding.
+so a texture's height is `256 * floor(256 / ceil(width / 256))` rows (`tile_texture_rows`):
+16,384 rows at a width of 806 px,
+10,752 at 1,358 px (the old byte rule allowed 12,288,
+which is 288 bins and
+made Vello log its warning at every render at scale 2),
+2,048 at 7,259 px.
+A tile that one texture holds is one texture,
+so an ordinary window draws exactly what it drew before the stack.
+A tile taller than a texture is cut at whole rows from its top into textures of `tile_texture_rows` and a rest.
+Each texture has its own scene (`tile_items_in`):
+the rows,
+hints,
+messages and underlines that can reach it,
+placed from its first row by a whole number of pixels,
+so a glyph that two textures share is drawn in each at the same fractional position,
+and a clip band is cut to the texture (`encode`),
+so a selected row at a seam is cut where the textures meet.
+The stack holds at most four textures or the device's side plus 1,024 rows,
+whichever is more (`stack_rows`),
+so the view of the tallest window the device can show (never taller than its texture side) is always held.
+A window is never larger than the device's texture side in either direction,
+in physical pixels
+(`max-width` and `max-height` of `AppWindow`,
+set from the device's side):
+the toolkit's surface configuration would panic past it.
+`render::tile_cap` (`src/native/render/paint.rs`) is the largest tile height in logical pixels:
+the larger of what one texture holds and three views plus six code rows,
+within the stack's bound.
 A tile of lines taller than that is clipped instead of refused (`Viewport::clip`,
 `viewport::band_clip`):
 
@@ -5436,20 +5462,22 @@ The tile's texture is bounded by the device.
 `src/shaped_text/limit.rs` holds the largest texture side (`texture_dimension`,
 8192 until a device says otherwise),
 which `src/gpu_device.rs` records when it opens the device and `src/native/gpu_tile.rs` checks at the first frame.
-`tile_cap` (the tallest tile in logical pixels) is the smaller of the 64 MiB byte limit and the texture side,
+`tile_cap` (the tallest tile in logical pixels) is bound by the stack (`stack_rows`,
+textures of `tile_texture_rows`),
 one code row short for rounding,
 and a tile of lines taller than that is clipped as described in "Lines taller than one raster".
-`paint_tile` refuses a view past either limit with a diagnostic instead of letting the GPU reject the texture.
+`paint_tile` refuses a view past one texture and `paint_stack` a view past the stack with a diagnostic
+instead of letting the GPU reject the texture.
 The native test device is limited to 8192 px (wgpu's guaranteed minimum),
 so every test run proves the rule on this host too,
 whose own GPU offers 16384.
 In a window 2,000 px tall over `mixed(6000)` lines at a text width of 1,100 px
-(`a_2000_px_window_gets_a_tile_texture_within_the_devices_limit_at_both_scales`),
-the tile is a texture of 1113 by 8160 px at scale 1 (the texture side binds)
-and 2226 by 7488 px,
-63 MiB,
-at scale 2 (the byte limit binds),
-where three views would be 12,000 physical rows at scale 2.
+(`a_2000_px_window_gets_a_tile_of_textures_within_the_devices_limit_at_both_scales`),
+three views are 6,048 physical rows at scale 1,
+a texture of 1113 by 6048 px (the side of 8192 holds it),
+and 12,096 rows at scale 2,
+two textures of 2226 px by 7168 and 4928 rows (7168 is 28 bins of 256 high,
+the most that 9 bins across allow).
 
 Stages 5 and 6 of `doc/planning/ide-vello-text.md` are done:
 the minimap is drawn by the same renderer,

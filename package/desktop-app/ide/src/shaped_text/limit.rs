@@ -13,11 +13,12 @@ use crate::row_map::CODE_ROW;
 use std::sync::atomic::{AtomicU32, Ordering};
 
 /// What:
-///  Most bytes a source tile's texture may hold:
+///  Most bytes one texture of a source tile may hold:
 ///  64 MiB of RGBA.
 /// Why:
-///  The tile is one GPU texture;
-///  the window clips a tile that would pass this,
+///  A tile is drawn across as many GPU textures as its height needs,
+///  and each one stays within this;
+///  the window clips a tile that would pass the stack's bound,
 ///  so the check in the painter only guards a caller that did not.
 ///
 /// In TS you'd write (pseudocode):
@@ -106,7 +107,7 @@ pub fn raster_width(wrap: Option<f32>) -> f32 {
 /// What:
 ///  Whether a raster `columns` pixels wide and `rows` pixels tall holds at most [`MAX_RASTER_BYTES`].
 /// Why:
-///  Every check against the limit asks this one question,
+///  Every check against the byte rule asks this one question,
 ///  so no caller repeats the multiplication or its overflow rule.
 ///
 /// In TS you'd write (pseudocode):
@@ -118,40 +119,233 @@ pub fn raster_fits(columns: u64, rows: u64) -> bool {
 }
 
 /// What:
-///  Whether a tile texture `columns` pixels wide and `rows` pixels tall is within [`MAX_RASTER_BYTES`] and within
-///  the device's texture size on both sides.
+///  Pixels on a side of one bin of Vello's coarse stage:
+///  16 pixels in a tile and 16 tiles in a bin.
 /// Why:
-///  The tile is one texture on the GPU,
-///  so its memory and the limit of the device both bound its height.
+///  Vello 0.11 counts the bins a render covers (`vello-0.11.0/src/render.rs`,
+/// the warning "Trying to paint too large
+///  image") and a texture is cut into bins from its top left corner,
+///  so a texture off this grid counts the partial bin at its right and bottom edges whole.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const BIN_SIDE = 256;
+/// ```
+pub const BIN_SIDE: u64 = 256;
+
+/// What:
+///  Most bins Vello 0.11 counts in one render before it logs that the image is too large:
+///  256 bins of 256 by 256 pixels are 16,777,216 pixels,
+///  which is exactly [`MAX_RASTER_BYTES`] of `Rgba8Unorm`.
+/// Why:
+///  The byte rule alone allowed a texture at the cap whose edges are off the bin grid to cover more bins than this,
+///  and the renderer logged the warning at every render of it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const MAX_BINS = 256;
+/// ```
+pub const MAX_BINS: u64 = 256;
+
+/// What:
+///  Most textures a tile of the code view is stacked from.
+/// Why:
+///  The tile is three view heights tall,
+///  so a window past the limits of one texture needs several,
+///  and the count bounds the memory a tile may hold at four times [`MAX_RASTER_BYTES`]:
+///  a view that is taller than that is the one exception (see [`stack_rows`]).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const MAX_STACK_TEXTURES = 4;
+/// ```
+pub const MAX_STACK_TEXTURES: u64 = 4;
+
+/// What:
+///  Physical rows a stack keeps beyond the largest window the device can show,
+///  so a view of the tallest window still has the rows that the rounding of a clip to whole code rows needs
+///  and the overscan that a re-center keeps clear.
+/// Why:
+///  A window is never taller than the device's texture side,
+///  so a stack of at least that many rows plus this room always holds the whole view.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const STACK_VIEW_ROOM = 1024;
+/// ```
+pub const STACK_VIEW_ROOM: u64 = 1024;
+
+/// What:
+///  The most rows one texture of a tile `columns` pixels wide may have:
+///  the device's side,
+///  and the rows where Vello counts at most [`MAX_BINS`] bins,
+///  which also keeps the bytes within [`MAX_RASTER_BYTES`].
+///  Nothing when the width itself is more than a texture of the device can be.
+/// Why:
+///  A texture the renderer draws in one pass must be one it can draw correctly:
+///  past 128 MiB it renders wrong without an error
+///  (`doc/troubleshooting/vello-silent-blank-or-corrupt-frames-at-fixed-buffer-limits.md`),
+///  and past 256 bins it logs a warning at every render.
+///  Counting the bins from the texture's width makes the limit a multiple of the bin side,
+///  so a texture at the limit is on the grid.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function tileTextureRows(columns: number): number;
+/// ```
+pub fn tile_texture_rows(columns: u64) -> u64 {
+    let side = u64::from(texture_dimension());
+    if columns == 0 || columns > side {
+        return 0;
+    }
+    let bins_across = columns.div_ceil(BIN_SIDE);
+    let by_bins = (MAX_BINS / bins_across).max(1) * BIN_SIDE;
+    let by_bytes = MAX_RASTER_BYTES / 4 / columns;
+    return side.min(by_bins).min(by_bytes);
+}
+
+/// What:
+///  Whether one texture `columns` pixels wide and `rows` pixels tall is within the device's texture size and within
+///  Vello's bin count ([`tile_texture_rows`]).
+/// Why:
+///  Every texture of a stack is asked this before the GPU is,
+///  since the GPU would reject a texture past its size with a validation error.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
 /// function textureFits(columns: number, rows: number): boolean;
 /// ```
 pub fn texture_fits(columns: u64, rows: u64) -> bool {
-    let side = u64::from(texture_dimension());
-    return raster_fits(columns, rows) && columns <= side && rows <= side;
+    return rows <= tile_texture_rows(columns);
 }
 
 /// What:
-///  The tallest tile in logical pixels whose texture,
-///  `columns` physical pixels wide at display `scale`,
-///  stays within [`MAX_RASTER_BYTES`] and within the device's texture size.
-///  One code row is kept free for the rounding of the texture's size up to whole pixels,
-///  and the answer is never under one code row.
+///  The most rows a tile `columns` pixels wide may have all together:
+///  [`MAX_STACK_TEXTURES`] textures of [`tile_texture_rows`],
+///  or the device's texture side and [`STACK_VIEW_ROOM`] rows when that is more.
+///  Nothing when the width is more than a texture can be.
 /// Why:
-///  A tile is one texture of the text area's width,
-///  so the limits on its bytes and on its side are limits on its height.
-///  A window cannot be taller than the device's texture size either,
-///  so a tile of that height always holds a view.
+///  A tile past one texture is drawn across several,
+///  so its height is bounded by the memory it takes and not by one texture.
+///  The tallest window the device can show is as tall as its texture side,
+///  and the view of it must be held whatever the width,
+///  so the bound never goes under a view and its room.
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// function tileCap(columns: number, scale: number): number;
+/// function stackRows(columns: number): number;
 /// ```
-pub fn tile_cap(columns: u64, scale: f32) -> f32 {
-    let rows = (MAX_RASTER_BYTES / 4 / columns.max(1)).min(u64::from(texture_dimension()));
+pub fn stack_rows(columns: u64) -> u64 {
+    let side = u64::from(texture_dimension());
+    if columns == 0 || columns > side {
+        return 0;
+    }
+    let by_count = MAX_STACK_TEXTURES * tile_texture_rows(columns);
+    return by_count.max(side + STACK_VIEW_ROOM);
+}
+
+/// What:
+///  Whether a tile `columns` pixels wide and `rows` pixels tall can be drawn across stacked textures:
+///  within [`stack_rows`].
+/// Why:
+///  The painter refuses a view past it,
+///  so a caller that did not clip the frame to the limit gets a message and not a GPU validation error.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function stackFits(columns: number, rows: number): boolean;
+/// ```
+pub fn stack_fits(columns: u64, rows: u64) -> bool {
+    return rows <= stack_rows(columns);
+}
+
+/// What:
+///  The heights of the textures a tile `columns` pixels wide and `rows` tall is stacked from,
+///  top first:
+///  as many full [`tile_texture_rows`] as fit,
+///  and the rest in the last.
+///  Nothing for a tile with no rows or no width a texture can have.
+/// Why:
+///  The cuts between the textures stand at whole rows from the tile's top,
+///  and every texture is as tall as the limit allows,
+///  so a tile that one texture holds is one texture and the window tells nothing else from it.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function textureHeights(columns: number, rows: number): number[];
+/// ```
+pub fn texture_heights(columns: u64, rows: u64) -> Vec<u32> {
+    let most = tile_texture_rows(columns);
+    let mut heights = Vec::new();
+    if most == 0 {
+        return heights;
+    }
+    let mut left = rows;
+    while left > 0 {
+        let height = left.min(most);
+        heights.push(height as u32);
+        left -= height;
+    }
+    return heights;
+}
+
+/// What:
+///  Logical pixels a tile may be taller than the height the window asked it for,
+///  for the rounding of its edges to whole code rows and the sizes of a tile's partial lines.
+/// Why:
+///  A cap exactly as tall as the asked height would cut the overscan the re-center keeps clear
+///  every time a rounding added a row.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// export const CAP_SLACK = 6 * CODE_ROW;
+/// ```
+pub const CAP_SLACK: f32 = 6.0 * CODE_ROW;
+
+/// What:
+///  The tallest tile in logical pixels whose stack of textures,
+///  `columns` physical pixels wide at display `scale`,
+///  stays within [`stack_rows`].
+///  One code row is kept free for the rounding of the texture's size up to whole pixels,
+///  and the answer is never under one code row.
+/// Why:
+///  This is the bound that no frame may pass whatever the window asked for;
+///  the shaper guards every frame with it,
+///  and the window asks for less ([`tile_cap`]).
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function stackCap(columns: number, scale: number): number;
+/// ```
+pub fn stack_cap(columns: u64, scale: f32) -> f32 {
+    let rows = stack_rows(columns.max(1));
     return ((rows as f32 / scale).floor() - CODE_ROW).max(CODE_ROW);
+}
+
+/// What:
+///  The tallest tile in logical pixels that the window lets a raster `columns` physical pixels wide at display
+///  `scale` be when it wants a tile `wanted` logical pixels tall:
+///  what one texture holds,
+/// or `wanted` and [`CAP_SLACK`] when that is more,
+///  and never more than [`stack_cap`].
+/// Why:
+///  A tile is a stack of textures of the text area's width,
+/// so a window larger than one texture allows gets
+///  several,
+/// but a tile that the view and its overscan do not need is not made:
+///  a line wrapped to thousands of rows is cut to the rows near the view exactly as it was
+///  when a tile was one texture,
+/// and only a window whose three views are taller than one texture
+///  stacks more.
+///
+/// In TS you'd write (pseudocode):
+/// ```ts
+/// function tileCap(columns: number, scale: number, wanted: number): number;
+/// ```
+pub fn tile_cap(columns: u64, scale: f32, wanted: f32) -> f32 {
+    let single =
+        ((tile_texture_rows(columns.max(1)) as f32 / scale).floor() - CODE_ROW).max(CODE_ROW);
+    return stack_cap(columns, scale).min(single.max(wanted + CAP_SLACK));
 }
 
 /// What:
@@ -250,10 +444,10 @@ pub fn fit_clip(
         None => (first_top, bottom),
     };
     let rows = ((to - from).max(CODE_ROW) * scale).ceil() as u64;
-    if texture_fits(columns, rows) {
+    if stack_fits(columns, rows) {
         return clip;
     }
-    return band_clip(first_top, bottom, (from, to), tile_cap(columns, scale));
+    return band_clip(first_top, bottom, (from, to), stack_cap(columns, scale));
 }
 
 /// What:

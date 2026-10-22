@@ -109,7 +109,7 @@ fn painted(
 /// ```ts
 /// function block(source: string, line: number, hint: [number, string], messages: [number, Severity, string][]): Block;
 /// ```
-fn block(
+pub(super) fn block(
     source: &str,
     line: usize,
     hint: (usize, &str),

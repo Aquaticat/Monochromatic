@@ -37,9 +37,9 @@ use ide_app::source_frame::FrameStamp;
 use ide_app::source_style::SourceStyles;
 /// Shaping choices a worker shaper must match.
 use ide_app::source_typography::SourceTypography;
-/// The scene of one tile,
-/// which crosses to the window thread.
-use ide_app::tile_scene::{TileScene, paint_tile};
+/// The scenes of one tile,
+/// which cross to the window thread.
+use ide_app::tile_scene::{TileStack, paint_stack};
 
 /// What:
 ///  `struct` groups named fields into one owned value;
@@ -96,7 +96,7 @@ pub(in crate::native) struct TileJob {
 ///
 /// In TS you'd write (pseudocode):
 /// ```ts
-/// type TileBuilt = { bounds: Bounds; view: ShapedView; scene: Scene; stamp: Stamp };
+/// type TileBuilt = { bounds: Bounds; view: ShapedView; scene: Scene[]; stamp: Stamp };
 /// ```
 pub(in crate::native) struct TileBuilt {
     /// Tile bounds that were built:
@@ -112,9 +112,10 @@ pub(in crate::native) struct TileBuilt {
     /// rectangles,
     /// and annotation positions.
     pub(in crate::native) view: ShapedView,
-    /// The Vello scene of the tile and the size of the texture it is drawn into;
-    /// the GPU turns it into pixels.
-    pub(in crate::native) scene: TileScene,
+    /// The Vello scenes of the tile and the sizes of the textures they are drawn into,
+    /// top first;
+    /// the GPU turns them into pixels.
+    pub(in crate::native) scene: TileStack,
     /// Paint identity the tile was built for.
     pub(in crate::native) stamp: FrameStamp,
     /// Active match used for the match rectangles.
@@ -187,7 +188,7 @@ pub(in crate::native) fn build_tile(shaper: &mut TextShaper, job: TileJob) -> Re
     let frame = lay_out(&view, &job.shown, shaper, job.inks);
     view.annotations = Some(frame);
     // The scene is drawn from the very layouts that measured the rows, so glyphs and geometry cannot disagree.
-    let scene = paint_tile(&view, job.colors, 0.0)?;
+    let scene = paint_stack(&view, job.colors, 0.0)?;
     return Ok(TileBuilt {
         bounds,
         requested: job.bounds,
