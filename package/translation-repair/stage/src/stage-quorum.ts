@@ -68,12 +68,13 @@ import type { RosterModelId, } from '@monochromatic-dev/translation-repair-share
 export const STAGE_RETRY_ROUNDS = 3;
 
 /**
- Asks a seat must have been given, every one of them thrown, before the run
+ Asks a seat must have been given, every one of them failed, before the run
  stops asking it: the most asks one gather gives a lost seat, since each of its
  rounds asks every seat not yet heard once (`STAGE_RETRY_ROUNDS` rounds after
  the first). A seat that fails every one of those asks has failed a whole
  gather's worth of asks, which is enough to tell it from a seat that merely
- lost a round.
+ lost a round. An ask fails by throwing or by a stream the round's grace window
+ cut with nothing delivered (ledger B761).
 
  @example
  ```ts
@@ -300,9 +301,10 @@ export async function gatherStageVoices<ValueT,>(
     },);
 
   /**
-   Counts of the seats the tally has withheld for throwing on every ask they
-   were given. Those seats are neither asked nor counted in the bench this
-   gather sizes its quorum on, so the quorum is taken over the seats left.
+   Counts of the seats the tally has withheld for failing every ask they
+   were given, by a throw or by a stream the round cut with nothing delivered.
+   Those seats are neither asked nor counted in the bench this gather sizes its
+   quorum on, so the quorum is taken over the seats left.
    */
   const withheldCounts = seatTally.withheld({ minAsks: SEAT_WITHHOLD_ASKS, },);
   /**
@@ -328,7 +330,7 @@ export async function gatherStageVoices<ValueT,>(
   },);
   if (withheldHere.length > 0) {
     l.warn(
-      `${stage}: not asking ${withheldHere.join(', ',)}, withheld for throwing on every ask; `
+      `${stage}: not asking ${withheldHere.join(', ',)}, withheld for failing every ask; `
         + 'the quorum is sized on the seats left',
     );
   }

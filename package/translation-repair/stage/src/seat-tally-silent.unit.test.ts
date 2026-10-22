@@ -16,6 +16,8 @@
  @module
  */
 
+import { setImmediate as turnOfTheLoop, } from 'node:timers/promises';
+
 import {
   describe,
   expect,
@@ -23,14 +25,14 @@ import {
 } from '@monochromatic-dev/module-test/ts';
 
 import { NoProviderForModelError, } from '@monochromatic-dev/translation-repair-markup';
-import { StreamCutShortError, } from '@monochromatic-dev/translation-repair-provider-stream';
+import { cutStreamError, } from '@monochromatic-dev/translation-repair-provider-stream/ts/cut-stream.test-fixture.ts';
 import type { ModelClient, } from '@monochromatic-dev/translation-repair-provider';
 import {
   createSeatTally,
   runGatherRound,
   seatReportLines,
   seatTallyClient,
-  StragglerCutReason,
+  StragglerCutError,
 } from '../dist/final/node/index.mjs';
 import { HANG_STOP_MS, } from '@monochromatic-dev/translation-repair-test-fixture/ts/hang-stop.test-fixture.ts';
 import { capturingLogger, } from '@monochromatic-dev/translation-repair-test-fixture/ts/capturing-logger.test-fixture.ts';
@@ -48,43 +50,6 @@ import {
 //region Fixtures
 
 /**
- A cut as the drain raises it.
-
- @param generatedChars - decoded characters of the answer and of the reasoning, absent where the drain had none
-
- @param firstByteMs - when the first byte arrived, negative when none did
-
- @returns The error a cut stream throws
-
- @example
- ```ts
- const error = cutStream({ generatedChars: { content: 0, reasoning: 0, }, },);
- ```
- */
-function cutStream(
-  {
-    generatedChars,
-    firstByteMs = 703,
-  }: {
-    readonly generatedChars?: { readonly content: number; readonly reasoning: number; };
-    readonly firstByteMs?: number;
-  },
-): StreamCutShortError {
-  return new StreamCutShortError({
-    label: 'inception/mercury-2.5',
-    partialText: 'x'.repeat(7_450,),
-    progress: {
-      firstByteMs,
-      maxGapMs: 627,
-      chars: 7_450,
-      elapsedMs: 125_589,
-    },
-    ...((generatedChars === undefined) ? {} : { generatedChars, }),
-    cause: new Error('exchange torn down by abort',),
-  },);
-}
-
-/**
  Client whose every call throws what it is handed.
 
  @param failure - what each call throws
@@ -93,7 +58,7 @@ function cutStream(
 
  @example
  ```ts
- const inner = throwingClient({ failure: cutStream({}), },);
+ const inner = throwingClient({ failure: cutStreamError({ firstByte: 'arrived', }), },);
  ```
  */
 function throwingClient({ failure, }: { readonly failure: unknown; },): ModelClient {
@@ -125,7 +90,7 @@ function signalCutByTheRound(): AbortSignal {
    Controller the cut aborts.
    */
   const controller = new AbortController();
-  controller.abort(new StragglerCutReason(),);
+  controller.abort(new StragglerCutError(),);
   return controller.signal;
 }
 
@@ -278,7 +243,7 @@ await describe({
             /** Tally the wrapper counts into. */
             const tally = createSeatTally();
             await askOnce({
-              inner: throwingClient({ failure: cutStream({ generatedChars: { content: 0, reasoning: 0, }, },), },),
+              inner: throwingClient({ failure: cutStreamError({ firstByte: 'arrived', generatedChars: { content: 0, reasoning: 0, }, },), },),
               tally,
               signal: signalCutByTheRound(),
             },);
@@ -295,7 +260,7 @@ await describe({
             /** Tally the wrapper counts into. */
             const tally = createSeatTally();
             await askOnce({
-              inner: throwingClient({ failure: cutStream({ generatedChars: { content: 0, reasoning: 43_372, }, },), },),
+              inner: throwingClient({ failure: cutStreamError({ firstByte: 'arrived', generatedChars: { content: 0, reasoning: 43_372, }, },), },),
               tally,
               signal: signalCutByTheRound(),
             },);
@@ -315,7 +280,7 @@ await describe({
             const callerStop = new AbortController();
             callerStop.abort(new Error('the entry hit its hard cap',),);
             await askOnce({
-              inner: throwingClient({ failure: cutStream({ generatedChars: { content: 0, reasoning: 0, }, },), },),
+              inner: throwingClient({ failure: cutStreamError({ firstByte: 'arrived', generatedChars: { content: 0, reasoning: 0, }, },), },),
               tally,
               signal: callerStop.signal,
             },);
@@ -331,12 +296,12 @@ await describe({
             /** Tally the wrapper counts into. */
             const tally = createSeatTally();
             await askOnce({
-              inner: throwingClient({ failure: cutStream({ firstByteMs: -1, },), },),
+              inner: throwingClient({ failure: cutStreamError({ firstByte: 'never', },), },),
               tally,
               signal: signalCutByTheRound(),
             },);
             await askOnce({
-              inner: throwingClient({ failure: cutStream({ firstByteMs: 700, },), },),
+              inner: throwingClient({ failure: cutStreamError({ firstByte: 'arrived', },), },),
               tally,
               signal: signalCutByTheRound(),
             },);
@@ -367,7 +332,7 @@ await describe({
             const tally = createSeatTally();
             /** Client over a seat whose every stream is cut empty. */
             const client = seatTallyClient({
-              inner: throwingClient({ failure: cutStream({ generatedChars: { content: 0, reasoning: 0, }, },), },),
+              inner: throwingClient({ failure: cutStreamError({ firstByte: 'arrived', generatedChars: { content: 0, reasoning: 0, }, },), },),
               tally,
               minAsks: 4,
             },);
@@ -452,8 +417,11 @@ await describe({
               heardNeeded: 1,
               graceMs: 30,
             },);
+            // The round returns without waiting for the call it cut; the call ends at the next turns of the loop.
+            await turnOfTheLoop();
+            await turnOfTheLoop();
             expect(reasons.length,).toBe(1,);
-            expect(reasons[0],).toBeInstanceOf(StragglerCutReason,);
+            expect(reasons[0],).toBeInstanceOf(StragglerCutError,);
           },
         },),
       ],

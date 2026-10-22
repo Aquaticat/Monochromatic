@@ -19,6 +19,7 @@ import {
 } from '@monochromatic-dev/translation-repair-provider-stream/ts';
 import { monotonicMs, } from '@monochromatic-dev/translation-repair-markup/ts';
 import { roundLine, } from './stage-round-line.ts';
+import { StragglerCutError, } from './straggler-cut.ts';
 
 //region Stage round
 // ONE fan-out round, and the rule that a stage never finishes later than its
@@ -575,7 +576,9 @@ export async function runGatherRound<ValueT,>(
     promise: Promise.allSettled(asks,),
     ms: graceMs,
   },);
-  abandon.abort();
+  // ABORTED WITH A REASON THE SEAT TALLY READS: a call this cuts is the straggler window closing, which counts against
+  // its seat when the call had delivered nothing (`seat-tally.ts`), where a caller leaving never does.
+  abandon.abort(new StragglerCutError(),);
 
   // The caller's abort has to leave this round as a FAILURE, not as a thin
   // roster. `allSettled` swallows every ask the abort tore down, so a

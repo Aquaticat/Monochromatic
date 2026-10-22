@@ -63,6 +63,29 @@ function metersLines({ lines, }: { readonly lines: readonly string[]; },): reado
   },);
 }
 
+/**
+ Budgets over the wet meters, reading on a clock the case moves by hand.
+
+ @param clock - the clock's reading, which the case advances
+
+ @returns Budgets whose readings are trusted for {@link FRESH_MS} and whose rate-limit hold is as long
+
+ @example
+ ```ts
+ const budgets = budgetsOnClock({ clock: { now: 10_000, }, },);
+ ```
+ */
+function budgetsOnClock(
+  { clock, }: { readonly clock: { now: number; }; },
+): ReturnType<typeof createProviderBudgets> {
+  return createProviderBudgets({
+    ...WET_METERS,
+    freshForMs: FRESH_MS,
+    rateLimitBackoffMs: FRESH_MS,
+    now: () => clock.now,
+  },);
+}
+
 await describe({
   name: 'budget meters line for a held provider',
   // One case at a time: each captures the console, which is one stub for the whole process.
@@ -83,7 +106,6 @@ await describe({
               heldOut: function refused(provider,): boolean {
                 return provider === 'openrouter';
               },
-              freshForMs: FRESH_MS,
             },);
             read.states = await budgets.readStates({ signal: SIGNAL, },);
           },
@@ -106,12 +128,7 @@ await describe({
         const clock = { now: 10_000, };
         const lines = await consoleLinesDuring({
           run: async function holdThenLapse(): Promise<void> {
-            const budgets = createProviderBudgets({
-              ...WET_METERS,
-              freshForMs: FRESH_MS,
-              rateLimitBackoffMs: FRESH_MS,
-              now: () => clock.now,
-            },);
+            const budgets = budgetsOnClock({ clock, },);
             // The refusal names a return ten freshness windows away, so the hold outlasts the meter reading.
             await budgets.markRefused({
               provider: 'hyper',
@@ -143,11 +160,7 @@ await describe({
         const clock = { now: 10_000, };
         const lines = await consoleLinesDuring({
           run: async function refuseForPayment(): Promise<void> {
-            const budgets = createProviderBudgets({
-              ...WET_METERS,
-              freshForMs: FRESH_MS,
-              now: () => clock.now,
-            },);
+            const budgets = budgetsOnClock({ clock, },);
             await budgets.markRefused({
               provider: 'openrouter',
               signal: SIGNAL,

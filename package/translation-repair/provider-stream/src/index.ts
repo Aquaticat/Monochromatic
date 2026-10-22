@@ -3,6 +3,7 @@
 // Production siblings import it through `/ts`; tests and fixtures through the built entry, so a process loads one copy.
 
 export { describeAbandon, } from './abandon-kind.ts';
+export { deliveredNoContent, } from './abandon-silence.ts';
 export { scanAnthropicDeltas, } from './anthropic-delta-scan.ts';
 export {
   type ExtractedCompletion,

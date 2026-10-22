@@ -19,51 +19,10 @@ import {
 
 import {
   deliveredNoContent,
-  StreamCutShortError,
   StreamDegenerateError,
   StreamOverrunError,
 } from '../dist/final/node/index.mjs';
-
-/**
- Builds a cut as the drain raises it.
-
- @param firstByteMs - when the first byte arrived, negative when none did
-
- @param rawChars - characters on the wire, framing included
-
- @param generatedChars - decoded characters of the answer and of the reasoning, absent where the caller had none
-
- @returns Error as the drain raises it
-
- @example
- ```ts
- const error = cutWith({ firstByteMs: 703, rawChars: 7450, generatedChars: { content: 0, reasoning: 0, }, },);
- ```
- */
-function cutWith(
-  {
-    firstByteMs,
-    rawChars,
-    generatedChars,
-  }: {
-    readonly firstByteMs: number;
-    readonly rawChars: number;
-    readonly generatedChars?: { readonly content: number; readonly reasoning: number; };
-  },
-): StreamCutShortError {
-  return new StreamCutShortError({
-    label: 'inception/mercury-2.5',
-    partialText: 'x'.repeat(rawChars,),
-    progress: {
-      firstByteMs,
-      maxGapMs: 627,
-      chars: rawChars,
-      elapsedMs: 125_589,
-    },
-    ...((generatedChars === undefined) ? {} : { generatedChars, }),
-    cause: new Error('exchange torn down by abort',),
-  },);
-}
+import { cutStreamError, } from './cut-stream.test-fixture.ts';
 
 await describe({
   name: deliveredNoContent.name,
@@ -73,7 +32,7 @@ await describe({
         + 'reached the wire, as every mercury stream of CuspariaKLSY22 read',
       fn: async () => {
         expect(deliveredNoContent({
-          error: cutWith({ firstByteMs: 703, rawChars: 7_450, generatedChars: { content: 0, reasoning: 0, }, },),
+          error: cutStreamError({ firstByte: 'arrived', generatedChars: { content: 0, reasoning: 0, }, },),
         },),).toBe(true,);
       },
     },),
@@ -83,11 +42,7 @@ await describe({
         + 'cuts (Qwen at 43,372 reasoning characters)',
       fn: async () => {
         expect(deliveredNoContent({
-          error: cutWith({
-            firstByteMs: 3_211,
-            rawChars: 1_328_114,
-            generatedChars: { content: 0, reasoning: 43_372, },
-          },),
+          error: cutStreamError({ firstByte: 'arrived', generatedChars: { content: 0, reasoning: 43_372, }, },),
         },),).toBe(false,);
       },
     },),
@@ -96,7 +51,7 @@ await describe({
       name: 'IS FALSE FOR A CUT THAT HAD ANSWER CHARACTERS',
       fn: async () => {
         expect(deliveredNoContent({
-          error: cutWith({ firstByteMs: 40, rawChars: 900, generatedChars: { content: 12, reasoning: 0, }, },),
+          error: cutStreamError({ firstByte: 'arrived', generatedChars: { content: 12, reasoning: 0, }, },),
         },),).toBe(false,);
       },
     },),
@@ -105,8 +60,8 @@ await describe({
       name: 'IS TRUE FOR A CUT WITH NO COUNT WHEN NO FIRST BYTE EVER ARRIVED, and false when one did, since the wire '
         + 'length alone says nothing of what the model wrote',
       fn: async () => {
-        expect(deliveredNoContent({ error: cutWith({ firstByteMs: -1, rawChars: 0, },), },),).toBe(true,);
-        expect(deliveredNoContent({ error: cutWith({ firstByteMs: 700, rawChars: 7_450, },), },),).toBe(false,);
+        expect(deliveredNoContent({ error: cutStreamError({ firstByte: 'never', },), },),).toBe(true,);
+        expect(deliveredNoContent({ error: cutStreamError({ firstByte: 'arrived', },), },),).toBe(false,);
       },
     },),
 

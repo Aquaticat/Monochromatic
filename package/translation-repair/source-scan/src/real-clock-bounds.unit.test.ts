@@ -306,6 +306,32 @@ const WRITER_GRACE_READ_BACK = 'a window of a writer grace the case reads back: 
  Bounds that keep a value of their own, keyed `path#site: form value`.
  */
 const LISTED: Readonly<Record<string, ListedBound>> = {
+  'provider-stream/cut-stream.test-fixture.ts#cutStreamError: firstByteMs: (firstByte === \'never\') ? -1 : FIRST_BYTE_MS': {
+    count: 1,
+    bound: 'read back',
+    reason: RECORD_FIELD,
+  },
+  'provider/provider-budget-held-meters.unit.test.ts#budgetsOnClock: freshForMs: FRESH_MS': {
+    count: 1,
+    bound: 'other',
+    reason: SCRIPTED_CLOCK,
+  },
+  'provider/provider-budget-held-meters.unit.test.ts#budgetsOnClock: rateLimitBackoffMs: FRESH_MS': {
+    count: 1,
+    bound: 'other',
+    reason: SCRIPTED_CLOCK,
+  },
+  'provider/provider-budget-held-meters.unit.test.ts#holdThenLapse: statedWaitMs: 10 * FRESH_MS': {
+    count: 1,
+    bound: 'other',
+    reason: SCRIPTED_CLOCK,
+  },
+  'stage/seat-tally-silent.unit.test.ts#<module>: graceMs: 30': {
+    count: 1,
+    bound: 'reached',
+    reason: 'the grace window the round closes on the call that waits for the cut: that call ends only by the cut, '
+      + 'so the window is reached on any machine',
+  },
   'provider-stream/abandon-kind-answer-reasoning.unit.test.ts#<module>: firstByteMs: 40': {
     count: 1,
     bound: 'read back',
