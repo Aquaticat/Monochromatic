@@ -447,6 +447,10 @@ For common issues:
   ** →
   [Use explicit JSON data for root definition indexes](translation-repair-root-order-serialization.md)
 
+- **A rendered check shows prose and code swapped inside one long paragraph?
+  ** →
+  [Keep every code span on one source line](marked-list-html-line-ends-item.md)
+
 ## Contributing
 
 When adding new troubleshooting content:
