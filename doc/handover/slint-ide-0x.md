@@ -1603,6 +1603,19 @@ the one-step delay is the recorder's capture model plus winit's redraw gate, not
     late tiles of 80 on B (applied at 52.6 and 238.6 ms, evidence removed) did not reproduce, so the combined count
     is B 2 of 140 against A 0 of 140; the cause of those two runs is not known and a load burst is not shown. At this
     window size the stack is one texture, so this measures the one-texture path only.
+    LANDED, 2026-10-22, code tile stacking agent `a074735d16c6106a5` (merge tip `7ae6dfbde2` on `origin/main`, ancestry
+    confirmed; branch tip `0a541c6008`). One conflict, in `bin/inspect-source-guards.mjs`: main had reformatted the
+    file (`3da31bdc3a`) while the branch replaced the `clip-cap` and `clip-texture-side` cases with nine stacking cases
+    and followed the `Slice` rename in `minimap-slices-in-place`. I kept main's formatted file and re-applied exactly
+    those edits (the `diff` against main shows nothing else; the nine new objects were generated from the branch's own
+    lines). Gates once on the merged snapshot: `lint` passes, unfiltered `test:native` 289 passed and 5 skipped,
+    `test:bin` 71 of 71, `test` 801 passed and 1 skipped, `inspect:no-software-renderer` passes. Because I resolved
+    the guards file by hand, I ran the ten guards the merge touched in a disposable copy of `target`: each passes at
+    baseline, fails with its guard removed, passes restored (10 of 163 guards; the other 153 were not run). Installed
+    the new IDE: `monochromatic-ide` is now `9c046da1e4f2...` (equal to `dist/monochromatic-ide` after `bundle`), the
+    previous binary `27b877741a05...` is kept as `~/.local/bin/monochromatic-ide.previous`. I have not yet opened
+    the installed binary in the nested compositor; that check is after the minimap landing, which installs again.
+    Agent worktree and branch removed locally and on the remote; scratch tree, guard cache and artifacts removed.
     The minimap lag agent `afaeefdb803099e40` has handed back (branch `worktree-agent-afaeefdb803099e40`, tip
     `fbe4f73b2b`, pushed, not on `main`, not yet verified by me): blank-track frames in a 3,777 px fling fell from
     0.45 to 0.01 (A/A control 0.43), by a `LEAD` of 8 bands on the heading side; seven guards shown to fail; its own
