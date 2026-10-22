@@ -268,6 +268,11 @@ fn no_window_size_or_scale_makes_a_raster_past_the_limit() {
     let mut holdable_cases = 0;
     for scale in [0.5_f32, 1.0, 1.25, 1.5, 1.75, 2.0, 3.0] {
         for text_width in [160.0_f32, 1330.0, 3000.0] {
+            // A window is held to the device's texture side in physical pixels, and its raster is as wide as its
+            // text area: a width the device cannot make a texture of is not a window.
+            if ((text_width + 22.0) * scale).ceil() > texture_dimension() as f32 {
+                continue;
+            }
             for height in [660.0_f32, 3500.0, 12_000.0] {
                 for offset in [0.0_f32, 14_000.0] {
                     let label =

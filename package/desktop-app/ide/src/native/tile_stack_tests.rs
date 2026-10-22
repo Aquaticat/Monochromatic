@@ -86,9 +86,9 @@ fn shaped(lines: usize, selected: usize) -> (ShapedView, Document) {
         Viewport {
             first: 0,
             count: lines,
-            width: 724.0,
+            width: 300.0,
             scale: 1.0,
-            wrap: Some(700.0),
+            wrap: None,
             clip: None,
         },
         &[],
@@ -135,7 +135,7 @@ fn a_tile_drawn_across_textures_equals_the_tile_in_one_texture() {
         let one = paint_tile(&view, RED_SELECTED, 0.0).expect("a tile that one texture holds");
         let whole = render_scene(&one);
         let width = whole.width() as usize;
-        for limit in [700_u32, 400, 256] {
+        for limit in [700_u32, 400, 300] {
             set_texture_dimension(limit);
             let stack = paint_stack(&view, RED_SELECTED, 0.0).expect("a stack within the limit");
             let mut heights = Vec::new();
@@ -200,62 +200,57 @@ fn a_texture_of_the_stack_is_placed_by_its_own_top() {
     set_texture_dimension(8192);
 }
 
-/// The cuts of a tile with hints, a message, and underlines of all severities pass through the virtual rows and
-/// the underlines, and the stack still equals the one texture.
-/// At least one cut stands within three rows of annotation ink, so the equality is not of rows without any.
-#[test]
-fn hints_messages_and_underlines_cut_by_a_seam_are_drawn_whole() {
-    install_gpu_platform();
-    set_texture_dimension(8192);
-    let source = "let first_value = compute(alpha, beta);\nlet second_value = compute(gamma, delta);\nlet third = 3;\n";
-    let document = Document::new(source);
+/// The tile of two lines with hints, messages, and underlines of all severities, below `padding` empty lines,
+/// as shaped rows with their annotation frame laid out.
+fn annotated(padding: usize) -> ShapedView {
+    let body = "let first_value = compute(alpha, beta);\nlet second_value = compute(gamma, delta);\nlet third = 3;\n";
+    let source = format!("{}{body}", "\n".repeat(padding));
+    let document = Document::new(&source);
     let lines = document.text().len_lines();
     let mut shaper = TextShaper::new();
     let first_block = block(
-        source,
-        0,
+        &source,
+        padding,
         (4, "ty: u32"),
         &[(4, Severity::Error, "unknown name here")],
     );
     let second_block = block(
-        source,
-        1,
+        &source,
+        padding + 1,
         (4, "ty: u64"),
         &[(18, Severity::Warning, "a long warning text")],
     );
+    // The first line of the body starts at character `padding`, the second 40 characters after it.
+    let start = padding;
+    let second = padding + 40;
+    let mut marks = Vec::new();
+    for (from, to, severity) in [
+        (start + 4, start + 15, Severity::Error),
+        (start + 18, start + 25, Severity::Warning),
+        (second + 4, second + 16, Severity::Information),
+        (second + 20, second + 30, Severity::Hint),
+    ] {
+        marks.push(Mark {
+            start: from,
+            end: to,
+            severity,
+        });
+    }
     let visible = Visible {
         blocks: vec![first_block.clone(), second_block.clone()],
-        marks: vec![
-            Mark {
-                start: 4,
-                end: 15,
-                severity: Severity::Error,
-            },
-            Mark {
-                start: 18,
-                end: 25,
-                severity: Severity::Warning,
-            },
-            Mark {
-                start: 45,
-                end: 56,
-                severity: Severity::Information,
-            },
-            Mark {
-                start: 60,
-                end: 70,
-                severity: Severity::Hint,
-            },
-        ],
+        marks,
     };
-    let raised = vec![(0, first_block.height()), (1, second_block.height())];
+    let raised = vec![
+        (padding, first_block.height()),
+        (padding + 1, second_block.height()),
+    ];
     let map = RowMap::new(lines, &raised);
     let mut view = shaper.prepare_rows(
         &document,
         Viewport {
             first: 0,
             count: lines,
-            width: 700.0,
+            width: 160.0,
             scale: 1.0,
             wrap: None,
             clip: None,
@@ -265,70 +260,89 @@ fn hints_messages_and_underlines_cut_by_a_seam_are_drawn_whole() {
     );
     let frame = lay_out(&view, &visible, &mut shaper, INKS);
     view.annotations = Some(frame);
+    return view;
+}
+
+/// How many texels of the rows `from..to` carry one of the annotation inks.
+fn annotation_ink_in(pixels: &SharedPixelBuffer<Rgba8Pixel>, from: usize, to: usize) -> usize {
+    let width = pixels.width() as usize;
+    let mut found = 0;
+    for pixel in &pixels.as_slice()[from * width..to * width] {
+        // Annotation inks are far from the source ink, which is a light gray.
+        let is_annotation = [
+            INKS.hint,
+            INKS.error,
+            INKS.warning,
+            INKS.information,
+            INKS.suggestion,
+        ]
+        .iter()
+        .any(|ink| {
+            return pixel.a > 150
+                && pixel.r.abs_diff(ink[0]) < 12
+                && pixel.g.abs_diff(ink[1]) < 12
+                && pixel.b.abs_diff(ink[2]) < 12;
+        });
+        if is_annotation {
+            found += 1;
+        }
+    }
+    return found;
+}
+
+/// The cuts of a tile with hints, messages, and underlines of all severities pass through the virtual rows and
+/// the underlines, and the stack still equals the one texture:
+/// the texture limit is as small as the tile is wide, so the cuts stand every 160 rows,
+/// and the annotated lines are moved down one code row at a time under them.
+/// At least three cuts stand within three rows of annotation ink,
+/// so the equality is not only of rows without any.
+#[test]
+fn hints_messages_and_underlines_cut_by_a_seam_are_drawn_whole() {
+    install_gpu_platform();
     let colors = CodeColors {
         foreground: [230, 230, 230, 255],
         selected: [255, 255, 255, 255],
         dark: true,
     };
-    let one = paint_tile(&view, colors, 0.0).expect("a tile that one texture holds");
-    let whole = render_scene(&one);
     let mut annotated_seams = 0;
-    for limit in (24_u32..=96).step_by(3) {
-        set_texture_dimension(limit);
-        if u64::from(view.height) > stack_rows(u64::from(view.width)) {
-            continue;
-        }
+    let mut cuts = 0;
+    for padding in 0..8 {
+        set_texture_dimension(8192);
+        let view = annotated(padding);
+        let one = paint_tile(&view, colors, 0.0).expect("a tile that one texture holds");
+        let whole = render_scene(&one);
+        let width = whole.width() as usize;
+        set_texture_dimension(160);
+        assert!(u64::from(view.height) <= stack_rows(u64::from(view.width)));
         let stack = paint_stack(&view, colors, 0.0).expect("a stack within the limit");
         let heights: Vec<u32> = stack
             .textures
             .iter()
             .map(|texture| return texture.height)
             .collect();
+        assert!(heights.len() >= 2, "padding {padding}: {heights:?}");
         let stacked = render_stack(&stack);
-        let equal = same_pixels(whole.as_slice(), stacked.as_slice());
         assert!(
-            equal,
-            "limit {limit}: the stack of {} textures differs from the one texture",
+            same_pixels(whole.as_slice(), stacked.as_slice()),
+            "padding {padding}: the stack of {} textures differs from the one texture",
             heights.len()
         );
-        let width = whole.width() as usize;
+        assert!(
+            !shifted_equals(whole.as_slice(), stacked.as_slice(), width),
+            "padding {padding}: a shift of one row went unseen"
+        );
         for seam in seams(&heights) {
-            let mut annotation_ink = 0;
-            for row in seam.saturating_sub(3)..seam + 3 {
-                for pixel in &stacked.as_slice()[row * width..(row + 1) * width] {
-                    // Annotation inks are far from the source ink, which is a light gray.
-                    let is_annotation = [
-                        INKS.hint,
-                        INKS.error,
-                        INKS.warning,
-                        INKS.information,
-                        INKS.suggestion,
-                    ]
-                    .iter()
-                    .any(|ink| {
-                        return pixel.a > 150
-                            && pixel.r.abs_diff(ink[0]) < 12
-                            && pixel.g.abs_diff(ink[1]) < 12
-                            && pixel.b.abs_diff(ink[2]) < 12;
-                    });
-                    if is_annotation {
-                        annotation_ink += 1;
-                    }
-                }
-            }
-            if annotation_ink > 0 {
+            cuts += 1;
+            if annotation_ink_in(&stacked, seam.saturating_sub(3), seam + 3) > 0 {
                 annotated_seams += 1;
             }
         }
-        assert!(
-            !shifted_equals(whole.as_slice(), stacked.as_slice(), width),
-            "limit {limit}: a shift of one row went unseen"
-        );
     }
     set_texture_dimension(8192);
+    assert!(cuts >= 8, "only {cuts} cuts were made");
     assert!(
         annotated_seams >= 3,
-        "only {annotated_seams} seams stood within three rows of annotation ink"
+        "only {annotated_seams} of {cuts} cuts stood within three rows of annotation ink"
     );
 }
 
@@ -345,6 +359,22 @@ fn code_view(window: &AppWindow) -> (Vec<Rgba8Pixel>, usize) {
         view.extend_from_slice(&row[left..right]);
     }
     return (view, right - left);
+}
+
+/// Where two reads of the code view differ, for a failure message: the rows that hold a differing texel, counted,
+/// and the first few of them with the first differing column.
+fn describe_difference(left: &[Rgba8Pixel], right: &[Rgba8Pixel], width: usize) -> String {
+    let mut rows = Vec::new();
+    for (row, (one, other)) in left.chunks(width).zip(right.chunks(width)).enumerate() {
+        if !same_pixels(one, other) {
+            let column = one
+                .iter()
+                .zip(other)
+                .position(|(first, second)| return !same_pixels(&[*first], &[*second]));
+            rows.push((row, column));
+        }
+    }
+    return format!("{} rows differ, the first {:?}", rows.len(), &rows[..rows.len().min(8)]);
 }
 
 /// What a window at texture limit `limit` shows after its view left the tile it first had:
@@ -393,8 +423,9 @@ fn the_window_shows_a_stacked_tile_as_the_one_texture_shows_it() {
         assert_eq!(stacked.len(), whole.len());
         assert!(
             same_pixels(&whole, &stacked),
-            "limit {limit}: the code view of a stack of {} textures differs from the one texture's",
-            sizes.len()
+            "limit {limit}: the code view of a stack of {} textures {sizes:?} differs from the one texture's: {}",
+            sizes.len(),
+            describe_difference(&whole, &stacked, width)
         );
         assert!(
             !same_pixels(&whole[width..], &stacked[..stacked.len() - width]),
