@@ -235,7 +235,7 @@ The `grade-agreement.ts` finding is a valid example of this uncertainty.
 `String(verdict)` runs inside the branch where `isGradeVerdict(verdict)` returned false,
 so `verdict` remains `unknown` and can be an object carrying conversion hooks.
 An investigation comment initially misread this as the positively narrowed branch;
-[the correction](https://github.com/Aquaticat/Monochromatic/issues/422#issuecomment-5286087654)
+[the correction][correction]
 withdraws that claim.
 
 ### Host state
@@ -366,5 +366,7 @@ The investigation was posted incrementally:
 - [external prior art and ranked design](https://github.com/Aquaticat/Monochromatic/issues/422#issuecomment-5285939316);
 - [matched prototype and propagation control](https://github.com/Aquaticat/Monochromatic/issues/422#issuecomment-5286022557);
 - [intrinsic and host cause families](https://github.com/Aquaticat/Monochromatic/issues/422#issuecomment-5286036647);
-- [correction of the `grade-agreement.ts` branch and accepted-policy constraint](https://github.com/Aquaticat/Monochromatic/issues/422#issuecomment-5286087654);
+- [correction of the `grade-agreement.ts` branch and accepted-policy constraint][correction];
 - [final synthesis and recommendation](https://github.com/Aquaticat/Monochromatic/issues/422#issuecomment-5286101731).
+
+[correction]: https://github.com/Aquaticat/Monochromatic/issues/422#issuecomment-5286087654
