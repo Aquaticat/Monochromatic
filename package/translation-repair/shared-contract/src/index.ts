@@ -108,11 +108,16 @@ export {
   type ServingCard,
 } from './model-card-derive.ts';
 export {
+  DEEPSEEK_V4_1_FLASH_ON_DEEPSEEK,
+  MIMO_V2_6_FLASH_ON_XIAOMI,
+} from './direct-card-sides.ts';
+export {
   type BedrockCard,
   type BedrockRoute,
   type BedrockStreamEnd,
   type CompletionCapPool,
   type DecisionsCard,
+  type DeepSeekCard,
   type ModelCard,
   type NeuralWattCard,
   type NeuralWattReasoningEffort,
@@ -121,6 +126,7 @@ export {
   type ServedCard,
   type SyntheticCard,
   type SyntheticVendorFamily,
+  type XiaomiCard,
 } from './model-card.ts';
 export { MODEL_CARDS, } from './model-cards.ts';
 export {
@@ -190,6 +196,8 @@ export {
   type BedrockOnlyRosterId,
   type BedrockServedId,
   type DecisionOnlyRosterId,
+  DEEPSEEK_SERVED_IDS,
+  type DeepSeekServedId,
   HYPER_SERVED_IDS,
   type HyperOriginRosterId,
   type HyperServedId,
@@ -203,6 +211,8 @@ export {
   type RosterModelId,
   SYNTHETIC_SERVED_IDS,
   type SyntheticServedId,
+  XIAOMI_SERVED_IDS,
+  type XiaomiServedId,
 } from './roster-id.ts';
 export {
   parseRunJson,

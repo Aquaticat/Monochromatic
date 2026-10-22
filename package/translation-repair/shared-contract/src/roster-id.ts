@@ -207,6 +207,69 @@ export const NEURALWATT_SERVED_IDS = [
 export type NeuralWattServedId = typeof NEURALWATT_SERVED_IDS[number];
 
 /**
+ The one spelling DeepSeek's own API serves for this pipeline: `deepseek-flash`,
+ which DeepSeek's documentation says "is now served by DeepSeek-V4.1-Flash-1017"
+ (`https://api-docs.deepseek.com/quick_start/pricing`, read 2026-10-22).
+
+ A SINGLE LITERAL ON PURPOSE: THE OWNER'S LOCK ON THE KEY, in the type. The
+ owner, 2026-10-22: "You can also use the DEEPSEEK_API_KEY as you wish, but you
+ may only use deepseek v4.1 flash 1017 with that key." The key is not
+ model-scoped (`GET /models` also lists `deepseek-v4-pro`), so the lock is in our
+ code: a second spelling here is a type error in every file that reads the
+ served id, and `direct-cards.unit.test.ts` fails on a second card side or
+ another id. There is no dated 1017 id; the 1017 claim rests on DeepSeek's
+ documentation.
+
+ @example
+ ```ts
+ const everyone = DEEPSEEK_SERVED_IDS;
+ ```
+ */
+export const DEEPSEEK_SERVED_IDS = [
+  'deepseek-flash',
+] as const;
+
+/**
+ Model identifier DeepSeek's own API accepts on the wire: the one the key is
+ granted for.
+
+ @example
+ ```ts
+ const modelId: DeepSeekServedId = 'deepseek-flash';
+ ```
+ */
+export type DeepSeekServedId = typeof DEEPSEEK_SERVED_IDS[number];
+
+/**
+ The one spelling Xiaomi's own API serves for this pipeline: `mimo-v2.6-flash`.
+
+ A SINGLE LITERAL ON PURPOSE: THE OWNER'S LOCK ON THE KEY, in the type. The
+ owner, 2026-10-22: "I've added TRANSLATION_REPAIR_XIAOMI_MIMO_API_KEY in main
+ worktree's json file. ... You may only use v2.6-flash with this key." The key
+ is not model-scoped (`GET /v1/models` lists `mimo-v2.6-pro`, the speech models
+ and others), so the lock is in our code, as for DeepSeek.
+
+ @example
+ ```ts
+ const everyone = XIAOMI_SERVED_IDS;
+ ```
+ */
+export const XIAOMI_SERVED_IDS = [
+  'mimo-v2.6-flash',
+] as const;
+
+/**
+ Model identifier Xiaomi's own API accepts on the wire: the one the key is
+ granted for.
+
+ @example
+ ```ts
+ const modelId: XiaomiServedId = 'mimo-v2.6-flash';
+ ```
+ */
+export type XiaomiServedId = typeof XIAOMI_SERVED_IDS[number];
+
+/**
  Roster identities introduced through Charm Hyper without a Synthetic
  spelling: by the naming rule, the roster ids that are Hyper spellings.
  The historical bucket name is not exclusive reach: OpenRouter serves

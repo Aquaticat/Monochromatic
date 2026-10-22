@@ -1,10 +1,12 @@
 import type {
   BedrockServedId,
+  DeepSeekServedId,
   HyperServedId,
   NeuralWattServedId,
   OpenRouterDecisionId,
   OpenRouterServedId,
   SyntheticServedId,
+  XiaomiServedId,
 } from './roster-id.ts';
 
 //region Model card
@@ -343,6 +345,61 @@ export type NeuralWattCard = ServedCard<NeuralWattServedId> & {
 };
 
 /**
+ DeepSeek's own API's side of a card: the one model the owner's key there is
+ granted for, priced the way DeepSeek's page prices it.
+
+ @example
+ ```ts
+ const card: DeepSeekCard = { id: 'deepseek-flash', readsImages: true, maxOutputLength: 393_216, promptCacheHitUsdPerMillion: 0.006, promptCacheMissUsdPerMillion: 0.3, completionUsdPerMillion: 1.2, };
+ ```
+ */
+export type DeepSeekCard = ServedCard<DeepSeekServedId> & {
+  /**
+   USD per million prompt tokens served from DeepSeek's cache, at the peak
+   price (the upper bound: peak is 01:00 to 04:00 and 06:00 to 10:00 UTC,
+   Monday to Friday, excluding Chinese public holidays, and the run cannot
+   know the holidays, so every call is priced as if at peak).
+   */
+  readonly promptCacheHitUsdPerMillion: number;
+
+  /**
+   USD per million prompt tokens not served from the cache, at the peak price.
+   */
+  readonly promptCacheMissUsdPerMillion: number;
+
+  /**
+   USD per million completion tokens, thinking included, at the peak price.
+   */
+  readonly completionUsdPerMillion: number;
+};
+
+/**
+ Xiaomi's own API's side of a card: the one model the owner's key there is
+ granted for, priced the way Xiaomi's pay-as-you-go page prices it.
+
+ @example
+ ```ts
+ const card: XiaomiCard = { id: 'mimo-v2.6-flash', readsImages: true, maxOutputLength: 131_072, promptCacheHitUsdPerMillion: 0.0028, promptCacheMissUsdPerMillion: 0.14, completionUsdPerMillion: 0.28, };
+ ```
+ */
+export type XiaomiCard = ServedCard<XiaomiServedId> & {
+  /**
+   USD per million prompt tokens served from Xiaomi's cache.
+   */
+  readonly promptCacheHitUsdPerMillion: number;
+
+  /**
+   USD per million prompt tokens not served from the cache.
+   */
+  readonly promptCacheMissUsdPerMillion: number;
+
+  /**
+   USD per million completion tokens, thinking included.
+   */
+  readonly completionUsdPerMillion: number;
+};
+
+/**
  The decisions endpoint's side of a card: a typed-decision model reached
  through OpenRouter's `/api/alpha/decisions`, which answers a choice, a
  yes-probability or a score and never a completion. A card carrying this
@@ -412,6 +469,18 @@ export type ModelCard = {
    NeuralWatt's entry, where it serves the model on the standard lane.
    */
   readonly neuralwatt?: NeuralWattCard;
+
+  /**
+   DeepSeek's own API's entry, on the one card the owner's key there is
+   granted for.
+   */
+  readonly deepseek?: DeepSeekCard;
+
+  /**
+   Xiaomi's own API's entry, on the one card the owner's key there is granted
+   for.
+   */
+  readonly xiaomi?: XiaomiCard;
 
   /**
    OpenRouter's decisions endpoint's entry, where it serves the model as a
