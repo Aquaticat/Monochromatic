@@ -1,15 +1,16 @@
 /**
- NeuralWatt provider plugin entry: owns the `neuralwatt` provider route over
- the shipped pi-ai adapter, serving a checked-in model snapshot at mount and
- landing the live NeuralWatt listing once the mount fetch resolves. @module
+ NeuralWatt provider plugin entry: keeps the `neuralwatt` provider route
+ written into the shipped pi-ai adapter's settings namespace, serving a
+ checked-in model snapshot at mount and landing the live NeuralWatt listing
+ once the mount fetch resolves. @module
  */
 
 import type {
   Context,
 } from '@deepseek-ai/cordis';
-import {
-  apply as applyPiAiAdapter,
-} from '@deepseek-ai/dsh-llm-pi-ai';
+import type {
+  SettingsForms,
+} from '@deepseek-ai/dsh-settings';
 import {
   tagged,
 } from '@monochromatic-dev/module-logger/ts';
@@ -17,12 +18,8 @@ import {
   neuralWattLogger,
 } from './logging.ts';
 import {
-  createNeuralWattProviders,
-  refreshNeuralWattProviders,
+  refreshNeuralWattRoute,
 } from './providers.ts';
-import {
-  neuralWattListingSnapshot,
-} from './snapshot.ts';
 
 export * from './constants.ts';
 export * from './fetch-listing.ts';
@@ -34,15 +31,15 @@ export * from './snapshot.ts';
 //region Plugin contract
 
 /**
- Host services the plugin reads at activation: the `llm` surface the shipped
- adapter registers the route and the model-discovery handler on.
+ Host services the plugin reads at activation: the settings surface whose
+ `llm-pi-ai` entry the route is written through.
  */
-export const inject: readonly string[] = ['llm'];
+export const inject: readonly string[] = ['settings'];
 
 /**
- Activate the NeuralWatt provider: serve the checked-in snapshot immediately,
- hand the route to the shipped pi-ai adapter, and land the live listing once
- the mount fetch resolves.
+ Activate the NeuralWatt provider: write the checked-in snapshot route into
+ the shipped adapter's settings namespace immediately, then land the live
+ listing once the mount fetch resolves.
 
  @param ctx - loader-scoped registration context
 
@@ -60,21 +57,16 @@ export function apply(ctx: Context): void {
     l: neuralWattLogger,
   },);
   /**
-   Served provider dict seeded with the checked-in snapshot.
+   Settings surface the route is written through; `inject` guarantees the
+   service is present when this runs.
    */
-  const providers = createNeuralWattProviders({
-    listing: neuralWattListingSnapshot,
-  },);
-  applyPiAiAdapter(
-    ctx,
-    { providers: providers.reference, },
-  );
-  logger.debug('neuralwatt provider applied over the shipped pi-ai adapter');
+  const settings: SettingsForms = ctx.settings;
+  logger.debug('neuralwatt route feed applied over the llm-pi-ai settings entry');
   /**
-   Fire-and-forget mount refresh: bounded, and its failure branch logs and
-   keeps the served snapshot instead of throwing.
+   Fire-and-forget mount refresh: bounded, and its failure branches log and
+   keep the served snapshot instead of throwing.
    */
-  void refreshNeuralWattProviders({ providers, },);
+  void refreshNeuralWattRoute({ settings, },);
 }
 
 //endregion Plugin contract
