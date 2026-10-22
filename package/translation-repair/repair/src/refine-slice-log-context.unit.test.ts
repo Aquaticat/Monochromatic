@@ -146,6 +146,7 @@ const OUTCOME: ChunkRepairOutcome = {
   heardCriticIds: [],
   claimAttributions: [],
   findings: [],
+  silentStages: [],
 };
 
 /**

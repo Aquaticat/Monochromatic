@@ -6,6 +6,7 @@ import {
   everyStageHeard,
   isIndexPairList,
   type PairedDocumentRecord,
+  silentStagesOfRecord,
 } from '@monochromatic-dev/translation-repair-stage/ts';
 import { isStringList, } from '@monochromatic-dev/translation-repair-lane-contest/ts';
 import { isJsonRecord, } from '@monochromatic-dev/translation-repair-document-structure/ts';
@@ -69,7 +70,10 @@ function isChunkRepairOutcome(value: unknown,): value is ChunkRepairOutcome {
     && Array.isArray(value.rounds,)
     && isJsonRecord(value.authorship,)
     && Array.isArray(value.droppedDeclaredNames,)
-    && Array.isArray(value.findings,);
+    && Array.isArray(value.findings,)
+    // REQUIRED, so a record written before the field existed is not resumed: it could not say that its panel heard
+    // nobody (XingZ6018 slice 85 was cached so, its findings located by cluster).
+    && Array.isArray(value.silentStages,);
 }
 
 /**
@@ -462,7 +466,13 @@ function isRefinedSliceSettlement(value: unknown,): value is RefinedSliceSettlem
  ```
  */
 function isResumableRepairOutcome(value: unknown,): value is ChunkRepairOutcome {
-  return isChunkRepairOutcome(value,) && everyStageHeard({ findings: value.findings, },);
+  if (!isChunkRepairOutcome(value,))
+    return false;
+  /**
+   The stages the settlement names as silent, as data or as a finding.
+   */
+  const silent = silentStagesOfRecord({ record: value, },);
+  return silent.length === 0;
 }
 
 /**
@@ -479,7 +489,13 @@ function isResumableRepairOutcome(value: unknown,): value is ChunkRepairOutcome 
  ```
  */
 function isResumableRefinement(value: unknown,): value is RefinedSliceSettlement {
-  return isRefinedSliceSettlement(value,) && everyStageHeard({ findings: value.findings, },);
+  if (!isRefinedSliceSettlement(value,))
+    return false;
+  /**
+   The stages the embedded outcome names as silent, as data or as a finding.
+   */
+  const silent = silentStagesOfRecord({ record: value.outcome, },);
+  return everyStageHeard({ findings: value.findings, },) && (silent.length === 0);
 }
 
 /**

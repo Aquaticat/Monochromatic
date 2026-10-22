@@ -170,7 +170,9 @@ export {
 } from './stage-settings.ts';
 export {
   everyStageHeard,
+  silentStageLabel,
   silentStagesOf,
+  silentStagesOfRecord,
   STAGE_QUORUM_UNMET_PREFIX,
   stageQuorumUnmetFinding,
 } from './stage-silence.ts';

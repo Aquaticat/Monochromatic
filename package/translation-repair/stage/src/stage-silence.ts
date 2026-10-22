@@ -21,6 +21,45 @@
 export const STAGE_QUORUM_UNMET_PREFIX = 'stage-quorum-unmet (';
 
 /**
+ Spells how many voices a stage heard against how many it asked, and where it ran when it ran once for each of several
+ places: the label of a silent stage, in the finding that says so and in the data a settlement carries.
+
+ @param stage - stage that fell short, such as `critic` or `panel`
+
+ @param heard - voices heard
+
+ @param asked - voices asked
+
+ @param where - place the stage ran in when it runs once for each of several, such as a panel packet's cluster
+
+ @returns The label, such as `critic 2/6` or `panel 0/6 (cluster/abc)`
+
+ @example
+ ```ts
+ const label = silentStageLabel({ stage: 'panel', heard: 0, asked: 6, where: 'cluster/abc', },);
+ ```
+ */
+export function silentStageLabel(
+  {
+    stage,
+    heard,
+    asked,
+    where,
+  }: {
+    readonly stage: string;
+    readonly heard: number;
+    readonly asked: number;
+    readonly where?: string;
+  },
+): string {
+  /**
+   Heard against asked, which every label opens with.
+   */
+  const shortfall = `${stage} ${String(heard,)}/${String(asked,)}`;
+  return (where === undefined) ? shortfall : `${shortfall} (${where})`;
+}
+
+/**
  Builds the finding a stage records when fewer voices than quorum answered.
 
  @param shortfall - stage and count, such as `critic 2/6`
@@ -56,6 +95,38 @@ export function silentStagesOf(
   return findings.filter(function saysQuorumUnmet(finding,): boolean {
     return finding.startsWith(STAGE_QUORUM_UNMET_PREFIX,);
   },);
+}
+
+/**
+ Silent stages a settlement record names: the ones it carries as data, then the ones that left a finding no layer
+ relocated.
+
+ THE DATA COMES FIRST AND IS THE FACT. A stage that runs once for each of several places (the panel, once per cluster)
+ locates its findings with the place, so `stage-quorum-unmet (` is no longer where the finding begins and
+ {@link silentStagesOf} cannot see it: XingZ6018 slice 85 was cached with a panel that heard nobody, for that reason.
+ Such a stage gives its shortfall as a label in `silentStages` as well.
+
+ @param record - the settlement's findings and the silent stages it carries as data
+
+ @returns The labels of the data, then the findings that read as quorum-unmet, empty when every stage was heard
+
+ @example
+ ```ts
+ const silent = silentStagesOfRecord({ record: outcome, },);
+ ```
+ */
+export function silentStagesOfRecord(
+  { record, }: {
+    readonly record: {
+      readonly findings: readonly string[];
+      readonly silentStages: readonly string[];
+    };
+  },
+): readonly string[] {
+  return [
+    ...record.silentStages,
+    ...silentStagesOf({ findings: record.findings, },),
+  ];
 }
 
 /**

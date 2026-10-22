@@ -88,7 +88,7 @@ await describe({
           + 'change to the FIXTURE INPUTS of this case moves it too, and must not, because those inputs are '
           + 'already part of the key and invalidate their own entries',
       fn: async () => {
-        expect(SLICE_CACHE_VERSION,).toBe(43,);
+        expect(SLICE_CACHE_VERSION,).toBe(44,);
 
         // MOVED THREE TIMES ON 2026-08-20, FOR THREE DIFFERENT REASONS, which
         // is the whole point of keeping the note.
@@ -173,8 +173,12 @@ await describe({
         //
         // VERSION 43 ON 2026-10-22 (a short bench closes one voice below every live seat once the grace ends, ledger B816):
         // moved the same way.
+        //
+        // VERSION 44 ON 2026-10-22 (the outcome carries `silentStages`, and the cache refuses a settlement that names a
+        // silent stage; XingZ6018 slice 85, a panel that heard nobody cached as examined): moved the same way, for the record
+        // and the rule that stores it.
         expect(keyed({ runShape: repairRunShape({ models: MODELS, },), },),)
-          .toBe('ce98ec079272db7d44c1b0dc8ad8309c57bd6e908de8bbca6212e77787d93761',);
+          .toBe('167c783587bbd2b6ee64b8a8c7591cd45b26df54224bdca9470b167adb24a0d5',);
       },
     },),
     it({

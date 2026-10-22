@@ -111,6 +111,7 @@ function outcomeFor({ sliceIndex, repairedText, }: { readonly sliceIndex: number
     heardCriticIds: changed ? [SEAT_HYPER_OPENROUTER_VISION_EDITOR,] : [],
     claimAttributions: [],
     findings: [],
+    silentStages: [],
   };
 }
 

@@ -806,6 +806,18 @@ export type ChunkRepairOutcome = {
    Stage findings in scorecard-stable wording.
    */
   readonly findings: readonly string[];
+
+  /**
+   The stages that heard fewer voices than their quorum and whose shortfall a finding could not carry, as labels such
+   as `panel 0/6 (cluster/abc)`; empty when no such stage was silent.
+
+   DATA, NOT A FINDING, so that a located or reworded finding cannot hide it (XingZ6018 slice 85: five panel packets
+   heard nobody, their findings began `panel-packet (cluster): `, and the settlement was cached as examined). Required
+   on every outcome, so a reader never has to tell "no silent stage" from "field not written": a record without the
+   field was written by a build that could not say, and is not resumed (`slice-cache-store.ts`). Read through
+   `silentStagesOfRecord`, which adds the stages that left a plain quorum-unmet finding.
+   */
+  readonly silentStages: readonly string[];
 };
 
 //endregion Repair contract

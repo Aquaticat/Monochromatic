@@ -230,6 +230,7 @@ function outcomeFor(
     heardCriticIds: [],
     claimAttributions: [],
     findings: [],
+    silentStages: [],
   };
 }
 
