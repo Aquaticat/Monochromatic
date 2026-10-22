@@ -1629,15 +1629,15 @@ const CARGO_PROFILE_BENCH: CargoProfileSpec = {
 };
 
 /**
- Music-player profile: symbol strip plus fat LTO, tuned in that crate's manifest.
- 
+ Music-player profile: symbol strip plus fat LTO in one codegen unit, for the smallest binary at the shipped opt-level.
+
  @example
  ```ts
  console.log(CARGO_PROFILE_MUSIC.release);
  ```
  */
 const CARGO_PROFILE_MUSIC: CargoProfileSpec = {
-  release: { strip: 'symbols', lto: 'thin', },
+  release: { strip: 'symbols', lto: 'fat', 'codegen-units': 1, },
 };
 
 /**
@@ -1670,6 +1670,7 @@ const CARGO_PROFILE_BY_DIR: Record<string, CargoProfileSpec> = {
   'package/rust-module/forbidden-regex.bench': CARGO_PROFILE_BENCH,
   'package/music-player/truepeak-core.bench': CARGO_PROFILE_BENCH,
   'package/music-player/desktop-app': CARGO_PROFILE_MUSIC,
+  'package/music-player/android-app/rust': CARGO_PROFILE_MUSIC,
   'package/rust-module/forbidden-regex.fuzz': CARGO_PROFILE_FUZZ,
   'package/cli/forbidden-strings.fuzz': CARGO_PROFILE_FUZZ,
 };

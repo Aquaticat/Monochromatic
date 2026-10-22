@@ -83,3 +83,14 @@ tokio = { version = "1", features = ["rt", "sync", "macros"] }
 paranoid-android = "0.2.2"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[profile.release]
+# Size: libmusicplayer_native.so in 0.1.7 was 26.78 MB (arm64-v8a) and 27.61 MB (x86_64) with the default release
+# profile. Measured on 2026-10-22 through the build:native task: stripping symbols gave 19.34 and 21.92 MB, thin LTO
+# on top gave 19.50 and 21.96 MB (no gain), and fat LTO with one codegen unit gave 15.84 and 18.28 MB. The build of
+# both ABIs from scratch took 125 s stripped and 352 s with fat LTO on a 28-core host. `strip = "symbols"` keeps
+# unwind info, so panics behave as before. For a quick edit-and-run loop override the profile per run:
+# CARGO_PROFILE_RELEASE_LTO=off CARGO_PROFILE_RELEASE_CODEGEN_UNITS=16 (costs size only).
+strip = "symbols"
+lto = "fat"
+codegen-units = 1
