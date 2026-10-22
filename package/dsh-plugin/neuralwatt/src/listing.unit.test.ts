@@ -387,7 +387,7 @@ await describe({
           },
         }),
         it({
-          name: 'pins the credential, protocol, endpoint, and effort dispatch',
+          name: 'pins the credential, protocol, endpoint, effort dispatch, and role mapping',
           fn: async () => {
             const route = mapNeuralWattProviders({ listing: [] })[NEURALWATT_ROUTE];
             if (route === undefined) {
@@ -397,6 +397,7 @@ await describe({
             expect(route.api).toBe(NEURALWATT_API);
             expect(route.baseURL).toBe(NEURALWATT_BASE_URL);
             expect(route.compat?.supportsReasoningEffort).toBe(true);
+            expect(route.compat?.supportsDeveloperRole).toBe(false);
             expect(route.models).toEqual([]);
           },
         }),
