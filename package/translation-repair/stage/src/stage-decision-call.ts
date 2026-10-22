@@ -79,8 +79,11 @@ export type StageDecision = {
 
  @throws The call's error, once the caller aborted
 
- @throws `EveryProviderDryError` when the router refused the call because
- no provider has budget left, which ends the run at the owner's instruction
+ @throws `EveryProviderDryError` when the client's decision call meets the router refusing every provider, which ends
+ the run at the owner's instruction. THE SHIPPED DECISIONS ROUTE DOES NOT RAISE IT (`provider-router-decide.ts` raises
+ `NoProviderForModelError` when OpenRouter reads dry, which stays a lost, unreachable seat), so this holds for a
+ decision call that does, such as one behind the pass guard; whether a dry decisions endpoint should end the run is
+ undecided.
 
  @example
  ```ts

@@ -629,7 +629,18 @@ import type { RepairModels, } from '@monochromatic-dev/translation-repair-assemb
  and the change cannot ride inside it, so the number moves. The reader also refuses a record that lacks the field, so
  a record written at 43 is not resumed even by a run that kept the old number. The refine version stays at 14: its
  key and its question are unchanged, and a refinement record embeds the outcome, so the same reader refuses one
- that lacks the field. No record has been written at 44, which this change sets first.
+ that lacks the field; the refine write gate asks the same question as that reader (`refinementIsResumable`), so it
+ writes nothing the reader would discard.
+
+ THE OTHER VERSIONS STAY AT 44, each for its own reason. The lane-contest (16), consolidate (32), consistency (7) and
+ page-title (6) keys hash the texts and questions they decide over, and nothing here changes what any of them may store
+ or how it decides: a slice the repair lane redoes under 44 reaches them as a changed key when its text changes and as
+ the same answer when it does not. The translate slice version (25) stays because the translate lane never reads
+ `silentStages` and its own gate is unchanged. The pairing version (3) stays by its own account of 2026-10-18
+ (`slice-reading/src/pairing-cache-version.ts`). The artifact schema stays because an artifact is a record of a
+ finished pass and not a cache a run resumes, and no source under `artifact/src` names the field. The
+ every-provider-dry stop of the same day (`bae1bb310e`) moves no version: it changes whether the next entry starts, not
+ what a settlement may be cached as. No record has been written at 44, which this change sets first.
  */
 export const SLICE_CACHE_VERSION = 44;
 /**

@@ -103,7 +103,8 @@ export function entryErrorOutcome(
 
  @param durationMs - time before it failed, on `monotonicMs`
 
- @param aborted - whether the hard-ceiling abort fired
+ @param aborted - whether the entry's signal had aborted when it failed: the hard-ceiling abort fired, or the dry
+ router stopped the run (the TALLY line prints it as `aborted=`)
 
  @returns Scheduling disposition, never a settlement
 

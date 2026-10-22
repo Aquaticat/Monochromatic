@@ -31,7 +31,10 @@ import {
   repeatedRosterIds,
   StageRosterRepeatError,
 } from './stage-roster-repeat.ts';
-import { stageQuorumUnmetFinding, } from './stage-silence.ts';
+import {
+  silentStageLabel,
+  stageQuorumUnmetFinding,
+} from './stage-silence.ts';
 import {
   RUN_SEATS,
   type SeatTally,
@@ -561,9 +564,14 @@ export async function gatherStageVoices<ValueT,>(
 
   /**
    Shortfall wording shared by both degradation findings: heard against
-   asked, since a seat the window spared was never owed an answer.
+   asked, since a seat the window spared was never owed an answer. SPELT BY THE ONE LABEL a silent stage carries as
+   data on the settlement (`silentStageLabel`), so the finding and the data cannot drift apart.
    */
-  const shortfall = `${stage} ${String(voices.length,)}/${String(asked.size,)}`;
+  const shortfall = silentStageLabel({
+    stage,
+    heard: voices.length,
+    asked: asked.size,
+  },);
 
   /**
    Models that were asked and never answered, in roster order.

@@ -327,9 +327,10 @@ export type NeuralWattCard = ServedCard<NeuralWattServedId> & {
    Reasoning effort sent with a call that carries a picture, on this
    provider only. THE ONLY REQUEST PARAMETER ANY CARD CAN NAME, and it lives
    on this side alone, so no other provider's client has a field to read:
-   the other providers cleared for thinking parameters (Anthropic, DeepSeek
-   and Xiaomi, first rate) have none measured yet, and the rest are third
-   tier. The owner, 2026-10-21: "NeuralWatt is a special case of all the
+   the other providers cleared for thinking parameters have none measured yet:
+   DeepSeek and Xiaomi (first rate), and Anthropic, which the owner ruled
+   first rate although no direct Anthropic client exists yet (one is being
+   built), so no client here sends it one. The rest are third tier. The owner, 2026-10-21: "NeuralWatt is a special case of all the
    providers: It implements what it documents correctly, almost always -
    I'm lifting the ban on passing params, but only for NeuralWatt." On
    2026-10-22: "Anthropic counts as first rate, neuralwatt counts as second

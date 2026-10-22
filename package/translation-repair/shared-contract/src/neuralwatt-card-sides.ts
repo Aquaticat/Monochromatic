@@ -40,9 +40,10 @@ export const GLM_5_3_FLASH_ON_NEURALWATT: NeuralWattCard = {
   // LEVEL: the choice rests on the one failure at `max`, on the listing's
   // ordering, and on the text probe named here, which is the nearest measurement and
   // is not a picture call. A transcription is not a deduction, so the depth is
-  // not what the reading needs. THE PROBE, by the parent session on 2026-10-22
-  // with a key: reasoning tokens of this model over three repeats on one
-  // digit-sum question, text only. No effort sent: 3947, 558, 1144. `low`: 143,
+  // not what the reading needs. THE PROBE of 2026-10-22, a keyed run whose raw
+  // numbers are recorded in `package/translation-repair/provider/README.md`
+  // ("Thinking-parameter evidence"): reasoning tokens of this model over three
+  // repeats on one digit-sum question, text only. No effort sent: 3947, 558, 1144. `low`: 143,
   // 116, 118. `high`: 169, 222, 182. `max`: 555, 579, 355. `low` kept thinking
   // on (every repeat reasoned), which complies with the owner's "we should
   // never disable thinking on anything" of 2026-10-22, and answered 2 of 3
