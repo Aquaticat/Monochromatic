@@ -18,12 +18,12 @@ import {
 import { claudeSchemaOf, } from '../dist/final/node/index.mjs';
 
 await describe({
-  name: 'claudeSchemaOf',
+  name: claudeSchemaOf.name,
   children: [
     it({
       name: 'CLOSES EVERY OBJECT, whether it sits under properties, items, anyOf or a definition, and whether it '
         + 'declares properties or only a type, and replaces an additionalProperties that allows more with false',
-      fn: () => {
+      fn: async () => {
         expect(claudeSchemaOf({
           schema: {
             type: 'object',
@@ -50,7 +50,7 @@ await describe({
     it({
       name: 'DROPS EACH BOUND THE FEATURE DOES NOT SUPPORT, numeric, string and array, and keeps the keywords it does '
         + 'support: type, enum, const, required, description and format',
-      fn: () => {
+      fn: async () => {
         expect(claudeSchemaOf({
           schema: {
             type: 'object',
@@ -79,7 +79,7 @@ await describe({
     it({
       name: 'LEAVES A MEMBER NAMED LIKE A KEYWORD ALONE: a property called minimum or maxLength is a name under '
         + 'properties and not a bound, and an enum or const value that spells a keyword is data',
-      fn: () => {
+      fn: async () => {
         expect(claudeSchemaOf({
           schema: {
             type: 'object',
@@ -106,7 +106,7 @@ await describe({
     it({
       name: 'LEAVES THE CALLER\'S SCHEMA UNTOUCHED, returns a schema that shares no object with it, and passes a '
         + 'boolean schema through',
-      fn: () => {
+      fn: async () => {
         /**
          Schema the caller wrote, with a bound and an open object.
          */

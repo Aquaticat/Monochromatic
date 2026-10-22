@@ -107,7 +107,7 @@ await describe({
           expect(body.tools,).toBeUndefined();
           expect(body.tool_choice,).toBeUndefined();
           expect(body.output_config,).toMatchObject({
-            format: { type: 'json_schema', schema: NAP_SCHEMA.json_schema.schema, },
+            format: { type: 'json_schema', schema: { ...NAP_SCHEMA.json_schema.schema, additionalProperties: false, }, },
           },);
         },),);
       },

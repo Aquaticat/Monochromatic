@@ -7,6 +7,7 @@ import {
 } from './anthropic-request.ts';
 import type { VisionMessage, } from './chat-contract.ts';
 import type { ClaudeModelInfo, } from './claude-catalog.ts';
+import { claudeSchemaOf, } from './claude-schema.ts';
 
 //region Claude body
 // THE BODY ONE CLAUDE CALL SENDS, member by member from the owner's brief of 2026-10-22 and the probes it cites.
@@ -105,12 +106,26 @@ export function buildClaudeBody(
     // NeuralWatt and banned on Hyper, Synthetic, OpenRouter and Bedrock. So this body sends `adaptive` and never
     // `disabled` or `between_tools` (which turns thinking off on Sonnet 5.5), and never `budget_tokens`, which both
     // models answer with HTTP 400.
-    thinking: { type: 'adaptive', },
+    //
+    // THE SUMMARY IS SHOWN (`display: 'summarized'`) SO THE STREAM CARRIES `thinking_delta` EVENTS WHILE THE MODEL
+    // THINKS. The default on both models is `omitted`, under which each thinking block streams with an empty text and
+    // only a signature (the bundled API skill, `shared/model-migration.md`: "the default streams empty-text thinking
+    // blocks (long pause before output)", and "set `display: "summarized"` to restore visible progress during
+    // thinking"). The stream idle guard resets its window on generated text only, and an empty delta is not text
+    // (`stream-idle-guard.ts`), so under the default a long think looked like a stalled stream, was cut at the first
+    // content window and was sent again, billing the thinking tokens each time. `display` changes what is returned and
+    // not what is generated or billed ("thinking happens and is billed the same under every setting", same file), and
+    // the reader drops the summary text (`anthropic-completion.ts`), so the answer is unchanged.
+    thinking: {
+      type: 'adaptive',
+      display: 'summarized',
+    },
     // THE STABLE PREFIX IS THE SYSTEM FIELD. Every call of a stage opens on the same instruction (house policy, the
     // rules, the reply block) and differs in the sheet it shows, which is the user turn, so one ephemeral breakpoint
     // on the last system block caches what hundreds of calls repeat. The default time to live of five minutes stands,
     // with no `ttl` member: the brief asks for 5 minutes, priced at the 5-minute write rate on the card. A prefix under
-    // 286 tokens on either model is not cached, silently, and costs nothing extra.
+    // 512 tokens on either model is not cached, silently, and costs nothing extra (the bundled API skill,
+    // `shared/prompt-caching.md`, minimum cacheable prefix for Sonnet 5.5 and Haiku 5.5).
     ...((instruction === '')
       ? {}
       : {
@@ -126,7 +141,9 @@ export function buildClaudeBody(
     // tokens, a right answer) and refused a forced `tool` with HTTP 400 ("tool_choice: type \"tool\" and \"any\" are
     // not supported for this model."). Haiku 5.5 under a forced `tool` or `any` returned no thinking tokens on 12 of 12
     // calls and the wrong answer on 6 of 6 hard ones, against 0 of 12 wrong with `format` or auto
-    // (`haiku-forced-tool-probe*.out`). The schema goes through unchanged, as the answer object the call states.
+    // (`haiku-forced-tool-probe*.out`). The schema goes through narrowed to what the feature accepts and nothing more
+    // (`claude-schema.ts`): every object closed with `additionalProperties: false` and the unsupported bounds dropped,
+    // which the reply guards of the stages still enforce.
     // `effort` is the card's, one level per effort card; a card that names none sends none, which is the model's own
     // default (Sonnet high, Haiku medium), the neutral reading of the owner's "Why don't you bench?".
     ...((responseFormat === undefined) && (card.effort === undefined)
@@ -139,8 +156,10 @@ export function buildClaudeBody(
             : {
               format: {
                 type: 'json_schema',
-                schema: responseFormat.json_schema
-                  .schema,
+                schema: claudeSchemaOf({
+                  schema: responseFormat.json_schema
+                    .schema,
+                },),
               },
             }),
         },
