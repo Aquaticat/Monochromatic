@@ -19,6 +19,7 @@ export {
   type DirectClient,
   type DirectRoute,
 } from './direct-client.ts';
+export { withoutRefusedKeyBody, } from './refused-key-body.ts';
 export {
   DIRECT_COST_UNREPORTED,
   deepSeekCostOf,

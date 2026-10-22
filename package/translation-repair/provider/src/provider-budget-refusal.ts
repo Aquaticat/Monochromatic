@@ -1,4 +1,5 @@
 import { ProviderHttpError, } from '@monochromatic-dev/translation-repair-provider-stream/ts';
+import type { ProviderName, } from '@monochromatic-dev/translation-repair-shared-contract/ts';
 import { NeuralWattAllowanceError, } from './neuralwatt-energy.ts';
 import { retryAfterMsOf, } from './retry-stated-wait.ts';
 
@@ -84,6 +85,12 @@ export function isUpstreamModelRefusal(
 /**
  Whether a failure is the older shape of Anthropic's empty-balance reply: status 400 with the low-credit sentence.
 
+ ANTHROPIC'S ALONE: the sentence is its own wording, and another provider's 400 that quotes it (an aggregator
+ relaying Anthropic's reply for one model, a body that echoes the request) is a bad request, not that provider's
+ empty balance.
+
+ @param provider - provider that answered
+
  @param status - HTTP status of the reply
 
  @param bodyExcerpt - opening of the reply body
@@ -92,19 +99,22 @@ export function isUpstreamModelRefusal(
 
  @example
  ```ts
- if (isLowCreditReply({ status, bodyExcerpt, },)) markBillingRefused();
+ if (isLowCreditReply({ provider, status, bodyExcerpt, },)) markBillingRefused();
  ```
  */
 export function isLowCreditReply(
   {
+    provider,
     status,
     bodyExcerpt,
   }: {
+    readonly provider: ProviderName;
     readonly status: number;
     readonly bodyExcerpt: string;
   },
 ): boolean {
-  return (status === HTTP_BAD_REQUEST)
+  return (provider === 'anthropic')
+    && (status === HTTP_BAD_REQUEST)
     && bodyExcerpt
       .toLowerCase()
       .includes(LOW_CREDIT_WORDS,);
@@ -242,5 +252,9 @@ export function isPaymentRefusal(
 export function statedWaitMsOf({ error, }: { readonly error: unknown; },): number {
   if (!(error instanceof ProviderHttpError))
     return 0;
-  return retryAfterMsOf({ bodyText: error.bodyExcerpt, },);
+  // THE LARGER OF THE TWO, since a provider states its wait in one place: Hyper in the body, Anthropic in the header.
+  return Math.max(
+    retryAfterMsOf({ bodyText: error.bodyExcerpt, },),
+    error.retryAfterMs,
+  );
 }

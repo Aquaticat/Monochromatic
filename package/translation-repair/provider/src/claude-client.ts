@@ -59,7 +59,7 @@ import {
   exchangeWithRetry,
   type RetryPolicy,
 } from './transient-retry.ts';
-import { withoutRefusedKeyBody, } from './direct-client.ts';
+import { withoutRefusedKeyBody, } from './refused-key-body.ts';
 
 //region Claude client
 // THE CLIENT OF ANTHROPIC'S OWN API, on the owner's Claude key, for TWO MODELS: Sonnet 5.5 and Haiku 5.5.
@@ -155,6 +155,9 @@ export type ClaudeClient = ModelCaller & {
  A flag that can be raised and never lowered, so a fact met once in a run (a billing error, the first limits line)
  cannot be forgotten by a later call.
 
+ CARRIED BY AN ABORT CONTROLLER, whose signal goes aborted once and stays: raising again changes nothing, and nothing
+ here grows or rebinds.
+
  @returns The flag's reader and its raiser
 
  @example
@@ -168,15 +171,16 @@ function oneWayFlag(): {
   readonly raise: () => void;
 } {
   /**
-   One entry once raised; an array rather than a rebound binding.
+   Aborted once the flag is raised.
    */
-  const raised: true[] = [];
+  const raised = new AbortController();
   return {
     isRaised: function isRaised(): boolean {
-      return raised.length > 0;
+      return raised.signal
+        .aborted;
     },
     raise: function raise(): void {
-      raised.push(true,);
+      raised.abort();
     },
   };
 }
@@ -227,11 +231,10 @@ function cardFor({ modelId, }: { readonly modelId: RosterModelId; },): ClaudeMod
   const row = CLAUDE_MODELS[spelling.id];
   // THE LOCK A SECOND TIME, AT RUN TIME: the types already hold every row to the two granted wire models and the three
   // efforts, and the cards' unit tests fail on a third, so these two branches cannot run unless a card is edited past
-  // both. They stop the call before a request is built, which is the only place a stray model id would cost money.
-  /* v8 ignore next 2 -- @preserve */
+  // both. They stop the call before a request is built, which is the only place a stray model id would cost money;
+  // `claude-client.unit.test.ts` edits a row past the types to run each.
   if (!(ANTHROPIC_WIRE_MODELS as readonly string[]).includes(row.wireModel,))
     throw new ClaudeModelNotServedError({ modelId: row.wireModel, },);
-  /* v8 ignore next 2 -- @preserve */
   if ((row.effort !== undefined) && (!(ANTHROPIC_EFFORTS as readonly string[]).includes(row.effort,)))
     throw new ClaudeModelNotServedError({ modelId: `${row.id} at effort ${row.effort}`, },);
   return row;
@@ -376,6 +379,73 @@ export function createClaudeClient(
   }
 
   /**
+   Holds the key dry for the run when a failure is a billing error, whichever way it reached the client: as the reply
+   of a non-success status, or as a thrown refusal (an `error` event under a success status, which the retry ladder
+   returns unretried as a 402).
+
+   @param failure - whatever the exchange produced
+
+   @param label - what the call is named by in logs
+
+   @example
+   ```ts
+   holdDryOnBilling({ failure, label, },);
+   ```
+   */
+  function holdDryOnBilling({
+    failure,
+    label,
+  }: {
+    readonly failure: unknown;
+    readonly label: string
+  },): void {
+    if (!isPaymentRefusal({ error: failure, },))
+      return;
+    billingRefused.raise();
+    tagged({
+      tag: holdDryOnBilling.name,
+      l,
+    },)
+      .warn(`<- ${label}: billing error; the Claude key is held dry for the rest of the run`,);
+  }
+
+  /**
+   Runs the retry ladder over one exchange, holding the key dry when it throws a billing error.
+
+   @param ladder - everything the ladder takes
+
+   @param label - what the call is named by in logs
+
+   @returns The reply the ladder ended on
+
+   @throws The ladder's own failure, after the billing flag has read it
+
+   @example
+   ```ts
+   const reply = await exchangeHoldingDryOnBilling({ ladder, label, },);
+   ```
+   */
+  async function exchangeHoldingDryOnBilling(
+    {
+      ladder,
+      label,
+    }: {
+      readonly ladder: Parameters<typeof exchangeWithRetry>[0];
+      readonly label: string
+    },
+  ): Promise<TransportReply> {
+    try {
+      return await exchangeWithRetry(ladder,);
+    } catch (error) {
+      holdDryOnBilling({
+        failure: error,
+        label,
+      },);
+      throw error;
+    }
+  }
+
+  /**
    Transport that gives a refused key's 401 back without the provider's words.
    */
   const guardedTransport = withoutRefusedKeyBody({ transport: pacedTransport, },);
@@ -404,7 +474,17 @@ export function createClaudeClient(
 
    @returns Content text and usage when reported
 
+   @throws {@link ClaudeModelNotServedError} when the model is not one of the eight Claude cards, before any request is
+   built
+
+   @throws {@link ClaudePrefillError} when the conversation ends on an assistant turn
+
+   @throws {@link EmptyConversationError} when the messages cannot form a conversation
+
    @throws {@link ProviderHttpError} on non-success status
+
+   @throws {@link StreamErrorEventError} on an error event under a success status, which stands for the refusal it
+   names
 
    @throws {@link MalformedCompletionError} on a stream that never ended
 
@@ -474,26 +554,29 @@ export function createClaudeClient(
       /**
        Raw reply from the transport seam, retried on transient statuses.
        */
-      const reply = await exchangeWithRetry({
-        provider: 'anthropic',
-        transport: guardedTransport,
-        exchange: {
-          url: claudeMessagesUrlFor({ baseUrl, },),
-          label,
-          method: 'POST',
-          headers,
-          bodyJson,
-          signal: (deadline === undefined) ? request.signal : deadline.callSignal,
-          wireFormat: 'anthropic',
-          captureHeaders: [
-            RETRY_AFTER_HEADER,
-            `${RATE_LIMIT_HEADER_PREFIX}*`,
-          ],
-          // Conditional spread keeps the knob absent instead of undefined.
-          ...(request.maxAnswerChars === undefined ? {} : { maxAnswerChars: request.maxAnswerChars, }),
+      const reply = await exchangeHoldingDryOnBilling({
+        label,
+        ladder: {
+          provider: 'anthropic',
+          transport: guardedTransport,
+          exchange: {
+            url: claudeMessagesUrlFor({ baseUrl, },),
+            label,
+            method: 'POST',
+            headers,
+            bodyJson,
+            signal: (deadline === undefined) ? request.signal : deadline.callSignal,
+            wireFormat: 'anthropic',
+            captureHeaders: [
+              RETRY_AFTER_HEADER,
+              `${RATE_LIMIT_HEADER_PREFIX}*`,
+            ],
+            // Conditional spread keeps the knob absent instead of undefined.
+            ...(request.maxAnswerChars === undefined ? {} : { maxAnswerChars: request.maxAnswerChars, }),
+          },
+          policy: retryPolicy,
+          verify: wholeMessage,
         },
-        policy: retryPolicy,
-        verify: wholeMessage,
       },);
       if (!isSuccessStatus({ status: reply.status, },)) {
         rl.warn(`<- ${label}: HTTP ${String(reply.status,)}`,);
@@ -507,13 +590,15 @@ export function createClaudeClient(
           status: reply.status,
           bodyText: reply.bodyText,
           requestBodyBytes: Buffer.byteLength(bodyJson,),
+          // Conditional spread keeps the member absent instead of undefined.
+          ...((reply.headers === undefined) ? {} : { headers: reply.headers, }),
         },);
         // A BILLING ERROR (402, or the older 400 saying the credit balance is too low) EMPTIES THE KEY FOR THE RUN: the
         // flag is this client's own, so a call already in flight that settles cannot lift it.
-        if (isPaymentRefusal({ error: failure, },)) {
-          billingRefused.raise();
-          rl.warn(`<- ${label}: billing error; the Claude key is held dry for the rest of the run`,);
-        }
+        holdDryOnBilling({
+          failure,
+          label,
+        },);
         throw failure;
       }
 

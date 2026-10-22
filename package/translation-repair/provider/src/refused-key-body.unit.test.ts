@@ -50,7 +50,7 @@ function answeringWith({ reply, }: { readonly reply: TransportReply; },): ModelT
 }
 
 await describe({
-  name: 'withoutRefusedKeyBody',
+  name: withoutRefusedKeyBody.name,
   children: [
     it({
       name: 'EMPTIES THE BODY OF A 401, which may echo the tail of the key, and keeps its status and headers',

@@ -30,8 +30,10 @@ import {
   type TransportReply,
 } from '@monochromatic-dev/translation-repair-provider-stream';
 import {
+  CLAUDE_MODELS,
   CLAUDE_PACE_WINDOW_MS,
   CLAUDE_REQUESTS_PER_MINUTE,
+  ClaudeModelNotServedError,
   createClaudeClient,
   createProviderBudgets,
   statedWaitMsOf,
@@ -366,7 +368,7 @@ await describe({
         /**
          Signal every meter read carries.
          */
-        const {signal} = new AbortController();
+        const { signal, } = new AbortController();
         /**
          Bodies that mean the balance is empty, each with its status.
          */
@@ -550,6 +552,44 @@ await describe({
         expect(logged.filter(function isSpend(line,): boolean {
           return line.includes('SPEND ',) && line.includes('completion=13082',);
         },).length,).toBe(1,);
+      },
+    },),
+    it({
+      name: 'STOPS A CARD EDITED PAST THE TYPES (C13), the lock\'s third line: a wire model outside the two granted and an '
+        + 'effort outside the three both refuse the call at the client, before a request is built',
+      fn: async () => {
+        /**
+         The Haiku row of the catalog, typed loosely so the case can edit it past what the types allow.
+         */
+        const row = CLAUDE_MODELS['claude-haiku-5-5'] as { wireModel: string; effort?: string; };
+        /**
+         What the row holds.
+         */
+        const original = { ...row, };
+        /**
+         Puts the row back when the case ends, however it ends.
+         */
+        using restoreRow = {
+          [Symbol.dispose](): void {
+            row.wireModel = original.wireModel;
+            if (original.effort === undefined)
+              delete row.effort;
+            else
+              row.effort = original.effort;
+          },
+        };
+        const { transport, exchanges, } = scripted({ replies: [{ status: 200, bodyText: '', },], },);
+        const client = createClaudeClient({ apiKey: CLAUDE_CAT_KEY, transport, retryPolicy: ONE_QUICK_RETRY, },);
+        row.wireModel = 'claude-opus-5-5';
+        const wrongModel: unknown = await rejectionOf(() => askCat({ client, modelId: 'claude-haiku-5-5', },),);
+        row.wireModel = original.wireModel;
+        row.effort = 'xhigh';
+        const wrongEffort: unknown = await rejectionOf(() => askCat({ client, modelId: 'claude-haiku-5-5', },),);
+        expect(wrongModel,).toBeInstanceOf(ClaudeModelNotServedError,);
+        expect((wrongModel as Error).message,).toContain('claude-opus-5-5',);
+        expect(wrongEffort,).toBeInstanceOf(ClaudeModelNotServedError,);
+        expect((wrongEffort as Error).message,).toContain('effort xhigh',);
+        expect(exchanges.length,).toBe(0,);
       },
     },),
   ],
