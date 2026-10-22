@@ -206,3 +206,161 @@ The archive block review has no version of its own.
 Consequence found in the same change:
 five cases of `archive-composite-revision.unit.test.ts` failed on the new sheet text,
 and are recorded as B734.
+
+## B762: sixteen answer schemas declare their properties in an order Hyper does not keep
+
+Status:
+guard written red on 2026-10-21 (UTC),
+`d5562122314a`;
+the rename that turns it green is not done.
+
+Found while the order of reason and vote (B732) was being checked against the replies of the two logs.
+Charm Hyper returns the keys of a tool call in alphabetical order:
+200 of 227 multi-key objects in zheermao22,
+and 102 of 103 vote replies in CuspariaKLSY22
+(a reply whose keys were already in alphabetical order cannot show it).
+NeuralWatt,
+OpenRouter and Synthetic follow the declared order.
+So on Hyper the ruling of 2026-10-21,
+"Reason first everywhere",
+holds only where `reason` sorts before the choice,
+and in most ballots it does not.
+
+Does the repo sort:
+no.
+`canonicalPromptValue` digests the messages for the uniqueness check and never reaches a request body,
+`buildAnthropicBody` and `renderToolSystemPrompt` place the schema as declared,
+and no other path reorders a schema or a reply.
+Whether Hyper sorts the schema it sends the model or the reply the model wrote is not known from the stored replies,
+and no probe of it was made.
+The only order that holds on every provider is one where declared order and alphabetical order agree.
+
+The guard:
+`source-scan/src/schema-property-order.unit.test.ts` reads every object literal that is the value of a `properties` key
+in non-test source,
+and names the file,
+the line,
+the declared order and the alphabetical order.
+Its fixture case passes first and shows each form:
+bare and quoted keys,
+a sorted member,
+a one-key member,
+a spread,
+a computed key,
+an object that merely holds keys and a test file.
+The package-wide case is red with sixteen findings.
+The task `source-scan:source-scans` lists the file.
+
+The sixteen schemas,
+as declared and the order they must reach:
+- `adjudication/adjudicate-wire.ts:234`:
+  `verdicts`,
+  `groups` must read `groups`,
+  `verdicts`.
+- `adjudication/adjudicate-wire.ts:247`:
+  `claim`,
+  `reason`,
+  `vote`,
+  `severity` must read `claim`,
+  `reason`,
+  `severity`,
+  `vote`.
+- `adjudication/candidate-select-wire.ts:362`:
+  `reason`,
+  `best`.
+- `adjudication/critic-wire.ts:158`:
+  `summary` before `sourceQuote`.
+- `adjudication/introduced-defect-wire.ts:741`:
+  `region`,
+  `verdict`,
+  `category`,
+  `severity`,
+  `evidence`,
+  `omittedText`,
+  `reason`.
+- `archive/absolute-naturalness-review-wire.ts:120`:
+  `reason`,
+  `findings`,
+  `acceptable`.
+- `archive/archive-block-review-wire.ts:314`:
+  `finding`,
+  `disposition`,
+  `sourceQuote`,
+  `replacementText`.
+- `archive/coverage-wire.ts:406`:
+  `reason`,
+  `quote`,
+  `coverage`.
+- `artifact/page-title-lexicon-wire.ts:286`:
+  `title`,
+  `rendering`.
+- `consistency/consistency-choice.ts:80`:
+  `reason`,
+  `choice`.
+- `consistency/consistency-wire.ts:387`:
+  `reason`,
+  `quotes`,
+  `choice`,
+  `keep`.
+- `lane-contest/contest-ballot-wire.ts:138`:
+  `reason`,
+  `unsupported`,
+  `dropped`,
+  `choice`.
+- `rendering-audit/rendering-audit-wire.ts:341`:
+  `verdict`,
+  `findings`.
+- `repair/edit-wire.ts:124`:
+  `region`,
+  `newText`.
+- `repair/refine-wire.ts:130`:
+  `paragraph`,
+  `newText`.
+- `translate-floor/translate-repair-wire.ts:220`:
+  `resolution`,
+  `translation`,
+  `explanation`.
+
+Why the rename was not done in this round:
+it is wide.
+Each schema is read by its writer,
+its reader,
+its sheet text,
+its fixtures and its tests,
+and every cache version whose key includes the schema moves with it.
+It also meets a decision the owner has not made:
+reason first and alphabetical order pull apart wherever `reason` sorts after the choice
+(`choice`,
+`coverage`,
+`best`,
+`acceptable` and `findings` all sort before it),
+so a reason-first ballot needs either a reason key that sorts first (a name such as `because`,
+and a different one where a sibling sorts before it)
+or a choice key renamed to sort after it.
+The rewrite wire's `explanation` follows the translation it explains,
+so it needs a name that sorts after `translation`.
+The introduced-defect wire stays reason last by the ruling of B732,
+so its reason key needs a name that sorts after `verdict`.
+Where the declared order carries no ruling at all
+(`groups` and `verdicts`,
+`newText` and `region`,
+`newText` and `paragraph`,
+`rendering` and `title`),
+moving the declaration is enough and nothing is renamed.
+The rename is proposed here and not chosen.
+
+Open to the owner's veto:
+whether to rename the reason keys or the choice keys,
+and whether the introduced-defect wire stays reason last.
+
+The rule for next time:
+a ruling about the order of keys in a reply is checked against a provider that reorders them,
+and what the reply order depends on is stated beside the ruling.
+Recurrence:
+`mistake-prevention-sheets-quorums-and-outcome-rules.md`,
+"Ballots give their reason first".
+
+Cache account:
+none moved,
+since no sheet or schema changed in this round.
+The rename will move every version whose key includes a renamed schema.

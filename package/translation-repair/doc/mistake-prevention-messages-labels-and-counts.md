@@ -489,3 +489,26 @@ What enforces it:
 so a construct site without one does not type-check.
 `request-size-refusal.unit.test.ts` fails when a Charm Hyper reply with every size signal is read as Synthetic's cap.
 No scan finds another provider-named class built from a shared helper.
+
+## Two readers of one fact
+
+What happened:
+the `METERS` line printed what a provider's meter said,
+and the router read the meter together with three holds
+(a refused credential,
+a timed hold after a refusal,
+a refusal for payment).
+CuspariaKLSY22 printed `bedrock=wet` on all 27 of its `METERS` lines while its `JUDGE SEATS` lines read `bedrock=dry`
+from the second on (ledger B763).
+
+The rule:
+a state the run prints and a state the run decides on come from one place.
+A printed state that skips a layer the router applies is a second reader of the fact,
+and the line that is the only record of when something was available says what the router saw.
+A new hold on routing is added to the printed state in the same change.
+
+What enforces it:
+`provider-budget-held-meters.unit.test.ts` holds one case for each hold,
+the timed one shown dry and then wet again once it lapses,
+and `run-providers-held.unit.test.ts` runs the run's own credential holds through the line.
+A hold added beside these and read by the router only is outside what they see.

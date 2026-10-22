@@ -120,6 +120,26 @@ and joins `WRITER_STAGE_LABELS` if it is a writer round.
 Its case runs a straggler under windows that differ (`archive-block-review-windows.unit.test.ts`),
 since `SCRIPTED_STAGE_SETTINGS` makes the two equal and so cannot tell which one a stage read.
 
+A cut or abandoned call is classified by its cause and by what it delivered (ledger B761).
+The round cuts a straggler by aborting its signal,
+and a stream that carried only framing (0 content characters and 0 reasoning characters,
+as 44 `inception/mercury-2.5` streams did in two logs) was counted in no column,
+so a seat whose every ask ended that way was never withheld.
+A cut counts as a failed ask only when the round made it (the abort reason names the round's cut)
+and the call delivered no content and no reasoning;
+a cut that had delivered reasoning is a working stream and stays out of the count.
+The threshold for withholding is chosen on seats that later answered:
+a run of 9 silent cuts was followed by an answer in CuspariaKLSY22,
+so any threshold on consecutive silent cuts below 10 would have withheld a seat that was serving.
+A seat is withheld when every ask failed,
+at 4 asks or more.
+`seat-tally-silent.unit.test.ts` holds the cases,
+including a reasoner cut with reasoning delivered,
+a caller's own stop,
+and a seat that answered once among many silent asks.
+A new wrapper that classifies an abort reads the abort reason and the delivered counts,
+and not the fact that the signal aborted.
+
 ## Sheets every model reads
 
 What happened:
@@ -316,6 +336,16 @@ and when the rendered instruction names the choice first.
 A new ballot schema that no test names,
 and a reply cut short by the completion cap,
 are outside what these can see.
+
+A ruling about the order of keys in a reply depends on the provider keeping that order (ledger B762).
+Charm Hyper returns a tool call's keys alphabetically (200 of 227 multi-key objects in zheermao22),
+and the repo sorts nothing,
+so a reason declared first reaches the decoder first on three providers and last on one wherever `reason` sorts after the choice.
+A key-order ruling is checked against a provider that reorders keys before it is called done,
+and a schema is declared in the order its keys sort unless the ruling says otherwise.
+`schema-property-order.unit.test.ts` in `source-scan` scans every `properties` literal in source for a declared order
+that is not alphabetical;
+it is red until the sixteen schemas it lists are renamed.
 
 ## Ties a gate settles
 
