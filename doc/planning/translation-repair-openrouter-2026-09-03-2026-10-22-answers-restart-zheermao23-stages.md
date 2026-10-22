@@ -479,8 +479,10 @@ in the order this read ranks them:
 - The plan energy figure,
   326.9 Wh with no NeuralWatt request in the log,
   six times the largest figure of the sibling reads.
-  Not a code defect;
-  an owner item.
+  Not a code defect:
+  the owner's dsh harness shares the NeuralWatt account
+  (owner,
+  2026-10-22).
 - The OpenRouter balance,
   3.99 USD at the end.
 - Qwen runaway reasoning,
@@ -524,8 +526,9 @@ and the working tree was not compared with it.
 
 Open items:
 
-- The source of the 326.9 Wh of plan energy
-  (the NeuralWatt dashboard for 12:31 to 13:21 UTC by model).
+- The 326.9 Wh of plan energy is settled as the owner's dsh harness on the same NeuralWatt account
+  (owner,
+  2026-10-22).
 - Whether the 90000 ms Mercury window works:
   no run has had a Mercury stall since it landed.
 - Why the cached reference text holds 25 characters.

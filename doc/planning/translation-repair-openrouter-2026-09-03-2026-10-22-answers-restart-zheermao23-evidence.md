@@ -10,7 +10,9 @@ A second reader recounted every figure from the logs on 2026-10-22 with scripts 
 93 confirmed,
 3 corrected in place in the run and stages files,
 4 unsourceable,
-which are the cause of the 326.9 Wh of plan energy,
+which are the cause of the 326.9 Wh of plan energy
+(settled by the owner afterwards:
+the dsh harness shares the NeuralWatt account),
 the 90,000 ms Mercury window (a card value and no log line),
 the launch time (from the launch unit and not the log)
 and the ledger and class labels (from other records).
@@ -365,5 +367,7 @@ Template line numbers are of the `zheermao22` run record.
 - The 90000 ms Mercury first-content window is in no line of the log or the artifact;
   it is read from the worktree card only.
 - The end baseline of NeuralWatt (about 5.9587 kWh) is computed and printed nowhere.
-- What drew the 326.9 Wh of plan energy.
+- What drew the 326.9 Wh of plan energy is in no log line;
+  the owner settled it on 2026-10-22
+  (the NeuralWatt key of the owner's dsh harness is on the same account).
 - The host time of the launch (12:30:44 UTC) is from the brief and not from the log.
